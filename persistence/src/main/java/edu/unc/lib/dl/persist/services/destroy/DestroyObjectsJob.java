@@ -43,6 +43,7 @@ import org.slf4j.LoggerFactory;
 import edu.unc.lib.boxc.common.metrics.TimerFactory;
 import edu.unc.lib.boxc.model.api.exceptions.FedoraException;
 import edu.unc.lib.boxc.model.api.ids.PID;
+import edu.unc.lib.boxc.model.api.objects.BinaryObject;
 import edu.unc.lib.boxc.model.api.objects.ContentContainerObject;
 import edu.unc.lib.boxc.model.api.objects.ContentObject;
 import edu.unc.lib.boxc.model.api.objects.FileObject;
@@ -51,9 +52,6 @@ import edu.unc.lib.boxc.model.api.rdf.Cdr;
 import edu.unc.lib.boxc.model.api.rdf.Ldp;
 import edu.unc.lib.boxc.model.api.rdf.Premis;
 import edu.unc.lib.boxc.model.fcrepo.ids.AgentPids;
-import edu.unc.lib.boxc.model.fcrepo.objects.AbstractContentContainerObject;
-import edu.unc.lib.boxc.model.fcrepo.objects.BinaryObjectImpl;
-import edu.unc.lib.boxc.model.fcrepo.objects.FileObjectImpl;
 import edu.unc.lib.dl.acl.fcrepo4.InheritedAclFactory;
 import edu.unc.lib.dl.fcrepo4.FedoraTransaction;
 import edu.unc.lib.dl.search.solr.model.ObjectPath;
@@ -133,7 +131,7 @@ public class DestroyObjectsJob extends AbstractDestroyObjectsJob {
         log.debug("Performing destroy on object {} of type {}",
                 rootOfTree.getPid().getQualifiedId(), rootOfTree.getClass().getName());
 
-        if (rootOfTree instanceof AbstractContentContainerObject) {
+        if (rootOfTree instanceof ContentContainerObject) {
             ContentContainerObject container = (ContentContainerObject) rootOfTree;
             List<ContentObject> members = container.getMembers();
 
@@ -147,7 +145,7 @@ public class DestroyObjectsJob extends AbstractDestroyObjectsJob {
         Resource rootResc = rootOfTree.getResource(true);
         Model rootModel = rootResc.getModel();
         List<URI> binaryUris = null;
-        if (rootOfTree instanceof FileObjectImpl) {
+        if (rootOfTree instanceof FileObject) {
             FileObject fileObj = (FileObject) rootOfTree;
             binaryUris = destroyFile(fileObj, rootResc);
         }
@@ -186,7 +184,7 @@ public class DestroyObjectsJob extends AbstractDestroyObjectsJob {
     }
 
     private List<URI> destroyFile(FileObject fileObj, Resource resc) {
-        BinaryObjectImpl origFile = fileObj.getOriginalFile();
+        BinaryObject origFile = fileObj.getOriginalFile();
         if (origFile != null) {
             addBinaryMetadataToParent(resc, origFile);
             URI uri = origFile.getContentUri();
@@ -196,7 +194,7 @@ public class DestroyObjectsJob extends AbstractDestroyObjectsJob {
         return null;
     }
 
-    private void addBinaryMetadataToParent(Resource parentResc, BinaryObjectImpl child) {
+    private void addBinaryMetadataToParent(Resource parentResc, BinaryObject child) {
         log.debug("Adding binary metadata from {} to parent {}", child.getPid().getQualifiedId(), parentResc);
         Resource childResc = child.getResource(true);
         TombstonePropertySelector selector = new TombstonePropertySelector(childResc);

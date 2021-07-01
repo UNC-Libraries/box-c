@@ -24,12 +24,12 @@ import org.slf4j.LoggerFactory;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObject;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
-import edu.unc.lib.boxc.model.fcrepo.objects.AbstractContentContainerObject;
-import edu.unc.lib.boxc.model.fcrepo.objects.AdminUnitImpl;
-import edu.unc.lib.boxc.model.fcrepo.objects.CollectionObjectImpl;
-import edu.unc.lib.boxc.model.fcrepo.objects.FileObjectImpl;
-import edu.unc.lib.boxc.model.fcrepo.objects.FolderObjectImpl;
-import edu.unc.lib.boxc.model.fcrepo.objects.WorkObjectImpl;
+import edu.unc.lib.boxc.model.api.objects.ContentContainerObject;
+import edu.unc.lib.boxc.model.api.objects.AdminUnit;
+import edu.unc.lib.boxc.model.api.objects.CollectionObject;
+import edu.unc.lib.boxc.model.api.objects.FileObject;
+import edu.unc.lib.boxc.model.api.objects.FolderObject;
+import edu.unc.lib.boxc.model.api.objects.WorkObject;
 import edu.unc.lib.dl.acl.service.AccessControlService;
 import edu.unc.lib.dl.acl.util.AgentPrincipals;
 import edu.unc.lib.dl.fcrepo4.TransactionManager;
@@ -73,7 +73,7 @@ public class MoveObjectsService {
 
         // Verify that the destination is a content container
         RepositoryObject destObj = repositoryObjectLoader.getRepositoryObject(destinationPid);
-        if (!(destObj instanceof AbstractContentContainerObject)) {
+        if (!(destObj instanceof ContentContainerObject)) {
             throw new IllegalArgumentException("Destination " + destinationPid + " was not a content container");
         }
         for (PID pid : pids) {
@@ -101,23 +101,23 @@ public class MoveObjectsService {
 
     private void verifyValidDestination(RepositoryObject destObj, PID pid) {
         RepositoryObject moveObj = repositoryObjectLoader.getRepositoryObject(pid);
-        if (destObj instanceof AdminUnitImpl) {
-            if (!(moveObj instanceof CollectionObjectImpl)) {
+        if (destObj instanceof AdminUnit) {
+            if (!(moveObj instanceof CollectionObject)) {
                 throw new IllegalArgumentException(
                         "Object with pid: " + pid + " is not a collection and cannot be added to an admin unit");
             }
-        } else if (destObj instanceof CollectionObjectImpl) {
-            if (!(moveObj instanceof FolderObjectImpl) && !(moveObj instanceof WorkObjectImpl)) {
+        } else if (destObj instanceof CollectionObject) {
+            if (!(moveObj instanceof FolderObject) && !(moveObj instanceof WorkObject)) {
                 throw new IllegalArgumentException(
                         "Object with pid: " + pid + " is not a folder or a work and cannot be added to a collection");
             }
-        } else if (destObj instanceof FolderObjectImpl) {
-            if (!(moveObj instanceof FolderObjectImpl) && !(moveObj instanceof WorkObjectImpl)) {
+        } else if (destObj instanceof FolderObject) {
+            if (!(moveObj instanceof FolderObject) && !(moveObj instanceof WorkObject)) {
                 throw new IllegalArgumentException(
                         "Object with pid: " + pid + " is not a folder or a work and cannot be added to a folder");
             }
-        } else if (destObj instanceof WorkObjectImpl) {
-            if (!(moveObj instanceof FileObjectImpl)) {
+        } else if (destObj instanceof WorkObject) {
+            if (!(moveObj instanceof FileObject)) {
                 throw new IllegalArgumentException(
                         "Object with pid: " + pid + " is not a file and cannot be added to a work");
             }

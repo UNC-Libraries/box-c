@@ -60,8 +60,8 @@ import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.objects.FolderObject;
 import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
-import edu.unc.lib.boxc.model.fcrepo.objects.FileObjectImpl;
-import edu.unc.lib.boxc.model.fcrepo.objects.WorkObjectImpl;
+import edu.unc.lib.boxc.model.api.objects.FileObject;
+import edu.unc.lib.boxc.model.api.objects.WorkObject;
 import edu.unc.lib.dl.acl.exception.AccessRestrictionException;
 import edu.unc.lib.dl.acl.fcrepo4.AccessControlServiceImpl;
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
@@ -124,7 +124,7 @@ public class RunEnhancementsIT extends AbstractAPIIT {
 
     @Test
     public void runEnhancementsFileObject() throws Exception {
-        FileObjectImpl fileObj = repositoryObjectFactory.createFileObject(null);
+        FileObject fileObj = repositoryObjectFactory.createFileObject(null);
         PID filePid = fileObj.getPid();
         fileObj.addOriginalFile(makeContentUri(BINARY_CONTENT), "file.png", "image/png", null, null);
         setResultMetadataObject(filePid, ResourceType.File.name());
@@ -145,8 +145,8 @@ public class RunEnhancementsIT extends AbstractAPIIT {
 
     @Test
     public void runEnhancementsWorkObject() throws Exception {
-        WorkObjectImpl workObj = repositoryObjectFactory.createWorkObject(null);
-        FileObjectImpl workFile = workObj
+        WorkObject workObj = repositoryObjectFactory.createWorkObject(null);
+        FileObject workFile = workObj
                 .addDataFile(makeContentUri(BINARY_CONTENT), "file.png", "image/png", null, null);
         PID workPid = workObj.getPid();
         setResultMetadataObject(workPid, ResourceType.Work.name());
@@ -168,7 +168,7 @@ public class RunEnhancementsIT extends AbstractAPIIT {
     @Test
     public void runEnhancementsNonFileNonWorkObject() throws Exception {
         FolderObject folderObj = repositoryObjectFactory.createFolderObject(null);
-        FileObjectImpl fileObj = folderObj.addWork()
+        FileObject fileObj = folderObj.addWork()
                 .addDataFile(makeContentUri(BINARY_CONTENT), "file.png", "image/png", null, null);
         PID filePid = fileObj.getPid();
         setResultMetadataObject(filePid, ResourceType.Folder.name());
@@ -189,7 +189,7 @@ public class RunEnhancementsIT extends AbstractAPIIT {
 
     @Test
     public void runEnhancementsNoAccess() throws Exception {
-        FileObjectImpl fileObj = repositoryObjectFactory.createFileObject(null);
+        FileObject fileObj = repositoryObjectFactory.createFileObject(null);
         fileObj.addOriginalFile(makeContentUri(BINARY_CONTENT), "file.png", "image/png", null, null);
         setResultMetadataObject(fileObj.getPid(), ResourceType.File.name());
 

@@ -71,11 +71,11 @@ import edu.unc.lib.boxc.model.api.rdf.Prov;
 import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
 import edu.unc.lib.boxc.model.fcrepo.ids.AgentPids;
 import edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPaths;
-import edu.unc.lib.boxc.model.fcrepo.objects.AdminUnitImpl;
-import edu.unc.lib.boxc.model.fcrepo.objects.BinaryObjectImpl;
-import edu.unc.lib.boxc.model.fcrepo.objects.CollectionObjectImpl;
-import edu.unc.lib.boxc.model.fcrepo.objects.ContentRootObjectImpl;
-import edu.unc.lib.boxc.model.fcrepo.objects.WorkObjectImpl;
+import edu.unc.lib.boxc.model.api.objects.AdminUnit;
+import edu.unc.lib.boxc.model.api.objects.BinaryObject;
+import edu.unc.lib.boxc.model.api.objects.CollectionObject;
+import edu.unc.lib.boxc.model.api.objects.ContentRootObject;
+import edu.unc.lib.boxc.model.api.objects.WorkObject;
 import edu.unc.lib.boxc.model.fcrepo.services.RepositoryInitializer;
 import edu.unc.lib.boxc.model.fcrepo.test.AclModelBuilder;
 import edu.unc.lib.boxc.model.fcrepo.test.RepositoryObjectTreeIndexer;
@@ -130,9 +130,9 @@ public class PatronAccessAssignmentServiceIT {
 
     private AgentPrincipals agent;
     private AccessGroupSet groups;
-    private ContentRootObjectImpl contentRoot;
-    private AdminUnitImpl adminUnit;
-    private CollectionObjectImpl collObj;
+    private ContentRootObject contentRoot;
+    private AdminUnit adminUnit;
+    private CollectionObject collObj;
 
     @Before
     public void init() throws Exception {
@@ -203,11 +203,11 @@ public class PatronAccessAssignmentServiceIT {
     @Test(expected = InvalidAssignmentException.class)
     public void assignToBinaryObject() throws Exception {
         createCollectionInUnit(null);
-        WorkObjectImpl work = repoObjFactory.createWorkObject(null);
+        WorkObject work = repoObjFactory.createWorkObject(null);
         collObj.addMember(work);
         URI contentUri = Files.createTempFile("test", ".txt").toUri();
         FileObject fileObj = work.addDataFile(contentUri, origFilename, origMimetype, null, null);
-        BinaryObjectImpl binObj = fileObj.getOriginalFile();
+        BinaryObject binObj = fileObj.getOriginalFile();
 
         PID pid = binObj.getPid();
         treeIndexer.indexAll(baseAddress);

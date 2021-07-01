@@ -24,8 +24,8 @@ import org.slf4j.LoggerFactory;
 import edu.unc.lib.boxc.model.api.objects.ContentObject;
 import edu.unc.lib.boxc.model.api.objects.WorkObject;
 import edu.unc.lib.boxc.model.api.rdf.Cdr;
-import edu.unc.lib.boxc.model.fcrepo.objects.FileObjectImpl;
-import edu.unc.lib.boxc.model.fcrepo.objects.WorkObjectImpl;
+import edu.unc.lib.boxc.model.api.objects.FileObject;
+import edu.unc.lib.boxc.model.api.objects.WorkObject;
 import edu.unc.lib.dl.data.ingest.solr.exception.IndexingException;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackage;
 
@@ -48,8 +48,8 @@ public class SetRelationsFilter implements IndexDocumentFilter{
         ContentObject contentObj = dip.getContentObject();
 
         // if the content obj is a work obj, set relation on its primary object
-        if (contentObj instanceof WorkObjectImpl) {
-            FileObjectImpl primaryObj = ((WorkObject) contentObj).getPrimaryObject();
+        if (contentObj instanceof WorkObject) {
+            FileObject primaryObj = ((WorkObject) contentObj).getPrimaryObject();
 
             if (primaryObj != null) {
                 // store primary-object relation

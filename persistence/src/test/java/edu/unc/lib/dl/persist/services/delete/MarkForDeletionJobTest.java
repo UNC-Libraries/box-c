@@ -47,7 +47,7 @@ import edu.unc.lib.boxc.model.api.rdf.Premis;
 import edu.unc.lib.boxc.model.fcrepo.event.PremisEventBuilderImpl;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.boxc.model.api.objects.ContentObject;
-import edu.unc.lib.boxc.model.fcrepo.objects.AdminUnitImpl;
+import edu.unc.lib.boxc.model.api.objects.AdminUnit;
 import edu.unc.lib.boxc.model.fcrepo.objects.DepositRecordImpl;
 import edu.unc.lib.dl.acl.exception.AccessRestrictionException;
 import edu.unc.lib.dl.acl.service.AccessControlService;
@@ -82,7 +82,7 @@ public class MarkForDeletionJobTest {
     @Mock
     private PremisLogger premisLogger;
     @Mock
-    private AdminUnitImpl repoObj;
+    private AdminUnit repoObj;
 
     @Captor
     private ArgumentCaptor<String> messageCaptor;

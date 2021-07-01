@@ -63,7 +63,7 @@ import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.objects.FileObject;
 import edu.unc.lib.boxc.model.api.rdf.Premis;
 import edu.unc.lib.boxc.model.fcrepo.ids.AgentPids;
-import edu.unc.lib.boxc.model.fcrepo.objects.FolderObjectImpl;
+import edu.unc.lib.boxc.model.api.objects.FolderObject;
 import edu.unc.lib.boxc.model.fcrepo.services.DerivativeService;
 import edu.unc.lib.dl.acl.exception.AccessRestrictionException;
 import edu.unc.lib.dl.acl.service.AccessControlService;
@@ -246,7 +246,7 @@ public class DatastreamRestControllerIT extends AbstractAPIIT {
         PID folderPid = makePid();
         String id = folderPid.getId();
 
-        FolderObjectImpl folderObj = repositoryObjectFactory.createFolderObject(folderPid, null);
+        FolderObject folderObj = repositoryObjectFactory.createFolderObject(folderPid, null);
         folderObj.getPremisLog().buildEvent(Premis.Creation)
             .addAuthorizingAgent(AgentPids.forPerson("some_user"))
             .writeAndClose();
@@ -289,7 +289,7 @@ public class DatastreamRestControllerIT extends AbstractAPIIT {
         PID folderPid = makePid();
         String id = folderPid.getId();
 
-        FolderObjectImpl folderObj = repositoryObjectFactory.createFolderObject(folderPid, null);
+        FolderObject folderObj = repositoryObjectFactory.createFolderObject(folderPid, null);
         folderObj.getPremisLog().buildEvent(Premis.Creation)
             .addAuthorizingAgent(AgentPids.forPerson("some_user"))
             .writeAndClose();

@@ -42,7 +42,7 @@ import edu.unc.lib.boxc.model.api.objects.RepositoryObject;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPaths;
-import edu.unc.lib.boxc.model.fcrepo.objects.AbstractContentContainerObject;
+import edu.unc.lib.boxc.model.api.objects.ContentContainerObject;
 import edu.unc.lib.dl.acl.util.AgentPrincipals;
 import edu.unc.lib.dl.acl.util.Permission;
 import edu.unc.lib.dl.cdr.sword.server.SwordConfigurationImpl;
@@ -127,7 +127,7 @@ public class ServiceDocumentManagerImpl extends AbstractFedoraManager implements
             SwordConfigurationImpl config) throws IOException {
         RepositoryObject repoObj = repositoryObjectLoader.getRepositoryObject(pid);
         ContentContainerObject containerObj;
-        if (repoObj instanceof AbstractContentContainerObject) {
+        if (repoObj instanceof ContentContainerObject) {
             containerObj = (ContentContainerObject) repoObj;
         } else {
             return Collections.emptyList();

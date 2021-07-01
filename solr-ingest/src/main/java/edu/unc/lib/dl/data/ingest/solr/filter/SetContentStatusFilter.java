@@ -24,8 +24,8 @@ import org.slf4j.LoggerFactory;
 
 import edu.unc.lib.boxc.model.api.rdf.Cdr;
 import edu.unc.lib.boxc.model.api.objects.ContentObject;
-import edu.unc.lib.boxc.model.fcrepo.objects.FileObjectImpl;
-import edu.unc.lib.boxc.model.fcrepo.objects.WorkObjectImpl;
+import edu.unc.lib.boxc.model.api.objects.FileObject;
+import edu.unc.lib.boxc.model.api.objects.WorkObject;
 import edu.unc.lib.dl.data.ingest.solr.exception.IndexingException;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackage;
 import edu.unc.lib.dl.search.solr.util.FacetConstants;
@@ -59,7 +59,7 @@ public class SetContentStatusFilter implements IndexDocumentFilter{
             status.add(FacetConstants.CONTENT_NOT_DESCRIBED);
         }
 
-        if (obj instanceof WorkObjectImpl) {
+        if (obj instanceof WorkObject) {
             if (resc.hasProperty(Cdr.primaryObject)) {
                 status.add(FacetConstants.HAS_PRIMARY_OBJECT);
             } else {
@@ -67,7 +67,7 @@ public class SetContentStatusFilter implements IndexDocumentFilter{
             }
         }
 
-        if (obj instanceof FileObjectImpl) {
+        if (obj instanceof FileObject) {
             Resource parentResc = obj.getParent().getResource();
             if (parentResc.hasProperty(Cdr.primaryObject, resc)) {
                 status.add(FacetConstants.IS_PRIMARY_OBJECT);

@@ -27,12 +27,11 @@ import static org.junit.Assert.assertNull;
 import org.junit.Before;
 import org.junit.Test;
 
+import edu.unc.lib.boxc.fcrepo.FcrepoPaths;
 import edu.unc.lib.boxc.model.api.exceptions.InvalidPidException;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.ids.PIDConstants;
 import edu.unc.lib.boxc.model.api.ids.RepositoryPathConstants;
-import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
-import edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPaths;
 import edu.unc.lib.boxc.model.fcrepo.test.TestHelper;
 
 /**
@@ -54,7 +53,7 @@ public class PIDsTest {
     }
 
     public String fakeRepositoryPath(String qualifier, String component) {
-        String path = RepositoryPaths.getBaseUri() + qualifier + TEST_PATH + TEST_UUID;
+        String path = FcrepoPaths.getBaseUri() + qualifier + TEST_PATH + TEST_UUID;
         if (component != null) {
             path += "/" + component;
         }
@@ -334,7 +333,7 @@ public class PIDsTest {
     @Test
     public void agentPidFromPath() {
         String id = "person/subdomain/username";
-        String path = RepositoryPaths.getBaseUri() + PIDConstants.AGENTS_QUALIFIER + "/" + id;
+        String path = FcrepoPaths.getBaseUri() + PIDConstants.AGENTS_QUALIFIER + "/" + id;
 
         PID pid = PIDs.get(path);
 
@@ -350,7 +349,7 @@ public class PIDsTest {
         String id = "person/subdomain/username";
         String qualifiedId = PIDConstants.AGENTS_QUALIFIER + "/" + id;
 
-        String expectedPath = RepositoryPaths.getBaseUri() + qualifiedId;
+        String expectedPath = FcrepoPaths.getBaseUri() + qualifiedId;
 
         PID pid = PIDs.get(qualifiedId);
 
@@ -367,7 +366,7 @@ public class PIDsTest {
         String id = "person/subdomain/username";
 
         String expectedQualifiedId = PIDConstants.AGENTS_QUALIFIER + "/" + id;
-        String expectedPath = RepositoryPaths.getBaseUri() + expectedQualifiedId;
+        String expectedPath = FcrepoPaths.getBaseUri() + expectedQualifiedId;
 
         PID pid = PIDs.get(PIDConstants.AGENTS_QUALIFIER, id);
 

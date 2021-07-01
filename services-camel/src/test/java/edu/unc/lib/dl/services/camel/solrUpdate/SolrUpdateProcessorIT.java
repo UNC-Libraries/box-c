@@ -64,8 +64,8 @@ import org.springframework.test.context.ContextHierarchy;
 import edu.unc.lib.boxc.model.api.ResourceType;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObject;
-import edu.unc.lib.boxc.model.fcrepo.objects.AdminUnitImpl;
-import edu.unc.lib.boxc.model.fcrepo.objects.CollectionObjectImpl;
+import edu.unc.lib.boxc.model.api.objects.AdminUnit;
+import edu.unc.lib.boxc.model.api.objects.CollectionObject;
 import edu.unc.lib.boxc.model.fcrepo.test.TestHelper;
 import edu.unc.lib.dl.acl.util.AgentPrincipals;
 import edu.unc.lib.dl.data.ingest.solr.action.IndexingAction;
@@ -191,7 +191,7 @@ public class SolrUpdateProcessorIT extends AbstractSolrProcessorIT {
     @Test
     public void testAddChildren() throws Exception {
         // Add extra collection
-        CollectionObjectImpl coll2Obj = repositoryObjectFactory.createCollectionObject(null);
+        CollectionObject coll2Obj = repositoryObjectFactory.createCollectionObject(null);
         unitObj.addMember(coll2Obj);
 
         indexObjectsInTripleStore();
@@ -357,9 +357,9 @@ public class SolrUpdateProcessorIT extends AbstractSolrProcessorIT {
         doc.addField("roleGroup", "dummyGroup");
 
         String resourceType;
-        if (obj instanceof AdminUnitImpl) {
+        if (obj instanceof AdminUnit) {
             resourceType = ResourceType.AdminUnit.name();
-        } else if (obj instanceof CollectionObjectImpl) {
+        } else if (obj instanceof CollectionObject) {
             resourceType = ResourceType.Collection.name();
         } else {
             resourceType = ResourceType.ContentRoot.name();

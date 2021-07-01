@@ -49,8 +49,8 @@ import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.api.rdf.Premis;
 import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
 import edu.unc.lib.boxc.model.fcrepo.ids.AgentPids;
-import edu.unc.lib.boxc.model.fcrepo.objects.AdminUnitImpl;
-import edu.unc.lib.boxc.model.fcrepo.objects.CollectionObjectImpl;
+import edu.unc.lib.boxc.model.api.objects.AdminUnit;
+import edu.unc.lib.boxc.model.api.objects.CollectionObject;
 import edu.unc.lib.dl.services.OperationsMessageSender;
 import edu.unc.lib.dl.util.JMSMessageUtil.CDRActions;
 import io.dropwizard.metrics5.Timer;
@@ -101,7 +101,7 @@ public class StaffRoleAssignmentService {
             RepositoryObject repoObj = repositoryObjectLoader.getRepositoryObject(target);
 
             // Verify that the target is a collection or admin unit
-            if (!(repoObj instanceof CollectionObjectImpl || repoObj instanceof AdminUnitImpl)) {
+            if (!(repoObj instanceof CollectionObject || repoObj instanceof AdminUnit)) {
                 throw new InvalidAssignmentException("Cannot assign staff roles to  object " + target.getId()
                         + ", objects of type " + repoObj.getClass().getName() + " are not eligible.");
             }

@@ -44,7 +44,7 @@ import edu.unc.lib.boxc.model.api.objects.FolderObject;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObject;
 import edu.unc.lib.boxc.model.api.objects.WorkObject;
 import edu.unc.lib.boxc.model.api.rdf.Ldp;
-import edu.unc.lib.boxc.model.fcrepo.objects.AbstractContentContainerObject;
+import edu.unc.lib.boxc.model.api.objects.ContentContainerObject;
 import edu.unc.lib.dl.fcrepo4.ClientFaultResolver;
 import edu.unc.lib.dl.fedora.ServiceException;
 
@@ -86,7 +86,7 @@ public class DestroyObjectsCompletelyJob extends AbstractDestroyObjectsJob {
         assertCanDestroy(agent, rootOfTree, aclService);
 
         log.info("Completely destroying object {}", rootOfTree.getPid());
-        if (rootOfTree instanceof AbstractContentContainerObject) {
+        if (rootOfTree instanceof ContentContainerObject) {
             ContentContainerObject container = (ContentContainerObject) rootOfTree;
             List<ContentObject> members = container.getMembers();
 

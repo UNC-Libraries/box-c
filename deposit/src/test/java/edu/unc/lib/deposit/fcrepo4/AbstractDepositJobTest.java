@@ -43,7 +43,7 @@ import edu.unc.lib.boxc.model.api.ids.RepositoryPathConstants;
 import edu.unc.lib.boxc.model.fcrepo.event.PremisEventBuilderImpl;
 import edu.unc.lib.boxc.model.fcrepo.event.PremisLoggerFactoryImpl;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
-import edu.unc.lib.boxc.model.fcrepo.objects.AbstractRepositoryObject;
+import edu.unc.lib.boxc.model.api.objects.RepositoryObject;
 import edu.unc.lib.boxc.model.fcrepo.services.RepositoryObjectDriver;
 import edu.unc.lib.boxc.model.fcrepo.test.TestHelper;
 import edu.unc.lib.dl.fcrepo4.FedoraTransaction;
@@ -114,7 +114,7 @@ public class AbstractDepositJobTest {
 
         when(premisLoggerFactory.createPremisLogger(any(PID.class), any(File.class)))
                 .thenReturn(premisLogger);
-        when(premisLoggerFactory.createPremisLogger(any(AbstractRepositoryObject.class), any(BinaryTransferSession.class)))
+        when(premisLoggerFactory.createPremisLogger(any(RepositoryObject.class), any(BinaryTransferSession.class)))
                 .thenReturn(premisLogger);
         when(premisLogger.buildEvent(any(Resource.class))).thenReturn(premisEventBuilder);
         when(premisEventBuilder.addEventDetail(anyString(), Matchers.<Object>anyVararg())).thenReturn(premisEventBuilder);

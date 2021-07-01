@@ -56,8 +56,8 @@ import edu.unc.lib.boxc.model.api.objects.BinaryObject;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
 import edu.unc.lib.boxc.model.fcrepo.ids.DatastreamPids;
-import edu.unc.lib.boxc.model.fcrepo.objects.BinaryObjectImpl;
-import edu.unc.lib.boxc.model.fcrepo.objects.WorkObjectImpl;
+import edu.unc.lib.boxc.model.api.objects.BinaryObject;
+import edu.unc.lib.boxc.model.api.objects.WorkObject;
 import edu.unc.lib.boxc.model.fcrepo.test.RepositoryObjectTreeIndexer;
 import edu.unc.lib.boxc.model.fcrepo.test.TestHelper;
 import edu.unc.lib.dl.fcrepo4.TransactionManager;
@@ -173,7 +173,7 @@ public class VersionedDatastreamServiceIT {
         newV1.setContentStream(getModsDocumentStream(TEST_TITLE));
         newV1.setContentType("text/xml");
 
-        BinaryObjectImpl dsObj = service.addVersion(newV1);
+        BinaryObject dsObj = service.addVersion(newV1);
         Date originalCreated = dsObj.getCreatedDate();
         String digest1 = dsObj.getSha1Checksum();
         assertNotNull("Checksum not set for first version", digest1);
@@ -212,7 +212,7 @@ public class VersionedDatastreamServiceIT {
         newV1.setContentStream(getModsDocumentStream(TEST_TITLE));
         newV1.setContentType("text/xml");
 
-        BinaryObjectImpl dsObj = service.addVersion(newV1);
+        BinaryObject dsObj = service.addVersion(newV1);
         Date version1Date = dsObj.getCreatedDate();
         String digest1 = dsObj.getSha1Checksum();
         assertNotNull("Checksum not set for first version", digest1);
@@ -221,7 +221,7 @@ public class VersionedDatastreamServiceIT {
         newV2.setContentStream(getModsDocumentStream("more titles"));
         newV2.setContentType("text/xml");
 
-        BinaryObjectImpl dsObj2 = service.addVersion(newV2);
+        BinaryObject dsObj2 = service.addVersion(newV2);
         Date version2Date = dsObj2.getLastModified();
         String digest2 = dsObj2.getSha1Checksum();
         assertNotNull("Checksum not set for second version", digest2);
@@ -230,7 +230,7 @@ public class VersionedDatastreamServiceIT {
         newV3.setContentStream(getModsDocumentStream("lets leave it here"));
         newV3.setContentType("text/xml");
 
-        BinaryObjectImpl dsObjFinal = service.addVersion(newV3);
+        BinaryObject dsObjFinal = service.addVersion(newV3);
         String digest3 = dsObjFinal.getSha1Checksum();
         assertNotNull("Checksum not set for second version", digest3);
 
@@ -264,7 +264,7 @@ public class VersionedDatastreamServiceIT {
 
     @Test
     public void addVersion_NewDatastream_ProvidedTransferSession() throws Exception {
-        WorkObjectImpl work = repoObjFactory.createWorkObject(parentPid, null);
+        WorkObject work = repoObjFactory.createWorkObject(parentPid, null);
         treeIndexer.indexAll(baseAddress);
 
         try (BinaryTransferSession session = transferService.getSession(work)) {

@@ -41,7 +41,7 @@ import edu.unc.lib.boxc.model.api.objects.FileObject;
 import edu.unc.lib.boxc.model.api.rdf.DcElements;
 import edu.unc.lib.boxc.model.api.rdf.Ebucore;
 import edu.unc.lib.boxc.model.api.xml.JDOMNamespaceUtil;
-import edu.unc.lib.boxc.model.fcrepo.objects.FileObjectImpl;
+import edu.unc.lib.boxc.model.api.objects.FileObject;
 import edu.unc.lib.dl.data.ingest.solr.exception.IndexingException;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackage;
 import edu.unc.lib.dl.search.solr.model.IndexDocumentBean;
@@ -104,7 +104,7 @@ public class SetDescriptiveMetadataFilter implements IndexDocumentFilter {
         Resource resc = dip.getContentObject().getResource();
         String dcTitle = titleText(resc, DcElements.title);
         String ebucoreTitle = titleText(resc, Ebucore.filename);
-        if (isBlank(dcTitle) && isBlank(ebucoreTitle) && dip.getContentObject() instanceof FileObjectImpl) {
+        if (isBlank(dcTitle) && isBlank(ebucoreTitle) && dip.getContentObject() instanceof FileObject) {
             ebucoreTitle = ((FileObject) dip.getContentObject()).getOriginalFile().getFilename();
         }
 

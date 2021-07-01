@@ -26,8 +26,8 @@ import edu.unc.lib.boxc.model.api.ids.ContentPathConstants;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.services.ContentPathFactory;
 import edu.unc.lib.boxc.model.api.objects.ContentObject;
-import edu.unc.lib.boxc.model.fcrepo.objects.ContentRootObjectImpl;
-import edu.unc.lib.boxc.model.fcrepo.objects.FileObjectImpl;
+import edu.unc.lib.boxc.model.api.objects.ContentRootObject;
+import edu.unc.lib.boxc.model.api.objects.FileObject;
 import edu.unc.lib.dl.data.ingest.solr.exception.IndexingException;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackage;
 import edu.unc.lib.dl.search.solr.model.IndexDocumentBean;
@@ -53,7 +53,7 @@ public class SetPathFilter implements IndexDocumentFilter {
         IndexDocumentBean idb = dip.getDocument();
         List<PID> pids = pathFactory.getAncestorPids(dip.getPid());
 
-        if (pids.size() == 0 && !(dip.getContentObject() instanceof ContentRootObjectImpl)) {
+        if (pids.size() == 0 && !(dip.getContentObject() instanceof ContentRootObject)) {
             throw new IndexingException("Object " + dip.getPid() + " has no known ancestors");
         }
 
@@ -72,7 +72,7 @@ public class SetPathFilter implements IndexDocumentFilter {
         String ancestorIds = "/" + pids.stream()
                 .map(pid -> pid.getId())
                 .collect(Collectors.joining("/"));
-        if (!(dip.getContentObject() instanceof FileObjectImpl)) {
+        if (!(dip.getContentObject() instanceof FileObject)) {
             ancestorIds += "/" + dip.getPid().getId();
         }
         idb.setAncestorIds(ancestorIds);
@@ -89,7 +89,7 @@ public class SetPathFilter implements IndexDocumentFilter {
 
         String rollup;
 
-        if (contentObject instanceof FileObjectImpl) {
+        if (contentObject instanceof FileObject) {
             rollup = pids.get(pids.size() - 1).getId();
         } else {
             rollup = contentObject.getPid().getId();

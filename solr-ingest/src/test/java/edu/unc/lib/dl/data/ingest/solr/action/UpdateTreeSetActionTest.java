@@ -37,7 +37,7 @@ import org.mockito.Mock;
 
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
-import edu.unc.lib.boxc.model.fcrepo.objects.AbstractContentContainerObject;
+import edu.unc.lib.boxc.model.api.objects.ContentContainerObject;
 import edu.unc.lib.boxc.model.api.objects.ContentObject;
 import edu.unc.lib.dl.data.ingest.solr.ChildSetRequest;
 import edu.unc.lib.dl.data.ingest.solr.SolrUpdateRequest;
@@ -90,7 +90,7 @@ public class UpdateTreeSetActionTest {
 
     @Test
     public void testSingleEmptyChild() throws Exception {
-        AbstractContentContainerObject containerObj = makeContainer(repositoryObjectLoader);
+        ContentContainerObject containerObj = makeContainer(repositoryObjectLoader);
         PID containerPid = containerObj.getPid();
 
         indexTriples(containerObj);
@@ -111,9 +111,9 @@ public class UpdateTreeSetActionTest {
      */
     @Test
     public void testMultipleChildren() throws Exception {
-        AbstractContentContainerObject container1Obj = makeContainer(repositoryObjectLoader);
+        ContentContainerObject container1Obj = makeContainer(repositoryObjectLoader);
         PID container1Pid = container1Obj.getPid();
-        AbstractContentContainerObject container2Obj = makeContainer(repositoryObjectLoader);
+        ContentContainerObject container2Obj = makeContainer(repositoryObjectLoader);
         PID container2Pid = container2Obj.getPid();
 
         indexTriples(container1Obj, container2Obj);
@@ -136,9 +136,9 @@ public class UpdateTreeSetActionTest {
      */
     @Test
     public void testNestedChildren() throws Exception {
-        AbstractContentContainerObject containerObj = makeContainer(repositoryObjectLoader);
+        ContentContainerObject containerObj = makeContainer(repositoryObjectLoader);
         PID containerPid = containerObj.getPid();
-        AbstractContentContainerObject childObj = addContainerToParent(containerObj, repositoryObjectLoader);
+        ContentContainerObject childObj = addContainerToParent(containerObj, repositoryObjectLoader);
 
         indexTriples(containerObj, childObj);
 

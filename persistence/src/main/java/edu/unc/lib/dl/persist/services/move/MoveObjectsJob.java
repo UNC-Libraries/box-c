@@ -38,7 +38,7 @@ import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.api.rdf.Premis;
 import edu.unc.lib.boxc.model.fcrepo.ids.AgentPids;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
-import edu.unc.lib.boxc.model.fcrepo.objects.AbstractContentContainerObject;
+import edu.unc.lib.boxc.model.api.objects.ContentContainerObject;
 import edu.unc.lib.boxc.model.api.objects.ContentObject;
 import edu.unc.lib.dl.acl.service.AccessControlService;
 import edu.unc.lib.dl.acl.util.AgentPrincipals;
@@ -130,7 +130,7 @@ public class MoveObjectsJob implements Runnable {
     private void retrieveDestinationContainer() {
         // Verify that the destination is a content container
         RepositoryObject destObj = repositoryObjectLoader.getRepositoryObject(destinationPid);
-        if (!(destObj instanceof AbstractContentContainerObject)) {
+        if (!(destObj instanceof ContentContainerObject)) {
             throw new IllegalArgumentException("Destination " + destinationPid + " was not a content container");
         }
         destContainer = (ContentContainerObject) destObj;

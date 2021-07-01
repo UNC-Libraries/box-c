@@ -63,12 +63,12 @@ import edu.unc.lib.boxc.model.api.ids.PIDMinter;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
-import edu.unc.lib.boxc.model.fcrepo.objects.AdminUnitImpl;
-import edu.unc.lib.boxc.model.fcrepo.objects.CollectionObjectImpl;
-import edu.unc.lib.boxc.model.fcrepo.objects.ContentRootObjectImpl;
-import edu.unc.lib.boxc.model.fcrepo.objects.FileObjectImpl;
-import edu.unc.lib.boxc.model.fcrepo.objects.FolderObjectImpl;
-import edu.unc.lib.boxc.model.fcrepo.objects.WorkObjectImpl;
+import edu.unc.lib.boxc.model.api.objects.AdminUnit;
+import edu.unc.lib.boxc.model.api.objects.CollectionObject;
+import edu.unc.lib.boxc.model.api.objects.ContentRootObject;
+import edu.unc.lib.boxc.model.api.objects.FileObject;
+import edu.unc.lib.boxc.model.api.objects.FolderObject;
+import edu.unc.lib.boxc.model.api.objects.WorkObject;
 import edu.unc.lib.boxc.model.fcrepo.services.RepositoryInitializer;
 import edu.unc.lib.boxc.model.fcrepo.test.AclModelBuilder;
 import edu.unc.lib.boxc.model.fcrepo.test.RepositoryObjectTreeIndexer;
@@ -140,11 +140,11 @@ public class ExportCsvIT extends AbstractAPIIT {
     @Autowired
     private ExportCsvService exportCsvService;
 
-    protected ContentRootObjectImpl rootObj;
-    protected AdminUnitImpl unitObj;
-    protected CollectionObjectImpl collObj;
-    protected CollectionObjectImpl collObj2;
-    protected FolderObjectImpl folderObj;
+    protected ContentRootObject rootObj;
+    protected AdminUnit unitObj;
+    protected CollectionObject collObj;
+    protected CollectionObject collObj2;
+    protected FolderObject folderObj;
 
     @Before
     public void setup() throws Exception {
@@ -343,7 +343,7 @@ public class ExportCsvIT extends AbstractAPIIT {
     @Test
     public void embargoedResult() throws Exception {
         PID folderPid = pidMinter.mintContentPid();
-        FolderObjectImpl folder2Obj = repositoryObjectFactory.createFolderObject(folderPid,
+        FolderObject folder2Obj = repositoryObjectFactory.createFolderObject(folderPid,
                 new AclModelBuilder("Folder")
                         .addEmbargoUntil(getYearsInTheFuture(1)).model);
         collObj.addMember(folder2Obj);
@@ -368,7 +368,7 @@ public class ExportCsvIT extends AbstractAPIIT {
     @Test
     public void publicPermission() throws Exception {
         PID collPid = pidMinter.mintContentPid();
-        CollectionObjectImpl collObj = repositoryObjectFactory.createCollectionObject(collPid,
+        CollectionObject collObj = repositoryObjectFactory.createCollectionObject(collPid,
                 new AclModelBuilder("Collection")
                         .addCanViewOriginals(PUBLIC_PRINC).model);
         unitObj.addMember(collObj);
@@ -393,7 +393,7 @@ public class ExportCsvIT extends AbstractAPIIT {
     @Test
     public void authenticatedPermission() throws Exception {
         PID collPid = pidMinter.mintContentPid();
-        CollectionObjectImpl collObj = repositoryObjectFactory.createCollectionObject(collPid,
+        CollectionObject collObj = repositoryObjectFactory.createCollectionObject(collPid,
                 new AclModelBuilder("Collection")
                         .addCanViewOriginals(AUTHENTICATED_PRINC)
                         .addNoneRole(PUBLIC_PRINC).model);
@@ -419,7 +419,7 @@ public class ExportCsvIT extends AbstractAPIIT {
     @Test
     public void staffOnlyPermission() throws Exception {
         PID collPid = pidMinter.mintContentPid();
-        CollectionObjectImpl collObj = repositoryObjectFactory.createCollectionObject(collPid,
+        CollectionObject collObj = repositoryObjectFactory.createCollectionObject(collPid,
                 new AclModelBuilder("Collection")
                         .addNoneRole(AUTHENTICATED_PRINC)
                         .addNoneRole(PUBLIC_PRINC).model);
@@ -445,11 +445,11 @@ public class ExportCsvIT extends AbstractAPIIT {
     @Test
     public void moreRestrictiveChildPermission() throws Exception {
         PID folderPid = pidMinter.mintContentPid();
-        FolderObjectImpl folder = repositoryObjectFactory.createFolderObject(folderPid, new AclModelBuilder("Folder")
+        FolderObject folder = repositoryObjectFactory.createFolderObject(folderPid, new AclModelBuilder("Folder")
                 .addCanViewMetadata(PUBLIC_PRINC).model);
 
         PID collPid = pidMinter.mintContentPid();
-        CollectionObjectImpl collObj = repositoryObjectFactory.createCollectionObject(collPid,
+        CollectionObject collObj = repositoryObjectFactory.createCollectionObject(collPid,
                 new AclModelBuilder("Collection").addCanViewOriginals(PUBLIC_PRINC).model);
 
         collObj.addMember(folder);
@@ -477,11 +477,11 @@ public class ExportCsvIT extends AbstractAPIIT {
     @Test
     public void childInheritsParentPermission() throws Exception {
         PID folderPid = pidMinter.mintContentPid();
-        FolderObjectImpl folder = repositoryObjectFactory.createFolderObject(folderPid, new AclModelBuilder("Folder")
+        FolderObject folder = repositoryObjectFactory.createFolderObject(folderPid, new AclModelBuilder("Folder")
                 .addCanViewOriginals(PUBLIC_PRINC).model);
 
         PID collPid = pidMinter.mintContentPid();
-        CollectionObjectImpl collObj = repositoryObjectFactory.createCollectionObject(collPid,
+        CollectionObject collObj = repositoryObjectFactory.createCollectionObject(collPid,
                 new AclModelBuilder("Collection").addNoneRole(PUBLIC_PRINC).model);
 
         collObj.addMember(folder);
@@ -509,7 +509,7 @@ public class ExportCsvIT extends AbstractAPIIT {
     @Test
     public void RestrictedPermission() throws Exception {
         PID collPid = pidMinter.mintContentPid();
-        CollectionObjectImpl collObj = repositoryObjectFactory.createCollectionObject(collPid,
+        CollectionObject collObj = repositoryObjectFactory.createCollectionObject(collPid,
                 new AclModelBuilder("Collection")
                         .addCanViewMetadata(AUTHENTICATED_PRINC)
                         .addNoneRole(PUBLIC_PRINC).model);
@@ -595,7 +595,7 @@ public class ExportCsvIT extends AbstractAPIIT {
     }
 
     private Map<String, PID> addWorkToFolder() throws Exception {
-        WorkObjectImpl workObj = repositoryObjectFactory.createWorkObject(null);
+        WorkObject workObj = repositoryObjectFactory.createWorkObject(null);
         PID workPid = workObj.getPid();
 
         String bodyString = "Content";
@@ -604,7 +604,7 @@ public class ExportCsvIT extends AbstractAPIIT {
         Path contentPath = Files.createTempFile("file", ".txt");
         FileUtils.writeStringToFile(contentPath.toFile(), bodyString, "UTF-8");
 
-        FileObjectImpl fileObj = repositoryObjectFactory.createFileObject(null);
+        FileObject fileObj = repositoryObjectFactory.createFileObject(null);
         fileObj.addOriginalFile(contentPath.toUri(), filename, mimetype, null, null);
         PID filePid = fileObj.getPid();
 

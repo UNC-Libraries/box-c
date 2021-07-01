@@ -55,7 +55,7 @@ import com.samskivert.mustache.Template;
 import edu.unc.lib.boxc.model.api.objects.ContentObject;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
-import edu.unc.lib.boxc.model.fcrepo.objects.FolderObjectImpl;
+import edu.unc.lib.boxc.model.api.objects.FolderObject;
 import edu.unc.lib.boxc.model.fcrepo.test.TestHelper;
 import edu.unc.lib.dl.acl.util.AgentPrincipals;
 import edu.unc.lib.dl.persist.api.storage.StorageLocationManager;
@@ -137,7 +137,7 @@ public class ImportXMLIT {
 
     @Test
     public void updateDescription() throws Exception {
-        FolderObjectImpl folderObject = repoObjectFactory.createFolderObject(null);
+        FolderObject folderObject = repoObjectFactory.createFolderObject(null);
 
         Document updateDoc = makeUpdateDocument();
         addObjectUpdate(updateDoc, folderObject.getPid(), null)
@@ -153,7 +153,7 @@ public class ImportXMLIT {
         boolean result = notify.matches(5l, TimeUnit.SECONDS);
         assertTrue("Processing message did not match expectations", result);
 
-        FolderObjectImpl updateObject = repoObjectLoader.getFolderObject(folderObject.getPid());
+        FolderObject updateObject = repoObjectLoader.getFolderObject(folderObject.getPid());
         Document modsDoc = parseDescription(updateObject);
         assertModsFields(modsDoc, UPDATED_TITLE, UPDATED_DATE);
     }

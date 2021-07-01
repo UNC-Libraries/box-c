@@ -39,9 +39,9 @@ import org.mockito.Mock;
 
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
-import edu.unc.lib.boxc.model.fcrepo.objects.AbstractContentContainerObject;
+import edu.unc.lib.boxc.model.api.objects.ContentContainerObject;
 import edu.unc.lib.boxc.model.api.objects.ContentObject;
-import edu.unc.lib.boxc.model.fcrepo.objects.FileObjectImpl;
+import edu.unc.lib.boxc.model.api.objects.FileObject;
 import edu.unc.lib.dl.services.IndexingMessageSender;
 import edu.unc.lib.dl.sparql.JenaSparqlQueryServiceImpl;
 import edu.unc.lib.dl.sparql.SparqlQueryService;
@@ -58,7 +58,7 @@ public class RecursiveTreeIndexerTest {
     private RecursiveTreeIndexer indexer;
 
     @Mock
-    private AbstractContentContainerObject containerObj;
+    private ContentContainerObject containerObj;
 
     @Mock
     private RepositoryObjectLoader repositoryObjectLoader;
@@ -90,7 +90,7 @@ public class RecursiveTreeIndexerTest {
 
     @Test
     public void testNonContainer() throws Exception {
-        FileObjectImpl fileObj = makeFileObject(makePid(), repositoryObjectLoader);
+        FileObject fileObj = makeFileObject(makePid(), repositoryObjectLoader);
 
         indexer.index(fileObj, ADD, USER);
 
@@ -102,7 +102,7 @@ public class RecursiveTreeIndexerTest {
 
     @Test
     public void testNoChildren() throws Exception {
-        AbstractContentContainerObject containerObj = makeContainer(makePid(), repositoryObjectLoader);
+        ContentContainerObject containerObj = makeContainer(makePid(), repositoryObjectLoader);
 
         indexer.index(containerObj, ADD, USER);
 
@@ -114,10 +114,10 @@ public class RecursiveTreeIndexerTest {
 
     @Test
     public void testHierarchy() throws Exception {
-        AbstractContentContainerObject containerObj = makeContainer(makePid(), repositoryObjectLoader);
-        AbstractContentContainerObject child1Obj = makeContainer(makePid(), repositoryObjectLoader);
-        FileObjectImpl fileObj = makeFileObject(makePid(), repositoryObjectLoader);
-        AbstractContentContainerObject child2Obj = makeContainer(makePid(), repositoryObjectLoader);
+        ContentContainerObject containerObj = makeContainer(makePid(), repositoryObjectLoader);
+        ContentContainerObject child1Obj = makeContainer(makePid(), repositoryObjectLoader);
+        FileObject fileObj = makeFileObject(makePid(), repositoryObjectLoader);
+        ContentContainerObject child2Obj = makeContainer(makePid(), repositoryObjectLoader);
 
         addMembers(containerObj, child1Obj, child2Obj);
         addMembers(child1Obj, fileObj);

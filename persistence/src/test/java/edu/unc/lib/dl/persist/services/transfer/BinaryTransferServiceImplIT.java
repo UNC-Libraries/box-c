@@ -48,8 +48,8 @@ import edu.unc.lib.boxc.model.api.objects.BinaryObject;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
 import edu.unc.lib.boxc.model.fcrepo.ids.DatastreamPids;
-import edu.unc.lib.boxc.model.fcrepo.objects.FileObjectImpl;
-import edu.unc.lib.boxc.model.fcrepo.objects.WorkObjectImpl;
+import edu.unc.lib.boxc.model.api.objects.FileObject;
+import edu.unc.lib.boxc.model.api.objects.WorkObject;
 import edu.unc.lib.boxc.model.fcrepo.test.TestHelper;
 import edu.unc.lib.dl.fcrepo4.FedoraTransaction;
 import edu.unc.lib.dl.fcrepo4.TransactionManager;
@@ -250,8 +250,8 @@ public class BinaryTransferServiceImplIT {
         URI sourceUri2 = sourceFile2.toUri();
 
         // Create work with the initial state of the binary
-        WorkObjectImpl workObj = repoObjFactory.createWorkObject(null);
-        FileObjectImpl fileObj = repoObjFactory.createFileObject(null);
+        WorkObject workObj = repoObjFactory.createWorkObject(null);
+        FileObject fileObj = repoObjFactory.createFileObject(null);
         workObj.addMember(fileObj);
         PID originalPid = DatastreamPids.getOriginalFilePid(fileObj.getPid());
         URI firstVersionContentUri;
@@ -302,7 +302,7 @@ public class BinaryTransferServiceImplIT {
     public void rollbackWithNoBinaryChanges() throws Exception {
         FedoraTransaction tx = txManager.startTransaction();
         try {
-            WorkObjectImpl workObj = repoObjFactory.createWorkObject(null);
+            WorkObject workObj = repoObjFactory.createWorkObject(null);
             assertTrue(repoObjFactory.objectExists(workObj.getUri()));
             tx.cancelAndIgnore();
             assertFalse(repoObjFactory.objectExists(workObj.getUri()));

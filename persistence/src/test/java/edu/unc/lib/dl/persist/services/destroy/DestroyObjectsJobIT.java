@@ -77,14 +77,14 @@ import edu.unc.lib.boxc.model.api.rdf.PcdmModels;
 import edu.unc.lib.boxc.model.api.rdf.Premis;
 import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
-import edu.unc.lib.boxc.model.fcrepo.objects.AdminUnitImpl;
-import edu.unc.lib.boxc.model.fcrepo.objects.BinaryObjectImpl;
-import edu.unc.lib.boxc.model.fcrepo.objects.CollectionObjectImpl;
-import edu.unc.lib.boxc.model.fcrepo.objects.ContentRootObjectImpl;
-import edu.unc.lib.boxc.model.fcrepo.objects.FileObjectImpl;
-import edu.unc.lib.boxc.model.fcrepo.objects.FolderObjectImpl;
-import edu.unc.lib.boxc.model.fcrepo.objects.TombstoneImpl;
-import edu.unc.lib.boxc.model.fcrepo.objects.WorkObjectImpl;
+import edu.unc.lib.boxc.model.api.objects.AdminUnit;
+import edu.unc.lib.boxc.model.api.objects.BinaryObject;
+import edu.unc.lib.boxc.model.api.objects.CollectionObject;
+import edu.unc.lib.boxc.model.api.objects.ContentRootObject;
+import edu.unc.lib.boxc.model.api.objects.FileObject;
+import edu.unc.lib.boxc.model.api.objects.FolderObject;
+import edu.unc.lib.boxc.model.api.objects.Tombstone;
+import edu.unc.lib.boxc.model.api.objects.WorkObject;
 import edu.unc.lib.boxc.model.fcrepo.services.RepositoryInitializer;
 import edu.unc.lib.boxc.model.fcrepo.test.AclModelBuilder;
 import edu.unc.lib.boxc.model.fcrepo.test.RepositoryObjectTreeIndexer;
@@ -187,7 +187,7 @@ public class DestroyObjectsJobIT {
         PID fileObjPid = objsToDestroy.get(2);
         initializeJob(asList(fileObjPid));
 
-        FileObjectImpl fileObj = repoObjLoader.getFileObject(fileObjPid);
+        FileObject fileObj = repoObjLoader.getFileObject(fileObjPid);
         Map<URI, Map<String, String>> filesToCleanup = derivativesToCleanup(fileObj);
 
         URI contentUri = fileObj.getOriginalFile().getContentUri();
@@ -200,7 +200,7 @@ public class DestroyObjectsJobIT {
         assertTrue(logParentModel.contains(null, Premis.note,
                 "1 object(s) were destroyed"));
 
-        TombstoneImpl stoneFile = repoObjLoader.getTombstone(fileObjPid);
+        Tombstone stoneFile = repoObjLoader.getTombstone(fileObjPid);
         Resource stoneResc = stoneFile.getResource();
         assertTrue(stoneResc.hasProperty(RDF.type, Cdr.Tombstone));
         assertTrue(stoneResc.hasProperty(RDF.type, Cdr.FileObject));
@@ -231,8 +231,8 @@ public class DestroyObjectsJobIT {
         PID folderObjPid = objsToDestroy.get(0);
 
         FileObject fileObj = repoObjLoader.getFileObject(fileObjPid);
-        WorkObjectImpl workObj = repoObjLoader.getWorkObject(workObjPid);
-        FolderObjectImpl folderObj = repoObjLoader.getFolderObject(folderObjPid);
+        WorkObject workObj = repoObjLoader.getWorkObject(workObjPid);
+        FolderObject folderObj = repoObjLoader.getFolderObject(folderObjPid);
         Map<URI, Map<String, String>> filesToCleanup = derivativesToCleanup(fileObj);
         Map<URI, Map<String, String>> nonBinariesToCleanup = new HashMap<>();
         nonBinariesToCleanup.put(folderObj.getUri(), nonBinaryToCleanup(folderObj));
@@ -240,11 +240,11 @@ public class DestroyObjectsJobIT {
 
         job.run();
 
-        TombstoneImpl stoneFile = repoObjLoader.getTombstone(fileObjPid);
+        Tombstone stoneFile = repoObjLoader.getTombstone(fileObjPid);
         Resource fileResc = stoneFile.getResource();
-        TombstoneImpl stoneWork = repoObjLoader.getTombstone(workObjPid);
+        Tombstone stoneWork = repoObjLoader.getTombstone(workObjPid);
         Resource workResc = stoneWork.getResource();
-        TombstoneImpl stoneFolder = repoObjLoader.getTombstone(folderObjPid);
+        Tombstone stoneFolder = repoObjLoader.getTombstone(folderObjPid);
         Resource folderResc = stoneFolder.getResource();
         assertTrue(fileResc.hasProperty(RDF.type, Cdr.Tombstone));
         assertTrue(fileResc.hasProperty(RDF.type, Cdr.FileObject));
@@ -278,10 +278,10 @@ public class DestroyObjectsJobIT {
         PID workObjPid = objsToDestroy.get(1);
         PID folderObj1Pid = objsToDestroy.get(0);
 
-        TombstoneImpl stoneFile = repoObjLoader.getTombstone(fileObjPid);
-        TombstoneImpl stoneWork = repoObjLoader.getTombstone(workObjPid);
-        TombstoneImpl stoneFolder1 = repoObjLoader.getTombstone(folderObj1Pid);
-        TombstoneImpl stoneFolder2 = repoObjLoader.getTombstone(folderObj2Pid);
+        Tombstone stoneFile = repoObjLoader.getTombstone(fileObjPid);
+        Tombstone stoneWork = repoObjLoader.getTombstone(workObjPid);
+        Tombstone stoneFolder1 = repoObjLoader.getTombstone(folderObj1Pid);
+        Tombstone stoneFolder2 = repoObjLoader.getTombstone(folderObj2Pid);
         assertTrue(stoneFile.getModel().contains(stoneFile.getResource(), RDF.type, Cdr.Tombstone));
         assertTrue(stoneWork.getModel().contains(stoneWork.getResource(), RDF.type, Cdr.Tombstone));
         assertTrue(stoneFolder1.getModel().contains(stoneFolder1.getResource(), RDF.type, Cdr.Tombstone));
@@ -305,9 +305,9 @@ public class DestroyObjectsJobIT {
     public void destroyFolderTest() throws Exception {
         PID folderObjPid = objsToDestroy.get(0);
         initializeJob(Arrays.asList(folderObjPid));
-        FolderObjectImpl folderObj = repoObjLoader.getFolderObject(folderObjPid);
-        WorkObjectImpl workObj = (WorkObjectImpl) folderObj.getMembers().get(0);
-        FileObjectImpl fileObj = (FileObjectImpl) workObj.getMembers().get(0);
+        FolderObject folderObj = repoObjLoader.getFolderObject(folderObjPid);
+        WorkObject workObj = (WorkObject) folderObj.getMembers().get(0);
+        FileObject fileObj = (FileObject) workObj.getMembers().get(0);
 
         Map<URI, Map<String, String>> filesToCleanup = derivativesToCleanup(fileObj);
         Map<URI, Map<String, String>> nonBinariesToCleanup = new HashMap<>();
@@ -340,7 +340,7 @@ public class DestroyObjectsJobIT {
     @Test
     public void destroySingleObjectWithPreexistingPremisEventTest() {
         PID fileObjPid = objsToDestroy.get(2);
-        FileObjectImpl fileObj = repoObjLoader.getFileObject(fileObjPid);
+        FileObject fileObj = repoObjLoader.getFileObject(fileObjPid);
         Resource event = fileObj.getPremisLog().buildEvent(null, Premis.Ingestion, new Date(1L)).write();
 
         initializeJob(Collections.singletonList(fileObjPid));
@@ -351,7 +351,7 @@ public class DestroyObjectsJobIT {
         assertTrue(logParentModel.contains(null, RDF.type, Premis.Deletion));
         assertTrue(logParentModel.contains(null, Premis.note, "1 object(s) were destroyed"));
 
-        TombstoneImpl stoneFile = repoObjLoader.getTombstone(fileObjPid);
+        Tombstone stoneFile = repoObjLoader.getTombstone(fileObjPid);
         assertTrue(stoneFile.getModel().contains(stoneFile.getResource(), RDF.type, Cdr.Tombstone));
 
         Model logModel = stoneFile.getPremisLog().getEventsModel();
@@ -362,20 +362,20 @@ public class DestroyObjectsJobIT {
     private List<PID> createContentTree() throws Exception {
         PID contentRootPid = getContentRootPid();
         repoInitializer.initializeRepository();
-        ContentRootObjectImpl contentRoot = repoObjLoader.getContentRootObject(contentRootPid);
+        ContentRootObject contentRoot = repoObjLoader.getContentRootObject(contentRootPid);
 
-        AdminUnitImpl adminUnit = repoObjFactory.createAdminUnit(new AclModelBuilder("Unit")
+        AdminUnit adminUnit = repoObjFactory.createAdminUnit(new AclModelBuilder("Unit")
                 .addUnitOwner(agent.getUsernameUri())
                 .model);
         contentRoot.addMember(adminUnit);
 
-        CollectionObjectImpl collection = repoObjFactory.createCollectionObject(null);
+        CollectionObject collection = repoObjFactory.createCollectionObject(null);
         adminUnit.addMember(collection);
-        FolderObjectImpl folder = repoObjFactory.createFolderObject(null);
-        FolderObjectImpl folder2 = repoObjFactory.createFolderObject(null);
+        FolderObject folder = repoObjFactory.createFolderObject(null);
+        FolderObject folder2 = repoObjFactory.createFolderObject(null);
         collection.addMember(folder);
         collection.addMember(folder2);
-        WorkObjectImpl work = repoObjFactory.createWorkObject(null);
+        WorkObject work = repoObjFactory.createWorkObject(null);
         folder.addMember(work);
         String bodyString = "Content";
         String mimetype = "text/plain";
@@ -385,7 +385,7 @@ public class DestroyObjectsJobIT {
         String sha1 = "4f9be057f0ea5d2ba72fd2c810e8d7b9aa98b469";
         String filename = contentFile.getName();
         FileUtils.writeStringToFile(contentFile, bodyString, "UTF-8");
-        FileObjectImpl file = work.addDataFile(contentFile.toPath().toUri(), filename, mimetype, sha1, null);
+        FileObject file = work.addDataFile(contentFile.toPath().toUri(), filename, mimetype, sha1, null);
 
         treeIndexer.indexAll(baseAddress);
 
@@ -459,7 +459,7 @@ public class DestroyObjectsJobIT {
     private Map<URI, Map<String, String>> derivativesToCleanup(FileObject fileObj) {
         HashMap<URI, Map<String, String>> cleanupBinaryUris = new HashMap<>();
 
-        BinaryObjectImpl binary = fileObj.getOriginalFile();
+        BinaryObject binary = fileObj.getOriginalFile();
         PID binaryPid = binary.getPid();
         Map<String, String> contentMetadata = new HashMap<>();
         contentMetadata.put("objType", Cdr.FileObject.getURI());

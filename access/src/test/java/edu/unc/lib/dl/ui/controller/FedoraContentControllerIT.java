@@ -50,7 +50,7 @@ import org.springframework.web.context.WebApplicationContext;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.objects.FileObject;
 import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
-import edu.unc.lib.boxc.model.fcrepo.objects.FileObjectImpl;
+import edu.unc.lib.boxc.model.api.objects.FileObject;
 import edu.unc.lib.boxc.model.fcrepo.test.TestHelper;
 import edu.unc.lib.dl.acl.exception.AccessRestrictionException;
 import edu.unc.lib.dl.acl.service.AccessControlService;
@@ -195,7 +195,7 @@ public class FedoraContentControllerIT {
 
         String content = "<fits>content</fits>";
 
-        FileObjectImpl fileObj = repositoryObjectFactory.createFileObject(filePid, null);
+        FileObject fileObj = repositoryObjectFactory.createFileObject(filePid, null);
         fileObj.addOriginalFile(makeContentUri(BINARY_CONTENT), null, "text/plain", null, null);
         PID fitsPid = getTechnicalMetadataPid(fileObj.getPid());
         fileObj.addBinary(fitsPid, makeContentUri(content), "fits.xml", "application/xml", null, null, null);
@@ -226,7 +226,7 @@ public class FedoraContentControllerIT {
 
         String content = "<fits>content</fits>";
 
-        FileObjectImpl fileObj = repositoryObjectFactory.createFileObject(filePid, null);
+        FileObject fileObj = repositoryObjectFactory.createFileObject(filePid, null);
         PID fitsPid = getTechnicalMetadataPid(fileObj.getPid());
         fileObj.addBinary(fitsPid, makeContentUri(content), "fits.xml", "application/xml", null, null, null);
 

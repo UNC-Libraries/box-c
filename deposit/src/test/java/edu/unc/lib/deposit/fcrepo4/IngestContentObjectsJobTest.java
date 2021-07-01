@@ -74,14 +74,14 @@ import edu.unc.lib.boxc.model.api.rdf.Cdr;
 import edu.unc.lib.boxc.model.api.rdf.CdrAcl;
 import edu.unc.lib.boxc.model.api.rdf.CdrDeposit;
 import edu.unc.lib.boxc.model.fcrepo.event.PremisEventBuilderImpl;
-import edu.unc.lib.boxc.model.fcrepo.objects.AbstractContentContainerObject;
-import edu.unc.lib.boxc.model.fcrepo.objects.AdminUnitImpl;
-import edu.unc.lib.boxc.model.fcrepo.objects.BinaryObjectImpl;
-import edu.unc.lib.boxc.model.fcrepo.objects.CollectionObjectImpl;
-import edu.unc.lib.boxc.model.fcrepo.objects.ContentRootObjectImpl;
-import edu.unc.lib.boxc.model.fcrepo.objects.FileObjectImpl;
-import edu.unc.lib.boxc.model.fcrepo.objects.FolderObjectImpl;
-import edu.unc.lib.boxc.model.fcrepo.objects.WorkObjectImpl;
+import edu.unc.lib.boxc.model.api.objects.ContentContainerObject;
+import edu.unc.lib.boxc.model.api.objects.AdminUnit;
+import edu.unc.lib.boxc.model.api.objects.BinaryObject;
+import edu.unc.lib.boxc.model.api.objects.CollectionObject;
+import edu.unc.lib.boxc.model.api.objects.ContentRootObject;
+import edu.unc.lib.boxc.model.api.objects.FileObject;
+import edu.unc.lib.boxc.model.api.objects.FolderObject;
+import edu.unc.lib.boxc.model.api.objects.WorkObject;
 import edu.unc.lib.boxc.model.fcrepo.services.RepositoryObjectFactoryImpl;
 import edu.unc.lib.boxc.model.fcrepo.services.RepositoryObjectLoaderImpl;
 import edu.unc.lib.deposit.validate.VerifyObjectsAreInFedoraService;
@@ -122,7 +122,7 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
 
     private Model model;
 
-    private AbstractContentContainerObject destinationObj;
+    private ContentContainerObject destinationObj;
 
     @Mock
     private PremisLoggerFactory mockPremisLoggerFactory;
@@ -151,10 +151,10 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
     private AccessControlService aclService;
 
     @Mock
-    private FileObjectImpl mockFileObj;
+    private FileObject mockFileObj;
 
     @Mock
-    private BinaryObjectImpl mockBinaryObj;
+    private BinaryObject mockBinaryObj;
 
     @Mock
     private BinaryTransferService binaryTransferService;
@@ -242,7 +242,7 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
 
         when(depositStatusFactory.get(anyString())).thenReturn(depositStatus);
 
-        destinationObj = mock(FolderObjectImpl.class);
+        destinationObj = mock(FolderObject.class);
         when(destinationObj.getPremisLog()).thenReturn(mockPremisLogger);
         when(destinationObj.getPid()).thenReturn(destinationPid);
         when(repoObjLoader.getRepositoryObject(eq(destinationPid))).thenReturn(destinationObj);
@@ -253,7 +253,7 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
      */
     @Test
     public void ingestEmptyFolderTest() {
-        FolderObjectImpl folder = mock(FolderObjectImpl.class);
+        FolderObject folder = mock(FolderObject.class);
         when(repoObjFactory.createFolderObject(any(PID.class), any(Model.class))).thenReturn(folder);
 
         PID folderPid = makePid(RepositoryPathConstants.CONTENT_BASE);
@@ -272,7 +272,7 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
         verify(jobStatusFactory).incrCompletion(eq(jobUUID), eq(1));
     }
 
-    private Bag setupWork(PID workPid, WorkObjectImpl work) {
+    private Bag setupWork(PID workPid, WorkObject work) {
         when(repoObjFactory.createWorkObject(any(PID.class), any(Model.class))).thenReturn(work);
         when(work.getPid()).thenReturn(workPid);
 
@@ -290,7 +290,7 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
     @Test
     public void ingestWorkObjectTest() throws Exception {
         PID workPid = makePid(RepositoryPathConstants.CONTENT_BASE);
-        WorkObjectImpl work = mock(WorkObjectImpl.class);
+        WorkObject work = mock(WorkObject.class);
         Bag workBag = setupWork(workPid, work);
 
         String mainLoc = "pdf.pdf";
@@ -337,7 +337,7 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
     @Test(expected = JobFailedException.class)
     public void ingestWorkWithFileWithoutLocation() throws Exception {
         PID workPid = makePid(RepositoryPathConstants.CONTENT_BASE);
-        WorkObjectImpl work = mock(WorkObjectImpl.class);
+        WorkObject work = mock(WorkObject.class);
         Bag workBag = setupWork(workPid, work);
 
         PID filePid = makePid(RepositoryPathConstants.CONTENT_BASE);
@@ -360,7 +360,7 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
     @Test(expected = JobFailedException.class)
     public void ingestWorkWithFileDoesNotExist() throws Exception {
         PID workPid = makePid(RepositoryPathConstants.CONTENT_BASE);
-        WorkObjectImpl work = mock(WorkObjectImpl.class);
+        WorkObject work = mock(WorkObject.class);
         Bag workBag = setupWork(workPid, work);
 
         addFileObject(workBag, "doesnotexist.txt", "text/plain");
@@ -382,7 +382,7 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
     @Test(expected = AccessRestrictionException.class)
     public void ingestFailNoPermissionsTest() throws Exception {
         PID workPid = makePid(RepositoryPathConstants.CONTENT_BASE);
-        WorkObjectImpl work = mock(WorkObjectImpl.class);
+        WorkObject work = mock(WorkObject.class);
         Bag workBag = setupWork(workPid, work);
 
         addFileObject(workBag, "pdf.pdf", "application/pdf");
@@ -406,7 +406,7 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
         when(depositStatusFactory.isResumedDeposit(anyString())).thenReturn(true);
 
         PID workPid = makePid(RepositoryPathConstants.CONTENT_BASE);
-        WorkObjectImpl work = mock(WorkObjectImpl.class);
+        WorkObject work = mock(WorkObject.class);
         Bag workBag = setupWork(workPid, work);
         when(repoObjLoader.getWorkObject(eq(workPid))).thenReturn(work);
 
@@ -464,10 +464,10 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
     @Test
     public void ingestWorkObjectWithTransientChecksumFailure() throws Exception {
         PID workPid = makePid(RepositoryPathConstants.CONTENT_BASE);
-        WorkObjectImpl work = mock(WorkObjectImpl.class);
+        WorkObject work = mock(WorkObject.class);
         Bag workBag = setupWork(workPid, work);
 
-        BinaryObjectImpl mockDescBin = mock(BinaryObjectImpl.class);
+        BinaryObject mockDescBin = mock(BinaryObject.class);
         when(mockDescBin.getContentUri()).thenReturn(URI.create("file://path/to/desc"));
         when(updateDescService.updateDescription(any(UpdateDescriptionRequest.class))).thenReturn(mockDescBin);
 
@@ -517,7 +517,7 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
     @Test
     public void pauseAndResumeTest() throws Exception {
         PID workPid = makePid(RepositoryPathConstants.CONTENT_BASE);
-        WorkObjectImpl work = mock(WorkObjectImpl.class);
+        WorkObject work = mock(WorkObject.class);
         Bag workBag = setupWork(workPid, work);
 
         String mainLoc = "pdf.pdf";
@@ -563,12 +563,12 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
 
     @Test
     public void ingestAdminUnitTest() {
-        destinationObj = mock(ContentRootObjectImpl.class);
+        destinationObj = mock(ContentRootObject.class);
         when(destinationObj.getPid()).thenReturn(destinationPid);
         when(destinationObj.getPremisLog()).thenReturn(mockPremisLogger);
         when(repoObjLoader.getRepositoryObject(eq(destinationPid))).thenReturn(destinationObj);
 
-        AdminUnitImpl adminUnit = mock(AdminUnitImpl.class);
+        AdminUnit adminUnit = mock(AdminUnit.class);
         when(repoObjFactory.createAdminUnit(any(PID.class), any(Model.class))).thenReturn(adminUnit);
 
         PID adminPid = makePid(RepositoryPathConstants.CONTENT_BASE);
@@ -594,7 +594,7 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
 
     @Test(expected = AccessRestrictionException.class)
     public void ingestAdminUnitNoPermissionTest() {
-        destinationObj = mock(ContentRootObjectImpl.class);
+        destinationObj = mock(ContentRootObject.class);
         when(destinationObj.getPid()).thenReturn(destinationPid);
         when(repoObjLoader.getRepositoryObject(eq(destinationPid))).thenReturn(destinationObj);
 
@@ -603,7 +603,7 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
                 .assertHasAccess(anyString(), eq(destinationPid), any(AccessGroupSet.class),
                         eq(Permission.createAdminUnit));
 
-        AdminUnitImpl adminUnit = mock(AdminUnitImpl.class);
+        AdminUnit adminUnit = mock(AdminUnit.class);
         when(repoObjFactory.createAdminUnit(any(PID.class), any(Model.class))).thenReturn(adminUnit);
 
         PID adminPid = makePid(RepositoryPathConstants.CONTENT_BASE);
@@ -620,12 +620,12 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
 
     @Test
     public void ingestCollectionTest() {
-        destinationObj = mock(AdminUnitImpl.class);
+        destinationObj = mock(AdminUnit.class);
         when(destinationObj.getPid()).thenReturn(destinationPid);
         when(destinationObj.getPremisLog()).thenReturn(mockPremisLogger);
         when(repoObjLoader.getRepositoryObject(eq(destinationPid))).thenReturn(destinationObj);
 
-        CollectionObjectImpl collection = mock(CollectionObjectImpl.class);
+        CollectionObject collection = mock(CollectionObject.class);
         when(repoObjFactory.createCollectionObject(any(PID.class), any(Model.class))).thenReturn(collection);
 
         PID collectionPid = makePid(RepositoryPathConstants.CONTENT_BASE);
@@ -652,7 +652,7 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
 
     @Test(expected = AccessRestrictionException.class)
     public void ingestCollectionNoPermisionTest() {
-        destinationObj = mock(AdminUnitImpl.class);
+        destinationObj = mock(AdminUnit.class);
         when(destinationObj.getPid()).thenReturn(destinationPid);
         when(repoObjLoader.getRepositoryObject(eq(destinationPid))).thenReturn(destinationObj);
 
@@ -661,7 +661,7 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
                 .assertHasAccess(anyString(), eq(destinationPid), any(AccessGroupSet.class),
                         eq(Permission.createCollection));
 
-        CollectionObjectImpl collection = mock(CollectionObjectImpl.class);
+        CollectionObject collection = mock(CollectionObject.class);
         when(repoObjFactory.createCollectionObject(any(PID.class), any(Model.class))).thenReturn(collection);
 
         PID collectionPid = makePid(RepositoryPathConstants.CONTENT_BASE);
@@ -678,7 +678,7 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
 
     @Test
     public void ingestFolderWithAcls() {
-        FolderObjectImpl folder = mock(FolderObjectImpl.class);
+        FolderObject folder = mock(FolderObject.class);
         when(repoObjFactory.createFolderObject(any(PID.class), any(Model.class))).thenReturn(folder);
 
         PID folderPid = makePid(RepositoryPathConstants.CONTENT_BASE);
@@ -704,7 +704,7 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
     @Test
     public void ingestWorkWithFileObjWithAcls() throws Exception {
         PID workPid = makePid(RepositoryPathConstants.CONTENT_BASE);
-        WorkObjectImpl work = mock(WorkObjectImpl.class);
+        WorkObject work = mock(WorkObject.class);
         Bag workBag = setupWork(workPid, work);
         workBag.addProperty(CdrAcl.embargoUntil, model.createTypedLiteral(Calendar.getInstance()));
 
@@ -743,7 +743,7 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
 
     @Test(expected=JobFailedException.class)
     public void testObjectsNotInFedoraAfterIngest() throws Exception {
-        FolderObjectImpl folder = mock(FolderObjectImpl.class);
+        FolderObject folder = mock(FolderObject.class);
         when(repoObjFactory.createFolderObject(any(PID.class), any(Model.class))).thenReturn(folder);
 
         PID folderPid = makePid(RepositoryPathConstants.CONTENT_BASE);

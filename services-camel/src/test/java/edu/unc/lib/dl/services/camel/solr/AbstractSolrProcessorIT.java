@@ -48,9 +48,9 @@ import edu.unc.lib.boxc.model.api.objects.RepositoryObject;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.api.rdf.CdrAcl;
 import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
-import edu.unc.lib.boxc.model.fcrepo.objects.AdminUnitImpl;
-import edu.unc.lib.boxc.model.fcrepo.objects.CollectionObjectImpl;
-import edu.unc.lib.boxc.model.fcrepo.objects.ContentRootObjectImpl;
+import edu.unc.lib.boxc.model.api.objects.AdminUnit;
+import edu.unc.lib.boxc.model.api.objects.CollectionObject;
+import edu.unc.lib.boxc.model.api.objects.ContentRootObject;
 import edu.unc.lib.boxc.model.fcrepo.services.RepositoryInitializer;
 import edu.unc.lib.boxc.model.fcrepo.test.RepositoryObjectTreeIndexer;
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
@@ -101,9 +101,9 @@ public abstract class AbstractSolrProcessorIT {
     @Autowired
     private RepositoryObjectTreeIndexer treeIndexer;
 
-    protected ContentRootObjectImpl rootObj;
-    protected AdminUnitImpl unitObj;
-    protected CollectionObjectImpl collObj;
+    protected ContentRootObject rootObj;
+    protected AdminUnit unitObj;
+    protected CollectionObject collObj;
 
     @Mock
     protected Exchange exchange;

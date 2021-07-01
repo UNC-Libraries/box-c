@@ -38,12 +38,12 @@ import edu.unc.lib.boxc.model.api.objects.RepositoryObject;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.api.rdf.Cdr;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
-import edu.unc.lib.boxc.model.fcrepo.objects.AbstractContentContainerObject;
-import edu.unc.lib.boxc.model.fcrepo.objects.AdminUnitImpl;
-import edu.unc.lib.boxc.model.fcrepo.objects.CollectionObjectImpl;
-import edu.unc.lib.boxc.model.fcrepo.objects.ContentRootObjectImpl;
-import edu.unc.lib.boxc.model.fcrepo.objects.FolderObjectImpl;
-import edu.unc.lib.boxc.model.fcrepo.objects.WorkObjectImpl;
+import edu.unc.lib.boxc.model.api.objects.ContentContainerObject;
+import edu.unc.lib.boxc.model.api.objects.AdminUnit;
+import edu.unc.lib.boxc.model.api.objects.CollectionObject;
+import edu.unc.lib.boxc.model.api.objects.ContentRootObject;
+import edu.unc.lib.boxc.model.api.objects.FolderObject;
+import edu.unc.lib.boxc.model.api.objects.WorkObject;
 import edu.unc.lib.deposit.work.AbstractDepositJob;
 import edu.unc.lib.dl.acl.service.AccessControlService;
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
@@ -91,21 +91,21 @@ public class ValidateDestinationJob extends AbstractDepositJob {
 
         RepositoryObject destObj = repoObjLoader.getRepositoryObject(destPid);
 
-        if (!(destObj instanceof AbstractContentContainerObject)) {
+        if (!(destObj instanceof ContentContainerObject)) {
             failJob("Cannot add children to destination", "Cannot deposit to destination " + destPid
                     + ", types does not support children");
         }
 
-        if (destObj instanceof ContentRootObjectImpl) {
+        if (destObj instanceof ContentRootObject) {
             assertHasPermission(destPid, Permission.createAdminUnit);
             topLevelObjectsMatchAllowedTypes(destPid, ROOT_CHILD_TYPES, false);
-        } else if (destObj instanceof AdminUnitImpl) {
+        } else if (destObj instanceof AdminUnit) {
             assertHasPermission(destPid, Permission.createCollection);
             topLevelObjectsMatchAllowedTypes(destPid, ADMINUNIT_CHILD_TYPES, false);
-        } else if (destObj instanceof CollectionObjectImpl || destObj instanceof FolderObjectImpl) {
+        } else if (destObj instanceof CollectionObject || destObj instanceof FolderObject) {
             assertHasPermission(destPid, Permission.ingest);
             topLevelObjectsMatchAllowedTypes(destPid, COLL_FOLDER_CHILD_TYPES, false);
-        } else if (destObj instanceof WorkObjectImpl) {
+        } else if (destObj instanceof WorkObject) {
             assertHasPermission(destPid, Permission.ingest);
             topLevelObjectsMatchAllowedTypes(destPid, WORK_CHILD_TYPES, true);
         }

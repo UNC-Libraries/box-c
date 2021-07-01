@@ -43,8 +43,8 @@ import edu.unc.lib.boxc.model.api.objects.RepositoryObject;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.api.objects.WorkObject;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
-import edu.unc.lib.boxc.model.fcrepo.objects.FileObjectImpl;
-import edu.unc.lib.boxc.model.fcrepo.objects.WorkObjectImpl;
+import edu.unc.lib.boxc.model.api.objects.FileObject;
+import edu.unc.lib.boxc.model.api.objects.WorkObject;
 import edu.unc.lib.dl.acl.exception.AccessRestrictionException;
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.ui.exception.ResourceNotFoundException;
@@ -95,8 +95,8 @@ public class FedoraContentController {
         AccessGroupSet principals = getAgentPrincipals().getPrincipals();
 
         RepositoryObject repoObj = repoObjLoader.getRepositoryObject(pid);
-        if (repoObj instanceof WorkObjectImpl) {
-            FileObjectImpl primaryObj = ((WorkObject) repoObj).getPrimaryObject();
+        if (repoObj instanceof WorkObject) {
+            FileObject primaryObj = ((WorkObject) repoObj).getPrimaryObject();
             if (primaryObj != null) {
                 pid = primaryObj.getPid();
             }

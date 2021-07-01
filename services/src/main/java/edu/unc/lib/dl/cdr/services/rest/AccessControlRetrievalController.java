@@ -38,8 +38,8 @@ import edu.unc.lib.boxc.model.api.objects.RepositoryObject;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.boxc.model.api.objects.ContentObject;
-import edu.unc.lib.boxc.model.fcrepo.objects.AdminUnitImpl;
-import edu.unc.lib.boxc.model.fcrepo.objects.CollectionObjectImpl;
+import edu.unc.lib.boxc.model.api.objects.AdminUnit;
+import edu.unc.lib.boxc.model.api.objects.CollectionObject;
 import edu.unc.lib.dl.acl.fcrepo4.InheritedAclFactory;
 import edu.unc.lib.dl.acl.fcrepo4.ObjectAclFactory;
 import edu.unc.lib.dl.acl.service.AccessControlService;
@@ -94,10 +94,10 @@ public class AccessControlRetrievalController {
         List<RoleAssignment> inherited = null;
         List<RoleAssignment> assigned = null;
 
-        if (repoObj instanceof AdminUnitImpl) {
+        if (repoObj instanceof AdminUnit) {
             assigned = objectAclFactory.getStaffRoleAssignments(pid);
             inherited = Collections.emptyList();
-        } else if (repoObj instanceof CollectionObjectImpl) {
+        } else if (repoObj instanceof CollectionObject) {
             assigned = objectAclFactory.getStaffRoleAssignments(pid);
             RepositoryObject parent = repoObj.getParent();
             inherited = inheritedAclFactory.getStaffRoleAssignments(parent.getPid());
@@ -162,7 +162,7 @@ public class AccessControlRetrievalController {
 
         Map<String, Object> result = new HashMap<>();
 
-        if (repoObj instanceof AdminUnitImpl) {
+        if (repoObj instanceof AdminUnit) {
             result.put("error", "Cannot retrieve patron access for a unit");
             return new ResponseEntity<>(result, HttpStatus.BAD_REQUEST);
         } else if (repoObj instanceof ContentObject) {
@@ -192,7 +192,7 @@ public class AccessControlRetrievalController {
 
         RepositoryObject parent = repoObj.getParent();
         PID pid = parent.getPid();
-        if (!(parent instanceof AdminUnitImpl)) {
+        if (!(parent instanceof AdminUnit)) {
             inheritedInfo.setRoles(inheritedAclFactory.getPatronAccess(pid));
             inheritedInfo.setEmbargo(inheritedAclFactory.getEmbargoUntil(pid));
         }

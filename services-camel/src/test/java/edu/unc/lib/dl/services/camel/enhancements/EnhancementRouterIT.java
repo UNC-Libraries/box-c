@@ -67,9 +67,9 @@ import edu.unc.lib.boxc.model.api.objects.FileObject;
 import edu.unc.lib.boxc.model.api.rdf.Cdr;
 import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
-import edu.unc.lib.boxc.model.fcrepo.objects.BinaryObjectImpl;
-import edu.unc.lib.boxc.model.fcrepo.objects.CollectionObjectImpl;
-import edu.unc.lib.boxc.model.fcrepo.objects.FileObjectImpl;
+import edu.unc.lib.boxc.model.api.objects.BinaryObject;
+import edu.unc.lib.boxc.model.api.objects.CollectionObject;
+import edu.unc.lib.boxc.model.api.objects.FileObject;
 import edu.unc.lib.boxc.model.fcrepo.test.TestHelper;
 import edu.unc.lib.dl.acl.util.AgentPrincipals;
 import edu.unc.lib.dl.persist.services.edit.UpdateDescriptionService;
@@ -167,7 +167,7 @@ public class EnhancementRouterIT {
 
     @Test
     public void nonBinaryWithSourceImages() throws Exception {
-        CollectionObjectImpl collObject = repoObjectFactory.createCollectionObject(null);
+        CollectionObject collObject = repoObjectFactory.createCollectionObject(null);
 
         String uuid = collObject.getPid().getUUID();
         String basePath = idToPath(uuid, HASHED_PATH_DEPTH, HASHED_PATH_SIZE);
@@ -188,7 +188,7 @@ public class EnhancementRouterIT {
 
     @Test
     public void nonBinaryNoSourceImages() throws Exception {
-        CollectionObjectImpl collObject = repoObjectFactory.createCollectionObject(null);
+        CollectionObject collObject = repoObjectFactory.createCollectionObject(null);
         final Map<String, Object> headers = createEvent(collObject.getPid(),
                 Cdr.Collection.getURI(), Container.getURI());
         template.sendBodyAndHeaders("", headers);
@@ -203,7 +203,7 @@ public class EnhancementRouterIT {
         FileObject fileObj = repoObjectFactory.createFileObject(null);
         Path originalPath = Files.createTempFile("file", ".png");
         FileUtils.writeStringToFile(originalPath.toFile(), FILE_CONTENT, "UTF-8");
-        BinaryObjectImpl binObj = fileObj.addOriginalFile(originalPath.toUri(),
+        BinaryObject binObj = fileObj.addOriginalFile(originalPath.toUri(),
                 null, "image/png", null, null);
 
         // Separate exchanges when multicasting
@@ -229,7 +229,7 @@ public class EnhancementRouterIT {
         FileObject fileObj = repoObjectFactory.createFileObject(null);
         Path originalPath = Files.createTempFile("file", ".png");
         FileUtils.writeStringToFile(originalPath.toFile(), FILE_CONTENT, "UTF-8");
-        BinaryObjectImpl binObj = fileObj.addOriginalFile(originalPath.toUri(),
+        BinaryObject binObj = fileObj.addOriginalFile(originalPath.toUri(),
                 null, "image/png", null, null);
 
         String mdId = binObj.getPid().getRepositoryPath() + "/fcr:metadata";
@@ -254,11 +254,11 @@ public class EnhancementRouterIT {
 
     @Test
     public void testInvalidFile() throws Exception {
-        FileObjectImpl fileObj = repoObjectFactory.createFileObject(null);
+        FileObject fileObj = repoObjectFactory.createFileObject(null);
         PID fitsPid = getTechnicalMetadataPid(fileObj.getPid());
         Path techmdPath = Files.createTempFile("fits", ".xml");
         FileUtils.writeStringToFile(techmdPath.toFile(), FILE_CONTENT, "UTF-8");
-        BinaryObjectImpl binObj = fileObj.addBinary(fitsPid, techmdPath.toUri(),
+        BinaryObject binObj = fileObj.addBinary(fitsPid, techmdPath.toUri(),
                 "fits.xml", "text/xml", null, null, null);
 
         NotifyBuilder notify = new NotifyBuilder(cdrEnhancements)
@@ -279,8 +279,8 @@ public class EnhancementRouterIT {
 
     @Test
     public void testProcessFilterOutDescriptiveMDSolr() throws Exception {
-        FileObjectImpl fileObj = repoObjectFactory.createFileObject(null);
-        BinaryObjectImpl descObj = updateDescriptionService.updateDescription(new UpdateDescriptionRequest(
+        FileObject fileObj = repoObjectFactory.createFileObject(null);
+        BinaryObject descObj = updateDescriptionService.updateDescription(new UpdateDescriptionRequest(
                 mock(AgentPrincipals.class), fileObj.getPid(), new ByteArrayInputStream(FILE_CONTENT.getBytes())));
 
         NotifyBuilder notify = new NotifyBuilder(cdrEnhancements)
@@ -302,7 +302,7 @@ public class EnhancementRouterIT {
     public void testDepositManifestFileMetadata() throws Exception {
         DepositRecord recObj = repoObjectFactory.createDepositRecord(null);
         Path manifestPath = Files.createTempFile("manifest", ".txt");
-        BinaryObjectImpl manifestBin = recObj.addManifest(manifestPath.toUri(), "manifest", "text/plain", null, null);
+        BinaryObject manifestBin = recObj.addManifest(manifestPath.toUri(), "manifest", "text/plain", null, null);
 
         String mdId = manifestBin.getPid().getRepositoryPath() + "/fcr:metadata";
         PID mdPid = PIDs.get(mdId);

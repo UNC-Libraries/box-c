@@ -68,13 +68,13 @@ import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.api.rdf.PcdmModels;
 import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
 import edu.unc.lib.boxc.model.fcrepo.ids.DatastreamPids;
-import edu.unc.lib.boxc.model.fcrepo.objects.AdminUnitImpl;
-import edu.unc.lib.boxc.model.fcrepo.objects.BinaryObjectImpl;
-import edu.unc.lib.boxc.model.fcrepo.objects.CollectionObjectImpl;
-import edu.unc.lib.boxc.model.fcrepo.objects.ContentRootObjectImpl;
-import edu.unc.lib.boxc.model.fcrepo.objects.FileObjectImpl;
-import edu.unc.lib.boxc.model.fcrepo.objects.FolderObjectImpl;
-import edu.unc.lib.boxc.model.fcrepo.objects.WorkObjectImpl;
+import edu.unc.lib.boxc.model.api.objects.AdminUnit;
+import edu.unc.lib.boxc.model.api.objects.BinaryObject;
+import edu.unc.lib.boxc.model.api.objects.CollectionObject;
+import edu.unc.lib.boxc.model.api.objects.ContentRootObject;
+import edu.unc.lib.boxc.model.api.objects.FileObject;
+import edu.unc.lib.boxc.model.api.objects.FolderObject;
+import edu.unc.lib.boxc.model.api.objects.WorkObject;
 import edu.unc.lib.boxc.model.fcrepo.services.RepositoryInitializer;
 import edu.unc.lib.boxc.model.fcrepo.test.AclModelBuilder;
 import edu.unc.lib.boxc.model.fcrepo.test.RepositoryObjectTreeIndexer;
@@ -146,9 +146,9 @@ public class DestroyObjectsCompletelyJobIT {
     private Model queryModel;
     private RepositoryObjectTreeIndexer treeIndexer;
 
-    private ContentRootObjectImpl contentRoot;
-    private AdminUnitImpl adminUnit;
-    private CollectionObjectImpl collection;
+    private ContentRootObject contentRoot;
+    private AdminUnit adminUnit;
+    private CollectionObject collection;
 
     private DestroyObjectsCompletelyJob job;
 
@@ -195,7 +195,7 @@ public class DestroyObjectsCompletelyJobIT {
 
     @Test
     public void destroyBinaryObject() throws Exception {
-        WorkObjectImpl work = repoObjFactory.createWorkObject(null);
+        WorkObject work = repoObjFactory.createWorkObject(null);
         collection.addMember(work);
 
         FileObject file = addFileToWork(work);
@@ -223,14 +223,14 @@ public class DestroyObjectsCompletelyJobIT {
 
     @Test
     public void destroyDescribedWork() throws Exception {
-        WorkObjectImpl work = repoObjFactory.createWorkObject(null);
+        WorkObject work = repoObjFactory.createWorkObject(null);
         collection.addMember(work);
 
         editTitleService.editTitle(agent, work.getPid(), "first title");
         editTitleService.editTitle(agent, work.getPid(), "second title");
 
-        FileObjectImpl file = addFileToWork(work);
-        BinaryObjectImpl originalObj = file.getOriginalFile();
+        FileObject file = addFileToWork(work);
+        BinaryObject originalObj = file.getOriginalFile();
         File originalFile = new File(originalObj.getContentUri());
 
         treeIndexer.indexAll(baseAddress);
@@ -267,10 +267,10 @@ public class DestroyObjectsCompletelyJobIT {
     // Ensure that an invalid membership relation can't result in destroying admin units
     @Test
     public void destroyContainerWithAdminUnitMember() throws Exception {
-        FolderObjectImpl folder = repoObjFactory.createFolderObject(null);
+        FolderObject folder = repoObjFactory.createFolderObject(null);
         collection.addMember(folder);
 
-        AdminUnitImpl unit2 = repoObjFactory.createAdminUnit(null);
+        AdminUnit unit2 = repoObjFactory.createAdminUnit(null);
 
         // Force the admin unit as a member of the folder
         String updateString = createSparqlReplace(unit2.getPid().getRepositoryPath(),
@@ -316,17 +316,17 @@ public class DestroyObjectsCompletelyJobIT {
 
     @Test
     public void destroyMultiple() throws Exception {
-        FolderObjectImpl folder = repoObjFactory.createFolderObject(null);
+        FolderObject folder = repoObjFactory.createFolderObject(null);
         collection.addMember(folder);
 
-        FolderObjectImpl folder2 = repoObjFactory.createFolderObject(null);
+        FolderObject folder2 = repoObjFactory.createFolderObject(null);
         collection.addMember(folder2);
 
-        WorkObjectImpl work = repoObjFactory.createWorkObject(null);
+        WorkObject work = repoObjFactory.createWorkObject(null);
         folder2.addMember(work);
 
-        FileObjectImpl file = addFileToWork(work);
-        BinaryObjectImpl originalObj = file.getOriginalFile();
+        FileObject file = addFileToWork(work);
+        BinaryObject originalObj = file.getOriginalFile();
         File originalFile = new File(originalObj.getContentUri());
 
         treeIndexer.indexAll(baseAddress);
@@ -362,7 +362,7 @@ public class DestroyObjectsCompletelyJobIT {
         AccessGroupSet testPrincipals = new AccessGroupSet("please");
         agent = new AgentPrincipals("letmein", testPrincipals);
 
-        WorkObjectImpl work = repoObjFactory.createWorkObject(null);
+        WorkObject work = repoObjFactory.createWorkObject(null);
         collection.addMember(work);
 
         treeIndexer.indexAll(baseAddress);
@@ -382,7 +382,7 @@ public class DestroyObjectsCompletelyJobIT {
         verify(binaryDestroyedMessageSender, never()).sendMessage(any(Document.class));
     }
 
-    private FileObjectImpl addFileToWork(WorkObjectImpl work) throws Exception {
+    private FileObject addFileToWork(WorkObject work) throws Exception {
         String bodyString = "Content";
         String mimetype = "text/plain";
         Path storagePath = Paths.get(locationManager.getStorageLocationById(LOC1_ID).getNewStorageUri(work.getPid()));

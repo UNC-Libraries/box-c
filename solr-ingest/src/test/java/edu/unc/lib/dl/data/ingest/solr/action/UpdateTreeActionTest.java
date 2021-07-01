@@ -39,9 +39,9 @@ import org.mockito.Mock;
 
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
-import edu.unc.lib.boxc.model.fcrepo.objects.AbstractContentContainerObject;
+import edu.unc.lib.boxc.model.api.objects.ContentContainerObject;
 import edu.unc.lib.boxc.model.api.objects.ContentObject;
-import edu.unc.lib.boxc.model.fcrepo.objects.FileObjectImpl;
+import edu.unc.lib.boxc.model.api.objects.FileObject;
 import edu.unc.lib.dl.data.ingest.solr.SolrUpdateRequest;
 import edu.unc.lib.dl.data.ingest.solr.test.TestCorpus;
 import edu.unc.lib.dl.services.IndexingMessageSender;
@@ -82,11 +82,11 @@ public class UpdateTreeActionTest {
         corpus = new TestCorpus();
 
         // Establish basic containment relations
-        AbstractContentContainerObject obj1 = makeContainer(corpus.pid1, repositoryObjectLoader);
-        AbstractContentContainerObject obj2 = addContainerToParent(obj1, corpus.pid2, repositoryObjectLoader);
-        FileObjectImpl file1 = addFileObjectToParent(obj1, corpus.pid3, repositoryObjectLoader);
-        FileObjectImpl file2 = addFileObjectToParent(obj2, corpus.pid4, repositoryObjectLoader);
-        FileObjectImpl file3 = addFileObjectToParent(obj2, corpus.pid6, repositoryObjectLoader);
+        ContentContainerObject obj1 = makeContainer(corpus.pid1, repositoryObjectLoader);
+        ContentContainerObject obj2 = addContainerToParent(obj1, corpus.pid2, repositoryObjectLoader);
+        FileObject file1 = addFileObjectToParent(obj1, corpus.pid3, repositoryObjectLoader);
+        FileObject file2 = addFileObjectToParent(obj2, corpus.pid4, repositoryObjectLoader);
+        FileObject file3 = addFileObjectToParent(obj2, corpus.pid6, repositoryObjectLoader);
 
         sparqlModel = ModelFactory.createDefaultModel();
         sparqlQueryService = new JenaSparqlQueryServiceImpl(sparqlModel);

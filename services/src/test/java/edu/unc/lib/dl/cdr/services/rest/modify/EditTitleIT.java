@@ -44,7 +44,7 @@ import org.springframework.test.web.servlet.MvcResult;
 
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.objects.BinaryObject;
-import edu.unc.lib.boxc.model.fcrepo.objects.WorkObjectImpl;
+import edu.unc.lib.boxc.model.api.objects.WorkObject;
 import edu.unc.lib.dl.acl.exception.AccessRestrictionException;
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.acl.util.AgentPrincipals;
@@ -69,7 +69,7 @@ public class EditTitleIT extends AbstractAPIIT {
     @Test
     public void testCreateTitleWhereNoneExists() throws Exception {
         PID pid = makePid();
-        WorkObjectImpl work = repositoryObjectFactory.createWorkObject(pid, null);
+        WorkObject work = repositoryObjectFactory.createWorkObject(pid, null);
         String title = "work_title";
 
         MvcResult result = mvc.perform(put("/edit/title/" + pid.getUUID())
@@ -88,7 +88,7 @@ public class EditTitleIT extends AbstractAPIIT {
     @Test
     public void testSpecialCharactersTitle() throws Exception {
         PID pid = makePid();
-        WorkObjectImpl work = repositoryObjectFactory.createWorkObject(pid, null);
+        WorkObject work = repositoryObjectFactory.createWorkObject(pid, null);
         String title = "work_title!*'();:@&=+$,/?%#[]special@charcters";
 
         MvcResult result = mvc.perform(put("/edit/title/" + pid.getUUID())
@@ -108,7 +108,7 @@ public class EditTitleIT extends AbstractAPIIT {
     public void testReplaceTitle() throws Exception {
         PID pid = makePid();
         String oldTitle = "old_work_title";
-        WorkObjectImpl work = repositoryObjectFactory.createWorkObject(pid, null);
+        WorkObject work = repositoryObjectFactory.createWorkObject(pid, null);
 
         Document document = new Document();
         document.addContent(new Element("mods", MODS_V3_NS)

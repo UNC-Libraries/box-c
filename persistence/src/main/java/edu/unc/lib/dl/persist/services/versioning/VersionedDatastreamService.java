@@ -34,7 +34,7 @@ import edu.unc.lib.boxc.model.api.objects.RepositoryObject;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
-import edu.unc.lib.boxc.model.fcrepo.objects.BinaryObjectImpl;
+import edu.unc.lib.boxc.model.api.objects.BinaryObject;
 import edu.unc.lib.dl.exceptions.InvalidChecksumException;
 import edu.unc.lib.dl.fcrepo4.FedoraTransaction;
 import edu.unc.lib.dl.fcrepo4.TransactionManager;
@@ -67,11 +67,11 @@ public class VersionedDatastreamService {
      * @param newVersion details of the new datastream version
      * @return the BinaryObject representation of the datastream updated
      */
-    public BinaryObjectImpl addVersion(DatastreamVersion newVersion) {
+    public BinaryObject addVersion(DatastreamVersion newVersion) {
         PID dsPid = newVersion.getDsPid();
 
         Lock dsLock = lockManager.awaitWriteLock(dsPid);
-        BinaryObjectImpl dsObj = getBinaryObject(dsPid);
+        BinaryObject dsObj = getBinaryObject(dsPid);
 
         // Get a session for transferring the binary and its history
         BinaryTransferSession session = null;
@@ -114,7 +114,7 @@ public class VersionedDatastreamService {
      * @param dsPid
      * @return
      */
-    private BinaryObjectImpl getBinaryObject(PID dsPid) {
+    private BinaryObject getBinaryObject(PID dsPid) {
         try {
             return repoObjLoader.getBinaryObject(dsPid);
         } catch (NotFoundException e) {
@@ -129,7 +129,7 @@ public class VersionedDatastreamService {
      * @param session
      * @param currentDsObj
      */
-    private void updateDatastreamHistory(BinaryTransferSession session, BinaryObjectImpl currentDsObj) {
+    private void updateDatastreamHistory(BinaryTransferSession session, BinaryObject currentDsObj) {
         PID currentDsPid = currentDsObj.getPid();
 
         // Load existing datastream history if present
@@ -168,7 +168,7 @@ public class VersionedDatastreamService {
                 null);
     }
 
-    private BinaryObjectImpl updateHeadVersion(DatastreamVersion newVersion, BinaryTransferSession session) {
+    private BinaryObject updateHeadVersion(DatastreamVersion newVersion, BinaryTransferSession session) {
         PID dsPid = newVersion.getDsPid();
         // Transfer the incoming content to its storage location
         BinaryTransferOutcome dsOutcome;

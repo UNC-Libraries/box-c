@@ -34,7 +34,7 @@ import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.fcrepo.ids.DatastreamPids;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
-import edu.unc.lib.boxc.model.fcrepo.objects.FileObjectImpl;
+import edu.unc.lib.boxc.model.api.objects.FileObject;
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadata;
 import edu.unc.lib.dl.search.solr.model.Datastream;
 import edu.unc.lib.dl.search.solr.model.SearchRequest;
@@ -85,7 +85,7 @@ public class RunEnhancementsService {
 
                 LOG.debug("sending solr update message for {} of type runEnhancements", pid);
 
-                if (!(repositoryObjectLoader.getRepositoryObject(pid) instanceof FileObjectImpl)) {
+                if (!(repositoryObjectLoader.getRepositoryObject(pid) instanceof FileObject)) {
                     SearchState searchState = new SearchState();
                     searchState.addFacet(SearchFieldKeys.RESOURCE_TYPE, ResourceType.File.name());
                     searchState.setResultFields(resultsFieldList);

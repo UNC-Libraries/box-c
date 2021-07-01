@@ -42,7 +42,7 @@ import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.api.rdf.Cdr;
 import edu.unc.lib.boxc.model.api.rdf.CdrAcl;
 import edu.unc.lib.boxc.model.api.rdf.CdrDeposit;
-import edu.unc.lib.boxc.model.fcrepo.objects.AbstractRepositoryObject;
+import edu.unc.lib.boxc.model.api.objects.RepositoryObject;
 import edu.unc.lib.deposit.fcrepo4.AbstractDepositJobTest;
 import edu.unc.lib.deposit.work.JobFailedException;
 import edu.unc.lib.dl.acl.exception.InvalidAssignmentException;
@@ -70,7 +70,7 @@ public class ValidateContentModelJobTest extends AbstractDepositJobTest {
     @Mock
     private RepositoryObjectLoader repoObjectLoader;
     @Mock
-    private AbstractRepositoryObject destObj;
+    private RepositoryObject destObj;
     @Mock
     private Resource destResc;
 

@@ -53,7 +53,7 @@ import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.api.xml.JDOMNamespaceUtil;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.boxc.model.api.objects.ContentObject;
-import edu.unc.lib.boxc.model.fcrepo.objects.BinaryObjectImpl;
+import edu.unc.lib.boxc.model.api.objects.BinaryObject;
 import edu.unc.lib.dl.acl.service.AccessControlService;
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.acl.util.Permission;
@@ -192,7 +192,7 @@ public class XMLExportServiceTest {
         PID pid1 = registerObject();
         ContentObject contentObj = (ContentObject) repoObjLoader.getRepositoryObject(pid1);
 
-        BinaryObjectImpl modsObj = mock(BinaryObjectImpl.class);
+        BinaryObject modsObj = mock(BinaryObject.class);
         Date lastModified = new Date();
         when(modsObj.getLastModified()).thenReturn(lastModified);
         InputStream modsIs = new FileInputStream(new File(

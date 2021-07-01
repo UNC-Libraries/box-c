@@ -46,7 +46,7 @@ import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.boxc.model.api.objects.ContentObject;
-import edu.unc.lib.boxc.model.fcrepo.objects.BinaryObjectImpl;
+import edu.unc.lib.boxc.model.api.objects.BinaryObject;
 import edu.unc.lib.persist.services.EmailHandler;
 import io.dropwizard.metrics5.Timer;
 
@@ -118,7 +118,7 @@ public class XMLExportJob implements Runnable {
             return;
         }
         ContentObject obj = (ContentObject) repoObjLoader.getRepositoryObject(pid);
-        BinaryObjectImpl mods = obj.getDescription();
+        BinaryObject mods = obj.getDescription();
 
         try {
             Document objectDoc = new Document();

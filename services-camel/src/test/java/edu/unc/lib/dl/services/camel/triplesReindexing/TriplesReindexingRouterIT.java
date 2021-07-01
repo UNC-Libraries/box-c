@@ -57,13 +57,13 @@ import edu.unc.lib.boxc.model.api.objects.RepositoryObject;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
 import edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPaths;
-import edu.unc.lib.boxc.model.fcrepo.objects.AdminUnitImpl;
-import edu.unc.lib.boxc.model.fcrepo.objects.CollectionObjectImpl;
-import edu.unc.lib.boxc.model.fcrepo.objects.ContentRootObjectImpl;
+import edu.unc.lib.boxc.model.api.objects.AdminUnit;
+import edu.unc.lib.boxc.model.api.objects.CollectionObject;
+import edu.unc.lib.boxc.model.api.objects.ContentRootObject;
 import edu.unc.lib.boxc.model.fcrepo.objects.DepositRecordImpl;
-import edu.unc.lib.boxc.model.fcrepo.objects.FileObjectImpl;
-import edu.unc.lib.boxc.model.fcrepo.objects.FolderObjectImpl;
-import edu.unc.lib.boxc.model.fcrepo.objects.WorkObjectImpl;
+import edu.unc.lib.boxc.model.api.objects.FileObject;
+import edu.unc.lib.boxc.model.api.objects.FolderObject;
+import edu.unc.lib.boxc.model.api.objects.WorkObject;
 import edu.unc.lib.boxc.model.fcrepo.services.RepositoryInitializer;
 import edu.unc.lib.boxc.model.fcrepo.test.TestHelper;
 import edu.unc.lib.dl.acl.service.AccessControlService;
@@ -120,13 +120,13 @@ public class TriplesReindexingRouterIT {
     @Mock
     private Message message;
 
-    private ContentRootObjectImpl rootObj;
-    private AdminUnitImpl unitObj;
-    private CollectionObjectImpl collObj;
-    private FolderObjectImpl folderObj1;
-    private FolderObjectImpl folderObj2;
-    private WorkObjectImpl workObj;
-    private FileObjectImpl fileObj;
+    private ContentRootObject rootObj;
+    private AdminUnit unitObj;
+    private CollectionObject collObj;
+    private FolderObject folderObj1;
+    private FolderObject folderObj2;
+    private WorkObject workObj;
+    private FileObject fileObj;
 
     @Before
     public void setUp() throws Exception {

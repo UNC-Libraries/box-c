@@ -52,11 +52,11 @@ import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
 import edu.unc.lib.boxc.model.fcrepo.event.PremisLoggerFactoryImpl;
-import edu.unc.lib.boxc.model.fcrepo.objects.AdminUnitImpl;
-import edu.unc.lib.boxc.model.fcrepo.objects.CollectionObjectImpl;
-import edu.unc.lib.boxc.model.fcrepo.objects.ContentRootObjectImpl;
-import edu.unc.lib.boxc.model.fcrepo.objects.FileObjectImpl;
-import edu.unc.lib.boxc.model.fcrepo.objects.WorkObjectImpl;
+import edu.unc.lib.boxc.model.api.objects.AdminUnit;
+import edu.unc.lib.boxc.model.api.objects.CollectionObject;
+import edu.unc.lib.boxc.model.api.objects.ContentRootObject;
+import edu.unc.lib.boxc.model.api.objects.FileObject;
+import edu.unc.lib.boxc.model.api.objects.WorkObject;
 import edu.unc.lib.boxc.model.fcrepo.services.RepositoryInitializer;
 import edu.unc.lib.boxc.model.fcrepo.test.AclModelBuilder;
 import edu.unc.lib.boxc.model.fcrepo.test.RepositoryObjectTreeIndexer;
@@ -153,9 +153,9 @@ public class DestroyDerivativesRouterIT {
 
     private RepositoryObjectTreeIndexer treeIndexer;
 
-    private AdminUnitImpl adminUnit;
+    private AdminUnit adminUnit;
 
-    private CollectionObjectImpl collection;
+    private CollectionObject collection;
 
     private final static String LOC1_ID = "loc1";
 
@@ -171,7 +171,7 @@ public class DestroyDerivativesRouterIT {
         AccessGroupSet testPrincipals = new AccessGroupSet("edu:unc:lib:cdr:admin");
         agent = new AgentPrincipals("testUser", testPrincipals);
 
-        ContentRootObjectImpl contentRoot = repoObjLoader.getContentRootObject(contentRootPid);
+        ContentRootObject contentRoot = repoObjLoader.getContentRootObject(contentRootPid);
         adminUnit = repoObjectFactory.createAdminUnit(new AclModelBuilder("Unit")
                 .addUnitOwner(agent.getUsernameUri())
                 .model);
@@ -197,8 +197,8 @@ public class DestroyDerivativesRouterIT {
 
     @Test
     public void destroyImageTest() throws Exception {
-        WorkObjectImpl work = repoObjectFactory.createWorkObject(null);
-        FileObjectImpl fileObj = addFileToWork(work, "image/png");
+        WorkObject work = repoObjectFactory.createWorkObject(null);
+        FileObject fileObj = addFileToWork(work, "image/png");
         work.addMember(fileObj);
 
         treeIndexer.indexAll(baseAddress);
@@ -216,7 +216,7 @@ public class DestroyDerivativesRouterIT {
 
     @Test
     public void destroyCollectionImageTest() throws Exception {
-        CollectionObjectImpl collectionWithImg = repoObjectFactory.createCollectionObject(null);
+        CollectionObject collectionWithImg = repoObjectFactory.createCollectionObject(null);
         adminUnit.addMember(collectionWithImg);
 
         treeIndexer.indexAll(baseAddress);
@@ -243,7 +243,7 @@ public class DestroyDerivativesRouterIT {
 
     @Test
     public void destroyCollectionNoImageTest() throws Exception {
-        CollectionObjectImpl collectionWithImg = repoObjectFactory.createCollectionObject(null);
+        CollectionObject collectionWithImg = repoObjectFactory.createCollectionObject(null);
         adminUnit.addMember(collectionWithImg);
 
         treeIndexer.indexAll(baseAddress);
@@ -261,9 +261,9 @@ public class DestroyDerivativesRouterIT {
 
     @Test
     public void destroyTextTest() throws Exception {
-        WorkObjectImpl work = repoObjectFactory.createWorkObject(null);
+        WorkObject work = repoObjectFactory.createWorkObject(null);
         String mimetype = "text/plain";
-        FileObjectImpl fileObj = addFileToWork(work, mimetype);
+        FileObject fileObj = addFileToWork(work, mimetype);
         work.addMember(fileObj);
 
         treeIndexer.indexAll(baseAddress);
@@ -281,8 +281,8 @@ public class DestroyDerivativesRouterIT {
 
     @Test
     public void invalidTypeTest() throws Exception {
-        WorkObjectImpl work = repoObjectFactory.createWorkObject(null);
-        FileObjectImpl fileObj = addFileToWork(work, "application/octet-stream");
+        WorkObject work = repoObjectFactory.createWorkObject(null);
+        FileObject fileObj = addFileToWork(work, "application/octet-stream");
         work.addMember(fileObj);
 
         treeIndexer.indexAll(baseAddress);
@@ -298,7 +298,7 @@ public class DestroyDerivativesRouterIT {
         verify(destroyFulltextProcessor, never()).process(any(Exchange.class));
     }
 
-    private FileObjectImpl addFileToWork(WorkObjectImpl work, String mimetype) throws Exception {
+    private FileObject addFileToWork(WorkObject work, String mimetype) throws Exception {
         collection.addMember(work);
 
         String bodyString = "Content";

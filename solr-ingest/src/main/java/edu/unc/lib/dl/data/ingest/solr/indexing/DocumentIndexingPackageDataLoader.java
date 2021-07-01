@@ -29,7 +29,7 @@ import edu.unc.lib.boxc.model.api.objects.ContentObject;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObject;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.api.objects.ContentObject;
-import edu.unc.lib.boxc.model.fcrepo.objects.TombstoneImpl;
+import edu.unc.lib.boxc.model.api.objects.Tombstone;
 import edu.unc.lib.dl.data.ingest.solr.exception.IndexingException;
 import edu.unc.lib.dl.data.ingest.solr.exception.ObjectTombstonedException;
 
@@ -63,7 +63,7 @@ public class DocumentIndexingPackageDataLoader {
 
     public ContentObject getContentObject(DocumentIndexingPackage dip) throws IndexingException {
         RepositoryObject repoObj = repoObjLoader.getRepositoryObject(dip.getPid());
-        if (repoObj instanceof TombstoneImpl) {
+        if (repoObj instanceof Tombstone) {
             throw new ObjectTombstonedException("Object " + dip.getPid() + " is a tombstone");
         }
         if (!(repoObj instanceof ContentObject)) {

@@ -37,8 +37,8 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.ContextHierarchy;
 import org.springframework.test.web.servlet.MvcResult;
 
-import edu.unc.lib.boxc.model.fcrepo.objects.AdminUnitImpl;
-import edu.unc.lib.boxc.model.fcrepo.objects.CollectionObjectImpl;
+import edu.unc.lib.boxc.model.api.objects.AdminUnit;
+import edu.unc.lib.boxc.model.api.objects.CollectionObject;
 import edu.unc.lib.boxc.model.fcrepo.test.AclModelBuilder;
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.acl.util.GroupsThreadStore;
@@ -58,8 +58,8 @@ public class DestroyObjectsIT extends AbstractAPIIT {
     private static final String USER_GROUPS = "edu:lib:staff_grp";
     private static final String ADMIN_GROUP = "adminGroup";
 
-    private AdminUnitImpl adminUnit;
-    private CollectionObjectImpl collObj;
+    private AdminUnit adminUnit;
+    private CollectionObject collObj;
 
     @Autowired
     private JmsTemplate jmsTemplate;
@@ -129,7 +129,7 @@ public class DestroyObjectsIT extends AbstractAPIIT {
         createCollectionInUnit(new AclModelBuilder("Unit with owner")
                 .addUnitOwner(USER_GROUPS)
                 .model);
-        CollectionObjectImpl collObj2 = repositoryObjectFactory.createCollectionObject(null);
+        CollectionObject collObj2 = repositoryObjectFactory.createCollectionObject(null);
         adminUnit.addMember(collObj2);
 
         treeIndexer.indexAll(baseAddress);
@@ -149,7 +149,7 @@ public class DestroyObjectsIT extends AbstractAPIIT {
     @Test
     public void destroyMultipleNoPermission() throws Exception {
         createCollectionInUnit(null);
-        CollectionObjectImpl collObj2 = repositoryObjectFactory.createCollectionObject(null);
+        CollectionObject collObj2 = repositoryObjectFactory.createCollectionObject(null);
         adminUnit.addMember(collObj2);
 
         treeIndexer.indexAll(baseAddress);

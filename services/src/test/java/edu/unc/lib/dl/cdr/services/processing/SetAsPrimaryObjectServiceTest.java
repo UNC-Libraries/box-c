@@ -41,9 +41,9 @@ import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
-import edu.unc.lib.boxc.model.fcrepo.objects.FileObjectImpl;
-import edu.unc.lib.boxc.model.fcrepo.objects.FolderObjectImpl;
-import edu.unc.lib.boxc.model.fcrepo.objects.WorkObjectImpl;
+import edu.unc.lib.boxc.model.api.objects.FileObject;
+import edu.unc.lib.boxc.model.api.objects.FolderObject;
+import edu.unc.lib.boxc.model.api.objects.WorkObject;
 import edu.unc.lib.dl.acl.exception.AccessRestrictionException;
 import edu.unc.lib.dl.acl.service.AccessControlService;
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
@@ -68,11 +68,11 @@ public class SetAsPrimaryObjectServiceTest {
     @Mock
     private AccessGroupSet groups;
     @Mock
-    private WorkObjectImpl workObj;
+    private WorkObject workObj;
     @Mock
-    private FileObjectImpl fileObj;
+    private FileObject fileObj;
     @Mock
-    private FolderObjectImpl folderObj;
+    private FolderObject folderObj;
     @Mock
     private RepositoryObjectFactory factory;
     @Mock

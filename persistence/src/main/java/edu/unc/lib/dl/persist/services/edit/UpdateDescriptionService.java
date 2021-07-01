@@ -39,7 +39,7 @@ import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.api.rdf.Cdr;
 import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
 import edu.unc.lib.boxc.model.api.objects.ContentObject;
-import edu.unc.lib.boxc.model.fcrepo.objects.BinaryObjectImpl;
+import edu.unc.lib.boxc.model.api.objects.BinaryObject;
 import edu.unc.lib.dl.acl.service.AccessControlService;
 import edu.unc.lib.dl.acl.util.AgentPrincipals;
 import edu.unc.lib.dl.acl.util.Permission;
@@ -101,7 +101,7 @@ public class UpdateDescriptionService {
      * @return binary object of the updated description
      * @throws IOException
      */
-    public BinaryObjectImpl updateDescription(UpdateDescriptionRequest request) throws IOException {
+    public BinaryObject updateDescription(UpdateDescriptionRequest request) throws IOException {
         PID pid = request.getPid();
         ContentObject obj = request.getContentObject();
         if (obj == null) {
@@ -132,7 +132,7 @@ public class UpdateDescriptionService {
             newVersion.setFilename(MD_DESCRIPTIVE.getDefaultFilename());
             newVersion.setTransferSession(request.getTransferSession());
 
-            BinaryObjectImpl descBinary;
+            BinaryObject descBinary;
             if (repoObjFactory.objectExists(modsDsPid.getRepositoryUri())) {
                 descBinary = versioningService.addVersion(newVersion);
                 log.debug("Successfully updated description for {}", obj.getPid());

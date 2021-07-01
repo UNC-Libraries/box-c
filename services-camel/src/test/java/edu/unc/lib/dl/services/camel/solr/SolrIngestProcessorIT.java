@@ -49,10 +49,10 @@ import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.api.rdf.Cdr;
 import edu.unc.lib.boxc.model.api.rdf.CdrAcl;
 import edu.unc.lib.boxc.model.api.rdf.Fcrepo4Repository;
-import edu.unc.lib.boxc.model.fcrepo.objects.AbstractRepositoryObject;
-import edu.unc.lib.boxc.model.fcrepo.objects.BinaryObjectImpl;
-import edu.unc.lib.boxc.model.fcrepo.objects.FileObjectImpl;
-import edu.unc.lib.boxc.model.fcrepo.objects.WorkObjectImpl;
+import edu.unc.lib.boxc.model.api.objects.RepositoryObject;
+import edu.unc.lib.boxc.model.api.objects.BinaryObject;
+import edu.unc.lib.boxc.model.api.objects.FileObject;
+import edu.unc.lib.boxc.model.api.objects.WorkObject;
 import edu.unc.lib.boxc.model.fcrepo.services.DerivativeService;
 import edu.unc.lib.boxc.model.fcrepo.test.TestHelper;
 import edu.unc.lib.dl.acl.util.AgentPrincipals;
@@ -101,10 +101,10 @@ public class SolrIngestProcessorIT extends AbstractSolrProcessorIT {
 
     @Test
     public void testIndexDescribedWork() throws Exception {
-        WorkObjectImpl workObj = repositoryObjectFactory.createWorkObject(null);
+        WorkObject workObj = repositoryObjectFactory.createWorkObject(null);
         collObj.addMember(workObj);
 
-        FileObjectImpl fileObj = workObj.addDataFile(makeContentUri(CONTENT_TEXT),
+        FileObject fileObj = workObj.addDataFile(makeContentUri(CONTENT_TEXT),
                 "text.txt", "text/plain", null, null);
         workObj.setPrimaryObject(fileObj.getPid());
         InputStream modsStream = streamResource("/datastreams/simpleMods.xml");
@@ -176,14 +176,14 @@ public class SolrIngestProcessorIT extends AbstractSolrProcessorIT {
 
     @Test
     public void testIndexFileObject() throws Exception {
-        WorkObjectImpl workObj = repositoryObjectFactory.createWorkObject(null);
+        WorkObject workObj = repositoryObjectFactory.createWorkObject(null);
         collObj.addMember(workObj);
 
         // Revoking patron access on the file
         Model fileModel = ModelFactory.createDefaultModel();
         Resource fileResc = fileModel.getResource("");
         fileResc.addProperty(CdrAcl.none, AUTHENTICATED_PRINC);
-        FileObjectImpl fileObj = workObj.addDataFile(makeContentUri(CONTENT_TEXT),
+        FileObject fileObj = workObj.addDataFile(makeContentUri(CONTENT_TEXT),
                 "text.txt", "text/plain", null, null, fileModel);
 
         Path derivPath = derivativeService.getDerivativePath(fileObj.getPid(), DatastreamType.FULLTEXT_EXTRACTION);
@@ -225,14 +225,14 @@ public class SolrIngestProcessorIT extends AbstractSolrProcessorIT {
 
     @Test
     public void testIndexBinaryInWork() throws Exception {
-        WorkObjectImpl workObj = repositoryObjectFactory.createWorkObject(null);
+        WorkObject workObj = repositoryObjectFactory.createWorkObject(null);
         collObj.addMember(workObj);
 
-        FileObjectImpl fileObj = workObj.addDataFile(makeContentUri(CONTENT_TEXT),
+        FileObject fileObj = workObj.addDataFile(makeContentUri(CONTENT_TEXT),
                 "text.txt", "text/plain", null, null);
         workObj.setPrimaryObject(fileObj.getPid());
 
-        BinaryObjectImpl binObj = fileObj.getOriginalFile();
+        BinaryObject binObj = fileObj.getOriginalFile();
 
         indexObjectsInTripleStore();
 
@@ -262,7 +262,7 @@ public class SolrIngestProcessorIT extends AbstractSolrProcessorIT {
         assertNotNull(fileMd.getDatastreamObject(ORIGINAL_FILE.getId()));
     }
 
-    private void assertAncestorIds(BriefObjectMetadata md, AbstractRepositoryObject... ancestorObjs) {
+    private void assertAncestorIds(BriefObjectMetadata md, RepositoryObject... ancestorObjs) {
         String joinedIds = "/" + Arrays.stream(ancestorObjs)
                 .map(obj -> obj.getPid().getId())
                 .collect(Collectors.joining("/"));

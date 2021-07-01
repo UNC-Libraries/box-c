@@ -31,12 +31,12 @@ import edu.unc.lib.boxc.model.api.exceptions.NotFoundException;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.services.ContentPathFactory;
 import edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPaths;
-import edu.unc.lib.boxc.model.fcrepo.objects.AdminUnitImpl;
-import edu.unc.lib.boxc.model.fcrepo.objects.BinaryObjectImpl;
-import edu.unc.lib.boxc.model.fcrepo.objects.CollectionObjectImpl;
-import edu.unc.lib.boxc.model.fcrepo.objects.ContentRootObjectImpl;
-import edu.unc.lib.boxc.model.fcrepo.objects.FileObjectImpl;
-import edu.unc.lib.boxc.model.fcrepo.objects.WorkObjectImpl;
+import edu.unc.lib.boxc.model.api.objects.AdminUnit;
+import edu.unc.lib.boxc.model.api.objects.BinaryObject;
+import edu.unc.lib.boxc.model.api.objects.CollectionObject;
+import edu.unc.lib.boxc.model.api.objects.ContentRootObject;
+import edu.unc.lib.boxc.model.api.objects.FileObject;
+import edu.unc.lib.boxc.model.api.objects.WorkObject;
 
 /**
  *
@@ -49,9 +49,9 @@ public class ContentPathFactoryIT extends AbstractFedoraIT {
     private ContentPathFactory pathFactory;
 
     private PID contentRootPid;
-    private ContentRootObjectImpl contentRoot;
-    private AdminUnitImpl adminUnit;
-    private CollectionObjectImpl collObj;
+    private ContentRootObject contentRoot;
+    private AdminUnit adminUnit;
+    private CollectionObject collObj;
 
     @Before
     public void init() {
@@ -84,12 +84,12 @@ public class ContentPathFactoryIT extends AbstractFedoraIT {
 
     @Test
     public void testGetFileAncestors() throws Exception {
-        WorkObjectImpl work = repoObjFactory.createWorkObject(null);
+        WorkObject work = repoObjFactory.createWorkObject(null);
         collObj.addMember(work);
 
         Path contentPath = Files.createTempFile("test", ".txt");
-        FileObjectImpl fileObj = work.addDataFile(contentPath.toUri(), "file", "text/plain", null, null);
-        BinaryObjectImpl binObj = fileObj.getOriginalFile();
+        FileObject fileObj = work.addDataFile(contentPath.toUri(), "file", "text/plain", null, null);
+        BinaryObject binObj = fileObj.getOriginalFile();
 
         List<PID> ancestors = pathFactory.getAncestorPids(binObj.getPid());
 
@@ -112,7 +112,7 @@ public class ContentPathFactoryIT extends AbstractFedoraIT {
         assertEquals(adminUnit.getPid(), ancestors.get(1));
 
         // Switch ownership of coll to a new unit
-        AdminUnitImpl adminUnit2 = repoObjFactory.createAdminUnit(null);
+        AdminUnit adminUnit2 = repoObjFactory.createAdminUnit(null);
         contentRoot.addMember(adminUnit2);
 
         adminUnit2.addMember(collObj);

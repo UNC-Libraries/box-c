@@ -42,8 +42,8 @@ import edu.unc.lib.boxc.model.api.objects.RepositoryObject;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
-import edu.unc.lib.boxc.model.fcrepo.objects.BinaryObjectImpl;
-import edu.unc.lib.boxc.model.fcrepo.objects.FileObjectImpl;
+import edu.unc.lib.boxc.model.api.objects.BinaryObject;
+import edu.unc.lib.boxc.model.api.objects.FileObject;
 import edu.unc.lib.dl.acl.service.AccessControlService;
 import edu.unc.lib.dl.acl.util.AgentPrincipals;
 import edu.unc.lib.dl.fcrepo4.TransactionManager;
@@ -91,9 +91,9 @@ public abstract class AbstractDestroyObjectsJob implements Runnable {
         Map<String, String> metadata = new HashMap<>();
         PID pid;
 
-        if (repoObj instanceof FileObjectImpl) {
+        if (repoObj instanceof FileObject) {
             FileObject fileObj = (FileObject) repoObj;
-            BinaryObjectImpl binaryObj = fileObj.getOriginalFile();
+            BinaryObject binaryObj = fileObj.getOriginalFile();
             String mimetype = binaryObj.getMimetype();
             metadata.put("mimeType", mimetype);
             pid = binaryObj.getPid();

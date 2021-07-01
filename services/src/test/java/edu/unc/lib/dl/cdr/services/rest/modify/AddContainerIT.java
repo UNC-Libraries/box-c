@@ -49,10 +49,10 @@ import edu.unc.lib.boxc.model.api.objects.ContentObject;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObject;
 import edu.unc.lib.boxc.model.api.rdf.DcElements;
 import edu.unc.lib.boxc.model.api.objects.ContentObject;
-import edu.unc.lib.boxc.model.fcrepo.objects.AdminUnitImpl;
-import edu.unc.lib.boxc.model.fcrepo.objects.CollectionObjectImpl;
-import edu.unc.lib.boxc.model.fcrepo.objects.FolderObjectImpl;
-import edu.unc.lib.boxc.model.fcrepo.objects.WorkObjectImpl;
+import edu.unc.lib.boxc.model.api.objects.AdminUnit;
+import edu.unc.lib.boxc.model.api.objects.CollectionObject;
+import edu.unc.lib.boxc.model.api.objects.FolderObject;
+import edu.unc.lib.boxc.model.api.objects.WorkObject;
 import edu.unc.lib.boxc.model.fcrepo.test.AclModelBuilder;
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.acl.util.GroupsThreadStore;
@@ -82,7 +82,7 @@ public class AddContainerIT extends AbstractAPIIT {
     public void testAddCollectionToAdminUnit() throws UnsupportedOperationException, Exception {
         PID parentPid = makePid();
 
-        AdminUnitImpl parent = repositoryObjectFactory.createAdminUnit(parentPid, null);
+        AdminUnit parent = repositoryObjectFactory.createAdminUnit(parentPid, null);
         contentRoot.addMember(parent);
         treeIndexer.indexAll(baseAddress);
 
@@ -94,7 +94,7 @@ public class AddContainerIT extends AbstractAPIIT {
 
         treeIndexer.indexAll(baseAddress);
 
-        assertChildContainerAdded(parent, label, CollectionObjectImpl.class);
+        assertChildContainerAdded(parent, label, CollectionObject.class);
 
         // Verify response from api
         Map<String, Object> respMap = getMapFromResponse(result);
@@ -113,7 +113,7 @@ public class AddContainerIT extends AbstractAPIIT {
 
         treeIndexer.indexAll(baseAddress);
 
-        assertChildContainerAdded(contentRoot, label, AdminUnitImpl.class);
+        assertChildContainerAdded(contentRoot, label, AdminUnit.class);
 
         // Verify response from api
         Map<String, Object> respMap = getMapFromResponse(result);
@@ -124,9 +124,9 @@ public class AddContainerIT extends AbstractAPIIT {
 
     @Test
     public void testAddFolderStaffOnly() throws Exception {
-        AdminUnitImpl adminUnit = repositoryObjectFactory.createAdminUnit(null);
+        AdminUnit adminUnit = repositoryObjectFactory.createAdminUnit(null);
         contentRoot.addMember(adminUnit);
-        CollectionObjectImpl collObj = repositoryObjectFactory.createCollectionObject(null);
+        CollectionObject collObj = repositoryObjectFactory.createCollectionObject(null);
         adminUnit.addMember(collObj);
 
         treeIndexer.indexAll(baseAddress);
@@ -141,7 +141,7 @@ public class AddContainerIT extends AbstractAPIIT {
 
         treeIndexer.indexAll(baseAddress);
 
-        assertChildContainerAdded(collObj, label, FolderObjectImpl.class);
+        assertChildContainerAdded(collObj, label, FolderObject.class);
 
         // Verify response from api
         Map<String, Object> respMap = getMapFromResponse(result);
@@ -155,11 +155,11 @@ public class AddContainerIT extends AbstractAPIIT {
 
     @Test
     public void testAddFolderAccess() throws Exception {
-        AdminUnitImpl adminUnit = repositoryObjectFactory.createAdminUnit(new AclModelBuilder("Access")
+        AdminUnit adminUnit = repositoryObjectFactory.createAdminUnit(new AclModelBuilder("Access")
                 .addCanAccess("accessGroup").model);
         GroupsThreadStore.storeGroups(new AccessGroupSet("accessGroup"));
         contentRoot.addMember(adminUnit);
-        CollectionObjectImpl collObj = repositoryObjectFactory.createCollectionObject(null);
+        CollectionObject collObj = repositoryObjectFactory.createCollectionObject(null);
         adminUnit.addMember(collObj);
 
         treeIndexer.indexAll(baseAddress);
@@ -175,11 +175,11 @@ public class AddContainerIT extends AbstractAPIIT {
 
     @Test
     public void testAddFolderStaffOnlyAccess() throws Exception {
-        AdminUnitImpl adminUnit = repositoryObjectFactory.createAdminUnit(new AclModelBuilder("Access")
+        AdminUnit adminUnit = repositoryObjectFactory.createAdminUnit(new AclModelBuilder("Access")
                 .addCanAccess("accessGroup").model);
         GroupsThreadStore.storeGroups(new AccessGroupSet("accessGroup"));
         contentRoot.addMember(adminUnit);
-        CollectionObjectImpl collObj = repositoryObjectFactory.createCollectionObject(null);
+        CollectionObject collObj = repositoryObjectFactory.createCollectionObject(null);
         adminUnit.addMember(collObj);
 
         treeIndexer.indexAll(baseAddress);
@@ -195,12 +195,12 @@ public class AddContainerIT extends AbstractAPIIT {
 
     @Test
     public void testAddFolderIngestor() throws Exception {
-        AdminUnitImpl adminUnit = repositoryObjectFactory.createAdminUnit(new AclModelBuilder("Ingesting")
+        AdminUnit adminUnit = repositoryObjectFactory.createAdminUnit(new AclModelBuilder("Ingesting")
                 .addCanIngest("ingestorGroup").model);
 
         GroupsThreadStore.storeGroups(new AccessGroupSet("ingestorGroup"));
         contentRoot.addMember(adminUnit);
-        CollectionObjectImpl collObj = repositoryObjectFactory.createCollectionObject(null);
+        CollectionObject collObj = repositoryObjectFactory.createCollectionObject(null);
         adminUnit.addMember(collObj);
 
         treeIndexer.indexAll(baseAddress);
@@ -215,7 +215,7 @@ public class AddContainerIT extends AbstractAPIIT {
 
         treeIndexer.indexAll(baseAddress);
 
-        assertChildContainerAdded(collObj, label, FolderObjectImpl.class);
+        assertChildContainerAdded(collObj, label, FolderObject.class);
 
         // Verify response from api
         Map<String, Object> respMap = getMapFromResponse(result);
@@ -227,12 +227,12 @@ public class AddContainerIT extends AbstractAPIIT {
 
     @Test
     public void testAddFolderStaffOnlyIngestor() throws Exception {
-        AdminUnitImpl adminUnit = repositoryObjectFactory.createAdminUnit(new AclModelBuilder("Ingesting")
+        AdminUnit adminUnit = repositoryObjectFactory.createAdminUnit(new AclModelBuilder("Ingesting")
                 .addCanIngest("ingestorGroup").model);
 
         GroupsThreadStore.storeGroups(new AccessGroupSet("ingestorGroup"));
         contentRoot.addMember(adminUnit);
-        CollectionObjectImpl collObj = repositoryObjectFactory.createCollectionObject(null);
+        CollectionObject collObj = repositoryObjectFactory.createCollectionObject(null);
         adminUnit.addMember(collObj);
 
         treeIndexer.indexAll(baseAddress);
@@ -247,7 +247,7 @@ public class AddContainerIT extends AbstractAPIIT {
 
         treeIndexer.indexAll(baseAddress);
 
-        assertChildContainerAdded(collObj, label, FolderObjectImpl.class);
+        assertChildContainerAdded(collObj, label, FolderObject.class);
 
         // Verify response from api
         Map<String, Object> respMap = getMapFromResponse(result);
@@ -261,9 +261,9 @@ public class AddContainerIT extends AbstractAPIIT {
 
     @Test
     public void testAddWork() throws Exception {
-        AdminUnitImpl adminUnit = repositoryObjectFactory.createAdminUnit(null);
+        AdminUnit adminUnit = repositoryObjectFactory.createAdminUnit(null);
         contentRoot.addMember(adminUnit);
-        CollectionObjectImpl collObj = repositoryObjectFactory.createCollectionObject(null);
+        CollectionObject collObj = repositoryObjectFactory.createCollectionObject(null);
         adminUnit.addMember(collObj);
 
         treeIndexer.indexAll(baseAddress);
@@ -276,7 +276,7 @@ public class AddContainerIT extends AbstractAPIIT {
 
         treeIndexer.indexAll(baseAddress);
 
-        assertChildContainerAdded(collObj, label, WorkObjectImpl.class);
+        assertChildContainerAdded(collObj, label, WorkObject.class);
 
         // Verify response from api
         Map<String, Object> respMap = getMapFromResponse(result);
@@ -289,7 +289,7 @@ public class AddContainerIT extends AbstractAPIIT {
     public void testAddAdminUnitToCollection() throws UnsupportedOperationException, Exception {
         PID parentPid = makePid();
 
-        CollectionObjectImpl parent = repositoryObjectFactory.createCollectionObject(parentPid, null);
+        CollectionObject parent = repositoryObjectFactory.createCollectionObject(parentPid, null);
         treeIndexer.indexAll(baseAddress);
 
         assertChildContainerNotAdded(parent);
@@ -314,7 +314,7 @@ public class AddContainerIT extends AbstractAPIIT {
 
     @Test
     public void testAddDefaultCollection() throws UnsupportedOperationException, Exception {
-        AdminUnitImpl adminUnit = repositoryObjectFactory.createAdminUnit(null);
+        AdminUnit adminUnit = repositoryObjectFactory.createAdminUnit(null);
         contentRoot.addMember(adminUnit);
 
         treeIndexer.indexAll(baseAddress);
@@ -329,7 +329,7 @@ public class AddContainerIT extends AbstractAPIIT {
 
         treeIndexer.indexAll(baseAddress);
 
-        assertChildContainerAdded(adminUnit, label, CollectionObjectImpl.class);
+        assertChildContainerAdded(adminUnit, label, CollectionObject.class);
 
         // Verify response from api
         Map<String, Object> respMap = getMapFromResponse(result);
@@ -342,7 +342,7 @@ public class AddContainerIT extends AbstractAPIIT {
 
     @Test
     public void testAddStaffOnlyCollection() throws UnsupportedOperationException, Exception {
-        AdminUnitImpl adminUnit = repositoryObjectFactory.createAdminUnit(null);
+        AdminUnit adminUnit = repositoryObjectFactory.createAdminUnit(null);
         contentRoot.addMember(adminUnit);
 
         treeIndexer.indexAll(baseAddress);
@@ -357,7 +357,7 @@ public class AddContainerIT extends AbstractAPIIT {
 
         treeIndexer.indexAll(baseAddress);
 
-        assertChildContainerAdded(adminUnit, label, CollectionObjectImpl.class);
+        assertChildContainerAdded(adminUnit, label, CollectionObject.class);
 
         // Verify response from api
         Map<String, Object> respMap = getMapFromResponse(result);
@@ -372,7 +372,7 @@ public class AddContainerIT extends AbstractAPIIT {
 
     @Test
     public void testAddCollectionWithCollectionNumber() throws UnsupportedOperationException, Exception {
-        AdminUnitImpl adminUnit = repositoryObjectFactory.createAdminUnit(null);
+        AdminUnit adminUnit = repositoryObjectFactory.createAdminUnit(null);
         contentRoot.addMember(adminUnit);
 
         treeIndexer.indexAll(baseAddress);
@@ -388,7 +388,7 @@ public class AddContainerIT extends AbstractAPIIT {
 
         treeIndexer.indexAll(baseAddress);
 
-        assertChildContainerAdded(adminUnit, label, CollectionObjectImpl.class);
+        assertChildContainerAdded(adminUnit, label, CollectionObject.class);
 
         // Verify response from api
         Map<String, Object> respMap = getMapFromResponse(result);
@@ -405,9 +405,9 @@ public class AddContainerIT extends AbstractAPIIT {
     public void testAuthorizationFailure() throws Exception {
         GroupsThreadStore.storeGroups(new AccessGroupSet(UNIT_MANAGER_PRINC));
 
-        AdminUnitImpl adminUnit = repositoryObjectFactory.createAdminUnit(null);
+        AdminUnit adminUnit = repositoryObjectFactory.createAdminUnit(null);
         contentRoot.addMember(adminUnit);
-        CollectionObjectImpl collObj = repositoryObjectFactory.createCollectionObject(null);
+        CollectionObject collObj = repositoryObjectFactory.createCollectionObject(null);
         adminUnit.addMember(collObj);
         treeIndexer.indexAll(baseAddress);
 

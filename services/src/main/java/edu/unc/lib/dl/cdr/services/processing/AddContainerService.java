@@ -61,7 +61,7 @@ import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
 import edu.unc.lib.boxc.model.api.xml.JDOMNamespaceUtil;
 import edu.unc.lib.boxc.model.fcrepo.ids.AgentPids;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
-import edu.unc.lib.boxc.model.fcrepo.objects.AbstractContentContainerObject;
+import edu.unc.lib.boxc.model.api.objects.ContentContainerObject;
 import edu.unc.lib.dl.persist.api.storage.StorageLocation;
 import edu.unc.lib.dl.persist.api.storage.StorageLocationManager;
 import edu.unc.lib.dl.persist.services.acl.PatronAccessAssignmentService;
@@ -103,7 +103,7 @@ public class AddContainerService {
         PID parentPid = addRequest.getParentPid();
         AgentPrincipals agent = addRequest.getAgent();
 
-        AbstractContentContainerObject child = null;
+        ContentContainerObject child = null;
         FedoraTransaction tx = txManager.startTransaction();
 
         try (Timer.Context context = timer.time()) {

@@ -44,7 +44,7 @@ import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.api.rdf.Cdr;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
-import edu.unc.lib.boxc.model.fcrepo.objects.WorkObjectImpl;
+import edu.unc.lib.boxc.model.api.objects.WorkObject;
 import edu.unc.lib.boxc.model.fcrepo.services.RepositoryObjectFactoryImpl;
 import edu.unc.lib.dl.acl.fcrepo4.InheritedAclFactory;
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
@@ -85,7 +85,7 @@ public class DestroyObjectsRouterTest extends CamelSpringTestSupport {
     private TransactionManager txManager;
 
     @Mock
-    private WorkObjectImpl workObj;
+    private WorkObject workObj;
     @Mock
     private FedoraTransaction tx;
     @Mock

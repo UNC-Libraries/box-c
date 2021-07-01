@@ -34,8 +34,8 @@ import edu.unc.lib.boxc.model.api.objects.RepositoryObject;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.api.rdf.Fcrepo4Repository;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
-import edu.unc.lib.boxc.model.fcrepo.objects.FileObjectImpl;
-import edu.unc.lib.boxc.model.fcrepo.objects.WorkObjectImpl;
+import edu.unc.lib.boxc.model.api.objects.FileObject;
+import edu.unc.lib.boxc.model.api.objects.WorkObject;
 import edu.unc.lib.dl.data.ingest.solr.SolrUpdateRequest;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackage;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackageFactory;
@@ -83,10 +83,10 @@ public class SolrIngestProcessor implements Processor {
             // for binaries, need to index the file and work objects which contain it
             if (resourceTypes != null && resourceTypes.contains(Fcrepo4Repository.Binary.getURI())) {
                 targetPid = PIDs.get(targetPid.getId());
-                FileObjectImpl parentFile = repoObjLoader.getFileObject(targetPid);
+                FileObject parentFile = repoObjLoader.getFileObject(targetPid);
                 RepositoryObject grandParent = parentFile.getParent();
                 // Index both the parent file and work
-                if (grandParent instanceof WorkObjectImpl) {
+                if (grandParent instanceof WorkObject) {
                     targetPids.add(grandParent.getPid());
                 }
             }

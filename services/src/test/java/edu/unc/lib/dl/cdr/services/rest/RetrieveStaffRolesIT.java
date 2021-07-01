@@ -46,11 +46,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.objects.AdminUnit;
 import edu.unc.lib.boxc.model.api.objects.WorkObject;
-import edu.unc.lib.boxc.model.fcrepo.objects.AdminUnitImpl;
-import edu.unc.lib.boxc.model.fcrepo.objects.CollectionObjectImpl;
-import edu.unc.lib.boxc.model.fcrepo.objects.FileObjectImpl;
-import edu.unc.lib.boxc.model.fcrepo.objects.FolderObjectImpl;
-import edu.unc.lib.boxc.model.fcrepo.objects.WorkObjectImpl;
+import edu.unc.lib.boxc.model.api.objects.AdminUnit;
+import edu.unc.lib.boxc.model.api.objects.CollectionObject;
+import edu.unc.lib.boxc.model.api.objects.FileObject;
+import edu.unc.lib.boxc.model.api.objects.FolderObject;
+import edu.unc.lib.boxc.model.api.objects.WorkObject;
 import edu.unc.lib.boxc.model.fcrepo.test.AclModelBuilder;
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.acl.util.GroupsThreadStore;
@@ -96,7 +96,7 @@ public class RetrieveStaffRolesIT extends AbstractAPIIT {
     public void testInsufficientPermissions() throws Exception {
         PID unitPid = pidMinter.mintContentPid();
         // Creating admin unit with no permissions granted
-        AdminUnitImpl unit = repositoryObjectFactory.createAdminUnit(unitPid, null);
+        AdminUnit unit = repositoryObjectFactory.createAdminUnit(unitPid, null);
         contentRoot.addMember(unit);
         treeIndexer.indexAll(baseAddress);
 
@@ -111,7 +111,7 @@ public class RetrieveStaffRolesIT extends AbstractAPIIT {
         GroupsThreadStore.storeGroups(testPrincipals);
 
         PID pid = pidMinter.mintContentPid();
-        AdminUnitImpl unit = repositoryObjectFactory.createAdminUnit(pid, null);
+        AdminUnit unit = repositoryObjectFactory.createAdminUnit(pid, null);
         contentRoot.addMember(unit);
         treeIndexer.indexAll(baseAddress);
 
@@ -137,7 +137,7 @@ public class RetrieveStaffRolesIT extends AbstractAPIIT {
 
     @Test
     public void testAdminUnitWithManager() throws Exception {
-        AdminUnitImpl unit = setupAdminUnitWithGroup();
+        AdminUnit unit = setupAdminUnitWithGroup();
         PID pid = unit.getPid();
         treeIndexer.indexAll(baseAddress);
 
@@ -154,7 +154,7 @@ public class RetrieveStaffRolesIT extends AbstractAPIIT {
     @Test
     public void testAdminUnitWithMultipleRoles() throws Exception {
         PID unitPid = pidMinter.mintContentPid();
-        AdminUnitImpl unit = repositoryObjectFactory.createAdminUnit(unitPid,
+        AdminUnit unit = repositoryObjectFactory.createAdminUnit(unitPid,
                 new AclModelBuilder("Admin Unit Can Manage")
                 .addCanManage(GRP_PRINC)
                 .addUnitOwner(USER_NS_PRINC)
@@ -175,9 +175,9 @@ public class RetrieveStaffRolesIT extends AbstractAPIIT {
 
     @Test
     public void testCollectionNoAssigned() throws Exception {
-        AdminUnitImpl unit = setupAdminUnitWithGroup();
+        AdminUnit unit = setupAdminUnitWithGroup();
         PID pid = pidMinter.mintContentPid();
-        CollectionObjectImpl coll = repositoryObjectFactory.createCollectionObject(pid, null);
+        CollectionObject coll = repositoryObjectFactory.createCollectionObject(pid, null);
         unit.addMember(coll);
 
         treeIndexer.indexAll(baseAddress);
@@ -194,9 +194,9 @@ public class RetrieveStaffRolesIT extends AbstractAPIIT {
 
     @Test
     public void testCollectionWithAssignedStaffRole() throws Exception {
-        AdminUnitImpl unit = setupAdminUnitWithGroup();
+        AdminUnit unit = setupAdminUnitWithGroup();
         PID pid = pidMinter.mintContentPid();
-        CollectionObjectImpl coll = repositoryObjectFactory.createCollectionObject(pid,
+        CollectionObject coll = repositoryObjectFactory.createCollectionObject(pid,
                 new AclModelBuilder("Collection with access")
                 .addCanAccess(USER_NS_PRINC)
                 .model);
@@ -216,9 +216,9 @@ public class RetrieveStaffRolesIT extends AbstractAPIIT {
 
     @Test
     public void testCollectionWithPatronRole() throws Exception {
-        AdminUnitImpl unit = setupAdminUnitWithGroup();
+        AdminUnit unit = setupAdminUnitWithGroup();
         PID pid = pidMinter.mintContentPid();
-        CollectionObjectImpl coll = repositoryObjectFactory.createCollectionObject(pid,
+        CollectionObject coll = repositoryObjectFactory.createCollectionObject(pid,
                 new AclModelBuilder("Collection with patron")
                 .addCanViewOriginals(USER_NS_PRINC)
                 .model);
@@ -238,14 +238,14 @@ public class RetrieveStaffRolesIT extends AbstractAPIIT {
 
     @Test
     public void testFolderWithInheritedStaffRoles() throws Exception {
-        AdminUnitImpl unit = setupAdminUnitWithGroup();
-        CollectionObjectImpl coll = repositoryObjectFactory.createCollectionObject(
+        AdminUnit unit = setupAdminUnitWithGroup();
+        CollectionObject coll = repositoryObjectFactory.createCollectionObject(
                 new AclModelBuilder("Collection with access")
                 .addCanAccess(USER_NS_PRINC)
                 .model);
         unit.addMember(coll);
         PID pid = pidMinter.mintContentPid();
-        FolderObjectImpl folder = repositoryObjectFactory.createFolderObject(pid, null);
+        FolderObject folder = repositoryObjectFactory.createFolderObject(pid, null);
         coll.addMember(folder);
         treeIndexer.indexAll(baseAddress);
 
@@ -266,18 +266,18 @@ public class RetrieveStaffRolesIT extends AbstractAPIIT {
      */
     @Test
     public void testFolderDuplicateRolesForPrincipal() throws Exception {
-        AdminUnitImpl unit = repositoryObjectFactory.createAdminUnit(
+        AdminUnit unit = repositoryObjectFactory.createAdminUnit(
                 new AclModelBuilder("Admin Unit Group Can Access")
                 .addCanAccess(GRP_PRINC)
                 .model);
         contentRoot.addMember(unit);
-        CollectionObjectImpl coll = repositoryObjectFactory.createCollectionObject(
+        CollectionObject coll = repositoryObjectFactory.createCollectionObject(
                 new AclModelBuilder("Collection Group Can Ingest")
                 .addCanIngest(GRP_PRINC)
                 .model);
         unit.addMember(coll);
         PID pid = pidMinter.mintContentPid();
-        FolderObjectImpl folder = repositoryObjectFactory.createFolderObject(pid, null);
+        FolderObject folder = repositoryObjectFactory.createFolderObject(pid, null);
         coll.addMember(folder);
         treeIndexer.indexAll(baseAddress);
 
@@ -294,8 +294,8 @@ public class RetrieveStaffRolesIT extends AbstractAPIIT {
 
     @Test
     public void testWork() throws Exception {
-        AdminUnitImpl unit = setupAdminUnitWithGroup();
-        WorkObjectImpl work = setupWorkStructure(unit);
+        AdminUnit unit = setupAdminUnitWithGroup();
+        WorkObject work = setupWorkStructure(unit);
         PID pid = work.getPid();
         treeIndexer.indexAll(baseAddress);
 
@@ -311,12 +311,12 @@ public class RetrieveStaffRolesIT extends AbstractAPIIT {
 
     @Test
     public void testFileObject() throws Exception {
-        AdminUnitImpl unit = setupAdminUnitWithGroup();
+        AdminUnit unit = setupAdminUnitWithGroup();
         WorkObject work = setupWorkStructure(unit);
 
         Path contentPath = Files.createTempFile("test", ".txt");
         FileUtils.writeStringToFile(contentPath.toFile(), origBodyString, "UTF-8");
-        FileObjectImpl fileObj = work.addDataFile(contentPath.toUri(), origFilename, origMimetype, null, null);
+        FileObject fileObj = work.addDataFile(contentPath.toUri(), origFilename, origMimetype, null, null);
         PID pid = fileObj.getPid();
         treeIndexer.indexAll(baseAddress);
 
@@ -330,8 +330,8 @@ public class RetrieveStaffRolesIT extends AbstractAPIIT {
         assertHasInheritedRole(GRP_PRINC, canManage, unit.getPid(), respMap);
     }
 
-    private AdminUnitImpl setupAdminUnitWithGroup() {
-        AdminUnitImpl unit = repositoryObjectFactory.createAdminUnit(
+    private AdminUnit setupAdminUnitWithGroup() {
+        AdminUnit unit = repositoryObjectFactory.createAdminUnit(
                 new AclModelBuilder("Admin Unit Can Manage")
                 .addCanManage(GRP_PRINC)
                 .model);
@@ -339,11 +339,11 @@ public class RetrieveStaffRolesIT extends AbstractAPIIT {
         return unit;
     }
 
-    private WorkObjectImpl setupWorkStructure(AdminUnit unit) {
-        CollectionObjectImpl coll = repositoryObjectFactory.createCollectionObject(null);
+    private WorkObject setupWorkStructure(AdminUnit unit) {
+        CollectionObject coll = repositoryObjectFactory.createCollectionObject(null);
         unit.addMember(coll);
         PID pid = pidMinter.mintContentPid();
-        WorkObjectImpl work = repositoryObjectFactory.createWorkObject(pid, null);
+        WorkObject work = repositoryObjectFactory.createWorkObject(pid, null);
         coll.addMember(work);
         return work;
     }

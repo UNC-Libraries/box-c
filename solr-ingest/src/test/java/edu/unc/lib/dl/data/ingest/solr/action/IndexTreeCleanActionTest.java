@@ -36,7 +36,7 @@ import org.mockito.Mock;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
-import edu.unc.lib.boxc.model.fcrepo.objects.AbstractContentContainerObject;
+import edu.unc.lib.boxc.model.api.objects.ContentContainerObject;
 import edu.unc.lib.dl.data.ingest.solr.SolrUpdateRequest;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPipeline;
 import edu.unc.lib.dl.data.ingest.solr.indexing.SolrUpdateDriver;
@@ -65,7 +65,7 @@ public class IndexTreeCleanActionTest {
     private RecursiveTreeIndexer treeIndexer;
 
     @Mock
-    private AbstractContentContainerObject containerObj;
+    private ContentContainerObject containerObj;
 
     @Captor
     private ArgumentCaptor<PID> pidCaptor;

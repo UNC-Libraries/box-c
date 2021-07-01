@@ -29,8 +29,8 @@ import org.slf4j.LoggerFactory;
 
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.objects.ContentObject;
-import edu.unc.lib.boxc.model.fcrepo.objects.AdminUnitImpl;
-import edu.unc.lib.boxc.model.fcrepo.objects.CollectionObjectImpl;
+import edu.unc.lib.boxc.model.api.objects.AdminUnit;
+import edu.unc.lib.boxc.model.api.objects.CollectionObject;
 import edu.unc.lib.dl.acl.fcrepo4.InheritedAclFactory;
 import edu.unc.lib.dl.acl.fcrepo4.ObjectAclFactory;
 import edu.unc.lib.dl.acl.util.AccessPrincipalConstants;
@@ -88,7 +88,7 @@ public class SetAccessStatusFilter implements IndexDocumentFilter {
 
         ContentObject contentObj = dip.getContentObject();
         // No need to continue with patron statuses if object is an AdminUnit
-        if (contentObj instanceof AdminUnitImpl) {
+        if (contentObj instanceof AdminUnit) {
             return status;
         }
 
@@ -119,7 +119,7 @@ public class SetAccessStatusFilter implements IndexDocumentFilter {
             status.add(FacetConstants.PUBLIC_ACCESS);
         }
 
-        boolean isCollection = contentObj instanceof CollectionObjectImpl;
+        boolean isCollection = contentObj instanceof CollectionObject;
         if (hasPatronSettings(objPatronRoles, isCollection)) {
             status.add(FacetConstants.PATRON_SETTINGS);
         }

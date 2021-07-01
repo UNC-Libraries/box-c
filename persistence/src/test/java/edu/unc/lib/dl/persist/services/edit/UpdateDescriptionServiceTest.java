@@ -44,7 +44,7 @@ import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.boxc.model.api.objects.ContentObject;
-import edu.unc.lib.boxc.model.fcrepo.objects.BinaryObjectImpl;
+import edu.unc.lib.boxc.model.api.objects.BinaryObject;
 import edu.unc.lib.dl.acl.exception.AccessRestrictionException;
 import edu.unc.lib.dl.acl.service.AccessControlService;
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
@@ -86,7 +86,7 @@ public class UpdateDescriptionServiceTest {
     @Mock
     private VersionedDatastreamService versioningService;
     @Mock
-    private BinaryObjectImpl mockDescBin;
+    private BinaryObject mockDescBin;
 
     @Mock
     private AgentPrincipals agent;

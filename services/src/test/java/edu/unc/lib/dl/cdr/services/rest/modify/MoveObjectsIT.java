@@ -41,11 +41,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.objects.ContentContainerObject;
-import edu.unc.lib.boxc.model.fcrepo.objects.AbstractContentContainerObject;
+import edu.unc.lib.boxc.model.api.objects.ContentContainerObject;
 import edu.unc.lib.boxc.model.api.objects.ContentObject;
-import edu.unc.lib.boxc.model.fcrepo.objects.AdminUnitImpl;
-import edu.unc.lib.boxc.model.fcrepo.objects.CollectionObjectImpl;
-import edu.unc.lib.boxc.model.fcrepo.objects.FolderObjectImpl;
+import edu.unc.lib.boxc.model.api.objects.AdminUnit;
+import edu.unc.lib.boxc.model.api.objects.CollectionObject;
+import edu.unc.lib.boxc.model.api.objects.FolderObject;
 import edu.unc.lib.dl.cdr.services.rest.modify.MoveObjectsController.MoveRequest;
 
 /**
@@ -61,10 +61,10 @@ import edu.unc.lib.dl.cdr.services.rest.modify.MoveObjectsController.MoveRequest
 })
 public class MoveObjectsIT extends AbstractAPIIT {
 
-    private AdminUnitImpl unitObj;
-    private CollectionObjectImpl collObj;
-    private AbstractContentContainerObject sourceContainer;
-    private AbstractContentContainerObject destContainer;
+    private AdminUnit unitObj;
+    private CollectionObject collObj;
+    private ContentContainerObject sourceContainer;
+    private ContentContainerObject destContainer;
 
     @Before
     public void setup() {
@@ -163,7 +163,7 @@ public class MoveObjectsIT extends AbstractAPIIT {
         PID pid1 = makePid();
         addSourceMembers(pid1);
 
-        FolderObjectImpl sourceContainer2 = repositoryObjectFactory.createFolderObject(null);
+        FolderObject sourceContainer2 = repositoryObjectFactory.createFolderObject(null);
         collObj.addMember(sourceContainer2);
         PID pid2 = makePid();
         addSourceMembers(sourceContainer2, pid2);

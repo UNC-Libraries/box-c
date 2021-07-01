@@ -44,9 +44,9 @@ import edu.unc.lib.boxc.model.api.services.ContentPathFactory;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPaths;
 import edu.unc.lib.boxc.model.api.objects.ContentObject;
-import edu.unc.lib.boxc.model.fcrepo.objects.AdminUnitImpl;
-import edu.unc.lib.boxc.model.fcrepo.objects.CollectionObjectImpl;
-import edu.unc.lib.boxc.model.fcrepo.objects.FolderObjectImpl;
+import edu.unc.lib.boxc.model.api.objects.AdminUnit;
+import edu.unc.lib.boxc.model.api.objects.CollectionObject;
+import edu.unc.lib.boxc.model.api.objects.FolderObject;
 import edu.unc.lib.boxc.model.fcrepo.test.AclModelBuilder;
 import edu.unc.lib.dl.acl.fcrepo4.InheritedAclFactory;
 import edu.unc.lib.dl.acl.fcrepo4.ObjectAclFactory;
@@ -74,9 +74,9 @@ public class SetAccessStatusFilterTest {
     @Mock
     private ContentObject contentObj;
     @Mock
-    private CollectionObjectImpl parentObj;
+    private CollectionObject parentObj;
     @Mock
-    private AdminUnitImpl unitObj;
+    private AdminUnit unitObj;
     @Mock
     private Date date;
 
@@ -512,7 +512,7 @@ public class SetAccessStatusFilterTest {
 
     @Test
     public void testFolderWithCustomGroup() throws Exception {
-        redefineContentObject(FolderObjectImpl.class);
+        redefineContentObject(FolderObject.class);
 
         when(contentObj.getModel()).thenReturn(new AclModelBuilder(pid)
                 .addNoneRole(PUBLIC_PRINC)
@@ -530,7 +530,7 @@ public class SetAccessStatusFilterTest {
 
     @Test
     public void testFolderMinimalStaffOnlyWithInheritedCustomGroup() throws Exception {
-        redefineContentObject(FolderObjectImpl.class);
+        redefineContentObject(FolderObject.class);
 
         when(parentObj.getModel()).thenReturn(new AclModelBuilder(parentPid)
                 .addCanViewMetadata(PUBLIC_PRINC)
@@ -552,7 +552,7 @@ public class SetAccessStatusFilterTest {
 
     @Test
     public void testFolderTotallyStaffOnlyWithInheritedCustomGroup() throws Exception {
-        redefineContentObject(FolderObjectImpl.class);
+        redefineContentObject(FolderObject.class);
 
         when(parentObj.getModel()).thenReturn(new AclModelBuilder(parentPid)
                 .addCanViewMetadata(PUBLIC_PRINC)
@@ -575,7 +575,7 @@ public class SetAccessStatusFilterTest {
 
     @Test
     public void testFolderInheritAssignmentsDirectNoneExceptCustomDirectly() throws Exception {
-        redefineContentObject(FolderObjectImpl.class);
+        redefineContentObject(FolderObject.class);
 
         when(parentObj.getModel()).thenReturn(new AclModelBuilder(parentPid)
                 .addCanViewMetadata(PUBLIC_PRINC)
@@ -598,7 +598,7 @@ public class SetAccessStatusFilterTest {
 
     @Test
     public void testFolderInheritAssignmentsOnlyCustomDirectly() throws Exception {
-        redefineContentObject(FolderObjectImpl.class);
+        redefineContentObject(FolderObject.class);
 
         when(parentObj.getModel()).thenReturn(new AclModelBuilder(parentPid)
                 .addCanViewMetadata(PUBLIC_PRINC)

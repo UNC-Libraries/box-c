@@ -29,9 +29,9 @@ import org.slf4j.LoggerFactory;
 import edu.unc.lib.boxc.model.api.objects.ContentObject;
 import edu.unc.lib.boxc.model.api.objects.FileObject;
 import edu.unc.lib.boxc.model.api.objects.WorkObject;
-import edu.unc.lib.boxc.model.fcrepo.objects.BinaryObjectImpl;
-import edu.unc.lib.boxc.model.fcrepo.objects.FileObjectImpl;
-import edu.unc.lib.boxc.model.fcrepo.objects.WorkObjectImpl;
+import edu.unc.lib.boxc.model.api.objects.BinaryObject;
+import edu.unc.lib.boxc.model.api.objects.FileObject;
+import edu.unc.lib.boxc.model.api.objects.WorkObject;
 import edu.unc.lib.dl.data.ingest.solr.exception.IndexingException;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackage;
 import edu.unc.lib.dl.search.solr.util.ContentCategory;
@@ -69,7 +69,7 @@ public class SetContentTypeFilter implements IndexDocumentFilter {
         if (fileObj == null) {
                 return;
         }
-        BinaryObjectImpl binObj = fileObj.getOriginalFile();
+        BinaryObject binObj = fileObj.getOriginalFile();
         String filepath = binObj.getFilename();
         String mimetype = binObj.getMimetype();
         log.debug("The binary {} has filepath {} and mimetype {}", binObj.getPid(), filepath, mimetype);
@@ -80,9 +80,9 @@ public class SetContentTypeFilter implements IndexDocumentFilter {
 
     private FileObject getFileObject(DocumentIndexingPackage dip) throws IndexingException {
         ContentObject obj = dip.getContentObject();
-        if (obj instanceof WorkObjectImpl) {
+        if (obj instanceof WorkObject) {
             return ((WorkObject) obj).getPrimaryObject();
-        } else if (obj instanceof FileObjectImpl) {
+        } else if (obj instanceof FileObject) {
             return (FileObject) obj;
         } else {
             // object being indexed must be a work or a file object

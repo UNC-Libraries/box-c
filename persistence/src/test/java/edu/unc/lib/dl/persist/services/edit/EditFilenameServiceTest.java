@@ -48,9 +48,9 @@ import edu.unc.lib.boxc.model.api.rdf.Ebucore;
 import edu.unc.lib.boxc.model.api.rdf.Premis;
 import edu.unc.lib.boxc.model.fcrepo.event.PremisEventBuilderImpl;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
-import edu.unc.lib.boxc.model.fcrepo.objects.BinaryObjectImpl;
-import edu.unc.lib.boxc.model.fcrepo.objects.FileObjectImpl;
-import edu.unc.lib.boxc.model.fcrepo.objects.WorkObjectImpl;
+import edu.unc.lib.boxc.model.api.objects.BinaryObject;
+import edu.unc.lib.boxc.model.api.objects.FileObject;
+import edu.unc.lib.boxc.model.api.objects.WorkObject;
 import edu.unc.lib.boxc.model.fcrepo.services.RepositoryObjectFactoryImpl;
 import edu.unc.lib.dl.acl.exception.AccessRestrictionException;
 import edu.unc.lib.dl.acl.service.AccessControlService;
@@ -82,11 +82,11 @@ public class EditFilenameServiceTest {
     @Mock
     private FedoraTransaction tx;
     @Mock
-    private FileObjectImpl repoObj;
+    private FileObject repoObj;
     @Mock
-    private BinaryObjectImpl binaryObj;
+    private BinaryObject binaryObj;
     @Mock
-    private WorkObjectImpl workObj;
+    private WorkObject workObj;
     @Mock
     private Model model;
     @Mock

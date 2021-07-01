@@ -51,7 +51,7 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
-import edu.unc.lib.boxc.model.fcrepo.objects.CollectionObjectImpl;
+import edu.unc.lib.boxc.model.api.objects.CollectionObject;
 import edu.unc.lib.dl.acl.exception.AccessRestrictionException;
 import edu.unc.lib.dl.acl.fcrepo4.AccessControlServiceImpl;
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
@@ -71,7 +71,7 @@ import edu.unc.lib.dl.services.MessageSender;
 public class EditThumbIT extends AbstractAPIIT {
     private static final String USER_NAME = "user";
     private static final String ADMIN_GROUP = "adminGroup";
-    private CollectionObjectImpl collection;
+    private CollectionObject collection;
 
     @Rule
     public final TemporaryFolder tmpFolder = new TemporaryFolder();

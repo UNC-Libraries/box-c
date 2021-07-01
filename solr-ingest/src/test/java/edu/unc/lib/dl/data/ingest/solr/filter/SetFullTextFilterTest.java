@@ -36,9 +36,9 @@ import org.mockito.Mock;
 import edu.unc.lib.boxc.model.api.DatastreamType;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
-import edu.unc.lib.boxc.model.fcrepo.objects.FileObjectImpl;
-import edu.unc.lib.boxc.model.fcrepo.objects.FolderObjectImpl;
-import edu.unc.lib.boxc.model.fcrepo.objects.WorkObjectImpl;
+import edu.unc.lib.boxc.model.api.objects.FileObject;
+import edu.unc.lib.boxc.model.api.objects.FolderObject;
+import edu.unc.lib.boxc.model.api.objects.WorkObject;
 import edu.unc.lib.boxc.model.fcrepo.services.DerivativeService;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackage;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackageDataLoader;
@@ -60,9 +60,9 @@ public class SetFullTextFilterTest {
     private PID filePid;
     private PID workPid;
     @Mock
-    private WorkObjectImpl workObj;
+    private WorkObject workObj;
     @Mock
-    private FileObjectImpl fileObj;
+    private FileObject fileObj;
 
     private DerivativeService derivativeService;
 
@@ -133,7 +133,7 @@ public class SetFullTextFilterTest {
 
     @Test
     public void testNotWorkOrFile() throws Exception {
-        FolderObjectImpl folder = mock(FolderObjectImpl.class);
+        FolderObject folder = mock(FolderObject.class);
         when(folder.getPid()).thenReturn(workPid);
 
         dip = factory.createDip(workPid);

@@ -24,8 +24,8 @@ import org.apache.commons.io.FileUtils;
 
 import edu.unc.lib.boxc.model.api.objects.ContentObject;
 import edu.unc.lib.boxc.model.api.objects.WorkObject;
-import edu.unc.lib.boxc.model.fcrepo.objects.FileObjectImpl;
-import edu.unc.lib.boxc.model.fcrepo.objects.WorkObjectImpl;
+import edu.unc.lib.boxc.model.api.objects.FileObject;
+import edu.unc.lib.boxc.model.api.objects.WorkObject;
 import edu.unc.lib.boxc.model.fcrepo.services.DerivativeService;
 import edu.unc.lib.boxc.model.fcrepo.services.DerivativeService.Derivative;
 import edu.unc.lib.dl.data.ingest.solr.exception.IndexingException;
@@ -43,7 +43,7 @@ public class SetFullTextFilter implements IndexDocumentFilter {
 
     @Override
     public void filter(DocumentIndexingPackage dip) throws IndexingException {
-        FileObjectImpl fileObj = getFileObject(dip);
+        FileObject fileObj = getFileObject(dip);
         if (fileObj == null) {
             return;
         }
@@ -60,16 +60,16 @@ public class SetFullTextFilter implements IndexDocumentFilter {
         }
     }
 
-    private FileObjectImpl getFileObject(DocumentIndexingPackage dip) throws IndexingException {
+    private FileObject getFileObject(DocumentIndexingPackage dip) throws IndexingException {
         ContentObject contentObj = dip.getContentObject();
         // object being indexed must be a work or a file object
-        if (!(contentObj instanceof WorkObjectImpl) && !(contentObj instanceof FileObjectImpl)) {
+        if (!(contentObj instanceof WorkObject) && !(contentObj instanceof FileObject)) {
             return null;
         }
-        if (contentObj instanceof WorkObjectImpl) {
+        if (contentObj instanceof WorkObject) {
             return ((WorkObject) contentObj).getPrimaryObject();
         } else {
-            return (FileObjectImpl) contentObj;
+            return (FileObject) contentObj;
         }
     }
 

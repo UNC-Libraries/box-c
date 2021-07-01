@@ -50,7 +50,7 @@ import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.boxc.model.api.objects.ContentObject;
-import edu.unc.lib.boxc.model.fcrepo.objects.BinaryObjectImpl;
+import edu.unc.lib.boxc.model.api.objects.BinaryObject;
 import edu.unc.lib.dl.acl.exception.AccessRestrictionException;
 import edu.unc.lib.dl.acl.service.AccessControlService;
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
@@ -72,7 +72,7 @@ public class EditTitleServiceTest {
     @Mock
     private ContentObject contentObj;
     @Mock
-    private BinaryObjectImpl binaryObj;
+    private BinaryObject binaryObj;
     @Mock
     private UpdateDescriptionService updateDescriptionService;
     @Mock

@@ -45,9 +45,9 @@ import edu.unc.lib.boxc.model.api.DatastreamType;
 import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
 import edu.unc.lib.boxc.model.fcrepo.ids.DatastreamPids;
 import edu.unc.lib.boxc.model.api.objects.ContentObject;
-import edu.unc.lib.boxc.model.fcrepo.objects.BinaryObjectImpl;
-import edu.unc.lib.boxc.model.fcrepo.objects.FolderObjectImpl;
-import edu.unc.lib.boxc.model.fcrepo.objects.WorkObjectImpl;
+import edu.unc.lib.boxc.model.api.objects.BinaryObject;
+import edu.unc.lib.boxc.model.api.objects.FolderObject;
+import edu.unc.lib.boxc.model.api.objects.WorkObject;
 import edu.unc.lib.boxc.model.fcrepo.test.TestHelper;
 import edu.unc.lib.dl.acl.util.AgentPrincipals;
 import edu.unc.lib.dl.persist.services.edit.UpdateDescriptionService.UpdateDescriptionRequest;
@@ -82,13 +82,13 @@ public class UpdateDescriptionServiceIT {
 
     @Test
     public void addDescriptionToWork() throws Exception {
-        WorkObjectImpl workObj = repoObjFactory.createWorkObject(null);
+        WorkObject workObj = repoObjFactory.createWorkObject(null);
 
         addDescription(workObj, "new title", "2018-04-06");
 
-        List<BinaryObjectImpl> mdBins = workObj.listMetadata();
+        List<BinaryObject> mdBins = workObj.listMetadata();
         assertEquals(1, mdBins.size());
-        BinaryObjectImpl modsBin = mdBins.get(0);
+        BinaryObject modsBin = mdBins.get(0);
         assertEquals(DatastreamPids.getMdDescriptivePid(workObj.getPid()), modsBin.getPid());
         assertEquals(MD_DESCRIPTIVE.getDefaultFilename(), modsBin.getFilename());
 
@@ -97,15 +97,15 @@ public class UpdateDescriptionServiceIT {
 
     @Test
     public void updateDescriptionOnFolder() throws Exception {
-        FolderObjectImpl folderObj = repoObjFactory.createFolderObject(null);
+        FolderObject folderObj = repoObjFactory.createFolderObject(null);
 
         addDescription(folderObj, "new title", "2018-04-06");
         addDescription(folderObj, "updated title", "2018-04-08");
 
-        List<BinaryObjectImpl> mdBins = folderObj.listMetadata();
+        List<BinaryObject> mdBins = folderObj.listMetadata();
         assertEquals(2, mdBins.size());
 
-        BinaryObjectImpl modsBin = findDatastream(mdBins, MD_DESCRIPTIVE);
+        BinaryObject modsBin = findDatastream(mdBins, MD_DESCRIPTIVE);
         assertEquals(DatastreamPids.getMdDescriptivePid(folderObj.getPid()), modsBin.getPid());
         assertEquals(MD_DESCRIPTIVE.getDefaultFilename(), modsBin.getFilename());
 
@@ -115,7 +115,7 @@ public class UpdateDescriptionServiceIT {
         assertNotNull(findDatastream(mdBins, MD_DESCRIPTIVE_HISTORY));
     }
 
-    private BinaryObjectImpl findDatastream(List<BinaryObjectImpl> mdBins, DatastreamType dsType) {
+    private BinaryObject findDatastream(List<BinaryObject> mdBins, DatastreamType dsType) {
         return mdBins.stream()
                 .filter(bin -> bin.getPid().getComponentId().endsWith(dsType.getId()))
                 .findFirst()

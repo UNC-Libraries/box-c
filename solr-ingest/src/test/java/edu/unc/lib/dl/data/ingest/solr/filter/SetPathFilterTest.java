@@ -44,8 +44,8 @@ import edu.unc.lib.boxc.model.api.services.ContentPathFactory;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPaths;
 import edu.unc.lib.boxc.model.api.objects.ContentObject;
-import edu.unc.lib.boxc.model.fcrepo.objects.ContentRootObjectImpl;
-import edu.unc.lib.boxc.model.fcrepo.objects.FileObjectImpl;
+import edu.unc.lib.boxc.model.api.objects.ContentRootObject;
+import edu.unc.lib.boxc.model.api.objects.FileObject;
 import edu.unc.lib.dl.data.ingest.solr.exception.IndexingException;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackage;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackageDataLoader;
@@ -69,7 +69,7 @@ public class SetPathFilterTest {
     private ContentObject contentObject;
     private PID pid;
     @Mock
-    private FileObjectImpl fileObject;
+    private FileObject fileObject;
     @Captor
     private ArgumentCaptor<List<String>> listCaptor;
     @Captor
@@ -156,7 +156,7 @@ public class SetPathFilterTest {
     @Test
     public void testContentRootPath() throws Exception {
         when(pathFactory.getAncestorPids(pid)).thenReturn(emptyList());
-        ContentRootObjectImpl mockRoot = mock(ContentRootObjectImpl.class);
+        ContentRootObject mockRoot = mock(ContentRootObject.class);
         when(mockRoot.getPid()).thenReturn(RepositoryPaths.getContentRootPid());
         when(dip.getContentObject()).thenReturn(mockRoot);
 

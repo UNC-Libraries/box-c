@@ -32,8 +32,8 @@ import edu.unc.lib.boxc.model.api.rdf.Ebucore;
 import edu.unc.lib.boxc.model.api.rdf.Premis;
 import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
 import edu.unc.lib.boxc.model.fcrepo.ids.AgentPids;
-import edu.unc.lib.boxc.model.fcrepo.objects.BinaryObjectImpl;
-import edu.unc.lib.boxc.model.fcrepo.objects.FileObjectImpl;
+import edu.unc.lib.boxc.model.api.objects.BinaryObject;
+import edu.unc.lib.boxc.model.api.objects.FileObject;
 import edu.unc.lib.dl.services.OperationsMessageSender;
 import io.dropwizard.metrics5.Timer;
 
@@ -73,11 +73,11 @@ public class EditFilenameService {
 
             RepositoryObject obj = repoObjLoader.getRepositoryObject(pid);
 
-            if (!(obj instanceof FileObjectImpl)) {
+            if (!(obj instanceof FileObject)) {
                 throw new IllegalArgumentException("Failed to edit filename for " + obj.getPid());
             }
 
-            BinaryObjectImpl binaryObj = ((FileObject) obj).getOriginalFile();
+            BinaryObject binaryObj = ((FileObject) obj).getOriginalFile();
             String oldLabel = getOldLabel(binaryObj.getFilename());
 
             repoObjFactory.createExclusiveRelationship(binaryObj, Ebucore.filename, label);

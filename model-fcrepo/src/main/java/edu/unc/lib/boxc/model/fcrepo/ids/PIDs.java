@@ -15,12 +15,12 @@
  */
 package edu.unc.lib.boxc.model.fcrepo.ids;
 
+import static edu.unc.lib.boxc.fcrepo.FcrepoPaths.getBaseUri;
 import static edu.unc.lib.boxc.model.api.ids.RepositoryPathConstants.CONTENT_BASE;
 import static edu.unc.lib.boxc.model.api.ids.RepositoryPathConstants.DEPOSIT_RECORD_BASE;
 import static edu.unc.lib.boxc.model.api.ids.RepositoryPathConstants.HASHED_PATH_DEPTH;
 import static edu.unc.lib.boxc.model.api.ids.RepositoryPathConstants.HASHED_PATH_SIZE;
 import static edu.unc.lib.boxc.model.api.ids.RepositoryPathConstants.REPOSITORY_ROOT_ID;
-import static edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPaths.getBaseUri;
 import static edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPaths.getContentBase;
 import static edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPaths.getDepositRecordBase;
 import static edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPaths.idToPath;

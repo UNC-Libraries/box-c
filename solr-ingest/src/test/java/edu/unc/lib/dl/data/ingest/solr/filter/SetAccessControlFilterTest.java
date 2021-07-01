@@ -39,7 +39,7 @@ import org.mockito.Captor;
 import org.mockito.Mock;
 
 import edu.unc.lib.boxc.model.api.ids.PID;
-import edu.unc.lib.boxc.model.fcrepo.objects.ContentRootObjectImpl;
+import edu.unc.lib.boxc.model.api.objects.ContentRootObject;
 import edu.unc.lib.dl.acl.fcrepo4.InheritedAclFactory;
 import edu.unc.lib.dl.acl.util.AccessPrincipalConstants;
 import edu.unc.lib.dl.acl.util.RoleAssignment;
@@ -233,7 +233,7 @@ public class SetAccessControlFilterTest {
 
     @Test
     public void testContentRoot() throws Exception {
-        ContentRootObjectImpl contentRoot = mock(ContentRootObjectImpl.class);
+        ContentRootObject contentRoot = mock(ContentRootObject.class);
         when(dip.getContentObject()).thenReturn(contentRoot);
 
         filter.filter(dip);

@@ -83,12 +83,12 @@ import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
 import edu.unc.lib.boxc.model.fcrepo.ids.AgentPids;
 import edu.unc.lib.boxc.model.fcrepo.ids.DatastreamPids;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
-import edu.unc.lib.boxc.model.fcrepo.objects.AbstractContentContainerObject;
+import edu.unc.lib.boxc.model.api.objects.ContentContainerObject;
 import edu.unc.lib.boxc.model.api.objects.ContentObject;
-import edu.unc.lib.boxc.model.fcrepo.objects.CollectionObject;
-import edu.unc.lib.boxc.model.fcrepo.objects.FileObject;
-import edu.unc.lib.boxc.model.fcrepo.objects.FolderObject;
-import edu.unc.lib.boxc.model.fcrepo.objects.WorkObject;
+import edu.unc.lib.boxc.model.api.objects.CollectionObject;
+import edu.unc.lib.boxc.model.api.objects.FileObject;
+import edu.unc.lib.boxc.model.api.objects.FolderObject;
+import edu.unc.lib.boxc.model.api.objects.WorkObject;
 import edu.unc.lib.deposit.validate.VerifyObjectsAreInFedoraService;
 import edu.unc.lib.deposit.work.AbstractDepositJob;
 import edu.unc.lib.deposit.work.DepositGraphUtils;
@@ -223,7 +223,7 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
         depositorPid = AgentPids.forPerson(depositor);
 
         RepositoryObject destObj = repoObjLoader.getRepositoryObject(destPid);
-        if (!(destObj instanceof AbstractContentContainerObject)) {
+        if (!(destObj instanceof ContentContainerObject)) {
             failJob("Cannot add children to destination", "Cannot deposit to destination " + destPid
                     + ", types does not support children");
         }
@@ -254,9 +254,9 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
         try {
             logTransferSession = getTransferSession(model);
 
-            ingestChildren((AbstractContentContainerObject) destObj, depositBag);
+            ingestChildren((ContentContainerObject) destObj, depositBag);
             // Add ingestion event for the parent container
-            addIngestionEventForDestination((AbstractContentContainerObject) destObj, depositBag.asResource());
+            addIngestionEventForDestination((ContentContainerObject) destObj, depositBag.asResource());
         } catch (DepositException | FedoraException | IOException e) {
             failJob(e, "Failed to ingest content for deposit {0}", getDepositPID().getQualifiedId());
         } finally {
@@ -283,7 +283,7 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
      * @throws DepositException
      * @throws IOException
      */
-    private void ingestChildren(AbstractContentContainerObject destObj, Resource parentResc)
+    private void ingestChildren(ContentContainerObject destObj, Resource parentResc)
             throws DepositException, IOException {
         NodeIterator iterator = getChildIterator(parentResc);
         // No more children, nothing further to do in this tree
@@ -553,7 +553,7 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
         }
     }
 
-    private void ingestAdminUnit(AbstractContentContainerObject parent, Resource parentResc, Resource childResc)
+    private void ingestAdminUnit(ContentContainerObject parent, Resource parentResc, Resource childResc)
             throws DepositException, IOException {
 
         PID childPid = PIDs.get(childResc.getURI());
@@ -614,7 +614,7 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
         }
     }
 
-    private void ingestCollection(AbstractContentContainerObject parent, Resource parentResc, Resource childResc)
+    private void ingestCollection(ContentContainerObject parent, Resource parentResc, Resource childResc)
             throws DepositException, IOException {
 
         PID childPid = PIDs.get(childResc.getURI());
@@ -866,15 +866,15 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
         }
     }
 
-    private void addIngestionEventForDestination(AbstractContentContainerObject obj, Resource parentResc) throws IOException {
+    private void addIngestionEventForDestination(ContentContainerObject obj, Resource parentResc) throws IOException {
         addIngestionEventForContainer(obj, parentResc, true);
     }
 
-    private void addIngestionEventForContainer(AbstractContentContainerObject obj, Resource parentResc) throws IOException {
+    private void addIngestionEventForContainer(ContentContainerObject obj, Resource parentResc) throws IOException {
         addIngestionEventForContainer(obj, parentResc, false);
     }
 
-    private void addIngestionEventForContainer(AbstractContentContainerObject obj, Resource parentResc, boolean isDestination)
+    private void addIngestionEventForContainer(ContentContainerObject obj, Resource parentResc, boolean isDestination)
             throws IOException {
         NodeIterator childIt = getChildIterator(parentResc);
         int numChildren = 0;
@@ -912,7 +912,7 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
         if (obj instanceof FileObject) {
             builder.addEventDetail("ingested as PID: {0}\n ingested as filename: {1}",
                     obj.getPid().getQualifiedId(), ((FileObject) obj).getOriginalFile().getFilename());
-        } else if (obj instanceof AbstractContentContainerObject) {
+        } else if (obj instanceof ContentContainerObject) {
             builder.addEventDetail("ingested as PID: {0}",
                     obj.getPid().getQualifiedId());
         }

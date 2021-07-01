@@ -19,6 +19,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.UUID;
 
+import edu.unc.lib.boxc.fcrepo.FcrepoPaths;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPaths;
@@ -33,10 +34,17 @@ public class TestHelper {
 
     public static void setContentBase(String uri) {
         try {
-            Method m = RepositoryPaths.class.getDeclaredMethod("setContentBase", String.class);
+            Method m = FcrepoPaths.class.getDeclaredMethod("getBaseUri", String.class);
             m.setAccessible(true);
             try {
                 m.invoke(null, uri);
+            } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
+                e.printStackTrace();
+            }
+            Method m2 = RepositoryPaths.class.getDeclaredMethod("setContentBase", String.class);
+            m2.setAccessible(true);
+            try {
+                m2.invoke(null, uri);
             } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
                 e.printStackTrace();
             }

@@ -57,9 +57,9 @@ import edu.unc.lib.boxc.model.api.rdf.Prov;
 import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
 import edu.unc.lib.boxc.model.fcrepo.ids.AgentPids;
 import edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPaths;
-import edu.unc.lib.boxc.model.fcrepo.objects.AdminUnitImpl;
-import edu.unc.lib.boxc.model.fcrepo.objects.CollectionObjectImpl;
-import edu.unc.lib.boxc.model.fcrepo.objects.ContentRootObjectImpl;
+import edu.unc.lib.boxc.model.api.objects.AdminUnit;
+import edu.unc.lib.boxc.model.api.objects.CollectionObject;
+import edu.unc.lib.boxc.model.api.objects.ContentRootObject;
 import edu.unc.lib.boxc.model.fcrepo.services.RepositoryInitializer;
 import edu.unc.lib.boxc.model.fcrepo.test.AclModelBuilder;
 import edu.unc.lib.boxc.model.fcrepo.test.RepositoryObjectTreeIndexer;
@@ -97,7 +97,7 @@ public class ExpireEmbargoServiceIT {
 
     private ExpireEmbargoService service;
 
-    private ContentRootObjectImpl contentRoot;
+    private ContentRootObject contentRoot;
 
     @Before
     public void init() throws Exception {
@@ -120,7 +120,7 @@ public class ExpireEmbargoServiceIT {
     public void expireSingleEmbargoTest() throws Exception {
         Calendar embargoUntil = getDayFromNow(-1);
 
-        CollectionObjectImpl collObj = createCollectionInUnit(new AclModelBuilder("Collection with embargo")
+        CollectionObject collObj = createCollectionInUnit(new AclModelBuilder("Collection with embargo")
                 .addEmbargoUntil(embargoUntil)
                 .model);
         PID pid = collObj.getPid();
@@ -144,12 +144,12 @@ public class ExpireEmbargoServiceIT {
     public void expireMultipleEmbargoesTest() throws Exception {
         Calendar embargoUntil = getDayFromNow(-1);
         // create first embargoed collection
-        CollectionObjectImpl collObj1 = createCollectionInUnit(new AclModelBuilder("Collection with embargo")
+        CollectionObject collObj1 = createCollectionInUnit(new AclModelBuilder("Collection with embargo")
                 .addEmbargoUntil(embargoUntil)
                 .model);
         PID pid1 = collObj1.getPid();
         // create second embargoed collection
-        CollectionObjectImpl collObj2 = createCollectionInUnit(new AclModelBuilder("Another collection with embargo")
+        CollectionObject collObj2 = createCollectionInUnit(new AclModelBuilder("Another collection with embargo")
                 .addEmbargoUntil(embargoUntil)
                 .model);
         PID pid2 = collObj2.getPid();
@@ -178,7 +178,7 @@ public class ExpireEmbargoServiceIT {
 
     @Test
     public void expireNoEmbargoesTest() throws Exception {
-        CollectionObjectImpl collObj = createCollectionInUnit(null);
+        CollectionObject collObj = createCollectionInUnit(null);
         PID pid = collObj.getPid();
         treeIndexer.indexAll(baseAddress);
 
@@ -199,7 +199,7 @@ public class ExpireEmbargoServiceIT {
     public void doNotExpireFutureEmbargoesTest() throws Exception {
         Calendar embargoUntil = getDayFromNow(1);
 
-        CollectionObjectImpl collObj = createCollectionInUnit(new AclModelBuilder("Collection with embargo")
+        CollectionObject collObj = createCollectionInUnit(new AclModelBuilder("Collection with embargo")
                 .addEmbargoUntil(embargoUntil)
                 .model);
         PID pid = collObj.getPid();
@@ -224,10 +224,10 @@ public class ExpireEmbargoServiceIT {
         return cal;
     }
 
-    private CollectionObjectImpl createCollectionInUnit(Model collModel) {
-        AdminUnitImpl adminUnit = repoObjFactory.createAdminUnit(null);
+    private CollectionObject createCollectionInUnit(Model collModel) {
+        AdminUnit adminUnit = repoObjFactory.createAdminUnit(null);
         contentRoot.addMember(adminUnit);
-        CollectionObjectImpl collObj = repoObjFactory.createCollectionObject(collModel);
+        CollectionObject collObj = repoObjFactory.createCollectionObject(collModel);
         adminUnit.addMember(collObj);
         return collObj;
     }

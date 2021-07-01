@@ -66,7 +66,7 @@ import edu.unc.lib.boxc.model.fcrepo.event.PremisLoggerFactoryImpl;
 import edu.unc.lib.boxc.model.fcrepo.event.RepositoryPremisLogger;
 import edu.unc.lib.boxc.model.fcrepo.ids.AgentPids;
 import edu.unc.lib.boxc.model.fcrepo.ids.DatastreamPids;
-import edu.unc.lib.boxc.model.fcrepo.objects.AbstractRepositoryObject;
+import edu.unc.lib.boxc.model.api.objects.RepositoryObject;
 import edu.unc.lib.dl.persist.api.services.PidLockManager;
 import edu.unc.lib.dl.persist.api.transfer.BinaryTransferOutcome;
 import edu.unc.lib.dl.persist.api.transfer.BinaryTransferService;
@@ -101,7 +101,7 @@ public class RepositoryPremisLoggerIT extends AbstractFedoraIT {
 
         lockManager = PidLockManager.getDefaultPidLockManager();
 
-        when(transferService.getSession(any(AbstractRepositoryObject.class))).thenReturn(mockSession);
+        when(transferService.getSession(any(RepositoryObject.class))).thenReturn(mockSession);
         premisLoggerFactory.setBinaryTransferService(transferService);
 
         // No implementations of session available here, so mock from interface

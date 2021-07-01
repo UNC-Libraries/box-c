@@ -61,9 +61,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
 
 import edu.unc.lib.boxc.model.api.ids.PID;
-import edu.unc.lib.boxc.model.fcrepo.objects.AdminUnitImpl;
-import edu.unc.lib.boxc.model.fcrepo.objects.CollectionObjectImpl;
-import edu.unc.lib.boxc.model.fcrepo.objects.FolderObjectImpl;
+import edu.unc.lib.boxc.model.api.objects.AdminUnit;
+import edu.unc.lib.boxc.model.api.objects.CollectionObject;
+import edu.unc.lib.boxc.model.api.objects.FolderObject;
 import edu.unc.lib.boxc.model.fcrepo.test.AclModelBuilder;
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.acl.util.GroupsThreadStore;
@@ -87,8 +87,8 @@ public class UpdatePatronAccessIT extends AbstractAPIIT {
     private static final String USER_URI = USER_NAMESPACE + USER_NAME;
     private static final String USER_GROUPS = "edu:lib:admin_grp";
 
-    private AdminUnitImpl adminUnit;
-    private CollectionObjectImpl collObj;
+    private AdminUnit adminUnit;
+    private CollectionObject collObj;
     @Autowired
     private JmsTemplate patronAccessOperationTemplate;
     @Autowired
@@ -350,8 +350,8 @@ public class UpdatePatronAccessIT extends AbstractAPIIT {
     @Test
     public void bulkUpdateMultiple() throws Exception {
         createCollectionInUnit(null);
-        FolderObjectImpl folder1 = repositoryObjectFactory.createFolderObject(null);
-        FolderObjectImpl folder2 = repositoryObjectFactory.createFolderObject(null);
+        FolderObject folder1 = repositoryObjectFactory.createFolderObject(null);
+        FolderObject folder2 = repositoryObjectFactory.createFolderObject(null);
         collObj.addMember(folder1);
         collObj.addMember(folder2);
 

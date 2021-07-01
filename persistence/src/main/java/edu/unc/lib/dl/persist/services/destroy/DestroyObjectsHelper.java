@@ -22,8 +22,8 @@ import com.fasterxml.jackson.databind.ObjectWriter;
 
 import edu.unc.lib.boxc.model.api.exceptions.RepositoryException;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObject;
-import edu.unc.lib.boxc.model.fcrepo.objects.AdminUnitImpl;
-import edu.unc.lib.boxc.model.fcrepo.objects.ContentRootObjectImpl;
+import edu.unc.lib.boxc.model.api.objects.AdminUnit;
+import edu.unc.lib.boxc.model.api.objects.ContentRootObject;
 import edu.unc.lib.dl.acl.exception.AccessRestrictionException;
 import edu.unc.lib.dl.acl.service.AccessControlService;
 import edu.unc.lib.dl.acl.util.AgentPrincipals;
@@ -51,10 +51,10 @@ public class DestroyObjectsHelper {
      */
     public static void assertCanDestroy(AgentPrincipals agent, RepositoryObject repoObj,
             AccessControlService aclService) {
-        if (repoObj instanceof AdminUnitImpl) {
+        if (repoObj instanceof AdminUnit) {
             aclService.assertHasAccess("User does not have permission to destroy admin unit", repoObj.getPid(),
                     agent.getPrincipals(), Permission.destroyUnit);
-        } else if (repoObj instanceof ContentRootObjectImpl) {
+        } else if (repoObj instanceof ContentRootObject) {
             throw new AccessRestrictionException("Cannot destroy content root object");
         } else {
             aclService.assertHasAccess("User does not have permission to destroy this object", repoObj.getPid(),
