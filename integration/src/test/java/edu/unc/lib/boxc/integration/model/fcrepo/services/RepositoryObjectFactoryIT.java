@@ -49,7 +49,7 @@ import edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPathConstants;
 import edu.unc.lib.boxc.model.api.objects.AdminUnit;
 import edu.unc.lib.boxc.model.api.objects.BinaryObject;
 import edu.unc.lib.boxc.model.api.objects.CollectionObject;
-import edu.unc.lib.boxc.model.fcrepo.objects.DepositRecordImpl;
+import edu.unc.lib.boxc.model.api.objects.DepositRecord;
 import edu.unc.lib.boxc.model.api.objects.FileObject;
 import edu.unc.lib.boxc.model.api.objects.FolderObject;
 import edu.unc.lib.boxc.model.api.objects.WorkObject;
@@ -65,7 +65,7 @@ public class RepositoryObjectFactoryIT extends AbstractFedoraIT {
 
     @Test
     public void createDepositRecordTest() throws Exception {
-        DepositRecordImpl depRec = repoObjFactory.createDepositRecord(null);
+        DepositRecord depRec = repoObjFactory.createDepositRecord(null);
         PID pid = depRec.getPid();
         URI uri = pid.getRepositoryUri();
         String path = uri.toString();

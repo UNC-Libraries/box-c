@@ -60,7 +60,7 @@ import edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPaths;
 import edu.unc.lib.boxc.model.api.objects.AdminUnit;
 import edu.unc.lib.boxc.model.api.objects.CollectionObject;
 import edu.unc.lib.boxc.model.api.objects.ContentRootObject;
-import edu.unc.lib.boxc.model.fcrepo.objects.DepositRecordImpl;
+import edu.unc.lib.boxc.model.api.objects.DepositRecord;
 import edu.unc.lib.boxc.model.api.objects.FileObject;
 import edu.unc.lib.boxc.model.api.objects.FolderObject;
 import edu.unc.lib.boxc.model.api.objects.WorkObject;
@@ -220,7 +220,7 @@ public class TriplesReindexingRouterIT {
     @Test
     public void testIndexingFromRepoRoot() throws Exception {
         // Create a deposit record
-        DepositRecordImpl depositRec = repositoryObjectFactory.createDepositRecord(null);
+        DepositRecord depositRec = repositoryObjectFactory.createDepositRecord(null);
 
         PID contentPid = RepositoryPaths.getRootPid();
         messageSender.sendIndexingOperation("user", contentPid, RECURSIVE_REINDEX);

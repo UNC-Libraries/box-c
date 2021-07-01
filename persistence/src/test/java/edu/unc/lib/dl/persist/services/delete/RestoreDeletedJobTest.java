@@ -41,7 +41,7 @@ import edu.unc.lib.boxc.model.api.objects.ContentObject;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.api.rdf.Premis;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
-import edu.unc.lib.boxc.model.fcrepo.objects.DepositRecordImpl;
+import edu.unc.lib.boxc.model.api.objects.DepositRecord;
 import edu.unc.lib.dl.acl.exception.AccessRestrictionException;
 import edu.unc.lib.dl.acl.service.AccessControlService;
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
@@ -124,7 +124,7 @@ public class RestoreDeletedJobTest {
 
     @Test(expected = InvalidOperationForObjectType.class)
     public void invalidObjectTypeTest() {
-        DepositRecordImpl depObj = mock(DepositRecordImpl.class);
+        DepositRecord depObj = mock(DepositRecord.class);
         when(repositoryObjectLoader.getRepositoryObject(any(PID.class))).thenReturn(depObj);
 
         job.run();
