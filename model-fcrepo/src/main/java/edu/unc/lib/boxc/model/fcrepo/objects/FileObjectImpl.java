@@ -121,7 +121,7 @@ public class FileObjectImpl extends AbstractContentObject implements FileObject 
     @Override
     public BinaryObject getOriginalFile() {
         return driver.getRepositoryObject(getOriginalFilePid(pid),
-                BinaryObjectImpl.class);
+                BinaryObject.class);
     }
 
     /**
@@ -183,7 +183,7 @@ public class FileObjectImpl extends AbstractContentObject implements FileObject 
         for (StmtIterator it = resc.listProperties(PcdmModels.hasFile); it.hasNext(); ) {
             PID binaryPid = PIDs.get(it.nextStatement().getResource().getURI());
 
-            binaries.add(driver.getRepositoryObject(binaryPid, BinaryObjectImpl.class));
+            binaries.add(driver.getRepositoryObject(binaryPid, BinaryObject.class));
         }
 
         return binaries;
@@ -208,7 +208,7 @@ public class FileObjectImpl extends AbstractContentObject implements FileObject 
                 PID binaryPid = PIDs.get(it.nextStatement().getResource().getURI());
 
                 if (binaryPid.getComponentPath().endsWith("/" + name)) {
-                    return driver.getRepositoryObject(binaryPid, BinaryObjectImpl.class);
+                    return driver.getRepositoryObject(binaryPid, BinaryObject.class);
                 }
             }
         } finally {

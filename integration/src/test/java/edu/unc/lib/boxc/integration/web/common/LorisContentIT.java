@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package edu.unc.lib.dl.ui.integration;
+package edu.unc.lib.boxc.integration.web.common;
 
 import static edu.unc.lib.boxc.model.api.DatastreamType.TECHNICAL_METADATA;
 import static edu.unc.lib.boxc.model.api.xml.NamespaceConstants.FITS_URI;

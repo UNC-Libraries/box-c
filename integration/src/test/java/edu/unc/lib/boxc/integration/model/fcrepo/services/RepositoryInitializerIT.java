@@ -32,10 +32,10 @@ import org.junit.Before;
 import org.junit.Test;
 
 import edu.unc.lib.boxc.common.util.URIUtil;
+import edu.unc.lib.boxc.fcrepo.FcrepoPaths;
 import edu.unc.lib.boxc.integration.fcrepo.AbstractFedoraIT;
+import edu.unc.lib.boxc.model.api.ids.RepositoryPathConstants;
 import edu.unc.lib.boxc.model.api.rdf.Cdr;
-import edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPathConstants;
-import edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPaths;
 import edu.unc.lib.boxc.model.fcrepo.services.RepositoryInitializer;
 
 /**
@@ -126,7 +126,7 @@ public class RepositoryInitializerIT extends AbstractFedoraIT {
     }
 
     private URI getContainerUri(String id) {
-        String containerString = URIUtil.join(RepositoryPaths.getBaseUri(), id);
+        String containerString = URIUtil.join(FcrepoPaths.getBaseUri(), id);
         return URI.create(containerString);
     }
 }

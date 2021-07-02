@@ -15,7 +15,7 @@
     <bean id="containerWrapper" class="org.fcrepo.http.commons.test.util.ContainerWrapper"
         init-method="start" destroy-method="stop">
         <property name="port" value="48085" />
-        <property name="configLocation" value="classpath:web.xml" />
+        <property name="configLocation" value="classpath:spring-test/web.xml" />
     </bean>
 
 </beans>

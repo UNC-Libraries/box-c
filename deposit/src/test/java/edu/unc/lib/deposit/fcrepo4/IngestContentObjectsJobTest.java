@@ -93,13 +93,13 @@ import edu.unc.lib.dl.fcrepo4.FedoraTransaction;
 import edu.unc.lib.dl.fcrepo4.TransactionCancelledException;
 import edu.unc.lib.dl.fcrepo4.TransactionManager;
 import edu.unc.lib.dl.fedora.ChecksumMismatchException;
+import edu.unc.lib.dl.persist.api.event.PremisEventBuilder;
 import edu.unc.lib.dl.persist.api.event.PremisLogger;
 import edu.unc.lib.dl.persist.api.event.PremisLoggerFactory;
 import edu.unc.lib.dl.persist.api.storage.StorageLocation;
 import edu.unc.lib.dl.persist.api.storage.StorageLocationManager;
 import edu.unc.lib.dl.persist.api.transfer.BinaryTransferService;
 import edu.unc.lib.dl.persist.api.transfer.BinaryTransferSession;
-import edu.unc.lib.dl.persist.event.PremisEventBuilderImpl;
 import edu.unc.lib.dl.persist.services.deposit.DepositModelHelpers;
 import edu.unc.lib.dl.persist.services.edit.UpdateDescriptionService;
 import edu.unc.lib.dl.persist.services.edit.UpdateDescriptionService.UpdateDescriptionRequest;
@@ -148,7 +148,7 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
     @Mock
     private PremisLog mockPremisLog;
 
-    private PremisEventBuilderImpl mockPremisEventBuilder;
+    private PremisEventBuilder mockPremisEventBuilder;
 
     @Mock
     private AccessControlService aclService;
@@ -213,7 +213,8 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
         storageLocPath = tmpFolder.newFolder("storageLoc").toPath();
 
         // Setup logging dependencies
-        mockPremisEventBuilder = mock(PremisEventBuilderImpl.class, new SelfReturningAnswer());
+        mockPremisEventBuilder = mock(PremisEventBuilder.class, new SelfReturningAnswer());
+        when(mockPremisLoggerFactory.createPremisLogger(any())).thenReturn(mockPremisLogger);
         when(mockPremisLoggerFactory.createPremisLogger(any(PID.class), any(File.class)))
                 .thenReturn(mockPremisLogger);
         when(mockPremisLogger.buildEvent(any(Resource.class))).thenReturn(mockPremisEventBuilder);

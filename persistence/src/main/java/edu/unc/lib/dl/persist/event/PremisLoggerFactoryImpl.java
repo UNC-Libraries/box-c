@@ -22,7 +22,6 @@ import edu.unc.lib.boxc.model.api.ids.PIDMinter;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObject;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
-import edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPIDMinter;
 import edu.unc.lib.dl.persist.api.event.PremisLogger;
 import edu.unc.lib.dl.persist.api.event.PremisLoggerFactory;
 import edu.unc.lib.dl.persist.api.transfer.BinaryTransferService;
@@ -80,7 +79,7 @@ public class PremisLoggerFactoryImpl implements PremisLoggerFactory {
     /**
      * @param pidMinter the pidMinter to set
      */
-    public void setPidMinter(RepositoryPIDMinter pidMinter) {
+    public void setPidMinter(PIDMinter pidMinter) {
         this.pidMinter = pidMinter;
     }
 

@@ -60,15 +60,15 @@ import org.springframework.test.web.servlet.MvcResult;
 import edu.unc.lib.boxc.model.api.ResourceType;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.ids.PIDMinter;
-import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
-import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
-import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.boxc.model.api.objects.AdminUnit;
 import edu.unc.lib.boxc.model.api.objects.CollectionObject;
 import edu.unc.lib.boxc.model.api.objects.ContentRootObject;
 import edu.unc.lib.boxc.model.api.objects.FileObject;
 import edu.unc.lib.boxc.model.api.objects.FolderObject;
+import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.api.objects.WorkObject;
+import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
+import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.boxc.model.fcrepo.services.RepositoryInitializer;
 import edu.unc.lib.boxc.model.fcrepo.test.AclModelBuilder;
 import edu.unc.lib.boxc.model.fcrepo.test.RepositoryObjectTreeIndexer;
@@ -77,6 +77,7 @@ import edu.unc.lib.dl.cdr.services.processing.ExportCsvService;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackageFactory;
 import edu.unc.lib.dl.data.ingest.solr.indexing.SolrUpdateDriver;
 import edu.unc.lib.dl.data.ingest.solr.test.RepositoryObjectSolrIndexer;
+import edu.unc.lib.dl.persist.api.event.PremisLoggerFactory;
 import edu.unc.lib.dl.persist.services.delete.MarkForDeletionJob;
 import edu.unc.lib.dl.persist.services.edit.UpdateDescriptionService;
 import edu.unc.lib.dl.persist.services.edit.UpdateDescriptionService.UpdateDescriptionRequest;
@@ -139,6 +140,8 @@ public class ExportCsvIT extends AbstractAPIIT {
     private UpdateDescriptionService updateDescService;
     @Autowired
     private ExportCsvService exportCsvService;
+    @Autowired
+    private PremisLoggerFactory premisLoggerFactory;
 
     protected ContentRootObject rootObj;
     protected AdminUnit unitObj;
@@ -263,7 +266,7 @@ public class ExportCsvIT extends AbstractAPIIT {
         PID filePid = pidList.get("filePid");
 
         new MarkForDeletionJob(folderPid, "", getAgentPrincipals(), repositoryObjectLoader,
-                sparqlUpdateService, aclService).run();
+                sparqlUpdateService, aclService, premisLoggerFactory).run();
 
         treeIndexer.indexAll(baseAddress);
         solrIndexer.index(rootObj.getPid(), unitObj.getPid(), collObj.getPid(), folderPid, workPid, filePid);

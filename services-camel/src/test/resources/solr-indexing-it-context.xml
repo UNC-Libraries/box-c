@@ -230,7 +230,7 @@
         <constructor-arg value="edu.unc.lib.dl.util.VocabularyHelperManager" />
     </bean>
     
-    <bean id="derivativeService" class="edu.unc.lib.dl.util.DerivativeService">
+    <bean id="derivativeService" class="edu.unc.lib.boxc.model.fcrepo.services.DerivativeService">
         <property name="derivativeDir" value="target/" />
     </bean>
     

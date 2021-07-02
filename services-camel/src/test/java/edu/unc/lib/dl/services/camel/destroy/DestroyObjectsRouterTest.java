@@ -42,10 +42,10 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
-import edu.unc.lib.boxc.model.api.rdf.Cdr;
-import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.boxc.model.api.objects.WorkObject;
-import edu.unc.lib.boxc.model.fcrepo.services.RepositoryObjectFactoryImpl;
+import edu.unc.lib.boxc.model.api.rdf.Cdr;
+import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
+import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.dl.acl.fcrepo4.InheritedAclFactory;
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.acl.util.AgentPrincipals;
@@ -75,7 +75,7 @@ public class DestroyObjectsRouterTest extends CamelSpringTestSupport {
     @BeanInject(value = "repositoryObjectLoader")
     private RepositoryObjectLoader repoObjLoader;
     @BeanInject(value = "repositoryObjectFactory")
-    private RepositoryObjectFactoryImpl repoObjFactory;
+    private RepositoryObjectFactory repoObjFactory;
     @BeanInject(value = "inheritedAclFactory")
     private InheritedAclFactory inheritedAclFactory;
     @BeanInject(value = "objectPathFactory")

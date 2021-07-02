@@ -86,7 +86,7 @@ public class WorkObjectImpl extends AbstractContentContainerObject implements Wo
     @Override
     public void setPrimaryObject(PID primaryPid) {
         RepositoryObject primaryObj = driver.getRepositoryObject(primaryPid);
-        if (!(primaryObj instanceof FileObjectImpl)) {
+        if (!(primaryObj instanceof FileObject)) {
             throw new InvalidOperationForObjectType("Cannot set " + primaryPid.getUUID()
                     + " as primary object, since objects of type " + primaryObj.getClass().getName()
                     + " are not eligible.");
@@ -116,12 +116,12 @@ public class WorkObjectImpl extends AbstractContentContainerObject implements Wo
         }
 
         PID primaryPid = PIDs.get(primaryStmt.getResource().getURI());
-        return driver.getRepositoryObject(primaryPid, FileObjectImpl.class);
+        return driver.getRepositoryObject(primaryPid, FileObject.class);
     }
 
     @Override
     public ContentContainerObject addMember(ContentObject member) throws ObjectTypeMismatchException {
-        if (!(member instanceof FileObjectImpl)) {
+        if (!(member instanceof FileObject)) {
             throw new ObjectTypeMismatchException("Cannot add object of type " + member.getClass().getName()
                     + " as a member of WorkObject " + pid.getQualifiedId());
         }

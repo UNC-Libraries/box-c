@@ -49,6 +49,9 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import edu.unc.lib.boxc.model.api.SoftwareAgentConstants.SoftwareAgent;
 import edu.unc.lib.boxc.model.api.ids.PID;
+import edu.unc.lib.boxc.model.api.objects.AdminUnit;
+import edu.unc.lib.boxc.model.api.objects.CollectionObject;
+import edu.unc.lib.boxc.model.api.objects.ContentRootObject;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObject;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.api.rdf.CdrAcl;
@@ -57,14 +60,12 @@ import edu.unc.lib.boxc.model.api.rdf.Prov;
 import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
 import edu.unc.lib.boxc.model.fcrepo.ids.AgentPids;
 import edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPaths;
-import edu.unc.lib.boxc.model.api.objects.AdminUnit;
-import edu.unc.lib.boxc.model.api.objects.CollectionObject;
-import edu.unc.lib.boxc.model.api.objects.ContentRootObject;
 import edu.unc.lib.boxc.model.fcrepo.services.RepositoryInitializer;
 import edu.unc.lib.boxc.model.fcrepo.test.AclModelBuilder;
 import edu.unc.lib.boxc.model.fcrepo.test.RepositoryObjectTreeIndexer;
 import edu.unc.lib.boxc.model.fcrepo.test.TestHelper;
 import edu.unc.lib.dl.fcrepo4.TransactionManager;
+import edu.unc.lib.dl.persist.api.event.PremisLoggerFactory;
 import edu.unc.lib.dl.services.OperationsMessageSender;
 import edu.unc.lib.dl.sparql.SparqlQueryService;
 import edu.unc.lib.dl.util.JMSMessageUtil;
@@ -92,6 +93,8 @@ public class ExpireEmbargoServiceIT {
     private RepositoryObjectTreeIndexer treeIndexer;
     @Autowired
     private RepositoryInitializer repoInitializer;
+    @Autowired
+    private PremisLoggerFactory premisLoggerFactory;
     @Captor
     private ArgumentCaptor<List<PID>> pidListCaptor;
 
@@ -110,6 +113,7 @@ public class ExpireEmbargoServiceIT {
         service.setRepositoryObjectFactory(repoObjFactory);
         service.setTransactionManager(txManager);
         service.setSparqlQueryService(sparqlQueryService);
+        service.setPremisLoggerFactory(premisLoggerFactory);
 
         PID contentRootPid = RepositoryPaths.getContentRootPid();
         repoInitializer.initializeRepository();

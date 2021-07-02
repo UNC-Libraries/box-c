@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package edu.unc.lib.dl.acl.fcrepo4;
+package edu.unc.lib.boxc.integration.acl;
 
 import static edu.unc.lib.dl.acl.util.AccessPrincipalConstants.AUTHENTICATED_PRINC;
 import static edu.unc.lib.dl.acl.util.AccessPrincipalConstants.PATRON_NAMESPACE;
@@ -32,19 +32,23 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import edu.unc.lib.boxc.integration.fcrepo.AbstractFedoraIT;
 import edu.unc.lib.boxc.model.api.ids.PID;
+import edu.unc.lib.boxc.model.api.objects.AdminUnit;
+import edu.unc.lib.boxc.model.api.objects.CollectionObject;
+import edu.unc.lib.boxc.model.api.objects.ContentRootObject;
+import edu.unc.lib.boxc.model.api.objects.FolderObject;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
+import edu.unc.lib.boxc.model.api.objects.WorkObject;
 import edu.unc.lib.boxc.model.api.rdf.PcdmModels;
 import edu.unc.lib.boxc.model.api.services.ContentPathFactory;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPaths;
-import edu.unc.lib.boxc.model.fcrepo.objects.AdminUnitImpl;
-import edu.unc.lib.boxc.model.fcrepo.objects.CollectionObjectImpl;
-import edu.unc.lib.boxc.model.fcrepo.objects.ContentRootObjectImpl;
-import edu.unc.lib.boxc.model.fcrepo.objects.FolderObjectImpl;
-import edu.unc.lib.boxc.model.fcrepo.objects.WorkObjectImpl;
 import edu.unc.lib.boxc.model.fcrepo.services.RepositoryInitializer;
 import edu.unc.lib.boxc.model.fcrepo.test.AclModelBuilder;
 import edu.unc.lib.dl.acl.exception.AccessRestrictionException;
+import edu.unc.lib.dl.acl.fcrepo4.AccessControlServiceImpl;
+import edu.unc.lib.dl.acl.fcrepo4.GlobalPermissionEvaluator;
+import edu.unc.lib.dl.acl.fcrepo4.InheritedPermissionEvaluator;
+import edu.unc.lib.dl.acl.fcrepo4.ObjectAclFactory;
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.acl.util.Permission;
 
@@ -57,22 +61,22 @@ public class AccessControlServiceImplIT extends AbstractFedoraIT {
     private static final long CACHE_MAX_SIZE = 100l;
     private static final long CACHE_TIME_TO_LIVE = 100l;
 
-    private static ContentRootObjectImpl contentRoot;
-    private static AdminUnitImpl adminUnit1;
-    private static CollectionObjectImpl collObj1;
-    private static FolderObjectImpl collObj1Folder1;
-    private static WorkObjectImpl collObj1Folder1Work1;
-    private static FolderObjectImpl collObj1Folder2;
-    private static WorkObjectImpl collObj1Folder2Work1;
-    private static WorkObjectImpl collObj1Folder2Work2;
-    private static WorkObjectImpl collObj1Folder2Work3;
-    private static WorkObjectImpl collObj1Work2;
-    private static CollectionObjectImpl collObj2;
-    private static FolderObjectImpl collObj2Folder1;
-    private static WorkObjectImpl collObj2Folder1Work1;
-    private static WorkObjectImpl collObj2Work2;
-    private static CollectionObjectImpl collObj3;
-    private static AdminUnitImpl adminUnit2;
+    private static ContentRootObject contentRoot;
+    private static AdminUnit adminUnit1;
+    private static CollectionObject collObj1;
+    private static FolderObject collObj1Folder1;
+    private static WorkObject collObj1Folder1Work1;
+    private static FolderObject collObj1Folder2;
+    private static WorkObject collObj1Folder2Work1;
+    private static WorkObject collObj1Folder2Work2;
+    private static WorkObject collObj1Folder2Work3;
+    private static WorkObject collObj1Work2;
+    private static CollectionObject collObj2;
+    private static FolderObject collObj2Folder1;
+    private static WorkObject collObj2Folder1Work1;
+    private static WorkObject collObj2Work2;
+    private static CollectionObject collObj3;
+    private static AdminUnit adminUnit2;
 
     private static final String PATRON_GROUP = PATRON_NAMESPACE + "special";
 

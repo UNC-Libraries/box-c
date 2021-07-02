@@ -49,13 +49,13 @@ import org.springframework.test.context.ContextHierarchy;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import edu.unc.lib.boxc.model.api.ids.PID;
-import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
-import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
 import edu.unc.lib.boxc.model.api.objects.AdminUnit;
 import edu.unc.lib.boxc.model.api.objects.CollectionObject;
 import edu.unc.lib.boxc.model.api.objects.ContentRootObject;
 import edu.unc.lib.boxc.model.api.objects.FileObject;
+import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.api.objects.WorkObject;
+import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
 import edu.unc.lib.boxc.model.fcrepo.services.RepositoryInitializer;
 import edu.unc.lib.boxc.model.fcrepo.test.AclModelBuilder;
 import edu.unc.lib.boxc.model.fcrepo.test.RepositoryObjectTreeIndexer;
@@ -314,7 +314,7 @@ public class DestroyDerivativesRouterIT {
 
     private void markForDeletion(PID pid) {
         new MarkForDeletionJob(pid, "", agent, repoObjLoader,
-                sparqlUpdateService, aclService).run();
+                sparqlUpdateService, aclService, premisLoggerFactory).run();
     }
 
     private void initializeDestroyJob(List<PID> objsToDestroy) {
@@ -332,5 +332,6 @@ public class DestroyDerivativesRouterIT {
         destroyJob.setStorageLocationManager(locationManager);
         destroyJob.setIndexingMessageSender(indexingMessageSender);
         destroyJob.setBinaryDestroyedMessageSender(binaryDestroyedMessageSender);
+        destroyJob.setPremisLoggerFactory(premisLoggerFactory);
     }
 }

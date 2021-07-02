@@ -22,6 +22,8 @@ import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.objects.CollectionObject;
 import edu.unc.lib.boxc.model.api.objects.ContentContainerObject;
 import edu.unc.lib.boxc.model.api.objects.ContentObject;
+import edu.unc.lib.boxc.model.api.objects.FolderObject;
+import edu.unc.lib.boxc.model.api.objects.WorkObject;
 import edu.unc.lib.boxc.model.api.rdf.Cdr;
 import edu.unc.lib.boxc.model.api.rdf.PcdmModels;
 import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
@@ -59,7 +61,7 @@ public class CollectionObjectImpl extends AbstractContentContainerObject impleme
 
     @Override
     public ContentContainerObject addMember(ContentObject member) throws ObjectTypeMismatchException {
-        if (!(member instanceof FolderObjectImpl || member instanceof WorkObjectImpl)) {
+        if (!(member instanceof FolderObject || member instanceof WorkObject)) {
             throw new ObjectTypeMismatchException("Cannot add object of type " + member.getClass().getName()
                     + " as a member of CollectionObject " + pid.getQualifiedId());
         }

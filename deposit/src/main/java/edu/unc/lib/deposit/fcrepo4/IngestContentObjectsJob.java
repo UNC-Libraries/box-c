@@ -887,7 +887,8 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
         // don't add event unless at least one child is ingested
         if (numChildren > 0) {
             // If target for this event is the existing destination object, then write to live log
-            try (PremisLogger premisLogger = isDestination ? premisLoggerFactory.createPremisLogger(obj) : getPremisLogger(obj.getPid())) {
+            try (PremisLogger premisLogger = isDestination ?
+                    premisLoggerFactory.createPremisLogger(obj) : getPremisLogger(obj.getPid())) {
                 PremisEventBuilder builder = premisLogger.buildEvent(Premis.Ingestion);
                 if (numChildren == 1 && childPid != null) {
                     builder.addEventDetail("added child object {0} to this container",

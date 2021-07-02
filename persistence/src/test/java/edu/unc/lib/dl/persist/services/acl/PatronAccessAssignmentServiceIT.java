@@ -62,20 +62,20 @@ import org.springframework.test.context.ContextHierarchy;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import edu.unc.lib.boxc.model.api.ids.PID;
+import edu.unc.lib.boxc.model.api.objects.AdminUnit;
+import edu.unc.lib.boxc.model.api.objects.BinaryObject;
+import edu.unc.lib.boxc.model.api.objects.CollectionObject;
+import edu.unc.lib.boxc.model.api.objects.ContentRootObject;
 import edu.unc.lib.boxc.model.api.objects.FileObject;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObject;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
+import edu.unc.lib.boxc.model.api.objects.WorkObject;
 import edu.unc.lib.boxc.model.api.rdf.CdrAcl;
 import edu.unc.lib.boxc.model.api.rdf.Premis;
 import edu.unc.lib.boxc.model.api.rdf.Prov;
 import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
 import edu.unc.lib.boxc.model.fcrepo.ids.AgentPids;
 import edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPaths;
-import edu.unc.lib.boxc.model.api.objects.AdminUnit;
-import edu.unc.lib.boxc.model.api.objects.BinaryObject;
-import edu.unc.lib.boxc.model.api.objects.CollectionObject;
-import edu.unc.lib.boxc.model.api.objects.ContentRootObject;
-import edu.unc.lib.boxc.model.api.objects.WorkObject;
 import edu.unc.lib.boxc.model.fcrepo.services.RepositoryInitializer;
 import edu.unc.lib.boxc.model.fcrepo.test.AclModelBuilder;
 import edu.unc.lib.boxc.model.fcrepo.test.RepositoryObjectTreeIndexer;
@@ -90,6 +90,7 @@ import edu.unc.lib.dl.acl.util.RoleAssignment;
 import edu.unc.lib.dl.acl.util.UserRole;
 import edu.unc.lib.dl.fcrepo4.TransactionManager;
 import edu.unc.lib.dl.fedora.ServiceException;
+import edu.unc.lib.dl.persist.api.event.PremisLoggerFactory;
 import edu.unc.lib.dl.persist.services.acl.PatronAccessAssignmentService.PatronAccessAssignmentRequest;
 import edu.unc.lib.dl.services.OperationsMessageSender;
 import edu.unc.lib.dl.util.JMSMessageUtil.CDRActions;
@@ -122,6 +123,8 @@ public class PatronAccessAssignmentServiceIT {
     @Autowired
     private TransactionManager txManager;
     @Autowired
+    private PremisLoggerFactory premisLoggerFactory;
+    @Autowired
     private RepositoryInitializer repoInitializer;
     @Captor
     private ArgumentCaptor<List<PID>> pidListCaptor;
@@ -148,6 +151,7 @@ public class PatronAccessAssignmentServiceIT {
         patronService.setRepositoryObjectLoader(repoObjLoader);
         patronService.setRepositoryObjectFactory(repoObjFactory);
         patronService.setTransactionManager(txManager);
+        patronService.setPremisLoggerFactory(premisLoggerFactory);
 
         PID contentRootPid = RepositoryPaths.getContentRootPid();
         repoInitializer.initializeRepository();

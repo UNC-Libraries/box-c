@@ -118,7 +118,7 @@
             factory-bean="fcrepoClientFactory" factory-method="makeClient">
     </bean>
     
-    <bean id="pidMinter" class="edu.unc.lib.dl.fcrepo4.RepositoryPIDMinter">
+    <bean id="pidMinter" class="edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPIDMinter">
     </bean>
     
     <bean id="repositoryObjectDriver" class="edu.unc.lib.boxc.model.fcrepo.services.RepositoryObjectDriver">
@@ -132,7 +132,7 @@
         <property name="repositoryObjectDriver" ref="repositoryObjectDriver" />
     </bean>
     
-    <bean id="repositoryObjectLoader" class="edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader" init-method="init">
+    <bean id="repositoryObjectLoader" class="edu.unc.lib.boxc.model.fcrepo.services.RepositoryObjectLoaderImpl" init-method="init">
         <property name="cacheTimeToLive" value="1000" />
         <property name="cacheMaxSize" value="50" />
         <property name="repositoryObjectCacheLoader" ref="repositoryObjectCacheLoader" />

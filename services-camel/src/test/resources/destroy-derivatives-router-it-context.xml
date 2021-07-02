@@ -66,7 +66,7 @@
         <constructor-arg value="edu.unc.lib.dl.search.solr.service.ObjectPathFactory" />
     </bean>
 
-    <bean id="treeIndexer" class="edu.unc.lib.dl.test.RepositoryObjectTreeIndexer">
+    <bean id="treeIndexer" class="edu.unc.lib.boxc.model.fcrepo.test.RepositoryObjectTreeIndexer">
         <constructor-arg ref="queryModel" />
         <constructor-arg ref="fcrepoClient" />
     </bean>

@@ -316,6 +316,7 @@
         <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
         <property name="sparqlUpdateService" ref="fedoraSparqlUpdateService" />
         <property name="operationsMessageSender" ref="operationsMessageSender" />
+        <property name="premisLoggerFactory" ref="premisLoggerFactory" />
   </bean>
 
   <bean id="setAsPrimaryObjectService" class="edu.unc.lib.dl.cdr.services.processing.SetAsPrimaryObjectService" >
@@ -383,7 +384,7 @@
         <property name="defaultEncoding" value="UTF-8" />
     </bean>
 
-    <bean id="derivativeService" class="edu.unc.lib.dl.util.DerivativeService">
+    <bean id="derivativeService" class="edu.unc.lib.boxc.model.fcrepo.services.DerivativeService">
         <property name="derivativeDir" value="${derivative.dir}" />
     </bean>
    

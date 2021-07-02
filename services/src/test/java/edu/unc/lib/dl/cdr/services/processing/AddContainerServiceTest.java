@@ -127,6 +127,7 @@ public class AddContainerServiceTest {
         when(agent.getUsername()).thenReturn("user");
 
         eventBuilder = mock(PremisEventBuilderImpl.class, new SelfReturningAnswer());
+        when(premisLoggerFactory.createPremisLogger(any())).thenReturn(premisLogger);
         when(premisLogger.buildEvent(eq(Premis.Creation))).thenReturn(eventBuilder);
 
         when(txManager.startTransaction()).thenReturn(tx);
@@ -153,6 +154,7 @@ public class AddContainerServiceTest {
         service.setOperationsMessageSender(messageSender);
         service.setStorageLocationManager(storageLocationManager);
         service.setUpdateDescriptionService(updateDescService);
+        service.setPremisLoggerFactory(premisLoggerFactory);
     }
 
     private AddContainerRequest createRequest(String label, boolean staffOnly, ResourceType containerType) {
@@ -205,7 +207,6 @@ public class AddContainerServiceTest {
                 return folder;
             }
         });
-        when(premisLoggerFactory.createPremisLogger(folder)).thenReturn(premisLogger);
 
         service.addContainer(createRequest("folder", false, ResourceType.Folder));
 
@@ -241,7 +242,6 @@ public class AddContainerServiceTest {
                 return work;
             }
         });
-        when(premisLoggerFactory.createPremisLogger(work)).thenReturn(premisLogger);
 
         service.addContainer(createRequest("work", false, ResourceType.Work));
 

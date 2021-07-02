@@ -39,8 +39,8 @@ import edu.unc.lib.boxc.model.api.rdf.Premis;
 import edu.unc.lib.boxc.model.fcrepo.ids.AgentPids;
 import edu.unc.lib.deposit.work.AbstractConcurrentDepositJob;
 import edu.unc.lib.dl.exceptions.InvalidChecksumException;
+import edu.unc.lib.dl.persist.api.event.PremisEventBuilder;
 import edu.unc.lib.dl.persist.api.event.PremisLogger;
-import edu.unc.lib.dl.persist.event.PremisEventBuilderImpl;
 import edu.unc.lib.dl.persist.services.deposit.DepositModelHelpers;
 import edu.unc.lib.dl.util.DigestAlgorithm;
 import edu.unc.lib.dl.util.MultiDigestInputStreamWrapper;
@@ -150,7 +150,7 @@ public class FixityCheckJob extends AbstractConcurrentDepositJob {
             FixityCheckResult result = (FixityCheckResult) resultObj;
             // Store event for calculation of checksums
             PremisLogger premisDepositLogger = getPremisLogger(result.rescPid);
-            PremisEventBuilderImpl builder = premisDepositLogger.buildEvent(Premis.MessageDigestCalculation)
+            PremisEventBuilder builder = premisDepositLogger.buildEvent(Premis.MessageDigestCalculation)
                     .addSoftwareAgent(AgentPids.forSoftware(SoftwareAgent.depositService));
             result.details.forEach(builder::addEventDetail);
             builder.write();

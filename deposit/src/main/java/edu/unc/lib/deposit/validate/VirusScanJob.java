@@ -41,8 +41,8 @@ import edu.unc.lib.boxc.model.api.rdf.Premis;
 import edu.unc.lib.boxc.model.fcrepo.ids.AgentPids;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.deposit.work.AbstractConcurrentDepositJob;
+import edu.unc.lib.dl.persist.api.event.PremisEventBuilder;
 import edu.unc.lib.dl.persist.api.event.PremisLogger;
-import edu.unc.lib.dl.persist.event.PremisEventBuilderImpl;
 import fi.solita.clamav.ClamAVClient;
 import fi.solita.clamav.ScanResult;
 
@@ -147,7 +147,7 @@ public class VirusScanJob extends AbstractConcurrentDepositJob {
                         PID binPid = href.getKey();
                         PID parentPid = PIDs.get(binPid.getQualifier(), binPid.getId());
                         PremisLogger premisLogger = getPremisLogger(parentPid);
-                        PremisEventBuilderImpl premisEventBuilder = premisLogger.buildEvent(Premis.VirusCheck);
+                        PremisEventBuilder premisEventBuilder = premisLogger.buildEvent(Premis.VirusCheck);
 
                         premisEventBuilder.addSoftwareAgent(AgentPids.forSoftware(SoftwareAgent.clamav))
                                 .addEventDetail("File passed pre-ingest scan for viruses")

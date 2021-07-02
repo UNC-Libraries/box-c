@@ -32,6 +32,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import edu.unc.lib.boxc.model.api.ResourceType;
 import edu.unc.lib.boxc.model.api.ids.PID;
+import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.acl.util.GroupsThreadStore;
 
@@ -90,7 +91,7 @@ public class ContentModelController {
         public void setPids(List<String> pids) {
             this.pids = new ArrayList<>(pids.size());
             for (String id : pids) {
-                this.pids.add(new PID(id));
+                this.pids.add(PIDs.get(id));
             }
         }
 

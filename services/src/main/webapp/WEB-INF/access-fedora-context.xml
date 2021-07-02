@@ -42,7 +42,7 @@
         <property name="objectAclFactory" ref="objectAclFactory" />
     </bean>
     
-    <bean id="repositoryObjectLoaderNoCache" class="edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader" init-method="init">
+    <bean id="repositoryObjectLoaderNoCache" class="edu.unc.lib.boxc.model.fcrepo.services.RepositoryObjectLoaderImpl" init-method="init">
         <property name="repositoryObjectCacheLoader" ref="repositoryObjectCacheLoader" />
         <property name="cacheTimeToLive" value="0" />
         <property name="cacheMaxSize" value="0" />
@@ -95,7 +95,7 @@
             factory-bean="fcrepoClientFactory" factory-method="makeClient">
     </bean>
     
-    <bean id="ldpContainerFactory" class="edu.unc.lib.dl.fcrepo4.LdpContainerFactory">
+    <bean id="ldpContainerFactory" class="edu.unc.lib.boxc.model.fcrepo.services.LdpContainerFactory">
         <property name="client" ref="fcrepoClient" />
     </bean>
     
@@ -110,7 +110,7 @@
         <property name="fcrepoClient" ref="fcrepoClient" />
     </bean>
 
-    <bean id="repositoryObjectFactory" class="edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory">
+    <bean id="repositoryObjectFactory" class="edu.unc.lib.boxc.model.fcrepo.services.RepositoryObjectFactoryImpl">
         <property name="client" ref="fcrepoClient" />
         <property name="ldpFactory" ref="ldpContainerFactory" />
         <property name="pidMinter" ref="pidMinter" />
@@ -118,7 +118,7 @@
         <property name="sparqlUpdateService" ref="fedoraSparqlUpdateService" />
     </bean>
     
-    <bean id="pidMinter" class="edu.unc.lib.dl.fcrepo4.RepositoryPIDMinter">
+    <bean id="pidMinter" class="edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPIDMinter">
     </bean>
     
     <bean id="repositoryObjectDriver" class="edu.unc.lib.boxc.model.fcrepo.services.RepositoryObjectDriver">
@@ -134,7 +134,7 @@
         <property name="repositoryObjectDriver" ref="repositoryObjectDriver" />
     </bean>
     
-    <bean id="repositoryObjectLoader" class="edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader" init-method="init">
+    <bean id="repositoryObjectLoader" class="edu.unc.lib.boxc.model.fcrepo.services.RepositoryObjectLoaderImpl" init-method="init">
         <property name="cacheTimeToLive" value="1000" />
         <property name="cacheMaxSize" value="50" />
         <property name="repositoryObjectCacheLoader" ref="repositoryObjectCacheLoader" />

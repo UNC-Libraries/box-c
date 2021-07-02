@@ -44,7 +44,6 @@ import edu.unc.lib.boxc.model.api.objects.FolderObject;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObject;
 import edu.unc.lib.boxc.model.api.objects.WorkObject;
 import edu.unc.lib.boxc.model.api.rdf.Ldp;
-import edu.unc.lib.boxc.model.api.objects.ContentContainerObject;
 import edu.unc.lib.dl.fcrepo4.ClientFaultResolver;
 import edu.unc.lib.dl.fedora.ServiceException;
 

@@ -416,6 +416,7 @@ public class DestroyObjectsJobIT {
         job.setStorageLocationManager(locationManager);
         job.setIndexingMessageSender(indexingMessageSender);
         job.setBinaryDestroyedMessageSender(binaryDestroyedMessageSender);
+        job.setPremisLoggerFactory(premisLoggerFactory);
     }
 
     private void assertMessagePresent(List<Document> returnedDocs, Map<URI, Map<String, String>> filesToCleanup,

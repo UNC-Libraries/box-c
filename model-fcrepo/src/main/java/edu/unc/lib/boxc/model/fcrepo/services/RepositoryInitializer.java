@@ -26,9 +26,9 @@ import org.apache.jena.vocabulary.DC;
 import org.slf4j.Logger;
 
 import edu.unc.lib.boxc.common.util.URIUtil;
+import edu.unc.lib.boxc.fcrepo.FcrepoPaths;
 import edu.unc.lib.boxc.model.api.ids.RepositoryPathConstants;
 import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
-import edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPaths;
 
 /**
  * Initializes the structure of the repository
@@ -58,7 +58,7 @@ public class RepositoryInitializer {
     }
 
     private URI createContainer(String id, String title) {
-        String containerString = URIUtil.join(RepositoryPaths.getBaseUri(), id);
+        String containerString = URIUtil.join(FcrepoPaths.getBaseUri(), id);
         URI containerUri = URI.create(containerString);
 
         // Abort initialization of already present container

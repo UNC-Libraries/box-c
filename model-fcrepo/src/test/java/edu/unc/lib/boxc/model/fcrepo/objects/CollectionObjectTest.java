@@ -35,6 +35,7 @@ import org.mockito.stubbing.Answer;
 import edu.unc.lib.boxc.model.api.exceptions.ObjectTypeMismatchException;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.objects.CollectionObject;
+import edu.unc.lib.boxc.model.api.objects.ContentObject;
 import edu.unc.lib.boxc.model.api.objects.FolderObject;
 import edu.unc.lib.boxc.model.api.objects.WorkObject;
 import edu.unc.lib.boxc.model.api.rdf.Cdr;
@@ -108,10 +109,10 @@ public class CollectionObjectTest extends AbstractFedoraObjectTest {
     public void addWorkMemberTest() {
         collection.addMember(workChildObj);
 
-        ArgumentCaptor<AbstractContentObject> captor = ArgumentCaptor.forClass(AbstractContentObject.class);
+        ArgumentCaptor<ContentObject> captor = ArgumentCaptor.forClass(ContentObject.class);
         verify(repoObjFactory).addMember(eq(collection), captor.capture());
 
-        AbstractContentObject child = captor.getValue();
+        ContentObject child = captor.getValue();
         assertTrue("Incorrect type of child added", child instanceof WorkObject);
         assertEquals("Child did not have the expected pid", workChildPid, child.getPid());
     }
@@ -120,10 +121,10 @@ public class CollectionObjectTest extends AbstractFedoraObjectTest {
     public void addFolderMemberTest() {
         collection.addMember(folderChildObj);
 
-        ArgumentCaptor<AbstractContentObject> captor = ArgumentCaptor.forClass(AbstractContentObject.class);
+        ArgumentCaptor<ContentObject> captor = ArgumentCaptor.forClass(ContentObject.class);
         verify(repoObjFactory).addMember(eq(collection), captor.capture());
 
-        AbstractContentObject child = captor.getValue();
+        ContentObject child = captor.getValue();
         assertTrue("Incorrect type of child added", child instanceof FolderObject);
         assertEquals("Child did not have the expected pid", folderChildPid, child.getPid());
     }

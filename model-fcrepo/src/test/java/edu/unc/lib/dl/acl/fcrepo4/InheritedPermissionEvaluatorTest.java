@@ -15,7 +15,7 @@
  */
 package edu.unc.lib.dl.acl.fcrepo4;
 
-import static edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPathConstants.CONTENT_ROOT_ID;
+import static edu.unc.lib.boxc.model.api.ids.RepositoryPathConstants.CONTENT_ROOT_ID;
 import static edu.unc.lib.dl.acl.util.AccessPrincipalConstants.AUTHENTICATED_PRINC;
 import static edu.unc.lib.dl.acl.util.AccessPrincipalConstants.PATRON_NAMESPACE;
 import static edu.unc.lib.dl.acl.util.AccessPrincipalConstants.PUBLIC_PRINC;

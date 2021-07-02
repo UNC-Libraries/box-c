@@ -19,6 +19,7 @@ import edu.unc.lib.boxc.model.api.ResourceType;
 import edu.unc.lib.boxc.model.api.exceptions.FedoraException;
 import edu.unc.lib.boxc.model.api.exceptions.ObjectTypeMismatchException;
 import edu.unc.lib.boxc.model.api.ids.PID;
+import edu.unc.lib.boxc.model.api.objects.AdminUnit;
 import edu.unc.lib.boxc.model.api.objects.ContentContainerObject;
 import edu.unc.lib.boxc.model.api.objects.ContentObject;
 import edu.unc.lib.boxc.model.api.objects.ContentRootObject;
@@ -43,7 +44,7 @@ public class ContentRootObjectImpl extends AbstractContentContainerObject implem
 
     @Override
     public ContentContainerObject addMember(ContentObject member) throws ObjectTypeMismatchException {
-        if (!(member instanceof AdminUnitImpl)) {
+        if (!(member instanceof AdminUnit)) {
             throw new ObjectTypeMismatchException("Cannot add object of type " + member.getClass().getName()
                     + " as a member of ContentRootObject " + pid.getQualifiedId());
         }

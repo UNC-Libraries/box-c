@@ -67,7 +67,7 @@ public class RepositoryPIDMinter implements PIDMinter {
      */
     @Override
     public PID mintPremisEventPid(PID parentPid) {
-        String eventId = EVENT_ID_PREFIX + System.currentTimeMillis() + ((int)(Math.random() * 1000));
+        String eventId = EVENT_ID_PREFIX + System.currentTimeMillis() + System.nanoTime();
         String eventUrl = URIUtil.join(parentPid.getRepositoryPath(), eventId);
         return PIDs.get(eventUrl);
     }

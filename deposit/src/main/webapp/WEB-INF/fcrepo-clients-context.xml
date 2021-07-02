@@ -26,7 +26,7 @@
             factory-bean="fcrepoClientFactory" factory-method="makeClient">
     </bean>
     
-    <bean id="ldpContainerFactory" class="edu.unc.lib.dl.fcrepo4.LdpContainerFactory">
+    <bean id="ldpContainerFactory" class="edu.unc.lib.boxc.model.fcrepo.services.LdpContainerFactory">
         <property name="client" ref="fcrepoClient" />
     </bean>
     
@@ -34,7 +34,7 @@
         <property name="fcrepoClient" ref="fcrepoClient" />
     </bean>
 
-    <bean id="repositoryObjectFactory" class="edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory">
+    <bean id="repositoryObjectFactory" class="edu.unc.lib.boxc.model.fcrepo.services.RepositoryObjectFactoryImpl">
         <property name="client" ref="fcrepoClient" />
         <property name="ldpFactory" ref="ldpContainerFactory" />
         <property name="pidMinter" ref="pidMinter" />
@@ -42,7 +42,7 @@
         <property name="sparqlUpdateService" ref="fedoraSparqlUpdateService" />
     </bean>
     
-    <bean id="pidMinter" class="edu.unc.lib.dl.fcrepo4.RepositoryPIDMinter">
+    <bean id="pidMinter" class="edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPIDMinter">
     </bean>
     
     <bean id="repositoryObjectDriver" class="edu.unc.lib.boxc.model.fcrepo.services.RepositoryObjectDriver">
@@ -58,7 +58,7 @@
         <property name="repositoryObjectFactory" ref="repositoryObjectFactory" />
     </bean>
     
-    <bean id="repositoryObjectLoader" class="edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader" init-method="init">
+    <bean id="repositoryObjectLoader" class="edu.unc.lib.boxc.model.fcrepo.services.RepositoryObjectLoaderImpl" init-method="init">
         <property name="cacheTimeToLive" value="1000" />
         <property name="cacheMaxSize" value="50" />
         <property name="repositoryObjectCacheLoader" ref="repositoryObjectCacheLoader" />
@@ -69,7 +69,7 @@
         <property name="binaryTransferService" ref="binaryTransferService" />
     </bean>
     
-    <bean id="repositoryInitializer" class="edu.unc.lib.dl.fcrepo4.RepositoryInitializer"
+    <bean id="repositoryInitializer" class="edu.unc.lib.boxc.model.fcrepo.services.RepositoryInitializer"
             init-method="initializeRepository">
         <property name="objFactory" ref="repositoryObjectFactory" />
     </bean>

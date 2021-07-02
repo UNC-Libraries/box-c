@@ -34,7 +34,7 @@ public class TestHelper {
 
     public static void setContentBase(String uri) {
         try {
-            Method m = FcrepoPaths.class.getDeclaredMethod("getBaseUri", String.class);
+            Method m = FcrepoPaths.class.getDeclaredMethod("setBaseUri", String.class);
             m.setAccessible(true);
             try {
                 m.invoke(null, uri);

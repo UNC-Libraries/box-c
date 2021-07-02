@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package edu.unc.lib.dl.util;
+package edu.unc.lib.dl.persist.services.ingest;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -35,6 +35,7 @@ import org.xml.sax.helpers.DefaultHandler;
 
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.xml.NamespaceConstants;
+import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 
 /**
  * An quick SAX extractor of METS header information.
@@ -100,7 +101,7 @@ public class MetsHeaderScanner extends DefaultHandler {
             for (int i = 0; i < attr.getLength(); i++) {
                 String n = attr.getLocalName(i);
                 if (n.equals("OBJID")) {
-                    objID = new PID(attr.getValue(i));
+                    objID = PIDs.get(attr.getValue(i));
                 } else if (n.equals("ID")) {
                     id = attr.getValue(i);
                 } else if (n.equals("LABEL")) {

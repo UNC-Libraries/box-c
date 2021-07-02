@@ -26,7 +26,6 @@ import org.slf4j.LoggerFactory;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.dl.persist.api.ingest.DepositData;
 import edu.unc.lib.dl.util.DepositException;
-import edu.unc.lib.dl.util.MetsHeaderScanner;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
 
 /**
