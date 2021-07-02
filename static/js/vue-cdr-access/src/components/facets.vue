@@ -43,10 +43,6 @@
         },
 
         watch: {
-            selected_facets() {
-                this.selectedFacets();
-            },
-
            '$route.query'(route) {
                this.selected_facets = [];
                this.setFacetsFromParams();
@@ -88,6 +84,7 @@
         methods: {
             clearAll() {
                 this.selected_facets = [];
+                this.selectedFacets();
             },
 
             updateAll(facet, remove = false) {
@@ -96,6 +93,8 @@
                 } else {
                     this.updateSelectedFacet(facet);
                 }
+
+                this.selectedFacets();
             },
 
             updateSelectedFacet(facet) {
