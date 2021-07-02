@@ -33,6 +33,7 @@ import edu.unc.lib.dl.search.solr.model.SearchRequest;
 import edu.unc.lib.dl.search.solr.model.SearchResultResponse;
 import edu.unc.lib.dl.search.solr.model.SearchState;
 import edu.unc.lib.dl.search.solr.util.FacetFieldUtil;
+import edu.unc.lib.dl.util.ResourceType;
 
 /**
  * Service for retrieving facet listings for searches supporting selection of multiple values for the same facet.
@@ -40,6 +41,9 @@ import edu.unc.lib.dl.search.solr.util.FacetFieldUtil;
  * @author bbpennel
  */
 public class MultiSelectFacetListService extends AbstractQueryService {
+    private static final List<String> DEFAULT_RESOURCE_TYPES = Arrays.asList(
+            ResourceType.AdminUnit.name(), ResourceType.Collection.name(),
+            ResourceType.Folder.name(), ResourceType.Work.name());
 
     private SolrSearchService searchService;
 
@@ -70,7 +74,14 @@ public class MultiSelectFacetListService extends AbstractQueryService {
         SearchRequest facetRequest = new SearchRequest(searchState, searchRequest.getAccessGroups(), true);
 
         searchState.setRowsPerPage(0);
-        searchState.setResourceTypes(null);
+        // Set the resource types counted in the facets to exclude File objects
+        if (searchState.getResourceTypes() == null) {
+            searchState.setResourceTypes(DEFAULT_RESOURCE_TYPES);
+        } else {
+            searchState.setResourceTypes(searchState.getResourceTypes().stream()
+                    .filter(t -> !t.equals(ResourceType.File.name()))
+                    .collect(Collectors.toList()));
+        }
 
         // Perform base search with all filters applied, generating the base result response which will be returned.
         SearchResultResponse resultResponse = searchService.getSearchResults(facetRequest);
