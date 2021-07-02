@@ -362,10 +362,10 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
     }
 
     /**
-     * Test that a single file can be ingested into an existing work, as in the SeFile deposit case
+     * Test that a single file can be ingested into an existing work, as in the SimpleFile deposit case
      */
     @Test
-    public void ingestSeFile() throws Exception {
+    public void ingestSimpleFile() throws Exception {
         WorkObject destWork = repoObjFactory.createWorkObject(null);
         FolderObject parentFolder = repoObjLoader.getFolderObject(destinationPid);
         parentFolder.addMember(destWork);
