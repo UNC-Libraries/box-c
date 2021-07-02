@@ -1,7 +1,8 @@
 <template>
     <div>
         <div class="search-query-text">
-            <strong>Search results for</strong> "{{ $route.query.anywhere }}"
+            Search results for "{{ $route.query.anywhere }}"
+            <facet-tags :facet-list="facet_list"></facet-tags>
         </div>
         <img v-if="is_loading" src="/static/images/ajax-loader-lg.gif" alt="data loading icon">
         <div v-if="!is_loading">
@@ -35,17 +36,16 @@
 <script>
     import browseSort from "./browseSort";
     import facets from "./facets";
+    import facetTags from "./facetTags";
     import listDisplay from "./listDisplay";
     import pagination from "./pagination";
     import routeUtils from "../mixins/routeUtils";
     import get from 'axios';
 
-    const UUID_REGEX = /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i;
-
     export default {
         name: 'searchWrapper',
 
-        components: {browseSort, facets, listDisplay, pagination},
+        components: {browseSort, facets, facetTags, listDisplay, pagination},
 
         mixins: [routeUtils],
 
@@ -89,14 +89,8 @@
         methods: {
             retrieveData() {
                 let param_string = `${this.formatParamsString(this.$route.query)}&getFacets=true`;
-                let search_path = 'searchJson';
 
-                this.collection = UUID_REGEX.test(this.$route.path) ? this.$route.path.split('/')[2] : '';
-                if (this.collection !== '') {
-                    search_path += `/${this.collection}`
-                }
-
-                get(`${search_path}/${param_string}`).then((response) => {
+                get(`searchJson/${param_string}`).then((response) => {
                     this.records = response.data.metadata;
                     this.total_records = response.data.resultCount;
                     this.facet_list = response.data.facetFields;
