@@ -30,6 +30,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 
 import org.apache.jena.rdf.model.Bag;
@@ -39,6 +41,7 @@ import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.Statement;
 import org.apache.jena.rdf.model.StmtIterator;
 import org.apache.jena.vocabulary.RDF;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
@@ -60,18 +63,27 @@ public class BagIt2N3BagJobTest extends AbstractNormalizationJobTest {
     @Captor
     private ArgumentCaptor<String> filePathCaptor;
 
+    private ExecutorService executorService;
+
     @Before
     public void setup() throws Exception {
         status = new HashMap<>();
         when(depositStatusFactory.get(anyString())).thenReturn(status);
 
+        executorService = Executors.newSingleThreadExecutor();
         job = new BagIt2N3BagJob();
         job.setDepositUUID(depositUUID);
         job.setDepositDirectory(depositDir);
+        job.setExecutorService(executorService);
         setField(job, "depositModelManager", depositModelManager);
         setField(job, "depositsDirectory", depositsDirectory);
         setField(job, "depositStatusFactory", depositStatusFactory);
         job.init();
+    }
+
+    @After
+    public void tearDownTest() throws Exception {
+        executorService.shutdown();
     }
 
     @Test
