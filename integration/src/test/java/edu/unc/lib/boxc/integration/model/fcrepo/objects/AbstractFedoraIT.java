@@ -99,7 +99,7 @@ public abstract class AbstractFedoraIT {
     }
 
     /**
-     * Asserts that the object identified by pid has been created in Fedora.  Does not work for binary resources
+     * Asserts that the object identified by pid has been created in Fedora
      *
      * @param pid
      * @throws FcrepoOperationFailedException
