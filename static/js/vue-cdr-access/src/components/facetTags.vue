@@ -197,5 +197,5 @@ export default {
     i.fa-greater-than {
         color: #B0B0B0;
         font-size: .6rem;
-}
+    }
 </style>
