@@ -54,9 +54,9 @@ import edu.unc.lib.boxc.model.api.rdf.CdrDeposit;
 import edu.unc.lib.boxc.model.api.rdf.Premis;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.deposit.fcrepo4.AbstractDepositJobTest;
+import edu.unc.lib.dl.persist.api.event.PremisEventBuilder;
 import edu.unc.lib.dl.persist.api.event.PremisLogger;
 import edu.unc.lib.dl.persist.api.event.PremisLoggerFactory;
-import edu.unc.lib.dl.persist.event.PremisEventBuilderImpl;
 import edu.unc.lib.dl.persist.services.deposit.DepositModelHelpers;
 
 /**
@@ -78,7 +78,7 @@ public class NormalizeFileObjectsJobTest extends AbstractDepositJobTest {
     private PremisLogger mockPremisLogger;
     @Mock
     private PremisLoggerFactory mockPremisLoggerFactory;
-    private PremisEventBuilderImpl mockPremisEventBuilder;
+    private PremisEventBuilder mockPremisEventBuilder;
 
     @Mock
     private PIDMinter pidMinter;
@@ -95,7 +95,7 @@ public class NormalizeFileObjectsJobTest extends AbstractDepositJobTest {
         setField(job, "pidMinter", pidMinter);
         job.init();
 
-        mockPremisEventBuilder = mock(PremisEventBuilderImpl.class, new SelfReturningAnswer());
+        mockPremisEventBuilder = mock(PremisEventBuilder.class, new SelfReturningAnswer());
         when(mockPremisLoggerFactory.createPremisLogger(any(PID.class), any(File.class)))
                 .thenReturn(mockPremisLogger);
         when(mockPremisLogger.buildEvent(any(Resource.class))).thenReturn(mockPremisEventBuilder);

@@ -45,8 +45,6 @@ import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.boxc.model.fcrepo.objects.AbstractFedoraObjectTest;
 import edu.unc.lib.dl.persist.api.event.PremisEventBuilder;
 import edu.unc.lib.dl.persist.api.event.PremisLogger;
-import edu.unc.lib.dl.persist.event.FilePremisLogger;
-import edu.unc.lib.dl.persist.event.PremisEventBuilderImpl;
 
 /**
  *
@@ -82,7 +80,7 @@ public class FilePremisLoggerTest extends AbstractFedoraObjectTest {
         PremisEventBuilder builder = premis.buildEvent(null, eventType, date);
 
         assertTrue("Returned object is not a PremisLogger", premis instanceof PremisLogger);
-        assertTrue("Returned object is not a PremisEventBuilder", builder instanceof PremisEventBuilderImpl);
+        assertTrue("Returned object is not a PremisEventBuilder", builder instanceof PremisEventBuilder);
     }
 
     @Test

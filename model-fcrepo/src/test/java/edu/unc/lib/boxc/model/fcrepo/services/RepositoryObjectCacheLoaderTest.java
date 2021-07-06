@@ -44,20 +44,20 @@ import edu.unc.lib.boxc.common.test.SelfReturningAnswer;
 import edu.unc.lib.boxc.model.api.exceptions.ObjectTypeMismatchException;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.ids.RepositoryPathConstants;
+import edu.unc.lib.boxc.model.api.objects.AdminUnit;
+import edu.unc.lib.boxc.model.api.objects.BinaryObject;
+import edu.unc.lib.boxc.model.api.objects.CollectionObject;
+import edu.unc.lib.boxc.model.api.objects.ContentRootObject;
+import edu.unc.lib.boxc.model.api.objects.DepositRecord;
+import edu.unc.lib.boxc.model.api.objects.FileObject;
+import edu.unc.lib.boxc.model.api.objects.FolderObject;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObject;
+import edu.unc.lib.boxc.model.api.objects.WorkObject;
 import edu.unc.lib.boxc.model.api.rdf.Cdr;
 import edu.unc.lib.boxc.model.api.rdf.Fcrepo4Repository;
 import edu.unc.lib.boxc.model.api.rdf.Ldp;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
-import edu.unc.lib.boxc.model.fcrepo.objects.AdminUnitImpl;
-import edu.unc.lib.boxc.model.fcrepo.objects.BinaryObjectImpl;
-import edu.unc.lib.boxc.model.fcrepo.objects.CollectionObjectImpl;
-import edu.unc.lib.boxc.model.fcrepo.objects.ContentRootObjectImpl;
-import edu.unc.lib.boxc.model.fcrepo.objects.DepositRecordImpl;
-import edu.unc.lib.boxc.model.fcrepo.objects.FileObjectImpl;
-import edu.unc.lib.boxc.model.fcrepo.objects.FolderObjectImpl;
 import edu.unc.lib.boxc.model.fcrepo.objects.RepositoryObjectCacheLoader;
-import edu.unc.lib.boxc.model.fcrepo.objects.WorkObjectImpl;
 
 /**
  *
@@ -105,7 +105,7 @@ public class RepositoryObjectCacheLoaderTest {
 
         RepositoryObject obj = objectCacheLoader.load(pid);
 
-        assertTrue(obj instanceof DepositRecordImpl);
+        assertTrue(obj instanceof DepositRecord);
         assertEquals(pid, obj.getPid());
         assertEquals(ETAG, obj.getEtag());
         assertTrue(obj.getResource().hasProperty(RDF.type, Cdr.DepositRecord));
@@ -118,7 +118,7 @@ public class RepositoryObjectCacheLoaderTest {
 
         RepositoryObject obj = objectCacheLoader.load(pid);
 
-        assertTrue(obj instanceof WorkObjectImpl);
+        assertTrue(obj instanceof WorkObject);
         assertEquals(pid, obj.getPid());
         assertEquals(ETAG, obj.getEtag());
         assertTrue(obj.getResource().hasProperty(RDF.type, Cdr.Work));
@@ -131,7 +131,7 @@ public class RepositoryObjectCacheLoaderTest {
 
         RepositoryObject obj = objectCacheLoader.load(pid);
 
-        assertTrue(obj instanceof FileObjectImpl);
+        assertTrue(obj instanceof FileObject);
         assertEquals(pid, obj.getPid());
         assertEquals(ETAG, obj.getEtag());
         assertTrue(obj.getResource().hasProperty(RDF.type, Cdr.FileObject));
@@ -144,7 +144,7 @@ public class RepositoryObjectCacheLoaderTest {
 
         RepositoryObject obj = objectCacheLoader.load(pid);
 
-        assertTrue(obj instanceof FolderObjectImpl);
+        assertTrue(obj instanceof FolderObject);
         assertEquals(pid, obj.getPid());
         assertEquals(ETAG, obj.getEtag());
         assertTrue(obj.getResource().hasProperty(RDF.type, Cdr.Folder));
@@ -157,7 +157,7 @@ public class RepositoryObjectCacheLoaderTest {
 
         RepositoryObject obj = objectCacheLoader.load(pid);
 
-        assertTrue(obj instanceof CollectionObjectImpl);
+        assertTrue(obj instanceof CollectionObject);
         assertEquals(pid, obj.getPid());
         assertEquals(ETAG, obj.getEtag());
         assertTrue(obj.getResource().hasProperty(RDF.type, Cdr.Collection));
@@ -170,7 +170,7 @@ public class RepositoryObjectCacheLoaderTest {
 
         RepositoryObject obj = objectCacheLoader.load(pid);
 
-        assertTrue(obj instanceof ContentRootObjectImpl);
+        assertTrue(obj instanceof ContentRootObject);
         assertEquals(pid, obj.getPid());
         assertEquals(ETAG, obj.getEtag());
         assertTrue(obj.getResource().hasProperty(RDF.type, Cdr.ContentRoot));
@@ -183,7 +183,7 @@ public class RepositoryObjectCacheLoaderTest {
 
         RepositoryObject obj = objectCacheLoader.load(pid);
 
-        assertTrue(obj instanceof AdminUnitImpl);
+        assertTrue(obj instanceof AdminUnit);
         assertEquals(pid, obj.getPid());
         assertEquals(ETAG, obj.getEtag());
         assertTrue(obj.getResource().hasProperty(RDF.type, Cdr.AdminUnit));
@@ -196,7 +196,7 @@ public class RepositoryObjectCacheLoaderTest {
 
         RepositoryObject obj = objectCacheLoader.load(pid);
 
-        assertTrue(obj instanceof BinaryObjectImpl);
+        assertTrue(obj instanceof BinaryObject);
         assertEquals(pid, obj.getPid());
         assertEquals(ETAG, obj.getEtag());
         assertTrue(obj.getResource().hasProperty(RDF.type, Ldp.NonRdfSource));

@@ -39,16 +39,16 @@ import org.mockito.stubbing.Answer;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.ids.PIDMinter;
 import edu.unc.lib.boxc.model.api.ids.RepositoryPathConstants;
-import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObject;
+import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.boxc.model.fcrepo.services.RepositoryObjectDriver;
 import edu.unc.lib.boxc.model.fcrepo.test.TestHelper;
 import edu.unc.lib.dl.fcrepo4.FedoraTransaction;
 import edu.unc.lib.dl.fcrepo4.TransactionCancelledException;
 import edu.unc.lib.dl.fcrepo4.TransactionManager;
+import edu.unc.lib.dl.persist.api.event.PremisEventBuilder;
 import edu.unc.lib.dl.persist.api.event.PremisLogger;
 import edu.unc.lib.dl.persist.api.transfer.BinaryTransferSession;
-import edu.unc.lib.dl.persist.event.PremisEventBuilderImpl;
 import edu.unc.lib.dl.persist.event.PremisLoggerFactoryImpl;
 import edu.unc.lib.dl.persist.services.deposit.DepositModelManager;
 import edu.unc.lib.dl.reporting.ActivityMetricsClient;
@@ -86,7 +86,7 @@ public class AbstractDepositJobTest {
     @Mock
     protected PremisLogger premisLogger;
     @Mock
-    protected PremisEventBuilderImpl premisEventBuilder;
+    protected PremisEventBuilder premisEventBuilder;
     @Mock
     protected ActivityMetricsClient metricsClient;
     @Mock

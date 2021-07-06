@@ -38,16 +38,16 @@ import edu.unc.lib.boxc.model.api.exceptions.NotFoundException;
 import edu.unc.lib.boxc.model.api.exceptions.ObjectTypeMismatchException;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.ids.PIDMinter;
+import edu.unc.lib.boxc.model.api.objects.AdminUnit;
+import edu.unc.lib.boxc.model.api.objects.BinaryObject;
+import edu.unc.lib.boxc.model.api.objects.CollectionObject;
+import edu.unc.lib.boxc.model.api.objects.DepositRecord;
+import edu.unc.lib.boxc.model.api.objects.FileObject;
+import edu.unc.lib.boxc.model.api.objects.FolderObject;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObject;
+import edu.unc.lib.boxc.model.api.objects.WorkObject;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
-import edu.unc.lib.boxc.model.fcrepo.objects.AdminUnitImpl;
-import edu.unc.lib.boxc.model.fcrepo.objects.BinaryObjectImpl;
-import edu.unc.lib.boxc.model.fcrepo.objects.CollectionObjectImpl;
-import edu.unc.lib.boxc.model.fcrepo.objects.DepositRecordImpl;
-import edu.unc.lib.boxc.model.fcrepo.objects.FileObjectImpl;
-import edu.unc.lib.boxc.model.fcrepo.objects.FolderObjectImpl;
 import edu.unc.lib.boxc.model.fcrepo.objects.RepositoryObjectCacheLoader;
-import edu.unc.lib.boxc.model.fcrepo.objects.WorkObjectImpl;
 
 /**
  *
@@ -89,7 +89,7 @@ public class RepositoryObjectLoaderTest {
     public void getBinaryTest() {
         PID pid = getBinaryPid();
 
-        when(objectCacheLoader.load(eq(pid))).thenReturn(mock(BinaryObjectImpl.class));
+        when(objectCacheLoader.load(eq(pid))).thenReturn(mock(BinaryObject.class));
 
         assertNotNull(repoObjLoader.getBinaryObject(pid));
     }
@@ -104,7 +104,7 @@ public class RepositoryObjectLoaderTest {
     public void getFileObjectTest() {
         PID pid = pidMinter.mintContentPid();
 
-        when(objectCacheLoader.load(eq(pid))).thenReturn(mock(FileObjectImpl.class));
+        when(objectCacheLoader.load(eq(pid))).thenReturn(mock(FileObject.class));
 
         assertNotNull(repoObjLoader.getFileObject(pid));
     }
@@ -113,7 +113,7 @@ public class RepositoryObjectLoaderTest {
     public void getWorkObjectTest() {
         PID pid = pidMinter.mintContentPid();
 
-        when(objectCacheLoader.load(eq(pid))).thenReturn(mock(WorkObjectImpl.class));
+        when(objectCacheLoader.load(eq(pid))).thenReturn(mock(WorkObject.class));
 
         assertNotNull(repoObjLoader.getWorkObject(pid));
     }
@@ -122,7 +122,7 @@ public class RepositoryObjectLoaderTest {
     public void getFolderObjectTest() {
         PID pid = pidMinter.mintContentPid();
 
-        when(objectCacheLoader.load(eq(pid))).thenReturn(mock(FolderObjectImpl.class));
+        when(objectCacheLoader.load(eq(pid))).thenReturn(mock(FolderObject.class));
 
         assertNotNull(repoObjLoader.getFolderObject(pid));
     }
@@ -131,7 +131,7 @@ public class RepositoryObjectLoaderTest {
     public void getCollectionObjectTest() {
         PID pid = pidMinter.mintContentPid();
 
-        when(objectCacheLoader.load(eq(pid))).thenReturn(mock(CollectionObjectImpl.class));
+        when(objectCacheLoader.load(eq(pid))).thenReturn(mock(CollectionObject.class));
 
         assertNotNull(repoObjLoader.getCollectionObject(pid));
     }
@@ -140,7 +140,7 @@ public class RepositoryObjectLoaderTest {
     public void getAdminUnitTest() {
         PID pid = pidMinter.mintContentPid();
 
-        when(objectCacheLoader.load(eq(pid))).thenReturn(mock(AdminUnitImpl.class));
+        when(objectCacheLoader.load(eq(pid))).thenReturn(mock(AdminUnit.class));
 
         assertNotNull(repoObjLoader.getAdminUnit(pid));
     }
@@ -149,7 +149,7 @@ public class RepositoryObjectLoaderTest {
     public void getDepositRecordTest() {
         PID pid = pidMinter.mintDepositRecordPid();
 
-        when(objectCacheLoader.load(eq(pid))).thenReturn(mock(DepositRecordImpl.class));
+        when(objectCacheLoader.load(eq(pid))).thenReturn(mock(DepositRecord.class));
 
         assertNotNull(repoObjLoader.getDepositRecord(pid));
     }
@@ -158,7 +158,7 @@ public class RepositoryObjectLoaderTest {
     public void getDepositRecordWrongTypeTest() {
         PID pid = pidMinter.mintDepositRecordPid();
 
-        when(objectCacheLoader.load(eq(pid))).thenReturn(mock(WorkObjectImpl.class));
+        when(objectCacheLoader.load(eq(pid))).thenReturn(mock(WorkObject.class));
 
         repoObjLoader.getDepositRecord(pid);
     }
@@ -167,10 +167,10 @@ public class RepositoryObjectLoaderTest {
     public void getRepositoryObjectFolderTest() throws Exception {
         PID pid = pidMinter.mintContentPid();
 
-        when(objectCacheLoader.load(eq(pid))).thenReturn(mock(FolderObjectImpl.class));
+        when(objectCacheLoader.load(eq(pid))).thenReturn(mock(FolderObject.class));
 
         RepositoryObject resultObj = repoObjLoader.getRepositoryObject(pid);
-        assertTrue(resultObj instanceof FolderObjectImpl);
+        assertTrue(resultObj instanceof FolderObject);
     }
 
     @Test(expected = NotFoundException.class)
@@ -187,7 +187,7 @@ public class RepositoryObjectLoaderTest {
     public void invalidateTest() throws Exception {
         PID pid = pidMinter.mintContentPid();
 
-        when(objectCacheLoader.load(eq(pid))).thenReturn(mock(FolderObjectImpl.class));
+        when(objectCacheLoader.load(eq(pid))).thenReturn(mock(FolderObject.class));
         // Trigger population of cache
         repoObjLoader.getRepositoryObject(pid);
 

@@ -58,9 +58,9 @@ import edu.unc.lib.dl.acl.util.Permission;
 import edu.unc.lib.dl.fcrepo4.FedoraTransaction;
 import edu.unc.lib.dl.fcrepo4.TransactionCancelledException;
 import edu.unc.lib.dl.fcrepo4.TransactionManager;
+import edu.unc.lib.dl.persist.api.event.PremisEventBuilder;
 import edu.unc.lib.dl.persist.api.event.PremisLogger;
 import edu.unc.lib.dl.persist.api.event.PremisLoggerFactory;
-import edu.unc.lib.dl.persist.event.PremisEventBuilderImpl;
 import edu.unc.lib.dl.services.OperationsMessageSender;
 
 /**
@@ -106,7 +106,7 @@ public class EditFilenameServiceTest {
     @Captor
     private ArgumentCaptor<List<PID>> pidCaptor;
 
-    private PremisEventBuilderImpl eventBuilder;
+    private PremisEventBuilder eventBuilder;
 
     private PID pid;
 
@@ -134,7 +134,7 @@ public class EditFilenameServiceTest {
         when(agent.getPrincipals()).thenReturn(groups);
         when(agent.getUsername()).thenReturn("user");
 
-        eventBuilder = mock(PremisEventBuilderImpl.class, new SelfReturningAnswer());
+        eventBuilder = mock(PremisEventBuilder.class, new SelfReturningAnswer());
         when(premisLoggerFactory.createPremisLogger(repoObj)).thenReturn(premisLogger);
         when(premisLogger.buildEvent(eq(Premis.FilenameChange))).thenReturn(eventBuilder);
         when(agent.getUsernameUri()).thenReturn("agentname");

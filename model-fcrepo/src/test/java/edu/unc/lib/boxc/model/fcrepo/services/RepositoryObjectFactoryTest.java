@@ -57,13 +57,6 @@ import edu.unc.lib.boxc.model.api.objects.FolderObject;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.api.objects.WorkObject;
 import edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPIDMinter;
-import edu.unc.lib.boxc.model.fcrepo.objects.AdminUnitImpl;
-import edu.unc.lib.boxc.model.fcrepo.objects.BinaryObjectImpl;
-import edu.unc.lib.boxc.model.fcrepo.objects.CollectionObjectImpl;
-import edu.unc.lib.boxc.model.fcrepo.objects.DepositRecordImpl;
-import edu.unc.lib.boxc.model.fcrepo.objects.FileObjectImpl;
-import edu.unc.lib.boxc.model.fcrepo.objects.FolderObjectImpl;
-import edu.unc.lib.boxc.model.fcrepo.objects.WorkObjectImpl;
 import edu.unc.lib.dl.sparql.SparqlUpdateService;
 /**
  *
@@ -121,42 +114,42 @@ public class RepositoryObjectFactoryTest {
 
     @Test
     public void createDepositRecordTest() {
-        when(repoObjLoader.getDepositRecord(any(PID.class))).thenReturn(mock(DepositRecordImpl.class));
+        when(repoObjLoader.getDepositRecord(any(PID.class))).thenReturn(mock(DepositRecord.class));
         DepositRecord obj = repoObjFactory.createDepositRecord(null);
         assertNotNull(obj);
     }
 
     @Test
     public void createAdminUnitTest() {
-        when(repoObjLoader.getAdminUnit(any(PID.class))).thenReturn(mock(AdminUnitImpl.class));
+        when(repoObjLoader.getAdminUnit(any(PID.class))).thenReturn(mock(AdminUnit.class));
         AdminUnit obj = repoObjFactory.createAdminUnit(null);
         assertNotNull(obj);
     }
 
     @Test
     public void createCollectionObjectTest() throws Exception {
-        when(repoObjLoader.getCollectionObject(any(PID.class))).thenReturn(mock(CollectionObjectImpl.class));
+        when(repoObjLoader.getCollectionObject(any(PID.class))).thenReturn(mock(CollectionObject.class));
         CollectionObject obj = repoObjFactory.createCollectionObject(null);
         assertNotNull(obj);
     }
 
     @Test
     public void createFolderObjectTest() throws Exception {
-        when(repoObjLoader.getFolderObject(any(PID.class))).thenReturn(mock(FolderObjectImpl.class));
+        when(repoObjLoader.getFolderObject(any(PID.class))).thenReturn(mock(FolderObject.class));
         FolderObject obj = repoObjFactory.createFolderObject(null);
         assertNotNull(obj);
     }
 
     @Test
     public void createWorkObjectTest() {
-        when(repoObjLoader.getWorkObject(any(PID.class))).thenReturn(mock(WorkObjectImpl.class));
+        when(repoObjLoader.getWorkObject(any(PID.class))).thenReturn(mock(WorkObject.class));
         WorkObject obj = repoObjFactory.createWorkObject(null);
         assertNotNull(obj);
     }
 
     @Test
     public void createFileObjectTest() {
-        when(repoObjLoader.getFileObject(any(PID.class))).thenReturn(mock(FileObjectImpl.class));
+        when(repoObjLoader.getFileObject(any(PID.class))).thenReturn(mock(FileObject.class));
         FileObject obj = repoObjFactory.createFileObject(null);
         assertNotNull(obj);
     }
@@ -177,7 +170,7 @@ public class RepositoryObjectFactoryTest {
         PID pid = pidMinter.mintContentPid();
         URI binaryUri = pid.getRepositoryUri();
         when(mockResponse.getLocation()).thenReturn(binaryUri);
-        BinaryObjectImpl mockBinary = mock(BinaryObjectImpl.class);
+        BinaryObject mockBinary = mock(BinaryObject.class);
         when(mockBinary.getPid()).thenReturn(pid);
         when(repoObjLoader.getBinaryObject(any(PID.class))).thenReturn(mockBinary);
 

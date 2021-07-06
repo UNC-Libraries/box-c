@@ -36,16 +36,7 @@ import edu.unc.lib.boxc.model.api.objects.RepositoryObject;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.api.objects.Tombstone;
 import edu.unc.lib.boxc.model.api.objects.WorkObject;
-import edu.unc.lib.boxc.model.fcrepo.objects.AdminUnitImpl;
-import edu.unc.lib.boxc.model.fcrepo.objects.BinaryObjectImpl;
-import edu.unc.lib.boxc.model.fcrepo.objects.CollectionObjectImpl;
-import edu.unc.lib.boxc.model.fcrepo.objects.ContentRootObjectImpl;
-import edu.unc.lib.boxc.model.fcrepo.objects.DepositRecordImpl;
-import edu.unc.lib.boxc.model.fcrepo.objects.FileObjectImpl;
-import edu.unc.lib.boxc.model.fcrepo.objects.FolderObjectImpl;
 import edu.unc.lib.boxc.model.fcrepo.objects.RepositoryObjectCacheLoader;
-import edu.unc.lib.boxc.model.fcrepo.objects.TombstoneImpl;
-import edu.unc.lib.boxc.model.fcrepo.objects.WorkObjectImpl;
 
 /**
  * Provides accessors to retrieve repository objects from a cache
@@ -83,25 +74,25 @@ public class RepositoryObjectLoaderImpl implements RepositoryObjectLoader {
     @Override
     public AdminUnit getAdminUnit(PID pid) {
         RepositoryObject repoObj = getRepositoryObject(pid);
-        if (!(repoObj instanceof AdminUnitImpl)) {
+        if (!(repoObj instanceof AdminUnit)) {
             throw new ObjectTypeMismatchException("Object with pid " + pid + " is not an admin unit");
         }
-        return (AdminUnitImpl) repoObj;
+        return (AdminUnit) repoObj;
     }
 
     @Override
     public CollectionObject getCollectionObject(PID pid) {
         RepositoryObject repoObj = getRepositoryObject(pid);
-        if (!(repoObj instanceof CollectionObjectImpl)) {
+        if (!(repoObj instanceof CollectionObject)) {
             throw new ObjectTypeMismatchException("Object with pid " + pid + " is not a collection");
         }
-        return (CollectionObjectImpl) repoObj;
+        return (CollectionObject) repoObj;
     }
 
     @Override
     public ContentRootObject getContentRootObject(PID pid) {
         RepositoryObject repoObj = getRepositoryObject(pid);
-        if (!(repoObj instanceof ContentRootObjectImpl)) {
+        if (!(repoObj instanceof ContentRootObject)) {
             throw new ObjectTypeMismatchException("Object with pid " + pid + " is not the content root");
         }
         return (ContentRootObject) repoObj;
@@ -110,55 +101,55 @@ public class RepositoryObjectLoaderImpl implements RepositoryObjectLoader {
     @Override
     public FolderObject getFolderObject(PID pid) {
         RepositoryObject repoObj = getRepositoryObject(pid);
-        if (!(repoObj instanceof FolderObjectImpl)) {
+        if (!(repoObj instanceof FolderObject)) {
             throw new ObjectTypeMismatchException("Object with pid " + pid + " is not a folder");
         }
-        return (FolderObjectImpl) repoObj;
+        return (FolderObject) repoObj;
     }
 
     @Override
     public WorkObject getWorkObject(PID pid) {
         RepositoryObject repoObj = getRepositoryObject(pid);
-        if (!(repoObj instanceof WorkObjectImpl)) {
+        if (!(repoObj instanceof WorkObject)) {
             throw new ObjectTypeMismatchException("Object with pid " + pid + " is not a work");
         }
-        return (WorkObjectImpl) repoObj;
+        return (WorkObject) repoObj;
     }
 
     @Override
     public FileObject getFileObject(PID pid) {
         RepositoryObject repoObj = getRepositoryObject(pid);
-        if (!(repoObj instanceof FileObjectImpl)) {
+        if (!(repoObj instanceof FileObject)) {
             throw new ObjectTypeMismatchException("Object with pid " + pid + " is not a file");
         }
-        return (FileObjectImpl) repoObj;
+        return (FileObject) repoObj;
     }
 
     @Override
     public BinaryObject getBinaryObject(PID pid) {
         RepositoryObject repoObj = getRepositoryObject(pid);
-        if (!(repoObj instanceof BinaryObjectImpl)) {
+        if (!(repoObj instanceof BinaryObject)) {
             throw new ObjectTypeMismatchException("Object with pid " + pid + " is not a binary");
         }
-        return (BinaryObjectImpl) repoObj;
+        return (BinaryObject) repoObj;
     }
 
     @Override
     public DepositRecord getDepositRecord(PID pid) {
         RepositoryObject repoObj = getRepositoryObject(pid);
-        if (!(repoObj instanceof DepositRecordImpl)) {
+        if (!(repoObj instanceof DepositRecord)) {
             throw new ObjectTypeMismatchException("Object with pid " + pid + " is not a deposit record");
         }
-        return (DepositRecordImpl) repoObj;
+        return (DepositRecord) repoObj;
     }
 
     @Override
     public Tombstone getTombstone(PID pid) {
         RepositoryObject repoObj = getRepositoryObject(pid);
-        if (!(repoObj instanceof TombstoneImpl)) {
+        if (!(repoObj instanceof Tombstone)) {
             throw new ObjectTypeMismatchException("Object with pid " + pid + " is not a tombstone");
         }
-        return (TombstoneImpl) repoObj;
+        return (Tombstone) repoObj;
     }
 
     @Override

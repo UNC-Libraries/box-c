@@ -77,9 +77,9 @@ import edu.unc.lib.boxc.model.api.ids.RepositoryPathConstants;
 import edu.unc.lib.boxc.model.api.rdf.Cdr;
 import edu.unc.lib.boxc.model.api.rdf.CdrDeposit;
 import edu.unc.lib.deposit.fcrepo4.AbstractDepositJobTest;
+import edu.unc.lib.dl.persist.api.event.PremisEventBuilder;
 import edu.unc.lib.dl.persist.api.event.PremisLogger;
 import edu.unc.lib.dl.persist.api.event.PremisLoggerFactory;
-import edu.unc.lib.dl.persist.event.PremisEventBuilderImpl;
 import edu.unc.lib.dl.persist.services.deposit.DepositModelHelpers;
 import edu.unc.lib.dl.util.DepositConstants;
 
@@ -122,7 +122,7 @@ public class ExtractTechnicalMetadataJobTest extends AbstractDepositJobTest {
     private PremisLoggerFactory premisLoggerFactory;
     @Mock
     private PremisLogger premisLogger;
-    private PremisEventBuilderImpl premisEventBuilder;
+    private PremisEventBuilder premisEventBuilder;
 
     private ExtractTechnicalMetadataJob job;
 
@@ -143,7 +143,7 @@ public class ExtractTechnicalMetadataJobTest extends AbstractDepositJobTest {
         job.setBaseFitsUri(FITS_BASE_URI);
 
         // Setup logging dependencies
-        premisEventBuilder = mock(PremisEventBuilderImpl.class, new SelfReturningAnswer());
+        premisEventBuilder = mock(PremisEventBuilder.class, new SelfReturningAnswer());
         when(premisLoggerFactory.createPremisLogger(any(PID.class), any(File.class)))
                 .thenReturn(premisLogger);
         when(premisLogger.buildEvent(any(Resource.class))).thenReturn(premisEventBuilder);

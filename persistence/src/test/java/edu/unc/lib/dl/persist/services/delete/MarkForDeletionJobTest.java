@@ -43,17 +43,17 @@ import edu.unc.lib.boxc.model.api.exceptions.InvalidOperationForObjectType;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.objects.AdminUnit;
 import edu.unc.lib.boxc.model.api.objects.ContentObject;
+import edu.unc.lib.boxc.model.api.objects.DepositRecord;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.api.rdf.Premis;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
-import edu.unc.lib.boxc.model.api.objects.DepositRecord;
 import edu.unc.lib.dl.acl.exception.AccessRestrictionException;
 import edu.unc.lib.dl.acl.service.AccessControlService;
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.acl.util.AgentPrincipals;
+import edu.unc.lib.dl.persist.api.event.PremisEventBuilder;
 import edu.unc.lib.dl.persist.api.event.PremisLogger;
 import edu.unc.lib.dl.persist.api.event.PremisLoggerFactory;
-import edu.unc.lib.dl.persist.event.PremisEventBuilderImpl;
 import edu.unc.lib.dl.services.OperationsMessageSender;
 import edu.unc.lib.dl.sparql.SparqlUpdateService;
 
@@ -90,7 +90,7 @@ public class MarkForDeletionJobTest {
     @Captor
     private ArgumentCaptor<String> messageCaptor;
 
-    private PremisEventBuilderImpl eventBuilder;
+    private PremisEventBuilder eventBuilder;
 
     private PID pid;
 
@@ -107,7 +107,7 @@ public class MarkForDeletionJobTest {
 
         when(contentObj.getMetadataUri()).thenReturn(URI.create(""));
 
-        eventBuilder = mock(PremisEventBuilderImpl.class, new SelfReturningAnswer());
+        eventBuilder = mock(PremisEventBuilder.class, new SelfReturningAnswer());
         when(premisLoggerFactory.createPremisLogger(contentObj)).thenReturn(premisLogger);
         when(premisLogger.buildEvent(eq(Premis.Deaccession))).thenReturn(eventBuilder);
 
