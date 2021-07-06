@@ -29,6 +29,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ExecutorService;
 
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
@@ -67,6 +68,7 @@ import gov.loc.repository.bagit.verify.MandatoryVerifier;
 public class BagIt2N3BagJob extends AbstractFileServerToBagJob {
     private static final Logger log = LoggerFactory.getLogger(BagIt2N3BagJob.class);
     private BagReader reader = new BagReader();
+    private ExecutorService executorService;
 
     public BagIt2N3BagJob() {
         super();
@@ -95,7 +97,7 @@ public class BagIt2N3BagJob extends AbstractFileServerToBagJob {
             // Check that bag exists. Throws MissingBagitFileException
             MandatoryVerifier.checkBagitFileExists(bagReader.getRootDir(), bagReader.getVersion());
 
-            try (BagVerifier verifier = new BagVerifier()) {
+            try (BagVerifier verifier = new BagVerifier(executorService)) {
                 interruptJobIfStopped();
                 verifier.isComplete(bagReader, false);
                 interruptJobIfStopped();
@@ -171,5 +173,9 @@ public class BagIt2N3BagJob extends AbstractFileServerToBagJob {
         }
 
         commit(() -> depModel.add(model));
+    }
+
+    public void setExecutorService(ExecutorService executorService) {
+        this.executorService = executorService;
     }
 }
