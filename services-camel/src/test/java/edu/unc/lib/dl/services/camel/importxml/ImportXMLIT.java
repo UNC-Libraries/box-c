@@ -15,12 +15,12 @@
  */
 package edu.unc.lib.dl.services.camel.importxml;
 
+import static edu.unc.lib.boxc.model.api.xml.JDOMNamespaceUtil.MODS_V3_NS;
 import static edu.unc.lib.dl.persist.services.importxml.XMLImportTestHelper.addObjectUpdate;
 import static edu.unc.lib.dl.persist.services.importxml.XMLImportTestHelper.documentToInputStream;
 import static edu.unc.lib.dl.persist.services.importxml.XMLImportTestHelper.makeUpdateDocument;
 import static edu.unc.lib.dl.persist.services.importxml.XMLImportTestHelper.modsWithTitleAndDate;
 import static edu.unc.lib.dl.persist.services.storage.StorageLocationTestHelper.newStorageLocationTestHelper;
-import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.MODS_V3_NS;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
@@ -52,15 +52,15 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import com.samskivert.mustache.Template;
 
+import edu.unc.lib.boxc.model.api.objects.ContentObject;
+import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
+import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
+import edu.unc.lib.boxc.model.api.objects.FolderObject;
+import edu.unc.lib.boxc.model.fcrepo.test.TestHelper;
 import edu.unc.lib.dl.acl.util.AgentPrincipals;
-import edu.unc.lib.dl.fcrepo4.ContentObject;
-import edu.unc.lib.dl.fcrepo4.FolderObject;
-import edu.unc.lib.dl.fcrepo4.RepositoryObjectFactory;
-import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
 import edu.unc.lib.dl.persist.api.storage.StorageLocationManager;
 import edu.unc.lib.dl.persist.services.importxml.ImportXMLService;
 import edu.unc.lib.dl.persist.services.transfer.BinaryTransferServiceImpl;
-import edu.unc.lib.dl.test.TestHelper;
 
 /**
  * @author bbpennel

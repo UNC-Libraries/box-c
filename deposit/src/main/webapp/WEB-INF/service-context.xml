@@ -28,7 +28,7 @@
     </bean>
     
     <bean id="injectedCdrVersion" class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
-        <property name="staticMethod" value="edu.unc.lib.dl.util.SoftwareAgentConstants.setCdrVersion" />
+        <property name="staticMethod" value="edu.unc.lib.boxc.model.api.SoftwareAgentConstants.setCdrVersion" />
         <property name="arguments">
             <list>
                 <value>5.0</value>
@@ -206,7 +206,7 @@
     </bean>
     
     <!-- Initialize access control dependencies -->
-    <bean id="contentPathFactory" class="edu.unc.lib.dl.fedora.ContentPathFactory"
+    <bean id="contentPathFactory" class="edu.unc.lib.boxc.model.fcrepo.services.ContentPathFactoryImpl"
             init-method="init">
         <property name="cacheMaxSize" value="${cache.contentPath.maxSize}" />
         <property name="cacheTimeToLive" value="${cache.contentPath.timeToLive}" />

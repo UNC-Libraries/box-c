@@ -16,10 +16,10 @@
 package edu.unc.lib.deposit.fcrepo4;
 
 import static edu.unc.lib.boxc.common.test.TestHelpers.setField;
+import static edu.unc.lib.boxc.model.api.DatastreamType.ORIGINAL_FILE;
+import static edu.unc.lib.boxc.model.api.DatastreamType.TECHNICAL_METADATA;
 import static edu.unc.lib.dl.acl.util.AccessPrincipalConstants.AUTHENTICATED_PRINC;
 import static edu.unc.lib.dl.acl.util.AccessPrincipalConstants.PUBLIC_PRINC;
-import static edu.unc.lib.dl.model.DatastreamType.ORIGINAL_FILE;
-import static edu.unc.lib.dl.model.DatastreamType.TECHNICAL_METADATA;
 import static edu.unc.lib.dl.persist.services.storage.StorageLocationTestHelper.LOC1_ID;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.Assert.assertTrue;
@@ -65,6 +65,23 @@ import org.mockito.Captor;
 import org.mockito.Mock;
 
 import edu.unc.lib.boxc.common.test.SelfReturningAnswer;
+import edu.unc.lib.boxc.model.api.event.PremisLog;
+import edu.unc.lib.boxc.model.api.exceptions.FedoraException;
+import edu.unc.lib.boxc.model.api.ids.PID;
+import edu.unc.lib.boxc.model.api.ids.RepositoryPathConstants;
+import edu.unc.lib.boxc.model.api.objects.AdminUnit;
+import edu.unc.lib.boxc.model.api.objects.BinaryObject;
+import edu.unc.lib.boxc.model.api.objects.CollectionObject;
+import edu.unc.lib.boxc.model.api.objects.ContentContainerObject;
+import edu.unc.lib.boxc.model.api.objects.ContentRootObject;
+import edu.unc.lib.boxc.model.api.objects.FileObject;
+import edu.unc.lib.boxc.model.api.objects.FolderObject;
+import edu.unc.lib.boxc.model.api.objects.WorkObject;
+import edu.unc.lib.boxc.model.api.rdf.Cdr;
+import edu.unc.lib.boxc.model.api.rdf.CdrAcl;
+import edu.unc.lib.boxc.model.api.rdf.CdrDeposit;
+import edu.unc.lib.boxc.model.fcrepo.services.RepositoryObjectFactoryImpl;
+import edu.unc.lib.boxc.model.fcrepo.services.RepositoryObjectLoaderImpl;
 import edu.unc.lib.deposit.validate.VerifyObjectsAreInFedoraService;
 import edu.unc.lib.deposit.work.JobFailedException;
 import edu.unc.lib.deposit.work.JobInterruptedException;
@@ -72,26 +89,13 @@ import edu.unc.lib.dl.acl.exception.AccessRestrictionException;
 import edu.unc.lib.dl.acl.service.AccessControlService;
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.acl.util.Permission;
-import edu.unc.lib.dl.event.PremisEventBuilder;
-import edu.unc.lib.dl.event.PremisLogger;
-import edu.unc.lib.dl.event.PremisLoggerFactory;
-import edu.unc.lib.dl.fcrepo4.AdminUnit;
-import edu.unc.lib.dl.fcrepo4.BinaryObject;
-import edu.unc.lib.dl.fcrepo4.CollectionObject;
-import edu.unc.lib.dl.fcrepo4.ContentContainerObject;
-import edu.unc.lib.dl.fcrepo4.ContentRootObject;
 import edu.unc.lib.dl.fcrepo4.FedoraTransaction;
-import edu.unc.lib.dl.fcrepo4.FileObject;
-import edu.unc.lib.dl.fcrepo4.FolderObject;
-import edu.unc.lib.dl.fcrepo4.RepositoryObjectFactory;
-import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
-import edu.unc.lib.dl.fcrepo4.RepositoryPathConstants;
 import edu.unc.lib.dl.fcrepo4.TransactionCancelledException;
 import edu.unc.lib.dl.fcrepo4.TransactionManager;
-import edu.unc.lib.dl.fcrepo4.WorkObject;
 import edu.unc.lib.dl.fedora.ChecksumMismatchException;
-import edu.unc.lib.dl.fedora.FedoraException;
-import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.persist.api.event.PremisEventBuilder;
+import edu.unc.lib.dl.persist.api.event.PremisLogger;
+import edu.unc.lib.dl.persist.api.event.PremisLoggerFactory;
 import edu.unc.lib.dl.persist.api.storage.StorageLocation;
 import edu.unc.lib.dl.persist.api.storage.StorageLocationManager;
 import edu.unc.lib.dl.persist.api.transfer.BinaryTransferService;
@@ -99,9 +103,6 @@ import edu.unc.lib.dl.persist.api.transfer.BinaryTransferSession;
 import edu.unc.lib.dl.persist.services.deposit.DepositModelHelpers;
 import edu.unc.lib.dl.persist.services.edit.UpdateDescriptionService;
 import edu.unc.lib.dl.persist.services.edit.UpdateDescriptionService.UpdateDescriptionRequest;
-import edu.unc.lib.dl.rdf.Cdr;
-import edu.unc.lib.dl.rdf.CdrAcl;
-import edu.unc.lib.dl.rdf.CdrDeposit;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositState;
 
@@ -128,9 +129,9 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
     private PremisLoggerFactory mockPremisLoggerFactory;
 
     @Mock
-    private RepositoryObjectLoader repoObjLoader;
+    private RepositoryObjectLoaderImpl repoObjLoader;
     @Mock
-    private RepositoryObjectFactory repoObjFactory;
+    private RepositoryObjectFactoryImpl repoObjFactory;
     @Mock
     private TransactionManager txManager;
     @Mock
@@ -144,6 +145,8 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
 
     @Mock
     private PremisLogger mockPremisLogger;
+    @Mock
+    private PremisLog mockPremisLog;
 
     private PremisEventBuilder mockPremisEventBuilder;
 
@@ -211,6 +214,7 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
 
         // Setup logging dependencies
         mockPremisEventBuilder = mock(PremisEventBuilder.class, new SelfReturningAnswer());
+        when(mockPremisLoggerFactory.createPremisLogger(any())).thenReturn(mockPremisLogger);
         when(mockPremisLoggerFactory.createPremisLogger(any(PID.class), any(File.class)))
                 .thenReturn(mockPremisLogger);
         when(mockPremisLogger.buildEvent(any(Resource.class))).thenReturn(mockPremisEventBuilder);
@@ -243,7 +247,7 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
         when(depositStatusFactory.get(anyString())).thenReturn(depositStatus);
 
         destinationObj = mock(FolderObject.class);
-        when(destinationObj.getPremisLog()).thenReturn(mockPremisLogger);
+        when(destinationObj.getPremisLog()).thenReturn(mockPremisLog);
         when(destinationObj.getPid()).thenReturn(destinationPid);
         when(repoObjLoader.getRepositoryObject(eq(destinationPid))).thenReturn(destinationObj);
     }
@@ -565,7 +569,7 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
     public void ingestAdminUnitTest() {
         destinationObj = mock(ContentRootObject.class);
         when(destinationObj.getPid()).thenReturn(destinationPid);
-        when(destinationObj.getPremisLog()).thenReturn(mockPremisLogger);
+        when(destinationObj.getPremisLog()).thenReturn(mockPremisLog);
         when(repoObjLoader.getRepositoryObject(eq(destinationPid))).thenReturn(destinationObj);
 
         AdminUnit adminUnit = mock(AdminUnit.class);
@@ -622,7 +626,7 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
     public void ingestCollectionTest() {
         destinationObj = mock(AdminUnit.class);
         when(destinationObj.getPid()).thenReturn(destinationPid);
-        when(destinationObj.getPremisLog()).thenReturn(mockPremisLogger);
+        when(destinationObj.getPremisLog()).thenReturn(mockPremisLog);
         when(repoObjLoader.getRepositoryObject(eq(destinationPid))).thenReturn(destinationObj);
 
         CollectionObject collection = mock(CollectionObject.class);

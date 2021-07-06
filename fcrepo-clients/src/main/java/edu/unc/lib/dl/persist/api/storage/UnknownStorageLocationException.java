@@ -15,7 +15,7 @@
  */
 package edu.unc.lib.dl.persist.api.storage;
 
-import edu.unc.lib.dl.exceptions.RepositoryException;
+import edu.unc.lib.boxc.model.api.exceptions.RepositoryException;
 
 /**
  * @author bbpennel

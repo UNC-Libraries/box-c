@@ -15,7 +15,7 @@
  */
 package edu.unc.lib.dl.services.camel.routing;
 
-import static edu.unc.lib.dl.rdf.Fcrepo4Repository.Binary;
+import static edu.unc.lib.boxc.model.api.rdf.Fcrepo4Repository.Binary;
 import static org.fcrepo.camel.FcrepoHeaders.FCREPO_URI;
 import static org.slf4j.LoggerFactory.getLogger;
 
@@ -25,12 +25,12 @@ import org.apache.camel.Exchange;
 import org.apache.camel.Message;
 import org.slf4j.Logger;
 
+import edu.unc.lib.boxc.model.api.DatastreamType;
+import edu.unc.lib.boxc.model.api.ids.PID;
+import edu.unc.lib.boxc.model.api.ids.PIDConstants;
+import edu.unc.lib.boxc.model.api.ids.RepositoryPathConstants;
+import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.dl.fcrepo4.FcrepoJmsConstants;
-import edu.unc.lib.dl.fcrepo4.PIDs;
-import edu.unc.lib.dl.fcrepo4.RepositoryPathConstants;
-import edu.unc.lib.dl.fedora.PID;
-import edu.unc.lib.dl.fedora.PIDConstants;
-import edu.unc.lib.dl.model.DatastreamType;
 import edu.unc.lib.dl.services.camel.util.EventTypes;
 
 /**

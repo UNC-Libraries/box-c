@@ -16,10 +16,10 @@
 package edu.unc.lib.dl.cdr.services.rest.modify;
 
 import static edu.unc.lib.boxc.common.test.TestHelpers.setField;
+import static edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPaths.getContentRootPid;
 import static edu.unc.lib.dl.acl.util.AccessPrincipalConstants.AUTHENTICATED_PRINC;
 import static edu.unc.lib.dl.acl.util.AccessPrincipalConstants.PUBLIC_PRINC;
 import static edu.unc.lib.dl.acl.util.GroupsThreadStore.getAgentPrincipals;
-import static edu.unc.lib.dl.fcrepo4.RepositoryPaths.getContentRootPid;
 import static edu.unc.lib.dl.search.solr.util.FacetConstants.CONTENT_DESCRIBED;
 import static edu.unc.lib.dl.search.solr.util.FacetConstants.CONTENT_NOT_DESCRIBED;
 import static org.junit.Assert.assertEquals;
@@ -57,32 +57,33 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.ContextHierarchy;
 import org.springframework.test.web.servlet.MvcResult;
 
+import edu.unc.lib.boxc.model.api.ResourceType;
+import edu.unc.lib.boxc.model.api.ids.PID;
+import edu.unc.lib.boxc.model.api.ids.PIDMinter;
+import edu.unc.lib.boxc.model.api.objects.AdminUnit;
+import edu.unc.lib.boxc.model.api.objects.CollectionObject;
+import edu.unc.lib.boxc.model.api.objects.ContentRootObject;
+import edu.unc.lib.boxc.model.api.objects.FileObject;
+import edu.unc.lib.boxc.model.api.objects.FolderObject;
+import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
+import edu.unc.lib.boxc.model.api.objects.WorkObject;
+import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
+import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
+import edu.unc.lib.boxc.model.fcrepo.services.RepositoryInitializer;
+import edu.unc.lib.boxc.model.fcrepo.test.AclModelBuilder;
+import edu.unc.lib.boxc.model.fcrepo.test.RepositoryObjectTreeIndexer;
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.cdr.services.processing.ExportCsvService;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackageFactory;
 import edu.unc.lib.dl.data.ingest.solr.indexing.SolrUpdateDriver;
 import edu.unc.lib.dl.data.ingest.solr.test.RepositoryObjectSolrIndexer;
-import edu.unc.lib.dl.fcrepo4.AdminUnit;
-import edu.unc.lib.dl.fcrepo4.CollectionObject;
-import edu.unc.lib.dl.fcrepo4.ContentRootObject;
-import edu.unc.lib.dl.fcrepo4.FileObject;
-import edu.unc.lib.dl.fcrepo4.FolderObject;
-import edu.unc.lib.dl.fcrepo4.PIDs;
-import edu.unc.lib.dl.fcrepo4.RepositoryInitializer;
-import edu.unc.lib.dl.fcrepo4.RepositoryObjectFactory;
-import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
-import edu.unc.lib.dl.fcrepo4.RepositoryPIDMinter;
-import edu.unc.lib.dl.fcrepo4.WorkObject;
-import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.persist.api.event.PremisLoggerFactory;
 import edu.unc.lib.dl.persist.services.delete.MarkForDeletionJob;
 import edu.unc.lib.dl.persist.services.edit.UpdateDescriptionService;
 import edu.unc.lib.dl.persist.services.edit.UpdateDescriptionService.UpdateDescriptionRequest;
 import edu.unc.lib.dl.search.solr.service.ChildrenCountService;
 import edu.unc.lib.dl.search.solr.service.SolrSearchService;
 import edu.unc.lib.dl.sparql.FedoraSparqlUpdateService;
-import edu.unc.lib.dl.test.AclModelBuilder;
-import edu.unc.lib.dl.test.RepositoryObjectTreeIndexer;
-import edu.unc.lib.dl.util.ResourceType;
 
 /**
  *
@@ -126,7 +127,7 @@ public class ExportCsvIT extends AbstractAPIIT {
     @Autowired
     protected DocumentIndexingPackageFactory dipFactory;
     @Autowired
-    protected RepositoryPIDMinter pidMinter;
+    protected PIDMinter pidMinter;
     @Autowired
     private RepositoryInitializer repoInitializer;
     @Autowired
@@ -139,6 +140,8 @@ public class ExportCsvIT extends AbstractAPIIT {
     private UpdateDescriptionService updateDescService;
     @Autowired
     private ExportCsvService exportCsvService;
+    @Autowired
+    private PremisLoggerFactory premisLoggerFactory;
 
     protected ContentRootObject rootObj;
     protected AdminUnit unitObj;
@@ -263,7 +266,7 @@ public class ExportCsvIT extends AbstractAPIIT {
         PID filePid = pidList.get("filePid");
 
         new MarkForDeletionJob(folderPid, "", getAgentPrincipals(), repositoryObjectLoader,
-                sparqlUpdateService, aclService).run();
+                sparqlUpdateService, aclService, premisLoggerFactory).run();
 
         treeIndexer.indexAll(baseAddress);
         solrIndexer.index(rootObj.getPid(), unitObj.getPid(), collObj.getPid(), folderPid, workPid, filePid);

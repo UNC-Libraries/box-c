@@ -15,10 +15,10 @@
  */
 package edu.unc.lib.deposit.normalize;
 
-import static edu.unc.lib.dl.rdf.CdrDeposit.cleanupLocation;
-import static edu.unc.lib.dl.rdf.CdrDeposit.md5sum;
-import static edu.unc.lib.dl.rdf.CdrDeposit.sha1sum;
-import static edu.unc.lib.dl.rdf.CdrDeposit.stagingLocation;
+import static edu.unc.lib.boxc.model.api.rdf.CdrDeposit.cleanupLocation;
+import static edu.unc.lib.boxc.model.api.rdf.CdrDeposit.md5sum;
+import static edu.unc.lib.boxc.model.api.rdf.CdrDeposit.sha1sum;
+import static edu.unc.lib.boxc.model.api.rdf.CdrDeposit.stagingLocation;
 import static gov.loc.repository.bagit.hash.StandardSupportedAlgorithms.MD5;
 import static gov.loc.repository.bagit.hash.StandardSupportedAlgorithms.SHA1;
 
@@ -37,8 +37,8 @@ import org.apache.jena.rdf.model.Resource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import edu.unc.lib.boxc.model.api.rdf.CdrDeposit;
 import edu.unc.lib.dl.persist.services.deposit.DepositModelHelpers;
-import edu.unc.lib.dl.rdf.CdrDeposit;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
 import gov.loc.repository.bagit.domain.Bag;
 import gov.loc.repository.bagit.domain.Manifest;

@@ -15,7 +15,7 @@
  */
 package edu.unc.lib.dl.services;
 
-import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.ATOM_NS;
+import static edu.unc.lib.boxc.model.api.xml.JDOMNamespaceUtil.ATOM_NS;
 
 import javax.jms.JMSException;
 import javax.jms.Message;

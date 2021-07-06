@@ -15,9 +15,9 @@
  */
 package edu.unc.lib.dl.persist.services.deposit;
 
-import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.HASHED_PATH_DEPTH;
-import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.HASHED_PATH_SIZE;
-import static edu.unc.lib.dl.fcrepo4.RepositoryPaths.idToPath;
+import static edu.unc.lib.boxc.model.api.ids.RepositoryPathConstants.HASHED_PATH_DEPTH;
+import static edu.unc.lib.boxc.model.api.ids.RepositoryPathConstants.HASHED_PATH_SIZE;
+import static edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPaths.idToPath;
 import static edu.unc.lib.dl.util.DepositConstants.DESCRIPTION_DIR;
 import static edu.unc.lib.dl.util.DepositConstants.EVENTS_DIR;
 import static edu.unc.lib.dl.util.DepositConstants.HISTORY_DIR;
@@ -35,9 +35,9 @@ import org.jdom2.Element;
 import org.jdom2.output.Format;
 import org.jdom2.output.XMLOutputter;
 
-import edu.unc.lib.dl.exceptions.RepositoryException;
-import edu.unc.lib.dl.fedora.PID;
-import edu.unc.lib.dl.model.DatastreamType;
+import edu.unc.lib.boxc.model.api.DatastreamType;
+import edu.unc.lib.boxc.model.api.exceptions.RepositoryException;
+import edu.unc.lib.boxc.model.api.ids.PID;
 
 /**
  * Manages a deposit directory for a single deposit

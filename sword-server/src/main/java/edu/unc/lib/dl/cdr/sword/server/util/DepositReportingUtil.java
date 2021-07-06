@@ -18,8 +18,8 @@ package edu.unc.lib.dl.cdr.sword.server.util;
 import org.apache.abdera.i18n.iri.IRI;
 import org.swordapp.server.DepositReceipt;
 
+import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.dl.cdr.sword.server.SwordConfigurationImpl;
-import edu.unc.lib.dl.fedora.PID;
 
 /**
  * Utility for generating reports of SWORD deposits

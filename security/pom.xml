@@ -59,6 +59,10 @@
             <groupId>edu.unc.lib.cdr</groupId>
             <artifactId>metadata</artifactId>
         </dependency>
+        <dependency>
+            <groupId>edu.unc.lib.cdr</groupId>
+            <artifactId>model-api</artifactId>
+        </dependency>
 
         <dependency>
             <groupId>javax.annotation</groupId>

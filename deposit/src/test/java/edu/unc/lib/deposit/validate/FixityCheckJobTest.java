@@ -16,7 +16,7 @@
 package edu.unc.lib.deposit.validate;
 
 import static edu.unc.lib.boxc.common.test.TestHelpers.setField;
-import static edu.unc.lib.dl.model.DatastreamType.ORIGINAL_FILE;
+import static edu.unc.lib.boxc.model.api.DatastreamType.ORIGINAL_FILE;
 import static edu.unc.lib.dl.persist.services.deposit.DepositModelHelpers.addDatastream;
 import static edu.unc.lib.dl.persist.services.deposit.DepositModelHelpers.getDatastream;
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -56,16 +56,17 @@ import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.Logger;
 
+import edu.unc.lib.boxc.model.api.ids.PID;
+import edu.unc.lib.boxc.model.api.ids.PIDMinter;
+import edu.unc.lib.boxc.model.api.rdf.Cdr;
+import edu.unc.lib.boxc.model.api.rdf.CdrDeposit;
+import edu.unc.lib.boxc.model.api.rdf.Premis;
+import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
+import edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPIDMinter;
 import edu.unc.lib.deposit.fcrepo4.AbstractDepositJobTest;
 import edu.unc.lib.deposit.work.JobFailedException;
 import edu.unc.lib.deposit.work.JobInterruptedException;
-import edu.unc.lib.dl.event.PremisLoggerFactory;
-import edu.unc.lib.dl.fcrepo4.PIDs;
-import edu.unc.lib.dl.fcrepo4.RepositoryPIDMinter;
-import edu.unc.lib.dl.fedora.PID;
-import edu.unc.lib.dl.rdf.Cdr;
-import edu.unc.lib.dl.rdf.CdrDeposit;
-import edu.unc.lib.dl.rdf.Premis;
+import edu.unc.lib.dl.persist.event.PremisLoggerFactoryImpl;
 import edu.unc.lib.dl.util.DigestAlgorithm;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositState;
 
@@ -84,7 +85,7 @@ public class FixityCheckJobTest extends AbstractDepositJobTest {
     private static final String CONTENT2_MD5 = "d4568cb41bf223e418cfd4f23b1a385b";
     private static final String CONTENT2_SHA1 = "f14b0716d448386a4f0671112097c55fc0d91313";
 
-    private RepositoryPIDMinter pidMinter;
+    private PIDMinter pidMinter;
 
     private FixityCheckJob job;
 
@@ -96,7 +97,7 @@ public class FixityCheckJobTest extends AbstractDepositJobTest {
     public void setup() throws Exception {
         pidMinter = new RepositoryPIDMinter();
 
-        premisLoggerFactory = new PremisLoggerFactory();
+        premisLoggerFactory = new PremisLoggerFactoryImpl();
         premisLoggerFactory.setPidMinter(pidMinter);
 
         initializeJob();

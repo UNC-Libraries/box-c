@@ -18,11 +18,11 @@ package edu.unc.lib.dl.data.ingest.solr.action;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import edu.unc.lib.boxc.model.api.ids.PID;
+import edu.unc.lib.boxc.model.api.objects.RepositoryObject;
 import edu.unc.lib.dl.data.ingest.solr.ChildSetRequest;
 import edu.unc.lib.dl.data.ingest.solr.SolrUpdateRequest;
 import edu.unc.lib.dl.data.ingest.solr.exception.IndexingException;
-import edu.unc.lib.dl.fcrepo4.RepositoryObject;
-import edu.unc.lib.dl.fedora.PID;
 
 /**
  * Updates each object specified in the update request and all of their children.

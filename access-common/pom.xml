@@ -106,7 +106,7 @@
         </dependency>
         <dependency>
             <groupId>edu.unc.lib.cdr</groupId>
-            <artifactId>fcrepo-clients</artifactId>
+            <artifactId>model-fcrepo</artifactId>
             <type>test-jar</type>
             <scope>test</scope>
         </dependency>

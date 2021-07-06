@@ -23,6 +23,11 @@
         <property name="inheritedAclFactory" ref="inheritedAclFactory" />
         <property name="indexingMessageSender" ref="indexingMessageSender" />
         <property name="binaryDestroyedMessageSender" ref="binaryDestroyedMessageSender" />
+        <property name="premisLoggerFactory" ref="premisLoggerFactory" />
+    </bean>
+    
+    <bean id="premisLoggerFactory" class="org.mockito.Mockito" factory-method="mock">
+        <constructor-arg value="edu.unc.lib.dl.persist.api.event.PremisLoggerFactory" />
     </bean>
     
     <bean id="aclService" class="org.mockito.Mockito" factory-method="mock">
@@ -30,7 +35,7 @@
     </bean>
     
     <bean id="repositoryObjectFactory" class="org.mockito.Mockito" factory-method="mock">
-        <constructor-arg value="edu.unc.lib.dl.fcrepo4.RepositoryObjectFactory" />
+        <constructor-arg value="edu.unc.lib.boxc.model.fcrepo.services.RepositoryObjectFactoryImpl" />
     </bean>
     
     <bean id="inheritedAclFactory" class="org.mockito.Mockito" factory-method="mock">
@@ -38,7 +43,7 @@
     </bean>
     
     <bean id="repositoryObjectLoader" class="org.mockito.Mockito" factory-method="mock">
-        <constructor-arg value="edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader" />
+        <constructor-arg value="edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader" />
     </bean>
     
     <bean id="transactionManager" class="org.mockito.Mockito" factory-method="mock">

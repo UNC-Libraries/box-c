@@ -15,14 +15,14 @@
  */
 package edu.unc.lib.dl.services;
 
+import static edu.unc.lib.boxc.model.api.xml.JDOMNamespaceUtil.ATOM_NS;
+import static edu.unc.lib.boxc.model.api.xml.JDOMNamespaceUtil.CDR_MESSAGE_NS;
 import static edu.unc.lib.dl.util.JMSMessageUtil.CDRActions.RUN_ENHANCEMENTS;
-import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.ATOM_NS;
-import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.CDR_MESSAGE_NS;
 
 import org.jdom2.Document;
 import org.jdom2.Element;
 
-import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.boxc.model.api.ids.PID;
 
 /**
  * Helper methods for run enhancement messages

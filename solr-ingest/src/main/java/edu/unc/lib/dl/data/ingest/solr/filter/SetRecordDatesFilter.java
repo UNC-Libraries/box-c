@@ -19,10 +19,10 @@ import java.text.ParseException;
 
 import org.apache.jena.rdf.model.Resource;
 
+import edu.unc.lib.boxc.model.api.rdf.Fcrepo4Repository;
+import edu.unc.lib.boxc.model.api.objects.ContentObject;
 import edu.unc.lib.dl.data.ingest.solr.exception.IndexingException;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackage;
-import edu.unc.lib.dl.fcrepo4.ContentObject;
-import edu.unc.lib.dl.rdf.Fcrepo4Repository;
 
 /**
  * Indexing filter that extracts Fedora-generated dates about the creation and modification state of an object

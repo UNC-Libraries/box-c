@@ -15,7 +15,7 @@
  */
 package edu.unc.lib.dl.validation;
 
-import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.MODS_V3_NS;
+import static edu.unc.lib.boxc.model.api.xml.JDOMNamespaceUtil.MODS_V3_NS;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;

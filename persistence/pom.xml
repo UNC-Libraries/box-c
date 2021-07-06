@@ -84,6 +84,10 @@
         </dependency>
         <dependency>
             <groupId>edu.unc.lib.cdr</groupId>
+            <artifactId>model-fcrepo</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>edu.unc.lib.cdr</groupId>
             <artifactId>solr-search</artifactId>
         </dependency>
         <dependency>
@@ -203,7 +207,7 @@
         </dependency>
         <dependency>
             <groupId>edu.unc.lib.cdr</groupId>
-            <artifactId>fcrepo-clients</artifactId>
+            <artifactId>model-fcrepo</artifactId>
             <scope>test</scope>
             <type>test-jar</type>
         </dependency>

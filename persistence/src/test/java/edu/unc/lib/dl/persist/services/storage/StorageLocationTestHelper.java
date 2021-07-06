@@ -15,7 +15,7 @@
  */
 package edu.unc.lib.dl.persist.services.storage;
 
-import static edu.unc.lib.dl.fcrepo4.RepositoryPaths.getContentRootPid;
+import static edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPaths.getContentRootPid;
 import static java.lang.Runtime.getRuntime;
 import static java.nio.file.Files.createTempDirectory;
 import static java.util.Arrays.asList;
@@ -35,9 +35,10 @@ import java.util.Map;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
-import edu.unc.lib.dl.fedora.ContentPathFactory;
-import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.boxc.model.api.ids.PID;
+import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
+import edu.unc.lib.boxc.model.api.services.ContentPathFactory;
+import edu.unc.lib.boxc.model.fcrepo.services.ContentPathFactoryImpl;
 import edu.unc.lib.dl.persist.api.storage.StorageLocationManager;
 import edu.unc.lib.dl.persist.services.storage.StorageLocationManagerImpl.StorageLocationMapping;
 
@@ -139,7 +140,7 @@ public class StorageLocationTestHelper {
      */
     public StorageLocationManager createLocationManager(RepositoryObjectLoader repoObjLoader)
             throws Exception {
-        ContentPathFactory pathFactory = mock(ContentPathFactory.class);
+        ContentPathFactory pathFactory = mock(ContentPathFactoryImpl.class);
         when(pathFactory.getAncestorPids(any(PID.class))).thenReturn(new ArrayList<>(asList((getContentRootPid()))));
 
         return createLocationManager(repoObjLoader, pathFactory);

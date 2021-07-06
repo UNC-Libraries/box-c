@@ -16,9 +16,9 @@
 package edu.unc.lib.dl.xml;
 
 import static edu.unc.lib.boxc.common.xml.SecureXMLFactory.createSAXBuilder;
-import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.MODS_V3_NS;
-import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.RDF_NS;
-import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.SKOS_NS;
+import static edu.unc.lib.boxc.model.api.xml.JDOMNamespaceUtil.MODS_V3_NS;
+import static edu.unc.lib.boxc.model.api.xml.JDOMNamespaceUtil.RDF_NS;
+import static edu.unc.lib.boxc.model.api.xml.JDOMNamespaceUtil.SKOS_NS;
 
 import java.io.ByteArrayInputStream;
 import java.util.ArrayDeque;
@@ -43,6 +43,8 @@ import org.jdom2.xpath.XPathExpression;
 import org.jdom2.xpath.XPathFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import edu.unc.lib.boxc.model.api.xml.JDOMNamespaceUtil;
 
 /**
  * Utility for looking up department name hierarchies using an index constructed

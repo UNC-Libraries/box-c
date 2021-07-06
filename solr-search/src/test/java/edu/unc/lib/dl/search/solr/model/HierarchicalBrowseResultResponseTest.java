@@ -15,7 +15,7 @@
  */
 package edu.unc.lib.dl.search.solr.model;
 
-import static edu.unc.lib.dl.util.ResourceType.Folder;
+import static edu.unc.lib.boxc.model.api.ResourceType.Folder;
 import static java.util.Arrays.asList;
 
 import java.util.ArrayList;

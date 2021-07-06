@@ -20,11 +20,12 @@ import static org.apache.commons.lang3.StringUtils.isBlank;
 import java.util.ArrayList;
 import java.util.Collection;
 
+import edu.unc.lib.boxc.model.api.ids.PID;
+import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
+import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.dl.acl.service.AccessControlService;
 import edu.unc.lib.dl.acl.util.AgentPrincipals;
-import edu.unc.lib.dl.fcrepo4.PIDs;
-import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
-import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.persist.api.event.PremisLoggerFactory;
 import edu.unc.lib.dl.services.OperationsMessageSender;
 import edu.unc.lib.dl.sparql.SparqlUpdateService;
 
@@ -40,6 +41,7 @@ public class MarkForDeletionService {
     private RepositoryObjectLoader repositoryObjectLoader;
     private SparqlUpdateService sparqlUpdateService;
     private OperationsMessageSender operationsMessageSender;
+    private PremisLoggerFactory premisLoggerFactory;
 
     /**
      * Mark a pid for deletion using the agent principals provided.
@@ -57,7 +59,7 @@ public class MarkForDeletionService {
         for (String id : ids) {
             PID pid = PIDs.get(id);
             Runnable job = new MarkForDeletionJob(pid, message, agent, repositoryObjectLoader,
-                    sparqlUpdateService, aclService);
+                    sparqlUpdateService, aclService, premisLoggerFactory);
             job.run();
             pids.add(pid);
         }
@@ -76,7 +78,7 @@ public class MarkForDeletionService {
         for (String id : ids) {
             PID pid = PIDs.get(id);
             Runnable job = new RestoreDeletedJob(pid, agent,
-                    repositoryObjectLoader, sparqlUpdateService, aclService);
+                    repositoryObjectLoader, sparqlUpdateService, aclService, premisLoggerFactory);
             job.run();
             pids.add(pid);
         }
@@ -111,4 +113,8 @@ public class MarkForDeletionService {
    public void setOperationsMessageSender(OperationsMessageSender operationsMessageSender) {
        this.operationsMessageSender = operationsMessageSender;
    }
+
+    public void setPremisLoggerFactory(PremisLoggerFactory premisLoggerFactory) {
+        this.premisLoggerFactory = premisLoggerFactory;
+    }
 }

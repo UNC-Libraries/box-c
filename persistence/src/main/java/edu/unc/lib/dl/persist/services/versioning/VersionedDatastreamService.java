@@ -15,7 +15,7 @@
  */
 package edu.unc.lib.dl.persist.services.versioning;
 
-import static edu.unc.lib.dl.model.DatastreamPids.getDatastreamHistoryPid;
+import static edu.unc.lib.boxc.model.fcrepo.ids.DatastreamPids.getDatastreamHistoryPid;
 import static org.slf4j.LoggerFactory.getLogger;
 
 import java.io.IOException;
@@ -27,18 +27,18 @@ import java.util.concurrent.locks.Lock;
 import org.apache.jena.rdf.model.Model;
 import org.slf4j.Logger;
 
+import edu.unc.lib.boxc.model.api.exceptions.NotFoundException;
+import edu.unc.lib.boxc.model.api.ids.PID;
+import edu.unc.lib.boxc.model.api.objects.BinaryObject;
+import edu.unc.lib.boxc.model.api.objects.RepositoryObject;
+import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
+import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
+import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
+import edu.unc.lib.boxc.model.fcrepo.ids.PidLockManager;
 import edu.unc.lib.dl.exceptions.InvalidChecksumException;
-import edu.unc.lib.dl.fcrepo4.BinaryObject;
 import edu.unc.lib.dl.fcrepo4.FedoraTransaction;
-import edu.unc.lib.dl.fcrepo4.PIDs;
-import edu.unc.lib.dl.fcrepo4.RepositoryObject;
-import edu.unc.lib.dl.fcrepo4.RepositoryObjectFactory;
-import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
 import edu.unc.lib.dl.fcrepo4.TransactionManager;
-import edu.unc.lib.dl.fedora.NotFoundException;
-import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.fedora.ServiceException;
-import edu.unc.lib.dl.persist.api.services.PidLockManager;
 import edu.unc.lib.dl.persist.api.transfer.BinaryTransferOutcome;
 import edu.unc.lib.dl.persist.api.transfer.BinaryTransferService;
 import edu.unc.lib.dl.persist.api.transfer.BinaryTransferSession;

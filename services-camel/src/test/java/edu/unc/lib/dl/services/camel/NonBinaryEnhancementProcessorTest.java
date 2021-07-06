@@ -32,13 +32,13 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.mockito.Mock;
 
+import edu.unc.lib.boxc.model.fcrepo.test.TestHelper;
+
 import java.io.File;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-
-import edu.unc.lib.dl.test.TestHelper;
 
 /**
  * @author lfarrell

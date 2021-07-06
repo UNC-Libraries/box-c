@@ -17,11 +17,11 @@ package edu.unc.lib.dl.data.ingest.solr.filter;
 
 import java.util.List;
 
+import edu.unc.lib.boxc.model.api.ResourceType;
+import edu.unc.lib.boxc.model.api.objects.ContentObject;
 import edu.unc.lib.dl.data.ingest.solr.exception.IndexingException;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackage;
-import edu.unc.lib.dl.fcrepo4.ContentObject;
 import edu.unc.lib.dl.search.solr.model.IndexDocumentBean;
-import edu.unc.lib.dl.util.ResourceType;
 
 /**
  * Sets the resource type and resource type sort order for the object being indexed

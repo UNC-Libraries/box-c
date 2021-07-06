@@ -52,7 +52,7 @@ import java.util.stream.Collectors;
 
 import org.apache.jena.rdf.model.Property;
 
-import edu.unc.lib.dl.rdf.CdrAcl;
+import edu.unc.lib.boxc.model.api.rdf.CdrAcl;
 
 /**
  * Enumeration of the roles which can be assigned to user principals. Defines

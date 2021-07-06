@@ -17,22 +17,23 @@ package edu.unc.lib.dl.persist.services.edit;
 
 import java.util.Arrays;
 
+import edu.unc.lib.boxc.common.metrics.TimerFactory;
+import edu.unc.lib.boxc.model.api.ids.PID;
+import edu.unc.lib.boxc.model.api.objects.BinaryObject;
+import edu.unc.lib.boxc.model.api.objects.FileObject;
+import edu.unc.lib.boxc.model.api.objects.RepositoryObject;
+import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
+import edu.unc.lib.boxc.model.api.rdf.DcElements;
+import edu.unc.lib.boxc.model.api.rdf.Ebucore;
+import edu.unc.lib.boxc.model.api.rdf.Premis;
+import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
+import edu.unc.lib.boxc.model.fcrepo.ids.AgentPids;
 import edu.unc.lib.dl.acl.service.AccessControlService;
 import edu.unc.lib.dl.acl.util.AgentPrincipals;
 import edu.unc.lib.dl.acl.util.Permission;
-import edu.unc.lib.dl.fcrepo4.BinaryObject;
 import edu.unc.lib.dl.fcrepo4.FedoraTransaction;
-import edu.unc.lib.dl.fcrepo4.FileObject;
-import edu.unc.lib.dl.fcrepo4.RepositoryObject;
-import edu.unc.lib.dl.fcrepo4.RepositoryObjectFactory;
-import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
 import edu.unc.lib.dl.fcrepo4.TransactionManager;
-import edu.unc.lib.dl.fedora.PID;
-import edu.unc.lib.boxc.common.metrics.TimerFactory;
-import edu.unc.lib.dl.model.AgentPids;
-import edu.unc.lib.dl.rdf.DcElements;
-import edu.unc.lib.dl.rdf.Ebucore;
-import edu.unc.lib.dl.rdf.Premis;
+import edu.unc.lib.dl.persist.api.event.PremisLoggerFactory;
 import edu.unc.lib.dl.services.OperationsMessageSender;
 import io.dropwizard.metrics5.Timer;
 
@@ -49,6 +50,7 @@ public class EditFilenameService {
     private RepositoryObjectFactory repoObjFactory;
     private TransactionManager txManager;
     private OperationsMessageSender operationsMessageSender;
+    private PremisLoggerFactory premisLoggerFactory;
 
     private static final Timer timer = TimerFactory.createTimerForClass(EditFilenameService.class);
 
@@ -82,7 +84,7 @@ public class EditFilenameService {
             repoObjFactory.createExclusiveRelationship(binaryObj, Ebucore.filename, label);
             repoObjFactory.createExclusiveRelationship(obj, DcElements.title, label);
 
-            obj.getPremisLog()
+            premisLoggerFactory.createPremisLogger(obj)
                 .buildEvent(Premis.FilenameChange)
                 .addImplementorAgent(AgentPids.forPerson(agent))
                 .addEventDetail("Object renamed from " + oldLabel + " to " + label)
@@ -131,6 +133,10 @@ public class EditFilenameService {
      */
     public void setOperationsMessageSender(OperationsMessageSender operationsMessageSender) {
         this.operationsMessageSender = operationsMessageSender;
+    }
+
+    public void setPremisLoggerFactory(PremisLoggerFactory premisLoggerFactory) {
+        this.premisLoggerFactory = premisLoggerFactory;
     }
 
     private String getOldLabel(String filename) {

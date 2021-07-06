@@ -68,7 +68,7 @@
     </bean>
     
     <bean id="contentPathFactory" class="org.mockito.Mockito" factory-method="mock">
-        <constructor-arg value="edu.unc.lib.dl.fedora.ContentPathFactory" />
+        <constructor-arg value="edu.unc.lib.boxc.model.fcrepo.services.ContentPathFactoryImpl" />
     </bean>
     
     <bean id="aclService" class="org.mockito.Mockito" factory-method="mock">

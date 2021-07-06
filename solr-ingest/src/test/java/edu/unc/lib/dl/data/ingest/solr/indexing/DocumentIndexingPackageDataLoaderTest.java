@@ -34,11 +34,11 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
 
+import edu.unc.lib.boxc.model.api.ids.PID;
+import edu.unc.lib.boxc.model.api.objects.ContentObject;
+import edu.unc.lib.boxc.model.api.objects.BinaryObject;
+import edu.unc.lib.boxc.model.fcrepo.services.RepositoryObjectLoaderImpl;
 import edu.unc.lib.dl.data.ingest.solr.exception.IndexingException;
-import edu.unc.lib.dl.fcrepo4.BinaryObject;
-import edu.unc.lib.dl.fcrepo4.ContentObject;
-import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
-import edu.unc.lib.dl.fedora.PID;
 
 /**
  *
@@ -50,7 +50,7 @@ public class DocumentIndexingPackageDataLoaderTest {
     private DocumentIndexingPackageDataLoader dataLoader;
 
     @Mock
-    private RepositoryObjectLoader repoObjLoader;
+    private RepositoryObjectLoaderImpl repoObjLoader;
     @Mock
     private DocumentIndexingPackage dip;
     @Mock

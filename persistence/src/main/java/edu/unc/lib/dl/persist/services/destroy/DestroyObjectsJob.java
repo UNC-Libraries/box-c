@@ -15,8 +15,8 @@
  */
 package edu.unc.lib.dl.persist.services.destroy;
 
-import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.METADATA_CONTAINER;
-import static edu.unc.lib.dl.model.DatastreamType.MD_EVENTS;
+import static edu.unc.lib.boxc.model.api.DatastreamType.MD_EVENTS;
+import static edu.unc.lib.boxc.model.api.ids.RepositoryPathConstants.METADATA_CONTAINER;
 import static edu.unc.lib.dl.persist.services.destroy.DestroyObjectsHelper.assertCanDestroy;
 import static edu.unc.lib.dl.persist.services.destroy.ServerManagedProperties.isServerManagedProperty;
 import static edu.unc.lib.dl.util.IndexingActionType.DELETE_SOLR_TREE;
@@ -40,20 +40,20 @@ import org.fcrepo.client.FcrepoOperationFailedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import edu.unc.lib.dl.acl.fcrepo4.InheritedAclFactory;
-import edu.unc.lib.dl.fcrepo4.BinaryObject;
-import edu.unc.lib.dl.fcrepo4.ContentContainerObject;
-import edu.unc.lib.dl.fcrepo4.ContentObject;
-import edu.unc.lib.dl.fcrepo4.FedoraTransaction;
-import edu.unc.lib.dl.fcrepo4.FileObject;
-import edu.unc.lib.dl.fcrepo4.RepositoryObject;
-import edu.unc.lib.dl.fedora.FedoraException;
-import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.boxc.common.metrics.TimerFactory;
-import edu.unc.lib.dl.model.AgentPids;
-import edu.unc.lib.dl.rdf.Cdr;
-import edu.unc.lib.dl.rdf.Ldp;
-import edu.unc.lib.dl.rdf.Premis;
+import edu.unc.lib.boxc.model.api.exceptions.FedoraException;
+import edu.unc.lib.boxc.model.api.ids.PID;
+import edu.unc.lib.boxc.model.api.objects.BinaryObject;
+import edu.unc.lib.boxc.model.api.objects.ContentContainerObject;
+import edu.unc.lib.boxc.model.api.objects.ContentObject;
+import edu.unc.lib.boxc.model.api.objects.FileObject;
+import edu.unc.lib.boxc.model.api.objects.RepositoryObject;
+import edu.unc.lib.boxc.model.api.rdf.Cdr;
+import edu.unc.lib.boxc.model.api.rdf.Ldp;
+import edu.unc.lib.boxc.model.api.rdf.Premis;
+import edu.unc.lib.boxc.model.fcrepo.ids.AgentPids;
+import edu.unc.lib.dl.acl.fcrepo4.InheritedAclFactory;
+import edu.unc.lib.dl.fcrepo4.FedoraTransaction;
 import edu.unc.lib.dl.search.solr.model.ObjectPath;
 import edu.unc.lib.dl.search.solr.service.ObjectPathFactory;
 import edu.unc.lib.dl.util.TombstonePropertySelector;
@@ -104,7 +104,8 @@ public class DestroyObjectsJob extends AbstractDestroyObjectsJob {
 
                     // Add premis event to parent
                     String lineSeparator = System.getProperty("line.separator");
-                    parentObj.getPremisLog().buildEvent(Premis.Deletion)
+                    premisLoggerFactory.createPremisLogger(parentObj)
+                            .buildEvent(Premis.Deletion)
                             .addAuthorizingAgent(AgentPids.forPerson(agent))
                             .addOutcome(true)
                             .addEventDetail("{0} object(s) were destroyed", deletedObjIds.size())
@@ -161,7 +162,8 @@ public class DestroyObjectsJob extends AbstractDestroyObjectsJob {
         repoObjFactory.createOrTransformObject(rootOfTree.getUri(), stoneModel);
 
         //add premis event to tombstone
-        rootOfTree.getPremisLog().buildEvent(Premis.Deletion)
+        premisLoggerFactory.createPremisLogger(rootOfTree)
+            .buildEvent(Premis.Deletion)
             .addAuthorizingAgent(AgentPids.forPerson(agent))
             .addEventDetail("Item deleted from repository and replaced by tombstone")
             .writeAndClose();

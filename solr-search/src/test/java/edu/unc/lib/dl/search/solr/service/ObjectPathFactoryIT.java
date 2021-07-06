@@ -29,7 +29,7 @@ import org.junit.Test;
 import org.mockito.Mock;
 
 import edu.unc.lib.boxc.common.test.TestHelpers;
-import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadata;
 import edu.unc.lib.dl.search.solr.model.ObjectPath;
 import edu.unc.lib.dl.search.solr.model.ObjectPathEntry;

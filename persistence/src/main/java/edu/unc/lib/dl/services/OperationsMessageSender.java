@@ -15,9 +15,9 @@
  */
 package edu.unc.lib.dl.services;
 
-import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.ATOM_NS;
-import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.CDR_MESSAGE_NS;
-import static edu.unc.lib.dl.xml.NamespaceConstants.CDR_MESSAGE_AUTHOR_URI;
+import static edu.unc.lib.boxc.model.api.xml.JDOMNamespaceUtil.ATOM_NS;
+import static edu.unc.lib.boxc.model.api.xml.JDOMNamespaceUtil.CDR_MESSAGE_NS;
+import static edu.unc.lib.boxc.model.api.xml.NamespaceConstants.CDR_MESSAGE_AUTHOR_URI;
 
 import java.util.Collection;
 import java.util.UUID;
@@ -30,10 +30,10 @@ import org.joda.time.format.ISODateTimeFormat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.boxc.model.api.ResourceType;
+import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.dl.persist.api.indexing.IndexingPriority;
 import edu.unc.lib.dl.util.JMSMessageUtil.CDRActions;
-import edu.unc.lib.dl.util.ResourceType;
 
 /**
  * Constructs and sends JMS messages describing CDR operations.

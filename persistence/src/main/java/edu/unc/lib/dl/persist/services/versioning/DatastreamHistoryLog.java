@@ -15,7 +15,7 @@
  */
 package edu.unc.lib.dl.persist.services.versioning;
 
-import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.DCR_PACKAGING_NS;
+import static edu.unc.lib.boxc.model.api.xml.JDOMNamespaceUtil.DCR_PACKAGING_NS;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 import java.io.ByteArrayInputStream;
@@ -33,7 +33,7 @@ import org.jdom2.output.XMLOutputter;
 
 import edu.unc.lib.boxc.common.util.DateTimeUtil;
 import edu.unc.lib.boxc.common.xml.SecureXMLFactory;
-import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.dl.fedora.ServiceException;
 
 /**

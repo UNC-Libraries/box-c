@@ -15,20 +15,20 @@
  */
 package edu.unc.lib.dl.data.ingest.solr.filter;
 
-import static edu.unc.lib.dl.model.DatastreamType.FULLTEXT_EXTRACTION;
+import static edu.unc.lib.boxc.model.api.DatastreamType.FULLTEXT_EXTRACTION;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 import java.io.IOException;
 
 import org.apache.commons.io.FileUtils;
 
+import edu.unc.lib.boxc.model.api.objects.ContentObject;
+import edu.unc.lib.boxc.model.api.objects.FileObject;
+import edu.unc.lib.boxc.model.api.objects.WorkObject;
+import edu.unc.lib.boxc.model.fcrepo.services.DerivativeService;
+import edu.unc.lib.boxc.model.fcrepo.services.DerivativeService.Derivative;
 import edu.unc.lib.dl.data.ingest.solr.exception.IndexingException;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackage;
-import edu.unc.lib.dl.fcrepo4.ContentObject;
-import edu.unc.lib.dl.fcrepo4.FileObject;
-import edu.unc.lib.dl.fcrepo4.WorkObject;
-import edu.unc.lib.dl.util.DerivativeService;
-import edu.unc.lib.dl.util.DerivativeService.Derivative;
 
 /**
  * Retrieves full text data for object being indexed and stores it to the indexing document

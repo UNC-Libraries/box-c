@@ -15,7 +15,7 @@
  */
 package edu.unc.lib.dl.persist.services.importxml;
 
-import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.MODS_V3_NS;
+import static edu.unc.lib.boxc.model.api.xml.JDOMNamespaceUtil.MODS_V3_NS;
 import static org.apache.commons.io.FileUtils.copyInputStreamToFile;
 
 import java.io.ByteArrayInputStream;
@@ -27,7 +27,7 @@ import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.output.XMLOutputter;
 
-import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.boxc.model.api.ids.PID;
 
 /**
  * @author bbpennel

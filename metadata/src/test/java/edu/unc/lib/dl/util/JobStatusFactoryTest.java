@@ -30,7 +30,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
 
-import edu.unc.lib.dl.exceptions.RepositoryException;
+import edu.unc.lib.boxc.model.api.exceptions.RepositoryException;
 import edu.unc.lib.dl.util.RedisWorkerConstants.JobField;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;

@@ -41,6 +41,7 @@
         <property name="operationsMessageSender" ref="operationsMessageSender" />
         <property name="storageLocationManager" ref="storageLocationManager" />
         <property name="updateDescriptionService" ref="updateDescriptionService" />
+        <property name="premisLoggerFactory" ref="premisLoggerFactory" />
     </bean>
 
     <bean id="patronService" class="edu.unc.lib.dl.persist.services.acl.PatronAccessAssignmentService">
@@ -49,5 +50,6 @@
         <property name="repositoryObjectFactory" ref="repositoryObjectFactory" />
         <property name="transactionManager" ref="transactionManager" />
         <property name="operationsMessageSender" ref="operationsMessageSender" />
+        <property name="premisLoggerFactory" ref="premisLoggerFactory" />
     </bean>
 </beans>

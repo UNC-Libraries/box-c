@@ -15,7 +15,7 @@
  */
 package edu.unc.lib.dl.data.ingest.solr.test;
 
-import static edu.unc.lib.dl.fcrepo4.RepositoryPaths.getContentRootPid;
+import static edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPaths.getContentRootPid;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -25,8 +25,8 @@ import java.util.stream.Collectors;
 
 import org.apache.solr.common.SolrInputDocument;
 
-import edu.unc.lib.dl.fcrepo4.PIDs;
-import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.boxc.model.api.ids.PID;
+import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 
 /**
  * Utility which constructs a small corpus of solr documents for testing and

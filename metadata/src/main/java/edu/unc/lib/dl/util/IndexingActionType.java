@@ -18,7 +18,7 @@ package edu.unc.lib.dl.util;
 import java.net.URI;
 import java.net.URISyntaxException;
 
-import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
+import edu.unc.lib.boxc.model.api.xml.JDOMNamespaceUtil;
 
 /**
  * Indexing actions

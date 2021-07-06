@@ -32,6 +32,15 @@ import org.apache.jena.rdf.model.Resource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import edu.unc.lib.boxc.common.metrics.TimerFactory;
+import edu.unc.lib.boxc.model.api.ids.PID;
+import edu.unc.lib.boxc.model.api.objects.AdminUnit;
+import edu.unc.lib.boxc.model.api.objects.CollectionObject;
+import edu.unc.lib.boxc.model.api.objects.RepositoryObject;
+import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
+import edu.unc.lib.boxc.model.api.rdf.Premis;
+import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
+import edu.unc.lib.boxc.model.fcrepo.ids.AgentPids;
 import edu.unc.lib.dl.acl.exception.InvalidAssignmentException;
 import edu.unc.lib.dl.acl.fcrepo4.ContentObjectAccessRestrictionValidator;
 import edu.unc.lib.dl.acl.fcrepo4.InheritedAclFactory;
@@ -39,18 +48,10 @@ import edu.unc.lib.dl.acl.service.AccessControlService;
 import edu.unc.lib.dl.acl.util.AgentPrincipals;
 import edu.unc.lib.dl.acl.util.RoleAssignment;
 import edu.unc.lib.dl.acl.util.UserRole;
-import edu.unc.lib.dl.fcrepo4.AdminUnit;
-import edu.unc.lib.dl.fcrepo4.CollectionObject;
 import edu.unc.lib.dl.fcrepo4.FedoraTransaction;
-import edu.unc.lib.dl.fcrepo4.RepositoryObject;
-import edu.unc.lib.dl.fcrepo4.RepositoryObjectFactory;
-import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
 import edu.unc.lib.dl.fcrepo4.TransactionManager;
-import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.fedora.ServiceException;
-import edu.unc.lib.boxc.common.metrics.TimerFactory;
-import edu.unc.lib.dl.model.AgentPids;
-import edu.unc.lib.dl.rdf.Premis;
+import edu.unc.lib.dl.persist.api.event.PremisLoggerFactory;
 import edu.unc.lib.dl.services.OperationsMessageSender;
 import edu.unc.lib.dl.util.JMSMessageUtil.CDRActions;
 import io.dropwizard.metrics5.Timer;
@@ -71,6 +72,7 @@ public class StaffRoleAssignmentService {
     private InheritedAclFactory aclFactory;
     private OperationsMessageSender operationsMessageSender;
     private TransactionManager txManager;
+    private PremisLoggerFactory premisLoggerFactory;
 
     private ContentObjectAccessRestrictionValidator accessValidator;
 
@@ -110,7 +112,8 @@ public class StaffRoleAssignmentService {
 
             replaceStaffRoles(repoObj, assignments);
 
-            repoObj.getPremisLog().buildEvent(Premis.PolicyAssignment)
+            premisLoggerFactory.createPremisLogger(repoObj)
+                    .buildEvent(Premis.PolicyAssignment)
                     .addImplementorAgent(AgentPids.forPerson(agent))
                     .addEventDetail(createEventDetails(target))
                     .writeAndClose();
@@ -228,5 +231,9 @@ public class StaffRoleAssignmentService {
      */
     public void setTransactionManager(TransactionManager txManager) {
         this.txManager = txManager;
+    }
+
+    public void setPremisLoggerFactory(PremisLoggerFactory premisLoggerFactory) {
+        this.premisLoggerFactory = premisLoggerFactory;
     }
 }

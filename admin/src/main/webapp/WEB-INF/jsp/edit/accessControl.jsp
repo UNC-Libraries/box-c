@@ -24,8 +24,8 @@
 <link rel="stylesheet" type="text/css" href="/static/css/admin/jqueryui-editable.css" />
 
 <%
-	// Retrieving the static CDR ACL Namespace object
-	pageContext.setAttribute("aclNS", edu.unc.lib.dl.xml.JDOMNamespaceUtil.CDR_ACL_NS);
+    // Retrieving the static CDR ACL Namespace object
+	pageContext.setAttribute("aclNS", edu.unc.lib.boxc.model.api.xml.JDOMNamespaceUtil.CDR_ACL_NS);
 %>
 
 <div class="edit_acls edit_form">

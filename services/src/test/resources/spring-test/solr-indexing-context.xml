@@ -154,7 +154,7 @@
         <property name="pathFactory" ref="contentPathFactory" />
     </bean>
 
-    <bean id="contentPathFactory" class="edu.unc.lib.dl.fedora.ContentPathFactory"
+    <bean id="contentPathFactory" class="edu.unc.lib.boxc.model.fcrepo.services.ContentPathFactoryImpl"
           init-method="init">
         <property name="cacheMaxSize" value="100" />
         <property name="cacheTimeToLive" value="1000" />
@@ -239,7 +239,7 @@
         <property name="dataLoader" ref="dipDataLoader" />
     </bean>
     
-    <bean id="derivativeService" class="edu.unc.lib.dl.util.DerivativeService">
+    <bean id="derivativeService" class="edu.unc.lib.boxc.model.fcrepo.services.DerivativeService">
         <property name="derivativeDir" value="target/" />
     </bean>
 

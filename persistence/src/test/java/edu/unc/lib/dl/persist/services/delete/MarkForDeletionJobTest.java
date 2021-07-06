@@ -39,20 +39,21 @@ import org.mockito.Captor;
 import org.mockito.Mock;
 
 import edu.unc.lib.boxc.common.test.SelfReturningAnswer;
+import edu.unc.lib.boxc.model.api.exceptions.InvalidOperationForObjectType;
+import edu.unc.lib.boxc.model.api.ids.PID;
+import edu.unc.lib.boxc.model.api.objects.AdminUnit;
+import edu.unc.lib.boxc.model.api.objects.ContentObject;
+import edu.unc.lib.boxc.model.api.objects.DepositRecord;
+import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
+import edu.unc.lib.boxc.model.api.rdf.Premis;
+import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.dl.acl.exception.AccessRestrictionException;
 import edu.unc.lib.dl.acl.service.AccessControlService;
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.acl.util.AgentPrincipals;
-import edu.unc.lib.dl.event.PremisEventBuilder;
-import edu.unc.lib.dl.event.PremisLogger;
-import edu.unc.lib.dl.fcrepo4.AdminUnit;
-import edu.unc.lib.dl.fcrepo4.ContentObject;
-import edu.unc.lib.dl.fcrepo4.DepositRecord;
-import edu.unc.lib.dl.fcrepo4.PIDs;
-import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
-import edu.unc.lib.dl.fedora.PID;
-import edu.unc.lib.dl.model.InvalidOperationForObjectType;
-import edu.unc.lib.dl.rdf.Premis;
+import edu.unc.lib.dl.persist.api.event.PremisEventBuilder;
+import edu.unc.lib.dl.persist.api.event.PremisLogger;
+import edu.unc.lib.dl.persist.api.event.PremisLoggerFactory;
 import edu.unc.lib.dl.services.OperationsMessageSender;
 import edu.unc.lib.dl.sparql.SparqlUpdateService;
 
@@ -83,6 +84,8 @@ public class MarkForDeletionJobTest {
     private PremisLogger premisLogger;
     @Mock
     private AdminUnit repoObj;
+    @Mock
+    private PremisLoggerFactory premisLoggerFactory;
 
     @Captor
     private ArgumentCaptor<String> messageCaptor;
@@ -105,12 +108,13 @@ public class MarkForDeletionJobTest {
         when(contentObj.getMetadataUri()).thenReturn(URI.create(""));
 
         eventBuilder = mock(PremisEventBuilder.class, new SelfReturningAnswer());
-        when(contentObj.getPremisLog()).thenReturn(premisLogger);
+        when(premisLoggerFactory.createPremisLogger(contentObj)).thenReturn(premisLogger);
         when(premisLogger.buildEvent(eq(Premis.Deaccession))).thenReturn(eventBuilder);
 
         pid = PIDs.get(UUID.randomUUID().toString());
 
-        job = new MarkForDeletionJob(pid, MESSAGE, agent, repositoryObjectLoader, sparqlUpdateService, aclService);
+        job = new MarkForDeletionJob(pid, MESSAGE, agent, repositoryObjectLoader, sparqlUpdateService, aclService,
+                premisLoggerFactory);
     }
 
     @Test(expected = AccessRestrictionException.class)

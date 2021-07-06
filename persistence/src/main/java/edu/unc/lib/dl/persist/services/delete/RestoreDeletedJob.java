@@ -15,21 +15,22 @@
  */
 package edu.unc.lib.dl.persist.services.delete;
 
+import static edu.unc.lib.boxc.model.api.rdf.CdrAcl.markedForDeletion;
 import static edu.unc.lib.dl.acl.util.Permission.markForDeletion;
 import static edu.unc.lib.dl.acl.util.Permission.markForDeletionUnit;
-import static edu.unc.lib.dl.rdf.CdrAcl.markedForDeletion;
 import static edu.unc.lib.dl.sparql.SparqlUpdateHelper.createSparqlDelete;
 
+import edu.unc.lib.boxc.model.api.exceptions.InvalidOperationForObjectType;
+import edu.unc.lib.boxc.model.api.ids.PID;
+import edu.unc.lib.boxc.model.api.objects.AdminUnit;
+import edu.unc.lib.boxc.model.api.objects.ContentObject;
+import edu.unc.lib.boxc.model.api.objects.RepositoryObject;
+import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
+import edu.unc.lib.boxc.model.api.rdf.Premis;
+import edu.unc.lib.boxc.model.fcrepo.ids.AgentPids;
 import edu.unc.lib.dl.acl.service.AccessControlService;
 import edu.unc.lib.dl.acl.util.AgentPrincipals;
-import edu.unc.lib.dl.fcrepo4.AdminUnit;
-import edu.unc.lib.dl.fcrepo4.ContentObject;
-import edu.unc.lib.dl.fcrepo4.RepositoryObject;
-import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
-import edu.unc.lib.dl.fedora.PID;
-import edu.unc.lib.dl.model.AgentPids;
-import edu.unc.lib.dl.model.InvalidOperationForObjectType;
-import edu.unc.lib.dl.rdf.Premis;
+import edu.unc.lib.dl.persist.api.event.PremisLoggerFactory;
 import edu.unc.lib.dl.sparql.SparqlUpdateService;
 
 /**
@@ -43,16 +44,18 @@ public class RestoreDeletedJob implements Runnable {
     private AccessControlService aclService;
     private RepositoryObjectLoader repositoryObjectLoader;
     private SparqlUpdateService sparqlUpdateService;
+    private PremisLoggerFactory premisLoggerFactory;
 
     private AgentPrincipals agent;
     private PID pid;
 
     public RestoreDeletedJob(PID pid, AgentPrincipals agent,
             RepositoryObjectLoader repositoryObjectLoader, SparqlUpdateService sparqlUpdateService,
-            AccessControlService aclService) {
+            AccessControlService aclService, PremisLoggerFactory premisLoggerFactory) {
         this.pid = pid;
         this.repositoryObjectLoader = repositoryObjectLoader;
         this.sparqlUpdateService = sparqlUpdateService;
+        this.premisLoggerFactory = premisLoggerFactory;
         this.aclService = aclService;
         this.agent = agent;
     }
@@ -78,7 +81,8 @@ public class RestoreDeletedJob implements Runnable {
 
         sparqlUpdateService.executeUpdate(repoObj.getMetadataUri().toString(), updateString);
 
-        repoObj.getPremisLog().buildEvent(Premis.Accession)
+        premisLoggerFactory.createPremisLogger(repoObj)
+                .buildEvent(Premis.Accession)
                 .addImplementorAgent(AgentPids.forPerson(agent))
                 .addEventDetail("Item restored from deletion")
                 .writeAndClose();

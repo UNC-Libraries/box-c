@@ -19,17 +19,17 @@
             factory-bean="fcrepoClientFactory" factory-method="makeClient">
     </bean>
     
-    <bean id="ldpContainerFactory" class="edu.unc.lib.dl.fcrepo4.LdpContainerFactory">
+    <bean id="ldpContainerFactory" class="edu.unc.lib.boxc.model.fcrepo.services.LdpContainerFactory">
         <property name="client" ref="fcrepoClient" />
     </bean>
     
-    <bean id="repositoryPIDMinter" class="edu.unc.lib.dl.fcrepo4.RepositoryPIDMinter"></bean>
+    <bean id="repositoryPIDMinter" class="edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPIDMinter"></bean>
     
     <bean id="fedoraSparqlUpdateService" class="edu.unc.lib.dl.sparql.FedoraSparqlUpdateService">
         <property name="fcrepoClient" ref="fcrepoClient" />
     </bean>
 
-    <bean id="repositoryObjectFactory" class="edu.unc.lib.dl.fcrepo4.RepositoryObjectFactory">
+    <bean id="repositoryObjectFactory" class="edu.unc.lib.boxc.model.fcrepo.services.RepositoryObjectFactoryImpl">
         <property name="client" ref="fcrepoClient" />
         <property name="ldpFactory" ref="ldpContainerFactory" />
         <property name="pidMinter" ref="repositoryPIDMinter" />
@@ -45,16 +45,15 @@
         <constructor-arg value="5" />
     </bean>
     
-    <bean id="repositoryObjectLoader" class="edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader" init-method="init">
+    <bean id="repositoryObjectLoader" class="edu.unc.lib.boxc.model.fcrepo.services.RepositoryObjectLoaderImpl" init-method="init">
         <property name="repositoryObjectCacheLoader" ref="repositoryObjectCacheLoader" />
         <property name="cacheTimeToLive" ref="cacheTimeToLive" />
         <property name="cacheMaxSize" ref="cacheMaxSize" />
     </bean>
     
-    <bean id="repositoryObjectDriver" class="edu.unc.lib.dl.fcrepo4.RepositoryObjectDriver">
+    <bean id="repositoryObjectDriver" class="edu.unc.lib.boxc.model.fcrepo.services.RepositoryObjectDriver">
         <property name="client" ref="fcrepoClient" />
         <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
-        <property name="repositoryObjectFactory" ref="repositoryObjectFactory" />
         <property name="sparqlQueryService" ref="sparqlQueryService" />
         <property name="pidMinter" ref="repositoryPIDMinter" />
     </bean>
@@ -66,7 +65,7 @@
         <constructor-arg ref="queryModel" />
     </bean>
     
-    <bean id="repositoryObjectCacheLoader" class="edu.unc.lib.dl.fcrepo4.RepositoryObjectCacheLoader">
+    <bean id="repositoryObjectCacheLoader" class="edu.unc.lib.boxc.model.fcrepo.objects.RepositoryObjectCacheLoader">
         <property name="client" ref="fcrepoClient" />
         <property name="repositoryObjectDriver" ref="repositoryObjectDriver" />
         <property name="repositoryObjectFactory" ref="repositoryObjectFactory" />

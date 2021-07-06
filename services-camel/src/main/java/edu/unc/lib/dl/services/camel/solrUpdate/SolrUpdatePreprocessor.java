@@ -15,6 +15,7 @@
  */
 package edu.unc.lib.dl.services.camel.solrUpdate;
 
+import static edu.unc.lib.boxc.model.api.xml.JDOMNamespaceUtil.ATOM_NS;
 import static edu.unc.lib.dl.util.IndexingActionType.ADD_SET_TO_PARENT;
 import static edu.unc.lib.dl.util.IndexingActionType.CLEAN_REINDEX;
 import static edu.unc.lib.dl.util.IndexingActionType.DELETE_CHILDREN_PRIOR_TO_TIMESTAMP;
@@ -22,7 +23,6 @@ import static edu.unc.lib.dl.util.IndexingActionType.DELETE_SOLR_TREE;
 import static edu.unc.lib.dl.util.IndexingActionType.RECURSIVE_ADD;
 import static edu.unc.lib.dl.util.IndexingActionType.RECURSIVE_REINDEX;
 import static edu.unc.lib.dl.util.IndexingActionType.UPDATE_ACCESS_TREE;
-import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.ATOM_NS;
 
 import java.util.EnumSet;
 import java.util.Set;
@@ -40,8 +40,8 @@ import org.jdom2.output.XMLOutputter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import edu.unc.lib.dl.fcrepo4.PIDs;
-import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.boxc.model.api.ids.PID;
+import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders;
 import edu.unc.lib.dl.services.camel.util.MessageUtil;
 import edu.unc.lib.dl.util.IndexingActionType;

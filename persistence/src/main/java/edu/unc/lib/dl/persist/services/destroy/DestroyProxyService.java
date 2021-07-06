@@ -15,7 +15,7 @@
  */
 package edu.unc.lib.dl.persist.services.destroy;
 
-import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.FCR_TOMBSTONE;
+import static edu.unc.lib.boxc.model.api.ids.RepositoryPathConstants.FCR_TOMBSTONE;
 
 import java.io.IOException;
 import java.net.URI;
@@ -30,7 +30,7 @@ import org.fcrepo.client.FcrepoResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.dl.fedora.ServiceException;
 import edu.unc.lib.dl.sparql.SparqlQueryService;
 

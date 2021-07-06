@@ -18,7 +18,7 @@ package edu.unc.lib.dl.persist.api.transfer;
 import java.io.InputStream;
 import java.net.URI;
 
-import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.dl.persist.api.storage.BinaryDetails;
 
 /**

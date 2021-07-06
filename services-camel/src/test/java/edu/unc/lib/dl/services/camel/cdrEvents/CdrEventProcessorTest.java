@@ -15,8 +15,8 @@
  */
 package edu.unc.lib.dl.services.camel.cdrEvents;
 
+import static edu.unc.lib.boxc.model.api.xml.JDOMNamespaceUtil.ATOM_NS;
 import static edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders.CdrUpdateAction;
-import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.ATOM_NS;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.verify;

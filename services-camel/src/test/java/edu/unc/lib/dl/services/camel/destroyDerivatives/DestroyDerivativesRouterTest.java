@@ -35,7 +35,7 @@ import org.junit.Test;
 import org.springframework.context.support.AbstractApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
-import edu.unc.lib.dl.rdf.Cdr;
+import edu.unc.lib.boxc.model.api.rdf.Cdr;
 
 public class DestroyDerivativesRouterTest extends CamelSpringTestSupport {
     private static final String DESTROY_DERIVATIVES_ROUTE = "CdrDestroyDerivatives";

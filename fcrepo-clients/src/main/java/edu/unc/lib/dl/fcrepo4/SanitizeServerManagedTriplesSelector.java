@@ -15,12 +15,12 @@
  */
 package edu.unc.lib.dl.fcrepo4;
 
-import static edu.unc.lib.dl.rdf.Fcrepo4Repository.created;
-import static edu.unc.lib.dl.rdf.Fcrepo4Repository.createdBy;
-import static edu.unc.lib.dl.rdf.Fcrepo4Repository.lastModified;
-import static edu.unc.lib.dl.rdf.Fcrepo4Repository.lastModifiedBy;
-import static edu.unc.lib.dl.rdf.Premis.hasFixity;
-import static edu.unc.lib.dl.rdf.Premis.hasMessageDigest;
+import static edu.unc.lib.boxc.model.api.rdf.Fcrepo4Repository.created;
+import static edu.unc.lib.boxc.model.api.rdf.Fcrepo4Repository.createdBy;
+import static edu.unc.lib.boxc.model.api.rdf.Fcrepo4Repository.lastModified;
+import static edu.unc.lib.boxc.model.api.rdf.Fcrepo4Repository.lastModifiedBy;
+import static edu.unc.lib.boxc.model.api.rdf.Premis.hasFixity;
+import static edu.unc.lib.boxc.model.api.rdf.Premis.hasMessageDigest;
 
 import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.Resource;
@@ -28,9 +28,9 @@ import org.apache.jena.rdf.model.SimpleSelector;
 import org.apache.jena.rdf.model.Statement;
 import org.apache.jena.vocabulary.RDF;
 
-import edu.unc.lib.dl.rdf.Fcrepo4Repository;
-import edu.unc.lib.dl.rdf.Ldp;
-import edu.unc.lib.dl.rdf.Memento;
+import edu.unc.lib.boxc.model.api.rdf.Fcrepo4Repository;
+import edu.unc.lib.boxc.model.api.rdf.Ldp;
+import edu.unc.lib.boxc.model.api.rdf.Memento;
 
 /**
  * Selector which returns all triples which are not fcrepo server managed

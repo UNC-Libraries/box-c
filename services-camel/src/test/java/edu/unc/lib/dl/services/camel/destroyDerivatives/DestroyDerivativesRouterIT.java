@@ -15,10 +15,10 @@
  */
 package edu.unc.lib.dl.services.camel.destroyDerivatives;
 
-import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.HASHED_PATH_DEPTH;
-import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.HASHED_PATH_SIZE;
-import static edu.unc.lib.dl.fcrepo4.RepositoryPaths.getContentRootPid;
-import static edu.unc.lib.dl.fcrepo4.RepositoryPaths.idToPath;
+import static edu.unc.lib.boxc.model.api.ids.RepositoryPathConstants.HASHED_PATH_DEPTH;
+import static edu.unc.lib.boxc.model.api.ids.RepositoryPathConstants.HASHED_PATH_SIZE;
+import static edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPaths.getContentRootPid;
+import static edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPaths.idToPath;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.reset;
@@ -48,22 +48,25 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.ContextHierarchy;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
+import edu.unc.lib.boxc.model.api.ids.PID;
+import edu.unc.lib.boxc.model.api.objects.AdminUnit;
+import edu.unc.lib.boxc.model.api.objects.CollectionObject;
+import edu.unc.lib.boxc.model.api.objects.ContentRootObject;
+import edu.unc.lib.boxc.model.api.objects.FileObject;
+import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
+import edu.unc.lib.boxc.model.api.objects.WorkObject;
+import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
+import edu.unc.lib.boxc.model.fcrepo.services.RepositoryInitializer;
+import edu.unc.lib.boxc.model.fcrepo.test.AclModelBuilder;
+import edu.unc.lib.boxc.model.fcrepo.test.RepositoryObjectTreeIndexer;
+import edu.unc.lib.boxc.model.fcrepo.test.TestHelper;
 import edu.unc.lib.dl.acl.fcrepo4.InheritedAclFactory;
 import edu.unc.lib.dl.acl.service.AccessControlService;
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.acl.util.AgentPrincipals;
-import edu.unc.lib.dl.event.PremisLoggerFactory;
-import edu.unc.lib.dl.fcrepo4.AdminUnit;
-import edu.unc.lib.dl.fcrepo4.CollectionObject;
-import edu.unc.lib.dl.fcrepo4.ContentRootObject;
-import edu.unc.lib.dl.fcrepo4.FileObject;
-import edu.unc.lib.dl.fcrepo4.RepositoryInitializer;
-import edu.unc.lib.dl.fcrepo4.RepositoryObjectFactory;
-import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
 import edu.unc.lib.dl.fcrepo4.TransactionManager;
-import edu.unc.lib.dl.fcrepo4.WorkObject;
-import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.persist.api.transfer.BinaryTransferService;
+import edu.unc.lib.dl.persist.event.PremisLoggerFactoryImpl;
 import edu.unc.lib.dl.persist.services.delete.MarkForDeletionJob;
 import edu.unc.lib.dl.persist.services.destroy.DestroyObjectsJob;
 import edu.unc.lib.dl.persist.services.destroy.DestroyObjectsRequest;
@@ -73,9 +76,6 @@ import edu.unc.lib.dl.search.solr.service.ObjectPathFactory;
 import edu.unc.lib.dl.services.IndexingMessageSender;
 import edu.unc.lib.dl.services.MessageSender;
 import edu.unc.lib.dl.sparql.FedoraSparqlUpdateService;
-import edu.unc.lib.dl.test.AclModelBuilder;
-import edu.unc.lib.dl.test.RepositoryObjectTreeIndexer;
-import edu.unc.lib.dl.test.TestHelper;
 
 /**
  *
@@ -118,7 +118,7 @@ public class DestroyDerivativesRouterIT {
     @Autowired
     private FedoraSparqlUpdateService sparqlUpdateService;
     @Autowired
-    private PremisLoggerFactory premisLoggerFactory;
+    private PremisLoggerFactoryImpl premisLoggerFactory;
     @Autowired
     private CamelContext cdrDestroyDerivatives;
     @Autowired
@@ -314,7 +314,7 @@ public class DestroyDerivativesRouterIT {
 
     private void markForDeletion(PID pid) {
         new MarkForDeletionJob(pid, "", agent, repoObjLoader,
-                sparqlUpdateService, aclService).run();
+                sparqlUpdateService, aclService, premisLoggerFactory).run();
     }
 
     private void initializeDestroyJob(List<PID> objsToDestroy) {
@@ -332,5 +332,6 @@ public class DestroyDerivativesRouterIT {
         destroyJob.setStorageLocationManager(locationManager);
         destroyJob.setIndexingMessageSender(indexingMessageSender);
         destroyJob.setBinaryDestroyedMessageSender(binaryDestroyedMessageSender);
+        destroyJob.setPremisLoggerFactory(premisLoggerFactory);
     }
 }

@@ -17,6 +17,8 @@ package edu.unc.lib.dl.fedora;
 
 import org.springframework.ws.soap.client.SoapFaultClientException;
 
+import edu.unc.lib.boxc.model.api.exceptions.FedoraException;
+
 /**
  * 
  * @author bbpennel

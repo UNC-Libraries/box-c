@@ -15,8 +15,8 @@
  */
 package edu.unc.lib.dl.services.camel.solrUpdate;
 
+import static edu.unc.lib.boxc.model.api.xml.JDOMNamespaceUtil.ATOM_NS;
 import static edu.unc.lib.dl.util.IndexingMessageHelper.makeIndexingOperationBody;
-import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.ATOM_NS;
 import static org.junit.Assert.fail;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.doThrow;
@@ -49,9 +49,10 @@ import org.springframework.test.context.BootstrapWith;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.ContextHierarchy;
 
-import edu.unc.lib.dl.fcrepo4.RepositoryPIDMinter;
-import edu.unc.lib.dl.fedora.NotFoundException;
-import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.boxc.model.api.exceptions.NotFoundException;
+import edu.unc.lib.boxc.model.api.ids.PID;
+import edu.unc.lib.boxc.model.api.ids.PIDMinter;
+import edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPIDMinter;
 import edu.unc.lib.dl.persist.api.indexing.IndexingPriority;
 import edu.unc.lib.dl.services.camel.util.MessageUtil;
 import edu.unc.lib.dl.util.IndexingActionType;
@@ -89,7 +90,7 @@ public class SolrUpdateRouterTest {
 
     private ArgumentCaptor<Exchange> exchangeCaptor;
 
-    private RepositoryPIDMinter pidMinter;
+    private PIDMinter pidMinter;
 
     private PID targetPid;
 

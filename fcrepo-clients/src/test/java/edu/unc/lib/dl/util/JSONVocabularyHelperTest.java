@@ -34,7 +34,7 @@ import org.jdom2.input.SAXBuilder;
 import org.junit.Before;
 import org.junit.Test;
 
-import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
+import edu.unc.lib.boxc.model.api.xml.JDOMNamespaceUtil;
 
 /**
  * @author bbpennel

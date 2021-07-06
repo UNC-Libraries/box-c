@@ -26,8 +26,8 @@ import org.fcrepo.client.FcrepoClient;
 import org.fcrepo.client.FcrepoOperationFailedException;
 import org.fcrepo.client.FcrepoResponse;
 
+import edu.unc.lib.boxc.model.api.exceptions.FedoraException;
 import edu.unc.lib.dl.fcrepo4.ClientFaultResolver;
-import edu.unc.lib.dl.fedora.FedoraException;
 
 /**
  * Execute sparql update queries against a fedora repository

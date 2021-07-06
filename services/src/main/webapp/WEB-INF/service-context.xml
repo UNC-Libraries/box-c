@@ -41,7 +41,7 @@
     </bean>
     
     <bean id="injectedCdrVersion" class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
-        <property name="staticMethod" value="edu.unc.lib.dl.util.SoftwareAgentConstants.setCdrVersion" />
+        <property name="staticMethod" value="edu.unc.lib.boxc.model.api.SoftwareAgentConstants.setCdrVersion" />
         <property name="arguments">
             <list>
                 <value>5.0</value>
@@ -245,6 +245,7 @@
         <property name="operationsMessageSender" ref="operationsMessageSender" />
         <property name="storageLocationManager" ref="storageLocationManager" />
         <property name="updateDescriptionService" ref="updateDescriptionService" />
+        <property name="premisLoggerFactory" ref="premisLoggerFactory" />
     </bean>
     
     <bean id="editFilenameService" class="edu.unc.lib.dl.persist.services.edit.EditFilenameService">
@@ -253,6 +254,7 @@
         <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
         <property name="transactionManager" ref="transactionManager" />
         <property name="operationsMessageSender" ref="operationsMessageSender" />
+        <property name="premisLoggerFactory" ref="premisLoggerFactory" />
     </bean>
 
     <bean id="editTitleService" class="edu.unc.lib.dl.persist.services.edit.EditTitleService">
@@ -314,6 +316,7 @@
         <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
         <property name="sparqlUpdateService" ref="fedoraSparqlUpdateService" />
         <property name="operationsMessageSender" ref="operationsMessageSender" />
+        <property name="premisLoggerFactory" ref="premisLoggerFactory" />
   </bean>
 
   <bean id="setAsPrimaryObjectService" class="edu.unc.lib.dl.cdr.services.processing.SetAsPrimaryObjectService" >
@@ -381,7 +384,7 @@
         <property name="defaultEncoding" value="UTF-8" />
     </bean>
 
-    <bean id="derivativeService" class="edu.unc.lib.dl.util.DerivativeService">
+    <bean id="derivativeService" class="edu.unc.lib.boxc.model.fcrepo.services.DerivativeService">
         <property name="derivativeDir" value="${derivative.dir}" />
     </bean>
    
@@ -397,6 +400,7 @@
         <property name="repositoryObjectFactory" ref="repositoryObjectFactory" />
         <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
         <property name="transactionManager" ref="transactionManager" />
+        <property name="premisLoggerFactory" ref="premisLoggerFactory" />
     </bean>
     
     <bean id="patronAccessOperationTemplate" class="org.springframework.jms.core.JmsTemplate">
@@ -415,6 +419,7 @@
         <property name="repositoryObjectFactory" ref="repositoryObjectFactory" />
         <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
         <property name="transactionManager" ref="transactionManager" />
+        <property name="premisLoggerFactory" ref="premisLoggerFactory" />
     </bean>
     
     <bean id="binaryTransferService" class="edu.unc.lib.dl.persist.services.transfer.BinaryTransferServiceImpl">

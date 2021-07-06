@@ -15,9 +15,9 @@
  */
 package edu.unc.lib.dl.services.camel.destroyDerivatives;
 
-import static edu.unc.lib.dl.model.DatastreamType.FULLTEXT_EXTRACTION;
-import static edu.unc.lib.dl.model.DatastreamType.JP2_ACCESS_COPY;
-import static edu.unc.lib.dl.model.DatastreamType.THUMBNAIL_LARGE;
+import static edu.unc.lib.boxc.model.api.DatastreamType.FULLTEXT_EXTRACTION;
+import static edu.unc.lib.boxc.model.api.DatastreamType.JP2_ACCESS_COPY;
+import static edu.unc.lib.boxc.model.api.DatastreamType.THUMBNAIL_LARGE;
 import static edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders.CdrBinaryMimeType;
 import static edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders.CdrBinaryPidId;
 import static org.junit.Assert.assertFalse;
@@ -29,7 +29,9 @@ import static org.mockito.MockitoAnnotations.initMocks;
 import java.io.File;
 import java.nio.charset.StandardCharsets;
 
-import edu.unc.lib.dl.test.TestHelper;
+import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
+import edu.unc.lib.boxc.model.fcrepo.test.TestHelper;
+
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
 import org.apache.commons.io.FileUtils;
@@ -38,8 +40,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.mockito.Mock;
-
-import edu.unc.lib.dl.fcrepo4.PIDs;
 
 public class DestroyDerivativesProcessorTest {
     private DestroyDerivativesProcessor processor;

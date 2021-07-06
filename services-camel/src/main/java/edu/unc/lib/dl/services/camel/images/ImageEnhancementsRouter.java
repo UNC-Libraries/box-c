@@ -24,7 +24,7 @@ import org.apache.camel.impl.JavaUuidGenerator;
 import org.apache.camel.spi.UuidGenerator;
 import org.slf4j.Logger;
 
-import edu.unc.lib.dl.exceptions.RepositoryException;
+import edu.unc.lib.boxc.model.api.exceptions.RepositoryException;
 import edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders;
 
 /**

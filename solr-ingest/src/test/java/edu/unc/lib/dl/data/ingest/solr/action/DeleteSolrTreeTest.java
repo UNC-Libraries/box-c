@@ -29,10 +29,10 @@ import org.junit.Test;
 import org.mockito.Mock;
 
 import edu.unc.lib.boxc.common.test.TestHelpers;
+import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.data.ingest.solr.SolrUpdateRequest;
 import edu.unc.lib.dl.data.ingest.solr.test.TestCorpus;
-import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadataBean;
 import edu.unc.lib.dl.search.solr.service.SolrSearchService;
 import edu.unc.lib.dl.search.solr.util.AccessRestrictionUtil;

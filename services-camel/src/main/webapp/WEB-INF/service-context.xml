@@ -26,7 +26,7 @@
     </bean>
     
     <bean id="injectedCdrVersion" class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
-        <property name="staticMethod" value="edu.unc.lib.dl.util.SoftwareAgentConstants.setCdrVersion" />
+        <property name="staticMethod" value="edu.unc.lib.boxc.model.api.SoftwareAgentConstants.setCdrVersion" />
         <property name="arguments">
             <list>
                 <value>5.0</value>
@@ -45,24 +45,24 @@
             factory-bean="fcrepoClientFactory" factory-method="makeClient">
     </bean>
 
-    <bean id="ldpContainerFactory" class="edu.unc.lib.dl.fcrepo4.LdpContainerFactory">
+    <bean id="ldpContainerFactory" class="edu.unc.lib.boxc.model.fcrepo.services.LdpContainerFactory">
         <property name="client" ref="fcrepoClient" />
     </bean>
     
-    <bean id="premisLoggerFactory" class="edu.unc.lib.dl.event.PremisLoggerFactory">
+    <bean id="premisLoggerFactory" class="edu.unc.lib.dl.persist.event.PremisLoggerFactoryImpl">
         <property name="pidMinter" ref="repositoryPIDMinter" />
         <property name="repoObjLoader" ref="repositoryObjectLoader" />
         <property name="repoObjFactory" ref="repositoryObjectFactory" />
         <property name="binaryTransferService" ref="binaryTransferService" />
     </bean>
     
-    <bean id="repositoryPIDMinter" class="edu.unc.lib.dl.fcrepo4.RepositoryPIDMinter"></bean>
+    <bean id="repositoryPIDMinter" class="edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPIDMinter"></bean>
 
     <bean id="fedoraSparqlUpdateService" class="edu.unc.lib.dl.sparql.FedoraSparqlUpdateService">
         <property name="fcrepoClient" ref="fcrepoClient" />
     </bean>
 
-    <bean id="repositoryObjectFactory" class="edu.unc.lib.dl.fcrepo4.RepositoryObjectFactory">
+    <bean id="repositoryObjectFactory" class="edu.unc.lib.boxc.model.fcrepo.services.RepositoryObjectFactoryImpl">
         <property name="client" ref="fcrepoClient" />
         <property name="ldpFactory" ref="ldpContainerFactory" />
         <property name="pidMinter" ref="repositoryPIDMinter" />
@@ -70,27 +70,26 @@
         <property name="sparqlUpdateService" ref="fedoraSparqlUpdateService" />
     </bean>
 
-    <bean id="repositoryObjectDriver" class="edu.unc.lib.dl.fcrepo4.RepositoryObjectDriver">
+    <bean id="repositoryObjectDriver" class="edu.unc.lib.boxc.model.fcrepo.services.RepositoryObjectDriver">
         <property name="client" ref="fcrepoClient" />
         <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
-        <property name="premisLoggerFactory" ref="premisLoggerFactory" />
         <property name="pidMinter" ref="repositoryPIDMinter" />
         <property name="sparqlQueryService" ref="sparqlQueryService" />
     </bean>
     
-    <bean id="repositoryObjectLoader" class="edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader" init-method="init">
+    <bean id="repositoryObjectLoader" class="edu.unc.lib.boxc.model.fcrepo.services.RepositoryObjectLoaderImpl" init-method="init">
         <property name="repositoryObjectCacheLoader" ref="repositoryObjectCacheLoader" />
         <property name="cacheTimeToLive" value="${cache.contentPath.timeToLive}" />
         <property name="cacheMaxSize" value="${cache.contentPath.maxSize}" />
     </bean>
     
-    <bean id="repositoryObjectLoaderNoCache" class="edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader" init-method="init">
+    <bean id="repositoryObjectLoaderNoCache" class="edu.unc.lib.boxc.model.fcrepo.services.RepositoryObjectLoaderImpl" init-method="init">
         <property name="repositoryObjectCacheLoader" ref="repositoryObjectCacheLoader" />
         <property name="cacheTimeToLive" value="0" />
         <property name="cacheMaxSize" value="0" />
     </bean>
     
-    <bean id="repositoryObjectCacheLoader" class="edu.unc.lib.dl.fcrepo4.RepositoryObjectCacheLoader">
+    <bean id="repositoryObjectCacheLoader" class="edu.unc.lib.boxc.model.fcrepo.objects.RepositoryObjectCacheLoader">
         <property name="client" ref="fcrepoClient" />
         <property name="repositoryObjectDriver" ref="repositoryObjectDriver" />
         <property name="repositoryObjectFactory" ref="repositoryObjectFactory" />
@@ -109,7 +108,7 @@
         <property name="httpClientConnectionManager" ref="httpClientConnectionManager" />
     </bean>
     
-    <bean id="contentPathFactory" class="edu.unc.lib.dl.fedora.ContentPathFactory"
+    <bean id="contentPathFactory" class="edu.unc.lib.boxc.model.fcrepo.services.ContentPathFactoryImpl"
             init-method="init">
         <property name="cacheMaxSize" value="${cache.contentPath.maxSize}" />
         <property name="cacheTimeToLive" value="${cache.contentPath.timeToLive}" />
@@ -213,22 +212,22 @@
     </bean>
 
     <bean id="addSmallThumbnailProcessor" class="edu.unc.lib.dl.services.camel.images.AddDerivativeProcessor">
-        <constructor-arg value="#{T(edu.unc.lib.dl.model.DatastreamType).THUMBNAIL_SMALL.getExtension()}" />
+        <constructor-arg value="#{T(edu.unc.lib.boxc.model.api.DatastreamType).THUMBNAIL_SMALL.getExtension()}" />
         <constructor-arg value="${cdr.enhancement.path.thumbnail.small}" />
     </bean>
     
     <bean id="addLargeThumbnailProcessor" class="edu.unc.lib.dl.services.camel.images.AddDerivativeProcessor">
-        <constructor-arg value="#{T(edu.unc.lib.dl.model.DatastreamType).THUMBNAIL_LARGE.getExtension()}" />
+        <constructor-arg value="#{T(edu.unc.lib.boxc.model.api.DatastreamType).THUMBNAIL_LARGE.getExtension()}" />
         <constructor-arg value="${cdr.enhancement.path.thumbnail.large}" />
     </bean>
     
     <bean id="addAccessCopyProcessor" class="edu.unc.lib.dl.services.camel.images.AddDerivativeProcessor">
-        <constructor-arg value="#{T(edu.unc.lib.dl.model.DatastreamType).JP2_ACCESS_COPY.getExtension()}" />
+        <constructor-arg value="#{T(edu.unc.lib.boxc.model.api.DatastreamType).JP2_ACCESS_COPY.getExtension()}" />
         <constructor-arg value="${cdr.enhancement.path.jp2}" />
     </bean>
 
     <bean id="addFullTextDerivativeProcessor" class="edu.unc.lib.dl.services.camel.images.AddDerivativeProcessor">
-        <constructor-arg value="#{T(edu.unc.lib.dl.model.DatastreamType).FULLTEXT_EXTRACTION.getExtension()}" />
+        <constructor-arg value="#{T(edu.unc.lib.boxc.model.api.DatastreamType).FULLTEXT_EXTRACTION.getExtension()}" />
         <constructor-arg value="${cdr.enhancement.path.fulltext}" />
     </bean>
     
@@ -246,22 +245,22 @@
     </bean>
 
     <bean id="destroySmallThumbnailProcessor" class="edu.unc.lib.dl.services.camel.destroyDerivatives.DestroyDerivativesProcessor">
-        <constructor-arg value="#{T(edu.unc.lib.dl.model.DatastreamType).THUMBNAIL_SMALL.getExtension()}" />
+        <constructor-arg value="#{T(edu.unc.lib.boxc.model.api.DatastreamType).THUMBNAIL_SMALL.getExtension()}" />
         <constructor-arg value="${cdr.enhancement.path.thumbnail.small}" />
     </bean>
 
     <bean id="destroyLargeThumbnailProcessor" class="edu.unc.lib.dl.services.camel.destroyDerivatives.DestroyDerivativesProcessor">
-        <constructor-arg value="#{T(edu.unc.lib.dl.model.DatastreamType).THUMBNAIL_LARGE.getExtension()}" />
+        <constructor-arg value="#{T(edu.unc.lib.boxc.model.api.DatastreamType).THUMBNAIL_LARGE.getExtension()}" />
         <constructor-arg value="${cdr.enhancement.path.thumbnail.large}" />
     </bean>
 
     <bean id="destroyAccessCopyProcessor" class="edu.unc.lib.dl.services.camel.destroyDerivatives.DestroyDerivativesProcessor">
-        <constructor-arg value="#{T(edu.unc.lib.dl.model.DatastreamType).JP2_ACCESS_COPY.getExtension()}" />
+        <constructor-arg value="#{T(edu.unc.lib.boxc.model.api.DatastreamType).JP2_ACCESS_COPY.getExtension()}" />
         <constructor-arg value="${cdr.enhancement.path.jp2}" />
     </bean>
 
     <bean id="destroyFulltextProcessor" class="edu.unc.lib.dl.services.camel.destroyDerivatives.DestroyDerivativesProcessor">
-        <constructor-arg value="#{T(edu.unc.lib.dl.model.DatastreamType).FULLTEXT_EXTRACTION.getExtension()}" />
+        <constructor-arg value="#{T(edu.unc.lib.boxc.model.api.DatastreamType).FULLTEXT_EXTRACTION.getExtension()}" />
         <constructor-arg value="${cdr.enhancement.path.fulltext}" />
     </bean>
     
@@ -280,6 +279,7 @@
         <property name="binaryTransferService" ref="binaryTransferService" />
         <property name="indexingMessageSender" ref="indexingMessageSender" />
         <property name="binaryDestroyedMessageSender" ref="binaryDestroyedMessageSender" />
+        <property name="premisLoggerFactory" ref="premisLoggerFactory" />
     </bean>
     
     <bean id="fcrepo" class="org.fcrepo.camel.FcrepoComponent">
@@ -434,6 +434,7 @@
         <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
         <property name="repositoryObjectFactory" ref="repositoryObjectFactory" />
         <property name="operationsMessageSender" ref="operationsMessageSender" />
+        <property name="premisLoggerFactory" ref="premisLoggerFactory" />
     </bean>
     
     <bean id="binaryCleanupProcessor" class="edu.unc.lib.dl.services.camel.binaryCleanup.BinaryCleanupProcessor">
@@ -447,6 +448,7 @@
         <property name="repositoryObjectFactory" ref="repositoryObjectFactory" />
         <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
         <property name="transactionManager" ref="transactionManager" />
+        <property name="premisLoggerFactory" ref="premisLoggerFactory" />
     </bean>
 
     <bean id="patronAccessAssignmentProcessor" class="edu.unc.lib.dl.services.camel.patronAccess.PatronAccessAssignmentProcessor">

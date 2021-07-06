@@ -15,7 +15,7 @@
  */
 package edu.unc.lib.dl.fedora;
 
-import edu.unc.lib.dl.exceptions.RepositoryException;
+import edu.unc.lib.boxc.model.api.exceptions.RepositoryException;
 
 /**
  * @author Gregory Jansen

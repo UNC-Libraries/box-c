@@ -16,10 +16,10 @@
 package edu.unc.lib.dl.persist.services.acl;
 
 import static edu.unc.lib.boxc.common.util.DateTimeUtil.formatDateToUTC;
+import static edu.unc.lib.boxc.model.api.rdf.CdrAcl.embargoUntil;
 import static edu.unc.lib.dl.acl.util.EmbargoUtil.isEmbargoActive;
 import static edu.unc.lib.dl.acl.util.Permission.changePatronAccess;
 import static edu.unc.lib.dl.acl.util.Permission.ingest;
-import static edu.unc.lib.dl.rdf.CdrAcl.embargoUntil;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.springframework.util.Assert.notNull;
 
@@ -42,6 +42,16 @@ import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
+import edu.unc.lib.boxc.common.metrics.TimerFactory;
+import edu.unc.lib.boxc.model.api.ids.PID;
+import edu.unc.lib.boxc.model.api.objects.AdminUnit;
+import edu.unc.lib.boxc.model.api.objects.ContentObject;
+import edu.unc.lib.boxc.model.api.objects.RepositoryObject;
+import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
+import edu.unc.lib.boxc.model.api.rdf.Premis;
+import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
+import edu.unc.lib.boxc.model.fcrepo.ids.AgentPids;
+import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.dl.acl.exception.InvalidAssignmentException;
 import edu.unc.lib.dl.acl.fcrepo4.ContentObjectAccessRestrictionValidator;
 import edu.unc.lib.dl.acl.service.AccessControlService;
@@ -49,20 +59,11 @@ import edu.unc.lib.dl.acl.util.AgentPrincipals;
 import edu.unc.lib.dl.acl.util.Permission;
 import edu.unc.lib.dl.acl.util.RoleAssignment;
 import edu.unc.lib.dl.acl.util.UserRole;
-import edu.unc.lib.dl.event.PremisLogger;
-import edu.unc.lib.dl.fcrepo4.AdminUnit;
-import edu.unc.lib.dl.fcrepo4.ContentObject;
 import edu.unc.lib.dl.fcrepo4.FedoraTransaction;
-import edu.unc.lib.dl.fcrepo4.PIDs;
-import edu.unc.lib.dl.fcrepo4.RepositoryObject;
-import edu.unc.lib.dl.fcrepo4.RepositoryObjectFactory;
-import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
 import edu.unc.lib.dl.fcrepo4.TransactionManager;
-import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.fedora.ServiceException;
-import edu.unc.lib.boxc.common.metrics.TimerFactory;
-import edu.unc.lib.dl.model.AgentPids;
-import edu.unc.lib.dl.rdf.Premis;
+import edu.unc.lib.dl.persist.api.event.PremisLogger;
+import edu.unc.lib.dl.persist.api.event.PremisLoggerFactory;
 import edu.unc.lib.dl.services.OperationsMessageSender;
 import edu.unc.lib.dl.util.JMSMessageUtil.CDRActions;
 import io.dropwizard.metrics5.Timer;
@@ -83,6 +84,7 @@ public class PatronAccessAssignmentService {
     private RepositoryObjectFactory repositoryObjectFactory;
     private OperationsMessageSender operationsMessageSender;
     private TransactionManager txManager;
+    private PremisLoggerFactory premisLoggerFactory;
 
     private ContentObjectAccessRestrictionValidator accessValidator;
 
@@ -181,7 +183,7 @@ public class PatronAccessAssignmentService {
         }
 
         // Add PREMIS event indicating the role changes
-        return repoObj.getPremisLog().buildEvent(Premis.PolicyAssignment)
+        return premisLoggerFactory.createPremisLogger(repoObj).buildEvent(Premis.PolicyAssignment)
                 .addImplementorAgent(AgentPids.forPerson(agent))
                 .addEventDetail(createRoleEventDetails(assignments))
                 .create();
@@ -255,7 +257,7 @@ public class PatronAccessAssignmentService {
             return null;
         } else {
             // Produce the premis event for this embargo
-            return repoObj.getPremisLog().buildEvent(Premis.PolicyAssignment)
+            return premisLoggerFactory.createPremisLogger(repoObj).buildEvent(Premis.PolicyAssignment)
                     .addImplementorAgent(AgentPids.forPerson(request.getAgent()))
                     .addEventDetail(eventText)
                     .create();
@@ -321,7 +323,7 @@ public class PatronAccessAssignmentService {
     }
 
     private void writePremisEvents(RepositoryObject repoObj, Resource rolesEvent, Resource embargoEvent) {
-        try (PremisLogger logger = repoObj.getPremisLog()) {
+        try (PremisLogger logger = premisLoggerFactory.createPremisLogger(repoObj)) {
             if (rolesEvent != null) {
                 if (embargoEvent != null) {
                     logger.writeEvents(rolesEvent, embargoEvent);
@@ -357,6 +359,10 @@ public class PatronAccessAssignmentService {
 
     public void setAccessValidator(ContentObjectAccessRestrictionValidator accessValidator) {
         this.accessValidator = accessValidator;
+    }
+
+    public void setPremisLoggerFactory(PremisLoggerFactory premisLoggerFactory) {
+        this.premisLoggerFactory = premisLoggerFactory;
     }
 
     public static class PatronAccessAssignmentRequest {

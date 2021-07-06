@@ -25,11 +25,12 @@ import org.slf4j.LoggerFactory;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
 
+import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
+import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
 import edu.unc.lib.dl.acl.fcrepo4.InheritedAclFactory;
 import edu.unc.lib.dl.acl.service.AccessControlService;
-import edu.unc.lib.dl.fcrepo4.RepositoryObjectFactory;
-import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
 import edu.unc.lib.dl.fcrepo4.TransactionManager;
+import edu.unc.lib.dl.persist.api.event.PremisLoggerFactory;
 import edu.unc.lib.dl.persist.api.storage.StorageLocationManager;
 import edu.unc.lib.dl.persist.api.transfer.BinaryTransferService;
 import edu.unc.lib.dl.persist.services.destroy.AbstractDestroyObjectsJob;
@@ -63,6 +64,7 @@ public class DestroyObjectsProcessor implements Processor {
     private BinaryTransferService transferService;
     private IndexingMessageSender indexingMessageSender;
     private MessageSender binaryDestroyedMessageSender;
+    private PremisLoggerFactory premisLoggerFactory;
 
     @Override
     public void process(Exchange exchange) throws Exception {
@@ -86,6 +88,7 @@ public class DestroyObjectsProcessor implements Processor {
             job.setStorageLocationManager(locManager);
             job.setIndexingMessageSender(indexingMessageSender);
             job.setBinaryDestroyedMessageSender(binaryDestroyedMessageSender);
+            job.setPremisLoggerFactory(premisLoggerFactory);
             return job;
         } else {
             DestroyObjectsJob job = new DestroyObjectsJob(request);
@@ -100,6 +103,7 @@ public class DestroyObjectsProcessor implements Processor {
             job.setStorageLocationManager(locManager);
             job.setIndexingMessageSender(indexingMessageSender);
             job.setBinaryDestroyedMessageSender(binaryDestroyedMessageSender);
+            job.setPremisLoggerFactory(premisLoggerFactory);
             return job;
         }
     }
@@ -146,5 +150,9 @@ public class DestroyObjectsProcessor implements Processor {
 
     public void setBinaryDestroyedMessageSender(MessageSender binaryDestroyedMessageSender) {
         this.binaryDestroyedMessageSender = binaryDestroyedMessageSender;
+    }
+
+    public void setPremisLoggerFactory(PremisLoggerFactory premisLoggerFactory) {
+        this.premisLoggerFactory = premisLoggerFactory;
     }
 }

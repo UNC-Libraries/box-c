@@ -29,9 +29,9 @@ import java.util.Map.Entry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import edu.unc.lib.boxc.model.api.ids.PID;
+import edu.unc.lib.boxc.model.api.ids.PIDMinter;
 import edu.unc.lib.dl.acl.util.AgentPrincipals;
-import edu.unc.lib.dl.fcrepo4.RepositoryPIDMinter;
-import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.persist.api.ingest.DepositData;
 import edu.unc.lib.dl.persist.api.ingest.DepositHandler;
 import edu.unc.lib.dl.util.DepositConstants;
@@ -51,7 +51,7 @@ import edu.unc.lib.dl.util.RedisWorkerConstants.DepositState;
 public abstract class AbstractDepositHandler implements DepositHandler {
     private static final Logger log = LoggerFactory.getLogger(AbstractDepositHandler.class);
 
-    protected RepositoryPIDMinter pidMinter;
+    protected PIDMinter pidMinter;
     private DepositStatusFactory depositStatusFactory;
     private File depositsDirectory;
 
@@ -70,7 +70,7 @@ public abstract class AbstractDepositHandler implements DepositHandler {
     /**
      * @param pidMinter the pidMinter to set
      */
-    public void setPidMinter(RepositoryPIDMinter pidMinter) {
+    public void setPidMinter(PIDMinter pidMinter) {
         this.pidMinter = pidMinter;
     }
 

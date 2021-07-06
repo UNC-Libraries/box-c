@@ -18,10 +18,10 @@ package edu.unc.lib.dl.fcrepo4;
 import org.apache.http.HttpStatus;
 import org.fcrepo.client.FcrepoOperationFailedException;
 
+import edu.unc.lib.boxc.model.api.exceptions.FedoraException;
+import edu.unc.lib.boxc.model.api.exceptions.NotFoundException;
 import edu.unc.lib.dl.fedora.AuthorizationException;
 import edu.unc.lib.dl.fedora.ConflictException;
-import edu.unc.lib.dl.fedora.FedoraException;
-import edu.unc.lib.dl.fedora.NotFoundException;
 
 /**
  * Resolves exceptions which clients encounter while interacting with Fedora into more specific

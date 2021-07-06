@@ -17,7 +17,7 @@ package edu.unc.lib.dl.persist.services.acl;
 
 import static edu.unc.lib.boxc.common.util.DateTimeUtil.formatDateToUTC;
 import static edu.unc.lib.boxc.common.util.DateTimeUtil.parseUTCToDate;
-import static edu.unc.lib.dl.rdf.CdrAcl.embargoUntil;
+import static edu.unc.lib.boxc.model.api.rdf.CdrAcl.embargoUntil;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -34,21 +34,22 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
-import edu.unc.lib.boxc.common.util.DateTimeUtil;
-import edu.unc.lib.dl.fcrepo4.FedoraTransaction;
-import edu.unc.lib.dl.fcrepo4.PIDs;
-import edu.unc.lib.dl.fcrepo4.RepositoryObject;
-import edu.unc.lib.dl.fcrepo4.RepositoryObjectFactory;
-import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
-import edu.unc.lib.dl.fcrepo4.TransactionManager;
-import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.boxc.common.metrics.TimerFactory;
-import edu.unc.lib.dl.model.AgentPids;
-import edu.unc.lib.dl.rdf.Premis;
+import edu.unc.lib.boxc.common.util.DateTimeUtil;
+import edu.unc.lib.boxc.model.api.SoftwareAgentConstants.SoftwareAgent;
+import edu.unc.lib.boxc.model.api.ids.PID;
+import edu.unc.lib.boxc.model.api.objects.RepositoryObject;
+import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
+import edu.unc.lib.boxc.model.api.rdf.Premis;
+import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
+import edu.unc.lib.boxc.model.fcrepo.ids.AgentPids;
+import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
+import edu.unc.lib.dl.fcrepo4.FedoraTransaction;
+import edu.unc.lib.dl.fcrepo4.TransactionManager;
+import edu.unc.lib.dl.persist.api.event.PremisLoggerFactory;
 import edu.unc.lib.dl.services.OperationsMessageSender;
 import edu.unc.lib.dl.sparql.SparqlQueryService;
 import edu.unc.lib.dl.util.JMSMessageUtil;
-import edu.unc.lib.dl.util.SoftwareAgentConstants.SoftwareAgent;
 import io.dropwizard.metrics5.Timer;
 
 /**
@@ -66,6 +67,7 @@ public class ExpireEmbargoService {
     private OperationsMessageSender operationsMessageSender;
     private TransactionManager txManager;
     private SparqlQueryService sparqlQueryService;
+    private PremisLoggerFactory premisLoggerFactory;
 
     private static final Timer timer = TimerFactory.createTimerForClass(ExpireEmbargoService.class);
 
@@ -102,7 +104,8 @@ public class ExpireEmbargoService {
                     String eventText = "Expired an embargo which ended " +
                             formatDateToUTC(parseUTCToDate(embargoDate));
                     // Produce the premis event for this embargo
-                    repoObj.getPremisLog().buildEvent(Premis.Dissemination)
+                    premisLoggerFactory.createPremisLogger(repoObj)
+                            .buildEvent(Premis.Dissemination)
                             .addSoftwareAgent(AgentPids.forSoftware(SoftwareAgent.embargoExpirationService))
                             .addEventDetail(eventText)
                             .writeAndClose();
@@ -183,5 +186,9 @@ public class ExpireEmbargoService {
      */
     public void setTransactionManager(TransactionManager txManager) {
         this.txManager = txManager;
+    }
+
+    public void setPremisLoggerFactory(PremisLoggerFactory premisLoggerFactory) {
+        this.premisLoggerFactory = premisLoggerFactory;
     }
 }

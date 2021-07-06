@@ -55,7 +55,7 @@
         <property name="jmsTemplate" ref="binaryDestroyedJmsTemplate" />
     </bean>
 
-    <bean id="contentPathFactory" class="edu.unc.lib.dl.fedora.ContentPathFactory"
+    <bean id="contentPathFactory" class="edu.unc.lib.boxc.model.fcrepo.services.ContentPathFactoryImpl"
           init-method="init">
         <property name="cacheMaxSize" value="100" />
         <property name="cacheTimeToLive" value="5000" />
@@ -66,7 +66,7 @@
         <constructor-arg value="edu.unc.lib.dl.search.solr.service.ObjectPathFactory" />
     </bean>
 
-    <bean id="treeIndexer" class="edu.unc.lib.dl.test.RepositoryObjectTreeIndexer">
+    <bean id="treeIndexer" class="edu.unc.lib.boxc.model.fcrepo.test.RepositoryObjectTreeIndexer">
         <constructor-arg ref="queryModel" />
         <constructor-arg ref="fcrepoClient" />
     </bean>

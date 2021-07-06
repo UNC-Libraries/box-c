@@ -24,7 +24,8 @@ import org.fcrepo.client.FcrepoOperationFailedException;
 import org.fcrepo.client.FcrepoResponse;
 
 import edu.unc.lib.boxc.common.util.URIUtil;
-import edu.unc.lib.dl.fedora.FedoraException;
+import edu.unc.lib.boxc.fcrepo.FcrepoPaths;
+import edu.unc.lib.boxc.model.api.exceptions.FedoraException;
 import edu.unc.lib.dl.persist.api.transfer.BinaryTransferService;
 
 /**
@@ -46,7 +47,7 @@ public class TransactionManager {
             FedoraTransaction rootTx = FedoraTransaction.rootTxThread.get();
             return new FedoraTransaction(rootTx.getTxUri(), this);
         }
-        URI repoBase = URI.create(RepositoryPaths.getBaseUri());
+        URI repoBase = URI.create(FcrepoPaths.getBaseUri());
         // appends suffix for creating transaction
         URI createTxUri = URI.create(URIUtil.join(repoBase, CREATE_TX));
         URI txUri = null;

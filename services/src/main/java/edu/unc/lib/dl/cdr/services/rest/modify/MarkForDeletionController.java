@@ -30,10 +30,10 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import edu.unc.lib.boxc.model.api.exceptions.FedoraException;
 import edu.unc.lib.dl.acl.exception.AccessRestrictionException;
 import edu.unc.lib.dl.acl.util.AgentPrincipals;
 import edu.unc.lib.dl.fedora.AuthorizationException;
-import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.persist.services.delete.MarkForDeletionService;
 
 /**

@@ -43,11 +43,6 @@
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
             </plugin>
-            
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-jar-plugin</artifactId>
-            </plugin>
         </plugins>
     </build>
 
@@ -93,6 +88,10 @@
             <artifactId>common-utils</artifactId>
             <type>test-jar</type>
             <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>edu.unc.lib.cdr</groupId>
+            <artifactId>model-api</artifactId>
         </dependency>
         <dependency>
             <groupId>com.google.guava</groupId>
