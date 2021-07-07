@@ -106,7 +106,8 @@ public class ImportXMLJobIT {
     @Mock
     private MimeMessage mimeMsg;
 
-    private String fromAddress = "admin@example.com";
+    private String fromAddress = "no-reply@example.com";
+    private String adminAddress = "admin@example.com";
 
     @Rule
     public final TemporaryFolder tmpFolder = new TemporaryFolder();
@@ -287,6 +288,7 @@ public class ImportXMLJobIT {
         job.setCompleteTemplate(completeTemplate);
         job.setFailedTemplate(failedTemplate);
         job.setFromAddress(fromAddress);
+        job.setAdminAddress(adminAddress);
         job.setMimeMessage(mimeMsg);
         job.setLocationManager(locationManager);
         job.setTransferService(transferService);

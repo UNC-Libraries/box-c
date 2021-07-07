@@ -49,6 +49,7 @@ import com.samskivert.mustache.Template;
 
 import edu.unc.lib.boxc.common.metrics.TimerFactory;
 import edu.unc.lib.boxc.model.api.exceptions.FedoraException;
+import edu.unc.lib.boxc.model.api.exceptions.RepositoryException;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.dl.acl.exception.AccessRestrictionException;
@@ -79,6 +80,7 @@ public class ImportXMLJob implements Runnable {
     private Template completeTemplate;
     private Template failedTemplate;
     private String fromAddress;
+    private String adminAddress;
     private MimeMessage mimeMsg;
     private MimeMessageHelper msg;
 
@@ -133,8 +135,7 @@ public class ImportXMLJob implements Runnable {
             mimeMsg = mailSender.createMimeMessage();
             msg = new MimeMessageHelper(mimeMsg, MimeMessageHelper.MULTIPART_MODE_MIXED);
         } catch (MessagingException e) {
-            log.error("Failed to send email to {} for update {}",
-                    userEmail, importFile.getAbsolutePath(), e);
+            throw new RepositoryException("Failed to initialize email templates", e);
         }
 
         try (
@@ -204,6 +205,10 @@ public class ImportXMLJob implements Runnable {
 
     public void setFromAddress(String fromAddress) {
         this.fromAddress = fromAddress;
+    }
+
+    public void setAdminAddress(String adminAddress) {
+        this.adminAddress = adminAddress;
     }
 
     public MimeMessage getMimeMessage() {
@@ -424,7 +429,7 @@ public class ImportXMLJob implements Runnable {
             log.info("Sending email to '{}'", userEmail);
             if (userEmail == null || userEmail.trim().length() == 0) {
                 // No email provided, send to admins instead
-                msg.addTo(fromAddress);
+                msg.addTo(adminAddress);
             } else {
                 msg.addTo(userEmail);
             }
@@ -445,7 +450,7 @@ public class ImportXMLJob implements Runnable {
             if (failed.size() > 0) {
                 data.put("issues", true);
                 msg.setSubject("DCR Metadata update completed with issues:" + importFile.getAbsolutePath());
-                msg.addTo(fromAddress);
+                msg.addTo(adminAddress);
             } else {
                 msg.setSubject("DCR Metadata update completed: " + importFile.getPath());
             }
@@ -465,7 +470,7 @@ public class ImportXMLJob implements Runnable {
             msg.setFrom(fromAddress);
             if (userEmail == null || userEmail.trim().length() == 0) {
                 // No email provided, send to admins instead
-                msg.addTo(fromAddress);
+                msg.addTo(adminAddress);
             } else {
                 msg.addTo(userEmail);
             }
