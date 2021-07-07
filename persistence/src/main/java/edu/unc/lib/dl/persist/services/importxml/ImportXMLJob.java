@@ -49,6 +49,8 @@ import com.samskivert.mustache.Template;
 
 import edu.unc.lib.boxc.common.metrics.TimerFactory;
 import edu.unc.lib.boxc.model.api.exceptions.FedoraException;
+import edu.unc.lib.boxc.model.api.exceptions.NotFoundException;
+import edu.unc.lib.boxc.model.api.exceptions.RepositoryException;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.dl.acl.exception.AccessRestrictionException;
@@ -79,6 +81,7 @@ public class ImportXMLJob implements Runnable {
     private Template completeTemplate;
     private Template failedTemplate;
     private String fromAddress;
+    private String adminAddress;
     private MimeMessage mimeMsg;
     private MimeMessageHelper msg;
 
@@ -133,8 +136,7 @@ public class ImportXMLJob implements Runnable {
             mimeMsg = mailSender.createMimeMessage();
             msg = new MimeMessageHelper(mimeMsg, MimeMessageHelper.MULTIPART_MODE_MIXED);
         } catch (MessagingException e) {
-            log.error("Failed to send email to {} for update {}",
-                    userEmail, importFile.getAbsolutePath(), e);
+            throw new RepositoryException("Failed to initialize email templates", e);
         }
 
         try (
@@ -204,6 +206,10 @@ public class ImportXMLJob implements Runnable {
 
     public void setFromAddress(String fromAddress) {
         this.fromAddress = fromAddress;
+    }
+
+    public void setAdminAddress(String adminAddress) {
+        this.adminAddress = adminAddress;
     }
 
     public MimeMessage getMimeMessage() {
@@ -285,10 +291,14 @@ public class ImportXMLJob implements Runnable {
                                 Attribute pid = element.getAttributeByName(pidAttribute);
 
                                 if (pid != null) {
-                                    currentPid = PIDs.get(pid.getValue());
-                                    log.debug("Starting element for object {}", currentPid.getQualifiedId());
-                                    objectCount++;
-                                    state = DocumentState.IN_OBJECT;
+                                    try {
+                                        currentPid = PIDs.get(pid.getValue());
+                                        log.debug("Starting element for object {}", currentPid.getQualifiedId());
+                                        objectCount++;
+                                        state = DocumentState.IN_OBJECT;
+                                    } catch (Exception ex) {
+                                        failed.put(pid.getValue(), "Invalid PID attribute: " + ex.getMessage());
+                                    }
                                 } else {
                                     failed.put(importFile.getAbsolutePath(), "PID attribute was missing");
                                 }
@@ -303,14 +313,14 @@ public class ImportXMLJob implements Runnable {
 
                                 Attribute typeAttr = element.getAttributeByName(typeAttribute);
                                 if (typeAttr == null) {
-                                    failed.put(currentPid.getRepositoryPath(),
+                                    failed.put(currentPid.getQualifiedId(),
                                             "Invalid import data, missing type attribute on update");
                                 }
                                 if (MODS_TYPE.equals(typeAttr.getValue())) {
                                     currentDs = MODS_TYPE;
                                     log.debug("Starting MODS element for object {}", currentPid.getQualifiedId());
                                 } else {
-                                    failed.put(currentPid.getRepositoryPath(),
+                                    failed.put(currentPid.getQualifiedId(),
                                             "Invalid import data, unsupported type in update tag");
                                 }
 
@@ -362,20 +372,22 @@ public class ImportXMLJob implements Runnable {
                                             new UpdateDescriptionRequest(agent, currentPid, modsStream)
                                                 .withTransferSession(transferSession)
                                                 .withPriority(IndexingPriority.low));
-                                    updated.add(currentPid.getId());
+                                    updated.add(currentPid.getQualifiedId());
                                     log.debug("Finished updating object {} with id {}", objectCount, currentPid);
                                 } catch (AccessRestrictionException ex) {
-                                    failed.put(currentPid.getRepositoryPath(),
+                                    failed.put(currentPid.getQualifiedId(),
                                             "User doesn't have permission to update this object: " + ex.getMessage());
                                 } catch (MetadataValidationException ex) {
                                     log.debug("Validation failed for {}", currentPid, ex);
-                                    failed.put(currentPid.getRepositoryPath(),
+                                    failed.put(currentPid.getQualifiedId(),
                                             "MODS is not valid: " + ex.getDetailedMessage());
                                 } catch (IOException ex) {
-                                    failed.put(currentPid.getRepositoryPath(),
+                                    failed.put(currentPid.getQualifiedId(),
                                             "Error reading or converting MODS stream: " + ex.getMessage());
+                                } catch (NotFoundException ex) {
+                                    failed.put(currentPid.getQualifiedId(), "Object not found");
                                 } catch (FedoraException ex) {
-                                    failed.put(currentPid.getRepositoryPath(),
+                                    failed.put(currentPid.getQualifiedId(),
                                             "Error retrieving object from Fedora: " + ex.getMessage());
                                 }
                             } else if (foundResumptionPoint) {
@@ -424,7 +436,7 @@ public class ImportXMLJob implements Runnable {
             log.info("Sending email to '{}'", userEmail);
             if (userEmail == null || userEmail.trim().length() == 0) {
                 // No email provided, send to admins instead
-                msg.addTo(fromAddress);
+                msg.addTo(adminAddress);
             } else {
                 msg.addTo(userEmail);
             }
@@ -445,7 +457,7 @@ public class ImportXMLJob implements Runnable {
             if (failed.size() > 0) {
                 data.put("issues", true);
                 msg.setSubject("DCR Metadata update completed with issues:" + importFile.getAbsolutePath());
-                msg.addTo(fromAddress);
+                msg.addTo(adminAddress);
             } else {
                 msg.setSubject("DCR Metadata update completed: " + importFile.getPath());
             }
@@ -465,7 +477,7 @@ public class ImportXMLJob implements Runnable {
             msg.setFrom(fromAddress);
             if (userEmail == null || userEmail.trim().length() == 0) {
                 // No email provided, send to admins instead
-                msg.addTo(fromAddress);
+                msg.addTo(adminAddress);
             } else {
                 msg.addTo(userEmail);
             }

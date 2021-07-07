@@ -106,7 +106,8 @@ public class ImportXMLJobIT {
     @Mock
     private MimeMessage mimeMsg;
 
-    private String fromAddress = "admin@example.com";
+    private String fromAddress = "no-reply@example.com";
+    private String adminAddress = "admin@example.com";
 
     @Rule
     public final TemporaryFolder tmpFolder = new TemporaryFolder();
@@ -257,6 +258,22 @@ public class ImportXMLJobIT {
         assertEquals("The import file contains XML errors", job.getFailed().get(importFile.getAbsolutePath()));
     }
 
+    @Test
+    public void testObjectDoesNotExist() throws Exception {
+        PID workPid = PIDs.get(UUID.randomUUID().toString());
+
+        Document updateDoc = makeUpdateDocument();
+        addObjectUpdate(updateDoc, workPid, null)
+            .addContent(modsWithTitleAndDate(UPDATED_TITLE, UPDATED_DATE));
+        importFile = writeToFile(updateDoc);
+        createJob();
+
+        job.run();
+
+        verify(mailSender).send(any(MimeMessage.class));
+        assertEquals("Object not found", job.getFailed().get(workPid.getQualifiedId()));
+    }
+
     private void assertModsUpdated(InputStream updatedMods) throws JDOMException, IOException {
         SAXBuilder builder = new SAXBuilder();
         Document doc = builder.build(updatedMods);
@@ -287,6 +304,7 @@ public class ImportXMLJobIT {
         job.setCompleteTemplate(completeTemplate);
         job.setFailedTemplate(failedTemplate);
         job.setFromAddress(fromAddress);
+        job.setAdminAddress(adminAddress);
         job.setMimeMessage(mimeMsg);
         job.setLocationManager(locationManager);
         job.setTransferService(transferService);

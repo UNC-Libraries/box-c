@@ -46,6 +46,7 @@ public class ImportXMLProcessor implements Processor {
     private Template updateCompleteTemplate;
     private Template updateFailedTemplate;
     private String fromAddress;
+    private String adminAddress;
     private BinaryTransferService transferService;
     private StorageLocationManager locationManager;
 
@@ -66,6 +67,7 @@ public class ImportXMLProcessor implements Processor {
         job.setCompleteTemplate(updateCompleteTemplate);
         job.setFailedTemplate(updateFailedTemplate);
         job.setFromAddress(fromAddress);
+        job.setAdminAddress(adminAddress);
         job.setLocationManager(locationManager);
         job.setMailSender(mailSender);
         job.setTransferService(transferService);
@@ -91,6 +93,10 @@ public class ImportXMLProcessor implements Processor {
 
     public void setFromAddress(String fromAddress) {
         this.fromAddress = fromAddress;
+    }
+
+    public void setAdminAddress(String adminAddress) {
+        this.adminAddress = adminAddress;
     }
 
     public void setTransferService(BinaryTransferService transferService) {

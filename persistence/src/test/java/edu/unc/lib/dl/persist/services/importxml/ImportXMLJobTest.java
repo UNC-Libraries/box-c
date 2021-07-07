@@ -25,6 +25,10 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyObject;
+import static org.mockito.Matchers.argThat;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
@@ -35,6 +39,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import javax.mail.Address;
+import javax.mail.Message;
 import javax.mail.internet.MimeMessage;
 import javax.xml.namespace.QName;
 import javax.xml.stream.XMLEventReader;
@@ -48,6 +54,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.mockito.ArgumentCaptor;
+import org.mockito.ArgumentMatcher;
 import org.mockito.Captor;
 import org.mockito.Mock;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -56,7 +63,9 @@ import org.springframework.mail.javamail.MimeMessageHelper;
 import com.samskivert.mustache.Template;
 
 import edu.unc.lib.boxc.model.api.ids.PID;
+import edu.unc.lib.boxc.model.api.objects.BinaryObject;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
+import edu.unc.lib.dl.acl.exception.AccessRestrictionException;
 import edu.unc.lib.dl.acl.util.AgentPrincipals;
 import edu.unc.lib.dl.persist.api.storage.StorageLocation;
 import edu.unc.lib.dl.persist.api.storage.StorageLocationManager;
@@ -64,6 +73,7 @@ import edu.unc.lib.dl.persist.api.transfer.BinaryTransferService;
 import edu.unc.lib.dl.persist.api.transfer.BinaryTransferSession;
 import edu.unc.lib.dl.persist.api.transfer.MultiDestinationTransferSession;
 import edu.unc.lib.dl.persist.services.edit.UpdateDescriptionService;
+import edu.unc.lib.dl.persist.services.edit.UpdateDescriptionService.UpdateDescriptionRequest;
 
 /**
  *
@@ -76,9 +86,13 @@ public class ImportXMLJobTest {
     private final static String UPDATED_TITLE = "Updated Work Title";
     private final static String ORIGINAL_DATE = "2017-10-09";
 
-    private static final String OBJ1_ID = "ae0091e0-192d-46f9-a8ad-8b0dc82f33ad";
-    private static final String OBJ2_ID = "b75e416f-0ca8-4138-94ca-0a99bbd8e710";
-    private static final String OBJ3_ID = "43dcb37a-27fc-425b-9c00-76cee952507c";
+    private static final String OBJ1_ID = "content/ae0091e0-192d-46f9-a8ad-8b0dc82f33ad";
+    private static final String OBJ2_ID = "content/b75e416f-0ca8-4138-94ca-0a99bbd8e710";
+    private static final String OBJ3_ID = "content/43dcb37a-27fc-425b-9c00-76cee952507c";
+
+    private static final String USER_EMAIL = "user@example.com";
+    private static final String FROM_EMAIL = "reply@example.com";
+    private static final String ADMIN_EMAIL = "admin@example.com";
 
     private ImportXMLJob job;
 
@@ -102,6 +116,8 @@ public class ImportXMLJobTest {
     private StorageLocationManager locationManager;
     @Mock
     private StorageLocation storageLocation;
+    @Captor
+    private ArgumentCaptor<Address> addressCaptor;
 
     @Mock
     private MimeMessage msg;
@@ -156,6 +172,8 @@ public class ImportXMLJobTest {
 
         verify(msg).setSubject(subjectCaptor.capture());
         assertEquals("DCR Metadata update failed", subjectCaptor.getValue());
+
+        assertAddressesSet(USER_EMAIL);
     }
 
     @SuppressWarnings("unchecked")
@@ -177,6 +195,8 @@ public class ImportXMLJobTest {
 
         verify(msg).setSubject(subjectCaptor.capture());
         assertEquals("DCR Metadata update failed", subjectCaptor.getValue());
+
+        assertAddressesSet(USER_EMAIL);
     }
 
     @SuppressWarnings("unchecked")
@@ -209,6 +229,8 @@ public class ImportXMLJobTest {
 
         verify(msg).setSubject(subjectCaptor.capture());
         assertEquals("DCR Metadata update failed", subjectCaptor.getValue());
+
+        assertAddressesSet(USER_EMAIL);
     }
 
     @SuppressWarnings("unchecked")
@@ -235,6 +257,79 @@ public class ImportXMLJobTest {
 
         verify(msg).setSubject(subjectCaptor.capture());
         assertTrue(subjectCaptor.getValue().startsWith("DCR Metadata update completed"));
+
+        assertAddressesSet(USER_EMAIL);
+    }
+
+    @SuppressWarnings("unchecked")
+    @Test
+    public void partialSuccessfulJobTest() throws Exception {
+        when(updateService.updateDescription(any(UpdateDescriptionRequest.class)))
+                .thenReturn(mock(BinaryObject.class))
+                .thenThrow(new AccessRestrictionException());
+
+        File tempImportFile = createTempImportFile();
+        setupJob(tempImportFile);
+        when(completeTemplate.execute(anyObject())).thenReturn("success email text");
+        job.run();
+
+        verify(mailSender).send(msg);
+        verify(completeTemplate).execute(mapCaptor.capture());
+        Map<String, Object> dataMap = mapCaptor.getValue();
+        assertEquals(tempImportFile.getPath(), dataMap.get("fileName"));
+
+        List<String> updated = (List<String>) dataMap.get("updated");
+        assertEquals(1, updated.size());
+        assertTrue(updated.contains(OBJ1_ID));
+        assertEquals(1, dataMap.get("updatedCount"));
+
+        Set<Entry<String, String>> failed = (Set<Entry<String, String>>) dataMap.get("failed");
+        assertEquals(1, failed.size());
+        Entry<String, String> failedEntry = failed.iterator().next();
+        assertEquals(PIDs.get(OBJ2_ID).getQualifiedId(), failedEntry.getKey());
+        assertTrue("Unexpected failure message: " + failedEntry.getValue(),
+                failedEntry.getValue().contains("User doesn't have permission"));
+        assertEquals(1, dataMap.get("failedCount"));
+
+        verify(msg).setSubject(subjectCaptor.capture());
+        assertTrue(subjectCaptor.getValue().startsWith("DCR Metadata update completed"));
+
+        assertAddressesSet(USER_EMAIL, ADMIN_EMAIL);
+    }
+
+    @SuppressWarnings("unchecked")
+    @Test
+    public void invalidPidTest() throws Exception {
+        // Give the update document a bad pid
+        Document updateDoc = makeUpdateDocument();
+        addObjectUpdate(updateDoc, PIDs.get(OBJ1_ID), null)
+            .addContent(modsWithTitleAndDate(ORIGINAL_TITLE, ORIGINAL_DATE));
+        updateDoc.getRootElement().getChild("object").setAttribute("pid", "definitelynotapid");
+        File tempImportFile = writeToFile(updateDoc);
+
+        setupJob(tempImportFile);
+        when(completeTemplate.execute(anyObject())).thenReturn("success email text");
+        job.run();
+
+        verify(mailSender).send(msg);
+        verify(completeTemplate).execute(mapCaptor.capture());
+        Map<String, Object> dataMap = mapCaptor.getValue();
+        assertEquals(tempImportFile.getPath(), dataMap.get("fileName"));
+
+        assertEquals(0, dataMap.get("updatedCount"));
+
+        Set<Entry<String, String>> failed = (Set<Entry<String, String>>) dataMap.get("failed");
+        assertEquals(1, failed.size());
+        Entry<String, String> failedEntry = failed.iterator().next();
+        assertEquals("definitelynotapid", failedEntry.getKey());
+        assertTrue("Unexpected failure message: " + failedEntry.getValue(),
+                failedEntry.getValue().contains("Invalid PID attribute"));
+        assertEquals(1, dataMap.get("failedCount"));
+
+        verify(msg).setSubject(subjectCaptor.capture());
+        assertTrue(subjectCaptor.getValue().startsWith("DCR Metadata update completed"));
+
+        assertAddressesSet(USER_EMAIL, ADMIN_EMAIL);
     }
 
     private File createTempImportFile() throws Exception {
@@ -248,13 +343,30 @@ public class ImportXMLJobTest {
         return writeToFile(updateDoc);
     }
 
+    private void assertAddressesSet(String... expectedAddresses) throws Exception {
+        verify(msg).setFrom(argThat(new ArgumentMatcher<Address>() {
+            @Override
+            public boolean matches(Object argument) {
+                Address address = (Address) argument;
+                return address.toString().equals(FROM_EMAIL);
+            }
+        }));
+        verify(msg, times(expectedAddresses.length))
+                .addRecipient(eq(Message.RecipientType.TO), addressCaptor.capture());
+        List<Address> toAddresses = addressCaptor.getAllValues();
+        for (String expectedAddress : expectedAddresses) {
+            assertTrue("Expected to address " + expectedAddress,
+                    toAddresses.stream().anyMatch(a -> a.toString().equals(expectedAddress)));
+        }
+    }
+
     private void setupJob(File importFile) {
-        String userEmail = "user@email.com";
-        ImportXMLRequest request = new ImportXMLRequest(userEmail, agent, importFile);
+        ImportXMLRequest request = new ImportXMLRequest(USER_EMAIL, agent, importFile);
         job = new ImportXMLJob(request);
         job.setCompleteTemplate(completeTemplate);
         job.setFailedTemplate(failedTemplate);
-        job.setFromAddress("admin@example.com");
+        job.setFromAddress(FROM_EMAIL);
+        job.setAdminAddress(ADMIN_EMAIL);
         job.setMailSender(mailSender);
         job.setUpdateService(updateService);
         job.setMimeMessage(msg);

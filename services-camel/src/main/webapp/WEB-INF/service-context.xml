@@ -321,6 +321,10 @@
     <bean id="fromAddress" class="java.lang.String">
         <constructor-arg value="${repository.from.email}" />
     </bean>
+    
+    <bean id="adminAddress" class="java.lang.String">
+        <constructor-arg value="${administrator.email}" />
+    </bean>
 
     <bean id="mailSender" class="org.springframework.mail.javamail.JavaMailSenderImpl">
         <property name="host" value="${smtp.host:localhost}" />
@@ -397,6 +401,7 @@
         <property name="updateCompleteTemplate" ref="updateCompleteTemplate" />
         <property name="updateFailedTemplate" ref="updateFailedTemplate" />
         <property name="fromAddress" ref="fromAddress" />
+        <property name="adminAddress" ref="adminAddress" />
         <property name="transferService" ref="binaryTransferService" />
         <property name="locationManager" ref="storageLocationManager" />
     </bean>
