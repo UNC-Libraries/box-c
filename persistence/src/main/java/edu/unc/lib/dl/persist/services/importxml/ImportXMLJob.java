@@ -49,6 +49,7 @@ import com.samskivert.mustache.Template;
 
 import edu.unc.lib.boxc.common.metrics.TimerFactory;
 import edu.unc.lib.boxc.model.api.exceptions.FedoraException;
+import edu.unc.lib.boxc.model.api.exceptions.NotFoundException;
 import edu.unc.lib.boxc.model.api.exceptions.RepositoryException;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
@@ -290,10 +291,14 @@ public class ImportXMLJob implements Runnable {
                                 Attribute pid = element.getAttributeByName(pidAttribute);
 
                                 if (pid != null) {
-                                    currentPid = PIDs.get(pid.getValue());
-                                    log.debug("Starting element for object {}", currentPid.getQualifiedId());
-                                    objectCount++;
-                                    state = DocumentState.IN_OBJECT;
+                                    try {
+                                        currentPid = PIDs.get(pid.getValue());
+                                        log.debug("Starting element for object {}", currentPid.getQualifiedId());
+                                        objectCount++;
+                                        state = DocumentState.IN_OBJECT;
+                                    } catch (Exception ex) {
+                                        failed.put(pid.getValue(), "Invalid PID attribute: " + ex.getMessage());
+                                    }
                                 } else {
                                     failed.put(importFile.getAbsolutePath(), "PID attribute was missing");
                                 }
@@ -379,6 +384,8 @@ public class ImportXMLJob implements Runnable {
                                 } catch (IOException ex) {
                                     failed.put(currentPid.getRepositoryPath(),
                                             "Error reading or converting MODS stream: " + ex.getMessage());
+                                } catch (NotFoundException ex) {
+                                    failed.put(currentPid.getRepositoryPath(), "Object not found");
                                 } catch (FedoraException ex) {
                                     failed.put(currentPid.getRepositoryPath(),
                                             "Error retrieving object from Fedora: " + ex.getMessage());

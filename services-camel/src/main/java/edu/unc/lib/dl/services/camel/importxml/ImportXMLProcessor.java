@@ -67,6 +67,7 @@ public class ImportXMLProcessor implements Processor {
         job.setCompleteTemplate(updateCompleteTemplate);
         job.setFailedTemplate(updateFailedTemplate);
         job.setFromAddress(fromAddress);
+        job.setAdminAddress(adminAddress);
         job.setLocationManager(locationManager);
         job.setMailSender(mailSender);
         job.setTransferService(transferService);

@@ -297,6 +297,41 @@ public class ImportXMLJobTest {
         assertAddressesSet(USER_EMAIL, ADMIN_EMAIL);
     }
 
+    @SuppressWarnings("unchecked")
+    @Test
+    public void invalidPidTest() throws Exception {
+        // Give the update document a bad pid
+        Document updateDoc = makeUpdateDocument();
+        addObjectUpdate(updateDoc, PIDs.get(OBJ1_ID), null)
+            .addContent(modsWithTitleAndDate(ORIGINAL_TITLE, ORIGINAL_DATE));
+        updateDoc.getRootElement().getChild("object").setAttribute("pid", "definitelynotapid");
+        File tempImportFile = writeToFile(updateDoc);
+
+        setupJob(tempImportFile);
+        when(completeTemplate.execute(anyObject())).thenReturn("success email text");
+        job.run();
+
+        verify(mailSender).send(msg);
+        verify(completeTemplate).execute(mapCaptor.capture());
+        Map<String, Object> dataMap = mapCaptor.getValue();
+        assertEquals(tempImportFile.getPath(), dataMap.get("fileName"));
+
+        assertEquals(0, dataMap.get("updatedCount"));
+
+        Set<Entry<String, String>> failed = (Set<Entry<String, String>>) dataMap.get("failed");
+        assertEquals(1, failed.size());
+        Entry<String, String> failedEntry = failed.iterator().next();
+        assertEquals("definitelynotapid", failedEntry.getKey());
+        assertTrue("Unexpected failure message: " + failedEntry.getValue(),
+                failedEntry.getValue().contains("Invalid PID attribute"));
+        assertEquals(1, dataMap.get("failedCount"));
+
+        verify(msg).setSubject(subjectCaptor.capture());
+        assertTrue(subjectCaptor.getValue().startsWith("DCR Metadata update completed"));
+
+        assertAddressesSet(USER_EMAIL, ADMIN_EMAIL);
+    }
+
     private File createTempImportFile() throws Exception {
         Document updateDoc = makeUpdateDocument();
         addObjectUpdate(updateDoc, PIDs.get(OBJ1_ID), null)

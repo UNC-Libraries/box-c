@@ -258,6 +258,22 @@ public class ImportXMLJobIT {
         assertEquals("The import file contains XML errors", job.getFailed().get(importFile.getAbsolutePath()));
     }
 
+    @Test
+    public void testObjectDoesNotExist() throws Exception {
+        PID workPid = PIDs.get(UUID.randomUUID().toString());
+
+        Document updateDoc = makeUpdateDocument();
+        addObjectUpdate(updateDoc, workPid, null)
+            .addContent(modsWithTitleAndDate(UPDATED_TITLE, UPDATED_DATE));
+        importFile = writeToFile(updateDoc);
+        createJob();
+
+        job.run();
+
+        verify(mailSender).send(any(MimeMessage.class));
+        assertEquals("Object not found", job.getFailed().get(workPid.getRepositoryPath()));
+    }
+
     private void assertModsUpdated(InputStream updatedMods) throws JDOMException, IOException {
         SAXBuilder builder = new SAXBuilder();
         Document doc = builder.build(updatedMods);
