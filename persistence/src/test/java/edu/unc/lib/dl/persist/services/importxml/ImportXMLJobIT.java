@@ -271,7 +271,7 @@ public class ImportXMLJobIT {
         job.run();
 
         verify(mailSender).send(any(MimeMessage.class));
-        assertEquals("Object not found", job.getFailed().get(workPid.getRepositoryPath()));
+        assertEquals("Object not found", job.getFailed().get(workPid.getQualifiedId()));
     }
 
     private void assertModsUpdated(InputStream updatedMods) throws JDOMException, IOException {

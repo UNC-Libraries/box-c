@@ -313,14 +313,14 @@ public class ImportXMLJob implements Runnable {
 
                                 Attribute typeAttr = element.getAttributeByName(typeAttribute);
                                 if (typeAttr == null) {
-                                    failed.put(currentPid.getRepositoryPath(),
+                                    failed.put(currentPid.getQualifiedId(),
                                             "Invalid import data, missing type attribute on update");
                                 }
                                 if (MODS_TYPE.equals(typeAttr.getValue())) {
                                     currentDs = MODS_TYPE;
                                     log.debug("Starting MODS element for object {}", currentPid.getQualifiedId());
                                 } else {
-                                    failed.put(currentPid.getRepositoryPath(),
+                                    failed.put(currentPid.getQualifiedId(),
                                             "Invalid import data, unsupported type in update tag");
                                 }
 
@@ -372,22 +372,22 @@ public class ImportXMLJob implements Runnable {
                                             new UpdateDescriptionRequest(agent, currentPid, modsStream)
                                                 .withTransferSession(transferSession)
                                                 .withPriority(IndexingPriority.low));
-                                    updated.add(currentPid.getId());
+                                    updated.add(currentPid.getQualifiedId());
                                     log.debug("Finished updating object {} with id {}", objectCount, currentPid);
                                 } catch (AccessRestrictionException ex) {
-                                    failed.put(currentPid.getRepositoryPath(),
+                                    failed.put(currentPid.getQualifiedId(),
                                             "User doesn't have permission to update this object: " + ex.getMessage());
                                 } catch (MetadataValidationException ex) {
                                     log.debug("Validation failed for {}", currentPid, ex);
-                                    failed.put(currentPid.getRepositoryPath(),
+                                    failed.put(currentPid.getQualifiedId(),
                                             "MODS is not valid: " + ex.getDetailedMessage());
                                 } catch (IOException ex) {
-                                    failed.put(currentPid.getRepositoryPath(),
+                                    failed.put(currentPid.getQualifiedId(),
                                             "Error reading or converting MODS stream: " + ex.getMessage());
                                 } catch (NotFoundException ex) {
-                                    failed.put(currentPid.getRepositoryPath(), "Object not found");
+                                    failed.put(currentPid.getQualifiedId(), "Object not found");
                                 } catch (FedoraException ex) {
-                                    failed.put(currentPid.getRepositoryPath(),
+                                    failed.put(currentPid.getQualifiedId(),
                                             "Error retrieving object from Fedora: " + ex.getMessage());
                                 }
                             } else if (foundResumptionPoint) {

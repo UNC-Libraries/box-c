@@ -86,9 +86,9 @@ public class ImportXMLJobTest {
     private final static String UPDATED_TITLE = "Updated Work Title";
     private final static String ORIGINAL_DATE = "2017-10-09";
 
-    private static final String OBJ1_ID = "ae0091e0-192d-46f9-a8ad-8b0dc82f33ad";
-    private static final String OBJ2_ID = "b75e416f-0ca8-4138-94ca-0a99bbd8e710";
-    private static final String OBJ3_ID = "43dcb37a-27fc-425b-9c00-76cee952507c";
+    private static final String OBJ1_ID = "content/ae0091e0-192d-46f9-a8ad-8b0dc82f33ad";
+    private static final String OBJ2_ID = "content/b75e416f-0ca8-4138-94ca-0a99bbd8e710";
+    private static final String OBJ3_ID = "content/43dcb37a-27fc-425b-9c00-76cee952507c";
 
     private static final String USER_EMAIL = "user@example.com";
     private static final String FROM_EMAIL = "reply@example.com";
@@ -286,7 +286,7 @@ public class ImportXMLJobTest {
         Set<Entry<String, String>> failed = (Set<Entry<String, String>>) dataMap.get("failed");
         assertEquals(1, failed.size());
         Entry<String, String> failedEntry = failed.iterator().next();
-        assertEquals(PIDs.get(OBJ2_ID).getRepositoryPath(), failedEntry.getKey());
+        assertEquals(PIDs.get(OBJ2_ID).getQualifiedId(), failedEntry.getKey());
         assertTrue("Unexpected failure message: " + failedEntry.getValue(),
                 failedEntry.getValue().contains("User doesn't have permission"));
         assertEquals(1, dataMap.get("failedCount"));
