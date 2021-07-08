@@ -307,6 +307,15 @@
 
         .is-link {
             background-color: #1A698C;
+            border-radius: 5px;
+            font-size: .85rem;
+            margin-bottom: 10px;
+            margin-top: 12px;
+            padding: 1.1em 0.8em 1.1em 1.2em;
+        }
+
+        .facet-header {
+            padding-top: 18px;
         }
 
         .facet-display {
