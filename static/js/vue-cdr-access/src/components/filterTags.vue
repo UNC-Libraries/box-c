@@ -82,32 +82,32 @@ export default {
             return params;
         },
 
-        formatSearchValue(field, fieldValue) {
-            if (field === undefined || TYPES[fieldValue] === undefined) {
+        formatSearchValue(fieldValue, type) {
+            if (fieldValue === undefined || TYPES[type] === undefined) {
                 return '';
             }
 
-            let display_text = decodeURIComponent(field);
+            let display_text = decodeURIComponent(fieldValue);
 
             // Format time based tags
-            if (fieldValue === 'added' || fieldValue === 'created') {
-                display_text = this._formatTime(field);
+            if (type === 'added' || type === 'created') {
+                display_text = this._formatTime(fieldValue);
             }
 
             let tag_info = {
-                type: fieldValue,
-                type_text: TYPES[fieldValue],
-                original_value: field,
+                type: type,
+                type_text: TYPES[type],
+                original_value: fieldValue,
                 value_text: display_text
             };
 
             // Return non multi-value tags
-            if (fieldValue !== 'format' && fieldValue !== 'collection') {
+            if (type !== 'format' && type !== 'collection') {
                 return tag_info;
             }
 
             // Multi-value tags
-            return this._updateMultiValueTags(display_text, fieldValue, tag_info);
+            return this._updateMultiValueTags(display_text, type, tag_info);
         },
 
         _formatTime(field) {
