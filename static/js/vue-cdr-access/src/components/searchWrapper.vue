@@ -1,7 +1,8 @@
 <template>
     <div>
         <div class="search-query-text">
-            <strong>Search results for</strong> "{{ $route.query.anywhere }}"
+            Search results for "{{ $route.query.anywhere }}"
+            <filter-tags :facet-list="facet_list"></filter-tags>
         </div>
         <img v-if="is_loading" src="/static/images/ajax-loader-lg.gif" alt="data loading icon">
         <div v-if="!is_loading">
@@ -35,6 +36,7 @@
 <script>
     import browseSort from "./browseSort";
     import facets from "./facets";
+    import filterTags from "./filterTags";
     import listDisplay from "./listDisplay";
     import pagination from "./pagination";
     import routeUtils from "../mixins/routeUtils";
@@ -45,7 +47,7 @@
     export default {
         name: 'searchWrapper',
 
-        components: {browseSort, facets, listDisplay, pagination},
+        components: {browseSort, facets, filterTags, listDisplay, pagination},
 
         mixins: [routeUtils],
 
@@ -90,11 +92,7 @@
             retrieveData() {
                 let param_string = `${this.formatParamsString(this.$route.query)}&getFacets=true`;
                 let search_path = 'searchJson';
-
                 this.collection = UUID_REGEX.test(this.$route.path) ? this.$route.path.split('/')[2] : '';
-                if (this.collection !== '') {
-                    search_path += `/${this.collection}`
-                }
 
                 get(`${search_path}/${param_string}`).then((response) => {
                     this.records = response.data.metadata;

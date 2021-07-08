@@ -1,6 +1,6 @@
 <template>
     <div id="facetList" class="contentarea">
-        <a v-if="selected_facets.length > 0" id="clear-all" class="button is-danger is-small" @click.prevent="clearAll()">
+        <a v-if="selected_facets.length > 0" id="clear-all" class="button is-link is-small" @click.prevent="clearAll()">
             <span class="icon is-small">
                 <i class="fas fa-times"></i>
             </span> Clear filters</a>
@@ -43,10 +43,6 @@
         },
 
         watch: {
-            selected_facets() {
-                this.selectedFacets();
-            },
-
            '$route.query'(route) {
                this.selected_facets = [];
                this.setFacetsFromParams();
@@ -88,6 +84,7 @@
         methods: {
             clearAll() {
                 this.selected_facets = [];
+                this.selectedFacets();
             },
 
             updateAll(facet, remove = false) {
@@ -96,6 +93,8 @@
                 } else {
                     this.updateSelectedFacet(facet);
                 }
+
+                this.selectedFacets();
             },
 
             updateSelectedFacet(facet) {
@@ -306,6 +305,19 @@
             padding-top: 5px;
         }
 
+        .is-link {
+            background-color: #1A698C;
+            border-radius: 5px;
+            font-size: .85rem;
+            margin-bottom: 10px;
+            margin-top: 12px;
+            padding: 1.1em 0.8em 1.1em 1.2em;
+        }
+
+        .facet-header {
+            padding-top: 18px;
+        }
+
         .facet-display {
             margin-bottom: 25px;
             text-transform: capitalize;
@@ -315,13 +327,14 @@
             }
 
             i {
-                color: red;
+                color: #1A698C;
                 position: relative;
                 vertical-align: text-top;
             }
 
             .is-selected {
-                font-weight: bold;
+                color: black;
+                text-decoration: none;
             }
         }
 

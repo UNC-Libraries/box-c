@@ -70,6 +70,10 @@ describe('facets.vue', () => {
             }
         });
 
+        wrapper.setData({
+            selected_facets: [],
+        });
+
         let facet_list = wrapper.findAll('.facet-display a');
         collection = facet_list.at(0);
         selected_facet = facet_list.at(2);
@@ -107,9 +111,6 @@ describe('facets.vue', () => {
     });
 
     it("does not display a clear all facets button if no facets are selected", async () => {
-        wrapper.setData({
-            selected_facets: []
-        })
         expect(wrapper.find('#clear-all').exists()).toBe(false);
     });
 
@@ -204,10 +205,5 @@ describe('facets.vue', () => {
         expect(wrapper.vm.selected_facets).toEqual(['format=image||image/png']);
         expect(selected_facet.html()).toMatch(/Image.*8.*fas.fa-times/); // facet values and checkmark
         expect(selected_sub_facet.html()).toMatch(/png.*2.*fas.fa-times/); // facet values and checkmark
-    });
-
-    afterEach(() => {
-        wrapper.vm.facet_display = [];
-        wrapper.vm.selected_facets = [];
     });
 });
