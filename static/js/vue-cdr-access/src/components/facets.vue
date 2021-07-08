@@ -1,6 +1,6 @@
 <template>
     <div id="facetList" class="contentarea">
-        <a v-if="selected_facets.length > 0" id="clear-all" class="button is-danger is-small" @click.prevent="clearAll()">
+        <a v-if="selected_facets.length > 0" id="clear-all" class="button is-link is-small" @click.prevent="clearAll()">
             <span class="icon is-small">
                 <i class="fas fa-times"></i>
             </span> Clear filters</a>
@@ -305,6 +305,10 @@
             padding-top: 5px;
         }
 
+        .is-link {
+            background-color: #1A698C;
+        }
+
         .facet-display {
             margin-bottom: 25px;
             text-transform: capitalize;
@@ -314,13 +318,14 @@
             }
 
             i {
-                color: red;
+                color: #1A698C;
                 position: relative;
                 vertical-align: text-top;
             }
 
             .is-selected {
-                font-weight: bold;
+                color: black;
+                text-decoration: none;
             }
         }
 

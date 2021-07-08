@@ -29,7 +29,7 @@ const TYPES = {
 }
 
 export default {
-    name: "facetTags",
+    name: "filterTags",
 
     mixins: [routeUtils],
 
@@ -82,52 +82,55 @@ export default {
             return params;
         },
 
-        formatSearchValue(field, type) {
-            if (field === undefined || TYPES[type] === undefined) {
+        formatSearchValue(field, fieldValue) {
+            if (field === undefined || TYPES[fieldValue] === undefined) {
                 return '';
             }
 
             let display_text = decodeURIComponent(field);
 
             // Format time based tags
-            if (type === 'added' || type === 'created') {
-                this._formatTime(field, display_text);
+            if (fieldValue === 'added' || fieldValue === 'created') {
+                display_text = this._formatTime(field);
             }
 
             let tag_info = {
-                type: type,
-                type_text: TYPES[type],
+                type: fieldValue,
+                type_text: TYPES[fieldValue],
                 original_value: field,
                 value_text: display_text
             };
 
             // Return non multi-value tags
-            if (type !== 'format' && type !== 'collection') {
+            if (fieldValue !== 'format' && fieldValue !== 'collection') {
                 return tag_info;
             }
 
             // Multi-value tags
-            return this._updateMultiValueTags(display_text, type, tag_info);
+            return this._updateMultiValueTags(display_text, fieldValue, tag_info);
         },
 
-        _formatTime(field, display_text) {
+        _formatTime(field) {
             if (field.startsWith(',')) {
-                display_text = `All dates through ${field.replace(',', '')}`;
+                return `All dates through ${field.replace(',', '')}`;
             } else if (field.endsWith(',')) {
-                display_text = `${field.replace(',', '')} to present date`;
+                return `${field.replace(',', '')} to present date`;
             } else {
                 const date_values = field.split(',');
-                display_text = `${date_values[0]} to ${date_values[1]}`
+                return `${date_values[0]} to ${date_values[1]}`
             }
-            return display_text;
         },
 
         _updateMultiValueTags(display_text, type, tag_info) {
             const tag_values = display_text.split('||');
 
             // Format collection tags
-            if (type === 'collection' && this.facetList.length > 0) {
+            if (type === 'collection') {
                 const collections = this.facetList.find(f => f.name === 'PARENT_COLLECTION');
+                if (collections === undefined) {
+                    return tag_info;
+                }
+
                 return tag_values.map((f_value) => {
                     let collection_text = f_value;
                     let original_value = f_value;
@@ -155,7 +158,7 @@ export default {
 
         truncateText(text) {
             const MAX_LENGTH = 40;
-            if (text.length > MAX_LENGTH) {
+            if (text.length > (MAX_LENGTH + 1)) {
                 return `${text.substr(0, MAX_LENGTH)}\u2026`;
             }
             return text;
@@ -185,8 +188,8 @@ export default {
     }
 
     i.fa-times {
-        background-color: #ff3860;
-        border: 1px solid #ff3860;
+        background-color: #1A698C;
+        border: 1px solid #1A698C;
         border-bottom-right-radius: 5px;
         border-top-right-radius: 5px;
         color: white;
