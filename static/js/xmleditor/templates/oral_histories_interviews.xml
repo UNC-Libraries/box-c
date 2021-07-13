@@ -76,7 +76,9 @@
   </mods:name>
   <mods:subject>
     <mods:topic authority="lcsh" />
-    <mods:name authority="naf" />
+    <mods:name authority="naf">
+      <mods:namePart />
+    </mods:name>
     <mods:geographic authority="lcsh" />
   </mods:subject>
 </mods:mods>
