@@ -1,4 +1,4 @@
-<mods:mods xmlns:mods="http://www.loc.gov/mods/v3">
+<mods:mods xmlns:mods="http://www.loc.gov/mods/v3" xmlns:xlink="http://www.w3.org/1999/xlink">
   <mods:titleInfo>
     <mods:title />
   </mods:titleInfo>
@@ -49,8 +49,8 @@
   <mods:location displayLabel="Alternate file location">
     <mods:url />
   </mods:location>
-  <mods:accessCondition xmlns:xlink="http://www.w3.org/1999/xlink" displayLabel="License" type="use and reproduction" xlink:href="" />
-  <mods:accessCondition xmlns:xlink="http://www.w3.org/1999/xlink" displayLabel="Rights" type="use and reproduction" xlink:href="" />
+  <mods:accessCondition displayLabel="License" type="use and reproduction" xlink:href="" />
+  <mods:accessCondition displayLabel="Rights" type="use and reproduction" xlink:href="" />
   <mods:accessCondition displayLabel="Restrictions" type="restriction on access" />
   <mods:genre authority="lcgft">Oral histories</mods:genre>
   <mods:note />
