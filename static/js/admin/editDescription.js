@@ -123,6 +123,18 @@ define("editDescription", ["module", "jquery", "jquery-ui", "ace", "xmleditor", 
 						title: "Serial Title",
 						description: 'Template with standard fields to describe serial titles',
 						icon_class: 'fa fa-newspaper-o'
+					},
+					{
+						filename: 'oral_histories_interviews.xml',
+						title: 'Oral History Interview',
+						description: 'Oral histories MODS template with common fields',
+						icon_class: 'fas fa-microphone'
+					},
+					{
+						filename: 'oral_histories_series.xml',
+						title: "Oral Histories Series",
+						description: 'Template with standard fields to describe oral histories series',
+						icon_class: 'fas fa-microphone'
 					}
 				],
 				cancelFunction: function() {
