@@ -30,7 +30,7 @@ import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.response.QueryResponse;
 
 import edu.unc.lib.boxc.model.api.ResourceType;
-import edu.unc.lib.dl.acl.util.AccessGroupSet;
+import edu.unc.lib.boxc.auth.fcrepo.model.AccessGroupSet;
 import edu.unc.lib.dl.search.solr.exception.SolrRuntimeException;
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadataBean;
 import edu.unc.lib.dl.search.solr.model.CutoffFacet;

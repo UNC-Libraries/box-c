@@ -44,13 +44,13 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
+import edu.unc.lib.boxc.web.common.auth.AccessLevel;
+import edu.unc.lib.boxc.web.common.auth.filters.StoreAccessLevelFilter;
 import edu.unc.lib.dl.acl.fcrepo4.GlobalPermissionEvaluator;
-import edu.unc.lib.dl.acl.util.AccessGroupSet;
-import edu.unc.lib.dl.acl.util.AccessPrincipalConstants;
-import edu.unc.lib.dl.acl.util.GroupsThreadStore;
-import edu.unc.lib.dl.acl.util.UserRole;
-import edu.unc.lib.dl.ui.access.AccessLevel;
-import edu.unc.lib.dl.ui.access.StoreAccessLevelFilter;
+import edu.unc.lib.boxc.auth.fcrepo.model.AccessGroupSet;
+import edu.unc.lib.boxc.auth.api.AccessPrincipalConstants;
+import edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore;
+import edu.unc.lib.boxc.auth.api.UserRole;
 
 /**
  * @author bbpennel

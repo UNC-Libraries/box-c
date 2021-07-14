@@ -15,7 +15,7 @@
  */
 package edu.unc.lib.dl.cdr.services.rest;
 
-import static edu.unc.lib.dl.acl.util.GroupsThreadStore.getAgentPrincipals;
+import static edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore.getAgentPrincipals;
 import static edu.unc.lib.dl.util.RedisWorkerConstants.DepositPipelineState.quieted;
 import static edu.unc.lib.dl.util.RedisWorkerConstants.DepositPipelineState.shutdown;
 import static java.util.Collections.singletonMap;
@@ -37,8 +37,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import edu.unc.lib.dl.acl.fcrepo4.GlobalPermissionEvaluator;
-import edu.unc.lib.dl.acl.util.AccessGroupSet;
-import edu.unc.lib.dl.acl.util.Permission;
+import edu.unc.lib.boxc.auth.fcrepo.model.AccessGroupSet;
+import edu.unc.lib.boxc.auth.api.Permission;
 import edu.unc.lib.dl.util.DepositPipelineStatusFactory;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositPipelineAction;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositPipelineState;

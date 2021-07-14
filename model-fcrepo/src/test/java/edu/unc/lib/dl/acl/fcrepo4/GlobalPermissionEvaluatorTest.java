@@ -28,9 +28,9 @@ import java.util.Set;
 import org.junit.Before;
 import org.junit.Test;
 
-import edu.unc.lib.dl.acl.util.AccessPrincipalConstants;
-import edu.unc.lib.dl.acl.util.Permission;
-import edu.unc.lib.dl.acl.util.UserRole;
+import edu.unc.lib.boxc.auth.api.AccessPrincipalConstants;
+import edu.unc.lib.boxc.auth.api.Permission;
+import edu.unc.lib.boxc.auth.api.UserRole;
 
 public class GlobalPermissionEvaluatorTest {
 

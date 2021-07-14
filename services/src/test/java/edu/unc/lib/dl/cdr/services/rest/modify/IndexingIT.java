@@ -15,7 +15,7 @@
  */
 package edu.unc.lib.dl.cdr.services.rest.modify;
 
-import static edu.unc.lib.dl.acl.util.Permission.reindex;
+import static edu.unc.lib.boxc.auth.api.Permission.reindex;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -41,8 +41,8 @@ import org.springframework.test.context.ContextHierarchy;
 import org.springframework.test.web.servlet.MvcResult;
 
 import edu.unc.lib.boxc.model.api.ids.PID;
-import edu.unc.lib.dl.acl.exception.AccessRestrictionException;
-import edu.unc.lib.dl.acl.util.AccessGroupSet;
+import edu.unc.lib.boxc.auth.api.exceptions.AccessRestrictionException;
+import edu.unc.lib.boxc.auth.fcrepo.model.AccessGroupSet;
 
 /**
  *

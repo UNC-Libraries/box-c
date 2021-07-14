@@ -28,7 +28,7 @@ import com.fasterxml.jackson.databind.ObjectReader;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
 import edu.unc.lib.dl.acl.fcrepo4.InheritedAclFactory;
-import edu.unc.lib.dl.acl.service.AccessControlService;
+import edu.unc.lib.boxc.auth.api.services.AccessControlService;
 import edu.unc.lib.dl.fcrepo4.TransactionManager;
 import edu.unc.lib.dl.persist.api.event.PremisLoggerFactory;
 import edu.unc.lib.dl.persist.api.storage.StorageLocationManager;

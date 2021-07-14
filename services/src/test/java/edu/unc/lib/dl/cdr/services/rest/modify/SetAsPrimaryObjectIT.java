@@ -15,7 +15,7 @@
  */
 package edu.unc.lib.dl.cdr.services.rest.modify;
 
-import static edu.unc.lib.dl.acl.util.Permission.editResourceType;
+import static edu.unc.lib.boxc.auth.api.Permission.editResourceType;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -38,8 +38,8 @@ import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObject;
 import edu.unc.lib.boxc.model.api.objects.FileObject;
 import edu.unc.lib.boxc.model.api.objects.WorkObject;
-import edu.unc.lib.dl.acl.exception.AccessRestrictionException;
-import edu.unc.lib.dl.acl.util.AccessGroupSet;
+import edu.unc.lib.boxc.auth.api.exceptions.AccessRestrictionException;
+import edu.unc.lib.boxc.auth.fcrepo.model.AccessGroupSet;
 
 /**
  *

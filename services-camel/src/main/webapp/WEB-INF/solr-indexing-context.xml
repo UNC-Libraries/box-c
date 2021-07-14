@@ -13,7 +13,7 @@
         http://camel.apache.org/schema/spring
         http://camel.apache.org/schema/spring/camel-spring.xsd">
         
-    <util:set id="accessGroups" set-class="edu.unc.lib.dl.acl.util.AccessGroupSet">
+    <util:set id="accessGroups" set-class="edu.unc.lib.boxc.auth.fcrepo.model.AccessGroupSet">
         <value>${access.group.admin}</value>
     </util:set>
 

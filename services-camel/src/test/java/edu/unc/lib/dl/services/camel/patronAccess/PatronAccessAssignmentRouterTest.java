@@ -15,8 +15,8 @@
  */
 package edu.unc.lib.dl.services.camel.patronAccess;
 
-import static edu.unc.lib.dl.acl.util.AccessPrincipalConstants.AUTHENTICATED_PRINC;
-import static edu.unc.lib.dl.acl.util.UserRole.canViewMetadata;
+import static edu.unc.lib.boxc.auth.api.AccessPrincipalConstants.AUTHENTICATED_PRINC;
+import static edu.unc.lib.boxc.auth.api.UserRole.canViewMetadata;
 import static java.util.Arrays.asList;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.timeout;
@@ -36,10 +36,10 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
-import edu.unc.lib.dl.acl.exception.AccessRestrictionException;
-import edu.unc.lib.dl.acl.util.AccessGroupSet;
-import edu.unc.lib.dl.acl.util.AgentPrincipals;
-import edu.unc.lib.dl.acl.util.RoleAssignment;
+import edu.unc.lib.boxc.auth.api.exceptions.AccessRestrictionException;
+import edu.unc.lib.boxc.auth.fcrepo.model.AccessGroupSet;
+import edu.unc.lib.boxc.auth.fcrepo.model.AgentPrincipals;
+import edu.unc.lib.boxc.auth.fcrepo.model.RoleAssignment;
 import edu.unc.lib.dl.persist.services.acl.PatronAccessAssignmentService;
 import edu.unc.lib.dl.persist.services.acl.PatronAccessAssignmentService.PatronAccessAssignmentRequest;
 import edu.unc.lib.dl.persist.services.acl.PatronAccessDetails;

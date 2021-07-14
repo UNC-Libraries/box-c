@@ -15,11 +15,11 @@
  */
 package edu.unc.lib.dl.cdr.services.rest;
 
-import static edu.unc.lib.dl.acl.util.AccessPrincipalConstants.AUTHENTICATED_PRINC;
-import static edu.unc.lib.dl.acl.util.AccessPrincipalConstants.PUBLIC_PRINC;
-import static edu.unc.lib.dl.acl.util.AccessPrincipalConstants.USER_NAMESPACE;
-import static edu.unc.lib.dl.acl.util.UserRole.canViewMetadata;
-import static edu.unc.lib.dl.acl.util.UserRole.canViewOriginals;
+import static edu.unc.lib.boxc.auth.api.AccessPrincipalConstants.AUTHENTICATED_PRINC;
+import static edu.unc.lib.boxc.auth.api.AccessPrincipalConstants.PUBLIC_PRINC;
+import static edu.unc.lib.boxc.auth.api.AccessPrincipalConstants.USER_NAMESPACE;
+import static edu.unc.lib.boxc.auth.api.UserRole.canViewMetadata;
+import static edu.unc.lib.boxc.auth.api.UserRole.canViewOriginals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
@@ -53,11 +53,11 @@ import edu.unc.lib.boxc.model.api.objects.FileObject;
 import edu.unc.lib.boxc.model.api.objects.FolderObject;
 import edu.unc.lib.boxc.model.api.objects.WorkObject;
 import edu.unc.lib.boxc.model.fcrepo.test.AclModelBuilder;
-import edu.unc.lib.dl.acl.util.AccessGroupSet;
-import edu.unc.lib.dl.acl.util.AccessPrincipalConstants;
-import edu.unc.lib.dl.acl.util.GroupsThreadStore;
-import edu.unc.lib.dl.acl.util.IPAddressPatronPrincipalConfig;
-import edu.unc.lib.dl.acl.util.UserRole;
+import edu.unc.lib.boxc.auth.fcrepo.model.AccessGroupSet;
+import edu.unc.lib.boxc.auth.api.AccessPrincipalConstants;
+import edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore;
+import edu.unc.lib.boxc.web.common.auth.IPAddressPatronPrincipalConfig;
+import edu.unc.lib.boxc.auth.api.UserRole;
 import edu.unc.lib.dl.cdr.services.rest.modify.AbstractAPIIT;
 import edu.unc.lib.dl.persist.services.acl.PatronAccessDetails;
 

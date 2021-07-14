@@ -15,11 +15,11 @@
  */
 package edu.unc.lib.dl.cdr.services.rest.modify;
 
-import static edu.unc.lib.dl.acl.util.AccessPrincipalConstants.USER_NAMESPACE;
-import static edu.unc.lib.dl.acl.util.Permission.assignStaffRoles;
-import static edu.unc.lib.dl.acl.util.UserRole.canAccess;
-import static edu.unc.lib.dl.acl.util.UserRole.canManage;
-import static edu.unc.lib.dl.acl.util.UserRole.unitOwner;
+import static edu.unc.lib.boxc.auth.api.AccessPrincipalConstants.USER_NAMESPACE;
+import static edu.unc.lib.boxc.auth.api.Permission.assignStaffRoles;
+import static edu.unc.lib.boxc.auth.api.UserRole.canAccess;
+import static edu.unc.lib.boxc.auth.api.UserRole.canManage;
+import static edu.unc.lib.boxc.auth.api.UserRole.unitOwner;
 import static java.util.Arrays.asList;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -50,11 +50,11 @@ import edu.unc.lib.boxc.model.api.objects.ContentObject;
 import edu.unc.lib.boxc.model.api.objects.AdminUnit;
 import edu.unc.lib.boxc.model.api.objects.CollectionObject;
 import edu.unc.lib.boxc.model.fcrepo.test.AclModelBuilder;
-import edu.unc.lib.dl.acl.exception.AccessRestrictionException;
-import edu.unc.lib.dl.acl.util.AccessGroupSet;
-import edu.unc.lib.dl.acl.util.GroupsThreadStore;
-import edu.unc.lib.dl.acl.util.RoleAssignment;
-import edu.unc.lib.dl.acl.util.UserRole;
+import edu.unc.lib.boxc.auth.api.exceptions.AccessRestrictionException;
+import edu.unc.lib.boxc.auth.fcrepo.model.AccessGroupSet;
+import edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore;
+import edu.unc.lib.boxc.auth.fcrepo.model.RoleAssignment;
+import edu.unc.lib.boxc.auth.api.UserRole;
 import edu.unc.lib.dl.cdr.services.rest.modify.UpdateStaffAccessController.UpdateStaffRequest;
 
 /**

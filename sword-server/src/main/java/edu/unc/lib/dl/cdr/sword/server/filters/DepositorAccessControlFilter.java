@@ -15,16 +15,16 @@
  */
 package edu.unc.lib.dl.cdr.sword.server.filters;
 
-import static edu.unc.lib.dl.acl.util.RemoteUserUtil.getRemoteUser;
+import static edu.unc.lib.boxc.web.common.auth.RemoteUserUtil.getRemoteUser;
 
 import javax.servlet.http.HttpServletRequest;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import edu.unc.lib.dl.acl.filter.StoreUserAccessControlFilter;
-import edu.unc.lib.dl.acl.util.AccessGroupSet;
-import edu.unc.lib.dl.acl.util.AccessPrincipalConstants;
+import edu.unc.lib.boxc.web.common.auth.filters.StoreUserAccessControlFilter;
+import edu.unc.lib.boxc.auth.fcrepo.model.AccessGroupSet;
+import edu.unc.lib.boxc.auth.api.AccessPrincipalConstants;
 import edu.unc.lib.dl.cdr.sword.server.SwordConfigurationImpl;
 
 /**

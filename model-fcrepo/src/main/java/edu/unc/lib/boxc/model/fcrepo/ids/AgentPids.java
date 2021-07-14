@@ -21,7 +21,7 @@ import edu.unc.lib.boxc.common.util.URIUtil;
 import edu.unc.lib.boxc.model.api.SoftwareAgentConstants.SoftwareAgent;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.ids.PIDConstants;
-import edu.unc.lib.dl.acl.util.AgentPrincipals;
+import edu.unc.lib.boxc.auth.fcrepo.model.AgentPrincipals;
 
 /**
  * Helper methods for getting PIDs for agent

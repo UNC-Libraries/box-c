@@ -21,7 +21,7 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import edu.unc.lib.boxc.model.api.ids.PID;
-import edu.unc.lib.dl.acl.util.AccessGroupSet;
+import edu.unc.lib.boxc.auth.fcrepo.model.AccessGroupSet;
 import edu.unc.lib.dl.data.ingest.solr.SolrUpdateRequest;
 import edu.unc.lib.dl.data.ingest.solr.exception.IndexingException;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackage;

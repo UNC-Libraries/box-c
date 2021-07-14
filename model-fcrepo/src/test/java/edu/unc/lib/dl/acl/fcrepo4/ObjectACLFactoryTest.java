@@ -15,7 +15,7 @@
  */
 package edu.unc.lib.dl.acl.fcrepo4;
 
-import static edu.unc.lib.dl.acl.util.AccessPrincipalConstants.PUBLIC_PRINC;
+import static edu.unc.lib.boxc.auth.api.AccessPrincipalConstants.PUBLIC_PRINC;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -53,7 +53,7 @@ import edu.unc.lib.boxc.model.api.objects.ContentObject;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.api.rdf.Cdr;
 import edu.unc.lib.boxc.model.api.rdf.CdrAcl;
-import edu.unc.lib.dl.acl.util.RoleAssignment;
+import edu.unc.lib.boxc.auth.fcrepo.model.RoleAssignment;
 
 /**
  *

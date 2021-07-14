@@ -15,7 +15,7 @@
  */
 package edu.unc.lib.dl.cdr.services.rest.modify;
 
-import static edu.unc.lib.dl.acl.util.AccessPrincipalConstants.USER_NAMESPACE;
+import static edu.unc.lib.boxc.auth.api.AccessPrincipalConstants.USER_NAMESPACE;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 import static org.springframework.http.MediaType.APPLICATION_JSON_UTF8_VALUE;
 
@@ -36,9 +36,9 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
-import edu.unc.lib.dl.acl.exception.InvalidAssignmentException;
-import edu.unc.lib.dl.acl.util.AgentPrincipals;
-import edu.unc.lib.dl.acl.util.RoleAssignment;
+import edu.unc.lib.boxc.auth.api.exceptions.InvalidAssignmentException;
+import edu.unc.lib.boxc.auth.fcrepo.model.AgentPrincipals;
+import edu.unc.lib.boxc.auth.fcrepo.model.RoleAssignment;
 import edu.unc.lib.dl.persist.services.acl.StaffRoleAssignmentService;
 
 /**

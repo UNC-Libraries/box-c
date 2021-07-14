@@ -24,9 +24,9 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import edu.unc.lib.dl.acl.util.Permission;
-import edu.unc.lib.dl.acl.util.PrincipalClassifier;
-import edu.unc.lib.dl.acl.util.UserRole;
+import edu.unc.lib.boxc.auth.api.Permission;
+import edu.unc.lib.boxc.auth.fcrepo.services.PrincipalClassifier;
+import edu.unc.lib.boxc.auth.api.UserRole;
 
 /**
  * Utility which evaluates the permissions of agents against globally defined

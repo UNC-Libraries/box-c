@@ -19,8 +19,8 @@ import java.io.File;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
-import edu.unc.lib.dl.acl.util.AccessGroupSet;
-import edu.unc.lib.dl.acl.util.AgentPrincipals;
+import edu.unc.lib.boxc.auth.fcrepo.model.AccessGroupSet;
+import edu.unc.lib.boxc.auth.fcrepo.model.AgentPrincipals;
 
 /**
  * Request to perform a bulk import of descriptive metadata

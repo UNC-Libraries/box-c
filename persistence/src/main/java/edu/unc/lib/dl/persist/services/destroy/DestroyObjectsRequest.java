@@ -17,8 +17,8 @@ package edu.unc.lib.dl.persist.services.destroy;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
-import edu.unc.lib.dl.acl.util.AccessGroupSet;
-import edu.unc.lib.dl.acl.util.AgentPrincipals;
+import edu.unc.lib.boxc.auth.fcrepo.model.AccessGroupSet;
+import edu.unc.lib.boxc.auth.fcrepo.model.AgentPrincipals;
 
 /**
  * A request to destroy one or more objects.

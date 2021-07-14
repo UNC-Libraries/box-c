@@ -15,14 +15,15 @@
  */
 package edu.unc.lib.dl.acl.fcrepo4;
 
+import java.util.Set;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import edu.unc.lib.boxc.auth.api.Permission;
+import edu.unc.lib.boxc.auth.api.exceptions.AccessRestrictionException;
+import edu.unc.lib.boxc.auth.api.services.AccessControlService;
 import edu.unc.lib.boxc.model.api.ids.PID;
-import edu.unc.lib.dl.acl.exception.AccessRestrictionException;
-import edu.unc.lib.dl.acl.service.AccessControlService;
-import edu.unc.lib.dl.acl.util.AccessGroupSet;
-import edu.unc.lib.dl.acl.util.Permission;
 
 /**
  * Implementation of the service to evaluate and retrieve CDR access controls in
@@ -40,7 +41,7 @@ public class AccessControlServiceImpl implements AccessControlService {
     private GlobalPermissionEvaluator globalPermissionEvaluator;
 
     @Override
-    public boolean hasAccess(PID pid, AccessGroupSet principals, Permission permission) {
+    public boolean hasAccess(PID pid, Set<String> principals, Permission permission) {
         // Check if there are any global agents, if so evaluate immediately against requested permission
         if (globalPermissionEvaluator.hasGlobalPermission(principals, permission)) {
             return true;
@@ -55,13 +56,13 @@ public class AccessControlServiceImpl implements AccessControlService {
     }
 
     @Override
-    public void assertHasAccess(PID pid, AccessGroupSet principals, Permission permission)
+    public void assertHasAccess(PID pid, Set<String> principals, Permission permission)
             throws AccessRestrictionException {
         assertHasAccess(null, pid, principals, permission);
     }
 
     @Override
-    public void assertHasAccess(String message, PID pid, AccessGroupSet principals, Permission permission)
+    public void assertHasAccess(String message, PID pid, Set<String> principals, Permission permission)
             throws AccessRestrictionException {
         if (!hasAccess(pid, principals, permission)) {
             throw new AccessRestrictionException(message);

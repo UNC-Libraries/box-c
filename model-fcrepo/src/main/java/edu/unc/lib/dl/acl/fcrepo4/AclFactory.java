@@ -21,7 +21,7 @@ import java.util.Map;
 import java.util.Set;
 
 import edu.unc.lib.boxc.model.api.ids.PID;
-import edu.unc.lib.dl.acl.util.RoleAssignment;
+import edu.unc.lib.boxc.auth.fcrepo.model.RoleAssignment;
 
 /**
  * Interface for factories which provide access control details repository

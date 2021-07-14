@@ -43,9 +43,9 @@ import org.apache.jena.vocabulary.RDF;
 
 import edu.unc.lib.boxc.model.api.rdf.Cdr;
 import edu.unc.lib.boxc.model.api.rdf.CdrAcl;
-import edu.unc.lib.dl.acl.exception.InvalidAssignmentException;
-import edu.unc.lib.dl.acl.util.PrincipalClassifier;
-import edu.unc.lib.dl.acl.util.UserRole;
+import edu.unc.lib.boxc.auth.api.exceptions.InvalidAssignmentException;
+import edu.unc.lib.boxc.auth.fcrepo.services.PrincipalClassifier;
+import edu.unc.lib.boxc.auth.api.UserRole;
 
 /**
  * Validator which determines if a provided model contains access restriction

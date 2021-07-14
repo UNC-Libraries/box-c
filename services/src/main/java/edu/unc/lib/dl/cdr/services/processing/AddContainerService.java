@@ -15,10 +15,10 @@
  */
 package edu.unc.lib.dl.cdr.services.processing;
 
-import static edu.unc.lib.dl.acl.util.AccessPrincipalConstants.AUTHENTICATED_PRINC;
-import static edu.unc.lib.dl.acl.util.AccessPrincipalConstants.PUBLIC_PRINC;
-import static edu.unc.lib.dl.acl.util.UserRole.canViewOriginals;
-import static edu.unc.lib.dl.acl.util.UserRole.none;
+import static edu.unc.lib.boxc.auth.api.AccessPrincipalConstants.AUTHENTICATED_PRINC;
+import static edu.unc.lib.boxc.auth.api.AccessPrincipalConstants.PUBLIC_PRINC;
+import static edu.unc.lib.boxc.auth.api.UserRole.canViewOriginals;
+import static edu.unc.lib.boxc.auth.api.UserRole.none;
 import static edu.unc.lib.dl.util.DescriptionConstants.COLLECTION_NUMBER_EL;
 import static edu.unc.lib.dl.util.DescriptionConstants.COLLECTION_NUMBER_LABEL;
 import static edu.unc.lib.dl.util.DescriptionConstants.COLLECTION_NUMBER_TYPE;
@@ -54,11 +54,11 @@ import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
 import edu.unc.lib.boxc.model.api.xml.JDOMNamespaceUtil;
 import edu.unc.lib.boxc.model.fcrepo.ids.AgentPids;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
-import edu.unc.lib.dl.acl.exception.AccessRestrictionException;
-import edu.unc.lib.dl.acl.service.AccessControlService;
-import edu.unc.lib.dl.acl.util.AgentPrincipals;
-import edu.unc.lib.dl.acl.util.Permission;
-import edu.unc.lib.dl.acl.util.RoleAssignment;
+import edu.unc.lib.boxc.auth.api.exceptions.AccessRestrictionException;
+import edu.unc.lib.boxc.auth.api.services.AccessControlService;
+import edu.unc.lib.boxc.auth.fcrepo.model.AgentPrincipals;
+import edu.unc.lib.boxc.auth.api.Permission;
+import edu.unc.lib.boxc.auth.fcrepo.model.RoleAssignment;
 import edu.unc.lib.dl.fcrepo4.FedoraTransaction;
 import edu.unc.lib.dl.fcrepo4.TransactionManager;
 import edu.unc.lib.dl.persist.api.event.PremisLoggerFactory;

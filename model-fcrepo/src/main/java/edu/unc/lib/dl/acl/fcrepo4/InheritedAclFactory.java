@@ -15,8 +15,8 @@
  */
 package edu.unc.lib.dl.acl.fcrepo4;
 
-import static edu.unc.lib.dl.acl.util.EmbargoUtil.isEmbargoActive;
-import static edu.unc.lib.dl.acl.util.PrincipalClassifier.getPatronPrincipals;
+import static edu.unc.lib.boxc.auth.fcrepo.services.EmbargoUtil.isEmbargoActive;
+import static edu.unc.lib.boxc.auth.fcrepo.services.PrincipalClassifier.getPatronPrincipals;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -37,9 +37,9 @@ import org.slf4j.LoggerFactory;
 
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.services.ContentPathFactory;
-import edu.unc.lib.dl.acl.util.AccessPrincipalConstants;
-import edu.unc.lib.dl.acl.util.RoleAssignment;
-import edu.unc.lib.dl.acl.util.UserRole;
+import edu.unc.lib.boxc.auth.api.AccessPrincipalConstants;
+import edu.unc.lib.boxc.auth.fcrepo.model.RoleAssignment;
+import edu.unc.lib.boxc.auth.api.UserRole;
 
 /**
  * Factory which provides access control details that apply to particular

@@ -15,8 +15,8 @@
  */
 package edu.unc.lib.dl.services.camel.solrUpdate;
 
-import static edu.unc.lib.dl.acl.util.AccessPrincipalConstants.AUTHENTICATED_PRINC;
-import static edu.unc.lib.dl.acl.util.AccessPrincipalConstants.PUBLIC_PRINC;
+import static edu.unc.lib.boxc.auth.api.AccessPrincipalConstants.AUTHENTICATED_PRINC;
+import static edu.unc.lib.boxc.auth.api.AccessPrincipalConstants.PUBLIC_PRINC;
 import static edu.unc.lib.dl.util.IndexingActionType.ADD_SET_TO_PARENT;
 import static edu.unc.lib.dl.util.IndexingActionType.DELETE;
 import static edu.unc.lib.dl.util.IndexingActionType.DELETE_SOLR_TREE;
@@ -67,7 +67,7 @@ import edu.unc.lib.boxc.model.api.objects.RepositoryObject;
 import edu.unc.lib.boxc.model.api.objects.AdminUnit;
 import edu.unc.lib.boxc.model.api.objects.CollectionObject;
 import edu.unc.lib.boxc.model.fcrepo.test.TestHelper;
-import edu.unc.lib.dl.acl.util.AgentPrincipals;
+import edu.unc.lib.boxc.auth.fcrepo.model.AgentPrincipals;
 import edu.unc.lib.dl.data.ingest.solr.action.IndexingAction;
 import edu.unc.lib.dl.data.ingest.solr.filter.SetCollectionSupplementalInformationFilter;
 import edu.unc.lib.dl.data.ingest.solr.filter.collection.RLASupplementalFilter;

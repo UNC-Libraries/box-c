@@ -16,8 +16,8 @@
 package edu.unc.lib.deposit.fcrepo4;
 
 import static edu.unc.lib.deposit.work.DepositGraphUtils.getChildIterator;
-import static edu.unc.lib.dl.acl.util.AccessPrincipalConstants.AUTHENTICATED_PRINC;
-import static edu.unc.lib.dl.acl.util.AccessPrincipalConstants.PUBLIC_PRINC;
+import static edu.unc.lib.boxc.auth.api.AccessPrincipalConstants.AUTHENTICATED_PRINC;
+import static edu.unc.lib.boxc.auth.api.AccessPrincipalConstants.PUBLIC_PRINC;
 
 import java.util.Map;
 

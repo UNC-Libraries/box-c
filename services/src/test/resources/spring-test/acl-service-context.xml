@@ -22,7 +22,7 @@
         http://www.springframework.org/schema/beans
         http://www.springframework.org/schema/beans/spring-beans.xsd">
     
-    <bean name="patronPrincipalProvider" class="edu.unc.lib.dl.acl.util.PatronPrincipalProvider"
+    <bean name="patronPrincipalProvider" class="edu.unc.lib.boxc.web.common.auth.PatronPrincipalProvider"
             init-method="init">
         <property name="patronGroupConfigPath" value="src/test/resources/patron-principals.json" />
     </bean>

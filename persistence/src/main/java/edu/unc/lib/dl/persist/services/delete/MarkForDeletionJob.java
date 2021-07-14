@@ -16,8 +16,8 @@
 package edu.unc.lib.dl.persist.services.delete;
 
 import static edu.unc.lib.boxc.model.api.rdf.CdrAcl.markedForDeletion;
-import static edu.unc.lib.dl.acl.util.Permission.markForDeletion;
-import static edu.unc.lib.dl.acl.util.Permission.markForDeletionUnit;
+import static edu.unc.lib.boxc.auth.api.Permission.markForDeletion;
+import static edu.unc.lib.boxc.auth.api.Permission.markForDeletionUnit;
 import static edu.unc.lib.dl.sparql.SparqlUpdateHelper.createSparqlReplace;
 
 import edu.unc.lib.boxc.common.metrics.TimerFactory;
@@ -29,8 +29,8 @@ import edu.unc.lib.boxc.model.api.objects.RepositoryObject;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.api.rdf.Premis;
 import edu.unc.lib.boxc.model.fcrepo.ids.AgentPids;
-import edu.unc.lib.dl.acl.service.AccessControlService;
-import edu.unc.lib.dl.acl.util.AgentPrincipals;
+import edu.unc.lib.boxc.auth.api.services.AccessControlService;
+import edu.unc.lib.boxc.auth.fcrepo.model.AgentPrincipals;
 import edu.unc.lib.dl.persist.api.event.PremisLoggerFactory;
 import edu.unc.lib.dl.sparql.SparqlUpdateService;
 import io.dropwizard.metrics5.Timer;

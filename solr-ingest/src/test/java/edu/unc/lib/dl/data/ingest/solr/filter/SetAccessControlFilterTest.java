@@ -15,13 +15,13 @@
  */
 package edu.unc.lib.dl.data.ingest.solr.filter;
 
-import static edu.unc.lib.dl.acl.util.AccessPrincipalConstants.AUTHENTICATED_PRINC;
-import static edu.unc.lib.dl.acl.util.AccessPrincipalConstants.PUBLIC_PRINC;
-import static edu.unc.lib.dl.acl.util.UserRole.canDescribe;
-import static edu.unc.lib.dl.acl.util.UserRole.canManage;
-import static edu.unc.lib.dl.acl.util.UserRole.canViewAccessCopies;
-import static edu.unc.lib.dl.acl.util.UserRole.canViewMetadata;
-import static edu.unc.lib.dl.acl.util.UserRole.canViewOriginals;
+import static edu.unc.lib.boxc.auth.api.AccessPrincipalConstants.AUTHENTICATED_PRINC;
+import static edu.unc.lib.boxc.auth.api.AccessPrincipalConstants.PUBLIC_PRINC;
+import static edu.unc.lib.boxc.auth.api.UserRole.canDescribe;
+import static edu.unc.lib.boxc.auth.api.UserRole.canManage;
+import static edu.unc.lib.boxc.auth.api.UserRole.canViewAccessCopies;
+import static edu.unc.lib.boxc.auth.api.UserRole.canViewMetadata;
+import static edu.unc.lib.boxc.auth.api.UserRole.canViewOriginals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
@@ -41,9 +41,9 @@ import org.mockito.Mock;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.objects.ContentRootObject;
 import edu.unc.lib.dl.acl.fcrepo4.InheritedAclFactory;
-import edu.unc.lib.dl.acl.util.AccessPrincipalConstants;
-import edu.unc.lib.dl.acl.util.RoleAssignment;
-import edu.unc.lib.dl.acl.util.UserRole;
+import edu.unc.lib.boxc.auth.api.AccessPrincipalConstants;
+import edu.unc.lib.boxc.auth.fcrepo.model.RoleAssignment;
+import edu.unc.lib.boxc.auth.api.UserRole;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackage;
 import edu.unc.lib.dl.search.solr.model.IndexDocumentBean;
 

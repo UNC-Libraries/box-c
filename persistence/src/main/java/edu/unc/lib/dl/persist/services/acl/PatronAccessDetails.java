@@ -20,7 +20,7 @@ import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 
-import edu.unc.lib.dl.acl.util.RoleAssignment;
+import edu.unc.lib.boxc.auth.fcrepo.model.RoleAssignment;
 
 /**
  * Contains details which affect patron access to a resource.

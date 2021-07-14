@@ -15,9 +15,9 @@
  */
 package edu.unc.lib.dl.acl.fcrepo4;
 
-import static edu.unc.lib.dl.acl.util.EmbargoUtil.isEmbargoActive;
-import static edu.unc.lib.dl.acl.util.PrincipalClassifier.classifyPrincipals;
-import static edu.unc.lib.dl.acl.util.PrincipalClassifier.getPatronPrincipals;
+import static edu.unc.lib.boxc.auth.fcrepo.services.EmbargoUtil.isEmbargoActive;
+import static edu.unc.lib.boxc.auth.fcrepo.services.PrincipalClassifier.classifyPrincipals;
+import static edu.unc.lib.boxc.auth.fcrepo.services.PrincipalClassifier.getPatronPrincipals;
 
 import java.util.HashSet;
 import java.util.Iterator;
@@ -30,9 +30,9 @@ import edu.unc.lib.boxc.model.api.exceptions.OrphanedObjectException;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.services.ContentPathFactory;
 import edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPaths;
-import edu.unc.lib.dl.acl.util.AccessPrincipalConstants;
-import edu.unc.lib.dl.acl.util.Permission;
-import edu.unc.lib.dl.acl.util.UserRole;
+import edu.unc.lib.boxc.auth.api.AccessPrincipalConstants;
+import edu.unc.lib.boxc.auth.api.Permission;
+import edu.unc.lib.boxc.auth.api.UserRole;
 
 /**
  * Evaluates the permissions of agents on specific objects, taking into account

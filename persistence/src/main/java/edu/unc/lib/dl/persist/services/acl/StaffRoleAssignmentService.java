@@ -15,7 +15,7 @@
  */
 package edu.unc.lib.dl.persist.services.acl;
 
-import static edu.unc.lib.dl.acl.util.Permission.assignStaffRoles;
+import static edu.unc.lib.boxc.auth.api.Permission.assignStaffRoles;
 import static org.springframework.util.Assert.notNull;
 
 import java.util.ArrayList;
@@ -41,13 +41,13 @@ import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.api.rdf.Premis;
 import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
 import edu.unc.lib.boxc.model.fcrepo.ids.AgentPids;
-import edu.unc.lib.dl.acl.exception.InvalidAssignmentException;
+import edu.unc.lib.boxc.auth.api.exceptions.InvalidAssignmentException;
 import edu.unc.lib.dl.acl.fcrepo4.ContentObjectAccessRestrictionValidator;
 import edu.unc.lib.dl.acl.fcrepo4.InheritedAclFactory;
-import edu.unc.lib.dl.acl.service.AccessControlService;
-import edu.unc.lib.dl.acl.util.AgentPrincipals;
-import edu.unc.lib.dl.acl.util.RoleAssignment;
-import edu.unc.lib.dl.acl.util.UserRole;
+import edu.unc.lib.boxc.auth.api.services.AccessControlService;
+import edu.unc.lib.boxc.auth.fcrepo.model.AgentPrincipals;
+import edu.unc.lib.boxc.auth.fcrepo.model.RoleAssignment;
+import edu.unc.lib.boxc.auth.api.UserRole;
 import edu.unc.lib.dl.fcrepo4.FedoraTransaction;
 import edu.unc.lib.dl.fcrepo4.TransactionManager;
 import edu.unc.lib.dl.fedora.ServiceException;

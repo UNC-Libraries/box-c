@@ -18,10 +18,10 @@ package edu.unc.lib.dl.cdr.services.rest.modify;
 import static edu.unc.lib.boxc.common.xml.SecureXMLFactory.createSAXBuilder;
 import static edu.unc.lib.boxc.model.api.ids.RepositoryPathConstants.CONTENT_ROOT_ID;
 import static edu.unc.lib.boxc.model.api.xml.JDOMNamespaceUtil.MODS_V3_NS;
-import static edu.unc.lib.dl.acl.util.AccessPrincipalConstants.AUTHENTICATED_PRINC;
-import static edu.unc.lib.dl.acl.util.AccessPrincipalConstants.PUBLIC_PRINC;
-import static edu.unc.lib.dl.acl.util.UserRole.canViewOriginals;
-import static edu.unc.lib.dl.acl.util.UserRole.none;
+import static edu.unc.lib.boxc.auth.api.AccessPrincipalConstants.AUTHENTICATED_PRINC;
+import static edu.unc.lib.boxc.auth.api.AccessPrincipalConstants.PUBLIC_PRINC;
+import static edu.unc.lib.boxc.auth.api.UserRole.canViewOriginals;
+import static edu.unc.lib.boxc.auth.api.UserRole.none;
 import static edu.unc.lib.dl.util.DescriptionConstants.COLLECTION_NUMBER_EL;
 import static edu.unc.lib.dl.util.DescriptionConstants.COLLECTION_NUMBER_LABEL;
 import static org.junit.Assert.assertEquals;
@@ -54,9 +54,9 @@ import edu.unc.lib.boxc.model.api.objects.CollectionObject;
 import edu.unc.lib.boxc.model.api.objects.FolderObject;
 import edu.unc.lib.boxc.model.api.objects.WorkObject;
 import edu.unc.lib.boxc.model.fcrepo.test.AclModelBuilder;
-import edu.unc.lib.dl.acl.util.AccessGroupSet;
-import edu.unc.lib.dl.acl.util.GroupsThreadStore;
-import edu.unc.lib.dl.acl.util.UserRole;
+import edu.unc.lib.boxc.auth.fcrepo.model.AccessGroupSet;
+import edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore;
+import edu.unc.lib.boxc.auth.api.UserRole;
 import edu.unc.lib.dl.util.DescriptionConstants;
 
 /**

@@ -15,7 +15,7 @@
  */
 package edu.unc.lib.dl.search.solr.service;
 
-import static edu.unc.lib.dl.acl.util.AccessPrincipalConstants.PUBLIC_PRINC;
+import static edu.unc.lib.boxc.auth.api.AccessPrincipalConstants.PUBLIC_PRINC;
 import static edu.unc.lib.dl.search.solr.util.SearchFieldKeys.CONTENT_TYPE;
 import static edu.unc.lib.dl.search.solr.util.SearchFieldKeys.PARENT_COLLECTION;
 import static org.junit.Assert.assertEquals;
@@ -32,7 +32,7 @@ import org.mockito.Mock;
 
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.dl.acl.fcrepo4.GlobalPermissionEvaluator;
-import edu.unc.lib.dl.acl.util.AccessGroupSet;
+import edu.unc.lib.boxc.auth.fcrepo.model.AccessGroupSet;
 import edu.unc.lib.dl.search.solr.model.FacetFieldFactory;
 import edu.unc.lib.dl.search.solr.model.FacetFieldList;
 import edu.unc.lib.dl.search.solr.model.FacetFieldObject;

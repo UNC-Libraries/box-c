@@ -16,7 +16,7 @@
 package edu.unc.lib.dl.search.solr.test;
 
 import static edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPaths.getContentRootPid;
-import static edu.unc.lib.dl.acl.util.AccessPrincipalConstants.PUBLIC_PRINC;
+import static edu.unc.lib.boxc.auth.api.AccessPrincipalConstants.PUBLIC_PRINC;
 import static java.util.Arrays.asList;
 
 import java.lang.reflect.Field;
@@ -31,7 +31,7 @@ import org.apache.solr.common.SolrInputDocument;
 import edu.unc.lib.boxc.model.api.ResourceType;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
-import edu.unc.lib.dl.acl.util.UserRole;
+import edu.unc.lib.boxc.auth.api.UserRole;
 import edu.unc.lib.dl.search.solr.util.ContentCategory;
 
 /**
