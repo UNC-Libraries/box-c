@@ -45,8 +45,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import edu.unc.lib.boxc.auth.api.UserRole;
 import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
+import edu.unc.lib.boxc.auth.api.models.RoleAssignment;
 import edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl;
-import edu.unc.lib.boxc.auth.fcrepo.models.RoleAssignment;
 import edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.objects.AdminUnit;

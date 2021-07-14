@@ -19,7 +19,7 @@ import org.apache.solr.client.solrj.SolrQuery;
 
 import edu.unc.lib.boxc.auth.api.exceptions.AccessRestrictionException;
 import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
-import edu.unc.lib.boxc.auth.fcrepo.services.GlobalPermissionEvaluator;
+import edu.unc.lib.boxc.auth.api.services.GlobalPermissionEvaluator;
 
 /**
  * Utility for constructing access restrictions for solr searches.

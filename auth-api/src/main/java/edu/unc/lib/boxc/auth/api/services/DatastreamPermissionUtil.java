@@ -13,19 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package edu.unc.lib.boxc.auth.fcrepo.services;
+package edu.unc.lib.boxc.auth.api.services;
 
-import static edu.unc.lib.boxc.model.api.DatastreamType.getByIdentifier;
 import static edu.unc.lib.boxc.auth.api.Permission.viewHidden;
+import static edu.unc.lib.boxc.model.api.DatastreamType.getByIdentifier;
 
 import java.util.EnumMap;
 import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.util.Assert;
 
-import edu.unc.lib.boxc.model.api.DatastreamType;
 import edu.unc.lib.boxc.auth.api.Permission;
+import edu.unc.lib.boxc.model.api.DatastreamType;
 
 /**
  * Helper methods for determining permissions of datastreams.
@@ -79,7 +78,9 @@ public class DatastreamPermissionUtil {
      * @return permission
      */
     public static Permission getPermissionForDatastream(DatastreamType datastream) {
-        Assert.notNull(datastream);
+        if (datastream == null) {
+            throw new IllegalArgumentException("Must provide a non-null datastream");
+        }
 
         return DS_PERMISSION_MAP.get(datastream);
     }

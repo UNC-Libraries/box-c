@@ -24,7 +24,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import edu.unc.lib.boxc.auth.api.AccessPrincipalConstants;
-import edu.unc.lib.boxc.auth.fcrepo.models.RoleAssignment;
+import edu.unc.lib.boxc.auth.api.models.RoleAssignment;
 import edu.unc.lib.boxc.auth.fcrepo.services.InheritedAclFactory;
 import edu.unc.lib.boxc.model.api.objects.AdminUnit;
 import edu.unc.lib.boxc.model.api.objects.ContentRootObject;

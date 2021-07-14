@@ -40,8 +40,8 @@ import com.fasterxml.jackson.databind.type.MapType;
 
 import edu.unc.lib.boxc.auth.api.UserRole;
 import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
+import edu.unc.lib.boxc.auth.api.services.GlobalPermissionEvaluator;
 import edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl;
-import edu.unc.lib.boxc.auth.fcrepo.services.GlobalPermissionEvaluator;
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadata;
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadataBean;
 import edu.unc.lib.dl.search.solr.model.HierarchicalBrowseResultResponse;

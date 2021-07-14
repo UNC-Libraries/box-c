@@ -47,7 +47,8 @@ import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.api.rdf.Cdr;
 import edu.unc.lib.boxc.model.api.rdf.CdrAcl;
 import edu.unc.lib.boxc.auth.api.UserRole;
-import edu.unc.lib.boxc.auth.fcrepo.models.RoleAssignment;
+import edu.unc.lib.boxc.auth.api.models.RoleAssignment;
+import edu.unc.lib.boxc.auth.api.services.AclFactory;
 
 /**
  * Factory which provides access control details which are directly represented

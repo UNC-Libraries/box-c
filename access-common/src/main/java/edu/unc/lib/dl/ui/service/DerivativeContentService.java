@@ -15,7 +15,7 @@
  */
 package edu.unc.lib.dl.ui.service;
 
-import static edu.unc.lib.boxc.auth.fcrepo.services.DatastreamPermissionUtil.getPermissionForDatastream;
+import static edu.unc.lib.boxc.auth.api.services.DatastreamPermissionUtil.getPermissionForDatastream;
 import static edu.unc.lib.boxc.model.api.DatastreamType.getByIdentifier;
 import static edu.unc.lib.boxc.model.fcrepo.services.DerivativeService.listDerivativeTypes;
 import static edu.unc.lib.dl.ui.service.FedoraContentService.CONTENT_DISPOSITION;

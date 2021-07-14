@@ -13,14 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package edu.unc.lib.boxc.auth.fcrepo.services;
+package edu.unc.lib.boxc.auth.api.services;
 
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import edu.unc.lib.boxc.auth.fcrepo.models.RoleAssignment;
+import edu.unc.lib.boxc.auth.api.models.RoleAssignment;
 import edu.unc.lib.boxc.model.api.ids.PID;
 
 /**

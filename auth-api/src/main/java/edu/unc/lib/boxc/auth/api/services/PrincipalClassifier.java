@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package edu.unc.lib.boxc.auth.fcrepo.services;
+package edu.unc.lib.boxc.auth.api.services;
 
 import static edu.unc.lib.boxc.auth.api.AccessPrincipalConstants.PATRON_PRINC_PATTERN;
 

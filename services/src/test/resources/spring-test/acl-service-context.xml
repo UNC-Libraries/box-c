@@ -55,7 +55,7 @@
         </property>
     </bean>
     
-    <bean id="globalPermissionEvaluator" class="edu.unc.lib.boxc.auth.fcrepo.services.GlobalPermissionEvaluator">
+    <bean id="globalPermissionEvaluator" class="edu.unc.lib.boxc.auth.fcrepo.services.GlobalPermissionEvaluatorImpl">
         <constructor-arg ref="aclGlobalProperties" />
     </bean>
     

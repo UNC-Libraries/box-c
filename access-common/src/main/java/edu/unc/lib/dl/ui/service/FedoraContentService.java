@@ -15,7 +15,7 @@
  */
 package edu.unc.lib.dl.ui.service;
 
-import static edu.unc.lib.boxc.auth.fcrepo.services.DatastreamPermissionUtil.getPermissionForDatastream;
+import static edu.unc.lib.boxc.auth.api.services.DatastreamPermissionUtil.getPermissionForDatastream;
 import static edu.unc.lib.boxc.model.api.DatastreamType.ORIGINAL_FILE;
 import static org.apache.http.HttpHeaders.CONTENT_LENGTH;
 import static org.apache.http.HttpHeaders.CONTENT_TYPE;

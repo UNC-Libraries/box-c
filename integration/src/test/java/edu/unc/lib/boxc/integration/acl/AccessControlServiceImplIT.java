@@ -33,9 +33,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import edu.unc.lib.boxc.auth.api.Permission;
 import edu.unc.lib.boxc.auth.api.exceptions.AccessRestrictionException;
 import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
+import edu.unc.lib.boxc.auth.api.services.GlobalPermissionEvaluator;
 import edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl;
 import edu.unc.lib.boxc.auth.fcrepo.services.AccessControlServiceImpl;
-import edu.unc.lib.boxc.auth.fcrepo.services.GlobalPermissionEvaluator;
+import edu.unc.lib.boxc.auth.fcrepo.services.GlobalPermissionEvaluatorImpl;
 import edu.unc.lib.boxc.auth.fcrepo.services.InheritedPermissionEvaluator;
 import edu.unc.lib.boxc.auth.fcrepo.services.ObjectAclFactory;
 import edu.unc.lib.boxc.integration.fcrepo.AbstractFedoraIT;
@@ -110,7 +111,7 @@ public class AccessControlServiceImplIT extends AbstractFedoraIT {
     public void init() throws Exception {
         Properties properties = new Properties();
         properties.load(this.getClass().getResourceAsStream("/acl/config.properties"));
-        globalPermissionEvaluator = new GlobalPermissionEvaluator(properties);
+        globalPermissionEvaluator = new GlobalPermissionEvaluatorImpl(properties);
 
         aclFactory = new ObjectAclFactory();
         aclFactory.setRepositoryObjectLoader(repositoryObjectLoader);

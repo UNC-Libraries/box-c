@@ -17,7 +17,7 @@ package edu.unc.lib.dl.persist.services.acl;
 
 import static edu.unc.lib.boxc.auth.api.Permission.changePatronAccess;
 import static edu.unc.lib.boxc.auth.api.Permission.ingest;
-import static edu.unc.lib.boxc.auth.fcrepo.services.EmbargoUtil.isEmbargoActive;
+import static edu.unc.lib.boxc.auth.api.services.EmbargoUtil.isEmbargoActive;
 import static edu.unc.lib.boxc.common.util.DateTimeUtil.formatDateToUTC;
 import static edu.unc.lib.boxc.model.api.rdf.CdrAcl.embargoUntil;
 import static org.apache.commons.lang3.StringUtils.isBlank;
@@ -41,13 +41,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 
 import edu.unc.lib.boxc.auth.api.Permission;
 import edu.unc.lib.boxc.auth.api.UserRole;
 import edu.unc.lib.boxc.auth.api.exceptions.InvalidAssignmentException;
 import edu.unc.lib.boxc.auth.api.models.AgentPrincipals;
+import edu.unc.lib.boxc.auth.api.models.RoleAssignment;
 import edu.unc.lib.boxc.auth.api.services.AccessControlService;
-import edu.unc.lib.boxc.auth.fcrepo.models.RoleAssignment;
+import edu.unc.lib.boxc.auth.fcrepo.models.AgentPrincipalsImpl;
 import edu.unc.lib.boxc.auth.fcrepo.services.ContentObjectAccessRestrictionValidator;
 import edu.unc.lib.boxc.common.metrics.TimerFactory;
 import edu.unc.lib.boxc.model.api.ids.PID;
@@ -366,6 +368,7 @@ public class PatronAccessAssignmentService {
     }
 
     public static class PatronAccessAssignmentRequest {
+        @JsonDeserialize(as = AgentPrincipalsImpl.class)
         private AgentPrincipals agent;
         private PID target;
         private PatronAccessDetails accessDetails;

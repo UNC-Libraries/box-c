@@ -18,7 +18,7 @@ package edu.unc.lib.dl.data.ingest.solr.filter;
 import static edu.unc.lib.boxc.auth.api.AccessPrincipalConstants.AUTHENTICATED_PRINC;
 import static edu.unc.lib.boxc.auth.api.AccessPrincipalConstants.PUBLIC_PRINC;
 import static edu.unc.lib.boxc.auth.api.UserRole.canViewOriginals;
-import static edu.unc.lib.boxc.auth.fcrepo.services.EmbargoUtil.isEmbargoActive;
+import static edu.unc.lib.boxc.auth.api.services.EmbargoUtil.isEmbargoActive;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -29,7 +29,7 @@ import org.slf4j.LoggerFactory;
 
 import edu.unc.lib.boxc.auth.api.AccessPrincipalConstants;
 import edu.unc.lib.boxc.auth.api.UserRole;
-import edu.unc.lib.boxc.auth.fcrepo.models.RoleAssignment;
+import edu.unc.lib.boxc.auth.api.models.RoleAssignment;
 import edu.unc.lib.boxc.auth.fcrepo.services.InheritedAclFactory;
 import edu.unc.lib.boxc.auth.fcrepo.services.ObjectAclFactory;
 import edu.unc.lib.boxc.model.api.ids.PID;

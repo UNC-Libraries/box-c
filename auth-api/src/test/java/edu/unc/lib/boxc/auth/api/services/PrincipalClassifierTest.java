@@ -13,12 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package edu.unc.lib.boxc.auth.fcrepo.services;
+package edu.unc.lib.boxc.auth.api.services;
 
 import static edu.unc.lib.boxc.auth.api.AccessPrincipalConstants.AUTHENTICATED_PRINC;
 import static edu.unc.lib.boxc.auth.api.AccessPrincipalConstants.PUBLIC_PRINC;
-import static edu.unc.lib.boxc.auth.fcrepo.services.PrincipalClassifier.classifyPrincipals;
-import static edu.unc.lib.boxc.auth.fcrepo.services.PrincipalClassifier.getPatronPrincipals;
+import static edu.unc.lib.boxc.auth.api.services.PrincipalClassifier.classifyPrincipals;
+import static edu.unc.lib.boxc.auth.api.services.PrincipalClassifier.getPatronPrincipals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 

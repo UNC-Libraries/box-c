@@ -18,9 +18,11 @@ package edu.unc.lib.dl.persist.services.importxml;
 import java.io.File;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 
 import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
 import edu.unc.lib.boxc.auth.api.models.AgentPrincipals;
+import edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl;
 import edu.unc.lib.boxc.auth.fcrepo.models.AgentPrincipalsImpl;
 
 /**
@@ -31,6 +33,7 @@ import edu.unc.lib.boxc.auth.fcrepo.models.AgentPrincipalsImpl;
  */
 public class ImportXMLRequest {
     private String userEmail;
+    @JsonDeserialize(as = AccessGroupSetImpl.class)
     private AccessGroupSet principals;
     private String username;
     private File importFile;

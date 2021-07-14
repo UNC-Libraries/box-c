@@ -32,7 +32,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import edu.unc.lib.boxc.auth.api.AccessPrincipalConstants;
 import edu.unc.lib.boxc.auth.api.UserRole;
 import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
-import edu.unc.lib.boxc.auth.fcrepo.services.GlobalPermissionEvaluator;
+import edu.unc.lib.boxc.auth.api.services.GlobalPermissionEvaluator;
 import edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore;
 import edu.unc.lib.boxc.web.common.auth.AccessLevel;
 import edu.unc.lib.dl.ui.service.SolrQueryLayerService;

@@ -36,7 +36,7 @@
         <property name="queryLayer" ref="queryLayer"/>
     </bean>
 
-    <util:set id="accessGroups" set-class="edu.unc.lib.boxc.auth.fcrepo.model.AccessGroupSet">
+    <util:set id="accessGroups" set-class="edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl">
         <value>${access.group.admin}</value>
     </util:set>
 </beans>

@@ -18,7 +18,7 @@ package edu.unc.lib.dl.ui.service;
 import static edu.unc.lib.boxc.auth.api.AccessPrincipalConstants.PUBLIC_PRINC;
 import static edu.unc.lib.boxc.auth.api.Permission.editDescription;
 import static edu.unc.lib.boxc.auth.api.UserRole.canViewOriginals;
-import static edu.unc.lib.boxc.auth.fcrepo.services.DatastreamPermissionUtil.getPermissionForDatastream;
+import static edu.unc.lib.boxc.auth.api.services.DatastreamPermissionUtil.getPermissionForDatastream;
 import static edu.unc.lib.boxc.model.api.DatastreamType.JP2_ACCESS_COPY;
 import static edu.unc.lib.boxc.model.api.DatastreamType.MD_DESCRIPTIVE;
 import static edu.unc.lib.boxc.model.api.DatastreamType.ORIGINAL_FILE;

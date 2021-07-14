@@ -44,6 +44,7 @@ import org.apache.jena.vocabulary.RDF;
 import edu.unc.lib.boxc.model.api.rdf.Cdr;
 import edu.unc.lib.boxc.model.api.rdf.CdrAcl;
 import edu.unc.lib.boxc.auth.api.exceptions.InvalidAssignmentException;
+import edu.unc.lib.boxc.auth.api.services.PrincipalClassifier;
 import edu.unc.lib.boxc.auth.api.UserRole;
 
 /**

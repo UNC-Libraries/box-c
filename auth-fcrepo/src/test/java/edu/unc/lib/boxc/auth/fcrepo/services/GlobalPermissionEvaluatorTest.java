@@ -31,6 +31,7 @@ import org.junit.Test;
 import edu.unc.lib.boxc.auth.api.AccessPrincipalConstants;
 import edu.unc.lib.boxc.auth.api.Permission;
 import edu.unc.lib.boxc.auth.api.UserRole;
+import edu.unc.lib.boxc.auth.api.services.GlobalPermissionEvaluator;
 
 public class GlobalPermissionEvaluatorTest {
 
@@ -56,7 +57,7 @@ public class GlobalPermissionEvaluatorTest {
     public void hasGlobalPermissionTest() {
         addGlobalAssignment(UserRole.administrator, PRINC_GRP1);
 
-        evaluator = new GlobalPermissionEvaluator(configProperties);
+        evaluator = new GlobalPermissionEvaluatorImpl(configProperties);
 
         assertTrue(evaluator.hasGlobalPermission(principals, Permission.destroy));
     }
@@ -64,23 +65,23 @@ public class GlobalPermissionEvaluatorTest {
     @Test(expected = IllegalArgumentException.class)
     public void illegalRoleTest() {
         configProperties.setProperty(
-                GlobalPermissionEvaluator.GLOBAL_PROP_PREFIX + "boxy", PRINC_GRP1);
+                GlobalPermissionEvaluatorImpl.GLOBAL_PROP_PREFIX + "boxy", PRINC_GRP1);
 
-        evaluator = new GlobalPermissionEvaluator(configProperties);
+        evaluator = new GlobalPermissionEvaluatorImpl(configProperties);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void illegalPatronRoleTest() {
         addGlobalAssignment(UserRole.canViewOriginals, PRINC_GRP1);
 
-        evaluator = new GlobalPermissionEvaluator(configProperties);
+        evaluator = new GlobalPermissionEvaluatorImpl(configProperties);
     }
 
     @Test
     public void noPermissionTest() {
         addGlobalAssignment(UserRole.canAccess, PRINC_GRP1);
 
-        evaluator = new GlobalPermissionEvaluator(configProperties);
+        evaluator = new GlobalPermissionEvaluatorImpl(configProperties);
 
         assertFalse(evaluator.hasGlobalPermission(principals, Permission.destroy));
     }
@@ -89,7 +90,7 @@ public class GlobalPermissionEvaluatorTest {
     public void illegalPatronPrincipalTest() {
         addGlobalAssignment(UserRole.canAccess, AccessPrincipalConstants.AUTHENTICATED_PRINC);
 
-        new GlobalPermissionEvaluator(configProperties);
+        new GlobalPermissionEvaluatorImpl(configProperties);
     }
 
     @Test
@@ -98,7 +99,7 @@ public class GlobalPermissionEvaluatorTest {
         addGlobalAssignment(UserRole.canAccess, PRINC_GRP1);
         configProperties.setProperty("some.other.property", "val");
 
-        evaluator = new GlobalPermissionEvaluator(configProperties);
+        evaluator = new GlobalPermissionEvaluatorImpl(configProperties);
 
         assertTrue(evaluator.hasGlobalPermission(principals, Permission.viewHidden));
     }
@@ -107,7 +108,7 @@ public class GlobalPermissionEvaluatorTest {
     public void noRoleProperties() {
         configProperties.setProperty("some.property", "value");
 
-        evaluator = new GlobalPermissionEvaluator(configProperties);
+        evaluator = new GlobalPermissionEvaluatorImpl(configProperties);
 
         assertFalse(evaluator.hasGlobalPermission(principals, Permission.viewHidden));
     }
@@ -117,14 +118,14 @@ public class GlobalPermissionEvaluatorTest {
         addGlobalAssignment(UserRole.canAccess, PRINC_GRP1);
         addGlobalAssignment(UserRole.canManage, PRINC_GRP1);
 
-        evaluator = new GlobalPermissionEvaluator(configProperties);
+        evaluator = new GlobalPermissionEvaluatorImpl(configProperties);
     }
 
     @Test
     public void noPrincipalsTest() {
         addGlobalAssignment(UserRole.administrator, PRINC_GRP1);
 
-        evaluator = new GlobalPermissionEvaluator(configProperties);
+        evaluator = new GlobalPermissionEvaluatorImpl(configProperties);
 
         assertFalse(evaluator.hasGlobalPermission(Collections.emptySet(), Permission.viewHidden));
     }
@@ -134,7 +135,7 @@ public class GlobalPermissionEvaluatorTest {
         addGlobalAssignment(UserRole.canManage, PRINC_GRP1);
         addGlobalAssignment(UserRole.canDescribe, PRINC_GRP2);
 
-        evaluator = new GlobalPermissionEvaluator(configProperties);
+        evaluator = new GlobalPermissionEvaluatorImpl(configProperties);
 
         assertTrue(evaluator.hasGlobalPermission(principals, Permission.markForDeletion));
 
@@ -152,7 +153,7 @@ public class GlobalPermissionEvaluatorTest {
     public void multiplePrincipalsSameRoleTest() {
         addGlobalAssignment(UserRole.canDescribe, PRINC_GRP1 + "," + PRINC_GRP2);
 
-        evaluator = new GlobalPermissionEvaluator(configProperties);
+        evaluator = new GlobalPermissionEvaluatorImpl(configProperties);
 
         assertTrue(evaluator.hasGlobalPermission(principals, Permission.editDescription));
         assertFalse(evaluator.hasGlobalPermission(principals, Permission.markForDeletion));
@@ -171,7 +172,7 @@ public class GlobalPermissionEvaluatorTest {
     public void hasGlobalPrincipalTest() {
         addGlobalAssignment(UserRole.canManage, PRINC_GRP1);
 
-        evaluator = new GlobalPermissionEvaluator(configProperties);
+        evaluator = new GlobalPermissionEvaluatorImpl(configProperties);
 
         assertTrue(evaluator.hasGlobalPrincipal(principals));
     }
@@ -180,7 +181,7 @@ public class GlobalPermissionEvaluatorTest {
     public void noGlobalPrincipalTest() {
         addGlobalAssignment(UserRole.canManage, PRINC_GRP2);
 
-        evaluator = new GlobalPermissionEvaluator(configProperties);
+        evaluator = new GlobalPermissionEvaluatorImpl(configProperties);
 
         assertFalse(evaluator.hasGlobalPrincipal(principals));
     }
@@ -190,7 +191,7 @@ public class GlobalPermissionEvaluatorTest {
         addGlobalAssignment(UserRole.canManage, PRINC_GRP1);
         addGlobalAssignment(UserRole.canDescribe, PRINC_GRP2);
 
-        evaluator = new GlobalPermissionEvaluator(configProperties);
+        evaluator = new GlobalPermissionEvaluatorImpl(configProperties);
 
         Set<UserRole> roles = evaluator.getGlobalUserRoles(principals);
 
@@ -204,7 +205,7 @@ public class GlobalPermissionEvaluatorTest {
         addGlobalAssignment(UserRole.canManage, PRINC_GRP1);
         addGlobalAssignment(UserRole.canDescribe, PRINC_GRP2);
 
-        evaluator = new GlobalPermissionEvaluator(configProperties);
+        evaluator = new GlobalPermissionEvaluatorImpl(configProperties);
 
         Set<UserRole> roles = evaluator.getGlobalUserRoles(principals);
 
@@ -216,7 +217,7 @@ public class GlobalPermissionEvaluatorTest {
     public void getNoGlobalUserRoles() {
         addGlobalAssignment(UserRole.canDescribe, PRINC_GRP2);
 
-        evaluator = new GlobalPermissionEvaluator(configProperties);
+        evaluator = new GlobalPermissionEvaluatorImpl(configProperties);
 
         Set<UserRole> roles = evaluator.getGlobalUserRoles(principals);
 
@@ -225,6 +226,6 @@ public class GlobalPermissionEvaluatorTest {
 
     private void addGlobalAssignment(UserRole role, String principal) {
         configProperties.setProperty(
-                GlobalPermissionEvaluator.GLOBAL_PROP_PREFIX + role.name(), principal);
+                GlobalPermissionEvaluatorImpl.GLOBAL_PROP_PREFIX + role.name(), principal);
     }
 }

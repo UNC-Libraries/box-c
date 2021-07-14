@@ -26,6 +26,8 @@ import java.util.stream.Collectors;
 
 import edu.unc.lib.boxc.auth.api.Permission;
 import edu.unc.lib.boxc.auth.api.UserRole;
+import edu.unc.lib.boxc.auth.api.services.GlobalPermissionEvaluator;
+import edu.unc.lib.boxc.auth.api.services.PrincipalClassifier;
 
 /**
  * Utility which evaluates the permissions of agents against globally defined
@@ -34,14 +36,14 @@ import edu.unc.lib.boxc.auth.api.UserRole;
  * @author bbpennel
  *
  */
-public class GlobalPermissionEvaluator {
+public class GlobalPermissionEvaluatorImpl implements GlobalPermissionEvaluator {
 
     protected static final String GLOBAL_PROP_PREFIX = "cdr.acl.globalRoles.";
     private Map<String, Set<String>> globalPrincipalToPermissions;
     private Map<String, UserRole> globalPrincipalToRole;
     private Set<String> globalPrincipals;
 
-    public GlobalPermissionEvaluator(Properties properties) {
+    public GlobalPermissionEvaluatorImpl(Properties properties) {
         storeGlobalPrincipals(properties);
         globalPrincipals = Collections.unmodifiableSet(globalPrincipalToPermissions.keySet());
     }
@@ -88,6 +90,7 @@ public class GlobalPermissionEvaluator {
      * @param permission
      * @return
      */
+    @Override
     public boolean hasGlobalPermission(Set<String> agentPrincipals, Permission permission) {
         return agentPrincipals.stream().anyMatch(p -> {
             Set<String> permissions = globalPrincipalToPermissions.get(p);
@@ -104,6 +107,7 @@ public class GlobalPermissionEvaluator {
      * @param agentPrincipals
      * @return true if agentPrincipals contains a global principal
      */
+    @Override
     public boolean hasGlobalPrincipal(Set<String> agentPrincipals) {
         return globalPrincipals.stream().anyMatch(agentPrincipals::contains);
     }
@@ -115,6 +119,7 @@ public class GlobalPermissionEvaluator {
      * @param agentPrincipals
      * @return set of UserRoles globally assigned to the principals
      */
+    @Override
     public Set<UserRole> getGlobalUserRoles(Set<String> agentPrincipals) {
         return agentPrincipals.stream()
                 .filter(p -> globalPrincipalToRole.containsKey(p))

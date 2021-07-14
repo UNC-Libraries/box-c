@@ -15,9 +15,9 @@
  */
 package edu.unc.lib.boxc.auth.fcrepo.services;
 
-import static edu.unc.lib.boxc.auth.fcrepo.services.EmbargoUtil.isEmbargoActive;
-import static edu.unc.lib.boxc.auth.fcrepo.services.PrincipalClassifier.classifyPrincipals;
-import static edu.unc.lib.boxc.auth.fcrepo.services.PrincipalClassifier.getPatronPrincipals;
+import static edu.unc.lib.boxc.auth.api.services.EmbargoUtil.isEmbargoActive;
+import static edu.unc.lib.boxc.auth.api.services.PrincipalClassifier.classifyPrincipals;
+import static edu.unc.lib.boxc.auth.api.services.PrincipalClassifier.getPatronPrincipals;
 
 import java.util.HashSet;
 import java.util.Iterator;
