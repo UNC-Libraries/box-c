@@ -34,11 +34,12 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import edu.unc.lib.boxc.auth.api.exceptions.InvalidAssignmentException;
+import edu.unc.lib.boxc.auth.api.models.AgentPrincipals;
+import edu.unc.lib.boxc.auth.fcrepo.models.AgentPrincipalsImpl;
+import edu.unc.lib.boxc.auth.fcrepo.models.RoleAssignment;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
-import edu.unc.lib.boxc.auth.api.exceptions.InvalidAssignmentException;
-import edu.unc.lib.boxc.auth.fcrepo.model.AgentPrincipals;
-import edu.unc.lib.boxc.auth.fcrepo.model.RoleAssignment;
 import edu.unc.lib.dl.persist.services.acl.StaffRoleAssignmentService;
 
 /**
@@ -76,7 +77,7 @@ public class UpdateStaffAccessController {
         }
 
         try {
-            AgentPrincipals agent = AgentPrincipals.createFromThread();
+            AgentPrincipals agent = AgentPrincipalsImpl.createFromThread();
             String jobId = staffRoleService.updateRoles(agent, pid, assignments.getRoles());
             result.put("job", jobId);
         } catch (InvalidAssignmentException e) {

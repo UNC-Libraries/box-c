@@ -32,7 +32,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
 
-import edu.unc.lib.boxc.auth.fcrepo.model.AgentPrincipals;
+import edu.unc.lib.boxc.auth.api.models.AgentPrincipals;
+import edu.unc.lib.boxc.auth.fcrepo.models.AgentPrincipalsImpl;
 import edu.unc.lib.dl.cdr.services.processing.ImportThumbnailService;
 
 /**
@@ -54,7 +55,7 @@ public class EditThumbnailController {
                                                      @RequestParam("file") MultipartFile thumbnailFile)
             throws Exception {
 
-        AgentPrincipals agent = AgentPrincipals.createFromThread();
+        AgentPrincipals agent = AgentPrincipalsImpl.createFromThread();
         String mimeType = thumbnailFile.getContentType();
 
         Map<String, Object> result = new HashMap<>();

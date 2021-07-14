@@ -13,9 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package edu.unc.lib.dl.acl.fcrepo4;
+package edu.unc.lib.boxc.auth.fcrepo.services;
 
-import static edu.unc.lib.boxc.model.api.ids.RepositoryPathConstants.CONTENT_ROOT_ID;
 import static edu.unc.lib.boxc.auth.api.AccessPrincipalConstants.AUTHENTICATED_PRINC;
 import static edu.unc.lib.boxc.auth.api.AccessPrincipalConstants.PATRON_NAMESPACE;
 import static edu.unc.lib.boxc.auth.api.AccessPrincipalConstants.PUBLIC_PRINC;
@@ -25,6 +24,7 @@ import static edu.unc.lib.boxc.auth.api.UserRole.canViewAccessCopies;
 import static edu.unc.lib.boxc.auth.api.UserRole.canViewMetadata;
 import static edu.unc.lib.boxc.auth.api.UserRole.canViewOriginals;
 import static edu.unc.lib.boxc.auth.api.UserRole.unitOwner;
+import static edu.unc.lib.boxc.model.api.ids.RepositoryPathConstants.CONTENT_ROOT_ID;
 import static java.util.Arrays.asList;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -52,11 +52,11 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
 
+import edu.unc.lib.boxc.auth.api.UserRole;
+import edu.unc.lib.boxc.auth.fcrepo.models.RoleAssignment;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.services.ContentPathFactory;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
-import edu.unc.lib.boxc.auth.fcrepo.model.RoleAssignment;
-import edu.unc.lib.boxc.auth.api.UserRole;
 
 public class InheritedAclFactoryTest {
 

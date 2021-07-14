@@ -45,8 +45,8 @@ import org.springframework.test.context.ContextHierarchy;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
-import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore;
+import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.dl.persist.services.importxml.ImportXMLService;
 
 /**

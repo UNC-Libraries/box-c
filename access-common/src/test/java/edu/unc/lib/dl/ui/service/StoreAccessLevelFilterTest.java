@@ -44,13 +44,14 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
+import edu.unc.lib.boxc.auth.api.AccessPrincipalConstants;
+import edu.unc.lib.boxc.auth.api.UserRole;
+import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
+import edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl;
+import edu.unc.lib.boxc.auth.fcrepo.services.GlobalPermissionEvaluator;
+import edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore;
 import edu.unc.lib.boxc.web.common.auth.AccessLevel;
 import edu.unc.lib.boxc.web.common.auth.filters.StoreAccessLevelFilter;
-import edu.unc.lib.dl.acl.fcrepo4.GlobalPermissionEvaluator;
-import edu.unc.lib.boxc.auth.fcrepo.model.AccessGroupSet;
-import edu.unc.lib.boxc.auth.api.AccessPrincipalConstants;
-import edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore;
-import edu.unc.lib.boxc.auth.api.UserRole;
 
 /**
  * @author bbpennel
@@ -79,7 +80,7 @@ public class StoreAccessLevelFilterTest {
     @Before
     public void setup() {
         initMocks(StoreAccessLevelFilterTest.class);
-        principals = new AccessGroupSet();
+        principals = new AccessGroupSetImpl();
         GroupsThreadStore.storeGroups(principals);
 
         when(request.getSession(true)).thenReturn(session);
@@ -103,7 +104,7 @@ public class StoreAccessLevelFilterTest {
     @Test
     public void accessFromLocalPermissions() throws Exception {
         GroupsThreadStore.storeUsername("user");
-        when(queryLayer.hasAdminViewPermission(any(AccessGroupSet.class))).thenReturn(true);
+        when(queryLayer.hasAdminViewPermission(any(AccessGroupSetImpl.class))).thenReturn(true);
 
         filter.doFilterInternal(request, response, filterChain);
 
@@ -120,7 +121,7 @@ public class StoreAccessLevelFilterTest {
     public void noAccess() throws Exception {
         filter.setRequireViewAdmin(true);
         GroupsThreadStore.storeUsername("user");
-        when(queryLayer.hasAdminViewPermission(any(AccessGroupSet.class))).thenReturn(false);
+        when(queryLayer.hasAdminViewPermission(any(AccessGroupSetImpl.class))).thenReturn(false);
 
         filter.doFilterInternal(request, response, filterChain);
 

@@ -31,9 +31,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import edu.unc.lib.boxc.auth.api.models.AgentPrincipals;
+import edu.unc.lib.boxc.auth.fcrepo.models.AgentPrincipalsImpl;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
-import edu.unc.lib.boxc.auth.fcrepo.model.AgentPrincipals;
 import edu.unc.lib.dl.persist.services.move.MoveObjectsService;
 
 /**
@@ -63,7 +64,7 @@ public class MoveObjectsController {
             return new ResponseEntity<>(results, HttpStatus.BAD_REQUEST);
         }
 
-        AgentPrincipals agent = AgentPrincipals.createFromThread();
+        AgentPrincipals agent = AgentPrincipalsImpl.createFromThread();
         PID destPid = PIDs.get(moveRequest.getDestination());
         try {
             List<PID> movePids = moveRequest.getMoved().stream().map(p -> PIDs.get(p)).collect(Collectors.toList());

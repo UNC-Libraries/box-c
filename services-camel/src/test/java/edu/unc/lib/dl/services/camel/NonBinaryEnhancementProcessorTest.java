@@ -23,6 +23,12 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
+import java.io.File;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
 import org.apache.commons.io.FileUtils;
@@ -33,12 +39,6 @@ import org.junit.rules.TemporaryFolder;
 import org.mockito.Mock;
 
 import edu.unc.lib.boxc.model.fcrepo.test.TestHelper;
-
-import java.io.File;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 
 /**
  * @author lfarrell

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package edu.unc.lib.boxc.auth.fcrepo.model;
+package edu.unc.lib.boxc.auth.fcrepo.models;
 
 import static edu.unc.lib.boxc.auth.api.AccessPrincipalConstants.USER_NAMESPACE;
 import static org.apache.commons.lang3.StringUtils.isBlank;
@@ -22,6 +22,8 @@ import java.util.Collection;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
+import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
+import edu.unc.lib.boxc.auth.api.models.AgentPrincipals;
 import edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore;
 
 /**
@@ -30,12 +32,12 @@ import edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore;
  * @author bbpennel
  *
  */
-public class AgentPrincipals {
+public class AgentPrincipalsImpl implements AgentPrincipals {
 
     private String username;
     private AccessGroupSet principals;
 
-    public AgentPrincipals() {
+    public AgentPrincipalsImpl() {
     }
 
     /**
@@ -44,12 +46,12 @@ public class AgentPrincipals {
      * @param username
      * @param principals
      */
-    public AgentPrincipals(String username, AccessGroupSet principals) {
+    public AgentPrincipalsImpl(String username, AccessGroupSet principals) {
         this.username = username;
         if (principals == null) {
-            this.principals = new AccessGroupSet();
+            this.principals = new AccessGroupSetImpl();
         } else {
-            this.principals = new AccessGroupSet(principals);
+            this.principals = new AccessGroupSetImpl(principals);
         }
         if (!isBlank(username)) {
             this.principals.add(getUsernameUri());
@@ -69,6 +71,7 @@ public class AgentPrincipals {
     /**
      * @return the username
      */
+    @Override
     public String getUsername() {
         return username;
     }
@@ -76,6 +79,7 @@ public class AgentPrincipals {
     /**
      * @return the namespaced username
      */
+    @Override
     @JsonIgnore
     public String getUsernameUri() {
         return USER_NAMESPACE + username;
@@ -84,6 +88,7 @@ public class AgentPrincipals {
     /**
      * @return set of all principals for this agent
      */
+    @Override
     public AccessGroupSet getPrincipals() {
         return principals;
     }
@@ -93,6 +98,6 @@ public class AgentPrincipals {
     }
 
     public void setPrincipals(Collection<String> principals) {
-        this.principals = new AccessGroupSet(principals);
+        this.principals = new AccessGroupSetImpl(principals);
     }
 }

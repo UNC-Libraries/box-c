@@ -19,11 +19,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.auth.api.exceptions.AccessRestrictionException;
+import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
 import edu.unc.lib.boxc.auth.api.services.AccessControlService;
-import edu.unc.lib.boxc.auth.fcrepo.model.AccessGroupSet;
 import edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore;
+import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.dl.cdr.services.rest.modify.ExportXMLController.XMLExportRequest;
 import edu.unc.lib.dl.fedora.ServiceException;
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadata;

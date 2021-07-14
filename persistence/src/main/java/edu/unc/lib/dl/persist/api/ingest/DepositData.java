@@ -18,7 +18,7 @@ package edu.unc.lib.dl.persist.api.ingest;
 import java.io.InputStream;
 import java.net.URI;
 
-import edu.unc.lib.boxc.auth.fcrepo.model.AgentPrincipals;
+import edu.unc.lib.boxc.auth.api.models.AgentPrincipals;
 import edu.unc.lib.dl.util.PackagingType;
 import edu.unc.lib.dl.util.RedisWorkerConstants.Priority;
 

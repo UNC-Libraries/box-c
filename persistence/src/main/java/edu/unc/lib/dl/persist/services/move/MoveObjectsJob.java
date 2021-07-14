@@ -30,6 +30,9 @@ import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import edu.unc.lib.boxc.auth.api.Permission;
+import edu.unc.lib.boxc.auth.api.models.AgentPrincipals;
+import edu.unc.lib.boxc.auth.api.services.AccessControlService;
 import edu.unc.lib.boxc.common.metrics.TimerFactory;
 import edu.unc.lib.boxc.common.util.DateTimeUtil;
 import edu.unc.lib.boxc.model.api.ids.PID;
@@ -40,9 +43,6 @@ import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.api.rdf.Premis;
 import edu.unc.lib.boxc.model.fcrepo.ids.AgentPids;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
-import edu.unc.lib.boxc.auth.api.services.AccessControlService;
-import edu.unc.lib.boxc.auth.fcrepo.model.AgentPrincipals;
-import edu.unc.lib.boxc.auth.api.Permission;
 import edu.unc.lib.dl.fcrepo4.FedoraTransaction;
 import edu.unc.lib.dl.fcrepo4.TransactionManager;
 import edu.unc.lib.dl.persist.api.event.PremisLoggerFactory;

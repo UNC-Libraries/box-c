@@ -17,9 +17,9 @@ package edu.unc.lib.dl.search.solr.model;
 
 import java.io.Serializable;
 
+import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
-import edu.unc.lib.boxc.auth.fcrepo.model.AccessGroupSet;
 
 /**
  * Request bean for a brief record search. Handles basic searches and advanced searches.

@@ -38,6 +38,11 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 
+import edu.unc.lib.boxc.auth.api.exceptions.AccessRestrictionException;
+import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
+import edu.unc.lib.boxc.auth.api.models.AgentPrincipals;
+import edu.unc.lib.boxc.auth.api.services.AccessControlService;
+import edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl;
 import edu.unc.lib.boxc.common.test.SelfReturningAnswer;
 import edu.unc.lib.boxc.model.api.exceptions.InvalidOperationForObjectType;
 import edu.unc.lib.boxc.model.api.ids.PID;
@@ -47,10 +52,6 @@ import edu.unc.lib.boxc.model.api.objects.DepositRecord;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.api.rdf.Premis;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
-import edu.unc.lib.boxc.auth.api.exceptions.AccessRestrictionException;
-import edu.unc.lib.boxc.auth.api.services.AccessControlService;
-import edu.unc.lib.boxc.auth.fcrepo.model.AccessGroupSet;
-import edu.unc.lib.boxc.auth.fcrepo.model.AgentPrincipals;
 import edu.unc.lib.dl.persist.api.event.PremisEventBuilder;
 import edu.unc.lib.dl.persist.api.event.PremisLogger;
 import edu.unc.lib.dl.persist.api.event.PremisLoggerFactory;
@@ -120,7 +121,7 @@ public class MarkForDeletionJobTest {
     @Test(expected = AccessRestrictionException.class)
     public void insufficientAccessTest() {
         doThrow(new AccessRestrictionException()).when(aclService)
-                .assertHasAccess(anyString(), eq(pid), any(AccessGroupSet.class), eq(markForDeletion));
+                .assertHasAccess(anyString(), eq(pid), any(AccessGroupSetImpl.class), eq(markForDeletion));
 
         job.run();
     }
@@ -129,7 +130,7 @@ public class MarkForDeletionJobTest {
     public void insufficientAccessAdminUnitTest() {
         when(repositoryObjectLoader.getRepositoryObject(pid)).thenReturn(repoObj);
         doThrow(new AccessRestrictionException()).when(aclService)
-                .assertHasAccess(anyString(), eq(pid), any(AccessGroupSet.class), eq(markForDeletionUnit));
+                .assertHasAccess(anyString(), eq(pid), any(AccessGroupSetImpl.class), eq(markForDeletionUnit));
 
         job.run();
     }

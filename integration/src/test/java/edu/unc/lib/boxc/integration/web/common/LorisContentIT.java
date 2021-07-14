@@ -71,9 +71,9 @@ import edu.unc.lib.boxc.model.fcrepo.services.RepositoryInitializer;
 import edu.unc.lib.boxc.model.fcrepo.test.AclModelBuilder;
 import edu.unc.lib.boxc.model.fcrepo.test.RepositoryObjectTreeIndexer;
 import edu.unc.lib.boxc.model.fcrepo.test.TestHelper;
-import edu.unc.lib.dl.acl.fcrepo4.GlobalPermissionEvaluator;
 import edu.unc.lib.boxc.auth.api.services.AccessControlService;
-import edu.unc.lib.boxc.auth.fcrepo.model.AccessGroupSet;
+import edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl;
+import edu.unc.lib.boxc.auth.fcrepo.services.GlobalPermissionEvaluator;
 import edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore;
 import edu.unc.lib.boxc.auth.api.UserRole;
 import edu.unc.lib.dl.data.ingest.solr.test.RepositoryObjectSolrIndexer;
@@ -132,7 +132,7 @@ public class LorisContentIT {
         TestHelper.setContentBase("http://localhost:48085/rest");
 
         GroupsThreadStore.storeUsername("test_user");
-        GroupsThreadStore.storeGroups(new AccessGroupSet("adminGroup"));
+        GroupsThreadStore.storeGroups(new AccessGroupSetImpl("adminGroup"));
 
         generateBaseStructure();
     }
@@ -225,7 +225,7 @@ public class LorisContentIT {
 
     @Test
     public void testGetManifestJp2MetadataOnly() throws Exception {
-        GroupsThreadStore.storeGroups(new AccessGroupSet(PUBLIC_PRINC));
+        GroupsThreadStore.storeGroups(new AccessGroupSetImpl(PUBLIC_PRINC));
 
         WorkObject workObj = repoObjFactory.createWorkObject(new AclModelBuilder("Work2").model);
         collObj.addMember(workObj);

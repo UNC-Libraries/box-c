@@ -29,10 +29,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import edu.unc.lib.boxc.auth.api.exceptions.AccessRestrictionException;
+import edu.unc.lib.boxc.auth.fcrepo.models.AgentPrincipalsImpl;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
-import edu.unc.lib.boxc.auth.api.exceptions.AccessRestrictionException;
-import edu.unc.lib.boxc.auth.fcrepo.model.AgentPrincipals;
 import edu.unc.lib.dl.fedora.AuthorizationException;
 import edu.unc.lib.dl.persist.services.indexing.IndexingService;
 
@@ -100,7 +100,7 @@ public class IndexingController {
 
         log.info("Indexing object " + id);
         try {
-            indexingService.reindexObject(AgentPrincipals.createFromThread(), objectPid);
+            indexingService.reindexObject(AgentPrincipalsImpl.createFromThread(), objectPid);
         } catch (Exception e) {
             result.put("error", e.getMessage());
             if (e instanceof AuthorizationException || e instanceof AccessRestrictionException) {
@@ -129,7 +129,7 @@ public class IndexingController {
             log.info("Reindexing " + id + ", clean reindex mode");
         }
         try {
-            indexingService.reindexObjectAndChildren(AgentPrincipals.createFromThread(), objectPid, inplace);
+            indexingService.reindexObjectAndChildren(AgentPrincipalsImpl.createFromThread(), objectPid, inplace);
         } catch (Exception e) {
             result.put("error", e.getMessage());
             if (e instanceof AuthorizationException || e instanceof AccessRestrictionException) {

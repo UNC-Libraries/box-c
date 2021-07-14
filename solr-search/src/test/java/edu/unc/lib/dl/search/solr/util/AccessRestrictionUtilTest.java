@@ -26,8 +26,9 @@ import org.junit.Test;
 import org.mockito.Mock;
 
 import edu.unc.lib.boxc.auth.api.exceptions.AccessRestrictionException;
-import edu.unc.lib.dl.acl.fcrepo4.GlobalPermissionEvaluator;
-import edu.unc.lib.boxc.auth.fcrepo.model.AccessGroupSet;
+import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
+import edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl;
+import edu.unc.lib.boxc.auth.fcrepo.services.GlobalPermissionEvaluator;
 
 /**
  *
@@ -56,7 +57,7 @@ public class AccessRestrictionUtilTest {
         restrictionUtil.setGlobalPermissionEvaluator(globalPermissionEvaluator);
         restrictionUtil.setSearchSettings(searchSettings);
 
-        accessGroups = new AccessGroupSet(ACCESS_GROUP);
+        accessGroups = new AccessGroupSetImpl(ACCESS_GROUP);
     }
 
     @Test
@@ -71,7 +72,7 @@ public class AccessRestrictionUtilTest {
 
     @Test(expected = AccessRestrictionException.class)
     public void addAccessNoGroupsTest() {
-        accessGroups = new AccessGroupSet();
+        accessGroups = new AccessGroupSetImpl();
 
         SolrQuery query = new SolrQuery(BASE_QUERY);
         restrictionUtil.add(query, accessGroups);

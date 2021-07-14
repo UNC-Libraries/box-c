@@ -23,7 +23,7 @@ import static org.mockito.Mockito.verify;
 import org.junit.Before;
 import org.junit.Test;
 
-import edu.unc.lib.boxc.auth.fcrepo.model.AccessGroupSet;
+import edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl;
 import edu.unc.lib.dl.data.ingest.solr.SolrUpdateRequest;
 import edu.unc.lib.dl.util.IndexingActionType;
 
@@ -36,7 +36,7 @@ public class IndexTreeInplaceActionTest extends UpdateTreeActionTest {
     @Before
     public void setupInplace() throws Exception {
 
-        action.setAccessGroups(new AccessGroupSet("admin"));
+        action.setAccessGroups(new AccessGroupSetImpl("admin"));
         ((IndexTreeInplaceAction) action).setIndexingMessageSender(messageSender);
     }
 

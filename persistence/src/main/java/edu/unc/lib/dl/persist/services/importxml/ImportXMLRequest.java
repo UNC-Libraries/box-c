@@ -19,8 +19,9 @@ import java.io.File;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
-import edu.unc.lib.boxc.auth.fcrepo.model.AccessGroupSet;
-import edu.unc.lib.boxc.auth.fcrepo.model.AgentPrincipals;
+import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
+import edu.unc.lib.boxc.auth.api.models.AgentPrincipals;
+import edu.unc.lib.boxc.auth.fcrepo.models.AgentPrincipalsImpl;
 
 /**
  * Request to perform a bulk import of descriptive metadata
@@ -63,7 +64,7 @@ public class ImportXMLRequest {
      */
     @JsonIgnore
     public AgentPrincipals getAgent() {
-        return new AgentPrincipals(username, principals);
+        return new AgentPrincipalsImpl(username, principals);
     }
 
     /**

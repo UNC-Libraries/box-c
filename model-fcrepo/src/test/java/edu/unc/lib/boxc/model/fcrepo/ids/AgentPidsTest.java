@@ -16,15 +16,16 @@
 package edu.unc.lib.boxc.model.fcrepo.ids;
 
 import static org.junit.Assert.assertEquals;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import edu.unc.lib.boxc.auth.api.models.AgentPrincipals;
 import edu.unc.lib.boxc.model.api.SoftwareAgentConstants;
 import edu.unc.lib.boxc.model.api.SoftwareAgentConstants.SoftwareAgent;
 import edu.unc.lib.boxc.model.fcrepo.test.TestHelper;
-import edu.unc.lib.boxc.auth.fcrepo.model.AccessGroupSet;
-import edu.unc.lib.boxc.auth.fcrepo.model.AgentPrincipals;
 
 /**
  * @author bbpennel
@@ -82,7 +83,8 @@ public class AgentPidsTest {
 
     @Test
     public void pidForPersonAgentPrincipals() throws Exception {
-        AgentPrincipals princs = new AgentPrincipals("someuser2", new AccessGroupSet("group"));
+        AgentPrincipals princs = mock(AgentPrincipals.class);
+        when(princs.getUsername()).thenReturn("someuser2");
         assertEquals(BASE_URI + "agents/person/onyen/someuser2",
                 AgentPids.forPerson(princs).getRepositoryPath());
     }

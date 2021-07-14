@@ -45,11 +45,10 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.mockito.Mock;
 
-import edu.unc.lib.boxc.auth.fcrepo.model.AccessGroupSet;
+import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
 import edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore;
 import edu.unc.lib.boxc.web.common.auth.PatronPrincipalProvider;
 import edu.unc.lib.boxc.web.common.auth.RemoteUserUtil;
-import edu.unc.lib.boxc.web.common.auth.filters.StoreUserAccessControlFilter;
 
 /**
  *

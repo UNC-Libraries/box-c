@@ -17,9 +17,9 @@ package edu.unc.lib.dl.persist.services.ingest;
 
 import java.util.Map;
 
-import edu.unc.lib.boxc.model.api.ids.PID;
-import edu.unc.lib.boxc.auth.api.services.AccessControlService;
 import edu.unc.lib.boxc.auth.api.Permission;
+import edu.unc.lib.boxc.auth.api.services.AccessControlService;
+import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.dl.persist.api.ingest.DepositData;
 import edu.unc.lib.dl.persist.api.ingest.DepositHandler;
 import edu.unc.lib.dl.util.DepositException;

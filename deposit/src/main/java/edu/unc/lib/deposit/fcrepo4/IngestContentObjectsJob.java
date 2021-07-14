@@ -60,6 +60,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import edu.unc.lib.boxc.auth.api.Permission;
+import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
+import edu.unc.lib.boxc.auth.api.models.AgentPrincipals;
+import edu.unc.lib.boxc.auth.api.services.AccessControlService;
+import edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl;
+import edu.unc.lib.boxc.auth.fcrepo.models.AgentPrincipalsImpl;
 import edu.unc.lib.boxc.model.api.DatastreamType;
 import edu.unc.lib.boxc.model.api.SoftwareAgentConstants.SoftwareAgent;
 import edu.unc.lib.boxc.model.api.exceptions.FedoraException;
@@ -88,10 +94,6 @@ import edu.unc.lib.deposit.validate.VerifyObjectsAreInFedoraService;
 import edu.unc.lib.deposit.work.AbstractDepositJob;
 import edu.unc.lib.deposit.work.DepositGraphUtils;
 import edu.unc.lib.deposit.work.JobInterruptedException;
-import edu.unc.lib.boxc.auth.api.services.AccessControlService;
-import edu.unc.lib.boxc.auth.fcrepo.model.AccessGroupSet;
-import edu.unc.lib.boxc.auth.fcrepo.model.AgentPrincipals;
-import edu.unc.lib.boxc.auth.api.Permission;
 import edu.unc.lib.dl.fcrepo4.FedoraTransaction;
 import edu.unc.lib.dl.fcrepo4.FedoraTransactionRefresher;
 import edu.unc.lib.dl.fcrepo4.TransactionManager;
@@ -225,8 +227,8 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
                     + ", types does not support children");
         }
         String groups = depositStatus.get(DepositField.permissionGroups.name());
-        groupSet = new AccessGroupSet(groups);
-        agent = new AgentPrincipals(depositor, groupSet);
+        groupSet = new AccessGroupSetImpl(groups);
+        agent = new AgentPrincipalsImpl(depositor, groupSet);
 
         // Verify that the depositor is allowed to ingest to the given destination
         aclService.assertHasAccess(

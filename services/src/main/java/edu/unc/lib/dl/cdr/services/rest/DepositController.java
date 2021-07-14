@@ -15,8 +15,8 @@
  */
 package edu.unc.lib.dl.cdr.services.rest;
 
-import static edu.unc.lib.boxc.common.xml.SecureXMLFactory.createXMLInputFactory;
 import static edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore.getAgentPrincipals;
+import static edu.unc.lib.boxc.common.xml.SecureXMLFactory.createXMLInputFactory;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -53,11 +53,11 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import edu.unc.lib.boxc.model.api.xml.JDOMNamespaceUtil;
-import edu.unc.lib.dl.acl.fcrepo4.GlobalPermissionEvaluator;
-import edu.unc.lib.boxc.auth.fcrepo.model.AccessGroupSet;
-import edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore;
 import edu.unc.lib.boxc.auth.api.Permission;
+import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
+import edu.unc.lib.boxc.auth.fcrepo.services.GlobalPermissionEvaluator;
+import edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore;
+import edu.unc.lib.boxc.model.api.xml.JDOMNamespaceUtil;
 import edu.unc.lib.dl.util.DepositConstants;
 import edu.unc.lib.dl.util.DepositPipelineStatusFactory;
 import edu.unc.lib.dl.util.DepositStatusFactory;

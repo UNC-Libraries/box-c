@@ -33,15 +33,15 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 
+import edu.unc.lib.boxc.auth.api.exceptions.AccessRestrictionException;
+import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
+import edu.unc.lib.boxc.auth.api.models.AgentPrincipals;
+import edu.unc.lib.boxc.auth.api.services.AccessControlService;
+import edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl;
+import edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.objects.ContentObject;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
-import edu.unc.lib.boxc.auth.api.exceptions.AccessRestrictionException;
-import edu.unc.lib.boxc.auth.api.services.AccessControlService;
-import edu.unc.lib.boxc.auth.fcrepo.model.AccessGroupSet;
-import edu.unc.lib.boxc.auth.fcrepo.model.AgentPrincipals;
-import edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore;
-import edu.unc.lib.dl.persist.services.indexing.IndexingService;
 import edu.unc.lib.dl.services.IndexingMessageSender;
 import edu.unc.lib.dl.util.IndexingActionType;
 
@@ -126,7 +126,7 @@ public class IndexingServiceTest {
     @Test(expected = AccessRestrictionException.class)
     public void insufficientAccessTest() {
         doThrow(new AccessRestrictionException()).when(aclService)
-                .assertHasAccess(anyString(), any(PID.class), any(AccessGroupSet.class), eq(reindex));
+                .assertHasAccess(anyString(), any(PID.class), any(AccessGroupSetImpl.class), eq(reindex));
 
         service.reindexObject(agent, objPid);
     }

@@ -37,11 +37,12 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.ContextHierarchy;
 import org.springframework.test.web.servlet.MvcResult;
 
+import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
+import edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl;
+import edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore;
 import edu.unc.lib.boxc.model.api.objects.AdminUnit;
 import edu.unc.lib.boxc.model.api.objects.CollectionObject;
 import edu.unc.lib.boxc.model.fcrepo.test.AclModelBuilder;
-import edu.unc.lib.boxc.auth.fcrepo.model.AccessGroupSet;
-import edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore;
 
 /**
  * @author bbpennel
@@ -68,7 +69,7 @@ public class DestroyObjectsIT extends AbstractAPIIT {
     public void setup() throws Exception {
         reset(jmsTemplate);
 
-        AccessGroupSet testPrincipals = new AccessGroupSet(USER_GROUPS);
+        AccessGroupSet testPrincipals = new AccessGroupSetImpl(USER_GROUPS);
 
         GroupsThreadStore.storeUsername(USER_NAME);
         GroupsThreadStore.storeGroups(testPrincipals);
@@ -110,7 +111,7 @@ public class DestroyObjectsIT extends AbstractAPIIT {
 
     @Test
     public void destroyUnitAsAdmin() throws Exception {
-        AccessGroupSet testPrincipals = new AccessGroupSet(ADMIN_GROUP);
+        AccessGroupSet testPrincipals = new AccessGroupSetImpl(ADMIN_GROUP);
         GroupsThreadStore.storeGroups(testPrincipals);
 
         createCollectionInUnit(null);

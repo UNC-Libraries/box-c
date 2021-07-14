@@ -36,11 +36,12 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import edu.unc.lib.boxc.auth.api.Permission;
+import edu.unc.lib.boxc.auth.api.models.AgentPrincipals;
+import edu.unc.lib.boxc.auth.api.services.AccessControlService;
+import edu.unc.lib.boxc.auth.fcrepo.models.AgentPrincipalsImpl;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
-import edu.unc.lib.boxc.auth.api.services.AccessControlService;
-import edu.unc.lib.boxc.auth.fcrepo.model.AgentPrincipals;
-import edu.unc.lib.boxc.auth.api.Permission;
 import edu.unc.lib.dl.fedora.ServiceException;
 import edu.unc.lib.dl.persist.services.acl.PatronAccessAssignmentService;
 import edu.unc.lib.dl.persist.services.acl.PatronAccessAssignmentService.PatronAccessAssignmentRequest;
@@ -75,7 +76,7 @@ public class UpdatePatronAccessController {
         result.put("pid", pid.getId());
 
         try {
-            AgentPrincipals agent = AgentPrincipals.createFromThread();
+            AgentPrincipals agent = AgentPrincipalsImpl.createFromThread();
             validateUpdate(agent, pid, accessDetails);
             patronAccessOperationSender.sendUpdateRequest(new PatronAccessAssignmentRequest(agent, pid, accessDetails));
             result.put("status", "Submitted patron access update for " + pid.getId());
@@ -110,7 +111,7 @@ public class UpdatePatronAccessController {
             return new ResponseEntity<>(result, HttpStatus.BAD_REQUEST);
         }
 
-        AgentPrincipals agent = AgentPrincipals.createFromThread();
+        AgentPrincipals agent = AgentPrincipalsImpl.createFromThread();
         List<PID> pids = bulkAccessDetails.getIds().stream().map(PIDs::get).collect(Collectors.toList());
         int count = 0;
         try {

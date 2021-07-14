@@ -13,15 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package edu.unc.lib.dl.acl.fcrepo4;
+package edu.unc.lib.boxc.auth.fcrepo.services;
 
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import edu.unc.lib.boxc.auth.fcrepo.models.RoleAssignment;
 import edu.unc.lib.boxc.model.api.ids.PID;
-import edu.unc.lib.boxc.auth.fcrepo.model.RoleAssignment;
 
 /**
  * Interface for factories which provide access control details repository

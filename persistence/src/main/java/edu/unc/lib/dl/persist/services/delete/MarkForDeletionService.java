@@ -20,11 +20,11 @@ import static org.apache.commons.lang3.StringUtils.isBlank;
 import java.util.ArrayList;
 import java.util.Collection;
 
+import edu.unc.lib.boxc.auth.api.models.AgentPrincipals;
+import edu.unc.lib.boxc.auth.api.services.AccessControlService;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
-import edu.unc.lib.boxc.auth.api.services.AccessControlService;
-import edu.unc.lib.boxc.auth.fcrepo.model.AgentPrincipals;
 import edu.unc.lib.dl.persist.api.event.PremisLoggerFactory;
 import edu.unc.lib.dl.services.OperationsMessageSender;
 import edu.unc.lib.dl.sparql.SparqlUpdateService;

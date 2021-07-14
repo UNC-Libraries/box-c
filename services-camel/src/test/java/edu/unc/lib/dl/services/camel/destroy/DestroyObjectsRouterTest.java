@@ -40,15 +40,17 @@ import org.mockito.Mock;
 import org.springframework.context.support.AbstractApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
+import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
+import edu.unc.lib.boxc.auth.api.models.AgentPrincipals;
+import edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl;
+import edu.unc.lib.boxc.auth.fcrepo.models.AgentPrincipalsImpl;
+import edu.unc.lib.boxc.auth.fcrepo.services.InheritedAclFactory;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.api.objects.WorkObject;
 import edu.unc.lib.boxc.model.api.rdf.Cdr;
 import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
-import edu.unc.lib.dl.acl.fcrepo4.InheritedAclFactory;
-import edu.unc.lib.boxc.auth.fcrepo.model.AccessGroupSet;
-import edu.unc.lib.boxc.auth.fcrepo.model.AgentPrincipals;
 import edu.unc.lib.dl.fcrepo4.FedoraTransaction;
 import edu.unc.lib.dl.fcrepo4.TransactionManager;
 import edu.unc.lib.dl.persist.services.destroy.DestroyObjectsRequest;
@@ -94,8 +96,8 @@ public class DestroyObjectsRouterTest extends CamelSpringTestSupport {
     @Before
     public void setup() {
         initMocks(this);
-        AccessGroupSet testPrincipals = new AccessGroupSet(USER_GROUPS);
-        agent = new AgentPrincipals(USER_NAME, testPrincipals);
+        AccessGroupSet testPrincipals = new AccessGroupSetImpl(USER_GROUPS);
+        agent = new AgentPrincipalsImpl(USER_NAME, testPrincipals);
 
         when(txManager.startTransaction()).thenReturn(tx);
     }

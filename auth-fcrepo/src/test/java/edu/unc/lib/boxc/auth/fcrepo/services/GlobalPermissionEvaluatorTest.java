@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package edu.unc.lib.dl.acl.fcrepo4;
+package edu.unc.lib.boxc.auth.fcrepo.services;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;

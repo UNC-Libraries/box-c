@@ -60,14 +60,15 @@ import org.springframework.test.web.servlet.MvcResult;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
 
+import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
+import edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl;
+import edu.unc.lib.boxc.auth.fcrepo.models.RoleAssignment;
+import edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.objects.AdminUnit;
 import edu.unc.lib.boxc.model.api.objects.CollectionObject;
 import edu.unc.lib.boxc.model.api.objects.FolderObject;
 import edu.unc.lib.boxc.model.fcrepo.test.AclModelBuilder;
-import edu.unc.lib.boxc.auth.fcrepo.model.AccessGroupSet;
-import edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore;
-import edu.unc.lib.boxc.auth.fcrepo.model.RoleAssignment;
 import edu.unc.lib.dl.cdr.services.rest.modify.UpdatePatronAccessController.BulkPatronAccessDetails;
 import edu.unc.lib.dl.persist.services.acl.PatronAccessAssignmentService.PatronAccessAssignmentRequest;
 import edu.unc.lib.dl.persist.services.acl.PatronAccessDetails;
@@ -102,7 +103,7 @@ public class UpdatePatronAccessIT extends AbstractAPIIT {
         initMocks(this);
         reset(patronAccessOperationTemplate);
         reset(patronAccessOperationSender);
-        AccessGroupSet testPrincipals = new AccessGroupSet(USER_GROUPS);
+        AccessGroupSet testPrincipals = new AccessGroupSetImpl(USER_GROUPS);
 
         GroupsThreadStore.storeUsername(USER_NAME);
         GroupsThreadStore.storeGroups(testPrincipals);

@@ -15,8 +15,8 @@
  */
 package edu.unc.lib.dl.ui.controller;
 
-import static edu.unc.lib.boxc.model.api.DatastreamType.ORIGINAL_FILE;
 import static edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore.getAgentPrincipals;
+import static edu.unc.lib.boxc.model.api.DatastreamType.ORIGINAL_FILE;
 
 import java.io.IOException;
 
@@ -36,6 +36,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.context.request.WebRequest;
 
+import edu.unc.lib.boxc.auth.api.exceptions.AccessRestrictionException;
+import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
 import edu.unc.lib.boxc.model.api.exceptions.NotFoundException;
 import edu.unc.lib.boxc.model.api.exceptions.ObjectTypeMismatchException;
 import edu.unc.lib.boxc.model.api.ids.PID;
@@ -44,8 +46,6 @@ import edu.unc.lib.boxc.model.api.objects.RepositoryObject;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.api.objects.WorkObject;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
-import edu.unc.lib.boxc.auth.api.exceptions.AccessRestrictionException;
-import edu.unc.lib.boxc.auth.fcrepo.model.AccessGroupSet;
 import edu.unc.lib.dl.ui.exception.ResourceNotFoundException;
 import edu.unc.lib.dl.ui.service.FedoraContentService;
 import edu.unc.lib.dl.ui.util.AnalyticsTrackerUtil;

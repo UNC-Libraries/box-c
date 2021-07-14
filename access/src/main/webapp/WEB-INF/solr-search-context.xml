@@ -179,7 +179,7 @@
         <property name="ignoreResourceNotFound" value="false" />
     </bean>
     
-    <bean id="globalPermissionEvaluator" class="edu.unc.lib.dl.acl.fcrepo4.GlobalPermissionEvaluator">
+    <bean id="globalPermissionEvaluator" class="edu.unc.lib.boxc.auth.fcrepo.services.GlobalPermissionEvaluator">
         <constructor-arg ref="aclProperties" />
     </bean>
     

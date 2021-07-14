@@ -37,13 +37,14 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import edu.unc.lib.boxc.auth.api.Permission;
+import edu.unc.lib.boxc.auth.api.models.AgentPrincipals;
+import edu.unc.lib.boxc.auth.api.services.AccessControlService;
+import edu.unc.lib.boxc.auth.fcrepo.models.AgentPrincipalsImpl;
+import edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore;
 import edu.unc.lib.boxc.model.api.exceptions.RepositoryException;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
-import edu.unc.lib.boxc.auth.api.services.AccessControlService;
-import edu.unc.lib.boxc.auth.fcrepo.model.AgentPrincipals;
-import edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore;
-import edu.unc.lib.boxc.auth.api.Permission;
 import edu.unc.lib.dl.persist.api.ingest.DepositData;
 import edu.unc.lib.dl.persist.api.ingest.IngestSource;
 import edu.unc.lib.dl.persist.api.ingest.IngestSourceManager;
@@ -79,7 +80,7 @@ public class IngestSourceController {
     public ResponseEntity<Object> listIngestSources(@PathVariable("pid") String pid) {
         PID destination = PIDs.get(pid);
 
-        AgentPrincipals agent = AgentPrincipals.createFromThread();
+        AgentPrincipals agent = AgentPrincipalsImpl.createFromThread();
         aclService.assertHasAccess("Insufficient permissions",
                 destination, agent.getPrincipals(), Permission.ingest);
 
@@ -105,7 +106,7 @@ public class IngestSourceController {
         log.info("Request to ingest from source to {}", pid);
         PID destination = PIDs.get(pid);
 
-        AgentPrincipals agent = AgentPrincipals.createFromThread();
+        AgentPrincipals agent = AgentPrincipalsImpl.createFromThread();
         aclService.assertHasAccess("Insufficient permissions to ingest to " + pid,
                 destination, agent.getPrincipals(), Permission.ingest);
 

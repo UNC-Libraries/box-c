@@ -46,6 +46,11 @@ import org.springframework.test.web.servlet.MvcResult;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import edu.unc.lib.boxc.auth.api.AccessPrincipalConstants;
+import edu.unc.lib.boxc.auth.api.UserRole;
+import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
+import edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl;
+import edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.objects.AdminUnit;
 import edu.unc.lib.boxc.model.api.objects.CollectionObject;
@@ -53,11 +58,7 @@ import edu.unc.lib.boxc.model.api.objects.FileObject;
 import edu.unc.lib.boxc.model.api.objects.FolderObject;
 import edu.unc.lib.boxc.model.api.objects.WorkObject;
 import edu.unc.lib.boxc.model.fcrepo.test.AclModelBuilder;
-import edu.unc.lib.boxc.auth.fcrepo.model.AccessGroupSet;
-import edu.unc.lib.boxc.auth.api.AccessPrincipalConstants;
-import edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore;
 import edu.unc.lib.boxc.web.common.auth.IPAddressPatronPrincipalConfig;
-import edu.unc.lib.boxc.auth.api.UserRole;
 import edu.unc.lib.dl.cdr.services.rest.modify.AbstractAPIIT;
 import edu.unc.lib.dl.persist.services.acl.PatronAccessDetails;
 
@@ -85,7 +86,7 @@ public class RetrievePatronRolesIT extends AbstractAPIIT {
 
     @Before
     public void init_() throws Exception {
-        AccessGroupSet testPrincipals = new AccessGroupSet(PUBLIC_PRINC);
+        AccessGroupSet testPrincipals = new AccessGroupSetImpl(PUBLIC_PRINC);
         GroupsThreadStore.storeUsername(USER_PRINC);
         GroupsThreadStore.storeGroups(testPrincipals);
         setupContentRoot();
@@ -183,7 +184,7 @@ public class RetrievePatronRolesIT extends AbstractAPIIT {
 
     @Test
     public void getAllowedPrincpals() throws Exception {
-        AccessGroupSet testPrincipals = new AccessGroupSet(PUBLIC_PRINC, AccessPrincipalConstants.ADMIN_ACCESS_PRINC);
+        AccessGroupSet testPrincipals = new AccessGroupSetImpl(PUBLIC_PRINC, AccessPrincipalConstants.ADMIN_ACCESS_PRINC);
         GroupsThreadStore.storeGroups(testPrincipals);
 
         treeIndexer.indexAll(baseAddress);

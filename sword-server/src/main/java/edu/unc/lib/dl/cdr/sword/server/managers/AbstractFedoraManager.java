@@ -24,11 +24,11 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.swordapp.server.SwordError;
 
+import edu.unc.lib.boxc.auth.api.Permission;
+import edu.unc.lib.boxc.auth.api.services.AccessControlService;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPaths;
-import edu.unc.lib.boxc.auth.api.services.AccessControlService;
-import edu.unc.lib.boxc.auth.api.Permission;
 import edu.unc.lib.dl.util.ErrorURIRegistry;
 
 /**

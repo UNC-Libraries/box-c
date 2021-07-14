@@ -61,17 +61,16 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.ContextHierarchy;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
+import edu.unc.lib.boxc.auth.fcrepo.models.AgentPrincipalsImpl;
 import edu.unc.lib.boxc.model.api.ids.PID;
+import edu.unc.lib.boxc.model.api.objects.BinaryObject;
+import edu.unc.lib.boxc.model.api.objects.CollectionObject;
 import edu.unc.lib.boxc.model.api.objects.DepositRecord;
 import edu.unc.lib.boxc.model.api.objects.FileObject;
 import edu.unc.lib.boxc.model.api.rdf.Cdr;
 import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
-import edu.unc.lib.boxc.model.api.objects.BinaryObject;
-import edu.unc.lib.boxc.model.api.objects.CollectionObject;
-import edu.unc.lib.boxc.model.api.objects.FileObject;
 import edu.unc.lib.boxc.model.fcrepo.test.TestHelper;
-import edu.unc.lib.boxc.auth.fcrepo.model.AgentPrincipals;
 import edu.unc.lib.dl.persist.services.edit.UpdateDescriptionService;
 import edu.unc.lib.dl.persist.services.edit.UpdateDescriptionService.UpdateDescriptionRequest;
 import edu.unc.lib.dl.services.camel.BinaryMetadataProcessor;
@@ -281,7 +280,7 @@ public class EnhancementRouterIT {
     public void testProcessFilterOutDescriptiveMDSolr() throws Exception {
         FileObject fileObj = repoObjectFactory.createFileObject(null);
         BinaryObject descObj = updateDescriptionService.updateDescription(new UpdateDescriptionRequest(
-                mock(AgentPrincipals.class), fileObj.getPid(), new ByteArrayInputStream(FILE_CONTENT.getBytes())));
+                mock(AgentPrincipalsImpl.class), fileObj.getPid(), new ByteArrayInputStream(FILE_CONTENT.getBytes())));
 
         NotifyBuilder notify = new NotifyBuilder(cdrEnhancements)
                 .whenCompleted(1)

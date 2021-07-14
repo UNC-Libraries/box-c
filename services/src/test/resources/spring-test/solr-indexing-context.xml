@@ -149,7 +149,7 @@
         <property name="updateSolrClient" ref="solrClient" />
     </bean>
 
-    <bean id="inheritedAclFactory" class="edu.unc.lib.dl.acl.fcrepo4.InheritedAclFactory">
+    <bean id="inheritedAclFactory" class="edu.unc.lib.boxc.auth.fcrepo.services.InheritedAclFactory">
         <property name="objectAclFactory" ref="objectAclFactory" />
         <property name="pathFactory" ref="contentPathFactory" />
     </bean>
@@ -161,7 +161,7 @@
         <property name="fcrepoClient" ref="fcrepoClient" />
     </bean>
 
-    <bean id="objectAclFactory" class="edu.unc.lib.dl.acl.fcrepo4.ObjectAclFactory"
+    <bean id="objectAclFactory" class="edu.unc.lib.boxc.auth.fcrepo.services.ObjectAclFactory"
           init-method="init">
         <property name="cacheMaxSize" value="100" />
         <property name="cacheTimeToLive" value="100" />

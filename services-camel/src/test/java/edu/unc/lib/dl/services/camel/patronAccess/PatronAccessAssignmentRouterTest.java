@@ -34,12 +34,13 @@ import org.mockito.Captor;
 import org.springframework.context.support.AbstractApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
+import edu.unc.lib.boxc.auth.api.exceptions.AccessRestrictionException;
+import edu.unc.lib.boxc.auth.api.models.AgentPrincipals;
+import edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl;
+import edu.unc.lib.boxc.auth.fcrepo.models.AgentPrincipalsImpl;
+import edu.unc.lib.boxc.auth.fcrepo.models.RoleAssignment;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
-import edu.unc.lib.boxc.auth.api.exceptions.AccessRestrictionException;
-import edu.unc.lib.boxc.auth.fcrepo.model.AccessGroupSet;
-import edu.unc.lib.boxc.auth.fcrepo.model.AgentPrincipals;
-import edu.unc.lib.boxc.auth.fcrepo.model.RoleAssignment;
 import edu.unc.lib.dl.persist.services.acl.PatronAccessAssignmentService;
 import edu.unc.lib.dl.persist.services.acl.PatronAccessAssignmentService.PatronAccessAssignmentRequest;
 import edu.unc.lib.dl.persist.services.acl.PatronAccessDetails;
@@ -73,7 +74,7 @@ public class PatronAccessAssignmentRouterTest extends CamelSpringTestSupport {
 
     @Test
     public void validMessageTest() throws Exception {
-        AgentPrincipals agent = new AgentPrincipals(USER, new AccessGroupSet(PRINCIPALS));
+        AgentPrincipals agent = new AgentPrincipalsImpl(USER, new AccessGroupSetImpl(PRINCIPALS));
         PID pid = PIDs.get(UUID.randomUUID().toString());
         PatronAccessDetails accessDetails = new PatronAccessDetails();
         accessDetails.setRoles(asList(
@@ -92,7 +93,7 @@ public class PatronAccessAssignmentRouterTest extends CamelSpringTestSupport {
 
     @Test
     public void insufficientPermissionsTest() throws Exception {
-        AgentPrincipals agent = new AgentPrincipals(USER, new AccessGroupSet(PRINCIPALS));
+        AgentPrincipals agent = new AgentPrincipalsImpl(USER, new AccessGroupSetImpl(PRINCIPALS));
         PID pid = PIDs.get(UUID.randomUUID().toString());
         PatronAccessDetails accessDetails = new PatronAccessDetails();
         accessDetails.setRoles(asList(

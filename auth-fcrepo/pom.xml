@@ -49,7 +49,7 @@
         </dependency>
         <dependency>
             <groupId>edu.unc.lib.cdr</groupId>
-            <artifactId>model-api</artifactId>
+            <artifactId>model-fcrepo</artifactId>
         </dependency>
         <dependency>
             <groupId>edu.unc.lib.cdr</groupId>

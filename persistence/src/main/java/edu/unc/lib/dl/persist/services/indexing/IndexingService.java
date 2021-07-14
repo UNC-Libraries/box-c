@@ -15,9 +15,9 @@
  */
 package edu.unc.lib.dl.persist.services.indexing;
 
-import edu.unc.lib.boxc.auth.api.services.AccessControlService;
-import edu.unc.lib.boxc.auth.fcrepo.model.AgentPrincipals;
 import edu.unc.lib.boxc.auth.api.Permission;
+import edu.unc.lib.boxc.auth.api.models.AgentPrincipals;
+import edu.unc.lib.boxc.auth.api.services.AccessControlService;
 import edu.unc.lib.boxc.common.metrics.TimerFactory;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.dl.services.IndexingMessageSender;

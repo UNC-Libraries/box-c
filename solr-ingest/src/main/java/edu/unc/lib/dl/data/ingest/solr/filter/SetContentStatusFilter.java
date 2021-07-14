@@ -22,10 +22,10 @@ import org.apache.jena.rdf.model.Resource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import edu.unc.lib.boxc.model.api.rdf.Cdr;
 import edu.unc.lib.boxc.model.api.objects.ContentObject;
 import edu.unc.lib.boxc.model.api.objects.FileObject;
 import edu.unc.lib.boxc.model.api.objects.WorkObject;
+import edu.unc.lib.boxc.model.api.rdf.Cdr;
 import edu.unc.lib.dl.data.ingest.solr.exception.IndexingException;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackage;
 import edu.unc.lib.dl.search.solr.util.FacetConstants;

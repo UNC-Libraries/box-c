@@ -18,8 +18,6 @@ package edu.unc.lib.boxc.auth.fcrepo.services;
 import org.junit.Assert;
 import org.junit.Test;
 
-import edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore;
-
 public class GroupsThreadStoreTest extends Assert {
 
     @Test

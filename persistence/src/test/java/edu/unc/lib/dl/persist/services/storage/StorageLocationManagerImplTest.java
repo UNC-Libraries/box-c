@@ -39,12 +39,12 @@ import org.junit.rules.TemporaryFolder;
 import org.mockito.Mock;
 
 import edu.unc.lib.boxc.model.api.ids.PID;
+import edu.unc.lib.boxc.model.api.objects.AdminUnit;
+import edu.unc.lib.boxc.model.api.objects.CollectionObject;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.api.rdf.Cdr;
 import edu.unc.lib.boxc.model.api.services.ContentPathFactory;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
-import edu.unc.lib.boxc.model.api.objects.AdminUnit;
-import edu.unc.lib.boxc.model.api.objects.CollectionObject;
 import edu.unc.lib.dl.persist.api.storage.StorageLocation;
 import edu.unc.lib.dl.persist.api.storage.StorageType;
 import edu.unc.lib.dl.persist.api.storage.UnknownStorageLocationException;

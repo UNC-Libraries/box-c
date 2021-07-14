@@ -54,7 +54,7 @@ import edu.unc.lib.boxc.model.api.objects.FileObject;
 import edu.unc.lib.boxc.model.fcrepo.test.TestHelper;
 import edu.unc.lib.boxc.auth.api.exceptions.AccessRestrictionException;
 import edu.unc.lib.boxc.auth.api.services.AccessControlService;
-import edu.unc.lib.boxc.auth.fcrepo.model.AccessGroupSet;
+import edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl;
 import edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore;
 import edu.unc.lib.boxc.auth.api.Permission;
 
@@ -96,7 +96,7 @@ public class FedoraContentControllerIT {
         TestHelper.setContentBase("http://localhost:48085/rest");
 
         GroupsThreadStore.storeUsername("test_user");
-        GroupsThreadStore.storeGroups(new AccessGroupSet("adminGroup"));
+        GroupsThreadStore.storeGroups(new AccessGroupSetImpl("adminGroup"));
 
     }
 
@@ -170,7 +170,7 @@ public class FedoraContentControllerIT {
         fileObj.addOriginalFile(makeContentUri(BINARY_CONTENT), null, "text/plain", null, null);
 
         doThrow(new AccessRestrictionException()).when(accessControlService)
-                .assertHasAccess(anyString(), eq(filePid), any(AccessGroupSet.class), eq(Permission.viewOriginal));
+                .assertHasAccess(anyString(), eq(filePid), any(AccessGroupSetImpl.class), eq(Permission.viewOriginal));
 
         MvcResult result = mvc.perform(get("/content/" + filePid.getId()))
                 .andExpect(status().isForbidden())
@@ -232,7 +232,7 @@ public class FedoraContentControllerIT {
 
         // Requires viewHidden permission
         doThrow(new AccessRestrictionException()).when(accessControlService)
-                .assertHasAccess(anyString(), eq(filePid), any(AccessGroupSet.class), eq(Permission.viewHidden));
+                .assertHasAccess(anyString(), eq(filePid), any(AccessGroupSetImpl.class), eq(Permission.viewHidden));
 
         // Verify administrative datastream retrievable
         MvcResult result = mvc.perform(get("/content/" + filePid.getId() + "/" + TECHNICAL_METADATA.getId()))

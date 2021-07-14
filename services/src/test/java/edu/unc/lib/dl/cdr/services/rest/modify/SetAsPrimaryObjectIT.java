@@ -34,12 +34,12 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.ContextHierarchy;
 import org.springframework.test.web.servlet.MvcResult;
 
-import edu.unc.lib.boxc.model.api.ids.PID;
-import edu.unc.lib.boxc.model.api.objects.RepositoryObject;
-import edu.unc.lib.boxc.model.api.objects.FileObject;
-import edu.unc.lib.boxc.model.api.objects.WorkObject;
 import edu.unc.lib.boxc.auth.api.exceptions.AccessRestrictionException;
-import edu.unc.lib.boxc.auth.fcrepo.model.AccessGroupSet;
+import edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl;
+import edu.unc.lib.boxc.model.api.ids.PID;
+import edu.unc.lib.boxc.model.api.objects.FileObject;
+import edu.unc.lib.boxc.model.api.objects.RepositoryObject;
+import edu.unc.lib.boxc.model.api.objects.WorkObject;
 
 /**
  *
@@ -85,7 +85,7 @@ public class SetAsPrimaryObjectIT extends AbstractAPIIT {
         makePidsAndObjects();
 
         doThrow(new AccessRestrictionException()).when(aclService)
-                .assertHasAccess(anyString(), eq(fileObjPid), any(AccessGroupSet.class), eq(editResourceType));
+                .assertHasAccess(anyString(), eq(fileObjPid), any(AccessGroupSetImpl.class), eq(editResourceType));
 
         addFileObjAsMember();
 
@@ -165,7 +165,7 @@ public class SetAsPrimaryObjectIT extends AbstractAPIIT {
         parent.setPrimaryObject(fileObj.getPid());
 
         doThrow(new AccessRestrictionException()).when(aclService)
-                .assertHasAccess(anyString(), eq(parentPid), any(AccessGroupSet.class), eq(editResourceType));
+                .assertHasAccess(anyString(), eq(parentPid), any(AccessGroupSetImpl.class), eq(editResourceType));
 
         MvcResult result = mvc.perform(put("/edit/clearPrimaryObject/" + fileObjPid.getUUID()))
             .andExpect(status().isForbidden())

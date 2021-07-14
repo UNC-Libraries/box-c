@@ -32,12 +32,12 @@ import org.apache.solr.client.solrj.response.QueryResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import edu.unc.lib.boxc.model.api.ResourceType;
+import edu.unc.lib.boxc.auth.api.UserRole;
 import edu.unc.lib.boxc.auth.api.exceptions.AccessRestrictionException;
-import edu.unc.lib.boxc.auth.fcrepo.model.AccessGroupSet;
+import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
 import edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore;
 import edu.unc.lib.boxc.auth.fcrepo.services.PrincipalClassifier;
-import edu.unc.lib.boxc.auth.api.UserRole;
+import edu.unc.lib.boxc.model.api.ResourceType;
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadata;
 import edu.unc.lib.dl.search.solr.model.CaseInsensitiveFacet;
 import edu.unc.lib.dl.search.solr.model.FacetFieldObject;

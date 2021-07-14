@@ -45,16 +45,17 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.ContextHierarchy;
 import org.springframework.test.web.servlet.MvcResult;
 
+import edu.unc.lib.boxc.auth.api.UserRole;
+import edu.unc.lib.boxc.auth.api.exceptions.AccessRestrictionException;
+import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
+import edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl;
+import edu.unc.lib.boxc.auth.fcrepo.models.RoleAssignment;
+import edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore;
 import edu.unc.lib.boxc.model.api.ids.PID;
-import edu.unc.lib.boxc.model.api.objects.ContentObject;
 import edu.unc.lib.boxc.model.api.objects.AdminUnit;
 import edu.unc.lib.boxc.model.api.objects.CollectionObject;
+import edu.unc.lib.boxc.model.api.objects.ContentObject;
 import edu.unc.lib.boxc.model.fcrepo.test.AclModelBuilder;
-import edu.unc.lib.boxc.auth.api.exceptions.AccessRestrictionException;
-import edu.unc.lib.boxc.auth.fcrepo.model.AccessGroupSet;
-import edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore;
-import edu.unc.lib.boxc.auth.fcrepo.model.RoleAssignment;
-import edu.unc.lib.boxc.auth.api.UserRole;
 import edu.unc.lib.dl.cdr.services.rest.modify.UpdateStaffAccessController.UpdateStaffRequest;
 
 /**
@@ -72,7 +73,7 @@ public class UpdateStaffRolesIT extends AbstractAPIIT {
 
     @Before
     public void setup() throws Exception {
-        AccessGroupSet testPrincipals = new AccessGroupSet(USER_GROUPS);
+        AccessGroupSet testPrincipals = new AccessGroupSetImpl(USER_GROUPS);
 
         GroupsThreadStore.storeUsername(USER_NAME);
         GroupsThreadStore.storeGroups(testPrincipals);
@@ -94,7 +95,7 @@ public class UpdateStaffRolesIT extends AbstractAPIIT {
         treeIndexer.indexAll(baseAddress);
 
         doThrow(new AccessRestrictionException()).when(aclService)
-                .assertHasAccess(anyString(), eq(pid), any(AccessGroupSet.class), eq(assignStaffRoles));
+                .assertHasAccess(anyString(), eq(pid), any(AccessGroupSetImpl.class), eq(assignStaffRoles));
 
         List<RoleAssignment> assignments = asList(
                 new RoleAssignment(USER_NAME, canAccess, pid));

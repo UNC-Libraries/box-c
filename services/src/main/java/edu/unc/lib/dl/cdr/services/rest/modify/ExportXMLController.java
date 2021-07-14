@@ -30,7 +30,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import edu.unc.lib.boxc.auth.api.exceptions.AccessRestrictionException;
-import edu.unc.lib.boxc.auth.fcrepo.model.AgentPrincipals;
+import edu.unc.lib.boxc.auth.api.models.AgentPrincipals;
+import edu.unc.lib.boxc.auth.fcrepo.models.AgentPrincipalsImpl;
 import edu.unc.lib.dl.cdr.services.processing.XMLExportService;
 
 /**
@@ -64,7 +65,7 @@ public class ExportXMLController {
         Map<String, Object> result = new HashMap<>();
         result.put("action", "export xml");
 
-        AgentPrincipals agent = AgentPrincipals.createFromThread();
+        AgentPrincipals agent = AgentPrincipalsImpl.createFromThread();
 
         try {
             XMLExportRequest exportReq = new XMLExportRequest(

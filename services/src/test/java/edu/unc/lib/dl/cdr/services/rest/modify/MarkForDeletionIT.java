@@ -39,12 +39,12 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.ContextHierarchy;
 import org.springframework.test.web.servlet.MvcResult;
 
+import edu.unc.lib.boxc.auth.api.exceptions.AccessRestrictionException;
+import edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObject;
 import edu.unc.lib.boxc.model.api.rdf.CdrAcl;
 import edu.unc.lib.boxc.model.api.rdf.Premis;
-import edu.unc.lib.boxc.auth.api.exceptions.AccessRestrictionException;
-import edu.unc.lib.boxc.auth.fcrepo.model.AccessGroupSet;
 
 /**
  *
@@ -157,7 +157,7 @@ public class MarkForDeletionIT extends AbstractAPIIT {
         PID pid = makePid();
 
         doThrow(new AccessRestrictionException()).when(aclService)
-                .assertHasAccess(anyString(), eq(pid), any(AccessGroupSet.class), eq(markForDeletion));
+                .assertHasAccess(anyString(), eq(pid), any(AccessGroupSetImpl.class), eq(markForDeletion));
 
         repositoryObjectFactory.createWorkObject(pid, null);
 

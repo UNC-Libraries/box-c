@@ -139,7 +139,7 @@
         </dependency>
         <dependency>
             <groupId>edu.unc.lib.cdr</groupId>
-            <artifactId>auth-fcrepo</artifactId>
+            <artifactId>auth-api</artifactId>
         </dependency>
         <dependency>
             <groupId>com.sun.xml.messaging.saaj</groupId>

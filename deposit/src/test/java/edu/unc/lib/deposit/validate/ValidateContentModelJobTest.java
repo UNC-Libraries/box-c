@@ -46,7 +46,7 @@ import edu.unc.lib.boxc.model.api.objects.RepositoryObject;
 import edu.unc.lib.deposit.fcrepo4.AbstractDepositJobTest;
 import edu.unc.lib.deposit.work.JobFailedException;
 import edu.unc.lib.boxc.auth.api.exceptions.InvalidAssignmentException;
-import edu.unc.lib.dl.acl.fcrepo4.ContentObjectAccessRestrictionValidator;
+import edu.unc.lib.boxc.auth.fcrepo.services.ContentObjectAccessRestrictionValidator;
 import edu.unc.lib.dl.persist.services.deposit.DepositModelHelpers;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
 

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package edu.unc.lib.dl.acl.fcrepo4;
+package edu.unc.lib.boxc.auth.fcrepo.services;
 
 import java.util.AbstractMap.SimpleEntry;
 import java.util.Arrays;
@@ -25,7 +25,6 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import edu.unc.lib.boxc.auth.api.Permission;
-import edu.unc.lib.boxc.auth.fcrepo.services.PrincipalClassifier;
 import edu.unc.lib.boxc.auth.api.UserRole;
 
 /**

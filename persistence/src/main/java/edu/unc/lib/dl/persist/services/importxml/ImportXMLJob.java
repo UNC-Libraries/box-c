@@ -47,14 +47,14 @@ import org.springframework.mail.javamail.MimeMessageHelper;
 
 import com.samskivert.mustache.Template;
 
+import edu.unc.lib.boxc.auth.api.exceptions.AccessRestrictionException;
+import edu.unc.lib.boxc.auth.api.models.AgentPrincipals;
 import edu.unc.lib.boxc.common.metrics.TimerFactory;
 import edu.unc.lib.boxc.model.api.exceptions.FedoraException;
 import edu.unc.lib.boxc.model.api.exceptions.NotFoundException;
 import edu.unc.lib.boxc.model.api.exceptions.RepositoryException;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
-import edu.unc.lib.boxc.auth.api.exceptions.AccessRestrictionException;
-import edu.unc.lib.boxc.auth.fcrepo.model.AgentPrincipals;
 import edu.unc.lib.dl.fedora.ServiceException;
 import edu.unc.lib.dl.persist.api.indexing.IndexingPriority;
 import edu.unc.lib.dl.persist.api.storage.StorageLocationManager;

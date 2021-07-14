@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package edu.unc.lib.dl.acl.fcrepo4;
+package edu.unc.lib.boxc.auth.fcrepo.services;
 
 import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
@@ -46,8 +46,8 @@ import edu.unc.lib.boxc.model.api.objects.RepositoryObject;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.api.rdf.Cdr;
 import edu.unc.lib.boxc.model.api.rdf.CdrAcl;
-import edu.unc.lib.boxc.auth.fcrepo.model.RoleAssignment;
 import edu.unc.lib.boxc.auth.api.UserRole;
+import edu.unc.lib.boxc.auth.fcrepo.models.RoleAssignment;
 
 /**
  * Factory which provides access control details which are directly represented

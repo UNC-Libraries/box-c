@@ -30,8 +30,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.web.context.ServletContextAware;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-import edu.unc.lib.boxc.auth.fcrepo.model.AccessGroupSet;
-import edu.unc.lib.boxc.auth.fcrepo.model.AgentPrincipals;
+import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
+import edu.unc.lib.boxc.auth.api.models.AgentPrincipals;
+import edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl;
 import edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore;
 import edu.unc.lib.boxc.web.common.auth.PatronPrincipalProvider;
 import edu.unc.lib.dl.httpclient.HttpClientUtil;
@@ -107,13 +108,13 @@ public class StoreUserAccessControlFilter extends OncePerRequestFilter implement
                     GroupsThreadStore.getUsername(), forwardedGroups);
         }
         if (forwardedGroups == null) {
-            return new AccessGroupSet();
+            return new AccessGroupSetImpl();
         }
 
         if (forwardedGroups.trim().length() > 0) {
-            return new AccessGroupSet(forwardedGroups);
+            return new AccessGroupSetImpl(forwardedGroups);
         }
-        return new AccessGroupSet();
+        return new AccessGroupSetImpl();
     }
 
     protected AccessGroupSet getGrouperGroups(HttpServletRequest request) {
@@ -125,9 +126,9 @@ public class StoreUserAccessControlFilter extends OncePerRequestFilter implement
         }
 
         if (shibGroups == null || shibGroups.trim().length() == 0) {
-            accessGroups = new AccessGroupSet();
+            accessGroups = new AccessGroupSetImpl();
         } else {
-            accessGroups = new AccessGroupSet(shibGroups);
+            accessGroups = new AccessGroupSetImpl(shibGroups);
         }
 
         // Add all patron principals to group set

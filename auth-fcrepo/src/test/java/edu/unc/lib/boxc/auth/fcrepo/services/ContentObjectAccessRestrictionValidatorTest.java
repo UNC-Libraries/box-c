@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package edu.unc.lib.dl.acl.fcrepo4;
+package edu.unc.lib.boxc.auth.fcrepo.services;
 
 import static edu.unc.lib.boxc.auth.api.AccessPrincipalConstants.AUTHENTICATED_PRINC;
 import static edu.unc.lib.boxc.auth.api.AccessPrincipalConstants.PUBLIC_PRINC;
@@ -31,10 +31,10 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
 
+import edu.unc.lib.boxc.auth.api.exceptions.InvalidAssignmentException;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.rdf.Cdr;
 import edu.unc.lib.boxc.model.api.rdf.CdrAcl;
-import edu.unc.lib.boxc.auth.api.exceptions.InvalidAssignmentException;
 
 /**
  *

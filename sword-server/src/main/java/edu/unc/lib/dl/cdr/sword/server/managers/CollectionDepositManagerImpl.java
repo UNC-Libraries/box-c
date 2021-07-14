@@ -29,10 +29,11 @@ import org.swordapp.server.SwordConfiguration;
 import org.swordapp.server.SwordError;
 import org.swordapp.server.SwordServerException;
 
-import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.auth.api.exceptions.AccessRestrictionException;
-import edu.unc.lib.boxc.auth.fcrepo.model.AgentPrincipals;
+import edu.unc.lib.boxc.auth.api.models.AgentPrincipals;
+import edu.unc.lib.boxc.auth.fcrepo.models.AgentPrincipalsImpl;
 import edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore;
+import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.dl.cdr.sword.server.SwordConfigurationImpl;
 import edu.unc.lib.dl.cdr.sword.server.util.DepositReportingUtil;
 import edu.unc.lib.dl.persist.api.ingest.DepositData;
@@ -67,7 +68,7 @@ public class CollectionDepositManagerImpl extends AbstractFedoraManager implemen
 
         String depositor = auth.getUsername();
         String owner = (auth.getOnBehalfOf() != null) ? auth.getOnBehalfOf() : depositor;
-        AgentPrincipals agentPrincipals = new AgentPrincipals(owner, GroupsThreadStore.getGroups());
+        AgentPrincipals agentPrincipals = new AgentPrincipalsImpl(owner, GroupsThreadStore.getGroups());
 
         PID containerPID = extractPID(collectionURI, SwordConfigurationImpl.COLLECTION_PATH + "/");
 

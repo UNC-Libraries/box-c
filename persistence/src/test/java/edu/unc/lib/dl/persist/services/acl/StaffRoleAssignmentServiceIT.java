@@ -58,6 +58,17 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.ContextHierarchy;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
+import edu.unc.lib.boxc.auth.api.Permission;
+import edu.unc.lib.boxc.auth.api.UserRole;
+import edu.unc.lib.boxc.auth.api.exceptions.AccessRestrictionException;
+import edu.unc.lib.boxc.auth.api.exceptions.InvalidAssignmentException;
+import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
+import edu.unc.lib.boxc.auth.api.models.AgentPrincipals;
+import edu.unc.lib.boxc.auth.api.services.AccessControlService;
+import edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl;
+import edu.unc.lib.boxc.auth.fcrepo.models.AgentPrincipalsImpl;
+import edu.unc.lib.boxc.auth.fcrepo.models.RoleAssignment;
+import edu.unc.lib.boxc.auth.fcrepo.services.InheritedAclFactory;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.ids.PIDMinter;
 import edu.unc.lib.boxc.model.api.objects.AdminUnit;
@@ -77,15 +88,6 @@ import edu.unc.lib.boxc.model.fcrepo.services.RepositoryInitializer;
 import edu.unc.lib.boxc.model.fcrepo.test.AclModelBuilder;
 import edu.unc.lib.boxc.model.fcrepo.test.RepositoryObjectTreeIndexer;
 import edu.unc.lib.boxc.model.fcrepo.test.TestHelper;
-import edu.unc.lib.boxc.auth.api.exceptions.AccessRestrictionException;
-import edu.unc.lib.boxc.auth.api.exceptions.InvalidAssignmentException;
-import edu.unc.lib.dl.acl.fcrepo4.InheritedAclFactory;
-import edu.unc.lib.boxc.auth.api.services.AccessControlService;
-import edu.unc.lib.boxc.auth.fcrepo.model.AccessGroupSet;
-import edu.unc.lib.boxc.auth.fcrepo.model.AgentPrincipals;
-import edu.unc.lib.boxc.auth.api.Permission;
-import edu.unc.lib.boxc.auth.fcrepo.model.RoleAssignment;
-import edu.unc.lib.boxc.auth.api.UserRole;
 import edu.unc.lib.dl.fcrepo4.TransactionManager;
 import edu.unc.lib.dl.fedora.ServiceException;
 import edu.unc.lib.dl.persist.api.event.PremisLoggerFactory;
@@ -146,8 +148,8 @@ public class StaffRoleAssignmentServiceIT {
         initMocks(this);
         TestHelper.setContentBase(baseAddress);
 
-        groups = new AccessGroupSet(GRP_PRINC);
-        agent = new AgentPrincipals(USER_PRINC, groups);
+        groups = new AccessGroupSetImpl(GRP_PRINC);
+        agent = new AgentPrincipalsImpl(USER_PRINC, groups);
 
         roleService = new StaffRoleAssignmentService();
         roleService.setAclFactory(aclFactory);
@@ -168,7 +170,7 @@ public class StaffRoleAssignmentServiceIT {
         PID pid = pidMinter.mintContentPid();
 
         doThrow(new AccessRestrictionException()).when(aclService)
-            .assertHasAccess(anyString(), eq(pid), any(AccessGroupSet.class), eq(Permission.assignStaffRoles));
+            .assertHasAccess(anyString(), eq(pid), any(AccessGroupSetImpl.class), eq(Permission.assignStaffRoles));
 
         Set<RoleAssignment> assignments = new HashSet<>(asList(
                 new RoleAssignment(USER_PRINC, canAccess)));

@@ -20,15 +20,15 @@ import java.util.ArrayList;
 import org.junit.Assert;
 import org.junit.Test;
 
-import edu.unc.lib.boxc.auth.fcrepo.model.AccessGroupSet;
+import edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl;
 
-public class AccessGroupSetTest extends Assert {
+public class AccessGroupSetImplTest extends Assert {
 
     @Test
     public void testGroups() {
         String testGroup = "this:is:a:test:group";
 
-        AccessGroupSet groups = new AccessGroupSet();
+        AccessGroupSetImpl groups = new AccessGroupSetImpl();
         assertEquals(groups.size(), 0);
         groups.add(testGroup);
 
@@ -53,12 +53,12 @@ public class AccessGroupSetTest extends Assert {
         groupList.add(testGroup);
         assertTrue(groups.containsAny(groupList));
 
-        groups = new AccessGroupSet();
+        groups = new AccessGroupSetImpl();
         groups.add(testGroupSlashes);
         assertFalse(groups.contains(testGroup));
         assertTrue(groups.contains(testGroupSlashes));
 
-        groups = new AccessGroupSet(new String[]{"group:1","group:2","group:3","group:1"});
+        groups = new AccessGroupSetImpl(new String[]{"group:1","group:2","group:3","group:1"});
         assertEquals(groups.size(), 3);
     }
 
@@ -68,17 +68,17 @@ public class AccessGroupSetTest extends Assert {
         groups.add("oddGroup");groups.add("testGroup1");
         groups.add("nonmatchingGroup");groups.add("edu:unc:lib:cdr:admin");
 
-        AccessGroupSet groupSet = new AccessGroupSet();
+        AccessGroupSetImpl groupSet = new AccessGroupSetImpl();
         //groupSet.addAll(groups);
 
         String members = "testGroup1";
-        groupSet = new AccessGroupSet(members);
+        groupSet = new AccessGroupSetImpl(members);
         Assert.assertTrue(groupSet.size() == 1);
 
         Assert.assertTrue(groupSet.contains("testGroup1"));
 
         members = "testGroup1;testGroup2;testGroup3;oddGroup";
-        groupSet = new AccessGroupSet(members);
+        groupSet = new AccessGroupSetImpl(members);
         Assert.assertEquals(4, groupSet.size());
         Assert.assertTrue(groupSet.contains("testGroup1"));
         Assert.assertTrue(groupSet.contains("oddGroup"));
@@ -86,21 +86,21 @@ public class AccessGroupSetTest extends Assert {
         Assert.assertTrue(groupSet.containsAny(groups));
 
         members = "testGroup1:testGroupExtended;testGroup2";
-        groupSet = new AccessGroupSet(members);
+        groupSet = new AccessGroupSetImpl(members);
         Assert.assertTrue(groupSet.size() == 2);
 
         members = ";testGroup1;";
-        groupSet = new AccessGroupSet(members);
+        groupSet = new AccessGroupSetImpl(members);
         Assert.assertTrue(groupSet.size() == 1);
 
         members = "";
-        groupSet = new AccessGroupSet(members);
+        groupSet = new AccessGroupSetImpl(members);
         Assert.assertTrue(groupSet.size() == 0);
         Assert.assertFalse(groupSet.containsAny(groups));
         Assert.assertTrue(members.equals(groupSet.joinAccessGroups(";", "", false)));
 
         members = "edu:unc:lib:cdr:admin;edu:unc:lib:cdr:sfc";
-        groupSet = new AccessGroupSet(members);
+        groupSet = new AccessGroupSetImpl(members);
         Assert.assertTrue(groupSet.size() == 2);
         Assert.assertTrue(groupSet.containsAny(groups));
 

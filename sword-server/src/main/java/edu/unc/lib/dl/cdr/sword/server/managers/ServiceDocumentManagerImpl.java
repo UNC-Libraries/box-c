@@ -36,14 +36,15 @@ import org.swordapp.server.SwordError;
 import org.swordapp.server.SwordServerException;
 import org.swordapp.server.SwordWorkspace;
 
+import edu.unc.lib.boxc.auth.api.Permission;
+import edu.unc.lib.boxc.auth.api.models.AgentPrincipals;
+import edu.unc.lib.boxc.auth.fcrepo.models.AgentPrincipalsImpl;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.objects.ContentContainerObject;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObject;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPaths;
-import edu.unc.lib.boxc.auth.fcrepo.model.AgentPrincipals;
-import edu.unc.lib.boxc.auth.api.Permission;
 import edu.unc.lib.dl.cdr.sword.server.SwordConfigurationImpl;
 import edu.unc.lib.dl.persist.api.ingest.DepositHandler;
 import edu.unc.lib.dl.util.ErrorURIRegistry;
@@ -132,7 +133,7 @@ public class ServiceDocumentManagerImpl extends AbstractFedoraManager implements
             return Collections.emptyList();
         }
 
-        AgentPrincipals agent = AgentPrincipals.createFromThread();
+        AgentPrincipals agent = AgentPrincipalsImpl.createFromThread();
 
         return containerObj.getMembers().stream().map(child -> {
             PID childPid = child.getPid();

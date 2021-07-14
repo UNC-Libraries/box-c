@@ -39,17 +39,18 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 
+import edu.unc.lib.boxc.auth.api.Permission;
+import edu.unc.lib.boxc.auth.api.exceptions.AccessRestrictionException;
+import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
+import edu.unc.lib.boxc.auth.api.models.AgentPrincipals;
+import edu.unc.lib.boxc.auth.api.services.AccessControlService;
+import edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl;
 import edu.unc.lib.boxc.model.api.ids.PID;
+import edu.unc.lib.boxc.model.api.objects.BinaryObject;
+import edu.unc.lib.boxc.model.api.objects.ContentObject;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
-import edu.unc.lib.boxc.model.api.objects.ContentObject;
-import edu.unc.lib.boxc.model.api.objects.BinaryObject;
-import edu.unc.lib.boxc.auth.api.exceptions.AccessRestrictionException;
-import edu.unc.lib.boxc.auth.api.services.AccessControlService;
-import edu.unc.lib.boxc.auth.fcrepo.model.AccessGroupSet;
-import edu.unc.lib.boxc.auth.fcrepo.model.AgentPrincipals;
-import edu.unc.lib.boxc.auth.api.Permission;
 import edu.unc.lib.dl.persist.api.indexing.IndexingPriority;
 import edu.unc.lib.dl.persist.api.storage.StorageLocation;
 import edu.unc.lib.dl.persist.api.transfer.BinaryTransferSession;
@@ -163,7 +164,7 @@ public class UpdateDescriptionServiceTest {
     @Test(expected = AccessRestrictionException.class)
     public void insufficientAccessTest() throws Exception {
         doThrow(new AccessRestrictionException()).when(aclService)
-                .assertHasAccess(anyString(), eq(objPid), any(AccessGroupSet.class), any(Permission.class));
+                .assertHasAccess(anyString(), eq(objPid), any(AccessGroupSetImpl.class), any(Permission.class));
 
         service.updateDescription(new UpdateDescriptionRequest(agent, objPid, modsStream));
     }
@@ -171,7 +172,7 @@ public class UpdateDescriptionServiceTest {
     @Test
     public void insufficientAccessDisableAccessCheckTest() throws Exception {
         doThrow(new AccessRestrictionException()).when(aclService)
-                .assertHasAccess(anyString(), eq(objPid), any(AccessGroupSet.class), any(Permission.class));
+                .assertHasAccess(anyString(), eq(objPid), any(AccessGroupSetImpl.class), any(Permission.class));
 
         service.setChecksAccess(false);
 

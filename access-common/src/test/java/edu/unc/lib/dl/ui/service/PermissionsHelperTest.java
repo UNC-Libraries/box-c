@@ -15,11 +15,11 @@
  */
 package edu.unc.lib.dl.ui.service;
 
-import static edu.unc.lib.boxc.model.api.DatastreamType.JP2_ACCESS_COPY;
-import static edu.unc.lib.boxc.model.api.DatastreamType.ORIGINAL_FILE;
 import static edu.unc.lib.boxc.auth.api.Permission.editDescription;
 import static edu.unc.lib.boxc.auth.api.Permission.viewAccessCopies;
 import static edu.unc.lib.boxc.auth.api.Permission.viewOriginal;
+import static edu.unc.lib.boxc.model.api.DatastreamType.JP2_ACCESS_COPY;
+import static edu.unc.lib.boxc.model.api.DatastreamType.ORIGINAL_FILE;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
@@ -35,10 +35,11 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
 
-import edu.unc.lib.boxc.model.api.ids.PID;
-import edu.unc.lib.boxc.auth.api.services.AccessControlService;
-import edu.unc.lib.boxc.auth.fcrepo.model.AccessGroupSet;
 import edu.unc.lib.boxc.auth.api.Permission;
+import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
+import edu.unc.lib.boxc.auth.api.services.AccessControlService;
+import edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl;
+import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadataBean;
 
 /**
@@ -73,7 +74,7 @@ public class PermissionsHelperTest {
                 JP2_ACCESS_COPY.getId() + "|application/jp2|file.jp2|jp2|884||");
         mdObject.setDatastream(datastreams);
 
-        principals = new AccessGroupSet("group");
+        principals = new AccessGroupSetImpl("group");
 
         helper = new PermissionsHelper();
         helper.setAccessControlService(accessControlService);

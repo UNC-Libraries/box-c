@@ -15,8 +15,9 @@
  */
 package edu.unc.lib.boxc.auth.fcrepo.services;
 
-import edu.unc.lib.boxc.auth.fcrepo.model.AccessGroupSet;
-import edu.unc.lib.boxc.auth.fcrepo.model.AgentPrincipals;
+import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
+import edu.unc.lib.boxc.auth.api.models.AgentPrincipals;
+import edu.unc.lib.boxc.auth.fcrepo.models.AgentPrincipalsImpl;
 
 /**
  * This class works in conjunction with <code>GroupsToThreadStoreInterceptor</code> and
@@ -121,7 +122,7 @@ public abstract class GroupsThreadStore {
     public static AgentPrincipals getAgentPrincipals() {
         AgentPrincipals principals = GroupsThreadStore.agentPrincipals.get();
         if (principals == null) {
-            principals = new AgentPrincipals(username.get(), groups.get());
+            principals = new AgentPrincipalsImpl(username.get(), groups.get());
             agentPrincipals.set(principals);
         }
         return principals;

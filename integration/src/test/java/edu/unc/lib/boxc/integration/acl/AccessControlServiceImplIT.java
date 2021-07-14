@@ -30,6 +30,14 @@ import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import edu.unc.lib.boxc.auth.api.Permission;
+import edu.unc.lib.boxc.auth.api.exceptions.AccessRestrictionException;
+import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
+import edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl;
+import edu.unc.lib.boxc.auth.fcrepo.services.AccessControlServiceImpl;
+import edu.unc.lib.boxc.auth.fcrepo.services.GlobalPermissionEvaluator;
+import edu.unc.lib.boxc.auth.fcrepo.services.InheritedPermissionEvaluator;
+import edu.unc.lib.boxc.auth.fcrepo.services.ObjectAclFactory;
 import edu.unc.lib.boxc.integration.fcrepo.AbstractFedoraIT;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.objects.AdminUnit;
@@ -44,13 +52,6 @@ import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPaths;
 import edu.unc.lib.boxc.model.fcrepo.services.RepositoryInitializer;
 import edu.unc.lib.boxc.model.fcrepo.test.AclModelBuilder;
-import edu.unc.lib.boxc.auth.api.exceptions.AccessRestrictionException;
-import edu.unc.lib.dl.acl.fcrepo4.AccessControlServiceImpl;
-import edu.unc.lib.dl.acl.fcrepo4.GlobalPermissionEvaluator;
-import edu.unc.lib.dl.acl.fcrepo4.InheritedPermissionEvaluator;
-import edu.unc.lib.dl.acl.fcrepo4.ObjectAclFactory;
-import edu.unc.lib.boxc.auth.fcrepo.model.AccessGroupSet;
-import edu.unc.lib.boxc.auth.api.Permission;
 
 /**
  *
@@ -225,7 +226,7 @@ public class AccessControlServiceImplIT extends AbstractFedoraIT {
     @Test
     public void hasGlobalAdminAccess() {
 
-        final AccessGroupSet principals = new AccessGroupSet("adminGroup");
+        final AccessGroupSet principals = new AccessGroupSetImpl("adminGroup");
 
         getAllContentObjects().forEach(pid -> {
             assertTrue(aclService.hasAccess(pid, principals, Permission.destroy));
@@ -237,7 +238,7 @@ public class AccessControlServiceImplIT extends AbstractFedoraIT {
     @Test
     public void hasGlobalDescribeAccess() {
 
-        final AccessGroupSet principals = new AccessGroupSet(STAFF_PRINC);
+        final AccessGroupSet principals = new AccessGroupSetImpl(STAFF_PRINC);
 
         // Ensure that global describe group can describe everywhere but not destroy
         getAllContentObjects().forEach(pid -> {
@@ -250,7 +251,7 @@ public class AccessControlServiceImplIT extends AbstractFedoraIT {
     @Test
     public void hasGlobalViewAccess() {
 
-        final AccessGroupSet principals = new AccessGroupSet("auditors");
+        final AccessGroupSet principals = new AccessGroupSetImpl("auditors");
 
         // Ensure that the global access group can read everything, but not edit
         getAllContentObjects().forEach(pid -> {
@@ -262,7 +263,7 @@ public class AccessControlServiceImplIT extends AbstractFedoraIT {
 
     @Test
     public void localHigherPermissionOverridesGlobal() {
-        final AccessGroupSet principals = new AccessGroupSet(STAFF_PRINC);
+        final AccessGroupSet principals = new AccessGroupSetImpl(STAFF_PRINC);
 
         assertTrue("canManage role on collection 2 should override global canDescribe",
                 aclService.hasAccess(collObj2.getPid(), principals, Permission.markForDeletion));
@@ -270,7 +271,7 @@ public class AccessControlServiceImplIT extends AbstractFedoraIT {
 
     @Test
     public void unitHasPatronPermissionTest() {
-        final AccessGroupSet principals = new AccessGroupSet(PUBLIC_PRINC);
+        final AccessGroupSet principals = new AccessGroupSetImpl(PUBLIC_PRINC);
 
         assertTrue("Everyone should be able to view unit",
                 aclService.hasAccess(adminUnit1.getPid(), principals, Permission.viewMetadata));
@@ -278,7 +279,7 @@ public class AccessControlServiceImplIT extends AbstractFedoraIT {
 
     @Test
     public void everyoneHasAccessToPublicWorkTest() {
-        final AccessGroupSet principals = new AccessGroupSet(PUBLIC_PRINC);
+        final AccessGroupSet principals = new AccessGroupSetImpl(PUBLIC_PRINC);
 
         assertTrue("Everyone should be able to access unrestricted work",
                 aclService.hasAccess(collObj1Work2.getPid(), principals, Permission.viewOriginal));
@@ -286,21 +287,21 @@ public class AccessControlServiceImplIT extends AbstractFedoraIT {
 
     @Test
     public void assertEveryoneCanAccess() {
-        final AccessGroupSet principals = new AccessGroupSet(PUBLIC_PRINC);
+        final AccessGroupSet principals = new AccessGroupSetImpl(PUBLIC_PRINC);
 
         aclService.assertHasAccess(null, collObj1Work2.getPid(), principals, Permission.viewOriginal);
     }
 
     @Test(expected = AccessRestrictionException.class)
     public void assertEveryoneCannotAccess() {
-        final AccessGroupSet principals = new AccessGroupSet(PUBLIC_PRINC);
+        final AccessGroupSet principals = new AccessGroupSetImpl(PUBLIC_PRINC);
 
         aclService.assertHasAccess(null, collObj1Folder1Work1.getPid(), principals, Permission.viewOriginal);
     }
 
     @Test
     public void everyoneCannotAccessRestrictedFolderTest() {
-        final AccessGroupSet principals = new AccessGroupSet(PUBLIC_PRINC);
+        final AccessGroupSet principals = new AccessGroupSetImpl(PUBLIC_PRINC);
 
         assertFalse("Everyone should not be able to access staff only folder",
                 aclService.hasAccess(collObj1Folder1.getPid(), principals, Permission.viewOriginal));
@@ -308,7 +309,7 @@ public class AccessControlServiceImplIT extends AbstractFedoraIT {
 
     @Test
     public void everyoneCannotAccessWorkInheritedFromFolderTest() {
-        final AccessGroupSet principals = new AccessGroupSet(PUBLIC_PRINC);
+        final AccessGroupSet principals = new AccessGroupSetImpl(PUBLIC_PRINC);
 
         assertFalse("Everyone should not be able to access work in a staff only folder",
                 aclService.hasAccess(collObj2Work2.getPid(), principals, Permission.viewOriginal));
@@ -316,7 +317,7 @@ public class AccessControlServiceImplIT extends AbstractFedoraIT {
 
     @Test
     public void everyoneCannotAccessRestrictedCollTest() {
-        final AccessGroupSet principals = new AccessGroupSet(PUBLIC_PRINC);
+        final AccessGroupSet principals = new AccessGroupSetImpl(PUBLIC_PRINC);
 
         assertFalse("Everyone should not be able to access staff only collection",
                 aclService.hasAccess(collObj2.getPid(), principals, Permission.viewOriginal));
@@ -324,7 +325,7 @@ public class AccessControlServiceImplIT extends AbstractFedoraIT {
 
     @Test
     public void everyoneCannotAccessWorkInRestrictedCollTest() {
-        final AccessGroupSet principals = new AccessGroupSet(PUBLIC_PRINC);
+        final AccessGroupSet principals = new AccessGroupSetImpl(PUBLIC_PRINC);
 
         assertFalse("Everyone should not be able to work in restricted collection",
                 aclService.hasAccess(collObj2Folder1Work1.getPid(), principals, Permission.viewOriginal));
@@ -332,7 +333,7 @@ public class AccessControlServiceImplIT extends AbstractFedoraIT {
 
     @Test
     public void everyoneDowngradedAccess() {
-        final AccessGroupSet principals = new AccessGroupSet(PUBLIC_PRINC);
+        final AccessGroupSet principals = new AccessGroupSetImpl(PUBLIC_PRINC);
 
         assertTrue("Everyone must have view metadata access",
                 aclService.hasAccess(collObj1Folder2Work1.getPid(), principals, Permission.viewMetadata));
@@ -342,7 +343,7 @@ public class AccessControlServiceImplIT extends AbstractFedoraIT {
 
     @Test
     public void authenticatedHigherPermissions() {
-        final AccessGroupSet principals = new AccessGroupSet(PUBLIC_PRINC, AUTHENTICATED_PRINC);
+        final AccessGroupSet principals = new AccessGroupSetImpl(PUBLIC_PRINC, AUTHENTICATED_PRINC);
 
         assertTrue("Authenticated must have view originals access for folder",
                 aclService.hasAccess(collObj1Folder2.getPid(), principals, Permission.viewOriginal));
@@ -352,7 +353,7 @@ public class AccessControlServiceImplIT extends AbstractFedoraIT {
 
     @Test
     public void specialPatronGroupHigherPermissions() {
-        final AccessGroupSet principals = new AccessGroupSet(PUBLIC_PRINC, PATRON_GROUP);
+        final AccessGroupSet principals = new AccessGroupSetImpl(PUBLIC_PRINC, PATRON_GROUP);
 
         assertTrue("Patron group must have view originals access for folder",
                 aclService.hasAccess(collObj1Folder2.getPid(), principals, Permission.viewOriginal));
@@ -362,7 +363,7 @@ public class AccessControlServiceImplIT extends AbstractFedoraIT {
 
     @Test
     public void specialPatronGroupStaffOnly() {
-        final AccessGroupSet principals = new AccessGroupSet(PUBLIC_PRINC, PATRON_GROUP);
+        final AccessGroupSet principals = new AccessGroupSetImpl(PUBLIC_PRINC, PATRON_GROUP);
 
         assertFalse("Patron group must have no access for work",
                 aclService.hasAccess(collObj1Folder2Work2.getPid(), principals, Permission.viewMetadata));
@@ -370,7 +371,7 @@ public class AccessControlServiceImplIT extends AbstractFedoraIT {
 
     @Test
     public void specialPatronGroupStaffOnlyReUpped() {
-        final AccessGroupSet principals = new AccessGroupSet(PUBLIC_PRINC, PATRON_GROUP);
+        final AccessGroupSet principals = new AccessGroupSetImpl(PUBLIC_PRINC, PATRON_GROUP);
 
         assertTrue("Patron group must have originals access for work",
                 aclService.hasAccess(collObj1Folder2Work3.getPid(), principals, Permission.viewOriginal));
@@ -378,7 +379,7 @@ public class AccessControlServiceImplIT extends AbstractFedoraIT {
 
     @Test
     public void staffViewerCanAccessStaffOnlyWorkInRestrictedCollTest() {
-        final AccessGroupSet principals = new AccessGroupSet(VIEWER_PRINC);
+        final AccessGroupSet principals = new AccessGroupSetImpl(VIEWER_PRINC);
 
         assertTrue("Staff user should be able to access patron restricted work",
                 aclService.hasAccess(collObj2Work2.getPid(), principals, Permission.viewOriginal));
@@ -386,7 +387,7 @@ public class AccessControlServiceImplIT extends AbstractFedoraIT {
 
     @Test
     public void staffViewerCannotModifyCollectionTest() {
-        final AccessGroupSet principals = new AccessGroupSet(VIEWER_PRINC);
+        final AccessGroupSet principals = new AccessGroupSetImpl(VIEWER_PRINC);
 
         assertFalse("Staff user should not be able to modify collection",
                 aclService.hasAccess(collObj2.getPid(), principals, Permission.editDescription));
@@ -394,7 +395,7 @@ public class AccessControlServiceImplIT extends AbstractFedoraIT {
 
     @Test
     public void collStaffCannotViewOtherColl() {
-        final AccessGroupSet principals = new AccessGroupSet(VIEWER_PRINC);
+        final AccessGroupSet principals = new AccessGroupSetImpl(VIEWER_PRINC);
 
         assertFalse("Collection assigned staff user should not be able to access a different collection",
                 aclService.hasAccess(collObj3.getPid(), principals, Permission.viewOriginal));
@@ -402,7 +403,7 @@ public class AccessControlServiceImplIT extends AbstractFedoraIT {
 
     @Test
     public void unitOwnerHasAccessTest() {
-        final AccessGroupSet principals = new AccessGroupSet(UNIT_OWNER_PRINC);
+        final AccessGroupSet principals = new AccessGroupSetImpl(UNIT_OWNER_PRINC);
 
         assertTrue("Unit owner should be able to create collections in unit",
                 aclService.hasAccess(adminUnit1.getPid(), principals, Permission.createCollection));
@@ -414,7 +415,7 @@ public class AccessControlServiceImplIT extends AbstractFedoraIT {
 
     @Test
     public void unitOwnerCannotModifyOtherUnitTest() {
-        final AccessGroupSet principals = new AccessGroupSet(UNIT_OWNER_PRINC);
+        final AccessGroupSet principals = new AccessGroupSetImpl(UNIT_OWNER_PRINC);
 
         assertFalse("Unit owner 1 should not be able to create collections in another unit",
                 aclService.hasAccess(adminUnit2.getPid(), principals, Permission.createCollection));
@@ -422,7 +423,7 @@ public class AccessControlServiceImplIT extends AbstractFedoraIT {
 
     @Test
     public void unitManagerHasAccessTest() {
-        final AccessGroupSet principals = new AccessGroupSet(UNIT_MANAGER_PRINC);
+        final AccessGroupSet principals = new AccessGroupSetImpl(UNIT_MANAGER_PRINC);
 
         assertTrue("Manager should be able to modify unit",
                 aclService.hasAccess(adminUnit1.getPid(), principals, Permission.editDescription));

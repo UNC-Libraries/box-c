@@ -36,18 +36,19 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 
+import edu.unc.lib.boxc.auth.api.exceptions.AccessRestrictionException;
+import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
+import edu.unc.lib.boxc.auth.api.models.AgentPrincipals;
+import edu.unc.lib.boxc.auth.api.services.AccessControlService;
+import edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl;
 import edu.unc.lib.boxc.model.api.exceptions.InvalidOperationForObjectType;
 import edu.unc.lib.boxc.model.api.ids.PID;
-import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
-import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
-import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.boxc.model.api.objects.FileObject;
 import edu.unc.lib.boxc.model.api.objects.FolderObject;
+import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.api.objects.WorkObject;
-import edu.unc.lib.boxc.auth.api.exceptions.AccessRestrictionException;
-import edu.unc.lib.boxc.auth.api.services.AccessControlService;
-import edu.unc.lib.boxc.auth.fcrepo.model.AccessGroupSet;
-import edu.unc.lib.boxc.auth.fcrepo.model.AgentPrincipals;
+import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
+import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.dl.services.OperationsMessageSender;
 
 /**
@@ -125,7 +126,7 @@ public class SetAsPrimaryObjectServiceTest {
     @Test(expected = AccessRestrictionException.class)
     public void insufficientAccessTest() {
         doThrow(new AccessRestrictionException()).when(aclService)
-        .assertHasAccess(anyString(), eq(fileObjPid), any(AccessGroupSet.class), eq(editResourceType));
+        .assertHasAccess(anyString(), eq(fileObjPid), any(AccessGroupSetImpl.class), eq(editResourceType));
 
         service.setAsPrimaryObject(agent, fileObjPid);
     }
@@ -192,7 +193,7 @@ public class SetAsPrimaryObjectServiceTest {
     @Test(expected = AccessRestrictionException.class)
     public void testClearPrimaryObjectAccessRestriction() {
         doThrow(new AccessRestrictionException()).when(aclService)
-            .assertHasAccess(anyString(), eq(workObjPid), any(AccessGroupSet.class), eq(editResourceType));
+            .assertHasAccess(anyString(), eq(workObjPid), any(AccessGroupSetImpl.class), eq(editResourceType));
 
         when(fileObj.getParent()).thenReturn(workObj);
 

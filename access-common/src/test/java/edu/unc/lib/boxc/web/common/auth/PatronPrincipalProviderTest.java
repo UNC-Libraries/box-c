@@ -42,8 +42,6 @@ import org.junit.rules.TemporaryFolder;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import edu.unc.lib.boxc.web.common.auth.PatronPrincipalProvider;
-
 /**
  * @author bbpennel
  */

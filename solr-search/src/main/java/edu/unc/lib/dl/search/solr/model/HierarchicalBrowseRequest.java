@@ -15,7 +15,7 @@
  */
 package edu.unc.lib.dl.search.solr.model;
 
-import edu.unc.lib.boxc.auth.fcrepo.model.AccessGroupSet;
+import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
 
 /**
  *

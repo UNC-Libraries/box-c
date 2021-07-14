@@ -46,16 +46,17 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 
+import edu.unc.lib.boxc.auth.api.Permission;
+import edu.unc.lib.boxc.auth.api.exceptions.AccessRestrictionException;
+import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
+import edu.unc.lib.boxc.auth.api.models.AgentPrincipals;
+import edu.unc.lib.boxc.auth.api.services.AccessControlService;
+import edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl;
 import edu.unc.lib.boxc.model.api.ids.PID;
+import edu.unc.lib.boxc.model.api.objects.BinaryObject;
+import edu.unc.lib.boxc.model.api.objects.ContentObject;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
-import edu.unc.lib.boxc.model.api.objects.ContentObject;
-import edu.unc.lib.boxc.model.api.objects.BinaryObject;
-import edu.unc.lib.boxc.auth.api.exceptions.AccessRestrictionException;
-import edu.unc.lib.boxc.auth.api.services.AccessControlService;
-import edu.unc.lib.boxc.auth.fcrepo.model.AccessGroupSet;
-import edu.unc.lib.boxc.auth.fcrepo.model.AgentPrincipals;
-import edu.unc.lib.boxc.auth.api.Permission;
 import edu.unc.lib.dl.persist.services.edit.UpdateDescriptionService.UpdateDescriptionRequest;
 import edu.unc.lib.dl.services.OperationsMessageSender;
 
@@ -101,7 +102,7 @@ public class EditTitleServiceTest {
 
         when(repoObjLoader.getRepositoryObject(eq(pid))).thenReturn(contentObj);
         when(contentObj.getDescription()).thenReturn(binaryObj);
-        when(aclService.hasAccess(any(PID.class), any(AccessGroupSet.class), eq(Permission.editDescription)))
+        when(aclService.hasAccess(any(PID.class), any(AccessGroupSetImpl.class), eq(Permission.editDescription)))
                 .thenReturn(true);
         when(repoObjLoader.getRepositoryObject(any(PID.class))).thenReturn(contentObj);
         when(agent.getPrincipals()).thenReturn(groups);
@@ -140,7 +141,7 @@ public class EditTitleServiceTest {
         when(binaryObj.getBinaryStream()).thenReturn(convertDocumentToStream(document));
 
         doThrow(new AccessRestrictionException()).when(aclService)
-                .assertHasAccess(anyString(), eq(pid), any(AccessGroupSet.class), any(Permission.class));
+                .assertHasAccess(anyString(), eq(pid), any(AccessGroupSetImpl.class), any(Permission.class));
 
         service.editTitle(agent, pid, title);
     }

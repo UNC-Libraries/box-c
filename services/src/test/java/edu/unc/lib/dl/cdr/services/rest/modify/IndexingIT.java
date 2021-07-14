@@ -40,9 +40,9 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.ContextHierarchy;
 import org.springframework.test.web.servlet.MvcResult;
 
-import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.auth.api.exceptions.AccessRestrictionException;
-import edu.unc.lib.boxc.auth.fcrepo.model.AccessGroupSet;
+import edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl;
+import edu.unc.lib.boxc.model.api.ids.PID;
 
 /**
  *
@@ -67,7 +67,7 @@ public class IndexingIT extends AbstractAPIIT {
     public void testAuthorizationFailure() throws Exception {
         PID objPid = makePid();
         doThrow(new AccessRestrictionException()).when(aclService)
-                .assertHasAccess(anyString(), eq(objPid), any(AccessGroupSet.class), eq(reindex));
+                .assertHasAccess(anyString(), eq(objPid), any(AccessGroupSetImpl.class), eq(reindex));
 
         MvcResult result = mvc.perform(post("/edit/solr/update/" + objPid.getUUID()))
             .andExpect(status().isForbidden())
@@ -152,7 +152,7 @@ public class IndexingIT extends AbstractAPIIT {
     public void testReindexTriplesAuthorizationFailure() throws Exception {
         PID parentPid = makePid();
         doThrow(new AccessRestrictionException()).when(aclService)
-            .assertHasAccess(anyString(), eq(parentPid), any(AccessGroupSet.class), eq(reindex));
+            .assertHasAccess(anyString(), eq(parentPid), any(AccessGroupSetImpl.class), eq(reindex));
 
         MvcResult result = mvc.perform(post("/edit/triples/reindex/" + parentPid.getUUID(), false))
                 .andExpect(status().isForbidden())

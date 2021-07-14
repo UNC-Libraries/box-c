@@ -59,14 +59,15 @@ import org.springframework.test.web.servlet.MvcResult;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.jsontype.NamedType;
 
+import edu.unc.lib.boxc.auth.api.Permission;
+import edu.unc.lib.boxc.auth.api.exceptions.AccessRestrictionException;
+import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
+import edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl;
+import edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore;
 import edu.unc.lib.boxc.common.util.ZipFileUtil;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.services.ContentPathFactory;
 import edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPaths;
-import edu.unc.lib.boxc.auth.api.exceptions.AccessRestrictionException;
-import edu.unc.lib.boxc.auth.fcrepo.model.AccessGroupSet;
-import edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore;
-import edu.unc.lib.boxc.auth.api.Permission;
 import edu.unc.lib.dl.cdr.services.rest.modify.IngestSourceController.IngestPackageDetails;
 import edu.unc.lib.dl.persist.api.ingest.IngestSource;
 import edu.unc.lib.dl.persist.api.ingest.IngestSourceCandidate;
@@ -117,7 +118,7 @@ public class IngestFromSourcesIT extends AbstractAPIIT {
         sourceFolderPath = tmpFolder.newFolder().getAbsolutePath();
         mappingList = new ArrayList<>();
 
-        AccessGroupSet testPrincipals = new AccessGroupSet("admins");
+        AccessGroupSet testPrincipals = new AccessGroupSetImpl("admins");
 
         GroupsThreadStore.storeUsername(DEPOSITOR);
         GroupsThreadStore.storeGroups(testPrincipals);
@@ -140,7 +141,7 @@ public class IngestFromSourcesIT extends AbstractAPIIT {
         mockAncestors(destPid, rootPid, adminUnitPid);
 
         doThrow(new AccessRestrictionException()).when(aclService)
-                .assertHasAccess(anyString(), eq(destPid), any(AccessGroupSet.class), eq(Permission.ingest));
+                .assertHasAccess(anyString(), eq(destPid), any(AccessGroupSetImpl.class), eq(Permission.ingest));
 
         mvc.perform(get("/edit/ingestSources/list/" + destPid.getId()))
                 .andExpect(status().isForbidden())
@@ -265,7 +266,7 @@ public class IngestFromSourcesIT extends AbstractAPIIT {
         mockAncestors(destPid, rootPid, adminUnitPid);
 
         doThrow(new AccessRestrictionException()).when(aclService)
-                .assertHasAccess(anyString(), eq(destPid), any(AccessGroupSet.class), eq(Permission.ingest));
+                .assertHasAccess(anyString(), eq(destPid), any(AccessGroupSetImpl.class), eq(Permission.ingest));
 
         List<IngestPackageDetails> details = asList(
                 new IngestPackageDetails("testsource", candPath1.getFileName().toString(), BAGIT,
@@ -547,7 +548,7 @@ public class IngestFromSourcesIT extends AbstractAPIIT {
     private void assertDepositorDetailsStored(Map<String, String> status) {
         assertEquals(DEPOSITOR, status.get(DepositField.depositorName.name()));
         assertEquals(DEPOSITOR_EMAIL, status.get(DepositField.depositorEmail.name()));
-        AccessGroupSet depositPrincipals = new AccessGroupSet(status.get(DepositField.permissionGroups.name()));
+        AccessGroupSet depositPrincipals = new AccessGroupSetImpl(status.get(DepositField.permissionGroups.name()));
         assertTrue("admins principal must be set in deposit", depositPrincipals.contains("admins"));
     }
 

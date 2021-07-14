@@ -84,14 +84,14 @@
         <property name="fcrepoClient" ref="fcrepoClient" />
     </bean>
     
-    <bean id="objectAclFactory" class="edu.unc.lib.dl.acl.fcrepo4.ObjectAclFactory"
+    <bean id="objectAclFactory" class="edu.unc.lib.boxc.auth.fcrepo.services.ObjectAclFactory"
             init-method="init">
         <property name="cacheMaxSize" value="100" />
         <property name="cacheTimeToLive" value="100" />
         <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
     </bean>
     
-    <bean id="inheritedPermissionEvaluator" class="edu.unc.lib.dl.acl.fcrepo4.InheritedPermissionEvaluator">
+    <bean id="inheritedPermissionEvaluator" class="edu.unc.lib.boxc.auth.fcrepo.services.InheritedPermissionEvaluator">
         <property name="pathFactory" ref="contentPathFactory" />
         <property name="objectAclFactory" ref="objectAclFactory" />
     </bean>
@@ -105,11 +105,11 @@
         </property>
     </bean>
     
-    <bean id="globalPermissionEvaluator" class="edu.unc.lib.dl.acl.fcrepo4.GlobalPermissionEvaluator">
+    <bean id="globalPermissionEvaluator" class="edu.unc.lib.boxc.auth.fcrepo.services.GlobalPermissionEvaluator">
         <constructor-arg ref="aclGlobalProperties" />
     </bean>
     
-    <bean id="aclService" class="edu.unc.lib.dl.acl.fcrepo4.AccessControlServiceImpl">
+    <bean id="aclService" class="edu.unc.lib.boxc.auth.fcrepo.services.AccessControlServiceImpl">
         <property name="globalPermissionEvaluator" ref="globalPermissionEvaluator" />
         <property name="permissionEvaluator" ref="inheritedPermissionEvaluator" />
     </bean>

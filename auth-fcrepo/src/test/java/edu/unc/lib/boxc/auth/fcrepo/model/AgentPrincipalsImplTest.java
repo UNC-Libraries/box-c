@@ -26,8 +26,10 @@ import java.util.List;
 
 import org.junit.Test;
 
-import edu.unc.lib.boxc.auth.fcrepo.model.AccessGroupSet;
-import edu.unc.lib.boxc.auth.fcrepo.model.AgentPrincipals;
+import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
+import edu.unc.lib.boxc.auth.api.models.AgentPrincipals;
+import edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl;
+import edu.unc.lib.boxc.auth.fcrepo.models.AgentPrincipalsImpl;
 import edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore;
 
 /**
@@ -35,19 +37,19 @@ import edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore;
  * @author bbpennel
  *
  */
-public class AgentPrincipalsTest {
+public class AgentPrincipalsImplTest {
 
     private final static String USERNAME = "user";
     private final static String[] PRINCIPALS = new String[] {"grp1", "grp2"};
     private final static List<String> PRINCIPAL_LIST = Arrays.asList(PRINCIPALS);
-    private final static AccessGroupSet PRINCIPAL_SET = new AccessGroupSet(PRINCIPALS);
+    private final static AccessGroupSet PRINCIPAL_SET = new AccessGroupSetImpl(PRINCIPALS);
 
     @Test
     public void testCreateFromThread() {
         GroupsThreadStore.storeUsername(USERNAME);
         GroupsThreadStore.storeGroups(PRINCIPAL_SET);
 
-        AgentPrincipals agent = AgentPrincipals.createFromThread();
+        AgentPrincipals agent = AgentPrincipalsImpl.createFromThread();
 
         assertEquals(USERNAME, agent.getUsername());
         assertTrue(agent.getPrincipals().containsAll(PRINCIPAL_LIST));
@@ -57,7 +59,7 @@ public class AgentPrincipalsTest {
 
     @Test
     public void testWithUsername() {
-        AgentPrincipals agent = new AgentPrincipals(USERNAME, PRINCIPAL_SET);
+        AgentPrincipals agent = new AgentPrincipalsImpl(USERNAME, PRINCIPAL_SET);
 
         assertEquals(USERNAME, agent.getUsername());
         assertTrue(agent.getPrincipals().containsAll(PRINCIPAL_LIST));
@@ -67,7 +69,7 @@ public class AgentPrincipalsTest {
 
     @Test
     public void testWithoutUsername() {
-        AgentPrincipals agent = new AgentPrincipals(null, PRINCIPAL_SET);
+        AgentPrincipals agent = new AgentPrincipalsImpl(null, PRINCIPAL_SET);
 
         assertNull(agent.getUsername());
         assertTrue(agent.getPrincipals().containsAll(PRINCIPAL_LIST));

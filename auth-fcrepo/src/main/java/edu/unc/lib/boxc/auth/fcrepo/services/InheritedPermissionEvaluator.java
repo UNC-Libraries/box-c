@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package edu.unc.lib.dl.acl.fcrepo4;
+package edu.unc.lib.boxc.auth.fcrepo.services;
 
 import static edu.unc.lib.boxc.auth.fcrepo.services.EmbargoUtil.isEmbargoActive;
 import static edu.unc.lib.boxc.auth.fcrepo.services.PrincipalClassifier.classifyPrincipals;

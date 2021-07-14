@@ -28,9 +28,9 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
 
+import edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl;
 import edu.unc.lib.boxc.common.test.TestHelpers;
 import edu.unc.lib.boxc.model.api.ids.PID;
-import edu.unc.lib.boxc.auth.fcrepo.model.AccessGroupSet;
 import edu.unc.lib.dl.data.ingest.solr.SolrUpdateRequest;
 import edu.unc.lib.dl.data.ingest.solr.test.TestCorpus;
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadataBean;
@@ -87,7 +87,7 @@ public class DeleteSolrTreeTest extends BaseEmbeddedSolrTest {
         action.setSolrSettings(solrSettings);
         action.setSearchSettings(searchSettings);
         action.setSolrSearchService(solrSearchService);
-        action.setAccessGroups(new AccessGroupSet("admin"));
+        action.setAccessGroups(new AccessGroupSetImpl("admin"));
         action.setSolrSearchService(solrSearchService);
 
         server.add(corpus.populate());

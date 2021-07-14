@@ -15,13 +15,13 @@
  */
 package edu.unc.lib.dl.cdr.services.processing;
 
-import static edu.unc.lib.boxc.model.api.DatastreamType.ORIGINAL_FILE;
-import static edu.unc.lib.boxc.model.api.ids.RepositoryPathConstants.CONTENT_ROOT_ID;
 import static edu.unc.lib.boxc.auth.api.AccessPrincipalConstants.AUTHENTICATED_PRINC;
 import static edu.unc.lib.boxc.auth.api.AccessPrincipalConstants.PUBLIC_PRINC;
 import static edu.unc.lib.boxc.auth.api.Permission.viewHidden;
 import static edu.unc.lib.boxc.auth.api.UserRole.canViewOriginals;
 import static edu.unc.lib.boxc.auth.api.UserRole.none;
+import static edu.unc.lib.boxc.model.api.DatastreamType.ORIGINAL_FILE;
+import static edu.unc.lib.boxc.model.api.ids.RepositoryPathConstants.CONTENT_ROOT_ID;
 import static edu.unc.lib.dl.search.solr.util.FacetConstants.MARKED_FOR_DELETION;
 
 import java.io.BufferedWriter;
@@ -43,12 +43,12 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
+import edu.unc.lib.boxc.auth.api.models.AgentPrincipals;
+import edu.unc.lib.boxc.auth.api.services.AccessControlService;
 import edu.unc.lib.boxc.model.api.exceptions.NotFoundException;
 import edu.unc.lib.boxc.model.api.exceptions.RepositoryException;
 import edu.unc.lib.boxc.model.api.ids.PID;
-import edu.unc.lib.boxc.auth.api.services.AccessControlService;
-import edu.unc.lib.boxc.auth.fcrepo.model.AccessGroupSet;
-import edu.unc.lib.boxc.auth.fcrepo.model.AgentPrincipals;
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadata;
 import edu.unc.lib.dl.search.solr.model.Datastream;
 import edu.unc.lib.dl.search.solr.model.SearchRequest;
