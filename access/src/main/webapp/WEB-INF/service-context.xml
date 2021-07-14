@@ -136,7 +136,7 @@
         <property name="patronPrincipalProvider" ref="patronPrincipalProvider" />
     </bean>
     
-    <bean name="storeAccessLevelFilter" class="edu.unc.lib.dl.ui.access.StoreAccessLevelFilter">
+    <bean name="storeAccessLevelFilter" class="edu.unc.lib.boxc.web.common.auth.filters.StoreAccessLevelFilter">
         <property name="queryLayer" ref="queryLayer" />
         <property name="requireViewAdmin" value="false" />
     </bean>
