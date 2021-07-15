@@ -48,6 +48,12 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.ContextHierarchy;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
+import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
+import edu.unc.lib.boxc.auth.api.models.AgentPrincipals;
+import edu.unc.lib.boxc.auth.api.services.AccessControlService;
+import edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl;
+import edu.unc.lib.boxc.auth.fcrepo.models.AgentPrincipalsImpl;
+import edu.unc.lib.boxc.auth.fcrepo.services.InheritedAclFactory;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.objects.AdminUnit;
 import edu.unc.lib.boxc.model.api.objects.CollectionObject;
@@ -60,10 +66,6 @@ import edu.unc.lib.boxc.model.fcrepo.services.RepositoryInitializer;
 import edu.unc.lib.boxc.model.fcrepo.test.AclModelBuilder;
 import edu.unc.lib.boxc.model.fcrepo.test.RepositoryObjectTreeIndexer;
 import edu.unc.lib.boxc.model.fcrepo.test.TestHelper;
-import edu.unc.lib.dl.acl.fcrepo4.InheritedAclFactory;
-import edu.unc.lib.dl.acl.service.AccessControlService;
-import edu.unc.lib.dl.acl.util.AccessGroupSet;
-import edu.unc.lib.dl.acl.util.AgentPrincipals;
 import edu.unc.lib.dl.fcrepo4.TransactionManager;
 import edu.unc.lib.dl.persist.api.transfer.BinaryTransferService;
 import edu.unc.lib.dl.persist.event.PremisLoggerFactoryImpl;
@@ -168,8 +170,8 @@ public class DestroyDerivativesRouterIT {
         repositoryInitializer.initializeRepository();
         PID contentRootPid = getContentRootPid();
 
-        AccessGroupSet testPrincipals = new AccessGroupSet("edu:unc:lib:cdr:admin");
-        agent = new AgentPrincipals("testUser", testPrincipals);
+        AccessGroupSet testPrincipals = new AccessGroupSetImpl("edu:unc:lib:cdr:admin");
+        agent = new AgentPrincipalsImpl("testUser", testPrincipals);
 
         ContentRootObject contentRoot = repoObjLoader.getContentRootObject(contentRootPid);
         adminUnit = repoObjectFactory.createAdminUnit(new AclModelBuilder("Unit")

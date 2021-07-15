@@ -42,11 +42,12 @@ import org.springframework.test.annotation.DirtiesContext.MethodMode;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
+import edu.unc.lib.boxc.auth.api.models.AgentPrincipals;
+import edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl;
+import edu.unc.lib.boxc.auth.fcrepo.models.AgentPrincipalsImpl;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.ids.PIDMinter;
 import edu.unc.lib.deposit.work.DepositSupervisor.ActionMonitoringTask;
-import edu.unc.lib.dl.acl.util.AccessGroupSet;
-import edu.unc.lib.dl.acl.util.AgentPrincipals;
 import edu.unc.lib.dl.persist.api.ingest.DepositData;
 import edu.unc.lib.dl.persist.services.ingest.AbstractDepositHandler;
 import edu.unc.lib.dl.util.DepositException;
@@ -152,7 +153,7 @@ public class DepositSupervisorTest {
         });
 
         depositDestination = pidMinter.mintContentPid();
-        agent = new AgentPrincipals("user", new AccessGroupSet());
+        agent = new AgentPrincipalsImpl("user", new AccessGroupSetImpl());
 
         pipelineStatusFactory.setPipelineState(DepositPipelineState.active);
         supervisor = new DepositSupervisor();

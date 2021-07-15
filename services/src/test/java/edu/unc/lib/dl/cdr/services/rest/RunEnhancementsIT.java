@@ -15,9 +15,9 @@
  */
 package edu.unc.lib.dl.cdr.services.rest;
 
+import static edu.unc.lib.boxc.auth.api.Permission.runEnhancements;
 import static edu.unc.lib.boxc.model.api.xml.JDOMNamespaceUtil.ATOM_NS;
 import static edu.unc.lib.boxc.model.api.xml.JDOMNamespaceUtil.CDR_MESSAGE_NS;
-import static edu.unc.lib.dl.acl.util.Permission.runEnhancements;
 import static edu.unc.lib.dl.util.JMSMessageUtil.CDRActions.RUN_ENHANCEMENTS;
 import static java.util.Arrays.asList;
 import static org.junit.Assert.assertEquals;
@@ -55,17 +55,18 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.ContextHierarchy;
 import org.springframework.test.web.servlet.MvcResult;
 
+import edu.unc.lib.boxc.auth.api.exceptions.AccessRestrictionException;
+import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
+import edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl;
+import edu.unc.lib.boxc.auth.fcrepo.services.AccessControlServiceImpl;
+import edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore;
 import edu.unc.lib.boxc.model.api.ResourceType;
 import edu.unc.lib.boxc.model.api.ids.PID;
+import edu.unc.lib.boxc.model.api.objects.FileObject;
 import edu.unc.lib.boxc.model.api.objects.FolderObject;
+import edu.unc.lib.boxc.model.api.objects.WorkObject;
 import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
-import edu.unc.lib.boxc.model.api.objects.FileObject;
-import edu.unc.lib.boxc.model.api.objects.WorkObject;
-import edu.unc.lib.dl.acl.exception.AccessRestrictionException;
-import edu.unc.lib.dl.acl.fcrepo4.AccessControlServiceImpl;
-import edu.unc.lib.dl.acl.util.AccessGroupSet;
-import edu.unc.lib.dl.acl.util.GroupsThreadStore;
 import edu.unc.lib.dl.cdr.services.rest.modify.AbstractAPIIT;
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadataBean;
 import edu.unc.lib.dl.search.solr.model.SearchRequest;
@@ -110,7 +111,7 @@ public class RunEnhancementsIT extends AbstractAPIIT {
         initMocks(this);
         reset(messageSender);
 
-        AccessGroupSet testPrincipals = new AccessGroupSet(ADMIN_GROUP);
+        AccessGroupSet testPrincipals = new AccessGroupSetImpl(ADMIN_GROUP);
 
         GroupsThreadStore.storeUsername(USER_NAME);
         GroupsThreadStore.storeGroups(testPrincipals);
@@ -195,7 +196,7 @@ public class RunEnhancementsIT extends AbstractAPIIT {
 
         PID objPid = fileObj.getPid();
         doThrow(new AccessRestrictionException()).when(aclServices)
-                .assertHasAccess(anyString(), eq(objPid), any(AccessGroupSet.class), eq(runEnhancements));
+                .assertHasAccess(anyString(), eq(objPid), any(AccessGroupSetImpl.class), eq(runEnhancements));
 
         mvc.perform(post("/runEnhancements")
                 .contentType(MediaType.APPLICATION_JSON)

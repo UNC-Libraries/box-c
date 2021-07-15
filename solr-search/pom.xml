@@ -28,7 +28,7 @@
     <dependencies>
         <dependency>
             <groupId>edu.unc.lib.cdr</groupId>
-            <artifactId>security</artifactId>
+            <artifactId>auth-fcrepo</artifactId>
         </dependency>
         <dependency>
             <groupId>edu.unc.lib.cdr</groupId>
@@ -51,6 +51,10 @@
         <dependency>
             <groupId>edu.unc.lib.cdr</groupId>
             <artifactId>model-fcrepo</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>edu.unc.lib.cdr</groupId>
+            <artifactId>auth-api</artifactId>
         </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>

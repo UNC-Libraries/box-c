@@ -17,7 +17,7 @@
             http://www.springframework.org/schema/context 
             http://www.springframework.org/schema/context/spring-context-3.0.xsd">
 
-    <util:set id="accessGroups" set-class="edu.unc.lib.dl.acl.util.AccessGroupSet">
+    <util:set id="accessGroups" set-class="edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl">
         <value>admin</value>
     </util:set>
 

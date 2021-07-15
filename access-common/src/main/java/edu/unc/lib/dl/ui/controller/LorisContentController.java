@@ -35,13 +35,14 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 
+import edu.unc.lib.boxc.auth.api.Permission;
+import edu.unc.lib.boxc.auth.api.models.AgentPrincipals;
+import edu.unc.lib.boxc.auth.api.services.AccessControlService;
+import edu.unc.lib.boxc.auth.api.services.DatastreamPermissionUtil;
+import edu.unc.lib.boxc.auth.fcrepo.models.AgentPrincipalsImpl;
+import edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
-import edu.unc.lib.dl.acl.fcrepo4.DatastreamPermissionUtil;
-import edu.unc.lib.dl.acl.service.AccessControlService;
-import edu.unc.lib.dl.acl.util.AgentPrincipals;
-import edu.unc.lib.dl.acl.util.GroupsThreadStore;
-import edu.unc.lib.dl.acl.util.Permission;
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadata;
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadataBean;
 import edu.unc.lib.dl.search.solr.model.SimpleIdRequest;
@@ -82,7 +83,7 @@ public class LorisContentController extends AbstractSolrSearchController {
 
         Permission permission = DatastreamPermissionUtil.getPermissionForDatastream(datastream);
 
-        AgentPrincipals agent = AgentPrincipals.createFromThread();
+        AgentPrincipals agent = AgentPrincipalsImpl.createFromThread();
         LOG.debug("Checking if user {} has access to {} belonging to object {}.",
                 agent.getUsername(), datastream, pid);
         return accessControlService.hasAccess(pid, agent.getPrincipals(), permission);
@@ -235,7 +236,7 @@ public class LorisContentController extends AbstractSolrSearchController {
     }
 
     private List<BriefObjectMetadata> getDatastreams(PID pid) {
-        AgentPrincipals agent = AgentPrincipals.createFromThread();
+        AgentPrincipals agent = AgentPrincipalsImpl.createFromThread();
         return accessCopiesService.listViewableFiles(pid, agent.getPrincipals());
     }
 }

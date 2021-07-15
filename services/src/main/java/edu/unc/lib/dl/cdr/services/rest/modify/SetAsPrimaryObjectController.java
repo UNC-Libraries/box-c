@@ -29,10 +29,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import edu.unc.lib.boxc.auth.api.exceptions.AccessRestrictionException;
+import edu.unc.lib.boxc.auth.fcrepo.models.AgentPrincipalsImpl;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
-import edu.unc.lib.dl.acl.exception.AccessRestrictionException;
-import edu.unc.lib.dl.acl.util.AgentPrincipals;
 import edu.unc.lib.dl.cdr.services.processing.SetAsPrimaryObjectService;
 import edu.unc.lib.dl.fedora.AuthorizationException;
 
@@ -64,7 +64,7 @@ public class SetAsPrimaryObjectController {
         PID fileObjPid = PIDs.get(id);
 
         try {
-            setAsPrimaryObjectService.setAsPrimaryObject(AgentPrincipals.createFromThread(), fileObjPid);
+            setAsPrimaryObjectService.setAsPrimaryObject(AgentPrincipalsImpl.createFromThread(), fileObjPid);
         } catch (Exception e) {
             result.put("error", e.getMessage());
             if (e instanceof AuthorizationException || e instanceof AccessRestrictionException) {
@@ -92,7 +92,7 @@ public class SetAsPrimaryObjectController {
         PID objPid = PIDs.get(id);
 
         try {
-            setAsPrimaryObjectService.clearPrimaryObject(AgentPrincipals.createFromThread(), objPid);
+            setAsPrimaryObjectService.clearPrimaryObject(AgentPrincipalsImpl.createFromThread(), objPid);
         } catch (Exception e) {
             result.put("error", e.getMessage());
             if (e instanceof AuthorizationException || e instanceof AccessRestrictionException) {

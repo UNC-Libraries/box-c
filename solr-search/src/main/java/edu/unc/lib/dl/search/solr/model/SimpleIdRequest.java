@@ -17,9 +17,9 @@ package edu.unc.lib.dl.search.solr.model;
 
 import java.util.List;
 
+import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
-import edu.unc.lib.dl.acl.util.AccessGroupSet;
 
 /**
  * Request object for a single ID along with access restrictions and requested result data.

@@ -15,11 +15,11 @@
  */
 package edu.unc.lib.dl.persist.services.acl;
 
+import static edu.unc.lib.boxc.auth.api.Permission.changePatronAccess;
+import static edu.unc.lib.boxc.auth.api.Permission.ingest;
+import static edu.unc.lib.boxc.auth.api.services.EmbargoUtil.isEmbargoActive;
 import static edu.unc.lib.boxc.common.util.DateTimeUtil.formatDateToUTC;
 import static edu.unc.lib.boxc.model.api.rdf.CdrAcl.embargoUntil;
-import static edu.unc.lib.dl.acl.util.EmbargoUtil.isEmbargoActive;
-import static edu.unc.lib.dl.acl.util.Permission.changePatronAccess;
-import static edu.unc.lib.dl.acl.util.Permission.ingest;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.springframework.util.Assert.notNull;
 
@@ -41,7 +41,16 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 
+import edu.unc.lib.boxc.auth.api.Permission;
+import edu.unc.lib.boxc.auth.api.UserRole;
+import edu.unc.lib.boxc.auth.api.exceptions.InvalidAssignmentException;
+import edu.unc.lib.boxc.auth.api.models.AgentPrincipals;
+import edu.unc.lib.boxc.auth.api.models.RoleAssignment;
+import edu.unc.lib.boxc.auth.api.services.AccessControlService;
+import edu.unc.lib.boxc.auth.fcrepo.models.AgentPrincipalsImpl;
+import edu.unc.lib.boxc.auth.fcrepo.services.ContentObjectAccessRestrictionValidator;
 import edu.unc.lib.boxc.common.metrics.TimerFactory;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.objects.AdminUnit;
@@ -52,13 +61,6 @@ import edu.unc.lib.boxc.model.api.rdf.Premis;
 import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
 import edu.unc.lib.boxc.model.fcrepo.ids.AgentPids;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
-import edu.unc.lib.dl.acl.exception.InvalidAssignmentException;
-import edu.unc.lib.dl.acl.fcrepo4.ContentObjectAccessRestrictionValidator;
-import edu.unc.lib.dl.acl.service.AccessControlService;
-import edu.unc.lib.dl.acl.util.AgentPrincipals;
-import edu.unc.lib.dl.acl.util.Permission;
-import edu.unc.lib.dl.acl.util.RoleAssignment;
-import edu.unc.lib.dl.acl.util.UserRole;
 import edu.unc.lib.dl.fcrepo4.FedoraTransaction;
 import edu.unc.lib.dl.fcrepo4.TransactionManager;
 import edu.unc.lib.dl.fedora.ServiceException;
@@ -366,6 +368,7 @@ public class PatronAccessAssignmentService {
     }
 
     public static class PatronAccessAssignmentRequest {
+        @JsonDeserialize(as = AgentPrincipalsImpl.class)
         private AgentPrincipals agent;
         private PID target;
         private PatronAccessDetails accessDetails;

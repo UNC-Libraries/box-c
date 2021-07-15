@@ -6,16 +6,8 @@
 	<short-name>cdr</short-name>
 	<uri>http://cdr.lib.unc.edu/cdrUI</uri>
 	<function>
-		<name>containsAny</name>
-		<function-class>edu.unc.lib.dl.acl.util.AccessGroupSet</function-class>
-		<function-signature>
-			boolean containsAny(edu.unc.lib.dl.acl.util.AccessGroupSet, 
-				java.util.Collection)
-		</function-signature>
-	</function>
-	<function>
 		<name>getUsername</name>
-		<function-class>edu.unc.lib.dl.acl.util.GroupsThreadStore</function-class>
+		<function-class>edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore</function-class>
 		<function-signature>
 			java.lang.String getUsername()
 		</function-signature>
@@ -150,14 +142,14 @@
 		<name>metadataToJSON</name>
 		<function-class>edu.unc.lib.dl.ui.util.SerializationUtil</function-class>
 		<function-signature>
-			java.lang.String metadataToJSON(edu.unc.lib.dl.search.solr.model.BriefObjectMetadata, edu.unc.lib.dl.acl.util.AccessGroupSet)
+			java.lang.String metadataToJSON(edu.unc.lib.dl.search.solr.model.BriefObjectMetadata, edu.unc.lib.boxc.auth.api.models.AccessGroupSet)
 		</function-signature>
 	</function>
 	<function>
 		<name>resultsToJSON</name>
 		<function-class>edu.unc.lib.dl.ui.util.SerializationUtil</function-class>
 		<function-signature>
-			java.lang.String resultsToJSON(edu.unc.lib.dl.search.solr.model.SearchResultResponse, edu.unc.lib.dl.acl.util.AccessGroupSet)
+			java.lang.String resultsToJSON(edu.unc.lib.dl.search.solr.model.SearchResultResponse, edu.unc.lib.boxc.auth.api.models.AccessGroupSet)
 		</function-signature>
 	</function>
 	<function>

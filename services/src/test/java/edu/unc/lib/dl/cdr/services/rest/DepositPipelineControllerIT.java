@@ -33,8 +33,8 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.ContextHierarchy;
 import org.springframework.test.web.servlet.MvcResult;
 
-import edu.unc.lib.dl.acl.util.AccessGroupSet;
-import edu.unc.lib.dl.acl.util.GroupsThreadStore;
+import edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl;
+import edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore;
 import edu.unc.lib.dl.cdr.services.rest.modify.AbstractAPIIT;
 import edu.unc.lib.dl.util.DepositPipelineStatusFactory;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositPipelineState;
@@ -81,7 +81,7 @@ public class DepositPipelineControllerIT extends AbstractAPIIT {
 
     @Test
     public void getState_NoPermission() throws Exception {
-        GroupsThreadStore.storeGroups(new AccessGroupSet("authenticated"));
+        GroupsThreadStore.storeGroups(new AccessGroupSetImpl("authenticated"));
 
         MvcResult result = mvc.perform(get("/edit/depositPipeline"))
                 .andExpect(status().isUnauthorized())
@@ -129,7 +129,7 @@ public class DepositPipelineControllerIT extends AbstractAPIIT {
 
     @Test
     public void requestAction_NoPermission() throws Exception {
-        GroupsThreadStore.storeGroups(new AccessGroupSet("authenticated"));
+        GroupsThreadStore.storeGroups(new AccessGroupSetImpl("authenticated"));
 
         MvcResult result = mvc.perform(post("/edit/depositPipeline/quiet"))
                 .andExpect(status().isUnauthorized())

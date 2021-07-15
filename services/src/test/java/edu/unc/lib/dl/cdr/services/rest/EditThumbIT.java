@@ -15,9 +15,9 @@
  */
 package edu.unc.lib.dl.cdr.services.rest;
 
+import static edu.unc.lib.boxc.auth.api.Permission.editDescription;
 import static edu.unc.lib.boxc.model.api.xml.JDOMNamespaceUtil.ATOM_NS;
 import static edu.unc.lib.boxc.model.api.xml.JDOMNamespaceUtil.CDR_MESSAGE_NS;
-import static edu.unc.lib.dl.acl.util.Permission.editDescription;
 import static edu.unc.lib.dl.util.JMSMessageUtil.CDRActions.RUN_ENHANCEMENTS;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.any;
@@ -49,15 +49,16 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.ContextHierarchy;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
+import edu.unc.lib.boxc.auth.api.exceptions.AccessRestrictionException;
+import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
+import edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl;
+import edu.unc.lib.boxc.auth.fcrepo.services.AccessControlServiceImpl;
+import edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore;
 import edu.unc.lib.boxc.model.api.ids.PID;
-import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
 import edu.unc.lib.boxc.model.api.objects.CollectionObject;
-import edu.unc.lib.dl.acl.exception.AccessRestrictionException;
-import edu.unc.lib.dl.acl.fcrepo4.AccessControlServiceImpl;
-import edu.unc.lib.dl.acl.util.AccessGroupSet;
-import edu.unc.lib.dl.acl.util.GroupsThreadStore;
-import edu.unc.lib.dl.cdr.services.rest.modify.AbstractAPIIT;
+import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
 import edu.unc.lib.dl.cdr.services.processing.ImportThumbnailService;
+import edu.unc.lib.dl.cdr.services.rest.modify.AbstractAPIIT;
 import edu.unc.lib.dl.services.MessageSender;
 
 /**
@@ -102,7 +103,7 @@ public class EditThumbIT extends AbstractAPIIT {
         initMocks(this);
         reset(messageSender);
 
-        AccessGroupSet testPrincipals = new AccessGroupSet(ADMIN_GROUP);
+        AccessGroupSet testPrincipals = new AccessGroupSetImpl(ADMIN_GROUP);
 
         GroupsThreadStore.storeUsername(USER_NAME);
         GroupsThreadStore.storeGroups(testPrincipals);
@@ -143,7 +144,7 @@ public class EditThumbIT extends AbstractAPIIT {
         MockMultipartFile thumbnailFile = new MockMultipartFile("file", "file.txt", "plain/text", textStream());
 
         doThrow(new AccessRestrictionException()).when(aclServices)
-                .assertHasAccess(anyString(), eq(collection.getPid()), any(AccessGroupSet.class), eq(editDescription));
+                .assertHasAccess(anyString(), eq(collection.getPid()), any(AccessGroupSetImpl.class), eq(editDescription));
 
         mvc.perform(MockMvcRequestBuilders.multipart(URI.create("/edit/displayThumbnail/" + collection.getPid().getUUID()))
                 .file(thumbnailFile))

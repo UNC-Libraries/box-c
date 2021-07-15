@@ -18,8 +18,8 @@ package edu.unc.lib.deposit.fcrepo4;
 import static edu.unc.lib.boxc.common.test.TestHelpers.setField;
 import static edu.unc.lib.boxc.model.api.DatastreamType.ORIGINAL_FILE;
 import static edu.unc.lib.boxc.model.api.DatastreamType.TECHNICAL_METADATA;
-import static edu.unc.lib.dl.acl.util.AccessPrincipalConstants.AUTHENTICATED_PRINC;
-import static edu.unc.lib.dl.acl.util.AccessPrincipalConstants.PUBLIC_PRINC;
+import static edu.unc.lib.boxc.auth.api.AccessPrincipalConstants.AUTHENTICATED_PRINC;
+import static edu.unc.lib.boxc.auth.api.AccessPrincipalConstants.PUBLIC_PRINC;
 import static edu.unc.lib.dl.persist.services.storage.StorageLocationTestHelper.LOC1_ID;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.Assert.assertTrue;
@@ -85,10 +85,10 @@ import edu.unc.lib.boxc.model.fcrepo.services.RepositoryObjectLoaderImpl;
 import edu.unc.lib.deposit.validate.VerifyObjectsAreInFedoraService;
 import edu.unc.lib.deposit.work.JobFailedException;
 import edu.unc.lib.deposit.work.JobInterruptedException;
-import edu.unc.lib.dl.acl.exception.AccessRestrictionException;
-import edu.unc.lib.dl.acl.service.AccessControlService;
-import edu.unc.lib.dl.acl.util.AccessGroupSet;
-import edu.unc.lib.dl.acl.util.Permission;
+import edu.unc.lib.boxc.auth.api.exceptions.AccessRestrictionException;
+import edu.unc.lib.boxc.auth.api.services.AccessControlService;
+import edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl;
+import edu.unc.lib.boxc.auth.api.Permission;
 import edu.unc.lib.dl.fcrepo4.FedoraTransaction;
 import edu.unc.lib.dl.fcrepo4.TransactionCancelledException;
 import edu.unc.lib.dl.fcrepo4.TransactionManager;
@@ -393,7 +393,7 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
 
         doThrow(new AccessRestrictionException()).when(aclService)
                 .assertHasAccess(anyString(), eq(destinationPid),
-                        any(AccessGroupSet.class), eq(Permission.ingest));
+                        any(AccessGroupSetImpl.class), eq(Permission.ingest));
 
         job.closeModel();
 
@@ -604,7 +604,7 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
 
         // Throw access exception for creating admin unit
         doThrow(new AccessRestrictionException()).when(aclService)
-                .assertHasAccess(anyString(), eq(destinationPid), any(AccessGroupSet.class),
+                .assertHasAccess(anyString(), eq(destinationPid), any(AccessGroupSetImpl.class),
                         eq(Permission.createAdminUnit));
 
         AdminUnit adminUnit = mock(AdminUnit.class);
@@ -662,7 +662,7 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
 
         // Throw access exception for creating collection
         doThrow(new AccessRestrictionException()).when(aclService)
-                .assertHasAccess(anyString(), eq(destinationPid), any(AccessGroupSet.class),
+                .assertHasAccess(anyString(), eq(destinationPid), any(AccessGroupSetImpl.class),
                         eq(Permission.createCollection));
 
         CollectionObject collection = mock(CollectionObject.class);

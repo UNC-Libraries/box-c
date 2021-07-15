@@ -44,7 +44,7 @@
     </bean>
     
     <bean id="aclService" class="org.mockito.Mockito" factory-method="mock">
-        <constructor-arg value="edu.unc.lib.dl.acl.fcrepo4.AccessControlServiceImpl" />
+        <constructor-arg value="edu.unc.lib.boxc.auth.fcrepo.services.AccessControlServiceImpl" />
     </bean>
     
     <bean id="contentPathFactory" class="edu.unc.lib.boxc.model.fcrepo.services.ContentPathFactoryImpl"
@@ -54,14 +54,14 @@
         <property name="fcrepoClient" ref="fcrepoClient" />
     </bean>
     
-    <bean id="objectAclFactory" class="edu.unc.lib.dl.acl.fcrepo4.ObjectAclFactory"
+    <bean id="objectAclFactory" class="edu.unc.lib.boxc.auth.fcrepo.services.ObjectAclFactory"
             init-method="init">
         <property name="cacheMaxSize" value="0" />
         <property name="cacheTimeToLive" value="0" />
         <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
     </bean>
     
-    <bean id="inheritedAclFactory" class="edu.unc.lib.dl.acl.fcrepo4.InheritedAclFactory">
+    <bean id="inheritedAclFactory" class="edu.unc.lib.boxc.auth.fcrepo.services.InheritedAclFactory">
         <property name="objectAclFactory" ref="objectAclFactory" />
         <property name="pathFactory" ref="contentPathFactory" />
     </bean>

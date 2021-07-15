@@ -15,12 +15,10 @@
  */
 package edu.unc.lib.dl.fedora;
 
-import org.springframework.ws.soap.client.SoapFaultClientException;
-
 import edu.unc.lib.boxc.model.api.exceptions.FedoraException;
 
 /**
- * 
+ *
  * @author bbpennel
  *
  */
@@ -35,17 +33,6 @@ public class AuthorizationException extends FedoraException {
 
     public AuthorizationException(Exception e) {
         super(e);
-    }
-
-    public AuthorizationException(SoapFaultClientException e) {
-        super(e);
-
-        String reason = e.getFaultStringOrReason();
-        if (reason.contains("NotApplicable")) {
-            type = AuthorizationErrorType.NOT_APPLICABLE;
-        } else if (reason.contains("Indeterminate")) {
-            type = AuthorizationErrorType.INDETERMINATE;
-        }
     }
 
     public AuthorizationErrorType getType() {

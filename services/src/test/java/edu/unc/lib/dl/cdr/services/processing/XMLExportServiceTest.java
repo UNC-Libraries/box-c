@@ -46,17 +46,17 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 
+import edu.unc.lib.boxc.auth.api.Permission;
+import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
+import edu.unc.lib.boxc.auth.api.services.AccessControlService;
+import edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl;
 import edu.unc.lib.boxc.common.util.ZipFileUtil;
 import edu.unc.lib.boxc.model.api.ids.PID;
+import edu.unc.lib.boxc.model.api.objects.BinaryObject;
 import edu.unc.lib.boxc.model.api.objects.ContentObject;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.api.xml.JDOMNamespaceUtil;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
-import edu.unc.lib.boxc.model.api.objects.ContentObject;
-import edu.unc.lib.boxc.model.api.objects.BinaryObject;
-import edu.unc.lib.dl.acl.service.AccessControlService;
-import edu.unc.lib.dl.acl.util.AccessGroupSet;
-import edu.unc.lib.dl.acl.util.Permission;
 import edu.unc.lib.dl.cdr.services.rest.modify.ExportXMLController.XMLExportRequest;
 import edu.unc.lib.dl.fedora.ServiceException;
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadata;
@@ -118,7 +118,7 @@ public class XMLExportServiceTest {
         service.setRepoObjLoader(repoObjLoader);
         service.setSearchStateFactory(searchStateFactory);
 
-        when(aclService.hasAccess(any(PID.class), any(AccessGroupSet.class), eq(Permission.bulkUpdateDescription)))
+        when(aclService.hasAccess(any(PID.class), any(AccessGroupSetImpl.class), eq(Permission.bulkUpdateDescription)))
                 .thenReturn(true);
 
         when(searchStateFactory.createSearchState()).thenReturn(searchState);
@@ -226,9 +226,9 @@ public class XMLExportServiceTest {
         PID pid1 = registerObject();
         PID pid2 = registerObject();
 
-        when(aclService.hasAccess(eq(pid1), any(AccessGroupSet.class), eq(Permission.bulkUpdateDescription)))
+        when(aclService.hasAccess(eq(pid1), any(AccessGroupSetImpl.class), eq(Permission.bulkUpdateDescription)))
                 .thenReturn(true);
-        when(aclService.hasAccess(eq(pid2), any(AccessGroupSet.class), eq(Permission.bulkUpdateDescription)))
+        when(aclService.hasAccess(eq(pid2), any(AccessGroupSetImpl.class), eq(Permission.bulkUpdateDescription)))
                 .thenReturn(false);
 
         service.exportXml(username, group, request);

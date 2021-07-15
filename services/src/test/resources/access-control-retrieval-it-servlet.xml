@@ -32,7 +32,7 @@
 
     <context:component-scan resource-pattern="**/AccessControlRetrievalController*" base-package="edu.unc.lib.dl.cdr.services.rest"/>
     
-    <bean id="inheritedAclFactory" class="edu.unc.lib.dl.acl.fcrepo4.InheritedAclFactory">
+    <bean id="inheritedAclFactory" class="edu.unc.lib.boxc.auth.fcrepo.services.InheritedAclFactory">
         <property name="objectAclFactory" ref="objectAclFactory" />
         <property name="pathFactory" ref="contentPathFactory" />
     </bean>

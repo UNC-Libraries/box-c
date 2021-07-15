@@ -37,11 +37,13 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 
+import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
+import edu.unc.lib.boxc.auth.api.models.AgentPrincipals;
+import edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl;
+import edu.unc.lib.boxc.auth.fcrepo.models.AgentPrincipalsImpl;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.ids.PIDMinter;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
-import edu.unc.lib.dl.acl.util.AccessGroupSet;
-import edu.unc.lib.dl.acl.util.AgentPrincipals;
 import edu.unc.lib.dl.persist.api.ingest.DepositData;
 import edu.unc.lib.dl.util.DepositStatusFactory;
 import edu.unc.lib.dl.util.PackagingType;
@@ -85,8 +87,8 @@ public class FileServerDepositHandlerTest {
         depositPid = PIDs.get("deposit", UUID.randomUUID().toString());
         destPid = PIDs.get(UUID.randomUUID().toString());
 
-        testPrincipals = new AccessGroupSet("admin;adminGroup");
-        depositingAgent = new AgentPrincipals(DEPOSITOR, testPrincipals);
+        testPrincipals = new AccessGroupSetImpl("admin;adminGroup");
+        depositingAgent = new AgentPrincipalsImpl(DEPOSITOR, testPrincipals);
 
         when(pidMinter.mintDepositRecordPid()).thenReturn(depositPid);
 
@@ -136,7 +138,7 @@ public class FileServerDepositHandlerTest {
 
         assertEquals(DepositState.unregistered.name(), status.get(DepositField.state.name()));
         assertEquals(DepositAction.register.name(), status.get(DepositField.actionRequest.name()));
-        AccessGroupSet depositPrincipals = new AccessGroupSet(status.get(DepositField.permissionGroups.name()));
+        AccessGroupSet depositPrincipals = new AccessGroupSetImpl(status.get(DepositField.permissionGroups.name()));
         assertTrue("admin principal must be set in deposit", depositPrincipals.contains("admin"));
         assertTrue("adminGroup principal must be set in deposit", depositPrincipals.contains("adminGroup"));
     }

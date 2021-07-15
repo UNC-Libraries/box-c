@@ -88,6 +88,10 @@
         </dependency>
         <dependency>
             <groupId>edu.unc.lib.cdr</groupId>
+            <artifactId>auth-fcrepo</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>edu.unc.lib.cdr</groupId>
             <artifactId>solr-search</artifactId>
         </dependency>
         <dependency>

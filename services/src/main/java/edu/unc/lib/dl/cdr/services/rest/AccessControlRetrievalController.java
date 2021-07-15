@@ -15,7 +15,7 @@
  */
 package edu.unc.lib.dl.cdr.services.rest;
 
-import static edu.unc.lib.dl.acl.util.AccessPrincipalConstants.USER_NAMESPACE;
+import static edu.unc.lib.boxc.auth.api.AccessPrincipalConstants.USER_NAMESPACE;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 import java.util.Collections;
@@ -33,21 +33,22 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import edu.unc.lib.boxc.auth.api.AccessPrincipalConstants;
+import edu.unc.lib.boxc.auth.api.Permission;
+import edu.unc.lib.boxc.auth.api.models.AgentPrincipals;
+import edu.unc.lib.boxc.auth.api.models.RoleAssignment;
+import edu.unc.lib.boxc.auth.api.services.AccessControlService;
+import edu.unc.lib.boxc.auth.fcrepo.models.AgentPrincipalsImpl;
+import edu.unc.lib.boxc.auth.fcrepo.services.InheritedAclFactory;
+import edu.unc.lib.boxc.auth.fcrepo.services.ObjectAclFactory;
 import edu.unc.lib.boxc.model.api.ids.PID;
+import edu.unc.lib.boxc.model.api.objects.AdminUnit;
+import edu.unc.lib.boxc.model.api.objects.CollectionObject;
+import edu.unc.lib.boxc.model.api.objects.ContentObject;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObject;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
-import edu.unc.lib.boxc.model.api.objects.ContentObject;
-import edu.unc.lib.boxc.model.api.objects.AdminUnit;
-import edu.unc.lib.boxc.model.api.objects.CollectionObject;
-import edu.unc.lib.dl.acl.fcrepo4.InheritedAclFactory;
-import edu.unc.lib.dl.acl.fcrepo4.ObjectAclFactory;
-import edu.unc.lib.dl.acl.service.AccessControlService;
-import edu.unc.lib.dl.acl.util.AccessPrincipalConstants;
-import edu.unc.lib.dl.acl.util.AgentPrincipals;
-import edu.unc.lib.dl.acl.util.PatronPrincipalProvider;
-import edu.unc.lib.dl.acl.util.Permission;
-import edu.unc.lib.dl.acl.util.RoleAssignment;
+import edu.unc.lib.boxc.web.common.auth.PatronPrincipalProvider;
 import edu.unc.lib.dl.persist.services.acl.PatronAccessDetails;
 
 /**
@@ -84,7 +85,7 @@ public class AccessControlRetrievalController {
         log.debug("Retrieving staff roles for {}", id);
         PID pid = PIDs.get(id);
 
-        AgentPrincipals agent = AgentPrincipals.createFromThread();
+        AgentPrincipals agent = AgentPrincipalsImpl.createFromThread();
         aclService.assertHasAccess("Insufficient permissions to retrieve staff roles for " + id,
                 pid, agent.getPrincipals(), Permission.viewHidden);
 
@@ -131,7 +132,7 @@ public class AccessControlRetrievalController {
     @ResponseBody
     public ResponseEntity<Object> getPatronAccess() {
         log.debug("Retrieving allowed patron principals");
-        AgentPrincipals agent = AgentPrincipals.createFromThread();
+        AgentPrincipals agent = AgentPrincipalsImpl.createFromThread();
         if (!agent.getPrincipals().contains(AccessPrincipalConstants.ADMIN_ACCESS_PRINC)) {
             return new ResponseEntity<>(HttpStatus.FORBIDDEN);
         }
@@ -154,7 +155,7 @@ public class AccessControlRetrievalController {
         log.debug("Retrieving patron access details for {}", id);
         PID pid = PIDs.get(id);
 
-        AgentPrincipals agent = AgentPrincipals.createFromThread();
+        AgentPrincipals agent = AgentPrincipalsImpl.createFromThread();
         aclService.assertHasAccess("Insufficient permissions to retrieve patron access for " + id,
                 pid, agent.getPrincipals(), Permission.viewHidden);
 

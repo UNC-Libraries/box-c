@@ -60,7 +60,7 @@
     </bean>
     
     <bean id="aclService" class="org.mockito.Mockito" factory-method="mock">
-        <constructor-arg value="edu.unc.lib.dl.acl.service.AccessControlService" />
+        <constructor-arg value="edu.unc.lib.boxc.auth.api.services.AccessControlService" />
     </bean>
 
     <bean id="getUrisProcessor" class="edu.unc.lib.dl.services.camel.longleaf.GetUrisProcessor">

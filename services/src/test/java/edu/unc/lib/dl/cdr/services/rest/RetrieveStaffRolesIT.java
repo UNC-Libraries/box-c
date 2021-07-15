@@ -15,11 +15,11 @@
  */
 package edu.unc.lib.dl.cdr.services.rest;
 
-import static edu.unc.lib.dl.acl.util.AccessPrincipalConstants.USER_NAMESPACE;
-import static edu.unc.lib.dl.acl.util.UserRole.canAccess;
-import static edu.unc.lib.dl.acl.util.UserRole.canIngest;
-import static edu.unc.lib.dl.acl.util.UserRole.canManage;
-import static edu.unc.lib.dl.acl.util.UserRole.unitOwner;
+import static edu.unc.lib.boxc.auth.api.AccessPrincipalConstants.USER_NAMESPACE;
+import static edu.unc.lib.boxc.auth.api.UserRole.canAccess;
+import static edu.unc.lib.boxc.auth.api.UserRole.canIngest;
+import static edu.unc.lib.boxc.auth.api.UserRole.canManage;
+import static edu.unc.lib.boxc.auth.api.UserRole.unitOwner;
 import static edu.unc.lib.dl.cdr.services.rest.AccessControlRetrievalController.ASSIGNED_ROLES;
 import static edu.unc.lib.dl.cdr.services.rest.AccessControlRetrievalController.INHERITED_ROLES;
 import static edu.unc.lib.dl.cdr.services.rest.AccessControlRetrievalController.ROLES_KEY;
@@ -43,19 +43,18 @@ import org.springframework.test.web.servlet.MvcResult;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import edu.unc.lib.boxc.auth.api.UserRole;
+import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
+import edu.unc.lib.boxc.auth.api.models.RoleAssignment;
+import edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl;
+import edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore;
 import edu.unc.lib.boxc.model.api.ids.PID;
-import edu.unc.lib.boxc.model.api.objects.AdminUnit;
-import edu.unc.lib.boxc.model.api.objects.WorkObject;
 import edu.unc.lib.boxc.model.api.objects.AdminUnit;
 import edu.unc.lib.boxc.model.api.objects.CollectionObject;
 import edu.unc.lib.boxc.model.api.objects.FileObject;
 import edu.unc.lib.boxc.model.api.objects.FolderObject;
 import edu.unc.lib.boxc.model.api.objects.WorkObject;
 import edu.unc.lib.boxc.model.fcrepo.test.AclModelBuilder;
-import edu.unc.lib.dl.acl.util.AccessGroupSet;
-import edu.unc.lib.dl.acl.util.GroupsThreadStore;
-import edu.unc.lib.dl.acl.util.RoleAssignment;
-import edu.unc.lib.dl.acl.util.UserRole;
 import edu.unc.lib.dl.cdr.services.rest.modify.AbstractAPIIT;
 
 /**
@@ -81,7 +80,7 @@ public class RetrieveStaffRolesIT extends AbstractAPIIT {
 
     @Before
     public void init_() throws Exception {
-        AccessGroupSet testPrincipals = new AccessGroupSet(GRP_PRINC);
+        AccessGroupSet testPrincipals = new AccessGroupSetImpl(GRP_PRINC);
         GroupsThreadStore.storeUsername(USER_PRINC);
         GroupsThreadStore.storeGroups(testPrincipals);
         setupContentRoot();
@@ -107,7 +106,7 @@ public class RetrieveStaffRolesIT extends AbstractAPIIT {
 
     @Test
     public void testAsGlobalAdminNoAssigned() throws Exception {
-        AccessGroupSet testPrincipals = new AccessGroupSet(SUPER_GROUP_PRINC);
+        AccessGroupSet testPrincipals = new AccessGroupSetImpl(SUPER_GROUP_PRINC);
         GroupsThreadStore.storeGroups(testPrincipals);
 
         PID pid = pidMinter.mintContentPid();

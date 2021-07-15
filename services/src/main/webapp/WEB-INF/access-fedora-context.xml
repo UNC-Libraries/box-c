@@ -25,19 +25,19 @@
         <property name="fcrepoClient" ref="fcrepoClient" />
     </bean>
     
-    <bean id="objectAclFactory" class="edu.unc.lib.dl.acl.fcrepo4.ObjectAclFactory"
+    <bean id="objectAclFactory" class="edu.unc.lib.boxc.auth.fcrepo.services.ObjectAclFactory"
             init-method="init">
         <property name="cacheMaxSize" value="${cache.objectAcls.maxSize}" />
         <property name="cacheTimeToLive" value="${cache.objectAcls.timeToLive}" />
         <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
     </bean>
     
-    <bean id="inheritedAclFactory" class="edu.unc.lib.dl.acl.fcrepo4.InheritedAclFactory">
+    <bean id="inheritedAclFactory" class="edu.unc.lib.boxc.auth.fcrepo.services.InheritedAclFactory">
         <property name="objectAclFactory" ref="objectAclFactory" />
         <property name="pathFactory" ref="contentPathFactory" />
     </bean>
     
-    <bean id="inheritedPermissionEvaluator" class="edu.unc.lib.dl.acl.fcrepo4.InheritedPermissionEvaluator">
+    <bean id="inheritedPermissionEvaluator" class="edu.unc.lib.boxc.auth.fcrepo.services.InheritedPermissionEvaluator">
         <property name="pathFactory" ref="contentPathFactory" />
         <property name="objectAclFactory" ref="objectAclFactory" />
     </bean>
@@ -48,14 +48,14 @@
         <property name="cacheMaxSize" value="0" />
     </bean>
     
-    <bean id="uncachedObjectAclFactory" class="edu.unc.lib.dl.acl.fcrepo4.ObjectAclFactory"
+    <bean id="uncachedObjectAclFactory" class="edu.unc.lib.boxc.auth.fcrepo.services.ObjectAclFactory"
             init-method="init">
         <property name="cacheMaxSize" value="0" />
         <property name="cacheTimeToLive" value="0" />
         <property name="repositoryObjectLoader" ref="repositoryObjectLoaderNoCache" />
     </bean>
     
-    <bean id="uncachedInheritedAclFactory" class="edu.unc.lib.dl.acl.fcrepo4.InheritedAclFactory">
+    <bean id="uncachedInheritedAclFactory" class="edu.unc.lib.boxc.auth.fcrepo.services.InheritedAclFactory">
         <property name="objectAclFactory" ref="uncachedObjectAclFactory" />
         <property name="pathFactory" ref="contentPathFactory" />
     </bean>
@@ -75,11 +75,11 @@
         <property name="ignoreResourceNotFound" value="false" />
     </bean>
     
-    <bean id="globalPermissionEvaluator" class="edu.unc.lib.dl.acl.fcrepo4.GlobalPermissionEvaluator">
+    <bean id="globalPermissionEvaluator" class="edu.unc.lib.boxc.auth.fcrepo.services.GlobalPermissionEvaluatorImpl">
         <constructor-arg ref="aclProperties" />
     </bean>
     
-    <bean id="aclService" class="edu.unc.lib.dl.acl.fcrepo4.AccessControlServiceImpl">
+    <bean id="aclService" class="edu.unc.lib.boxc.auth.fcrepo.services.AccessControlServiceImpl">
         <property name="globalPermissionEvaluator" ref="globalPermissionEvaluator" />
         <property name="permissionEvaluator" ref="inheritedPermissionEvaluator" />
     </bean>

@@ -38,9 +38,10 @@ import org.mockito.runners.MockitoJUnitRunner;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.type.MapType;
 
-import edu.unc.lib.dl.acl.fcrepo4.GlobalPermissionEvaluator;
-import edu.unc.lib.dl.acl.util.AccessGroupSet;
-import edu.unc.lib.dl.acl.util.UserRole;
+import edu.unc.lib.boxc.auth.api.UserRole;
+import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
+import edu.unc.lib.boxc.auth.api.services.GlobalPermissionEvaluator;
+import edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl;
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadata;
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadataBean;
 import edu.unc.lib.dl.search.solr.model.HierarchicalBrowseResultResponse;
@@ -74,7 +75,7 @@ public class SerializationUtilTest extends Assert {
         mapper = new ObjectMapper();
         SerializationUtil.injectSettings(searchSettings, solrSettings,
                 globalPermissionEvaluator);
-        when(globalPermissionEvaluator.getGlobalUserRoles(any(AccessGroupSet.class)))
+        when(globalPermissionEvaluator.getGlobalUserRoles(any(AccessGroupSetImpl.class)))
                 .thenReturn(Collections.emptySet());
 
         md = new BriefObjectMetadataBean();
@@ -156,26 +157,26 @@ public class SerializationUtilTest extends Assert {
                 UserRole.canViewOriginals.name() + "|group2"));
 
         // Verify principal with administrative permissions
-        assertHasRolePermissions(md, new AccessGroupSet("group1"), UserRole.canManage);
+        assertHasRolePermissions(md, new AccessGroupSetImpl("group1"), UserRole.canManage);
 
         // Verify principal with patron permissions
-        assertHasRolePermissions(md, new AccessGroupSet("group2"), UserRole.canViewOriginals);
+        assertHasRolePermissions(md, new AccessGroupSetImpl("group2"), UserRole.canViewOriginals);
 
         // Verify group with no permissions
-        assertHasRolePermissions(md, new AccessGroupSet("group3"), null);
+        assertHasRolePermissions(md, new AccessGroupSetImpl("group3"), null);
 
         // Verify that highest permissions out of set of principals are assigned
-        assertHasRolePermissions(md, new AccessGroupSet("group2;group3"), UserRole.canViewOriginals);
+        assertHasRolePermissions(md, new AccessGroupSetImpl("group2;group3"), UserRole.canViewOriginals);
     }
 
     // Check for only global match
     @Test
     public void testGlobalPermissionSerialization1() throws Exception {
         md.setRoleGroup(Arrays.asList(UserRole.canManage.name() + "|group1"));
-        AccessGroupSet adminPrincipals = new AccessGroupSet("adminGrp");
+        AccessGroupSet adminPrincipals = new AccessGroupSetImpl("adminGrp");
 
         // Check for exclusive global match
-        when(globalPermissionEvaluator.getGlobalUserRoles(any(AccessGroupSet.class)))
+        when(globalPermissionEvaluator.getGlobalUserRoles(any(AccessGroupSetImpl.class)))
                 .thenReturn(new HashSet<>(Arrays.asList(UserRole.administrator)));
 
         assertHasRolePermissions(md, adminPrincipals, UserRole.administrator);
@@ -185,9 +186,9 @@ public class SerializationUtilTest extends Assert {
     @Test
     public void testGlobalPermissionSerialization2() throws Exception {
         md.setRoleGroup(Arrays.asList(UserRole.canManage.name() + "|group1"));
-        AccessGroupSet mixedPrincipals = new AccessGroupSet("adminGrp;group1");
+        AccessGroupSet mixedPrincipals = new AccessGroupSetImpl("adminGrp;group1");
 
-        when(globalPermissionEvaluator.getGlobalUserRoles(any(AccessGroupSet.class)))
+        when(globalPermissionEvaluator.getGlobalUserRoles(any(AccessGroupSetImpl.class)))
                 .thenReturn(new HashSet<>(Arrays.asList(UserRole.canAccess)));
 
         assertHasRolePermissions(md, mixedPrincipals, UserRole.canManage);
@@ -197,9 +198,9 @@ public class SerializationUtilTest extends Assert {
     @Test
     public void testGlobalPermissionSerialization3() throws Exception {
         md.setRoleGroup(Arrays.asList(UserRole.canManage.name() + "|group1"));
-        AccessGroupSet mixedPrincipals = new AccessGroupSet("adminGrp;group1");
+        AccessGroupSet mixedPrincipals = new AccessGroupSetImpl("adminGrp;group1");
 
-        when(globalPermissionEvaluator.getGlobalUserRoles(any(AccessGroupSet.class)))
+        when(globalPermissionEvaluator.getGlobalUserRoles(any(AccessGroupSetImpl.class)))
         .thenReturn(new HashSet<>(Arrays.asList(UserRole.canAccess)));
 
         assertHasRolePermissions(md, mixedPrincipals, UserRole.canManage);

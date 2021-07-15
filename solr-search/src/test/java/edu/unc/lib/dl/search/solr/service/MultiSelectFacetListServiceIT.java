@@ -15,7 +15,7 @@
  */
 package edu.unc.lib.dl.search.solr.service;
 
-import static edu.unc.lib.dl.acl.util.AccessPrincipalConstants.PUBLIC_PRINC;
+import static edu.unc.lib.boxc.auth.api.AccessPrincipalConstants.PUBLIC_PRINC;
 import static edu.unc.lib.dl.search.solr.util.SearchFieldKeys.CONTENT_TYPE;
 import static edu.unc.lib.dl.search.solr.util.SearchFieldKeys.PARENT_COLLECTION;
 import static edu.unc.lib.dl.search.solr.util.SearchFieldKeys.ROLE_GROUP;
@@ -32,9 +32,10 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
 
+import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
+import edu.unc.lib.boxc.auth.api.services.GlobalPermissionEvaluator;
+import edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl;
 import edu.unc.lib.boxc.model.api.exceptions.NotFoundException;
-import edu.unc.lib.dl.acl.fcrepo4.GlobalPermissionEvaluator;
-import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.search.solr.model.FacetFieldFactory;
 import edu.unc.lib.dl.search.solr.model.FacetFieldList;
 import edu.unc.lib.dl.search.solr.model.FacetFieldObject;
@@ -108,7 +109,7 @@ public class MultiSelectFacetListServiceIT extends BaseEmbeddedSolrTest {
         service.setSearchSettings(searchSettings);
         service.setSearchService(searchService);
 
-        accessGroups = new AccessGroupSet("unitOwner", PUBLIC_PRINC);
+        accessGroups = new AccessGroupSetImpl("unitOwner", PUBLIC_PRINC);
     }
 
     @Test
@@ -430,7 +431,7 @@ public class MultiSelectFacetListServiceIT extends BaseEmbeddedSolrTest {
 
     @Test
     public void limitedPatronAccessTest() throws Exception {
-        accessGroups = new AccessGroupSet(PUBLIC_PRINC);
+        accessGroups = new AccessGroupSetImpl(PUBLIC_PRINC);
 
         SearchState searchState = new SearchState();
         searchState.setFacetsToRetrieve(FACETS_TO_RETRIEVE);
@@ -455,7 +456,7 @@ public class MultiSelectFacetListServiceIT extends BaseEmbeddedSolrTest {
 
     @Test(expected = NotFoundException.class)
     public void noAccessTest() throws Exception {
-        accessGroups = new AccessGroupSet(PUBLIC_PRINC);
+        accessGroups = new AccessGroupSetImpl(PUBLIC_PRINC);
 
         SearchState searchState = new SearchState();
         searchState.setFacetsToRetrieve(FACETS_TO_RETRIEVE);

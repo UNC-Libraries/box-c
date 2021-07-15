@@ -15,12 +15,12 @@
  */
 package edu.unc.lib.dl.persist.services.acl;
 
+import static edu.unc.lib.boxc.auth.api.AccessPrincipalConstants.AUTHENTICATED_PRINC;
+import static edu.unc.lib.boxc.auth.api.AccessPrincipalConstants.PUBLIC_PRINC;
+import static edu.unc.lib.boxc.auth.api.UserRole.canManage;
+import static edu.unc.lib.boxc.auth.api.UserRole.canViewMetadata;
+import static edu.unc.lib.boxc.auth.api.UserRole.canViewOriginals;
 import static edu.unc.lib.boxc.common.util.DateTimeUtil.formatDateToUTC;
-import static edu.unc.lib.dl.acl.util.AccessPrincipalConstants.AUTHENTICATED_PRINC;
-import static edu.unc.lib.dl.acl.util.AccessPrincipalConstants.PUBLIC_PRINC;
-import static edu.unc.lib.dl.acl.util.UserRole.canManage;
-import static edu.unc.lib.dl.acl.util.UserRole.canViewMetadata;
-import static edu.unc.lib.dl.acl.util.UserRole.canViewOriginals;
 import static java.util.Arrays.asList;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -61,6 +61,16 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.ContextHierarchy;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
+import edu.unc.lib.boxc.auth.api.Permission;
+import edu.unc.lib.boxc.auth.api.UserRole;
+import edu.unc.lib.boxc.auth.api.exceptions.AccessRestrictionException;
+import edu.unc.lib.boxc.auth.api.exceptions.InvalidAssignmentException;
+import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
+import edu.unc.lib.boxc.auth.api.models.AgentPrincipals;
+import edu.unc.lib.boxc.auth.api.models.RoleAssignment;
+import edu.unc.lib.boxc.auth.api.services.AccessControlService;
+import edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl;
+import edu.unc.lib.boxc.auth.fcrepo.models.AgentPrincipalsImpl;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.objects.AdminUnit;
 import edu.unc.lib.boxc.model.api.objects.BinaryObject;
@@ -80,14 +90,6 @@ import edu.unc.lib.boxc.model.fcrepo.services.RepositoryInitializer;
 import edu.unc.lib.boxc.model.fcrepo.test.AclModelBuilder;
 import edu.unc.lib.boxc.model.fcrepo.test.RepositoryObjectTreeIndexer;
 import edu.unc.lib.boxc.model.fcrepo.test.TestHelper;
-import edu.unc.lib.dl.acl.exception.AccessRestrictionException;
-import edu.unc.lib.dl.acl.exception.InvalidAssignmentException;
-import edu.unc.lib.dl.acl.service.AccessControlService;
-import edu.unc.lib.dl.acl.util.AccessGroupSet;
-import edu.unc.lib.dl.acl.util.AgentPrincipals;
-import edu.unc.lib.dl.acl.util.Permission;
-import edu.unc.lib.dl.acl.util.RoleAssignment;
-import edu.unc.lib.dl.acl.util.UserRole;
 import edu.unc.lib.dl.fcrepo4.TransactionManager;
 import edu.unc.lib.dl.fedora.ServiceException;
 import edu.unc.lib.dl.persist.api.event.PremisLoggerFactory;
@@ -142,8 +144,8 @@ public class PatronAccessAssignmentServiceIT {
         initMocks(this);
         TestHelper.setContentBase(baseAddress);
 
-        groups = new AccessGroupSet(GRP_PRINC);
-        agent = new AgentPrincipals(USER_PRINC, groups);
+        groups = new AccessGroupSetImpl(GRP_PRINC);
+        agent = new AgentPrincipalsImpl(USER_PRINC, groups);
 
         patronService = new PatronAccessAssignmentService();
         patronService.setAclService(aclService);
@@ -165,7 +167,7 @@ public class PatronAccessAssignmentServiceIT {
         treeIndexer.indexAll(baseAddress);
 
         doThrow(new AccessRestrictionException()).when(aclService)
-            .assertHasAccess(anyString(), eq(pid), any(AccessGroupSet.class), eq(Permission.changePatronAccess));
+            .assertHasAccess(anyString(), eq(pid), any(AccessGroupSetImpl.class), eq(Permission.changePatronAccess));
 
         PatronAccessDetails accessDetails = new PatronAccessDetails();
         accessDetails.setRoles(asList(
@@ -181,7 +183,7 @@ public class PatronAccessAssignmentServiceIT {
         treeIndexer.indexAll(baseAddress);
 
         doThrow(new AccessRestrictionException()).when(aclService)
-                .assertHasAccess(anyString(), eq(pid), any(AccessGroupSet.class), eq(Permission.ingest));
+                .assertHasAccess(anyString(), eq(pid), any(AccessGroupSetImpl.class), eq(Permission.ingest));
 
         PatronAccessDetails accessDetails = new PatronAccessDetails();
         accessDetails.setRoles(asList(

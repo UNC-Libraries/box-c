@@ -15,16 +15,17 @@
  */
 package edu.unc.lib.dl.cdr.sword.server.filters;
 
-import static edu.unc.lib.dl.acl.util.RemoteUserUtil.getRemoteUser;
+import static edu.unc.lib.boxc.web.common.auth.RemoteUserUtil.getRemoteUser;
 
 import javax.servlet.http.HttpServletRequest;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import edu.unc.lib.dl.acl.filter.StoreUserAccessControlFilter;
-import edu.unc.lib.dl.acl.util.AccessGroupSet;
-import edu.unc.lib.dl.acl.util.AccessPrincipalConstants;
+import edu.unc.lib.boxc.auth.api.AccessPrincipalConstants;
+import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
+import edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl;
+import edu.unc.lib.boxc.web.common.auth.filters.StoreUserAccessControlFilter;
 import edu.unc.lib.dl.cdr.sword.server.SwordConfigurationImpl;
 
 /**
@@ -54,7 +55,7 @@ public class DepositorAccessControlFilter extends StoreUserAccessControlFilter {
     protected AccessGroupSet getDepositorGroups(HttpServletRequest request) {
         String user = getRemoteUser(request);
         log.debug("SWORD depositor user {} logged in", user);
-        AccessGroupSet accessGroups = new AccessGroupSet();
+        AccessGroupSet accessGroups = new AccessGroupSetImpl();
         accessGroups.addAccessGroup(AccessPrincipalConstants.PUBLIC_PRINC);
         if (user != null) {
             accessGroups.addAccessGroup(swordConfig.getDepositorNamespace() + request.getRemoteUser());

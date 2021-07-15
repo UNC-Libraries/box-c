@@ -52,6 +52,6 @@
     </bean>
     
     <bean id="accessControlService" class="org.mockito.Mockito" factory-method="mock">
-        <constructor-arg value="edu.unc.lib.dl.acl.service.AccessControlService" />
+        <constructor-arg value="edu.unc.lib.boxc.auth.api.services.AccessControlService" />
     </bean>
 </beans>

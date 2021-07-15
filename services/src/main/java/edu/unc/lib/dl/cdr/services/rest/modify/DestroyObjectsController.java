@@ -31,7 +31,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import edu.unc.lib.dl.acl.util.AgentPrincipals;
+import edu.unc.lib.boxc.auth.api.models.AgentPrincipals;
+import edu.unc.lib.boxc.auth.fcrepo.models.AgentPrincipalsImpl;
 import edu.unc.lib.dl.persist.services.destroy.DestroyObjectsService;
 
 /**
@@ -72,7 +73,7 @@ public class DestroyObjectsController {
             result.put("pids", ids);
         }
 
-        AgentPrincipals agent = AgentPrincipals.createFromThread();
+        AgentPrincipals agent = AgentPrincipalsImpl.createFromThread();
         String jobId = service.destroyObjects(agent, ids);
         result.put("job", jobId);
         log.info("{} initiated destruction of {} objects from the repository", agent.getUsername(), ids.length);

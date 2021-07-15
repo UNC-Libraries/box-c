@@ -16,9 +16,12 @@
 package edu.unc.lib.dl.persist.services.destroy;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 
-import edu.unc.lib.dl.acl.util.AccessGroupSet;
-import edu.unc.lib.dl.acl.util.AgentPrincipals;
+import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
+import edu.unc.lib.boxc.auth.api.models.AgentPrincipals;
+import edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl;
+import edu.unc.lib.boxc.auth.fcrepo.models.AgentPrincipalsImpl;
 
 /**
  * A request to destroy one or more objects.
@@ -31,6 +34,7 @@ public class DestroyObjectsRequest {
     private String jobId;
     private String[] ids;
     private String username;
+    @JsonDeserialize(as = AccessGroupSetImpl.class)
     private AccessGroupSet principals;
     private boolean completely;
 
@@ -46,7 +50,7 @@ public class DestroyObjectsRequest {
 
     @JsonIgnore
     public AgentPrincipals getAgent() {
-        return new AgentPrincipals(username, principals);
+        return new AgentPrincipalsImpl(username, principals);
     }
 
     public AccessGroupSet getPrincipals() {

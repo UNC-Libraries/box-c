@@ -15,10 +15,10 @@
  */
 package edu.unc.lib.dl.ui.util;
 
+import java.util.List;
+
 import org.jdom2.Document;
 import org.jdom2.Element;
-
-import java.util.List;
 
 /**
  * Helper class to remove empty nodes from MODS documents

@@ -15,13 +15,13 @@
  */
 package edu.unc.lib.dl.cdr.services.rest.modify;
 
+import static edu.unc.lib.boxc.auth.api.AccessPrincipalConstants.AUTHENTICATED_PRINC;
+import static edu.unc.lib.boxc.auth.api.AccessPrincipalConstants.PUBLIC_PRINC;
+import static edu.unc.lib.boxc.auth.api.UserRole.canViewOriginals;
+import static edu.unc.lib.boxc.auth.api.UserRole.none;
 import static edu.unc.lib.boxc.common.xml.SecureXMLFactory.createSAXBuilder;
 import static edu.unc.lib.boxc.model.api.ids.RepositoryPathConstants.CONTENT_ROOT_ID;
 import static edu.unc.lib.boxc.model.api.xml.JDOMNamespaceUtil.MODS_V3_NS;
-import static edu.unc.lib.dl.acl.util.AccessPrincipalConstants.AUTHENTICATED_PRINC;
-import static edu.unc.lib.dl.acl.util.AccessPrincipalConstants.PUBLIC_PRINC;
-import static edu.unc.lib.dl.acl.util.UserRole.canViewOriginals;
-import static edu.unc.lib.dl.acl.util.UserRole.none;
 import static edu.unc.lib.dl.util.DescriptionConstants.COLLECTION_NUMBER_EL;
 import static edu.unc.lib.dl.util.DescriptionConstants.COLLECTION_NUMBER_LABEL;
 import static org.junit.Assert.assertEquals;
@@ -43,20 +43,19 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.ContextHierarchy;
 import org.springframework.test.web.servlet.MvcResult;
 
+import edu.unc.lib.boxc.auth.api.UserRole;
+import edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl;
+import edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore;
 import edu.unc.lib.boxc.model.api.ids.PID;
-import edu.unc.lib.boxc.model.api.objects.ContentContainerObject;
-import edu.unc.lib.boxc.model.api.objects.ContentObject;
-import edu.unc.lib.boxc.model.api.objects.RepositoryObject;
-import edu.unc.lib.boxc.model.api.rdf.DcElements;
-import edu.unc.lib.boxc.model.api.objects.ContentObject;
 import edu.unc.lib.boxc.model.api.objects.AdminUnit;
 import edu.unc.lib.boxc.model.api.objects.CollectionObject;
+import edu.unc.lib.boxc.model.api.objects.ContentContainerObject;
+import edu.unc.lib.boxc.model.api.objects.ContentObject;
 import edu.unc.lib.boxc.model.api.objects.FolderObject;
+import edu.unc.lib.boxc.model.api.objects.RepositoryObject;
 import edu.unc.lib.boxc.model.api.objects.WorkObject;
+import edu.unc.lib.boxc.model.api.rdf.DcElements;
 import edu.unc.lib.boxc.model.fcrepo.test.AclModelBuilder;
-import edu.unc.lib.dl.acl.util.AccessGroupSet;
-import edu.unc.lib.dl.acl.util.GroupsThreadStore;
-import edu.unc.lib.dl.acl.util.UserRole;
 import edu.unc.lib.dl.util.DescriptionConstants;
 
 /**
@@ -157,7 +156,7 @@ public class AddContainerIT extends AbstractAPIIT {
     public void testAddFolderAccess() throws Exception {
         AdminUnit adminUnit = repositoryObjectFactory.createAdminUnit(new AclModelBuilder("Access")
                 .addCanAccess("accessGroup").model);
-        GroupsThreadStore.storeGroups(new AccessGroupSet("accessGroup"));
+        GroupsThreadStore.storeGroups(new AccessGroupSetImpl("accessGroup"));
         contentRoot.addMember(adminUnit);
         CollectionObject collObj = repositoryObjectFactory.createCollectionObject(null);
         adminUnit.addMember(collObj);
@@ -177,7 +176,7 @@ public class AddContainerIT extends AbstractAPIIT {
     public void testAddFolderStaffOnlyAccess() throws Exception {
         AdminUnit adminUnit = repositoryObjectFactory.createAdminUnit(new AclModelBuilder("Access")
                 .addCanAccess("accessGroup").model);
-        GroupsThreadStore.storeGroups(new AccessGroupSet("accessGroup"));
+        GroupsThreadStore.storeGroups(new AccessGroupSetImpl("accessGroup"));
         contentRoot.addMember(adminUnit);
         CollectionObject collObj = repositoryObjectFactory.createCollectionObject(null);
         adminUnit.addMember(collObj);
@@ -198,7 +197,7 @@ public class AddContainerIT extends AbstractAPIIT {
         AdminUnit adminUnit = repositoryObjectFactory.createAdminUnit(new AclModelBuilder("Ingesting")
                 .addCanIngest("ingestorGroup").model);
 
-        GroupsThreadStore.storeGroups(new AccessGroupSet("ingestorGroup"));
+        GroupsThreadStore.storeGroups(new AccessGroupSetImpl("ingestorGroup"));
         contentRoot.addMember(adminUnit);
         CollectionObject collObj = repositoryObjectFactory.createCollectionObject(null);
         adminUnit.addMember(collObj);
@@ -230,7 +229,7 @@ public class AddContainerIT extends AbstractAPIIT {
         AdminUnit adminUnit = repositoryObjectFactory.createAdminUnit(new AclModelBuilder("Ingesting")
                 .addCanIngest("ingestorGroup").model);
 
-        GroupsThreadStore.storeGroups(new AccessGroupSet("ingestorGroup"));
+        GroupsThreadStore.storeGroups(new AccessGroupSetImpl("ingestorGroup"));
         contentRoot.addMember(adminUnit);
         CollectionObject collObj = repositoryObjectFactory.createCollectionObject(null);
         adminUnit.addMember(collObj);
@@ -403,7 +402,7 @@ public class AddContainerIT extends AbstractAPIIT {
 
     @Test
     public void testAuthorizationFailure() throws Exception {
-        GroupsThreadStore.storeGroups(new AccessGroupSet(UNIT_MANAGER_PRINC));
+        GroupsThreadStore.storeGroups(new AccessGroupSetImpl(UNIT_MANAGER_PRINC));
 
         AdminUnit adminUnit = repositoryObjectFactory.createAdminUnit(null);
         contentRoot.addMember(adminUnit);

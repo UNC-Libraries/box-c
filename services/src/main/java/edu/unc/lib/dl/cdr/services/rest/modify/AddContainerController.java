@@ -28,9 +28,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import edu.unc.lib.boxc.auth.api.exceptions.AccessRestrictionException;
+import edu.unc.lib.boxc.auth.fcrepo.models.AgentPrincipalsImpl;
 import edu.unc.lib.boxc.model.api.ResourceType;
-import edu.unc.lib.dl.acl.exception.AccessRestrictionException;
-import edu.unc.lib.dl.acl.util.AgentPrincipals;
 import edu.unc.lib.dl.cdr.services.processing.AddContainerService;
 import edu.unc.lib.dl.cdr.services.processing.AddContainerService.AddContainerRequest;
 import edu.unc.lib.dl.fedora.AuthorizationException;
@@ -78,7 +78,7 @@ public class AddContainerController {
         result.put("pid", addRequest.getParentPid().getId());
 
         try {
-            addContainerService.addContainer(addRequest.withAgent(AgentPrincipals.createFromThread()));
+            addContainerService.addContainer(addRequest.withAgent(AgentPrincipalsImpl.createFromThread()));
         } catch (Exception e) {
             result.put("error", e.getMessage());
             Throwable t = e.getCause();

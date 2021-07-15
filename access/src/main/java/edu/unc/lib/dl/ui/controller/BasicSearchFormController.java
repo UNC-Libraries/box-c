@@ -15,27 +15,27 @@
  */
 package edu.unc.lib.dl.ui.controller;
 
-import javax.servlet.http.HttpServletRequest;
-
-import edu.unc.lib.dl.search.solr.model.SearchState;
-import edu.unc.lib.dl.search.solr.service.SearchActionService;
-import edu.unc.lib.dl.search.solr.service.SearchStateFactory;
-import edu.unc.lib.dl.search.solr.util.SearchSettings;
-import edu.unc.lib.dl.search.solr.util.SearchStateUtil;
-
+import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.util.HashMap;
+
+import javax.servlet.http.HttpServletRequest;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 
-import java.io.UnsupportedEncodingException;
-import org.springframework.beans.factory.annotation.Autowired;
+import edu.unc.lib.dl.search.solr.model.SearchState;
+import edu.unc.lib.dl.search.solr.service.SearchActionService;
+import edu.unc.lib.dl.search.solr.service.SearchStateFactory;
+import edu.unc.lib.dl.search.solr.util.SearchSettings;
+import edu.unc.lib.dl.search.solr.util.SearchStateUtil;
 
 /**
  * Handles search requests from basic search forms.  Can handle

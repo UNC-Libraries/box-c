@@ -15,6 +15,9 @@
  */
 package edu.unc.lib.dl.cdr.services.rest.modify;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,13 +30,10 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import java.util.HashMap;
-import java.util.Map;
-
+import edu.unc.lib.boxc.auth.api.exceptions.AccessRestrictionException;
+import edu.unc.lib.boxc.auth.fcrepo.models.AgentPrincipalsImpl;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
-import edu.unc.lib.dl.acl.exception.AccessRestrictionException;
-import edu.unc.lib.dl.acl.util.AgentPrincipals;
 import edu.unc.lib.dl.fedora.AuthorizationException;
 import edu.unc.lib.dl.persist.services.edit.EditTitleService;
 
@@ -60,7 +60,7 @@ public class EditTitleController {
         PID pid = PIDs.get(id);
 
         try {
-            service.editTitle(AgentPrincipals.createFromThread(), pid, title);
+            service.editTitle(AgentPrincipalsImpl.createFromThread(), pid, title);
         } catch (Exception e) {
             result.put("error", e.getMessage());
 

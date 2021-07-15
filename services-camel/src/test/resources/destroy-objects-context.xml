@@ -31,7 +31,7 @@
     </bean>
     
     <bean id="aclService" class="org.mockito.Mockito" factory-method="mock">
-        <constructor-arg value="edu.unc.lib.dl.acl.service.AccessControlService" />
+        <constructor-arg value="edu.unc.lib.boxc.auth.api.services.AccessControlService" />
     </bean>
     
     <bean id="repositoryObjectFactory" class="org.mockito.Mockito" factory-method="mock">
@@ -39,7 +39,7 @@
     </bean>
     
     <bean id="inheritedAclFactory" class="org.mockito.Mockito" factory-method="mock">
-        <constructor-arg value="edu.unc.lib.dl.acl.fcrepo4.InheritedAclFactory" />
+        <constructor-arg value="edu.unc.lib.boxc.auth.fcrepo.services.InheritedAclFactory" />
     </bean>
     
     <bean id="repositoryObjectLoader" class="org.mockito.Mockito" factory-method="mock">

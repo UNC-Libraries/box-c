@@ -42,13 +42,13 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.ContextHierarchy;
 import org.springframework.test.web.servlet.MvcResult;
 
+import edu.unc.lib.boxc.auth.api.Permission;
+import edu.unc.lib.boxc.auth.api.exceptions.AccessRestrictionException;
+import edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl;
+import edu.unc.lib.boxc.auth.fcrepo.models.AgentPrincipalsImpl;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.objects.BinaryObject;
 import edu.unc.lib.boxc.model.api.objects.WorkObject;
-import edu.unc.lib.dl.acl.exception.AccessRestrictionException;
-import edu.unc.lib.dl.acl.util.AccessGroupSet;
-import edu.unc.lib.dl.acl.util.AgentPrincipals;
-import edu.unc.lib.dl.acl.util.Permission;
 import edu.unc.lib.dl.persist.services.edit.UpdateDescriptionService;
 import edu.unc.lib.dl.persist.services.edit.UpdateDescriptionService.UpdateDescriptionRequest;
 
@@ -117,7 +117,7 @@ public class EditTitleIT extends AbstractAPIIT {
 
         InputStream modsStream = documentToInputStream(document);
         updateDescriptionService.updateDescription(new UpdateDescriptionRequest(
-                mock(AgentPrincipals.class), pid, modsStream));
+                mock(AgentPrincipalsImpl.class), pid, modsStream));
 
         String newTitle = "new_work_title";
         MvcResult result = mvc.perform(put("/edit/title/" + pid.getUUID())
@@ -139,7 +139,7 @@ public class EditTitleIT extends AbstractAPIIT {
         repositoryObjectFactory.createFolderObject(pid, null);
 
         doThrow(new AccessRestrictionException()).when(aclService)
-                .assertHasAccess(anyString(), eq(pid), any(AccessGroupSet.class), eq(Permission.editDescription));
+                .assertHasAccess(anyString(), eq(pid), any(AccessGroupSetImpl.class), eq(Permission.editDescription));
 
         String title = "folder_title";
         MvcResult result = mvc.perform(put("/edit/title/" + pid.getUUID())

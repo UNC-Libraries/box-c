@@ -15,7 +15,7 @@
  */
 package edu.unc.lib.dl.cdr.services.rest.modify;
 
-import static edu.unc.lib.dl.acl.util.Permission.editDescription;
+import static edu.unc.lib.boxc.auth.api.Permission.editDescription;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -41,11 +41,11 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.ContextHierarchy;
 import org.springframework.test.web.servlet.MvcResult;
 
+import edu.unc.lib.boxc.auth.api.exceptions.AccessRestrictionException;
+import edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.objects.ContentObject;
 import edu.unc.lib.boxc.model.api.services.ContentPathFactory;
-import edu.unc.lib.dl.acl.exception.AccessRestrictionException;
-import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.persist.services.edit.UpdateDescriptionService;
 
 /**
@@ -116,7 +116,7 @@ public class UpdateDescriptionIT extends AbstractAPIIT {
     @Test
     public void testAuthorizationFailure() throws Exception {
         doThrow(new AccessRestrictionException()).when(aclService)
-                .assertHasAccess(anyString(), any(PID.class), any(AccessGroupSet.class), eq(editDescription));
+                .assertHasAccess(anyString(), any(PID.class), any(AccessGroupSetImpl.class), eq(editDescription));
 
         File file = new File("src/test/resources/mods/valid-mods.xml");
         InputStream stream = new FileInputStream(file);

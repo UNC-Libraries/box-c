@@ -15,7 +15,7 @@
  */
 package edu.unc.lib.dl.cdr.services.rest.modify;
 
-import static edu.unc.lib.dl.acl.util.Permission.bulkUpdateDescription;
+import static edu.unc.lib.boxc.auth.api.Permission.bulkUpdateDescription;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
@@ -54,11 +54,11 @@ import org.springframework.test.web.servlet.MvcResult;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import edu.unc.lib.boxc.auth.api.models.AgentPrincipals;
+import edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl;
+import edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.objects.ContentObject;
-import edu.unc.lib.dl.acl.util.AccessGroupSet;
-import edu.unc.lib.dl.acl.util.AgentPrincipals;
-import edu.unc.lib.dl.acl.util.GroupsThreadStore;
 import edu.unc.lib.dl.cdr.services.rest.modify.ExportXMLController.XMLExportRequest;
 import edu.unc.lib.dl.persist.services.edit.UpdateDescriptionService;
 import edu.unc.lib.dl.persist.services.edit.UpdateDescriptionService.UpdateDescriptionRequest;
@@ -113,14 +113,14 @@ public class ExportXMLIT extends AbstractAPIIT {
     @Before
     public void init_() throws Exception {
         initMocks(this);
-        when(aclService.hasAccess(any(PID.class), any(AccessGroupSet.class), eq(bulkUpdateDescription)))
+        when(aclService.hasAccess(any(PID.class), any(AccessGroupSetImpl.class), eq(bulkUpdateDescription)))
                 .thenReturn(true);
         reset(emailHandler);
     }
 
     @Test
     public void testExportMODS() throws Exception {
-        doNothing().when(aclService).assertHasAccess(anyString(), any(PID.class), any(AccessGroupSet.class),
+        doNothing().when(aclService).assertHasAccess(anyString(), any(PID.class), any(AccessGroupSetImpl.class),
                 eq(bulkUpdateDescription));
 
         String json = makeExportJson(createObjects(),false);
@@ -177,7 +177,7 @@ public class ExportXMLIT extends AbstractAPIIT {
         // reset username to null to simulate situation where no username exists
         GroupsThreadStore.clearStore();
         GroupsThreadStore.storeUsername(null);
-        GroupsThreadStore.storeGroups(new AccessGroupSet("adminGroup"));
+        GroupsThreadStore.storeGroups(new AccessGroupSetImpl("adminGroup"));
         MvcResult result = mvc.perform(post("/edit/exportXML")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(json))

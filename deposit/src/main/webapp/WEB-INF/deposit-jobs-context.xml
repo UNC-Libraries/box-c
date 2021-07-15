@@ -175,7 +175,7 @@
         scope="prototype">
     </bean>
     
-    <bean id="aclValidator" class="edu.unc.lib.dl.acl.fcrepo4.ContentObjectAccessRestrictionValidator">
+    <bean id="aclValidator" class="edu.unc.lib.boxc.auth.fcrepo.services.ContentObjectAccessRestrictionValidator">
     </bean>
     
     <bean id="ValidateContentModelJob" class="edu.unc.lib.deposit.validate.ValidateContentModelJob"

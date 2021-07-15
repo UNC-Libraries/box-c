@@ -30,10 +30,10 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import edu.unc.lib.boxc.auth.api.exceptions.AccessRestrictionException;
+import edu.unc.lib.boxc.auth.fcrepo.models.AgentPrincipalsImpl;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
-import edu.unc.lib.dl.acl.exception.AccessRestrictionException;
-import edu.unc.lib.dl.acl.util.AgentPrincipals;
 import edu.unc.lib.dl.fedora.AuthorizationException;
 import edu.unc.lib.dl.persist.services.edit.EditFilenameService;
 
@@ -60,7 +60,7 @@ public class EditFilenameController {
         PID pid = PIDs.get(id);
 
         try {
-            editFilenameService.editLabel(AgentPrincipals.createFromThread(), pid, label);
+            editFilenameService.editLabel(AgentPrincipalsImpl.createFromThread(), pid, label);
         } catch (Exception e) {
             result.put("error", e.getMessage());
             Throwable t = e.getCause();

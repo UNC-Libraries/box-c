@@ -44,11 +44,12 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.ContextHierarchy;
 import org.springframework.test.web.servlet.MvcResult;
 
+import edu.unc.lib.boxc.auth.api.Permission;
+import edu.unc.lib.boxc.auth.api.exceptions.AccessRestrictionException;
+import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
+import edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl;
+import edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore;
 import edu.unc.lib.boxc.model.api.ids.PID;
-import edu.unc.lib.dl.acl.exception.AccessRestrictionException;
-import edu.unc.lib.dl.acl.util.AccessGroupSet;
-import edu.unc.lib.dl.acl.util.GroupsThreadStore;
-import edu.unc.lib.dl.acl.util.Permission;
 import edu.unc.lib.dl.persist.services.ingest.CDRMETSDepositHandler;
 import edu.unc.lib.dl.persist.services.ingest.SimpleObjectDepositHandler;
 import edu.unc.lib.dl.util.DepositMethod;
@@ -93,7 +94,7 @@ public class IngestControllerIT extends AbstractAPIIT {
         metsHandler.setDepositsDirectory(depositsDir);
         simpleHandler.setDepositsDirectory(depositsDir);
 
-        AccessGroupSet testPrincipals = new AccessGroupSet("admins");
+        AccessGroupSet testPrincipals = new AccessGroupSetImpl("admins");
 
         GroupsThreadStore.storeUsername(DEPOSITOR);
         GroupsThreadStore.storeGroups(testPrincipals);
@@ -110,7 +111,7 @@ public class IngestControllerIT extends AbstractAPIIT {
         MockMultipartFile depositFile = new MockMultipartFile("file", "test.txt", "text/plain", "some text".getBytes());
 
         doThrow(new AccessRestrictionException()).when(aclService)
-                .assertHasAccess(anyString(), eq(destPid), any(AccessGroupSet.class), eq(Permission.ingest));
+                .assertHasAccess(anyString(), eq(destPid), any(AccessGroupSetImpl.class), eq(Permission.ingest));
 
         mvc.perform(multipart("/edit/ingest/" + destPid.getId())
                 .file(depositFile)
@@ -228,7 +229,7 @@ public class IngestControllerIT extends AbstractAPIIT {
     private void assertDepositorDetailsStored(Map<String, String> status) {
         assertEquals(DEPOSITOR, status.get(DepositField.depositorName.name()));
         assertEquals(DEPOSITOR_EMAIL, status.get(DepositField.depositorEmail.name()));
-        AccessGroupSet depositPrincipals = new AccessGroupSet(status.get(DepositField.permissionGroups.name()));
+        AccessGroupSet depositPrincipals = new AccessGroupSetImpl(status.get(DepositField.permissionGroups.name()));
         assertTrue("admins principal must be set in deposit", depositPrincipals.contains("admins"));
     }
 
