@@ -83,7 +83,7 @@ public class BagIt2N3BagJob extends AbstractFileServerToBagJob {
         Model depModel = getReadOnlyModel();
         Model model = ModelFactory.createDefaultModel().add(depModel);
 
-        org.apache.jena.rdf.model.Bag depositBag = model.createBag(getDepositPID().getURI().toString());
+        org.apache.jena.rdf.model.Bag depositBag = model.createBag(getDepositPID().getRepositoryPath().toString());
 
         Map<String, String> status = getDepositStatus();
         URI sourceUri = URI.create(status.get(DepositField.sourceUri.name()));
@@ -97,12 +97,13 @@ public class BagIt2N3BagJob extends AbstractFileServerToBagJob {
             // Check that bag exists. Throws MissingBagitFileException
             MandatoryVerifier.checkBagitFileExists(bagReader.getRootDir(), bagReader.getVersion());
 
-            try (BagVerifier verifier = new BagVerifier(executorService)) {
-                interruptJobIfStopped();
-                verifier.isComplete(bagReader, false);
-                interruptJobIfStopped();
-                verifier.isValid(bagReader, false);
-            }
+            // Avoiding closing the BagVerifier since all it does is shuts down the shared executor
+            @SuppressWarnings("resource")
+            BagVerifier verifier = new BagVerifier(executorService);
+            interruptJobIfStopped();
+            verifier.isComplete(bagReader, false);
+            interruptJobIfStopped();
+            verifier.isValid(bagReader, false);
 
             interruptJobIfStopped();
 

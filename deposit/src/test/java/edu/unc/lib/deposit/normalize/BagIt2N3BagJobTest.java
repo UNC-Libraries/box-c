@@ -30,6 +30,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
@@ -71,8 +72,12 @@ public class BagIt2N3BagJobTest extends AbstractNormalizationJobTest {
         when(depositStatusFactory.get(anyString())).thenReturn(status);
 
         executorService = Executors.newSingleThreadExecutor();
+        initJob(depositUUID);
+    }
+
+    private void initJob(String uuid) {
         job = new BagIt2N3BagJob();
-        job.setDepositUUID(depositUUID);
+        job.setDepositUUID(uuid);
         job.setDepositDirectory(depositDir);
         job.setExecutorService(executorService);
         setField(job, "depositModelManager", depositModelManager);
@@ -214,6 +219,56 @@ public class BagIt2N3BagJobTest extends AbstractNormalizationJobTest {
 
         assertEquals("Incorrect number of objects identified for cleanup", 1, cleanupSet.size());
         assertTrue("Cleanup of bag not set", cleanupSet.contains(sourceUri.toString()));
+    }
+
+    // BXC-3217
+    @Test
+    public void testTwoJobs() throws Exception {
+        URI sourceUri = Paths.get("src/test/resources/paths/valid-bag").toAbsolutePath().toUri();
+        status.put(DepositField.sourceUri.name(), sourceUri.toString());
+        status.put(DepositField.fileName.name(), "Test File");
+        status.put(DepositField.createParentFolder.name(), "true");
+
+        job.run();
+
+        Model model = job.getReadOnlyModel();
+        Bag depositBag = model.getBag(job.getDepositPID().getRepositoryPath());
+
+        Bag bagFolder = model.getBag((Resource) depositBag.iterator().next());
+        Resource folder = (Resource) bagFolder.iterator().next();
+        Bag childrenBag = model.getBag(folder.getURI());
+        assertEquals(2, childrenBag.size());
+
+        // Verify that all manifests were added.
+        List<String> manifestPaths = depositBag.listProperties(CdrDeposit.hasDatastreamManifest)
+                .toList().stream()
+                .map(Statement::getResource)
+                .map(r -> r.getProperty(CdrDeposit.stagingLocation).getString())
+                .collect(Collectors.toList());
+        assertEquals("Unexpected number of manifests", 2, manifestPaths.size());
+
+        job.closeModel();
+
+        // Initialize and run a second job to make sure two of them can run in a row
+        initJob(UUID.randomUUID().toString());
+        job.run();
+
+        Model model2 = job.getReadOnlyModel();
+        Bag depositBag2 = model2.getBag(job.getDepositPID().getRepositoryPath());
+
+        Bag bagFolder2 = model2.getBag((Resource) depositBag2.iterator().next());
+        Resource folder2 = (Resource) bagFolder2.iterator().next();
+        Bag childrenBag2 = model2.getBag(folder2.getURI());
+        assertEquals(2, childrenBag2.size());
+
+        // Verify that all manifests were added.
+        List<String> manifestPaths2 = depositBag2.listProperties(CdrDeposit.hasDatastreamManifest)
+                .toList().stream()
+                .map(Statement::getResource)
+                .map(r -> r.getProperty(CdrDeposit.stagingLocation).getString())
+                .collect(Collectors.toList());
+        assertEquals("Unexpected number of manifests", 2, manifestPaths2.size());
+
     }
 
     private void assertFileAdded(Resource work, String md5sum, String fileLocation) {
