@@ -15,7 +15,7 @@
  */
 package edu.unc.lib.boxc.deposit.impl.submit;
 
-import static edu.unc.lib.boxc.deposit.api.PackagingType.SIMPLE_OBJECT;
+import static edu.unc.lib.boxc.persist.api.PackagingType.SIMPLE_OBJECT;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;

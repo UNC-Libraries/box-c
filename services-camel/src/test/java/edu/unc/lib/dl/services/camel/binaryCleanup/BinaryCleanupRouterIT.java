@@ -53,13 +53,13 @@ import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
 import edu.unc.lib.boxc.model.fcrepo.ids.DatastreamPids;
 import edu.unc.lib.boxc.model.fcrepo.services.RepositoryInitializer;
 import edu.unc.lib.boxc.model.fcrepo.test.TestHelper;
+import edu.unc.lib.boxc.persist.api.storage.StorageLocation;
+import edu.unc.lib.boxc.persist.api.storage.StorageLocationManager;
+import edu.unc.lib.boxc.persist.impl.storage.StorageLocationTestHelper;
 import edu.unc.lib.dl.fcrepo4.FedoraTransaction;
 import edu.unc.lib.dl.fcrepo4.TransactionManager;
 import edu.unc.lib.dl.persist.api.event.PremisLogger;
 import edu.unc.lib.dl.persist.api.event.PremisLoggerFactory;
-import edu.unc.lib.dl.persist.api.storage.StorageLocation;
-import edu.unc.lib.dl.persist.api.storage.StorageLocationManager;
-import edu.unc.lib.dl.persist.services.storage.StorageLocationTestHelper;
 
 /**
  * @author bbpennel

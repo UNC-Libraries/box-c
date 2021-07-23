@@ -49,8 +49,6 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import edu.unc.lib.boxc.common.util.DateTimeUtil;
 import edu.unc.lib.boxc.common.xml.SecureXMLFactory;
-import edu.unc.lib.boxc.deposit.impl.sources.IngestSourceManagerImpl;
-import edu.unc.lib.boxc.deposit.impl.sources.IngestSourceTestHelper;
 import edu.unc.lib.boxc.model.api.exceptions.ObjectTypeMismatchException;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.ids.PIDMinter;
@@ -61,9 +59,11 @@ import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
 import edu.unc.lib.boxc.model.fcrepo.ids.DatastreamPids;
 import edu.unc.lib.boxc.model.fcrepo.test.RepositoryObjectTreeIndexer;
 import edu.unc.lib.boxc.model.fcrepo.test.TestHelper;
+import edu.unc.lib.boxc.persist.api.transfer.BinaryTransferSession;
+import edu.unc.lib.boxc.persist.impl.sources.IngestSourceManagerImpl;
+import edu.unc.lib.boxc.persist.impl.sources.IngestSourceTestHelper;
+import edu.unc.lib.boxc.persist.impl.transfer.BinaryTransferServiceImpl;
 import edu.unc.lib.dl.fcrepo4.TransactionManager;
-import edu.unc.lib.dl.persist.api.transfer.BinaryTransferSession;
-import edu.unc.lib.dl.persist.services.transfer.BinaryTransferServiceImpl;
 import edu.unc.lib.dl.persist.services.versioning.VersionedDatastreamService.DatastreamVersion;
 
 /**

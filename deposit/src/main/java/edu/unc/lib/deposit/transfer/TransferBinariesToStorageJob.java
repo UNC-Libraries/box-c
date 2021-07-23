@@ -53,12 +53,12 @@ import edu.unc.lib.boxc.model.api.rdf.CdrDeposit;
 import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
 import edu.unc.lib.boxc.model.fcrepo.ids.DatastreamPids;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
+import edu.unc.lib.boxc.persist.api.storage.BinaryDetails;
+import edu.unc.lib.boxc.persist.api.transfer.BinaryAlreadyExistsException;
+import edu.unc.lib.boxc.persist.api.transfer.BinaryTransferOutcome;
+import edu.unc.lib.boxc.persist.api.transfer.BinaryTransferSession;
 import edu.unc.lib.deposit.work.AbstractConcurrentDepositJob;
 import edu.unc.lib.dl.exceptions.InvalidChecksumException;
-import edu.unc.lib.dl.persist.api.storage.BinaryDetails;
-import edu.unc.lib.dl.persist.api.transfer.BinaryAlreadyExistsException;
-import edu.unc.lib.dl.persist.api.transfer.BinaryTransferOutcome;
-import edu.unc.lib.dl.persist.api.transfer.BinaryTransferSession;
 
 /**
  * Job which transfers binaries included in this deposit to the appropriate destination

@@ -18,7 +18,7 @@ package edu.unc.lib.deposit.fcrepo4;
 import static edu.unc.lib.boxc.common.test.TestHelpers.setField;
 import static edu.unc.lib.boxc.model.api.DatastreamType.ORIGINAL_FILE;
 import static edu.unc.lib.boxc.model.api.DatastreamType.TECHNICAL_METADATA;
-import static edu.unc.lib.dl.persist.services.storage.StorageLocationTestHelper.LOC1_ID;
+import static edu.unc.lib.boxc.persist.impl.storage.StorageLocationTestHelper.LOC1_ID;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.apache.jena.rdf.model.ResourceFactory.createResource;
 import static org.junit.Assert.assertEquals;

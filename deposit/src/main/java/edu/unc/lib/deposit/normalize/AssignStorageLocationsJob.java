@@ -36,9 +36,9 @@ import org.apache.jena.vocabulary.RDF;
 import edu.unc.lib.boxc.deposit.api.RedisWorkerConstants.DepositField;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.rdf.Cdr;
+import edu.unc.lib.boxc.persist.api.storage.StorageLocation;
+import edu.unc.lib.boxc.persist.api.storage.UnknownStorageLocationException;
 import edu.unc.lib.deposit.work.AbstractDepositJob;
-import edu.unc.lib.dl.persist.api.storage.StorageLocation;
-import edu.unc.lib.dl.persist.api.storage.UnknownStorageLocationException;
 
 /**
  * Assigns a storage location designator to all ingestable objects except for binaries

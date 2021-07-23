@@ -29,7 +29,6 @@ import org.apache.jena.vocabulary.RDF;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import edu.unc.lib.boxc.deposit.api.PackagingType;
 import edu.unc.lib.boxc.deposit.api.RedisWorkerConstants.DepositField;
 import edu.unc.lib.boxc.deposit.impl.model.DepositModelHelpers;
 import edu.unc.lib.boxc.model.api.SoftwareAgentConstants.SoftwareAgent;
@@ -38,6 +37,7 @@ import edu.unc.lib.boxc.model.api.rdf.Cdr;
 import edu.unc.lib.boxc.model.api.rdf.CdrDeposit;
 import edu.unc.lib.boxc.model.api.rdf.Premis;
 import edu.unc.lib.boxc.model.fcrepo.ids.AgentPids;
+import edu.unc.lib.boxc.persist.api.PackagingType;
 import edu.unc.lib.deposit.work.AbstractDepositJob;
 import edu.unc.lib.dl.persist.api.event.PremisLogger;
 

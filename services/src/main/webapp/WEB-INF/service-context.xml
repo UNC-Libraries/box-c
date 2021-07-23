@@ -99,7 +99,6 @@
         <property name="objectPathFactory" ref="objectPathFactory" />
         <property name="asynchronous" value="true" />
         <property name="moveExecutor" ref="moveExecutor" />
-        <property name="operationMetrics" ref="activityMetricsClient" />
     </bean>
     
     <bean id="destroyObjectsJmsTemplate" class="org.springframework.jms.core.JmsTemplate">
@@ -188,10 +187,6 @@
     <bean id="moveExecutor" class="java.util.concurrent.Executors"
             factory-method="newFixedThreadPool" destroy-method="shutdownNow">
             <constructor-arg value="${services.move.workers:1}"/>
-    </bean>
-    
-    <bean id="activityMetricsClient" class="edu.unc.lib.boxc.deposit.impl.model.ActivityMetricsClient" >
-        <property name="jedisPool" ref="jedisPool" />
     </bean>
     
     <!-- Access related beans -->
@@ -422,11 +417,11 @@
         <property name="premisLoggerFactory" ref="premisLoggerFactory" />
     </bean>
     
-    <bean id="binaryTransferService" class="edu.unc.lib.dl.persist.services.transfer.BinaryTransferServiceImpl">
+    <bean id="binaryTransferService" class="edu.unc.lib.boxc.persist.impl.transfer.BinaryTransferServiceImpl">
         <property name="storageLocationManager" ref="storageLocationManager" />
     </bean>
     
-    <bean id="storageLocationManager" class="edu.unc.lib.dl.persist.services.storage.StorageLocationManagerImpl"
+    <bean id="storageLocationManager" class="edu.unc.lib.boxc.persist.impl.storage.StorageLocationManagerImpl"
             init-method="init">
         <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
         <property name="pathFactory" ref="contentPathFactory" />

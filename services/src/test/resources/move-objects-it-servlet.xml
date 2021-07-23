@@ -45,10 +45,6 @@
         <constructor-arg value="edu.unc.lib.boxc.auth.fcrepo.services.AccessControlServiceImpl" />
     </bean>
     
-    <bean id="operationMetrics" class="org.mockito.Mockito" factory-method="mock">
-        <constructor-arg value="edu.unc.lib.boxc.deposit.impl.model.ActivityMetricsClient" />
-    </bean>
-    
     <bean id="objectPathFactory" class="org.mockito.Mockito" factory-method="mock">
         <constructor-arg value="edu.unc.lib.dl.search.solr.service.ObjectPathFactory" />
     </bean>

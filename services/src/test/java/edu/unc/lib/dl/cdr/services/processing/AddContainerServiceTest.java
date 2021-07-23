@@ -60,6 +60,8 @@ import edu.unc.lib.boxc.model.api.rdf.Cdr;
 import edu.unc.lib.boxc.model.api.rdf.Premis;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.boxc.model.fcrepo.services.RepositoryObjectFactoryImpl;
+import edu.unc.lib.boxc.persist.api.storage.StorageLocation;
+import edu.unc.lib.boxc.persist.api.storage.StorageLocationManager;
 import edu.unc.lib.dl.cdr.services.processing.AddContainerService.AddContainerRequest;
 import edu.unc.lib.dl.fcrepo4.FedoraTransaction;
 import edu.unc.lib.dl.fcrepo4.TransactionCancelledException;
@@ -67,8 +69,6 @@ import edu.unc.lib.dl.fcrepo4.TransactionManager;
 import edu.unc.lib.dl.persist.api.event.PremisEventBuilder;
 import edu.unc.lib.dl.persist.api.event.PremisLogger;
 import edu.unc.lib.dl.persist.api.event.PremisLoggerFactory;
-import edu.unc.lib.dl.persist.api.storage.StorageLocation;
-import edu.unc.lib.dl.persist.api.storage.StorageLocationManager;
 import edu.unc.lib.dl.persist.services.edit.UpdateDescriptionService;
 import edu.unc.lib.dl.services.OperationsMessageSender;
 

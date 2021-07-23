@@ -29,12 +29,12 @@ import org.mockito.Mock;
 
 import edu.unc.lib.boxc.auth.api.models.AgentPrincipals;
 import edu.unc.lib.boxc.auth.api.services.AccessControlService;
-import edu.unc.lib.boxc.deposit.api.PackagingType;
-import edu.unc.lib.boxc.deposit.api.exceptions.UnsupportedPackagingTypeException;
 import edu.unc.lib.boxc.deposit.api.submit.DepositData;
 import edu.unc.lib.boxc.deposit.api.submit.DepositHandler;
 import edu.unc.lib.boxc.deposit.impl.model.DepositStatusFactory;
 import edu.unc.lib.boxc.model.api.ids.PID;
+import edu.unc.lib.boxc.persist.api.PackagingType;
+import edu.unc.lib.boxc.persist.api.exceptions.UnsupportedPackagingTypeException;
 
 /**
  *

@@ -44,10 +44,10 @@ import org.mockito.ArgumentMatcher;
 import org.mockito.Mock;
 
 import edu.unc.lib.boxc.common.util.URIUtil;
-import edu.unc.lib.boxc.deposit.api.exceptions.UnknownIngestSourceException;
-import edu.unc.lib.boxc.deposit.api.sources.IngestSource;
-import edu.unc.lib.boxc.deposit.api.sources.IngestSourceManager;
 import edu.unc.lib.boxc.model.api.rdf.CdrDeposit;
+import edu.unc.lib.boxc.persist.api.exceptions.UnknownIngestSourceException;
+import edu.unc.lib.boxc.persist.api.sources.IngestSource;
+import edu.unc.lib.boxc.persist.api.sources.IngestSourceManager;
 import edu.unc.lib.deposit.fcrepo4.AbstractDepositJobTest;
 
 /**

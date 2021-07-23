@@ -16,7 +16,6 @@
 package edu.unc.lib.boxc.deposit.impl.model;
 
 import static edu.unc.lib.boxc.deposit.api.RedisWorkerConstants.DEPOSIT_METRICS_PREFIX;
-import static edu.unc.lib.boxc.deposit.api.RedisWorkerConstants.OPERATION_METRICS_PREFIX;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -41,27 +40,6 @@ public class ActivityMetricsClient {
 
     public void setJedisPool(JedisPool jedisPool) {
         this.jedisPool = jedisPool;
-    }
-
-    public void incrMoves() {
-        try (Jedis jedis = getJedisPool().getResource()) {
-            String date = metricsDateFormat.format(new Date());
-            jedis.hincrBy(OPERATION_METRICS_PREFIX + date, "moves", 1);
-        }
-    }
-
-    public void incrFinishedEnhancement(String className) {
-        try (Jedis jedis = getJedisPool().getResource()) {
-            String date = metricsDateFormat.format(new Date());
-            jedis.hincrBy(OPERATION_METRICS_PREFIX + date, "finished-enh:" + className, 1);
-        }
-    }
-
-    public void incrFailedEnhancement(String className) {
-        try (Jedis jedis = getJedisPool().getResource()) {
-            String date = metricsDateFormat.format(new Date());
-            jedis.hincrBy(OPERATION_METRICS_PREFIX + date, "failed-enh:" + className, 1);
-        }
     }
 
     public void incrFailedDeposit() {

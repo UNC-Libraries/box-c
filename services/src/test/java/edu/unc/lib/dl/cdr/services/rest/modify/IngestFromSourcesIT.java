@@ -15,13 +15,13 @@
  */
 package edu.unc.lib.dl.cdr.services.rest.modify;
 
-import static edu.unc.lib.boxc.deposit.api.PackagingType.BAGIT;
-import static edu.unc.lib.boxc.deposit.api.PackagingType.DIRECTORY;
-import static edu.unc.lib.boxc.deposit.impl.sources.IngestSourceTestHelper.addMapping;
-import static edu.unc.lib.boxc.deposit.impl.sources.IngestSourceTestHelper.createConfigFile;
-import static edu.unc.lib.boxc.deposit.impl.sources.IngestSourceTestHelper.createFilesystemConfig;
-import static edu.unc.lib.boxc.deposit.impl.sources.IngestSourceTestHelper.serializeLocationMappings;
-import static edu.unc.lib.dl.persist.api.storage.StorageType.FILESYSTEM;
+import static edu.unc.lib.boxc.persist.api.PackagingType.BAGIT;
+import static edu.unc.lib.boxc.persist.api.PackagingType.DIRECTORY;
+import static edu.unc.lib.boxc.persist.api.storage.StorageType.FILESYSTEM;
+import static edu.unc.lib.boxc.persist.impl.sources.IngestSourceTestHelper.addMapping;
+import static edu.unc.lib.boxc.persist.impl.sources.IngestSourceTestHelper.createConfigFile;
+import static edu.unc.lib.boxc.persist.impl.sources.IngestSourceTestHelper.createFilesystemConfig;
+import static edu.unc.lib.boxc.persist.impl.sources.IngestSourceTestHelper.serializeLocationMappings;
 import static java.util.Arrays.asList;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -66,15 +66,15 @@ import edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl;
 import edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore;
 import edu.unc.lib.boxc.common.util.ZipFileUtil;
 import edu.unc.lib.boxc.deposit.api.RedisWorkerConstants.DepositField;
-import edu.unc.lib.boxc.deposit.api.sources.IngestSource;
-import edu.unc.lib.boxc.deposit.api.sources.IngestSourceCandidate;
 import edu.unc.lib.boxc.deposit.impl.model.DepositStatusFactory;
-import edu.unc.lib.boxc.deposit.impl.sources.FilesystemIngestSource;
-import edu.unc.lib.boxc.deposit.impl.sources.IngestSourceManagerImpl;
-import edu.unc.lib.boxc.deposit.impl.sources.IngestSourceManagerImpl.IngestSourceMapping;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.services.ContentPathFactory;
 import edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPaths;
+import edu.unc.lib.boxc.persist.api.sources.IngestSource;
+import edu.unc.lib.boxc.persist.api.sources.IngestSourceCandidate;
+import edu.unc.lib.boxc.persist.impl.sources.FilesystemIngestSource;
+import edu.unc.lib.boxc.persist.impl.sources.IngestSourceManagerImpl;
+import edu.unc.lib.boxc.persist.impl.sources.IngestSourceManagerImpl.IngestSourceMapping;
 import edu.unc.lib.dl.cdr.services.rest.modify.IngestSourceController.IngestPackageDetails;
 
 /**

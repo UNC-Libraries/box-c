@@ -63,10 +63,10 @@ import edu.unc.lib.boxc.model.api.services.ContentPathFactory;
 import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.boxc.model.fcrepo.test.TestHelper;
-import edu.unc.lib.dl.persist.api.storage.StorageLocationManager;
+import edu.unc.lib.boxc.persist.api.storage.StorageLocationManager;
+import edu.unc.lib.boxc.persist.impl.transfer.BinaryTransferServiceImpl;
 import edu.unc.lib.dl.persist.services.edit.UpdateDescriptionService;
 import edu.unc.lib.dl.persist.services.edit.UpdateDescriptionService.UpdateDescriptionRequest;
-import edu.unc.lib.dl.persist.services.transfer.BinaryTransferServiceImpl;
 
 /**
  *

@@ -29,7 +29,7 @@ import org.slf4j.LoggerFactory;
 import edu.unc.lib.dl.fedora.ServiceException;
 import edu.unc.lib.boxc.common.metrics.HistogramFactory;
 import edu.unc.lib.boxc.common.metrics.TimerFactory;
-import edu.unc.lib.dl.persist.services.transfer.FileSystemTransferHelpers;
+import edu.unc.lib.boxc.persist.impl.transfer.FileSystemTransferHelpers;
 import io.dropwizard.metrics5.Histogram;
 import io.dropwizard.metrics5.Timer;
 

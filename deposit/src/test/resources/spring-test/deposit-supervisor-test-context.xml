@@ -34,7 +34,7 @@
     </bean>
     
     <bean id="jobFactory" class="org.mockito.Mockito" factory-method="mock">
-        <constructor-arg value="edu.unc.lib.dl.util.SpringJobFactory" />
+        <constructor-arg value="edu.unc.lib.boxc.deposit.utils.SpringJobFactory" />
     </bean>
     
     <bean id="depositWorkerPool" class="net.greghaines.jesque.worker.WorkerPool">

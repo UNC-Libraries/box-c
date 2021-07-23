@@ -65,7 +65,6 @@ import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
 import edu.unc.lib.boxc.auth.api.models.AgentPrincipals;
 import edu.unc.lib.boxc.auth.api.services.AccessControlService;
 import edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl;
-import edu.unc.lib.boxc.deposit.impl.model.ActivityMetricsClient;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.objects.AdminUnit;
 import edu.unc.lib.boxc.model.api.objects.CollectionObject;
@@ -104,8 +103,6 @@ public class MoveObjectsServiceTest {
     private OperationsMessageSender operationsMessageSender;
     @Mock
     private ObjectPathFactory objectPathFactory;
-    @Mock
-    private ActivityMetricsClient operationMetrics;
 
     @Rule
     public ExpectedException expectedException = ExpectedException.none();
@@ -150,7 +147,6 @@ public class MoveObjectsServiceTest {
         service.setTransactionManager(transactionManager);
         service.setOperationsMessageSender(operationsMessageSender);
         service.setObjectPathFactory(objectPathFactory);
-        service.setOperationMetrics(operationMetrics);
 
         sourcePid = makePid();
         when(mockParent.getPid()).thenReturn(sourcePid);

@@ -23,7 +23,6 @@ import org.slf4j.LoggerFactory;
 
 import edu.unc.lib.boxc.auth.api.models.AgentPrincipals;
 import edu.unc.lib.boxc.auth.api.services.AccessControlService;
-import edu.unc.lib.boxc.deposit.impl.model.ActivityMetricsClient;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.objects.AdminUnit;
 import edu.unc.lib.boxc.model.api.objects.CollectionObject;
@@ -53,7 +52,6 @@ public class MoveObjectsService {
     private ObjectPathFactory objectPathFactory;
     private boolean asynchronous;
     private ExecutorService moveExecutor;
-    private ActivityMetricsClient operationMetrics;
 
     /**
      * Move a list of objects to the destination container as the provided
@@ -86,7 +84,6 @@ public class MoveObjectsService {
         job.setTransactionManager(transactionManager);
         job.setOperationsMessageSender(operationsMessageSender);
         job.setObjectPathFactory(objectPathFactory);
-        job.setOperationMetrics(operationMetrics);
 
         if (asynchronous) {
             log.info("User {} is queueing move operation {} of {} objects to destination {}",
@@ -168,13 +165,6 @@ public class MoveObjectsService {
      */
     public void setObjectPathFactory(ObjectPathFactory objectPathFactory) {
         this.objectPathFactory = objectPathFactory;
-    }
-
-    /**
-     * @param operationMetrics the operationMetrics to set
-     */
-    public void setOperationMetrics(ActivityMetricsClient operationMetrics) {
-        this.operationMetrics = operationMetrics;
     }
 
     /**

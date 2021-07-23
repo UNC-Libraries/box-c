@@ -19,8 +19,8 @@ import java.io.InputStream;
 import java.net.URI;
 
 import edu.unc.lib.boxc.auth.api.models.AgentPrincipals;
-import edu.unc.lib.boxc.deposit.api.PackagingType;
 import edu.unc.lib.boxc.deposit.api.RedisWorkerConstants.Priority;
+import edu.unc.lib.boxc.persist.api.PackagingType;
 
 /**
  * Data composing a deposit submission

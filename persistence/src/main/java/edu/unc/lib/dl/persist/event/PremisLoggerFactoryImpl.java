@@ -22,10 +22,10 @@ import edu.unc.lib.boxc.model.api.ids.PIDMinter;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObject;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
+import edu.unc.lib.boxc.persist.api.transfer.BinaryTransferService;
+import edu.unc.lib.boxc.persist.api.transfer.BinaryTransferSession;
 import edu.unc.lib.dl.persist.api.event.PremisLogger;
 import edu.unc.lib.dl.persist.api.event.PremisLoggerFactory;
-import edu.unc.lib.dl.persist.api.transfer.BinaryTransferService;
-import edu.unc.lib.dl.persist.api.transfer.BinaryTransferSession;
 
 /**
  * A factory class for creating PremisLogger instances

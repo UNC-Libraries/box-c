@@ -32,9 +32,9 @@ import org.apache.jena.rdf.model.RDFNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import edu.unc.lib.boxc.deposit.api.sources.IngestSource;
-import edu.unc.lib.boxc.deposit.api.sources.IngestSourceManager;
 import edu.unc.lib.boxc.model.api.rdf.CdrDeposit;
+import edu.unc.lib.boxc.persist.api.sources.IngestSource;
+import edu.unc.lib.boxc.persist.api.sources.IngestSourceManager;
 import edu.unc.lib.deposit.work.AbstractDepositJob;
 
 /**

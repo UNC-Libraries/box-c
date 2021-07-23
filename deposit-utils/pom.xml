@@ -19,6 +19,10 @@
             <artifactId>auth-fcrepo</artifactId>
         </dependency>
         <dependency>
+            <groupId>edu.unc.lib.cdr</groupId>
+            <artifactId>persistence</artifactId>
+        </dependency>
+        <dependency>
             <groupId>gov.loc</groupId>
             <artifactId>bagit</artifactId>
         </dependency>

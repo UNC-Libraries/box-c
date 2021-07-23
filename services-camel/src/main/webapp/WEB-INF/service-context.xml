@@ -157,11 +157,11 @@
     </bean>
     
     <!-- External storage manager -->
-    <bean id="binaryTransferService" class="edu.unc.lib.dl.persist.services.transfer.BinaryTransferServiceImpl">
+    <bean id="binaryTransferService" class="edu.unc.lib.boxc.persist.impl.transfer.BinaryTransferServiceImpl">
         <property name="storageLocationManager" ref="storageLocationManager" />
     </bean>
     
-    <bean id="storageLocationManager" class="edu.unc.lib.dl.persist.services.storage.StorageLocationManagerImpl"
+    <bean id="storageLocationManager" class="edu.unc.lib.boxc.persist.impl.storage.StorageLocationManagerImpl"
             init-method="init">
         <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
         <property name="pathFactory" ref="contentPathFactory" />

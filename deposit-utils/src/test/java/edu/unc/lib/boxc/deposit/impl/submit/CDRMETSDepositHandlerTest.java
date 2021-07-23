@@ -15,7 +15,7 @@
  */
 package edu.unc.lib.boxc.deposit.impl.submit;
 
-import static edu.unc.lib.boxc.deposit.api.PackagingType.METS_CDR;
+import static edu.unc.lib.boxc.persist.api.PackagingType.METS_CDR;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;

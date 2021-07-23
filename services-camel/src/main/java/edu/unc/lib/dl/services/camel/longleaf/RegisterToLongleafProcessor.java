@@ -53,7 +53,7 @@ import edu.unc.lib.boxc.model.api.ids.RepositoryPathConstants;
 import edu.unc.lib.boxc.model.api.objects.BinaryObject;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
-import edu.unc.lib.dl.persist.services.transfer.FileSystemTransferHelpers;
+import edu.unc.lib.boxc.persist.impl.transfer.FileSystemTransferHelpers;
 import io.dropwizard.metrics5.Histogram;
 import io.dropwizard.metrics5.Timer;
 

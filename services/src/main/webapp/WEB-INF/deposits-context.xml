@@ -9,7 +9,7 @@
         http://www.springframework.org/schema/context 
         http://www.springframework.org/schema/context/spring-context-3.0.xsd">
     
-    <bean id="ingestSourceManager" class="edu.unc.lib.boxc.deposit.impl.sources.IngestSourceManagerImpl"
+    <bean id="ingestSourceManager" class="edu.unc.lib.boxc.persist.impl.sources.IngestSourceManagerImpl"
             init-method="init">
         <property name="contentPathFactory" ref="contentPathFactory" />
         <property name="configPath" value="${ingestSources.path}" />
@@ -36,10 +36,10 @@
     </bean>
     
     <util:map id="packageHandlers">
-        <entry key="#{T(edu.unc.lib.boxc.deposit.api.PackagingType).METS_CDR}" value-ref="cdrMetsDepositHandler" />
-        <entry key="#{T(edu.unc.lib.boxc.deposit.api.PackagingType).SIMPLE_OBJECT}" value-ref="simpleObjectDepositHandler" />
-        <entry key="#{T(edu.unc.lib.boxc.deposit.api.PackagingType).BAGIT}" value-ref="fileServerDepositHandler" />
-        <entry key="#{T(edu.unc.lib.boxc.deposit.api.PackagingType).DIRECTORY}" value-ref="fileServerDepositHandler" />
+        <entry key="#{T(edu.unc.lib.boxc.persist.api.PackagingType).METS_CDR}" value-ref="cdrMetsDepositHandler" />
+        <entry key="#{T(edu.unc.lib.boxc.persist.api.PackagingType).SIMPLE_OBJECT}" value-ref="simpleObjectDepositHandler" />
+        <entry key="#{T(edu.unc.lib.boxc.persist.api.PackagingType).BAGIT}" value-ref="fileServerDepositHandler" />
+        <entry key="#{T(edu.unc.lib.boxc.persist.api.PackagingType).DIRECTORY}" value-ref="fileServerDepositHandler" />
     </util:map>
     
     <bean id="depositsDirectory" class="java.io.File">

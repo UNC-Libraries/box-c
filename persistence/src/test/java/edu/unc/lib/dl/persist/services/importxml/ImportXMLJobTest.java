@@ -67,11 +67,11 @@ import edu.unc.lib.boxc.auth.api.models.AgentPrincipals;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.objects.BinaryObject;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
-import edu.unc.lib.dl.persist.api.storage.StorageLocation;
-import edu.unc.lib.dl.persist.api.storage.StorageLocationManager;
-import edu.unc.lib.dl.persist.api.transfer.BinaryTransferService;
-import edu.unc.lib.dl.persist.api.transfer.BinaryTransferSession;
-import edu.unc.lib.dl.persist.api.transfer.MultiDestinationTransferSession;
+import edu.unc.lib.boxc.persist.api.storage.StorageLocation;
+import edu.unc.lib.boxc.persist.api.storage.StorageLocationManager;
+import edu.unc.lib.boxc.persist.api.transfer.BinaryTransferService;
+import edu.unc.lib.boxc.persist.api.transfer.BinaryTransferSession;
+import edu.unc.lib.boxc.persist.api.transfer.MultiDestinationTransferSession;
 import edu.unc.lib.dl.persist.services.edit.UpdateDescriptionService;
 import edu.unc.lib.dl.persist.services.edit.UpdateDescriptionService.UpdateDescriptionRequest;
 

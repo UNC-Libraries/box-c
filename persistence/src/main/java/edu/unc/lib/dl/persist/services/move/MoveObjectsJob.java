@@ -35,7 +35,6 @@ import edu.unc.lib.boxc.auth.api.models.AgentPrincipals;
 import edu.unc.lib.boxc.auth.api.services.AccessControlService;
 import edu.unc.lib.boxc.common.metrics.TimerFactory;
 import edu.unc.lib.boxc.common.util.DateTimeUtil;
-import edu.unc.lib.boxc.deposit.impl.model.ActivityMetricsClient;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.objects.ContentContainerObject;
 import edu.unc.lib.boxc.model.api.objects.ContentObject;
@@ -69,7 +68,6 @@ public class MoveObjectsJob implements Runnable {
     private TransactionManager transactionManager;
     private OperationsMessageSender operationsMessageSender;
     private ObjectPathFactory objectPathFactory;
-    private ActivityMetricsClient operationMetrics;
     private PremisLoggerFactory premisLoggerFactory;
 
     private AgentPrincipals agent;
@@ -120,8 +118,6 @@ public class MoveObjectsJob implements Runnable {
     }
 
     private void reportCompleted() {
-        operationMetrics.incrMoves();
-
         List<PID> sourcePids = sourceToPid.keySet().stream().map(p -> PIDs.get(p)).collect(Collectors.toList());
         operationsMessageSender.sendMoveOperation(agent.getUsername(), sourcePids, destinationPid, pids, null);
 
@@ -295,13 +291,6 @@ public class MoveObjectsJob implements Runnable {
      */
     public void setObjectPathFactory(ObjectPathFactory objectPathFactory) {
         this.objectPathFactory = objectPathFactory;
-    }
-
-    /**
-     * @param operationMetrics the operationMetrics to set
-     */
-    public void setOperationMetrics(ActivityMetricsClient operationMetrics) {
-        this.operationMetrics = operationMetrics;
     }
 
     public void setPremisLoggerFactory(PremisLoggerFactory premisLoggerFactory) {

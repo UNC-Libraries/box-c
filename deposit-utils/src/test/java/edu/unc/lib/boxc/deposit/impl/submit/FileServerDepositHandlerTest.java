@@ -15,8 +15,8 @@
  */
 package edu.unc.lib.boxc.deposit.impl.submit;
 
-import static edu.unc.lib.boxc.deposit.api.PackagingType.BAGIT;
-import static edu.unc.lib.boxc.deposit.api.PackagingType.DIRECTORY;
+import static edu.unc.lib.boxc.persist.api.PackagingType.BAGIT;
+import static edu.unc.lib.boxc.persist.api.PackagingType.DIRECTORY;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -41,7 +41,6 @@ import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
 import edu.unc.lib.boxc.auth.api.models.AgentPrincipals;
 import edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl;
 import edu.unc.lib.boxc.auth.fcrepo.models.AgentPrincipalsImpl;
-import edu.unc.lib.boxc.deposit.api.PackagingType;
 import edu.unc.lib.boxc.deposit.api.RedisWorkerConstants.DepositAction;
 import edu.unc.lib.boxc.deposit.api.RedisWorkerConstants.DepositField;
 import edu.unc.lib.boxc.deposit.api.RedisWorkerConstants.DepositState;
@@ -52,6 +51,7 @@ import edu.unc.lib.boxc.deposit.impl.submit.FileServerDepositHandler;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.ids.PIDMinter;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
+import edu.unc.lib.boxc.persist.api.PackagingType;
 
 public class FileServerDepositHandlerTest {
 

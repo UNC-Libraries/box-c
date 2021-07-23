@@ -102,12 +102,12 @@
         <constructor-arg value="edu.unc.lib.boxc.auth.fcrepo.services.AccessControlServiceImpl" />
     </bean>
 
-    <bean id="storageLocationManager" class="edu.unc.lib.dl.persist.services.storage.StorageLocationTestHelper"
+    <bean id="storageLocationManager" class="edu.unc.lib.boxc.persist.impl.storage.StorageLocationTestHelper"
           factory-method="createLocationManagerWithBasicConfig">
         <constructor-arg ref="repositoryObjectLoader" />
     </bean>
 
-    <bean id="binaryTransferService" class="edu.unc.lib.dl.persist.services.transfer.BinaryTransferServiceImpl">
+    <bean id="binaryTransferService" class="edu.unc.lib.boxc.persist.impl.transfer.BinaryTransferServiceImpl">
         <property name="storageLocationManager" ref="storageLocationManager" />
     </bean>
 

@@ -57,13 +57,13 @@
     </bean>
     
     <util:map id="packageHandlers">
-        <entry key="#{T(edu.unc.lib.boxc.deposit.api.PackagingType).METS_CDR}" value-ref="cdrMetsDepositHandler" />
-        <entry key="#{T(edu.unc.lib.boxc.deposit.api.PackagingType).SIMPLE_OBJECT}" value-ref="simpleObjectDepositHandler" />
-        <entry key="#{T(edu.unc.lib.boxc.deposit.api.PackagingType).BAGIT}" value-ref="fileServerDepositHandler" />
-        <entry key="#{T(edu.unc.lib.boxc.deposit.api.PackagingType).DIRECTORY}" value-ref="fileServerDepositHandler" />
+        <entry key="#{T(edu.unc.lib.boxc.persist.api.PackagingType).METS_CDR}" value-ref="cdrMetsDepositHandler" />
+        <entry key="#{T(edu.unc.lib.boxc.persist.api.PackagingType).SIMPLE_OBJECT}" value-ref="simpleObjectDepositHandler" />
+        <entry key="#{T(edu.unc.lib.boxc.persist.api.PackagingType).BAGIT}" value-ref="fileServerDepositHandler" />
+        <entry key="#{T(edu.unc.lib.boxc.persist.api.PackagingType).DIRECTORY}" value-ref="fileServerDepositHandler" />
     </util:map>
     
-    <bean id="ingestSourceManager" class="edu.unc.lib.boxc.deposit.impl.sources.IngestSourceManagerImpl">
+    <bean id="ingestSourceManager" class="edu.unc.lib.boxc.persist.impl.sources.IngestSourceManagerImpl">
         <property name="contentPathFactory" ref="contentPathFactory" />
     </bean>
     

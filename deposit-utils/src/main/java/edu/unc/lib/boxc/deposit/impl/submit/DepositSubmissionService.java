@@ -19,12 +19,12 @@ import java.util.Map;
 
 import edu.unc.lib.boxc.auth.api.Permission;
 import edu.unc.lib.boxc.auth.api.services.AccessControlService;
-import edu.unc.lib.boxc.deposit.api.PackagingType;
 import edu.unc.lib.boxc.deposit.api.exceptions.DepositException;
-import edu.unc.lib.boxc.deposit.api.exceptions.UnsupportedPackagingTypeException;
 import edu.unc.lib.boxc.deposit.api.submit.DepositData;
 import edu.unc.lib.boxc.deposit.api.submit.DepositHandler;
 import edu.unc.lib.boxc.model.api.ids.PID;
+import edu.unc.lib.boxc.persist.api.PackagingType;
+import edu.unc.lib.boxc.persist.api.exceptions.UnsupportedPackagingTypeException;
 
 /**
  * Service which submits deposits to the deposit pipeline based on packaging type
