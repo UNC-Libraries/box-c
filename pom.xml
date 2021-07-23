@@ -198,6 +198,9 @@
         <module>auth-api</module>
         <module>auth-fcrepo</module>
         <module>integration</module>
+        <module>operations-jms</module>
+        <module>operations</module>
+        <module>deposit-utils</module>
     </modules>
 
     <reporting>
@@ -647,6 +650,21 @@
                 <artifactId>persistence</artifactId>
                 <version>${cdr.version}</version>
                 <type>test-jar</type>
+            </dependency>
+            <dependency>
+                <groupId>edu.unc.lib.cdr</groupId>
+                <artifactId>deposit-utils</artifactId>
+                <version>${cdr.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>edu.unc.lib.cdr</groupId>
+                <artifactId>operations-jms</artifactId>
+                <version>${cdr.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>edu.unc.lib.cdr</groupId>
+                <artifactId>operations</artifactId>
+                <version>${cdr.version}</version>
             </dependency>
             <dependency>
                 <groupId>edu.unc.lib.cdr</groupId>

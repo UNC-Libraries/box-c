@@ -35,9 +35,9 @@ import org.apache.commons.lang3.NotImplementedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import edu.unc.lib.boxc.deposit.api.sources.IngestSource;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.dl.exceptions.UnsupportedAlgorithmException;
-import edu.unc.lib.dl.persist.api.ingest.IngestSource;
 import edu.unc.lib.dl.persist.api.storage.BinaryDetails;
 import edu.unc.lib.dl.persist.api.storage.StorageLocation;
 import edu.unc.lib.dl.persist.api.transfer.BinaryAlreadyExistsException;

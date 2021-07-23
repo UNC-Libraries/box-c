@@ -37,14 +37,14 @@ import org.jdom2.output.XMLOutputter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import edu.unc.lib.boxc.deposit.api.RedisWorkerConstants.DepositField;
+import edu.unc.lib.boxc.deposit.impl.model.DepositModelHelpers;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.rdf.Cdr;
 import edu.unc.lib.boxc.model.api.rdf.CdrDeposit;
 import edu.unc.lib.boxc.model.api.xml.JDOMNamespaceUtil;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.deposit.work.AbstractDepositJob;
-import edu.unc.lib.dl.persist.services.deposit.DepositModelHelpers;
-import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
 
 /**
  * Abstract deposit normalization job which processes walks file system paths to interpret them into n3 and MODS for

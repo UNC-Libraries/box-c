@@ -60,6 +60,11 @@ import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import edu.unc.lib.boxc.common.util.DateTimeUtil;
+import edu.unc.lib.boxc.deposit.api.RedisWorkerConstants.DepositField;
+import edu.unc.lib.boxc.deposit.api.RedisWorkerConstants.JobField;
+import edu.unc.lib.boxc.deposit.impl.model.DepositDirectoryManager;
+import edu.unc.lib.boxc.deposit.impl.model.DepositModelHelpers;
+import edu.unc.lib.boxc.deposit.impl.model.DepositStatusFactory;
 import edu.unc.lib.boxc.model.api.DatastreamType;
 import edu.unc.lib.boxc.model.api.SoftwareAgentConstants.SoftwareAgent;
 import edu.unc.lib.boxc.model.api.ids.PID;
@@ -90,12 +95,7 @@ import edu.unc.lib.boxc.auth.api.services.AccessControlService;
 import edu.unc.lib.dl.fcrepo4.FedoraTransaction;
 import edu.unc.lib.dl.fcrepo4.TransactionManager;
 import edu.unc.lib.dl.persist.event.FilePremisLogger;
-import edu.unc.lib.dl.persist.services.deposit.DepositDirectoryManager;
-import edu.unc.lib.dl.persist.services.deposit.DepositModelHelpers;
 import edu.unc.lib.dl.persist.services.edit.UpdateDescriptionService;
-import edu.unc.lib.dl.util.DepositStatusFactory;
-import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
-import edu.unc.lib.dl.util.RedisWorkerConstants.JobField;
 
 /**
  *

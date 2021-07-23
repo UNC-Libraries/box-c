@@ -75,7 +75,7 @@
         <constructor-arg ref="jedisPool" />
     </bean>
     
-    <bean id="depositModelManager" class="edu.unc.lib.dl.persist.services.deposit.DepositModelManager"
+    <bean id="depositModelManager" class="edu.unc.lib.boxc.deposit.impl.model.DepositModelManager"
             destroy-method="close">
         <constructor-arg value="${deposits.tdb.dir}" />
     </bean>
@@ -160,19 +160,19 @@
 
     <bean id="jobFactory" class="edu.unc.lib.dl.util.SpringJobFactory" />
 
-    <bean id="jobStatusFactory" class="edu.unc.lib.dl.util.JobStatusFactory" >
+    <bean id="jobStatusFactory" class="edu.unc.lib.boxc.deposit.impl.model.JobStatusFactory" >
         <property name="jedisPool" ref="jedisPool" />
     </bean>
     
-    <bean id="activityMetricsClient" class="edu.unc.lib.dl.reporting.ActivityMetricsClient" >
+    <bean id="activityMetricsClient" class="edu.unc.lib.boxc.deposit.impl.model.ActivityMetricsClient" >
         <property name="jedisPool" ref="jedisPool" />
     </bean>
 
-    <bean id="depositStatusFactory" class="edu.unc.lib.dl.util.DepositStatusFactory">
+    <bean id="depositStatusFactory" class="edu.unc.lib.boxc.deposit.impl.model.DepositStatusFactory">
         <property name="jedisPool" ref="jedisPool" />
     </bean>
     
-    <bean id="pipelineStatusFactory" class="edu.unc.lib.dl.util.DepositPipelineStatusFactory">
+    <bean id="pipelineStatusFactory" class="edu.unc.lib.boxc.deposit.impl.model.DepositPipelineStatusFactory">
         <property name="jedisPool" ref="jedisPool" />
     </bean>
     
@@ -249,7 +249,7 @@
         <property name="permissionEvaluator" ref="inheritedPermissionEvaluator" />
     </bean>
     
-    <bean id="ingestSourceManager" class="edu.unc.lib.dl.persist.services.ingest.IngestSourceManagerImpl"
+    <bean id="ingestSourceManager" class="edu.unc.lib.boxc.deposit.impl.sources.IngestSourceManagerImpl"
             init-method="init">
         <property name="contentPathFactory" ref="contentPathFactory" />
         <property name="configPath" value="${ingestSources.path}" />

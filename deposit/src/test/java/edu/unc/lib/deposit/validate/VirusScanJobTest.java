@@ -50,6 +50,8 @@ import org.mockito.stubbing.Answer;
 import com.google.common.util.concurrent.MoreExecutors;
 
 import edu.unc.lib.boxc.common.util.URIUtil;
+import edu.unc.lib.boxc.deposit.api.RedisWorkerConstants.DepositState;
+import edu.unc.lib.boxc.deposit.impl.model.DepositModelHelpers;
 import edu.unc.lib.boxc.model.api.exceptions.RepositoryException;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.ids.RepositoryPathConstants;
@@ -60,8 +62,6 @@ import edu.unc.lib.boxc.model.fcrepo.ids.DatastreamPids;
 import edu.unc.lib.deposit.fcrepo4.AbstractDepositJobTest;
 import edu.unc.lib.deposit.work.JobFailedException;
 import edu.unc.lib.deposit.work.JobInterruptedException;
-import edu.unc.lib.dl.persist.services.deposit.DepositModelHelpers;
-import edu.unc.lib.dl.util.RedisWorkerConstants.DepositState;
 import fi.solita.clamav.ClamAVClient;
 import fi.solita.clamav.ScanResult;
 import fi.solita.clamav.ScanResult.Status;

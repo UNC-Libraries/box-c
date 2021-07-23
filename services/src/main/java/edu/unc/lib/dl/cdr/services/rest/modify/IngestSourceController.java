@@ -42,17 +42,17 @@ import edu.unc.lib.boxc.auth.api.models.AgentPrincipals;
 import edu.unc.lib.boxc.auth.api.services.AccessControlService;
 import edu.unc.lib.boxc.auth.fcrepo.models.AgentPrincipalsImpl;
 import edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore;
+import edu.unc.lib.boxc.deposit.api.DepositMethod;
+import edu.unc.lib.boxc.deposit.api.PackagingType;
+import edu.unc.lib.boxc.deposit.api.exceptions.DepositException;
+import edu.unc.lib.boxc.deposit.api.exceptions.InvalidIngestSourceCandidateException;
+import edu.unc.lib.boxc.deposit.api.sources.IngestSource;
+import edu.unc.lib.boxc.deposit.api.sources.IngestSourceManager;
+import edu.unc.lib.boxc.deposit.api.submit.DepositData;
+import edu.unc.lib.boxc.deposit.services.DepositSubmissionService;
 import edu.unc.lib.boxc.model.api.exceptions.RepositoryException;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
-import edu.unc.lib.dl.persist.api.ingest.DepositData;
-import edu.unc.lib.dl.persist.api.ingest.IngestSource;
-import edu.unc.lib.dl.persist.api.ingest.IngestSourceManager;
-import edu.unc.lib.dl.persist.api.ingest.InvalidIngestSourceCandidateException;
-import edu.unc.lib.dl.persist.services.ingest.DepositSubmissionService;
-import edu.unc.lib.dl.util.DepositException;
-import edu.unc.lib.dl.util.DepositMethod;
-import edu.unc.lib.dl.util.PackagingType;
 
 /**
  * Controller for interacting with ingest sources, including finding packages

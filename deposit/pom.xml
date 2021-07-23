@@ -65,6 +65,10 @@
             <scope>test</scope>
         </dependency>
         <dependency>
+            <groupId>edu.unc.lib.cdr</groupId>
+            <artifactId>deposit-utils</artifactId>
+        </dependency>
+        <dependency>
             <groupId>net.greghaines</groupId>
             <artifactId>jesque</artifactId>
         </dependency>

@@ -25,9 +25,9 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 
 import org.slf4j.Logger;
 
+import edu.unc.lib.boxc.deposit.api.sources.IngestSourceManager;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObject;
 import edu.unc.lib.dl.fcrepo4.FedoraTransaction;
-import edu.unc.lib.dl.persist.api.ingest.IngestSourceManager;
 import edu.unc.lib.dl.persist.api.storage.StorageLocation;
 import edu.unc.lib.dl.persist.api.storage.StorageLocationManager;
 import edu.unc.lib.dl.persist.api.transfer.BinaryTransferOutcome;

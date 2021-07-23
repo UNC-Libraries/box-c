@@ -16,12 +16,12 @@
 package edu.unc.lib.deposit.transfer;
 
 import static edu.unc.lib.boxc.common.test.TestHelpers.setField;
+import static edu.unc.lib.boxc.deposit.impl.sources.IngestSourceTestHelper.createConfigFile;
+import static edu.unc.lib.boxc.deposit.impl.sources.IngestSourceTestHelper.createFilesystemConfig;
+import static edu.unc.lib.boxc.deposit.impl.sources.IngestSourceTestHelper.serializeLocationMappings;
 import static edu.unc.lib.boxc.model.api.DatastreamType.MD_DESCRIPTIVE_HISTORY;
 import static edu.unc.lib.boxc.model.api.DatastreamType.TECHNICAL_METADATA_HISTORY;
 import static edu.unc.lib.boxc.model.fcrepo.ids.DatastreamPids.getOriginalFilePid;
-import static edu.unc.lib.dl.persist.services.ingest.IngestSourceTestHelper.createConfigFile;
-import static edu.unc.lib.dl.persist.services.ingest.IngestSourceTestHelper.createFilesystemConfig;
-import static edu.unc.lib.dl.persist.services.ingest.IngestSourceTestHelper.serializeLocationMappings;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
@@ -67,6 +67,9 @@ import org.junit.Test;
 import org.mockito.Mock;
 import org.slf4j.Logger;
 
+import edu.unc.lib.boxc.deposit.impl.model.DepositDirectoryManager;
+import edu.unc.lib.boxc.deposit.impl.model.DepositModelHelpers;
+import edu.unc.lib.boxc.deposit.impl.sources.IngestSourceManagerImpl;
 import edu.unc.lib.boxc.model.api.DatastreamType;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.rdf.Cdr;
@@ -82,9 +85,6 @@ import edu.unc.lib.dl.persist.api.storage.StorageLocation;
 import edu.unc.lib.dl.persist.api.storage.StorageLocationManager;
 import edu.unc.lib.dl.persist.api.transfer.BinaryTransferException;
 import edu.unc.lib.dl.persist.api.transfer.BinaryTransferSession;
-import edu.unc.lib.dl.persist.services.deposit.DepositDirectoryManager;
-import edu.unc.lib.dl.persist.services.deposit.DepositModelHelpers;
-import edu.unc.lib.dl.persist.services.ingest.IngestSourceManagerImpl;
 import edu.unc.lib.dl.persist.services.storage.StorageLocationTestHelper;
 import edu.unc.lib.dl.persist.services.transfer.BinaryTransferServiceImpl;
 

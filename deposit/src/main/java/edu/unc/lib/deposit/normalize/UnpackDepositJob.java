@@ -19,8 +19,8 @@ import java.io.File;
 import java.io.IOException;
 
 import edu.unc.lib.boxc.common.util.ZipFileUtil;
+import edu.unc.lib.boxc.deposit.api.RedisWorkerConstants.DepositField;
 import edu.unc.lib.deposit.work.AbstractDepositJob;
-import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
 
 /**
  * Unpacks the submission package into the deposit directory.

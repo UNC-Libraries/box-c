@@ -65,6 +65,9 @@ import org.mockito.Captor;
 import org.mockito.Mock;
 
 import edu.unc.lib.boxc.common.test.SelfReturningAnswer;
+import edu.unc.lib.boxc.deposit.api.RedisWorkerConstants.DepositField;
+import edu.unc.lib.boxc.deposit.api.RedisWorkerConstants.DepositState;
+import edu.unc.lib.boxc.deposit.impl.model.DepositModelHelpers;
 import edu.unc.lib.boxc.model.api.event.PremisLog;
 import edu.unc.lib.boxc.model.api.exceptions.FedoraException;
 import edu.unc.lib.boxc.model.api.ids.PID;
@@ -100,11 +103,8 @@ import edu.unc.lib.dl.persist.api.storage.StorageLocation;
 import edu.unc.lib.dl.persist.api.storage.StorageLocationManager;
 import edu.unc.lib.dl.persist.api.transfer.BinaryTransferService;
 import edu.unc.lib.dl.persist.api.transfer.BinaryTransferSession;
-import edu.unc.lib.dl.persist.services.deposit.DepositModelHelpers;
 import edu.unc.lib.dl.persist.services.edit.UpdateDescriptionService;
 import edu.unc.lib.dl.persist.services.edit.UpdateDescriptionService.UpdateDescriptionRequest;
-import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
-import edu.unc.lib.dl.util.RedisWorkerConstants.DepositState;
 
 /**
  *

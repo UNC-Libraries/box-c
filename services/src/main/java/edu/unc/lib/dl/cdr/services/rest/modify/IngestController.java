@@ -38,13 +38,13 @@ import edu.unc.lib.boxc.auth.api.exceptions.AccessRestrictionException;
 import edu.unc.lib.boxc.auth.api.models.AgentPrincipals;
 import edu.unc.lib.boxc.auth.fcrepo.models.AgentPrincipalsImpl;
 import edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore;
+import edu.unc.lib.boxc.deposit.api.DepositMethod;
+import edu.unc.lib.boxc.deposit.api.PackagingType;
+import edu.unc.lib.boxc.deposit.api.exceptions.UnsupportedPackagingTypeException;
+import edu.unc.lib.boxc.deposit.api.submit.DepositData;
+import edu.unc.lib.boxc.deposit.services.DepositSubmissionService;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
-import edu.unc.lib.dl.persist.api.ingest.DepositData;
-import edu.unc.lib.dl.persist.services.ingest.DepositSubmissionService;
-import edu.unc.lib.dl.util.DepositMethod;
-import edu.unc.lib.dl.util.PackagingType;
-import edu.unc.lib.dl.util.UnsupportedPackagingTypeException;
 
 /**
  * Controller for handling ingest submission requests

@@ -34,6 +34,7 @@ import org.apache.jena.rdf.model.Statement;
 import org.apache.jena.rdf.model.StmtIterator;
 import org.apache.jena.vocabulary.RDF;
 
+import edu.unc.lib.boxc.deposit.impl.model.DepositModelHelpers;
 import edu.unc.lib.boxc.model.api.SoftwareAgentConstants.SoftwareAgent;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.rdf.Cdr;
@@ -44,7 +45,6 @@ import edu.unc.lib.boxc.model.fcrepo.ids.AgentPids;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.deposit.work.AbstractDepositJob;
 import edu.unc.lib.dl.persist.api.event.PremisLogger;
-import edu.unc.lib.dl.persist.services.deposit.DepositModelHelpers;
 
 /**
  * Normalization job to ensure all FileObjects being ingested are wrapped in

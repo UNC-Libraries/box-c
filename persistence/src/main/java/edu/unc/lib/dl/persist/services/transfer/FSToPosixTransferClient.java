@@ -25,8 +25,8 @@ import java.nio.file.Paths;
 
 import org.slf4j.Logger;
 
+import edu.unc.lib.boxc.deposit.api.sources.IngestSource;
 import edu.unc.lib.boxc.model.api.ids.PID;
-import edu.unc.lib.dl.persist.api.ingest.IngestSource;
 import edu.unc.lib.dl.persist.api.storage.StorageLocation;
 import edu.unc.lib.dl.persist.api.transfer.BinaryTransferOutcome;
 import edu.unc.lib.dl.persist.services.storage.HashedPosixStorageLocation;

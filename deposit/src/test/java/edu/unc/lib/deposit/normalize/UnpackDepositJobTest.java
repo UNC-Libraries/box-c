@@ -27,9 +27,9 @@ import java.util.Map;
 import org.junit.Before;
 import org.junit.Test;
 
+import edu.unc.lib.boxc.deposit.api.RedisWorkerConstants.DepositField;
 import edu.unc.lib.deposit.DepositTestUtils;
 import edu.unc.lib.deposit.fcrepo4.AbstractDepositJobTest;
-import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
 
 public class UnpackDepositJobTest extends AbstractDepositJobTest {
 

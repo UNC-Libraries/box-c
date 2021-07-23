@@ -20,8 +20,8 @@ import static org.springframework.util.Assert.notNull;
 import java.util.HashMap;
 import java.util.Map;
 
+import edu.unc.lib.boxc.deposit.api.sources.IngestSourceManager;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObject;
-import edu.unc.lib.dl.persist.api.ingest.IngestSourceManager;
 import edu.unc.lib.dl.persist.api.storage.StorageLocation;
 import edu.unc.lib.dl.persist.api.storage.StorageLocationManager;
 import edu.unc.lib.dl.persist.api.transfer.BinaryTransferService;

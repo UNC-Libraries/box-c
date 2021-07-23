@@ -50,7 +50,7 @@
        init-method="loadSchemas">
         <property name="schemas">
             <map>
-                <entry key="#{T(edu.unc.lib.dl.xml.METSProfile).CDR_SIMPLE.name}"
+                <entry key="#{T(edu.unc.lib.boxc.deposit.impl.mets.METSProfile).CDR_SIMPLE.name}"
                     value="classpath:edu/unc/lib/dl/schematron/simple_mets_profile.sch" />
                 <entry key="object-mods"
                     value="classpath:edu/unc/lib/dl/schematron/object-mods.sch" />

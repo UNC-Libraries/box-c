@@ -45,6 +45,9 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import edu.unc.lib.boxc.deposit.api.PackagingType;
+import edu.unc.lib.boxc.deposit.api.RedisWorkerConstants.DepositField;
+import edu.unc.lib.boxc.deposit.impl.model.DepositModelHelpers;
 import edu.unc.lib.boxc.model.api.SoftwareAgentConstants.SoftwareAgent;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.objects.BinaryObject;
@@ -57,9 +60,6 @@ import edu.unc.lib.boxc.model.api.rdf.Prov;
 import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
 import edu.unc.lib.boxc.model.fcrepo.ids.AgentPids;
 import edu.unc.lib.deposit.work.JobInterruptedException;
-import edu.unc.lib.dl.persist.services.deposit.DepositModelHelpers;
-import edu.unc.lib.dl.util.PackagingType;
-import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
 
 /**
  * @author bbpennel

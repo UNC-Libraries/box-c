@@ -16,8 +16,8 @@
 package edu.unc.lib.dl.cdr.services.rest;
 
 import static edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore.getAgentPrincipals;
-import static edu.unc.lib.dl.util.RedisWorkerConstants.DepositPipelineState.quieted;
-import static edu.unc.lib.dl.util.RedisWorkerConstants.DepositPipelineState.shutdown;
+import static edu.unc.lib.boxc.deposit.api.RedisWorkerConstants.DepositPipelineState.quieted;
+import static edu.unc.lib.boxc.deposit.api.RedisWorkerConstants.DepositPipelineState.shutdown;
 import static java.util.Collections.singletonMap;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
@@ -39,9 +39,9 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import edu.unc.lib.boxc.auth.api.Permission;
 import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
 import edu.unc.lib.boxc.auth.api.services.GlobalPermissionEvaluator;
-import edu.unc.lib.dl.util.DepositPipelineStatusFactory;
-import edu.unc.lib.dl.util.RedisWorkerConstants.DepositPipelineAction;
-import edu.unc.lib.dl.util.RedisWorkerConstants.DepositPipelineState;
+import edu.unc.lib.boxc.deposit.api.RedisWorkerConstants.DepositPipelineAction;
+import edu.unc.lib.boxc.deposit.api.RedisWorkerConstants.DepositPipelineState;
+import edu.unc.lib.boxc.deposit.impl.model.DepositPipelineStatusFactory;
 
 /**
  * Controller for API endpoints to interact with the deposit pipeline.

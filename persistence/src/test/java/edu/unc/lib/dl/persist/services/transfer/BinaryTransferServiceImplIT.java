@@ -42,6 +42,8 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import edu.unc.lib.boxc.deposit.impl.sources.IngestSourceManagerImpl;
+import edu.unc.lib.boxc.deposit.impl.sources.IngestSourceTestHelper;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.ids.PIDMinter;
 import edu.unc.lib.boxc.model.api.objects.BinaryObject;
@@ -58,8 +60,6 @@ import edu.unc.lib.dl.persist.api.transfer.BinaryAlreadyExistsException;
 import edu.unc.lib.dl.persist.api.transfer.BinaryTransferOutcome;
 import edu.unc.lib.dl.persist.api.transfer.BinaryTransferSession;
 import edu.unc.lib.dl.persist.api.transfer.MultiDestinationTransferSession;
-import edu.unc.lib.dl.persist.services.ingest.IngestSourceManagerImpl;
-import edu.unc.lib.dl.persist.services.ingest.IngestSourceTestHelper;
 import edu.unc.lib.dl.persist.services.storage.HashedFilesystemStorageLocation;
 import edu.unc.lib.dl.persist.services.storage.StorageLocationManagerImpl;
 

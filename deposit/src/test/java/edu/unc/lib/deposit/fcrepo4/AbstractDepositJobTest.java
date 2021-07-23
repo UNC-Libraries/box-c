@@ -36,6 +36,11 @@ import org.mockito.Mock;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
+import edu.unc.lib.boxc.deposit.api.RedisWorkerConstants.DepositState;
+import edu.unc.lib.boxc.deposit.impl.model.ActivityMetricsClient;
+import edu.unc.lib.boxc.deposit.impl.model.DepositModelManager;
+import edu.unc.lib.boxc.deposit.impl.model.DepositStatusFactory;
+import edu.unc.lib.boxc.deposit.impl.model.JobStatusFactory;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.ids.PIDMinter;
 import edu.unc.lib.boxc.model.api.ids.RepositoryPathConstants;
@@ -50,11 +55,6 @@ import edu.unc.lib.dl.persist.api.event.PremisEventBuilder;
 import edu.unc.lib.dl.persist.api.event.PremisLogger;
 import edu.unc.lib.dl.persist.api.transfer.BinaryTransferSession;
 import edu.unc.lib.dl.persist.event.PremisLoggerFactoryImpl;
-import edu.unc.lib.dl.persist.services.deposit.DepositModelManager;
-import edu.unc.lib.dl.reporting.ActivityMetricsClient;
-import edu.unc.lib.dl.util.DepositStatusFactory;
-import edu.unc.lib.dl.util.JobStatusFactory;
-import edu.unc.lib.dl.util.RedisWorkerConstants.DepositState;
 
 /**
  *

@@ -40,12 +40,12 @@ import edu.unc.lib.boxc.auth.api.Permission;
 import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
 import edu.unc.lib.boxc.auth.api.services.AccessControlService;
 import edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl;
+import edu.unc.lib.boxc.deposit.api.RedisWorkerConstants.DepositField;
+import edu.unc.lib.boxc.deposit.api.RedisWorkerConstants.DepositState;
+import edu.unc.lib.boxc.deposit.impl.model.DepositModelManager;
+import edu.unc.lib.boxc.deposit.impl.model.DepositStatusFactory;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
-import edu.unc.lib.dl.persist.services.deposit.DepositModelManager;
-import edu.unc.lib.dl.util.DepositStatusFactory;
-import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
-import edu.unc.lib.dl.util.RedisWorkerConstants.DepositState;
 
 /**
  *

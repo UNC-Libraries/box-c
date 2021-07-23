@@ -24,8 +24,8 @@ import java.util.Map;
 
 import org.apache.commons.codec.digest.DigestUtils;
 
+import edu.unc.lib.boxc.deposit.api.RedisWorkerConstants.DepositField;
 import edu.unc.lib.deposit.work.AbstractDepositJob;
-import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
 
 /**
  *

@@ -81,6 +81,10 @@
             <scope>test</scope>
         </dependency>
         <dependency>
+            <groupId>edu.unc.lib.cdr</groupId>
+            <artifactId>deposit-utils</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
         </dependency>

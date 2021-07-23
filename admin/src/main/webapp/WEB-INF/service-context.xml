@@ -151,11 +151,11 @@
     </bean>
     
     <bean id="runEnhancementQueueName" class="java.lang.String">
-        <constructor-arg value="#{T(edu.unc.lib.dl.util.RedisWorkerConstants).RUN_ENHANCEMENT_TREE_QUEUE}" />
+        <constructor-arg value="#{T(edu.unc.lib.boxc.deposit.api.RedisWorkerConstants).RUN_ENHANCEMENT_TREE_QUEUE}" />
     </bean>
     
 
-    <bean id="depositStatusFactory" class="edu.unc.lib.dl.util.DepositStatusFactory">
+    <bean id="depositStatusFactory" class="edu.unc.lib.boxc.deposit.impl.model.DepositStatusFactory">
         <property name="jedisPool" ref="jedisPool" />
     </bean>
     

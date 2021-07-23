@@ -152,7 +152,7 @@
         <property name="fcrepoClient" ref="fcrepoClient" />
     </bean>
     
-    <bean id="depositModelManager" class="edu.unc.lib.dl.persist.services.deposit.DepositModelManager"
+    <bean id="depositModelManager" class="edu.unc.lib.boxc.deposit.impl.model.DepositModelManager"
             factory-method="inMemoryManager" destroy-method="close">
     </bean>
     
@@ -180,19 +180,19 @@
         <property name="maxTotal" value="25"/>
     </bean>
     
-    <bean id="depositStatusFactory" class="edu.unc.lib.dl.util.DepositStatusFactory">
+    <bean id="depositStatusFactory" class="edu.unc.lib.boxc.deposit.impl.model.DepositStatusFactory">
         <property name="jedisPool" ref="jedisPool" />
     </bean>
     
-    <bean id="pipelineStatusFactory" class="edu.unc.lib.dl.util.DepositPipelineStatusFactory">
+    <bean id="pipelineStatusFactory" class="edu.unc.lib.boxc.deposit.impl.model.DepositPipelineStatusFactory">
         <property name="jedisPool" ref="jedisPool" />
     </bean>
     
-    <bean id="jobStatusFactory" class="edu.unc.lib.dl.util.JobStatusFactory" >
+    <bean id="jobStatusFactory" class="edu.unc.lib.boxc.deposit.impl.model.JobStatusFactory" >
         <property name="jedisPool" ref="jedisPool" />
     </bean>
     
-    <bean id="activityMetricsClient" class="edu.unc.lib.dl.reporting.ActivityMetricsClient" >
+    <bean id="activityMetricsClient" class="edu.unc.lib.boxc.deposit.impl.model.ActivityMetricsClient" >
         <property name="jedisPool" ref="jedisPool" />
     </bean>
 </beans>

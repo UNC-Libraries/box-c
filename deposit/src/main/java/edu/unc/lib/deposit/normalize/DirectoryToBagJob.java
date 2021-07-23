@@ -31,9 +31,9 @@ import org.apache.jena.vocabulary.RDF;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import edu.unc.lib.boxc.deposit.api.RedisWorkerConstants.DepositField;
 import edu.unc.lib.boxc.model.api.rdf.Cdr;
 import edu.unc.lib.boxc.model.api.rdf.CdrDeposit;
-import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
 
 /**
  * Normalizes a simple directory submission into n3 for deposit

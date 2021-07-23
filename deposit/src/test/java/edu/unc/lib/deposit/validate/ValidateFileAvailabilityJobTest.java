@@ -39,6 +39,11 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.mockito.Mock;
 
+import edu.unc.lib.boxc.deposit.api.RedisWorkerConstants.DepositState;
+import edu.unc.lib.boxc.deposit.api.exceptions.UnknownIngestSourceException;
+import edu.unc.lib.boxc.deposit.api.sources.IngestSource;
+import edu.unc.lib.boxc.deposit.api.sources.IngestSourceManager;
+import edu.unc.lib.boxc.deposit.impl.model.DepositModelHelpers;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.ids.RepositoryPathConstants;
 import edu.unc.lib.boxc.model.api.rdf.Cdr;
@@ -46,11 +51,6 @@ import edu.unc.lib.boxc.model.api.rdf.CdrDeposit;
 import edu.unc.lib.deposit.fcrepo4.AbstractDepositJobTest;
 import edu.unc.lib.deposit.work.JobFailedException;
 import edu.unc.lib.deposit.work.JobInterruptedException;
-import edu.unc.lib.dl.persist.api.ingest.IngestSource;
-import edu.unc.lib.dl.persist.api.ingest.IngestSourceManager;
-import edu.unc.lib.dl.persist.api.ingest.UnknownIngestSourceException;
-import edu.unc.lib.dl.persist.services.deposit.DepositModelHelpers;
-import edu.unc.lib.dl.util.RedisWorkerConstants.DepositState;
 
 /**
  *
