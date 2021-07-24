@@ -28,12 +28,12 @@
         <property name="pubSubDomain" value="false" />
     </bean>
 
-    <bean id="patronAccessOperationSender" class="edu.unc.lib.dl.persist.services.acl.PatronAccessOperationSender">
+    <bean id="patronAccessOperationSender" class="edu.unc.lib.boxc.operations.acl.PatronAccessOperationSender">
         <property name="jmsTemplate" ref="patronAccessOperationTemplate"/>
     </bean>
 
     <bean id="patronAccessAssignmentService" class="org.mockito.Mockito" factory-method="mock">
-        <constructor-arg  value="edu.unc.lib.dl.persist.services.acl.PatronAccessAssignmentService" />
+        <constructor-arg  value="edu.unc.lib.boxc.operations.acl.PatronAccessAssignmentService" />
     </bean>
 
     <bean id="patronAccessAssignmentProcessor" class="edu.unc.lib.dl.services.camel.patronAccess.PatronAccessAssignmentProcessor">

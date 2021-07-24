@@ -18,7 +18,7 @@ package edu.unc.lib.dl.cdr.services.rest;
 import static edu.unc.lib.boxc.auth.api.Permission.editDescription;
 import static edu.unc.lib.boxc.model.api.xml.JDOMNamespaceUtil.ATOM_NS;
 import static edu.unc.lib.boxc.model.api.xml.JDOMNamespaceUtil.CDR_MESSAGE_NS;
-import static edu.unc.lib.dl.util.JMSMessageUtil.CDRActions.RUN_ENHANCEMENTS;
+import static edu.unc.lib.boxc.operations.jms.JMSMessageUtil.CDRActions.RUN_ENHANCEMENTS;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
@@ -57,9 +57,9 @@ import edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.objects.CollectionObject;
 import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
+import edu.unc.lib.boxc.operations.jms.MessageSender;
 import edu.unc.lib.dl.cdr.services.processing.ImportThumbnailService;
 import edu.unc.lib.dl.cdr.services.rest.modify.AbstractAPIIT;
-import edu.unc.lib.dl.services.MessageSender;
 
 /**
  * @author lfarrell

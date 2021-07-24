@@ -28,8 +28,8 @@ import org.slf4j.LoggerFactory;
 
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
+import edu.unc.lib.boxc.operations.impl.validation.MODSValidator;
 import edu.unc.lib.deposit.work.AbstractDepositJob;
-import edu.unc.lib.dl.validation.MODSValidator;
 import edu.unc.lib.dl.validation.MetadataValidationException;
 
 /**

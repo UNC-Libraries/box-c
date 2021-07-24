@@ -33,8 +33,8 @@ import edu.unc.lib.boxc.auth.api.exceptions.AccessRestrictionException;
 import edu.unc.lib.boxc.auth.fcrepo.models.AgentPrincipalsImpl;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
+import edu.unc.lib.boxc.operations.jms.indexing.IndexingService;
 import edu.unc.lib.dl.fedora.AuthorizationException;
-import edu.unc.lib.dl.persist.services.indexing.IndexingService;
 
 /**
  * API controller for reindexing the repository

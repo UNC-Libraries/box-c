@@ -15,11 +15,11 @@
  */
 package edu.unc.lib.dl.data.ingest.solr.action;
 
+import static edu.unc.lib.boxc.operations.jms.indexing.IndexingActionType.ADD;
 import static edu.unc.lib.dl.data.ingest.solr.test.MockRepositoryObjectHelpers.addMembers;
 import static edu.unc.lib.dl.data.ingest.solr.test.MockRepositoryObjectHelpers.makeContainer;
 import static edu.unc.lib.dl.data.ingest.solr.test.MockRepositoryObjectHelpers.makeFileObject;
 import static edu.unc.lib.dl.data.ingest.solr.test.MockRepositoryObjectHelpers.makePid;
-import static edu.unc.lib.dl.util.IndexingActionType.ADD;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.eq;
@@ -39,13 +39,13 @@ import org.mockito.Mock;
 
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
+import edu.unc.lib.boxc.operations.jms.indexing.IndexingMessageSender;
+import edu.unc.lib.boxc.operations.jms.indexing.IndexingActionType;
 import edu.unc.lib.boxc.model.api.objects.ContentContainerObject;
 import edu.unc.lib.boxc.model.api.objects.ContentObject;
 import edu.unc.lib.boxc.model.api.objects.FileObject;
-import edu.unc.lib.dl.services.IndexingMessageSender;
 import edu.unc.lib.dl.sparql.JenaSparqlQueryServiceImpl;
 import edu.unc.lib.dl.sparql.SparqlQueryService;
-import edu.unc.lib.dl.util.IndexingActionType;
 
 /**
  *

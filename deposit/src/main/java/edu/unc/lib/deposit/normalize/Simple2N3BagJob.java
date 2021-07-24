@@ -37,9 +37,9 @@ import edu.unc.lib.boxc.model.api.rdf.Cdr;
 import edu.unc.lib.boxc.model.api.rdf.CdrDeposit;
 import edu.unc.lib.boxc.model.api.rdf.Premis;
 import edu.unc.lib.boxc.model.fcrepo.ids.AgentPids;
+import edu.unc.lib.boxc.operations.api.events.PremisLogger;
 import edu.unc.lib.boxc.persist.api.PackagingType;
 import edu.unc.lib.deposit.work.AbstractDepositJob;
-import edu.unc.lib.dl.persist.api.event.PremisLogger;
 
 /**
  * Normalizes a simple deposit object into an N3 deposit structure.

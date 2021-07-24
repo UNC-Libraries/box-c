@@ -38,11 +38,11 @@ import org.apache.commons.lang3.StringUtils;
 
 import edu.unc.lib.boxc.model.api.exceptions.RepositoryException;
 import edu.unc.lib.boxc.model.api.ids.PID;
+import edu.unc.lib.boxc.persist.api.DigestAlgorithm;
 import edu.unc.lib.boxc.persist.api.storage.BinaryDetails;
 import edu.unc.lib.boxc.persist.api.storage.StorageLocation;
 import edu.unc.lib.boxc.persist.api.transfer.BinaryTransferException;
 import edu.unc.lib.boxc.persist.impl.storage.BinaryDetailsImpl;
-import edu.unc.lib.dl.util.DigestAlgorithm;
 
 /**
  * Helpers for file system transfer client operations

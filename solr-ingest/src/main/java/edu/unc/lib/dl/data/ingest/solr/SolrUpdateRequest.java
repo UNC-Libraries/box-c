@@ -19,7 +19,7 @@ import java.util.Map;
 
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
-import edu.unc.lib.dl.util.IndexingActionType;
+import edu.unc.lib.boxc.operations.jms.indexing.IndexingActionType;
 
 /**
  * Represents a request to update an object identified by pid.

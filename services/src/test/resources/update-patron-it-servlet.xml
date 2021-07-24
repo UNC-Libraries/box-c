@@ -34,7 +34,7 @@
         <constructor-arg value="org.springframework.jms.core.JmsTemplate" />
     </bean>
     
-    <bean id="patronAccessOperationSenderReal" class="edu.unc.lib.dl.persist.services.acl.PatronAccessOperationSender">
+    <bean id="patronAccessOperationSenderReal" class="edu.unc.lib.boxc.operations.acl.PatronAccessOperationSender">
         <property name="jmsTemplate" ref="patronAccessOperationTemplate"/>
     </bean>
     

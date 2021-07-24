@@ -23,7 +23,7 @@
         <property name="client" ref="fcrepoClient" />
     </bean>
     
-    <bean id="premisLoggerFactory" class="edu.unc.lib.dl.persist.event.PremisLoggerFactoryImpl">
+    <bean id="premisLoggerFactory" class="edu.unc.lib.boxc.operations.impl.events.PremisLoggerFactoryImpl">
         <property name="pidMinter" ref="repositoryPIDMinter" />
         <property name="repoObjLoader" ref="repositoryObjectLoader" />
         <property name="repoObjFactory" ref="repositoryObjectFactory" />
@@ -111,7 +111,7 @@
         <property name="storageLocationManager" ref="storageLocationManager" />
     </bean>
 
-    <bean id="versionedDatastreamService" class="edu.unc.lib.dl.persist.services.versioning.VersionedDatastreamService" >
+    <bean id="versionedDatastreamService" class="edu.unc.lib.boxc.operations.versioning.VersionedDatastreamService" >
         <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
         <property name="repositoryObjectFactory" ref="repositoryObjectFactory" />
         <property name="binaryTransferService" ref="binaryTransferService" />
@@ -119,10 +119,10 @@
     </bean>
     
     <bean id="operationsMessageSender" class="org.mockito.Mockito" factory-method="mock">
-        <constructor-arg value="edu.unc.lib.dl.services.OperationsMessageSender" />
+        <constructor-arg value="edu.unc.lib.boxc.operations.jms.OperationsMessageSender" />
     </bean>
 
-    <bean id="updateDescriptionService" class="edu.unc.lib.dl.persist.services.edit.UpdateDescriptionService" >
+    <bean id="updateDescriptionService" class="edu.unc.lib.boxc.operations.edit.UpdateDescriptionService" >
         <property name="aclService" ref="aclService" />
         <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
         <property name="repositoryObjectFactory" ref="repositoryObjectFactory" />

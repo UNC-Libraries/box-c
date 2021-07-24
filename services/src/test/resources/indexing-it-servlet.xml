@@ -32,7 +32,7 @@
 
     <context:component-scan resource-pattern="**/IndexingController*" base-package="edu.unc.lib.dl.cdr.services.rest.modify"/>
     
-    <bean id="indexingService" class="edu.unc.lib.dl.persist.services.indexing.IndexingService">
+    <bean id="indexingService" class="edu.unc.lib.boxc.operations.jms.indexing.IndexingService">
         <property name="aclService" ref="aclService" />
         <property name="indexingMessageSender" ref="indexingMessageSender" />
     </bean>

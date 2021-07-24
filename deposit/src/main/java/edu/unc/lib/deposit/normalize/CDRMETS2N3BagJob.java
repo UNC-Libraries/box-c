@@ -33,8 +33,8 @@ import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.rdf.Premis;
 import edu.unc.lib.boxc.model.fcrepo.ids.AgentPids;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
+import edu.unc.lib.boxc.operations.api.events.PremisLogger;
 import edu.unc.lib.boxc.persist.api.PackagingType;
-import edu.unc.lib.dl.persist.api.event.PremisLogger;
 
 /**
  *

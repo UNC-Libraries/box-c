@@ -16,7 +16,7 @@
 package edu.unc.lib.dl.services.camel;
 
 import static edu.unc.lib.boxc.model.api.xml.JDOMNamespaceUtil.CDR_MESSAGE_NS;
-import static edu.unc.lib.dl.util.JMSMessageUtil.CDRActions.RUN_ENHANCEMENTS;
+import static edu.unc.lib.boxc.operations.jms.JMSMessageUtil.CDRActions.RUN_ENHANCEMENTS;
 import static org.fcrepo.camel.FcrepoHeaders.FCREPO_URI;
 
 import org.apache.camel.Exchange;

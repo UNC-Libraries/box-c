@@ -16,16 +16,16 @@
 
 package edu.unc.lib.dl.services.camel.cdrEvents;
 
+import static edu.unc.lib.boxc.operations.jms.JMSMessageUtil.CDRActions.ADD;
+import static edu.unc.lib.boxc.operations.jms.JMSMessageUtil.CDRActions.EDIT_ACCESS_CONTROL;
+import static edu.unc.lib.boxc.operations.jms.JMSMessageUtil.CDRActions.EDIT_TYPE;
+import static edu.unc.lib.boxc.operations.jms.JMSMessageUtil.CDRActions.MARK_FOR_DELETION;
+import static edu.unc.lib.boxc.operations.jms.JMSMessageUtil.CDRActions.MOVE;
+import static edu.unc.lib.boxc.operations.jms.JMSMessageUtil.CDRActions.REMOVE;
+import static edu.unc.lib.boxc.operations.jms.JMSMessageUtil.CDRActions.RESTORE_FROM_DELETION;
+import static edu.unc.lib.boxc.operations.jms.JMSMessageUtil.CDRActions.SET_AS_PRIMARY_OBJECT;
+import static edu.unc.lib.boxc.operations.jms.JMSMessageUtil.CDRActions.UPDATE_DESCRIPTION;
 import static edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders.CdrUpdateAction;
-import static edu.unc.lib.dl.util.JMSMessageUtil.CDRActions.ADD;
-import static edu.unc.lib.dl.util.JMSMessageUtil.CDRActions.EDIT_ACCESS_CONTROL;
-import static edu.unc.lib.dl.util.JMSMessageUtil.CDRActions.EDIT_TYPE;
-import static edu.unc.lib.dl.util.JMSMessageUtil.CDRActions.MARK_FOR_DELETION;
-import static edu.unc.lib.dl.util.JMSMessageUtil.CDRActions.MOVE;
-import static edu.unc.lib.dl.util.JMSMessageUtil.CDRActions.REMOVE;
-import static edu.unc.lib.dl.util.JMSMessageUtil.CDRActions.RESTORE_FROM_DELETION;
-import static edu.unc.lib.dl.util.JMSMessageUtil.CDRActions.SET_AS_PRIMARY_OBJECT;
-import static edu.unc.lib.dl.util.JMSMessageUtil.CDRActions.UPDATE_DESCRIPTION;
 import static java.util.Arrays.asList;
 import static org.slf4j.LoggerFactory.getLogger;
 

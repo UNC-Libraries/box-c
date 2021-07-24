@@ -45,11 +45,11 @@ import edu.unc.lib.boxc.model.api.rdf.Premis;
 import edu.unc.lib.boxc.model.api.rdf.Rdfs;
 import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
 import edu.unc.lib.boxc.model.fcrepo.ids.AgentPids;
+import edu.unc.lib.boxc.operations.api.events.PremisEventBuilder;
+import edu.unc.lib.boxc.operations.api.events.PremisLogger;
+import edu.unc.lib.boxc.persist.api.DigestAlgorithm;
 import edu.unc.lib.boxc.persist.api.transfer.BinaryTransferSession;
 import edu.unc.lib.deposit.work.AbstractDepositJob;
-import edu.unc.lib.dl.persist.api.event.PremisEventBuilder;
-import edu.unc.lib.dl.persist.api.event.PremisLogger;
-import edu.unc.lib.dl.util.DigestAlgorithm;
 
 /**
  * Creates and ingests the deposit record object

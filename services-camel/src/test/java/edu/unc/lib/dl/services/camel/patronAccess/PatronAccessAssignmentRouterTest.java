@@ -41,10 +41,10 @@ import edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl;
 import edu.unc.lib.boxc.auth.fcrepo.models.AgentPrincipalsImpl;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
-import edu.unc.lib.dl.persist.services.acl.PatronAccessAssignmentService;
-import edu.unc.lib.dl.persist.services.acl.PatronAccessAssignmentService.PatronAccessAssignmentRequest;
-import edu.unc.lib.dl.persist.services.acl.PatronAccessDetails;
-import edu.unc.lib.dl.persist.services.acl.PatronAccessOperationSender;
+import edu.unc.lib.boxc.operations.impl.acl.PatronAccessAssignmentService;
+import edu.unc.lib.boxc.operations.impl.acl.PatronAccessAssignmentService.PatronAccessAssignmentRequest;
+import edu.unc.lib.boxc.operations.impl.acl.PatronAccessDetails;
+import edu.unc.lib.boxc.operations.impl.acl.PatronAccessOperationSender;
 
 /**
  * @author bbpennel

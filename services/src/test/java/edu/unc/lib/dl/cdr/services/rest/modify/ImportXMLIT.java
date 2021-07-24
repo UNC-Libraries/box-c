@@ -15,9 +15,6 @@
  */
 package edu.unc.lib.dl.cdr.services.rest.modify;
 
-import static edu.unc.lib.dl.persist.services.importxml.XMLImportTestHelper.addObjectUpdate;
-import static edu.unc.lib.dl.persist.services.importxml.XMLImportTestHelper.documentToInputStream;
-import static edu.unc.lib.dl.persist.services.importxml.XMLImportTestHelper.makeUpdateDocument;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
@@ -47,7 +44,8 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 import edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
-import edu.unc.lib.dl.persist.services.importxml.ImportXMLService;
+import edu.unc.lib.boxc.operations.impl.importxml.ImportXMLService;
+import edu.unc.lib.boxc.operations.test.ModsTestHelper;
 
 /**
  *
@@ -118,10 +116,11 @@ public class ImportXMLIT extends AbstractAPIIT {
     }
 
     private MockMultipartFile createTempImportFile() throws Exception {
-        Document updateDoc = makeUpdateDocument();
-        addObjectUpdate(updateDoc, PIDs.get(UUID.randomUUID().toString()), null);
+        Document updateDoc = ModsTestHelper.makeUpdateDocument();
+        ModsTestHelper.addObjectUpdate(updateDoc, PIDs.get(UUID.randomUUID().toString()), null);
 
-        MockMultipartFile importFile = new MockMultipartFile("file", documentToInputStream(updateDoc));
+        MockMultipartFile importFile = new MockMultipartFile("file",
+                ModsTestHelper.documentToInputStream(updateDoc));
         return importFile;
     }
 

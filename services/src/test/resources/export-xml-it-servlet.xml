@@ -65,6 +65,6 @@
     </bean>
     
     <bean id="emailHandler" class="org.mockito.Mockito" factory-method="mock">
-        <constructor-arg value="edu.unc.lib.persist.services.EmailHandler" />
+        <constructor-arg value="edu.unc.lib.boxc.operations.impl.utils.EmailHandler" />
     </bean>
 </beans>

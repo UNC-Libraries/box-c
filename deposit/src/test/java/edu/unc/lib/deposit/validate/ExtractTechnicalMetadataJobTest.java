@@ -78,10 +78,10 @@ import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.ids.RepositoryPathConstants;
 import edu.unc.lib.boxc.model.api.rdf.Cdr;
 import edu.unc.lib.boxc.model.api.rdf.CdrDeposit;
+import edu.unc.lib.boxc.operations.api.events.PremisEventBuilder;
+import edu.unc.lib.boxc.operations.api.events.PremisLogger;
+import edu.unc.lib.boxc.operations.api.events.PremisLoggerFactory;
 import edu.unc.lib.deposit.fcrepo4.AbstractDepositJobTest;
-import edu.unc.lib.dl.persist.api.event.PremisEventBuilder;
-import edu.unc.lib.dl.persist.api.event.PremisLogger;
-import edu.unc.lib.dl.persist.api.event.PremisLoggerFactory;
 
 /**
  *

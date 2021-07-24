@@ -33,7 +33,7 @@
     <context:component-scan resource-pattern="**/EditThumbnailController*" base-package="edu.unc.lib.dl.cdr.services.rest"/>
 
     <bean id="messageSender" class="org.mockito.Mockito" factory-method="mock">
-        <constructor-arg value="edu.unc.lib.dl.services.MessageSender"/>
+        <constructor-arg value="edu.unc.lib.boxc.operations.jms.MessageSender"/>
     </bean>
 
     <bean id="importThumbnailService" class="edu.unc.lib.dl.cdr.services.processing.ImportThumbnailService">

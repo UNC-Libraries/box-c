@@ -48,10 +48,10 @@ import org.mockito.Mock;
 
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
+import edu.unc.lib.boxc.operations.jms.JMSMessageUtil.CDRActions;
+import edu.unc.lib.boxc.operations.jms.indexing.IndexingActionType;
+import edu.unc.lib.boxc.operations.jms.indexing.IndexingMessageSender;
 import edu.unc.lib.dl.persist.api.indexing.IndexingPriority;
-import edu.unc.lib.dl.services.IndexingMessageSender;
-import edu.unc.lib.dl.util.IndexingActionType;
-import edu.unc.lib.dl.util.JMSMessageUtil.CDRActions;
 
 /**
  *

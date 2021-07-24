@@ -64,13 +64,13 @@ import edu.unc.lib.boxc.model.api.rdf.Prov;
 import edu.unc.lib.boxc.model.fcrepo.ids.AgentPids;
 import edu.unc.lib.boxc.model.fcrepo.ids.DatastreamPids;
 import edu.unc.lib.boxc.model.fcrepo.ids.PidLockManager;
+import edu.unc.lib.boxc.operations.api.events.PremisLogger;
+import edu.unc.lib.boxc.operations.impl.events.PremisLoggerFactoryImpl;
+import edu.unc.lib.boxc.operations.impl.events.RepositoryPremisLogger;
+import edu.unc.lib.boxc.persist.api.DigestAlgorithm;
 import edu.unc.lib.boxc.persist.api.transfer.BinaryTransferOutcome;
 import edu.unc.lib.boxc.persist.api.transfer.BinaryTransferService;
 import edu.unc.lib.boxc.persist.api.transfer.BinaryTransferSession;
-import edu.unc.lib.dl.persist.api.event.PremisLogger;
-import edu.unc.lib.dl.persist.event.PremisLoggerFactoryImpl;
-import edu.unc.lib.dl.persist.event.RepositoryPremisLogger;
-import edu.unc.lib.dl.util.DigestAlgorithm;
 
 /**
  *

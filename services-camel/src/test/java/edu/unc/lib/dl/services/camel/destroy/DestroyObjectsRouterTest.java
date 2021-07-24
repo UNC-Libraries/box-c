@@ -15,7 +15,7 @@
  */
 package edu.unc.lib.dl.services.camel.destroy;
 
-import static edu.unc.lib.dl.persist.services.destroy.DestroyObjectsHelper.serializeDestroyRequest;
+import static edu.unc.lib.boxc.operations.jms.destroy.DestroyObjectsHelper.serializeDestroyRequest;
 import static org.apache.jena.rdf.model.ModelFactory.createDefaultModel;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
@@ -51,9 +51,9 @@ import edu.unc.lib.boxc.model.api.objects.WorkObject;
 import edu.unc.lib.boxc.model.api.rdf.Cdr;
 import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
+import edu.unc.lib.boxc.operations.jms.destroy.DestroyObjectsRequest;
 import edu.unc.lib.dl.fcrepo4.FedoraTransaction;
 import edu.unc.lib.dl.fcrepo4.TransactionManager;
-import edu.unc.lib.dl.persist.services.destroy.DestroyObjectsRequest;
 import edu.unc.lib.dl.search.solr.model.ObjectPath;
 import edu.unc.lib.dl.search.solr.service.ObjectPathFactory;
 

@@ -46,7 +46,7 @@ import edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.objects.ContentObject;
 import edu.unc.lib.boxc.model.api.services.ContentPathFactory;
-import edu.unc.lib.dl.persist.services.edit.UpdateDescriptionService;
+import edu.unc.lib.boxc.operations.impl.edit.UpdateDescriptionService;
 
 /**
  *

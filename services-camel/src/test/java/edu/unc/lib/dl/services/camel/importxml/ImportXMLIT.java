@@ -17,10 +17,6 @@ package edu.unc.lib.dl.services.camel.importxml;
 
 import static edu.unc.lib.boxc.model.api.xml.JDOMNamespaceUtil.MODS_V3_NS;
 import static edu.unc.lib.boxc.persist.impl.storage.StorageLocationTestHelper.newStorageLocationTestHelper;
-import static edu.unc.lib.dl.persist.services.importxml.XMLImportTestHelper.addObjectUpdate;
-import static edu.unc.lib.dl.persist.services.importxml.XMLImportTestHelper.documentToInputStream;
-import static edu.unc.lib.dl.persist.services.importxml.XMLImportTestHelper.makeUpdateDocument;
-import static edu.unc.lib.dl.persist.services.importxml.XMLImportTestHelper.modsWithTitleAndDate;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
@@ -58,9 +54,10 @@ import edu.unc.lib.boxc.model.api.objects.FolderObject;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
 import edu.unc.lib.boxc.model.fcrepo.test.TestHelper;
+import edu.unc.lib.boxc.operations.impl.importxml.ImportXMLService;
+import edu.unc.lib.boxc.operations.test.ModsTestHelper;
 import edu.unc.lib.boxc.persist.api.storage.StorageLocationManager;
 import edu.unc.lib.boxc.persist.impl.transfer.BinaryTransferServiceImpl;
-import edu.unc.lib.dl.persist.services.importxml.ImportXMLService;
 
 /**
  * @author bbpennel
@@ -139,10 +136,10 @@ public class ImportXMLIT {
     public void updateDescription() throws Exception {
         FolderObject folderObject = repoObjectFactory.createFolderObject(null);
 
-        Document updateDoc = makeUpdateDocument();
-        addObjectUpdate(updateDoc, folderObject.getPid(), null)
-            .addContent(modsWithTitleAndDate(UPDATED_TITLE, UPDATED_DATE));
-        InputStream importStream = documentToInputStream(updateDoc);
+        Document updateDoc = ModsTestHelper.makeUpdateDocument();
+        ModsTestHelper.addObjectUpdate(updateDoc, folderObject.getPid(), null)
+            .addContent(ModsTestHelper.modsWithTitleAndDate(UPDATED_TITLE, UPDATED_DATE));
+        InputStream importStream = ModsTestHelper.documentToInputStream(updateDoc);
 
         importXmlService.pushJobToQueue(importStream, agent, USER_EMAIL);
 

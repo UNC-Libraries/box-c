@@ -35,7 +35,7 @@ import edu.unc.lib.boxc.auth.api.models.AgentPrincipals;
 import edu.unc.lib.boxc.auth.fcrepo.models.AgentPrincipalsImpl;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
-import edu.unc.lib.dl.persist.services.move.MoveObjectsService;
+import edu.unc.lib.boxc.operations.impl.move.MoveObjectsService;
 
 /**
  *

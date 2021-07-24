@@ -27,7 +27,7 @@
     </bean>
     
     <bean id="premisLoggerFactory" class="org.mockito.Mockito" factory-method="mock">
-        <constructor-arg value="edu.unc.lib.dl.persist.api.event.PremisLoggerFactory" />
+        <constructor-arg value="edu.unc.lib.boxc.operations.api.events.PremisLoggerFactory" />
     </bean>
     
     <bean id="aclService" class="org.mockito.Mockito" factory-method="mock">
@@ -55,7 +55,7 @@
     </bean>
     
     <bean id="indexingMessageSender" class="org.mockito.Mockito" factory-method="mock">
-        <constructor-arg value="edu.unc.lib.dl.services.IndexingMessageSender" />
+        <constructor-arg value="edu.unc.lib.boxc.operations.jms.IndexingMessageSender" />
     </bean>
     
     <bean id="fcrepoClient" class="org.mockito.Mockito" factory-method="mock">
@@ -63,7 +63,7 @@
     </bean>
     
     <bean id="binaryDestroyedMessageSender" class="org.mockito.Mockito" factory-method="mock">
-        <constructor-arg value="edu.unc.lib.dl.services.MessageSender" />
+        <constructor-arg value="edu.unc.lib.boxc.operations.jms.MessageSender" />
     </bean>
 
     <camel:camelContext id="cdrDestroyObjects">

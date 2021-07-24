@@ -17,13 +17,13 @@ package edu.unc.lib.dl.services.camel.solrUpdate;
 
 import static edu.unc.lib.boxc.auth.api.AccessPrincipalConstants.AUTHENTICATED_PRINC;
 import static edu.unc.lib.boxc.auth.api.AccessPrincipalConstants.PUBLIC_PRINC;
-import static edu.unc.lib.dl.util.IndexingActionType.ADD_SET_TO_PARENT;
-import static edu.unc.lib.dl.util.IndexingActionType.DELETE;
-import static edu.unc.lib.dl.util.IndexingActionType.DELETE_SOLR_TREE;
-import static edu.unc.lib.dl.util.IndexingActionType.RECURSIVE_ADD;
-import static edu.unc.lib.dl.util.IndexingActionType.UPDATE_ACCESS_TREE;
-import static edu.unc.lib.dl.util.IndexingActionType.UPDATE_DESCRIPTION;
-import static edu.unc.lib.dl.util.IndexingMessageHelper.makeIndexingOperationBody;
+import static edu.unc.lib.boxc.operations.jms.indexing.IndexingActionType.ADD_SET_TO_PARENT;
+import static edu.unc.lib.boxc.operations.jms.indexing.IndexingActionType.DELETE;
+import static edu.unc.lib.boxc.operations.jms.indexing.IndexingActionType.DELETE_SOLR_TREE;
+import static edu.unc.lib.boxc.operations.jms.indexing.IndexingActionType.RECURSIVE_ADD;
+import static edu.unc.lib.boxc.operations.jms.indexing.IndexingActionType.UPDATE_ACCESS_TREE;
+import static edu.unc.lib.boxc.operations.jms.indexing.IndexingActionType.UPDATE_DESCRIPTION;
+import static edu.unc.lib.boxc.operations.jms.indexing.IndexingMessageHelper.makeIndexingOperationBody;
 import static java.util.Collections.singleton;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -68,16 +68,16 @@ import edu.unc.lib.boxc.model.api.objects.AdminUnit;
 import edu.unc.lib.boxc.model.api.objects.CollectionObject;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObject;
 import edu.unc.lib.boxc.model.fcrepo.test.TestHelper;
+import edu.unc.lib.boxc.operations.impl.edit.UpdateDescriptionService;
+import edu.unc.lib.boxc.operations.impl.edit.UpdateDescriptionService.UpdateDescriptionRequest;
+import edu.unc.lib.boxc.operations.jms.indexing.IndexingActionType;
 import edu.unc.lib.dl.data.ingest.solr.action.IndexingAction;
 import edu.unc.lib.dl.data.ingest.solr.filter.SetCollectionSupplementalInformationFilter;
 import edu.unc.lib.dl.data.ingest.solr.filter.collection.RLASupplementalFilter;
-import edu.unc.lib.dl.persist.services.edit.UpdateDescriptionService;
-import edu.unc.lib.dl.persist.services.edit.UpdateDescriptionService.UpdateDescriptionRequest;
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadata;
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadataBean;
 import edu.unc.lib.dl.search.solr.util.FacetConstants;
 import edu.unc.lib.dl.services.camel.solr.AbstractSolrProcessorIT;
-import edu.unc.lib.dl.util.IndexingActionType;
 
 /**
  *

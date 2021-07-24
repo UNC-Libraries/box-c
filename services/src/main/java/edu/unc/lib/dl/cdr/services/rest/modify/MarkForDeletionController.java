@@ -34,8 +34,8 @@ import edu.unc.lib.boxc.auth.api.exceptions.AccessRestrictionException;
 import edu.unc.lib.boxc.auth.api.models.AgentPrincipals;
 import edu.unc.lib.boxc.auth.fcrepo.models.AgentPrincipalsImpl;
 import edu.unc.lib.boxc.model.api.exceptions.FedoraException;
+import edu.unc.lib.boxc.operations.impl.delete.MarkForDeletionService;
 import edu.unc.lib.dl.fedora.AuthorizationException;
-import edu.unc.lib.dl.persist.services.delete.MarkForDeletionService;
 
 /**
  * API controller for specifying whether or not resources are marked for deletion.

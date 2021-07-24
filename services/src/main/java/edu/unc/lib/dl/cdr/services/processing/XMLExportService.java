@@ -24,6 +24,7 @@ import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
 import edu.unc.lib.boxc.auth.api.services.AccessControlService;
 import edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
+import edu.unc.lib.boxc.operations.impl.utils.EmailHandler;
 import edu.unc.lib.dl.cdr.services.rest.modify.ExportXMLController.XMLExportRequest;
 import edu.unc.lib.dl.fedora.ServiceException;
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadata;
@@ -33,7 +34,6 @@ import edu.unc.lib.dl.search.solr.model.SearchState;
 import edu.unc.lib.dl.search.solr.service.SearchStateFactory;
 import edu.unc.lib.dl.search.solr.util.SearchFieldKeys;
 import edu.unc.lib.dl.ui.service.SolrQueryLayerService;
-import edu.unc.lib.persist.services.EmailHandler;
 
 /**
  * A service that starts a job for exporting the XML metadata of specified objects

@@ -51,7 +51,7 @@
         <property name="pubSubDomain" value="false" />
     </bean>
 
-    <bean id="binaryDestroyedMessageSender" class="edu.unc.lib.dl.services.MessageSender">
+    <bean id="binaryDestroyedMessageSender" class="edu.unc.lib.boxc.operations.jms.MessageSender">
         <property name="jmsTemplate" ref="binaryDestroyedJmsTemplate" />
     </bean>
 

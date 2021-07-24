@@ -25,21 +25,21 @@ import org.slf4j.LoggerFactory;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
 
-import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
-import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
-import edu.unc.lib.boxc.persist.api.storage.StorageLocationManager;
-import edu.unc.lib.boxc.persist.api.transfer.BinaryTransferService;
 import edu.unc.lib.boxc.auth.api.services.AccessControlService;
 import edu.unc.lib.boxc.auth.fcrepo.services.InheritedAclFactory;
+import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
+import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
+import edu.unc.lib.boxc.operations.api.events.PremisLoggerFactory;
+import edu.unc.lib.boxc.operations.impl.destroy.AbstractDestroyObjectsJob;
+import edu.unc.lib.boxc.operations.impl.destroy.DestroyObjectsCompletelyJob;
+import edu.unc.lib.boxc.operations.impl.destroy.DestroyObjectsJob;
+import edu.unc.lib.boxc.operations.jms.MessageSender;
+import edu.unc.lib.boxc.operations.jms.destroy.DestroyObjectsRequest;
+import edu.unc.lib.boxc.operations.jms.indexing.IndexingMessageSender;
+import edu.unc.lib.boxc.persist.api.storage.StorageLocationManager;
+import edu.unc.lib.boxc.persist.api.transfer.BinaryTransferService;
 import edu.unc.lib.dl.fcrepo4.TransactionManager;
-import edu.unc.lib.dl.persist.api.event.PremisLoggerFactory;
-import edu.unc.lib.dl.persist.services.destroy.AbstractDestroyObjectsJob;
-import edu.unc.lib.dl.persist.services.destroy.DestroyObjectsCompletelyJob;
-import edu.unc.lib.dl.persist.services.destroy.DestroyObjectsJob;
-import edu.unc.lib.dl.persist.services.destroy.DestroyObjectsRequest;
 import edu.unc.lib.dl.search.solr.service.ObjectPathFactory;
-import edu.unc.lib.dl.services.IndexingMessageSender;
-import edu.unc.lib.dl.services.MessageSender;
 
 /**
  * Processor which handles messages requesting the destruction of objects.

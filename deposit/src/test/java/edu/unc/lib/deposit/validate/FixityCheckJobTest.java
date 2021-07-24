@@ -64,11 +64,11 @@ import edu.unc.lib.boxc.model.api.rdf.CdrDeposit;
 import edu.unc.lib.boxc.model.api.rdf.Premis;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPIDMinter;
+import edu.unc.lib.boxc.operations.impl.events.PremisLoggerFactoryImpl;
+import edu.unc.lib.boxc.persist.api.DigestAlgorithm;
 import edu.unc.lib.deposit.fcrepo4.AbstractDepositJobTest;
 import edu.unc.lib.deposit.work.JobFailedException;
 import edu.unc.lib.deposit.work.JobInterruptedException;
-import edu.unc.lib.dl.persist.event.PremisLoggerFactoryImpl;
-import edu.unc.lib.dl.util.DigestAlgorithm;
 
 /**
  * @author bbpennel

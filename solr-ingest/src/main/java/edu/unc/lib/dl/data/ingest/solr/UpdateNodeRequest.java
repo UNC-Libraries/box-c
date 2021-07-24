@@ -17,8 +17,8 @@ package edu.unc.lib.dl.data.ingest.solr;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
+import edu.unc.lib.boxc.operations.jms.ActionMessage;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackage;
-import edu.unc.lib.dl.message.ActionMessage;
 
 /**
  *

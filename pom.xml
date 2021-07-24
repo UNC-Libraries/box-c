@@ -650,6 +650,7 @@
                 <artifactId>persistence</artifactId>
                 <version>${cdr.version}</version>
                 <type>test-jar</type>
+                <scope>test</scope>
             </dependency>
             <dependency>
                 <groupId>edu.unc.lib.cdr</groupId>
@@ -665,6 +666,13 @@
                 <groupId>edu.unc.lib.cdr</groupId>
                 <artifactId>operations</artifactId>
                 <version>${cdr.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>edu.unc.lib.cdr</groupId>
+                <artifactId>operations</artifactId>
+                <version>${cdr.version}</version>
+                <type>test-jar</type>
+                <scope>test</scope>
             </dependency>
             <dependency>
                 <groupId>edu.unc.lib.cdr</groupId>

@@ -69,6 +69,10 @@
             <artifactId>deposit-utils</artifactId>
         </dependency>
         <dependency>
+            <groupId>edu.unc.lib.cdr</groupId>
+            <artifactId>operations</artifactId>
+        </dependency>
+        <dependency>
             <groupId>net.greghaines</groupId>
             <artifactId>jesque</artifactId>
         </dependency>

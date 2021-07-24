@@ -40,7 +40,7 @@ import edu.unc.lib.boxc.auth.fcrepo.models.AgentPrincipalsImpl;
 import edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore;
 import edu.unc.lib.boxc.deposit.api.DepositMethod;
 import edu.unc.lib.boxc.deposit.api.submit.DepositData;
-import edu.unc.lib.boxc.deposit.services.DepositSubmissionService;
+import edu.unc.lib.boxc.deposit.impl.submit.DepositSubmissionService;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.boxc.persist.api.PackagingType;

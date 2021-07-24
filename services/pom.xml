@@ -82,6 +82,15 @@
         </dependency>
         <dependency>
             <groupId>edu.unc.lib.cdr</groupId>
+            <artifactId>operations</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>edu.unc.lib.cdr</groupId>
+            <artifactId>operations</artifactId>
+            <type>test-jar</type>
+        </dependency>
+        <dependency>
+            <groupId>edu.unc.lib.cdr</groupId>
             <artifactId>deposit-utils</artifactId>
         </dependency>
         <dependency>

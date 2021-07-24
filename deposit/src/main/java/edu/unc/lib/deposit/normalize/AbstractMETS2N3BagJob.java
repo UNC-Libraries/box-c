@@ -51,9 +51,9 @@ import edu.unc.lib.boxc.model.api.rdf.CdrDeposit;
 import edu.unc.lib.boxc.model.api.rdf.Premis;
 import edu.unc.lib.boxc.model.api.xml.JDOMNamespaceUtil;
 import edu.unc.lib.boxc.model.fcrepo.ids.AgentPids;
+import edu.unc.lib.boxc.operations.api.events.PremisLogger;
+import edu.unc.lib.boxc.operations.impl.validation.SchematronValidator;
 import edu.unc.lib.deposit.work.AbstractDepositJob;
-import edu.unc.lib.dl.persist.api.event.PremisLogger;
-import edu.unc.lib.dl.schematron.SchematronValidator;
 
 /**
  *

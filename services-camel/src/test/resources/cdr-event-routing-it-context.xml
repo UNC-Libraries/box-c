@@ -36,7 +36,7 @@
         <property name="pubSubDomain" value="false" />
     </bean>
 
-    <bean id="operationsMessageSender" class="edu.unc.lib.dl.services.OperationsMessageSender">
+    <bean id="operationsMessageSender" class="edu.unc.lib.boxc.operations.jms.OperationsMessageSender">
         <property name="jmsTemplate" ref="cdrEventsJmsTemplate" />
     </bean>
 
@@ -46,7 +46,7 @@
     </bean>
 
     <bean id="indexingMessageSender" parent="abstractMessageSender"
-        class="edu.unc.lib.dl.services.IndexingMessageSender">
+        class="edu.unc.lib.boxc.operations.jms.IndexingMessageSender">
     </bean>
 
     <bean id="cdrEventProcessor"

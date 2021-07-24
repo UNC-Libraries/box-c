@@ -18,9 +18,9 @@ package edu.unc.lib.dl.data.ingest.solr.action;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import edu.unc.lib.boxc.operations.jms.indexing.IndexingActionType;
 import edu.unc.lib.dl.data.ingest.solr.SolrUpdateRequest;
 import edu.unc.lib.dl.data.ingest.solr.exception.IndexingException;
-import edu.unc.lib.dl.util.IndexingActionType;
 
 /**
  * Action which clears index records and then regenerates them for the specified

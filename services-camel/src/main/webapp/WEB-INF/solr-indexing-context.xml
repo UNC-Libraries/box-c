@@ -351,7 +351,7 @@
     </bean>
     
     <util:map id="solrIndexingActionMap"
-        key-type="edu.unc.lib.dl.util.IndexingActionType"
+        key-type="edu.unc.lib.boxc.operations.jms.indexing.IndexingActionType"
         value-type="edu.unc.lib.dl.data.ingest.solr.action.IndexingAction">
         <entry key="ADD" value-ref="updateObjectAction" />
         <entry key="UPDATE_DESCRIPTION" value-ref="updateDescriptionAction" />

@@ -40,9 +40,9 @@ import edu.unc.lib.boxc.model.api.rdf.CdrDeposit;
 import edu.unc.lib.boxc.model.api.rdf.Premis;
 import edu.unc.lib.boxc.model.fcrepo.ids.AgentPids;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
+import edu.unc.lib.boxc.operations.api.events.PremisEventBuilder;
+import edu.unc.lib.boxc.operations.api.events.PremisLogger;
 import edu.unc.lib.deposit.work.AbstractConcurrentDepositJob;
-import edu.unc.lib.dl.persist.api.event.PremisEventBuilder;
-import edu.unc.lib.dl.persist.api.event.PremisLogger;
 import fi.solita.clamav.ClamAVClient;
 import fi.solita.clamav.ScanResult;
 

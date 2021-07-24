@@ -59,8 +59,8 @@ import edu.unc.lib.boxc.model.api.rdf.Cdr;
 import edu.unc.lib.boxc.model.api.rdf.CdrAcl;
 import edu.unc.lib.boxc.model.api.rdf.CdrDeposit;
 import edu.unc.lib.boxc.model.api.rdf.Premis;
+import edu.unc.lib.boxc.operations.impl.validation.SchematronValidator;
 import edu.unc.lib.deposit.work.JobFailedException;
-import edu.unc.lib.dl.schematron.SchematronValidator;
 
 /**
  *

@@ -17,8 +17,8 @@ package edu.unc.lib.dl.services.camel.solrUpdate;
 
 import static edu.unc.lib.boxc.model.api.xml.JDOMNamespaceUtil.ATOM_NS;
 import static edu.unc.lib.boxc.model.api.xml.JDOMNamespaceUtil.CDR_MESSAGE_NS;
-import static edu.unc.lib.dl.util.IndexingActionType.ADD;
-import static edu.unc.lib.dl.util.IndexingActionType.DELETE;
+import static edu.unc.lib.boxc.operations.jms.indexing.IndexingActionType.ADD;
+import static edu.unc.lib.boxc.operations.jms.indexing.IndexingActionType.DELETE;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.never;
@@ -44,10 +44,10 @@ import org.mockito.Mock;
 
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
+import edu.unc.lib.boxc.operations.jms.indexing.IndexingActionType;
 import edu.unc.lib.dl.data.ingest.solr.ChildSetRequest;
 import edu.unc.lib.dl.data.ingest.solr.SolrUpdateRequest;
 import edu.unc.lib.dl.data.ingest.solr.action.IndexingAction;
-import edu.unc.lib.dl.util.IndexingActionType;
 
 /**
  *

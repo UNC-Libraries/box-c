@@ -45,7 +45,7 @@
         <property name="storageLocationManager" ref="storageLocationManager" />
     </bean>
     
-    <bean id="premisLoggerFactory" class="edu.unc.lib.dl.persist.event.PremisLoggerFactoryImpl">
+    <bean id="premisLoggerFactory" class="edu.unc.lib.boxc.operations.impl.events.PremisLoggerFactoryImpl">
         <property name="pidMinter" ref="repositoryPIDMinter" />
         <property name="repoObjLoader" ref="repositoryObjectLoader" />
         <property name="repoObjFactory" ref="repositoryObjectFactory" />
@@ -106,14 +106,14 @@
         <constructor-arg value="edu.unc.lib.boxc.auth.fcrepo.services.AccessControlServiceImpl" />
     </bean>
     
-    <bean id="versionedDatastreamService" class="edu.unc.lib.dl.persist.services.versioning.VersionedDatastreamService" >
+    <bean id="versionedDatastreamService" class="edu.unc.lib.boxc.operations.versioning.VersionedDatastreamService" >
         <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
         <property name="repositoryObjectFactory" ref="repositoryObjectFactory" />
         <property name="binaryTransferService" ref="binaryTransferService" />
         <property name="transactionManager" ref="transactionManager" />
     </bean>
 
-    <bean id="updateDescriptionService" class="edu.unc.lib.dl.persist.services.edit.UpdateDescriptionService" >
+    <bean id="updateDescriptionService" class="edu.unc.lib.boxc.operations.edit.UpdateDescriptionService" >
         <property name="aclService" ref="aclService" />
         <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
         <property name="repositoryObjectFactory" ref="repositoryObjectFactory" />
@@ -127,11 +127,11 @@
         <constructor-arg value="org.springframework.jms.core.JmsTemplate" />
     </bean>
     
-    <bean id="operationsMessageSender" class="edu.unc.lib.dl.services.OperationsMessageSender">
+    <bean id="operationsMessageSender" class="edu.unc.lib.boxc.operations.jms.OperationsMessageSender">
         <property name="jmsTemplate" ref="jmsTemplate" />
     </bean>
     
-    <bean id="indexingMessageSender" class="edu.unc.lib.dl.services.IndexingMessageSender" >
+    <bean id="indexingMessageSender" class="edu.unc.lib.boxc.operations.jms.IndexingMessageSender" >
         <property name="jmsTemplate" ref="jmsTemplate" />
     </bean>
     
@@ -139,7 +139,7 @@
         factory-method="createSchemaFactory" scope="prototype">
     </bean>
     
-    <bean id="schematronValidator" class="edu.unc.lib.dl.schematron.SchematronValidator"
+    <bean id="schematronValidator" class="edu.unc.lib.boxc.operations.xml.SchematronValidator"
        init-method="loadSchemas">
         <property name="schemas">
             <map>
@@ -153,7 +153,7 @@
         </property>
     </bean>
     
-    <bean id="modsValidator" class="edu.unc.lib.dl.validation.MODSValidator">
+    <bean id="modsValidator" class="edu.unc.lib.boxc.operations.xml.MODSValidator">
         <property name="schematronValidator" ref="schematronValidator" />
         <property name="modsSchema">
             <bean class="javax.xml.validation.Schema" factory-bean="schemaFactory"

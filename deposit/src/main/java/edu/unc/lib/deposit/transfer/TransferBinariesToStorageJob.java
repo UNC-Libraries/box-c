@@ -20,7 +20,7 @@ import static edu.unc.lib.boxc.model.api.rdf.CdrDeposit.hasDatastreamDescriptive
 import static edu.unc.lib.boxc.model.fcrepo.ids.DatastreamPids.getDepositManifestPid;
 import static edu.unc.lib.boxc.model.fcrepo.ids.DatastreamPids.getOriginalFilePid;
 import static edu.unc.lib.boxc.model.fcrepo.ids.DatastreamPids.getTechnicalMetadataPid;
-import static edu.unc.lib.dl.util.DigestAlgorithm.DEFAULT_ALGORITHM;
+import static edu.unc.lib.boxc.persist.api.DigestAlgorithm.DEFAULT_ALGORITHM;
 import static java.util.Arrays.asList;
 import static java.util.stream.Collectors.toSet;
 import static org.apache.jena.rdf.model.ResourceFactory.createStringLiteral;
