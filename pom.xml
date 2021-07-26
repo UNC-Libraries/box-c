@@ -201,6 +201,7 @@
         <module>operations-jms</module>
         <module>operations</module>
         <module>deposit-utils</module>
+        <module>persistence-api</module>
     </modules>
 
     <reporting>
@@ -638,6 +639,11 @@
             <dependency>
                 <groupId>edu.unc.lib.cdr</groupId>
                 <artifactId>access-common</artifactId>
+                <version>${cdr.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>edu.unc.lib.cdr</groupId>
+                <artifactId>persistence-api</artifactId>
                 <version>${cdr.version}</version>
             </dependency>
             <dependency>

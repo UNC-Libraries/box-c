@@ -26,9 +26,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
 import com.samskivert.mustache.Template;
 
-import edu.unc.lib.boxc.operations.edit.UpdateDescriptionService;
-import edu.unc.lib.boxc.operations.importxml.ImportXMLJob;
-import edu.unc.lib.boxc.operations.importxml.ImportXMLRequest;
+import edu.unc.lib.boxc.operations.impl.edit.UpdateDescriptionService;
+import edu.unc.lib.boxc.operations.impl.importxml.ImportXMLJob;
+import edu.unc.lib.boxc.operations.impl.importxml.ImportXMLRequest;
 import edu.unc.lib.boxc.persist.api.storage.StorageLocationManager;
 import edu.unc.lib.boxc.persist.api.transfer.BinaryTransferService;
 
