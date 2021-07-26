@@ -76,6 +76,7 @@ import edu.unc.lib.boxc.model.api.rdf.CdrDeposit;
 import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
 import edu.unc.lib.boxc.model.fcrepo.ids.DatastreamPids;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
+import edu.unc.lib.boxc.persist.api.exceptions.InvalidChecksumException;
 import edu.unc.lib.boxc.persist.api.storage.StorageLocation;
 import edu.unc.lib.boxc.persist.api.storage.StorageLocationManager;
 import edu.unc.lib.boxc.persist.api.transfer.BinaryTransferException;
@@ -86,7 +87,6 @@ import edu.unc.lib.boxc.persist.impl.transfer.BinaryTransferServiceImpl;
 import edu.unc.lib.deposit.normalize.AbstractNormalizationJobTest;
 import edu.unc.lib.deposit.work.JobFailedException;
 import edu.unc.lib.deposit.work.JobInterruptedException;
-import edu.unc.lib.dl.exceptions.InvalidChecksumException;
 
 /**
  * @author bbpennel

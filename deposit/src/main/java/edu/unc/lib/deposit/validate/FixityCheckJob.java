@@ -41,9 +41,9 @@ import edu.unc.lib.boxc.model.fcrepo.ids.AgentPids;
 import edu.unc.lib.boxc.operations.api.events.PremisEventBuilder;
 import edu.unc.lib.boxc.operations.api.events.PremisLogger;
 import edu.unc.lib.boxc.persist.api.DigestAlgorithm;
+import edu.unc.lib.boxc.persist.api.exceptions.InvalidChecksumException;
 import edu.unc.lib.boxc.persist.impl.MultiDigestInputStreamWrapper;
 import edu.unc.lib.deposit.work.AbstractConcurrentDepositJob;
-import edu.unc.lib.dl.exceptions.InvalidChecksumException;
 
 /**
  * Calculates digests for staged files, performing a fixity check if existing

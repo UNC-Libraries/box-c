@@ -33,7 +33,7 @@
     <context:component-scan resource-pattern="**/UpdateStaffAccessController*" base-package="edu.unc.lib.dl.cdr.services.rest.modify"/>
     <context:component-scan base-package="edu.unc.lib.dl.cdr.services.rest.exceptions" />
     
-    <bean id="staffRoleAssignmentService" class="edu.unc.lib.boxc.operations.acl.StaffRoleAssignmentService">
+    <bean id="staffRoleAssignmentService" class="edu.unc.lib.boxc.operations.impl.acl.StaffRoleAssignmentService">
         <property name="aclService" ref="aclService" />
         <property name="aclFactory" ref="inheritedAclFactory" />
         <property name="operationsMessageSender" ref="operationsMessageSender" />

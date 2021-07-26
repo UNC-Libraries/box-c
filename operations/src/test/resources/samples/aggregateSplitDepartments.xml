@@ -1,0 +1,340 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<foxml:digitalObject VERSION="1.1" PID="uuid:4f3929f9-5f1a-4af3-8019-77112b9893ba"
+xmlns:foxml="info:fedora/fedora-system:def/foxml#"
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+xsi:schemaLocation="info:fedora/fedora-system:def/foxml# http://www.fedora.info/definitions/1/0/foxml1-1.xsd">
+<foxml:objectProperties>
+<foxml:property NAME="info:fedora/fedora-system:def/model#state" VALUE="Active"/>
+<foxml:property NAME="info:fedora/fedora-system:def/model#label" VALUE="A Comparison of Machine Learning Algorithms for Chemical Toxicity Classification Using a Simulated Multi-Scale Data Model"/>
+<foxml:property NAME="info:fedora/fedora-system:def/model#ownerId" VALUE=""/>
+<foxml:property NAME="info:fedora/fedora-system:def/model#createdDate" VALUE="2012-08-24T00:14:50.526Z"/>
+<foxml:property NAME="info:fedora/fedora-system:def/view#lastModifiedDate" VALUE="2012-09-26T18:38:22.666Z"/>
+</foxml:objectProperties>
+<foxml:datastream ID="AUDIT" STATE="A" CONTROL_GROUP="X" VERSIONABLE="false">
+<foxml:datastreamVersion ID="AUDIT.0" LABEL="Audit Trail for this object" CREATED="2012-08-24T00:14:50.526Z" MIMETYPE="text/xml" FORMAT_URI="info:fedora/fedora-system:format/xml.fedora.audit">
+<foxml:xmlContent>
+<audit:auditTrail xmlns:audit="info:fedora/fedora-system:def/audit#">
+<audit:record ID="AUDREC1">
+<audit:process type="Fedora API-M"/>
+<audit:action>ingest</audit:action>
+<audit:componentID></audit:componentID>
+<audit:responsibility>fedoraAdmin</audit:responsibility>
+<audit:date>2012-08-24T00:14:50.526Z</audit:date>
+<audit:justification>uuid:0289bb08-35db-46fb-9666-7be852e09ba8</audit:justification>
+</audit:record>
+<audit:record ID="AUDREC2">
+<audit:process type="Fedora API-M"/>
+<audit:action>modifyDatastreamByValue</audit:action>
+<audit:componentID>MD_DESCRIPTIVE</audit:componentID>
+<audit:responsibility>fedoraAdmin</audit:responsibility>
+<audit:date>2012-09-26T18:38:22.666Z</audit:date>
+<audit:justification></audit:justification>
+</audit:record>
+</audit:auditTrail>
+</foxml:xmlContent>
+</foxml:datastreamVersion>
+</foxml:datastream>
+<foxml:datastream ID="RELS-EXT" STATE="A" CONTROL_GROUP="X" VERSIONABLE="false">
+<foxml:datastreamVersion ID="RELS-EXT.0" LABEL="Fedora Object-to-Object Relationship Metadata" CREATED="2012-08-24T00:14:50.551Z" MIMETYPE="text/xml" SIZE="1697">
+<foxml:contentDigest TYPE="MD5" DIGEST="da8227f1a4d74d5a1b758bb47bf929aa"/>
+<foxml:xmlContent>
+<rdf:RDF xmlns:dcterms="http://purl.org/dc/terms/" xmlns:owl="http://www.w3.org/2002/07/owl#" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:ns5="http://cdr.unc.edu/definitions/1.0/base-model.xml#" xmlns:ns6="info:fedora/fedora-system:def/model#" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+                    <rdf:Description rdf:about="info:fedora/uuid:4f3929f9-5f1a-4af3-8019-77112b9893ba">
+                        <ns5:allowIndexing>yes</ns5:allowIndexing>
+                        <ns5:contains rdf:resource="info:fedora/uuid:9a7f19d7-5f1d-44f9-9c3d-3ff4f7dac42d"></ns5:contains>
+                        <ns5:contains rdf:resource="info:fedora/uuid:a4fa0296-1ce7-42a1-b74d-0222afd98194"></ns5:contains>
+                        <ns5:defaultWebObject rdf:resource="info:fedora/uuid:a4fa0296-1ce7-42a1-b74d-0222afd98194"></ns5:defaultWebObject>
+                        <ns5:originalDeposit rdf:resource="info:fedora/uuid:0289bb08-35db-46fb-9666-7be852e09ba8"></ns5:originalDeposit>
+                        <ns5:owner rdf:resource="info:fedora/uuid:ca7e3178-e603-4e71-b49b-21f15ddd3887"></ns5:owner>
+                        <ns5:slug>A_Comparison_of_Machine_Learning_Algorithms_for_C</ns5:slug>
+                        <ns6:hasModel rdf:resource="info:fedora/cdr-model:AggregateWork"></ns6:hasModel>
+                        <ns6:hasModel rdf:resource="info:fedora/cdr-model:Container"></ns6:hasModel>
+                        <ns6:hasModel rdf:resource="info:fedora/cdr-model:PreservedObject"></ns6:hasModel>
+                    </rdf:Description>
+                </rdf:RDF>
+</foxml:xmlContent>
+</foxml:datastreamVersion>
+</foxml:datastream>
+<foxml:datastream ID="MD_DESCRIPTIVE" STATE="A" CONTROL_GROUP="X" VERSIONABLE="true">
+<foxml:datastreamVersion ID="MD_DESCRIPTIVE.0" LABEL="Descriptive Metadata" CREATED="2012-08-24T00:14:50.552Z" MIMETYPE="text/xml" SIZE="7401">
+<foxml:contentDigest TYPE="MD5" DIGEST="6923f876f113e39989dd50babba01d49"/>
+<foxml:xmlContent>
+<mods:mods xmlns:rights="http://www.cdlib.org/inside/diglib/copyrightMD" xmlns:epdcx="http://purl.org/eprint/epdcx/2006-11-16/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xlink2="http://www.w3.org/1999/xlink" xmlns:mods="http://www.loc.gov/mods/v3">
+               <mods:titleInfo>
+                  <mods:title>A Comparison of Machine Learning Algorithms for Chemical Toxicity Classification Using a Simulated Multi-Scale Data Model</mods:title>
+               </mods:titleInfo>
+               <mods:abstract>Abstract
+            
+            
+               
+                  Background
+               
+               Bioactivity profiling using high-throughput in vitro assays can reduce the cost and time required for toxicological screening of environmental chemicals and can also reduce the need for animal testing. Several public efforts are aimed at discovering patterns or classifiers in high-dimensional bioactivity space that predict tissue, organ or whole animal toxicological endpoints. Supervised machine learning is a powerful approach to discover combinatorial relationships in complex in vitro/in vivo datasets. We present a novel model to simulate complex chemical-toxicology data sets and use this model to evaluate the relative performance of different machine learning (ML) methods.
+            
+            
+               
+                  Results
+               
+               The classification performance of Artificial Neural Networks (ANN), K-Nearest Neighbors (KNN), Linear Discriminant Analysis (LDA), Na&amp;#239;ve Bayes (NB), Recursive Partitioning and Regression Trees (RPART), and Support Vector Machines (SVM) in the presence and absence of filter-based feature selection was analyzed using K-way cross-validation testing and independent validation on simulated in vitro assay data sets with varying levels of model complexity, number of irrelevant features and measurement noise. While the prediction accuracy of all ML methods decreased as non-causal (irrelevant) features were added, some ML methods performed better than others. In the limit of using a large number of features, ANN and SVM were always in the top performing set of methods while RPART and KNN (k = 5) were always in the poorest performing set. The addition of measurement noise and irrelevant features decreased the classification accuracy of all ML methods, with LDA suffering the greatest performance degradation. LDA performance is especially sensitive to the use of feature selection. Filter-based feature selection generally improved performance, most strikingly for LDA.
+            
+            
+               
+                  Conclusion
+               
+               We have developed a novel simulation model to evaluate machine learning methods for the analysis of data sets in which in vitro bioassay data is being used to predict in vivo chemical toxicology. From our analysis, we can recommend that several ML methods, most notably SVM and ANN, are good candidates for use in real world applications in this area.</mods:abstract>
+               
+               
+               
+               
+               
+               <mods:language>
+                  <mods:languageTerm type="code" authority="iso639-2b">eng</mods:languageTerm>
+               </mods:language>
+               <mods:typeOfResource>text</mods:typeOfResource>
+               <mods:genre authorityURI="http://purl.org/eprint/type/" valueURI="http://purl.org/eprint/type/JournalArticle" type="work type">Journal Article</mods:genre>
+               <mods:originInfo>
+                  <mods:publisher>BioMed Central Ltd</mods:publisher>
+                  <mods:dateIssued>2008-05-19</mods:dateIssued>
+               </mods:originInfo>
+               <mods:genre authority="local">Peer Reviewed</mods:genre>
+               <mods:accessCondition>
+                  <rights:copyright copyright.status="copyrighted" publication.status="published">
+                     <rights:rights.holder>
+                        <rights:name>Richard Judson et al.; licensee BioMed Central Ltd.</rights:name>
+                     </rights:rights.holder>
+                  </rights:copyright>
+               </mods:accessCondition>
+               <mods:accessCondition type="use and reproduction" xlink2:href="http://creativecommons.org/licenses/by/2.0"></mods:accessCondition>
+               <mods:accessCondition type="restriction on access">Open Access</mods:accessCondition>
+               <mods:note type="citation/reference">BMC Bioinformatics. 2008 May 19;9(1):241</mods:note>
+               <mods:location>
+                  <mods:url>http://dx.doi.org/10.1186/1471-2105-9-241</mods:url>
+               </mods:location>
+            <mods:identifier type="pmpid" displayLabel="PMID">18489778</mods:identifier>
+                    <mods:identifier type="doi">10.1186/1471-2105-9-241</mods:identifier>
+                    <mods:name>
+                        <mods:namePart>Judson, Richard</mods:namePart>
+                        <mods:affiliation>National Center for Computational Toxicology</mods:affiliation>
+                        <mods:role><mods:roleTerm>creator</mods:roleTerm></mods:role>
+                    </mods:name>
+                    <mods:name>
+                        <mods:namePart>Elloumi, Fathi</mods:namePart>
+                        <mods:affiliation>National Center for Computational Toxicology</mods:affiliation>
+                    </mods:name>
+                    <mods:name>
+                        <mods:namePart>Setzer, R Woodrow</mods:namePart>
+                        <mods:affiliation>National Center for Computational Toxicology</mods:affiliation>
+                    </mods:name>
+                    <mods:name>
+                        <mods:namePart>Li, Zhen</mods:namePart>
+                        <mods:affiliation>Dept of Biostatistics University of North Carolina</mods:affiliation>
+                    </mods:name>
+                    <mods:name>
+                        <mods:namePart>Shah, Imran</mods:namePart>
+                        <mods:affiliation>National Center for Computational Toxicology</mods:affiliation>
+                    </mods:name>
+                    <mods:relatedItem type="otherFormat" displayLabel="Source">
+                        <mods:titleInfo>
+                            <mods:title>BMC Bioinformatics</mods:title>
+                        </mods:titleInfo>
+                        <mods:identifier type="issn">1471-2105</mods:identifier>
+                        <mods:originInfo>
+                            <mods:dateIssued>2008</mods:dateIssued>
+                        </mods:originInfo>
+                        <mods:part>
+                            <mods:detail type="volume">
+                                <mods:number>9</mods:number>
+                                <mods:caption>vol.</mods:caption>
+                            </mods:detail>
+                            <mods:detail type="issue">
+                                <mods:number>1</mods:number>
+                                <mods:caption>issue</mods:caption>
+                            </mods:detail>
+                        </mods:part>
+                        <mods:part>
+                            <mods:extent unit="page">
+                                <mods:start>241</mods:start>
+                            </mods:extent>
+                        </mods:part>
+                    </mods:relatedItem>
+                </mods:mods>
+</foxml:xmlContent>
+</foxml:datastreamVersion>
+<foxml:datastreamVersion ID="MD_DESCRIPTIVE.1" LABEL="Descriptive Metadata" CREATED="2012-09-26T18:38:22.666Z" MIMETYPE="text/xml" SIZE="6533">
+<foxml:contentDigest TYPE="MD5" DIGEST="84e583a9280840f9c18502bc115481cb"/>
+<foxml:xmlContent>
+<mods:mods xmlns:epdcx="http://purl.org/eprint/epdcx/2006-11-16/" xmlns:mods="http://www.loc.gov/mods/v3" xmlns:rights="http://www.cdlib.org/inside/diglib/copyrightMD" xmlns:xlink2="http://www.w3.org/1999/xlink" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <mods:titleInfo>
+    <mods:title>Title Changed</mods:title>
+  </mods:titleInfo>
+  <mods:abstract>Abstract
+            
+            
+               
+                  Background
+               
+               Bioactivity profiling using high-throughput in vitro assays can reduce the cost and time required for toxicological screening of environmental chemicals and can also reduce the need for animal testing. Several public efforts are aimed at discovering patterns or classifiers in high-dimensional bioactivity space that predict tissue, organ or whole animal toxicological endpoints. Supervised machine learning is a powerful approach to discover combinatorial relationships in complex in vitro/in vivo datasets. We present a novel model to simulate complex chemical-toxicology data sets and use this model to evaluate the relative performance of different machine learning (ML) methods.
+            
+            
+               
+                  Results
+               
+               The classification performance of Artificial Neural Networks (ANN), K-Nearest Neighbors (KNN), Linear Discriminant Analysis (LDA), Na&amp;#239;ve Bayes (NB), Recursive Partitioning and Regression Trees (RPART), and Support Vector Machines (SVM) in the presence and absence of filter-based feature selection was analyzed using K-way cross-validation testing and independent validation on simulated in vitro assay data sets with varying levels of model complexity, number of irrelevant features and measurement noise. While the prediction accuracy of all ML methods decreased as non-causal (irrelevant) features were added, some ML methods performed better than others. In the limit of using a large number of features, ANN and SVM were always in the top performing set of methods while RPART and KNN (k = 5) were always in the poorest performing set. The addition of measurement noise and irrelevant features decreased the classification accuracy of all ML methods, with LDA suffering the greatest performance degradation. LDA performance is especially sensitive to the use of feature selection. Filter-based feature selection generally improved performance, most strikingly for LDA.
+            
+            
+               
+                  Conclusion
+               
+               We have developed a novel simulation model to evaluate machine learning methods for the analysis of data sets in which in vitro bioassay data is being used to predict in vivo chemical toxicology. From our analysis, we can recommend that several ML methods, most notably SVM and ANN, are good candidates for use in real world applications in this area.</mods:abstract>
+  <mods:language>
+    <mods:languageTerm authority="iso639-2b" type="code">eng</mods:languageTerm>
+  </mods:language>
+  <mods:typeOfResource>text</mods:typeOfResource>
+  <mods:genre authorityURI="http://purl.org/eprint/type/" type="work type" valueURI="http://purl.org/eprint/type/JournalArticle">Journal Article</mods:genre>
+  <mods:originInfo>
+    <mods:publisher>BioMed Central Ltd</mods:publisher>
+    <mods:dateIssued>2008-05-19</mods:dateIssued>
+  </mods:originInfo>
+  <mods:genre authority="local">Peer Reviewed</mods:genre>
+  <mods:accessCondition>
+    <rights:copyright copyright.status="copyrighted" publication.status="published">
+      <rights:rights.holder>
+        <rights:name>Richard Judson et al.; licensee BioMed Central Ltd.</rights:name>
+      </rights:rights.holder>
+    </rights:copyright>
+  </mods:accessCondition>
+  <mods:accessCondition type="use and reproduction" xlink2:href="http://creativecommons.org/licenses/by/2.0"></mods:accessCondition>
+  <mods:accessCondition type="restriction on access">Open Access</mods:accessCondition>
+  <mods:note type="citation/reference">BMC Bioinformatics. 2008 May 19;9(1):241</mods:note>
+  <mods:location>
+    <mods:url>http://dx.doi.org/10.1186/1471-2105-9-241</mods:url>
+  </mods:location>
+  <mods:identifier displayLabel="PMID" type="pmpid">18489778</mods:identifier>
+  <mods:identifier type="doi">10.1186/1471-2105-9-241</mods:identifier>
+  <mods:name>
+    <mods:namePart>Judson, Richard</mods:namePart>
+    <mods:affiliation>National Center for Computational Toxicology, Office of Research and Development, U.S. Environmental Protection Agency, Research Triangle Park, North Carolina 27711, USA</mods:affiliation>
+    <mods:role><mods:roleTerm>creator</mods:roleTerm></mods:role>
+  </mods:name>
+  <mods:name>
+    <mods:namePart>Elloumi, Fathi</mods:namePart>
+    <mods:affiliation>National Center for Computational Toxicology, Office of Research and Development, U.S. Environmental Protection Agency, Research Triangle Park, North Carolina 27711, USA</mods:affiliation>
+  </mods:name>
+  <mods:name>
+    <mods:namePart>Setzer, R Woodrow</mods:namePart>
+    <mods:affiliation>National Center for Computational Toxicology, Office of Research and Development, U.S. Environmental Protection Agency, Research Triangle Park, North Carolina 27711, USA</mods:affiliation>
+  </mods:name>
+  <mods:name>
+    <mods:namePart>Li, Zhen</mods:namePart>
+    <mods:affiliation>Dept of Biostatistics University of North Carolina, Chapel Hill</mods:affiliation>
+  </mods:name>
+  <mods:name>
+    <mods:namePart>Shah, Imran</mods:namePart>
+    <mods:affiliation>National Center for Computational Toxicology, Office of Research and Development, U.S. Environmental Protection Agency, Research Triangle Park, North Carolina 27711, USA</mods:affiliation>
+    <mods:role><mods:roleTerm>director</mods:roleTerm></mods:role>
+  </mods:name>
+  <mods:relatedItem displayLabel="Source" type="otherFormat">
+    <mods:titleInfo>
+      <mods:title>BMC Bioinformatics</mods:title>
+    </mods:titleInfo>
+    <mods:identifier type="issn">1471-2105</mods:identifier>
+    <mods:originInfo>
+      <mods:dateIssued>2008</mods:dateIssued>
+    </mods:originInfo>
+    <mods:part>
+      <mods:detail type="volume">
+        <mods:number>9</mods:number>
+        <mods:caption>vol.</mods:caption>
+      </mods:detail>
+      <mods:detail type="issue">
+        <mods:number>1</mods:number>
+        <mods:caption>issue</mods:caption>
+      </mods:detail>
+    </mods:part>
+    <mods:part>
+      <mods:extent unit="page">
+        <mods:start>241</mods:start>
+      </mods:extent>
+    </mods:part>
+  </mods:relatedItem>
+  <mods:subject>
+      <mods:topic>Machine Learning</mods:topic>
+  </mods:subject>
+  <mods:subject>
+      <mods:name type="personal" authority="naf">
+            <mods:namePart>Woolf, Virginia</mods:namePart>
+            <mods:namePart type="date">1882-1941</mods:namePart>
+      </mods:name>
+  </mods:subject>
+</mods:mods>
+</foxml:xmlContent>
+</foxml:datastreamVersion>
+</foxml:datastream>
+<foxml:datastream ID="MD_CONTENTS" STATE="A" CONTROL_GROUP="X" VERSIONABLE="false">
+<foxml:datastreamVersion ID="MD_CONTENTS.0" LABEL="List of Contents" CREATED="2012-08-24T00:14:50.552Z" MIMETYPE="text/xml" SIZE="377">
+<foxml:contentDigest TYPE="MD5" DIGEST="cc7cd6feeaac61068ad970c60ff1c292"/>
+<foxml:xmlContent>
+<m:structMap xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:m="http://www.loc.gov/METS/">
+               <m:div TYPE="Container">
+                  <m:div ID="uuid:9a7f19d7-5f1d-44f9-9c3d-3ff4f7dac42d" ORDER="1"></m:div>
+                  <m:div ID="uuid:a4fa0296-1ce7-42a1-b74d-0222afd98194" ORDER="2"></m:div>
+               </m:div>
+            </m:structMap>
+</foxml:xmlContent>
+</foxml:datastreamVersion>
+</foxml:datastream>
+<foxml:datastream ID="DC" STATE="A" CONTROL_GROUP="X" VERSIONABLE="false">
+<foxml:datastreamVersion ID="DC1.0" LABEL="Internal XML Metadata" CREATED="2012-08-24T00:14:50.552Z" MIMETYPE="text/xml" SIZE="3961">
+<foxml:contentDigest TYPE="MD5" DIGEST="2c624759265ae2da7e446583b8f3e3ed"/>
+<foxml:xmlContent>
+<oai_dc:dc xmlns:oai_dc="http://www.openarchives.org/OAI/2.0/oai_dc/" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.openarchives.org/OAI/2.0/oai_dc/ http://www.openarchives.org/OAI/2.0/oai_dc.xsd">
+  <dc:title>A Comparison of Machine Learning Algorithms for Chemical Toxicity Classification Using a Simulated Multi-Scale Data Model</dc:title>
+  <dc:description>Abstract
+            
+            
+               
+                  Background
+               
+               Bioactivity profiling using high-throughput in vitro assays can reduce the cost and time required for toxicological screening of environmental chemicals and can also reduce the need for animal testing. Several public efforts are aimed at discovering patterns or classifiers in high-dimensional bioactivity space that predict tissue, organ or whole animal toxicological endpoints. Supervised machine learning is a powerful approach to discover combinatorial relationships in complex in vitro/in vivo datasets. We present a novel model to simulate complex chemical-toxicology data sets and use this model to evaluate the relative performance of different machine learning (ML) methods.
+            
+            
+               
+                  Results
+               
+               The classification performance of Artificial Neural Networks (ANN), K-Nearest Neighbors (KNN), Linear Discriminant Analysis (LDA), Na&amp;#239;ve Bayes (NB), Recursive Partitioning and Regression Trees (RPART), and Support Vector Machines (SVM) in the presence and absence of filter-based feature selection was analyzed using K-way cross-validation testing and independent validation on simulated in vitro assay data sets with varying levels of model complexity, number of irrelevant features and measurement noise. While the prediction accuracy of all ML methods decreased as non-causal (irrelevant) features were added, some ML methods performed better than others. In the limit of using a large number of features, ANN and SVM were always in the top performing set of methods while RPART and KNN (k = 5) were always in the poorest performing set. The addition of measurement noise and irrelevant features decreased the classification accuracy of all ML methods, with LDA suffering the greatest performance degradation. LDA performance is especially sensitive to the use of feature selection. Filter-based feature selection generally improved performance, most strikingly for LDA.
+            
+            
+               
+                  Conclusion
+               
+               We have developed a novel simulation model to evaluate machine learning methods for the analysis of data sets in which in vitro bioassay data is being used to predict in vivo chemical toxicology. From our analysis, we can recommend that several ML methods, most notably SVM and ANN, are good candidates for use in real world applications in this area.</dc:description>
+  <dc:description>BMC Bioinformatics. 2008 May 19;9(1):241</dc:description>
+  <dc:publisher>BioMed Central Ltd</dc:publisher>
+  <dc:contributor>Judson, Richard</dc:contributor>
+  <dc:contributor>Elloumi, Fathi</dc:contributor>
+  <dc:contributor>Setzer, R Woodrow</dc:contributor>
+  <dc:contributor>Li, Zhen</dc:contributor>
+  <dc:contributor>Shah, Imran</dc:contributor>
+  <dc:type>Text</dc:type>
+  <dc:type>Journal Article</dc:type>
+  <dc:type>Peer Reviewed</dc:type>
+  <dc:identifier>uuid:4f3929f9-5f1a-4af3-8019-77112b9893ba</dc:identifier>
+  <dc:identifier>http://dx.doi.org/10.1186/1471-2105-9-241</dc:identifier>
+  <dc:identifier>18489778</dc:identifier>
+  <dc:identifier>doi: 10.1186/1471-2105-9-241</dc:identifier>
+  <dc:language>eng</dc:language>
+  <dc:relation>BMC Bioinformatics--1471-2105</dc:relation>
+  <dc:rights>Richard Judson et al.; licensee BioMed Central Ltd.</dc:rights>
+  <dc:rights></dc:rights>
+  <dc:rights>Open Access</dc:rights>
+</oai_dc:dc>
+</foxml:xmlContent>
+</foxml:datastreamVersion>
+</foxml:datastream>
+<foxml:datastream ID="MD_EVENTS" STATE="A" CONTROL_GROUP="M" VERSIONABLE="false">
+<foxml:datastreamVersion ID="MD_EVENTS.0" LABEL="PREMIS Events Metadata" CREATED="2012-08-24T00:14:50.552Z" MIMETYPE="text/xml" SIZE="5328">
+<foxml:contentDigest TYPE="MD5" DIGEST="6bd1db4c76906f6e1cb206c82bb286d3"/>
+<foxml:contentLocation TYPE="INTERNAL_ID" REF="uuid:4f3929f9-5f1a-4af3-8019-77112b9893ba+MD_EVENTS+MD_EVENTS.0"/>
+</foxml:datastreamVersion>
+</foxml:datastream>
+</foxml:digitalObject>

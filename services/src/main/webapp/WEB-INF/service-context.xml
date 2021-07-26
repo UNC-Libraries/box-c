@@ -91,7 +91,7 @@
     </bean>
     
     <bean id="moveObjectsService"
-        class="edu.unc.lib.boxc.operations.move.MoveObjectsService">
+        class="edu.unc.lib.boxc.operations.impl.move.MoveObjectsService">
         <property name="aclService" ref="aclService" />
         <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
         <property name="transactionManager" ref="transactionManager" />
@@ -124,16 +124,14 @@
         <property name="jmsTemplate" ref="jmsTemplate" />
     </bean>
     
-    <bean id="schematronValidator" class="edu.unc.lib.boxc.operations.xml.SchematronValidator"
+    <bean id="schematronValidator" class="edu.unc.lib.boxc.operations.impl.validation.SchematronValidator"
        init-method="loadSchemas">
         <property name="schemas">
             <map>
-                <entry key="#{T(edu.unc.lib.boxc.deposit.impl.mets.METSProfile).CDR_SIMPLE.name}"
-                    value="classpath:edu/unc/lib/dl/schematron/simple_mets_profile.sch" />
                 <entry key="object-mods"
-                    value="classpath:edu/unc/lib/dl/schematron/object-mods.sch" />
+                    value="classpath:edu/unc/lib/boxc/operations/impl/validation/object-mods.sch" />
                 <entry key="vocabularies-mods"
-                    value="classpath:edu/unc/lib/dl/schematron/vocabularies-mods.sch" />
+                    value="classpath:edu/unc/lib/boxc/operations/impl/validation/vocabularies-mods.sch" />
             </map>
         </property>
     </bean>
@@ -142,7 +140,7 @@
         factory-method="createSchemaFactory" scope="prototype">
     </bean>
     
-    <bean id="modsValidator" class="edu.unc.lib.boxc.operations.xml.MODSValidator">
+    <bean id="modsValidator" class="edu.unc.lib.boxc.operations.impl.validation.MODSValidator">
         <property name="schematronValidator" ref="schematronValidator" />
         <property name="modsSchema">
             <bean class="javax.xml.validation.Schema" factory-bean="schemaFactory"
@@ -165,19 +163,6 @@
                 </constructor-arg>
             </bean>
         </property>
-    </bean>
-    
-    <util:map id="vocabHelperClassMap">
-        <entry key="Affiliation" value="edu.unc.lib.dl.xml.DepartmentOntologyUtil"/>
-        <entry key="JSONVocabulary" value="edu.unc.lib.dl.util.JSONVocabularyHelper"/>
-    </util:map>
-    
-    <bean id="vocabManager" class="edu.unc.lib.dl.util.VocabularyHelperManager">
-        <property name="helperClasses" ref="vocabHelperClassMap" />
-    </bean>
-    
-    <bean id="bulkMetadataQueueName" class="java.lang.String">
-        <constructor-arg value="#{T(edu.unc.lib.boxc.deposit.api.RedisWorkerConstants).BULK_UPDATE_QUEUE}"/>
     </bean>
     
     <bean id="dataDir" class="java.lang.String">
@@ -243,7 +228,7 @@
         <property name="premisLoggerFactory" ref="premisLoggerFactory" />
     </bean>
     
-    <bean id="editFilenameService" class="edu.unc.lib.boxc.operations.edit.EditFilenameService">
+    <bean id="editFilenameService" class="edu.unc.lib.boxc.operations.impl.edit.EditFilenameService">
         <property name="aclService" ref="aclService" />
         <property name="repositoryObjectFactory" ref="repositoryObjectFactory" />
         <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
@@ -252,7 +237,7 @@
         <property name="premisLoggerFactory" ref="premisLoggerFactory" />
     </bean>
 
-    <bean id="editTitleService" class="edu.unc.lib.boxc.operations.edit.EditTitleService">
+    <bean id="editTitleService" class="edu.unc.lib.boxc.operations.impl.edit.EditTitleService">
         <property name="aclService" ref="aclService" />
         <property name="repoObjLoader" ref="repositoryObjectLoader" />
         <property name="updateDescriptionService" ref="updateDescriptionService" />
@@ -282,7 +267,7 @@
         <property name="pubSubDomain" value="false" />
     </bean>
     
-    <bean id="solrIndexingMessageSender" class="edu.unc.lib.boxc.operations.jms.IndexingMessageSender" >
+    <bean id="solrIndexingMessageSender" class="edu.unc.lib.boxc.operations.jms.indexing.IndexingMessageSender" >
         <property name="jmsTemplate" ref="solrUpdateJmsTemplate" />
     </bean>
     
@@ -297,7 +282,7 @@
         <property name="pubSubDomain" value="false" />
     </bean>
     
-    <bean id="triplesIndexingMessageSender" class="edu.unc.lib.boxc.operations.jms.IndexingMessageSender" >
+    <bean id="triplesIndexingMessageSender" class="edu.unc.lib.boxc.operations.jms.indexing.IndexingMessageSender" >
         <property name="jmsTemplate" ref="triplesUpdateJmsTemplate" />
     </bean>
     
@@ -306,7 +291,7 @@
         <property name="indexingMessageSender" ref="triplesIndexingMessageSender" />
     </bean>
     
-    <bean id="markForDeletionService" class="edu.unc.lib.boxc.operations.delete.MarkForDeletionService">
+    <bean id="markForDeletionService" class="edu.unc.lib.boxc.operations.impl.delete.MarkForDeletionService">
         <property name="aclService" ref="aclService" />
         <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
         <property name="sparqlUpdateService" ref="fedoraSparqlUpdateService" />
@@ -320,14 +305,14 @@
       <property name="operationsMessageSender" ref="operationsMessageSender" />
   </bean>
   
-  <bean id="versionedDatastreamService" class="edu.unc.lib.boxc.operations.versioning.VersionedDatastreamService" >
+  <bean id="versionedDatastreamService" class="edu.unc.lib.boxc.operations.impl.versioning.VersionedDatastreamService" >
       <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
       <property name="repositoryObjectFactory" ref="repositoryObjectFactory" />
       <property name="binaryTransferService" ref="binaryTransferService" />
       <property name="transactionManager" ref="transactionManager" />
   </bean>
   
-  <bean id="updateDescriptionService" class="edu.unc.lib.boxc.operations.edit.UpdateDescriptionService" >
+  <bean id="updateDescriptionService" class="edu.unc.lib.boxc.operations.impl.edit.UpdateDescriptionService" >
       <property name="aclService" ref="aclService" />
       <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
       <property name="repositoryObjectFactory" ref="repositoryObjectFactory" />
@@ -363,7 +348,7 @@
       <property name="pubSubDomain" value="false" />
   </bean>
   
-  <bean id="xmlImportService" class="edu.unc.lib.boxc.operations.importxml.ImportXMLService"
+  <bean id="xmlImportService" class="edu.unc.lib.boxc.operations.impl.importxml.ImportXMLService"
         init-method="init">
       <property name="dataDir" ref="dataDir" />
       <property name="jmsTemplate" ref="importXmlJmsTemplate"/>
@@ -388,7 +373,7 @@
         <property name="derivativeService" ref="derivativeService" />
     </bean>
     
-    <bean id="staffRoleAssignmentService" class="edu.unc.lib.boxc.operations.acl.StaffRoleAssignmentService">
+    <bean id="staffRoleAssignmentService" class="edu.unc.lib.boxc.operations.impl.acl.StaffRoleAssignmentService">
         <property name="aclService" ref="aclService" />
         <property name="aclFactory" ref="uncachedInheritedAclFactory" />
         <property name="operationsMessageSender" ref="operationsMessageSender" />
@@ -404,11 +389,11 @@
         <property name="pubSubDomain" value="false" />
     </bean>
 
-    <bean id="patronAccessOperationSender" class="edu.unc.lib.boxc.operations.acl.PatronAccessOperationSender">
+    <bean id="patronAccessOperationSender" class="edu.unc.lib.boxc.operations.impl.acl.PatronAccessOperationSender">
         <property name="jmsTemplate" ref="patronAccessOperationTemplate"/>
     </bean>
     
-    <bean id="patronAccessAssignmentService" class="edu.unc.lib.boxc.operations.acl.PatronAccessAssignmentService">
+    <bean id="patronAccessAssignmentService" class="edu.unc.lib.boxc.operations.impl.acl.PatronAccessAssignmentService">
         <property name="aclService" ref="aclService" />
         <property name="operationsMessageSender" ref="operationsMessageSender" />
         <property name="repositoryObjectFactory" ref="repositoryObjectFactory" />

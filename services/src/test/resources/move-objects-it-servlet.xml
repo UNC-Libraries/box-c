@@ -32,11 +32,10 @@
 
     <context:component-scan resource-pattern="**/MoveObjectsController*" base-package="edu.unc.lib.dl.cdr.services.rest.modify"/>
     
-    <bean id="moveObjectsService" class="edu.unc.lib.boxc.operations.move.MoveObjectsService">
+    <bean id="moveObjectsService" class="edu.unc.lib.boxc.operations.impl.move.MoveObjectsService">
         <property name="aclService" ref="aclService" />
         <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
         <property name="operationsMessageSender" ref="operationsMessageSender" />
-        <property name="operationMetrics" ref="operationMetrics" />
         <property name="objectPathFactory" ref="objectPathFactory" />
         <property name="transactionManager" ref="transactionManager" />
     </bean>

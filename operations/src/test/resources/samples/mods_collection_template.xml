@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mods xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+ xsi:schemaLocation="http://www.loc.gov/mods/v3 http://www.loc.gov/standards/mods/v3/mods-3-3.xsd"
+ xmlns="http://www.loc.gov/mods/v3">
+    <titleInfo>
+        <title>TITLE OF COLLECTION HERE</title>
+    </titleInfo>
+
+    <!-- AUTHOR/CREATOR, use organization or personal -->
+    <name type="corporate">
+        <namePart>CREATING ORGANIZATION NAME HERE</namePart>
+        <role>
+            <roleTerm type="text">creator</roleTerm>
+        </role>
+    </name>
+    
+    <name type="personal">
+        <namePart>CREATING PERSON NAME HERE</namePart>
+        <role>
+            <roleTerm type="text">creator</roleTerm>
+        </role>
+    </name>
+
+    <!-- Date range within which items were originally created. -->
+    <originInfo>
+        <dateCreated keyDate="yes" encoding="iso8601">YYYY-MM-DD/YYYY-MM-DD</dateCreated>
+    </originInfo>
+
+    <language>
+        <languageTerm type="code" authority="iso639-2b">eng</languageTerm>
+    </language>
+
+    <!-- A collection summary -->
+    <abstract>COLLECTION ABSTRACT GOES HERE</abstract>
+
+    <!-- A short summary, approximately two lines of text or less (160 characters) -->
+    <note type="short description">A SHORT DESCRIPTION OF THE COLLECTION MATERIALS GOES HERE</note>
+
+    <!-- A list of keywords or topics for this collection. -->
+    <subject>
+        <topic>SUBJECT OF THE COLLECTION</topic>
+        <topic>ANOTHER SUBJECT OF THE COLLECTION</topic>
+    </subject>
+    
+</mods>

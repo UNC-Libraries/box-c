@@ -23,9 +23,6 @@ public class RedisWorkerConstants {
     public static final String DEPOSIT_PIPELINE_STATE = "deposit-pipeline-state";
     public static final String DEPOSIT_PIPELINE_ACTION = "deposit-pipeline-action";
     public static final String JOB_STATUS_PREFIX = "job-status:";
-    public static final String BULK_UPDATE_PREFIX = "bulk-update:";
-    public static final String BULK_RESUME_PREFIX = "bulk-resume:";
-    public static final String BULK_UPDATE_QUEUE = "bulk-md-update";
     public static final String JOB_COMPLETED_OBJECTS = "job-completed-objects:";
 
     public static final String RUN_ENHANCEMENT_TREE_QUEUE = "enhance-tree";

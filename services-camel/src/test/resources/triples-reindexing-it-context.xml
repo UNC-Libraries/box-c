@@ -50,7 +50,7 @@
         <property name="pubSubDomain" value="false" />
     </bean>
     
-    <bean id="triplesIndexingMessageSender" class="edu.unc.lib.boxc.operations.jms.IndexingMessageSender" >
+    <bean id="triplesIndexingMessageSender" class="edu.unc.lib.boxc.operations.jms.indexing.IndexingMessageSender" >
         <property name="jmsTemplate" ref="triplesUpdateJmsTemplate" />
     </bean>
     

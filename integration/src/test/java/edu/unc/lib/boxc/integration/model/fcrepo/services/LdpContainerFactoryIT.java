@@ -29,8 +29,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import edu.unc.lib.boxc.integration.fcrepo.AbstractFedoraIT;
 import edu.unc.lib.boxc.model.api.rdf.PcdmModels;
+import edu.unc.lib.boxc.model.api.rdf.RDFModelUtil;
 import edu.unc.lib.boxc.model.fcrepo.services.LdpContainerFactory;
-import edu.unc.lib.dl.util.RDFModelUtil;
 
 /**
  *

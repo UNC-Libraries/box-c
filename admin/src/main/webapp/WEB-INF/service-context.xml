@@ -164,11 +164,10 @@
     </bean>
     
     <util:map id="vocabHelperClassMap">
-        <entry key="Affiliation" value="edu.unc.lib.dl.xml.DepartmentOntologyUtil"/>
-        <entry key="JSONVocabulary" value="edu.unc.lib.dl.util.JSONVocabularyHelper"/>
+        <entry key="JSONVocabulary" value="edu.unc.lib.boxc.operations.impl.vocab.JSONVocabularyHelper"/>
     </util:map>
     
-    <bean id="vocabManager" class="edu.unc.lib.dl.util.VocabularyHelperManager">
+    <bean id="vocabManager" class="edu.unc.lib.boxc.operations.impl.vocab.VocabularyHelperManager">
         <property name="helperClasses" ref="vocabHelperClassMap" />
     </bean>
     

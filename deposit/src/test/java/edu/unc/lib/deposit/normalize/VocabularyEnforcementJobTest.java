@@ -49,8 +49,8 @@ import edu.unc.lib.boxc.common.xml.SecureXMLFactory;
 import edu.unc.lib.boxc.deposit.api.RedisWorkerConstants.DepositField;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
-import edu.unc.lib.dl.util.VocabularyHelperManager;
-import edu.unc.lib.dl.xml.VocabularyHelper;
+import edu.unc.lib.boxc.operations.api.vocab.VocabularyHelper;
+import edu.unc.lib.boxc.operations.impl.vocab.VocabularyHelperManager;
 
 /**
  * @author bbpennel

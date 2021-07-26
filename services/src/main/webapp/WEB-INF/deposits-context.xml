@@ -58,7 +58,7 @@
         <property name="jedisPool" ref="jedisPool" />
     </bean>
     
-    <bean id="depositSubmissionService" class="edu.unc.lib.boxc.deposit.services.DepositSubmissionService">
+    <bean id="depositSubmissionService" class="edu.unc.lib.boxc.deposit.impl.submit.DepositSubmissionService">
         <property name="aclService" ref="aclService" />
         <property name="packageHandlers" ref="packageHandlers" />
     </bean>

@@ -44,13 +44,6 @@
         <property name="storageLocationManager" ref="storageLocationManager" />
     </bean>
     
-    <bean id="premisLoggerFactory" class="edu.unc.lib.boxc.operations.impl.events.PremisLoggerFactoryImpl">
-        <property name="pidMinter" ref="repositoryPIDMinter" />
-        <property name="repoObjLoader" ref="repositoryObjectLoader" />
-        <property name="repoObjFactory" ref="repositoryObjectFactory" />
-        <property name="binaryTransferService" ref="binaryTransferService" />
-    </bean>
-    
     <bean id="repositoryPIDMinter" class="edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPIDMinter"></bean>
     
     <bean id="fedoraSparqlUpdateService" class="edu.unc.lib.dl.sparql.FedoraSparqlUpdateService">
@@ -94,79 +87,6 @@
     <bean id="transactionManager" class="edu.unc.lib.dl.fcrepo4.TransactionManager">
         <property name="client" ref="fcrepoClient" />
         <property name="binaryTransferService" ref="binaryTransferService" />
-    </bean>
-    
-    <bean id="jmsTemplate" class="org.mockito.Mockito" factory-method="mock">
-        <constructor-arg value="org.springframework.jms.core.JmsTemplate" />
-    </bean>
-    
-    <bean id="operationsMessageSender" class="edu.unc.lib.boxc.operations.jms.OperationsMessageSender">
-        <property name="jmsTemplate" ref="jmsTemplate" />
-    </bean>
-    
-    <bean id="indexingMessageSender" class="edu.unc.lib.boxc.operations.jms.IndexingMessageSender" >
-        <property name="jmsTemplate" ref="jmsTemplate" />
-    </bean>
-    
-    <bean id="schemaFactory" class="edu.unc.lib.boxc.common.xml.SecureXMLFactory"
-        factory-method="createSchemaFactory" scope="prototype">
-    </bean>
-    
-    <bean id="schematronValidator" class="edu.unc.lib.boxc.operations.xml.SchematronValidator"
-       init-method="loadSchemas">
-        <property name="schemas">
-            <map>
-                <entry key="#{T(edu.unc.lib.boxc.deposit.impl.mets.METSProfile).CDR_SIMPLE.name}"
-                    value="classpath:edu/unc/lib/dl/schematron/simple_mets_profile.sch" />
-                <entry key="object-mods"
-                    value="classpath:edu/unc/lib/dl/schematron/object-mods.sch" />
-                <entry key="vocabularies-mods"
-                    value="classpath:edu/unc/lib/dl/schematron/vocabularies-mods.sch" />
-            </map>
-        </property>
-    </bean>
-    
-    <bean id="modsValidator" class="edu.unc.lib.boxc.operations.xml.MODSValidator">
-        <property name="schematronValidator" ref="schematronValidator" />
-        <property name="modsSchema">
-            <bean class="javax.xml.validation.Schema" factory-bean="schemaFactory"
-                factory-method="newSchema">
-                <constructor-arg>
-                    <list value-type="javax.xml.transform.Source">
-                        <bean class="javax.xml.transform.stream.StreamSource">
-                            <constructor-arg type="java.io.InputStream"
-                                value="classpath:/schemas/xml.xsd" />
-                        </bean>
-                        <bean class="javax.xml.transform.stream.StreamSource">
-                            <constructor-arg type="java.io.InputStream"
-                                value="classpath:/schemas/xlink.xsd" />
-                        </bean>
-                        <bean class="javax.xml.transform.stream.StreamSource">
-                            <constructor-arg type="java.io.InputStream"
-                                value="classpath:/schemas/mods-3-7.xsd" />
-                        </bean>
-                    </list>
-                </constructor-arg>
-            </bean>
-        </property>
-    </bean>
-    
-    <bean id="sparqlUpdateService" class="edu.unc.lib.dl.sparql.FedoraSparqlUpdateService">
-        <property name="fcrepoClient" ref="fcrepoClient" />
-    </bean>
-    
-    <bean id="multipartResolver"
-        class="org.springframework.web.multipart.commons.CommonsMultipartResolver">
-        <property name="maxUploadSize" value="2000000000"/>
-    </bean>
-    
-    <bean id="bulkMetadataQueueName" class="java.lang.String">
-        <constructor-arg value="#{T(edu.unc.lib.boxc.deposit.api.RedisWorkerConstants).BULK_UPDATE_QUEUE}"/>
-    </bean>
-    
-    <bean id="destroyProxyService" class="edu.unc.lib.boxc.operations.destroy.DestroyProxyService" >
-        <property name="sparqlQueryService" ref="sparqlQueryService" />
-        <property name="fcrepoClient" ref="fcrepoClient" />
     </bean>
     
     <bean id="objectPathFactory" class="org.mockito.Mockito" factory-method="mock">

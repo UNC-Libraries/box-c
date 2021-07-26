@@ -28,9 +28,9 @@ import org.slf4j.LoggerFactory;
 
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
+import edu.unc.lib.boxc.operations.api.exceptions.MetadataValidationException;
 import edu.unc.lib.boxc.operations.impl.validation.MODSValidator;
 import edu.unc.lib.deposit.work.AbstractDepositJob;
-import edu.unc.lib.dl.validation.MetadataValidationException;
 
 /**
  * Asserts that all descriptions in the deposit comply with repository schema

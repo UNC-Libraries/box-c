@@ -44,9 +44,9 @@ import edu.unc.lib.boxc.deposit.api.RedisWorkerConstants.DepositField;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.rdf.Cdr;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
+import edu.unc.lib.boxc.operations.api.vocab.VocabularyHelper;
+import edu.unc.lib.boxc.operations.impl.vocab.VocabularyHelperManager;
 import edu.unc.lib.deposit.work.AbstractDepositJob;
-import edu.unc.lib.dl.util.VocabularyHelperManager;
-import edu.unc.lib.dl.xml.VocabularyHelper;
 
 /**
  * Examines the descriptive metadata for this ingest and determines if it is valid according to the given vocabularies.

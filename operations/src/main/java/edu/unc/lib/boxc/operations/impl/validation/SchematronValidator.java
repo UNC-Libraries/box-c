@@ -130,7 +130,7 @@ public class SchematronValidator {
         // Load up a transformer and the ISO Schematron to XSL templates.
         Templates isoSVRLTemplates = null;
         ClassPathResource svrlRes = new ClassPathResource(
-                "/edu/unc/lib/dl/schematron/iso_svrl.xsl",
+                "/edu/unc/lib/boxc/operations/impl/validation/iso_svrl.xsl",
                 SchematronValidator.class);
         Source svrlrc;
         try {

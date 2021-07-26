@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mods xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.loc.gov/mods/v3 http://www.loc.gov/standards/mods/v3/mods-3-3.xsd" xmlns="http://www.loc.gov/mods/v3">
+    
+    <titleInfo>
+        <title>Example to Demonstrate MODS Name Variations</title>
+    </titleInfo>
+
+    <name type="personal">
+        <namePart>Dr. J. G. de Roulhac Hamilton</namePart>
+        <displayForm>Dr. J. G. de Roulhac Hamilton</displayForm>
+        <role>
+            <roleTerm type="text">creator</roleTerm>
+        </role>
+    </name>
+    
+    <name type="personal">
+        <namePart>Dr. P. D. de Jonge</namePart>
+        <role>
+            <roleTerm type="text">creator</roleTerm>
+        </role>
+    </name>
+    
+    <name type="personal">
+        <namePart type="given">Sarah Graham</namePart>
+        <namePart type="family">Kenan</namePart>
+        <displayForm>Sarah Kenan</displayForm>
+        <role>
+            <roleTerm type="text">funder</roleTerm>
+        </role>
+    </name>
+    
+    <name type="personal" >
+        <namePart type="given">Larry Truman</namePart>
+        <namePart type="family">Munson</namePart>
+        <namePart type="date">1933-1986</namePart>
+        <role>
+            <roleTerm type="text">funder</roleTerm>
+        </role>
+    </name>
+    
+    <name type="corporate">
+        <namePart>The Mellon Foundation</namePart>
+        <role>
+            <roleTerm type="text">funder</roleTerm>
+        </role>
+    </name>
+    
+    <originInfo>
+        <dateCreated keyDate="yes" encoding="iso8601">19300114</dateCreated>
+    </originInfo>
+
+    <language>
+        <languageTerm type="code" authority="iso639-2b">eng</languageTerm>
+    </language>
+
+    <abstract>Long at the center of inquiry into the history and culture of the American South, the
+        Southern Historical Collection (SHC) is a vast collection of distinct archival collections.
+        These collections are comprised of unique primary documents, such as diaries, journals,
+        letters, correspondence, photographs, maps, drawings, ledgers, oral histories, moving
+        images, albums, scrapbooks, and literary manuscripts.</abstract>
+
+    <subject>
+        <topic>Southern United States -- History</topic>
+    </subject>
+</mods>

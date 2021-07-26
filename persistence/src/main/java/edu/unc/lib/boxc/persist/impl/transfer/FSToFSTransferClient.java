@@ -37,6 +37,7 @@ import org.slf4j.LoggerFactory;
 
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.persist.api.DigestAlgorithm;
+import edu.unc.lib.boxc.persist.api.exceptions.UnsupportedAlgorithmException;
 import edu.unc.lib.boxc.persist.api.sources.IngestSource;
 import edu.unc.lib.boxc.persist.api.storage.BinaryDetails;
 import edu.unc.lib.boxc.persist.api.storage.StorageLocation;
@@ -44,7 +45,6 @@ import edu.unc.lib.boxc.persist.api.transfer.BinaryAlreadyExistsException;
 import edu.unc.lib.boxc.persist.api.transfer.BinaryTransferClient;
 import edu.unc.lib.boxc.persist.api.transfer.BinaryTransferException;
 import edu.unc.lib.boxc.persist.api.transfer.BinaryTransferOutcome;
-import edu.unc.lib.dl.exceptions.UnsupportedAlgorithmException;
 
 /**
  * Client for transferring files from a filesystem ingest source to a filesystem

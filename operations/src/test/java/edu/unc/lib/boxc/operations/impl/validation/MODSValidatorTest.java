@@ -42,7 +42,7 @@ import org.junit.rules.ExpectedException;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
 
-import edu.unc.lib.dl.validation.MetadataValidationException;
+import edu.unc.lib.boxc.operations.api.exceptions.MetadataValidationException;
 
 /**
  *
@@ -63,8 +63,8 @@ public class MODSValidatorTest {
     @Before
     public void init() throws Exception {
         Map<String, Resource> schemas = new HashMap<>();
-        schemas.put("object-mods", new ClassPathResource("edu/unc/lib/dl/schematron/object-mods.sch"));
-        schemas.put("vocabularies-mods", new ClassPathResource("edu/unc/lib/dl/schematron/vocabularies-mods.sch"));
+        schemas.put("object-mods", new ClassPathResource("edu/unc/lib/boxc/operations/impl/validation/object-mods.sch"));
+        schemas.put("vocabularies-mods", new ClassPathResource("edu/unc/lib/boxc/operations/impl/validation/vocabularies-mods.sch"));
 
         schematronValidator = new SchematronValidator();
         schematronValidator.setSchemas(schemas);

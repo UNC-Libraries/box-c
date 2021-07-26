@@ -15,7 +15,7 @@
  */
 package edu.unc.lib.boxc.model.fcrepo.services;
 
-import static edu.unc.lib.dl.util.RDFModelUtil.TURTLE_MIMETYPE;
+import static edu.unc.lib.boxc.model.api.rdf.RDFModelUtil.TURTLE_MIMETYPE;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.slf4j.LoggerFactory.getLogger;
 

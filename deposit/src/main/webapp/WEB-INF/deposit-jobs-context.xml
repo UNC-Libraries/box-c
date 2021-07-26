@@ -54,16 +54,16 @@
         <property name="binaryTransferService" ref="binaryTransferService" />
     </bean>
     
-    <bean class="edu.unc.lib.boxc.operations.xml.SchematronValidator" name="schematronValidator"
+    <bean class="edu.unc.lib.boxc.operations.impl.validation.SchematronValidator" name="schematronValidator"
         init-method="loadSchemas">
         <property name="schemas">
             <map>
                 <entry key="#{T(edu.unc.lib.boxc.deposit.impl.mets.METSProfile).CDR_SIMPLE.name}"
-                    value="classpath:edu/unc/lib/dl/schematron/simple_mets_profile.sch" />
+                    value="classpath:edu/unc/lib/boxc/operations/impl/validation/simple_mets_profile.sch" />
                 <entry key="object-mods"
-                    value="classpath:edu/unc/lib/dl/schematron/object-mods.sch" />
+                    value="classpath:edu/unc/lib/boxc/operations/impl/validation/object-mods.sch" />
                 <entry key="vocabularies-mods"
-                    value="classpath:edu/unc/lib/dl/schematron/vocabularies-mods.sch" />
+                    value="classpath:edu/unc/lib/boxc/operations/impl/validation/vocabularies-mods.sch" />
             </map>
         </property>
     </bean>
@@ -72,7 +72,7 @@
         factory-method="createSchemaFactory" scope="prototype">
     </bean>
 
-    <bean id="modsValidator" class="edu.unc.lib.boxc.operations.xml.MODSValidator">
+    <bean id="modsValidator" class="edu.unc.lib.boxc.operations.impl.validation.MODSValidator">
         <property name="schematronValidator" ref="schematronValidator" />
         <property name="modsSchema">
             <bean class="javax.xml.validation.Schema" factory-bean="schemaFactory"
@@ -97,14 +97,14 @@
         </property>
     </bean>
     
-    <bean id="versionedDatastreamService" class="edu.unc.lib.boxc.operations.versioning.VersionedDatastreamService" >
+    <bean id="versionedDatastreamService" class="edu.unc.lib.boxc.operations.impl.versioning.VersionedDatastreamService" >
         <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
         <property name="repositoryObjectFactory" ref="repositoryObjectFactory" />
         <property name="binaryTransferService" ref="binaryTransferService" />
         <property name="transactionManager" ref="transactionManager" />
     </bean>
     
-    <bean id="updateDescriptionService" class="edu.unc.lib.boxc.operations.edit.UpdateDescriptionService" >
+    <bean id="updateDescriptionService" class="edu.unc.lib.boxc.operations.impl.edit.UpdateDescriptionService" >
         <property name="aclService" ref="aclService" />
         <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
         <property name="repositoryObjectFactory" ref="repositoryObjectFactory" />

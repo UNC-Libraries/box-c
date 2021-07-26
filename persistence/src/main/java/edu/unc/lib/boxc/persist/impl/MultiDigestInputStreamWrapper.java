@@ -31,8 +31,8 @@ import org.slf4j.LoggerFactory;
 
 import edu.unc.lib.boxc.model.api.exceptions.RepositoryException;
 import edu.unc.lib.boxc.persist.api.DigestAlgorithm;
-import edu.unc.lib.dl.exceptions.InvalidChecksumException;
-import edu.unc.lib.dl.exceptions.UnsupportedAlgorithmException;
+import edu.unc.lib.boxc.persist.api.exceptions.InvalidChecksumException;
+import edu.unc.lib.boxc.persist.api.exceptions.UnsupportedAlgorithmException;
 
 /**
  * Wrapper for an InputStream that allows for the computation and evaluation

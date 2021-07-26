@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rdf:RDF xmlns:skos="http://www.w3.org/2004/02/skos/core#" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+  <skos:Concept rdf:about="College of Arts and Sciences">
+    <skos:hiddenLabel>Arts and Sciences</skos:hiddenLabel>
+    <skos:narrower rdf:resource="Center for European Studies"/>
+    <skos:narrower rdf:resource="Curriculum in Archaeology"/>
+    <skos:narrower rdf:resource="Department of History"/>
+    <skos:narrower rdf:resource="Department of Military Science"/>
+    <skos:narrower rdf:resource="Department of Music"/>
+    <skos:narrower rdf:resource="Department of American Studies"/>
+    <skos:narrower rdf:resource="Department of Nested Studies"/>
+  </skos:Concept>
+  <skos:Concept rdf:about="Department of Nested Studies">
+    <skos:broader rdf:resource="College of Arts and Sciences"/>
+    <skos:narrower rdf:resource="Department of Deeply Nested Studies"/>
+  </skos:Concept>
+  <skos:Concept rdf:about="Department of Deeply Nested Studies">
+    <skos:broader rdf:resource="Department of Nested Studies"/>
+    <skos:broader rdf:resource="College of Arts and Sciences"/>
+  </skos:Concept>
+  <skos:Concept rdf:about="Department of American Studies">
+    <skos:hiddenLabel>American Studies</skos:hiddenLabel>
+    <skos:broader rdf:resource="College of Arts and Sciences"/>
+    <skos:narrower rdf:resource="Folklore Program"/>
+  </skos:Concept>
+  <skos:Concept rdf:about="Folklore Program">
+    <skos:hiddenLabel>Folklore</skos:hiddenLabel>
+    <skos:broader rdf:resource="Department of American Studies"/>
+  </skos:Concept>
+  <skos:Concept rdf:about="Center for Studies of Europe">
+    <skos:hiddenLabel>Studies of Europe</skos:hiddenLabel>
+  </skos:Concept>
+  <skos:Concept rdf:about="Curriculumn in Studies of Europe"/>
+  <skos:Concept rdf:about="Center for European Studies">
+    <skos:hiddenLabel>European Studies</skos:hiddenLabel>
+    <skos:broader rdf:resource="College of Arts and Sciences"/>
+    <skos:altLabel>Center for Studies of Europe</skos:altLabel>
+  </skos:Concept>
+  <skos:Concept rdf:about="School of Studies of Europe">
+    <skos:hiddenLabel>Studies of Europe</skos:hiddenLabel>
+  </skos:Concept>
+  <skos:Concept rdf:about="Curriculum in Archaeology">
+    <skos:hiddenLabel>Archaeology</skos:hiddenLabel>
+    <skos:broader rdf:resource="College of Arts and Sciences"/>
+  </skos:Concept>
+  <skos:Concept rdf:about="Department of History">
+    <skos:hiddenLabel>History</skos:hiddenLabel>
+    <skos:broader rdf:resource="College of Arts and Sciences"/>
+  </skos:Concept>
+  <skos:Concept rdf:about="Department of Music">
+    <skos:hiddenLabel>Music</skos:hiddenLabel>
+    <skos:broader rdf:resource="College of Arts and Sciences"/>
+  </skos:Concept>
+  <skos:Concept rdf:about="Department of Military Science">
+    <skos:hiddenLabel>Military Science</skos:hiddenLabel>
+    <skos:broader rdf:resource="College of Arts and Sciences"/>
+  </skos:Concept>
+  <skos:Concept rdf:about="Gillings School of Global Public Health">
+    <skos:altLabel>School of Public Health</skos:altLabel>
+    <skos:narrower rdf:resource="Department of Nutrition"/>
+  </skos:Concept>
+  <skos:Concept rdf:about="School of Public Health">
+    <skos:hiddenLabel>Public Health</skos:hiddenLabel>
+    <skos:prefLabel>Gillings School of Global Public Health</skos:prefLabel>
+  </skos:Concept>
+  <skos:Concept rdf:about="Kenan-Flagler Business School">
+    <skos:altLabel>School of Business</skos:altLabel>
+    <skos:altLabel>Business Administration</skos:altLabel>
+  </skos:Concept>
+  <skos:Concept rdf:about="Department of Nutrition">
+    <skos:hiddenLabel>Nutrition</skos:hiddenLabel>
+    <skos:broader rdf:resource="Gillings School of Global Public Health"/>
+  </skos:Concept>
+  <skos:Concept rdf:about="Department of Biomedical Engineering">
+    <skos:hiddenLabel>Biomedical Engineering</skos:hiddenLabel>
+    <skos:prefLabel>Joint Department of Biomedical Engineering</skos:prefLabel>
+  </skos:Concept>
+  <skos:Concept rdf:about="Joint Department of Biomedical Engineering">
+    <skos:altLabel>Department of Biomedical Engineering</skos:altLabel>
+    <skos:broader rdf:resource="College of Arts and Sciences"/>
+    <skos:broader rdf:resource="North Carolina State University"/>
+  </skos:Concept>
+</rdf:RDF>

@@ -1,0 +1,315 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?oxygen SCHSchema="../../resources/schematron/simple_model.sch"?>
+<METS:mets xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+    xsi:schemaLocation="
+ http://www.loc.gov/METS/ http://www.loc.gov/standards/mets/mets.xsd
+ http://www.loc.gov/mods/v3 http://www.loc.gov/standards/mods/v3/mods-3-3.xsd
+ info:lc/xmlns/premis-v2 http://www.loc.gov/standards/premis/draft-schemas-2-0/premis-v2-0.xsd
+ http://www.w3.org/1999/xlink http://www.loc.gov/standards/xlink/xlink.xsd"
+    xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:METS="http://www.loc.gov/METS/"
+    PROFILE="http://cdr.unc.edu/METS/profiles/Simple" >
+
+    <METS:metsHdr>
+        <METS:agent ROLE="EDITOR">
+            <METS:name>Greg Jansen</METS:name>
+        </METS:agent>
+    </METS:metsHdr>
+
+    <METS:dmdSec ID="SlidesMODS">
+        <METS:mdWrap MDTYPE="MODS">
+            <METS:xmlData>
+                <mods xmlns="http://www.loc.gov/mods/v3">
+                    <titleInfo>
+                        <title>Digital Curation and Digital Preservation: An Introduction
+                            (Presentation Slides)</title>
+                    </titleInfo>
+                    <genre>presentation slides</genre>
+                    <name type="personal">
+                        <affiliation>School of Information and Library Science, UNC Chapel Hill</affiliation>
+                        <namePart>Hank, Carolyn</namePart>
+                        <role>
+                            <roleTerm>creator</roleTerm>
+                        </role>
+                    </name>
+                    <name type="personal">
+                        <affiliation>School of Information and Library Science, UNC Chapel Hill</affiliation>
+                        <namePart>Tibbo, Helen</namePart>
+                        <role>
+                            <roleTerm>creator</roleTerm>
+                        </role>
+                    </name>
+                    <originInfo>
+                        <dateIssued keyDate="yes" encoding="iso8601">20070619</dateIssued>
+                        <dateCreated encoding="iso8601">20070510</dateCreated>
+                        <place>
+                            <placeTerm authority="marcgac" type="text">e-gr</placeTerm>
+                        </place>
+                    </originInfo>
+                    <language>
+                        <languageTerm authority="iso639-2b">eng</languageTerm>
+                    </language>
+                    <physicalDescription>
+                        <digitalOrigin>born digital</digitalOrigin>
+                        <internetMediaType>application/vnd.ms-powerpoint</internetMediaType>
+                    </physicalDescription>
+                    <abstract>Slides from a half-day tutorial on digital curation and digital
+                        preservation given June 19, 2007 at the ACM IEEE Joint Conference on Digital
+                        Libraries (JCDL), held June 18-23, 2007, Vancouver, BC, Canada.</abstract>
+                    <subject ID="owofjwe">
+                        <topic>Digital Curation</topic>
+                    </subject>
+                    <extension>
+                        <rdf:RDF>
+                            <rdf:Description rdf:about="#owofjwe">
+                                <das:rank xmlns:das="foo">4</das:rank>
+                            </rdf:Description>
+                        </rdf:RDF>
+                    </extension>
+                    <subject>
+                        <topic>Digital Preservation</topic>
+                    </subject>
+                    <!-- the following might be added during ingest
+                        <identifier type="URI" displayLabel="Unique Identifier">f23jkkhj23q23h23u34</identifier>
+                        <identifier type="URL" displayLabel="Persistent/Citation URL">http://ir.unc.edu/f23jkkhj23q23h23u34</identifier> -->
+                </mods>
+            </METS:xmlData>
+        </METS:mdWrap>
+    </METS:dmdSec>
+
+    <METS:dmdSec ID="OverviewMODS">
+        <METS:mdWrap MDTYPE="MODS">
+            <METS:xmlData>
+                <mods xmlns="http://www.loc.gov/mods/v3">
+                    <titleInfo>
+                        <title>Digital Curation and Digital Preservation: An Introduction (Overview
+                            Document)</title>
+                    </titleInfo>
+                    <genre>overview document</genre>
+                    <name type="personal">
+                        <affiliation>School of Information and Library Science, UNC Chapel Hill</affiliation>
+                        <namePart>Hank, Carolyn</namePart>
+                        <role>
+                            <roleTerm>creator</roleTerm>
+                        </role>
+                    </name>
+                    <name type="personal">
+                        <affiliation>School of Information and Library Science, UNC Chapel Hill</affiliation>
+                        <namePart>Tibbo, Helen</namePart>
+                        <role>
+                            <roleTerm>creator</roleTerm>
+                        </role>
+                    </name>
+                    <originInfo>
+                        <dateIssued keyDate="yes" encoding="iso8601">20070619</dateIssued>
+                        <dateCreated encoding="iso8601">20070510</dateCreated>
+                        <place>
+                            <placeTerm authority="marcgac" type="text">e-gr</placeTerm>
+                        </place>
+                    </originInfo>
+                    <language>
+                        <languageTerm authority="iso639-2b">eng</languageTerm>
+                    </language>
+                    <physicalDescription>
+                        <digitalOrigin>born digital</digitalOrigin>
+                        <internetMediaType>application/vnd.ms-word</internetMediaType>
+                    </physicalDescription>
+                    <abstract>An overview, including agenda, objectives, and bibliography, from a
+                        half-day tutorial on digital curation and digital preservation given June
+                        19, 2007 at the ACM IEEE Joint Conference on Digital Libraries (JCDL), held
+                        June 18-23, 2007, Vancouver, BC, Canada.</abstract>
+                    <subject>
+                        <topic>Digital Curation</topic>
+                    </subject>
+                    <subject>
+                        <topic>Digital Preservation</topic>
+                    </subject>
+                    <!-- the following might be added during ingest
+                        <identifier type="URI" displayLabel="Unique Identifier">f23jkkhj23q23h23u34</identifier>
+                        <identifier type="URL" displayLabel="Persistent/Citation URL">http://ir.unc.edu/f23jkkhj23q23h23u34</identifier> -->
+                </mods>
+            </METS:xmlData>
+        </METS:mdWrap>
+    </METS:dmdSec>
+
+    <METS:dmdSec ID="CollectionMODS">
+        <METS:mdWrap MDTYPE="MODS">
+            <METS:xmlData>
+                <mods xmlns="http://www.loc.gov/mods/v3">
+                    <titleInfo>
+                        <title>Works of Carolyn Hank</title>
+                    </titleInfo>
+                    <genre>scholar collection</genre>
+                    <name type="personal">
+                        <affiliation>School of Information and Library Science, UNC Chapel Hill</affiliation>
+                        <affiliation>Carolina Digital Library and Archives, UNC Chapel Hill</affiliation>
+                        <namePart>Hank, Carolyn</namePart>
+                        <role>
+                            <roleTerm>contributor</roleTerm>
+                        </role>
+                    </name>
+                </mods>
+            </METS:xmlData>
+        </METS:mdWrap>
+    </METS:dmdSec>
+
+    <METS:amdSec ID="CollectionAMD">
+        <METS:digiprovMD ID="CollectionDPMD">
+            <METS:mdWrap MDTYPE="PREMIS">
+                <METS:xmlData>
+                    <premis xmlns="info:lc/xmlns/premis-v2" version="2.0">
+                        <object xsi:type="representation">
+                            <objectIdentifier>
+                                <objectIdentifierType/>
+                                <objectIdentifierValue/>
+                            </objectIdentifier>
+                            <!-- This relationship element will be used to nest SIPs within containers -->
+                            <!-- Collections do not require nesting -->
+<!--                            <relationship>
+                                <relationshipType>info:fedora/fedora-system:def/relations-external#isPartOf</relationshipType>
+                                <relationshipSubType>info:fedora/fedora-system:def/relations-external#isMemberOfCollection</relationshipSubType>
+                                <relatedObjectIdentification>
+                                    <relatedObjectIdentifierType>HANDLE</relatedObjectIdentifierType>
+                                    <relatedObjectIdentifierValue>http://lkjaljksda.edu/90209818.0912089123</relatedObjectIdentifierValue>
+                                </relatedObjectIdentification>
+                            </relationship>-->
+                            <!--<preservationLevel>
+                                <preservationLevelValue></preservationLevelValue>
+                            </preservationLevel>-->
+                        </object>
+                        <rights>
+                            <rightsStatement>
+                                <rightsStatementIdentifier>
+                                    <rightsStatementIdentifierType/>
+                                    <rightsStatementIdentifierValue/>
+                                </rightsStatementIdentifier>
+                                <rightsBasis/>
+                            </rightsStatement>
+                        </rights>
+                        
+                    </premis>
+                </METS:xmlData>
+            </METS:mdWrap>
+        </METS:digiprovMD>
+    </METS:amdSec>
+
+    <METS:amdSec ID="SlidesAMD">
+        <METS:digiprovMD ID="SlidesDPMD">
+            <METS:mdWrap MDTYPE="PREMIS">
+                <METS:xmlData>
+                    <premis xmlns="info:lc/xmlns/premis-v2" version="2.0">
+                        <object xsi:type="representation">
+                            <objectIdentifier>
+                                <objectIdentifierType/>
+                                <objectIdentifierValue/>
+                            </objectIdentifier>
+                        </object>
+                        <rights>
+                            <rightsStatement>
+                                <rightsStatementIdentifier>
+                                    <rightsStatementIdentifierType/>
+                                    <rightsStatementIdentifierValue/>
+                                </rightsStatementIdentifier>
+                                <rightsBasis/>
+                            </rightsStatement>
+                        </rights>
+                    </premis>
+                </METS:xmlData>
+            </METS:mdWrap>
+        </METS:digiprovMD>
+    </METS:amdSec>
+
+    <METS:amdSec ID="OverviewAMD">
+        <METS:digiprovMD ID="OverviewDPMD">
+            <METS:mdWrap MDTYPE="PREMIS">
+                <METS:xmlData>
+                    <premis xmlns="info:lc/xmlns/premis-v2" version="2.0">
+                        <object xsi:type="representation">
+                            <objectIdentifier>
+                                <objectIdentifierType/>
+                                <objectIdentifierValue/>
+                            </objectIdentifier>
+                        </object>
+                        <rights>
+                            <rightsStatement>
+                                <rightsStatementIdentifier>
+                                    <rightsStatementIdentifierType/>
+                                    <rightsStatementIdentifierValue/>
+                                </rightsStatementIdentifier>
+                                <rightsBasis/>
+                            </rightsStatement>
+                        </rights>
+                    </premis>
+                </METS:xmlData>
+            </METS:mdWrap>
+        </METS:digiprovMD>
+    </METS:amdSec>
+
+    <METS:fileSec>
+        <METS:fileGrp>
+            <METS:file USE="MASTER" ID="PPT" MIMETYPE="application/vnd.ms-powerpoint">
+                <METS:FLocat LOCTYPE="URL" xlink:href="file:///slides_tutorial10_final.ppt"/>
+            </METS:file>
+        </METS:fileGrp>
+        <METS:fileGrp USE="SERVICE">
+            <METS:file ID="PPTPDF" MIMETYPE="application/pdf">
+                <METS:FLocat LOCTYPE="URL" xlink:href="file:///tutorial10_slides_19june2007.pdf"/>
+            </METS:file>
+        </METS:fileGrp>
+        <METS:fileGrp USE="INDEX_TEXT">
+            <METS:file ID="PPTTXT" MIMETYPE="text/plain">
+                <METS:FLocat LOCTYPE="URL" xlink:href="file:///slides.txt"/>
+            </METS:file>
+        </METS:fileGrp>
+        <METS:fileGrp USE="MASTER">
+            <METS:file ID="DOC" MIMETYPE="application/vnd.ms-word">
+                <METS:FLocat LOCTYPE="URL" xlink:href="file:///outline_june18_5pm_CH.doc"/>
+            </METS:file>
+        </METS:fileGrp>
+        <METS:fileGrp USE="MASTER">
+            <METS:file ID="DOCPDF" MIMETYPE="application/pdf">
+                <METS:FLocat LOCTYPE="URL" xlink:href="file:///tutorial10_overview_19june2007.pdf"/>
+            </METS:file>
+        </METS:fileGrp>
+        <METS:fileGrp USE="INDEX_TEXT">
+            <METS:file ID="DOCTXT" MIMETYPE="text/xml">
+                <METS:FLocat LOCTYPE="URL" xlink:href="file:///overview.txt"/>
+            </METS:file>
+        </METS:fileGrp>
+        <METS:fileGrp USE="SURROGATE">
+            <METS:file ID="THUMB1" MIMETYPE="image/gif">
+                <METS:FLocat LOCTYPE="URL" xlink:href="file:///hank_carolyn.png"/>
+            </METS:file>
+        </METS:fileGrp>
+    </METS:fileSec>
+
+    <METS:structMap>
+        <METS:div ID="carolyn" TYPE="Collection"
+            DMDID="CollectionMODS" ADMID="CollectionAMD">
+            <METS:fptr FILEID="THUMB1"/>
+            <METS:div ID="jcdl2007" LABEL="Digital Curation Tutorial (JCDL 2007)" TYPE="Folder">
+                <METS:div ID="slides" TYPE="Simple"
+                    DMDID="SlidesMODS">
+                    <METS:fptr FILEID="PPT"/>
+                    <METS:fptr FILEID="PPTPDF"/>
+                    <METS:fptr FILEID="PPTTXT"/>
+                </METS:div>
+                <METS:div ID="overview" TYPE="Simple Item"
+                    ADMID="OverviewAMD">
+                    <METS:fptr FILEID="DOC"/>
+                    <METS:fptr FILEID="DOCPDF"/>
+                    <METS:fptr FILEID="DOCTXT"/>
+                </METS:div>
+            </METS:div>
+        </METS:div>
+    </METS:structMap>
+    
+    <METS:structLink>
+        <METS:smLink xlink:to="#overview" xlink:from="#carolyn"/>
+        <METS:smLink xlink:from="#carolyn" xlink:to="#foonotexists"/>
+        <METS:smLink xlink:to="#overview" xlink:from="#carolyn" xlink:arcrole="http://example.com/unknownURI#bad"/>
+        <METS:smLink xlink:to="#overview" xlink:from="#lasjdkf" xlink:arcrole="http://cdr.unc.edu/definitions/1.0/base-model.xml#refersTo"/>
+        <METS:smLink xlink:to="#overview" xlink:from="#carolyn" xlink:arcrole="http://cdr.unc.edu/definitions/1.0/base-model.xml#refersTo"/>
+    </METS:structLink>
+    
+</METS:mets>

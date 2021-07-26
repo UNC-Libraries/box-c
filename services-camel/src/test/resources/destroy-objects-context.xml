@@ -55,7 +55,7 @@
     </bean>
     
     <bean id="indexingMessageSender" class="org.mockito.Mockito" factory-method="mock">
-        <constructor-arg value="edu.unc.lib.boxc.operations.jms.IndexingMessageSender" />
+        <constructor-arg value="edu.unc.lib.boxc.operations.jms.indexing.IndexingMessageSender" />
     </bean>
     
     <bean id="fcrepoClient" class="org.mockito.Mockito" factory-method="mock">

@@ -15,9 +15,9 @@
  */
 package edu.unc.lib.boxc.operations.impl.destroy;
 
+import static edu.unc.lib.boxc.model.api.rdf.RDFModelUtil.TURTLE_MIMETYPE;
 import static edu.unc.lib.boxc.operations.jms.destroy.DestroyObjectsHelper.assertCanDestroy;
 import static edu.unc.lib.boxc.operations.jms.indexing.IndexingActionType.DELETE_SOLR_TREE;
-import static edu.unc.lib.dl.util.RDFModelUtil.TURTLE_MIMETYPE;
 import static org.springframework.http.HttpHeaders.CONTENT_LOCATION;
 
 import java.io.IOException;

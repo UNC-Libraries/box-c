@@ -33,7 +33,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xml.sax.SAXException;
 
-import edu.unc.lib.dl.validation.MetadataValidationException;
+import edu.unc.lib.boxc.operations.api.exceptions.MetadataValidationException;
 
 /**
  * Asserts that MODS complies with the XSD and controlled vocabularies,

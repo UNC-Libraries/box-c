@@ -156,7 +156,7 @@
     </bean>
     
     <bean id="indexingMessageSender" parent="abstractMessageSender"
-        class="edu.unc.lib.boxc.operations.jms.IndexingMessageSender">
+        class="edu.unc.lib.boxc.operations.jms.indexing.IndexingMessageSender">
     </bean>
     
     <bean id="solrSmallUpdateProcessor" class="edu.unc.lib.dl.services.camel.solrUpdate.SolrUpdateProcessor">

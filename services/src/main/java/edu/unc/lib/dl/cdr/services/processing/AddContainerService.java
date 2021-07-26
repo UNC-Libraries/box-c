@@ -19,9 +19,9 @@ import static edu.unc.lib.boxc.auth.api.AccessPrincipalConstants.AUTHENTICATED_P
 import static edu.unc.lib.boxc.auth.api.AccessPrincipalConstants.PUBLIC_PRINC;
 import static edu.unc.lib.boxc.auth.api.UserRole.canViewOriginals;
 import static edu.unc.lib.boxc.auth.api.UserRole.none;
-import static edu.unc.lib.dl.util.DescriptionConstants.COLLECTION_NUMBER_EL;
-import static edu.unc.lib.dl.util.DescriptionConstants.COLLECTION_NUMBER_LABEL;
-import static edu.unc.lib.dl.util.DescriptionConstants.COLLECTION_NUMBER_TYPE;
+import static edu.unc.lib.boxc.model.api.xml.DescriptionConstants.COLLECTION_NUMBER_EL;
+import static edu.unc.lib.boxc.model.api.xml.DescriptionConstants.COLLECTION_NUMBER_LABEL;
+import static edu.unc.lib.boxc.model.api.xml.DescriptionConstants.COLLECTION_NUMBER_TYPE;
 import static java.util.Arrays.asList;
 import static org.apache.jena.rdf.model.ModelFactory.createDefaultModel;
 import static org.jdom2.output.Format.getPrettyFormat;

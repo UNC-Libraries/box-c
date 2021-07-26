@@ -47,9 +47,9 @@ import org.apache.jena.update.UpdateAction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import edu.unc.lib.boxc.deposit.api.exceptions.InterruptedRuntimeException;
 import edu.unc.lib.boxc.model.api.exceptions.RepositoryException;
 import edu.unc.lib.boxc.model.api.ids.PID;
-import edu.unc.lib.dl.exceptions.InterruptedRuntimeException;
 
 /**
  * Manager which provides access to a common deposit dataset used for

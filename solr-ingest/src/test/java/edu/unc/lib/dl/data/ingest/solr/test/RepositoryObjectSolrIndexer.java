@@ -15,7 +15,7 @@
  */
 package edu.unc.lib.dl.data.ingest.solr.test;
 
-import static edu.unc.lib.dl.util.RDFModelUtil.createModel;
+import static edu.unc.lib.boxc.model.api.rdf.RDFModelUtil.createModel;
 
 import java.util.Arrays;
 import java.util.HashSet;

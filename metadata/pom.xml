@@ -97,14 +97,5 @@
             <groupId>org.mockito</groupId>
             <artifactId>mockito-core</artifactId>
         </dependency>
-        <dependency>
-            <groupId>org.apache.jena</groupId>
-            <artifactId>apache-jena-libs</artifactId>
-            <type>pom</type>
-        </dependency>
-        <dependency>
-            <groupId>io.dropwizard.metrics5</groupId>
-            <artifactId>metrics-core</artifactId>
-        </dependency>
     </dependencies>
 </project>
