@@ -58,12 +58,12 @@ import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.boxc.operations.api.exceptions.MetadataValidationException;
 import edu.unc.lib.boxc.operations.impl.edit.UpdateDescriptionService;
 import edu.unc.lib.boxc.operations.impl.edit.UpdateDescriptionService.UpdateDescriptionRequest;
+import edu.unc.lib.boxc.operations.jms.indexing.IndexingPriority;
 import edu.unc.lib.boxc.persist.api.storage.StorageLocationManager;
 import edu.unc.lib.boxc.persist.api.transfer.BinaryTransferService;
 import edu.unc.lib.boxc.persist.api.transfer.BinaryTransferSession;
 import edu.unc.lib.boxc.persist.api.transfer.MultiDestinationTransferSession;
 import edu.unc.lib.dl.fedora.ServiceException;
-import edu.unc.lib.dl.persist.api.indexing.IndexingPriority;
 import io.dropwizard.metrics5.Timer;
 
 /**

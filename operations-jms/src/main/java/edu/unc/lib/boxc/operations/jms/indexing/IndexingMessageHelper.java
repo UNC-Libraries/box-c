@@ -28,7 +28,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import edu.unc.lib.boxc.model.api.ids.PID;
-import edu.unc.lib.dl.persist.api.indexing.IndexingPriority;
 
 /**
  * Helper methods for generating indexing messages

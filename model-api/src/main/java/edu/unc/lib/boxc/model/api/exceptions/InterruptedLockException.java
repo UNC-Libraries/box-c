@@ -13,13 +13,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package edu.unc.lib.dl.persist.api.indexing;
+package edu.unc.lib.boxc.model.api.exceptions;
 
 /**
- * Indexing priority flag values
+ * Exception indicating that a lock or acquisition of one was interrupted
  *
  * @author bbpennel
  */
-public enum IndexingPriority {
-    low, normal, high;
+public class InterruptedLockException extends RepositoryException {
+
+    private static final long serialVersionUID = 1L;
+
+    /**
+     * @param message
+     */
+    public InterruptedLockException(String message) {
+        super(message);
+    }
+
 }

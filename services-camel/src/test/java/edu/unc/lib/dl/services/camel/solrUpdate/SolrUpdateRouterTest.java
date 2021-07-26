@@ -54,7 +54,7 @@ import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.ids.PIDMinter;
 import edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPIDMinter;
 import edu.unc.lib.boxc.operations.jms.indexing.IndexingActionType;
-import edu.unc.lib.dl.persist.api.indexing.IndexingPriority;
+import edu.unc.lib.boxc.operations.jms.indexing.IndexingPriority;
 import edu.unc.lib.dl.services.camel.util.MessageUtil;
 
 /**

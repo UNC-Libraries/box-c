@@ -60,6 +60,7 @@ import edu.unc.lib.boxc.deposit.api.RedisWorkerConstants.DepositState;
 import edu.unc.lib.boxc.deposit.impl.model.DepositModelManager;
 import edu.unc.lib.boxc.deposit.impl.model.DepositStatusFactory;
 import edu.unc.lib.boxc.deposit.impl.model.JobStatusFactory;
+import edu.unc.lib.boxc.model.api.exceptions.InterruptedLockException;
 import edu.unc.lib.boxc.model.api.exceptions.RepositoryException;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.ids.PIDMinter;
@@ -73,7 +74,6 @@ import edu.unc.lib.boxc.persist.api.storage.StorageLocation;
 import edu.unc.lib.boxc.persist.api.storage.StorageLocationManager;
 import edu.unc.lib.boxc.persist.api.transfer.BinaryTransferService;
 import edu.unc.lib.boxc.persist.api.transfer.BinaryTransferSession;
-import edu.unc.lib.dl.persist.api.services.InterruptedLockException;
 import io.dropwizard.metrics5.Timer;
 
 /**

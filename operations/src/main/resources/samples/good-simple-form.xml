@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mets:mets xmlns:acl="http://cdr.unc.edu/definitions/acl"
+    xmlns:mets="http://www.loc.gov/METS/" xmlns:mods="http://www.loc.gov/mods/v3"
+    xmlns:xlink="http://www.w3.org/1999/xlink" PROFILE="http://cdr.unc.edu/METS/profiles/Simple">
+  <mets:metsHdr CREATEDATE="2013-03-01T18:35:35.100Z" LASTMODDATE="2013-03-01T18:35:35.100Z">
+    <mets:agent ROLE="CREATOR" TYPE="OTHER">
+      <mets:name>CDR Forms</mets:name>
+    </mets:agent>
+  </mets:metsHdr>
+  <mets:dmdSec ID="mods">
+    <mets:mdWrap MDTYPE="MODS">
+      <mets:xmlData>
+        <mods:mods>
+          <mods:titleInfo>
+            <mods:title>Lorem Ipsum</mods:title>
+          </mods:titleInfo>
+          <mods:name>
+            <mods:namePart type="given">John</mods:namePart>
+            <mods:namePart type="family">Doe</mods:namePart>
+          </mods:name>
+        </mods:mods>
+      </mets:xmlData>
+    </mets:mdWrap>
+  </mets:dmdSec>
+  <mets:amdSec>
+    <mets:rightsMD ID="acl">
+      <mets:mdWrap MDTYPE="OTHER">
+        <mets:xmlData>
+          <acl:accessControl acl:published="false"/>
+        </mets:xmlData>
+      </mets:mdWrap>
+    </mets:rightsMD>
+  </mets:amdSec>
+  <mets:fileSec>
+    <mets:fileGrp>
+      <mets:file ID="f0" MIMETYPE="application/pdf">
+        <mets:FLocat xlink:href="f0.data" LOCTYPE="URL"/>
+      </mets:file>
+      <mets:file ID="f1" MIMETYPE="image/png">
+        <mets:FLocat xlink:href="f1.data" LOCTYPE="URL"/>
+      </mets:file>
+      <mets:file ID="f2" MIMETYPE="application/octet-stream">
+        <mets:FLocat xlink:href="f2.data" LOCTYPE="URL"/>
+      </mets:file>
+    </mets:fileGrp>
+  </mets:fileSec>
+  <mets:structMap>
+    <mets:div ADMID="acl" DMDID="mods" ID="a" TYPE="Aggregate Work">
+      <mets:div ID="d0" LABEL="1479-5868-8-1337-document.pdf" TYPE="File">
+        <mets:fptr FILEID="f0"/>
+      </mets:div>
+      <mets:div ID="d1" LABEL="Calorie_Menu.png" TYPE="File">
+        <mets:fptr FILEID="f1"/>
+      </mets:div>
+      <mets:div ID="d2" LABEL="mets.xml.erb" TYPE="File">
+        <mets:fptr FILEID="f2"/>
+      </mets:div>
+    </mets:div>
+  </mets:structMap>
+  <mets:structLink>
+    <mets:smLink xlink:arcrole="http://cdr.unc.edu/definitions/1.0/base-model.xml#defaultWebObject"
+        xlink:from="#a" xlink:to="#d0"/>
+    <mets:smLink xlink:arcrole="http://cdr.unc.edu/definitions/1.0/base-model.xml#hasSupplemental"
+        xlink:from="#a" xlink:to="#d1"/>
+    <mets:smLink xlink:arcrole="http://cdr.unc.edu/definitions/1.0/base-model.xml#hasSupplemental"
+        xlink:from="#a" xlink:to="#d2"/>
+  </mets:structLink>
+</mets:mets>

@@ -46,8 +46,8 @@ import edu.unc.lib.boxc.operations.impl.validation.MODSValidator;
 import edu.unc.lib.boxc.operations.impl.versioning.VersionedDatastreamService;
 import edu.unc.lib.boxc.operations.impl.versioning.VersionedDatastreamService.DatastreamVersion;
 import edu.unc.lib.boxc.operations.jms.OperationsMessageSender;
+import edu.unc.lib.boxc.operations.jms.indexing.IndexingPriority;
 import edu.unc.lib.boxc.persist.api.transfer.BinaryTransferSession;
-import edu.unc.lib.dl.persist.api.indexing.IndexingPriority;
 import io.dropwizard.metrics5.Timer;
 
 /**

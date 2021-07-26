@@ -23,7 +23,7 @@ import org.apache.camel.builder.RouteBuilder;
 import org.slf4j.Logger;
 
 import edu.unc.lib.boxc.model.api.exceptions.NotFoundException;
-import edu.unc.lib.dl.persist.api.indexing.IndexingPriority;
+import edu.unc.lib.boxc.operations.jms.indexing.IndexingPriority;
 import edu.unc.lib.dl.services.camel.util.CacheInvalidatingProcessor;
 import edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders;
 

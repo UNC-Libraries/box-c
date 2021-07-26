@@ -33,7 +33,7 @@ import org.slf4j.LoggerFactory;
 import edu.unc.lib.boxc.model.api.ResourceType;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.operations.jms.JMSMessageUtil.CDRActions;
-import edu.unc.lib.dl.persist.api.indexing.IndexingPriority;
+import edu.unc.lib.boxc.operations.jms.indexing.IndexingPriority;
 
 /**
  * Constructs and sends JMS messages describing CDR operations.

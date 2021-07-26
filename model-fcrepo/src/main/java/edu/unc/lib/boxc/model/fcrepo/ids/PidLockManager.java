@@ -17,8 +17,8 @@ package edu.unc.lib.boxc.model.fcrepo.ids;
 
 import com.google.common.util.concurrent.Striped;
 
+import edu.unc.lib.boxc.model.api.exceptions.InterruptedLockException;
 import edu.unc.lib.boxc.model.api.ids.PID;
-import edu.unc.lib.dl.persist.api.services.InterruptedLockException;
 
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;

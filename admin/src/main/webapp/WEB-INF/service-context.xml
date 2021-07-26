@@ -121,42 +121,9 @@
         <property name="spoofEmailSuffix" value="${spoofing.emailSuffix:@localhost}" />
     </bean>
     
-    
-    <bean id="jedisPool" class="redis.clients.jedis.JedisPool" scope="singleton"
-        destroy-method="destroy">
-        <constructor-arg type="String" value="${redis.host:localhost}"/>
-        <constructor-arg type="int" value="${redis.port:6379}"/>
-    </bean>
-    
     <bean id="dataPath" class="java.lang.String">
         <constructor-arg
             value="${data.dir}" />
-    </bean>
-    
-    <bean id="jesqueConfig" class="net.greghaines.jesque.Config">
-        <constructor-arg value="${redis.host:localhost}" type="java.lang.String" />
-        <constructor-arg value="${redis.port:6379}" type="int" />
-        <constructor-arg value="2000" type="int" />
-        <constructor-arg type="java.lang.String">
-            <null />
-        </constructor-arg>
-        <constructor-arg value="resque" type="java.lang.String" />
-        <constructor-arg value="0" type="int" />
-    </bean>
-    
-    <bean id="jesqueClient" class="net.greghaines.jesque.client.ClientPoolImpl"
-        scope="prototype">
-        <constructor-arg ref="jesqueConfig" />
-        <constructor-arg ref="jedisPool" />
-    </bean>
-    
-    <bean id="runEnhancementQueueName" class="java.lang.String">
-        <constructor-arg value="#{T(edu.unc.lib.boxc.deposit.api.RedisWorkerConstants).RUN_ENHANCEMENT_TREE_QUEUE}" />
-    </bean>
-    
-
-    <bean id="depositStatusFactory" class="edu.unc.lib.boxc.deposit.impl.model.DepositStatusFactory">
-        <property name="jedisPool" ref="jedisPool" />
     </bean>
     
     <bean id="depositsDirectory" class="java.io.File">

@@ -33,10 +33,10 @@ import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.xml.JDOMNamespaceUtil;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.boxc.operations.jms.indexing.IndexingMessageSender;
+import edu.unc.lib.boxc.operations.jms.indexing.IndexingPriority;
 import edu.unc.lib.boxc.operations.jms.JMSMessageUtil;
 import edu.unc.lib.boxc.operations.jms.JMSMessageUtil.CDRActions;
 import edu.unc.lib.boxc.operations.jms.indexing.IndexingActionType;
-import edu.unc.lib.dl.persist.api.indexing.IndexingPriority;
 
 /**
  * Processes CDR events to determine the actions required to update solr records

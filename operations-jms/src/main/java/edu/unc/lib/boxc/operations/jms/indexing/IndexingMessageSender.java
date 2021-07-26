@@ -26,7 +26,6 @@ import org.slf4j.LoggerFactory;
 
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.operations.jms.MessageSender;
-import edu.unc.lib.dl.persist.api.indexing.IndexingPriority;
 /**
  * Constructs and sends JMS messages describing CDR operations related to reindexing
  *
