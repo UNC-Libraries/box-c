@@ -32,7 +32,19 @@
         </dependency>
         <dependency>
             <groupId>edu.unc.lib.cdr</groupId>
+            <artifactId>solr-search</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>edu.unc.lib.cdr</groupId>
             <artifactId>persistence</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.samskivert</groupId>
+            <artifactId>jmustache</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>javax.mail</groupId>
+            <artifactId>mail</artifactId>
         </dependency>
         <!-- Testing -->
         <dependency>
@@ -70,6 +82,11 @@
         <dependency>
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-classic</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>commons-fileupload</groupId>
+            <artifactId>commons-fileupload</artifactId>
             <scope>test</scope>
         </dependency>
         <!-- Fcrepo testing -->

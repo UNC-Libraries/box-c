@@ -38,6 +38,15 @@
             <groupId>org.springframework</groupId>
             <artifactId>spring-context</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.apache.jena</groupId>
+            <artifactId>apache-jena-libs</artifactId>
+            <type>pom</type>
+        </dependency>
+        <dependency>
+            <groupId>net.greghaines</groupId>
+            <artifactId>jesque</artifactId>
+        </dependency>
         <!-- Testing -->
         <dependency>
             <groupId>it.ozimov</groupId>

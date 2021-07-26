@@ -27,6 +27,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -36,7 +37,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 
 import org.apache.commons.io.FileUtils;
-import org.fusesource.hawtbuf.ByteArrayInputStream;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -49,7 +49,6 @@ import edu.unc.lib.boxc.persist.api.transfer.BinaryAlreadyExistsException;
 import edu.unc.lib.boxc.persist.api.transfer.BinaryTransferException;
 import edu.unc.lib.boxc.persist.api.transfer.BinaryTransferOutcome;
 import edu.unc.lib.boxc.persist.impl.storage.HashedFilesystemStorageLocation;
-import edu.unc.lib.boxc.persist.impl.transfer.StreamToFSTransferClient;
 
 /**
  * @author bbpennel

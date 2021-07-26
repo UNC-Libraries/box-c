@@ -24,6 +24,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.InputStream;
 import java.nio.file.Path;
@@ -31,7 +32,6 @@ import java.nio.file.Paths;
 import java.util.Map;
 import java.util.UUID;
 
-import org.apache.activemq.util.ByteArrayInputStream;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -51,7 +51,6 @@ import edu.unc.lib.boxc.deposit.api.RedisWorkerConstants.Priority;
 import edu.unc.lib.boxc.deposit.api.exceptions.DepositException;
 import edu.unc.lib.boxc.deposit.api.submit.DepositData;
 import edu.unc.lib.boxc.deposit.impl.model.DepositStatusFactory;
-import edu.unc.lib.boxc.deposit.impl.submit.SimpleObjectDepositHandler;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.ids.PIDMinter;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;

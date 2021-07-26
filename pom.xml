@@ -113,7 +113,6 @@
         <saxon.version>9.9.1-6</saxon.version>
         <xerces.version>2.12.0</xerces.version>
         <xml-apis.version>1.4.01</xml-apis.version>
-        <saaj.version>1.5.0</saaj.version>
         <xom.version>1.2.5</xom.version>
         
         <jetty.version>9.4.12.v20180830</jetty.version>
@@ -864,11 +863,6 @@
                 <groupId>xml-apis</groupId>
                 <artifactId>xml-apis</artifactId>
                 <version>${xml-apis.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.sun.xml.messaging.saaj</groupId>
-                <artifactId>saaj-impl</artifactId>
-                <version>${saaj.version}</version>
             </dependency>
             <dependency>
                 <groupId>xom</groupId>

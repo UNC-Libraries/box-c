@@ -89,10 +89,6 @@
         <property name="binaryTransferService" ref="binaryTransferService" />
     </bean>
     
-    <bean id="objectPathFactory" class="org.mockito.Mockito" factory-method="mock">
-        <constructor-arg value="edu.unc.lib.dl.search.solr.service.ObjectPathFactory" />
-    </bean>
-    
     <bean id="treeIndexer" class="edu.unc.lib.boxc.model.fcrepo.test.RepositoryObjectTreeIndexer">
         <constructor-arg ref="queryModel" />
         <constructor-arg ref="fcrepoClient" />

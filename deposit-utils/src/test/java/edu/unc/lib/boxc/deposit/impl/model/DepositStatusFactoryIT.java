@@ -35,7 +35,6 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import edu.unc.lib.boxc.deposit.api.RedisWorkerConstants.DepositAction;
 import edu.unc.lib.boxc.deposit.api.RedisWorkerConstants.DepositField;
 import edu.unc.lib.boxc.deposit.api.RedisWorkerConstants.DepositState;
-import edu.unc.lib.boxc.deposit.impl.model.DepositStatusFactory;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 
@@ -45,7 +44,7 @@ import redis.clients.jedis.JedisPool;
  *
  */
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration({"/spring-test/cdr-client-container.xml"})
+@ContextConfiguration({"/spring/jedis-context.xml"})
 public class DepositStatusFactoryIT {
 
     private DepositStatusFactory factory;
