@@ -38,7 +38,7 @@ import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
-import edu.unc.lib.dl.persist.api.transfer.BinaryTransferService;
+import edu.unc.lib.boxc.persist.api.transfer.BinaryTransferService;
 
 /**
  *

@@ -51,8 +51,8 @@ import edu.unc.lib.deposit.fcrepo4.AbstractFedoraDepositJobIT;
 import edu.unc.lib.deposit.work.JobFailedException;
 import edu.unc.lib.boxc.auth.api.exceptions.AccessRestrictionException;
 import edu.unc.lib.boxc.auth.api.services.AccessControlService;
-import edu.unc.lib.dl.util.DepositStatusFactory;
-import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
+import edu.unc.lib.boxc.deposit.api.RedisWorkerConstants.DepositField;
+import edu.unc.lib.boxc.deposit.impl.model.DepositStatusFactory;
 
 /**
  * @author bbpennel

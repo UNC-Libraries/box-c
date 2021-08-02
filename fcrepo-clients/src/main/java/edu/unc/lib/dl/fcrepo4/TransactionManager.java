@@ -26,7 +26,7 @@ import org.fcrepo.client.FcrepoResponse;
 import edu.unc.lib.boxc.common.util.URIUtil;
 import edu.unc.lib.boxc.fcrepo.FcrepoPaths;
 import edu.unc.lib.boxc.model.api.exceptions.FedoraException;
-import edu.unc.lib.dl.persist.api.transfer.BinaryTransferService;
+import edu.unc.lib.boxc.persist.api.transfer.BinaryTransferService;
 
 /**
  * Starts, commits, keeps alive, and rolls back transactions in Fedora.

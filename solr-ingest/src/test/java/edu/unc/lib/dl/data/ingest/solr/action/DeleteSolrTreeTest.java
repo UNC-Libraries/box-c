@@ -15,7 +15,7 @@
  */
 package edu.unc.lib.dl.data.ingest.solr.action;
 
-import static edu.unc.lib.dl.util.IndexingActionType.DELETE_SOLR_TREE;
+import static edu.unc.lib.boxc.operations.jms.indexing.IndexingActionType.DELETE_SOLR_TREE;
 import static org.mockito.MockitoAnnotations.initMocks;
 
 import java.io.IOException;

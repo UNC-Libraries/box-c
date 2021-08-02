@@ -33,11 +33,11 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
 import edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore;
 import edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPaths;
+import edu.unc.lib.boxc.operations.api.vocab.VocabularyHelper;
+import edu.unc.lib.boxc.operations.impl.vocab.VocabularyHelperManager;
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadata;
 import edu.unc.lib.dl.search.solr.model.SearchRequest;
 import edu.unc.lib.dl.ui.util.SerializationUtil;
-import edu.unc.lib.dl.util.VocabularyHelperManager;
-import edu.unc.lib.dl.xml.VocabularyHelper;
 
 /**
  * @author bbpennel

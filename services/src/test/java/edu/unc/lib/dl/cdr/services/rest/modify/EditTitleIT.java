@@ -17,7 +17,6 @@ package edu.unc.lib.dl.cdr.services.rest.modify;
 
 import static edu.unc.lib.boxc.common.xml.SecureXMLFactory.createSAXBuilder;
 import static edu.unc.lib.boxc.model.api.xml.JDOMNamespaceUtil.MODS_V3_NS;
-import static edu.unc.lib.dl.persist.services.importxml.XMLImportTestHelper.documentToInputStream;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
@@ -49,8 +48,9 @@ import edu.unc.lib.boxc.auth.fcrepo.models.AgentPrincipalsImpl;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.objects.BinaryObject;
 import edu.unc.lib.boxc.model.api.objects.WorkObject;
-import edu.unc.lib.dl.persist.services.edit.UpdateDescriptionService;
-import edu.unc.lib.dl.persist.services.edit.UpdateDescriptionService.UpdateDescriptionRequest;
+import edu.unc.lib.boxc.operations.impl.edit.UpdateDescriptionService;
+import edu.unc.lib.boxc.operations.impl.edit.UpdateDescriptionService.UpdateDescriptionRequest;
+import edu.unc.lib.boxc.operations.test.ModsTestHelper;
 
 /**
  *
@@ -115,7 +115,7 @@ public class EditTitleIT extends AbstractAPIIT {
                 .addContent(new Element("titleInfo", MODS_V3_NS)
                         .addContent(new Element("title", MODS_V3_NS).setText(oldTitle))));
 
-        InputStream modsStream = documentToInputStream(document);
+        InputStream modsStream = ModsTestHelper.documentToInputStream(document);
         updateDescriptionService.updateDescription(new UpdateDescriptionRequest(
                 mock(AgentPrincipalsImpl.class), pid, modsStream));
 

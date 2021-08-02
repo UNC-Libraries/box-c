@@ -35,16 +35,16 @@
         <property name="objFactory" ref="repositoryObjectFactory" />
     </bean>
     
-    <bean id="storageLocationManager" class="edu.unc.lib.dl.persist.services.storage.StorageLocationTestHelper"
+    <bean id="storageLocationManager" class="edu.unc.lib.boxc.persist.impl.storage.StorageLocationTestHelper"
             factory-method="createLocationManagerWithBasicConfig">
         <constructor-arg ref="repositoryObjectLoader" />
     </bean>
     
-    <bean id="binaryTransferService" class="edu.unc.lib.dl.persist.services.transfer.BinaryTransferServiceImpl">
+    <bean id="binaryTransferService" class="edu.unc.lib.boxc.persist.impl.transfer.BinaryTransferServiceImpl">
         <property name="storageLocationManager" ref="storageLocationManager" />
     </bean>
     
-    <bean id="premisLoggerFactory" class="edu.unc.lib.dl.persist.event.PremisLoggerFactoryImpl">
+    <bean id="premisLoggerFactory" class="edu.unc.lib.boxc.operations.impl.events.PremisLoggerFactoryImpl">
         <property name="pidMinter" ref="pidMinter" />
         <property name="repoObjLoader" ref="repositoryObjectLoader" />
         <property name="repoObjFactory" ref="repositoryObjectFactory" />
@@ -126,14 +126,14 @@
         <property name="repositoryObjectCacheLoader" ref="repositoryObjectCacheLoader" />
     </bean>
     
-    <bean id="versionedDatastreamService" class="edu.unc.lib.dl.persist.services.versioning.VersionedDatastreamService" >
+    <bean id="versionedDatastreamService" class="edu.unc.lib.boxc.operations.impl.versioning.VersionedDatastreamService" >
         <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
         <property name="repositoryObjectFactory" ref="repositoryObjectFactory" />
         <property name="binaryTransferService" ref="binaryTransferService" />
         <property name="transactionManager" ref="transactionManager" />
     </bean>
 
-    <bean id="updateDescriptionService" class="edu.unc.lib.dl.persist.services.edit.UpdateDescriptionService" >
+    <bean id="updateDescriptionService" class="edu.unc.lib.boxc.operations.impl.edit.UpdateDescriptionService" >
         <property name="aclService" ref="aclService" />
         <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
         <property name="repositoryObjectFactory" ref="repositoryObjectFactory" />
@@ -152,7 +152,7 @@
         <property name="fcrepoClient" ref="fcrepoClient" />
     </bean>
     
-    <bean id="depositModelManager" class="edu.unc.lib.dl.persist.services.deposit.DepositModelManager"
+    <bean id="depositModelManager" class="edu.unc.lib.boxc.deposit.impl.model.DepositModelManager"
             factory-method="inMemoryManager" destroy-method="close">
     </bean>
     
@@ -180,19 +180,19 @@
         <property name="maxTotal" value="25"/>
     </bean>
     
-    <bean id="depositStatusFactory" class="edu.unc.lib.dl.util.DepositStatusFactory">
+    <bean id="depositStatusFactory" class="edu.unc.lib.boxc.deposit.impl.model.DepositStatusFactory">
         <property name="jedisPool" ref="jedisPool" />
     </bean>
     
-    <bean id="pipelineStatusFactory" class="edu.unc.lib.dl.util.DepositPipelineStatusFactory">
+    <bean id="pipelineStatusFactory" class="edu.unc.lib.boxc.deposit.impl.model.DepositPipelineStatusFactory">
         <property name="jedisPool" ref="jedisPool" />
     </bean>
     
-    <bean id="jobStatusFactory" class="edu.unc.lib.dl.util.JobStatusFactory" >
+    <bean id="jobStatusFactory" class="edu.unc.lib.boxc.deposit.impl.model.JobStatusFactory" >
         <property name="jedisPool" ref="jedisPool" />
     </bean>
     
-    <bean id="activityMetricsClient" class="edu.unc.lib.dl.reporting.ActivityMetricsClient" >
+    <bean id="activityMetricsClient" class="edu.unc.lib.boxc.deposit.impl.model.ActivityMetricsClient" >
         <property name="jedisPool" ref="jedisPool" />
     </bean>
 </beans>

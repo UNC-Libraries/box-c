@@ -32,7 +32,7 @@
 
     <context:component-scan resource-pattern="**/DestroyObjectsController*" base-package="edu.unc.lib.dl.cdr.services.rest.modify"/>
     
-    <bean id="destroyObjectsService" class="edu.unc.lib.dl.persist.services.destroy.DestroyObjectsService">
+    <bean id="destroyObjectsService" class="edu.unc.lib.boxc.operations.jms.destroy.DestroyObjectsService">
         <property name="aclService" ref="aclService" />
         <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
         <property name="jmsTemplate" ref="jmsTemplate"/>

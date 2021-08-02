@@ -12,12 +12,12 @@
 
     <context:property-placeholder />
     
-    <bean id="depositModelManager" class="edu.unc.lib.dl.persist.services.deposit.DepositModelManager"
+    <bean id="depositModelManager" class="edu.unc.lib.boxc.deposit.impl.model.DepositModelManager"
             factory-method="inMemoryManager" destroy-method="close">
     </bean>
     
     <bean id="operationsMessageSender" class="org.mockito.Mockito" factory-method="mock">
-        <constructor-arg value="edu.unc.lib.dl.services.OperationsMessageSender" />
+        <constructor-arg value="edu.unc.lib.boxc.operations.jms.OperationsMessageSender" />
     </bean>
     
     <bean id="depositEmailHandler" class="org.mockito.Mockito" factory-method="mock">
@@ -34,7 +34,7 @@
     </bean>
     
     <bean id="jobFactory" class="org.mockito.Mockito" factory-method="mock">
-        <constructor-arg value="edu.unc.lib.dl.util.SpringJobFactory" />
+        <constructor-arg value="edu.unc.lib.boxc.deposit.utils.SpringJobFactory" />
     </bean>
     
     <bean id="depositWorkerPool" class="net.greghaines.jesque.worker.WorkerPool">

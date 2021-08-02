@@ -35,6 +35,11 @@
             <groupId>edu.unc.lib.cdr</groupId>
             <artifactId>fcrepo-clients</artifactId>
         </dependency>
+        
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+        </dependency>
         <!-- Testing -->
         <dependency>
             <groupId>junit</groupId>

@@ -17,8 +17,8 @@ package edu.unc.lib.boxc.model.fcrepo.services;
 
 import static edu.unc.lib.boxc.model.api.ids.RepositoryPathConstants.FCR_METADATA;
 import static edu.unc.lib.boxc.model.api.ids.RepositoryPathConstants.METADATA_CONTAINER;
+import static edu.unc.lib.boxc.model.api.rdf.RDFModelUtil.TURTLE_MIMETYPE;
 import static edu.unc.lib.dl.util.MimetypeHelpers.formatMimetype;
-import static edu.unc.lib.dl.util.RDFModelUtil.TURTLE_MIMETYPE;
 import static org.fcrepo.client.ExternalContentHandling.PROXY;
 import static org.fcrepo.client.FedoraTypes.LDP_NON_RDF_SOURCE;
 import static org.fcrepo.client.LinkHeaderConstants.DESCRIBEDBY_REL;
@@ -63,6 +63,7 @@ import edu.unc.lib.boxc.model.api.objects.WorkObject;
 import edu.unc.lib.boxc.model.api.rdf.Cdr;
 import edu.unc.lib.boxc.model.api.rdf.IanaRelation;
 import edu.unc.lib.boxc.model.api.rdf.PcdmModels;
+import edu.unc.lib.boxc.model.api.rdf.RDFModelUtil;
 import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.dl.fcrepo4.ClientFaultResolver;
@@ -70,7 +71,6 @@ import edu.unc.lib.dl.fcrepo4.SanitizeServerManagedTriplesSelector;
 import edu.unc.lib.dl.fedora.ChecksumMismatchException;
 import edu.unc.lib.dl.sparql.SparqlUpdateHelper;
 import edu.unc.lib.dl.sparql.SparqlUpdateService;
-import edu.unc.lib.dl.util.RDFModelUtil;
 
 /**
  * Creates objects in the repository matching specific object profile types.

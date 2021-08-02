@@ -69,10 +69,10 @@ import edu.unc.lib.boxc.model.api.objects.AdminUnit;
 import edu.unc.lib.boxc.model.api.objects.CollectionObject;
 import edu.unc.lib.boxc.model.api.objects.FolderObject;
 import edu.unc.lib.boxc.model.fcrepo.test.AclModelBuilder;
+import edu.unc.lib.boxc.operations.impl.acl.PatronAccessAssignmentService.PatronAccessAssignmentRequest;
+import edu.unc.lib.boxc.operations.impl.acl.PatronAccessDetails;
+import edu.unc.lib.boxc.operations.impl.acl.PatronAccessOperationSender;
 import edu.unc.lib.dl.cdr.services.rest.modify.UpdatePatronAccessController.BulkPatronAccessDetails;
-import edu.unc.lib.dl.persist.services.acl.PatronAccessAssignmentService.PatronAccessAssignmentRequest;
-import edu.unc.lib.dl.persist.services.acl.PatronAccessDetails;
-import edu.unc.lib.dl.persist.services.acl.PatronAccessOperationSender;
 
 /**
  * @author bbpennel

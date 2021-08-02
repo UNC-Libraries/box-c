@@ -58,7 +58,7 @@
         <property name="sparqlQueryService" ref="sparqlQueryService" />
     </bean>
     
-    <bean id="premisLoggerFactory" class="edu.unc.lib.dl.persist.event.PremisLoggerFactoryImpl">
+    <bean id="premisLoggerFactory" class="edu.unc.lib.boxc.operations.impl.events.PremisLoggerFactoryImpl">
         <property name="pidMinter" ref="repositoryPIDMinter" />
         <property name="repoObjLoader" ref="repositoryObjectLoader" />
         <property name="repoObjFactory" ref="repositoryObjectFactory" />
@@ -94,7 +94,7 @@
     </bean>
     
     <bean id="binaryTransferService" class="org.mockito.Mockito" factory-method="mock">
-        <constructor-arg value="edu.unc.lib.dl.persist.api.transfer.BinaryTransferService" />
+        <constructor-arg value="edu.unc.lib.boxc.persist.api.transfer.BinaryTransferService" />
     </bean>
     
     <bean id="txManager" class="edu.unc.lib.dl.fcrepo4.TransactionManager">

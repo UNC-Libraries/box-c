@@ -15,7 +15,7 @@
  */
 package edu.unc.lib.boxc.model.fcrepo.services;
 
-import static edu.unc.lib.dl.util.RDFModelUtil.streamModel;
+import static edu.unc.lib.boxc.model.api.rdf.RDFModelUtil.streamModel;
 import static org.apache.jena.rdf.model.ResourceFactory.createResource;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;

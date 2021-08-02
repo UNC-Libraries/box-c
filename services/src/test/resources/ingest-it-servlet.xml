@@ -36,34 +36,34 @@
     <context:component-scan resource-pattern="**/IngestController*" base-package="edu.unc.lib.dl.cdr.services.rest.modify"/>
     <context:component-scan resource-pattern="**/IngestSourceController*" base-package="edu.unc.lib.dl.cdr.services.rest.modify"/>
     
-    <bean id="depositSubmissionService" class="edu.unc.lib.dl.persist.services.ingest.DepositSubmissionService">
+    <bean id="depositSubmissionService" class="edu.unc.lib.boxc.deposit.impl.submit.DepositSubmissionService">
         <property name="aclService" ref="aclService" />
         <property name="packageHandlers" ref="packageHandlers" />
     </bean>
     
-    <bean id="cdrMetsDepositHandler" class="edu.unc.lib.dl.persist.services.ingest.CDRMETSDepositHandler">
+    <bean id="cdrMetsDepositHandler" class="edu.unc.lib.boxc.deposit.impl.submit.CDRMETSDepositHandler">
         <property name="pidMinter" ref="repositoryPIDMinter" />
         <property name="depositStatusFactory" ref="depositStatusFactory" />
     </bean>
     
-    <bean id="simpleObjectDepositHandler" class="edu.unc.lib.dl.persist.services.ingest.SimpleObjectDepositHandler">
+    <bean id="simpleObjectDepositHandler" class="edu.unc.lib.boxc.deposit.impl.submit.SimpleObjectDepositHandler">
         <property name="pidMinter" ref="repositoryPIDMinter" />
         <property name="depositStatusFactory" ref="depositStatusFactory" />
     </bean>
     
-    <bean id="fileServerDepositHandler" class="edu.unc.lib.dl.persist.services.ingest.FileServerDepositHandler">
+    <bean id="fileServerDepositHandler" class="edu.unc.lib.boxc.deposit.impl.submit.FileServerDepositHandler">
         <property name="pidMinter" ref="repositoryPIDMinter" />
         <property name="depositStatusFactory" ref="depositStatusFactory" />
     </bean>
     
     <util:map id="packageHandlers">
-        <entry key="#{T(edu.unc.lib.dl.util.PackagingType).METS_CDR}" value-ref="cdrMetsDepositHandler" />
-        <entry key="#{T(edu.unc.lib.dl.util.PackagingType).SIMPLE_OBJECT}" value-ref="simpleObjectDepositHandler" />
-        <entry key="#{T(edu.unc.lib.dl.util.PackagingType).BAGIT}" value-ref="fileServerDepositHandler" />
-        <entry key="#{T(edu.unc.lib.dl.util.PackagingType).DIRECTORY}" value-ref="fileServerDepositHandler" />
+        <entry key="#{T(edu.unc.lib.boxc.persist.api.PackagingType).METS_CDR}" value-ref="cdrMetsDepositHandler" />
+        <entry key="#{T(edu.unc.lib.boxc.persist.api.PackagingType).SIMPLE_OBJECT}" value-ref="simpleObjectDepositHandler" />
+        <entry key="#{T(edu.unc.lib.boxc.persist.api.PackagingType).BAGIT}" value-ref="fileServerDepositHandler" />
+        <entry key="#{T(edu.unc.lib.boxc.persist.api.PackagingType).DIRECTORY}" value-ref="fileServerDepositHandler" />
     </util:map>
     
-    <bean id="ingestSourceManager" class="edu.unc.lib.dl.persist.services.ingest.IngestSourceManagerImpl">
+    <bean id="ingestSourceManager" class="edu.unc.lib.boxc.persist.impl.sources.IngestSourceManagerImpl">
         <property name="contentPathFactory" ref="contentPathFactory" />
     </bean>
     
@@ -75,7 +75,7 @@
         <constructor-arg value="edu.unc.lib.boxc.auth.fcrepo.services.AccessControlServiceImpl" />
     </bean>
     
-    <bean id="depositStatusFactory" class="edu.unc.lib.dl.util.DepositStatusFactory">
+    <bean id="depositStatusFactory" class="edu.unc.lib.boxc.deposit.impl.model.DepositStatusFactory">
         <property name="jedisPool" ref="jedisPool" />
     </bean>
 </beans>

@@ -15,8 +15,8 @@
  */
 package edu.unc.lib.dl.data.ingest.solr.action;
 
+import static edu.unc.lib.boxc.operations.jms.indexing.IndexingActionType.DELETE_CHILDREN_PRIOR_TO_TIMESTAMP;
 import static edu.unc.lib.dl.data.ingest.solr.action.DeleteStaleChildren.STALE_TIMESTAMP;
-import static edu.unc.lib.dl.util.IndexingActionType.DELETE_CHILDREN_PRIOR_TO_TIMESTAMP;
 
 import java.util.Date;
 import java.util.HashMap;
@@ -26,9 +26,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import edu.unc.lib.boxc.common.util.DateTimeUtil;
+import edu.unc.lib.boxc.operations.jms.indexing.IndexingMessageSender;
 import edu.unc.lib.dl.data.ingest.solr.SolrUpdateRequest;
 import edu.unc.lib.dl.data.ingest.solr.exception.IndexingException;
-import edu.unc.lib.dl.services.IndexingMessageSender;
 
 /**
  * Performs an update of an object and all of its descendants. After they have all updated, any descendants which were

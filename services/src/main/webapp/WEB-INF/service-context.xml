@@ -91,7 +91,7 @@
     </bean>
     
     <bean id="moveObjectsService"
-        class="edu.unc.lib.dl.persist.services.move.MoveObjectsService">
+        class="edu.unc.lib.boxc.operations.impl.move.MoveObjectsService">
         <property name="aclService" ref="aclService" />
         <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
         <property name="transactionManager" ref="transactionManager" />
@@ -99,7 +99,6 @@
         <property name="objectPathFactory" ref="objectPathFactory" />
         <property name="asynchronous" value="true" />
         <property name="moveExecutor" ref="moveExecutor" />
-        <property name="operationMetrics" ref="activityMetricsClient" />
     </bean>
     
     <bean id="destroyObjectsJmsTemplate" class="org.springframework.jms.core.JmsTemplate">
@@ -109,7 +108,7 @@
     </bean>
     
     <bean id="destroyObjectsService"
-        class="edu.unc.lib.dl.persist.services.destroy.DestroyObjectsService">
+        class="edu.unc.lib.boxc.operations.jms.destroy.DestroyObjectsService">
         <property name="aclService" ref="aclService" />
         <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
         <property name="jmsTemplate" ref="destroyObjectsJmsTemplate" />
@@ -121,20 +120,18 @@
         <property name="pubSubDomain" value="false" />
     </bean>
 
-    <bean id="operationsMessageSender" class="edu.unc.lib.dl.services.OperationsMessageSender">
+    <bean id="operationsMessageSender" class="edu.unc.lib.boxc.operations.jms.OperationsMessageSender">
         <property name="jmsTemplate" ref="jmsTemplate" />
     </bean>
     
-    <bean id="schematronValidator" class="edu.unc.lib.dl.schematron.SchematronValidator"
+    <bean id="schematronValidator" class="edu.unc.lib.boxc.operations.impl.validation.SchematronValidator"
        init-method="loadSchemas">
         <property name="schemas">
             <map>
-                <entry key="#{T(edu.unc.lib.dl.xml.METSProfile).CDR_SIMPLE.name}"
-                    value="classpath:edu/unc/lib/dl/schematron/simple_mets_profile.sch" />
                 <entry key="object-mods"
-                    value="classpath:edu/unc/lib/dl/schematron/object-mods.sch" />
+                    value="classpath:edu/unc/lib/boxc/operations/impl/validation/object-mods.sch" />
                 <entry key="vocabularies-mods"
-                    value="classpath:edu/unc/lib/dl/schematron/vocabularies-mods.sch" />
+                    value="classpath:edu/unc/lib/boxc/operations/impl/validation/vocabularies-mods.sch" />
             </map>
         </property>
     </bean>
@@ -143,7 +140,7 @@
         factory-method="createSchemaFactory" scope="prototype">
     </bean>
     
-    <bean id="modsValidator" class="edu.unc.lib.dl.validation.MODSValidator">
+    <bean id="modsValidator" class="edu.unc.lib.boxc.operations.impl.validation.MODSValidator">
         <property name="schematronValidator" ref="schematronValidator" />
         <property name="modsSchema">
             <bean class="javax.xml.validation.Schema" factory-bean="schemaFactory"
@@ -168,19 +165,6 @@
         </property>
     </bean>
     
-    <util:map id="vocabHelperClassMap">
-        <entry key="Affiliation" value="edu.unc.lib.dl.xml.DepartmentOntologyUtil"/>
-        <entry key="JSONVocabulary" value="edu.unc.lib.dl.util.JSONVocabularyHelper"/>
-    </util:map>
-    
-    <bean id="vocabManager" class="edu.unc.lib.dl.util.VocabularyHelperManager">
-        <property name="helperClasses" ref="vocabHelperClassMap" />
-    </bean>
-    
-    <bean id="bulkMetadataQueueName" class="java.lang.String">
-        <constructor-arg value="#{T(edu.unc.lib.dl.util.RedisWorkerConstants).BULK_UPDATE_QUEUE}"/>
-    </bean>
-    
     <bean id="dataDir" class="java.lang.String">
         <constructor-arg value="${data.dir}"/>
     </bean>
@@ -188,10 +172,6 @@
     <bean id="moveExecutor" class="java.util.concurrent.Executors"
             factory-method="newFixedThreadPool" destroy-method="shutdownNow">
             <constructor-arg value="${services.move.workers:1}"/>
-    </bean>
-    
-    <bean id="activityMetricsClient" class="edu.unc.lib.dl.reporting.ActivityMetricsClient" >
-        <property name="jedisPool" ref="jedisPool" />
     </bean>
     
     <!-- Access related beans -->
@@ -248,7 +228,7 @@
         <property name="premisLoggerFactory" ref="premisLoggerFactory" />
     </bean>
     
-    <bean id="editFilenameService" class="edu.unc.lib.dl.persist.services.edit.EditFilenameService">
+    <bean id="editFilenameService" class="edu.unc.lib.boxc.operations.impl.edit.EditFilenameService">
         <property name="aclService" ref="aclService" />
         <property name="repositoryObjectFactory" ref="repositoryObjectFactory" />
         <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
@@ -257,14 +237,14 @@
         <property name="premisLoggerFactory" ref="premisLoggerFactory" />
     </bean>
 
-    <bean id="editTitleService" class="edu.unc.lib.dl.persist.services.edit.EditTitleService">
+    <bean id="editTitleService" class="edu.unc.lib.boxc.operations.impl.edit.EditTitleService">
         <property name="aclService" ref="aclService" />
         <property name="repoObjLoader" ref="repositoryObjectLoader" />
         <property name="updateDescriptionService" ref="updateDescriptionService" />
         <property name="operationsMessageSender" ref="operationsMessageSender" />
     </bean>
     
-    <bean id="runEnhancementMessageSender" class="edu.unc.lib.dl.services.MessageSender">
+    <bean id="runEnhancementMessageSender" class="edu.unc.lib.boxc.operations.jms.MessageSender">
         <property name="jmsTemplate" ref="enhancementsJmsTemplate"/>
     </bean>
 
@@ -287,11 +267,11 @@
         <property name="pubSubDomain" value="false" />
     </bean>
     
-    <bean id="solrIndexingMessageSender" class="edu.unc.lib.dl.services.IndexingMessageSender" >
+    <bean id="solrIndexingMessageSender" class="edu.unc.lib.boxc.operations.jms.indexing.IndexingMessageSender" >
         <property name="jmsTemplate" ref="solrUpdateJmsTemplate" />
     </bean>
     
-    <bean id="solrIndexingService" class="edu.unc.lib.dl.persist.services.indexing.IndexingService" >
+    <bean id="solrIndexingService" class="edu.unc.lib.boxc.operations.jms.indexing.IndexingService" >
         <property name="aclService" ref="aclService" />
         <property name="indexingMessageSender" ref="solrIndexingMessageSender" />
     </bean>
@@ -302,16 +282,16 @@
         <property name="pubSubDomain" value="false" />
     </bean>
     
-    <bean id="triplesIndexingMessageSender" class="edu.unc.lib.dl.services.IndexingMessageSender" >
+    <bean id="triplesIndexingMessageSender" class="edu.unc.lib.boxc.operations.jms.indexing.IndexingMessageSender" >
         <property name="jmsTemplate" ref="triplesUpdateJmsTemplate" />
     </bean>
     
-    <bean id="triplesIndexingService" class="edu.unc.lib.dl.persist.services.indexing.IndexingService" >
+    <bean id="triplesIndexingService" class="edu.unc.lib.boxc.operations.jms.indexing.IndexingService" >
         <property name="aclService" ref="aclService" />
         <property name="indexingMessageSender" ref="triplesIndexingMessageSender" />
     </bean>
     
-    <bean id="markForDeletionService" class="edu.unc.lib.dl.persist.services.delete.MarkForDeletionService">
+    <bean id="markForDeletionService" class="edu.unc.lib.boxc.operations.impl.delete.MarkForDeletionService">
         <property name="aclService" ref="aclService" />
         <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
         <property name="sparqlUpdateService" ref="fedoraSparqlUpdateService" />
@@ -325,14 +305,14 @@
       <property name="operationsMessageSender" ref="operationsMessageSender" />
   </bean>
   
-  <bean id="versionedDatastreamService" class="edu.unc.lib.dl.persist.services.versioning.VersionedDatastreamService" >
+  <bean id="versionedDatastreamService" class="edu.unc.lib.boxc.operations.impl.versioning.VersionedDatastreamService" >
       <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
       <property name="repositoryObjectFactory" ref="repositoryObjectFactory" />
       <property name="binaryTransferService" ref="binaryTransferService" />
       <property name="transactionManager" ref="transactionManager" />
   </bean>
   
-  <bean id="updateDescriptionService" class="edu.unc.lib.dl.persist.services.edit.UpdateDescriptionService" >
+  <bean id="updateDescriptionService" class="edu.unc.lib.boxc.operations.impl.edit.UpdateDescriptionService" >
       <property name="aclService" ref="aclService" />
       <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
       <property name="repositoryObjectFactory" ref="repositoryObjectFactory" />
@@ -348,7 +328,7 @@
         <property name="sourceImagesDir" value="${sourceImages.dir}" />
     </bean>
   
-  <bean id="emailHandler" class="edu.unc.lib.persist.services.EmailHandler">
+  <bean id="emailHandler" class="edu.unc.lib.boxc.operations.impl.utils.EmailHandler">
     <property name="fromAddress" value="${repository.from.email}" />
     <property name="mailSender" ref="mailSender" />
   </bean>
@@ -368,7 +348,7 @@
       <property name="pubSubDomain" value="false" />
   </bean>
   
-  <bean id="xmlImportService" class="edu.unc.lib.dl.persist.services.importxml.ImportXMLService"
+  <bean id="xmlImportService" class="edu.unc.lib.boxc.operations.impl.importxml.ImportXMLService"
         init-method="init">
       <property name="dataDir" ref="dataDir" />
       <property name="jmsTemplate" ref="importXmlJmsTemplate"/>
@@ -393,7 +373,7 @@
         <property name="derivativeService" ref="derivativeService" />
     </bean>
     
-    <bean id="staffRoleAssignmentService" class="edu.unc.lib.dl.persist.services.acl.StaffRoleAssignmentService">
+    <bean id="staffRoleAssignmentService" class="edu.unc.lib.boxc.operations.impl.acl.StaffRoleAssignmentService">
         <property name="aclService" ref="aclService" />
         <property name="aclFactory" ref="uncachedInheritedAclFactory" />
         <property name="operationsMessageSender" ref="operationsMessageSender" />
@@ -409,11 +389,11 @@
         <property name="pubSubDomain" value="false" />
     </bean>
 
-    <bean id="patronAccessOperationSender" class="edu.unc.lib.dl.persist.services.acl.PatronAccessOperationSender">
+    <bean id="patronAccessOperationSender" class="edu.unc.lib.boxc.operations.impl.acl.PatronAccessOperationSender">
         <property name="jmsTemplate" ref="patronAccessOperationTemplate"/>
     </bean>
     
-    <bean id="patronAccessAssignmentService" class="edu.unc.lib.dl.persist.services.acl.PatronAccessAssignmentService">
+    <bean id="patronAccessAssignmentService" class="edu.unc.lib.boxc.operations.impl.acl.PatronAccessAssignmentService">
         <property name="aclService" ref="aclService" />
         <property name="operationsMessageSender" ref="operationsMessageSender" />
         <property name="repositoryObjectFactory" ref="repositoryObjectFactory" />
@@ -422,11 +402,11 @@
         <property name="premisLoggerFactory" ref="premisLoggerFactory" />
     </bean>
     
-    <bean id="binaryTransferService" class="edu.unc.lib.dl.persist.services.transfer.BinaryTransferServiceImpl">
+    <bean id="binaryTransferService" class="edu.unc.lib.boxc.persist.impl.transfer.BinaryTransferServiceImpl">
         <property name="storageLocationManager" ref="storageLocationManager" />
     </bean>
     
-    <bean id="storageLocationManager" class="edu.unc.lib.dl.persist.services.storage.StorageLocationManagerImpl"
+    <bean id="storageLocationManager" class="edu.unc.lib.boxc.persist.impl.storage.StorageLocationManagerImpl"
             init-method="init">
         <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
         <property name="pathFactory" ref="contentPathFactory" />

@@ -28,9 +28,9 @@ import org.apache.jena.rdf.model.Resource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import edu.unc.lib.boxc.deposit.api.RedisWorkerConstants.DepositField;
 import edu.unc.lib.boxc.model.api.rdf.CdrAcl;
 import edu.unc.lib.deposit.work.AbstractDepositJob;
-import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
 
 /**
  * Marks file server ingests "staff only", if the appropriate flag is set on the deposit

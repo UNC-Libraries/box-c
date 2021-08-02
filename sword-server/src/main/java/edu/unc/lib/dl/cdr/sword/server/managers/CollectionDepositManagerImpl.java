@@ -33,16 +33,16 @@ import edu.unc.lib.boxc.auth.api.exceptions.AccessRestrictionException;
 import edu.unc.lib.boxc.auth.api.models.AgentPrincipals;
 import edu.unc.lib.boxc.auth.fcrepo.models.AgentPrincipalsImpl;
 import edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore;
+import edu.unc.lib.boxc.deposit.api.DepositMethod;
+import edu.unc.lib.boxc.deposit.api.RedisWorkerConstants.Priority;
+import edu.unc.lib.boxc.deposit.api.submit.DepositData;
+import edu.unc.lib.boxc.deposit.impl.submit.DepositSubmissionService;
 import edu.unc.lib.boxc.model.api.ids.PID;
+import edu.unc.lib.boxc.persist.api.PackagingType;
+import edu.unc.lib.boxc.persist.api.exceptions.UnsupportedPackagingTypeException;
 import edu.unc.lib.dl.cdr.sword.server.SwordConfigurationImpl;
 import edu.unc.lib.dl.cdr.sword.server.util.DepositReportingUtil;
-import edu.unc.lib.dl.persist.api.ingest.DepositData;
-import edu.unc.lib.dl.persist.services.ingest.DepositSubmissionService;
-import edu.unc.lib.dl.util.DepositMethod;
 import edu.unc.lib.dl.util.ErrorURIRegistry;
-import edu.unc.lib.dl.util.PackagingType;
-import edu.unc.lib.dl.util.RedisWorkerConstants.Priority;
-import edu.unc.lib.dl.util.UnsupportedPackagingTypeException;
 
 /**
  * Manager responsible for performing ingest of new objects or packages

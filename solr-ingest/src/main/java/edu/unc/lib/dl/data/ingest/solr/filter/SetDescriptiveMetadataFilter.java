@@ -15,9 +15,9 @@
  */
 package edu.unc.lib.dl.data.ingest.solr.filter;
 
-import static edu.unc.lib.dl.util.DescriptionConstants.COLLECTION_NUMBER_EL;
-import static edu.unc.lib.dl.util.DescriptionConstants.COLLECTION_NUMBER_LABEL;
-import static edu.unc.lib.dl.util.DescriptionConstants.COLLECTION_NUMBER_TYPE;
+import static edu.unc.lib.boxc.model.api.xml.DescriptionConstants.COLLECTION_NUMBER_EL;
+import static edu.unc.lib.boxc.model.api.xml.DescriptionConstants.COLLECTION_NUMBER_LABEL;
+import static edu.unc.lib.boxc.model.api.xml.DescriptionConstants.COLLECTION_NUMBER_TYPE;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
 import java.io.IOException;
@@ -25,7 +25,6 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.Map;
 import java.util.Properties;
 
 import org.apache.jena.rdf.model.Property;
@@ -43,9 +42,8 @@ import edu.unc.lib.boxc.model.api.rdf.Ebucore;
 import edu.unc.lib.boxc.model.api.xml.JDOMNamespaceUtil;
 import edu.unc.lib.dl.data.ingest.solr.exception.IndexingException;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackage;
+import edu.unc.lib.dl.data.ingest.solr.utils.JDOMQueryUtil;
 import edu.unc.lib.dl.search.solr.model.IndexDocumentBean;
-import edu.unc.lib.dl.util.VocabularyHelperManager;
-import edu.unc.lib.dl.xml.JDOMQueryUtil;
 
 /**
  * Filter which sets descriptive metadata information, generally pulled from MODS
@@ -58,9 +56,6 @@ public class SetDescriptiveMetadataFilter implements IndexDocumentFilter {
 
     private final Properties languageCodeMap;
     public final static String AFFIL_URI = "http://cdr.unc.edu/vocabulary/Affiliation";
-
-    private VocabularyHelperManager vocabManager;
-
 
     public SetDescriptiveMetadataFilter() {
         languageCodeMap = new Properties();
@@ -235,24 +230,6 @@ public class SetDescriptiveMetadataFilter implements IndexDocumentFilter {
         } else {
             idb.setCreator(null);
             idb.setCreatorSort(null);
-        }
-
-        Map<String, List<List<String>>> authTerms = vocabManager.getAuthoritativeForms(idb.getPid(), mods);
-        List<String> flattened = new ArrayList<>();
-        if (authTerms != null) {
-            List<List<String>> affiliationTerms = authTerms.get(AFFIL_URI);
-
-            if (affiliationTerms != null) {
-                // Make the departments for the whole document into a form solr can take
-                for (List<String> path : affiliationTerms) {
-                    flattened.addAll(path);
-                }
-                if (flattened.size() == 0) {
-                    idb.setDepartment(null);
-                } else {
-                    idb.setDepartment(flattened);
-                }
-            }
         }
     }
 
@@ -439,9 +416,5 @@ public class SetDescriptiveMetadataFilter implements IndexDocumentFilter {
         } else {
             idb.setCitation(null);
         }
-    }
-
-    public void setVocabManager(VocabularyHelperManager vocabManager) {
-        this.vocabManager = vocabManager;
     }
 }

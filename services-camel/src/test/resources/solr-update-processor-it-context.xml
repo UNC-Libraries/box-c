@@ -123,7 +123,7 @@
     </bean>
     
     <util:map id="solrIndexingActionMap"
-        key-type="edu.unc.lib.dl.util.IndexingActionType"
+        key-type="edu.unc.lib.boxc.operations.jms.indexing.IndexingActionType"
         value-type="edu.unc.lib.dl.data.ingest.solr.action.IndexingAction">
         <entry key="ADD" value-ref="updateObjectAction" />
         <entry key="UPDATE_DESCRIPTION" value-ref="updateDescriptionAction" />
@@ -156,7 +156,7 @@
     </bean>
     
     <bean id="indexingMessageSender" parent="abstractMessageSender"
-        class="edu.unc.lib.dl.services.IndexingMessageSender">
+        class="edu.unc.lib.boxc.operations.jms.indexing.IndexingMessageSender">
     </bean>
     
     <bean id="solrSmallUpdateProcessor" class="edu.unc.lib.dl.services.camel.solrUpdate.SolrUpdateProcessor">

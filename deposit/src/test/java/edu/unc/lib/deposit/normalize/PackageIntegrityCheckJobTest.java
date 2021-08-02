@@ -27,11 +27,11 @@ import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import edu.unc.lib.boxc.deposit.api.RedisWorkerConstants.DepositField;
+import edu.unc.lib.boxc.deposit.utils.SpringJobFactory;
 import edu.unc.lib.deposit.DepositTestUtils;
 import edu.unc.lib.deposit.validate.PackageIntegrityCheckJob;
 import edu.unc.lib.deposit.work.JobFailedException;
-import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
-import edu.unc.lib.dl.util.SpringJobFactory;
 
 public class PackageIntegrityCheckJobTest extends AbstractNormalizationJobTest {
 

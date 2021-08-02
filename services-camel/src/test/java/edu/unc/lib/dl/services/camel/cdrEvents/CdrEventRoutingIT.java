@@ -15,8 +15,8 @@
  */
 package edu.unc.lib.dl.services.camel.cdrEvents;
 
-import static edu.unc.lib.dl.util.IndexingActionType.ADD_SET_TO_PARENT;
-import static edu.unc.lib.dl.util.IndexingActionType.UPDATE_ACCESS_TREE;
+import static edu.unc.lib.boxc.operations.jms.indexing.IndexingActionType.ADD_SET_TO_PARENT;
+import static edu.unc.lib.boxc.operations.jms.indexing.IndexingActionType.UPDATE_ACCESS_TREE;
 import static java.util.Collections.emptyList;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -51,12 +51,12 @@ import org.springframework.test.context.ContextHierarchy;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.boxc.model.fcrepo.test.TestHelper;
+import edu.unc.lib.boxc.operations.jms.OperationsMessageSender;
+import edu.unc.lib.boxc.operations.jms.indexing.IndexingActionType;
 import edu.unc.lib.dl.data.ingest.solr.ChildSetRequest;
 import edu.unc.lib.dl.data.ingest.solr.SolrUpdateRequest;
 import edu.unc.lib.dl.data.ingest.solr.action.IndexingAction;
-import edu.unc.lib.dl.services.OperationsMessageSender;
 import edu.unc.lib.dl.services.camel.solrUpdate.SolrUpdateProcessor;
-import edu.unc.lib.dl.util.IndexingActionType;
 
 /**
  *

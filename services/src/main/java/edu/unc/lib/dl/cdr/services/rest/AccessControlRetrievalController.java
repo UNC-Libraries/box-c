@@ -48,8 +48,8 @@ import edu.unc.lib.boxc.model.api.objects.ContentObject;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObject;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
+import edu.unc.lib.boxc.operations.impl.acl.PatronAccessDetails;
 import edu.unc.lib.boxc.web.common.auth.PatronPrincipalProvider;
-import edu.unc.lib.dl.persist.services.acl.PatronAccessDetails;
 
 /**
  * API controller for retrieving access-control information about an object

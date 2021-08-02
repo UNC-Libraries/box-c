@@ -26,7 +26,7 @@ import java.util.List;
 
 import org.slf4j.Logger;
 
-import edu.unc.lib.dl.persist.services.transfer.FileSystemTransferHelpers;
+import edu.unc.lib.boxc.persist.impl.transfer.FileSystemTransferHelpers;
 
 /**
  * @author bbpennel

@@ -49,7 +49,7 @@ import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.api.objects.WorkObject;
 import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
-import edu.unc.lib.dl.services.OperationsMessageSender;
+import edu.unc.lib.boxc.operations.jms.OperationsMessageSender;
 
 /**
  *

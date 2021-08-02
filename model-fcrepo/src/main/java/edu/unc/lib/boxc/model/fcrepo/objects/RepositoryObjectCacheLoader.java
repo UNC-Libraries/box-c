@@ -15,7 +15,7 @@
  */
 package edu.unc.lib.boxc.model.fcrepo.objects;
 
-import static edu.unc.lib.dl.util.RDFModelUtil.TURTLE_MIMETYPE;
+import static edu.unc.lib.boxc.model.api.rdf.RDFModelUtil.TURTLE_MIMETYPE;
 
 import java.io.IOException;
 import java.net.URI;

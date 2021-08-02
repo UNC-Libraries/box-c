@@ -20,7 +20,7 @@ import static edu.unc.lib.boxc.model.api.rdf.CdrDeposit.hasDatastreamDescriptive
 import static edu.unc.lib.boxc.model.fcrepo.ids.DatastreamPids.getDepositManifestPid;
 import static edu.unc.lib.boxc.model.fcrepo.ids.DatastreamPids.getOriginalFilePid;
 import static edu.unc.lib.boxc.model.fcrepo.ids.DatastreamPids.getTechnicalMetadataPid;
-import static edu.unc.lib.dl.util.DigestAlgorithm.DEFAULT_ALGORITHM;
+import static edu.unc.lib.boxc.persist.api.DigestAlgorithm.DEFAULT_ALGORITHM;
 import static java.util.Arrays.asList;
 import static java.util.stream.Collectors.toSet;
 import static org.apache.jena.rdf.model.ResourceFactory.createStringLiteral;
@@ -45,6 +45,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import edu.unc.lib.boxc.deposit.impl.model.DepositModelHelpers;
 import edu.unc.lib.boxc.model.api.DatastreamType;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.rdf.Cdr;
@@ -52,13 +53,12 @@ import edu.unc.lib.boxc.model.api.rdf.CdrDeposit;
 import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
 import edu.unc.lib.boxc.model.fcrepo.ids.DatastreamPids;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
+import edu.unc.lib.boxc.persist.api.exceptions.InvalidChecksumException;
+import edu.unc.lib.boxc.persist.api.storage.BinaryDetails;
+import edu.unc.lib.boxc.persist.api.transfer.BinaryAlreadyExistsException;
+import edu.unc.lib.boxc.persist.api.transfer.BinaryTransferOutcome;
+import edu.unc.lib.boxc.persist.api.transfer.BinaryTransferSession;
 import edu.unc.lib.deposit.work.AbstractConcurrentDepositJob;
-import edu.unc.lib.dl.exceptions.InvalidChecksumException;
-import edu.unc.lib.dl.persist.api.storage.BinaryDetails;
-import edu.unc.lib.dl.persist.api.transfer.BinaryAlreadyExistsException;
-import edu.unc.lib.dl.persist.api.transfer.BinaryTransferOutcome;
-import edu.unc.lib.dl.persist.api.transfer.BinaryTransferSession;
-import edu.unc.lib.dl.persist.services.deposit.DepositModelHelpers;
 
 /**
  * Job which transfers binaries included in this deposit to the appropriate destination

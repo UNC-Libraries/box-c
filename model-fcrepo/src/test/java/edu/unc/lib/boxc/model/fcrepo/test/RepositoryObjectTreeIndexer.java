@@ -15,7 +15,7 @@
  */
 package edu.unc.lib.boxc.model.fcrepo.test;
 
-import static edu.unc.lib.dl.util.RDFModelUtil.createModel;
+import static edu.unc.lib.boxc.model.api.rdf.RDFModelUtil.createModel;
 
 import java.net.URI;
 

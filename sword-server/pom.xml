@@ -74,6 +74,10 @@
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.apache.abdera</groupId>
+            <artifactId>abdera-client</artifactId>
+        </dependency>
             
         <dependency>
             <groupId>org.slf4j</groupId>
@@ -118,6 +122,10 @@
         <dependency>
             <groupId>edu.unc.lib.cdr</groupId>
             <artifactId>persistence</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>edu.unc.lib.cdr</groupId>
+            <artifactId>deposit-utils</artifactId>
         </dependency>
         <dependency>
             <groupId>org.springframework</groupId>

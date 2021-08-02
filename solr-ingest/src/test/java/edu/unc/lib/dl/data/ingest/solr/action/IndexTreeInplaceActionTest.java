@@ -15,7 +15,7 @@
  */
 package edu.unc.lib.dl.data.ingest.solr.action;
 
-import static edu.unc.lib.dl.util.IndexingActionType.RECURSIVE_ADD;
+import static edu.unc.lib.boxc.operations.jms.indexing.IndexingActionType.RECURSIVE_ADD;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -24,8 +24,8 @@ import org.junit.Before;
 import org.junit.Test;
 
 import edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl;
+import edu.unc.lib.boxc.operations.jms.indexing.IndexingActionType;
 import edu.unc.lib.dl.data.ingest.solr.SolrUpdateRequest;
-import edu.unc.lib.dl.util.IndexingActionType;
 
 /**
  *

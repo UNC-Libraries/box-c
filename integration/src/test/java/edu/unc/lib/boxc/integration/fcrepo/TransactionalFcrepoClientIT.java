@@ -15,7 +15,7 @@
  */
 package edu.unc.lib.boxc.integration.fcrepo;
 
-import static edu.unc.lib.dl.util.RDFModelUtil.createModel;
+import static edu.unc.lib.boxc.model.api.rdf.RDFModelUtil.createModel;
 import static org.apache.jena.rdf.model.ResourceFactory.createResource;
 import static org.fcrepo.client.FedoraTypes.LDP_NON_RDF_SOURCE;
 import static org.junit.Assert.assertEquals;
@@ -42,14 +42,14 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import edu.unc.lib.boxc.model.api.ids.PID;
+import edu.unc.lib.boxc.model.api.rdf.RDFModelUtil;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.boxc.model.fcrepo.test.TestHelper;
+import edu.unc.lib.boxc.persist.api.transfer.BinaryTransferService;
 import edu.unc.lib.dl.fcrepo4.FedoraTransaction;
 import edu.unc.lib.dl.fcrepo4.TransactionCancelledException;
 import edu.unc.lib.dl.fcrepo4.TransactionManager;
 import edu.unc.lib.dl.fcrepo4.TransactionalFcrepoClient;
-import edu.unc.lib.dl.persist.api.transfer.BinaryTransferService;
-import edu.unc.lib.dl.util.RDFModelUtil;
 
 /**
  * @author bbpennel

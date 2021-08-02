@@ -15,7 +15,7 @@
  */
 package edu.unc.lib.boxc.integration.model.fcrepo.services;
 
-import static edu.unc.lib.dl.util.RDFModelUtil.TURTLE_MIMETYPE;
+import static edu.unc.lib.boxc.model.api.rdf.RDFModelUtil.TURTLE_MIMETYPE;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 

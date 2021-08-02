@@ -30,7 +30,7 @@ import edu.unc.lib.boxc.model.api.objects.FileObject;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObject;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.api.objects.WorkObject;
-import edu.unc.lib.dl.services.OperationsMessageSender;
+import edu.unc.lib.boxc.operations.jms.OperationsMessageSender;
 import io.dropwizard.metrics5.Timer;
 
 

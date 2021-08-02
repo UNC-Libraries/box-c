@@ -32,21 +32,16 @@
 
     <context:component-scan resource-pattern="**/MoveObjectsController*" base-package="edu.unc.lib.dl.cdr.services.rest.modify"/>
     
-    <bean id="moveObjectsService" class="edu.unc.lib.dl.persist.services.move.MoveObjectsService">
+    <bean id="moveObjectsService" class="edu.unc.lib.boxc.operations.impl.move.MoveObjectsService">
         <property name="aclService" ref="aclService" />
         <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
         <property name="operationsMessageSender" ref="operationsMessageSender" />
-        <property name="operationMetrics" ref="operationMetrics" />
         <property name="objectPathFactory" ref="objectPathFactory" />
         <property name="transactionManager" ref="transactionManager" />
     </bean>
     
     <bean id="aclService" class="org.mockito.Mockito" factory-method="mock">
         <constructor-arg value="edu.unc.lib.boxc.auth.fcrepo.services.AccessControlServiceImpl" />
-    </bean>
-    
-    <bean id="operationMetrics" class="org.mockito.Mockito" factory-method="mock">
-        <constructor-arg value="edu.unc.lib.dl.reporting.ActivityMetricsClient" />
     </bean>
     
     <bean id="objectPathFactory" class="org.mockito.Mockito" factory-method="mock">

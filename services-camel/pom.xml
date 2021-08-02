@@ -164,6 +164,10 @@
             </exclusion>
         </exclusions>
     </dependency>
+    <dependency>
+        <groupId>edu.unc.lib.cdr</groupId>
+        <artifactId>operations</artifactId>
+    </dependency>
 
     <!-- Testing -->
     <dependency>
@@ -177,7 +181,11 @@
         <groupId>edu.unc.lib.cdr</groupId>
         <artifactId>common-utils</artifactId>
         <type>test-jar</type>
-        <scope>test</scope>
+    </dependency>
+    <dependency>
+        <groupId>edu.unc.lib.cdr</groupId>
+        <artifactId>operations</artifactId>
+        <type>test-jar</type>
     </dependency>
     
     <dependency>

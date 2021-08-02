@@ -15,8 +15,8 @@
  */
 package edu.unc.lib.dl.cdr.services.rest.modify;
 
-import static edu.unc.lib.dl.util.PackagingType.METS_CDR;
-import static edu.unc.lib.dl.util.PackagingType.SIMPLE_OBJECT;
+import static edu.unc.lib.boxc.persist.api.PackagingType.METS_CDR;
+import static edu.unc.lib.boxc.persist.api.PackagingType.SIMPLE_OBJECT;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -49,13 +49,13 @@ import edu.unc.lib.boxc.auth.api.exceptions.AccessRestrictionException;
 import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
 import edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl;
 import edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore;
+import edu.unc.lib.boxc.deposit.api.DepositMethod;
+import edu.unc.lib.boxc.deposit.api.RedisWorkerConstants.DepositField;
+import edu.unc.lib.boxc.deposit.impl.model.DepositStatusFactory;
+import edu.unc.lib.boxc.deposit.impl.submit.CDRMETSDepositHandler;
+import edu.unc.lib.boxc.deposit.impl.submit.SimpleObjectDepositHandler;
 import edu.unc.lib.boxc.model.api.ids.PID;
-import edu.unc.lib.dl.persist.services.ingest.CDRMETSDepositHandler;
-import edu.unc.lib.dl.persist.services.ingest.SimpleObjectDepositHandler;
-import edu.unc.lib.dl.util.DepositMethod;
-import edu.unc.lib.dl.util.DepositStatusFactory;
-import edu.unc.lib.dl.util.PackagingType;
-import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
+import edu.unc.lib.boxc.persist.api.PackagingType;
 
 /**
  *

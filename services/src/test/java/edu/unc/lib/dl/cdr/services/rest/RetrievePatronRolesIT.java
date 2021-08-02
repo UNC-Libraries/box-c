@@ -58,9 +58,9 @@ import edu.unc.lib.boxc.model.api.objects.FileObject;
 import edu.unc.lib.boxc.model.api.objects.FolderObject;
 import edu.unc.lib.boxc.model.api.objects.WorkObject;
 import edu.unc.lib.boxc.model.fcrepo.test.AclModelBuilder;
+import edu.unc.lib.boxc.operations.impl.acl.PatronAccessDetails;
 import edu.unc.lib.boxc.web.common.auth.IPAddressPatronPrincipalConfig;
 import edu.unc.lib.dl.cdr.services.rest.modify.AbstractAPIIT;
-import edu.unc.lib.dl.persist.services.acl.PatronAccessDetails;
 
 /**
 *

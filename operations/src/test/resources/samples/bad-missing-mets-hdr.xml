@@ -1,0 +1,225 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<METS:mets xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.loc.gov/METS/ ../schemas/mets.xsd"
+    xmlns:METS="http://www.loc.gov/METS/" xmlns:xlink="http://www.w3.org/1999/xlink"
+    xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+    xmlns:acl="http://cdr.unc.edu/definitions/acl"
+    PROFILE="http://cdr.unc.edu/METS/profiles/Simple">
+
+<!--     <METS:metsHdr CREATEDATE="2009-03-02T13:56:21.297-05:00">
+        <METS:agent ROLE="CREATOR" TYPE="INDIVIDUAL">
+            <METS:name>Margaret Dickson</METS:name>
+        </METS:agent>
+    </METS:metsHdr> -->
+
+    <METS:dmdSec ID="d3e2-MODS">
+        <METS:mdWrap MDTYPE="MODS">
+            <METS:xmlData>
+                <mods:mods xmlns:mods="http://www.loc.gov/mods/v3">
+                    <mods:titleInfo>
+                        <mods:title>Esperanza e insatisfacción adolescente en la novela española de
+                            finales del siglo veinte: graffiteros, okupas y soñadores</mods:title>
+                    </mods:titleInfo>
+                    <mods:genre authority="local">http://purl.org/eprint/type/Thesis</mods:genre>
+                    <mods:typeOfResource>text</mods:typeOfResource>
+                    <mods:name type="personal">
+                        <mods:affiliation>Romance Languages</mods:affiliation>
+                        <mods:namePart>Muñoz-Hermoso, Abel.</mods:namePart>
+                        <mods:role>
+                            <mods:roleTerm>creator</mods:roleTerm>
+                        </mods:role>
+                    </mods:name>
+                    <mods:originInfo>
+                        <mods:dateIssued keyDate="yes" encoding="iso8601">200605</mods:dateIssued>
+                    </mods:originInfo>
+                    <mods:language>
+                        <mods:languageTerm type="code" authority="iso639-2b">spa</mods:languageTerm>
+                    </mods:language>
+                    <mods:abstract>According to literary critic Juan Antonio Masoliver Ródenas,
+                        Spanish novels written at the end of the twentieth century reflected Spanish
+                        society's dissatisfaction with its government and general pessimism. The
+                        purpose of this dissertation is to study five Spanish novels written at that
+                        time--Martín Casariego's El chico que imitaba a Roberto Carlos (1996),
+                        Lorenzo Silva's Algún día, cuando pueda llevarte a Varsovia (1997), Ray
+                        Loriga's Héroes (1993), José Ángel Mañas' Mensaka (1995), and Care Santos'
+                        Okupada (1997)--to show that while some authors indeed provided a dark and
+                        negative vision of Spanish society, others gave the reader a more optimistic
+                        and positive image of the nation and its future. The texts chosen for this
+                        study all present the world from the perspective of Spanish adolescents and
+                        focus on the many different issues they must confront in an increasingly
+                        globalized society. In order to understand the context from which these
+                        novels originated, they are analyzed from an urban and cultural perspective.
+                        This approach also helps to establish a parallel between a young person’s
+                        coming-of-age and the social, political and cultural changes taking place in
+                        Spain at the turn the twenty-first century. Given the importance of the
+                        development of identity in these texts, the correlation between the Spanish
+                        adolescent novel and the tradition of the Bildungsroman is also explored. A
+                        key to the process of identity development is the different mechanisms young
+                        people rely on to escape (albeit temporarily) from their problems. Some of
+                        the alternatives available to adolescents presented in the texts studied
+                        here are the use of the imagination, the development of an ecological
+                        consciousness, and participation in social youth movements, such as painting
+                        graffiti and squatter movements. In the end, the choices made by Casariego,
+                        Silva, Loriga, Mañas, and Santos’ protagonists reveal the essential
+                        differences among the Spanish novels written in the 1990s. By presenting the
+                        reader with an image of youth that is hedonistic and materialistic, Héroes
+                        and Mensaka confirm the critics’ assertion that the Spanish novel reflected
+                        the nation’s disenchantment and pessimism. However, the level of social
+                        engagement that motivates the actions of the protagonists of El chico ,
+                        Algún día, and Okupada suggests that not all Spanish novelists viewed their
+                        nation from the same negative perspective. What is more, the optimistic
+                        futures suggested in these three novels positively influence young Spanish
+                        readers at a time in their lives when they are developing their own identity
+                        as individuals and social beings. By presenting characters that face their
+                        problems and explore the various options available to them, these authors
+                        indirectly help their adolescent readers who are themselves living similar
+                        situations and in the process of becoming adults.</mods:abstract>
+                    <mods:accessCondition type="use">The author has granted the University of North
+                        Carolina at Chapel Hill a limited, non-exclusive right to make this
+                        publication available to the public. The author retains all other
+                        rights.</mods:accessCondition>
+                    <mods:accessCondition type="access">Open access</mods:accessCondition>
+                </mods:mods>
+            </METS:xmlData>
+        </METS:mdWrap>
+    </METS:dmdSec>
+
+    <METS:amdSec ID="uuid_b217d43e-2e4b-4652-a88d-6e541bc1ba17">
+        <METS:rightsMD CREATED="2011-03-27T15:12:42.752Z" STATUS="USER_EDITED">
+            <METS:mdWrap MDTYPE="OTHER">
+                <METS:xmlData>
+                    <acl:accessControl acl:embargo-until="2017-03-27">
+                        <acl:grant acl:group="unc:lib:staff" acl:role="patron"/>
+                        <acl:grant acl:group="patron:group:unc" acl:role="patron"/>
+                    </acl:accessControl>
+                </METS:xmlData>
+            </METS:mdWrap>
+        </METS:rightsMD>
+    </METS:amdSec>
+
+    <METS:fileSec>
+        <METS:fileGrp>
+            <METS:file ID="diskimage" MIMETYPE="archive/iso9660" USE="DiskImage">
+                <METS:FLocat LOCTYPE="URL" xlink:href="http://darkive.lib.unc.edu/98274924.iso"/>
+            </METS:file>
+
+            <METS:file ID="image1" MIMETYPE="image/tiff">
+                <METS:FLocat LOCTYPE="URL" xlink:href="http://darkive.lib.unc.edu/98274924.tiff"/>
+            </METS:file>
+
+            <METS:file ID="r5" MIMETYPE="text/xml">
+                <METS:FLocat LOCTYPE="URL" xlink:href="file:///my file.doc"/>
+            </METS:file>
+
+            <METS:file ID="r6" MIMETYPE="text/xml">
+                <METS:FLocat LOCTYPE="URL" xlink:href="file:///my file.doc"/>
+            </METS:file>
+
+            <METS:file ID="r7" MIMETYPE="text/xml">
+                <METS:FLocat LOCTYPE="URL" xlink:href="file:///my file.doc"/>
+            </METS:file>
+
+            <METS:file ID="r8" MIMETYPE="text/xml">
+                <METS:FLocat LOCTYPE="URL" xlink:href="file:///my file.doc"/>
+            </METS:file>
+
+            <METS:file ID="r9" MIMETYPE="text/xml">
+                <METS:FLocat LOCTYPE="URL" xlink:href="file:///my file.doc"/>
+            </METS:file>
+        </METS:fileGrp>
+        <!--            <METS:file ID="p1" MIMETYPE="text/xml">
+                <METS:FLocat LOCTYPE="URL" xlink:href="file:///my file.doc"/>
+                </METS:file>
+                <METS:file ID="myfile" MIMETYPE="text/xml">
+                <METS:FLocat LOCTYPE="URL" xlink:href="file:///my file.doc"/>
+                </METS:file>
+            <METS:file ID="p2" MIMETYPE="text/xml">
+                <METS:FLocat LOCTYPE="URL" xlink:href="file:///my file.doc"/>
+            </METS:file>
+            <METS:file ID="daolinks" MIMETYPE="text/xml">
+                <METS:FContent>
+                    <METS:xmlData>
+                        <eadLinks>
+                            <link from="k2kh234" to="corr1"/>
+                            <link from="k2l23h2" to="corr2"/>
+                        </eadLinks>
+                    </METS:xmlData>
+                </METS:FContent>
+            </METS:file>
+            <METS:file ID="eadxml" MIMETYPE="text/xml">
+                <METS:FLocat LOCTYPE="URL" xlink:href="file:///ead.xml"/>
+            </METS:file>-->
+    </METS:fileSec>
+
+    <!-- DIVs need both a content type AND a role in complex content models, However the basic Container content
+        model only have one role, which can be made a default role..  There for a basic content model can just use the 
+        type attribute to express content model.  When you have a special role and a CM, then you need an additional structure
+        map.  If the role of the contained object is not a default. -->
+    <!-- The ContainerCM expects types of Container, Resource and File. Resources are always links to objects with arbitrary content models. -->
+    <METS:structMap ID="top">
+        <METS:div TYPE="Collection" LABEL="Thomas Watson Digital Collection"
+            ADMID="uuid_b217d43e-2e4b-4652-a88d-6e541bc1ba17">
+            <METS:div TYPE="Disk" LABEL="Thomas Watson Digital Disk" ORDER="5">
+                <METS:div ID="folder1" TYPE="Folder" LABEL="Correspondence Series" DMDID="d3e2-MODS">
+                    <METS:div ID="corr1" LABEL="1873" ORDER="1" ORDERLABEL="1a"> </METS:div>
+                    <METS:div ID="corr2" LABEL="1874" ORDER="2" ORDERLABEL="1b">
+                        <METS:div TYPE="File">
+                            <METS:fptr FILEID="r5"/>
+                        </METS:div>
+                        <METS:div TYPE="File">
+                            <METS:fptr FILEID="r6"/>
+                        </METS:div>
+                        <METS:div TYPE="File">
+                            <METS:fptr FILEID="r7"/>
+                        </METS:div>
+                        <METS:div>
+                            <METS:fptr FILEID="r8"/>
+                        </METS:div>
+                        <METS:div LABEL="File McFileson">
+                            <METS:fptr FILEID="r9"/>
+                        </METS:div>
+                    </METS:div>
+                </METS:div>
+                <METS:div TYPE="Reference" ID="ead1"/>
+            </METS:div>
+        </METS:div>
+    </METS:structMap>
+
+    <!-- Archive Description Content Model expects EADXML and perhaps more -->
+    <!--<METS:structMap TYPE="ScannedDocumentCM">
+        <METS:div TYPE="Document">
+            <METS:div TYPE="Page">
+                <METS:fptr FILEID="p1"/>
+            </METS:div>
+            <METS:div TYPE="Page">
+                <METS:fptr FILEID="p2"/>
+            </METS:div>
+        </METS:div>
+    </METS:structMap>-->
+
+    <!-- Archive Description Content Model expects EADXML and perhaps more -->
+    <!--<METS:structMap TYPE="ArchivalDescriptionCM">
+        <METS:div ID="ead2" TYPE="ArchivalDescription">
+            <METS:div  TYPE="EADXML">
+                <METS:fptr FILEID="eadxml"/>
+            </METS:div>
+            <METS:div TYPE="DAOLINKS">
+                <METS:fptr FILEID="daolinks"></METS:fptr>
+            </METS:div>
+        </METS:div>
+    </METS:structMap>-->
+
+    <METS:structMap TYPE="Basic">
+        <METS:div ID="i1" TYPE="File">
+            <METS:fptr FILEID="image1"/>
+        </METS:div>
+    </METS:structMap>
+
+    <!-- many more individual image structure maps go here... -->
+    <METS:structLink>
+        <METS:smLink xlink:from="#ead1" xlink:to="#i1"
+            xlink:arcrole="http://cdr.unc.edu/definitions/1.0/base-model.xml#refersTo"/>
+        <METS:smLink xlink:from="#folder1" xlink:to="#i1"
+            xlink:arcrole="http://cdr.unc.edu/definitions/1.0/base-model.xml#hasSurrogate"/>
+    </METS:structLink>
+</METS:mets>

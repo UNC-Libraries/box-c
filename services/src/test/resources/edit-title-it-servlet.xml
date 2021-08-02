@@ -32,7 +32,7 @@
 
     <context:component-scan resource-pattern="**/EditTitleController*" base-package="edu.unc.lib.dl.cdr.services.rest.modify"/>
 
-    <bean id="editTitleService" class="edu.unc.lib.dl.persist.services.edit.EditTitleService">
+    <bean id="editTitleService" class="edu.unc.lib.boxc.operations.impl.edit.EditTitleService">
         <property name="aclService" ref="aclService" />
         <property name="repoObjLoader" ref="repositoryObjectLoader" />
         <property name="updateDescriptionService" ref="updateDescriptionService" />

@@ -49,7 +49,7 @@
     </bean>
     
     <bean id="messageSender" class="org.mockito.Mockito" factory-method="mock">
-        <constructor-arg value="edu.unc.lib.dl.services.MessageSender"/>
+        <constructor-arg value="edu.unc.lib.boxc.operations.jms.MessageSender"/>
     </bean>
 
     <bean id="runEnhancementService" class="edu.unc.lib.dl.cdr.services.processing.RunEnhancementsService">

@@ -34,7 +34,7 @@ import org.springframework.web.multipart.MultipartFile;
 import edu.unc.lib.boxc.auth.api.models.AgentPrincipals;
 import edu.unc.lib.boxc.auth.fcrepo.models.AgentPrincipalsImpl;
 import edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore;
-import edu.unc.lib.dl.persist.services.importxml.ImportXMLService;
+import edu.unc.lib.boxc.operations.impl.importxml.ImportXMLService;
 
 /**
  * API endpoint that accepts an XML document containing objects' metadata, kicks off update operations for

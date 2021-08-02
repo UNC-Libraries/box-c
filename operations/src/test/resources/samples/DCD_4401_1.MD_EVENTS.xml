@@ -1,0 +1,201 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<transaction user="count0" method="add" start="2009-09-14T00:00:00" objects="17">
+<message>We have to archive this disk in our preservation environment before the CD-ROM media degrades any further.</message>
+<premis:events xmlns:premis="info:lc/xmlns/premis-v2">
+    <premis:event>
+        <premis:eventIdentifier>
+            <premis:eventIdentifierType>URI</premis:eventIdentifierType>
+            <premis:eventIdentifierValue>event:52539363-08d3-4014-b78b-bd9d04b62ab4
+            </premis:eventIdentifierValue>
+        </premis:eventIdentifier>
+        <premis:eventType>validation</premis:eventType>
+        <premis:eventDateTime>2009-09-14T00:00:00</premis:eventDateTime>
+        <premis:eventDetail>virus scan</premis:eventDetail>
+        <premis:linkingAgentIdentifier>
+            <premis:linkingAgentIdentifierType>Name</premis:linkingAgentIdentifierType>
+            <premis:linkingAgentIdentifierValue>cdr:7</premis:linkingAgentIdentifierValue>
+            <premis:linkingAgentRole>Initiator</premis:linkingAgentRole>
+        </premis:linkingAgentIdentifier>
+        <premis:linkingAgentIdentifier>
+            <premis:linkingAgentIdentifierType>Name</premis:linkingAgentIdentifierType>
+            <premis:linkingAgentIdentifierValue>scanned with a microscope
+            </premis:linkingAgentIdentifierValue>
+            <premis:linkingAgentRole>Software</premis:linkingAgentRole>
+        </premis:linkingAgentIdentifier>
+        <premis:linkingObjectIdentifier>
+            <premis:linkingObjectIdentifierType>Fedora Commons PID</premis:linkingObjectIdentifierType>
+            <premis:linkingObjectRole>Subject</premis:linkingObjectRole>
+            <premis:linkingObjectIdentifierValue>info:fedora/cdr:564</premis:linkingObjectIdentifierValue>
+        </premis:linkingObjectIdentifier>
+    </premis:event>
+    <premis:event>
+        <premis:eventIdentifier>
+            <premis:eventIdentifierType>URI</premis:eventIdentifierType>
+            <premis:eventIdentifierValue>event:b3374e43-ce3a-4a1f-b801-1239f66322b0
+            </premis:eventIdentifierValue>
+        </premis:eventIdentifier>
+        <premis:eventType>validation</premis:eventType>
+        <premis:eventDateTime>2009-09-14T14:47:27</premis:eventDateTime>
+        <premis:eventDetail>METS manifest validated against profile:
+            http://cdr.unc.edu/METS/profiles/Simple</premis:eventDetail>
+        <premis:linkingAgentIdentifier>
+            <premis:linkingAgentIdentifierType>Name</premis:linkingAgentIdentifierType>
+            <premis:linkingAgentIdentifierValue>Repository</premis:linkingAgentIdentifierValue>
+            <premis:linkingAgentRole>Initiator</premis:linkingAgentRole>
+        </premis:linkingAgentIdentifier>
+        <premis:linkingObjectIdentifier>
+            <premis:linkingObjectIdentifierType>Fedora Commons PID</premis:linkingObjectIdentifierType>
+            <premis:linkingObjectRole>Subject</premis:linkingObjectRole>
+            <premis:linkingObjectIdentifierValue>info:fedora/cdr:564</premis:linkingObjectIdentifierValue>
+        </premis:linkingObjectIdentifier>
+    </premis:event>
+    <premis:event>
+        <premis:eventIdentifier>
+            <premis:eventIdentifierType>URI</premis:eventIdentifierType>
+            <premis:eventIdentifierValue>event:38c82cf0-9994-4f31-a01c-b8f373935af2
+            </premis:eventIdentifierValue>
+        </premis:eventIdentifier>
+        <premis:eventType>creation</premis:eventType>
+        <premis:eventDateTime>2009-08-31T17:00:02-04:00</premis:eventDateTime>
+        <premis:eventDetail>SIP created</premis:eventDetail>
+        <premis:linkingAgentIdentifier>
+            <premis:linkingAgentIdentifierType>Name</premis:linkingAgentIdentifierType>
+            <premis:linkingAgentIdentifierValue>CDR Disk Archive Plugin for Duke Data Accessioner (r813 built
+                on 2009-08-31T16:57:41-05:00)</premis:linkingAgentIdentifierValue>
+            <premis:linkingAgentRole>OTHER</premis:linkingAgentRole>
+        </premis:linkingAgentIdentifier>
+        <premis:linkingAgentIdentifier>
+            <premis:linkingAgentIdentifierType>Name</premis:linkingAgentIdentifierType>
+            <premis:linkingAgentIdentifierValue>Duke Data Accessioner (build information not available)
+            </premis:linkingAgentIdentifierValue>
+            <premis:linkingAgentRole>OTHER</premis:linkingAgentRole>
+        </premis:linkingAgentIdentifier>
+        <premis:linkingAgentIdentifier>
+            <premis:linkingAgentIdentifierType>Name</premis:linkingAgentIdentifierType>
+            <premis:linkingAgentIdentifierValue>Gregory Jansen</premis:linkingAgentIdentifierValue>
+            <premis:linkingAgentRole>CREATOR</premis:linkingAgentRole>
+        </premis:linkingAgentIdentifier>
+        <premis:linkingObjectIdentifier>
+            <premis:linkingObjectIdentifierType>Fedora Commons PID</premis:linkingObjectIdentifierType>
+            <premis:linkingObjectRole>Subject</premis:linkingObjectRole>
+            <premis:linkingObjectIdentifierValue>info:fedora/cdr:564</premis:linkingObjectIdentifierValue>
+        </premis:linkingObjectIdentifier>
+    </premis:event>
+    <premis:event>
+        <premis:eventIdentifier>
+            <premis:eventIdentifierType>URI</premis:eventIdentifierType>
+            <premis:eventIdentifierValue>event:78bfe2b1-c8a8-4b85-8ffd-b2cfb9d71f83
+            </premis:eventIdentifierValue>
+        </premis:eventIdentifier>
+        <premis:eventType>validation</premis:eventType>
+        <premis:eventDateTime>2009-09-14T14:47:41</premis:eventDateTime>
+        <premis:eventDetail>METS manifest checksum was verified for file: file://DCD_4401_1.iso
+        </premis:eventDetail>
+        <premis:linkingAgentIdentifier>
+            <premis:linkingAgentIdentifierType>http://cdr.unc.edu/definitions/1.0/base-model.xml#uid
+            </premis:linkingAgentIdentifierType>
+            <premis:linkingAgentIdentifierValue>ac0813f0-3794-40ef-8689-968b88a30708
+            </premis:linkingAgentIdentifierValue>
+            <premis:linkingAgentRole>Initiator</premis:linkingAgentRole>
+        </premis:linkingAgentIdentifier>
+        <premis:linkingObjectIdentifier>
+            <premis:linkingObjectIdentifierType>Fedora Commons PID</premis:linkingObjectIdentifierType>
+            <premis:linkingObjectIdentifierValue>info:fedora/cdr:564</premis:linkingObjectIdentifierValue>
+            <premis:linkingObjectRole>Subject</premis:linkingObjectRole>
+        </premis:linkingObjectIdentifier>
+    </premis:event>
+    <premis:event>
+        <premis:eventIdentifier>
+            <premis:eventIdentifierType>URI</premis:eventIdentifierType>
+            <premis:eventIdentifierValue>event:7914c610-174e-4f6e-9bb2-cfe8b546b6d0
+            </premis:eventIdentifierValue>
+        </premis:eventIdentifier>
+        <premis:eventType>normalization</premis:eventType>
+        <premis:eventDateTime>2009-09-14T14:47:50</premis:eventDateTime>
+        <premis:eventDetail>generated unique ID (http://cdr.unc.edu/definitions/1.0/base-model.xml#uid)
+            with UUID algorithm: 3f179579-3de2-4665-9265-5d3a42311187</premis:eventDetail>
+        <premis:linkingAgentIdentifier>
+            <premis:linkingAgentIdentifierType>http://cdr.unc.edu/definitions/1.0/base-model.xml#uid
+            </premis:linkingAgentIdentifierType>
+            <premis:linkingAgentIdentifierValue>ac0813f0-3794-40ef-8689-968b88a30708
+            </premis:linkingAgentIdentifierValue>
+            <premis:linkingAgentRole>Initiator</premis:linkingAgentRole>
+        </premis:linkingAgentIdentifier>
+        <premis:linkingObjectIdentifier>
+            <premis:linkingObjectIdentifierType>Fedora Commons PID</premis:linkingObjectIdentifierType>
+            <premis:linkingObjectIdentifierValue>info:fedora/cdr:564</premis:linkingObjectIdentifierValue>
+            <premis:linkingObjectRole>Subject</premis:linkingObjectRole>
+        </premis:linkingObjectIdentifier>
+    </premis:event>
+    <premis:event>
+        <premis:eventIdentifier>
+            <premis:eventIdentifierType>URI</premis:eventIdentifierType>
+            <premis:eventIdentifierValue>event:d09efd96-9380-466f-b69b-47d44e6eee6a
+            </premis:eventIdentifierValue>
+        </premis:eventIdentifier>
+        <premis:eventType>validation</premis:eventType>
+        <premis:eventDateTime>2009-09-14T14:47:51</premis:eventDateTime>
+        <premis:eventDetail>Validation of Controlled Vocabularies in Descriptive Metadata (MODS)
+        </premis:eventDetail>
+        <premis:linkingAgentIdentifier>
+            <premis:linkingAgentIdentifierType>http://cdr.unc.edu/definitions/1.0/base-model.xml#uid
+            </premis:linkingAgentIdentifierType>
+            <premis:linkingAgentIdentifierValue>ac0813f0-3794-40ef-8689-968b88a30708
+            </premis:linkingAgentIdentifierValue>
+            <premis:linkingAgentRole>Initiator</premis:linkingAgentRole>
+        </premis:linkingAgentIdentifier>
+        <premis:linkingObjectIdentifier>
+            <premis:linkingObjectIdentifierType>Fedora Commons PID</premis:linkingObjectIdentifierType>
+            <premis:linkingObjectIdentifierValue>info:fedora/cdr:564</premis:linkingObjectIdentifierValue>
+            <premis:linkingObjectRole>Subject</premis:linkingObjectRole>
+        </premis:linkingObjectIdentifier>
+        <premis:linkingObjectIdentifier>
+            <premis:linkingObjectIdentifierType>Fedora Commons PID</premis:linkingObjectIdentifierType>
+            <premis:linkingObjectIdentifierValue>info:fedora/cdr:564/MD_DESCRIPTIVE
+            </premis:linkingObjectIdentifierValue>
+            <premis:linkingObjectRole>Source Data</premis:linkingObjectRole>
+        </premis:linkingObjectIdentifier>
+        <premis:eventOutcomeInformation>
+            <eventOutcome>MODS is valid</eventOutcome>
+            <eventOutcomeDetail>
+                <premis:eventOutcomeDetailNote>The supplied MODS metadata meets CDR vocabulary requirements.
+                </premis:eventOutcomeDetailNote>
+            </eventOutcomeDetail>
+        </premis:eventOutcomeInformation>
+    </premis:event>
+    <premis:event>
+        <premis:eventIdentifier>
+            <premis:eventIdentifierType>URI</premis:eventIdentifierType>
+            <premis:eventIdentifierValue>event:4a33634e-abfd-4da1-b653-245842355173
+            </premis:eventIdentifierValue>
+        </premis:eventIdentifier>
+        <premis:eventType>normalization</premis:eventType>
+        <premis:eventDateTime>2009-09-14T14:48:06</premis:eventDateTime>
+        <premis:eventDetail>Metadata Object Description Schema (MODS) data transformed into Dublin Core
+            (DC).</premis:eventDetail>
+        <premis:linkingAgentIdentifier>
+            <premis:linkingAgentIdentifierType>http://cdr.unc.edu/definitions/1.0/base-model.xml#uid
+            </premis:linkingAgentIdentifierType>
+            <premis:linkingAgentIdentifierValue>ac0813f0-3794-40ef-8689-968b88a30708
+            </premis:linkingAgentIdentifierValue>
+            <premis:linkingAgentRole>Initiator</premis:linkingAgentRole>
+        </premis:linkingAgentIdentifier>
+        <premis:linkingObjectIdentifier>
+            <premis:linkingObjectIdentifierType>Fedora Commons PID</premis:linkingObjectIdentifierType>
+            <premis:linkingObjectIdentifierValue>info:fedora/cdr:564</premis:linkingObjectIdentifierValue>
+            <premis:linkingObjectRole>Subject</premis:linkingObjectRole>
+        </premis:linkingObjectIdentifier>
+        <premis:linkingObjectIdentifier>
+            <premis:linkingObjectIdentifierType>Fedora Commons PID</premis:linkingObjectIdentifierType>
+            <premis:linkingObjectIdentifierValue>info:fedora/cdr:564/MD_DESCRIPTIVE
+            </premis:linkingObjectIdentifierValue>
+            <premis:linkingObjectRole>Source Data</premis:linkingObjectRole>
+        </premis:linkingObjectIdentifier>
+        <premis:linkingObjectIdentifier>
+            <premis:linkingObjectIdentifierType>Fedora Commons PID</premis:linkingObjectIdentifierType>
+            <premis:linkingObjectIdentifierValue>info:fedora/cdr:564/DC</premis:linkingObjectIdentifierValue>
+            <premis:linkingObjectRole>Derived Data</premis:linkingObjectRole>
+        </premis:linkingObjectIdentifier>
+    </premis:event>
+</premis:events>
+</transaction>

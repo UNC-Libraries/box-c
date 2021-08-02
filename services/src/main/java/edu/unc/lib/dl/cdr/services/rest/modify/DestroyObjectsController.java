@@ -33,7 +33,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import edu.unc.lib.boxc.auth.api.models.AgentPrincipals;
 import edu.unc.lib.boxc.auth.fcrepo.models.AgentPrincipalsImpl;
-import edu.unc.lib.dl.persist.services.destroy.DestroyObjectsService;
+import edu.unc.lib.boxc.operations.jms.destroy.DestroyObjectsService;
 
 /**
  * API controller for destroying repository objects and replacing them with tombstones

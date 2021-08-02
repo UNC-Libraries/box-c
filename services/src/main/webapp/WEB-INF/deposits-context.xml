@@ -9,7 +9,7 @@
         http://www.springframework.org/schema/context 
         http://www.springframework.org/schema/context/spring-context-3.0.xsd">
     
-    <bean id="ingestSourceManager" class="edu.unc.lib.dl.persist.services.ingest.IngestSourceManagerImpl"
+    <bean id="ingestSourceManager" class="edu.unc.lib.boxc.persist.impl.sources.IngestSourceManagerImpl"
             init-method="init">
         <property name="contentPathFactory" ref="contentPathFactory" />
         <property name="configPath" value="${ingestSources.path}" />
@@ -17,48 +17,48 @@
     </bean>
     
     <!-- Deposit Handlers -->
-    <bean id="cdrMetsDepositHandler" class="edu.unc.lib.dl.persist.services.ingest.CDRMETSDepositHandler">
+    <bean id="cdrMetsDepositHandler" class="edu.unc.lib.boxc.deposit.impl.submit.CDRMETSDepositHandler">
         <property name="pidMinter" ref="pidMinter" />
         <property name="depositStatusFactory" ref="depositStatusFactory" />
         <property name="depositsDirectory" ref="depositsDirectory" />
     </bean>
     
-    <bean id="simpleObjectDepositHandler" class="edu.unc.lib.dl.persist.services.ingest.SimpleObjectDepositHandler">
+    <bean id="simpleObjectDepositHandler" class="edu.unc.lib.boxc.deposit.impl.submit.SimpleObjectDepositHandler">
         <property name="pidMinter" ref="pidMinter" />
         <property name="depositStatusFactory" ref="depositStatusFactory" />
         <property name="depositsDirectory" ref="depositsDirectory" />
     </bean>
     
-    <bean id="fileServerDepositHandler" class="edu.unc.lib.dl.persist.services.ingest.FileServerDepositHandler">
+    <bean id="fileServerDepositHandler" class="edu.unc.lib.boxc.deposit.impl.submit.FileServerDepositHandler">
         <property name="pidMinter" ref="pidMinter" />
         <property name="depositStatusFactory" ref="depositStatusFactory" />
         <property name="depositsDirectory" ref="depositsDirectory" />
     </bean>
     
     <util:map id="packageHandlers">
-        <entry key="#{T(edu.unc.lib.dl.util.PackagingType).METS_CDR}" value-ref="cdrMetsDepositHandler" />
-        <entry key="#{T(edu.unc.lib.dl.util.PackagingType).SIMPLE_OBJECT}" value-ref="simpleObjectDepositHandler" />
-        <entry key="#{T(edu.unc.lib.dl.util.PackagingType).BAGIT}" value-ref="fileServerDepositHandler" />
-        <entry key="#{T(edu.unc.lib.dl.util.PackagingType).DIRECTORY}" value-ref="fileServerDepositHandler" />
+        <entry key="#{T(edu.unc.lib.boxc.persist.api.PackagingType).METS_CDR}" value-ref="cdrMetsDepositHandler" />
+        <entry key="#{T(edu.unc.lib.boxc.persist.api.PackagingType).SIMPLE_OBJECT}" value-ref="simpleObjectDepositHandler" />
+        <entry key="#{T(edu.unc.lib.boxc.persist.api.PackagingType).BAGIT}" value-ref="fileServerDepositHandler" />
+        <entry key="#{T(edu.unc.lib.boxc.persist.api.PackagingType).DIRECTORY}" value-ref="fileServerDepositHandler" />
     </util:map>
     
     <bean id="depositsDirectory" class="java.io.File">
         <constructor-arg value="${batch.ingest.dir}" />
     </bean>
     
-    <bean id="depositStatusFactory" class="edu.unc.lib.dl.util.DepositStatusFactory">
+    <bean id="depositStatusFactory" class="edu.unc.lib.boxc.deposit.impl.model.DepositStatusFactory">
         <property name="jedisPool" ref="jedisPool" />
     </bean>
     
-    <bean id="depositPipelineStatusFactory" class="edu.unc.lib.dl.util.DepositPipelineStatusFactory">
+    <bean id="depositPipelineStatusFactory" class="edu.unc.lib.boxc.deposit.impl.model.DepositPipelineStatusFactory">
         <property name="jedisPool" ref="jedisPool" />
     </bean>
     
-    <bean id="jobStatusFactory" class="edu.unc.lib.dl.util.JobStatusFactory">
+    <bean id="jobStatusFactory" class="edu.unc.lib.boxc.deposit.impl.model.JobStatusFactory">
         <property name="jedisPool" ref="jedisPool" />
     </bean>
     
-    <bean id="depositSubmissionService" class="edu.unc.lib.dl.persist.services.ingest.DepositSubmissionService">
+    <bean id="depositSubmissionService" class="edu.unc.lib.boxc.deposit.impl.submit.DepositSubmissionService">
         <property name="aclService" ref="aclService" />
         <property name="packageHandlers" ref="packageHandlers" />
     </bean>

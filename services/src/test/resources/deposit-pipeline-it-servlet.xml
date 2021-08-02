@@ -48,7 +48,7 @@
         <constructor-arg ref="aclGlobalProperties" />
     </bean>
     
-    <bean id="pipelineStatusFactory" class="edu.unc.lib.dl.util.DepositPipelineStatusFactory">
+    <bean id="pipelineStatusFactory" class="edu.unc.lib.boxc.deposit.impl.model.DepositPipelineStatusFactory">
         <property name="jedisPool" ref="jedisPool" />
     </bean>
 </beans>

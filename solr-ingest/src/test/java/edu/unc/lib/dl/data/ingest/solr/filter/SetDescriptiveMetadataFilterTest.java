@@ -15,12 +15,10 @@
  */
 package edu.unc.lib.dl.data.ingest.solr.filter;
 
-import static edu.unc.lib.boxc.common.test.TestHelpers.setField;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
@@ -28,16 +26,12 @@ import static org.mockito.MockitoAnnotations.initMocks;
 import java.io.File;
 import java.io.FileInputStream;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.Statement;
 import org.jdom2.Document;
-import org.jdom2.Element;
 import org.jdom2.input.SAXBuilder;
 import org.junit.Before;
 import org.junit.Test;
@@ -46,13 +40,12 @@ import org.mockito.Captor;
 import org.mockito.Mock;
 
 import edu.unc.lib.boxc.model.api.ids.PID;
+import edu.unc.lib.boxc.model.api.objects.ContentObject;
 import edu.unc.lib.boxc.model.api.rdf.DcElements;
 import edu.unc.lib.boxc.model.api.rdf.Ebucore;
-import edu.unc.lib.boxc.model.api.objects.ContentObject;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackage;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackageDataLoader;
 import edu.unc.lib.dl.search.solr.model.IndexDocumentBean;
-import edu.unc.lib.dl.util.VocabularyHelperManager;
 
 /**
  *
@@ -78,9 +71,6 @@ public class SetDescriptiveMetadataFilterTest {
 
     @Mock
     private PID pid;
-
-    @Mock
-    private VocabularyHelperManager vocabManager;
 
     private SetDescriptiveMetadataFilter filter;
 
@@ -108,7 +98,6 @@ public class SetDescriptiveMetadataFilterTest {
         when(contentObj.getResource()).thenReturn(objResc);
 
         filter = new SetDescriptiveMetadataFilter();
-        setField(filter, "vocabManager", vocabManager);
     }
 
     @Test
@@ -216,25 +205,6 @@ public class SetDescriptiveMetadataFilterTest {
         assertTrue(idb.getCreator().contains("Test, Creator2"));
 
         assertEquals("Test, Creator1", idb.getCreatorSort());
-    }
-
-    @Test
-    public void testAffiliationVocabTerm() throws Exception {
-        SAXBuilder builder = new SAXBuilder();
-        Document modsDoc = builder.build(new FileInputStream(new File(
-                "src/test/resources/datastream/inventoryMods.xml")));
-        when(dip.getMods()).thenReturn(modsDoc.detachRootElement());
-        Map<String, List<List<String>>> authTerms = new HashMap<>();
-        List<List<String>> terms = new ArrayList<>();
-        List<String> depts = new ArrayList<>();
-        depts.add("Music");
-        terms.add(depts);
-        authTerms.put("http://cdr.unc.edu/vocabulary/Affiliation", terms);
-        when(vocabManager.getAuthoritativeForms(any(PID.class), any(Element.class))).thenReturn(authTerms);
-
-        filter.filter(dip);
-
-        assertTrue(idb.getDepartment().contains("Music"));
     }
 
     @Test

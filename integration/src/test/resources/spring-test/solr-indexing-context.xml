@@ -203,10 +203,6 @@
 
     <bean id="setDescriptiveMetadataFilter"
           class="edu.unc.lib.dl.data.ingest.solr.filter.SetDescriptiveMetadataFilter">
-        <property name="vocabManager" ref="vocabManager" />
-    </bean>
-
-    <bean id="vocabManager" class="edu.unc.lib.dl.util.VocabularyHelperManager">
     </bean>
 
     <bean id="setFullTextFilter" class="edu.unc.lib.dl.data.ingest.solr.filter.SetFullTextFilter">

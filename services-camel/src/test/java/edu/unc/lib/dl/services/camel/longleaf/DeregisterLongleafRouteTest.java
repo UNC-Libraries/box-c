@@ -51,7 +51,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.ContextHierarchy;
 
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
-import edu.unc.lib.dl.services.MessageSender;
+import edu.unc.lib.boxc.operations.jms.MessageSender;
 
 /**
  * @author bbpennel

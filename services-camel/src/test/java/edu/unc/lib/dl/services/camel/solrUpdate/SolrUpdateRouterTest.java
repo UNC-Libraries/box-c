@@ -16,7 +16,7 @@
 package edu.unc.lib.dl.services.camel.solrUpdate;
 
 import static edu.unc.lib.boxc.model.api.xml.JDOMNamespaceUtil.ATOM_NS;
-import static edu.unc.lib.dl.util.IndexingMessageHelper.makeIndexingOperationBody;
+import static edu.unc.lib.boxc.operations.jms.indexing.IndexingMessageHelper.makeIndexingOperationBody;
 import static org.junit.Assert.fail;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.doThrow;
@@ -53,9 +53,9 @@ import edu.unc.lib.boxc.model.api.exceptions.NotFoundException;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.ids.PIDMinter;
 import edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPIDMinter;
-import edu.unc.lib.dl.persist.api.indexing.IndexingPriority;
+import edu.unc.lib.boxc.operations.jms.indexing.IndexingActionType;
+import edu.unc.lib.boxc.operations.jms.indexing.IndexingPriority;
 import edu.unc.lib.dl.services.camel.util.MessageUtil;
-import edu.unc.lib.dl.util.IndexingActionType;
 
 /**
  *

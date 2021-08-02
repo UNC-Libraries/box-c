@@ -27,10 +27,10 @@ import org.slf4j.LoggerFactory;
 
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.rdf.CdrDeposit;
+import edu.unc.lib.boxc.persist.api.exceptions.UnknownIngestSourceException;
+import edu.unc.lib.boxc.persist.api.sources.IngestSource;
+import edu.unc.lib.boxc.persist.api.sources.IngestSourceManager;
 import edu.unc.lib.deposit.work.AbstractDepositJob;
-import edu.unc.lib.dl.persist.api.ingest.IngestSource;
-import edu.unc.lib.dl.persist.api.ingest.IngestSourceManager;
-import edu.unc.lib.dl.persist.api.ingest.UnknownIngestSourceException;
 
 /**
  * Verifies that files referenced by this deposit for ingest are present and

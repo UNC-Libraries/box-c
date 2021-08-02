@@ -35,9 +35,9 @@ import org.springframework.test.web.servlet.MvcResult;
 
 import edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl;
 import edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore;
+import edu.unc.lib.boxc.deposit.api.RedisWorkerConstants.DepositPipelineState;
+import edu.unc.lib.boxc.deposit.impl.model.DepositPipelineStatusFactory;
 import edu.unc.lib.dl.cdr.services.rest.modify.AbstractAPIIT;
-import edu.unc.lib.dl.util.DepositPipelineStatusFactory;
-import edu.unc.lib.dl.util.RedisWorkerConstants.DepositPipelineState;
 
 /**
  * @author bbpennel

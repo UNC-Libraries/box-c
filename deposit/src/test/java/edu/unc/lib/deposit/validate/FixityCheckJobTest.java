@@ -16,9 +16,9 @@
 package edu.unc.lib.deposit.validate;
 
 import static edu.unc.lib.boxc.common.test.TestHelpers.setField;
+import static edu.unc.lib.boxc.deposit.impl.model.DepositModelHelpers.addDatastream;
+import static edu.unc.lib.boxc.deposit.impl.model.DepositModelHelpers.getDatastream;
 import static edu.unc.lib.boxc.model.api.DatastreamType.ORIGINAL_FILE;
-import static edu.unc.lib.dl.persist.services.deposit.DepositModelHelpers.addDatastream;
-import static edu.unc.lib.dl.persist.services.deposit.DepositModelHelpers.getDatastream;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -56,6 +56,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.Logger;
 
+import edu.unc.lib.boxc.deposit.api.RedisWorkerConstants.DepositState;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.ids.PIDMinter;
 import edu.unc.lib.boxc.model.api.rdf.Cdr;
@@ -63,12 +64,11 @@ import edu.unc.lib.boxc.model.api.rdf.CdrDeposit;
 import edu.unc.lib.boxc.model.api.rdf.Premis;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPIDMinter;
+import edu.unc.lib.boxc.operations.impl.events.PremisLoggerFactoryImpl;
+import edu.unc.lib.boxc.persist.api.DigestAlgorithm;
 import edu.unc.lib.deposit.fcrepo4.AbstractDepositJobTest;
 import edu.unc.lib.deposit.work.JobFailedException;
 import edu.unc.lib.deposit.work.JobInterruptedException;
-import edu.unc.lib.dl.persist.event.PremisLoggerFactoryImpl;
-import edu.unc.lib.dl.util.DigestAlgorithm;
-import edu.unc.lib.dl.util.RedisWorkerConstants.DepositState;
 
 /**
  * @author bbpennel

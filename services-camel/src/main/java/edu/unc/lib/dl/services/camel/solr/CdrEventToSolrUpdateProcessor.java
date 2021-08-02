@@ -32,11 +32,11 @@ import org.slf4j.LoggerFactory;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.xml.JDOMNamespaceUtil;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
-import edu.unc.lib.dl.persist.api.indexing.IndexingPriority;
-import edu.unc.lib.dl.services.IndexingMessageSender;
-import edu.unc.lib.dl.util.IndexingActionType;
-import edu.unc.lib.dl.util.JMSMessageUtil;
-import edu.unc.lib.dl.util.JMSMessageUtil.CDRActions;
+import edu.unc.lib.boxc.operations.jms.indexing.IndexingMessageSender;
+import edu.unc.lib.boxc.operations.jms.indexing.IndexingPriority;
+import edu.unc.lib.boxc.operations.jms.JMSMessageUtil;
+import edu.unc.lib.boxc.operations.jms.JMSMessageUtil.CDRActions;
+import edu.unc.lib.boxc.operations.jms.indexing.IndexingActionType;
 
 /**
  * Processes CDR events to determine the actions required to update solr records
