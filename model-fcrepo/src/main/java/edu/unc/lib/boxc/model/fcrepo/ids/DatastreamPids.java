@@ -15,6 +15,7 @@
  */
 package edu.unc.lib.boxc.model.fcrepo.ids;
 
+import static edu.unc.lib.boxc.model.api.DatastreamType.ACCESS_COPY;
 import static edu.unc.lib.boxc.model.api.DatastreamType.MD_DESCRIPTIVE;
 import static edu.unc.lib.boxc.model.api.DatastreamType.MD_EVENTS;
 import static edu.unc.lib.boxc.model.api.DatastreamType.ORIGINAL_FILE;
@@ -61,6 +62,11 @@ public class DatastreamPids {
 
     public static PID getDepositManifestPid(PID pid, String name) {
         String path = URIUtil.join(pid.getRepositoryPath(), DEPOSIT_MANIFEST_CONTAINER, name.toLowerCase());
+        return PIDs.get(path);
+    }
+
+    public static PID getAccessCopyPid(PID pid) {
+        String path = URIUtil.join(pid.getRepositoryPath(), DATA_FILE_FILESET, ACCESS_COPY.getId());
         return PIDs.get(path);
     }
 

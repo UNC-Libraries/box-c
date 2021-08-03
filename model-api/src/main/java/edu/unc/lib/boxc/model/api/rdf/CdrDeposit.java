@@ -96,6 +96,10 @@ public class CdrDeposit {
     public static final Property hasDatastreamOriginal = createProperty(
             "http://cdr.unc.edu/definitions/deposit#hasDatastreamOriginal" );
 
+    /** Link to access copy binary resource */
+    public static final Property hasDatastreamAccessCopy = createProperty(
+            "http://cdr.unc.edu/definitions/deposit#hasDatastreamAccessCopy" );
+
     /** Link to FITS binary resource */
     public static final Property hasDatastreamFits = createProperty(
             "http://cdr.unc.edu/definitions/deposit#hasDatastreamFits" );
