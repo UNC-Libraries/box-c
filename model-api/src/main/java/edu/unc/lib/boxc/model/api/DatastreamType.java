@@ -27,6 +27,7 @@ import static edu.unc.lib.boxc.model.api.ids.RepositoryPathConstants.METADATA_CO
  *
  */
 public enum DatastreamType {
+    ACCESS_COPY("access_copy", "application/octet-stream", ".access", null, EXTERNAL),
     FULLTEXT_EXTRACTION("fulltext", "text/plain", "txt", null, EXTERNAL),
     JP2_ACCESS_COPY("jp2", "image/jp2", "jp2", null, EXTERNAL),
     MD_DESCRIPTIVE("md_descriptive", "text/xml", "xml", METADATA_CONTAINER, INTERNAL),

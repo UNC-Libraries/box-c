@@ -96,7 +96,7 @@ public class DepositDirectoryManager {
      * @param modsEl
      */
     public void writeMods(PID pid, Element modsEl) {
-        Path modsPath = makeMetadataFilePath(descriptionDir, pid, ".xml");
+        Path modsPath = getModsPath(pid);
 
         try (OutputStream fos = newOutputStream(modsPath)) {
             // Make a new document for just the MODS, which should add in the xml declaration
@@ -106,6 +106,14 @@ public class DepositDirectoryManager {
         } catch (IOException e) {
             throw new RepositoryException("Unable to write MODS for " + pid.getId(), e);
         }
+    }
+
+    /**
+     * @param pid
+     * @return get the path to where the MODS file for the given PID should be located
+     */
+    public Path getModsPath(PID pid) {
+        return makeMetadataFilePath(descriptionDir, pid, ".xml");
     }
 
     public Path writeHistoryFile(PID pid, DatastreamType type, InputStream historyStream) {
