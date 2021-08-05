@@ -27,7 +27,8 @@ public enum DepositMethod {
     SWORD20("SWORD 2.0"),
     CDRAPI1("CDR API 1.0"),
     CDRCollector("CDR Collector 1.0"),
-    BXC3_TO_5_MIGRATION_UTIL("BXC3 To BXC5 Migration Utility");
+    BXC3_TO_5_MIGRATION_UTIL("BXC3 To BXC5 Migration Utility"),
+    CDM_TO_BXC_MIGRATION("CDM To Box-c Migration");
 
     private String label;
 
