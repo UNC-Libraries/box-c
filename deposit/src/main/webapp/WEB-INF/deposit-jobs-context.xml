@@ -148,6 +148,10 @@
         scope="prototype">
     </bean>
     
+    <bean id="PreconstructedDepositJob" class="edu.unc.lib.deposit.normalize.PreconstructedDepositJob"
+        scope="prototype">
+    </bean>
+    
     <bean id="bagitValidationExecutor" class="java.util.concurrent.Executors"
             factory-method="newFixedThreadPool" destroy-method="shutdownNow">
         <constructor-arg value="${job.bagitValidation.workers:50}"/>

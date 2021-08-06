@@ -45,6 +45,7 @@ import edu.unc.lib.boxc.model.api.ids.PID;
  * @author bbpennel
  */
 public class DepositDirectoryManager {
+    public static final String MODEL_FILENAME = "model.n3";
 
     private Path depositDir;
     private Path descriptionDir;
@@ -154,6 +155,13 @@ public class DepositDirectoryManager {
             }
         }
         return mdPath.resolve(pid.getId() + extension);
+    }
+
+    /**
+     * @return Path of triples file containing the deposit model
+     */
+    public Path getModelPath() {
+        return depositDir.resolve(MODEL_FILENAME);
     }
 
     public Path getDepositDir() {

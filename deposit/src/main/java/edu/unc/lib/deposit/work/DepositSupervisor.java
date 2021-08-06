@@ -66,6 +66,7 @@ import edu.unc.lib.deposit.normalize.BagIt2N3BagJob;
 import edu.unc.lib.deposit.normalize.CDRMETS2N3BagJob;
 import edu.unc.lib.deposit.normalize.DirectoryToBagJob;
 import edu.unc.lib.deposit.normalize.NormalizeFileObjectsJob;
+import edu.unc.lib.deposit.normalize.PreconstructedDepositJob;
 import edu.unc.lib.deposit.normalize.Simple2N3BagJob;
 import edu.unc.lib.deposit.normalize.UnpackDepositJob;
 import edu.unc.lib.deposit.transfer.TransferBinariesToStorageJob;
@@ -743,29 +744,24 @@ public class DepositSupervisor implements WorkerListener {
             }
         }
 
-        // Deposit package type may be converted to N3
-        if (!packagingType.equals(PackagingType.BAG_WITH_N3.getUri())) {
-            Job conversion = null;
-            // we need to add N3 packaging to this bag
-            if (packagingType.equals(PackagingType.METS_CDR.getUri())) {
-                conversion = makeJob(CDRMETS2N3BagJob.class, depositUUID);
-            } else if (packagingType.equals(PackagingType.SIMPLE_OBJECT.getUri())) {
-                conversion = makeJob(Simple2N3BagJob.class, depositUUID);
-            } else if (packagingType.equals(PackagingType.BAGIT.getUri())) {
-                conversion = makeJob(BagIt2N3BagJob.class, depositUUID);
-            } else if (packagingType.equals(PackagingType.DIRECTORY.getUri())) {
-                conversion = makeJob(DirectoryToBagJob.class, depositUUID);
-            }
-
-            if (conversion == null) {
-                String msg = MessageFormat
-                        .format("Cannot convert deposit package to N3 BagIt."
-                                + " No converter for this packaging type(s): {0}",
-                                packagingType);
-                throw new DepositFailedException(msg);
-            } else if (!successfulJobs.contains(conversion.getClassName())) {
-                return conversion;
-            }
+        Class<?> conversionClass = null;
+        if (packagingType.equals(PackagingType.BAG_WITH_N3.getUri())) {
+            conversionClass = PreconstructedDepositJob.class;
+        } else if (packagingType.equals(PackagingType.METS_CDR.getUri())) {
+            conversionClass = CDRMETS2N3BagJob.class;
+        } else if (packagingType.equals(PackagingType.SIMPLE_OBJECT.getUri())) {
+            conversionClass = Simple2N3BagJob.class;
+        } else if (packagingType.equals(PackagingType.BAGIT.getUri())) {
+            conversionClass = BagIt2N3BagJob.class;
+        } else if (packagingType.equals(PackagingType.DIRECTORY.getUri())) {
+            conversionClass = DirectoryToBagJob.class;
+        }
+        if (conversionClass == null) {
+            String msg = MessageFormat.format("Cannot convert deposit package to N3 BagIt."
+                            + " No converter for this packaging type(s): {0}", packagingType);
+            throw new DepositFailedException(msg);
+        } else if (!successfulJobs.contains(conversionClass.getName())) {
+            return makeJob(conversionClass, depositUUID);
         }
 
         // Normalize all fileObjects into Works
