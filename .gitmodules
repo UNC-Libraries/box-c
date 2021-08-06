@@ -1,6 +1,3 @@
-[submodule "fcrepo"]
-	path = fcrepo
-	url = https://github.com/fcrepo/fcrepo.git
 [submodule "clamav-java"]
 	path = clamav-java
 	url = https://github.com/UNC-Libraries/clamav-java.git

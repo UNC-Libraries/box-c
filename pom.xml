@@ -61,7 +61,7 @@
         
         <cdr.version>5.0-SNAPSHOT</cdr.version>
         <fcrepo.version>3.8.0</fcrepo.version>
-        <fcrepo4.version>5.2.0-SNAPSHOT</fcrepo4.version>
+        <fcrepo4.version>5.1.2-RC-1</fcrepo4.version>
         <fcrepo-indexing-triplestore.version>5.0.0</fcrepo-indexing-triplestore.version>
         <clamav-java.version>1.0.2-SNAPSHOT</clamav-java.version>
         
@@ -72,7 +72,7 @@
         
         <junit.version>4.13.1</junit.version>
         <grizzly.version>2.4.4</grizzly.version>
-        <jersey.version>2.32</jersey.version>
+        <jersey.version>2.34</jersey.version>
         <mockito.version>1.10.19</mockito.version>
         <fcrepo.client.version>5.0.0</fcrepo.client.version>
         <mock.server.version>5.4.1</mock.server.version>
@@ -189,7 +189,6 @@
         <module>access-common</module>
         <module>deposit</module>
         <module>clamav-java</module>
-        <module>fcrepo</module>
         <module>spoof</module>
         <module>common-utils</module>
         <module>model-api</module>
