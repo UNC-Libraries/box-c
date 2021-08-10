@@ -15,7 +15,7 @@
  */
 package edu.unc.lib.dl.data.ingest.solr.indexing;
 
-import static edu.unc.lib.dl.search.solr.util.SearchFieldKeys.ID;
+import static edu.unc.lib.boxc.search.api.SearchFieldKeys.ID;
 
 import java.io.IOException;
 import java.util.Date;
@@ -31,8 +31,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import edu.unc.lib.boxc.model.api.ids.PID;
+import edu.unc.lib.boxc.search.solr.models.IndexDocumentBean;
 import edu.unc.lib.dl.data.ingest.solr.exception.IndexingException;
-import edu.unc.lib.dl.search.solr.model.IndexDocumentBean;
 import edu.unc.lib.dl.search.solr.util.SolrSettings;
 
 /**

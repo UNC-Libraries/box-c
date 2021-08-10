@@ -20,9 +20,9 @@ import static edu.unc.lib.boxc.common.test.TestHelpers.setField;
 import static edu.unc.lib.boxc.model.api.ResourceType.Folder;
 import static edu.unc.lib.boxc.model.api.ResourceType.Work;
 import static edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPaths.getContentRootPid;
+import static edu.unc.lib.boxc.search.api.SearchFieldKeys.SUBJECT;
 import static edu.unc.lib.dl.search.solr.service.ChildrenCountService.CHILD_COUNT;
 import static edu.unc.lib.dl.search.solr.service.StructureQueryService.CONTAINERS_COUNT;
-import static edu.unc.lib.dl.search.solr.util.SearchFieldKeys.SUBJECT;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -43,18 +43,18 @@ import edu.unc.lib.boxc.auth.api.services.GlobalPermissionEvaluator;
 import edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
+import edu.unc.lib.boxc.search.api.SearchFieldKeys;
 import edu.unc.lib.boxc.search.api.models.ContentObjectRecord;
+import edu.unc.lib.boxc.search.api.requests.HierarchicalBrowseRequest;
+import edu.unc.lib.boxc.search.api.requests.SearchState;
+import edu.unc.lib.boxc.search.solr.facets.GenericFacet;
 import edu.unc.lib.dl.search.solr.model.FacetFieldFactory;
-import edu.unc.lib.dl.search.solr.model.GenericFacet;
-import edu.unc.lib.dl.search.solr.model.HierarchicalBrowseRequest;
 import edu.unc.lib.dl.search.solr.model.HierarchicalBrowseResultResponse;
 import edu.unc.lib.dl.search.solr.model.HierarchicalBrowseResultResponse.ResultNode;
-import edu.unc.lib.dl.search.solr.model.SearchState;
 import edu.unc.lib.dl.search.solr.test.BaseEmbeddedSolrTest;
 import edu.unc.lib.dl.search.solr.test.TestCorpus;
 import edu.unc.lib.dl.search.solr.util.AccessRestrictionUtil;
 import edu.unc.lib.dl.search.solr.util.FacetFieldUtil;
-import edu.unc.lib.dl.search.solr.util.SearchFieldKeys;
 
 /**
  *
@@ -249,7 +249,7 @@ public class StructureQueryServiceIT extends BaseEmbeddedSolrTest {
 
         // Add subject filter to search state
         SearchState searchState = new SearchState();
-        searchState.setFacet(SUBJECT, new GenericFacet(SUBJECT.name(), "computers"));
+        searchState.setFacet(new GenericFacet(SUBJECT.name(), "computers"));
 
         HierarchicalBrowseRequest browseRequest = makeRequest(testCorpus.coll1Pid);
         browseRequest.setSearchState(searchState);

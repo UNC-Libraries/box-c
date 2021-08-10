@@ -30,13 +30,13 @@ import com.googlecode.concurrentlinkedhashmap.ConcurrentLinkedHashMap;
 
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPaths;
+import edu.unc.lib.boxc.search.api.SearchFieldKeys;
 import edu.unc.lib.boxc.search.api.facets.HierarchicalFacetNode;
 import edu.unc.lib.boxc.search.api.models.ContentObjectRecord;
 import edu.unc.lib.boxc.search.api.models.ObjectPath;
 import edu.unc.lib.boxc.search.api.models.ObjectPathEntry;
-import edu.unc.lib.dl.search.solr.model.ObjectPathImpl;
-import edu.unc.lib.dl.search.solr.model.SimpleIdRequest;
-import edu.unc.lib.dl.search.solr.util.SearchFieldKeys;
+import edu.unc.lib.boxc.search.api.requests.SimpleIdRequest;
+import edu.unc.lib.boxc.search.solr.models.ObjectPathImpl;
 import edu.unc.lib.dl.search.solr.util.SolrSettings;
 
 /**
@@ -112,22 +112,22 @@ public class ObjectPathFactory {
      * will be present.
      *
      * The path is determined by the ancestorPath field of the
-     * BriefObjectMetadata object. If ancestorPath is not present, then null
+     * ContentObjectRecord object. If ancestorPath is not present, then null
      * will be returned.
      *
-     * @param bom
+     * @param record
      * @return
      */
-    public ObjectPath getPath(ContentObjectRecord bom) {
-        if (bom.getAncestorPathFacet() == null && !RepositoryPaths.getContentRootPid().getId().equals(bom.getId())) {
+    public ObjectPath getPath(ContentObjectRecord record) {
+        if (record.getAncestorPathFacet() == null && !RepositoryPaths.getContentRootPid().equals(record.getPid())) {
             return null;
         }
 
         List<ObjectPathEntry> entries = new ArrayList<>();
 
         // Retrieve path data for each node in the ancestor path
-        if (bom.getAncestorPathFacet() != null) {
-            for (HierarchicalFacetNode node : bom.getAncestorPathFacet().getFacetNodes()) {
+        if (record.getAncestorPathFacet() != null) {
+            for (HierarchicalFacetNode node : record.getAncestorPathFacet().getFacetNodes()) {
                 String pid = node.getSearchKey();
                 PathCacheData pathData = getPathData(pid);
 
@@ -137,18 +137,18 @@ public class ObjectPathFactory {
             }
         }
 
-        if (bom.getTitle() != null) {
+        if (record.getTitle() != null) {
             // Refresh the cache for the object being looked up if it is a container
-            if (isContainer(bom.getResourceType())) {
+            if (isContainer(record.getResourceType())) {
                 try {
-                    pathCache.put(bom.getId(), new PathCacheData(bom.getTitle(), true, bom.getCollectionId()));
+                    pathCache.put(record.getId(), new PathCacheData(record.getTitle(), true, record.getCollectionId()));
                 } catch (InvalidPathDataException e) {
-                    log.debug("Did not cache path data for the provided object {}", bom.getId(), e);
+                    log.debug("Did not cache path data for the provided object {}", record.getId(), e);
                 }
             }
 
             // Add the provided metadata object into the path as the last entry, if it had a title
-            entries.add(new ObjectPathEntry(bom.getId(), bom.getTitle(), true, bom.getCollectionId()));
+            entries.add(new ObjectPathEntry(record.getId(), record.getTitle(), true, record.getCollectionId()));
         }
 
         return new ObjectPathImpl(entries);

@@ -18,8 +18,8 @@ package edu.unc.lib.dl.search.solr.service;
 import static edu.unc.lib.boxc.auth.api.AccessPrincipalConstants.PUBLIC_PRINC;
 import static edu.unc.lib.boxc.common.test.TestHelpers.setField;
 import static edu.unc.lib.boxc.model.api.ResourceType.File;
+import static edu.unc.lib.boxc.search.api.SearchFieldKeys.RESOURCE_TYPE;
 import static edu.unc.lib.dl.search.solr.service.ChildrenCountService.CHILD_COUNT;
-import static edu.unc.lib.dl.search.solr.util.SearchFieldKeys.RESOURCE_TYPE;
 import static java.util.Arrays.asList;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.anySetOf;
@@ -43,7 +43,7 @@ import edu.unc.lib.boxc.model.api.ResourceType;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.boxc.search.api.models.ContentObjectRecord;
-import edu.unc.lib.dl.search.solr.model.SimpleIdRequest;
+import edu.unc.lib.boxc.search.api.requests.SimpleIdRequest;
 import edu.unc.lib.dl.search.solr.test.BaseEmbeddedSolrTest;
 import edu.unc.lib.dl.search.solr.test.TestCorpus;
 import edu.unc.lib.dl.search.solr.util.AccessRestrictionUtil;
@@ -191,7 +191,7 @@ public class ChildrenCountServiceIT extends BaseEmbeddedSolrTest {
 
     private ContentObjectRecord getObject(PID pid) {
         return solrSearchService.getObjectById(
-                new SimpleIdRequest(pid.getId(), principals));
+                new SimpleIdRequest(pid, principals));
     }
 
     private void assertCountEquals(long count, ContentObjectRecord md, String countType) {

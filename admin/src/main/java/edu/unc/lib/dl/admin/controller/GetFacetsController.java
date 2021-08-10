@@ -25,7 +25,8 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 
-import edu.unc.lib.dl.search.solr.model.SearchRequest;
+import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
+import edu.unc.lib.boxc.search.api.requests.SearchRequest;
 import edu.unc.lib.dl.search.solr.model.SearchResultResponse;
 import edu.unc.lib.dl.search.solr.service.MultiSelectFacetListService;
 import edu.unc.lib.dl.search.solr.service.ParentCollectionFacetTitleService;
@@ -48,7 +49,7 @@ public class GetFacetsController extends AbstractSearchController {
     @RequestMapping("/facets/{pid}")
     public String getFacets(@PathVariable("pid") String pid, Model model, HttpServletRequest request) {
         SearchRequest searchRequest = generateSearchRequest(request);
-        searchRequest.setRootPid(pid);
+        searchRequest.setRootPid(PIDs.get(pid));
 
         return getFacets(searchRequest, model);
     }

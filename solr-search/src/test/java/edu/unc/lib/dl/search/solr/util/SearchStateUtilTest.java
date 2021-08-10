@@ -26,7 +26,9 @@ import java.util.stream.Collectors;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import edu.unc.lib.dl.search.solr.model.SearchState;
+import edu.unc.lib.boxc.search.api.SearchFieldKeys;
+import edu.unc.lib.boxc.search.api.requests.SearchState;
+import edu.unc.lib.boxc.search.solr.facets.GenericFacet;
 
 /**
  * @author bbpennel
@@ -64,7 +66,7 @@ public class SearchStateUtilTest {
     @Test
     public void generateSearchParametersSubjectFacet() throws Exception {
         SearchState searchState = new SearchState();
-        searchState.addFacet(SearchFieldKeys.SUBJECT, "subject value");
+        searchState.addFacet(new GenericFacet(SearchFieldKeys.SUBJECT, "subject value"));
 
         Map<String, String> params = SearchStateUtil.generateSearchParameters(searchState);
         assertEquals("subject value", params.get("subject"));
@@ -73,9 +75,9 @@ public class SearchStateUtilTest {
     @Test
     public void generateSearchParametersMultipleSubjectFacet() throws Exception {
         SearchState searchState = new SearchState();
-        searchState.addFacet(SearchFieldKeys.SUBJECT, "subject1");
-        searchState.addFacet(SearchFieldKeys.SUBJECT, "subject two");
-        searchState.addFacet(SearchFieldKeys.SUBJECT, "last one");
+        searchState.addFacet(new GenericFacet(SearchFieldKeys.SUBJECT, "subject1"));
+        searchState.addFacet(new GenericFacet(SearchFieldKeys.SUBJECT, "subject two"));
+        searchState.addFacet(new GenericFacet(SearchFieldKeys.SUBJECT, "last one"));
 
         Map<String, String> params = SearchStateUtil.generateSearchParameters(searchState);
         assertEquals("subject1||subject two||last one", params.get("subject"));
@@ -84,8 +86,8 @@ public class SearchStateUtilTest {
     @Test
     public void generateSearchParametersMultipleRoleGroup() throws Exception {
         SearchState searchState = new SearchState();
-        searchState.addFacet(SearchFieldKeys.ROLE_GROUP, "canViewOriginals|everyone");
-        searchState.addFacet(SearchFieldKeys.ROLE_GROUP, "canViewOriginals|authenticated");
+        searchState.addFacet(new GenericFacet(SearchFieldKeys.ROLE_GROUP, "canViewOriginals|everyone"));
+        searchState.addFacet(new GenericFacet(SearchFieldKeys.ROLE_GROUP, "canViewOriginals|authenticated"));
 
         Map<String, String> params = SearchStateUtil.generateSearchParameters(searchState);
         assertEquals("canViewOriginals|everyone||canViewOriginals|authenticated", params.get("role"));
@@ -94,9 +96,9 @@ public class SearchStateUtilTest {
     @Test
     public void generateSearchParametersMultipleFacets() throws Exception {
         SearchState searchState = new SearchState();
-        searchState.addFacet(SearchFieldKeys.SUBJECT, "subject1");
-        searchState.addFacet(SearchFieldKeys.SUBJECT, "subject two");
-        searchState.addFacet(SearchFieldKeys.ROLE_GROUP, "canViewOriginals|everyone");
+        searchState.addFacet(new GenericFacet(SearchFieldKeys.SUBJECT, "subject1"));
+        searchState.addFacet(new GenericFacet(SearchFieldKeys.SUBJECT, "subject two"));
+        searchState.addFacet(new GenericFacet(SearchFieldKeys.ROLE_GROUP, "canViewOriginals|everyone"));
 
         Map<String, String> params = SearchStateUtil.generateSearchParameters(searchState);
         assertEquals("canViewOriginals|everyone", params.get("role"));
@@ -106,7 +108,7 @@ public class SearchStateUtilTest {
     @Test
     public void generateSearchParametersAncestorPath() throws Exception {
         SearchState searchState = new SearchState();
-        searchState.addFacet(SearchFieldKeys.ANCESTOR_PATH, "3,c31a3e50-8ee7-4381-a16d-0be47c9aeee4");
+        searchState.addFacet(new GenericFacet(SearchFieldKeys.ANCESTOR_PATH, "3,c31a3e50-8ee7-4381-a16d-0be47c9aeee4"));
 
         Map<String, String> params = SearchStateUtil.generateSearchParameters(searchState);
         assertTrue(params.isEmpty());
@@ -116,9 +118,9 @@ public class SearchStateUtilTest {
     public void generateSearchParameterString() {
         SearchState searchState = new SearchState();
         searchState.getSearchFields().put(SearchFieldKeys.KEYWORD.name(), "test words");
-        searchState.addFacet(SearchFieldKeys.SUBJECT, "subject1");
-        searchState.addFacet(SearchFieldKeys.SUBJECT, "subject two");
-        searchState.addFacet(SearchFieldKeys.ROLE_GROUP, "canViewOriginals|everyone");
+        searchState.addFacet(new GenericFacet(SearchFieldKeys.SUBJECT, "subject1"));
+        searchState.addFacet(new GenericFacet(SearchFieldKeys.SUBJECT, "subject two"));
+        searchState.addFacet(new GenericFacet(SearchFieldKeys.ROLE_GROUP, "canViewOriginals|everyone"));
 
         String paramString = SearchStateUtil.generateSearchParameterString(searchState);
         Map<String, String> params = Arrays.stream(paramString.split("&"))

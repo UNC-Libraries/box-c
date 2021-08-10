@@ -22,9 +22,12 @@ import org.apache.solr.client.solrj.SolrQuery;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import edu.unc.lib.boxc.search.api.SearchFieldKeys;
 import edu.unc.lib.boxc.search.api.facets.SearchFacet;
 import edu.unc.lib.boxc.search.api.models.ContentObjectRecord;
-import edu.unc.lib.dl.search.solr.util.SearchFieldKeys;
+import edu.unc.lib.boxc.search.api.models.GroupedContentObjectRecord;
+import edu.unc.lib.boxc.search.api.requests.SearchState;
+import edu.unc.lib.boxc.search.solr.facets.MultivaluedHierarchicalFacet;
 
 /**
  * Response object for a search request.  Contains the list of results from the selected
@@ -101,8 +104,8 @@ public class SearchResultResponse {
             MultivaluedHierarchicalFacet repFacet = null;
             // If we're dealing with a rolled up result then hunt through all its items to find the matching content
             // type
-            if (representative instanceof GroupedMetadataBean) {
-                GroupedMetadataBean groupRep = (GroupedMetadataBean) representative;
+            if (representative instanceof GroupedContentObjectRecord) {
+                GroupedContentObjectRecord groupRep = (GroupedContentObjectRecord) representative;
 
                 int i = 0;
                 do {

@@ -40,7 +40,7 @@ import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
 import edu.unc.lib.boxc.auth.api.services.AccessControlService;
 import edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl;
 import edu.unc.lib.boxc.model.api.ids.PID;
-import edu.unc.lib.dl.search.solr.model.BriefObjectMetadataBean;
+import edu.unc.lib.boxc.search.solr.models.ContentObjectSolrRecord;
 
 /**
  *
@@ -51,7 +51,7 @@ public class PermissionsHelperTest {
 
     private PermissionsHelper helper;
 
-    private BriefObjectMetadataBean mdObject;
+    private ContentObjectSolrRecord mdObject;
 
     private List<String> roleGroups;
 
@@ -66,7 +66,7 @@ public class PermissionsHelperTest {
 
         roleGroups = new ArrayList<>();
 
-        mdObject = new BriefObjectMetadataBean();
+        mdObject = new ContentObjectSolrRecord();
         mdObject.setId("9ef8d1c5-14a1-4ed3-b0c0-6da67fa5f6d1");
         mdObject.setRoleGroup(roleGroups);
         List<String> datastreams = Arrays.asList(

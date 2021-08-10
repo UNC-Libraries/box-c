@@ -38,16 +38,17 @@ import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
 import edu.unc.lib.boxc.auth.api.services.PrincipalClassifier;
 import edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore;
 import edu.unc.lib.boxc.model.api.ResourceType;
+import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
+import edu.unc.lib.boxc.search.api.SearchFieldKeys;
 import edu.unc.lib.boxc.search.api.models.ContentObjectRecord;
-import edu.unc.lib.dl.search.solr.model.CaseInsensitiveFacet;
+import edu.unc.lib.boxc.search.api.requests.SearchRequest;
+import edu.unc.lib.boxc.search.api.requests.SearchState;
+import edu.unc.lib.boxc.search.solr.facets.CaseInsensitiveFacet;
 import edu.unc.lib.dl.search.solr.model.FacetFieldObject;
-import edu.unc.lib.dl.search.solr.model.SearchRequest;
 import edu.unc.lib.dl.search.solr.model.SearchResultResponse;
-import edu.unc.lib.dl.search.solr.model.SearchState;
 import edu.unc.lib.dl.search.solr.service.ObjectPathFactory;
 import edu.unc.lib.dl.search.solr.service.SearchStateFactory;
 import edu.unc.lib.dl.search.solr.service.SolrSearchService;
-import edu.unc.lib.dl.search.solr.util.SearchFieldKeys;
 import edu.unc.lib.dl.search.solr.util.SolrSettings;
 
 /**
@@ -87,23 +88,23 @@ public class SolrQueryLayerService extends SolrSearchService {
 
     public SearchResultResponse getDepartmentList(AccessGroupSet accessGroups, String pid) {
         SearchState searchState;
-        Boolean has_pid = (pid != null) ? true : false;
+        Boolean hasPid = (pid != null) ? true : false;
 
         searchState = searchStateFactory.createFacetSearchState(SearchFieldKeys.DEPARTMENT.name(), "index",
                 Integer.MAX_VALUE);
 
         SearchRequest searchRequest = new SearchRequest(searchState, accessGroups, true);
-        searchRequest.setRootPid(pid);
+        searchRequest.setRootPid(PIDs.get(pid));
         ContentObjectRecord selectedContainer = null;
 
-        if (has_pid) {
+        if (hasPid) {
             selectedContainer = addSelectedContainer(searchRequest.getRootPid(), searchState,
                     false, accessGroups);
         }
 
         SearchResultResponse results = getSearchResults(searchRequest);
 
-        if (has_pid) {
+        if (hasPid) {
             results.setSelectedContainer(selectedContainer);
         }
 

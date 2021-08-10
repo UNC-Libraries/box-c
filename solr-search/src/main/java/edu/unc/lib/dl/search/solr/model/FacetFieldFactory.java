@@ -29,6 +29,7 @@ import org.slf4j.LoggerFactory;
 import edu.unc.lib.boxc.search.api.exceptions.InvalidFacetException;
 import edu.unc.lib.boxc.search.api.exceptions.InvalidHierarchicalFacetException;
 import edu.unc.lib.boxc.search.api.facets.SearchFacet;
+import edu.unc.lib.boxc.search.solr.facets.GenericFacet;
 import edu.unc.lib.dl.search.solr.util.SearchSettings;
 import edu.unc.lib.dl.search.solr.util.SolrSettings;
 
@@ -43,7 +44,14 @@ public class FacetFieldFactory {
     private SearchSettings searchSettings;
     private SolrSettings solrSettings;
 
-    public GenericFacet createFacet(String fieldKey, String facetValue) {
+    /**
+     * Create an instance of a SearchFacet. The implementation is determined based off of the configured
+     * class for the fieldKey
+     * @param fieldKey
+     * @param facetValue value of the facet
+     * @return
+     */
+    public SearchFacet createFacet(String fieldKey, String facetValue) {
         Class<?> facetClass = searchSettings.getFacetClasses().get(fieldKey);
         if (facetClass == null) {
             facetClass = GenericFacet.class;
@@ -51,12 +59,10 @@ public class FacetFieldFactory {
         try {
             Constructor<?> constructor = facetClass.getConstructor(String.class, String.class);
             Object newFacet = constructor.newInstance(fieldKey, facetValue);
-            /*if (newFacet == null)
-                throw new Exception();*/
             return (GenericFacet) newFacet;
         } catch (InvocationTargetException e) {
             if (e.getCause() instanceof InvalidHierarchicalFacetException) {
-                throw (InvalidHierarchicalFacetException)e.getCause();
+                throw (InvalidHierarchicalFacetException) e.getCause();
             }
             throw new InvalidFacetException(
                     "An exception occurred while attempting to instantiate a new facet field object for "

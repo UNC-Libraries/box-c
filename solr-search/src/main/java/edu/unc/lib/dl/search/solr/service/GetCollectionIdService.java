@@ -28,9 +28,9 @@ import org.apache.solr.common.SolrDocumentList;
 import org.slf4j.Logger;
 
 import edu.unc.lib.boxc.model.api.ids.ContentPathConstants;
+import edu.unc.lib.boxc.search.api.SearchFieldKeys;
 import edu.unc.lib.boxc.search.api.exceptions.SolrRuntimeException;
 import edu.unc.lib.boxc.search.api.models.ContentObjectRecord;
-import edu.unc.lib.dl.search.solr.util.SearchFieldKeys;
 import edu.unc.lib.dl.search.solr.util.SolrSettings;
 
 /**

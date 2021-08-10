@@ -26,7 +26,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import edu.unc.lib.boxc.model.api.ids.PID;
-import edu.unc.lib.dl.search.solr.model.BriefObjectMetadataBean;
+import edu.unc.lib.boxc.search.solr.models.ContentObjectSolrRecord;
 
 /**
  *
@@ -50,7 +50,7 @@ public class DatastreamUtilTest {
     @Test
     public void testGetOriginalFileUrl() {
         PID pid = makePid();
-        BriefObjectMetadataBean mdObj = new BriefObjectMetadataBean();
+        ContentObjectSolrRecord mdObj = new ContentObjectSolrRecord();
         mdObj.setId(pid.getId());
         mdObj.setDatastream(asList(ORIGINAL_DS));
 
@@ -61,7 +61,7 @@ public class DatastreamUtilTest {
     @Test
     public void testGetOriginalFileIndexableUrl() {
         PID pid = makePid();
-        BriefObjectMetadataBean mdObj = new BriefObjectMetadataBean();
+        ContentObjectSolrRecord mdObj = new ContentObjectSolrRecord();
         mdObj.setId(pid.getId());
         mdObj.setDatastream(asList(ORIGINAL_INDEXABLE));
 
@@ -72,7 +72,7 @@ public class DatastreamUtilTest {
     @Test
     public void testGetDatastreamUrl() {
         PID pid = makePid();
-        BriefObjectMetadataBean mdObj = new BriefObjectMetadataBean();
+        ContentObjectSolrRecord mdObj = new ContentObjectSolrRecord();
         mdObj.setId(pid.getId());
         mdObj.setDatastream(asList(FITS_DS));
 
@@ -83,7 +83,7 @@ public class DatastreamUtilTest {
     @Test
     public void testGetThumbnailUrl() {
         PID pid = makePid();
-        BriefObjectMetadataBean mdObj = new BriefObjectMetadataBean();
+        ContentObjectSolrRecord mdObj = new ContentObjectSolrRecord();
         mdObj.setId(pid.getId());
         mdObj.setDatastream(asList(ORIGINAL_DS, THUMB_SMALL_DS));
 
@@ -96,7 +96,7 @@ public class DatastreamUtilTest {
         PID primaryObjPid = makePid();
 
         PID pid = makePid();
-        BriefObjectMetadataBean mdObj = new BriefObjectMetadataBean();
+        ContentObjectSolrRecord mdObj = new ContentObjectSolrRecord();
         mdObj.setId(pid.getId());
         mdObj.setDatastream(asList(ORIGINAL_DS, THUMB_SMALL_DS + primaryObjPid.getId()));
 
@@ -107,7 +107,7 @@ public class DatastreamUtilTest {
     @Test
     public void testGetThumbnailUrlNoThumbs() {
         PID pid = makePid();
-        BriefObjectMetadataBean mdObj = new BriefObjectMetadataBean();
+        ContentObjectSolrRecord mdObj = new ContentObjectSolrRecord();
         mdObj.setId(pid.getId());
         mdObj.setDatastream(asList(ORIGINAL_DS));
 

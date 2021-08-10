@@ -24,9 +24,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import edu.unc.lib.boxc.model.api.xml.JDOMNamespaceUtil;
+import edu.unc.lib.boxc.search.solr.models.IndexDocumentBean;
 import edu.unc.lib.dl.data.ingest.solr.exception.IndexingException;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackage;
-import edu.unc.lib.dl.search.solr.model.IndexDocumentBean;
 
 /**
  * Indexing filter for adding RLA specific fields

@@ -107,7 +107,7 @@
     </bean>
     
     <bean class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
-        <property name="staticMethod" value="edu.unc.lib.dl.search.solr.model.BriefObjectMetadataBean.setPathFactory"/>
+        <property name="staticMethod" value="edu.unc.lib.boxc.search.solr.models.ContentObjectSolrRecord.setPathFactory"/>
         <property name="arguments">
             <list>
                 <ref bean="objectPathFactory"/>

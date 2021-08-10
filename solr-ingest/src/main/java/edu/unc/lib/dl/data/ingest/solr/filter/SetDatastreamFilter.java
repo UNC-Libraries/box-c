@@ -46,10 +46,11 @@ import edu.unc.lib.boxc.model.api.objects.WorkObject;
 import edu.unc.lib.boxc.model.api.rdf.Ebucore;
 import edu.unc.lib.boxc.model.api.rdf.Premis;
 import edu.unc.lib.boxc.model.fcrepo.services.DerivativeService;
+import edu.unc.lib.boxc.search.api.models.Datastream;
+import edu.unc.lib.boxc.search.solr.models.DatastreamImpl;
+import edu.unc.lib.boxc.search.solr.models.IndexDocumentBean;
 import edu.unc.lib.dl.data.ingest.solr.exception.IndexingException;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackage;
-import edu.unc.lib.dl.search.solr.model.DatastreamImpl;
-import edu.unc.lib.dl.search.solr.model.IndexDocumentBean;
 
 /**
  * Extracts datastreams from an object and sets related properties concerning the default datastream for the object.
@@ -71,7 +72,7 @@ public class SetDatastreamFilter implements IndexDocumentFilter {
         ContentObject contentObj = dip.getContentObject();
         IndexDocumentBean doc = dip.getDocument();
 
-        List<DatastreamImpl> datastreams = new ArrayList<>();
+        List<Datastream> datastreams = new ArrayList<>();
 
         FileObject fileObj = getFileObject(contentObj);
         if (fileObj != null) {
@@ -157,7 +158,7 @@ public class SetDatastreamFilter implements IndexDocumentFilter {
      * @param binList list of binaries
      * @param ownedByOtherObject
      */
-    private void addDatastreams(List<DatastreamImpl> dsList, List<BinaryObject> binList, boolean ownedByOtherObject) {
+    private void addDatastreams(List<Datastream> dsList, List<BinaryObject> binList, boolean ownedByOtherObject) {
         binList.stream().forEach(binary -> {
                 Resource binaryResc = binary.getResource();
 
@@ -180,7 +181,8 @@ public class SetDatastreamFilter implements IndexDocumentFilter {
 
                 String extentValue = (name.equals(ORIGINAL_FILE.getId()) &&
                         mimetype != null && mimetype.startsWith("image")) ? getExtent(binList) : null;
-                dsList.add(new DatastreamImpl(owner, name, filesize, mimetype, filename, extension, checksum, extentValue));
+                dsList.add(new DatastreamImpl(owner, name, filesize, mimetype,
+                        filename, extension, checksum, extentValue));
             });
     }
 
@@ -192,9 +194,9 @@ public class SetDatastreamFilter implements IndexDocumentFilter {
         return prop.getResource().getURI();
     }
 
-    private List<String> getDatastreamStrings(List<DatastreamImpl> datastreams) {
+    private List<String> getDatastreamStrings(List<Datastream> datastreams) {
         return datastreams.stream()
-                .map(DatastreamImpl::toString)
+                .map(Datastream::toString)
                 .collect(Collectors.toList());
     }
 
@@ -205,15 +207,15 @@ public class SetDatastreamFilter implements IndexDocumentFilter {
      * @param datastreams
      * @return
      */
-    private long getFilesizeTotal(List<DatastreamImpl> datastreams) {
+    private long getFilesizeTotal(List<Datastream> datastreams) {
         return datastreams.stream()
             .filter(ds -> ds.getFilesize() != null && ds.getOwner() == null)
-            .mapToLong(DatastreamImpl::getFilesize)
+            .mapToLong(Datastream::getFilesize)
             .sum();
     }
 
-    private long getFilesize(List<DatastreamImpl> datastreams) throws IndexingException {
-        Optional<DatastreamImpl> original = datastreams.stream()
+    private long getFilesize(List<Datastream> datastreams) throws IndexingException {
+        Optional<Datastream> original = datastreams.stream()
                 .filter(ds -> ORIGINAL_FILE.getId().equals(ds.getName()))
                 .findFirst();
 
@@ -225,7 +227,7 @@ public class SetDatastreamFilter implements IndexDocumentFilter {
         return size != null ? size : 0l;
     }
 
-    private void addDerivatives(List<DatastreamImpl> dsList, PID pid, boolean ownedByOtherObject) {
+    private void addDerivatives(List<Datastream> dsList, PID pid, boolean ownedByOtherObject) {
         derivativeService.getDerivatives(pid).stream()
             .forEach(deriv -> {
                 String owner = (ownedByOtherObject ? pid.getId() : null);

@@ -44,8 +44,7 @@ import edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.boxc.search.api.models.ContentObjectRecord;
-import edu.unc.lib.dl.search.solr.model.BriefObjectMetadataBean;
-import edu.unc.lib.dl.search.solr.model.SimpleIdRequest;
+import edu.unc.lib.boxc.search.api.requests.SimpleIdRequest;
 import edu.unc.lib.dl.ui.service.AccessCopiesService;
 import edu.unc.lib.dl.ui.service.LorisContentService;
 
@@ -164,9 +163,9 @@ public class LorisContentController extends AbstractSolrSearchController {
         PID pid = PIDs.get(id);
         // Check if the user is allowed to view this object's manifest
         if (this.hasAccess(pid, datastream)) {
-            SimpleIdRequest idRequest = new SimpleIdRequest(id, GroupsThreadStore
+            SimpleIdRequest idRequest = new SimpleIdRequest(pid, GroupsThreadStore
                     .getAgentPrincipals().getPrincipals());
-            BriefObjectMetadataBean briefObj = queryLayer.getObjectById(idRequest);
+            ContentObjectRecord briefObj = queryLayer.getObjectById(idRequest);
             response.addHeader("Access-Control-Allow-Origin", "*");
             return lorisContentService.getCanvas(request, briefObj);
         } else {

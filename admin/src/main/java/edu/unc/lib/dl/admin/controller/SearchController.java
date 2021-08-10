@@ -35,10 +35,11 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPaths;
-import edu.unc.lib.dl.search.solr.model.SearchRequest;
+import edu.unc.lib.boxc.search.api.requests.SearchRequest;
+import edu.unc.lib.boxc.search.api.requests.SearchState;
 import edu.unc.lib.dl.search.solr.model.SearchResultResponse;
-import edu.unc.lib.dl.search.solr.model.SearchState;
 import edu.unc.lib.dl.search.solr.util.SearchStateUtil;
 
 /**
@@ -155,7 +156,7 @@ public class SearchController extends AbstractSearchController {
 
     private SearchRequest getSearchRequest(String pid, HttpServletRequest request) {
         SearchRequest searchRequest = generateSearchRequest(request);
-        searchRequest.setRootPid(pid);
+        searchRequest.setRootPid(PIDs.get(pid));
         searchRequest.setApplyCutoffs(false);
         return searchRequest;
     }
@@ -196,7 +197,7 @@ public class SearchController extends AbstractSearchController {
 
     private SearchRequest getListRequest(String pid, HttpServletRequest request) {
         SearchRequest searchRequest = generateSearchRequest(request);
-        searchRequest.setRootPid(pid);
+        searchRequest.setRootPid(PIDs.get(pid));
         return searchRequest;
     }
 }

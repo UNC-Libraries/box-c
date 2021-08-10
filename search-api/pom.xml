@@ -15,5 +15,9 @@
             <groupId>edu.unc.lib.cdr</groupId>
             <artifactId>model-api</artifactId>
         </dependency>
+        <dependency>
+            <groupId>edu.unc.lib.cdr</groupId>
+            <artifactId>auth-api</artifactId>
+        </dependency>
     </dependencies>
 </project>

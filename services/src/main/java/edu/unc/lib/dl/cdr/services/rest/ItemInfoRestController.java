@@ -35,10 +35,10 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
+import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.boxc.search.api.models.ContentObjectRecord;
-import edu.unc.lib.dl.search.solr.model.BriefObjectMetadataBean;
-import edu.unc.lib.dl.search.solr.model.IdListRequest;
-import edu.unc.lib.dl.search.solr.model.SimpleIdRequest;
+import edu.unc.lib.boxc.search.api.requests.IdListRequest;
+import edu.unc.lib.boxc.search.api.requests.SimpleIdRequest;
 import edu.unc.lib.dl.ui.service.SolrQueryLayerService;
 
 /**
@@ -59,8 +59,8 @@ public class ItemInfoRestController {
     public @ResponseBody
     ResponseEntity<Object> getVersion(@PathVariable("id") String id) {
         AccessGroupSet principals = getAgentPrincipals().getPrincipals();
-        SimpleIdRequest idRequest = new SimpleIdRequest(id, Arrays.asList("_version_"), principals);
-        BriefObjectMetadataBean md = solrSearchService.getObjectById(idRequest);
+        SimpleIdRequest idRequest = new SimpleIdRequest(PIDs.get(id), Arrays.asList("_version_"), principals);
+        ContentObjectRecord md = solrSearchService.getObjectById(idRequest);
         if (md == null || md.get_version_() == null) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }

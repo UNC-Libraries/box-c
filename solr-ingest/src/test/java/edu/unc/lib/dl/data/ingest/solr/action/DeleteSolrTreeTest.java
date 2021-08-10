@@ -31,9 +31,9 @@ import org.mockito.Mock;
 import edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl;
 import edu.unc.lib.boxc.common.test.TestHelpers;
 import edu.unc.lib.boxc.model.api.ids.PID;
+import edu.unc.lib.boxc.search.solr.models.ContentObjectSolrRecord;
 import edu.unc.lib.dl.data.ingest.solr.SolrUpdateRequest;
 import edu.unc.lib.dl.data.ingest.solr.test.TestCorpus;
-import edu.unc.lib.dl.search.solr.model.BriefObjectMetadataBean;
 import edu.unc.lib.dl.search.solr.service.SolrSearchService;
 import edu.unc.lib.dl.search.solr.util.AccessRestrictionUtil;
 import edu.unc.lib.dl.search.solr.util.SearchSettings;
@@ -58,7 +58,7 @@ public class DeleteSolrTreeTest extends BaseEmbeddedSolrTest {
     private DeleteSolrTreeAction action;
 
     @Mock
-    private BriefObjectMetadataBean metadata;
+    private ContentObjectSolrRecord metadata;
 
     @Before
     public void setup() throws SolrServerException, IOException {

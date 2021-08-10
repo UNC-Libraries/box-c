@@ -28,11 +28,11 @@ import edu.unc.lib.boxc.search.api.facets.CutoffFacet;
 import edu.unc.lib.boxc.search.api.facets.CutoffFacetNode;
 import edu.unc.lib.boxc.search.api.facets.HierarchicalFacetNode;
 import edu.unc.lib.boxc.search.api.facets.SearchFacet;
-import edu.unc.lib.dl.search.solr.model.CaseInsensitiveFacet;
+import edu.unc.lib.boxc.search.api.requests.SearchState;
+import edu.unc.lib.boxc.search.solr.facets.CaseInsensitiveFacet;
+import edu.unc.lib.boxc.search.solr.facets.GenericFacet;
+import edu.unc.lib.boxc.search.solr.facets.MultivaluedHierarchicalFacet;
 import edu.unc.lib.dl.search.solr.model.FacetFieldFactory;
-import edu.unc.lib.dl.search.solr.model.GenericFacet;
-import edu.unc.lib.dl.search.solr.model.MultivaluedHierarchicalFacet;
-import edu.unc.lib.dl.search.solr.model.SearchState;
 
 /**
  *
@@ -195,7 +195,7 @@ public class FacetFieldUtil {
 
     public void setFacetLimit(String fieldKey, Integer facetLimit, SearchState searchState) {
         // Create a new facet object for the facet being limited
-        GenericFacet facet = facetFieldFactory.createFacet(fieldKey, null);
+        SearchFacet facet = facetFieldFactory.createFacet(fieldKey, null);
         searchState.getFacetLimits().put(facet.getFieldName(), facetLimit);
     }
 

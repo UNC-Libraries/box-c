@@ -71,12 +71,12 @@ import edu.unc.lib.boxc.model.fcrepo.test.TestHelper;
 import edu.unc.lib.boxc.operations.impl.edit.UpdateDescriptionService;
 import edu.unc.lib.boxc.operations.impl.edit.UpdateDescriptionService.UpdateDescriptionRequest;
 import edu.unc.lib.boxc.operations.jms.indexing.IndexingActionType;
+import edu.unc.lib.boxc.search.api.FacetConstants;
 import edu.unc.lib.boxc.search.api.models.ContentObjectRecord;
+import edu.unc.lib.boxc.search.solr.models.ContentObjectSolrRecord;
 import edu.unc.lib.dl.data.ingest.solr.action.IndexingAction;
 import edu.unc.lib.dl.data.ingest.solr.filter.SetCollectionSupplementalInformationFilter;
 import edu.unc.lib.dl.data.ingest.solr.filter.collection.RLASupplementalFilter;
-import edu.unc.lib.dl.search.solr.model.BriefObjectMetadataBean;
-import edu.unc.lib.dl.search.solr.util.FacetConstants;
 import edu.unc.lib.dl.services.camel.solr.AbstractSolrProcessorIT;
 
 /**
@@ -337,7 +337,7 @@ public class SolrUpdateProcessorIT extends AbstractSolrProcessorIT {
 
         QueryResponse resp = solrClient.query(solrQuery);
 
-        List<BriefObjectMetadataBean> results = resp.getBeans(BriefObjectMetadataBean.class);
+        List<ContentObjectSolrRecord> results = resp.getBeans(ContentObjectSolrRecord.class);
         if (results != null && results.size() > 0) {
             return results.get(0);
         }

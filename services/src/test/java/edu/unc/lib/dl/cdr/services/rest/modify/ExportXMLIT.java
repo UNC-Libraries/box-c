@@ -62,11 +62,11 @@ import edu.unc.lib.boxc.model.api.objects.ContentObject;
 import edu.unc.lib.boxc.operations.impl.edit.UpdateDescriptionService;
 import edu.unc.lib.boxc.operations.impl.edit.UpdateDescriptionService.UpdateDescriptionRequest;
 import edu.unc.lib.boxc.operations.impl.utils.EmailHandler;
+import edu.unc.lib.boxc.search.api.requests.SearchRequest;
+import edu.unc.lib.boxc.search.api.requests.SearchState;
+import edu.unc.lib.boxc.search.solr.models.ContentObjectSolrRecord;
 import edu.unc.lib.dl.cdr.services.rest.modify.ExportXMLController.XMLExportRequest;
-import edu.unc.lib.dl.search.solr.model.BriefObjectMetadataBean;
-import edu.unc.lib.dl.search.solr.model.SearchRequest;
 import edu.unc.lib.dl.search.solr.model.SearchResultResponse;
-import edu.unc.lib.dl.search.solr.model.SearchState;
 import edu.unc.lib.dl.search.solr.service.SearchStateFactory;
 import edu.unc.lib.dl.ui.service.SolrQueryLayerService;
 
@@ -148,10 +148,10 @@ public class ExportXMLIT extends AbstractAPIIT {
         SearchResultResponse results = mock(SearchResultResponse.class);
         when(queryLayer.performSearch(any(SearchRequest.class))).thenReturn(results);
 
-        BriefObjectMetadataBean md = new BriefObjectMetadataBean();
+        ContentObjectSolrRecord md = new ContentObjectSolrRecord();
         md.setId(exports.get(0));
 
-        BriefObjectMetadataBean md2 = new BriefObjectMetadataBean();
+        ContentObjectSolrRecord md2 = new ContentObjectSolrRecord();
         md2.setId(exports.get(1));
 
         when(results.getResultList()).thenReturn(Arrays.asList(md, md2));

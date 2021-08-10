@@ -23,7 +23,6 @@ import java.util.List;
 
 import edu.unc.lib.boxc.search.api.models.ContentObjectRecord;
 import edu.unc.lib.boxc.search.api.models.Datastream;
-import edu.unc.lib.dl.search.solr.model.DatastreamImpl;
 
 /**
  * Utility methods for presenting datastreams in views.
@@ -127,7 +126,7 @@ public class DatastreamUtil {
      */
     public static Datastream getPreferredDatastream(ContentObjectRecord metadata, String datastreamName) {
         Datastream preferredDS = null;
-        List<DatastreamImpl> dataStreams = metadata.getDatastreamObjects();
+        List<Datastream> dataStreams = metadata.getDatastreamObjects();
 
         if (dataStreams == null) {
             return null;

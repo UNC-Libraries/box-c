@@ -40,10 +40,10 @@ import edu.unc.lib.boxc.model.api.objects.FileObject;
 import edu.unc.lib.boxc.model.api.rdf.DcElements;
 import edu.unc.lib.boxc.model.api.rdf.Ebucore;
 import edu.unc.lib.boxc.model.api.xml.JDOMNamespaceUtil;
+import edu.unc.lib.boxc.search.solr.models.IndexDocumentBean;
 import edu.unc.lib.dl.data.ingest.solr.exception.IndexingException;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackage;
 import edu.unc.lib.dl.data.ingest.solr.utils.JDOMQueryUtil;
-import edu.unc.lib.dl.search.solr.model.IndexDocumentBean;
 
 /**
  * Filter which sets descriptive metadata information, generally pulled from MODS

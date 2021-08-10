@@ -20,8 +20,8 @@ import static edu.unc.lib.boxc.model.api.ResourceType.Collection;
 import static edu.unc.lib.boxc.model.api.ResourceType.File;
 import static edu.unc.lib.boxc.model.api.ResourceType.Folder;
 import static edu.unc.lib.boxc.model.api.ResourceType.Work;
-import static edu.unc.lib.dl.search.solr.util.SearchFieldKeys.ANCESTOR_PATH;
-import static edu.unc.lib.dl.search.solr.util.SearchFieldKeys.RESOURCE_TYPE;
+import static edu.unc.lib.boxc.search.api.SearchFieldKeys.ANCESTOR_PATH;
+import static edu.unc.lib.boxc.search.api.SearchFieldKeys.RESOURCE_TYPE;
 import static java.util.Arrays.asList;
 
 import java.util.List;

@@ -15,11 +15,11 @@
  */
 package edu.unc.lib.dl.search.solr.service;
 
+import edu.unc.lib.boxc.search.api.SearchFieldKeys;
 import edu.unc.lib.boxc.search.api.facets.SearchFacet;
+import edu.unc.lib.boxc.search.solr.facets.GenericFacet;
 import edu.unc.lib.dl.search.solr.model.FacetFieldList;
 import edu.unc.lib.dl.search.solr.model.FacetFieldObject;
-import edu.unc.lib.dl.search.solr.model.GenericFacet;
-import edu.unc.lib.dl.search.solr.util.SearchFieldKeys;
 
 /**
  * Query service which fills in missing titles for parent collection facet

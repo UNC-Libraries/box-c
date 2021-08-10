@@ -15,7 +15,7 @@
  */
 package edu.unc.lib.dl.search.solr.service;
 
-import static edu.unc.lib.dl.search.solr.util.SearchFieldKeys.RESOURCE_TYPE;
+import static edu.unc.lib.boxc.search.api.SearchFieldKeys.RESOURCE_TYPE;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -44,20 +44,21 @@ import edu.unc.lib.boxc.auth.api.UserRole;
 import edu.unc.lib.boxc.auth.api.exceptions.AccessRestrictionException;
 import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
 import edu.unc.lib.boxc.model.api.ids.PID;
+import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
+import edu.unc.lib.boxc.search.api.SearchFieldKeys;
 import edu.unc.lib.boxc.search.api.facets.CutoffFacet;
 import edu.unc.lib.boxc.search.api.facets.SearchFacet;
 import edu.unc.lib.boxc.search.api.models.ContentObjectRecord;
-import edu.unc.lib.dl.search.solr.model.BriefObjectMetadataBean;
+import edu.unc.lib.boxc.search.api.requests.IdListRequest;
+import edu.unc.lib.boxc.search.api.requests.SearchRequest;
+import edu.unc.lib.boxc.search.api.requests.SearchState;
+import edu.unc.lib.boxc.search.api.requests.SimpleIdRequest;
+import edu.unc.lib.boxc.search.solr.models.ContentObjectSolrRecord;
+import edu.unc.lib.boxc.search.solr.models.GroupedContentObjectSolrRecord;
 import edu.unc.lib.dl.search.solr.model.FacetFieldFactory;
-import edu.unc.lib.dl.search.solr.model.GroupedMetadataBean;
-import edu.unc.lib.dl.search.solr.model.IdListRequest;
-import edu.unc.lib.dl.search.solr.model.SearchRequest;
 import edu.unc.lib.dl.search.solr.model.SearchResultResponse;
-import edu.unc.lib.dl.search.solr.model.SearchState;
-import edu.unc.lib.dl.search.solr.model.SimpleIdRequest;
 import edu.unc.lib.dl.search.solr.util.DateFormatUtil;
 import edu.unc.lib.dl.search.solr.util.FacetFieldUtil;
-import edu.unc.lib.dl.search.solr.util.SearchFieldKeys;
 import edu.unc.lib.dl.search.solr.util.SolrSettings;
 
 /**
@@ -88,7 +89,7 @@ public class SolrSearchService extends AbstractQueryService {
      * @param userAccessGroups
      * @return
      */
-    public BriefObjectMetadataBean getObjectById(SimpleIdRequest idRequest) {
+    public ContentObjectRecord getObjectById(SimpleIdRequest idRequest) {
         LOG.debug("In getObjectbyID");
 
         QueryResponse queryResponse = null;
@@ -122,7 +123,7 @@ public class SolrSearchService extends AbstractQueryService {
             return null;
         }
 
-        List<BriefObjectMetadataBean> results = queryResponse.getBeans(BriefObjectMetadataBean.class);
+        List<ContentObjectSolrRecord> results = queryResponse.getBeans(ContentObjectSolrRecord.class);
         if (results != null && results.size() > 0) {
             return results.get(0);
         }
@@ -172,7 +173,7 @@ public class SolrSearchService extends AbstractQueryService {
             return null;
         }
 
-        List<?> results = queryResponse.getBeans(BriefObjectMetadataBean.class);
+        List<?> results = queryResponse.getBeans(ContentObjectSolrRecord.class);
         return (List<ContentObjectRecord>) results;
     }
 
@@ -188,12 +189,12 @@ public class SolrSearchService extends AbstractQueryService {
 
     /**
      * Generates a solr query from the search state specified in searchRequest
-     * and executes it, returning a result set of BriefObjectMetadataBeans and,
+     * and executes it, returning a result set of ContentObjectRecord and,
      * optionally, the SolrQuery generated for this request.
      *
      * @param searchRequest
      * @param returnQuery
-     * @return the result set of BriefObjectMetadataBeans, or null if an error occurred
+     * @return the result set of ContentObjectRecords, or null if an error occurred
      */
     public SearchResultResponse getSearchResults(SearchRequest searchRequest, boolean returnQuery) {
         LOG.debug("In getSearchResults: " + searchRequest.getSearchState());
@@ -213,10 +214,10 @@ public class SolrSearchService extends AbstractQueryService {
                     && searchRequest.getSearchState().getRollupField() == null) {
                 for (ContentObjectRecord item : resultResponse.getResultList()) {
                     if (item.getId() != null && item.getRollup() != null && !item.getId().equals(item.getRollup())) {
-                        BriefObjectMetadataBean representative = this.getObjectById(new SimpleIdRequest(
-                                item.getRollup(), searchRequest.getAccessGroups()));
+                        ContentObjectRecord representative = this.getObjectById(new SimpleIdRequest(
+                                PIDs.get(item.getRollup()), searchRequest.getAccessGroups()));
                         if (representative != null) {
-                            GroupedMetadataBean grouped = (GroupedMetadataBean) item;
+                            GroupedContentObjectSolrRecord grouped = (GroupedContentObjectSolrRecord) item;
                             grouped.getItems().add(representative);
                             grouped.setRepresentative(representative);
                         }
@@ -263,9 +264,9 @@ public class SolrSearchService extends AbstractQueryService {
         List<String> resultFields = new ArrayList<>();
         resultFields.add(SearchFieldKeys.ANCESTOR_PATH.name());
 
-        SimpleIdRequest idRequest = new SimpleIdRequest(pid, resultFields, accessGroups);
+        SimpleIdRequest idRequest = new SimpleIdRequest(PIDs.get(pid), resultFields, accessGroups);
 
-        BriefObjectMetadataBean rootNode = null;
+        ContentObjectRecord rootNode = null;
         try {
             rootNode = getObjectById(idRequest);
         } catch (Exception e) {
@@ -288,7 +289,7 @@ public class SolrSearchService extends AbstractQueryService {
             selectedPath.setCutoff(selectedPath.getHighestTier() + 1);
         }
         // Override any existing ancestor path facets if a selected container is present
-        searchState.setFacet(SearchFieldKeys.ANCESTOR_PATH, selectedPath);
+        searchState.setFacet(selectedPath);
         return selectedContainer;
     }
 
@@ -563,7 +564,7 @@ public class SolrSearchService extends AbstractQueryService {
     }
 
     /**
-     * Executes a SolrQuery based off of a search state and stores the results as BriefObjectMetadataBeans.
+     * Executes a SolrQuery based off of a search state and stores the results as ContentObjectRecords.
      *
      * @param query
      *           the solr query to be executed
@@ -589,10 +590,10 @@ public class SolrSearchService extends AbstractQueryService {
                 // response.setResultCount(groupCmd.getMatches());
                 response.setResultCount(groupCmd.getNGroups());
                 for (Group group : groupCmd.getValues()) {
-                    List<BriefObjectMetadataBean> beans = solrClient.getBinder()
-                            .getBeans(BriefObjectMetadataBean.class, group.getResult());
+                    List<ContentObjectSolrRecord> beans = solrClient.getBinder()
+                            .getBeans(ContentObjectSolrRecord.class, group.getResult());
 
-                    GroupedMetadataBean grouped = new GroupedMetadataBean(group.getGroupValue(),
+                    GroupedContentObjectSolrRecord grouped = new GroupedContentObjectSolrRecord(group.getGroupValue(),
                             beans, group.getResult().getNumFound());
                     groupResults.add(grouped);
                 }
@@ -600,7 +601,7 @@ public class SolrSearchService extends AbstractQueryService {
             response.setResultList(groupResults);
 
         } else {
-            List<?> results = queryResponse.getBeans(BriefObjectMetadataBean.class);
+            List<?> results = queryResponse.getBeans(ContentObjectSolrRecord.class);
             response.setResultList((List<ContentObjectRecord>) results);
             // Store the number of results
             response.setResultCount(queryResponse.getResults().getNumFound());

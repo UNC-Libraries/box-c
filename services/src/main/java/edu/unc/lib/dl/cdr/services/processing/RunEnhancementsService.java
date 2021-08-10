@@ -36,13 +36,14 @@ import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.fcrepo.ids.DatastreamPids;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.boxc.operations.jms.MessageSender;
+import edu.unc.lib.boxc.search.api.SearchFieldKeys;
 import edu.unc.lib.boxc.search.api.models.ContentObjectRecord;
 import edu.unc.lib.boxc.search.api.models.Datastream;
-import edu.unc.lib.dl.search.solr.model.SearchRequest;
+import edu.unc.lib.boxc.search.api.requests.SearchRequest;
+import edu.unc.lib.boxc.search.api.requests.SearchState;
+import edu.unc.lib.boxc.search.api.requests.SimpleIdRequest;
+import edu.unc.lib.boxc.search.solr.facets.GenericFacet;
 import edu.unc.lib.dl.search.solr.model.SearchResultResponse;
-import edu.unc.lib.dl.search.solr.model.SearchState;
-import edu.unc.lib.dl.search.solr.model.SimpleIdRequest;
-import edu.unc.lib.dl.search.solr.util.SearchFieldKeys;
 import edu.unc.lib.dl.ui.service.SolrQueryLayerService;
 import io.dropwizard.metrics5.Timer;
 
@@ -87,7 +88,7 @@ public class RunEnhancementsService {
 
                 if (!(repositoryObjectLoader.getRepositoryObject(pid) instanceof FileObject)) {
                     SearchState searchState = new SearchState();
-                    searchState.addFacet(SearchFieldKeys.RESOURCE_TYPE, ResourceType.File.name());
+                    searchState.addFacet(new GenericFacet(SearchFieldKeys.RESOURCE_TYPE, ResourceType.File.name()));
                     searchState.setResultFields(resultsFieldList);
 
                     SearchRequest searchRequest = new SearchRequest();
@@ -105,7 +106,7 @@ public class RunEnhancementsService {
                     ContentObjectRecord rootContainer = resultResponse.getSelectedContainer();
                     createMessage(rootContainer, agent.getUsername(), force);
                 } else {
-                    SimpleIdRequest searchRequest = new SimpleIdRequest(objectPid, agent.getPrincipals());
+                    SimpleIdRequest searchRequest = new SimpleIdRequest(pid, agent.getPrincipals());
                     ContentObjectRecord metadata = queryLayer.getObjectById(searchRequest);
                     createMessage(metadata, agent.getUsername(), force);
                 }

@@ -20,9 +20,9 @@ import static edu.unc.lib.boxc.model.api.ResourceType.Collection;
 import static edu.unc.lib.boxc.model.api.ResourceType.Folder;
 import static edu.unc.lib.boxc.model.api.ResourceType.Work;
 import static edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPaths.getContentRootPid;
+import static edu.unc.lib.boxc.search.api.SearchFieldKeys.ANCESTOR_PATH;
+import static edu.unc.lib.boxc.search.api.SearchFieldKeys.RESOURCE_TYPE;
 import static edu.unc.lib.dl.search.solr.service.ChildrenCountService.CHILD_COUNT;
-import static edu.unc.lib.dl.search.solr.util.SearchFieldKeys.ANCESTOR_PATH;
-import static edu.unc.lib.dl.search.solr.util.SearchFieldKeys.RESOURCE_TYPE;
 import static java.util.Arrays.asList;
 
 import java.util.HashSet;
@@ -39,19 +39,18 @@ import org.slf4j.LoggerFactory;
 import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
 import edu.unc.lib.boxc.model.api.ResourceType;
 import edu.unc.lib.boxc.model.api.ids.PID;
+import edu.unc.lib.boxc.search.api.SearchFieldKeys;
 import edu.unc.lib.boxc.search.api.exceptions.SolrRuntimeException;
 import edu.unc.lib.boxc.search.api.facets.CutoffFacet;
 import edu.unc.lib.boxc.search.api.facets.HierarchicalFacetNode;
 import edu.unc.lib.boxc.search.api.models.ContentObjectRecord;
-import edu.unc.lib.dl.search.solr.model.BriefObjectMetadataBean;
-import edu.unc.lib.dl.search.solr.model.CutoffFacetImpl;
-import edu.unc.lib.dl.search.solr.model.HierarchicalBrowseRequest;
+import edu.unc.lib.boxc.search.api.requests.HierarchicalBrowseRequest;
+import edu.unc.lib.boxc.search.api.requests.SearchRequest;
+import edu.unc.lib.boxc.search.api.requests.SearchState;
+import edu.unc.lib.boxc.search.api.requests.SimpleIdRequest;
+import edu.unc.lib.boxc.search.solr.facets.CutoffFacetImpl;
 import edu.unc.lib.dl.search.solr.model.HierarchicalBrowseResultResponse;
-import edu.unc.lib.dl.search.solr.model.SearchRequest;
 import edu.unc.lib.dl.search.solr.model.SearchResultResponse;
-import edu.unc.lib.dl.search.solr.model.SearchState;
-import edu.unc.lib.dl.search.solr.model.SimpleIdRequest;
-import edu.unc.lib.dl.search.solr.util.SearchFieldKeys;
 
 /**
  * Query service for producing structural views of search results.
@@ -90,7 +89,7 @@ public class StructureQueryService extends AbstractQueryService {
         }
 
         // Get the path of the root object being requested for iteration
-        CutoffFacetImpl path = getObjectPath(browseRequest.getRootPid(), principals);
+        CutoffFacet path = getObjectPath(browseRequest.getRootPid(), principals);
         List<HierarchicalFacetNode> pathFacetNodes = path.getFacetNodes();
         if (pathFacetNodes == null) {
             return browseResponse;
@@ -171,7 +170,7 @@ public class StructureQueryService extends AbstractQueryService {
 
     private ContentObjectRecord getContentRootMetadata(AccessGroupSet principals) {
         return searchService.getObjectById(new SimpleIdRequest(
-                getContentRootPid().getId(), principals));
+                getContentRootPid(), principals));
     }
 
     /**
@@ -322,12 +321,12 @@ public class StructureQueryService extends AbstractQueryService {
     /*
      * Returns the path facet of the object identified by pid.
      */
-    private CutoffFacetImpl getObjectPath(PID pid, AccessGroupSet accessGroups) {
+    private CutoffFacet getObjectPath(PID pid, AccessGroupSet accessGroups) {
         List<String> resultFields = asList(SearchFieldKeys.ID.name(), ANCESTOR_PATH.name());
         SimpleIdRequest idRequest = new SimpleIdRequest(pid, resultFields, accessGroups);
 
         try {
-            BriefObjectMetadataBean rootNode = searchService.getObjectById(idRequest);
+            ContentObjectRecord rootNode = searchService.getObjectById(idRequest);
             return rootNode.getPath();
         } catch (Exception e) {
             throw new SolrRuntimeException("Error while retrieving Solr entry for " + pid, e);

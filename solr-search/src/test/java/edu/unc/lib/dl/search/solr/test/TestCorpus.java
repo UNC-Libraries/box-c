@@ -32,7 +32,7 @@ import edu.unc.lib.boxc.auth.api.UserRole;
 import edu.unc.lib.boxc.model.api.ResourceType;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
-import edu.unc.lib.dl.search.solr.util.ContentCategory;
+import edu.unc.lib.boxc.search.api.ContentCategory;
 
 /**
  * Utility which constructs a small corpus of solr documents for testing and

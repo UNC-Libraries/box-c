@@ -43,7 +43,7 @@ import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
 import edu.unc.lib.boxc.auth.api.services.GlobalPermissionEvaluator;
 import edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl;
 import edu.unc.lib.boxc.search.api.models.ContentObjectRecord;
-import edu.unc.lib.dl.search.solr.model.BriefObjectMetadataBean;
+import edu.unc.lib.boxc.search.solr.models.ContentObjectSolrRecord;
 import edu.unc.lib.dl.search.solr.model.HierarchicalBrowseResultResponse;
 import edu.unc.lib.dl.search.solr.model.SearchResultResponse;
 import edu.unc.lib.dl.search.solr.util.SearchSettings;
@@ -68,7 +68,7 @@ public class SerializationUtilTest extends Assert {
     @Mock
     private GlobalPermissionEvaluator globalPermissionEvaluator;
 
-    private BriefObjectMetadataBean md;
+    private ContentObjectSolrRecord md;
 
     @Before
     public void init() {
@@ -78,7 +78,7 @@ public class SerializationUtilTest extends Assert {
         when(globalPermissionEvaluator.getGlobalUserRoles(any(AccessGroupSetImpl.class)))
                 .thenReturn(Collections.emptySet());
 
-        md = new BriefObjectMetadataBean();
+        md = new ContentObjectSolrRecord();
         md.setId("48aeb594-6d95-45e9-bb20-dd631ecc93e9");
     }
 
@@ -102,7 +102,7 @@ public class SerializationUtilTest extends Assert {
     public void briefMetadataListToJSONTest() throws Exception {
         md.setTitle("Test Item");
 
-        BriefObjectMetadataBean md2 = new BriefObjectMetadataBean();
+        ContentObjectSolrRecord md2 = new ContentObjectSolrRecord();
         md2.setId("9ef8d1c5-14a1-4ed3-b0c0-6da67fa5f6d1");
         md2.setTitle("Test Item 2");
         md.setDatastream(DATASTREAMS);
@@ -120,11 +120,11 @@ public class SerializationUtilTest extends Assert {
     @SuppressWarnings("unchecked")
     @Test
     public void testStructureToJSON() throws Exception {
-        BriefObjectMetadataBean rootMd = new BriefObjectMetadataBean();
+        ContentObjectSolrRecord rootMd = new ContentObjectSolrRecord();
         rootMd.setId("48aeb594-6d95-45e9-bb20-dd631ecc93e9");
         rootMd.setAncestorPath(singletonList("1,48aeb594-6d95-45e9-bb20-dd631ecc93e9"));
 
-        BriefObjectMetadataBean childMd = new BriefObjectMetadataBean();
+        ContentObjectSolrRecord childMd = new ContentObjectSolrRecord();
         childMd.setId("7c73296f-54ae-438e-b8d5-1890eba41676");
         childMd.setAncestorPath(asList("1,48aeb594-6d95-45e9-bb20-dd631ecc93e9"));
 
@@ -207,7 +207,7 @@ public class SerializationUtilTest extends Assert {
     }
 
     @SuppressWarnings("unchecked")
-    private Map<String, Object> assertHasRolePermissions(BriefObjectMetadataBean md, AccessGroupSet principals,
+    private Map<String, Object> assertHasRolePermissions(ContentObjectSolrRecord md, AccessGroupSet principals,
             UserRole expectedRole) throws Exception {
         String groupJson = SerializationUtil.metadataToJSON(md, principals);
         Map<String, Object> groupMap = getResultMap(groupJson);

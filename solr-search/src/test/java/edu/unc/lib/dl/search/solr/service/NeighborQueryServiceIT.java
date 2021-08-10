@@ -40,8 +40,7 @@ import edu.unc.lib.boxc.model.api.ResourceType;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.boxc.search.api.models.ContentObjectRecord;
-import edu.unc.lib.dl.search.solr.model.BriefObjectMetadataBean;
-import edu.unc.lib.dl.search.solr.model.SimpleIdRequest;
+import edu.unc.lib.boxc.search.api.requests.SimpleIdRequest;
 import edu.unc.lib.dl.search.solr.test.BaseEmbeddedSolrTest;
 import edu.unc.lib.dl.search.solr.test.TestCorpus;
 import edu.unc.lib.dl.search.solr.util.AccessRestrictionUtil;
@@ -121,9 +120,9 @@ public class NeighborQueryServiceIT extends BaseEmbeddedSolrTest {
     public void testNeighborsMiddleList() throws Exception {
         populateNeighborhood(ResourceType.File, WINDOW_SIZE, WINDOW_SIZE, ResourceType.File);
 
-        BriefObjectMetadataBean targetMd = getMetadata(targetPid);
+        ContentObjectRecord targetMd = getMetadata(targetPid);
 
-        List<BriefObjectMetadataBean> results = queryService.getNeighboringItems(targetMd, WINDOW_SIZE, groups);
+        List<ContentObjectRecord> results = queryService.getNeighboringItems(targetMd, WINDOW_SIZE, groups);
 
         assertEquals(WINDOW_SIZE, results.size());
         int indexOfTarget = indexOf(results, targetMd);
@@ -136,9 +135,9 @@ public class NeighborQueryServiceIT extends BaseEmbeddedSolrTest {
     public void testNeighborsStartList() throws Exception {
         populateNeighborhood(ResourceType.File, 0, WINDOW_SIZE, ResourceType.File);
 
-        BriefObjectMetadataBean targetMd = getMetadata(targetPid);
+        ContentObjectRecord targetMd = getMetadata(targetPid);
 
-        List<BriefObjectMetadataBean> results = queryService.getNeighboringItems(targetMd, WINDOW_SIZE, groups);
+        List<ContentObjectRecord> results = queryService.getNeighboringItems(targetMd, WINDOW_SIZE, groups);
 
         assertEquals(WINDOW_SIZE, results.size());
         int indexOfTarget = indexOf(results, targetMd);
@@ -150,9 +149,9 @@ public class NeighborQueryServiceIT extends BaseEmbeddedSolrTest {
     public void testNeighborsEndList() throws Exception {
         populateNeighborhood(ResourceType.File, WINDOW_SIZE, 0, ResourceType.File);
 
-        BriefObjectMetadataBean targetMd = getMetadata(targetPid);
+        ContentObjectRecord targetMd = getMetadata(targetPid);
 
-        List<BriefObjectMetadataBean> results = queryService.getNeighboringItems(targetMd, WINDOW_SIZE, groups);
+        List<ContentObjectRecord> results = queryService.getNeighboringItems(targetMd, WINDOW_SIZE, groups);
 
         assertEquals(WINDOW_SIZE, results.size());
         int indexOfTarget = indexOf(results, targetMd);
@@ -164,9 +163,9 @@ public class NeighborQueryServiceIT extends BaseEmbeddedSolrTest {
     public void testNoNeighbors() throws Exception {
         populateNeighborhood(ResourceType.File, 0, 0, ResourceType.File);
 
-        BriefObjectMetadataBean targetMd = getMetadata(targetPid);
+        ContentObjectRecord targetMd = getMetadata(targetPid);
 
-        List<BriefObjectMetadataBean> results = queryService.getNeighboringItems(targetMd, WINDOW_SIZE, groups);
+        List<ContentObjectRecord> results = queryService.getNeighboringItems(targetMd, WINDOW_SIZE, groups);
 
         assertEquals(1, results.size());
         int indexOfTarget = indexOf(results, targetMd);
@@ -177,9 +176,9 @@ public class NeighborQueryServiceIT extends BaseEmbeddedSolrTest {
     public void testFewNeighbors() throws Exception {
         populateNeighborhood(ResourceType.File, 1, 1, ResourceType.File);
 
-        BriefObjectMetadataBean targetMd = getMetadata(targetPid);
+        ContentObjectRecord targetMd = getMetadata(targetPid);
 
-        List<BriefObjectMetadataBean> results = queryService.getNeighboringItems(targetMd, WINDOW_SIZE, groups);
+        List<ContentObjectRecord> results = queryService.getNeighboringItems(targetMd, WINDOW_SIZE, groups);
 
         assertEquals(3, results.size());
         int indexOfTarget = indexOf(results, targetMd);
@@ -192,9 +191,9 @@ public class NeighborQueryServiceIT extends BaseEmbeddedSolrTest {
     public void testNeighborsNearEnd() throws Exception {
         populateNeighborhood(ResourceType.File, WINDOW_SIZE, 2, ResourceType.File);
 
-        BriefObjectMetadataBean targetMd = getMetadata(targetPid);
+        ContentObjectRecord targetMd = getMetadata(targetPid);
 
-        List<BriefObjectMetadataBean> results = queryService.getNeighboringItems(targetMd, WINDOW_SIZE, groups);
+        List<ContentObjectRecord> results = queryService.getNeighboringItems(targetMd, WINDOW_SIZE, groups);
 
         assertEquals(WINDOW_SIZE, results.size());
         int indexOfTarget = indexOf(results, targetMd);
@@ -208,10 +207,10 @@ public class NeighborQueryServiceIT extends BaseEmbeddedSolrTest {
         int numNeighbors = 500;
         populateNeighborhood(ResourceType.File, numNeighbors, numNeighbors, ResourceType.File);
 
-        BriefObjectMetadataBean targetMd = getMetadata(targetPid);
+        ContentObjectRecord targetMd = getMetadata(targetPid);
 
         long start = System.nanoTime();
-        List<BriefObjectMetadataBean> results = queryService.getNeighboringItems(targetMd, WINDOW_SIZE, groups);
+        List<ContentObjectRecord> results = queryService.getNeighboringItems(targetMd, WINDOW_SIZE, groups);
         log.info("Executed neighbors query in {}", (System.nanoTime() - start));
 
         assertEquals(WINDOW_SIZE, results.size());
@@ -244,8 +243,8 @@ public class NeighborQueryServiceIT extends BaseEmbeddedSolrTest {
         server.add(docs);
         server.commit();
 
-        BriefObjectMetadataBean targetMd = getMetadata(tpid);
-        List<BriefObjectMetadataBean> results = queryService.getNeighboringItems(targetMd, WINDOW_SIZE, groups);
+        ContentObjectRecord targetMd = getMetadata(tpid);
+        List<ContentObjectRecord> results = queryService.getNeighboringItems(targetMd, WINDOW_SIZE, groups);
 
         assertEquals(7, results.size());
         int indexOfTarget = indexOf(results, targetMd);
@@ -278,8 +277,8 @@ public class NeighborQueryServiceIT extends BaseEmbeddedSolrTest {
         server.add(docs);
         server.commit();
 
-        BriefObjectMetadataBean targetMd = getMetadata(tpid);
-        List<BriefObjectMetadataBean> results = queryService.getNeighboringItems(targetMd, WINDOW_SIZE, groups);
+        ContentObjectRecord targetMd = getMetadata(tpid);
+        List<ContentObjectRecord> results = queryService.getNeighboringItems(targetMd, WINDOW_SIZE, groups);
 
         assertEquals(4, results.size());
         int indexOfTarget = indexOf(results, targetMd);
@@ -397,7 +396,7 @@ public class NeighborQueryServiceIT extends BaseEmbeddedSolrTest {
             return PIDs.get(UUID.randomUUID().toString());
     }
 
-    private int indexOf(List<BriefObjectMetadataBean> results, ContentObjectRecord obj) {
+    private int indexOf(List<ContentObjectRecord> results, ContentObjectRecord obj) {
         for (int i = 0; i < results.size(); i++) {
             ContentObjectRecord result = results.get(i);
             if (result.getId().equals(obj.getId())) {
@@ -407,21 +406,21 @@ public class NeighborQueryServiceIT extends BaseEmbeddedSolrTest {
         return -1;
     }
 
-    private void assertPrecedingResults(List<BriefObjectMetadataBean> results, int end, int offset) {
+    private void assertPrecedingResults(List<ContentObjectRecord> results, int end, int offset) {
         for (int i = 0; i < end; i++) {
             ContentObjectRecord result = results.get(i);
             assertEquals(PRECEDING_PREFIX + formatSortable(i + offset), result.getTitle());
         }
     }
 
-    private void assertSucceedingResults(List<BriefObjectMetadataBean> results, int start) {
+    private void assertSucceedingResults(List<ContentObjectRecord> results, int start) {
         for (int i = start + 1; i < results.size(); i++) {
             ContentObjectRecord result = results.get(i);
             assertEquals(SUCCEEDING_PREFIX + formatSortable(i - start - 1), result.getTitle());
         }
     }
 
-    private BriefObjectMetadataBean getMetadata(PID pid) throws Exception {
+    private ContentObjectRecord getMetadata(PID pid) throws Exception {
         return solrSearchService.getObjectById(new SimpleIdRequest(pid, groups));
     }
 

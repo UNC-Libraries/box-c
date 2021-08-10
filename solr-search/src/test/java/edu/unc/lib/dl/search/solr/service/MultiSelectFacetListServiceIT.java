@@ -16,9 +16,9 @@
 package edu.unc.lib.dl.search.solr.service;
 
 import static edu.unc.lib.boxc.auth.api.AccessPrincipalConstants.PUBLIC_PRINC;
-import static edu.unc.lib.dl.search.solr.util.SearchFieldKeys.CONTENT_TYPE;
-import static edu.unc.lib.dl.search.solr.util.SearchFieldKeys.PARENT_COLLECTION;
-import static edu.unc.lib.dl.search.solr.util.SearchFieldKeys.ROLE_GROUP;
+import static edu.unc.lib.boxc.search.api.SearchFieldKeys.CONTENT_TYPE;
+import static edu.unc.lib.boxc.search.api.SearchFieldKeys.PARENT_COLLECTION;
+import static edu.unc.lib.boxc.search.api.SearchFieldKeys.ROLE_GROUP;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -36,21 +36,21 @@ import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
 import edu.unc.lib.boxc.auth.api.services.GlobalPermissionEvaluator;
 import edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl;
 import edu.unc.lib.boxc.model.api.exceptions.NotFoundException;
+import edu.unc.lib.boxc.search.api.SearchFieldKeys;
 import edu.unc.lib.boxc.search.api.facets.SearchFacet;
+import edu.unc.lib.boxc.search.api.requests.SearchRequest;
+import edu.unc.lib.boxc.search.api.requests.SearchState;
+import edu.unc.lib.boxc.search.solr.facets.GenericFacet;
+import edu.unc.lib.boxc.search.solr.facets.MultivaluedHierarchicalFacet;
+import edu.unc.lib.boxc.search.solr.facets.RoleGroupFacet;
 import edu.unc.lib.dl.search.solr.model.FacetFieldFactory;
 import edu.unc.lib.dl.search.solr.model.FacetFieldList;
 import edu.unc.lib.dl.search.solr.model.FacetFieldObject;
-import edu.unc.lib.dl.search.solr.model.GenericFacet;
-import edu.unc.lib.dl.search.solr.model.MultivaluedHierarchicalFacet;
-import edu.unc.lib.dl.search.solr.model.RoleGroupFacet;
-import edu.unc.lib.dl.search.solr.model.SearchRequest;
 import edu.unc.lib.dl.search.solr.model.SearchResultResponse;
-import edu.unc.lib.dl.search.solr.model.SearchState;
 import edu.unc.lib.dl.search.solr.test.BaseEmbeddedSolrTest;
 import edu.unc.lib.dl.search.solr.test.TestCorpus;
 import edu.unc.lib.dl.search.solr.util.AccessRestrictionUtil;
 import edu.unc.lib.dl.search.solr.util.FacetFieldUtil;
-import edu.unc.lib.dl.search.solr.util.SearchFieldKeys;
 
 /**
  * @author bbpennel

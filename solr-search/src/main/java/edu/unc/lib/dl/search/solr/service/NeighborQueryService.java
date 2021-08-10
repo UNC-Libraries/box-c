@@ -15,8 +15,8 @@
  */
 package edu.unc.lib.dl.search.solr.service;
 
-import static edu.unc.lib.dl.search.solr.util.SearchFieldKeys.RESOURCE_TYPE;
-import static edu.unc.lib.dl.search.solr.util.SearchFieldKeys.TITLE_LC;
+import static edu.unc.lib.boxc.search.api.SearchFieldKeys.RESOURCE_TYPE;
+import static edu.unc.lib.boxc.search.api.SearchFieldKeys.TITLE_LC;
 import static edu.unc.lib.dl.search.solr.util.SolrSettings.sanitize;
 import static java.lang.String.format;
 import static org.apache.commons.lang3.StringUtils.isBlank;
@@ -32,11 +32,12 @@ import com.google.common.collect.Lists;
 
 import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
 import edu.unc.lib.boxc.model.api.ResourceType;
+import edu.unc.lib.boxc.search.api.SearchFieldKeys;
 import edu.unc.lib.boxc.search.api.exceptions.SolrRuntimeException;
 import edu.unc.lib.boxc.search.api.facets.CutoffFacet;
-import edu.unc.lib.dl.search.solr.model.BriefObjectMetadataBean;
+import edu.unc.lib.boxc.search.api.models.ContentObjectRecord;
+import edu.unc.lib.boxc.search.solr.models.ContentObjectSolrRecord;
 import edu.unc.lib.dl.search.solr.util.FacetFieldUtil;
-import edu.unc.lib.dl.search.solr.util.SearchFieldKeys;
 
 /**
  * Service that retrieves objects neighboring a selected object.
@@ -61,7 +62,7 @@ public class NeighborQueryService extends AbstractQueryService {
      *           Access groups of the user making this request.
      * @return
      */
-    public List<BriefObjectMetadataBean> getNeighboringItems(BriefObjectMetadataBean metadata, int windowSize,
+    public List<ContentObjectRecord> getNeighboringItems(ContentObjectRecord metadata, int windowSize,
             AccessGroupSet principals) {
 
         // Restrict query to files/aggregates and objects within the same parent
@@ -109,10 +110,10 @@ public class NeighborQueryService extends AbstractQueryService {
         // Sort neighbors using reverse title sort in order to get items closest to target
         addSort(precedingQuery, "title", false);
 
-        List<BriefObjectMetadataBean> precedingNeighbors;
+        List<? extends ContentObjectRecord> precedingNeighbors;
         try {
             QueryResponse queryResponse = executeQuery(precedingQuery);
-            precedingNeighbors = queryResponse.getBeans(BriefObjectMetadataBean.class);
+            precedingNeighbors = queryResponse.getBeans(ContentObjectSolrRecord.class);
             // Reverse order of preceding items from the reverse title sort
             precedingNeighbors = Lists.reverse(precedingNeighbors);
         } catch (SolrServerException e) {
@@ -131,17 +132,17 @@ public class NeighborQueryService extends AbstractQueryService {
         // Sort neighbors using the title sort
         addSort(succeedingQuery, "title", true);
 
-        List<BriefObjectMetadataBean> succeedingNeighbors;
+        List<? extends ContentObjectRecord> succeedingNeighbors;
         try {
             QueryResponse queryResponse = this.executeQuery(succeedingQuery);
-            succeedingNeighbors = queryResponse.getBeans(BriefObjectMetadataBean.class);
+            succeedingNeighbors = queryResponse.getBeans(ContentObjectSolrRecord.class);
         } catch (SolrServerException e) {
             throw new SolrRuntimeException("Error retrieving Neighboring items: {}" + solrQuery, e);
         }
 
         // Construct a result from appropriate numbers of preceding records, the target,
         // and succeeding reports
-        List<BriefObjectMetadataBean> results = new ArrayList<>();
+        List<ContentObjectRecord> results = new ArrayList<>();
 
         // Expected number of objects to either side of target if sufficient available
         int precedingHalfWindow = (int) Math.ceil((windowSize - 1) / 2.0);

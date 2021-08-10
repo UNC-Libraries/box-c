@@ -58,10 +58,10 @@ import edu.unc.lib.boxc.model.fcrepo.services.DerivativeService;
 import edu.unc.lib.boxc.model.fcrepo.test.TestHelper;
 import edu.unc.lib.boxc.operations.impl.edit.UpdateDescriptionService;
 import edu.unc.lib.boxc.operations.impl.edit.UpdateDescriptionService.UpdateDescriptionRequest;
+import edu.unc.lib.boxc.search.api.SearchFieldKeys;
 import edu.unc.lib.boxc.search.api.models.ContentObjectRecord;
+import edu.unc.lib.boxc.search.api.requests.SimpleIdRequest;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPipeline;
-import edu.unc.lib.dl.search.solr.model.SimpleIdRequest;
-import edu.unc.lib.dl.search.solr.util.SearchFieldKeys;
 
 /**
  *
@@ -116,7 +116,7 @@ public class SolrIngestProcessorIT extends AbstractSolrProcessorIT {
         processor.process(exchange);
         server.commit();
 
-        SimpleIdRequest idRequest = new SimpleIdRequest(workObj.getPid().getId(), accessGroups);
+        SimpleIdRequest idRequest = new SimpleIdRequest(workObj.getPid(), accessGroups);
         ContentObjectRecord workMd = solrSearchService.getObjectById(idRequest);
 
         assertEquals("Work", workMd.getResourceType());
@@ -152,7 +152,7 @@ public class SolrIngestProcessorIT extends AbstractSolrProcessorIT {
         processor.process(exchange);
         server.commit();
 
-        SimpleIdRequest idRequest = new SimpleIdRequest(collObj.getPid().getId(), accessGroups);
+        SimpleIdRequest idRequest = new SimpleIdRequest(collObj.getPid(), accessGroups);
         ContentObjectRecord collMd = solrSearchService.getObjectById(idRequest);
 
         assertEquals("Collection", collMd.getResourceType());
@@ -197,7 +197,7 @@ public class SolrIngestProcessorIT extends AbstractSolrProcessorIT {
 
         List<String> allFields = Arrays.stream(SearchFieldKeys.values())
                 .map(SearchFieldKeys::name).collect(Collectors.toList());
-        SimpleIdRequest idRequest = new SimpleIdRequest(fileObj.getPid().getId(), allFields, accessGroups);
+        SimpleIdRequest idRequest = new SimpleIdRequest(fileObj.getPid(), allFields, accessGroups);
         ContentObjectRecord fileMd = solrSearchService.getObjectById(idRequest);
 
         assertEquals(ResourceType.File.name(), fileMd.getResourceType());
@@ -241,7 +241,7 @@ public class SolrIngestProcessorIT extends AbstractSolrProcessorIT {
         processor.process(exchange);
         server.commit();
 
-        SimpleIdRequest idRequest = new SimpleIdRequest(workObj.getPid().getId(), accessGroups);
+        SimpleIdRequest idRequest = new SimpleIdRequest(workObj.getPid(), accessGroups);
         ContentObjectRecord workMd = solrSearchService.getObjectById(idRequest);
 
         assertEquals("Work", workMd.getResourceType());
@@ -251,7 +251,7 @@ public class SolrIngestProcessorIT extends AbstractSolrProcessorIT {
 
         assertTrue("Content type was not set to text", workMd.getContentType().get(0).contains("text"));
 
-        idRequest = new SimpleIdRequest(fileObj.getPid().getId(), accessGroups);
+        idRequest = new SimpleIdRequest(fileObj.getPid(), accessGroups);
         ContentObjectRecord fileMd = solrSearchService.getObjectById(idRequest);
 
         assertEquals(ResourceType.File.name(), fileMd.getResourceType());

@@ -19,7 +19,7 @@
 <%@ page trimDirectiveWhitespaces="true" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
-<%@ page import="edu.unc.lib.dl.search.solr.model.SearchState" %>
+<%@ page import="edu.unc.lib.boxc.search.api.requests.SearchState" %>
 <%@ page import="edu.unc.lib.dl.search.solr.model.SearchResultResponse" %>
 <%@ page import="edu.unc.lib.dl.search.solr.util.SearchSettings" %>
 

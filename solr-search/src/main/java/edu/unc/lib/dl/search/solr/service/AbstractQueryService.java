@@ -29,8 +29,8 @@ import org.apache.solr.client.solrj.response.QueryResponse;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import edu.unc.lib.boxc.search.api.SearchFieldKeys;
 import edu.unc.lib.dl.search.solr.util.AccessRestrictionUtil;
-import edu.unc.lib.dl.search.solr.util.SearchFieldKeys;
 import edu.unc.lib.dl.search.solr.util.SearchSettings;
 import edu.unc.lib.dl.search.solr.util.SolrSettings;
 

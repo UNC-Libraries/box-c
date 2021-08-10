@@ -30,9 +30,10 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
 import edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore;
-import edu.unc.lib.dl.search.solr.model.BriefObjectMetadataBean;
-import edu.unc.lib.dl.search.solr.model.SimpleIdRequest;
-import edu.unc.lib.dl.search.solr.util.SearchFieldKeys;
+import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
+import edu.unc.lib.boxc.search.api.SearchFieldKeys;
+import edu.unc.lib.boxc.search.api.models.ContentObjectRecord;
+import edu.unc.lib.boxc.search.api.requests.SimpleIdRequest;
 import edu.unc.lib.dl.ui.exception.ResourceNotFoundException;
 import edu.unc.lib.dl.ui.util.SerializationUtil;
 
@@ -56,8 +57,8 @@ public class ResultEntryController extends AbstractSearchController {
         response.setContentType("application/json");
         AccessGroupSet accessGroups = GroupsThreadStore.getPrincipals();
 
-        SimpleIdRequest entryRequest = new SimpleIdRequest(pid, resultsFieldList, accessGroups);
-        BriefObjectMetadataBean entryBean = queryLayer.getObjectById(entryRequest);
+        SimpleIdRequest entryRequest = new SimpleIdRequest(PIDs.get(pid), resultsFieldList, accessGroups);
+        ContentObjectRecord entryBean = queryLayer.getObjectById(entryRequest);
         if (entryBean == null) {
             throw new ResourceNotFoundException("The requested record either does not exist or is not accessible");
         }

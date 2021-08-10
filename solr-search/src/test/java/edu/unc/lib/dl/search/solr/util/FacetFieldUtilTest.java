@@ -26,11 +26,11 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import edu.unc.lib.dl.search.solr.model.CaseInsensitiveFacet;
-import edu.unc.lib.dl.search.solr.model.CutoffFacetImpl;
-import edu.unc.lib.dl.search.solr.model.GenericFacet;
-import edu.unc.lib.dl.search.solr.model.MultivaluedHierarchicalFacet;
-import edu.unc.lib.dl.search.solr.model.RoleGroupFacet;
+import edu.unc.lib.boxc.search.solr.facets.CaseInsensitiveFacet;
+import edu.unc.lib.boxc.search.solr.facets.CutoffFacetImpl;
+import edu.unc.lib.boxc.search.solr.facets.GenericFacet;
+import edu.unc.lib.boxc.search.solr.facets.MultivaluedHierarchicalFacet;
+import edu.unc.lib.boxc.search.solr.facets.RoleGroupFacet;
 
 public class FacetFieldUtilTest {
 
