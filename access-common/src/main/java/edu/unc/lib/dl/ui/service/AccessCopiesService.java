@@ -28,11 +28,11 @@ import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
 import edu.unc.lib.boxc.auth.api.services.GlobalPermissionEvaluator;
 import edu.unc.lib.boxc.model.api.DatastreamType;
 import edu.unc.lib.boxc.model.api.ids.PID;
-import edu.unc.lib.dl.search.solr.exception.SolrRuntimeException;
-import edu.unc.lib.dl.search.solr.model.BriefObjectMetadata;
+import edu.unc.lib.boxc.search.api.exceptions.SolrRuntimeException;
+import edu.unc.lib.boxc.search.api.facets.CutoffFacet;
+import edu.unc.lib.boxc.search.api.models.ContentObjectRecord;
+import edu.unc.lib.boxc.search.api.models.Datastream;
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadataBean;
-import edu.unc.lib.dl.search.solr.model.CutoffFacet;
-import edu.unc.lib.dl.search.solr.model.Datastream;
 import edu.unc.lib.dl.search.solr.model.SearchRequest;
 import edu.unc.lib.dl.search.solr.model.SearchState;
 import edu.unc.lib.dl.search.solr.model.SimpleIdRequest;
@@ -55,8 +55,8 @@ public class AccessCopiesService extends SolrSearchService {
      * @return
      */
     @SuppressWarnings("unchecked")
-    public List<BriefObjectMetadata> listViewableFiles(PID pid, AccessGroupSet principals) {
-        BriefObjectMetadata briefObj = getObjectById(new SimpleIdRequest(pid, principals));
+    public List<ContentObjectRecord> listViewableFiles(PID pid, AccessGroupSet principals) {
+        ContentObjectRecord briefObj = getObjectById(new SimpleIdRequest(pid, principals));
         String resourceType = briefObj.getResourceType();
         if (searchSettings.resourceTypeFile.equals(resourceType)) {
             if (briefObj.getDatastreamObject(DatastreamType.JP2_ACCESS_COPY.getId()) != null) {
@@ -71,7 +71,7 @@ public class AccessCopiesService extends SolrSearchService {
 
         QueryResponse resp = performQuery(briefObj, principals, MAX_FILES);
         List<?> results = resp.getBeans(BriefObjectMetadataBean.class);
-        List<BriefObjectMetadata> mdObjs = (List<BriefObjectMetadata>) results;
+        List<ContentObjectRecord> mdObjs = (List<ContentObjectRecord>) results;
         mdObjs.add(0, briefObj);
         return mdObjs;
     }
@@ -83,7 +83,7 @@ public class AccessCopiesService extends SolrSearchService {
      * @param principals
      * @return
      */
-    public boolean hasViewableFiles(BriefObjectMetadata briefObj, AccessGroupSet principals) {
+    public boolean hasViewableFiles(ContentObjectRecord briefObj, AccessGroupSet principals) {
         String resourceType = briefObj.getResourceType();
         if (searchSettings.resourceTypeFile.equals(resourceType)) {
             Datastream datastream = briefObj.getDatastreamObject(DatastreamType.JP2_ACCESS_COPY.getId());
@@ -97,7 +97,7 @@ public class AccessCopiesService extends SolrSearchService {
         return resp.getResults().getNumFound() > 0;
     }
 
-    private QueryResponse performQuery(BriefObjectMetadata briefObj, AccessGroupSet principals, int rows) {
+    private QueryResponse performQuery(ContentObjectRecord briefObj, AccessGroupSet principals, int rows) {
         // Search for child objects with jp2 datastreams with user can access
         SearchState searchState = new SearchState();
         if (!globalPermissionEvaluator.hasGlobalPrincipal(principals)) {

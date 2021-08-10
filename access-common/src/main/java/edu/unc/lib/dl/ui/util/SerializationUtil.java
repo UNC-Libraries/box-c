@@ -37,10 +37,10 @@ import edu.unc.lib.boxc.auth.api.UserRole;
 import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
 import edu.unc.lib.boxc.auth.api.services.GlobalPermissionEvaluator;
 import edu.unc.lib.boxc.common.util.DateTimeUtil;
-import edu.unc.lib.dl.search.solr.model.BriefObjectMetadata;
-import edu.unc.lib.dl.search.solr.model.CutoffFacet;
+import edu.unc.lib.boxc.search.api.facets.CutoffFacet;
+import edu.unc.lib.boxc.search.api.facets.HierarchicalFacetNode;
+import edu.unc.lib.boxc.search.api.models.ContentObjectRecord;
 import edu.unc.lib.dl.search.solr.model.HierarchicalBrowseResultResponse;
-import edu.unc.lib.dl.search.solr.model.HierarchicalFacetNode;
 import edu.unc.lib.dl.search.solr.model.SearchResultResponse;
 import edu.unc.lib.dl.search.solr.util.SearchSettings;
 import edu.unc.lib.dl.search.solr.util.SolrSettings;
@@ -97,7 +97,7 @@ public class SerializationUtil {
         StringBuilder result = new StringBuilder();
         result.append('[');
         boolean firstEntry = true;
-        for (BriefObjectMetadata metadata : resultResponse.getResultList()) {
+        for (ContentObjectRecord metadata : resultResponse.getResultList()) {
             if (firstEntry) {
                 firstEntry = false;
             } else {
@@ -112,14 +112,14 @@ public class SerializationUtil {
     public static List<Map<String, Object>> resultsToList(SearchResultResponse resultResponse, AccessGroupSet groups) {
         List<Map<String, Object>> result = new ArrayList<>(resultResponse.getResultList().size());
 
-        for (BriefObjectMetadata metadata : resultResponse.getResultList()) {
+        for (ContentObjectRecord metadata : resultResponse.getResultList()) {
             result.add(metadataToMap(metadata, groups));
         }
 
         return result;
     }
 
-    public static Map<String, Object> metadataToMap(BriefObjectMetadata metadata, AccessGroupSet groups) {
+    public static Map<String, Object> metadataToMap(ContentObjectRecord metadata, AccessGroupSet groups) {
         Map<String, Object> result = new HashMap<>();
         String thumbnail_url = DatastreamUtil.getThumbnailUrl(metadata, null);
 
@@ -247,7 +247,7 @@ public class SerializationUtil {
         return result;
     }
 
-    public static String metadataToJSON(BriefObjectMetadata metadata, AccessGroupSet groups) {
+    public static String metadataToJSON(ContentObjectRecord metadata, AccessGroupSet groups) {
         try {
             return jsonMapper.writeValueAsString(metadataToMap(metadata, groups));
         } catch (JsonProcessingException e) {
@@ -279,7 +279,7 @@ public class SerializationUtil {
      * @param principals agent principals
      * @return set of permissions
      */
-    private static Set<String> getPermissionsByGroups(BriefObjectMetadata metadata, AccessGroupSet principals) {
+    private static Set<String> getPermissionsByGroups(ContentObjectRecord metadata, AccessGroupSet principals) {
         Set<UserRole> globalRoles = globalPermissionEvaluator.getGlobalUserRoles(principals);
 
         Map<String, Collection<String>> groupRoleMap = metadata.getGroupRoleMap();

@@ -39,13 +39,14 @@ import org.slf4j.LoggerFactory;
 import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
 import edu.unc.lib.boxc.model.api.ResourceType;
 import edu.unc.lib.boxc.model.api.ids.PID;
-import edu.unc.lib.dl.search.solr.exception.SolrRuntimeException;
-import edu.unc.lib.dl.search.solr.model.BriefObjectMetadata;
+import edu.unc.lib.boxc.search.api.exceptions.SolrRuntimeException;
+import edu.unc.lib.boxc.search.api.facets.CutoffFacet;
+import edu.unc.lib.boxc.search.api.facets.HierarchicalFacetNode;
+import edu.unc.lib.boxc.search.api.models.ContentObjectRecord;
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadataBean;
-import edu.unc.lib.dl.search.solr.model.CutoffFacet;
+import edu.unc.lib.dl.search.solr.model.CutoffFacetImpl;
 import edu.unc.lib.dl.search.solr.model.HierarchicalBrowseRequest;
 import edu.unc.lib.dl.search.solr.model.HierarchicalBrowseResultResponse;
-import edu.unc.lib.dl.search.solr.model.HierarchicalFacetNode;
 import edu.unc.lib.dl.search.solr.model.SearchRequest;
 import edu.unc.lib.dl.search.solr.model.SearchResultResponse;
 import edu.unc.lib.dl.search.solr.model.SearchState;
@@ -83,20 +84,20 @@ public class StructureQueryService extends AbstractQueryService {
         AccessGroupSet principals = browseRequest.getAccessGroups();
 
         // Start hierarchy tree at root of the repository
-        BriefObjectMetadata contentRootMd = getContentRootMetadata(principals);
+        ContentObjectRecord contentRootMd = getContentRootMetadata(principals);
         if (contentRootMd != null) {
             browseResponse.getResultList().add(contentRootMd);
         }
 
         // Get the path of the root object being requested for iteration
-        CutoffFacet path = getObjectPath(browseRequest.getRootPid(), principals);
+        CutoffFacetImpl path = getObjectPath(browseRequest.getRootPid(), principals);
         List<HierarchicalFacetNode> pathFacetNodes = path.getFacetNodes();
         if (pathFacetNodes == null) {
             return browseResponse;
         }
 
         // Path facet used to find immediate children of ancestor containers, built up one tier at a time
-        CutoffFacet stepPath = new CutoffFacet(ANCESTOR_PATH.name(), asList(), 0);
+        CutoffFacetImpl stepPath = new CutoffFacetImpl(ANCESTOR_PATH.name(), asList(), 0);
         // Retrieve immediate children of all objects in the hierarchy leading up to the target container
         for (HierarchicalFacetNode stepFacetNode : pathFacetNodes) {
             // Add the next tier's identifier to the search facet
@@ -133,7 +134,7 @@ public class StructureQueryService extends AbstractQueryService {
         AccessGroupSet principals = browseRequest.getAccessGroups();
 
         // Retrieve the root node for this request and use it for the structure search
-        BriefObjectMetadata rootMd = getRootMetadata(browseRequest.getRootPid(), principals);
+        ContentObjectRecord rootMd = getRootMetadata(browseRequest.getRootPid(), principals);
         CutoffFacet rootPath = rootMd.getPath();
 
         HierarchicalBrowseResultResponse browseResponse = new HierarchicalBrowseResultResponse();
@@ -155,8 +156,8 @@ public class StructureQueryService extends AbstractQueryService {
      * Gets metadata for the requested root object. Defaults to the root of the
      * content tree if no rootId is provided.
      */
-    private BriefObjectMetadata getRootMetadata(PID rootPid, AccessGroupSet principals) {
-        BriefObjectMetadata rootNode = null;
+    private ContentObjectRecord getRootMetadata(PID rootPid, AccessGroupSet principals) {
+        ContentObjectRecord rootNode = null;
         if (rootPid != null) {
             rootNode = searchService.getObjectById(new SimpleIdRequest(rootPid, principals));
         }
@@ -168,7 +169,7 @@ public class StructureQueryService extends AbstractQueryService {
         return rootNode;
     }
 
-    private BriefObjectMetadata getContentRootMetadata(AccessGroupSet principals) {
+    private ContentObjectRecord getContentRootMetadata(AccessGroupSet principals) {
         return searchService.getObjectById(new SimpleIdRequest(
                 getContentRootPid().getId(), principals));
     }
@@ -254,7 +255,7 @@ public class StructureQueryService extends AbstractQueryService {
     /*
      * Calculates and assigns child and container counts to each object in the result list
      */
-    private void assignCounts(SearchState browseState, AccessGroupSet principals, List<BriefObjectMetadata> results) {
+    private void assignCounts(SearchState browseState, AccessGroupSet principals, List<ContentObjectRecord> results) {
         // Get the children counts per container
         SearchRequest filteredChildrenRequest =
                 new SearchRequest(browseState, principals, true);
@@ -321,7 +322,7 @@ public class StructureQueryService extends AbstractQueryService {
     /*
      * Returns the path facet of the object identified by pid.
      */
-    private CutoffFacet getObjectPath(PID pid, AccessGroupSet accessGroups) {
+    private CutoffFacetImpl getObjectPath(PID pid, AccessGroupSet accessGroups) {
         List<String> resultFields = asList(SearchFieldKeys.ID.name(), ANCESTOR_PATH.name());
         SimpleIdRequest idRequest = new SimpleIdRequest(pid, resultFields, accessGroups);
 

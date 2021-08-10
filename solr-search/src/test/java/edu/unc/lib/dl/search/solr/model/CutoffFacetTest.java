@@ -27,7 +27,8 @@ import org.apache.solr.client.solrj.response.FacetField;
 import org.junit.Assert;
 import org.junit.Test;
 
-import edu.unc.lib.dl.search.solr.exception.InvalidHierarchicalFacetException;
+import edu.unc.lib.boxc.search.api.exceptions.InvalidHierarchicalFacetException;
+import edu.unc.lib.boxc.search.api.facets.CutoffFacet;
 import edu.unc.lib.dl.search.solr.util.SearchFieldKeys;
 import edu.unc.lib.dl.search.solr.util.SearchSettings;
 
@@ -37,7 +38,7 @@ public class CutoffFacetTest extends Assert {
     public void parseTest() {
         List<String> facetValues = Arrays.asList("1,uuid:a", "2,uuid:b", "3,uuid:c");
 
-        CutoffFacet facet = new CutoffFacet(null, facetValues, 0);
+        CutoffFacetImpl facet = new CutoffFacetImpl(null, facetValues, 0);
         assertEquals(3,facet.getHighestTier());
         assertEquals("3,uuid:c",facet.getSearchValue());
         assertEquals("uuid:c",facet.getSearchKey());
@@ -48,13 +49,13 @@ public class CutoffFacetTest extends Assert {
     @Test
     public void getNode() {
         List<String> facetValues = Arrays.asList("1,uuid:a", "2,uuid:b", "3,uuid:c");
-        CutoffFacet facet = new CutoffFacet(null, facetValues, 0);
+        CutoffFacet facet = new CutoffFacetImpl(null, facetValues, 0);
 
-        assertEquals("1,uuid:a", facet.getNode("uuid:a").getSearchValue());
-        assertEquals("2,uuid:b", facet.getNode("uuid:b").getSearchValue());
-        assertEquals("3,uuid:c", facet.getNode("uuid:c").getSearchValue());
+        assertEquals("1,uuid:a", facet.getNodeBySearchKey("uuid:a").getSearchValue());
+        assertEquals("2,uuid:b", facet.getNodeBySearchKey("uuid:b").getSearchValue());
+        assertEquals("3,uuid:c", facet.getNodeBySearchKey("uuid:c").getSearchValue());
 
-        assertNull(facet.getNode("uuid:d"));
+        assertNull(facet.getNodeBySearchKey("uuid:d"));
     }
 
     @Test
@@ -70,7 +71,7 @@ public class CutoffFacetTest extends Assert {
         FacetFieldFactory facetFieldFactory = new FacetFieldFactory();
         SearchSettings searchSettings = mock(SearchSettings.class);
         Map<String, Class<?>> facetClasses = new HashMap<String, Class<?>>();
-        facetClasses.put("ANCESTOR_PATH", CutoffFacet.class);
+        facetClasses.put("ANCESTOR_PATH", CutoffFacetImpl.class);
         when(searchSettings.getFacetClasses()).thenReturn(facetClasses);
         facetFieldFactory.setSearchSettings(searchSettings);
 
@@ -83,19 +84,19 @@ public class CutoffFacetTest extends Assert {
 
     @Test
     public void facetStringConstructorTest() {
-        CutoffFacet facet = new CutoffFacet("ANCESTOR_PATH", "1,uuid:123456");
+        CutoffFacet facet = new CutoffFacetImpl("ANCESTOR_PATH", "1,uuid:123456");
 
-        assertEquals("1,uuid:123456", facet.getNode("uuid:123456").getSearchValue());
+        assertEquals("1,uuid:123456", facet.getNodeBySearchKey("uuid:123456").getSearchValue());
     }
 
     @Test(expected=InvalidHierarchicalFacetException.class)
     public void nullfacetStringConstructorTest() {
-        new CutoffFacet("ANCESTOR_PATH", ",uuid:123456");
+        new CutoffFacetImpl("ANCESTOR_PATH", ",uuid:123456");
     }
 
     @Test
     public void constructWithCutoff() {
-        CutoffFacet facet = new CutoffFacet("ANCESTOR_PATH", "3,uuid:test!5");
+        CutoffFacetImpl facet = new CutoffFacetImpl("ANCESTOR_PATH", "3,uuid:test!5");
 
         assertEquals("ANCESTOR_PATH", facet.getFieldName());
         assertEquals("uuid:test", facet.getSearchKey());
@@ -106,7 +107,7 @@ public class CutoffFacetTest extends Assert {
 
     @Test
     public void starKeyLimitTo() {
-        CutoffFacet depthFacet = new CutoffFacet(SearchFieldKeys.ANCESTOR_PATH.name(), "1,*");
+        CutoffFacetImpl depthFacet = new CutoffFacetImpl(SearchFieldKeys.ANCESTOR_PATH.name(), "1,*");
         depthFacet.setCutoff(2);
 
         String limitToValue = depthFacet.getLimitToValue();

@@ -30,9 +30,9 @@ import org.mockito.Mock;
 
 import edu.unc.lib.boxc.common.test.TestHelpers;
 import edu.unc.lib.boxc.model.api.ids.PID;
-import edu.unc.lib.dl.search.solr.model.BriefObjectMetadata;
-import edu.unc.lib.dl.search.solr.model.ObjectPath;
-import edu.unc.lib.dl.search.solr.model.ObjectPathEntry;
+import edu.unc.lib.boxc.search.api.models.ContentObjectRecord;
+import edu.unc.lib.boxc.search.api.models.ObjectPath;
+import edu.unc.lib.boxc.search.api.models.ObjectPathEntry;
 import edu.unc.lib.dl.search.solr.model.SimpleIdRequest;
 import edu.unc.lib.dl.search.solr.test.BaseEmbeddedSolrTest;
 import edu.unc.lib.dl.search.solr.test.TestCorpus;
@@ -103,7 +103,7 @@ public class ObjectPathFactoryIT extends BaseEmbeddedSolrTest {
 
     @Test
     public void testNoAncestorPath() throws Exception {
-        BriefObjectMetadata bom = mock(BriefObjectMetadata.class);
+        ContentObjectRecord bom = mock(ContentObjectRecord.class);
 
         ObjectPath path = objPathFactory.getPath(bom);
 
@@ -112,7 +112,7 @@ public class ObjectPathFactoryIT extends BaseEmbeddedSolrTest {
 
     @Test
     public void testGetPathByMetadata() throws Exception {
-        BriefObjectMetadata bom = solrSearchService.getObjectById(new SimpleIdRequest(testCorpus.coll1Pid, null));
+        ContentObjectRecord bom = solrSearchService.getObjectById(new SimpleIdRequest(testCorpus.coll1Pid, null));
 
         ObjectPath path = objPathFactory.getPath(bom);
 

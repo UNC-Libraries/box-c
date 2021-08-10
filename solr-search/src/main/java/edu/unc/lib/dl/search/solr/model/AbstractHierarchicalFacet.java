@@ -20,12 +20,15 @@ import java.util.List;
 
 import org.apache.solr.client.solrj.response.FacetField;
 
+import edu.unc.lib.boxc.search.api.facets.HierarchicalFacet;
+import edu.unc.lib.boxc.search.api.facets.HierarchicalFacetNode;
+
 /**
- * 
+ *
  * @author bbpennel
  *
  */
-public abstract class AbstractHierarchicalFacet extends GenericFacet implements Cloneable {
+public abstract class AbstractHierarchicalFacet extends GenericFacet implements Cloneable, HierarchicalFacet {
     protected List<HierarchicalFacetNode> facetNodes;
 
     protected AbstractHierarchicalFacet() {
@@ -61,10 +64,12 @@ public abstract class AbstractHierarchicalFacet extends GenericFacet implements 
         facetNodes = new ArrayList<HierarchicalFacetNode>();
     }
 
+    @Override
     public void addNode(HierarchicalFacetNode node) {
         facetNodes.add(node);
     }
 
+    @Override
     public List<HierarchicalFacetNode> getFacetNodes() {
         return facetNodes;
     }
@@ -73,9 +78,7 @@ public abstract class AbstractHierarchicalFacet extends GenericFacet implements 
         this.facetNodes = facetNodes;
     }
 
-    public abstract String getSearchKey();
-    public abstract String getPivotValue();
-
+    @Override
     public String toString() {
         StringBuilder sb = new StringBuilder('[');
         boolean first = true;

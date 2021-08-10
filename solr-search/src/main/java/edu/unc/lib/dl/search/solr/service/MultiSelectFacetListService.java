@@ -25,11 +25,11 @@ import java.util.stream.Collectors;
 
 import edu.unc.lib.boxc.model.api.ResourceType;
 import edu.unc.lib.boxc.model.api.exceptions.NotFoundException;
-import edu.unc.lib.dl.search.solr.model.BriefObjectMetadata;
+import edu.unc.lib.boxc.search.api.facets.SearchFacet;
+import edu.unc.lib.boxc.search.api.models.ContentObjectRecord;
 import edu.unc.lib.dl.search.solr.model.FacetFieldList;
 import edu.unc.lib.dl.search.solr.model.FacetFieldObject;
 import edu.unc.lib.dl.search.solr.model.MultivaluedHierarchicalFacet;
-import edu.unc.lib.dl.search.solr.model.SearchFacet;
 import edu.unc.lib.dl.search.solr.model.SearchRequest;
 import edu.unc.lib.dl.search.solr.model.SearchResultResponse;
 import edu.unc.lib.dl.search.solr.model.SearchState;
@@ -50,7 +50,7 @@ public class MultiSelectFacetListService extends AbstractQueryService {
     public SearchResultResponse getFacetListResult(SearchRequest searchRequest) {
         SearchState searchState = (SearchState) searchRequest.getSearchState().clone();
 
-        BriefObjectMetadata selectedContainer = null;
+        ContentObjectRecord selectedContainer = null;
         if (searchRequest.getRootPid() != null) {
             selectedContainer = searchService.addSelectedContainer(searchRequest.getRootPid(), searchState,
                     searchRequest.isApplyCutoffs(), searchRequest.getAccessGroups());

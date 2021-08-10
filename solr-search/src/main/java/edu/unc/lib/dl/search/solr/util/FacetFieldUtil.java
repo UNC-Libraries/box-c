@@ -24,14 +24,14 @@ import java.util.stream.Collectors;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import edu.unc.lib.boxc.search.api.facets.CutoffFacet;
+import edu.unc.lib.boxc.search.api.facets.CutoffFacetNode;
+import edu.unc.lib.boxc.search.api.facets.HierarchicalFacetNode;
+import edu.unc.lib.boxc.search.api.facets.SearchFacet;
 import edu.unc.lib.dl.search.solr.model.CaseInsensitiveFacet;
-import edu.unc.lib.dl.search.solr.model.CutoffFacet;
-import edu.unc.lib.dl.search.solr.model.CutoffFacetNode;
 import edu.unc.lib.dl.search.solr.model.FacetFieldFactory;
 import edu.unc.lib.dl.search.solr.model.GenericFacet;
-import edu.unc.lib.dl.search.solr.model.HierarchicalFacetNode;
 import edu.unc.lib.dl.search.solr.model.MultivaluedHierarchicalFacet;
-import edu.unc.lib.dl.search.solr.model.SearchFacet;
 import edu.unc.lib.dl.search.solr.model.SearchState;
 
 /**

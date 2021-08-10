@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package edu.unc.lib.dl.search.solr.model;
+package edu.unc.lib.boxc.search.api.models;
 
 import java.util.Collection;
 import java.util.Date;
@@ -21,6 +21,8 @@ import java.util.List;
 import java.util.Map;
 
 import edu.unc.lib.boxc.model.api.ids.PID;
+import edu.unc.lib.boxc.search.api.facets.CutoffFacet;
+import edu.unc.lib.boxc.search.api.facets.HierarchicalFacet;
 
 /**
  * An object containing the metadata for a repository object
@@ -28,7 +30,7 @@ import edu.unc.lib.boxc.model.api.ids.PID;
  * @author bbpennel
  *
  */
-public interface BriefObjectMetadata {
+public interface ContentObjectRecord {
     public CutoffFacet getAncestorPathFacet();
 
     public ObjectPath getObjectPath();
@@ -37,7 +39,7 @@ public interface BriefObjectMetadata {
 
     public CutoffFacet getPath();
 
-    public List<MultivaluedHierarchicalFacet> getContentTypeFacet();
+    public List<HierarchicalFacet> getContentTypeFacet();
 
     public List<Datastream> getDatastreamObjects();
 

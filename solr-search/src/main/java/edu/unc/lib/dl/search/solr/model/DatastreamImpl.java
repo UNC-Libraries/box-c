@@ -15,12 +15,14 @@
  */
 package edu.unc.lib.dl.search.solr.model;
 
+import edu.unc.lib.boxc.search.api.models.Datastream;
+
 /**
+ * Implementation of a record representing a datastream held by a repository object
  *
  * @author bbpennel
- *
  */
-public class Datastream {
+public class DatastreamImpl implements Datastream {
     private String owner;
     private String name;
     private Long filesize;
@@ -30,7 +32,7 @@ public class Datastream {
     private String checksum;
     private String extent;
 
-    public Datastream(String owner, String name, Long filesize, String mimetype, String filename, String extension,
+    public DatastreamImpl(String owner, String name, Long filesize, String mimetype, String filename, String extension,
             String checksum, String extent) {
         this.owner = owner;
         this.name = name;
@@ -42,7 +44,7 @@ public class Datastream {
         this.extent = extent;
     }
 
-    public Datastream(String datastream) {
+    public DatastreamImpl(String datastream) {
         if (datastream == null) {
             throw new IllegalArgumentException("Datastream value must not be null");
         }
@@ -116,8 +118,8 @@ public class Datastream {
         if (object == null) {
             return false;
         }
-        if (object instanceof Datastream) {
-            Datastream rightHand = (Datastream) object;
+        if (object instanceof DatastreamImpl) {
+            DatastreamImpl rightHand = (DatastreamImpl) object;
             // Equal if names match and either pids are null or both match
             return name.equals(rightHand.name)
                     && (rightHand.owner == null || owner == null || owner.equals(rightHand.owner));
@@ -129,7 +131,7 @@ public class Datastream {
             }
             // Attempt comparison of string as a datastream
             try {
-                Datastream rightHand = new Datastream(rightHandString);
+                Datastream rightHand = new DatastreamImpl(rightHandString);
                 return this.equals(rightHand);
             } catch (IllegalArgumentException e) {
                 // String wasn't a datastream, so not equal
@@ -146,6 +148,7 @@ public class Datastream {
         return result;
     }
 
+    @Override
     public String getDatastreamIdentifier() {
         if (owner == null) {
             return name;
@@ -153,34 +156,42 @@ public class Datastream {
         return owner + "/" + name;
     }
 
+    @Override
     public String getName() {
         return name;
     }
 
+    @Override
     public String getOwner() {
         return owner;
     }
 
+    @Override
     public Long getFilesize() {
         return filesize;
     }
 
+    @Override
     public String getMimetype() {
         return mimetype;
     }
 
+    @Override
     public String getExtension() {
         return extension;
     }
 
+    @Override
     public String getChecksum() {
         return checksum;
     }
 
+    @Override
     public String getFilename() {
         return filename;
     }
 
+    @Override
     public String getExtent() {
         return extent;
     }
@@ -209,7 +220,7 @@ public class Datastream {
         this.filesize = filesize;
     }
 
-    public void getExtent(String extent) {
+    public void setExtent(String extent) {
         this.extent = extent;
     }
 }

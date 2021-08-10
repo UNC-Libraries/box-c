@@ -22,6 +22,8 @@ import org.apache.solr.client.solrj.SolrQuery;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import edu.unc.lib.boxc.search.api.facets.SearchFacet;
+import edu.unc.lib.boxc.search.api.models.ContentObjectRecord;
 import edu.unc.lib.dl.search.solr.util.SearchFieldKeys;
 
 /**
@@ -33,8 +35,8 @@ import edu.unc.lib.dl.search.solr.util.SearchFieldKeys;
 public class SearchResultResponse {
     private final Logger LOG = LoggerFactory.getLogger(SearchResultResponse.class);
 
-    private BriefObjectMetadata selectedContainer;
-    private List<BriefObjectMetadata> resultList;
+    private ContentObjectRecord selectedContainer;
+    private List<ContentObjectRecord> resultList;
     private FacetFieldList facetFields;
     private long resultCount;
     private SearchState searchState;
@@ -43,11 +45,11 @@ public class SearchResultResponse {
     public SearchResultResponse() {
     }
 
-    public List<BriefObjectMetadata> getResultList() {
+    public List<ContentObjectRecord> getResultList() {
         return resultList;
     }
 
-    public void setResultList(List<BriefObjectMetadata> resultList) {
+    public void setResultList(List<ContentObjectRecord> resultList) {
         this.resultList = resultList;
     }
 
@@ -83,15 +85,15 @@ public class SearchResultResponse {
         this.generatedQuery = generatedQuery;
     }
 
-    public BriefObjectMetadata getSelectedContainer() {
+    public ContentObjectRecord getSelectedContainer() {
         return selectedContainer;
     }
 
-    public void setSelectedContainer(BriefObjectMetadata selectedContainer) {
+    public void setSelectedContainer(ContentObjectRecord selectedContainer) {
         this.selectedContainer = selectedContainer;
     }
 
-    public void extractCrumbDisplayValueFromRepresentative(BriefObjectMetadata representative) {
+    public void extractCrumbDisplayValueFromRepresentative(ContentObjectRecord representative) {
         List<SearchFacet> contentTypeValue = searchState.getFacets().get(SearchFieldKeys.CONTENT_TYPE.name());
         if (contentTypeValue instanceof MultivaluedHierarchicalFacet) {
             LOG.debug("Replacing content type search value "
@@ -107,7 +109,7 @@ public class SearchResultResponse {
                     representative = groupRep.getItems().get(i);
 
                     if (representative.getContentTypeFacet() != null) {
-                        repFacet = representative.getContentTypeFacet().get(0);
+                        repFacet = (MultivaluedHierarchicalFacet) representative.getContentTypeFacet().get(0);
                         LOG.debug("Pulling content type from representative {}: {}",
                                 representative.getId(), repFacet);
                         if (repFacet.contains(((MultivaluedHierarchicalFacet) contentTypeValue))) {
@@ -119,7 +121,7 @@ public class SearchResultResponse {
                 } while (++i < groupRep.getItems().size());
             } else {
                 // If its not a rolled up result, take it easy
-                repFacet = representative.getContentTypeFacet().get(0);
+                repFacet = (MultivaluedHierarchicalFacet) representative.getContentTypeFacet().get(0);
             }
 
             if (repFacet != null) {
@@ -134,7 +136,7 @@ public class SearchResultResponse {
             return null;
         }
         List<String> ids = new ArrayList<String>();
-        for (BriefObjectMetadata brief: this.resultList) {
+        for (ContentObjectRecord brief: this.resultList) {
             ids.add(brief.getId());
         }
         return ids;

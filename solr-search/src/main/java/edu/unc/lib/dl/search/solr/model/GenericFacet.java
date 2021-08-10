@@ -17,6 +17,8 @@ package edu.unc.lib.dl.search.solr.model;
 
 import org.apache.solr.client.solrj.response.FacetField;
 
+import edu.unc.lib.boxc.search.api.facets.SearchFacet;
+
 /**
  * Stores a individual facet entry
  * @author bbpennel

@@ -52,8 +52,8 @@ import de.digitalcollections.iiif.model.sharedcanvas.Sequence;
 import edu.unc.lib.boxc.common.util.URIUtil;
 import edu.unc.lib.boxc.model.api.DatastreamType;
 import edu.unc.lib.boxc.model.api.ResourceType;
-import edu.unc.lib.dl.search.solr.model.BriefObjectMetadata;
-import edu.unc.lib.dl.search.solr.model.Datastream;
+import edu.unc.lib.boxc.search.api.models.ContentObjectRecord;
+import edu.unc.lib.boxc.search.api.models.Datastream;
 import edu.unc.lib.dl.ui.exception.ClientAbortException;
 import edu.unc.lib.dl.ui.util.FileIOUtil;
 
@@ -177,10 +177,10 @@ public class LorisContentService {
         }
     }
 
-    public String getManifest(HttpServletRequest request, List<BriefObjectMetadata> briefObjs)
+    public String getManifest(HttpServletRequest request, List<ContentObjectRecord> briefObjs)
             throws JsonProcessingException {
         String manifestBase = getRecordPath(request);
-        BriefObjectMetadata rootObj = briefObjs.get(0);
+        ContentObjectRecord rootObj = briefObjs.get(0);
 
         String title = getTitle(rootObj);
 
@@ -214,29 +214,29 @@ public class LorisContentService {
         return iiifMapper.writeValueAsString(manifest.addSequence(seq));
     }
 
-    public String getSequence(HttpServletRequest request, List<BriefObjectMetadata> briefObjs)
+    public String getSequence(HttpServletRequest request, List<ContentObjectRecord> briefObjs)
             throws JsonProcessingException {
         String path = getRecordPath(request);
         return iiifMapper.writeValueAsString(createSequence(path, briefObjs));
     }
 
-    public String getCanvas(HttpServletRequest request, BriefObjectMetadata briefObj)
+    public String getCanvas(HttpServletRequest request, ContentObjectRecord briefObj)
             throws JsonProcessingException {
         String path = getRecordPath(request);
         return iiifMapper.writeValueAsString(createCanvas(path, briefObj));
     }
 
-    private Sequence createSequence(String seqPath, List<BriefObjectMetadata> briefObjs) {
+    private Sequence createSequence(String seqPath, List<ContentObjectRecord> briefObjs) {
         Sequence seq = new Sequence(URIUtil.join(seqPath, "sequence", "normal"));
 
-        BriefObjectMetadata rootObj = briefObjs.get(0);
+        ContentObjectRecord rootObj = briefObjs.get(0);
         if (rootObj.getResourceType().equals(ResourceType.Work.name())) {
             String rootJp2Id = jp2Pid(rootObj);
             briefObjs.remove(0);
             // Move the primary object to the beginning of the sequence
             if (rootJp2Id != null && !rootJp2Id.equals(rootObj.getId())) {
                 for (int i = 0; i < briefObjs.size(); i++) {
-                    BriefObjectMetadata briefObj = briefObjs.get(i);
+                    ContentObjectRecord briefObj = briefObjs.get(i);
                     if (briefObj.getId().equals(rootJp2Id)) {
                         if (i != 0) {
                             briefObjs.remove(i);
@@ -248,7 +248,7 @@ public class LorisContentService {
             }
         }
 
-        for (BriefObjectMetadata briefObj : briefObjs) {
+        for (ContentObjectRecord briefObj : briefObjs) {
             String datastreamUuid = jp2Pid(briefObj);
             if (!StringUtils.isEmpty(datastreamUuid)) {
                 Canvas canvas = createCanvas(seqPath, briefObj);
@@ -259,7 +259,7 @@ public class LorisContentService {
         return seq;
     }
 
-    private Canvas createCanvas(String path, BriefObjectMetadata briefObj) {
+    private Canvas createCanvas(String path, ContentObjectRecord briefObj) {
         String title = getTitle(briefObj);
         String uuid = jp2Pid(briefObj);
 
@@ -294,7 +294,7 @@ public class LorisContentService {
         return URIUtil.join(basePath, "jp2Proxy", uuid, datastream);
     }
 
-    private String jp2Pid(BriefObjectMetadata briefObj) {
+    private String jp2Pid(ContentObjectRecord briefObj) {
         Datastream datastream = briefObj.getDatastreamObject(DatastreamType.JP2_ACCESS_COPY.getId());
         if (datastream != null) {
             String id = datastream.getOwner();
@@ -313,7 +313,7 @@ public class LorisContentService {
         }
     }
 
-    private String getTitle(BriefObjectMetadata briefObj) {
+    private String getTitle(ContentObjectRecord briefObj) {
         String title = briefObj.getTitle();
         return (title != null) ? title : "";
     }

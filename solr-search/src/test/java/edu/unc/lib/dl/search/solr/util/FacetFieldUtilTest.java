@@ -27,7 +27,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import edu.unc.lib.dl.search.solr.model.CaseInsensitiveFacet;
-import edu.unc.lib.dl.search.solr.model.CutoffFacet;
+import edu.unc.lib.dl.search.solr.model.CutoffFacetImpl;
 import edu.unc.lib.dl.search.solr.model.GenericFacet;
 import edu.unc.lib.dl.search.solr.model.MultivaluedHierarchicalFacet;
 import edu.unc.lib.dl.search.solr.model.RoleGroupFacet;
@@ -55,7 +55,7 @@ public class FacetFieldUtilTest {
     public void addFacetCutoffToQuery() {
         SolrQuery query = new SolrQuery();
 
-        CutoffFacet facet = new CutoffFacet("ANCESTOR_PATH", "2,test");
+        CutoffFacetImpl facet = new CutoffFacetImpl("ANCESTOR_PATH", "2,test");
 
         facetFieldUtil.addToSolrQuery(facet, query);
 
@@ -69,7 +69,7 @@ public class FacetFieldUtilTest {
     public void addFacetCutoffWithCutoffToQuery() {
         SolrQuery query = new SolrQuery();
 
-        CutoffFacet facet = new CutoffFacet("ANCESTOR_PATH", "2,test!3");
+        CutoffFacetImpl facet = new CutoffFacetImpl("ANCESTOR_PATH", "2,test!3");
 
         facetFieldUtil.addToSolrQuery(facet, query);
 
@@ -83,8 +83,8 @@ public class FacetFieldUtilTest {
     public void addMultipleCutoffToQuery() {
         SolrQuery query = new SolrQuery();
 
-        CutoffFacet facet = new CutoffFacet("ANCESTOR_PATH", "2,test1");
-        CutoffFacet facet2 = new CutoffFacet("ANCESTOR_PATH", "3,test2!4");
+        CutoffFacetImpl facet = new CutoffFacetImpl("ANCESTOR_PATH", "2,test1");
+        CutoffFacetImpl facet2 = new CutoffFacetImpl("ANCESTOR_PATH", "3,test2!4");
 
         facetFieldUtil.addToSolrQuery(Arrays.asList(facet, facet2), query);
 
@@ -189,7 +189,7 @@ public class FacetFieldUtilTest {
     public void addMultipleFacets() {
         SolrQuery query = new SolrQuery();
 
-        CutoffFacet facet = new CutoffFacet("ANCESTOR_PATH", "2,test");
+        CutoffFacetImpl facet = new CutoffFacetImpl("ANCESTOR_PATH", "2,test");
         facetFieldUtil.addToSolrQuery(facet, query);
 
         MultivaluedHierarchicalFacet facet2 = new MultivaluedHierarchicalFacet("CONTENT_TYPE", "image/jpg");

@@ -35,8 +35,8 @@ import org.springframework.util.Assert;
 
 import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
 import edu.unc.lib.boxc.model.api.ResourceType;
-import edu.unc.lib.dl.search.solr.exception.SolrRuntimeException;
-import edu.unc.lib.dl.search.solr.model.BriefObjectMetadata;
+import edu.unc.lib.boxc.search.api.exceptions.SolrRuntimeException;
+import edu.unc.lib.boxc.search.api.models.ContentObjectRecord;
 
 /**
  * Service for calculating the number of child objects within containers.
@@ -60,7 +60,7 @@ public class ChildrenCountService extends AbstractQueryService {
      * @param principals agent principals
      * @return count of number of child objects
      */
-    public long getChildrenCount(BriefObjectMetadata container, AccessGroupSet principals) {
+    public long getChildrenCount(ContentObjectRecord container, AccessGroupSet principals) {
         SolrQuery solrQuery = createBaseQuery(principals, container, null);
 
         try {
@@ -80,7 +80,7 @@ public class ChildrenCountService extends AbstractQueryService {
      * @param containers containers to add child counts to.
      * @param principals agent principals
      */
-    public void addChildrenCounts(List<BriefObjectMetadata> containers, AccessGroupSet principals) {
+    public void addChildrenCounts(List<ContentObjectRecord> containers, AccessGroupSet principals) {
         addChildrenCounts(containers, principals, CHILD_COUNT, null);
     }
 
@@ -98,7 +98,7 @@ public class ChildrenCountService extends AbstractQueryService {
      * @param baseQuery Optional. Starting query that will be used for
      *            calculating child counts.
      */
-    public void addChildrenCounts(List<BriefObjectMetadata> containers, AccessGroupSet principals,
+    public void addChildrenCounts(List<ContentObjectRecord> containers, AccessGroupSet principals,
             String countKey, SolrQuery baseQuery) {
 
         Assert.notNull(containers, "Must provide a list of containers");
@@ -123,7 +123,7 @@ public class ChildrenCountService extends AbstractQueryService {
         }
 
         // Calculate the child count for each provided container one at a time
-        for (BriefObjectMetadata container : containers) {
+        for (ContentObjectRecord container : containers) {
             // Skip counts for any file objects
             if (ResourceType.File.name().equals(container.getResourceType())) {
                 continue;
@@ -139,7 +139,7 @@ public class ChildrenCountService extends AbstractQueryService {
         }
     }
 
-    private SolrQuery createBaseQuery(AccessGroupSet principals, BriefObjectMetadata container, SolrQuery baseQuery) {
+    private SolrQuery createBaseQuery(AccessGroupSet principals, ContentObjectRecord container, SolrQuery baseQuery) {
         SolrQuery solrQuery;
         if (baseQuery == null) {
             solrQuery = new SolrQuery();

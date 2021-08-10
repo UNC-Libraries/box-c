@@ -35,7 +35,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
-import edu.unc.lib.dl.search.solr.model.BriefObjectMetadata;
+import edu.unc.lib.boxc.search.api.models.ContentObjectRecord;
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadataBean;
 import edu.unc.lib.dl.search.solr.model.IdListRequest;
 import edu.unc.lib.dl.search.solr.model.SimpleIdRequest;
@@ -84,10 +84,10 @@ public class ItemInfoRestController {
         List<String> resultFields = Arrays.asList("_version_");
 
         IdListRequest listRequest = new IdListRequest(ids, resultFields, principals);
-        List<BriefObjectMetadata> listResults = solrSearchService.getObjectsById(listRequest);
+        List<ContentObjectRecord> listResults = solrSearchService.getObjectsById(listRequest);
         Map<String, String> results = new HashMap<>(listResults.size());
 
-        for (BriefObjectMetadata result: listResults) {
+        for (ContentObjectRecord result: listResults) {
             results.put(result.getId(), Long.toString(result.get_version_()));
         }
 

@@ -49,8 +49,8 @@ import edu.unc.lib.boxc.auth.api.services.AccessControlService;
 import edu.unc.lib.boxc.model.api.exceptions.NotFoundException;
 import edu.unc.lib.boxc.model.api.exceptions.RepositoryException;
 import edu.unc.lib.boxc.model.api.ids.PID;
-import edu.unc.lib.dl.search.solr.model.BriefObjectMetadata;
-import edu.unc.lib.dl.search.solr.model.Datastream;
+import edu.unc.lib.boxc.search.api.models.ContentObjectRecord;
+import edu.unc.lib.boxc.search.api.models.Datastream;
 import edu.unc.lib.dl.search.solr.model.SearchRequest;
 import edu.unc.lib.dl.search.solr.model.SearchResultResponse;
 import edu.unc.lib.dl.search.solr.model.SearchState;
@@ -126,7 +126,7 @@ public class ExportCsvService {
         searchState.setSortType("export");
         searchState.setRowsPerPage(pageSize);
 
-        BriefObjectMetadata container = queryLayer.addSelectedContainer(pid, searchState, false,
+        ContentObjectRecord container = queryLayer.addSelectedContainer(pid, searchState, false,
                 accessGroups);
         if (container == null) {
             throw new NotFoundException("Object " + pid.getId() + " not found while streaming CSV export");
@@ -146,7 +146,7 @@ public class ExportCsvService {
 
                 SearchResultResponse resultResponse = queryLayer.getSearchResults(searchRequest);
 
-                List<BriefObjectMetadata> objects = resultResponse.getResultList();
+                List<ContentObjectRecord> objects = resultResponse.getResultList();
                 // Insert the parent container if on the first page of results
                 if (pageStart == 0) {
                     objects.add(0, container);
@@ -159,7 +159,7 @@ public class ExportCsvService {
                 childrenCountService.addChildrenCounts(objects, searchRequest.getAccessGroups());
 
                 // Stream the current page of results
-                for (BriefObjectMetadata object : objects) {
+                for (ContentObjectRecord object : objects) {
                     printObject(printer, object);
                 }
 
@@ -213,7 +213,7 @@ public class ExportCsvService {
         return CSVFormat.EXCEL.withHeader(CSV_HEADERS).print(writer);
     }
 
-    private void printObject(CSVPrinter printer, BriefObjectMetadata object) throws IOException {
+    private void printObject(CSVPrinter printer, ContentObjectRecord object) throws IOException {
         // Vitals: object type, pid, title, path, label, depth
         printer.print(object.getResourceType());
         printer.print(object.getId());

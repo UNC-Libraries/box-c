@@ -35,7 +35,7 @@ import edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore;
 import edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPaths;
 import edu.unc.lib.boxc.operations.api.vocab.VocabularyHelper;
 import edu.unc.lib.boxc.operations.impl.vocab.VocabularyHelperManager;
-import edu.unc.lib.dl.search.solr.model.BriefObjectMetadata;
+import edu.unc.lib.boxc.search.api.models.ContentObjectRecord;
 import edu.unc.lib.dl.search.solr.model.SearchRequest;
 import edu.unc.lib.dl.ui.util.SerializationUtil;
 
@@ -78,7 +78,7 @@ public class VocabularyController extends AbstractSearchController {
     public Map<String, Object> getInvalidVocab(SearchRequest searchRequest) {
         AccessGroupSet groups = GroupsThreadStore.getPrincipals();
 
-        BriefObjectMetadata selectedContainer = queryLayer.addSelectedContainer(searchRequest.getRootPid(),
+        ContentObjectRecord selectedContainer = queryLayer.addSelectedContainer(searchRequest.getRootPid(),
                 searchRequest.getSearchState(), false, groups);
 
         Map<String, Object> results = new LinkedHashMap<>();

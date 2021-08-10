@@ -37,7 +37,7 @@ import org.slf4j.LoggerFactory;
 
 import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
 import edu.unc.lib.boxc.model.api.ids.PID;
-import edu.unc.lib.dl.search.solr.model.BriefObjectMetadata;
+import edu.unc.lib.boxc.search.api.models.ContentObjectRecord;
 import edu.unc.lib.dl.search.solr.model.SimpleIdRequest;
 import edu.unc.lib.dl.search.solr.service.SolrSearchService;
 
@@ -93,7 +93,7 @@ public class AnalyticsTrackerUtil {
         try {
             AnalyticsUserData userData = new AnalyticsUserData(request);
 
-            BriefObjectMetadata briefObject = solrSearchService.getObjectById(new SimpleIdRequest(pid, principals));
+            ContentObjectRecord briefObject = solrSearchService.getObjectById(new SimpleIdRequest(pid, principals));
             String parentCollection = briefObject.getParentCollection() == null ?
                     "(no collection)"
                     : briefObject.getParentCollectionName();

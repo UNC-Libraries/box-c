@@ -29,6 +29,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import edu.unc.lib.boxc.model.api.ResourceType;
+import edu.unc.lib.boxc.search.api.models.ContentObjectRecord;
 
 /**
  *
@@ -57,9 +58,9 @@ public class HierarchicalBrowseResultResponse extends SearchResultResponse {
     }
 
     public void removeContainersWithoutContents() {
-        ListIterator<BriefObjectMetadata> resultIt = this.getResultList().listIterator(this.getResultList().size());
+        ListIterator<ContentObjectRecord> resultIt = this.getResultList().listIterator(this.getResultList().size());
         while (resultIt.hasPrevious()) {
-            BriefObjectMetadata briefObject = resultIt.previous();
+            ContentObjectRecord briefObject = resultIt.previous();
             if (briefObject == null || briefObject.getResourceType() == null) {
                 continue;
             }
@@ -90,7 +91,7 @@ public class HierarchicalBrowseResultResponse extends SearchResultResponse {
      *
      * @param itemResults
      */
-    public void populateItemResults(List<BriefObjectMetadata> itemResults) {
+    public void populateItemResults(List<ContentObjectRecord> itemResults) {
         getResultList().addAll(itemResults);
     }
 
@@ -113,7 +114,7 @@ public class HierarchicalBrowseResultResponse extends SearchResultResponse {
         nodeMap.put(parentNode.getMetadata().getId(), parentNode);
 
         for (int i = 1; i < this.getResultList().size(); i++) {
-            BriefObjectMetadata metadata = this.getResultList().get(i);
+            ContentObjectRecord metadata = this.getResultList().get(i);
 
             // Find the closest parent record
             for (int j = metadata.getAncestorPathFacet().getFacetNodes().size() - 1; j >= 0; j--) {
@@ -163,7 +164,7 @@ public class HierarchicalBrowseResultResponse extends SearchResultResponse {
         return null;
     }
 
-    public void addNodes(List<BriefObjectMetadata> nodes) {
+    public void addNodes(List<ContentObjectRecord> nodes) {
 
     }
 
@@ -196,7 +197,7 @@ public class HierarchicalBrowseResultResponse extends SearchResultResponse {
     }
 
     public static class ResultNode {
-        private BriefObjectMetadata metadata;
+        private ContentObjectRecord metadata;
         private List<ResultNode> children;
         boolean isTopLevel;
 
@@ -204,16 +205,16 @@ public class HierarchicalBrowseResultResponse extends SearchResultResponse {
             this.children = new ArrayList<>();
         }
 
-        public ResultNode(BriefObjectMetadata metadata) {
+        public ResultNode(ContentObjectRecord metadata) {
             this();
             this.metadata = metadata;
         }
 
-        public BriefObjectMetadata getMetadata() {
+        public ContentObjectRecord getMetadata() {
             return metadata;
         }
 
-        public void setMetadata(BriefObjectMetadata metadata) {
+        public void setMetadata(ContentObjectRecord metadata) {
             this.metadata = metadata;
         }
 
@@ -237,7 +238,7 @@ public class HierarchicalBrowseResultResponse extends SearchResultResponse {
             this.isTopLevel = isTopLevel;
         }
 
-        public ResultNode addChild(BriefObjectMetadata metadata) {
+        public ResultNode addChild(ContentObjectRecord metadata) {
             ResultNode newNode = new ResultNode(metadata);
             this.children.add(newNode);
             return newNode;

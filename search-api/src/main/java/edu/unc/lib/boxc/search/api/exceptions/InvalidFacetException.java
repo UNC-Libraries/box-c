@@ -13,22 +13,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package edu.unc.lib.dl.search.solr.exception;
+package edu.unc.lib.boxc.search.api.exceptions;
 
 /**
  * 
  * @author bbpennel
  *
  */
-public class InvalidHierarchicalFacetException extends InvalidFacetException {
+public class InvalidFacetException extends RuntimeException {
     private static final long serialVersionUID = 1L;
 
-    public InvalidHierarchicalFacetException(String msg, Exception e) {
-        super(msg);
+    public InvalidFacetException(String msg, Exception e) {
+        super(msg + "\n" + e.getMessage());
         this.setStackTrace(e.getStackTrace());
     }
 
-    public InvalidHierarchicalFacetException(String msg) {
+    public InvalidFacetException(String msg) {
         super(msg);
     }
 }

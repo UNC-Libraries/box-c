@@ -44,13 +44,13 @@ import edu.unc.lib.boxc.auth.api.UserRole;
 import edu.unc.lib.boxc.auth.api.exceptions.AccessRestrictionException;
 import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
 import edu.unc.lib.boxc.model.api.ids.PID;
-import edu.unc.lib.dl.search.solr.model.BriefObjectMetadata;
+import edu.unc.lib.boxc.search.api.facets.CutoffFacet;
+import edu.unc.lib.boxc.search.api.facets.SearchFacet;
+import edu.unc.lib.boxc.search.api.models.ContentObjectRecord;
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadataBean;
-import edu.unc.lib.dl.search.solr.model.CutoffFacet;
 import edu.unc.lib.dl.search.solr.model.FacetFieldFactory;
 import edu.unc.lib.dl.search.solr.model.GroupedMetadataBean;
 import edu.unc.lib.dl.search.solr.model.IdListRequest;
-import edu.unc.lib.dl.search.solr.model.SearchFacet;
 import edu.unc.lib.dl.search.solr.model.SearchRequest;
 import edu.unc.lib.dl.search.solr.model.SearchResultResponse;
 import edu.unc.lib.dl.search.solr.model.SearchState;
@@ -130,7 +130,7 @@ public class SolrSearchService extends AbstractQueryService {
     }
 
     @SuppressWarnings("unchecked")
-    public List<BriefObjectMetadata> getObjectsById(IdListRequest listRequest) {
+    public List<ContentObjectRecord> getObjectsById(IdListRequest listRequest) {
         QueryResponse queryResponse = null;
         SolrQuery solrQuery = new SolrQuery();
         StringBuilder query = new StringBuilder("*:* ");
@@ -173,7 +173,7 @@ public class SolrSearchService extends AbstractQueryService {
         }
 
         List<?> results = queryResponse.getBeans(BriefObjectMetadataBean.class);
-        return (List<BriefObjectMetadata>) results;
+        return (List<ContentObjectRecord>) results;
     }
 
     /**
@@ -211,7 +211,7 @@ public class SolrSearchService extends AbstractQueryService {
             // Add in the correct rollup representatives when they are missing, if we are rolling up on the rollup id
             if (searchRequest.getSearchState().getRollup() != null && searchRequest.getSearchState().getRollup()
                     && searchRequest.getSearchState().getRollupField() == null) {
-                for (BriefObjectMetadata item : resultResponse.getResultList()) {
+                for (ContentObjectRecord item : resultResponse.getResultList()) {
                     if (item.getId() != null && item.getRollup() != null && !item.getId().equals(item.getRollup())) {
                         BriefObjectMetadataBean representative = this.getObjectById(new SimpleIdRequest(
                                 item.getRollup(), searchRequest.getAccessGroups()));
@@ -277,9 +277,9 @@ public class SolrSearchService extends AbstractQueryService {
         return rootNode.getAncestorPathFacet();
     }
 
-    public BriefObjectMetadata addSelectedContainer(PID containerPid, SearchState searchState,
+    public ContentObjectRecord addSelectedContainer(PID containerPid, SearchState searchState,
             boolean applyCutoffs, AccessGroupSet principals) {
-        BriefObjectMetadata selectedContainer = getObjectById(new SimpleIdRequest(containerPid, principals));
+        ContentObjectRecord selectedContainer = getObjectById(new SimpleIdRequest(containerPid, principals));
         if (selectedContainer == null) {
             return null;
         }
@@ -584,7 +584,7 @@ public class SolrSearchService extends AbstractQueryService {
         GroupResponse groupResponse = queryResponse.getGroupResponse();
         SearchResultResponse response = new SearchResultResponse();
         if (groupResponse != null) {
-            List<BriefObjectMetadata> groupResults = new ArrayList<>();
+            List<ContentObjectRecord> groupResults = new ArrayList<>();
             for (GroupCommand groupCmd : groupResponse.getValues()) {
                 // response.setResultCount(groupCmd.getMatches());
                 response.setResultCount(groupCmd.getNGroups());
@@ -601,7 +601,7 @@ public class SolrSearchService extends AbstractQueryService {
 
         } else {
             List<?> results = queryResponse.getBeans(BriefObjectMetadataBean.class);
-            response.setResultList((List<BriefObjectMetadata>) results);
+            response.setResultList((List<ContentObjectRecord>) results);
             // Store the number of results
             response.setResultCount(queryResponse.getResults().getNumFound());
         }

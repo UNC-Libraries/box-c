@@ -32,9 +32,9 @@ import com.google.common.collect.Lists;
 
 import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
 import edu.unc.lib.boxc.model.api.ResourceType;
-import edu.unc.lib.dl.search.solr.exception.SolrRuntimeException;
+import edu.unc.lib.boxc.search.api.exceptions.SolrRuntimeException;
+import edu.unc.lib.boxc.search.api.facets.CutoffFacet;
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadataBean;
-import edu.unc.lib.dl.search.solr.model.CutoffFacet;
 import edu.unc.lib.dl.search.solr.util.FacetFieldUtil;
 import edu.unc.lib.dl.search.solr.util.SearchFieldKeys;
 

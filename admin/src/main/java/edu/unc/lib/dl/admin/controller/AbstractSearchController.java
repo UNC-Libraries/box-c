@@ -20,7 +20,7 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
-import edu.unc.lib.dl.search.solr.model.BriefObjectMetadata;
+import edu.unc.lib.boxc.search.api.models.ContentObjectRecord;
 import edu.unc.lib.dl.search.solr.model.SearchRequest;
 import edu.unc.lib.dl.search.solr.model.SearchResultResponse;
 import edu.unc.lib.dl.search.solr.model.SearchState;
@@ -59,7 +59,7 @@ public class AbstractSearchController extends AbstractSolrSearchController {
 
         SearchResultResponse resultResponse = queryLayer.performSearch(searchRequest);
 
-        List<BriefObjectMetadata> objects = resultResponse.getResultList();
+        List<ContentObjectRecord> objects = resultResponse.getResultList();
         childrenCountService.addChildrenCounts(objects, searchRequest.getAccessGroups());
 
         return resultResponse;

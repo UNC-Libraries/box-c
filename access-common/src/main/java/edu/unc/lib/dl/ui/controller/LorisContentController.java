@@ -43,7 +43,7 @@ import edu.unc.lib.boxc.auth.fcrepo.models.AgentPrincipalsImpl;
 import edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
-import edu.unc.lib.dl.search.solr.model.BriefObjectMetadata;
+import edu.unc.lib.boxc.search.api.models.ContentObjectRecord;
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadataBean;
 import edu.unc.lib.dl.search.solr.model.SimpleIdRequest;
 import edu.unc.lib.dl.ui.service.AccessCopiesService;
@@ -191,7 +191,7 @@ public class LorisContentController extends AbstractSolrSearchController {
         PID pid = PIDs.get(id);
         // Check if the user is allowed to view this object's manifest
         if (this.hasAccess(pid, datastream)) {
-            List<BriefObjectMetadata> briefObjs = getDatastreams(pid);
+            List<ContentObjectRecord> briefObjs = getDatastreams(pid);
             response.addHeader("Access-Control-Allow-Origin", "*");
             return lorisContentService.getSequence(request, briefObjs);
         } else {
@@ -217,7 +217,7 @@ public class LorisContentController extends AbstractSolrSearchController {
         // Check if the user is allowed to view this object's manifest
         if (this.hasAccess(pid, datastream)) {
             try {
-                List<BriefObjectMetadata> briefObjs = getDatastreams(pid);
+                List<ContentObjectRecord> briefObjs = getDatastreams(pid);
                 if (briefObjs.size() == 0) {
                     response.setStatus(HttpStatus.NOT_FOUND.value());
                 } else {
@@ -235,7 +235,7 @@ public class LorisContentController extends AbstractSolrSearchController {
         return "";
     }
 
-    private List<BriefObjectMetadata> getDatastreams(PID pid) {
+    private List<ContentObjectRecord> getDatastreams(PID pid) {
         AgentPrincipals agent = AgentPrincipalsImpl.createFromThread();
         return accessCopiesService.listViewableFiles(pid, agent.getPrincipals());
     }

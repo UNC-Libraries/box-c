@@ -26,7 +26,7 @@ import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
-import edu.unc.lib.dl.search.solr.model.SearchFacet;
+import edu.unc.lib.boxc.search.api.facets.SearchFacet;
 import edu.unc.lib.dl.search.solr.model.SearchState;
 import edu.unc.lib.dl.search.solr.model.SearchState.RangePair;
 

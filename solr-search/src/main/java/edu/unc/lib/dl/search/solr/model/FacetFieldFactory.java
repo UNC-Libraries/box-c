@@ -26,8 +26,9 @@ import org.apache.solr.client.solrj.response.FacetField;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import edu.unc.lib.dl.search.solr.exception.InvalidFacetException;
-import edu.unc.lib.dl.search.solr.exception.InvalidHierarchicalFacetException;
+import edu.unc.lib.boxc.search.api.exceptions.InvalidFacetException;
+import edu.unc.lib.boxc.search.api.exceptions.InvalidHierarchicalFacetException;
+import edu.unc.lib.boxc.search.api.facets.SearchFacet;
 import edu.unc.lib.dl.search.solr.util.SearchSettings;
 import edu.unc.lib.dl.search.solr.util.SolrSettings;
 

@@ -42,7 +42,7 @@ import edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl;
 import edu.unc.lib.boxc.model.api.ResourceType;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
-import edu.unc.lib.dl.search.solr.model.BriefObjectMetadata;
+import edu.unc.lib.boxc.search.api.models.ContentObjectRecord;
 import edu.unc.lib.dl.search.solr.model.SimpleIdRequest;
 import edu.unc.lib.dl.search.solr.test.BaseEmbeddedSolrTest;
 import edu.unc.lib.dl.search.solr.test.TestCorpus;
@@ -102,7 +102,7 @@ public class ChildrenCountServiceIT extends BaseEmbeddedSolrTest {
 
     @Test
     public void testGetChildrenCount() throws Exception {
-        BriefObjectMetadata bom = getObject(testCorpus.coll1Pid);
+        ContentObjectRecord bom = getObject(testCorpus.coll1Pid);
 
         assertEquals(3, countService.getChildrenCount(bom, principals));
     }
@@ -111,22 +111,22 @@ public class ChildrenCountServiceIT extends BaseEmbeddedSolrTest {
     public void testGetChildrenCountWithAccessRestriction() throws Exception {
         restrictionUtil.setDisablePermissionFiltering(false);
 
-        BriefObjectMetadata bom = getObject(testCorpus.coll2Pid);
+        ContentObjectRecord bom = getObject(testCorpus.coll2Pid);
 
         assertEquals(1, countService.getChildrenCount(bom, principals));
     }
 
     @Test
     public void testGetChildrenCountForWork() throws Exception {
-        BriefObjectMetadata bom = getObject(testCorpus.work1Pid);
+        ContentObjectRecord bom = getObject(testCorpus.work1Pid);
 
         assertEquals(2, countService.getChildrenCount(bom, principals));
     }
 
     @Test
     public void testAddChildrenCounts() throws Exception {
-        BriefObjectMetadata folder1 = getObject(testCorpus.folder1Pid);
-        BriefObjectMetadata coll2 = getObject(testCorpus.coll2Pid);
+        ContentObjectRecord folder1 = getObject(testCorpus.folder1Pid);
+        ContentObjectRecord coll2 = getObject(testCorpus.coll2Pid);
 
         countService.addChildrenCounts(asList(folder1, coll2), principals);
 
@@ -138,8 +138,8 @@ public class ChildrenCountServiceIT extends BaseEmbeddedSolrTest {
     public void testAddChildrenCountsWithAccessRestriction() throws Exception {
         restrictionUtil.setDisablePermissionFiltering(false);
 
-        BriefObjectMetadata folder1 = getObject(testCorpus.folder1Pid);
-        BriefObjectMetadata coll2 = getObject(testCorpus.coll2Pid);
+        ContentObjectRecord folder1 = getObject(testCorpus.folder1Pid);
+        ContentObjectRecord coll2 = getObject(testCorpus.coll2Pid);
 
         countService.addChildrenCounts(asList(folder1, coll2), principals);
 
@@ -149,8 +149,8 @@ public class ChildrenCountServiceIT extends BaseEmbeddedSolrTest {
 
     @Test
     public void testAddChildrenCountsFromBaseQuery() throws Exception {
-        BriefObjectMetadata folder1 = getObject(testCorpus.folder1Pid);
-        BriefObjectMetadata coll2 = getObject(testCorpus.coll2Pid);
+        ContentObjectRecord folder1 = getObject(testCorpus.folder1Pid);
+        ContentObjectRecord coll2 = getObject(testCorpus.coll2Pid);
 
         SolrQuery baseQuery = new SolrQuery("*:*");
         // Count only files
@@ -182,19 +182,19 @@ public class ChildrenCountServiceIT extends BaseEmbeddedSolrTest {
 
         index(docs);
 
-        BriefObjectMetadata coll1 = getObject(testCorpus.coll1Pid);
+        ContentObjectRecord coll1 = getObject(testCorpus.coll1Pid);
 
         countService.addChildrenCounts(asList(coll1), principals);
 
         assertCountEquals(203, coll1, CHILD_COUNT);
     }
 
-    private BriefObjectMetadata getObject(PID pid) {
+    private ContentObjectRecord getObject(PID pid) {
         return solrSearchService.getObjectById(
                 new SimpleIdRequest(pid.getId(), principals));
     }
 
-    private void assertCountEquals(long count, BriefObjectMetadata md, String countType) {
+    private void assertCountEquals(long count, ContentObjectRecord md, String countType) {
         assertEquals("Incorrect number of children", count, md.getCountMap().get(countType).intValue());
     }
 }

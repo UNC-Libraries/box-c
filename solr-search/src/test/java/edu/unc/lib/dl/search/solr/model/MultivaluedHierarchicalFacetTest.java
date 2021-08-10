@@ -27,6 +27,7 @@ import org.apache.solr.client.solrj.response.FacetField;
 import org.junit.Assert;
 import org.junit.Test;
 
+import edu.unc.lib.boxc.search.api.facets.HierarchicalFacet;
 import edu.unc.lib.dl.search.solr.util.SearchSettings;
 
 public class MultivaluedHierarchicalFacetTest extends Assert {
@@ -34,17 +35,19 @@ public class MultivaluedHierarchicalFacetTest extends Assert {
     @Test
     public void createFacetList() {
         List<String> facetValues = Arrays.asList("^image,Image", "/image^jpg,jpg");
-        List<MultivaluedHierarchicalFacet> facets = MultivaluedHierarchicalFacet
+        List<HierarchicalFacet> facets = MultivaluedHierarchicalFacet
                 .createMultivaluedHierarchicalFacets(null, facetValues);
 
         assertEquals(1, facets.size());
 
-        MultivaluedHierarchicalFacetNode firstTier = (MultivaluedHierarchicalFacetNode)facets.get(0).getFacetNodes().get(0);
+        MultivaluedHierarchicalFacetNode firstTier = (
+                MultivaluedHierarchicalFacetNode)facets.get(0).getFacetNodes().get(0);
         assertEquals("Image", firstTier.getDisplayValue());
         assertEquals("image", firstTier.getSearchKey());
         assertEquals(1, firstTier.getTiers().size());
 
-        MultivaluedHierarchicalFacetNode secondTier = (MultivaluedHierarchicalFacetNode)facets.get(0).getFacetNodes().get(1);
+        MultivaluedHierarchicalFacetNode secondTier =
+                (MultivaluedHierarchicalFacetNode)facets.get(0).getFacetNodes().get(1);
         assertEquals("jpg", secondTier.getDisplayValue());
         assertEquals("jpg", secondTier.getSearchKey());
         assertEquals(2, secondTier.getTiers().size());
@@ -55,17 +58,19 @@ public class MultivaluedHierarchicalFacetTest extends Assert {
     @Test
     public void createFacetListMultiple() {
         List<String> facetValues = Arrays.asList("^image,Image", "/image^jpg,jpg", "^audio,Audio", "/audio^wav,wav");
-        List<MultivaluedHierarchicalFacet> facets = MultivaluedHierarchicalFacet
+        List<HierarchicalFacet> facets = MultivaluedHierarchicalFacet
                 .createMultivaluedHierarchicalFacets(null, facetValues);
 
         assertEquals(2, facets.size());
 
-        MultivaluedHierarchicalFacetNode firstTier = (MultivaluedHierarchicalFacetNode)facets.get(0).getFacetNodes().get(0);
+        MultivaluedHierarchicalFacetNode firstTier =
+                (MultivaluedHierarchicalFacetNode)facets.get(0).getFacetNodes().get(0);
         assertEquals("Image", firstTier.getDisplayValue());
         assertEquals("image", firstTier.getSearchKey());
         assertEquals(1, firstTier.getTiers().size());
 
-        MultivaluedHierarchicalFacetNode secondTier = (MultivaluedHierarchicalFacetNode)facets.get(0).getFacetNodes().get(1);
+        MultivaluedHierarchicalFacetNode secondTier =
+                (MultivaluedHierarchicalFacetNode)facets.get(0).getFacetNodes().get(1);
         assertEquals("jpg", secondTier.getDisplayValue());
         assertEquals("jpg", secondTier.getSearchKey());
         assertEquals(2, secondTier.getTiers().size());
@@ -88,7 +93,7 @@ public class MultivaluedHierarchicalFacetTest extends Assert {
     @Test
     public void createFacetListMultipleResort() {
         List<String> facetValues = Arrays.asList("/image^jpg,jpg", "^audio,Audio", "^image,Image", "/audio^wav,wav");
-        List<MultivaluedHierarchicalFacet> facets = MultivaluedHierarchicalFacet
+        List<HierarchicalFacet> facets = MultivaluedHierarchicalFacet
                 .createMultivaluedHierarchicalFacets(null, facetValues);
 
         assertEquals(2, facets.size());
@@ -146,17 +151,17 @@ public class MultivaluedHierarchicalFacetTest extends Assert {
     @Test
     public void setDisplayValuesMergeInMissingNode() {
         List<String> facetValues = Arrays.asList("/image^jpg,jpg", "^image,Image");
-        List<MultivaluedHierarchicalFacet> facetsIncoming = MultivaluedHierarchicalFacet
+        List<HierarchicalFacet> facetsIncoming = MultivaluedHierarchicalFacet
                 .createMultivaluedHierarchicalFacets(null, facetValues);
 
         facetValues = Arrays.asList("/image^jpg,jpg");
-        List<MultivaluedHierarchicalFacet> facetsBase = MultivaluedHierarchicalFacet
+        List<HierarchicalFacet> facetsBase = MultivaluedHierarchicalFacet
                 .createMultivaluedHierarchicalFacets(null, facetValues);
 
-        MultivaluedHierarchicalFacet facetBase = facetsBase.get(0);
+        MultivaluedHierarchicalFacet facetBase = (MultivaluedHierarchicalFacet) facetsBase.get(0);
         assertEquals(1, facetBase.getFacetNodes().size());
 
-        facetBase.setDisplayValues(facetsIncoming.get(0));
+        facetBase.setDisplayValues((MultivaluedHierarchicalFacet) facetsIncoming.get(0));
 
         assertEquals(2, facetBase.getFacetNodes().size());
 
@@ -170,17 +175,17 @@ public class MultivaluedHierarchicalFacetTest extends Assert {
     @Test
     public void setDisplayValuesFewerIncomingNodes() {
         List<String> facetValues = Arrays.asList("^image,Image");
-        List<MultivaluedHierarchicalFacet> facetsIncoming = MultivaluedHierarchicalFacet
+        List<HierarchicalFacet> facetsIncoming = MultivaluedHierarchicalFacet
                 .createMultivaluedHierarchicalFacets(null, facetValues);
 
         facetValues = Arrays.asList("^image", "/image^jpg");
-        List<MultivaluedHierarchicalFacet> facetsBase = MultivaluedHierarchicalFacet
+        List<HierarchicalFacet> facetsBase = MultivaluedHierarchicalFacet
                 .createMultivaluedHierarchicalFacets(null, facetValues);
 
-        MultivaluedHierarchicalFacet facetBase = facetsBase.get(0);
+        MultivaluedHierarchicalFacet facetBase = (MultivaluedHierarchicalFacet) facetsBase.get(0);
         assertEquals(2, facetBase.getFacetNodes().size());
 
-        facetBase.setDisplayValues(facetsIncoming.get(0));
+        facetBase.setDisplayValues((MultivaluedHierarchicalFacet) facetsIncoming.get(0));
 
         assertEquals(2, facetBase.getFacetNodes().size());
 
@@ -199,35 +204,35 @@ public class MultivaluedHierarchicalFacetTest extends Assert {
 
     @Test
     public void containsTest() {
-        List<MultivaluedHierarchicalFacet> facets = MultivaluedHierarchicalFacet
+        List<HierarchicalFacet> facets = MultivaluedHierarchicalFacet
                 .createMultivaluedHierarchicalFacets(null, Arrays.asList("^image,Image", "/image^jpg,jpg"));
-        MultivaluedHierarchicalFacet facet1 = facets.get(0);
+        MultivaluedHierarchicalFacet facet1 = (MultivaluedHierarchicalFacet) facets.get(0);
 
         facets = MultivaluedHierarchicalFacet
                 .createMultivaluedHierarchicalFacets(null, Arrays.asList("^image"));
-        MultivaluedHierarchicalFacet facet2 = facets.get(0);
+        MultivaluedHierarchicalFacet facet2 = (MultivaluedHierarchicalFacet) facets.get(0);
 
         assertTrue(facet1.contains(facet2));
     }
 
     @Test
     public void containsMultipleTierTest() {
-        List<MultivaluedHierarchicalFacet> facets = MultivaluedHierarchicalFacet
+        List<HierarchicalFacet> facets = MultivaluedHierarchicalFacet
                 .createMultivaluedHierarchicalFacets(null, Arrays.asList("^image,Image", "/image^jpg,jpg"));
-        MultivaluedHierarchicalFacet facet1 = facets.get(0);
+        MultivaluedHierarchicalFacet facet1 = (MultivaluedHierarchicalFacet) facets.get(0);
 
         facets = MultivaluedHierarchicalFacet
                 .createMultivaluedHierarchicalFacets(null, Arrays.asList("^image", "/image^jpg"));
-        MultivaluedHierarchicalFacet facet2 = facets.get(0);
+        MultivaluedHierarchicalFacet facet2 = (MultivaluedHierarchicalFacet) facets.get(0);
 
         assertTrue(facet1.contains(facet2));
     }
 
     @Test
     public void containsMultipleTierTest2() {
-        List<MultivaluedHierarchicalFacet> facets = MultivaluedHierarchicalFacet
+        List<HierarchicalFacet> facets = MultivaluedHierarchicalFacet
                 .createMultivaluedHierarchicalFacets(null, Arrays.asList("^text,Text", "/text^pdf,pdf"));
-        MultivaluedHierarchicalFacet facet1 = facets.get(0);
+        MultivaluedHierarchicalFacet facet1 = (MultivaluedHierarchicalFacet) facets.get(0);
 
         //This constructor probably isn't working since it only creates one node
         MultivaluedHierarchicalFacet facet2 = new MultivaluedHierarchicalFacet(null, "/text^pdf");
@@ -238,19 +243,19 @@ public class MultivaluedHierarchicalFacetTest extends Assert {
 
     @Test
     public void containsNotMatchTest() {
-        List<MultivaluedHierarchicalFacet> facets = MultivaluedHierarchicalFacet
+        List<HierarchicalFacet> facets = MultivaluedHierarchicalFacet
                 .createMultivaluedHierarchicalFacets(null, Arrays.asList("^image,Image", "/image^jpg,jpg"));
-        MultivaluedHierarchicalFacet facet1 = facets.get(0);
+        MultivaluedHierarchicalFacet facet1 = (MultivaluedHierarchicalFacet) facets.get(0);
 
         facets = MultivaluedHierarchicalFacet
                 .createMultivaluedHierarchicalFacets(null, Arrays.asList("^text", "/text^pdf"));
-        MultivaluedHierarchicalFacet facet2 = facets.get(0);
+        MultivaluedHierarchicalFacet facet2 = (MultivaluedHierarchicalFacet) facets.get(0);
 
         assertFalse(facet1.contains(facet2));
 
         facets = MultivaluedHierarchicalFacet
                 .createMultivaluedHierarchicalFacets(null, Arrays.asList("^text"));
-        facet2 = facets.get(0);
+        facet2 = (MultivaluedHierarchicalFacet) facets.get(0);
 
         assertFalse(facet1.contains(facet2));
     }

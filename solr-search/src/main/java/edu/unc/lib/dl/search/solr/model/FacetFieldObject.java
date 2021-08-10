@@ -19,6 +19,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import edu.unc.lib.boxc.search.api.facets.SearchFacet;
+
 /**
  * An individual hierarchical facet field, containing any number of specific hierarchical facet values in it.
  *

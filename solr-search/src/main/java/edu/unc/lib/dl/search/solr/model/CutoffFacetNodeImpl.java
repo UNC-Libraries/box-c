@@ -15,20 +15,22 @@
  */
 package edu.unc.lib.dl.search.solr.model;
 
-import edu.unc.lib.dl.search.solr.exception.InvalidHierarchicalFacetException;
+import edu.unc.lib.boxc.search.api.exceptions.InvalidHierarchicalFacetException;
+import edu.unc.lib.boxc.search.api.facets.CutoffFacetNode;
+import edu.unc.lib.boxc.search.api.facets.HierarchicalFacetNode;
 
 /**
- * 
+ * Implementation of a node within a hierarchical facet which supports cut off operations
  * @author bbpennel
  *
  */
-public class CutoffFacetNode implements HierarchicalFacetNode {
+public class CutoffFacetNodeImpl implements HierarchicalFacetNode, CutoffFacetNode {
     private final String searchValue;
     private String searchKey;
     private String facetValue;
     private Integer tier;
 
-    public CutoffFacetNode(String facetValue) {
+    public CutoffFacetNodeImpl(String facetValue) {
         this.facetValue = facetValue;
         String[] facetComponents = facetValue.split(",", 3);
         if (facetComponents.length > 0) {
@@ -49,13 +51,13 @@ public class CutoffFacetNode implements HierarchicalFacetNode {
         this.searchValue = this.tier + "," + this.searchKey;
     }
 
-    public CutoffFacetNode(String searchKey, Integer tier) {
+    public CutoffFacetNodeImpl(String searchKey, Integer tier) {
         this.searchKey = searchKey;
         this.tier = tier;
         this.searchValue = this.tier + "," + this.searchKey;
     }
 
-    public CutoffFacetNode(CutoffFacetNode node) {
+    public CutoffFacetNodeImpl(CutoffFacetNodeImpl node) {
         this.facetValue = node.facetValue;
         this.searchKey = node.searchKey;
         this.searchValue = node.searchValue;
@@ -80,6 +82,7 @@ public class CutoffFacetNode implements HierarchicalFacetNode {
         return facetValue;
     }
 
+    @Override
     public Integer getTier() {
         return tier;
     }
@@ -101,6 +104,6 @@ public class CutoffFacetNode implements HierarchicalFacetNode {
 
     @Override
     public Object clone() {
-        return new CutoffFacetNode(this);
+        return new CutoffFacetNodeImpl(this);
     }
 }

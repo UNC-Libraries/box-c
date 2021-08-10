@@ -15,10 +15,10 @@
  */
 package edu.unc.lib.dl.search.solr.service;
 
+import edu.unc.lib.boxc.search.api.facets.SearchFacet;
 import edu.unc.lib.dl.search.solr.model.FacetFieldList;
 import edu.unc.lib.dl.search.solr.model.FacetFieldObject;
 import edu.unc.lib.dl.search.solr.model.GenericFacet;
-import edu.unc.lib.dl.search.solr.model.SearchFacet;
 import edu.unc.lib.dl.search.solr.util.SearchFieldKeys;
 
 /**

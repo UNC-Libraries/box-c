@@ -43,7 +43,7 @@ import edu.unc.lib.boxc.auth.api.services.GlobalPermissionEvaluator;
 import edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
-import edu.unc.lib.dl.search.solr.model.BriefObjectMetadata;
+import edu.unc.lib.boxc.search.api.models.ContentObjectRecord;
 import edu.unc.lib.dl.search.solr.model.FacetFieldFactory;
 import edu.unc.lib.dl.search.solr.model.GenericFacet;
 import edu.unc.lib.dl.search.solr.model.HierarchicalBrowseRequest;
@@ -145,7 +145,7 @@ public class StructureQueryServiceIT extends BaseEmbeddedSolrTest {
 
         HierarchicalBrowseResultResponse resp = structureService.getExpandedStructurePath(browseRequest);
 
-        BriefObjectMetadata rootMd = resp.getRootNode().getMetadata();
+        ContentObjectRecord rootMd = resp.getRootNode().getMetadata();
         assertEquals("Root object must be the Collections object", rootId, rootMd.getId());
 
         assertCountEquals("Incorrect number of child containers", 5, rootMd, CONTAINERS_COUNT);
@@ -163,20 +163,20 @@ public class StructureQueryServiceIT extends BaseEmbeddedSolrTest {
 
         // Verify that the intermediate object between root and chosen is expanded
         ResultNode unitNode = rootNode.getChildren().get(0);
-        BriefObjectMetadata unitMd = unitNode.getMetadata();
+        ContentObjectRecord unitMd = unitNode.getMetadata();
         assertEquals("Root must contain Unit object", testCorpus.unitPid.getId(), unitMd.getId());
         assertEquals("Incorrect number of immediate children of unit", 2, unitNode.getChildren().size());
 
         // Verify that the selected object is expanded
         ResultNode coll1Node = getChildByPid(unitNode, testCorpus.coll1Pid);
-        BriefObjectMetadata coll1Md = coll1Node.getMetadata();
+        ContentObjectRecord coll1Md = coll1Node.getMetadata();
         assertCountEquals("Incorrect number of child objects", 3, coll1Md, CHILD_COUNT);
         assertCountEquals("Incorrect number of child containers", 1, coll1Md, CONTAINERS_COUNT);
         assertEquals("One immediate child expected", 1, coll1Node.getChildren().size());
 
         // Verify that its sibling is present but not expanded
         ResultNode coll2Node = getChildByPid(unitNode, testCorpus.coll2Pid);
-        BriefObjectMetadata coll2Md = coll2Node.getMetadata();
+        ContentObjectRecord coll2Md = coll2Node.getMetadata();
         assertCountEquals("Incorrect number of child objects", 3, coll2Md, CHILD_COUNT);
         assertEquals("Unexpanded sibling should not return child records", 0, coll2Node.getChildren().size());
 
@@ -209,7 +209,7 @@ public class StructureQueryServiceIT extends BaseEmbeddedSolrTest {
                 structureService.getHierarchicalBrowseResults(browseRequest);
 
         ResultNode rootNode = resp.getRootNode();
-        BriefObjectMetadata coll2Md = rootNode.getMetadata();
+        ContentObjectRecord coll2Md = rootNode.getMetadata();
         assertEquals("Root object must be coll2", testCorpus.coll2Pid.getId(), coll2Md.getId());
 
         assertCountEquals("Incorrect number of child objects", 3, coll2Md, CHILD_COUNT);
@@ -229,7 +229,7 @@ public class StructureQueryServiceIT extends BaseEmbeddedSolrTest {
                 structureService.getHierarchicalBrowseResults(browseRequest);
 
         ResultNode rootNode = resp.getRootNode();
-        BriefObjectMetadata coll2Md = rootNode.getMetadata();
+        ContentObjectRecord coll2Md = rootNode.getMetadata();
         assertEquals("Root object must be coll2", testCorpus.coll2Pid.getId(), coll2Md.getId());
 
         assertCountEquals("Incorrect number of child objects", 1, coll2Md, CHILD_COUNT);
@@ -258,7 +258,7 @@ public class StructureQueryServiceIT extends BaseEmbeddedSolrTest {
                 structureService.getHierarchicalBrowseResults(browseRequest);
 
         ResultNode rootNode = resp.getRootNode();
-        BriefObjectMetadata coll1Md = rootNode.getMetadata();
+        ContentObjectRecord coll1Md = rootNode.getMetadata();
         assertEquals("Root object must be coll1", testCorpus.coll1Pid.getId(), coll1Md.getId());
 
         // Counts should only reflect what matches filters
@@ -289,7 +289,7 @@ public class StructureQueryServiceIT extends BaseEmbeddedSolrTest {
                 structureService.getHierarchicalBrowseResults(browseRequest);
 
         ResultNode rootNode = resp.getRootNode();
-        BriefObjectMetadata coll1Md = rootNode.getMetadata();
+        ContentObjectRecord coll1Md = rootNode.getMetadata();
         assertEquals("Root object must be coll1", testCorpus.coll1Pid.getId(), coll1Md.getId());
 
         // Counts should only reflect what matches filters
@@ -310,7 +310,7 @@ public class StructureQueryServiceIT extends BaseEmbeddedSolrTest {
                 structureService.getHierarchicalBrowseResults(browseRequest);
 
         ResultNode rootNode = resp.getRootNode();
-        BriefObjectMetadata folder1Md = rootNode.getMetadata();
+        ContentObjectRecord folder1Md = rootNode.getMetadata();
         assertEquals("Root object must be folder1", testCorpus.folder1Pid.getId(), folder1Md.getId());
 
         assertCountEquals("Incorrect number of child objects", 2, folder1Md, CHILD_COUNT);
@@ -339,7 +339,7 @@ public class StructureQueryServiceIT extends BaseEmbeddedSolrTest {
         }
     }
 
-    private void assertCountEquals(String message, long count, BriefObjectMetadata md, String countType) {
+    private void assertCountEquals(String message, long count, ContentObjectRecord md, String countType) {
         assertEquals(message, count, md.getCountMap().get(countType).intValue());
     }
 }

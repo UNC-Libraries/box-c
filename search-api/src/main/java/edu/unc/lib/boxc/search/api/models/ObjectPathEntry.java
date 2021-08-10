@@ -13,9 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package edu.unc.lib.dl.search.solr.model;
+package edu.unc.lib.boxc.search.api.models;
 
 /**
+ * A single tier entry in the content path of an object
  * @author bbpennel
  * @date Mar 18, 2015
  */

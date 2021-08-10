@@ -27,10 +27,12 @@ import java.util.Map;
 import org.junit.Assert;
 import org.junit.Test;
 
+import edu.unc.lib.boxc.search.api.models.ContentObjectRecord;
+
 
 public class HierarchicalBrowseResultResponseTest extends Assert {
 
-    private List<BriefObjectMetadata> getMetadataObjects() {
+    private List<ContentObjectRecord> getMetadataObjects() {
         BriefObjectMetadataBean md1 = new BriefObjectMetadataBean();
         md1.setId("48aeb594-6d95-45e9-bb20-dd631ecc93e9");
         md1.setResourceType(Folder.name());
@@ -46,7 +48,7 @@ public class HierarchicalBrowseResultResponseTest extends Assert {
         md2.setCountMap(countMap);
 
 
-        return new ArrayList<>(asList((BriefObjectMetadata)md1, (BriefObjectMetadata)md2));
+        return new ArrayList<>(asList((ContentObjectRecord)md1, (ContentObjectRecord)md2));
     }
 
     @Test

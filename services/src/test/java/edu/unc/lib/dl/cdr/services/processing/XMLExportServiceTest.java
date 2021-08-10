@@ -58,9 +58,9 @@ import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.api.xml.JDOMNamespaceUtil;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.boxc.operations.impl.utils.EmailHandler;
+import edu.unc.lib.boxc.search.api.models.ContentObjectRecord;
 import edu.unc.lib.dl.cdr.services.rest.modify.ExportXMLController.XMLExportRequest;
 import edu.unc.lib.dl.fedora.ServiceException;
-import edu.unc.lib.dl.search.solr.model.BriefObjectMetadata;
 import edu.unc.lib.dl.search.solr.model.SearchRequest;
 import edu.unc.lib.dl.search.solr.model.SearchResultResponse;
 import edu.unc.lib.dl.search.solr.model.SearchState;
@@ -169,7 +169,7 @@ public class XMLExportServiceTest {
         PID pid2 = mockObject();
         PID parentPid = registerObject();
 
-        List<BriefObjectMetadata> childrenMd = new ArrayList<>();
+        List<ContentObjectRecord> childrenMd = new ArrayList<>();
         childrenMd.add(mockMd(pid1));
         childrenMd.add(mockMd(pid2));
         when(resultResponse.getResultList()).thenReturn(childrenMd);
@@ -328,8 +328,8 @@ public class XMLExportServiceTest {
         return builder.build(new FileInputStream(reportFile));
     }
 
-    private BriefObjectMetadata mockMd(PID pid) {
-        BriefObjectMetadata md = mock(BriefObjectMetadata.class);
+    private ContentObjectRecord mockMd(PID pid) {
+        ContentObjectRecord md = mock(ContentObjectRecord.class);
         when(md.getPid()).thenReturn(pid);
         return md;
     }

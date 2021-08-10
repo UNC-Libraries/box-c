@@ -23,54 +23,58 @@ import org.apache.solr.client.solrj.response.FacetField;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import edu.unc.lib.boxc.search.api.facets.CutoffFacet;
+import edu.unc.lib.boxc.search.api.facets.CutoffFacetNode;
+import edu.unc.lib.boxc.search.api.facets.HierarchicalFacetNode;
+
 /**
- * 
+ *
  * @author bbpennel
  *
  */
-public class CutoffFacet extends AbstractHierarchicalFacet {
-    private static final Logger LOG = LoggerFactory.getLogger(CutoffFacet.class);
+public class CutoffFacetImpl extends AbstractHierarchicalFacet implements CutoffFacet {
+    private static final Logger LOG = LoggerFactory.getLogger(CutoffFacetImpl.class);
 
     // Maximum tier allowable in results
     private Integer cutoff;
     // Maximum tier allowable in facet results
     private Integer facetCutoff;
 
-    public CutoffFacet(String fieldName, String facetString) {
+    public CutoffFacetImpl(String fieldName, String facetString) {
         super(fieldName, facetString);
         LOG.debug("Instantiating cutoff facet for " + fieldName + " from " + facetString);
         this.value = this.extractCutoffs(this.value);
-        CutoffFacetNode node = new CutoffFacetNode(this.value);
+        CutoffFacetNodeImpl node = new CutoffFacetNodeImpl(this.value);
         this.facetNodes.add(node);
 
     }
 
-    public CutoffFacet(String fieldName, String facetString, Long count) {
+    public CutoffFacetImpl(String fieldName, String facetString, Long count) {
         super(fieldName, facetString, count);
         this.value = this.extractCutoffs(this.value);
-        CutoffFacetNode node = new CutoffFacetNode(this.value);
+        CutoffFacetNodeImpl node = new CutoffFacetNodeImpl(this.value);
         this.facetNodes.add(node);
 
     }
 
-    public CutoffFacet(String fieldName, List<String> facetStrings, long count) {
+    public CutoffFacetImpl(String fieldName, List<String> facetStrings, long count) {
         super(fieldName, null, count);
         for (String facetString: facetStrings) {
-            CutoffFacetNode node = new CutoffFacetNode(facetString);
+            CutoffFacetNodeImpl node = new CutoffFacetNodeImpl(facetString);
             this.facetNodes.add(node);
         }
         this.sortTiers();
     }
 
-    public CutoffFacet(String fieldName, FacetField.Count countObject) {
+    public CutoffFacetImpl(String fieldName, FacetField.Count countObject) {
         super(fieldName, countObject);
         this.value = this.extractCutoffs(this.value);
-        CutoffFacetNode node = new CutoffFacetNode(this.value);
+        CutoffFacetNodeImpl node = new CutoffFacetNodeImpl(this.value);
         this.facetNodes.add(node);
     }
 
-    public CutoffFacet(CutoffFacet facet) {
-        super((GenericFacet)facet);
+    public CutoffFacetImpl(CutoffFacetImpl facet) {
+        super(facet);
         this.cutoff = facet.getCutoff();
         this.facetCutoff = facet.getFacetCutoff();
         for (HierarchicalFacetNode node: facet.getFacetNodes()) {
@@ -101,48 +105,38 @@ public class CutoffFacet extends AbstractHierarchicalFacet {
         return facetParts[0];
     }
 
-    public void sortTiers() {
+    private void sortTiers() {
         Collections.sort(this.facetNodes, new Comparator<HierarchicalFacetNode>() {
+            @Override
             public int compare(HierarchicalFacetNode node1, HierarchicalFacetNode node2) {
                 return ((CutoffFacetNode)node1).getTier() - ((CutoffFacetNode)node2).getTier();
             }
         });
     }
 
-    public void addNode(HierarchicalFacetNode node) {
-        facetNodes.add(node);
-    }
-
     public void addNode(String searchValue) {
         int highestTier = getHighestTier();
-        CutoffFacetNode node = new CutoffFacetNode(searchValue, highestTier + 1);
+        CutoffFacetNodeImpl node = new CutoffFacetNodeImpl(searchValue, highestTier + 1);
         this.facetNodes.add(node);
     }
 
-    public HierarchicalFacetNode getNode(String searchKey) {
-        for (HierarchicalFacetNode node: this.facetNodes) {
-            if (((CutoffFacetNode)node).getSearchKey().equals(searchKey)) {
-                return node;
-            }
-        }
-        return null;
-    }
-
-    public CutoffFacetNode getHighestTierNode() {
+    @Override
+    public CutoffFacetNodeImpl getHighestTierNode() {
         if (this.facetNodes == null || this.facetNodes.size() == 0) {
             return null;
         }
 
-        CutoffFacetNode lastNode = (CutoffFacetNode)this.facetNodes.get(this.facetNodes.size() - 1);
+        CutoffFacetNodeImpl lastNode = (CutoffFacetNodeImpl)this.facetNodes.get(this.facetNodes.size() - 1);
         if ("*".equals(lastNode.getSearchKey())) {
             if (this.facetNodes.size() == 1) {
                 return null;
             }
-            return (CutoffFacetNode)this.facetNodes.get(this.facetNodes.size() - 2);
+            return (CutoffFacetNodeImpl)this.facetNodes.get(this.facetNodes.size() - 2);
         }
         return lastNode;
     }
 
+    @Override
     public int getHighestTier() {
         CutoffFacetNode lastNode = this.getHighestTierNode();
         if (lastNode == null) {
@@ -158,7 +152,7 @@ public class CutoffFacet extends AbstractHierarchicalFacet {
 
     @Override
     public String getSearchKey() {
-        CutoffFacetNode lastNode = this.getHighestTierNode();
+        CutoffFacetNodeImpl lastNode = this.getHighestTierNode();
         if (lastNode == null) {
             return null;
         }
@@ -167,7 +161,7 @@ public class CutoffFacet extends AbstractHierarchicalFacet {
 
     @Override
     public String getSearchValue() {
-        CutoffFacetNode lastNode = this.getHighestTierNode();
+        CutoffFacetNodeImpl lastNode = this.getHighestTierNode();
         if (lastNode == null) {
             return null;
         }
@@ -176,7 +170,7 @@ public class CutoffFacet extends AbstractHierarchicalFacet {
 
     @Override
     public String getPivotValue() {
-        CutoffFacetNode lastNode = this.getHighestTierNode();
+        CutoffFacetNodeImpl lastNode = this.getHighestTierNode();
         if (lastNode == null) {
             return null;
         }
@@ -188,10 +182,11 @@ public class CutoffFacet extends AbstractHierarchicalFacet {
         if (this.facetNodes.size() == 0) {
             return null;
         }
-        CutoffFacetNode lastNode = (CutoffFacetNode)this.facetNodes.get(this.facetNodes.size() - 1);
+        CutoffFacetNodeImpl lastNode = (CutoffFacetNodeImpl)this.facetNodes.get(this.facetNodes.size() - 1);
         return lastNode.getLimitToValue();
     }
 
+    @Override
     public Integer getCutoff() {
         return cutoff;
     }
@@ -200,6 +195,7 @@ public class CutoffFacet extends AbstractHierarchicalFacet {
         this.cutoff = cutoff;
     }
 
+    @Override
     public Integer getFacetCutoff() {
         return facetCutoff;
     }
@@ -210,6 +206,6 @@ public class CutoffFacet extends AbstractHierarchicalFacet {
 
     @Override
     public Object clone() {
-        return new CutoffFacet(this);
+        return new CutoffFacetImpl(this);
     }
 }

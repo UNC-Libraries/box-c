@@ -45,10 +45,10 @@ import edu.unc.lib.boxc.model.fcrepo.ids.AgentPids;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.boxc.operations.api.events.PremisLoggerFactory;
 import edu.unc.lib.boxc.operations.jms.OperationsMessageSender;
+import edu.unc.lib.boxc.search.api.models.ObjectPath;
+import edu.unc.lib.boxc.search.api.models.ObjectPathEntry;
 import edu.unc.lib.dl.fcrepo4.FedoraTransaction;
 import edu.unc.lib.dl.fcrepo4.TransactionManager;
-import edu.unc.lib.dl.search.solr.model.ObjectPath;
-import edu.unc.lib.dl.search.solr.model.ObjectPathEntry;
 import edu.unc.lib.dl.search.solr.service.ObjectPathFactory;
 import io.dropwizard.metrics5.Timer;
 

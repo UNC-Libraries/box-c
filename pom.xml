@@ -200,6 +200,7 @@
         <module>operations</module>
         <module>deposit-utils</module>
         <module>persistence-api</module>
+        <module>search-api</module>
     </modules>
 
     <reporting>
@@ -633,6 +634,11 @@
                 <version>${cdr.version}</version>
                 <type>test-jar</type>
                 <scope>test</scope>
+            </dependency>
+                <dependency>
+                <groupId>edu.unc.lib.cdr</groupId>
+                <artifactId>search-api</artifactId>
+                <version>${cdr.version}</version>
             </dependency>
             <dependency>
                 <groupId>edu.unc.lib.cdr</groupId>

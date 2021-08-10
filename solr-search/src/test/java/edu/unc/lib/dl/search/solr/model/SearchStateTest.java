@@ -23,6 +23,8 @@ import java.util.List;
 
 import org.junit.Test;
 
+import edu.unc.lib.boxc.search.api.facets.HierarchicalFacet;
+import edu.unc.lib.boxc.search.api.facets.SearchFacet;
 import edu.unc.lib.dl.search.solr.util.SearchFieldKeys;
 
 public class SearchStateTest {
@@ -39,7 +41,7 @@ public class SearchStateTest {
 
         assertTrue(facetObject.get(0) instanceof MultivaluedHierarchicalFacet);
 
-        assertEquals(1, ((AbstractHierarchicalFacet)facetObject.get(0)).getFacetNodes().size());
+        assertEquals(1, ((HierarchicalFacet)facetObject.get(0)).getFacetNodes().size());
 
     }
 }

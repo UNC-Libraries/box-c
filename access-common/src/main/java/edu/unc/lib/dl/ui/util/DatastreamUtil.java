@@ -21,8 +21,9 @@ import static org.apache.commons.lang3.StringUtils.isBlank;
 
 import java.util.List;
 
-import edu.unc.lib.dl.search.solr.model.BriefObjectMetadata;
-import edu.unc.lib.dl.search.solr.model.Datastream;
+import edu.unc.lib.boxc.search.api.models.ContentObjectRecord;
+import edu.unc.lib.boxc.search.api.models.Datastream;
+import edu.unc.lib.dl.search.solr.model.DatastreamImpl;
 
 /**
  * Utility methods for presenting datastreams in views.
@@ -51,7 +52,7 @@ public class DatastreamUtil {
      * @param datastreamName name of datastream to return
      * @return url for accessing the datastream.
      */
-    public static String getDatastreamUrl(BriefObjectMetadata metadata, String datastreamName) {
+    public static String getDatastreamUrl(ContentObjectRecord metadata, String datastreamName) {
         // Prefer the matching datastream from this object over the same datastream with a different pid prefix
         Datastream preferredDS = getPreferredDatastream(metadata, datastreamName);
 
@@ -86,7 +87,7 @@ public class DatastreamUtil {
      * @param metadata metadata record for object
      * @return url for accessing the datastream.
      */
-    public static String getOriginalFileUrl(BriefObjectMetadata metadata) {
+    public static String getOriginalFileUrl(ContentObjectRecord metadata) {
         return getDatastreamUrl(metadata, ORIGINAL_FILE.getId());
     }
 
@@ -94,7 +95,7 @@ public class DatastreamUtil {
      * @param metadata metadata record for object
      * @return Get the mimetype of the original file datastream, or null if no original file
      */
-    public static String getOriginalFileMimetype(BriefObjectMetadata metadata) {
+    public static String getOriginalFileMimetype(ContentObjectRecord metadata) {
         Datastream preferredDS = getPreferredDatastream(metadata, ORIGINAL_FILE.getId());
         if (preferredDS == null) {
             return null;
@@ -107,7 +108,7 @@ public class DatastreamUtil {
      * @param suffix mimetype suffix
      * @return
      */
-    public static boolean originalFileMimetypeMatches(BriefObjectMetadata metadata, String pattern) {
+    public static boolean originalFileMimetypeMatches(ContentObjectRecord metadata, String pattern) {
         String mimetype = getOriginalFileMimetype(metadata);
         if (mimetype == null) {
             return false;
@@ -124,9 +125,9 @@ public class DatastreamUtil {
      * @param datastreamName
      * @return
      */
-    public static Datastream getPreferredDatastream(BriefObjectMetadata metadata, String datastreamName) {
+    public static Datastream getPreferredDatastream(ContentObjectRecord metadata, String datastreamName) {
         Datastream preferredDS = null;
-        List<Datastream> dataStreams = metadata.getDatastreamObjects();
+        List<DatastreamImpl> dataStreams = metadata.getDatastreamObjects();
 
         if (dataStreams == null) {
             return null;
@@ -155,7 +156,7 @@ public class DatastreamUtil {
      * @return url for thumbnail or empty string if the requested size thumbnail
      *         is not available.
      */
-    public static String getThumbnailUrl(BriefObjectMetadata metadata, String size) {
+    public static String getThumbnailUrl(ContentObjectRecord metadata, String size) {
         String selectedSize = size == null ? "large" : size;
         selectedSize = selectedSize.toLowerCase().trim();
         String derivativeName = "thumbnail_" + selectedSize;

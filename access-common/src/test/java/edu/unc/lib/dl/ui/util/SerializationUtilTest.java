@@ -42,7 +42,7 @@ import edu.unc.lib.boxc.auth.api.UserRole;
 import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
 import edu.unc.lib.boxc.auth.api.services.GlobalPermissionEvaluator;
 import edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl;
-import edu.unc.lib.dl.search.solr.model.BriefObjectMetadata;
+import edu.unc.lib.boxc.search.api.models.ContentObjectRecord;
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadataBean;
 import edu.unc.lib.dl.search.solr.model.HierarchicalBrowseResultResponse;
 import edu.unc.lib.dl.search.solr.model.SearchResultResponse;
@@ -128,7 +128,7 @@ public class SerializationUtilTest extends Assert {
         childMd.setId("7c73296f-54ae-438e-b8d5-1890eba41676");
         childMd.setAncestorPath(asList("1,48aeb594-6d95-45e9-bb20-dd631ecc93e9"));
 
-        List<BriefObjectMetadata> mdList = asList(rootMd, childMd);
+        List<ContentObjectRecord> mdList = asList(rootMd, childMd);
 
         HierarchicalBrowseResultResponse response = new HierarchicalBrowseResultResponse();
         response.setResultList(mdList);

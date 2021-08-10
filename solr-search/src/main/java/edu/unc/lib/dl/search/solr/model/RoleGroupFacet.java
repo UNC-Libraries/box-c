@@ -18,7 +18,7 @@ package edu.unc.lib.dl.search.solr.model;
 import org.apache.solr.client.solrj.response.FacetField;
 
 import edu.unc.lib.boxc.model.api.xml.JDOMNamespaceUtil;
-import edu.unc.lib.dl.search.solr.exception.InvalidFacetException;
+import edu.unc.lib.boxc.search.api.exceptions.InvalidFacetException;
 
 /**
  *

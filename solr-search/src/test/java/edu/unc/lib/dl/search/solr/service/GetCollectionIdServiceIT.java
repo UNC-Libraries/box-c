@@ -25,7 +25,7 @@ import org.junit.Test;
 import org.mockito.Mock;
 
 import edu.unc.lib.boxc.model.api.ids.PID;
-import edu.unc.lib.dl.search.solr.model.BriefObjectMetadata;
+import edu.unc.lib.boxc.search.api.models.ContentObjectRecord;
 import edu.unc.lib.dl.search.solr.model.SimpleIdRequest;
 import edu.unc.lib.dl.search.solr.test.BaseEmbeddedSolrTest;
 import edu.unc.lib.dl.search.solr.test.TestCorpus;
@@ -63,7 +63,7 @@ public class GetCollectionIdServiceIT extends BaseEmbeddedSolrTest {
 
     @Test
     public void collectionIdFromAncestorTest() throws Exception {
-        BriefObjectMetadata mdObj = getObject(testCorpus.work1Pid);
+        ContentObjectRecord mdObj = getObject(testCorpus.work1Pid);
 
         String collId = collIdService.getCollectionId(mdObj);
         assertEquals(TestCorpus.TEST_COLL_ID, collId);
@@ -71,7 +71,7 @@ public class GetCollectionIdServiceIT extends BaseEmbeddedSolrTest {
 
     @Test
     public void collectionIdFromSelfTest() throws Exception {
-        BriefObjectMetadata mdObj = getObject(testCorpus.coll1Pid);
+        ContentObjectRecord mdObj = getObject(testCorpus.coll1Pid);
 
         String collId = collIdService.getCollectionId(mdObj);
         assertEquals(TestCorpus.TEST_COLL_ID, collId);
@@ -79,7 +79,7 @@ public class GetCollectionIdServiceIT extends BaseEmbeddedSolrTest {
 
     @Test
     public void noCollectionIdTest() throws Exception {
-        BriefObjectMetadata mdObj = getObject(testCorpus.work3Pid);
+        ContentObjectRecord mdObj = getObject(testCorpus.work3Pid);
 
         String collId = collIdService.getCollectionId(mdObj);
         assertNull(collId);
@@ -87,13 +87,13 @@ public class GetCollectionIdServiceIT extends BaseEmbeddedSolrTest {
 
     @Test
     public void noCollectionIdUnitTest() throws Exception {
-        BriefObjectMetadata mdObj = getObject(testCorpus.unitPid);
+        ContentObjectRecord mdObj = getObject(testCorpus.unitPid);
 
         String collId = collIdService.getCollectionId(mdObj);
         assertNull(collId);
     }
 
-    private BriefObjectMetadata getObject(PID pid) {
+    private ContentObjectRecord getObject(PID pid) {
         return solrSearchService.getObjectById(
                 new SimpleIdRequest(pid.getId(), null));
     }

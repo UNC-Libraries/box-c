@@ -33,7 +33,8 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
 import edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPaths;
-import edu.unc.lib.dl.search.solr.model.CutoffFacet;
+import edu.unc.lib.boxc.search.api.facets.CutoffFacet;
+import edu.unc.lib.dl.search.solr.model.CutoffFacetImpl;
 import edu.unc.lib.dl.search.solr.model.SearchRequest;
 import edu.unc.lib.dl.search.solr.model.SearchResultResponse;
 import edu.unc.lib.dl.search.solr.model.SearchState;
@@ -109,7 +110,7 @@ public class SearchActionController extends AbstractSolrSearchController {
                                                                HttpServletResponse response) {
         SearchRequest searchRequest = generateSearchRequest(request);
         searchRequest.setRootPid(RepositoryPaths.getContentRootPid().getURI());
-        CutoffFacet cutoff = new CutoffFacet(SearchFieldKeys.ANCESTOR_PATH.name(), "1,*!2");
+        CutoffFacet cutoff = new CutoffFacetImpl(SearchFieldKeys.ANCESTOR_PATH.name(), "1,*!2");
         searchRequest.getSearchState().addFacet(cutoff);
         searchRequest.setApplyCutoffs(true);
 

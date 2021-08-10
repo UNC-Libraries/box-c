@@ -21,13 +21,18 @@ import java.util.List;
 import java.util.Map;
 
 import edu.unc.lib.boxc.model.api.ids.PID;
+import edu.unc.lib.boxc.search.api.facets.CutoffFacet;
+import edu.unc.lib.boxc.search.api.facets.HierarchicalFacet;
+import edu.unc.lib.boxc.search.api.models.ContentObjectRecord;
+import edu.unc.lib.boxc.search.api.models.Datastream;
+import edu.unc.lib.boxc.search.api.models.ObjectPath;
 
 /**
  *
  * @author bbpennel
  *
  */
-public class GroupedMetadataBean implements BriefObjectMetadata {
+public class GroupedMetadataBean implements ContentObjectRecord {
     private final List<BriefObjectMetadataBean> items;
     private BriefObjectMetadataBean representative;
     private final Long itemCount;
@@ -82,7 +87,7 @@ public class GroupedMetadataBean implements BriefObjectMetadata {
     }
 
     @Override
-    public List<MultivaluedHierarchicalFacet> getContentTypeFacet() {
+    public List<HierarchicalFacet> getContentTypeFacet() {
         return this.representative.getContentTypeFacet();
     }
 

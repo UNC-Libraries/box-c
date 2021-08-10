@@ -34,12 +34,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import edu.unc.lib.dl.search.solr.exception.InvalidFacetException;
+import edu.unc.lib.boxc.search.api.exceptions.InvalidFacetException;
+import edu.unc.lib.boxc.search.api.facets.CutoffFacet;
+import edu.unc.lib.boxc.search.api.facets.SearchFacet;
 import edu.unc.lib.dl.search.solr.model.CaseInsensitiveFacet;
-import edu.unc.lib.dl.search.solr.model.CutoffFacet;
+import edu.unc.lib.dl.search.solr.model.CutoffFacetImpl;
 import edu.unc.lib.dl.search.solr.model.FacetFieldFactory;
 import edu.unc.lib.dl.search.solr.model.MultivaluedHierarchicalFacet;
-import edu.unc.lib.dl.search.solr.model.SearchFacet;
 import edu.unc.lib.dl.search.solr.model.SearchState;
 import edu.unc.lib.dl.search.solr.util.FacetFieldUtil;
 import edu.unc.lib.dl.search.solr.util.SearchFieldKeys;
@@ -94,7 +95,7 @@ public class SearchStateFactory {
         searchState.setResourceTypes(new ArrayList<>(searchSettings.defaultCollectionResourceTypes));
         searchState.setFacetsToRetrieve(new ArrayList<>(searchSettings.collectionBrowseFacetNames));
 
-        CutoffFacet depthFacet = new CutoffFacet(SearchFieldKeys.ANCESTOR_PATH.name(), "1,*");
+        CutoffFacet depthFacet = new CutoffFacetImpl(SearchFieldKeys.ANCESTOR_PATH.name(), "1,*");
         depthFacet.setCutoff(2);
         searchState.addFacet(depthFacet);
 
@@ -465,7 +466,7 @@ public class SearchStateFactory {
 
         parameter = getParameter(request, searchSettings.searchFieldParam(SearchFieldKeys.ANCESTOR_PATH.name()));
         if (parameter != null && parameter.length() > 0) {
-            CutoffFacet hierFacet = new CutoffFacet(SearchFieldKeys.ANCESTOR_PATH.name(), parameter);
+            CutoffFacet hierFacet = new CutoffFacetImpl(SearchFieldKeys.ANCESTOR_PATH.name(), parameter);
             searchState.addFacet(hierFacet);
         }
 

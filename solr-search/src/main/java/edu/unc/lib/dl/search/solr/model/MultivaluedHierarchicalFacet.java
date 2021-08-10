@@ -26,10 +26,13 @@ import org.apache.solr.client.solrj.response.FacetField;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import edu.unc.lib.dl.search.solr.exception.InvalidHierarchicalFacetException;
+import edu.unc.lib.boxc.search.api.exceptions.InvalidHierarchicalFacetException;
+import edu.unc.lib.boxc.search.api.facets.HierarchicalFacet;
+import edu.unc.lib.boxc.search.api.facets.HierarchicalFacetNode;
 
 /**
- * 
+ * A hierarchical facet that supports multiple sets of hierarchical values for the same record
+ *
  * @author bbpennel
  *
  */
@@ -62,7 +65,7 @@ public class MultivaluedHierarchicalFacet extends AbstractHierarchicalFacet {
         }
     }
 
-    public static List<MultivaluedHierarchicalFacet> createMultivaluedHierarchicalFacets(String fieldName,
+    public static List<HierarchicalFacet> createMultivaluedHierarchicalFacets(String fieldName,
             List<String> facetValues) {
         Map<String, MultivaluedHierarchicalFacet> facetMap = new LinkedHashMap<String, MultivaluedHierarchicalFacet>();
         for (String facetValue : facetValues) {
@@ -84,7 +87,7 @@ public class MultivaluedHierarchicalFacet extends AbstractHierarchicalFacet {
             facet.sortTiers();
         }
 
-        return new ArrayList<MultivaluedHierarchicalFacet>(facetMap.values());
+        return new ArrayList<HierarchicalFacet>(facetMap.values());
     }
 
     public MultivaluedHierarchicalFacet(String fieldName) {
@@ -101,7 +104,7 @@ public class MultivaluedHierarchicalFacet extends AbstractHierarchicalFacet {
         }
     }
 
-    public void sortTiers() {
+    private void sortTiers() {
         Collections.sort(this.facetNodes, new Comparator<HierarchicalFacetNode>() {
             @Override
             public int compare(HierarchicalFacetNode node1, HierarchicalFacetNode node2) {
@@ -114,24 +117,6 @@ public class MultivaluedHierarchicalFacet extends AbstractHierarchicalFacet {
     private MultivaluedHierarchicalFacetNode getLastNode() {
         return (MultivaluedHierarchicalFacetNode) this.facetNodes
                 .get(this.facetNodes.size() - 1);
-    }
-
-    public HierarchicalFacetNode getNode(String searchKey) {
-        for (HierarchicalFacetNode node: this.facetNodes) {
-            if (node.getSearchKey().equals(searchKey)) {
-                return node;
-            }
-        }
-        return null;
-    }
-
-    public HierarchicalFacetNode getNodeBySearchValue(String searchValue) {
-        for (HierarchicalFacetNode node: this.facetNodes) {
-            if (node.getSearchValue().equals(searchValue)) {
-                return node;
-            }
-        }
-        return null;
     }
 
     public boolean contains(MultivaluedHierarchicalFacet facet) {

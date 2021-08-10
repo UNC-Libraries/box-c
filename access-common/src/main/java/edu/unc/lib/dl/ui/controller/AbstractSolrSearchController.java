@@ -30,7 +30,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
 import edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore;
-import edu.unc.lib.dl.search.solr.exception.InvalidHierarchicalFacetException;
+import edu.unc.lib.boxc.search.api.exceptions.InvalidHierarchicalFacetException;
 import edu.unc.lib.dl.search.solr.model.HierarchicalBrowseRequest;
 import edu.unc.lib.dl.search.solr.model.SearchRequest;
 import edu.unc.lib.dl.search.solr.model.SearchResultResponse;

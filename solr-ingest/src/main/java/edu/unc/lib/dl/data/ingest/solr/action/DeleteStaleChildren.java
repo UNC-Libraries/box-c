@@ -21,9 +21,9 @@ import java.util.Map;
 
 import org.springframework.util.Assert;
 
+import edu.unc.lib.boxc.search.api.models.ContentObjectRecord;
 import edu.unc.lib.dl.data.ingest.solr.SolrUpdateRequest;
 import edu.unc.lib.dl.data.ingest.solr.exception.IndexingException;
-import edu.unc.lib.dl.search.solr.model.BriefObjectMetadata;
 import edu.unc.lib.dl.search.solr.util.SearchFieldKeys;
 import edu.unc.lib.dl.search.solr.util.SolrSettings;
 
@@ -61,7 +61,7 @@ public class DeleteStaleChildren extends AbstractIndexingAction {
                 query.append("*:*");
             } else {
                 // Get the path facet value for the starting point, since we need the hierarchy tier.
-                BriefObjectMetadata ancestorPathBean = getRootAncestorPath(updateRequest);
+                ContentObjectRecord ancestorPathBean = getRootAncestorPath(updateRequest);
 
                 // Limit cleanup scope to root pid
                 query.append(solrSettings.getFieldName(SearchFieldKeys.ANCESTOR_PATH.name())).append(':')

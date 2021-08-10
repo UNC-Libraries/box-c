@@ -21,9 +21,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import edu.unc.lib.boxc.model.api.ResourceType;
+import edu.unc.lib.boxc.search.api.models.ContentObjectRecord;
 import edu.unc.lib.dl.data.ingest.solr.SolrUpdateRequest;
 import edu.unc.lib.dl.data.ingest.solr.exception.IndexingException;
-import edu.unc.lib.dl.search.solr.model.BriefObjectMetadata;
 import edu.unc.lib.dl.search.solr.util.SearchFieldKeys;
 import edu.unc.lib.dl.search.solr.util.SolrSettings;
 
@@ -44,7 +44,7 @@ public class DeleteSolrTreeAction extends AbstractIndexingAction {
             return;
         }
 
-        BriefObjectMetadata ancestorPathBean = getRootAncestorPath(updateRequest);
+        ContentObjectRecord ancestorPathBean = getRootAncestorPath(updateRequest);
         if (ancestorPathBean == null) {
             LOG.debug("Root object " + updateRequest.getTargetID() + " was not found while attempting to delete tree.");
             return;
@@ -69,7 +69,7 @@ public class DeleteSolrTreeAction extends AbstractIndexingAction {
         }
     }
 
-    private boolean isContainer(BriefObjectMetadata mdObj) {
+    private boolean isContainer(ContentObjectRecord mdObj) {
         String resourceType = mdObj.getResourceType();
         return ResourceType.Collection.equals(resourceType)
                 || ResourceType.AdminUnit.equals(resourceType)

@@ -48,7 +48,7 @@ import edu.unc.lib.boxc.model.api.rdf.Premis;
 import edu.unc.lib.boxc.model.fcrepo.services.DerivativeService;
 import edu.unc.lib.dl.data.ingest.solr.exception.IndexingException;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackage;
-import edu.unc.lib.dl.search.solr.model.Datastream;
+import edu.unc.lib.dl.search.solr.model.DatastreamImpl;
 import edu.unc.lib.dl.search.solr.model.IndexDocumentBean;
 
 /**
@@ -71,7 +71,7 @@ public class SetDatastreamFilter implements IndexDocumentFilter {
         ContentObject contentObj = dip.getContentObject();
         IndexDocumentBean doc = dip.getDocument();
 
-        List<Datastream> datastreams = new ArrayList<>();
+        List<DatastreamImpl> datastreams = new ArrayList<>();
 
         FileObject fileObj = getFileObject(contentObj);
         if (fileObj != null) {
@@ -157,7 +157,7 @@ public class SetDatastreamFilter implements IndexDocumentFilter {
      * @param binList list of binaries
      * @param ownedByOtherObject
      */
-    private void addDatastreams(List<Datastream> dsList, List<BinaryObject> binList, boolean ownedByOtherObject) {
+    private void addDatastreams(List<DatastreamImpl> dsList, List<BinaryObject> binList, boolean ownedByOtherObject) {
         binList.stream().forEach(binary -> {
                 Resource binaryResc = binary.getResource();
 
@@ -180,7 +180,7 @@ public class SetDatastreamFilter implements IndexDocumentFilter {
 
                 String extentValue = (name.equals(ORIGINAL_FILE.getId()) &&
                         mimetype != null && mimetype.startsWith("image")) ? getExtent(binList) : null;
-                dsList.add(new Datastream(owner, name, filesize, mimetype, filename, extension, checksum, extentValue));
+                dsList.add(new DatastreamImpl(owner, name, filesize, mimetype, filename, extension, checksum, extentValue));
             });
     }
 
@@ -192,9 +192,9 @@ public class SetDatastreamFilter implements IndexDocumentFilter {
         return prop.getResource().getURI();
     }
 
-    private List<String> getDatastreamStrings(List<Datastream> datastreams) {
+    private List<String> getDatastreamStrings(List<DatastreamImpl> datastreams) {
         return datastreams.stream()
-                .map(Datastream::toString)
+                .map(DatastreamImpl::toString)
                 .collect(Collectors.toList());
     }
 
@@ -205,15 +205,15 @@ public class SetDatastreamFilter implements IndexDocumentFilter {
      * @param datastreams
      * @return
      */
-    private long getFilesizeTotal(List<Datastream> datastreams) {
+    private long getFilesizeTotal(List<DatastreamImpl> datastreams) {
         return datastreams.stream()
             .filter(ds -> ds.getFilesize() != null && ds.getOwner() == null)
-            .mapToLong(Datastream::getFilesize)
+            .mapToLong(DatastreamImpl::getFilesize)
             .sum();
     }
 
-    private long getFilesize(List<Datastream> datastreams) throws IndexingException {
-        Optional<Datastream> original = datastreams.stream()
+    private long getFilesize(List<DatastreamImpl> datastreams) throws IndexingException {
+        Optional<DatastreamImpl> original = datastreams.stream()
                 .filter(ds -> ORIGINAL_FILE.getId().equals(ds.getName()))
                 .findFirst();
 
@@ -225,7 +225,7 @@ public class SetDatastreamFilter implements IndexDocumentFilter {
         return size != null ? size : 0l;
     }
 
-    private void addDerivatives(List<Datastream> dsList, PID pid, boolean ownedByOtherObject) {
+    private void addDerivatives(List<DatastreamImpl> dsList, PID pid, boolean ownedByOtherObject) {
         derivativeService.getDerivatives(pid).stream()
             .forEach(deriv -> {
                 String owner = (ownedByOtherObject ? pid.getId() : null);
@@ -239,7 +239,7 @@ public class SetDatastreamFilter implements IndexDocumentFilter {
                 Long filesize = derivFile.length();
                 String filename = derivFile.getName();
 
-                dsList.add(new Datastream(owner, name, filesize, mimetype, filename, extension, null, null));
+                dsList.add(new DatastreamImpl(owner, name, filesize, mimetype, filename, extension, null, null));
             });
     }
 

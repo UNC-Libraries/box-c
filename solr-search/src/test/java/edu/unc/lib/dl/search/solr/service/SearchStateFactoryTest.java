@@ -29,9 +29,9 @@ import java.util.Properties;
 import org.junit.Before;
 import org.junit.Test;
 
-import edu.unc.lib.dl.search.solr.model.CutoffFacet;
+import edu.unc.lib.boxc.search.api.facets.CutoffFacet;
+import edu.unc.lib.boxc.search.api.facets.SearchFacet;
 import edu.unc.lib.dl.search.solr.model.FacetFieldFactory;
-import edu.unc.lib.dl.search.solr.model.SearchFacet;
 import edu.unc.lib.dl.search.solr.model.SearchState;
 import edu.unc.lib.dl.search.solr.util.SearchFieldKeys;
 import edu.unc.lib.dl.search.solr.util.SearchSettings;

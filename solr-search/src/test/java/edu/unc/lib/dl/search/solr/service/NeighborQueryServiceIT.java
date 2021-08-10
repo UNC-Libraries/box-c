@@ -39,7 +39,7 @@ import edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl;
 import edu.unc.lib.boxc.model.api.ResourceType;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
-import edu.unc.lib.dl.search.solr.model.BriefObjectMetadata;
+import edu.unc.lib.boxc.search.api.models.ContentObjectRecord;
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadataBean;
 import edu.unc.lib.dl.search.solr.model.SimpleIdRequest;
 import edu.unc.lib.dl.search.solr.test.BaseEmbeddedSolrTest;
@@ -252,7 +252,7 @@ public class NeighborQueryServiceIT extends BaseEmbeddedSolrTest {
         assertEquals(3, indexOfTarget);
 
         for (int i = 0; i < results.size(); i++) {
-            BriefObjectMetadata result = results.get(i);
+            ContentObjectRecord result = results.get(i);
             assertEquals(idPrefix + i, result.getId());
         }
     }
@@ -286,7 +286,7 @@ public class NeighborQueryServiceIT extends BaseEmbeddedSolrTest {
         assertEquals(1, indexOfTarget);
 
         for (int i = 0; i < results.size(); i++) {
-            BriefObjectMetadata result = results.get(i);
+            ContentObjectRecord result = results.get(i);
             assertEquals(idPrefix + i, result.getId());
         }
     }
@@ -397,9 +397,9 @@ public class NeighborQueryServiceIT extends BaseEmbeddedSolrTest {
             return PIDs.get(UUID.randomUUID().toString());
     }
 
-    private int indexOf(List<BriefObjectMetadataBean> results, BriefObjectMetadata obj) {
+    private int indexOf(List<BriefObjectMetadataBean> results, ContentObjectRecord obj) {
         for (int i = 0; i < results.size(); i++) {
-            BriefObjectMetadata result = results.get(i);
+            ContentObjectRecord result = results.get(i);
             if (result.getId().equals(obj.getId())) {
                 return i;
             }
@@ -409,14 +409,14 @@ public class NeighborQueryServiceIT extends BaseEmbeddedSolrTest {
 
     private void assertPrecedingResults(List<BriefObjectMetadataBean> results, int end, int offset) {
         for (int i = 0; i < end; i++) {
-            BriefObjectMetadata result = results.get(i);
+            ContentObjectRecord result = results.get(i);
             assertEquals(PRECEDING_PREFIX + formatSortable(i + offset), result.getTitle());
         }
     }
 
     private void assertSucceedingResults(List<BriefObjectMetadataBean> results, int start) {
         for (int i = start + 1; i < results.size(); i++) {
-            BriefObjectMetadata result = results.get(i);
+            ContentObjectRecord result = results.get(i);
             assertEquals(SUCCEEDING_PREFIX + formatSortable(i - start - 1), result.getTitle());
         }
     }

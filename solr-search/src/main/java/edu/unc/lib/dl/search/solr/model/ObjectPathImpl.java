@@ -18,22 +18,29 @@ package edu.unc.lib.dl.search.solr.model;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import edu.unc.lib.boxc.search.api.models.ObjectPath;
+import edu.unc.lib.boxc.search.api.models.ObjectPathEntry;
+
 /**
+ * A hierarchy path for a content object
+ *
  * @author bbpennel
  * @date Mar 18, 2015
  */
-public class ObjectPath {
+public class ObjectPathImpl implements ObjectPath {
 
     private final List<ObjectPathEntry> entries;
 
-    public ObjectPath(List<ObjectPathEntry> entries) {
+    public ObjectPathImpl(List<ObjectPathEntry> entries) {
         this.entries = entries;
     }
 
+    @Override
     public List<ObjectPathEntry> getEntries() {
         return entries;
     }
 
+    @Override
     public String getName(String pid) {
         ObjectPathEntry entry = getByPID(pid);
         return entry == null ? null : entry.getName();
@@ -55,6 +62,7 @@ public class ObjectPath {
      *
      * @return name path
      */
+    @Override
     public String toNamePath() {
         return "/" + entries.stream().map(e -> e.getName().replaceAll("/", "\\/"))
                 .collect(Collectors.joining("/"));
@@ -66,6 +74,7 @@ public class ObjectPath {
      *
      * @return id path
      */
+    @Override
     public String toIdPath() {
         return "/" + entries.stream().map(e -> e.getPid())
                 .collect(Collectors.joining("/"));

@@ -36,8 +36,8 @@ import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.fcrepo.ids.DatastreamPids;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.boxc.operations.jms.MessageSender;
-import edu.unc.lib.dl.search.solr.model.BriefObjectMetadata;
-import edu.unc.lib.dl.search.solr.model.Datastream;
+import edu.unc.lib.boxc.search.api.models.ContentObjectRecord;
+import edu.unc.lib.boxc.search.api.models.Datastream;
 import edu.unc.lib.dl.search.solr.model.SearchRequest;
 import edu.unc.lib.dl.search.solr.model.SearchResultResponse;
 import edu.unc.lib.dl.search.solr.model.SearchState;
@@ -97,16 +97,16 @@ public class RunEnhancementsService {
                     searchRequest.setApplyCutoffs(false);
                     SearchResultResponse resultResponse = queryLayer.performSearch(searchRequest);
 
-                    for (BriefObjectMetadata metadata : resultResponse.getResultList()) {
+                    for (ContentObjectRecord metadata : resultResponse.getResultList()) {
                         createMessage(metadata, agent.getUsername(), force);
                     }
 
                     // Add the root container itself
-                    BriefObjectMetadata rootContainer = resultResponse.getSelectedContainer();
+                    ContentObjectRecord rootContainer = resultResponse.getSelectedContainer();
                     createMessage(rootContainer, agent.getUsername(), force);
                 } else {
                     SimpleIdRequest searchRequest = new SimpleIdRequest(objectPid, agent.getPrincipals());
-                    BriefObjectMetadata metadata = queryLayer.getObjectById(searchRequest);
+                    ContentObjectRecord metadata = queryLayer.getObjectById(searchRequest);
                     createMessage(metadata, agent.getUsername(), force);
                 }
             }
@@ -117,7 +117,7 @@ public class RunEnhancementsService {
         this.aclService = aclService;
     }
 
-    private void createMessage(BriefObjectMetadata metadata, String username, Boolean force) {
+    private void createMessage(ContentObjectRecord metadata, String username, Boolean force) {
         PID pid = metadata.getPid();
         Datastream originalDs = metadata.getDatastreamObject(ORIGINAL_FILE.getId());
         String resourceType = metadata.getResourceType();

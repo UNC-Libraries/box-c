@@ -30,10 +30,11 @@ import com.googlecode.concurrentlinkedhashmap.ConcurrentLinkedHashMap;
 
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPaths;
-import edu.unc.lib.dl.search.solr.model.BriefObjectMetadata;
-import edu.unc.lib.dl.search.solr.model.HierarchicalFacetNode;
-import edu.unc.lib.dl.search.solr.model.ObjectPath;
-import edu.unc.lib.dl.search.solr.model.ObjectPathEntry;
+import edu.unc.lib.boxc.search.api.facets.HierarchicalFacetNode;
+import edu.unc.lib.boxc.search.api.models.ContentObjectRecord;
+import edu.unc.lib.boxc.search.api.models.ObjectPath;
+import edu.unc.lib.boxc.search.api.models.ObjectPathEntry;
+import edu.unc.lib.dl.search.solr.model.ObjectPathImpl;
 import edu.unc.lib.dl.search.solr.model.SimpleIdRequest;
 import edu.unc.lib.dl.search.solr.util.SearchFieldKeys;
 import edu.unc.lib.dl.search.solr.util.SolrSettings;
@@ -100,7 +101,7 @@ public class ObjectPathFactory {
      */
     public ObjectPath getPath(PID pid) {
         SimpleIdRequest idRequest = new SimpleIdRequest(pid, startObjectFields, null);
-        BriefObjectMetadata bom = search.getObjectById(idRequest);
+        ContentObjectRecord bom = search.getObjectById(idRequest);
         return getPath(bom);
     }
 
@@ -117,7 +118,7 @@ public class ObjectPathFactory {
      * @param bom
      * @return
      */
-    public ObjectPath getPath(BriefObjectMetadata bom) {
+    public ObjectPath getPath(ContentObjectRecord bom) {
         if (bom.getAncestorPathFacet() == null && !RepositoryPaths.getContentRootPid().getId().equals(bom.getId())) {
             return null;
         }
@@ -150,7 +151,7 @@ public class ObjectPathFactory {
             entries.add(new ObjectPathEntry(bom.getId(), bom.getTitle(), true, bom.getCollectionId()));
         }
 
-        return new ObjectPath(entries);
+        return new ObjectPathImpl(entries);
     }
 
     /**

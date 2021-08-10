@@ -28,8 +28,8 @@ import org.apache.solr.common.SolrDocumentList;
 import org.slf4j.Logger;
 
 import edu.unc.lib.boxc.model.api.ids.ContentPathConstants;
-import edu.unc.lib.dl.search.solr.exception.SolrRuntimeException;
-import edu.unc.lib.dl.search.solr.model.BriefObjectMetadata;
+import edu.unc.lib.boxc.search.api.exceptions.SolrRuntimeException;
+import edu.unc.lib.boxc.search.api.models.ContentObjectRecord;
 import edu.unc.lib.dl.search.solr.util.SearchFieldKeys;
 import edu.unc.lib.dl.search.solr.util.SolrSettings;
 
@@ -51,7 +51,7 @@ public class GetCollectionIdService extends AbstractQueryService {
      * @param mdObj metadata object
      * @return collection id or null if none applies.
      */
-    public String getCollectionId(BriefObjectMetadata mdObj) {
+    public String getCollectionId(ContentObjectRecord mdObj) {
         long start = System.nanoTime();
         try {
             return findFirstCollectionId(mdObj);
@@ -61,7 +61,7 @@ public class GetCollectionIdService extends AbstractQueryService {
         }
     }
 
-    private String findFirstCollectionId(BriefObjectMetadata mdObj) {
+    private String findFirstCollectionId(ContentObjectRecord mdObj) {
         if (mdObj.getAncestorPath() == null || mdObj.getId() == null) {
             throw new IllegalArgumentException("Provided metadata object is missing required fields");
         }

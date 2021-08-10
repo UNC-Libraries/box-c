@@ -13,29 +13,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package edu.unc.lib.dl.search.solr.exception;
+package edu.unc.lib.boxc.search.api.exceptions;
 
 /**
- * Runtime exception originating from a solr interaction
- *
+ * 
  * @author bbpennel
  *
  */
-public class SolrRuntimeException extends RuntimeException {
-    private static final long serialVersionUID = 5827878385587178461L;
+public class InvalidHierarchicalFacetException extends InvalidFacetException {
+    private static final long serialVersionUID = 1L;
 
-    public SolrRuntimeException() {
+    public InvalidHierarchicalFacetException(String msg, Exception e) {
+        super(msg);
+        this.setStackTrace(e.getStackTrace());
     }
 
-    public SolrRuntimeException(String message) {
-        super(message);
-    }
-
-    public SolrRuntimeException(Throwable cause) {
-        super(cause);
-    }
-
-    public SolrRuntimeException(String message, Throwable cause) {
-        super(message, cause);
+    public InvalidHierarchicalFacetException(String msg) {
+        super(msg);
     }
 }

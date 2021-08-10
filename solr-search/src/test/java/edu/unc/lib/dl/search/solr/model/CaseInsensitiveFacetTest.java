@@ -21,6 +21,8 @@ import java.util.List;
 import org.junit.Assert;
 import org.junit.Test;
 
+import edu.unc.lib.boxc.search.api.facets.SearchFacet;
+
 public class CaseInsensitiveFacetTest extends Assert {
 
     @Test

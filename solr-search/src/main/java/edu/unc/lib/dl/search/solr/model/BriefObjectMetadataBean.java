@@ -28,6 +28,11 @@ import org.slf4j.LoggerFactory;
 
 import edu.unc.lib.boxc.common.util.DateTimeUtil;
 import edu.unc.lib.boxc.model.api.rdf.CdrAcl;
+import edu.unc.lib.boxc.search.api.facets.HierarchicalFacet;
+import edu.unc.lib.boxc.search.api.models.ContentObjectRecord;
+import edu.unc.lib.boxc.search.api.models.Datastream;
+import edu.unc.lib.boxc.search.api.models.ObjectPath;
+import edu.unc.lib.boxc.search.api.models.ObjectPathEntry;
 import edu.unc.lib.dl.search.solr.service.ObjectPathFactory;
 import edu.unc.lib.dl.search.solr.util.SearchFieldKeys;
 
@@ -37,23 +42,22 @@ import edu.unc.lib.dl.search.solr.util.SearchFieldKeys;
  *
  * @author bbpennel
  */
-public class BriefObjectMetadataBean extends IndexDocumentBean implements BriefObjectMetadata {
+public class BriefObjectMetadataBean extends IndexDocumentBean implements ContentObjectRecord {
     private static final Logger LOG = LoggerFactory.getLogger(BriefObjectMetadataBean.class);
 
     protected static ObjectPathFactory pathFactory;
 
-    protected CutoffFacet ancestorPathFacet;
-    protected CutoffFacet path;
+    protected CutoffFacetImpl ancestorPathFacet;
+    protected CutoffFacetImpl path;
     protected ObjectPath objectPath;
     protected String ancestorNames;
     protected String parentName;
-    protected List<MultivaluedHierarchicalFacet> contentTypeFacet;
+    protected List<HierarchicalFacet> contentTypeFacet;
     protected List<Datastream> datastreamObjects;
     // Inverted map of the roleGroup, clustering roles into buckets by group
     Map<String, Collection<String>> groupRoleMap;
     protected Map<String, Long> countMap;
     protected Map<String, List<String>> relationsMap;
-    private List<Tag> tags;
 
     public BriefObjectMetadataBean() {
         countMap = new HashMap<>(2);
@@ -71,11 +75,11 @@ public class BriefObjectMetadataBean extends IndexDocumentBean implements BriefO
     }
 
     @Override
-    public CutoffFacet getAncestorPathFacet() {
+    public CutoffFacetImpl getAncestorPathFacet() {
         return ancestorPathFacet;
     }
 
-    public void setAncestorPathFacet(CutoffFacet ancestorPathFacet) {
+    public void setAncestorPathFacet(CutoffFacetImpl ancestorPathFacet) {
         this.ancestorPathFacet = ancestorPathFacet;
     }
 
@@ -83,7 +87,7 @@ public class BriefObjectMetadataBean extends IndexDocumentBean implements BriefO
     @Field
     public void setAncestorPath(List<String> ancestorPaths) {
         super.setAncestorPath(ancestorPaths);
-        this.ancestorPathFacet = new CutoffFacet(SearchFieldKeys.ANCESTOR_PATH.name(), ancestorPaths, 0);
+        this.ancestorPathFacet = new CutoffFacetImpl(SearchFieldKeys.ANCESTOR_PATH.name(), ancestorPaths, 0);
     }
 
     /**
@@ -92,13 +96,13 @@ public class BriefObjectMetadataBean extends IndexDocumentBean implements BriefO
      * @return
      */
     @Override
-    public CutoffFacet getPath() {
+    public CutoffFacetImpl getPath() {
         if (path == null) {
             if (getAncestorPath() == null) {
-                this.path = new CutoffFacet(SearchFieldKeys.ANCESTOR_PATH.name(), "1," + getId() + "," + getTitle(),
+                this.path = new CutoffFacetImpl(SearchFieldKeys.ANCESTOR_PATH.name(), "1," + getId() + "," + getTitle(),
                         0L);
             } else {
-                path = new CutoffFacet(ancestorPathFacet);
+                path = new CutoffFacetImpl(ancestorPathFacet);
                 path.addNode(getId());
             }
         }
@@ -106,7 +110,7 @@ public class BriefObjectMetadataBean extends IndexDocumentBean implements BriefO
     }
 
     @Override
-    public List<MultivaluedHierarchicalFacet> getContentTypeFacet() {
+    public List<HierarchicalFacet> getContentTypeFacet() {
         return contentTypeFacet;
     }
 
@@ -155,7 +159,7 @@ public class BriefObjectMetadataBean extends IndexDocumentBean implements BriefO
 
         datastreamObjects = new ArrayList<>();
         for (String value : datastream) {
-            datastreamObjects.add(new Datastream(value));
+            datastreamObjects.add(new DatastreamImpl(value));
         }
     }
 

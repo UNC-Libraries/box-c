@@ -38,7 +38,7 @@ import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
 import edu.unc.lib.boxc.auth.api.services.PrincipalClassifier;
 import edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore;
 import edu.unc.lib.boxc.model.api.ResourceType;
-import edu.unc.lib.dl.search.solr.model.BriefObjectMetadata;
+import edu.unc.lib.boxc.search.api.models.ContentObjectRecord;
 import edu.unc.lib.dl.search.solr.model.CaseInsensitiveFacet;
 import edu.unc.lib.dl.search.solr.model.FacetFieldObject;
 import edu.unc.lib.dl.search.solr.model.SearchRequest;
@@ -94,7 +94,7 @@ public class SolrQueryLayerService extends SolrSearchService {
 
         SearchRequest searchRequest = new SearchRequest(searchState, accessGroups, true);
         searchRequest.setRootPid(pid);
-        BriefObjectMetadata selectedContainer = null;
+        ContentObjectRecord selectedContainer = null;
 
         if (has_pid) {
             selectedContainer = addSelectedContainer(searchRequest.getRootPid(), searchState,
@@ -180,7 +180,7 @@ public class SolrQueryLayerService extends SolrSearchService {
 
         Boolean rollup = searchState.getRollup();
 
-        BriefObjectMetadata selectedContainer = null;
+        ContentObjectRecord selectedContainer = null;
         // Get the record for the currently selected container if one is selected.
         if (searchRequest.getRootPid() != null) {
             selectedContainer = addSelectedContainer(searchRequest.getRootPid(), searchState,

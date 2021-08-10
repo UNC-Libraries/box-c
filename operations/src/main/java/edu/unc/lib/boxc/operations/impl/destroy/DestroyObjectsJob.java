@@ -54,8 +54,8 @@ import edu.unc.lib.boxc.model.api.rdf.Ldp;
 import edu.unc.lib.boxc.model.api.rdf.Premis;
 import edu.unc.lib.boxc.model.fcrepo.ids.AgentPids;
 import edu.unc.lib.boxc.operations.jms.destroy.DestroyObjectsRequest;
+import edu.unc.lib.boxc.search.api.models.ObjectPath;
 import edu.unc.lib.dl.fcrepo4.FedoraTransaction;
-import edu.unc.lib.dl.search.solr.model.ObjectPath;
 import edu.unc.lib.dl.search.solr.service.ObjectPathFactory;
 import io.dropwizard.metrics5.Timer;
 

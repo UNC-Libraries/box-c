@@ -21,6 +21,8 @@ import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 
+import edu.unc.lib.boxc.search.api.models.Datastream;
+
 /**
  *
  * @author bbpennel
@@ -31,7 +33,7 @@ public class DatastreamTest {
 
     @Test
     public void testToString() {
-        Datastream ds = new Datastream(null, "original", 555l, "text/plain", "file.txt", "txt", CHECKSUM, null);
+        Datastream ds = new DatastreamImpl(null, "original", 555l, "text/plain", "file.txt", "txt", CHECKSUM, null);
 
         assertEquals("original", ds.getName());
         assertEquals("text/plain", ds.getMimetype());
@@ -46,7 +48,7 @@ public class DatastreamTest {
 
     @Test
     public void testDatastreamParsing() {
-        Datastream ds = new Datastream("original_file|image/jpeg|file.jpg|jpg"
+        Datastream ds = new DatastreamImpl("original_file|image/jpeg|file.jpg|jpg"
                 + "|30459|" + CHECKSUM + "||");
 
         assertEquals("original_file", ds.getName());
@@ -60,7 +62,7 @@ public class DatastreamTest {
 
     @Test
     public void testDatastreamSurrogateParsing() {
-        Datastream ds = new Datastream("DATA_FILE|image/jpeg|file.jpg|jpg|30459|" + CHECKSUM + "|uuid:73247248-e351-49dc-9b27-fe44df3884e7|");
+        Datastream ds = new DatastreamImpl("DATA_FILE|image/jpeg|file.jpg|jpg|30459|" + CHECKSUM + "|uuid:73247248-e351-49dc-9b27-fe44df3884e7|");
 
         assertEquals("DATA_FILE", ds.getName());
         assertEquals("image/jpeg", ds.getMimetype());
@@ -73,7 +75,7 @@ public class DatastreamTest {
 
     @Test
     public void testDatastreamNoChecksum() {
-        Datastream ds = new Datastream("AUDIT|text/xml|audit|xml|30459|||");
+        Datastream ds = new DatastreamImpl("AUDIT|text/xml|audit|xml|30459|||");
 
         assertEquals("AUDIT", ds.getName());
         assertEquals("text/xml", ds.getMimetype());
@@ -86,7 +88,7 @@ public class DatastreamTest {
 
     @Test
     public void testDatastreamNoChecksumFromSurrogate() {
-        Datastream ds = new Datastream("AUDIT|text/xml|audit|xml|30459||uuid:73247248-e351-49dc-9b27-fe44df3884e7|");
+        Datastream ds = new DatastreamImpl("AUDIT|text/xml|audit|xml|30459||uuid:73247248-e351-49dc-9b27-fe44df3884e7|");
 
         assertEquals("AUDIT", ds.getName());
         assertEquals("text/xml", ds.getMimetype());
@@ -100,7 +102,7 @@ public class DatastreamTest {
     @Test
     public void testDatastreamEqualsString() {
         String dsName = "data_stream";
-        Datastream ds = new Datastream("data_stream|image/jpeg|ds.jpg|jpg|0|||240x750");
+        Datastream ds = new DatastreamImpl("data_stream|image/jpeg|ds.jpg|jpg|0|||240x750");
 
         assertTrue(ds.equals(dsName));
     }
@@ -108,7 +110,7 @@ public class DatastreamTest {
     @Test
     public void testDatastreamNotEqualsString() {
         String dsName = "other_ds";
-        Datastream ds = new Datastream("data_stream|image/jpeg|ds.jpg|jpg|0|||240x750");
+        Datastream ds = new DatastreamImpl("data_stream|image/jpeg|ds.jpg|jpg|0|||240x750");
 
         assertFalse(ds.equals(dsName));
     }
@@ -116,31 +118,31 @@ public class DatastreamTest {
     @Test
     public void testDatastreamEqualsFullDSString() {
         String dsName = "data_stream|image/jpeg|ds.jpg|jpg|0|||240x750";
-        Datastream ds = new Datastream("data_stream|image/jpeg|ds.jpg|jpg|0|||240x750");
+        Datastream ds = new DatastreamImpl("data_stream|image/jpeg|ds.jpg|jpg|0|||240x750");
 
         assertTrue(ds.equals(dsName));
     }
 
     @Test
     public void testDatastreamEqualsDatastream() {
-        Datastream ds1 = new Datastream("data_stream|image/jpeg|ds.jpg|jpg|0|||240x750");
-        Datastream ds2 = new Datastream("data_stream|image/jpeg|ds.jpg|jpg|0|||240x750");
+        Datastream ds1 = new DatastreamImpl("data_stream|image/jpeg|ds.jpg|jpg|0|||240x750");
+        Datastream ds2 = new DatastreamImpl("data_stream|image/jpeg|ds.jpg|jpg|0|||240x750");
 
         assertTrue(ds1.equals(ds2));
     }
 
     @Test
     public void testDatastreamEqualsDatastreamByNameAndOwner() {
-        Datastream ds1 = new Datastream("data_stream|image/jpeg|ds.jpg|jpg|0||owner_id|");
-        Datastream ds2 = new Datastream("data_stream||||||owner_id|");
+        Datastream ds1 = new DatastreamImpl("data_stream|image/jpeg|ds.jpg|jpg|0||owner_id|");
+        Datastream ds2 = new DatastreamImpl("data_stream||||||owner_id|");
 
         assertTrue(ds1.equals(ds2));
     }
 
     @Test
     public void testDatastreamNotEqualsDatastreamByOwner() {
-        Datastream ds1 = new Datastream("data_stream|image/jpeg|ds.jpg|jpg|0||owner_2|");
-        Datastream ds2 = new Datastream("data_stream|image/jpeg|ds.jpg|jpg|0||owner_1|");
+        Datastream ds1 = new DatastreamImpl("data_stream|image/jpeg|ds.jpg|jpg|0||owner_2|");
+        Datastream ds2 = new DatastreamImpl("data_stream|image/jpeg|ds.jpg|jpg|0||owner_1|");
 
         assertFalse(ds1.equals(ds2));
     }
