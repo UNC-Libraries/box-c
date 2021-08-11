@@ -181,9 +181,9 @@
         <module>persistence</module>
         <module>services</module>
         <module>services-camel</module>
-        
-        <module>solr-ingest</module>
-        <module>solr-search</module>
+        <module>search-api</module>
+        <module>indexing-solr</module>
+        <module>search-solr</module>
         <module>sword-server</module>
         <module>admin</module>
         <module>access-common</module>
@@ -200,7 +200,6 @@
         <module>operations</module>
         <module>deposit-utils</module>
         <module>persistence-api</module>
-        <module>search-api</module>
     </modules>
 
     <reporting>
@@ -620,17 +619,17 @@
             </dependency>
             <dependency>
                 <groupId>edu.unc.lib.cdr</groupId>
-                <artifactId>solr-search</artifactId>
+                <artifactId>search-solr</artifactId>
                 <version>${cdr.version}</version>
             </dependency>
             <dependency>
                 <groupId>edu.unc.lib.cdr</groupId>
-                <artifactId>solr-ingest</artifactId>
+                <artifactId>indexing-solr</artifactId>
                 <version>${cdr.version}</version>
             </dependency>
             <dependency>
                 <groupId>edu.unc.lib.cdr</groupId>
-                <artifactId>solr-ingest</artifactId>
+                <artifactId>indexing-solr</artifactId>
                 <version>${cdr.version}</version>
                 <type>test-jar</type>
                 <scope>test</scope>

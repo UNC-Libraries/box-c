@@ -47,13 +47,13 @@
         </dependency>
         <dependency>
             <groupId>edu.unc.lib.cdr</groupId>
-            <artifactId>solr-ingest</artifactId>
+            <artifactId>indexing-solr</artifactId>
             <type>test-jar</type>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>edu.unc.lib.cdr</groupId>
-            <artifactId>solr-ingest</artifactId>
+            <artifactId>indexing-solr</artifactId>
         </dependency>
         <dependency>
             <groupId>edu.unc.lib.cdr</groupId>

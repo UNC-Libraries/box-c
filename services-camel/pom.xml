@@ -156,7 +156,7 @@
 
     <dependency>
         <groupId>edu.unc.lib.cdr</groupId>
-        <artifactId>solr-ingest</artifactId>
+        <artifactId>indexing-solr</artifactId>
         <exclusions>
             <exclusion>
                 <groupId>org.codehaus.woodstox</groupId>

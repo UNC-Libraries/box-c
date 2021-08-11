@@ -35,7 +35,7 @@ jobs:
     - name: Build with Maven
       run: mvn -B -U clean install -DskipTests
     - name: Verify DCR modules
-      run: mvn verify -pl common-utils,access,access-common,admin,deposit,fcrepo-clients,metadata,model-api,model-fcrepo,persistence,auth-api,auth-fcrepo,services,services-camel,solr-ingest,solr-search,sword-server,integration
+      run: mvn verify -pl common-utils,access,access-common,admin,deposit,fcrepo-clients,metadata,model-api,model-fcrepo,persistence,auth-api,auth-fcrepo,services,services-camel,search-api,search-solr,index-solr,sword-server,integration
 
     - name: Set up nodejs
       uses: actions/setup-node@v2
