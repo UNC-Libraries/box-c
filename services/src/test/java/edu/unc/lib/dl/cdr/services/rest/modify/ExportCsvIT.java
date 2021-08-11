@@ -77,12 +77,12 @@ import edu.unc.lib.boxc.operations.api.events.PremisLoggerFactory;
 import edu.unc.lib.boxc.operations.impl.delete.MarkForDeletionJob;
 import edu.unc.lib.boxc.operations.impl.edit.UpdateDescriptionService;
 import edu.unc.lib.boxc.operations.impl.edit.UpdateDescriptionService.UpdateDescriptionRequest;
+import edu.unc.lib.boxc.search.solr.services.ChildrenCountService;
+import edu.unc.lib.boxc.search.solr.services.SolrSearchService;
 import edu.unc.lib.dl.cdr.services.processing.ExportCsvService;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackageFactory;
 import edu.unc.lib.dl.data.ingest.solr.indexing.SolrUpdateDriver;
 import edu.unc.lib.dl.data.ingest.solr.test.RepositoryObjectSolrIndexer;
-import edu.unc.lib.dl.search.solr.service.ChildrenCountService;
-import edu.unc.lib.dl.search.solr.service.SolrSearchService;
 import edu.unc.lib.dl.sparql.FedoraSparqlUpdateService;
 
 /**

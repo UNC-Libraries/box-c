@@ -20,12 +20,12 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
-import edu.unc.lib.boxc.search.api.SearchFieldKeys;
+import edu.unc.lib.boxc.search.api.SearchFieldKey;
 import edu.unc.lib.boxc.search.api.models.ContentObjectRecord;
 import edu.unc.lib.boxc.search.api.requests.SearchRequest;
 import edu.unc.lib.boxc.search.api.requests.SearchState;
-import edu.unc.lib.dl.search.solr.model.SearchResultResponse;
-import edu.unc.lib.dl.search.solr.service.ChildrenCountService;
+import edu.unc.lib.boxc.search.solr.responses.SearchResultResponse;
+import edu.unc.lib.boxc.search.solr.services.ChildrenCountService;
 import edu.unc.lib.dl.ui.controller.AbstractSolrSearchController;
 
 /**
@@ -38,15 +38,15 @@ public class AbstractSearchController extends AbstractSolrSearchController {
     @Autowired
     protected ChildrenCountService childrenCountService;
 
-    protected static List<String> resultsFieldList = Arrays.asList(SearchFieldKeys.ID.name(),
-            SearchFieldKeys.TITLE.name(), SearchFieldKeys.CREATOR.name(), SearchFieldKeys.DATASTREAM.name(),
-            SearchFieldKeys.DATE_ADDED.name(), SearchFieldKeys.DATE_UPDATED.name(),
-            SearchFieldKeys.RESOURCE_TYPE.name(), SearchFieldKeys.CONTENT_MODEL.name(),
-            SearchFieldKeys.STATUS.name(), SearchFieldKeys.VERSION.name(),SearchFieldKeys.ROLE_GROUP.name(),
-            SearchFieldKeys.RELATIONS.name(), SearchFieldKeys.CONTENT_TYPE.name(),
-            SearchFieldKeys.CONTENT_STATUS.name(), SearchFieldKeys.LABEL.name(), SearchFieldKeys.TIMESTAMP.name(),
-            SearchFieldKeys.ANCESTOR_PATH.name(),
-            SearchFieldKeys.IS_PART.name(), SearchFieldKeys.ROLLUP_ID.name());
+    protected static List<String> resultsFieldList = Arrays.asList(SearchFieldKey.ID.name(),
+            SearchFieldKey.TITLE.name(), SearchFieldKey.CREATOR.name(), SearchFieldKey.DATASTREAM.name(),
+            SearchFieldKey.DATE_ADDED.name(), SearchFieldKey.DATE_UPDATED.name(),
+            SearchFieldKey.RESOURCE_TYPE.name(), SearchFieldKey.CONTENT_MODEL.name(),
+            SearchFieldKey.STATUS.name(), SearchFieldKey.VERSION.name(),SearchFieldKey.ROLE_GROUP.name(),
+            SearchFieldKey.RELATIONS.name(), SearchFieldKey.CONTENT_TYPE.name(),
+            SearchFieldKey.CONTENT_STATUS.name(), SearchFieldKey.LABEL.name(), SearchFieldKey.TIMESTAMP.name(),
+            SearchFieldKey.ANCESTOR_PATH.name(),
+            SearchFieldKey.IS_PART.name(), SearchFieldKey.ROLLUP_ID.name());
 
     @Override
     protected SearchResultResponse getSearchResults(SearchRequest searchRequest) {

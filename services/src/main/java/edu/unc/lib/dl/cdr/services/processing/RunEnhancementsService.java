@@ -36,14 +36,14 @@ import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.fcrepo.ids.DatastreamPids;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.boxc.operations.jms.MessageSender;
-import edu.unc.lib.boxc.search.api.SearchFieldKeys;
+import edu.unc.lib.boxc.search.api.SearchFieldKey;
 import edu.unc.lib.boxc.search.api.models.ContentObjectRecord;
 import edu.unc.lib.boxc.search.api.models.Datastream;
 import edu.unc.lib.boxc.search.api.requests.SearchRequest;
 import edu.unc.lib.boxc.search.api.requests.SearchState;
 import edu.unc.lib.boxc.search.api.requests.SimpleIdRequest;
 import edu.unc.lib.boxc.search.solr.facets.GenericFacet;
-import edu.unc.lib.dl.search.solr.model.SearchResultResponse;
+import edu.unc.lib.boxc.search.solr.responses.SearchResultResponse;
 import edu.unc.lib.dl.ui.service.SolrQueryLayerService;
 import io.dropwizard.metrics5.Timer;
 
@@ -57,8 +57,8 @@ public class RunEnhancementsService {
     private static final Timer timer = TimerFactory.createTimerForClass(RunEnhancementsService.class);
 
     private final List<String> resultsFieldList = Arrays.asList(
-            SearchFieldKeys.DATASTREAM.name(), SearchFieldKeys.ID.name(),
-            SearchFieldKeys.RESOURCE_TYPE.name());
+            SearchFieldKey.DATASTREAM.name(), SearchFieldKey.ID.name(),
+            SearchFieldKey.RESOURCE_TYPE.name());
 
     private AccessControlService aclService;
 
@@ -88,7 +88,7 @@ public class RunEnhancementsService {
 
                 if (!(repositoryObjectLoader.getRepositoryObject(pid) instanceof FileObject)) {
                     SearchState searchState = new SearchState();
-                    searchState.addFacet(new GenericFacet(SearchFieldKeys.RESOURCE_TYPE, ResourceType.File.name()));
+                    searchState.addFacet(new GenericFacet(SearchFieldKey.RESOURCE_TYPE, ResourceType.File.name()));
                     searchState.setResultFields(resultsFieldList);
 
                     SearchRequest searchRequest = new SearchRequest();

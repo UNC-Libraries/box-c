@@ -29,7 +29,7 @@ import org.junit.Test;
 
 import edu.unc.lib.boxc.search.api.models.ContentObjectRecord;
 import edu.unc.lib.boxc.search.solr.models.ContentObjectSolrRecord;
-import edu.unc.lib.dl.search.solr.model.HierarchicalBrowseResultResponse;
+import edu.unc.lib.boxc.search.solr.responses.HierarchicalBrowseResultResponse;
 
 
 public class HierarchicalBrowseResultResponseTest extends Assert {

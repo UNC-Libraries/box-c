@@ -79,7 +79,7 @@
 		<name>getPreferredDatastream</name>
 		<function-class>edu.unc.lib.dl.ui.util.DatastreamUtil</function-class>
 		<function-signature>
-			edu.unc.lib.dl.search.solr.model.Datastream getPreferredDatastream(edu.unc.lib.boxc.search.api.models.ContentObjectRecord, java.lang.String)
+			edu.unc.lib.boxc.search.api.models.Datastream getPreferredDatastream(edu.unc.lib.boxc.search.api.models.ContentObjectRecord, java.lang.String)
 		</function-signature>
 	</function>
 	<function>
@@ -142,21 +142,21 @@
 		<name>resultsToJSON</name>
 		<function-class>edu.unc.lib.dl.ui.util.SerializationUtil</function-class>
 		<function-signature>
-			java.lang.String resultsToJSON(edu.unc.lib.dl.search.solr.model.SearchResultResponse, edu.unc.lib.boxc.auth.api.models.AccessGroupSet)
+			java.lang.String resultsToJSON(edu.unc.lib.boxc.search.solr.responses.SearchResultResponse, edu.unc.lib.boxc.auth.api.models.AccessGroupSet)
 		</function-signature>
 	</function>
 	<function>
 		<name>getSearchQueryParameters</name>
 		<function-class>edu.unc.lib.dl.search.solr.util.SearchStateUtil</function-class>
 		<function-signature>
-			java.lang.String generateSearchParameterString(edu.unc.lib.dl.search.solr.model.SearchState)
+			java.lang.String generateSearchParameterString(edu.unc.lib.boxc.search.api.requests.SearchState)
 		</function-signature>
 	</function>
 	<function>
 		<name>getSearchStateParameters</name>
 		<function-class>edu.unc.lib.dl.search.solr.util.SearchStateUtil</function-class>
 		<function-signature>
-			java.lang.String generateStateParameterString(edu.unc.lib.dl.search.solr.model.SearchState)
+			java.lang.String generateStateParameterString(edu.unc.lib.boxc.search.api.requests.SearchState)
 		</function-signature>
 	</function>
 	<function>

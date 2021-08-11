@@ -27,12 +27,12 @@ import org.apache.solr.client.solrj.response.FacetField;
 import org.junit.Assert;
 import org.junit.Test;
 
+import edu.unc.lib.boxc.search.api.facets.FacetFieldObject;
 import edu.unc.lib.boxc.search.api.facets.HierarchicalFacet;
+import edu.unc.lib.boxc.search.solr.config.SearchSettings;
 import edu.unc.lib.boxc.search.solr.facets.MultivaluedHierarchicalFacet;
 import edu.unc.lib.boxc.search.solr.facets.MultivaluedHierarchicalFacetNode;
-import edu.unc.lib.dl.search.solr.model.FacetFieldFactory;
-import edu.unc.lib.dl.search.solr.model.FacetFieldObject;
-import edu.unc.lib.dl.search.solr.util.SearchSettings;
+import edu.unc.lib.boxc.search.solr.services.FacetFieldFactory;
 
 public class MultivaluedHierarchicalFacetTest extends Assert {
 

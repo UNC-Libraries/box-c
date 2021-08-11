@@ -21,11 +21,11 @@ import java.util.Map;
 
 import org.springframework.util.Assert;
 
-import edu.unc.lib.boxc.search.api.SearchFieldKeys;
+import edu.unc.lib.boxc.search.api.SearchFieldKey;
 import edu.unc.lib.boxc.search.api.models.ContentObjectRecord;
+import edu.unc.lib.boxc.search.solr.config.SolrSettings;
 import edu.unc.lib.dl.data.ingest.solr.SolrUpdateRequest;
 import edu.unc.lib.dl.data.ingest.solr.exception.IndexingException;
-import edu.unc.lib.dl.search.solr.util.SolrSettings;
 
 /**
  * Deletes solr records for all objects which are children of the specified
@@ -64,12 +64,12 @@ public class DeleteStaleChildren extends AbstractIndexingAction {
                 ContentObjectRecord ancestorPathBean = getRootAncestorPath(updateRequest);
 
                 // Limit cleanup scope to root pid
-                query.append(solrSettings.getFieldName(SearchFieldKeys.ANCESTOR_PATH.name())).append(':')
+                query.append(solrSettings.getFieldName(SearchFieldKey.ANCESTOR_PATH.name())).append(':')
                         .append(SolrSettings.sanitize(ancestorPathBean.getPath().getSearchValue()));
             }
 
             // Target any children with timestamp older than start time.
-            query.append(" AND ").append(solrSettings.getFieldName(SearchFieldKeys.TIMESTAMP.name()))
+            query.append(" AND ").append(solrSettings.getFieldName(SearchFieldKey.TIMESTAMP.name()))
                     .append(":{* TO ").append(staleTimestamp).append("}");
 
             solrUpdateDriver.deleteByQuery(query.toString());

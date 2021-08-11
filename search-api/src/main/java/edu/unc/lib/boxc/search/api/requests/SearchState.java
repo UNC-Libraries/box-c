@@ -30,7 +30,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import edu.unc.lib.boxc.auth.api.Permission;
-import edu.unc.lib.boxc.search.api.SearchFieldKeys;
+import edu.unc.lib.boxc.search.api.SearchFieldKey;
 import edu.unc.lib.boxc.search.api.facets.SearchFacet;
 
 /**
@@ -161,7 +161,7 @@ public class SearchState implements Serializable, Cloneable {
      * @param value value of the facet to set.
      */
     public void setFacet(SearchFacet value) {
-        SearchFieldKeys key = SearchFieldKeys.valueOf(value.getFieldName());
+        SearchFieldKey key = SearchFieldKey.valueOf(value.getFieldName());
         facets.put(key.name(), Arrays.asList(value));
     }
 
@@ -170,7 +170,7 @@ public class SearchState implements Serializable, Cloneable {
      * @param key key of the facet to add
      * @param values list of values to set.
      */
-    public void setFacet(SearchFieldKeys key, List<SearchFacet> values) {
+    public void setFacet(SearchFieldKey key, List<SearchFacet> values) {
         facets.put(key.name(), values);
     }
 

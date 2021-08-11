@@ -27,13 +27,13 @@ import org.apache.solr.client.solrj.response.FacetField;
 import org.junit.Assert;
 import org.junit.Test;
 
-import edu.unc.lib.boxc.search.api.SearchFieldKeys;
+import edu.unc.lib.boxc.search.api.SearchFieldKey;
 import edu.unc.lib.boxc.search.api.exceptions.InvalidHierarchicalFacetException;
 import edu.unc.lib.boxc.search.api.facets.CutoffFacet;
+import edu.unc.lib.boxc.search.api.facets.FacetFieldObject;
+import edu.unc.lib.boxc.search.solr.config.SearchSettings;
 import edu.unc.lib.boxc.search.solr.facets.CutoffFacetImpl;
-import edu.unc.lib.dl.search.solr.model.FacetFieldFactory;
-import edu.unc.lib.dl.search.solr.model.FacetFieldObject;
-import edu.unc.lib.dl.search.solr.util.SearchSettings;
+import edu.unc.lib.boxc.search.solr.services.FacetFieldFactory;
 
 public class CutoffFacetTest extends Assert {
 
@@ -110,7 +110,7 @@ public class CutoffFacetTest extends Assert {
 
     @Test
     public void starKeyLimitTo() {
-        CutoffFacetImpl depthFacet = new CutoffFacetImpl(SearchFieldKeys.ANCESTOR_PATH.name(), "1,*");
+        CutoffFacetImpl depthFacet = new CutoffFacetImpl(SearchFieldKey.ANCESTOR_PATH.name(), "1,*");
         depthFacet.setCutoff(2);
 
         String limitToValue = depthFacet.getLimitToValue();

@@ -28,7 +28,7 @@ import org.slf4j.LoggerFactory;
 
 import edu.unc.lib.boxc.common.util.DateTimeUtil;
 import edu.unc.lib.boxc.model.api.rdf.CdrAcl;
-import edu.unc.lib.boxc.search.api.SearchFieldKeys;
+import edu.unc.lib.boxc.search.api.SearchFieldKey;
 import edu.unc.lib.boxc.search.api.facets.HierarchicalFacet;
 import edu.unc.lib.boxc.search.api.models.ContentObjectRecord;
 import edu.unc.lib.boxc.search.api.models.Datastream;
@@ -36,7 +36,7 @@ import edu.unc.lib.boxc.search.api.models.ObjectPath;
 import edu.unc.lib.boxc.search.api.models.ObjectPathEntry;
 import edu.unc.lib.boxc.search.solr.facets.CutoffFacetImpl;
 import edu.unc.lib.boxc.search.solr.facets.MultivaluedHierarchicalFacet;
-import edu.unc.lib.dl.search.solr.service.ObjectPathFactory;
+import edu.unc.lib.boxc.search.solr.services.ObjectPathFactory;
 
 /**
  * Stores a single Solr tuple representing an object from a search result. Can be populated directly by Solrj's
@@ -89,7 +89,7 @@ public class ContentObjectSolrRecord extends IndexDocumentBean implements Conten
     @Field
     public void setAncestorPath(List<String> ancestorPaths) {
         super.setAncestorPath(ancestorPaths);
-        this.ancestorPathFacet = new CutoffFacetImpl(SearchFieldKeys.ANCESTOR_PATH.name(), ancestorPaths, 0);
+        this.ancestorPathFacet = new CutoffFacetImpl(SearchFieldKey.ANCESTOR_PATH.name(), ancestorPaths, 0);
     }
 
     /**
@@ -101,7 +101,7 @@ public class ContentObjectSolrRecord extends IndexDocumentBean implements Conten
     public CutoffFacetImpl getPath() {
         if (path == null) {
             if (getAncestorPath() == null) {
-                this.path = new CutoffFacetImpl(SearchFieldKeys.ANCESTOR_PATH.name(), "1," + getId() + "," + getTitle(),
+                this.path = new CutoffFacetImpl(SearchFieldKey.ANCESTOR_PATH.name(), "1," + getId() + "," + getTitle(),
                         0L);
             } else {
                 path = new CutoffFacetImpl(ancestorPathFacet);
@@ -120,7 +120,7 @@ public class ContentObjectSolrRecord extends IndexDocumentBean implements Conten
     public void setContentType(ArrayList<String> contentTypes) {
         super.setContentType(contentTypes);
         this.contentTypeFacet = MultivaluedHierarchicalFacet.createMultivaluedHierarchicalFacets(
-                SearchFieldKeys.CONTENT_TYPE.name(), contentTypes);
+                SearchFieldKey.CONTENT_TYPE.name(), contentTypes);
     }
 
     @Override

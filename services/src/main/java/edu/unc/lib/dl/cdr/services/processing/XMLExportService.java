@@ -26,14 +26,14 @@ import edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.boxc.operations.impl.utils.EmailHandler;
-import edu.unc.lib.boxc.search.api.SearchFieldKeys;
+import edu.unc.lib.boxc.search.api.SearchFieldKey;
 import edu.unc.lib.boxc.search.api.models.ContentObjectRecord;
 import edu.unc.lib.boxc.search.api.requests.SearchRequest;
 import edu.unc.lib.boxc.search.api.requests.SearchState;
+import edu.unc.lib.boxc.search.solr.responses.SearchResultResponse;
+import edu.unc.lib.boxc.search.solr.services.SearchStateFactory;
 import edu.unc.lib.dl.cdr.services.rest.modify.ExportXMLController.XMLExportRequest;
 import edu.unc.lib.dl.fedora.ServiceException;
-import edu.unc.lib.dl.search.solr.model.SearchResultResponse;
-import edu.unc.lib.dl.search.solr.service.SearchStateFactory;
 import edu.unc.lib.dl.ui.service.SolrQueryLayerService;
 
 /**
@@ -50,7 +50,7 @@ public class XMLExportService {
     private RepositoryObjectLoader repoObjLoader;
     private boolean asynchronous;
 
-    private final List<String> resultFields = Arrays.asList(SearchFieldKeys.ID.name());
+    private final List<String> resultFields = Arrays.asList(SearchFieldKey.ID.name());
 
     /**
      * Determines whether metadata for child objects should be exported, and then kicks off the job

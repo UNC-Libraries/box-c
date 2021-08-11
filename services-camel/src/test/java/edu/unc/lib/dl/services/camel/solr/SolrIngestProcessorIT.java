@@ -58,7 +58,7 @@ import edu.unc.lib.boxc.model.fcrepo.services.DerivativeService;
 import edu.unc.lib.boxc.model.fcrepo.test.TestHelper;
 import edu.unc.lib.boxc.operations.impl.edit.UpdateDescriptionService;
 import edu.unc.lib.boxc.operations.impl.edit.UpdateDescriptionService.UpdateDescriptionRequest;
-import edu.unc.lib.boxc.search.api.SearchFieldKeys;
+import edu.unc.lib.boxc.search.api.SearchFieldKey;
 import edu.unc.lib.boxc.search.api.models.ContentObjectRecord;
 import edu.unc.lib.boxc.search.api.requests.SimpleIdRequest;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPipeline;
@@ -195,8 +195,8 @@ public class SolrIngestProcessorIT extends AbstractSolrProcessorIT {
         processor.process(exchange);
         server.commit();
 
-        List<String> allFields = Arrays.stream(SearchFieldKeys.values())
-                .map(SearchFieldKeys::name).collect(Collectors.toList());
+        List<String> allFields = Arrays.stream(SearchFieldKey.values())
+                .map(SearchFieldKey::name).collect(Collectors.toList());
         SimpleIdRequest idRequest = new SimpleIdRequest(fileObj.getPid(), allFields, accessGroups);
         ContentObjectRecord fileMd = solrSearchService.getObjectById(idRequest);
 

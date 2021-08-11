@@ -17,7 +17,7 @@ package edu.unc.lib.boxc.search.solr.facets;
 
 import org.apache.solr.client.solrj.response.FacetField;
 
-import edu.unc.lib.boxc.search.api.SearchFieldKeys;
+import edu.unc.lib.boxc.search.api.SearchFieldKey;
 import edu.unc.lib.boxc.search.api.facets.SearchFacet;
 
 /**
@@ -34,7 +34,7 @@ public class GenericFacet implements Cloneable, SearchFacet {
     public GenericFacet() {
     }
 
-    public GenericFacet(SearchFieldKeys fieldKey, String facetString) {
+    public GenericFacet(SearchFieldKey fieldKey, String facetString) {
         this(fieldKey.name(), facetString);
     }
 

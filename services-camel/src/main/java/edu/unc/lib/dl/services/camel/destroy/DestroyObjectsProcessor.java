@@ -38,8 +38,8 @@ import edu.unc.lib.boxc.operations.jms.destroy.DestroyObjectsRequest;
 import edu.unc.lib.boxc.operations.jms.indexing.IndexingMessageSender;
 import edu.unc.lib.boxc.persist.api.storage.StorageLocationManager;
 import edu.unc.lib.boxc.persist.api.transfer.BinaryTransferService;
+import edu.unc.lib.boxc.search.solr.services.ObjectPathFactory;
 import edu.unc.lib.dl.fcrepo4.TransactionManager;
-import edu.unc.lib.dl.search.solr.service.ObjectPathFactory;
 
 /**
  * Processor which handles messages requesting the destruction of objects.

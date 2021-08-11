@@ -43,11 +43,11 @@ import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
 import edu.unc.lib.boxc.auth.api.services.GlobalPermissionEvaluator;
 import edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl;
 import edu.unc.lib.boxc.search.api.models.ContentObjectRecord;
+import edu.unc.lib.boxc.search.solr.config.SearchSettings;
+import edu.unc.lib.boxc.search.solr.config.SolrSettings;
 import edu.unc.lib.boxc.search.solr.models.ContentObjectSolrRecord;
-import edu.unc.lib.dl.search.solr.model.HierarchicalBrowseResultResponse;
-import edu.unc.lib.dl.search.solr.model.SearchResultResponse;
-import edu.unc.lib.dl.search.solr.util.SearchSettings;
-import edu.unc.lib.dl.search.solr.util.SolrSettings;
+import edu.unc.lib.boxc.search.solr.responses.HierarchicalBrowseResultResponse;
+import edu.unc.lib.boxc.search.solr.responses.SearchResultResponse;
 
 /**
  *

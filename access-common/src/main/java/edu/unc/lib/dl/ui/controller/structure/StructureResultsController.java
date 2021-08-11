@@ -33,7 +33,7 @@ import edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.boxc.search.api.models.ContentObjectRecord;
 import edu.unc.lib.boxc.search.api.requests.SimpleIdRequest;
-import edu.unc.lib.dl.search.solr.model.HierarchicalBrowseResultResponse;
+import edu.unc.lib.boxc.search.solr.responses.HierarchicalBrowseResultResponse;
 import edu.unc.lib.dl.ui.controller.AbstractStructureResultsController;
 import edu.unc.lib.dl.ui.exception.ResourceNotFoundException;
 import edu.unc.lib.dl.ui.util.SerializationUtil;

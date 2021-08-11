@@ -21,9 +21,9 @@ import java.util.List;
 import org.junit.Assert;
 import org.junit.Test;
 
+import edu.unc.lib.boxc.search.api.facets.FacetFieldObject;
 import edu.unc.lib.boxc.search.api.facets.SearchFacet;
 import edu.unc.lib.boxc.search.solr.facets.CaseInsensitiveFacet;
-import edu.unc.lib.dl.search.solr.model.FacetFieldObject;
 
 public class CaseInsensitiveFacetTest extends Assert {
 

@@ -39,7 +39,7 @@ import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.search.api.models.ContentObjectRecord;
 import edu.unc.lib.boxc.search.api.requests.SimpleIdRequest;
-import edu.unc.lib.dl.search.solr.service.SolrSearchService;
+import edu.unc.lib.boxc.search.solr.services.SolrSearchService;
 
 /**
  * Utility for performing asynchronous analytics tracking events when unable to use the javascript api

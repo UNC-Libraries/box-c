@@ -75,8 +75,8 @@ import edu.unc.lib.boxc.operations.jms.indexing.IndexingMessageSender;
 import edu.unc.lib.boxc.persist.api.transfer.BinaryTransferService;
 import edu.unc.lib.boxc.persist.impl.storage.StorageLocationManagerImpl;
 import edu.unc.lib.boxc.search.api.models.ObjectPath;
+import edu.unc.lib.boxc.search.solr.services.ObjectPathFactory;
 import edu.unc.lib.dl.fcrepo4.TransactionManager;
-import edu.unc.lib.dl.search.solr.service.ObjectPathFactory;
 import edu.unc.lib.dl.sparql.FedoraSparqlUpdateService;
 
 /**

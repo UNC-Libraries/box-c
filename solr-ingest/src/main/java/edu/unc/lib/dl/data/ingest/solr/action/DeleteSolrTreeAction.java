@@ -21,11 +21,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import edu.unc.lib.boxc.model.api.ResourceType;
-import edu.unc.lib.boxc.search.api.SearchFieldKeys;
+import edu.unc.lib.boxc.search.api.SearchFieldKey;
 import edu.unc.lib.boxc.search.api.models.ContentObjectRecord;
+import edu.unc.lib.boxc.search.solr.config.SolrSettings;
 import edu.unc.lib.dl.data.ingest.solr.SolrUpdateRequest;
 import edu.unc.lib.dl.data.ingest.solr.exception.IndexingException;
-import edu.unc.lib.dl.search.solr.util.SolrSettings;
 
 /**
  *
@@ -56,12 +56,12 @@ public class DeleteSolrTreeAction extends AbstractIndexingAction {
 
             // Delete the container itself
             solrUpdateDriver.deleteByQuery(
-                    solrSettings.getFieldName(SearchFieldKeys.ID.name()) + ":"
+                    solrSettings.getFieldName(SearchFieldKey.ID.name()) + ":"
                             + SolrSettings.sanitize(updateRequest.getTargetID()));
 
             // Delete the containers contents
             solrUpdateDriver.deleteByQuery(
-                    solrSettings.getFieldName(SearchFieldKeys.ANCESTOR_PATH.name())
+                    solrSettings.getFieldName(SearchFieldKey.ANCESTOR_PATH.name())
                             + ":" + SolrSettings.sanitize(ancestorPathBean.getPath().getSearchValue()));
         } else {
             // Targeting an individual file, just delete it.

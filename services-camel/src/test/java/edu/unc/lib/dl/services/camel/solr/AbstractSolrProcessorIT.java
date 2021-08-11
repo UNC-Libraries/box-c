@@ -54,9 +54,9 @@ import edu.unc.lib.boxc.model.api.rdf.CdrAcl;
 import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
 import edu.unc.lib.boxc.model.fcrepo.services.RepositoryInitializer;
 import edu.unc.lib.boxc.model.fcrepo.test.RepositoryObjectTreeIndexer;
+import edu.unc.lib.boxc.search.solr.services.SolrSearchService;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackageFactory;
 import edu.unc.lib.dl.data.ingest.solr.indexing.SolrUpdateDriver;
-import edu.unc.lib.dl.search.solr.service.SolrSearchService;
 
 /**
  *

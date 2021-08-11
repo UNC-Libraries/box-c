@@ -34,14 +34,14 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPaths;
-import edu.unc.lib.boxc.search.api.SearchFieldKeys;
+import edu.unc.lib.boxc.search.api.SearchFieldKey;
 import edu.unc.lib.boxc.search.api.facets.CutoffFacet;
 import edu.unc.lib.boxc.search.api.requests.SearchRequest;
 import edu.unc.lib.boxc.search.api.requests.SearchState;
 import edu.unc.lib.boxc.search.solr.facets.CutoffFacetImpl;
-import edu.unc.lib.dl.search.solr.model.SearchResultResponse;
-import edu.unc.lib.dl.search.solr.service.MultiSelectFacetListService;
-import edu.unc.lib.dl.search.solr.service.ParentCollectionFacetTitleService;
+import edu.unc.lib.boxc.search.solr.responses.SearchResultResponse;
+import edu.unc.lib.boxc.search.solr.services.MultiSelectFacetListService;
+import edu.unc.lib.boxc.search.solr.services.ParentCollectionFacetTitleService;
 
 /**
  * Controller which interprets the provided search state, from either the last search state in the session or from GET
@@ -111,7 +111,7 @@ public class SearchActionController extends AbstractSolrSearchController {
                                                                HttpServletResponse response) {
         SearchRequest searchRequest = generateSearchRequest(request);
         searchRequest.setRootPid(RepositoryPaths.getContentRootPid());
-        CutoffFacet cutoff = new CutoffFacetImpl(SearchFieldKeys.ANCESTOR_PATH.name(), "1,*!2");
+        CutoffFacet cutoff = new CutoffFacetImpl(SearchFieldKey.ANCESTOR_PATH.name(), "1,*!2");
         searchRequest.getSearchState().addFacet(cutoff);
         searchRequest.setApplyCutoffs(true);
 

@@ -22,18 +22,18 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
 import edu.unc.lib.boxc.model.api.ids.PID;
-import edu.unc.lib.boxc.search.api.SearchFieldKeys;
+import edu.unc.lib.boxc.search.api.SearchFieldKey;
 import edu.unc.lib.boxc.search.api.models.ContentObjectRecord;
 import edu.unc.lib.boxc.search.api.requests.SimpleIdRequest;
+import edu.unc.lib.boxc.search.solr.config.SearchSettings;
+import edu.unc.lib.boxc.search.solr.config.SolrSettings;
+import edu.unc.lib.boxc.search.solr.services.SolrSearchService;
 import edu.unc.lib.dl.data.ingest.solr.SolrUpdateRequest;
 import edu.unc.lib.dl.data.ingest.solr.exception.IndexingException;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackage;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackageFactory;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPipeline;
 import edu.unc.lib.dl.data.ingest.solr.indexing.SolrUpdateDriver;
-import edu.unc.lib.dl.search.solr.service.SolrSearchService;
-import edu.unc.lib.dl.search.solr.util.SearchSettings;
-import edu.unc.lib.dl.search.solr.util.SolrSettings;
 
 /**
  *
@@ -65,9 +65,9 @@ public abstract class AbstractIndexingAction implements IndexingAction {
      */
     protected ContentObjectRecord getRootAncestorPath(SolrUpdateRequest updateRequest) throws IndexingException {
         List<String> resultFields = new ArrayList<>();
-        resultFields.add(SearchFieldKeys.ID.name());
-        resultFields.add(SearchFieldKeys.ANCESTOR_PATH.name());
-        resultFields.add(SearchFieldKeys.RESOURCE_TYPE.name());
+        resultFields.add(SearchFieldKey.ID.name());
+        resultFields.add(SearchFieldKey.ANCESTOR_PATH.name());
+        resultFields.add(SearchFieldKey.RESOURCE_TYPE.name());
 
         SimpleIdRequest idRequest = new SimpleIdRequest(updateRequest.getPid(), resultFields,
                 accessGroups);

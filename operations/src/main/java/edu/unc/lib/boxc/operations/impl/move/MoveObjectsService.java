@@ -33,8 +33,8 @@ import edu.unc.lib.boxc.model.api.objects.RepositoryObject;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.api.objects.WorkObject;
 import edu.unc.lib.boxc.operations.jms.OperationsMessageSender;
+import edu.unc.lib.boxc.search.solr.services.ObjectPathFactory;
 import edu.unc.lib.dl.fcrepo4.TransactionManager;
-import edu.unc.lib.dl.search.solr.service.ObjectPathFactory;
 
 /**
  * Service which moves content objects between containers.

@@ -28,7 +28,7 @@ import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
 import edu.unc.lib.boxc.auth.api.services.GlobalPermissionEvaluator;
 import edu.unc.lib.boxc.model.api.DatastreamType;
 import edu.unc.lib.boxc.model.api.ids.PID;
-import edu.unc.lib.boxc.search.api.SearchFieldKeys;
+import edu.unc.lib.boxc.search.api.SearchFieldKey;
 import edu.unc.lib.boxc.search.api.exceptions.SolrRuntimeException;
 import edu.unc.lib.boxc.search.api.facets.CutoffFacet;
 import edu.unc.lib.boxc.search.api.models.ContentObjectRecord;
@@ -37,7 +37,7 @@ import edu.unc.lib.boxc.search.api.requests.SearchRequest;
 import edu.unc.lib.boxc.search.api.requests.SearchState;
 import edu.unc.lib.boxc.search.api.requests.SimpleIdRequest;
 import edu.unc.lib.boxc.search.solr.models.ContentObjectSolrRecord;
-import edu.unc.lib.dl.search.solr.service.SolrSearchService;
+import edu.unc.lib.boxc.search.solr.services.SolrSearchService;
 
 /**
  * Service to check for or list resources with access copies
@@ -111,7 +111,7 @@ public class AccessCopiesService extends SolrSearchService {
 
         SearchRequest searchRequest = new SearchRequest(searchState, principals);
         SolrQuery query = generateSearch(searchRequest);
-        query.addFilterQuery(solrSettings.getFieldName(SearchFieldKeys.DATASTREAM.name()) + ":"
+        query.addFilterQuery(solrSettings.getFieldName(SearchFieldKey.DATASTREAM.name()) + ":"
                 + DatastreamType.JP2_ACCESS_COPY.getId() + "|*");
 
         try {

@@ -51,7 +51,7 @@
     </bean>
     
     <bean id="objectPathFactory" class="org.mockito.Mockito" factory-method="mock">
-        <constructor-arg value="edu.unc.lib.dl.search.solr.service.ObjectPathFactory" />
+        <constructor-arg value="edu.unc.lib.boxc.search.solr.services.ObjectPathFactory" />
     </bean>
     
     <bean id="indexingMessageSender" class="org.mockito.Mockito" factory-method="mock">

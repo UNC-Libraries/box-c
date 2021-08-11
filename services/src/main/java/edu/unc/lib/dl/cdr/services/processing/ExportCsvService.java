@@ -50,13 +50,13 @@ import edu.unc.lib.boxc.model.api.exceptions.NotFoundException;
 import edu.unc.lib.boxc.model.api.exceptions.RepositoryException;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.search.api.FacetConstants;
-import edu.unc.lib.boxc.search.api.SearchFieldKeys;
+import edu.unc.lib.boxc.search.api.SearchFieldKey;
 import edu.unc.lib.boxc.search.api.models.ContentObjectRecord;
 import edu.unc.lib.boxc.search.api.models.Datastream;
 import edu.unc.lib.boxc.search.api.requests.SearchRequest;
 import edu.unc.lib.boxc.search.api.requests.SearchState;
-import edu.unc.lib.dl.search.solr.model.SearchResultResponse;
-import edu.unc.lib.dl.search.solr.service.ChildrenCountService;
+import edu.unc.lib.boxc.search.solr.responses.SearchResultResponse;
+import edu.unc.lib.boxc.search.solr.services.ChildrenCountService;
 import edu.unc.lib.dl.ui.service.SolrQueryLayerService;
 
 /**
@@ -93,14 +93,14 @@ public class ExportCsvService {
             MIME_TYPE_HEADER, CHECKSUM_HEADER, FILE_SIZE_HEADER, NUM_CHILDREN_HEADER,
             DESCRIBED_HEADER, PATRON_PERMISSIONS_HEADER, EMBARGO_HEADER};
 
-    private static final List<String> SEARCH_FIELDS = Arrays.asList(SearchFieldKeys.ID.name(),
-            SearchFieldKeys.TITLE.name(),
-            SearchFieldKeys.RESOURCE_TYPE.name(), SearchFieldKeys.ANCESTOR_IDS.name(),
-            SearchFieldKeys.STATUS.name(), SearchFieldKeys.DATASTREAM.name(),
-            SearchFieldKeys.ANCESTOR_PATH.name(), SearchFieldKeys.CONTENT_MODEL.name(),
-            SearchFieldKeys.DATE_ADDED.name(), SearchFieldKeys.DATE_UPDATED.name(),
-            SearchFieldKeys.LABEL.name(), SearchFieldKeys.CONTENT_STATUS.name(),
-            SearchFieldKeys.ROLE_GROUP.name());
+    private static final List<String> SEARCH_FIELDS = Arrays.asList(SearchFieldKey.ID.name(),
+            SearchFieldKey.TITLE.name(),
+            SearchFieldKey.RESOURCE_TYPE.name(), SearchFieldKey.ANCESTOR_IDS.name(),
+            SearchFieldKey.STATUS.name(), SearchFieldKey.DATASTREAM.name(),
+            SearchFieldKey.ANCESTOR_PATH.name(), SearchFieldKey.CONTENT_MODEL.name(),
+            SearchFieldKey.DATE_ADDED.name(), SearchFieldKey.DATE_UPDATED.name(),
+            SearchFieldKey.LABEL.name(), SearchFieldKey.CONTENT_STATUS.name(),
+            SearchFieldKey.ROLE_GROUP.name());
 
     private ChildrenCountService childrenCountService;
     private AccessControlService aclService;

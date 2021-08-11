@@ -31,13 +31,13 @@ import org.mockito.Mock;
 import edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl;
 import edu.unc.lib.boxc.common.test.TestHelpers;
 import edu.unc.lib.boxc.model.api.ids.PID;
+import edu.unc.lib.boxc.search.solr.config.SearchSettings;
+import edu.unc.lib.boxc.search.solr.config.SolrSettings;
 import edu.unc.lib.boxc.search.solr.models.ContentObjectSolrRecord;
+import edu.unc.lib.boxc.search.solr.services.SolrSearchService;
+import edu.unc.lib.boxc.search.solr.utils.AccessRestrictionUtil;
 import edu.unc.lib.dl.data.ingest.solr.SolrUpdateRequest;
 import edu.unc.lib.dl.data.ingest.solr.test.TestCorpus;
-import edu.unc.lib.dl.search.solr.service.SolrSearchService;
-import edu.unc.lib.dl.search.solr.util.AccessRestrictionUtil;
-import edu.unc.lib.dl.search.solr.util.SearchSettings;
-import edu.unc.lib.dl.search.solr.util.SolrSettings;
 
 /**
  *

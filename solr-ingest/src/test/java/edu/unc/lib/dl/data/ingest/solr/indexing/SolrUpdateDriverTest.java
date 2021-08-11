@@ -29,9 +29,9 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
 
+import edu.unc.lib.boxc.search.solr.config.SolrSettings;
 import edu.unc.lib.boxc.search.solr.models.IndexDocumentBean;
 import edu.unc.lib.dl.data.ingest.solr.exception.IndexingException;
-import edu.unc.lib.dl.search.solr.util.SolrSettings;
 
 /**
  *

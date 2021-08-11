@@ -20,8 +20,8 @@ import java.util.Map;
 
 import org.apache.solr.client.solrj.response.FacetField;
 
+import edu.unc.lib.boxc.search.api.facets.FacetFieldObject;
 import edu.unc.lib.boxc.search.api.facets.SearchFacet;
-import edu.unc.lib.dl.search.solr.model.FacetFieldObject;
 
 /**
  * Facet used for case insensitive facet searching. Requires two fields, a display field and a search field. The display

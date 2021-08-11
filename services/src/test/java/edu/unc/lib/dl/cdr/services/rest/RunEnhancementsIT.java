@@ -71,8 +71,8 @@ import edu.unc.lib.boxc.operations.jms.MessageSender;
 import edu.unc.lib.boxc.search.api.requests.SearchRequest;
 import edu.unc.lib.boxc.search.api.requests.SimpleIdRequest;
 import edu.unc.lib.boxc.search.solr.models.ContentObjectSolrRecord;
+import edu.unc.lib.boxc.search.solr.responses.SearchResultResponse;
 import edu.unc.lib.dl.cdr.services.rest.modify.AbstractAPIIT;
-import edu.unc.lib.dl.search.solr.model.SearchResultResponse;
 import edu.unc.lib.dl.ui.service.SolrQueryLayerService;
 
 /**

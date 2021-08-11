@@ -30,8 +30,8 @@ import org.junit.Before;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import edu.unc.lib.boxc.search.solr.config.SolrSettings;
 import edu.unc.lib.dl.data.ingest.solr.indexing.SolrUpdateDriver;
-import edu.unc.lib.dl.search.solr.util.SolrSettings;
 
 public class BaseEmbeddedSolrTest extends Assert {
     private static final Logger log = LoggerFactory.getLogger(BaseEmbeddedSolrTest.class);
