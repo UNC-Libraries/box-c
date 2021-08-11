@@ -58,6 +58,9 @@ import org.springframework.test.context.ContextHierarchy;
 import org.springframework.test.web.servlet.MvcResult;
 
 import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
+import edu.unc.lib.boxc.indexing.solr.indexing.DocumentIndexingPackageFactory;
+import edu.unc.lib.boxc.indexing.solr.indexing.SolrUpdateDriver;
+import edu.unc.lib.boxc.indexing.solr.test.RepositoryObjectSolrIndexer;
 import edu.unc.lib.boxc.model.api.ResourceType;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.ids.PIDMinter;
@@ -80,9 +83,6 @@ import edu.unc.lib.boxc.operations.impl.edit.UpdateDescriptionService.UpdateDesc
 import edu.unc.lib.boxc.search.solr.services.ChildrenCountService;
 import edu.unc.lib.boxc.search.solr.services.SolrSearchService;
 import edu.unc.lib.dl.cdr.services.processing.ExportCsvService;
-import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackageFactory;
-import edu.unc.lib.dl.data.ingest.solr.indexing.SolrUpdateDriver;
-import edu.unc.lib.dl.data.ingest.solr.test.RepositoryObjectSolrIndexer;
 import edu.unc.lib.dl.sparql.FedoraSparqlUpdateService;
 
 /**

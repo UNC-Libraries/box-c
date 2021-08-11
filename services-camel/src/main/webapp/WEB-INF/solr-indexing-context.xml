@@ -18,7 +18,7 @@
     </util:set>
 
     <bean id="solrFullUpdatePipeline"
-        class="edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPipeline">
+        class="edu.unc.lib.boxc.indexing.solr.indexing.DocumentIndexingPipeline">
         <property name="filters">
             <list>
                 <ref bean="setRecordDatesFilter" />
@@ -38,7 +38,7 @@
     </bean>
     
     <bean id="solrAccessControlUpdatePipeline"
-        class="edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPipeline">
+        class="edu.unc.lib.boxc.indexing.solr.indexing.DocumentIndexingPipeline">
         <property name="filters">
             <list>
                 <ref bean="setRecordDatesFilter" />
@@ -50,7 +50,7 @@
     </bean>
     
     <bean id="solrMoveUpdatePipeline"
-        class="edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPipeline">
+        class="edu.unc.lib.boxc.indexing.solr.indexing.DocumentIndexingPipeline">
         <property name="filters">
             <list>
                 <ref bean="setRecordDatesFilter" />
@@ -62,7 +62,7 @@
     </bean>
     
     <bean id="solrDescriptionUpdatePipeline"
-        class="edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPipeline">
+        class="edu.unc.lib.boxc.indexing.solr.indexing.DocumentIndexingPipeline">
         <property name="filters">
             <list>
                 <ref bean="setRecordDatesFilter" />
@@ -75,7 +75,7 @@
     </bean>
     
     <bean id="solrDatastreamUpdatePipeline"
-        class="edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPipeline">
+        class="edu.unc.lib.boxc.indexing.solr.indexing.DocumentIndexingPipeline">
         <property name="filters">
             <list>
                 <ref bean="setRecordDatesFilter" />
@@ -85,7 +85,7 @@
     </bean>
     
     <bean id="solrFullTextUpdatePipeline"
-        class="edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPipeline">
+        class="edu.unc.lib.boxc.indexing.solr.indexing.DocumentIndexingPipeline">
         <property name="filters">
             <list>
                 <ref bean="setRecordDatesFilter" />
@@ -96,7 +96,7 @@
     </bean>
     
     <bean id="solrUpdateTypePipeline"
-        class="edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPipeline">
+        class="edu.unc.lib.boxc.indexing.solr.indexing.DocumentIndexingPipeline">
         <property name="filters">
             <list>
                 <ref bean="setRecordDatesFilter" />
@@ -107,7 +107,7 @@
     </bean>
 
     <bean id="solrUpdateDriver"
-        class="edu.unc.lib.dl.data.ingest.solr.indexing.SolrUpdateDriver"
+        class="edu.unc.lib.boxc.indexing.solr.indexing.SolrUpdateDriver"
         init-method="init">
         <property name="solrSettings" ref="solrSettings" />
         <property name="autoPushCount" value="${solr.update.autoPushCount}" />
@@ -147,10 +147,6 @@
         <property name="facetFieldFactory" ref="facetFieldFactory" />
     </bean>
 
-    <bean id="searchActionService" class="edu.unc.lib.boxc.web.common.search.SearchActionService">
-        <property name="searchSettings" ref="searchSettings" />
-    </bean>
-    
     <bean id="pathFactory" class="edu.unc.lib.boxc.search.solr.services.ObjectPathFactory">
         <property name="search" ref="queryLayer" />
         <property name="cacheSize" value="1000" />
@@ -177,94 +173,94 @@
     
     <!-- Solr ingest filters -->
     <bean id="setAccessControlFilter"
-        class="edu.unc.lib.dl.data.ingest.solr.filter.SetAccessControlFilter">
+        class="edu.unc.lib.boxc.indexing.solr.filter.SetAccessControlFilter">
         <property name="aclFactory" ref="inheritedAclFactory" />
     </bean>
     
     <bean id="setAccessStatusFilter"
-        class="edu.unc.lib.dl.data.ingest.solr.filter.SetAccessStatusFilter">
+        class="edu.unc.lib.boxc.indexing.solr.filter.SetAccessStatusFilter">
         <property name="inheritedAclFactory" ref="inheritedAclFactory" />
         <property name="objectAclFactory" ref="objectAclFactory" />
     </bean>
     
-    <bean id="setCollectionSupplementalInformationFilter" class="edu.unc.lib.dl.data.ingest.solr.filter.SetCollectionSupplementalInformationFilter">
+    <bean id="setCollectionSupplementalInformationFilter" class="edu.unc.lib.boxc.indexing.solr.filter.SetCollectionSupplementalInformationFilter">
         <property name="collectionFilters" value="${services.indexing.collectionFilters}" />
         <property name="pathFactory" ref="contentPathFactory" />
     </bean>
     
-    <bean id="setContentStatusFilter" class="edu.unc.lib.dl.data.ingest.solr.filter.SetContentStatusFilter">
+    <bean id="setContentStatusFilter" class="edu.unc.lib.boxc.indexing.solr.filter.SetContentStatusFilter">
     </bean>
     
-    <bean id="setContentTypeFilter" class="edu.unc.lib.dl.data.ingest.solr.filter.SetContentTypeFilter">
+    <bean id="setContentTypeFilter" class="edu.unc.lib.boxc.indexing.solr.filter.SetContentTypeFilter">
     </bean>
     
     <bean id="setDatastreamFilter"
-        class="edu.unc.lib.dl.data.ingest.solr.filter.SetDatastreamFilter">
+        class="edu.unc.lib.boxc.indexing.solr.filter.SetDatastreamFilter">
         <property name="derivativeService" ref="derivativeService" />
     </bean>
     
     <bean id="setDescriptiveMetadataFilter"
-        class="edu.unc.lib.dl.data.ingest.solr.filter.SetDescriptiveMetadataFilter">
+        class="edu.unc.lib.boxc.indexing.solr.filter.SetDescriptiveMetadataFilter">
     </bean>
     
-    <bean id="setFullTextFilter" class="edu.unc.lib.dl.data.ingest.solr.filter.SetFullTextFilter">
+    <bean id="setFullTextFilter" class="edu.unc.lib.boxc.indexing.solr.filter.SetFullTextFilter">
         <property name="derivativeService" ref="derivativeService" />
     </bean>
     
-    <bean id="setObjectTypeFilter" class="edu.unc.lib.dl.data.ingest.solr.filter.SetObjectTypeFilter">
+    <bean id="setObjectTypeFilter" class="edu.unc.lib.boxc.indexing.solr.filter.SetObjectTypeFilter">
     </bean>
     
-    <bean id="setPathFilter" class="edu.unc.lib.dl.data.ingest.solr.filter.SetPathFilter">
+    <bean id="setPathFilter" class="edu.unc.lib.boxc.indexing.solr.filter.SetPathFilter">
        <property name="pathFactory" ref="contentPathFactory" />
     </bean>
     
     <bean id="setRecordDatesFilter"
-        class="edu.unc.lib.dl.data.ingest.solr.filter.SetRecordDatesFilter">
+        class="edu.unc.lib.boxc.indexing.solr.filter.SetRecordDatesFilter">
     </bean>
     
     <bean id="setRelationsFilter"
-        class="edu.unc.lib.dl.data.ingest.solr.filter.SetRelationsFilter">
+        class="edu.unc.lib.boxc.indexing.solr.filter.SetRelationsFilter">
     </bean>
 
     <!-- Ingest Actions -->
     <bean id="updateObjectAction"
-        class="edu.unc.lib.dl.data.ingest.solr.action.UpdateObjectAction">
+        class="edu.unc.lib.boxc.indexing.solr.action.UpdateObjectAction">
         <property name="pipeline" ref="solrFullUpdatePipeline" />
         <property name="addDocumentMode" value="true" />
     </bean>
     
     <bean id="updateDescriptionAction"
-        class="edu.unc.lib.dl.data.ingest.solr.action.UpdateObjectAction">
+        class="edu.unc.lib.boxc.indexing.solr.action.UpdateObjectAction">
         <property name="pipeline" ref="solrDescriptionUpdatePipeline" />
         <property name="addDocumentMode" value="false" />
     </bean>
     
     <bean id="updateDatastreamsAction"
-        class="edu.unc.lib.dl.data.ingest.solr.action.UpdateObjectAction">
+        class="edu.unc.lib.boxc.indexing.solr.action.UpdateObjectAction">
         <property name="pipeline" ref="solrDatastreamUpdatePipeline" />
         <property name="addDocumentMode" value="false" />
     </bean>
     
     <bean id="updateFullTextAction"
-        class="edu.unc.lib.dl.data.ingest.solr.action.UpdateObjectAction">
+        class="edu.unc.lib.boxc.indexing.solr.action.UpdateObjectAction">
         <property name="pipeline" ref="solrFullTextUpdatePipeline" />
         <property name="addDocumentMode" value="false" />
     </bean>
     
-    <bean id="recursiveTreeIndexer" class="edu.unc.lib.dl.data.ingest.solr.action.RecursiveTreeIndexer">
+    <bean id="recursiveTreeIndexer" class="edu.unc.lib.boxc.indexing.solr.action.RecursiveTreeIndexer">
         <property name="indexingMessageSender" ref="indexingMessageSender" />
         <property name="sparqlQueryService" ref="sparqlQueryService" />
     </bean>
     
     <bean id="updateTreeAction"
-        class="edu.unc.lib.dl.data.ingest.solr.action.UpdateTreeAction">
+        class="edu.unc.lib.boxc.indexing.solr.action.UpdateTreeAction">
         <property name="actionType" value="ADD" />
         <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
         <property name="treeIndexer" ref="recursiveTreeIndexer" />
     </bean>
     
     <bean id="indexTreeInplaceAction"
-        class="edu.unc.lib.dl.data.ingest.solr.action.IndexTreeInplaceAction">
+        class="edu.unc.lib.boxc.indexing.solr.action.IndexTreeInplaceAction">
         <property name="actionType" value="ADD" />
         <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
         <property name="treeIndexer" ref="recursiveTreeIndexer" />
@@ -272,78 +268,78 @@
     </bean>
     
     <bean id="indexTreeCleanAction"
-        class="edu.unc.lib.dl.data.ingest.solr.action.IndexTreeCleanAction">
+        class="edu.unc.lib.boxc.indexing.solr.action.IndexTreeCleanAction">
         <property name="actionType" value="ADD" />
         <property name="deleteAction" ref="deleteSolrTreeAction" />
         <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
     </bean>
 
-    <bean id="clearIndexAction" class="edu.unc.lib.dl.data.ingest.solr.action.ClearIndexAction">
+    <bean id="clearIndexAction" class="edu.unc.lib.boxc.indexing.solr.action.ClearIndexAction">
     </bean>
 
     <bean id="deleteObjectAction"
-        class="edu.unc.lib.dl.data.ingest.solr.action.DeleteObjectAction">
+        class="edu.unc.lib.boxc.indexing.solr.action.DeleteObjectAction">
     </bean>
 
     <bean id="deleteSolrTreeAction"
-        class="edu.unc.lib.dl.data.ingest.solr.action.DeleteSolrTreeAction">
+        class="edu.unc.lib.boxc.indexing.solr.action.DeleteSolrTreeAction">
         <property name="solrSearchService" ref="queryLayer" />
         <property name="searchSettings" ref="searchSettings" />
         <property name="solrSettings" ref="solrSettings" />
         <property name="accessGroups" ref="accessGroups" />
     </bean>
 
-    <bean id="commitAction" class="edu.unc.lib.dl.data.ingest.solr.action.CommitAction">
+    <bean id="commitAction" class="edu.unc.lib.boxc.indexing.solr.action.CommitAction">
     </bean>
     
     <bean id="updateAccessControlAction"
-        class="edu.unc.lib.dl.data.ingest.solr.action.UpdateObjectAction">
+        class="edu.unc.lib.boxc.indexing.solr.action.UpdateObjectAction">
         <property name="pipeline" ref="solrAccessControlUpdatePipeline" />
         <property name="addDocumentMode" value="false" />
     </bean>
     
     <bean id="updateAccessTreeAction"
-        class="edu.unc.lib.dl.data.ingest.solr.action.UpdateTreeAction">
+        class="edu.unc.lib.boxc.indexing.solr.action.UpdateTreeAction">
         <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
         <property name="actionType" value="UPDATE_ACCESS" />
         <property name="treeIndexer" ref="recursiveTreeIndexer" />
     </bean>
     
     <bean id="addSetToParentAction"
-        class="edu.unc.lib.dl.data.ingest.solr.action.UpdateTreeSetAction">
+        class="edu.unc.lib.boxc.indexing.solr.action.UpdateTreeSetAction">
         <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
         <property name="actionType" value="ADD" />
         <property name="treeIndexer" ref="recursiveTreeIndexer" />
     </bean>
     
     <bean id="updatePathAction"
-        class="edu.unc.lib.dl.data.ingest.solr.action.UpdateObjectAction">
+        class="edu.unc.lib.boxc.indexing.solr.action.UpdateObjectAction">
         <property name="pipeline" ref="solrMoveUpdatePipeline" />
         <property name="addDocumentMode" value="false" />
     </bean>
     
     <bean id="moveObjectsAction"
-        class="edu.unc.lib.dl.data.ingest.solr.action.UpdateTreeSetAction">
+        class="edu.unc.lib.boxc.indexing.solr.action.UpdateTreeSetAction">
         <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
         <property name="actionType" value="UPDATE_PATH" />
         <property name="treeIndexer" ref="recursiveTreeIndexer" />
     </bean>
     
     <bean id="updateTypeAction"
-        class="edu.unc.lib.dl.data.ingest.solr.action.UpdateObjectAction">
+        class="edu.unc.lib.boxc.indexing.solr.action.UpdateObjectAction">
         <property name="pipeline" ref="solrUpdateTypePipeline" />
         <property name="addDocumentMode" value="false" />
     </bean>
     
     <bean id="updateTypeTreeAction"
-        class="edu.unc.lib.dl.data.ingest.solr.action.UpdateTreeSetAction">
+        class="edu.unc.lib.boxc.indexing.solr.action.UpdateTreeSetAction">
         <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
         <property name="actionType" value="UPDATE_TYPE_TREE" />
         <property name="treeIndexer" ref="recursiveTreeIndexer" />
     </bean>
 
     <bean id="updatePrimaryObjectAction"
-        class="edu.unc.lib.dl.data.ingest.solr.action.UpdateTreeSetAction">
+        class="edu.unc.lib.boxc.indexing.solr.action.UpdateTreeSetAction">
         <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
         <property name="actionType" value="ADD" />
         <property name="treeIndexer" ref="recursiveTreeIndexer" />
@@ -351,7 +347,7 @@
     
     <util:map id="solrIndexingActionMap"
         key-type="edu.unc.lib.boxc.operations.jms.indexing.IndexingActionType"
-        value-type="edu.unc.lib.dl.data.ingest.solr.action.IndexingAction">
+        value-type="edu.unc.lib.boxc.indexing.solr.action.IndexingAction">
         <entry key="ADD" value-ref="updateObjectAction" />
         <entry key="UPDATE_DESCRIPTION" value-ref="updateDescriptionAction" />
         <entry key="UPDATE_DATASTREAMS" value-ref="updateDatastreamsAction" />
@@ -374,12 +370,12 @@
     </util:map>
     
     <bean id="dipDataLoader"
-        class="edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackageDataLoader">
+        class="edu.unc.lib.boxc.indexing.solr.indexing.DocumentIndexingPackageDataLoader">
         <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
     </bean>
     
     <bean id="dipFactory"
-        class="edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackageFactory">
+        class="edu.unc.lib.boxc.indexing.solr.indexing.DocumentIndexingPackageFactory">
         <property name="dataLoader" ref="dipDataLoader" />
     </bean>
     

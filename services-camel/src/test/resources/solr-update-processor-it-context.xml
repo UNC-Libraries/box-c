@@ -21,20 +21,20 @@
         <property name="location" value="classpath:cdr-event-routing-it-config.properties"/>
     </bean>
     
-    <bean id="recursiveTreeIndexer" class="edu.unc.lib.dl.data.ingest.solr.action.RecursiveTreeIndexer">
+    <bean id="recursiveTreeIndexer" class="edu.unc.lib.boxc.indexing.solr.action.RecursiveTreeIndexer">
         <property name="indexingMessageSender" ref="indexingMessageSender" />
         <property name="sparqlQueryService" ref="sparqlQueryService" />
     </bean>
     
     <bean id="updateTreeAction"
-        class="edu.unc.lib.dl.data.ingest.solr.action.UpdateTreeAction">
+        class="edu.unc.lib.boxc.indexing.solr.action.UpdateTreeAction">
         <property name="actionType" value="ADD" />
         <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
         <property name="treeIndexer" ref="recursiveTreeIndexer" />
     </bean>
     
     <bean id="indexTreeInplaceAction"
-        class="edu.unc.lib.dl.data.ingest.solr.action.IndexTreeInplaceAction">
+        class="edu.unc.lib.boxc.indexing.solr.action.IndexTreeInplaceAction">
         <property name="actionType" value="ADD" />
         <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
         <property name="treeIndexer" ref="recursiveTreeIndexer" />
@@ -42,81 +42,81 @@
     </bean>
     
     <bean id="indexTreeCleanAction"
-        class="edu.unc.lib.dl.data.ingest.solr.action.IndexTreeCleanAction">
+        class="edu.unc.lib.boxc.indexing.solr.action.IndexTreeCleanAction">
         <property name="actionType" value="ADD" />
         <property name="deleteAction" ref="deleteSolrTreeAction" />
         <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
     </bean>
 
-    <bean id="clearIndexAction" class="edu.unc.lib.dl.data.ingest.solr.action.ClearIndexAction">
+    <bean id="clearIndexAction" class="edu.unc.lib.boxc.indexing.solr.action.ClearIndexAction">
     </bean>
 
     <bean id="deleteObjectAction"
-        class="edu.unc.lib.dl.data.ingest.solr.action.DeleteObjectAction">
+        class="edu.unc.lib.boxc.indexing.solr.action.DeleteObjectAction">
     </bean>
 
     <bean id="deleteSolrTreeAction"
-        class="edu.unc.lib.dl.data.ingest.solr.action.DeleteSolrTreeAction">
+        class="edu.unc.lib.boxc.indexing.solr.action.DeleteSolrTreeAction">
         <property name="solrSearchService" ref="queryLayer" />
         <property name="searchSettings" ref="searchSettings" />
         <property name="solrSettings" ref="solrSettings" />
         <property name="accessGroups" ref="accessGroups" />
     </bean>
 
-    <bean id="commitAction" class="edu.unc.lib.dl.data.ingest.solr.action.CommitAction">
+    <bean id="commitAction" class="edu.unc.lib.boxc.indexing.solr.action.CommitAction">
     </bean>
 
     <bean id="getUrisProcessor" class="edu.unc.lib.dl.services.camel.longleaf.GetUrisProcessor">
     </bean>
     
     <bean id="updateAccessControlAction"
-        class="edu.unc.lib.dl.data.ingest.solr.action.UpdateObjectAction">
+        class="edu.unc.lib.boxc.indexing.solr.action.UpdateObjectAction">
         <property name="pipeline" ref="solrAccessControlUpdatePipeline" />
         <property name="addDocumentMode" value="false" />
     </bean>
     
     <bean id="updateAccessTreeAction"
-        class="edu.unc.lib.dl.data.ingest.solr.action.UpdateTreeAction">
+        class="edu.unc.lib.boxc.indexing.solr.action.UpdateTreeAction">
         <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
         <property name="actionType" value="UPDATE_ACCESS" />
         <property name="treeIndexer" ref="recursiveTreeIndexer" />
     </bean>
     
     <bean id="addSetToParentAction"
-        class="edu.unc.lib.dl.data.ingest.solr.action.UpdateTreeSetAction">
+        class="edu.unc.lib.boxc.indexing.solr.action.UpdateTreeSetAction">
         <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
         <property name="actionType" value="ADD" />
         <property name="treeIndexer" ref="recursiveTreeIndexer" />
     </bean>
     
     <bean id="updatePathAction"
-        class="edu.unc.lib.dl.data.ingest.solr.action.UpdateObjectAction">
+        class="edu.unc.lib.boxc.indexing.solr.action.UpdateObjectAction">
         <property name="pipeline" ref="solrMoveUpdatePipeline" />
         <property name="addDocumentMode" value="false" />
     </bean>
     
     <bean id="moveObjectsAction"
-        class="edu.unc.lib.dl.data.ingest.solr.action.UpdateTreeSetAction">
+        class="edu.unc.lib.boxc.indexing.solr.action.UpdateTreeSetAction">
         <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
         <property name="actionType" value="UPDATE_PATH" />
         <property name="treeIndexer" ref="recursiveTreeIndexer" />
     </bean>
     
     <bean id="updateTypeAction"
-        class="edu.unc.lib.dl.data.ingest.solr.action.UpdateObjectAction">
+        class="edu.unc.lib.boxc.indexing.solr.action.UpdateObjectAction">
         <property name="pipeline" ref="solrUpdateTypePipeline" />
         <property name="addDocumentMode" value="false" />
     </bean>
     
     <bean id="updateTypeTreeAction"
-        class="edu.unc.lib.dl.data.ingest.solr.action.UpdateTreeSetAction">
+        class="edu.unc.lib.boxc.indexing.solr.action.UpdateTreeSetAction">
         <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
         <property name="actionType" value="UPDATE_TYPE_TREE" />
         <property name="treeIndexer" ref="recursiveTreeIndexer" />
     </bean>
 
     <bean id="updatePrimaryObjectAction"
-        class="edu.unc.lib.dl.data.ingest.solr.action.UpdateTreeSetAction">
+        class="edu.unc.lib.boxc.indexing.solr.action.UpdateTreeSetAction">
         <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
         <property name="actionType" value="ADD" />
         <property name="treeIndexer" ref="recursiveTreeIndexer" />
@@ -124,7 +124,7 @@
     
     <util:map id="solrIndexingActionMap"
         key-type="edu.unc.lib.boxc.operations.jms.indexing.IndexingActionType"
-        value-type="edu.unc.lib.dl.data.ingest.solr.action.IndexingAction">
+        value-type="edu.unc.lib.boxc.indexing.solr.action.IndexingAction">
         <entry key="ADD" value-ref="updateObjectAction" />
         <entry key="UPDATE_DESCRIPTION" value-ref="updateDescriptionAction" />
         <entry key="UPDATE_DATASTREAMS" value-ref="updateDatastreamsAction" />

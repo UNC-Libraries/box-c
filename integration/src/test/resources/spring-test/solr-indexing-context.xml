@@ -14,7 +14,7 @@
         http://www.springframework.org/schema/mvc/spring-mvc-3.0.xsd">
 
     <bean id="solrFullUpdatePipeline"
-          class="edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPipeline">
+          class="edu.unc.lib.boxc.indexing.solr.indexing.DocumentIndexingPipeline">
         <property name="filters">
             <list>
                 <ref bean="setRecordDatesFilter" />
@@ -140,7 +140,7 @@
     </bean>
 
     <bean id="solrUpdateDriver"
-          class="edu.unc.lib.dl.data.ingest.solr.indexing.SolrUpdateDriver">
+          class="edu.unc.lib.boxc.indexing.solr.indexing.SolrUpdateDriver">
         <property name="solrSettings" ref="solrSettings" />
         <property name="autoPushCount" value="1000" />
         <property name="updateThreads" value="2" />
@@ -175,62 +175,62 @@
 
     <!-- Solr ingest filters -->
     <bean id="setAccessControlFilter"
-          class="edu.unc.lib.dl.data.ingest.solr.filter.SetAccessControlFilter">
+          class="edu.unc.lib.boxc.indexing.solr.filter.SetAccessControlFilter">
         <property name="aclFactory" ref="inheritedAclFactory" />
     </bean>
 
     <bean id="setAccessStatusFilter"
-          class="edu.unc.lib.dl.data.ingest.solr.filter.SetAccessStatusFilter">
+          class="edu.unc.lib.boxc.indexing.solr.filter.SetAccessStatusFilter">
         <property name="inheritedAclFactory" ref="inheritedAclFactory" />
         <property name="objectAclFactory" ref="objectAclFactory" />
     </bean>
 
-    <bean id="setCollectionSupplementalInformationFilter" class="edu.unc.lib.dl.data.ingest.solr.filter.SetCollectionSupplementalInformationFilter">
+    <bean id="setCollectionSupplementalInformationFilter" class="edu.unc.lib.boxc.indexing.solr.filter.SetCollectionSupplementalInformationFilter">
         <property name="collectionFilters" value="src/test/resources/application.properties" />
         <property name="pathFactory" ref="contentPathFactory" />
     </bean>
 
-    <bean id="setContentStatusFilter" class="edu.unc.lib.dl.data.ingest.solr.filter.SetContentStatusFilter">
+    <bean id="setContentStatusFilter" class="edu.unc.lib.boxc.indexing.solr.filter.SetContentStatusFilter">
     </bean>
 
-    <bean id="setContentTypeFilter" class="edu.unc.lib.dl.data.ingest.solr.filter.SetContentTypeFilter">
+    <bean id="setContentTypeFilter" class="edu.unc.lib.boxc.indexing.solr.filter.SetContentTypeFilter">
     </bean>
 
     <bean id="setDatastreamFilter"
-          class="edu.unc.lib.dl.data.ingest.solr.filter.SetDatastreamFilter">
+          class="edu.unc.lib.boxc.indexing.solr.filter.SetDatastreamFilter">
         <property name="derivativeService" ref="derivativeService" />
     </bean>
 
     <bean id="setDescriptiveMetadataFilter"
-          class="edu.unc.lib.dl.data.ingest.solr.filter.SetDescriptiveMetadataFilter">
+          class="edu.unc.lib.boxc.indexing.solr.filter.SetDescriptiveMetadataFilter">
     </bean>
 
-    <bean id="setFullTextFilter" class="edu.unc.lib.dl.data.ingest.solr.filter.SetFullTextFilter">
+    <bean id="setFullTextFilter" class="edu.unc.lib.boxc.indexing.solr.filter.SetFullTextFilter">
         <property name="derivativeService" ref="derivativeService" />
     </bean>
 
-    <bean id="setObjectTypeFilter" class="edu.unc.lib.dl.data.ingest.solr.filter.SetObjectTypeFilter">
+    <bean id="setObjectTypeFilter" class="edu.unc.lib.boxc.indexing.solr.filter.SetObjectTypeFilter">
     </bean>
 
-    <bean id="setPathFilter" class="edu.unc.lib.dl.data.ingest.solr.filter.SetPathFilter">
+    <bean id="setPathFilter" class="edu.unc.lib.boxc.indexing.solr.filter.SetPathFilter">
         <property name="pathFactory" ref="contentPathFactory" />
     </bean>
 
     <bean id="setRecordDatesFilter"
-          class="edu.unc.lib.dl.data.ingest.solr.filter.SetRecordDatesFilter">
+          class="edu.unc.lib.boxc.indexing.solr.filter.SetRecordDatesFilter">
     </bean>
 
     <bean id="setRelationsFilter"
-          class="edu.unc.lib.dl.data.ingest.solr.filter.SetRelationsFilter">
+          class="edu.unc.lib.boxc.indexing.solr.filter.SetRelationsFilter">
     </bean>
 
     <bean id="dipDataLoader"
-          class="edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackageDataLoader">
+          class="edu.unc.lib.boxc.indexing.solr.indexing.DocumentIndexingPackageDataLoader">
         <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
     </bean>
 
     <bean id="dipFactory"
-          class="edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackageFactory">
+          class="edu.unc.lib.boxc.indexing.solr.indexing.DocumentIndexingPackageFactory">
         <property name="dataLoader" ref="dipDataLoader" />
     </bean>
     
@@ -238,6 +238,6 @@
         <property name="derivativeDir" value="target/" />
     </bean>
 
-    <bean id="repositoryObjectSolrIndexer" class="edu.unc.lib.dl.data.ingest.solr.test.RepositoryObjectSolrIndexer">
+    <bean id="repositoryObjectSolrIndexer" class="edu.unc.lib.boxc.indexing.solr.test.RepositoryObjectSolrIndexer">
     </bean>
 </beans>

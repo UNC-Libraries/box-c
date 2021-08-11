@@ -62,6 +62,9 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.ContextHierarchy;
 
 import edu.unc.lib.boxc.auth.api.models.AgentPrincipals;
+import edu.unc.lib.boxc.indexing.solr.action.IndexingAction;
+import edu.unc.lib.boxc.indexing.solr.filter.SetCollectionSupplementalInformationFilter;
+import edu.unc.lib.boxc.indexing.solr.filter.collection.RLASupplementalFilter;
 import edu.unc.lib.boxc.model.api.ResourceType;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.objects.AdminUnit;
@@ -74,9 +77,6 @@ import edu.unc.lib.boxc.operations.jms.indexing.IndexingActionType;
 import edu.unc.lib.boxc.search.api.FacetConstants;
 import edu.unc.lib.boxc.search.api.models.ContentObjectRecord;
 import edu.unc.lib.boxc.search.solr.models.ContentObjectSolrRecord;
-import edu.unc.lib.dl.data.ingest.solr.action.IndexingAction;
-import edu.unc.lib.dl.data.ingest.solr.filter.SetCollectionSupplementalInformationFilter;
-import edu.unc.lib.dl.data.ingest.solr.filter.collection.RLASupplementalFilter;
 import edu.unc.lib.dl.services.camel.solr.AbstractSolrProcessorIT;
 
 /**

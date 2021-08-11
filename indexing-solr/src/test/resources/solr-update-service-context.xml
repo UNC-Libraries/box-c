@@ -22,7 +22,7 @@
     </util:set>
 
     <bean id="solrUpdateDriver" class="org.mockito.Mockito" factory-method="mock">
-        <constructor-arg value="edu.unc.lib.dl.data.ingest.solr.indexing.SolrUpdateDriver"/>
+        <constructor-arg value="edu.unc.lib.boxc.indexing.solr.indexing.SolrUpdateDriver"/>
     </bean>
     
     <bean id="managementClient" class="org.mockito.Mockito" factory-method="mock">
@@ -34,19 +34,19 @@
     </bean>
 
     <bean id="documentIndexingPackageFactory"
-        class="edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackageFactory">
+        class="edu.unc.lib.boxc.indexing.solr.indexing.DocumentIndexingPackageFactory">
         <property name="managementClient" ref="managementClient" />
         <property name="accessClient" ref="accessClient" />
     </bean>
 
     <!-- Ingest pipeline -->
     <bean id="solrFullUpdatePipeline" class="org.mockito.Mockito" factory-method="mock">
-        <constructor-arg value="edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPipeline"/>
+        <constructor-arg value="edu.unc.lib.boxc.indexing.solr.indexing.DocumentIndexingPipeline"/>
     </bean>
 
     <!-- Ingest Actions -->
     <bean id="updateObjectAction"
-        class="edu.unc.lib.dl.data.ingest.solr.action.UpdateObjectAction">
+        class="edu.unc.lib.boxc.indexing.solr.action.UpdateObjectAction">
         <property name="pipeline" ref="solrFullUpdatePipeline" />
         <property name="dipFactory" ref="documentIndexingPackageFactory" />
         <property name="solrUpdateDriver" ref="solrUpdateDriver" />
@@ -54,7 +54,7 @@
 
     <util:map id="solrIndexingActionMap"
         key-type="edu.unc.lib.boxc.operations.jms.indexing.IndexingActionType"
-        value-type="edu.unc.lib.dl.data.ingest.solr.action.IndexingAction">
+        value-type="edu.unc.lib.boxc.indexing.solr.action.IndexingAction">
         <entry key="ADD" value-ref="updateObjectAction" />
     </util:map>
 
