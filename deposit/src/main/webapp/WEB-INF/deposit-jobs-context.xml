@@ -265,7 +265,8 @@
         scope="prototype">
         <property name="baseFitsUri" value="${fits.baseUri}" />
         <property name="httpClient" ref="fitsPooledHttpClient" />
-        <property name="processFilesLocally" value="${fits.processFilesLocally:true}" />
+        <property name="maxFileSizeForWebService" value="${fits.maxFileSizeForWebService:128000000}" />
+        <property name="fitsHomePath" value="${fits.homePath}" />
         <property name="executorService" ref="extractTechnicalMetadataExecutor" />
         <property name="flushRate" value="${job.extractTechnicalMetadata.flushRate:2000}" />
         <property name="maxQueuedJobs" value="${job.extractTechnicalMetadata.maxQueuedJobs:6}" />
