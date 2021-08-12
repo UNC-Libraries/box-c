@@ -16,7 +16,13 @@
 package edu.unc.lib.boxc.search.api.facets;
 
 /**
- * A hierarchical facet which supports cut off operations
+ * A hierarchical facet which supports cut off operations. Cut off operations allow for filtering of
+ * result sets to ranges of depth within the facet.
+ *
+ * For example, if there existed records distributed between 6 tiers of a hierarchical cut off
+ * facet, a search result could be limited to records which have tiers 3 through 5 of the facet
+ * by filtering with the value of the 3rd tier, and a cutoff value of 5.
+ *
  * @author bbpennel
  */
 public interface CutoffFacet extends HierarchicalFacet {
@@ -32,7 +38,7 @@ public interface CutoffFacet extends HierarchicalFacet {
     int getHighestTier();
 
     /**
-     * @return lower cutoff tier, objects at tiers below this value should not be returned by this facet.
+     * @return upper cutoff tier, objects above this tier should not be returned in search results.
      */
     Integer getCutoff();
 

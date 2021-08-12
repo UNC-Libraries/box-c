@@ -28,9 +28,25 @@ import edu.unc.lib.boxc.search.api.facets.CutoffFacetNode;
 import edu.unc.lib.boxc.search.api.facets.HierarchicalFacetNode;
 
 /**
+ * Implementation of a hierarchical facet which supports cut off operations. Cut off operations
+ * allow for filtering of result sets to ranges of depth within the facet. An example cut off
+ * facet would be the Ancestor Path field.
+ *
+ * A cutoff facet value follows the format:
+ *     <tier>,<value>
+ * For example, to filter to all objects which are descendants of object "5bfe6a08-67d9-4d90-9e50-eeaf86aad37e":
+ *     2,5bfe6a08-67d9-4d90-9e50-eeaf86aad37e
+ * Where the parent object is at the second tier of the hierarchy.
+ *
+ * In order to instead limit to a single tier of children, the following value may be used:
+ *     2,5bfe6a08-67d9-4d90-9e50-eeaf86aad37e!3
+ * Where the !3 component will cause the cut off value of the facet to be set to 3 in queries.
+ *
+ * In order to limit to immediate children of any container at a particular tier, use the following:
+ *     1,*!2
+ * Which should return records that have any tier 2 value.
  *
  * @author bbpennel
- *
  */
 public class CutoffFacetImpl extends AbstractHierarchicalFacet implements CutoffFacet {
     private static final Logger LOG = LoggerFactory.getLogger(CutoffFacetImpl.class);
@@ -191,6 +207,7 @@ public class CutoffFacetImpl extends AbstractHierarchicalFacet implements Cutoff
         return cutoff;
     }
 
+    @Override
     public void setCutoff(Integer cutoff) {
         this.cutoff = cutoff;
     }
