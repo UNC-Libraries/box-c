@@ -32,11 +32,12 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
 import edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore;
+import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPaths;
 import edu.unc.lib.boxc.operations.api.vocab.VocabularyHelper;
 import edu.unc.lib.boxc.operations.impl.vocab.VocabularyHelperManager;
-import edu.unc.lib.dl.search.solr.model.BriefObjectMetadata;
-import edu.unc.lib.dl.search.solr.model.SearchRequest;
+import edu.unc.lib.boxc.search.api.models.ContentObjectRecord;
+import edu.unc.lib.boxc.search.api.requests.SearchRequest;
 import edu.unc.lib.dl.ui.util.SerializationUtil;
 
 /**
@@ -58,7 +59,7 @@ public class VocabularyController extends AbstractSearchController {
     public @ResponseBody
     Map<String, Object> getInvalidVocab(HttpServletRequest request, HttpServletResponse response) {
         SearchRequest searchRequest = generateSearchRequest(request);
-        searchRequest.setRootPid(RepositoryPaths.getContentRootPid().toString());
+        searchRequest.setRootPid(RepositoryPaths.getContentRootPid());
 
         return getInvalidVocab(searchRequest);
     }
@@ -70,7 +71,7 @@ public class VocabularyController extends AbstractSearchController {
         response.setContentType("application/json");
 
         SearchRequest searchRequest = generateSearchRequest(request);
-        searchRequest.setRootPid(pid);
+        searchRequest.setRootPid(PIDs.get(pid));
 
         return getInvalidVocab(searchRequest);
     }
@@ -78,7 +79,7 @@ public class VocabularyController extends AbstractSearchController {
     public Map<String, Object> getInvalidVocab(SearchRequest searchRequest) {
         AccessGroupSet groups = GroupsThreadStore.getPrincipals();
 
-        BriefObjectMetadata selectedContainer = queryLayer.addSelectedContainer(searchRequest.getRootPid(),
+        ContentObjectRecord selectedContainer = queryLayer.addSelectedContainer(searchRequest.getRootPid(),
                 searchRequest.getSearchState(), false, groups);
 
         Map<String, Object> results = new LinkedHashMap<>();

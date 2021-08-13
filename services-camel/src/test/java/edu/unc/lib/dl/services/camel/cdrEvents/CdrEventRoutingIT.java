@@ -48,14 +48,14 @@ import org.springframework.test.context.BootstrapWith;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.ContextHierarchy;
 
+import edu.unc.lib.boxc.indexing.solr.ChildSetRequest;
+import edu.unc.lib.boxc.indexing.solr.SolrUpdateRequest;
+import edu.unc.lib.boxc.indexing.solr.action.IndexingAction;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.boxc.model.fcrepo.test.TestHelper;
 import edu.unc.lib.boxc.operations.jms.OperationsMessageSender;
 import edu.unc.lib.boxc.operations.jms.indexing.IndexingActionType;
-import edu.unc.lib.dl.data.ingest.solr.ChildSetRequest;
-import edu.unc.lib.dl.data.ingest.solr.SolrUpdateRequest;
-import edu.unc.lib.dl.data.ingest.solr.action.IndexingAction;
 import edu.unc.lib.dl.services.camel.solrUpdate.SolrUpdateProcessor;
 
 /**

@@ -24,15 +24,16 @@ import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
 import edu.unc.lib.boxc.auth.api.services.AccessControlService;
 import edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
+import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.boxc.operations.impl.utils.EmailHandler;
+import edu.unc.lib.boxc.search.api.SearchFieldKey;
+import edu.unc.lib.boxc.search.api.models.ContentObjectRecord;
+import edu.unc.lib.boxc.search.api.requests.SearchRequest;
+import edu.unc.lib.boxc.search.api.requests.SearchState;
+import edu.unc.lib.boxc.search.solr.responses.SearchResultResponse;
+import edu.unc.lib.boxc.search.solr.services.SearchStateFactory;
 import edu.unc.lib.dl.cdr.services.rest.modify.ExportXMLController.XMLExportRequest;
 import edu.unc.lib.dl.fedora.ServiceException;
-import edu.unc.lib.dl.search.solr.model.BriefObjectMetadata;
-import edu.unc.lib.dl.search.solr.model.SearchRequest;
-import edu.unc.lib.dl.search.solr.model.SearchResultResponse;
-import edu.unc.lib.dl.search.solr.model.SearchState;
-import edu.unc.lib.dl.search.solr.service.SearchStateFactory;
-import edu.unc.lib.dl.search.solr.util.SearchFieldKeys;
 import edu.unc.lib.dl.ui.service.SolrQueryLayerService;
 
 /**
@@ -49,7 +50,7 @@ public class XMLExportService {
     private RepositoryObjectLoader repoObjLoader;
     private boolean asynchronous;
 
-    private final List<String> resultFields = Arrays.asList(SearchFieldKeys.ID.name());
+    private final List<String> resultFields = Arrays.asList(SearchFieldKey.ID.name());
 
     /**
      * Determines whether metadata for child objects should be exported, and then kicks off the job
@@ -95,7 +96,7 @@ public class XMLExportService {
 
             SearchRequest searchRequest = new SearchRequest(searchState,
                     GroupsThreadStore.getPrincipals());
-            searchRequest.setRootPid(pid);
+            searchRequest.setRootPid(PIDs.get(pid));
             searchRequest.setApplyCutoffs(false);
             SearchResultResponse resultResponse = queryLayer.performSearch(searchRequest);
 
@@ -106,8 +107,8 @@ public class XMLExportService {
             // Add back in the parent pid
             pids.add(pid);
 
-            List<BriefObjectMetadata> objects = resultResponse.getResultList();
-            for (BriefObjectMetadata object : objects) {
+            List<ContentObjectRecord> objects = resultResponse.getResultList();
+            for (ContentObjectRecord object : objects) {
                 pids.add(object.getPid().toString());
             }
         }

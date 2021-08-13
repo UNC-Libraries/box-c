@@ -36,11 +36,11 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.MvcResult;
 
 import edu.unc.lib.boxc.model.api.ids.PID;
+import edu.unc.lib.boxc.search.api.models.ContentObjectRecord;
+import edu.unc.lib.boxc.search.api.requests.IdListRequest;
+import edu.unc.lib.boxc.search.api.requests.SimpleIdRequest;
+import edu.unc.lib.boxc.search.solr.models.ContentObjectSolrRecord;
 import edu.unc.lib.dl.cdr.services.rest.modify.AbstractAPIIT;
-import edu.unc.lib.dl.search.solr.model.BriefObjectMetadata;
-import edu.unc.lib.dl.search.solr.model.BriefObjectMetadataBean;
-import edu.unc.lib.dl.search.solr.model.IdListRequest;
-import edu.unc.lib.dl.search.solr.model.SimpleIdRequest;
 import edu.unc.lib.dl.ui.service.SolrQueryLayerService;
 
 @ContextConfiguration("/item-info-it-servlet.xml")
@@ -58,7 +58,7 @@ public class ItemInfoRestControllerIT extends AbstractAPIIT {
     @Test
     public void testGetVersion() throws Exception {
         PID objPid = makePid();
-        BriefObjectMetadataBean md = mock(BriefObjectMetadataBean.class);
+        ContentObjectSolrRecord md = mock(ContentObjectSolrRecord.class);
 
         String versionValue = "5693296345";
 
@@ -90,14 +90,14 @@ public class ItemInfoRestControllerIT extends AbstractAPIIT {
         PID objPid2 = makePid();
         String versionValue1 = "5693296345";
         String versionValue2 = "3463562949";
-        BriefObjectMetadata md1 = mock(BriefObjectMetadataBean.class);
+        ContentObjectRecord md1 = mock(ContentObjectSolrRecord.class);
         when(md1.getId()).thenReturn(objPid1.getId());
         when(md1.get_version_()).thenReturn(Long.parseLong(versionValue1));
-        BriefObjectMetadata md2 = mock(BriefObjectMetadataBean.class);
+        ContentObjectRecord md2 = mock(ContentObjectSolrRecord.class);
         when(md2.getId()).thenReturn(objPid2.getId());
         when(md2.get_version_()).thenReturn(Long.parseLong(versionValue2));
 
-        List<BriefObjectMetadata> results = Arrays.asList(md1, md2);
+        List<ContentObjectRecord> results = Arrays.asList(md1, md2);
         when(solrSearchService.getObjectsById(any(IdListRequest.class))).thenReturn(results);
 
         String idsValue = objPid1.getId() + "\n" + objPid2.getId();

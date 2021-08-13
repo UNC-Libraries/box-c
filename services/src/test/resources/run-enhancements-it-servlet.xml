@@ -37,15 +37,15 @@
     </bean>
 
     <bean id="searchSettings" class="org.mockito.Mockito" factory-method="mock">
-        <constructor-arg value="edu.unc.lib.dl.search.solr.util.SearchSettings" />
+        <constructor-arg value="edu.unc.lib.boxc.search.solr.config.SearchSettings" />
     </bean>
 
     <bean id="solrSettings" class="org.mockito.Mockito" factory-method="mock">
-        <constructor-arg value="edu.unc.lib.dl.search.solr.util.SolrSettings" />
+        <constructor-arg value="edu.unc.lib.boxc.search.solr.config.SolrSettings" />
     </bean>
 
     <bean id="facetFieldFactory" class="org.mockito.Mockito" factory-method="mock">
-        <constructor-arg value="edu.unc.lib.dl.search.solr.model.FacetFieldFactory" />
+        <constructor-arg value="edu.unc.lib.boxc.search.solr.services.FacetFieldFactory" />
     </bean>
     
     <bean id="messageSender" class="org.mockito.Mockito" factory-method="mock">

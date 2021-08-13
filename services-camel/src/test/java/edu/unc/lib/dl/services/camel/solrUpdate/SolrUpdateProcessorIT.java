@@ -62,6 +62,9 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.ContextHierarchy;
 
 import edu.unc.lib.boxc.auth.api.models.AgentPrincipals;
+import edu.unc.lib.boxc.indexing.solr.action.IndexingAction;
+import edu.unc.lib.boxc.indexing.solr.filter.SetCollectionSupplementalInformationFilter;
+import edu.unc.lib.boxc.indexing.solr.filter.collection.RLASupplementalFilter;
 import edu.unc.lib.boxc.model.api.ResourceType;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.objects.AdminUnit;
@@ -71,12 +74,9 @@ import edu.unc.lib.boxc.model.fcrepo.test.TestHelper;
 import edu.unc.lib.boxc.operations.impl.edit.UpdateDescriptionService;
 import edu.unc.lib.boxc.operations.impl.edit.UpdateDescriptionService.UpdateDescriptionRequest;
 import edu.unc.lib.boxc.operations.jms.indexing.IndexingActionType;
-import edu.unc.lib.dl.data.ingest.solr.action.IndexingAction;
-import edu.unc.lib.dl.data.ingest.solr.filter.SetCollectionSupplementalInformationFilter;
-import edu.unc.lib.dl.data.ingest.solr.filter.collection.RLASupplementalFilter;
-import edu.unc.lib.dl.search.solr.model.BriefObjectMetadata;
-import edu.unc.lib.dl.search.solr.model.BriefObjectMetadataBean;
-import edu.unc.lib.dl.search.solr.util.FacetConstants;
+import edu.unc.lib.boxc.search.api.FacetConstants;
+import edu.unc.lib.boxc.search.api.models.ContentObjectRecord;
+import edu.unc.lib.boxc.search.solr.models.ContentObjectSolrRecord;
 import edu.unc.lib.dl.services.camel.solr.AbstractSolrProcessorIT;
 
 /**
@@ -143,7 +143,7 @@ public class SolrUpdateProcessorIT extends AbstractSolrProcessorIT {
 
         server.commit();
 
-        BriefObjectMetadata unitMd = getSolrMetadata(unitObj);
+        ContentObjectRecord unitMd = getSolrMetadata(unitObj);
 
         assertEquals("Title should not have updated", "dummy title", unitMd.getTitle());
 
@@ -152,7 +152,7 @@ public class SolrUpdateProcessorIT extends AbstractSolrProcessorIT {
 
         assertNotNull(unitMd.getDateAdded());
 
-        BriefObjectMetadata collMd = getSolrMetadata(collObj);
+        ContentObjectRecord collMd = getSolrMetadata(collObj);
 
         assertEquals("Title should not have updated", "dummy title", collMd.getTitle());
 
@@ -177,7 +177,7 @@ public class SolrUpdateProcessorIT extends AbstractSolrProcessorIT {
         processor.process(exchange);
         server.commit();
 
-        BriefObjectMetadata collMd = getSolrMetadata(collObj);
+        ContentObjectRecord collMd = getSolrMetadata(collObj);
 
         assertEquals("Object title", collMd.getTitle());
         assertEquals("Boxy", collMd.getCreator().get(0));
@@ -213,13 +213,13 @@ public class SolrUpdateProcessorIT extends AbstractSolrProcessorIT {
 
         server.commit();
 
-        BriefObjectMetadata unitMd = getSolrMetadata(unitObj);
+        ContentObjectRecord unitMd = getSolrMetadata(unitObj);
         assertNull("Unit record should not have been updated", unitMd.getDateUpdated());
 
-        BriefObjectMetadata coll1Md = getSolrMetadata(collObj);
+        ContentObjectRecord coll1Md = getSolrMetadata(collObj);
         assertNull("First collection should not have been updated", coll1Md.getDateUpdated());
 
-        BriefObjectMetadata coll2Md = getSolrMetadata(coll2Obj);
+        ContentObjectRecord coll2Md = getSolrMetadata(coll2Obj);
         assertEquals(coll2Obj.getPid().getId(), coll2Md.getTitle());
 
         assertEquals(1, coll2Md.getReadGroup().size());
@@ -309,7 +309,7 @@ public class SolrUpdateProcessorIT extends AbstractSolrProcessorIT {
         processor.process(exchange);
         server.commit();
 
-        BriefObjectMetadata collMd = getSolrMetadata(collObj);
+        ContentObjectRecord collMd = getSolrMetadata(collObj);
 
         assertEquals("RLA Item", collMd.getTitle());
         assertTrue(collMd.getContentStatus().contains(FacetConstants.CONTENT_DESCRIBED));
@@ -327,7 +327,7 @@ public class SolrUpdateProcessorIT extends AbstractSolrProcessorIT {
         when(message.getBody()).thenReturn(messageBody);
     }
 
-    private BriefObjectMetadata getSolrMetadata(RepositoryObject obj) throws Exception {
+    private ContentObjectRecord getSolrMetadata(RepositoryObject obj) throws Exception {
         SolrQuery solrQuery = new SolrQuery();
         StringBuilder query = new StringBuilder();
         query.append("id:").append(obj.getPid().getId());
@@ -337,7 +337,7 @@ public class SolrUpdateProcessorIT extends AbstractSolrProcessorIT {
 
         QueryResponse resp = solrClient.query(solrQuery);
 
-        List<BriefObjectMetadataBean> results = resp.getBeans(BriefObjectMetadataBean.class);
+        List<ContentObjectSolrRecord> results = resp.getBeans(ContentObjectSolrRecord.class);
         if (results != null && results.size() > 0) {
             return results.get(0);
         }

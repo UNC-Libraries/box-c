@@ -30,9 +30,10 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
 import edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore;
-import edu.unc.lib.dl.search.solr.model.BriefObjectMetadataBean;
-import edu.unc.lib.dl.search.solr.model.HierarchicalBrowseResultResponse;
-import edu.unc.lib.dl.search.solr.model.SimpleIdRequest;
+import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
+import edu.unc.lib.boxc.search.api.models.ContentObjectRecord;
+import edu.unc.lib.boxc.search.api.requests.SimpleIdRequest;
+import edu.unc.lib.boxc.search.solr.responses.HierarchicalBrowseResultResponse;
 import edu.unc.lib.dl.ui.controller.AbstractStructureResultsController;
 import edu.unc.lib.dl.ui.exception.ResourceNotFoundException;
 import edu.unc.lib.dl.ui.util.SerializationUtil;
@@ -99,8 +100,8 @@ public class StructureResultsController extends AbstractStructureResultsControll
 
         AccessGroupSet principals = getAgentPrincipals().getPrincipals();
         // Get the parent pid for the selected object and get its structure view
-        BriefObjectMetadataBean selectedContainer = queryLayer.getObjectById(
-                new SimpleIdRequest(pid, tierResultFieldsList, principals));
+        ContentObjectRecord selectedContainer = queryLayer.getObjectById(
+                new SimpleIdRequest(PIDs.get(pid), tierResultFieldsList, principals));
         if (selectedContainer == null) {
             throw new ResourceNotFoundException("Object " + pid + " was not found.");
         }

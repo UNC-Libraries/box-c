@@ -95,15 +95,14 @@ import edu.unc.lib.boxc.model.fcrepo.test.AclModelBuilder;
 import edu.unc.lib.boxc.model.fcrepo.test.RepositoryObjectTreeIndexer;
 import edu.unc.lib.boxc.model.fcrepo.test.TestHelper;
 import edu.unc.lib.boxc.operations.api.events.PremisLoggerFactory;
-import edu.unc.lib.boxc.operations.impl.destroy.DestroyObjectsJob;
 import edu.unc.lib.boxc.operations.jms.MessageSender;
 import edu.unc.lib.boxc.operations.jms.destroy.DestroyObjectsRequest;
 import edu.unc.lib.boxc.operations.jms.indexing.IndexingMessageSender;
 import edu.unc.lib.boxc.persist.api.transfer.BinaryTransferService;
 import edu.unc.lib.boxc.persist.impl.storage.StorageLocationManagerImpl;
+import edu.unc.lib.boxc.search.api.models.ObjectPath;
+import edu.unc.lib.boxc.search.solr.services.ObjectPathFactory;
 import edu.unc.lib.dl.fcrepo4.TransactionManager;
-import edu.unc.lib.dl.search.solr.model.ObjectPath;
-import edu.unc.lib.dl.search.solr.service.ObjectPathFactory;
 import edu.unc.lib.dl.sparql.SparqlUpdateService;
 
 /**

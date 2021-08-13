@@ -38,17 +38,18 @@ import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
 import edu.unc.lib.boxc.auth.api.services.PrincipalClassifier;
 import edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore;
 import edu.unc.lib.boxc.model.api.ResourceType;
-import edu.unc.lib.dl.search.solr.model.BriefObjectMetadata;
-import edu.unc.lib.dl.search.solr.model.CaseInsensitiveFacet;
-import edu.unc.lib.dl.search.solr.model.FacetFieldObject;
-import edu.unc.lib.dl.search.solr.model.SearchRequest;
-import edu.unc.lib.dl.search.solr.model.SearchResultResponse;
-import edu.unc.lib.dl.search.solr.model.SearchState;
-import edu.unc.lib.dl.search.solr.service.ObjectPathFactory;
-import edu.unc.lib.dl.search.solr.service.SearchStateFactory;
-import edu.unc.lib.dl.search.solr.service.SolrSearchService;
-import edu.unc.lib.dl.search.solr.util.SearchFieldKeys;
-import edu.unc.lib.dl.search.solr.util.SolrSettings;
+import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
+import edu.unc.lib.boxc.search.api.SearchFieldKey;
+import edu.unc.lib.boxc.search.api.facets.FacetFieldObject;
+import edu.unc.lib.boxc.search.api.models.ContentObjectRecord;
+import edu.unc.lib.boxc.search.api.requests.SearchRequest;
+import edu.unc.lib.boxc.search.api.requests.SearchState;
+import edu.unc.lib.boxc.search.solr.config.SolrSettings;
+import edu.unc.lib.boxc.search.solr.facets.CaseInsensitiveFacet;
+import edu.unc.lib.boxc.search.solr.responses.SearchResultResponse;
+import edu.unc.lib.boxc.search.solr.services.ObjectPathFactory;
+import edu.unc.lib.boxc.search.solr.services.SearchStateFactory;
+import edu.unc.lib.boxc.search.solr.services.SolrSearchService;
 
 /**
  * Solr query construction layer. Constructs search states specific to common tasks before passing them on to lower
@@ -76,9 +77,9 @@ public class SolrQueryLayerService extends SolrSearchService {
         searchState.setRowsPerPage(MAX_COLLECTIONS_TO_RETRIEVE);
         searchState.setFacetsToRetrieve(null);
         List<String> resultFields = new ArrayList<>();
-        resultFields.add(SearchFieldKeys.ANCESTOR_PATH.name());
-        resultFields.add(SearchFieldKeys.TITLE.name());
-        resultFields.add(SearchFieldKeys.ID.name());
+        resultFields.add(SearchFieldKey.ANCESTOR_PATH.name());
+        resultFields.add(SearchFieldKey.TITLE.name());
+        resultFields.add(SearchFieldKey.ID.name());
         searchState.setResultFields(resultFields);
 
         searchRequest.setSearchState(searchState);
@@ -87,23 +88,23 @@ public class SolrQueryLayerService extends SolrSearchService {
 
     public SearchResultResponse getDepartmentList(AccessGroupSet accessGroups, String pid) {
         SearchState searchState;
-        Boolean has_pid = (pid != null) ? true : false;
+        Boolean hasPid = (pid != null) ? true : false;
 
-        searchState = searchStateFactory.createFacetSearchState(SearchFieldKeys.DEPARTMENT.name(), "index",
+        searchState = searchStateFactory.createFacetSearchState(SearchFieldKey.DEPARTMENT.name(), "index",
                 Integer.MAX_VALUE);
 
         SearchRequest searchRequest = new SearchRequest(searchState, accessGroups, true);
-        searchRequest.setRootPid(pid);
-        BriefObjectMetadata selectedContainer = null;
+        searchRequest.setRootPid(PIDs.get(pid));
+        ContentObjectRecord selectedContainer = null;
 
-        if (has_pid) {
+        if (hasPid) {
             selectedContainer = addSelectedContainer(searchRequest.getRootPid(), searchState,
                     false, accessGroups);
         }
 
         SearchResultResponse results = getSearchResults(searchRequest);
 
-        if (has_pid) {
+        if (hasPid) {
             results.setSelectedContainer(selectedContainer);
         }
 
@@ -133,7 +134,7 @@ public class SolrQueryLayerService extends SolrSearchService {
         SolrQuery solrQuery = new SolrQuery();
         solrQuery.setQuery(query.toString());
         // Only take into account permissions provided from collections and units
-        solrQuery.addFacetQuery(solrSettings.getFieldName(SearchFieldKeys.RESOURCE_TYPE.name())
+        solrQuery.addFacetQuery(solrSettings.getFieldName(SearchFieldKey.RESOURCE_TYPE.name())
                 + ":(" + ResourceType.Collection.name() + " " + ResourceType.AdminUnit.name() + ")");
 
         solrQuery.setRows(0);
@@ -180,7 +181,7 @@ public class SolrQueryLayerService extends SolrSearchService {
 
         Boolean rollup = searchState.getRollup();
 
-        BriefObjectMetadata selectedContainer = null;
+        ContentObjectRecord selectedContainer = null;
         // Get the record for the currently selected container if one is selected.
         if (searchRequest.getRootPid() != null) {
             selectedContainer = addSelectedContainer(searchRequest.getRootPid(), searchState,
@@ -201,14 +202,14 @@ public class SolrQueryLayerService extends SolrSearchService {
 
     public void populateBreadcrumbs(SearchRequest searchRequest, SearchResultResponse resultResponse) {
         SearchState searchState = searchRequest.getSearchState();
-        if (searchState.getFacets().containsKey(SearchFieldKeys.CONTENT_TYPE.name())) {
+        if (searchState.getFacets().containsKey(SearchFieldKey.CONTENT_TYPE.name())) {
             if (resultResponse.getResultCount() == 0 || searchState.getResultFields() == null
-                    || !searchState.getResultFields().contains(SearchFieldKeys.CONTENT_TYPE.name())) {
+                    || !searchState.getResultFields().contains(SearchFieldKey.CONTENT_TYPE.name())) {
                 SearchState contentTypeSearchState = new SearchState();
                 contentTypeSearchState.setRowsPerPage(1);
-                contentTypeSearchState.setFacet(SearchFieldKeys.CONTENT_TYPE,
-                        searchState.getFacets().get(SearchFieldKeys.CONTENT_TYPE.name()));
-                contentTypeSearchState.setResultFields(Arrays.asList(SearchFieldKeys.CONTENT_TYPE.name()));
+                contentTypeSearchState.setFacet(SearchFieldKey.CONTENT_TYPE,
+                        searchState.getFacets().get(SearchFieldKey.CONTENT_TYPE.name()));
+                contentTypeSearchState.setResultFields(Arrays.asList(SearchFieldKey.CONTENT_TYPE.name()));
 
                 SearchRequest contentTypeRequest = new SearchRequest(contentTypeSearchState, GroupsThreadStore
                                 .getAgentPrincipals().getPrincipals());
@@ -231,7 +232,7 @@ public class SolrQueryLayerService extends SolrSearchService {
 
         SolrQuery query = generateSearch(searchRequest);
 
-        query.setQuery(query.getQuery() + " AND " + solrSettings.getFieldName(SearchFieldKeys.RELATIONS.name()) + ":"
+        query.setQuery(query.getQuery() + " AND " + solrSettings.getFieldName(SearchFieldKey.RELATIONS.name()) + ":"
                 + SolrSettings.sanitize(relationName) + "|*");
         query.setRows(1000);
 

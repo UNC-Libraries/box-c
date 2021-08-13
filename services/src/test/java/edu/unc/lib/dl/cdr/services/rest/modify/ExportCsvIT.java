@@ -20,8 +20,8 @@ import static edu.unc.lib.boxc.auth.api.AccessPrincipalConstants.PUBLIC_PRINC;
 import static edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore.getAgentPrincipals;
 import static edu.unc.lib.boxc.common.test.TestHelpers.setField;
 import static edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPaths.getContentRootPid;
-import static edu.unc.lib.dl.search.solr.util.FacetConstants.CONTENT_DESCRIBED;
-import static edu.unc.lib.dl.search.solr.util.FacetConstants.CONTENT_NOT_DESCRIBED;
+import static edu.unc.lib.boxc.search.api.FacetConstants.CONTENT_DESCRIBED;
+import static edu.unc.lib.boxc.search.api.FacetConstants.CONTENT_NOT_DESCRIBED;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -58,6 +58,9 @@ import org.springframework.test.context.ContextHierarchy;
 import org.springframework.test.web.servlet.MvcResult;
 
 import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
+import edu.unc.lib.boxc.indexing.solr.indexing.DocumentIndexingPackageFactory;
+import edu.unc.lib.boxc.indexing.solr.indexing.SolrUpdateDriver;
+import edu.unc.lib.boxc.indexing.solr.test.RepositoryObjectSolrIndexer;
 import edu.unc.lib.boxc.model.api.ResourceType;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.ids.PIDMinter;
@@ -77,12 +80,9 @@ import edu.unc.lib.boxc.operations.api.events.PremisLoggerFactory;
 import edu.unc.lib.boxc.operations.impl.delete.MarkForDeletionJob;
 import edu.unc.lib.boxc.operations.impl.edit.UpdateDescriptionService;
 import edu.unc.lib.boxc.operations.impl.edit.UpdateDescriptionService.UpdateDescriptionRequest;
+import edu.unc.lib.boxc.search.solr.services.ChildrenCountService;
+import edu.unc.lib.boxc.search.solr.services.SolrSearchService;
 import edu.unc.lib.dl.cdr.services.processing.ExportCsvService;
-import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackageFactory;
-import edu.unc.lib.dl.data.ingest.solr.indexing.SolrUpdateDriver;
-import edu.unc.lib.dl.data.ingest.solr.test.RepositoryObjectSolrIndexer;
-import edu.unc.lib.dl.search.solr.service.ChildrenCountService;
-import edu.unc.lib.dl.search.solr.service.SolrSearchService;
 import edu.unc.lib.dl.sparql.FedoraSparqlUpdateService;
 
 /**

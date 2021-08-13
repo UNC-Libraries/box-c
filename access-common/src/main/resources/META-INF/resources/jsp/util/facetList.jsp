@@ -23,7 +23,7 @@
 <%--
 	Renders a navigable facet list for refining a result set.
 
-	facetFields - Object of type edu.unc.lib.dl.search.solr.model.FacetFieldList which contains the
+	facetFields - Object of type edu.unc.lib.boxc.search.api.facets.FacetFieldList which contains the
 		list of facets to render.  Required.
 	queryPath - override the servlet that facet links will send the user to.  Default "search"
 	additionalLimitActions - additional actions which will be appended to any add facet actions.

@@ -13,13 +13,6 @@
 		</function-signature>
 	</function>
 	<function>
-		<name>getFacetField</name>
-		<function-class>edu.unc.lib.dl.search.solr.model.FacetFieldList</function-class>
-		<function-signature>
-			edu.unc.lib.dl.search.solr.model.FacetFieldObject get(edu.unc.lib.dl.search.solr.model.FacetFieldList, java.lang.String)
-		</function-signature>
-	</function>
-	<function>
 		<name>join</name>
 		<function-class>edu.unc.lib.dl.ui.util.CollectionUtil</function-class>
 		<function-signature>
@@ -58,42 +51,42 @@
 		<name>getDatastreamUrl</name>
 		<function-class>edu.unc.lib.dl.ui.util.DatastreamUtil</function-class>
 		<function-signature>
-			java.lang.String getDatastreamUrl(edu.unc.lib.dl.search.solr.model.BriefObjectMetadata, java.lang.String)
+			java.lang.String getDatastreamUrl(edu.unc.lib.boxc.search.api.models.ContentObjectRecord, java.lang.String)
 		</function-signature>
 	</function>
 	<function>
 		<name>getOriginalFileUrl</name>
 		<function-class>edu.unc.lib.dl.ui.util.DatastreamUtil</function-class>
 		<function-signature>
-			java.lang.String getOriginalFileUrl(edu.unc.lib.dl.search.solr.model.BriefObjectMetadata)
+			java.lang.String getOriginalFileUrl(edu.unc.lib.boxc.search.api.models.ContentObjectRecord)
 		</function-signature>
 	</function>
 	<function>
 		<name>originalFileMimetypeMatches</name>
 		<function-class>edu.unc.lib.dl.ui.util.DatastreamUtil</function-class>
 		<function-signature>
-			boolean originalFileMimetypeMatches(edu.unc.lib.dl.search.solr.model.BriefObjectMetadata, java.lang.String)
+			boolean originalFileMimetypeMatches(edu.unc.lib.boxc.search.api.models.ContentObjectRecord, java.lang.String)
 		</function-signature>
 	</function>
 	<function>
 		<name>getOriginalFileMimetype</name>
 		<function-class>edu.unc.lib.dl.ui.util.DatastreamUtil</function-class>
 		<function-signature>
-			java.lang.String getOriginalFileMimetype(edu.unc.lib.dl.search.solr.model.BriefObjectMetadata)
+			java.lang.String getOriginalFileMimetype(edu.unc.lib.boxc.search.api.models.ContentObjectRecord)
 		</function-signature>
 	</function>
 	<function>
 		<name>getPreferredDatastream</name>
 		<function-class>edu.unc.lib.dl.ui.util.DatastreamUtil</function-class>
 		<function-signature>
-			edu.unc.lib.dl.search.solr.model.Datastream getPreferredDatastream(edu.unc.lib.dl.search.solr.model.BriefObjectMetadata, java.lang.String)
+			edu.unc.lib.boxc.search.api.models.Datastream getPreferredDatastream(edu.unc.lib.boxc.search.api.models.ContentObjectRecord, java.lang.String)
 		</function-signature>
 	</function>
 	<function>
 		<name>getThumbnailUrl</name>
 		<function-class>edu.unc.lib.dl.ui.util.DatastreamUtil</function-class>
 		<function-signature>
-			java.lang.String getThumbnailUrl(edu.unc.lib.dl.search.solr.model.BriefObjectMetadata, java.lang.String)
+			java.lang.String getThumbnailUrl(edu.unc.lib.boxc.search.api.models.ContentObjectRecord, java.lang.String)
 		</function-signature>
 	</function>
 	<function>
@@ -142,28 +135,28 @@
 		<name>metadataToJSON</name>
 		<function-class>edu.unc.lib.dl.ui.util.SerializationUtil</function-class>
 		<function-signature>
-			java.lang.String metadataToJSON(edu.unc.lib.dl.search.solr.model.BriefObjectMetadata, edu.unc.lib.boxc.auth.api.models.AccessGroupSet)
+			java.lang.String metadataToJSON(edu.unc.lib.boxc.search.api.models.ContentObjectRecord, edu.unc.lib.boxc.auth.api.models.AccessGroupSet)
 		</function-signature>
 	</function>
 	<function>
 		<name>resultsToJSON</name>
 		<function-class>edu.unc.lib.dl.ui.util.SerializationUtil</function-class>
 		<function-signature>
-			java.lang.String resultsToJSON(edu.unc.lib.dl.search.solr.model.SearchResultResponse, edu.unc.lib.boxc.auth.api.models.AccessGroupSet)
+			java.lang.String resultsToJSON(edu.unc.lib.boxc.search.solr.responses.SearchResultResponse, edu.unc.lib.boxc.auth.api.models.AccessGroupSet)
 		</function-signature>
 	</function>
 	<function>
 		<name>getSearchQueryParameters</name>
 		<function-class>edu.unc.lib.dl.search.solr.util.SearchStateUtil</function-class>
 		<function-signature>
-			java.lang.String generateSearchParameterString(edu.unc.lib.dl.search.solr.model.SearchState)
+			java.lang.String generateSearchParameterString(edu.unc.lib.boxc.search.api.requests.SearchState)
 		</function-signature>
 	</function>
 	<function>
 		<name>getSearchStateParameters</name>
 		<function-class>edu.unc.lib.dl.search.solr.util.SearchStateUtil</function-class>
 		<function-signature>
-			java.lang.String generateStateParameterString(edu.unc.lib.dl.search.solr.model.SearchState)
+			java.lang.String generateStateParameterString(edu.unc.lib.boxc.search.api.requests.SearchState)
 		</function-signature>
 	</function>
 	<function>

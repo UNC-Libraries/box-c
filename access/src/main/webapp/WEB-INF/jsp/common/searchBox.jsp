@@ -19,7 +19,7 @@
 <%@ page trimDirectiveWhitespaces="true" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
-<jsp:useBean id="settings" class="edu.unc.lib.dl.search.solr.util.SearchSettings" scope="page"/>
+<jsp:useBean id="settings" class="edu.unc.lib.boxc.search.solr.config.SearchSettings" scope="page"/>
 <c:set var="searchStateUrl" value="${requestScope.searchStateUrl}"/>
 
 <c:choose>

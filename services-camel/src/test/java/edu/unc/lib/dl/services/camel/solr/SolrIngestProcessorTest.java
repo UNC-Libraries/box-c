@@ -29,15 +29,15 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
 
+import edu.unc.lib.boxc.indexing.solr.exception.IndexingException;
+import edu.unc.lib.boxc.indexing.solr.indexing.DocumentIndexingPackage;
+import edu.unc.lib.boxc.indexing.solr.indexing.DocumentIndexingPackageFactory;
+import edu.unc.lib.boxc.indexing.solr.indexing.DocumentIndexingPipeline;
+import edu.unc.lib.boxc.indexing.solr.indexing.SolrUpdateDriver;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.fcrepo.test.TestHelper;
-import edu.unc.lib.dl.data.ingest.solr.exception.IndexingException;
-import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackage;
-import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackageFactory;
-import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPipeline;
-import edu.unc.lib.dl.data.ingest.solr.indexing.SolrUpdateDriver;
-import edu.unc.lib.dl.search.solr.model.IndexDocumentBean;
+import edu.unc.lib.boxc.search.solr.models.IndexDocumentBean;
 
 /**
  *

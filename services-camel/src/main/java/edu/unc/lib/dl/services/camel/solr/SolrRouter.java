@@ -23,8 +23,8 @@ import org.apache.camel.LoggingLevel;
 import org.apache.camel.builder.RouteBuilder;
 import org.slf4j.Logger;
 
+import edu.unc.lib.boxc.indexing.solr.exception.ObjectTombstonedException;
 import edu.unc.lib.boxc.model.api.exceptions.NotFoundException;
-import edu.unc.lib.dl.data.ingest.solr.exception.ObjectTombstonedException;
 
 /**
  * Router which triggers the full indexing of individual objects to Solr.

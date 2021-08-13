@@ -120,12 +120,12 @@
         </dependency>
         <dependency>
             <groupId>edu.unc.lib.cdr</groupId>
-            <artifactId>solr-ingest</artifactId>
+            <artifactId>indexing-solr</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>edu.unc.lib.cdr</groupId>
-            <artifactId>solr-ingest</artifactId>
+            <artifactId>indexing-solr</artifactId>
             <scope>test</scope>
             <type>test-jar</type>
         </dependency>
@@ -191,7 +191,7 @@
         <!-- DCR -->
         <dependency>
             <groupId>edu.unc.lib.cdr</groupId>
-            <artifactId>solr-search</artifactId>
+            <artifactId>search-solr</artifactId>
         </dependency>
         <dependency>
             <groupId>edu.unc.lib.cdr</groupId>

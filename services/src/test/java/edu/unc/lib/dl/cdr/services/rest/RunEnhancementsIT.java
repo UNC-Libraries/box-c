@@ -68,11 +68,11 @@ import edu.unc.lib.boxc.model.api.objects.WorkObject;
 import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.boxc.operations.jms.MessageSender;
+import edu.unc.lib.boxc.search.api.requests.SearchRequest;
+import edu.unc.lib.boxc.search.api.requests.SimpleIdRequest;
+import edu.unc.lib.boxc.search.solr.models.ContentObjectSolrRecord;
+import edu.unc.lib.boxc.search.solr.responses.SearchResultResponse;
 import edu.unc.lib.dl.cdr.services.rest.modify.AbstractAPIIT;
-import edu.unc.lib.dl.search.solr.model.BriefObjectMetadataBean;
-import edu.unc.lib.dl.search.solr.model.SearchRequest;
-import edu.unc.lib.dl.search.solr.model.SearchResultResponse;
-import edu.unc.lib.dl.search.solr.model.SimpleIdRequest;
 import edu.unc.lib.dl.ui.service.SolrQueryLayerService;
 
 /**
@@ -221,7 +221,7 @@ public class RunEnhancementsIT extends AbstractAPIIT {
     }
 
     private void setResultMetadataObject(PID pid, String resourceType) {
-        BriefObjectMetadataBean md = new BriefObjectMetadataBean();
+        ContentObjectSolrRecord md = new ContentObjectSolrRecord();
         md.setId(pid.getId());
         md.setDatastream(asList("original_file|image/png|small|png|3333||"));
         md.setResourceType(resourceType);

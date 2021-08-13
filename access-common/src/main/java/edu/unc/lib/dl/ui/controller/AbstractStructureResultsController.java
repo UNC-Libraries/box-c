@@ -26,12 +26,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import edu.unc.lib.dl.search.solr.exception.InvalidHierarchicalFacetException;
-import edu.unc.lib.dl.search.solr.model.HierarchicalBrowseRequest;
-import edu.unc.lib.dl.search.solr.model.HierarchicalBrowseResultResponse;
-import edu.unc.lib.dl.search.solr.model.SearchState;
-import edu.unc.lib.dl.search.solr.service.StructureQueryService;
-import edu.unc.lib.dl.search.solr.util.SearchFieldKeys;
+import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
+import edu.unc.lib.boxc.search.api.SearchFieldKey;
+import edu.unc.lib.boxc.search.api.exceptions.InvalidHierarchicalFacetException;
+import edu.unc.lib.boxc.search.api.requests.HierarchicalBrowseRequest;
+import edu.unc.lib.boxc.search.api.requests.SearchState;
+import edu.unc.lib.boxc.search.solr.responses.HierarchicalBrowseResultResponse;
+import edu.unc.lib.boxc.search.solr.services.StructureQueryService;
 
 /**
  * Base structure browse controller.
@@ -78,7 +79,7 @@ public class AbstractStructureResultsController extends AbstractSolrSearchContro
                     .getParameterMap()));
         }
         if (pid != null) {
-            browseRequest.setRootPid(pid);
+            browseRequest.setRootPid(PIDs.get(pid));
         }
         browseRequest.setIncludeFiles(includeFiles);
 
@@ -90,7 +91,7 @@ public class AbstractStructureResultsController extends AbstractSolrSearchContro
             LOG.debug("An invalid facet was provided: " + request.getQueryString(), e);
         }
 
-        if (pid == null && !searchState.getFacets().containsKey(SearchFieldKeys.ANCESTOR_PATH.name())) {
+        if (pid == null && !searchState.getFacets().containsKey(SearchFieldKey.ANCESTOR_PATH.name())) {
             browseRequest.setRetrievalDepth(1);
         }
 

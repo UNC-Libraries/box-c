@@ -75,8 +75,8 @@ import edu.unc.lib.boxc.auth.api.services.AccessControlService;
 import edu.unc.lib.boxc.auth.api.services.GlobalPermissionEvaluator;
 import edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl;
 import edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore;
+import edu.unc.lib.boxc.indexing.solr.test.RepositoryObjectSolrIndexer;
 import edu.unc.lib.boxc.auth.api.UserRole;
-import edu.unc.lib.dl.data.ingest.solr.test.RepositoryObjectSolrIndexer;
 
 /**
  * @author bbpennel

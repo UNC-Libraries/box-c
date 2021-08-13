@@ -32,7 +32,7 @@
         </dependency>
         <dependency>
             <groupId>edu.unc.lib.cdr</groupId>
-            <artifactId>solr-search</artifactId>
+            <artifactId>search-solr</artifactId>
         </dependency>
         <dependency>
             <groupId>edu.unc.lib.cdr</groupId>

@@ -22,7 +22,7 @@ import static edu.unc.lib.boxc.auth.api.UserRole.canViewOriginals;
 import static edu.unc.lib.boxc.auth.api.UserRole.none;
 import static edu.unc.lib.boxc.model.api.DatastreamType.ORIGINAL_FILE;
 import static edu.unc.lib.boxc.model.api.ids.RepositoryPathConstants.CONTENT_ROOT_ID;
-import static edu.unc.lib.dl.search.solr.util.FacetConstants.MARKED_FOR_DELETION;
+import static edu.unc.lib.boxc.search.api.FacetConstants.MARKED_FOR_DELETION;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -49,14 +49,14 @@ import edu.unc.lib.boxc.auth.api.services.AccessControlService;
 import edu.unc.lib.boxc.model.api.exceptions.NotFoundException;
 import edu.unc.lib.boxc.model.api.exceptions.RepositoryException;
 import edu.unc.lib.boxc.model.api.ids.PID;
-import edu.unc.lib.dl.search.solr.model.BriefObjectMetadata;
-import edu.unc.lib.dl.search.solr.model.Datastream;
-import edu.unc.lib.dl.search.solr.model.SearchRequest;
-import edu.unc.lib.dl.search.solr.model.SearchResultResponse;
-import edu.unc.lib.dl.search.solr.model.SearchState;
-import edu.unc.lib.dl.search.solr.service.ChildrenCountService;
-import edu.unc.lib.dl.search.solr.util.FacetConstants;
-import edu.unc.lib.dl.search.solr.util.SearchFieldKeys;
+import edu.unc.lib.boxc.search.api.FacetConstants;
+import edu.unc.lib.boxc.search.api.SearchFieldKey;
+import edu.unc.lib.boxc.search.api.models.ContentObjectRecord;
+import edu.unc.lib.boxc.search.api.models.Datastream;
+import edu.unc.lib.boxc.search.api.requests.SearchRequest;
+import edu.unc.lib.boxc.search.api.requests.SearchState;
+import edu.unc.lib.boxc.search.solr.responses.SearchResultResponse;
+import edu.unc.lib.boxc.search.solr.services.ChildrenCountService;
 import edu.unc.lib.dl.ui.service.SolrQueryLayerService;
 
 /**
@@ -93,14 +93,14 @@ public class ExportCsvService {
             MIME_TYPE_HEADER, CHECKSUM_HEADER, FILE_SIZE_HEADER, NUM_CHILDREN_HEADER,
             DESCRIBED_HEADER, PATRON_PERMISSIONS_HEADER, EMBARGO_HEADER};
 
-    private static final List<String> SEARCH_FIELDS = Arrays.asList(SearchFieldKeys.ID.name(),
-            SearchFieldKeys.TITLE.name(),
-            SearchFieldKeys.RESOURCE_TYPE.name(), SearchFieldKeys.ANCESTOR_IDS.name(),
-            SearchFieldKeys.STATUS.name(), SearchFieldKeys.DATASTREAM.name(),
-            SearchFieldKeys.ANCESTOR_PATH.name(), SearchFieldKeys.CONTENT_MODEL.name(),
-            SearchFieldKeys.DATE_ADDED.name(), SearchFieldKeys.DATE_UPDATED.name(),
-            SearchFieldKeys.LABEL.name(), SearchFieldKeys.CONTENT_STATUS.name(),
-            SearchFieldKeys.ROLE_GROUP.name());
+    private static final List<String> SEARCH_FIELDS = Arrays.asList(SearchFieldKey.ID.name(),
+            SearchFieldKey.TITLE.name(),
+            SearchFieldKey.RESOURCE_TYPE.name(), SearchFieldKey.ANCESTOR_IDS.name(),
+            SearchFieldKey.STATUS.name(), SearchFieldKey.DATASTREAM.name(),
+            SearchFieldKey.ANCESTOR_PATH.name(), SearchFieldKey.CONTENT_MODEL.name(),
+            SearchFieldKey.DATE_ADDED.name(), SearchFieldKey.DATE_UPDATED.name(),
+            SearchFieldKey.LABEL.name(), SearchFieldKey.CONTENT_STATUS.name(),
+            SearchFieldKey.ROLE_GROUP.name());
 
     private ChildrenCountService childrenCountService;
     private AccessControlService aclService;
@@ -126,7 +126,7 @@ public class ExportCsvService {
         searchState.setSortType("export");
         searchState.setRowsPerPage(pageSize);
 
-        BriefObjectMetadata container = queryLayer.addSelectedContainer(pid, searchState, false,
+        ContentObjectRecord container = queryLayer.addSelectedContainer(pid, searchState, false,
                 accessGroups);
         if (container == null) {
             throw new NotFoundException("Object " + pid.getId() + " not found while streaming CSV export");
@@ -146,7 +146,7 @@ public class ExportCsvService {
 
                 SearchResultResponse resultResponse = queryLayer.getSearchResults(searchRequest);
 
-                List<BriefObjectMetadata> objects = resultResponse.getResultList();
+                List<ContentObjectRecord> objects = resultResponse.getResultList();
                 // Insert the parent container if on the first page of results
                 if (pageStart == 0) {
                     objects.add(0, container);
@@ -159,7 +159,7 @@ public class ExportCsvService {
                 childrenCountService.addChildrenCounts(objects, searchRequest.getAccessGroups());
 
                 // Stream the current page of results
-                for (BriefObjectMetadata object : objects) {
+                for (ContentObjectRecord object : objects) {
                     printObject(printer, object);
                 }
 
@@ -213,7 +213,7 @@ public class ExportCsvService {
         return CSVFormat.EXCEL.withHeader(CSV_HEADERS).print(writer);
     }
 
-    private void printObject(CSVPrinter printer, BriefObjectMetadata object) throws IOException {
+    private void printObject(CSVPrinter printer, ContentObjectRecord object) throws IOException {
         // Vitals: object type, pid, title, path, label, depth
         printer.print(object.getResourceType());
         printer.print(object.getId());

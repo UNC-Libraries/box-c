@@ -30,16 +30,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
 import edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore;
-import edu.unc.lib.dl.search.solr.exception.InvalidHierarchicalFacetException;
-import edu.unc.lib.dl.search.solr.model.HierarchicalBrowseRequest;
-import edu.unc.lib.dl.search.solr.model.SearchRequest;
-import edu.unc.lib.dl.search.solr.model.SearchResultResponse;
-import edu.unc.lib.dl.search.solr.model.SearchState;
-import edu.unc.lib.dl.search.solr.service.ChildrenCountService;
-import edu.unc.lib.dl.search.solr.service.SearchActionService;
-import edu.unc.lib.dl.search.solr.service.SearchStateFactory;
-import edu.unc.lib.dl.search.solr.util.SearchSettings;
-import edu.unc.lib.dl.search.solr.util.SearchStateUtil;
+import edu.unc.lib.boxc.search.api.exceptions.InvalidHierarchicalFacetException;
+import edu.unc.lib.boxc.search.api.requests.HierarchicalBrowseRequest;
+import edu.unc.lib.boxc.search.api.requests.SearchRequest;
+import edu.unc.lib.boxc.search.api.requests.SearchState;
+import edu.unc.lib.boxc.search.solr.config.SearchSettings;
+import edu.unc.lib.boxc.search.solr.responses.SearchResultResponse;
+import edu.unc.lib.boxc.search.solr.services.ChildrenCountService;
+import edu.unc.lib.boxc.search.solr.services.SearchStateFactory;
+import edu.unc.lib.boxc.search.solr.utils.SearchStateUtil;
+import edu.unc.lib.boxc.web.common.search.SearchActionService;
 import edu.unc.lib.dl.ui.service.SolrQueryLayerService;
 import edu.unc.lib.dl.ui.util.SerializationUtil;
 
@@ -52,8 +52,6 @@ public abstract class AbstractSolrSearchController {
 
     @Autowired(required = true)
     protected SolrQueryLayerService queryLayer;
-    //@Autowired(required=true)
-    //protected SearchStateValidator briefSearchRequestValidator;
     @Autowired(required = true)
     protected SearchActionService searchActionService;
     @Autowired

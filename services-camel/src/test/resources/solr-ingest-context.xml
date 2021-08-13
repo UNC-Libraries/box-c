@@ -14,10 +14,10 @@
         http://camel.apache.org/schema/spring/camel-spring.xsd">
         
     <bean id="searchSettings" class="org.mockito.Mockito" factory-method="mock">
-        <constructor-arg value="edu.unc.lib.dl.search.solr.util.SearchSettings"/>
+        <constructor-arg value="edu.unc.lib.boxc.search.solr.config.SearchSettings"/>
     </bean>
     <bean id="solrSettings" class="org.mockito.Mockito" factory-method="mock">
-        <constructor-arg value="edu.unc.lib.dl.search.solr.util.SolrSettings"/>
+        <constructor-arg value="edu.unc.lib.boxc.search.solr.config.SolrSettings"/>
     </bean>
     
     <bean id="solrIngestProcessor" class="org.mockito.Mockito" factory-method="mock">

@@ -17,7 +17,7 @@ package edu.unc.lib.dl.ui.controller;
 
 import static edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore.getAgentPrincipals;
 import static edu.unc.lib.boxc.common.xml.SecureXMLFactory.createSAXBuilder;
-import static edu.unc.lib.dl.search.solr.util.FacetConstants.MARKED_FOR_DELETION;
+import static edu.unc.lib.boxc.search.api.FacetConstants.MARKED_FOR_DELETION;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -55,11 +55,11 @@ import edu.unc.lib.boxc.model.api.objects.BinaryObject;
 import edu.unc.lib.boxc.model.api.objects.ContentObject;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
-import edu.unc.lib.dl.search.solr.model.BriefObjectMetadataBean;
-import edu.unc.lib.dl.search.solr.model.SimpleIdRequest;
-import edu.unc.lib.dl.search.solr.service.ChildrenCountService;
-import edu.unc.lib.dl.search.solr.service.GetCollectionIdService;
-import edu.unc.lib.dl.search.solr.service.NeighborQueryService;
+import edu.unc.lib.boxc.search.api.models.ContentObjectRecord;
+import edu.unc.lib.boxc.search.api.requests.SimpleIdRequest;
+import edu.unc.lib.boxc.search.solr.services.ChildrenCountService;
+import edu.unc.lib.boxc.search.solr.services.GetCollectionIdService;
+import edu.unc.lib.boxc.search.solr.services.NeighborQueryService;
 import edu.unc.lib.dl.ui.exception.InvalidRecordRequestException;
 import edu.unc.lib.dl.ui.exception.RenderViewException;
 import edu.unc.lib.dl.ui.service.AccessCopiesService;
@@ -129,7 +129,7 @@ public class FullRecordController extends AbstractSolrSearchController {
             throw new InvalidRecordRequestException();
         }
 
-        SimpleIdRequest idRequest = new SimpleIdRequest(pidString, principals);
+        SimpleIdRequest idRequest = new SimpleIdRequest(pid, principals);
 
         // Retrieve the objects description from Fedora
         String fullObjectView = null;
@@ -176,8 +176,8 @@ public class FullRecordController extends AbstractSolrSearchController {
         }
 
         // Retrieve the objects record from Solr
-        SimpleIdRequest idRequest = new SimpleIdRequest(pidString, principals);
-        BriefObjectMetadataBean briefObject = queryLayer.getObjectById(idRequest);
+        SimpleIdRequest idRequest = new SimpleIdRequest(pid, principals);
+        ContentObjectRecord briefObject = queryLayer.getObjectById(idRequest);
         if (briefObject == null) {
             throw new InvalidRecordRequestException();
         }
@@ -210,7 +210,7 @@ public class FullRecordController extends AbstractSolrSearchController {
 
         if (briefObject.getResourceType().equals(searchSettings.resourceTypeFile) ||
                 briefObject.getResourceType().equals(searchSettings.resourceTypeAggregate)) {
-            List<BriefObjectMetadataBean> neighbors = neighborService.getNeighboringItems(briefObject,
+            List<ContentObjectRecord> neighbors = neighborService.getNeighboringItems(briefObject,
                     searchSettings.maxNeighborResults, principals);
             model.addAttribute("neighborList", neighbors);
         }

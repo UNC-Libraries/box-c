@@ -115,11 +115,11 @@
         </dependency>
         <dependency>
             <groupId>edu.unc.lib.cdr</groupId>
-            <artifactId>solr-ingest</artifactId>
+            <artifactId>indexing-solr</artifactId>
         </dependency>
         <dependency>
             <groupId>edu.unc.lib.cdr</groupId>
-            <artifactId>solr-ingest</artifactId>
+            <artifactId>indexing-solr</artifactId>
             <scope>test</scope>
             <type>test-jar</type>
         </dependency>

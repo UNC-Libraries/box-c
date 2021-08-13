@@ -31,11 +31,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 
-import edu.unc.lib.dl.search.solr.model.SearchState;
-import edu.unc.lib.dl.search.solr.service.SearchActionService;
-import edu.unc.lib.dl.search.solr.service.SearchStateFactory;
-import edu.unc.lib.dl.search.solr.util.SearchSettings;
-import edu.unc.lib.dl.search.solr.util.SearchStateUtil;
+import edu.unc.lib.boxc.search.api.requests.SearchState;
+import edu.unc.lib.boxc.search.solr.config.SearchSettings;
+import edu.unc.lib.boxc.search.solr.services.SearchStateFactory;
+import edu.unc.lib.boxc.search.solr.utils.SearchStateUtil;
+import edu.unc.lib.boxc.web.common.search.SearchActionService;
 
 /**
  * Handles search requests from basic search forms.  Can handle

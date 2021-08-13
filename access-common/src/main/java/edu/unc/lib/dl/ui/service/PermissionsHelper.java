@@ -29,7 +29,7 @@ import edu.unc.lib.boxc.auth.api.Permission;
 import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
 import edu.unc.lib.boxc.auth.api.services.AccessControlService;
 import edu.unc.lib.boxc.model.api.DatastreamType;
-import edu.unc.lib.dl.search.solr.model.BriefObjectMetadata;
+import edu.unc.lib.boxc.search.api.models.ContentObjectRecord;
 
 /**
  * Helper for determining permissions of view objects.
@@ -55,7 +55,7 @@ public class PermissionsHelper {
      * @param metadata
      * @return
      */
-    public boolean hasOriginalAccess(AccessGroupSet principals, BriefObjectMetadata metadata) {
+    public boolean hasOriginalAccess(AccessGroupSet principals, ContentObjectRecord metadata) {
         return hasDatastreamAccess(principals, ORIGINAL_FILE, metadata);
     }
 
@@ -67,7 +67,7 @@ public class PermissionsHelper {
      * @param metadata
      * @return
      */
-    public boolean hasThumbnailAccess(AccessGroupSet principals, BriefObjectMetadata metadata) {
+    public boolean hasThumbnailAccess(AccessGroupSet principals, ContentObjectRecord metadata) {
         return hasDatastreamAccess(principals, THUMBNAIL_SMALL, metadata);
     }
 
@@ -79,7 +79,7 @@ public class PermissionsHelper {
      * @param metadata
      * @return
      */
-    public boolean hasImagePreviewAccess(AccessGroupSet principals, BriefObjectMetadata metadata) {
+    public boolean hasImagePreviewAccess(AccessGroupSet principals, ContentObjectRecord metadata) {
         return hasDatastreamAccess(principals, JP2_ACCESS_COPY, metadata);
     }
 
@@ -90,7 +90,7 @@ public class PermissionsHelper {
      * @param metadata
      * @return
      */
-    public boolean hasDescriptionAccess(AccessGroupSet principals, BriefObjectMetadata metadata) {
+    public boolean hasDescriptionAccess(AccessGroupSet principals, ContentObjectRecord metadata) {
         return hasDatastreamAccess(principals, MD_DESCRIPTIVE, metadata);
     }
 
@@ -104,7 +104,7 @@ public class PermissionsHelper {
      * @return
      */
     public boolean hasDatastreamAccess(AccessGroupSet principals, DatastreamType datastream,
-            BriefObjectMetadata metadata) {
+            ContentObjectRecord metadata) {
         notNull(principals, "Requires agent principals");
         notNull(datastream, "Requires datastream type");
         notNull(metadata, "Requires metadata object");
@@ -119,7 +119,7 @@ public class PermissionsHelper {
         return accessControlService.hasAccess(metadata.getPid(), principals, permission);
     }
 
-    private static boolean containsDatastream(BriefObjectMetadata metadata, String datastream) {
+    private static boolean containsDatastream(ContentObjectRecord metadata, String datastream) {
         return metadata.getDatastreamObjects().stream()
                 .anyMatch(d -> d.getName().equals(datastream));
     }
@@ -132,7 +132,7 @@ public class PermissionsHelper {
      * @param metadata object metadata
      * @return
      */
-    public boolean hasEditAccess(AccessGroupSet principals, BriefObjectMetadata metadata) {
+    public boolean hasEditAccess(AccessGroupSet principals, ContentObjectRecord metadata) {
         notNull(principals, "Requires agent principals");
         notNull(metadata, "Requires metadata object");
 
@@ -145,7 +145,7 @@ public class PermissionsHelper {
      * @param metadata object
      * @return true if full public access is allow for the object
      */
-    public boolean allowsPublicAccess(BriefObjectMetadata metadata) {
+    public boolean allowsPublicAccess(ContentObjectRecord metadata) {
         if (metadata.getRoleGroup() == null) {
             return false;
         }

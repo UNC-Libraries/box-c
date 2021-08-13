@@ -30,9 +30,10 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
 import edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore;
-import edu.unc.lib.dl.search.solr.model.BriefObjectMetadataBean;
-import edu.unc.lib.dl.search.solr.model.SimpleIdRequest;
-import edu.unc.lib.dl.search.solr.util.SearchFieldKeys;
+import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
+import edu.unc.lib.boxc.search.api.SearchFieldKey;
+import edu.unc.lib.boxc.search.api.models.ContentObjectRecord;
+import edu.unc.lib.boxc.search.api.requests.SimpleIdRequest;
 import edu.unc.lib.dl.ui.exception.ResourceNotFoundException;
 import edu.unc.lib.dl.ui.util.SerializationUtil;
 
@@ -43,12 +44,12 @@ import edu.unc.lib.dl.ui.util.SerializationUtil;
  */
 @Controller
 public class ResultEntryController extends AbstractSearchController {
-    private final List<String> resultsFieldList = Arrays.asList(SearchFieldKeys.ID.name(), SearchFieldKeys.TITLE.name(),
-            SearchFieldKeys.CREATOR.name(), SearchFieldKeys.DATASTREAM.name(), SearchFieldKeys.DATE_ADDED.name(),
-            SearchFieldKeys.DATE_UPDATED.name(), SearchFieldKeys.RESOURCE_TYPE.name(),
-            SearchFieldKeys.CONTENT_MODEL.name(), SearchFieldKeys.STATUS.name(), SearchFieldKeys.ANCESTOR_PATH.name(),
-            SearchFieldKeys.VERSION.name(), SearchFieldKeys.ROLE_GROUP.name(), SearchFieldKeys.RELATIONS.name(),
-            SearchFieldKeys.CONTENT_STATUS.name(), SearchFieldKeys.IS_PART.name(), SearchFieldKeys.ROLLUP_ID.name());
+    private final List<String> resultsFieldList = Arrays.asList(SearchFieldKey.ID.name(), SearchFieldKey.TITLE.name(),
+            SearchFieldKey.CREATOR.name(), SearchFieldKey.DATASTREAM.name(), SearchFieldKey.DATE_ADDED.name(),
+            SearchFieldKey.DATE_UPDATED.name(), SearchFieldKey.RESOURCE_TYPE.name(),
+            SearchFieldKey.CONTENT_MODEL.name(), SearchFieldKey.STATUS.name(), SearchFieldKey.ANCESTOR_PATH.name(),
+            SearchFieldKey.VERSION.name(), SearchFieldKey.ROLE_GROUP.name(), SearchFieldKey.RELATIONS.name(),
+            SearchFieldKey.CONTENT_STATUS.name(), SearchFieldKey.IS_PART.name(), SearchFieldKey.ROLLUP_ID.name());
 
     @RequestMapping(value = "entry/{pid}", method = RequestMethod.GET)
     public @ResponseBody
@@ -56,8 +57,8 @@ public class ResultEntryController extends AbstractSearchController {
         response.setContentType("application/json");
         AccessGroupSet accessGroups = GroupsThreadStore.getPrincipals();
 
-        SimpleIdRequest entryRequest = new SimpleIdRequest(pid, resultsFieldList, accessGroups);
-        BriefObjectMetadataBean entryBean = queryLayer.getObjectById(entryRequest);
+        SimpleIdRequest entryRequest = new SimpleIdRequest(PIDs.get(pid), resultsFieldList, accessGroups);
+        ContentObjectRecord entryBean = queryLayer.getObjectById(entryRequest);
         if (entryBean == null) {
             throw new ResourceNotFoundException("The requested record either does not exist or is not accessible");
         }

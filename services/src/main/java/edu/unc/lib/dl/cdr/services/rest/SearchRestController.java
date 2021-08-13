@@ -34,13 +34,13 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
 import edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore;
-import edu.unc.lib.dl.search.solr.model.BriefObjectMetadata;
-import edu.unc.lib.dl.search.solr.model.BriefObjectMetadataBean;
-import edu.unc.lib.dl.search.solr.model.SearchRequest;
-import edu.unc.lib.dl.search.solr.model.SearchResultResponse;
-import edu.unc.lib.dl.search.solr.model.SearchState;
-import edu.unc.lib.dl.search.solr.model.SimpleIdRequest;
-import edu.unc.lib.dl.search.solr.service.ChildrenCountService;
+import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
+import edu.unc.lib.boxc.search.api.models.ContentObjectRecord;
+import edu.unc.lib.boxc.search.api.requests.SearchRequest;
+import edu.unc.lib.boxc.search.api.requests.SearchState;
+import edu.unc.lib.boxc.search.api.requests.SimpleIdRequest;
+import edu.unc.lib.boxc.search.solr.responses.SearchResultResponse;
+import edu.unc.lib.boxc.search.solr.services.ChildrenCountService;
 import edu.unc.lib.dl.ui.controller.AbstractSolrSearchController;
 import edu.unc.lib.dl.ui.util.SerializationUtil;
 
@@ -104,7 +104,7 @@ public class SearchRestController extends AbstractSolrSearchController {
     private String doSearch(String pid, HttpServletRequest request, boolean applyCutoffs) {
         SearchRequest searchRequest = generateSearchRequest(request);
         searchRequest.setApplyCutoffs(applyCutoffs);
-        searchRequest.setRootPid(pid);
+        searchRequest.setRootPid(PIDs.get(pid));
 
         SearchState searchState = searchRequest.getSearchState();
 
@@ -135,7 +135,7 @@ public class SearchRestController extends AbstractSolrSearchController {
         Map<String, Object> response = new HashMap<>();
         response.put("numFound", resultResponse.getResultCount());
         List<Map<String, Object>> results = new ArrayList<>(resultResponse.getResultList().size());
-        for (BriefObjectMetadata metadata: resultResponse.getResultList()) {
+        for (ContentObjectRecord metadata: resultResponse.getResultList()) {
             results.add(SerializationUtil.metadataToMap(metadata, principals));
         }
         response.put("results", results);
@@ -156,8 +156,8 @@ public class SearchRestController extends AbstractSolrSearchController {
         List<String> resultFields = this.getResultFields(request);
 
         AccessGroupSet principals = getAgentPrincipals().getPrincipals();
-        SimpleIdRequest idRequest = new SimpleIdRequest(id, resultFields, principals);
-        BriefObjectMetadataBean briefObject = queryLayer.getObjectById(idRequest);
+        SimpleIdRequest idRequest = new SimpleIdRequest(PIDs.get(id), resultFields, principals);
+        ContentObjectRecord briefObject = queryLayer.getObjectById(idRequest);
         if (briefObject == null) {
             response.setStatus(404);
             return null;

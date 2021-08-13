@@ -124,10 +124,10 @@ endif
 SUSPEND = "n"
 
 build-bxc:
-	mvn clean install -DskipTests -pl access,access-common,admin,deposit,fcrepo-clients,metadata,persistence,security,services,services-camel,solr-ingest,solr-search,sword-server,migration-util
+	mvn clean install -DskipTests -pl common-utils,access,access-common,admin,deposit,fcrepo-clients,metadata,model-api,model-fcrepo,persistence,auth-api,auth-fcrepo,services,services-camel,indexing-solr,solr-search,sword-server,integration
 
 verify-bxc:
-	mvn verify -pl access,access-common,admin,deposit,fcrepo-clients,metadata,persistence,security,services,services-camel,solr-ingest,solr-search,sword-server,migration-util
+	mvn verify -pl common-utils,access,access-common,admin,deposit,fcrepo-clients,metadata,model-api,model-fcrepo,persistence,auth-api,auth-fcrepo,services,services-camel,indexing-solr,solr-search,sword-server,integration
 
 ifneq ($(VERSION), "")
 	for i in static/js/public/*.js; do \

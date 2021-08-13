@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+
+    Copyright 2008 The University of North Carolina at Chapel Hill
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+            http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+
+-->
+<beans xmlns="http://www.springframework.org/schema/beans" 
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:util="http://www.springframework.org/schema/util"
+    xsi:schemaLocation="
+        http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/util 
+        http://www.springframework.org/schema/util/spring-util.xsd">
+
+    <bean id="searchSettings" class="edu.unc.lib.boxc.search.solr.config.SearchSettings">
+        <property name="properties" ref="searchProperties" />
+    </bean>
+    <util:properties id="searchProperties" location="classpath:search.properties" />
+    <bean id="searchStateFactory" class="edu.unc.lib.boxc.search.solr.services.SearchStateFactory">
+        <property name="searchSettings" ref="searchSettings" />
+    </bean>
+    <bean id="facetFieldFactory" class="edu.unc.lib.boxc.search.solr.services.FacetFieldFactory">
+        <property name="searchSettings" ref="searchSettings" />
+    </bean>
+    <bean id="facetFieldUtil" class="edu.unc.lib.boxc.search.solr.utils.FacetFieldUtil">
+        <property name="searchSettings" ref="searchSettings" />
+    </bean>
+    <bean id="searchActionService" class="edu.unc.lib.boxc.web.common.search.SearchActionService">
+    </bean>
+    <bean id="searchStateUtil" class="edu.unc.lib.boxc.search.solr.utils.SearchStateUtil">
+        <property name="searchSettings" ref="searchSettings" />
+    </bean>
+        
+</beans>
