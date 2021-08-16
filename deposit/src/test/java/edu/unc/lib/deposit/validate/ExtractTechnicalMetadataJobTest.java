@@ -20,7 +20,6 @@ import static edu.unc.lib.boxc.model.api.xml.JDOMNamespaceUtil.FITS_NS;
 import static edu.unc.lib.boxc.model.api.xml.JDOMNamespaceUtil.PREMIS_V3_NS;
 import static org.awaitility.Awaitility.await;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -36,15 +35,20 @@ import static org.springframework.util.MimeTypeUtils.APPLICATION_OCTET_STREAM_VA
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.attribute.PosixFilePermissions;
 import java.time.Duration;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpStatus;
 import org.apache.http.StatusLine;
@@ -95,17 +99,17 @@ public class ExtractTechnicalMetadataJobTest extends AbstractDepositJobTest {
 
     private final static String OCTET_MIMETYPE = "application/octet-stream";
 
-    private final static String IMAGE_FILEPATH = "/path/image.jpg";
+    private final static String IMAGE_FILEPATH = "path/image.jpg";
     private final static String IMAGE_MD5 = "2b8dac0b2c0ca845dc8d517a2792dcf4";
     private final static String IMAGE_MIMETYPE = "image/jpeg";
     private final static String IMAGE_FORMAT = "JPEG File Interchange Format";
 
-    private final static String CONFLICT_FILEPATH = "/path/conflict.wav";
+    private final static String CONFLICT_FILEPATH = "path/conflict.wav";
     private final static String CONFLICT_MD5 = "1d442d115b472b21437893000b79c97a";
     private final static String CONFLICT_MIMETYPE = "audio/x-wave";
     private final static String CONFLICT_FORMAT = "Waveform Audio";
 
-    private final static String UNKNOWN_FILEPATH = "/path/unknown.stuff";
+    private final static String UNKNOWN_FILEPATH = "path/unknown.stuff";
     private final static String UNKNOWN_MD5 = "2748ba561254b629c2103cb2e1be3fc2";
     private final static String UNKNOWN_FORMAT = "Unknown";
 
@@ -130,16 +134,21 @@ public class ExtractTechnicalMetadataJobTest extends AbstractDepositJobTest {
     private Model model;
 
     private File techmdDir;
+    private Path fitsCommand;
 
     private final static ExecutorService executorService = Executors.newFixedThreadPool(2);
 
     @Before
     public void init() throws Exception {
+        File fitsHome = tmpFolder.newFolder("fits");
+        // Create fits command and make it executable
+        fitsCommand = new File(fitsHome, "fits.sh").toPath();
+
         job = new ExtractTechnicalMetadataJob(jobUUID, depositUUID);
         job.setDepositDirectory(depositDir);
         setField(job, "pidMinter", pidMinter);
         job.setHttpClient(httpClient);
-        job.setProcessFilesLocally(true);
+        job.setFitsHomePath(fitsHome.getAbsolutePath());
         job.setBaseFitsUri(FITS_BASE_URI);
 
         // Setup logging dependencies
@@ -197,7 +206,8 @@ public class ExtractTechnicalMetadataJobTest extends AbstractDepositJobTest {
 
         job.run();
 
-        verifyFileResults(filePid, IMAGE_MIMETYPE, IMAGE_FORMAT, IMAGE_MD5, IMAGE_FILEPATH, 1);
+        verifyRequestParameters(IMAGE_FILEPATH);
+        verifyFileResults(filePid, IMAGE_MIMETYPE, IMAGE_FORMAT, IMAGE_MD5, 1);
     }
 
     @Test
@@ -210,7 +220,8 @@ public class ExtractTechnicalMetadataJobTest extends AbstractDepositJobTest {
 
         job.run();
 
-        verifyFileResults(filePid, CONFLICT_MIMETYPE, CONFLICT_FORMAT, CONFLICT_MD5, CONFLICT_FILEPATH, 1);
+        verifyRequestParameters(CONFLICT_FILEPATH);
+        verifyFileResults(filePid, CONFLICT_MIMETYPE, CONFLICT_FORMAT, CONFLICT_MD5, 1);
     }
 
     @Test
@@ -223,7 +234,8 @@ public class ExtractTechnicalMetadataJobTest extends AbstractDepositJobTest {
 
         job.run();
 
-        verifyFileResults(filePid, CONFLICT_MIMETYPE, CONFLICT_FORMAT, CONFLICT_MD5, CONFLICT_FILEPATH, 1);
+        verifyRequestParameters(CONFLICT_FILEPATH);
+        verifyFileResults(filePid, CONFLICT_MIMETYPE, CONFLICT_FORMAT, CONFLICT_MD5, 1);
     }
 
     @Test
@@ -236,7 +248,8 @@ public class ExtractTechnicalMetadataJobTest extends AbstractDepositJobTest {
 
         job.run();
 
-        verifyFileResults(filePid, CONFLICT_MIMETYPE, CONFLICT_FORMAT, CONFLICT_MD5, CONFLICT_FILEPATH, 1);
+        verifyRequestParameters(CONFLICT_FILEPATH);
+        verifyFileResults(filePid, CONFLICT_MIMETYPE, CONFLICT_FORMAT, CONFLICT_MD5, 1);
     }
 
     @Test
@@ -249,7 +262,8 @@ public class ExtractTechnicalMetadataJobTest extends AbstractDepositJobTest {
 
         job.run();
 
-        verifyFileResults(filePid, CONFLICT_MIMETYPE, CONFLICT_FORMAT, CONFLICT_MD5, CONFLICT_FILEPATH, 1);
+        verifyRequestParameters(CONFLICT_FILEPATH);
+        verifyFileResults(filePid, CONFLICT_MIMETYPE, CONFLICT_FORMAT, CONFLICT_MD5, 1);
     }
 
     @Test
@@ -262,7 +276,8 @@ public class ExtractTechnicalMetadataJobTest extends AbstractDepositJobTest {
 
         job.run();
 
-        verifyFileResults(filePid, IMAGE_MIMETYPE, IMAGE_FORMAT, IMAGE_MD5, IMAGE_FILEPATH, 1);
+        verifyRequestParameters(IMAGE_FILEPATH);
+        verifyFileResults(filePid, IMAGE_MIMETYPE, IMAGE_FORMAT, IMAGE_MD5, 1);
     }
 
     @Test
@@ -275,7 +290,8 @@ public class ExtractTechnicalMetadataJobTest extends AbstractDepositJobTest {
 
         job.run();
 
-        verifyFileResults(filePid, APPLICATION_OCTET_STREAM_VALUE, UNKNOWN_FORMAT, UNKNOWN_MD5, UNKNOWN_FILEPATH, 1);
+        verifyRequestParameters(UNKNOWN_FILEPATH);
+        verifyFileResults(filePid, APPLICATION_OCTET_STREAM_VALUE, UNKNOWN_FORMAT, UNKNOWN_MD5, 1);
     }
 
     @Test
@@ -283,12 +299,13 @@ public class ExtractTechnicalMetadataJobTest extends AbstractDepositJobTest {
         respondWithFile("/fitsReports/textReport.xml");
 
         // Providing octet stream mimetype to be overrridden
-        PID filePid = addFileObject(depositBag, "/path/text.txt", "application/json", null);
+        PID filePid = addFileObject(depositBag, "path/text.txt", "application/json", null);
         job.closeModel();
 
         job.run();
 
-        verifyFileResults(filePid, "application/json", "Text", IMAGE_MD5, "/path/text.txt", 1);
+        verifyRequestParameters("/path/text.txt");
+        verifyFileResults(filePid, "application/json", "Text", IMAGE_MD5, 1);
     }
 
     @Test
@@ -301,7 +318,8 @@ public class ExtractTechnicalMetadataJobTest extends AbstractDepositJobTest {
 
         job.run();
 
-        verifyFileResults(filePid, IMAGE_MIMETYPE, IMAGE_FORMAT, IMAGE_MD5, IMAGE_FILEPATH, 1);
+        verifyRequestParameters(IMAGE_FILEPATH);
+        verifyFileResults(filePid, IMAGE_MIMETYPE, IMAGE_FORMAT, IMAGE_MD5, 1);
     }
 
     @Test
@@ -314,7 +332,8 @@ public class ExtractTechnicalMetadataJobTest extends AbstractDepositJobTest {
 
         job.run();
 
-        verifyFileResults(filePid, IMAGE_MIMETYPE, IMAGE_FORMAT, IMAGE_MD5, IMAGE_FILEPATH, 1);
+        verifyRequestParameters(IMAGE_FILEPATH);
+        verifyFileResults(filePid, IMAGE_MIMETYPE, IMAGE_FORMAT, IMAGE_MD5, 1);
     }
 
     @Test
@@ -327,7 +346,8 @@ public class ExtractTechnicalMetadataJobTest extends AbstractDepositJobTest {
 
         job.run();
 
-        verifyFileResults(filePid, IMAGE_MIMETYPE, IMAGE_FORMAT, IMAGE_MD5, IMAGE_FILEPATH, 1);
+        verifyRequestParameters(IMAGE_FILEPATH);
+        verifyFileResults(filePid, IMAGE_MIMETYPE, IMAGE_FORMAT, IMAGE_MD5, 1);
     }
 
     @Test
@@ -335,7 +355,7 @@ public class ExtractTechnicalMetadataJobTest extends AbstractDepositJobTest {
         respondWithFile("/fitsReports/imageReport.xml");
 
         techmdDir.mkdir();
-        PID skippedPid = addFileObject(depositBag, "/skipped/object.jpg", null, null);
+        PID skippedPid = addFileObject(depositBag, "skipped/object.jpg", null, null);
         Path skippedPath = job.getTechMdPath(skippedPid, true);
         Files.createFile(skippedPath);
 
@@ -349,7 +369,8 @@ public class ExtractTechnicalMetadataJobTest extends AbstractDepositJobTest {
 
         await().atMost(Duration.ofSeconds(2))
             .until(() -> techmdDir.list().length == 2);
-        verifyFileResults(filePid, IMAGE_MIMETYPE, IMAGE_FORMAT, IMAGE_MD5, IMAGE_FILEPATH, 2);
+        verifyRequestParameters(IMAGE_FILEPATH);
+        verifyFileResults(filePid, IMAGE_MIMETYPE, IMAGE_FORMAT, IMAGE_MD5, 2);
     }
 
     @Test
@@ -362,7 +383,8 @@ public class ExtractTechnicalMetadataJobTest extends AbstractDepositJobTest {
 
         job.run();
 
-        verifyFileResults(filePid, OCTET_MIMETYPE, UNKNOWN_FORMAT, UNKNOWN_MD5, UNKNOWN_FILEPATH, 1);
+        verifyRequestParameters(UNKNOWN_FILEPATH);
+        verifyFileResults(filePid, OCTET_MIMETYPE, UNKNOWN_FORMAT, UNKNOWN_MD5, 1);
     }
 
     @Test
@@ -413,7 +435,7 @@ public class ExtractTechnicalMetadataJobTest extends AbstractDepositJobTest {
 
     @Test
     public void unicodeFilenameTest() throws Exception {
-        respondWithFile("/fitsReports/imageReport.xml");
+        setupFitsCommand("src/test/resources/fitsReports/imageReport.xml");
 
         // Create the work object which nests the file
         PID workPid = makePid(RepositoryPathConstants.CONTENT_BASE);
@@ -422,17 +444,13 @@ public class ExtractTechnicalMetadataJobTest extends AbstractDepositJobTest {
         depositBag.add(workBag);
         String filename = "weird\uD83D\uDC7D.txt";
         File sourceFile = tmpFolder.newFile(filename);
-        addFileObject(workBag, sourceFile.getAbsolutePath(), IMAGE_MIMETYPE, IMAGE_MD5);
+        PID filePid = addFileObject(workBag, sourceFile.getAbsolutePath(), IMAGE_MIMETYPE, IMAGE_MD5);
 
         job.closeModel();
 
         job.run();
 
-        HttpUriRequest request = getRequest();
-        String submittedPath = getSubmittedFilePath(request);
-        System.out.println("Submitted " + submittedPath);
-        assertNotEquals("Submitted path should not match original",
-                sourceFile.getAbsolutePath().replace("/", "%2F"), submittedPath);
+        verifyFileResults(filePid, IMAGE_MIMETYPE, IMAGE_FORMAT, IMAGE_MD5, 1);
     }
 
     private HttpUriRequest getRequest() throws Exception {
@@ -449,19 +467,20 @@ public class ExtractTechnicalMetadataJobTest extends AbstractDepositJobTest {
         return submitted.replace(FITS_BASE_URI + "/examine?file=", "");
     }
 
-    private void verifyFileResults(PID filePid, String expectedMimetype, String expectedFormat,
-            String expectedChecksum, String expectedFilepath, int numberReports) throws Exception {
-
+    private void verifyRequestParameters(String expectedFilepath) throws Exception {
         String absFilePath = Paths.get(depositDir.getAbsolutePath(), expectedFilepath).toString();
-
-        model = job.getReadOnlyModel();
-        // Post-run model info for the file object
-        Resource fileResc = model.getResource(filePid.getRepositoryPath());
-
         HttpUriRequest request = getRequest();
         String submittedPath = getSubmittedFilePath(request);
 
         assertEquals("FITS service not called with the expected path", absFilePath.replace("/", "%2F"), submittedPath);
+    }
+
+    private void verifyFileResults(PID filePid, String expectedMimetype, String expectedFormat,
+            String expectedChecksum, int numberReports) throws Exception {
+
+        model = job.getReadOnlyModel();
+        // Post-run model info for the file object
+        Resource fileResc = model.getResource(filePid.getRepositoryPath());
 
         assertEquals("Incorrect number of reports in output dir",
                 numberReports, techmdDir.list().length);
@@ -502,7 +521,14 @@ public class ExtractTechnicalMetadataJobTest extends AbstractDepositJobTest {
         verify(jobStatusFactory, times(1)).incrCompletion(eq(jobUUID), eq(1));
     }
 
-    private PID addFileObject(Bag parent, String stagingLocation, String mimetype, String md5sum) {
+    private PID addFileObject(Bag parent, String stagingLocation, String mimetype, String md5sum) throws IOException {
+        try {
+            Path stagingPath = job.getDepositDirectory().toPath().resolve(stagingLocation);
+            Files.createDirectories(stagingPath.getParent());
+            Files.createFile(stagingPath);
+        } catch (FileAlreadyExistsException e) {
+            // Ignoring
+        }
         PID filePid = makePid(RepositoryPathConstants.CONTENT_BASE);
 
         Resource fileResc = parent.getModel().createResource(filePid.getRepositoryPath());
@@ -519,5 +545,13 @@ public class ExtractTechnicalMetadataJobTest extends AbstractDepositJobTest {
         parent.add(fileResc);
 
         return filePid;
+    }
+
+    private void setupFitsCommand(String docPath) throws IOException {
+        Files.createFile(fitsCommand);
+        FileUtils.write(fitsCommand.toFile(), "#!/usr/bin/env bash\n"
+                + "cat " + Paths.get(docPath).toAbsolutePath() + "\n"
+                + "exit 0", StandardCharsets.US_ASCII);
+        Files.setPosixFilePermissions(fitsCommand, PosixFilePermissions.fromString("rwxr--r--"));
     }
 }
