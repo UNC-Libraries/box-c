@@ -378,10 +378,15 @@ public class ExtractTechnicalMetadataJob extends AbstractConcurrentDepositJob {
 
     private Document extractUsingCLI(PID objPid, Path stagedPath) {
         try {
-            Process process = Runtime.getRuntime().exec(fitsCommandPath + " -i " + stagedPath);
+            String escapedPath = stagedPath.toString().replaceAll("\"", "\\\\\"");
+            String command = fitsCommandPath + " -i \"" + escapedPath + "\"";
+            Process process = Runtime.getRuntime().exec(command);
             if (process.waitFor() != 0) {
-                failJob(null, "Failed to generate report for {0}, script returned {1} with output:\n{2}",
-                        objPid, process.exitValue(), IOUtils.toString(process.getInputStream(), UTF_8));
+                String stdout = IOUtils.toString(process.getInputStream(), UTF_8);
+                String stderr = IOUtils.toString(process.getErrorStream(), UTF_8);
+                failJob(null, "Failed to generate report for {0}, using command:\n{1}\n"
+                        + "Script returned {3} with output:\n{4} {5}",
+                        objPid, command, process.exitValue(), stdout, stderr);
             }
             return createSAXBuilder().build(process.getInputStream());
         } catch (IOException | JDOMException | InterruptedException e) {
