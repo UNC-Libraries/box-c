@@ -197,6 +197,7 @@
         <constructor-arg type="java.lang.String" value="${clamd.host:localhost}" index="0" />
         <constructor-arg type="int" value="${clamd.port:3310}" index="1" />
         <constructor-arg type="int" value="${clamd.timeout:60000}" index="2" />
+        <property name="maxStreamSize" value="${clamd.maxStreamSize:64000000}" />
     </bean>
     
     <bean id="fileValidationExecutor" class="java.util.concurrent.Executors"
