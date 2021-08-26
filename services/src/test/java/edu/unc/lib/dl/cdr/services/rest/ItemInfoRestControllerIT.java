@@ -40,8 +40,8 @@ import edu.unc.lib.boxc.search.api.models.ContentObjectRecord;
 import edu.unc.lib.boxc.search.api.requests.IdListRequest;
 import edu.unc.lib.boxc.search.api.requests.SimpleIdRequest;
 import edu.unc.lib.boxc.search.solr.models.ContentObjectSolrRecord;
+import edu.unc.lib.boxc.web.common.services.SolrQueryLayerService;
 import edu.unc.lib.dl.cdr.services.rest.modify.AbstractAPIIT;
-import edu.unc.lib.dl.ui.service.SolrQueryLayerService;
 
 @ContextConfiguration("/item-info-it-servlet.xml")
 public class ItemInfoRestControllerIT extends AbstractAPIIT {

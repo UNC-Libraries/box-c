@@ -34,8 +34,8 @@ import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.boxc.search.api.SearchFieldKey;
 import edu.unc.lib.boxc.search.api.models.ContentObjectRecord;
 import edu.unc.lib.boxc.search.api.requests.SimpleIdRequest;
-import edu.unc.lib.dl.ui.exception.ResourceNotFoundException;
-import edu.unc.lib.dl.ui.util.SerializationUtil;
+import edu.unc.lib.boxc.web.common.exceptions.ResourceNotFoundException;
+import edu.unc.lib.boxc.web.common.utils.SerializationUtil;
 
 /**
  *

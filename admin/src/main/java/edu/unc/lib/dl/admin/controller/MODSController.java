@@ -40,8 +40,8 @@ import edu.unc.lib.boxc.operations.api.vocab.VocabularyHelper;
 import edu.unc.lib.boxc.operations.impl.vocab.VocabularyHelperManager;
 import edu.unc.lib.boxc.search.api.models.ContentObjectRecord;
 import edu.unc.lib.boxc.search.api.requests.SimpleIdRequest;
-import edu.unc.lib.dl.ui.controller.AbstractSolrSearchController;
-import edu.unc.lib.dl.ui.exception.InvalidRecordRequestException;
+import edu.unc.lib.boxc.web.common.controller.AbstractSolrSearchController;
+import edu.unc.lib.boxc.web.common.exceptions.InvalidRecordRequestException;
 
 /**
  *

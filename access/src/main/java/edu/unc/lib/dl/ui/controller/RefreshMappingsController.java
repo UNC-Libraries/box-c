@@ -30,8 +30,8 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import edu.unc.lib.boxc.auth.api.Permission;
 import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
 import edu.unc.lib.boxc.auth.api.services.GlobalPermissionEvaluator;
-import edu.unc.lib.dl.ui.exception.ResourceNotFoundException;
-import edu.unc.lib.dl.ui.view.XSLViewResolver;
+import edu.unc.lib.boxc.web.common.exceptions.ResourceNotFoundException;
+import edu.unc.lib.boxc.web.common.view.XSLViewResolver;
 
 /**
  * Allows admin users to trigger reloads of various UI specific mappings.

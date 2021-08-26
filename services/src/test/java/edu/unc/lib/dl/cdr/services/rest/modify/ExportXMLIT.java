@@ -67,8 +67,8 @@ import edu.unc.lib.boxc.search.api.requests.SearchState;
 import edu.unc.lib.boxc.search.solr.models.ContentObjectSolrRecord;
 import edu.unc.lib.boxc.search.solr.responses.SearchResultResponse;
 import edu.unc.lib.boxc.search.solr.services.SearchStateFactory;
+import edu.unc.lib.boxc.web.common.services.SolrQueryLayerService;
 import edu.unc.lib.dl.cdr.services.rest.modify.ExportXMLController.XMLExportRequest;
-import edu.unc.lib.dl.ui.service.SolrQueryLayerService;
 
 /**
  *

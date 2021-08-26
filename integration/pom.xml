@@ -57,7 +57,7 @@
         </dependency>
         <dependency>
             <groupId>edu.unc.lib.cdr</groupId>
-            <artifactId>access-common</artifactId>
+            <artifactId>web-common</artifactId>
         </dependency>
         <dependency>
             <groupId>edu.unc.lib.cdr</groupId>

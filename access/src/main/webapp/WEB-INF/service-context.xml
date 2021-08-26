@@ -51,7 +51,7 @@
 
     <!-- Utils -->
     
-    <bean id="permsHelper" class="edu.unc.lib.dl.ui.service.PermissionsHelper">
+    <bean id="permsHelper" class="edu.unc.lib.boxc.web.common.services.PermissionsHelper">
         <property name="accessControlService" ref="aclService" />
     </bean>
 
@@ -77,13 +77,13 @@
             destroy-method="shutdown">
     </bean>
 
-    <bean id="lorisContentService" class="edu.unc.lib.dl.ui.service.LorisContentService">
+    <bean id="lorisContentService" class="edu.unc.lib.boxc.web.common.services.LorisContentService">
         <property name="lorisPath" value="${loris.base.url}"/>
         <property name="basePath" value="${access.base.url}"/>
         <property name="httpClientConnectionManager" ref="httpClientConnectionManager" />
     </bean>
     
-    <bean id="findingAidUrlService" class="edu.unc.lib.dl.ui.service.FindingAidUrlService"
+    <bean id="findingAidUrlService" class="edu.unc.lib.boxc.web.common.services.FindingAidUrlService"
             init-method="init">
         <property name="httpClientConnectionManager" ref="httpClientConnectionManager" />
         <property name="findingAidBaseUrl" value="${findingaids.base.url}" />
@@ -101,7 +101,7 @@
 
     <!-- Map logical view names to physical views <bean class="org.springframework.web.servlet.view.InternalResourceViewResolver" 
         p:suffix=".jsp"/> -->
-    <bean class="edu.unc.lib.dl.ui.view.CDRViewResolver" p:suffix=".jsp">
+    <bean class="edu.unc.lib.boxc.web.common.view.CDRViewResolver" p:suffix=".jsp">
         <property name="exposedContextBeanNames">
             <list>
                 <value>searchSettings</value>
@@ -119,7 +119,7 @@
         <property name="redirectHttp10Compatible" value="false" />
     </bean>
 
-    <bean class="edu.unc.lib.dl.ui.view.XSLViewResolver">
+    <bean class="edu.unc.lib.boxc.web.common.view.XSLViewResolver">
         <property name="views">
             <map>
                 <entry key="external.xslView.fullRecord.url" value="/recordTransformations/modsToFullRecord.xsl"/>

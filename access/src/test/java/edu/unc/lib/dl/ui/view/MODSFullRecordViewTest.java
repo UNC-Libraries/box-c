@@ -34,6 +34,8 @@ import org.jdom2.xpath.XPathFactory;
 import org.junit.Before;
 import org.junit.Test;
 
+import edu.unc.lib.boxc.web.common.view.XSLComponentView;
+
 public class MODSFullRecordViewTest {
     private static String XSL_PATH = "/recordTransformations/modsToFullRecord.xsl";
 

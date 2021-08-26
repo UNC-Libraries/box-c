@@ -39,6 +39,7 @@ import edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore;
 import edu.unc.lib.boxc.search.api.requests.SearchState;
 import edu.unc.lib.boxc.search.solr.responses.SearchResultResponse;
 import edu.unc.lib.boxc.search.solr.utils.SearchStateUtil;
+import edu.unc.lib.boxc.web.common.controller.AbstractSolrSearchController;
 
 /**
  * Handles requests to the advanced search page, sending users to the form if there are no

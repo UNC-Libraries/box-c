@@ -26,6 +26,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 
 import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
 import edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore;
+import edu.unc.lib.boxc.web.common.controller.AbstractSolrSearchController;
 
 /**
  * Controller which populates the dynamic components making up the front page of

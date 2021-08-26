@@ -30,4 +30,5 @@
     <mvc:annotation-driven/>
 
     <context:component-scan base-package="edu.unc.lib.dl.ui.controller" />
+    <context:component-scan base-package="edu.unc.lib.boxc.web.common.controller" />
 </beans>

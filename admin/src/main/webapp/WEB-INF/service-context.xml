@@ -80,7 +80,7 @@
         destroy-method="shutdown">
     </bean>
 
-    <bean class="edu.unc.lib.dl.ui.view.CDRViewResolver" p:suffix=".jsp">
+    <bean class="edu.unc.lib.boxc.web.common.view.CDRViewResolver" p:suffix=".jsp">
         <property name="exposedContextBeanNames">
             <list>
                 <value>searchSettings</value>

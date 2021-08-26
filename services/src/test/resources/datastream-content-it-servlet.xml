@@ -32,12 +32,12 @@
 
     <context:component-scan resource-pattern="**/DatastreamController*" base-package="edu.unc.lib.dl.cdr.services.rest"/>
     
-    <bean id="fedoraContentService" class="edu.unc.lib.dl.ui.service.FedoraContentService">
+    <bean id="fedoraContentService" class="edu.unc.lib.boxc.web.common.services.FedoraContentService">
         <property name="accessControlService" ref="aclService" />
         <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
     </bean>
     
-    <bean id="derivativeContentService" class="edu.unc.lib.dl.ui.service.DerivativeContentService">
+    <bean id="derivativeContentService" class="edu.unc.lib.boxc.web.common.services.DerivativeContentService">
         <property name="accessControlService" ref="aclService" />
     </bean>
     
@@ -46,6 +46,6 @@
     </bean>
     
     <bean id="analyticsTracker" class="org.mockito.Mockito" factory-method="mock">
-        <constructor-arg value="edu.unc.lib.dl.ui.util.AnalyticsTrackerUtil" />
+        <constructor-arg value="edu.unc.lib.boxc.web.common.utils.AnalyticsTrackerUtil" />
     </bean>
 </beans>

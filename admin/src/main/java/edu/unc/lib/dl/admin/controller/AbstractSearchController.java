@@ -26,7 +26,7 @@ import edu.unc.lib.boxc.search.api.requests.SearchRequest;
 import edu.unc.lib.boxc.search.api.requests.SearchState;
 import edu.unc.lib.boxc.search.solr.responses.SearchResultResponse;
 import edu.unc.lib.boxc.search.solr.services.ChildrenCountService;
-import edu.unc.lib.dl.ui.controller.AbstractSolrSearchController;
+import edu.unc.lib.boxc.web.common.controller.AbstractSolrSearchController;
 
 /**
  *

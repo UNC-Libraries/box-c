@@ -42,6 +42,7 @@ import edu.unc.lib.boxc.search.solr.facets.CutoffFacetImpl;
 import edu.unc.lib.boxc.search.solr.responses.SearchResultResponse;
 import edu.unc.lib.boxc.search.solr.services.MultiSelectFacetListService;
 import edu.unc.lib.boxc.search.solr.services.ParentCollectionFacetTitleService;
+import edu.unc.lib.boxc.web.common.controller.AbstractSolrSearchController;
 
 /**
  * Controller which interprets the provided search state, from either the last search state in the session or from GET

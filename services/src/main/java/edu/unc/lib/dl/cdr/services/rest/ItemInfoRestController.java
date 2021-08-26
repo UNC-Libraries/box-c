@@ -39,7 +39,7 @@ import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.boxc.search.api.models.ContentObjectRecord;
 import edu.unc.lib.boxc.search.api.requests.IdListRequest;
 import edu.unc.lib.boxc.search.api.requests.SimpleIdRequest;
-import edu.unc.lib.dl.ui.service.SolrQueryLayerService;
+import edu.unc.lib.boxc.web.common.services.SolrQueryLayerService;
 
 /**
  *

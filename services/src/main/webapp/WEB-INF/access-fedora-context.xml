@@ -147,7 +147,7 @@
     
     <bean class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
         <property name="staticMethod"
-            value="edu.unc.lib.dl.ui.util.DatastreamUtil.setDatastreamEndpoint" />
+            value="edu.unc.lib.boxc.web.common.utils.DatastreamUtil.setDatastreamEndpoint" />
         <property name="arguments">
             <list>
                 <value>${services.api.url}</value>

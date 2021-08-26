@@ -30,6 +30,6 @@
 
     <mvc:annotation-driven/>
 
-    <context:component-scan base-package="edu.unc.lib.dl.cdr.sword.server.servlets" />
+    <context:component-scan base-package="edu.unc.lib.boxc.web.sword.servlets" />
 
 </beans>

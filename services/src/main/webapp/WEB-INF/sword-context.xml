@@ -33,7 +33,7 @@
     
     <!-- SWORD config -->
 
-    <bean id="config" class="edu.unc.lib.dl.cdr.sword.server.SwordConfigurationImpl">
+    <bean id="config" class="edu.unc.lib.boxc.web.sword.SwordConfigurationImpl">
         <property name="authType" value="Basic"/>
         <property name="swordPath" ref="swordPath"/>
         <property name="basePath" value="${services.base.url}"/>
@@ -45,33 +45,33 @@
         <property name="adminDepositor" value="${sword.username}"/>
     </bean>
     
-    <bean id="depositReportingUtil" class="edu.unc.lib.dl.cdr.sword.server.util.DepositReportingUtil">
+    <bean id="depositReportingUtil" class="edu.unc.lib.boxc.web.sword.utils.DepositReportingUtil">
     </bean>
     
-    <bean id="collectionListManager" class="edu.unc.lib.dl.cdr.sword.server.managers.CollectionListManagerImpl">
+    <bean id="collectionListManager" class="edu.unc.lib.boxc.web.sword.managers.CollectionListManagerImpl">
         <property name="pageSize" value="50"/>
     </bean>
     
-    <bean id="collectionDepositManager" class="edu.unc.lib.dl.cdr.sword.server.managers.CollectionDepositManagerImpl">
+    <bean id="collectionDepositManager" class="edu.unc.lib.boxc.web.sword.managers.CollectionDepositManagerImpl">
         <property name="depositService" ref="depositSubmissionService" />
         <property name="priorityDepositors" value="${sword.priorityDepositors:''}" />
         <property name="depositReportingUtil" ref="depositReportingUtil" />
     </bean>
     
-    <bean id="serviceDocumentManager" class="edu.unc.lib.dl.cdr.sword.server.managers.ServiceDocumentManagerImpl" >
+    <bean id="serviceDocumentManager" class="edu.unc.lib.boxc.web.sword.managers.ServiceDocumentManagerImpl" >
         <property name="acceptedPackaging" ref="packageHandlers" />
     </bean>
     
-    <bean id="containerManager" class="edu.unc.lib.dl.cdr.sword.server.managers.ContainerManagerImpl">
+    <bean id="containerManager" class="edu.unc.lib.boxc.web.sword.managers.ContainerManagerImpl">
     </bean>
     
-    <bean id="mediaResourceManager" class="edu.unc.lib.dl.cdr.sword.server.managers.MediaResourceManagerImpl">
+    <bean id="mediaResourceManager" class="edu.unc.lib.boxc.web.sword.managers.MediaResourceManagerImpl">
     </bean>
     
-    <bean id="statementManager" class="edu.unc.lib.dl.cdr.sword.server.managers.StatementManagerImpl">
+    <bean id="statementManager" class="edu.unc.lib.boxc.web.sword.managers.StatementManagerImpl">
     </bean>
     
-    <bean id="depositorAccessControlFilter" class="edu.unc.lib.dl.cdr.sword.server.filters.DepositorAccessControlFilter">
+    <bean id="depositorAccessControlFilter" class="edu.unc.lib.boxc.web.sword.filters.DepositorAccessControlFilter">
         <property name="swordConfig" ref="config"/>
     </bean>
     

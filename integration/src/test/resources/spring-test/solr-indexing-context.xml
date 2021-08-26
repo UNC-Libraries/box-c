@@ -129,7 +129,7 @@
         <property name="disablePermissionFiltering" value="true" />
     </bean>
 
-    <bean id="queryLayer" class="edu.unc.lib.dl.ui.service.SolrQueryLayerService">
+    <bean id="queryLayer" class="edu.unc.lib.boxc.web.common.services.SolrQueryLayerService">
         <property name="solrSettings" ref="solrSettings" />
         <property name="searchSettings" ref="searchSettings" />
         <property name="searchStateFactory" ref="searchStateFactory" />

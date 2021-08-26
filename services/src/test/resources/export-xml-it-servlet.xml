@@ -41,7 +41,7 @@
     </bean>
 
     <bean id="queryLayer" class="org.mockito.Mockito" factory-method="mock">
-        <constructor-arg value="edu.unc.lib.dl.ui.service.SolrQueryLayerService" />
+        <constructor-arg value="edu.unc.lib.boxc.web.common.services.SolrQueryLayerService" />
     </bean>
 
     <bean id="searchSettings" class="org.mockito.Mockito" factory-method="mock">

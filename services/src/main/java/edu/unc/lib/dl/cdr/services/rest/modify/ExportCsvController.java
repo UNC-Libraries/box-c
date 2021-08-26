@@ -36,8 +36,8 @@ import edu.unc.lib.boxc.model.api.exceptions.NotFoundException;
 import edu.unc.lib.boxc.model.api.exceptions.RepositoryException;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
+import edu.unc.lib.boxc.web.common.controller.AbstractSolrSearchController;
 import edu.unc.lib.dl.cdr.services.processing.ExportCsvService;
-import edu.unc.lib.dl.ui.controller.AbstractSolrSearchController;
 
 /**
  * Controller which generates a CSV listing of a repository object

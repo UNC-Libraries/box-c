@@ -88,7 +88,7 @@
     
     <filter>
         <filter-name>SwordHeaderRewriteFilter</filter-name>
-        <filter-class>edu.unc.lib.dl.cdr.sword.server.filters.SwordHeaderRewriteFilter</filter-class>
+        <filter-class>edu.unc.lib.boxc.web.sword.filters.SwordHeaderRewriteFilter</filter-class>
     </filter>
     <filter-mapping>
         <filter-name>SwordHeaderRewriteFilter</filter-name>

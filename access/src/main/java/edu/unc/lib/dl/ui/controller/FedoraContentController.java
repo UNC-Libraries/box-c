@@ -46,9 +46,9 @@ import edu.unc.lib.boxc.model.api.objects.RepositoryObject;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.api.objects.WorkObject;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
-import edu.unc.lib.dl.ui.exception.ResourceNotFoundException;
-import edu.unc.lib.dl.ui.service.FedoraContentService;
-import edu.unc.lib.dl.ui.util.AnalyticsTrackerUtil;
+import edu.unc.lib.boxc.web.common.exceptions.ResourceNotFoundException;
+import edu.unc.lib.boxc.web.common.services.FedoraContentService;
+import edu.unc.lib.boxc.web.common.utils.AnalyticsTrackerUtil;
 
 /**
  * Controller which handles requests for specific content datastreams from Fedora and streams the results back as the

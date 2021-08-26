@@ -20,7 +20,7 @@
 
     <!-- Import controllers -->
     <context:component-scan base-package="edu.unc.lib.dl.admin.controller" />
-    <context:component-scan base-package="edu.unc.lib.dl.ui.controller.structure" />
+    <context:component-scan base-package="edu.unc.lib.boxc.web.common.controller.structure" />
     
     <mvc:annotation-driven/>
 </beans>

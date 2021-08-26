@@ -44,7 +44,7 @@ import edu.unc.lib.boxc.search.api.requests.SearchState;
 import edu.unc.lib.boxc.search.api.requests.SimpleIdRequest;
 import edu.unc.lib.boxc.search.solr.facets.GenericFacet;
 import edu.unc.lib.boxc.search.solr.responses.SearchResultResponse;
-import edu.unc.lib.dl.ui.service.SolrQueryLayerService;
+import edu.unc.lib.boxc.web.common.services.SolrQueryLayerService;
 import io.dropwizard.metrics5.Timer;
 
 /**

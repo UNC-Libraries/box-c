@@ -44,10 +44,10 @@ import edu.unc.lib.boxc.model.api.exceptions.NotFoundException;
 import edu.unc.lib.boxc.model.api.exceptions.ObjectTypeMismatchException;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
-import edu.unc.lib.dl.ui.exception.ResourceNotFoundException;
-import edu.unc.lib.dl.ui.service.DerivativeContentService;
-import edu.unc.lib.dl.ui.service.FedoraContentService;
-import edu.unc.lib.dl.ui.util.AnalyticsTrackerUtil;
+import edu.unc.lib.boxc.web.common.exceptions.ResourceNotFoundException;
+import edu.unc.lib.boxc.web.common.services.DerivativeContentService;
+import edu.unc.lib.boxc.web.common.services.FedoraContentService;
+import edu.unc.lib.boxc.web.common.utils.AnalyticsTrackerUtil;
 
 /**
  *

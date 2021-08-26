@@ -60,12 +60,13 @@ import edu.unc.lib.boxc.search.api.requests.SimpleIdRequest;
 import edu.unc.lib.boxc.search.solr.services.ChildrenCountService;
 import edu.unc.lib.boxc.search.solr.services.GetCollectionIdService;
 import edu.unc.lib.boxc.search.solr.services.NeighborQueryService;
-import edu.unc.lib.dl.ui.exception.InvalidRecordRequestException;
-import edu.unc.lib.dl.ui.exception.RenderViewException;
-import edu.unc.lib.dl.ui.service.AccessCopiesService;
-import edu.unc.lib.dl.ui.service.FindingAidUrlService;
-import edu.unc.lib.dl.ui.util.ModsUtil;
-import edu.unc.lib.dl.ui.view.XSLViewResolver;
+import edu.unc.lib.boxc.web.common.controller.AbstractSolrSearchController;
+import edu.unc.lib.boxc.web.common.exceptions.InvalidRecordRequestException;
+import edu.unc.lib.boxc.web.common.exceptions.RenderViewException;
+import edu.unc.lib.boxc.web.common.services.AccessCopiesService;
+import edu.unc.lib.boxc.web.common.services.FindingAidUrlService;
+import edu.unc.lib.boxc.web.common.utils.ModsUtil;
+import edu.unc.lib.boxc.web.common.view.XSLViewResolver;
 
 /**
  * Controller which retrieves data necessary for populating the full record page, retrieving supplemental information

@@ -38,7 +38,7 @@ import edu.unc.lib.boxc.operations.api.vocab.VocabularyHelper;
 import edu.unc.lib.boxc.operations.impl.vocab.VocabularyHelperManager;
 import edu.unc.lib.boxc.search.api.models.ContentObjectRecord;
 import edu.unc.lib.boxc.search.api.requests.SearchRequest;
-import edu.unc.lib.dl.ui.util.SerializationUtil;
+import edu.unc.lib.boxc.web.common.utils.SerializationUtil;
 
 /**
  * @author bbpennel

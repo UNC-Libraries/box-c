@@ -184,9 +184,9 @@
         <module>search-api</module>
         <module>indexing-solr</module>
         <module>search-solr</module>
-        <module>sword-server</module>
+        <module>web-sword</module>
         <module>admin</module>
-        <module>access-common</module>
+        <module>web-common</module>
         <module>deposit</module>
         <module>clamav-java</module>
         <module>spoof</module>
@@ -641,7 +641,7 @@
             </dependency>
             <dependency>
                 <groupId>edu.unc.lib.cdr</groupId>
-                <artifactId>access-common</artifactId>
+                <artifactId>web-common</artifactId>
                 <version>${cdr.version}</version>
             </dependency>
             <dependency>
@@ -690,7 +690,7 @@
             </dependency>
             <dependency>
                 <groupId>edu.unc.lib.cdr</groupId>
-                <artifactId>sword-server</artifactId>
+                <artifactId>web-sword</artifactId>
                 <version>${cdr.version}</version>
             </dependency>
             <dependency>

@@ -205,13 +205,13 @@
             destroy-method="shutdown">
     </bean>
     
-    <bean id="analyticsTracker" class="edu.unc.lib.dl.ui.util.AnalyticsTrackerUtil">
+    <bean id="analyticsTracker" class="edu.unc.lib.boxc.web.common.utils.AnalyticsTrackerUtil">
         <property name="gaTrackingID" ref="gaTrackingID" />
         <property name="solrSearchService" ref="unrestrictedSolrSearchService" />
         <property name="httpClientConnectionManager" ref="httpClientConnectionManager" />
     </bean>
     
-    <bean id="fedoraContentService" class="edu.unc.lib.dl.ui.service.FedoraContentService">
+    <bean id="fedoraContentService" class="edu.unc.lib.boxc.web.common.services.FedoraContentService">
         <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
         <property name="accessControlService" ref="aclService" />
     </bean>
@@ -368,7 +368,7 @@
         <property name="derivativeDir" value="${derivative.dir}" />
     </bean>
    
-    <bean id="derivativeContentService" class="edu.unc.lib.dl.ui.service.DerivativeContentService">
+    <bean id="derivativeContentService" class="edu.unc.lib.boxc.web.common.services.DerivativeContentService">
         <property name="accessControlService" ref="aclService" />
         <property name="derivativeService" ref="derivativeService" />
     </bean>
@@ -421,7 +421,7 @@
     </bean>
     
     <bean class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
-        <property name="staticMethod" value="edu.unc.lib.dl.ui.util.SerializationUtil.injectSettings"/>
+        <property name="staticMethod" value="edu.unc.lib.boxc.web.common.utils.SerializationUtil.injectSettings"/>
         <property name="arguments">
             <list>
                 <ref bean="searchSettings"/>

@@ -85,7 +85,7 @@
     </bean>
     
     <bean id="analyticsTracker" class="org.mockito.Mockito" factory-method="mock">
-        <constructor-arg value="edu.unc.lib.dl.ui.util.AnalyticsTrackerUtil" />
+        <constructor-arg value="edu.unc.lib.boxc.web.common.utils.AnalyticsTrackerUtil" />
     </bean>
     
     <bean id="aclService" class="org.mockito.Mockito" factory-method="mock">
