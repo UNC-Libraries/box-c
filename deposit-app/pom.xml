@@ -34,10 +34,6 @@
         </dependency>
         <dependency>
             <groupId>edu.unc.lib.cdr</groupId>
-            <artifactId>metadata</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>edu.unc.lib.cdr</groupId>
             <artifactId>common-utils</artifactId>
             <type>test-jar</type>
             <scope>test</scope>

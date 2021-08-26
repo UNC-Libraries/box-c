@@ -147,7 +147,7 @@
         <maven-war-plugin.version>3.1.0</maven-war-plugin.version>
         <maven-shade-plugin.version>3.2.1</maven-shade-plugin.version>
         
-        <build-tools.path>metadata/src/main/resources/</build-tools.path>
+        <build-tools.path>common-utils/src/main/resources/</build-tools.path>
     </properties>
 
     <distributionManagement>
@@ -182,7 +182,6 @@
         <module>fcrepo-utils</module>
         <module>indexing-solr</module>
         <module>integration</module>
-        <module>metadata</module>
         <module>model-api</module>
         <module>model-fcrepo</module>
         <module>operations-jms</module>
@@ -577,11 +576,6 @@
                 <version>${cdr.version}</version>
                 <type>test-jar</type>
                 <scope>test</scope>
-            </dependency>
-            <dependency>
-                <groupId>edu.unc.lib.cdr</groupId>
-                <artifactId>metadata</artifactId>
-                <version>${cdr.version}</version>
             </dependency>
             <dependency>
                 <groupId>edu.unc.lib.cdr</groupId>

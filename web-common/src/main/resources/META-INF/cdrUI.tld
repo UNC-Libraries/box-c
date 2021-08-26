@@ -147,14 +147,14 @@
 	</function>
 	<function>
 		<name>getSearchQueryParameters</name>
-		<function-class>edu.unc.lib.dl.search.solr.util.SearchStateUtil</function-class>
+		<function-class>edu.unc.lib.boxc.search.solr.utils.SearchStateUtil</function-class>
 		<function-signature>
 			java.lang.String generateSearchParameterString(edu.unc.lib.boxc.search.api.requests.SearchState)
 		</function-signature>
 	</function>
 	<function>
 		<name>getSearchStateParameters</name>
-		<function-class>edu.unc.lib.dl.search.solr.util.SearchStateUtil</function-class>
+		<function-class>edu.unc.lib.boxc.search.solr.utils.SearchStateUtil</function-class>
 		<function-signature>
 			java.lang.String generateStateParameterString(edu.unc.lib.boxc.search.api.requests.SearchState)
 		</function-signature>

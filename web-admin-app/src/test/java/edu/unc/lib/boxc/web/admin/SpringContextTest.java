@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package edu.unc.lib.dl.admin;
+package edu.unc.lib.boxc.web.admin;
 
 import org.junit.BeforeClass;
 import org.junit.Test;

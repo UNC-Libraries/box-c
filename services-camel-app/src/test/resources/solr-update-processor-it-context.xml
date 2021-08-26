@@ -151,7 +151,7 @@
         <property name="pubSubDomain" value="false" />
     </bean>
     
-    <bean id="abstractMessageSender" class="edu.unc.lib.dl.services.AbstractMessageSender" abstract="true" >
+    <bean id="abstractMessageSender" class="edu.unc.lib.boxc.operations.jms.MessageSender" abstract="true" >
         <property name="jmsTemplate" ref="solrUpdateJmsTemplate" />
     </bean>
     

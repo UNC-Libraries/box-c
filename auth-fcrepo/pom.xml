@@ -37,10 +37,6 @@
 
         <dependency>
             <groupId>edu.unc.lib.cdr</groupId>
-            <artifactId>metadata</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>edu.unc.lib.cdr</groupId>
             <artifactId>model-fcrepo</artifactId>
         </dependency>
         <dependency>
