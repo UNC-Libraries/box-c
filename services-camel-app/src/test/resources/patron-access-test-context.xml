@@ -36,12 +36,12 @@
         <constructor-arg  value="edu.unc.lib.boxc.operations.impl.acl.PatronAccessAssignmentService" />
     </bean>
 
-    <bean id="patronAccessAssignmentProcessor" class="edu.unc.lib.dl.services.camel.patronAccess.PatronAccessAssignmentProcessor">
+    <bean id="patronAccessAssignmentProcessor" class="edu.unc.lib.boxc.services.camel.patronAccess.PatronAccessAssignmentProcessor">
         <property name="patronAccessAssignmentService" ref="patronAccessAssignmentService" />
     </bean>
 
     <camel:camelContext id="CdrUpdatePatronAccess">
-        <camel:package>edu.unc.lib.dl.services.camel.patronAccess</camel:package>
+        <camel:package>edu.unc.lib.boxc.services.camel.patronAccess</camel:package>
     </camel:camelContext>
     
 </beans>

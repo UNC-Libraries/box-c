@@ -274,7 +274,7 @@
     </dependencies>
 
     <build>
-        <finalName>services-camel</finalName>
+        <finalName>${artifactId}</finalName>
         <plugins>
             <plugin>
                 <artifactId>maven-failsafe-plugin</artifactId>

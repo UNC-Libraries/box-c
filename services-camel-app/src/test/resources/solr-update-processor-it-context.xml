@@ -66,7 +66,7 @@
     <bean id="commitAction" class="edu.unc.lib.boxc.indexing.solr.action.CommitAction">
     </bean>
 
-    <bean id="getUrisProcessor" class="edu.unc.lib.dl.services.camel.longleaf.GetUrisProcessor">
+    <bean id="getUrisProcessor" class="edu.unc.lib.boxc.services.camel.longleaf.GetUrisProcessor">
     </bean>
     
     <bean id="updateAccessControlAction"
@@ -159,25 +159,25 @@
         class="edu.unc.lib.boxc.operations.jms.indexing.IndexingMessageSender">
     </bean>
     
-    <bean id="solrSmallUpdateProcessor" class="edu.unc.lib.dl.services.camel.solrUpdate.SolrUpdateProcessor">
+    <bean id="solrSmallUpdateProcessor" class="edu.unc.lib.boxc.services.camel.solrUpdate.SolrUpdateProcessor">
         <property name="solrIndexingActionMap" ref="solrIndexingActionMap"/>
     </bean>
     
-    <bean id="solrLargeUpdateProcessor" class="edu.unc.lib.dl.services.camel.solrUpdate.SolrUpdateProcessor">
+    <bean id="solrLargeUpdateProcessor" class="edu.unc.lib.boxc.services.camel.solrUpdate.SolrUpdateProcessor">
         <property name="solrIndexingActionMap" ref="solrIndexingActionMap"/>
     </bean>
     
-    <bean id="cacheInvalidatingProcessor" class="edu.unc.lib.dl.services.camel.util.CacheInvalidatingProcessor">
+    <bean id="cacheInvalidatingProcessor" class="edu.unc.lib.boxc.services.camel.util.CacheInvalidatingProcessor">
         <property name="repositoryObjectLoader" ref="repositoryObjectLoader"/>
         <property name="objectAclFactory" ref="objectAclFactory"/>
     </bean>
     
-    <bean id="solrUpdatePreprocessor" class="edu.unc.lib.dl.services.camel.solrUpdate.SolrUpdatePreprocessor">
+    <bean id="solrUpdatePreprocessor" class="edu.unc.lib.boxc.services.camel.solrUpdate.SolrUpdatePreprocessor">
     </bean>
     
-    <bean id="bodyListAggregationStrategy" class="edu.unc.lib.dl.services.camel.util.BodyListAggregationStrategy"/>
+    <bean id="bodyListAggregationStrategy" class="edu.unc.lib.boxc.services.camel.util.BodyListAggregationStrategy"/>
         
     <camel:camelContext id="cdrServiceSolrUpdate">
-        <camel:package>edu.unc.lib.dl.services.camel.solrUpdate</camel:package>
+        <camel:package>edu.unc.lib.boxc.services.camel.solrUpdate</camel:package>
     </camel:camelContext>
 </beans>

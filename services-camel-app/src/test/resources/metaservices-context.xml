@@ -22,23 +22,23 @@
     </bean>
     
     <bean id="binaryMetadataProcessor" class="org.mockito.Mockito" factory-method="mock">
-        <constructor-arg value="edu.unc.lib.dl.services.camel.BinaryMetadataProcessor" />
+        <constructor-arg value="edu.unc.lib.boxc.services.camel.BinaryMetadataProcessor" />
     </bean>
 
     <bean id="binaryEnhancementProcessor" class="org.mockito.Mockito" factory-method="mock">
-        <constructor-arg value="edu.unc.lib.dl.services.camel.BinaryEnhancementProcessor" />
+        <constructor-arg value="edu.unc.lib.boxc.services.camel.BinaryEnhancementProcessor" />
     </bean>
 
     <bean id="nonBinaryEnhancementProcessor" class="org.mockito.Mockito" factory-method="mock">
-        <constructor-arg value="edu.unc.lib.dl.services.camel.NonBinaryEnhancementProcessor" />
+        <constructor-arg value="edu.unc.lib.boxc.services.camel.NonBinaryEnhancementProcessor" />
     </bean>
     
     <bean id="cacheInvalidatingProcessor" class="org.mockito.Mockito" factory-method="mock">
-        <constructor-arg value="edu.unc.lib.dl.services.camel.util.CacheInvalidatingProcessor" />
+        <constructor-arg value="edu.unc.lib.boxc.services.camel.util.CacheInvalidatingProcessor" />
     </bean>
 
     <camel:camelContext id="CdrMetaServicesRouter">
-        <camel:package>edu.unc.lib.dl.services.camel.routing</camel:package>
+        <camel:package>edu.unc.lib.boxc.services.camel.routing</camel:package>
     </camel:camelContext>
     
 </beans>

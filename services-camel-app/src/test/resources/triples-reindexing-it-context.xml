@@ -32,7 +32,7 @@
         <constructor-arg value="${triplestore.reindex.stream}" />
     </bean>
     
-    <bean id="indexingMessageProcessor" class="edu.unc.lib.dl.services.camel.triplesReindexing.IndexingMessageProcessor">
+    <bean id="indexingMessageProcessor" class="edu.unc.lib.boxc.services.camel.triplesReindexing.IndexingMessageProcessor">
     </bean>
     
     <bean id="httpClientConnectionManager" class="org.apache.http.impl.conn.PoolingHttpClientConnectionManager"
@@ -63,7 +63,7 @@
         <constructor-arg value="edu.unc.lib.boxc.auth.api.services.AccessControlService" />
     </bean>
 
-    <bean id="getUrisProcessor" class="edu.unc.lib.dl.services.camel.longleaf.GetUrisProcessor">
+    <bean id="getUrisProcessor" class="edu.unc.lib.boxc.services.camel.longleaf.GetUrisProcessor">
     </bean>
     
     <camel:camelContext id="fcrepoTriplestoreIndexer">
@@ -71,6 +71,6 @@
     </camel:camelContext>
 
     <camel:camelContext id="cdrServiceTriplesReindexing">
-        <camel:package>edu.unc.lib.dl.services.camel.triplesReindexing</camel:package>
+        <camel:package>edu.unc.lib.boxc.services.camel.triplesReindexing</camel:package>
     </camel:camelContext>
 </beans>

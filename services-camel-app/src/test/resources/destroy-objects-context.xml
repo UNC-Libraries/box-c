@@ -13,7 +13,7 @@
         http://camel.apache.org/schema/spring
         http://camel.apache.org/schema/spring/camel-spring.xsd">
     
-    <bean id="destroyObjectsProcessor" class="edu.unc.lib.dl.services.camel.destroy.DestroyObjectsProcessor">
+    <bean id="destroyObjectsProcessor" class="edu.unc.lib.boxc.services.camel.destroy.DestroyObjectsProcessor">
         <property name="aclService" ref="aclService" />
         <property name="repositoryObjectFactory" ref="repositoryObjectFactory" />
         <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
@@ -67,7 +67,7 @@
     </bean>
 
     <camel:camelContext id="cdrDestroyObjects">
-        <camel:package>edu.unc.lib.dl.services.camel.destroy</camel:package>
+        <camel:package>edu.unc.lib.boxc.services.camel.destroy</camel:package>
     </camel:camelContext>
     
 </beans>

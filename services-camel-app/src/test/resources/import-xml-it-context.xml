@@ -96,7 +96,7 @@
         <property name="modsValidator" ref="modsValidator" />
     </bean>
     
-    <bean id="importXMLProcessor" class="edu.unc.lib.dl.services.camel.importxml.ImportXMLProcessor">
+    <bean id="importXMLProcessor" class="edu.unc.lib.boxc.services.camel.importxml.ImportXMLProcessor">
         <property name="updateService" ref="updateDescriptionService" />
         <property name="mailSender" ref="mailSender" />
         <property name="updateCompleteTemplate" ref="updateCompleteTemplate" />
@@ -112,7 +112,7 @@
     </bean>
 
     <camel:camelContext id="cdrImportXML">
-        <camel:package>edu.unc.lib.dl.services.camel.importxml</camel:package>
+        <camel:package>edu.unc.lib.boxc.services.camel.importxml</camel:package>
     </camel:camelContext>
   
 </beans>

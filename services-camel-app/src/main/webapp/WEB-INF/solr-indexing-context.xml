@@ -379,31 +379,31 @@
         <property name="dataLoader" ref="dipDataLoader" />
     </bean>
     
-    <bean id="solrIngestProcessor" class="edu.unc.lib.dl.services.camel.solr.SolrIngestProcessor">
+    <bean id="solrIngestProcessor" class="edu.unc.lib.boxc.services.camel.solr.SolrIngestProcessor">
         <constructor-arg ref="dipFactory" />
         <constructor-arg ref="solrFullUpdatePipeline" />
         <constructor-arg ref="solrUpdateDriver" />
         <constructor-arg ref="repositoryObjectLoader" />
     </bean>
     
-    <bean id="cdrEventToSolrUpdateProcessor" class="edu.unc.lib.dl.services.camel.solr.CdrEventToSolrUpdateProcessor">
+    <bean id="cdrEventToSolrUpdateProcessor" class="edu.unc.lib.boxc.services.camel.solr.CdrEventToSolrUpdateProcessor">
         <property name="indexingMessageSender" ref="indexingMessageSender" />
     </bean>
     
-    <bean id="solrLargeUpdateProcessor" class="edu.unc.lib.dl.services.camel.solrUpdate.SolrUpdateProcessor">
+    <bean id="solrLargeUpdateProcessor" class="edu.unc.lib.boxc.services.camel.solrUpdate.SolrUpdateProcessor">
         <property name="solrIndexingActionMap" ref="solrIndexingActionMap"/>
     </bean>
     
-    <bean id="solrSmallUpdateProcessor" class="edu.unc.lib.dl.services.camel.solrUpdate.SolrUpdateProcessor">
+    <bean id="solrSmallUpdateProcessor" class="edu.unc.lib.boxc.services.camel.solrUpdate.SolrUpdateProcessor">
         <property name="solrIndexingActionMap" ref="solrIndexingActionMap"/>
     </bean>
     
-    <bean id="solrUpdatePreprocessor" class="edu.unc.lib.dl.services.camel.solrUpdate.SolrUpdatePreprocessor">
+    <bean id="solrUpdatePreprocessor" class="edu.unc.lib.boxc.services.camel.solrUpdate.SolrUpdatePreprocessor">
     </bean>
     
-    <bean id="bodyListAggregationStrategy" class="edu.unc.lib.dl.services.camel.util.BodyListAggregationStrategy"/>
+    <bean id="bodyListAggregationStrategy" class="edu.unc.lib.boxc.services.camel.util.BodyListAggregationStrategy"/>
     
     <camel:camelContext id="CdrServiceSolrUpdate">
-        <camel:package>edu.unc.lib.dl.services.camel.solrUpdate</camel:package>
+        <camel:package>edu.unc.lib.boxc.services.camel.solrUpdate</camel:package>
     </camel:camelContext>
 </beans>

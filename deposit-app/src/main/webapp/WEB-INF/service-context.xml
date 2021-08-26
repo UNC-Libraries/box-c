@@ -148,13 +148,13 @@
         <ref bean="cdrMetsDepositWorkerPool"/>
     </util:list>
 
-    <bean id="depositSupervisor" class="edu.unc.lib.deposit.work.DepositSupervisor">
+    <bean id="depositSupervisor" class="edu.unc.lib.boxc.deposit.work.DepositSupervisor">
         <property name="jesqueConfig" ref="jesqueConfig"/>
         <property name="cleanupDelaySeconds" value="${cleanup.delay.seconds:60}"/>
         <property name="unavailableDelaySeconds" value="${unavailable.delay.seconds:60}"/>
     </bean>
     
-    <bean id="depositServiceInitiator" class="edu.unc.lib.deposit.SpringDepositServiceInitiator">
+    <bean id="depositServiceInitiator" class="edu.unc.lib.boxc.deposit.SpringDepositServiceInitiator">
         <property name="depositSupervisor" ref="depositSupervisor" />
     </bean>
 

@@ -16,11 +16,11 @@
     </bean>
     
     <bean id="solrSmallUpdateProcessor" class="org.mockito.Mockito" factory-method="mock">
-        <constructor-arg value="edu.unc.lib.dl.services.camel.solrUpdate.SolrUpdateProcessor" />
+        <constructor-arg value="edu.unc.lib.boxc.services.camel.solrUpdate.SolrUpdateProcessor" />
     </bean>
     
     <bean id="solrLargeUpdateProcessor" class="org.mockito.Mockito" factory-method="mock">
-        <constructor-arg value="edu.unc.lib.dl.services.camel.solrUpdate.SolrUpdateProcessor" />
+        <constructor-arg value="edu.unc.lib.boxc.services.camel.solrUpdate.SolrUpdateProcessor" />
     </bean>
     
     <bean id="solrUpdatePreprocessor" class="org.mockito.Mockito" factory-method="spy">
@@ -28,16 +28,16 @@
     </bean>
     
     <bean id="cacheInvalidatingProcessor" class="org.mockito.Mockito" factory-method="mock">
-        <constructor-arg value="edu.unc.lib.dl.services.camel.util.CacheInvalidatingProcessor" />
+        <constructor-arg value="edu.unc.lib.boxc.services.camel.util.CacheInvalidatingProcessor" />
     </bean>
     
-    <bean id="solrUpdatePreprocessorReal" class="edu.unc.lib.dl.services.camel.solrUpdate.SolrUpdatePreprocessor">
+    <bean id="solrUpdatePreprocessorReal" class="edu.unc.lib.boxc.services.camel.solrUpdate.SolrUpdatePreprocessor">
     </bean>
     
-    <bean id="bodyListAggregationStrategy" class="edu.unc.lib.dl.services.camel.util.BodyListAggregationStrategy"/>
+    <bean id="bodyListAggregationStrategy" class="edu.unc.lib.boxc.services.camel.util.BodyListAggregationStrategy"/>
 
     <camel:camelContext id="cdrServiceSolrUpdate">
-        <camel:package>edu.unc.lib.dl.services.camel.solrUpdate</camel:package>
+        <camel:package>edu.unc.lib.boxc.services.camel.solrUpdate</camel:package>
     </camel:camelContext>
     
 </beans>

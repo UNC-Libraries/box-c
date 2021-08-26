@@ -24,7 +24,7 @@
         <property name="location" value="classpath:binary-cleanup-it-config.properties"/>
     </bean>
     
-    <bean id="binaryCleanupProcessor" class="edu.unc.lib.dl.services.camel.binaryCleanup.BinaryCleanupProcessor">
+    <bean id="binaryCleanupProcessor" class="edu.unc.lib.boxc.services.camel.binaryCleanup.BinaryCleanupProcessor">
         <property name="storageLocationManager" ref="storageLocationManager" />
         <property name="binaryTransferService" ref="binaryTransferService" />
     </bean>
@@ -36,7 +36,7 @@
     </bean>
     
     <camel:camelContext id="cdrBinaryCleanup">
-        <camel:package>edu.unc.lib.dl.services.camel.binaryCleanup</camel:package>
+        <camel:package>edu.unc.lib.boxc.services.camel.binaryCleanup</camel:package>
     </camel:camelContext>
 
 </beans>

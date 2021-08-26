@@ -13,17 +13,17 @@
         http://camel.apache.org/schema/spring
         http://camel.apache.org/schema/spring/camel-spring.xsd">
 
-    <bean id="addSmallThumbnailProcessorReal" class="edu.unc.lib.dl.services.camel.images.AddDerivativeProcessor">
+    <bean id="addSmallThumbnailProcessorReal" class="edu.unc.lib.boxc.services.camel.images.AddDerivativeProcessor">
         <constructor-arg value="#{T(edu.unc.lib.boxc.model.api.DatastreamType).THUMBNAIL_SMALL.getExtension()}" />
         <constructor-arg value="target" />
     </bean>
 
-    <bean id="addLargeThumbnailProcessorReal" class="edu.unc.lib.dl.services.camel.images.AddDerivativeProcessor">
+    <bean id="addLargeThumbnailProcessorReal" class="edu.unc.lib.boxc.services.camel.images.AddDerivativeProcessor">
         <constructor-arg value="#{T(edu.unc.lib.boxc.model.api.DatastreamType).THUMBNAIL_LARGE.getExtension()}" />
         <constructor-arg value="target" />
     </bean>
 
-    <bean id="addAccessCopyProcessorReal" class="edu.unc.lib.dl.services.camel.images.AddDerivativeProcessor">
+    <bean id="addAccessCopyProcessorReal" class="edu.unc.lib.boxc.services.camel.images.AddDerivativeProcessor">
         <constructor-arg value="#{T(edu.unc.lib.boxc.model.api.DatastreamType).JP2_ACCESS_COPY.getExtension()}" />
         <constructor-arg value="target" />
     </bean>
@@ -41,7 +41,7 @@
     </bean>
 
     <camel:camelContext id="CdrServiceEnhancements">
-        <camel:package>edu.unc.lib.dl.services.camel.images</camel:package>
+        <camel:package>edu.unc.lib.boxc.services.camel.images</camel:package>
     </camel:camelContext>
     
 </beans>

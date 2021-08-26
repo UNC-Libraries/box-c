@@ -188,83 +188,83 @@
     </bean>
 
     <!-- Processors -->
-    <bean id="cdrEventProcessor" class="edu.unc.lib.dl.services.camel.cdrEvents.CdrEventProcessor">
+    <bean id="cdrEventProcessor" class="edu.unc.lib.boxc.services.camel.cdrEvents.CdrEventProcessor">
     </bean>
 
-    <bean id="binaryEnhancementProcessor" class="edu.unc.lib.dl.services.camel.BinaryEnhancementProcessor">
+    <bean id="binaryEnhancementProcessor" class="edu.unc.lib.boxc.services.camel.BinaryEnhancementProcessor">
         <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
     </bean>
 
-    <bean id="nonBinaryEnhancementProcessor" class="edu.unc.lib.dl.services.camel.NonBinaryEnhancementProcessor">
+    <bean id="nonBinaryEnhancementProcessor" class="edu.unc.lib.boxc.services.camel.NonBinaryEnhancementProcessor">
         <property name="sourceImagesDir" value="${sourceImages.dir}" />
     </bean>
     
-    <bean id="binaryMetadataProcessor" class="edu.unc.lib.dl.services.camel.BinaryMetadataProcessor">
+    <bean id="binaryMetadataProcessor" class="edu.unc.lib.boxc.services.camel.BinaryMetadataProcessor">
         <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
     </bean>
     
-    <bean id="cacheInvalidatingProcessor" class="edu.unc.lib.dl.services.camel.util.CacheInvalidatingProcessor">
+    <bean id="cacheInvalidatingProcessor" class="edu.unc.lib.boxc.services.camel.util.CacheInvalidatingProcessor">
         <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
         <property name="objectAclFactory" ref="objectAclFactory" />
     </bean>
 
-    <bean id="addSmallThumbnailProcessor" class="edu.unc.lib.dl.services.camel.images.AddDerivativeProcessor">
+    <bean id="addSmallThumbnailProcessor" class="edu.unc.lib.boxc.services.camel.images.AddDerivativeProcessor">
         <constructor-arg value="#{T(edu.unc.lib.boxc.model.api.DatastreamType).THUMBNAIL_SMALL.getExtension()}" />
         <constructor-arg value="${cdr.enhancement.path.thumbnail.small}" />
     </bean>
     
-    <bean id="addLargeThumbnailProcessor" class="edu.unc.lib.dl.services.camel.images.AddDerivativeProcessor">
+    <bean id="addLargeThumbnailProcessor" class="edu.unc.lib.boxc.services.camel.images.AddDerivativeProcessor">
         <constructor-arg value="#{T(edu.unc.lib.boxc.model.api.DatastreamType).THUMBNAIL_LARGE.getExtension()}" />
         <constructor-arg value="${cdr.enhancement.path.thumbnail.large}" />
     </bean>
     
-    <bean id="addAccessCopyProcessor" class="edu.unc.lib.dl.services.camel.images.AddDerivativeProcessor">
+    <bean id="addAccessCopyProcessor" class="edu.unc.lib.boxc.services.camel.images.AddDerivativeProcessor">
         <constructor-arg value="#{T(edu.unc.lib.boxc.model.api.DatastreamType).JP2_ACCESS_COPY.getExtension()}" />
         <constructor-arg value="${cdr.enhancement.path.jp2}" />
     </bean>
 
-    <bean id="addFullTextDerivativeProcessor" class="edu.unc.lib.dl.services.camel.images.AddDerivativeProcessor">
+    <bean id="addFullTextDerivativeProcessor" class="edu.unc.lib.boxc.services.camel.images.AddDerivativeProcessor">
         <constructor-arg value="#{T(edu.unc.lib.boxc.model.api.DatastreamType).FULLTEXT_EXTRACTION.getExtension()}" />
         <constructor-arg value="${cdr.enhancement.path.fulltext}" />
     </bean>
     
-    <bean id="fulltextProcessor" class="edu.unc.lib.dl.services.camel.fulltext.FulltextProcessor">
+    <bean id="fulltextProcessor" class="edu.unc.lib.boxc.services.camel.fulltext.FulltextProcessor">
         <constructor-arg value="${cdr.enhancement.path.fulltext}" />
     </bean>
 
-    <bean id="destroyedMsgProcessor" class="edu.unc.lib.dl.services.camel.destroyDerivatives.DestroyedMsgProcessor">
+    <bean id="destroyedMsgProcessor" class="edu.unc.lib.boxc.services.camel.destroyDerivatives.DestroyedMsgProcessor">
         <constructor-arg value="${sourceImages.dir}" />
     </bean>
 
-    <bean id="destroyCollectionSrcImgProcessor" class="edu.unc.lib.dl.services.camel.destroyDerivatives.DestroyDerivativesProcessor">
+    <bean id="destroyCollectionSrcImgProcessor" class="edu.unc.lib.boxc.services.camel.destroyDerivatives.DestroyDerivativesProcessor">
         <constructor-arg value="" />
         <constructor-arg value="${sourceImages.dir}" />
     </bean>
 
-    <bean id="destroySmallThumbnailProcessor" class="edu.unc.lib.dl.services.camel.destroyDerivatives.DestroyDerivativesProcessor">
+    <bean id="destroySmallThumbnailProcessor" class="edu.unc.lib.boxc.services.camel.destroyDerivatives.DestroyDerivativesProcessor">
         <constructor-arg value="#{T(edu.unc.lib.boxc.model.api.DatastreamType).THUMBNAIL_SMALL.getExtension()}" />
         <constructor-arg value="${cdr.enhancement.path.thumbnail.small}" />
     </bean>
 
-    <bean id="destroyLargeThumbnailProcessor" class="edu.unc.lib.dl.services.camel.destroyDerivatives.DestroyDerivativesProcessor">
+    <bean id="destroyLargeThumbnailProcessor" class="edu.unc.lib.boxc.services.camel.destroyDerivatives.DestroyDerivativesProcessor">
         <constructor-arg value="#{T(edu.unc.lib.boxc.model.api.DatastreamType).THUMBNAIL_LARGE.getExtension()}" />
         <constructor-arg value="${cdr.enhancement.path.thumbnail.large}" />
     </bean>
 
-    <bean id="destroyAccessCopyProcessor" class="edu.unc.lib.dl.services.camel.destroyDerivatives.DestroyDerivativesProcessor">
+    <bean id="destroyAccessCopyProcessor" class="edu.unc.lib.boxc.services.camel.destroyDerivatives.DestroyDerivativesProcessor">
         <constructor-arg value="#{T(edu.unc.lib.boxc.model.api.DatastreamType).JP2_ACCESS_COPY.getExtension()}" />
         <constructor-arg value="${cdr.enhancement.path.jp2}" />
     </bean>
 
-    <bean id="destroyFulltextProcessor" class="edu.unc.lib.dl.services.camel.destroyDerivatives.DestroyDerivativesProcessor">
+    <bean id="destroyFulltextProcessor" class="edu.unc.lib.boxc.services.camel.destroyDerivatives.DestroyDerivativesProcessor">
         <constructor-arg value="#{T(edu.unc.lib.boxc.model.api.DatastreamType).FULLTEXT_EXTRACTION.getExtension()}" />
         <constructor-arg value="${cdr.enhancement.path.fulltext}" />
     </bean>
     
-    <bean id="indexingMessageProcessor" class="edu.unc.lib.dl.services.camel.triplesReindexing.IndexingMessageProcessor">
+    <bean id="indexingMessageProcessor" class="edu.unc.lib.boxc.services.camel.triplesReindexing.IndexingMessageProcessor">
     </bean>
     
-    <bean id="destroyObjectsProcessor" class="edu.unc.lib.dl.services.camel.destroy.DestroyObjectsProcessor">
+    <bean id="destroyObjectsProcessor" class="edu.unc.lib.boxc.services.camel.destroy.DestroyObjectsProcessor">
         <property name="aclService" ref="aclService" />
         <property name="repositoryObjectFactory" ref="repositoryObjectFactory" />
         <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
@@ -390,7 +390,7 @@
         <property name="versionedDatastreamService" ref="versionedDatastreamService" />
     </bean>
     
-    <bean id="importXMLProcessor" class="edu.unc.lib.dl.services.camel.importxml.ImportXMLProcessor">
+    <bean id="importXMLProcessor" class="edu.unc.lib.boxc.services.camel.importxml.ImportXMLProcessor">
         <property name="updateService" ref="updateDescriptionService" />
         <property name="mailSender" ref="mailSender" />
         <property name="updateCompleteTemplate" ref="updateCompleteTemplate" />
@@ -401,13 +401,13 @@
         <property name="locationManager" ref="storageLocationManager" />
     </bean>
     
-    <bean id="longleafAggregationStrategy" class="edu.unc.lib.dl.services.camel.longleaf.LongleafAggregationStrategy">
+    <bean id="longleafAggregationStrategy" class="edu.unc.lib.boxc.services.camel.longleaf.LongleafAggregationStrategy">
     </bean>
 
-    <bean id="getUrisProcessor" class="edu.unc.lib.dl.services.camel.longleaf.GetUrisProcessor">
+    <bean id="getUrisProcessor" class="edu.unc.lib.boxc.services.camel.longleaf.GetUrisProcessor">
     </bean>
     
-    <bean id="registerLongleafProcessor" class="edu.unc.lib.dl.services.camel.longleaf.RegisterToLongleafProcessor">
+    <bean id="registerLongleafProcessor" class="edu.unc.lib.boxc.services.camel.longleaf.RegisterToLongleafProcessor">
         <property name="repositoryObjectLoader" ref="repositoryObjectLoaderNoCache" />
         <property name="fcrepoClient" ref="fcrepoClient" />
         <property name="longleafBaseCommand" value="${longleaf.baseCommand}" />
@@ -424,7 +424,7 @@
         <property name="jmsTemplate" ref="binaryDestroyedJmsTemplate" />
     </bean>
     
-    <bean id="deregisterLongleafProcessor" class="edu.unc.lib.dl.services.camel.longleaf.DeregisterLongleafProcessor">
+    <bean id="deregisterLongleafProcessor" class="edu.unc.lib.boxc.services.camel.longleaf.DeregisterLongleafProcessor">
         <property name="longleafBaseCommand" value="${longleaf.baseCommand}" />
     </bean>
 
@@ -437,7 +437,7 @@
         <property name="premisLoggerFactory" ref="premisLoggerFactory" />
     </bean>
     
-    <bean id="binaryCleanupProcessor" class="edu.unc.lib.dl.services.camel.binaryCleanup.BinaryCleanupProcessor">
+    <bean id="binaryCleanupProcessor" class="edu.unc.lib.boxc.services.camel.binaryCleanup.BinaryCleanupProcessor">
         <property name="storageLocationManager" ref="storageLocationManager" />
         <property name="binaryTransferService" ref="binaryTransferService" />
     </bean>
@@ -451,7 +451,7 @@
         <property name="premisLoggerFactory" ref="premisLoggerFactory" />
     </bean>
 
-    <bean id="patronAccessAssignmentProcessor" class="edu.unc.lib.dl.services.camel.patronAccess.PatronAccessAssignmentProcessor">
+    <bean id="patronAccessAssignmentProcessor" class="edu.unc.lib.boxc.services.camel.patronAccess.PatronAccessAssignmentProcessor">
         <property name="patronAccessAssignmentService" ref="patronAccessAssignmentService" />
     </bean>
 
@@ -462,46 +462,46 @@
     </camel:camelContext>
     
     <camel:camelContext id="CdrServiceTriplesReindexing">
-        <camel:package>edu.unc.lib.dl.services.camel.triplesReindexing</camel:package>
+        <camel:package>edu.unc.lib.boxc.services.camel.triplesReindexing</camel:package>
     </camel:camelContext>
     
     <camel:camelContext id="CdrServiceCdrEvents">
-        <camel:package>edu.unc.lib.dl.services.camel.cdrEvents</camel:package>
+        <camel:package>edu.unc.lib.boxc.services.camel.cdrEvents</camel:package>
     </camel:camelContext>
     
     <camel:camelContext id="cdrLongleaf">
-        <camel:package>edu.unc.lib.dl.services.camel.longleaf</camel:package>
+        <camel:package>edu.unc.lib.boxc.services.camel.longleaf</camel:package>
     </camel:camelContext>
     
     <camel:camelContext id="CdrEnhancements">
-        <camel:package>edu.unc.lib.dl.services.camel.enhancements</camel:package>
-        <camel:package>edu.unc.lib.dl.services.camel.images</camel:package>
-        <camel:package>edu.unc.lib.dl.services.camel.fulltext</camel:package>
-        <camel:package>edu.unc.lib.dl.services.camel.solr</camel:package>
+        <camel:package>edu.unc.lib.boxc.services.camel.enhancements</camel:package>
+        <camel:package>edu.unc.lib.boxc.services.camel.images</camel:package>
+        <camel:package>edu.unc.lib.boxc.services.camel.fulltext</camel:package>
+        <camel:package>edu.unc.lib.boxc.services.camel.solr</camel:package>
     </camel:camelContext>
     
     <camel:camelContext id="CdrBinaryCleanup">
-        <camel:package>edu.unc.lib.dl.services.camel.binaryCleanup</camel:package>
+        <camel:package>edu.unc.lib.boxc.services.camel.binaryCleanup</camel:package>
     </camel:camelContext>
     
     <!-- Initialize metaServicesRouter after the routes it depends on -->
     <camel:camelContext id="MetaServicesRouter">
-        <camel:package>edu.unc.lib.dl.services.camel.routing</camel:package>
+        <camel:package>edu.unc.lib.boxc.services.camel.routing</camel:package>
     </camel:camelContext>
     
     <camel:camelContext id="CdrImportXML">
-        <camel:package>edu.unc.lib.dl.services.camel.importxml</camel:package>
+        <camel:package>edu.unc.lib.boxc.services.camel.importxml</camel:package>
     </camel:camelContext>
     
     <camel:camelContext id="CdrDestroyObjects">
-        <camel:package>edu.unc.lib.dl.services.camel.destroy</camel:package>
+        <camel:package>edu.unc.lib.boxc.services.camel.destroy</camel:package>
     </camel:camelContext>
 
     <camel:camelContext id="CdrDestroyDerivatives">
-        <camel:package>edu.unc.lib.dl.services.camel.destroyDerivatives</camel:package>
+        <camel:package>edu.unc.lib.boxc.services.camel.destroyDerivatives</camel:package>
     </camel:camelContext>
     
     <camel:camelContext id="CdrUpdatePatronAccess">
-        <camel:package>edu.unc.lib.dl.services.camel.patronAccess</camel:package>
+        <camel:package>edu.unc.lib.boxc.services.camel.patronAccess</camel:package>
     </camel:camelContext>
 </beans>

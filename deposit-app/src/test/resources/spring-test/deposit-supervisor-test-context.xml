@@ -21,7 +21,7 @@
     </bean>
     
     <bean id="depositEmailHandler" class="org.mockito.Mockito" factory-method="mock">
-        <constructor-arg value="edu.unc.lib.deposit.work.DepositEmailHandler" />
+        <constructor-arg value="edu.unc.lib.boxc.deposit.work.DepositEmailHandler" />
     </bean>
     
     <bean id="mockDepositDirectory" class="org.mockito.Mockito" factory-method="mock">

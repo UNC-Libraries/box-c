@@ -50,35 +50,35 @@
     </bean>
 
     <bean id="cdrEventProcessor"
-        class="edu.unc.lib.dl.services.camel.cdrEvents.CdrEventProcessor">
+        class="edu.unc.lib.boxc.services.camel.cdrEvents.CdrEventProcessor">
     </bean>
 
     <bean id="cdrEventToSolrUpdateProcessor"
-        class="edu.unc.lib.dl.services.camel.solr.CdrEventToSolrUpdateProcessor">
+        class="edu.unc.lib.boxc.services.camel.solr.CdrEventToSolrUpdateProcessor">
         <property name="indexingMessageSender" ref="indexingMessageSender" />
     </bean>
 
     <bean id="solrSmallUpdateProcessor"
-        class="edu.unc.lib.dl.services.camel.solrUpdate.SolrUpdateProcessor">
+        class="edu.unc.lib.boxc.services.camel.solrUpdate.SolrUpdateProcessor">
     </bean>
     
     <bean id="solrLargeUpdateProcessor"
-        class="edu.unc.lib.dl.services.camel.solrUpdate.SolrUpdateProcessor">
+        class="edu.unc.lib.boxc.services.camel.solrUpdate.SolrUpdateProcessor">
     </bean>
     
-    <bean id="solrUpdatePreprocessor" class="edu.unc.lib.dl.services.camel.solrUpdate.SolrUpdatePreprocessor">
+    <bean id="solrUpdatePreprocessor" class="edu.unc.lib.boxc.services.camel.solrUpdate.SolrUpdatePreprocessor">
     </bean>
     
     <bean id="cacheInvalidatingProcessor" class="org.mockito.Mockito" factory-method="mock">
-        <constructor-arg value="edu.unc.lib.dl.services.camel.util.CacheInvalidatingProcessor" />
+        <constructor-arg value="edu.unc.lib.boxc.services.camel.util.CacheInvalidatingProcessor" />
     </bean>
 
     <camel:camelContext id="cdrServiceCdrEvents">
-        <camel:package>edu.unc.lib.dl.services.camel.cdrEvents</camel:package>
+        <camel:package>edu.unc.lib.boxc.services.camel.cdrEvents</camel:package>
     </camel:camelContext>
 
     <camel:camelContext id="cdrServiceSolrUpdate">
-        <camel:package>edu.unc.lib.dl.services.camel.solrUpdate</camel:package>
+        <camel:package>edu.unc.lib.boxc.services.camel.solrUpdate</camel:package>
     </camel:camelContext>
   
 </beans>

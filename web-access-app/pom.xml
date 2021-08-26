@@ -12,7 +12,7 @@
     <url>http://cdr-dev.lib.unc.edu/</url>
     <description>Application for accessing the Digital Collections Repository</description>
     <build>
-        <finalName>access</finalName>
+        <finalName>${artifactId}</finalName>
         <resources>
             <resource>
                 <filtering>false</filtering>

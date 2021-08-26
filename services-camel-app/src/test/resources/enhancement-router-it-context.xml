@@ -25,52 +25,52 @@
     </bean>
     
     <bean id="solrIngestProcessor" class="org.mockito.Mockito" factory-method="mock">
-        <constructor-arg value="edu.unc.lib.dl.services.camel.solr.SolrIngestProcessor" />
+        <constructor-arg value="edu.unc.lib.boxc.services.camel.solr.SolrIngestProcessor" />
     </bean>
 
     <bean id="addSmallThumbnailProcessor" class="org.mockito.Mockito" factory-method="mock">
-        <constructor-arg value="edu.unc.lib.dl.services.camel.images.AddDerivativeProcessor" />
+        <constructor-arg value="edu.unc.lib.boxc.services.camel.images.AddDerivativeProcessor" />
     </bean>
 
     <bean id="addLargeThumbnailProcessor" class="org.mockito.Mockito" factory-method="mock">
-        <constructor-arg value="edu.unc.lib.dl.services.camel.images.AddDerivativeProcessor" />
+        <constructor-arg value="edu.unc.lib.boxc.services.camel.images.AddDerivativeProcessor" />
     </bean>
 
     <bean id="addAccessCopyProcessor" class="org.mockito.Mockito" factory-method="mock">
-        <constructor-arg value="edu.unc.lib.dl.services.camel.images.AddDerivativeProcessor" />
+        <constructor-arg value="edu.unc.lib.boxc.services.camel.images.AddDerivativeProcessor" />
     </bean>
     
-    <bean id="binaryMetadataProcessor" class="edu.unc.lib.dl.services.camel.BinaryMetadataProcessor">
+    <bean id="binaryMetadataProcessor" class="edu.unc.lib.boxc.services.camel.BinaryMetadataProcessor">
         <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
     </bean>
 
-    <bean id="binaryEnhancementProcessor" class="edu.unc.lib.dl.services.camel.BinaryEnhancementProcessor">
+    <bean id="binaryEnhancementProcessor" class="edu.unc.lib.boxc.services.camel.BinaryEnhancementProcessor">
         <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
     </bean>
 
-    <bean id="nonBinaryEnhancementProcessor" class="edu.unc.lib.dl.services.camel.NonBinaryEnhancementProcessor">
+    <bean id="nonBinaryEnhancementProcessor" class="edu.unc.lib.boxc.services.camel.NonBinaryEnhancementProcessor">
     </bean>
 
     <bean id="addFullTextDerivativeProcessor" class="org.mockito.Mockito" factory-method="mock">
-        <constructor-arg value="edu.unc.lib.dl.services.camel.images.AddDerivativeProcessor" />
+        <constructor-arg value="edu.unc.lib.boxc.services.camel.images.AddDerivativeProcessor" />
     </bean>
 
     <bean id="fulltextProcessor" class="org.mockito.Mockito" factory-method="mock">
-        <constructor-arg value="edu.unc.lib.dl.services.camel.fulltext.FulltextProcessor" />
+        <constructor-arg value="edu.unc.lib.boxc.services.camel.fulltext.FulltextProcessor" />
     </bean>
     
     <bean id="registerLongleafProcessor" class="org.mockito.Mockito" factory-method="mock">
-        <constructor-arg value="edu.unc.lib.dl.services.camel.longleaf.RegisterToLongleafProcessor" />
+        <constructor-arg value="edu.unc.lib.boxc.services.camel.longleaf.RegisterToLongleafProcessor" />
     </bean>
     
     <bean id="deregisterLongleafProcessor" class="org.mockito.Mockito" factory-method="mock">
-        <constructor-arg value="edu.unc.lib.dl.services.camel.longleaf.DeregisterLongleafProcessor" />
+        <constructor-arg value="edu.unc.lib.boxc.services.camel.longleaf.DeregisterLongleafProcessor" />
     </bean>
     
-    <bean id="longleafAggregationStrategy" class="edu.unc.lib.dl.services.camel.longleaf.LongleafAggregationStrategy">
+    <bean id="longleafAggregationStrategy" class="edu.unc.lib.boxc.services.camel.longleaf.LongleafAggregationStrategy">
     </bean>
 
-    <bean id="getUrisProcessor" class="edu.unc.lib.dl.services.camel.longleaf.GetUrisProcessor">
+    <bean id="getUrisProcessor" class="edu.unc.lib.boxc.services.camel.longleaf.GetUrisProcessor">
     </bean>
     
     <bean id="sjms" class="org.apache.camel.component.sjms.SjmsComponent">
@@ -88,14 +88,14 @@
     </bean>
     
     <camel:camelContext id="cdrLongleaf">
-        <camel:package>edu.unc.lib.dl.services.camel.longleaf</camel:package>
+        <camel:package>edu.unc.lib.boxc.services.camel.longleaf</camel:package>
     </camel:camelContext>
 
     <camel:camelContext id="cdrEnhancements">
-        <camel:package>edu.unc.lib.dl.services.camel.enhancements</camel:package>
-        <camel:package>edu.unc.lib.dl.services.camel.images</camel:package>
-        <camel:package>edu.unc.lib.dl.services.camel.fulltext</camel:package>
-        <camel:package>edu.unc.lib.dl.services.camel.solr</camel:package>
+        <camel:package>edu.unc.lib.boxc.services.camel.enhancements</camel:package>
+        <camel:package>edu.unc.lib.boxc.services.camel.images</camel:package>
+        <camel:package>edu.unc.lib.boxc.services.camel.fulltext</camel:package>
+        <camel:package>edu.unc.lib.boxc.services.camel.solr</camel:package>
     </camel:camelContext>
 
 </beans>

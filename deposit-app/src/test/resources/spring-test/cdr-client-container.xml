@@ -148,7 +148,7 @@
         <property name="binaryTransferService" ref="binaryTransferService" />
     </bean>
     
-    <bean id="verifyObjectsAreInFedoraService" class="edu.unc.lib.deposit.validate.VerifyObjectsAreInFedoraService" >
+    <bean id="verifyObjectsAreInFedoraService" class="edu.unc.lib.boxc.deposit.validate.VerifyObjectsAreInFedoraService" >
         <property name="fcrepoClient" ref="fcrepoClient" />
     </bean>
     

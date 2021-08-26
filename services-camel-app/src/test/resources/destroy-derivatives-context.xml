@@ -14,30 +14,30 @@
         http://camel.apache.org/schema/spring/camel-spring.xsd">
 
     <bean id="destroyedMsgProcessor" class="org.mockito.Mockito" factory-method="mock">
-        <constructor-arg value="edu.unc.lib.dl.services.camel.destroyDerivatives.DestroyedMsgProcessor" />
+        <constructor-arg value="edu.unc.lib.boxc.services.camel.destroyDerivatives.DestroyedMsgProcessor" />
     </bean>
 
     <bean id="destroyCollectionSrcImgProcessor" class="org.mockito.Mockito" factory-method="mock">
-        <constructor-arg value="edu.unc.lib.dl.services.camel.destroyDerivatives.DestroyDerivativesProcessor" />
+        <constructor-arg value="edu.unc.lib.boxc.services.camel.destroyDerivatives.DestroyDerivativesProcessor" />
     </bean>
 
     <bean id="destroySmallThumbnailProcessor" class="org.mockito.Mockito" factory-method="mock">
-        <constructor-arg value="edu.unc.lib.dl.services.camel.destroyDerivatives.DestroyDerivativesProcessor" />
+        <constructor-arg value="edu.unc.lib.boxc.services.camel.destroyDerivatives.DestroyDerivativesProcessor" />
     </bean>
 
     <bean id="destroyLargeThumbnailProcessor" class="org.mockito.Mockito" factory-method="mock">
-        <constructor-arg value="edu.unc.lib.dl.services.camel.destroyDerivatives.DestroyDerivativesProcessor" />
+        <constructor-arg value="edu.unc.lib.boxc.services.camel.destroyDerivatives.DestroyDerivativesProcessor" />
     </bean>
 
     <bean id="destroyAccessCopyProcessor" class="org.mockito.Mockito" factory-method="mock">
-        <constructor-arg value="edu.unc.lib.dl.services.camel.destroyDerivatives.DestroyDerivativesProcessor" />
+        <constructor-arg value="edu.unc.lib.boxc.services.camel.destroyDerivatives.DestroyDerivativesProcessor" />
     </bean>
 
     <bean id="destroyFulltextProcessor" class="org.mockito.Mockito" factory-method="mock">
-        <constructor-arg value="edu.unc.lib.dl.services.camel.destroyDerivatives.DestroyDerivativesProcessor" />
+        <constructor-arg value="edu.unc.lib.boxc.services.camel.destroyDerivatives.DestroyDerivativesProcessor" />
     </bean>
 
     <camel:camelContext id="cdrDestroyDerivatives">
-        <camel:package>edu.unc.lib.dl.services.camel.destroyDerivatives</camel:package>
+        <camel:package>edu.unc.lib.boxc.services.camel.destroyDerivatives</camel:package>
     </camel:camelContext>
 </beans>

@@ -15,7 +15,7 @@
         <constructor-arg index="0" value="deposit.properties.uri" />
     </bean>
 
-    <bean id="depositEmailHandler" class="edu.unc.lib.deposit.work.DepositEmailHandler" >
+    <bean id="depositEmailHandler" class="edu.unc.lib.boxc.deposit.work.DepositEmailHandler" >
         <property name="depositStatusFactory" ref="depositStatusFactory" />
         <property name="baseUrl" value="${baseUrl}" />
         <property name="mailSender" ref="mailSender" />
@@ -140,15 +140,15 @@
         </constructor-arg>
     </bean>
 
-    <bean id="PackageIntegrityCheckJob" class="edu.unc.lib.deposit.validate.PackageIntegrityCheckJob"
+    <bean id="PackageIntegrityCheckJob" class="edu.unc.lib.boxc.deposit.validate.PackageIntegrityCheckJob"
         scope="prototype">
     </bean>
 
-    <bean id="UnpackDepositJob" class="edu.unc.lib.deposit.normalize.UnpackDepositJob"
+    <bean id="UnpackDepositJob" class="edu.unc.lib.boxc.deposit.normalize.UnpackDepositJob"
         scope="prototype">
     </bean>
     
-    <bean id="PreconstructedDepositJob" class="edu.unc.lib.deposit.normalize.PreconstructedDepositJob"
+    <bean id="PreconstructedDepositJob" class="edu.unc.lib.boxc.deposit.normalize.PreconstructedDepositJob"
         scope="prototype">
     </bean>
     
@@ -157,39 +157,39 @@
         <constructor-arg value="${job.bagitValidation.workers:50}"/>
     </bean>
     
-    <bean id="BagIt2N3BagJob" class="edu.unc.lib.deposit.normalize.BagIt2N3BagJob"
+    <bean id="BagIt2N3BagJob" class="edu.unc.lib.boxc.deposit.normalize.BagIt2N3BagJob"
         scope="prototype">
         <property name="executorService" ref="bagitValidationExecutor" />
     </bean>
     
-    <bean id="DirectoryToBagJob" class="edu.unc.lib.deposit.normalize.DirectoryToBagJob"
+    <bean id="DirectoryToBagJob" class="edu.unc.lib.boxc.deposit.normalize.DirectoryToBagJob"
         scope="prototype">
     </bean>
 
-    <bean id="CDRMETS2N3BagJob" class="edu.unc.lib.deposit.normalize.CDRMETS2N3BagJob"
+    <bean id="CDRMETS2N3BagJob" class="edu.unc.lib.boxc.deposit.normalize.CDRMETS2N3BagJob"
         scope="prototype">
         <property name="schematronValidator" ref="schematronValidator" />
         <property name="metsSipSchema" ref="metsSipSchema" />
     </bean>
 
-    <bean id="Simple2N3BagJob" class="edu.unc.lib.deposit.normalize.Simple2N3BagJob"
+    <bean id="Simple2N3BagJob" class="edu.unc.lib.boxc.deposit.normalize.Simple2N3BagJob"
         scope="prototype"/>
     
-    <bean id="NormalizeFileObjectsJob" class="edu.unc.lib.deposit.normalize.NormalizeFileObjectsJob"
+    <bean id="NormalizeFileObjectsJob" class="edu.unc.lib.boxc.deposit.normalize.NormalizeFileObjectsJob"
         scope="prototype">
     </bean>
     
     <bean id="aclValidator" class="edu.unc.lib.boxc.auth.fcrepo.services.ContentObjectAccessRestrictionValidator">
     </bean>
     
-    <bean id="ValidateContentModelJob" class="edu.unc.lib.deposit.validate.ValidateContentModelJob"
+    <bean id="ValidateContentModelJob" class="edu.unc.lib.boxc.deposit.validate.ValidateContentModelJob"
         scope="prototype">
         <property name="aclValidator" ref="aclValidator" />
         <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
         <property name="depositStatusFactory" ref="depositStatusFactory" />
     </bean>
     
-    <bean id="VocabularyEnforcementJob" class="edu.unc.lib.deposit.normalize.VocabularyEnforcementJob"
+    <bean id="VocabularyEnforcementJob" class="edu.unc.lib.boxc.deposit.normalize.VocabularyEnforcementJob"
         scope="prototype">
     </bean>
     
@@ -205,30 +205,30 @@
         <constructor-arg value="${job.fileValidation.workers:4}"/>
     </bean>
 
-    <bean id="VirusScanJob" class="edu.unc.lib.deposit.validate.VirusScanJob"
+    <bean id="VirusScanJob" class="edu.unc.lib.boxc.deposit.validate.VirusScanJob"
             scope="prototype">
         <property name="clamClient" ref="clamClient" />
         <property name="maxQueuedJobs" value="${job.fileValidation.maxQueuedJobs:5}" />
         <property name="executorService" ref="fileValidationExecutor" />
     </bean>
     
-    <bean id="FixityCheckJob" class="edu.unc.lib.deposit.validate.FixityCheckJob"
+    <bean id="FixityCheckJob" class="edu.unc.lib.boxc.deposit.validate.FixityCheckJob"
         scope="prototype">
         <property name="executorService" ref="fileValidationExecutor" />
         <property name="maxQueuedJobs" value="${job.fileValidation.maxQueuedJobs:5}" />
         <property name="flushRate" value="${job.fixityCheck.flushRate:2000}" />
     </bean>
     
-    <bean id="ValidateDestinationJob" class="edu.unc.lib.deposit.validate.ValidateDestinationJob"
+    <bean id="ValidateDestinationJob" class="edu.unc.lib.boxc.deposit.validate.ValidateDestinationJob"
         scope="prototype">
     </bean>
 
-    <bean id="ValidateFileAvailabilityJob" class="edu.unc.lib.deposit.validate.ValidateFileAvailabilityJob"
+    <bean id="ValidateFileAvailabilityJob" class="edu.unc.lib.boxc.deposit.validate.ValidateFileAvailabilityJob"
         scope="prototype">
         <property name="ingestSourceManager" ref="ingestSourceManager" />
     </bean>
 
-    <bean id="ValidateDescriptionJob" class="edu.unc.lib.deposit.validate.ValidateDescriptionJob"
+    <bean id="ValidateDescriptionJob" class="edu.unc.lib.boxc.deposit.validate.ValidateDescriptionJob"
         scope="prototype">
         <property name="modsValidator" ref="modsValidator" />
     </bean>
@@ -262,7 +262,7 @@
         <constructor-arg value="${job.extractTechnicalMetadata.workers:5}"/>
     </bean>
     
-    <bean id="ExtractTechnicalMetadataJob" class="edu.unc.lib.deposit.validate.ExtractTechnicalMetadataJob"
+    <bean id="ExtractTechnicalMetadataJob" class="edu.unc.lib.boxc.deposit.validate.ExtractTechnicalMetadataJob"
         scope="prototype">
         <property name="baseFitsUri" value="${fits.baseUri}" />
         <property name="httpClient" ref="fitsPooledHttpClient" />
@@ -273,11 +273,11 @@
         <property name="maxQueuedJobs" value="${job.extractTechnicalMetadata.maxQueuedJobs:6}" />
     </bean>
     
-    <bean id="verifyObjectsAreInFedoraService" class="edu.unc.lib.deposit.validate.VerifyObjectsAreInFedoraService" >
+    <bean id="verifyObjectsAreInFedoraService" class="edu.unc.lib.boxc.deposit.validate.VerifyObjectsAreInFedoraService" >
         <property name="fcrepoClient" ref="fcrepoClient" />
     </bean>
     
-    <bean id="assignStorageLocationsJob" class="edu.unc.lib.deposit.normalize.AssignStorageLocationsJob"
+    <bean id="assignStorageLocationsJob" class="edu.unc.lib.boxc.deposit.normalize.AssignStorageLocationsJob"
         scope="prototype">
     </bean>
     
@@ -286,22 +286,22 @@
         <constructor-arg value="${job.transferBinaries.workers:5}"/>
     </bean>
     
-    <bean id="transferBinariesToStorageJob" class="edu.unc.lib.deposit.transfer.TransferBinariesToStorageJob"
+    <bean id="transferBinariesToStorageJob" class="edu.unc.lib.boxc.deposit.transfer.TransferBinariesToStorageJob"
             scope="prototype">
         <property name="executorService" ref="transferBinariesExecutor" />
         <property name="flushRate" value="${job.transferBinaries.flushRate:2000}" />
         <property name="maxQueuedJobs" value="${job.transferBinaries.maxQueuedJobs:6}" />
     </bean>
     
-    <bean id="ingestContentObjectsJob" class="edu.unc.lib.deposit.fcrepo4.IngestContentObjectsJob"
+    <bean id="ingestContentObjectsJob" class="edu.unc.lib.boxc.deposit.fcrepo4.IngestContentObjectsJob"
         scope="prototype">
     </bean>
     
-    <bean id="ingestDepositRecordJob" class="edu.unc.lib.deposit.fcrepo4.IngestDepositRecordJob"
+    <bean id="ingestDepositRecordJob" class="edu.unc.lib.boxc.deposit.fcrepo4.IngestDepositRecordJob"
         scope="prototype">
     </bean>
 
-    <bean id="staffOnlyPermissionJob" class="edu.unc.lib.deposit.fcrepo4.StaffOnlyPermissionJob"
+    <bean id="staffOnlyPermissionJob" class="edu.unc.lib.boxc.deposit.fcrepo4.StaffOnlyPermissionJob"
           scope="prototype">
     </bean>
     
@@ -349,7 +349,7 @@
         </constructor-arg>
     </bean>
 
-    <bean id="CleanupDepositJob" class="edu.unc.lib.deposit.CleanupDepositJob"
+    <bean id="CleanupDepositJob" class="edu.unc.lib.boxc.deposit.CleanupDepositJob"
         scope="prototype">
         <property name="ingestSourceManager" ref="ingestSourceManager" />
         <property name="statusKeysExpireSeconds" value="${status.keys.expire.seconds:3600}"/>

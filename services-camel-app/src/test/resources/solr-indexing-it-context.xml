@@ -322,6 +322,6 @@
         <property name="dataLoader" ref="dipDataLoader" />
     </bean>
 
-    <bean id="getUrisProcessor" class="edu.unc.lib.dl.services.camel.longleaf.GetUrisProcessor">
+    <bean id="getUrisProcessor" class="edu.unc.lib.boxc.services.camel.longleaf.GetUrisProcessor">
     </bean>
 </beans>

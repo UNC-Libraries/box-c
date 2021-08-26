@@ -11,7 +11,7 @@
     <name>CDR Administrative Interface</name>
 
     <build>
-        <finalName>admin</finalName>
+        <finalName>${artifactId}</finalName>
         <resources>
             <resource>
                 <filtering>false</filtering>
