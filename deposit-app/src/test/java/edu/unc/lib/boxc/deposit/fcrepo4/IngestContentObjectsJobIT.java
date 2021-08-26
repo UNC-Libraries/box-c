@@ -70,6 +70,8 @@ import edu.unc.lib.boxc.deposit.impl.model.DepositStatusFactory;
 import edu.unc.lib.boxc.deposit.validate.VerifyObjectsAreInFedoraService;
 import edu.unc.lib.boxc.deposit.work.JobFailedException;
 import edu.unc.lib.boxc.deposit.work.JobInterruptedException;
+import edu.unc.lib.boxc.fcrepo.utils.FedoraTransaction;
+import edu.unc.lib.boxc.fcrepo.utils.TransactionManager;
 import edu.unc.lib.boxc.model.api.DatastreamType;
 import edu.unc.lib.boxc.model.api.SoftwareAgentConstants.SoftwareAgent;
 import edu.unc.lib.boxc.model.api.ids.PID;
@@ -95,8 +97,6 @@ import edu.unc.lib.boxc.model.fcrepo.test.AclModelBuilder;
 import edu.unc.lib.boxc.model.fcrepo.test.RepositoryObjectTreeIndexer;
 import edu.unc.lib.boxc.operations.impl.edit.UpdateDescriptionService;
 import edu.unc.lib.boxc.operations.impl.events.FilePremisLogger;
-import edu.unc.lib.dl.fcrepo4.FedoraTransaction;
-import edu.unc.lib.dl.fcrepo4.TransactionManager;
 
 /**
  *

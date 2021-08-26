@@ -54,6 +54,8 @@ import edu.unc.lib.boxc.auth.api.services.AccessControlService;
 import edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl;
 import edu.unc.lib.boxc.auth.fcrepo.models.AgentPrincipalsImpl;
 import edu.unc.lib.boxc.auth.fcrepo.services.InheritedAclFactory;
+import edu.unc.lib.boxc.fcrepo.utils.FedoraSparqlUpdateService;
+import edu.unc.lib.boxc.fcrepo.utils.TransactionManager;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.objects.AdminUnit;
 import edu.unc.lib.boxc.model.api.objects.CollectionObject;
@@ -78,8 +80,6 @@ import edu.unc.lib.boxc.search.api.models.ObjectPath;
 import edu.unc.lib.boxc.search.solr.services.ObjectPathFactory;
 import edu.unc.lib.boxc.services.camel.destroyDerivatives.DestroyDerivativesProcessor;
 import edu.unc.lib.boxc.services.camel.destroyDerivatives.DestroyedMsgProcessor;
-import edu.unc.lib.dl.fcrepo4.TransactionManager;
-import edu.unc.lib.dl.sparql.FedoraSparqlUpdateService;
 
 /**
  *

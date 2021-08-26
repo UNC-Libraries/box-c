@@ -76,6 +76,10 @@ import edu.unc.lib.boxc.deposit.impl.model.DepositModelHelpers;
 import edu.unc.lib.boxc.deposit.validate.VerifyObjectsAreInFedoraService;
 import edu.unc.lib.boxc.deposit.work.JobFailedException;
 import edu.unc.lib.boxc.deposit.work.JobInterruptedException;
+import edu.unc.lib.boxc.fcrepo.exceptions.ChecksumMismatchException;
+import edu.unc.lib.boxc.fcrepo.exceptions.TransactionCancelledException;
+import edu.unc.lib.boxc.fcrepo.utils.FedoraTransaction;
+import edu.unc.lib.boxc.fcrepo.utils.TransactionManager;
 import edu.unc.lib.boxc.model.api.event.PremisLog;
 import edu.unc.lib.boxc.model.api.exceptions.FedoraException;
 import edu.unc.lib.boxc.model.api.ids.PID;
@@ -102,10 +106,6 @@ import edu.unc.lib.boxc.persist.api.storage.StorageLocation;
 import edu.unc.lib.boxc.persist.api.storage.StorageLocationManager;
 import edu.unc.lib.boxc.persist.api.transfer.BinaryTransferService;
 import edu.unc.lib.boxc.persist.api.transfer.BinaryTransferSession;
-import edu.unc.lib.dl.fcrepo4.FedoraTransaction;
-import edu.unc.lib.dl.fcrepo4.TransactionCancelledException;
-import edu.unc.lib.dl.fcrepo4.TransactionManager;
-import edu.unc.lib.dl.fedora.ChecksumMismatchException;
 
 /**
  *

@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE module PUBLIC
+    "-//Puppy Crawl//DTD Check Configuration 1.2//EN"
+    "http://www.puppycrawl.com/dtds/configuration_1_2.dtd">
+<!-- Checkstyle configuration that checks the Fedora coding conventions from: 
+    - the Fedora FcRepo4 Code Style Guide https://wiki.duraspace.org/display/FF/Code+Style+Guide 
+    - some best practices Checkstyle is very configurable. Be sure to read the 
+    documentation at http://checkstyle.sf.net (or in your downloaded distribution). 
+    Most Checks are configurable, be sure to consult the documentation. To completely 
+    disable a check, just comment it out or delete it from the file. Finally, 
+    it is worth reading the documentation. -->
+        
+    <!--
+        List of all checkstyle modules
+        http://checkstyle.sourceforge.net/checks.html
+        
+        List of property types to modify default module behavoirs
+        http://checkstyle.sourceforge.net/property_types.html
+    -->
+<module name="Checker">
+    
+    <!-- Suppress 
+        The fcrepo based suppression file disables JavaDoc checks in unit test and IT test files.
+        It also disables indentation checking, e.g. 4 spaces for all java files
+    -->
+    <module name="SuppressionFilter">
+        <property name="file" value="${checkstyle.suppressions.file}"/>
+    </module>
+    
+    <!-- Checks that there are no tab characters ('\t') in the source code. -->
+    <module name="FileTabCharacter">
+        <property name="eachLine" value="true" />
+        <property name="fileExtensions" value="css,java,js,jsp,xml,xsl" />
+    </module>
+    
+    <!-- License Header module disabled in favor of license-maven-plugin -->
+    <module name="TreeWalker">
+        
+        <!-- Checks for redundant import statements -->
+        <module name="RedundantImport" />
+        
+        <!-- Checks for unused import statements -->
+        <module name="UnusedImports" />
+        
+        <!-- Check that finds import statements that use the * notation. -->
+        <module name="AvoidStarImport" />
+        
+        <!-- Checks for long lines. -->
+        <module name="LineLength">
+            <property name="max" value="120"/>
+        </module>
+        
+        <!-- Write Javadocs for public methods and classes. Keep it short and to 
+            the point /** * @author Joe Developer * @date MMM DD, YYYY */ public class 
+            MyClass -->
+        <module name="JavadocType">
+            <property name="scope" value="public" />
+            <property name="excludeScope" value="anoninner" />
+            <!-- Contrary to expectation only checks for author tags without an author -->
+            <!-- \S value matches anything but a whitespace -->
+            <property name="authorFormat" value="\S" />
+            <property name="allowUnknownTags" value="true" />
+            <property name="allowMissingParamTags" value="false" />
+        </module>
+        <!-- Ensure files have the Javadoc @author tag -->
+        <module name="Regexp">
+            <property name="format" value=" \* \@author " />
+            <property name="message" value="Javadoc @author tag" />
+        </module>
+        
+        <!-- Relaxes syntax options for JavaDoc comments -->
+        <module name="JavadocMethod">
+            <property name="scope" value="public" />
+            <!-- whether to allow documented exceptions that are not declared if they are a subclass of java.lang.RuntimeException -->
+            <property name="allowUndeclaredRTE" value="true" /> 
+            <property name="allowMissingParamTags" value="true" />
+            <property name="allowMissingThrowsTags" value="true" />
+            <property name="allowMissingReturnTag" value="true" />
+        </module>
+        
+        <!-- 
+            Checks for braces around code blocks 
+            http://checkstyle.sourceforge.net/config_blocks.html#NeedBraces
+        -->
+        <module name="NeedBraces" />
+        
+        <!-- 
+            Set braces style options below override the default K & R style 
+            Available options: http://checkstyle.sourceforge.net/property_types.html#lcurly
+          Setting an option:  
+        -->
+        <module name="LeftCurly">
+            <property name="option" value="eol" />
+        </module>
+        
+        
+        <!-- http://checkstyle.sourceforge.net/config_blocks.html#RightCurly -->
+        <module name="RightCurly"> 
+            <property name="option" value="same"/>
+        </module>
+        
+        <!--
+            Requires whitespace around the variable/syntax types listed below
+            http://checkstyle.sourceforge.net/config_whitespace.html#WhitespaceAround
+        -->
+        <module name="WhitespaceAround">
+            <property name="tokens"
+                value="ASSIGN, BAND, BAND_ASSIGN, BOR, BOR_ASSIGN, BSR, BSR_ASSIGN, BXOR, BXOR_ASSIGN, COLON, DIV, DIV_ASSIGN, EQUAL, GE, GT, LAND, LE, LITERAL_CATCH, LITERAL_DO, LITERAL_ELSE, LITERAL_FINALLY, LITERAL_FOR, LITERAL_IF, LITERAL_RETURN, LITERAL_SYNCHRONIZED, LITERAL_TRY, LITERAL_WHILE, LOR, LT, MINUS, MINUS_ASSIGN, MOD, MOD_ASSIGN, NOT_EQUAL, PLUS, PLUS_ASSIGN, QUESTION, SL, SLIST, SL_ASSIGN, SR, SR_ASSIGN, STAR, STAR_ASSIGN, TYPE_EXTENSION_AND" />
+        </module>
+        
+        <!--
+            Checks correct indentation of Java code.
+            http://checkstyle.sourceforge.net/config_misc.html#Indentation
+        -->
+        <module name="Indentation">
+            <!-- How far a throws clause should be indented when on next line -->
+            <property name="throwsIndent" value="8" />
+        </module>
+        
+        <!-- 
+            Maintains a set of check suppressions from @SuppressWarnings annotations. 
+            It prevents Checkstyle from reporting errors from parts of code that were annotated with @SuppressWarnings and using name of the check to be excluded
+            http://checkstyle.sourceforge.net/config_annotation.html#SuppressWarningsHolder
+        -->
+        <module name="SuppressWarningsHolder" />
+        
+        <!--
+            Checks that the whitespace around the Generic tokens (angle brackets) "<" and ">" are correct
+            http://checkstyle.sourceforge.net/config_whitespace.html#GenericWhitespace
+        -->
+        <module name="GenericWhitespace" />
+        
+        <!--
+            Makes sure that utility classes (classes that contain only static methods or fields in their API) do not have a public constructor.
+            http://checkstyle.sourceforge.net/config_design.html#HideUtilityClassConstructor
+        -->
+        <module name="HideUtilityClassConstructor" />
+        
+        <!--
+            Checks that each variable declaration is in its own statement and on its own line
+            http://checkstyle.sourceforge.net/config_coding.html#MultipleVariableDeclarations
+        -->
+        <module name="MultipleVariableDeclarations" />
+    </module>
+    
+    <!-- No Trailing Whitespace, except on lines that only have an asterisk 
+        (e.g. Javadoc comments) -->
+    <module name="RegexpSingleline">
+        <property name="format" value="(?&lt;!\*)\s+$|\*\s\s+$" />
+        <property name="message" value="Trailing whitespace" />
+        <property name="fileExtensions" value="css,java,js,jsp,xml,xsl" />
+    </module>
+    
+    <!-- 
+        Filter SuppressWarningsFilter uses annotations to suppress audit events. 
+        http://checkstyle.sourceforge.net/config_filters.html#SuppressWarningsFilter
+    -->
+    <module name="SuppressWarningsFilter" />
+</module>

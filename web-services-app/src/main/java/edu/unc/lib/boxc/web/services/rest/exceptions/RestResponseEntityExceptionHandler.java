@@ -29,9 +29,9 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 import edu.unc.lib.boxc.auth.api.exceptions.AccessRestrictionException;
 import edu.unc.lib.boxc.auth.api.models.AgentPrincipals;
 import edu.unc.lib.boxc.auth.fcrepo.models.AgentPrincipalsImpl;
+import edu.unc.lib.boxc.fcrepo.exceptions.AuthorizationException;
 import edu.unc.lib.boxc.model.api.exceptions.InvalidPidException;
 import edu.unc.lib.boxc.model.api.exceptions.NotFoundException;
-import edu.unc.lib.dl.fedora.AuthorizationException;
 
 /**
  *

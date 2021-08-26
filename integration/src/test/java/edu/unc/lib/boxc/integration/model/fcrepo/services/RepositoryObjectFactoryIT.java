@@ -37,6 +37,7 @@ import org.fcrepo.client.FcrepoResponse;
 import org.junit.Test;
 
 import edu.unc.lib.boxc.common.util.URIUtil;
+import edu.unc.lib.boxc.fcrepo.utils.FedoraTransaction;
 import edu.unc.lib.boxc.integration.fcrepo.AbstractFedoraIT;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.ids.RepositoryPathConstants;
@@ -54,7 +55,6 @@ import edu.unc.lib.boxc.model.api.rdf.Ldp;
 import edu.unc.lib.boxc.model.api.rdf.PcdmModels;
 import edu.unc.lib.boxc.model.api.rdf.PcdmUse;
 import edu.unc.lib.boxc.model.api.rdf.RDFModelUtil;
-import edu.unc.lib.dl.fcrepo4.FedoraTransaction;
 
 /**
  *

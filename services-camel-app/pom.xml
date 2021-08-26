@@ -140,7 +140,7 @@
     
     <dependency>
         <groupId>edu.unc.lib.cdr</groupId>
-        <artifactId>fcrepo-clients</artifactId>
+        <artifactId>fcrepo-utils</artifactId>
     </dependency>
     
     <dependency>

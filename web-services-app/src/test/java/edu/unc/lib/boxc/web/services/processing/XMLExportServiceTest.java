@@ -51,6 +51,7 @@ import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
 import edu.unc.lib.boxc.auth.api.services.AccessControlService;
 import edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl;
 import edu.unc.lib.boxc.common.util.ZipFileUtil;
+import edu.unc.lib.boxc.fcrepo.exceptions.ServiceException;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.objects.BinaryObject;
 import edu.unc.lib.boxc.model.api.objects.ContentObject;
@@ -66,7 +67,6 @@ import edu.unc.lib.boxc.search.solr.services.SearchStateFactory;
 import edu.unc.lib.boxc.web.common.services.SolrQueryLayerService;
 import edu.unc.lib.boxc.web.services.processing.XMLExportService;
 import edu.unc.lib.boxc.web.services.rest.modify.ExportXMLController.XMLExportRequest;
-import edu.unc.lib.dl.fedora.ServiceException;
 
 /**
  *

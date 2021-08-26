@@ -63,6 +63,7 @@ import org.springframework.util.MimeTypeUtils;
 
 import com.google.common.base.CharMatcher;
 
+import edu.unc.lib.boxc.common.http.MimetypeHelpers;
 import edu.unc.lib.boxc.common.util.URIUtil;
 import edu.unc.lib.boxc.deposit.work.AbstractConcurrentDepositJob;
 import edu.unc.lib.boxc.deposit.work.JobFailedException;
@@ -70,7 +71,6 @@ import edu.unc.lib.boxc.deposit.work.JobInterruptedException;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.fcrepo.ids.DatastreamPids;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
-import edu.unc.lib.dl.util.MimetypeHelpers;
 
 /**
  * Job which performs technical metadata extraction on binary files included in

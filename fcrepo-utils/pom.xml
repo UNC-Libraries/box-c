@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <artifactId>fcrepo-utils</artifactId>
+    <packaging>jar</packaging>
+    
+    <parent>
+        <groupId>edu.unc.lib.cdr</groupId>
+        <artifactId>cdr</artifactId>
+        <version>5.0-SNAPSHOT</version>
+    </parent>
+    
+    <name>Fedora Clients</name>
+    <description>This project contains a Spring web services implementation of the Fedora Commons 3.0 API-M and API-A</description>
+    
+    <build>
+        <testResources>
+            <testResource>
+                <filtering>true</filtering>
+                <directory>../etc</directory>
+                <includes>
+                    <include>server.properties</include>
+                </includes>
+            </testResource>
+            <testResource>
+                <directory>src/test/resources</directory>
+            </testResource>
+        </testResources>
+
+        <plugins>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>build-helper-maven-plugin</artifactId>
+            </plugin>
+        
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-failsafe-plugin</artifactId>
+            </plugin>
+        
+            <plugin>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+            </plugin>
+        </plugins>
+    </build>
+
+    <dependencies>
+        <!-- Logging -->
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-core</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-classic</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpclient</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpmime</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>edu.unc.lib.cdr</groupId>
+            <artifactId>metadata</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>edu.unc.lib.cdr</groupId>
+            <artifactId>common-utils</artifactId>
+            <type>test-jar</type>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>edu.unc.lib.cdr</groupId>
+            <artifactId>model-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>edu.unc.lib.cdr</groupId>
+            <artifactId>persistence-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>edu.unc.lib.cdr</groupId>
+            <artifactId>auth-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.fcrepo.client</groupId>
+            <artifactId>fcrepo-java-client</artifactId>
+        </dependency>
+        <!-- integration testing -->
+        <dependency>
+            <groupId>org.fcrepo</groupId>
+            <artifactId>fcrepo-http-commons</artifactId>
+            <scope>test</scope>
+            <type>test-jar</type>
+        </dependency>
+        <dependency>
+            <groupId>org.fcrepo</groupId>
+            <artifactId>fcrepo-auth-common</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>javax.servlet</groupId>
+            <artifactId>javax.servlet-api</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.grizzly</groupId>
+            <artifactId>grizzly-http-servlet</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.jersey.core</groupId>
+            <artifactId>jersey-common</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.jersey.ext</groupId>
+            <artifactId>jersey-spring5</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.jersey.test-framework.providers</groupId>
+            <artifactId>jersey-test-framework-provider-grizzly2</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.fcrepo</groupId>
+            <artifactId>fcrepo-kernel-modeshape</artifactId>
+            <scope>test</scope>
+            <classifier>tests</classifier>
+        </dependency>
+        <dependency>
+            <groupId>org.fcrepo</groupId>
+            <artifactId>fcrepo-http-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.jena</groupId>
+            <artifactId>jena-fuseki-main</artifactId>
+        </dependency>
+    </dependencies>
+</project>

@@ -41,10 +41,10 @@ import org.fcrepo.client.FedoraHeaderConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import edu.unc.lib.dl.fcrepo4.ClientFaultResolver;
-import edu.unc.lib.dl.fedora.ServiceException;
 import edu.unc.lib.boxc.common.metrics.HistogramFactory;
 import edu.unc.lib.boxc.common.metrics.TimerFactory;
+import edu.unc.lib.boxc.fcrepo.exceptions.ServiceException;
+import edu.unc.lib.boxc.fcrepo.utils.ClientFaultResolver;
 import edu.unc.lib.boxc.model.api.DatastreamType;
 import edu.unc.lib.boxc.model.api.exceptions.NotFoundException;
 import edu.unc.lib.boxc.model.api.exceptions.ObjectTypeMismatchException;

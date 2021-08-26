@@ -33,8 +33,8 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import edu.unc.lib.boxc.auth.api.exceptions.AccessRestrictionException;
 import edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore;
+import edu.unc.lib.boxc.fcrepo.exceptions.AuthorizationException;
 import edu.unc.lib.boxc.web.services.processing.RunEnhancementsService;
-import edu.unc.lib.dl.fedora.AuthorizationException;
 
 /**
  * Receives list of PIDs to run enhancements on

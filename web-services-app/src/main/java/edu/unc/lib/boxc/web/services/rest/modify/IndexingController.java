@@ -31,10 +31,10 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 import edu.unc.lib.boxc.auth.api.exceptions.AccessRestrictionException;
 import edu.unc.lib.boxc.auth.fcrepo.models.AgentPrincipalsImpl;
+import edu.unc.lib.boxc.fcrepo.exceptions.AuthorizationException;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.boxc.operations.jms.indexing.IndexingService;
-import edu.unc.lib.dl.fedora.AuthorizationException;
 
 /**
  * API controller for reindexing the repository

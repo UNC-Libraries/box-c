@@ -27,6 +27,7 @@ import com.fasterxml.jackson.databind.ObjectReader;
 
 import edu.unc.lib.boxc.auth.api.services.AccessControlService;
 import edu.unc.lib.boxc.auth.fcrepo.services.InheritedAclFactory;
+import edu.unc.lib.boxc.fcrepo.utils.TransactionManager;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
 import edu.unc.lib.boxc.operations.api.events.PremisLoggerFactory;
@@ -39,7 +40,6 @@ import edu.unc.lib.boxc.operations.jms.indexing.IndexingMessageSender;
 import edu.unc.lib.boxc.persist.api.storage.StorageLocationManager;
 import edu.unc.lib.boxc.persist.api.transfer.BinaryTransferService;
 import edu.unc.lib.boxc.search.solr.services.ObjectPathFactory;
-import edu.unc.lib.dl.fcrepo4.TransactionManager;
 
 /**
  * Processor which handles messages requesting the destruction of objects.

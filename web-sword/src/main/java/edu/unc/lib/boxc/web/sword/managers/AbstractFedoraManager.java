@@ -29,7 +29,7 @@ import edu.unc.lib.boxc.auth.api.services.AccessControlService;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPaths;
-import edu.unc.lib.dl.util.ErrorURIRegistry;
+import edu.unc.lib.boxc.web.sword.ErrorURIRegistry;
 
 /**
  *

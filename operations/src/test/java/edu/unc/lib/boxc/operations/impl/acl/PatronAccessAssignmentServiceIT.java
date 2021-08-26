@@ -71,6 +71,8 @@ import edu.unc.lib.boxc.auth.api.models.RoleAssignment;
 import edu.unc.lib.boxc.auth.api.services.AccessControlService;
 import edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl;
 import edu.unc.lib.boxc.auth.fcrepo.models.AgentPrincipalsImpl;
+import edu.unc.lib.boxc.fcrepo.exceptions.ServiceException;
+import edu.unc.lib.boxc.fcrepo.utils.TransactionManager;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.objects.AdminUnit;
 import edu.unc.lib.boxc.model.api.objects.BinaryObject;
@@ -96,8 +98,6 @@ import edu.unc.lib.boxc.operations.impl.acl.PatronAccessDetails;
 import edu.unc.lib.boxc.operations.impl.acl.PatronAccessAssignmentService.PatronAccessAssignmentRequest;
 import edu.unc.lib.boxc.operations.jms.OperationsMessageSender;
 import edu.unc.lib.boxc.operations.jms.JMSMessageUtil.CDRActions;
-import edu.unc.lib.dl.fcrepo4.TransactionManager;
-import edu.unc.lib.dl.fedora.ServiceException;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextHierarchy({

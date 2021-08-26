@@ -18,7 +18,7 @@ package edu.unc.lib.boxc.operations.impl.delete;
 import static edu.unc.lib.boxc.auth.api.Permission.markForDeletion;
 import static edu.unc.lib.boxc.auth.api.Permission.markForDeletionUnit;
 import static edu.unc.lib.boxc.model.api.rdf.CdrAcl.markedForDeletion;
-import static edu.unc.lib.dl.sparql.SparqlUpdateHelper.createSparqlDelete;
+import static edu.unc.lib.boxc.model.api.sparql.SparqlUpdateHelper.createSparqlDelete;
 
 import edu.unc.lib.boxc.auth.api.models.AgentPrincipals;
 import edu.unc.lib.boxc.auth.api.services.AccessControlService;
@@ -29,9 +29,9 @@ import edu.unc.lib.boxc.model.api.objects.ContentObject;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObject;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.api.rdf.Premis;
+import edu.unc.lib.boxc.model.api.sparql.SparqlUpdateService;
 import edu.unc.lib.boxc.model.fcrepo.ids.AgentPids;
 import edu.unc.lib.boxc.operations.api.events.PremisLoggerFactory;
-import edu.unc.lib.dl.sparql.SparqlUpdateService;
 
 /**
  * Operation which restores a content object which was marked for deletion

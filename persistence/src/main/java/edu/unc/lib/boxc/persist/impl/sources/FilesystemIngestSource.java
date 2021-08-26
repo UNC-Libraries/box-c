@@ -32,12 +32,12 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import edu.unc.lib.boxc.fcrepo.exceptions.ServiceException;
 import edu.unc.lib.boxc.persist.api.PackagingType;
 import edu.unc.lib.boxc.persist.api.exceptions.InvalidIngestSourceCandidateException;
 import edu.unc.lib.boxc.persist.api.sources.IngestSource;
 import edu.unc.lib.boxc.persist.api.sources.IngestSourceCandidate;
 import edu.unc.lib.boxc.persist.api.storage.StorageType;
-import edu.unc.lib.dl.fedora.ServiceException;
 import gov.loc.repository.bagit.domain.Bag;
 import gov.loc.repository.bagit.exceptions.InvalidBagitFileFormatException;
 import gov.loc.repository.bagit.exceptions.MaliciousPathException;

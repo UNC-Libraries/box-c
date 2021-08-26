@@ -36,6 +36,7 @@ import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.google.common.util.concurrent.UncheckedExecutionException;
 
+import edu.unc.lib.boxc.fcrepo.utils.ClientFaultResolver;
 import edu.unc.lib.boxc.model.api.exceptions.ObjectHierarchyException;
 import edu.unc.lib.boxc.model.api.exceptions.OrphanedObjectException;
 import edu.unc.lib.boxc.model.api.exceptions.RepositoryException;
@@ -45,7 +46,6 @@ import edu.unc.lib.boxc.model.api.rdf.RDFModelUtil;
 import edu.unc.lib.boxc.model.api.services.ContentPathFactory;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPaths;
-import edu.unc.lib.dl.fcrepo4.ClientFaultResolver;
 
 /**
  * Factory for retrieving path information for content objects

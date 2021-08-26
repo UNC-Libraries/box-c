@@ -31,9 +31,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
+import edu.unc.lib.boxc.fcrepo.utils.FedoraSparqlUpdateService;
 import edu.unc.lib.boxc.model.api.rdf.RDFModelUtil;
 import edu.unc.lib.boxc.model.fcrepo.test.TestHelper;
-import edu.unc.lib.dl.sparql.FedoraSparqlUpdateService;
 
 /**
  *

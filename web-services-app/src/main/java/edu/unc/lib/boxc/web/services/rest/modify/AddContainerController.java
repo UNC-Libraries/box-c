@@ -30,10 +30,10 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import edu.unc.lib.boxc.auth.api.exceptions.AccessRestrictionException;
 import edu.unc.lib.boxc.auth.fcrepo.models.AgentPrincipalsImpl;
+import edu.unc.lib.boxc.fcrepo.exceptions.AuthorizationException;
 import edu.unc.lib.boxc.model.api.ResourceType;
 import edu.unc.lib.boxc.web.services.processing.AddContainerService;
 import edu.unc.lib.boxc.web.services.processing.AddContainerService.AddContainerRequest;
-import edu.unc.lib.dl.fedora.AuthorizationException;
 
 /**
  * API controller for creating new containers

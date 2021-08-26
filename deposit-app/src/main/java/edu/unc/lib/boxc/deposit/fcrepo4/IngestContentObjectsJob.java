@@ -74,6 +74,10 @@ import edu.unc.lib.boxc.deposit.validate.VerifyObjectsAreInFedoraService;
 import edu.unc.lib.boxc.deposit.work.AbstractDepositJob;
 import edu.unc.lib.boxc.deposit.work.DepositGraphUtils;
 import edu.unc.lib.boxc.deposit.work.JobInterruptedException;
+import edu.unc.lib.boxc.fcrepo.exceptions.ChecksumMismatchException;
+import edu.unc.lib.boxc.fcrepo.utils.FedoraTransaction;
+import edu.unc.lib.boxc.fcrepo.utils.FedoraTransactionRefresher;
+import edu.unc.lib.boxc.fcrepo.utils.TransactionManager;
 import edu.unc.lib.boxc.model.api.DatastreamType;
 import edu.unc.lib.boxc.model.api.SoftwareAgentConstants.SoftwareAgent;
 import edu.unc.lib.boxc.model.api.exceptions.FedoraException;
@@ -103,10 +107,6 @@ import edu.unc.lib.boxc.operations.api.events.PremisLogger;
 import edu.unc.lib.boxc.operations.impl.edit.UpdateDescriptionService;
 import edu.unc.lib.boxc.operations.impl.edit.UpdateDescriptionService.UpdateDescriptionRequest;
 import edu.unc.lib.boxc.persist.api.transfer.BinaryTransferSession;
-import edu.unc.lib.dl.fcrepo4.FedoraTransaction;
-import edu.unc.lib.dl.fcrepo4.FedoraTransactionRefresher;
-import edu.unc.lib.dl.fcrepo4.TransactionManager;
-import edu.unc.lib.dl.fedora.ChecksumMismatchException;
 
 /**
  * Ingests all content objects in the deposit into the Fedora repository.

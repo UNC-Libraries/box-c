@@ -179,7 +179,7 @@
         <module>common-utils</module>
         <module>deposit-app</module>
         <module>deposit-utils</module>
-        <module>fcrepo-clients</module>
+        <module>fcrepo-utils</module>
         <module>indexing-solr</module>
         <module>integration</module>
         <module>metadata</module>
@@ -602,7 +602,7 @@
             </dependency>
              <dependency>
                 <groupId>edu.unc.lib.cdr</groupId>
-                <artifactId>fcrepo-clients</artifactId>
+                <artifactId>fcrepo-utils</artifactId>
                 <version>${cdr.version}</version>
             </dependency>
             <dependency>

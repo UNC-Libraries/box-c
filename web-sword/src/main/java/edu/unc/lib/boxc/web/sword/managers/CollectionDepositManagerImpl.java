@@ -40,9 +40,9 @@ import edu.unc.lib.boxc.deposit.impl.submit.DepositSubmissionService;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.persist.api.PackagingType;
 import edu.unc.lib.boxc.persist.api.exceptions.UnsupportedPackagingTypeException;
+import edu.unc.lib.boxc.web.sword.ErrorURIRegistry;
 import edu.unc.lib.boxc.web.sword.SwordConfigurationImpl;
 import edu.unc.lib.boxc.web.sword.utils.DepositReportingUtil;
-import edu.unc.lib.dl.util.ErrorURIRegistry;
 
 /**
  * Manager responsible for performing ingest of new objects or packages

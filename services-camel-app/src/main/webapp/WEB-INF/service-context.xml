@@ -34,7 +34,7 @@
         </property>
     </bean>
     
-    <bean id="fcrepoClientFactory" class="edu.unc.lib.dl.fcrepo4.FcrepoClientFactory" factory-method="factory">
+    <bean id="fcrepoClientFactory" class="edu.unc.lib.boxc.fcrepo.utils.FcrepoClientFactory" factory-method="factory">
         <constructor-arg value="${fcrepo.baseUrl}" />
         <constructor-arg value="${fcrepo.auth.host}" />
         <constructor-arg value="${fcrepo.auth.user}" />
@@ -58,7 +58,7 @@
     
     <bean id="repositoryPIDMinter" class="edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPIDMinter"></bean>
 
-    <bean id="fedoraSparqlUpdateService" class="edu.unc.lib.dl.sparql.FedoraSparqlUpdateService">
+    <bean id="fedoraSparqlUpdateService" class="edu.unc.lib.boxc.fcrepo.utils.FedoraSparqlUpdateService">
         <property name="fcrepoClient" ref="fcrepoClient" />
     </bean>
 
@@ -100,7 +100,7 @@
             destroy-method="shutdown">
     </bean>
     
-    <bean id="sparqlQueryService" class="edu.unc.lib.dl.sparql.FusekiSparqlQueryServiceImpl">
+    <bean id="sparqlQueryService" class="edu.unc.lib.boxc.model.fcrepo.sparql.FusekiSparqlQueryServiceImpl">
         <property name="fusekiQueryURL" value="${fuseki.baseUri}" />
         <property name="httpClientConnectionManager" ref="httpClientConnectionManager" />
     </bean>
@@ -286,7 +286,7 @@
         <property name="baseUrl" value="${fcrepo.baseUrl}"/>
     </bean>
     
-    <bean id="transactionManager" class="edu.unc.lib.dl.fcrepo4.TransactionManager">
+    <bean id="transactionManager" class="edu.unc.lib.boxc.fcrepo.utils.TransactionManager">
         <property name="client" ref="fcrepoClient" />
         <property name="binaryTransferService" ref="binaryTransferService" />
     </bean>

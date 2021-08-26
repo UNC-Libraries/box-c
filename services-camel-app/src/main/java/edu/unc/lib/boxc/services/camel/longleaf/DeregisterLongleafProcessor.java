@@ -26,9 +26,9 @@ import org.apache.camel.Message;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import edu.unc.lib.dl.fedora.ServiceException;
 import edu.unc.lib.boxc.common.metrics.HistogramFactory;
 import edu.unc.lib.boxc.common.metrics.TimerFactory;
+import edu.unc.lib.boxc.fcrepo.exceptions.ServiceException;
 import edu.unc.lib.boxc.persist.impl.transfer.FileSystemTransferHelpers;
 import io.dropwizard.metrics5.Histogram;
 import io.dropwizard.metrics5.Timer;

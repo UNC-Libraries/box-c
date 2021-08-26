@@ -15,8 +15,8 @@
  */
 package edu.unc.lib.boxc.web.common.auth.filters;
 
+import static edu.unc.lib.boxc.web.common.auth.HttpAuthHeaders.FORWARDED_MAIL_HEADER;
 import static edu.unc.lib.boxc.web.common.auth.RemoteUserUtil.getRemoteUser;
-import static edu.unc.lib.dl.httpclient.HttpClientUtil.FORWARDED_MAIL_HEADER;
 
 import java.io.IOException;
 
@@ -34,8 +34,8 @@ import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
 import edu.unc.lib.boxc.auth.api.models.AgentPrincipals;
 import edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl;
 import edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore;
+import edu.unc.lib.boxc.web.common.auth.HttpAuthHeaders;
 import edu.unc.lib.boxc.web.common.auth.PatronPrincipalProvider;
-import edu.unc.lib.dl.httpclient.HttpClientUtil;
 
 /**
  * Filter which retrieves the users shibboleth and grouper session information in order to construct their profile as
@@ -102,7 +102,7 @@ public class StoreUserAccessControlFilter extends OncePerRequestFilter implement
     }
 
     protected AccessGroupSet getForwardedGroups(HttpServletRequest request) {
-        String forwardedGroups = request.getHeader(HttpClientUtil.FORWARDED_GROUPS_HEADER);
+        String forwardedGroups = request.getHeader(HttpAuthHeaders.FORWARDED_GROUPS_HEADER);
         if (log.isDebugEnabled()) {
             log.debug("Forwarding user {} logged in with forwarded groups {}",
                     GroupsThreadStore.getUsername(), forwardedGroups);
@@ -118,7 +118,7 @@ public class StoreUserAccessControlFilter extends OncePerRequestFilter implement
     }
 
     protected AccessGroupSet getGrouperGroups(HttpServletRequest request) {
-        String shibGroups = request.getHeader(HttpClientUtil.SHIBBOLETH_GROUPS_HEADER);
+        String shibGroups = request.getHeader(HttpAuthHeaders.SHIBBOLETH_GROUPS_HEADER);
         AccessGroupSet accessGroups = null;
         String userName = GroupsThreadStore.getUsername();
         if (log.isDebugEnabled()) {

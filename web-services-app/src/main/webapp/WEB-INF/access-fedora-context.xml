@@ -12,7 +12,7 @@
     http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd"
     xmlns="http://www.springframework.org/schema/beans">
     
-    <bean id="sparqlQueryService" class="edu.unc.lib.dl.sparql.FusekiSparqlQueryServiceImpl">
+    <bean id="sparqlQueryService" class="edu.unc.lib.boxc.model.fcrepo.sparql.FusekiSparqlQueryServiceImpl">
         <property name="fusekiQueryURL" value="${fuseki.baseUri}" />
         <property name="httpClientConnectionManager" ref="httpClientConnectionManager" />
     </bean>
@@ -84,7 +84,7 @@
         <property name="permissionEvaluator" ref="inheritedPermissionEvaluator" />
     </bean>
     
-    <bean id="fcrepoClientFactory" class="edu.unc.lib.dl.fcrepo4.FcrepoClientFactory" factory-method="factory">
+    <bean id="fcrepoClientFactory" class="edu.unc.lib.boxc.fcrepo.utils.FcrepoClientFactory" factory-method="factory">
         <constructor-arg value="${fcrepo.baseUrl}" />
         <constructor-arg value="${fcrepo.auth.host}" />
         <constructor-arg value="${fcrepo.auth.user}" />
@@ -106,7 +106,7 @@
         <property name="binaryTransferService" ref="binaryTransferService" />
     </bean>
     
-    <bean id="fedoraSparqlUpdateService" class="edu.unc.lib.dl.sparql.FedoraSparqlUpdateService">
+    <bean id="fedoraSparqlUpdateService" class="edu.unc.lib.boxc.fcrepo.utils.FedoraSparqlUpdateService">
         <property name="fcrepoClient" ref="fcrepoClient" />
     </bean>
 
@@ -140,7 +140,7 @@
         <property name="repositoryObjectCacheLoader" ref="repositoryObjectCacheLoader" />
     </bean>
     
-    <bean id="transactionManager" class="edu.unc.lib.dl.fcrepo4.TransactionManager">
+    <bean id="transactionManager" class="edu.unc.lib.boxc.fcrepo.utils.TransactionManager">
         <property name="client" ref="fcrepoClient" />
         <property name="binaryTransferService" ref="binaryTransferService" />
     </bean>

@@ -47,8 +47,8 @@ import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPaths;
 import edu.unc.lib.boxc.persist.api.PackagingType;
+import edu.unc.lib.boxc.web.sword.ErrorURIRegistry;
 import edu.unc.lib.boxc.web.sword.SwordConfigurationImpl;
-import edu.unc.lib.dl.util.ErrorURIRegistry;
 
 /**
  * Generates service document from all containers which are the immediate children of the starting path, given the users

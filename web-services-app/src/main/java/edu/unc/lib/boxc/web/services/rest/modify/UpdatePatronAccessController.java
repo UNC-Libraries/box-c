@@ -40,13 +40,13 @@ import edu.unc.lib.boxc.auth.api.Permission;
 import edu.unc.lib.boxc.auth.api.models.AgentPrincipals;
 import edu.unc.lib.boxc.auth.api.services.AccessControlService;
 import edu.unc.lib.boxc.auth.fcrepo.models.AgentPrincipalsImpl;
+import edu.unc.lib.boxc.fcrepo.exceptions.ServiceException;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.boxc.operations.impl.acl.PatronAccessAssignmentService;
 import edu.unc.lib.boxc.operations.impl.acl.PatronAccessAssignmentService.PatronAccessAssignmentRequest;
 import edu.unc.lib.boxc.operations.impl.acl.PatronAccessDetails;
 import edu.unc.lib.boxc.operations.impl.acl.PatronAccessOperationSender;
-import edu.unc.lib.dl.fedora.ServiceException;
 
 /**
  * API endpoint for setting patron access control for objects

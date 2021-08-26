@@ -23,6 +23,7 @@ import org.slf4j.LoggerFactory;
 
 import edu.unc.lib.boxc.auth.api.models.AgentPrincipals;
 import edu.unc.lib.boxc.auth.api.services.AccessControlService;
+import edu.unc.lib.boxc.fcrepo.utils.TransactionManager;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.objects.AdminUnit;
 import edu.unc.lib.boxc.model.api.objects.CollectionObject;
@@ -34,7 +35,6 @@ import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.api.objects.WorkObject;
 import edu.unc.lib.boxc.operations.jms.OperationsMessageSender;
 import edu.unc.lib.boxc.search.solr.services.ObjectPathFactory;
-import edu.unc.lib.dl.fcrepo4.TransactionManager;
 
 /**
  * Service which moves content objects between containers.

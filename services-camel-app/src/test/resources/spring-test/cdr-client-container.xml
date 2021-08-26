@@ -11,7 +11,7 @@
             value="http://localhost:48085/rest/" />
     </bean>
     
-    <bean id="fcrepoClientFactory" class="edu.unc.lib.dl.fcrepo4.FcrepoClientFactory" factory-method="factory">
+    <bean id="fcrepoClientFactory" class="edu.unc.lib.boxc.fcrepo.utils.FcrepoClientFactory" factory-method="factory">
         <constructor-arg ref="baseAddress" />
     </bean>
     
@@ -32,7 +32,7 @@
     
     <bean id="repositoryPIDMinter" class="edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPIDMinter"></bean>
     
-    <bean id="fedoraSparqlUpdateService" class="edu.unc.lib.dl.sparql.FedoraSparqlUpdateService">
+    <bean id="fedoraSparqlUpdateService" class="edu.unc.lib.boxc.fcrepo.utils.FedoraSparqlUpdateService">
         <property name="fcrepoClient" ref="fcrepoClient" />
     </bean>
 
@@ -78,7 +78,7 @@
     <bean id="queryModel" class="org.apache.jena.rdf.model.ModelFactory" factory-method="createDefaultModel">
     </bean>
     
-    <bean id="sparqlQueryService" class="edu.unc.lib.dl.sparql.JenaSparqlQueryServiceImpl">
+    <bean id="sparqlQueryService" class="edu.unc.lib.boxc.model.fcrepo.sparql.JenaSparqlQueryServiceImpl">
         <constructor-arg ref="queryModel" />
     </bean>
     
@@ -93,7 +93,7 @@
         <property name="repositoryObjectFactory" ref="repositoryObjectFactory" />
     </bean>
     
-    <bean id="txManager" class="edu.unc.lib.dl.fcrepo4.TransactionManager">
+    <bean id="txManager" class="edu.unc.lib.boxc.fcrepo.utils.TransactionManager">
         <property name="client" ref="fcrepoClient" />
         <property name="binaryTransferService" ref="binaryTransferService" />
     </bean>

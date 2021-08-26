@@ -33,9 +33,9 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import edu.unc.lib.boxc.auth.api.exceptions.AccessRestrictionException;
 import edu.unc.lib.boxc.auth.api.models.AgentPrincipals;
 import edu.unc.lib.boxc.auth.fcrepo.models.AgentPrincipalsImpl;
+import edu.unc.lib.boxc.fcrepo.exceptions.AuthorizationException;
 import edu.unc.lib.boxc.model.api.exceptions.FedoraException;
 import edu.unc.lib.boxc.operations.impl.delete.MarkForDeletionService;
-import edu.unc.lib.dl.fedora.AuthorizationException;
 
 /**
  * API controller for specifying whether or not resources are marked for deletion.

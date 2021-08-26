@@ -15,10 +15,10 @@
  */
 package edu.unc.lib.boxc.services.camel.solr;
 
+import static edu.unc.lib.boxc.fcrepo.FcrepoJmsConstants.EVENT_TYPE;
+import static edu.unc.lib.boxc.fcrepo.FcrepoJmsConstants.IDENTIFIER;
+import static edu.unc.lib.boxc.fcrepo.FcrepoJmsConstants.RESOURCE_TYPE;
 import static edu.unc.lib.boxc.model.api.rdf.Fcrepo4Repository.Container;
-import static edu.unc.lib.dl.fcrepo4.FcrepoJmsConstants.EVENT_TYPE;
-import static edu.unc.lib.dl.fcrepo4.FcrepoJmsConstants.IDENTIFIER;
-import static edu.unc.lib.dl.fcrepo4.FcrepoJmsConstants.RESOURCE_TYPE;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.verify;
 

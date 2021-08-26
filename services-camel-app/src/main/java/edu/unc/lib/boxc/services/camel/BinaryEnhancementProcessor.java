@@ -27,13 +27,13 @@ import org.jdom2.Element;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import edu.unc.lib.boxc.fcrepo.FcrepoJmsConstants;
 import edu.unc.lib.boxc.model.api.exceptions.ObjectTypeMismatchException;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObject;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.boxc.services.camel.util.MessageUtil;
-import edu.unc.lib.dl.fcrepo4.FcrepoJmsConstants;
 
 /**
  * Sets headers related to identifying binary objects to run enhancement operations on

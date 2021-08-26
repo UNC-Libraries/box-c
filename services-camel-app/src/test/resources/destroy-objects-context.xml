@@ -47,7 +47,7 @@
     </bean>
     
     <bean id="transactionManager" class="org.mockito.Mockito" factory-method="mock">
-        <constructor-arg value="edu.unc.lib.dl.fcrepo4.TransactionManager" />
+        <constructor-arg value="edu.unc.lib.boxc.fcrepo.utils.TransactionManager" />
     </bean>
     
     <bean id="objectPathFactory" class="org.mockito.Mockito" factory-method="mock">

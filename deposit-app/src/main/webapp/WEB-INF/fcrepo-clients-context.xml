@@ -15,7 +15,7 @@
         <constructor-arg index="0" value="deposit.properties.uri" />
     </bean>
     
-    <bean id="fcrepoClientFactory" class="edu.unc.lib.dl.fcrepo4.FcrepoClientFactory" factory-method="factory">
+    <bean id="fcrepoClientFactory" class="edu.unc.lib.boxc.fcrepo.utils.FcrepoClientFactory" factory-method="factory">
         <constructor-arg value="${fcrepo.baseUrl}" />
         <constructor-arg value="${fcrepo.auth.host}" />
         <constructor-arg value="${fcrepo.auth.user}" />
@@ -30,7 +30,7 @@
         <property name="client" ref="fcrepoClient" />
     </bean>
     
-    <bean id="fedoraSparqlUpdateService" class="edu.unc.lib.dl.sparql.FedoraSparqlUpdateService">
+    <bean id="fedoraSparqlUpdateService" class="edu.unc.lib.boxc.fcrepo.utils.FedoraSparqlUpdateService">
         <property name="fcrepoClient" ref="fcrepoClient" />
     </bean>
 
@@ -64,7 +64,7 @@
         <property name="repositoryObjectCacheLoader" ref="repositoryObjectCacheLoader" />
     </bean>
     
-    <bean id="transactionManager" class="edu.unc.lib.dl.fcrepo4.TransactionManager">
+    <bean id="transactionManager" class="edu.unc.lib.boxc.fcrepo.utils.TransactionManager">
         <property name="client" ref="fcrepoClient" />
         <property name="binaryTransferService" ref="binaryTransferService" />
     </bean>

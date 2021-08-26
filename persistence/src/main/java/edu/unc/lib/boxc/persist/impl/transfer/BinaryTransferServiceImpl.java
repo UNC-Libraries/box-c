@@ -25,6 +25,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 
 import org.slf4j.Logger;
 
+import edu.unc.lib.boxc.fcrepo.utils.FedoraTransaction;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObject;
 import edu.unc.lib.boxc.persist.api.sources.IngestSourceManager;
 import edu.unc.lib.boxc.persist.api.storage.StorageLocation;
@@ -33,7 +34,6 @@ import edu.unc.lib.boxc.persist.api.transfer.BinaryTransferOutcome;
 import edu.unc.lib.boxc.persist.api.transfer.BinaryTransferService;
 import edu.unc.lib.boxc.persist.api.transfer.BinaryTransferSession;
 import edu.unc.lib.boxc.persist.api.transfer.MultiDestinationTransferSession;
-import edu.unc.lib.dl.fcrepo4.FedoraTransaction;
 
 /**
  * Default implementation of a binary transfer service
