@@ -173,33 +173,31 @@
     </scm>
 
     <modules>
-        <module>access</module>
-        
-        <module>fcrepo-clients</module>
-        
-        <module>metadata</module>
-        <module>persistence</module>
-        <module>services</module>
-        <module>services-camel</module>
-        <module>search-api</module>
-        <module>indexing-solr</module>
-        <module>search-solr</module>
-        <module>web-sword</module>
-        <module>admin</module>
-        <module>web-common</module>
-        <module>deposit</module>
-        <module>clamav-java</module>
-        <module>spoof</module>
-        <module>common-utils</module>
-        <module>model-api</module>
-        <module>model-fcrepo</module>
         <module>auth-api</module>
         <module>auth-fcrepo</module>
+        <module>clamav-java</module>
+        <module>common-utils</module>
+        <module>deposit-app</module>
+        <module>deposit-utils</module>
+        <module>fcrepo-clients</module>
+        <module>indexing-solr</module>
         <module>integration</module>
+        <module>metadata</module>
+        <module>model-api</module>
+        <module>model-fcrepo</module>
         <module>operations-jms</module>
         <module>operations</module>
-        <module>deposit-utils</module>
         <module>persistence-api</module>
+        <module>persistence</module>
+        <module>search-api</module>
+        <module>search-solr</module>
+        <module>services-camel-app</module>
+        <module>spoof</module>
+        <module>web-access-app</module>
+        <module>web-admin-app</module>
+        <module>web-common</module>
+        <module>web-services-app</module>
+        <module>web-sword</module>
     </modules>
 
     <reporting>
@@ -682,11 +680,6 @@
                 <version>${cdr.version}</version>
                 <type>test-jar</type>
                 <scope>test</scope>
-            </dependency>
-            <dependency>
-                <groupId>edu.unc.lib.cdr</groupId>
-                <artifactId>services-worker</artifactId>
-                <version>${cdr.version}</version>
             </dependency>
             <dependency>
                 <groupId>edu.unc.lib.cdr</groupId>

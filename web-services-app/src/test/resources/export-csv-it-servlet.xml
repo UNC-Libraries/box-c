@@ -15,26 +15,28 @@
 
     <mvc:annotation-driven/>
 
-    <context:component-scan resource-pattern="**/LorisContentController*" base-package="edu.unc.lib.boxc.web.common.controllers"/>
+    <context:component-scan resource-pattern="**/ExportCsvController*" base-package="edu.unc.lib.boxc.web.services.rest.modify"/>
 
     <bean id="properties" class="org.springframework.beans.factory.config.PropertiesFactoryBean">
-        <property name="location" value="classpath:loris-content-it.properties"/>
+        <property name="location" value="classpath:export-csv-it.properties"/>
     </bean>
 
+    <bean id="propertiesURI" class="java.lang.System" factory-method="getProperty">
+        <constructor-arg index="0" value="server.properties.uri"/><!-- property name for properties URI location -->
+        <constructor-arg index="1" value="classpath:export-csv-it.properties"/><!-- default location for testing -->
+    </bean>
     <bean id="serverProperties" class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
-        <property name="location" value="classpath:loris-content-it.properties"/>
+        <property name="location" ref="propertiesURI"/>
         <property name="ignoreResourceNotFound" value="false"/>
     </bean>
     
-    <bean id="lorisContentService" class="edu.unc.lib.boxc.web.common.services.LorisContentService">
-        <property name="lorisPath" value="${loris.base.url}"/>
-        <property name="basePath" value="${access.base.url}"/>
+    <bean id="exportCsvService" class="edu.unc.lib.boxc.web.services.processing.ExportCsvService">
+        <property name="childrenCountService" ref="childrenCountService"/>
+        <property name="aclService" ref="aclService"/>
+        <property name="queryLayer" ref="queryLayer"/>
     </bean>
-    
-    <bean id="accessCopiesService" class="edu.unc.lib.boxc.web.common.services.AccessCopiesService">
-        <property name="accessRestrictionUtil" ref="solrAccessRestrictionUtil" />
-        <property name="facetFieldUtil" ref="facetFieldUtil" />
-        <property name="globalPermissionEvaluator" ref="globalPermissionEvaluator" />
-        <property name="solrClient" ref="solrClient" />
-    </bean>
+
+    <util:set id="accessGroups" set-class="edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl">
+        <value>${access.group.admin}</value>
+    </util:set>
 </beans>
