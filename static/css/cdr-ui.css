@@ -817,6 +817,10 @@ p.no-search-results {
   margin-bottom: 50px;
 }
 
+img.data-thumb {
+  max-width: 50px;
+}
+
 .child-records {
   font-size: 16px;
   margin: 50px 50px 25px 50px;
