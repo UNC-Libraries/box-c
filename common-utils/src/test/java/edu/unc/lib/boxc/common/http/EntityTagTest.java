@@ -24,8 +24,6 @@ import org.junit.Test;
 import edu.unc.lib.boxc.common.http.EntityTag;
 
 public class EntityTagTest {
-
-
     @Test
     public void strongEtagTest() {
         String value = "123456789";
