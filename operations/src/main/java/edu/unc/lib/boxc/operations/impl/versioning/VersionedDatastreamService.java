@@ -27,6 +27,9 @@ import java.util.concurrent.locks.Lock;
 import org.apache.jena.rdf.model.Model;
 import org.slf4j.Logger;
 
+import edu.unc.lib.boxc.fcrepo.exceptions.ServiceException;
+import edu.unc.lib.boxc.fcrepo.utils.FedoraTransaction;
+import edu.unc.lib.boxc.fcrepo.utils.TransactionManager;
 import edu.unc.lib.boxc.model.api.exceptions.NotFoundException;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.objects.BinaryObject;
@@ -39,9 +42,6 @@ import edu.unc.lib.boxc.persist.api.exceptions.InvalidChecksumException;
 import edu.unc.lib.boxc.persist.api.transfer.BinaryTransferOutcome;
 import edu.unc.lib.boxc.persist.api.transfer.BinaryTransferService;
 import edu.unc.lib.boxc.persist.api.transfer.BinaryTransferSession;
-import edu.unc.lib.dl.fcrepo4.FedoraTransaction;
-import edu.unc.lib.dl.fcrepo4.TransactionManager;
-import edu.unc.lib.dl.fedora.ServiceException;
 
 /**
  * Service for managing versions of a datastream using an XML based history log.

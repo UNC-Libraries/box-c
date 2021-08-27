@@ -32,11 +32,7 @@
         </dependency>
         <dependency>
             <groupId>edu.unc.lib.cdr</groupId>
-            <artifactId>fcrepo-clients</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>edu.unc.lib.cdr</groupId>
-            <artifactId>metadata</artifactId>
+            <artifactId>fcrepo-utils</artifactId>
         </dependency>
         <dependency>
             <groupId>edu.unc.lib.cdr</groupId>

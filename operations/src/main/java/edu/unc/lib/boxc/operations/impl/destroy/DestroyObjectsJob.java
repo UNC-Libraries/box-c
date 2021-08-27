@@ -42,6 +42,7 @@ import org.slf4j.LoggerFactory;
 
 import edu.unc.lib.boxc.auth.fcrepo.services.InheritedAclFactory;
 import edu.unc.lib.boxc.common.metrics.TimerFactory;
+import edu.unc.lib.boxc.fcrepo.utils.FedoraTransaction;
 import edu.unc.lib.boxc.model.api.exceptions.FedoraException;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.objects.BinaryObject;
@@ -56,7 +57,6 @@ import edu.unc.lib.boxc.model.fcrepo.ids.AgentPids;
 import edu.unc.lib.boxc.operations.jms.destroy.DestroyObjectsRequest;
 import edu.unc.lib.boxc.search.api.models.ObjectPath;
 import edu.unc.lib.boxc.search.solr.services.ObjectPathFactory;
-import edu.unc.lib.dl.fcrepo4.FedoraTransaction;
 import io.dropwizard.metrics5.Timer;
 
 /**

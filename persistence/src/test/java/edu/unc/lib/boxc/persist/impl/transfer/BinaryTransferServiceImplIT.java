@@ -42,6 +42,8 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import edu.unc.lib.boxc.fcrepo.utils.FedoraTransaction;
+import edu.unc.lib.boxc.fcrepo.utils.TransactionManager;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.ids.PIDMinter;
 import edu.unc.lib.boxc.model.api.objects.BinaryObject;
@@ -61,8 +63,6 @@ import edu.unc.lib.boxc.persist.impl.sources.IngestSourceTestHelper;
 import edu.unc.lib.boxc.persist.impl.storage.HashedFilesystemStorageLocation;
 import edu.unc.lib.boxc.persist.impl.storage.StorageLocationManagerImpl;
 import edu.unc.lib.boxc.persist.impl.transfer.BinaryTransferServiceImpl;
-import edu.unc.lib.dl.fcrepo4.FedoraTransaction;
-import edu.unc.lib.dl.fcrepo4.TransactionManager;
 
 /**
  * @author bbpennel

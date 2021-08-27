@@ -31,8 +31,8 @@ import org.fcrepo.client.FcrepoResponse;
 import org.fcrepo.client.FedoraTypes;
 import org.slf4j.Logger;
 
+import edu.unc.lib.boxc.fcrepo.utils.ClientFaultResolver;
 import edu.unc.lib.boxc.model.api.exceptions.FedoraException;
-import edu.unc.lib.dl.fcrepo4.ClientFaultResolver;
 
 /**
  * Factory for creating LDP container objects in the repository

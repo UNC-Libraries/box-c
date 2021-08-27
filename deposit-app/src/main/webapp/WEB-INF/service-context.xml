@@ -1,0 +1,271 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:c="http://www.springframework.org/schema/c"
+    xmlns:p="http://www.springframework.org/schema/p" xmlns:context="http://www.springframework.org/schema/context"
+    xmlns:util="http://www.springframework.org/schema/util"
+    xsi:schemaLocation="http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans-4.3.xsd
+        http://www.springframework.org/schema/util 
+        http://www.springframework.org/schema/util/spring-util.xsd
+        http://www.springframework.org/schema/context
+        http://www.springframework.org/schema/context/spring-context-4.3.xsd">
+
+    <context:annotation-config />
+
+    <bean name="propertiesURI" class="java.lang.System"
+        factory-method="getProperty">
+        <constructor-arg index="0" value="deposit.properties.uri" />
+    </bean>
+    
+    <bean id="serverProperties"
+        class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+        <property name="locations">
+            <list>
+                <ref bean="propertiesURI" />
+            </list>
+        </property>
+        <property name="ignoreResourceNotFound" value="false" />
+    </bean>
+    
+    <bean id="injectedCdrVersion" class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
+        <property name="staticMethod" value="edu.unc.lib.boxc.model.api.SoftwareAgentConstants.setCdrVersion" />
+        <property name="arguments">
+            <list>
+                <value>5.0</value>
+            </list>
+        </property>
+    </bean>
+
+    <bean id="depositsDirectory" class="java.io.File">
+        <constructor-arg value="${deposits.dir}" />
+    </bean>
+
+    <bean id="jedisPool" class="redis.clients.jedis.JedisPool"
+        destroy-method="destroy">
+        <constructor-arg ref="poolConfig"/>
+        <constructor-arg type="String" value="${redis.host:localhost}" />
+        <constructor-arg type="int" value="${redis.port:6379}" />
+    </bean>
+    
+    <bean id="poolConfig" class="redis.clients.jedis.JedisPoolConfig">
+        <property name="maxIdle" value="15"/>
+        <property name="minIdle" value="2"/>
+        <property name="maxTotal" value="25"/>
+    </bean>
+
+    <bean id="jesqueConfig" class="net.greghaines.jesque.Config">
+        <constructor-arg value="${redis.host:localhost}" type="java.lang.String" />
+        <constructor-arg value="${redis.port:6379}" type="int" />
+        <constructor-arg value="2000" type="int" />
+        <constructor-arg type="java.lang.String">
+            <null />
+        </constructor-arg>
+        <constructor-arg value="resque" type="java.lang.String" />
+        <constructor-arg value="0" type="int" />
+    </bean>
+
+    <bean id="jesqueClient" class="net.greghaines.jesque.client.ClientPoolImpl"
+        scope="prototype">
+        <constructor-arg ref="jesqueConfig" />
+        <constructor-arg ref="jedisPool" />
+    </bean>
+    
+    <bean id="queueDAO" class="net.greghaines.jesque.meta.dao.impl.QueueInfoDAORedisImpl">
+        <constructor-arg ref="jesqueConfig" />
+        <constructor-arg ref="jedisPool" />
+    </bean>
+    
+    <bean id="depositModelManager" class="edu.unc.lib.boxc.deposit.impl.model.DepositModelManager"
+            destroy-method="close">
+        <constructor-arg value="${deposits.tdb.dir}" />
+    </bean>
+
+    <bean id="depositWorkerPool" class="net.greghaines.jesque.worker.WorkerPool">
+        <constructor-arg name="workerFactory">
+            <bean class="net.greghaines.jesque.worker.WorkerImplFactory">
+                <constructor-arg name="config" ref="jesqueConfig" />
+                <constructor-arg name="queues">
+                    <util:list>
+                        <value>PREPARE</value>
+                        <value>DELAYED_PREPARE</value>
+                    </util:list>
+                </constructor-arg>
+                <constructor-arg ref="jobFactory" />
+            </bean>
+        </constructor-arg>
+        <constructor-arg name="numWorkers" value="${workers.num:2}" />
+    </bean>
+    
+    <bean id="highPriorityDepositWorkerPool" class="net.greghaines.jesque.worker.WorkerPool">
+        <constructor-arg name="workerFactory">
+            <bean class="net.greghaines.jesque.worker.WorkerImplFactory">
+                <constructor-arg name="config" ref="jesqueConfig" />
+                <constructor-arg name="queues">
+                    <util:list>
+                        <value>PREPARE_HIGH_PRIORITY</value>
+                    </util:list>
+                </constructor-arg>
+                <constructor-arg ref="jobFactory" />
+            </bean>
+        </constructor-arg>
+        <constructor-arg name="numWorkers" value="${workers.high.num:4}" />
+    </bean>
+
+    <bean id="migrationDepositWorkPool" class="net.greghaines.jesque.worker.WorkerPool">
+        <constructor-arg name="workerFactory">
+            <bean class="net.greghaines.jesque.worker.WorkerImplFactory">
+                <constructor-arg name="config" ref="jesqueConfig" />
+                <constructor-arg name="queues">
+                    <util:list>
+                        <value>PREPARE_LOW_PRIORITY</value>
+                    </util:list>
+                </constructor-arg>
+                <constructor-arg ref="jobFactory" />
+            </bean>
+        </constructor-arg>
+        <constructor-arg name="numWorkers" value="${workers.low.num:2}" />
+    </bean>
+    
+    <bean id="cdrMetsDepositWorkerPool" class="net.greghaines.jesque.worker.WorkerPool">
+        <constructor-arg name="workerFactory">
+            <bean class="net.greghaines.jesque.worker.WorkerImplFactory">
+                <constructor-arg name="config" ref="jesqueConfig" />
+                <constructor-arg name="queues">
+                    <util:list>
+                        <value>CDRMETSCONVERT</value>
+                    </util:list>
+                </constructor-arg>
+                <constructor-arg ref="jobFactory" />
+            </bean>
+        </constructor-arg>
+        <constructor-arg name="numWorkers" value="${workers.mets.num:1}" />
+    </bean>
+    
+    <util:list id="depositWorkerPools" value-type="net.greghaines.jesque.worker.WorkerPool">
+        <ref bean="depositWorkerPool"/>
+        <ref bean="highPriorityDepositWorkerPool"/>
+        <ref bean="migrationDepositWorkPool"/>
+        <ref bean="cdrMetsDepositWorkerPool"/>
+    </util:list>
+
+    <bean id="depositSupervisor" class="edu.unc.lib.boxc.deposit.work.DepositSupervisor">
+        <property name="jesqueConfig" ref="jesqueConfig"/>
+        <property name="cleanupDelaySeconds" value="${cleanup.delay.seconds:60}"/>
+        <property name="unavailableDelaySeconds" value="${unavailable.delay.seconds:60}"/>
+    </bean>
+    
+    <bean id="depositServiceInitiator" class="edu.unc.lib.boxc.deposit.SpringDepositServiceInitiator">
+        <property name="depositSupervisor" ref="depositSupervisor" />
+    </bean>
+
+    <bean id="jobFactory" class="edu.unc.lib.boxc.deposit.utils.SpringJobFactory" />
+
+    <bean id="jobStatusFactory" class="edu.unc.lib.boxc.deposit.impl.model.JobStatusFactory" >
+        <property name="jedisPool" ref="jedisPool" />
+    </bean>
+    
+    <bean id="activityMetricsClient" class="edu.unc.lib.boxc.deposit.impl.model.ActivityMetricsClient" >
+        <property name="jedisPool" ref="jedisPool" />
+    </bean>
+
+    <bean id="depositStatusFactory" class="edu.unc.lib.boxc.deposit.impl.model.DepositStatusFactory">
+        <property name="jedisPool" ref="jedisPool" />
+    </bean>
+    
+    <bean id="pipelineStatusFactory" class="edu.unc.lib.boxc.deposit.impl.model.DepositPipelineStatusFactory">
+        <property name="jedisPool" ref="jedisPool" />
+    </bean>
+    
+    <bean id="multiThreadedHttpConnectionManager" class="org.apache.http.impl.conn.PoolingHttpClientConnectionManager"
+            destroy-method="shutdown">
+        <property name="defaultMaxPerRoute" value="8" />
+        <property name="maxTotal" value="24" />
+    </bean>
+    
+    <bean id="httpClientRequestConfigBuilder" class="org.apache.http.client.config.RequestConfig"
+        factory-method="custom">
+        <property name="socketTimeout" value="${http.client.socketTimeout:300000}" />
+    </bean>
+    
+    <bean id="httpClientRequestConfig" factory-bean="httpClientRequestConfigBuilder"
+        factory-method="build">
+    </bean>
+    
+    <bean id="pooledHttpClientBuilder" class="org.apache.http.impl.client.HttpClients" factory-method="custom">
+        <property name="connectionManager" ref="multiThreadedHttpConnectionManager" />
+        <property name="defaultRequestConfig" ref="httpClientRequestConfig" />
+    </bean>
+    
+    <bean id="pooledHttpClient" class="org.apache.http.impl.client.CloseableHttpClient"
+            factory-bean="pooledHttpClientBuilder" factory-method="build">
+    </bean>
+    
+    <bean id="sparqlQueryService" class="edu.unc.lib.boxc.model.fcrepo.sparql.FusekiSparqlQueryServiceImpl">
+        <property name="fusekiQueryURL" value="${fuseki.baseUri}" />
+        <property name="httpClientConnectionManager" ref="multiThreadedHttpConnectionManager" />
+    </bean>
+    
+    <!-- Initialize access control dependencies -->
+    <bean id="contentPathFactory" class="edu.unc.lib.boxc.model.fcrepo.services.ContentPathFactoryImpl"
+            init-method="init">
+        <property name="cacheMaxSize" value="${cache.contentPath.maxSize}" />
+        <property name="cacheTimeToLive" value="${cache.contentPath.timeToLive}" />
+        <property name="fcrepoClient" ref="fcrepoClient" />
+    </bean>
+    
+    <bean id="objectAclFactory" class="edu.unc.lib.boxc.auth.fcrepo.services.ObjectAclFactory"
+            init-method="init">
+        <property name="cacheMaxSize" value="${cache.objectAcls.maxSize}" />
+        <property name="cacheTimeToLive" value="${cache.objectAcls.timeToLive}" />
+        <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
+    </bean>
+    
+    <bean id="inheritedPermissionEvaluator" class="edu.unc.lib.boxc.auth.fcrepo.services.InheritedPermissionEvaluator">
+        <property name="pathFactory" ref="contentPathFactory" />
+        <property name="objectAclFactory" ref="objectAclFactory" />
+    </bean>
+
+    <bean name="aclPropertiesURI" class="java.lang.System"
+            factory-method="getProperty">
+        <constructor-arg index="0" value="acl.properties.uri" />
+    </bean>
+
+    <bean id="aclProperties"
+        class="org.springframework.beans.factory.config.PropertiesFactoryBean">
+        <property name="locations">
+            <list>
+                <ref bean="aclPropertiesURI" />
+            </list>
+        </property>
+        <property name="ignoreResourceNotFound" value="false" />
+    </bean>
+    
+    <bean id="globalPermissionEvaluator" class="edu.unc.lib.boxc.auth.fcrepo.services.GlobalPermissionEvaluatorImpl">
+        <constructor-arg ref="aclProperties" />
+    </bean>
+    
+    <bean id="aclService" class="edu.unc.lib.boxc.auth.fcrepo.services.AccessControlServiceImpl">
+        <property name="globalPermissionEvaluator" ref="globalPermissionEvaluator" />
+        <property name="permissionEvaluator" ref="inheritedPermissionEvaluator" />
+    </bean>
+    
+    <bean id="ingestSourceManager" class="edu.unc.lib.boxc.persist.impl.sources.IngestSourceManagerImpl"
+            init-method="init">
+        <property name="contentPathFactory" ref="contentPathFactory" />
+        <property name="configPath" value="${ingestSources.path}" />
+        <property name="mappingPath" value="${ingestSourceMappings.path}" />
+    </bean>
+    
+    <bean id="binaryTransferService" class="edu.unc.lib.boxc.persist.impl.transfer.BinaryTransferServiceImpl">
+        <property name="ingestSourceManager" ref="ingestSourceManager" />
+        <property name="storageLocationManager" ref="storageLocationManager" />
+    </bean>
+    
+    <bean id="storageLocationManager" class="edu.unc.lib.boxc.persist.impl.storage.StorageLocationManagerImpl"
+            init-method="init">
+        <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
+        <property name="pathFactory" ref="contentPathFactory" />
+        <property name="configPath" value="${storageLocations.path}" />
+        <property name="mappingPath" value="${storageLocationMappings.path}" />
+    </bean>
+</beans>

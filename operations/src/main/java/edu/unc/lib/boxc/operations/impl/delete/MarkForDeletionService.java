@@ -24,10 +24,10 @@ import edu.unc.lib.boxc.auth.api.models.AgentPrincipals;
 import edu.unc.lib.boxc.auth.api.services.AccessControlService;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
+import edu.unc.lib.boxc.model.api.sparql.SparqlUpdateService;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.boxc.operations.api.events.PremisLoggerFactory;
 import edu.unc.lib.boxc.operations.jms.OperationsMessageSender;
-import edu.unc.lib.dl.sparql.SparqlUpdateService;
 
 /**
  * Service which manages setting of the marked for deletion flag.

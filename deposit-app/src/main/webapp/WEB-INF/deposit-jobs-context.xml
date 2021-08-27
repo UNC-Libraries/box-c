@@ -1,0 +1,357 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:c="http://www.springframework.org/schema/c"
+    xmlns:p="http://www.springframework.org/schema/p" xmlns:context="http://www.springframework.org/schema/context"
+    xmlns:util="http://www.springframework.org/schema/util"
+    xsi:schemaLocation="http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans-4.3.xsd
+        http://www.springframework.org/schema/util 
+        http://www.springframework.org/schema/util/spring-util.xsd
+        http://www.springframework.org/schema/context
+        http://www.springframework.org/schema/context/spring-context-4.3.xsd">
+
+    <bean name="propertiesURI" class="java.lang.System"
+        factory-method="getProperty">
+        <constructor-arg index="0" value="deposit.properties.uri" />
+    </bean>
+
+    <bean id="depositEmailHandler" class="edu.unc.lib.boxc.deposit.work.DepositEmailHandler" >
+        <property name="depositStatusFactory" ref="depositStatusFactory" />
+        <property name="baseUrl" value="${baseUrl}" />
+        <property name="mailSender" ref="mailSender" />
+        <property name="administratorEmail" value="${administrator.email}" />
+        <property name="completedHtmlTemplate" ref="completedHtmlTemplate" />
+        <property name="completedTextTemplate" ref="completedTextTemplate" />
+        <property name="failedHtmlTemplate" ref="failedHtmlTemplate" />
+        <property name="failedTextTemplate" ref="failedTextTemplate" />
+    </bean>
+    
+    <bean id="jmsFactory" class="org.apache.activemq.pool.PooledConnectionFactory"
+        destroy-method="stop">
+        <property name="connectionFactory">
+            <bean class="org.apache.activemq.ActiveMQConnectionFactory">
+                <property name="brokerURL">
+                    <value>${jms.broker.uri}</value>
+                </property>
+            </bean>
+        </property>
+    </bean>
+    
+    <bean id="cdrEventsJmsTemplate" class="org.springframework.jms.core.JmsTemplate">
+        <property name="connectionFactory" ref="jmsFactory" />
+        <property name="defaultDestinationName" value="${cdr.stream}" />
+        <property name="pubSubDomain" value="false" />
+    </bean>
+    
+    <bean id="operationsMessageSender" class="edu.unc.lib.boxc.operations.jms.OperationsMessageSender">
+        <property name="jmsTemplate" ref="cdrEventsJmsTemplate" />
+    </bean>
+    
+    <bean id="premisLoggerFactory" class="edu.unc.lib.boxc.operations.impl.events.PremisLoggerFactoryImpl">
+        <property name="pidMinter" ref="pidMinter" />
+        <property name="repoObjLoader" ref="repositoryObjectLoader" />
+        <property name="repoObjFactory" ref="repositoryObjectFactory" />
+        <property name="binaryTransferService" ref="binaryTransferService" />
+    </bean>
+    
+    <bean class="edu.unc.lib.boxc.operations.impl.validation.SchematronValidator" name="schematronValidator"
+        init-method="loadSchemas">
+        <property name="schemas">
+            <map>
+                <entry key="#{T(edu.unc.lib.boxc.deposit.impl.mets.METSProfile).CDR_SIMPLE.name}"
+                    value="classpath:edu/unc/lib/boxc/operations/impl/validation/simple_mets_profile.sch" />
+                <entry key="object-mods"
+                    value="classpath:edu/unc/lib/boxc/operations/impl/validation/object-mods.sch" />
+                <entry key="vocabularies-mods"
+                    value="classpath:edu/unc/lib/boxc/operations/impl/validation/vocabularies-mods.sch" />
+            </map>
+        </property>
+    </bean>
+
+    <bean id="schemaFactory" class="edu.unc.lib.boxc.common.xml.SecureXMLFactory"
+        factory-method="createSchemaFactory" scope="prototype">
+    </bean>
+
+    <bean id="modsValidator" class="edu.unc.lib.boxc.operations.impl.validation.MODSValidator">
+        <property name="schematronValidator" ref="schematronValidator" />
+        <property name="modsSchema">
+            <bean class="javax.xml.validation.Schema" factory-bean="schemaFactory"
+                factory-method="newSchema">
+                <constructor-arg>
+                    <list value-type="javax.xml.transform.Source">
+                        <bean class="javax.xml.transform.stream.StreamSource">
+                            <constructor-arg type="java.io.InputStream"
+                                value="classpath:/schemas/xml.xsd" />
+                        </bean>
+                        <bean class="javax.xml.transform.stream.StreamSource">
+                            <constructor-arg type="java.io.InputStream"
+                                value="classpath:/schemas/xlink.xsd" />
+                        </bean>
+                        <bean class="javax.xml.transform.stream.StreamSource">
+                            <constructor-arg type="java.io.InputStream"
+                                value="classpath:/schemas/mods-3-7.xsd" />
+                        </bean>
+                    </list>
+                </constructor-arg>
+            </bean>
+        </property>
+    </bean>
+    
+    <bean id="versionedDatastreamService" class="edu.unc.lib.boxc.operations.impl.versioning.VersionedDatastreamService" >
+        <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
+        <property name="repositoryObjectFactory" ref="repositoryObjectFactory" />
+        <property name="binaryTransferService" ref="binaryTransferService" />
+        <property name="transactionManager" ref="transactionManager" />
+    </bean>
+    
+    <bean id="updateDescriptionService" class="edu.unc.lib.boxc.operations.impl.edit.UpdateDescriptionService" >
+        <property name="aclService" ref="aclService" />
+        <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
+        <property name="repositoryObjectFactory" ref="repositoryObjectFactory" />
+        <property name="validate" value="false" />
+        <property name="checksAccess" value="false" />
+        <property name="sendsMessages" value="false" />
+        <property name="versionedDatastreamService" ref="versionedDatastreamService" />
+    </bean>
+
+    <bean id="metsSipSchema" class="javax.xml.validation.Schema"
+        factory-bean="schemaFactory" factory-method="newSchema">
+        <constructor-arg>
+            <list value-type="javax.xml.transform.Source">
+                <bean class="javax.xml.transform.stream.StreamSource">
+                    <constructor-arg type="java.io.InputStream" value="classpath:/schemas/xml.xsd" />
+                </bean>
+                <bean class="javax.xml.transform.stream.StreamSource">
+                    <constructor-arg type="java.io.InputStream" value="classpath:/schemas/xlink.xsd" />
+                </bean>
+                <bean class="javax.xml.transform.stream.StreamSource">
+                    <constructor-arg type="java.io.InputStream" value="classpath:/schemas/mets.xsd" />
+                </bean>
+                <bean class="javax.xml.transform.stream.StreamSource">
+                    <constructor-arg type="java.io.InputStream" value="classpath:/schemas/premis-v2-0.xsd" />
+                </bean>
+                <bean class="javax.xml.transform.stream.StreamSource">
+                    <constructor-arg type="java.io.InputStream" value="classpath:/schemas/mods-3-7.xsd" />
+                </bean>
+                <bean class="javax.xml.transform.stream.StreamSource">
+                    <constructor-arg type="java.io.InputStream" value="classpath:/schemas/acl.xsd" />
+                </bean>
+            </list>
+        </constructor-arg>
+    </bean>
+
+    <bean id="PackageIntegrityCheckJob" class="edu.unc.lib.boxc.deposit.validate.PackageIntegrityCheckJob"
+        scope="prototype">
+    </bean>
+
+    <bean id="UnpackDepositJob" class="edu.unc.lib.boxc.deposit.normalize.UnpackDepositJob"
+        scope="prototype">
+    </bean>
+    
+    <bean id="PreconstructedDepositJob" class="edu.unc.lib.boxc.deposit.normalize.PreconstructedDepositJob"
+        scope="prototype">
+    </bean>
+    
+    <bean id="bagitValidationExecutor" class="java.util.concurrent.Executors"
+            factory-method="newFixedThreadPool" destroy-method="shutdownNow">
+        <constructor-arg value="${job.bagitValidation.workers:50}"/>
+    </bean>
+    
+    <bean id="BagIt2N3BagJob" class="edu.unc.lib.boxc.deposit.normalize.BagIt2N3BagJob"
+        scope="prototype">
+        <property name="executorService" ref="bagitValidationExecutor" />
+    </bean>
+    
+    <bean id="DirectoryToBagJob" class="edu.unc.lib.boxc.deposit.normalize.DirectoryToBagJob"
+        scope="prototype">
+    </bean>
+
+    <bean id="CDRMETS2N3BagJob" class="edu.unc.lib.boxc.deposit.normalize.CDRMETS2N3BagJob"
+        scope="prototype">
+        <property name="schematronValidator" ref="schematronValidator" />
+        <property name="metsSipSchema" ref="metsSipSchema" />
+    </bean>
+
+    <bean id="Simple2N3BagJob" class="edu.unc.lib.boxc.deposit.normalize.Simple2N3BagJob"
+        scope="prototype"/>
+    
+    <bean id="NormalizeFileObjectsJob" class="edu.unc.lib.boxc.deposit.normalize.NormalizeFileObjectsJob"
+        scope="prototype">
+    </bean>
+    
+    <bean id="aclValidator" class="edu.unc.lib.boxc.auth.fcrepo.services.ContentObjectAccessRestrictionValidator">
+    </bean>
+    
+    <bean id="ValidateContentModelJob" class="edu.unc.lib.boxc.deposit.validate.ValidateContentModelJob"
+        scope="prototype">
+        <property name="aclValidator" ref="aclValidator" />
+        <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
+        <property name="depositStatusFactory" ref="depositStatusFactory" />
+    </bean>
+    
+    <bean id="VocabularyEnforcementJob" class="edu.unc.lib.boxc.deposit.normalize.VocabularyEnforcementJob"
+        scope="prototype">
+    </bean>
+    
+    <bean id="clamClient" class="fi.solita.clamav.ClamAVClient">
+        <constructor-arg type="java.lang.String" value="${clamd.host:localhost}" index="0" />
+        <constructor-arg type="int" value="${clamd.port:3310}" index="1" />
+        <constructor-arg type="int" value="${clamd.timeout:60000}" index="2" />
+        <property name="maxStreamSize" value="${clamd.maxStreamSize:64000000}" />
+    </bean>
+    
+    <bean id="fileValidationExecutor" class="java.util.concurrent.Executors"
+            factory-method="newFixedThreadPool" destroy-method="shutdownNow">
+        <constructor-arg value="${job.fileValidation.workers:4}"/>
+    </bean>
+
+    <bean id="VirusScanJob" class="edu.unc.lib.boxc.deposit.validate.VirusScanJob"
+            scope="prototype">
+        <property name="clamClient" ref="clamClient" />
+        <property name="maxQueuedJobs" value="${job.fileValidation.maxQueuedJobs:5}" />
+        <property name="executorService" ref="fileValidationExecutor" />
+    </bean>
+    
+    <bean id="FixityCheckJob" class="edu.unc.lib.boxc.deposit.validate.FixityCheckJob"
+        scope="prototype">
+        <property name="executorService" ref="fileValidationExecutor" />
+        <property name="maxQueuedJobs" value="${job.fileValidation.maxQueuedJobs:5}" />
+        <property name="flushRate" value="${job.fixityCheck.flushRate:2000}" />
+    </bean>
+    
+    <bean id="ValidateDestinationJob" class="edu.unc.lib.boxc.deposit.validate.ValidateDestinationJob"
+        scope="prototype">
+    </bean>
+
+    <bean id="ValidateFileAvailabilityJob" class="edu.unc.lib.boxc.deposit.validate.ValidateFileAvailabilityJob"
+        scope="prototype">
+        <property name="ingestSourceManager" ref="ingestSourceManager" />
+    </bean>
+
+    <bean id="ValidateDescriptionJob" class="edu.unc.lib.boxc.deposit.validate.ValidateDescriptionJob"
+        scope="prototype">
+        <property name="modsValidator" ref="modsValidator" />
+    </bean>
+    
+    <bean id="fitsHttpClientRequestConfigBuilder" class="org.apache.http.client.config.RequestConfig"
+        factory-method="custom">
+        <property name="socketTimeout" value="${fits.http.client.socketTimeout:300000}" />
+    </bean>
+    
+    <bean id="fitsHttpConnectionManager" class="org.apache.http.impl.conn.PoolingHttpClientConnectionManager"
+            destroy-method="shutdown">
+        <property name="defaultMaxPerRoute" value="${job.extractTechnicalMetadata.workers:5}" />
+        <property name="maxTotal" value="${job.extractTechnicalMetadata.workers:5}" />
+    </bean>
+    
+    <bean id="fitsHttpClientRequestConfig" factory-bean="fitsHttpClientRequestConfigBuilder"
+        factory-method="build">
+    </bean>
+    
+    <bean id="fitsPooledHttpClientBuilder" class="org.apache.http.impl.client.HttpClients" factory-method="custom">
+        <property name="connectionManager" ref="fitsHttpConnectionManager" />
+        <property name="defaultRequestConfig" ref="fitsHttpClientRequestConfig" />
+    </bean>
+    
+    <bean id="fitsPooledHttpClient" class="org.apache.http.impl.client.CloseableHttpClient"
+            factory-bean="fitsPooledHttpClientBuilder" factory-method="build">
+    </bean>
+    
+    <bean id="extractTechnicalMetadataExecutor" class="java.util.concurrent.Executors"
+            factory-method="newFixedThreadPool" destroy-method="shutdownNow">
+        <constructor-arg value="${job.extractTechnicalMetadata.workers:5}"/>
+    </bean>
+    
+    <bean id="ExtractTechnicalMetadataJob" class="edu.unc.lib.boxc.deposit.validate.ExtractTechnicalMetadataJob"
+        scope="prototype">
+        <property name="baseFitsUri" value="${fits.baseUri}" />
+        <property name="httpClient" ref="fitsPooledHttpClient" />
+        <property name="maxFileSizeForWebService" value="${fits.maxFileSizeForWebService:128000000}" />
+        <property name="fitsHomePath" value="${fits.homePath}" />
+        <property name="executorService" ref="extractTechnicalMetadataExecutor" />
+        <property name="flushRate" value="${job.extractTechnicalMetadata.flushRate:2000}" />
+        <property name="maxQueuedJobs" value="${job.extractTechnicalMetadata.maxQueuedJobs:6}" />
+    </bean>
+    
+    <bean id="verifyObjectsAreInFedoraService" class="edu.unc.lib.boxc.deposit.validate.VerifyObjectsAreInFedoraService" >
+        <property name="fcrepoClient" ref="fcrepoClient" />
+    </bean>
+    
+    <bean id="assignStorageLocationsJob" class="edu.unc.lib.boxc.deposit.normalize.AssignStorageLocationsJob"
+        scope="prototype">
+    </bean>
+    
+    <bean id="transferBinariesExecutor" class="java.util.concurrent.Executors"
+            factory-method="newFixedThreadPool" destroy-method="shutdownNow">
+        <constructor-arg value="${job.transferBinaries.workers:5}"/>
+    </bean>
+    
+    <bean id="transferBinariesToStorageJob" class="edu.unc.lib.boxc.deposit.transfer.TransferBinariesToStorageJob"
+            scope="prototype">
+        <property name="executorService" ref="transferBinariesExecutor" />
+        <property name="flushRate" value="${job.transferBinaries.flushRate:2000}" />
+        <property name="maxQueuedJobs" value="${job.transferBinaries.maxQueuedJobs:6}" />
+    </bean>
+    
+    <bean id="ingestContentObjectsJob" class="edu.unc.lib.boxc.deposit.fcrepo4.IngestContentObjectsJob"
+        scope="prototype">
+    </bean>
+    
+    <bean id="ingestDepositRecordJob" class="edu.unc.lib.boxc.deposit.fcrepo4.IngestDepositRecordJob"
+        scope="prototype">
+    </bean>
+
+    <bean id="staffOnlyPermissionJob" class="edu.unc.lib.boxc.deposit.fcrepo4.StaffOnlyPermissionJob"
+          scope="prototype">
+    </bean>
+    
+    <bean id="mailSender" class="org.springframework.mail.javamail.JavaMailSenderImpl">
+        <property name="host" value="${smtp.host:localhost}" />
+        <property name="port" value="${smtp.port:25}" />
+        <property name="defaultEncoding" value="UTF-8" />
+    </bean>
+    
+    <bean id="mustacheCompiler" class="com.samskivert.mustache.Mustache" factory-method="compiler"/>
+
+    <bean id="completedHtmlTemplate" factory-bean="mustacheCompiler"
+        factory-method="compile">
+        <constructor-arg>
+            <bean class="java.io.InputStreamReader">
+                <constructor-arg type="java.io.InputStream" value="classpath:completed_html.txt" />
+            </bean>
+        </constructor-arg>
+    </bean>
+    
+    <bean id="completedTextTemplate" factory-bean="mustacheCompiler"
+        factory-method="compile">
+        <constructor-arg>
+            <bean class="java.io.InputStreamReader">
+                <constructor-arg type="java.io.InputStream" value="classpath:completed_text.txt" />
+            </bean>
+        </constructor-arg>
+    </bean>
+
+    <bean id="failedHtmlTemplate" factory-bean="mustacheCompiler"
+        factory-method="compile">
+        <constructor-arg>
+            <bean class="java.io.InputStreamReader">
+                <constructor-arg type="java.io.InputStream" value="classpath:failed_html.txt" />
+            </bean>
+        </constructor-arg>
+    </bean>
+    
+    <bean id="failedTextTemplate" factory-bean="mustacheCompiler"
+        factory-method="compile">
+        <constructor-arg>
+            <bean class="java.io.InputStreamReader">
+                <constructor-arg type="java.io.InputStream" value="classpath:failed_text.txt" />
+            </bean>
+        </constructor-arg>
+    </bean>
+
+    <bean id="CleanupDepositJob" class="edu.unc.lib.boxc.deposit.CleanupDepositJob"
+        scope="prototype">
+        <property name="ingestSourceManager" ref="ingestSourceManager" />
+        <property name="statusKeysExpireSeconds" value="${status.keys.expire.seconds:3600}"/>
+    </bean>
+</beans>

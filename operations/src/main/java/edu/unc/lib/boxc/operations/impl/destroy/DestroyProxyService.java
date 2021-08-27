@@ -30,9 +30,9 @@ import org.fcrepo.client.FcrepoResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import edu.unc.lib.boxc.fcrepo.exceptions.ServiceException;
 import edu.unc.lib.boxc.model.api.ids.PID;
-import edu.unc.lib.dl.fedora.ServiceException;
-import edu.unc.lib.dl.sparql.SparqlQueryService;
+import edu.unc.lib.boxc.model.api.sparql.SparqlQueryService;
 
 /**
  * Service for destroying membership proxies from ldp IndirectContainers.

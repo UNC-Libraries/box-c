@@ -15,7 +15,7 @@
 
     <mvc:annotation-driven/>
 
-    <context:component-scan resource-pattern="**/LorisContentController*" base-package="edu.unc.lib.dl.ui.controller"/>
+    <context:component-scan resource-pattern="**/LorisContentController*" base-package="edu.unc.lib.boxc.web.common.controllers"/>
 
     <bean id="properties" class="org.springframework.beans.factory.config.PropertiesFactoryBean">
         <property name="location" value="classpath:loris-content-it.properties"/>
@@ -26,12 +26,12 @@
         <property name="ignoreResourceNotFound" value="false"/>
     </bean>
     
-    <bean id="lorisContentService" class="edu.unc.lib.dl.ui.service.LorisContentService">
+    <bean id="lorisContentService" class="edu.unc.lib.boxc.web.common.services.LorisContentService">
         <property name="lorisPath" value="${loris.base.url}"/>
         <property name="basePath" value="${access.base.url}"/>
     </bean>
     
-    <bean id="accessCopiesService" class="edu.unc.lib.dl.ui.service.AccessCopiesService">
+    <bean id="accessCopiesService" class="edu.unc.lib.boxc.web.common.services.AccessCopiesService">
         <property name="accessRestrictionUtil" ref="solrAccessRestrictionUtil" />
         <property name="facetFieldUtil" ref="facetFieldUtil" />
         <property name="globalPermissionEvaluator" ref="globalPermissionEvaluator" />

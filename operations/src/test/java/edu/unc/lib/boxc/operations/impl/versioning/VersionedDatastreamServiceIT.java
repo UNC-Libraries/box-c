@@ -49,6 +49,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import edu.unc.lib.boxc.common.util.DateTimeUtil;
 import edu.unc.lib.boxc.common.xml.SecureXMLFactory;
+import edu.unc.lib.boxc.fcrepo.utils.TransactionManager;
 import edu.unc.lib.boxc.model.api.exceptions.ObjectTypeMismatchException;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.ids.PIDMinter;
@@ -66,7 +67,6 @@ import edu.unc.lib.boxc.persist.api.transfer.BinaryTransferSession;
 import edu.unc.lib.boxc.persist.impl.sources.IngestSourceManagerImpl;
 import edu.unc.lib.boxc.persist.impl.sources.IngestSourceTestHelper;
 import edu.unc.lib.boxc.persist.impl.transfer.BinaryTransferServiceImpl;
-import edu.unc.lib.dl.fcrepo4.TransactionManager;
 
 /**
  * @author bbpennel

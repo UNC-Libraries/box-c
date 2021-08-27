@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:c="http://www.springframework.org/schema/c"
+    xmlns:p="http://www.springframework.org/schema/p" xmlns:context="http://www.springframework.org/schema/context"
+    xmlns:util="http://www.springframework.org/schema/util"
+    xmlns:camel="http://camel.apache.org/schema/spring"
+    xsi:schemaLocation="http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans-4.3.xsd
+        http://www.springframework.org/schema/util 
+        http://www.springframework.org/schema/util/spring-util.xsd
+        http://www.springframework.org/schema/context
+        http://www.springframework.org/schema/context/spring-context-4.3.xsd
+        http://camel.apache.org/schema/spring
+        http://camel.apache.org/schema/spring/camel-spring.xsd">
+
+    <bean id="addSmallThumbnailProcessorReal" class="edu.unc.lib.boxc.services.camel.images.AddDerivativeProcessor">
+        <constructor-arg value="#{T(edu.unc.lib.boxc.model.api.DatastreamType).THUMBNAIL_SMALL.getExtension()}" />
+        <constructor-arg value="target" />
+    </bean>
+
+    <bean id="addLargeThumbnailProcessorReal" class="edu.unc.lib.boxc.services.camel.images.AddDerivativeProcessor">
+        <constructor-arg value="#{T(edu.unc.lib.boxc.model.api.DatastreamType).THUMBNAIL_LARGE.getExtension()}" />
+        <constructor-arg value="target" />
+    </bean>
+
+    <bean id="addAccessCopyProcessorReal" class="edu.unc.lib.boxc.services.camel.images.AddDerivativeProcessor">
+        <constructor-arg value="#{T(edu.unc.lib.boxc.model.api.DatastreamType).JP2_ACCESS_COPY.getExtension()}" />
+        <constructor-arg value="target" />
+    </bean>
+
+    <bean id="addSmallThumbnailProcessor" class="org.mockito.Mockito" factory-method="spy">
+        <constructor-arg ref="addSmallThumbnailProcessorReal" />
+    </bean>
+
+    <bean id="addLargeThumbnailProcessor" class="org.mockito.Mockito" factory-method="spy">
+        <constructor-arg ref="addLargeThumbnailProcessorReal" />
+    </bean>
+
+    <bean id="addAccessCopyProcessor" class="org.mockito.Mockito" factory-method="spy">
+        <constructor-arg ref="addAccessCopyProcessorReal" />
+    </bean>
+
+    <camel:camelContext id="CdrServiceEnhancements">
+        <camel:package>edu.unc.lib.boxc.services.camel.images</camel:package>
+    </camel:camelContext>
+    
+</beans>

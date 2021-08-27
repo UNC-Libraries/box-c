@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+
+    Copyright 2008 The University of North Carolina at Chapel Hill
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+            http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+
+-->
+<beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:util="http://www.springframework.org/schema/util"
+    xmlns:context="http://www.springframework.org/schema/context" xmlns:p="http://www.springframework.org/schema/p"
+    xmlns:mvc="http://www.springframework.org/schema/mvc"
+    xsi:schemaLocation="
+        http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/util 
+        http://www.springframework.org/schema/util/spring-util.xsd
+        http://www.springframework.org/schema/context 
+        http://www.springframework.org/schema/context/spring-context-3.0.xsd
+        http://www.springframework.org/schema/mvc
+        http://www.springframework.org/schema/mvc/spring-mvc-3.0.xsd">
+
+    <context:annotation-config />
+
+    <bean name="propertiesURI" class="java.lang.System"
+        factory-method="getProperty">
+        <constructor-arg index="0" value="server.properties.uri" />
+        <!-- property name for properties URI location -->
+        <constructor-arg index="1" value="classpath:server.properties" />
+        <!-- default location for testing -->
+    </bean>
+    <bean id="serverProperties"
+        class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+        <property name="locations">
+            <list>
+                <ref bean="propertiesURI" />
+                <!-- non-runtime stuff <value>classpath:solr-ingest.properties</value> -->
+            </list>
+        </property>
+        <property name="ignoreResourceNotFound" value="false" />
+    </bean>
+
+    <!-- Utils -->
+    
+    <bean id="permsHelper" class="edu.unc.lib.boxc.web.common.services.PermissionsHelper">
+        <property name="accessControlService" ref="aclService" />
+    </bean>
+
+    <!-- Beans -->
+
+    <bean id="gaTrackingID" class="java.lang.String">
+        <constructor-arg value="${google.trackingId}" />
+    </bean>
+    
+    <bean id="accessBaseUrl" class="java.lang.String">
+        <constructor-arg value="${access.base.url}" />
+    </bean>
+    
+    <bean id="adminBaseUrl" class="java.lang.String">
+        <constructor-arg value="${admin.base.url}" />
+    </bean>
+    
+    <bean id="formsBaseUrl" class="java.lang.String">
+        <constructor-arg value="${forms.base.url}" />
+    </bean>
+    
+    <bean id="httpClientConnectionManager" class="org.apache.http.impl.conn.PoolingHttpClientConnectionManager"
+            destroy-method="shutdown">
+    </bean>
+
+    <bean id="lorisContentService" class="edu.unc.lib.boxc.web.common.services.LorisContentService">
+        <property name="lorisPath" value="${loris.base.url}"/>
+        <property name="basePath" value="${access.base.url}"/>
+        <property name="httpClientConnectionManager" ref="httpClientConnectionManager" />
+    </bean>
+    
+    <bean id="findingAidUrlService" class="edu.unc.lib.boxc.web.common.services.FindingAidUrlService"
+            init-method="init">
+        <property name="httpClientConnectionManager" ref="httpClientConnectionManager" />
+        <property name="findingAidBaseUrl" value="${findingaids.base.url}" />
+        <property name="maxCacheSize" value="${findingaids.maxCacheSize:1024}" />
+        <property name="expireCacheSeconds" value="${findingaids.expireCacheSeconds:300}" />
+        <property name="checkTimeoutSeconds" value="${findingaids.checkTimeoutSeconds:5}" />
+    </bean>
+
+    <!-- Import controllers -->
+    <bean
+        class="org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter"></bean>
+    <bean
+        class="org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping">
+    </bean>
+
+    <!-- Map logical view names to physical views <bean class="org.springframework.web.servlet.view.InternalResourceViewResolver" 
+        p:suffix=".jsp"/> -->
+    <bean class="edu.unc.lib.boxc.web.common.view.CDRViewResolver" p:suffix=".jsp">
+        <property name="exposedContextBeanNames">
+            <list>
+                <value>searchSettings</value>
+                <value>permsHelper</value>
+                <value>gaTrackingID</value>
+                <value>accessBaseUrl</value>
+                <value>adminBaseUrl</value>
+                <value>formsBaseUrl</value>
+            </list>
+        </property>
+        <property name="viewClass"
+            value="org.springframework.web.servlet.view.JstlView" />
+        <property name="baseView" value="/WEB-INF/jsp/index" />
+        <property name="subViewPrefix" value="" />
+        <property name="redirectHttp10Compatible" value="false" />
+    </bean>
+
+    <bean class="edu.unc.lib.boxc.web.common.view.XSLViewResolver">
+        <property name="views">
+            <map>
+                <entry key="external.xslView.fullRecord.url" value="/recordTransformations/modsToFullRecord.xsl"/>
+            </map>
+        </property>
+    </bean>
+    
+    <bean name="patronPrincipalProvider" class="edu.unc.lib.boxc.web.common.auth.PatronPrincipalProvider"
+            init-method="init">
+        <property name="patronGroupConfigPath" value="${acl.patronPrincipalConfig.path}" />
+    </bean>
+    
+    <bean name="storeUserAccessControlFilter" class="edu.unc.lib.boxc.web.common.auth.filters.StoreUserAccessControlFilter">
+        <property name="patronPrincipalProvider" ref="patronPrincipalProvider" />
+    </bean>
+    
+    <bean name="storeAccessLevelFilter" class="edu.unc.lib.boxc.web.common.auth.filters.StoreAccessLevelFilter">
+        <property name="queryLayer" ref="queryLayer" />
+        <property name="requireViewAdmin" value="false" />
+    </bean>
+    
+    <bean name="spoofShibbolethFilter" class="edu.unc.lib.boxc.web.common.auth.filters.SpoofShibbolethFilter">
+        <property name="spoofEnabled" value="${spoofing.enabled:false}" />
+        <property name="spoofEmailSuffix" value="${spoofing.emailSuffix:@localhost}" />
+    </bean>
+</beans>

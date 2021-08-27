@@ -46,6 +46,9 @@ import edu.unc.lib.boxc.auth.api.models.AgentPrincipals;
 import edu.unc.lib.boxc.auth.api.services.AccessControlService;
 import edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl;
 import edu.unc.lib.boxc.common.test.SelfReturningAnswer;
+import edu.unc.lib.boxc.fcrepo.exceptions.TransactionCancelledException;
+import edu.unc.lib.boxc.fcrepo.utils.FedoraTransaction;
+import edu.unc.lib.boxc.fcrepo.utils.TransactionManager;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.objects.BinaryObject;
 import edu.unc.lib.boxc.model.api.objects.FileObject;
@@ -61,9 +64,6 @@ import edu.unc.lib.boxc.operations.api.events.PremisLogger;
 import edu.unc.lib.boxc.operations.api.events.PremisLoggerFactory;
 import edu.unc.lib.boxc.operations.impl.edit.EditFilenameService;
 import edu.unc.lib.boxc.operations.jms.OperationsMessageSender;
-import edu.unc.lib.dl.fcrepo4.FedoraTransaction;
-import edu.unc.lib.dl.fcrepo4.TransactionCancelledException;
-import edu.unc.lib.dl.fcrepo4.TransactionManager;
 
 /**
  *

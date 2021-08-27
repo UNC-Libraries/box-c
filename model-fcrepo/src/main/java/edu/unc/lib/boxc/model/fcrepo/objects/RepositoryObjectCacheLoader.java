@@ -33,6 +33,8 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.cache.CacheLoader;
 
+import edu.unc.lib.boxc.common.http.EntityTag;
+import edu.unc.lib.boxc.fcrepo.utils.ClientFaultResolver;
 import edu.unc.lib.boxc.model.api.exceptions.FedoraException;
 import edu.unc.lib.boxc.model.api.exceptions.ObjectTypeMismatchException;
 import edu.unc.lib.boxc.model.api.ids.PID;
@@ -42,8 +44,6 @@ import edu.unc.lib.boxc.model.api.rdf.Cdr;
 import edu.unc.lib.boxc.model.api.rdf.Ldp;
 import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
 import edu.unc.lib.boxc.model.fcrepo.services.RepositoryObjectDriver;
-import edu.unc.lib.dl.fcrepo4.ClientFaultResolver;
-import edu.unc.lib.dl.util.EntityTag;
 
 /**
  * Loader for cache of repository objects

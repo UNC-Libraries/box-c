@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+
+    Copyright 2008 The University of North Carolina at Chapel Hill
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+            http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+
+-->
+<beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:util="http://www.springframework.org/schema/util" xmlns:context="http://www.springframework.org/schema/context"
+    xsi:schemaLocation="
+        http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/util 
+        http://www.springframework.org/schema/util/spring-util.xsd
+        http://www.springframework.org/schema/context 
+        http://www.springframework.org/schema/context/spring-context-3.0.xsd">
+
+    <bean id="swordPath" class="java.lang.String">
+        <constructor-arg
+            value="${services.base.url}sword" />
+    </bean>
+    
+    <!-- SWORD config -->
+
+    <bean id="config" class="edu.unc.lib.boxc.web.sword.SwordConfigurationImpl">
+        <property name="authType" value="Basic"/>
+        <property name="swordPath" ref="swordPath"/>
+        <property name="basePath" value="${services.base.url}"/>
+        <property name="tempDirectory" value="${initial.batch.ingest.dir}"/>
+        <property name="swordVersion" value="${sword.version}"/>
+        <property name="generatorVersion" value="${project.version}"/>
+        <property name="generator" value="${repository.protocol}://${repository.host}"/>
+        <property name="depositorNamespace" value="${sword.depositorNamespace}"/>
+        <property name="adminDepositor" value="${sword.username}"/>
+    </bean>
+    
+    <bean id="depositReportingUtil" class="edu.unc.lib.boxc.web.sword.utils.DepositReportingUtil">
+    </bean>
+    
+    <bean id="collectionListManager" class="edu.unc.lib.boxc.web.sword.managers.CollectionListManagerImpl">
+        <property name="pageSize" value="50"/>
+    </bean>
+    
+    <bean id="collectionDepositManager" class="edu.unc.lib.boxc.web.sword.managers.CollectionDepositManagerImpl">
+        <property name="depositService" ref="depositSubmissionService" />
+        <property name="priorityDepositors" value="${sword.priorityDepositors:''}" />
+        <property name="depositReportingUtil" ref="depositReportingUtil" />
+    </bean>
+    
+    <bean id="serviceDocumentManager" class="edu.unc.lib.boxc.web.sword.managers.ServiceDocumentManagerImpl" >
+        <property name="acceptedPackaging" ref="packageHandlers" />
+    </bean>
+    
+    <bean id="containerManager" class="edu.unc.lib.boxc.web.sword.managers.ContainerManagerImpl">
+    </bean>
+    
+    <bean id="mediaResourceManager" class="edu.unc.lib.boxc.web.sword.managers.MediaResourceManagerImpl">
+    </bean>
+    
+    <bean id="statementManager" class="edu.unc.lib.boxc.web.sword.managers.StatementManagerImpl">
+    </bean>
+    
+    <bean id="depositorAccessControlFilter" class="edu.unc.lib.boxc.web.sword.filters.DepositorAccessControlFilter">
+        <property name="swordConfig" ref="config"/>
+    </bean>
+    
+    <context:annotation-config />
+    
+    <bean class="org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter"></bean>
+    <bean
+        class="org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping">
+    </bean>
+</beans>

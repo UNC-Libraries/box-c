@@ -41,6 +41,8 @@ import org.fcrepo.client.FcrepoResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import edu.unc.lib.boxc.fcrepo.utils.ClientFaultResolver;
+import edu.unc.lib.boxc.fcrepo.utils.FedoraTransaction;
 import edu.unc.lib.boxc.model.api.event.PremisLog;
 import edu.unc.lib.boxc.model.api.exceptions.FedoraException;
 import edu.unc.lib.boxc.model.api.exceptions.ObjectTypeMismatchException;
@@ -52,12 +54,10 @@ import edu.unc.lib.boxc.model.api.objects.ContentObject;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObject;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.api.rdf.PcdmModels;
+import edu.unc.lib.boxc.model.api.sparql.SparqlQueryService;
 import edu.unc.lib.boxc.model.fcrepo.event.RepositoryPremisLog;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.boxc.model.fcrepo.objects.AbstractRepositoryObject;
-import edu.unc.lib.dl.fcrepo4.ClientFaultResolver;
-import edu.unc.lib.dl.fcrepo4.FedoraTransaction;
-import edu.unc.lib.dl.sparql.SparqlQueryService;
 
 /**
  * Service that provides data and clients to interact with an object's data

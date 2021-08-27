@@ -13,17 +13,13 @@
     <dependencies>
         <dependency>
             <groupId>edu.unc.lib.cdr</groupId>
-            <artifactId>fcrepo-clients</artifactId>
+            <artifactId>fcrepo-utils</artifactId>
         </dependency>
         <dependency>
             <groupId>edu.unc.lib.cdr</groupId>
             <artifactId>model-fcrepo</artifactId>
             <scope>test</scope>
             <type>test-jar</type>
-        </dependency>
-        <dependency>
-            <groupId>edu.unc.lib.cdr</groupId>
-            <artifactId>metadata</artifactId>
         </dependency>
         <dependency>
             <groupId>edu.unc.lib.cdr</groupId>
@@ -57,7 +53,7 @@
         </dependency>
         <dependency>
             <groupId>edu.unc.lib.cdr</groupId>
-            <artifactId>access-common</artifactId>
+            <artifactId>web-common</artifactId>
         </dependency>
         <dependency>
             <groupId>edu.unc.lib.cdr</groupId>

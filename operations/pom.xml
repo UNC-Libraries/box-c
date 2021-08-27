@@ -46,6 +46,10 @@
             <groupId>javax.mail</groupId>
             <artifactId>mail</artifactId>
         </dependency>
+        <dependency>
+            <groupId>jaxen</groupId>
+            <artifactId>jaxen</artifactId>
+        </dependency>
         <!-- Testing -->
         <dependency>
             <groupId>junit</groupId>

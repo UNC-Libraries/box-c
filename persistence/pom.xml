@@ -40,17 +40,13 @@
         </dependency>
         <dependency>
             <groupId>edu.unc.lib.cdr</groupId>
-            <artifactId>metadata</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>edu.unc.lib.cdr</groupId>
             <artifactId>common-utils</artifactId>
             <type>test-jar</type>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>edu.unc.lib.cdr</groupId>
-            <artifactId>fcrepo-clients</artifactId>
+            <artifactId>fcrepo-utils</artifactId>
         </dependency>
         <dependency>
             <groupId>edu.unc.lib.cdr</groupId>

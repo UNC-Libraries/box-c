@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:context="http://www.springframework.org/schema/context"
+    xmlns:util="http://www.springframework.org/schema/util"
+    xsi:schemaLocation="http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/util 
+        http://www.springframework.org/schema/util/spring-util.xsd
+        http://www.springframework.org/schema/context
+        http://www.springframework.org/schema/context/spring-context.xsd">
+
+    <context:property-placeholder />
+    
+    <bean id="depositModelManager" class="edu.unc.lib.boxc.deposit.impl.model.DepositModelManager"
+            factory-method="inMemoryManager" destroy-method="close">
+    </bean>
+    
+    <bean id="operationsMessageSender" class="org.mockito.Mockito" factory-method="mock">
+        <constructor-arg value="edu.unc.lib.boxc.operations.jms.OperationsMessageSender" />
+    </bean>
+    
+    <bean id="depositEmailHandler" class="org.mockito.Mockito" factory-method="mock">
+        <constructor-arg value="edu.unc.lib.boxc.deposit.work.DepositEmailHandler" />
+    </bean>
+    
+    <bean id="mockDepositDirectory" class="org.mockito.Mockito" factory-method="mock">
+        <constructor-arg value="java.io.File" />
+    </bean>
+    
+    <bean id="queueDAO" class="net.greghaines.jesque.meta.dao.impl.QueueInfoDAORedisImpl">
+        <constructor-arg ref="jesqueConfig" />
+        <constructor-arg ref="jedisPool" />
+    </bean>
+    
+    <bean id="jobFactory" class="org.mockito.Mockito" factory-method="mock">
+        <constructor-arg value="edu.unc.lib.boxc.deposit.utils.SpringJobFactory" />
+    </bean>
+    
+    <bean id="depositWorkerPool" class="net.greghaines.jesque.worker.WorkerPool">
+        <constructor-arg name="workerFactory">
+            <bean class="net.greghaines.jesque.worker.WorkerImplFactory">
+                <constructor-arg name="config" ref="jesqueConfig" />
+                <constructor-arg name="queues">
+                    <util:list>
+                        <value>PREPARE</value>
+                        <value>DELAYED_PREPARE</value>
+                    </util:list>
+                </constructor-arg>
+                <constructor-arg ref="jobFactory" />
+            </bean>
+        </constructor-arg>
+        <constructor-arg name="numWorkers" value="1" />
+    </bean>
+
+    <bean id="highPriorityDepositWorkerPool" class="net.greghaines.jesque.worker.WorkerPool">
+        <constructor-arg name="workerFactory">
+            <bean class="net.greghaines.jesque.worker.WorkerImplFactory">
+                <constructor-arg name="config" ref="jesqueConfig" />
+                <constructor-arg name="queues">
+                    <util:list>
+                        <value>PREPARE_HIGH_PRIORITY</value>
+                    </util:list>
+                </constructor-arg>
+                <constructor-arg ref="jobFactory" />
+            </bean>
+        </constructor-arg>
+        <constructor-arg name="numWorkers" value="2" />
+    </bean>
+
+    <bean id="migrationDepositWorkPool" class="net.greghaines.jesque.worker.WorkerPool">
+        <constructor-arg name="workerFactory">
+            <bean class="net.greghaines.jesque.worker.WorkerImplFactory">
+                <constructor-arg name="config" ref="jesqueConfig" />
+                <constructor-arg name="queues">
+                    <util:list>
+                        <value>PREPARE_LOW_PRIORITY</value>
+                    </util:list>
+                </constructor-arg>
+                <constructor-arg ref="jobFactory" />
+            </bean>
+        </constructor-arg>
+        <constructor-arg name="numWorkers" value="2" />
+    </bean>
+    
+    <util:list id="depositWorkerPools" value-type="net.greghaines.jesque.worker.WorkerPool">
+        <ref bean="depositWorkerPool"/>
+        <ref bean="highPriorityDepositWorkerPool"/>
+        <ref bean="migrationDepositWorkPool"/>
+    </util:list>
+</beans>

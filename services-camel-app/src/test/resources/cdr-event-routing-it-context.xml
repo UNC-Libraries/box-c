@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:c="http://www.springframework.org/schema/c"
+    xmlns:p="http://www.springframework.org/schema/p" xmlns:context="http://www.springframework.org/schema/context"
+    xmlns:util="http://www.springframework.org/schema/util"
+    xmlns:camel="http://camel.apache.org/schema/spring"
+    xmlns:amq="http://activemq.apache.org/schema/core"
+    xsi:schemaLocation="http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans-4.3.xsd
+        http://www.springframework.org/schema/util 
+        http://www.springframework.org/schema/util/spring-util.xsd
+        http://www.springframework.org/schema/context
+        http://www.springframework.org/schema/context/spring-context-4.3.xsd
+        http://activemq.apache.org/schema/core
+        http://activemq.apache.org/schema/core/activemq-core.xsd
+        http://camel.apache.org/schema/spring
+        http://camel.apache.org/schema/spring/camel-spring.xsd">
+        
+    <bean id="properties" class="org.apache.camel.component.properties.PropertiesComponent">
+        <property name="location" value="classpath:cdr-event-routing-it-config.properties"/>
+    </bean>
+    
+    <bean id="bridgePropertyPlaceholder" class="org.apache.camel.spring.spi.BridgePropertyPlaceholderConfigurer">
+        <property name="location" value="classpath:cdr-event-routing-it-config.properties"/>
+    </bean>
+
+    <bean id="solrUpdateJmsTemplate" class="org.springframework.jms.core.JmsTemplate">
+        <property name="connectionFactory" ref="jmsFactory" />
+        <property name="defaultDestinationName" value="${cdr.solrupdate.stream}" />
+        <property name="pubSubDomain" value="false" />
+    </bean>
+
+    <bean id="cdrEventsJmsTemplate" class="org.springframework.jms.core.JmsTemplate">
+        <property name="connectionFactory" ref="jmsFactory" />
+        <property name="defaultDestinationName" value="${cdr.stream}" />
+        <property name="pubSubDomain" value="false" />
+    </bean>
+
+    <bean id="operationsMessageSender" class="edu.unc.lib.boxc.operations.jms.OperationsMessageSender">
+        <property name="jmsTemplate" ref="cdrEventsJmsTemplate" />
+    </bean>
+
+    <bean id="abstractMessageSender" class="edu.unc.lib.boxc.operations.jms.MessageSender"
+        abstract="true">
+        <property name="jmsTemplate" ref="solrUpdateJmsTemplate" />
+    </bean>
+
+    <bean id="indexingMessageSender" parent="abstractMessageSender"
+        class="edu.unc.lib.boxc.operations.jms.indexing.IndexingMessageSender">
+    </bean>
+
+    <bean id="cdrEventProcessor"
+        class="edu.unc.lib.boxc.services.camel.cdrEvents.CdrEventProcessor">
+    </bean>
+
+    <bean id="cdrEventToSolrUpdateProcessor"
+        class="edu.unc.lib.boxc.services.camel.solr.CdrEventToSolrUpdateProcessor">
+        <property name="indexingMessageSender" ref="indexingMessageSender" />
+    </bean>
+
+    <bean id="solrSmallUpdateProcessor"
+        class="edu.unc.lib.boxc.services.camel.solrUpdate.SolrUpdateProcessor">
+    </bean>
+    
+    <bean id="solrLargeUpdateProcessor"
+        class="edu.unc.lib.boxc.services.camel.solrUpdate.SolrUpdateProcessor">
+    </bean>
+    
+    <bean id="solrUpdatePreprocessor" class="edu.unc.lib.boxc.services.camel.solrUpdate.SolrUpdatePreprocessor">
+    </bean>
+    
+    <bean id="cacheInvalidatingProcessor" class="org.mockito.Mockito" factory-method="mock">
+        <constructor-arg value="edu.unc.lib.boxc.services.camel.util.CacheInvalidatingProcessor" />
+    </bean>
+
+    <camel:camelContext id="cdrServiceCdrEvents">
+        <camel:package>edu.unc.lib.boxc.services.camel.cdrEvents</camel:package>
+    </camel:camelContext>
+
+    <camel:camelContext id="cdrServiceSolrUpdate">
+        <camel:package>edu.unc.lib.boxc.services.camel.solrUpdate</camel:package>
+    </camel:camelContext>
+  
+</beans>

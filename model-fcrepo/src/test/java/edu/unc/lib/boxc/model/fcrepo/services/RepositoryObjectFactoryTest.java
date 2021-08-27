@@ -56,8 +56,8 @@ import edu.unc.lib.boxc.model.api.objects.FileObject;
 import edu.unc.lib.boxc.model.api.objects.FolderObject;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.api.objects.WorkObject;
+import edu.unc.lib.boxc.model.api.sparql.SparqlUpdateService;
 import edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPIDMinter;
-import edu.unc.lib.dl.sparql.SparqlUpdateService;
 /**
  *
  * @author bbpennel

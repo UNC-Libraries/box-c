@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:c="http://www.springframework.org/schema/c"
+    xmlns:p="http://www.springframework.org/schema/p" xmlns:context="http://www.springframework.org/schema/context"
+    xmlns:util="http://www.springframework.org/schema/util"
+    xmlns:camel="http://camel.apache.org/schema/spring"
+    xsi:schemaLocation="http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans-4.3.xsd
+        http://www.springframework.org/schema/util 
+        http://www.springframework.org/schema/util/spring-util.xsd
+        http://www.springframework.org/schema/context
+        http://www.springframework.org/schema/context/spring-context-4.3.xsd
+        http://camel.apache.org/schema/spring
+        http://camel.apache.org/schema/spring/camel-spring.xsd">
+    
+    <bean id="destroyObjectsProcessor" class="edu.unc.lib.boxc.services.camel.destroy.DestroyObjectsProcessor">
+        <property name="aclService" ref="aclService" />
+        <property name="repositoryObjectFactory" ref="repositoryObjectFactory" />
+        <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
+        <property name="transactionManager" ref="transactionManager" />
+        <property name="objectPathFactory" ref="objectPathFactory" />
+        <property name="fcrepoClient" ref="fcrepoClient" />
+        <property name="inheritedAclFactory" ref="inheritedAclFactory" />
+        <property name="indexingMessageSender" ref="indexingMessageSender" />
+        <property name="binaryDestroyedMessageSender" ref="binaryDestroyedMessageSender" />
+        <property name="premisLoggerFactory" ref="premisLoggerFactory" />
+    </bean>
+    
+    <bean id="premisLoggerFactory" class="org.mockito.Mockito" factory-method="mock">
+        <constructor-arg value="edu.unc.lib.boxc.operations.api.events.PremisLoggerFactory" />
+    </bean>
+    
+    <bean id="aclService" class="org.mockito.Mockito" factory-method="mock">
+        <constructor-arg value="edu.unc.lib.boxc.auth.api.services.AccessControlService" />
+    </bean>
+    
+    <bean id="repositoryObjectFactory" class="org.mockito.Mockito" factory-method="mock">
+        <constructor-arg value="edu.unc.lib.boxc.model.fcrepo.services.RepositoryObjectFactoryImpl" />
+    </bean>
+    
+    <bean id="inheritedAclFactory" class="org.mockito.Mockito" factory-method="mock">
+        <constructor-arg value="edu.unc.lib.boxc.auth.fcrepo.services.InheritedAclFactory" />
+    </bean>
+    
+    <bean id="repositoryObjectLoader" class="org.mockito.Mockito" factory-method="mock">
+        <constructor-arg value="edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader" />
+    </bean>
+    
+    <bean id="transactionManager" class="org.mockito.Mockito" factory-method="mock">
+        <constructor-arg value="edu.unc.lib.boxc.fcrepo.utils.TransactionManager" />
+    </bean>
+    
+    <bean id="objectPathFactory" class="org.mockito.Mockito" factory-method="mock">
+        <constructor-arg value="edu.unc.lib.boxc.search.solr.services.ObjectPathFactory" />
+    </bean>
+    
+    <bean id="indexingMessageSender" class="org.mockito.Mockito" factory-method="mock">
+        <constructor-arg value="edu.unc.lib.boxc.operations.jms.indexing.IndexingMessageSender" />
+    </bean>
+    
+    <bean id="fcrepoClient" class="org.mockito.Mockito" factory-method="mock">
+        <constructor-arg value="org.fcrepo.client.FcrepoClient" />
+    </bean>
+    
+    <bean id="binaryDestroyedMessageSender" class="org.mockito.Mockito" factory-method="mock">
+        <constructor-arg value="edu.unc.lib.boxc.operations.jms.MessageSender" />
+    </bean>
+
+    <camel:camelContext id="cdrDestroyObjects">
+        <camel:package>edu.unc.lib.boxc.services.camel.destroy</camel:package>
+    </camel:camelContext>
+    
+</beans>
