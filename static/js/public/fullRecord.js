@@ -104,13 +104,16 @@ define('fullRecord', ['module', 'jquery', 'JP2Viewer', 'StructureView', 'dataTab
 			{ width: '5%', targets: [0, 4, 5] },
 			{ width: '20%', targets: [2, 3] },
 			{ width: '40%', targets: 1 },
-			{ render: function (data, type, row) {
+			{ render: function (data, type, row, meta) {
 				var img;
+				var hasIntersectionObserver = 'IntersectionObserver' in window;
 
-				if ('thumbnail_url' in row) {
-					img = '<img src="' + row.thumbnail_url + '" alt="Thumbnail image for ' + row.title + '">';
+				if ('thumbnail_url' in row  && (meta.row < 10 || !hasIntersectionObserver)) {
+					img = '<img class="data-thumb" src="' + row.thumbnail_url + '" alt="Thumbnail image for ' + row.title + '">';
+				} else if ('thumbnail_url' in row && hasIntersectionObserver) {
+					img = '<img class="data-thumb lazy" data-src="' + row.thumbnail_url + '" alt="Thumbnail image for ' + row.title + '">';
 				} else {
-					img = '<i class="fa fa-file default-img-icon" title="Default thumbnail image"></i>';
+					img = '<i class="fa fa-file default-img-icon data-thumb" title="Default thumbnail image"></i>';
 				}
 
 				var trashBadge = showBadge(row).markDeleted;
@@ -186,6 +189,9 @@ define('fullRecord', ['module', 'jquery', 'JP2Viewer', 'StructureView', 'dataTab
 				if (showBadge(data).markDeleted) {
 					$(row).addClass('deleted');
 				}
+			},
+			drawCallback: function() {
+				lazyLoad();
 			}
 		});
 
@@ -237,6 +243,24 @@ define('fullRecord', ['module', 'jquery', 'JP2Viewer', 'StructureView', 'dataTab
 			}
 
 			return val + ' ' + sizes[i];
+		}
+
+		function lazyLoad() {
+			var lazyloadImages = document.querySelectorAll('.lazy');
+			var imageObserver = new IntersectionObserver(function (entries, observer) {
+				entries.forEach(function (entry) {
+					if (entry.isIntersecting) {
+						var image = entry.target;
+						image.src = image.dataset.src;
+						image.classList.remove('lazy');
+						imageObserver.unobserve(image);
+					}
+				});
+			});
+
+			lazyloadImages.forEach(function (image) {
+				imageObserver.observe(image);
+			});
 		}
 	}
 });
