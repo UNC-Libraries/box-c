@@ -1,10 +1,10 @@
-![Build](https://github.com/UNC-Libraries/Carolina-Digital-Repository/workflows/DcrBuild/badge.svg)
+![Build](https://github.com/UNC-Libraries/box-c/workflows/DcrBuild/badge.svg)
 
 Building the project
 ---------------------
 ```
 # clone the project
-git clone https://github.com/UNC-Libraries/Carolina-Digital-Repository
+git clone https://github.com/UNC-Libraries/box-c
 # initialize submodules
 git submodule update --init --recursive
 # Install SASS parser to build CSS
