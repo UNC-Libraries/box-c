@@ -35,13 +35,17 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Objects;
+import java.util.Set;
 
 import javax.annotation.PostConstruct;
 
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -94,6 +98,7 @@ public class ExtractTechnicalMetadataJob extends AbstractConcurrentDepositJob {
     private String fitsHomePath;
     private Path fitsCommandPath;
     private int maxFileSizeForWebService;
+    private Set<String> FILE_EXTS_FOR_CLI = new HashSet<>(Arrays.asList("mov"));
 
     private Model model;
 
@@ -230,8 +235,8 @@ public class ExtractTechnicalMetadataJob extends AbstractConcurrentDepositJob {
             } catch (JobFailedException | JobInterruptedException e) {
                 throw e;
             } catch (Exception e) {
-                failJob(e, "Failed to extract FITS details for {0} from document:\n{1}",
-                        objPid, getXMLOutputter().outputString(fitsDoc));
+                failJob(e, "Failed to extract FITS details for file '{0}' with id {1} from document:\n{2}",
+                        stagedPath, objPid.getId(), getXMLOutputter().outputString(fitsDoc));
             }
         }
 
@@ -334,10 +339,22 @@ public class ExtractTechnicalMetadataJob extends AbstractConcurrentDepositJob {
     private boolean shouldProcessWithWebService(Path path) {
         // FITS cannot currently handle file paths that contain unicode characters
         if (!CharMatcher.ascii().matchesAllOf(path.toString())) {
+            log.debug("File {} not applicable for web service due to unacceptable characters", path);
+            return false;
+        }
+        String filename = path.getFileName().toString();
+        String extension = FilenameUtils.getExtension(filename).toLowerCase();
+        if (FILE_EXTS_FOR_CLI.contains(extension)) {
+            log.debug("File {} not applicable for web service due to file extension", path);
             return false;
         }
         try {
-            return Files.size(path) <= maxFileSizeForWebService;
+            if (Files.size(path) <= maxFileSizeForWebService) {
+                log.debug("File {} is applicable for web service", path);
+                return true;
+            } else {
+                log.debug("File {} not applicable for web service due to file size restriction", path);
+            }
         } catch (IOException e) {
             failJob(e, "Unable to inspect file");
         }
@@ -370,8 +387,8 @@ public class ExtractTechnicalMetadataJob extends AbstractConcurrentDepositJob {
 
             return createSAXBuilder().build(respBodyStream);
         } catch (IOException | JDOMException e) {
-            failJob(e, "Failed to stream report for {0} from server to report document",
-                    objPid);
+            failJob(e, "Failed to stream report for file '{0}' with id {1} from server to report document",
+                    stagedPath, objPid.getId());
         }
         return null;
     }
@@ -390,7 +407,7 @@ public class ExtractTechnicalMetadataJob extends AbstractConcurrentDepositJob {
             }
             return createSAXBuilder().build(process.getInputStream());
         } catch (IOException | JDOMException | InterruptedException e) {
-            failJob(e, "Failed to generate report for {0}", objPid);
+            failJob(e, "Failed to generate report for file '{0}' with id {1}", stagedPath, objPid.getId());
         }
         return null;
     }

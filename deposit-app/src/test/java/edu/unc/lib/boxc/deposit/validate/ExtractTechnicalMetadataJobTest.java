@@ -78,7 +78,6 @@ import edu.unc.lib.boxc.common.test.SelfReturningAnswer;
 import edu.unc.lib.boxc.deposit.api.DepositConstants;
 import edu.unc.lib.boxc.deposit.fcrepo4.AbstractDepositJobTest;
 import edu.unc.lib.boxc.deposit.impl.model.DepositModelHelpers;
-import edu.unc.lib.boxc.deposit.validate.ExtractTechnicalMetadataJob;
 import edu.unc.lib.boxc.model.api.exceptions.RepositoryException;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.ids.RepositoryPathConstants;
@@ -444,6 +443,26 @@ public class ExtractTechnicalMetadataJobTest extends AbstractDepositJobTest {
         workBag.addProperty(RDF.type, Cdr.Work);
         depositBag.add(workBag);
         String filename = "weird\uD83D\uDC7D.txt";
+        File sourceFile = tmpFolder.newFile(filename);
+        PID filePid = addFileObject(workBag, sourceFile.getAbsolutePath(), IMAGE_MIMETYPE, IMAGE_MD5);
+
+        job.closeModel();
+
+        job.run();
+
+        verifyFileResults(filePid, IMAGE_MIMETYPE, IMAGE_FORMAT, IMAGE_MD5, 1);
+    }
+
+    @Test
+    public void movFileTest() throws Exception {
+        setupFitsCommand("src/test/resources/fitsReports/imageReport.xml");
+
+        // Create the work object which nests the file
+        PID workPid = makePid(RepositoryPathConstants.CONTENT_BASE);
+        Bag workBag = model.createBag(workPid.getRepositoryPath());
+        workBag.addProperty(RDF.type, Cdr.Work);
+        depositBag.add(workBag);
+        String filename = "commencement.MOV";
         File sourceFile = tmpFolder.newFile(filename);
         PID filePid = addFileObject(workBag, sourceFile.getAbsolutePath(), IMAGE_MIMETYPE, IMAGE_MD5);
 
