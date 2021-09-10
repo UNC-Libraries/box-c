@@ -32,39 +32,6 @@
 
     <context:component-scan resource-pattern="**/ExportXMLController*" base-package="edu.unc.lib.boxc.web.services.rest.modify"/>
     
-    <bean id="xmlExportService" class="edu.unc.lib.boxc.web.services.processing.XMLExportService">
-        <property name="aclService" ref="aclService" />
-        <property name="emailHandler" ref="emailHandler" />
-        <property name="repoObjLoader" ref="repositoryObjectLoader" />
-        <property name="queryLayer" ref="queryLayer" />
-        <property name="searchStateFactory" ref="searchStateFactory" />
-    </bean>
-
-    <bean id="queryLayer" class="org.mockito.Mockito" factory-method="mock">
-        <constructor-arg value="edu.unc.lib.boxc.web.common.services.SolrQueryLayerService" />
-    </bean>
-
-    <bean id="searchSettings" class="org.mockito.Mockito" factory-method="mock">
-        <constructor-arg value="edu.unc.lib.boxc.search.solr.config.SearchSettings" />
-    </bean>
-
-    <bean id="solrSettings" class="org.mockito.Mockito" factory-method="mock">
-        <constructor-arg value="edu.unc.lib.boxc.search.solr.config.SolrSettings" />
-    </bean>
-
-    <bean id="facetFieldFactory" class="org.mockito.Mockito" factory-method="mock">
-        <constructor-arg value="edu.unc.lib.boxc.search.solr.services.FacetFieldFactory" />
-    </bean>
-
-    <bean id="searchStateFactory" class="org.mockito.Mockito" factory-method="mock">
-        <constructor-arg value="edu.unc.lib.boxc.search.solr.services.SearchStateFactory" />
-    </bean>
-
-    <bean id="facetFieldUtil" class="org.mockito.Mockito" factory-method="mock">
-        <constructor-arg value="edu.unc.lib.boxc.search.solr.utils.FacetFieldUtil" />
-    </bean>
-    
-    <bean id="emailHandler" class="org.mockito.Mockito" factory-method="mock">
-        <constructor-arg value="edu.unc.lib.boxc.operations.impl.utils.EmailHandler" />
+    <bean id="exportXmlRequestService" class="edu.unc.lib.boxc.operations.jms.exportxml.ExportXMLRequestService" >
     </bean>
 </beans>

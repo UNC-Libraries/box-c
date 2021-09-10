@@ -834,6 +834,11 @@
                 <artifactId>jackson-annotations</artifactId>
                 <version>${jackson.version}</version>
             </dependency>
+                <dependency>
+                <groupId>com.fasterxml.jackson.datatype</groupId>
+                <artifactId>jackson-datatype-jsr310</artifactId>
+                <version>${jackson.version}</version>
+            </dependency>
             
             <dependency>
                 <groupId>org.jdom</groupId>
@@ -982,6 +987,12 @@
                 <version>${activemq-protobuf.version}</version>
                 <scope>test</scope>
             </dependency>
+            <dependency>
+                <groupId>org.apache.activemq.tooling</groupId>
+                <artifactId>activemq-junit</artifactId>
+                <version>${activemq.version}</version>
+                <scope>test</scope>
+            </dependency> 
             
             <dependency>
                 <groupId>org.apache.solr</groupId>

@@ -328,18 +328,14 @@
         <property name="sourceImagesDir" value="${sourceImages.dir}" />
     </bean>
   
-  <bean id="emailHandler" class="edu.unc.lib.boxc.operations.impl.utils.EmailHandler">
-    <property name="fromAddress" value="${repository.from.email}" />
-    <property name="mailSender" ref="mailSender" />
+  <bean id="exportXmlJmsTemplate" class="org.springframework.jms.core.JmsTemplate">
+      <property name="connectionFactory" ref="jmsFactory" />
+      <property name="defaultDestinationName" value="${cdr.exportxml.stream}" />
+      <property name="pubSubDomain" value="false" />
   </bean>
   
-  <bean id="xmlExportService" class="edu.unc.lib.boxc.web.services.processing.XMLExportService" >
-      <property name="searchStateFactory" ref="searchStateFactory" />
-      <property name="queryLayer" ref="queryLayer" />
-      <property name="aclService" ref="aclService" />
-      <property name="repoObjLoader" ref="repositoryObjectLoader" />
-      <property name="emailHandler" ref="emailHandler" />
-      <property name="asynchronous" value="true" />
+  <bean id="exportXmlRequestService" class="edu.unc.lib.boxc.operations.jms.exportxml.ExportXMLRequestService" >
+      <property name="jmsTemplate" ref="exportXmlJmsTemplate"/>
   </bean>
   
   <bean id="importXmlJmsTemplate" class="org.springframework.jms.core.JmsTemplate">

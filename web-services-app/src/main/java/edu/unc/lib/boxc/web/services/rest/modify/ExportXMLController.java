@@ -15,8 +15,8 @@
  */
 package edu.unc.lib.boxc.web.services.rest.modify;
 
+import java.time.Instant;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import org.slf4j.Logger;
@@ -32,7 +32,8 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import edu.unc.lib.boxc.auth.api.exceptions.AccessRestrictionException;
 import edu.unc.lib.boxc.auth.api.models.AgentPrincipals;
 import edu.unc.lib.boxc.auth.fcrepo.models.AgentPrincipalsImpl;
-import edu.unc.lib.boxc.web.services.processing.XMLExportService;
+import edu.unc.lib.boxc.operations.jms.exportxml.ExportXMLRequest;
+import edu.unc.lib.boxc.operations.jms.exportxml.ExportXMLRequestService;
 
 /**
  * Responds to requests to generate an XML document containing metadata for objects in the selected set of objects,
@@ -47,7 +48,7 @@ public class ExportXMLController {
     private static final Logger log = LoggerFactory.getLogger(ExportXMLController.class);
 
     @Autowired
-    private XMLExportService service;
+    private ExportXMLRequestService service;
 
     /**
      * Exports an XML document containing metadata for all objects specified by the request
@@ -57,22 +58,20 @@ public class ExportXMLController {
      */
     @PostMapping(value = "/edit/exportXML")
     public @ResponseBody
-    Object exportFolder(@RequestBody XMLExportRequest exportRequest) {
+    Object exportFolder(@RequestBody ExportXMLRequest exportRequest) {
         return exportXML(exportRequest);
     }
 
-    private ResponseEntity<Object> exportXML(XMLExportRequest exportRequest) {
+    private ResponseEntity<Object> exportXML(ExportXMLRequest exportRequest) {
         Map<String, Object> result = new HashMap<>();
         result.put("action", "export xml");
 
         AgentPrincipals agent = AgentPrincipalsImpl.createFromThread();
 
         try {
-            XMLExportRequest exportReq = new XMLExportRequest(
-                    exportRequest.getPids(),
-                    exportRequest.getExportChildren(),
-                    exportRequest.getEmail());
-            service.exportXml(agent.getUsername(), agent.getPrincipals(), exportReq);
+            exportRequest.setAgent(agent);
+            exportRequest.setRequestedTimestamp(Instant.now());
+            service.sendRequest(exportRequest);
             result.put("message", "Metadata export for " + exportRequest.getPids().size()
                     + " objects has begun, you will receive the data via email soon");
         } catch (AccessRestrictionException e) {
@@ -86,44 +85,4 @@ public class ExportXMLController {
         result.put("timestamp", System.currentTimeMillis());
         return new ResponseEntity<>(result, HttpStatus.OK);
     }
-
-    public static class XMLExportRequest {
-        private List<String> pids;
-        private boolean exportChildren;
-        private String email;
-
-        public XMLExportRequest() {
-        }
-
-        public XMLExportRequest(List<String> pids, boolean exportChildren, String email) {
-            this.pids = pids;
-            this.exportChildren = exportChildren;
-            this.email = email;
-        }
-
-        public List<String> getPids() {
-            return pids;
-        }
-
-        public void setPids(List<String> pids) {
-            this.pids = pids;
-        }
-
-        public String getEmail() {
-            return email;
-        }
-
-        public void setEmail(String email) {
-            this.email = email;
-        }
-
-        public boolean getExportChildren() {
-            return exportChildren;
-        }
-
-        public void setExportChildren(boolean exportChildren) {
-            this.exportChildren = exportChildren;
-        }
-    }
-
 }

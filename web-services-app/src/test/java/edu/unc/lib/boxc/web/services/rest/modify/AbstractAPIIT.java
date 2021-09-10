@@ -36,6 +36,7 @@ import org.springframework.web.context.WebApplicationContext;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.type.MapType;
 
+import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
 import edu.unc.lib.boxc.auth.api.services.AccessControlService;
 import edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl;
 import edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore;
@@ -57,6 +58,8 @@ import edu.unc.lib.boxc.model.fcrepo.test.TestHelper;
 @RunWith(SpringJUnit4ClassRunner.class)
 @WebAppConfiguration
 public abstract class AbstractAPIIT {
+    protected final static String USERNAME = "test_user";
+    protected final static AccessGroupSet GROUPS = new AccessGroupSetImpl("adminGroup");
 
     @Autowired(required = false)
     protected String baseAddress;
@@ -88,8 +91,8 @@ public abstract class AbstractAPIIT {
 
         TestHelper.setContentBase("http://localhost:48085/rest");
 
-        GroupsThreadStore.storeUsername("test_user");
-        GroupsThreadStore.storeGroups(new AccessGroupSetImpl("adminGroup"));
+        GroupsThreadStore.storeUsername(USERNAME);
+        GroupsThreadStore.storeGroups(GROUPS);
 
     }
 

@@ -57,7 +57,7 @@
 
     <bean id="deleteSolrTreeAction"
         class="edu.unc.lib.boxc.indexing.solr.action.DeleteSolrTreeAction">
-        <property name="solrSearchService" ref="queryLayer" />
+        <property name="solrSearchService" ref="solrSearchService" />
         <property name="searchSettings" ref="searchSettings" />
         <property name="solrSettings" ref="solrSettings" />
         <property name="accessGroups" ref="accessGroups" />
