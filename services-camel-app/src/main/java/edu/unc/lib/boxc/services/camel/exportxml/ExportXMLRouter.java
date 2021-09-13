@@ -22,8 +22,6 @@ import org.apache.camel.BeanInject;
 import org.apache.camel.builder.RouteBuilder;
 import org.slf4j.Logger;
 
-import edu.unc.lib.boxc.services.camel.importxml.ImportXMLRouter;
-
 /**
  * Route which executes requests to perform bulk xml exports.
  *
@@ -31,7 +29,7 @@ import edu.unc.lib.boxc.services.camel.importxml.ImportXMLRouter;
  */
 public class ExportXMLRouter extends RouteBuilder {
 
-    private static final Logger log = getLogger(ImportXMLRouter.class);
+    private static final Logger log = getLogger(ExportXMLRouter.class);
 
     @BeanInject(value = "exportXMLProcessor")
     private ExportXMLProcessor exportXmlProcessor;

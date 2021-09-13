@@ -416,6 +416,7 @@
         <property name="searchService" ref="queryLayer" />
         <property name="searchStateFactory" ref="searchStateFactory" />
         <property name="requestService" ref="exportXmlRequestService" />
+        <property name="objectsPerExport" value="${cdr.exportxml.objectsPerExport:5000}" />
     </bean>
     
     <bean id="longleafAggregationStrategy" class="edu.unc.lib.boxc.services.camel.longleaf.LongleafAggregationStrategy">

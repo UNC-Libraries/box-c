@@ -25,6 +25,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -34,6 +35,7 @@ import java.util.zip.ZipOutputStream;
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
 import org.apache.camel.Processor;
+import org.apache.commons.lang3.StringUtils;
 import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.JDOMException;
@@ -78,6 +80,7 @@ public class ExportXMLProcessor implements Processor {
     private SearchStateFactory searchStateFactory;
     private SolrSearchService searchService;
     private ExportXMLRequestService requestService;
+    private int objectsPerExport = 100;
 
     private static final int BUFFER_SIZE = 2048;
     private static final String SEPERATOR = System.getProperty("line.separator");
@@ -98,29 +101,48 @@ public class ExportXMLProcessor implements Processor {
             addChildPIDsToRequest(request);
             log.debug("Finished retrieving children PIDs for export in {}ms", System.currentTimeMillis() - startTime);
         }
+        String username = request.getAgent().getUsername();
+        XMLOutputter xmlOutput = new XMLOutputter(Format.getRawFormat());
 
-        log.debug("Preparing to export metadata for {} objects", request.getPids().size());
-        try (Timer.Context context = timer.time()) {
-            File mdExportFile = File.createTempFile("xml_export", ".xml");
+        int page = 0;
+        int totalPids = request.getPids().size();
+        while (page * objectsPerExport < totalPids) {
+            int pageStart = page * objectsPerExport;
+            int pageEnd = pageStart + objectsPerExport;
+            if (pageEnd > totalPids) {
+                pageEnd = totalPids;
+            }
+            // Generate export in pages, one export document per page
+            List<String> pagePids = request.getPids().subList(pageStart, pageEnd);
+            page++;
+            try (Timer.Context context = timer.time()) {
+                // Trim off the milliseconds for filename
+                String timestamp = StringUtils.substringBefore(request.getRequestedTimestamp().toString(), ".");
+                String filename = String.format("xml_export_%s_%04d", timestamp, page);
+                File mdExportFile = File.createTempFile(filename, ".xml");
 
-            try (FileOutputStream xfop = new FileOutputStream(mdExportFile)) {
-                xfop.write(exportHeaderBytes);
+                log.debug("Preparing to export metadata for objects {} through {} out of {} to {}",
+                        pageStart, pageEnd, request.getPids().size(), filename);
 
-                XMLOutputter xmlOutput = new XMLOutputter(Format.getRawFormat());
+                try (BufferedOutputStream xfop = new BufferedOutputStream(new FileOutputStream(mdExportFile))) {
+                    xfop.write(exportHeaderBytes);
 
-                for (String pidString : request.getPids()) {
-                    addObjectToExport(pidString, xfop, xmlOutput, request);
+                    for (String pidString : pagePids) {
+                        addObjectToExport(pidString, xfop, xmlOutput, request);
+                    }
+
+                    xfop.write("</bulkMetadata>".getBytes(UTF_8));
                 }
 
-                xfop.write("</bulkMetadata>".getBytes(UTF_8));
+                sendEmail(zipit(mdExportFile, filename), request, filename, pageStart, pageEnd, totalPids);
+                log.info("Completed exported objects {} through {} for user {} to {}",
+                        pageStart, pageEnd, username, filename);
+            } catch (IOException e) {
+                throw new ServiceException("Unable to write export file", e);
             }
-
-            sendEmail(zipit(mdExportFile), request);
-            log.info("Finished metadata export for {} objects in {}ms for user {}",
-                    request.getPids().size(), System.currentTimeMillis() - startTime, request.getAgent().getUsername());
-        } catch (IOException e) {
-            throw new ServiceException("Unable to write export file", e);
         }
+        log.info("Finished metadata export for {} objects in {}ms for user {}",
+                request.getPids().size(), System.currentTimeMillis() - startTime, username);
     }
 
     private void addChildPIDsToRequest(ExportXMLRequest request) throws ServiceException {
@@ -147,14 +169,14 @@ public class ExportXMLProcessor implements Processor {
 
             List<ContentObjectRecord> objects = resultResponse.getResultList();
             for (ContentObjectRecord object : objects) {
-                pids.add(object.getPid().toString());
+                pids.add(object.getPid().getId());
             }
         }
         // update the list of pids in the request with all of the child pids found
         request.setPids(pids);
     }
 
-    private void addObjectToExport(String pidString, FileOutputStream xfop, XMLOutputter xmlOutput,
+    private void addObjectToExport(String pidString, OutputStream xfop, XMLOutputter xmlOutput,
             ExportXMLRequest request)
             throws IOException {
         PID pid = PIDs.get(pidString);
@@ -195,7 +217,6 @@ public class ExportXMLProcessor implements Processor {
             xmlOutput.output(objectEl, xfop);
 
             xfop.write(SEPERATOR_BYTES);
-            xfop.flush();
         } catch (JDOMException e) {
             log.error("Failed to parse MODS document for {}", pid, e);
         }
@@ -237,7 +258,11 @@ public class ExportXMLProcessor implements Processor {
         this.requestService = requestService;
     }
 
-    private File zipit(File mdExportFile) throws IOException {
+    public void setObjectsPerExport(int objectsPerExport) {
+        this.objectsPerExport = objectsPerExport;
+    }
+
+    private File zipit(File mdExportFile, String filename) throws IOException {
         File mdExportZip = File.createTempFile("xml_export", ".zip");
         FileOutputStream dest = new FileOutputStream(mdExportZip);
 
@@ -246,7 +271,7 @@ public class ExportXMLProcessor implements Processor {
             try (BufferedInputStream origin = new BufferedInputStream(fi, BUFFER_SIZE)) {
                 byte data[] = new byte[BUFFER_SIZE];
 
-                ZipEntry entry = new ZipEntry("export.xml");
+                ZipEntry entry = new ZipEntry(filename + ".xml");
                 out.putNextEntry(entry);
 
                 int count;
@@ -259,10 +284,18 @@ public class ExportXMLProcessor implements Processor {
         return mdExportZip;
     }
 
-    private void sendEmail(File mdExportFile, ExportXMLRequest request) {
-        String emailBody = "The XML metadata for " + request.getPids().size() +
-                " object(s) requested for export by " + request.getAgent().getUsername() + " is attached.\n";
+    private void sendEmail(File mdExportFile, ExportXMLRequest request, String filename,
+            int pageStart, int pageEnd, int totalPids) {
+        String emailBody;
+        if (totalPids > objectsPerExport) {
+            emailBody = "The XML metadata for objects " + (pageStart + 1) + "-" + pageEnd + " out of " + totalPids
+                    + " total objects selected for export by user " + request.getAgent().getUsername()
+                    + " is attached.\n";
+        } else {
+            emailBody = "The XML metadata for " + totalPids +
+                    " object(s) requested for export by " + request.getAgent().getUsername() + " is attached.\n";
+        }
 
-        emailHandler.sendEmail(request.getEmail(), "DCR Metadata Export", emailBody, "xml_export.zip", mdExportFile);
+        emailHandler.sendEmail(request.getEmail(), "DCR Metadata Export", emailBody, filename + ".zip", mdExportFile);
     }
 }

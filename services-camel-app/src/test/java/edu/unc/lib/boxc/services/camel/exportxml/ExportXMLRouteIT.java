@@ -21,9 +21,8 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.reset;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.MockitoAnnotations.initMocks;
 
@@ -32,6 +31,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
+import java.time.Instant;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -40,6 +40,7 @@ import java.util.stream.Collectors;
 import org.apache.camel.CamelContext;
 import org.apache.camel.builder.NotifyBuilder;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.solr.client.solrj.embedded.EmbeddedSolrServer;
 import org.jdom2.Document;
 import org.jdom2.Element;
@@ -117,6 +118,8 @@ public class ExportXMLRouteIT {
     private ExportXMLRequestService requestService;
     @Autowired
     private EmailHandler emailHandler;
+    @Autowired
+    private ExportXMLProcessor exportXmlProcessor;
 
     @Captor
     private ArgumentCaptor<String> toCaptor;
@@ -129,11 +132,11 @@ public class ExportXMLRouteIT {
     @Captor
     private ArgumentCaptor<File> attachmentCaptor;
 
-    protected ContentRootObject rootObj;
-    protected AdminUnit unitObj;
-    protected CollectionObject collObj1;
+    private ContentRootObject rootObj;
+    private AdminUnit unitObj;
+    private CollectionObject collObj1;
     private WorkObject workObj1;
-    protected CollectionObject collObj2;
+    private CollectionObject collObj2;
     private WorkObject workObj2;
     private FileObject fileObj1;
 
@@ -146,6 +149,7 @@ public class ExportXMLRouteIT {
         TestHelper.setContentBase("http://localhost:48085/rest");
         agent = new AgentPrincipalsImpl("user", new AccessGroupSetImpl("adminGroup"));
         generateBaseStructure();
+        exportXmlProcessor.setObjectsPerExport(500);
     }
 
     @Test
@@ -259,6 +263,39 @@ public class ExportXMLRouteIT {
         assertExportDocumentCount(rootEl, 0);
     }
 
+    @Test
+    public void exportUnitIncludeChildrenPagedTest() throws Exception {
+        exportXmlProcessor.setObjectsPerExport(2);
+
+        indexAll();
+
+        NotifyBuilder notify = new NotifyBuilder(cdrExportXML)
+                .whenCompleted(1)
+                .create();
+
+        sendRequest(true, unitObj.getPid());
+
+        boolean result = notify.matches(5l, TimeUnit.SECONDS);
+        assertTrue("Processing message did not match expectations", result);
+
+        assertEmailSent(3);
+
+        Element rootEl1 = getExportedDocumentRootEl(1);
+        assertHasObjectWithoutMods(rootEl1, ResourceType.AdminUnit, unitObj.getPid());
+        assertHasObjectWithMods(rootEl1, ResourceType.Collection, collObj1.getPid());
+        assertExportDocumentCount(rootEl1, 2);
+
+        Element rootEl2 = getExportedDocumentRootEl(2);
+        assertHasObjectWithoutMods(rootEl2, ResourceType.Collection, collObj2.getPid());
+        assertHasObjectWithMods(rootEl2, ResourceType.Work, workObj1.getPid());
+        assertExportDocumentCount(rootEl1, 2);
+
+        Element rootEl3 = getExportedDocumentRootEl(3);
+        assertHasObjectWithoutMods(rootEl3, ResourceType.Work, workObj2.getPid());
+        assertHasObjectWithoutMods(rootEl3, ResourceType.File, fileObj1.getPid());
+        assertExportDocumentCount(rootEl3, 2);
+    }
+
     private void indexAll() throws Exception{
         treeIndexer.indexAll(rootObj.getPid().getRepositoryPath());
         solrIndexer.index(rootObj.getPid(), unitObj.getPid(), collObj1.getPid(), collObj2.getPid(),
@@ -266,7 +303,11 @@ public class ExportXMLRouteIT {
     }
 
     private void assertEmailSent() {
-        verify(emailHandler).sendEmail(toCaptor.capture(), subjectCaptor.capture(), bodyCaptor.capture(),
+        assertEmailSent(1);
+    }
+
+    private void assertEmailSent(int numberEmails) {
+        verify(emailHandler, times(numberEmails)).sendEmail(toCaptor.capture(), subjectCaptor.capture(), bodyCaptor.capture(),
                 filenameCaptor.capture(), attachmentCaptor.capture());
     }
 
@@ -276,27 +317,36 @@ public class ExportXMLRouteIT {
         request.setExportChildren(exportChildren);
         request.setPids(Arrays.stream(pids).map(PID::getId).collect(Collectors.toList()));
         request.setEmail(EMAIL);
+        request.setRequestedTimestamp(Instant.now());
         requestService.sendRequest(request);
         return request;
     }
 
     private Element getExportedDocumentRootEl() throws Exception {
-        Document doc = getExportedDocument();
+        return getExportedDocumentRootEl(1);
+    }
+
+    private Element getExportedDocumentRootEl(int page) throws Exception {
+        Document doc = getExportedDocument(page);
 
         Element rootEl = doc.getRootElement();
         assertEquals("bulkMetadata", rootEl.getName());
         return rootEl;
     }
 
-    private Document getExportedDocument() throws Exception {
-        verify(emailHandler).sendEmail(eq(EMAIL), anyString(), anyString(),
-                eq("xml_export.zip"), attachmentCaptor.capture());
-        return getExportedDocument(attachmentCaptor.getValue());
+    private Document getExportedDocument(int page) throws Exception {
+        String toEmail = toCaptor.getAllValues().get(page - 1);
+        assertEquals(EMAIL, toEmail);
+        String exportFile = filenameCaptor.getAllValues().get(page - 1);
+        assertTrue("Unexpected export filename: " + exportFile,
+                exportFile.matches("xml\\_export\\_.*\\_0+" + page + "\\.zip"));
+        return getExportedDocument(attachmentCaptor.getAllValues().get(page - 1));
     }
 
     private Document getExportedDocument(File reportZip) throws Exception {
         File unzipDir = ZipFileUtil.unzipToTemp(reportZip);
-        File reportFile = new File(unzipDir, "export.xml");
+        String filename = StringUtils.substringBeforeLast(reportZip.getName(), ".");
+        File reportFile = new File(unzipDir, filename + ".xml");
 
         SAXBuilder builder = new SAXBuilder();
         return builder.build(new FileInputStream(reportFile));
