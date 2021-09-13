@@ -27,10 +27,12 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.MockitoAnnotations.initMocks;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
+import java.nio.file.DirectoryStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.time.Instant;
 import java.util.Arrays;
 import java.util.List;
@@ -40,7 +42,6 @@ import java.util.stream.Collectors;
 import org.apache.camel.CamelContext;
 import org.apache.camel.builder.NotifyBuilder;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.solr.client.solrj.embedded.EmbeddedSolrServer;
 import org.jdom2.Document;
 import org.jdom2.Element;
@@ -345,11 +346,10 @@ public class ExportXMLRouteIT {
 
     private Document getExportedDocument(File reportZip) throws Exception {
         File unzipDir = ZipFileUtil.unzipToTemp(reportZip);
-        String filename = StringUtils.substringBeforeLast(reportZip.getName(), ".");
-        File reportFile = new File(unzipDir, filename + ".xml");
-
-        SAXBuilder builder = new SAXBuilder();
-        return builder.build(new FileInputStream(reportFile));
+        try (DirectoryStream<Path> dirStream = Files.newDirectoryStream(unzipDir.toPath(), "*.xml")) {
+            SAXBuilder builder = new SAXBuilder();
+            return builder.build(Files.newInputStream(dirStream.iterator().next()));
+        }
     }
 
     private void assertExportDocumentCount(Element rootEl, int expectedCnt) {
