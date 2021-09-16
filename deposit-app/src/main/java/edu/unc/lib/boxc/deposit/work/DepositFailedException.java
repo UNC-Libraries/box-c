@@ -20,10 +20,10 @@ package edu.unc.lib.boxc.deposit.work;
  * @author count0
  *
  */
-public class DepositFailedException extends Throwable {
+public class DepositFailedException extends RuntimeException {
 
     /**
-     * 
+     *
      */
     private static final long serialVersionUID = -4818301461775253637L;
 

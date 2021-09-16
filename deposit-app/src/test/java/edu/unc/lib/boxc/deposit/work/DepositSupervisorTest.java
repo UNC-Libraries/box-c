@@ -22,10 +22,12 @@ import static org.mockito.Mockito.when;
 import static org.slf4j.LoggerFactory.getLogger;
 import static org.springframework.test.util.ReflectionTestUtils.setField;
 
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
-import com.google.common.base.Objects;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -57,9 +59,9 @@ import edu.unc.lib.boxc.deposit.impl.model.DepositPipelineStatusFactory;
 import edu.unc.lib.boxc.deposit.impl.model.DepositStatusFactory;
 import edu.unc.lib.boxc.deposit.impl.model.JobStatusFactory;
 import edu.unc.lib.boxc.deposit.impl.submit.AbstractDepositHandler;
+import edu.unc.lib.boxc.deposit.normalize.BagIt2N3BagJob;
 import edu.unc.lib.boxc.deposit.utils.SpringJobFactory;
-import edu.unc.lib.boxc.deposit.work.AbstractDepositJob;
-import edu.unc.lib.boxc.deposit.work.DepositSupervisor;
+import edu.unc.lib.boxc.deposit.validate.PackageIntegrityCheckJob;
 import edu.unc.lib.boxc.deposit.work.DepositSupervisor.ActionMonitoringTask;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.ids.PIDMinter;
@@ -484,6 +486,24 @@ public class DepositSupervisorTest {
         assertDepositAction(null, depositPid);
     }
 
+    @Test
+    public void nextJobBagitNormalizationTest() throws Exception {
+        Map<String, String> status = new HashMap<>();
+        status.put(DepositField.packagingType.name(), PackagingType.BAGIT.getUri());
+        List<String> successfulJobs = Arrays.asList(PackageIntegrityCheckJob.class.getName());
+        Job job = supervisor.getNextJob("12345", status, successfulJobs);
+        assertEquals(BagIt2N3BagJob.class.getName(), job.getClassName());
+    }
+
+    @Test(expected = DepositFailedException.class)
+    public void nextJobInvalidSuccessfulJobsTest() throws Exception {
+        Map<String, String> status = new HashMap<>();
+        status.put(DepositField.packagingType.name(), PackagingType.BAGIT.getUri());
+        List<String> successfulJobs = Arrays.asList(PackageIntegrityCheckJob.class.getName(),
+                "edu.unc.lib.old.stuff.CDRMETS2N3BagJob");
+        supervisor.getNextJob("12345", status, successfulJobs);
+    }
+
     private void assertWorkersPaused(boolean expectedValue) {
         for (WorkerPool workerPool : depositWorkerPools) {
             assertEquals("Expected worker to be " + (expectedValue ? "" : "un") + "paused, but it was not",
@@ -550,7 +570,7 @@ public class DepositSupervisorTest {
             } else {
                 action = null;
             }
-            if (Objects.equal(expectedAction, action) || (allowNull && action == null)) {
+            if (Objects.equals(expectedAction, action) || (allowNull && action == null)) {
                 return;
             }
             Thread.sleep(STATE_POLL_PERIOD);

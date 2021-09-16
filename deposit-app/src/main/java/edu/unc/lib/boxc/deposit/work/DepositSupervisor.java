@@ -29,6 +29,7 @@ import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
@@ -65,6 +66,7 @@ import edu.unc.lib.boxc.deposit.normalize.NormalizeFileObjectsJob;
 import edu.unc.lib.boxc.deposit.normalize.PreconstructedDepositJob;
 import edu.unc.lib.boxc.deposit.normalize.Simple2N3BagJob;
 import edu.unc.lib.boxc.deposit.normalize.UnpackDepositJob;
+import edu.unc.lib.boxc.deposit.normalize.VocabularyEnforcementJob;
 import edu.unc.lib.boxc.deposit.transfer.TransferBinariesToStorageJob;
 import edu.unc.lib.boxc.deposit.validate.ExtractTechnicalMetadataJob;
 import edu.unc.lib.boxc.deposit.validate.FixityCheckJob;
@@ -722,9 +724,25 @@ public class DepositSupervisor implements WorkerListener {
         }
     }
 
-    private Job getNextJob(Job job, String depositUUID, Map<String, String> status, List<String> successfulJobs)
+    // New deposit jobs will need to be added to this list, due to BXC-3248
+    private static Set<String> VALID_DEPOSIT_JOBS = Arrays.asList(PackageIntegrityCheckJob.class,
+            UnpackDepositJob.class, PreconstructedDepositJob.class, CDRMETS2N3BagJob.class,
+            Simple2N3BagJob.class, BagIt2N3BagJob.class,
+            DirectoryToBagJob.class, NormalizeFileObjectsJob.class, VocabularyEnforcementJob.class,
+            ValidateDestinationJob.class, ValidateContentModelJob.class, ValidateDescriptionJob.class,
+            ValidateFileAvailabilityJob.class, VirusScanJob.class, FixityCheckJob.class,
+            ExtractTechnicalMetadataJob.class, AssignStorageLocationsJob.class, TransferBinariesToStorageJob.class,
+            StaffOnlyPermissionJob.class, IngestDepositRecordJob.class, IngestContentObjectsJob.class,
+            CleanupDepositJob.class)
+            .stream().map(Class::getName).collect(Collectors.toSet());
+
+    protected Job getNextJob(String depositUUID, Map<String, String> status, List<String> successfulJobs)
             throws DepositFailedException {
         LOG.debug("Got completed job names: {}", successfulJobs);
+        if (!VALID_DEPOSIT_JOBS.containsAll(successfulJobs)) {
+            throw new DepositFailedException("Deposit " + depositUUID + " lists invalid 'successful jobs',"
+                    + " it may be out of date and require updating: " + successfulJobs);
+        }
 
         // Package integrity check
         if (status.get(DepositField.depositMd5.name()) != null) {
@@ -857,7 +875,7 @@ public class DepositSupervisor implements WorkerListener {
     private void queueNextJob(Job job, String depositUUID, Map<String, String> status, List<String> successfulJobs,
             long delay)
             throws DepositFailedException {
-        Job nextJob = getNextJob(job, depositUUID, status, successfulJobs);
+        Job nextJob = getNextJob(depositUUID, status, successfulJobs);
         if (nextJob != null) {
             LOG.info("Queuing next job {} for deposit {}", nextJob.getClassName(), depositUUID);
 
