@@ -30,12 +30,12 @@ public class RedisWorkerConstants {
     public static final String RESQUE_QUEUE_PREFIX = "resque:queue:";
 
     public static enum DepositField {
-        uuid, state, actionRequest, contactName, depositorName, intSenderIdentifier, intSenderDescription,
-        fileName, depositMethod, containerId, payLoadOctets,
-        createTime, startTime, endTime, ingestedOctets, ingestedObjects, directory, lock, submitTime,
+        uuid, state, actionRequest, contactName, depositorName, intSenderDescription,
+        fileName, depositMethod, containerId,
+        createTime, startTime, endTime, ingestedObjects, directory, lock, submitTime,
         depositorEmail, packagingType, packageProfile, metsType, permissionGroups, depositMd5, depositSlug,
-        errorMessage, stackTrace, excludeDepositRecord, publishObjects, fileMimetype, priority, sourceUri,
-        extras, ingestInprogress, storageLocation, staffOnly, overrideTimestamps, createParentFolder;
+        errorMessage, excludeDepositRecord, fileMimetype, priority, sourceUri,
+        ingestInprogress, storageLocation, staffOnly, overrideTimestamps, createParentFolder;
     }
 
     public static enum JobField {

@@ -782,9 +782,9 @@ public class DepositSupervisor implements WorkerListener {
             return makeJob(conversionClass, depositUUID);
         }
 
-        // Normalize all fileObjects into Works
+        // Normalize all fileObjects into Works. Only applying to METS packaging, other types should already be valid
         if (!successfulJobs.contains(NormalizeFileObjectsJob.class.getName())
-                && !packagingType.equals(PackagingType.SIMPLE_OBJECT.getUri())) {
+                && packagingType.equals(PackagingType.METS_CDR.getUri())) {
             return makeJob(NormalizeFileObjectsJob.class, depositUUID);
         }
 
