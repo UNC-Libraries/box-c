@@ -20,7 +20,6 @@ import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Map;
 import java.util.stream.Stream;
 
 import org.apache.jena.rdf.model.Bag;
@@ -58,16 +57,20 @@ public class DirectoryToBagJob extends AbstractFileServerToBagJob {
         // Cache all the changes for committing at the end
         Model model = ModelFactory.createDefaultModel().add(depModel);
 
-        Bag depositBag = model.createBag(getDepositPID().getURI());
+        Bag depositBag = model.createBag(getDepositPID().getRepositoryPath());
 
-        Map<String, String> status = getDepositStatus();
-        URI sourceUri = URI.create(status.get(DepositField.sourceUri.name()));
+        URI sourceUri = URI.create(getDepositField(DepositField.sourceUri));
         Path sourcePath = Paths.get(sourceUri);
 
         interruptJobIfStopped();
 
         // Turn the base directory itself into the top level folder for this deposit
-        Bag sourceBag = getSourceBag(depositBag, sourcePath);
+        Bag sourceBag;
+        if (shouldCreateParentFolder()) {
+            sourceBag = getSourceBag(depositBag, sourcePath);
+        } else {
+            sourceBag = depositBag;
+        }
 
         // Add all of the payload objects into the bag folder
         try (Stream<Path> stream = Files.walk(sourcePath, MAX_DEPTH)) {
@@ -89,6 +92,9 @@ public class DirectoryToBagJob extends AbstractFileServerToBagJob {
                     Path storedPath = file.toAbsolutePath();
                     model.add(originalResource, CdrDeposit.stagingLocation, storedPath.toUri().toString());
                 } else {
+                    if (isFileOnlyMode()) {
+                        failJob("Subfolders are not allowed for this deposit, encountered subfolder " + filePath, null);
+                    }
                     Bag folderBag = getFolderBag(sourceBag, filePath);
                     model.add(folderBag, CdrDeposit.label, filename);
                     model.add(folderBag, RDF.type, Cdr.Folder);

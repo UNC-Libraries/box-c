@@ -18,6 +18,7 @@ package edu.unc.lib.boxc.deposit.normalize;
 import static edu.unc.lib.boxc.common.test.TestHelpers.setField;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.when;
 import static org.slf4j.LoggerFactory.getLogger;
@@ -45,7 +46,7 @@ import org.slf4j.Logger;
 
 import edu.unc.lib.boxc.deposit.api.RedisWorkerConstants.DepositField;
 import edu.unc.lib.boxc.deposit.impl.model.DepositModelHelpers;
-import edu.unc.lib.boxc.deposit.normalize.DirectoryToBagJob;
+import edu.unc.lib.boxc.deposit.work.JobFailedException;
 import edu.unc.lib.boxc.deposit.work.JobInterruptedException;
 import edu.unc.lib.boxc.model.api.rdf.Cdr;
 import edu.unc.lib.boxc.model.api.rdf.CdrDeposit;
@@ -95,11 +96,12 @@ public class DirectoryToBagJobTest extends AbstractNormalizationJobTest {
     public void testConversion() throws Exception {
         status.put(DepositField.sourceUri.name(), depositDirectory.toURI().toString());
         status.put(DepositField.fileName.name(), "Test File");
+        status.put(DepositField.createParentFolder.name(), "true");
 
         job.run();
 
         Model model = job.getReadOnlyModel();
-        Bag depositBag = model.getBag(job.getDepositPID().getURI());
+        Bag depositBag = model.getBag(job.getDepositPID().getRepositoryPath());
 
         assertEquals(1, depositBag.size());
 
@@ -139,6 +141,7 @@ public class DirectoryToBagJobTest extends AbstractNormalizationJobTest {
     public void interruptionTest() throws Exception {
         status.put(DepositField.sourceUri.name(), depositDirectory.toURI().toString());
         status.put(DepositField.fileName.name(), "Test File");
+        status.put(DepositField.createParentFolder.name(), "true");
 
         AtomicBoolean gotJobInterrupted = new AtomicBoolean(false);
         AtomicReference<Exception> otherException = new AtomicReference<>();
@@ -192,11 +195,12 @@ public class DirectoryToBagJobTest extends AbstractNormalizationJobTest {
 
         status.put(DepositField.sourceUri.name(), nestedDepositDir.toURI().toString());
         status.put(DepositField.fileName.name(), "Test File");
+        status.put(DepositField.createParentFolder.name(), "true");
 
         job.run();
 
         Model model = job.getReadOnlyModel();
-        Bag depositBag = model.getBag(job.getDepositPID().getURI());
+        Bag depositBag = model.getBag(job.getDepositPID().getRepositoryPath());
 
         assertEquals(1, depositBag.size());
 
@@ -238,11 +242,12 @@ public class DirectoryToBagJobTest extends AbstractNormalizationJobTest {
 
         status.put(DepositField.sourceUri.name(), unicodeDepDir.toURI().toString());
         status.put(DepositField.fileName.name(), "Unicode Test File");
+        status.put(DepositField.createParentFolder.name(), "true");
 
         job.run();
 
         Model model = job.getReadOnlyModel();
-        Bag depositBag = model.getBag(job.getDepositPID().getURI());
+        Bag depositBag = model.getBag(job.getDepositPID().getRepositoryPath());
 
         assertEquals(1, depositBag.size());
 
@@ -278,11 +283,12 @@ public class DirectoryToBagJobTest extends AbstractNormalizationJobTest {
 
         status.put(DepositField.sourceUri.name(), unicodeDepDir.toURI().toString());
         status.put(DepositField.fileName.name(), "Unicode Nested Test File");
+        status.put(DepositField.createParentFolder.name(), "true");
 
         job.run();
 
         Model model = job.getReadOnlyModel();
-        Bag depositBag = model.getBag(job.getDepositPID().getURI());
+        Bag depositBag = model.getBag(job.getDepositPID().getRepositoryPath());
 
         assertEquals(1, depositBag.size());
 
@@ -307,6 +313,95 @@ public class DirectoryToBagJobTest extends AbstractNormalizationJobTest {
         Resource originalResc = DepositModelHelpers.getDatastream(file);
         String tagPath = originalResc.getProperty(CdrDeposit.stagingLocation).getString();
         assertTrue("Unexpected path " + tagPath, tagPath.endsWith("unicode_test/%F0%9F%91%BD_sightings/ufo.txt"));
+    }
+
+    @Test
+    public void testSkipParentFolder() throws Exception {
+        status.put(DepositField.sourceUri.name(), depositDirectory.toURI().toString());
+        status.put(DepositField.fileName.name(), "Test File");
+        status.put(DepositField.createParentFolder.name(), "false");
+
+        job.run();
+
+        Model model = job.getReadOnlyModel();
+        Bag depositBag = model.getBag(job.getDepositPID().getRepositoryPath());
+
+        assertEquals(2, depositBag.size());
+
+        Resource emptyFolder = getChildByLabel(depositBag, "empty_test");
+        assertTrue("Content model was not set", emptyFolder.hasProperty(RDF.type, Cdr.Folder));
+
+        Bag emptyBag = model.getBag(emptyFolder.getURI());
+
+        assertEquals(0, emptyBag.size());
+
+        Resource folder = getChildByLabel(depositBag, "test");
+        assertTrue("Content model was not set", folder.hasProperty(RDF.type, Cdr.Folder));
+
+        Bag childrenBag = model.getBag(folder.getURI());
+
+        assertEquals(1, childrenBag.size());
+
+        // Verify that file and its properties were added to work
+        Resource work = getChildByLabel(childrenBag, "lorem.txt");
+        assertTrue("Type was not set", work.hasProperty(RDF.type, Cdr.Work));
+
+        Bag workBag = model.getBag(work.getURI());
+        Resource file = getChildByLabel(workBag, "lorem.txt");
+        assertTrue("Type was not set", file.hasProperty(RDF.type, Cdr.FileObject));
+
+        Resource originalResc = DepositModelHelpers.getDatastream(file);
+        String tagPath = originalResc.getProperty(CdrDeposit.stagingLocation).getString();
+        assertTrue(tagPath.endsWith("directory-deposit/test/lorem.txt"));
+    }
+
+    @Test
+    public void testFilesOnlyModeWithNestedFolders() throws Exception {
+        status.put(DepositField.sourceUri.name(), depositDirectory.toURI().toString());
+        status.put(DepositField.fileName.name(), "Test File");
+        status.put(DepositField.filesOnlyMode.name(), "true");
+
+        try {
+            job.run();
+            fail();
+        } catch (JobFailedException e) {
+            assertTrue("Incorrect exception message: " + e.getMessage(),
+                    e.getMessage().contains("Subfolders are not allowed for this deposit"));
+        }
+    }
+
+    @Test
+    public void testFilesOnlyModeWithFlatStructure() throws Exception {
+        File flatDepositDir = tmpDir.newFolder("flat");
+
+        File file1 = new File(flatDepositDir, "file1.txt");
+        file1.createNewFile();
+
+        File file2 = new File(flatDepositDir, "file2.txt");
+        file2.createNewFile();
+
+        status.put(DepositField.sourceUri.name(), flatDepositDir.toURI().toString());
+        status.put(DepositField.fileName.name(), "Flat File");
+        status.put(DepositField.filesOnlyMode.name(), "true");
+
+        job.run();
+
+        Model model = job.getReadOnlyModel();
+        Bag depositBag = model.getBag(job.getDepositPID().getRepositoryPath());
+
+        assertEquals(2, depositBag.size());
+
+        Resource file1Resc = getChildByLabel(depositBag, "file1.txt");
+        assertTrue("Content model was not set", file1Resc.hasProperty(RDF.type, Cdr.FileObject));
+        Resource originalResc1 = DepositModelHelpers.getDatastream(file1Resc);
+        String tagPath1 = originalResc1.getProperty(CdrDeposit.stagingLocation).getString();
+        assertTrue("Unexpected path " + tagPath1, tagPath1.endsWith("flat/file1.txt"));
+
+        Resource file2Resc = getChildByLabel(depositBag, "file2.txt");
+        assertTrue("Content model was not set", file2Resc.hasProperty(RDF.type, Cdr.FileObject));
+        Resource originalResc2 = DepositModelHelpers.getDatastream(file2Resc);
+        String tagPath2 = originalResc2.getProperty(CdrDeposit.stagingLocation).getString();
+        assertTrue("Unexpected path " + tagPath2, tagPath2.endsWith("flat/file2.txt"));
     }
 
     private Resource getChildByLabel(Bag bagResc, String seekLabel) {
