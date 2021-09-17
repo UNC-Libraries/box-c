@@ -23,6 +23,8 @@ static/css/cdr_access.css
 static/css/cdr_vue_modal_styles.css
 static/js/vue-access.js
 static/js/vue-permissions.js
+static/css/cdr-ui.css
+static/css/sass/cdr-ui.scss
 *.log*
 *.iml
 dump.rdb
