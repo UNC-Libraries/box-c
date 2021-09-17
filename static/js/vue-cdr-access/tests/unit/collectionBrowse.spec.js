@@ -74,11 +74,11 @@ describe('collectionBrowse.vue', () => {
             router
         });
 
-        wrapper.vm.retrieveData();
         moxios.stubRequest('collectionsJson', {
             status: 200,
             response: JSON.stringify(response)
         });
+        wrapper.vm.retrieveData();
     });
 
     it("retrieves data", (done) => {

@@ -1332,11 +1332,11 @@ describe('patronRoles.vue', () => {
     });
 
     function stubDataLoad(load = response) {
-        wrapper.vm.getRoles();
         moxios.stubRequest(`/services/api/acl/patron/${wrapper.vm.uuid}`, {
             status: 200,
             response: JSON.stringify(load)
         });
+        wrapper.vm.getRoles();
     }
 
     function stubDataSaveResponse() {
@@ -1346,11 +1346,11 @@ describe('patronRoles.vue', () => {
     }
 
     function stubAllowedPrincipals(load) {
-        wrapper.vm.getRoles();
         moxios.stubRequest(`/services/api/acl/patron/allowedPrincipals`, {
             status: 200,
             response: JSON.stringify(load)
         });
+        wrapper.vm.getRoles();
     }
 
     function stubBulkDataSaveResponse() {

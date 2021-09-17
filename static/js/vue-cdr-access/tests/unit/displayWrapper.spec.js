@@ -75,11 +75,11 @@ describe('displayWrapper.vue', () => {
     });
 
     it("retrieves data", (done) => {
-        wrapper.vm.retrieveData();
         moxios.stubRequest(`listJson/${response.container.id}?rows=20&start=0&sort=default%2Cnormal&browse_type=list-display&works_only=false&types=Work%2CFolder%2CCollection`, {
             status: 200,
             response: JSON.stringify(response)
         });
+        wrapper.vm.retrieveData();
 
         moxios.wait(() => {
             expect(wrapper.vm.search_method).toEqual('listJson');
