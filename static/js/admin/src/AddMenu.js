@@ -31,6 +31,7 @@ define('AddMenu', [ 'jquery', 'jquery-ui', 'underscore', 'CreateContainerForm', 
 			
 			if (this.container.type == "Work") {
 				items["addFile"] = { name : "Add File" };
+				items["ingestSourceFilesOnly"] = { name : "Add Files from Server" }
 			}
 			
 			if (folderOrCollection) {
@@ -95,6 +96,12 @@ define('AddMenu', [ 'jquery', 'jquery-ui', 'underscore', 'CreateContainerForm', 
 							case "ingestSource" :
 								new IngestFromSourceForm({
 									alertHandler : self.options.alertHandler
+								}).open(self.container.id);
+								break;
+							case "ingestSourceFilesOnly" :
+								new IngestFromSourceForm({
+									alertHandler : self.options.alertHandler,
+									filesOnlyMode : true
 								}).open(self.container.id);
 								break;
 							case "addWork" :
