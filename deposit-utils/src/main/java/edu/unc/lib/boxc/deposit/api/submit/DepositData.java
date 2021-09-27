@@ -46,6 +46,7 @@ public class DepositData {
     private boolean staffOnly;
     private boolean overrideTimestamps;
     private boolean createParentFolder;
+    private boolean filesOnlyMode;
 
     public DepositData(InputStream inputStream, String filename, String mimeType, PackagingType packagingType,
             String depositMethod, AgentPrincipals depositingAgent) {
@@ -287,5 +288,17 @@ public class DepositData {
 
     public void setCreateParentFolder(boolean createParentFolder) {
         this.createParentFolder = createParentFolder;
+    }
+
+    /**
+     * @return if true, this deposit will disallow the creation of container objects, files
+     *      will be created as FileObjects without wrapping Work objects.
+     */
+    public boolean getFilesOnlyMode() {
+        return filesOnlyMode;
+    }
+
+    public void setFilesOnlyMode(boolean filesOnlyMode) {
+        this.filesOnlyMode = filesOnlyMode;
     }
 }

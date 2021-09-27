@@ -156,6 +156,7 @@ public class IngestSourceController {
 
             deposit.setStaffOnly(packageDetails.getStaffOnly());
             deposit.setCreateParentFolder(packageDetails.getCreateParentFolder());
+            deposit.setFilesOnlyMode(packageDetails.getFilesOnlyMode());
 
             try {
                 depositIds.add(depositService.submitDeposit(destination, deposit).getId());
@@ -180,6 +181,7 @@ public class IngestSourceController {
         private String label;
         private boolean staffOnly;
         private boolean createParentFolder;
+        private boolean filesOnlyMode;
 
         public IngestPackageDetails() {
         }
@@ -247,6 +249,14 @@ public class IngestSourceController {
 
         public void setCreateParentFolder(boolean createParentFolder) {
             this.createParentFolder = createParentFolder;
+        }
+
+        public boolean getFilesOnlyMode() {
+            return filesOnlyMode;
+        }
+
+        public void setFilesOnlyMode(boolean filesOnlyMode) {
+            this.filesOnlyMode = filesOnlyMode;
         }
     }
 }

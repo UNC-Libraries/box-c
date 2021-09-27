@@ -1,0 +1,2 @@
+fa5c89f3c88b81bfd5e821b0316569af  data/lorem.txt
+e78f5438b48b39bcbdea61b73679449d  data/ipsum.txt

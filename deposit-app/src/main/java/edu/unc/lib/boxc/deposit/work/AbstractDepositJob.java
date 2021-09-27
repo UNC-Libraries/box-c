@@ -238,10 +238,20 @@ public abstract class AbstractDepositJob implements Runnable {
         this.depositStatusFactory = depositStatusFactory;
     }
 
+    private Map<String, String> depositStatus;
     public Map<String, String> getDepositStatus() {
-        Map<String, String> result = this.getDepositStatusFactory().get(
-                depositUUID);
-        return Collections.unmodifiableMap(result);
+        if (depositStatus == null) {
+            depositStatus = Collections.unmodifiableMap(getDepositStatusFactory().get(depositUUID));
+        }
+        return depositStatus;
+    }
+
+    /**
+     * @param field
+     * @return get the value of a deposit status field
+     */
+    public String getDepositField(DepositField field) {
+        return getDepositStatus().get(field.name());
     }
 
     public File getDescriptionDir() {

@@ -18,6 +18,7 @@ package edu.unc.lib.boxc.deposit.normalize;
 import static edu.unc.lib.boxc.common.test.TestHelpers.setField;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.when;
 
@@ -50,7 +51,6 @@ import org.mockito.Captor;
 
 import edu.unc.lib.boxc.deposit.api.RedisWorkerConstants.DepositField;
 import edu.unc.lib.boxc.deposit.impl.model.DepositModelHelpers;
-import edu.unc.lib.boxc.deposit.normalize.BagIt2N3BagJob;
 import edu.unc.lib.boxc.deposit.work.JobFailedException;
 import edu.unc.lib.boxc.model.api.rdf.Cdr;
 import edu.unc.lib.boxc.model.api.rdf.CdrDeposit;
@@ -102,7 +102,7 @@ public class BagIt2N3BagJobTest extends AbstractNormalizationJobTest {
         job.run();
 
         Model model = job.getReadOnlyModel();
-        Bag depositBag = model.getBag(job.getDepositPID().getURI());
+        Bag depositBag = model.getBag(job.getDepositPID().getRepositoryPath());
 
         assertEquals(1, depositBag.size());
 
@@ -171,7 +171,7 @@ public class BagIt2N3BagJobTest extends AbstractNormalizationJobTest {
         job.run();
 
         Model model = job.getReadOnlyModel();
-        Bag depositBag = model.getBag(job.getDepositPID().getURI());
+        Bag depositBag = model.getBag(job.getDepositPID().getRepositoryPath());
 
         assertEquals(1, depositBag.size());
 
@@ -270,6 +270,74 @@ public class BagIt2N3BagJobTest extends AbstractNormalizationJobTest {
                 .collect(Collectors.toList());
         assertEquals("Unexpected number of manifests", 2, manifestPaths2.size());
 
+    }
+
+    @Test
+    public void testFilesOnlyModeWithNestedFolders() throws Exception {
+        URI sourceUri = Paths.get("src/test/resources/paths/valid-bag").toAbsolutePath().toUri();
+        status.put(DepositField.sourceUri.name(), sourceUri.toString());
+        status.put(DepositField.fileName.name(), "Test File");
+        status.put(DepositField.filesOnlyMode.name(), "true");
+
+        try {
+            job.run();
+            fail();
+        } catch (JobFailedException e) {
+            assertTrue("Incorrect exception message: " + e.getMessage(),
+                    e.getMessage().contains("Subfolders are not allowed for this deposit"));
+        }
+    }
+
+    @Test
+    public void testFilesOnlyModeWithFlatStructure() throws Exception {
+        URI sourceUri = Paths.get("src/test/resources/paths/flat-bag").toAbsolutePath().toUri();
+        status.put(DepositField.sourceUri.name(), sourceUri.toString());
+        status.put(DepositField.fileName.name(), "Test File");
+        status.put(DepositField.createParentFolder.name(), "true");
+        status.put(DepositField.filesOnlyMode.name(), "true");
+
+        job.run();
+
+        Model model = job.getReadOnlyModel();
+        Bag depositBag = model.getBag(job.getDepositPID().getRepositoryPath());
+
+        Bag childrenBag = model.getBag(depositBag.getURI());
+
+        assertEquals(2, childrenBag.size());
+
+        Resource file1Resc = getChildByLabel(depositBag, "lorem.txt");
+        assertTrue("Content model was not set", file1Resc.hasProperty(RDF.type, Cdr.FileObject));
+        Resource originalResc1 = DepositModelHelpers.getDatastream(file1Resc);
+        String tagPath1 = originalResc1.getProperty(CdrDeposit.stagingLocation).getString();
+        assertEquals(sourceUri.toString() + "data/lorem.txt", tagPath1);
+
+        Resource file2Resc = getChildByLabel(depositBag, "ipsum.txt");
+        assertTrue("Content model was not set", file2Resc.hasProperty(RDF.type, Cdr.FileObject));
+        Resource originalResc2 = DepositModelHelpers.getDatastream(file2Resc);
+        String tagPath2 = originalResc2.getProperty(CdrDeposit.stagingLocation).getString();
+        assertTrue("Unexpected path " + tagPath2, tagPath2.endsWith("data/ipsum.txt"));
+
+        // Verify that all manifests were added.
+        List<String> manifestPaths = depositBag.listProperties(CdrDeposit.hasDatastreamManifest)
+                .toList().stream()
+                .map(Statement::getResource)
+                .map(r -> r.getProperty(CdrDeposit.stagingLocation).getString())
+                .collect(Collectors.toList());
+        assertEquals("Unexpected number of manifests", 2, manifestPaths.size());
+        List<String> expectedFilePaths = Arrays.asList(sourceUri.toString() + "bagit.txt",
+                sourceUri.toString() + "manifest-md5.txt");
+        assertTrue("Must contain all of the expected manifest files, but contained " + manifestPaths,
+                manifestPaths.containsAll(expectedFilePaths));
+
+        Set<String> cleanupSet = new HashSet<>();
+        StmtIterator it = depositBag.listProperties(CdrDeposit.cleanupLocation);
+        while (it.hasNext()) {
+            Statement stmt = it.nextStatement();
+            cleanupSet.add(stmt.getString());
+        }
+
+        assertEquals("Incorrect number of objects identified for cleanup", 1, cleanupSet.size());
+        assertTrue("Cleanup of bag not set", cleanupSet.contains(sourceUri.toString()));
     }
 
     private void assertFileAdded(Resource work, String md5sum, String fileLocation) {

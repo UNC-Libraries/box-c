@@ -2,7 +2,8 @@ define('IngestFromSourceForm', [ 'jquery', 'AbstractFileUploadForm', 'ModalLoadi
 
 	var defaultOptions = {
 			title : 'Ingest from file server',
-			createFormTemplate : candidatesTemplate
+			createFormTemplate : candidatesTemplate,
+			filesOnlyMode : false
 	};
 
 	function IngestFromSourceForm(options) {
@@ -202,7 +203,11 @@ define('IngestFromSourceForm', [ 'jquery', 'AbstractFileUploadForm', 'ModalLoadi
 			selectedCandidates.push(candidates[selectedIndexes[i]]);
 		}
 		
-		var candidatesForm = metadataTemplate({selectedCandidates : selectedCandidates});
+		var filesOnlyMode = this.options.filesOnlyMode;
+		var candidatesForm = metadataTemplate({
+			selectedCandidates : selectedCandidates,
+			filesOnlyMode : filesOnlyMode
+		});
 		
 		this.dialog.html(candidatesForm);
 
@@ -258,7 +263,8 @@ define('IngestFromSourceForm', [ 'jquery', 'AbstractFileUploadForm', 'ModalLoadi
 					packagingType : packagingType,
 					label : folderName,
 					staffOnly: $this.find("input[name=staff-only]").prop("checked"),
-					createParentFolder: createParentFolder
+					createParentFolder: createParentFolder,
+					filesOnlyMode: filesOnlyMode
 				};
 				fileInfo.push(info);
 			});

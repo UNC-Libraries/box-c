@@ -1,6 +1,6 @@
 define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'AddFileForm', 'EditThumbnailForm',
-		'EditFilenameForm', 'EditTitleForm', 'DeleteForm', 'contextMenu'],
-		function($, ui, StringUtilities, AddFileForm, EditThumbnailForm, EditFilenameForm, EditTitleForm, DeleteForm) {
+		'EditFilenameForm', 'EditTitleForm', 'DeleteForm', 'IngestFromSourceForm', 'contextMenu'],
+		function($, ui, StringUtilities, AddFileForm, EditThumbnailForm, EditFilenameForm, EditTitleForm, DeleteForm, IngestFromSourceForm) {
 
 	var defaultOptions = {
 		selector : undefined,
@@ -184,6 +184,7 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'A
 		// Add files to work objects
 		if (!isContentRoot && metadata.type === 'Work' && $.inArray('ingest', metadata.permissions) != -1) {
 			items["addFile"] = {name : 'Add File'};
+			items["ingestSourceFilesOnly"] = {name : 'Add Files from Server'};
 		}
 
 		// Export actions
@@ -321,6 +322,12 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'A
 						new AddFileForm({
 							alertHandler : self.options.alertHandler
 						}).open(resultObject);
+						break;
+					case "ingestSourceFilesOnly" :
+						new IngestFromSourceForm({
+							alertHandler : self.options.alertHandler,
+							filesOnlyMode : true
+						}).open(metadata.id);
 						break;
 					case "editFilename" :
 						self.editFilename(resultObject);

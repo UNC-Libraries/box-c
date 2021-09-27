@@ -38,7 +38,7 @@ import org.apache.jena.reasoner.Reasoner;
 import org.apache.jena.reasoner.ReasonerRegistry;
 import org.apache.jena.reasoner.ValidityReport;
 import org.apache.jena.reasoner.ValidityReport.Report;
-import org.apache.jena.util.FileManager;
+import org.apache.jena.riot.RDFDataMgr;
 import org.apache.jena.vocabulary.RDF;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -91,7 +91,7 @@ public class ValidateContentModelJob extends AbstractDepositJob{
         validObjectTypes = new HashSet<>(Arrays.asList(
                 Cdr.FileObject, Cdr.Work, Cdr.Folder, Cdr.Collection, Cdr.AdminUnit));
 
-        cdrSchema = FileManager.get().loadModel("cdr-schema.ttl");
+        cdrSchema = RDFDataMgr.loadModel("cdr-schema.ttl");
 
         reasoner = ReasonerRegistry.getOWLMicroReasoner().bindSchema(cdrSchema);
     }

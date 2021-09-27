@@ -37,7 +37,7 @@
 					<% } %>
 				</div>
 				<div class="file_browse_entry_inputs">
-					<% if (candidate.type === "BagIt") { %>
+					<% if (candidate.type === "BagIt" && !filesOnlyMode) { %>
 						<input id="create_parent_input_<%= index %>" type="checkbox" name="create_parent_input">
 						<label for="create_parent_input_<%= index %>">Create a new folder for the files in this bag?
 							<div class="tooltip">

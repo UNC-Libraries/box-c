@@ -76,7 +76,7 @@ public abstract class AbstractFileServerToBagJob extends AbstractDepositJob {
         Map<String, String> status = getDepositStatus();
 
         PID containerPID = createPID();
-        Bag bagFolder = model.createBag(containerPID.getURI());
+        Bag bagFolder = model.createBag(containerPID.getRepositoryPath());
         // Determine the label to use for this the root directory of the deposit package
         String label = status.get(DepositField.depositSlug.name());
         if (label == null) {
@@ -101,33 +101,39 @@ public abstract class AbstractFileServerToBagJob extends AbstractDepositJob {
      * Creates and returns a Jena Resource for the given path representing a file,
      * adding it to the hierarchy for the deposit
      *
-     * @param sourceBag
+     * @param sourceBag bag representing the destination to which the contents of this deposit should be added
      * @param filepath
      * @return the resource representing the original binary for the created file resource
      */
     protected Resource getFileResource(Bag sourceBag, Path filepath) {
         String filename = filepath.getFileName().toString();
         Bag parentBag = getParentBag(sourceBag, filepath);
-
-        // Create work object
-        PID workPid = createPID();
         Model model = parentBag.getModel();
-        Bag workBag = model.createBag(workPid.getURI());
-        model.add(workBag, RDF.type, Cdr.Work);
-        model.add(workBag, CdrDeposit.label, filename);
+
+        Bag workBag = null;
+        if (!isFileOnlyMode()) {
+            // Create work object
+            PID workPid = createPID();
+            workBag = model.createBag(workPid.getRepositoryPath());
+            model.add(workBag, RDF.type, Cdr.Work);
+            model.add(workBag, CdrDeposit.label, filename);
+        }
 
         // Generate the file object and add to the work
         PID pid = createPID();
-        Resource fileResource = workBag.getModel().createResource(pid.getURI());
+        Resource fileResource = model.createResource(pid.getRepositoryPath());
         fileResource.addProperty(RDF.type, Cdr.FileObject);
         fileResource.addProperty(CdrDeposit.label, filename);
-        workBag.add(fileResource);
-
         // Add in the original binary resource
         Resource originalResc = DepositModelHelpers.addDatastream(fileResource, ORIGINAL_FILE);
 
-        workBag.addProperty(Cdr.primaryObject, fileResource);
-        parentBag.add(workBag);
+        if (!isFileOnlyMode()) {
+            workBag.add(fileResource);
+            workBag.addProperty(Cdr.primaryObject, fileResource);
+            parentBag.add(workBag);
+        } else {
+            parentBag.add(fileResource);
+        }
 
         return originalResc;
     }
@@ -145,7 +151,7 @@ public abstract class AbstractFileServerToBagJob extends AbstractDepositJob {
 
         PID pid = createPID();
 
-        Bag bagFolder = sourceBag.getModel().createBag(pid.getURI());
+        Bag bagFolder = sourceBag.getModel().createBag(pid.getRepositoryPath());
         parentBag.add(bagFolder);
 
         pathToFolderBagCache.put(filepath.toString(), bagFolder);
@@ -162,7 +168,7 @@ public abstract class AbstractFileServerToBagJob extends AbstractDepositJob {
     /**
      * Returns a Jena Bag object for the parent folder of the given filepath, creating the parent if it is not present.
      *
-     * @param sourceBag
+     * @param sourceBag bag representing the destination to which the contents of this deposit should be added
      * @param filepath
      * @return
      */
@@ -182,6 +188,9 @@ public abstract class AbstractFileServerToBagJob extends AbstractDepositJob {
         if (pathSegments.length <= 1) {
             return sourceBag;
         }
+        if (isFileOnlyMode()) {
+            failJob("Subfolders are not allowed for this deposit, encountered subfolder " + filepath, null);
+        }
 
         Bag currentNode = sourceBag;
 
@@ -199,7 +208,7 @@ public abstract class AbstractFileServerToBagJob extends AbstractDepositJob {
             // No existing folder was found, create one
             PID pid = createPID();
 
-            Bag childBag = model.createBag(pid.getURI());
+            Bag childBag = model.createBag(pid.getRepositoryPath());
             currentNode.add(childBag);
 
             model.add(childBag, CdrDeposit.label, segment);
@@ -236,5 +245,25 @@ public abstract class AbstractFileServerToBagJob extends AbstractDepositJob {
         } catch (IOException e) {
             failJob(e, "Unable to write title metadata for bag deposit {0}", getDepositPID());
         }
+    }
+
+    private Boolean fileOnlyMode;
+    /**
+     * @return True if this deposit should only add FileObjects to the model. If other container types
+     *      are encountered, the deposit will fail.
+     */
+    protected boolean isFileOnlyMode() {
+        if (fileOnlyMode == null) {
+            fileOnlyMode = new Boolean(getDepositField(DepositField.filesOnlyMode));
+        }
+        return fileOnlyMode;
+    }
+
+    /**
+     * @return True if a folder should be created to represent the top level container being deposited,
+     *      otherwise the contents of the deposit will be added to the destination directly.
+     */
+    protected boolean shouldCreateParentFolder() {
+        return Boolean.parseBoolean(getDepositField(DepositField.createParentFolder)) && !isFileOnlyMode();
     }
 }

@@ -88,7 +88,6 @@ public class BagIt2N3BagJob extends AbstractFileServerToBagJob {
         Map<String, String> status = getDepositStatus();
         URI sourceUri = URI.create(status.get(DepositField.sourceUri.name()));
         Path sourceFile = Paths.get(sourceUri);
-        boolean createParentFolder = Boolean.parseBoolean(status.get(DepositField.createParentFolder.name()));
 
         try {
             // Verify that the bag has all the required parts
@@ -111,7 +110,7 @@ public class BagIt2N3BagJob extends AbstractFileServerToBagJob {
 
             // Turn the bag itself into the top level folder for this deposit
             org.apache.jena.rdf.model.Bag sourceBag;
-            if (createParentFolder) {
+            if (shouldCreateParentFolder()) {
                 sourceBag = getSourceBag(depositBag, sourceFile);
             } else {
                 sourceBag = depositBag;
