@@ -42,7 +42,7 @@ describe('staffRoles.vue', () => {
             status: 200,
             response: JSON.stringify(response)
         });
-
+        wrapper.vm.getRoles();
         global.confirm = jest.fn().mockReturnValue(true);
     });
 
@@ -172,6 +172,7 @@ describe('staffRoles.vue', () => {
             status: 200,
             response: JSON.stringify(response)
         });
+        wrapper.vm.getRoles();
 
         moxios.wait(() => {
             let cells = wrapper.findAll('.inherited-permissions td');

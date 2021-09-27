@@ -157,11 +157,11 @@ describe('searchWrapper.vue', () => {
     });
 
     it("displays facets if facets but no results", (done) => {
-        wrapper.vm.retrieveData();
         moxios.stubRequest(`searchJson/?anywhere=&getFacets=true`, {
             status: 200,
             response: JSON.stringify(facets_no_results)
         });
+        wrapper.vm.retrieveData();
         moxios.wait(() => {
             expect(wrapper.find('.facet-list').isVisible()).toBe(true);
             expect(wrapper.vm.hasFacets).toBe(true);
@@ -196,9 +196,9 @@ describe('searchWrapper.vue', () => {
 });
 
 function loadFullData() {
-    wrapper.vm.retrieveData();
     moxios.stubRequest(`searchJson/?anywhere=&getFacets=true`, {
         status: 200,
         response: JSON.stringify(response)
     });
+    wrapper.vm.retrieveData();
 }
