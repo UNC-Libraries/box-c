@@ -1,25 +1,32 @@
 <mods:mods xmlns:mods="http://www.loc.gov/mods/v3">
-  <mods:titleInfo>
-    <mods:title></mods:title>
-  </mods:titleInfo>
   <mods:name type="personal">
-    <mods:namePart type="family"/>
     <mods:namePart type="given"/>
+    <mods:namePart type="family"/>
+    <mods:namePart type="date"/>
+    <mods:namePart type="termsOfAddress"/>
     <mods:role>
-      <mods:roleTerm authority=""/>
+      <mods:roleTerm type="text" authority="marcrelator">Creator</mods:roleTerm>
+    </mods:role>
+  </mods:name>
+  <mods:name type="corporate">
+    <mods:namePart/>
+    <mods:role>
+      <mods:roleTerm type="text" authority="marcrelator">Creator</mods:roleTerm>
     </mods:role>
   </mods:name>
   <mods:originInfo>
-    <mods:dateIssued encoding="iso8601" />
+    <mods:dateCreated encoding="w3cdtf" />
   </mods:originInfo>
-  <mods:subject>
-    <mods:topic authority="" />
-    <mods:geographic authority="" />
-  </mods:subject>
-  <mods:note></mods:note>
   <mods:language>
     <mods:languageTerm authority="iso639-2b" type="code">eng</mods:languageTerm>
   </mods:language>
+  <mods:titleInfo>
+    <mods:title></mods:title>
+  </mods:titleInfo>
+  <mods:note displayLabel="Description"/>
+  <mods:subject authority="lcsh">
+    <mods:topic/>
+  </mods:subject>
+  <mods:note displayLabel="Keywords"/>
   <mods:typeOfResource>text</mods:typeOfResource>
-  <mods:genre/>
 </mods:mods>

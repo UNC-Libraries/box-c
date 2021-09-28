@@ -102,7 +102,7 @@ define("editDescription", ["module", "jquery", "jquery-ui", "ace", "xmleditor", 
 					},
 					{
 						filename: 'generic.xml',
-						title: "Generic Object",
+						title: "Generic Work",
 						description: 'Generic MODS template prepopulated with common fields',
 						icon_class: 'fa fa-file-text-o'
 					},
@@ -119,9 +119,9 @@ define("editDescription", ["module", "jquery", "jquery-ui", "ace", "xmleditor", 
 						icon_class: 'fa fa-archive'
 					},
 					{
-						filename: 'serials.xml',
-						title: "Serial Title",
-						description: 'Template with standard fields to describe serial titles',
+						filename: 'continuing_resource.xml',
+						title: "Continuing Resource",
+						description: 'Template with standard fields to describe continuing resources',
 						icon_class: 'fa fa-newspaper-o'
 					},
 					{
