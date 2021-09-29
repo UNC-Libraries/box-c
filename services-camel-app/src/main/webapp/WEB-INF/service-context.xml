@@ -401,6 +401,24 @@
         <property name="locationManager" ref="storageLocationManager" />
     </bean>
     
+    <bean id="emailHandler" class="edu.unc.lib.boxc.operations.impl.utils.EmailHandler">
+        <property name="fromAddress" ref="fromAddress" />
+        <property name="mailSender" ref="mailSender" />
+    </bean>
+    
+    <bean id="exportXmlRequestService" class="edu.unc.lib.boxc.operations.jms.exportxml.ExportXMLRequestService" >
+    </bean>
+    
+    <bean id="exportXMLProcessor" class="edu.unc.lib.boxc.services.camel.exportxml.ExportXMLProcessor">
+        <property name="emailHandler" ref="emailHandler" />
+        <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
+        <property name="aclService" ref="aclService" />
+        <property name="searchService" ref="queryLayer" />
+        <property name="searchStateFactory" ref="searchStateFactory" />
+        <property name="requestService" ref="exportXmlRequestService" />
+        <property name="objectsPerExport" value="${cdr.exportxml.objectsPerExport:5000}" />
+    </bean>
+    
     <bean id="longleafAggregationStrategy" class="edu.unc.lib.boxc.services.camel.longleaf.LongleafAggregationStrategy">
     </bean>
 
@@ -491,6 +509,10 @@
     
     <camel:camelContext id="CdrImportXML">
         <camel:package>edu.unc.lib.boxc.services.camel.importxml</camel:package>
+    </camel:camelContext>
+    
+    <camel:camelContext id="CdrExportXML">
+        <camel:package>edu.unc.lib.boxc.services.camel.exportxml</camel:package>
     </camel:camelContext>
     
     <camel:camelContext id="CdrDestroyObjects">

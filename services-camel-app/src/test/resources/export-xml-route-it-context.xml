@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:c="http://www.springframework.org/schema/c"
+    xmlns:p="http://www.springframework.org/schema/p" xmlns:context="http://www.springframework.org/schema/context"
+    xmlns:util="http://www.springframework.org/schema/util"
+    xmlns:camel="http://camel.apache.org/schema/spring"
+    xmlns:amq="http://activemq.apache.org/schema/core"
+    xsi:schemaLocation="http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans-4.3.xsd
+        http://www.springframework.org/schema/util 
+        http://www.springframework.org/schema/util/spring-util.xsd
+        http://www.springframework.org/schema/context
+        http://www.springframework.org/schema/context/spring-context-4.3.xsd
+        http://activemq.apache.org/schema/core
+        http://activemq.apache.org/schema/core/activemq-core.xsd
+        http://camel.apache.org/schema/spring
+        http://camel.apache.org/schema/spring/camel-spring.xsd">
+        
+    <bean id="properties" class="org.apache.camel.component.properties.PropertiesComponent">
+        <property name="location" value="classpath:import-xml-it-config.properties"/>
+    </bean>
+    
+    <bean id="bridgePropertyPlaceholder" class="org.apache.camel.spring.spi.BridgePropertyPlaceholderConfigurer">
+        <property name="location" value="classpath:import-xml-it-config.properties"/>
+    </bean>
+    
+    <bean id="emailHandler" class="org.mockito.Mockito" factory-method="mock">
+        <constructor-arg value="edu.unc.lib.boxc.operations.impl.utils.EmailHandler" />
+    </bean>
+    
+    <bean id="exportXmlRequestService" class="edu.unc.lib.boxc.operations.jms.exportxml.ExportXMLRequestService" >
+        <property name="jmsTemplate" ref="exportXmlJmsTemplate" />
+    </bean>
+    
+    <bean id="exportXMLProcessor" class="edu.unc.lib.boxc.services.camel.exportxml.ExportXMLProcessor">
+        <property name="emailHandler" ref="emailHandler" />
+        <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
+        <property name="aclService" ref="aclService" />
+        <property name="searchService" ref="solrSearchService" />
+        <property name="searchStateFactory" ref="searchStateFactory" />
+        <property name="requestService" ref="exportXmlRequestService" />
+    </bean>
+    
+    <bean id="exportXmlJmsTemplate" class="org.springframework.jms.core.JmsTemplate">
+        <property name="connectionFactory" ref="jmsFactory" />
+        <property name="defaultDestinationName" value="${cdr.exportxml.stream}" />
+        <property name="pubSubDomain" value="false" />
+    </bean>
+
+    <camel:camelContext id="cdrExportXML">
+        <camel:package>edu.unc.lib.boxc.services.camel.exportxml</camel:package>
+    </camel:camelContext>
+  
+</beans>

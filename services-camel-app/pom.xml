@@ -161,6 +161,12 @@
     </dependency>
     <dependency>
         <groupId>edu.unc.lib.cdr</groupId>
+        <artifactId>indexing-solr</artifactId>
+        <scope>test</scope>
+        <type>test-jar</type>
+    </dependency>
+    <dependency>
+        <groupId>edu.unc.lib.cdr</groupId>
         <artifactId>operations</artifactId>
     </dependency>
 
