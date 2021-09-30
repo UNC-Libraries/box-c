@@ -281,6 +281,10 @@
         scope="prototype">
     </bean>
     
+    <bean id="derivativeService" class="edu.unc.lib.boxc.model.fcrepo.services.DerivativeService">
+        <property name="derivativeDir" value="${derivative.dir}" />
+    </bean>
+    
     <bean id="transferBinariesExecutor" class="java.util.concurrent.Executors"
             factory-method="newFixedThreadPool" destroy-method="shutdownNow">
         <constructor-arg value="${job.transferBinaries.workers:5}"/>
