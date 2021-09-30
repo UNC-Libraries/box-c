@@ -35,6 +35,7 @@ public class ExportXMLRequest {
     private Instant requestedTimestamp;
     @JsonDeserialize(as = AgentPrincipalsImpl.class)
     private AgentPrincipals agent;
+    private boolean excludeNoDatastreams;
 
     public ExportXMLRequest() {
     }
@@ -83,5 +84,16 @@ public class ExportXMLRequest {
 
     public void setAgent(AgentPrincipals agent) {
         this.agent = agent;
+    }
+
+    /**
+     * @return True if objects which return no datastreams should be excluded from the export
+     */
+    public boolean getExcludeNoDatastreams() {
+        return excludeNoDatastreams;
+    }
+
+    public void setExcludeNoDatastreams(boolean excludeNoDatastreams) {
+        this.excludeNoDatastreams = excludeNoDatastreams;
     }
 }

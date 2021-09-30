@@ -182,7 +182,7 @@ public abstract class AbstractQueryService {
      * @param fieldKey
      * @return
      */
-    protected String solrField(SearchFieldKey fieldKey) {
+    public String solrField(SearchFieldKey fieldKey) {
         return solrSettings.getFieldName(fieldKey.name());
     }
 

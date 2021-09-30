@@ -36,6 +36,8 @@ import org.apache.camel.Exchange;
 import org.apache.camel.Message;
 import org.apache.camel.Processor;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.solr.client.solrj.SolrQuery;
+import org.apache.solr.client.solrj.SolrServerException;
 import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.JDOMException;
@@ -48,6 +50,7 @@ import edu.unc.lib.boxc.auth.api.Permission;
 import edu.unc.lib.boxc.auth.api.services.AccessControlService;
 import edu.unc.lib.boxc.common.metrics.TimerFactory;
 import edu.unc.lib.boxc.fcrepo.exceptions.ServiceException;
+import edu.unc.lib.boxc.model.api.DatastreamType;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.objects.BinaryObject;
 import edu.unc.lib.boxc.model.api.objects.ContentObject;
@@ -72,7 +75,9 @@ import io.dropwizard.metrics5.Timer;
  */
 public class ExportXMLProcessor implements Processor {
     private static final Logger log = LoggerFactory.getLogger(ExportXMLProcessor.class);
-    private final List<String> resultFields = Arrays.asList(SearchFieldKey.ID.name());
+    private final List<String> resultFieldsParent = Arrays.asList(
+            SearchFieldKey.ID.name(), SearchFieldKey.DATASTREAM.name());
+    private final List<String> resultFieldsChildren = Arrays.asList(SearchFieldKey.ID.name());
 
     private AccessControlService aclService;
     private RepositoryObjectLoader repoObjLoader;
@@ -107,15 +112,22 @@ public class ExportXMLProcessor implements Processor {
     }
 
     private void performExport(ExportXMLRequest request, long startTime) throws IOException {
-        if (request.getExportChildren()) {
-            addChildPIDsToRequest(request);
+        int originalPidCount = request.getPids().size();
+        if (request.getExportChildren() || request.getExcludeNoDatastreams()) {
+            adjustRequestPids(request);
             log.debug("Finished retrieving children PIDs for export in {}ms", System.currentTimeMillis() - startTime);
         }
         String username = request.getAgent().getUsername();
-        XMLOutputter xmlOutput = new XMLOutputter(Format.getRawFormat());
-
-        int page = 0;
         int totalPids = request.getPids().size();
+        if (totalPids == 0) {
+            log.debug("All objects were filtered out of export request by user {} which originally listed {} objects",
+                    username, originalPidCount);
+            sendEmailNoResults(request, originalPidCount);
+            return;
+        }
+
+        XMLOutputter xmlOutput = new XMLOutputter(Format.getRawFormat());
+        int page = 0;
         while (page * objectsPerExport < totalPids) {
             int pageStart = page * objectsPerExport;
             int pageEnd = pageStart + objectsPerExport;
@@ -127,7 +139,8 @@ public class ExportXMLProcessor implements Processor {
             page++;
 
             // Trim off the milliseconds for filename
-            String timestamp = StringUtils.substringBefore(request.getRequestedTimestamp().toString(), ".");
+            String timestamp = StringUtils.substringBefore(request.getRequestedTimestamp().toString(), ".")
+                    .replace(":", "-");
             String filename = String.format("xml_export_%s_%04d", timestamp, page);
             File mdExportFile = File.createTempFile(filename, ".xml");
 
@@ -150,28 +163,53 @@ public class ExportXMLProcessor implements Processor {
         }
     }
 
-    private void addChildPIDsToRequest(ExportXMLRequest request) throws ServiceException {
+    /**
+     * Adjusts the list of requested PIDs by adding in children objects and/or excluding objects
+     * which do not have the requested datastreams, depending on options set in the request.
+     * @param request
+     * @throws ServiceException
+     */
+    private void adjustRequestPids(ExportXMLRequest request) throws ServiceException {
         List<String> pids = new ArrayList<>();
         for (String pid : request.getPids()) {
             SearchState searchState = searchStateFactory.createSearchState();
-            searchState.setResultFields(resultFields);
+            searchState.setResultFields(resultFieldsParent);
+
+            // Add back in the parent pid unless we are excluding it because it has no datastreams
+            SearchRequest searchRequest = new SearchRequest(searchState, request.getAgent().getPrincipals());
+            ContentObjectRecord parent = searchService.addSelectedContainer(
+                    PIDs.get(pid), searchState, false, request.getAgent().getPrincipals());
+            if (request.getExcludeNoDatastreams()) {
+                if (parent.getDatastreamObject(DatastreamType.MD_DESCRIPTIVE.getId()) != null) {
+                    pids.add(pid);
+                }
+            } else {
+                pids.add(pid);
+            }
+            if (!request.getExportChildren()) {
+                continue;
+            }
+
+            // Expand list of requested IDs to include children objects
             searchState.setSortType("export");
             searchState.setRowsPerPage(Integer.MAX_VALUE);
             searchState.setIgnoreMaxRows(true);
-
-            SearchRequest searchRequest = new SearchRequest(searchState, request.getAgent().getPrincipals());
-            searchRequest.setRootPid(PIDs.get(pid));
+            searchState.setResultFields(resultFieldsChildren);
             searchRequest.setApplyCutoffs(false);
-            searchService.addSelectedContainer(
-                    PIDs.get(pid), searchState, false, request.getAgent().getPrincipals());
-            SearchResultResponse resultResponse = searchService.getSearchResults(searchRequest);
+            SolrQuery solrQuery = searchService.generateSearch(searchRequest);
+            if (request.getExcludeNoDatastreams()) {
+                solrQuery.addFilterQuery(searchService.solrField(SearchFieldKey.DATASTREAM) + ":"
+                        + DatastreamType.MD_DESCRIPTIVE.getId() + "|*");
+            }
+            SearchResultResponse resultResponse = null;
+            try {
+                resultResponse = searchService.executeSearch(solrQuery, searchState, false, false);
+            } catch (SolrServerException e) {
+                throw new ServiceException(e);
+            }
             if (resultResponse == null) {
                 throw new ServiceException("An error occurred while retrieving children of " + pid + " for export.");
             }
-
-            // Add back in the parent pid
-            pids.add(pid);
-
             List<ContentObjectRecord> objects = resultResponse.getResultList();
             for (ContentObjectRecord object : objects) {
                 pids.add(object.getPid().getId());
@@ -302,5 +340,16 @@ public class ExportXMLProcessor implements Processor {
         }
 
         emailHandler.sendEmail(request.getEmail(), "DCR Metadata Export", emailBody, filename + ".zip", mdExportFile);
+    }
+
+    private void sendEmailNoResults(ExportXMLRequest request, int originalPidCount) {
+        String emailBody = "Request to export metadata for objects initiated by " + request.getAgent().getUsername()
+                + " at " + request.getRequestedTimestamp() + " returned no results.\n";
+        if (request.getExcludeNoDatastreams()) {
+                emailBody += "\nThe request specified " + originalPidCount + " objects for export, but "
+                        + "no objects contained the requested datastreams.";
+        }
+
+        emailHandler.sendEmail(request.getEmail(), "DCR Metadata Export returned no results", emailBody, null, null);
     }
 }

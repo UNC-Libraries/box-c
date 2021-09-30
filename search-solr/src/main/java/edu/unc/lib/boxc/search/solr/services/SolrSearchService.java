@@ -279,7 +279,15 @@ public class SolrSearchService extends AbstractQueryService {
 
     public ContentObjectRecord addSelectedContainer(PID containerPid, SearchState searchState,
             boolean applyCutoffs, AccessGroupSet principals) {
-        ContentObjectRecord selectedContainer = getObjectById(new SimpleIdRequest(containerPid, principals));
+        List<String> fields = null;
+        if (searchState.getResultFields() != null) {
+            fields = new ArrayList<>(searchState.getResultFields());
+            if (!fields.contains(SearchFieldKey.ANCESTOR_PATH.name())) {
+                fields.add(SearchFieldKey.ANCESTOR_PATH.name());
+            }
+        }
+
+        ContentObjectRecord selectedContainer = getObjectById(new SimpleIdRequest(containerPid, fields, principals));
         if (selectedContainer == null) {
             return null;
         }
@@ -301,7 +309,7 @@ public class SolrSearchService extends AbstractQueryService {
      * @param isRetrieveFacetsRequest
      * @return
      */
-    protected SolrQuery generateSearch(SearchRequest searchRequest) {
+    public SolrQuery generateSearch(SearchRequest searchRequest) {
         SearchState searchState = searchRequest.getSearchState();
         SolrQuery solrQuery = new SolrQuery();
         StringBuilder termQuery = new StringBuilder();
@@ -577,7 +585,7 @@ public class SolrSearchService extends AbstractQueryService {
      * @throws SolrServerException
      */
     @SuppressWarnings("unchecked")
-    protected SearchResultResponse executeSearch(SolrQuery query, SearchState searchState,
+    public SearchResultResponse executeSearch(SolrQuery query, SearchState searchState,
             boolean isRetrieveFacetsRequest, boolean returnQuery) throws SolrServerException {
         QueryResponse queryResponse = executeQuery(query);
 

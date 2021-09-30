@@ -57,6 +57,7 @@ define('ExportMetadataXMLBatchAction', [ 'jquery', 'AbstractBatchAction', "tpl!.
 		this.$form.submit(function(e){
 			var email = $("#xml_recipient_email", self.$form).val();
 			var includeChildren = $("#export_xml_include_children", self.$form).prop("checked");
+			var excludeNoDs = $("#export_xml_exclude_no_datastreams", self.$form).prop("checked");
 			
 			if (!email || !$.trim(email)) {
 				return false;
@@ -76,7 +77,8 @@ define('ExportMetadataXMLBatchAction', [ 'jquery', 'AbstractBatchAction', "tpl!.
 				data : JSON.stringify({
 					email : email,
 					pids : pids,
-					exportChildren: includeChildren || false
+					exportChildren: includeChildren || false,
+					excludeNoDatastreams: excludeNoDs || false
 				})
 			}).done(function(response) {
 				self.context.view.$alertHandler.alertHandler("message", response.message);

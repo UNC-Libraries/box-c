@@ -161,7 +161,7 @@ public class ExportXMLRouteIT {
                 .whenCompleted(1)
                 .create();
 
-        sendRequest(false, workObj1.getPid(), workObj2.getPid());
+        sendRequest(false, false, workObj1.getPid(), workObj2.getPid());
 
         boolean result = notify.matches(5l, TimeUnit.SECONDS);
         assertTrue("Processing message did not match expectations", result);
@@ -184,7 +184,7 @@ public class ExportXMLRouteIT {
                 .whenCompleted(1)
                 .create();
 
-        sendRequest(false, collObj1.getPid());
+        sendRequest(false, false, collObj1.getPid());
 
         boolean result = notify.matches(5l, TimeUnit.SECONDS);
         assertTrue("Processing message did not match expectations", result);
@@ -206,7 +206,7 @@ public class ExportXMLRouteIT {
                 .whenCompleted(1)
                 .create();
 
-        sendRequest(true, collObj1.getPid());
+        sendRequest(true, false, collObj1.getPid());
 
         boolean result = notify.matches(5l, TimeUnit.SECONDS);
         assertTrue("Processing message did not match expectations", result);
@@ -232,7 +232,7 @@ public class ExportXMLRouteIT {
                 .whenDone(1)
                 .create();
 
-        sendRequest(false, workObj1.getPid());
+        sendRequest(false, false, workObj1.getPid());
 
         boolean result = notify.matches(5l, TimeUnit.SECONDS);
         assertTrue("Processing message did not match expectations", result);
@@ -253,7 +253,7 @@ public class ExportXMLRouteIT {
                 .whenDone(1)
                 .create();
 
-        sendRequest(false, collObj1.getPid());
+        sendRequest(false, false, collObj1.getPid());
 
         boolean result = notify.matches(5l, TimeUnit.SECONDS);
         assertTrue("Processing message did not match expectations", result);
@@ -274,7 +274,7 @@ public class ExportXMLRouteIT {
                 .whenCompleted(1)
                 .create();
 
-        sendRequest(true, unitObj.getPid());
+        sendRequest(true, false, unitObj.getPid());
 
         boolean result = notify.matches(5l, TimeUnit.SECONDS);
         assertTrue("Processing message did not match expectations", result);
@@ -297,6 +297,116 @@ public class ExportXMLRouteIT {
         assertExportDocumentCount(rootEl3, 2);
     }
 
+    @Test
+    public void exportUnitIncludeChildrenPagedExcludeNoDatastreamsTest() throws Exception {
+        exportXmlProcessor.setObjectsPerExport(1);
+
+        indexAll();
+
+        NotifyBuilder notify = new NotifyBuilder(cdrExportXML)
+                .whenCompleted(1)
+                .create();
+
+        sendRequest(true, true, unitObj.getPid());
+
+        boolean result = notify.matches(5l, TimeUnit.SECONDS);
+        assertTrue("Processing message did not match expectations", result);
+
+        assertEmailSent(2);
+
+        Element rootEl1 = getExportedDocumentRootEl(1);
+        assertHasObjectWithMods(rootEl1, ResourceType.Collection, collObj1.getPid());
+        assertExportDocumentCount(rootEl1, 1);
+
+        Element rootEl2 = getExportedDocumentRootEl(2);
+        assertHasObjectWithMods(rootEl2, ResourceType.Work, workObj1.getPid());
+        assertExportDocumentCount(rootEl1, 1);
+    }
+
+    @Test
+    public void exportCollectionExcludeChildrenExcludeNoDatastreamsTest() throws Exception {
+        indexAll();
+
+        NotifyBuilder notify = new NotifyBuilder(cdrExportXML)
+                .whenCompleted(1)
+                .create();
+
+        sendRequest(false, true, collObj1.getPid());
+
+        boolean result = notify.matches(5l, TimeUnit.SECONDS);
+        assertTrue("Processing message did not match expectations", result);
+
+        assertEmailSent(1);
+
+        Element rootEl1 = getExportedDocumentRootEl(1);
+        assertHasObjectWithMods(rootEl1, ResourceType.Collection, collObj1.getPid());
+        assertExportDocumentCount(rootEl1, 1);
+    }
+
+    @Test
+    public void exportWorkNoModsExcludeNoDatastreamsTest() throws Exception {
+        indexAll();
+
+        NotifyBuilder notify = new NotifyBuilder(cdrExportXML)
+                .whenCompleted(1)
+                .create();
+
+        sendRequest(true, true, workObj2.getPid());
+
+        boolean result = notify.matches(5l, TimeUnit.SECONDS);
+        assertTrue("Processing message did not match expectations", result);
+
+        assertEmailSent();
+
+        assertNull(filenameCaptor.getValue());
+        assertNull(attachmentCaptor.getValue());
+        assertEquals("DCR Metadata Export returned no results", subjectCaptor.getValue());
+    }
+
+    @Test
+    public void exportWorkWithModsExcludeNoDatastreamsIncChildrenTest() throws Exception {
+        indexAll();
+
+        NotifyBuilder notify = new NotifyBuilder(cdrExportXML)
+                .whenCompleted(1)
+                .create();
+
+        sendRequest(true, true, workObj1.getPid());
+
+        boolean result = notify.matches(5l, TimeUnit.SECONDS);
+        assertTrue("Processing message did not match expectations", result);
+
+        assertEmailSent();
+
+        Element rootEl = getExportedDocumentRootEl();
+
+        assertHasObjectWithMods(rootEl, ResourceType.Work, workObj1.getPid());
+
+        assertExportDocumentCount(rootEl, 1);
+    }
+
+    @Test
+    public void exportWorkWithModsExcludeNoDatastreamsExcChildrenTest() throws Exception {
+        indexAll();
+
+        NotifyBuilder notify = new NotifyBuilder(cdrExportXML)
+                .whenCompleted(1)
+                .create();
+
+        sendRequest(false, true, workObj1.getPid());
+
+        boolean result = notify.matches(5l, TimeUnit.SECONDS);
+        assertTrue("Processing message did not match expectations", result);
+
+        assertEmailSent();
+
+        Element rootEl = getExportedDocumentRootEl();
+
+        assertHasObjectWithMods(rootEl, ResourceType.Work, workObj1.getPid());
+
+        assertExportDocumentCount(rootEl, 1);
+    }
+
     private void indexAll() throws Exception{
         treeIndexer.indexAll(rootObj.getPid().getRepositoryPath());
         solrIndexer.index(rootObj.getPid(), unitObj.getPid(), collObj1.getPid(), collObj2.getPid(),
@@ -308,14 +418,15 @@ public class ExportXMLRouteIT {
     }
 
     private void assertEmailSent(int numberEmails) {
-        verify(emailHandler, times(numberEmails)).sendEmail(toCaptor.capture(), subjectCaptor.capture(), bodyCaptor.capture(),
-                filenameCaptor.capture(), attachmentCaptor.capture());
+        verify(emailHandler, times(numberEmails)).sendEmail(toCaptor.capture(), subjectCaptor.capture(),
+                bodyCaptor.capture(), filenameCaptor.capture(), attachmentCaptor.capture());
     }
 
-    private ExportXMLRequest sendRequest(boolean exportChildren, PID... pids) throws IOException {
+    private ExportXMLRequest sendRequest(boolean exportChildren, boolean excludeNoDs, PID... pids) throws IOException {
         ExportXMLRequest request = new ExportXMLRequest();
         request.setAgent(agent);
         request.setExportChildren(exportChildren);
+        request.setExcludeNoDatastreams(excludeNoDs);
         request.setPids(Arrays.stream(pids).map(PID::getId).collect(Collectors.toList()));
         request.setEmail(EMAIL);
         request.setRequestedTimestamp(Instant.now());
