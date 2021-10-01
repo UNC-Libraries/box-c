@@ -268,12 +268,12 @@ public class TransferBinariesToStorageJob extends AbstractConcurrentDepositJob {
 
         private void transferAccessSurrogate() {
             // add storageUri if doesn't already exist. It will exist in a resume scenario.
-            if (datastreamNotTransferred(CdrDeposit.hasDatastreamAccessCopy)) {
-                Resource dsResc = DepositModelHelpers.getDatastream(resc, DatastreamType.ACCESS_COPY);
+            if (datastreamNotTransferred(CdrDeposit.hasDatastreamAccessSurrogate)) {
+                Resource dsResc = DepositModelHelpers.getDatastream(resc, DatastreamType.ACCESS_SURROGATE);
 
                 URI stagingUri = URI.create(dsResc.getProperty(CdrDeposit.stagingLocation).getString());
                 Path stagingPath = Paths.get(stagingUri);
-                Path destPath = derivativeService.getDerivativePath(objPid, DatastreamType.ACCESS_COPY);
+                Path destPath = derivativeService.getDerivativePath(objPid, DatastreamType.ACCESS_SURROGATE);
                 try {
                     FileUtils.copyFile(stagingPath.toFile(), destPath.toFile());
                 } catch (IOException e) {

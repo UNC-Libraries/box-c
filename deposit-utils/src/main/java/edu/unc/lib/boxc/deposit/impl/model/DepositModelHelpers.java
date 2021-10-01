@@ -68,8 +68,8 @@ public class DepositModelHelpers {
             PID fitsPid = DatastreamPids.getTechnicalMetadataPid(parentPid);
             dsPid = DatastreamPids.getDatastreamHistoryPid(fitsPid);
             break;
-        case ACCESS_COPY:
-            dsPid = DatastreamPids.getAccessCopyPid(parentPid);
+        case ACCESS_SURROGATE:
+            dsPid = DatastreamPids.getAccessSurrogatePid(parentPid);
             break;
         default:
             throw new RepositoryException("Cannot add datastream of type " + type.name());
@@ -98,8 +98,8 @@ public class DepositModelHelpers {
             return CdrDeposit.hasDatastreamDescriptiveHistory;
         case TECHNICAL_METADATA_HISTORY:
             return CdrDeposit.hasDatastreamFitsHistory;
-        case ACCESS_COPY:
-            return CdrDeposit.hasDatastreamAccessCopy;
+        case ACCESS_SURROGATE:
+            return CdrDeposit.hasDatastreamAccessSurrogate;
         default:
             throw new RepositoryException("Cannot add datastream of type " + type.name());
         }

@@ -201,6 +201,7 @@
     
     <bean id="binaryMetadataProcessor" class="edu.unc.lib.boxc.services.camel.BinaryMetadataProcessor">
         <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
+        <property name="derivativeService" ref="derivativeService" />
     </bean>
     
     <bean id="cacheInvalidatingProcessor" class="edu.unc.lib.boxc.services.camel.util.CacheInvalidatingProcessor">

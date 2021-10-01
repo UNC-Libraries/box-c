@@ -290,9 +290,9 @@ public class TransferBinariesToStorageJobTest extends AbstractNormalizationJobTe
         workBag.addProperty(Cdr.primaryObject, fileResc);
 
         Path surrogateFile = derivStagingPath.resolve("myderiv.png");
-        PID surrogatePid = DatastreamPids.getAccessCopyPid(filePid);
+        PID surrogatePid = DatastreamPids.getAccessSurrogatePid(filePid);
         Resource surrogateResc = depositModel.getResource(surrogatePid.getRepositoryPath());
-        fileResc.addProperty(CdrDeposit.hasDatastreamAccessCopy, surrogateResc);
+        fileResc.addProperty(CdrDeposit.hasDatastreamAccessSurrogate, surrogateResc);
         Files.write(surrogateFile, "derived".getBytes());
         surrogateResc.addProperty(CdrDeposit.stagingLocation, surrogateFile.toUri().toString());
 
@@ -306,7 +306,7 @@ public class TransferBinariesToStorageJobTest extends AbstractNormalizationJobTe
         assertOriginalFileTransferred(postFileResc, FILE_CONTENT1);
         assertFitsFileTransferred(postFileResc);
 
-        Resource dsResc = DepositModelHelpers.getDatastream(postFileResc, DatastreamType.ACCESS_COPY);
+        Resource dsResc = DepositModelHelpers.getDatastream(postFileResc, DatastreamType.ACCESS_SURROGATE);
         URI surrogateUri = URI.create(dsResc.getProperty(CdrDeposit.storageUri).getString());
         Path surrogatePath = Paths.get(surrogateUri);
         assertTrue("Surrogate file should exist at storage uri", Files.exists(surrogatePath));
@@ -324,9 +324,9 @@ public class TransferBinariesToStorageJobTest extends AbstractNormalizationJobTe
         workBag.addProperty(Cdr.primaryObject, fileResc);
 
         Path surrogateFile = derivStagingPath.resolve("myderiv.png");
-        PID surrogatePid = DatastreamPids.getAccessCopyPid(filePid);
+        PID surrogatePid = DatastreamPids.getAccessSurrogatePid(filePid);
         Resource surrogateResc = depositModel.getResource(surrogatePid.getRepositoryPath());
-        fileResc.addProperty(CdrDeposit.hasDatastreamAccessCopy, surrogateResc);
+        fileResc.addProperty(CdrDeposit.hasDatastreamAccessSurrogate, surrogateResc);
         // never creates surrogate file
         surrogateResc.addProperty(CdrDeposit.stagingLocation, surrogateFile.toUri().toString());
 
@@ -342,7 +342,7 @@ public class TransferBinariesToStorageJobTest extends AbstractNormalizationJobTe
         Model model = job.getReadOnlyModel();
         Resource postFileResc = model.getResource(fileResc.getURI());
 
-        Resource dsResc = DepositModelHelpers.getDatastream(postFileResc, DatastreamType.ACCESS_COPY);
+        Resource dsResc = DepositModelHelpers.getDatastream(postFileResc, DatastreamType.ACCESS_SURROGATE);
         assertFalse(dsResc.hasProperty(CdrDeposit.storageUri));
     }
 
