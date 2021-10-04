@@ -53,8 +53,8 @@ import edu.unc.lib.boxc.model.api.rdf.Ebucore;
 import edu.unc.lib.boxc.model.api.rdf.Fcrepo4Repository;
 import edu.unc.lib.boxc.model.api.rdf.Premis;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
+import edu.unc.lib.boxc.model.fcrepo.services.DerivativeService;
 import edu.unc.lib.boxc.model.fcrepo.test.TestHelper;
-import edu.unc.lib.boxc.services.camel.BinaryMetadataProcessor;
 
 /**
  *
@@ -90,6 +90,7 @@ public class BinaryMetadataProcessorTest {
     private RepositoryObjectLoader repoObjLoader;
     @Mock
     private BinaryObject binaryObject;
+    private DerivativeService derivativeService;
 
     @Before
     public void init() throws Exception {
@@ -99,8 +100,12 @@ public class BinaryMetadataProcessorTest {
 
         binaryBase = tmpFolder.newFolder().getAbsolutePath();
 
+        derivativeService = new DerivativeService();
+        derivativeService.setDerivativeDir(binaryBase);
+
         processor = new BinaryMetadataProcessor();
         processor.setRepositoryObjectLoader(repoObjLoader);
+        processor.setDerivativeService(derivativeService);
 
         when(exchange.getIn()).thenReturn(message);
         when(exchange.getIn().getHeader(FCREPO_URI)).thenReturn(RESC_ID);
