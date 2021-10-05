@@ -220,10 +220,6 @@
         <property name="dataLoader" ref="dipDataLoader" />
     </bean>
     
-    <bean id="derivativeService" class="edu.unc.lib.boxc.model.fcrepo.services.DerivativeService">
-        <property name="derivativeDir" value="target/" />
-    </bean>
-    
     <bean id="repositoryObjectSolrIndexer" class="edu.unc.lib.boxc.indexing.solr.test.RepositoryObjectSolrIndexer">
     </bean>
 </beans>

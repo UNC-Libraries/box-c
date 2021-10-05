@@ -26,14 +26,17 @@ import static java.util.stream.Collectors.toSet;
 import static org.apache.jena.rdf.model.ResourceFactory.createStringLiteral;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.ResIterator;
@@ -54,6 +57,7 @@ import edu.unc.lib.boxc.model.api.rdf.CdrDeposit;
 import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
 import edu.unc.lib.boxc.model.fcrepo.ids.DatastreamPids;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
+import edu.unc.lib.boxc.model.fcrepo.services.DerivativeService;
 import edu.unc.lib.boxc.persist.api.exceptions.InvalidChecksumException;
 import edu.unc.lib.boxc.persist.api.storage.BinaryDetails;
 import edu.unc.lib.boxc.persist.api.transfer.BinaryAlreadyExistsException;
@@ -76,6 +80,8 @@ public class TransferBinariesToStorageJob extends AbstractConcurrentDepositJob {
 
     @Autowired
     private RepositoryObjectFactory repoObjFactory;
+    @Autowired
+    private DerivativeService derivativeService;
 
     private Model model;
 
@@ -199,6 +205,7 @@ public class TransferBinariesToStorageJob extends AbstractConcurrentDepositJob {
                 transferOriginalFile();
                 transferFitsExtract();
                 transferFitsHistoryFile();
+                transferAccessSurrogate();
             } else if (objPid.getQualifier().equals(DEPOSIT_RECORD_BASE)) {
                 transferDepositManifests();
             }
@@ -256,6 +263,25 @@ public class TransferBinariesToStorageJob extends AbstractConcurrentDepositJob {
                 URI stagingUri = getTechMdPath(objPid, false).toUri();
                 transferFile(fitsPid, stagingUri, CdrDeposit.hasDatastreamFits);
                 log.debug("Finished transferring techmd file {}", fitsPid.getQualifiedId());
+            }
+        }
+
+        private void transferAccessSurrogate() {
+            // add storageUri if doesn't already exist. It will exist in a resume scenario.
+            if (datastreamNotTransferred(CdrDeposit.hasDatastreamAccessSurrogate)) {
+                Resource dsResc = DepositModelHelpers.getDatastream(resc, DatastreamType.ACCESS_SURROGATE);
+
+                URI stagingUri = URI.create(dsResc.getProperty(CdrDeposit.stagingLocation).getString());
+                Path stagingPath = Paths.get(stagingUri);
+                Path destPath = derivativeService.getDerivativePath(objPid, DatastreamType.ACCESS_SURROGATE);
+                try {
+                    FileUtils.copyFile(stagingPath.toFile(), destPath.toFile());
+                } catch (IOException e) {
+                    failJob(e, "Failed to copy access surrogate from {0} to {1}", stagingPath, destPath);
+                }
+                result.statements.add(ResourceFactory.createStatement(
+                        dsResc, CdrDeposit.storageUri, createStringLiteral(destPath.toUri().toString())));
+                log.debug("Finished transferring access surrogate for {}", objPid.getQualifiedId());
             }
         }
 

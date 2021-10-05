@@ -81,9 +81,13 @@ public class DerivativeService {
 
         String id = pid.getId();
         String hashedPath = idToPath(id, HASHED_PATH_DEPTH, HASHED_PATH_SIZE);
+        String filename = id;
+        if (dsType.getExtension() != null) {
+            filename += "." + dsType.getExtension();
+        }
 
         // Construct the full path of the derivative
-        return Paths.get(derivativeDir, dsType.getId(), hashedPath, id + "." + dsType.getExtension());
+        return Paths.get(derivativeDir, dsType.getId(), hashedPath, filename);
     }
 
     /**

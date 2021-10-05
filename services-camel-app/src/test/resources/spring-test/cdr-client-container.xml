@@ -131,4 +131,7 @@
         <property name="versionedDatastreamService" ref="versionedDatastreamService" />
     </bean>
 
+    <bean id="derivativeService" class="edu.unc.lib.boxc.model.fcrepo.services.DerivativeService">
+        <property name="derivativeDir" value="target/" />
+    </bean>
 </beans>

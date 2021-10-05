@@ -26,6 +26,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -38,6 +39,7 @@ import static org.slf4j.LoggerFactory.getLogger;
 
 import java.io.File;
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -70,7 +72,6 @@ import org.slf4j.Logger;
 import edu.unc.lib.boxc.deposit.impl.model.DepositDirectoryManager;
 import edu.unc.lib.boxc.deposit.impl.model.DepositModelHelpers;
 import edu.unc.lib.boxc.deposit.normalize.AbstractNormalizationJobTest;
-import edu.unc.lib.boxc.deposit.transfer.TransferBinariesToStorageJob;
 import edu.unc.lib.boxc.deposit.work.JobFailedException;
 import edu.unc.lib.boxc.deposit.work.JobInterruptedException;
 import edu.unc.lib.boxc.model.api.DatastreamType;
@@ -80,6 +81,7 @@ import edu.unc.lib.boxc.model.api.rdf.CdrDeposit;
 import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
 import edu.unc.lib.boxc.model.fcrepo.ids.DatastreamPids;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
+import edu.unc.lib.boxc.model.fcrepo.services.DerivativeService;
 import edu.unc.lib.boxc.persist.api.exceptions.InvalidChecksumException;
 import edu.unc.lib.boxc.persist.api.storage.StorageLocation;
 import edu.unc.lib.boxc.persist.api.storage.StorageLocationManager;
@@ -119,6 +121,8 @@ public class TransferBinariesToStorageJobTest extends AbstractNormalizationJobTe
 
     private DepositDirectoryManager depositDirManager;
 
+    private DerivativeService derivativeService;
+
     private Model depositModel;
     private Bag depBag;
 
@@ -126,6 +130,8 @@ public class TransferBinariesToStorageJobTest extends AbstractNormalizationJobTe
     private Path loc2Path;
     private Path sourcePath;
     private Path candidatePath;
+    private Path derivStoragePath;
+    private Path derivStagingPath;
 
     private final static ExecutorService executorService = Executors.newFixedThreadPool(2);
 
@@ -136,6 +142,8 @@ public class TransferBinariesToStorageJobTest extends AbstractNormalizationJobTe
     public void init() throws Exception {
         loc1Path = tmpFolder.newFolder("loc1").toPath();
         loc2Path = tmpFolder.newFolder("loc2").toPath();
+        derivStoragePath = tmpFolder.newFolder("derivs").toPath();
+        derivStagingPath = tmpFolder.newFolder("derivStaging").toPath();
 
         locTestHelper = new StorageLocationTestHelper();
         locTestHelper.addStorageLocation(LOC1_ID, "Location 1", loc1Path.toString());
@@ -159,6 +167,9 @@ public class TransferBinariesToStorageJobTest extends AbstractNormalizationJobTe
         transferService = new BinaryTransferServiceImpl();
         transferService.setIngestSourceManager(sourceManager);
 
+        derivativeService = new DerivativeService();
+        derivativeService.setDerivativeDir(derivStoragePath.toString());
+
         initializeJob();
 
         depositModel = job.getWritableModel();
@@ -176,6 +187,7 @@ public class TransferBinariesToStorageJobTest extends AbstractNormalizationJobTe
         setField(job, "jobStatusFactory", jobStatusFactory);
         setField(job, "repoObjFactory", repoObjFactory);
         setField(job, "executorService", executorService);
+        setField(job, "derivativeService", derivativeService);
         job.setFlushRate(FLUSH_RATE);
         job.init();
     }
@@ -268,6 +280,70 @@ public class TransferBinariesToStorageJobTest extends AbstractNormalizationJobTe
         job.closeModel();
 
         job.run();
+    }
+
+    @Test
+    public void depositWithWorkContainingFileAndAccessSurrogate() throws Exception {
+        Bag workBag = addContainerObject(depBag, Cdr.Work);
+        Resource fileResc = addFileObject(workBag, FILE_CONTENT1, true);
+        PID filePid = PIDs.get(fileResc.getURI());
+        workBag.addProperty(Cdr.primaryObject, fileResc);
+
+        Path surrogateFile = derivStagingPath.resolve("myderiv.png");
+        PID surrogatePid = DatastreamPids.getAccessSurrogatePid(filePid);
+        Resource surrogateResc = depositModel.getResource(surrogatePid.getRepositoryPath());
+        fileResc.addProperty(CdrDeposit.hasDatastreamAccessSurrogate, surrogateResc);
+        Files.write(surrogateFile, "derived".getBytes());
+        surrogateResc.addProperty(CdrDeposit.stagingLocation, surrogateFile.toUri().toString());
+
+        job.closeModel();
+
+        job.run();
+
+        Model model = job.getReadOnlyModel();
+        Resource postFileResc = model.getResource(fileResc.getURI());
+
+        assertOriginalFileTransferred(postFileResc, FILE_CONTENT1);
+        assertFitsFileTransferred(postFileResc);
+
+        Resource dsResc = DepositModelHelpers.getDatastream(postFileResc, DatastreamType.ACCESS_SURROGATE);
+        URI surrogateUri = URI.create(dsResc.getProperty(CdrDeposit.storageUri).getString());
+        Path surrogatePath = Paths.get(surrogateUri);
+        assertTrue("Surrogate file should exist at storage uri", Files.exists(surrogatePath));
+        assertEquals("derived", FileUtils.readFileToString(surrogatePath.toFile(), StandardCharsets.UTF_8));
+
+        verify(jobStatusFactory).setTotalCompletion(eq(jobUUID), eq(3));
+        verify(jobStatusFactory, times(3)).incrCompletion(eq(jobUUID), eq(1));
+    }
+
+    @Test
+    public void depositWithWorkContainingFileAndMissingAccessSurrogate() throws Exception {
+        Bag workBag = addContainerObject(depBag, Cdr.Work);
+        Resource fileResc = addFileObject(workBag, FILE_CONTENT1, true);
+        PID filePid = PIDs.get(fileResc.getURI());
+        workBag.addProperty(Cdr.primaryObject, fileResc);
+
+        Path surrogateFile = derivStagingPath.resolve("myderiv.png");
+        PID surrogatePid = DatastreamPids.getAccessSurrogatePid(filePid);
+        Resource surrogateResc = depositModel.getResource(surrogatePid.getRepositoryPath());
+        fileResc.addProperty(CdrDeposit.hasDatastreamAccessSurrogate, surrogateResc);
+        // never creates surrogate file
+        surrogateResc.addProperty(CdrDeposit.stagingLocation, surrogateFile.toUri().toString());
+
+        job.closeModel();
+
+        try {
+            job.run();
+            fail("Job expected to fail");
+        } catch (JobFailedException e) {
+            // expected
+        }
+
+        Model model = job.getReadOnlyModel();
+        Resource postFileResc = model.getResource(fileResc.getURI());
+
+        Resource dsResc = DepositModelHelpers.getDatastream(postFileResc, DatastreamType.ACCESS_SURROGATE);
+        assertFalse(dsResc.hasProperty(CdrDeposit.storageUri));
     }
 
     // Ensure that interruptions come through as JobInterruptedExceptions
