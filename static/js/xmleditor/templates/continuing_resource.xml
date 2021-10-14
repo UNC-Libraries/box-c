@@ -39,7 +39,7 @@
       <mods:placeTerm type="text" />
     </mods:place>
     <mods:publisher />
-    <mods:issuance />
+    <mods:issuance>continuing</mods:issuance>
     <mods:frequency authority="marcfrequency" />
   </mods:originInfo>
   <mods:subject authority="lcsh">
