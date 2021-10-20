@@ -30,7 +30,6 @@ import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.riot.RDFDataMgr;
 import org.apache.jena.riot.RDFFormat;
-import org.apache.jena.util.FileManager;
 import org.apache.jena.vocabulary.RDF;
 
 import edu.unc.lib.boxc.model.api.exceptions.ObjectPersistenceException;
@@ -139,7 +138,7 @@ public class FilePremisLogger implements PremisLogger {
         model = ModelFactory.createDefaultModel();
 
         if (premisFile != null && premisFile.exists()) {
-            InputStream in = FileManager.get().open(premisFile.getAbsolutePath());
+            InputStream in = RDFDataMgr.open(premisFile.getAbsolutePath());
             model.read(in, null, "N-TRIPLES");
         }
 

@@ -47,7 +47,7 @@ import edu.unc.lib.boxc.web.common.exceptions.ResourceNotFoundException;
  */
 public class DerivativeContentService {
 
-    private static final int BUFFER_SIZE = 4096;
+    private static final int BUFFER_SIZE = 8192;
 
     private DerivativeService derivativeService;
 
