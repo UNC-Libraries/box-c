@@ -16,6 +16,7 @@
 package edu.unc.lib.boxc.search.solr.test;
 
 import java.io.File;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.Properties;
 
@@ -57,7 +58,8 @@ public class BaseEmbeddedSolrTest {
         dataDir = dataBaseDir.newFolder();
 
         System.setProperty("solr.data.dir", dataDir.getAbsolutePath());
-        container = new CoreContainer("../etc/solr-config");
+        container = CoreContainer.createAndLoad(Paths.get("../etc/solr-config"),
+                Paths.get("../etc/solr-config/solr.xml"));
         container.load();
 
         server = new EmbeddedSolrServer(container, "access");
