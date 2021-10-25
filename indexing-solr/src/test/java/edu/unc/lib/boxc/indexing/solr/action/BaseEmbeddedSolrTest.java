@@ -16,6 +16,7 @@
 package edu.unc.lib.boxc.indexing.solr.action;
 
 import java.io.File;
+import java.nio.file.Paths;
 import java.util.Properties;
 
 import org.apache.commons.io.FileUtils;
@@ -52,7 +53,8 @@ public class BaseEmbeddedSolrTest extends Assert {
         dataDir.mkdir();
 
         System.setProperty("solr.data.dir", dataDir.getAbsolutePath());
-        container = new CoreContainer("src/test/resources/config");
+        container = CoreContainer.createAndLoad(Paths.get("../etc/solr-config"),
+                Paths.get("../etc/solr-config/solr.xml"));
         container.load();
 
         server = new EmbeddedSolrServer(container, "access");
@@ -83,6 +85,7 @@ public class BaseEmbeddedSolrTest extends Assert {
     @After
     public void tearDown() throws Exception {
         server.close();
+        container.shutdown();
         log.debug("Cleaning up data directory");
         FileUtils.deleteDirectory(dataDir);
     }

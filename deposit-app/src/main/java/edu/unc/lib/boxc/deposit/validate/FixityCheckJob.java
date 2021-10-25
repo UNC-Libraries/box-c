@@ -15,6 +15,7 @@
  */
 package edu.unc.lib.boxc.deposit.validate;
 
+import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
@@ -181,7 +182,7 @@ public class FixityCheckJob extends AbstractConcurrentDepositJob {
                 return;
             }
 
-            try (InputStream fStream = Files.newInputStream(Paths.get(stagedUri))) {
+            try (InputStream fStream = new BufferedInputStream(Files.newInputStream(Paths.get(stagedUri)))) {
                 log.debug("Calculating digests for {}", stagedUri);
                 MultiDigestInputStreamWrapper digestWrapper = new MultiDigestInputStreamWrapper(
                         fStream, existingDigests, REQUIRED_ALGS);

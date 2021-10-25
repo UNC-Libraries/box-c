@@ -121,8 +121,17 @@
         <constructor-arg value="access" />
     </bean>
 
-    <bean id="coreContainer" class="org.apache.solr.core.CoreContainer" init-method="load">
-        <constructor-arg value="src/test/resources/config" />
+    <bean id="solrHomePath" class="java.io.File">
+        <constructor-arg value="../etc/solr-config" />
+    </bean>
+    
+    <bean id="solrConfigPath" class="java.io.File">
+        <constructor-arg value="../etc/solr-config/solr.xml" />
+    </bean>
+
+    <bean id="coreContainer" class="org.apache.solr.core.CoreContainer" factory-method="createAndLoad" init-method="load">
+        <constructor-arg value="#{solrHomePath.toPath()}" />
+        <constructor-arg value="#{solrConfigPath.toPath()}" />
     </bean>
 
     <bean id="solrAccessRestrictionUtil" class="edu.unc.lib.boxc.search.solr.utils.AccessRestrictionUtil">
