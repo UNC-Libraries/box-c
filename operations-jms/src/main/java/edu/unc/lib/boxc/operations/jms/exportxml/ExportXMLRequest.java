@@ -16,12 +16,15 @@
 package edu.unc.lib.boxc.operations.jms.exportxml;
 
 import java.time.Instant;
+import java.util.EnumSet;
 import java.util.List;
+import java.util.Set;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 
 import edu.unc.lib.boxc.auth.api.models.AgentPrincipals;
 import edu.unc.lib.boxc.auth.fcrepo.models.AgentPrincipalsImpl;
+import edu.unc.lib.boxc.model.api.DatastreamType;
 
 /**
  * A request object for a bulk XML export
@@ -36,6 +39,7 @@ public class ExportXMLRequest {
     @JsonDeserialize(as = AgentPrincipalsImpl.class)
     private AgentPrincipals agent;
     private boolean excludeNoDatastreams;
+    private Set<DatastreamType> datastreams;
 
     public ExportXMLRequest() {
     }
@@ -95,5 +99,20 @@ public class ExportXMLRequest {
 
     public void setExcludeNoDatastreams(boolean excludeNoDatastreams) {
         this.excludeNoDatastreams = excludeNoDatastreams;
+    }
+
+    /**
+     * @return List of datastreams to be exported
+     */
+    public Set<DatastreamType> getDatastreams() {
+        return datastreams;
+    }
+
+    public void setDatastreams(Set<DatastreamType> datastreams) {
+        if (datastreams == null || datastreams instanceof EnumSet) {
+            this.datastreams = datastreams;
+        } else {
+            this.datastreams = EnumSet.copyOf(datastreams);
+        }
     }
 }

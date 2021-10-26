@@ -26,15 +26,20 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.EnumSet;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
 import org.apache.camel.Processor;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrServerException;
@@ -51,10 +56,13 @@ import edu.unc.lib.boxc.auth.api.services.AccessControlService;
 import edu.unc.lib.boxc.common.metrics.TimerFactory;
 import edu.unc.lib.boxc.fcrepo.exceptions.ServiceException;
 import edu.unc.lib.boxc.model.api.DatastreamType;
+import edu.unc.lib.boxc.model.api.exceptions.NotFoundException;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.objects.BinaryObject;
 import edu.unc.lib.boxc.model.api.objects.ContentObject;
+import edu.unc.lib.boxc.model.api.objects.FileObject;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
+import edu.unc.lib.boxc.model.fcrepo.ids.DatastreamPids;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.boxc.operations.impl.utils.EmailHandler;
 import edu.unc.lib.boxc.operations.jms.exportxml.ExportXMLRequest;
@@ -78,6 +86,10 @@ public class ExportXMLProcessor implements Processor {
     private final List<String> resultFieldsParent = Arrays.asList(
             SearchFieldKey.ID.name(), SearchFieldKey.DATASTREAM.name());
     private final List<String> resultFieldsChildren = Arrays.asList(SearchFieldKey.ID.name());
+    private final Set<DatastreamType> DEFAULT_DS_TYPES = EnumSet.of(DatastreamType.MD_DESCRIPTIVE);
+    private final Set<DatastreamType> EXPORTABLE_DS_TYPES = EnumSet.of(
+            DatastreamType.MD_DESCRIPTIVE, DatastreamType.MD_DESCRIPTIVE_HISTORY, DatastreamType.MD_EVENTS,
+            DatastreamType.TECHNICAL_METADATA, DatastreamType.TECHNICAL_METADATA_HISTORY);
 
     private AccessControlService aclService;
     private RepositoryObjectLoader repoObjLoader;
@@ -103,6 +115,7 @@ public class ExportXMLProcessor implements Processor {
         long startTime = System.currentTimeMillis();
         ExportXMLRequest request = requestService.deserializeRequest((String) in.getBody());
         try (Timer.Context context = timer.time()) {
+            initializedIncludedDatastreams(request);
             performExport(request, startTime);
         } catch (IOException e) {
             throw new ServiceException("Unable to write export file", e);
@@ -170,6 +183,7 @@ public class ExportXMLProcessor implements Processor {
      * @throws ServiceException
      */
     private void adjustRequestPids(ExportXMLRequest request) throws ServiceException {
+        String dsField = searchService.solrField(SearchFieldKey.DATASTREAM);
         List<String> pids = new ArrayList<>();
         for (String pid : request.getPids()) {
             SearchState searchState = searchStateFactory.createSearchState();
@@ -180,8 +194,11 @@ public class ExportXMLProcessor implements Processor {
             ContentObjectRecord parent = searchService.addSelectedContainer(
                     PIDs.get(pid), searchState, false, request.getAgent().getPrincipals());
             if (request.getExcludeNoDatastreams()) {
-                if (parent.getDatastreamObject(DatastreamType.MD_DESCRIPTIVE.getId()) != null) {
-                    pids.add(pid);
+                for (DatastreamType includedDs : request.getDatastreams()) {
+                    if (parent.getDatastreamObject(includedDs.getId()) != null) {
+                        pids.add(pid);
+                        break;
+                    }
                 }
             } else {
                 pids.add(pid);
@@ -198,8 +215,10 @@ public class ExportXMLProcessor implements Processor {
             searchRequest.setApplyCutoffs(false);
             SolrQuery solrQuery = searchService.generateSearch(searchRequest);
             if (request.getExcludeNoDatastreams()) {
-                solrQuery.addFilterQuery(searchService.solrField(SearchFieldKey.DATASTREAM) + ":"
-                        + DatastreamType.MD_DESCRIPTIVE.getId() + "|*");
+                String dsIncludeFilter = request.getDatastreams().stream()
+                        .map(ds -> dsField + ":" + ds.getId() + "|*")
+                        .collect(Collectors.joining(" OR ", "(", ")"));
+                solrQuery.addFilterQuery(dsIncludeFilter);
             }
             SearchResultResponse resultResponse = null;
             try {
@@ -230,38 +249,60 @@ public class ExportXMLProcessor implements Processor {
             return;
         }
         ContentObject obj = (ContentObject) repoObjLoader.getRepositoryObject(pid);
-        BinaryObject mods = obj.getDescription();
 
-        try {
-            Document objectDoc = new Document();
-            Element objectEl = new Element("object");
-            objectEl.setAttribute("pid", pid.getQualifiedId());
-            objectEl.setAttribute("type", obj.getResourceType().toString());
-            objectDoc.addContent(objectEl);
+        Document objectDoc = new Document();
+        Element objectEl = new Element("object");
+        objectEl.setAttribute("pid", pid.getQualifiedId());
+        objectEl.setAttribute("type", obj.getResourceType().toString());
+        if (obj instanceof FileObject) {
+            objectEl.setAttribute("parent", obj.getParentPid().getQualifiedId());
+        }
+        objectDoc.addContent(objectEl);
 
-            if (mods != null) {
-                Document dsDoc;
-                try (InputStream modsStream = mods.getBinaryStream()) {
-                    dsDoc = createSAXBuilder().build(modsStream);
+        for (DatastreamType dsType : request.getDatastreams()) {
+            PID dsPid = DatastreamPids.getDatastreamPid(pid, dsType);
+
+            try {
+                BinaryObject dsObj = repoObjLoader.getBinaryObject(dsPid);
+
+                objectEl.addContent(SEPERATOR);
+
+                Element updateDsEl = new Element("update");
+                updateDsEl.setAttribute("type", dsType.getId());
+                updateDsEl.setAttribute("lastModified", dsObj.getLastModified().toString());
+                String mimetype = dsObj.getMimetype();
+                updateDsEl.setAttribute("mimetype", mimetype);
+                updateDsEl.addContent(SEPERATOR);
+
+                if ("text/xml".equals(mimetype)) {
+                    try (InputStream modsStream = dsObj.getBinaryStream()) {
+                        Document dsDoc = createSAXBuilder().build(modsStream);
+                        updateDsEl.addContent(dsDoc.detachRootElement());
+                    }
+                } else {
+                    updateDsEl.addContent(IOUtils.toString(dsObj.getBinaryStream(), StandardCharsets.UTF_8));
                 }
-
+                updateDsEl.addContent(SEPERATOR);
+                objectEl.addContent(updateDsEl);
                 objectEl.addContent(SEPERATOR);
-
-                Element modsUpdateEl = new Element("update");
-                modsUpdateEl.setAttribute("type", "MODS");
-                modsUpdateEl.setAttribute("lastModified", mods.getLastModified().toString());
-                modsUpdateEl.addContent(SEPERATOR);
-                modsUpdateEl.addContent(dsDoc.detachRootElement());
-                modsUpdateEl.addContent(SEPERATOR);
-                objectEl.addContent(modsUpdateEl);
-                objectEl.addContent(SEPERATOR);
+            } catch (NotFoundException e) {
+                log.debug("Object {} has no {} datastream for export", pid.getId(), dsType.getId());
+            } catch (JDOMException e) {
+                log.error("Failed to parse XML document for {}", dsPid, e);
             }
+        }
 
-            xmlOutput.output(objectEl, xfop);
+        xmlOutput.output(objectEl, xfop);
 
-            xfop.write(SEPERATOR_BYTES);
-        } catch (JDOMException e) {
-            log.error("Failed to parse MODS document for {}", pid, e);
+        xfop.write(SEPERATOR_BYTES);
+    }
+
+    private void initializedIncludedDatastreams(ExportXMLRequest request) {
+        Set<DatastreamType> dses = request.getDatastreams();
+        if (dses == null) {
+            request.setDatastreams(DEFAULT_DS_TYPES);
+        } else {
+            dses.retainAll(EXPORTABLE_DS_TYPES);
         }
     }
 

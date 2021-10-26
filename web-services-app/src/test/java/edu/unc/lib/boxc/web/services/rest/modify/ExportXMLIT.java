@@ -19,6 +19,7 @@ import static edu.unc.lib.boxc.common.test.TestHelpers.setField;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.MockitoAnnotations.initMocks;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -27,6 +28,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import java.io.IOException;
 import java.time.Duration;
 import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
 
@@ -51,6 +53,7 @@ import org.springframework.jms.core.JmsTemplate;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.MvcResult;
 
+import edu.unc.lib.boxc.model.api.DatastreamType;
 import edu.unc.lib.boxc.model.api.ids.PIDMinter;
 import edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPIDMinter;
 import edu.unc.lib.boxc.operations.jms.exportxml.ExportXMLRequest;
@@ -135,6 +138,7 @@ public class ExportXMLIT extends AbstractAPIIT {
         assertEquals(exports, sentReq.getPids());
         assertNotNull(sentReq.getRequestedTimestamp());
         assertFalse(sentReq.getExportChildren());
+        assertNull(sentReq.getDatastreams());
     }
 
     @Test
@@ -158,6 +162,42 @@ public class ExportXMLIT extends AbstractAPIIT {
         assertEquals(exports, sentReq.getPids());
         assertNotNull(sentReq.getRequestedTimestamp());
         assertTrue(sentReq.getExportChildren());
+        assertNull(sentReq.getDatastreams());
+    }
+
+    @Test
+    public void testExportMultipleDatastreams() throws Exception {
+        List<String> exports = createObjects();
+        ExportXMLRequest export = new ExportXMLRequest();
+        export.setPids(exports);
+        export.setExportChildren(false);
+        export.setEmail("user@example.com");
+        export.setDatastreams(EnumSet.of(DatastreamType.TECHNICAL_METADATA, DatastreamType.MD_DESCRIPTIVE,
+                DatastreamType.MD_DESCRIPTIVE_HISTORY));
+
+        String json = exportXmlRequestService.serializeRequest(export);
+        MvcResult result = mvc.perform(post("/edit/exportXML")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(json))
+                .andExpect(status().is2xxSuccessful())
+                .andReturn();
+
+        // Verify response from api
+        Map<String, Object> respMap = getMapFromResponse(result);
+        assertEquals("export xml", respMap.get("action"));
+
+        Awaitility.await("Number of messages was " + receivedMessages.size())
+                .atMost(Duration.ofSeconds(2)).until(() -> receivedMessages.size() == 1);
+        ExportXMLRequest sentReq = receivedMessages.get(0);
+        assertEquals(USERNAME, sentReq.getAgent().getUsername());
+        assertTrue(sentReq.getAgent().getPrincipals().containsAll(GROUPS));
+        assertEquals(exports, sentReq.getPids());
+        assertNotNull(sentReq.getRequestedTimestamp());
+        assertFalse(sentReq.getExportChildren());
+        assertTrue(sentReq.getDatastreams().contains(DatastreamType.TECHNICAL_METADATA));
+        assertTrue(sentReq.getDatastreams().contains(DatastreamType.MD_DESCRIPTIVE));
+        assertTrue(sentReq.getDatastreams().contains(DatastreamType.MD_DESCRIPTIVE_HISTORY));
+        assertEquals(3, sentReq.getDatastreams().size());
     }
 
     private List<String> createObjects() throws Exception {
