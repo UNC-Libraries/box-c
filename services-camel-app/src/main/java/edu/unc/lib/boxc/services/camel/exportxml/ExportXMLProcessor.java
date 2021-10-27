@@ -16,6 +16,7 @@
 package edu.unc.lib.boxc.services.camel.exportxml;
 
 import static edu.unc.lib.boxc.common.xml.SecureXMLFactory.createSAXBuilder;
+import static edu.unc.lib.boxc.operations.jms.exportxml.BulkXMLConstants.BULK_MD_TAG;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 import java.io.BufferedInputStream;
@@ -29,7 +30,6 @@ import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -65,6 +65,7 @@ import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.fcrepo.ids.DatastreamPids;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.boxc.operations.impl.utils.EmailHandler;
+import edu.unc.lib.boxc.operations.jms.exportxml.BulkXMLConstants;
 import edu.unc.lib.boxc.operations.jms.exportxml.ExportXMLRequest;
 import edu.unc.lib.boxc.operations.jms.exportxml.ExportXMLRequestService;
 import edu.unc.lib.boxc.search.api.SearchFieldKey;
@@ -86,10 +87,6 @@ public class ExportXMLProcessor implements Processor {
     private final List<String> resultFieldsParent = Arrays.asList(
             SearchFieldKey.ID.name(), SearchFieldKey.DATASTREAM.name());
     private final List<String> resultFieldsChildren = Arrays.asList(SearchFieldKey.ID.name());
-    private final Set<DatastreamType> DEFAULT_DS_TYPES = EnumSet.of(DatastreamType.MD_DESCRIPTIVE);
-    private final Set<DatastreamType> EXPORTABLE_DS_TYPES = EnumSet.of(
-            DatastreamType.MD_DESCRIPTIVE, DatastreamType.MD_DESCRIPTIVE_HISTORY, DatastreamType.MD_EVENTS,
-            DatastreamType.TECHNICAL_METADATA, DatastreamType.TECHNICAL_METADATA_HISTORY);
 
     private AccessControlService aclService;
     private RepositoryObjectLoader repoObjLoader;
@@ -103,7 +100,7 @@ public class ExportXMLProcessor implements Processor {
     private static final String SEPERATOR = System.getProperty("line.separator");
     private static final byte[] SEPERATOR_BYTES = SEPERATOR.getBytes();
     private static final byte[] exportHeaderBytes = ("<?xml version=\"1.0\" encoding=\"utf-8\"?>" + SEPERATOR
-            + "<bulkMetadata>" + SEPERATOR).getBytes(UTF_8);
+            + "<" + BULK_MD_TAG + ">" + SEPERATOR).getBytes(UTF_8);
 
     private static final Timer timer = TimerFactory.createTimerForClass(ExportXMLProcessor.class);
 
@@ -167,7 +164,7 @@ public class ExportXMLProcessor implements Processor {
                     addObjectToExport(pidString, xfop, xmlOutput, request);
                 }
 
-                xfop.write("</bulkMetadata>".getBytes(UTF_8));
+                xfop.write(("</" + BULK_MD_TAG + ">").getBytes(UTF_8));
             }
 
             sendEmail(zipit(mdExportFile, filename), request, filename, pageStart, pageEnd, totalPids);
@@ -251,11 +248,11 @@ public class ExportXMLProcessor implements Processor {
         ContentObject obj = (ContentObject) repoObjLoader.getRepositoryObject(pid);
 
         Document objectDoc = new Document();
-        Element objectEl = new Element("object");
-        objectEl.setAttribute("pid", pid.getQualifiedId());
-        objectEl.setAttribute("type", obj.getResourceType().toString());
+        Element objectEl = new Element(BulkXMLConstants.OBJECT_TAG);
+        objectEl.setAttribute(BulkXMLConstants.PID_ATTR, pid.getQualifiedId());
+        objectEl.setAttribute(BulkXMLConstants.TYPE_ATTR, obj.getResourceType().toString());
         if (obj instanceof FileObject) {
-            objectEl.setAttribute("parent", obj.getParentPid().getQualifiedId());
+            objectEl.setAttribute(BulkXMLConstants.PARENT_ID_ATTR, obj.getParentPid().getQualifiedId());
         }
         objectDoc.addContent(objectEl);
 
@@ -267,23 +264,26 @@ public class ExportXMLProcessor implements Processor {
 
                 objectEl.addContent(SEPERATOR);
 
-                Element updateDsEl = new Element("update");
-                updateDsEl.setAttribute("type", dsType.getId());
-                updateDsEl.setAttribute("lastModified", dsObj.getLastModified().toString());
+                Element datastreamEl = new Element(BulkXMLConstants.DATASTREAM_TAG);
+                datastreamEl.setAttribute(BulkXMLConstants.TYPE_ATTR, dsType.getId());
+                datastreamEl.setAttribute(BulkXMLConstants.MODIFIED_ATTR, dsObj.getLastModified().toString());
                 String mimetype = dsObj.getMimetype();
-                updateDsEl.setAttribute("mimetype", mimetype);
-                updateDsEl.addContent(SEPERATOR);
+                datastreamEl.setAttribute(BulkXMLConstants.MIMETYPE_ATTR, mimetype);
+                datastreamEl.addContent(SEPERATOR);
+                if (BulkXMLConstants.UPDATEABLE_DS_TYPES.contains(dsType)) {
+                    datastreamEl.setAttribute(BulkXMLConstants.OPERATION_ATTR, BulkXMLConstants.OPER_UPDATE_ATTR);
+                }
 
                 if ("text/xml".equals(mimetype)) {
                     try (InputStream modsStream = dsObj.getBinaryStream()) {
                         Document dsDoc = createSAXBuilder().build(modsStream);
-                        updateDsEl.addContent(dsDoc.detachRootElement());
+                        datastreamEl.addContent(dsDoc.detachRootElement());
                     }
                 } else {
-                    updateDsEl.addContent(IOUtils.toString(dsObj.getBinaryStream(), StandardCharsets.UTF_8));
+                    datastreamEl.addContent(IOUtils.toString(dsObj.getBinaryStream(), StandardCharsets.UTF_8));
                 }
-                updateDsEl.addContent(SEPERATOR);
-                objectEl.addContent(updateDsEl);
+                datastreamEl.addContent(SEPERATOR);
+                objectEl.addContent(datastreamEl);
                 objectEl.addContent(SEPERATOR);
             } catch (NotFoundException e) {
                 log.debug("Object {} has no {} datastream for export", pid.getId(), dsType.getId());
@@ -300,9 +300,9 @@ public class ExportXMLProcessor implements Processor {
     private void initializedIncludedDatastreams(ExportXMLRequest request) {
         Set<DatastreamType> dses = request.getDatastreams();
         if (dses == null) {
-            request.setDatastreams(DEFAULT_DS_TYPES);
+            request.setDatastreams(BulkXMLConstants.DEFAULT_DS_TYPES);
         } else {
-            dses.retainAll(EXPORTABLE_DS_TYPES);
+            dses.retainAll(BulkXMLConstants.EXPORTABLE_DS_TYPES);
         }
     }
 

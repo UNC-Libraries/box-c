@@ -596,18 +596,19 @@ public class ExportXMLRouteIT {
         Element objEl = getObjectElByPid(rootEl, pid);
         assertNotNull("Did not contain expected child object " + pid, objEl);
         assertEquals(expectedType.name(), objEl.getAttributeValue("type"));
-        Element updateEl = getUpdateElByDatastream(objEl, DatastreamType.MD_DESCRIPTIVE);
-        assertNull(updateEl);
+        Element dsEl = getDatastreamElByType(objEl, DatastreamType.MD_DESCRIPTIVE);
+        assertNull(dsEl);
     }
 
     private void assertHasObjectWithMods(Element rootEl, ResourceType expectedType, PID pid) {
         Element objEl = getObjectElByPid(rootEl, pid);
         assertNotNull("Did not contain expected child object " + pid, objEl);
         assertEquals(expectedType.name(), objEl.getAttributeValue("type"));
-        Element updateEl = getUpdateElByDatastream(objEl, DatastreamType.MD_DESCRIPTIVE);
-        assertNotNull(updateEl);
-        assertNotNull(updateEl.getAttributeValue("lastModified"));
-        Element modsEl = updateEl.getChild("mods", JDOMNamespaceUtil.MODS_V3_NS);
+        Element dsEl = getDatastreamElByType(objEl, DatastreamType.MD_DESCRIPTIVE);
+        assertNotNull(dsEl);
+        assertNotNull(dsEl.getAttributeValue("lastModified"));
+        assertEquals("update", dsEl.getAttributeValue("operation"));
+        Element modsEl = dsEl.getChild("mods", JDOMNamespaceUtil.MODS_V3_NS);
         assertNotNull(modsEl);
     }
 
@@ -616,23 +617,23 @@ public class ExportXMLRouteIT {
         Element objEl = getObjectElByPid(rootEl, pid);
         assertNotNull("Did not contain expected child object " + pid, objEl);
         assertEquals(expectedType.name(), objEl.getAttributeValue("type"));
-        Element updateEl = getUpdateElByDatastream(objEl, expectedDsType);
-        assertNotNull(updateEl);
-        assertNotNull(updateEl.getAttributeValue("lastModified"));
-        assertEquals(expectedMimetype, updateEl.getAttributeValue("mimetype"));
+        Element dsEl = getDatastreamElByType(objEl, expectedDsType);
+        assertNotNull(dsEl);
+        assertNotNull(dsEl.getAttributeValue("lastModified"));
+        assertEquals(expectedMimetype, dsEl.getAttributeValue("mimetype"));
 
         String content;
         if (expectedMimetype.equals("text/xml")) {
-            Element contentEl = updateEl.getChildren().get(0);
+            Element contentEl = dsEl.getChildren().get(0);
             content = new XMLOutputter(Format.getRawFormat()).outputString(contentEl);
         } else {
-            content = updateEl.getTextTrim();
+            content = dsEl.getTextTrim();
         }
         assertEquals(expectedContent.trim(), content);
     }
 
-    private Element getUpdateElByDatastream(Element objEl, DatastreamType dsType) {
-        return objEl.getChildren("update").stream()
+    private Element getDatastreamElByType(Element objEl, DatastreamType dsType) {
+        return objEl.getChildren("datastream").stream()
                 .filter(e -> e.getAttributeValue("type").equals(dsType.getId()))
                 .findFirst().orElse(null);
     }
