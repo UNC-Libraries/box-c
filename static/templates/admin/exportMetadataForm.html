@@ -11,6 +11,15 @@
 
 	<label class="form_inline"><input type="checkbox" id="export_xml_exclude_no_datastreams"> Exclude objects with no returned datastreams.</label>
 
+	<p style="margin-top: 1em;">Select metadata datastream types for export:</p>
+	<div style="padding-left: 2em;">
+		<label class="form_inline"><input type="checkbox" name="export_xml_metadata_types" value="MD_DESCRIPTIVE" checked="checked"> MODS Description</label>
+		<label class="form_inline"><input type="checkbox" name="export_xml_metadata_types" value="MD_EVENTS"> PREMIS Event Log</label>
+		<label class="form_inline"><input type="checkbox" name="export_xml_metadata_types" value="TECHNICAL_METADATA"> Technical Metadata (FITS)</label>
+		<label class="form_inline"><input type="checkbox" name="export_xml_metadata_types" value="MD_DESCRIPTIVE_HISTORY"> MODS Description History</label>
+		<label class="form_inline"><input type="checkbox" name="export_xml_metadata_types" value="TECHNICAL_METADATA_HISTORY"> Technical Metadata History</label>
+	</div>
+
 	<div class="update_field">
 		<input type="submit" id="export_xml_submit_button" class="update_button" value="Export" />
 	</div>
