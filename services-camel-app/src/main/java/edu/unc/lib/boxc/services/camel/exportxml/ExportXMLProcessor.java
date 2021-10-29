@@ -70,6 +70,7 @@ import edu.unc.lib.boxc.operations.jms.exportxml.ExportXMLRequest;
 import edu.unc.lib.boxc.operations.jms.exportxml.ExportXMLRequestService;
 import edu.unc.lib.boxc.search.api.SearchFieldKey;
 import edu.unc.lib.boxc.search.api.models.ContentObjectRecord;
+import edu.unc.lib.boxc.search.api.models.Datastream;
 import edu.unc.lib.boxc.search.api.requests.SearchRequest;
 import edu.unc.lib.boxc.search.api.requests.SearchState;
 import edu.unc.lib.boxc.search.solr.responses.SearchResultResponse;
@@ -192,7 +193,8 @@ public class ExportXMLProcessor implements Processor {
                     PIDs.get(pid), searchState, false, request.getAgent().getPrincipals());
             if (request.getExcludeNoDatastreams()) {
                 for (DatastreamType includedDs : request.getDatastreams()) {
-                    if (parent.getDatastreamObject(includedDs.getId()) != null) {
+                    Datastream ds = parent.getDatastreamObject(includedDs.getId());
+                    if (ds != null && ds.getOwner() == null) {
                         pids.add(pid);
                         break;
                     }
@@ -213,7 +215,8 @@ public class ExportXMLProcessor implements Processor {
             SolrQuery solrQuery = searchService.generateSearch(searchRequest);
             if (request.getExcludeNoDatastreams()) {
                 String dsIncludeFilter = request.getDatastreams().stream()
-                        .map(ds -> dsField + ":" + ds.getId() + "|*")
+                        // Filtering datastreams to exclude those owned by other objects
+                        .map(ds -> dsField + ":" + ds.getId() + "|*||")
                         .collect(Collectors.joining(" OR ", "(", ")"));
                 solrQuery.addFilterQuery(dsIncludeFilter);
             }

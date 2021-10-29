@@ -112,7 +112,11 @@ public class ExportXMLRequest {
         if (datastreams == null || datastreams instanceof EnumSet) {
             this.datastreams = datastreams;
         } else {
-            this.datastreams = EnumSet.copyOf(datastreams);
+            if (datastreams.isEmpty()) {
+                this.datastreams = EnumSet.noneOf(DatastreamType.class);
+            } else {
+                this.datastreams = EnumSet.copyOf(datastreams);
+            }
         }
     }
 }

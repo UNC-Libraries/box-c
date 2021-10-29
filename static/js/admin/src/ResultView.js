@@ -21,7 +21,7 @@ define('ResultView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtilities'
 			resultActions : [
 						{
 							actions : [
-								{action : 'ExportMetadataXMLBatch', label : 'Export MODS', joiner : ' for'}
+								{action : 'ExportMetadataXMLBatch', label : 'Export Metadata', joiner : ' for'}
 							]
 						},
 						{

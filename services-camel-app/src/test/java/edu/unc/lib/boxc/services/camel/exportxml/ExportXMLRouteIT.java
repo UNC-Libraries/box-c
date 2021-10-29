@@ -527,6 +527,39 @@ public class ExportXMLRouteIT {
         assertExportDocumentCount(rootEl, 1);
     }
 
+    @Test
+    public void exportCollectionFitsExcludeNoDatastreamTest() throws Exception {
+        String fitsContent = "<fits>content</fits>";
+        URI fitsUri = makeContentUri(fitsContent);
+        PID fitsPid = getTechnicalMetadataPid(fileObj1.getPid());
+        fileObj1.addBinary(fitsPid, fitsUri, TECHNICAL_METADATA.getDefaultFilename(), TECHNICAL_METADATA.getMimetype(),
+                null, null, IanaRelation.derivedfrom, DCTerms.conformsTo, createResource(FITS_URI));
+        workObj1.setPrimaryObject(fileObj1.getPid());
+
+        indexAll();
+
+        NotifyBuilder notify = new NotifyBuilder(cdrExportXML)
+                .whenCompleted(1)
+                .create();
+
+        ExportXMLRequest request = createRequest(true, true, collObj1.getPid());
+        request.setDatastreams(EnumSet.of(DatastreamType.TECHNICAL_METADATA));
+        sendRequest(request);
+
+        boolean result = notify.matches(5l, TimeUnit.SECONDS);
+        assertTrue("Processing message did not match expectations", result);
+
+        assertEmailSent();
+
+        Element rootEl = getExportedDocumentRootEl();
+
+        assertHasObjectWithoutMods(rootEl, ResourceType.File, fileObj1.getPid());
+        assertHasObjectWithDatastream(rootEl, ResourceType.File, fileObj1.getPid(), DatastreamType.TECHNICAL_METADATA,
+                "text/xml", fitsContent);
+
+        assertExportDocumentCount(rootEl, 1);
+    }
+
     private void indexAll() throws Exception{
         treeIndexer.indexAll(rootObj.getPid().getRepositoryPath());
         solrIndexer.index(rootObj.getPid(), unitObj.getPid(), collObj1.getPid(), collObj2.getPid(),
