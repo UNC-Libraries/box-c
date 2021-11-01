@@ -194,7 +194,7 @@ public class ExportXMLProcessor implements Processor {
             if (request.getExcludeNoDatastreams()) {
                 for (DatastreamType includedDs : request.getDatastreams()) {
                     Datastream ds = parent.getDatastreamObject(includedDs.getId());
-                    if (ds != null && ds.getOwner() == null) {
+                    if (ds != null && StringUtils.isEmpty(ds.getOwner())) {
                         pids.add(pid);
                         break;
                     }
