@@ -65,8 +65,7 @@ import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.boxc.model.fcrepo.test.TestHelper;
 import edu.unc.lib.boxc.operations.impl.edit.UpdateDescriptionService;
 import edu.unc.lib.boxc.operations.impl.edit.UpdateDescriptionService.UpdateDescriptionRequest;
-import edu.unc.lib.boxc.operations.impl.importxml.ImportXMLJob;
-import edu.unc.lib.boxc.operations.impl.importxml.ImportXMLRequest;
+import edu.unc.lib.boxc.operations.jms.exportxml.BulkXMLConstants;
 import edu.unc.lib.boxc.persist.api.storage.StorageLocationManager;
 import edu.unc.lib.boxc.persist.impl.transfer.BinaryTransferServiceImpl;
 
@@ -274,6 +273,28 @@ public class ImportXMLJobIT {
 
         verify(mailSender).send(any(MimeMessage.class));
         assertEquals("Object not found", job.getFailed().get(workPid.getQualifiedId()));
+    }
+
+    @Test
+    public void testNoOperation() throws Exception {
+        PID workPid = populateFedora();
+        InputStream originalMods = descriptionStream(workPid);
+        assertModsNotUpdated(originalMods);
+
+        Document updateDoc = makeUpdateDocument();
+        Element dsEl = addObjectUpdate(updateDoc, workPid, null)
+            .addContent(modsWithTitleAndDate(UPDATED_TITLE, UPDATED_DATE));
+        // Remove the operation
+        dsEl.removeAttribute(BulkXMLConstants.OPERATION_ATTR);
+        importFile = writeToFile(updateDoc);
+        createJob();
+
+        job.run();
+
+        verify(mailSender).send(any(MimeMessage.class));
+
+        InputStream updatedMods = descriptionStream(workPid);
+        assertModsNotUpdated(updatedMods);
     }
 
     private void assertModsUpdated(InputStream updatedMods) throws JDOMException, IOException {

@@ -16,6 +16,9 @@
 package edu.unc.lib.boxc.operations.impl.importxml;
 
 import static edu.unc.lib.boxc.common.xml.SecureXMLFactory.createXMLInputFactory;
+import static edu.unc.lib.boxc.operations.jms.exportxml.BulkXMLConstants.BULK_MD_TAG;
+import static edu.unc.lib.boxc.operations.jms.exportxml.BulkXMLConstants.DATASTREAM_TAG;
+import static edu.unc.lib.boxc.operations.jms.exportxml.BulkXMLConstants.OBJECT_TAG;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -51,6 +54,7 @@ import edu.unc.lib.boxc.auth.api.exceptions.AccessRestrictionException;
 import edu.unc.lib.boxc.auth.api.models.AgentPrincipals;
 import edu.unc.lib.boxc.common.metrics.TimerFactory;
 import edu.unc.lib.boxc.fcrepo.exceptions.ServiceException;
+import edu.unc.lib.boxc.model.api.DatastreamType;
 import edu.unc.lib.boxc.model.api.exceptions.FedoraException;
 import edu.unc.lib.boxc.model.api.exceptions.NotFoundException;
 import edu.unc.lib.boxc.model.api.exceptions.RepositoryException;
@@ -59,6 +63,7 @@ import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.boxc.operations.api.exceptions.MetadataValidationException;
 import edu.unc.lib.boxc.operations.impl.edit.UpdateDescriptionService;
 import edu.unc.lib.boxc.operations.impl.edit.UpdateDescriptionService.UpdateDescriptionRequest;
+import edu.unc.lib.boxc.operations.jms.exportxml.BulkXMLConstants;
 import edu.unc.lib.boxc.operations.jms.indexing.IndexingPriority;
 import edu.unc.lib.boxc.persist.api.storage.StorageLocationManager;
 import edu.unc.lib.boxc.persist.api.transfer.BinaryTransferService;
@@ -89,12 +94,10 @@ public class ImportXMLJob implements Runnable {
         ROOT, IN_BULK, IN_OBJECT, IN_CONTENT;
     }
 
-    private final static String BULK_MD_TAG = "bulkMetadata";
-    private final static String OBJECT_TAG = "object";
-    private final static String UPDATE_TAG = "update";
-    private final static String MODS_TYPE = "MODS";
-    private final static QName pidAttribute = new QName("pid");
-    private final static QName typeAttribute = new QName("type");
+    private final static String MODS_TYPE = DatastreamType.MD_DESCRIPTIVE.getId();
+    private final static QName pidAttribute = new QName(BulkXMLConstants.PID_ATTR);
+    private final static QName typeAttribute = new QName(BulkXMLConstants.TYPE_ATTR);
+    private final static QName operationAttribute = new QName(BulkXMLConstants.OPERATION_ATTR);
 
     private PID currentPid;
     private int objectCount = 0;
@@ -265,6 +268,7 @@ public class ImportXMLJob implements Runnable {
 
         boolean resumeMode = (resumePid != null);
         boolean foundResumptionPoint = false;
+        boolean updateOperation = false;
 
         try {
             while (xmlReader.hasNext()) {
@@ -307,18 +311,22 @@ public class ImportXMLJob implements Runnable {
                         break;
                     case IN_OBJECT:
                         if (e.isStartElement()) {
+                            updateOperation = false;
                             StartElement element = e.asStartElement();
                             // Found start of update, extract the datastream
-                            if (element.getName().getLocalPart().equals(UPDATE_TAG)) {
-
+                            if (element.getName().getLocalPart().equals(DATASTREAM_TAG)) {
+                                Attribute operation = element.getAttributeByName(operationAttribute);
                                 Attribute typeAttr = element.getAttributeByName(typeAttribute);
                                 if (typeAttr == null) {
                                     failed.put(currentPid.getQualifiedId(),
                                             "Invalid import data, missing type attribute on update");
-                                }
-                                if (MODS_TYPE.equals(typeAttr.getValue())) {
-                                    currentDs = MODS_TYPE;
-                                    log.debug("Starting MODS element for object {}", currentPid.getQualifiedId());
+                                } else if (MODS_TYPE.equals(typeAttr.getValue())) {
+                                    updateOperation = operation != null && BulkXMLConstants.OPER_UPDATE_ATTR
+                                            .equals(operation.getValue());
+                                    if (updateOperation) {
+                                        currentDs = MODS_TYPE;
+                                        log.debug("Starting MODS element for object {}", currentPid.getQualifiedId());
+                                    }
                                 } else {
                                     failed.put(currentPid.getQualifiedId(),
                                             "Invalid import data, unsupported type in update tag");
@@ -328,7 +336,7 @@ public class ImportXMLJob implements Runnable {
                                         && currentPid.equals(resumePid) && currentDs.equals(resumeDs);
 
                                 state = DocumentState.IN_CONTENT;
-                                if (!resumeMode) {
+                                if (!resumeMode && updateOperation) {
                                     contentWriter = new StringWriter();
                                     xmlWriter = xmlOutput.createXMLEventWriter(contentWriter);
                                 }
@@ -355,11 +363,11 @@ public class ImportXMLJob implements Runnable {
                         }
 
                         // Finished with opening tags and the update tag is ending, done with content.
-                        if (countOpenings == 0 && e.isEndElement() && UPDATE_TAG.equals(
+                        if (countOpenings == 0 && e.isEndElement() && DATASTREAM_TAG.equals(
                                 e.asEndElement().getName().getLocalPart())) {
                             state = DocumentState.IN_OBJECT;
 
-                            if (!resumeMode) {
+                            if (!resumeMode && updateOperation) {
                                 xmlWriter.close();
                                 xmlWriter = null;
                                 InputStream modsStream = new ByteArrayInputStream(contentWriter.toString().getBytes());
@@ -394,7 +402,7 @@ public class ImportXMLJob implements Runnable {
                                 return;
                             }
                         } else {
-                            if (!resumeMode) {
+                            if (!resumeMode && updateOperation) {
                                 // Store all of the content from the incoming document
                                 xmlWriter.add(e);
                             }

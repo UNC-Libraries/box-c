@@ -58,11 +58,19 @@ define('ExportMetadataXMLBatchAction', [ 'jquery', 'AbstractBatchAction', "tpl!.
 			var email = $("#xml_recipient_email", self.$form).val();
 			var includeChildren = $("#export_xml_include_children", self.$form).prop("checked");
 			var excludeNoDs = $("#export_xml_exclude_no_datastreams", self.$form).prop("checked");
+			var datastreamTypes = $.map($("input[name='export_xml_metadata_types']:checkbox:checked"), function(e,i) {
+			    return e.value;
+			});
 			
 			if (!email || !$.trim(email)) {
 				return false;
 			}
 			localStorage.setItem("send_to_address_" + onyen, email);
+
+			if (datastreamTypes.length == 0 && excludeNoDs) {
+				self.context.view.$alertHandler.alertHandler("error", "Must select at least one metadata type for export, or include objects with no returned datastreams.");
+				return false;
+			}
 
 			var pids = [];
 			for (var index in self.targets) {
@@ -78,7 +86,8 @@ define('ExportMetadataXMLBatchAction', [ 'jquery', 'AbstractBatchAction', "tpl!.
 					email : email,
 					pids : pids,
 					exportChildren: includeChildren || false,
-					excludeNoDatastreams: excludeNoDs || false
+					excludeNoDatastreams: excludeNoDs || false,
+					datastreams: datastreamTypes || []
 				})
 			}).done(function(response) {
 				self.context.view.$alertHandler.alertHandler("message", response.message);

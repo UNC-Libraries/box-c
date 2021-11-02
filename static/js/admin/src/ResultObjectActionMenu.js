@@ -195,7 +195,7 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'A
 			}
 
 			if ($.inArray('editDescription', metadata.permissions) != -1) {
-				items["exportXML"] = {name : 'Export MODS'};
+				items["exportXML"] = {name : 'Export Metadata'};
 			}
 		}
 

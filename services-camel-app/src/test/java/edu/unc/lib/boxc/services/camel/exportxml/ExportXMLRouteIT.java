@@ -15,8 +15,12 @@
  */
 package edu.unc.lib.boxc.services.camel.exportxml;
 
+import static edu.unc.lib.boxc.model.api.DatastreamType.TECHNICAL_METADATA;
+import static edu.unc.lib.boxc.model.api.xml.NamespaceConstants.FITS_URI;
+import static edu.unc.lib.boxc.model.fcrepo.ids.DatastreamPids.getTechnicalMetadataPid;
 import static edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPaths.getContentRootPid;
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.apache.jena.rdf.model.ResourceFactory.createResource;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -30,11 +34,13 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Instant;
 import java.util.Arrays;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -42,10 +48,14 @@ import java.util.stream.Collectors;
 import org.apache.camel.CamelContext;
 import org.apache.camel.builder.NotifyBuilder;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
+import org.apache.jena.vocabulary.DCTerms;
 import org.apache.solr.client.solrj.embedded.EmbeddedSolrServer;
 import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.input.SAXBuilder;
+import org.jdom2.output.Format;
+import org.jdom2.output.XMLOutputter;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -61,21 +71,28 @@ import edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl;
 import edu.unc.lib.boxc.auth.fcrepo.models.AgentPrincipalsImpl;
 import edu.unc.lib.boxc.common.util.ZipFileUtil;
 import edu.unc.lib.boxc.indexing.solr.test.RepositoryObjectSolrIndexer;
+import edu.unc.lib.boxc.model.api.DatastreamType;
 import edu.unc.lib.boxc.model.api.ResourceType;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.ids.PIDMinter;
 import edu.unc.lib.boxc.model.api.objects.AdminUnit;
+import edu.unc.lib.boxc.model.api.objects.BinaryObject;
 import edu.unc.lib.boxc.model.api.objects.CollectionObject;
 import edu.unc.lib.boxc.model.api.objects.ContentRootObject;
 import edu.unc.lib.boxc.model.api.objects.FileObject;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.api.objects.WorkObject;
+import edu.unc.lib.boxc.model.api.rdf.IanaRelation;
+import edu.unc.lib.boxc.model.api.rdf.Premis;
 import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
 import edu.unc.lib.boxc.model.api.xml.JDOMNamespaceUtil;
+import edu.unc.lib.boxc.model.fcrepo.ids.DatastreamPids;
 import edu.unc.lib.boxc.model.fcrepo.services.RepositoryInitializer;
 import edu.unc.lib.boxc.model.fcrepo.test.AclModelBuilder;
 import edu.unc.lib.boxc.model.fcrepo.test.RepositoryObjectTreeIndexer;
 import edu.unc.lib.boxc.model.fcrepo.test.TestHelper;
+import edu.unc.lib.boxc.operations.api.events.PremisLogger;
+import edu.unc.lib.boxc.operations.api.events.PremisLoggerFactory;
 import edu.unc.lib.boxc.operations.impl.edit.UpdateDescriptionService;
 import edu.unc.lib.boxc.operations.impl.edit.UpdateDescriptionService.UpdateDescriptionRequest;
 import edu.unc.lib.boxc.operations.impl.utils.EmailHandler;
@@ -121,6 +138,8 @@ public class ExportXMLRouteIT {
     private EmailHandler emailHandler;
     @Autowired
     private ExportXMLProcessor exportXmlProcessor;
+    @Autowired
+    private PremisLoggerFactory premisLoggerFactory;
 
     @Captor
     private ArgumentCaptor<String> toCaptor;
@@ -161,7 +180,7 @@ public class ExportXMLRouteIT {
                 .whenCompleted(1)
                 .create();
 
-        sendRequest(false, false, workObj1.getPid(), workObj2.getPid());
+        sendRequest(createRequest(false, false, workObj1.getPid(), workObj2.getPid()));
 
         boolean result = notify.matches(5l, TimeUnit.SECONDS);
         assertTrue("Processing message did not match expectations", result);
@@ -184,7 +203,7 @@ public class ExportXMLRouteIT {
                 .whenCompleted(1)
                 .create();
 
-        sendRequest(false, false, collObj1.getPid());
+        sendRequest(createRequest(false, false, collObj1.getPid()));
 
         boolean result = notify.matches(5l, TimeUnit.SECONDS);
         assertTrue("Processing message did not match expectations", result);
@@ -206,7 +225,7 @@ public class ExportXMLRouteIT {
                 .whenCompleted(1)
                 .create();
 
-        sendRequest(true, false, collObj1.getPid());
+        sendRequest(createRequest(true, false, collObj1.getPid()));
 
         boolean result = notify.matches(5l, TimeUnit.SECONDS);
         assertTrue("Processing message did not match expectations", result);
@@ -232,7 +251,7 @@ public class ExportXMLRouteIT {
                 .whenDone(1)
                 .create();
 
-        sendRequest(false, false, workObj1.getPid());
+        sendRequest(createRequest(false, false, workObj1.getPid()));
 
         boolean result = notify.matches(5l, TimeUnit.SECONDS);
         assertTrue("Processing message did not match expectations", result);
@@ -253,7 +272,7 @@ public class ExportXMLRouteIT {
                 .whenDone(1)
                 .create();
 
-        sendRequest(false, false, collObj1.getPid());
+        sendRequest(createRequest(false, false, collObj1.getPid()));
 
         boolean result = notify.matches(5l, TimeUnit.SECONDS);
         assertTrue("Processing message did not match expectations", result);
@@ -274,7 +293,7 @@ public class ExportXMLRouteIT {
                 .whenCompleted(1)
                 .create();
 
-        sendRequest(true, false, unitObj.getPid());
+        sendRequest(createRequest(true, false, unitObj.getPid()));
 
         boolean result = notify.matches(5l, TimeUnit.SECONDS);
         assertTrue("Processing message did not match expectations", result);
@@ -307,7 +326,7 @@ public class ExportXMLRouteIT {
                 .whenCompleted(1)
                 .create();
 
-        sendRequest(true, true, unitObj.getPid());
+        sendRequest(createRequest(true, true, unitObj.getPid()));
 
         boolean result = notify.matches(5l, TimeUnit.SECONDS);
         assertTrue("Processing message did not match expectations", result);
@@ -331,7 +350,7 @@ public class ExportXMLRouteIT {
                 .whenCompleted(1)
                 .create();
 
-        sendRequest(false, true, collObj1.getPid());
+        sendRequest(createRequest(false, true, collObj1.getPid()));
 
         boolean result = notify.matches(5l, TimeUnit.SECONDS);
         assertTrue("Processing message did not match expectations", result);
@@ -351,7 +370,7 @@ public class ExportXMLRouteIT {
                 .whenCompleted(1)
                 .create();
 
-        sendRequest(true, true, workObj2.getPid());
+        sendRequest(createRequest(true, true, workObj2.getPid()));
 
         boolean result = notify.matches(5l, TimeUnit.SECONDS);
         assertTrue("Processing message did not match expectations", result);
@@ -371,7 +390,7 @@ public class ExportXMLRouteIT {
                 .whenCompleted(1)
                 .create();
 
-        sendRequest(true, true, workObj1.getPid());
+        sendRequest(createRequest(true, true, workObj1.getPid()));
 
         boolean result = notify.matches(5l, TimeUnit.SECONDS);
         assertTrue("Processing message did not match expectations", result);
@@ -393,7 +412,7 @@ public class ExportXMLRouteIT {
                 .whenCompleted(1)
                 .create();
 
-        sendRequest(false, true, workObj1.getPid());
+        sendRequest(createRequest(false, true, workObj1.getPid()));
 
         boolean result = notify.matches(5l, TimeUnit.SECONDS);
         assertTrue("Processing message did not match expectations", result);
@@ -403,6 +422,140 @@ public class ExportXMLRouteIT {
         Element rootEl = getExportedDocumentRootEl();
 
         assertHasObjectWithMods(rootEl, ResourceType.Work, workObj1.getPid());
+
+        assertExportDocumentCount(rootEl, 1);
+    }
+
+    @Test
+    public void exportWorkModsAndFitsTest() throws Exception {
+        String fitsContent = "<fits>content</fits>";
+        URI fitsUri = makeContentUri(fitsContent);
+        PID fitsPid = getTechnicalMetadataPid(fileObj1.getPid());
+        fileObj1.addBinary(fitsPid, fitsUri, TECHNICAL_METADATA.getDefaultFilename(), TECHNICAL_METADATA.getMimetype(),
+                null, null, IanaRelation.derivedfrom, DCTerms.conformsTo, createResource(FITS_URI));
+
+        indexAll();
+
+        NotifyBuilder notify = new NotifyBuilder(cdrExportXML)
+                .whenCompleted(1)
+                .create();
+
+        ExportXMLRequest request = createRequest(true, true, workObj1.getPid());
+        request.setDatastreams(EnumSet.of(DatastreamType.MD_DESCRIPTIVE, DatastreamType.TECHNICAL_METADATA));
+        sendRequest(request);
+
+        boolean result = notify.matches(5l, TimeUnit.SECONDS);
+        assertTrue("Processing message did not match expectations", result);
+
+        assertEmailSent();
+
+        Element rootEl = getExportedDocumentRootEl();
+
+        assertHasObjectWithMods(rootEl, ResourceType.Work, workObj1.getPid());
+        assertHasObjectWithDatastream(rootEl, ResourceType.File, fileObj1.getPid(), DatastreamType.TECHNICAL_METADATA,
+                "text/xml", fitsContent);
+
+        // The FITS belongs to the FileObject, so it will be returned as a separate object
+        assertExportDocumentCount(rootEl, 2);
+    }
+
+    @Test
+    public void exportWorkModsAndPremisTest() throws Exception {
+        PremisLogger logger = premisLoggerFactory.createPremisLogger(workObj1);
+        logger.buildEvent(Premis.Ingestion)
+                .addEventDetail("Ingested this thing")
+                .writeAndClose();
+        BinaryObject premisDs = repositoryObjectLoader.getBinaryObject(
+                DatastreamPids.getMdEventsPid(workObj1.getPid()));
+        String logContent = IOUtils.toString(premisDs.getBinaryStream(), StandardCharsets.UTF_8);
+
+        indexAll();
+
+        NotifyBuilder notify = new NotifyBuilder(cdrExportXML)
+                .whenCompleted(1)
+                .create();
+
+        ExportXMLRequest request = createRequest(true, true, workObj1.getPid());
+        request.setDatastreams(EnumSet.of(DatastreamType.MD_DESCRIPTIVE, DatastreamType.MD_EVENTS));
+        sendRequest(request);
+
+        boolean result = notify.matches(5l, TimeUnit.SECONDS);
+        assertTrue("Processing message did not match expectations", result);
+
+        assertEmailSent();
+
+        Element rootEl = getExportedDocumentRootEl();
+
+        assertHasObjectWithMods(rootEl, ResourceType.Work, workObj1.getPid());
+        assertHasObjectWithDatastream(rootEl, ResourceType.Work, workObj1.getPid(), DatastreamType.MD_EVENTS,
+                "application/n-triples", logContent);
+
+        assertExportDocumentCount(rootEl, 1);
+    }
+
+    @Test
+    public void exportWorkModsAndPremisNoModsTest() throws Exception {
+        PremisLogger logger = premisLoggerFactory.createPremisLogger(workObj2);
+        logger.buildEvent(Premis.Ingestion)
+                .addEventDetail("Ingested this other thing")
+                .writeAndClose();
+        BinaryObject premisDs = repositoryObjectLoader.getBinaryObject(
+                DatastreamPids.getMdEventsPid(workObj2.getPid()));
+        String logContent = IOUtils.toString(premisDs.getBinaryStream(), StandardCharsets.UTF_8);
+
+        indexAll();
+
+        NotifyBuilder notify = new NotifyBuilder(cdrExportXML)
+                .whenCompleted(1)
+                .create();
+
+        ExportXMLRequest request = createRequest(true, true, workObj2.getPid());
+        request.setDatastreams(EnumSet.of(DatastreamType.MD_DESCRIPTIVE, DatastreamType.MD_EVENTS));
+        sendRequest(request);
+
+        boolean result = notify.matches(5l, TimeUnit.SECONDS);
+        assertTrue("Processing message did not match expectations", result);
+
+        assertEmailSent();
+
+        Element rootEl = getExportedDocumentRootEl();
+
+        assertHasObjectWithoutMods(rootEl, ResourceType.Work, workObj2.getPid());
+        assertHasObjectWithDatastream(rootEl, ResourceType.Work, workObj2.getPid(), DatastreamType.MD_EVENTS,
+                "application/n-triples", logContent);
+
+        assertExportDocumentCount(rootEl, 1);
+    }
+
+    @Test
+    public void exportCollectionFitsExcludeNoDatastreamTest() throws Exception {
+        String fitsContent = "<fits>content</fits>";
+        URI fitsUri = makeContentUri(fitsContent);
+        PID fitsPid = getTechnicalMetadataPid(fileObj1.getPid());
+        fileObj1.addBinary(fitsPid, fitsUri, TECHNICAL_METADATA.getDefaultFilename(), TECHNICAL_METADATA.getMimetype(),
+                null, null, IanaRelation.derivedfrom, DCTerms.conformsTo, createResource(FITS_URI));
+        workObj1.setPrimaryObject(fileObj1.getPid());
+
+        indexAll();
+
+        NotifyBuilder notify = new NotifyBuilder(cdrExportXML)
+                .whenCompleted(1)
+                .create();
+
+        ExportXMLRequest request = createRequest(true, true, collObj1.getPid());
+        request.setDatastreams(EnumSet.of(DatastreamType.TECHNICAL_METADATA));
+        sendRequest(request);
+
+        boolean result = notify.matches(5l, TimeUnit.SECONDS);
+        assertTrue("Processing message did not match expectations", result);
+
+        assertEmailSent();
+
+        Element rootEl = getExportedDocumentRootEl();
+
+        assertHasObjectWithoutMods(rootEl, ResourceType.File, fileObj1.getPid());
+        assertHasObjectWithDatastream(rootEl, ResourceType.File, fileObj1.getPid(), DatastreamType.TECHNICAL_METADATA,
+                "text/xml", fitsContent);
 
         assertExportDocumentCount(rootEl, 1);
     }
@@ -422,7 +575,7 @@ public class ExportXMLRouteIT {
                 bodyCaptor.capture(), filenameCaptor.capture(), attachmentCaptor.capture());
     }
 
-    private ExportXMLRequest sendRequest(boolean exportChildren, boolean excludeNoDs, PID... pids) throws IOException {
+    private ExportXMLRequest createRequest(boolean exportChildren, boolean excludeNoDs, PID... pids) {
         ExportXMLRequest request = new ExportXMLRequest();
         request.setAgent(agent);
         request.setExportChildren(exportChildren);
@@ -430,6 +583,10 @@ public class ExportXMLRouteIT {
         request.setPids(Arrays.stream(pids).map(PID::getId).collect(Collectors.toList()));
         request.setEmail(EMAIL);
         request.setRequestedTimestamp(Instant.now());
+        return request;
+    }
+
+    private ExportXMLRequest sendRequest(ExportXMLRequest request) throws IOException {
         requestService.sendRequest(request);
         return request;
     }
@@ -472,18 +629,46 @@ public class ExportXMLRouteIT {
         Element objEl = getObjectElByPid(rootEl, pid);
         assertNotNull("Did not contain expected child object " + pid, objEl);
         assertEquals(expectedType.name(), objEl.getAttributeValue("type"));
-        assertNull(objEl.getChild("update"));
+        Element dsEl = getDatastreamElByType(objEl, DatastreamType.MD_DESCRIPTIVE);
+        assertNull(dsEl);
     }
 
     private void assertHasObjectWithMods(Element rootEl, ResourceType expectedType, PID pid) {
         Element objEl = getObjectElByPid(rootEl, pid);
         assertNotNull("Did not contain expected child object " + pid, objEl);
         assertEquals(expectedType.name(), objEl.getAttributeValue("type"));
-        Element updateEl = objEl.getChild("update");
-        assertNotNull(updateEl);
-        assertNotNull(updateEl.getAttributeValue("lastModified"));
-        Element modsEl = updateEl.getChild("mods", JDOMNamespaceUtil.MODS_V3_NS);
+        Element dsEl = getDatastreamElByType(objEl, DatastreamType.MD_DESCRIPTIVE);
+        assertNotNull(dsEl);
+        assertNotNull(dsEl.getAttributeValue("lastModified"));
+        assertEquals("update", dsEl.getAttributeValue("operation"));
+        Element modsEl = dsEl.getChild("mods", JDOMNamespaceUtil.MODS_V3_NS);
         assertNotNull(modsEl);
+    }
+
+    private void assertHasObjectWithDatastream(Element rootEl, ResourceType expectedType, PID pid,
+            DatastreamType expectedDsType, String expectedMimetype, String expectedContent) {
+        Element objEl = getObjectElByPid(rootEl, pid);
+        assertNotNull("Did not contain expected child object " + pid, objEl);
+        assertEquals(expectedType.name(), objEl.getAttributeValue("type"));
+        Element dsEl = getDatastreamElByType(objEl, expectedDsType);
+        assertNotNull(dsEl);
+        assertNotNull(dsEl.getAttributeValue("lastModified"));
+        assertEquals(expectedMimetype, dsEl.getAttributeValue("mimetype"));
+
+        String content;
+        if (expectedMimetype.equals("text/xml")) {
+            Element contentEl = dsEl.getChildren().get(0);
+            content = new XMLOutputter(Format.getRawFormat()).outputString(contentEl);
+        } else {
+            content = dsEl.getTextTrim();
+        }
+        assertEquals(expectedContent.trim(), content);
+    }
+
+    private Element getDatastreamElByType(Element objEl, DatastreamType dsType) {
+        return objEl.getChildren("datastream").stream()
+                .filter(e -> e.getAttributeValue("type").equals(dsType.getId()))
+                .findFirst().orElse(null);
     }
 
     private Element getObjectElByPid(Element rootEl, PID pid) {

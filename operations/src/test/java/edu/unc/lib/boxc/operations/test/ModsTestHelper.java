@@ -27,7 +27,9 @@ import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.output.XMLOutputter;
 
+import edu.unc.lib.boxc.model.api.DatastreamType;
 import edu.unc.lib.boxc.model.api.ids.PID;
+import edu.unc.lib.boxc.operations.jms.exportxml.BulkXMLConstants;
 
 /**
  * @author bbpennel
@@ -52,26 +54,27 @@ public class ModsTestHelper {
 
     public static Document makeUpdateDocument() {
         Document doc = new Document();
-        doc.addContent(new Element("bulkMetadata"));
+        doc.addContent(new Element(BulkXMLConstants.BULK_MD_TAG));
         return doc;
     }
 
     public static Element addObjectUpdate(Document doc, PID pid, String lastModified) {
         Element objEl = addObject(doc, pid);
-        Element updateEl = new Element("update");
-        updateEl.setAttribute("type", "MODS");
+        Element dsEl = new Element(BulkXMLConstants.DATASTREAM_TAG);
+        dsEl.setAttribute(BulkXMLConstants.TYPE_ATTR, DatastreamType.MD_DESCRIPTIVE.getId());
+        dsEl.setAttribute(BulkXMLConstants.OPERATION_ATTR, BulkXMLConstants.OPER_UPDATE_ATTR);
         if (lastModified != null) {
-            updateEl.setAttribute("lastModified", lastModified);
+            dsEl.setAttribute(BulkXMLConstants.MODIFIED_ATTR, lastModified);
         }
-        objEl.addContent(updateEl);
+        objEl.addContent(dsEl);
 
-        return updateEl;
+        return dsEl;
     }
 
     public static Element addObject(Document doc, PID pid) {
-        Element objEl = new Element("object");
+        Element objEl = new Element(BulkXMLConstants.OBJECT_TAG);
         if (pid != null) {
-            objEl.setAttribute("pid", pid.getId());
+            objEl.setAttribute(BulkXMLConstants.PID_ATTR, pid.getId());
         }
         doc.getRootElement().addContent(objEl);
         return objEl;
