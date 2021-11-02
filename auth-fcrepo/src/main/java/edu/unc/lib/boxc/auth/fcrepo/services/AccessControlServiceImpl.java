@@ -27,8 +27,8 @@ import edu.unc.lib.boxc.auth.api.services.GlobalPermissionEvaluator;
 import edu.unc.lib.boxc.model.api.ids.PID;
 
 /**
- * Implementation of the service to evaluate and retrieve CDR access controls in
- * a fcrepo4 repository.
+ * Implementation of the service to evaluate and retrieve box-c access controls in
+ * a fcrepo repository.
  *
  * @author bbpennel
  *

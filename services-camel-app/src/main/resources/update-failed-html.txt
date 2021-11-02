@@ -6,7 +6,7 @@
   </style>
 </head>
 <body>
-  <h3>CDR metadata update failed validation: {{fileName}}</h3>
+  <h3>DCR metadata update failed validation: {{fileName}}</h3>
   
   <dl>
     {{#problems}}
