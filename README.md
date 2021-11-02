@@ -1,7 +1,26 @@
 ![Build](https://github.com/UNC-Libraries/box-c/workflows/DcrBuild/badge.svg)
 
+Requirements
+============
+Box-c requires Java 8 in order to build and test. On a Mac, this can be installed using brew as follows:
+```
+brew tap adoptopenjdk/openjdk
+brew install --cask adoptopenjdk8
+```
+Then set `JAVA_HOME` to the installed version. This can be done by editing your .bash_profile or .bashrc file to add the following line:
+```
+export JAVA_HOME=/Library/Java/JavaVirtualMachines/adoptopenjdk-8.jdk/Contents/Home/
+```
+
+Maven 3.x is required in order to build the project, which can be installed with:
+```
+brew install maven
+```
+
+
 Building the project
 ---------------------
+
 ```
 # clone the project
 git clone https://github.com/UNC-Libraries/box-c
