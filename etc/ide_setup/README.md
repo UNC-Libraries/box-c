@@ -1,5 +1,13 @@
 # Intellij Setup
 
+## Configuration and Troubleshooting
+You will need to set Intellij to use your Java 8 SDK installation:
+https://www.jetbrains.com/help/idea/sdk.html#change-project-sdk
+
+If Intellij is giving project errors related to not being able to find maven dependencies, the following steps may help:
+* Right click on the pom.xml file for the project and go to Maven > Reload Project
+* Perform a `mvn clean install -DskipTests` in the box-c project, then in intellij go to File > Invalidate Caches, and restart intellij.
+
 ## Code Style
 Preferences > Editor > Code Style > Java
 
