@@ -7,10 +7,10 @@
 </head>
 <body>
   {{^issues}}
-    <h3>CDR metadata update completed successfully</h3>
+    <h3>DCR metadata update completed successfully</h3>
   {{/issues}}
   {{#issues}}
-    <h3>CDR metadata update completed with issues: {{fileName}}</h3>
+    <h3>DCR metadata update completed with issues: {{fileName}}</h3>
   {{/issues}}
 
   {{#outdatedCount}}
