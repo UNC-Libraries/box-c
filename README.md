@@ -1,7 +1,26 @@
 ![Build](https://github.com/UNC-Libraries/box-c/workflows/DcrBuild/badge.svg)
 
+Requirements
+============
+Box-c requires Java 8 in order to build and test. On a Mac, this can be installed using brew as follows:
+```
+brew tap adoptopenjdk/openjdk
+brew install --cask adoptopenjdk8
+```
+Then set `JAVA_HOME` to the installed version. This can be done by editing your .bash_profile or .bashrc file to add the following line:
+```
+export JAVA_HOME=/Library/Java/JavaVirtualMachines/adoptopenjdk-8.jdk/Contents/Home/
+```
+
+Maven 3.x is required in order to build the project, which can be installed with:
+```
+brew install maven
+```
+
+
 Building the project
 ---------------------
+
 ```
 # clone the project
 git clone https://github.com/UNC-Libraries/box-c
@@ -17,22 +36,24 @@ brew install node
 mvn clean install -DskipTests
 ```
 
-Eclipse IDE Developer Setup
----------------------------
-A version of Eclipse with m2e is required
+IDE Developer Setup
+----------------------------
+See the instructions here:
+[Setup Readme](etc/ide_setup/)
 
-To set the environment variable you'll need for running unit tests in Eclipse, go to Preferences > Java > Installed JREs. Select your JRE and click Edit, then type  ```-Dfcrepo.baseUri=http://example.com/rest```` in the Default VM Arguments box in the Default VM Arguments box
 
 Running Tests
 -------------
 
-All tests run automatically in Travis.
-All Java tests run automatically when building the project.
+All tests run automatically in Github Actions.
+All Java tests run automatically when building the project, unless skipped.
 JavaScript test don't run on a maven build, but can be run manually using the NPM command below.
 
 ```
-# Java Tests
-mvn clean install
+# Java Unit Tests (skipping tests from external modules)
+mvn -pl '!clamav-java' test 
+# Java unit and integration tests
+mvn -pl '!clamav-java' verify 
 
 # JavaScript Tests
 npm --prefix static/js/vue-cdr-access run test:unit
