@@ -42,6 +42,7 @@ import javax.jms.Session;
 import javax.jms.TextMessage;
 import javax.ws.rs.core.MediaType;
 
+import org.apache.activemq.ActiveMQConnectionFactory;
 import org.apache.activemq.junit.EmbeddedActiveMQBroker;
 import org.awaitility.Awaitility;
 import org.junit.After;
@@ -84,7 +85,8 @@ public class ExportXMLIT extends AbstractAPIIT {
     public void setup() throws Exception {
         initMocks(this);
         pidMinter = new RepositoryPIDMinter();
-        ConnectionFactory connectionFactory = broker.createConnectionFactory();
+        ConnectionFactory connectionFactory = new ActiveMQConnectionFactory(
+                "vm://embedded-broker?create=false&waitForStart=5000");
         jmsTemplate = new JmsTemplate();
         jmsTemplate.setConnectionFactory(connectionFactory);
         jmsTemplate.setPubSubDomain(false);
