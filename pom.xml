@@ -114,13 +114,11 @@
         <xerces.version>2.12.0</xerces.version>
         <xml-apis.version>1.4.01</xml-apis.version>
         <xom.version>1.2.5</xom.version>
-        
-        <jetty.version>9.4.12.v20180830</jetty.version>
-        <taglibs.version>1.1.2</taglibs.version>
-        <javax.servlet.api.version>3.1.0</javax.servlet.api.version>
-        <javax.servlet.jsp.version>2.3.3</javax.servlet.jsp.version>
-        <jstl.version>1.2</jstl.version>
-        <jsp-api.version>2.2</jsp-api.version>
+
+        <taglibs.version>1.2.5</taglibs.version>
+        <jakarta.servlet.api.version>4.0.4</jakarta.servlet.api.version>
+        <jstl.version>1.2.7</jstl.version>
+        <jsp-api.version>2.3.6</jsp-api.version>
         
         <jedis.version>2.9.3</jedis.version>
         <embedded-redis.version>0.7.3</embedded-redis.version>
@@ -149,28 +147,6 @@
         
         <build-tools.path>common-utils/src/main/resources/</build-tools.path>
     </properties>
-
-    <distributionManagement>
-        <repository>
-            <id>dlbuild.libint.unc.edu</id>
-            <name>dlbuild.libint.unc.edu-releases</name>
-            <url>http://dlbuild.libint.unc.edu:8080/artifactory/libs-release-local</url>
-        </repository>
-        <snapshotRepository>
-            <id>dlbuild.libint.unc.edu</id>
-            <name>dlbuild.libint.unc.edu-snapshots</name>
-            <url>http://dlbuild.libint.unc.edu:8080/artifactory/libs-snapshot-local</url>
-        </snapshotRepository>
-    </distributionManagement>
-
-    <issueManagement>
-        <system>trac</system>
-        <url>https://intranet.lib.unc.edu:82/trac/cdr/</url>
-    </issueManagement>
-    <scm>
-        <connection>scm:javasvn:svn://intranet.lib.unc.edu/cdr/cdr-master/trunk</connection>
-        <developerConnection>scm:javasvn:svn://intranet.lib.unc.edu/cdr/cdr-master/trunk</developerConnection>
-    </scm>
 
     <modules>
         <module>auth-api</module>
@@ -210,48 +186,6 @@
     </reporting>
 
     <profiles>
-        <profile>
-            <id>example-settings</id>
-            <!-- supplies test properties to src/test/resources/server.properties -->
-            <activation>
-                <activeByDefault>true</activeByDefault>
-            </activation>
-            <properties>
-                <repositoryProtocol>https</repositoryProtocol>
-                <repositoryHost>localhost</repositoryHost>
-                <repositoryPort/>
-                <repositoryContext/>
-
-                <fedoraProtocol>https</fedoraProtocol>
-                <fedoraHost>localhost</fedoraHost>
-                <fedoraPort/>
-                <fedoraContext>fedora/</fedoraContext>
-                <fedoraAdminUsername>fedoraAdmin</fedoraAdminUsername>
-                <fedoraAdminPassword>fedoraPassword</fedoraAdminPassword>
-
-                <mulgaraProtocol>http</mulgaraProtocol>
-                <mulgaraHost>localhost</mulgaraHost>
-                <mulgaraPort>:8080</mulgaraPort>
-                <mulgaraContext/>
-
-                <solrProtocol>https</solrProtocol>
-                <solrHost>localhost</solrHost>
-                <solrPort/>
-                <solrContext>solr</solrContext>
-
-                <externalBaseUrl>http://localhost/static/</externalBaseUrl>
-
-                <jmsHost>localhost</jmsHost>
-                <jmsPort>:61616</jmsPort>
-
-                <!-- note: no colon on this port -->
-                <smtpHost>localhost</smtpHost>
-                <smtpPort>25</smtpPort>
-
-                <administratorEmail>somebody@example.com</administratorEmail>
-                <repositoryFromEmail>services@example.com</repositoryFromEmail>
-            </properties>
-        </profile>
         <profile>
             <id>release</id>
             <build>
@@ -451,15 +385,6 @@
                 </configuration>
             </plugin>
             <plugin>
-                <groupId>org.eclipse.jetty</groupId>
-                <artifactId>jetty-maven-plugin</artifactId>
-                <version>${jetty.version}</version>
-                <configuration>
-                    <scanIntervalSeconds>2</scanIntervalSeconds>
-                    <stopKey>STOP</stopKey>
-                </configuration>
-            </plugin>
-            <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-war-plugin</artifactId>
                 <version>${maven-war-plugin.version}</version>
@@ -523,40 +448,6 @@
             </plugin>
         </plugins>
     </build>
-    
-    <repositories>
-        <repository>
-            <id>maven.restlet.org</id>
-            <name>maven.restlet.org</name>
-            <url>https://maven.restlet.talend.com/</url>
-        </repository> 
-    </repositories>
-    
-    <pluginRepositories>
-        <pluginRepository>
-            <id>sonatype-nexus-snapshots</id>
-            <name>Sonatype Nexus Snapshots</name>
-            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
-            <releases>
-                <enabled>false</enabled>
-            </releases>
-            <snapshots>
-                <enabled>true</enabled>
-            </snapshots>
-        </pluginRepository>
-    
-        <pluginRepository>
-            <id>sonatype-nexus-staging</id>
-            <name>Nexus Release Repository</name>
-            <url>https://oss.sonatype.org/content/repositories/releases</url>
-            <releases>
-                <enabled>true</enabled>
-            </releases>
-            <snapshots>
-                <enabled>false</enabled>
-            </snapshots>
-        </pluginRepository>
-    </pluginRepositories>
 
     <dependencyManagement>
         <dependencies>
@@ -1030,30 +921,26 @@
             
             <!-- Servlets -->
             <dependency>
-                <groupId>taglibs</groupId>
-                <artifactId>standard</artifactId>
+                <groupId>org.apache.taglibs</groupId>
+                <artifactId>taglibs-standard-impl</artifactId>
                 <version>${taglibs.version}</version>
+                <scope>runtime</scope>
             </dependency>
             <dependency>
-                <groupId>javax.servlet</groupId>
-                <artifactId>jstl</artifactId>
+                <groupId>jakarta.servlet.jsp.jstl</groupId>
+                <artifactId>jakarta.servlet.jsp.jstl-api</artifactId>
                 <version>${jstl.version}</version>
             </dependency>
             <dependency>
-                <groupId>javax.servlet.jsp</groupId>
-                <artifactId>jsp-api</artifactId>
+                <groupId>jakarta.servlet.jsp</groupId>
+                <artifactId>jakarta.servlet.jsp-api</artifactId>
                 <version>${jsp-api.version}</version>
                 <scope>provided</scope>
             </dependency>
             <dependency>
-                <groupId>javax.servlet</groupId>
-                <artifactId>javax.servlet-api</artifactId>
-                <version>${javax.servlet.api.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>javax.servlet.jsp</groupId>
-                <artifactId>javax.servlet.jsp-api</artifactId>
-                <version>${javax.servlet.jsp.version}</version>
+                <groupId>jakarta.servlet</groupId>
+                <artifactId>jakarta.servlet-api</artifactId>
+                <version>${jakarta.servlet.api.version}</version>
                 <scope>provided</scope>
             </dependency>
             
