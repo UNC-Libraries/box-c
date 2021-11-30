@@ -473,6 +473,27 @@ public class ExtractTechnicalMetadataJobTest extends AbstractDepositJobTest {
         verifyFileResults(filePid, IMAGE_MIMETYPE, IMAGE_FORMAT, IMAGE_MD5, 1);
     }
 
+    @Test
+    public void movFileParenthesisTest() throws Exception {
+        setupFitsCommand("src/test/resources/fitsReports/imageReport.xml");
+
+        PID workPid = makePid(RepositoryPathConstants.CONTENT_BASE);
+        Bag workBag = model.createBag(workPid.getRepositoryPath());
+        workBag.addProperty(RDF.type, Cdr.Work);
+        depositBag.add(workBag);
+        String parentFolderName = "paren(goes)here";
+        File parentFolder = tmpFolder.newFolder(parentFolderName);
+        String filename = "commencement.MOV";
+        File sourceFile = new File(parentFolder, "commence.mov");
+        PID filePid = addFileObject(workBag, sourceFile.getAbsolutePath(), IMAGE_MIMETYPE, IMAGE_MD5);
+
+        job.closeModel();
+
+        job.run();
+
+        verifyFileResults(filePid, IMAGE_MIMETYPE, IMAGE_FORMAT, IMAGE_MD5, 1);
+    }
+
     private HttpUriRequest getRequest() throws Exception {
         ArgumentCaptor<HttpUriRequest> requestCaptor = ArgumentCaptor.forClass(HttpUriRequest.class);
         verify(httpClient).execute(requestCaptor.capture());
