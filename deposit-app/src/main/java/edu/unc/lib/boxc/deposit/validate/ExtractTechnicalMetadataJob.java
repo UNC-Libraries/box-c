@@ -26,6 +26,7 @@ import static org.apache.commons.lang3.StringUtils.substringBeforeLast;
 import static org.springframework.util.MimeTypeUtils.APPLICATION_OCTET_STREAM_VALUE;
 
 import java.io.BufferedWriter;
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -394,20 +395,23 @@ public class ExtractTechnicalMetadataJob extends AbstractConcurrentDepositJob {
     }
 
     private Document extractUsingCLI(PID objPid, Path stagedPath) {
+        String stdout = null;
         try {
             String escapedPath = stagedPath.toString().replaceAll("\"", "\\\\\"");
-            String command = fitsCommandPath + " -i \"" + escapedPath + "\"";
+            String command = fitsCommandPath + " -i " + escapedPath;
             Process process = Runtime.getRuntime().exec(command);
-            if (process.waitFor() != 0) {
-                String stdout = IOUtils.toString(process.getInputStream(), UTF_8);
+            int exitCode = process.waitFor();
+            stdout = IOUtils.toString(process.getInputStream(), UTF_8);
+            if (exitCode != 0) {
                 String stderr = IOUtils.toString(process.getErrorStream(), UTF_8);
                 failJob(null, "Failed to generate report for {0}, using command:\n{1}\n"
                         + "Script returned {3} with output:\n{4} {5}",
                         objPid, command, process.exitValue(), stdout, stderr);
             }
-            return createSAXBuilder().build(process.getInputStream());
+            return createSAXBuilder().build(new ByteArrayInputStream(stdout.getBytes(UTF_8)));
         } catch (IOException | JDOMException | InterruptedException e) {
-            failJob(e, "Failed to generate report for file '{0}' with id {1}", stagedPath, objPid.getId());
+            failJob(e, "Failed to generate report for file {0} with id {1}, output was:\n{2}",
+                    stagedPath, objPid.getId(), stdout);
         }
         return null;
     }
