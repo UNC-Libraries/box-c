@@ -27,6 +27,7 @@ import java.util.List;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import edu.unc.lib.boxc.web.common.services.XmlDocumentFilteringService;
 import org.jdom2.Document;
 import org.jdom2.JDOMException;
 import org.jdom2.input.SAXBuilder;
@@ -91,6 +92,8 @@ public class FullRecordController extends AbstractSolrSearchController {
     private FindingAidUrlService findingAidUrlService;
     @Autowired
     private AccessCopiesService accessCopiesService;
+    @Autowired
+    private XmlDocumentFilteringService xmlDocumentFilteringService;
 
     @Autowired(required = true)
     private XSLViewResolver xslViewResolver;
@@ -142,6 +145,7 @@ public class FullRecordController extends AbstractSolrSearchController {
                 SAXBuilder builder = createSAXBuilder();
                 try (InputStream modsStream = modsObj.getBinaryStream()) {
                     Document modsDoc = builder.build(modsStream);
+                    xmlDocumentFilteringService.filterExclusions(modsDoc);
                     fullObjectView = xslViewResolver.renderView("external.xslView.fullRecord.url",
                             ModsUtil.removeEmptyNodes(modsDoc));
                 }

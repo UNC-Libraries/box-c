@@ -56,7 +56,7 @@ public class XmlDocumentFilteringServiceTest {
         ObjectWriter writer = new ObjectMapper().writer();
         File configFile = tmpFolder.newFile("config.json");
         writer.writeValue(configFile, Arrays.asList(xpaths));
-        service.setConfigPath(configFile.getAbsolutePath());
+        service.setConfigPath(configFile.toPath());
         service.init();
     }
 
