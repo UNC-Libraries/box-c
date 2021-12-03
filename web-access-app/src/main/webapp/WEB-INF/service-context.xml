@@ -92,6 +92,11 @@
         <property name="checkTimeoutSeconds" value="${findingaids.checkTimeoutSeconds:5}" />
     </bean>
 
+    <bean id="xmlDocumentFilteringService" class="edu.unc.lib.boxc.web.common.services.XmlDocumentFilteringService"
+            init-method="init">
+        <property name="configPathString" value="/modsExclusionXPaths.json" />
+    </bean>
+
     <!-- Import controllers -->
     <bean
         class="org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter"></bean>

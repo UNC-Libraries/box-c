@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mods:mods xmlns:mods="http://www.loc.gov/mods/v3">
+    <mods:language>
+        <mods:languageTerm authority="iso639-2b" type="code">eng</mods:languageTerm>
+    </mods:language>
+    <mods:titleInfo>
+        <mods:title>Test Document</mods:title>
+    </mods:titleInfo>
+    <mods:extension>
+        <boxc-worktype>test_type</boxc-worktype>
+    </mods:extension>
+    <mods:abstract displayLabel="public">This is a test object</mods:abstract>
+    <mods:abstract displayLabel="admin only">For testing purposes</mods:abstract>
+    <mods:name>
+        <mods:displayForm>McPerson, Person</mods:displayForm>
+        <mods:affiliation>place</mods:affiliation>
+    </mods:name>
+</mods:mods>
