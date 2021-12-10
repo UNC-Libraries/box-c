@@ -32,20 +32,24 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Set;
 
 import javax.annotation.PostConstruct;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.http.HttpStatus;
@@ -88,7 +92,8 @@ public class ExtractTechnicalMetadataJob extends AbstractConcurrentDepositJob {
     private static final Logger log = LoggerFactory.getLogger(ExtractTechnicalMetadataJob.class);
 
     private static final String FITS_SINGLE_STATUS = "SINGLE_RESULT";
-    private final static String FITS_EXAMINE_PATH = "examine";
+    private static final String FITS_EXAMINE_PATH = "examine";
+    private static final Path TMP_PATH = Paths.get(System.getProperty("java.io.tmpdir"));
 
     private CloseableHttpClient httpClient;
 
@@ -396,9 +401,24 @@ public class ExtractTechnicalMetadataJob extends AbstractConcurrentDepositJob {
 
     private Document extractUsingCLI(PID objPid, Path stagedPath) {
         String stdout = null;
+        Path fileLink = null;
         try {
-            String escapedPath = stagedPath.toString().replaceAll("\"", "\\\\\"");
-            String command = fitsCommandPath + " -i " + escapedPath;
+            String targetPath;
+            // Create a symlink to the file to scan if it contains any non-ascii characters in its path,
+            // otherwise there will be encoding mismatches between boxc, the terminal, and FITS.
+            if (!charactersInBoundsForAscii(stagedPath)) {
+                String linkName = objPid.getId();
+                String ext = FilenameUtils.getExtension(stagedPath.getFileName().toString());
+                if (ext != null) {
+                    linkName += "." + ext;
+                }
+                fileLink = TMP_PATH.resolve(linkName);
+                Files.createSymbolicLink(fileLink, stagedPath);
+                targetPath = fileLink.toString();
+            } else {
+                targetPath = stagedPath.toString().replaceAll("\"", "\\\\\"");
+            }
+            String[] command = new String[] { fitsCommandPath.toString(), "-i", targetPath };
             Process process = Runtime.getRuntime().exec(command);
             int exitCode = process.waitFor();
             stdout = IOUtils.toString(process.getInputStream(), UTF_8);
@@ -406,12 +426,20 @@ public class ExtractTechnicalMetadataJob extends AbstractConcurrentDepositJob {
                 String stderr = IOUtils.toString(process.getErrorStream(), UTF_8);
                 failJob(null, "Failed to generate report for {0}, using command:\n{1}\n"
                         + "Script returned {3} with output:\n{4} {5}",
-                        objPid, command, process.exitValue(), stdout, stderr);
+                        objPid, Arrays.toString(command), process.exitValue(), stdout, stderr);
             }
             return createSAXBuilder().build(new ByteArrayInputStream(stdout.getBytes(UTF_8)));
         } catch (IOException | JDOMException | InterruptedException e) {
             failJob(e, "Failed to generate report for file {0} with id {1}, output was:\n{2}",
                     stagedPath, objPid.getId(), stdout);
+        } finally {
+            if (fileLink != null) {
+                try {
+                    Files.delete(fileLink);
+                } catch (IOException e) {
+                    log.warn("Failed to cleanup symlink", e);
+                }
+            }
         }
         return null;
     }
@@ -506,6 +534,10 @@ public class ExtractTechnicalMetadataJob extends AbstractConcurrentDepositJob {
         return premisDoc.getRootElement()
                 .getChild("object", PREMIS_V3_NS)
                 .getChild("objectCharacteristics", PREMIS_V3_NS);
+    }
+
+    private boolean charactersInBoundsForAscii(Path path) {
+        return CharMatcher.ascii().matchesAllOf(path.toString());
     }
 
     /**
