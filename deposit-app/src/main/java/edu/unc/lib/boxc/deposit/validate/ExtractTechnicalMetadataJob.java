@@ -15,41 +15,15 @@
  */
 package edu.unc.lib.boxc.deposit.validate;
 
-import static edu.unc.lib.boxc.common.xml.SecureXMLFactory.createSAXBuilder;
-import static edu.unc.lib.boxc.model.api.rdf.CdrDeposit.mimetype;
-import static edu.unc.lib.boxc.model.api.xml.JDOMNamespaceUtil.FITS_NS;
-import static edu.unc.lib.boxc.model.api.xml.JDOMNamespaceUtil.PREMIS_V3_NS;
-import static edu.unc.lib.boxc.model.api.xml.JDOMNamespaceUtil.XSI_NS;
-import static java.nio.charset.StandardCharsets.UTF_8;
-import static java.nio.file.Files.newBufferedWriter;
-import static org.apache.commons.lang3.StringUtils.substringBeforeLast;
-import static org.springframework.util.MimeTypeUtils.APPLICATION_OCTET_STREAM_VALUE;
-
-import java.io.BufferedWriter;
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Objects;
-import java.util.Set;
-
-import javax.annotation.PostConstruct;
-
-import org.apache.commons.io.FileUtils;
+import com.google.common.base.CharMatcher;
+import edu.unc.lib.boxc.common.http.MimetypeHelpers;
+import edu.unc.lib.boxc.common.util.URIUtil;
+import edu.unc.lib.boxc.deposit.work.AbstractConcurrentDepositJob;
+import edu.unc.lib.boxc.deposit.work.JobFailedException;
+import edu.unc.lib.boxc.deposit.work.JobInterruptedException;
+import edu.unc.lib.boxc.model.api.ids.PID;
+import edu.unc.lib.boxc.model.fcrepo.ids.DatastreamPids;
+import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.http.HttpStatus;
@@ -70,16 +44,35 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.MimeTypeUtils;
 
-import com.google.common.base.CharMatcher;
+import javax.annotation.PostConstruct;
+import java.io.BufferedWriter;
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map.Entry;
+import java.util.Objects;
+import java.util.Set;
 
-import edu.unc.lib.boxc.common.http.MimetypeHelpers;
-import edu.unc.lib.boxc.common.util.URIUtil;
-import edu.unc.lib.boxc.deposit.work.AbstractConcurrentDepositJob;
-import edu.unc.lib.boxc.deposit.work.JobFailedException;
-import edu.unc.lib.boxc.deposit.work.JobInterruptedException;
-import edu.unc.lib.boxc.model.api.ids.PID;
-import edu.unc.lib.boxc.model.fcrepo.ids.DatastreamPids;
-import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
+import static edu.unc.lib.boxc.common.xml.SecureXMLFactory.createSAXBuilder;
+import static edu.unc.lib.boxc.model.api.rdf.CdrDeposit.mimetype;
+import static edu.unc.lib.boxc.model.api.xml.JDOMNamespaceUtil.FITS_NS;
+import static edu.unc.lib.boxc.model.api.xml.JDOMNamespaceUtil.PREMIS_V3_NS;
+import static edu.unc.lib.boxc.model.api.xml.JDOMNamespaceUtil.XSI_NS;
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static java.nio.file.Files.newBufferedWriter;
+import static org.apache.commons.lang3.StringUtils.substringBeforeLast;
+import static org.springframework.util.MimeTypeUtils.APPLICATION_OCTET_STREAM_VALUE;
 
 /**
  * Job which performs technical metadata extraction on binary files included in
