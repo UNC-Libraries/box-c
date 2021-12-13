@@ -15,37 +15,15 @@
  */
 package edu.unc.lib.boxc.deposit.validate;
 
-import static edu.unc.lib.boxc.common.xml.SecureXMLFactory.createSAXBuilder;
-import static edu.unc.lib.boxc.model.api.rdf.CdrDeposit.mimetype;
-import static edu.unc.lib.boxc.model.api.xml.JDOMNamespaceUtil.FITS_NS;
-import static edu.unc.lib.boxc.model.api.xml.JDOMNamespaceUtil.PREMIS_V3_NS;
-import static edu.unc.lib.boxc.model.api.xml.JDOMNamespaceUtil.XSI_NS;
-import static java.nio.charset.StandardCharsets.UTF_8;
-import static java.nio.file.Files.newBufferedWriter;
-import static org.apache.commons.lang3.StringUtils.substringBeforeLast;
-import static org.springframework.util.MimeTypeUtils.APPLICATION_OCTET_STREAM_VALUE;
-
-import java.io.BufferedWriter;
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map.Entry;
-import java.util.Objects;
-import java.util.Set;
-
-import javax.annotation.PostConstruct;
-
+import com.google.common.base.CharMatcher;
+import edu.unc.lib.boxc.common.http.MimetypeHelpers;
+import edu.unc.lib.boxc.common.util.URIUtil;
+import edu.unc.lib.boxc.deposit.work.AbstractConcurrentDepositJob;
+import edu.unc.lib.boxc.deposit.work.JobFailedException;
+import edu.unc.lib.boxc.deposit.work.JobInterruptedException;
+import edu.unc.lib.boxc.model.api.ids.PID;
+import edu.unc.lib.boxc.model.fcrepo.ids.DatastreamPids;
+import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.http.HttpStatus;
@@ -66,16 +44,35 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.MimeTypeUtils;
 
-import com.google.common.base.CharMatcher;
+import javax.annotation.PostConstruct;
+import java.io.BufferedWriter;
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map.Entry;
+import java.util.Objects;
+import java.util.Set;
 
-import edu.unc.lib.boxc.common.http.MimetypeHelpers;
-import edu.unc.lib.boxc.common.util.URIUtil;
-import edu.unc.lib.boxc.deposit.work.AbstractConcurrentDepositJob;
-import edu.unc.lib.boxc.deposit.work.JobFailedException;
-import edu.unc.lib.boxc.deposit.work.JobInterruptedException;
-import edu.unc.lib.boxc.model.api.ids.PID;
-import edu.unc.lib.boxc.model.fcrepo.ids.DatastreamPids;
-import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
+import static edu.unc.lib.boxc.common.xml.SecureXMLFactory.createSAXBuilder;
+import static edu.unc.lib.boxc.model.api.rdf.CdrDeposit.mimetype;
+import static edu.unc.lib.boxc.model.api.xml.JDOMNamespaceUtil.FITS_NS;
+import static edu.unc.lib.boxc.model.api.xml.JDOMNamespaceUtil.PREMIS_V3_NS;
+import static edu.unc.lib.boxc.model.api.xml.JDOMNamespaceUtil.XSI_NS;
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static java.nio.file.Files.newBufferedWriter;
+import static org.apache.commons.lang3.StringUtils.substringBeforeLast;
+import static org.springframework.util.MimeTypeUtils.APPLICATION_OCTET_STREAM_VALUE;
 
 /**
  * Job which performs technical metadata extraction on binary files included in
@@ -88,7 +85,8 @@ public class ExtractTechnicalMetadataJob extends AbstractConcurrentDepositJob {
     private static final Logger log = LoggerFactory.getLogger(ExtractTechnicalMetadataJob.class);
 
     private static final String FITS_SINGLE_STATUS = "SINGLE_RESULT";
-    private final static String FITS_EXAMINE_PATH = "examine";
+    private static final String FITS_EXAMINE_PATH = "examine";
+    private static final Path TMP_PATH = Paths.get(System.getProperty("java.io.tmpdir"));
 
     private CloseableHttpClient httpClient;
 
@@ -396,9 +394,24 @@ public class ExtractTechnicalMetadataJob extends AbstractConcurrentDepositJob {
 
     private Document extractUsingCLI(PID objPid, Path stagedPath) {
         String stdout = null;
+        Path fileLink = null;
         try {
-            String escapedPath = stagedPath.toString().replaceAll("\"", "\\\\\"");
-            String command = fitsCommandPath + " -i " + escapedPath;
+            String targetPath;
+            // Create a symlink to the file to scan if it contains any non-ascii characters in its path,
+            // otherwise there will be encoding mismatches between boxc, the terminal, and FITS.
+            if (!charactersInBoundsForAscii(stagedPath)) {
+                String linkName = objPid.getId();
+                String ext = FilenameUtils.getExtension(stagedPath.getFileName().toString());
+                if (ext != null) {
+                    linkName += "." + ext;
+                }
+                fileLink = TMP_PATH.resolve(linkName);
+                Files.createSymbolicLink(fileLink, stagedPath);
+                targetPath = fileLink.toString();
+            } else {
+                targetPath = stagedPath.toString().replaceAll("\"", "\\\\\"");
+            }
+            String[] command = new String[] { fitsCommandPath.toString(), "-i", targetPath };
             Process process = Runtime.getRuntime().exec(command);
             int exitCode = process.waitFor();
             stdout = IOUtils.toString(process.getInputStream(), UTF_8);
@@ -406,12 +419,20 @@ public class ExtractTechnicalMetadataJob extends AbstractConcurrentDepositJob {
                 String stderr = IOUtils.toString(process.getErrorStream(), UTF_8);
                 failJob(null, "Failed to generate report for {0}, using command:\n{1}\n"
                         + "Script returned {3} with output:\n{4} {5}",
-                        objPid, command, process.exitValue(), stdout, stderr);
+                        objPid, Arrays.toString(command), process.exitValue(), stdout, stderr);
             }
             return createSAXBuilder().build(new ByteArrayInputStream(stdout.getBytes(UTF_8)));
         } catch (IOException | JDOMException | InterruptedException e) {
             failJob(e, "Failed to generate report for file {0} with id {1}, output was:\n{2}",
                     stagedPath, objPid.getId(), stdout);
+        } finally {
+            if (fileLink != null) {
+                try {
+                    Files.delete(fileLink);
+                } catch (IOException e) {
+                    log.warn("Failed to cleanup symlink", e);
+                }
+            }
         }
         return null;
     }
@@ -506,6 +527,10 @@ public class ExtractTechnicalMetadataJob extends AbstractConcurrentDepositJob {
         return premisDoc.getRootElement()
                 .getChild("object", PREMIS_V3_NS)
                 .getChild("objectCharacteristics", PREMIS_V3_NS);
+    }
+
+    private boolean charactersInBoundsForAscii(Path path) {
+        return CharMatcher.ascii().matchesAllOf(path.toString());
     }
 
     /**
