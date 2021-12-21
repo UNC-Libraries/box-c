@@ -27,6 +27,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringWriter;
 import java.nio.file.Files;
+import java.time.Instant;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -98,6 +100,7 @@ public class ImportXMLJob implements Runnable {
     private final static QName pidAttribute = new QName(BulkXMLConstants.PID_ATTR);
     private final static QName typeAttribute = new QName(BulkXMLConstants.TYPE_ATTR);
     private final static QName operationAttribute = new QName(BulkXMLConstants.OPERATION_ATTR);
+    private final static QName modifiedAttribute = new QName(BulkXMLConstants.MODIFIED_ATTR);
 
     private PID currentPid;
     private int objectCount = 0;
@@ -105,6 +108,7 @@ public class ImportXMLJob implements Runnable {
     private XMLEventReader xmlReader;
     private final XMLOutputFactory xmlOutput = XMLOutputFactory.newInstance();
     private DocumentState state = DocumentState.ROOT;
+    private Instant currentLastModified;
 
     private final String userEmail;
     private AgentPrincipals agent;
@@ -148,7 +152,7 @@ public class ImportXMLJob implements Runnable {
                 MultiDestinationTransferSession session = transferService.getSession();
         ) {
             initializeXMLReader(importStream);
-            processUpdates(session, null, null);
+            processUpdates(session);
             log.info("Finished metadata import for {} objects in {}ms for user {}",
                     objectCount, System.currentTimeMillis() - startTime, username);
             sendCompletedEmail(updated, failed);
@@ -257,18 +261,14 @@ public class ImportXMLJob implements Runnable {
         xmlReader = createXMLInputFactory().createXMLEventReader(importStream);
     }
 
-    private void processUpdates(MultiDestinationTransferSession session, PID resumePid, String resumeDs)
+    private void processUpdates(MultiDestinationTransferSession session)
             throws XMLStreamException, ServiceException {
         QName contentOpening = null;
         long countOpenings = 0;
         XMLEventWriter xmlWriter = null;
         StringWriter contentWriter = null;
 
-        String currentDs = null;
-
-        boolean resumeMode = (resumePid != null);
-        boolean foundResumptionPoint = false;
-        boolean updateOperation = false;
+        DatastreamDetails dsOpDetails = null;
 
         try {
             while (xmlReader.hasNext()) {
@@ -311,32 +311,13 @@ public class ImportXMLJob implements Runnable {
                         break;
                     case IN_OBJECT:
                         if (e.isStartElement()) {
-                            updateOperation = false;
                             StartElement element = e.asStartElement();
                             // Found start of update, extract the datastream
                             if (element.getName().getLocalPart().equals(DATASTREAM_TAG)) {
-                                Attribute operation = element.getAttributeByName(operationAttribute);
-                                Attribute typeAttr = element.getAttributeByName(typeAttribute);
-                                if (typeAttr == null) {
-                                    failed.put(currentPid.getQualifiedId(),
-                                            "Invalid import data, missing type attribute on update");
-                                } else if (MODS_TYPE.equals(typeAttr.getValue())) {
-                                    updateOperation = operation != null && BulkXMLConstants.OPER_UPDATE_ATTR
-                                            .equals(operation.getValue());
-                                    if (updateOperation) {
-                                        currentDs = MODS_TYPE;
-                                        log.debug("Starting MODS element for object {}", currentPid.getQualifiedId());
-                                    }
-                                } else {
-                                    failed.put(currentPid.getQualifiedId(),
-                                            "Invalid import data, unsupported type in update tag");
-                                }
-
-                                foundResumptionPoint = resumeMode
-                                        && currentPid.equals(resumePid) && currentDs.equals(resumeDs);
+                                dsOpDetails = startDatastreamOperation(element);
 
                                 state = DocumentState.IN_CONTENT;
-                                if (!resumeMode && updateOperation) {
+                                if (dsOpDetails != null) {
                                     contentWriter = new StringWriter();
                                     xmlWriter = xmlOutput.createXMLEventWriter(contentWriter);
                                 }
@@ -367,7 +348,7 @@ public class ImportXMLJob implements Runnable {
                                 e.asEndElement().getName().getLocalPart())) {
                             state = DocumentState.IN_OBJECT;
 
-                            if (!resumeMode && updateOperation) {
+                            if (dsOpDetails != null) {
                                 xmlWriter.close();
                                 xmlWriter = null;
                                 InputStream modsStream = new ByteArrayInputStream(contentWriter.toString().getBytes());
@@ -379,7 +360,8 @@ public class ImportXMLJob implements Runnable {
                                     updateService.updateDescription(
                                             new UpdateDescriptionRequest(agent, currentPid, modsStream)
                                                 .withTransferSession(transferSession)
-                                                .withPriority(IndexingPriority.low));
+                                                .withPriority(IndexingPriority.low)
+                                                .withUnmodifiedSince(dsOpDetails.lastModified));
                                     updated.add(currentPid.getQualifiedId());
                                     log.debug("Finished updating object {} with id {}", objectCount, currentPid);
                                 } catch (AccessRestrictionException ex) {
@@ -398,11 +380,9 @@ public class ImportXMLJob implements Runnable {
                                     failed.put(currentPid.getQualifiedId(),
                                             "Error retrieving object from Fedora: " + ex.getMessage());
                                 }
-                            } else if (foundResumptionPoint) {
-                                return;
                             }
                         } else {
-                            if (!resumeMode && updateOperation) {
+                            if (dsOpDetails != null) {
                                 // Store all of the content from the incoming document
                                 xmlWriter.add(e);
                             }
@@ -416,6 +396,51 @@ public class ImportXMLJob implements Runnable {
             }
         }
 
+    }
+
+    /**
+     * Start a datastream operation, if it passes preconditions:
+     *     * Has a valid type attribute (currently only MODS)
+     *     * Either has no last modified attribute, or has one in ISO 8601 format
+     *     * Is a valid operation (currently only updates)
+     * @param element
+     * @return Details about the operation, or null if it is not a valid operation
+     */
+    private DatastreamDetails startDatastreamOperation(StartElement element) {
+        Attribute operation = element.getAttributeByName(operationAttribute);
+        if (operation == null || !BulkXMLConstants.OPER_UPDATE_ATTR.equals(operation.getValue())) {
+            return null;
+        }
+        DatastreamDetails details = new DatastreamDetails();
+        Attribute typeAttr = element.getAttributeByName(typeAttribute);
+        if (typeAttr == null) {
+            failed.put(currentPid.getQualifiedId(),
+                    "Invalid import data, missing type attribute on update");
+            return null;
+        } else if (!MODS_TYPE.equals(typeAttr.getValue())) {
+            failed.put(currentPid.getQualifiedId(),
+                    "Invalid import data, unsupported type in update tag");
+            return null;
+        }
+        details.dsType = typeAttr.getValue();
+        Attribute modifiedAttr = element.getAttributeByName(modifiedAttribute);
+        if (modifiedAttr != null) {
+            try {
+                details.lastModified = Instant.parse(modifiedAttr.getValue());
+            } catch (DateTimeParseException e) {
+                failed.put(currentPid.getQualifiedId(), "Invalid last modified timestamp," +
+                        " must be in ISO 8601 format");
+                return null;
+            }
+        }
+        log.debug("Starting MODS element for object {}", currentPid.getQualifiedId());
+        return details;
+    }
+
+    private class DatastreamDetails {
+        private String dsType;
+        private Instant lastModified;
+        private boolean updateOperation;
     }
 
     private void close() {
