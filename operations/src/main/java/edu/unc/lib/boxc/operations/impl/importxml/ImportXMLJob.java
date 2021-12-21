@@ -265,10 +265,7 @@ public class ImportXMLJob implements Runnable {
             throws XMLStreamException, ServiceException {
         QName contentOpening = null;
         long countOpenings = 0;
-        XMLEventWriter xmlWriter = null;
-        StringWriter contentWriter = null;
-
-        DatastreamDetails dsOpDetails = null;
+        DatastreamOperationDetails dsOpDetails = null;
 
         try {
             while (xmlReader.hasNext()) {
@@ -318,8 +315,7 @@ public class ImportXMLJob implements Runnable {
 
                                 state = DocumentState.IN_CONTENT;
                                 if (dsOpDetails != null) {
-                                    contentWriter = new StringWriter();
-                                    xmlWriter = xmlOutput.createXMLEventWriter(contentWriter);
+                                    dsOpDetails.initializeContentWriters();
                                 }
                             }
                         } else if (e.isEndElement()) {
@@ -349,9 +345,8 @@ public class ImportXMLJob implements Runnable {
                             state = DocumentState.IN_OBJECT;
 
                             if (dsOpDetails != null) {
-                                xmlWriter.close();
-                                xmlWriter = null;
-                                InputStream modsStream = new ByteArrayInputStream(contentWriter.toString().getBytes());
+                                dsOpDetails.close();
+                                InputStream modsStream = dsOpDetails.getContentStream();
                                 try {
                                     log.debug("Ending MODS tag for {}, preparing to update description",
                                             currentPid.getQualifiedId());
@@ -384,15 +379,15 @@ public class ImportXMLJob implements Runnable {
                         } else {
                             if (dsOpDetails != null) {
                                 // Store all of the content from the incoming document
-                                xmlWriter.add(e);
+                                dsOpDetails.addContent(e);
                             }
                         }
                         break;
                 }
             }
         } finally {
-            if (xmlWriter != null) {
-                xmlWriter.close();
+            if (dsOpDetails != null) {
+                dsOpDetails.close();
             }
         }
 
@@ -406,12 +401,12 @@ public class ImportXMLJob implements Runnable {
      * @param element
      * @return Details about the operation, or null if it is not a valid operation
      */
-    private DatastreamDetails startDatastreamOperation(StartElement element) {
+    private DatastreamOperationDetails startDatastreamOperation(StartElement element) {
         Attribute operation = element.getAttributeByName(operationAttribute);
         if (operation == null || !BulkXMLConstants.OPER_UPDATE_ATTR.equals(operation.getValue())) {
             return null;
         }
-        DatastreamDetails details = new DatastreamDetails();
+        DatastreamOperationDetails details = new DatastreamOperationDetails();
         Attribute typeAttr = element.getAttributeByName(typeAttribute);
         if (typeAttr == null) {
             failed.put(currentPid.getQualifiedId(),
@@ -437,10 +432,29 @@ public class ImportXMLJob implements Runnable {
         return details;
     }
 
-    private class DatastreamDetails {
+    private class DatastreamOperationDetails {
         private String dsType;
         private Instant lastModified;
         private boolean updateOperation;
+        private XMLEventWriter xmlWriter;
+        private StringWriter contentWriter;
+
+        public void initializeContentWriters() throws XMLStreamException {
+            contentWriter = new StringWriter();
+            xmlWriter = xmlOutput.createXMLEventWriter(contentWriter);
+        }
+
+        public InputStream getContentStream() {
+            return new ByteArrayInputStream(contentWriter.toString().getBytes());
+        }
+
+        public void addContent(XMLEvent e) throws XMLStreamException {
+            xmlWriter.add(e);
+        }
+
+        public void close() throws XMLStreamException {
+            xmlWriter.close();
+        }
     }
 
     private void close() {
