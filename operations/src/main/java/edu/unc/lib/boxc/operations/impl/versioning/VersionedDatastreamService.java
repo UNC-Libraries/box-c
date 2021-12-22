@@ -76,9 +76,9 @@ public class VersionedDatastreamService {
         if (dsObj != null && newVersion.getUnmodifiedSince() != null) {
             Date lastModified = dsObj.getLastModified();
             if (dsObj.getLastModified().toInstant().isAfter(newVersion.getUnmodifiedSince())) {
-                throw new OptimisticLockException("Rejecting update to datastream " + dsPid
-                        + ", last updated " + lastModified + " but required to have not been modified since "
-                        + newVersion.getUnmodifiedSince());
+                throw new OptimisticLockException("Rejecting update to datastream " + dsPid.getQualifiedId()
+                        + ", last updated " + lastModified.toInstant()
+                        + " but is required to have not been modified since " + newVersion.getUnmodifiedSince());
             }
         }
 
