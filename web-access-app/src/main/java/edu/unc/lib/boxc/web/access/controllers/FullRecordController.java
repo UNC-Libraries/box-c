@@ -27,7 +27,10 @@ import edu.unc.lib.boxc.model.api.objects.ContentObject;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.boxc.search.api.models.ContentObjectRecord;
+import edu.unc.lib.boxc.search.api.requests.SearchRequest;
+import edu.unc.lib.boxc.search.api.requests.SearchState;
 import edu.unc.lib.boxc.search.api.requests.SimpleIdRequest;
+import edu.unc.lib.boxc.search.solr.responses.SearchResultResponse;
 import edu.unc.lib.boxc.search.solr.services.ChildrenCountService;
 import edu.unc.lib.boxc.search.solr.services.GetCollectionIdService;
 import edu.unc.lib.boxc.search.solr.services.NeighborQueryService;
@@ -60,6 +63,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -178,9 +182,16 @@ public class FullRecordController extends AbstractSolrSearchController {
             throw new InvalidRecordRequestException();
         }
 
-        // Retrieve the objects record from Solr
-        SimpleIdRequest idRequest = new SimpleIdRequest(pid, principals);
-        ContentObjectRecord briefObject = queryLayer.getObjectById(idRequest);
+        // Retrieve the object's record from Solr
+        SearchRequest searchRequest = new SearchRequest();
+        SearchState searchState = searchStateFactory.createSearchState();
+        searchState.setFacetsToRetrieve(null);
+        searchState.setIgnoreMaxRows(true);
+        searchRequest.setSearchState(searchState);
+
+        ContentObjectRecord briefObject = queryLayer.addSelectedContainer(pid, searchState, true,
+                principals);
+
         if (briefObject == null) {
             throw new InvalidRecordRequestException();
         }
@@ -195,11 +206,10 @@ public class FullRecordController extends AbstractSolrSearchController {
 
         // Get additional information depending on the type of object since the user has access
         String resourceType = briefObject.getResourceType();
-        boolean retrieveChildrenCount = !resourceType.equals(searchSettings.resourceTypeFile);
+        briefObject.getCountMap().put("child", childrenCountService.getChildrenCount(briefObject, principals));
 
-        if (retrieveChildrenCount) {
-            briefObject.getCountMap().put("child", childrenCountService.getChildrenCount(briefObject, principals));
-        }
+        List<ContentObjectRecord> workObjects = new ArrayList<>();
+        workObjects.add(briefObject);
 
         if (resourceType.equals(searchSettings.resourceTypeFolder) ||
                 resourceType.equals(searchSettings.resourceTypeFile) ||
@@ -219,7 +229,19 @@ public class FullRecordController extends AbstractSolrSearchController {
         }
 
         if (briefObject.getResourceType().equals(searchSettings.resourceTypeAggregate)) {
-            model.addAttribute("viewerNeeded", accessCopiesService.hasViewableFiles(briefObject, principals));
+            model.addAttribute("imageViewerNeeded", accessCopiesService.hasViewableFiles(briefObject, principals));
+
+            if (!resourceType.equals(searchSettings.resourceTypeFile)) {
+                // Get child objects
+                searchRequest.setAccessGroups(principals);
+                searchRequest.setRootPid(pid);
+                searchRequest.setApplyCutoffs(true);
+                SearchResultResponse resultResponse = queryLayer.performSearch(searchRequest);
+                List<ContentObjectRecord> childObjects = resultResponse.getResultList();
+                workObjects.addAll(childObjects);
+            }
+
+            model.addAttribute("pdfViewerNeeded", accessCopiesService.pdfViewerNeeded(workObjects));
         }
 
         List<String> objectStatus = briefObject.getStatus();

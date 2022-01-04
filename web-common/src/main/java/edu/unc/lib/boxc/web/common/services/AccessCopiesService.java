@@ -28,6 +28,7 @@ import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
 import edu.unc.lib.boxc.auth.api.services.GlobalPermissionEvaluator;
 import edu.unc.lib.boxc.model.api.DatastreamType;
 import edu.unc.lib.boxc.model.api.ids.PID;
+import edu.unc.lib.boxc.model.api.rdf.Cdr;
 import edu.unc.lib.boxc.search.api.SearchFieldKey;
 import edu.unc.lib.boxc.search.api.exceptions.SolrRuntimeException;
 import edu.unc.lib.boxc.search.api.facets.CutoffFacet;
@@ -38,6 +39,9 @@ import edu.unc.lib.boxc.search.api.requests.SearchState;
 import edu.unc.lib.boxc.search.api.requests.SimpleIdRequest;
 import edu.unc.lib.boxc.search.solr.models.ContentObjectSolrRecord;
 import edu.unc.lib.boxc.search.solr.services.SolrSearchService;
+import edu.unc.lib.boxc.web.common.utils.DatastreamUtil;
+
+import static edu.unc.lib.boxc.model.api.DatastreamType.ORIGINAL_FILE;
 
 /**
  * Service to check for or list resources with access copies
@@ -95,6 +99,52 @@ public class AccessCopiesService extends SolrSearchService {
 
         QueryResponse resp = performQuery(briefObj, principals, 0);
         return resp.getResults().getNumFound() > 0;
+    }
+
+    /**
+     * Returns true if the file is a pdf and is the primary object or the object has no primary object
+     * @param workObjs
+     * @return
+     */
+    public boolean pdfViewerNeeded(List<ContentObjectRecord> workObjs) {
+        if (workObjs == null) {
+            return false;
+        }
+
+        // Check first object
+        ContentObjectRecord workObj = workObjs.get(0);
+        if (hasPdf(workObj) && workObjs.size() == 1) {
+            return true;
+        }
+
+        workObjs.remove(0);
+
+        // Check any other objects
+        boolean hasPdfPrimaryObj = false;
+        for (ContentObjectRecord childObj: workObjs) {
+            if (!hasPdf(childObj)) {
+                continue;
+            }
+
+            List<String> primaryObj = childObj.getRelation(Cdr.primaryObject.getURI());
+            if (primaryObj == null) {
+                continue;
+            }
+
+            // True if PDF is primary object
+            String primaryObjUUID = primaryObj.get(0);
+            String origFileIdentifier = childObj.getDatastreamObject(ORIGINAL_FILE.getId()).getDatastreamIdentifier();
+            if (origFileIdentifier.startsWith(primaryObjUUID)) {
+                hasPdfPrimaryObj = true;
+                break;
+            }
+        }
+
+        return hasPdfPrimaryObj;
+    }
+
+    private boolean hasPdf(ContentObjectRecord contentObj) {
+        return DatastreamUtil.originalFileMimetypeMatches(contentObj, "application/(x-)?pdf");
     }
 
     private QueryResponse performQuery(ContentObjectRecord briefObj, AccessGroupSet principals, int rows) {
