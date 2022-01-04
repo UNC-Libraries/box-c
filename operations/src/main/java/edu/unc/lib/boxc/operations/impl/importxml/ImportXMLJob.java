@@ -409,7 +409,6 @@ public class ImportXMLJob implements Runnable {
         if (operation == null || !BulkXMLConstants.OPER_UPDATE_ATTR.equals(operation.getValue())) {
             return null;
         }
-        DatastreamOperationDetails details = new DatastreamOperationDetails();
         Attribute typeAttr = element.getAttributeByName(typeAttribute);
         if (typeAttr == null) {
             failed.put(currentPid.getQualifiedId(),
@@ -420,6 +419,7 @@ public class ImportXMLJob implements Runnable {
                     "Invalid import data, unsupported type in update tag");
             return null;
         }
+        DatastreamOperationDetails details = new DatastreamOperationDetails();
         details.dsType = typeAttr.getValue();
         Attribute modifiedAttr = element.getAttributeByName(modifiedAttribute);
         if (modifiedAttr != null) {

@@ -74,11 +74,11 @@ public class VersionedDatastreamService {
         Lock dsLock = lockManager.awaitWriteLock(dsPid);
         BinaryObject dsObj = getBinaryObject(dsPid);
         if (dsObj != null && newVersion.getUnmodifiedSince() != null) {
-            Date lastModified = dsObj.getLastModified();
-            if (dsObj.getLastModified().toInstant().isAfter(newVersion.getUnmodifiedSince())) {
+            Instant fcrepoModified = dsObj.getLastModified().toInstant();
+            if (newVersion.getUnmodifiedSince().isBefore(fcrepoModified)) {
                 throw new OptimisticLockException("Rejecting update to datastream " + dsPid.getQualifiedId()
-                        + ", last updated " + lastModified.toInstant()
-                        + " but is required to have not been modified since " + newVersion.getUnmodifiedSince());
+                        + ", must not have been modified since " + newVersion.getUnmodifiedSince()
+                        + " but was last updated " + fcrepoModified);
             }
         }
 
