@@ -77,8 +77,9 @@ public class VersionedDatastreamService {
             Instant fcrepoModified = dsObj.getLastModified().toInstant();
             if (newVersion.getUnmodifiedSince().isBefore(fcrepoModified)) {
                 throw new OptimisticLockException("Rejecting update to datastream " + dsPid.getQualifiedId()
-                        + ", must not have been modified since " + newVersion.getUnmodifiedSince()
-                        + " but was last updated " + fcrepoModified);
+                        + ", update specifies datastream must not have been modified since "
+                        + newVersion.getUnmodifiedSince()
+                        + " but version in the repository was last updated " + fcrepoModified);
             }
         }
 
