@@ -21,9 +21,11 @@ import static org.slf4j.LoggerFactory.getLogger;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
+import java.time.Instant;
 import java.util.Date;
 import java.util.concurrent.locks.Lock;
 
+import edu.unc.lib.boxc.fcrepo.exceptions.OptimisticLockException;
 import org.apache.jena.rdf.model.Model;
 import org.slf4j.Logger;
 
@@ -71,6 +73,15 @@ public class VersionedDatastreamService {
 
         Lock dsLock = lockManager.awaitWriteLock(dsPid);
         BinaryObject dsObj = getBinaryObject(dsPid);
+        if (dsObj != null && newVersion.getUnmodifiedSince() != null) {
+            Instant fcrepoModified = dsObj.getLastModified().toInstant();
+            if (newVersion.getUnmodifiedSince().isBefore(fcrepoModified)) {
+                throw new OptimisticLockException("Rejecting update to datastream " + dsPid.getQualifiedId()
+                        + ", update specifies datastream must not have been modified since "
+                        + newVersion.getUnmodifiedSince()
+                        + " but version in the repository was last updated " + fcrepoModified);
+            }
+        }
 
         // Get a session for transferring the binary and its history
         BinaryTransferSession session = null;
@@ -249,6 +260,8 @@ public class VersionedDatastreamService {
         private String sha1;
         private String filename;
         private Model properties;
+        // Date after which the datastream must not have been modified, for optimistic locking
+        private Instant unmodifiedSince;
 
         public DatastreamVersion(PID dsPid) {
             this.dsPid = dsPid;
@@ -320,6 +333,14 @@ public class VersionedDatastreamService {
 
         public void setProperties(Model properties) {
             this.properties = properties;
+        }
+
+        public Instant getUnmodifiedSince() {
+            return unmodifiedSince;
+        }
+
+        public void setUnmodifiedSince(Instant unmodifiedSince) {
+            this.unmodifiedSince = unmodifiedSince;
         }
     }
 }

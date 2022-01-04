@@ -25,6 +25,7 @@ import static org.apache.jena.rdf.model.ResourceFactory.createResource;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.time.Instant;
 
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.vocabulary.RDF;
@@ -129,6 +130,7 @@ public class UpdateDescriptionService {
             newVersion.setContentType(MD_DESCRIPTIVE.getMimetype());
             newVersion.setFilename(MD_DESCRIPTIVE.getDefaultFilename());
             newVersion.setTransferSession(request.getTransferSession());
+            newVersion.setUnmodifiedSince(request.getUnmodifiedSince());
 
             BinaryObject descBinary;
             if (repoObjFactory.objectExists(modsDsPid.getRepositoryUri())) {
@@ -215,6 +217,7 @@ public class UpdateDescriptionService {
         private AgentPrincipals agent;
         private InputStream modsStream;
         private IndexingPriority priority;
+        private Instant unmodifiedSince;
 
         public UpdateDescriptionRequest(AgentPrincipals agent, PID pid, InputStream modsStream) {
             this.agent = agent;
@@ -276,6 +279,15 @@ public class UpdateDescriptionService {
 
         public UpdateDescriptionRequest withPriority(IndexingPriority priority) {
             this.priority = priority;
+            return this;
+        }
+
+        public Instant getUnmodifiedSince() {
+            return unmodifiedSince;
+        }
+
+        public UpdateDescriptionRequest withUnmodifiedSince(Instant unmodifiedSince) {
+            this.unmodifiedSince = unmodifiedSince;
             return this;
         }
     }

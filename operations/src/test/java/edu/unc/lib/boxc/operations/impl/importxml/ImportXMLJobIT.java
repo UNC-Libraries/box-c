@@ -33,6 +33,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
+import java.time.Instant;
 import java.util.UUID;
 
 import javax.mail.internet.MimeMessage;
@@ -175,7 +176,7 @@ public class ImportXMLJobIT {
         Document updateDoc = makeUpdateDocument();
         addObjectUpdate(updateDoc, null, null)
             .addContent(modsWithTitleAndDate("Missing pid!", null));
-        addObjectUpdate(updateDoc, workPid, "2017-10-18T12:29:53.396Z")
+        addObjectUpdate(updateDoc, workPid, "2999-10-18T12:29:53.396Z")
             .addContent(modsWithTitleAndDate(UPDATED_TITLE, UPDATED_DATE));
         importFile = writeToFile(updateDoc);
         createJob();
@@ -199,7 +200,7 @@ public class ImportXMLJobIT {
         Document updateDoc = makeUpdateDocument();
         addObjectUpdate(updateDoc, anotherWorkPid, null)
             .addContent(modsWithTitleAndDate(UPDATED_TITLE, UPDATED_DATE));
-        addObjectUpdate(updateDoc, workPid, "2017-10-18T12:29:53.396Z")
+        addObjectUpdate(updateDoc, workPid, "2999-10-18T12:29:53.396Z")
             .addContent(modsWithTitleAndDate(UPDATED_TITLE, UPDATED_DATE));
         importFile = writeToFile(updateDoc);
         createJob();
@@ -295,6 +296,37 @@ public class ImportXMLJobIT {
 
         InputStream updatedMods = descriptionStream(workPid);
         assertModsNotUpdated(updatedMods);
+    }
+
+    @Test
+    public void testMultipleWorksOneOptimisticLockingFailure() throws Exception {
+        // With MODS, obj timestamp older than last modified in import
+        PID workPid1 = populateFedora();
+        // With optimistic locking failure, obj timestamp newer than last modified in import
+        PID workPid2 = populateFedora();
+        // Without MODS, with optimistic lock timestamp provided
+        PID workPid3 = populateFedora();
+
+        InputStream workMods1 = descriptionStream(workPid1);
+        InputStream workMods2 = descriptionStream(workPid2);
+
+        Document updateDoc = makeUpdateDocument();
+        Instant work1ModsUpdated = repoObjLoader.getWorkObject(workPid1).getDescription().getLastModified().toInstant();
+        addObjectUpdate(updateDoc, workPid1, work1ModsUpdated.toString())
+                .addContent(modsWithTitleAndDate(UPDATED_TITLE, UPDATED_DATE));
+        addObjectUpdate(updateDoc, workPid2, "1999-10-18T12:29:53.396Z")
+                .addContent(modsWithTitleAndDate(UPDATED_TITLE, UPDATED_DATE));
+        addObjectUpdate(updateDoc, workPid3, "2999-10-18T12:29:53.396Z")
+                .addContent(modsWithTitleAndDate(UPDATED_TITLE, UPDATED_DATE));
+        importFile = writeToFile(updateDoc);
+        createJob();
+
+        job.run();
+
+        verify(mailSender).send(any(MimeMessage.class));
+        assertModsUpdated(descriptionStream(workPid1));
+        assertModsNotUpdated(descriptionStream(workPid2));
+        assertModsUpdated(descriptionStream(workPid3));
     }
 
     private void assertModsUpdated(InputStream updatedMods) throws JDOMException, IOException {

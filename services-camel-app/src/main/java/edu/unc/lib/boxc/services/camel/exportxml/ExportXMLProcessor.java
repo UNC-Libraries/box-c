@@ -269,7 +269,8 @@ public class ExportXMLProcessor implements Processor {
 
                 Element datastreamEl = new Element(BulkXMLConstants.DATASTREAM_TAG);
                 datastreamEl.setAttribute(BulkXMLConstants.TYPE_ATTR, dsType.getId());
-                datastreamEl.setAttribute(BulkXMLConstants.MODIFIED_ATTR, dsObj.getLastModified().toString());
+                datastreamEl.setAttribute(BulkXMLConstants.MODIFIED_ATTR,
+                        dsObj.getLastModified().toInstant().toString());
                 String mimetype = dsObj.getMimetype();
                 datastreamEl.setAttribute(BulkXMLConstants.MIMETYPE_ATTR, mimetype);
                 datastreamEl.addContent(SEPERATOR);
