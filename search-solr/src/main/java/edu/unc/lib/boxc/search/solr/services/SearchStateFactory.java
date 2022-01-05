@@ -30,6 +30,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
+import edu.unc.lib.boxc.search.solr.facets.GenericFacet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -463,10 +464,9 @@ public class SearchStateFactory {
             searchState.getSearchFields().put(SearchFieldKey.TITLE_INDEX.name(), parameter);
         }
 
-        parameter = getParameter(request, searchSettings.searchFieldParam(SearchFieldKey.ANCESTOR_PATH.name()));
+        parameter = getParameter(request, searchSettings.searchFieldParam(SearchFieldKey.PARENT_COLLECTION.name()));
         if (parameter != null && parameter.length() > 0) {
-            CutoffFacet hierFacet = new CutoffFacetImpl(SearchFieldKey.ANCESTOR_PATH.name(), parameter);
-            searchState.addFacet(hierFacet);
+            searchState.setFacet(new GenericFacet(SearchFieldKey.PARENT_COLLECTION, parameter));
         }
 
         parameter = getParameter(request, searchSettings.searchFieldParam(SearchFieldKey.DEPARTMENT.name()));

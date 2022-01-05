@@ -46,7 +46,7 @@
 		<div class="twocol light shadowtop">
 			<div class="contentarea">
 				<h3>Limit By</h3>
-				<select name="container" class="advsearch_select" aria-label="collection">
+				<select name="${searchSettings.searchFieldParams['PARENT_COLLECTION']}" class="advsearch_select" aria-label="collection">
 					<option value="">Collection</option>
 					<c:forEach items="${collectionList}" var="collectionRecord">
 						<option value="<c:out value='${collectionRecord.id}' />"><c:out value="${collectionRecord.title}" /></option>
