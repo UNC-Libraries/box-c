@@ -233,15 +233,13 @@ public class FullRecordController extends AbstractSolrSearchController {
         if (briefObject.getResourceType().equals(searchSettings.resourceTypeAggregate)) {
             model.addAttribute("imageViewerNeeded", accessCopiesService.hasViewableFiles(briefObject, principals));
 
-            if (!resourceType.equals(searchSettings.resourceTypeFile)) {
-                // Get child objects
-                searchRequest.setAccessGroups(principals);
-                searchRequest.setRootPid(pid);
-                searchRequest.setApplyCutoffs(true);
-                SearchResultResponse resultResponse = queryLayer.performSearch(searchRequest);
-                List<ContentObjectRecord> childObjects = resultResponse.getResultList();
-                workObjects.addAll(childObjects);
-            }
+            // Get child objects
+            searchRequest.setAccessGroups(principals);
+            searchRequest.setRootPid(pid);
+            searchRequest.setApplyCutoffs(true);
+            SearchResultResponse resultResponse = queryLayer.performSearch(searchRequest);
+            List<ContentObjectRecord> childObjects = resultResponse.getResultList();
+            workObjects.addAll(childObjects);
 
             model.addAttribute("pdfViewerNeeded", accessCopiesService.pdfViewerNeeded(workObjects));
         }
