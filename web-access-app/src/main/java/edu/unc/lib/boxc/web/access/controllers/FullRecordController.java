@@ -206,7 +206,9 @@ public class FullRecordController extends AbstractSolrSearchController {
 
         // Get additional information depending on the type of object since the user has access
         String resourceType = briefObject.getResourceType();
-        briefObject.getCountMap().put("child", childrenCountService.getChildrenCount(briefObject, principals));
+        if (!resourceType.equals(searchSettings.resourceTypeFile)) {
+            briefObject.getCountMap().put("child", childrenCountService.getChildrenCount(briefObject, principals));
+        }
 
         List<ContentObjectRecord> workObjects = new ArrayList<>();
         workObjects.add(briefObject);
