@@ -111,18 +111,19 @@ public class AccessCopiesService extends SolrSearchService {
             return false;
         }
 
-        // Check first object
-        ContentObjectRecord workObj = workObjs.get(0);
-        if (hasPdf(workObj) && workObjs.size() == 1) {
-            return true;
-        }
-
-        workObjs.remove(0);
-
-        // Check any other objects
+        // Check if pdf and primary object
         boolean hasPdfPrimaryObj = false;
-        for (ContentObjectRecord childObj: workObjs) {
-            if (!hasPdf(childObj)) {
+
+        int numObjs = workObjs.size();
+        for (int i = 0; i < numObjs; i++) {
+            ContentObjectRecord childObj = workObjs.get(i);
+            boolean hasPdfFile = DatastreamUtil.originalFileMimetypeMatches(childObj, "application/(x-)?pdf");
+
+            if (i == 0 && hasPdfFile && numObjs == 1) {
+                return true;
+            }
+
+            if (!hasPdfFile) {
                 continue;
             }
 
@@ -141,10 +142,6 @@ public class AccessCopiesService extends SolrSearchService {
         }
 
         return hasPdfPrimaryObj;
-    }
-
-    private boolean hasPdf(ContentObjectRecord contentObj) {
-        return DatastreamUtil.originalFileMimetypeMatches(contentObj, "application/(x-)?pdf");
     }
 
     private QueryResponse performQuery(ContentObjectRecord briefObj, AccessGroupSet principals, int rows) {
