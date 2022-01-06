@@ -39,6 +39,7 @@ import edu.unc.lib.boxc.web.common.exceptions.InvalidRecordRequestException;
 import edu.unc.lib.boxc.web.common.exceptions.RenderViewException;
 import edu.unc.lib.boxc.web.common.services.AccessCopiesService;
 import edu.unc.lib.boxc.web.common.services.FindingAidUrlService;
+import edu.unc.lib.boxc.web.common.services.PermissionsHelper;
 import edu.unc.lib.boxc.web.common.services.XmlDocumentFilteringService;
 import edu.unc.lib.boxc.web.common.utils.ModsUtil;
 import edu.unc.lib.boxc.web.common.view.XSLViewResolver;
@@ -183,14 +184,8 @@ public class FullRecordController extends AbstractSolrSearchController {
         }
 
         // Retrieve the object's record from Solr
-        SearchRequest searchRequest = new SearchRequest();
-        SearchState searchState = searchStateFactory.createSearchState();
-        searchState.setFacetsToRetrieve(null);
-        searchState.setIgnoreMaxRows(true);
-        searchRequest.setSearchState(searchState);
-
-        ContentObjectRecord briefObject = queryLayer.addSelectedContainer(pid, searchState, true,
-                principals);
+        SimpleIdRequest idRequest = new SimpleIdRequest(pid, principals);
+        ContentObjectRecord briefObject = queryLayer.getObjectById(idRequest);
 
         if (briefObject == null) {
             throw new InvalidRecordRequestException();
@@ -210,9 +205,6 @@ public class FullRecordController extends AbstractSolrSearchController {
             briefObject.getCountMap().put("child", childrenCountService.getChildrenCount(briefObject, principals));
         }
 
-        List<ContentObjectRecord> workObjects = new ArrayList<>();
-        workObjects.add(briefObject);
-
         if (resourceType.equals(searchSettings.resourceTypeFolder) ||
                 resourceType.equals(searchSettings.resourceTypeFile) ||
                 resourceType.equals(searchSettings.resourceTypeAggregate) ||
@@ -231,17 +223,35 @@ public class FullRecordController extends AbstractSolrSearchController {
         }
 
         if (briefObject.getResourceType().equals(searchSettings.resourceTypeAggregate)) {
-            model.addAttribute("imageViewerNeeded", accessCopiesService.hasViewableFiles(briefObject, principals));
+            boolean imageViewerNeeded = accessCopiesService.hasViewableFiles(briefObject, principals);
+            model.addAttribute("imageViewerNeeded", imageViewerNeeded);
 
-            // Get child objects
-            searchRequest.setAccessGroups(principals);
-            searchRequest.setRootPid(pid);
-            searchRequest.setApplyCutoffs(true);
-            SearchResultResponse resultResponse = queryLayer.performSearch(searchRequest);
-            List<ContentObjectRecord> childObjects = resultResponse.getResultList();
-            workObjects.addAll(childObjects);
+            boolean pdfViewerNeeded = false;
 
-            model.addAttribute("pdfViewerNeeded", accessCopiesService.pdfViewerNeeded(workObjects));
+            if (!imageViewerNeeded) {
+                // Check if primary object is a pdf
+                pdfViewerNeeded = accessCopiesService.hasViewablePdf(briefObject, principals);
+
+                if (!pdfViewerNeeded) {
+                    // Get child objects
+                    SearchRequest searchRequest = new SearchRequest();
+                    SearchState searchState = searchStateFactory.createSearchState();
+                    searchState.setFacetsToRetrieve(null);
+                    searchState.setIgnoreMaxRows(true);
+                    searchRequest.setSearchState(searchState);
+                    searchRequest.setAccessGroups(principals);
+                    searchRequest.setRootPid(pid);
+                    searchRequest.setApplyCutoffs(true);
+                    SearchResultResponse resultResponse = queryLayer.performSearch(searchRequest);
+
+                    if (resultResponse.getResultCount() == 1) {
+                        ContentObjectRecord childObject = resultResponse.getResultList().get(0);
+                        pdfViewerNeeded = accessCopiesService.hasViewablePdf(childObject, principals);
+                    }
+                }
+            }
+
+            model.addAttribute("pdfViewerNeeded", pdfViewerNeeded);
         }
 
         List<String> objectStatus = briefObject.getStatus();
