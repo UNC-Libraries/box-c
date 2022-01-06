@@ -18,12 +18,21 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ page trimDirectiveWhitespaces="true" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<c:choose>
+    <c:when test="${not empty filePid}">
+        <c:set var="fileId" value="${filePid}"/>
+    </c:when>
+    <c:otherwise>
+        <c:set var="fileId" value="${briefObject.id}"/>
+    </c:otherwise>
+</c:choose>
+
 <link rel="stylesheet" href="/static/plugins/pdfjs/web/viewer.css">
 <link rel="resource" type="application/l10n" href="/static/plugins/pdfjs/web/locale/locale.properties">
 <script src="/static/plugins/pdfjs/build/pdf.js" type="text/javascript"></script>
 
 <div id="pdfViewer">
-    <div id="outerContainer" data-url='${briefObject.id}'>
+    <div id="outerContainer" data-url='${fileId}'>
         <div id="sidebarContainer">
             <div id="toolbarSidebar">
                 <div class="splitToolbarButton toggled">

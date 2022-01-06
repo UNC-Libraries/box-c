@@ -38,7 +38,6 @@ import edu.unc.lib.boxc.search.api.requests.SearchState;
 import edu.unc.lib.boxc.search.api.requests.SimpleIdRequest;
 import edu.unc.lib.boxc.search.solr.models.ContentObjectSolrRecord;
 import edu.unc.lib.boxc.search.solr.services.SolrSearchService;
-import edu.unc.lib.boxc.web.common.services.PermissionsHelper;
 import edu.unc.lib.boxc.web.common.utils.DatastreamUtil;
 
 /**

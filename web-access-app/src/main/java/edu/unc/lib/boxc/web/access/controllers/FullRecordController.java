@@ -27,6 +27,7 @@ import edu.unc.lib.boxc.model.api.objects.ContentObject;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.boxc.search.api.models.ContentObjectRecord;
+import edu.unc.lib.boxc.search.api.models.Datastream;
 import edu.unc.lib.boxc.search.api.requests.SearchRequest;
 import edu.unc.lib.boxc.search.api.requests.SearchState;
 import edu.unc.lib.boxc.search.api.requests.SimpleIdRequest;
@@ -64,12 +65,12 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
 import static edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore.getAgentPrincipals;
 import static edu.unc.lib.boxc.common.xml.SecureXMLFactory.createSAXBuilder;
+import static edu.unc.lib.boxc.model.api.DatastreamType.ORIGINAL_FILE;
 import static edu.unc.lib.boxc.search.api.FacetConstants.MARKED_FOR_DELETION;
 
 /**
@@ -232,6 +233,7 @@ public class FullRecordController extends AbstractSolrSearchController {
                 // Check if primary object is a pdf
                 pdfViewerNeeded = accessCopiesService.hasViewablePdf(briefObject, principals);
 
+                // Check if first child is a pdf
                 if (!pdfViewerNeeded) {
                     // Get child objects
                     SearchRequest searchRequest = new SearchRequest();
@@ -247,6 +249,10 @@ public class FullRecordController extends AbstractSolrSearchController {
                     if (resultResponse.getResultCount() == 1) {
                         ContentObjectRecord childObject = resultResponse.getResultList().get(0);
                         pdfViewerNeeded = accessCopiesService.hasViewablePdf(childObject, principals);
+
+                        if (pdfViewerNeeded) {
+                            model.addAttribute("filePid",childObject.getId());
+                        }
                     }
                 }
             }
