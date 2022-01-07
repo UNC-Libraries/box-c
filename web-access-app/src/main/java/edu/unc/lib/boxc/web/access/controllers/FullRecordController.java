@@ -27,7 +27,6 @@ import edu.unc.lib.boxc.model.api.objects.ContentObject;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.boxc.search.api.models.ContentObjectRecord;
-import edu.unc.lib.boxc.search.api.models.Datastream;
 import edu.unc.lib.boxc.search.api.requests.SearchRequest;
 import edu.unc.lib.boxc.search.api.requests.SearchState;
 import edu.unc.lib.boxc.search.api.requests.SimpleIdRequest;
@@ -40,7 +39,6 @@ import edu.unc.lib.boxc.web.common.exceptions.InvalidRecordRequestException;
 import edu.unc.lib.boxc.web.common.exceptions.RenderViewException;
 import edu.unc.lib.boxc.web.common.services.AccessCopiesService;
 import edu.unc.lib.boxc.web.common.services.FindingAidUrlService;
-import edu.unc.lib.boxc.web.common.services.PermissionsHelper;
 import edu.unc.lib.boxc.web.common.services.XmlDocumentFilteringService;
 import edu.unc.lib.boxc.web.common.utils.ModsUtil;
 import edu.unc.lib.boxc.web.common.view.XSLViewResolver;
@@ -70,7 +68,6 @@ import java.util.List;
 
 import static edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore.getAgentPrincipals;
 import static edu.unc.lib.boxc.common.xml.SecureXMLFactory.createSAXBuilder;
-import static edu.unc.lib.boxc.model.api.DatastreamType.ORIGINAL_FILE;
 import static edu.unc.lib.boxc.search.api.FacetConstants.MARKED_FOR_DELETION;
 
 /**
