@@ -67,7 +67,21 @@ public class PIDsTest {
         PID pid = PIDs.get(path);
 
         assertNotNull(pid);
-        assertEquals("Identifer did not match provided value", TEST_UUID, pid.getId());
+        assertEquals("Identifier did not match provided value", TEST_UUID, pid.getId());
+        assertEquals("Repository path was incorrect", path, pid.getRepositoryUri().toString());
+        assertEquals("Incorrect qualifier", CONTENT_BASE, pid.getQualifier());
+        assertNull("Component path should not be set", pid.getComponentPath());
+    }
+
+    @Test
+    public void getPidFromRepositoryPathWithWhitespace() {
+        String path = fakeRepositoryPath(CONTENT_BASE, null);
+        String paddedPath = "  " + path + " ";
+
+        PID pid = PIDs.get(path);
+
+        assertNotNull(pid);
+        assertEquals("Identifier did not match provided value", TEST_UUID, pid.getId());
         assertEquals("Repository path was incorrect", path, pid.getRepositoryUri().toString());
         assertEquals("Incorrect qualifier", CONTENT_BASE, pid.getQualifier());
         assertNull("Component path should not be set", pid.getComponentPath());
@@ -82,7 +96,7 @@ public class PIDsTest {
         PID pid = PIDs.get(path);
 
         assertNotNull(pid);
-        assertEquals("Identifer did not match provided value", TEST_UUID, pid.getId());
+        assertEquals("Identifier did not match provided value", TEST_UUID, pid.getId());
         assertEquals("Repository path was incorrect", path, pid.getRepositoryUri().toString());
         assertEquals("Incorrect qualifier", DEPOSIT_RECORD_BASE, pid.getQualifier());
         assertEquals("Qualified id did not match", qualified, pid.getQualifiedId());
@@ -104,7 +118,7 @@ public class PIDsTest {
         PID pid = PIDs.get(uuid);
 
         assertNotNull(pid);
-        assertEquals("Identifer did not match provided value", TEST_UUID, pid.getId());
+        assertEquals("Identifier did not match provided value", TEST_UUID, pid.getId());
         assertEquals("Repository path was incorrect", expectedPath, pid.getRepositoryUri().toString());
         assertEquals("Blank qualifier was not set to default", CONTENT_BASE, pid.getQualifier());
         assertNull("Component path should not be set", pid.getComponentPath());
@@ -118,7 +132,7 @@ public class PIDsTest {
         PID pid = PIDs.get(qualified);
 
         assertNotNull(pid);
-        assertEquals("Identifer did not match provided value", TEST_UUID, pid.getId());
+        assertEquals("Identifier did not match provided value", TEST_UUID, pid.getId());
         assertEquals("Repository path was incorrect", expectedPath, pid.getRepositoryUri().toString());
         assertEquals("Blank qualifier was not set to default", DEPOSIT_RECORD_BASE, pid.getQualifier());
         assertEquals("Qualified id did not match", qualified, pid.getQualifiedId());
@@ -134,11 +148,25 @@ public class PIDsTest {
         PID pid = PIDs.get(qualified);
 
         assertNotNull(pid);
-        assertEquals("Identifer did not match provided value", TEST_UUID, pid.getId());
+        assertEquals("Identifier did not match provided value", TEST_UUID, pid.getId());
         assertEquals("Repository path was incorrect", expectedPath, pid.getRepositoryUri().toString());
         assertEquals("Blank qualifier was not set to default", DEPOSIT_RECORD_BASE, pid.getQualifier());
         assertEquals("Qualified id did not match", qualified, pid.getQualifiedId());
         assertEquals("Incorrect component path", component, pid.getComponentPath());
+    }
+
+    @Test
+    public void getPidFromIDWithWhitespace() {
+        String uuid = "  " + TEST_UUID + " ";
+        String expectedPath = fakeRepositoryPath(CONTENT_BASE, null);
+
+        PID pid = PIDs.get(uuid);
+
+        assertNotNull(pid);
+        assertEquals("Identifier did not match provided value", TEST_UUID, pid.getId());
+        assertEquals("Repository path was incorrect", expectedPath, pid.getRepositoryUri().toString());
+        assertEquals("Blank qualifier was not set to default", CONTENT_BASE, pid.getQualifier());
+        assertNull("Component path should not be set", pid.getComponentPath());
     }
 
     @Test(expected = InvalidPidException.class)
@@ -156,7 +184,7 @@ public class PIDsTest {
         PID pid = PIDs.get(expectedPath);
 
         assertNotNull(pid);
-        assertEquals("Identifer did not match provided value", TEST_UUID, pid.getId());
+        assertEquals("Identifier did not match provided value", TEST_UUID, pid.getId());
         assertEquals("Repository path was incorrect", expectedPath, pid.getRepositoryUri().toString());
         assertEquals("Incorrect qualifier", CONTENT_BASE, pid.getQualifier());
         assertEquals("Component path should match fileset",
@@ -195,7 +223,7 @@ public class PIDsTest {
 
     private void verifyReservedPid(PID pid, String qualified, String expectedPath, String component) {
         assertNotNull(pid);
-        assertEquals("Identifer did not match provided value", CONTENT_ROOT_ID, pid.getId());
+        assertEquals("Identifier did not match provided value", CONTENT_ROOT_ID, pid.getId());
         assertEquals("Repository path was incorrect", expectedPath, pid.getRepositoryUri().toString());
         assertEquals("Blank qualifier was not set to default", CONTENT_BASE, pid.getQualifier());
         assertEquals("Qualified id did not match", qualified, pid.getQualifiedId());
@@ -262,7 +290,7 @@ public class PIDsTest {
         PID pid = PIDs.get(path);
 
         assertNotNull(pid);
-        assertEquals("Identifer did not match provided value", DEPOSITS_QUALIFIER, pid.getId());
+        assertEquals("Identifier did not match provided value", DEPOSITS_QUALIFIER, pid.getId());
         assertEquals("Repository path was incorrect", path, pid.getRepositoryUri().toString());
         assertEquals("Incorrect qualifier", REPOSITORY_ROOT_ID, pid.getQualifier());
         assertNull("Component path should not be set", pid.getComponentPath());
@@ -273,7 +301,7 @@ public class PIDsTest {
         PID pid = PIDs.get(DEPOSITS_QUALIFIER);
 
         assertNotNull(pid);
-        assertEquals("Identifer did not match provided value", DEPOSITS_QUALIFIER, pid.getId());
+        assertEquals("Identifier did not match provided value", DEPOSITS_QUALIFIER, pid.getId());
         assertEquals("Repository path was incorrect",
                 RepositoryPaths.getDepositRecordBase(), pid.getRepositoryUri().toString());
         assertEquals("Incorrect qualifier", REPOSITORY_ROOT_ID, pid.getQualifier());
@@ -338,7 +366,7 @@ public class PIDsTest {
         PID pid = PIDs.get(path);
 
         assertNotNull(pid);
-        assertEquals("Identifer did not match provided value", id, pid.getId());
+        assertEquals("Identifier did not match provided value", id, pid.getId());
         assertEquals("Repository path was incorrect", path, pid.getRepositoryPath());
         assertEquals("Incorrect qualifier", PIDConstants.AGENTS_QUALIFIER, pid.getQualifier());
         assertNull("Component path should not be set", pid.getComponentPath());
@@ -354,7 +382,7 @@ public class PIDsTest {
         PID pid = PIDs.get(qualifiedId);
 
         assertNotNull(pid);
-        assertEquals("Identifer did not match provided value", id, pid.getId());
+        assertEquals("Identifier did not match provided value", id, pid.getId());
         assertEquals("Repository path was incorrect", expectedPath, pid.getRepositoryPath());
         assertEquals("Incorrect qualifier", PIDConstants.AGENTS_QUALIFIER, pid.getQualifier());
         assertEquals("Incorrect qualified id", qualifiedId, pid.getQualifiedId());
@@ -371,7 +399,7 @@ public class PIDsTest {
         PID pid = PIDs.get(PIDConstants.AGENTS_QUALIFIER, id);
 
         assertNotNull(pid);
-        assertEquals("Identifer did not match provided value", id, pid.getId());
+        assertEquals("Identifier did not match provided value", id, pid.getId());
         assertEquals("Repository path was incorrect", expectedPath, pid.getRepositoryPath());
         assertEquals("Incorrect qualifier", PIDConstants.AGENTS_QUALIFIER, pid.getQualifier());
         assertEquals("Incorrect qualified id", expectedQualifiedId, pid.getQualifiedId());
