@@ -19,8 +19,8 @@
 <%@ page trimDirectiveWhitespaces="true" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <c:choose>
-    <c:when test="${not empty filePid}">
-        <c:set var="fileId" value="${filePid}"/>
+    <c:when test="${not empty pdfViewerPid}">
+        <c:set var="fileId" value="${pdfViewerPid}"/>
     </c:when>
     <c:otherwise>
         <c:set var="fileId" value="${briefObject.id}"/>

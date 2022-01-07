@@ -38,7 +38,6 @@ import static org.mockito.MockitoAnnotations.initMocks;
  * @author lfarrell
  */
 public class AccessCopiesServiceTest {
-    @Mock
     private PermissionsHelper helper;
 
     private ContentObjectSolrRecord mdObject;
@@ -75,26 +74,30 @@ public class AccessCopiesServiceTest {
 
         accessCopiesService = new AccessCopiesService();
         accessCopiesService.setPermissionsHelper(helper);
-
-        when(accessControlService.hasAccess(mdObject.getPid(), principals, viewOriginal)).thenReturn(true);
     }
 
     @Test
     public void testHasViewAblePdf() {
+        hasPermissions(mdObject, true);
         assertTrue("Work does not have PDF viewable content",
                 accessCopiesService.hasViewablePdf(mdObject, principals));
     }
 
     @Test
     public void testDoesNotHasViewAblePdf() {
+        hasPermissions(mdObjectImg, true);
         assertFalse("Work has viewable PDF content",
                 accessCopiesService.hasViewablePdf(mdObjectImg, principals));
     }
 
     @Test
     public void testNoPermissionsHasViewAblePdf() {
-        when(accessControlService.hasAccess(mdObject.getPid(), principals, viewOriginal)).thenReturn(false);
+        hasPermissions(mdObject, false);
         assertFalse("Work has viewable PDF content",
                 accessCopiesService.hasViewablePdf(mdObject, principals));
+    }
+
+    private void hasPermissions(ContentObjectSolrRecord contentObject, boolean hasAccess) {
+        when(accessControlService.hasAccess(contentObject.getPid(), principals, viewOriginal)).thenReturn(hasAccess);
     }
 }

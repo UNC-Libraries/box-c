@@ -232,24 +232,10 @@ public class FullRecordController extends AbstractSolrSearchController {
 
                 // Check if first child is a pdf
                 if (!pdfViewerNeeded) {
-                    // Get child objects
-                    SearchRequest searchRequest = new SearchRequest();
-                    SearchState searchState = searchStateFactory.createSearchState();
-                    searchState.setFacetsToRetrieve(null);
-                    searchState.setIgnoreMaxRows(true);
-                    searchRequest.setSearchState(searchState);
-                    searchRequest.setAccessGroups(principals);
-                    searchRequest.setRootPid(pid);
-                    searchRequest.setApplyCutoffs(true);
-                    SearchResultResponse resultResponse = queryLayer.performSearch(searchRequest);
-
-                    if (resultResponse.getResultCount() == 1) {
-                        ContentObjectRecord childObject = resultResponse.getResultList().get(0);
-                        pdfViewerNeeded = accessCopiesService.hasViewablePdf(childObject, principals);
-
-                        if (pdfViewerNeeded) {
-                            model.addAttribute("filePid",childObject.getId());
-                        }
+                    String childObjectPid = accessCopiesService.getViewablePdfFilePid(pid, principals, queryLayer);
+                    if (childObjectPid != null) {
+                        pdfViewerNeeded = true;
+                        model.addAttribute("pdfViewerPid", childObjectPid);
                     }
                 }
             }
