@@ -95,16 +95,10 @@ public class AdvancedSearchFormController extends AbstractSolrSearchController {
         // If the user has submitted the search form, then generate a search state
         // and forward them to the search servlet.
         SearchState searchState = searchStateFactory.createSearchStateAdvancedSearch(request.getParameterMap());
-        String container = request.getParameter("container");
 
         request.getSession().setAttribute("searchState", searchState);
         model.addAllAttributes(SearchStateUtil.generateStateParameters(searchState));
 
-        String collection = (container != null && container.length() > 0) ? container : null;
-        if (collection == null) {
-            return "redirect:/search";
-        }
-
-        return "redirect:/search?collection=" + collection;
+        return "redirect:/search";
     }
 }
