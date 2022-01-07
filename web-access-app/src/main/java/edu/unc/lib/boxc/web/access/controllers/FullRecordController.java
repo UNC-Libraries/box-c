@@ -49,12 +49,15 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.servlet.ModelAndView;
+import org.springframework.web.servlet.View;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -98,17 +101,33 @@ public class FullRecordController extends AbstractSolrSearchController {
     @Autowired
     private RepositoryObjectLoader repositoryObjectLoader;
 
-    @RequestMapping(value = "/{pid}", method = RequestMethod.GET)
-    public String handleRequest(@PathVariable("pid") String pid, Model model, HttpServletRequest request) {
-        return getFullRecord(pid, model, request);
+    @GetMapping("/{pid}")
+    public ModelAndView handleRequest(@PathVariable("pid") String pid, Model model, HttpServletRequest request) {
+        String normalizedPid = normalizePid(pid);
+        // Permanently redirect to the normalized PID
+        if (!normalizedPid.equals(pid)) {
+            request.setAttribute(View.RESPONSE_STATUS_ATTRIBUTE, HttpStatus.MOVED_PERMANENTLY);
+            return new ModelAndView("redirect:/record/" + normalizedPid, model.asMap());
+        }
+        return new ModelAndView(getFullRecord(pid, model, request));
     }
 
-    @RequestMapping(method = RequestMethod.GET)
-    public String handleOldRequest(@RequestParam("id") String id, Model model, HttpServletRequest request) {
-        return getFullRecord(id, model, request);
+    @GetMapping
+    public ModelAndView handleOldRequest(@RequestParam("id") String id, Model model, HttpServletRequest request) {
+        String normalizedPid = normalizePid(id);
+        // Permanently redirect to current syntax
+        request.setAttribute(View.RESPONSE_STATUS_ATTRIBUTE, HttpStatus.MOVED_PERMANENTLY);
+        return new ModelAndView("redirect:/record/" + normalizedPid, model.asMap());
     }
 
-    @RequestMapping(value = "/{pid}/metadataView", method = RequestMethod.GET)
+    private String normalizePid(String pid) {
+        if (pid == null) {
+            return null;
+        }
+        return pid.trim().replaceFirst("^uuid:", "");
+    }
+
+    @GetMapping("/{pid}/metadataView")
     @ResponseBody
     public String handleFullObjectRequest(@PathVariable("pid") String pid, Model model, HttpServletRequest request,
                                           HttpServletResponse response) {
