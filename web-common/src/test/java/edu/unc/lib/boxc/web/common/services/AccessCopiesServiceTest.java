@@ -18,26 +18,42 @@ package edu.unc.lib.boxc.web.common.services;
 import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
 import edu.unc.lib.boxc.auth.api.services.AccessControlService;
 import edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl;
+import edu.unc.lib.boxc.search.solr.config.SearchSettings;
+import edu.unc.lib.boxc.search.solr.config.SolrSettings;
 import edu.unc.lib.boxc.search.solr.models.ContentObjectSolrRecord;
+import edu.unc.lib.boxc.search.solr.utils.AccessRestrictionUtil;
+import edu.unc.lib.boxc.search.solr.utils.FacetFieldUtil;
+
+import org.apache.solr.client.solrj.SolrClient;
+import org.apache.solr.client.solrj.SolrQuery;
+import org.apache.solr.client.solrj.SolrServerException;
+import org.apache.solr.client.solrj.response.QueryResponse;
+import org.apache.solr.common.SolrDocumentList;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Properties;
 
 import static edu.unc.lib.boxc.auth.api.Permission.viewOriginal;
 import static edu.unc.lib.boxc.model.api.DatastreamType.ORIGINAL_FILE;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertFalse;
+import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
 /**
  * @author lfarrell
  */
-public class AccessCopiesServiceTest {
+public class AccessCopiesServiceTest  {
     private PermissionsHelper helper;
 
     private ContentObjectSolrRecord mdObject;
@@ -50,9 +66,21 @@ public class AccessCopiesServiceTest {
 
     @Mock
     private AccessControlService accessControlService;
+    @Mock
+    private AccessRestrictionUtil restrictionUtil;
+    @Mock
+    private SolrSettings solrSettings;
+    @Mock
+    private FacetFieldUtil facetFieldUtil;
+    @Mock
+    private SolrClient solrClient;
+    @Mock
+    private QueryResponse queryResponse;
+    @Mock
+    private SolrDocumentList solrDocumentList;
 
     @Before
-    public void init() throws IOException {
+    public void init() throws IOException, SolrServerException {
         initMocks(this);
 
         mdObject = new ContentObjectSolrRecord();
@@ -72,8 +100,22 @@ public class AccessCopiesServiceTest {
         helper = new PermissionsHelper();
         helper.setAccessControlService(accessControlService);
 
+        Properties searchProps = new Properties();
+        searchProps.load(this.getClass().getResourceAsStream("/search.properties"));
+        SearchSettings searchSettings = new SearchSettings();
+        searchSettings.setProperties(searchProps);
+
         accessCopiesService = new AccessCopiesService();
         accessCopiesService.setPermissionsHelper(helper);
+        accessCopiesService.setAccessRestrictionUtil(restrictionUtil);
+        accessCopiesService.setSolrSettings(solrSettings);
+        accessCopiesService.setSearchSettings(searchSettings);
+        accessCopiesService.setFacetFieldUtil(facetFieldUtil);
+        accessCopiesService.setSolrClient(solrClient);
+
+        when(solrClient.query(any(SolrQuery.class))).thenReturn(queryResponse);
+        when(queryResponse.getResults()).thenReturn(solrDocumentList);
+        when(solrDocumentList.getNumFound()).thenReturn(1L);
     }
 
     @Test
@@ -95,6 +137,41 @@ public class AccessCopiesServiceTest {
         hasPermissions(mdObject, false);
         assertFalse("Work has viewable PDF content",
                 accessCopiesService.hasViewablePdf(mdObject, principals));
+    }
+
+    @Test
+    public void testHasViewAblePdfPid() {
+        hasPermissions(mdObject, true);
+
+        List<ContentObjectSolrRecord> mdObjects = new ArrayList<>();
+        mdObjects.add(mdObject);
+        when(queryResponse.getBeans(ContentObjectSolrRecord.class)).thenReturn(mdObjects);
+
+        String filePid = accessCopiesService.getViewablePdfFilePid(mdObject, principals);
+        assertNotNull(filePid);
+        assertEquals(filePid, mdObject.getId());
+    }
+
+    @Test
+    public void testDoesNotHaveViewAblePdfPidOneContentObject() {
+        hasPermissions(mdObjectImg, true);
+
+        List<ContentObjectSolrRecord> mdObjects = new ArrayList<>();
+        mdObjects.add(mdObjectImg);
+        when(queryResponse.getBeans(ContentObjectSolrRecord.class)).thenReturn(mdObjects);
+
+        String filePid = accessCopiesService.getViewablePdfFilePid(mdObjectImg, principals);
+        assertNull(filePid);
+    }
+
+    @Test
+    public void testDoesNotHaveViewAblePdfPidMultipleFileObjects() {
+        hasPermissions(mdObjectImg, true);
+
+        when(solrDocumentList.getNumFound()).thenReturn(2L);
+
+        String filePid = accessCopiesService.getViewablePdfFilePid(mdObjectImg, principals);
+        assertNull(filePid);
     }
 
     private void hasPermissions(ContentObjectSolrRecord contentObject, boolean hasAccess) {
