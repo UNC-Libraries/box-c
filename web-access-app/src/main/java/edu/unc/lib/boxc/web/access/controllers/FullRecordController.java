@@ -27,10 +27,7 @@ import edu.unc.lib.boxc.model.api.objects.ContentObject;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.boxc.search.api.models.ContentObjectRecord;
-import edu.unc.lib.boxc.search.api.requests.SearchRequest;
-import edu.unc.lib.boxc.search.api.requests.SearchState;
 import edu.unc.lib.boxc.search.api.requests.SimpleIdRequest;
-import edu.unc.lib.boxc.search.solr.responses.SearchResultResponse;
 import edu.unc.lib.boxc.search.solr.services.ChildrenCountService;
 import edu.unc.lib.boxc.search.solr.services.GetCollectionIdService;
 import edu.unc.lib.boxc.search.solr.services.NeighborQueryService;
@@ -232,7 +229,7 @@ public class FullRecordController extends AbstractSolrSearchController {
 
                 // Check if first child is a pdf
                 if (!pdfViewerNeeded) {
-                    String childObjectPid = accessCopiesService.getViewablePdfFilePid(pid, principals, queryLayer);
+                    String childObjectPid = accessCopiesService.getViewablePdfFilePid(briefObject, principals);
                     if (childObjectPid != null) {
                         pdfViewerNeeded = true;
                         model.addAttribute("pdfViewerPid", childObjectPid);

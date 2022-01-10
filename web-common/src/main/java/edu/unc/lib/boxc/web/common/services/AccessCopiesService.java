@@ -37,7 +37,6 @@ import edu.unc.lib.boxc.search.api.requests.SearchRequest;
 import edu.unc.lib.boxc.search.api.requests.SearchState;
 import edu.unc.lib.boxc.search.api.requests.SimpleIdRequest;
 import edu.unc.lib.boxc.search.solr.models.ContentObjectSolrRecord;
-import edu.unc.lib.boxc.search.solr.responses.SearchResultResponse;
 import edu.unc.lib.boxc.search.solr.services.SolrSearchService;
 import edu.unc.lib.boxc.web.common.utils.DatastreamUtil;
 
@@ -114,13 +113,12 @@ public class AccessCopiesService extends SolrSearchService {
     /**
      * Retrieves Retrieves the first ContentObjectRecord of a work and
      * checks if ContentObjectRecord has a pdf that can be viewed. If so it returns the object's id
-     * @param pid
+     * @param briefObj
      * @param principals
-     * @param queryLayer
      * @return String
      */
-    public String getViewablePdfFilePid(PID pid, AccessGroupSet principals, SolrQueryLayerService queryLayer) {
-        ContentObjectRecord contentObj = getChildFileObject(pid, principals, queryLayer);
+    public String getViewablePdfFilePid(ContentObjectRecord briefObj, AccessGroupSet principals) {
+        ContentObjectRecord contentObj = getChildFileObject(briefObj, principals);
         if (contentObj != null && hasViewablePdf(contentObj, principals)) {
             return contentObj.getId();
         }
@@ -130,25 +128,31 @@ public class AccessCopiesService extends SolrSearchService {
     /**
      * Retrieves the first ContentObjectRecord of a work,
      * and checks if it's the only ContentObjectRecord in the work.
-     * @param pid
+     * @param briefObj
      * @param principals
-     * @param queryLayer
      * @return String
      */
-    private ContentObjectRecord getChildFileObject(PID pid, AccessGroupSet principals,
-                                                  SolrQueryLayerService queryLayer) {
+    private ContentObjectRecord getChildFileObject(ContentObjectRecord briefObj, AccessGroupSet principals) {
         SearchState searchState = new SearchState();
         searchState.setFacetsToRetrieve(null);
         searchState.setRowsPerPage(1);
+        CutoffFacet selectedPath = briefObj.getPath();
+        searchState.addFacet(selectedPath);
         SearchRequest searchRequest = new SearchRequest(searchState, principals);
         searchRequest.setSearchState(searchState);
         searchRequest.setAccessGroups(principals);
-        searchRequest.setRootPid(pid);
         searchRequest.setApplyCutoffs(true);
-        SearchResultResponse resultResponse = queryLayer.performSearch(searchRequest);
+        SolrQuery query = generateSearch(searchRequest);
 
-        if (resultResponse.getResultCount() == 1) {
-            return resultResponse.getResultList().get(0);
+        try {
+            QueryResponse resp = executeQuery(query);
+
+            if (resp.getResults().getNumFound() == 1) {
+                List<?> results = resp.getBeans(ContentObjectSolrRecord.class);
+                return (ContentObjectRecord) results.get(0);
+            }
+        } catch (SolrServerException e) {
+            throw new SolrRuntimeException("Error listing viewable files: " + query, e);
         }
 
         return null;
