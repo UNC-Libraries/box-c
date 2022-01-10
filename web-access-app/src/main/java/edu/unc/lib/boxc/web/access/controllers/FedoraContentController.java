@@ -23,6 +23,8 @@ import java.io.IOException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import edu.unc.lib.boxc.fcrepo.exceptions.AuthorizationException;
+import edu.unc.lib.boxc.web.common.controllers.AbstractErrorHandlingController;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -57,7 +59,7 @@ import edu.unc.lib.boxc.web.common.utils.AnalyticsTrackerUtil;
  * @author bbpennel
  */
 @Controller
-public class FedoraContentController {
+public class FedoraContentController extends AbstractErrorHandlingController {
     private static final Logger log = LoggerFactory.getLogger(FedoraContentController.class);
 
     @Autowired
@@ -115,32 +117,5 @@ public class FedoraContentController {
             return;
         }
         analyticsTracker.trackEvent(request, "download", pid, principals);
-    }
-
-    @ResponseStatus(value = HttpStatus.NOT_FOUND)
-    @ExceptionHandler({ResourceNotFoundException.class, NotFoundException.class})
-    public String handleResourceNotFound(HttpServletRequest request) {
-        request.setAttribute("pageSubtitle", "Invalid content");
-        return "error/invalidRecord";
-    }
-
-    @ResponseStatus(value = HttpStatus.FORBIDDEN)
-    @ExceptionHandler(AccessRestrictionException.class)
-    public String handleInvalidRecordRequest(HttpServletRequest request) {
-        request.setAttribute("pageSubtitle", "Invalid content");
-        return "error/invalidRecord";
-    }
-
-    @ResponseStatus(value = HttpStatus.BAD_REQUEST)
-    @ExceptionHandler(ObjectTypeMismatchException.class)
-    public String handleObjectTypeMismatchException(HttpServletRequest request) {
-        request.setAttribute("pageSubtitle", "Invalid content");
-        return "error/invalidRecord";
-    }
-
-    @ExceptionHandler(value = { RuntimeException.class })
-    protected String handleUncaught(RuntimeException ex, WebRequest request) {
-        log.error("Uncaught exception while streaming content", ex);
-        return "error/exception";
     }
 }

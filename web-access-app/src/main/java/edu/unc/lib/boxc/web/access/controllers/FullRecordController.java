@@ -19,7 +19,9 @@ import edu.unc.lib.boxc.auth.api.Permission;
 import edu.unc.lib.boxc.auth.api.exceptions.AccessRestrictionException;
 import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
 import edu.unc.lib.boxc.auth.api.services.AccessControlService;
+import edu.unc.lib.boxc.fcrepo.exceptions.AuthorizationException;
 import edu.unc.lib.boxc.model.api.exceptions.FedoraException;
+import edu.unc.lib.boxc.model.api.exceptions.InvalidPidException;
 import edu.unc.lib.boxc.model.api.exceptions.NotFoundException;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.objects.BinaryObject;
@@ -141,14 +143,8 @@ public class FullRecordController extends AbstractSolrSearchController {
         PID pid = PIDs.get(pidString);
 
         AccessGroupSet principals = getAgentPrincipals().getPrincipals();
-
-        try {
-            aclService.assertHasAccess("Insufficient permissions to access full record metadata for " + pidString,
-                    pid, principals, Permission.viewMetadata);
-        } catch (AccessRestrictionException e) {
-            LOG.info("{}", e.getMessage());
-            throw new InvalidRecordRequestException();
-        }
+        aclService.assertHasAccess("Insufficient permissions to access full record metadata for " + pidString,
+                pid, principals, Permission.viewMetadata);
 
         SimpleIdRequest idRequest = new SimpleIdRequest(pid, principals);
 
@@ -168,7 +164,7 @@ public class FullRecordController extends AbstractSolrSearchController {
                 }
             }
         } catch (NotFoundException e) {
-            throw new InvalidRecordRequestException(e);
+            throw e;
         } catch (FedoraException e) {
             LOG.error("Failed to retrieve object {} from fedora", idRequest.getId(), e);
         } catch (RenderViewException e) {
@@ -251,13 +247,6 @@ public class FullRecordController extends AbstractSolrSearchController {
 
         model.addAttribute("pageSubtitle", briefObject.getTitle());
         return "fullRecord";
-    }
-
-    @ResponseStatus(value = HttpStatus.FORBIDDEN)
-    @ExceptionHandler(InvalidRecordRequestException.class)
-    public String handleInvalidRecordRequest(HttpServletRequest request) {
-        request.setAttribute("pageSubtitle", "Invalid record");
-        return "error/invalidRecord";
     }
 
     public void setXslViewResolver(XSLViewResolver xslViewResolver) {

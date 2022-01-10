@@ -47,7 +47,7 @@ import edu.unc.lib.boxc.web.common.utils.SerializationUtil;
  * Abstract base class for controllers which interact with solr services.
  * @author bbpennel
  */
-public abstract class AbstractSolrSearchController {
+public abstract class AbstractSolrSearchController extends AbstractErrorHandlingController {
     private final Logger LOG = LoggerFactory.getLogger(AbstractSolrSearchController.class);
 
     @Autowired(required = true)

@@ -22,6 +22,7 @@ import java.util.HashMap;
 
 import javax.servlet.http.HttpServletRequest;
 
+import edu.unc.lib.boxc.web.common.controllers.AbstractErrorHandlingController;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,7 +47,7 @@ import edu.unc.lib.boxc.web.common.search.SearchActionService;
  */
 @Controller
 @RequestMapping("/basicSearch")
-public class BasicSearchFormController {
+public class BasicSearchFormController extends AbstractErrorHandlingController {
     private static final Logger LOG = LoggerFactory.getLogger(BasicSearchFormController.class);
     @Autowired(required = true)
     private SearchActionService searchActionService;
