@@ -15,7 +15,9 @@
  */
 package edu.unc.lib.boxc.web.access.controllers;
 
+import edu.unc.lib.boxc.auth.api.exceptions.AccessRestrictionException;
 import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
+import edu.unc.lib.boxc.fcrepo.exceptions.AuthorizationException;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.objects.FileObject;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObject;
@@ -29,10 +31,13 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseStatus;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -98,6 +103,14 @@ public class FedoraContentController extends AbstractErrorHandlingController {
         } catch (IOException e) {
             log.error("Problem retrieving {} for {}", pid.toString(), datastream, e);
         }
+    }
+
+    @ResponseStatus(HttpStatus.FORBIDDEN)
+    @ExceptionHandler({ AccessRestrictionException.class, AuthorizationException.class })
+    public String handleForbiddenRecordRequest(RuntimeException ex, HttpServletRequest request) {
+        request.setAttribute("pageSubtitle", "Invalid content");
+        log.debug("Access denied", ex);
+        return "error/invalidRecord";
     }
 
     private void recordDownloadEvent(PID pid, String datastream, AccessGroupSet principals,
