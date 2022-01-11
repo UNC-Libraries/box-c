@@ -21,6 +21,7 @@ import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
 import edu.unc.lib.boxc.auth.api.services.AccessControlService;
 import edu.unc.lib.boxc.fcrepo.exceptions.AuthorizationException;
 import edu.unc.lib.boxc.model.api.exceptions.FedoraException;
+import edu.unc.lib.boxc.model.api.exceptions.InvalidPidException;
 import edu.unc.lib.boxc.model.api.exceptions.NotFoundException;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.objects.BinaryObject;
@@ -35,6 +36,7 @@ import edu.unc.lib.boxc.search.solr.services.NeighborQueryService;
 import edu.unc.lib.boxc.web.common.controllers.AbstractErrorHandlingSearchController;
 import edu.unc.lib.boxc.web.common.exceptions.InvalidRecordRequestException;
 import edu.unc.lib.boxc.web.common.exceptions.RenderViewException;
+import edu.unc.lib.boxc.web.common.exceptions.ResourceNotFoundException;
 import edu.unc.lib.boxc.web.common.services.AccessCopiesService;
 import edu.unc.lib.boxc.web.common.services.FindingAidUrlService;
 import edu.unc.lib.boxc.web.common.services.XmlDocumentFilteringService;
@@ -247,11 +249,12 @@ public class FullRecordController extends AbstractErrorHandlingSearchController 
         return "fullRecord";
     }
 
-    @ResponseStatus(HttpStatus.NOT_FOUND)
-    @ExceptionHandler({ AccessRestrictionException.class, AuthorizationException.class })
-    public String handleForbiddenRecordRequest(RuntimeException ex, HttpServletRequest request) {
+    @ResponseStatus(value = HttpStatus.FORBIDDEN)
+    @ExceptionHandler({ InvalidRecordRequestException.class, InvalidPidException.class,
+            NotFoundException.class, ResourceNotFoundException.class })
+    public String handleInvalidRecordRequest(RuntimeException ex, HttpServletRequest request) {
         request.setAttribute("pageSubtitle", "Invalid request");
-        LOG.debug("Access denied", ex);
+        LOG.debug("Invalid record request", ex);
         return "error/invalidRecord";
     }
 
