@@ -73,6 +73,7 @@ public class PIDs {
             return null;
         }
 
+        value = value.trim();
         if (value.startsWith(getBaseUri())) {
             return buildPidFromUri(value);
         } else {

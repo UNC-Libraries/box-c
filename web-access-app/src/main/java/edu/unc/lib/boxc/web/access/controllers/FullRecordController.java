@@ -20,6 +20,7 @@ import edu.unc.lib.boxc.auth.api.exceptions.AccessRestrictionException;
 import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
 import edu.unc.lib.boxc.auth.api.services.AccessControlService;
 import edu.unc.lib.boxc.model.api.exceptions.FedoraException;
+import edu.unc.lib.boxc.model.api.exceptions.InvalidPidException;
 import edu.unc.lib.boxc.model.api.exceptions.NotFoundException;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.objects.BinaryObject;
@@ -31,9 +32,10 @@ import edu.unc.lib.boxc.search.api.requests.SimpleIdRequest;
 import edu.unc.lib.boxc.search.solr.services.ChildrenCountService;
 import edu.unc.lib.boxc.search.solr.services.GetCollectionIdService;
 import edu.unc.lib.boxc.search.solr.services.NeighborQueryService;
-import edu.unc.lib.boxc.web.common.controllers.AbstractSolrSearchController;
+import edu.unc.lib.boxc.web.common.controllers.AbstractErrorHandlingSearchController;
 import edu.unc.lib.boxc.web.common.exceptions.InvalidRecordRequestException;
 import edu.unc.lib.boxc.web.common.exceptions.RenderViewException;
+import edu.unc.lib.boxc.web.common.exceptions.ResourceNotFoundException;
 import edu.unc.lib.boxc.web.common.services.AccessCopiesService;
 import edu.unc.lib.boxc.web.common.services.FindingAidUrlService;
 import edu.unc.lib.boxc.web.common.services.XmlDocumentFilteringService;
@@ -49,12 +51,14 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.servlet.ModelAndView;
+import org.springframework.web.servlet.View;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -75,7 +79,7 @@ import static edu.unc.lib.boxc.search.api.FacetConstants.MARKED_FOR_DELETION;
  */
 @Controller
 @RequestMapping("/record")
-public class FullRecordController extends AbstractSolrSearchController {
+public class FullRecordController extends AbstractErrorHandlingSearchController {
     private static final Logger LOG = LoggerFactory.getLogger(FullRecordController.class);
 
     @Autowired
@@ -98,17 +102,33 @@ public class FullRecordController extends AbstractSolrSearchController {
     @Autowired
     private RepositoryObjectLoader repositoryObjectLoader;
 
-    @RequestMapping(value = "/{pid}", method = RequestMethod.GET)
-    public String handleRequest(@PathVariable("pid") String pid, Model model, HttpServletRequest request) {
-        return getFullRecord(pid, model, request);
+    @GetMapping("/{pid}")
+    public ModelAndView handleRequest(@PathVariable("pid") String pid, Model model, HttpServletRequest request) {
+        String normalizedPid = normalizePid(pid);
+        // Permanently redirect to the normalized PID
+        if (!normalizedPid.equals(pid)) {
+            request.setAttribute(View.RESPONSE_STATUS_ATTRIBUTE, HttpStatus.MOVED_PERMANENTLY);
+            return new ModelAndView("redirect:/record/" + normalizedPid, model.asMap());
+        }
+        return new ModelAndView(getFullRecord(pid, model, request));
     }
 
-    @RequestMapping(method = RequestMethod.GET)
-    public String handleOldRequest(@RequestParam("id") String id, Model model, HttpServletRequest request) {
-        return getFullRecord(id, model, request);
+    @GetMapping
+    public ModelAndView handleOldRequest(@RequestParam("id") String id, Model model, HttpServletRequest request) {
+        String normalizedPid = normalizePid(id);
+        // Permanently redirect to current syntax
+        request.setAttribute(View.RESPONSE_STATUS_ATTRIBUTE, HttpStatus.MOVED_PERMANENTLY);
+        return new ModelAndView("redirect:/record/" + normalizedPid, model.asMap());
     }
 
-    @RequestMapping(value = "/{pid}/metadataView", method = RequestMethod.GET)
+    private String normalizePid(String pid) {
+        if (pid == null) {
+            return null;
+        }
+        return pid.trim().replaceFirst("^uuid:", "");
+    }
+
+    @GetMapping("/{pid}/metadataView")
     @ResponseBody
     public String handleFullObjectRequest(@PathVariable("pid") String pid, Model model, HttpServletRequest request,
                                           HttpServletResponse response) {
@@ -122,14 +142,8 @@ public class FullRecordController extends AbstractSolrSearchController {
         PID pid = PIDs.get(pidString);
 
         AccessGroupSet principals = getAgentPrincipals().getPrincipals();
-
-        try {
-            aclService.assertHasAccess("Insufficient permissions to access full record metadata for " + pidString,
-                    pid, principals, Permission.viewMetadata);
-        } catch (AccessRestrictionException e) {
-            LOG.info("{}", e.getMessage());
-            throw new InvalidRecordRequestException();
-        }
+        aclService.assertHasAccess("Insufficient permissions to access full record metadata for " + pidString,
+                pid, principals, Permission.viewMetadata);
 
         SimpleIdRequest idRequest = new SimpleIdRequest(pid, principals);
 
@@ -149,7 +163,7 @@ public class FullRecordController extends AbstractSolrSearchController {
                 }
             }
         } catch (NotFoundException e) {
-            throw new InvalidRecordRequestException(e);
+            throw e;
         } catch (FedoraException e) {
             LOG.error("Failed to retrieve object {} from fedora", idRequest.getId(), e);
         } catch (RenderViewException e) {
@@ -235,9 +249,11 @@ public class FullRecordController extends AbstractSolrSearchController {
     }
 
     @ResponseStatus(value = HttpStatus.FORBIDDEN)
-    @ExceptionHandler(InvalidRecordRequestException.class)
-    public String handleInvalidRecordRequest(HttpServletRequest request) {
-        request.setAttribute("pageSubtitle", "Invalid record");
+    @ExceptionHandler({ InvalidRecordRequestException.class, InvalidPidException.class,
+            NotFoundException.class, ResourceNotFoundException.class })
+    public String handleInvalidRecordRequest(RuntimeException ex, HttpServletRequest request) {
+        request.setAttribute("pageSubtitle", "Invalid request");
+        LOG.debug("Invalid record request", ex);
         return "error/invalidRecord";
     }
 

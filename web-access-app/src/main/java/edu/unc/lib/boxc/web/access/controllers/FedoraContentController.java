@@ -69,27 +69,27 @@ public class FedoraContentController {
 
     @RequestMapping(value = {"/content/{pid}", "/indexablecontent/{pid}"})
     public void getDefaultDatastream(@PathVariable("pid") String pid,
-            @RequestParam(value = "dl", defaultValue = "false") boolean download,
-            HttpServletRequest request, HttpServletResponse response) {
+                                     @RequestParam(value = "dl", defaultValue = "false") boolean download,
+                                     HttpServletRequest request, HttpServletResponse response) {
         streamData(pid, ORIGINAL_FILE.getId(), download, request, response);
     }
 
     @RequestMapping(value = {"/content/{pid}/{datastream}", "/indexablecontent/{pid}/{datastream}"})
     public void getDatastream(@PathVariable("pid") String pid, @PathVariable("datastream") String datastream,
-            @RequestParam(value = "dl", defaultValue = "false") boolean download,
-            HttpServletRequest request, HttpServletResponse response) {
+                              @RequestParam(value = "dl", defaultValue = "false") boolean download,
+                              HttpServletRequest request, HttpServletResponse response) {
         streamData(pid, datastream, download, request, response);
     }
 
     @RequestMapping(value = {"/indexablecontent", "/content"})
     public void getDatastreamByParameters(@RequestParam("id") String id, @RequestParam("ds") String datastream,
-            @RequestParam(value = "dl", defaultValue = "false") boolean download,
-            HttpServletRequest request, HttpServletResponse response) {
+                                          @RequestParam(value = "dl", defaultValue = "false") boolean download,
+                                          HttpServletRequest request, HttpServletResponse response) {
         streamData(id, ORIGINAL_FILE.getId(), download, request, response);
     }
 
     private void streamData(String pidString, String datastream, boolean asAttachment, HttpServletRequest request,
-            HttpServletResponse response) {
+                            HttpServletResponse response) {
         PID pid = PIDs.get(pidString);
         AccessGroupSet principals = getAgentPrincipals().getPrincipals();
 
@@ -110,7 +110,7 @@ public class FedoraContentController {
     }
 
     private void recordDownloadEvent(PID pid, String datastream, AccessGroupSet principals,
-            HttpServletRequest request) {
+                                     HttpServletRequest request) {
         if (!(StringUtils.isBlank(datastream) || ORIGINAL_FILE.getId().equals(datastream))) {
             return;
         }

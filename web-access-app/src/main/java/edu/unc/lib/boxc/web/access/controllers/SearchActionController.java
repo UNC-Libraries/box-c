@@ -15,22 +15,6 @@
  */
 package edu.unc.lib.boxc.web.access.controllers;
 
-import java.util.Map;
-import java.util.Optional;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
-
 import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPaths;
@@ -42,7 +26,21 @@ import edu.unc.lib.boxc.search.solr.facets.CutoffFacetImpl;
 import edu.unc.lib.boxc.search.solr.responses.SearchResultResponse;
 import edu.unc.lib.boxc.search.solr.services.MultiSelectFacetListService;
 import edu.unc.lib.boxc.search.solr.services.ParentCollectionFacetTitleService;
-import edu.unc.lib.boxc.web.common.controllers.AbstractSolrSearchController;
+import edu.unc.lib.boxc.web.common.controllers.AbstractErrorHandlingSearchController;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.util.Map;
+import java.util.Optional;
 
 /**
  * Controller which interprets the provided search state, from either the last search state in the session or from GET
@@ -51,7 +49,7 @@ import edu.unc.lib.boxc.web.common.controllers.AbstractSolrSearchController;
  * @author bbpennel
  */
 @Controller
-public class SearchActionController extends AbstractSolrSearchController {
+public class SearchActionController extends AbstractErrorHandlingSearchController {
     private static final Logger LOG = LoggerFactory.getLogger(SearchActionController.class);
 
     @Autowired
