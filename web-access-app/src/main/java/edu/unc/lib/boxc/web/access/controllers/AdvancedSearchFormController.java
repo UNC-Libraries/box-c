@@ -15,16 +15,12 @@
  */
 package edu.unc.lib.boxc.web.access.controllers;
 
-import static edu.unc.lib.boxc.common.xml.SecureXMLFactory.createSAXBuilder;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.LinkedHashMap;
-import java.util.List;
-
-import javax.annotation.PostConstruct;
-import javax.servlet.http.HttpServletRequest;
-
+import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
+import edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore;
+import edu.unc.lib.boxc.search.api.requests.SearchState;
+import edu.unc.lib.boxc.search.solr.responses.SearchResultResponse;
+import edu.unc.lib.boxc.search.solr.utils.SearchStateUtil;
+import edu.unc.lib.boxc.web.common.controllers.AbstractErrorHandlingSearchController;
 import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.JDOMException;
@@ -34,12 +30,14 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
-import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
-import edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore;
-import edu.unc.lib.boxc.search.api.requests.SearchState;
-import edu.unc.lib.boxc.search.solr.responses.SearchResultResponse;
-import edu.unc.lib.boxc.search.solr.utils.SearchStateUtil;
-import edu.unc.lib.boxc.web.common.controllers.AbstractSolrSearchController;
+import javax.annotation.PostConstruct;
+import javax.servlet.http.HttpServletRequest;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.LinkedHashMap;
+import java.util.List;
+
+import static edu.unc.lib.boxc.common.xml.SecureXMLFactory.createSAXBuilder;
 
 /**
  * Handles requests to the advanced search page, sending users to the form if there are no
@@ -49,7 +47,7 @@ import edu.unc.lib.boxc.web.common.controllers.AbstractSolrSearchController;
  */
 @Controller
 @RequestMapping("/advancedSearch")
-public class AdvancedSearchFormController extends AbstractSolrSearchController {
+public class AdvancedSearchFormController extends AbstractErrorHandlingSearchController {
     LinkedHashMap<String, String> dropdownVals = new LinkedHashMap<>();
 
     @PostConstruct

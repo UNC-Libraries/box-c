@@ -19,6 +19,7 @@ import edu.unc.lib.boxc.auth.api.Permission;
 import edu.unc.lib.boxc.auth.api.exceptions.AccessRestrictionException;
 import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
 import edu.unc.lib.boxc.auth.api.services.AccessControlService;
+import edu.unc.lib.boxc.fcrepo.exceptions.AuthorizationException;
 import edu.unc.lib.boxc.model.api.exceptions.FedoraException;
 import edu.unc.lib.boxc.model.api.exceptions.NotFoundException;
 import edu.unc.lib.boxc.model.api.ids.PID;
@@ -31,7 +32,7 @@ import edu.unc.lib.boxc.search.api.requests.SimpleIdRequest;
 import edu.unc.lib.boxc.search.solr.services.ChildrenCountService;
 import edu.unc.lib.boxc.search.solr.services.GetCollectionIdService;
 import edu.unc.lib.boxc.search.solr.services.NeighborQueryService;
-import edu.unc.lib.boxc.web.common.controllers.AbstractSolrSearchController;
+import edu.unc.lib.boxc.web.common.controllers.AbstractErrorHandlingSearchController;
 import edu.unc.lib.boxc.web.common.exceptions.InvalidRecordRequestException;
 import edu.unc.lib.boxc.web.common.exceptions.RenderViewException;
 import edu.unc.lib.boxc.web.common.services.AccessCopiesService;
@@ -48,11 +49,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.View;
 
@@ -75,7 +78,7 @@ import static edu.unc.lib.boxc.search.api.FacetConstants.MARKED_FOR_DELETION;
  */
 @Controller
 @RequestMapping("/record")
-public class FullRecordController extends AbstractSolrSearchController {
+public class FullRecordController extends AbstractErrorHandlingSearchController {
     private static final Logger LOG = LoggerFactory.getLogger(FullRecordController.class);
 
     @Autowired
@@ -242,6 +245,14 @@ public class FullRecordController extends AbstractSolrSearchController {
 
         model.addAttribute("pageSubtitle", briefObject.getTitle());
         return "fullRecord";
+    }
+
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    @ExceptionHandler({ AccessRestrictionException.class, AuthorizationException.class })
+    public String handleForbiddenRecordRequest(RuntimeException ex, HttpServletRequest request) {
+        request.setAttribute("pageSubtitle", "Invalid request");
+        LOG.debug("Access denied", ex);
+        return "error/invalidRecord";
     }
 
     public void setXslViewResolver(XSLViewResolver xslViewResolver) {

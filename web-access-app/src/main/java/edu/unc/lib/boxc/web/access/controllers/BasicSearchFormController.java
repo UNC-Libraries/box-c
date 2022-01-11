@@ -15,14 +15,12 @@
  */
 package edu.unc.lib.boxc.web.access.controllers;
 
-import java.io.UnsupportedEncodingException;
-import java.net.URLDecoder;
-import java.net.URLEncoder;
-import java.util.HashMap;
-
-import javax.servlet.http.HttpServletRequest;
-
-import edu.unc.lib.boxc.web.common.controllers.AbstractErrorHandlingController;
+import edu.unc.lib.boxc.search.api.requests.SearchState;
+import edu.unc.lib.boxc.search.solr.config.SearchSettings;
+import edu.unc.lib.boxc.search.solr.services.SearchStateFactory;
+import edu.unc.lib.boxc.search.solr.utils.SearchStateUtil;
+import edu.unc.lib.boxc.web.common.controllers.AbstractErrorHandlingSearchController;
+import edu.unc.lib.boxc.web.common.search.SearchActionService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,11 +30,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 
-import edu.unc.lib.boxc.search.api.requests.SearchState;
-import edu.unc.lib.boxc.search.solr.config.SearchSettings;
-import edu.unc.lib.boxc.search.solr.services.SearchStateFactory;
-import edu.unc.lib.boxc.search.solr.utils.SearchStateUtil;
-import edu.unc.lib.boxc.web.common.search.SearchActionService;
+import javax.servlet.http.HttpServletRequest;
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
+import java.net.URLEncoder;
+import java.util.HashMap;
 
 /**
  * Handles search requests from basic search forms.  Can handle
@@ -47,7 +45,7 @@ import edu.unc.lib.boxc.web.common.search.SearchActionService;
  */
 @Controller
 @RequestMapping("/basicSearch")
-public class BasicSearchFormController extends AbstractErrorHandlingController {
+public class BasicSearchFormController extends AbstractErrorHandlingSearchController {
     private static final Logger LOG = LoggerFactory.getLogger(BasicSearchFormController.class);
     @Autowired(required = true)
     private SearchActionService searchActionService;

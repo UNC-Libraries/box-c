@@ -34,12 +34,12 @@ import org.springframework.web.context.request.WebRequest;
 import javax.servlet.http.HttpServletRequest;
 
 /**
- * Abstract controller which adds general exception handling
+ * Search controller with default error handling
  *
  * @author bbpennel
  */
-public abstract class AbstractErrorHandlingController {
-    private static final Logger log = LoggerFactory.getLogger(AbstractErrorHandlingController.class);
+public abstract class AbstractErrorHandlingSearchController extends AbstractSolrSearchController {
+    private static final Logger log = LoggerFactory.getLogger(AbstractErrorHandlingSearchController.class);
 
     @ResponseStatus(HttpStatus.NOT_FOUND)
     @ExceptionHandler({ InvalidRecordRequestException.class, InvalidPidException.class,
@@ -50,8 +50,7 @@ public abstract class AbstractErrorHandlingController {
         return "error/invalidRecord";
     }
 
-    // Separate from handleInvalidRecordRequest in case need to override the status code elsewhere
-    @ResponseStatus(HttpStatus.NOT_FOUND)
+    @ResponseStatus(HttpStatus.FORBIDDEN)
     @ExceptionHandler({ AccessRestrictionException.class, AuthorizationException.class })
     public String handleForbiddenRecordRequest(RuntimeException ex, HttpServletRequest request) {
         request.setAttribute("pageSubtitle", "Invalid request");

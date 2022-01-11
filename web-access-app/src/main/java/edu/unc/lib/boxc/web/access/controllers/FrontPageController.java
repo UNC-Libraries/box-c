@@ -15,8 +15,9 @@
  */
 package edu.unc.lib.boxc.web.access.controllers;
 
-import javax.servlet.http.HttpServletRequest;
-
+import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
+import edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore;
+import edu.unc.lib.boxc.web.common.controllers.AbstractErrorHandlingSearchController;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
@@ -24,9 +25,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
-import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
-import edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore;
-import edu.unc.lib.boxc.web.common.controllers.AbstractSolrSearchController;
+import javax.servlet.http.HttpServletRequest;
 
 /**
  * Controller which populates the dynamic components making up the front page of
@@ -35,7 +34,7 @@ import edu.unc.lib.boxc.web.common.controllers.AbstractSolrSearchController;
  */
 @Controller
 @RequestMapping("/")
-public class FrontPageController extends AbstractSolrSearchController {
+public class FrontPageController extends AbstractErrorHandlingSearchController {
     private static final Logger LOG = LoggerFactory.getLogger(FrontPageController.class);
 
     @RequestMapping(method = RequestMethod.GET)
