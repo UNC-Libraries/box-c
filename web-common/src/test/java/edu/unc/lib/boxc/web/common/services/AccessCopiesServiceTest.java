@@ -18,6 +18,7 @@ package edu.unc.lib.boxc.web.common.services;
 import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
 import edu.unc.lib.boxc.auth.api.services.AccessControlService;
 import edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl;
+import edu.unc.lib.boxc.model.api.ResourceType;
 import edu.unc.lib.boxc.search.solr.config.SearchSettings;
 import edu.unc.lib.boxc.search.solr.config.SolrSettings;
 import edu.unc.lib.boxc.search.solr.models.ContentObjectSolrRecord;
@@ -37,6 +38,7 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
+import java.util.UUID;
 
 import static edu.unc.lib.boxc.auth.api.Permission.viewOriginal;
 import static edu.unc.lib.boxc.model.api.DatastreamType.ORIGINAL_FILE;
@@ -90,29 +92,33 @@ public class AccessCopiesServiceTest  {
         initMocks(this);
 
         mdObject = new ContentObjectSolrRecord();
-        mdObject.setId("9ef8d1c5-14a1-4ed3-b0c0-6da67fa5f6d1");
+        mdObject.setResourceType(ResourceType.Work.name());
+        mdObject.setId(UUID.randomUUID().toString());
         List<String> datastreams = Collections.singletonList(
                 ORIGINAL_FILE.getId() + "|application/pdf|file.pdf|pdf|766|urn:sha1:checksum|");
         mdObject.setDatastream(datastreams);
 
         mdObjectImg = new ContentObjectSolrRecord();
-        mdObjectImg.setId("27f8d1c5-14a1-4ed3-b0c0-6da67fa5f6d1");
+        mdObjectImg.setResourceType(ResourceType.Work.name());
+        mdObjectImg.setId(UUID.randomUUID().toString());
         List<String> imgDatastreams = Collections.singletonList(
                 ORIGINAL_FILE.getId() + "|image/png|file.png|png|766|urn:sha1:checksum|");
         mdObjectImg.setDatastream(imgDatastreams);
 
         mdObjectAudio = new ContentObjectSolrRecord();
-        mdObjectAudio.setId("45c8d1c5-14a1-4ed3-b0c0-6da67fa5f6d1");
+        mdObjectAudio.setResourceType(ResourceType.Work.name());
+        mdObjectAudio.setId(UUID.randomUUID().toString());
         List<String> audioDatastreams = Collections.singletonList(
                 ORIGINAL_FILE.getId() + "|audio/mpeg|file.mp3|mp3|766|urn:sha1:checksum|");
         mdObjectAudio.setDatastream(audioDatastreams);
 
         noOriginalFileObj = new ContentObjectSolrRecord();
+        noOriginalFileObj.setResourceType(ResourceType.Work.name());
         noOriginalFileObj.setId("45c8d1c5-14a1-4ed3-b0c0-6da67fa5f6d1");
-        hasPermissions(noOriginalFileObj, true);
 
         mdObjectXml = new ContentObjectSolrRecord();
-        mdObjectXml.setId("45c8d1c5-14a1-4ed3-b0c0-6da67fa5f6d1");
+        mdObjectXml.setResourceType(ResourceType.Work.name());
+        mdObjectXml.setId(UUID.randomUUID().toString());
         List<String> xmlDatastreams = Collections.singletonList(
                 TECHNICAL_METADATA.getId() + "|text.xml|file.xml|xml|766|urn:sha1:checksum|");
         mdObjectXml.setDatastream(xmlDatastreams);
@@ -197,7 +203,7 @@ public class AccessCopiesServiceTest  {
     @Test
     public void testPrimaryObjectHasDownloadUrl() {
         hasPermissions(mdObjectAudio, true);
-        String downloadUrl = accessCopiesService.getDownloadPath(mdObjectAudio, principals);
+        String downloadUrl = accessCopiesService.getDownloadUrl(mdObjectAudio, principals);
         assertEquals("content/" + mdObjectAudio.getId(), downloadUrl);
     }
 
@@ -209,19 +215,29 @@ public class AccessCopiesServiceTest  {
         List<ContentObjectSolrRecord> resultList = Collections.singletonList(mdObject);
         when(queryResponse.getBeans(ContentObjectSolrRecord.class)).thenReturn(resultList);
 
-        String downloadUrl = accessCopiesService.getDownloadPath(noOriginalFileObj, principals);
+        String downloadUrl = accessCopiesService.getDownloadUrl(noOriginalFileObj, principals);
         assertEquals("indexablecontent/" + mdObject.getId(), downloadUrl);
     }
 
     @Test
-    public void testDoesNotHasDownloadUrl() {
+    public void testDoesNotHaveDownloadUrl() {
         hasPermissions(noOriginalFileObj, true);
         hasPermissions(mdObjectXml, true);
 
         List<ContentObjectSolrRecord> resultList = Collections.singletonList(mdObjectXml);
         when(queryResponse.getBeans(ContentObjectSolrRecord.class)).thenReturn(resultList);
 
-        String downloadUrl = accessCopiesService.getDownloadPath(noOriginalFileObj, principals);
+        String downloadUrl = accessCopiesService.getDownloadUrl(noOriginalFileObj, principals);
+
+        assertEquals("", downloadUrl);
+    }
+
+    @Test
+    public void testMultipleFileObjectsDoesNotHaveDownloadUrl() {
+        hasPermissions(noOriginalFileObj, true);
+        when(solrDocumentList.getNumFound()).thenReturn(2L);
+
+        String downloadUrl = accessCopiesService.getDownloadUrl(noOriginalFileObj, principals);
 
         assertEquals("", downloadUrl);
     }

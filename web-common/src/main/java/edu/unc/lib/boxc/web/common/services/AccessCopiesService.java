@@ -27,6 +27,7 @@ import edu.unc.lib.boxc.auth.api.Permission;
 import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
 import edu.unc.lib.boxc.auth.api.services.GlobalPermissionEvaluator;
 import edu.unc.lib.boxc.model.api.DatastreamType;
+import edu.unc.lib.boxc.model.api.ResourceType;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.search.api.SearchFieldKey;
 import edu.unc.lib.boxc.search.api.exceptions.SolrRuntimeException;
@@ -157,14 +158,15 @@ public class AccessCopiesService extends SolrSearchService {
     }
 
     /**
-     * Get the path of the file that can be downloaded
+     * Get the path of the original_file datastream within contentObjectRecord that can be downloaded,
+     * or null if no appropriate original_file is present
      * @param contentObjectRecord
      * @param principals
      * @return
      */
-    public String getDownloadPath(ContentObjectRecord contentObjectRecord, AccessGroupSet principals) {
+    public String getDownloadUrl(ContentObjectRecord contentObjectRecord, AccessGroupSet principals) {
         ContentObjectRecord contentObj = getContentObject(contentObjectRecord, principals);
-        if (contentObj != null && permissionsHelper.hasOriginalAccess(principals, contentObj)) {
+        if (contentObj != null) {
             return DatastreamUtil.getOriginalFileUrl(contentObj);
         }
 
@@ -178,7 +180,11 @@ public class AccessCopiesService extends SolrSearchService {
      * @param principals
      * @return String
      */
-    private ContentObjectRecord getChildFileObject(ContentObjectRecord briefObj, AccessGroupSet principals) {
+    private ContentObjectRecord getChildFileObject(ContentObjectRecord briefObj, AccessGroupSet principals) {;
+        if (!briefObj.getResourceType().equals(ResourceType.Work.name())) {
+            return null;
+        }
+
         SearchState searchState = new SearchState();
         searchState.setFacetsToRetrieve(null);
         searchState.setRowsPerPage(1);

@@ -262,7 +262,7 @@ public class FullRecordController extends AbstractErrorHandlingSearchController 
 
 
             // Get the file to download
-            String dataFileUrl = accessCopiesService.getDownloadPath(briefObject, principals);
+            String dataFileUrl = accessCopiesService.getDownloadUrl(briefObject, principals);
             model.addAttribute("dataFileUrl", dataFileUrl);
         }
 
