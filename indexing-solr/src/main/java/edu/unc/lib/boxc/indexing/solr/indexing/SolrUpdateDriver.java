@@ -15,14 +15,11 @@
  */
 package edu.unc.lib.boxc.indexing.solr.indexing;
 
-import static edu.unc.lib.boxc.search.api.SearchFieldKey.ID;
-
-import java.io.IOException;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Map.Entry;
-
+import edu.unc.lib.boxc.indexing.solr.exception.IndexingException;
+import edu.unc.lib.boxc.indexing.solr.exception.RecoverableIndexingException;
+import edu.unc.lib.boxc.model.api.ids.PID;
+import edu.unc.lib.boxc.search.solr.config.SolrSettings;
+import edu.unc.lib.boxc.search.solr.models.IndexDocumentBean;
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.util.ClientUtils;
@@ -30,16 +27,18 @@ import org.apache.solr.common.SolrInputDocument;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import edu.unc.lib.boxc.indexing.solr.exception.IndexingException;
-import edu.unc.lib.boxc.model.api.ids.PID;
-import edu.unc.lib.boxc.search.solr.config.SolrSettings;
-import edu.unc.lib.boxc.search.solr.models.IndexDocumentBean;
+import java.io.IOException;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Map.Entry;
+
+import static edu.unc.lib.boxc.search.api.SearchFieldKey.ID;
 
 /**
  * Performs batch add/delete/update operations to a Solr index.
  *
  * @author bbpennel
- *
  */
 public class SolrUpdateDriver {
     private static final Logger log = LoggerFactory.getLogger(SolrUpdateDriver.class);
@@ -72,7 +71,7 @@ public class SolrUpdateDriver {
 
         for (String field : solrSettings.getRequiredFields()) {
             if (!fields.containsKey(field)) {
-                throw new IndexingException("Required indexing field {" + field + "} was not present for "
+                throw new RecoverableIndexingException("Required indexing field {" + field + "} was not present for "
                         + idb.getId());
             }
         }
@@ -82,9 +81,7 @@ public class SolrUpdateDriver {
             // Providing a version value, indicating that it doesn't matter if record exists
             idb.set_version_(0l);
             solrClient.addBean(idb);
-        } catch (IOException e) {
-            throw new IndexingException("Failed to add document to solr", e);
-        } catch (SolrServerException e) {
+        } catch (IOException | SolrServerException e) {
             throw new IndexingException("Failed to add document to solr", e);
         }
     }
@@ -93,7 +90,6 @@ public class SolrUpdateDriver {
      * Perform a partial document update from a IndexDocumentBean. Null fields are considered to be unspecified and will
      * not be changed, except for the update timestamp field which is always set.
      *
-     * @param operation
      * @param idb
      * @throws IndexingException
      */
@@ -136,10 +132,8 @@ public class SolrUpdateDriver {
                 log.debug("Performing partial update:\n{}", ClientUtils.toXML(sid));
             }
             updateSolrClient.add(sid);
-        } catch (IOException e) {
-            throw new IndexingException("Failed to add document to solr", e);
-        } catch (SolrServerException e) {
-            throw new IndexingException("Failed to add document to solr", e);
+        } catch (IOException | SolrServerException e) {
+            throw new RecoverableIndexingException("Failed to add document to solr", e);
         }
     }
 
