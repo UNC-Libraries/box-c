@@ -192,9 +192,10 @@ public class FullRecordController extends AbstractErrorHandlingSearchController 
             throw new InvalidRecordRequestException();
         }
 
-        // Retrieve the objects record from Solr
+        // Retrieve the object's record from Solr
         SimpleIdRequest idRequest = new SimpleIdRequest(pid, principals);
         ContentObjectRecord briefObject = queryLayer.getObjectById(idRequest);
+
         if (briefObject == null) {
             throw new InvalidRecordRequestException();
         }
@@ -209,9 +210,7 @@ public class FullRecordController extends AbstractErrorHandlingSearchController 
 
         // Get additional information depending on the type of object since the user has access
         String resourceType = briefObject.getResourceType();
-        boolean retrieveChildrenCount = !resourceType.equals(searchSettings.resourceTypeFile);
-
-        if (retrieveChildrenCount) {
+        if (!resourceType.equals(searchSettings.resourceTypeFile)) {
             briefObject.getCountMap().put("child", childrenCountService.getChildrenCount(briefObject, principals));
         }
 
@@ -233,7 +232,26 @@ public class FullRecordController extends AbstractErrorHandlingSearchController 
         }
 
         if (briefObject.getResourceType().equals(searchSettings.resourceTypeAggregate)) {
-            model.addAttribute("viewerNeeded", accessCopiesService.hasViewableFiles(briefObject, principals));
+            boolean imageViewerNeeded = accessCopiesService.hasViewableFiles(briefObject, principals);
+            model.addAttribute("imageViewerNeeded", imageViewerNeeded);
+
+            boolean pdfViewerNeeded = false;
+
+            if (!imageViewerNeeded) {
+                // Check if primary object is a pdf
+                pdfViewerNeeded = accessCopiesService.hasViewablePdf(briefObject, principals);
+
+                // Check if first child is a pdf
+                if (!pdfViewerNeeded) {
+                    String childObjectPid = accessCopiesService.getViewablePdfFilePid(briefObject, principals);
+                    if (childObjectPid != null) {
+                        pdfViewerNeeded = true;
+                        model.addAttribute("pdfViewerPid", childObjectPid);
+                    }
+                }
+            }
+
+            model.addAttribute("pdfViewerNeeded", pdfViewerNeeded);
         }
 
         List<String> objectStatus = briefObject.getStatus();

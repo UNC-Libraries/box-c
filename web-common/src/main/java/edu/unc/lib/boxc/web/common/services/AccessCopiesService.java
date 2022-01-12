@@ -38,6 +38,7 @@ import edu.unc.lib.boxc.search.api.requests.SearchState;
 import edu.unc.lib.boxc.search.api.requests.SimpleIdRequest;
 import edu.unc.lib.boxc.search.solr.models.ContentObjectSolrRecord;
 import edu.unc.lib.boxc.search.solr.services.SolrSearchService;
+import edu.unc.lib.boxc.web.common.utils.DatastreamUtil;
 
 /**
  * Service to check for or list resources with access copies
@@ -47,6 +48,7 @@ import edu.unc.lib.boxc.search.solr.services.SolrSearchService;
 public class AccessCopiesService extends SolrSearchService {
     private static final int MAX_FILES = 2000;
     private GlobalPermissionEvaluator globalPermissionEvaluator;
+    private PermissionsHelper permissionsHelper;
 
     /**
      * List viewable files for the specified object
@@ -97,6 +99,65 @@ public class AccessCopiesService extends SolrSearchService {
         return resp.getResults().getNumFound() > 0;
     }
 
+    /**
+     * Returns true if a user has access to the original file of the content object and the file is a PDF
+     * @param contentObj
+     * @param principals
+     * @return boolean
+     */
+    public boolean hasViewablePdf(ContentObjectRecord contentObj, AccessGroupSet principals) {
+        return permissionsHelper.hasOriginalAccess(principals, contentObj) &&
+                DatastreamUtil.originalFileMimetypeMatches(contentObj, "application/(x-)?pdf");
+    }
+
+    /**
+     * Retrieves the first ContentObjectRecord of a work and
+     * checks if ContentObjectRecord has a pdf that can be viewed. If so it returns the object's id
+     * @param briefObj
+     * @param principals
+     * @return String
+     */
+    public String getViewablePdfFilePid(ContentObjectRecord briefObj, AccessGroupSet principals) {
+        ContentObjectRecord contentObj = getChildFileObject(briefObj, principals);
+        if (contentObj != null && hasViewablePdf(contentObj, principals)) {
+            return contentObj.getId();
+        }
+        return null;
+    }
+
+    /**
+     * Retrieves the first ContentObjectRecord of a work,
+     * and checks if it's the only ContentObjectRecord in the work.
+     * @param briefObj
+     * @param principals
+     * @return String
+     */
+    private ContentObjectRecord getChildFileObject(ContentObjectRecord briefObj, AccessGroupSet principals) {
+        SearchState searchState = new SearchState();
+        searchState.setFacetsToRetrieve(null);
+        searchState.setRowsPerPage(1);
+        CutoffFacet selectedPath = briefObj.getPath();
+        searchState.addFacet(selectedPath);
+        SearchRequest searchRequest = new SearchRequest(searchState, principals);
+        searchRequest.setSearchState(searchState);
+        searchRequest.setAccessGroups(principals);
+        searchRequest.setApplyCutoffs(true);
+        SolrQuery query = generateSearch(searchRequest);
+
+        try {
+            QueryResponse resp = executeQuery(query);
+
+            if (resp.getResults().getNumFound() == 1) {
+                List<?> results = resp.getBeans(ContentObjectSolrRecord.class);
+                return (ContentObjectRecord) results.get(0);
+            }
+        } catch (SolrServerException e) {
+            throw new SolrRuntimeException("Error listing viewable files: " + query, e);
+        }
+
+        return null;
+    }
+
     private QueryResponse performQuery(ContentObjectRecord briefObj, AccessGroupSet principals, int rows) {
         // Search for child objects with jp2 datastreams with user can access
         SearchState searchState = new SearchState();
@@ -124,5 +185,9 @@ public class AccessCopiesService extends SolrSearchService {
 
     public void setGlobalPermissionEvaluator(GlobalPermissionEvaluator globalPermissionEvaluator) {
         this.globalPermissionEvaluator = globalPermissionEvaluator;
+    }
+
+    public void setPermissionsHelper(PermissionsHelper permissionsHelper) {
+        this.permissionsHelper = permissionsHelper;
     }
 }

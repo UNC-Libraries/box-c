@@ -137,13 +137,13 @@
 
             <div class="clear">
                 <c:choose>
-                    <c:when test="${hasOriginalFileAccess && cdr:originalFileMimetypeMatches(briefObject, 'application/(x-)?pdf')}">
-                        <c:import url="fullRecord/pdfViewer.jsp" />
-                    </c:when>
-                    <c:when test="${viewerNeeded}">
+                    <c:when test="${imageViewerNeeded}">
                         <div class="clear_space"></div>
                         <link rel="stylesheet" href="/static/plugins/uv/uv.css">
                         <div id="jp2_viewer" class="jp2_imageviewer_window" data-url="${briefObject.id}"></div>
+                    </c:when>
+                    <c:when test="${pdfViewerNeeded}">
+                        <c:import url="fullRecord/pdfViewer.jsp" />
                     </c:when>
                     <c:when test="${hasOriginalFileAccess && cdr:originalFileMimetypeMatches(briefObject, 'audio/(x-)?mpeg(-?3)?')}">
                         <div class="clear_space"></div>

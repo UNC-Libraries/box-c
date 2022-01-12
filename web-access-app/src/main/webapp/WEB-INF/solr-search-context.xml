@@ -122,6 +122,7 @@
         <property name="accessRestrictionUtil" ref="solrAccessRestrictionUtil" />
         <property name="facetFieldUtil" ref="facetFieldUtil" />
         <property name="globalPermissionEvaluator" ref="globalPermissionEvaluator" />
+        <property name="permissionsHelper" ref="permsHelper" />
     </bean>
     
     <bean id="queryLayer" class="edu.unc.lib.boxc.web.common.services.SolrQueryLayerService"
