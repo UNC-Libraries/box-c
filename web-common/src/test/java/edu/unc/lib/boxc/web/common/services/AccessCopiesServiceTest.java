@@ -40,6 +40,7 @@ import java.util.Properties;
 
 import static edu.unc.lib.boxc.auth.api.Permission.viewOriginal;
 import static edu.unc.lib.boxc.model.api.DatastreamType.ORIGINAL_FILE;
+import static edu.unc.lib.boxc.model.api.DatastreamType.TECHNICAL_METADATA;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -58,6 +59,12 @@ public class AccessCopiesServiceTest  {
     private ContentObjectSolrRecord mdObject;
 
     private ContentObjectSolrRecord mdObjectImg;
+
+    private ContentObjectSolrRecord mdObjectAudio;
+
+    private ContentObjectSolrRecord noOriginalFileObj;
+
+    private ContentObjectSolrRecord mdObjectXml;
 
     private AccessGroupSet principals;
 
@@ -93,6 +100,22 @@ public class AccessCopiesServiceTest  {
         List<String> imgDatastreams = Collections.singletonList(
                 ORIGINAL_FILE.getId() + "|image/png|file.png|png|766|urn:sha1:checksum|");
         mdObjectImg.setDatastream(imgDatastreams);
+
+        mdObjectAudio = new ContentObjectSolrRecord();
+        mdObjectAudio.setId("45c8d1c5-14a1-4ed3-b0c0-6da67fa5f6d1");
+        List<String> audioDatastreams = Collections.singletonList(
+                ORIGINAL_FILE.getId() + "|audio/mpeg|file.mp3|mp3|766|urn:sha1:checksum|");
+        mdObjectAudio.setDatastream(audioDatastreams);
+
+        noOriginalFileObj = new ContentObjectSolrRecord();
+        noOriginalFileObj.setId("45c8d1c5-14a1-4ed3-b0c0-6da67fa5f6d1");
+        hasPermissions(noOriginalFileObj, true);
+
+        mdObjectXml = new ContentObjectSolrRecord();
+        mdObjectXml.setId("45c8d1c5-14a1-4ed3-b0c0-6da67fa5f6d1");
+        List<String> xmlDatastreams = Collections.singletonList(
+                TECHNICAL_METADATA.getId() + "|text.xml|file.xml|xml|766|urn:sha1:checksum|");
+        mdObjectXml.setDatastream(xmlDatastreams);
 
         principals = new AccessGroupSetImpl("group");
 
@@ -169,6 +192,52 @@ public class AccessCopiesServiceTest  {
 
         String filePid = accessCopiesService.getViewablePdfFilePid(mdObjectImg, principals);
         assertNull(filePid);
+    }
+
+    @Test
+    public void testPrimaryObjectHasDownloadUrl() {
+        hasPermissions(mdObjectAudio, true);
+        String downloadUrl = accessCopiesService.getDownloadPath(mdObjectAudio, principals);
+        assertEquals("content/" + mdObjectAudio.getId(), downloadUrl);
+    }
+
+    @Test
+    public void testChildObjectHasDownloadUrl() {
+        hasPermissions(noOriginalFileObj, true);
+        hasPermissions(mdObject, true);
+
+        List<ContentObjectSolrRecord> resultList = Collections.singletonList(mdObject);
+        when(queryResponse.getBeans(ContentObjectSolrRecord.class)).thenReturn(resultList);
+
+        String downloadUrl = accessCopiesService.getDownloadPath(noOriginalFileObj, principals);
+        assertEquals("indexablecontent/" + mdObject.getId(), downloadUrl);
+    }
+
+    @Test
+    public void testDoesNotHasDownloadUrl() {
+        hasPermissions(noOriginalFileObj, true);
+        hasPermissions(mdObjectXml, true);
+
+        List<ContentObjectSolrRecord> resultList = Collections.singletonList(mdObjectXml);
+        when(queryResponse.getBeans(ContentObjectSolrRecord.class)).thenReturn(resultList);
+
+        String downloadUrl = accessCopiesService.getDownloadPath(noOriginalFileObj, principals);
+
+        assertEquals("", downloadUrl);
+    }
+
+    @Test
+    public void hasPlayableAudiofile() {
+        hasPermissions(mdObjectAudio, true);
+        assertTrue("Work has no audio content",
+                accessCopiesService.hasPlayableAudioFile(mdObjectAudio, principals));
+    }
+
+    @Test
+    public void doesNotHavePlayableAudiofile() {
+        hasPermissions(mdObjectImg, true);
+        assertFalse("Work has audio content",
+                accessCopiesService.hasPlayableAudioFile(mdObjectImg, principals));
     }
 
     private void hasPermissions(ContentObjectSolrRecord contentObject, boolean hasAccess) {

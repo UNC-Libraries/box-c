@@ -111,6 +111,17 @@ public class AccessCopiesService extends SolrSearchService {
     }
 
     /**
+     * Returns true if a user has access to the original file of the content object and the file is an audio file
+     * @param contentObj
+     * @param principals
+     * @return
+     */
+    public boolean hasPlayableAudioFile(ContentObjectRecord contentObj, AccessGroupSet principals) {
+        return permissionsHelper.hasOriginalAccess(principals, contentObj) &&
+                DatastreamUtil.originalFileMimetypeMatches(contentObj, "audio/(x-)?mpeg(-?3)?");
+    }
+
+    /**
      * Retrieves the first ContentObjectRecord of a work and
      * checks if ContentObjectRecord has a pdf that can be viewed. If so it returns the object's id
      * @param briefObj
@@ -123,6 +134,41 @@ public class AccessCopiesService extends SolrSearchService {
             return contentObj.getId();
         }
         return null;
+    }
+
+    /**
+     * Get the first content object that has an original file datastream
+     * and return it if the user has the appropriate permissions
+     * @param briefObj
+     * @param principals
+     * @return
+     */
+    public ContentObjectRecord getContentObject(ContentObjectRecord briefObj, AccessGroupSet principals) {
+        if (permissionsHelper.hasOriginalAccess(principals, briefObj)) {
+            return briefObj;
+        }
+
+        ContentObjectRecord contentObj = getChildFileObject(briefObj, principals);
+        if (contentObj != null && permissionsHelper.hasOriginalAccess(principals, contentObj)) {
+            return contentObj;
+        }
+
+        return null;
+    }
+
+    /**
+     * Get the path of the file that can be downloaded
+     * @param contentObjectRecord
+     * @param principals
+     * @return
+     */
+    public String getDownloadPath(ContentObjectRecord contentObjectRecord, AccessGroupSet principals) {
+        ContentObjectRecord contentObj = getContentObject(contentObjectRecord, principals);
+        if (contentObj != null && permissionsHelper.hasOriginalAccess(principals, contentObj)) {
+            return DatastreamUtil.getOriginalFileUrl(contentObj);
+        }
+
+        return "";
     }
 
     /**

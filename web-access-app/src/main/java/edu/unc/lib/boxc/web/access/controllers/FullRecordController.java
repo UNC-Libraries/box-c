@@ -252,6 +252,18 @@ public class FullRecordController extends AbstractErrorHandlingSearchController 
             }
 
             model.addAttribute("pdfViewerNeeded", pdfViewerNeeded);
+
+            // Check for audio file
+            boolean audioPlayerNeeded = false;
+            if (!imageViewerNeeded && !pdfViewerNeeded) {
+                audioPlayerNeeded = accessCopiesService.hasPlayableAudioFile(briefObject, principals);
+            }
+            model.addAttribute("audioPlayerNeeded", audioPlayerNeeded);
+
+
+            // Get the file to download
+            String dataFileUrl = accessCopiesService.getDownloadPath(briefObject, principals);
+            model.addAttribute("dataFileUrl", dataFileUrl);
         }
 
         List<String> objectStatus = briefObject.getStatus();
