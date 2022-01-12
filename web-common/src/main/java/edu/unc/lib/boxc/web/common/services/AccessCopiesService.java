@@ -111,7 +111,7 @@ public class AccessCopiesService extends SolrSearchService {
     }
 
     /**
-     * Retrieves Retrieves the first ContentObjectRecord of a work and
+     * Retrieves the first ContentObjectRecord of a work and
      * checks if ContentObjectRecord has a pdf that can be viewed. If so it returns the object's id
      * @param briefObj
      * @param principals

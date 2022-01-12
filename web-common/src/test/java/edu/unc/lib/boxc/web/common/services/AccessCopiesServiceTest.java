@@ -34,7 +34,6 @@ import org.junit.Test;
 import org.mockito.Mock;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
@@ -119,32 +118,31 @@ public class AccessCopiesServiceTest  {
     }
 
     @Test
-    public void testHasViewAblePdf() {
+    public void testHasViewablePdf() {
         hasPermissions(mdObject, true);
         assertTrue("Work does not have PDF viewable content",
                 accessCopiesService.hasViewablePdf(mdObject, principals));
     }
 
     @Test
-    public void testDoesNotHasViewAblePdf() {
+    public void testDoesNotHaveViewablePdf() {
         hasPermissions(mdObjectImg, true);
         assertFalse("Work has viewable PDF content",
                 accessCopiesService.hasViewablePdf(mdObjectImg, principals));
     }
 
     @Test
-    public void testNoPermissionsHasViewAblePdf() {
+    public void testNoPermissionsHasViewablePdf() {
         hasPermissions(mdObject, false);
         assertFalse("Work has viewable PDF content",
                 accessCopiesService.hasViewablePdf(mdObject, principals));
     }
 
     @Test
-    public void testHasViewAblePdfPid() {
+    public void testHasViewablePdfPid() {
         hasPermissions(mdObject, true);
 
-        List<ContentObjectSolrRecord> mdObjects = new ArrayList<>();
-        mdObjects.add(mdObject);
+        List<ContentObjectSolrRecord> mdObjects = Collections.singletonList(mdObject);
         when(queryResponse.getBeans(ContentObjectSolrRecord.class)).thenReturn(mdObjects);
 
         String filePid = accessCopiesService.getViewablePdfFilePid(mdObject, principals);
@@ -153,11 +151,10 @@ public class AccessCopiesServiceTest  {
     }
 
     @Test
-    public void testDoesNotHaveViewAblePdfPidOneContentObject() {
+    public void testDoesNotHaveViewablePdfPidOneContentObject() {
         hasPermissions(mdObjectImg, true);
 
-        List<ContentObjectSolrRecord> mdObjects = new ArrayList<>();
-        mdObjects.add(mdObjectImg);
+        List<ContentObjectSolrRecord> mdObjects = Collections.singletonList(mdObjectImg);
         when(queryResponse.getBeans(ContentObjectSolrRecord.class)).thenReturn(mdObjects);
 
         String filePid = accessCopiesService.getViewablePdfFilePid(mdObjectImg, principals);
@@ -165,7 +162,7 @@ public class AccessCopiesServiceTest  {
     }
 
     @Test
-    public void testDoesNotHaveViewAblePdfPidMultipleFileObjects() {
+    public void testDoesNotHaveViewablePdfPidMultipleFileObjects() {
         hasPermissions(mdObjectImg, true);
 
         when(solrDocumentList.getNumFound()).thenReturn(2L);
