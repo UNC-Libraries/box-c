@@ -101,40 +101,39 @@ public class AccessCopiesService extends SolrSearchService {
     }
 
     /**
-     * Returns true if a user has access to the original file of the content object and the file is a PDF
+     * Returns true if a user has access to the original file of the content object and the file mimetype
+     * matches the regular expression pattern
      * @param contentObj
      * @param principals
-     * @return boolean
-     */
-    public boolean hasViewablePdf(ContentObjectRecord contentObj, AccessGroupSet principals) {
-        return permissionsHelper.hasOriginalAccess(principals, contentObj) &&
-                DatastreamUtil.originalFileMimetypeMatches(contentObj, "application/(x-)?pdf");
-    }
-
-    /**
-     * Returns true if a user has access to the original file of the content object and the file is an audio file
-     * @param contentObj
-     * @param principals
+     * @param regxPattern
      * @return
      */
-    public boolean hasPlayableAudioFile(ContentObjectRecord contentObj, AccessGroupSet principals) {
+    public boolean hasDatastreamContent(ContentObjectRecord contentObj, AccessGroupSet principals,
+                                        String regxPattern) {
         return permissionsHelper.hasOriginalAccess(principals, contentObj) &&
-                DatastreamUtil.originalFileMimetypeMatches(contentObj, "audio/(x-)?mpeg(-?3)?");
+                DatastreamUtil.originalFileMimetypeMatches(contentObj, regxPattern);
     }
 
     /**
      * Retrieves the first ContentObjectRecord of a work and
-     * checks if ContentObjectRecord has a pdf that can be viewed. If so it returns the object's id
+     * checks if ContentObjectRecord has a file that matches the provided regular expression pattern.
+     * If so it returns the object's id
      * @param briefObj
      * @param principals
+     * @param regxPattern
      * @return String
      */
-    public String getViewablePdfFilePid(ContentObjectRecord briefObj, AccessGroupSet principals) {
+    public String getDatastreamPid(ContentObjectRecord briefObj, AccessGroupSet principals, String regxPattern) {
         ContentObjectRecord contentObj = getChildFileObject(briefObj, principals);
-        if (contentObj != null && hasViewablePdf(contentObj, principals)) {
+        if (contentObj != null && hasDatastreamContent(contentObj, principals, regxPattern)) {
             return contentObj.getId();
         }
         return null;
+    }
+
+    public boolean hasPlayableAudio(ContentObjectRecord briefObj, AccessGroupSet principals) {
+        ContentObjectRecord contentObj = getContentObject(briefObj, principals);
+        return contentObj != null && hasDatastreamContent(contentObj, principals, "audio/(x-)?mpeg(-?3)?");
     }
 
     /**
@@ -180,7 +179,7 @@ public class AccessCopiesService extends SolrSearchService {
      * @param principals
      * @return String
      */
-    private ContentObjectRecord getChildFileObject(ContentObjectRecord briefObj, AccessGroupSet principals) {;
+    private ContentObjectRecord getChildFileObject(ContentObjectRecord briefObj, AccessGroupSet principals) {
         if (!briefObj.getResourceType().equals(ResourceType.Work.name())) {
             return null;
         }

@@ -238,12 +238,14 @@ public class FullRecordController extends AbstractErrorHandlingSearchController 
             boolean pdfViewerNeeded = false;
 
             if (!imageViewerNeeded) {
+                String pdfMimeTypeRegx = "application/(x-)?pdf";
                 // Check if primary object is a pdf
-                pdfViewerNeeded = accessCopiesService.hasViewablePdf(briefObject, principals);
+                pdfViewerNeeded = accessCopiesService.hasDatastreamContent(briefObject, principals, pdfMimeTypeRegx);
 
                 // Check if first child is a pdf
                 if (!pdfViewerNeeded) {
-                    String childObjectPid = accessCopiesService.getViewablePdfFilePid(briefObject, principals);
+                    String childObjectPid = accessCopiesService.getDatastreamPid(briefObject, principals,
+                            pdfMimeTypeRegx);
                     if (childObjectPid != null) {
                         pdfViewerNeeded = true;
                         model.addAttribute("pdfViewerPid", childObjectPid);
@@ -256,10 +258,9 @@ public class FullRecordController extends AbstractErrorHandlingSearchController 
             // Check for audio file
             boolean audioPlayerNeeded = false;
             if (!imageViewerNeeded && !pdfViewerNeeded) {
-                audioPlayerNeeded = accessCopiesService.hasPlayableAudioFile(briefObject, principals);
+                audioPlayerNeeded = accessCopiesService.hasPlayableAudio(briefObject, principals);
             }
             model.addAttribute("audioPlayerNeeded", audioPlayerNeeded);
-
 
             // Get the file to download
             String dataFileUrl = accessCopiesService.getDownloadUrl(briefObject, principals);

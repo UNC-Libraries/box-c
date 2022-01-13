@@ -142,7 +142,7 @@
                     <c:when test="${pdfViewerNeeded}">
                         <c:import url="fullRecord/pdfViewer.jsp" />
                     </c:when>
-                    <c:when test="${not empty dataFileUrl && audioPlayerNeeded}">
+                    <c:when test="${audioPlayerNeeded}">
                         <div class="clear_space"></div>
                         <audio class="audio_player inline_viewer" src="${dataFileUrl}">
                         </audio>

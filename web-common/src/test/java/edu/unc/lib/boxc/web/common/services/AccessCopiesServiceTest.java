@@ -72,6 +72,8 @@ public class AccessCopiesServiceTest  {
 
     private AccessCopiesService accessCopiesService;
 
+    private final String pdfMimetype = "application/(x-)?pdf";
+
     @Mock
     private AccessControlService accessControlService;
     @Mock
@@ -150,21 +152,21 @@ public class AccessCopiesServiceTest  {
     public void testHasViewablePdf() {
         hasPermissions(mdObject, true);
         assertTrue("Work does not have PDF viewable content",
-                accessCopiesService.hasViewablePdf(mdObject, principals));
+                accessCopiesService.hasDatastreamContent(mdObject, principals, pdfMimetype));
     }
 
     @Test
     public void testDoesNotHaveViewablePdf() {
         hasPermissions(mdObjectImg, true);
         assertFalse("Work has viewable PDF content",
-                accessCopiesService.hasViewablePdf(mdObjectImg, principals));
+                accessCopiesService.hasDatastreamContent(mdObjectImg, principals, pdfMimetype));
     }
 
     @Test
     public void testNoPermissionsHasViewablePdf() {
         hasPermissions(mdObject, false);
         assertFalse("Work has viewable PDF content",
-                accessCopiesService.hasViewablePdf(mdObject, principals));
+                accessCopiesService.hasDatastreamContent(mdObject, principals, pdfMimetype));
     }
 
     @Test
@@ -174,7 +176,7 @@ public class AccessCopiesServiceTest  {
         List<ContentObjectSolrRecord> mdObjects = Collections.singletonList(mdObject);
         when(queryResponse.getBeans(ContentObjectSolrRecord.class)).thenReturn(mdObjects);
 
-        String filePid = accessCopiesService.getViewablePdfFilePid(mdObject, principals);
+        String filePid = accessCopiesService.getDatastreamPid(mdObject, principals, pdfMimetype);
         assertNotNull(filePid);
         assertEquals(filePid, mdObject.getId());
     }
@@ -186,7 +188,7 @@ public class AccessCopiesServiceTest  {
         List<ContentObjectSolrRecord> mdObjects = Collections.singletonList(mdObjectImg);
         when(queryResponse.getBeans(ContentObjectSolrRecord.class)).thenReturn(mdObjects);
 
-        String filePid = accessCopiesService.getViewablePdfFilePid(mdObjectImg, principals);
+        String filePid = accessCopiesService.getDatastreamPid(mdObjectImg, principals, pdfMimetype);
         assertNull(filePid);
     }
 
@@ -196,7 +198,7 @@ public class AccessCopiesServiceTest  {
 
         when(solrDocumentList.getNumFound()).thenReturn(2L);
 
-        String filePid = accessCopiesService.getViewablePdfFilePid(mdObjectImg, principals);
+        String filePid = accessCopiesService.getDatastreamPid(mdObjectImg, principals, pdfMimetype);
         assertNull(filePid);
     }
 
@@ -246,14 +248,27 @@ public class AccessCopiesServiceTest  {
     public void hasPlayableAudiofile() {
         hasPermissions(mdObjectAudio, true);
         assertTrue("Work has no audio content",
-                accessCopiesService.hasPlayableAudioFile(mdObjectAudio, principals));
+                accessCopiesService.hasPlayableAudio(mdObjectAudio, principals));
+    }
+
+    @Test
+    public void hasPlayableAudiofileNoPrimaryObject() {
+        hasPermissions(mdObjectAudio, true);
+        hasPermissions(mdObjectXml, true);
+        List<ContentObjectSolrRecord> resultList = Collections.singletonList(mdObjectAudio);
+        when(queryResponse.getBeans(ContentObjectSolrRecord.class)).thenReturn(resultList);
+        assertTrue("Work has no audio content",
+                accessCopiesService.hasPlayableAudio(mdObjectXml, principals));
     }
 
     @Test
     public void doesNotHavePlayableAudiofile() {
         hasPermissions(mdObjectImg, true);
+        hasPermissions(mdObjectXml, true);
+        List<ContentObjectSolrRecord> resultList = Collections.singletonList(mdObjectXml);
+        when(queryResponse.getBeans(ContentObjectSolrRecord.class)).thenReturn(resultList);
         assertFalse("Work has audio content",
-                accessCopiesService.hasPlayableAudioFile(mdObjectImg, principals));
+                accessCopiesService.hasPlayableAudio(mdObjectImg, principals));
     }
 
     private void hasPermissions(ContentObjectSolrRecord contentObject, boolean hasAccess) {
