@@ -134,15 +134,15 @@
 
             <div class="clear">
                 <c:choose>
-                    <c:when test="${imageViewerNeeded}">
+                    <c:when test="${viewerType == 'uv'}">
                         <div class="clear_space"></div>
                         <link rel="stylesheet" href="/static/plugins/uv/uv.css">
                         <div id="jp2_viewer" class="jp2_imageviewer_window" data-url="${briefObject.id}"></div>
                     </c:when>
-                    <c:when test="${pdfViewerNeeded}">
+                    <c:when test="${viewerType == 'pdf'}">
                         <c:import url="fullRecord/pdfViewer.jsp" />
                     </c:when>
-                    <c:when test="${audioPlayerNeeded}">
+                    <c:when test="${viewerType == 'audio'}">
                         <div class="clear_space"></div>
                         <audio class="audio_player inline_viewer" src="${dataFileUrl}">
                         </audio>

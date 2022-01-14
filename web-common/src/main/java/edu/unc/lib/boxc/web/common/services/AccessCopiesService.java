@@ -50,6 +50,8 @@ public class AccessCopiesService extends SolrSearchService {
     private static final int MAX_FILES = 2000;
     private GlobalPermissionEvaluator globalPermissionEvaluator;
     private PermissionsHelper permissionsHelper;
+    public static final String AUDIO_MIMETYPE_REGEX = "audio/(x-)?mpeg(-?3)?";
+    public static final String PDF_MIMETYPE_REGEX = "application/(x-)?pdf";
 
     /**
      * List viewable files for the specified object
@@ -124,16 +126,15 @@ public class AccessCopiesService extends SolrSearchService {
      * @return String
      */
     public String getDatastreamPid(ContentObjectRecord briefObj, AccessGroupSet principals, String regxPattern) {
+        if (hasDatastreamContent(briefObj, principals, regxPattern)) {
+            return briefObj.getId();
+        }
+
         ContentObjectRecord contentObj = getChildFileObject(briefObj, principals);
         if (contentObj != null && hasDatastreamContent(contentObj, principals, regxPattern)) {
             return contentObj.getId();
         }
         return null;
-    }
-
-    public boolean hasPlayableAudio(ContentObjectRecord briefObj, AccessGroupSet principals) {
-        ContentObjectRecord contentObj = getContentObject(briefObj, principals);
-        return contentObj != null && hasDatastreamContent(contentObj, principals, "audio/(x-)?mpeg(-?3)?");
     }
 
     /**
