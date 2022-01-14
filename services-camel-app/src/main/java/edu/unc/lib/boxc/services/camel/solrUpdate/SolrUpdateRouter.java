@@ -15,17 +15,21 @@
  */
 package edu.unc.lib.boxc.services.camel.solrUpdate;
 
-import static org.slf4j.LoggerFactory.getLogger;
-
-import org.apache.camel.BeanInject;
-import org.apache.camel.LoggingLevel;
-import org.apache.camel.builder.RouteBuilder;
-import org.slf4j.Logger;
-
+import edu.unc.lib.boxc.indexing.solr.exception.RecoverableIndexingException;
 import edu.unc.lib.boxc.model.api.exceptions.NotFoundException;
 import edu.unc.lib.boxc.operations.jms.indexing.IndexingPriority;
 import edu.unc.lib.boxc.services.camel.util.CacheInvalidatingProcessor;
 import edu.unc.lib.boxc.services.camel.util.CdrFcrepoHeaders;
+import org.apache.camel.BeanInject;
+import org.apache.camel.LoggingLevel;
+import org.apache.camel.builder.RouteBuilder;
+import org.apache.http.HttpException;
+import org.fcrepo.client.FcrepoOperationFailedException;
+import org.slf4j.Logger;
+
+import java.net.ConnectException;
+
+import static org.slf4j.LoggerFactory.getLogger;
 
 /**
  * Route for performing solr updates for update requests.
@@ -51,16 +55,17 @@ public class SolrUpdateRouter extends RouteBuilder {
     @Override
     public void configure() throws Exception {
         onException(NotFoundException.class)
-            .redeliveryDelay("{{cdr.enhancement.solr.error.retryDelay:500}}")
-            .maximumRedeliveries("{{cdr.enhancement.solr.error.maxRedeliveries:10}}")
-            .backOffMultiplier("{{cdr.enhancement.solr.error.backOffMultiplier:2}}")
+            .redeliveryDelay("{{cdr.enhancement.solr.notFound.retryDelay:500}}")
+            .maximumRedeliveries("{{cdr.enhancement.solr.notFound.maxRedeliveries:10}}")
+            .backOffMultiplier("{{cdr.enhancement.solr.notFound.backOffMultiplier:2}}")
             .retryAttemptedLogLevel(LoggingLevel.DEBUG);
-
-        onException(Exception.class)
+        onException(RecoverableIndexingException.class, FcrepoOperationFailedException.class,
+                    ConnectException.class, HttpException.class)
             .redeliveryDelay("{{cdr.enhancement.solr.error.retryDelay:500}}")
             .maximumRedeliveries("{{cdr.enhancement.solr.error.maxRedeliveries:10}}")
             .backOffMultiplier("{{cdr.enhancement.solr.error.backOffMultiplier:2}}")
             .retryAttemptedLogLevel(LoggingLevel.WARN);
+        onException(Exception.class).retriesExhaustedLogLevel(LoggingLevel.ERROR);
 
         from("{{cdr.solrupdate.stream.camel}}")
             .routeId("CdrServiceSolrUpdate")

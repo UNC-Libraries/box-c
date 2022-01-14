@@ -271,6 +271,7 @@
         class="edu.unc.lib.boxc.indexing.solr.action.IndexTreeCleanAction">
         <property name="actionType" value="ADD" />
         <property name="deleteAction" ref="deleteSolrTreeAction" />
+        <property name="treeIndexer" ref="recursiveTreeIndexer" />
         <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
     </bean>
 

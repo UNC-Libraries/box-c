@@ -16,28 +16,21 @@
 package edu.unc.lib.boxc.indexing.solr.exception;
 
 /**
- * Exception while attempting to index to solr
+ * Indexing exception which it may be possible to recover from
  *
  * @author bbpennel
  */
-public class IndexingException extends RuntimeException {
-    private static final long serialVersionUID = 1L;
-    private String body;
+public class RecoverableIndexingException extends IndexingException {
 
-    public IndexingException(String message, Throwable cause, String body) {
-        super(message, cause);
-        this.body = body;
+    public RecoverableIndexingException(String message, Throwable cause, String body) {
+        super(message, cause, body);
     }
 
-    public IndexingException(String message, Throwable cause) {
+    public RecoverableIndexingException(String message, Throwable cause) {
         super(message, cause);
     }
 
-    public IndexingException(String message) {
+    public RecoverableIndexingException(String message) {
         super(message);
-    }
-
-    public String getBody() {
-        return body;
     }
 }
