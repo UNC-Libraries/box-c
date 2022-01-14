@@ -70,6 +70,8 @@ import java.util.List;
 import static edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore.getAgentPrincipals;
 import static edu.unc.lib.boxc.common.xml.SecureXMLFactory.createSAXBuilder;
 import static edu.unc.lib.boxc.search.api.FacetConstants.MARKED_FOR_DELETION;
+import static edu.unc.lib.boxc.web.common.services.AccessCopiesService.AUDIO_MIMETYPE_REGEX ;
+import static edu.unc.lib.boxc.web.common.services.AccessCopiesService.PDF_MIMETYPE_REGEX;
 
 /**
  * Controller which retrieves data necessary for populating the full record page, retrieving supplemental information
@@ -232,26 +234,31 @@ public class FullRecordController extends AbstractErrorHandlingSearchController 
         }
 
         if (briefObject.getResourceType().equals(searchSettings.resourceTypeAggregate)) {
+            String viewerType = null;
+            String viewerPid = null;
             boolean imageViewerNeeded = accessCopiesService.hasViewableFiles(briefObject, principals);
-            model.addAttribute("imageViewerNeeded", imageViewerNeeded);
-
-            boolean pdfViewerNeeded = false;
-
-            if (!imageViewerNeeded) {
-                // Check if primary object is a pdf
-                pdfViewerNeeded = accessCopiesService.hasViewablePdf(briefObject, principals);
-
-                // Check if first child is a pdf
-                if (!pdfViewerNeeded) {
-                    String childObjectPid = accessCopiesService.getViewablePdfFilePid(briefObject, principals);
-                    if (childObjectPid != null) {
-                        pdfViewerNeeded = true;
-                        model.addAttribute("pdfViewerPid", childObjectPid);
+            if (imageViewerNeeded) {
+                viewerType = "uv";
+            } else {
+                // Check for PDF to display
+                viewerPid = accessCopiesService.getDatastreamPid(briefObject, principals, PDF_MIMETYPE_REGEX);
+                if (viewerPid != null) {
+                    viewerType = "pdf";
+                } else {
+                    // Check for viewable audio file
+                    viewerPid = accessCopiesService.getDatastreamPid(briefObject, principals, AUDIO_MIMETYPE_REGEX);
+                    if (viewerPid != null) {
+                        viewerType = "audio";
                     }
                 }
             }
 
-            model.addAttribute("pdfViewerNeeded", pdfViewerNeeded);
+            model.addAttribute("viewerType", viewerType);
+            model.addAttribute("viewerPid", viewerPid);
+
+            // Get the file to download
+            String dataFileUrl = accessCopiesService.getDownloadUrl(briefObject, principals);
+            model.addAttribute("dataFileUrl", dataFileUrl);
         }
 
         List<String> objectStatus = briefObject.getStatus();

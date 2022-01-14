@@ -27,6 +27,7 @@ import edu.unc.lib.boxc.auth.api.Permission;
 import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
 import edu.unc.lib.boxc.auth.api.services.GlobalPermissionEvaluator;
 import edu.unc.lib.boxc.model.api.DatastreamType;
+import edu.unc.lib.boxc.model.api.ResourceType;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.search.api.SearchFieldKey;
 import edu.unc.lib.boxc.search.api.exceptions.SolrRuntimeException;
@@ -49,6 +50,8 @@ public class AccessCopiesService extends SolrSearchService {
     private static final int MAX_FILES = 2000;
     private GlobalPermissionEvaluator globalPermissionEvaluator;
     private PermissionsHelper permissionsHelper;
+    public static final String AUDIO_MIMETYPE_REGEX = "audio/(x-)?mpeg(-?3)?";
+    public static final String PDF_MIMETYPE_REGEX = "application/(x-)?pdf";
 
     /**
      * List viewable files for the specified object
@@ -100,29 +103,74 @@ public class AccessCopiesService extends SolrSearchService {
     }
 
     /**
-     * Returns true if a user has access to the original file of the content object and the file is a PDF
+     * Returns true if a user has access to the original file of the content object and the file mimetype
+     * matches the regular expression pattern
      * @param contentObj
      * @param principals
-     * @return boolean
+     * @param regxPattern
+     * @return
      */
-    public boolean hasViewablePdf(ContentObjectRecord contentObj, AccessGroupSet principals) {
+    public boolean hasDatastreamContent(ContentObjectRecord contentObj, AccessGroupSet principals,
+                                        String regxPattern) {
         return permissionsHelper.hasOriginalAccess(principals, contentObj) &&
-                DatastreamUtil.originalFileMimetypeMatches(contentObj, "application/(x-)?pdf");
+                DatastreamUtil.originalFileMimetypeMatches(contentObj, regxPattern);
     }
 
     /**
      * Retrieves the first ContentObjectRecord of a work and
-     * checks if ContentObjectRecord has a pdf that can be viewed. If so it returns the object's id
+     * checks if ContentObjectRecord has a file that matches the provided regular expression pattern.
+     * If so it returns the object's id
      * @param briefObj
      * @param principals
+     * @param regxPattern
      * @return String
      */
-    public String getViewablePdfFilePid(ContentObjectRecord briefObj, AccessGroupSet principals) {
+    public String getDatastreamPid(ContentObjectRecord briefObj, AccessGroupSet principals, String regxPattern) {
+        if (hasDatastreamContent(briefObj, principals, regxPattern)) {
+            return briefObj.getId();
+        }
+
         ContentObjectRecord contentObj = getChildFileObject(briefObj, principals);
-        if (contentObj != null && hasViewablePdf(contentObj, principals)) {
+        if (contentObj != null && hasDatastreamContent(contentObj, principals, regxPattern)) {
             return contentObj.getId();
         }
         return null;
+    }
+
+    /**
+     * Get the first content object that has an original file datastream
+     * and return it if the user has the appropriate permissions
+     * @param briefObj
+     * @param principals
+     * @return
+     */
+    public ContentObjectRecord getContentObject(ContentObjectRecord briefObj, AccessGroupSet principals) {
+        if (permissionsHelper.hasOriginalAccess(principals, briefObj)) {
+            return briefObj;
+        }
+
+        ContentObjectRecord contentObj = getChildFileObject(briefObj, principals);
+        if (contentObj != null && permissionsHelper.hasOriginalAccess(principals, contentObj)) {
+            return contentObj;
+        }
+
+        return null;
+    }
+
+    /**
+     * Get the path of the original_file datastream within contentObjectRecord that can be downloaded,
+     * or null if no appropriate original_file is present
+     * @param contentObjectRecord
+     * @param principals
+     * @return
+     */
+    public String getDownloadUrl(ContentObjectRecord contentObjectRecord, AccessGroupSet principals) {
+        ContentObjectRecord contentObj = getContentObject(contentObjectRecord, principals);
+        if (contentObj != null) {
+            return DatastreamUtil.getOriginalFileUrl(contentObj);
+        }
+
+        return "";
     }
 
     /**
@@ -133,6 +181,10 @@ public class AccessCopiesService extends SolrSearchService {
      * @return String
      */
     private ContentObjectRecord getChildFileObject(ContentObjectRecord briefObj, AccessGroupSet principals) {
+        if (!briefObj.getResourceType().equals(ResourceType.Work.name())) {
+            return null;
+        }
+
         SearchState searchState = new SearchState();
         searchState.setFacetsToRetrieve(null);
         searchState.setRowsPerPage(1);
