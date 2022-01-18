@@ -35,6 +35,7 @@ import org.junit.Test;
 import org.mockito.Mock;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
@@ -269,6 +270,33 @@ public class AccessCopiesServiceTest  {
         when(queryResponse.getBeans(ContentObjectSolrRecord.class)).thenReturn(resultList);
         assertNull("Playable audio file pid found",
                 accessCopiesService.getDatastreamPid(mdObjectImg, principals, AUDIO_MIMETYPE_REGEX));
+    }
+
+    @Test
+    public void primaryObjThumbnail() {
+        hasPermissions(mdObjectImg, true);
+        // Thumbnail object is the same as passed in object, so don't need to retrieve it again
+        assertNull(accessCopiesService.getThumbnailObject(mdObjectImg, principals));
+    }
+
+    @Test
+    public void noPrimaryObjThumbnailOneFile() {
+        hasPermissions(noOriginalFileObj, true);
+        hasPermissions(mdObjectImg, true);
+        List<ContentObjectSolrRecord> resultList = Collections.singletonList(mdObjectImg);
+        when(queryResponse.getBeans(ContentObjectSolrRecord.class)).thenReturn(resultList);
+        assertEquals(mdObjectImg, accessCopiesService.getThumbnailObject(noOriginalFileObj, principals));
+    }
+
+    @Test
+    public void noPrimaryObjThumbnailMultipleFiles() {
+        hasPermissions(noOriginalFileObj, true);
+        hasPermissions(mdObjectXml, true);
+        hasPermissions(mdObjectImg, true);
+        List<ContentObjectSolrRecord> resultList = Arrays.asList(mdObjectXml, mdObjectImg);
+        when(queryResponse.getBeans(ContentObjectSolrRecord.class)).thenReturn(resultList);
+        when(queryResponse.getResults().size()).thenReturn(resultList.size());
+        assertEquals(mdObjectImg, accessCopiesService.getThumbnailObject(noOriginalFileObj, principals));
     }
 
     private void hasPermissions(ContentObjectSolrRecord contentObject, boolean hasAccess) {

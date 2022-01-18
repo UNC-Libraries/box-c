@@ -259,6 +259,12 @@ public class FullRecordController extends AbstractErrorHandlingSearchController 
             // Get the file to download
             String dataFileUrl = accessCopiesService.getDownloadUrl(briefObject, principals);
             model.addAttribute("dataFileUrl", dataFileUrl);
+
+            // Get thumbnail object
+            ContentObjectRecord thumbnailObject = accessCopiesService.getThumbnailObject(briefObject, principals);
+            if (thumbnailObject != null) {
+                model.addAttribute("thumbnailObject", thumbnailObject);
+            }
         }
 
         List<String> objectStatus = briefObject.getStatus();

@@ -32,6 +32,15 @@
     </c:otherwise>
 </c:choose>
 
+<c:choose>
+    <c:when test="${not empty thumbnailObject}">
+        <c:set var="thumbnailObject" value="${thumbnailObject}"/>
+    </c:when>
+    <c:otherwise>
+        <c:set var="thumbnailObject" value="${briefObject}"/>
+    </c:otherwise>
+</c:choose>
+
 <div class="full_record_top">
             <div class="collinfo_metadata browse-header aggregate-record">
                 <c:import url="fullRecord/navigationBar.jsp" />
@@ -62,7 +71,7 @@
                 </div>
                 <div class="columns columns-resize aggregate-info">
                     <div class="column is-narrow-tablet ${isDeleted}">
-                        <c:set var="thumbnailObject" value="${briefObject}" scope="request" />
+                        <c:set var="thumbnailObject" value="${thumbnailObject}" scope="request" />
                         <c:import url="common/thumbnail.jsp">
                             <c:param name="target" value="file" />
                             <c:param name="size" value="large" />

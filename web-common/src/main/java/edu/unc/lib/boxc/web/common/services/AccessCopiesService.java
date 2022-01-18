@@ -138,6 +138,40 @@ public class AccessCopiesService extends SolrSearchService {
     }
 
     /**
+     * Gets first object with an original file to use as thumbnail
+     * Returns null if briefObject has an original file, as we don't need to add the object twice.
+     * @param briefObj
+     * @param principals
+     * @return
+     */
+    public ContentObjectRecord getThumbnailObject(ContentObjectRecord briefObj, AccessGroupSet principals) {
+        if (permissionsHelper.hasOriginalAccess(principals, briefObj)) {
+            return null; // Already have briefObj for thumbnail. Don't need it again
+        }
+
+        // Check if there's only one file
+        ContentObjectRecord contentObj = getChildFileObject(briefObj, principals);
+        if (contentObj != null && permissionsHelper.hasOriginalAccess(principals, contentObj)) {
+            return contentObj;
+        }
+
+        // Check other children for thumbnails
+        QueryResponse childContentObjs = getChildFileObjects(briefObj, principals, MAX_FILES);
+        if (childContentObjs != null) {
+            List<?> results = childContentObjs.getBeans(ContentObjectSolrRecord.class);
+            int resultsSize = childContentObjs.getResults().size();
+            for (int i = 0; i < resultsSize; i++) {
+                ContentObjectRecord childContentObj = (ContentObjectRecord) results.get(i);
+                if (permissionsHelper.hasOriginalAccess(principals, childContentObj)) {
+                    return childContentObj;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    /**
      * Get the first content object that has an original file datastream
      * and return it if the user has the appropriate permissions
      * @param briefObj
@@ -180,14 +214,14 @@ public class AccessCopiesService extends SolrSearchService {
      * @param principals
      * @return String
      */
-    private ContentObjectRecord getChildFileObject(ContentObjectRecord briefObj, AccessGroupSet principals) {
+    private QueryResponse getChildFileObjects(ContentObjectRecord briefObj, AccessGroupSet principals, int rows) {
         if (!briefObj.getResourceType().equals(ResourceType.Work.name())) {
             return null;
         }
 
         SearchState searchState = new SearchState();
         searchState.setFacetsToRetrieve(null);
-        searchState.setRowsPerPage(1);
+        searchState.setRowsPerPage(rows);
         CutoffFacet selectedPath = briefObj.getPath();
         searchState.addFacet(selectedPath);
         SearchRequest searchRequest = new SearchRequest(searchState, principals);
@@ -197,16 +231,24 @@ public class AccessCopiesService extends SolrSearchService {
         SolrQuery query = generateSearch(searchRequest);
 
         try {
-            QueryResponse resp = executeQuery(query);
-
-            if (resp.getResults().getNumFound() == 1) {
-                List<?> results = resp.getBeans(ContentObjectSolrRecord.class);
-                return (ContentObjectRecord) results.get(0);
-            }
+            return executeQuery(query);
         } catch (SolrServerException e) {
             throw new SolrRuntimeException("Error listing viewable files: " + query, e);
         }
+    }
 
+    /**
+     * Returns ContentObject record if only one record is returned from the query
+     * @param briefObj
+     * @param principals
+     * @return
+     */
+    private ContentObjectRecord getChildFileObject(ContentObjectRecord briefObj, AccessGroupSet principals) {
+        QueryResponse resp = getChildFileObjects(briefObj, principals, 1);
+        if (resp != null && resp.getResults().getNumFound() == 1) {
+            List<?> results = resp.getBeans(ContentObjectSolrRecord.class);
+            return (ContentObjectRecord) results.get(0);
+        }
         return null;
     }
 
