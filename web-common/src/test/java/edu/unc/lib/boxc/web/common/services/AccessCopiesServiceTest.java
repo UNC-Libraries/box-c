@@ -19,6 +19,7 @@ import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
 import edu.unc.lib.boxc.auth.api.services.AccessControlService;
 import edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl;
 import edu.unc.lib.boxc.model.api.ResourceType;
+import edu.unc.lib.boxc.model.api.rdf.Cdr;
 import edu.unc.lib.boxc.search.solr.config.SearchSettings;
 import edu.unc.lib.boxc.search.solr.config.SolrSettings;
 import edu.unc.lib.boxc.search.solr.models.ContentObjectSolrRecord;
@@ -41,9 +42,11 @@ import java.util.List;
 import java.util.Properties;
 import java.util.UUID;
 
+import static edu.unc.lib.boxc.auth.api.Permission.viewMetadata;
 import static edu.unc.lib.boxc.auth.api.Permission.viewOriginal;
 import static edu.unc.lib.boxc.model.api.DatastreamType.ORIGINAL_FILE;
 import static edu.unc.lib.boxc.model.api.DatastreamType.TECHNICAL_METADATA;
+import static edu.unc.lib.boxc.model.api.DatastreamType.THUMBNAIL_SMALL;
 import static edu.unc.lib.boxc.web.common.services.AccessCopiesService.AUDIO_MIMETYPE_REGEX ;
 import static edu.unc.lib.boxc.web.common.services.AccessCopiesService.PDF_MIMETYPE_REGEX;
 import static org.junit.Assert.assertEquals;
@@ -104,7 +107,8 @@ public class AccessCopiesServiceTest  {
         mdObjectImg = new ContentObjectSolrRecord();
         mdObjectImg.setResourceType(ResourceType.Work.name());
         mdObjectImg.setId(UUID.randomUUID().toString());
-        List<String> imgDatastreams = Collections.singletonList(
+        List<String> imgDatastreams = Arrays.asList(
+                THUMBNAIL_SMALL.getId() + "|image/png|thumb.png|png|66|urn:sha1:checksum|",
                 ORIGINAL_FILE.getId() + "|image/png|file.png|png|766|urn:sha1:checksum|");
         mdObjectImg.setDatastream(imgDatastreams);
 
@@ -275,6 +279,7 @@ public class AccessCopiesServiceTest  {
     @Test
     public void primaryObjThumbnail() {
         hasPermissions(mdObjectImg, true);
+        mdObjectImg.setRelations(Collections.singletonList(Cdr.primaryObject.getURI() + "|" + mdObjectImg.getId()));
         // Thumbnail object is the same as passed in object, so don't need to retrieve it again
         assertNull(accessCopiesService.getThumbnailObject(mdObjectImg, principals));
     }
@@ -293,7 +298,7 @@ public class AccessCopiesServiceTest  {
         hasPermissions(noOriginalFileObj, true);
         hasPermissions(mdObjectXml, true);
         hasPermissions(mdObjectImg, true);
-        List<ContentObjectSolrRecord> resultList = Arrays.asList(mdObjectXml, mdObjectImg);
+        List<ContentObjectSolrRecord> resultList = Arrays.asList(mdObjectImg, mdObjectXml);
         when(queryResponse.getBeans(ContentObjectSolrRecord.class)).thenReturn(resultList);
         when(queryResponse.getResults().size()).thenReturn(resultList.size());
         assertEquals(mdObjectImg, accessCopiesService.getThumbnailObject(noOriginalFileObj, principals));
@@ -301,5 +306,6 @@ public class AccessCopiesServiceTest  {
 
     private void hasPermissions(ContentObjectSolrRecord contentObject, boolean hasAccess) {
         when(accessControlService.hasAccess(contentObject.getPid(), principals, viewOriginal)).thenReturn(hasAccess);
+        when(accessControlService.hasAccess(contentObject.getPid(), principals, viewMetadata)).thenReturn(hasAccess);
     }
 }
