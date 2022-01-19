@@ -29,6 +29,7 @@ import java.util.UUID;
 import org.apache.camel.BeanInject;
 import org.apache.camel.Produce;
 import org.apache.camel.ProducerTemplate;
+import org.apache.camel.builder.AdviceWith;
 import org.apache.camel.builder.AdviceWithRouteBuilder;
 import org.apache.camel.test.spring.CamelSpringTestSupport;
 import org.apache.jena.rdf.model.Model;
@@ -136,12 +137,9 @@ public class DestroyObjectsRouterTest extends CamelSpringTestSupport {
     }
 
     private void createContext(String routeName, String currentRoute) throws Exception {
-        context.getRouteDefinition(routeName).adviceWith(context, new AdviceWithRouteBuilder() {
-            @Override
-            public void configure() throws Exception {
-                replaceFromWith(currentRoute);
-                mockEndpointsAndSkip("*");
-            }
+        AdviceWith.adviceWith(context, routeName, a -> {
+            a.replaceFromWith(currentRoute);
+            a.mockEndpointsAndSkip("*");
         });
 
         context.start();

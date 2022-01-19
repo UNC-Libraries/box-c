@@ -15,17 +15,17 @@
  */
 package edu.unc.lib.boxc.services.camel.longleaf;
 
-import static java.util.Collections.singletonList;
-import static org.fcrepo.camel.FcrepoHeaders.FCREPO_URI;
+import org.apache.camel.AggregationStrategy;
+import org.apache.camel.Exchange;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import org.apache.camel.Exchange;
-import org.apache.camel.processor.aggregate.AggregationStrategy;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import static java.util.Collections.singletonList;
+import static org.fcrepo.camel.FcrepoHeaders.FCREPO_URI;
 
 /**
  * Aggregation strategy for combining messages into a batch for longleaf processing
