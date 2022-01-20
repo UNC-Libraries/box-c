@@ -65,10 +65,8 @@
         <fcrepo-indexing-triplestore.version>5.0.0</fcrepo-indexing-triplestore.version>
         <clamav-java.version>1.0.2-SNAPSHOT</clamav-java.version>
         
-        <spring.version>5.2.4.RELEASE</spring.version>
-        <spring.security.version>5.1.5.RELEASE</spring.security.version>
-        <spring.ws.version>2.3.0.RELEASE</spring.ws.version>
-        <quartz.version>2.3.2</quartz.version>
+        <spring.version>5.3.15</spring.version>
+        <spring.ws.version>3.1.2</spring.ws.version>
         
         <junit.version>4.13.1</junit.version>
         <grizzly.version>2.4.4</grizzly.version>
@@ -130,7 +128,7 @@
         <jena.fuseki.version>3.17.0</jena.fuseki.version>
         
         <fcrepo-camel.version>5.0.0</fcrepo-camel.version>
-        <camel.version>2.20.4</camel.version>
+        <camel.version>2.25.4</camel.version>
         <tika.version>1.19.1</tika.version>
         
         <maven.failsafe.version>2.22.1</maven.failsafe.version>
@@ -812,11 +810,6 @@
                 <groupId>org.springframework.ws</groupId>
                 <artifactId>spring-ws-core</artifactId>
                 <version>${spring.ws.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.quartz-scheduler</groupId>
-                <artifactId>quartz</artifactId>
-                <version>${quartz.version}</version>
             </dependency>
             
             <dependency>
