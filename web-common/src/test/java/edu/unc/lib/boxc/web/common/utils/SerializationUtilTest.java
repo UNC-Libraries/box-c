@@ -28,6 +28,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
+import edu.unc.lib.boxc.web.common.services.AccessCopiesService;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -48,7 +49,6 @@ import edu.unc.lib.boxc.search.solr.config.SolrSettings;
 import edu.unc.lib.boxc.search.solr.models.ContentObjectSolrRecord;
 import edu.unc.lib.boxc.search.solr.responses.HierarchicalBrowseResultResponse;
 import edu.unc.lib.boxc.search.solr.responses.SearchResultResponse;
-import edu.unc.lib.boxc.web.common.utils.SerializationUtil;
 
 /**
  *
@@ -68,6 +68,8 @@ public class SerializationUtilTest extends Assert {
     private SolrSettings solrSettings;
     @Mock
     private GlobalPermissionEvaluator globalPermissionEvaluator;
+    @Mock
+    private AccessCopiesService accessCopiesService;
 
     private ContentObjectSolrRecord md;
 
@@ -75,7 +77,7 @@ public class SerializationUtilTest extends Assert {
     public void init() {
         mapper = new ObjectMapper();
         SerializationUtil.injectSettings(searchSettings, solrSettings,
-                globalPermissionEvaluator);
+                globalPermissionEvaluator, accessCopiesService);
         when(globalPermissionEvaluator.getGlobalUserRoles(any(AccessGroupSetImpl.class)))
                 .thenReturn(Collections.emptySet());
 

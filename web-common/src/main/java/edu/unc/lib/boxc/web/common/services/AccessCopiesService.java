@@ -147,18 +147,26 @@ public class AccessCopiesService extends SolrSearchService {
      * @return
      */
     public ContentObjectRecord getThumbnailObject(ContentObjectRecord briefObj, AccessGroupSet principals) {
-        List<String> primaryObj = briefObj.getRelation(Cdr.primaryObject.getURI());
-        if (primaryObj != null) {
-            return null; // Already have briefObj for thumbnail. Don't need it again
+        if (briefObj.getResourceType().equals(ResourceType.Work.name())) {
+            List<String> primaryObj = briefObj.getRelation(Cdr.primaryObject.getURI());
+            if (primaryObj != null) {
+                return briefObj;
+            }
+
+            // Check for first object with a thumbnail if no primary object
+            ContentObjectRecord contentObj = thumbnailObjectSearch(briefObj, principals);
+            if (contentObj != null && permissionsHelper.hasThumbnailAccess(principals, contentObj)) {
+                return contentObj;
+            }
         }
 
-        // Check for first object with a thumbnail if no primary object
-        ContentObjectRecord contentObj = thumbnailObjectSearch(briefObj, principals);
-        if (contentObj != null && permissionsHelper.hasThumbnailAccess(principals, contentObj)) {
-            return contentObj;
-        }
+        return briefObj;
+    }
 
-        return null;
+    public ContentObjectRecord getThumbnailObject(PID pid, AccessGroupSet principals) {
+        SimpleIdRequest idRequest = new SimpleIdRequest(pid, principals);
+        ContentObjectRecord briefObj = getObjectById(idRequest);
+        return getThumbnailObject(briefObj, principals);
     }
 
     /**
@@ -229,7 +237,7 @@ public class AccessCopiesService extends SolrSearchService {
 
         try {
             QueryResponse resp =  executeQuery(query);
-            if (resp != null) {
+            if (resp != null && resp.getResults().getNumFound() > 0) {
                 List<?> results = resp.getBeans(ContentObjectSolrRecord.class);
                 return (ContentObjectRecord) results.get(0);
             }

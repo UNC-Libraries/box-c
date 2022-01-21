@@ -44,6 +44,7 @@ import edu.unc.lib.boxc.search.solr.config.SearchSettings;
 import edu.unc.lib.boxc.search.solr.config.SolrSettings;
 import edu.unc.lib.boxc.search.solr.responses.HierarchicalBrowseResultResponse;
 import edu.unc.lib.boxc.search.solr.responses.SearchResultResponse;
+import edu.unc.lib.boxc.web.common.services.AccessCopiesService;
 
 /**
  *
@@ -61,6 +62,7 @@ public class SerializationUtil {
     private static SearchSettings searchSettings;
     private static SolrSettings solrSettings;
     private static GlobalPermissionEvaluator globalPermissionEvaluator;
+    private static AccessCopiesService accessCopiesService;
 
     private SerializationUtil() {
     }
@@ -121,7 +123,13 @@ public class SerializationUtil {
 
     public static Map<String, Object> metadataToMap(ContentObjectRecord metadata, AccessGroupSet groups) {
         Map<String, Object> result = new HashMap<>();
-        String thumbnail_url = DatastreamUtil.getThumbnailUrl(metadata, null);
+
+        ContentObjectRecord thumbnailObject = null;
+        if (groups != null) {
+            thumbnailObject = accessCopiesService.getThumbnailObject(metadata, groups);
+        }
+        ContentObjectRecord thumbnail = (thumbnailObject != null) ? thumbnailObject : metadata;
+        String thumbnail_url = DatastreamUtil.getThumbnailUrl(thumbnail, null);
 
         if (!thumbnail_url.isEmpty()) {
             result.put("thumbnail_url", thumbnail_url);
@@ -266,10 +274,12 @@ public class SerializationUtil {
     }
 
     public static void injectSettings(SearchSettings searchSettings,
-            SolrSettings solrSettings, GlobalPermissionEvaluator globalPermissionEvaluator) {
+                                      SolrSettings solrSettings, GlobalPermissionEvaluator globalPermissionEvaluator,
+                                      AccessCopiesService accessCopiesService) {
         SerializationUtil.searchSettings = searchSettings;
         SerializationUtil.solrSettings = solrSettings;
         SerializationUtil.globalPermissionEvaluator = globalPermissionEvaluator;
+        SerializationUtil.accessCopiesService = accessCopiesService;
     }
 
     /**

@@ -43,6 +43,7 @@
                 <ref bean="searchSettings" />
                 <ref bean="solrSettings" />
                 <ref bean="globalPermissionEvaluator" />
+                <ref bean="accessCopiesService" />
             </list>
         </property>
     </bean>

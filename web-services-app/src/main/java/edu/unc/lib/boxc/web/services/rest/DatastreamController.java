@@ -44,7 +44,9 @@ import edu.unc.lib.boxc.model.api.exceptions.NotFoundException;
 import edu.unc.lib.boxc.model.api.exceptions.ObjectTypeMismatchException;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
+import edu.unc.lib.boxc.search.api.models.ContentObjectRecord;
 import edu.unc.lib.boxc.web.common.exceptions.ResourceNotFoundException;
+import edu.unc.lib.boxc.web.common.services.AccessCopiesService;
 import edu.unc.lib.boxc.web.common.services.DerivativeContentService;
 import edu.unc.lib.boxc.web.common.services.FedoraContentService;
 import edu.unc.lib.boxc.web.common.utils.AnalyticsTrackerUtil;
@@ -66,6 +68,8 @@ public class DatastreamController {
     private AnalyticsTrackerUtil analyticsTracker;
     @Autowired
     private DerivativeContentService derivativeContentService;
+    @Autowired
+    private AccessCopiesService accessCopiesService;
 
     @RequestMapping("/file/{pid}")
     public void getDatastream(@PathVariable("pid") String pidString,
@@ -125,8 +129,8 @@ public class DatastreamController {
         PID pid = PIDs.get(pidString);
         AccessGroupSet principals = getAgentPrincipals().getPrincipals();
         String thumbName = "thumbnail_" + size.toLowerCase().trim();
-
-        derivativeContentService.streamData(pid, thumbName, principals, false, response);
+        ContentObjectRecord thumbnailObj = accessCopiesService.getThumbnailObject(pid, principals);
+        derivativeContentService.streamData(thumbnailObj.getPid(), thumbName, principals, false, response);
     }
 
     @ResponseStatus(value = HttpStatus.NOT_FOUND)

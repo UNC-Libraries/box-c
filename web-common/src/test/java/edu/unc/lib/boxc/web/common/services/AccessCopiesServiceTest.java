@@ -280,8 +280,7 @@ public class AccessCopiesServiceTest  {
     public void primaryObjThumbnail() {
         hasPermissions(mdObjectImg, true);
         mdObjectImg.setRelations(Collections.singletonList(Cdr.primaryObject.getURI() + "|" + mdObjectImg.getId()));
-        // Thumbnail object is the same as passed in object, so don't need to retrieve it again
-        assertNull(accessCopiesService.getThumbnailObject(mdObjectImg, principals));
+        assertEquals(mdObjectImg, accessCopiesService.getThumbnailObject(mdObjectImg, principals));
     }
 
     @Test
@@ -302,6 +301,16 @@ public class AccessCopiesServiceTest  {
         when(queryResponse.getBeans(ContentObjectSolrRecord.class)).thenReturn(resultList);
         when(queryResponse.getResults().size()).thenReturn(resultList.size());
         assertEquals(mdObjectImg, accessCopiesService.getThumbnailObject(noOriginalFileObj, principals));
+    }
+
+    @Test
+    public void noPrimaryObjNoThumbnail() {
+        hasPermissions(noOriginalFileObj, true);
+        hasPermissions(mdObjectXml, true);
+        List<ContentObjectSolrRecord> resultList = Collections.singletonList(mdObjectXml);
+        when(queryResponse.getBeans(ContentObjectSolrRecord.class)).thenReturn(resultList);
+        when(queryResponse.getResults().size()).thenReturn(resultList.size());
+        assertEquals(noOriginalFileObj, accessCopiesService.getThumbnailObject(noOriginalFileObj, principals));
     }
 
     private void hasPermissions(ContentObjectSolrRecord contentObject, boolean hasAccess) {
