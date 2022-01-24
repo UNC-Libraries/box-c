@@ -197,6 +197,23 @@
         <artifactId>operations</artifactId>
     </dependency>
 
+    <!-- Jaxb 2.x dependencies, until camel-core no longer requires them -->
+    <dependency>
+        <groupId>javax.xml.bind</groupId>
+        <artifactId>jaxb-api</artifactId>
+        <scope>compile</scope>
+    </dependency>
+    <dependency>
+        <groupId>com.sun.xml.bind</groupId>
+        <artifactId>jaxb-core</artifactId>
+        <scope>compile</scope>
+    </dependency>
+    <dependency>
+        <groupId>com.sun.xml.bind</groupId>
+        <artifactId>jaxb-impl</artifactId>
+        <scope>compile</scope>
+    </dependency>
+
     <!-- Testing -->
     <dependency>
         <groupId>org.apache.camel</groupId>
