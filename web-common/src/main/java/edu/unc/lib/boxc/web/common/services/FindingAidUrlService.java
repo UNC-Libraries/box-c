@@ -15,12 +15,10 @@
  */
 package edu.unc.lib.boxc.web.common.services;
 
-import static org.slf4j.LoggerFactory.getLogger;
-
-import java.util.Optional;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
-
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
+import edu.unc.lib.boxc.common.util.URIUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpStatus;
 import org.apache.http.StatusLine;
@@ -31,12 +29,15 @@ import org.apache.http.conn.HttpClientConnectionManager;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.slf4j.Logger;
+import org.springframework.web.util.UriUtils;
 
-import com.google.common.cache.CacheBuilder;
-import com.google.common.cache.CacheLoader;
-import com.google.common.cache.LoadingCache;
+import java.nio.charset.StandardCharsets;
+import java.util.Optional;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
 
-import edu.unc.lib.boxc.common.util.URIUtil;
+import static org.slf4j.LoggerFactory.getLogger;
+import static org.springframework.util.Assert.notNull;
 
 /**
  * Service for getting finding aid URLs
@@ -55,6 +56,7 @@ public class FindingAidUrlService {
     private CloseableHttpClient httpClient;
 
     public void init() {
+        notNull(findingAidBaseUrl, "Must configure base finding aid url");
         collIdTolinkCache = CacheBuilder.newBuilder()
                 .maximumSize(maxCacheSize)
                 .expireAfterWrite(expireCacheSeconds, TimeUnit.SECONDS)
@@ -62,6 +64,7 @@ public class FindingAidUrlService {
                     @Override
                     public Optional<String> load(String key) throws Exception {
                         String baseCollId = key.replace("-z", "");
+                        baseCollId = UriUtils.encodePath(baseCollId, StandardCharsets.UTF_8);
                         String url = URIUtil.join(findingAidBaseUrl, baseCollId) + "/";
                         HttpHead req = new HttpHead(url);
                         try (CloseableHttpResponse resp = httpClient.execute(req)) {

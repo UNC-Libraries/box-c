@@ -90,4 +90,26 @@ public class FindingAidUrlServiceTest {
         String collId = "50000";
         assertNull(service.getFindingAidUrl(collId));
     }
+
+    @Test
+    public void unencodedCollectionIdTest() {
+        when(statusLine.getStatusCode()).thenReturn(HttpStatus.SC_OK);
+
+        String collId = "55555 oh+no";
+        assertEquals(BASE_URL + "55555%20oh+no/", service.getFindingAidUrl(collId));
+    }
+
+    @Test
+    public void blankCollectionIdTest() {
+        when(statusLine.getStatusCode()).thenReturn(HttpStatus.SC_NOT_FOUND);
+
+        String collId = "";
+        assertNull(service.getFindingAidUrl(collId));
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void noBaseUrlTest() {
+        service.setFindingAidBaseUrl(null);
+        service.init();
+    }
 }
