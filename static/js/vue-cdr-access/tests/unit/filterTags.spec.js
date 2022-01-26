@@ -1,25 +1,33 @@
-import { createLocalVue, shallowMount } from '@vue/test-utils'
-import VueRouter from 'vue-router';
+import { shallowMount, flushPromises } from '@vue/test-utils'
+import { createRouter, createWebHistory } from 'vue-router';
 import filterTags from '@/components/filterTags.vue';
+import displayWrapper from "@/components/displayWrapper";
+import searchWrapper from '@/components/searchWrapper';
 
-const localVue = createLocalVue();
-localVue.use(VueRouter);
-const router = new VueRouter({
-    routes: [
-        {
-            path: '/search/:uuid?',
-            name: 'searchRecords'
-        }
-    ]
-});
-let wrapper, facet_tags;
+let wrapper, facet_tags, router;
 
 describe('filterTags.vue', () => {
     beforeEach(() => {
+        router = createRouter({
+            history: createWebHistory(process.env.BASE_URL),
+            routes: [
+                {
+                    path: '/search/:uuid?',
+                    name: 'searchRecords',
+                    component: searchWrapper
+                },
+                {
+                    path: '/record/:uuid',
+                    name: 'displayRecords',
+                    component: displayWrapper
+                }
+            ]
+        });
         wrapper = shallowMount(filterTags, {
-            localVue,
-            router,
-            propsData: {
+            global: {
+                plugins: [router]
+            },
+            props: {
                 facetList: [
                     {
                         name: "PARENT_COLLECTION",
@@ -73,116 +81,104 @@ describe('filterTags.vue', () => {
         facet_tags = wrapper.findAll('ul li');
     });
 
+    afterEach(() => router = null);
+
     it("displays selected tags", async () => {
-        wrapper.vm.$router.push('/search?collection=d77fd8c9-744b-42ab-8e20-5ad9bdf8194e');
-        await wrapper.vm.$nextTick();
+        await router.push('/search?collection=d77fd8c9-744b-42ab-8e20-5ad9bdf8194e');
         expect(wrapper.find('.search-text').text()).toMatch(/Collection.*?testCollection/s);
     });
 
     it("displays multiple selected tags", async () => {
-        wrapper.vm.$router.push('/search?collection=d77fd8c9-744b-42ab-8e20-5ad9bdf8194e&format=image');
-        await wrapper.vm.$nextTick();
+        await router.push('/search?collection=d77fd8c9-744b-42ab-8e20-5ad9bdf8194e&format=image');
         const selected_tags = wrapper.findAll('.search-text');
-        expect(selected_tags.at(0).text()).toMatch(/Collection.*?testCollection/s);
-        expect(selected_tags.at(1).text()).toMatch(/Format.*?image/s);
+        expect(selected_tags[0].text()).toMatch(/Collection.*?testCollection/s);
+        expect(selected_tags[1].text()).toMatch(/Format.*?image/s);
     });
 
     it("displays multiple selected tags of same type", async () => {
-        wrapper.vm.$router.push('/search?collection=d77fd8c9-744b-42ab-8e20-5ad9bdf8194e||88386d31-6931-467d-add5-1d109f335302');
-        await wrapper.vm.$nextTick();
+        await router.push('/search?collection=d77fd8c9-744b-42ab-8e20-5ad9bdf8194e||88386d31-6931-467d-add5-1d109f335302');;
         const selected_tags = wrapper.findAll('.search-text');
-        expect(selected_tags.at(0).text()).toMatch(/Collection.*?testCollection/s);
-        expect(selected_tags.at(1).text()).toMatch(/Collection.*?test2Collection/s);
+        expect(selected_tags[0].text()).toMatch(/Collection.*?testCollection/s);
+        expect(selected_tags[1].text()).toMatch(/Collection.*?test2Collection/s);
     });
 
     it("displays multiple selected tags of different types", async () => {
-        wrapper.vm.$router.push('/search?collection=d77fd8c9-744b-42ab-8e20-5ad9bdf8194e||' +
+        await router.push('/search?collection=d77fd8c9-744b-42ab-8e20-5ad9bdf8194e||' +
         '88386d31-6931-467d-add5-1d109f335302&format=image||text');
-        await wrapper.vm.$nextTick();
         const selected_tags = wrapper.findAll('.search-text');
-        expect(selected_tags.at(0).text()).toMatch(/Collection.*?testCollection/s);
-        expect(selected_tags.at(1).text()).toMatch(/Collection.*?test2Collection/s);
-        expect(selected_tags.at(2).text()).toMatch(/Format.*?image/s);
-        expect(selected_tags.at(3).text()).toMatch(/Format.*?text/s);
+        expect(selected_tags[0].text()).toMatch(/Collection.*?testCollection/s);
+        expect(selected_tags[1].text()).toMatch(/Collection.*?test2Collection/s);
+        expect(selected_tags[2].text()).toMatch(/Format.*?image/s);
+        expect(selected_tags[3].text()).toMatch(/Format.*?text/s);
     });
 
     it("clears a selected tag", async () => {
-        wrapper.vm.$router.push('/search?collection=d77fd8c9-744b-42ab-8e20-5ad9bdf8194e');
-        await wrapper.vm.$nextTick();
+        await router.push('/search?collection=d77fd8c9-744b-42ab-8e20-5ad9bdf8194e');
         expect(wrapper.find('.search-text').text()).toMatch(/Collection.*?testCollection/s);
 
-        wrapper.find('.search-text').trigger('click');
-        await wrapper.vm.$nextTick();
+        await wrapper.find('.search-text').trigger('click');
+        await flushPromises();
         expect(wrapper.find('.search-text').exists()).toBe(false);
     });
 
     it("clears sub tags of a selected tag", async () => {
-        wrapper.vm.$router.push('/search?format=image||image/png');
-        await wrapper.vm.$nextTick();
+        await router.push('/search?format=image||image/png');
         const selected_tags = wrapper.findAll('.search-text');
-        expect(selected_tags.at(0).text()).toMatch(/Format.*?image/s);
-        expect(selected_tags.at(1).text()).toMatch(/Format.*?image\/png/s);
+        expect(selected_tags[0].text()).toMatch(/Format.*?image/s);
+        expect(selected_tags[1].text()).toMatch(/Format.*?image\/png/s);
 
         wrapper.find('.search-text').trigger('click'); // image tag
-        await wrapper.vm.$nextTick();
+        await flushPromises();
         expect(wrapper.find('.search-text').exists()).toBe(false);
     });
 
     it("does not clear parent tag of a selected tag", async () => {
-        wrapper.vm.$router.push('/search?format=image||image/png');
-        await wrapper.vm.$nextTick();
+        await router.push('/search?format=image||image/png');
         let selected_tags = wrapper.findAll('.search-text');
-        expect(selected_tags.at(0).text()).toMatch(/Format.*?image/s);
-        expect(selected_tags.at(1).text()).toMatch(/Format.*?image\/png/s);
+        expect(selected_tags[0].text()).toMatch(/Format.*?image/s);
+        expect(selected_tags[1].text()).toMatch(/Format.*?image\/png/s);
 
-        selected_tags.at(1).trigger('click'); // image/png tag
-        await wrapper.vm.$nextTick();
+        selected_tags[1].trigger('click'); // image/png tag
+        await flushPromises();
         selected_tags = wrapper.findAll('.search-text');
-        expect(selected_tags.at(0).text()).toMatch(/Format.*?image/s);
+        expect(selected_tags[0].text()).toMatch(/Format.*?image/s);
         expect(selected_tags.length).toEqual(1);
     });
 
     it("displays search query", async () => {
-        wrapper.vm.$router.push('/search?anywhere=stones');
-        await wrapper.vm.$nextTick();
+        await router.push('/search?anywhere=stones');
         expect(wrapper.find('.search-text').text()).toMatch(/stones/);
     });
 
     it("does not display search query if empty", async () => {
-        wrapper.vm.$router.push('/search?anywhere=');
-        await wrapper.vm.$nextTick();
+        await router.push('/search?anywhere=');
         expect(wrapper.find('.search-text').exists()).toBe(false);
     });
 
     it("displays a title search", async () => {
-        wrapper.vm.$router.push('/search?titleIndex=stones');
-        await wrapper.vm.$nextTick();
+        await router.push('/search?titleIndex=stones');
         expect(wrapper.find('.search-text').text()).toMatch(/Title.*?stones/s);
     });
 
     it("displays a title search and a keyword search", async () => {
-        wrapper.vm.$router.push('/search?titleIndex=wooden buildings&anywhere=barns');
-        await wrapper.vm.$nextTick();
+        await router.push('/search?titleIndex=wooden buildings&anywhere=barns');
         let selected_tags = wrapper.findAll('.search-text');
-        expect(selected_tags.at(0).text()).toMatch(/barns/);
-        expect(selected_tags.at(1).text()).toMatch(/Title.*?wooden\sbuildings/s);
+        expect(selected_tags[0].text()).toMatch(/barns/);
+        expect(selected_tags[1].text()).toMatch(/Title.*?wooden\sbuildings/s);
     });
 
     it("correctly displays a date search", async () => {
-        wrapper.vm.$router.push('/search?added=1999,2005');
-        await wrapper.vm.$nextTick();
+        await router.push('/search?added=1999,2005');
         expect(wrapper.find('.search-text').text()).toMatch(/Date\sAdded.*?1999\sto\s2005/s);
     });
 
     it("correctly displays a date search with no end date", async () => {
-        wrapper.vm.$router.push('/search?created=1999,');
-        await wrapper.vm.$nextTick();
+        await router.push('/search?created=1999,');
         expect(wrapper.find('.search-text').text()).toMatch(/Date\sCreated.*?1999\sto\spresent\sdate/s);
     });
 
     it("correctly displays a date search with no start date", async () => {
-        wrapper.vm.$router.push('/search?added=,2005');
-        await wrapper.vm.$nextTick();
+        await router.push('/search?added=,2005');
         expect(wrapper.find('.search-text').text()).toMatch(/Date\sAdded.*?All\sdates\sthrough\s2005/s);
     });
 });

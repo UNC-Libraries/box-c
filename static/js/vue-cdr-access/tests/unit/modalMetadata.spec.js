@@ -1,29 +1,40 @@
-import { createLocalVue, shallowMount } from '@vue/test-utils';
-import VueRouter from 'vue-router';
+import { shallowMount } from '@vue/test-utils';
+import { createRouter, createWebHistory } from 'vue-router';
 import moxios from 'moxios'
 import pretty from 'pretty';
 import modalMetadata from '@/components/modalMetadata.vue';
-
-const localVue = createLocalVue();
-const router = new VueRouter();
-localVue.use(VueRouter);
+import displayWrapper from '@/components/displayWrapper';
 
 const updated_uuid = 'c03a4bd7-25f4-4a6c-a68d-fedc4251b680';
 const title = 'Test Collection';
 const response = pretty(`<table><tbody><tr><th>Creator</th><td><p>Real Dean</p></td></tr></tbody></table>`);
-let wrapper;
+let router, wrapper;
 
 describe('modalMetadata.vue', () => {
-    beforeEach(() => {
+    beforeEach(async () => {
+        router = createRouter({
+            history: createWebHistory(process.env.BASE_URL),
+            routes: [
+                {
+                    path: '/record/:uuid',
+                    name: 'displayRecords',
+                    component: displayWrapper
+                }
+            ]
+        });
         wrapper = shallowMount(modalMetadata, {
-            localVue,
-            router,
-            propsData: {
+            global: {
+                plugins: [router]
+            },
+            props: {
                 uuid: '',
                 title: title
             }
         });
+        await router.push('/record/1234');
     });
+
+    afterEach(() => router = null);
 
     it("fetches the record metadata when the metadata button is clicked", () => {
         // Mock event
@@ -52,22 +63,20 @@ describe('modalMetadata.vue', () => {
     });
 
     it("displays a record title when triggered", async () => {
-        wrapper.setData({
+        await wrapper.setData({
             showModal: true
         });
 
-        await wrapper.vm.$nextTick();
         const record = wrapper.find('h3');
         expect(record.text()).toBe(title);
     });
 
     it("displays metadata when triggered", async () => {
-        wrapper.setData({
+        await wrapper.setData({
             metadata: response,
             showModal: true
         });
 
-        await wrapper.vm.$nextTick();
         const record = wrapper.find('table');
         expect(record.html()).toBe(wrapper.vm.metadata);
     });

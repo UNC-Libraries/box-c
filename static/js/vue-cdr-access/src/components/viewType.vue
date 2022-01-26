@@ -21,8 +21,11 @@
         },
 
         watch: {
-            '$route.query'(params) {
-                this.browse_type = params.browse_type;
+            '$route.query': {
+                handler(params) {
+                    this.browse_type = params.browse_type;
+                },
+                deep: true
             }
         },
 

@@ -1,68 +1,78 @@
-import { createLocalVue, shallowMount } from '@vue/test-utils'
-import VueRouter from 'vue-router';
+import { shallowMount, flushPromises } from '@vue/test-utils'
+import { createRouter, createWebHistory } from 'vue-router';
 import viewType from '@/components/viewType.vue'
-const localVue = createLocalVue();
-localVue.use(VueRouter);
+import displayWrapper from "@/components/displayWrapper";
 
-const router = new VueRouter({
-    routes: [
-        {
-            path: '/record/uuid1234',
-            name: 'displayRecords'
-        }
-    ]
-});
-
-let wrapper, btns;
+let wrapper, btns, router;
 
 describe('viewType.vue', () => {
     beforeEach(() => {
+        router = createRouter({
+            history: createWebHistory(),
+            routes: [
+                {
+                    path: '/record/:uuid/',
+                    name: 'displayRecords',
+                    component: displayWrapper
+                }
+            ]
+        });
         sessionStorage.clear();
         wrapper = shallowMount(viewType, {
-            localVue,
-            router
+            global: {
+                plugins: [router]
+            },
+            props: {
+                browse_type: 'list-display'
+            }
         });
 
         btns = wrapper.findAll('#browse-btns i');
     });
 
-    it("sets a browse type when clicked", () => {
-        btns.at(1).trigger('click');
-        expect(wrapper.vm.$router.currentRoute.query.browse_type).toEqual(encodeURIComponent('gallery-display'));
+    afterEach(() => router = null);
 
-        btns.at(0).trigger('click');
-        expect(wrapper.vm.$router.currentRoute.query.browse_type).toEqual(encodeURIComponent('list-display'));
+    it("sets a browse type when clicked", async () => {
+        await router.push('/record/1234/?browse_type=list-display');
+        await btns[1].trigger('click');
+        await flushPromises();
+        expect(wrapper.vm.$router.currentRoute.value.query.browse_type).toEqual(encodeURIComponent('gallery-display'));
+
+        await btns[0].trigger('click');
+        await flushPromises();
+        expect(wrapper.vm.$router.currentRoute.value.query.browse_type).toEqual(encodeURIComponent('list-display'));
     });
 
-    it("sets the browse type in sessionStorage when clicked", () => {
+    it("sets the browse type in sessionStorage when clicked", async () => {
+        await router.push('/record/1234/?browse_type=list-display');
         const KEY = 'browse-type';
-        btns.at(1).trigger('click');
+        await btns[1].trigger('click');
+        await flushPromises();
         expect(sessionStorage.setItem).toHaveBeenLastCalledWith(KEY, 'gallery-display');
 
-        btns.at(0).trigger('click');
+        await btns[0].trigger('click');
+        await flushPromises();
         expect(sessionStorage.setItem).toHaveBeenLastCalledWith(KEY, 'list-display');
     });
 
     it("highlights the correct selected browse type", async () => {
-        btns.at(1).trigger('click');
-        await wrapper.vm.$nextTick();
-        expect(btns.at(0).classes()).not.toContain('is-selected');
-        expect(btns.at(1).classes()).toContain('is-selected');
+        await router.push('/record/1234');
+        await btns[1].trigger('click');
+        await flushPromises();
+        expect(btns[0].classes()).not.toContain('is-selected');
+        expect(btns[1].classes()).toContain('is-selected');
 
-        btns.at(0).trigger('click');
-        await wrapper.vm.$nextTick();
-        expect(btns.at(0).classes()).toContain('is-selected');
-        expect(btns.at(1).classes()).not.toContain('is-selected');
+        await btns[0].trigger('click');
+        await flushPromises();
+        expect(btns[0].classes()).toContain('is-selected');
+        expect(btns[1].classes()).not.toContain('is-selected');
     });
 
-    it("sets browse_type from url, if present", () => {
+    it("sets browse_type from url, if present", async () => {
+        await router.push('/record/1234/?browse_type=list-display');
         expect(wrapper.vm.browse_type).toEqual('list-display');
 
-        wrapper.vm.$router.currentRoute.query.browse_type = 'gallery-display';
-        wrapper = shallowMount(viewType, {
-            localVue,
-            router
-        });
+        await router.push('/record/1234/?browse_type=gallery-display');
         expect(wrapper.vm.browse_type).toEqual('gallery-display');
     });
 });

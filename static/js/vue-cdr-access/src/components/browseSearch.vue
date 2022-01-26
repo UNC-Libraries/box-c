@@ -29,12 +29,15 @@
         watch: {
             // Checks for route changes and updates the search box text as needed, keeping it up
             // to date on forward and backward navigation on the same page.
-            '$route.query'(d) {
-                if ('anywhere' in d) {
-                    this.search_query = decodeURIComponent(d.anywhere);
-                } else {
-                    this.search_query = '';
-                }
+            '$route.query': {
+                handler(d) {
+                    if ('anywhere' in d) {
+                        this.search_query = decodeURIComponent(d.anywhere);
+                    } else {
+                        this.search_query = '';
+                    }
+                },
+                deep: true
             }
         },
 

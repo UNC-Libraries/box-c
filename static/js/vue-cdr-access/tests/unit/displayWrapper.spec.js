@@ -1,20 +1,9 @@
-import { createLocalVue, shallowMount } from '@vue/test-utils'
-import VueRouter from 'vue-router';
+import { shallowMount, flushPromises } from '@vue/test-utils'
+import { createRouter, createWebHistory } from 'vue-router';
 import displayWrapper from '@/components/displayWrapper.vue';
 import moxios from "moxios";
 
-const localVue = createLocalVue();
-localVue.use(VueRouter);
-const router = new VueRouter({
-    routes: [
-        {
-            path: '/record/98bc503c-9603-4cd9-8a65-93a22520ef68',
-            name: 'displayRecords'
-        }
-    ]
-});
-
-let wrapper;
+let wrapper, router;
 const record_list = [
     {
         "added": "2017-12-20T13:44:46.154Z",
@@ -57,20 +46,33 @@ describe('displayWrapper.vue', () => {
     beforeEach(() => {
         moxios.install();
 
-        wrapper = shallowMount(displayWrapper, {
-            localVue,
-            router
+        router = createRouter({
+            history: createWebHistory(process.env.BASE_URL),
+            routes: [
+                {
+                    path: '/record/:uuid',
+                    name: 'displayRecords',
+                    component: displayWrapper
+                }
+            ]
         });
 
-        wrapper.setData({
-            container_name: '',
-            container_metadata: {},
-            is_admin_unit: false,
-            is_collection: true,
-            is_folder: false,
-            record_count: 0,
-            record_list: [],
-            uuid: '0410e5c1-a036-4b7c-8d7d-63bfda2d6a36'
+        wrapper = shallowMount(displayWrapper, {
+            global: {
+                plugins: [router]
+            },
+            data() {
+                return {
+                    container_name: '',
+                    container_metadata: {},
+                    is_admin_unit: false,
+                    is_collection: true,
+                    is_folder: false,
+                    record_count: 0,
+                    record_list: [],
+                    uuid: '0410e5c1-a036-4b7c-8d7d-63bfda2d6a36'
+                }
+            }
         });
     });
 
@@ -91,76 +93,78 @@ describe('displayWrapper.vue', () => {
         });
     });
 
-    it("uses the correct search parameter for non admin set browse works only browse", () => {
-        wrapper.vm.$router.currentRoute.query.works_only = 'true';
+    it("uses the correct search parameter for non admin set browse works only browse", async () => {
+        await router.push('/record/1234/?works_only=true')
 
         wrapper.vm.updateUrl();
         wrapper.vm.retrieveData();
-
+        await flushPromises();
         expect(wrapper.vm.search_method).toEqual('searchJson');
-        expect(wrapper.vm.$router.currentRoute.query.types).toEqual('Work');
+        expect(wrapper.vm.$router.currentRoute.value.query.types).toEqual('Work');
     });
 
-    it("uses the correct search parameters for non admin works only browse", () => {
-        wrapper.vm.$router.currentRoute.query.works_only = 'false';
+    it("uses the correct search parameters for non admin works only browse",  async () => {
+        await router.push('/record/1234/?works_only=false');
 
         wrapper.vm.updateUrl();
         wrapper.vm.retrieveData();
+        await flushPromises();
         expect(wrapper.vm.search_method).toEqual('listJson');
-        expect(wrapper.vm.$router.currentRoute.query.types).toEqual('Work,Folder,Collection');
+        expect(wrapper.vm.$router.currentRoute.value.query.types).toEqual('Work,Folder,Collection');
     });
 
-    it("uses the correct search parameters if search text is specified", () => {
-        wrapper.vm.$router.currentRoute.query.anywhere = 'search query';
+    it("uses the correct search parameters if search text is specified", async () => {
+        await router.push('/record/1234?anywhere=search query');
 
         wrapper.vm.updateUrl();
         wrapper.vm.retrieveData();
+        await flushPromises();
         expect(wrapper.vm.search_method).toEqual('searchJson');
-        expect(wrapper.vm.$router.currentRoute.query.types).toEqual('Work,Folder,Collection');
+        expect(wrapper.vm.$router.currentRoute.value.query.types).toEqual('Work,Folder,Collection');
     });
 
-    it("uses the correct parameters for admin set browse", () => {
-        wrapper.setData({
+    it("uses the correct parameters for admin set browse", async () => {
+        await wrapper.setData({
             is_admin_unit: true,
             is_collection: false,
             is_folder: false
         });
-        wrapper.vm.$router.currentRoute.query.works_only = 'false';
-        wrapper.vm.$router.currentRoute.query.anywhere = '';
+        await router.push('/record/1234?works_only=false');
+
         wrapper.vm.updateUrl();
         wrapper.vm.retrieveData();
-
+        await flushPromises();
         expect(wrapper.vm.search_method).toEqual('listJson');
-        expect(wrapper.vm.$router.currentRoute.query.types).toEqual('Work,Folder,Collection');
+        expect(wrapper.vm.$router.currentRoute.value.query.types).toEqual('Work,Folder,Collection');
     });
 
-    it("updates the url when work type changes", () => {
-        wrapper.setData({
+    it("updates the url when work type changes", async () => {
+        await wrapper.setData({
             is_admin_unit: false,
             is_collection: true
         });
 
-        wrapper.vm.$router.currentRoute.query.browse_type = 'gallery-display';
+        await router.push('/record/1234?browse_type=gallery-display');
         wrapper.vm.updateUrl();
-        expect(wrapper.vm.$router.currentRoute.query.types).toEqual('Work,Folder,Collection');
+        await flushPromises();
+        expect(wrapper.vm.$router.currentRoute.value.query.types).toEqual('Work,Folder,Collection');
     });
 
     it("displays a 'works only' option if the 'works only' box is checked and no records are works", async () => {
-        wrapper.vm.$router.currentRoute.query.works_only = 'true';
+        await router.push('/record/1234?works_only=true');
+
         wrapper.vm.updateUrl();
         wrapper.vm.retrieveData();
-
-        await wrapper.vm.$nextTick();
+        await flushPromises();
         let works_only = wrapper.find('.container-note');
         expect(works_only.exists()).toBe(true);
     });
 
     it("does not display a 'works only' option if the 'works only' box is not checked and no records are works", async () => {
-        wrapper.vm.$router.currentRoute.query.works_only = 'false';
+        await router.push('/record/1234?works_only=false');
         wrapper.vm.updateUrl();
         wrapper.vm.retrieveData();
-
-        await wrapper.vm.$nextTick();
+        await flushPromises();
         let works_only = wrapper.find('.container-note');
         expect(works_only.exists()).toBe(false)
     });
@@ -168,5 +172,6 @@ describe('displayWrapper.vue', () => {
     afterEach(() => {
         moxios.uninstall();
         wrapper = null;
+        router = null;
     });
 });

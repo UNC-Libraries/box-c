@@ -30,8 +30,11 @@
         },
 
         watch: {
-            '$route.query'(route) {
-                this.setSort();
+            '$route.query': {
+                handler(route) {
+                    this.setSort();
+                },
+                deep: true
             }
         },
 

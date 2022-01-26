@@ -1,23 +1,35 @@
-import { createLocalVue, shallowMount } from '@vue/test-utils'
-import VueRouter from 'vue-router';
+import { shallowMount } from '@vue/test-utils'
+import { createRouter, createWebHistory } from 'vue-router';
 import pagination from '@/components/pagination.vue'
+import displayWrapper from "@/components/displayWrapper";
 import routeUtils from '@/mixins/routeUtils.js';
 
-const localVue = createLocalVue();
-localVue.use(VueRouter);
-const router = new VueRouter();
 const gallery = 'gallery-display';
 const list_display = 'list-display';
-let wrapper;
+let wrapper, router;
 
-describe('routeUtils', () => {
-    beforeEach(() => {
+describe('routeUtils',  () => {
+    beforeEach(async () => {
+        router = createRouter({
+            history: createWebHistory(process.env.BASE_URL),
+            routes: [
+                {
+                    path: '/record/:uuid',
+                    name: 'displayRecords',
+                    component: displayWrapper
+                }
+            ]
+        });
         // Set wrapper using any component that uses routeUtils mixin to avoid test warnings about missing template
         wrapper = shallowMount(pagination, {
-            localVue,
-            router
+            global: {
+                plugins: [router]
+            }
         });
+        await router.push('/record/1234');
     });
+
+    afterEach(() => router = null);
 
     it("sets default url parameters for browse view if none are given", () => {
         const defaults = {
@@ -101,16 +113,16 @@ describe('routeUtils', () => {
         expect(wrapper.vm.formatParamsString(defaults)).toEqual(formatted);
     });
 
-    it("updates work type", () => {
+    it("updates work type", async () => {
         // Admin units
         expect(wrapper.vm.updateWorkType(false).types).toEqual('Work,Folder,Collection');
 
         // Works only
-        wrapper.vm.$router.currentRoute.query.works_only = 'true';
+        wrapper.vm.$router.currentRoute.value.query.works_only = 'true';
         expect(wrapper.vm.updateWorkType(true).types).toEqual('Work');
 
         // All work types
-        wrapper.vm.$router.currentRoute.query.works_only = 'false';
+        wrapper.vm.$router.currentRoute.value.query.works_only = 'false';
         expect(wrapper.vm.updateWorkType(false).types).toEqual('Work,Folder,Collection');
     });
 

@@ -41,10 +41,13 @@
         name: 'displayWrapper',
 
         watch: {
-            '$route.query'(d) {
-                if (!this.is_page_loading) {
-                    this.retrieveData();
-                }
+            '$route.query': {
+                handler(d) {
+                    if (!this.is_page_loading) {
+                        this.retrieveData();
+                    }
+                },
+                deep: true
             }
         },
 
