@@ -119,6 +119,7 @@
     import axios from 'axios';
     import cloneDeep from 'lodash.clonedeep';
     import isEmpty from 'lodash.isempty';
+    import { mapState } from 'vuex';
 
     export default {
         name: 'staffRoles',
@@ -128,15 +129,6 @@
         },
 
         mixins: [staffRoleList, displayModal],
-
-        props: {
-            alertHandler: Object,
-            changesCheck: Boolean,
-            objectPath: Array,
-            containerType: String,
-            title: String,
-            uuid: String
-        },
 
         data() {
             return {
@@ -153,6 +145,16 @@
         },
 
         computed: {
+            // Get needed state from Vuex
+            ...mapState({
+                alertHandler: state => state.alertHandler,
+                changesCheck: state => state.checkForUnsavedChanges,
+                objectPath: state => state.metadata.objectPath,
+                containerType: state => state.metadata.type,
+                uuid: state => state.metadata.id,
+                title: state => state.metadata.title
+            }),
+
             canSetPermissions() {
                 return ['AdminUnit', 'Collection'].includes(this.containerType);
             },
@@ -168,7 +170,7 @@
                     if (!isEmpty(response.data)) {
                         this.current_staff_roles = response.data;
                         /* Add as clone so it doesn't update this.current_staff_roles.assigned by reference
-                           when a user is is added/updated */
+                           when a user is added/updated */
                         let update_roles = cloneDeep(response.data);
                         this.updated_staff_roles = update_roles.assigned.roles;
                     }

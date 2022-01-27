@@ -100,6 +100,7 @@
     import patronHelpers from '../mixins/patronHelpers';
     import axios from 'axios';
     import cloneDeep from 'lodash.clonedeep';
+    import { mapState } from 'vuex';
 
     const EVERYONE_PRINCIPAL = 'everyone';
     const AUTH_PRINCIPAL = 'authenticated';
@@ -133,17 +134,6 @@
 
         mixins: [displayModal, patronHelpers],
 
-        props: {
-            actionHandler: Object,
-            alertHandler: Object,
-            changesCheck: Boolean,
-            containerType: String,
-            resultObject: Object,
-            resultObjects: Array,
-            title: String,
-            uuid: String
-        },
-
         created() {
             // Initialize non-reactive variables
             this.inherited = initialRoles();
@@ -166,6 +156,19 @@
         },
 
         computed: {
+            // Get needed state from Vuex
+            ...mapState({
+                alertHandler: state => state.alertHandler,
+                actionHandler: state => state.actionHandler,
+                changesCheck: state => state.checkForUnsavedChanges,
+                containerType: state => state.metadata.type,
+                resultObject: state => state.resultObject,
+                resultObjects: state => state.resultObjects,
+                objectPath: state => state.metadata.objectPath,
+                title: state => state.metadata.title,
+                uuid: state => state.metadata.id
+            }),
+
             possibleRoles() {
                 return this.possibleRoleList(this.containerType);
             },

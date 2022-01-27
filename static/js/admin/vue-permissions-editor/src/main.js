@@ -1,17 +1,19 @@
-import Vue from 'vue'
+import { createApp, h } from 'vue'
 import App from './App.vue'
 import router from './router'
+import store from './store'
 import './assets/common-styles.css'
 
-Vue.config.productionTip = false
+window.perms_editor = createApp({
+  render() {
+    return h(App);
+  }
+}).use(router).use(store).mount('#permissions-app');
 
 /**
- * Need to define our Vue instance as a global, due to the way Webpack scopes variables, so it can be used by non-Vue admin app code
- * See https://forum.vuejs.org/t/how-to-access-vue-from-chrome-console/3606
+ * Need to define our Vuex store instance as a global, due to the way Webpack scopes variables,
+ * so it can be used by non-Vue admin app code
  * Action menu needs to be able to set data values on Vue instance
  * Used by resultObjectActionMenu.js
  */
-window.perms_editor = new Vue({
-  router,
-  render: h => h(App)
-}).$mount('#permissions-app')
+window.perms_editor_store = store;

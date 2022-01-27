@@ -23,24 +23,10 @@
                                 </div>
                                 <div class="modal-body">
                                     <patron-roles v-if="permissionType === 'Patron'"
-                                                  :action-handler="actionHandler"
-                                                  :alert-handler="alertHandler"
-                                                  :changes-check="checkForUnsavedChanges"
-                                                  :container-type="metadata.type"
-                                                  :result-object="resultObject"
-                                                  :result-objects="resultObjects"
-                                                  :title="metadata.title"
-                                                  :uuid="metadata.id"
                                                   @reset-changes-check="resetChangesCheck"
                                                   @show-modal="closeModal">
                                     </patron-roles>
                                     <staff-roles v-else
-                                                 :alert-handler="alertHandler"
-                                                 :changes-check="checkForUnsavedChanges"
-                                                 :object-path="metadata.objectPath"
-                                                 :container-type="metadata.type"
-                                                 :uuid="metadata.id"
-                                                 :title="metadata.title"
                                                  @reset-changes-check="resetChangesCheck"
                                                  @show-modal="closeModal">
                                     </staff-roles>
@@ -57,25 +43,24 @@
 <script>
     import patronRoles from './patronRoles';
     import staffRoles from "./staffRoles";
+    import { mapState } from 'vuex';
 
     export default {
         name: 'modalEditor',
         components: {patronRoles, staffRoles},
 
-        data() {
-            return {
-                actionHandler: {},
-                alertHandler: {},
-                checkForUnsavedChanges: false,
-                metadata: {},
-                permissionType: '',
-                resultObject: {},
-                resultObjects: [],
-                showModal: false,
-            };
-        },
-
         computed: {
+            ...mapState({
+                actionHandler: state => state.actionHandler,
+                alertHandler: state => state.alertHandler,
+                checkForUnsavedChanges: state => state.checkForUnsavedChanges,
+                metadata: state => state.metadata,
+                permissionType: state => state.permissionType,
+                resultObject: state => state.resultObject,
+                resultObjects: state => state.resultObjects,
+                showModal: state => state.showModal
+            }),
+
             iconType() {
                 if (this.metadata.type === 'Collection') {
                     return 'fa-archive';
@@ -99,15 +84,15 @@
 
         methods: {
             closeModalCheck() {
-                this.checkForUnsavedChanges = true;
+                this.$store.commit('setCheckForUnsavedChanges', true);
             },
 
             resetChangesCheck(check_changes) {
-                this.checkForUnsavedChanges = check_changes;
+                this.$store.commit('setCheckForUnsavedChanges', check_changes);
             },
 
             closeModal() {
-                this.showModal = false;
+                this.$store.commit('setShowModal', false);
             }
         }
     }

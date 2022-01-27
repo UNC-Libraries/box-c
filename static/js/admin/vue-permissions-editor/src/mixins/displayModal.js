@@ -1,4 +1,6 @@
 export default {
+    emits: ['show-modal', 'reset-changes-check'],
+
     data() {
         return {
             is_submitting: false,
@@ -8,10 +10,13 @@ export default {
     },
 
     watch: {
-        changesCheck(check) {
-            if (check) {
-                this.showModal();
-            }
+        changesCheck: {
+            handler(check) {
+                if (check) {
+                    this.showModal();
+                }
+            },
+            deep: true
         }
     },
 

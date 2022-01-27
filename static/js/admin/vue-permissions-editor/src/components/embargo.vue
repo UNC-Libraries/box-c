@@ -55,6 +55,8 @@
             isBulkMode: Boolean
         },
 
+        emits: ['embargo-info', 'error-msg'],
+
         data() {
             return {
                 custom_embargo_date: '',
@@ -66,26 +68,31 @@
         },
 
         watch: {
-            currentEmbargo(embargo) {
-                this.has_embargo = embargo !== null;
+            currentEmbargo: {
+                handler(embargo) {
+                    this.has_embargo = embargo !== null;
 
-                if (this.has_embargo) {
-                    this.embargo_ends_date = embargo;
-                } else {
-                    this.embargo_ends_date = '';
-                }
+                    if (this.has_embargo) {
+                        this.embargo_ends_date = embargo;
+                    } else {
+                        this.embargo_ends_date = '';
+                    }
+                },
+                deep: true
             },
-
-            embargo_type: function(newType, oldType) {
-                if (newType === "ignore") {
-                    this.ignoreEmbargo();
-                } else if (newType === "clear") {
-                    this.removeEmbargo(false);
-                } else if (newType === "1year") {
-                    this.setFixedEmbargoDate(1);
-                } else if (newType === "2years") {
-                    this.setFixedEmbargoDate(2);
-                }
+            embargo_type: {
+                handler(newType) {
+                    if (newType === "ignore") {
+                        this.ignoreEmbargo();
+                    } else if (newType === "clear") {
+                        this.removeEmbargo(false);
+                    } else if (newType === "1year") {
+                        this.setFixedEmbargoDate(1);
+                    } else if (newType === "2years") {
+                        this.setFixedEmbargoDate(2);
+                    }
+                },
+                deep: true
             }
         },
 

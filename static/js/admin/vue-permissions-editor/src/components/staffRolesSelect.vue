@@ -14,6 +14,8 @@
 
         mixins: [staffRoleList],
 
+        emits: ['staff-role-update'],
+
         props: {
             areDeleted: {
                 type: Array,
@@ -27,8 +29,11 @@
         },
 
         watch: {
-            user(updated_user) {
-                this.selected_role = updated_user.role;
+            user: {
+                handler(updated_user) {
+                    this.selected_role = updated_user.role;
+                },
+                deep: true
             }
         },
 
