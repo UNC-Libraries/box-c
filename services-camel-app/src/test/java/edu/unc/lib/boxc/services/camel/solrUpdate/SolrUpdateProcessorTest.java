@@ -21,6 +21,8 @@ import static edu.unc.lib.boxc.operations.jms.indexing.IndexingActionType.ADD;
 import static edu.unc.lib.boxc.operations.jms.indexing.IndexingActionType.DELETE;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -32,6 +34,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import edu.unc.lib.boxc.model.api.objects.FileObject;
+import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
+import edu.unc.lib.boxc.model.api.objects.WorkObject;
+import edu.unc.lib.boxc.operations.jms.MessageSender;
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
 import org.jdom2.Document;
@@ -48,7 +54,6 @@ import edu.unc.lib.boxc.indexing.solr.action.IndexingAction;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.boxc.operations.jms.indexing.IndexingActionType;
-import edu.unc.lib.boxc.services.camel.solrUpdate.SolrUpdateProcessor;
 
 /**
  *
@@ -71,6 +76,12 @@ public class SolrUpdateProcessorTest {
 
     @Mock
     private IndexingAction mockAddAction;
+    @Mock
+    private IndexingAction mockUpdateAccessAction;
+    @Mock
+    private RepositoryObjectLoader repositoryObjectLoader;
+    @Mock
+    private MessageSender messageSender;
 
     @Captor
     private ArgumentCaptor<ChildSetRequest> childSetCaptor;
@@ -81,9 +92,12 @@ public class SolrUpdateProcessorTest {
 
         indexingActionMap = new HashMap<>();
         indexingActionMap.put(ADD, mockAddAction);
+        indexingActionMap.put(IndexingActionType.UPDATE_ACCESS, mockUpdateAccessAction);
 
         processor = new SolrUpdateProcessor();
         processor.setSolrIndexingActionMap(indexingActionMap);
+        processor.setRepositoryObjectLoader(repositoryObjectLoader);
+        processor.setUpdateWorkSender(messageSender);
 
         bodyDoc = new Document();
         when(exchange.getIn()).thenReturn(msg);
@@ -122,6 +136,40 @@ public class SolrUpdateProcessorTest {
         processor.process(exchange);
 
         verify(mockAddAction, never()).performAction(any());
+    }
+
+    @Test
+    public void testFileMessageUpdateWork() throws Exception {
+        populateEntry(IndexingActionType.ADD);
+        var targetFile = mock(FileObject.class);
+        var parentWork = mock(WorkObject.class);
+        var workPid = PIDs.get(UUID.randomUUID().toString());
+        when(targetFile.getParent()).thenReturn(parentWork);
+        when(parentWork.getPid()).thenReturn(workPid);
+        when(repositoryObjectLoader.getRepositoryObject(targetPid)).thenReturn(targetFile);
+
+        processor.process(exchange);
+
+        verify(messageSender).sendMessage(workPid.getQualifiedId());
+        // Regular indexing should also happen
+        verify(mockAddAction).performAction(any(SolrUpdateRequest.class));
+    }
+
+    @Test
+    public void testFileMessageNotNeedWorkUpdate() throws Exception {
+        populateEntry(IndexingActionType.UPDATE_ACCESS);
+        var targetFile = mock(FileObject.class);
+        var parentWork = mock(WorkObject.class);
+        var workPid = PIDs.get(UUID.randomUUID().toString());
+        when(targetFile.getParent()).thenReturn(parentWork);
+        when(parentWork.getPid()).thenReturn(workPid);
+        when(repositoryObjectLoader.getRepositoryObject(targetPid)).thenReturn(targetFile);
+
+        processor.process(exchange);
+
+        verify(messageSender, never()).sendMessage(anyString());
+        // Regular indexing should happen regardless
+        verify(mockUpdateAccessAction).performAction(any(SolrUpdateRequest.class));
     }
 
     private Element populateEntry(IndexingActionType type) {

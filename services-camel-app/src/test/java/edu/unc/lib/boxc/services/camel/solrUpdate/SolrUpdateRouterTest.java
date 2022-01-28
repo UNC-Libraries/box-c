@@ -29,6 +29,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
+import edu.unc.lib.boxc.operations.jms.indexing.IndexingMessageSender;
 import org.apache.camel.CamelContext;
 import org.apache.camel.Exchange;
 import org.apache.camel.Produce;
@@ -77,6 +78,12 @@ public class SolrUpdateRouterTest {
 
     @Produce(uri = "{{cdr.solrupdate.stream}}")
     private ProducerTemplate template;
+
+    @Produce(uri = "{{cdr.solrupdate.workObject.fileUpdated}}")
+    private ProducerTemplate templateWorkFromFile;
+
+    @Autowired
+    private IndexingMessageSender indexingMessageSender;
 
     @Autowired
     private CamelContext cdrServiceSolrUpdate;
@@ -239,6 +246,27 @@ public class SolrUpdateRouterTest {
         verify(solrSmallUpdateProcessor).process(exchangeCaptor.capture());
         List<Exchange> exchanges = exchangeCaptor.getAllValues();
         assertMessage(exchanges, targetPid, IndexingActionType.UPDATE_ACCESS_TREE);
+    }
+
+    @Test
+    public void multipleWorkFromFile() throws Exception {
+        PID targetPid1 = pidMinter.mintContentPid();
+        PID targetPid2 = pidMinter.mintContentPid();
+
+        NotifyBuilder notify = new NotifyBuilder(cdrServiceSolrUpdate)
+                .whenCompleted(1)
+                .create();
+
+        templateWorkFromFile.sendBodyAndHeaders(targetPid1.getId(), null);
+        templateWorkFromFile.sendBodyAndHeaders(targetPid2.getId(), null);
+        // Repeat first message, should only produce one final message
+        templateWorkFromFile.sendBodyAndHeaders(targetPid1.getId(), null);
+        templateWorkFromFile.sendBodyAndHeaders(targetPid1.getId(), null);
+
+        notify.matches(3l, TimeUnit.SECONDS);
+
+        verify(indexingMessageSender).sendIndexingOperation(null, targetPid1, IndexingActionType.UPDATE_DATASTREAMS);
+        verify(indexingMessageSender).sendIndexingOperation(null, targetPid2, IndexingActionType.UPDATE_DATASTREAMS);
     }
 
     private void assertMessage(List<Exchange> exchanges, PID expectedPid, IndexingActionType expectedAction)

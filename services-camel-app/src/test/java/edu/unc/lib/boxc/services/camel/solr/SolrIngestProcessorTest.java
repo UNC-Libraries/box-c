@@ -15,14 +15,24 @@
  */
 package edu.unc.lib.boxc.services.camel.solr;
 
+import static edu.unc.lib.boxc.fcrepo.FcrepoJmsConstants.RESOURCE_TYPE;
 import static org.fcrepo.camel.FcrepoHeaders.FCREPO_URI;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
+import edu.unc.lib.boxc.indexing.solr.SolrUpdateRequest;
+import edu.unc.lib.boxc.model.api.objects.FileObject;
+import edu.unc.lib.boxc.model.api.objects.WorkObject;
+import edu.unc.lib.boxc.model.api.rdf.Fcrepo4Repository;
+import edu.unc.lib.boxc.model.fcrepo.ids.DatastreamPids;
+import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
+import edu.unc.lib.boxc.operations.jms.MessageSender;
+import edu.unc.lib.boxc.operations.jms.indexing.IndexingActionType;
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
 import org.junit.Before;
@@ -39,6 +49,8 @@ import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.fcrepo.test.TestHelper;
 import edu.unc.lib.boxc.search.solr.models.IndexDocumentBean;
 import edu.unc.lib.boxc.services.camel.solr.SolrIngestProcessor;
+
+import java.util.UUID;
 
 /**
  *
@@ -66,6 +78,8 @@ public class SolrIngestProcessorTest {
     private SolrUpdateDriver solrUpdateDriver;
     @Mock
     private RepositoryObjectLoader repoObjLoader;
+    @Mock
+    private MessageSender messageSender;
 
     @Mock
     private Exchange exchange;
@@ -77,6 +91,7 @@ public class SolrIngestProcessorTest {
         TestHelper.setContentBase(CONTENT_BASE_URI);
         initMocks(this);
         processor = new SolrIngestProcessor(dipFactory, pipeline, solrUpdateDriver, repoObjLoader);
+        processor.setUpdateWorkSender(messageSender);
 
         when(exchange.getIn()).thenReturn(message);
         when(message.getHeader(eq(FCREPO_URI)))
@@ -99,5 +114,28 @@ public class SolrIngestProcessorTest {
         doThrow(new IndexingException("Fail")).when(pipeline).process(any(DocumentIndexingPackage.class));
 
         processor.process(exchange);
+    }
+
+    @Test
+    public void testBinaryMessageUpdateAncestors() throws Exception {
+        PID filePid = PIDs.get(TEST_URI);
+        PID binaryPid = DatastreamPids.getOriginalFilePid(filePid);
+        when(message.getHeader(eq(RESOURCE_TYPE))).thenReturn(Fcrepo4Repository.Binary.getURI());
+        when(message.getHeader(eq(FCREPO_URI))).thenReturn(binaryPid.getRepositoryPath());
+
+        var targetFile = mock(FileObject.class);
+        when(targetFile.getPid()).thenReturn(filePid);
+        var parentWork = mock(WorkObject.class);
+        var workPid = PIDs.get(UUID.randomUUID().toString());
+        when(targetFile.getParent()).thenReturn(parentWork);
+        when(parentWork.getPid()).thenReturn(workPid);
+        when(repoObjLoader.getFileObject(filePid)).thenReturn(targetFile);
+
+        processor.process(exchange);
+
+        verify(messageSender).sendMessage(workPid.getQualifiedId());
+        // Regular indexing should also happen
+        verify(pipeline).process(eq(dip));
+        verify(solrUpdateDriver).addDocument(eq(docBean));
     }
 }

@@ -20,10 +20,18 @@ import static edu.unc.lib.boxc.model.api.xml.JDOMNamespaceUtil.ATOM_NS;
 import static edu.unc.lib.boxc.model.api.xml.JDOMNamespaceUtil.CDR_MESSAGE_NS;
 import static java.util.stream.Collectors.toMap;
 
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
+import edu.unc.lib.boxc.model.api.objects.FileObject;
+import edu.unc.lib.boxc.model.api.objects.RepositoryObject;
+import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
+import edu.unc.lib.boxc.model.api.objects.WorkObject;
+import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
+import edu.unc.lib.boxc.operations.jms.MessageSender;
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
 import org.apache.camel.Processor;
@@ -49,7 +57,12 @@ public class SolrUpdateProcessor implements Processor {
     private static final Logger log = LoggerFactory.getLogger(SolrUpdateProcessor.class);
     private static final Timer timer = createTimerForClass(SolrUpdateProcessor.class);
 
+    private RepositoryObjectLoader repoObjLoader;
+    private MessageSender updateWorkSender;
     private Map<IndexingActionType, IndexingAction> solrIndexingActionMap;
+    private Set<IndexingActionType> NEED_UPDATE_PARENT_WORK = EnumSet.of(
+            IndexingActionType.DELETE, IndexingActionType.ADD,
+            IndexingActionType.UPDATE_DATASTREAMS, IndexingActionType.UPDATE_FULL_TEXT);
 
     @Override
     public void process(Exchange exchange) throws Exception {
@@ -83,10 +96,23 @@ public class SolrUpdateProcessor implements Processor {
             updateRequest.setParams(params);
 
             IndexingAction indexingAction = this.solrIndexingActionMap.get(actionType);
-            if (indexingAction != null) {
-                log.info("Performing action {} on object {}",
-                        action, pid);
-                indexingAction.performAction(updateRequest);
+            if (indexingAction == null) {
+                return;
+            }
+            log.info("Performing action {} on object {}", action, pid);
+            indexingAction.performAction(updateRequest);
+
+            // Trigger update of parent work obj for files if the action requires it
+            if (NEED_UPDATE_PARENT_WORK.contains(actionType)) {
+                var targetPid = PIDs.get(pid);
+                var targetObj = repoObjLoader.getRepositoryObject(targetPid);
+                if (targetObj instanceof FileObject) {
+                    var parent = targetObj.getParent();
+                    if (parent instanceof WorkObject) {
+                        log.debug("Requesting indexing of work {} containing file {}", parent.getPid().getId(), pid);
+                        updateWorkSender.sendMessage(parent.getPid().getQualifiedId());
+                    }
+                }
             }
         }
     }
@@ -115,5 +141,13 @@ public class SolrUpdateProcessor implements Processor {
      */
     public void setSolrIndexingActionMap(Map<IndexingActionType, IndexingAction> solrIndexingActionMap) {
         this.solrIndexingActionMap = solrIndexingActionMap;
+    }
+
+    public void setRepositoryObjectLoader(RepositoryObjectLoader repoObjLoader) {
+        this.repoObjLoader = repoObjLoader;
+    }
+
+    public void setUpdateWorkSender(MessageSender updateWorkSender) {
+        this.updateWorkSender = updateWorkSender;
     }
 }

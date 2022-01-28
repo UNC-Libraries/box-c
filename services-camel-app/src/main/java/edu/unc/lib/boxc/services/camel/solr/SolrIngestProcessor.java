@@ -23,6 +23,7 @@ import static org.fcrepo.camel.FcrepoHeaders.FCREPO_URI;
 import java.util.ArrayList;
 import java.util.List;
 
+import edu.unc.lib.boxc.operations.jms.MessageSender;
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
 import org.apache.camel.Processor;
@@ -58,6 +59,7 @@ public class SolrIngestProcessor implements Processor {
     private DocumentIndexingPipeline pipeline;
     private SolrUpdateDriver solrUpdateDriver;
     private RepositoryObjectLoader repoObjLoader;
+    private MessageSender updateWorkSender;
 
     public SolrIngestProcessor(DocumentIndexingPackageFactory factory,
             DocumentIndexingPipeline pipeline, SolrUpdateDriver solrUpdateDriver,
@@ -85,9 +87,11 @@ public class SolrIngestProcessor implements Processor {
                 targetPid = PIDs.get(targetPid.getId());
                 FileObject parentFile = repoObjLoader.getFileObject(targetPid);
                 RepositoryObject grandParent = parentFile.getParent();
-                // Index both the parent file and work
+                // Trigger indexing of the work containing this file object
                 if (grandParent instanceof WorkObject) {
-                    targetPids.add(grandParent.getPid());
+                    log.debug("Requesting indexing of work {} containing file {}",
+                            grandParent.getPid().getId(), targetPid);
+                    updateWorkSender.sendMessage(grandParent.getPid().getQualifiedId());
                 }
             }
 
@@ -105,5 +109,9 @@ public class SolrIngestProcessor implements Processor {
                 solrUpdateDriver.addDocument(dip.getDocument());
             }
         }
+    }
+
+    public void setUpdateWorkSender(MessageSender updateWorkSender) {
+        this.updateWorkSender = updateWorkSender;
     }
 }

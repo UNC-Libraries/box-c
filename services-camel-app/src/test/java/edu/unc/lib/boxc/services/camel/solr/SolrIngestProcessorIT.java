@@ -34,6 +34,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import edu.unc.lib.boxc.operations.jms.MessageSender;
 import org.apache.commons.io.FileUtils;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
@@ -86,6 +87,8 @@ public class SolrIngestProcessorIT extends AbstractSolrProcessorIT {
     private DerivativeService derivativeService;
     @Mock
     private AgentPrincipals agent;
+    @Autowired
+    private MessageSender updateWorkSender;
 
     @Before
     public void setUp() throws Exception {
@@ -94,6 +97,7 @@ public class SolrIngestProcessorIT extends AbstractSolrProcessorIT {
         TestHelper.setContentBase(baseAddress);
 
         processor = new SolrIngestProcessor(dipFactory, solrFullUpdatePipeline, driver, repositoryObjectLoader);
+        processor.setUpdateWorkSender(updateWorkSender);
 
         when(exchange.getIn()).thenReturn(message);
 

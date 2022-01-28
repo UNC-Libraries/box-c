@@ -52,6 +52,9 @@ public class SolrUpdateRouter extends RouteBuilder {
     @BeanInject(value = "cacheInvalidatingProcessor")
     private CacheInvalidatingProcessor cacheInvalidatingProcessor;
 
+    @BeanInject
+    private AggregateUpdateProcessor aggregateWorkForFileProcessor;
+
     @Override
     public void configure() throws Exception {
         onException(NotFoundException.class)
@@ -81,6 +84,7 @@ public class SolrUpdateRouter extends RouteBuilder {
                 .when().method(SolrUpdatePreprocessor.class, "isLargeAction")
                     .to("{{cdr.solrupdate.large.camel}}")
                 .when().method(SolrUpdatePreprocessor.class, "isSmallAction")
+                    .log(LoggingLevel.DEBUG, log, "Performing small solr update")
                     .bean(solrSmallUpdateProcessor)
                 .otherwise()
                     .bean(solrUpdatePreprocessor, "logUnknownSolrUpdate")
@@ -97,5 +101,11 @@ public class SolrUpdateRouter extends RouteBuilder {
             .startupOrder(508)
             .log(LoggingLevel.DEBUG, log, "Performing low priority solr update")
             .bean(solrSmallUpdateProcessor);
+
+        from("{{cdr.solrupdate.workObject.fileUpdated.consumer}}")
+            .routeId("CdrSolrUpdateWorkFileUpdated")
+            .startupOrder(506)
+            .log(LoggingLevel.DEBUG, log, "Processing batch of work updates")
+            .bean(aggregateWorkForFileProcessor);
     }
 }
