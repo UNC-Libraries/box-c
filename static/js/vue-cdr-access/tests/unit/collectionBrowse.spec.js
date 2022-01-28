@@ -2,18 +2,6 @@ import { shallowMount } from '@vue/test-utils'
 import { createRouter, createWebHistory } from 'vue-router';
 import collectionBrowse from '@/components/collectionBrowse.vue';
 import moxios from "moxios";
-import displayWrapper from "@/components/displayWrapper";
-
-const router = createRouter({
-    history: createWebHistory(process.env.BASE_URL),
-    routes: [
-        {
-            path: '/record/:uuid/',
-            name: 'displayRecords',
-            component: displayWrapper
-        }
-    ]
-});
 
 let response = {
     "metadata": [
@@ -70,11 +58,7 @@ describe('collectionBrowse.vue', () => {
     beforeEach(() => {
         moxios.install();
 
-        wrapper = shallowMount(collectionBrowse, {
-            global: {
-                plugins: [router]
-            }
-        });
+        wrapper = shallowMount(collectionBrowse);
 
         moxios.stubRequest('collectionsJson', {
             status: 200,

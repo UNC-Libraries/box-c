@@ -28,7 +28,6 @@ describe('browseSearch.vue', () => {
         });
 
         await router.push('/record/1234');
-
         wrapper.vm.$router.currentRoute.value.query.anywhere = '';
     });
 
@@ -61,7 +60,7 @@ describe('browseSearch.vue', () => {
 
     it("sets default placeholder text if no object type is given", () => {
         const $route = {
-            path: '/record/73bc003c-9603-4cd9-8a65-93a22520ef6a',
+            path: '/record/1234',
             name: 'displayRecords',
             query: { anywhere: encodeURIComponent('Test Folder') }
         };

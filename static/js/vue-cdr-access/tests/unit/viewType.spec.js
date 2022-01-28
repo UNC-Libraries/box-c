@@ -21,9 +21,6 @@ describe('viewType.vue', () => {
         wrapper = shallowMount(viewType, {
             global: {
                 plugins: [router]
-            },
-            props: {
-                browse_type: 'list-display'
             }
         });
 
