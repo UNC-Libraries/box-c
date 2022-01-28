@@ -1,25 +1,35 @@
-import { createLocalVue, shallowMount } from '@vue/test-utils'
-import VueRouter from 'vue-router';
+import { shallowMount, flushPromises } from '@vue/test-utils'
+import { createRouter, createWebHistory } from 'vue-router';
 import facets from '@/components/facets.vue';
+import searchWrapper from '@/components/searchWrapper.vue'
+import displayWrapper from '@/components/displayWrapper';
 
-const localVue = createLocalVue();
-localVue.use(VueRouter);
-const router = new VueRouter({
-    routes: [
-        {
-            path: '/search/:uuid?',
-            name: 'searchRecords'
-        }
-    ]
-});
-let wrapper, collection, selected_facet, selected_sub_facet;
+
+let router, wrapper, collection, selected_facet, selected_sub_facet;
 
 describe('facets.vue', () => {
     beforeEach(() => {
+        router = createRouter({
+            history: createWebHistory(process.env.BASE_URL),
+            routes: [
+                {
+                    path: '/search/:uuid?',
+                    name: 'searchRecords',
+                    component: searchWrapper
+                },
+                {
+                    path: '/record/:uuid',
+                    name: 'displayRecords',
+                    component: displayWrapper
+                }
+            ]
+        });
+
         wrapper = shallowMount(facets, {
-            localVue,
-            router,
-            propsData: {
+            global: {
+                plugins: [router]
+            },
+            props: {
                 facetList: [
                     {
                         name: "PARENT_COLLECTION",
@@ -67,46 +77,50 @@ describe('facets.vue', () => {
                         ]
                     }
                 ]
+            },
+            data() {
+                return {
+                    selected_facets: []
+                }
             }
         });
 
-        wrapper.setData({
-            selected_facets: [],
-        });
-
         let facet_list = wrapper.findAll('.facet-display a');
-        collection = facet_list.at(0);
-        selected_facet = facet_list.at(2);
-        selected_sub_facet = facet_list.at(3);
-
+        collection = facet_list[0];
+        selected_facet = facet_list[2];
+        selected_sub_facet = facet_list[3];
     });
+
+    afterEach(() => router = null);
 
     it("displays returned facets with counts", () => {
         let facet_headers = wrapper.findAll('.facet-display h3');
         let facets = wrapper.findAll('.facet-display li');
 
-        expect(facet_headers.at(0).text()).toBe('Collection');
-        expect(facets.at(0).find('a').text()).toBe('testCollection (19)');
-        expect(facets.at(1).find('a').text()).toBe('test2Collection (1)');
+        expect(facet_headers[0].text()).toBe('Collection');
+        expect(facets[0].find('a').text()).toBe('testCollection (19)');
+        expect(facets[1].find('a').text()).toBe('test2Collection (1)');
 
-        expect(facet_headers.at(1).text()).toBe('Format');
-        expect(facets.at(2).find('a').text()).toBe('Image (8)');
-        expect(facets.at(3).find('a').text()).toBe('png (2)');
+        expect(facet_headers[1].text()).toBe('Format');
+        expect(facets[2].find('a').text()).toBe('Image (8)');
+        expect(facets[3].find('a').text()).toBe('png (2)');
     });
 
     it("displays a listing of selected facets", async () => {
+        await router.push('/search/?collection=d77fd8c9-744b-42ab-8e20-5ad9bdf8194e');
         selected_facet.trigger('click');
-
-        await wrapper.vm.$nextTick();
+        await flushPromises();
+        let facet_list = wrapper.findAll('.facet-display a');
+        selected_facet = facet_list[2];
         expect(selected_facet.html()).toMatch(/Image.*8.*fas.fa-times/); // facet value and checkmark
-        expect(wrapper.vm.selected_facets).toEqual(['format=image']);
+        expect(wrapper.vm.selected_facets).toContain('format=image');
     });
 
     it("displays a clear all facets button", async () => {
         expect(wrapper.find('#clear-all').exists()).toBe(false);
+        await router.push('/search/?collection=d77fd8c9-744b-42ab-8e20-5ad9bdf8194e');
         selected_facet.trigger('click');
-
-        await wrapper.vm.$nextTick();
+        await flushPromises();
         expect(wrapper.find('#clear-all').isVisible()).toBe(true);
     });
 
@@ -115,94 +129,107 @@ describe('facets.vue', () => {
     });
 
     it("clears all selected facets if 'Clear Filters' button is clicked", async () => {
+        await router.push('/search/?collection=d77fd8c9-744b-42ab-8e20-5ad9bdf8194e');
         selected_facet.trigger('click');
-        await wrapper.vm.$nextTick();
-        expect(wrapper.vm.selected_facets).toEqual(['format=image']);
+        await flushPromises();
+        expect(wrapper.vm.selected_facets).toContain('format=image');
 
         wrapper.find('#clear-all').trigger('click');
-        await wrapper.vm.$nextTick();
+        await flushPromises();
         expect(wrapper.vm.selected_facets).toEqual([]);
     });
 
     it("clears a selected facet if it is unchecked", async () => {
+        await router.push('/search/?collection=d77fd8c9-744b-42ab-8e20-5ad9bdf8194e');
         // Add facet
         selected_facet.trigger('click');
+        await flushPromises();
 
-        await wrapper.vm.$nextTick();
+        let facets = wrapper.findAll('.facet-display a');
+        selected_facet = facets[2];
+
         expect(selected_facet.html()).toContain('fas fa-times'); // Look for X checkmark
-        expect(wrapper.vm.selected_facets).toEqual(['format=image']);
+        expect(wrapper.vm.selected_facets).toContain('format=image');
 
         // Remove facet
         selected_facet.trigger('click');
-
-        await wrapper.vm.$nextTick();
+        await flushPromises();
+        facets = wrapper.findAll('.facet-display a');
+        selected_facet = facets[2];
         expect(selected_facet.html()).not.toContain('fas fa-times'); // Look for X checkmark
-        expect(wrapper.vm.selected_facets).toEqual([]);
+        expect(wrapper.vm.selected_facets).not.toContain('format=image');
     });
 
     it("updates the query parameters if a facet is selected", async () => {
-        expect(wrapper.vm.$router.currentRoute.query.format).toBe(undefined);
+        expect(wrapper.vm.$router.currentRoute.value.query.format).toBe(undefined);
 
         // Add facet
+        await router.push('/search/?collection=d77fd8c9-744b-42ab-8e20-5ad9bdf8194e');
         selected_facet.trigger('click');
-
-        await wrapper.vm.$nextTick();
-        expect(wrapper.vm.$router.currentRoute.query.format).toEqual('image');
+        await flushPromises();
+        expect(wrapper.vm.$router.currentRoute.value.query.format).toEqual('image');
     });
 
     it("updates the query parameters if a facet is removed", async () => {
         // Add facet
+        await router.push('/search/?collection=d77fd8c9-744b-42ab-8e20-5ad9bdf8194e');
         selected_facet.trigger('click');
-
-        await wrapper.vm.$nextTick();
-        expect(wrapper.vm.$router.currentRoute.query.format).toEqual('image');
+        await flushPromises();
+        expect(wrapper.vm.$router.currentRoute.value.query.format).toEqual('image');
 
         // Remove facet
+        let facet_list = wrapper.findAll('.facet-display a');
+        selected_facet = facet_list[2];
         selected_facet.trigger('click');
+        await flushPromises();
 
-        await wrapper.vm.$nextTick();
-        expect(wrapper.vm.$router.currentRoute.query.format).toBe(undefined);
+        expect(wrapper.vm.$router.currentRoute.value.query.format).toBe(undefined);
     });
 
     it("updates facet display for a collection", async () => {
-        wrapper.vm.$router.push('/search/?collection=d77fd8c9-744b-42ab-8e20-5ad9bdf8194e');
-
-        await wrapper.vm.$nextTick();
+        await router.push('/search/?collection=d77fd8c9-744b-42ab-8e20-5ad9bdf8194e');
         expect(wrapper.vm.selected_facets).toEqual(['collection=d77fd8c9-744b-42ab-8e20-5ad9bdf8194e']);
     });
 
     it("accepts multiple facets", async () => {
+        await router.push('/search/?collection=d77fd8c9-744b-42ab-8e20-5ad9bdf8194e');
         collection.trigger('click');
+        await flushPromises();
         selected_facet.trigger('click');
-
-        await wrapper.vm.$nextTick();
+        await flushPromises();
         expect(wrapper.vm.selected_facets).toEqual(['collection=d77fd8c9-744b-42ab-8e20-5ad9bdf8194e', 'format=image']);
     });
 
     it("accepts multiple facets and facets of the same type", async () => {
+        await router.push('/search?anywhere=""');
         collection.trigger('click');
+        await flushPromises();
         selected_facet.trigger('click');
+        await flushPromises();
         selected_sub_facet.trigger('click');
-
-        await wrapper.vm.$nextTick();
+        await flushPromises();
         expect(wrapper.vm.selected_facets).toEqual(['collection=d77fd8c9-744b-42ab-8e20-5ad9bdf8194e', 'format=image||image/png']);
     });
 
     it("removes the child facet if a parent facet is removed", async () => {
-        wrapper.vm.$router.push('/search?format=image%257C%257Cimage%252Fpng');
-
-        await wrapper.vm.$nextTick();
+        await router.push('/search?format=image%257C%257Cimage%252Fpng');
         expect(wrapper.vm.selected_facets).toEqual(['format=image||image/png']);
 
         // Should always be above child facet
+        let facet_list = wrapper.findAll('.facet-display a');
+        selected_facet = facet_list[2];
         selected_facet.trigger('click');
+        await flushPromises();
         expect(wrapper.vm.selected_facets).toEqual([]);
     });
 
     it("sets selected facets, including parent facets, if the page is reloaded", async () => {
-        wrapper.vm.$router.push('/search/?format=image%257C%257Cimage%252Fpng');
-        await wrapper.vm.$nextTick();
+        await router.push('/search/?format=image%257C%257Cimage%252Fpng');
+        await flushPromises();
         expect(wrapper.vm.selected_facets).toEqual(['format=image||image/png']);
+        let facet_list = wrapper.findAll('.facet-display a');
+        selected_facet = facet_list[2];
+        selected_sub_facet = facet_list[3];
         expect(selected_facet.html()).toMatch(/Image.*8.*fas.fa-times/); // facet values and checkmark
         expect(selected_sub_facet.html()).toMatch(/png.*2.*fas.fa-times/); // facet values and checkmark
     });

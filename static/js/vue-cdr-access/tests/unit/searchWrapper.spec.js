@@ -1,18 +1,9 @@
-import { createLocalVue, shallowMount } from '@vue/test-utils'
-import VueRouter from 'vue-router';
+import { shallowMount } from '@vue/test-utils'
+import { createRouter, createWebHistory } from 'vue-router';
 import searchWrapper from '@/components/searchWrapper.vue';
 import moxios from "moxios";
+import displayWrapper from "@/components/displayWrapper";
 
-const localVue = createLocalVue();
-localVue.use(VueRouter);
-const router = new VueRouter({
-    routes: [
-        {
-            path: '/search/:uuid?',
-            name: 'searchRecords'
-        }
-    ]
-});
 const response = {
     "container": {
         "ancestorNames": "/Content Collections Root",
@@ -125,18 +116,30 @@ const facets_no_results = {
     ],
     "resultCount": 0
 };
-let wrapper;
+let wrapper, router;
 
 describe('searchWrapper.vue', () => {
     beforeEach(() => {
         moxios.install();
 
-        wrapper = shallowMount(searchWrapper, {
-            localVue,
-            router
+        router = createRouter({
+            history: createWebHistory(process.env.BASE_URL),
+            routes: [
+                {
+                    path: '/record/:uuid',
+                    name: 'displayRecords',
+                    component: displayWrapper
+                }
+            ]
         });
 
-        wrapper.vm.$router.currentRoute.query.anywhere = '';
+        wrapper = shallowMount(searchWrapper, {
+            global: {
+                plugins: [router]
+            }
+        });
+
+        wrapper.vm.$router.currentRoute.value.query.anywhere = '';
     });
 
     it("retrieves data", (done) => {
@@ -192,6 +195,7 @@ describe('searchWrapper.vue', () => {
 
     afterEach(() => {
         moxios.uninstall();
+        router = null
     });
 });
 

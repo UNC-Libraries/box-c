@@ -1,17 +1,5 @@
-import { createLocalVue, shallowMount } from '@vue/test-utils'
-import VueRouter from 'vue-router';
+import { shallowMount } from '@vue/test-utils'
 import browseDisplay from '@/components/browseDisplay.vue';
-
-const localVue = createLocalVue();
-localVue.use(VueRouter);
-const router = new VueRouter({
-    routes: [
-        {
-            path: '/record/98bc503c-9603-4cd9-8a65-93a22520ef68',
-            name: 'displayRecords'
-        }
-    ]
-});
 
 let wrapper;
 const record_list = [
@@ -44,15 +32,14 @@ let records = [...record_list, ...record_list, ...record_list, ...record_list]; 
 describe('browseDisplay.vue', () => {
     beforeEach(() => {
         wrapper = shallowMount(browseDisplay, {
-            localVue,
-            router,
-            propsData: {
+            props: {
                 recordList: records
+            },
+            data() {
+                return {
+                    column_size: 'is-3'
+                }
             }
-        });
-
-        wrapper.setData({
-            column_size: 'is-3',
         });
     });
 

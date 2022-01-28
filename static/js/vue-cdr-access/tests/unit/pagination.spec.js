@@ -1,43 +1,51 @@
-import { createLocalVue, shallowMount } from '@vue/test-utils';
-import '@testing-library/jest-dom'
-import VueRouter from 'vue-router';
+import { shallowMount, flushPromises } from '@vue/test-utils';
+import { createRouter, createWebHistory } from 'vue-router';
+import '@testing-library/jest-dom';
 import pagination from '@/components/pagination.vue';
+import displayWrapper from '@/components/displayWrapper';
+import searchWrapper from '@/components/searchWrapper';
 
-const localVue = createLocalVue();
-localVue.use(VueRouter);
-const router = new VueRouter({
-    routes: [
-        {
-            path: '/record/uuid1234',
-            name: 'displayRecords'
-        },
-        {
-            path: '/search/:uuid?',
-            name: 'searchRecords'
-        }
-    ]
-});
-
-let wrapper;
+let router, wrapper;
 
 describe('pagination.vue', () => {
-    beforeEach(() => {
+    beforeEach(async () => {
+        router = createRouter({
+            history: createWebHistory(process.env.BASE_URL),
+            routes: [
+                {
+                    path: '/record/:uuid',
+                    name: 'displayRecords',
+                    component: displayWrapper
+                },
+                {
+                    path: '/search/:uuid?',
+                    name: 'searchRecords',
+                    component: searchWrapper
+                }
+            ]
+        });
         wrapper = shallowMount(pagination, {
-            localVue,
-            router,
-            propsData: {
+            global: {
+                plugins: [router]
+            },
+            props: {
                 browseType: 'display',
                 numberOfRecords: 199
+            },
+            data() {
+                return {
+                    pageLimit: 5,
+                    pageOffset: 2,
+                    startRecord: 1,
+                    totalPageCount: 1
+                }
             }
         });
 
-        wrapper.setData({
-            pageLimit: 5,
-            pageOffset: 2,
-            startRecord: 1,
-            totalPageCount: 1
-        });
+        await router.push('/record/1234');
     });
+
+    afterEach(() => router = null);
 
     it("calculates the total number of pages", () => {
         expect(wrapper.vm.totalPageCount).toEqual(10);
@@ -48,8 +56,7 @@ describe('pagination.vue', () => {
     });
 
     it("displays a list of pages if the user is on the first page and there are <= pages than the page limit", async () => {
-        wrapper.setProps({ numberOfRecords: 24 });
-        await wrapper.vm.$nextTick();
+        await wrapper.setProps({ numberOfRecords: 24 });
         expect(wrapper.findAll('.page-number').length).toEqual(2);
     });
 
@@ -57,94 +64,96 @@ describe('pagination.vue', () => {
         expect(wrapper.findAll('.page-number').length).toEqual(6);
     });
 
-    it("updates the page when a page is selected", () => {
-        wrapper.findAll('.page-number').at(3).trigger('click');
+    it("updates the page when a page is selected", async () => {
+        await wrapper.findAll('.page-number')[3].trigger('click');
+        await flushPromises();
         expect(wrapper.vm.currentPage).toEqual(4);
         expect(wrapper.vm.currentPageList).toEqual([2, 3, 4, 5, 6]);
     });
 
-    it("updates the start record when a 'display' page is selected", () => {
-        wrapper.findAll('.page-number').at(1).trigger('click');
-        expect(wrapper.vm.$router.currentRoute.query.start).toEqual(20);
+    it("updates the start record when a 'display' page is selected",  async () => {
+        await wrapper.findAll('.page-number')[1].trigger('click');
+        await flushPromises();
+        expect(parseInt(wrapper.vm.$router.currentRoute.value.query.start)).toEqual(20);
     });
 
     it("updates the start record when a 'search' page is selected", async () => {
-        wrapper.setProps({
+        await wrapper.setProps({
             browseType: 'search'
         });
-        await wrapper.vm.$nextTick();
-        wrapper.findAll('.page-number').at(1).trigger('click');
-        expect(wrapper.vm.$router.currentRoute.query['a.setStartRow']).toEqual('20');
+
+        await wrapper.findAll('.page-number')[1].trigger('click');
+        await flushPromises();
+        expect(wrapper.vm.$router.currentRoute.value.query['a.setStartRow']).toEqual('20');
     });
 
     it("displays a link to jump to the first page if the user in on a page beyond the pageLimit", async () => {
-        wrapper.findAll('.page-number').at(5).trigger('click');
-
-        await wrapper.vm.$nextTick();
-        wrapper.findAll('.page-number').at(1).trigger('click');
+        await wrapper.findAll('.page-number')[5].trigger('click');
+        await flushPromises();
+        await wrapper.findAll('.page-number')[1].trigger('click');
+        await flushPromises();
 
         expect(wrapper.find('#first-page-link').isVisible()).toBe(true);
     });
 
     it("displays a link to jump to the last page if the user in on a page that is before the pageLimit and" +
-        "there are more pages than the pageLimit", () => {
+        "there are more pages than the pageLimit",  () => {
         expect(wrapper.find('#last-page-link').isVisible()).toBe(true);
     });
 
     it("does not display a link to jump to the first page if the user in on a page before the pageLimit and" +
         "there are less than or eqaul number of pages than the pageLimit", async () => {
-        wrapper.setProps({
+        await wrapper.setProps({
             numberOfRecords: 100
         });
-        await wrapper.vm.$nextTick();
-        wrapper.findAll('.page-number').at(4).trigger('click');
+
+        await wrapper.findAll('.page-number')[4].trigger('click');
+        await flushPromises();
         expect(wrapper.find('#first-page-link').exists()).toBe(false);
     });
 
     it("does not display a link to jump to the last page if the user in on a page before the pageLimit and" +
         "there are less than or eqaul number of pages than the pageLimit", async () => {
-        wrapper.setProps({
+        await wrapper.setProps({
             numberOfRecords: 100
         });
-        await wrapper.vm.$nextTick();
-        wrapper.findAll('.page-number').at(1).trigger('click');
+
+        await wrapper.findAll('.page-number')[1].trigger('click');
+        await flushPromises();
         expect(wrapper.find('#last-page-link').exists()).toBe(false);
     });
 
     it("displays a back link", async () => {
-        expect(wrapper.find('.start').classes('back-next')).toBe(true);
+        await wrapper.findAll('.page-number')[2].trigger('click');
+        await flushPromises();
+        let start_btn = wrapper.find('.start');
+        expect(start_btn.classes('back-next')).toBe(true);
+        expect(start_btn.classes('no-link')).toBe(false);
 
-        wrapper.findAll('.page-number').at(0).trigger('click');
-
-        await wrapper.vm.$nextTick();
-        expect(wrapper.find('.start').classes('back-next')).toBe(false);
-        expect(wrapper.find('.start').classes('no-link')).toBe(true);
+        await wrapper.findAll('.page-number')[0].trigger('click');
+        await flushPromises();
+        start_btn = wrapper.find('.start');
+        expect(start_btn.classes('back-next')).toBe(false);
+        expect(start_btn.classes('no-link')).toBe(true);
     });
 
     it("displays a next link", async () => {
-        wrapper.setProps({
+        await wrapper.setProps({
             numberOfRecords: 100
         });
 
-        await wrapper.vm.$nextTick();
         expect(wrapper.find('.end').classes('back-next')).toBe(true);
 
-        wrapper.findAll('.page-number').at(4).trigger('click');
-
-        await wrapper.vm.$nextTick();
+        await wrapper.findAll('.page-number')[4].trigger('click');
+        await flushPromises();
         expect(wrapper.find('.end').classes('back-next')).toBe(false);
         expect(wrapper.find('.end').classes('no-link')).toBe(true);
     });
 
     it("maintains the base path when changing search pages", async () => {
-        wrapper.setProps({
-            browseType: 'search'
-        });
-
-        await wrapper.vm.$router.push('/search/d77fd8c9-744b-42ab-8e20-5ad9bdf8194e?collection_name=testCollection&page=1');
-
         // Change pages
         wrapper.vm.pageUrl(2);
-        expect(wrapper.vm.$route.path).toEqual('/search/d77fd8c9-744b-42ab-8e20-5ad9bdf8194e');
+        await flushPromises();
+        expect(wrapper.vm.$route.path).toEqual('/record/1234');
     });
 });

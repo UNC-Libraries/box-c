@@ -32,8 +32,11 @@
         },
 
         watch: {
-            '$route.query'(params) {
-                this.works_only = this.coerceWorksOnly(params.works_only);
+            '$route.query': {
+                handler(params) {
+                    this.works_only = this.coerceWorksOnly(params.works_only);
+                },
+                deep: true
             }
         },
 

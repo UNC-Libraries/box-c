@@ -63,7 +63,12 @@
         },
 
         watch: {
-            '$route.query': 'retrieveData'
+            '$route.query': {
+                handler() {
+                    this.retrieveData();
+                },
+                deep: true
+            }
         },
 
         computed: {

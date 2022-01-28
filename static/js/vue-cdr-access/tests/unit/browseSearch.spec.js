@@ -1,51 +1,57 @@
-import { createLocalVue, shallowMount } from '@vue/test-utils';
-import VueRouter from 'vue-router';
+import { shallowMount, flushPromises } from '@vue/test-utils';
+import  { createRouter, createWebHistory } from 'vue-router';
 import browseSearch from '@/components/browseSearch.vue';
+import displayWrapper from "@/components/displayWrapper";
 
 const query = 'Test Collection';
-let wrapper;
-const localVue = createLocalVue();
-localVue.use(VueRouter);
-const router = new VueRouter({
-    routes: [
-        {
-            path: '/record/uuid1234',
-            name: 'displayRecords',
-            query: ''
-        }
-    ]
-});
+let wrapper, router;
 
 describe('browseSearch.vue', () => {
-    beforeEach(() => {
+    beforeEach(async () => {
+        router = createRouter({
+            history: createWebHistory(process.env.BASE_URL),
+            routes: [
+                {
+                    path: '/record/:uuid',
+                    name: 'displayRecords',
+                    component: displayWrapper
+                }
+            ]
+        });
         wrapper = shallowMount(browseSearch, {
-            localVue,
-            router,
-            propsData: {
+            global: {
+                plugins: [router]
+            },
+            props: {
                 objectType: 'Folder'
             }
         });
+
+        await router.push('/record/1234');
+        wrapper.vm.$router.currentRoute.value.query.anywhere = '';
     });
 
-    it("updates the url when search results change", () => {
+    afterEach(() => router = null);
+
+    it("updates the url when search results change", async() => {
         wrapper.find('input').setValue(query);
         let btn = wrapper.find('button');
-        btn.trigger('click');
-
-        expect(wrapper.vm.$router.currentRoute.query.anywhere).toEqual(encodeURIComponent(query));
+        await btn.trigger('click');
+        await flushPromises();
+        expect(wrapper.vm.$router.currentRoute.value.query.anywhere).toEqual(encodeURIComponent(query));
     });
 
-    it("clears search results", () => {
+    it("clears search results", async() => {
         wrapper.find('input').setValue(query);
         let btn = wrapper.find('button');
-        btn.trigger('click');
+        await btn.trigger('click');
+        await flushPromises();
+        expect(wrapper.vm.$router.currentRoute.value.query.anywhere).toEqual(encodeURIComponent(query));
 
-        expect(wrapper.vm.$router.currentRoute.query.anywhere).toEqual(encodeURIComponent(query));
-
-        let clearLink = wrapper.find('a');
-        clearLink.trigger('click');
-
-        expect(wrapper.vm.$router.currentRoute.query.anywhere).toEqual(encodeURIComponent(''));
+        let clearLink = wrapper.find('a.clear-results');
+        await clearLink.trigger('click');
+        await flushPromises();
+        expect(wrapper.vm.$router.currentRoute.value.query.anywhere).toEqual(encodeURIComponent(''));
     });
 
     it("sets placeholder text from the object type", () => {
@@ -53,7 +59,6 @@ describe('browseSearch.vue', () => {
     });
 
     it("sets default placeholder text if no object type is given", () => {
-        const localVue = createLocalVue();
         const $route = {
             path: '/record/1234',
             name: 'displayRecords',
@@ -61,16 +66,16 @@ describe('browseSearch.vue', () => {
         };
 
         wrapper = shallowMount(browseSearch, {
-            localVue,
-            mocks: {
-                $route
+            global: {
+                mocks: {
+                    $route
+                }
             }
         });
         expect(wrapper.find('input').attributes('placeholder')).toBe('Search within this object');
     });
 
     it("can set the search query value from the url", () => {
-        const localVue = createLocalVue();
         const $route = {
             path: '/record/1234',
             name: 'displayRecords',
@@ -78,11 +83,12 @@ describe('browseSearch.vue', () => {
         };
 
         wrapper = shallowMount(browseSearch, {
-            localVue,
-            mocks: {
-                $route
+            global: {
+                mocks: {
+                    $route
+                }
             },
-            propsData: {
+            props: {
                 objectType: 'Folder'
             }
         });

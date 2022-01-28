@@ -1,18 +1,15 @@
-import { createLocalVue, shallowMount } from '@vue/test-utils'
-import VueRouter from 'vue-router';
+import { shallowMount } from '@vue/test-utils'
+import { createRouter, createWebHistory } from 'vue-router';
 import listDisplay from '@/components/listDisplay.vue';
+import displayWrapper from '@/components/displayWrapper';
 
-const localVue = createLocalVue();
-localVue.use(VueRouter);
-const router = new VueRouter({
+const router = createRouter({
+    history: createWebHistory(process.env.BASE_URL),
     routes: [
         {
-            path: '/record/98bc503c-9603-4cd9-8a65-93a22520ef68',
-            name: 'displayRecords'
-        },
-        {
-            path: '/search/:uuid?',
-            name: 'searchRecords'
+            path: '/record/:uuid',
+            name: 'displayRecords',
+            component: displayWrapper
         }
     ]
 });
@@ -22,9 +19,10 @@ describe('listDisplay.vue', () => {
     beforeEach(() => {
         sessionStorage.clear();
         wrapper = shallowMount(listDisplay, {
-            localVue,
-            router,
-            propsData: {
+            global: {
+                plugins: [router]
+            },
+            props: {
                 recordList: [
                     {
                         "added": "2019-10-31T18:11:02.238Z",
@@ -144,27 +142,26 @@ describe('listDisplay.vue', () => {
     });
 
     it("set a default browse type for record links when saved browse type shouldn't be used", async () => {
-        wrapper.setProps({
+        await wrapper.setProps({
             useSavedBrowseType: false
         });
-        await wrapper.vm.$nextTick();
         expect(wrapper.vm.linkBrowseType).toBe('list-display');
     });
 
     it("sets a default browse type for record links when saved browse type should be used and no value is set", async () => {
-        wrapper.setProps({
+        await wrapper.setProps({
             useSavedBrowseType: true
         });
-        await wrapper.vm.$nextTick();
         expect(wrapper.vm.linkBrowseType).toBe('gallery-display');
     });
 
     it("sets browse type form sessionStorage for record links when saved browse type should be used", async () => {
         sessionStorage.setItem('browse-type', 'list-display');
         wrapper = shallowMount(listDisplay, {
-            localVue,
-            router,
-            propsData: {
+            global: {
+                plugins: [router]
+            },
+            props: {
                 useSavedBrowseType: true
             }
         });
@@ -174,9 +171,10 @@ describe('listDisplay.vue', () => {
 
     it("doesn't display a collection number if one isn't set", async () => {
         wrapper = shallowMount(listDisplay, {
-            localVue,
-            router,
-            propsData: {
+            global: {
+                plugins: [router]
+            },
+            props: {
                 useSavedBrowseType: true
             }
         });
@@ -186,9 +184,10 @@ describe('listDisplay.vue', () => {
 
     it("displays a collection number if one is set", async () => {
         wrapper = shallowMount(listDisplay, {
-            localVue,
-            router,
-            propsData: {
+            global: {
+                plugins: [router]
+            },
+            props: {
                 useSavedBrowseType: true
             }
         });
@@ -198,9 +197,10 @@ describe('listDisplay.vue', () => {
 
     it("displays a collection number if one is set", async () => {
         wrapper = shallowMount(listDisplay, {
-            localVue,
-            router,
-            propsData: {
+            global: {
+                plugins: [router]
+            },
+            props: {
                 useSavedBrowseType: true,
                 recordList: [
                     {

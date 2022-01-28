@@ -1,38 +1,42 @@
-import { createLocalVue, shallowMount } from '@vue/test-utils';
-import VueRouter from 'vue-router';
+import { mount, flushPromises } from '@vue/test-utils';
+import { createRouter, createWebHistory } from 'vue-router';
 import browseSort from '@/components/browseSort.vue';
+import displayWrapper from '@/components/displayWrapper';
+import searchWrapper from '@/components/searchWrapper';
 
-const localVue = createLocalVue();
-localVue.use(VueRouter);
-const router = new VueRouter({
-    routes: [
-        {
-            path: '/record/uuid1234',
-            name: 'displayRecords'
-        },
-        {
-            path: '/search/:uuid?',
-            name: 'searchRecords'
-        }
-    ]
-});
-let wrapper;
-let wrapper_search;
+let wrapper, wrapper_search, router;
 
 describe('browseSort.vue', () => {
     beforeEach(() => {
-        wrapper = shallowMount(browseSort, {
-            localVue,
-            router,
-            propsData: {
+        router = createRouter({
+            history: createWebHistory(process.env.BASE_URL),
+            routes: [
+                {
+                    path: '/record/:uuid',
+                    name: 'displayRecords',
+                    component: displayWrapper
+                },
+                {
+                    path: '/search/:uuid?',
+                    name: 'searchRecords',
+                    component: searchWrapper
+                }
+            ]
+        });
+        wrapper = mount(browseSort, {
+            global: {
+                plugins: [router]
+            },
+            props: {
                 browseType: 'display'
             }
         });
 
-        wrapper_search = shallowMount(browseSort, {
-            localVue,
-            router,
-            propsData: {
+        wrapper_search = mount(browseSort, {
+            global: {
+                plugins: [router]
+            },
+            props: {
                 browseType: 'search'
             }
         });
@@ -42,23 +46,28 @@ describe('browseSort.vue', () => {
         expect(wrapper.vm.sort_order).toEqual('default,normal');
     });
 
-    it("updates the url when the dropdown changes for browsing", () => {
-        wrapper.findAll('option').at(2).setSelected();
-        expect(wrapper.vm.$router.currentRoute.query.sort).toEqual('title,reverse');
+    it("updates the url when the dropdown changes for browsing", async () => {
+        await router.push('/record/d77fd8c9-744b-42ab-8e20-5ad9bdf8194e/?collection_name=testCollection&sort=title,normal');
+        wrapper.findAll('option')[2].setSelected();
+        await flushPromises();
+        expect(wrapper.vm.$router.currentRoute.value.query.sort).toEqual('title,reverse');
         expect(wrapper.vm.sort_order).toEqual('title,reverse');
     });
 
-    it("updates the url when the dropdown changes for a search", () => {
-        wrapper_search.findAll('option').at(2).setSelected();
-        expect(wrapper_search.vm.$router.currentRoute.query.sort).toEqual('title,reverse');
+    it("updates the url when the dropdown changes for a search", async () => {
+        await router.push('/search/d77fd8c9-744b-42ab-8e20-5ad9bdf8194e?collection_name=testCollection&sort=title,normal');
+        wrapper_search.findAll('option')[2].setSelected();
+        await flushPromises();
+        expect(wrapper_search.vm.$router.currentRoute.value.query.sort).toEqual('title,reverse');
         expect(wrapper_search.vm.sort_order).toEqual('title,reverse');
     });
 
-    it("maintains the base path when changing search pages", () => {
-        wrapper_search.vm.$router.push('/search/d77fd8c9-744b-42ab-8e20-5ad9bdf8194e?collection_name=testCollection&sort=title,normal');
+    it("maintains the base path when changing search pages", async () => {
+        await router.push('/search/d77fd8c9-744b-42ab-8e20-5ad9bdf8194e?collection_name=testCollection&sort=title,normal');
 
         // Change sort types
-        wrapper_search.findAll('option').at(2).setSelected();
+        wrapper_search.findAll('option')[2].setSelected(true);
+        await flushPromises();
         expect(wrapper_search.vm.sort_order).toEqual('title,reverse');
         expect(wrapper_search.vm.$route.path).toEqual('/search/d77fd8c9-744b-42ab-8e20-5ad9bdf8194e');
     });
@@ -66,5 +75,6 @@ describe('browseSort.vue', () => {
     afterEach(() => {
         wrapper.setData({ sort_order: '' });
         wrapper_search.setData({ sort_order: '' });
+        router = null;
     });
 });

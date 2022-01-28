@@ -5,7 +5,7 @@
                 <i class="fas fa-times"></i>
             </span> Clear filters</a>
         <h2 class="facet-header">Filter results by...</h2>
-        <div class="facet-display" v-if="facet.values.length" v-for="facet in this.sortedFacetsList">
+        <div class="facet-display" v-for="facet in this.sortedFacetsList">
             <div v-if="showFacetDisplay(facet)">
                 <h3>{{ facetName(facet.name) }}</h3>
                 <ul>
@@ -43,9 +43,12 @@
         },
 
         watch: {
-           '$route.query'(route) {
-               this.selected_facets = [];
-               this.setFacetsFromParams();
+            '$route.query': {
+                handler() {
+                    this.selected_facets = [];
+                    this.setFacetsFromParams();
+                },
+                deep: true
             }
         },
 
@@ -137,7 +140,6 @@
                 POSSIBLE_FACET_PARAMS.forEach((facet) => delete base_search.query[facet]);
                 // Add/Update with new facets
                 base_search.query = Object.assign(base_search.query, updated_facet_params.queryFacets);
-
                 this.$router.push(base_search).catch((e) => {
                     if (this.nonDuplicateNavigationError(e)) {
                         throw e;

@@ -1,18 +1,7 @@
-import { createLocalVue, shallowMount } from '@vue/test-utils'
-import VueRouter from 'vue-router';
+import { shallowMount } from '@vue/test-utils'
+import { createRouter, createWebHistory } from 'vue-router';
 import collectionBrowse from '@/components/collectionBrowse.vue';
 import moxios from "moxios";
-
-const localVue = createLocalVue();
-localVue.use(VueRouter);
-const router = new VueRouter({
-    routes: [
-        {
-            path: '/collections/',
-            name: 'collectionBrowse'
-        }
-    ]
-});
 
 let response = {
     "metadata": [
@@ -69,10 +58,7 @@ describe('collectionBrowse.vue', () => {
     beforeEach(() => {
         moxios.install();
 
-        wrapper = shallowMount(collectionBrowse, {
-            localVue,
-            router
-        });
+        wrapper = shallowMount(collectionBrowse);
 
         moxios.stubRequest('collectionsJson', {
             status: 200,
