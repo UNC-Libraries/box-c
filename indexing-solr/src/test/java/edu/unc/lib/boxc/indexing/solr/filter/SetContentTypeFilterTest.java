@@ -15,21 +15,19 @@
  */
 package edu.unc.lib.boxc.indexing.solr.filter;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyListOf;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-import static org.mockito.MockitoAnnotations.initMocks;
-
-import java.util.List;
-
+import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
+import edu.unc.lib.boxc.indexing.solr.indexing.DocumentIndexingPackage;
 import edu.unc.lib.boxc.indexing.solr.indexing.DocumentIndexingPackageDataLoader;
+import edu.unc.lib.boxc.model.api.ids.PID;
+import edu.unc.lib.boxc.model.api.objects.BinaryObject;
+import edu.unc.lib.boxc.model.api.objects.FileObject;
+import edu.unc.lib.boxc.model.api.objects.FolderObject;
+import edu.unc.lib.boxc.model.api.objects.WorkObject;
 import edu.unc.lib.boxc.search.api.SearchFieldKey;
 import edu.unc.lib.boxc.search.api.facets.CutoffFacet;
 import edu.unc.lib.boxc.search.api.requests.SearchRequest;
+import edu.unc.lib.boxc.search.solr.models.ContentObjectSolrRecord;
+import edu.unc.lib.boxc.search.solr.models.IndexDocumentBean;
 import edu.unc.lib.boxc.search.solr.responses.SearchResultResponse;
 import edu.unc.lib.boxc.search.solr.services.SolrSearchService;
 import org.junit.Before;
@@ -38,14 +36,19 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 
-import edu.unc.lib.boxc.indexing.solr.filter.SetContentTypeFilter;
-import edu.unc.lib.boxc.indexing.solr.indexing.DocumentIndexingPackage;
-import edu.unc.lib.boxc.model.api.ids.PID;
-import edu.unc.lib.boxc.model.api.objects.BinaryObject;
-import edu.unc.lib.boxc.model.api.objects.FileObject;
-import edu.unc.lib.boxc.model.api.objects.FolderObject;
-import edu.unc.lib.boxc.model.api.objects.WorkObject;
-import edu.unc.lib.boxc.search.solr.models.IndexDocumentBean;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import static org.mockito.MockitoAnnotations.initMocks;
 
 /**
  *
@@ -87,27 +90,29 @@ public class SetContentTypeFilterTest {
         dip.setPid(pid);
         idb = dip.getDocument();
 
-        when(workObj.getPrimaryObject()).thenReturn(fileObj);
         when(fileObj.getOriginalFile()).thenReturn(binObj);
         when(ancestorPath.getFieldName()).thenReturn(SearchFieldKey.ANCESTOR_PATH.name());
         when(solrSearchService.getSearchResults(any(SearchRequest.class))).thenReturn(searchResultResponse);
+        when(solrSearchService.getAncestorPath(pid.getId(), null)).thenReturn(ancestorPath);
 
         filter = new SetContentTypeFilter();
         filter.setSolrSearchService(solrSearchService);
     }
 
     @Test
-    public void testGetContentTypeFromWorkObject() throws Exception {
-        when(dip.getContentObject()).thenReturn(workObj);
+    public void testGetContentTypeFromWorkObjectWithPrimary() throws Exception {
+        dip.setContentObject(workObj);
         when(workObj.getPrimaryObject()).thenReturn(fileObj);
 
-        when(binObj.getFilename()).thenReturn("primary.xml");
-        when(binObj.getMimetype()).thenReturn("application/xml");
+        var fileRec = new ContentObjectSolrRecord();
+        fileRec.setContentType(Arrays.asList("^text,Text", "/text^xml,xml"));
+        when(searchResultResponse.getResultList()).thenReturn(Collections.singletonList(fileRec));
 
         filter.filter(dip);
 
         assertEquals("^text,Text", idb.getContentType().get(0));
         assertEquals("/text^xml,xml", idb.getContentType().get(1));
+        assertEquals(2, idb.getContentType().size());
     }
 
     @Test
@@ -118,6 +123,7 @@ public class SetContentTypeFilterTest {
 
         assertEquals("^dataset,Dataset", idb.getContentType().get(0));
         assertEquals("/dataset^csv,csv", idb.getContentType().get(1));
+        assertEquals(2, idb.getContentType().size());
     }
 
     @Test
@@ -129,11 +135,12 @@ public class SetContentTypeFilterTest {
 
         assertEquals("^unknown,Unknown", idb.getContentType().get(0));
         assertEquals("/unknown^x3f,x3f", idb.getContentType().get(1));
+        assertEquals(2, idb.getContentType().size());
     }
 
     @Test
     public void testNotWorkAndNotFileObject() throws Exception {
-        when(dip.getContentObject()).thenReturn(folderObj);
+        dip.setContentObject(folderObj);
 
         filter.filter(dip);
 
@@ -142,12 +149,17 @@ public class SetContentTypeFilterTest {
 
     @Test
     public void testWorkWithoutPrimaryObject() throws Exception {
-        when(dip.getContentObject()).thenReturn(workObj);
-        when(workObj.getPrimaryObject()).thenReturn(null);
+        dip.setContentObject(workObj);
+
+        var fileRec = new ContentObjectSolrRecord();
+        fileRec.setContentType(Arrays.asList("^text,Text", "/text^xml,xml"));
+        when(searchResultResponse.getResultList()).thenReturn(Collections.singletonList(fileRec));
 
         filter.filter(dip);
 
-        assertNull(idb.getContentType());
+        assertEquals("^text,Text", idb.getContentType().get(0));
+        assertEquals("/text^xml,xml", idb.getContentType().get(1));
+        assertEquals(2, idb.getContentType().size());
     }
 
     @Test
@@ -158,6 +170,7 @@ public class SetContentTypeFilterTest {
 
         assertEquals("^text,Text", idb.getContentType().get(0));
         assertEquals("/text^txt,txt", idb.getContentType().get(1));
+        assertEquals(2, idb.getContentType().size());
     }
 
     @Test
@@ -168,6 +181,7 @@ public class SetContentTypeFilterTest {
 
         assertEquals("^unknown,Unknown", idb.getContentType().get(0));
         assertEquals("/unknown^pdf,pdf", idb.getContentType().get(1));
+        assertEquals(2, idb.getContentType().size());
     }
 
     @Test
@@ -178,6 +192,7 @@ public class SetContentTypeFilterTest {
 
         assertEquals("^image,Image", idb.getContentType().get(0));
         assertEquals("/image^jpg,jpg", idb.getContentType().get(1));
+        assertEquals(2, idb.getContentType().size());
     }
 
     @Test
@@ -188,6 +203,7 @@ public class SetContentTypeFilterTest {
 
         assertEquals("^video,Video", idb.getContentType().get(0));
         assertEquals("/video^mp4,mp4", idb.getContentType().get(1));
+        assertEquals(2, idb.getContentType().size());
     }
 
     @Test
@@ -198,6 +214,7 @@ public class SetContentTypeFilterTest {
 
         assertEquals("^audio,Audio", idb.getContentType().get(0));
         assertEquals("/audio^wav,wav", idb.getContentType().get(1));
+        assertEquals(2, idb.getContentType().size());
     }
 
     @Test
@@ -208,6 +225,7 @@ public class SetContentTypeFilterTest {
 
         assertEquals("^unknown,Unknown", idb.getContentType().get(0));
         assertEquals("/unknown^stuff,stuff", idb.getContentType().get(1));
+        assertEquals(2, idb.getContentType().size());
     }
 
     @Test
@@ -218,6 +236,7 @@ public class SetContentTypeFilterTest {
 
         assertEquals("^text,Text", idb.getContentType().get(0));
         assertEquals("/text^txt,txt", idb.getContentType().get(1));
+        assertEquals(2, idb.getContentType().size());
     }
 
     @Test
@@ -228,6 +247,7 @@ public class SetContentTypeFilterTest {
 
         assertEquals("^unknown,Unknown", idb.getContentType().get(0));
         assertEquals("/unknown^unknown,unknown", idb.getContentType().get(1));
+        assertEquals(2, idb.getContentType().size());
     }
 
     @Test
@@ -238,6 +258,7 @@ public class SetContentTypeFilterTest {
 
         assertEquals("^unknown,Unknown", idb.getContentType().get(0));
         assertEquals("/unknown^unknown,unknown", idb.getContentType().get(1));
+        assertEquals(2, idb.getContentType().size());
     }
 
     @Test
@@ -248,6 +269,61 @@ public class SetContentTypeFilterTest {
 
         assertEquals("^text,Text", idb.getContentType().get(0));
         assertEquals("/text^txt,txt", idb.getContentType().get(1));
+        assertEquals(2, idb.getContentType().size());
+    }
+
+    @Test
+    public void testWorkWithNoFiles() throws Exception {
+        dip.setContentObject(workObj);
+
+        when(searchResultResponse.getResultList()).thenReturn(Collections.emptyList());
+
+        filter.filter(dip);
+
+        assertTrue(idb.getContentType().isEmpty());
+    }
+
+    @Test
+    public void testWorkWithMultipleFileTypes() throws Exception {
+        dip.setContentObject(workObj);
+
+        var fileRec1 = new ContentObjectSolrRecord();
+        fileRec1.setContentType(Arrays.asList("^text,Text", "/text^xml,xml"));
+        var fileRec2 = new ContentObjectSolrRecord();
+        fileRec2.setContentType(Arrays.asList("^text,Text", "/text^plain,txt"));
+        var fileRec3 = new ContentObjectSolrRecord();
+        fileRec3.setContentType(Arrays.asList("^text,Text", "/text^plain,txt"));
+        var fileRec4 = new ContentObjectSolrRecord();
+        fileRec4.setContentType(Arrays.asList("^audio,Audio", "/audio^wav,wav"));
+        when(searchResultResponse.getResultList()).thenReturn(Arrays.asList(
+                fileRec1, fileRec2, fileRec3, fileRec4));
+
+        filter.filter(dip);
+
+        var cTypes = idb.getContentType();
+        assertTrue(cTypes.contains("^text,Text"));
+        assertTrue(cTypes.contains("/text^xml,xml"));
+        assertTrue(cTypes.contains("/text^plain,txt"));
+        assertTrue(cTypes.contains("^audio,Audio"));
+        assertTrue(cTypes.contains("/audio^wav,wav"));
+        assertEquals(5, idb.getContentType().size());
+    }
+
+    @Test
+    public void testWorkInPipelineAfterAncestorPathSet() throws Exception {
+        dip.setContentObject(workObj);
+        idb.setAncestorPath(Arrays.asList("2," + pid.getId()));
+
+        var fileRec = new ContentObjectSolrRecord();
+        fileRec.setContentType(Arrays.asList("^text,Text", "/text^xml,xml"));
+        when(searchResultResponse.getResultList()).thenReturn(Collections.singletonList(fileRec));
+
+        filter.filter(dip);
+
+        assertEquals("^text,Text", idb.getContentType().get(0));
+        assertEquals("/text^xml,xml", idb.getContentType().get(1));
+        assertEquals(2, idb.getContentType().size());
+        verify(solrSearchService, never()).getAncestorPath(anyString(), any(AccessGroupSet.class));
     }
 
     private void mockFile(String filename, String mimetype) {

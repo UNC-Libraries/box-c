@@ -15,23 +15,17 @@
  */
 package edu.unc.lib.boxc.services.camel.solrUpdate;
 
-import static edu.unc.lib.boxc.common.metrics.TimerFactory.createTimerForClass;
-import static edu.unc.lib.boxc.model.api.xml.JDOMNamespaceUtil.ATOM_NS;
-import static edu.unc.lib.boxc.model.api.xml.JDOMNamespaceUtil.CDR_MESSAGE_NS;
-import static java.util.stream.Collectors.toMap;
-
-import java.util.EnumSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
-
+import edu.unc.lib.boxc.indexing.solr.ChildSetRequest;
+import edu.unc.lib.boxc.indexing.solr.SolrUpdateRequest;
+import edu.unc.lib.boxc.indexing.solr.action.IndexingAction;
 import edu.unc.lib.boxc.model.api.objects.FileObject;
-import edu.unc.lib.boxc.model.api.objects.RepositoryObject;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.api.objects.WorkObject;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.boxc.operations.jms.MessageSender;
+import edu.unc.lib.boxc.operations.jms.indexing.IndexingActionType;
+import edu.unc.lib.boxc.services.camel.util.MessageUtil;
+import io.dropwizard.metrics5.Timer;
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
 import org.apache.camel.Processor;
@@ -40,12 +34,16 @@ import org.jdom2.Element;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import edu.unc.lib.boxc.indexing.solr.ChildSetRequest;
-import edu.unc.lib.boxc.indexing.solr.SolrUpdateRequest;
-import edu.unc.lib.boxc.indexing.solr.action.IndexingAction;
-import edu.unc.lib.boxc.operations.jms.indexing.IndexingActionType;
-import edu.unc.lib.boxc.services.camel.util.MessageUtil;
-import io.dropwizard.metrics5.Timer;
+import java.util.EnumSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import static edu.unc.lib.boxc.common.metrics.TimerFactory.createTimerForClass;
+import static edu.unc.lib.boxc.model.api.xml.JDOMNamespaceUtil.ATOM_NS;
+import static edu.unc.lib.boxc.model.api.xml.JDOMNamespaceUtil.CDR_MESSAGE_NS;
+import static java.util.stream.Collectors.toMap;
 
 /**
  * Processes solr update messages, triggering the requested solr update action.

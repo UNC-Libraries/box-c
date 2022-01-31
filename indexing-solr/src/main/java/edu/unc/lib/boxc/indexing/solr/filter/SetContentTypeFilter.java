@@ -15,24 +15,33 @@
  */
 package edu.unc.lib.boxc.indexing.solr.filter;
 
+import edu.unc.lib.boxc.indexing.solr.exception.IndexingException;
+import edu.unc.lib.boxc.indexing.solr.indexing.DocumentIndexingPackage;
+import edu.unc.lib.boxc.model.api.ResourceType;
+import edu.unc.lib.boxc.model.api.objects.BinaryObject;
+import edu.unc.lib.boxc.model.api.objects.FileObject;
+import edu.unc.lib.boxc.model.api.objects.WorkObject;
+import edu.unc.lib.boxc.search.api.ContentCategory;
+import edu.unc.lib.boxc.search.api.SearchFieldKey;
+import edu.unc.lib.boxc.search.api.facets.CutoffFacet;
+import edu.unc.lib.boxc.search.api.requests.SearchRequest;
+import edu.unc.lib.boxc.search.api.requests.SearchState;
+import edu.unc.lib.boxc.search.solr.facets.CutoffFacetImpl;
+import edu.unc.lib.boxc.search.solr.facets.GenericFacet;
+import edu.unc.lib.boxc.search.solr.models.IndexDocumentBean;
+import edu.unc.lib.boxc.search.solr.services.SolrSearchService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import edu.unc.lib.boxc.indexing.solr.exception.IndexingException;
-import edu.unc.lib.boxc.indexing.solr.indexing.DocumentIndexingPackage;
-import edu.unc.lib.boxc.model.api.objects.BinaryObject;
-import edu.unc.lib.boxc.model.api.objects.ContentObject;
-import edu.unc.lib.boxc.model.api.objects.FileObject;
-import edu.unc.lib.boxc.model.api.objects.WorkObject;
-import edu.unc.lib.boxc.search.api.ContentCategory;
+import java.util.stream.Collectors;
 
 /**
  * Assigns content-type field for a Solr record. The field contains a category (e.g., "image")
@@ -51,6 +60,10 @@ public class SetContentTypeFilter implements IndexDocumentFilter {
     private Properties mimetypeToExtensionMap;
     private Properties contentTypeProperties;
 
+    private static final int MAX_FILES_PER_WORK = 10000;
+    private static final List<String> WORK_FILE_FIELDS = Arrays.asList(SearchFieldKey.CONTENT_TYPE.name());
+    private SolrSearchService solrSearchService;
+
     public SetContentTypeFilter() throws IOException {
         mimetypeToExtensionMap = new Properties();
         mimetypeToExtensionMap.load(new InputStreamReader(getClass().getResourceAsStream(
@@ -62,30 +75,44 @@ public class SetContentTypeFilter implements IndexDocumentFilter {
 
     @Override
     public void filter(DocumentIndexingPackage dip) throws IndexingException {
-        // object being indexed must be a file object, or a work with a primary object
-        FileObject fileObj = getFileObject(dip);
-        if (fileObj == null) {
-                return;
+        var contentObj = dip.getContentObject();
+        var doc = dip.getDocument();
+        if (contentObj instanceof WorkObject) {
+            addFileContentTypesToWork(doc);
+        } else if (contentObj instanceof FileObject) {
+            var fileObj = (FileObject) contentObj;
+            BinaryObject binObj = fileObj.getOriginalFile();
+            String filepath = binObj.getFilename();
+            String mimetype = binObj.getMimetype();
+            log.debug("The binary {} has filepath {} and mimetype {}", binObj.getPid(), filepath, mimetype);
+            List<String> contentTypes = new ArrayList<>();
+            extractContentType(filepath, mimetype, contentTypes);
+            dip.getDocument().setContentType(contentTypes);
         }
-        BinaryObject binObj = fileObj.getOriginalFile();
-        String filepath = binObj.getFilename();
-        String mimetype = binObj.getMimetype();
-        log.debug("The binary {} has filepath {} and mimetype {}", binObj.getPid(), filepath, mimetype);
-        List<String> contentTypes = new ArrayList<>();
-        extractContentType(filepath, mimetype, contentTypes);
-        dip.getDocument().setContentType(contentTypes);
     }
 
-    private FileObject getFileObject(DocumentIndexingPackage dip) throws IndexingException {
-        ContentObject obj = dip.getContentObject();
-        if (obj instanceof WorkObject) {
-            return ((WorkObject) obj).getPrimaryObject();
-        } else if (obj instanceof FileObject) {
-            return (FileObject) obj;
-        } else {
-            // object being indexed must be a work or a file object
-            return null;
+    private void addFileContentTypesToWork(IndexDocumentBean doc) {
+        var searchState = new SearchState();
+        var ancestorPath = getAncestorPath(doc);
+        searchState.setFacet(ancestorPath);
+        searchState.setFacet(new GenericFacet(SearchFieldKey.RESOURCE_TYPE.name(), ResourceType.File.name()));
+        searchState.setRowsPerPage(MAX_FILES_PER_WORK);
+        searchState.setResultFields(WORK_FILE_FIELDS);
+        var searchRequest = new SearchRequest();
+        searchRequest.setSearchState(searchState);
+        var result = solrSearchService.getSearchResults(searchRequest);
+        var contentTypes = result.getResultList().stream()
+                .flatMap(r -> r.getContentType().stream())
+                .distinct()
+                .collect(Collectors.toList());
+        doc.setContentType(contentTypes);
+    }
+
+    private CutoffFacet getAncestorPath(IndexDocumentBean doc) {
+        if (doc.getAncestorPath() != null && !doc.getAncestorPath().isEmpty()) {
+            return new CutoffFacetImpl(SearchFieldKey.ANCESTOR_PATH.name(), doc.getAncestorPath(), -1);
         }
+        return solrSearchService.getAncestorPath(doc.getId(), null);
     }
 
     private String getExtension(String filepath, String mimetype) {
@@ -149,4 +176,7 @@ public class SetContentTypeFilter implements IndexDocumentFilter {
         return ContentCategory.getContentCategory(contentCategory);
     }
 
+    public void setSolrSearchService(SolrSearchService solrSearchService) {
+        this.solrSearchService = solrSearchService;
+    }
 }
