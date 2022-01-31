@@ -117,7 +117,7 @@ public class ContentObjectSolrRecord extends IndexDocumentBean implements Conten
     }
 
     @Field
-    public void setContentType(ArrayList<String> contentTypes) {
+    public void setContentType(List<String> contentTypes) {
         super.setContentType(contentTypes);
         this.contentTypeFacet = MultivaluedHierarchicalFacet.createMultivaluedHierarchicalFacets(
                 SearchFieldKey.CONTENT_TYPE.name(), contentTypes);

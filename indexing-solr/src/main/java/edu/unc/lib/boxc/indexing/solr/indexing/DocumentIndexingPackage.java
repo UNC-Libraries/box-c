@@ -62,6 +62,10 @@ public class DocumentIndexingPackage {
         return contentObject;
     }
 
+    public void setContentObject(ContentObject contentObject) {
+        this.contentObject = contentObject;
+    }
+
     public IndexDocumentBean getDocument() {
         return document;
     }

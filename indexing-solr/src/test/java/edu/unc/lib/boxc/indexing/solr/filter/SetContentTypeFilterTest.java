@@ -16,6 +16,8 @@
 package edu.unc.lib.boxc.indexing.solr.filter;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyListOf;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -24,6 +26,12 @@ import static org.mockito.MockitoAnnotations.initMocks;
 
 import java.util.List;
 
+import edu.unc.lib.boxc.indexing.solr.indexing.DocumentIndexingPackageDataLoader;
+import edu.unc.lib.boxc.search.api.SearchFieldKey;
+import edu.unc.lib.boxc.search.api.facets.CutoffFacet;
+import edu.unc.lib.boxc.search.api.requests.SearchRequest;
+import edu.unc.lib.boxc.search.solr.responses.SearchResultResponse;
+import edu.unc.lib.boxc.search.solr.services.SolrSearchService;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
@@ -46,7 +54,6 @@ import edu.unc.lib.boxc.search.solr.models.IndexDocumentBean;
  */
 public class SetContentTypeFilterTest {
 
-    @Mock
     private DocumentIndexingPackage dip;
     @Mock
     private PID pid;
@@ -58,10 +65,17 @@ public class SetContentTypeFilterTest {
     private BinaryObject binObj;
     @Mock
     private FolderObject folderObj;
-    @Mock
     private IndexDocumentBean idb;
     @Captor
     private ArgumentCaptor<List<String>> listCaptor;
+    @Mock
+    private SolrSearchService solrSearchService;
+    @Mock
+    private DocumentIndexingPackageDataLoader documentIndexingPackageDataLoader;
+    @Mock
+    private CutoffFacet ancestorPath;
+    @Mock
+    private SearchResultResponse searchResultResponse;
 
     private SetContentTypeFilter filter;
 
@@ -69,13 +83,17 @@ public class SetContentTypeFilterTest {
     public void setup() throws Exception {
         initMocks(this);
 
-        when(dip.getDocument()).thenReturn(idb);
-        when(dip.getPid()).thenReturn(pid);
+        dip = new DocumentIndexingPackage(pid, null, documentIndexingPackageDataLoader);
+        dip.setPid(pid);
+        idb = dip.getDocument();
 
         when(workObj.getPrimaryObject()).thenReturn(fileObj);
         when(fileObj.getOriginalFile()).thenReturn(binObj);
+        when(ancestorPath.getFieldName()).thenReturn(SearchFieldKey.ANCESTOR_PATH.name());
+        when(solrSearchService.getSearchResults(any(SearchRequest.class))).thenReturn(searchResultResponse);
 
         filter = new SetContentTypeFilter();
+        filter.setSolrSearchService(solrSearchService);
     }
 
     @Test
@@ -88,9 +106,8 @@ public class SetContentTypeFilterTest {
 
         filter.filter(dip);
 
-        verify(idb).setContentType(listCaptor.capture());
-        assertEquals("^text,Text", listCaptor.getValue().get(0));
-        assertEquals("/text^xml,xml", listCaptor.getValue().get(1));
+        assertEquals("^text,Text", idb.getContentType().get(0));
+        assertEquals("/text^xml,xml", idb.getContentType().get(1));
     }
 
     @Test
@@ -99,9 +116,8 @@ public class SetContentTypeFilterTest {
 
         filter.filter(dip);
 
-        verify(idb).setContentType(listCaptor.capture());
-        assertEquals("^dataset,Dataset", listCaptor.getValue().get(0));
-        assertEquals("/dataset^csv,csv", listCaptor.getValue().get(1));
+        assertEquals("^dataset,Dataset", idb.getContentType().get(0));
+        assertEquals("/dataset^csv,csv", idb.getContentType().get(1));
     }
 
     @Test
@@ -111,9 +127,8 @@ public class SetContentTypeFilterTest {
 
         filter.filter(dip);
 
-        verify(idb).setContentType(listCaptor.capture());
-        assertEquals("^unknown,Unknown", listCaptor.getValue().get(0));
-        assertEquals("/unknown^x3f,x3f", listCaptor.getValue().get(1));
+        assertEquals("^unknown,Unknown", idb.getContentType().get(0));
+        assertEquals("/unknown^x3f,x3f", idb.getContentType().get(1));
     }
 
     @Test
@@ -122,7 +137,7 @@ public class SetContentTypeFilterTest {
 
         filter.filter(dip);
 
-        verify(idb, never()).setContentType(anyListOf(String.class));
+        assertNull(idb.getContentType());
     }
 
     @Test
@@ -132,7 +147,7 @@ public class SetContentTypeFilterTest {
 
         filter.filter(dip);
 
-        verify(idb, never()).setContentType(anyListOf(String.class));
+        assertNull(idb.getContentType());
     }
 
     @Test
@@ -141,9 +156,8 @@ public class SetContentTypeFilterTest {
 
         filter.filter(dip);
 
-        verify(idb).setContentType(listCaptor.capture());
-        assertEquals("^text,Text", listCaptor.getValue().get(0));
-        assertEquals("/text^txt,txt", listCaptor.getValue().get(1));
+        assertEquals("^text,Text", idb.getContentType().get(0));
+        assertEquals("/text^txt,txt", idb.getContentType().get(1));
     }
 
     @Test
@@ -152,9 +166,8 @@ public class SetContentTypeFilterTest {
 
         filter.filter(dip);
 
-        verify(idb).setContentType(listCaptor.capture());
-        assertEquals("^unknown,Unknown", listCaptor.getValue().get(0));
-        assertEquals("/unknown^pdf,pdf", listCaptor.getValue().get(1));
+        assertEquals("^unknown,Unknown", idb.getContentType().get(0));
+        assertEquals("/unknown^pdf,pdf", idb.getContentType().get(1));
     }
 
     @Test
@@ -163,9 +176,8 @@ public class SetContentTypeFilterTest {
 
         filter.filter(dip);
 
-        verify(idb).setContentType(listCaptor.capture());
-        assertEquals("^image,Image", listCaptor.getValue().get(0));
-        assertEquals("/image^jpg,jpg", listCaptor.getValue().get(1));
+        assertEquals("^image,Image", idb.getContentType().get(0));
+        assertEquals("/image^jpg,jpg", idb.getContentType().get(1));
     }
 
     @Test
@@ -174,9 +186,8 @@ public class SetContentTypeFilterTest {
 
         filter.filter(dip);
 
-        verify(idb).setContentType(listCaptor.capture());
-        assertEquals("^video,Video", listCaptor.getValue().get(0));
-        assertEquals("/video^mp4,mp4", listCaptor.getValue().get(1));
+        assertEquals("^video,Video", idb.getContentType().get(0));
+        assertEquals("/video^mp4,mp4", idb.getContentType().get(1));
     }
 
     @Test
@@ -185,9 +196,8 @@ public class SetContentTypeFilterTest {
 
         filter.filter(dip);
 
-        verify(idb).setContentType(listCaptor.capture());
-        assertEquals("^audio,Audio", listCaptor.getValue().get(0));
-        assertEquals("/audio^wav,wav", listCaptor.getValue().get(1));
+        assertEquals("^audio,Audio", idb.getContentType().get(0));
+        assertEquals("/audio^wav,wav", idb.getContentType().get(1));
     }
 
     @Test
@@ -196,9 +206,8 @@ public class SetContentTypeFilterTest {
 
         filter.filter(dip);
 
-        verify(idb).setContentType(listCaptor.capture());
-        assertEquals("^unknown,Unknown", listCaptor.getValue().get(0));
-        assertEquals("/unknown^stuff,stuff", listCaptor.getValue().get(1));
+        assertEquals("^unknown,Unknown", idb.getContentType().get(0));
+        assertEquals("/unknown^stuff,stuff", idb.getContentType().get(1));
     }
 
     @Test
@@ -207,9 +216,8 @@ public class SetContentTypeFilterTest {
 
         filter.filter(dip);
 
-        verify(idb).setContentType(listCaptor.capture());
-        assertEquals("^text,Text", listCaptor.getValue().get(0));
-        assertEquals("/text^txt,txt", listCaptor.getValue().get(1));
+        assertEquals("^text,Text", idb.getContentType().get(0));
+        assertEquals("/text^txt,txt", idb.getContentType().get(1));
     }
 
     @Test
@@ -218,9 +226,8 @@ public class SetContentTypeFilterTest {
 
         filter.filter(dip);
 
-        verify(idb).setContentType(listCaptor.capture());
-        assertEquals("^unknown,Unknown", listCaptor.getValue().get(0));
-        assertEquals("/unknown^unknown,unknown", listCaptor.getValue().get(1));
+        assertEquals("^unknown,Unknown", idb.getContentType().get(0));
+        assertEquals("/unknown^unknown,unknown", idb.getContentType().get(1));
     }
 
     @Test
@@ -229,9 +236,8 @@ public class SetContentTypeFilterTest {
 
         filter.filter(dip);
 
-        verify(idb).setContentType(listCaptor.capture());
-        assertEquals("^unknown,Unknown", listCaptor.getValue().get(0));
-        assertEquals("/unknown^unknown,unknown", listCaptor.getValue().get(1));
+        assertEquals("^unknown,Unknown", idb.getContentType().get(0));
+        assertEquals("/unknown^unknown,unknown", idb.getContentType().get(1));
     }
 
     @Test
@@ -240,11 +246,9 @@ public class SetContentTypeFilterTest {
 
         filter.filter(dip);
 
-        verify(idb).setContentType(listCaptor.capture());
-        assertEquals("^text,Text", listCaptor.getValue().get(0));
-        assertEquals("/text^txt,txt", listCaptor.getValue().get(1));
+        assertEquals("^text,Text", idb.getContentType().get(0));
+        assertEquals("/text^txt,txt", idb.getContentType().get(1));
     }
-
 
     private void mockFile(String filename, String mimetype) {
         when(dip.getContentObject()).thenReturn(fileObj);
