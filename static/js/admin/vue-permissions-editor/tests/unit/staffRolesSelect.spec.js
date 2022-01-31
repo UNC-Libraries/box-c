@@ -1,14 +1,12 @@
-import { createLocalVue, shallowMount } from '@vue/test-utils';
+import { shallowMount } from '@vue/test-utils';
 import staffRolesSelect from '@/components/staffRolesSelect.vue';
 
-const localVue = createLocalVue();
 let wrapper;
 
 describe('staffRolesSelect.vue', () => {
     beforeEach(() => {
         wrapper = shallowMount(staffRolesSelect, {
-            localVue,
-            propsData: {
+            props: {
                 areDeleted: [],
                 containerType: 'Collection',
                 user: { principal: 'test_user', role: 'canAccess' }

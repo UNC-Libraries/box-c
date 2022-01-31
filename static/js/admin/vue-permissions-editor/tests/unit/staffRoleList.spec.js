@@ -1,8 +1,7 @@
-import { createLocalVue, shallowMount } from '@vue/test-utils'
+import { shallowMount } from '@vue/test-utils'
 import staffRolesSelect from '@/components/staffRolesSelect.vue'
 import staffRoleList from '@/mixins/staffRoleList.js';
 
-const localVue = createLocalVue();
 const collection_roles = [
     { text: 'can Access', value: 'canAccess' },
     { text: 'can Ingest', value: 'canIngest' },
@@ -19,8 +18,7 @@ describe('staffRoleList', () => {
     // Set wrapper using any component that uses staffRoleList mixin to avoid test warnings about missing template
     it("displays all options for Admin Units", () => {
         wrapper = shallowMount(staffRolesSelect, {
-            localVue,
-            propsData: {
+            props: {
                 containerType: 'AdminUnit',
                 user: { principal: 'test_user', role: 'canAccess' }
             }
@@ -30,8 +28,7 @@ describe('staffRoleList', () => {
 
     it("displays a subset of options for Collections", () => {
         wrapper = shallowMount(staffRolesSelect, {
-            localVue,
-            propsData: {
+            props: {
                 containerType: 'Collection',
                 user: { principal: 'test_user', role: 'canAccess' }
             }

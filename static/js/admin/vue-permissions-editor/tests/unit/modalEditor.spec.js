@@ -1,12 +1,7 @@
-import { createLocalVue, shallowMount } from '@vue/test-utils';
-import VueRouter from 'vue-router';
+import { shallowMount } from '@vue/test-utils';
 import modalEditor from '@/components/modalEditor.vue';
+import {createStore} from "vuex";
 
-const localVue = createLocalVue();
-const router = new VueRouter();
-localVue.use(VueRouter);
-
-const title = 'Test Collection';
 const metadata = {
     id: 'd77fd8c9-744b-42ab-8e20-5ad9bdf8194e',
     title: 'Test Collection',
@@ -20,18 +15,30 @@ const metadata = {
 let wrapper;
 
 describe('modalEditor.vue', () => {
+    const store = createStore({
+        state () {
+            return {
+                metadata: {},
+                showModal: false,
+            }
+        },
+        mutations: {
+            setMetadata (state, metadata) {
+                state.metadata = metadata;
+            },
+            setShowModal (state, showModal) {
+                state.showModal = showModal;
+            }
+        }
+    });
+
     beforeEach(() => {
-        wrapper = shallowMount(modalEditor, {
-            localVue,
-            router
-        });
-
-        wrapper.setData({
-            metadata: metadata,
-            permissionType: 'Staff',
-            showModal: false,
-
-        });
+        wrapper = shallowMount(modalEditor,
+            {
+                global: {
+                    plugins: [store]
+                }
+            });
     });
 
     it("is hidden by default", () => {
@@ -39,11 +46,9 @@ describe('modalEditor.vue', () => {
     });
 
     it("displays a record title when triggered from admin interface", async () => {
-        wrapper.setData({
-            showModal: true
-        });
+        await store.commit('setShowModal', true);
+        await store.commit('setMetadata', metadata);
 
-        await wrapper.vm.$nextTick();
         const record = wrapper.find('h3');
         expect(record.text()).toContain(metadata.title);
     });
