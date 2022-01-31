@@ -228,7 +228,6 @@
 
         #remove-embargo {
             margin-top: 20px;
-            width: 115px;
         }
 
         fieldset {
@@ -263,7 +262,7 @@
             li {
                 display: block;
                 margin-left: 15px;
-                margin-bottom: 0px;
+                margin-bottom: 0;
             }
         }
     }
