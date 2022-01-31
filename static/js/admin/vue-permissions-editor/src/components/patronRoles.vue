@@ -134,11 +134,6 @@
 
         mixins: [displayModal, patronHelpers],
 
-        created() {
-            // Initialize non-reactive variables
-            this.inherited = initialRoles();
-        },
-
         data() {
             return {
                 allowed_principals: [],
@@ -151,7 +146,8 @@
                 user_type: null,
                 should_show_add_principal: false,
                 saved_details: null,
-                bulk_has_saved: false
+                bulk_has_saved: false,
+                inherited: initialRoles()
             }
         },
 
