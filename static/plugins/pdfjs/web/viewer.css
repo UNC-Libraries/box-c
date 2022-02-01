@@ -362,7 +362,7 @@
   --sidebar-bg-color: rgba(245, 246, 247, 1);
   --toolbar-bg-color: rgba(249, 249, 250, 1);
   --toolbar-border-color: rgba(204, 204, 204, 1);
-  --button-hover-color: #13294B;
+  --button-hover-color: rgba(221, 222, 223, 1);
   --toggled-btn-bg-color: rgba(0, 0, 0, 0.3);
   --dropdown-btn-bg-color: rgba(215, 215, 219, 1);
   --separator-color: rgba(0, 0, 0, 0.3);
@@ -2029,14 +2029,12 @@ html[dir="rtl"] #toolbarViewerLeft > .toolbarButton:first-child {
   display: inline-block;
   top: 6px;
   content: url(images/toolbarButton-menuArrow.svg);
-  content: var(--toolbarButton-menuArrow-icon);
   pointer-events: none;
   max-width: 16px;
 }
 @media (prefers-color-scheme: dark) {
   .dropdownToolbarButton::after {
   content: url(images/toolbarButton-menuArrow-dark.svg);
-  content: var(--toolbarButton-menuArrow-icon);
   }
 }
 html[dir="ltr"] .dropdownToolbarButton::after {
@@ -2155,12 +2153,10 @@ html[dir="rtl"] .secondaryToolbarButton::before {
 }
 .toolbarButton#sidebarToggle::before {
   content: url(images/toolbarButton-sidebarToggle.svg);
-  content: var(--toolbarButton-sidebarToggle-icon);
 }
 @media (prefers-color-scheme: dark) {
   .toolbarButton#sidebarToggle::before {
   content: url(images/toolbarButton-sidebarToggle-dark.svg);
-  content: var(--toolbarButton-sidebarToggle-icon);
   }
 }
 html[dir="rtl"] .toolbarButton#sidebarToggle::before {
@@ -2168,12 +2164,10 @@ html[dir="rtl"] .toolbarButton#sidebarToggle::before {
 }
 .toolbarButton#secondaryToolbarToggle::before {
   content: url(images/toolbarButton-secondaryToolbarToggle.svg);
-  content: var(--toolbarButton-secondaryToolbarToggle-icon);
 }
 @media (prefers-color-scheme: dark) {
   .toolbarButton#secondaryToolbarToggle::before {
   content: url(images/toolbarButton-secondaryToolbarToggle-dark.svg);
-  content: var(--toolbarButton-secondaryToolbarToggle-icon);
   }
 }
 html[dir="rtl"] .toolbarButton#secondaryToolbarToggle::before {
@@ -2181,12 +2175,10 @@ html[dir="rtl"] .toolbarButton#secondaryToolbarToggle::before {
 }
 .toolbarButton.findPrevious::before {
   content: url(images/findbarButton-previous.svg);
-  content: var(--findbarButton-previous-icon);
 }
 @media (prefers-color-scheme: dark) {
   .toolbarButton.findPrevious::before {
   content: url(images/findbarButton-previous-dark.svg);
-  content: var(--findbarButton-previous-icon);
   }
 }
 html[dir="rtl"] .toolbarButton.findPrevious::before {
@@ -2194,12 +2186,10 @@ html[dir="rtl"] .toolbarButton.findPrevious::before {
 }
 .toolbarButton.findNext::before {
   content: url(images/findbarButton-next.svg);
-  content: var(--findbarButton-next-icon);
 }
 @media (prefers-color-scheme: dark) {
   .toolbarButton.findNext::before {
   content: url(images/findbarButton-next-dark.svg);
-  content: var(--findbarButton-next-icon);
   }
 }
 html[dir="rtl"] .toolbarButton.findNext::before {
@@ -2207,12 +2197,10 @@ html[dir="rtl"] .toolbarButton.findNext::before {
 }
 .toolbarButton.pageUp::before {
   content: url(images/toolbarButton-pageUp.svg);
-  content: var(--toolbarButton-pageUp-icon);
 }
 @media (prefers-color-scheme: dark) {
   .toolbarButton.pageUp::before {
   content: url(images/toolbarButton-pageUp-dark.svg);
-  content: var(--toolbarButton-pageUp-icon);
   }
 }
 html[dir="rtl"] .toolbarButton.pageUp::before {
@@ -2220,12 +2208,10 @@ html[dir="rtl"] .toolbarButton.pageUp::before {
 }
 .toolbarButton.pageDown::before {
   content: url(images/toolbarButton-pageDown.svg);
-  content: var(--toolbarButton-pageDown-icon);
 }
 @media (prefers-color-scheme: dark) {
   .toolbarButton.pageDown::before {
   content: url(images/toolbarButton-pageDown-dark.svg);
-  content: var(--toolbarButton-pageDown-icon);
   }
 }
 html[dir="rtl"] .toolbarButton.pageDown::before {
@@ -2233,102 +2219,82 @@ html[dir="rtl"] .toolbarButton.pageDown::before {
 }
 .toolbarButton.zoomOut::before {
   content: url(images/toolbarButton-zoomOut.svg);
-  content: var(--toolbarButton-zoomOut-icon);
 }
 @media (prefers-color-scheme: dark) {
   .toolbarButton.zoomOut::before {
   content: url(images/toolbarButton-zoomOut-dark.svg);
-  content: var(--toolbarButton-zoomOut-icon);
   }
 }
 .toolbarButton.zoomIn::before {
   content: url(images/toolbarButton-zoomIn.svg);
-  content: var(--toolbarButton-zoomIn-icon);
 }
 @media (prefers-color-scheme: dark) {
   .toolbarButton.zoomIn::before {
   content: url(images/toolbarButton-zoomIn-dark.svg);
-  content: var(--toolbarButton-zoomIn-icon);
   }
 }
 .toolbarButton.presentationMode::before {
   content: url(images/toolbarButton-presentationMode.svg);
-  content: var(--toolbarButton-presentationMode-icon);
 }
 @media (prefers-color-scheme: dark) {
   .toolbarButton.presentationMode::before {
   content: url(images/toolbarButton-presentationMode-dark.svg);
-  content: var(--toolbarButton-presentationMode-icon);
   }
 }
 .secondaryToolbarButton.presentationMode::before {
   content: url(images/toolbarButton-presentationMode.svg);
-  content: var(--toolbarButton-presentationMode-icon);
 }
 @media (prefers-color-scheme: dark) {
   .secondaryToolbarButton.presentationMode::before {
   content: url(images/toolbarButton-presentationMode-dark.svg);
-  content: var(--toolbarButton-presentationMode-icon);
   }
 }
 .toolbarButton.print::before {
   content: url(images/toolbarButton-print.svg);
-  content: var(--toolbarButton-print-icon);
 }
 @media (prefers-color-scheme: dark) {
   .toolbarButton.print::before {
   content: url(images/toolbarButton-print-dark.svg);
-  content: var(--toolbarButton-print-icon);
   }
 }
 .secondaryToolbarButton.print::before {
   content: url(images/toolbarButton-print.svg);
-  content: var(--toolbarButton-print-icon);
 }
 @media (prefers-color-scheme: dark) {
   .secondaryToolbarButton.print::before {
   content: url(images/toolbarButton-print-dark.svg);
-  content: var(--toolbarButton-print-icon);
   }
 }
 .toolbarButton.openFile::before {
   content: url(images/toolbarButton-openFile.svg);
-  content: var(--toolbarButton-openFile-icon);
 }
 @media (prefers-color-scheme: dark) {
   .toolbarButton.openFile::before {
   content: url(images/toolbarButton-openFile-dark.svg);
-  content: var(--toolbarButton-openFile-icon);
   }
 }
 .secondaryToolbarButton.openFile::before {
   content: url(images/toolbarButton-openFile.svg);
-  content: var(--toolbarButton-openFile-icon);
 }
 @media (prefers-color-scheme: dark) {
   .secondaryToolbarButton.openFile::before {
   content: url(images/toolbarButton-openFile-dark.svg);
-  content: var(--toolbarButton-openFile-icon);
   }
 }
 .toolbarButton.download::before {
   content: url(images/toolbarButton-download.svg);
-  content: var(--toolbarButton-download-icon);
 }
 @media (prefers-color-scheme: dark) {
   .toolbarButton.download::before {
   content: url(images/toolbarButton-download-dark.svg);
-  content: var(--toolbarButton-download-icon);
   }
 }
 .secondaryToolbarButton.download::before {
   content: url(images/toolbarButton-download.svg);
-  content: var(--toolbarButton-download-icon);
 }
 @media (prefers-color-scheme: dark) {
   .secondaryToolbarButton.download::before {
   content: url(images/toolbarButton-download-dark.svg);
-  content: var(--toolbarButton-download-icon);
   }
 }
 .secondaryToolbarButton.bookmark {
@@ -2341,42 +2307,34 @@ html[dir="rtl"] .toolbarButton.pageDown::before {
 }
 .toolbarButton.bookmark::before {
   content: url(images/toolbarButton-bookmark.svg);
-  content: var(--toolbarButton-bookmark-icon);
 }
 @media (prefers-color-scheme: dark) {
   .toolbarButton.bookmark::before {
   content: url(images/toolbarButton-bookmark-dark.svg);
-  content: var(--toolbarButton-bookmark-icon);
   }
 }
 .secondaryToolbarButton.bookmark::before {
   content: url(images/toolbarButton-bookmark.svg);
-  content: var(--toolbarButton-bookmark-icon);
 }
 @media (prefers-color-scheme: dark) {
   .secondaryToolbarButton.bookmark::before {
   content: url(images/toolbarButton-bookmark-dark.svg);
-  content: var(--toolbarButton-bookmark-icon);
   }
 }
 #viewThumbnail.toolbarButton::before {
   content: url(images/toolbarButton-viewThumbnail.svg);
-  content: var(--toolbarButton-viewThumbnail-icon);
 }
 @media (prefers-color-scheme: dark) {
   #viewThumbnail.toolbarButton::before {
   content: url(images/toolbarButton-viewThumbnail-dark.svg);
-  content: var(--toolbarButton-viewThumbnail-icon);
   }
 }
 #viewOutline.toolbarButton::before {
   content: url(images/toolbarButton-viewOutline.svg);
-  content: var(--toolbarButton-viewOutline-icon);
 }
 @media (prefers-color-scheme: dark) {
   #viewOutline.toolbarButton::before {
   content: url(images/toolbarButton-viewOutline-dark.svg);
-  content: var(--toolbarButton-viewOutline-icon);
   }
 }
 html[dir="rtl"] #viewOutline.toolbarButton::before {
@@ -2384,32 +2342,26 @@ html[dir="rtl"] #viewOutline.toolbarButton::before {
 }
 #viewAttachments.toolbarButton::before {
   content: url(images/toolbarButton-viewAttachments.svg);
-  content: var(--toolbarButton-viewAttachments-icon);
 }
 @media (prefers-color-scheme: dark) {
   #viewAttachments.toolbarButton::before {
   content: url(images/toolbarButton-viewAttachments-dark.svg);
-  content: var(--toolbarButton-viewAttachments-icon);
   }
 }
 #viewLayers.toolbarButton::before {
   content: url(images/toolbarButton-viewLayers.svg);
-  content: var(--toolbarButton-viewLayers-icon);
 }
 @media (prefers-color-scheme: dark) {
   #viewLayers.toolbarButton::before {
   content: url(images/toolbarButton-viewLayers-dark.svg);
-  content: var(--toolbarButton-viewLayers-icon);
   }
 }
 #viewFind.toolbarButton::before {
   content: url(images/toolbarButton-search.svg);
-  content: var(--toolbarButton-search-icon);
 }
 @media (prefers-color-scheme: dark) {
   #viewFind.toolbarButton::before {
   content: url(images/toolbarButton-search-dark.svg);
-  content: var(--toolbarButton-search-icon);
   }
 }
 .toolbarButton.pdfSidebarNotification::after {
@@ -2457,132 +2409,106 @@ html[dir="rtl"] .secondaryToolbarButton > span {
 }
 .secondaryToolbarButton.firstPage::before {
   content: url(images/secondaryToolbarButton-firstPage.svg);
-  content: var(--secondaryToolbarButton-firstPage-icon);
 }
 @media (prefers-color-scheme: dark) {
   .secondaryToolbarButton.firstPage::before {
   content: url(images/secondaryToolbarButton-firstPage-dark.svg);
-  content: var(--secondaryToolbarButton-firstPage-icon);
   }
 }
 .secondaryToolbarButton.lastPage::before {
   content: url(images/secondaryToolbarButton-lastPage.svg);
-  content: var(--secondaryToolbarButton-lastPage-icon);
 }
 @media (prefers-color-scheme: dark) {
   .secondaryToolbarButton.lastPage::before {
   content: url(images/secondaryToolbarButton-lastPage-dark.svg);
-  content: var(--secondaryToolbarButton-lastPage-icon);
   }
 }
 .secondaryToolbarButton.rotateCcw::before {
   content: url(images/secondaryToolbarButton-rotateCcw.svg);
-  content: var(--secondaryToolbarButton-rotateCcw-icon);
 }
 @media (prefers-color-scheme: dark) {
   .secondaryToolbarButton.rotateCcw::before {
   content: url(images/secondaryToolbarButton-rotateCcw-dark.svg);
-  content: var(--secondaryToolbarButton-rotateCcw-icon);
   }
 }
 .secondaryToolbarButton.rotateCw::before {
   content: url(images/secondaryToolbarButton-rotateCw.svg);
-  content: var(--secondaryToolbarButton-rotateCw-icon);
 }
 @media (prefers-color-scheme: dark) {
   .secondaryToolbarButton.rotateCw::before {
   content: url(images/secondaryToolbarButton-rotateCw-dark.svg);
-  content: var(--secondaryToolbarButton-rotateCw-icon);
   }
 }
 .secondaryToolbarButton.selectTool::before {
   content: url(images/secondaryToolbarButton-selectTool.svg);
-  content: var(--secondaryToolbarButton-selectTool-icon);
 }
 @media (prefers-color-scheme: dark) {
   .secondaryToolbarButton.selectTool::before {
   content: url(images/secondaryToolbarButton-selectTool-dark.svg);
-  content: var(--secondaryToolbarButton-selectTool-icon);
   }
 }
 .secondaryToolbarButton.handTool::before {
   content: url(images/secondaryToolbarButton-handTool.svg);
-  content: var(--secondaryToolbarButton-handTool-icon);
 }
 @media (prefers-color-scheme: dark) {
   .secondaryToolbarButton.handTool::before {
   content: url(images/secondaryToolbarButton-handTool-dark.svg);
-  content: var(--secondaryToolbarButton-handTool-icon);
   }
 }
 .secondaryToolbarButton.scrollVertical::before {
   content: url(images/secondaryToolbarButton-scrollVertical.svg);
-  content: var(--secondaryToolbarButton-scrollVertical-icon);
 }
 @media (prefers-color-scheme: dark) {
   .secondaryToolbarButton.scrollVertical::before {
   content: url(images/secondaryToolbarButton-scrollVertical-dark.svg);
-  content: var(--secondaryToolbarButton-scrollVertical-icon);
   }
 }
 .secondaryToolbarButton.scrollHorizontal::before {
   content: url(images/secondaryToolbarButton-scrollHorizontal.svg);
-  content: var(--secondaryToolbarButton-scrollHorizontal-icon);
 }
 @media (prefers-color-scheme: dark) {
   .secondaryToolbarButton.scrollHorizontal::before {
   content: url(images/secondaryToolbarButton-scrollHorizontal-dark.svg);
-  content: var(--secondaryToolbarButton-scrollHorizontal-icon);
   }
 }
 .secondaryToolbarButton.scrollWrapped::before {
   content: url(images/secondaryToolbarButton-scrollWrapped.svg);
-  content: var(--secondaryToolbarButton-scrollWrapped-icon);
 }
 @media (prefers-color-scheme: dark) {
   .secondaryToolbarButton.scrollWrapped::before {
   content: url(images/secondaryToolbarButton-scrollWrapped-dark.svg);
-  content: var(--secondaryToolbarButton-scrollWrapped-icon);
   }
 }
 .secondaryToolbarButton.spreadNone::before {
   content: url(images/secondaryToolbarButton-spreadNone.svg);
-  content: var(--secondaryToolbarButton-spreadNone-icon);
 }
 @media (prefers-color-scheme: dark) {
   .secondaryToolbarButton.spreadNone::before {
   content: url(images/secondaryToolbarButton-spreadNone-dark.svg);
-  content: var(--secondaryToolbarButton-spreadNone-icon);
   }
 }
 .secondaryToolbarButton.spreadOdd::before {
   content: url(images/secondaryToolbarButton-spreadOdd.svg);
-  content: var(--secondaryToolbarButton-spreadOdd-icon);
 }
 @media (prefers-color-scheme: dark) {
   .secondaryToolbarButton.spreadOdd::before {
   content: url(images/secondaryToolbarButton-spreadOdd-dark.svg);
-  content: var(--secondaryToolbarButton-spreadOdd-icon);
   }
 }
 .secondaryToolbarButton.spreadEven::before {
   content: url(images/secondaryToolbarButton-spreadEven.svg);
-  content: var(--secondaryToolbarButton-spreadEven-icon);
 }
 @media (prefers-color-scheme: dark) {
   .secondaryToolbarButton.spreadEven::before {
   content: url(images/secondaryToolbarButton-spreadEven-dark.svg);
-  content: var(--secondaryToolbarButton-spreadEven-icon);
   }
 }
 .secondaryToolbarButton.documentProperties::before {
   content: url(images/secondaryToolbarButton-documentProperties.svg);
-  content: var(--secondaryToolbarButton-documentProperties-icon);
 }
 @media (prefers-color-scheme: dark) {
   .secondaryToolbarButton.documentProperties::before {
   content: url(images/secondaryToolbarButton-documentProperties-dark.svg);
-  content: var(--secondaryToolbarButton-documentProperties-icon);
   }
 }
 .verticalToolbarSeparator {
@@ -2880,7 +2806,6 @@ html[dir="rtl"] #layersView .treesItem > a > label {
 }
 .treeItemToggler::before {
   content: url(images/treeitem-expanded.svg);
-  content: var(--treeitem-expanded-icon);
   display: inline-block;
   position: absolute;
   max-width: 16px;
@@ -2888,18 +2813,15 @@ html[dir="rtl"] #layersView .treesItem > a > label {
 @media (prefers-color-scheme: dark) {
   .treeItemToggler::before {
   content: url(images/treeitem-expanded-dark.svg);
-  content: var(--treeitem-expanded-icon);
   }
 }
 .treeItemToggler.treeItemsHidden::before {
   content: url(images/treeitem-collapsed.svg);
-  content: var(--treeitem-collapsed-icon);
   max-width: 16px;
 }
 @media (prefers-color-scheme: dark) {
   .treeItemToggler.treeItemsHidden::before {
   content: url(images/treeitem-collapsed-dark.svg);
-  content: var(--treeitem-collapsed-icon);
   }
 }
 html[dir="rtl"] .treeItemToggler.treeItemsHidden::before {
