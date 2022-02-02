@@ -78,6 +78,7 @@ public class SetContentTypeFilter implements IndexDocumentFilter {
         var contentObj = dip.getContentObject();
         var doc = dip.getDocument();
         if (contentObj instanceof WorkObject) {
+            log.debug("Indexing contentType of work {}", dip.getPid().getId());
             addFileContentTypesToWork(doc);
         } else if (contentObj instanceof FileObject) {
             var fileObj = (FileObject) contentObj;
@@ -93,8 +94,8 @@ public class SetContentTypeFilter implements IndexDocumentFilter {
 
     private void addFileContentTypesToWork(IndexDocumentBean doc) {
         var searchState = new SearchState();
-        var ancestorPath = getAncestorPath(doc);
-        searchState.setFacet(ancestorPath);
+        var objectPath = getObjectPath(doc);
+        searchState.setFacet(objectPath);
         searchState.setFacet(new GenericFacet(SearchFieldKey.RESOURCE_TYPE.name(), ResourceType.File.name()));
         searchState.setRowsPerPage(MAX_FILES_PER_WORK);
         searchState.setResultFields(WORK_FILE_FIELDS);
@@ -105,14 +106,20 @@ public class SetContentTypeFilter implements IndexDocumentFilter {
                 .flatMap(r -> r.getContentType().stream())
                 .distinct()
                 .collect(Collectors.toList());
+        log.debug("Query for children of work {} had contentTypes {} from {} files",
+                doc.getId(), contentTypes, result.getResultCount());
         doc.setContentType(contentTypes);
     }
 
-    private CutoffFacet getAncestorPath(IndexDocumentBean doc) {
+    private CutoffFacet getObjectPath(IndexDocumentBean doc) {
+        CutoffFacetImpl ancestorPath;
         if (doc.getAncestorPath() != null && !doc.getAncestorPath().isEmpty()) {
-            return new CutoffFacetImpl(SearchFieldKey.ANCESTOR_PATH.name(), doc.getAncestorPath(), -1);
+            ancestorPath = new CutoffFacetImpl(SearchFieldKey.ANCESTOR_PATH.name(), doc.getAncestorPath(), -1);
+        } else {
+            ancestorPath = (CutoffFacetImpl) solrSearchService.getAncestorPath(doc.getId(), null);
         }
-        return solrSearchService.getAncestorPath(doc.getId(), null);
+        ancestorPath.addNode(doc.getId());
+        return ancestorPath;
     }
 
     private String getExtension(String filepath, String mimetype) {

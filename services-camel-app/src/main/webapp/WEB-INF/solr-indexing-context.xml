@@ -83,6 +83,17 @@
             </list>
         </property>
     </bean>
+
+    <bean id="solrUpdateWorkFilesPipeline"
+          class="edu.unc.lib.boxc.indexing.solr.indexing.DocumentIndexingPipeline">
+        <property name="filters">
+            <list>
+                <ref bean="setRecordDatesFilter" />
+                <ref bean="setContentTypeFilter" />
+                <ref bean="setDatastreamFilter" />
+            </list>
+        </property>
+    </bean>
     
     <bean id="solrFullTextUpdatePipeline"
         class="edu.unc.lib.boxc.indexing.solr.indexing.DocumentIndexingPipeline">
@@ -192,6 +203,7 @@
     </bean>
     
     <bean id="setContentTypeFilter" class="edu.unc.lib.boxc.indexing.solr.filter.SetContentTypeFilter">
+        <property name="solrSearchService" ref="queryLayer" />
     </bean>
     
     <bean id="setDatastreamFilter"
@@ -238,6 +250,12 @@
     <bean id="updateDatastreamsAction"
         class="edu.unc.lib.boxc.indexing.solr.action.UpdateObjectAction">
         <property name="pipeline" ref="solrDatastreamUpdatePipeline" />
+        <property name="addDocumentMode" value="false" />
+    </bean>
+
+    <bean id="updateWorkFilesAction"
+          class="edu.unc.lib.boxc.indexing.solr.action.UpdateObjectAction">
+        <property name="pipeline" ref="solrUpdateWorkFilesPipeline" />
         <property name="addDocumentMode" value="false" />
     </bean>
     
@@ -352,6 +370,7 @@
         <entry key="ADD" value-ref="updateObjectAction" />
         <entry key="UPDATE_DESCRIPTION" value-ref="updateDescriptionAction" />
         <entry key="UPDATE_DATASTREAMS" value-ref="updateDatastreamsAction" />
+        <entry key="UPDATE_WORK_FILES" value-ref="updateWorkFilesAction" />
         <entry key="UPDATE_FULL_TEXT" value-ref="updateFullTextAction" />
         <entry key="RECURSIVE_REINDEX" value-ref="indexTreeInplaceAction" />
         <entry key="RECURSIVE_ADD" value-ref="updateTreeAction" />
@@ -408,12 +427,12 @@
 
     <bean id="aggregateWorkForFileProcessor" class="edu.unc.lib.boxc.services.camel.solrUpdate.AggregateUpdateProcessor">
         <property name="indexingMessageSender" ref="indexingMessageSender" />
-        <property name="actionType" value="UPDATE_DATASTREAMS" />
+        <property name="actionType" value="UPDATE_WORK_FILES" />
     </bean>
 
     <bean id="updateWorkJmsTemplate" class="org.springframework.jms.core.JmsTemplate">
         <property name="connectionFactory" ref="pooledAmqConnectionFactory" />
-        <property name="defaultDestinationName" value="${cdr.solrupdate.workObject.fileUpdated}" />
+        <property name="defaultDestinationName" value="activemq:queue:solr.update.workObject.fileUpdated" />
         <property name="pubSubDomain" value="false" />
     </bean>
 

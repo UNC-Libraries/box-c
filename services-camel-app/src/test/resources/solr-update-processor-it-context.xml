@@ -128,6 +128,7 @@
         <entry key="ADD" value-ref="updateObjectAction" />
         <entry key="UPDATE_DESCRIPTION" value-ref="updateDescriptionAction" />
         <entry key="UPDATE_DATASTREAMS" value-ref="updateDatastreamsAction" />
+        <entry key="UPDATE_WORK_FILES" value-ref="updateWorkFilesAction" />
         <entry key="UPDATE_FULL_TEXT" value-ref="updateFullTextAction" />
         <entry key="RECURSIVE_REINDEX" value-ref="indexTreeInplaceAction" />
         <entry key="RECURSIVE_ADD" value-ref="updateTreeAction" />
@@ -180,7 +181,7 @@
 
     <bean id="aggregateWorkForFileProcessor" class="edu.unc.lib.boxc.services.camel.solrUpdate.AggregateUpdateProcessor">
         <property name="indexingMessageSender" ref="indexingMessageSender" />
-        <property name="actionType" value="UPDATE_DATASTREAMS" />
+        <property name="actionType" value="UPDATE_WORK_FILES" />
     </bean>
 
     <bean id="updateWorkJmsTemplate" class="org.springframework.jms.core.JmsTemplate">

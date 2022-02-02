@@ -15,21 +15,14 @@
  */
 package edu.unc.lib.boxc.services.camel.solrUpdate;
 
-import static edu.unc.lib.boxc.model.api.xml.JDOMNamespaceUtil.ATOM_NS;
-import static edu.unc.lib.boxc.operations.jms.indexing.IndexingMessageHelper.makeIndexingOperationBody;
-import static org.junit.Assert.fail;
-import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.timeout;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-
-import java.util.Arrays;
-import java.util.List;
-import java.util.concurrent.TimeUnit;
-
+import edu.unc.lib.boxc.model.api.exceptions.NotFoundException;
+import edu.unc.lib.boxc.model.api.ids.PID;
+import edu.unc.lib.boxc.model.api.ids.PIDMinter;
+import edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPIDMinter;
+import edu.unc.lib.boxc.operations.jms.indexing.IndexingActionType;
 import edu.unc.lib.boxc.operations.jms.indexing.IndexingMessageSender;
+import edu.unc.lib.boxc.operations.jms.indexing.IndexingPriority;
+import edu.unc.lib.boxc.services.camel.util.MessageUtil;
 import org.apache.camel.CamelContext;
 import org.apache.camel.Exchange;
 import org.apache.camel.Produce;
@@ -50,15 +43,19 @@ import org.springframework.test.context.BootstrapWith;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.ContextHierarchy;
 
-import edu.unc.lib.boxc.model.api.exceptions.NotFoundException;
-import edu.unc.lib.boxc.model.api.ids.PID;
-import edu.unc.lib.boxc.model.api.ids.PIDMinter;
-import edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPIDMinter;
-import edu.unc.lib.boxc.operations.jms.indexing.IndexingActionType;
-import edu.unc.lib.boxc.operations.jms.indexing.IndexingPriority;
-import edu.unc.lib.boxc.services.camel.solrUpdate.SolrUpdatePreprocessor;
-import edu.unc.lib.boxc.services.camel.solrUpdate.SolrUpdateProcessor;
-import edu.unc.lib.boxc.services.camel.util.MessageUtil;
+import java.util.Arrays;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
+
+import static edu.unc.lib.boxc.model.api.xml.JDOMNamespaceUtil.ATOM_NS;
+import static edu.unc.lib.boxc.operations.jms.indexing.IndexingMessageHelper.makeIndexingOperationBody;
+import static org.junit.Assert.fail;
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.timeout;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 /**
  *
@@ -265,8 +262,8 @@ public class SolrUpdateRouterTest {
 
         notify.matches(3l, TimeUnit.SECONDS);
 
-        verify(indexingMessageSender).sendIndexingOperation(null, targetPid1, IndexingActionType.UPDATE_DATASTREAMS);
-        verify(indexingMessageSender).sendIndexingOperation(null, targetPid2, IndexingActionType.UPDATE_DATASTREAMS);
+        verify(indexingMessageSender).sendIndexingOperation(null, targetPid1, IndexingActionType.UPDATE_WORK_FILES);
+        verify(indexingMessageSender).sendIndexingOperation(null, targetPid2, IndexingActionType.UPDATE_WORK_FILES);
     }
 
     private void assertMessage(List<Exchange> exchanges, PID expectedPid, IndexingActionType expectedAction)

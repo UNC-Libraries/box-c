@@ -59,13 +59,11 @@ public class SolrUpdateProcessor implements Processor {
     private MessageSender updateWorkSender;
     private Map<IndexingActionType, IndexingAction> solrIndexingActionMap;
     private Set<IndexingActionType> NEED_UPDATE_PARENT_WORK = EnumSet.of(
-            IndexingActionType.DELETE, IndexingActionType.ADD,
-            IndexingActionType.UPDATE_DATASTREAMS, IndexingActionType.UPDATE_FULL_TEXT);
+            IndexingActionType.DELETE, IndexingActionType.ADD);
 
     @Override
     public void process(Exchange exchange) throws Exception {
         try (Timer.Context context = timer.time()) {
-            log.debug("Processing solr update");
             final Message in = exchange.getIn();
 
             Document msgBody = MessageUtil.getDocumentBody(in);

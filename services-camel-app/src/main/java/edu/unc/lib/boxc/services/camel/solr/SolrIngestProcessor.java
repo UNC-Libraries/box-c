@@ -82,6 +82,7 @@ public class SolrIngestProcessor implements Processor {
             PID targetPid = PIDs.get(fcrepoUri);
             String resourceTypes = (String) in.getHeader(RESOURCE_TYPE);
 
+            PID grandParentWorkPid = null;
             // for binaries, need to index the file and work objects which contain it
             if (resourceTypes != null && resourceTypes.contains(Fcrepo4Repository.Binary.getURI())) {
                 targetPid = PIDs.get(targetPid.getId());
@@ -89,9 +90,7 @@ public class SolrIngestProcessor implements Processor {
                 RepositoryObject grandParent = parentFile.getParent();
                 // Trigger indexing of the work containing this file object
                 if (grandParent instanceof WorkObject) {
-                    log.debug("Requesting indexing of work {} containing file {}",
-                            grandParent.getPid().getId(), targetPid);
-                    updateWorkSender.sendMessage(grandParent.getPid().getQualifiedId());
+                    grandParentWorkPid = grandParent.getPid();
                 }
             }
 
@@ -107,6 +106,11 @@ public class SolrIngestProcessor implements Processor {
 
                 pipeline.process(dip);
                 solrUpdateDriver.addDocument(dip.getDocument());
+            }
+
+            if (grandParentWorkPid != null) {
+                log.debug("Requesting indexing of work {} containing file {}", grandParentWorkPid.getId(), targetPid);
+                updateWorkSender.sendMessage(grandParentWorkPid.getQualifiedId());
             }
         }
     }

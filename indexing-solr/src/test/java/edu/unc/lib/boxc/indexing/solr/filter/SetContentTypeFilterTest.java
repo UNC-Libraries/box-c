@@ -23,9 +23,11 @@ import edu.unc.lib.boxc.model.api.objects.BinaryObject;
 import edu.unc.lib.boxc.model.api.objects.FileObject;
 import edu.unc.lib.boxc.model.api.objects.FolderObject;
 import edu.unc.lib.boxc.model.api.objects.WorkObject;
+import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.boxc.search.api.SearchFieldKey;
 import edu.unc.lib.boxc.search.api.facets.CutoffFacet;
 import edu.unc.lib.boxc.search.api.requests.SearchRequest;
+import edu.unc.lib.boxc.search.solr.facets.CutoffFacetImpl;
 import edu.unc.lib.boxc.search.solr.models.ContentObjectSolrRecord;
 import edu.unc.lib.boxc.search.solr.models.IndexDocumentBean;
 import edu.unc.lib.boxc.search.solr.responses.SearchResultResponse;
@@ -39,6 +41,7 @@ import org.mockito.Mock;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.UUID;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
@@ -58,7 +61,6 @@ import static org.mockito.MockitoAnnotations.initMocks;
 public class SetContentTypeFilterTest {
 
     private DocumentIndexingPackage dip;
-    @Mock
     private PID pid;
     @Mock
     private FileObject fileObj;
@@ -75,7 +77,6 @@ public class SetContentTypeFilterTest {
     private SolrSearchService solrSearchService;
     @Mock
     private DocumentIndexingPackageDataLoader documentIndexingPackageDataLoader;
-    @Mock
     private CutoffFacet ancestorPath;
     @Mock
     private SearchResultResponse searchResultResponse;
@@ -86,12 +87,14 @@ public class SetContentTypeFilterTest {
     public void setup() throws Exception {
         initMocks(this);
 
+        pid = PIDs.get(UUID.randomUUID().toString());
         dip = new DocumentIndexingPackage(pid, null, documentIndexingPackageDataLoader);
         dip.setPid(pid);
         idb = dip.getDocument();
 
         when(fileObj.getOriginalFile()).thenReturn(binObj);
-        when(ancestorPath.getFieldName()).thenReturn(SearchFieldKey.ANCESTOR_PATH.name());
+        ancestorPath = new CutoffFacetImpl(SearchFieldKey.ANCESTOR_PATH.name(), Arrays.asList(
+                "1,1ed05130-d25f-4890-9086-02d98625275f", "2,5aa1ad67-c494-48dc-839e-241826559abb"), 0);
         when(solrSearchService.getSearchResults(any(SearchRequest.class))).thenReturn(searchResultResponse);
         when(solrSearchService.getAncestorPath(pid.getId(), null)).thenReturn(ancestorPath);
 

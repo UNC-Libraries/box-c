@@ -117,6 +117,11 @@ public class SolrIngestProcessorIT extends AbstractSolrProcessorIT {
 
         indexObjectsInTripleStore();
 
+        setMessageTarget(fileObj);
+        when(message.getHeader(RESOURCE_TYPE)).thenReturn(Cdr.FileObject.getURI());
+        processor.process(exchange);
+        server.commit();
+
         setMessageTarget(workObj);
         processor.process(exchange);
         server.commit();
@@ -243,6 +248,11 @@ public class SolrIngestProcessorIT extends AbstractSolrProcessorIT {
 
         setMessageTarget(binObj);
         when(message.getHeader(RESOURCE_TYPE)).thenReturn(Fcrepo4Repository.Binary.getURI());
+        processor.process(exchange);
+        server.commit();
+
+        setMessageTarget(workObj);
+        when(message.getHeader(RESOURCE_TYPE)).thenReturn(Cdr.Work.getURI());
         processor.process(exchange);
         server.commit();
 
