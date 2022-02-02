@@ -7,13 +7,16 @@ const store = createStore({
             actionHandler: {},
             alertHandler: {},
             checkForUnsavedChanges: false,
-            embargoError: '',
-            embargoInfo: {},
+            embargoInfo: {
+                embargo: null,
+                skipEmbargo: true
+            },
             metadata: {},
             permissionType: '',
             resultObject: {},
             resultObjects: [],
             showModal: false,
+            staffRole: {}
         }
     },
     mutations: {
@@ -25,9 +28,6 @@ const store = createStore({
         },
         setCheckForUnsavedChanges (state, unsavedChanges) {
             state.checkForUnsavedChanges = unsavedChanges;
-        },
-        setEmbargoError (state, embargoError) {
-            state.embargoError = embargoError;
         },
         setEmbargoInfo (state, embargoInfo) {
             state.embargoInfo = embargoInfo;
@@ -46,6 +46,9 @@ const store = createStore({
         },
         setShowModal (state, showModal) {
             state.showModal = showModal;
+        },
+        setStaffRole (state, staffRole) {
+            state.staffRole = staffRole;
         }
     }
 });

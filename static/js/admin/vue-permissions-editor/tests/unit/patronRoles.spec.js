@@ -3,7 +3,6 @@ import patronRoles from '@/components/patronRoles.vue';
 import moxios from 'moxios';
 import {createStore} from 'vuex';
 
-
 const UUID = '73bc003c-9603-4cd9-8a65-93a22520ef6a';
 const embargo_date = '2099-01-01';
 const inherited_roles = [{ principal: 'everyone', role: 'canViewOriginals', assignedTo: null },
@@ -70,7 +69,7 @@ describe('patronRoles.vue', () => {
         stubDataLoad();
 
         moxios.wait(async () => {
-            await wrapper.setData({
+            await wrapper.vm.$store.commit('setEmbargoInfo', {
                 embargo: embargo_date,
                 skip_embargo: false
             });
@@ -955,7 +954,7 @@ describe('patronRoles.vue', () => {
                 { principal: 'authenticated', role: 'canViewOriginals', deleted: false, embargo: false, type: 'inherited', assignedTo: null }
             ]);
 
-            wrapper.vm.$refs.embargoInfo.$emit('embargo-info', { embargo: embargo_date, skip_embargo: false });
+            wrapper.vm.$store.commit('setEmbargoInfo', { embargo: embargo_date, skip_embargo: false });
             expect(wrapper.vm.displayAssignments).toEqual([
                 { principal: 'patron', role: 'canViewMetadata', deleted: false, embargo: true, type: 'assigned', assignedTo: UUID }
             ]);
@@ -973,13 +972,13 @@ describe('patronRoles.vue', () => {
     it("assigning an embargo does not change displayed roles if already 'canViewMetadata' or 'none'", (done) => {
         stubDataLoad(full_roles);
 
-        moxios.wait(() => {
+        moxios.wait(async () => {
             expect(wrapper.vm.displayAssignments).toEqual([
                 { principal: 'everyone', role: 'none', deleted: false, embargo: false, type: 'assigned', assignedTo: UUID },
                 { principal: 'authenticated', role: 'canViewMetadata', deleted: false, embargo: false, type: 'inherited', assignedTo: null }
             ]);
 
-            wrapper.vm.$refs.embargoInfo.$emit('embargo-info', embargo_date);
+            await wrapper.vm.$store.commit('setEmbargoInfo', embargo_date);
             expect(wrapper.vm.displayAssignments).toEqual([
                 { principal: 'everyone', role: 'none', deleted: false, embargo: true, type: 'assigned', assignedTo: UUID },
                 { principal: 'authenticated', role: 'canViewMetadata', deleted: false, embargo: false, type: 'inherited', assignedTo: null }
@@ -991,13 +990,13 @@ describe('patronRoles.vue', () => {
     it("updates submit roles if an embargo is added or removed", (done) => {
         stubDataLoad(full_roles);
 
-        moxios.wait(() => {
+        moxios.wait(async () => {
             expect(wrapper.vm.submissionAccessDetails().embargo).toEqual(null);
 
-            wrapper.vm.$refs.embargoInfo.$emit('embargo-info', { embargo: embargo_date, skip_embargo: false });
+            await wrapper.vm.$store.commit('setEmbargoInfo', { embargo: embargo_date, skip_embargo: false });
             expect(wrapper.vm.submissionAccessDetails().embargo).toEqual(embargo_date);
 
-            wrapper.vm.$refs.embargoInfo.$emit('embargo-info', { embargo: null, skip_embargo: false });
+            await wrapper.vm.$store.commit('setEmbargoInfo', { embargo: null, skip_embargo: false });
             expect(wrapper.vm.submissionAccessDetails().embargo).toEqual(null);
             done();
         })
@@ -1035,23 +1034,24 @@ describe('patronRoles.vue', () => {
         await wrapper.setData({
             saved_details: {
                 roles: []
-            }
+            },
+            selected_patron_assignments: [{
+                assignedTo: '1234',
+                principal: 'everyone',
+                role: 'canViewAccessCopies'
+            }, {
+                assignedTo: '1234',
+                principal: 'authenticated',
+                role: 'canViewOriginals'
+            }]
         });
-        wrapper.vm.assignedPatronRoles.set = jest.fn().mockReturnValue([{
-            assignedTo: '1234',
-            principal: 'everyone',
-            role: 'canViewAccessCopies'
-        }, {
-            assignedTo: '1234',
-            principal: 'authenticated',
-            role: 'canViewOriginals'
-        }]);
+
         await wrapper.find('#is-canceling').trigger('click');
         expect(global.confirm).toHaveBeenCalled();
     });
 
     it("prompts the user if 'Cancel' is clicked and saved and unsaved changes arrays don't have the same values", async () => {
-        wrapper.setData({
+        await wrapper.setData({
             saved_details: {
                 roles: [{
                     assignedTo: '1234',
@@ -1062,17 +1062,18 @@ describe('patronRoles.vue', () => {
                     principal: 'authenticated',
                     role: 'canViewAccessCopies'
                 }]
-            }
+            },
+            selected_patron_assignments: [{
+                    assignedTo: '1234',
+                    principal: 'everyone',
+                    role: 'canViewAccessCopies'
+                }, {
+                    assignedTo: '1234',
+                    principal: 'authenticated',
+                    role: 'canViewOriginals'
+                }]
         });
-        wrapper.vm.assignedPatronRoles.set = jest.fn().mockReturnValue([{
-            assignedTo: '1234',
-            principal: 'everyone',
-            role: 'canViewAccessCopies'
-        }, {
-            assignedTo: '1234',
-            principal: 'authenticated',
-            role: 'canViewOriginals'
-        }]);
+
         await wrapper.find('#is-canceling').trigger('click');
         expect(global.confirm).toHaveBeenCalled();
     });
@@ -1136,8 +1137,6 @@ describe('patronRoles.vue', () => {
         stubAllowedPrincipals([]);
 
         moxios.wait(async () => {
-            await wrapper.vm.$nextTick();
-
             expect(wrapper.find('.inherited-permissions').exists()).toBe(false)
             expect(wrapper.vm.user_type).toEqual('ignore');
             expect(wrapper.vm.assignedPatronRoles).toEqual([]);
@@ -1145,11 +1144,11 @@ describe('patronRoles.vue', () => {
             expect(wrapper.vm.submissionAccessDetails().roles).toEqual([]);
             expectSaveButtonDisabled();
 
-            wrapper.vm.$refs.embargoInfo.$emit('embargo-info', {embargo: embargo_date, skip_embargo: false});
+            wrapper.vm.$store.commit('setEmbargoInfo', {embargo: embargo_date, skipEmbargo: false});
             await wrapper.vm.$nextTick();
             expectSaveButtonDisabled(false);
 
-            wrapper.vm.$refs.embargoInfo.$emit('embargo-info', {embargo: null, skip_embargo: true});
+            wrapper.vm.$store.commit('setEmbargoInfo', {embargo: null, skipEmbargo: true});
             await wrapper.vm.$nextTick();
             expectSaveButtonDisabled();
 
@@ -1200,7 +1199,7 @@ describe('patronRoles.vue', () => {
             stubBulkDataSaveResponse();
             await wrapper.find('#is-submitting').trigger('click');
             moxios.wait(() => {
-                let request = moxios.requests.mostRecent()
+                let request = moxios.requests.mostRecent();
                 expect(request.config.method).toEqual('put');
                 expect(JSON.parse(request.config.data)).toEqual({
                     ids: ["73bc003c-9603-4cd9-8a65-93a22520ef6a", "0dfda46a-7812-44e9-8ad3-056b493622e7"],
@@ -1226,7 +1225,7 @@ describe('patronRoles.vue', () => {
         mountBulk(resultObjectsTwoFolders);
 
         moxios.wait(async () => {
-            await wrapper.vm.$refs.embargoInfo.$emit('embargo-info', {embargo: embargo_date, skip_embargo: false});
+            await wrapper.vm.$store.commit('setEmbargoInfo', { embargo: embargo_date, skipEmbargo: false });
             stubBulkDataSaveResponse();
             await wrapper.find('#is-submitting').trigger('click');
 
@@ -1320,6 +1319,7 @@ describe('patronRoles.vue', () => {
 
     function expectSaveButtonDisabled(expectDisabled = true) {
         let disabledValue = wrapper.find('#is-submitting').attributes();
+
         if (expectDisabled) {
             expect(disabledValue).toHaveProperty('disabled');
         } else {
@@ -1334,8 +1334,10 @@ describe('patronRoles.vue', () => {
                     actionHandler: { addEvent: jest.fn() },
                     alertHandler: { alertHandler: jest.fn() },
                     checkForUnsavedChanges: false,
-                    embargoError: '',
-                    embargoInfo: {},
+                    embargoInfo: {
+                        embargo: null,
+                        skipEmbargo: true
+                    },
                     metadata: { id: UUID, type: 'Folder', deleted: false, embargo: null },
                     permissionType: '',
                     resultObject: {},

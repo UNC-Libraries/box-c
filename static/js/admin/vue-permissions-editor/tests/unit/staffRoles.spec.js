@@ -34,13 +34,16 @@ describe('staffRoles.vue', () => {
                     actionHandler: { addEvent: jest.fn() },
                     alertHandler: { alertHandler: jest.fn() },
                     checkForUnsavedChanges: false,
-                    embargoError: '',
-                    embargoInfo: {},
+                    embargoInfo: {
+                        embargo: null,
+                        skipEmbargo: true
+                    },
                     metadata: metadata(),
                     permissionType: '',
                     resultObject: {},
                     resultObjects: [],
                     showModal: false,
+                    staffRole: {}
                 }
             },
             mutations: {
@@ -52,9 +55,6 @@ describe('staffRoles.vue', () => {
                 },
                 setCheckForUnsavedChanges (state, unsavedChanges) {
                     state.checkForUnsavedChanges = unsavedChanges;
-                },
-                setEmbargoError (state, embargoError) {
-                    state.embargoError = embargoError;
                 },
                 setEmbargoInfo (state, embargoInfo) {
                     state.embargoInfo = embargoInfo;
@@ -73,6 +73,9 @@ describe('staffRoles.vue', () => {
                 },
                 setShowModal (state, showModal) {
                     state.showModal = showModal;
+                },
+                setStaffRole (state, staffRole) {
+                    state.staffRole = staffRole;
                 }
             }
         });
@@ -167,36 +170,45 @@ describe('staffRoles.vue', () => {
         });
     });
 
-/*    it("displays names of containers that roles are assigned to in inherited table", (done) => {
+    it("displays names of containers that roles are assigned to in inherited table", (done) => {
+        const store = createStore({
+            state () {
+                return {
+                    metadata: {
+                        id: '4f2be243-ce9e-4f26-91fc-08f1b592734d',
+                        title: 'Some Subfolder',
+                        type: 'Folder',
+                        objectPath: [{
+                            pid: 'collections',
+                            name: 'Content Collections Root',
+                            container: true
+                        }, {
+                            pid: '73bc003c-9603-4cd9-8a65-93a22520ef6a',
+                            name: 'Test Unit',
+                            container: true
+                        }, {
+                            pid: 'f88ff51e-7e74-4e0e-9ab9-259444393aeb',
+                            name: 'Test Collection',
+                            container: true
+                        }, {
+                            pid: '4f2be243-ce9e-4f26-91fc-08f1b592734d',
+                            name: 'Some Subfolder',
+                            container: true
+                        }]
+                    }
+                }
+            },
+            mutations: {
+                setMetadata (state, staffRole) {
+                    state.staffRole = staffRole;
+                }
+            }
+        });
         wrapper = shallowMount(staffRoles, {
             global: {
                 plugins: [store]
-            },
-            propsData: {
-                alertHandler: {
-                    alertHandler: jest.fn() // This method lives outside of the Vue app
-                },
-                objectPath: [{
-                    pid: 'collections',
-                    name: 'Content Collections Root',
-                    container: true
-                }, {
-                    pid: '73bc003c-9603-4cd9-8a65-93a22520ef6a',
-                    name: 'Test Unit',
-                    container: true
-                }, {
-                    pid: 'f88ff51e-7e74-4e0e-9ab9-259444393aeb',
-                    name: 'Test Collecton',
-                    container: true
-                }, {
-                    pid: '4f2be243-ce9e-4f26-91fc-08f1b592734d',
-                    name: 'Some Subfolder',
-                    container: true
-                }],
-                containerType: 'Folder',
-                title: 'Some Subfolder',
-                uuid: '4f2be243-ce9e-4f26-91fc-08f1b592734d'
             }
+
         });
 
         const response = {
@@ -222,10 +234,10 @@ describe('staffRoles.vue', () => {
             expect(cells[2].text()).toEqual('Test Unit');
             expect(cells[3].text()).toEqual(response.inherited.roles[1].principal);
             expect(cells[4].text()).toEqual(response.inherited.roles[1].role);
-            expect(cells[5].text()).toEqual('Test Collecton');
+            expect(cells[5].text()).toEqual('Test Collection');
             done();
         });
-    });*/
+    });
 
     it("does not display an inherited roles table if there are no inherited roles", (done) => {
         moxios.wait(async () => {
@@ -245,6 +257,16 @@ describe('staffRoles.vue', () => {
             // See test in staffRolesSelect.spec.js for test asserting that the correct option is displayed
             done();
         });
+    });
+
+    it("updates user roles, if a role is changed", async() => {
+        // Role loaded in beforeEach action
+        expect(wrapper.vm.updated_staff_roles).toEqual([{ principal: 'test_user', role: 'canIngest' }]);
+
+        // staffSelectRole component updates the data store
+        const updatedUser = { principal: 'test_user', role: 'canManage' };
+        await wrapper.vm.$store.commit('setStaffRole', updatedUser);
+        expect(wrapper.vm.updated_staff_roles).toEqual([updatedUser]);
     });
 
     it("disables 'submit' by default", (done) => {
@@ -396,16 +418,16 @@ describe('staffRoles.vue', () => {
         expect(btn.isVisible()).toBe(true);
     });
 
-    it("emits an event to reset 'changesCheck' in parent component", async () => {
+    it("updates the data store to reset 'changesCheck' in parent component", async () => {
         await wrapper.vm.$store.commit('setCheckForUnsavedChanges', true);
         expect(wrapper.vm.user_name).toEqual('');
         expect(wrapper.vm.selected_role).toEqual('canAccess');
     });
 
-    it("emits an event to close the modal if 'Cancel' is clicked and there are no unsaved changes", (done) => {
+    it("updates the data store to close the modal if 'Cancel' is clicked and there are no unsaved changes", (done) => {
         moxios.wait(() => {
             wrapper.find('#is-canceling').trigger('click');
-            expect(wrapper.emitted()['show-modal'][0]).toEqual([false]);
+            expect(wrapper.vm.$store.state.showModal).toEqual(false);
             done();
         });
     });

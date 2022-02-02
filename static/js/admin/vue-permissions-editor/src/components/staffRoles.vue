@@ -64,8 +64,7 @@
                         <staff-roles-select
                                 :container-type="containerType"
                                 :are-deleted="deleted_users"
-                                :user="updated_staff_role"
-                                @staff-role-update="updateUserRole">
+                                :user="updated_staff_role">
                         </staff-roles-select>
                     </td>
                     <td class="btn">
@@ -129,6 +128,24 @@
         },
 
         mixins: [staffRoleList, displayModal],
+
+        watch: {
+            /**
+             * Update a current user's role
+             * @param user
+             */
+            '$store.state.staffRole': {
+                handler() {
+                    let user = this.$store.state.staffRole;
+                    let user_index = this.getUserIndex(user);
+
+                    if (user_index !== -1) {
+                        this.updated_staff_roles[user_index].role = user.role;
+                        this.unsavedUpdates();
+                    }
+                }
+            }
+        },
 
         data() {
             return {
@@ -293,19 +310,6 @@
                 }
             },
 
-            /**
-             * Update a current user's role
-             * @param user
-             */
-            updateUserRole(user) {
-                let user_index = this.getUserIndex(user);
-
-                if (user_index !== -1) {
-                    this.updated_staff_roles[user_index].role = user.role;
-                    this.unsavedUpdates();
-                }
-            },
-
             truncatePermissionText(text) {
               if (text.length > 25) {
                 let permissions = text.split(':');
@@ -329,7 +333,7 @@
             },
 
             /**
-             * Emit a close modal event
+             * Close the modal window
              * Checks if there are unsaved changes and asks user to confirm exit, if so.
              */
             showModal() {

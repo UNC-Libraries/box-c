@@ -14,8 +14,6 @@
 
         mixins: [staffRoleList],
 
-        emits: ['staff-role-update'],
-
         props: {
             areDeleted: {
                 type: Array,
@@ -51,11 +49,8 @@
 
         methods: {
            selectedValue() {
-               this.$emit('staff-role-update', { principal: this.user.principal, role: this.selected_role });
+               this.$store.commit('setStaffRole', { principal: this.user.principal, role: this.selected_role });
            }
         }
     }
 </script>
-
-<style scoped lang="scss">
-</style>

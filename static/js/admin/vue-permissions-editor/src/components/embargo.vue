@@ -2,12 +2,12 @@
     <div id="set-embargo">
         <h3>Set Embargo</h3>
         <div class="embargo-details">
-            <p v-if="has_embargo">Embargo expires {{ formattedEmbargoDate }} for this object</p>
-            <p v-if="!has_embargo && !isBulkMode">No embargo set for this object</p>
+            <p v-if="hasEmbargo">Embargo expires {{ formattedEmbargoDate }} for this object</p>
+            <p v-if="!hasEmbargo && !isBulkMode">No embargo set for this object</p>
 
 
-            <button id="show-form" v-if="!has_embargo && !show_form && !isBulkMode" @click="showForm">Add embargo</button>
-            <div class="form" v-if="has_embargo || show_form || isBulkMode">
+            <button id="show-form" v-if="!hasEmbargo && !show_form && !isBulkMode" @click="showForm">Add embargo</button>
+            <div class="form" v-if="hasEmbargo || show_form || isBulkMode">
                 <form>
                     <fieldset :disabled="isDeleted">
                         <ul class="select-type-list">
@@ -37,7 +37,7 @@
                         </ul>
                     </fieldset>
                 </form>
-                <button @click="removeEmbargo" :class="{'hidden': !has_embargo}" id="remove-embargo" v-if="!isBulkMode">Remove Embargo</button>
+                <button @click="removeEmbargo" :class="{'hidden': !hasEmbargo}" id="remove-embargo" v-if="!isBulkMode">Remove Embargo</button>
             </div>
         </div>
     </div>
@@ -45,41 +45,26 @@
 
 <script>
     import { addYears, format, isFuture } from 'date-fns'
+    import {mapState} from "vuex";
 
     export default {
         name: 'embargo',
 
         props: {
-            currentEmbargo: String,
             isDeleted: Boolean,
             isBulkMode: Boolean
         },
 
-        emits: ['embargo-info', 'error-msg'],
-
         data() {
             return {
                 custom_embargo_date: '',
-                embargo_ends_date: '',
-                has_embargo: false,
+                error_msg: '',
                 show_form: false,
                 embargo_type: "ignore"
             }
         },
 
         watch: {
-            currentEmbargo: {
-                handler(embargo) {
-                    this.has_embargo = embargo !== null;
-
-                    if (this.has_embargo) {
-                        this.embargo_ends_date = embargo;
-                    } else {
-                        this.embargo_ends_date = '';
-                    }
-                },
-                deep: true
-            },
             embargo_type: {
                 handler(newType) {
                     if (newType === "ignore") {
@@ -97,11 +82,19 @@
         },
 
         computed: {
+            ...mapState({
+                alertHandler: state => state.alertHandler,
+                embargoEndsDate: state => {
+                    return (state.embargoInfo.embargo !== null) ? state.embargoInfo.embargo : '';
+                },
+                hasEmbargo: state => state.embargoInfo.embargo !== null
+            }),
+
             formattedEmbargoDate() {
-                if (this.embargo_ends_date === '') {
-                    return this.embargo_ends_date;
+                if (this.embargoEndsDate === '') {
+                    return this.embargoEndsDate;
                 }
-                let embargo_date = this.specifiedDate(this.embargo_ends_date);
+                let embargo_date = this.specifiedDate(this.embargoEndsDate);
                 return format(embargo_date, 'MMMM do, yyyy');
             }
         },
@@ -117,9 +110,9 @@
             removeEmbargo(confirm = true) {
                 if (!confirm || window.confirm("This will clear the embargo for this object. Are you sure you'd like to continue?")) {
                     this.clearEmbargoInfo();
-                    this.$emit('embargo-info', {
+                    this.$store.commit('setEmbargoInfo', {
                         embargo: null,
-                        skip_embargo: false
+                        skipEmbargo: false
                     });
                 }
             },
@@ -129,9 +122,9 @@
              */
             ignoreEmbargo() {
                 this.clearEmbargoInfo();
-                this.$emit('embargo-info', {
+                this.$store.commit('setEmbargoInfo', {
                     embargo: null,
-                    skip_embargo: true
+                    skipEmbargo: true
                 });
             },
 
@@ -139,17 +132,9 @@
              * Resets embargo form
              */
             clearEmbargoInfo() {
-                this.has_embargo = false;
                 this.show_form = false;
                 this.custom_embargo_date = '';
-                this.embargo_ends_date = '';
-
-                this.clearEmbargoError();
-            },
-
-            clearEmbargoError() {
                 this.error_msg = '';
-                this.$emit('error-msg', this.error_msg);
             },
 
             /**
@@ -158,12 +143,11 @@
              */
             setFixedEmbargoDate(years) {
                 let future_date = addYears(new Date(), years);
-                this.embargo_ends_date = format(future_date, 'yyyy-LL-dd');
+                let fixed_embargo_date = format(future_date, 'yyyy-LL-dd');
                 this.custom_embargo_date = '';
-                this.clearEmbargoError();
-                this.$emit('embargo-info', {
-                    embargo: this.embargo_ends_date,
-                    skip_embargo: false
+                this.$store.commit('setEmbargoInfo', {
+                    embargo: fixed_embargo_date,
+                    skipEmbargo: false
                 });
             },
 
@@ -177,22 +161,23 @@
 
                 if (date_filled && regex_match && isFuture(date_parts)) {
                     this.embargo_type = 'custom';
-                    this.$emit('error-msg', '');
-                    this.embargo_ends_date = this.custom_embargo_date;
-                    this.$emit('embargo-info', {
-                        embargo: this.embargo_ends_date,
-                        skip_embargo: false
+                    this.error_msg = '';
+                    this.$store.commit('setEmbargoInfo', {
+                        embargo: this.custom_embargo_date,
+                        skipEmbargo: false
                     });
                 } else if (date_filled && !regex_match) {
-                    this.$emit('error-msg', 'Please enter a valid date in the following format YYYY-MM-DD');
+                    this.error_msg = 'Please enter a valid date in the following format YYYY-MM-DD';
+                    this.alertHandler.alertHandler('error', this.error_msg);
                 } else if (date_filled && !isFuture(date_parts)) {
-                    this.$emit('error-msg', 'Please enter a future date');
+                    this.error_msg = 'Please enter a future date';
+                    this.alertHandler.alertHandler('error', this.error_msg);
                 }
             },
 
             selectCustom() {
                 this.embargo_type = 'custom';
-                this.clearEmbargoError();
+                this.error_msg = '';
             },
 
             /**
