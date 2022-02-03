@@ -34,6 +34,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import edu.unc.lib.boxc.operations.jms.MessageSender;
 import org.apache.commons.io.FileUtils;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
@@ -86,6 +87,8 @@ public class SolrIngestProcessorIT extends AbstractSolrProcessorIT {
     private DerivativeService derivativeService;
     @Mock
     private AgentPrincipals agent;
+    @Autowired
+    private MessageSender updateWorkSender;
 
     @Before
     public void setUp() throws Exception {
@@ -94,6 +97,7 @@ public class SolrIngestProcessorIT extends AbstractSolrProcessorIT {
         TestHelper.setContentBase(baseAddress);
 
         processor = new SolrIngestProcessor(dipFactory, solrFullUpdatePipeline, driver, repositoryObjectLoader);
+        processor.setUpdateWorkSender(updateWorkSender);
 
         when(exchange.getIn()).thenReturn(message);
 
@@ -112,6 +116,11 @@ public class SolrIngestProcessorIT extends AbstractSolrProcessorIT {
         updateDescriptionService.updateDescription(new UpdateDescriptionRequest(agent, workObj.getPid(), modsStream));
 
         indexObjectsInTripleStore();
+
+        setMessageTarget(fileObj);
+        when(message.getHeader(RESOURCE_TYPE)).thenReturn(Cdr.FileObject.getURI());
+        processor.process(exchange);
+        server.commit();
 
         setMessageTarget(workObj);
         processor.process(exchange);
@@ -239,6 +248,11 @@ public class SolrIngestProcessorIT extends AbstractSolrProcessorIT {
 
         setMessageTarget(binObj);
         when(message.getHeader(RESOURCE_TYPE)).thenReturn(Fcrepo4Repository.Binary.getURI());
+        processor.process(exchange);
+        server.commit();
+
+        setMessageTarget(workObj);
+        when(message.getHeader(RESOURCE_TYPE)).thenReturn(Cdr.Work.getURI());
         processor.process(exchange);
         server.commit();
 

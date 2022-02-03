@@ -29,6 +29,7 @@ public enum IndexingActionType {
     ADD("Add/Update", "Adds or updates the entry for the specified object"),
     UPDATE_DESCRIPTION("Update description", "Updates the descriptive metadata for the specified object"),
     UPDATE_DATASTREAMS("Update datastreams", "Updates datastream metadata for the specified object"),
+    UPDATE_WORK_FILES("Update work files", "Set of files within a work has been updated."),
     UPDATE_FULL_TEXT("Update full text", "Updates the full text data for the specified object"),
     DELETE("Remove from Index", "Removes the index entry for the specified object"),
     COMMIT("Commit", "Causes an immediate upload and commit of pending updates"),

@@ -42,6 +42,8 @@ import java.util.concurrent.TimeUnit;
 
 import javax.annotation.Resource;
 
+import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
+import edu.unc.lib.boxc.operations.jms.MessageSender;
 import org.apache.camel.CamelContext;
 import org.apache.camel.builder.NotifyBuilder;
 import org.apache.commons.io.FileUtils;
@@ -107,6 +109,10 @@ public class SolrUpdateProcessorIT extends AbstractSolrProcessorIT {
     private SetCollectionSupplementalInformationFilter setCollectionSupplementalInformationFilter;
     @Autowired
     private SolrClient solrClient;
+    @Autowired
+    private RepositoryObjectLoader repositoryObjectLoader;
+    @Autowired
+    private MessageSender updateWorkSender;
 
     @Resource(name = "solrIndexingActionMap")
     private Map<IndexingActionType, IndexingAction> solrIndexingActionMap;
@@ -119,6 +125,8 @@ public class SolrUpdateProcessorIT extends AbstractSolrProcessorIT {
 
         processor = new SolrUpdateProcessor();
         processor.setSolrIndexingActionMap(solrIndexingActionMap);
+        processor.setRepositoryObjectLoader(repositoryObjectLoader);
+        processor.setUpdateWorkSender(updateWorkSender);
 
         when(exchange.getIn()).thenReturn(message);
 

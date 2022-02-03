@@ -73,6 +73,13 @@
         <constructor-arg value="edu.unc.lib.boxc.services.camel.util.CacheInvalidatingProcessor" />
     </bean>
 
+    <bean id="aggregateWorkForFileProcessor" class="edu.unc.lib.boxc.services.camel.solrUpdate.AggregateUpdateProcessor">
+        <property name="indexingMessageSender" ref="indexingMessageSender" />
+        <property name="actionType" value="UPDATE_WORK_FILES" />
+    </bean>
+
+    <bean id="orderedSetAggregationStrategy" class="edu.unc.lib.boxc.services.camel.util.OrderedSetAggregationStrategy"/>
+
     <camel:camelContext id="cdrServiceCdrEvents">
         <camel:package>edu.unc.lib.boxc.services.camel.cdrEvents</camel:package>
     </camel:camelContext>

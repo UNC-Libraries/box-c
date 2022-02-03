@@ -128,6 +128,7 @@
         <entry key="ADD" value-ref="updateObjectAction" />
         <entry key="UPDATE_DESCRIPTION" value-ref="updateDescriptionAction" />
         <entry key="UPDATE_DATASTREAMS" value-ref="updateDatastreamsAction" />
+        <entry key="UPDATE_WORK_FILES" value-ref="updateWorkFilesAction" />
         <entry key="UPDATE_FULL_TEXT" value-ref="updateFullTextAction" />
         <entry key="RECURSIVE_REINDEX" value-ref="indexTreeInplaceAction" />
         <entry key="RECURSIVE_ADD" value-ref="updateTreeAction" />
@@ -161,10 +162,13 @@
     
     <bean id="solrSmallUpdateProcessor" class="edu.unc.lib.boxc.services.camel.solrUpdate.SolrUpdateProcessor">
         <property name="solrIndexingActionMap" ref="solrIndexingActionMap"/>
+        <property name="updateWorkSender" ref="updateWorkSender" />
+        <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
     </bean>
     
     <bean id="solrLargeUpdateProcessor" class="edu.unc.lib.boxc.services.camel.solrUpdate.SolrUpdateProcessor">
         <property name="solrIndexingActionMap" ref="solrIndexingActionMap"/>
+        <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
     </bean>
     
     <bean id="cacheInvalidatingProcessor" class="edu.unc.lib.boxc.services.camel.util.CacheInvalidatingProcessor">
@@ -174,8 +178,23 @@
     
     <bean id="solrUpdatePreprocessor" class="edu.unc.lib.boxc.services.camel.solrUpdate.SolrUpdatePreprocessor">
     </bean>
-    
-    <bean id="bodyListAggregationStrategy" class="edu.unc.lib.boxc.services.camel.util.BodyListAggregationStrategy"/>
+
+    <bean id="aggregateWorkForFileProcessor" class="edu.unc.lib.boxc.services.camel.solrUpdate.AggregateUpdateProcessor">
+        <property name="indexingMessageSender" ref="indexingMessageSender" />
+        <property name="actionType" value="UPDATE_WORK_FILES" />
+    </bean>
+
+    <bean id="updateWorkJmsTemplate" class="org.springframework.jms.core.JmsTemplate">
+        <property name="connectionFactory" ref="jmsFactory" />
+        <property name="defaultDestinationName" value="${cdr.solrupdate.workObject.fileUpdated}" />
+        <property name="pubSubDomain" value="false" />
+    </bean>
+
+    <bean id="updateWorkSender" class="edu.unc.lib.boxc.operations.jms.MessageSender">
+        <property name="jmsTemplate" ref="updateWorkJmsTemplate" />
+    </bean>
+
+    <bean id="orderedSetAggregationStrategy" class="edu.unc.lib.boxc.services.camel.util.OrderedSetAggregationStrategy"/>
         
     <camel:camelContext id="cdrServiceSolrUpdate">
         <camel:package>edu.unc.lib.boxc.services.camel.solrUpdate</camel:package>

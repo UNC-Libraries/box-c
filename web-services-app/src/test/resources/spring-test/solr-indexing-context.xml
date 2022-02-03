@@ -204,6 +204,7 @@
     </bean>
 
     <bean id="setContentTypeFilter" class="edu.unc.lib.boxc.indexing.solr.filter.SetContentTypeFilter">
+        <property name="solrSearchService" ref="solrSearchService" />
     </bean>
 
     <bean id="setDatastreamFilter"

@@ -95,6 +95,7 @@ public class SolrUpdatePreprocessor implements Processor {
                     IndexingActionType.UPDATE_ACCESS,
                     IndexingActionType.UPDATE_PATH,
                     IndexingActionType.UPDATE_DATASTREAMS,
+                    IndexingActionType.UPDATE_WORK_FILES,
                     IndexingActionType.UPDATE_FULL_TEXT,
                     IndexingActionType.COMMIT,
                     IndexingActionType.DELETE);

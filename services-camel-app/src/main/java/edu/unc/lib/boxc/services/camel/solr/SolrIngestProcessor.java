@@ -23,6 +23,7 @@ import static org.fcrepo.camel.FcrepoHeaders.FCREPO_URI;
 import java.util.ArrayList;
 import java.util.List;
 
+import edu.unc.lib.boxc.operations.jms.MessageSender;
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
 import org.apache.camel.Processor;
@@ -58,6 +59,7 @@ public class SolrIngestProcessor implements Processor {
     private DocumentIndexingPipeline pipeline;
     private SolrUpdateDriver solrUpdateDriver;
     private RepositoryObjectLoader repoObjLoader;
+    private MessageSender updateWorkSender;
 
     public SolrIngestProcessor(DocumentIndexingPackageFactory factory,
             DocumentIndexingPipeline pipeline, SolrUpdateDriver solrUpdateDriver,
@@ -80,14 +82,15 @@ public class SolrIngestProcessor implements Processor {
             PID targetPid = PIDs.get(fcrepoUri);
             String resourceTypes = (String) in.getHeader(RESOURCE_TYPE);
 
+            PID grandParentWorkPid = null;
             // for binaries, need to index the file and work objects which contain it
             if (resourceTypes != null && resourceTypes.contains(Fcrepo4Repository.Binary.getURI())) {
                 targetPid = PIDs.get(targetPid.getId());
                 FileObject parentFile = repoObjLoader.getFileObject(targetPid);
                 RepositoryObject grandParent = parentFile.getParent();
-                // Index both the parent file and work
+                // Trigger indexing of the work containing this file object
                 if (grandParent instanceof WorkObject) {
-                    targetPids.add(grandParent.getPid());
+                    grandParentWorkPid = grandParent.getPid();
                 }
             }
 
@@ -104,6 +107,15 @@ public class SolrIngestProcessor implements Processor {
                 pipeline.process(dip);
                 solrUpdateDriver.addDocument(dip.getDocument());
             }
+
+            if (grandParentWorkPid != null) {
+                log.debug("Requesting indexing of work {} containing file {}", grandParentWorkPid.getId(), targetPid);
+                updateWorkSender.sendMessage(grandParentWorkPid.getQualifiedId());
+            }
         }
+    }
+
+    public void setUpdateWorkSender(MessageSender updateWorkSender) {
+        this.updateWorkSender = updateWorkSender;
     }
 }
