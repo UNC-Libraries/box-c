@@ -2,7 +2,7 @@ import { shallowMount } from '@vue/test-utils'
 import '@testing-library/jest-dom'
 import staffRoles from '@/components/staffRoles.vue'
 import moxios from "moxios";
-import { createStore } from "vuex";
+import store from '../../src/store';
 
 const response = {
     inherited: { roles: [{ principal: 'test_admin', role: 'administrator' }] },
@@ -25,60 +25,12 @@ const metadata = () => {
 let wrapper;
 
 describe('staffRoles.vue', () => {
-    beforeEach(async () => {
+    beforeEach(() => {
         moxios.install();
 
-        const store = createStore({
-            state () {
-                return {
-                    actionHandler: { addEvent: jest.fn() },
-                    alertHandler: { alertHandler: jest.fn() },
-                    checkForUnsavedChanges: false,
-                    embargoInfo: {
-                        embargo: null,
-                        skipEmbargo: true
-                    },
-                    metadata: metadata(),
-                    permissionType: '',
-                    resultObject: {},
-                    resultObjects: [],
-                    showModal: false,
-                    staffRole: {}
-                }
-            },
-            mutations: {
-                setActionHandler (state, actionHandler) {
-                    state.actionHandler = actionHandler;
-                },
-                setAlertHandler (state, alertHandler) {
-                    state.alertHandler = alertHandler;
-                },
-                setCheckForUnsavedChanges (state, unsavedChanges) {
-                    state.checkForUnsavedChanges = unsavedChanges;
-                },
-                setEmbargoInfo (state, embargoInfo) {
-                    state.embargoInfo = embargoInfo;
-                },
-                setMetadata (state, metadata) {
-                    state.metadata = metadata;
-                },
-                setPermissionType (state, permissionType) {
-                    state.permissionType = permissionType;
-                },
-                setResultObject (state, resultObject) {
-                    state.resultObject = resultObject;
-                },
-                setResultObjects (state, resultObjects) {
-                    state.resultObjects = resultObjects;
-                },
-                setShowModal (state, showModal) {
-                    state.showModal = showModal;
-                },
-                setStaffRole (state, staffRole) {
-                    state.staffRole = staffRole;
-                }
-            }
-        });
+        store.commit('setActionHandler', { addEvent: jest.fn() });
+        store.commit('setAlertHandler', { alertHandler: jest.fn() });
+        store.commit('setMetadata', metadata());
 
         wrapper = shallowMount(staffRoles, {
             global: {
@@ -171,44 +123,27 @@ describe('staffRoles.vue', () => {
     });
 
     it("displays names of containers that roles are assigned to in inherited table", (done) => {
-        const store = createStore({
-            state () {
-                return {
-                    metadata: {
-                        id: '4f2be243-ce9e-4f26-91fc-08f1b592734d',
-                        title: 'Some Subfolder',
-                        type: 'Folder',
-                        objectPath: [{
-                            pid: 'collections',
-                            name: 'Content Collections Root',
-                            container: true
-                        }, {
-                            pid: '73bc003c-9603-4cd9-8a65-93a22520ef6a',
-                            name: 'Test Unit',
-                            container: true
-                        }, {
-                            pid: 'f88ff51e-7e74-4e0e-9ab9-259444393aeb',
-                            name: 'Test Collection',
-                            container: true
-                        }, {
-                            pid: '4f2be243-ce9e-4f26-91fc-08f1b592734d',
-                            name: 'Some Subfolder',
-                            container: true
-                        }]
-                    }
-                }
-            },
-            mutations: {
-                setMetadata (state, staffRole) {
-                    state.staffRole = staffRole;
-                }
-            }
-        });
-        wrapper = shallowMount(staffRoles, {
-            global: {
-                plugins: [store]
-            }
-
+        wrapper.vm.$store.commit('setMetadata', {
+            id: '4f2be243-ce9e-4f26-91fc-08f1b592734d',
+            title: 'Some Subfolder',
+            type: 'Folder',
+            objectPath: [{
+                pid: 'collections',
+                name: 'Content Collections Root',
+                container: true
+            }, {
+                pid: '73bc003c-9603-4cd9-8a65-93a22520ef6a',
+                name: 'Test Unit',
+                container: true
+            }, {
+                pid: 'f88ff51e-7e74-4e0e-9ab9-259444393aeb',
+                name: 'Test Collection',
+                container: true
+            }, {
+                pid: '4f2be243-ce9e-4f26-91fc-08f1b592734d',
+                name: 'Some Subfolder',
+                container: true
+            }]
         });
 
         const response = {

@@ -1,7 +1,7 @@
 import {shallowMount} from '@vue/test-utils';
 import patronRoles from '@/components/patronRoles.vue';
 import moxios from 'moxios';
-import {createStore} from 'vuex';
+import store from '../../src/store';
 
 const UUID = '73bc003c-9603-4cd9-8a65-93a22520ef6a';
 const embargo_date = '2099-01-01';
@@ -54,7 +54,11 @@ let wrapper, selects;
 describe('patronRoles.vue', () => {
     beforeEach(() => {
         moxios.install();
-        const store = instantiateStore();
+
+        store.commit('setActionHandler', { addEvent: jest.fn() });
+        store.commit('setAlertHandler', { alertHandler: jest.fn() });
+        store.commit('setMetadata', { id: UUID, type: 'Folder', deleted: false, embargo: null });
+
         wrapper = shallowMount(patronRoles, {
             global: {
                 plugins: [store]
@@ -1276,13 +1280,8 @@ describe('patronRoles.vue', () => {
     ];
 
     function mountBulk(resultObjects) {
-        const store = instantiateStore(resultObjects);
-        wrapper = shallowMount(patronRoles, {
-            global: {
-                plugins: [store]
-            }
-        });
-        wrapper.vm.$store.commit('setMetadata', { type: null, id: null });
+        store.commit('setResultObjects', resultObjects);
+        store.commit('setMetadata', { type: null, id: null });
     }
 
     afterEach(() => {
@@ -1325,58 +1324,5 @@ describe('patronRoles.vue', () => {
         } else {
             expect(disabledValue).not.toHaveProperty('disabled');
         }
-    }
-
-    function instantiateStore(resultObjects = []) {
-        return createStore({
-            state () {
-                return {
-                    actionHandler: { addEvent: jest.fn() },
-                    alertHandler: { alertHandler: jest.fn() },
-                    checkForUnsavedChanges: false,
-                    embargoInfo: {
-                        embargo: null,
-                        skipEmbargo: true
-                    },
-                    metadata: { id: UUID, type: 'Folder', deleted: false, embargo: null },
-                    permissionType: '',
-                    resultObject: {},
-                    resultObjects: resultObjects,
-                    showModal: false
-                }
-            },
-            mutations: {
-                setActionHandler (state, actionHandler) {
-                    state.actionHandler = actionHandler;
-                },
-                setAlertHandler (state, alertHandler) {
-                    state.alertHandler = alertHandler;
-                },
-                setCheckForUnsavedChanges (state, unsavedChanges) {
-                    state.checkForUnsavedChanges = unsavedChanges;
-                },
-                setEmbargoError (state, embargoError) {
-                    state.embargoError = embargoError;
-                },
-                setEmbargoInfo (state, embargoInfo) {
-                    state.embargoInfo = embargoInfo;
-                },
-                setMetadata (state, metadata) {
-                    state.metadata = metadata;
-                },
-                setPermissionType (state, permissionType) {
-                    state.permissionType = permissionType;
-                },
-                setResultObject (state, resultObject) {
-                    state.resultObject = resultObject;
-                },
-                setResultObjects (state, resultObjects) {
-                    state.resultObjects = resultObjects;
-                },
-                setShowModal (state, showModal) {
-                    state.showModal = showModal;
-                }
-            }
-        });
     }
 });

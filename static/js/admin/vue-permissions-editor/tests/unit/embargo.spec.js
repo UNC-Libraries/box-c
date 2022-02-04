@@ -1,7 +1,7 @@
 import { shallowMount } from '@vue/test-utils';
 import embargo from '@/components/embargo.vue';
 import { addYears, format } from 'date-fns';
-import {createStore} from 'vuex';
+import store from '../../src/store';
 
 const testDate = '2099-01-01';
 let embargo_from_server = {
@@ -11,35 +11,12 @@ let embargo_from_server = {
 };
 
 let wrapper;
-let store;
 let inputs;
 
 describe('embargo.vue', () => {
     beforeEach(async () => {
-        store = createStore({
-            state () {
-                return {
-                    alertHandler: {
-                        alertHandler: jest.fn()
-                    },
-                    embargoInfo: {
-                        embargo: null,
-                        skipEmbargo: true
-                    }
-                }
-            },
-            mutations: {
-                setActionHandler (state, actionHandler) {
-                    state.actionHandler = actionHandler;
-                },
-                setCheckForUnsavedChanges (state, unsavedChanges) {
-                    state.checkForUnsavedChanges = unsavedChanges;
-                },
-                setEmbargoInfo (state, embargoInfo) {
-                    state.embargoInfo = embargoInfo;
-                }
-            }
-        });
+        store.commit('setAlertHandler', { alertHandler: jest.fn() });
+
         wrapper = shallowMount(embargo, {
             props: {
                 isDeleted: false
@@ -52,10 +29,6 @@ describe('embargo.vue', () => {
         await wrapper.vm.$nextTick();
         inputs = wrapper.findAll('input');
         global.confirm = jest.fn().mockReturnValue(true);
-    });
-
-    afterEach(() => {
-        store = null;
     });
 
     it("sets an embargo if one is returned from the server", async () => {

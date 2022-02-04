@@ -1,24 +1,11 @@
 import { shallowMount } from '@vue/test-utils';
 import staffRolesSelect from '@/components/staffRolesSelect.vue';
-import {createStore} from "vuex";
+import store from '../../src/store';
 
 let wrapper;
 
 describe('staffRolesSelect.vue', () => {
     beforeEach(() => {
-        const store = createStore({
-            state () {
-                return {
-                    staffRole: {}
-                }
-            },
-            mutations: {
-                setStaffRole (state, staffRole) {
-                    state.staffRole = staffRole;
-                }
-            }
-        });
-
         wrapper = shallowMount(staffRolesSelect, {
             props: {
                 areDeleted: [],
