@@ -27,8 +27,11 @@
         },
 
         watch: {
-            user(updated_user) {
-                this.selected_role = updated_user.role;
+            user: {
+                handler(updated_user) {
+                    this.selected_role = updated_user.role;
+                },
+                deep: true
             }
         },
 
@@ -46,11 +49,8 @@
 
         methods: {
            selectedValue() {
-               this.$emit('staff-role-update', { principal: this.user.principal, role: this.selected_role });
+               this.$store.commit('setStaffRole', { principal: this.user.principal, role: this.selected_role });
            }
         }
     }
 </script>
-
-<style scoped lang="scss">
-</style>

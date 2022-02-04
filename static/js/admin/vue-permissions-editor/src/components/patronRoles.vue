@@ -74,10 +74,8 @@
         </ul>
 
         <embargo ref="embargoInfo"
-                 :current-embargo="embargo"
                  :is-deleted="isDeleted"
-                 :is-bulk-mode="isBulkMode"
-                 @embargo-info="setEmbargo">
+                 :is-bulk-mode="isBulkMode">
         </embargo>
 
         <ul class="submit-btn-options">
@@ -100,6 +98,7 @@
     import patronHelpers from '../mixins/patronHelpers';
     import axios from 'axios';
     import cloneDeep from 'lodash.clonedeep';
+    import { mapState } from 'vuex';
 
     const EVERYONE_PRINCIPAL = 'everyone';
     const AUTH_PRINCIPAL = 'authenticated';
@@ -133,39 +132,37 @@
 
         mixins: [displayModal, patronHelpers],
 
-        props: {
-            actionHandler: Object,
-            alertHandler: Object,
-            changesCheck: Boolean,
-            containerType: String,
-            resultObject: Object,
-            resultObjects: Array,
-            title: String,
-            uuid: String
-        },
-
-        created() {
-            // Initialize non-reactive variables
-            this.inherited = initialRoles();
-        },
-
         data() {
             return {
                 allowed_principals: [],
                 selected_patron_assignments: [],
-                embargo: null,
-                skip_embargo: true,
                 deleted: false,
                 new_assignment_role: VIEW_ORIGINAL_ROLE,
                 new_assignment_principal: '',
                 user_type: null,
                 should_show_add_principal: false,
                 saved_details: null,
-                bulk_has_saved: false
+                bulk_has_saved: false,
+                inherited: initialRoles()
             }
         },
 
         computed: {
+            // Get needed state from Vuex
+            ...mapState({
+                alertHandler: state => state.alertHandler,
+                actionHandler: state => state.actionHandler,
+                changesCheck: state => state.checkForUnsavedChanges,
+                containerType: state => state.metadata.type,
+                embargo: state => state.embargoInfo.embargo,
+                skipEmbargo: state => state.embargoInfo.skipEmbargo,
+                resultObject: state => state.resultObject,
+                resultObjects: state => state.resultObjects,
+                objectPath: state => state.metadata.objectPath,
+                title: state => state.metadata.title,
+                uuid: state => state.metadata.id
+            }),
+
             possibleRoles() {
                 return this.possibleRoleList(this.containerType);
             },
@@ -206,7 +203,7 @@
                         .map(princ => ({ principal: princ, role: STAFF_ONLY_ROLE, assignedTo: this.uuid }));
                 } else {
                     return this.selected_patron_assignments
-                               .map(pa => ({ principal: pa.principal, role: pa.role, assignedTo: this.uuid }));
+                        .map(pa => ({ principal: pa.principal, role: pa.role, assignedTo: this.uuid }));
                 }
             },
 
@@ -264,7 +261,7 @@
 
             saveChangesAllowed() {
                 if (this.isBulkMode) {
-                    return !this.bulk_has_saved && !(this.user_type === ACCESS_TYPE_IGNORE && this.skip_embargo === true);
+                    return !this.bulk_has_saved && !(this.user_type === ACCESS_TYPE_IGNORE && this.skipEmbargo === true);
                 }
                 return this.hasUnsavedChanges;
             },
@@ -299,7 +296,10 @@
                     return;
                 }
                 axios.get(`/services/api/acl/patron/${this.uuid}`).then((response) => {
-                    this.embargo = response.data.assigned.embargo;
+                    this.$store.commit('setEmbargoInfo', {
+                        embargo: response.data.assigned.embargo,
+                        skipEmbargo: true
+                    });
                     this._initializeInherited(response.data.inherited);
                     this.deleted = response.data.assigned.deleted;
                     this._initializeSelectedAssignments(response.data.assigned.roles);
@@ -453,7 +453,7 @@
                 let bulkDetails = {
                     ids: this.resultObjects.map(ro => ro.pid),
                     accessDetails: submissionDetails,
-                    skipEmbargo: this.skip_embargo,
+                    skipEmbargo: this.skipEmbargo,
                     skipRoles: skipRoles
                 };
 
@@ -573,20 +573,6 @@
                 }
 
                 return role;
-            },
-
-            /**
-             * Updates embargo for display and submit roles based on emitted event from embargo component
-             * @param embargo_info
-             */
-            setEmbargo(embargo_info) {
-                if (embargo_info === null) {
-                    this.embargo = null;
-                    this.skip_embargo = true;
-                } else {
-                    this.embargo = embargo_info.embargo;
-                    this.skip_embargo = embargo_info.skip_embargo;
-                }
             },
 
             /**

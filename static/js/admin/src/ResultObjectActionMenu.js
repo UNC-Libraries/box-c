@@ -237,10 +237,6 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'A
 			items["staffPermissions"] = {name : 'Staff permissions'};
 		}
 
-
-		// Get data object for vue permissions editor
-		var perms_editor_data = perms_editor.$children[0].$children[0].$data;
-
 		return {
 			callback: function(key, options) {
 				switch (key) {
@@ -429,19 +425,19 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'A
 						})();
 						break;
 					case "patronPermissions":
-						perms_editor_data.permissionType = 'Patron';
-						perms_editor_data.metadata = metadata;
-						perms_editor_data.showModal = true;
-						perms_editor_data.alertHandler = self.options.alertHandler;
-						perms_editor_data.actionHandler = self.actionHandler;
-						perms_editor_data.resultObject = resultObject;
-						perms_editor_data.resultObjects = null;
+						perms_editor_store.commit('setPermissionType', 'Patron');
+						perms_editor_store.commit('setMetadata', metadata);
+						perms_editor_store.commit('setShowModal', true);
+						perms_editor_store.commit('setAlertHandler', self.options.alertHandler);
+						perms_editor_store.commit('setActionHandler', self.actionHandler);
+						perms_editor_store.commit('setResultObject', resultObject);
+						perms_editor_store.commit('setResultObjects', null);
 						break;
 					case "staffPermissions":
-						perms_editor_data.permissionType = 'Staff';
-						perms_editor_data.metadata = metadata;
-						perms_editor_data.showModal = true;
-						perms_editor_data.alertHandler = self.options.alertHandler;
+						perms_editor_store.commit('setPermissionType', 'Staff');
+						perms_editor_store.commit('setMetadata', metadata);
+						perms_editor_store.commit('setShowModal', true);
+						perms_editor_store.commit('setAlertHandler', self.options.alertHandler);
 						break;
 				}
 			},

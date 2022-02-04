@@ -1,17 +1,19 @@
-import { createLocalVue, shallowMount } from '@vue/test-utils';
+import { shallowMount } from '@vue/test-utils';
 import staffRolesSelect from '@/components/staffRolesSelect.vue';
+import store from '../../src/store';
 
-const localVue = createLocalVue();
 let wrapper;
 
 describe('staffRolesSelect.vue', () => {
     beforeEach(() => {
         wrapper = shallowMount(staffRolesSelect, {
-            localVue,
-            propsData: {
+            props: {
                 areDeleted: [],
                 containerType: 'Collection',
                 user: { principal: 'test_user', role: 'canAccess' }
+            },
+            global: {
+                plugins: [store]
             }
         });
     });
@@ -21,8 +23,8 @@ describe('staffRolesSelect.vue', () => {
         expect(select.element.value).toEqual('canAccess');
     });
 
-    it("emits an event with updated user role when user role changes", () => {
-        wrapper.findAll('option').at(2).setSelected();
-        expect(wrapper.emitted()['staff-role-update'][0]).toEqual([{ principal: 'test_user', role: 'canDescribe' }]);
+    it("updates data store with updated user role when user role changes", () => {
+        wrapper.findAll('option')[2].setSelected();
+        expect(wrapper.vm.$store.state.staffRole).toEqual({ principal: 'test_user', role: 'canDescribe' });
     });
 });
