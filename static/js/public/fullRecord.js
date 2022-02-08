@@ -11,7 +11,6 @@ require.config({
 		'StructureEntry' : 'cdr-access',
 		'StructureView' : 'cdr-access',
 		'JP2Viewer' : 'cdr-access',
-		'VideoPlayer' : 'cdr-access',
 		'AudioPlayer' : 'cdr-access',
 		'dataTables': '/static/plugins/DataTables/datatables.min',
 		'uvOffline': '/static/plugins/uv/lib/offline',
@@ -35,8 +34,6 @@ require.config({
 define('fullRecord', ['module', 'jquery', 'JP2Viewer', 'StructureView', 'dataTables', 'AudioPlayer', 'thumbnails'], function(module, $) {
 	var $jp2Window = $(".jp2_imageviewer_window"),
 		$audioPlayer = $(".audio_player"),
-		$videoPlayer = $(".video_player"),
-		$structureView = $(".structure.aggregate"),
 		$childFilesTable = $("#child-files"),
 		$modsDisplay = $("#mods_data_display");
 
@@ -55,27 +52,6 @@ define('fullRecord', ['module', 'jquery', 'JP2Viewer', 'StructureView', 'dataTab
 		loadViewer($audioPlayer, 'audioPlayer');
 	}
 
-	if ($structureView.length > 0) {
-		$.ajax({
-			url: "/structure/" + $structureView.attr('data-pid') + "/json?files=true",
-			dataType : 'json',
-			success: function(data){
-				$structureView.structureView({
-					hideRoot : true,
-					showResourceIcons : true,
-					showParentLink : false,
-					rootNode : data.root,
-					queryPath : 'list',
-					secondaryActions : true,
-					seeAllLinks : false,
-					excludeIds : $structureView.attr('data-exclude')
-				});
-			},
-			error: function(e){
-				console.log("Failed to load", e);
-			}
-		});
-	}
 
 	if ($modsDisplay.length > 0) {
 		$.ajax({
