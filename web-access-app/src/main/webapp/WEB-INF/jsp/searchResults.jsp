@@ -17,24 +17,5 @@
 --%>
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ page trimDirectiveWhitespaces="true" %>
-<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
-<%@ taglib prefix="cdr" uri="http://cdr.lib.unc.edu/cdrUI"%>
-<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %> 
-
-<div>
-<c:set var="searchState" scope="request" value="${resultResponse.searchState}"/>
-<c:set var="facetFields" scope="request" value="${resultResponse.facetFields}"/>
-<c:set var="selectedContainer" scope="request" value="${resultResponse.selectedContainer}"/>
-<c:set var="resultCount" scope="request" value="${resultResponse.resultCount}"/>
-<c:import url="searchResults/resultsPage.jsp"/>
-<script>
-	var require = {
-		config: {
-			'searchResults' : {
-				'filterParams' : '${cdr:urlEncode(searchQueryUrl)}'
-			},
-		}
-	};
-</script>
-<script type="text/javascript" src="/static/js/lib/require.js" data-main="/static/js/public/searchResults"></script>
-</div>
+<div id="app"></div>
+<script src="static/js/vue-access.js"></script>
