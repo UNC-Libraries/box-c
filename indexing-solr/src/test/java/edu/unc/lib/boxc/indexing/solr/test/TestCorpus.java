@@ -15,6 +15,7 @@
  */
 package edu.unc.lib.boxc.indexing.solr.test;
 
+import static edu.unc.lib.boxc.model.api.DatastreamType.ORIGINAL_FILE;
 import static edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPaths.getContentRootPid;
 
 import java.util.ArrayList;
@@ -23,6 +24,11 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import edu.unc.lib.boxc.indexing.solr.utils.ContentTypeUtils;
+import edu.unc.lib.boxc.model.api.DatastreamType;
+import edu.unc.lib.boxc.model.api.ResourceType;
+import edu.unc.lib.boxc.search.api.ContentCategory;
+import edu.unc.lib.boxc.search.api.SearchFieldKey;
 import org.apache.solr.common.SolrInputDocument;
 
 import edu.unc.lib.boxc.model.api.ids.PID;
@@ -50,6 +56,7 @@ public class TestCorpus {
     public PID pid4;
     public PID pid5;
     public PID pid6;
+    public PID pid6File;
     public PID nonExistentPid;
 
     public TestCorpus() {
@@ -59,6 +66,7 @@ public class TestCorpus {
         pid4 = makePid();
         pid5 = makePid();
         pid6 = makePid();
+        pid6File = makePid();
         nonExistentPid = makePid();
     }
 
@@ -114,6 +122,24 @@ public class TestCorpus {
 
         newDoc = new SolrInputDocument();
         newDoc.addField("title", "File");
+        newDoc.addField("id", pid6File.getId());
+        newDoc.addField("rollup", pid6.getId());
+        newDoc.addField("roleGroup", "public admin");
+        newDoc.addField("readGroup", "public");
+        newDoc.addField("adminGroup", "admin");
+        newDoc.addField("ancestorIds", makeAncestorIds(pid1, pid2, pid6));
+        newDoc.addField("ancestorPath", makeAncestorPath(pid1, pid2, pid6));
+        newDoc.addField("resourceType", ResourceType.File.name());
+        List<String> imgDatastreams = Arrays.asList(
+                ORIGINAL_FILE.getId() + "|image/png|file.png|png|766|urn:sha1:checksum|",
+                DatastreamType.THUMBNAIL_LARGE.getId() + "|image/png|thumb|png|55||");
+        newDoc.addField(SearchFieldKey.DATASTREAM.getSolrField(), imgDatastreams);
+        newDoc.addField(SearchFieldKey.CONTENT_TYPE.getSolrField(),
+                ContentTypeUtils.constructContentTypeFacets(ContentCategory.image, "png"));
+        docs.add(newDoc);
+
+        newDoc = new SolrInputDocument();
+        newDoc.addField("title", "Work");
         newDoc.addField("id", pid6.getId());
         newDoc.addField("rollup", pid6.getId());
         newDoc.addField("roleGroup", "public admin");
@@ -121,7 +147,12 @@ public class TestCorpus {
         newDoc.addField("adminGroup", "admin");
         newDoc.addField("ancestorIds", makeAncestorIds(pid1, pid2));
         newDoc.addField("ancestorPath", makeAncestorPath(pid1, pid2));
-        newDoc.addField("resourceType", "File");
+        newDoc.addField("resourceType", ResourceType.Work.name());
+        imgDatastreams.set(0, imgDatastreams.get(0) + pid6File.getId());
+        imgDatastreams.set(1, imgDatastreams.get(1) + pid6File.getId());
+        newDoc.addField(SearchFieldKey.DATASTREAM.getSolrField(), imgDatastreams);
+        newDoc.addField(SearchFieldKey.CONTENT_TYPE.getSolrField(),
+                ContentTypeUtils.constructContentTypeFacets(ContentCategory.image, "png"));
         docs.add(newDoc);
 
         newDoc = new SolrInputDocument();

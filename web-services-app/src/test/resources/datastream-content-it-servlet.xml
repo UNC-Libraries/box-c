@@ -48,4 +48,15 @@
     <bean id="analyticsTracker" class="org.mockito.Mockito" factory-method="mock">
         <constructor-arg value="edu.unc.lib.boxc.web.common.utils.AnalyticsTrackerUtil" />
     </bean>
+
+    <bean id="globalPermissionEvaluator" class="org.mockito.Mockito" factory-method="mock">
+        <constructor-arg value="edu.unc.lib.boxc.auth.api.services.GlobalPermissionEvaluator" />
+    </bean>
+
+    <bean id="accessCopiesService" class="edu.unc.lib.boxc.web.common.services.AccessCopiesService">
+        <property name="accessRestrictionUtil" ref="solrAccessRestrictionUtil" />
+        <property name="facetFieldUtil" ref="facetFieldUtil" />
+        <property name="globalPermissionEvaluator" ref="globalPermissionEvaluator" />
+        <property name="solrClient" ref="solrClient" />
+    </bean>
 </beans>

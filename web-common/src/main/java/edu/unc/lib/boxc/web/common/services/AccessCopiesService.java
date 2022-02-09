@@ -41,6 +41,8 @@ import edu.unc.lib.boxc.search.api.requests.SimpleIdRequest;
 import edu.unc.lib.boxc.search.solr.models.ContentObjectSolrRecord;
 import edu.unc.lib.boxc.search.solr.services.SolrSearchService;
 import edu.unc.lib.boxc.web.common.utils.DatastreamUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Service to check for or list resources with access copies
@@ -48,6 +50,8 @@ import edu.unc.lib.boxc.web.common.utils.DatastreamUtil;
  * @author bbpennel
  */
 public class AccessCopiesService extends SolrSearchService {
+    private static final Logger log = LoggerFactory.getLogger(AccessCopiesService.class);
+
     private static final int MAX_FILES = 2000;
     private GlobalPermissionEvaluator globalPermissionEvaluator;
     private PermissionsHelper permissionsHelper;
@@ -188,15 +192,18 @@ public class AccessCopiesService extends SolrSearchService {
         // Find thumbnail datastream recorded directly on the object, if present
         var thumbId = DatastreamUtil.getThumbnailOwnerId(contentObjectRecord);
         if (thumbId != null) {
+            log.debug("Found thumbnail object directly assigned to object {}", thumbId);
             return thumbId;
         }
         // Don't need to check any further if object isn't a work or doesn't contain files with thumbnails
         if (!ResourceType.Work.name().equals(contentObjectRecord.getResourceType())
                 || contentObjectRecord.getContentType() == null
                 || !contentObjectRecord.getContentType().contains(IMAGE_CONTENT_TYPE)) {
+            log.debug("Record {} is not applicable for a thumbnail", contentObjectRecord.getId());
             return null;
         }
         if (!checkChildren) {
+            log.debug("Not checking children for work {}, so using self as thumbnail id", contentObjectRecord.getId());
             return contentObjectRecord.getId();
         }
 
@@ -209,8 +216,11 @@ public class AccessCopiesService extends SolrSearchService {
             QueryResponse resp = executeQuery(query);
             if (resp.getResults().getNumFound() > 0) {
                 var results = resp.getBeans(ContentObjectSolrRecord.class);
+                var id = results.get(0).getId();
+                log.debug("Found thumbnail object {} for work {}", id, contentObjectRecord.getId());
                 return results.get(0).getId();
             } else {
+                log.debug("No thumbnail objects for work {}", contentObjectRecord.getId());
                 return null;
             }
         } catch (SolrServerException e) {

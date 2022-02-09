@@ -17,6 +17,7 @@ package edu.unc.lib.boxc.indexing.solr.filter;
 
 import edu.unc.lib.boxc.indexing.solr.exception.IndexingException;
 import edu.unc.lib.boxc.indexing.solr.indexing.DocumentIndexingPackage;
+import edu.unc.lib.boxc.indexing.solr.utils.ContentTypeUtils;
 import edu.unc.lib.boxc.model.api.ResourceType;
 import edu.unc.lib.boxc.model.api.objects.BinaryObject;
 import edu.unc.lib.boxc.model.api.objects.FileObject;
@@ -141,17 +142,7 @@ public class SetContentTypeFilter implements IndexDocumentFilter {
     private void extractContentType(String filepath, String mimetype, List<String> contentTypes) {
         String extension = getExtension(filepath, mimetype);
         ContentCategory contentCategory = getContentCategory(mimetype, extension);
-        // add string with name + display-name to list of content types
-        contentTypes.add('^' + contentCategory.getJoined());
-        StringBuilder contentType = new StringBuilder();
-        contentType.append('/').append(contentCategory.name()).append('^');
-        if (extension == null) {
-            contentType.append("unknown,unknown");
-        } else {
-            contentType.append(extension).append(',').append(extension);
-        }
-        // add string with content category name + extension to list of content types
-        contentTypes.add(contentType.toString());
+        ContentTypeUtils.addContentTypeFacets(contentCategory, extension, contentTypes);
     }
 
     private ContentCategory getContentCategory(String mimetype, String extension) {

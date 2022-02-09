@@ -117,7 +117,7 @@ public class DeleteSolrTreeTest extends BaseEmbeddedSolrTest {
 
         SolrDocumentList docListAfter = getDocumentList();
 
-        assertEquals(6, docListAfter.getNumFound());
+        assertEquals(7, docListAfter.getNumFound());
     }
 
     @Test
