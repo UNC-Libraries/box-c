@@ -55,7 +55,7 @@
 	<sch:pattern>
 		<sch:title>Collection Number</sch:title>
 		<sch:rule context="mods:identifier[@displayLabel='Collection Number' and @type='local']">
-			<sch:assert test="matches(.,'^[0-9]{5}$') or matches(.,'^[0-9]{5}-z$')">Collection Number must be a 5 digit number or 5 digit number followed by -z.</sch:assert>
+			<sch:assert test="matches(.,'^[0-9a-zA-Z_\\-]{5}[0-9a-zA-Z_\\-]*$')">Collection Number must contain only letters, numbers or the - character, and be at least 5 characters long.</sch:assert>
 		</sch:rule>
 	</sch:pattern>
 
