@@ -83,9 +83,8 @@ public class SolrSearchService extends AbstractQueryService {
     /**
      * Retrieves the Solr tuple representing the object identified by id.
      *
-     * @param id
+     * @param idRequest
      *           identifier (uuid) of the object to retrieve.
-     * @param userAccessGroups
      * @return
      */
     public ContentObjectRecord getObjectById(SimpleIdRequest idRequest) {
@@ -306,16 +305,14 @@ public class SolrSearchService extends AbstractQueryService {
      * facet results in addition to search results.
      *
      * @param searchRequest
-     * @param isRetrieveFacetsRequest
      * @return
      */
     public SolrQuery generateSearch(SearchRequest searchRequest) {
         SearchState searchState = searchRequest.getSearchState();
         SolrQuery solrQuery = new SolrQuery();
-        StringBuilder termQuery = new StringBuilder();
 
         // Generate search term query string
-        addSearchFields(searchState, termQuery);
+        addSearchFields(searchState, solrQuery);
 
         // Add role group limits based on the request's groups
         addPermissionLimits(searchState, searchRequest.getAccessGroups(), solrQuery);
@@ -324,8 +321,8 @@ public class SolrSearchService extends AbstractQueryService {
         addRangeFields(searchState, solrQuery);
 
         // No query terms given, make it an everything query
-        if (termQuery.length() == 0) {
-            termQuery.append("*:* ");
+        if (StringUtils.isEmpty(solrQuery.getQuery())) {
+            solrQuery.setQuery("*:*");
         }
 
         // Add access restrictions to query
@@ -336,9 +333,6 @@ public class SolrSearchService extends AbstractQueryService {
             LOG.debug("User had no access groups", e);
             return null;
         }
-
-        // Add query
-        solrQuery.setQuery(termQuery.toString());
 
         solrQuery.set("defType", "edismax");
         solrQuery.set("qf", DEFAULT_RELEVANCY_BOOSTS);
@@ -444,53 +438,51 @@ public class SolrSearchService extends AbstractQueryService {
         return solrQuery;
     }
 
+    private static final String ANYWHERE_FIELD = SearchFieldKey.DEFAULT_INDEX.getSolrField();
+
     /**
      * Add search fields from a search state to the given termQuery
      *
      * @param searchState
-     * @param termQuery
+     * @param solrQuery
      */
-    private void addSearchFields(SearchState searchState, StringBuilder termQuery) {
+    private void addSearchFields(SearchState searchState, SolrQuery solrQuery) {
         // Generate search term query string
-        String searchType = null;
-        Map<String, String> searchFields = searchState.getSearchFields();
-        if (searchFields != null) {
+        var searchFields = searchState.getSearchFields();
+        var searchOp = searchState.getSearchTermOperator();
+        if (searchFields != null && !searchFields.isEmpty()) {
             Iterator<String> searchTypeIt = searchFields.keySet().iterator();
             while (searchTypeIt.hasNext()) {
-                searchType = searchTypeIt.next();
+                String searchType = searchTypeIt.next();
                 String fieldValue = searchState.getSearchFields().get(searchType);
-                // Special "field exists" keyword
-                if ("*".equals(fieldValue)) {
-                    if (termQuery.length() > 0) {
-                        termQuery.append(" AND ");
-                    }
-                    termQuery.append(solrSettings.getFieldName(searchType)).append(":*");
+                String searchValue = computeSearchValue(searchType, fieldValue, searchOp);
+                if (searchValue == null) {
                     continue;
                 }
-                List<String> searchFragments = SolrSettings.getSearchTermFragments(fieldValue);
-                if (searchFragments != null && searchFragments.size() > 0) {
-                    if (termQuery.length() > 0) {
-                        termQuery.append(" AND ");
-                    }
-                    LOG.debug("{} : {}", searchType, searchFragments);
-                    // Search all fields when text field specified
-                    if ("text".equalsIgnoreCase(searchType)) {
-                        termQuery.append(solrSettings.getFieldName(searchType)).append(':');
-                    }
-                    termQuery.append('(');
-                    boolean firstTerm = true;
-                    for (String searchFragment : searchFragments) {
-                        if (firstTerm) {
-                            firstTerm = false;
-                        } else {
-                            termQuery.append(' ').append(searchState.getSearchTermOperator()).append(' ');
-                        }
-                        termQuery.append(searchFragment);
-                    }
-                    termQuery.append(')');
+                if (ANYWHERE_FIELD.equals(searchType)) {
+                    solrQuery.setQuery(searchValue);
+                    continue;
                 }
+                var fieldName = solrSettings.getFieldName(searchType);
+                solrQuery.addFilterQuery(fieldName + ":" + searchValue);
             }
         }
+    }
+
+    private String computeSearchValue(String searchType, String fieldValue, String searchTermOp) {
+        if ("*".equals(fieldValue)) {
+            return fieldValue;
+        }
+        var searchFragments = SolrSettings.getSearchTermFragments(fieldValue);
+        if (searchFragments == null || searchFragments.isEmpty()) {
+            return null;
+        }
+        String searchValue = String.join(' ' + searchTermOp + ' ', searchFragments);
+        if (searchFragments.size() > 1) {
+            searchValue = "(" + searchValue + ")";
+        }
+        LOG.debug("{} : {}", searchType, searchValue);
+        return searchValue;
     }
 
     /**
