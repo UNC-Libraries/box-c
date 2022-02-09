@@ -146,4 +146,11 @@ public interface ContentObjectRecord {
     public Date getActiveEmbargo();
 
     String getCollectionId();
+
+    /**
+     * @return ID of the object holding the thumbnail for this object, if one is present. Otherwise, null.
+     */
+    String getThumbnailId();
+
+    void setThumbnailId(String id);
 }

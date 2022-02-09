@@ -27,6 +27,7 @@ import edu.unc.lib.boxc.search.solr.responses.SearchResultResponse;
 import edu.unc.lib.boxc.search.solr.services.MultiSelectFacetListService;
 import edu.unc.lib.boxc.search.solr.services.ParentCollectionFacetTitleService;
 import edu.unc.lib.boxc.web.common.controllers.AbstractErrorHandlingSearchController;
+import edu.unc.lib.boxc.web.common.services.AccessCopiesService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -56,6 +57,8 @@ public class SearchActionController extends AbstractErrorHandlingSearchControlle
     private MultiSelectFacetListService multiSelectFacetListService;
     @Autowired
     private ParentCollectionFacetTitleService parentCollectionFacetTitleService;
+    @Autowired
+    private AccessCopiesService accessCopiesService;
 
     @RequestMapping("/search")
     public String search() {
@@ -97,6 +100,7 @@ public class SearchActionController extends AbstractErrorHandlingSearchControlle
         searchRequest.setRootPid(PIDs.get(pid));
         searchRequest.setApplyCutoffs(true);
         SearchResultResponse resultResponse = queryLayer.performSearch(searchRequest);
+        populateThumbnailUrls(searchRequest, resultResponse);
         return getResults(resultResponse, "list", request);
     }
 
@@ -118,6 +122,7 @@ public class SearchActionController extends AbstractErrorHandlingSearchControlle
         searchState.setRowsPerPage(searchSettings.defaultCollectionsPerPage);
         searchState.setFacetsToRetrieve(searchSettings.collectionBrowseFacetNames);
         SearchResultResponse resultResponse = queryLayer.performSearch(searchRequest);
+        populateThumbnailUrls(searchRequest, resultResponse);
 
         return getResults(resultResponse, "search", request);
     }
@@ -129,6 +134,7 @@ public class SearchActionController extends AbstractErrorHandlingSearchControlle
         }
         searchRequest.setApplyCutoffs(false);
         SearchResultResponse resultResponse = queryLayer.performSearch(searchRequest);
+        populateThumbnailUrls(searchRequest, resultResponse);
 
         SearchState searchState = searchRequest.getSearchState();
         AccessGroupSet principals = searchRequest.getAccessGroups();
@@ -148,5 +154,12 @@ public class SearchActionController extends AbstractErrorHandlingSearchControlle
         }
 
         return getResults(resultResponse, "search", request);
+    }
+
+    private void populateThumbnailUrls(SearchRequest searchRequest, SearchResultResponse result) {
+        accessCopiesService.populateThumbnailIds(result.getResultList(),
+                searchRequest.getAccessGroups(), true);
+        accessCopiesService.populateThumbnailId(result.getSelectedContainer(),
+                searchRequest.getAccessGroups(), true);
     }
 }

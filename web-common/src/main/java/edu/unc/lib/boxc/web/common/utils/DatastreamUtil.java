@@ -21,6 +21,7 @@ import static org.apache.commons.lang3.StringUtils.isBlank;
 
 import java.util.List;
 
+import edu.unc.lib.boxc.model.api.DatastreamType;
 import edu.unc.lib.boxc.search.api.models.ContentObjectRecord;
 import edu.unc.lib.boxc.search.api.models.Datastream;
 
@@ -146,39 +147,46 @@ public class DatastreamUtil {
     }
 
     /**
-     * Returns the url for accessing a thumbnail of the specified size for the
-     * provided object. If the object does not have a thumbnail of that size, an
-     * empty string is returned.
-     *
-     * @param metadata metadata record for object
-     * @param size name of thumbnail size being requested.
-     * @return url for thumbnail or empty string if the requested size thumbnail
-     *         is not available.
+     * Returns the ID of the owner of the thumbnail for the provided object.
+     * @param metadata
+     * @return id of the owner of the thumbnail, or null if the thumbnail is not present
      */
-    public static String getThumbnailUrl(ContentObjectRecord metadata, String size) {
-        String selectedSize = size == null ? "large" : size;
-        selectedSize = selectedSize.toLowerCase().trim();
-        String derivativeName = "thumbnail_" + selectedSize;
-
+    public static String getThumbnailOwnerId(ContentObjectRecord metadata) {
         // Prefer the matching derivative from this object
-        Datastream preferredDS = getPreferredDatastream(metadata, derivativeName);
+        Datastream preferredDS = getPreferredDatastream(metadata, DatastreamType.THUMBNAIL_LARGE.getId());
 
         // Ensure that this item has the appropriate thumbnail
         if (preferredDS == null) {
-            return "";
+            return null;
         }
 
+        return isBlank(preferredDS.getOwner()) ?  metadata.getId() : preferredDS.getOwner();
+    }
+
+    /**
+     * @param id
+     * @return constructed large thumbnail url, using the provided id
+     */
+    public static String constructThumbnailUrl(String id) {
+        return constructThumbnailUrl(id, "large");
+    }
+
+    /**
+     * @param id
+     * @param size
+     * @return constructed thumbnail url, using the provided id and size
+     */
+    public static String constructThumbnailUrl(String id, String size) {
+        if (id == null) {
+            return null;
+        }
+        String selectedSize = size == null ? "large" : size;
+        selectedSize = selectedSize.toLowerCase().trim();
         StringBuilder url = new StringBuilder(datastreamEndpoint);
-
-        url.append("thumb/");
-        if (isBlank(preferredDS.getOwner())) {
-            url.append(metadata.getId());
-        } else {
-            url.append(preferredDS.getOwner());
-        }
-
-        url.append("/").append(selectedSize);
-
-        return url.toString();
+        return url.append("thumb/")
+                .append(id)
+                .append("/")
+                .append(selectedSize)
+                .toString();
     }
 }

@@ -17,10 +17,12 @@ package edu.unc.lib.boxc.web.common.utils;
 
 import static edu.unc.lib.boxc.model.api.DatastreamType.ORIGINAL_FILE;
 import static edu.unc.lib.boxc.model.api.DatastreamType.TECHNICAL_METADATA;
+import static edu.unc.lib.boxc.model.api.DatastreamType.THUMBNAIL_LARGE;
 import static edu.unc.lib.boxc.model.api.DatastreamType.THUMBNAIL_SMALL;
 import static edu.unc.lib.boxc.model.fcrepo.test.TestHelper.makePid;
 import static java.util.Arrays.asList;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -42,6 +44,7 @@ public class DatastreamUtilTest {
     private final static String ORIGINAL_INDEXABLE = ORIGINAL_FILE.getId() + "|application/pdf|doc.pdf|pdf|5555||";
     private final static String FITS_DS = TECHNICAL_METADATA.getId() + "|text/xml|fits.xml|xml|5555||";
     private final static String THUMB_SMALL_DS = THUMBNAIL_SMALL.getId() + "|image/png|small|png|3333||";
+    private final static String THUMB_LARGE_DS = THUMBNAIL_LARGE.getId() + "|image/png|small|png|10000||";
 
     @Before
     public void setup() {
@@ -82,27 +85,32 @@ public class DatastreamUtilTest {
     }
 
     @Test
-    public void testGetThumbnailUrl() {
+    public void testConstructThumbnailSmall() {
         PID pid = makePid();
         ContentObjectSolrRecord mdObj = new ContentObjectSolrRecord();
         mdObj.setId(pid.getId());
-        mdObj.setDatastream(asList(ORIGINAL_DS, THUMB_SMALL_DS));
+        mdObj.setDatastream(asList(ORIGINAL_DS, THUMB_SMALL_DS, THUMB_LARGE_DS));
 
-        String url = DatastreamUtil.getThumbnailUrl(mdObj, "small");
+        var id = DatastreamUtil.getThumbnailOwnerId(mdObj);
+        assertEquals(pid.getId(), id);
+        var url = DatastreamUtil.constructThumbnailUrl(id, "small");
         assertEquals(ENDPOINT_URL + "thumb/" + pid.getId() + "/small", url);
     }
 
     @Test
-    public void testGetThumbnailUrlForPrimaryObject() {
+    public void testConstructThumbnailUrlForPrimaryObject() {
         PID primaryObjPid = makePid();
 
         PID pid = makePid();
         ContentObjectSolrRecord mdObj = new ContentObjectSolrRecord();
         mdObj.setId(pid.getId());
-        mdObj.setDatastream(asList(ORIGINAL_DS, THUMB_SMALL_DS + primaryObjPid.getId()));
+        mdObj.setDatastream(asList(ORIGINAL_DS,
+                THUMB_SMALL_DS + primaryObjPid.getId(), THUMB_LARGE_DS + primaryObjPid.getId()));
 
-        String url = DatastreamUtil.getThumbnailUrl(mdObj, "small");
-        assertEquals(ENDPOINT_URL + "thumb/" + primaryObjPid.getId() + "/small", url);
+        var id = DatastreamUtil.getThumbnailOwnerId(mdObj);
+        assertEquals(primaryObjPid.getId(), id);
+        var url = DatastreamUtil.constructThumbnailUrl(id, "large");
+        assertEquals(ENDPOINT_URL + "thumb/" + primaryObjPid.getId() + "/large", url);
     }
 
     @Test
@@ -112,7 +120,8 @@ public class DatastreamUtilTest {
         mdObj.setId(pid.getId());
         mdObj.setDatastream(asList(ORIGINAL_DS));
 
-        String url = DatastreamUtil.getThumbnailUrl(mdObj, "small");
-        assertEquals("", url);
+        var id = DatastreamUtil.getThumbnailOwnerId(mdObj);
+        assertNull(id);
+        assertNull(DatastreamUtil.constructThumbnailUrl(id));
     }
 }

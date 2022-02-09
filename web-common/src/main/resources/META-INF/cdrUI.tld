@@ -83,10 +83,10 @@
 		</function-signature>
 	</function>
 	<function>
-		<name>getThumbnailUrl</name>
+		<name>constructThumbnailUrl</name>
 		<function-class>edu.unc.lib.boxc.web.common.utils.DatastreamUtil</function-class>
 		<function-signature>
-			java.lang.String getThumbnailUrl(edu.unc.lib.boxc.search.api.models.ContentObjectRecord, java.lang.String)
+			java.lang.String constructThumbnailUrl(java.lang.String, java.lang.String)
 		</function-signature>
 	</function>
 	<function>

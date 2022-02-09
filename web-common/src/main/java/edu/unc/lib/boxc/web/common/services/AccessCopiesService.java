@@ -19,6 +19,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+import edu.unc.lib.boxc.search.api.ContentCategory;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.response.QueryResponse;
@@ -173,6 +174,65 @@ public class AccessCopiesService extends SolrSearchService {
         return "";
     }
 
+    private static final String IMAGE_CONTENT_TYPE = '^' + ContentCategory.image.getJoined();
+
+    /**
+     * @param contentObjectRecord
+     * @param principals
+     * @param checkChildren if true, then in cases where it is ambiguous if the provided record has a thumbnail,
+     *             then additional queries will be performed to check.
+     * @return ID of the object the thumbnail for the provided object belongs to, or null if there is no thumbnail
+     */
+    public String getThumbnailId(ContentObjectRecord contentObjectRecord, AccessGroupSet principals,
+                                 boolean checkChildren) {
+        // Find thumbnail datastream recorded directly on the object, if present
+        var thumbId = DatastreamUtil.getThumbnailOwnerId(contentObjectRecord);
+        if (thumbId != null) {
+            return thumbId;
+        }
+        // Don't need to check any further if object isn't a work or doesn't contain files with thumbnails
+        if (!ResourceType.Work.name().equals(contentObjectRecord.getResourceType())
+                || contentObjectRecord.getContentType() == null
+                || !contentObjectRecord.getContentType().contains(IMAGE_CONTENT_TYPE)) {
+            return null;
+        }
+        if (!checkChildren) {
+            return contentObjectRecord.getId();
+        }
+
+        SolrQuery query = buildFirstChildQuery(contentObjectRecord, principals);
+        // Limit query to just children which have a thumbnail datastream
+        query.addFilterQuery(solrSettings.getFieldName(SearchFieldKey.DATASTREAM.name()) + ":"
+                + DatastreamType.THUMBNAIL_LARGE.getId() + "|*");
+
+        try {
+            QueryResponse resp = executeQuery(query);
+            if (resp.getResults().getNumFound() > 0) {
+                var results = resp.getBeans(ContentObjectSolrRecord.class);
+                return results.get(0).getId();
+            } else {
+                return null;
+            }
+        } catch (SolrServerException e) {
+            throw new SolrRuntimeException("Error listing viewable files: " + query, e);
+        }
+    }
+
+    public void populateThumbnailId(ContentObjectRecord record, AccessGroupSet principals,
+                                    boolean checkChildren) {
+        if (record == null) {
+            return;
+        }
+        record.setThumbnailId(getThumbnailId(record, principals, checkChildren));
+    }
+
+    public void populateThumbnailIds(List<ContentObjectRecord> records, AccessGroupSet principals,
+                                     boolean checkChildren) {
+        for (var record: records) {
+            record.setThumbnailId(getThumbnailId(record, principals, checkChildren));
+        }
+    }
+
     /**
      * Retrieves the first ContentObjectRecord of a work,
      * and checks if it's the only ContentObjectRecord in the work.
@@ -185,17 +245,7 @@ public class AccessCopiesService extends SolrSearchService {
             return null;
         }
 
-        SearchState searchState = new SearchState();
-        searchState.setFacetsToRetrieve(null);
-        searchState.setRowsPerPage(1);
-        CutoffFacet selectedPath = briefObj.getPath();
-        searchState.addFacet(selectedPath);
-        SearchRequest searchRequest = new SearchRequest(searchState, principals);
-        searchRequest.setSearchState(searchState);
-        searchRequest.setAccessGroups(principals);
-        searchRequest.setApplyCutoffs(true);
-        SolrQuery query = generateSearch(searchRequest);
-
+        SolrQuery query = buildFirstChildQuery(briefObj, principals);
         try {
             QueryResponse resp = executeQuery(query);
 
@@ -208,6 +258,19 @@ public class AccessCopiesService extends SolrSearchService {
         }
 
         return null;
+    }
+
+    private SolrQuery buildFirstChildQuery(ContentObjectRecord briefObj, AccessGroupSet principals) {
+        SearchState searchState = new SearchState();
+        searchState.setFacetsToRetrieve(null);
+        searchState.setRowsPerPage(1);
+        CutoffFacet selectedPath = briefObj.getPath();
+        searchState.addFacet(selectedPath);
+        SearchRequest searchRequest = new SearchRequest(searchState, principals);
+        searchRequest.setSearchState(searchState);
+        searchRequest.setAccessGroups(principals);
+        searchRequest.setApplyCutoffs(true);
+        return generateSearch(searchRequest);
     }
 
     private QueryResponse performQuery(ContentObjectRecord briefObj, AccessGroupSet principals, int rows) {

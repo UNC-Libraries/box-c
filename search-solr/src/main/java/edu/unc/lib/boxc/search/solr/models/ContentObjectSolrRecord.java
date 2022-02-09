@@ -60,6 +60,7 @@ public class ContentObjectSolrRecord extends IndexDocumentBean implements Conten
     Map<String, Collection<String>> groupRoleMap;
     protected Map<String, Long> countMap;
     protected Map<String, List<String>> relationsMap;
+    protected String thumbnailId;
 
     public ContentObjectSolrRecord() {
         countMap = new HashMap<>(2);
@@ -335,5 +336,15 @@ public class ContentObjectSolrRecord extends IndexDocumentBean implements Conten
         }
 
         return ancestorNames;
+    }
+
+    @Override
+    public String getThumbnailId() {
+        return thumbnailId;
+    }
+
+    @Override
+    public void setThumbnailId(String thumbnailId) {
+        this.thumbnailId = thumbnailId;
     }
 }

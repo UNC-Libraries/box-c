@@ -78,11 +78,11 @@
 
 <c:set var="src">
 	<c:choose>
-		<c:when test="${param.size == 'large' && permsHelper.hasThumbnailAccess(requestScope.accessGroupSet, thumbnailObject)}">
-			<c:out value="${cdr:getThumbnailUrl(thumbnailObject, 'large')}" />
+		<c:when test="${param.size == 'large' && thumbnailObject.thumbnailId != null}">
+			<c:out value="${cdr:constructThumbnailUrl(thumbnailObject.thumbnailId, 'large')}" />
 		</c:when>
-		<c:when test="${param.size == 'small' && permsHelper.hasThumbnailAccess(requestScope.accessGroupSet, thumbnailObject)}">
-			<c:out value="${cdr:getThumbnailUrl(thumbnailObject, 'small')}" />
+		<c:when test="${param.size == 'small' && thumbnailObject.thumbnailId != null}">
+			<c:out value="${cdr:constructThumbnailUrl(thumbnailObject.thumbnailId, 'small')}" />
 		</c:when>
 	</c:choose>
 </c:set>
