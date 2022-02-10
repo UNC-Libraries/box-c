@@ -199,7 +199,7 @@ public class AccessCopiesService extends SolrSearchService {
 
     public void populateThumbnailIds(List<ContentObjectRecord> records, AccessGroupSet principals,
                                      boolean checkChildren) {
-        for (var record: records) {
+        for (var record : records) {
             record.setThumbnailId(getThumbnailId(record, principals, checkChildren));
         }
     }
