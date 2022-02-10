@@ -143,15 +143,13 @@ public class DatastreamController {
         var objRequest = new SimpleIdRequest(pid, THUMB_QUERY_FIELDS, principals);
         var objRecord = solrQueryLayerService.getObjectById(objRequest);
         if (objRecord == null) {
-            log.error("Didn't find it {}", pidString);
             throw new ResourceNotFoundException("The requested object either does not exist or is not accessible");
         }
         if (ResourceType.Work.name().equals(objRecord.getResourceType())) {
-            log.error("Its a work {}", pidString);
             var thumbId = accessCopiesService.getThumbnailId(objRecord, principals, true);
             if (thumbId != null) {
                 pid = PIDs.get(thumbId);
-                log.error("Got thumbnail id {} for work {}", thumbId, pidString);
+                log.debug("Got thumbnail id {} for work {}", thumbId, pidString);
             }
         }
 
