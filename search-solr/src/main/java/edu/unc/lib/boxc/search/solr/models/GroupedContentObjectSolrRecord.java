@@ -372,4 +372,14 @@ public class GroupedContentObjectSolrRecord implements GroupedContentObjectRecor
     public String getIdentifierSort() {
         return representative.getIdentifierSort();
     }
+
+    @Override
+    public String getThumbnailId() {
+        return representative.getThumbnailId();
+    }
+
+    @Override
+    public void setThumbnailId(String id) {
+        representative.setThumbnailId(id);
+    }
 }

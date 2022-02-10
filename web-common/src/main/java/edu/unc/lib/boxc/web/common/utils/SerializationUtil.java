@@ -121,10 +121,9 @@ public class SerializationUtil {
 
     public static Map<String, Object> metadataToMap(ContentObjectRecord metadata, AccessGroupSet groups) {
         Map<String, Object> result = new HashMap<>();
-        String thumbnail_url = DatastreamUtil.getThumbnailUrl(metadata, null);
 
-        if (!thumbnail_url.isEmpty()) {
-            result.put("thumbnail_url", thumbnail_url);
+        if (metadata.getThumbnailId() != null) {
+            result.put("thumbnail_url", DatastreamUtil.constructThumbnailUrl(metadata.getThumbnailId()));
         }
 
         if (metadata.getId() != null) {

@@ -114,4 +114,16 @@
             </list>
         </property>
     </bean>
+
+    <bean id="permsHelper" class="edu.unc.lib.boxc.web.common.services.PermissionsHelper">
+        <property name="accessControlService" ref="aclService" />
+    </bean>
+
+    <bean id="accessCopiesService" class="edu.unc.lib.boxc.web.common.services.AccessCopiesService"
+          init-method="initializeSolrServer">
+        <property name="accessRestrictionUtil" ref="solrAccessRestrictionUtil" />
+        <property name="facetFieldUtil" ref="facetFieldUtil" />
+        <property name="globalPermissionEvaluator" ref="globalPermissionEvaluator" />
+        <property name="permissionsHelper" ref="permsHelper" />
+    </bean>
 </beans>

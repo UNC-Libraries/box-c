@@ -85,7 +85,7 @@ public class DerivativeContentService {
 
         Derivative deriv = derivativeService.getDerivative(pid, derivType);
         if (deriv == null) {
-            throw new ResourceNotFoundException("Deriviatve " + dsName + " does not exist for object " + pid);
+            throw new ResourceNotFoundException("Derivative " + dsName + " does not exist for object " + pid);
         }
 
         File derivFile = deriv.getFile();

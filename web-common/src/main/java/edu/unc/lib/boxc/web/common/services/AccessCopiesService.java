@@ -19,6 +19,8 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+import edu.unc.lib.boxc.search.api.ContentCategory;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.response.QueryResponse;
@@ -40,6 +42,8 @@ import edu.unc.lib.boxc.search.api.requests.SimpleIdRequest;
 import edu.unc.lib.boxc.search.solr.models.ContentObjectSolrRecord;
 import edu.unc.lib.boxc.search.solr.services.SolrSearchService;
 import edu.unc.lib.boxc.web.common.utils.DatastreamUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Service to check for or list resources with access copies
@@ -47,6 +51,8 @@ import edu.unc.lib.boxc.web.common.utils.DatastreamUtil;
  * @author bbpennel
  */
 public class AccessCopiesService extends SolrSearchService {
+    private static final Logger log = LoggerFactory.getLogger(AccessCopiesService.class);
+
     private static final int MAX_FILES = 2000;
     private GlobalPermissionEvaluator globalPermissionEvaluator;
     private PermissionsHelper permissionsHelper;
@@ -103,74 +109,99 @@ public class AccessCopiesService extends SolrSearchService {
     }
 
     /**
-     * Returns true if a user has access to the original file of the content object and the file mimetype
-     * matches the regular expression pattern
-     * @param contentObj
-     * @param principals
-     * @param regxPattern
-     * @return
-     */
-    public boolean hasDatastreamContent(ContentObjectRecord contentObj, AccessGroupSet principals,
-                                        String regxPattern) {
-        return permissionsHelper.hasOriginalAccess(principals, contentObj) &&
-                DatastreamUtil.originalFileMimetypeMatches(contentObj, regxPattern);
-    }
-
-    /**
-     * Retrieves the first ContentObjectRecord of a work and
-     * checks if ContentObjectRecord has a file that matches the provided regular expression pattern.
-     * If so it returns the object's id
+     * Retrieves the ID of the owner of the original file for the provided object, if the mimetype of the
+     * file matches the provided regular expression pattern. If there is no matching original file, null is returned.
      * @param briefObj
      * @param principals
      * @param regxPattern
      * @return String
      */
     public String getDatastreamPid(ContentObjectRecord briefObj, AccessGroupSet principals, String regxPattern) {
-        if (hasDatastreamContent(briefObj, principals, regxPattern)) {
-            return briefObj.getId();
+        if (permissionsHelper.hasOriginalAccess(principals, briefObj) &&
+                DatastreamUtil.originalFileMimetypeMatches(briefObj, regxPattern)) {
+            var ds = briefObj.getDatastreamObject(DatastreamType.ORIGINAL_FILE.getId());
+            return StringUtils.isEmpty(ds.getOwner()) ? briefObj.getId() : ds.getOwner();
         }
-
-        ContentObjectRecord contentObj = getChildFileObject(briefObj, principals);
-        if (contentObj != null && hasDatastreamContent(contentObj, principals, regxPattern)) {
-            return contentObj.getId();
-        }
-        return null;
-    }
-
-    /**
-     * Get the first content object that has an original file datastream
-     * and return it if the user has the appropriate permissions
-     * @param briefObj
-     * @param principals
-     * @return
-     */
-    public ContentObjectRecord getContentObject(ContentObjectRecord briefObj, AccessGroupSet principals) {
-        if (permissionsHelper.hasOriginalAccess(principals, briefObj)) {
-            return briefObj;
-        }
-
-        ContentObjectRecord contentObj = getChildFileObject(briefObj, principals);
-        if (contentObj != null && permissionsHelper.hasOriginalAccess(principals, contentObj)) {
-            return contentObj;
-        }
-
         return null;
     }
 
     /**
      * Get the path of the original_file datastream within contentObjectRecord that can be downloaded,
-     * or null if no appropriate original_file is present
+     * or an empty string if no appropriate original_file is present
      * @param contentObjectRecord
      * @param principals
      * @return
      */
     public String getDownloadUrl(ContentObjectRecord contentObjectRecord, AccessGroupSet principals) {
-        ContentObjectRecord contentObj = getContentObject(contentObjectRecord, principals);
-        if (contentObj != null) {
-            return DatastreamUtil.getOriginalFileUrl(contentObj);
+        if (contentObjectRecord == null || !permissionsHelper.hasOriginalAccess(principals, contentObjectRecord)) {
+            return "";
+        }
+        return DatastreamUtil.getOriginalFileUrl(contentObjectRecord);
+    }
+
+    private static final String IMAGE_CONTENT_TYPE = '^' + ContentCategory.image.getJoined();
+
+    /**
+     * @param contentObjectRecord
+     * @param principals
+     * @param checkChildren if true, then in cases where it is ambiguous if the provided record has a thumbnail,
+     *             then additional queries will be performed to check.
+     * @return ID of the object the thumbnail for the provided object belongs to, or null if there is no thumbnail
+     */
+    public String getThumbnailId(ContentObjectRecord contentObjectRecord, AccessGroupSet principals,
+                                 boolean checkChildren) {
+        // Find thumbnail datastream recorded directly on the object, if present
+        var thumbId = DatastreamUtil.getThumbnailOwnerId(contentObjectRecord);
+        if (thumbId != null) {
+            log.debug("Found thumbnail object directly assigned to object {}", thumbId);
+            return thumbId;
+        }
+        // Don't need to check any further if object isn't a work or doesn't contain files with thumbnails
+        if (!ResourceType.Work.name().equals(contentObjectRecord.getResourceType())
+                || contentObjectRecord.getContentType() == null
+                || !contentObjectRecord.getContentType().contains(IMAGE_CONTENT_TYPE)) {
+            log.debug("Record {} is not applicable for a thumbnail", contentObjectRecord.getId());
+            return null;
+        }
+        if (!checkChildren) {
+            log.debug("Not checking children for work {}, so using self as thumbnail id", contentObjectRecord.getId());
+            return contentObjectRecord.getId();
         }
 
-        return "";
+        SolrQuery query = buildFirstChildQuery(contentObjectRecord, principals);
+        // Limit query to just children which have a thumbnail datastream
+        query.addFilterQuery(solrSettings.getFieldName(SearchFieldKey.DATASTREAM.name()) + ":"
+                + DatastreamType.THUMBNAIL_LARGE.getId() + "|*");
+
+        try {
+            QueryResponse resp = executeQuery(query);
+            if (resp.getResults().getNumFound() > 0) {
+                var results = resp.getBeans(ContentObjectSolrRecord.class);
+                var id = results.get(0).getId();
+                log.debug("Found thumbnail object {} for work {}", id, contentObjectRecord.getId());
+                return results.get(0).getId();
+            } else {
+                log.debug("No thumbnail objects for work {}", contentObjectRecord.getId());
+                return null;
+            }
+        } catch (SolrServerException e) {
+            throw new SolrRuntimeException("Error listing viewable files: " + query, e);
+        }
+    }
+
+    public void populateThumbnailId(ContentObjectRecord record, AccessGroupSet principals,
+                                    boolean checkChildren) {
+        if (record == null) {
+            return;
+        }
+        record.setThumbnailId(getThumbnailId(record, principals, checkChildren));
+    }
+
+    public void populateThumbnailIds(List<ContentObjectRecord> records, AccessGroupSet principals,
+                                     boolean checkChildren) {
+        for (var record : records) {
+            record.setThumbnailId(getThumbnailId(record, principals, checkChildren));
+        }
     }
 
     /**
@@ -185,17 +216,7 @@ public class AccessCopiesService extends SolrSearchService {
             return null;
         }
 
-        SearchState searchState = new SearchState();
-        searchState.setFacetsToRetrieve(null);
-        searchState.setRowsPerPage(1);
-        CutoffFacet selectedPath = briefObj.getPath();
-        searchState.addFacet(selectedPath);
-        SearchRequest searchRequest = new SearchRequest(searchState, principals);
-        searchRequest.setSearchState(searchState);
-        searchRequest.setAccessGroups(principals);
-        searchRequest.setApplyCutoffs(true);
-        SolrQuery query = generateSearch(searchRequest);
-
+        SolrQuery query = buildFirstChildQuery(briefObj, principals);
         try {
             QueryResponse resp = executeQuery(query);
 
@@ -208,6 +229,19 @@ public class AccessCopiesService extends SolrSearchService {
         }
 
         return null;
+    }
+
+    private SolrQuery buildFirstChildQuery(ContentObjectRecord briefObj, AccessGroupSet principals) {
+        SearchState searchState = new SearchState();
+        searchState.setFacetsToRetrieve(null);
+        searchState.setRowsPerPage(1);
+        CutoffFacet selectedPath = briefObj.getPath();
+        searchState.addFacet(selectedPath);
+        SearchRequest searchRequest = new SearchRequest(searchState, principals);
+        searchRequest.setSearchState(searchState);
+        searchRequest.setAccessGroups(principals);
+        searchRequest.setApplyCutoffs(true);
+        return generateSearch(searchRequest);
     }
 
     private QueryResponse performQuery(ContentObjectRecord briefObj, AccessGroupSet principals, int rows) {

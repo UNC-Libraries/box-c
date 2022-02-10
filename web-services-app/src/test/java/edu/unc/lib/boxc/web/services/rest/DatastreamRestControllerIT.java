@@ -41,10 +41,12 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
+import edu.unc.lib.boxc.indexing.solr.test.TestCorpus;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.vocabulary.RDF;
+import org.apache.solr.client.solrj.embedded.EmbeddedSolrServer;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -82,6 +84,7 @@ import edu.unc.lib.boxc.web.services.rest.modify.AbstractAPIIT;
 @ContextHierarchy({
     @ContextConfiguration("/spring-test/test-fedora-container.xml"),
     @ContextConfiguration("/spring-test/cdr-client-container.xml"),
+    @ContextConfiguration("/spring-test/solr-indexing-context.xml"),
     @ContextConfiguration("/datastream-content-it-servlet.xml")
 })
 public class DatastreamRestControllerIT extends AbstractAPIIT {
@@ -96,6 +99,9 @@ public class DatastreamRestControllerIT extends AbstractAPIIT {
 
     @Autowired
     private PremisLoggerFactory premisLoggerFactory;
+
+    @Autowired
+    private EmbeddedSolrServer embeddedSolrServer;
 
     @Rule
     public TemporaryFolder derivDir = new TemporaryFolder();
@@ -172,7 +178,9 @@ public class DatastreamRestControllerIT extends AbstractAPIIT {
 
     @Test
     public void testGetThumbnail() throws Exception {
-        PID filePid = makePid();
+        var corpus = populateCorpus();
+
+        PID filePid = corpus.pid6File;
         String id = filePid.getId();
         createDerivative(id, THUMBNAIL_SMALL, BINARY_CONTENT.getBytes());
 
@@ -190,8 +198,32 @@ public class DatastreamRestControllerIT extends AbstractAPIIT {
     }
 
     @Test
+    public void testGetThumbnailForWork() throws Exception {
+        var corpus = populateCorpus();
+
+        PID filePid = corpus.pid6File;
+        String id = filePid.getId();
+        createDerivative(id, THUMBNAIL_SMALL, BINARY_CONTENT.getBytes());
+        PID workPid = corpus.pid6;
+
+        MvcResult result = mvc.perform(get("/thumb/" + workPid.getId()))
+                .andExpect(status().is2xxSuccessful())
+                .andReturn();
+
+        // Verify content was retrieved
+        MockHttpServletResponse response = result.getResponse();
+        assertEquals(BINARY_CONTENT, response.getContentAsString());
+        assertEquals(BINARY_CONTENT.length(), response.getContentLength());
+        assertEquals("image/png", response.getContentType());
+        assertEquals("inline; filename=\"" + id + "." + THUMBNAIL_SMALL.getExtension() + "\"",
+                response.getHeader(CONTENT_DISPOSITION));
+    }
+
+    @Test
     public void testGetInvalidThumbnailSize() throws Exception {
-        PID filePid = makePid();
+        var corpus = populateCorpus();
+
+        PID filePid = corpus.pid6File;
         String id = filePid.getId();
         createDerivative(id, THUMBNAIL_SMALL, BINARY_CONTENT.getBytes());
 
@@ -202,7 +234,9 @@ public class DatastreamRestControllerIT extends AbstractAPIIT {
 
     @Test
     public void testGetThumbnailNoPermission() throws Exception {
-        PID filePid = makePid();
+        var corpus = populateCorpus();
+
+        PID filePid = corpus.pid6File;
         String id = filePid.getId();
         createDerivative(id, THUMBNAIL_SMALL, BINARY_CONTENT.getBytes());
 
@@ -215,6 +249,13 @@ public class DatastreamRestControllerIT extends AbstractAPIIT {
 
         MockHttpServletResponse response = result.getResponse();
         assertEquals("Content must not be returned", "", response.getContentAsString());
+    }
+
+    private TestCorpus populateCorpus() throws Exception {
+        var corpus = new TestCorpus();
+        embeddedSolrServer.add(corpus.populate());
+        embeddedSolrServer.commit();
+        return corpus;
     }
 
     @Test

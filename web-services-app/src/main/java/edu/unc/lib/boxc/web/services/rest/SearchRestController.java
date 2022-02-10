@@ -26,6 +26,7 @@ import java.util.regex.Pattern;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import edu.unc.lib.boxc.web.common.services.AccessCopiesService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -56,6 +57,8 @@ public class SearchRestController extends AbstractSolrSearchController {
 
     @Autowired
     private ChildrenCountService childrenCountService;
+    @Autowired
+    private AccessCopiesService accessCopiesService;
 
     @RequestMapping(value = "/search")
     public @ResponseBody String search(HttpServletRequest request, HttpServletResponse response) {
@@ -135,6 +138,7 @@ public class SearchRestController extends AbstractSolrSearchController {
         Map<String, Object> response = new HashMap<>();
         response.put("numFound", resultResponse.getResultCount());
         List<Map<String, Object>> results = new ArrayList<>(resultResponse.getResultList().size());
+        accessCopiesService.populateThumbnailIds(resultResponse.getResultList(), principals, false);
         for (ContentObjectRecord metadata: resultResponse.getResultList()) {
             results.add(SerializationUtil.metadataToMap(metadata, principals));
         }

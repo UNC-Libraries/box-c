@@ -230,6 +230,7 @@ public class FullRecordController extends AbstractErrorHandlingSearchController 
                 briefObject.getResourceType().equals(searchSettings.resourceTypeAggregate)) {
             List<ContentObjectRecord> neighbors = neighborService.getNeighboringItems(briefObject,
                     searchSettings.maxNeighborResults, principals);
+            accessCopiesService.populateThumbnailIds(neighbors, principals, true);
             model.addAttribute("neighborList", neighbors);
         }
 
@@ -260,6 +261,8 @@ public class FullRecordController extends AbstractErrorHandlingSearchController 
             String dataFileUrl = accessCopiesService.getDownloadUrl(briefObject, principals);
             model.addAttribute("dataFileUrl", dataFileUrl);
         }
+
+        accessCopiesService.populateThumbnailId(briefObject, principals, true);
 
         List<String> objectStatus = briefObject.getStatus();
         boolean isMarkedForDeletion = false;
