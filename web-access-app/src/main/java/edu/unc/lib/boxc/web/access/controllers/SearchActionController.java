@@ -16,6 +16,7 @@
 package edu.unc.lib.boxc.web.access.controllers;
 
 import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
+import edu.unc.lib.boxc.model.api.ResourceType;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPaths;
 import edu.unc.lib.boxc.search.api.SearchFieldKey;
@@ -28,6 +29,7 @@ import edu.unc.lib.boxc.search.solr.services.MultiSelectFacetListService;
 import edu.unc.lib.boxc.search.solr.services.ParentCollectionFacetTitleService;
 import edu.unc.lib.boxc.web.common.controllers.AbstractErrorHandlingSearchController;
 import edu.unc.lib.boxc.web.common.services.AccessCopiesService;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -99,6 +101,7 @@ public class SearchActionController extends AbstractErrorHandlingSearchControlle
         SearchRequest searchRequest = generateSearchRequest(request);
         searchRequest.setRootPid(PIDs.get(pid));
         searchRequest.setApplyCutoffs(true);
+        setDefaultRollup(searchRequest);
         SearchResultResponse resultResponse = queryLayer.performSearch(searchRequest);
         populateThumbnailUrls(searchRequest, resultResponse);
         return getResults(resultResponse, "list", request);
@@ -133,6 +136,8 @@ public class SearchActionController extends AbstractErrorHandlingSearchControlle
             searchRequest.setRootPid(PIDs.get(pid));
         }
         searchRequest.setApplyCutoffs(false);
+        setDefaultRollup(searchRequest);
+
         SearchResultResponse resultResponse = queryLayer.performSearch(searchRequest);
         populateThumbnailUrls(searchRequest, resultResponse);
 
@@ -154,6 +159,31 @@ public class SearchActionController extends AbstractErrorHandlingSearchControlle
         }
 
         return getResults(resultResponse, "search", request);
+    }
+
+    private void setDefaultRollup(SearchRequest searchRequest) {
+        if (searchRequest.getSearchState().getRollup() == null) {
+            var enableRollup = shouldEnableRollup(searchRequest);
+            LOG.debug("Rollup not specified in request, determine rollup should be set to {}", enableRollup);
+            searchRequest.getSearchState().setRollup(enableRollup);
+            if (!enableRollup) {
+                searchRequest.getSearchState().getResourceTypes().remove(ResourceType.File.name());
+            }
+        }
+    }
+
+    private boolean shouldEnableRollup(SearchRequest searchRequest) {
+        var state = searchRequest.getSearchState();
+        var searchFields = state.getSearchFields();
+        if (searchFields.isEmpty()) {
+            return false;
+        }
+        for (var searchField : searchFields.entrySet()) {
+            if (!StringUtils.isBlank(searchField.getValue())) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private void populateThumbnailUrls(SearchRequest searchRequest, SearchResultResponse result) {
