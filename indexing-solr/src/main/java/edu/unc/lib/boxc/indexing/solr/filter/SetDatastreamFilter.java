@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.Statement;
 import org.jdom2.Document;
@@ -140,7 +141,16 @@ public class SetDatastreamFilter implements IndexDocumentFilter {
                 if (imgMd != null) {
                     String imgHeight = imgMd.getChildTextTrim("imageHeight", FITS_NS);
                     String imgWidth = imgMd.getChildTextTrim("imageWidth", FITS_NS);
-                    extent = imgHeight + "x" + imgWidth;
+                    if (!StringUtils.isBlank(imgHeight) && !StringUtils.isBlank(imgWidth)) {
+                        try {
+                            Integer.parseInt(imgHeight);
+                            Integer.parseInt(imgWidth);
+                            extent = imgHeight + "x" + imgWidth;
+                        } catch (NumberFormatException e) {
+                            log.warn("Invalid image width or height from FITS {}: {} x {}",
+                                    fits.getPid().getQualifiedId(), imgWidth, imgHeight);
+                        }
+                    }
                 }
             }
             return extent;
