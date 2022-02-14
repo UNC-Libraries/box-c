@@ -25,6 +25,8 @@ import org.apache.jena.query.QueryFactory;
 
 import edu.unc.lib.boxc.model.api.sparql.SparqlQueryService;
 
+import java.lang.reflect.Method;
+
 /**
  * Service for executing sparql queries against a Fuseki backend
  *
@@ -34,24 +36,17 @@ import edu.unc.lib.boxc.model.api.sparql.SparqlQueryService;
 public class FusekiSparqlQueryServiceImpl implements SparqlQueryService {
 
     private String fusekiQueryURL;
-    private CloseableHttpClient httpClient;
-    private HttpClientConnectionManager httpClientConnectionManager;
 
     @Override
     public QueryExecution executeQuery(String queryString) {
         Query query = QueryFactory.create(queryString);
 
-        return QueryExecutionFactory.sparqlService(fusekiQueryURL, query, httpClient);
+        return QueryExecution.service(fusekiQueryURL)
+                .query(query)
+                .build();
     }
 
     public void setFusekiQueryURL(String fusekiQueryURL) {
         this.fusekiQueryURL = fusekiQueryURL;
-    }
-
-    public void setHttpClientConnectionManager(HttpClientConnectionManager manager) {
-        this.httpClientConnectionManager = manager;
-        this.httpClient = HttpClients.custom()
-                .setConnectionManager(httpClientConnectionManager)
-                .build();
     }
 }

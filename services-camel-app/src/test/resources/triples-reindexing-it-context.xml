@@ -41,7 +41,6 @@
 
     <bean id="sparqlQueryService" class="edu.unc.lib.boxc.model.fcrepo.sparql.FusekiSparqlQueryServiceImpl" >
         <property name="fusekiQueryURL" value="${triplestore.datasetUri}" />
-        <property name="httpClientConnectionManager" ref="httpClientConnectionManager" />
     </bean>
     
     <bean id="triplesUpdateJmsTemplate" class="org.springframework.jms.core.JmsTemplate">

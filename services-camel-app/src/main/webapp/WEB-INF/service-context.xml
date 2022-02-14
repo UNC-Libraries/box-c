@@ -102,7 +102,6 @@
     
     <bean id="sparqlQueryService" class="edu.unc.lib.boxc.model.fcrepo.sparql.FusekiSparqlQueryServiceImpl">
         <property name="fusekiQueryURL" value="${fuseki.baseUri}" />
-        <property name="httpClientConnectionManager" ref="httpClientConnectionManager" />
     </bean>
     
     <bean id="contentPathFactory" class="edu.unc.lib.boxc.model.fcrepo.services.ContentPathFactoryImpl"

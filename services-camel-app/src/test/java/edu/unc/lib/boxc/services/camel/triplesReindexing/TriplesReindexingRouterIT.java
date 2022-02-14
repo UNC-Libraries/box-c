@@ -136,8 +136,8 @@ public class TriplesReindexingRouterIT {
 
         final Dataset ds = new DatasetImpl(fusekiModel);
         fusekiServer = FusekiServer.create()
-                .setPort(Integer.parseInt(fusekiPort))
-                .setContextPath("/fuseki")
+                .port(Integer.parseInt(fusekiPort))
+                .contextPath("/fuseki")
                 .add("/test", ds)
                 .build();
         fusekiServer.start();

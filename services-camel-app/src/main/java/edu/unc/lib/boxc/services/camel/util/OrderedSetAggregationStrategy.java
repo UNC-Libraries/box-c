@@ -36,7 +36,7 @@ public class OrderedSetAggregationStrategy implements AggregationStrategy {
     @Override
     public Exchange aggregate(Exchange oldExchange, Exchange newExchange) {
         if (oldExchange == null) {
-            log.error("Starting new ordered set batch");
+            log.debug("Starting new ordered set batch");
             var orderedSet = new LinkedHashSet<>();
             orderedSet.add(newExchange.getIn().getBody());
             newExchange.getIn().setBody(orderedSet);
@@ -44,7 +44,7 @@ public class OrderedSetAggregationStrategy implements AggregationStrategy {
         } else {
             var orderedSet = oldExchange.getIn().getBody(Set.class);
             orderedSet.add(newExchange.getIn().getBody());
-            log.error("Added to batch, now contains {}", orderedSet.size());
+            log.debug("Added to batch, now contains {}", orderedSet.size());
             return oldExchange;
         }
     }
