@@ -1,3 +1,6 @@
-["//mods:originInfo/mods:dateCaptured",
+["//mods:originInfo[@displayLabel=\"Digital Scan Date Raw Scan\"]/mods:dateCaptured",
+  "//mods:originInfo[@displayLabel=\"Digital Scan Date filename\"]/mods:dateCaptured",
   "//mods:identifier[@type=\"filename\"]",
-  "//mods:physicalDescription/mods:note[@type=\"technical\"]"]
+  "//mods:physicalDescription/mods:note[@type=\"technical\"]",
+  "//mods:originInfo/mods:place/mods:placeTerm[@type=\"code\" and @authority=\"marccountry\"]",
+  "//mods:originInfo/mods:dateIssued[@encoding=\"marc\"]"]
