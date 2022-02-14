@@ -30,7 +30,7 @@
 			<div class="contentarea">
 				<h3>Search for</h3>
 				<p class="clear has-text-weight-bold">
-					<label for="keyword">Keyword</label> <input id="keyword" name="${searchSettings.searchFieldParams['DEFAULT_INDEX']}" class="advsearch_text" type="text" />
+					<label for="anywhere">Anywhere</label> <input id="anywhere" name="${searchSettings.searchFieldParams['DEFAULT_INDEX']}" class="advsearch_text" type="text" />
 				</p>
 				<p class="clear has-text-weight-bold">
 					<label for="title">Title</label> <input id="title" name="${searchSettings.searchFieldParams['TITLE_INDEX']}" class="advsearch_text" type="text" />
