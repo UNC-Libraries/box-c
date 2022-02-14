@@ -109,7 +109,7 @@
 			<xsl:otherwise>
 				<xsl:for-each select="*[local-name() = 'namePart']">
 					<xsl:if test="position() != 1">
-						<xsl:text>; </xsl:text>
+						<xsl:text>, </xsl:text>
 					</xsl:if>
 					<xsl:value-of select="text()"/>
 				</xsl:for-each>
