@@ -93,7 +93,7 @@ public class SolrSearchService extends AbstractQueryService {
         QueryResponse queryResponse = null;
         SolrQuery solrQuery = new SolrQuery();
         StringBuilder query = new StringBuilder();
-        query.append(solrSettings.getFieldName(SearchFieldKey.ID.name())).append(':')
+        query.append(SearchFieldKey.ID.getSolrField()).append(':')
                 .append(SolrSettings.sanitize(idRequest.getId()));
         try {
             // Add access restrictions to query
@@ -152,7 +152,7 @@ public class SolrSearchService extends AbstractQueryService {
             } else {
                 query.append(" OR ");
             }
-            query.append(solrSettings.getFieldName(SearchFieldKey.ID.name())).append(':')
+            query.append(SearchFieldKey.ID.getSolrField()).append(':')
                     .append(SolrSettings.sanitize(id));
         }
 
@@ -343,9 +343,12 @@ public class SolrSearchService extends AbstractQueryService {
         if (searchState.getRollup() != null && searchState.getRollup()) {
             solrQuery.set(GroupParams.GROUP, true);
             if (searchState.getRollupField() == null) {
-                solrQuery.set(GroupParams.GROUP_FIELD, solrSettings.getFieldName(SearchFieldKey.ROLLUP_ID.name()));
+                solrQuery.set(GroupParams.GROUP_FIELD, SearchFieldKey.ROLLUP_ID.getSolrField());
             } else {
-                solrQuery.set(GroupParams.GROUP_FIELD, solrSettings.getFieldName(searchState.getRollupField()));
+                var rollupField = SearchFieldKey.valueOf(searchState.getRollupField());
+                if (rollupField != null) {
+                    solrQuery.set(GroupParams.GROUP_FIELD, rollupField.getSolrField());
+                }
             }
 
             solrQuery.set(GroupParams.GROUP_TOTAL_COUNT, true);
@@ -355,8 +358,7 @@ public class SolrSearchService extends AbstractQueryService {
         }
 
         if (!searchState.getIncludeParts()) {
-            solrQuery.addFilterQuery(
-                    solrSettings.getFieldName(SearchFieldKey.IS_PART.name()) + ":false");
+            solrQuery.addFilterQuery(SearchFieldKey.IS_PART.getSolrField() + ":false");
         }
 
         // Add sort parameters
@@ -379,9 +381,9 @@ public class SolrSearchService extends AbstractQueryService {
             if (searchState.getFacetsToRetrieve() != null) {
                 // Add facet fields
                 for (String facetName : searchState.getFacetsToRetrieve()) {
-                    String facetField = solrSettings.getFieldName(facetName);
+                    var facetField = SearchFieldKey.valueOf(facetName);
                     if (facetField != null) {
-                        solrQuery.addFacetField(solrSettings.getFieldName(facetName));
+                        solrQuery.addFacetField(facetField.getSolrField());
                     }
                 }
             }
@@ -390,7 +392,8 @@ public class SolrSearchService extends AbstractQueryService {
         // Override the base facet limit if overrides are given.
         if (searchState.getFacetLimits() != null) {
             for (Entry<String, Integer> facetLimit : searchState.getFacetLimits().entrySet()) {
-                solrQuery.add("f." + solrSettings.getFieldName(facetLimit.getKey()) + ".facet.limit",
+                var facetField = SearchFieldKey.valueOf(facetLimit.getKey());
+                solrQuery.add("f." + facetField.getSolrField() + ".facet.limit",
                         facetLimit.getValue().toString());
             }
         }
@@ -421,7 +424,8 @@ public class SolrSearchService extends AbstractQueryService {
             // Add individual facet field sorts if they are present.
             if (searchState.getFacetSorts() != null) {
                 for (Entry<String, String> facetSort : searchState.getFacetSorts().entrySet()) {
-                    solrQuery.add("f." + solrSettings.getFieldName(facetSort.getKey()) + ".facet.sort",
+                    var facetField = SearchFieldKey.valueOf(facetSort.getKey());
+                    solrQuery.add("f." + facetField.getSolrField() + ".facet.sort",
                                     facetSort.getValue());
                 }
             }
@@ -463,8 +467,11 @@ public class SolrSearchService extends AbstractQueryService {
                     solrQuery.setQuery(searchValue);
                     continue;
                 }
-                var fieldName = solrSettings.getFieldName(searchType);
-                solrQuery.addFilterQuery(fieldName + ":" + searchValue);
+                var field = SearchFieldKey.valueOf(searchType);
+                if (field == null) {
+                    continue;
+                }
+                solrQuery.addFilterQuery(field.getSolrField() + ":" + searchValue);
             }
         }
     }
@@ -504,7 +511,7 @@ public class SolrSearchService extends AbstractQueryService {
             }
 
             boolean first = true;
-            StringBuilder filter = new StringBuilder(solrSettings.getFieldName(SearchFieldKey.ROLE_GROUP.name()));
+            StringBuilder filter = new StringBuilder(SearchFieldKey.ROLE_GROUP.getSolrField());
             filter.append(':').append('(');
             for (String group : groups) {
                 String saneGroup = SolrSettings.sanitize(group);
@@ -541,8 +548,11 @@ public class SolrSearchService extends AbstractQueryService {
                     continue;
                 }
 
-                query.addFilterQuery(String.format("%s:[%s TO %s]",
-                        solrSettings.getFieldName(key), left, right));
+                var field = SearchFieldKey.valueOf(key);
+                if (field != null) {
+                    query.addFilterQuery(String.format("%s:[%s TO %s]",
+                            field.getSolrField(), left, right));
+                }
             }
         }
     }

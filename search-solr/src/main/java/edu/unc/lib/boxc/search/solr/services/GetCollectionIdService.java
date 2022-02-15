@@ -72,8 +72,8 @@ public class GetCollectionIdService extends AbstractQueryService {
         List<String> ancestors = mdObj.getAncestorPath();
         int index = ancestors.size();
 
-        String idFieldName = solrSettings.getFieldName(SearchFieldKey.ID.name());
-        String collectionIdName = solrSettings.getFieldName(SearchFieldKey.COLLECTION_ID.name());
+        String idFieldName = SearchFieldKey.ID.getSolrField();
+        String collectionIdName = SearchFieldKey.COLLECTION_ID.getSolrField();
 
         while (--index >= ContentPathConstants.COLLECTION_DEPTH) {
             String nextId = StringUtils.substringAfter(ancestors.get(index), ",");

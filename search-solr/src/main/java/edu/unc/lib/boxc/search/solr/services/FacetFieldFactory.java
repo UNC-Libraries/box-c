@@ -20,8 +20,8 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 
+import edu.unc.lib.boxc.search.api.SearchFieldKey;
 import org.apache.solr.client.solrj.response.FacetField;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -89,11 +89,9 @@ public class FacetFieldFactory {
         if (facetFields == null) {
             return null;
         }
-        Map<String, String> fieldNameMappings = solrSettings.getFieldNameToKey();
-
         FacetFieldList facetFieldList = new FacetFieldList();
         for (FacetField facetField : facetFields) {
-            String fieldName = fieldNameMappings.get(facetField.getName());
+            String fieldName = SearchFieldKey.getByName(facetField.getName()).name();
             if (facetField.getValueCount() > 0) {
                 facetFieldList.add(createFacetFieldObject(fieldName, facetField));
             }

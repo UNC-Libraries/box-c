@@ -153,7 +153,7 @@ public abstract class AbstractQueryService {
                 if (!normalOrder) {
                     sortOrder = sortOrder.reverse();
                 }
-                solrQuery.addSort(solrSettings.getFieldName(sortField.getFieldName()), sortOrder);
+                solrQuery.addSort(SearchFieldKey.valueOf(sortField.getFieldName()).getSolrField(), sortOrder);
             }
         }
     }
@@ -169,9 +169,9 @@ public abstract class AbstractQueryService {
             resultFields = DEFAULT_RESULT_FIELDS;
         }
         for (String field : resultFields) {
-            String solrFieldName = solrSettings.getFieldName(field);
-            if (solrFieldName != null) {
-                solrQuery.addField(solrFieldName);
+            var solrField = SearchFieldKey.valueOf(field);
+            if (solrField != null) {
+                solrQuery.addField(solrField.getSolrField());
             }
         }
     }
@@ -183,7 +183,7 @@ public abstract class AbstractQueryService {
      * @return
      */
     public String solrField(SearchFieldKey fieldKey) {
-        return solrSettings.getFieldName(fieldKey.name());
+        return fieldKey.getSolrField();
     }
 
     /**

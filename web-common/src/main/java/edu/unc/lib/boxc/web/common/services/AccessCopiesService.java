@@ -170,7 +170,7 @@ public class AccessCopiesService extends SolrSearchService {
 
         SolrQuery query = buildFirstChildQuery(contentObjectRecord, principals);
         // Limit query to just children which have a thumbnail datastream
-        query.addFilterQuery(solrSettings.getFieldName(SearchFieldKey.DATASTREAM.name()) + ":"
+        query.addFilterQuery(SearchFieldKey.DATASTREAM.getSolrField() + ":"
                 + DatastreamType.THUMBNAIL_LARGE.getId() + "|*");
 
         try {
@@ -258,7 +258,7 @@ public class AccessCopiesService extends SolrSearchService {
 
         SearchRequest searchRequest = new SearchRequest(searchState, principals);
         SolrQuery query = generateSearch(searchRequest);
-        query.addFilterQuery(solrSettings.getFieldName(SearchFieldKey.DATASTREAM.name()) + ":"
+        query.addFilterQuery(SearchFieldKey.DATASTREAM.getSolrField() + ":"
                 + DatastreamType.JP2_ACCESS_COPY.getId() + "|*");
 
         try {

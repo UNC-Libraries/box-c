@@ -64,12 +64,12 @@ public class DeleteStaleChildren extends AbstractIndexingAction {
                 ContentObjectRecord ancestorPathBean = getRootAncestorPath(updateRequest);
 
                 // Limit cleanup scope to root pid
-                query.append(solrSettings.getFieldName(SearchFieldKey.ANCESTOR_PATH.name())).append(':')
+                query.append(SearchFieldKey.ANCESTOR_PATH.getSolrField()).append(':')
                         .append(SolrSettings.sanitize(ancestorPathBean.getPath().getSearchValue()));
             }
 
             // Target any children with timestamp older than start time.
-            query.append(" AND ").append(solrSettings.getFieldName(SearchFieldKey.TIMESTAMP.name()))
+            query.append(" AND ").append(SearchFieldKey.TIMESTAMP.getSolrField())
                     .append(":{* TO ").append(staleTimestamp).append("}");
 
             solrUpdateDriver.deleteByQuery(query.toString());
