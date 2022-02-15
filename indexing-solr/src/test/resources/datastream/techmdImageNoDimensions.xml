@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<premis3:premis xmlns:premis3="http://www.loc.gov/premis/v3">
+  <premis3:object xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="premis3:file">
+    <premis3:objectCharacteristics>
+      <premis3:compositionLevel>0</premis3:compositionLevel>
+      <premis3:format>
+        <premis3:formatDesignation>
+          <premis3:formatName>JPEG EXIF</premis3:formatName>
+        </premis3:formatDesignation>
+      </premis3:format>
+      <premis3:size>66500</premis3:size>
+      <premis3:objectCharacteristicsExtension>
+        <fits xmlns="http://hul.harvard.edu/ois/xml/ns/fits/fits_output" xsi:schemaLocation="http://hul.harvard.edu/ois/xml/ns/fits/fits_output http://hul.harvard.edu/ois/xml/xsd/fits/fits_output.xsd" version="1.6.4-wisc-SNAPSHOT" timestamp="2/4/22, 11:11 AM">
+          <identification status="SINGLE_RESULT">
+            <identity format="JPEG EXIF" mimetype="image/jpeg" toolname="FITS" toolversion="1.6.4-wisc-SNAPSHOT">
+              <tool toolname="NLNZ Metadata Extractor" toolversion="3.6GA" />
+              <version toolname="NLNZ Metadata Extractor" toolversion="3.6GA">1.1</version>
+            </identity>
+          </identification>
+          <fileinfo>
+            <lastmodified toolname="Exiftool" toolversion="12.29" status="CONFLICT">2012:05:08 14:09:05</lastmodified>
+            <lastmodified toolname="Tika" toolversion="2.0.0" status="CONFLICT">2012-05-08T10:09:05</lastmodified>
+            <created toolname="NLNZ Metadata Extractor" toolversion="3.6GA" status="CONFLICT">2012:05:08 14:09:05</created>
+            <created toolname="Tika" toolversion="2.0.0" status="CONFLICT">2012-05-08T10:09:05</created>
+            <filepath toolname="OIS File Information" toolversion="1.0" status="SINGLE_RESULT">/opt/data/test_staging/pyr_dir/therapy-dog-pyr1.jpg</filepath>
+            <filename toolname="OIS File Information" toolversion="1.0" status="SINGLE_RESULT">therapy-dog-pyr1.jpg</filename>
+            <size toolname="OIS File Information" toolversion="1.0">66500</size>
+            <md5checksum toolname="OIS File Information" toolversion="1.0" status="SINGLE_RESULT">c55102ab3c25319a1ff13730532e52a0</md5checksum>
+            <fslastmodified toolname="OIS File Information" toolversion="1.0" status="SINGLE_RESULT">1643991034440</fslastmodified>
+          </fileinfo>
+          <filestatus />
+          <metadata>
+            <image>
+              <lightSource toolname="NLNZ Metadata Extractor" toolversion="3.6GA" status="SINGLE_RESULT">unknown</lightSource>
+              <standard>
+                <mix:mix xmlns:mix="http://www.loc.gov/mix/v20">
+                  <mix:BasicDigitalObjectInformation />
+                  <mix:BasicImageInformation>
+                    <mix:BasicImageCharacteristics>
+                      <mix:PhotometricInterpretation />
+                    </mix:BasicImageCharacteristics>
+                  </mix:BasicImageInformation>
+                  <mix:ImageCaptureMetadata>
+                    <mix:GeneralCaptureInformation>
+                      <mix:dateTimeCreated>2012-05-08T14:09:05</mix:dateTimeCreated>
+                    </mix:GeneralCaptureInformation>
+                    <mix:DigitalCameraCapture>
+                      <mix:DigitalCameraModel />
+                      <mix:CameraCaptureSettings>
+                        <mix:ImageData>
+                          <mix:lightSource>unknown</mix:lightSource>
+                        </mix:ImageData>
+                      </mix:CameraCaptureSettings>
+                    </mix:DigitalCameraCapture>
+                  </mix:ImageCaptureMetadata>
+                  <mix:ImageAssessmentMetadata>
+                    <mix:SpatialMetrics />
+                    <mix:ImageColorEncoding />
+                  </mix:ImageAssessmentMetadata>
+                </mix:mix>
+              </standard>
+            </image>
+          </metadata>
+          <statistics fitsExecutionTime="296">
+            <tool toolname="MediaInfo" toolversion="21.03" status="did not run" />
+            <tool toolname="OIS Audio Information" toolversion="0.1" status="did not run" />
+            <tool toolname="ADL Tool" toolversion="0.1" status="did not run" />
+            <tool toolname="VTT Tool" toolversion="0.1" status="did not run" />
+            <tool toolname="Droid" toolversion="[could not launch tool]" status="failed" />
+            <tool toolname="Exiftool" toolversion="12.29" executionTime="114" />
+            <tool toolname="NLNZ Metadata Extractor" toolversion="3.6GA" executionTime="294" />
+            <tool toolname="OIS File Information" toolversion="1.0" executionTime="1" />
+            <tool toolname="OIS XML Metadata" toolversion="0.2" status="did not run" />
+            <tool toolname="Tika" toolversion="2.0.0" executionTime="5" />
+          </statistics>
+        </fits>
+      </premis3:objectCharacteristicsExtension>
+    </premis3:objectCharacteristics>
+    <premis3:objectIdentifier>
+      <premis3:objectIdentifierType>Fedora Datastream PID</premis3:objectIdentifierType>
+      <premis3:objectIdentifierValue>http://dcr-test-bes.libint.unc.edu:8181/fcrepo/rest/content/38/a6/42/65/38a64265-9bfd-48f2-89f0-6507a33d7df3</premis3:objectIdentifierValue>
+    </premis3:objectIdentifier>
+  </premis3:object>
+</premis3:premis>

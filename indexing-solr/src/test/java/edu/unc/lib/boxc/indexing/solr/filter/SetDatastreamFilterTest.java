@@ -223,6 +223,32 @@ public class SetDatastreamFilterTest {
         assertEquals(FILE_SIZE + FILE2_SIZE + (FILE3_SIZE * 2), (long) idb.getFilesizeTotal());
     }
 
+    @Test
+    public void fileObjectImageBinaryNoDimensionsTest() throws Exception {
+        when(binObj.getResource()).thenReturn(
+                fileResource(ORIGINAL_FILE.getId(), FILE_SIZE, FILE3_MIMETYPE, "test.png", FILE_DIGEST));
+
+        BinaryObject binObj2 = mock(BinaryObject.class);
+        when(binObj2.getPid()).thenReturn(DatastreamPids.getTechnicalMetadataPid(pid));
+        when(binObj2.getResource()).thenReturn(
+                fileResource(TECHNICAL_METADATA.getId(), FILE2_SIZE, FILE2_MIMETYPE, FILE2_NAME, FILE2_DIGEST));
+        when(binObj2.getBinaryStream()).thenReturn(getClass().getResourceAsStream("/datastream/techmdImageNoDimensions.xml"));
+
+        when(fileObj.getBinaryObjects()).thenReturn(Arrays.asList(binObj, binObj2));
+        dip.setContentObject(fileObj);
+
+        filter.filter(dip);
+
+        assertContainsDatastream(idb.getDatastream(), ORIGINAL_FILE.getId(),
+                FILE_SIZE, FILE3_MIMETYPE, "test.png", FILE_DIGEST, null, null);
+        assertContainsDatastream(idb.getDatastream(), TECHNICAL_METADATA.getId(),
+                FILE2_SIZE, FILE2_MIMETYPE, FILE2_NAME, FILE2_DIGEST, null, null);
+
+        assertEquals(FILE_SIZE, (long) idb.getFilesizeSort());
+        // JP2 and thumbnail set to same size
+        assertEquals(FILE_SIZE + FILE2_SIZE, (long) idb.getFilesizeTotal());
+    }
+
     @Test(expected = IndexingException.class)
     public void fileObjectNoOriginalTest() throws Exception {
         when(binObj.getResource()).thenReturn(
@@ -358,8 +384,6 @@ public class SetDatastreamFilterTest {
         String joined = components.stream()
                 .map(c -> c == null ? "" : c.toString())
                 .collect(Collectors.joining("|"));
-        System.out.println("Values: " + values);
-        System.out.println("Seeking: " + joined);
         assertTrue("Did not contain datastream " + name, values.contains(joined));
     }
 
