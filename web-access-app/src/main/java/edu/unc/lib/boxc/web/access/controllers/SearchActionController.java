@@ -101,7 +101,7 @@ public class SearchActionController extends AbstractErrorHandlingSearchControlle
         SearchRequest searchRequest = generateSearchRequest(request);
         searchRequest.setRootPid(PIDs.get(pid));
         searchRequest.setApplyCutoffs(true);
-        setDefaultRollup(searchRequest);
+        setDefaultRollup(searchRequest, true);
         SearchResultResponse resultResponse = queryLayer.performSearch(searchRequest);
         populateThumbnailUrls(searchRequest, resultResponse);
         return getResults(resultResponse, "list", request);
@@ -136,7 +136,7 @@ public class SearchActionController extends AbstractErrorHandlingSearchControlle
             searchRequest.setRootPid(PIDs.get(pid));
         }
         searchRequest.setApplyCutoffs(false);
-        setDefaultRollup(searchRequest);
+        setDefaultRollup(searchRequest, false);
 
         SearchResultResponse resultResponse = queryLayer.performSearch(searchRequest);
         populateThumbnailUrls(searchRequest, resultResponse);
@@ -161,12 +161,12 @@ public class SearchActionController extends AbstractErrorHandlingSearchControlle
         return getResults(resultResponse, "search", request);
     }
 
-    private void setDefaultRollup(SearchRequest searchRequest) {
+    private void setDefaultRollup(SearchRequest searchRequest, boolean isListing) {
         if (searchRequest.getSearchState().getRollup() == null) {
             var enableRollup = shouldEnableRollup(searchRequest);
             LOG.debug("Rollup not specified in request, determine rollup should be set to {}", enableRollup);
             searchRequest.getSearchState().setRollup(enableRollup);
-            if (!enableRollup) {
+            if (!enableRollup && !isListing) {
                 searchRequest.getSearchState().getResourceTypes().remove(ResourceType.File.name());
             }
         }
