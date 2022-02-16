@@ -16,6 +16,7 @@
 package edu.unc.lib.boxc.search.solr.config;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -173,6 +174,7 @@ public class SearchSettings extends AbstractSettings {
         setQueryMaxLength(Integer.parseInt(properties.getProperty("search.query.maxLength", "255")));
         setDefaultOperator(properties.getProperty("search.query.defaultOperator", ""));
         populateCollectionFromProperty("search.query.operators", operators, properties, ",");
+        operators = Collections.unmodifiableSet(operators);
         setDefaultPerPage(Integer.parseInt(properties.getProperty("search.results.defaultPerPage", "0")));
         setDefaultCollectionsPerPage(Integer.parseInt(properties.getProperty("search.results.defaultCollectionsPerPage",
                 "0")));
@@ -200,6 +202,10 @@ public class SearchSettings extends AbstractSettings {
                 ",");
         populateCollectionFromProperty("search.facet.defaultStructureBrowse", facetNamesStructureBrowse,
                 properties, ",");
+        facetNames = Collections.unmodifiableList(facetNames);
+        searchFacetNames = Collections.unmodifiableList(searchFacetNames);
+        collectionBrowseFacetNames = Collections.unmodifiableList(collectionBrowseFacetNames);
+        facetNamesStructureBrowse = Collections.unmodifiableList(facetNamesStructureBrowse);
         try {
             populateClassMapFromProperty("search.facet.class.", "edu.unc.lib.boxc.search.solr.facets.",
                     this.facetClasses, properties);
@@ -213,23 +219,35 @@ public class SearchSettings extends AbstractSettings {
         populateCollectionFromProperty("search.field.searchable", searchableFields, properties, ",");
         populateCollectionFromProperty("search.field.rangeSearchable", rangeSearchableFields, properties, ",");
         populateCollectionFromProperty("search.field.dateSearchable", dateSearchableFields, properties, ",");
+        searchableFields = Collections.unmodifiableSet(searchableFields);
+        rangeSearchableFields = Collections.unmodifiableSet(rangeSearchableFields);
+        dateSearchableFields = Collections.unmodifiableSet(dateSearchableFields);
+
         populateMapFromProperty("search.field.paramName.", searchFieldParams, properties);
         searchFieldKeys = getInvertedHashMap(searchFieldParams);
         populateMapFromProperty("search.field.display.", searchFieldLabels, properties);
         populateMapFromProperty("search.actions.", actions, properties);
         populateMapFromProperty("search.url.param.", searchStateParams, properties);
         populateListMapFromProperty("search.results.fields", resultFields, properties);
+        searchFieldParams = Collections.unmodifiableMap(searchFieldParams);
+        searchFieldLabels = Collections.unmodifiableMap(searchFieldLabels);
+        actions = Collections.unmodifiableMap(actions);
+        searchStateParams = Collections.unmodifiableMap(searchStateParams);
+        resultFields = Collections.unmodifiableMap(resultFields);
 
         // Populate sort types
         setSortReverse(properties.getProperty("search.sort.order.reverse", ""));
         setSortNormal(properties.getProperty("search.sort.order.normal", ""));
         populateMapFromProperty("search.sort.name.", sortDisplayNames, properties);
         populateCollectionFromProperty("search.sort.displayOrder", sortDisplayOrder, properties, "\\|");
+        sortDisplayOrder = Collections.unmodifiableList(sortDisplayOrder);
 
         // Access field names
         this.setAllowPatronAccess(new Boolean(properties.getProperty("search.access.allowPatrons", "true")));
         populateCollectionFromProperty("search.access.fields", accessFields, properties, ",");
         populateCollectionFromProperty("search.access.filterableFields", accessFilterableFields, properties, ",");
+        accessFields = Collections.unmodifiableSet(accessFields);
+        accessFilterableFields = Collections.unmodifiableSet(accessFilterableFields);
 
         // Resource Types
         setResourceTypeFile(properties.getProperty("search.resource.type.file", ""));
@@ -242,6 +260,9 @@ public class SearchSettings extends AbstractSettings {
         populateCollectionFromProperty("search.resource.searchDefault", defaultResourceTypes, properties, ",");
         populateCollectionFromProperty("search.resource.collectionDefault", defaultCollectionResourceTypes,
                 properties, ",");
+        resourceTypes = Collections.unmodifiableSet(resourceTypes);
+        defaultResourceTypes = Collections.unmodifiableList(defaultResourceTypes);
+        defaultCollectionResourceTypes = Collections.unmodifiableList(defaultCollectionResourceTypes);
 
         Iterator<Map.Entry<Object, Object>> propIt = properties.entrySet().iterator();
         while (propIt.hasNext()) {
@@ -258,6 +279,7 @@ public class SearchSettings extends AbstractSettings {
                 this.sortTypes.put(propertyKey.substring(propertyKey.lastIndexOf(".") + 1), sortFields);
             }
         }
+        sortTypes = Collections.unmodifiableMap(sortTypes);
     }
 
     public int getFacetsPerGroup() {
