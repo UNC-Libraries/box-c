@@ -167,6 +167,8 @@ public class SearchActionController extends AbstractErrorHandlingSearchControlle
             LOG.debug("Rollup not specified in request, determine rollup should be set to {}", enableRollup);
             searchRequest.getSearchState().setRollup(enableRollup);
             if (!enableRollup && !isListing) {
+                LOG.debug("Removing File objects from non-rollup query {}",
+                        searchRequest.getSearchState().getResourceTypes());
                 searchRequest.getSearchState().getResourceTypes().remove(ResourceType.File.name());
             }
         }

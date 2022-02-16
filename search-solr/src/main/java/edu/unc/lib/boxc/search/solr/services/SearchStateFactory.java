@@ -71,7 +71,7 @@ public class SearchStateFactory {
         SearchState searchState = new SearchState();
 
         searchState.setBaseFacetLimit(searchSettings.facetsPerGroup);
-        searchState.setResourceTypes(searchSettings.defaultResourceTypes);
+        searchState.setResourceTypes(new ArrayList<>(searchSettings.defaultResourceTypes));
         searchState.setSearchTermOperator(searchSettings.defaultOperator);
         searchState.setRowsPerPage(searchSettings.defaultPerPage);
         searchState.setFacetsToRetrieve(new ArrayList<>(searchSettings.searchFacetNames));
@@ -180,7 +180,7 @@ public class SearchStateFactory {
     public SearchState createStructureBrowseSearchState() {
         SearchState searchState = new SearchState();
         searchState.setResultFields(new ArrayList<>(searchSettings.resultFields.get("structure")));
-        searchState.setResourceTypes(searchSettings.defaultResourceTypes);
+        searchState.setResourceTypes(new ArrayList<>(searchSettings.defaultResourceTypes));
         searchState.setSearchTermOperator(searchSettings.defaultOperator);
         searchState.setRowsPerPage(0);
         searchState.setStartRow(0);
@@ -206,7 +206,7 @@ public class SearchStateFactory {
         SearchState searchState = new SearchState();
         searchState.setResultFields(new ArrayList<>(searchSettings.resultFields.get("structure")));
         searchState.setBaseFacetLimit(searchSettings.facetsPerGroup);
-        searchState.setResourceTypes(searchSettings.defaultResourceTypes);
+        searchState.setResourceTypes(new ArrayList<>(searchSettings.defaultResourceTypes));
         searchState.setSearchTermOperator(searchSettings.defaultOperator);
         searchState.setRowsPerPage(searchSettings.defaultPerPage);
         searchState.setStartRow(0);
@@ -244,7 +244,7 @@ public class SearchStateFactory {
     public SearchState createFacetSearchState(String facetField, String facetSort, int maxResults) {
         SearchState searchState = new SearchState();
 
-        searchState.setResourceTypes(searchSettings.defaultResourceTypes);
+        searchState.setResourceTypes(new ArrayList<>(searchSettings.defaultResourceTypes));
         searchState.setRowsPerPage(0);
         searchState.setStartRow(0);
 
@@ -358,7 +358,7 @@ public class SearchStateFactory {
 
         //Determine resource types selected
         parameter = getParameter(request, searchSettings.searchStateParam("RESOURCE_TYPES"));
-        ArrayList<String> resourceTypes = new ArrayList<>();
+        var resourceTypes = new ArrayList<String>();
         if (parameter == null) {
             //If resource types aren't specified, load the defaults.
             resourceTypes.addAll(searchSettings.defaultResourceTypes);
