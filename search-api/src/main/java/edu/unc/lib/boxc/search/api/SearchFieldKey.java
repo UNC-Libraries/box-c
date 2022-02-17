@@ -51,6 +51,7 @@ public enum SearchFieldKey {
     FILESIZE("filesizeSort"),
     FILESIZE_TOTAL("filesizeTotal"),
     FULL_TEXT("fullText"),
+    GENRE("genre"),
     ID("id"),
     IDENTIFIER("identifier"),
     IDENTIFIER_SORT("identifierSort"),

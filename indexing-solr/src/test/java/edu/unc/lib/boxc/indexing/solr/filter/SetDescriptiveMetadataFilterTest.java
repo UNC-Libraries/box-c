@@ -139,11 +139,13 @@ public class SetDescriptiveMetadataFilterTest {
         List<String> keywords = idb.getKeyword();
         assertTrue(keywords.contains("abc123"));
 
-        assertTrue(keywords.contains("Dissertation"));
+        assertFalse(keywords.contains("Dissertation"));
         assertTrue(keywords.contains("text"));
         assertTrue(keywords.contains("note"));
         assertTrue(keywords.contains("phys note"));
         assertTrue(keywords.contains("Cited source"));
+
+        assertTrue(idb.getGenre().contains("Dissertation"));
 
         assertEquals("citation text", idb.getCitation());
     }

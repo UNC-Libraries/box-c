@@ -299,6 +299,11 @@ public class GroupedContentObjectSolrRecord implements GroupedContentObjectRecor
     }
 
     @Override
+    public List<String> getGenre() {
+        return this.representative.getGenre();
+    }
+
+    @Override
     public List<String> getLanguage() {
         return this.representative.getLanguage();
     }
