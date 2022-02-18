@@ -72,9 +72,9 @@ public class ObjectPathFactory {
         mapBuilder.maximumWeightedCapacity(cacheSize);
         this.pathCache = mapBuilder.build();
 
-        titleFieldName = solrSettings.getFieldName(SearchFieldKey.TITLE.name());
-        typeFieldName = solrSettings.getFieldName(SearchFieldKey.RESOURCE_TYPE.name());
-        collectionId = solrSettings.getFieldName(SearchFieldKey.COLLECTION_ID.name());
+        titleFieldName = SearchFieldKey.TITLE.getSolrField();
+        typeFieldName = SearchFieldKey.RESOURCE_TYPE.getSolrField();
+        collectionId = SearchFieldKey.COLLECTION_ID.getSolrField();
         pathFields = Arrays.asList(titleFieldName, typeFieldName);
         startObjectFields = Arrays.asList(SearchFieldKey.ID.name(),
                 SearchFieldKey.TITLE.name(), SearchFieldKey.RESOURCE_TYPE.name(),

@@ -134,7 +134,7 @@ public class SolrQueryLayerService extends SolrSearchService {
         SolrQuery solrQuery = new SolrQuery();
         solrQuery.setQuery(query.toString());
         // Only take into account permissions provided from collections and units
-        solrQuery.addFacetQuery(solrSettings.getFieldName(SearchFieldKey.RESOURCE_TYPE.name())
+        solrQuery.addFacetQuery(SearchFieldKey.RESOURCE_TYPE.getSolrField()
                 + ":(" + ResourceType.Collection.name() + " " + ResourceType.AdminUnit.name() + ")");
 
         solrQuery.setRows(0);
@@ -232,7 +232,7 @@ public class SolrQueryLayerService extends SolrSearchService {
 
         SolrQuery query = generateSearch(searchRequest);
 
-        query.setQuery(query.getQuery() + " AND " + solrSettings.getFieldName(SearchFieldKey.RELATIONS.name()) + ":"
+        query.setQuery(query.getQuery() + " AND " + SearchFieldKey.RELATIONS.getSolrField() + ":"
                 + SolrSettings.sanitize(relationName) + "|*");
         query.setRows(1000);
 

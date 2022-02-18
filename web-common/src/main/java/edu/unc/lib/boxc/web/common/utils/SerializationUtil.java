@@ -224,7 +224,7 @@ public class SerializationUtil {
             while (fieldIt.hasNext()) {
                 Entry<String, Object> entry = fieldIt.next();
                 // Translate the solr field back into the query parameter name
-                String fieldKey = solrSettings.getFieldKey(entry.getKey());
+                String fieldKey = solrSettings.getDynamicFieldKey(entry.getKey());
                 String paramName = searchSettings.getSearchFieldParam(fieldKey);
                 if (paramName != null) {
                     result.put(paramName, entry.getValue());

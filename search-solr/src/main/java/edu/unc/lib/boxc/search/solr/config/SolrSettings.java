@@ -15,17 +15,19 @@
  */
 package edu.unc.lib.boxc.search.solr.config;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Properties;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
+import edu.unc.lib.boxc.search.api.SearchFieldKey;
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.impl.HttpSolrClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Utility class which stores Solr index addressing and instantiation settings from a properties file.
@@ -43,10 +45,13 @@ public class SolrSettings extends AbstractSettings {
     private int maxConnections;
     private int maxRetries;
     // Mapping of field keys to internal solr field names
-    private HashMap<String, String> fieldNames;
+    private Map<String, String> fieldNames;
     // Reverse of fieldName, for translating from the internal solr field name to the general field identification key
-    private HashMap<String, String> fieldNameToKey;
-    private String[] requiredFields;
+    private Map<String, String> fieldNameToKey;
+    private String[] requiredFields = new String[] {
+            SearchFieldKey.ADMIN_GROUP.getSolrField(), SearchFieldKey.ID.getSolrField(),
+            SearchFieldKey.RESOURCE_TYPE.getSolrField(), SearchFieldKey.ROLE_GROUP.getSolrField(),
+            SearchFieldKey.ROLLUP_ID.getSolrField(), SearchFieldKey.TITLE.getSolrField() };
 
     public SolrSettings() {
         fieldNames = new HashMap<>();
@@ -62,7 +67,6 @@ public class SolrSettings extends AbstractSettings {
         LOG.debug("Setting properties.");
         this.setPath(properties.getProperty("solr.path", ""));
         this.setCore(properties.getProperty("solr.core", ""));
-        this.setRequiredFields(properties.getProperty("solr.requiredFields", ""));
         this.setSocketTimeout(Integer.parseInt(properties.getProperty("solr.socketTimeout", "1000")));
         this.setConnectionTimeout(Integer.parseInt(properties.getProperty("solr.connectionTimeout", "100")));
         this.setDefaultMaxConnectionsPerHost(Integer.parseInt(properties.getProperty(
@@ -175,10 +179,6 @@ public class SolrSettings extends AbstractSettings {
         return requiredFields;
     }
 
-    public void setRequiredFields(String requiredFields) {
-        this.requiredFields = requiredFields.split(",");
-    }
-
     public int getSocketTimeout() {
         return socketTimeout;
     }
@@ -232,36 +232,13 @@ public class SolrSettings extends AbstractSettings {
     }
 
     /**
-     * Returns the field identification key for the internal solr field name given
+     * Returns the dynamic field identification key for the internal solr field name given
      *
      * @param name
      * @return
      */
-    public String getFieldKey(String name) {
+    public String getDynamicFieldKey(String name) {
         return fieldNameToKey.get(name);
-    }
-
-    public HashMap<String, String> getFieldNameToKey() {
-        return this.fieldNameToKey;
-    }
-
-    /**
-     * Returns the internal solr field name for the field identified by key
-     *
-     * @param key
-     * @return
-     */
-    public String getFieldName(String key) {
-        return fieldNames.get(key);
-    }
-
-    public HashMap<String, String> getFieldNames() {
-        return fieldNames;
-    }
-
-    public void setFieldNames(HashMap<String, String> fieldNames) {
-        this.fieldNames = fieldNames;
-        fieldNameToKey = getInvertedHashMap(fieldNames);
     }
 
     public int getMaxRetries() {

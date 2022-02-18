@@ -21,6 +21,7 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import edu.unc.lib.boxc.search.api.SearchFieldKey;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -57,14 +58,16 @@ public class FacetFieldUtil {
         searchState.getFacets().forEach((fieldName, facets) -> {
             if (facetIsOfType(facets, CutoffFacet.class)) {
                 CutoffFacet facet = (CutoffFacet) facets.get(0);
-                String solrFieldName = solrSettings.getFieldName(facet.getFieldName());
-                if (facet.getFacetCutoff() != null) {
-                    solrQuery.setFacetPrefix(solrFieldName, facet.getFacetCutoff() + ",");
+                var field = SearchFieldKey.valueOf(facet.getFieldName());
+                if (facet.getFacetCutoff() != null && field != null) {
+                    solrQuery.setFacetPrefix(field.getSolrField(), facet.getFacetCutoff() + ",");
                 }
             } else if (facetIsOfType(facets, MultivaluedHierarchicalFacet.class)) {
                 MultivaluedHierarchicalFacet facet = (MultivaluedHierarchicalFacet) facets.get(0);
-                String solrFieldName = solrSettings.getFieldName(facet.getFieldName());
-                solrQuery.setFacetPrefix(solrFieldName, facet.getPivotValue());
+                var field = SearchFieldKey.valueOf(facet.getFieldName());
+                if (field != null) {
+                    solrQuery.setFacetPrefix(field.getSolrField(), facet.getPivotValue());
+                }
             }
         });
     }
@@ -133,7 +136,7 @@ public class FacetFieldUtil {
         CutoffFacet facet = (CutoffFacet) inFacet;
         List<HierarchicalFacetNode> facetNodes = facet.getFacetNodes();
         CutoffFacetNode endNode = (CutoffFacetNode) facetNodes.get(facetNodes.size() - 1);
-        String solrFieldName = solrSettings.getFieldName(facet.getFieldName());
+        String solrFieldName = SearchFieldKey.valueOf(facet.getFieldName()).getSolrField();
 
         StringBuilder filterQuery = new StringBuilder("(");
         filterQuery.append(solrFieldName).append(":").append(endNode.getTier()).append(",");
@@ -153,7 +156,7 @@ public class FacetFieldUtil {
     private Function<SearchFacet, String> multivaluedFacetToFq = (inFacet) -> {
         MultivaluedHierarchicalFacet facet = (MultivaluedHierarchicalFacet) inFacet;
         StringBuilder filterQuery = new StringBuilder();
-        String solrFieldName = solrSettings.getFieldName(facet.getFieldName());
+        String solrFieldName = SearchFieldKey.valueOf(facet.getFieldName()).getSolrField();
 
         filterQuery.append(solrFieldName).append(":").append(
                 SolrSettings.sanitize(facet.getSearchValue())).append(",*");
@@ -161,13 +164,14 @@ public class FacetFieldUtil {
     };
 
     private Function<SearchFacet, String> genericFacetToFq = (facet) -> {
-        return solrSettings.getFieldName(facet.getFieldName()) + ":\""
+        String solrFieldName = SearchFieldKey.valueOf(facet.getFieldName()).getSolrField();
+        return SearchFieldKey.valueOf(facet.getFieldName()).getSolrField() + ":\""
                 + SolrSettings.sanitize(facet.getSearchValue()) + "\"";
     };
 
     private Function<SearchFacet, String> caseInsensitiveFacetToFq = (inFacet) -> {
         CaseInsensitiveFacet facet = (CaseInsensitiveFacet) inFacet;
-        return solrSettings.getFieldName(facet.getSearchName()) + ":\""
+        return SearchFieldKey.valueOf(facet.getSearchName()).getSolrField() + ":\""
                 + SolrSettings.sanitize(facet.getSearchValue()) + "\"";
     };
 
@@ -187,7 +191,7 @@ public class FacetFieldUtil {
     }
 
     public void addDefaultFacetPivot(String fieldKey, Class<?> facetClass, SolrQuery solrQuery) {
-        String solrFieldName = solrSettings.getFieldName(fieldKey);
+        String solrFieldName = SearchFieldKey.valueOf(fieldKey).getSolrField();
         if (CutoffFacet.class.equals(facetClass)) {
             solrQuery.add("f." + solrFieldName + ".facet.prefix", "1,");
         } else if (MultivaluedHierarchicalFacet.class.equals(facetClass)) {

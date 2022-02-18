@@ -15,6 +15,11 @@
  */
 package edu.unc.lib.boxc.search.api;
 
+import java.util.Arrays;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
 /**
  *
  * @author bbpennel
@@ -63,6 +68,8 @@ public enum SearchFieldKey {
     RESOURCE_TYPE_SORT("resourceTypeSort"),
     ROLE_GROUP("roleGroup"),
     ROLLUP_ID("rollup"),
+    SCOPE("scope"),
+    SCORE("score"),
     STATUS("status"),
     SUBJECT("subject"),
     SUBJECT_INDEX("subjectIndex"),
@@ -74,6 +81,9 @@ public enum SearchFieldKey {
 
     private final String solrField;
 
+    private static Map<String, SearchFieldKey> nameToKey = Arrays.stream(SearchFieldKey.values())
+            .collect(Collectors.toMap(SearchFieldKey::getSolrField, Function.identity()));
+
     private SearchFieldKey(String solrField) {
         this.solrField = solrField;
     }
@@ -84,5 +94,13 @@ public enum SearchFieldKey {
      */
     public String getSolrField() {
         return solrField;
+    }
+
+    /**
+     * @param name
+     * @return the SearchFieldKey which has a solr field name matching the provided value
+     */
+    public static SearchFieldKey getByName(String name) {
+        return nameToKey.get(name);
     }
 }
