@@ -36,16 +36,11 @@
   <mods:note displayLabel="Keywords" />
   <mods:note displayLabel="Place of Interview" />
   <mods:note displayLabel="Locations" />
-  <mods:physicalDescription>
-    <mods:extent />
+  <mods:physicalDescription displayLabel="Duration">
+    <mods:extent unit="hours" />
   </mods:physicalDescription>
   <mods:typeOfResource>sound recording-nonmusical</mods:typeOfResource>
   <mods:abstract />
-  <mods:relatedItem type="host" displayLabel="Host Collection">
-    <mods:titleInfo>
-      <mods:title />
-    </mods:titleInfo>
-  </mods:relatedItem>
   <mods:location displayLabel="Alternate file location">
     <mods:url />
   </mods:location>
@@ -74,11 +69,14 @@
       <mods:roleTerm authority="marcrelator" type="text">Producer</mods:roleTerm>
     </mods:role>
   </mods:name>
-  <mods:subject>
-    <mods:topic authority="lcsh" />
-    <mods:name authority="naf">
+  <mods:subject authority="lcsh">
+    <mods:topic />
+    <mods:name type="personal">
       <mods:namePart />
     </mods:name>
-    <mods:geographic authority="lcsh" />
+    <mods:name type="corporate">
+      <mods:namePart />
+    </mods:name>
+    <mods:geographic />
   </mods:subject>
 </mods:mods>

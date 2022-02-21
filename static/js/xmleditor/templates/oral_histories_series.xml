@@ -24,11 +24,14 @@
     <mods:languageTerm authority="iso639-2b" type="code" />
   </mods:language>
   <mods:note displayLabel="Keywords" />
-  <mods:subject>
-    <mods:topic authority="lcsh" />
-    <mods:name authority="naf">
+  <mods:subject authority="lcsh">
+    <mods:topic />
+    <mods:name type="personal">
       <mods:namePart />
     </mods:name>
-    <mods:geographic authority="lcsh" />
+    <mods:name type="corporate">
+      <mods:namePart />
+    </mods:name>
+    <mods:geographic />
   </mods:subject>
 </mods:mods>
