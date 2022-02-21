@@ -25,7 +25,7 @@
     import routeUtils from '../mixins/routeUtils';
 
     const UUID_REGEX = /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i;
-    const POSSIBLE_FACET_PARAMS = ['collection', 'format', 'language', 'subject'];
+    const POSSIBLE_FACET_PARAMS = ['collection', 'format', 'language', 'subject', 'genre'];
 
     export default {
         name: 'facets',
@@ -217,6 +217,8 @@
                     return 'Language';
                 } else if (value === 'SUBJECT') {
                     return 'Subject';
+                } else if (value === 'GENRE') {
+                    return 'Genre';
                 } else {
                     return value;
                 }
@@ -233,6 +235,8 @@
                     facet_type = 'language=';
                 } else if (value.fieldName === 'SUBJECT') {
                     facet_type = 'subject=';
+                } else if (value.fieldName === 'GENRE') {
+                    facet_type = 'genre=';
                 } else {
                     facet_type = '';
                 }

@@ -25,7 +25,8 @@ const TYPES = {
     contributorIndex: 'Contributor',
     format: 'Format',
     subjectIndex: 'Subject',
-    titleIndex: 'Title'
+    titleIndex: 'Title',
+    genre: 'Genre'
 }
 
 export default {

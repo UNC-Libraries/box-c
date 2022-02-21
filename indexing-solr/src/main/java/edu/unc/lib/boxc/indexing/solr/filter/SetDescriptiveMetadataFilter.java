@@ -83,6 +83,7 @@ public class SetDescriptiveMetadataFilter implements IndexDocumentFilter {
             this.extractIdentifiers(mods, idb);
             this.extractCitation(mods, idb);
             this.extractKeywords(mods, idb);
+            this.extractGenre(mods, idb);
         }
 
         if (idb.getTitle() == null) {
@@ -379,7 +380,6 @@ public class SetDescriptiveMetadataFilter implements IndexDocumentFilter {
     }
 
     private void extractKeywords(Element mods, IndexDocumentBean idb) {
-        this.addValuesToList(idb.getKeyword(), mods.getChildren("genre", JDOMNamespaceUtil.MODS_V3_NS));
         this.addValuesToList(idb.getKeyword(), mods.getChildren("typeOfResource", JDOMNamespaceUtil.MODS_V3_NS));
         this.addValuesToList(idb.getKeyword(), mods.getChildren("note", JDOMNamespaceUtil.MODS_V3_NS));
         List<Element> physicalDescription = mods.getChildren("physicalDescription", JDOMNamespaceUtil.MODS_V3_NS);
@@ -396,6 +396,11 @@ public class SetDescriptiveMetadataFilter implements IndexDocumentFilter {
         }
     }
 
+    private void extractGenre(Element mods, IndexDocumentBean idb) {
+        idb.setGenre(new ArrayList<>());
+        this.addValuesToList(idb.getGenre(), mods.getChildren("genre", JDOMNamespaceUtil.MODS_V3_NS));
+    }
+
     private void addValuesToList(List<String> values, List<Element> elements) {
         if (elements == null) {
             return;
@@ -403,7 +408,7 @@ public class SetDescriptiveMetadataFilter implements IndexDocumentFilter {
         for (Element elementObj: elements) {
             String value = elementObj.getValue();
             if (value != null) {
-                values.add(value);
+                values.add(value.trim());
             }
         }
     }

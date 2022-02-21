@@ -65,6 +65,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import edu.unc.lib.boxc.search.api.SearchFieldKey;
 import org.apache.solr.client.solrj.beans.Field;
 
 import edu.unc.lib.boxc.common.util.DateTimeUtil;
@@ -403,6 +404,15 @@ public class IndexDocumentBean {
 
     public List<String> getLanguage() {
         return (List<String>) fields.get(LANGUAGE.getSolrField());
+    }
+
+    @Field
+    public void setGenre(List<String> genre) {
+        fields.put(SearchFieldKey.GENRE.getSolrField(), genre);
+    }
+
+    public List<String> getGenre() {
+        return (List<String>) fields.get(SearchFieldKey.GENRE.getSolrField());
     }
 
     @Field
