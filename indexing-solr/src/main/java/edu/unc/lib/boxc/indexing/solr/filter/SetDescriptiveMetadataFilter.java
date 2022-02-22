@@ -155,39 +155,8 @@ public class SetDescriptiveMetadataFilter implements IndexDocumentFilter {
 
         for (Element nameEl : names) {
             // First see if there is a display form
-            String nameValue = nameEl.getChildText("displayForm", JDOMNamespaceUtil.MODS_V3_NS);
-            if (nameValue == null) {
-                // If there was no displayForm, then try to get the name parts.
-                List<Element> nameParts = nameEl.getChildren("namePart", JDOMNamespaceUtil.MODS_V3_NS);
-                if (nameParts.size() == 1) {
-                    nameValue = nameParts.get(0).getValue();
-                } else if (nameParts.size() > 1) {
-                    Element genericPart = JDOMQueryUtil.getElementByAttribute(nameParts, "type", null);
-                    if (genericPart != null) {
-                        nameValue = genericPart.getValue();
-                    } else {
-                        // If there were multiple non-generic name parts, then try to piece them together
-                        Element givenPart = JDOMQueryUtil.getElementByAttribute(nameParts, "type", "given");
-                        Element familyPart = JDOMQueryUtil.getElementByAttribute(nameParts, "type", "family");
-                        StringBuilder nameBuilder = new StringBuilder();
-                        if (familyPart != null) {
-                            nameBuilder.append(familyPart.getValue());
-                            if (givenPart != null) {
-                                nameBuilder.append(',').append(' ');
-                            }
-                        }
-                        if (givenPart != null) {
-                            nameBuilder.append(givenPart.getValue());
-                        }
-                        if (nameBuilder.length() > 0) {
-                            nameValue = nameBuilder.toString();
-                        } else {
-                            // Non-sensical name, just use the first available value.
-                            nameValue = nameParts.get(0).getValue();
-                        }
-                    }
-                }
-            }
+            String nameValue = formatName(nameEl);
+
             if (nameValue != null) {
                 contributors.add(nameValue);
 
@@ -274,8 +243,14 @@ public class SetDescriptiveMetadataFilter implements IndexDocumentFilter {
             for (Element subjectObj: subjectEls) {
                 List<Element> subjectParts = subjectObj.getChildren();
                 for (Element subjectEl: subjectParts) {
-                    if (subjectEl.getChildren().size() == 0) {
-                        subjects.add(subjectEl.getValue());
+                    String subjectName = subjectEl.getName();
+
+                    if (subjectName.equals("name")) {
+                        subjects.add(formatName(subjectEl));
+                    }
+
+                    if (subjectEl.getChildren().size() == 0 && subjectName.equals("topic")) {
+                            subjects.add(subjectEl.getValue());
                     }
                 }
             }
@@ -421,5 +396,42 @@ public class SetDescriptiveMetadataFilter implements IndexDocumentFilter {
         } else {
             idb.setCitation(null);
         }
+    }
+
+    private String formatName(Element nameEl) {
+        String nameValue = nameEl.getChildText("displayForm", JDOMNamespaceUtil.MODS_V3_NS);
+        if (nameValue == null) {
+            // If there was no displayForm, then try to get the name parts.
+            List<Element> nameParts = nameEl.getChildren("namePart", JDOMNamespaceUtil.MODS_V3_NS);
+            if (nameParts.size() == 1) {
+                nameValue = nameParts.get(0).getValue();
+            } else if (nameParts.size() > 1) {
+                Element genericPart = JDOMQueryUtil.getElementByAttribute(nameParts, "type", null);
+                if (genericPart != null) {
+                    nameValue = genericPart.getValue();
+                } else {
+                    // If there were multiple non-generic name parts, then try to piece them together
+                    Element givenPart = JDOMQueryUtil.getElementByAttribute(nameParts, "type", "given");
+                    Element familyPart = JDOMQueryUtil.getElementByAttribute(nameParts, "type", "family");
+                    StringBuilder nameBuilder = new StringBuilder();
+                    if (familyPart != null) {
+                        nameBuilder.append(familyPart.getValue());
+                        if (givenPart != null) {
+                            nameBuilder.append(',').append(' ');
+                        }
+                    }
+                    if (givenPart != null) {
+                        nameBuilder.append(givenPart.getValue());
+                    }
+                    if (nameBuilder.length() > 0) {
+                        nameValue = nameBuilder.toString();
+                    } else {
+                        // Nonsensical name, just use the first available value.
+                        nameValue = nameParts.get(0).getValue();
+                    }
+                }
+            }
+        }
+        return nameValue;
     }
 }

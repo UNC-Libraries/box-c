@@ -6,6 +6,13 @@
   <mods:genre>Dissertation</mods:genre>
   <mods:subject>
     <mods:topic>Test resource</mods:topic>
+    <mods:name>
+      <mods:namePart type="family">rules</mods:namePart>
+      <mods:namePart type="given">boxy</mods:namePart>
+    </mods:name>
+    <mods:titleInfo>
+      <mods:title>Subject Title</mods:title>
+    </mods:titleInfo>
   </mods:subject>
   <mods:typeOfResource>text</mods:typeOfResource>
   <mods:note>note</mods:note>
