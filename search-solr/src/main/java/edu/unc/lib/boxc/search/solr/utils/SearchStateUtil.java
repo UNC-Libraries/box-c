@@ -140,7 +140,7 @@ public class SearchStateUtil {
 
         //Append search term operator if its not the default
         if (searchState.getSearchTermOperator() != null &&
-                !searchState.getSearchTermOperator().equals(searchSettings.defaultOperator)) {
+                !searchState.getSearchTermOperator().equals(SearchSettings.DEFAULT_OPERATOR)) {
             params.put(searchSettings.searchStateParam("SEARCH_TERM_OPERATOR"), searchState.getSearchTermOperator());
         }
 

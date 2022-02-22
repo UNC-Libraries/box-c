@@ -54,6 +54,7 @@ import java.util.Optional;
 @Controller
 public class SearchActionController extends AbstractErrorHandlingSearchController {
     private static final Logger LOG = LoggerFactory.getLogger(SearchActionController.class);
+    private static final int DEFAULT_COLLECTIONS_PER_PAGE = 500;
 
     @Autowired
     private MultiSelectFacetListService multiSelectFacetListService;
@@ -122,8 +123,7 @@ public class SearchActionController extends AbstractErrorHandlingSearchControlle
         searchRequest.setApplyCutoffs(true);
 
         SearchState searchState = searchRequest.getSearchState();
-        searchState.setRowsPerPage(searchSettings.defaultCollectionsPerPage);
-        searchState.setFacetsToRetrieve(searchSettings.collectionBrowseFacetNames);
+        searchState.setRowsPerPage(DEFAULT_COLLECTIONS_PER_PAGE);
         SearchResultResponse resultResponse = queryLayer.performSearch(searchRequest);
         populateThumbnailUrls(searchRequest, resultResponse);
 

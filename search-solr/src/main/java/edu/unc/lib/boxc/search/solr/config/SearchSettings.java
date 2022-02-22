@@ -38,19 +38,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class SearchSettings extends AbstractSettings {
     private static final Logger log = LoggerFactory.getLogger(SearchSettings.class);
 
+    public static final String DEFAULT_OPERATOR = "AND";
+
     private Properties properties;
-    // Upper limit to the number of characters allowed in a single query field.
-    public int queryMaxLength;
-    // Default operator for looking up keyword terms.
-    public String defaultOperator;
-    // Set of possible boolean operators for looking up keyword terms.
-    public Set<String> operators;
     // Default number of rows to return for a search request.
     public int defaultPerPage;
-    // Default number of entries to return for a collection browse request.
-    public int defaultCollectionsPerPage;
-    // Default number of entries to retrieve for embedded/widget result lists
-    public int defaultListResultsPerPage;
     // Upper limit to the number of results allowed to be returned in a single search request.
     public int maxPerPage;
     // Upper limit to the number of results allowed in a browse request.
@@ -78,10 +70,6 @@ public class SearchSettings extends AbstractSettings {
     public List<String> facetNames;
     // Facets shown by default in normal search results
     public List<String> searchFacetNames;
-    // Fields which are filterable as facets in a collection browse
-    public List<String> collectionBrowseFacetNames;
-    // Fields which are filterable as facets in a structure browse
-    public List<String> facetNamesStructureBrowse;
     // Classes for facet fields. If not specified, then it is a GenericFacet
     public Map<String, Class<?>> facetClasses;
     // Delimiter which separates the components of a hierarchical facet in string form (such as tier, search value).
@@ -96,12 +84,6 @@ public class SearchSettings extends AbstractSettings {
     public int maxFacetsPerGroup;
     // Indicates whether to limit search results to only those with administrative viewing privileges
     public Boolean allowPatronAccess;
-    // Fields which should be treated as access filters
-    public Set<String> accessFields;
-    // Access filter fields which users are allowed to filter by.
-    public Set<String> accessFilterableFields;
-    // Set of accepted resource types/content models that results can be limited to.
-    public Set<String> resourceTypes;
     // Search manipulation related actions
     public Map<String, String> actions;
     // Request parameter names for parameters used to construct search states.
@@ -121,8 +103,6 @@ public class SearchSettings extends AbstractSettings {
     public Map<String, List<SortField>> sortTypes;
     // Display names for sort types.
     public Map<String, String> sortDisplayNames;
-    // Order in which sort names should be displayed to the user.
-    public List<String> sortDisplayOrder;
     // Sort direction constants
     public String sortReverse;
     public String sortNormal;
@@ -142,10 +122,7 @@ public class SearchSettings extends AbstractSettings {
 
         facetNames = new ArrayList<>();
         searchFacetNames = new ArrayList<>();
-        collectionBrowseFacetNames = new ArrayList<>();
-        facetNamesStructureBrowse = new ArrayList<>();
         this.facetClasses = new HashMap<>();
-        operators = new HashSet<>();
 
         searchableFields = new HashSet<>();
         rangeSearchableFields = new HashSet<>();
@@ -157,36 +134,23 @@ public class SearchSettings extends AbstractSettings {
         actions = new HashMap<>();
         searchStateParams = new HashMap<>();
 
-        resourceTypes = new HashSet<>();
         defaultResourceTypes = new ArrayList<>();
         defaultCollectionResourceTypes = new ArrayList<>();
 
         sortTypes = new HashMap<>();
         sortDisplayNames = new HashMap<>();
-        sortDisplayOrder = new ArrayList<>();
-
-        accessFields = new HashSet<>();
-        accessFilterableFields = new HashSet<>();
 
         resultFields = new HashMap<>();
 
         // Query validation properties
-        setQueryMaxLength(Integer.parseInt(properties.getProperty("search.query.maxLength", "255")));
-        setDefaultOperator(properties.getProperty("search.query.defaultOperator", ""));
-        populateCollectionFromProperty("search.query.operators", operators, properties, ",");
-        operators = Collections.unmodifiableSet(operators);
         setDefaultPerPage(Integer.parseInt(properties.getProperty("search.results.defaultPerPage", "0")));
-        setDefaultCollectionsPerPage(Integer.parseInt(properties.getProperty("search.results.defaultCollectionsPerPage",
-                "0")));
-        setDefaultListResultsPerPage(Integer.parseInt(properties.getProperty("search.results.defaultListResultsPerPage",
-                "0")));
         setMaxPerPage(Integer.parseInt(properties.getProperty("search.results.maxPerPage", "0")));
-        setMaxBrowsePerPage(Integer.parseInt(properties.getProperty("search.results.maxBrowsePerPage", "0")));
+        setMaxBrowsePerPage(Integer.parseInt(properties.getProperty("search.results.maxBrowsePerPage", "100")));
         setPagesToDisplay(Integer.parseInt(properties.getProperty("search.results.pagesToDisplay", "0")));
         setMaxNeighborResults(Integer.parseInt(properties.getProperty("search.results.neighborItems", "0")));
 
-        setStructuredDepthDefault(Integer.parseInt(properties.getProperty("search.structure.depth.default", "0")));
-        setStructuredDepthMax(Integer.parseInt(properties.getProperty("search.structure.depth.max", "0")));
+        setStructuredDepthDefault(Integer.parseInt(properties.getProperty("search.structure.depth.default", "1")));
+        setStructuredDepthMax(Integer.parseInt(properties.getProperty("search.structure.depth.max", "4")));
 
         setMaxNeighborResults(Integer.parseInt(properties.getProperty("search.results.neighborItems", "0")));
         setMaxNeighborResults(Integer.parseInt(properties.getProperty("search.results.neighborItems", "0")));
@@ -198,14 +162,8 @@ public class SearchSettings extends AbstractSettings {
         setMaxFacetsPerGroup(Integer.parseInt(properties.getProperty("search.facet.maxFacetsPerGroup", "0")));
         populateCollectionFromProperty("search.facet.fields", facetNames, properties, ",");
         populateCollectionFromProperty("search.facet.defaultSearch", searchFacetNames, properties, ",");
-        populateCollectionFromProperty("search.facet.defaultCollectionBrowse", collectionBrowseFacetNames, properties,
-                ",");
-        populateCollectionFromProperty("search.facet.defaultStructureBrowse", facetNamesStructureBrowse,
-                properties, ",");
         facetNames = Collections.unmodifiableList(facetNames);
         searchFacetNames = Collections.unmodifiableList(searchFacetNames);
-        collectionBrowseFacetNames = Collections.unmodifiableList(collectionBrowseFacetNames);
-        facetNamesStructureBrowse = Collections.unmodifiableList(facetNamesStructureBrowse);
         try {
             populateClassMapFromProperty("search.facet.class.", "edu.unc.lib.boxc.search.solr.facets.",
                     this.facetClasses, properties);
@@ -213,7 +171,6 @@ public class SearchSettings extends AbstractSettings {
             log.error("Invalid facet class specified in search.facet.class property", e);
         }
         setFacetSubfieldDelimiter(properties.getProperty("search.facet.subfieldDelimiter", ""));
-        setFacetTierDelimiter(properties.getProperty("search.facet.tierDelimiter", ""));
 
         // Field names
         populateCollectionFromProperty("search.field.searchable", searchableFields, properties, ",");
@@ -239,15 +196,9 @@ public class SearchSettings extends AbstractSettings {
         setSortReverse(properties.getProperty("search.sort.order.reverse", ""));
         setSortNormal(properties.getProperty("search.sort.order.normal", ""));
         populateMapFromProperty("search.sort.name.", sortDisplayNames, properties);
-        populateCollectionFromProperty("search.sort.displayOrder", sortDisplayOrder, properties, "\\|");
-        sortDisplayOrder = Collections.unmodifiableList(sortDisplayOrder);
 
         // Access field names
         this.setAllowPatronAccess(new Boolean(properties.getProperty("search.access.allowPatrons", "true")));
-        populateCollectionFromProperty("search.access.fields", accessFields, properties, ",");
-        populateCollectionFromProperty("search.access.filterableFields", accessFilterableFields, properties, ",");
-        accessFields = Collections.unmodifiableSet(accessFields);
-        accessFilterableFields = Collections.unmodifiableSet(accessFilterableFields);
 
         // Resource Types
         setResourceTypeFile(properties.getProperty("search.resource.type.file", ""));
@@ -256,11 +207,9 @@ public class SearchSettings extends AbstractSettings {
         setResourceTypeCollection(properties.getProperty("search.resource.type.collection", ""));
         setResourceTypeUnit(properties.getProperty("search.resource.type.unit", "Unit"));
         setResourceTypeContentRoot(properties.getProperty("search.resource.type.contentRoot", "ContentRoot"));
-        populateCollectionFromProperty("search.resource.types", resourceTypes, properties, ",");
         populateCollectionFromProperty("search.resource.searchDefault", defaultResourceTypes, properties, ",");
         populateCollectionFromProperty("search.resource.collectionDefault", defaultCollectionResourceTypes,
                 properties, ",");
-        resourceTypes = Collections.unmodifiableSet(resourceTypes);
         defaultResourceTypes = Collections.unmodifiableList(defaultResourceTypes);
         defaultCollectionResourceTypes = Collections.unmodifiableList(defaultCollectionResourceTypes);
 
@@ -298,28 +247,12 @@ public class SearchSettings extends AbstractSettings {
         this.expandedFacetsPerGroup = expandedFacetsPerGroup;
     }
 
-    public int getQueryMaxLength() {
-        return queryMaxLength;
-    }
-
-    public void setQueryMaxLength(int queryMaxLength) {
-        this.queryMaxLength = queryMaxLength;
-    }
-
     public int getDefaultPerPage() {
         return defaultPerPage;
     }
 
     public void setDefaultPerPage(int defaultPerPage) {
         this.defaultPerPage = defaultPerPage;
-    }
-
-    public int getDefaultCollectionsPerPage() {
-        return defaultCollectionsPerPage;
-    }
-
-    public void setDefaultCollectionsPerPage(int defaultCollectionsPerPage) {
-        this.defaultCollectionsPerPage = defaultCollectionsPerPage;
     }
 
     public int getMaxPerPage() {
@@ -352,14 +285,6 @@ public class SearchSettings extends AbstractSettings {
 
     public void setFacetNames(List<String> facetNames) {
         this.facetNames = facetNames;
-    }
-
-    public List<String> getFacetNamesStructureBrowse() {
-        return facetNamesStructureBrowse;
-    }
-
-    public void setFacetNamesStructureBrowse(List<String> facetNamesStructureBrowse) {
-        this.facetNamesStructureBrowse = facetNamesStructureBrowse;
     }
 
     public Map<String, List<SortField>> getSortTypes() {
@@ -410,33 +335,9 @@ public class SearchSettings extends AbstractSettings {
         this.allowPatronAccess = allowPatronAccess;
     }
 
-    public Set<String> getAccessFields() {
-        return accessFields;
-    }
-
-    public void setAccessFields(Set<String> accessFields) {
-        this.accessFields = accessFields;
-    }
-
-    public Set<String> getAccessFilterableFields() {
-        return accessFilterableFields;
-    }
-
-    public void setAccessFilterableFields(Set<String> accessFilterableFields) {
-        this.accessFilterableFields = accessFilterableFields;
-    }
-
     public boolean isResourceTypeContainer(String resourceType) {
         return (resourceTypeCollection.equals(resourceType) || resourceTypeFolder.equals(resourceType)
                 || resourceTypeAggregate.equals(resourceType));
-    }
-
-    public Set<String> getResourceTypes() {
-        return resourceTypes;
-    }
-
-    public void setResourceTypes(Set<String> resourceTypes) {
-        this.resourceTypes = resourceTypes;
     }
 
     public List<String> getDefaultResourceTypes() {
@@ -445,22 +346,6 @@ public class SearchSettings extends AbstractSettings {
 
     public void setDefaultResourceTypes(List<String> defaultResourceTypes) {
         this.defaultResourceTypes = defaultResourceTypes;
-    }
-
-    public String getDefaultOperator() {
-        return defaultOperator;
-    }
-
-    public void setDefaultOperator(String defaultOperator) {
-        this.defaultOperator = defaultOperator;
-    }
-
-    public Set<String> getOperators() {
-        return operators;
-    }
-
-    public void setOperators(Set<String> operators) {
-        this.operators = operators;
     }
 
     public Map<String, String> getActions() {
@@ -604,14 +489,6 @@ public class SearchSettings extends AbstractSettings {
         this.sortDisplayNames = sortDisplayNames;
     }
 
-    public List<String> getSortDisplayOrder() {
-        return sortDisplayOrder;
-    }
-
-    public void setSortDisplayOrder(List<String> sortDisplayOrder) {
-        this.sortDisplayOrder = sortDisplayOrder;
-    }
-
     public String getResourceTypeFile() {
         return resourceTypeFile;
     }
@@ -658,22 +535,6 @@ public class SearchSettings extends AbstractSettings {
         this.resourceTypeContentRoot = resourceTypeContentRoot;
     }
 
-    public List<String> getCollectionBrowseFacetNames() {
-        return collectionBrowseFacetNames;
-    }
-
-    public void setCollectionBrowseFacetNames(List<String> collectionBrowseFacetNames) {
-        this.collectionBrowseFacetNames = collectionBrowseFacetNames;
-    }
-
-    public int getDefaultListResultsPerPage() {
-        return defaultListResultsPerPage;
-    }
-
-    public void setDefaultListResultsPerPage(int defaultListResultsPerPage) {
-        this.defaultListResultsPerPage = defaultListResultsPerPage;
-    }
-
     public Set<String> getDateSearchableFields() {
         return dateSearchableFields;
     }
@@ -712,22 +573,6 @@ public class SearchSettings extends AbstractSettings {
 
     @Override
     public String toString() {
-        return "SearchSettings [queryMaxLength=" + queryMaxLength + ", defaultOperator=" + defaultOperator
-                + ", operators=" + operators + ", defaultPerPage=" + defaultPerPage + ", defaultCollectionsPerPage="
-                + defaultCollectionsPerPage + ", defaultListResultsPerPage=" + defaultListResultsPerPage
-                + ", maxPerPage=" + maxPerPage + ", pagesToDisplay=" + pagesToDisplay + ", maxNeighborResults="
-                + maxNeighborResults + ", searchFieldParams=" + searchFieldParams + ", searchFieldLabels="
-                + searchFieldLabels + ", searchableFields=" + searchableFields + ", rangeSearchableFields="
-                + rangeSearchableFields + ", dateSearchableFields=" + dateSearchableFields + ", facetNames="
-                + facetNames + ", collectionBrowseFacetNames=" + collectionBrowseFacetNames
-                + ", facetSubfieldDelimiter=" + facetSubfieldDelimiter + ", facetTierDelimiter=" + facetTierDelimiter
-                + ", facetsPerGroup=" + facetsPerGroup + ", maxFacetsPerGroup=" + maxFacetsPerGroup + ", accessFields="
-                + accessFields + ", accessFilterableFields=" + accessFilterableFields + ", resourceTypes="
-                + resourceTypes + ", actions=" + actions + ", searchStateParams=" + searchStateParams
-                + ", resourceTypeFile=" + resourceTypeFile + ", resourceTypeFolder=" + resourceTypeFolder
-                + ", resourceTypeCollection=" + resourceTypeCollection + ", defaultResourceTypes="
-                + defaultResourceTypes + ", defaultCollectionResourceTypes=" + defaultCollectionResourceTypes
-                + ", sortTypes=" + sortTypes + ", sortDisplayNames=" + sortDisplayNames + ", sortDisplayOrder="
-                + sortDisplayOrder + ", sortReverse=" + sortReverse + ", sortNormal=" + sortNormal + "]";
+        return "";
     }
 }
