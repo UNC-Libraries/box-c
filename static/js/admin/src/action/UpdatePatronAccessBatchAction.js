@@ -15,24 +15,23 @@ define('UpdatePatronAccessBatchAction', [ 'jquery', 'AbstractBatchAction'], func
     UpdatePatronAccessBatchAction.prototype.execute = function() {
         let targets = this.getTargets();
 
-        let perms_editor_data = perms_editor.$children[0].$children[0].$data;
-        perms_editor_data.permissionType = 'Patron';
-        perms_editor_data.alertHandler = this.context.view.$alertHandler;
-        perms_editor_data.actionHandler = this.context.actionHandler;
+        perms_editor_store.commit('setPermissionType', 'Patron');
+        perms_editor_store.commit('setAlertHandler', this.context.view.$alertHandler);
+        perms_editor_store.commit('setActionHandler', this.context.actionHandler);
         if (targets.length == 1) {
-            perms_editor_data.resultObject = targets[0];
-            perms_editor_data.resultObjects = null;
-            perms_editor_data.metadata = targets[0].metadata;
+            perms_editor_store.commit('setResultObject', targets[0]);
+            perms_editor_store.commit('setResultObjects', null);
+            perms_editor_store.commit('setMetadata', targets[0].metadata);
         } else {
-            perms_editor_data.resultObject = null;
-            perms_editor_data.resultObjects = targets;
-            perms_editor_data.metadata = {
+            perms_editor_store.commit('setResultObject', null);
+            perms_editor_store.commit('setResultObjects', targets);
+            perms_editor_store.commit('setMetadata', {
                 title: targets.length + " objects",
                 id: null,
                 type: null
-            };
+            });
         }
-        perms_editor_data.showModal = true;
+        perms_editor_store.commit('setShowModal', true);
 
         AbstractBatchAction.prototype.execute.call(this);
     }
