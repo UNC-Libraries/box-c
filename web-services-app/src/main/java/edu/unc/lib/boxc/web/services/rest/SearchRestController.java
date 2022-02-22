@@ -18,6 +18,7 @@ package edu.unc.lib.boxc.web.services.rest;
 import static edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore.getAgentPrincipals;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -26,6 +27,8 @@ import java.util.regex.Pattern;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import edu.unc.lib.boxc.search.api.SearchFieldKey;
+import edu.unc.lib.boxc.search.solr.config.SearchSettings;
 import edu.unc.lib.boxc.web.common.services.AccessCopiesService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -54,6 +57,24 @@ import edu.unc.lib.boxc.web.common.utils.SerializationUtil;
 public class SearchRestController extends AbstractSolrSearchController {
 
     private static Pattern jsonpCleanupPattern = Pattern.compile("[^a-zA-Z0-9_$]+");
+
+    public static final List<String> RESULT_FIELDS_ID = Arrays.asList(SearchFieldKey.ID.name());
+    public static final List<String> RESULT_FIELDS_IDENTIFIER = Arrays.asList(SearchFieldKey.ID.name(),
+            SearchFieldKey.IDENTIFIER.name());
+    public static final List<String> RESULT_FIELDS_BRIEF = Arrays.asList(SearchFieldKey.ID.name(),
+            SearchFieldKey.TITLE.name(), SearchFieldKey.CREATOR.name(), SearchFieldKey.ABSTRACT.name(),
+            SearchFieldKey.RESOURCE_TYPE.name(), SearchFieldKey.PARENT_COLLECTION.name());
+    public static final List<String> RESULT_FIELDS_FULL = Arrays.asList(SearchFieldKey.ID.name(),
+            SearchFieldKey.TITLE.name(), SearchFieldKey.CREATOR.name(), SearchFieldKey.ABSTRACT.name(),
+            SearchFieldKey.RESOURCE_TYPE.name(), SearchFieldKey.PARENT_COLLECTION.name(),
+            SearchFieldKey.DATASTREAM.name(), SearchFieldKey.DATE_ADDED.name(), SearchFieldKey.DATE_CREATED.name(),
+            SearchFieldKey.DATE_UPDATED.name(), SearchFieldKey.IDENTIFIER.name(), SearchFieldKey.LANGUAGE.name(),
+            SearchFieldKey.SUBJECT.name(), SearchFieldKey.FILESIZE.name());
+    public static final Map<String, List<String>> RESULT_FIELD_SETS = Map.of("id", RESULT_FIELDS_ID,
+            "identifier", RESULT_FIELDS_IDENTIFIER,
+            "brief", RESULT_FIELDS_BRIEF,
+            "full", RESULT_FIELDS_FULL,
+            "structure", SearchSettings.RESULT_FIELDS_STRUCTURE);
 
     @Autowired
     private ChildrenCountService childrenCountService;
@@ -96,9 +117,9 @@ public class SearchRestController extends AbstractSolrSearchController {
         } else {
             // Retrieve a predefined set of fields
             String fieldSet = request.getParameter("fieldSet");
-            List<String> resultFields = searchSettings.resultFields.get(fieldSet);
+            List<String> resultFields = RESULT_FIELD_SETS.get(fieldSet);
             if (resultFields == null) {
-                resultFields = new ArrayList<>(searchSettings.resultFields.get("brief"));
+                resultFields = new ArrayList<>(RESULT_FIELDS_BRIEF);
             }
             return resultFields;
         }

@@ -25,6 +25,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import edu.unc.lib.boxc.search.solr.config.SearchSettings;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrServerException;
@@ -498,7 +499,7 @@ public class SolrSearchService extends AbstractQueryService {
      *
      * @param searchState
      * @param groups
-     * @param termQuery
+     * @param query
      */
     private void addPermissionLimits(SearchState searchState, AccessGroupSet groups, SolrQuery query) {
 
@@ -561,7 +562,7 @@ public class SolrSearchService extends AbstractQueryService {
         if (StringUtils.isBlank(value)) {
             return "*";
         }
-        if (searchSettings.dateSearchableFields.contains(key)) {
+        if (SearchSettings.FIELDS_DATE_SEARCHABLE.contains(key)) {
             try {
                 return DateFormatUtil.getFormattedDate(value, true, true);
             } catch (NumberFormatException e) {

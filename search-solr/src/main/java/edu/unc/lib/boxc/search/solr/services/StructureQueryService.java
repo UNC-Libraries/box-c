@@ -202,7 +202,7 @@ public class StructureQueryService extends AbstractQueryService {
         StringBuilder cutoffQuery = new StringBuilder();
         cutoffQuery.append('!').append(solrField(ANCESTOR_PATH)).append(":");
         cutoffQuery.append(tierPath.getHighestTier() + 1);
-        cutoffQuery.append(searchSettings.facetSubfieldDelimiter).append('*');
+        cutoffQuery.append(CutoffFacet.SUBFIELD_DELIMITER).append('*');
         hierarchyQuery.addFilterQuery(cutoffQuery.toString());
 
         SearchResultResponse results;

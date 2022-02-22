@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import edu.unc.lib.boxc.search.solr.config.SearchSettings;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.response.FacetField;
@@ -73,7 +74,7 @@ public class SolrQueryLayerService extends SolrSearchService {
         searchRequest.setAccessGroups(accessGroups);
 
         SearchState searchState = searchStateFactory.createSearchState();
-        searchState.setResourceTypes(searchSettings.defaultCollectionResourceTypes);
+        searchState.setResourceTypes(SearchSettings.DEFAULT_COLLECTION_RESOURCE_TYPES);
         searchState.setRowsPerPage(MAX_COLLECTIONS_TO_RETRIEVE);
         searchState.setFacetsToRetrieve(null);
         List<String> resultFields = new ArrayList<>();

@@ -16,6 +16,8 @@
 package edu.unc.lib.boxc.search.solr.config;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -25,6 +27,8 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
+import edu.unc.lib.boxc.model.api.ResourceType;
+import edu.unc.lib.boxc.search.api.SearchFieldKey;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,6 +43,35 @@ public class SearchSettings extends AbstractSettings {
     private static final Logger log = LoggerFactory.getLogger(SearchSettings.class);
 
     public static final String DEFAULT_OPERATOR = "AND";
+    public static final String SORT_ORDER_REVERSED = "reverse";
+    public static final Collection<String> DEFAULT_RESOURCE_TYPES =
+            Arrays.asList(ResourceType.File.name(), ResourceType.Work.name(), ResourceType.Folder.name(),
+                    ResourceType.Collection.name(), ResourceType.AdminUnit.name());
+    public static final Collection<String> DEFAULT_COLLECTION_RESOURCE_TYPES =
+            Collections.singletonList(ResourceType.Collection.name());
+
+    // Set of field keys to use in structure result sets
+    public static final List<String> RESULT_FIELDS_STRUCTURE = Arrays.asList(SearchFieldKey.ID.name(),
+            SearchFieldKey.TITLE.name(), SearchFieldKey.RESOURCE_TYPE.name(), SearchFieldKey.ANCESTOR_PATH.name(),
+            SearchFieldKey.PARENT_COLLECTION.name());
+
+    // Set of fields which can be used in range search criteria
+    public static final Set<String> FIELDS_RANGE_SEARCHABLE = Set.of(
+            SearchFieldKey.DATE_CREATED.name(), SearchFieldKey.DATE_ADDED.name(), SearchFieldKey.DATE_UPDATED.name());
+    // Set of fields which should be treated as dates in search criteria
+    public static final Set<String> FIELDS_DATE_SEARCHABLE = FIELDS_RANGE_SEARCHABLE;
+
+    public static final String URL_PARAM_FACET_LIMIT_FIELDS = "facetLimits";
+    public static final String URL_PARAM_BASE_FACET_LIMIT = "facetLimit";
+    public static final String URL_PARAM_START_ROW = "start";
+    public static final String URL_PARAM_ROWS_PER_PAGE = "rows";
+    public static final String URL_PARAM_SORT_TYPE = "sort";
+    public static final String URL_PARAM_FACET_FIELDS_TO_RETRIEVE = "facetSelect";
+    public static final String URL_PARAM_RESOURCE_TYPES = "types";
+    public static final String URL_PARAM_SEARCH_TERM_OPERATOR = "operator";
+    public static final String URL_PARAM_ROLLUP = "rollup";
+    public static final String URL_PARAM_FIELDSET = "fieldSet";
+    public static final String URL_PARAM_FIELDS = "fields";
 
     private Properties properties;
     // Default number of rows to return for a search request.
@@ -62,20 +95,12 @@ public class SearchSettings extends AbstractSettings {
     public Map<String, String> searchFieldLabels;
     // Fields which are allowed to be directly queried via keyword searches
     public Set<String> searchableFields;
-    // Fields which should be searched as ranged queries.
-    public Set<String> rangeSearchableFields;
-    // Fields which are searched as date fields
-    public Set<String> dateSearchableFields;
     // Fields which are filterable as facets
     public List<String> facetNames;
     // Facets shown by default in normal search results
     public List<String> searchFacetNames;
     // Classes for facet fields. If not specified, then it is a GenericFacet
     public Map<String, Class<?>> facetClasses;
-    // Delimiter which separates the components of a hierarchical facet in string form (such as tier, search value).
-    public String facetSubfieldDelimiter;
-    // Delimiter string which separates tiers of a hierarchical facet from each other.
-    public String facetTierDelimiter;
     // Default number of facets entries to return for a single facet field result set.
     public int facetsPerGroup;
     // Default number of facets entries to return for a single facet field result set.
@@ -84,10 +109,13 @@ public class SearchSettings extends AbstractSettings {
     public int maxFacetsPerGroup;
     // Indicates whether to limit search results to only those with administrative viewing privileges
     public Boolean allowPatronAccess;
-    // Search manipulation related actions
-    public Map<String, String> actions;
-    // Request parameter names for parameters used to construct search states.
-    public Map<String, String> searchStateParams;
+    // Search manipulation related actions, remove on
+    public final Map<String, String> actions = Map.of("SET_FACET_LIMIT", "setFacetLimit",
+            "REMOVE_FACET_LIMIT", "removeFacetLimit",
+            "NEXT_PAGE", "nextPage",
+            "PREVIOUS_PAGE", "previousPage",
+            "SET_START_ROW", "setStartRow");
+
     // Resource/content model constants
     public String resourceTypeFile;
     public String resourceTypeAggregate;
@@ -95,18 +123,10 @@ public class SearchSettings extends AbstractSettings {
     public String resourceTypeCollection;
     public String resourceTypeUnit;
     public String resourceTypeContentRoot;
-    // Default set of resource types to retrieve in a search request
-    public List<String> defaultResourceTypes;
-    // Default set of resources types to retrieve in collection browse requests.
-    public List<String> defaultCollectionResourceTypes;
     // Sort types, which are groupings of any number of field names with matching sort orders.
     public Map<String, List<SortField>> sortTypes;
     // Display names for sort types.
     public Map<String, String> sortDisplayNames;
-    // Sort direction constants
-    public String sortReverse;
-    public String sortNormal;
-    public Map<String, List<String>> resultFields;
 
     public SearchSettings() {
     }
@@ -125,22 +145,12 @@ public class SearchSettings extends AbstractSettings {
         this.facetClasses = new HashMap<>();
 
         searchableFields = new HashSet<>();
-        rangeSearchableFields = new HashSet<>();
         searchFieldParams = new HashMap<>();
         searchFieldKeys = new HashMap<>();
         searchFieldLabels = new HashMap<>();
-        dateSearchableFields = new HashSet<>();
-
-        actions = new HashMap<>();
-        searchStateParams = new HashMap<>();
-
-        defaultResourceTypes = new ArrayList<>();
-        defaultCollectionResourceTypes = new ArrayList<>();
 
         sortTypes = new HashMap<>();
         sortDisplayNames = new HashMap<>();
-
-        resultFields = new HashMap<>();
 
         // Query validation properties
         setDefaultPerPage(Integer.parseInt(properties.getProperty("search.results.defaultPerPage", "0")));
@@ -170,48 +180,31 @@ public class SearchSettings extends AbstractSettings {
         } catch (ClassNotFoundException e) {
             log.error("Invalid facet class specified in search.facet.class property", e);
         }
-        setFacetSubfieldDelimiter(properties.getProperty("search.facet.subfieldDelimiter", ""));
 
         // Field names
         populateCollectionFromProperty("search.field.searchable", searchableFields, properties, ",");
-        populateCollectionFromProperty("search.field.rangeSearchable", rangeSearchableFields, properties, ",");
-        populateCollectionFromProperty("search.field.dateSearchable", dateSearchableFields, properties, ",");
         searchableFields = Collections.unmodifiableSet(searchableFields);
-        rangeSearchableFields = Collections.unmodifiableSet(rangeSearchableFields);
-        dateSearchableFields = Collections.unmodifiableSet(dateSearchableFields);
 
         populateMapFromProperty("search.field.paramName.", searchFieldParams, properties);
         searchFieldKeys = getInvertedHashMap(searchFieldParams);
         populateMapFromProperty("search.field.display.", searchFieldLabels, properties);
         populateMapFromProperty("search.actions.", actions, properties);
-        populateMapFromProperty("search.url.param.", searchStateParams, properties);
-        populateListMapFromProperty("search.results.fields", resultFields, properties);
         searchFieldParams = Collections.unmodifiableMap(searchFieldParams);
         searchFieldLabels = Collections.unmodifiableMap(searchFieldLabels);
-        actions = Collections.unmodifiableMap(actions);
-        searchStateParams = Collections.unmodifiableMap(searchStateParams);
-        resultFields = Collections.unmodifiableMap(resultFields);
 
         // Populate sort types
-        setSortReverse(properties.getProperty("search.sort.order.reverse", ""));
-        setSortNormal(properties.getProperty("search.sort.order.normal", ""));
         populateMapFromProperty("search.sort.name.", sortDisplayNames, properties);
 
         // Access field names
         this.setAllowPatronAccess(new Boolean(properties.getProperty("search.access.allowPatrons", "true")));
 
-        // Resource Types
-        setResourceTypeFile(properties.getProperty("search.resource.type.file", ""));
-        setResourceTypeAggregate(properties.getProperty("search.resource.type.aggregate", ""));
-        setResourceTypeFolder(properties.getProperty("search.resource.type.folder", ""));
-        setResourceTypeCollection(properties.getProperty("search.resource.type.collection", ""));
-        setResourceTypeUnit(properties.getProperty("search.resource.type.unit", "Unit"));
-        setResourceTypeContentRoot(properties.getProperty("search.resource.type.contentRoot", "ContentRoot"));
-        populateCollectionFromProperty("search.resource.searchDefault", defaultResourceTypes, properties, ",");
-        populateCollectionFromProperty("search.resource.collectionDefault", defaultCollectionResourceTypes,
-                properties, ",");
-        defaultResourceTypes = Collections.unmodifiableList(defaultResourceTypes);
-        defaultCollectionResourceTypes = Collections.unmodifiableList(defaultCollectionResourceTypes);
+        // Resource Types, stored here temporarily for usage in jsp
+        resourceTypeFile = ResourceType.File.name();
+        resourceTypeAggregate = ResourceType.Work.name();
+        resourceTypeFolder = ResourceType.Folder.name();
+        resourceTypeCollection = ResourceType.Collection.name();
+        resourceTypeUnit = ResourceType.AdminUnit.name();
+        resourceTypeContentRoot = ResourceType.ContentRoot.name();
 
         Iterator<Map.Entry<Object, Object>> propIt = properties.entrySet().iterator();
         while (propIt.hasNext()) {
@@ -295,36 +288,12 @@ public class SearchSettings extends AbstractSettings {
         this.sortTypes = sortTypes;
     }
 
-    public String getSortReverse() {
-        return sortReverse;
-    }
-
-    public void setSortReverse(String sortReverse) {
-        this.sortReverse = sortReverse;
-    }
-
-    public String getSortNormal() {
-        return sortNormal;
-    }
-
-    public void setSortNormal(String sortNormal) {
-        this.sortNormal = sortNormal;
-    }
-
     public Map<String, Class<?>> getFacetClasses() {
         return facetClasses;
     }
 
     public void setFacetClasses(Map<String, Class<?>> facetClasses) {
         this.facetClasses = facetClasses;
-    }
-
-    public Set<String> getRangeSearchableFields() {
-        return rangeSearchableFields;
-    }
-
-    public void setRangeSearchableFields(Set<String> rangeSearchableFields) {
-        this.rangeSearchableFields = rangeSearchableFields;
     }
 
     public Boolean getAllowPatronAccess() {
@@ -335,57 +304,12 @@ public class SearchSettings extends AbstractSettings {
         this.allowPatronAccess = allowPatronAccess;
     }
 
-    public boolean isResourceTypeContainer(String resourceType) {
-        return (resourceTypeCollection.equals(resourceType) || resourceTypeFolder.equals(resourceType)
-                || resourceTypeAggregate.equals(resourceType));
-    }
-
-    public List<String> getDefaultResourceTypes() {
-        return defaultResourceTypes;
-    }
-
-    public void setDefaultResourceTypes(List<String> defaultResourceTypes) {
-        this.defaultResourceTypes = defaultResourceTypes;
-    }
-
     public Map<String, String> getActions() {
         return actions;
     }
 
-    public void setActions(Map<String, String> actions) {
-        this.actions = actions;
-    }
-
     public String actionName(String actionKey) {
         return this.actions.get(actionKey);
-    }
-
-    public String getActionName(String actionKey) {
-        return this.actionName(actionKey);
-    }
-
-    public List<String> getDefaultCollectionResourceTypes() {
-        return defaultCollectionResourceTypes;
-    }
-
-    public void setDefaultCollectionResourceTypes(List<String> defaultCollectionResourceTypes) {
-        this.defaultCollectionResourceTypes = defaultCollectionResourceTypes;
-    }
-
-    public Map<String, String> getSearchStateParams() {
-        return searchStateParams;
-    }
-
-    public void setSearchStateParams(Map<String, String> searchStateParams) {
-        this.searchStateParams = searchStateParams;
-    }
-
-    public String searchStateParam(String key) {
-        return this.searchStateParams.get(key);
-    }
-
-    public String getSearchStateParam(String key) {
-        return this.searchStateParam(key);
     }
 
     public int getMaxFacetsPerGroup() {
@@ -394,22 +318,6 @@ public class SearchSettings extends AbstractSettings {
 
     public void setMaxFacetsPerGroup(int maxFacetsPerGroup) {
         this.maxFacetsPerGroup = maxFacetsPerGroup;
-    }
-
-    public String getFacetSubfieldDelimiter() {
-        return facetSubfieldDelimiter;
-    }
-
-    public void setFacetSubfieldDelimiter(String facetSubfieldDelimiter) {
-        this.facetSubfieldDelimiter = facetSubfieldDelimiter;
-    }
-
-    public String getFacetTierDelimiter() {
-        return facetTierDelimiter;
-    }
-
-    public void setFacetTierDelimiter(String facetTierDelimiter) {
-        this.facetTierDelimiter = facetTierDelimiter;
     }
 
     /**
@@ -487,60 +395,6 @@ public class SearchSettings extends AbstractSettings {
 
     public void setSortDisplayNames(Map<String, String> sortDisplayNames) {
         this.sortDisplayNames = sortDisplayNames;
-    }
-
-    public String getResourceTypeFile() {
-        return resourceTypeFile;
-    }
-
-    public void setResourceTypeFile(String resourceTypeFile) {
-        this.resourceTypeFile = resourceTypeFile;
-    }
-
-    public String getResourceTypeAggregate() {
-        return resourceTypeAggregate;
-    }
-
-    public void setResourceTypeAggregate(String resourceTypeAggregate) {
-        this.resourceTypeAggregate = resourceTypeAggregate;
-    }
-
-    public String getResourceTypeFolder() {
-        return resourceTypeFolder;
-    }
-
-    public void setResourceTypeFolder(String resourceTypeFolder) {
-        this.resourceTypeFolder = resourceTypeFolder;
-    }
-
-    public String getResourceTypeCollection() {
-        return resourceTypeCollection;
-    }
-
-    public void setResourceTypeCollection(String resourceTypeCollection) {
-        this.resourceTypeCollection = resourceTypeCollection;
-    }
-
-    /**
-     * @param resourceTypeUnit the resourceTypeUnit to set
-     */
-    public void setResourceTypeUnit(String resourceTypeUnit) {
-        this.resourceTypeUnit = resourceTypeUnit;
-    }
-
-    /**
-     * @param resourceTypeContentRoot the resourceTypeContentRoot to set
-     */
-    public void setResourceTypeContentRoot(String resourceTypeContentRoot) {
-        this.resourceTypeContentRoot = resourceTypeContentRoot;
-    }
-
-    public Set<String> getDateSearchableFields() {
-        return dateSearchableFields;
-    }
-
-    public void setDateSearchableFields(Set<String> dateSearchableFields) {
-        this.dateSearchableFields = dateSearchableFields;
     }
 
     public int getMaxNeighborResults() {

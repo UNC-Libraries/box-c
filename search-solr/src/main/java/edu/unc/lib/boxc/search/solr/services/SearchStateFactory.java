@@ -68,7 +68,7 @@ public class SearchStateFactory {
         SearchState searchState = new SearchState();
 
         searchState.setBaseFacetLimit(searchSettings.facetsPerGroup);
-        searchState.setResourceTypes(new ArrayList<>(searchSettings.defaultResourceTypes));
+        searchState.setResourceTypes(new ArrayList<>(SearchSettings.DEFAULT_RESOURCE_TYPES));
         searchState.setSearchTermOperator(SearchSettings.DEFAULT_OPERATOR);
         searchState.setRowsPerPage(searchSettings.defaultPerPage);
         searchState.setFacetsToRetrieve(new ArrayList<>(searchSettings.searchFacetNames));
@@ -138,7 +138,7 @@ public class SearchStateFactory {
      */
     public SearchState createHierarchyListSearchState() {
         SearchState searchState = createIDSearchState();
-        searchState.setResultFields(new ArrayList<>(searchSettings.resultFields.get("structure")));
+        searchState.setResultFields(new ArrayList<>(SearchSettings.RESULT_FIELDS_STRUCTURE));
 
         List<String> containerTypes = new ArrayList<>();
         containerTypes.add(Collection.name());
@@ -154,8 +154,8 @@ public class SearchStateFactory {
 
     public SearchState createStructureBrowseSearchState() {
         SearchState searchState = new SearchState();
-        searchState.setResultFields(new ArrayList<>(searchSettings.resultFields.get("structure")));
-        searchState.setResourceTypes(new ArrayList<>(searchSettings.defaultResourceTypes));
+        searchState.setResultFields(new ArrayList<>(SearchSettings.RESULT_FIELDS_STRUCTURE));
+        searchState.setResourceTypes(new ArrayList<>(SearchSettings.DEFAULT_RESOURCE_TYPES));
         searchState.setSearchTermOperator(SearchSettings.DEFAULT_OPERATOR);
         searchState.setRowsPerPage(0);
         searchState.setStartRow(0);
@@ -179,9 +179,9 @@ public class SearchStateFactory {
      */
     public SearchState createHierarchicalBrowseSearchState() {
         SearchState searchState = new SearchState();
-        searchState.setResultFields(new ArrayList<>(searchSettings.resultFields.get("structure")));
+        searchState.setResultFields(new ArrayList<>(SearchSettings.RESULT_FIELDS_STRUCTURE));
         searchState.setBaseFacetLimit(searchSettings.facetsPerGroup);
-        searchState.setResourceTypes(new ArrayList<>(searchSettings.defaultResourceTypes));
+        searchState.setResourceTypes(new ArrayList<>(SearchSettings.DEFAULT_RESOURCE_TYPES));
         searchState.setSearchTermOperator(SearchSettings.DEFAULT_OPERATOR);
         searchState.setRowsPerPage(searchSettings.defaultPerPage);
         searchState.setStartRow(0);
@@ -218,7 +218,7 @@ public class SearchStateFactory {
     public SearchState createFacetSearchState(String facetField, String facetSort, int maxResults) {
         SearchState searchState = new SearchState();
 
-        searchState.setResourceTypes(new ArrayList<>(searchSettings.defaultResourceTypes));
+        searchState.setResourceTypes(new ArrayList<>(SearchSettings.DEFAULT_RESOURCE_TYPES));
         searchState.setRowsPerPage(0);
         searchState.setStartRow(0);
 
@@ -281,7 +281,7 @@ public class SearchStateFactory {
                 } catch (InvalidFacetException e) {
                     log.debug("Invalid facet " + key + " with value " + value, e);
                 }
-            } else if (searchSettings.rangeSearchableFields.contains(key)) {
+            } else if (SearchSettings.FIELDS_RANGE_SEARCHABLE.contains(key)) {
                 try {
                     rangeFields.put(key, new SearchState.RangePair(value));
                 } catch (ArrayIndexOutOfBoundsException e) {
@@ -303,7 +303,7 @@ public class SearchStateFactory {
         populateQueryableFields(searchState, request);
 
         //retrieve facet limits
-        String parameter = getParameter(request, searchSettings.searchStateParam("FACET_LIMIT_FIELDS"));
+        String parameter = getParameter(request, SearchSettings.URL_PARAM_FACET_LIMIT_FIELDS);
         if (parameter != null) {
             String parameterArray[] = parameter.split("\\|");
             for (String parameterPair: parameterArray) {
@@ -321,7 +321,7 @@ public class SearchStateFactory {
         }
 
         //Set the base facet limit if one is provided
-        parameter = getParameter(request, searchSettings.searchStateParam("BASE_FACET_LIMIT"));
+        parameter = getParameter(request, SearchSettings.URL_PARAM_BASE_FACET_LIMIT);
         if (parameter != null) {
             try {
                 searchState.setBaseFacetLimit(Integer.parseInt(parameter));
@@ -331,11 +331,11 @@ public class SearchStateFactory {
         }
 
         //Determine resource types selected
-        parameter = getParameter(request, searchSettings.searchStateParam("RESOURCE_TYPES"));
+        parameter = getParameter(request, SearchSettings.URL_PARAM_RESOURCE_TYPES);
         var resourceTypes = new ArrayList<String>();
         if (parameter == null) {
             //If resource types aren't specified, load the defaults.
-            resourceTypes.addAll(searchSettings.defaultResourceTypes);
+            resourceTypes.addAll(SearchSettings.DEFAULT_RESOURCE_TYPES);
         } else {
             String resourceArray[] = parameter.split(",");
             for (String resourceType: resourceArray) {
@@ -347,7 +347,7 @@ public class SearchStateFactory {
         searchState.setResourceTypes(resourceTypes);
 
         //Get search term operator
-        parameter = getParameter(request, searchSettings.searchStateParam("SEARCH_TERM_OPERATOR"));
+        parameter = getParameter(request, SearchSettings.URL_PARAM_SEARCH_TERM_OPERATOR);
         if (parameter == null) {
             //If no operator set, use the default.
             searchState.setSearchTermOperator(SearchSettings.DEFAULT_OPERATOR);
@@ -358,7 +358,7 @@ public class SearchStateFactory {
         //Get Start row
         int startRow = 0;
         try {
-            startRow = Integer.parseInt(getParameter(request, searchSettings.searchStateParam("START_ROW")));
+            startRow = Integer.parseInt(getParameter(request, SearchSettings.URL_PARAM_START_ROW));
         } catch (Exception e) {
         }
         searchState.setStartRow(startRow);
@@ -366,7 +366,7 @@ public class SearchStateFactory {
         //Get number of rows per page
         int rowsPerPage = 0;
         try {
-            rowsPerPage = Integer.parseInt(getParameter(request, searchSettings.searchStateParam("ROWS_PER_PAGE")));
+            rowsPerPage = Integer.parseInt(getParameter(request, SearchSettings.URL_PARAM_ROWS_PER_PAGE));
         } catch (Exception e) {
             // If not specified or invalid, then use default page size
             rowsPerPage = searchSettings.defaultPerPage;
@@ -374,19 +374,19 @@ public class SearchStateFactory {
         searchState.setRowsPerPage(rowsPerPage);
 
         //Set sort
-        parameter = getParameter(request, searchSettings.searchStateParam("SORT_TYPE"));
+        parameter = getParameter(request, SearchSettings.URL_PARAM_SORT_TYPE);
         if (parameter != null) {
             String[] sortParts = parameter.split(",");
             if (sortParts.length > 0) {
                 searchState.setSortType(sortParts[0]);
                 if (sortParts.length == 2) {
-                    searchState.setSortNormalOrder(!sortParts[1].equals(searchSettings.sortReverse));
+                    searchState.setSortNormalOrder(!sortParts[1].equals(SearchSettings.SORT_ORDER_REVERSED));
                 }
             }
         }
 
         //facetsToRetrieve
-        parameter = getParameter(request, searchSettings.searchStateParam("FACET_FIELDS_TO_RETRIEVE"));
+        parameter = getParameter(request, SearchSettings.URL_PARAM_FACET_FIELDS_TO_RETRIEVE);
         ArrayList<String> facetsToRetrieve = new ArrayList<>();
         if (parameter != null) {
             String facetArray[] = parameter.split(",");
@@ -399,7 +399,7 @@ public class SearchStateFactory {
             searchState.setFacetsToRetrieve(facetsToRetrieve);
         }
 
-        parameter = getParameter(request, searchSettings.searchStateParam("ROLLUP"));
+        parameter = getParameter(request, SearchSettings.URL_PARAM_ROLLUP);
         if (parameter == null) {
             searchState.setRollup(null);
         } else {
