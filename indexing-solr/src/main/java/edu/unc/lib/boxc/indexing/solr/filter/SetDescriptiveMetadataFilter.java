@@ -249,7 +249,7 @@ public class SetDescriptiveMetadataFilter implements IndexDocumentFilter {
                         subjects.add(formatName(subjectEl));
                     }
 
-                    if (subjectEl.getChildren().size() == 0 && subjectName.equals("topic")) {
+                    if (subjectEl.getChildren().isEmpty() && subjectName.equals("topic")) {
                             subjects.add(subjectEl.getValue());
                     }
                 }
