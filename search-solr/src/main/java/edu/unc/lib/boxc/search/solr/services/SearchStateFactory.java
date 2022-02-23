@@ -31,6 +31,7 @@ import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
 import edu.unc.lib.boxc.search.solr.facets.GenericFacet;
+import edu.unc.lib.boxc.search.solr.utils.DateFormatUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -238,7 +239,8 @@ public class SearchStateFactory {
      * specified.  A base value may be given for the facet being queried, for use in
      * querying specific tiers in a hierarchical facet.
      * @param facetField
-     * @param baseValue
+     * @param facetSort
+     * @param maxResults
      * @return
      */
     public SearchState createFacetSearchState(String facetField, String facetSort, int maxResults) {
@@ -298,6 +300,12 @@ public class SearchStateFactory {
             }
             if (searchSettings.searchableFields.contains(key)) {
                 searchFields.put(key, value);
+            } else if (searchSettings.rangeSearchableFields.contains(key)) {
+                try {
+                    rangeFields.put(key, new SearchState.RangePair(value));
+                } catch (ArrayIndexOutOfBoundsException e) {
+                    //An invalid range was specified, throw away the term pair
+                }
             } else if (searchSettings.facetNames.contains(key)) {
                 try {
                     List<SearchFacet> facetValues = Arrays.stream(value.split("\\s*\\|\\|\\s*"))
@@ -306,12 +314,6 @@ public class SearchStateFactory {
                     facetFields.put(key, facetValues);
                 } catch (InvalidFacetException e) {
                     log.debug("Invalid facet " + key + " with value " + value, e);
-                }
-            } else if (searchSettings.rangeSearchableFields.contains(key)) {
-                try {
-                    rangeFields.put(key, new SearchState.RangePair(value));
-                } catch (ArrayIndexOutOfBoundsException e) {
-                    //An invalid range was specified, throw away the term pair
                 }
             }
         }
@@ -371,6 +373,23 @@ public class SearchStateFactory {
             }
         }
         searchState.setResourceTypes(resourceTypes);
+
+        //Add date added year range
+        SearchState.RangePair dateCreatedYear = new SearchState.RangePair();
+        parameter = getParameter(request, searchSettings.searchFieldParam(
+                SearchFieldKey.DATE_CREATED_YEAR.name()));
+        if (parameter != null && parameter.length() > 0) {
+            String[] dateRange = parameter.split(",");
+            dateCreatedYear.setLeftHand(DateFormatUtil.getFormattedDate(dateRange[0], true, false));
+            dateCreatedYear.setRightHand(DateFormatUtil.getFormattedDate(dateRange[1], true, true));
+        }
+
+        if (dateCreatedYear.getLeftHand() != null || dateCreatedYear.getRightHand() != null) {
+            searchState.getRangeFields().put(SearchFieldKey.DATE_CREATED_YEAR.name(), dateCreatedYear);
+            Map<String, SearchState.RangePair> dateRangeSearch = new HashMap<>();
+            dateRangeSearch.put(SearchFieldKey.DATE_CREATED_YEAR.name(), dateCreatedYear);
+            searchState.setRangeFields(dateRangeSearch);
+        }
 
         //Get search term operator
         parameter = getParameter(request, searchSettings.searchStateParam("SEARCH_TERM_OPERATOR"));
@@ -433,7 +452,7 @@ public class SearchStateFactory {
         if (parameter == null) {
             searchState.setRollup(null);
         } else {
-            Boolean rollup = new Boolean(parameter);
+            Boolean rollup = Boolean.valueOf(parameter);
             searchState.setRollup(rollup);
         }
     }

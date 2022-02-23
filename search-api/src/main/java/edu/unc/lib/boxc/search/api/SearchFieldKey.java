@@ -44,6 +44,7 @@ public enum SearchFieldKey {
     DATE_ADDED("dateAdded"),
     DATE_CREATED("dateCreated"),
     DATE_UPDATED("dateUpdated"),
+    DATE_CREATED_YEAR("dateCreatedYear"),
     DEFAULT_INDEX("text"),
     DEPARTMENT("department"),
     DEPARTMENT_LC("department_lc"),

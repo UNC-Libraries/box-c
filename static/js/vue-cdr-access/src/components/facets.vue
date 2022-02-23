@@ -8,13 +8,26 @@
         <div class="facet-display" v-for="facet in this.sortedFacetsList">
             <div v-if="showFacetDisplay(facet)">
                 <h3>{{ facetName(facet.name) }}</h3>
-                <ul>
+                <ul v-if="facet.name !=='DATE_CREATED_YEAR'" >
                     <li v-for="value in facet.values">
                         <a class="is-selected" v-if="isSelected(value.limitToValue)" @click.prevent="updateAll(value, true)">
                             {{ value.displayValue }} ({{ value.count }}) <i class="fas fa-times"></i></a>
                         <a v-else @click.prevent="updateAll(value)">{{ value.displayValue }} ({{ value.count }})</a>
                     </li>
                 </ul>
+                <Slider v-if="facet.name === 'DATE_CREATED_YEAR'" class="slider-carolina-blue"
+                        :min="dates.allowed_dates.start" :max="dates.allowed_dates.end"
+                        @update="setDatesForForm" v-model="dates.date_range" />
+                <form v-if="facet.name === 'DATE_CREATED_YEAR'" @change="setDatesForSlider()">
+                    <input type="number" v-model="dates.selected_dates.start" name="start_date"
+                           aria-label="Start Date" placeholder="Start Date" :max="dates.allowed_dates.end" />
+                    &ndash;
+                    <input type="number" v-model="dates.selected_dates.end" name="end_date"
+                           aria-label="End Date" placeholder="End Date" :max="dates.allowed_dates.end" />
+                    <br />
+                    <input type="submit" value="Limit" @click.prevent="setDateFacetUrl()" class="button is-small" />
+                    <p class="date_error" v-if="dates.invalid_date_range">The start date cannot be after the end date</p>
+                </form>
             </div>
         </div>
     </div>
@@ -22,13 +35,18 @@
 
 <script>
     import sortBy from 'lodash.sortby';
+    import Slider from '@vueform/slider';
+    import "@vueform/slider/themes/default.css";
     import routeUtils from '../mixins/routeUtils';
 
     const UUID_REGEX = /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i;
-    const POSSIBLE_FACET_PARAMS = ['collection', 'format', 'language', 'subject', 'genre'];
+    const POSSIBLE_FACET_PARAMS = ['collection', 'createdYear', 'format', 'language', 'subject', 'genre'];
+    const CURRENT_YEAR = new Date().getFullYear();
 
     export default {
         name: 'facets',
+
+        components: { Slider },
 
         props: {
             facetList: Array
@@ -38,6 +56,19 @@
 
         data() {
             return {
+                dates: {
+                    allowed_dates: {
+                        start: 1500,
+                        end: CURRENT_YEAR
+                    },
+                    selected_dates: {
+                        start: 1500,
+                        end: CURRENT_YEAR
+                    },
+                    date_range: [1500, CURRENT_YEAR],
+                    error_message: '',
+                    invalid_date_range: false
+                },
                 selected_facets: []
             }
         },
@@ -158,7 +189,7 @@
                 };
             },
 
-           /**
+            /**
              * Remove full facet info for deselected facets and their children
              * @param facet
              */
@@ -197,7 +228,11 @@
                 let formatted_facets = {};
                 updated_facets.forEach((facet) => {
                     let facet_pieces = facet.split('=');
-                    formatted_facets[facet_pieces[0]] = encodeURIComponent(decodeURIComponent(facet_pieces[1]));
+                    if (facet_pieces[0] !== 'createdYear') {
+                        formatted_facets[facet_pieces[0]] = encodeURIComponent(decodeURIComponent(facet_pieces[1]));
+                    } else {
+                        formatted_facets[facet_pieces[0]] = facet_pieces[1];
+                    }
                 });
 
                 return formatted_facets;
@@ -209,39 +244,41 @@
              * @returns {string|*}
              */
             facetName(value) {
-                if (value === 'PARENT_COLLECTION') {
-                    return 'Collection'
-                } else if (value === 'CONTENT_TYPE') {
-                    return 'Format';
-                } else if (value === 'LANGUAGE') {
-                    return 'Language';
-                } else if (value === 'SUBJECT') {
-                    return 'Subject';
-                } else if (value === 'GENRE') {
-                    return 'Genre';
-                } else {
-                    return value;
+                switch (value) {
+                    case 'PARENT_COLLECTION':
+                        return 'Collection';
+                    case 'CONTENT_TYPE':
+                        return 'Format';
+                    case 'LANGUAGE':
+                        return 'Language';
+                    case 'SUBJECT':
+                        return 'Subject';
+                    case 'GENRE':
+                        return 'Genre';
+                    case 'DATE_CREATED_YEAR':
+                        return 'Date Created';
+                    default:
+                        return value;
                 }
             },
 
             facetType(value) {
-                let facet_type;
-
-                if (value.fieldName === 'PARENT_COLLECTION') {
-                    facet_type = 'collection='
-                } else if (value.fieldName === 'CONTENT_TYPE') {
-                    facet_type = 'format=';
-                } else if (value.fieldName === 'LANGUAGE') {
-                    facet_type = 'language=';
-                } else if (value.fieldName === 'SUBJECT') {
-                    facet_type = 'subject=';
-                } else if (value.fieldName === 'GENRE') {
-                    facet_type = 'genre=';
-                } else {
-                    facet_type = '';
+                switch (value.fieldName) {
+                    case 'PARENT_COLLECTION':
+                        return 'collection=';
+                    case 'CONTENT_TYPE':
+                        return 'format=';
+                    case 'LANGUAGE':
+                        return 'language=';
+                    case 'SUBJECT':
+                        return 'subject=';
+                    case 'GENRE':
+                        return 'genre=';
+                    case 'DATE_CREATED_YEAR':
+                        return 'createdYear=';
+                    default:
+                        return '';
                 }
-
-                return facet_type;
             },
 
             /**
@@ -264,6 +301,40 @@
                 }
 
                 return `${facet_type}${value.limitToValue}`;
+            },
+
+            setDateFacetUrl() {
+                let start = this.dates.selected_dates.start;
+                let end = this.dates.selected_dates.end;
+                if (start > end) {
+                    this.dates.invalid_date_range = true;
+                    return;
+                }
+
+                const updated_facet_value = `createdYear=${start},${end}`;
+                const current_facet_value = this.selected_facets.findIndex(f => f.startsWith('createdYear'));
+                if (current_facet_value !== -1) {
+                    this.selected_facets[current_facet_value] = updated_facet_value
+                } else {
+                    this.selected_facets.push(updated_facet_value);
+                }
+
+                this.dates.invalid_date_range = false;
+                this.selectedFacets();
+            },
+            /**
+             * Set number input from values emitted from update event on the slider
+             * @param dates
+             */
+            setDatesForForm(dates) {
+                this.dates.selected_dates.start = dates[0];
+                this.dates.selected_dates.end = dates[1];
+            },
+            /**
+             * Set number input from values emitted from update event on the slider
+             */
+            setDatesForSlider() {
+                this.dates.date_range = [this.dates.selected_dates.start, this.dates.selected_dates.end];
             },
 
             /**
@@ -351,5 +422,29 @@
                 padding-right: 10px;
             }
         }
+
+        form {
+            margin-top: 25px;
+            input[type=number] {
+                max-width: 100px;
+            }
+            input[type=submit] {
+                margin-top: 10px;
+            }
+        }
+        .date_error {
+            color: #cc0f35;
+            font-size: 15px;
+            margin-top: 10px;
+        }
+    }
+
+    .slider-target {
+        margin: 45px auto 0 auto;
+        width: 90%;
+    }
+    .slider-carolina-blue {
+        --slider-connect-bg: #1A698C;
+        --slider-tooltip-bg: #1A698C;
     }
 </style>

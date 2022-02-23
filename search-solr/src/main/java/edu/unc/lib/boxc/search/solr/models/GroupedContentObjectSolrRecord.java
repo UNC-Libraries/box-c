@@ -329,6 +329,11 @@ public class GroupedContentObjectSolrRecord implements GroupedContentObjectRecor
     }
 
     @Override
+    public String getDateCreatedYear() {
+        return this.representative.getDateCreatedYear();
+    }
+
+    @Override
     public Date getDateAdded() {
         return this.representative.getDateAdded();
     }

@@ -22,6 +22,7 @@ import static org.apache.commons.lang3.StringUtils.isBlank;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -56,6 +57,7 @@ public class SetDescriptiveMetadataFilter implements IndexDocumentFilter {
 
     private final Properties languageCodeMap;
     public final static String AFFIL_URI = "http://cdr.unc.edu/vocabulary/Affiliation";
+    private final SimpleDateFormat getYear = new SimpleDateFormat("yyyy");
 
     public SetDescriptiveMetadataFilter() {
         languageCodeMap = new Properties();
@@ -91,6 +93,7 @@ public class SetDescriptiveMetadataFilter implements IndexDocumentFilter {
         }
         if (idb.getDateCreated() == null) {
             idb.setDateCreated(idb.getDateAdded());
+            idb.setDateCreatedYear(getYear.format(idb.getDateAdded()));
         }
         idb.getKeyword().add(dip.getPid().getId());
     }
@@ -345,10 +348,13 @@ public class SetDescriptiveMetadataFilter implements IndexDocumentFilter {
 
             if (dateCreated != null) {
                 idb.setDateCreated(dateCreated);
+                idb.setDateCreatedYear(getYear.format(dateCreated));
             } else if (dateIssued != null) {
                 idb.setDateCreated(dateIssued);
+                idb.setDateCreatedYear(getYear.format(dateIssued));
             } else if (dateCaptured != null) {
                 idb.setDateCreated(dateCaptured);
+                idb.setDateCreatedYear(getYear.format(dateCaptured));
             }
         }
     }

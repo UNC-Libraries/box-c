@@ -30,6 +30,7 @@ import static edu.unc.lib.boxc.search.api.SearchFieldKey.CREATOR_SORT;
 import static edu.unc.lib.boxc.search.api.SearchFieldKey.DATASTREAM;
 import static edu.unc.lib.boxc.search.api.SearchFieldKey.DATE_ADDED;
 import static edu.unc.lib.boxc.search.api.SearchFieldKey.DATE_CREATED;
+import static edu.unc.lib.boxc.search.api.SearchFieldKey.DATE_CREATED_YEAR;
 import static edu.unc.lib.boxc.search.api.SearchFieldKey.DATE_UPDATED;
 import static edu.unc.lib.boxc.search.api.SearchFieldKey.DEPARTMENT;
 import static edu.unc.lib.boxc.search.api.SearchFieldKey.DISPLAY_ORDER;
@@ -413,6 +414,15 @@ public class IndexDocumentBean {
 
     public List<String> getGenre() {
         return (List<String>) fields.get(SearchFieldKey.GENRE.getSolrField());
+    }
+
+    public String getDateCreatedYear() {
+        return (String) fields.get(DATE_CREATED_YEAR.getSolrField());
+    }
+
+    @Field
+    public void setDateCreatedYear(String dateCreatedYear) {
+        fields.put(DATE_CREATED_YEAR.getSolrField(), dateCreatedYear);
     }
 
     @Field
