@@ -71,12 +71,18 @@
   </mods:name>
   <mods:subject authority="lcsh">
     <mods:topic />
+  </mods:subject>
+  <mods:subject authority="lcsh">
     <mods:name type="personal">
       <mods:namePart />
     </mods:name>
+  </mods:subject>
+  <mods:subject authority="lcsh">
     <mods:name type="corporate">
       <mods:namePart />
     </mods:name>
+  </mods:subject>
+  <mods:subject authority="lcsh">
     <mods:geographic />
   </mods:subject>
 </mods:mods>
