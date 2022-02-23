@@ -25,7 +25,7 @@
     import routeUtils from '../mixins/routeUtils';
 
     const UUID_REGEX = /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i;
-    const POSSIBLE_FACET_PARAMS = ['collection', 'format', 'language', 'subject', 'genre'];
+    const POSSIBLE_FACET_PARAMS = ['collection', 'format', 'language', 'subject'];
 
     export default {
         name: 'facets',
