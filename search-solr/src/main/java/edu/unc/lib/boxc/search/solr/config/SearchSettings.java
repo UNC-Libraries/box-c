@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import edu.unc.lib.boxc.model.api.ResourceType;
 import edu.unc.lib.boxc.search.api.SearchFieldKey;
@@ -185,12 +186,12 @@ public class SearchSettings extends AbstractSettings {
         populateCollectionFromProperty("search.field.searchable", searchableFields, properties, ",");
         searchableFields = Collections.unmodifiableSet(searchableFields);
 
-        populateMapFromProperty("search.field.paramName.", searchFieldParams, properties);
-        searchFieldKeys = getInvertedHashMap(searchFieldParams);
-        populateMapFromProperty("search.field.display.", searchFieldLabels, properties);
-        populateMapFromProperty("search.actions.", actions, properties);
-        searchFieldParams = Collections.unmodifiableMap(searchFieldParams);
-        searchFieldLabels = Collections.unmodifiableMap(searchFieldLabels);
+        searchFieldParams = Arrays.stream(SearchFieldKey.values())
+                .collect(Collectors.toMap(SearchFieldKey::name, SearchFieldKey::getUrlParam));
+        searchFieldKeys = Arrays.stream(SearchFieldKey.values())
+                .collect(Collectors.toMap(SearchFieldKey::getUrlParam, SearchFieldKey::name));
+        searchFieldLabels = Arrays.stream(SearchFieldKey.values())
+                .collect(Collectors.toMap(SearchFieldKey::name, SearchFieldKey::getDisplayLabel));
 
         // Populate sort types
         populateMapFromProperty("search.sort.name.", sortDisplayNames, properties);
