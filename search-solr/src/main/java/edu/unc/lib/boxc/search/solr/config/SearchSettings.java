@@ -49,6 +49,21 @@ public class SearchSettings extends AbstractSettings {
 
     public static final String DEFAULT_OPERATOR = "AND";
     public static final String SORT_ORDER_REVERSED = "reverse";
+    // Sort types, which are groupings of any number of field names with matching sort orders.
+    public static final Map<String, List<SortField>> SORT_TYPES = Map.of(
+            "bestMatch", constructSortFields("SCORE|desc,TITLE|asc,LABEL|asc"),
+            "collection", constructSortFields(
+                    "ANCESTOR_IDS|asc,IDENTIFIER_SORT|asc,DISPLAY_ORDER|asc,TITLE|asc,LABEL|asc"),
+            "creator", constructSortFields("CREATOR_SORT|asc"),
+            "dateAdded", constructSortFields("DATE_ADDED|desc"),
+            "dateCreated", constructSortFields("DATE_CREATED|desc"),
+            "dateUpdated", constructSortFields("DATE_UPDATED|desc"),
+            "default", constructSortFields(
+                    "SCORE|desc,RESOURCE_TYPE_SORT|asc,IDENTIFIER_SORT|asc,TITLE|asc,LABEL|asc"),
+            "resourceType", constructSortFields("RESOURCE_TYPE_SORT|asc"),
+            "title", constructSortFields("TITLE_LC|asc,ID|asc")
+    );
+
     public static final Collection<String> DEFAULT_RESOURCE_TYPES =
             Arrays.asList(ResourceType.File.name(), ResourceType.Work.name(), ResourceType.Folder.name(),
                     ResourceType.Collection.name(), ResourceType.AdminUnit.name());
@@ -135,8 +150,6 @@ public class SearchSettings extends AbstractSettings {
     public String resourceTypeCollection;
     public String resourceTypeUnit;
     public String resourceTypeContentRoot;
-    // Sort types, which are groupings of any number of field names with matching sort orders.
-    public Map<String, List<SortField>> sortTypes;
 
     public SearchSettings() {
     }
@@ -157,8 +170,6 @@ public class SearchSettings extends AbstractSettings {
         searchFieldParams = new HashMap<>();
         searchFieldKeys = new HashMap<>();
         searchFieldLabels = new HashMap<>();
-
-        sortTypes = new HashMap<>();
 
         // Query validation properties
         setDefaultPerPage(Integer.parseInt(properties.getProperty("search.results.defaultPerPage", "0")));
@@ -204,23 +215,10 @@ public class SearchSettings extends AbstractSettings {
         resourceTypeCollection = ResourceType.Collection.name();
         resourceTypeUnit = ResourceType.AdminUnit.name();
         resourceTypeContentRoot = ResourceType.ContentRoot.name();
+    }
 
-        Iterator<Map.Entry<Object, Object>> propIt = properties.entrySet().iterator();
-        while (propIt.hasNext()) {
-            Map.Entry<Object, Object> propEntry = propIt.next();
-            String propertyKey = (String) propEntry.getKey();
-
-            // Populate sort types
-            if (propertyKey.indexOf("search.sort.type.") == 0) {
-                String sortTypes[] = ((String) propEntry.getValue()).split(",");
-                List<SortField> sortFields = new ArrayList<>();
-                for (String sortField : sortTypes) {
-                    sortFields.add(new SortField(sortField));
-                }
-                this.sortTypes.put(propertyKey.substring(propertyKey.lastIndexOf(".") + 1), sortFields);
-            }
-        }
-        sortTypes = Collections.unmodifiableMap(sortTypes);
+    private static List<SortField> constructSortFields(String value) {
+        return Arrays.stream(value.split(",")).map(SortField::new).collect(Collectors.toList());
     }
 
     public int getFacetsPerGroup() {
@@ -275,18 +273,6 @@ public class SearchSettings extends AbstractSettings {
         return facetNames;
     }
 
-    public void setFacetNames(List<String> facetNames) {
-        this.facetNames = facetNames;
-    }
-
-    public Map<String, List<SortField>> getSortTypes() {
-        return sortTypes;
-    }
-
-    public void setSortTypes(Map<String, List<SortField>> sortTypes) {
-        this.sortTypes = sortTypes;
-    }
-
     public Boolean getAllowPatronAccess() {
         return allowPatronAccess;
     }
@@ -317,7 +303,7 @@ public class SearchSettings extends AbstractSettings {
      * @author bbpennel
      *
      */
-    public class SortField {
+    public static class SortField {
         private String fieldName;
         private String sortOrder;
 
@@ -378,6 +364,22 @@ public class SearchSettings extends AbstractSettings {
 
     public void setPagesToDisplay(int pagesToDisplay) {
         this.pagesToDisplay = pagesToDisplay;
+    }
+
+    public String getResourceTypeFile() {
+        return resourceTypeFile;
+    }
+
+    public String getResourceTypeAggregate() {
+        return resourceTypeAggregate;
+    }
+
+    public String getResourceTypeFolder() {
+        return resourceTypeFolder;
+    }
+
+    public String getResourceTypeCollection() {
+        return resourceTypeCollection;
     }
 
     public int getMaxNeighborResults() {

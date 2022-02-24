@@ -145,7 +145,10 @@ public abstract class AbstractQueryService {
      * @param normalOrder
      */
     protected void addSort(SolrQuery solrQuery, String sortType, boolean normalOrder) {
-        List<SearchSettings.SortField> sortFields = searchSettings.sortTypes.get(sortType);
+        if (sortType == null) {
+            return;
+        }
+        var sortFields = SearchSettings.SORT_TYPES.get(sortType);
         if (sortFields != null) {
             for (int i = 0; i < sortFields.size(); i++) {
                 SearchSettings.SortField sortField = sortFields.get(i);
