@@ -30,6 +30,10 @@ import java.util.stream.Collectors;
 
 import edu.unc.lib.boxc.model.api.ResourceType;
 import edu.unc.lib.boxc.search.api.SearchFieldKey;
+import edu.unc.lib.boxc.search.solr.facets.CaseInsensitiveFacet;
+import edu.unc.lib.boxc.search.solr.facets.CutoffFacetImpl;
+import edu.unc.lib.boxc.search.solr.facets.MultivaluedHierarchicalFacet;
+import edu.unc.lib.boxc.search.solr.facets.RoleGroupFacet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -61,6 +65,15 @@ public class SearchSettings extends AbstractSettings {
             SearchFieldKey.DATE_CREATED.name(), SearchFieldKey.DATE_ADDED.name(), SearchFieldKey.DATE_UPDATED.name());
     // Set of fields which should be treated as dates in search criteria
     public static final Set<String> FIELDS_DATE_SEARCHABLE = FIELDS_RANGE_SEARCHABLE;
+
+    // Classes for facet fields. If not specified, then it is a GenericFacet
+    public static final Map<String, Class<?>> FACET_CLASS_MAP = Map.of(
+            SearchFieldKey.ANCESTOR_PATH.name(), CutoffFacetImpl.class,
+            SearchFieldKey.CONTENT_TYPE.name(), MultivaluedHierarchicalFacet.class,
+            SearchFieldKey.DEPARTMENT.name(), CaseInsensitiveFacet.class,
+            SearchFieldKey.DEPARTMENT_LC.name(), CaseInsensitiveFacet.class,
+            SearchFieldKey.ROLE_GROUP.name(), RoleGroupFacet.class
+    );
 
     public static final String URL_PARAM_FACET_LIMIT_FIELDS = "facetLimits";
     public static final String URL_PARAM_BASE_FACET_LIMIT = "facetLimit";
@@ -100,8 +113,6 @@ public class SearchSettings extends AbstractSettings {
     public List<String> facetNames;
     // Facets shown by default in normal search results
     public List<String> searchFacetNames;
-    // Classes for facet fields. If not specified, then it is a GenericFacet
-    public Map<String, Class<?>> facetClasses;
     // Default number of facets entries to return for a single facet field result set.
     public int facetsPerGroup;
     // Default number of facets entries to return for a single facet field result set.
@@ -126,8 +137,6 @@ public class SearchSettings extends AbstractSettings {
     public String resourceTypeContentRoot;
     // Sort types, which are groupings of any number of field names with matching sort orders.
     public Map<String, List<SortField>> sortTypes;
-    // Display names for sort types.
-    public Map<String, String> sortDisplayNames;
 
     public SearchSettings() {
     }
@@ -143,7 +152,6 @@ public class SearchSettings extends AbstractSettings {
 
         facetNames = new ArrayList<>();
         searchFacetNames = new ArrayList<>();
-        this.facetClasses = new HashMap<>();
 
         searchableFields = new HashSet<>();
         searchFieldParams = new HashMap<>();
@@ -151,7 +159,6 @@ public class SearchSettings extends AbstractSettings {
         searchFieldLabels = new HashMap<>();
 
         sortTypes = new HashMap<>();
-        sortDisplayNames = new HashMap<>();
 
         // Query validation properties
         setDefaultPerPage(Integer.parseInt(properties.getProperty("search.results.defaultPerPage", "0")));
@@ -175,12 +182,6 @@ public class SearchSettings extends AbstractSettings {
         populateCollectionFromProperty("search.facet.defaultSearch", searchFacetNames, properties, ",");
         facetNames = Collections.unmodifiableList(facetNames);
         searchFacetNames = Collections.unmodifiableList(searchFacetNames);
-        try {
-            populateClassMapFromProperty("search.facet.class.", "edu.unc.lib.boxc.search.solr.facets.",
-                    this.facetClasses, properties);
-        } catch (ClassNotFoundException e) {
-            log.error("Invalid facet class specified in search.facet.class property", e);
-        }
 
         // Field names
         populateCollectionFromProperty("search.field.searchable", searchableFields, properties, ",");
@@ -192,9 +193,6 @@ public class SearchSettings extends AbstractSettings {
                 .collect(Collectors.toMap(SearchFieldKey::getUrlParam, SearchFieldKey::name));
         searchFieldLabels = Arrays.stream(SearchFieldKey.values())
                 .collect(Collectors.toMap(SearchFieldKey::name, SearchFieldKey::getDisplayLabel));
-
-        // Populate sort types
-        populateMapFromProperty("search.sort.name.", sortDisplayNames, properties);
 
         // Access field names
         this.setAllowPatronAccess(new Boolean(properties.getProperty("search.access.allowPatrons", "true")));
@@ -289,14 +287,6 @@ public class SearchSettings extends AbstractSettings {
         this.sortTypes = sortTypes;
     }
 
-    public Map<String, Class<?>> getFacetClasses() {
-        return facetClasses;
-    }
-
-    public void setFacetClasses(Map<String, Class<?>> facetClasses) {
-        this.facetClasses = facetClasses;
-    }
-
     public Boolean getAllowPatronAccess() {
         return allowPatronAccess;
     }
@@ -388,14 +378,6 @@ public class SearchSettings extends AbstractSettings {
 
     public void setPagesToDisplay(int pagesToDisplay) {
         this.pagesToDisplay = pagesToDisplay;
-    }
-
-    public Map<String, String> getSortDisplayNames() {
-        return sortDisplayNames;
-    }
-
-    public void setSortDisplayNames(Map<String, String> sortDisplayNames) {
-        this.sortDisplayNames = sortDisplayNames;
     }
 
     public int getMaxNeighborResults() {
