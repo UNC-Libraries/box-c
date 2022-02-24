@@ -148,7 +148,7 @@ public abstract class AbstractQueryService {
         if (sortType == null) {
             return;
         }
-        var sortFields = SearchSettings.SORT_TYPES.get(sortType);
+        var sortFields = SearchSettings.getSortFields(sortType);
         if (sortFields != null) {
             for (int i = 0; i < sortFields.size(); i++) {
                 SearchSettings.SortField sortField = sortFields.get(i);

@@ -55,10 +55,7 @@ public class FacetFieldFactory {
      * @return
      */
     public SearchFacet createFacet(String fieldKey, String facetValue) {
-        Class<?> facetClass = SearchSettings.FACET_CLASS_MAP.get(fieldKey);
-        if (facetClass == null) {
-            facetClass = GenericFacet.class;
-        }
+        Class<?> facetClass = SearchSettings.getFacetClass(fieldKey);
         try {
             Constructor<?> constructor = facetClass.getConstructor(String.class, String.class);
             Object newFacet = constructor.newInstance(fieldKey, facetValue);
@@ -111,10 +108,7 @@ public class FacetFieldFactory {
 
         // Generate list of facet values from Solr facet fields if they are provided.
         if (facetField != null) {
-            Class<?> facetClass = SearchSettings.FACET_CLASS_MAP.get(fieldKey);
-            if (facetClass == null) {
-                facetClass = GenericFacet.class;
-            }
+            Class<?> facetClass = SearchSettings.getFacetClass(fieldKey);
             try {
                 Constructor<?> constructor = facetClass.getConstructor(String.class, FacetField.Count.class);
                 for (FacetField.Count value : facetField.getValues()) {

@@ -15,28 +15,28 @@
  */
 package edu.unc.lib.boxc.search.solr.config;
 
+import edu.unc.lib.boxc.model.api.ResourceType;
+import edu.unc.lib.boxc.search.api.SearchFieldKey;
+import edu.unc.lib.boxc.search.solr.facets.CaseInsensitiveFacet;
+import edu.unc.lib.boxc.search.solr.facets.CutoffFacetImpl;
+import edu.unc.lib.boxc.search.solr.facets.GenericFacet;
+import edu.unc.lib.boxc.search.solr.facets.MultivaluedHierarchicalFacet;
+import edu.unc.lib.boxc.search.solr.facets.RoleGroupFacet;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.stream.Collectors;
-
-import edu.unc.lib.boxc.model.api.ResourceType;
-import edu.unc.lib.boxc.search.api.SearchFieldKey;
-import edu.unc.lib.boxc.search.solr.facets.CaseInsensitiveFacet;
-import edu.unc.lib.boxc.search.solr.facets.CutoffFacetImpl;
-import edu.unc.lib.boxc.search.solr.facets.MultivaluedHierarchicalFacet;
-import edu.unc.lib.boxc.search.solr.facets.RoleGroupFacet;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Stores properties related to searching retrieved from a properties file. Includes default values and lists of
@@ -50,7 +50,7 @@ public class SearchSettings extends AbstractSettings {
     public static final String DEFAULT_OPERATOR = "AND";
     public static final String SORT_ORDER_REVERSED = "reverse";
     // Sort types, which are groupings of any number of field names with matching sort orders.
-    public static final Map<String, List<SortField>> SORT_TYPES = Map.of(
+    private static final Map<String, List<SortField>> SORT_TYPES = Map.of(
             "bestMatch", constructSortFields("SCORE|desc,TITLE|asc,LABEL|asc"),
             "collection", constructSortFields(
                     "ANCESTOR_IDS|asc,IDENTIFIER_SORT|asc,DISPLAY_ORDER|asc,TITLE|asc,LABEL|asc"),
@@ -82,7 +82,7 @@ public class SearchSettings extends AbstractSettings {
     public static final Set<String> FIELDS_DATE_SEARCHABLE = FIELDS_RANGE_SEARCHABLE;
 
     // Classes for facet fields. If not specified, then it is a GenericFacet
-    public static final Map<String, Class<?>> FACET_CLASS_MAP = Map.of(
+    private static final Map<String, Class<?>> FACET_CLASS_MAP = Map.of(
             SearchFieldKey.ANCESTOR_PATH.name(), CutoffFacetImpl.class,
             SearchFieldKey.CONTENT_TYPE.name(), MultivaluedHierarchicalFacet.class,
             SearchFieldKey.DEPARTMENT.name(), CaseInsensitiveFacet.class,
@@ -172,23 +172,20 @@ public class SearchSettings extends AbstractSettings {
         searchFieldLabels = new HashMap<>();
 
         // Query validation properties
-        setDefaultPerPage(Integer.parseInt(properties.getProperty("search.results.defaultPerPage", "0")));
-        setMaxPerPage(Integer.parseInt(properties.getProperty("search.results.maxPerPage", "0")));
+        setDefaultPerPage(Integer.parseInt(properties.getProperty("search.results.defaultPerPage", "20")));
+        setMaxPerPage(Integer.parseInt(properties.getProperty("search.results.maxPerPage", "40")));
         setMaxBrowsePerPage(Integer.parseInt(properties.getProperty("search.results.maxBrowsePerPage", "100")));
-        setPagesToDisplay(Integer.parseInt(properties.getProperty("search.results.pagesToDisplay", "0")));
-        setMaxNeighborResults(Integer.parseInt(properties.getProperty("search.results.neighborItems", "0")));
+        setPagesToDisplay(Integer.parseInt(properties.getProperty("search.results.pagesToDisplay", "10")));
+        setMaxNeighborResults(Integer.parseInt(properties.getProperty("search.results.neighborItems", "7")));
 
         setStructuredDepthDefault(Integer.parseInt(properties.getProperty("search.structure.depth.default", "1")));
         setStructuredDepthMax(Integer.parseInt(properties.getProperty("search.structure.depth.max", "4")));
 
-        setMaxNeighborResults(Integer.parseInt(properties.getProperty("search.results.neighborItems", "0")));
-        setMaxNeighborResults(Integer.parseInt(properties.getProperty("search.results.neighborItems", "0")));
-
         // Facet properties
-        setFacetsPerGroup(Integer.parseInt(properties.getProperty("search.facet.facetsPerGroup", "0")));
+        setFacetsPerGroup(Integer.parseInt(properties.getProperty("search.facet.facetsPerGroup", "6")));
         setExpandedFacetsPerGroup(Integer.parseInt(
-                properties.getProperty("search.facet.expandedFacetsPerGroup", "0")));
-        setMaxFacetsPerGroup(Integer.parseInt(properties.getProperty("search.facet.maxFacetsPerGroup", "0")));
+                properties.getProperty("search.facet.expandedFacetsPerGroup", "15")));
+        setMaxFacetsPerGroup(Integer.parseInt(properties.getProperty("search.facet.maxFacetsPerGroup", "15")));
         populateCollectionFromProperty("search.facet.fields", facetNames, properties, ",");
         populateCollectionFromProperty("search.facet.defaultSearch", searchFacetNames, properties, ",");
         facetNames = Collections.unmodifiableList(facetNames);
@@ -206,7 +203,7 @@ public class SearchSettings extends AbstractSettings {
                 .collect(Collectors.toMap(SearchFieldKey::name, SearchFieldKey::getDisplayLabel));
 
         // Access field names
-        this.setAllowPatronAccess(new Boolean(properties.getProperty("search.access.allowPatrons", "true")));
+        this.setAllowPatronAccess(new Boolean(properties.getProperty("search.access.allowPatrons", "false")));
 
         // Resource Types, stored here temporarily for usage in jsp
         resourceTypeFile = ResourceType.File.name();
@@ -286,7 +283,7 @@ public class SearchSettings extends AbstractSettings {
     }
 
     public String actionName(String actionKey) {
-        return this.actions.get(actionKey);
+        return actionKey == null ? null : this.actions.get(actionKey);
     }
 
     public int getMaxFacetsPerGroup() {
@@ -295,6 +292,26 @@ public class SearchSettings extends AbstractSettings {
 
     public void setMaxFacetsPerGroup(int maxFacetsPerGroup) {
         this.maxFacetsPerGroup = maxFacetsPerGroup;
+    }
+
+    /**
+     * @param fieldKey Field key, must not be null
+     * @return Get the facet class associated with the provided key. Defaults to GenericFacet.
+     */
+    public static Class<?> getFacetClass(String fieldKey) {
+        if (fieldKey == null) {
+            throw new IllegalArgumentException("Cannot get facet class for null field key");
+        }
+        var fClass = FACET_CLASS_MAP.get(fieldKey);
+        return fClass == null ? GenericFacet.class : fClass;
+    }
+
+    /**
+     * @param sortKey
+     * @return Get list of SortField types for the provided sort type key
+     */
+    public static List<SortField> getSortFields(String sortKey) {
+        return sortKey == null ? null : SORT_TYPES.get(sortKey);
     }
 
     /**

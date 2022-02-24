@@ -102,7 +102,7 @@ public class SearchRestController extends AbstractSolrSearchController {
     }
 
     private List<String> getResultFields(HttpServletRequest request) {
-        String fields = request.getParameter("fields");
+        String fields = request.getParameter(SearchSettings.URL_PARAM_FIELDS);
         // Allow for retrieving of specific fields
         if (fields != null) {
             String[] fieldNames = fields.split(",");
@@ -116,7 +116,7 @@ public class SearchRestController extends AbstractSolrSearchController {
             return resultFields;
         } else {
             // Retrieve a predefined set of fields
-            String fieldSet = request.getParameter("fieldSet");
+            String fieldSet = request.getParameter(SearchSettings.URL_PARAM_FIELDSET);
             List<String> resultFields = RESULT_FIELD_SETS.get(fieldSet);
             if (resultFields == null) {
                 resultFields = new ArrayList<>(RESULT_FIELDS_BRIEF);
