@@ -106,6 +106,49 @@ describe('facets.vue', () => {
         expect(facets[3].find('a').text()).toBe('png (2)');
     });
 
+    it("does not display facets with no returned results", () => {
+        let emptyFacetWrapper = shallowMount(facets, {
+            global: {
+                plugins: [router]
+            },
+            props: {
+                facetList: [
+                    {
+                        name: "CONTENT_TYPE",
+                        values: [
+                            {
+                                count: 8,
+                                displayValue: "Image",
+                                limitToValue: "image",
+                                value: "^image,Image",
+                                fieldName: "CONTENT_TYPE"
+                            }
+                        ]
+                    },
+                    {
+                        name: "SUBJECT",
+                        values: []
+                    }
+                ]
+            },
+            data() {
+                return {
+                    selected_facets: []
+                }
+            }
+        });
+
+        let facet_headers = emptyFacetWrapper.findAll('.facet-display h3');
+        let facet_list = emptyFacetWrapper.findAll('.facet-display li');
+
+        expect(facet_headers[0].text()).toBe('Format');
+        expect(facet_list[0].find('a').text()).toBe('Image (8)');
+
+        expect(facet_headers.length).toBe(1);
+        expect(facet_list.length).toBe(1);
+        expect(facet_headers.map((d) => d.text())).not.toContain('Subject');
+    });
+
     it("displays a listing of selected facets", async () => {
         await router.push('/search/?collection=d77fd8c9-744b-42ab-8e20-5ad9bdf8194e');
         selected_facet.trigger('click');
@@ -145,8 +188,8 @@ describe('facets.vue', () => {
         selected_facet.trigger('click');
         await flushPromises();
 
-        let facets = wrapper.findAll('.facet-display a');
-        selected_facet = facets[2];
+        let facet_list = wrapper.findAll('.facet-display a');
+        selected_facet = facet_list[2];
 
         expect(selected_facet.html()).toContain('fas fa-times'); // Look for X checkmark
         expect(wrapper.vm.selected_facets).toContain('format=image');
@@ -154,8 +197,8 @@ describe('facets.vue', () => {
         // Remove facet
         selected_facet.trigger('click');
         await flushPromises();
-        facets = wrapper.findAll('.facet-display a');
-        selected_facet = facets[2];
+        facet_list = wrapper.findAll('.facet-display a');
+        selected_facet = facet_list[2];
         expect(selected_facet.html()).not.toContain('fas fa-times'); // Look for X checkmark
         expect(wrapper.vm.selected_facets).not.toContain('format=image');
     });

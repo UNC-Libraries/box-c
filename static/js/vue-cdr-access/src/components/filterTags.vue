@@ -24,6 +24,7 @@ const TYPES = {
     created: 'Date Created',
     contributorIndex: 'Contributor',
     format: 'Format',
+    subject: 'Subject',
     subjectIndex: 'Subject',
     titleIndex: 'Title',
     genre: 'Genre'
