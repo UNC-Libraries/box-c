@@ -124,7 +124,8 @@
              * @returns {boolean|boolean}
              */
             showFacetDisplay(facet) {
-                return facet.name !== 'PARENT_COLLECTION' || (facet.name === 'PARENT_COLLECTION' && !this.routeHasCollectionId);
+                return facet.values.length > 0 &&
+                    (facet.name !== 'PARENT_COLLECTION' || (facet.name === 'PARENT_COLLECTION' && !this.routeHasCollectionId));
             },
 
             /**
