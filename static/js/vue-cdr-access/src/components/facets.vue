@@ -15,15 +15,14 @@
                         <a v-else @click.prevent="updateAll(value)">{{ value.displayValue }} ({{ value.count }})</a>
                     </li>
                 </ul>
-                <Slider v-if="facet.name === 'DATE_CREATED_YEAR'" class="slider-carolina-blue"
-                        :min="dates.allowed_dates.start" :max="dates.allowed_dates.end"
-                        @update="setDatesForForm" v-model="dates.date_range" />
-                <form v-if="facet.name === 'DATE_CREATED_YEAR'" @change="setDatesForSlider()">
+                <form v-if="facet.name === 'DATE_CREATED_YEAR'">
                     <input type="number" v-model="dates.selected_dates.start" name="start_date"
-                           aria-label="Start Date" placeholder="Start Date" :max="dates.allowed_dates.end" />
+                           :min="dates.allowed_dates.start" :max="dates.allowed_dates.end"
+                           aria-label="Start Date" placeholder="Start Date" />
                     &ndash;
                     <input type="number" v-model="dates.selected_dates.end" name="end_date"
-                           aria-label="End Date" placeholder="End Date" :max="dates.allowed_dates.end" />
+                           :min="dates.allowed_dates.start" :max="dates.allowed_dates.end"
+                           aria-label="End Date" placeholder="End Date" />
                     <br />
                     <input type="submit" value="Limit" @click.prevent="setDateFacetUrl()" class="button is-small" />
                     <p class="date_error" v-if="dates.invalid_date_range">The start date cannot be after the end date</p>
@@ -35,8 +34,6 @@
 
 <script>
     import sortBy from 'lodash.sortby';
-    import Slider from '@vueform/slider';
-    import "@vueform/slider/themes/default.css";
     import routeUtils from '../mixins/routeUtils';
 
     const UUID_REGEX = /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i;
@@ -45,8 +42,6 @@
 
     export default {
         name: 'facets',
-
-        components: { Slider },
 
         props: {
             facetList: Array
@@ -65,7 +60,6 @@
                         start: 1500,
                         end: CURRENT_YEAR
                     },
-                    date_range: [1500, CURRENT_YEAR],
                     error_message: '',
                     invalid_date_range: false
                 },
@@ -322,20 +316,6 @@
                 this.dates.invalid_date_range = false;
                 this.selectedFacets();
             },
-            /**
-             * Set number input from values emitted from update event on the slider
-             * @param dates
-             */
-            setDatesForForm(dates) {
-                this.dates.selected_dates.start = dates[0];
-                this.dates.selected_dates.end = dates[1];
-            },
-            /**
-             * Set number input from values emitted from update event on the slider
-             */
-            setDatesForSlider() {
-                this.dates.date_range = [this.dates.selected_dates.start, this.dates.selected_dates.end];
-            },
 
             /**
              * Determine if a facet value is in the url query and add it to selected facets, if so.
@@ -371,6 +351,7 @@
 </script>
 
 <style scoped lang="scss">
+    $cdr-blue: #1A698C;
     #facetList {
         h3 {
             font-size: 18px;
@@ -383,7 +364,7 @@
         }
 
         .is-link {
-            background-color: #1A698C;
+            background-color: $cdr-blue;
             border-radius: 5px;
             font-size: .85rem;
             margin-bottom: 10px;
@@ -404,7 +385,7 @@
             }
 
             i {
-                color: #1A698C;
+                color: $cdr-blue;
                 position: relative;
                 vertical-align: text-top;
             }
@@ -424,12 +405,16 @@
         }
 
         form {
-            margin-top: 25px;
+            margin-top: 5px;
             input[type=number] {
                 max-width: 100px;
             }
             input[type=submit] {
                 margin-top: 10px;
+                background-color: $cdr-blue;
+                color: white;
+                font-weight: bold;
+                border-radius: 5px;
             }
         }
         .date_error {
@@ -437,14 +422,5 @@
             font-size: 15px;
             margin-top: 10px;
         }
-    }
-
-    .slider-target {
-        margin: 45px auto 0 auto;
-        width: 90%;
-    }
-    .slider-carolina-blue {
-        --slider-connect-bg: #1A698C;
-        --slider-tooltip-bg: #1A698C;
     }
 </style>
