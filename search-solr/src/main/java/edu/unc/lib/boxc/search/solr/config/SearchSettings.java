@@ -423,10 +423,6 @@ public class SearchSettings extends AbstractSettings {
         this.structuredDepthDefault = structuredDepthDefault;
     }
 
-    public String getProperty(String key) {
-        return this.properties.getProperty(key);
-    }
-
     @Override
     public String toString() {
         return "";
