@@ -117,6 +117,9 @@ public class SearchRestController extends AbstractSolrSearchController {
         } else {
             // Retrieve a predefined set of fields
             String fieldSet = request.getParameter(SearchSettings.URL_PARAM_FIELDSET);
+            if (fieldSet == null) {
+                fieldSet = "brief";
+            }
             List<String> resultFields = RESULT_FIELD_SETS.get(fieldSet);
             if (resultFields == null) {
                 resultFields = new ArrayList<>(RESULT_FIELDS_BRIEF);
