@@ -380,11 +380,11 @@ public class SearchStateFactory {
                 SearchFieldKey.DATE_CREATED_YEAR.name()));
         if (parameter != null && parameter.length() > 0) {
             String[] dateRange = parameter.split(",");
-            dateCreatedYear.setLeftHand(DateFormatUtil.getFormattedDate(dateRange[0], true, false));
-            dateCreatedYear.setRightHand(DateFormatUtil.getFormattedDate(dateRange[1], true, true));
+            dateCreatedYear.setLeftHand(dateRange[0]);
+            dateCreatedYear.setRightHand(dateRange[1]);
         }
 
-        if (dateCreatedYear.getLeftHand() != null || dateCreatedYear.getRightHand() != null) {
+        if (dateCreatedYear.getLeftHand() != null && dateCreatedYear.getRightHand() != null) {
             searchState.getRangeFields().put(SearchFieldKey.DATE_CREATED_YEAR.name(), dateCreatedYear);
             Map<String, SearchState.RangePair> dateRangeSearch = new HashMap<>();
             dateRangeSearch.put(SearchFieldKey.DATE_CREATED_YEAR.name(), dateCreatedYear);
