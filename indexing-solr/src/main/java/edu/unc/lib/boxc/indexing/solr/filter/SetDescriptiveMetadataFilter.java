@@ -27,6 +27,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Properties;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.Statement;
@@ -246,11 +247,11 @@ public class SetDescriptiveMetadataFilter implements IndexDocumentFilter {
                     String subjectName = subjectEl.getName();
 
                     if (subjectName.equals("name")) {
-                        subjects.add(formatName(subjectEl));
+                        addIfNotBlank(subjects, formatName(subjectEl));
                     }
 
                     if (subjectEl.getChildren().isEmpty() && subjectName.equals("topic")) {
-                            subjects.add(subjectEl.getValue());
+                        addIfNotBlank(subjects, subjectEl.getValue());
                     }
                 }
             }
@@ -376,15 +377,19 @@ public class SetDescriptiveMetadataFilter implements IndexDocumentFilter {
         this.addValuesToList(idb.getGenre(), mods.getChildren("genre", JDOMNamespaceUtil.MODS_V3_NS));
     }
 
+    private void addIfNotBlank(List<String> values, String newValue) {
+        if (StringUtils.isBlank(newValue)) {
+            return;
+        }
+        values.add(newValue);
+    }
+
     private void addValuesToList(List<String> values, List<Element> elements) {
         if (elements == null) {
             return;
         }
         for (Element elementObj: elements) {
-            String value = elementObj.getValue();
-            if (value != null) {
-                values.add(value.trim());
-            }
+            addIfNotBlank(values, elementObj.getValue());
         }
     }
 
