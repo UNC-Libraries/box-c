@@ -57,6 +57,7 @@ public class SearchSettings extends AbstractSettings {
             "creator", constructSortFields("CREATOR_SORT|asc"),
             "dateAdded", constructSortFields("DATE_ADDED|desc"),
             "dateCreated", constructSortFields("DATE_CREATED|desc"),
+            "dateCreatedAsc", constructSortFields("DATE_CREATED|asc"),
             "dateUpdated", constructSortFields("DATE_UPDATED|desc"),
             "default", constructSortFields(
                     "SCORE|desc,RESOURCE_TYPE_SORT|asc,IDENTIFIER_SORT|asc,TITLE|asc,LABEL|asc"),
@@ -77,7 +78,8 @@ public class SearchSettings extends AbstractSettings {
 
     // Set of fields which can be used in range search criteria
     public static final Set<String> FIELDS_RANGE_SEARCHABLE = Set.of(
-            SearchFieldKey.DATE_CREATED.name(), SearchFieldKey.DATE_ADDED.name(), SearchFieldKey.DATE_UPDATED.name());
+            SearchFieldKey.DATE_CREATED.name(), SearchFieldKey.DATE_ADDED.name(), SearchFieldKey.DATE_UPDATED.name(),
+            SearchFieldKey.DATE_CREATED_YEAR.name());
     // Set of fields which should be treated as dates in search criteria
     public static final Set<String> FIELDS_DATE_SEARCHABLE = FIELDS_RANGE_SEARCHABLE;
 

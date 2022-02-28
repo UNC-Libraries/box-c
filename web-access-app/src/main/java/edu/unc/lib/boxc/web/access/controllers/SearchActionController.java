@@ -152,10 +152,16 @@ public class SearchActionController extends AbstractErrorHandlingSearchControlle
         }
 
         // Retrieve the facet result set
-        if (Boolean.valueOf(getFacets)) {
+        if (Boolean.parseBoolean(getFacets)) {
             SearchResultResponse resultResponseFacets = multiSelectFacetListService.getFacetListResult(facetRequest);
             parentCollectionFacetTitleService.populateTitles(resultResponseFacets.getFacetFields());
             resultResponse.setFacetFields(resultResponseFacets.getFacetFields());
+
+            // Get minimum year for date created "facet" search
+            String minSearchYear = multiSelectFacetListService.getMinimumYear(searchState, searchRequest);
+            if (minSearchYear != null) {
+                resultResponse.setMinimumSearchYear(minSearchYear);
+            }
         }
 
         return getResults(resultResponse, "search", request);

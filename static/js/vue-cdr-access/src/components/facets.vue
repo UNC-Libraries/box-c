@@ -17,11 +17,11 @@
                 </ul>
                 <form v-if="facet.name === 'DATE_CREATED_YEAR'">
                     <input type="number" v-model="dates.selected_dates.start" name="start_date"
-                           :min="dates.allowed_dates.start" :max="dates.allowed_dates.end"
+                           :min="min_year" :max="currentYear"
                            aria-label="Start Date" placeholder="Start Date" />
                     &ndash;
                     <input type="number" v-model="dates.selected_dates.end" name="end_date"
-                           :min="dates.allowed_dates.start" :max="dates.allowed_dates.end"
+                           :min="min_year" :max="currentYear"
                            aria-label="End Date" placeholder="End Date" />
                     <br />
                     <input type="submit" value="Limit" @click.prevent="setDateFacetUrl()" class="button is-small" />
@@ -44,7 +44,8 @@
         name: 'facets',
 
         props: {
-            facetList: Array
+            facetList: Array,
+            minSearchYear: Number
         },
 
         mixins: [routeUtils],
@@ -52,17 +53,14 @@
         data() {
             return {
                 dates: {
-                    allowed_dates: {
-                        start: 1500,
-                        end: CURRENT_YEAR
-                    },
                     selected_dates: {
-                        start: 1500,
+                        start: this.minSearchYear,
                         end: CURRENT_YEAR
                     },
                     error_message: '',
                     invalid_date_range: false
                 },
+                min_year: this.minSearchYear,
                 selected_facets: []
             }
         },
@@ -74,6 +72,15 @@
                     this.setFacetsFromParams();
                 },
                 deep: true
+            },
+            minSearchYear: {
+                handler(year) {
+                    // Favor the date range in the url for consistencies' sake
+                    if (this.urlParams().createdYear === undefined) {
+                        this.min_year = year;
+                        this.dates.selected_dates.start = year
+                    }
+                }
             }
         },
 
@@ -106,6 +113,10 @@
 
                     return facet;
                 });
+            },
+
+            currentYear() {
+                return new Date().getFullYear();
             }
         },
 
@@ -149,6 +160,9 @@
              * @returns {boolean|boolean}
              */
             showFacetDisplay(facet) {
+                if (facet.name === 'DATE_CREATED_YEAR' && this.minSearchYear !== undefined) {
+                    return true;
+                }
                 return facet.values.length > 0 &&
                     (facet.name !== 'PARENT_COLLECTION' || (facet.name === 'PARENT_COLLECTION' && !this.routeHasCollectionId));
             },
@@ -318,6 +332,25 @@
                 this.selectedFacets();
             },
 
+            setDateRangeFromParams(facet_value) {
+                if (facet_value !== undefined) {
+                    const decoded_facet_value = decodeURIComponent(facet_value);
+                    const search_years = decoded_facet_value.split(',');
+
+                    // Ignore invalid date ranges
+                    if (parseInt(search_years[0]) > parseInt(search_years[1])) {
+                        return;
+                    }
+
+                    this.dates.selected_dates.start = parseInt(search_years[0]);
+                    this.min_year = parseInt(search_years[0]);
+                    this.dates.selected_dates.end = parseInt(search_years[1]);
+                } else {
+                    // In this case selected start date set by minSearchYear watcher
+                    this.dates.selected_dates.end = this.currentYear;
+                }
+            },
+
             /**
              * Determine if a facet value is in the url query and add it to selected facets, if so.
              * This method triggers every time a facet is added/removed from the mounted() method
@@ -331,6 +364,11 @@
                     const decoded_facet_value = decodeURIComponent(facet_value);
                     const updated_value = `${type}=${decoded_facet_value}`
                     this.selected_facets.push(updated_value);
+                }
+
+                // Set date ranges
+                if (type === 'createdYear') {
+                    this.setDateRangeFromParams(facet_value);
                 }
             },
 

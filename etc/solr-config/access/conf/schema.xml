@@ -44,6 +44,9 @@
     <!-- The format for this date field is of the form 1995-12-31T23:59:59Z -->
     <fieldType name="date" class="solr.DatePointField" positionIncrementGap="0"/>
 
+    <!-- https://solr.apache.org/guide/8_11/working-with-dates.html#date-range-formatting -->
+    <fieldType name="date_range" class="solr.DateRangeField"/>
+
     <!-- The "RandomSortField" is not used to store or search any
          data.  You can declare fields of this type it in your schema
          to generate pseudo-random orderings of your docs for sorting
@@ -178,6 +181,7 @@
     <field name="dateAdded" type="date" indexed="true" stored="true"/>
     <!-- Date when this object was originally created -->
     <field name="dateCreated" type="date" indexed="true" stored="true"/>
+    <field name="dateCreatedYear" type="date_range" indexed="true" stored="true"/>
     <!-- Date when the object was last updated in the repository -->
     <field name="dateUpdated" type="date" indexed="true" stored="true"/>
     <!-- DEPRECATED -->
