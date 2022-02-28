@@ -15,9 +15,18 @@
  */
 package edu.unc.lib.boxc.search.solr.services;
 
-import static edu.unc.lib.boxc.model.api.ResourceType.AdminUnit;
-import static edu.unc.lib.boxc.model.api.ResourceType.Collection;
-import static edu.unc.lib.boxc.model.api.ResourceType.Folder;
+import edu.unc.lib.boxc.search.api.SearchFieldKey;
+import edu.unc.lib.boxc.search.api.exceptions.InvalidFacetException;
+import edu.unc.lib.boxc.search.api.facets.SearchFacet;
+import edu.unc.lib.boxc.search.api.requests.SearchState;
+import edu.unc.lib.boxc.search.solr.config.SearchSettings;
+import edu.unc.lib.boxc.search.solr.facets.CaseInsensitiveFacet;
+import edu.unc.lib.boxc.search.solr.facets.GenericFacet;
+import edu.unc.lib.boxc.search.solr.facets.MultivaluedHierarchicalFacet;
+import edu.unc.lib.boxc.search.solr.utils.FacetFieldUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
@@ -30,21 +39,9 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
-import edu.unc.lib.boxc.search.solr.facets.GenericFacet;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-
-import edu.unc.lib.boxc.search.api.SearchFieldKey;
-import edu.unc.lib.boxc.search.api.exceptions.InvalidFacetException;
-import edu.unc.lib.boxc.search.api.facets.CutoffFacet;
-import edu.unc.lib.boxc.search.api.facets.SearchFacet;
-import edu.unc.lib.boxc.search.api.requests.SearchState;
-import edu.unc.lib.boxc.search.solr.config.SearchSettings;
-import edu.unc.lib.boxc.search.solr.facets.CaseInsensitiveFacet;
-import edu.unc.lib.boxc.search.solr.facets.CutoffFacetImpl;
-import edu.unc.lib.boxc.search.solr.facets.MultivaluedHierarchicalFacet;
-import edu.unc.lib.boxc.search.solr.utils.FacetFieldUtil;
+import static edu.unc.lib.boxc.model.api.ResourceType.AdminUnit;
+import static edu.unc.lib.boxc.model.api.ResourceType.Collection;
+import static edu.unc.lib.boxc.model.api.ResourceType.Folder;
 
 /**
  * Factory which generates SearchState objects.
@@ -71,35 +68,13 @@ public class SearchStateFactory {
         SearchState searchState = new SearchState();
 
         searchState.setBaseFacetLimit(searchSettings.facetsPerGroup);
-        searchState.setResourceTypes(new ArrayList<>(searchSettings.defaultResourceTypes));
-        searchState.setSearchTermOperator(searchSettings.defaultOperator);
+        searchState.setResourceTypes(new ArrayList<>(SearchSettings.DEFAULT_RESOURCE_TYPES));
+        searchState.setSearchTermOperator(SearchSettings.DEFAULT_OPERATOR);
         searchState.setRowsPerPage(searchSettings.defaultPerPage);
         searchState.setFacetsToRetrieve(new ArrayList<>(searchSettings.searchFacetNames));
         searchState.setStartRow(0);
         searchState.setSortType("default");
         searchState.setSortNormalOrder(true);
-        return searchState;
-    }
-
-    /**
-     * Creates and returns a SearchState object starting from the default options for a
-     * collection browse search, and then populating it with the search state.
-     * from the http request.
-     * @param request
-     * @return SearchState object containing the search state for a collection browse
-     */
-    public SearchState createCollectionBrowseSearchState(Map<String,String[]> request) {
-        SearchState searchState = createSearchState();
-
-        searchState.setRowsPerPage(searchSettings.defaultCollectionsPerPage);
-        searchState.setResourceTypes(new ArrayList<>(searchSettings.defaultCollectionResourceTypes));
-        searchState.setFacetsToRetrieve(new ArrayList<>(searchSettings.collectionBrowseFacetNames));
-
-        CutoffFacet depthFacet = new CutoffFacetImpl(SearchFieldKey.ANCESTOR_PATH.name(), "1,*");
-        depthFacet.setCutoff(2);
-        searchState.addFacet(depthFacet);
-
-        populateSearchState(searchState, request);
         return searchState;
     }
 
@@ -140,7 +115,7 @@ public class SearchStateFactory {
         resultFields.add(SearchFieldKey.ID.name());
         searchState.setResultFields(resultFields);
 
-        searchState.setSearchTermOperator(searchSettings.defaultOperator);
+        searchState.setSearchTermOperator(SearchSettings.DEFAULT_OPERATOR);
         searchState.setRowsPerPage(searchSettings.defaultPerPage);
         searchState.setFacetsToRetrieve(null);
         searchState.setStartRow(0);
@@ -163,7 +138,7 @@ public class SearchStateFactory {
      */
     public SearchState createHierarchyListSearchState() {
         SearchState searchState = createIDSearchState();
-        searchState.setResultFields(new ArrayList<>(searchSettings.resultFields.get("structure")));
+        searchState.setResultFields(new ArrayList<>(SearchSettings.RESULT_FIELDS_STRUCTURE));
 
         List<String> containerTypes = new ArrayList<>();
         containerTypes.add(Collection.name());
@@ -179,9 +154,9 @@ public class SearchStateFactory {
 
     public SearchState createStructureBrowseSearchState() {
         SearchState searchState = new SearchState();
-        searchState.setResultFields(new ArrayList<>(searchSettings.resultFields.get("structure")));
-        searchState.setResourceTypes(new ArrayList<>(searchSettings.defaultResourceTypes));
-        searchState.setSearchTermOperator(searchSettings.defaultOperator);
+        searchState.setResultFields(new ArrayList<>(SearchSettings.RESULT_FIELDS_STRUCTURE));
+        searchState.setResourceTypes(new ArrayList<>(SearchSettings.DEFAULT_RESOURCE_TYPES));
+        searchState.setSearchTermOperator(SearchSettings.DEFAULT_OPERATOR);
         searchState.setRowsPerPage(0);
         searchState.setStartRow(0);
 
@@ -204,17 +179,15 @@ public class SearchStateFactory {
      */
     public SearchState createHierarchicalBrowseSearchState() {
         SearchState searchState = new SearchState();
-        searchState.setResultFields(new ArrayList<>(searchSettings.resultFields.get("structure")));
+        searchState.setResultFields(new ArrayList<>(SearchSettings.RESULT_FIELDS_STRUCTURE));
         searchState.setBaseFacetLimit(searchSettings.facetsPerGroup);
-        searchState.setResourceTypes(new ArrayList<>(searchSettings.defaultResourceTypes));
-        searchState.setSearchTermOperator(searchSettings.defaultOperator);
+        searchState.setResourceTypes(new ArrayList<>(SearchSettings.DEFAULT_RESOURCE_TYPES));
+        searchState.setSearchTermOperator(SearchSettings.DEFAULT_OPERATOR);
         searchState.setRowsPerPage(searchSettings.defaultPerPage);
         searchState.setStartRow(0);
 
         searchState.setSortType("collection");
         searchState.setSortNormalOrder(true);
-
-        searchState.setFacetsToRetrieve(new ArrayList<>(searchSettings.facetNamesStructureBrowse));
 
         return searchState;
     }
@@ -238,13 +211,14 @@ public class SearchStateFactory {
      * specified.  A base value may be given for the facet being queried, for use in
      * querying specific tiers in a hierarchical facet.
      * @param facetField
-     * @param baseValue
+     * @param facetSort
+     * @param maxResults
      * @return
      */
     public SearchState createFacetSearchState(String facetField, String facetSort, int maxResults) {
         SearchState searchState = new SearchState();
 
-        searchState.setResourceTypes(new ArrayList<>(searchSettings.defaultResourceTypes));
+        searchState.setResourceTypes(new ArrayList<>(SearchSettings.DEFAULT_RESOURCE_TYPES));
         searchState.setRowsPerPage(0);
         searchState.setStartRow(0);
 
@@ -307,7 +281,7 @@ public class SearchStateFactory {
                 } catch (InvalidFacetException e) {
                     log.debug("Invalid facet " + key + " with value " + value, e);
                 }
-            } else if (searchSettings.rangeSearchableFields.contains(key)) {
+            } else if (SearchSettings.FIELDS_RANGE_SEARCHABLE.contains(key)) {
                 try {
                     rangeFields.put(key, new SearchState.RangePair(value));
                 } catch (ArrayIndexOutOfBoundsException e) {
@@ -329,7 +303,7 @@ public class SearchStateFactory {
         populateQueryableFields(searchState, request);
 
         //retrieve facet limits
-        String parameter = getParameter(request, searchSettings.searchStateParam("FACET_LIMIT_FIELDS"));
+        String parameter = getParameter(request, SearchSettings.URL_PARAM_FACET_LIMIT_FIELDS);
         if (parameter != null) {
             String parameterArray[] = parameter.split("\\|");
             for (String parameterPair: parameterArray) {
@@ -347,7 +321,7 @@ public class SearchStateFactory {
         }
 
         //Set the base facet limit if one is provided
-        parameter = getParameter(request, searchSettings.searchStateParam("BASE_FACET_LIMIT"));
+        parameter = getParameter(request, SearchSettings.URL_PARAM_BASE_FACET_LIMIT);
         if (parameter != null) {
             try {
                 searchState.setBaseFacetLimit(Integer.parseInt(parameter));
@@ -357,11 +331,11 @@ public class SearchStateFactory {
         }
 
         //Determine resource types selected
-        parameter = getParameter(request, searchSettings.searchStateParam("RESOURCE_TYPES"));
+        parameter = getParameter(request, SearchSettings.URL_PARAM_RESOURCE_TYPES);
         var resourceTypes = new ArrayList<String>();
         if (parameter == null) {
             //If resource types aren't specified, load the defaults.
-            resourceTypes.addAll(searchSettings.defaultResourceTypes);
+            resourceTypes.addAll(SearchSettings.DEFAULT_RESOURCE_TYPES);
         } else {
             String resourceArray[] = parameter.split(",");
             for (String resourceType: resourceArray) {
@@ -373,10 +347,10 @@ public class SearchStateFactory {
         searchState.setResourceTypes(resourceTypes);
 
         //Get search term operator
-        parameter = getParameter(request, searchSettings.searchStateParam("SEARCH_TERM_OPERATOR"));
+        parameter = getParameter(request, SearchSettings.URL_PARAM_SEARCH_TERM_OPERATOR);
         if (parameter == null) {
             //If no operator set, use the default.
-            searchState.setSearchTermOperator(searchSettings.defaultOperator);
+            searchState.setSearchTermOperator(SearchSettings.DEFAULT_OPERATOR);
         } else {
             searchState.setSearchTermOperator(parameter);
         }
@@ -384,7 +358,7 @@ public class SearchStateFactory {
         //Get Start row
         int startRow = 0;
         try {
-            startRow = Integer.parseInt(getParameter(request, searchSettings.searchStateParam("START_ROW")));
+            startRow = Integer.parseInt(getParameter(request, SearchSettings.URL_PARAM_START_ROW));
         } catch (Exception e) {
         }
         searchState.setStartRow(startRow);
@@ -392,31 +366,27 @@ public class SearchStateFactory {
         //Get number of rows per page
         int rowsPerPage = 0;
         try {
-            rowsPerPage = Integer.parseInt(getParameter(request, searchSettings.searchStateParam("ROWS_PER_PAGE")));
+            rowsPerPage = Integer.parseInt(getParameter(request, SearchSettings.URL_PARAM_ROWS_PER_PAGE));
         } catch (Exception e) {
-            //If not specified, then get the appropriate default value based on search content types.
-            if (!resourceTypes.contains("File") && resourceTypes.contains("Collection")) {
-                rowsPerPage = searchSettings.defaultCollectionsPerPage;
-            } else {
-                rowsPerPage = searchSettings.defaultPerPage;
-            }
+            // If not specified or invalid, then use default page size
+            rowsPerPage = searchSettings.defaultPerPage;
         }
         searchState.setRowsPerPage(rowsPerPage);
 
         //Set sort
-        parameter = getParameter(request, searchSettings.searchStateParam("SORT_TYPE"));
+        parameter = getParameter(request, SearchSettings.URL_PARAM_SORT_TYPE);
         if (parameter != null) {
             String[] sortParts = parameter.split(",");
             if (sortParts.length > 0) {
                 searchState.setSortType(sortParts[0]);
                 if (sortParts.length == 2) {
-                    searchState.setSortNormalOrder(!sortParts[1].equals(searchSettings.sortReverse));
+                    searchState.setSortNormalOrder(!sortParts[1].equals(SearchSettings.SORT_ORDER_REVERSED));
                 }
             }
         }
 
         //facetsToRetrieve
-        parameter = getParameter(request, searchSettings.searchStateParam("FACET_FIELDS_TO_RETRIEVE"));
+        parameter = getParameter(request, SearchSettings.URL_PARAM_FACET_FIELDS_TO_RETRIEVE);
         ArrayList<String> facetsToRetrieve = new ArrayList<>();
         if (parameter != null) {
             String facetArray[] = parameter.split(",");
@@ -429,7 +399,7 @@ public class SearchStateFactory {
             searchState.setFacetsToRetrieve(facetsToRetrieve);
         }
 
-        parameter = getParameter(request, searchSettings.searchStateParam("ROLLUP"));
+        parameter = getParameter(request, SearchSettings.URL_PARAM_ROLLUP);
         if (parameter == null) {
             searchState.setRollup(null);
         } else {

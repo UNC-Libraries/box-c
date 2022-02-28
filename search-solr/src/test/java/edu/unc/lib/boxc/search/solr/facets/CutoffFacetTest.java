@@ -72,11 +72,6 @@ public class CutoffFacetTest extends Assert {
         when(facetField.getValues()).thenReturn(countList);
 
         FacetFieldFactory facetFieldFactory = new FacetFieldFactory();
-        SearchSettings searchSettings = mock(SearchSettings.class);
-        Map<String, Class<?>> facetClasses = new HashMap<String, Class<?>>();
-        facetClasses.put("ANCESTOR_PATH", CutoffFacetImpl.class);
-        when(searchSettings.getFacetClasses()).thenReturn(facetClasses);
-        facetFieldFactory.setSearchSettings(searchSettings);
 
         FacetFieldObject ffo = facetFieldFactory.createFacetFieldObject("ANCESTOR_PATH", facetField);
         assertTrue(ffo.getValues().get(0) instanceof CutoffFacet);

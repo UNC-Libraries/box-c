@@ -18,10 +18,12 @@ package edu.unc.lib.boxc.web.services.rest;
 import static edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore.getAgentPrincipals;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import edu.unc.lib.boxc.search.api.SearchFieldKey;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -55,11 +57,13 @@ public class ItemInfoRestController {
     @Autowired
     private SolrQueryLayerService solrSearchService;
 
+    private static final List<String> VERSION_FIELDS = Collections.singletonList(SearchFieldKey.VERSION.name());
+
     @RequestMapping(value = "{id}/solrRecord/version", method = RequestMethod.GET)
     public @ResponseBody
     ResponseEntity<Object> getVersion(@PathVariable("id") String id) {
         AccessGroupSet principals = getAgentPrincipals().getPrincipals();
-        SimpleIdRequest idRequest = new SimpleIdRequest(PIDs.get(id), Arrays.asList("_version_"), principals);
+        SimpleIdRequest idRequest = new SimpleIdRequest(PIDs.get(id), VERSION_FIELDS, principals);
         ContentObjectRecord md = solrSearchService.getObjectById(idRequest);
         if (md == null || md.get_version_() == null) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
@@ -81,9 +85,8 @@ public class ItemInfoRestController {
         LOG.debug("Requesting version numbers for {}", ids);
 
         AccessGroupSet principals = getAgentPrincipals().getPrincipals();
-        List<String> resultFields = Arrays.asList("_version_");
 
-        IdListRequest listRequest = new IdListRequest(ids, resultFields, principals);
+        IdListRequest listRequest = new IdListRequest(ids, VERSION_FIELDS, principals);
         List<ContentObjectRecord> listResults = solrSearchService.getObjectsById(listRequest);
         Map<String, String> results = new HashMap<>(listResults.size());
 

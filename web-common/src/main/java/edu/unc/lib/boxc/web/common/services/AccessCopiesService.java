@@ -69,14 +69,14 @@ public class AccessCopiesService extends SolrSearchService {
     public List<ContentObjectRecord> listViewableFiles(PID pid, AccessGroupSet principals) {
         ContentObjectRecord briefObj = getObjectById(new SimpleIdRequest(pid, principals));
         String resourceType = briefObj.getResourceType();
-        if (searchSettings.resourceTypeFile.equals(resourceType)) {
+        if (ResourceType.File.nameEquals(resourceType)) {
             if (briefObj.getDatastreamObject(DatastreamType.JP2_ACCESS_COPY.getId()) != null) {
                 return Collections.singletonList(briefObj);
             } else {
                 return Collections.emptyList();
             }
         }
-        if (!searchSettings.resourceTypeAggregate.equals(resourceType)) {
+        if (!ResourceType.Work.nameEquals(resourceType)) {
             return Collections.emptyList();
         }
 
@@ -96,11 +96,11 @@ public class AccessCopiesService extends SolrSearchService {
      */
     public boolean hasViewableFiles(ContentObjectRecord briefObj, AccessGroupSet principals) {
         String resourceType = briefObj.getResourceType();
-        if (searchSettings.resourceTypeFile.equals(resourceType)) {
+        if (ResourceType.File.nameEquals(resourceType)) {
             Datastream datastream = briefObj.getDatastreamObject(DatastreamType.JP2_ACCESS_COPY.getId());
             return datastream != null;
         }
-        if (!searchSettings.resourceTypeAggregate.equals(resourceType)) {
+        if (!ResourceType.Work.nameEquals(resourceType)) {
             return false;
         }
 

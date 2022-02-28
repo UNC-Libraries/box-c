@@ -196,13 +196,13 @@ public class StructureQueryService extends AbstractQueryService {
         SolrQuery baseQuery = searchService.generateSearch(hierarchyRequest);
         // Get the set of all applicable containers
         SolrQuery hierarchyQuery = baseQuery.getCopy();
-        hierarchyQuery.setRows(new Integer(searchSettings.getProperty("search.results.maxBrowsePerPage")));
+        hierarchyQuery.setRows(searchSettings.getMaxBrowsePerPage());
 
         // Reusable query segment for limiting the results to the immediate tier results
         StringBuilder cutoffQuery = new StringBuilder();
         cutoffQuery.append('!').append(solrField(ANCESTOR_PATH)).append(":");
         cutoffQuery.append(tierPath.getHighestTier() + 1);
-        cutoffQuery.append(searchSettings.facetSubfieldDelimiter).append('*');
+        cutoffQuery.append(CutoffFacet.SUBFIELD_DELIMITER).append('*');
         hierarchyQuery.addFilterQuery(cutoffQuery.toString());
 
         SearchResultResponse results;

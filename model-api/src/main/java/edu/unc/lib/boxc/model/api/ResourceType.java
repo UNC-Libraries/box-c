@@ -69,6 +69,14 @@ public enum ResourceType {
         return this.name().equals(name);
     }
 
+    /**
+     * @param name
+     * @return Name of this resource type matches the provided value
+     */
+    public boolean nameEquals(String name) {
+        return this.name().equals(name);
+    }
+
     public static ResourceType getResourceTypeByUri(String uri) {
         for (ResourceType type : values()) {
             if (type.uri.equals(uri)) {

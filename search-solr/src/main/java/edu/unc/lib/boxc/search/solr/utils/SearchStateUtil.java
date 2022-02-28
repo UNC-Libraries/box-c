@@ -101,28 +101,28 @@ public class SearchStateUtil {
         HashMap<String,String> params = generateSearchParameters(searchState);
 
         if (searchState.getRowsPerPage() != null && searchState.getRowsPerPage() >= 0) {
-            params.put(searchSettings.searchStateParam("ROWS_PER_PAGE"), "" + searchState.getRowsPerPage());
+            params.put(SearchSettings.URL_PARAM_ROWS_PER_PAGE, "" + searchState.getRowsPerPage());
         }
 
         if (searchState.getFacetsToRetrieve() != null && searchState.getFacetsToRetrieve().size() > 0
                 && !searchState.getFacetsToRetrieve().containsAll(searchSettings.facetNames)) {
-            params.put(searchSettings.searchStateParam("FACET_FIELDS_TO_RETRIEVE"),
+            params.put(SearchSettings.URL_PARAM_FACET_FIELDS_TO_RETRIEVE,
                     joinFields(searchState.getFacetsToRetrieve(), ",", true));
         }
 
         if (searchState.getFacetLimits() != null && searchState.getFacetLimits().size() > 0) {
-            params.put(searchSettings.searchStateParam("FACET_LIMIT_FIELDS"),
+            params.put(SearchSettings.URL_PARAM_FACET_LIMIT_FIELDS,
                     joinFields(searchState.getFacetLimits()));
         }
 
         if (searchState.getStartRow() != null && searchState.getStartRow() != 0) {
-            params.put(searchSettings.searchStateParam("START_ROW"), "" + searchState.getStartRow());
+            params.put(SearchSettings.URL_PARAM_START_ROW, "" + searchState.getStartRow());
         }
 
         //Add base facet limit if it isn't the default
         if (searchState.getBaseFacetLimit() != null
                 && searchState.getBaseFacetLimit() != searchSettings.facetsPerGroup) {
-            params.put(searchSettings.searchStateParam("BASE_FACET_LIMIT"), "" + searchState.getBaseFacetLimit());
+            params.put(SearchSettings.URL_PARAM_BASE_FACET_LIMIT, "" + searchState.getBaseFacetLimit());
         }
 
         if (searchState.getSortType() != null && searchState.getSortType().length() != 0) {
@@ -131,22 +131,22 @@ public class SearchStateUtil {
                 sortValue.append(searchState.getSortType());
 
                 if (!searchState.getSortNormalOrder()) {
-                    sortValue.append(',').append(searchSettings.sortReverse);
+                    sortValue.append(',').append(SearchSettings.SORT_ORDER_REVERSED);
                 }
 
-                params.put(searchSettings.searchStateParam("SORT_TYPE"), sortValue.toString());
+                params.put(SearchSettings.URL_PARAM_SORT_TYPE, sortValue.toString());
             }
         }
 
         //Append search term operator if its not the default
         if (searchState.getSearchTermOperator() != null &&
-                !searchState.getSearchTermOperator().equals(searchSettings.defaultOperator)) {
-            params.put(searchSettings.searchStateParam("SEARCH_TERM_OPERATOR"), searchState.getSearchTermOperator());
+                !searchState.getSearchTermOperator().equals(SearchSettings.DEFAULT_OPERATOR)) {
+            params.put(SearchSettings.URL_PARAM_SEARCH_TERM_OPERATOR, searchState.getSearchTermOperator());
         }
 
         if (searchState.getResourceTypes() != null
-                && !searchState.getResourceTypes().containsAll(searchSettings.defaultResourceTypes)) {
-            params.put(searchSettings.searchStateParam("RESOURCE_TYPES"),
+                && !searchState.getResourceTypes().containsAll(SearchSettings.DEFAULT_RESOURCE_TYPES)) {
+            params.put(SearchSettings.URL_PARAM_RESOURCE_TYPES,
                     joinFields(searchState.getResourceTypes(), ",", false));
         }
 
