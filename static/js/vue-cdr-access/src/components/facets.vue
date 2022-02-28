@@ -37,8 +37,8 @@
     import routeUtils from '../mixins/routeUtils';
 
     const UUID_REGEX = /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i;
-    const POSSIBLE_FACET_PARAMS = ['collection', 'createdYear', 'format', 'language', 'subject', 'genre'];
     const CURRENT_YEAR = new Date().getFullYear();
+    const POSSIBLE_FACET_PARAMS = ['collection', 'createdYear', 'format', 'language', 'subject'];
 
     export default {
         name: 'facets',
@@ -149,7 +149,8 @@
              * @returns {boolean|boolean}
              */
             showFacetDisplay(facet) {
-                return facet.name !== 'PARENT_COLLECTION' || (facet.name === 'PARENT_COLLECTION' && !this.routeHasCollectionId);
+                return facet.values.length > 0 &&
+                    (facet.name !== 'PARENT_COLLECTION' || (facet.name === 'PARENT_COLLECTION' && !this.routeHasCollectionId));
             },
 
             /**

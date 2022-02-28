@@ -26,6 +26,7 @@ package edu.unc.lib.boxc.search.api.facets;
  * @author bbpennel
  */
 public interface CutoffFacet extends HierarchicalFacet {
+    public static final String SUBFIELD_DELIMITER = ",";
 
     /**
      * @return The hierarchy node with the highest tier value

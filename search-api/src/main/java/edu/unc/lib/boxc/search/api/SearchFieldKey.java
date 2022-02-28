@@ -27,67 +27,74 @@ import java.util.stream.Collectors;
  *
  */
 public enum SearchFieldKey {
-    ABSTRACT("abstract"),
-    ADMIN_GROUP("adminGroup"),
-    ANCESTOR_IDS("ancestorIds"),
-    ANCESTOR_PATH("ancestorPath"),
-    CITATION("citation"),
-    COLLECTION_ID("collectionId"),
-    CONTENT_MODEL("contentModel"),
-    CONTENT_STATUS("contentStatus"),
-    CONTENT_TYPE("contentType"),
-    CONTRIBUTOR("contributor"),
-    CONTRIBUTOR_INDEX("contributorIndex"),
-    CREATOR("creator"),
-    CREATOR_SORT("creatorSort"),
-    DATASTREAM("datastream"),
-    DATE_ADDED("dateAdded"),
-    DATE_CREATED("dateCreated"),
-    DATE_UPDATED("dateUpdated"),
-    DATE_CREATED_YEAR("dateCreatedYear"),
-    DEFAULT_INDEX("text"),
-    DEPARTMENT("department"),
-    DEPARTMENT_LC("department_lc"),
-    DISPLAY_ORDER("displayOrder"),
-    FILESIZE("filesizeSort"),
-    FILESIZE_TOTAL("filesizeTotal"),
-    FULL_TEXT("fullText"),
-    GENRE("genre"),
-    ID("id"),
-    IDENTIFIER("identifier"),
-    IDENTIFIER_SORT("identifierSort"),
-    IS_PART("isPart"),
-    KEYWORD("keyword"),
-    LABEL("label"),
-    LANGUAGE("language"),
-    LAST_INDEXED("lastIndexed"),
-    OTHER_TITLES("otherTitle"),
-    PARENT_COLLECTION("parentCollection"),
-    PARENT_UNIT("parentUnit"),
-    READ_GROUP("readGroup"),
-    RELATIONS("relations"),
-    RESOURCE_TYPE("resourceType"),
-    RESOURCE_TYPE_SORT("resourceTypeSort"),
-    ROLE_GROUP("roleGroup"),
-    ROLLUP_ID("rollup"),
-    SCOPE("scope"),
-    SCORE("score"),
-    STATUS("status"),
-    SUBJECT("subject"),
-    SUBJECT_INDEX("subjectIndex"),
-    TIMESTAMP("timestamp"),
-    TITLE("title"),
-    TITLE_INDEX("titleIndex"),
-    TITLE_LC("title_lc"),
-    VERSION("_version_");
+    ABSTRACT("abstract", "abstract", "Abstract"),
+    ADMIN_GROUP("adminGroup", "adminGroup", "Admin Group"),
+    ANCESTOR_IDS("ancestorIds", "ancestorIds", "Ancestor Ids"),
+    ANCESTOR_PATH("ancestorPath", "path", "Folders"),
+    CITATION("citation", "citation", "Citation"),
+    COLLECTION_ID("collectionId", "collectionId", "Archival Collection ID"),
+    CONTENT_MODEL("contentModel", "model", ""),
+    CONTENT_STATUS("contentStatus", "contentStatus", "Content Status"),
+    CONTENT_TYPE("contentType", "format", "Format"),
+    CONTRIBUTOR("contributor", "contributor", "Contributor"),
+    CONTRIBUTOR_INDEX("contributorIndex", "contributorIndex", "Contributor"),
+    CREATOR("creator", "creator", "Creator"),
+    CREATOR_SORT("creatorSort", "creatorSort", "Creator Sort"),
+    DATASTREAM("datastream", "datastream", "Datastream"),
+    DATE_ADDED("dateAdded", "added", "Date Deposited"),
+    DATE_CREATED("dateCreated", "created", "Date Created"),
+    DATE_CREATED_YEAR("dateCreatedYear", "createdYear", "Date Created Year"),
+    DATE_UPDATED("dateUpdated", "updated", "Last Updated"),
+    DEFAULT_INDEX("text", "anywhere", "Anywhere"),
+    DEPARTMENT("department", "dept", "Department"),
+    DEPARTMENT_LC("department_lc", "dept_lc", "Department"),
+    DISPLAY_ORDER("displayOrder", "displayOrder", "Display Order"),
+    FILESIZE("filesizeSort", "filesize", "Filesize"),
+    FILESIZE_TOTAL("filesizeTotal", "filesizeTotal", "Filesize Total"),
+    FULL_TEXT("fullText", "fullText", "Full Text"),
+    GENRE("genre", "genre", "Genre"),
+    ID("id", "id", "ID"),
+    IDENTIFIER("identifier", "identifier", "Identifier"),
+    IDENTIFIER_SORT("identifierSort", "identifierSort", "Identifier Sort"),
+    IS_PART("isPart", "", ""),
+    KEYWORD("keyword", "keyword", "Keyword"),
+    LABEL("label", "label", ""),
+    LANGUAGE("language", "language", "Language"),
+    LAST_INDEXED("lastIndexed", "lastIndexed", "lastIndexed"),
+    OTHER_TITLES("otherTitle", "otherTitle", "otherTitle"),
+    PARENT_COLLECTION("parentCollection", "collection", "Collection"),
+    PARENT_UNIT("parentUnit", "unit", "Admin Unit"),
+    READ_GROUP("readGroup", "readGroup", "Read Group"),
+    RELATIONS("relations", "relations", "Relations"),
+    RESOURCE_TYPE("resourceType", "type", "Resource Type"),
+    RESOURCE_TYPE_SORT("resourceTypeSort", "typeSort", "Resource Type Sort"),
+    RLA_SITE_CODE("rla_site_code_d", "rla.siteCode", ""),
+    RLA_CATALOG_NUMBER("rla_catalog_number_d", "rla.catalogNumber", ""),
+    RLA_CONTEXT_1("rla_context_1_d", "rla.context1", ""),
+    ROLE_GROUP("roleGroup", "role", "Roles"),
+    ROLLUP_ID("rollup", "rollupId", "Rollup ID"),
+    SCOPE("scope", "scope", ""),
+    SCORE("score", "score", "Score"),
+    STATUS("status", "status", "Access Status"),
+    SUBJECT("subject", "subject", "Subject"),
+    SUBJECT_INDEX("subjectIndex", "subjectIndex", "Subject Index"),
+    TIMESTAMP("timestamp", "timestamp", "Timestamp"),
+    TITLE("title", "title", "Title"),
+    TITLE_INDEX("titleIndex", "titleIndex", "Title Index"),
+    TITLE_LC("title_lc", "title_lc", "Title"),
+    VERSION("_version_", "version", "Version");
 
     private final String solrField;
+    private final String displayLabel;
+    private final String urlParam;
 
     private static Map<String, SearchFieldKey> nameToKey = Arrays.stream(SearchFieldKey.values())
             .collect(Collectors.toMap(SearchFieldKey::getSolrField, Function.identity()));
 
-    private SearchFieldKey(String solrField) {
+    private SearchFieldKey(String solrField, String urlParam, String displayLabel) {
         this.solrField = solrField;
+        this.urlParam = urlParam;
+        this.displayLabel = displayLabel;
     }
 
     /**
@@ -96,6 +103,20 @@ public enum SearchFieldKey {
      */
     public String getSolrField() {
         return solrField;
+    }
+
+    /**
+     * @return Display label for this field
+     */
+    public String getDisplayLabel() {
+        return displayLabel;
+    }
+
+    /**
+     * @return parameter name of this field in search URLs
+     */
+    public String getUrlParam() {
+        return urlParam;
     }
 
     /**

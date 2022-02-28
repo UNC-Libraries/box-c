@@ -22,6 +22,7 @@ import java.util.List;
 import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
 
+import edu.unc.lib.boxc.search.solr.config.SearchSettings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -51,7 +52,7 @@ public class AbstractStructureResultsController extends AbstractSolrSearchContro
 
     @PostConstruct
     public void init() {
-        tierResultFieldsList = searchSettings.resultFields.get("structure");
+        tierResultFieldsList = SearchSettings.RESULT_FIELDS_STRUCTURE;
     }
 
     protected HierarchicalBrowseResultResponse getStructureResult(String pid, boolean includeFiles,

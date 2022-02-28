@@ -15,24 +15,18 @@
  */
 package edu.unc.lib.boxc.search.solr.facets;
 
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
+import edu.unc.lib.boxc.search.api.facets.FacetFieldObject;
+import edu.unc.lib.boxc.search.api.facets.HierarchicalFacet;
+import edu.unc.lib.boxc.search.solr.services.FacetFieldFactory;
 import org.apache.solr.client.solrj.response.FacetField;
 import org.junit.Assert;
 import org.junit.Test;
 
-import edu.unc.lib.boxc.search.api.facets.FacetFieldObject;
-import edu.unc.lib.boxc.search.api.facets.HierarchicalFacet;
-import edu.unc.lib.boxc.search.solr.config.SearchSettings;
-import edu.unc.lib.boxc.search.solr.facets.MultivaluedHierarchicalFacet;
-import edu.unc.lib.boxc.search.solr.facets.MultivaluedHierarchicalFacetNode;
-import edu.unc.lib.boxc.search.solr.services.FacetFieldFactory;
+import java.util.Arrays;
+import java.util.List;
+
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 public class MultivaluedHierarchicalFacetTest extends Assert {
 
@@ -138,11 +132,6 @@ public class MultivaluedHierarchicalFacetTest extends Assert {
         when(facetField.getValues()).thenReturn(countList);
 
         FacetFieldFactory facetFieldFactory = new FacetFieldFactory();
-        SearchSettings searchSettings = mock(SearchSettings.class);
-        Map<String,Class<?>> facetClasses = new HashMap<String,Class<?>>();
-        facetClasses.put("CONTENT_TYPE", MultivaluedHierarchicalFacet.class);
-        when(searchSettings.getFacetClasses()).thenReturn(facetClasses);
-        facetFieldFactory.setSearchSettings(searchSettings);
 
         FacetFieldObject ffo = facetFieldFactory.createFacetFieldObject("CONTENT_TYPE", facetField);
         assertTrue(ffo.getValues().get(0) instanceof MultivaluedHierarchicalFacet);

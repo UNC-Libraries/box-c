@@ -19,6 +19,7 @@ import edu.unc.lib.boxc.auth.api.Permission;
 import edu.unc.lib.boxc.auth.api.exceptions.AccessRestrictionException;
 import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
 import edu.unc.lib.boxc.auth.api.services.AccessControlService;
+import edu.unc.lib.boxc.model.api.ResourceType;
 import edu.unc.lib.boxc.model.api.exceptions.FedoraException;
 import edu.unc.lib.boxc.model.api.exceptions.InvalidPidException;
 import edu.unc.lib.boxc.model.api.exceptions.NotFoundException;
@@ -212,29 +213,29 @@ public class FullRecordController extends AbstractErrorHandlingSearchController 
 
         // Get additional information depending on the type of object since the user has access
         String resourceType = briefObject.getResourceType();
-        if (!resourceType.equals(searchSettings.resourceTypeFile)) {
+        if (!ResourceType.File.nameEquals(resourceType)) {
             briefObject.getCountMap().put("child", childrenCountService.getChildrenCount(briefObject, principals));
         }
 
-        if (resourceType.equals(searchSettings.resourceTypeFolder) ||
-                resourceType.equals(searchSettings.resourceTypeFile) ||
-                resourceType.equals(searchSettings.resourceTypeAggregate) ||
-                resourceType.equals(searchSettings.resourceTypeCollection)) {
+        if (ResourceType.Folder.nameEquals(resourceType) ||
+                ResourceType.File.nameEquals(resourceType) ||
+                ResourceType.Work.nameEquals(resourceType) ||
+                ResourceType.Collection.nameEquals(resourceType)) {
             String collectionId = collectionIdService.getCollectionId(briefObject);
             String faUrl = findingAidUrlService.getFindingAidUrl(collectionId);
             model.addAttribute("collectionId", collectionId);
             model.addAttribute("findingAidUrl", faUrl);
         }
 
-        if (briefObject.getResourceType().equals(searchSettings.resourceTypeFile) ||
-                briefObject.getResourceType().equals(searchSettings.resourceTypeAggregate)) {
+        if (ResourceType.File.nameEquals(briefObject.getResourceType()) ||
+                ResourceType.Work.nameEquals(briefObject.getResourceType())) {
             List<ContentObjectRecord> neighbors = neighborService.getNeighboringItems(briefObject,
                     searchSettings.maxNeighborResults, principals);
             accessCopiesService.populateThumbnailIds(neighbors, principals, true);
             model.addAttribute("neighborList", neighbors);
         }
 
-        if (briefObject.getResourceType().equals(searchSettings.resourceTypeAggregate)) {
+        if (ResourceType.Work.nameEquals(briefObject.getResourceType())) {
             String viewerType = null;
             String viewerPid = null;
             boolean imageViewerNeeded = accessCopiesService.hasViewableFiles(briefObject, principals);

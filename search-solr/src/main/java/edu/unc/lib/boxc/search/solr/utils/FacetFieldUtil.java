@@ -182,7 +182,7 @@ public class FacetFieldUtil {
      * @param solrQuery
      */
     public void addDefaultFacetPivot(String fieldKey, SolrQuery solrQuery) {
-        Class<?> facetClass = searchSettings.getFacetClasses().get(fieldKey);
+        Class<?> facetClass = SearchSettings.getFacetClass(fieldKey);
         this.addDefaultFacetPivot(fieldKey, facetClass, solrQuery);
     }
 

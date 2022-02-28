@@ -21,6 +21,7 @@ import java.util.List;
 
 import javax.servlet.http.HttpServletResponse;
 
+import edu.unc.lib.boxc.model.api.ResourceType;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -63,7 +64,7 @@ public class ResultEntryController extends AbstractSearchController {
             throw new ResourceNotFoundException("The requested record either does not exist or is not accessible");
         }
 
-        if (!entryBean.getResourceType().equals(searchSettings.resourceTypeFile)) {
+        if (!ResourceType.File.nameEquals(entryBean.getResourceType())) {
             childrenCountService.addChildrenCounts(Collections.singletonList(entryBean), accessGroups);
         }
         return SerializationUtil.metadataToJSON(entryBean, accessGroups);
