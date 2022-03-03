@@ -2,10 +2,18 @@ import { shallowMount, flushPromises } from '@vue/test-utils'
 import { createRouter, createWebHistory } from 'vue-router';
 import viewType from '@/components/viewType.vue'
 import displayWrapper from "@/components/displayWrapper";
+import {createI18n} from "vue-i18n";
+import translations from "@/translations";
 
 let wrapper, btns, router;
 
 describe('viewType.vue', () => {
+    const i18n = createI18n({
+        locale: 'en',
+        fallbackLocale: 'en',
+        messages: translations
+    });
+
     beforeEach(() => {
         router = createRouter({
             history: createWebHistory(),
@@ -20,7 +28,7 @@ describe('viewType.vue', () => {
         sessionStorage.clear();
         wrapper = shallowMount(viewType, {
             global: {
-                plugins: [router]
+                plugins: [router, i18n]
             }
         });
 

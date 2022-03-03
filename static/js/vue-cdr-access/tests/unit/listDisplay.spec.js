@@ -2,6 +2,8 @@ import { shallowMount } from '@vue/test-utils'
 import { createRouter, createWebHistory } from 'vue-router';
 import listDisplay from '@/components/listDisplay.vue';
 import displayWrapper from '@/components/displayWrapper';
+import {createI18n} from "vue-i18n";
+import translations from "@/translations";
 
 const router = createRouter({
     history: createWebHistory(process.env.BASE_URL),
@@ -16,11 +18,17 @@ const router = createRouter({
 let wrapper;
 
 describe('listDisplay.vue', () => {
+    const i18n = createI18n({
+        locale: 'en',
+        fallbackLocale: 'en',
+        messages: translations
+    });
+
     beforeEach(() => {
         sessionStorage.clear();
         wrapper = shallowMount(listDisplay, {
             global: {
-                plugins: [router]
+                plugins: [router, i18n]
             },
             props: {
                 recordList: [
@@ -172,7 +180,7 @@ describe('listDisplay.vue', () => {
     it("doesn't display a collection number if one isn't set", async () => {
         wrapper = shallowMount(listDisplay, {
             global: {
-                plugins: [router]
+                plugins: [router, i18n]
             },
             props: {
                 useSavedBrowseType: true
@@ -185,7 +193,7 @@ describe('listDisplay.vue', () => {
     it("displays a collection number if one is set", async () => {
         wrapper = shallowMount(listDisplay, {
             global: {
-                plugins: [router]
+                plugins: [router, i18n]
             },
             props: {
                 useSavedBrowseType: true
@@ -198,7 +206,7 @@ describe('listDisplay.vue', () => {
     it("displays a collection number if one is set", async () => {
         wrapper = shallowMount(listDisplay, {
             global: {
-                plugins: [router]
+                plugins: [router, i18n]
             },
             props: {
                 useSavedBrowseType: true,

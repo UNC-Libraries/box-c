@@ -2,6 +2,8 @@ import { shallowMount, flushPromises } from '@vue/test-utils'
 import { createRouter, createWebHistory } from 'vue-router';
 import displayWrapper from '@/components/displayWrapper.vue';
 import moxios from "moxios";
+import {createI18n} from "vue-i18n";
+import translations from "@/translations";
 
 let wrapper, router;
 const record_list = [
@@ -43,6 +45,12 @@ const response = {
 };
 
 describe('displayWrapper.vue', () => {
+    const i18n = createI18n({
+        locale: 'en',
+        fallbackLocale: 'en',
+        messages: translations
+    });
+
     beforeEach(() => {
         moxios.install();
 
@@ -59,7 +67,7 @@ describe('displayWrapper.vue', () => {
 
         wrapper = shallowMount(displayWrapper, {
             global: {
-                plugins: [router]
+                plugins: [router, i18n]
             },
             data() {
                 return {

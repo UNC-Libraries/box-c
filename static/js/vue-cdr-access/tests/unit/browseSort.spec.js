@@ -3,10 +3,18 @@ import { createRouter, createWebHistory } from 'vue-router';
 import browseSort from '@/components/browseSort.vue';
 import displayWrapper from '@/components/displayWrapper';
 import searchWrapper from '@/components/searchWrapper';
+import {createI18n} from "vue-i18n";
+import translations from "@/translations";
 
 let wrapper, wrapper_search, router;
 
 describe('browseSort.vue', () => {
+    const i18n = createI18n({
+        locale: 'en',
+        fallbackLocale: 'en',
+        messages: translations
+    });
+
     beforeEach(() => {
         router = createRouter({
             history: createWebHistory(process.env.BASE_URL),
@@ -25,7 +33,7 @@ describe('browseSort.vue', () => {
         });
         wrapper = mount(browseSort, {
             global: {
-                plugins: [router]
+                plugins: [router, i18n]
             },
             props: {
                 browseType: 'display'
@@ -34,7 +42,7 @@ describe('browseSort.vue', () => {
 
         wrapper_search = mount(browseSort, {
             global: {
-                plugins: [router]
+                plugins: [router, i18n]
             },
             props: {
                 browseType: 'search'
