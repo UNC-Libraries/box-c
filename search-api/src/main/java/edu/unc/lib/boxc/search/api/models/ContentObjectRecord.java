@@ -123,6 +123,8 @@ public interface ContentObjectRecord {
 
     public List<String> getSubject();
 
+    public List<String> getLocation();
+
     public List<String> getGenre();
 
     public List<String> getLanguage();
