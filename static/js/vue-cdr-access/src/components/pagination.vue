@@ -2,7 +2,7 @@
     <div class="columns pagination is-mobile">
         <div class="column is-12">
             <ul v-if="numberOfRecords > 0">
-                <li v-if="currentPage !== 1"><a class="back-next start" @click.prevent="pageUrl(currentPage - 1)" href="#">Previous</a></li>
+                <li v-if="currentPage !== 1"><a class="back-next start" @click.prevent="pageUrl(currentPage - 1)" href="#">{{ $t('pagination.previous') }}</a></li>
                 <li v-else class="no-link start">Previous</li>
                 <li id="first-page-link" v-if="currentPage >= pageLimit - 1 && totalPageCount > pageLimit"><a @click.prevent="pageUrl(1)" href="#" class="page-number"
                                                            :class="{ current: currentPage === 1 }">1</a> ...</li>
@@ -13,7 +13,7 @@
                     ... <a @click.prevent="pageUrl(totalPageCount)" href="#" class="page-number"
                            :class="{ current: currentPage === totalPageCount }">{{totalPageCount }}</a>
                 </li>
-                <li v-if="currentPage < totalPageCount"><a class="back-next end" @click.prevent="pageUrl(currentPage + 1)" href="#">Next</a></li>
+                <li v-if="currentPage < totalPageCount"><a class="back-next end" @click.prevent="pageUrl(currentPage + 1)" href="#">{{ $t('pagination.next') }}</a></li>
                 <li v-else class="no-link end">Next</li>
             </ul>
         </div>
