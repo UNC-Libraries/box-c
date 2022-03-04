@@ -274,10 +274,6 @@ public class SearchStateFactory {
                 searchFields.put(key, value);
             } else if (SearchSettings.FIELDS_RANGE_SEARCHABLE.contains(key)) {
                 try {
-                    String[] rangeValues = value.split(",");
-                    if (Integer.parseInt(rangeValues[0]) > Integer.parseInt(rangeValues[1])) {
-                        continue;
-                    }
                     rangeFields.put(key, new SearchState.RangePair(value));
                 } catch (ArrayIndexOutOfBoundsException e) {
                     //An invalid range was specified, throw away the term pair
@@ -404,23 +400,24 @@ public class SearchStateFactory {
 
 
             //Add date added year range, which is a sort of facet
-            SearchState.RangePair dateCreatedYear = new SearchState.RangePair();
-            parameter = getParameter(request, searchSettings.searchFieldParam(
-                    SearchFieldKey.DATE_CREATED_YEAR.name()));
-            if (parameter != null && parameter.length() > 0) {
-                String[] dateRange = parameter.split(",");
-                boolean isValidRange = Integer.parseInt(dateRange[1]) >= Integer.parseInt(dateRange[0]);
-                if (isValidRange) {
+            try {
+                SearchState.RangePair dateCreatedYear = new SearchState.RangePair();
+                parameter = getParameter(request, searchSettings.searchFieldParam(
+                        SearchFieldKey.DATE_CREATED_YEAR.name()));
+                if (parameter != null && parameter.length() > 0) {
+                    String[] dateRange = parameter.split(",");
                     dateCreatedYear.setLeftHand(dateRange[0]);
                     dateCreatedYear.setRightHand(dateRange[1]);
                 }
-            }
 
-            if (dateCreatedYear.getLeftHand() != null && dateCreatedYear.getRightHand() != null) {
-                searchState.getRangeFields().put(SearchFieldKey.DATE_CREATED_YEAR.name(), dateCreatedYear);
-                Map<String, SearchState.RangePair> dateRangeSearch = new HashMap<>();
-                dateRangeSearch.put(SearchFieldKey.DATE_CREATED_YEAR.name(), dateCreatedYear);
-                searchState.setRangeFields(dateRangeSearch);
+                if (dateCreatedYear.getLeftHand() != null && dateCreatedYear.getRightHand() != null) {
+                    searchState.getRangeFields().put(SearchFieldKey.DATE_CREATED_YEAR.name(), dateCreatedYear);
+                }
+            } catch (IllegalArgumentException e) {
+                // An invalid range was specified, throw away the range pair
+                Map<String, SearchState.RangePair> currentRangeFields = searchState.getRangeFields();
+                currentRangeFields.remove(SearchFieldKey.DATE_CREATED_YEAR.name());
+                log.info(e.getMessage());
             }
         }
 

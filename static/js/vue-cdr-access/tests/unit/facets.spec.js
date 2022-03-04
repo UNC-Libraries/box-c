@@ -30,7 +30,7 @@ describe('facets.vue', () => {
                 plugins: [router]
             },
             props: {
-                minSearchYear: 2011,
+                minCreatedYear: 2011,
                 facetList: [
                     {
                         name: "PARENT_COLLECTION",
@@ -112,18 +112,12 @@ describe('facets.vue', () => {
     });
 
     it("displays 'Date Created' facet if a minimum search year is set", () => {
-        let current_year = new Date().getFullYear().toString();
         let facet_headers = wrapper.findAll('.facet-display h3');
-        let form_inputs = wrapper.findAll('form input');
 
         expect(facet_headers[2].text()).toBe('Date Created');
         expect(wrapper.find('form').isVisible()).toBe(true);
-        expect(form_inputs[0].attributes('min')).toEqual('2011');
-        expect(form_inputs[0].attributes('max')).toEqual(current_year);
-        expect(form_inputs[1].attributes('min')).toEqual('2011');
-        expect(form_inputs[1].attributes('max')).toEqual(current_year);
         expect(wrapper.vm.dates.selected_dates.start).toEqual(2011);
-        expect(wrapper.vm.dates.selected_dates.end).toEqual(2022);
+        expect(wrapper.vm.dates.selected_dates.end).toEqual(end_year);
     });
 
     it("does not display facets with no returned results", () => {
@@ -176,7 +170,7 @@ describe('facets.vue', () => {
                 plugins: [router]
             },
             props: {
-                minSearchYear: undefined,
+                minCreatedYear: undefined,
                 facetList: [
                     {
                         name: "CONTENT_TYPE",
@@ -365,12 +359,5 @@ describe('facets.vue', () => {
         expect(wrapper.vm.dates.selected_dates.start).toEqual(2019);
         expect(wrapper.vm.min_year).toEqual(2019);
         expect(wrapper.vm.dates.selected_dates.end).toEqual(2021);
-
-        let date_boxes = wrapper.findAll('form input[type=number');
-
-        expect(date_boxes[0].attributes('min')).toEqual('2019');
-        expect(date_boxes[0].attributes('max')).toEqual(end_year.toString());
-        expect(date_boxes[1].attributes('min')).toEqual('2019');
-        expect(date_boxes[1].attributes('max')).toEqual(end_year.toString());
     });
 });

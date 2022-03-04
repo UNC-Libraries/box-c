@@ -158,10 +158,8 @@ public class SearchActionController extends AbstractErrorHandlingSearchControlle
             resultResponse.setFacetFields(resultResponseFacets.getFacetFields());
 
             // Get minimum year for date created "facet" search
-            String minSearchYear = multiSelectFacetListService.getMinimumYear(searchState, searchRequest);
-            if (minSearchYear != null) {
-                resultResponse.setMinimumSearchYear(minSearchYear);
-            }
+            String minSearchYear = multiSelectFacetListService.getMinimumDateCreatedYear(searchState, searchRequest);
+            resultResponse.setMinimumDateCreatedYear(minSearchYear);
         }
 
         return getResults(resultResponse, "search", request);

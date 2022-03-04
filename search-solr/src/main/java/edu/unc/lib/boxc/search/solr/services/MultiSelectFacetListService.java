@@ -121,13 +121,19 @@ public class MultiSelectFacetListService extends AbstractQueryService {
         return resultResponse;
     }
 
-    public String getMinimumYear(SearchState selectedState, SearchRequest originalRequest) {
+    /**
+     * Finds and returns the minimum year created for the given query
+     * @param selectedState
+     * @param originalRequest
+     * @return String
+     */
+    public String getMinimumDateCreatedYear(SearchState selectedState, SearchRequest originalRequest) {
         selectedState.setRowsPerPage(1);
-        selectedState.setSearchFields(Collections.singletonMap(SearchFieldKey.DATE_CREATED_YEAR.name(), "*"));
-        selectedState.setSortType("dateCreatedAsc");
+        selectedState.setResultFields(Collections.singletonList(SearchFieldKey.DATE_CREATED_YEAR.name()));
+        selectedState.setSortNormalOrder(false);
 
         SearchRequest selectedRequest = new SearchRequest(
-                selectedState, originalRequest.getAccessGroups(), true);
+                selectedState, originalRequest.getAccessGroups(), false);
         SearchResultResponse selectedResponse = searchService.getSearchResults(selectedRequest);
 
         try {

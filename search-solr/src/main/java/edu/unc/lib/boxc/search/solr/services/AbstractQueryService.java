@@ -57,7 +57,6 @@ public abstract class AbstractQueryService {
             SearchFieldKey.DATASTREAM.name(),
             SearchFieldKey.DATE_ADDED.name(),
             SearchFieldKey.DATE_CREATED.name(),
-            SearchFieldKey.DATE_CREATED_YEAR.name(),
             SearchFieldKey.DATE_UPDATED.name(),
             SearchFieldKey.DEPARTMENT.name(),
             SearchFieldKey.FILESIZE.name(),

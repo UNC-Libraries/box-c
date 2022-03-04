@@ -8,7 +8,7 @@
         <div v-if="!is_loading">
             <div class="columns">
                 <div v-if="hasFacets" class="facet-list column is-one-quarter facets-border border-box-left-top">
-                    <facets :facet-list="facet_list" :min-search-year="minimumSearchYear"></facets>
+                    <facets :facet-list="facet_list" :min-created-year="minimumCreatedYear"></facets>
                 </div>
 
                 <div v-if="records.length > 0" class="column is-three-quarters search-results-border border-box-left-top">
@@ -57,7 +57,7 @@
                 collection: '',
                 facet_list: [],
                 is_loading: true,
-                min_search_year: undefined,
+                min_created_year: undefined,
                 records: [],
                 total_records: 0
             }
@@ -93,8 +93,11 @@
                 return [];
             },
 
-            minimumSearchYear() {
-                return this.min_search_year !== undefined ? parseInt(this.min_search_year) : undefined;
+            minimumCreatedYear() {
+                if (this.min_created_year !== undefined) {
+                    return parseInt(this.min_created_year)
+                }
+                return undefined;
             }
         },
 
@@ -108,7 +111,7 @@
                     this.records = response.data.metadata;
                     this.total_records = response.data.resultCount;
                     this.facet_list = response.data.facetFields;
-                    this.min_search_year = response.data.minSearchYear;
+                    this.min_created_year = response.data.minSearchYear;
                     this.is_loading = false;
                 }).catch(function (error) {
                     console.log(error);

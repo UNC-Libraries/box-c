@@ -17,12 +17,10 @@
                 </ul>
                 <form v-if="facet.name === 'DATE_CREATED_YEAR'">
                     <input type="number" v-model="dates.selected_dates.start" name="start_date"
-                           :min="min_year" :max="currentYear"
-                           aria-label="Start Date" placeholder="Start Date" />
+                           min="1" max="3000" aria-label="Start Date" placeholder="Start Date" />
                     &ndash;
                     <input type="number" v-model="dates.selected_dates.end" name="end_date"
-                           :min="min_year" :max="currentYear"
-                           aria-label="End Date" placeholder="End Date" />
+                           min="1" max="3000" aria-label="End Date" placeholder="End Date" />
                     <br />
                     <input type="submit" value="Limit" @click.prevent="setDateFacetUrl()" class="button is-small" />
                     <p class="date_error" v-if="dates.invalid_date_range">The start date cannot be after the end date</p>
@@ -45,7 +43,7 @@
 
         props: {
             facetList: Array,
-            minSearchYear: Number
+            minCreatedYear: Number
         },
 
         mixins: [routeUtils],
@@ -54,13 +52,13 @@
             return {
                 dates: {
                     selected_dates: {
-                        start: this.minSearchYear,
+                        start: this.minCreatedYear,
                         end: CURRENT_YEAR
                     },
                     error_message: '',
                     invalid_date_range: false
                 },
-                min_year: this.minSearchYear,
+                min_year: this.minCreatedYear,
                 selected_facets: []
             }
         },
@@ -73,7 +71,7 @@
                 },
                 deep: true
             },
-            minSearchYear: {
+            minCreatedYear: {
                 handler(year) {
                     // Favor the date range in the url for consistencies' sake
                     if (this.urlParams().createdYear === undefined) {
@@ -116,7 +114,7 @@
             },
 
             currentYear() {
-                return new Date().getFullYear();
+                return CURRENT_YEAR;
             }
         },
 
@@ -160,7 +158,7 @@
              * @returns {boolean|boolean}
              */
             showFacetDisplay(facet) {
-                if (facet.name === 'DATE_CREATED_YEAR' && this.minSearchYear !== undefined) {
+                if (facet.name === 'DATE_CREATED_YEAR' && this.minCreatedYear !== undefined) {
                     return true;
                 }
                 return facet.values.length > 0 &&
@@ -336,15 +334,17 @@
                 if (facet_value !== undefined) {
                     const decoded_facet_value = decodeURIComponent(facet_value);
                     const search_years = decoded_facet_value.split(',');
+                    const start_year = parseInt(search_years[0]);
+                    const end_year = parseInt(search_years[1]);
 
                     // Ignore invalid date ranges
-                    if (parseInt(search_years[0]) > parseInt(search_years[1])) {
+                    if (Number.isNaN(start_year) || Number.isNaN(end_year) || start_year > end_year) {
                         return;
                     }
 
-                    this.dates.selected_dates.start = parseInt(search_years[0]);
-                    this.min_year = parseInt(search_years[0]);
-                    this.dates.selected_dates.end = parseInt(search_years[1]);
+                    this.dates.selected_dates.start = start_year;
+                    this.min_year = start_year;
+                    this.dates.selected_dates.end = end_year;
                 } else {
                     // In this case selected start date set by minSearchYear watcher
                     this.dates.selected_dates.end = this.currentYear;

@@ -22,8 +22,8 @@ import static org.apache.commons.lang3.StringUtils.isBlank;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Properties;
@@ -58,7 +58,6 @@ public class SetDescriptiveMetadataFilter implements IndexDocumentFilter {
 
     private final Properties languageCodeMap;
     public final static String AFFIL_URI = "http://cdr.unc.edu/vocabulary/Affiliation";
-    private final SimpleDateFormat getYear = new SimpleDateFormat("yyyy");
 
     public SetDescriptiveMetadataFilter() {
         languageCodeMap = new Properties();
@@ -94,7 +93,7 @@ public class SetDescriptiveMetadataFilter implements IndexDocumentFilter {
         }
         if (idb.getDateCreated() == null) {
             idb.setDateCreated(idb.getDateAdded());
-            idb.setDateCreatedYear(getYear.format(idb.getDateAdded()));
+            idb.setDateCreatedYear(setDateYear(idb.getDateAdded()));
         }
         idb.getKeyword().add(dip.getPid().getId());
     }
@@ -324,13 +323,13 @@ public class SetDescriptiveMetadataFilter implements IndexDocumentFilter {
 
             if (dateCreated != null) {
                 idb.setDateCreated(dateCreated);
-                idb.setDateCreatedYear(getYear.format(dateCreated));
+                idb.setDateCreatedYear(setDateYear(dateCreated));
             } else if (dateIssued != null) {
                 idb.setDateCreated(dateIssued);
-                idb.setDateCreatedYear(getYear.format(dateIssued));
+                idb.setDateCreatedYear(setDateYear(dateIssued));
             } else if (dateCaptured != null) {
                 idb.setDateCreated(dateCaptured);
-                idb.setDateCreatedYear(getYear.format(dateCaptured));
+                idb.setDateCreatedYear(setDateYear(dateCaptured));
             }
         }
     }
@@ -444,5 +443,11 @@ public class SetDescriptiveMetadataFilter implements IndexDocumentFilter {
             }
         }
         return nameValue;
+    }
+
+    private String setDateYear(Date date) {
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(date);
+        return Integer.toString(calendar.get(Calendar.YEAR));
     }
 }

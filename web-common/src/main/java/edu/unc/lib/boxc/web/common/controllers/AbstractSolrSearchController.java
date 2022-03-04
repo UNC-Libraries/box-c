@@ -163,8 +163,8 @@ public abstract class AbstractSolrSearchController {
             results.put("container", SerializationUtil.metadataToMap(resp.getSelectedContainer(), principals));
         }
 
-        if (resp.getMinimumSearchYear() != null) {
-            results.put("minSearchYear", resp.getMinimumSearchYear());
+        if (resp.getMinimumDateCreatedYear() != null) {
+            results.put("minSearchYear", resp.getMinimumDateCreatedYear());
         }
 
         return results;

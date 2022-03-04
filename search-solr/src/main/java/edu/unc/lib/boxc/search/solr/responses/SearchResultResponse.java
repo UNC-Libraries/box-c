@@ -42,7 +42,7 @@ public class SearchResultResponse {
     private ContentObjectRecord selectedContainer;
     private List<ContentObjectRecord> resultList;
     private FacetFieldList facetFields;
-    private String minimumSearchYear;
+    private String minimumDateCreatedYear;
     private long resultCount;
     private SearchState searchState;
     private SolrQuery generatedQuery;
@@ -74,12 +74,12 @@ public class SearchResultResponse {
         this.resultCount = resultCount;
     }
 
-    public String getMinimumSearchYear() {
-        return minimumSearchYear;
+    public String getMinimumDateCreatedYear() {
+        return minimumDateCreatedYear;
     }
 
-    public void setMinimumSearchYear(String year) {
-        this.minimumSearchYear = year;
+    public void setMinimumDateCreatedYear(String year) {
+        this.minimumDateCreatedYear = year;
     }
 
     public SearchState getSearchState() {

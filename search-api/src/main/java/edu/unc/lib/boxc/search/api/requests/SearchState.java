@@ -290,8 +290,10 @@ public class SearchState implements Serializable, Cloneable {
         }
 
         public RangePair(RangePair rangePair) {
-            this.leftHand = rangePair.getLeftHand();
-            this.rightHand = rangePair.getRightHand();
+            String leftHand = rangePair.getLeftHand();
+            String rightHand = rangePair.getRightHand();
+            this.leftHand = leftHand;
+            this.rightHand = rightHand;
         }
 
         public String getLeftHand() {
@@ -299,6 +301,7 @@ public class SearchState implements Serializable, Cloneable {
         }
 
         public void setLeftHand(String leftHand) {
+            checkValidRangePair(leftHand, getRightHand());
             this.leftHand = leftHand;
         }
 
@@ -307,6 +310,7 @@ public class SearchState implements Serializable, Cloneable {
         }
 
         public void setRightHand(String rightHand) {
+            checkValidRangePair(getLeftHand(), rightHand);
             this.rightHand = rightHand;
         }
 
@@ -322,6 +326,16 @@ public class SearchState implements Serializable, Cloneable {
                 return leftHand + ",";
             }
             return leftHand + "," + rightHand;
+        }
+
+        private void checkValidRangePair(String start, String end) {
+            // As long as one side is set we're good to go.
+            if (start != null && end != null) {
+                if (Integer.parseInt(start) >= Integer.parseInt(end)) {
+                    throw new IllegalArgumentException("Start value, '" + start + "', is greater than end value, " +
+                            "'" + end + "'");
+                }
+            }
         }
     }
 
