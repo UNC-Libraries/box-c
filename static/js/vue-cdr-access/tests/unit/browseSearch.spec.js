@@ -1,12 +1,20 @@
 import { shallowMount, flushPromises } from '@vue/test-utils';
+import { createI18n } from 'vue-i18n';
 import  { createRouter, createWebHistory } from 'vue-router';
 import browseSearch from '@/components/browseSearch.vue';
 import displayWrapper from "@/components/displayWrapper";
+import translations from "@/translations";
 
 const query = 'Test Collection';
 let wrapper, router;
 
 describe('browseSearch.vue', () => {
+    const i18n = createI18n({
+        locale: 'en',
+        fallbackLocale: 'en',
+        messages: translations
+    });
+
     beforeEach(async () => {
         router = createRouter({
             history: createWebHistory(process.env.BASE_URL),
@@ -20,7 +28,7 @@ describe('browseSearch.vue', () => {
         });
         wrapper = shallowMount(browseSearch, {
             global: {
-                plugins: [router]
+                plugins: [i18n, router]
             },
             props: {
                 objectType: 'Folder'
@@ -69,7 +77,8 @@ describe('browseSearch.vue', () => {
             global: {
                 mocks: {
                     $route
-                }
+                },
+                plugins: [i18n]
             }
         });
         expect(wrapper.find('input').attributes('placeholder')).toBe('Search within this object');
@@ -86,7 +95,8 @@ describe('browseSearch.vue', () => {
             global: {
                 mocks: {
                     $route
-                }
+                },
+                plugins: [i18n]
             },
             props: {
                 objectType: 'Folder'

@@ -1,11 +1,11 @@
 <template>
     <div class="browse-sort select is-medium">
         <select @change="sortRecords" v-model="sort_order" aria-label="Sort options">
-            <option value="default,normal">Sort by Relevance</option>
-            <option value="title,normal">Title A-Z</option>
-            <option value="title,reverse">Title Z-A</option>
-            <option value="dateAdded,normal">Date Created (newest)</option>
-            <option value="dateAdded,reverse">Date Created (oldest)</option>
+            <option value="default,normal">{{ $t('sort.relevance') }}</option>
+            <option value="title,normal">{{ $t('sort.title_a-z') }}</option>
+            <option value="title,reverse">{{ $t('sort.title_z-a') }}</option>
+            <option value="dateAdded,normal">{{ $t('sort.date_created_newest') }}</option>
+            <option value="dateAdded,reverse">{{ $t('sort.date_created_oldest') }}</option>
         </select>
     </div>
 </template>

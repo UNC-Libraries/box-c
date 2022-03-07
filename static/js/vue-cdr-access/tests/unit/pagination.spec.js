@@ -4,10 +4,18 @@ import '@testing-library/jest-dom';
 import pagination from '@/components/pagination.vue';
 import displayWrapper from '@/components/displayWrapper';
 import searchWrapper from '@/components/searchWrapper';
+import {createI18n} from "vue-i18n";
+import translations from "@/translations";
 
 let router, wrapper;
 
 describe('pagination.vue', () => {
+    const i18n = createI18n({
+        locale: 'en',
+        fallbackLocale: 'en',
+        messages: translations
+    });
+
     beforeEach(async () => {
         router = createRouter({
             history: createWebHistory(process.env.BASE_URL),
@@ -26,7 +34,7 @@ describe('pagination.vue', () => {
         });
         wrapper = shallowMount(pagination, {
             global: {
-                plugins: [router]
+                plugins: [router, i18n]
             },
             props: {
                 browseType: 'display',

@@ -10,7 +10,7 @@
                                 <slot name="header">
                                     <div class="column is-12">
                                         <h3>{{ title }}</h3>
-                                        <button class="button is-small" @click="showModal = false">Close</button>
+                                        <button class="button is-small" @click="showModal = false">{{ $t('modal.close') }}</button>
                                     </div>
                                 </slot>
                             </div>

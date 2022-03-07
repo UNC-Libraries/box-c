@@ -2,11 +2,19 @@ import { shallowMount, flushPromises } from '@vue/test-utils';
 import { createRouter, createWebHistory } from 'vue-router';
 import worksOnly from '@/components/worksOnly.vue';
 import displayWrapper from '@/components/displayWrapper';
+import {createI18n} from "vue-i18n";
+import translations from "@/translations";
 
 
 let wrapper, record_input, router;
 
 describe('worksOnly.vue', () => {
+    const i18n = createI18n({
+        locale: 'en',
+        fallbackLocale: 'en',
+        messages: translations
+    });
+
     beforeEach(() => {
         router = createRouter({
             history: createWebHistory(),
@@ -20,7 +28,7 @@ describe('worksOnly.vue', () => {
         });
         wrapper = shallowMount(worksOnly, {
             global: {
-                plugins: [router]
+                plugins: [router, i18n]
             },
             props: {
                 adminUnit: false

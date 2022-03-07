@@ -32,14 +32,14 @@
                                 <a :class="{deleted: markedForDeletion(record)}" :href="recordUrl(record.id, linkBrowseType)">{{ record.title }}</a>
                                 <span v-if="record.type !== 'File'" class="item_container_count">{{ countDisplay(record.counts.child) }}</span>
                             </div>
-                            <div><span class="has-text-weight-bold">Date Deposited:</span> {{ formatDate(record.added) }}</div>
+                            <div><span class="has-text-weight-bold">{{ $t('display.date_deposited') }}:</span> {{ formatDate(record.added) }}</div>
                             <div v-if="record.objectPath.length >= 3 && record.type !== 'Collection'">
-                                <span class="has-text-weight-bold">Collection:</span> <a class="metadata-link" :href="recordUrl(record.objectPath[2].pid, linkBrowseType)">{{ collectionInfo(record.objectPath) }}</a>
+                                <span class="has-text-weight-bold">{{ $t('display.collection') }}:</span> <a class="metadata-link" :href="recordUrl(record.objectPath[2].pid, linkBrowseType)">{{ collectionInfo(record.objectPath) }}</a>
                             </div>
                             <div v-if="record.objectPath.length >= 3 && showCollection(record)">
-                                <p class="collection_id"><span class="has-text-weight-bold">Collection Number:</span> {{ record.objectPath[2].collectionId }}</p>
+                                <p class="collection_id"><span class="has-text-weight-bold">{{ $t('display.collection_number') }}:</span> {{ record.objectPath[2].collectionId }}</p>
                             </div>
-                            <div v-if="record.type === 'Work' || record.type === 'File'"><span class="has-text-weight-bold">File Type:</span> {{ getFileType(record.datastream) }}</div>
+                            <div v-if="record.type === 'Work' || record.type === 'File'"><span class="has-text-weight-bold">{{ $t('display.file_type') }}:</span> {{ getFileType(record.datastream) }}</div>
                         </div>
                     </li>
                 </ul>
