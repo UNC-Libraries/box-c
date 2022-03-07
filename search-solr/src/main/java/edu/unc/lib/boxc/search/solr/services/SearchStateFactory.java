@@ -275,7 +275,7 @@ public class SearchStateFactory {
             } else if (SearchSettings.FIELDS_RANGE_SEARCHABLE.contains(key)) {
                 try {
                     rangeFields.put(key, new SearchState.RangePair(value));
-                } catch (ArrayIndexOutOfBoundsException e) {
+                } catch (ArrayIndexOutOfBoundsException | IllegalArgumentException e) {
                     //An invalid range was specified, throw away the term pair
                 }
             } else if (searchSettings.facetNames.contains(key)) {
@@ -405,14 +405,9 @@ public class SearchStateFactory {
                 parameter = getParameter(request, searchSettings.searchFieldParam(
                         SearchFieldKey.DATE_CREATED_YEAR.name()));
                 if (parameter != null && parameter.length() > 0) {
-                    String[] dateRange = parameter.split(",");
-                    dateCreatedYear.setLeftHand(dateRange[0]);
-                    dateCreatedYear.setRightHand(dateRange[1]);
+                    new SearchState.RangePair(parameter);
                 }
-
-                if (dateCreatedYear.getLeftHand() != null && dateCreatedYear.getRightHand() != null) {
-                    searchState.getRangeFields().put(SearchFieldKey.DATE_CREATED_YEAR.name(), dateCreatedYear);
-                }
+                searchState.getRangeFields().put(SearchFieldKey.DATE_CREATED_YEAR.name(), dateCreatedYear);
             } catch (IllegalArgumentException e) {
                 // An invalid range was specified, throw away the range pair
                 Map<String, SearchState.RangePair> currentRangeFields = searchState.getRangeFields();

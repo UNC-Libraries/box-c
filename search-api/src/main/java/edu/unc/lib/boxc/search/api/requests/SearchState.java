@@ -272,6 +272,7 @@ public class SearchState implements Serializable, Cloneable {
 
         public RangePair(String pairString) {
             String[] pairParts = pairString.split(",", 2);
+            checkValidRangePair(pairParts[0], pairParts[1]);
             if (pairParts[0].length() > 0) {
                 this.leftHand = pairParts[0];
             } else {
@@ -290,10 +291,8 @@ public class SearchState implements Serializable, Cloneable {
         }
 
         public RangePair(RangePair rangePair) {
-            String leftHand = rangePair.getLeftHand();
-            String rightHand = rangePair.getRightHand();
-            this.leftHand = leftHand;
-            this.rightHand = rightHand;
+            this.leftHand = rangePair.getLeftHand();
+            this.rightHand = rangePair.getRightHand();
         }
 
         public String getLeftHand() {

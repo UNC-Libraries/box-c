@@ -93,7 +93,7 @@ public class SetDescriptiveMetadataFilter implements IndexDocumentFilter {
         }
         if (idb.getDateCreated() == null) {
             idb.setDateCreated(idb.getDateAdded());
-            idb.setDateCreatedYear(setDateYear(idb.getDateAdded()));
+            idb.setDateCreatedYear(extractDateYear(idb.getDateAdded()));
         }
         idb.getKeyword().add(dip.getPid().getId());
     }
@@ -323,13 +323,13 @@ public class SetDescriptiveMetadataFilter implements IndexDocumentFilter {
 
             if (dateCreated != null) {
                 idb.setDateCreated(dateCreated);
-                idb.setDateCreatedYear(setDateYear(dateCreated));
+                idb.setDateCreatedYear(extractDateYear(dateCreated));
             } else if (dateIssued != null) {
                 idb.setDateCreated(dateIssued);
-                idb.setDateCreatedYear(setDateYear(dateIssued));
+                idb.setDateCreatedYear(extractDateYear(dateIssued));
             } else if (dateCaptured != null) {
                 idb.setDateCreated(dateCaptured);
-                idb.setDateCreatedYear(setDateYear(dateCaptured));
+                idb.setDateCreatedYear(extractDateYear(dateCaptured));
             }
         }
     }
@@ -445,7 +445,7 @@ public class SetDescriptiveMetadataFilter implements IndexDocumentFilter {
         return nameValue;
     }
 
-    private String setDateYear(Date date) {
+    private String extractDateYear(Date date) {
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(date);
         return Integer.toString(calendar.get(Calendar.YEAR));

@@ -347,7 +347,7 @@ describe('facets.vue', () => {
         await wrapper.find('form input[type=submit]').trigger('click');
 
         expect(wrapper.vm.dates.invalid_date_range).toEqual(true);
-        expect(wrapper.vm.selected_facets).not.toContain('createdYear=2021,2019');
+        expect(wrapper.vm.selected_facets).toEqual([]);
         expect(wrapper.find('.date_error').exists()).toBe(true);
     });
 
