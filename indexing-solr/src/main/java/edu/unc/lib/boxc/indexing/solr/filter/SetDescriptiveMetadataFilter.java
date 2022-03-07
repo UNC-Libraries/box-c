@@ -279,9 +279,7 @@ public class SetDescriptiveMetadataFilter implements IndexDocumentFilter {
                 List<Element> locationParts = locationEl.getChildren("geographic",
                         JDOMNamespaceUtil.MODS_V3_NS);
                 for (Element locEl : locationParts) {
-                    if (locEl.getName().equals("geographic")) {
-                        addIfNotBlank(locations, locEl.getValue());
-                    }
+                    addIfNotBlank(locations, locEl.getValue());
                 }
             }
         }
