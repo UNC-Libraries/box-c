@@ -6,10 +6,10 @@
                        :placeholder="searchText" :aria-label="searchText">
             </div>
             <div class="control">
-                <button @click="getResults" class="button">Search</button>
+                <button @click="getResults" class="button">{{ $t('search.search') }}</button>
             </div>
         </div>
-        <a class="clear-results" href="#" @click.prevent="clearSearch">Clear search results</a>
+        <a class="clear-results" href="#" @click.prevent="clearSearch">{{ $t('search.clear_search') }}</a>
     </div>
 </template>
 

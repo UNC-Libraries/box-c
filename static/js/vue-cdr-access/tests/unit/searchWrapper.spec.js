@@ -3,6 +3,8 @@ import { createRouter, createWebHistory } from 'vue-router';
 import searchWrapper from '@/components/searchWrapper.vue';
 import moxios from "moxios";
 import displayWrapper from "@/components/displayWrapper";
+import {createI18n} from "vue-i18n";
+import translations from "@/translations";
 
 const response = {
     "container": {
@@ -119,6 +121,12 @@ const facets_no_results = {
 let wrapper, router;
 
 describe('searchWrapper.vue', () => {
+    const i18n = createI18n({
+        locale: 'en',
+        fallbackLocale: 'en',
+        messages: translations
+    });
+
     beforeEach(() => {
         moxios.install();
 
@@ -135,7 +143,7 @@ describe('searchWrapper.vue', () => {
 
         wrapper = shallowMount(searchWrapper, {
             global: {
-                plugins: [router]
+                plugins: [router, i18n]
             }
         });
 

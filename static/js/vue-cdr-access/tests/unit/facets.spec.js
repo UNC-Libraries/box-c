@@ -3,11 +3,19 @@ import { createRouter, createWebHistory } from 'vue-router';
 import facets from '@/components/facets.vue';
 import searchWrapper from '@/components/searchWrapper.vue'
 import displayWrapper from '@/components/displayWrapper';
+import {createI18n} from "vue-i18n";
+import translations from "@/translations";
 
 const end_year = new Date().getFullYear();
 let router, wrapper, collection, selected_facet, selected_sub_facet;
 
 describe('facets.vue', () => {
+    const i18n = createI18n({
+        locale: 'en',
+        fallbackLocale: 'en',
+        messages: translations
+    });
+
     beforeEach(() => {
         router = createRouter({
             history: createWebHistory(process.env.BASE_URL),
@@ -27,7 +35,7 @@ describe('facets.vue', () => {
 
         wrapper = shallowMount(facets, {
             global: {
-                plugins: [router]
+                plugins: [router, i18n]
             },
             props: {
                 minCreatedYear: 2011,
@@ -123,7 +131,7 @@ describe('facets.vue', () => {
     it("does not display facets with no returned results", () => {
         let emptyFacetWrapper = shallowMount(facets, {
             global: {
-                plugins: [router]
+                plugins: [router, i18n]
             },
             props: {
                 minSearchYear: 2011,

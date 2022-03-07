@@ -3,8 +3,8 @@
         <a v-if="selected_facets.length > 0" id="clear-all" class="button is-link is-small" @click.prevent="clearAll()">
             <span class="icon is-small">
                 <i class="fas fa-times"></i>
-            </span> Clear filters</a>
-        <h2 class="facet-header">Filter results by...</h2>
+            </span> {{ $t('facets.clear')}}</a>
+        <h2 class="facet-header">{{ $t('facets.filter') }}</h2>
         <div class="facet-display" v-for="facet in this.sortedFacetsList">
             <div v-if="showFacetDisplay(facet)">
                 <h3>{{ facetName(facet.name) }}</h3>

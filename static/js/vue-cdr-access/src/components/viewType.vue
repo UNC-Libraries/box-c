@@ -1,8 +1,8 @@
 <template>
     <div id="browse-display-type" class="display-wrapper">
         <div id="browse-btns" @click="setMode">
-            <i id="list-display" title="List View" class="fas fa-th-list" :class="{'is-selected': !isGallery}"></i>
-            <i id="gallery-display" title="Gallery View" class="fas fa-th" :class="{'is-selected': isGallery}"></i>
+            <i id="list-display" :title="$t('view.list')" class="fas fa-th-list" :class="{'is-selected': !isGallery}"></i>
+            <i id="gallery-display" :title="$t('view.gallery')" class="fas fa-th" :class="{'is-selected': isGallery}"></i>
         </div>
     </div>
 </template>

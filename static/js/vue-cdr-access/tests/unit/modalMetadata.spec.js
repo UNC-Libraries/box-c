@@ -4,6 +4,8 @@ import moxios from 'moxios'
 import pretty from 'pretty';
 import modalMetadata from '@/components/modalMetadata.vue';
 import displayWrapper from '@/components/displayWrapper';
+import {createI18n} from "vue-i18n";
+import translations from "@/translations";
 
 const updated_uuid = 'c03a4bd7-25f4-4a6c-a68d-fedc4251b680';
 const title = 'Test Collection';
@@ -11,6 +13,12 @@ const response = pretty(`<table><tbody><tr><th>Creator</th><td><p>Real Dean</p><
 let router, wrapper;
 
 describe('modalMetadata.vue', () => {
+    const i18n = createI18n({
+        locale: 'en',
+        fallbackLocale: 'en',
+        messages: translations
+    });
+
     beforeEach(async () => {
         router = createRouter({
             history: createWebHistory(process.env.BASE_URL),
@@ -24,7 +32,7 @@ describe('modalMetadata.vue', () => {
         });
         wrapper = shallowMount(modalMetadata, {
             global: {
-                plugins: [router]
+                plugins: [router, i18n]
             },
             props: {
                 uuid: '',

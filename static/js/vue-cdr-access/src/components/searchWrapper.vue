@@ -21,7 +21,7 @@
                     </div>
                     <list-display v-if="records.length > 0" :record-list="records" :use-saved-browse-type="true"></list-display>
                 </div>
-                <p v-else class="spacing" :class="facetsWithNoResults">No records were found.</p>
+                <p v-else class="spacing" :class="facetsWithNoResults">{{ $t('search.no_results') }}</p>
             </div>
 
             <div class="columns is-mobile">

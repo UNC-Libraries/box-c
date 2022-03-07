@@ -2,12 +2,12 @@
     <div id="browse-display-type" class="display-wrapper" v-if="!adminUnit">
         <div class="field">
             <input @click="showWorks" type="checkbox" id="works-only" class="is-checkradio is-large" v-model="works_only">
-            <label for="works-only"><p>Show only works</p></label>
+            <label for="works-only"><p>{{ $t('works_only.show')}}</p></label>
         </div>
         <div class="note">
             <div class="display-note-btn">?
                 <div class="arrow"></div>
-                <span class="browse-tip">Show all files without organizational folders.</span>
+                <span class="browse-tip">{{ $t('works_only.show_tip') }}</span>
             </div>
         </div>
     </div>
