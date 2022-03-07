@@ -267,22 +267,26 @@ public class SetDescriptiveMetadataFilter implements IndexDocumentFilter {
 
     private void extractLocations(Element mods, IndexDocumentBean idb) {
         List<Element> locationEls = mods.getChildren("subject", JDOMNamespaceUtil.MODS_V3_NS);
+        if (locationEls.isEmpty()) {
+            idb.setLocation(null);
+            return;
+        }
+
         List<String> locations = new ArrayList<>();
-        if (locationEls.size() > 0) {
-            for (Element locationEl : locationEls) {
-                String possibleLocation = locationEl.getAttributeValue("authority");
-                if (possibleLocation != null && possibleLocation.equals("lcsh")) {
-                    List<Element> locationParts = locationEl.getChildren();
-                    for (Element locEl : locationParts) {
-                        if (locEl.getName().equals("geographic")) {
-                            addIfNotBlank(locations, locEl.getValue());
-                        }
+        for (Element locationEl : locationEls) {
+            String authority = locationEl.getAttributeValue("authority");
+            if (authority != null && authority.equals("lcsh")) {
+                List<Element> locationParts = locationEl.getChildren("geographic",
+                        JDOMNamespaceUtil.MODS_V3_NS);
+                for (Element locEl : locationParts) {
+                    if (locEl.getName().equals("geographic")) {
+                        addIfNotBlank(locations, locEl.getValue());
                     }
                 }
             }
         }
 
-        if (locations.size() > 0) {
+        if (!locations.isEmpty()) {
             idb.setLocation(locations);
         } else {
             idb.setLocation(null);
