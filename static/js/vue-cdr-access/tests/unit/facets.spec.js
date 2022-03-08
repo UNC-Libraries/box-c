@@ -175,7 +175,7 @@ describe('facets.vue', () => {
     it("does not display date facets with no minimum search year set", () => {
         let emptyFacetWrapper = shallowMount(facets, {
             global: {
-                plugins: [router]
+                plugins: [router, i18n]
             },
             props: {
                 minCreatedYear: undefined,
