@@ -44,6 +44,7 @@ import static edu.unc.lib.boxc.search.api.SearchFieldKey.KEYWORD;
 import static edu.unc.lib.boxc.search.api.SearchFieldKey.LABEL;
 import static edu.unc.lib.boxc.search.api.SearchFieldKey.LANGUAGE;
 import static edu.unc.lib.boxc.search.api.SearchFieldKey.LAST_INDEXED;
+import static edu.unc.lib.boxc.search.api.SearchFieldKey.LOCATION;
 import static edu.unc.lib.boxc.search.api.SearchFieldKey.OTHER_TITLES;
 import static edu.unc.lib.boxc.search.api.SearchFieldKey.PARENT_COLLECTION;
 import static edu.unc.lib.boxc.search.api.SearchFieldKey.PARENT_UNIT;
@@ -58,6 +59,7 @@ import static edu.unc.lib.boxc.search.api.SearchFieldKey.SUBJECT;
 import static edu.unc.lib.boxc.search.api.SearchFieldKey.TIMESTAMP;
 import static edu.unc.lib.boxc.search.api.SearchFieldKey.TITLE;
 import static edu.unc.lib.boxc.search.api.SearchFieldKey.VERSION;
+
 
 import java.text.ParseException;
 import java.util.Date;
@@ -402,10 +404,6 @@ public class IndexDocumentBean {
         fields.put(SUBJECT.getSolrField(), subject);
     }
 
-    public List<String> getLanguage() {
-        return (List<String>) fields.get(LANGUAGE.getSolrField());
-    }
-
     @Field
     public void setGenre(List<String> genre) {
         fields.put(SearchFieldKey.GENRE.getSolrField(), genre);
@@ -415,9 +413,22 @@ public class IndexDocumentBean {
         return (List<String>) fields.get(SearchFieldKey.GENRE.getSolrField());
     }
 
+    public List<String> getLanguage() {
+        return (List<String>) fields.get(LANGUAGE.getSolrField());
+    }
+
     @Field
     public void setLanguage(List<String> language) {
         fields.put(LANGUAGE.getSolrField(), language);
+    }
+
+    public List<String> getLocation() {
+        return (List<String>) fields.get(LOCATION.getSolrField());
+    }
+
+    @Field
+    public void setLocation(List<String> location) {
+        fields.put(LOCATION.getSolrField(), location);
     }
 
     public List<String> getCreator() {

@@ -60,6 +60,7 @@ public enum SearchFieldKey {
     LABEL("label", "label", ""),
     LANGUAGE("language", "language", "Language"),
     LAST_INDEXED("lastIndexed", "lastIndexed", "lastIndexed"),
+    LOCATION("location", "location", "Location"),
     OTHER_TITLES("otherTitle", "otherTitle", "otherTitle"),
     PARENT_COLLECTION("parentCollection", "collection", "Collection"),
     PARENT_UNIT("parentUnit", "unit", "Admin Unit"),

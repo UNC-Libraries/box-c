@@ -136,6 +136,18 @@ describe('facets.vue', () => {
                     {
                         name: "SUBJECT",
                         values: []
+                    },
+                    {
+                        name: "LOCATION",
+                        values: [
+                            {
+                                count: 1,
+                                displayValue: "North Carolina",
+                                limitToValue: "North Carolina",
+                                value: "North Carolina",
+                                fieldName: "LOCATION"
+                            }
+                        ]
                     }
                 ]
             },
@@ -152,8 +164,11 @@ describe('facets.vue', () => {
         expect(facet_headers[0].text()).toBe('Format');
         expect(facet_list[0].find('a').text()).toBe('Image (8)');
 
-        expect(facet_headers.length).toBe(1);
-        expect(facet_list.length).toBe(1);
+        expect(facet_headers[1].text()).toBe('Location');
+        expect(facet_list[1].find('a').text()).toBe('North Carolina (1)');
+
+        expect(facet_headers.length).toBe(2);
+        expect(facet_list.length).toBe(2);
         expect(facet_headers.map((d) => d.text())).not.toContain('Subject');
     });
 
