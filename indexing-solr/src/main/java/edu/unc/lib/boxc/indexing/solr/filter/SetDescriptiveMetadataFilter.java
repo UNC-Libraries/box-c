@@ -75,7 +75,7 @@ public class SetDescriptiveMetadataFilter implements IndexDocumentFilter {
         idb.setKeyword(new ArrayList<String>());
         if (mods != null) {
             this.extractTitles(mods, idb);
-            this.extractNamesAndAffiliations(mods, idb, true);
+            this.extractNames(mods, idb);
             this.extractAbstract(mods, idb);
             this.extractCollectionId(mods, idb);
             this.extractLanguages(mods, idb);
@@ -149,7 +149,7 @@ public class SetDescriptiveMetadataFilter implements IndexDocumentFilter {
         }
     }
 
-    private void extractNamesAndAffiliations(Element mods, IndexDocumentBean idb, boolean splitDepartments) {
+    private void extractNames(Element mods, IndexDocumentBean idb) {
         List<Element> names = mods.getChildren("name", JDOMNamespaceUtil.MODS_V3_NS);
         List<String> creators = new ArrayList<>();
         List<String> contributors = new ArrayList<>();
@@ -159,25 +159,28 @@ public class SetDescriptiveMetadataFilter implements IndexDocumentFilter {
             String nameValue = formatName(nameEl);
 
             if (nameValue != null) {
-                contributors.add(nameValue);
-
                 List<Element> roles = nameEl.getChildren("role", JDOMNamespaceUtil.MODS_V3_NS);
                 // Person is automatically a creator if no role is provided.
                 boolean isCreator = roles.size() == 0;
+                boolean isContributor = false;
                 if (!isCreator) {
                     // If roles were provided, then check to see if any of them are creators.  If so, store as creator.
                     for (Element role: roles) {
                         List<Element> roleTerms = role.getChildren("roleTerm", JDOMNamespaceUtil.MODS_V3_NS);
                         for (Element roleTerm: roleTerms) {
-                            if ("creator".equalsIgnoreCase(roleTerm.getValue())) {
+                            String roleType = roleTerm.getValue();
+                            if ("creator".equalsIgnoreCase(roleType) || "author".equalsIgnoreCase(roleType) ||
+                                    "interviewee".equalsIgnoreCase(roleType)) {
                                 isCreator = true;
                                 break;
                             }
-                            if ("author".equalsIgnoreCase(roleTerm.getValue())) {
-                                isCreator = true;
+
+                            if ("interviewer".equalsIgnoreCase(roleType) || "contributor".equalsIgnoreCase(roleType)) {
+                                isContributor = true;
                                 break;
                             }
-                            if (isCreator) {
+
+                            if (isCreator || isContributor) {
                                 break;
                             }
                         }
@@ -186,6 +189,10 @@ public class SetDescriptiveMetadataFilter implements IndexDocumentFilter {
 
                 if (isCreator) {
                     creators.add(nameValue);
+                }
+
+                if (isContributor) {
+                    contributors.add(nameValue);
                 }
             }
         }
@@ -411,29 +418,35 @@ public class SetDescriptiveMetadataFilter implements IndexDocumentFilter {
             if (nameParts.size() == 1) {
                 nameValue = nameParts.get(0).getValue();
             } else if (nameParts.size() > 1) {
-                Element genericPart = JDOMQueryUtil.getElementByAttribute(nameParts, "type", null);
-                if (genericPart != null) {
-                    nameValue = genericPart.getValue();
-                } else {
-                    // If there were multiple non-generic name parts, then try to piece them together
-                    Element givenPart = JDOMQueryUtil.getElementByAttribute(nameParts, "type", "given");
-                    Element familyPart = JDOMQueryUtil.getElementByAttribute(nameParts, "type", "family");
-                    StringBuilder nameBuilder = new StringBuilder();
-                    if (familyPart != null) {
-                        nameBuilder.append(familyPart.getValue());
-                        if (givenPart != null) {
-                            nameBuilder.append(',').append(' ');
-                        }
-                    }
+                Element givenPart = JDOMQueryUtil.getElementByAttribute(nameParts, "type", null);
+                if (givenPart == null) {
+                    givenPart = JDOMQueryUtil.getElementByAttribute(nameParts, "type", "given");
+                }
+                // If there were multiple non-generic name parts, then try to piece them together
+                Element familyPart = JDOMQueryUtil.getElementByAttribute(nameParts, "type", "family");
+                Element termsOfAddressPart = JDOMQueryUtil.getElementByAttribute(nameParts, "type", "termsOfAddress");
+                Element datePart = JDOMQueryUtil.getElementByAttribute(nameParts, "type", "date");
+                StringBuilder nameBuilder = new StringBuilder();
+                if (familyPart != null) {
+                    nameBuilder.append(familyPart.getValue());
                     if (givenPart != null) {
-                        nameBuilder.append(givenPart.getValue());
+                        nameBuilder.append(',').append(' ');
                     }
-                    if (nameBuilder.length() > 0) {
-                        nameValue = nameBuilder.toString();
-                    } else {
-                        // Nonsensical name, just use the first available value.
-                        nameValue = nameParts.get(0).getValue();
-                    }
+                }
+                if (givenPart != null) {
+                    nameBuilder.append(givenPart.getValue());
+                }
+                if (termsOfAddressPart != null) {
+                    nameBuilder.append(", ").append(termsOfAddressPart.getValue());
+                }
+                if (datePart != null) {
+                    nameBuilder.append(", ").append(datePart.getValue());
+                }
+                if (nameBuilder.length() > 0) {
+                    nameValue = nameBuilder.toString();
+                } else {
+                    // Nonsensical name, just use the first available value.
+                    nameValue = nameParts.get(0).getValue();
                 }
             }
         }

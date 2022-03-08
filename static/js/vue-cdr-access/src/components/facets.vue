@@ -220,6 +220,10 @@
                     return 'Subject';
                 } else if (value === 'GENRE') {
                     return 'Genre';
+                } else if (value === 'CREATOR') {
+                    return 'Creator';
+                } else if (value === 'CONTRIBUTOR') {
+                    return 'Contributor';
                 } else {
                     return value;
                 }
@@ -238,6 +242,10 @@
                     facet_type = 'subject=';
                 } else if (value.fieldName === 'GENRE') {
                     facet_type = 'genre=';
+                } else if (value.fieldName === 'CREATOR') {
+                    facet_type = 'creator=';
+                } else if (value.fieldName === 'CONTRIBUTOR') {
+                    facet_type = 'contributor=';
                 } else {
                     facet_type = '';
                 }

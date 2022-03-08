@@ -114,13 +114,14 @@ public class SetDescriptiveMetadataFilterTest {
         assertNull(idb.getOtherTitle());
 
         assertTrue(idb.getCreator().contains("Test, author"));
+        assertTrue(idb.getCreator().contains("Test, author2"));
+        assertTrue(idb.getCreator().contains("Gilmer, Jeremy Francis, 1918-2020"));
         assertEquals("Test, author", idb.getCreatorSort());
 
         List<String> contributors = idb.getContributor();
-        assertTrue(contributors.contains("Test, author"));
+        assertTrue(contributors.contains("Boxy, Berry Jean, Jr., 1991-"));
+        assertTrue(contributors.contains("Boxy, Alice, III, 1994-"));
         assertTrue(contributors.contains("Test, contributor"));
-
-        assertNull(idb.getDepartment());
 
         assertEquals("Abstract text", idb.getAbstractText());
 
@@ -193,9 +194,12 @@ public class SetDescriptiveMetadataFilterTest {
         filter.filter(dip);
 
         assertTrue(idb.getCreator().contains("Repo, Boxy"));
+        assertTrue(idb.getCreator().contains("Repo2, Boxy"));
+        assertTrue(idb.getCreator().contains("Boxy"));
+        assertTrue(idb.getCreator().contains("Gilmer, Jeremy Francis, 1918-2020"));
         assertEquals("Repo, Boxy", idb.getCreatorSort());
-
-        assertTrue(idb.getContributor().contains("Boxy"));
+        assertTrue(idb.getContributor().contains("Boxy, Berry Jean, Jr., 1991-"));
+        assertTrue(idb.getContributor().contains("Boxy, Alice, III, 1994-"));
     }
 
     @Test
