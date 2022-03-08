@@ -26,6 +26,7 @@ import java.util.Map.Entry;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -336,15 +337,13 @@ public class SearchState implements Serializable, Cloneable {
             }
         }
 
-        private boolean isEmptyValue(String value) {
-            return value == null || value.equals("");
-        }
-
         private void checkValidRangePair(String start, String end) {
             boolean validStart = validRangeValue(start);
             boolean validEnd = validRangeValue(end);
 
-            if ((validStart && isEmptyValue(end)) || (isEmptyValue(start) && validEnd)) {
+            // Checks if one side of the range pair is valid and the other is empty
+            // This results in queries such as [2020 TO *] or [* TO 2020]
+            if ((validStart && StringUtils.isEmpty(end)) || (StringUtils.isEmpty(start) && validEnd)) {
                 return;
             }
 
@@ -353,7 +352,7 @@ public class SearchState implements Serializable, Cloneable {
                         "'" + end + "'");
             }
 
-            if (Integer.parseInt(start) >= Integer.parseInt(end)) {
+            if (Integer.parseInt(start) > Integer.parseInt(end)) {
                 throw new IllegalArgumentException("Invalid search range. Start value: '" + start +
                         "', is greater than end value: '" + end + "'");
             }
