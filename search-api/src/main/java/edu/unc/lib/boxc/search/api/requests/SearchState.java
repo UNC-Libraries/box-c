@@ -327,13 +327,35 @@ public class SearchState implements Serializable, Cloneable {
             return leftHand + "," + rightHand;
         }
 
+        private boolean validRangeValue(String value) {
+            try {
+                Integer.parseInt(value);
+                return true;
+            } catch (NumberFormatException e) {
+                return false;
+            }
+        }
+
+        private boolean isEmptyValue(String value) {
+            return value == null || value.equals("");
+        }
+
         private void checkValidRangePair(String start, String end) {
-            // As long as one side is set we're good to go.
-            if (start != null && end != null) {
-                if (Integer.parseInt(start) >= Integer.parseInt(end)) {
-                    throw new IllegalArgumentException("Start value, '" + start + "', is greater than end value, " +
-                            "'" + end + "'");
-                }
+            boolean validStart = validRangeValue(start);
+            boolean validEnd = validRangeValue(end);
+
+            if ((validStart && isEmptyValue(end)) || (isEmptyValue(start) && validEnd)) {
+                return;
+            }
+
+            if (!validStart && !validEnd) {
+                throw new IllegalArgumentException("Invalid search range. Start Value: '" + start + "', End Value: " +
+                        "'" + end + "'");
+            }
+
+            if (Integer.parseInt(start) >= Integer.parseInt(end)) {
+                throw new IllegalArgumentException("Invalid search range. Start value: '" + start +
+                        "', is greater than end value: '" + end + "'");
             }
         }
     }

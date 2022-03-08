@@ -401,13 +401,12 @@ public class SearchStateFactory {
 
             //Add date added year range, which is a sort of facet
             try {
-                SearchState.RangePair dateCreatedYear = new SearchState.RangePair();
                 parameter = getParameter(request, searchSettings.searchFieldParam(
                         SearchFieldKey.DATE_CREATED_YEAR.name()));
                 if (parameter != null && parameter.length() > 0) {
-                    new SearchState.RangePair(parameter);
+                    SearchState.RangePair dateCreatedYear = new SearchState.RangePair(parameter);
+                    searchState.getRangeFields().put(SearchFieldKey.DATE_CREATED_YEAR.name(), dateCreatedYear);
                 }
-                searchState.getRangeFields().put(SearchFieldKey.DATE_CREATED_YEAR.name(), dateCreatedYear);
             } catch (IllegalArgumentException e) {
                 // An invalid range was specified, throw away the range pair
                 Map<String, SearchState.RangePair> currentRangeFields = searchState.getRangeFields();
