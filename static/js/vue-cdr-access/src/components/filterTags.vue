@@ -25,6 +25,7 @@ const TYPES = {
     contributor: 'Contributor',
     contributorIndex: 'Contributor',
     creator: 'Creator',
+    creatorIndex: 'Creator',
     format: 'Format',
     subject: 'Subject',
     subjectIndex: 'Subject',
@@ -91,6 +92,7 @@ export default {
                 return '';
             }
 
+            const MULTI_VALUED_FIELDS = ['format', 'collection', 'contributor', 'creator'];
             let display_text = decodeURIComponent(fieldValue);
 
             // Format time based tags
@@ -106,7 +108,7 @@ export default {
             };
 
             // Return non multi-value tags
-            if (type !== 'format' && type !== 'collection') {
+            if (!MULTI_VALUED_FIELDS.includes(type)) {
                 return tag_info;
             }
 

@@ -115,7 +115,7 @@
             },
 
             isSelected(facet) {
-                return this.selectedFacetInfo.findIndex(uf => uf.value === facet) !== -1;
+                return this.selectedFacetInfo.findIndex(uf => uf.value.toLowerCase() === facet.toLowerCase()) !== -1;
             },
 
             /**

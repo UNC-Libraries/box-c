@@ -39,6 +39,7 @@ public enum SearchFieldKey {
     CONTRIBUTOR("contributor", "contributor", "Contributor"),
     CONTRIBUTOR_INDEX("contributorIndex", "contributorIndex", "Contributor"),
     CREATOR("creator", "creator", "Creator"),
+    CREATOR_INDEX("creatorIndex", "creatorIndex", "Creator"),
     CREATOR_SORT("creatorSort", "creatorSort", "Creator Sort"),
     DATASTREAM("datastream", "datastream", "Datastream"),
     DATE_ADDED("dateAdded", "added", "Date Deposited"),
