@@ -81,6 +81,7 @@ public class SetDescriptiveMetadataFilter implements IndexDocumentFilter {
             this.extractCollectionId(mods, idb);
             this.extractLanguages(mods, idb);
             this.extractSubjects(mods, idb);
+            this.extractLocations(mods, idb);
             this.extractDateCreated(mods, idb);
             this.extractIdentifiers(mods, idb);
             this.extractCitation(mods, idb);
@@ -264,6 +265,32 @@ public class SetDescriptiveMetadataFilter implements IndexDocumentFilter {
             idb.setSubject(null);
         }
 
+    }
+
+    private void extractLocations(Element mods, IndexDocumentBean idb) {
+        List<Element> locationEls = mods.getChildren("subject", JDOMNamespaceUtil.MODS_V3_NS);
+        if (locationEls.isEmpty()) {
+            idb.setLocation(null);
+            return;
+        }
+
+        List<String> locations = new ArrayList<>();
+        for (Element locationEl : locationEls) {
+            String authority = locationEl.getAttributeValue("authority");
+            if (authority != null && authority.equals("lcsh")) {
+                List<Element> locationParts = locationEl.getChildren("geographic",
+                        JDOMNamespaceUtil.MODS_V3_NS);
+                for (Element locEl : locationParts) {
+                    addIfNotBlank(locations, locEl.getValue());
+                }
+            }
+        }
+
+        if (!locations.isEmpty()) {
+            idb.setLocation(locations);
+        } else {
+            idb.setLocation(null);
+        }
     }
 
     private void extractLanguages(Element mods, IndexDocumentBean idb) {

@@ -132,6 +132,9 @@ public class SetDescriptiveMetadataFilterTest {
         assertTrue(idb.getSubject().contains("Test resource two"));
         assertTrue(idb.getSubject().contains("rules, boxy"));
         assertFalse(idb.getSubject().contains("Subject Title"));
+        assertFalse(idb.getSubject().contains("Germany"));
+
+        assertTrue(idb.getLocation().contains("Germany"));
 
         assertTrue(idb.getLanguage().contains("English"));
 
