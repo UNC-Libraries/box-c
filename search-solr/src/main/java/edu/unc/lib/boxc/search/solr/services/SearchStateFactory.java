@@ -257,7 +257,8 @@ public class SearchStateFactory {
         Iterator<Entry<String, String[]>> paramIt = request.entrySet().iterator();
         while (paramIt.hasNext()) {
             Entry<String, String[]> param = paramIt.next();
-            if (param.getValue().length == 0) {
+            String[] paramValue = param.getValue();
+            if (paramValue == null || paramValue.length == 0) {
                 continue;
             }
             String key = searchSettings.searchFieldKey(param.getKey());

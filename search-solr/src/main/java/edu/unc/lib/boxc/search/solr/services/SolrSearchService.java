@@ -562,9 +562,7 @@ public class SolrSearchService extends AbstractQueryService {
         if (StringUtils.isBlank(value)) {
             return "*";
         }
-        if (SearchSettings.FIELDS_RANGE_SEARCHABLE.contains(key)) {
-            return SolrSettings.sanitize(value);
-        }
+
         if (SearchSettings.FIELDS_DATE_SEARCHABLE.contains(key)) {
             try {
                 return DateFormatUtil.getFormattedDate(value, true, true);

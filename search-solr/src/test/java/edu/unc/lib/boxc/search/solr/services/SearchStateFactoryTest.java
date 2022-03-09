@@ -262,7 +262,7 @@ public class SearchStateFactoryTest {
     public void extractRangePairsNull() {
         Map<String, String[]> parameters = new LinkedHashMap<>();
         parameters.put("anywhere", new String[]{""});
-        parameters.put("createdYear", new String[]{"null"});
+        parameters.put("createdYear", null);
 
         SearchState searchState = searchStateFactory.createSearchState(parameters);
         assertFalse(searchState.getRangeFields().containsKey(SearchFieldKey.DATE_CREATED_YEAR.name()));
