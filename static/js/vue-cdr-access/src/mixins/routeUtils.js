@@ -23,7 +23,7 @@ export default {
                     'a.setStartRow': 0,
                     rows: this.rows_per_page,
                     sort: 'default,normal',
-                    facetSelect: 'collection,format,genre,subject,createdYear'
+                    facetSelect: 'collection,format,subject,location,createdYear'
                 };
             } else {
                 defaults = {

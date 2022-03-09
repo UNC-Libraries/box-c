@@ -36,7 +36,7 @@
 
     const UUID_REGEX = /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i;
     const CURRENT_YEAR = new Date().getFullYear();
-    const POSSIBLE_FACET_PARAMS = ['collection', 'createdYear', 'format', 'language', 'subject'];
+    const POSSIBLE_FACET_PARAMS = ['collection', 'createdYear', 'format', 'language', 'subject', 'location'];
 
     export default {
         name: 'facets',
@@ -258,6 +258,8 @@
                         return 'Format';
                     case 'LANGUAGE':
                         return 'Language';
+                    case 'LOCATION':
+                        return 'Location';
                     case 'SUBJECT':
                         return 'Subject';
                     case 'GENRE':
@@ -277,6 +279,8 @@
                         return 'format=';
                     case 'LANGUAGE':
                         return 'language=';
+                    case 'LOCATION':
+                        return 'location=';
                     case 'SUBJECT':
                         return 'subject=';
                     case 'GENRE':
