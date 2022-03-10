@@ -1,5 +1,5 @@
 <template>
-    <div class="slider-styled" id="slider-round"></div>
+    <div ref="sliderEl" class="slider-styled" id="slider-round"></div>
 </template>
 
 <script>
@@ -46,31 +46,34 @@ export default {
                 this.slider.set(range);
             },
             deep: true
-        },
-        rangeValues: {
-            handler(range) {
-                this.slider.updateOptions({
-                    range: range
-                });
-            },
-            deep: true
         }
     },
 
+    methods: {
+        createSlider() {
+            this.slider = noUiSlider.create(this.$refs.sliderEl, {
+                start: this.startRange,
+                connect: true,
+                handleAttributes: [
+                    { 'aria-label': 'start' },
+                    { 'aria-label': 'end' },
+                ],
+                step: 1,
+                tooltips: [formatter, formatter],
+                range: this.rangeValues,
+                format: formatter
+            });
+        },
+
+        updateSlider() {
+            this.slider.on('change', years => this.$emit('sliderUpdated', years));
+        }
+
+    },
+
     mounted() {
-        this.slider = noUiSlider.create(document.getElementById('slider-round'), {
-            start: this.startRange,
-            connect: true,
-            handleAttributes: [
-                { 'aria-label': 'start' },
-                { 'aria-label': 'end' },
-            ],
-            step: 1,
-            tooltips: [formatter, formatter],
-            range: this.rangeValues,
-            format: formatter
-        });
-        this.slider.on('change', years => this.$emit('sliderUpdated', years));
+        this.createSlider();
+        this.updateSlider();
     },
 
     beforeUnmount() {

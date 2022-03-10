@@ -17,13 +17,13 @@
                 </ul>
                 <slider v-if="facet.name === 'DATE_CREATED_YEAR'"
                         :start-range="[dates.selected_dates.start, dates.selected_dates.end]"
-                        :range-values="{min: 1, max: 3000}" @sliderUpdated="sliderUpdated"></slider>
+                        :range-values="{min: setRangeMinimum, max: currentYear}" @sliderUpdated="sliderUpdated"></slider>
                 <form v-if="facet.name === 'DATE_CREATED_YEAR'">
                     <input type="number" v-model="dates.selected_dates.start" name="start_date"
-                           min="1" max="3000" aria-label="Start Date" placeholder="Start Date" />
+                           :min="setRangeMinimum" :max="currentYear" aria-label="Start Date" placeholder="Start Date" />
                     &ndash;
                     <input type="number" v-model="dates.selected_dates.end" name="end_date"
-                           min="1" max="3000" aria-label="End Date" placeholder="End Date" />
+                           :min="setRangeMinimum" :max="currentYear" aria-label="End Date" placeholder="End Date" />
                     <br />
                     <input type="submit" value="Limit" @click.prevent="setDateFacetUrl()" class="button is-small" />
                     <p class="date_error" v-if="dates.invalid_date_range">The start date cannot be after the end date</p>
@@ -121,6 +121,11 @@
 
             currentYear() {
                 return CURRENT_YEAR;
+            },
+
+            setRangeMinimum() {
+                const defaultMinYer = 1500;
+                return (this.min_year < defaultMinYer) ? this.min_year : defaultMinYer;
             }
         },
 
