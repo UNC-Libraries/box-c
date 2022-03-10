@@ -15,6 +15,9 @@
                         <a v-else @click.prevent="updateAll(value)">{{ value.displayValue }} ({{ value.count }})</a>
                     </li>
                 </ul>
+                <slider v-if="facet.name === 'DATE_CREATED_YEAR'"
+                        :start-range="[dates.selected_dates.start, dates.selected_dates.end]"
+                        :range-values="{min: 1, max: 3000}" @sliderUpdated="sliderUpdated"></slider>
                 <form v-if="facet.name === 'DATE_CREATED_YEAR'">
                     <input type="number" v-model="dates.selected_dates.start" name="start_date"
                            min="1" max="3000" aria-label="Start Date" placeholder="Start Date" />
@@ -32,6 +35,7 @@
 
 <script>
     import sortBy from 'lodash.sortby';
+    import slider from "@/components/slider";
     import routeUtils from '../mixins/routeUtils';
 
     const UUID_REGEX = /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i;
@@ -40,6 +44,8 @@
 
     export default {
         name: 'facets',
+
+        components: {slider},
 
         props: {
             facetList: Array,
@@ -384,6 +390,11 @@
                 POSSIBLE_FACET_PARAMS.forEach((type) => {
                     this._setFacetFromRoute(type, params[type]);
                 });
+            },
+
+            sliderUpdated(values) {
+                this.dates.selected_dates.start = values[0];
+                this.dates.selected_dates.end = values[1];
             }
         },
 
