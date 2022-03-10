@@ -4,6 +4,7 @@
 
 <script>
 import noUiSlider from 'nouislider';
+import isEqual from 'lodash.isequal';
 
 const formatter = {
     to: value => parseInt(value),
@@ -42,8 +43,13 @@ export default {
 
     watch: {
         startRange: {
-            handler(range) {
-                this.slider.set(range);
+            handler(newRange, oldRange) {
+                // Make sure array has actually changed to avoid a possible endless loop from the set event firing here
+                // and emitting on set in the mounted() hook, which would update the props in facets.vue and thus trigger
+                // this watcher and around and around.
+                if (!isEqual(newRange, oldRange)) {
+                    this.slider.set(newRange);
+                }
             },
             deep: true
         }
@@ -63,17 +69,12 @@ export default {
                 range: this.rangeValues,
                 format: formatter
             });
-        },
-
-        updateSlider() {
-            this.slider.on('change', years => this.$emit('sliderUpdated', years));
         }
-
     },
 
     mounted() {
         this.createSlider();
-        this.updateSlider();
+        this.slider.on('set', years => this.$emit('sliderUpdated', years));
     },
 
     beforeUnmount() {

@@ -464,6 +464,7 @@
         }
 
         form {
+            margin-bottom: 25px;
             margin-top: 5px;
             input[type=number] {
                 max-width: 100px;
