@@ -27,6 +27,7 @@ const TYPES = {
     creator: 'Creator',
     creatorIndex: 'Creator',
     format: 'Format',
+    location: 'Location',
     subject: 'Subject',
     subjectIndex: 'Subject',
     titleIndex: 'Title',

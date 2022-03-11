@@ -3,8 +3,8 @@
         <a v-if="selected_facets.length > 0" id="clear-all" class="button is-link is-small" @click.prevent="clearAll()">
             <span class="icon is-small">
                 <i class="fas fa-times"></i>
-            </span> Clear filters</a>
-        <h2 class="facet-header">Filter results by...</h2>
+            </span> {{ $t('facets.clear')}}</a>
+        <h2 class="facet-header">{{ $t('facets.filter') }}</h2>
         <div class="facet-display" v-for="facet in this.sortedFacetsList">
             <div v-if="showFacetDisplay(facet)">
                 <h3>{{ facetName(facet.name) }}</h3>
@@ -25,7 +25,7 @@
     import routeUtils from '../mixins/routeUtils';
 
     const UUID_REGEX = /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i;
-    const POSSIBLE_FACET_PARAMS = ['collection', 'format', 'language', 'subject', 'creator', 'contributor'];
+    const POSSIBLE_FACET_PARAMS = ['collection', 'format', 'language', 'subject', 'location', 'creator', 'contributor'];
 
     export default {
         name: 'facets',
@@ -216,6 +216,8 @@
                     return 'Format';
                 } else if (value === 'LANGUAGE') {
                     return 'Language';
+                } else if (value === 'LOCATION') {
+                    return 'Location';
                 } else if (value === 'SUBJECT') {
                     return 'Subject';
                 } else if (value === 'GENRE') {
@@ -238,6 +240,8 @@
                     facet_type = 'format=';
                 } else if (value.fieldName === 'LANGUAGE') {
                     facet_type = 'language=';
+                } else if (value.fieldName === 'LOCATION') {
+                    facet_type = 'location=';
                 } else if (value.fieldName === 'SUBJECT') {
                     facet_type = 'subject=';
                 } else if (value.fieldName === 'GENRE') {
