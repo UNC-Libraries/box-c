@@ -44,7 +44,40 @@
     </mods:role>
   </mods:name>
   <mods:name type="personal">
+    <mods:affiliation>Music</mods:affiliation>
+    <mods:namePart>Test, author2</mods:namePart>
+    <mods:role>
+      <mods:roleTerm authority="marcrelator" type="text">Author</mods:roleTerm>
+    </mods:role>
+  </mods:name>
+  <mods:name type="personal">
     <mods:namePart>Test, contributor</mods:namePart>
+    <mods:role>
+      <mods:roleTerm type="text" authority="marcrelator">Contributor</mods:roleTerm>
+    </mods:role>
+  </mods:name>
+  <mods:name>
+    <mods:namePart>Gilmer, Jeremy Francis, 1918-2020</mods:namePart>
+    <mods:role>
+      <mods:roleTerm authority="marcrelator" type="text">Interviewee</mods:roleTerm>
+    </mods:role>
+  </mods:name>
+  <mods:name>
+    <mods:namePart>Boxy, Berry Jean</mods:namePart>
+    <mods:namePart type="termsOfAddress">Jr.</mods:namePart>
+    <mods:namePart type="date">1991-</mods:namePart>
+    <mods:role>
+      <mods:roleTerm type="text" authority="marcrelator">Interviewer</mods:roleTerm>
+    </mods:role>
+  </mods:name>
+  <mods:name>
+    <mods:namePart type="given">Alice</mods:namePart>
+    <mods:namePart type="family">Boxy</mods:namePart>
+    <mods:namePart type="date">1994-</mods:namePart>
+    <mods:namePart type="termsOfAddress">III</mods:namePart>
+    <mods:role>
+      <mods:roleTerm type="text" authority="marcrelator">Contributor</mods:roleTerm>
+    </mods:role>
   </mods:name>
   <mods:originInfo>
     <mods:dateIssued encoding="iso8601" keyDate="yes">2006-05</mods:dateIssued>

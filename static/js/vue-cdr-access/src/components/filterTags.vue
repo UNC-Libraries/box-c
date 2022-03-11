@@ -22,7 +22,10 @@ const TYPES = {
     added: 'Date Added',
     collection: 'Collection',
     created: 'Date Created',
+    contributor: 'Contributor',
     contributorIndex: 'Contributor',
+    creator: 'Creator',
+    creatorIndex: 'Creator',
     format: 'Format',
     location: 'Location',
     subject: 'Subject',
@@ -89,7 +92,6 @@ export default {
             if (fieldValue === undefined || TYPES[type] === undefined) {
                 return '';
             }
-
             let display_text = decodeURIComponent(fieldValue);
 
             // Format time based tags
@@ -105,7 +107,8 @@ export default {
             };
 
             // Return non multi-value tags
-            if (type !== 'format' && type !== 'collection') {
+            const MULTI_VALUED_FIELDS = ['format', 'collection', 'contributor', 'creator'];
+            if (!MULTI_VALUED_FIELDS.includes(type)) {
                 return tag_info;
             }
 

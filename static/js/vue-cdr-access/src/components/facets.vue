@@ -25,7 +25,7 @@
     import routeUtils from '../mixins/routeUtils';
 
     const UUID_REGEX = /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i;
-    const POSSIBLE_FACET_PARAMS = ['collection', 'format', 'language', 'subject', 'location'];
+    const POSSIBLE_FACET_PARAMS = ['collection', 'format', 'language', 'subject', 'location', 'creator', 'contributor'];
 
     export default {
         name: 'facets',
@@ -115,7 +115,7 @@
             },
 
             isSelected(facet) {
-                return this.selectedFacetInfo.findIndex(uf => uf.value === facet) !== -1;
+                return this.selectedFacetInfo.findIndex(uf => uf.value.toLowerCase() === facet.toLowerCase()) !== -1;
             },
 
             /**
@@ -222,6 +222,10 @@
                     return 'Subject';
                 } else if (value === 'GENRE') {
                     return 'Genre';
+                } else if (value === 'CREATOR') {
+                    return 'Creator';
+                } else if (value === 'CONTRIBUTOR') {
+                    return 'Contributor';
                 } else {
                     return value;
                 }
@@ -242,6 +246,10 @@
                     facet_type = 'subject=';
                 } else if (value.fieldName === 'GENRE') {
                     facet_type = 'genre=';
+                } else if (value.fieldName === 'CREATOR') {
+                    facet_type = 'creator=';
+                } else if (value.fieldName === 'CONTRIBUTOR') {
+                    facet_type = 'contributor=';
                 } else {
                     facet_type = '';
                 }
