@@ -23,6 +23,7 @@ import static org.apache.commons.lang3.StringUtils.isBlank;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Properties;
@@ -162,28 +163,24 @@ public class SetDescriptiveMetadataFilter implements IndexDocumentFilter {
 
             if (nameValue != null) {
                 List<Element> roles = nameEl.getChildren("role", JDOMNamespaceUtil.MODS_V3_NS);
-                // Person is automatically a creator if no role is provided.
-                boolean isCreator = roles.size() == 0;
-                boolean isContributor = false;
-                if (!isCreator) {
+                // Person is automatically a contributor if no role is provided.
+                boolean isContributor = roles.size() == 0;
+                boolean isCreator = false;
+                List<String> creatorList = Arrays.asList("creator", "author", "artist", "interviewer", "interviewee");
+                if (!isContributor) {
                     // If roles were provided, then check to see if any of them are creators.  If so, store as creator.
                     for (Element role : roles) {
                         List<Element> roleTerms = role.getChildren("roleTerm", JDOMNamespaceUtil.MODS_V3_NS);
-                        for (Element roleTerm : roleTerms) {
-                            String roleType = roleTerm.getValue();
-                            if ("creator".equalsIgnoreCase(roleType) || "author".equalsIgnoreCase(roleType) ||
-                                    "interviewee".equalsIgnoreCase(roleType)) {
-                                isCreator = true;
-                                break;
-                            }
-
-                            if ("interviewer".equalsIgnoreCase(roleType) || "contributor".equalsIgnoreCase(roleType)) {
-                                isContributor = true;
-                                break;
-                            }
-
-                            if (isCreator || isContributor) {
-                                break;
+                        if (roleTerms.isEmpty()) {
+                            isContributor = true;
+                        }  else {
+                            for (Element roleTerm : roleTerms) {
+                                String roleType = roleTerm.getValue();
+                                if (creatorList.contains(roleType.toLowerCase())) {
+                                    isCreator = true;
+                                } else {
+                                    isContributor = true;
+                                }
                             }
                         }
                     }

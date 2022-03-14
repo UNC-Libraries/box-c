@@ -43,4 +43,17 @@
             <mods:roleTerm type="text" authority="marcrelator">Contributor</mods:roleTerm>
         </mods:role>
     </mods:name>
+    <mods:name>
+        <mods:namePart>Boxy, Assistant</mods:namePart>
+        <mods:role>
+            <mods:roleTerm authority="marcrelator" type="text">Assistant Director</mods:roleTerm>
+        </mods:role>
+    </mods:name>
+    <mods:name>
+        <mods:namePart>Boxy, Role Free</mods:namePart>
+    </mods:name>
+    <mods:name>
+        <mods:namePart>Boxy, Role Empty</mods:namePart>
+        <mods:role/>
+    </mods:name>
 </mods:mods>

@@ -113,15 +113,18 @@ public class SetDescriptiveMetadataFilterTest {
         assertEquals("Paper title", idb.getTitle());
         assertNull(idb.getOtherTitle());
 
-        assertTrue(idb.getCreator().contains("Test, author"));
-        assertTrue(idb.getCreator().contains("Test, author2"));
-        assertTrue(idb.getCreator().contains("Gilmer, Jeremy Francis, 1918-2020"));
+        List<String> creators = idb.getCreator();
+        assertTrue(creators.contains("Test, author"));
+        assertTrue(creators.contains("Test, author2"));
+        assertTrue(creators.contains("Gilmer, Jeremy Francis, 1918-2020"));
+        assertTrue(creators.contains("Boxy, Berry Jean, Jr., 1991-"));
         assertEquals("Test, author", idb.getCreatorSort());
 
         List<String> contributors = idb.getContributor();
-        assertTrue(contributors.contains("Boxy, Berry Jean, Jr., 1991-"));
         assertTrue(contributors.contains("Boxy, Alice, III, 1994-"));
         assertTrue(contributors.contains("Test, contributor"));
+        assertTrue(contributors.contains("Boxy, Assistant"));
+        assertTrue(contributors.contains("Boxy, Role Free"));
 
         assertEquals("Abstract text", idb.getAbstractText());
 
@@ -198,11 +201,14 @@ public class SetDescriptiveMetadataFilterTest {
 
         assertTrue(idb.getCreator().contains("Repo, Boxy"));
         assertTrue(idb.getCreator().contains("Repo2, Boxy"));
-        assertTrue(idb.getCreator().contains("Boxy"));
         assertTrue(idb.getCreator().contains("Gilmer, Jeremy Francis, 1918-2020"));
+        assertTrue(idb.getCreator().contains("Boxy, Berry Jean, Jr., 1991-"));
         assertEquals("Repo, Boxy", idb.getCreatorSort());
-        assertTrue(idb.getContributor().contains("Boxy, Berry Jean, Jr., 1991-"));
         assertTrue(idb.getContributor().contains("Boxy, Alice, III, 1994-"));
+        assertTrue(idb.getContributor().contains("Boxy, Assistant"));
+        assertTrue(idb.getContributor().contains("Boxy, Role Free"));
+        assertTrue(idb.getContributor().contains("Boxy, Role Empty"));
+        assertTrue(idb.getContributor().contains("Boxy"));
     }
 
     @Test

@@ -63,6 +63,15 @@
     </mods:role>
   </mods:name>
   <mods:name>
+    <mods:namePart>Boxy, Assistant</mods:namePart>
+    <mods:role>
+      <mods:roleTerm authority="marcrelator" type="text">Assistant Director</mods:roleTerm>
+    </mods:role>
+  </mods:name>
+  <mods:name>
+    <mods:namePart>Boxy, Role Free</mods:namePart>
+  </mods:name>
+  <mods:name>
     <mods:namePart>Boxy, Berry Jean</mods:namePart>
     <mods:namePart type="termsOfAddress">Jr.</mods:namePart>
     <mods:namePart type="date">1991-</mods:namePart>
