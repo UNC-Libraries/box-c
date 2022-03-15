@@ -22,6 +22,7 @@ const TYPES = {
     added: 'Date Added',
     collection: 'Collection',
     created: 'Date Created',
+    createdYear: 'Date Created',
     contributorIndex: 'Contributor',
     format: 'Format',
     location: 'Location',
@@ -93,7 +94,7 @@ export default {
             let display_text = decodeURIComponent(fieldValue);
 
             // Format time based tags
-            if (type === 'added' || type === 'created') {
+            if (type === 'added' || type === 'created' || type === 'createdYear') {
                 display_text = this._formatTime(fieldValue);
             }
 

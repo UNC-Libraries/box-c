@@ -8,13 +8,26 @@
         <div class="facet-display" v-for="facet in this.sortedFacetsList">
             <div v-if="showFacetDisplay(facet)">
                 <h3>{{ facetName(facet.name) }}</h3>
-                <ul>
+                <ul v-if="facet.name !=='DATE_CREATED_YEAR'" >
                     <li v-for="value in facet.values">
                         <a class="is-selected" v-if="isSelected(value.limitToValue)" @click.prevent="updateAll(value, true)">
                             {{ value.displayValue }} ({{ value.count }}) <i class="fas fa-times"></i></a>
                         <a v-else @click.prevent="updateAll(value)">{{ value.displayValue }} ({{ value.count }})</a>
                     </li>
                 </ul>
+                <slider v-if="facet.name === 'DATE_CREATED_YEAR'" ref="sliderInfo"
+                        :start-range="[dates.selected_dates.start, currentYear]"
+                        :range-values="{min: dates.selected_dates.start, max: currentYear}" @sliderUpdated="sliderUpdated"></slider>
+                <form v-if="facet.name === 'DATE_CREATED_YEAR'">
+                    <input type="number" v-model="dates.selected_dates.start" name="start_date"
+                           aria-label="Start Date" placeholder="Start Date" />
+                    &ndash;
+                    <input type="number" v-model="dates.selected_dates.end" name="end_date"
+                           aria-label="End Date" placeholder="End Date" />
+                    <br />
+                    <input type="submit" value="Limit" @click.prevent="setDateFacetUrl()" class="button is-small" />
+                    <p class="date_error" v-if="dates.invalid_date_range">The start date cannot be after the end date</p>
+                </form>
             </div>
         </div>
     </div>
@@ -22,22 +35,35 @@
 
 <script>
     import sortBy from 'lodash.sortby';
+    import slider from "@/components/slider";
     import routeUtils from '../mixins/routeUtils';
 
     const UUID_REGEX = /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i;
-    const POSSIBLE_FACET_PARAMS = ['collection', 'format', 'language', 'subject', 'location'];
+    const CURRENT_YEAR = new Date().getFullYear();
+    const POSSIBLE_FACET_PARAMS = ['collection', 'createdYear', 'format', 'language', 'subject', 'location'];
 
     export default {
         name: 'facets',
 
+        components: {slider},
+
         props: {
-            facetList: Array
+            facetList: Array,
+            minCreatedYear: Number
         },
 
         mixins: [routeUtils],
 
         data() {
             return {
+                dates: {
+                    selected_dates: {
+                        start: this.minCreatedYear,
+                        end: CURRENT_YEAR
+                    },
+                    error_message: '',
+                    invalid_date_range: false
+                },
                 selected_facets: []
             }
         },
@@ -49,6 +75,11 @@
                     this.setFacetsFromParams();
                 },
                 deep: true
+            },
+            minCreatedYear(newValue, oldValue) {
+                if (newValue < oldValue) {
+                    this.dates.selected_dates.start = newValue;
+                }
             }
         },
 
@@ -81,6 +112,10 @@
 
                     return facet;
                 });
+            },
+
+            currentYear() {
+                return CURRENT_YEAR;
             }
         },
 
@@ -124,6 +159,9 @@
              * @returns {boolean|boolean}
              */
             showFacetDisplay(facet) {
+                if (facet.name === 'DATE_CREATED_YEAR' && this.minCreatedYear !== undefined) {
+                    return true;
+                }
                 return facet.values.length > 0 &&
                     (facet.name !== 'PARENT_COLLECTION' || (facet.name === 'PARENT_COLLECTION' && !this.routeHasCollectionId));
             },
@@ -159,7 +197,7 @@
                 };
             },
 
-           /**
+            /**
              * Remove full facet info for deselected facets and their children
              * @param facet
              */
@@ -198,7 +236,11 @@
                 let formatted_facets = {};
                 updated_facets.forEach((facet) => {
                     let facet_pieces = facet.split('=');
-                    formatted_facets[facet_pieces[0]] = encodeURIComponent(decodeURIComponent(facet_pieces[1]));
+                    if (facet_pieces[0] !== 'createdYear') {
+                        formatted_facets[facet_pieces[0]] = encodeURIComponent(decodeURIComponent(facet_pieces[1]));
+                    } else {
+                        formatted_facets[facet_pieces[0]] = facet_pieces[1];
+                    }
                 });
 
                 return formatted_facets;
@@ -210,43 +252,45 @@
              * @returns {string|*}
              */
             facetName(value) {
-                if (value === 'PARENT_COLLECTION') {
-                    return 'Collection'
-                } else if (value === 'CONTENT_TYPE') {
-                    return 'Format';
-                } else if (value === 'LANGUAGE') {
-                    return 'Language';
-                } else if (value === 'LOCATION') {
-                    return 'Location';
-                } else if (value === 'SUBJECT') {
-                    return 'Subject';
-                } else if (value === 'GENRE') {
-                    return 'Genre';
-                } else {
-                    return value;
+                switch (value) {
+                    case 'PARENT_COLLECTION':
+                        return 'Collection';
+                    case 'CONTENT_TYPE':
+                        return 'Format';
+                    case 'LANGUAGE':
+                        return 'Language';
+                    case 'LOCATION':
+                        return 'Location';
+                    case 'SUBJECT':
+                        return 'Subject';
+                    case 'GENRE':
+                        return 'Genre';
+                    case 'DATE_CREATED_YEAR':
+                        return 'Date Created';
+                    default:
+                        return value;
                 }
             },
 
             facetType(value) {
-                let facet_type;
-
-                if (value.fieldName === 'PARENT_COLLECTION') {
-                    facet_type = 'collection='
-                } else if (value.fieldName === 'CONTENT_TYPE') {
-                    facet_type = 'format=';
-                } else if (value.fieldName === 'LANGUAGE') {
-                    facet_type = 'language=';
-                } else if (value.fieldName === 'LOCATION') {
-                    facet_type = 'location=';
-                } else if (value.fieldName === 'SUBJECT') {
-                    facet_type = 'subject=';
-                } else if (value.fieldName === 'GENRE') {
-                    facet_type = 'genre=';
-                } else {
-                    facet_type = '';
+                switch (value.fieldName) {
+                    case 'PARENT_COLLECTION':
+                        return 'collection=';
+                    case 'CONTENT_TYPE':
+                        return 'format=';
+                    case 'LANGUAGE':
+                        return 'language=';
+                    case 'LOCATION':
+                        return 'location=';
+                    case 'SUBJECT':
+                        return 'subject=';
+                    case 'GENRE':
+                        return 'genre=';
+                    case 'DATE_CREATED_YEAR':
+                        return 'createdYear=';
+                    default:
+                        return '';
                 }
-
-                return facet_type;
             },
 
             /**
@@ -271,6 +315,44 @@
                 return `${facet_type}${value.limitToValue}`;
             },
 
+            setDateFacetUrl() {
+                let start = this.dates.selected_dates.start;
+                let end = this.dates.selected_dates.end;
+                if (start > end) {
+                    this.dates.invalid_date_range = true;
+                    return;
+                }
+
+                const updated_facet_value = `createdYear=${start},${end}`;
+                const current_facet_value = this.selected_facets.findIndex(f => f.startsWith('createdYear'));
+                if (current_facet_value !== -1) {
+                    this.selected_facets[current_facet_value] = updated_facet_value
+                } else {
+                    this.selected_facets.push(updated_facet_value);
+                }
+
+                this.dates.invalid_date_range = false;
+                this.selectedFacets();
+            },
+
+            setDateRangeFromParams(facet_value) {
+                if (facet_value !== undefined) {
+                    const decoded_facet_value = decodeURIComponent(facet_value);
+                    const search_years = decoded_facet_value.split(',');
+                    const start_year = parseInt(search_years[0]);
+                    const end_year = parseInt(search_years[1]);
+
+                    // Ignore invalid date ranges
+                    if (Number.isNaN(start_year) || Number.isNaN(end_year) || start_year > end_year) {
+                        return;
+                    }
+                    this.dates.selected_dates.start = start_year;
+                    this.dates.selected_dates.end = end_year;
+                } else {
+                    this.dates.selected_dates.end = this.currentYear;
+                }
+            },
+
             /**
              * Determine if a facet value is in the url query and add it to selected facets, if so.
              * This method triggers every time a facet is added/removed from the mounted() method
@@ -285,6 +367,11 @@
                     const updated_value = `${type}=${decoded_facet_value}`
                     this.selected_facets.push(updated_value);
                 }
+
+                // Set date ranges
+                if (type === 'createdYear') {
+                    this.setDateRangeFromParams(facet_value);
+                }
             },
 
             /**
@@ -295,6 +382,11 @@
                 POSSIBLE_FACET_PARAMS.forEach((type) => {
                     this._setFacetFromRoute(type, params[type]);
                 });
+            },
+
+            sliderUpdated(values) {
+                this.dates.selected_dates.start = values[0];
+                this.dates.selected_dates.end = values[1];
             }
         },
 
@@ -305,6 +397,7 @@
 </script>
 
 <style scoped lang="scss">
+    $cdr-blue: #1A698C;
     #facetList {
         h3 {
             font-size: 18px;
@@ -317,7 +410,7 @@
         }
 
         .is-link {
-            background-color: #1A698C;
+            background-color: $cdr-blue;
             border-radius: 5px;
             font-size: .85rem;
             margin-bottom: 10px;
@@ -338,7 +431,7 @@
             }
 
             i {
-                color: #1A698C;
+                color: $cdr-blue;
                 position: relative;
                 vertical-align: text-top;
             }
@@ -355,6 +448,27 @@
             span {
                 padding-right: 10px;
             }
+        }
+
+        form {
+            float: none;
+            margin-bottom: 25px;
+            margin-top: 5px;
+            input[type=number] {
+                max-width: 100px;
+            }
+            input[type=submit] {
+                margin-top: 10px;
+                background-color: $cdr-blue;
+                color: white;
+                font-weight: bold;
+                border-radius: 5px;
+            }
+        }
+        .date_error {
+            color: #cc0f35;
+            font-size: 15px;
+            margin-top: 10px;
         }
     }
 </style>

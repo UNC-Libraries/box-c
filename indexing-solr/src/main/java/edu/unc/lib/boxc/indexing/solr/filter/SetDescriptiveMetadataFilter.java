@@ -23,6 +23,7 @@ import static org.apache.commons.lang3.StringUtils.isBlank;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Properties;
@@ -348,8 +349,10 @@ public class SetDescriptiveMetadataFilter implements IndexDocumentFilter {
 
             if (dateCreated != null) {
                 idb.setDateCreated(dateCreated);
+                idb.setDateCreatedYear(extractDateYear(dateCreated));
             } else if (dateIssued != null) {
                 idb.setDateCreated(dateIssued);
+                idb.setDateCreatedYear(extractDateYear(dateIssued));
             } else if (dateCaptured != null) {
                 idb.setDateCreated(dateCaptured);
             }
@@ -465,5 +468,11 @@ public class SetDescriptiveMetadataFilter implements IndexDocumentFilter {
             }
         }
         return nameValue;
+    }
+
+    private String extractDateYear(Date date) {
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(date);
+        return Integer.toString(calendar.get(Calendar.YEAR));
     }
 }

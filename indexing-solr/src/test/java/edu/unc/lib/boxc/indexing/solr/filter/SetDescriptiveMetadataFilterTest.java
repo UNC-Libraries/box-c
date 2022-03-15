@@ -26,6 +26,7 @@ import static org.mockito.MockitoAnnotations.initMocks;
 import java.io.File;
 import java.io.FileInputStream;
 import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
 
@@ -92,6 +93,7 @@ public class SetDescriptiveMetadataFilterTest {
 
         idb = new IndexDocumentBean();
         idb.setTitle("Title");
+        idb.setDateAdded(String.valueOf(LocalDateTime.now()));
 
         when(dip.getDocument()).thenReturn(idb);
         when(dip.getPid()).thenReturn(pid);
@@ -169,6 +171,7 @@ public class SetDescriptiveMetadataFilterTest {
         filter.filter(dip);
 
         assertEquals("2006-05", dateFormat.format(idb.getDateCreated()));
+        assertEquals("2006", idb.getDateCreatedYear());
     }
 
     /*
@@ -184,6 +187,7 @@ public class SetDescriptiveMetadataFilterTest {
         filter.filter(dip);
 
         assertEquals("2006-03", dateFormat.format(idb.getDateCreated()));
+        assertNull(idb.getDateCreatedYear());
     }
 
     @Test

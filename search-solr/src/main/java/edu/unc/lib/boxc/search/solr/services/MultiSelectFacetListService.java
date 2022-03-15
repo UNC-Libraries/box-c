@@ -17,6 +17,7 @@ package edu.unc.lib.boxc.search.solr.services;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map.Entry;
@@ -25,6 +26,7 @@ import java.util.stream.Collectors;
 
 import edu.unc.lib.boxc.model.api.ResourceType;
 import edu.unc.lib.boxc.model.api.exceptions.NotFoundException;
+import edu.unc.lib.boxc.search.api.SearchFieldKey;
 import edu.unc.lib.boxc.search.api.facets.FacetFieldList;
 import edu.unc.lib.boxc.search.api.facets.FacetFieldObject;
 import edu.unc.lib.boxc.search.api.facets.SearchFacet;
@@ -117,6 +119,29 @@ public class MultiSelectFacetListService extends AbstractQueryService {
 
         resultFacets.sort(searchRequest.getSearchState().getFacetsToRetrieve());
         return resultResponse;
+    }
+
+    /**
+     * Finds and returns the minimum year created for the given query
+     * @param selectedState
+     * @param originalRequest
+     * @return String
+     */
+    public String getMinimumDateCreatedYear(SearchState selectedState, SearchRequest originalRequest) {
+        selectedState.setRowsPerPage(1);
+        selectedState.setResultFields(Collections.singletonList(SearchFieldKey.DATE_CREATED_YEAR.name()));
+        selectedState.setSortNormalOrder(false);
+        selectedState.setSortType("dateCreated");
+
+        SearchRequest selectedRequest = new SearchRequest(
+                selectedState, originalRequest.getAccessGroups(), false);
+        SearchResultResponse selectedResponse = searchService.getSearchResults(selectedRequest);
+
+        try {
+            return selectedResponse.getResultList().get(0).getDateCreatedYear();
+        } catch (IndexOutOfBoundsException e) {
+            return null;
+        }
     }
 
     private List<SearchFacet> getMergedHierarchivalFacetValues(String facetName, List<SearchFacet> filterValues,

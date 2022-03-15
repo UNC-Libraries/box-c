@@ -26,6 +26,7 @@ import java.util.Map.Entry;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -272,6 +273,7 @@ public class SearchState implements Serializable, Cloneable {
 
         public RangePair(String pairString) {
             String[] pairParts = pairString.split(",", 2);
+            checkValidRangePair(pairParts[0], pairParts[1]);
             if (pairParts[0].length() > 0) {
                 this.leftHand = pairParts[0];
             } else {
@@ -299,6 +301,7 @@ public class SearchState implements Serializable, Cloneable {
         }
 
         public void setLeftHand(String leftHand) {
+            checkValidRangePair(leftHand, getRightHand());
             this.leftHand = leftHand;
         }
 
@@ -307,6 +310,7 @@ public class SearchState implements Serializable, Cloneable {
         }
 
         public void setRightHand(String rightHand) {
+            checkValidRangePair(getLeftHand(), rightHand);
             this.rightHand = rightHand;
         }
 
@@ -322,6 +326,36 @@ public class SearchState implements Serializable, Cloneable {
                 return leftHand + ",";
             }
             return leftHand + "," + rightHand;
+        }
+
+        private boolean validRangeValue(String value) {
+            try {
+                Integer.parseInt(value);
+                return true;
+            } catch (NumberFormatException e) {
+                return false;
+            }
+        }
+
+        private void checkValidRangePair(String start, String end) {
+            boolean validStart = validRangeValue(start);
+            boolean validEnd = validRangeValue(end);
+
+            // Checks if one side of the range pair is valid and the other is empty
+            // This results in queries such as [2020 TO *] or [* TO 2020]
+            if ((validStart && StringUtils.isEmpty(end)) || (StringUtils.isEmpty(start) && validEnd)) {
+                return;
+            }
+
+            if (!validStart && !validEnd) {
+                throw new IllegalArgumentException("Invalid search range. Start Value: '" + start + "', End Value: " +
+                        "'" + end + "'");
+            }
+
+            if (Integer.parseInt(start) > Integer.parseInt(end)) {
+                throw new IllegalArgumentException("Invalid search range. Start value: '" + start +
+                        "', is greater than end value: '" + end + "'");
+            }
         }
     }
 

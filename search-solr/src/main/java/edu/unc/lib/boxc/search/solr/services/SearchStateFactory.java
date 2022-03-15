@@ -257,7 +257,8 @@ public class SearchStateFactory {
         Iterator<Entry<String, String[]>> paramIt = request.entrySet().iterator();
         while (paramIt.hasNext()) {
             Entry<String, String[]> param = paramIt.next();
-            if (param.getValue().length == 0) {
+            String[] paramValue = param.getValue();
+            if (paramValue == null || paramValue.length == 0) {
                 continue;
             }
             String key = searchSettings.searchFieldKey(param.getKey());
@@ -272,6 +273,12 @@ public class SearchStateFactory {
             }
             if (searchSettings.searchableFields.contains(key)) {
                 searchFields.put(key, value);
+            } else if (SearchSettings.FIELDS_RANGE_SEARCHABLE.contains(key)) {
+                try {
+                    rangeFields.put(key, new SearchState.RangePair(value));
+                } catch (ArrayIndexOutOfBoundsException | IllegalArgumentException e) {
+                    //An invalid range was specified, throw away the term pair
+                }
             } else if (searchSettings.facetNames.contains(key)) {
                 try {
                     List<SearchFacet> facetValues = Arrays.stream(value.split("\\s*\\|\\|\\s*"))
@@ -280,12 +287,6 @@ public class SearchStateFactory {
                     facetFields.put(key, facetValues);
                 } catch (InvalidFacetException e) {
                     log.debug("Invalid facet " + key + " with value " + value, e);
-                }
-            } else if (SearchSettings.FIELDS_RANGE_SEARCHABLE.contains(key)) {
-                try {
-                    rangeFields.put(key, new SearchState.RangePair(value));
-                } catch (ArrayIndexOutOfBoundsException e) {
-                    //An invalid range was specified, throw away the term pair
                 }
             }
         }
@@ -397,13 +398,29 @@ public class SearchStateFactory {
                 }
             }
             searchState.setFacetsToRetrieve(facetsToRetrieve);
+
+
+            //Add date added year range, which is a sort of facet
+            try {
+                parameter = getParameter(request, searchSettings.searchFieldParam(
+                        SearchFieldKey.DATE_CREATED_YEAR.name()));
+                if (parameter != null && parameter.length() > 0) {
+                    SearchState.RangePair dateCreatedYear = new SearchState.RangePair(parameter);
+                    searchState.getRangeFields().put(SearchFieldKey.DATE_CREATED_YEAR.name(), dateCreatedYear);
+                }
+            } catch (IllegalArgumentException e) {
+                // An invalid range was specified, throw away the range pair
+                Map<String, SearchState.RangePair> currentRangeFields = searchState.getRangeFields();
+                currentRangeFields.remove(SearchFieldKey.DATE_CREATED_YEAR.name());
+                log.info(e.getMessage());
+            }
         }
 
         parameter = getParameter(request, SearchSettings.URL_PARAM_ROLLUP);
         if (parameter == null) {
             searchState.setRollup(null);
         } else {
-            Boolean rollup = new Boolean(parameter);
+            Boolean rollup = Boolean.valueOf(parameter);
             searchState.setRollup(rollup);
         }
     }

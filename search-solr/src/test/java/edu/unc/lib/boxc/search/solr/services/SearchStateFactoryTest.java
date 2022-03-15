@@ -162,4 +162,109 @@ public class SearchStateFactoryTest {
         assertEquals("52726582-2cea-455a-8220-c360dbe5082b", facetValues.get(0).getSearchValue());
         assertTrue(searchState.getSearchFields().containsKey(SearchFieldKey.DEFAULT_INDEX.name()));
     }
+
+    @Test
+    public void extractValidRangePairs() {
+        Map<String, String[]> parameters = new LinkedHashMap<>();
+        parameters.put("anywhere", new String[]{""});
+        parameters.put("createdYear", new String[]{"2020,2022"});
+
+        SearchState searchState = searchStateFactory.createSearchState(parameters);
+        assertTrue(searchState.getRangeFields().containsKey(SearchFieldKey.DATE_CREATED_YEAR.name()));
+        assertEquals("2020,2022", searchState.getRangeFields()
+                .get(SearchFieldKey.DATE_CREATED_YEAR.name()).toString());
+    }
+
+    @Test
+    public void extractValidSameRangePairs() {
+        Map<String, String[]> parameters = new LinkedHashMap<>();
+        parameters.put("anywhere", new String[]{""});
+        parameters.put("createdYear", new String[]{"2020,2020"});
+
+        SearchState searchState = searchStateFactory.createSearchState(parameters);
+        assertTrue(searchState.getRangeFields().containsKey(SearchFieldKey.DATE_CREATED_YEAR.name()));
+        assertEquals("2020,2020", searchState.getRangeFields()
+                .get(SearchFieldKey.DATE_CREATED_YEAR.name()).toString());
+    }
+
+    @Test
+    public void extractInvalidRangePairs() {
+        Map<String, String[]> parameters = new LinkedHashMap<>();
+        parameters.put("anywhere", new String[]{""});
+        parameters.put("createdYear", new String[]{"2022,2020"});
+
+        SearchState searchState = searchStateFactory.createSearchState(parameters);
+        assertFalse(searchState.getRangeFields().containsKey(SearchFieldKey.DATE_CREATED_YEAR.name()));
+    }
+
+    @Test
+    public void extractValidRangePairsLeft() {
+        Map<String, String[]> parameters = new LinkedHashMap<>();
+        parameters.put("anywhere", new String[]{""});
+        parameters.put("createdYear", new String[]{"2022,"});
+
+        SearchState searchState = searchStateFactory.createSearchState(parameters);
+        assertTrue(searchState.getRangeFields().containsKey(SearchFieldKey.DATE_CREATED_YEAR.name()));
+        assertEquals("2022,", searchState.getRangeFields().get(SearchFieldKey.DATE_CREATED_YEAR.name()).toString());
+    }
+
+    @Test
+    public void extractValidRangePairsRight() {
+        Map<String, String[]> parameters = new LinkedHashMap<>();
+        parameters.put("anywhere", new String[]{""});
+        parameters.put("createdYear", new String[]{",2022"});
+
+        SearchState searchState = searchStateFactory.createSearchState(parameters);
+        assertTrue(searchState.getRangeFields().containsKey(SearchFieldKey.DATE_CREATED_YEAR.name()));
+        assertEquals(",2022", searchState.getRangeFields().get(SearchFieldKey.DATE_CREATED_YEAR.name()).toString());
+    }
+
+    @Test
+    public void extractNoCreatedYearRangePairs() {
+        Map<String, String[]> parameters = new LinkedHashMap<>();
+        parameters.put("anywhere", new String[]{""});
+
+        SearchState searchState = searchStateFactory.createSearchState(parameters);
+        assertFalse(searchState.getRangeFields().containsKey(SearchFieldKey.DATE_CREATED_YEAR.name()));
+    }
+
+    @Test
+    public void extractRangePairsNoValue() {
+        Map<String, String[]> parameters = new LinkedHashMap<>();
+        parameters.put("anywhere", new String[]{""});
+        parameters.put("createdYear", new String[]{""});
+
+        SearchState searchState = searchStateFactory.createSearchState(parameters);
+        assertFalse(searchState.getRangeFields().containsKey(SearchFieldKey.DATE_CREATED_YEAR.name()));
+    }
+
+    @Test
+    public void extractRangePairsNonNumeric() {
+        Map<String, String[]> parameters = new LinkedHashMap<>();
+        parameters.put("anywhere", new String[]{""});
+        parameters.put("createdYear", new String[]{"ben,dean"});
+
+        SearchState searchState = searchStateFactory.createSearchState(parameters);
+        assertFalse(searchState.getRangeFields().containsKey(SearchFieldKey.DATE_CREATED_YEAR.name()));
+    }
+
+    @Test
+    public void extractRangePairsEmptyPair() {
+        Map<String, String[]> parameters = new LinkedHashMap<>();
+        parameters.put("anywhere", new String[]{""});
+        parameters.put("createdYear", new String[]{","});
+
+        SearchState searchState = searchStateFactory.createSearchState(parameters);
+        assertFalse(searchState.getRangeFields().containsKey(SearchFieldKey.DATE_CREATED_YEAR.name()));
+    }
+
+    @Test
+    public void extractRangePairsNull() {
+        Map<String, String[]> parameters = new LinkedHashMap<>();
+        parameters.put("anywhere", new String[]{""});
+        parameters.put("createdYear", null);
+
+        SearchState searchState = searchStateFactory.createSearchState(parameters);
+        assertFalse(searchState.getRangeFields().containsKey(SearchFieldKey.DATE_CREATED_YEAR.name()));
+    }
 }
