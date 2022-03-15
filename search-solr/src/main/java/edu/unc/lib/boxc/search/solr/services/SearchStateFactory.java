@@ -429,9 +429,9 @@ public class SearchStateFactory {
             searchState.getSearchFields().put(SearchFieldKey.CONTRIBUTOR_INDEX.name(), parameter);
         }
 
-        parameter = getParameter(request, searchSettings.searchFieldParam(SearchFieldKey.CREATOR_INDEX.name()));
+        parameter = getParameter(request, searchSettings.searchFieldParam(SearchFieldKey.CONTRIBUTOR_INDEX.name()));
         if (parameter != null && parameter.length() > 0) {
-            searchState.getSearchFields().put(SearchFieldKey.CREATOR_INDEX.name(), parameter);
+            searchState.getSearchFields().put(SearchFieldKey.CONTRIBUTOR_INDEX.name(), parameter);
         }
 
         parameter = getParameter(request, searchSettings.searchFieldParam(SearchFieldKey.TITLE_INDEX.name()));

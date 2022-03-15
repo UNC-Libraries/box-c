@@ -25,7 +25,7 @@
     import routeUtils from '../mixins/routeUtils';
 
     const UUID_REGEX = /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i;
-    const POSSIBLE_FACET_PARAMS = ['collection', 'format', 'language', 'subject', 'location', 'creator', 'contributor'];
+    const POSSIBLE_FACET_PARAMS = ['collection', 'format', 'language', 'subject', 'location', 'creatorContributor'];
 
     export default {
         name: 'facets',
@@ -222,10 +222,8 @@
                     return 'Subject';
                 } else if (value === 'GENRE') {
                     return 'Genre';
-                } else if (value === 'CREATOR') {
-                    return 'Creator';
-                } else if (value === 'CONTRIBUTOR') {
-                    return 'Contributor';
+                } else if (value === 'CREATOR_CONTRIBUTOR') {
+                    return 'Creator/Contributor';
                 } else {
                     return value;
                 }
@@ -246,10 +244,8 @@
                     facet_type = 'subject=';
                 } else if (value.fieldName === 'GENRE') {
                     facet_type = 'genre=';
-                } else if (value.fieldName === 'CREATOR') {
-                    facet_type = 'creator=';
-                } else if (value.fieldName === 'CONTRIBUTOR') {
-                    facet_type = 'contributor=';
+                } else if (value.fieldName === 'CREATOR_CONTRIBUTOR') {
+                    facet_type = 'creatorContributor=';
                 } else {
                     facet_type = '';
                 }

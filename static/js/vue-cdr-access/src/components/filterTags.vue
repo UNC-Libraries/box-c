@@ -26,6 +26,7 @@ const TYPES = {
     contributorIndex: 'Contributor',
     creator: 'Creator',
     creatorIndex: 'Creator',
+    creatorContributor: 'Creator/Contributor',
     format: 'Format',
     location: 'Location',
     subject: 'Subject',
@@ -107,7 +108,7 @@ export default {
             };
 
             // Return non multi-value tags
-            const MULTI_VALUED_FIELDS = ['format', 'collection', 'contributor', 'creator'];
+            const MULTI_VALUED_FIELDS = ['format', 'collection', 'creatorContributor'];
             if (!MULTI_VALUED_FIELDS.includes(type)) {
                 return tag_info;
             }

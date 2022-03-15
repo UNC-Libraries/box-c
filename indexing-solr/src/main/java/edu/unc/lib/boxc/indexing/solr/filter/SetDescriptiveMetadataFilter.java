@@ -156,6 +156,7 @@ public class SetDescriptiveMetadataFilter implements IndexDocumentFilter {
         List<Element> names = mods.getChildren("name", JDOMNamespaceUtil.MODS_V3_NS);
         List<String> creators = new ArrayList<>();
         List<String> contributors = new ArrayList<>();
+        List<String> creatorsContributors = new ArrayList<>();
 
         for (Element nameEl : names) {
             // First see if there is a display form
@@ -166,7 +167,7 @@ public class SetDescriptiveMetadataFilter implements IndexDocumentFilter {
                 // Person is automatically a contributor if no role is provided.
                 boolean isContributor = roles.size() == 0;
                 boolean isCreator = false;
-                List<String> creatorList = Arrays.asList("creator", "author", "artist", "interviewer", "interviewee");
+                List<String> creatorList = Arrays.asList("creator", "author", "interviewer", "interviewee");
                 if (!isContributor) {
                     // If roles were provided, then check to see if any of them are creators.  If so, store as creator.
                     for (Element role : roles) {
@@ -188,10 +189,12 @@ public class SetDescriptiveMetadataFilter implements IndexDocumentFilter {
 
                 if (isCreator) {
                     creators.add(nameValue);
+                    creatorsContributors.add(nameValue);
                 }
 
                 if (isContributor) {
                     contributors.add(nameValue);
+                    creatorsContributors.add(nameValue);
                 }
             }
         }
@@ -207,6 +210,9 @@ public class SetDescriptiveMetadataFilter implements IndexDocumentFilter {
         } else {
             idb.setCreator(null);
             idb.setCreatorSort(null);
+        }
+        if (creatorsContributors.size() > 0) {
+            idb.setCreatorContributor(creatorsContributors);
         }
     }
 

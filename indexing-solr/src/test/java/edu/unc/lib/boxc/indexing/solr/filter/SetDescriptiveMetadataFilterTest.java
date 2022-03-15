@@ -126,6 +126,17 @@ public class SetDescriptiveMetadataFilterTest {
         assertTrue(contributors.contains("Boxy, Assistant"));
         assertTrue(contributors.contains("Boxy, Role Free"));
 
+        List<String> creatorContributors = idb.getCreatorContributor();
+        assertTrue(creatorContributors.contains("Test, author"));
+        assertTrue(creatorContributors.contains("Test, author2"));
+        assertTrue(creatorContributors.contains("Gilmer, Jeremy Francis, 1918-2020"));
+        assertTrue(creatorContributors.contains("Boxy, Berry Jean, Jr., 1991-"));
+        assertTrue(creatorContributors.contains("Boxy, Alice, III, 1994-"));
+        assertTrue(creatorContributors.contains("Test, contributor"));
+        assertTrue(creatorContributors.contains("Boxy, Assistant"));
+        assertTrue(creatorContributors.contains("Boxy, Role Free"));
+        
+
         assertEquals("Abstract text", idb.getAbstractText());
 
         assertEquals("40148", idb.getCollectionId());
@@ -224,6 +235,9 @@ public class SetDescriptiveMetadataFilterTest {
         assertTrue(idb.getCreator().contains("Test, Creator2"));
 
         assertEquals("Test, Creator1", idb.getCreatorSort());
+
+        assertTrue(idb.getCreatorContributor().contains("Test, Creator1"));
+        assertTrue(idb.getCreatorContributor().contains("Test, Creator2"));
     }
 
     @Test
