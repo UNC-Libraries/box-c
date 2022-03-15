@@ -23,7 +23,7 @@ const TYPES = {
     collection: 'Collection',
     created: 'Date Created',
     contributor: 'Contributor',
-    contributorIndex: 'Contributor',
+    contributorIndex: 'Creator/Contributor',
     creator: 'Creator',
     creatorIndex: 'Creator',
     creatorContributor: 'Creator/Contributor',
