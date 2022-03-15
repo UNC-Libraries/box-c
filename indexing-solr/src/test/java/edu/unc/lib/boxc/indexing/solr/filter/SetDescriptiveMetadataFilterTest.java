@@ -187,7 +187,7 @@ public class SetDescriptiveMetadataFilterTest {
         filter.filter(dip);
 
         assertEquals("2006-03", dateFormat.format(idb.getDateCreated()));
-        assertEquals("2006", idb.getDateCreatedYear());
+        assertNull(idb.getDateCreatedYear());
     }
 
     @Test
