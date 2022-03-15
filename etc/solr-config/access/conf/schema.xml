@@ -172,6 +172,7 @@
     <field name="creator" type="string" indexed="true" stored="true" multiValued="true"/>
     <!-- Sort order fields -->
     <field name="creatorSort" type="string_lc" indexed="true" stored="true"/>
+    <field name="creatorContributor" type="string" indexed="true" stored="true" multiValued="true"/>
     <!-- DS name|mimetype|extension|filesize|checksum|owner -->
     <field name="datastream" type="string" indexed="true" stored="true" multiValued="true"/>
     <!-- Date when the object was added to the repository -->
@@ -246,7 +247,6 @@
     <!-- Index fields -->
     <!-- Specific field indexes -->
     <field name="contributorIndex" type="text_ns" indexed="true" stored="false" multiValued="true"/>
-    <field name="creatorIndex" type="text_ns" indexed="true" stored="false" multiValued="true"/>
     <!-- Index for most fields, except full text -->
     <field name="keywordIndex" type="text" indexed="true" stored="false" multiValued="true"/>
     <!-- Default, primary search field, includes everything from keyword index, plus full text -->
@@ -281,6 +281,11 @@
   <!-- The unique id -->
   <uniqueKey>id</uniqueKey>
 
+
+  <!-- Create composite field -->
+  <copyField source="contributor" dest="creatorContributor"/>
+  <copyField source="creator" dest="creatorContributor"/>
+
   <!-- Copy to index fields.  Duplicate copies are for boosting -->
   <copyField source="title" dest="titleIndex"/>
   <copyField source="title" dest="titleIndex"/>
@@ -289,7 +294,7 @@
   <copyField source="subject" dest="subjectIndex"/>
 
   <copyField source="contributor" dest="contributorIndex"/>
-  <copyField source="creator" dest="creatorIndex"/>
+  <copyField source="creator" dest="contributorIndex"/>
 
   <copyField source="title" dest="keywordIndex"/>
   <copyField source="title" dest="keywordIndex"/>
