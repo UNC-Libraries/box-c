@@ -15,6 +15,9 @@
                         <a v-else @click.prevent="updateAll(value)">{{ value.displayValue }} ({{ value.count }})</a>
                     </li>
                 </ul>
+                <slider v-if="facet.name === 'DATE_CREATED_YEAR'" ref="sliderInfo"
+                        :start-range="[dates.selected_dates.start, currentYear]"
+                        :range-values="{min: dates.selected_dates.start, max: currentYear}" @sliderUpdated="sliderUpdated"></slider>
                 <form v-if="facet.name === 'DATE_CREATED_YEAR'">
                     <input type="number" v-model="dates.selected_dates.start" name="start_date"
                            aria-label="Start Date" placeholder="Start Date" />
@@ -25,9 +28,6 @@
                     <input type="submit" value="Limit" @click.prevent="setDateFacetUrl()" class="button is-small" />
                     <p class="date_error" v-if="dates.invalid_date_range">The start date cannot be after the end date</p>
                 </form>
-                <slider v-if="facet.name === 'DATE_CREATED_YEAR'" ref="sliderInfo"
-                        :start-range="[dates.selected_dates.start, currentYear]"
-                        :range-values="{min: dates.selected_dates.start, max: currentYear}" @sliderUpdated="sliderUpdated"></slider>
             </div>
         </div>
     </div>
