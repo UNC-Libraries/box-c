@@ -27,7 +27,7 @@ export default {
         startRange: {
             type: Array,
             default(props) {
-                return [1, full_year]
+                return [1, full_year];
             }
         },
         rangeValues: {
@@ -36,7 +36,7 @@ export default {
                 return {
                     min: 1,
                     max: full_year
-                }
+                };
             }
         }
     },
@@ -44,9 +44,6 @@ export default {
     watch: {
         startRange: {
             handler(newRange, oldRange) {
-                // Make sure array has actually changed to avoid a possible endless loop from the set event firing here
-                // and emitting on set in the mounted() hook, which would update the props in facets.vue and thus trigger
-                // this watcher and around and around.
                 if (!isEqual(newRange, oldRange)) {
                     this.slider.set(newRange);
                 }
@@ -59,22 +56,26 @@ export default {
         createSlider() {
             this.slider = noUiSlider.create(this.$refs.sliderEl, {
                 start: this.startRange,
+                range: this.rangeValues,
                 connect: true,
                 handleAttributes: [
-                    { 'aria-label': 'start' },
-                    { 'aria-label': 'end' },
+                    { 'aria-label': 'Start Year' },
+                    { 'aria-label': 'End Year' },
                 ],
                 step: 1,
                 tooltips: [formatter, formatter],
-                range: this.rangeValues,
                 format: formatter
             });
+        },
+
+        emitInfo(years) {
+            this.$emit('sliderUpdated', years);
         }
     },
 
     mounted() {
         this.createSlider();
-        this.slider.on('set', years => this.$emit('sliderUpdated', years));
+        this.slider.on('change', years => this.emitInfo(years));
     },
 
     beforeUnmount() {
@@ -86,7 +87,7 @@ export default {
 <style lang="scss">
     #slider-round {
         height: 10px;
-        margin: 50px auto 25px 10px;
+        margin: 50px auto 25px auto;
         width: 90%;
 
         .noUi-connect {

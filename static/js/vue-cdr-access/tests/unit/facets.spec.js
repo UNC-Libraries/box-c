@@ -1,7 +1,7 @@
-import { shallowMount, flushPromises } from '@vue/test-utils'
+import {shallowMount, flushPromises, mount} from '@vue/test-utils'
 import { createRouter, createWebHistory } from 'vue-router';
-import facets from '@/components/facets.vue';
-import searchWrapper from '@/components/searchWrapper.vue'
+import facets from '@/components/facets';
+import searchWrapper from '@/components/searchWrapper';
 import displayWrapper from '@/components/displayWrapper';
 import {createI18n} from "vue-i18n";
 import translations from "@/translations";
@@ -374,13 +374,20 @@ describe('facets.vue', () => {
         expect(wrapper.find('.date_error').exists()).toBe(true);
     });
 
-    it("it sets the 'created date' picker values from the url", async () => {
+    it("sets the 'created date' picker values from the url", async () => {
         await router.push('/search/?createdYear=2019,2021');
         await flushPromises();
 
         expect(wrapper.vm.selected_facets).toEqual(['createdYear=2019,2021']);
         expect(wrapper.vm.dates.selected_dates.start).toEqual(2019);
-        expect(wrapper.vm.min_year).toEqual(2019);
         expect(wrapper.vm.dates.selected_dates.end).toEqual(2021);
+    });
+
+    // This isn't very satisfying, but something seems to have changed between vue 2 and 3
+    // regarding emitting an event
+    it("sets the date picker values if the slider is updated", () => {
+        expect(wrapper.vm.dates.selected_dates).toEqual({"start": 2011, "end": 2022, });
+        wrapper.vm.sliderUpdated([1991, 2000])
+        expect(wrapper.vm.dates.selected_dates).toEqual({"start": 1991, "end": 2000, });
     });
 });

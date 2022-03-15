@@ -94,7 +94,6 @@ public class SetDescriptiveMetadataFilter implements IndexDocumentFilter {
         }
         if (idb.getDateCreated() == null) {
             idb.setDateCreated(idb.getDateAdded());
-            idb.setDateCreatedYear(extractDateYear(idb.getDateAdded()));
         }
         idb.getKeyword().add(dip.getPid().getId());
     }
@@ -356,7 +355,6 @@ public class SetDescriptiveMetadataFilter implements IndexDocumentFilter {
                 idb.setDateCreatedYear(extractDateYear(dateIssued));
             } else if (dateCaptured != null) {
                 idb.setDateCreated(dateCaptured);
-                idb.setDateCreatedYear(extractDateYear(dateCaptured));
             }
         }
     }

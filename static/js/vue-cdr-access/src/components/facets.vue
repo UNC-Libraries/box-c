@@ -15,19 +15,19 @@
                         <a v-else @click.prevent="updateAll(value)">{{ value.displayValue }} ({{ value.count }})</a>
                     </li>
                 </ul>
-                <slider v-if="facet.name === 'DATE_CREATED_YEAR'"
-                        :start-range="[dates.selected_dates.start, dates.selected_dates.end]"
-                        :range-values="{min: setRangeMinimum, max: currentYear}" @sliderUpdated="sliderUpdated"></slider>
                 <form v-if="facet.name === 'DATE_CREATED_YEAR'">
                     <input type="number" v-model="dates.selected_dates.start" name="start_date"
-                           :min="setRangeMinimum" :max="currentYear" aria-label="Start Date" placeholder="Start Date" />
+                           aria-label="Start Date" placeholder="Start Date" />
                     &ndash;
                     <input type="number" v-model="dates.selected_dates.end" name="end_date"
-                           :min="setRangeMinimum" :max="currentYear" aria-label="End Date" placeholder="End Date" />
+                           aria-label="End Date" placeholder="End Date" />
                     <br />
                     <input type="submit" value="Limit" @click.prevent="setDateFacetUrl()" class="button is-small" />
                     <p class="date_error" v-if="dates.invalid_date_range">The start date cannot be after the end date</p>
                 </form>
+                <slider v-if="facet.name === 'DATE_CREATED_YEAR'" ref="sliderInfo"
+                        :start-range="[dates.selected_dates.start, currentYear]"
+                        :range-values="{min: dates.selected_dates.start, max: currentYear}" @sliderUpdated="sliderUpdated"></slider>
             </div>
         </div>
     </div>
@@ -64,7 +64,6 @@
                     error_message: '',
                     invalid_date_range: false
                 },
-                min_year: this.minCreatedYear,
                 selected_facets: []
             }
         },
@@ -77,13 +76,9 @@
                 },
                 deep: true
             },
-            minCreatedYear: {
-                handler(year) {
-                    // Favor the date range in the url for consistencies' sake
-                    if (this.urlParams().createdYear === undefined) {
-                        this.min_year = year;
-                        this.dates.selected_dates.start = year
-                    }
+            minCreatedYear(newValue, oldValue) {
+                if (newValue < oldValue) {
+                    this.dates.selected_dates.start = newValue;
                 }
             }
         },
@@ -121,11 +116,6 @@
 
             currentYear() {
                 return CURRENT_YEAR;
-            },
-
-            setRangeMinimum() {
-                const defaultMinYer = 1500;
-                return (this.min_year < defaultMinYer) ? this.min_year : defaultMinYer;
             }
         },
 
@@ -356,12 +346,9 @@
                     if (Number.isNaN(start_year) || Number.isNaN(end_year) || start_year > end_year) {
                         return;
                     }
-
                     this.dates.selected_dates.start = start_year;
-                    this.min_year = start_year;
                     this.dates.selected_dates.end = end_year;
                 } else {
-                    // In this case selected start date set by minSearchYear watcher
                     this.dates.selected_dates.end = this.currentYear;
                 }
             },
@@ -464,6 +451,7 @@
         }
 
         form {
+            float: none;
             margin-bottom: 25px;
             margin-top: 5px;
             input[type=number] {
