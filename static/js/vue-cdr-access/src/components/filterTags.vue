@@ -107,7 +107,7 @@ export default {
             };
 
             // Return non multi-value tags
-            if (type !== 'format' && type !== 'collection') {
+            if (type !== 'format' && type !== 'collection' && 'type' !== 'publisher') {
                 return tag_info;
             }
 

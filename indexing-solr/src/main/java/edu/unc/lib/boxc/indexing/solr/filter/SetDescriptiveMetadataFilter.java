@@ -319,16 +319,14 @@ public class SetDescriptiveMetadataFilter implements IndexDocumentFilter {
     private void extractPublisher(Element mods, IndexDocumentBean idb) {
         List<Element> originInfoEls = mods.getChildren("originInfo", JDOMNamespaceUtil.MODS_V3_NS);
         List<String> publishers = new ArrayList<>();
-        if (!originInfoEls.isEmpty()) {
-            for (Element originInfoEl : originInfoEls) {
-                List<Element> publisherEls = originInfoEl.getChildren("publisher", JDOMNamespaceUtil.MODS_V3_NS);
-                if (!publisherEls.isEmpty()) {
-                    for (Element publisher : publisherEls) {
-                        publishers.add(publisher.getValue());
-                    }
-                }
+
+        for (Element originInfoEl : originInfoEls) {
+            List<Element> publisherEls = originInfoEl.getChildren("publisher", JDOMNamespaceUtil.MODS_V3_NS);
+            for (Element publisher : publisherEls) {
+                publishers.add(publisher.getTextTrim());
             }
         }
+
         if (publishers.size() > 0) {
             idb.setPublisher(publishers);
         } else {
