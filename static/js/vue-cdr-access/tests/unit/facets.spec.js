@@ -1,12 +1,12 @@
-import { shallowMount, flushPromises } from '@vue/test-utils'
+import {shallowMount, flushPromises, mount} from '@vue/test-utils'
 import { createRouter, createWebHistory } from 'vue-router';
-import facets from '@/components/facets.vue';
-import searchWrapper from '@/components/searchWrapper.vue'
+import facets from '@/components/facets';
+import searchWrapper from '@/components/searchWrapper';
 import displayWrapper from '@/components/displayWrapper';
 import {createI18n} from "vue-i18n";
 import translations from "@/translations";
 
-
+const end_year = new Date().getFullYear();
 let router, wrapper, collection, selected_facet, selected_sub_facet;
 
 describe('facets.vue', () => {
@@ -38,6 +38,7 @@ describe('facets.vue', () => {
                 plugins: [router, i18n]
             },
             props: {
+                minCreatedYear: 2011,
                 facetList: [
                     {
                         name: "PARENT_COLLECTION",
@@ -83,11 +84,15 @@ describe('facets.vue', () => {
                                 fieldName: "CONTENT_TYPE"
                             }
                         ]
+                    }, {
+                        name: "DATE_CREATED_YEAR",
+                        values: []
                     }
                 ]
             },
             data() {
                 return {
+                    min_year: 2011,
                     selected_facets: []
                 }
             }
@@ -114,12 +119,22 @@ describe('facets.vue', () => {
         expect(facets[3].find('a').text()).toBe('png (2)');
     });
 
+    it("displays 'Date Created' facet if a minimum search year is set", () => {
+        let facet_headers = wrapper.findAll('.facet-display h3');
+
+        expect(facet_headers[2].text()).toBe('Date Created');
+        expect(wrapper.find('form').isVisible()).toBe(true);
+        expect(wrapper.vm.dates.selected_dates.start).toEqual(2011);
+        expect(wrapper.vm.dates.selected_dates.end).toEqual(end_year);
+    });
+
     it("does not display facets with no returned results", () => {
         let emptyFacetWrapper = shallowMount(facets, {
             global: {
                 plugins: [router, i18n]
             },
             props: {
+                minSearchYear: 2011,
                 facetList: [
                     {
                         name: "CONTENT_TYPE",
@@ -172,6 +187,51 @@ describe('facets.vue', () => {
         expect(facet_headers.map((d) => d.text())).not.toContain('Subject');
     });
 
+    it("does not display date facets with no minimum search year set", () => {
+        let emptyFacetWrapper = shallowMount(facets, {
+            global: {
+                plugins: [router, i18n]
+            },
+            props: {
+                minCreatedYear: undefined,
+                facetList: [
+                    {
+                        name: "CONTENT_TYPE",
+                        values: [
+                            {
+                                count: 8,
+                                displayValue: "Image",
+                                limitToValue: "image",
+                                value: "^image,Image",
+                                fieldName: "CONTENT_TYPE"
+                            }
+                        ]
+                    },
+                    {
+                        name: "DATE_CREATED_YEAR",
+                        values: []
+                    }
+                ]
+            },
+            data() {
+                return {
+                    selected_facets: []
+                }
+            }
+        });
+
+        let facet_headers = emptyFacetWrapper.findAll('.facet-display h3');
+        let facet_list = emptyFacetWrapper.findAll('.facet-display li');
+
+        expect(facet_headers[0].text()).toBe('Format');
+        expect(facet_list[0].find('a').text()).toBe('Image (8)');
+
+        expect(facet_headers.length).toBe(1);
+        expect(facet_list.length).toBe(1);
+        expect(facet_headers.map((d) => d.text())).not.toContain('Date Created');
+        expect(emptyFacetWrapper.find('form').exists()).toBe(false);
+    });
+
     it("displays a listing of selected facets", async () => {
         await router.push('/search/?collection=d77fd8c9-744b-42ab-8e20-5ad9bdf8194e');
         selected_facet.trigger('click');
@@ -200,7 +260,7 @@ describe('facets.vue', () => {
         await flushPromises();
         expect(wrapper.vm.selected_facets).toContain('format=image');
 
-        wrapper.find('#clear-all').trigger('click');
+        await wrapper.find('#clear-all').trigger('click');
         await flushPromises();
         expect(wrapper.vm.selected_facets).toEqual([]);
     });
@@ -298,5 +358,36 @@ describe('facets.vue', () => {
         selected_sub_facet = facet_list[3];
         expect(selected_facet.html()).toMatch(/Image.*8.*fas.fa-times/); // facet values and checkmark
         expect(selected_sub_facet.html()).toMatch(/png.*2.*fas.fa-times/); // facet values and checkmark
+    });
+
+    it("it doesn't allow start date to be after the end date for the 'created date' picker", async () => {
+        expect(wrapper.vm.dates.invalid_date_range).toEqual(false);
+        expect(wrapper.find('.date_error').exists()).toBe(false);
+
+        let date_boxes = wrapper.findAll('form input[type=number');
+        date_boxes[0].setValue(2021);
+        date_boxes[1].setValue(2019);
+        await wrapper.find('form input[type=submit]').trigger('click');
+
+        expect(wrapper.vm.dates.invalid_date_range).toEqual(true);
+        expect(wrapper.vm.selected_facets).toEqual([]);
+        expect(wrapper.find('.date_error').exists()).toBe(true);
+    });
+
+    it("sets the 'created date' picker values from the url", async () => {
+        await router.push('/search/?createdYear=2019,2021');
+        await flushPromises();
+
+        expect(wrapper.vm.selected_facets).toEqual(['createdYear=2019,2021']);
+        expect(wrapper.vm.dates.selected_dates.start).toEqual(2019);
+        expect(wrapper.vm.dates.selected_dates.end).toEqual(2021);
+    });
+
+    // This isn't very satisfying, but something seems to have changed between vue 2 and 3
+    // regarding emitting an event
+    it("sets the date picker values if the slider is updated", () => {
+        expect(wrapper.vm.dates.selected_dates).toEqual({"start": 2011, "end": 2022, });
+        wrapper.vm.sliderUpdated([1991, 2000])
+        expect(wrapper.vm.dates.selected_dates).toEqual({"start": 1991, "end": 2000, });
     });
 });

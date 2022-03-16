@@ -139,6 +139,8 @@ public interface ContentObjectRecord {
 
     public Date getDateCreated();
 
+    public String getDateCreatedYear();
+
     public Date getDateAdded();
 
     public Date getDateUpdated();

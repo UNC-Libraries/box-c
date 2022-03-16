@@ -44,6 +44,7 @@ public enum SearchFieldKey {
     DATASTREAM("datastream", "datastream", "Datastream"),
     DATE_ADDED("dateAdded", "added", "Date Deposited"),
     DATE_CREATED("dateCreated", "created", "Date Created"),
+    DATE_CREATED_YEAR("dateCreatedYear", "createdYear", "Date Created Year"),
     DATE_UPDATED("dateUpdated", "updated", "Last Updated"),
     DEFAULT_INDEX("text", "anywhere", "Anywhere"),
     DEPARTMENT("department", "dept", "Department"),
