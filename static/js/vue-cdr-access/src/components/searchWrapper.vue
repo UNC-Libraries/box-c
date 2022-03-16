@@ -1,3 +1,6 @@
+<!--
+Top level component wrapper for search pages
+-->
 <template>
     <div>
         <div class="search-query-text">

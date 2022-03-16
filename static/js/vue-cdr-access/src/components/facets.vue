@@ -1,3 +1,6 @@
+<!--
+Facet list component, used to display all the values of facets and provide links for applying those values as filters on the current search.
+-->
 <template>
     <div id="facetList" class="contentarea">
         <a v-if="selected_facets.length > 0" id="clear-all" class="button is-link is-small" @click.prevent="clearAll()">

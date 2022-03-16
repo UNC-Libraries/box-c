@@ -1,3 +1,6 @@
+<!--
+Buttons for switching display modes in a search result between gallery and list format.
+-->
 <template>
     <div id="browse-display-type" class="display-wrapper">
         <div id="browse-btns" @click="setMode">

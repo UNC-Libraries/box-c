@@ -1,3 +1,6 @@
+<!--
+Displays the MODS descriptive record for an object inside of a modal
+-->
 <template>
     <div class="meta-modal">
         <div v-if="showModal" @close="showModal = false">

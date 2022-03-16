@@ -1,3 +1,6 @@
+<!--
+Renders search results in a gallery view display in full record pages.
+-->
 <template>
     <div class="browse-records-display">
         <div class="columns">

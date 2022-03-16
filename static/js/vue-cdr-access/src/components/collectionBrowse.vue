@@ -1,3 +1,6 @@
+<!--
+Top level component used for the collection browse page
+-->
 <template>
     <div>
         <list-display :record-list="records" :use-saved-browse-type="true"></list-display>
