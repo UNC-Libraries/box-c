@@ -1,3 +1,6 @@
+<!--
+Sort drop down menu used in search results
+-->
 <template>
     <div class="browse-sort select is-medium">
         <select @change="sortRecords" v-model="sort_order" aria-label="Sort options">

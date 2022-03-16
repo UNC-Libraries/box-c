@@ -1,3 +1,6 @@
+<!--
+Wrapper for nouislider in vue
+-->
 <template>
     <div ref="sliderEl" class="slider-styled" id="slider-round"></div>
 </template>

@@ -1,3 +1,6 @@
+<!--
+Displays tags for currently active filters in a search result, with the option to remove them
+-->
 <template>
     <div>
         <ul @click="updateQueryUrl">

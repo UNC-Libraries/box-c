@@ -1,3 +1,6 @@
+<!--
+Pagination component for search results, listing pages, previous/next buttons, counts.
+-->
 <template>
     <div class="columns pagination is-mobile">
         <div class="column is-12">
