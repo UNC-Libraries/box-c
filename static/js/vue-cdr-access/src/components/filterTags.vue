@@ -26,6 +26,7 @@ const TYPES = {
     contributorIndex: 'Contributor',
     format: 'Format',
     location: 'Location',
+    publisher: 'Publisher',
     subject: 'Subject',
     subjectIndex: 'Subject',
     titleIndex: 'Title',

@@ -55,6 +55,9 @@
   <mods:originInfo>
     <mods:dateCaptured encoding="iso8601">2006-03</mods:dateCaptured>
   </mods:originInfo>
+  <mods:originInfo>
+    <mods:publisher>Knopf</mods:publisher>
+  </mods:originInfo>
   <mods:language>
     <mods:languageTerm authority="iso639-2b" type="code">eng</mods:languageTerm>
   </mods:language>

@@ -222,6 +222,8 @@
     <field name="parentCollection" type="string" indexed="true" stored="true"/>
     <!-- PID of the admin unit in this objects ancestry -->
     <field name="parentUnit" type="string" indexed="true" stored="true"/>
+    <!-- Publisher of an object -->
+    <field name="publisher" type="string" indexed="true" stored="true" multiValued="true"/>
     <!-- Groups which have metadata viewing rights to this object, and should be able to retrieve this item in normal searches -->
     <field name="readGroup" type="string" indexed="true" stored="true" required="true" multiValued="true" default=""/>
     <!-- Other triples associated with this object that are useful but do not warrant their own field -->
@@ -303,6 +305,7 @@
   <copyField source="abstract" dest="keywordIndex"/>
   <copyField source="department" dest="keywordIndex"/>
   <copyField source="keyword" dest="keywordIndex"/>
+  <copyField source="publisher" dest="keywordIndex"/>
   <copyField source="id" dest="keywordIndex"/>
   <copyField source="identifier" dest="keywordIndex"/>
 
@@ -316,6 +319,7 @@
   <copyField source="abstract" dest="text"/>
   <copyField source="department" dest="text"/>
   <copyField source="keyword" dest="text"/>
+  <copyField source="publisher" dest="text"/>
   <copyField source="id" dest="text"/>
   <copyField source="identifier" dest="text"/>
   <copyField source="fullText" dest="text"/>

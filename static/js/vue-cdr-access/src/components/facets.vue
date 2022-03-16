@@ -40,7 +40,7 @@
 
     const UUID_REGEX = /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i;
     const CURRENT_YEAR = new Date().getFullYear();
-    const POSSIBLE_FACET_PARAMS = ['collection', 'createdYear', 'format', 'language', 'subject', 'location'];
+    const POSSIBLE_FACET_PARAMS = ['collection', 'createdYear', 'format', 'language', 'subject', 'location', 'publisher'];
 
     export default {
         name: 'facets',
@@ -77,7 +77,7 @@
                 deep: true
             },
             minCreatedYear(newValue, oldValue) {
-                if (newValue < oldValue) {
+                if (oldValue === undefined || newValue < oldValue) {
                     this.dates.selected_dates.start = newValue;
                 }
             }
@@ -150,7 +150,7 @@
             },
 
             isSelected(facet) {
-                return this.selectedFacetInfo.findIndex(uf => uf.value === facet) !== -1;
+                return this.selectedFacetInfo.findIndex(uf => uf.value.toLowerCase() === facet.toLowerCase()) !== -1;
             },
 
             /**
@@ -267,6 +267,8 @@
                         return 'Genre';
                     case 'DATE_CREATED_YEAR':
                         return 'Date Created';
+                    case 'PUBLISHER':
+                        return 'Publisher';
                     default:
                         return value;
                 }
@@ -288,6 +290,8 @@
                         return 'genre=';
                     case 'DATE_CREATED_YEAR':
                         return 'createdYear=';
+                    case 'PUBLISHER':
+                        return 'publisher=';
                     default:
                         return '';
                 }

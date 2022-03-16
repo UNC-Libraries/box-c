@@ -49,6 +49,7 @@ import static edu.unc.lib.boxc.search.api.SearchFieldKey.LOCATION;
 import static edu.unc.lib.boxc.search.api.SearchFieldKey.OTHER_TITLES;
 import static edu.unc.lib.boxc.search.api.SearchFieldKey.PARENT_COLLECTION;
 import static edu.unc.lib.boxc.search.api.SearchFieldKey.PARENT_UNIT;
+import static edu.unc.lib.boxc.search.api.SearchFieldKey.PUBLISHER;
 import static edu.unc.lib.boxc.search.api.SearchFieldKey.READ_GROUP;
 import static edu.unc.lib.boxc.search.api.SearchFieldKey.RELATIONS;
 import static edu.unc.lib.boxc.search.api.SearchFieldKey.RESOURCE_TYPE;
@@ -510,6 +511,15 @@ public class IndexDocumentBean {
     @Field
     public void setCitation(String citation) {
         fields.put(CITATION.getSolrField(), citation);
+    }
+
+    public List<String> getPublisher() {
+        return (List<String>) fields.get(PUBLISHER.getSolrField());
+    }
+
+    @Field
+    public void setPublisher(List<String> publishers) {
+        fields.put(PUBLISHER.getSolrField(), publishers);
     }
 
     public String getFullText() {
