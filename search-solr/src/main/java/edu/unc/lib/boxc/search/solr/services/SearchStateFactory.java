@@ -446,11 +446,6 @@ public class SearchStateFactory {
             searchState.getSearchFields().put(SearchFieldKey.CONTRIBUTOR_INDEX.name(), parameter);
         }
 
-        parameter = getParameter(request, searchSettings.searchFieldParam(SearchFieldKey.CONTRIBUTOR_INDEX.name()));
-        if (parameter != null && parameter.length() > 0) {
-            searchState.getSearchFields().put(SearchFieldKey.CONTRIBUTOR_INDEX.name(), parameter);
-        }
-
         parameter = getParameter(request, searchSettings.searchFieldParam(SearchFieldKey.TITLE_INDEX.name()));
         if (parameter != null && parameter.length() > 0) {
             searchState.getSearchFields().put(SearchFieldKey.TITLE_INDEX.name(), parameter);

@@ -34,6 +34,7 @@ const TYPES = {
     titleIndex: 'Title',
     genre: 'Genre'
 }
+const MULTI_VALUED_FIELDS = ['format', 'collection', 'creatorContributor'];
 
 export default {
     name: "filterTags",
@@ -108,7 +109,6 @@ export default {
             };
 
             // Return non multi-value tags
-            const MULTI_VALUED_FIELDS = ['format', 'collection', 'creatorContributor'];
             if (!MULTI_VALUED_FIELDS.includes(type)) {
                 return tag_info;
             }

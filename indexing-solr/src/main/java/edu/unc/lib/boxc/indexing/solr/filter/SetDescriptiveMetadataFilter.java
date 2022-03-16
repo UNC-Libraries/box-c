@@ -59,6 +59,7 @@ public class SetDescriptiveMetadataFilter implements IndexDocumentFilter {
 
     private final Properties languageCodeMap;
     public final static String AFFIL_URI = "http://cdr.unc.edu/vocabulary/Affiliation";
+    public final List<String> CREATOR_LIST = Arrays.asList("creator", "author", "interviewer", "interviewee");
 
     public SetDescriptiveMetadataFilter() {
         languageCodeMap = new Properties();
@@ -157,32 +158,32 @@ public class SetDescriptiveMetadataFilter implements IndexDocumentFilter {
         List<Element> names = mods.getChildren("name", JDOMNamespaceUtil.MODS_V3_NS);
         List<String> creators = new ArrayList<>();
         List<String> contributors = new ArrayList<>();
-        List<String> creatorsContributors = new ArrayList<>();
 
         for (Element nameEl : names) {
             // First see if there is a display form
             String nameValue = formatName(nameEl);
 
-            if (nameValue != null) {
-                List<Element> roles = nameEl.getChildren("role", JDOMNamespaceUtil.MODS_V3_NS);
-                // Person is automatically a contributor if no role is provided.
-                boolean isContributor = roles.size() == 0;
-                boolean isCreator = false;
-                List<String> creatorList = Arrays.asList("creator", "author", "interviewer", "interviewee");
-                if (!isContributor) {
-                    // If roles were provided, then check to see if any of them are creators.  If so, store as creator.
-                    for (Element role : roles) {
-                        List<Element> roleTerms = role.getChildren("roleTerm", JDOMNamespaceUtil.MODS_V3_NS);
-                        if (roleTerms.isEmpty()) {
-                            isContributor = true;
-                        }  else {
-                            for (Element roleTerm : roleTerms) {
-                                String roleType = roleTerm.getValue();
-                                if (creatorList.contains(roleType.toLowerCase())) {
-                                    isCreator = true;
-                                } else {
-                                    isContributor = true;
-                                }
+            if (nameValue == null) {
+                continue;
+            }
+
+            List<Element> roles = nameEl.getChildren("role", JDOMNamespaceUtil.MODS_V3_NS);
+            // Person is automatically a contributor if no role is provided.
+            boolean isContributor = roles.isEmpty();
+            boolean isCreator = false;
+            if (!isContributor) {
+                // If roles were provided, then check to see if any of them are creators.  If so, store as creator.
+                for (Element role : roles) {
+                    List<Element> roleTerms = role.getChildren("roleTerm", JDOMNamespaceUtil.MODS_V3_NS);
+                    if (roleTerms.isEmpty()) {
+                        isContributor = true;
+                    }  else {
+                        for (Element roleTerm : roleTerms) {
+                            String roleType = roleTerm.getTextTrim();
+                            if (CREATOR_LIST.contains(roleType.toLowerCase())) {
+                                isCreator = true;
+                            } else {
+                                isContributor = true;
                             }
                         }
                     }
@@ -190,12 +191,10 @@ public class SetDescriptiveMetadataFilter implements IndexDocumentFilter {
 
                 if (isCreator) {
                     creators.add(nameValue);
-                    creatorsContributors.add(nameValue);
                 }
 
                 if (isContributor) {
                     contributors.add(nameValue);
-                    creatorsContributors.add(nameValue);
                 }
             }
         }
@@ -211,9 +210,6 @@ public class SetDescriptiveMetadataFilter implements IndexDocumentFilter {
         } else {
             idb.setCreator(null);
             idb.setCreatorSort(null);
-        }
-        if (creatorsContributors.size() > 0) {
-            idb.setCreatorContributor(creatorsContributors);
         }
     }
 

@@ -175,6 +175,7 @@
     <field name="creator" type="string" indexed="true" stored="true" multiValued="true"/>
     <!-- Sort order fields -->
     <field name="creatorSort" type="string_lc" indexed="true" stored="true"/>
+    <!-- Used for faceting creators and contributors as a single facet -->
     <field name="creatorContributor" type="string" indexed="true" stored="true" multiValued="true"/>
     <!-- DS name|mimetype|extension|filesize|checksum|owner -->
     <field name="datastream" type="string" indexed="true" stored="true" multiValued="true"/>
