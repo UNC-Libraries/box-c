@@ -20,7 +20,6 @@
 
     <!-- Import controllers -->
     <context:component-scan base-package="edu.unc.lib.boxc.web.admin.controllers" />
-    <context:component-scan base-package="edu.unc.lib.boxc.web.common.controllers.structure" />
     
     <mvc:annotation-driven/>
 </beans>

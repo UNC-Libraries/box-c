@@ -73,7 +73,7 @@ public class SearchSettings extends AbstractSettings {
     // Set of field keys to use in structure result sets
     public static final List<String> RESULT_FIELDS_STRUCTURE = Arrays.asList(SearchFieldKey.ID.name(),
             SearchFieldKey.TITLE.name(), SearchFieldKey.RESOURCE_TYPE.name(), SearchFieldKey.ANCESTOR_PATH.name(),
-            SearchFieldKey.PARENT_COLLECTION.name());
+            SearchFieldKey.PARENT_COLLECTION.name(), SearchFieldKey.ROLE_GROUP.name());
 
     // Set of fields which can be used in range search criteria
     public static final Set<String> FIELDS_RANGE_SEARCHABLE = Set.of(
