@@ -33,7 +33,6 @@ import edu.unc.lib.boxc.search.api.facets.HierarchicalFacet;
 import edu.unc.lib.boxc.search.api.models.ContentObjectRecord;
 import edu.unc.lib.boxc.search.api.models.Datastream;
 import edu.unc.lib.boxc.search.api.models.ObjectPath;
-import edu.unc.lib.boxc.search.api.models.ObjectPathEntry;
 import edu.unc.lib.boxc.search.solr.facets.CutoffFacetImpl;
 import edu.unc.lib.boxc.search.solr.facets.MultivaluedHierarchicalFacet;
 import edu.unc.lib.boxc.search.solr.services.ObjectPathFactory;
@@ -52,7 +51,6 @@ public class ContentObjectSolrRecord extends IndexDocumentBean implements Conten
     protected CutoffFacetImpl ancestorPathFacet;
     protected CutoffFacetImpl path;
     protected ObjectPath objectPath;
-    protected String ancestorNames;
     protected String parentName;
     protected List<HierarchicalFacet> contentTypeFacet;
     protected List<Datastream> datastreamObjects;
@@ -226,9 +224,7 @@ public class ContentObjectSolrRecord extends IndexDocumentBean implements Conten
         StringBuffer sb = new StringBuffer();
         sb.append("id: " + getId() + "\n");
         sb.append("ancestorPath: " + getAncestorPath() + "\n");
-        sb.append("ancestorNames: " + ancestorNames + "\n");
         sb.append("resourceType: " + getResourceType() + "\n");
-        sb.append("displayOrder: " + getDisplayOrder() + "\n");
         sb.append("contentType: " + getContentType() + "\n");
         sb.append("datastream: " + getDatastream() + "\n");
         sb.append("title: " + getTitle() + "\n");
@@ -240,7 +236,6 @@ public class ContentObjectSolrRecord extends IndexDocumentBean implements Conten
         sb.append("creator: " + getCreator() + "\n");
         sb.append("contributor: " + getContributor() + "\n");
         sb.append("creatorContributor: " + getCreatorContributor() + "\n");
-        sb.append("department: " + getDepartment() + "\n");
         sb.append("dateCreated: " + getDateCreated() + "\n");
         sb.append("dateCreatedYear: " + getDateCreatedYear() + "\n");
         sb.append("dateAdded: " + getDateAdded() + "\n");
@@ -320,26 +315,6 @@ public class ContentObjectSolrRecord extends IndexDocumentBean implements Conten
 
     public static void setPathFactory(ObjectPathFactory pathFactory) {
         ContentObjectSolrRecord.pathFactory = pathFactory;
-    }
-
-    @Override
-    public String getAncestorNames() {
-        if (ancestorNames == null) {
-            if (objectPath == null && pathFactory != null) {
-                objectPath = pathFactory.getPath(this);
-            }
-
-            if (objectPath != null) {
-                StringBuilder ancestorNames = new StringBuilder();
-                for (ObjectPathEntry entry : objectPath.getEntries()) {
-                    ancestorNames.append('/').append(entry.getName().replaceAll("\\/", "\\\\/"));
-                }
-
-                this.ancestorNames = ancestorNames.toString();
-            }
-        }
-
-        return ancestorNames;
     }
 
     @Override

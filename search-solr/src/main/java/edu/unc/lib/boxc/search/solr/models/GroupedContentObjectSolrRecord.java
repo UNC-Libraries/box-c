@@ -149,11 +149,6 @@ public class GroupedContentObjectSolrRecord implements GroupedContentObjectRecor
     }
 
     @Override
-    public String getAncestorNames() {
-        return this.representative.getAncestorNames();
-    }
-
-    @Override
     public String getParentCollection() {
         return this.representative.getParentCollection();
     }
@@ -194,16 +189,6 @@ public class GroupedContentObjectSolrRecord implements GroupedContentObjectRecor
     }
 
     @Override
-    public Boolean getIsPart() {
-        return this.representative.getIsPart();
-    }
-
-    @Override
-    public List<String> getContentModel() {
-        return this.representative.getContentModel();
-    }
-
-    @Override
     public String getResourceType() {
         return this.representative.getResourceType();
     }
@@ -221,11 +206,6 @@ public class GroupedContentObjectSolrRecord implements GroupedContentObjectRecor
     @Override
     public String getCreatorSort() {
         return this.representative.getCreatorSort();
-    }
-
-    @Override
-    public Long getDisplayOrder() {
-        return this.representative.getDisplayOrder();
     }
 
     @Override
@@ -331,11 +311,6 @@ public class GroupedContentObjectSolrRecord implements GroupedContentObjectRecor
     @Override
     public List<String> getCreatorContributor() {
         return this.representative.getCreatorContributor();
-    }
-
-    @Override
-    public List<String> getDepartment() {
-        return this.representative.getDepartment();
     }
 
     @Override

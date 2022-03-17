@@ -28,27 +28,21 @@ import edu.unc.lib.boxc.model.api.rdf.Fcrepo4Repository;
  *
  */
 public enum ResourceType {
-    AdminUnit(1, Cdr.AdminUnit),
-    Collection(2, Cdr.Collection),
-    Folder(6, Cdr.Folder),
-    Work(10, Cdr.Work),
-    File(20, Cdr.FileObject),
-    Binary(30, Fcrepo4Repository.Binary),
-    DepositRecord(100, Cdr.DepositRecord),
-    ContentRoot(100, Cdr.ContentRoot);
+    AdminUnit(Cdr.AdminUnit),
+    Collection(Cdr.Collection),
+    Folder(Cdr.Folder),
+    Work(Cdr.Work),
+    File(Cdr.FileObject),
+    Binary(Fcrepo4Repository.Binary),
+    DepositRecord(Cdr.DepositRecord),
+    ContentRoot(Cdr.ContentRoot);
 
-    private int displayOrder;
     private String uri;
     private Resource resource;
 
-    ResourceType(int displayOrder, Resource resource) {
-        this.displayOrder = displayOrder;
+    ResourceType(Resource resource) {
         this.resource = resource;
         this.uri = resource.getURI();
-    }
-
-    public int getDisplayOrder() {
-        return this.displayOrder;
     }
 
     /**

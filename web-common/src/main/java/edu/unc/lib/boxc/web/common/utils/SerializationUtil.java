@@ -78,8 +78,7 @@ public class SerializationUtil {
         Map<String, Object> entryMap = new HashMap<>();
         Map<String, Object> metadataMap = metadataToMap(node.getMetadata(), groups);
         entryMap.put("entry", metadataMap);
-        if (node.getMetadata().getAncestorNames() != null
-                && (node.getMetadata().getAncestorPath() == null || node.getMetadata().getAncestorPath().size() == 0)) {
+        if (node.getMetadata().getAncestorPath() == null || node.getMetadata().getAncestorPath().size() == 0) {
             entryMap.put("isTopLevel", "true");
         }
 
@@ -158,10 +157,6 @@ public class SerializationUtil {
             result.put("type", metadata.getResourceType());
         }
 
-        if (metadata.getContentModel() != null && metadata.getContentModel().size() > 0) {
-            result.put("model", metadata.getContentModel());
-        }
-
         if (metadata.getCreator() != null) {
             result.put("creator", metadata.getCreator());
         }
@@ -180,14 +175,6 @@ public class SerializationUtil {
 
         if (metadata.getObjectPath() != null) {
             result.put("objectPath", metadata.getObjectPath().getEntries());
-        }
-
-        if (metadata.getAncestorNames() != null) {
-            result.put("ancestorNames", metadata.getAncestorNames());
-        }
-
-        if (metadata.getIsPart() != null) {
-            result.put("isPart", metadata.getIsPart());
         }
 
         if (metadata.getRollup() != null) {

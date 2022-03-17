@@ -117,7 +117,6 @@
     <field name="adminGroup" type="string" indexed="true" stored="true" required="true" multiValued="true" default=""/>
     <!-- Sortable string representation of the path to this object.  This object is included if it is a container -->
     <field name="ancestorIds" type="string" indexed="true" stored="true"/>
-    <field name="ancestorNames" type="string" indexed="true" stored="true"/>
     <!--
     Hierarchical path facet up to, but not including, this object
 
@@ -140,8 +139,6 @@
     <field name="citation" type="string" indexed="false" stored="true"/>
     <!-- Archival Collection number -->
     <field name="collectionId" type="string" indexed="true" stored="true"/>
-    <!-- List of content models assigned to this object -->
-    <field name="contentModel" type="string" indexed="true" stored="true" multiValued="true"/>
     <!-- Status information related to the content of an object, such as if it is described or not -->
     <field name="contentStatus" type="string" indexed="true" stored="true" multiValued="true"/>
     <!--
@@ -186,17 +183,10 @@
     <field name="dateCreatedYear" type="dateRange" indexed="true" stored="true"/>
     <!-- Date when the object was last updated in the repository -->
     <field name="dateUpdated" type="date" indexed="true" stored="true"/>
-    <!-- DEPRECATED -->
-    <field name="department" type="string" indexed="true" stored="true" multiValued="true"/>
-    <field name="department_lc" type="string_lc" indexed="true" stored="false" multiValued="true"/>
-    <!-- Order for this object within its part container, if explicit ordering is provided -->
-    <field name="displayOrder" type="long" indexed="true" stored="true"/>
     <!-- Filesize of the default web data for this object, used for sorting -->
     <field name="filesizeSort" type="long" indexed="true" stored="true"/>
     <!-- Sum of all datastreams filesizes for this object -->
     <field name="filesizeTotal" type="long" indexed="true" stored="true"/>
-    <!-- DEPRECATED: Finding aid link. Retaining this field until a full reindex happens due to BXC-3088 -->
-    <field name="findingAidLink" type="string" indexed="false" stored="true" multiValued="true"/>
     <!-- Full text field, tokenized but not indexed so that it can be used for highlighting purposes -->
     <field name="fullText" type="text_tl" indexed="false" stored="true"/>
     <!-- Descriptive genre facet -->
@@ -207,12 +197,8 @@
     <field name="identifier" type="string" indexed="true" stored="true" multiValued="true"/>
     <!-- the identifier used for sorting (to be used if titles or labels don't sort as required) -->
     <field name="identifierSort" type="string_lc" indexed="true" stored="true"/>
-    <!-- DEPRECATED Indicates that item is part of an aggregate work -->
-    <field name="isPart"  type="boolean" indexed="true" stored="true" required="false"/>
     <!-- Other keywords, for use in copy indexes -->
     <field name="keyword" type="string" indexed="false" stored="true" multiValued="true"/>
-    <!-- DEPRECATED -->
-    <field name="label" type="string" indexed="true" stored="true"/>
     <!-- Languages presented in the resource, in human readable form-->
     <field name="language" type="string" indexed="true" stored="true" multiValued="true"/>
     <!-- Timestamp when this record was fully indexed -->
@@ -238,12 +224,8 @@
     <field name="roleGroup" type="string" indexed="true" stored="true" required="true" multiValued="true" default=""/>
     <!-- Rollup identifier, generally the PID for the current object, or the PID of the parent for this object -->
     <field name="rollup" type="string" indexed="true" stored="true" required="true"/>
-    <!-- DEPRECATED Facet for scoping this object to a particular set of views -->
-    <field name="scope" type="string" indexed="true" stored="true" multiValued="true"/>
     <!-- Stores publication status and other statuses that affect viewing of this object outside of group ACLs -->
     <field name="status" type="string" indexed="true" stored="true" multiValued="true"/>
-    <!-- DEPRECATED -->
-    <field name="statusTags" type="string" indexed="true" stored="true" multiValued="true"/>
     <field name="subject" type="string" indexed="true" stored="true" multiValued="true"/>
     <!-- Timestamp when this record was updated -->
     <field name="timestamp" type="date" indexed="true" stored="true" default="NOW" multiValued="false"/>
@@ -305,7 +287,6 @@
   <copyField source="contributor" dest="keywordIndex"/>
   <copyField source="subject" dest="keywordIndex"/>
   <copyField source="abstract" dest="keywordIndex"/>
-  <copyField source="department" dest="keywordIndex"/>
   <copyField source="keyword" dest="keywordIndex"/>
   <copyField source="publisher" dest="keywordIndex"/>
   <copyField source="id" dest="keywordIndex"/>
@@ -319,13 +300,11 @@
   <copyField source="contributor" dest="text"/>
   <copyField source="subject" dest="text"/>
   <copyField source="abstract" dest="text"/>
-  <copyField source="department" dest="text"/>
   <copyField source="keyword" dest="text"/>
   <copyField source="publisher" dest="text"/>
   <copyField source="id" dest="text"/>
   <copyField source="identifier" dest="text"/>
   <copyField source="fullText" dest="text"/>
 
-  <copyField source="department" dest="department_lc"/>
   <copyField source="title" dest="title_lc"/>
 </schema>

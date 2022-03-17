@@ -45,7 +45,6 @@ public class SetObjectTypeFilter implements IndexDocumentFilter {
         }
 
         idb.setResourceType(resourceType.name());
-        idb.setResourceTypeSort(resourceType.getDisplayOrder());
     }
 
 }

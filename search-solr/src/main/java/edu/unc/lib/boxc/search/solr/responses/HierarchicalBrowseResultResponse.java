@@ -227,8 +227,7 @@ public class HierarchicalBrowseResultResponse extends SearchResultResponse {
         }
 
         public Boolean getIsTopLevel() {
-            if (metadata.getAncestorNames() != null && (metadata.getAncestorPath() == null
-                    || metadata.getAncestorPath().size() == 0)) {
+            if (metadata.getAncestorPath() == null || metadata.getAncestorPath().size() == 0) {
                 return true;
             }
             return null;

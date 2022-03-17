@@ -80,10 +80,6 @@ public class AdvancedSearchFormController extends AbstractErrorHandlingSearchCon
 
             SearchResultResponse collectionResultResponse = queryLayer.getCollectionList(accessGroups);
             model.addAttribute("collectionList", collectionResultResponse.getResultList());
-
-            SearchResultResponse departmentFieldObject = queryLayer.getDepartmentList(accessGroups, null);
-            model.addAttribute("departmentList", departmentFieldObject.getFacetFields().get(0));
-
             model.addAttribute("pageSubtitle", "Advanced Search");
 
             model.addAttribute("formatMap", dropdownVals);

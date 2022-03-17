@@ -57,8 +57,6 @@ public interface ContentObjectRecord {
 
     public List<String> getAncestorPath();
 
-    public String getAncestorNames();
-
     public String getAncestorIds();
 
     public String getParentCollectionName();
@@ -79,17 +77,11 @@ public interface ContentObjectRecord {
 
     public List<String> getRelation(String relationName);
 
-    public Boolean getIsPart();
-
-    public List<String> getContentModel();
-
     public String getResourceType();
 
     public Integer getResourceTypeSort();
 
     public String getCreatorSort();
-
-    public Long getDisplayOrder();
 
     public List<String> getContentType();
 
@@ -136,8 +128,6 @@ public interface ContentObjectRecord {
     public List<String> getCreatorContributor();
 
     public List<String> getPublisher();
-
-    public List<String> getDepartment();
 
     public Date getDateCreated();
 

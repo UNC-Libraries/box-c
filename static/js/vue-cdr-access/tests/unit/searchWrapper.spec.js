@@ -8,7 +8,6 @@ import translations from "@/translations";
 
 const response = {
     "container": {
-        "ancestorNames": "/Content Collections Root",
         "added": "2019-07-29T17:20:57.813Z",
         "id": "collections",
         "title": "Content Collections Root",
@@ -44,7 +43,6 @@ const response = {
                 "thumbnail_large|image/png|0367e115-fc95-4f61-8539-e9a77cf00d8a.png|png|3602||0367e115-fc95-4f61-8539-e9a77cf00d8a"
             ],
             "_version_": 1649012742492782600,
-            "ancestorNames": "/Content Collections Root/DeansAdminUnit/deansCollection/DeansStuff/sportz/dean",
             "id": "64e6883d-3667-4e5b-893d-c6e851ac738a",
             "updated": "2019-08-21T15:11:02.034Z",
             "timestamp": 1572621099939
@@ -66,7 +64,6 @@ const response = {
 };
 const no_results = {
     "container": {
-        "ancestorNames": "/Content Collections Root",
         "added": "2019-07-29T17:20:57.813Z",
         "id": "collections",
         "title": "Content Collections Root",
@@ -89,7 +86,6 @@ const no_results = {
 };
 const facets_no_results = {
     "container": {
-        "ancestorNames": "/Content Collections Root",
         "added": "2019-07-29T17:20:57.813Z",
         "id": "collections",
         "title": "Content Collections Root",

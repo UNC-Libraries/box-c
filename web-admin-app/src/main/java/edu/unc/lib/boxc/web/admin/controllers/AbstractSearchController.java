@@ -41,12 +41,11 @@ public class AbstractSearchController extends AbstractSolrSearchController {
     protected static List<String> resultsFieldList = Arrays.asList(SearchFieldKey.ID.name(),
             SearchFieldKey.TITLE.name(), SearchFieldKey.CREATOR.name(), SearchFieldKey.DATASTREAM.name(),
             SearchFieldKey.DATE_ADDED.name(), SearchFieldKey.DATE_UPDATED.name(),
-            SearchFieldKey.RESOURCE_TYPE.name(), SearchFieldKey.CONTENT_MODEL.name(),
+            SearchFieldKey.RESOURCE_TYPE.name(),
             SearchFieldKey.STATUS.name(), SearchFieldKey.VERSION.name(),SearchFieldKey.ROLE_GROUP.name(),
             SearchFieldKey.RELATIONS.name(), SearchFieldKey.CONTENT_TYPE.name(),
             SearchFieldKey.CONTENT_STATUS.name(), SearchFieldKey.LABEL.name(), SearchFieldKey.TIMESTAMP.name(),
-            SearchFieldKey.ANCESTOR_PATH.name(),
-            SearchFieldKey.IS_PART.name(), SearchFieldKey.ROLLUP_ID.name());
+            SearchFieldKey.ANCESTOR_PATH.name(), SearchFieldKey.ROLLUP_ID.name());
 
     @Override
     protected SearchResultResponse getSearchResults(SearchRequest searchRequest) {

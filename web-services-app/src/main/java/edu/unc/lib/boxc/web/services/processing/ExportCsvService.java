@@ -97,9 +97,9 @@ public class ExportCsvService {
             SearchFieldKey.TITLE.name(),
             SearchFieldKey.RESOURCE_TYPE.name(), SearchFieldKey.ANCESTOR_IDS.name(),
             SearchFieldKey.STATUS.name(), SearchFieldKey.DATASTREAM.name(),
-            SearchFieldKey.ANCESTOR_PATH.name(), SearchFieldKey.CONTENT_MODEL.name(),
+            SearchFieldKey.ANCESTOR_PATH.name(),
             SearchFieldKey.DATE_ADDED.name(), SearchFieldKey.DATE_UPDATED.name(),
-            SearchFieldKey.LABEL.name(), SearchFieldKey.CONTENT_STATUS.name(),
+            SearchFieldKey.CONTENT_STATUS.name(),
             SearchFieldKey.ROLE_GROUP.name());
 
     private ChildrenCountService childrenCountService;
@@ -218,7 +218,6 @@ public class ExportCsvService {
         printer.print(object.getResourceType());
         printer.print(object.getId());
         printer.print(object.getTitle());
-        printer.print(object.getAncestorNames());
 
         String label = object.getLabel();
 
