@@ -27,6 +27,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
@@ -218,6 +219,9 @@ public class SetDescriptiveMetadataFilterTest {
         assertTrue(idb.getCreator().contains("Repo2, Boxy"));
         assertTrue(idb.getCreator().contains("Gilmer, Jeremy Francis, 1918-2020"));
         assertTrue(idb.getCreator().contains("Boxy, Berry Jean, Jr., 1991-"));
+        assertTrue(idb.getCreator().contains("Given"));
+        assertFalse(idb.getCreator().contains(", Given"));
+        assertFalse(idb.getCreator().contains(""));
         assertEquals("Repo, Boxy", idb.getCreatorSort());
         assertTrue(idb.getContributor().contains("Boxy, Alice, III, 1994-"));
         assertTrue(idb.getContributor().contains("Boxy, Assistant"));

@@ -18,6 +18,20 @@
         </mods:role>
     </mods:name>
     <mods:name type="personal">
+        <mods:affiliation>Music</mods:affiliation>
+        <mods:namePart>Test, author</mods:namePart>
+        <mods:role>
+            <mods:roleTerm authority="marcrelator" type="text">Creator</mods:roleTerm>
+        </mods:role>
+    </mods:name>
+    <mods:name>
+        <mods:namePart type="given">Given</mods:namePart>
+        <mods:role>
+            <mods:roleTerm>Creator</mods:roleTerm>
+        </mods:role>
+        <mods:namePart type="family" />
+    </mods:name>
+    <mods:name type="personal">
         <mods:namePart type="given">Boxy</mods:namePart>
     </mods:name>
     <mods:name>

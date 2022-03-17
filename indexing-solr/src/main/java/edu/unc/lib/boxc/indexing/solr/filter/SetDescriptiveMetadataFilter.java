@@ -59,7 +59,7 @@ public class SetDescriptiveMetadataFilter implements IndexDocumentFilter {
 
     private final Properties languageCodeMap;
     public final static String AFFIL_URI = "http://cdr.unc.edu/vocabulary/Affiliation";
-    public final List<String> CREATOR_LIST = Arrays.asList("creator", "author", "interviewer", "interviewee");
+    private final List<String> CREATOR_LIST = Arrays.asList("creator", "author", "interviewer", "interviewee");
 
     public SetDescriptiveMetadataFilter() {
         languageCodeMap = new Properties();
@@ -164,7 +164,7 @@ public class SetDescriptiveMetadataFilter implements IndexDocumentFilter {
             // First see if there is a display form
             String nameValue = formatName(nameEl);
 
-            if (nameValue == null) {
+            if (StringUtils.isBlank(nameValue)) {
                 continue;
             }
 
@@ -457,7 +457,7 @@ public class SetDescriptiveMetadataFilter implements IndexDocumentFilter {
                 nameValue = nameParts.get(0).getValue();
             } else if (nameParts.size() > 1) {
                 Element givenPart = JDOMQueryUtil.getElementByAttribute(nameParts, "type", null);
-                if (givenPart == null) {
+                if (givenPart == null || StringUtils.isBlank(givenPart.getValue())) {
                     givenPart = JDOMQueryUtil.getElementByAttribute(nameParts, "type", "given");
                 }
                 // If there were multiple non-generic name parts, then try to piece them together
@@ -465,19 +465,19 @@ public class SetDescriptiveMetadataFilter implements IndexDocumentFilter {
                 Element termsOfAddressPart = JDOMQueryUtil.getElementByAttribute(nameParts, "type", "termsOfAddress");
                 Element datePart = JDOMQueryUtil.getElementByAttribute(nameParts, "type", "date");
                 StringBuilder nameBuilder = new StringBuilder();
-                if (familyPart != null) {
+                if (hasNodeValue(familyPart)) {
                     nameBuilder.append(familyPart.getValue());
-                    if (givenPart != null) {
+                    if (hasNodeValue(givenPart)) {
                         nameBuilder.append(',').append(' ');
                     }
                 }
-                if (givenPart != null) {
+                if (hasNodeValue(givenPart)) {
                     nameBuilder.append(givenPart.getValue());
                 }
-                if (termsOfAddressPart != null) {
+                if (hasNodeValue(termsOfAddressPart)) {
                     nameBuilder.append(", ").append(termsOfAddressPart.getValue());
                 }
-                if (datePart != null) {
+                if (hasNodeValue(datePart)) {
                     nameBuilder.append(", ").append(datePart.getValue());
                 }
                 if (nameBuilder.length() > 0) {
@@ -495,5 +495,9 @@ public class SetDescriptiveMetadataFilter implements IndexDocumentFilter {
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(date);
         return Integer.toString(calendar.get(Calendar.YEAR));
+    }
+
+    private boolean hasNodeValue(Element node) {
+        return node != null && !StringUtils.isBlank(node.getValue());
     }
 }

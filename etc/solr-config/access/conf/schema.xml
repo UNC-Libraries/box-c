@@ -169,7 +169,7 @@
       fq=contentType:/audio|mp3,*&f.contentType.facet.prefix=/audio/mp3|
     -->
     <field name="contentType" type="string" indexed="true" stored="true" multiValued="true"/>
-    <!-- All names, not searchable, for use in copy indexes -->
+    <!-- All names, searchable, and used in copy indexes -->
     <field name="contributor" type="string" indexed="true" stored="true" multiValued="true"/>
     <!-- <field name="roleName" type="string" indexed="true" stored="true" multiValued="true"/> -->
     <field name="creator" type="string" indexed="true" stored="true" multiValued="true"/>
