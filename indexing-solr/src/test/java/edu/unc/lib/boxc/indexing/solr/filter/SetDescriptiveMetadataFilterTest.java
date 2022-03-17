@@ -217,11 +217,11 @@ public class SetDescriptiveMetadataFilterTest {
 
         assertTrue(idb.getCreator().contains("Repo, Boxy"));
         assertTrue(idb.getCreator().contains("Repo2, Boxy"));
+        assertTrue(idb.getCreator().contains("Test, author"));
         assertTrue(idb.getCreator().contains("Gilmer, Jeremy Francis, 1918-2020"));
         assertTrue(idb.getCreator().contains("Boxy, Berry Jean, Jr., 1991-"));
         assertTrue(idb.getCreator().contains("Given"));
-        assertFalse(idb.getCreator().contains(", Given"));
-        assertFalse(idb.getCreator().contains(""));
+        assertEquals(6, idb.getCreator().size());
         assertEquals("Repo, Boxy", idb.getCreatorSort());
         assertTrue(idb.getContributor().contains("Boxy, Alice, III, 1994-"));
         assertTrue(idb.getContributor().contains("Boxy, Assistant"));

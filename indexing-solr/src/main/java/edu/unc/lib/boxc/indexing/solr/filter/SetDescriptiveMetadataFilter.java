@@ -454,10 +454,10 @@ public class SetDescriptiveMetadataFilter implements IndexDocumentFilter {
             // If there was no displayForm, then try to get the name parts.
             List<Element> nameParts = nameEl.getChildren("namePart", JDOMNamespaceUtil.MODS_V3_NS);
             if (nameParts.size() == 1) {
-                nameValue = nameParts.get(0).getValue();
+                nameValue = nameParts.get(0).getTextTrim();
             } else if (nameParts.size() > 1) {
                 Element givenPart = JDOMQueryUtil.getElementByAttribute(nameParts, "type", null);
-                if (givenPart == null || StringUtils.isBlank(givenPart.getValue())) {
+                if (!hasNodeValue(givenPart)) {
                     givenPart = JDOMQueryUtil.getElementByAttribute(nameParts, "type", "given");
                 }
                 // If there were multiple non-generic name parts, then try to piece them together
@@ -466,25 +466,25 @@ public class SetDescriptiveMetadataFilter implements IndexDocumentFilter {
                 Element datePart = JDOMQueryUtil.getElementByAttribute(nameParts, "type", "date");
                 StringBuilder nameBuilder = new StringBuilder();
                 if (hasNodeValue(familyPart)) {
-                    nameBuilder.append(familyPart.getValue());
+                    nameBuilder.append(familyPart.getTextTrim());
                     if (hasNodeValue(givenPart)) {
                         nameBuilder.append(',').append(' ');
                     }
                 }
                 if (hasNodeValue(givenPart)) {
-                    nameBuilder.append(givenPart.getValue());
+                    nameBuilder.append(givenPart.getTextTrim());
                 }
                 if (hasNodeValue(termsOfAddressPart)) {
-                    nameBuilder.append(", ").append(termsOfAddressPart.getValue());
+                    nameBuilder.append(", ").append(termsOfAddressPart.getTextTrim());
                 }
                 if (hasNodeValue(datePart)) {
-                    nameBuilder.append(", ").append(datePart.getValue());
+                    nameBuilder.append(", ").append(datePart.getTextTrim());
                 }
                 if (nameBuilder.length() > 0) {
                     nameValue = nameBuilder.toString();
                 } else {
                     // Nonsensical name, just use the first available value.
-                    nameValue = nameParts.get(0).getValue();
+                    nameValue = nameParts.get(0).getTextTrim();
                 }
             }
         }
@@ -498,6 +498,6 @@ public class SetDescriptiveMetadataFilter implements IndexDocumentFilter {
     }
 
     private boolean hasNodeValue(Element node) {
-        return node != null && !StringUtils.isBlank(node.getValue());
+        return node != null && !StringUtils.isBlank(node.getTextTrim());
     }
 }

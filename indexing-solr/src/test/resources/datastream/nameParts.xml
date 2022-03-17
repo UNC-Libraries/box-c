@@ -17,7 +17,7 @@
             <mods:roleTerm authority="marcrelator" type="text">Author</mods:roleTerm>
         </mods:role>
     </mods:name>
-    <mods:name type="personal">
+    <mods:name>
         <mods:affiliation>Music</mods:affiliation>
         <mods:namePart>Test, author</mods:namePart>
         <mods:role>
