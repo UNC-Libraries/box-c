@@ -422,7 +422,9 @@ Facet list component, used to display all the values of facets and provide links
         }
 
         .facet-header {
-            padding-top: 18px;
+            color: black;
+            font-size: 20px;
+            padding: 18px 0 20px 0;
         }
 
         .facet-display {

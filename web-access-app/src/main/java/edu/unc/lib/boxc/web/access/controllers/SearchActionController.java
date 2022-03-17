@@ -75,19 +75,17 @@ public class SearchActionController extends AbstractErrorHandlingSearchControlle
 
     @RequestMapping(value = "/searchJson", method = RequestMethod.GET, produces = "application/json")
     public @ResponseBody
-    Map<String, Object> searchJson(@RequestParam("getFacets") Optional<String> getFacets, HttpServletRequest request,
+    Map<String, Object> searchJson(@RequestParam("getFacets") Optional<Boolean> getFacets, HttpServletRequest request,
                                    HttpServletResponse response) {
-        String facets = getFacets.orElse(null);
-        return searchJsonRequest(request, facets, null);
+        return searchJsonRequest(request, getFacets.orElse(false), null);
     }
 
     @RequestMapping(value = "/searchJson/{pid}", method = RequestMethod.GET, produces = "application/json")
     public @ResponseBody
     Map<String, Object> searchJson(@PathVariable("pid") String pid,
-                                   @RequestParam("getFacets") Optional<String> getFacets,
+                                   @RequestParam("getFacets") Optional<Boolean> getFacets,
                                    HttpServletRequest request, HttpServletResponse response) {
-        String facets = getFacets.orElse(null);
-        return searchJsonRequest(request, facets, pid);
+        return searchJsonRequest(request, getFacets.orElse(false), pid);
     }
 
     @RequestMapping(value = "/list/{pid}", method = RequestMethod.GET)
@@ -97,14 +95,19 @@ public class SearchActionController extends AbstractErrorHandlingSearchControlle
 
     @RequestMapping(value = "/listJson/{pid}", method = RequestMethod.GET, produces = "application/json")
     public @ResponseBody
-    Map<String, Object> listJson(@PathVariable("pid") String pid, HttpServletRequest request,
-                                 HttpServletResponse response) {
+    Map<String, Object> listJson(@PathVariable("pid") String pid,
+                                 @RequestParam("getFacets") Optional<Boolean> getFacets,
+                                 HttpServletRequest request, HttpServletResponse response) {
         SearchRequest searchRequest = generateSearchRequest(request);
         searchRequest.setRootPid(PIDs.get(pid));
         searchRequest.setApplyCutoffs(true);
         setDefaultRollup(searchRequest, true);
         SearchResultResponse resultResponse = queryLayer.performSearch(searchRequest);
         populateThumbnailUrls(searchRequest, resultResponse);
+
+        if (getFacets.orElse(false)) {
+            retrieveFacets(searchRequest, resultResponse);
+        }
         return getResults(resultResponse, "list", request);
     }
 
@@ -130,7 +133,7 @@ public class SearchActionController extends AbstractErrorHandlingSearchControlle
         return getResults(resultResponse, "search", request);
     }
 
-    private Map<String, Object> searchJsonRequest(HttpServletRequest request, String getFacets, String pid) {
+    private Map<String, Object> searchJsonRequest(HttpServletRequest request, Boolean getFacets, String pid) {
         SearchRequest searchRequest = generateSearchRequest(request);
         if (pid != null) {
             searchRequest.setRootPid(PIDs.get(pid));
@@ -141,6 +144,13 @@ public class SearchActionController extends AbstractErrorHandlingSearchControlle
         SearchResultResponse resultResponse = queryLayer.performSearch(searchRequest);
         populateThumbnailUrls(searchRequest, resultResponse);
 
+        if (getFacets) {
+            retrieveFacets(searchRequest, resultResponse);
+        }
+        return getResults(resultResponse, "search", request);
+    }
+
+    private void retrieveFacets(SearchRequest searchRequest, SearchResultResponse resultResponse) {
         SearchState searchState = searchRequest.getSearchState();
         AccessGroupSet principals = searchRequest.getAccessGroups();
         SearchRequest facetRequest = new SearchRequest(searchState, principals, true);
@@ -151,18 +161,15 @@ public class SearchActionController extends AbstractErrorHandlingSearchControlle
             facetRequest.setSearchState(facetState);
         }
 
-        // Retrieve the facet result set
-        if (Boolean.parseBoolean(getFacets)) {
-            SearchResultResponse resultResponseFacets = multiSelectFacetListService.getFacetListResult(facetRequest);
-            parentCollectionFacetTitleService.populateTitles(resultResponseFacets.getFacetFields());
-            resultResponse.setFacetFields(resultResponseFacets.getFacetFields());
+        SearchResultResponse resultResponseFacets = multiSelectFacetListService.getFacetListResult(facetRequest);
+        parentCollectionFacetTitleService.populateTitles(resultResponseFacets.getFacetFields());
+        resultResponse.setFacetFields(resultResponseFacets.getFacetFields());
 
-            // Get minimum year for date created "facet" search
+        // Get minimum year for date created "facet" search
+        if (facetRequest.getSearchState().getFacetsToRetrieve().contains(SearchFieldKey.DATE_CREATED_YEAR)) {
             String minSearchYear = multiSelectFacetListService.getMinimumDateCreatedYear(searchState, searchRequest);
             resultResponse.setMinimumDateCreatedYear(minSearchYear);
         }
-
-        return getResults(resultResponse, "search", request);
     }
 
     private void setDefaultRollup(SearchRequest searchRequest, boolean isListing) {
