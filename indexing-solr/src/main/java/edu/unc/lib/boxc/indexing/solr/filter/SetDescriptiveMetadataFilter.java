@@ -158,6 +158,7 @@ public class SetDescriptiveMetadataFilter implements IndexDocumentFilter {
         List<Element> names = mods.getChildren("name", JDOMNamespaceUtil.MODS_V3_NS);
         List<String> creators = new ArrayList<>();
         List<String> contributors = new ArrayList<>();
+        List<String> creatorsContributors = new ArrayList<>();
 
         for (Element nameEl : names) {
             // First see if there is a display form
@@ -188,14 +189,16 @@ public class SetDescriptiveMetadataFilter implements IndexDocumentFilter {
                         }
                     }
                 }
+            }
 
-                if (isCreator) {
-                    creators.add(nameValue);
-                }
+            if (isCreator) {
+                creators.add(nameValue);
+                creatorsContributors.add(nameValue);
+            }
 
-                if (isContributor) {
-                    contributors.add(nameValue);
-                }
+            if (isContributor) {
+                contributors.add(nameValue);
+                creatorsContributors.add(nameValue);
             }
         }
 
@@ -210,6 +213,11 @@ public class SetDescriptiveMetadataFilter implements IndexDocumentFilter {
         } else {
             idb.setCreator(null);
             idb.setCreatorSort(null);
+        }
+        if (creatorsContributors.size() > 0) {
+            idb.setCreatorContributor(creatorsContributors);
+        } else {
+            idb.setCreatorContributor(null);
         }
     }
 

@@ -286,11 +286,6 @@
   <!-- The unique id -->
   <uniqueKey>id</uniqueKey>
 
-
-  <!-- Create composite field -->
-  <copyField source="contributor" dest="creatorContributor"/>
-  <copyField source="creator" dest="creatorContributor"/>
-
   <!-- Copy to index fields.  Duplicate copies are for boosting -->
   <copyField source="title" dest="titleIndex"/>
   <copyField source="title" dest="titleIndex"/>
