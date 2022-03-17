@@ -306,6 +306,7 @@
   <copyField source="subject" dest="keywordIndex"/>
   <copyField source="abstract" dest="keywordIndex"/>
   <copyField source="department" dest="keywordIndex"/>
+  <copyField source="language" dest="keywordIndex"/>
   <copyField source="keyword" dest="keywordIndex"/>
   <copyField source="publisher" dest="keywordIndex"/>
   <copyField source="id" dest="keywordIndex"/>
@@ -320,6 +321,7 @@
   <copyField source="subject" dest="text"/>
   <copyField source="abstract" dest="text"/>
   <copyField source="department" dest="text"/>
+  <copyField source="language" dest="text"/>
   <copyField source="keyword" dest="text"/>
   <copyField source="publisher" dest="text"/>
   <copyField source="id" dest="text"/>

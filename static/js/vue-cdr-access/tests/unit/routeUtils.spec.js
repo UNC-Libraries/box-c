@@ -54,7 +54,7 @@ describe('routeUtils',  () => {
             'a.setStartRow': 0,
             rows: 20,
             sort: 'default,normal',
-            facetSelect: 'collection,format,location,subject,createdYear,publisher,creatorContributor'
+            facetSelect: 'collection,format,location,subject,language,createdYear,publisher,creatorContributor'
         };
 
         let results = wrapper.vm.urlParams({}, true);
@@ -90,7 +90,7 @@ describe('routeUtils',  () => {
             'a.setStartRow': 0,
             rows: 20,
             sort: 'default,normal',
-            facetSelect: 'collection,format,location,subject,createdYear,publisher,creatorContributor'
+            facetSelect: 'collection,format,location,subject,language,createdYear,publisher,creatorContributor'
         };
 
         let results = wrapper.vm.urlParams({'a.setStartRow': 20}, true);
