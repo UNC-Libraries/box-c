@@ -49,6 +49,21 @@
         </mods:role>
     </mods:name>
     <mods:name>
+        <mods:namePart/>
+        <mods:namePart type="termsOfAddress">Jr.</mods:namePart>
+        <mods:namePart type="date">1991-</mods:namePart>
+        <mods:role>
+            <mods:roleTerm type="text" authority="marcrelator">Interviewer</mods:roleTerm>
+        </mods:role>
+    </mods:name>
+    <mods:name>
+        <mods:namePart/>
+        <mods:namePart type="date">2007-</mods:namePart>
+        <mods:role>
+            <mods:roleTerm type="text" authority="marcrelator">Interviewer</mods:roleTerm>
+        </mods:role>
+    </mods:name>
+    <mods:name>
         <mods:namePart type="given">Alice</mods:namePart>
         <mods:namePart type="family">Boxy</mods:namePart>
         <mods:namePart type="date">1994-</mods:namePart>

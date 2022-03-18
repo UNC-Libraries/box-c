@@ -474,10 +474,10 @@ public class SetDescriptiveMetadataFilter implements IndexDocumentFilter {
                 if (hasNodeValue(givenPart)) {
                     nameBuilder.append(givenPart.getTextTrim());
                 }
-                if (hasNodeValue(termsOfAddressPart)) {
+                if (hasNodeValue(termsOfAddressPart) && hasValidName(familyPart, givenPart)) {
                     nameBuilder.append(", ").append(termsOfAddressPart.getTextTrim());
                 }
-                if (hasNodeValue(datePart)) {
+                if (hasNodeValue(datePart) && hasValidName(familyPart, givenPart)) {
                     nameBuilder.append(", ").append(datePart.getTextTrim());
                 }
                 if (nameBuilder.length() > 0) {
@@ -499,5 +499,9 @@ public class SetDescriptiveMetadataFilter implements IndexDocumentFilter {
 
     private boolean hasNodeValue(Element node) {
         return node != null && !StringUtils.isBlank(node.getTextTrim());
+    }
+
+    private boolean hasValidName(Element familyName, Element givenName) {
+        return hasNodeValue(familyName) || hasNodeValue(givenName);
     }
 }
