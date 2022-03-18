@@ -454,7 +454,10 @@ public class SetDescriptiveMetadataFilter implements IndexDocumentFilter {
             // If there was no displayForm, then try to get the name parts.
             List<Element> nameParts = nameEl.getChildren("namePart", JDOMNamespaceUtil.MODS_V3_NS);
             if (nameParts.size() == 1) {
-                nameValue = nameParts.get(0).getTextTrim();
+                String nameTypeValue = nameParts.get(0).getAttributeValue("type");
+                if (nameTypeValue == null || (nameTypeValue.equals("family") || nameTypeValue.equals("given"))) {
+                    nameValue = nameParts.get(0).getTextTrim();
+                }
             } else if (nameParts.size() > 1) {
                 Element givenPart = JDOMQueryUtil.getElementByAttribute(nameParts, "type", null);
                 if (!hasNodeValue(givenPart)) {
@@ -465,21 +468,28 @@ public class SetDescriptiveMetadataFilter implements IndexDocumentFilter {
                 Element termsOfAddressPart = JDOMQueryUtil.getElementByAttribute(nameParts, "type", "termsOfAddress");
                 Element datePart = JDOMQueryUtil.getElementByAttribute(nameParts, "type", "date");
                 StringBuilder nameBuilder = new StringBuilder();
-                if (hasNodeValue(familyPart)) {
+
+                boolean hasFamilyPart = hasNodeValue(familyPart);
+                boolean hasGivenPart = hasNodeValue(givenPart);
+                if (hasFamilyPart) {
                     nameBuilder.append(familyPart.getTextTrim());
                     if (hasNodeValue(givenPart)) {
                         nameBuilder.append(',').append(' ');
                     }
                 }
-                if (hasNodeValue(givenPart)) {
+                if (hasGivenPart) {
                     nameBuilder.append(givenPart.getTextTrim());
                 }
-                if (hasNodeValue(termsOfAddressPart) && hasValidName(familyPart, givenPart)) {
-                    nameBuilder.append(", ").append(termsOfAddressPart.getTextTrim());
+
+                if (hasFamilyPart || hasGivenPart) {
+                    if (hasNodeValue(termsOfAddressPart)) {
+                        nameBuilder.append(", ").append(termsOfAddressPart.getTextTrim());
+                    }
+                    if (hasNodeValue(datePart)) {
+                        nameBuilder.append(", ").append(datePart.getTextTrim());
+                    }
                 }
-                if (hasNodeValue(datePart) && hasValidName(familyPart, givenPart)) {
-                    nameBuilder.append(", ").append(datePart.getTextTrim());
-                }
+
                 if (nameBuilder.length() > 0) {
                     nameValue = nameBuilder.toString();
                 }
@@ -496,9 +506,5 @@ public class SetDescriptiveMetadataFilter implements IndexDocumentFilter {
 
     private boolean hasNodeValue(Element node) {
         return node != null && !StringUtils.isBlank(node.getTextTrim());
-    }
-
-    private boolean hasValidName(Element familyName, Element givenName) {
-        return hasNodeValue(familyName) || hasNodeValue(givenName);
     }
 }
