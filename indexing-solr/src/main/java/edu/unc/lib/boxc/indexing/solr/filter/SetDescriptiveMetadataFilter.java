@@ -23,6 +23,7 @@ import static org.apache.commons.lang3.StringUtils.isBlank;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -58,6 +59,7 @@ public class SetDescriptiveMetadataFilter implements IndexDocumentFilter {
 
     private final Properties languageCodeMap;
     public final static String AFFIL_URI = "http://cdr.unc.edu/vocabulary/Affiliation";
+    private final List<String> CREATOR_LIST = Arrays.asList("creator", "author", "interviewer", "interviewee");
 
     public SetDescriptiveMetadataFilter() {
         languageCodeMap = new Properties();
@@ -68,6 +70,7 @@ public class SetDescriptiveMetadataFilter implements IndexDocumentFilter {
             log.error("Failed to load code language mappings", e);
         }
     }
+
     @Override
     public void filter(DocumentIndexingPackage dip) throws IndexingException {
         IndexDocumentBean idb = dip.getDocument();
@@ -76,7 +79,7 @@ public class SetDescriptiveMetadataFilter implements IndexDocumentFilter {
         idb.setKeyword(new ArrayList<String>());
         if (mods != null) {
             this.extractTitles(mods, idb);
-            this.extractNamesAndAffiliations(mods, idb, true);
+            this.extractNames(mods, idb);
             this.extractAbstract(mods, idb);
             this.extractCollectionId(mods, idb);
             this.extractLanguages(mods, idb);
@@ -151,44 +154,51 @@ public class SetDescriptiveMetadataFilter implements IndexDocumentFilter {
         }
     }
 
-    private void extractNamesAndAffiliations(Element mods, IndexDocumentBean idb, boolean splitDepartments) {
+    private void extractNames(Element mods, IndexDocumentBean idb) {
         List<Element> names = mods.getChildren("name", JDOMNamespaceUtil.MODS_V3_NS);
         List<String> creators = new ArrayList<>();
         List<String> contributors = new ArrayList<>();
+        List<String> creatorsContributors = new ArrayList<>();
 
         for (Element nameEl : names) {
             // First see if there is a display form
             String nameValue = formatName(nameEl);
 
-            if (nameValue != null) {
-                contributors.add(nameValue);
+            if (StringUtils.isBlank(nameValue)) {
+                continue;
+            }
 
-                List<Element> roles = nameEl.getChildren("role", JDOMNamespaceUtil.MODS_V3_NS);
-                // Person is automatically a creator if no role is provided.
-                boolean isCreator = roles.size() == 0;
-                if (!isCreator) {
-                    // If roles were provided, then check to see if any of them are creators.  If so, store as creator.
-                    for (Element role: roles) {
-                        List<Element> roleTerms = role.getChildren("roleTerm", JDOMNamespaceUtil.MODS_V3_NS);
-                        for (Element roleTerm: roleTerms) {
-                            if ("creator".equalsIgnoreCase(roleTerm.getValue())) {
+            List<Element> roles = nameEl.getChildren("role", JDOMNamespaceUtil.MODS_V3_NS);
+            // Person is automatically a contributor if no role is provided.
+            boolean isContributor = roles.isEmpty();
+            boolean isCreator = false;
+            if (!isContributor) {
+                // If roles were provided, then check to see if any of them are creators.  If so, store as creator.
+                for (Element role : roles) {
+                    List<Element> roleTerms = role.getChildren("roleTerm", JDOMNamespaceUtil.MODS_V3_NS);
+                    if (roleTerms.isEmpty()) {
+                        isContributor = true;
+                    }  else {
+                        for (Element roleTerm : roleTerms) {
+                            String roleType = roleTerm.getTextTrim();
+                            if (CREATOR_LIST.contains(roleType.toLowerCase())) {
                                 isCreator = true;
-                                break;
-                            }
-                            if ("author".equalsIgnoreCase(roleTerm.getValue())) {
-                                isCreator = true;
-                                break;
-                            }
-                            if (isCreator) {
-                                break;
+                            } else {
+                                isContributor = true;
                             }
                         }
                     }
                 }
+            }
 
-                if (isCreator) {
-                    creators.add(nameValue);
-                }
+            if (isCreator) {
+                creators.add(nameValue);
+                creatorsContributors.add(nameValue);
+            }
+
+            if (isContributor) {
+                contributors.add(nameValue);
+                creatorsContributors.add(nameValue);
             }
         }
 
@@ -203,6 +213,11 @@ public class SetDescriptiveMetadataFilter implements IndexDocumentFilter {
         } else {
             idb.setCreator(null);
             idb.setCreatorSort(null);
+        }
+        if (creatorsContributors.size() > 0) {
+            idb.setCreatorContributor(creatorsContributors);
+        } else {
+            idb.setCreatorContributor(null);
         }
     }
 
@@ -220,7 +235,7 @@ public class SetDescriptiveMetadataFilter implements IndexDocumentFilter {
         String collectionId = null;
 
         if (!identifiers.isEmpty()) {
-            for (Element aid: identifiers) {
+            for (Element aid : identifiers) {
                 Attribute type = aid.getAttribute("type");
                 Attribute collection = aid.getAttribute("displayLabel");
 
@@ -243,9 +258,9 @@ public class SetDescriptiveMetadataFilter implements IndexDocumentFilter {
         List<Element> subjectEls = mods.getChildren("subject", JDOMNamespaceUtil.MODS_V3_NS);
         List<String> subjects = new ArrayList<>();
         if (subjectEls.size() > 0) {
-            for (Element subjectObj: subjectEls) {
+            for (Element subjectObj : subjectEls) {
                 List<Element> subjectParts = subjectObj.getChildren();
-                for (Element subjectEl: subjectParts) {
+                for (Element subjectEl : subjectParts) {
                     String subjectName = subjectEl.getName();
 
                     if (subjectName.equals("name")) {
@@ -297,7 +312,7 @@ public class SetDescriptiveMetadataFilter implements IndexDocumentFilter {
         List<String> languages = new ArrayList<>();
         if (languageEls.size() > 0) {
             String languageTerm = null;
-            for (Element languageObj: languageEls) {
+            for (Element languageObj : languageEls) {
                 // Our schema only allows for iso639-2b languages at this point.
                 languageTerm = languageObj.getChildText("languageTerm", JDOMNamespaceUtil.MODS_V3_NS);
                 if (languageTerm != null) {
@@ -329,7 +344,7 @@ public class SetDescriptiveMetadataFilter implements IndexDocumentFilter {
         Date dateIssued = null;
         Date dateCaptured = null;
         if (originInfoEls.size() > 0) {
-            for (Element originInfoEl: originInfoEls) {
+            for (Element originInfoEl : originInfoEls) {
                 dateCreated = JDOMQueryUtil
                         .parseISO6392bDateChild(originInfoEl, "dateCreated", JDOMNamespaceUtil.MODS_V3_NS);
                 if (dateCreated != null) {
@@ -362,7 +377,7 @@ public class SetDescriptiveMetadataFilter implements IndexDocumentFilter {
     private void extractIdentifiers(Element mods, IndexDocumentBean idb) {
         List<Element> identifierEls = mods.getChildren("identifier", JDOMNamespaceUtil.MODS_V3_NS);
         List<String> identifiers = new ArrayList<>();
-        for (Element identifierEl: identifierEls) {
+        for (Element identifierEl : identifierEls) {
             StringBuilder identifierBuilder = new StringBuilder();
             String idType = identifierEl.getAttributeValue("type");
             if (idType != null) {
@@ -389,14 +404,14 @@ public class SetDescriptiveMetadataFilter implements IndexDocumentFilter {
         this.addValuesToList(idb.getKeyword(), mods.getChildren("typeOfResource", JDOMNamespaceUtil.MODS_V3_NS));
         this.addValuesToList(idb.getKeyword(), mods.getChildren("note", JDOMNamespaceUtil.MODS_V3_NS));
         List<Element> physicalDescription = mods.getChildren("physicalDescription", JDOMNamespaceUtil.MODS_V3_NS);
-        for (Element childObj: physicalDescription) {
+        for (Element childObj : physicalDescription) {
             this.addValuesToList(idb.getKeyword(), childObj.getChildren(
                     "note", JDOMNamespaceUtil.MODS_V3_NS));
         }
         List<Element> relatedItemEls = mods.getChildren("relatedItem", JDOMNamespaceUtil.MODS_V3_NS);
-        for (Element childObj: relatedItemEls) {
+        for (Element childObj : relatedItemEls) {
             List<Element> childChildren = childObj.getChildren();
-            for (Element childChildObj: childChildren) {
+            for (Element childChildObj : childChildren) {
                 this.addValuesToList(idb.getKeyword(), childChildObj.getChildren());
             }
         }
@@ -418,7 +433,7 @@ public class SetDescriptiveMetadataFilter implements IndexDocumentFilter {
         if (elements == null) {
             return;
         }
-        for (Element elementObj: elements) {
+        for (Element elementObj : elements) {
             addIfNotBlank(values, elementObj.getValue());
         }
     }
@@ -439,31 +454,44 @@ public class SetDescriptiveMetadataFilter implements IndexDocumentFilter {
             // If there was no displayForm, then try to get the name parts.
             List<Element> nameParts = nameEl.getChildren("namePart", JDOMNamespaceUtil.MODS_V3_NS);
             if (nameParts.size() == 1) {
-                nameValue = nameParts.get(0).getValue();
+                String nameTypeValue = nameParts.get(0).getAttributeValue("type");
+                if (nameTypeValue == null || (nameTypeValue.equals("family") || nameTypeValue.equals("given"))) {
+                    nameValue = nameParts.get(0).getTextTrim();
+                }
             } else if (nameParts.size() > 1) {
-                Element genericPart = JDOMQueryUtil.getElementByAttribute(nameParts, "type", null);
-                if (genericPart != null) {
-                    nameValue = genericPart.getValue();
-                } else {
-                    // If there were multiple non-generic name parts, then try to piece them together
-                    Element givenPart = JDOMQueryUtil.getElementByAttribute(nameParts, "type", "given");
-                    Element familyPart = JDOMQueryUtil.getElementByAttribute(nameParts, "type", "family");
-                    StringBuilder nameBuilder = new StringBuilder();
-                    if (familyPart != null) {
-                        nameBuilder.append(familyPart.getValue());
-                        if (givenPart != null) {
-                            nameBuilder.append(',').append(' ');
-                        }
+                Element givenPart = JDOMQueryUtil.getElementByAttribute(nameParts, "type", null);
+                if (!hasNodeValue(givenPart)) {
+                    givenPart = JDOMQueryUtil.getElementByAttribute(nameParts, "type", "given");
+                }
+                // If there were multiple non-generic name parts, then try to piece them together
+                Element familyPart = JDOMQueryUtil.getElementByAttribute(nameParts, "type", "family");
+                Element termsOfAddressPart = JDOMQueryUtil.getElementByAttribute(nameParts, "type", "termsOfAddress");
+                Element datePart = JDOMQueryUtil.getElementByAttribute(nameParts, "type", "date");
+                StringBuilder nameBuilder = new StringBuilder();
+
+                boolean hasFamilyPart = hasNodeValue(familyPart);
+                boolean hasGivenPart = hasNodeValue(givenPart);
+                if (hasFamilyPart) {
+                    nameBuilder.append(familyPart.getTextTrim());
+                    if (hasNodeValue(givenPart)) {
+                        nameBuilder.append(',').append(' ');
                     }
-                    if (givenPart != null) {
-                        nameBuilder.append(givenPart.getValue());
+                }
+                if (hasGivenPart) {
+                    nameBuilder.append(givenPart.getTextTrim());
+                }
+
+                if (hasFamilyPart || hasGivenPart) {
+                    if (hasNodeValue(termsOfAddressPart)) {
+                        nameBuilder.append(", ").append(termsOfAddressPart.getTextTrim());
                     }
-                    if (nameBuilder.length() > 0) {
-                        nameValue = nameBuilder.toString();
-                    } else {
-                        // Nonsensical name, just use the first available value.
-                        nameValue = nameParts.get(0).getValue();
+                    if (hasNodeValue(datePart)) {
+                        nameBuilder.append(", ").append(datePart.getTextTrim());
                     }
+                }
+
+                if (nameBuilder.length() > 0) {
+                    nameValue = nameBuilder.toString();
                 }
             }
         }
@@ -474,5 +502,9 @@ public class SetDescriptiveMetadataFilter implements IndexDocumentFilter {
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(date);
         return Integer.toString(calendar.get(Calendar.YEAR));
+    }
+
+    private boolean hasNodeValue(Element node) {
+        return node != null && !StringUtils.isBlank(node.getTextTrim());
     }
 }

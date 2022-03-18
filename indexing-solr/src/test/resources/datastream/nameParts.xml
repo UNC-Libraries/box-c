@@ -1,16 +1,95 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <mods:mods xmlns:mods="http://www.loc.gov/mods/v3" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-  <mods:titleInfo>
-    <mods:title>Paper title</mods:title>
-  </mods:titleInfo>
-  <mods:name type="personal">
-  	<mods:namePart type="given">Boxy</mods:namePart>
-	<mods:namePart type="family">Repo</mods:namePart>
-	<mods:role>
-      <mods:roleTerm authority="marcrelator" type="text">Creator</mods:roleTerm>
-    </mods:role>
-  </mods:name>
-  <mods:name type="personal">
-    <mods:namePart type="given">Boxy</mods:namePart>
-  </mods:name>
-  </mods:mods>
+    <mods:titleInfo>
+        <mods:title>Paper title</mods:title>
+    </mods:titleInfo>
+    <mods:name type="personal">
+        <mods:namePart type="given">Boxy</mods:namePart>
+        <mods:namePart type="family">Repo</mods:namePart>
+        <mods:role>
+            <mods:roleTerm authority="marcrelator" type="text">Creator</mods:roleTerm>
+        </mods:role>
+    </mods:name>
+    <mods:name type="personal">
+        <mods:namePart type="given">Boxy</mods:namePart>
+        <mods:namePart type="family">Repo2</mods:namePart>
+        <mods:role>
+            <mods:roleTerm authority="marcrelator" type="text">Author</mods:roleTerm>
+        </mods:role>
+    </mods:name>
+    <mods:name>
+        <mods:affiliation>Music</mods:affiliation>
+        <mods:namePart>Test, author</mods:namePart>
+        <mods:role>
+            <mods:roleTerm authority="marcrelator" type="text">Creator</mods:roleTerm>
+        </mods:role>
+    </mods:name>
+    <mods:name>
+        <mods:namePart type="given">Given</mods:namePart>
+        <mods:role>
+            <mods:roleTerm>Creator</mods:roleTerm>
+        </mods:role>
+        <mods:namePart type="family" />
+    </mods:name>
+    <mods:name type="personal">
+        <mods:namePart type="given">Boxy</mods:namePart>
+    </mods:name>
+    <mods:name>
+        <mods:namePart>Gilmer, Jeremy Francis, 1918-2020</mods:namePart>
+        <mods:role>
+            <mods:roleTerm authority="marcrelator" type="text">Interviewee</mods:roleTerm>
+        </mods:role>
+    </mods:name>
+    <mods:name>
+        <mods:namePart>Boxy, Berry Jean</mods:namePart>
+        <mods:namePart type="termsOfAddress">Jr.</mods:namePart>
+        <mods:namePart type="date">1991-</mods:namePart>
+        <mods:role>
+            <mods:roleTerm type="text" authority="marcrelator">Interviewer</mods:roleTerm>
+        </mods:role>
+    </mods:name>
+    <mods:name>
+        <mods:namePart type="termsOfAddress">IV</mods:namePart>
+        <mods:namePart type="date">1973</mods:namePart>
+    </mods:name>
+    <mods:name>
+        <mods:namePart type="date">1999</mods:namePart>
+    </mods:name>
+    <mods:name>
+        <mods:namePart type="termsOfAddress">Sr</mods:namePart>
+    </mods:name>
+    <mods:name>
+        <mods:namePart/>
+        <mods:namePart type="termsOfAddress">Jr</mods:namePart>
+        <mods:namePart type="date">1990</mods:namePart>
+    </mods:name>
+    <mods:name>
+        <mods:namePart/>
+        <mods:namePart type="date">2007-</mods:namePart>
+        <mods:role>
+            <mods:roleTerm type="text" authority="marcrelator">Interviewer</mods:roleTerm>
+        </mods:role>
+    </mods:name>
+    <mods:name>
+        <mods:namePart type="given">Alice</mods:namePart>
+        <mods:namePart type="family">Boxy</mods:namePart>
+        <mods:namePart type="date">1994-</mods:namePart>
+        <mods:namePart type="termsOfAddress">III</mods:namePart>
+        <mods:role>
+            <mods:roleTerm type="text" authority="marcrelator">Contributor</mods:roleTerm>
+        </mods:role>
+    </mods:name>
+    <mods:name>
+        <mods:namePart>Boxy, Assistant</mods:namePart>
+        <mods:role>
+            <mods:roleTerm authority="marcrelator" type="text">Assistant Director</mods:roleTerm>
+        </mods:role>
+    </mods:name>
+    <mods:name>
+        <mods:namePart>Boxy, Role Free</mods:namePart>
+    </mods:name>
+    <mods:name>
+        <mods:namePart>Boxy, Role Empty</mods:namePart>
+        <mods:role/>
+    </mods:name>
+</mods:mods>
