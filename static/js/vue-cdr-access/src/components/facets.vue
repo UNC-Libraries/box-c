@@ -352,6 +352,7 @@ Facet list component, used to display all the values of facets and provide links
                     this.dates.selected_dates.start = start_year;
                     this.dates.selected_dates.end = end_year;
                 } else {
+                    this.dates.selected_dates.start = this.minCreatedYear;
                     this.dates.selected_dates.end = this.currentYear;
                 }
             },
