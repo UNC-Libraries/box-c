@@ -43,11 +43,7 @@ Facet list component, used to display all the values of facets and provide links
 
     const UUID_REGEX = /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i;
     const CURRENT_YEAR = new Date().getFullYear();
-<<<<<<< HEAD
-    const POSSIBLE_FACET_PARAMS = ['collection', 'createdYear', 'format', 'language', 'subject', 'location', 'publisher'];
-=======
-    const POSSIBLE_FACET_PARAMS = ['collection', 'createdYear', 'format', 'language', 'subject', 'location', 'creatorContributor'];
->>>>>>> main
+    const POSSIBLE_FACET_PARAMS = ['collection', 'createdYear', 'format', 'language', 'subject', 'location', 'publisher', 'creatorContributor'];
 
     export default {
         name: 'facets',
