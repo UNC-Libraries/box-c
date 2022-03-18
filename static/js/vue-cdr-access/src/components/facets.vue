@@ -19,7 +19,7 @@ Facet list component, used to display all the values of facets and provide links
                     </li>
                 </ul>
                 <slider v-if="facet.name === 'DATE_CREATED_YEAR'" ref="sliderInfo"
-                        :start-range="[dates.selected_dates.start, currentYear]"
+                        :start-range="[dates.selected_dates.start, dates.selected_dates.end]"
                         :range-values="{min: dates.selected_dates.start, max: currentYear}" @sliderUpdated="sliderUpdated"></slider>
                 <form v-if="facet.name === 'DATE_CREATED_YEAR'">
                     <input type="number" v-model="dates.selected_dates.start" name="start_date"
@@ -356,6 +356,7 @@ Facet list component, used to display all the values of facets and provide links
                     this.dates.selected_dates.start = start_year;
                     this.dates.selected_dates.end = end_year;
                 } else {
+                    this.dates.selected_dates.start = this.minCreatedYear;
                     this.dates.selected_dates.end = this.currentYear;
                 }
             },
