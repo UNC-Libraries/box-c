@@ -1,3 +1,6 @@
+<!--
+Renders search results in a list view display format
+-->
 <template>
     <div id="list-records-display">
         <div class="columns">

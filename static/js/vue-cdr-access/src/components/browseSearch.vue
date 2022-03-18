@@ -1,3 +1,6 @@
+<!--
+Search form component displayed on full record pages, allowing keyword searches and changing display modes.
+-->
 <template>
     <div>
         <div class="browse-search field has-addons">

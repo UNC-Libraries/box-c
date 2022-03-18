@@ -329,6 +329,11 @@ public class GroupedContentObjectSolrRecord implements GroupedContentObjectRecor
     }
 
     @Override
+    public List<String> getCreatorContributor() {
+        return this.representative.getCreatorContributor();
+    }
+
+    @Override
     public List<String> getDepartment() {
         return this.representative.getDepartment();
     }

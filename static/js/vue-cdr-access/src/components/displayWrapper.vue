@@ -1,3 +1,6 @@
+<!--
+Top level component for full record pages with searching/browsing, including AdminUnits, Collections, and Folders.
+-->
 <template>
     <div>
         <div class="columns is-tablet">

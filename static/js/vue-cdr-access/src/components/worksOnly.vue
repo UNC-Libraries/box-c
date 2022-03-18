@@ -1,3 +1,7 @@
+<!--
+Checkbox to switch search result modes between including only works with a flattened hierarchy,
+and including all types with hierarchy retained.
+-->
 <template>
     <div id="browse-display-type" class="display-wrapper" v-if="!adminUnit">
         <div class="field">

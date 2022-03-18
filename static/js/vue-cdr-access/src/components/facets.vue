@@ -1,3 +1,6 @@
+<!--
+Facet list component, used to display all the values of facets and provide links for applying those values as filters on the current search.
+-->
 <template>
     <div id="facetList" class="contentarea">
         <a v-if="selected_facets.length > 0" id="clear-all" class="button is-link is-small" @click.prevent="clearAll()">
@@ -16,7 +19,7 @@
                     </li>
                 </ul>
                 <slider v-if="facet.name === 'DATE_CREATED_YEAR'" ref="sliderInfo"
-                        :start-range="[dates.selected_dates.start, currentYear]"
+                        :start-range="[dates.selected_dates.start, dates.selected_dates.end]"
                         :range-values="{min: dates.selected_dates.start, max: currentYear}" @sliderUpdated="sliderUpdated"></slider>
                 <form v-if="facet.name === 'DATE_CREATED_YEAR'">
                     <input type="number" v-model="dates.selected_dates.start" name="start_date"
@@ -40,7 +43,11 @@
 
     const UUID_REGEX = /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i;
     const CURRENT_YEAR = new Date().getFullYear();
+<<<<<<< HEAD
     const POSSIBLE_FACET_PARAMS = ['collection', 'createdYear', 'format', 'language', 'subject', 'location', 'publisher'];
+=======
+    const POSSIBLE_FACET_PARAMS = ['collection', 'createdYear', 'format', 'language', 'subject', 'location', 'creatorContributor'];
+>>>>>>> main
 
     export default {
         name: 'facets',
@@ -269,6 +276,8 @@
                         return 'Date Created';
                     case 'PUBLISHER':
                         return 'Publisher';
+                    case 'CREATOR_CONTRIBUTOR':
+                        return 'Creator/Contributor';
                     default:
                         return value;
                 }
@@ -292,6 +301,8 @@
                         return 'createdYear=';
                     case 'PUBLISHER':
                         return 'publisher=';
+                    case 'CREATOR_CONTRIBUTOR':
+                        return 'creatorContributor=';
                     default:
                         return '';
                 }
@@ -353,6 +364,7 @@
                     this.dates.selected_dates.start = start_year;
                     this.dates.selected_dates.end = end_year;
                 } else {
+                    this.dates.selected_dates.start = this.minCreatedYear;
                     this.dates.selected_dates.end = this.currentYear;
                 }
             },

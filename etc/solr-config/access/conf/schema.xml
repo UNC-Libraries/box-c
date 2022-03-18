@@ -169,12 +169,14 @@
       fq=contentType:/audio|mp3,*&f.contentType.facet.prefix=/audio/mp3|
     -->
     <field name="contentType" type="string" indexed="true" stored="true" multiValued="true"/>
-    <!-- All names, not searchable, for use in copy indexes -->
-    <field name="contributor" type="string" indexed="false" stored="true" multiValued="true"/>
+    <!-- All names, searchable, and used in copy indexes -->
+    <field name="contributor" type="string" indexed="true" stored="true" multiValued="true"/>
     <!-- <field name="roleName" type="string" indexed="true" stored="true" multiValued="true"/> -->
     <field name="creator" type="string" indexed="true" stored="true" multiValued="true"/>
     <!-- Sort order fields -->
     <field name="creatorSort" type="string_lc" indexed="true" stored="true"/>
+    <!-- Used for faceting creators and contributors as a single facet -->
+    <field name="creatorContributor" type="string" indexed="true" stored="true" multiValued="true"/>
     <!-- DS name|mimetype|extension|filesize|checksum|owner -->
     <field name="datastream" type="string" indexed="true" stored="true" multiValued="true"/>
     <!-- Date when the object was added to the repository -->
@@ -293,8 +295,8 @@
 
   <copyField source="subject" dest="subjectIndex"/>
 
-  <copyField source="creator" dest="contributorIndex"/>
   <copyField source="contributor" dest="contributorIndex"/>
+  <copyField source="creator" dest="contributorIndex"/>
 
   <copyField source="title" dest="keywordIndex"/>
   <copyField source="title" dest="keywordIndex"/>
