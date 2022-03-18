@@ -482,9 +482,6 @@ public class SetDescriptiveMetadataFilter implements IndexDocumentFilter {
                 }
                 if (nameBuilder.length() > 0) {
                     nameValue = nameBuilder.toString();
-                } else {
-                    // Nonsensical name, just use the first available value.
-                    nameValue = nameParts.get(0).getTextTrim();
                 }
             }
         }
