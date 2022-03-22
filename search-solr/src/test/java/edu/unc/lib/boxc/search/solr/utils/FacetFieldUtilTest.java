@@ -32,7 +32,6 @@ import edu.unc.lib.boxc.search.solr.facets.CutoffFacetImpl;
 import edu.unc.lib.boxc.search.solr.facets.GenericFacet;
 import edu.unc.lib.boxc.search.solr.facets.MultivaluedHierarchicalFacet;
 import edu.unc.lib.boxc.search.solr.facets.RoleGroupFacet;
-import edu.unc.lib.boxc.search.solr.utils.FacetFieldUtil;
 
 public class FacetFieldUtilTest {
 
@@ -163,14 +162,14 @@ public class FacetFieldUtilTest {
     public void addCaseInsensitiveFacetToQuery() {
         SolrQuery query = new SolrQuery();
 
-        CaseInsensitiveFacet facet = new CaseInsensitiveFacet("DEPARTMENT", "department of boxy");
+        CaseInsensitiveFacet facet = new CaseInsensitiveFacet("TITLE", "department of boxy");
 
         facetFieldUtil.addToSolrQuery(facet, query);
 
         String[] filterQueries = query.getFilterQueries();
         assertEquals(1, filterQueries.length);
 
-        assertEquals("department_lc:\"department\\ of\\ boxy\"", filterQueries[0]);
+        assertEquals("title_lc:\"department\\ of\\ boxy\"", filterQueries[0]);
     }
 
     @Test

@@ -149,9 +149,6 @@ public class SolrIngestProcessorIT extends AbstractSolrProcessorIT {
 
         assertTrue("Read groups did not contain assigned group", workMd.getReadGroup().contains(AUTHENTICATED_PRINC));
         assertTrue("Admin groups did not contain assigned group", workMd.getAdminGroup().contains("admin"));
-
-        assertEquals("Primary object not set", fileObj.getPid().getId(),
-                workMd.getRelation(Cdr.primaryObject.getURI()).get(0));
     }
 
     @Test
