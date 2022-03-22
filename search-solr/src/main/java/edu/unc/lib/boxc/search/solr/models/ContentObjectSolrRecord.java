@@ -236,6 +236,7 @@ public class ContentObjectSolrRecord extends IndexDocumentBean implements Conten
         sb.append("keyword: " + getKeyword() + "\n");
         sb.append("subject: " + getSubject() + "\n");
         sb.append("language: " + getLanguage() + "\n");
+        sb.append("publisher: " + getPublisher() + "\n");
         sb.append("creator: " + getCreator() + "\n");
         sb.append("contributor: " + getContributor() + "\n");
         sb.append("creatorContributor: " + getCreatorContributor() + "\n");

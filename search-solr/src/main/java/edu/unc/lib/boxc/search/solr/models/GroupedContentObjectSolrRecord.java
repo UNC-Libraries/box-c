@@ -209,6 +209,11 @@ public class GroupedContentObjectSolrRecord implements GroupedContentObjectRecor
     }
 
     @Override
+    public List<String> getPublisher() {
+        return this.representative.getPublisher();
+    }
+
+    @Override
     public Integer getResourceTypeSort() {
         return this.representative.getResourceTypeSort();
     }

@@ -85,6 +85,7 @@ public class SetDescriptiveMetadataFilter implements IndexDocumentFilter {
             this.extractLanguages(mods, idb);
             this.extractSubjects(mods, idb);
             this.extractLocations(mods, idb);
+            this.extractPublisher(mods, idb);
             this.extractDateCreated(mods, idb);
             this.extractIdentifiers(mods, idb);
             this.extractCitation(mods, idb);
@@ -327,6 +328,24 @@ public class SetDescriptiveMetadataFilter implements IndexDocumentFilter {
             idb.setLanguage(languages);
         } else {
             idb.setLanguage(null);
+        }
+    }
+
+    private void extractPublisher(Element mods, IndexDocumentBean idb) {
+        List<Element> originInfoEls = mods.getChildren("originInfo", JDOMNamespaceUtil.MODS_V3_NS);
+        List<String> publishers = new ArrayList<>();
+
+        for (Element originInfoEl : originInfoEls) {
+            List<Element> publisherEls = originInfoEl.getChildren("publisher", JDOMNamespaceUtil.MODS_V3_NS);
+            for (Element publisher : publisherEls) {
+                publishers.add(publisher.getTextTrim());
+            }
+        }
+
+        if (publishers.size() > 0) {
+            idb.setPublisher(publishers);
+        } else {
+            idb.setPublisher(null);
         }
     }
 

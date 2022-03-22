@@ -43,7 +43,7 @@ Facet list component, used to display all the values of facets and provide links
 
     const UUID_REGEX = /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i;
     const CURRENT_YEAR = new Date().getFullYear();
-    const POSSIBLE_FACET_PARAMS = ['collection', 'createdYear', 'format', 'language', 'subject', 'location', 'creatorContributor'];
+    const POSSIBLE_FACET_PARAMS = ['collection', 'createdYear', 'format', 'language', 'subject', 'location', 'publisher', 'creatorContributor'];
 
     export default {
         name: 'facets',
@@ -80,7 +80,7 @@ Facet list component, used to display all the values of facets and provide links
                 deep: true
             },
             minCreatedYear(newValue, oldValue) {
-                if (newValue < oldValue) {
+                if (oldValue === undefined || newValue < oldValue) {
                     this.dates.selected_dates.start = newValue;
                 }
             }
@@ -270,6 +270,8 @@ Facet list component, used to display all the values of facets and provide links
                         return 'Genre';
                     case 'DATE_CREATED_YEAR':
                         return 'Date Created';
+                    case 'PUBLISHER':
+                        return 'Publisher';
                     case 'CREATOR_CONTRIBUTOR':
                         return 'Creator/Contributor';
                     default:
@@ -293,6 +295,8 @@ Facet list component, used to display all the values of facets and provide links
                         return 'genre=';
                     case 'DATE_CREATED_YEAR':
                         return 'createdYear=';
+                    case 'PUBLISHER':
+                        return 'publisher=';
                     case 'CREATOR_CONTRIBUTOR':
                         return 'creatorContributor=';
                     default:

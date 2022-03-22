@@ -66,6 +66,7 @@ public enum SearchFieldKey {
     OTHER_TITLES("otherTitle", "otherTitle", "otherTitle"),
     PARENT_COLLECTION("parentCollection", "collection", "Collection"),
     PARENT_UNIT("parentUnit", "unit", "Admin Unit"),
+    PUBLISHER("publisher", "publisher", "Publisher"),
     READ_GROUP("readGroup", "readGroup", "Read Group"),
     RELATIONS("relations", "relations", "Relations"),
     RESOURCE_TYPE("resourceType", "type", "Resource Type"),

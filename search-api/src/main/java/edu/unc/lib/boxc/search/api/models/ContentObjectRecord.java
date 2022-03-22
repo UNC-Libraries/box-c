@@ -135,6 +135,8 @@ public interface ContentObjectRecord {
 
     public List<String> getCreatorContributor();
 
+    public List<String> getPublisher();
+
     public List<String> getDepartment();
 
     public Date getDateCreated();
