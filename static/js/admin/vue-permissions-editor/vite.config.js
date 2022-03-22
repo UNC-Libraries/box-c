@@ -12,8 +12,13 @@ export default defineConfig({
         }
     },
     build: {
+        minify: false,
         rollupOptions: {
-            external: path.resolve( __dirname, 'static/images/ajax-loader-lg.gif' )
+            output: {
+                entryFileNames: `assets/vue-permissions-[name].js`,
+                chunkFileNames: `assets/vue-permissions-[name].js`,
+                assetFileNames: `assets/[name].[ext]`
+            }
         }
     }
-})
+});

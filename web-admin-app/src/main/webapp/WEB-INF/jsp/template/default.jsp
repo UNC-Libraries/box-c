@@ -31,7 +31,9 @@
 </head>
 <body>
 <div id="permissions-app"></div>
-<script src="/static/js/vue-permissions.js"></script>
+<script type="module" crossorigin src="/static/js/vue-permissions-vendor.js"></script>
+<script type="module" crossorigin src="/static/js/vue-permissions-index.js"></script>
+
 <div id="pagewrap">
 	<div id="pagewrap_inside">
 		<c:import url="common/header.jsp" />
