@@ -56,10 +56,10 @@ describe('browseSearch.vue', () => {
         await flushPromises();
         expect(wrapper.vm.$router.currentRoute.value.query.anywhere).toEqual(encodeURIComponent(query));
 
-        let clearLink = wrapper.find('a.clear-results');
+        let clearLink = wrapper.find('a#clear-results');
         await clearLink.trigger('click');
         await flushPromises();
-        expect(wrapper.vm.$router.currentRoute.value.query.anywhere).toEqual(encodeURIComponent(''));
+        expect(wrapper.vm.$router.currentRoute.value.query.anywhere).not.toBeDefined();
     });
 
     it("sets placeholder text from the object type", () => {

@@ -85,7 +85,7 @@ describe('displayWrapper.vue', () => {
     });
 
     it("retrieves data", (done) => {
-        moxios.stubRequest(`listJson/${response.container.id}?rows=20&start=0&sort=default%2Cnormal&browse_type=list-display&works_only=false&types=Work%2CFolder%2CCollection`, {
+        moxios.stubRequest(`listJson/${response.container.id}?rows=20&start=0&sort=default%2Cnormal&browse_type=list-display&works_only=false&types=Work%2CFolder%2CCollection&getFacets=true`, {
             status: 200,
             response: JSON.stringify(response)
         });

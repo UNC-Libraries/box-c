@@ -3,7 +3,8 @@ import isEmpty from 'lodash.isempty';
 export default {
     data() {
         return {
-            rows_per_page: this.$route.query.rows || 20
+            rows_per_page: this.$route.query.rows || 20,
+            possible_facet_fields: ['collection', 'createdYear', 'format', 'language', 'subject', 'location']
         }
     },
 
@@ -23,7 +24,7 @@ export default {
                     'a.setStartRow': 0,
                     rows: this.rows_per_page,
                     sort: 'default,normal',
-                    facetSelect: 'collection,format,location,subject,createdYear'
+                    facetSelect: this.possible_facet_fields.join(',')
                 };
             } else {
                 defaults = {
@@ -109,6 +110,32 @@ export default {
          */
         nonDuplicateNavigationError(error) {
             return (error.name !== 'NavigationDuplicated' && !/^avoided\s+redundant\s+navigation/i.test(error.message));
+        },
+
+        /**
+         * Returns a list of query parameters from the current URLs minus the specified set of parameters
+         * @param param_names names of query parameters to remove
+         * @returns {LocationQuery} list of query parameters with specified parameters removed
+         */
+        removeQueryParameters(param_names) {
+            const params = Object.assign({}, this.$route.query);
+            for (const remove_param of param_names) {
+                delete params[remove_param];
+            }
+            return params;
+        },
+
+        /**
+         * Push updated url to history, using the provided query parambers
+         * @param params query parameters to push to url
+         * @param route_name optional name for pushed route
+         */
+        routeWithParams(params, route_name = undefined) {
+            this.$router.push({ query: params, name: route_name }).catch((e) => {
+                if (this.nonDuplicateNavigationError(e)) {
+                    throw e;
+                }
+            });
         }
     }
 }

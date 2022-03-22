@@ -18,7 +18,7 @@ export default {
             "previous": "Previous"
         },
         "search": {
-            "clear_search": "Clear search results",
+            "clear_search": "Start over",
             "no_results": "No records were found.",
             "search": "Search"
         },

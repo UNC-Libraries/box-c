@@ -43,7 +43,6 @@ Facet list component, used to display all the values of facets and provide links
 
     const UUID_REGEX = /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i;
     const CURRENT_YEAR = new Date().getFullYear();
-    const POSSIBLE_FACET_PARAMS = ['collection', 'createdYear', 'format', 'language', 'subject', 'location'];
 
     export default {
         name: 'facets',
@@ -179,7 +178,7 @@ Facet list component, used to display all the values of facets and provide links
                 };
 
                 // Unset current facets
-                POSSIBLE_FACET_PARAMS.forEach((facet) => delete base_search.query[facet]);
+                this.possible_facet_fields.forEach((facet) => delete base_search.query[facet]);
                 // Add/Update with new facets
                 base_search.query = Object.assign(base_search.query, updated_facet_params.queryFacets);
                 this.$router.push(base_search).catch((e) => {
@@ -382,7 +381,7 @@ Facet list component, used to display all the values of facets and provide links
              */
             setFacetsFromParams() {
                 let params = this.urlParams();
-                POSSIBLE_FACET_PARAMS.forEach((type) => {
+                this.possible_facet_fields.forEach((type) => {
                     this._setFacetFromRoute(type, params[type]);
                 });
             },

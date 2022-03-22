@@ -5,8 +5,7 @@ Top level component for full record pages with searching/browsing, including Adm
     <div>
         <div class="columns is-tablet">
             <div class="column is-6">
-                <browse-search :object-type="container_metadata.type"></browse-search>
-                <filter-tags :facet-list="facet_list"></filter-tags>
+                <browse-search :object-type="container_metadata.type" :facet-list="facet_list"></browse-search>
             </div>
             <div class="column is-2" v-if="showWidget">
                 <browse-sort browse-type="display"></browse-sort>
@@ -40,7 +39,6 @@ Top level component for full record pages with searching/browsing, including Adm
     import browseSort from './browseSort';
     import listDisplay from './listDisplay';
     import facets from "./facets";
-    import filterTags from "./filterTags";
     import modalMetadata from './modalMetadata';
     import pagination from './pagination';
     import viewType from './viewType';
@@ -72,8 +70,7 @@ Top level component for full record pages with searching/browsing, including Adm
             pagination,
             viewType,
             worksOnly,
-            facets,
-            filterTags
+            facets
         },
 
         mixins: [routeUtils],
@@ -209,7 +206,7 @@ Top level component for full record pages with searching/browsing, including Adm
         padding-left: 50px;
     }
 
-    #facetList .contentarea {
+    #facetList.contentarea {
         margin: 20px;
     }
 
