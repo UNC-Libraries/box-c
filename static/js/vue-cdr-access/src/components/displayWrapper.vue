@@ -28,14 +28,14 @@ Top level component for full record pages with searching/browsing, including Adm
 </template>
 
 <script>
-    import browseDisplay from './browseDisplay.vue';
-    import browseSearch from './browseSearch.vue';
-    import browseSort from './browseSort.vue';
-    import listDisplay from './listDisplay';
-    import modalMetadata from './modalMetadata.vue';
-    import pagination from './pagination.vue';
-    import viewType from './viewType.vue';
-    import worksOnly from './worksOnly.vue';
+    import browseDisplay from '@/components/browseDisplay.vue';
+    import browseSearch from '@/components/browseSearch.vue';
+    import browseSort from '@/components/browseSort.vue';
+    import listDisplay from '@/components/listDisplay.vue';
+    import modalMetadata from '@/components/modalMetadata.vue';
+    import pagination from '@/components/pagination.vue';
+    import viewType from '@/components/viewType.vue';
+    import worksOnly from '@/components/worksOnly.vue';
     import get from 'axios';
     import isEmpty from 'lodash.isempty';
     import routeUtils from '../mixins/routeUtils';

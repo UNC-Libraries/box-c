@@ -92,8 +92,8 @@
 </template>
 
 <script>
-    import patronDisplayRow from './patronDisplayRow.vue';
-    import embargo from './embargo.vue';
+    import patronDisplayRow from '@/components/patronDisplayRow.vue';
+    import embargo from '@/components/embargo.vue';
     import displayModal from '../mixins/displayModal';
     import patronHelpers from '../mixins/patronHelpers';
     import axios from 'axios';
