@@ -71,7 +71,6 @@ public abstract class AbstractQueryService {
             SearchFieldKey.PARENT_UNIT.name(),
             SearchFieldKey.PUBLISHER.name(),
             SearchFieldKey.READ_GROUP.name(),
-            SearchFieldKey.RELATIONS.name(),
             SearchFieldKey.RESOURCE_TYPE.name(),
             SearchFieldKey.ROLE_GROUP.name(),
             SearchFieldKey.ROLLUP_ID.name(),

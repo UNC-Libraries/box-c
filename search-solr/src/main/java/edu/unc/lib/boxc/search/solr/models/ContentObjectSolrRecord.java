@@ -191,27 +191,6 @@ public class ContentObjectSolrRecord extends IndexDocumentBean implements Conten
     }
 
     @Override
-    @Field
-    public void setRelations(List<String> relations) {
-        super.setRelations(relations);
-
-        this.relationsMap = new HashMap<>(relations.size());
-        for (String relation: relations) {
-            if (relation == null) {
-                continue;
-            }
-            String[] rdfParts = relation.split("\\|", 2);
-
-            List<String> values = this.relationsMap.get(rdfParts[0]);
-            if (values == null) {
-                values = new ArrayList<>();
-                this.relationsMap.put(rdfParts[0], values);
-            }
-            values.add(rdfParts[1]);
-        }
-    }
-
-    @Override
     public List<String> getRelation(String relationName) {
         if (relationsMap == null) {
             return null;

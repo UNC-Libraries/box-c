@@ -214,8 +214,6 @@
     <field name="publisher" type="string" indexed="true" stored="true" multiValued="true"/>
     <!-- Groups which have metadata viewing rights to this object, and should be able to retrieve this item in normal searches -->
     <field name="readGroup" type="string" indexed="true" stored="true" required="true" multiValued="true" default=""/>
-    <!-- Other triples associated with this object that are useful but do not warrant their own field -->
-    <field name="relations" type="string" indexed="true" stored="true" multiValued="true"/>
     <!-- Computed, representative resource type for this object, such as Collection or Item -->
     <field name="resourceType" type="string" indexed="true" stored="true" required="true"/>
     <!-- Sort order for this item based on resource type -->

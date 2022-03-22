@@ -73,8 +73,6 @@ public class ExportCsvService {
     public static final String OBJ_TYPE_HEADER = "Object Type";
     public static final String PID_HEADER = "PID";
     public static final String TITLE_HEADER = "Title";
-    public static final String PATH_HEADER = "Path";
-    public static final String LABEL_HEADER = "Label";
     public static final String DEPTH_HEADER = "Depth";
     public static final String DELETED_HEADER = "Deleted";
     public static final String DATE_ADDED_HEADER = "Date Added";
@@ -88,7 +86,7 @@ public class ExportCsvService {
     public static final String EMBARGO_HEADER = "Embargoed";
 
     private static final String[] CSV_HEADERS = new String[] {
-            OBJ_TYPE_HEADER, PID_HEADER, TITLE_HEADER, PATH_HEADER, LABEL_HEADER,
+            OBJ_TYPE_HEADER, PID_HEADER, TITLE_HEADER,
             DEPTH_HEADER, DELETED_HEADER, DATE_ADDED_HEADER, DATE_UPDATED_HEADER,
             MIME_TYPE_HEADER, CHECKSUM_HEADER, FILE_SIZE_HEADER, NUM_CHILDREN_HEADER,
             DESCRIBED_HEADER, PATRON_PERMISSIONS_HEADER, EMBARGO_HEADER};
@@ -218,15 +216,6 @@ public class ExportCsvService {
         printer.print(object.getResourceType());
         printer.print(object.getId());
         printer.print(object.getTitle());
-
-        String label = object.getLabel();
-
-        if (label != null) {
-            printer.print(label);
-        } else {
-            printer.print("");
-        }
-
         printer.print(object.getAncestorPathFacet().getHighestTier());
 
         // Status: deleted

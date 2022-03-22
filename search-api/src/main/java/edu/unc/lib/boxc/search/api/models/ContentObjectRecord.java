@@ -73,8 +73,6 @@ public interface ContentObjectRecord {
 
     public Long getFilesizeTotal();
 
-    public List<String> getRelations();
-
     public List<String> getRelation(String relationName);
 
     public String getResourceType();

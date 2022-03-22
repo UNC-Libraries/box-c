@@ -48,7 +48,6 @@ import static edu.unc.lib.boxc.search.api.SearchFieldKey.PARENT_COLLECTION;
 import static edu.unc.lib.boxc.search.api.SearchFieldKey.PARENT_UNIT;
 import static edu.unc.lib.boxc.search.api.SearchFieldKey.PUBLISHER;
 import static edu.unc.lib.boxc.search.api.SearchFieldKey.READ_GROUP;
-import static edu.unc.lib.boxc.search.api.SearchFieldKey.RELATIONS;
 import static edu.unc.lib.boxc.search.api.SearchFieldKey.RESOURCE_TYPE;
 import static edu.unc.lib.boxc.search.api.SearchFieldKey.RESOURCE_TYPE_SORT;
 import static edu.unc.lib.boxc.search.api.SearchFieldKey.ROLE_GROUP;
@@ -194,15 +193,6 @@ public class IndexDocumentBean {
     @Field
     public void setFilesizeTotal(Long filesizeTotal) {
         fields.put(FILESIZE_TOTAL.getSolrField(), filesizeTotal);
-    }
-
-    public List<String> getRelations() {
-        return (List<String>) fields.get(RELATIONS.getSolrField());
-    }
-
-    @Field
-    public void setRelations(List<String> relations) {
-        fields.put(RELATIONS.getSolrField(), relations);
     }
 
     public String getResourceType() {

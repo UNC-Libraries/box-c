@@ -179,11 +179,6 @@ public class GroupedContentObjectSolrRecord implements GroupedContentObjectRecor
     }
 
     @Override
-    public List<String> getRelations() {
-        return this.representative.getRelations();
-    }
-
-    @Override
     public List<String> getRelation(String relationName) {
         return this.representative.getRelation(relationName);
     }

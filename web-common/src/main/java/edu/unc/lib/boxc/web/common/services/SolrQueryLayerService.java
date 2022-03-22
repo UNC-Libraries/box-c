@@ -195,23 +195,6 @@ public class SolrQueryLayerService extends SolrSearchService {
         this.searchStateFactory = searchStateFactory;
     }
 
-    public SearchResultResponse getRelationSet(SearchRequest searchRequest, String relationName) {
-
-        SolrQuery query = generateSearch(searchRequest);
-
-        query.setQuery(query.getQuery() + " AND " + SearchFieldKey.RELATIONS.getSolrField() + ":"
-                + SolrSettings.sanitize(relationName) + "|*");
-        query.setRows(1000);
-
-        try {
-            return executeSearch(query, searchRequest.getSearchState(), false, false);
-        } catch (SolrServerException e) {
-            LOG.error("Error retrieving Solr object request: " + e);
-        }
-
-        return null;
-    }
-
     /**
      * Get the number of objects present in the collection for various formats
      *
