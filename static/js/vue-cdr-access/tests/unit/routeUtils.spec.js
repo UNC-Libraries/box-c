@@ -1,7 +1,7 @@
 import { shallowMount } from '@vue/test-utils'
 import { createRouter, createWebHistory } from 'vue-router';
 import pagination from '@/components/pagination.vue'
-import displayWrapper from "@/components/displayWrapper";
+import displayWrapper from "@/components/displayWrapper.vue";
 import routeUtils from '@/mixins/routeUtils.js';
 
 const gallery = 'gallery-display';

@@ -23,15 +23,15 @@
         <ul class="set-patron-roles">
             <li v-if="isBulkMode">
                 <input type="radio" v-model="user_type" value="ignore"
-                       id="user_type_ignore"> <label for="user_type_ignore"> No Change</label>
+                       id="user_type_ignore"> <label for="user_type_ignore" @click="setRoleFromLabel('ignore')"> No Change</label>
             </li>
             <li v-if="!isCollection">
                 <input type="radio" v-model="user_type" value="parent" :disabled="isDeleted"
-                       id="user_type_parent"><label for="user_type_parent"> Inherit from parent</label>
+                       id="user_type_parent"><label for="user_type_parent" @click="setRoleFromLabel('parent')"> Inherit from parent</label>
             </li>
             <li>
                 <input type="radio" v-model="user_type" value="patron" :disabled="isDeleted"
-                       id="user_type_patron"><label for="user_type_patron"> Allow patron access</label>
+                       id="user_type_patron"><label for="user_type_patron" @click="setRoleFromLabel('patron')"> Allow patron access</label>
                 <ul id="assigned_principals_editor" class="patron">
                     <li v-for="(patron_princ, index) in selected_patron_assignments" v-bind:key="index" class="patron-assigned">
                         <p>{{ principalDisplayName(patron_princ.principal, allowed_principals) }}</p>
@@ -69,7 +69,7 @@
             </li>
             <li>
                 <input type="radio" v-model="user_type" value="staff" :disabled="isDeleted"
-                       id="user_type_staff"> <label for="user_type_staff"> Staff only access</label>
+                       id="user_type_staff"> <label for="user_type_staff" @click="setRoleFromLabel('staff')"> Staff only access</label>
             </li>
         </ul>
 
@@ -92,8 +92,8 @@
 </template>
 
 <script>
-    import patronDisplayRow from './patronDisplayRow';
-    import embargo from './embargo';
+    import patronDisplayRow from './patronDisplayRow.vue';
+    import embargo from './embargo.vue';
     import displayModal from '../mixins/displayModal';
     import patronHelpers from '../mixins/patronHelpers';
     import axios from 'axios';
@@ -278,6 +278,10 @@
                         d.type = type;
                     });
                 }
+            },
+
+            setRoleFromLabel(type){
+                this.user_type = type;
             },
 
             getRoles() {

@@ -112,7 +112,7 @@
 </template>
 
 <script>
-    import staffRolesSelect from "./staffRolesSelect";
+    import staffRolesSelect from "./staffRolesSelect.vue";
     import staffRoleList from "../mixins/staffRoleList";
     import displayModal from "../mixins/displayModal";
     import axios from 'axios';

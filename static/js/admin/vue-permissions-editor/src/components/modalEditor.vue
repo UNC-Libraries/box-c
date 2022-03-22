@@ -41,8 +41,8 @@
 </template>
 
 <script>
-    import patronRoles from './patronRoles';
-    import staffRoles from "./staffRoles";
+    import patronRoles from './patronRoles.vue';
+    import staffRoles from "./staffRoles.vue";
     import { mapState } from 'vuex';
 
     export default {

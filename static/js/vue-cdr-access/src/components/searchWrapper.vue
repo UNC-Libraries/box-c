@@ -37,11 +37,11 @@ Top level component wrapper for search pages
 </template>
 
 <script>
-    import browseSort from "./browseSort";
-    import facets from "./facets";
-    import filterTags from "./filterTags";
-    import listDisplay from "./listDisplay";
-    import pagination from "./pagination";
+    import browseSort from "./browseSort.vue";
+    import facets from "./facets.vue";
+    import filterTags from "./filterTags.vue";
+    import listDisplay from "./listDisplay.vue";
+    import pagination from "./pagination.vue";
     import routeUtils from "../mixins/routeUtils";
     import get from 'axios';
 

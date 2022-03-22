@@ -1,7 +1,7 @@
 import { shallowMount } from '@vue/test-utils';
 import embargo from '@/components/embargo.vue';
 import { addYears, format } from 'date-fns';
-import store from '../../src/store';
+import store from '@/store';
 
 const testDate = '2099-01-01';
 let embargo_from_server = {
@@ -126,7 +126,7 @@ describe('embargo.vue', () => {
         await setStartingEmbargo();
         expect(wrapper.vm.$store.state.embargoInfo.embargo).toBe(testDate);
 
-        await wrapper.find("#embargo-1year").trigger('click');
+        await wrapper.find("#embargo-1year").setValue();
 
         let next_year = format(addYears(new Date(), 1), 'yyyy-LL-dd');
         expect(wrapper.vm.$store.state.embargoInfo.embargo).toEqual(next_year);
@@ -226,7 +226,7 @@ describe('embargo.vue', () => {
 
     it("In bulk mode, clearing embargo sends event", async () => {
         await setToBulkMode();
-        await wrapper.find("#embargo-clear").trigger('click');
+        await wrapper.find("#embargo-clear").setValue();
 
         expect(wrapper.vm.embargo_type).toEqual('clear');
         expect(wrapper.vm.$store.state.embargoInfo).toEqual({
@@ -237,8 +237,8 @@ describe('embargo.vue', () => {
 
     it("In bulk mode, setting no change to embargo sends event", async () => {
         await setToBulkMode();
-        await wrapper.find("#embargo-1year").trigger('click');
-        await wrapper.find("#embargo-ignore").trigger('click');
+        await wrapper.find("#embargo-1year").setValue();
+        await wrapper.find("#embargo-ignore").setValue();
 
         expect(wrapper.vm.embargo_type).toEqual('ignore');
         expect(wrapper.vm.$store.state.embargoInfo).toEqual({
@@ -249,7 +249,7 @@ describe('embargo.vue', () => {
 
     it("In bulk mode, setting embargo duration sends event", async () => {
         await setToBulkMode();
-        await wrapper.find("#embargo-1year").trigger('click');
+        await wrapper.find("#embargo-1year").setValue();
 
         expect(wrapper.vm.embargo_type).toEqual('1year');
         let next_year = format(addYears(new Date(), 1), 'yyyy-LL-dd');

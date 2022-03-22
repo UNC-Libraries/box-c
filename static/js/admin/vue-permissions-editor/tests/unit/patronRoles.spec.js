@@ -1,7 +1,7 @@
 import {shallowMount} from '@vue/test-utils';
 import patronRoles from '@/components/patronRoles.vue';
 import moxios from 'moxios';
-import store from '../../src/store';
+import store from '@/store';
 
 const UUID = '73bc003c-9603-4cd9-8a65-93a22520ef6a';
 const embargo_date = '2099-01-01';
@@ -99,7 +99,7 @@ describe('patronRoles.vue', () => {
         moxios.wait(async () => {
             expect(wrapper.vm.hasUnsavedChanges).toBe(false);
 
-            await wrapper.find('#user_type_staff').trigger('click');
+            await wrapper.find('#user_type_staff').setValue();
             expect(wrapper.vm.user_type).toEqual('staff');
 
             expect(wrapper.vm.hasUnsavedChanges).toBe(true);
@@ -405,7 +405,7 @@ describe('patronRoles.vue', () => {
         moxios.wait(async () => {
             expect(wrapper.vm.assignedPatronRoles).toEqual(expected_assigned);
 
-            await wrapper.find('#user_type_parent').trigger('click');
+            await wrapper.find('#user_type_parent').setValue();
             expect(wrapper.vm.assignedPatronRoles).toEqual([]);
 
             let assigned_patrons = wrapper.findAll('.patron-assigned');
@@ -417,7 +417,7 @@ describe('patronRoles.vue', () => {
             expect(assigned_patrons[2].findAll('p')[0].text()).toEqual('Special Group');
             expect(assigned_patrons[2].findAll('select')[0].element.value).toEqual('canViewOriginals');
 
-            await wrapper.find('#user_type_patron').trigger('click');
+            await wrapper.find('#user_type_patron').setValue();
             expect(wrapper.vm.assignedPatronRoles).toEqual(expected_assigned);
 
             done();
@@ -632,13 +632,13 @@ describe('patronRoles.vue', () => {
             await wrapper.find('label[for="user_type_staff"]').trigger('click');
             expect(wrapper.vm.user_type).toBe('staff');
 
-            await wrapper.find('#user_type_parent').trigger('click');
+            await wrapper.find('#user_type_parent').setValue();
             expect(wrapper.vm.user_type).toBe('parent');
 
-            await wrapper.find('#user_type_patron').trigger('click');
+            await wrapper.find('#user_type_patron').setValue();
             expect(wrapper.vm.user_type).toBe('patron');
 
-            await wrapper.find('#user_type_staff').trigger('click');
+            await wrapper.find('#user_type_staff').setValue();
             expect(wrapper.vm.user_type).toBe('staff');
 
             done();
@@ -684,7 +684,7 @@ describe('patronRoles.vue', () => {
             expect(selects[0].attributes()).not.toHaveProperty('disabled');
             expect(selects[1].attributes()).not.toHaveProperty('disabled');
 
-            await wrapper.find('#user_type_staff').trigger('click');
+            await wrapper.find('#user_type_staff').setValue();
             expect(wrapper.vm.user_type).toEqual('staff');
             let updated_selects = wrapper.findAll('select');
             expect(updated_selects[0].attributes()).toHaveProperty('disabled');
@@ -740,7 +740,7 @@ describe('patronRoles.vue', () => {
                 {principal: 'authenticated', role: 'canViewAccessCopies', assignedTo: UUID }
             ]);
 
-            await wrapper.find('#user_type_staff').trigger('click');
+            await wrapper.find('#user_type_staff').setValue();
 
             expect(wrapper.vm.displayAssignments).toEqual([
                 { principal: "staff", role: 'none', type: 'assigned', deleted: false, embargo: false, assignedTo: UUID }
@@ -782,7 +782,7 @@ describe('patronRoles.vue', () => {
                 {principal: 'authenticated', role: 'canViewAccessCopies', assignedTo: UUID }
             ]);
 
-            await wrapper.find('#user_type_parent').trigger('click');
+            await wrapper.find('#user_type_parent').setValue();
 
             expect(wrapper.vm.displayAssignments).toEqual([
                 { principal: "patron", role: 'canViewOriginals', type: 'inherited', deleted: false, embargo: false, assignedTo: null }
@@ -1156,10 +1156,10 @@ describe('patronRoles.vue', () => {
             await wrapper.vm.$nextTick();
             expectSaveButtonDisabled();
 
-            await wrapper.find('#user_type_staff').trigger('click');
+            await wrapper.find('#user_type_staff').setValue();
             expectSaveButtonDisabled(false);
 
-            await wrapper.find('#user_type_ignore').trigger('click');
+            await wrapper.find('#user_type_ignore').setValue();
             expectSaveButtonDisabled();
             done();
         });
@@ -1169,7 +1169,7 @@ describe('patronRoles.vue', () => {
         mountBulk(resultObjectsTwoFolders);
 
         moxios.wait(async () => {
-            await wrapper.find('#user_type_staff').trigger('click');
+            await wrapper.find('#user_type_staff').setValue();
 
             expect(wrapper.vm.user_type).toEqual('staff');
             expect(wrapper.vm.assignedPatronRoles).toEqual([
@@ -1184,21 +1184,18 @@ describe('patronRoles.vue', () => {
         });
     });
 
-    it("Can submit custom groups during bulk update", async(done) => {
-        stubAllowedPrincipals([{principal: "my:special:group", name: "Special Group"}]);
+    it("Can submit custom groups during bulk update", (done) => {
         mountBulk(resultObjectsTwoFolders);
 
         moxios.wait(async () => {
-            await wrapper.find('#user_type_patron').trigger('click');
-            await wrapper.findAll('.patron-assigned')[0].findAll('option')[1].setSelected();
-            await wrapper.findAll('.patron-assigned')[1].findAll('option')[2].setSelected();
-
-            // Click to show the add other principal inputs
-            await wrapper.find('#add-principal').trigger('click');
-            // Select values for new patron role and then click the add button again
-            await wrapper.findAll('#add-new-patron-principal-id option')[0].setSelected();
-            await wrapper.findAll('#add-new-patron-principal-role option')[4].setSelected();
-            await wrapper.find('#add-principal').trigger('click');
+            await wrapper.setData({
+                allowed_principals: [{ name: 'Special Group', principal: 'my:special:group'}],
+                selected_patron_assignments: [
+                    { principal: 'everyone', role: 'canViewMetadata', assignedTo: null },
+                    { principal: 'authenticated', role: 'canViewAccessCopies', assignedTo: null },
+                    { principal: 'my:special:group', role: 'canViewOriginals', assignedTo: null }
+                ]
+            });
 
             stubBulkDataSaveResponse();
             await wrapper.find('#is-submitting').trigger('click');
