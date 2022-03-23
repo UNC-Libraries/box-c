@@ -17,6 +17,7 @@ Search form component displayed on full record pages, allowing keyword searches 
                 <span class="icon is-small">
                     <i class="fas fa-times"></i>
                 </span> {{ $t('search.clear_search')}}</a>
+            <clear-facets-button></clear-facets-button>
             <filter-tags :facet-list="facetList"></filter-tags>
         </div>
     </div>
@@ -25,11 +26,12 @@ Search form component displayed on full record pages, allowing keyword searches 
 <script>
     import routeUtils from '../mixins/routeUtils';
     import filterTags from "./filterTags";
+    import clearFacetsButton from "./clearFacetsButton";
 
     export default {
         name: 'browseSearch',
 
-        components: {filterTags},
+        components: {filterTags, clearFacetsButton},
 
         props: {
             objectType: {
@@ -77,7 +79,12 @@ Search form component displayed on full record pages, allowing keyword searches 
             },
 
             clearSearch() {
-                this.routeWithParams(this.removeQueryParameters(['anywhere']));
+                const params_to_remove = this.possible_facet_fields.concat(['anywhere']);
+                this.routeWithParams(this.removeQueryParameters(params_to_remove));
+            },
+
+            clearAllFacets() {
+                this.routeWithParams(this.removeQueryParameters(this.possible_facet_fields));
             }
         },
 
@@ -107,8 +114,7 @@ Search form component displayed on full record pages, allowing keyword searches 
     }
 
     .button {
-        background-color: #F0F0F0;
-        margin-top: 10px;
+        margin-right: 6px;
     }
 
     input, button {

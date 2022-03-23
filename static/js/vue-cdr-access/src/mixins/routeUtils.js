@@ -103,6 +103,22 @@ export default {
         },
 
         /**
+         * Checks the current URLs query parameters against the provided list of parameter names,
+         * returning true if at least one parameter is present and not empty.
+         * @param param_names
+         * @returns {boolean}
+         */
+        anyParamsPopulated(param_names) {
+            const params = Object.assign({}, this.$route.query);
+            for (const name of param_names) {
+                if (name in params && params[name]) {
+                    return true;
+                }
+            }
+            return false;
+        },
+
+        /**
          * Vue router doesn't seem to like dynamically adding params to current route
          * So catch any duplicate navigation errors and ignore
          * @param error

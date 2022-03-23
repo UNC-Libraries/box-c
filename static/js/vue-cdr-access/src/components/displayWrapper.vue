@@ -20,7 +20,7 @@ Top level component for full record pages with searching/browsing, including Adm
         <img v-if="is_page_loading" src="/static/images/ajax-loader-lg.gif" alt="data loading icon">
         <div v-if="showWidget && !is_page_loading" class="columns">
             <div class="facet-list column is-one-quarter facets-border">
-                <facets :facet-list="facet_list" :min-created-year="minimumCreatedYear"></facets>
+                <facets :facet-list="facet_list" :min-created-year="minimumCreatedYear" :show-clear-button="false"></facets>
             </div>
             <div class="column is-three-quarters">
                 <browse-display v-if="isBrowseDisplay" :record-list="record_list"></browse-display>
@@ -206,8 +206,14 @@ Top level component for full record pages with searching/browsing, including Adm
         padding-left: 50px;
     }
 
+    #facetList {
+        .facet-header {
+            padding: 0 0 20px 0;
+        }
+    }
+
     #facetList.contentarea {
-        margin: 20px;
+        margin: 0 20px 20px 38px;
     }
 
     @media screen and (max-width: 768px) {

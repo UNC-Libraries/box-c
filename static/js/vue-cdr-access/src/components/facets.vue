@@ -3,35 +3,30 @@ Facet list component, used to display all the values of facets and provide links
 -->
 <template>
     <div id="facetList" class="contentarea">
-        <a v-if="selected_facets.length > 0" id="clear-all" class="button is-link is-small" @click.prevent="clearAll()">
-            <span class="icon is-small">
-                <i class="fas fa-times"></i>
-            </span> {{ $t('facets.clear')}}</a>
+        <clear-facets-button v-if="showClearButton"></clear-facets-button>
         <h2 class="facet-header">{{ $t('facets.filter') }}</h2>
         <div class="facet-display" v-for="facet in this.sortedFacetsList">
-            <div v-if="showFacetDisplay(facet)">
-                <h3>{{ facetName(facet.name) }}</h3>
-                <ul v-if="facet.name !=='DATE_CREATED_YEAR'" >
-                    <li v-for="value in facet.values">
-                        <a class="is-selected" v-if="isSelected(value.limitToValue)" @click.prevent="updateAll(value, true)">
-                            {{ value.displayValue }} ({{ value.count }}) <i class="fas fa-times"></i></a>
-                        <a v-else @click.prevent="updateAll(value)">{{ value.displayValue }} ({{ value.count }})</a>
-                    </li>
-                </ul>
-                <slider v-if="facet.name === 'DATE_CREATED_YEAR'" ref="sliderInfo"
-                        :start-range="[dates.selected_dates.start, currentYear]"
-                        :range-values="{min: dates.selected_dates.start, max: currentYear}" @sliderUpdated="sliderUpdated"></slider>
-                <form v-if="facet.name === 'DATE_CREATED_YEAR'">
-                    <input type="number" v-model="dates.selected_dates.start" name="start_date"
-                           aria-label="Start Date" placeholder="Start Date" />
-                    &ndash;
-                    <input type="number" v-model="dates.selected_dates.end" name="end_date"
-                           aria-label="End Date" placeholder="End Date" />
-                    <br />
-                    <input type="submit" value="Limit" @click.prevent="setDateFacetUrl()" class="button is-small" />
-                    <p class="date_error" v-if="dates.invalid_date_range">The start date cannot be after the end date</p>
-                </form>
-            </div>
+            <h3>{{ facetName(facet.name) }}</h3>
+            <ul v-if="facet.name !=='DATE_CREATED_YEAR'" >
+                <li v-for="value in facet.values">
+                    <a class="is-selected" v-if="isSelected(value.limitToValue)" @click.prevent="updateAll(value, true)">
+                        {{ value.displayValue }} ({{ value.count }}) <i class="fas fa-times"></i></a>
+                    <a v-else @click.prevent="updateAll(value)">{{ value.displayValue }} ({{ value.count }})</a>
+                </li>
+            </ul>
+            <slider v-if="facet.name === 'DATE_CREATED_YEAR'" ref="sliderInfo"
+                    :start-range="[dates.selected_dates.start, currentYear]"
+                    :range-values="{min: dates.selected_dates.start, max: currentYear}" @sliderUpdated="sliderUpdated"></slider>
+            <form v-if="facet.name === 'DATE_CREATED_YEAR'">
+                <input type="number" v-model="dates.selected_dates.start" name="start_date"
+                       aria-label="Start Date" placeholder="Start Date" />
+                &ndash;
+                <input type="number" v-model="dates.selected_dates.end" name="end_date"
+                       aria-label="End Date" placeholder="End Date" />
+                <br />
+                <input type="submit" value="Limit" @click.prevent="setDateFacetUrl()" class="button is-small" />
+                <p class="date_error" v-if="dates.invalid_date_range">The start date cannot be after the end date</p>
+            </form>
         </div>
     </div>
 </template>
@@ -39,6 +34,7 @@ Facet list component, used to display all the values of facets and provide links
 <script>
     import sortBy from 'lodash.sortby';
     import slider from "@/components/slider";
+    import clearFacetsButton from "./clearFacetsButton";
     import routeUtils from '../mixins/routeUtils';
 
     const UUID_REGEX = /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i;
@@ -47,11 +43,15 @@ Facet list component, used to display all the values of facets and provide links
     export default {
         name: 'facets',
 
-        components: {slider},
+        components: {slider, clearFacetsButton},
 
         props: {
             facetList: Array,
-            minCreatedYear: Number
+            minCreatedYear: Number,
+            showClearButton: {
+                default: true,
+                type: Boolean
+            }
         },
 
         mixins: [routeUtils],
@@ -107,12 +107,13 @@ Facet list component, used to display all the values of facets and provide links
             },
 
             sortedFacetsList() {
-                return this.facetList.map((facet) => {
-                    if (facet.name === 'CONTENT_TYPE') {
-                        facet.values = sortBy(facet.values, ['limitToValue', 'count']);
-                    }
-
-                    return facet;
+                return this.facetList
+                    .filter((facet) => this.showFacetDisplay(facet))
+                    .map((facet) => {
+                        if (facet.name === 'CONTENT_TYPE') {
+                            facet.values = sortBy(facet.values, ['limitToValue', 'count']);
+                        }
+                        return facet;
                 });
             },
 
@@ -122,11 +123,6 @@ Facet list component, used to display all the values of facets and provide links
         },
 
         methods: {
-            clearAll() {
-                this.selected_facets = [];
-                this.selectedFacets();
-            },
-
             updateAll(facet, remove = false) {
                 if (remove) {
                     this.facetInfoRemove(facet);
@@ -411,19 +407,11 @@ Facet list component, used to display all the values of facets and provide links
             padding-top: 5px;
         }
 
-        .is-link {
-            background-color: $cdr-blue;
-            border-radius: 5px;
-            font-size: .85rem;
-            margin-bottom: 10px;
-            margin-top: 12px;
-            padding: 1.1em 0.8em 1.1em 1.2em;
-        }
-
         .facet-header {
             color: black;
             font-size: 20px;
             padding: 18px 0 20px 0;
+            margin: 0;
         }
 
         .facet-display {
@@ -443,14 +431,6 @@ Facet list component, used to display all the values of facets and provide links
             .is-selected {
                 color: black;
                 text-decoration: none;
-            }
-        }
-
-        a.button {
-            width: initial;
-
-            span {
-                padding-right: 10px;
             }
         }
 

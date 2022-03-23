@@ -1,4 +1,4 @@
-import {shallowMount, flushPromises, mount} from '@vue/test-utils'
+import {flushPromises, mount} from '@vue/test-utils'
 import { createRouter, createWebHistory } from 'vue-router';
 import facets from '@/components/facets';
 import searchWrapper from '@/components/searchWrapper';
@@ -33,7 +33,7 @@ describe('facets.vue', () => {
             ]
         });
 
-        wrapper = shallowMount(facets, {
+        wrapper = mount(facets, {
             global: {
                 plugins: [router, i18n]
             },
@@ -129,7 +129,7 @@ describe('facets.vue', () => {
     });
 
     it("does not display facets with no returned results", () => {
-        let emptyFacetWrapper = shallowMount(facets, {
+        let emptyFacetWrapper = mount(facets, {
             global: {
                 plugins: [router, i18n]
             },
@@ -188,7 +188,7 @@ describe('facets.vue', () => {
     });
 
     it("does not display date facets with no minimum search year set", () => {
-        let emptyFacetWrapper = shallowMount(facets, {
+        let emptyFacetWrapper = mount(facets, {
             global: {
                 plugins: [router, i18n]
             },
@@ -243,15 +243,15 @@ describe('facets.vue', () => {
     });
 
     it("displays a clear all facets button", async () => {
-        expect(wrapper.find('#clear-all').exists()).toBe(false);
+        expect(wrapper.find('.clear-all-facets').exists()).toBe(false);
         await router.push('/search/?collection=d77fd8c9-744b-42ab-8e20-5ad9bdf8194e');
         selected_facet.trigger('click');
         await flushPromises();
-        expect(wrapper.find('#clear-all').isVisible()).toBe(true);
+        expect(wrapper.find('.clear-all-facets').isVisible()).toBe(true);
     });
 
     it("does not display a clear all facets button if no facets are selected", async () => {
-        expect(wrapper.find('#clear-all').exists()).toBe(false);
+        expect(wrapper.find('.clear-all-facets').exists()).toBe(false);
     });
 
     it("clears all selected facets if 'Clear Filters' button is clicked", async () => {
@@ -260,7 +260,7 @@ describe('facets.vue', () => {
         await flushPromises();
         expect(wrapper.vm.selected_facets).toContain('format=image');
 
-        await wrapper.find('#clear-all').trigger('click');
+        await wrapper.find('.clear-all-facets').trigger('click');
         await flushPromises();
         expect(wrapper.vm.selected_facets).toEqual([]);
     });
