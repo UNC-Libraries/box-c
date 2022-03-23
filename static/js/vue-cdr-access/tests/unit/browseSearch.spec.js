@@ -1,4 +1,4 @@
-import { shallowMount, flushPromises } from '@vue/test-utils';
+import { shallowMount, flushPromises, mount } from '@vue/test-utils';
 import { createI18n } from 'vue-i18n';
 import  { createRouter, createWebHistory } from 'vue-router';
 import browseSearch from '@/components/browseSearch.vue';
@@ -26,7 +26,7 @@ describe('browseSearch.vue', () => {
                 }
             ]
         });
-        wrapper = shallowMount(browseSearch, {
+        wrapper = mount(browseSearch, {
             global: {
                 plugins: [i18n, router]
             },
@@ -62,6 +62,22 @@ describe('browseSearch.vue', () => {
         expect(wrapper.vm.$router.currentRoute.value.query.anywhere).not.toBeDefined();
     });
 
+    it("start over button clears keyword and facets", async() => {
+        await router.push('/record/1234?anywhere=test&subject=topic');
+        await flushPromises();
+
+        expect(wrapper.vm.$router.currentRoute.value.query.anywhere).toEqual("test");
+        expect(wrapper.vm.$router.currentRoute.value.query.subject).toEqual("topic");
+
+        let clearLink = wrapper.find('a#clear-results');
+        expect(clearLink.classes()).not.toContain('disabled');
+
+        await clearLink.trigger('click');
+        await flushPromises();
+        expect(wrapper.vm.$router.currentRoute.value.query.anywhere).not.toBeDefined();
+        expect(wrapper.vm.$router.currentRoute.value.query.subject).not.toBeDefined();
+    });
+
     it("sets placeholder text from the object type", () => {
         expect(wrapper.find('input').attributes('placeholder')).toBe('Search within this folder');
     });
@@ -73,7 +89,7 @@ describe('browseSearch.vue', () => {
             query: { anywhere: encodeURIComponent('Test Folder') }
         };
 
-        wrapper = shallowMount(browseSearch, {
+        wrapper = mount(browseSearch, {
             global: {
                 mocks: {
                     $route
@@ -91,7 +107,7 @@ describe('browseSearch.vue', () => {
             query: { anywhere: encodeURIComponent('Test Folder') }
         };
 
-        wrapper = shallowMount(browseSearch, {
+        wrapper = mount(browseSearch, {
             global: {
                 mocks: {
                     $route
@@ -104,5 +120,32 @@ describe('browseSearch.vue', () => {
         });
 
         expect(wrapper.vm.search_query).toEqual('Test Folder');
+    });
+
+    it("clear all facets button not displayed when no facets selected", async() => {
+        await router.push('/record/1234?anywhere=test');
+        await flushPromises();
+        let clearFacetsButton = wrapper.find('.clear-all-facets');
+
+        expect(clearFacetsButton.exists()).toBe(false);
+        expect(wrapper.vm.$router.currentRoute.value.query.anywhere).toEqual(encodeURIComponent('test'));
+        expect(wrapper.vm.$router.currentRoute.value.query.subject).not.toBeDefined();
+    });
+
+    it("displays and uses clear all facets button", async() => {
+        await router.push('/record/1234?anywhere=test&subject=topic');
+        await flushPromises();
+        let clearFacetsButton = wrapper.find('.clear-all-facets');
+        expect(clearFacetsButton.exists()).toBe(true);
+        expect(wrapper.vm.$router.currentRoute.value.query.anywhere).toEqual(encodeURIComponent('test'));
+        expect(wrapper.vm.$router.currentRoute.value.query.subject).toEqual(encodeURIComponent('topic'));
+
+        await clearFacetsButton.trigger('click');
+        await flushPromises();
+
+        clearFacetsButton = wrapper.find('.clear-all-facets');
+        expect(clearFacetsButton.exists()).toBe(false);
+        expect(wrapper.vm.$router.currentRoute.value.query.anywhere).toEqual(encodeURIComponent('test'));
+        expect(wrapper.vm.$router.currentRoute.value.query.subject).not.toBeDefined();
     });
 });

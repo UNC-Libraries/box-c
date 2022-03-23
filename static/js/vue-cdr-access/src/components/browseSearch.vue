@@ -13,7 +13,8 @@ Search form component displayed on full record pages, allowing keyword searches 
             </div>
         </div>
         <div class="clear-options">
-            <a id="clear-results" class="button is-link is-small" href="#" @click.prevent="clearSearch">
+            <a id="clear-results" class="button is-link is-small" v-bind:class="{ 'disabled' : !this.enableStartOverButton}"
+                    href="#" @click.prevent="clearSearch">
                 <span class="icon is-small">
                     <i class="fas fa-times"></i>
                 </span> {{ $t('search.clear_search')}}</a>
@@ -69,6 +70,12 @@ Search form component displayed on full record pages, allowing keyword searches 
                 const object_type = this.objectType.toLowerCase();
                 const object_text = (object_type === 'adminunit') ? 'collection' : object_type;
                 return `Search within this ${object_text}`
+            },
+            allPossibleSearchParameters() {
+                return this.possible_facet_fields.concat(['anywhere']);
+            },
+            enableStartOverButton() {
+                return this.anyParamsPopulated(this.allPossibleSearchParameters);
             }
         },
 
@@ -79,8 +86,7 @@ Search form component displayed on full record pages, allowing keyword searches 
             },
 
             clearSearch() {
-                const params_to_remove = this.possible_facet_fields.concat(['anywhere']);
-                this.routeWithParams(this.removeQueryParameters(params_to_remove));
+                this.routeWithParams(this.removeQueryParameters(this.allPossibleSearchParameters));
             },
 
             clearAllFacets() {

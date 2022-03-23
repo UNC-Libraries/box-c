@@ -17,6 +17,12 @@ $cdr-blue: #1A698C;
 a.button.is-link {
     width: initial;
 
+    &.disabled {
+        background-color: #fff;
+        border-color: #dbdbdb;
+        color: #555;
+    }
+
     span {
         padding-right: 10px;
     }
