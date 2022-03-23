@@ -7,7 +7,7 @@ Top level component wrapper for search pages
             Search results for "{{ $route.query.anywhere }}"
             <filter-tags :facet-list="facet_list"></filter-tags>
         </div>
-        <img v-if="is_loading" src="https://dcr.lib.unc.edu/static/images/ajax-loader-lg.gif" alt="data loading icon">
+        <img v-if="is_loading" :src="nonVueStaticImageUrl('ajax-loader-lg.gif')" alt="data loading icon">
         <div v-if="!is_loading">
             <div class="columns">
                 <div v-if="hasFacets" class="facet-list column is-one-quarter facets-border border-box-left-top">
@@ -87,6 +87,9 @@ Top level component wrapper for search pages
 
             hasFacets() {
                 return this.facet_list.map(f => f.values).flat().length > 0;
+            },
+            stuff(){
+                return ajaxLoaderLg;
             },
 
             facetsWithNoResults() {
