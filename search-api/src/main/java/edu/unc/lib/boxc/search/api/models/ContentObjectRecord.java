@@ -101,9 +101,9 @@ public interface ContentObjectRecord {
 
     public String getIdentifierSort();
 
-    public String getLabel();
-
     public String getTitle();
+
+    public String getAncestorNames();
 
     public List<String> getOtherTitle();
 

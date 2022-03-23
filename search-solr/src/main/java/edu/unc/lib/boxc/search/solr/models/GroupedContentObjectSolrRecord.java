@@ -149,6 +149,11 @@ public class GroupedContentObjectSolrRecord implements GroupedContentObjectRecor
     }
 
     @Override
+    public String getAncestorNames() {
+        return this.representative.getAncestorNames();
+    }
+
+    @Override
     public String getParentCollection() {
         return this.representative.getParentCollection();
     }
@@ -246,11 +251,6 @@ public class GroupedContentObjectSolrRecord implements GroupedContentObjectRecor
     @Override
     public List<String> getIdentifier() {
         return this.representative.getIdentifier();
-    }
-
-    @Override
-    public String getLabel() {
-        return this.representative.getLabel();
     }
 
     @Override

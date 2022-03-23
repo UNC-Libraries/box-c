@@ -33,6 +33,7 @@ import edu.unc.lib.boxc.search.api.facets.HierarchicalFacet;
 import edu.unc.lib.boxc.search.api.models.ContentObjectRecord;
 import edu.unc.lib.boxc.search.api.models.Datastream;
 import edu.unc.lib.boxc.search.api.models.ObjectPath;
+import edu.unc.lib.boxc.search.api.models.ObjectPathEntry;
 import edu.unc.lib.boxc.search.solr.facets.CutoffFacetImpl;
 import edu.unc.lib.boxc.search.solr.facets.MultivaluedHierarchicalFacet;
 import edu.unc.lib.boxc.search.solr.services.ObjectPathFactory;
@@ -51,6 +52,7 @@ public class ContentObjectSolrRecord extends IndexDocumentBean implements Conten
     protected CutoffFacetImpl ancestorPathFacet;
     protected CutoffFacetImpl path;
     protected ObjectPath objectPath;
+    protected String ancestorNames;
     protected String parentName;
     protected List<HierarchicalFacet> contentTypeFacet;
     protected List<Datastream> datastreamObjects;
@@ -294,6 +296,26 @@ public class ContentObjectSolrRecord extends IndexDocumentBean implements Conten
 
     public static void setPathFactory(ObjectPathFactory pathFactory) {
         ContentObjectSolrRecord.pathFactory = pathFactory;
+    }
+
+    @Override
+    public String getAncestorNames() {
+        if (ancestorNames == null) {
+            if (objectPath == null && pathFactory != null) {
+                objectPath = pathFactory.getPath(this);
+            }
+
+            if (objectPath != null) {
+                StringBuilder ancestorNames = new StringBuilder();
+                for (ObjectPathEntry entry : objectPath.getEntries()) {
+                    ancestorNames.append('/').append(entry.getName().replaceAll("\\/", "\\\\/"));
+                }
+
+                this.ancestorNames = ancestorNames.toString();
+            }
+        }
+
+        return ancestorNames;
     }
 
     @Override

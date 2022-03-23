@@ -39,7 +39,6 @@ import static edu.unc.lib.boxc.search.api.SearchFieldKey.ID;
 import static edu.unc.lib.boxc.search.api.SearchFieldKey.IDENTIFIER;
 import static edu.unc.lib.boxc.search.api.SearchFieldKey.IDENTIFIER_SORT;
 import static edu.unc.lib.boxc.search.api.SearchFieldKey.KEYWORD;
-import static edu.unc.lib.boxc.search.api.SearchFieldKey.LABEL;
 import static edu.unc.lib.boxc.search.api.SearchFieldKey.LANGUAGE;
 import static edu.unc.lib.boxc.search.api.SearchFieldKey.LAST_INDEXED;
 import static edu.unc.lib.boxc.search.api.SearchFieldKey.LOCATION;
@@ -139,15 +138,6 @@ public class IndexDocumentBean {
     @Field
     public void setParentUnit(String parentUnit) {
         fields.put(PARENT_UNIT.getSolrField(), parentUnit);
-    }
-
-    public String getLabel() {
-        return (String) fields.get(LABEL.getSolrField());
-    }
-
-    @Field
-    public void setLabel(String label) {
-        fields.put(LABEL.getSolrField(), label);
     }
 
     public String getRollup() {

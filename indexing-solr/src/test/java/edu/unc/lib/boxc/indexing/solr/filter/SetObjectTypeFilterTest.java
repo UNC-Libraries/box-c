@@ -75,6 +75,7 @@ public class SetObjectTypeFilterTest {
         filter.filter(dip);
 
         verify(idb).setResourceType(eq(ResourceType.Work.name()));
+        verify(idb).setResourceTypeSort(eq(ResourceType.Work.getDisplayOrder()));
     }
 
     @Test
