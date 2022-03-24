@@ -184,11 +184,6 @@ public class GroupedContentObjectSolrRecord implements GroupedContentObjectRecor
     }
 
     @Override
-    public List<String> getRelation(String relationName) {
-        return this.representative.getRelation(relationName);
-    }
-
-    @Override
     public String getResourceType() {
         return this.representative.getResourceType();
     }
@@ -341,11 +336,6 @@ public class GroupedContentObjectSolrRecord implements GroupedContentObjectRecor
     @Override
     public Map<String, Object> getDynamicFields() {
         return this.representative.getDynamicFields();
-    }
-
-    @Override
-    public Date getActiveEmbargo() {
-        return representative.getActiveEmbargo();
     }
 
     @Override

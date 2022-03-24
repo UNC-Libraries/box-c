@@ -17,7 +17,6 @@ package edu.unc.lib.boxc.search.solr.models;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -26,8 +25,6 @@ import org.apache.solr.client.solrj.beans.Field;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import edu.unc.lib.boxc.common.util.DateTimeUtil;
-import edu.unc.lib.boxc.model.api.rdf.CdrAcl;
 import edu.unc.lib.boxc.search.api.SearchFieldKey;
 import edu.unc.lib.boxc.search.api.facets.HierarchicalFacet;
 import edu.unc.lib.boxc.search.api.models.ContentObjectRecord;
@@ -193,14 +190,6 @@ public class ContentObjectSolrRecord extends IndexDocumentBean implements Conten
     }
 
     @Override
-    public List<String> getRelation(String relationName) {
-        if (relationsMap == null) {
-            return null;
-        }
-        return this.relationsMap.get(relationName);
-    }
-
-    @Override
     public String toString() {
         StringBuffer sb = new StringBuffer();
         sb.append("id: " + getId() + "\n");
@@ -253,30 +242,6 @@ public class ContentObjectSolrRecord extends IndexDocumentBean implements Conten
     @Override
     public void setCountMap(Map<String, Long> countMap) {
         this.countMap = countMap;
-    }
-
-    @Override
-    public Date getActiveEmbargo() {
-        List<String> embargoUntil = getRelation(CdrAcl.embargoUntil.getURI());
-        if (embargoUntil != null) {
-            Date result = null;
-            Date dateNow = new Date();
-            for (String embargo : embargoUntil) {
-                Date embargoDate;
-                try {
-                    embargoDate = DateTimeUtil.parseUTCToDate(embargo);
-                    if (embargoDate.after(dateNow)) {
-                        if (result == null || embargoDate.after(result)) {
-                            result = embargoDate;
-                        }
-                    }
-                } catch (IllegalArgumentException e) {
-                    LOG.error("Failed to parse embargo", e);
-                }
-            }
-            return result;
-        }
-        return null;
     }
 
     @Override

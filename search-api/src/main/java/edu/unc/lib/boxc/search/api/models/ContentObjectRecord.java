@@ -73,8 +73,6 @@ public interface ContentObjectRecord {
 
     public Long getFilesizeTotal();
 
-    public List<String> getRelation(String relationName);
-
     public String getResourceType();
 
     public Integer getResourceTypeSort();
@@ -140,8 +138,6 @@ public interface ContentObjectRecord {
     public String getFullText();
 
     public Map<String,Object> getDynamicFields();
-
-    public Date getActiveEmbargo();
 
     String getCollectionId();
 
