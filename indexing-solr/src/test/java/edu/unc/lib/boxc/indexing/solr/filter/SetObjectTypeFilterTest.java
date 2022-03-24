@@ -88,6 +88,7 @@ public class SetObjectTypeFilterTest {
         filter.filter(dip);
 
         verify(idb).setResourceType(eq(ResourceType.AdminUnit.name()));
+        verify(idb).setResourceTypeSort(eq(ResourceType.AdminUnit.getDisplayOrder()));
     }
 
     @Test(expected = IndexingException.class)
