@@ -87,7 +87,6 @@ Top level component for full record pages with searching/browsing, including Adm
                 record_count: 0,
                 record_list: [],
                 facet_list: [],
-                min_created_year: undefined,
                 search_method: 'listJson',
                 uuid: ''
             }
@@ -104,13 +103,6 @@ Top level component for full record pages with searching/browsing, including Adm
 
             showWorksOnly() {
                 return this.showWidget || this.coerceWorksOnly(this.$route.query.works_only);
-            },
-
-            minimumCreatedYear() {
-                if (this.min_created_year !== undefined) {
-                    return parseInt(this.min_created_year)
-                }
-                return undefined;
             }
         },
 
@@ -125,6 +117,7 @@ Top level component for full record pages with searching/browsing, including Adm
                     this.facet_list = response.data.facetFields;
                     this.container_name = response.data.container.title;
                     this.container_metadata = response.data.container;
+                    this.min_created_year = response.data.minSearchYear;
                     this.is_page_loading = false;
                 }).catch(function (error) {
                     console.log(error);

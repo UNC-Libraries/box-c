@@ -4,7 +4,8 @@ export default {
     data() {
         return {
             rows_per_page: this.$route.query.rows || 20,
-            possible_facet_fields: ['collection', 'createdYear', 'format', 'language', 'subject', 'location']
+            possible_facet_fields: ['collection', 'createdYear', 'format', 'language', 'subject', 'location'],
+            min_created_year: undefined
         }
     },
 
@@ -152,6 +153,15 @@ export default {
                     throw e;
                 }
             });
+        }
+    },
+
+    computed: {
+        minimumCreatedYear() {
+            if (this.min_created_year !== undefined) {
+                return parseInt(this.min_created_year)
+            }
+            return undefined;
         }
     }
 }

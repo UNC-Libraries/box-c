@@ -1,4 +1,4 @@
-import { shallowMount, flushPromises, mount } from '@vue/test-utils';
+import { flushPromises, mount } from '@vue/test-utils';
 import { createI18n } from 'vue-i18n';
 import  { createRouter, createWebHistory } from 'vue-router';
 import browseSearch from '@/components/browseSearch.vue';

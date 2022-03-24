@@ -60,7 +60,6 @@ Top level component wrapper for search pages
                 collection: '',
                 facet_list: [],
                 is_loading: true,
-                min_created_year: undefined,
                 records: [],
                 total_records: 0
             }
@@ -94,13 +93,6 @@ Top level component wrapper for search pages
                     return ['column', 'is-three-quarters'];
                 }
                 return [];
-            },
-
-            minimumCreatedYear() {
-                if (this.min_created_year !== undefined) {
-                    return parseInt(this.min_created_year)
-                }
-                return undefined;
             }
         },
 
