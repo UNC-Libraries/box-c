@@ -17,7 +17,6 @@ package edu.unc.lib.boxc.search.solr.config;
 
 import edu.unc.lib.boxc.model.api.ResourceType;
 import edu.unc.lib.boxc.search.api.SearchFieldKey;
-import edu.unc.lib.boxc.search.solr.facets.CaseInsensitiveFacet;
 import edu.unc.lib.boxc.search.solr.facets.CutoffFacetImpl;
 import edu.unc.lib.boxc.search.solr.facets.GenericFacet;
 import edu.unc.lib.boxc.search.solr.facets.MultivaluedHierarchicalFacet;
@@ -51,15 +50,15 @@ public class SearchSettings extends AbstractSettings {
     public static final String SORT_ORDER_REVERSED = "reverse";
     // Sort types, which are groupings of any number of field names with matching sort orders.
     private static final Map<String, List<SortField>> SORT_TYPES = Map.of(
-            "bestMatch", constructSortFields("SCORE|desc,TITLE|asc,LABEL|asc"),
+            "bestMatch", constructSortFields("SCORE|desc,TITLE|asc"),
             "collection", constructSortFields(
-                    "ANCESTOR_IDS|asc,IDENTIFIER_SORT|asc,DISPLAY_ORDER|asc,TITLE|asc,LABEL|asc"),
+                    "ANCESTOR_IDS|asc,IDENTIFIER_SORT|asc,TITLE|asc"),
             "creator", constructSortFields("CREATOR_SORT|asc"),
             "dateAdded", constructSortFields("DATE_ADDED|desc"),
             "dateCreated", constructSortFields("DATE_CREATED|desc"),
             "dateUpdated", constructSortFields("DATE_UPDATED|desc"),
             "default", constructSortFields(
-                    "SCORE|desc,RESOURCE_TYPE_SORT|asc,IDENTIFIER_SORT|asc,TITLE|asc,LABEL|asc"),
+                    "SCORE|desc,RESOURCE_TYPE_SORT|asc,IDENTIFIER_SORT|asc,TITLE|asc"),
             "resourceType", constructSortFields("RESOURCE_TYPE_SORT|asc"),
             "title", constructSortFields("TITLE_LC|asc,ID|asc")
     );
@@ -87,8 +86,6 @@ public class SearchSettings extends AbstractSettings {
     private static final Map<String, Class<?>> FACET_CLASS_MAP = Map.of(
             SearchFieldKey.ANCESTOR_PATH.name(), CutoffFacetImpl.class,
             SearchFieldKey.CONTENT_TYPE.name(), MultivaluedHierarchicalFacet.class,
-            SearchFieldKey.DEPARTMENT.name(), CaseInsensitiveFacet.class,
-            SearchFieldKey.DEPARTMENT_LC.name(), CaseInsensitiveFacet.class,
             SearchFieldKey.ROLE_GROUP.name(), RoleGroupFacet.class
     );
 

@@ -184,26 +184,6 @@ public class GroupedContentObjectSolrRecord implements GroupedContentObjectRecor
     }
 
     @Override
-    public List<String> getRelations() {
-        return this.representative.getRelations();
-    }
-
-    @Override
-    public List<String> getRelation(String relationName) {
-        return this.representative.getRelation(relationName);
-    }
-
-    @Override
-    public Boolean getIsPart() {
-        return this.representative.getIsPart();
-    }
-
-    @Override
-    public List<String> getContentModel() {
-        return this.representative.getContentModel();
-    }
-
-    @Override
     public String getResourceType() {
         return this.representative.getResourceType();
     }
@@ -221,11 +201,6 @@ public class GroupedContentObjectSolrRecord implements GroupedContentObjectRecor
     @Override
     public String getCreatorSort() {
         return this.representative.getCreatorSort();
-    }
-
-    @Override
-    public Long getDisplayOrder() {
-        return this.representative.getDisplayOrder();
     }
 
     @Override
@@ -271,11 +246,6 @@ public class GroupedContentObjectSolrRecord implements GroupedContentObjectRecor
     @Override
     public List<String> getIdentifier() {
         return this.representative.getIdentifier();
-    }
-
-    @Override
-    public String getLabel() {
-        return this.representative.getLabel();
     }
 
     @Override
@@ -334,11 +304,6 @@ public class GroupedContentObjectSolrRecord implements GroupedContentObjectRecor
     }
 
     @Override
-    public List<String> getDepartment() {
-        return this.representative.getDepartment();
-    }
-
-    @Override
     public Date getDateCreated() {
         return this.representative.getDateCreated();
     }
@@ -371,11 +336,6 @@ public class GroupedContentObjectSolrRecord implements GroupedContentObjectRecor
     @Override
     public Map<String, Object> getDynamicFields() {
         return this.representative.getDynamicFields();
-    }
-
-    @Override
-    public Date getActiveEmbargo() {
-        return representative.getActiveEmbargo();
     }
 
     @Override

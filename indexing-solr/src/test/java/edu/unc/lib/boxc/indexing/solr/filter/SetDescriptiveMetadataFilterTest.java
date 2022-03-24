@@ -138,7 +138,6 @@ public class SetDescriptiveMetadataFilterTest {
         assertTrue(creatorContributors.contains("Test, contributor"));
         assertTrue(creatorContributors.contains("Boxy, Assistant"));
         assertTrue(creatorContributors.contains("Boxy, Role Free"));
-        
 
         assertEquals("Abstract text", idb.getAbstractText());
 

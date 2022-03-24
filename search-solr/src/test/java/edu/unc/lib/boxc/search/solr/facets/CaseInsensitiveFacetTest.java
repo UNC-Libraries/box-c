@@ -23,7 +23,6 @@ import org.junit.Test;
 
 import edu.unc.lib.boxc.search.api.facets.FacetFieldObject;
 import edu.unc.lib.boxc.search.api.facets.SearchFacet;
-import edu.unc.lib.boxc.search.solr.facets.CaseInsensitiveFacet;
 
 public class CaseInsensitiveFacetTest extends Assert {
 

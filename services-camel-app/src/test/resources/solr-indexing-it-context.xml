@@ -35,7 +35,6 @@
                 <ref bean="setContentStatusFilter" />
                 <ref bean="setFullTextFilter" />
                 <ref bean="setObjectTypeFilter" />
-                <ref bean="setRelationsFilter" />
                 <ref bean="setCollectionSupplementalInformationFilter" />
             </list>
         </property>
@@ -48,7 +47,6 @@
                 <ref bean="setRecordDatesFilter" />
                 <ref bean="setAccessControlFilter" />
                 <ref bean="setAccessStatusFilter" />
-                <ref bean="setRelationsFilter" />
             </list>
         </property>
     </bean>
