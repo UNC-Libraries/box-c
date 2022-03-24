@@ -88,9 +88,6 @@ Top level component wrapper for search pages
             hasFacets() {
                 return this.facet_list.map(f => f.values).flat().length > 0;
             },
-            stuff(){
-                return ajaxLoaderLg;
-            },
 
             facetsWithNoResults() {
                 if (this.hasFacets) {

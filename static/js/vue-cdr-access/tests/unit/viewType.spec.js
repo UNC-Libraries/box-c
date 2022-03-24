@@ -1,7 +1,7 @@
 import { shallowMount, flushPromises } from '@vue/test-utils'
 import { createRouter, createWebHistory } from 'vue-router';
-import viewType from '../../src/components/viewType.vue'
-import displayWrapper from "../../src/components/displayWrapper.vue";
+import viewType from '@/components/viewType.vue'
+import displayWrapper from "@/components/displayWrapper.vue";
 import {createI18n} from "vue-i18n";
 import translations from "@/translations";
 

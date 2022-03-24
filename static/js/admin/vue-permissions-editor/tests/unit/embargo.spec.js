@@ -126,7 +126,7 @@ describe('embargo.vue', () => {
         await setStartingEmbargo();
         expect(wrapper.vm.$store.state.embargoInfo.embargo).toBe(testDate);
 
-        await wrapper.find("#embargo-1year").setValue();
+        await wrapper.find("#embargo-1year").trigger('change');
 
         let next_year = format(addYears(new Date(), 1), 'yyyy-LL-dd');
         expect(wrapper.vm.$store.state.embargoInfo.embargo).toEqual(next_year);
@@ -226,7 +226,7 @@ describe('embargo.vue', () => {
 
     it("In bulk mode, clearing embargo sends event", async () => {
         await setToBulkMode();
-        await wrapper.find("#embargo-clear").setValue();
+        await wrapper.find("#embargo-clear").trigger('change');
 
         expect(wrapper.vm.embargo_type).toEqual('clear');
         expect(wrapper.vm.$store.state.embargoInfo).toEqual({
@@ -237,8 +237,8 @@ describe('embargo.vue', () => {
 
     it("In bulk mode, setting no change to embargo sends event", async () => {
         await setToBulkMode();
-        await wrapper.find("#embargo-1year").setValue();
-        await wrapper.find("#embargo-ignore").setValue();
+        await wrapper.find("#embargo-1year").trigger('change');
+        await wrapper.find("#embargo-ignore").trigger('change');
 
         expect(wrapper.vm.embargo_type).toEqual('ignore');
         expect(wrapper.vm.$store.state.embargoInfo).toEqual({
@@ -249,7 +249,7 @@ describe('embargo.vue', () => {
 
     it("In bulk mode, setting embargo duration sends event", async () => {
         await setToBulkMode();
-        await wrapper.find("#embargo-1year").setValue();
+        await wrapper.find("#embargo-1year").trigger('change');
 
         expect(wrapper.vm.embargo_type).toEqual('1year');
         let next_year = format(addYears(new Date(), 1), 'yyyy-LL-dd');

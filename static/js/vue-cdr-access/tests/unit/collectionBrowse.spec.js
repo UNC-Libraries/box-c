@@ -1,5 +1,4 @@
 import { shallowMount } from '@vue/test-utils'
-import { createRouter, createWebHistory } from 'vue-router';
 import collectionBrowse from '@/components/collectionBrowse.vue';
 import moxios from "moxios";
 
