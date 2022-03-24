@@ -1,0 +1,22 @@
+.button.is-link {
+    background-color: #1A698C;
+    border-radius: 5px;
+    font-size: .85rem;
+    margin-bottom: 10px;
+    margin-top: 10px;
+    padding: 1.1em 0.8em 1.1em 1.2em;
+}
+
+a.button.is-link {
+    width: initial;
+}
+
+a.button.is-link.disabled {
+    background-color: #fff;
+    border-color: #dbdbdb;
+    color: #555;
+}
+
+a.button.is-link span {
+    padding-right: 10px;
+}
