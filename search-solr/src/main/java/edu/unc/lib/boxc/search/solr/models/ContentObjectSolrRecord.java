@@ -56,7 +56,6 @@ public class ContentObjectSolrRecord extends IndexDocumentBean implements Conten
     // Inverted map of the roleGroup, clustering roles into buckets by group
     Map<String, Collection<String>> groupRoleMap;
     protected Map<String, Long> countMap;
-    protected Map<String, List<String>> relationsMap;
     protected String thumbnailId;
 
     public ContentObjectSolrRecord() {
