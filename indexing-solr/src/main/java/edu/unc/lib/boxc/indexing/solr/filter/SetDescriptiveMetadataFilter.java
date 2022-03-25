@@ -468,52 +468,51 @@ public class SetDescriptiveMetadataFilter implements IndexDocumentFilter {
     }
 
     private String formatName(Element nameEl) {
-        String nameValue = nameEl.getChildText("displayForm", JDOMNamespaceUtil.MODS_V3_NS);
-        if (nameValue == null) {
-            // If there was no displayForm, then try to get the name parts.
-            List<Element> nameParts = nameEl.getChildren("namePart", JDOMNamespaceUtil.MODS_V3_NS);
-            if (nameParts.size() == 1) {
-                String nameTypeValue = nameParts.get(0).getAttributeValue("type");
-                if (nameTypeValue == null || (nameTypeValue.equals("family") || nameTypeValue.equals("given"))) {
-                    nameValue = nameParts.get(0).getTextTrim();
-                }
-            } else if (nameParts.size() > 1) {
-                Element givenPart = JDOMQueryUtil.getElementByAttribute(nameParts, "type", null);
-                if (!hasNodeValue(givenPart)) {
-                    givenPart = JDOMQueryUtil.getElementByAttribute(nameParts, "type", "given");
-                }
-                // If there were multiple non-generic name parts, then try to piece them together
-                Element familyPart = JDOMQueryUtil.getElementByAttribute(nameParts, "type", "family");
-                Element termsOfAddressPart = JDOMQueryUtil.getElementByAttribute(nameParts, "type", "termsOfAddress");
-                Element datePart = JDOMQueryUtil.getElementByAttribute(nameParts, "type", "date");
-                StringBuilder nameBuilder = new StringBuilder();
+        String nameValue = null;
 
-                boolean hasFamilyPart = hasNodeValue(familyPart);
-                boolean hasGivenPart = hasNodeValue(givenPart);
-                if (hasFamilyPart) {
-                    nameBuilder.append(familyPart.getTextTrim());
-                    if (hasNodeValue(givenPart)) {
-                        nameBuilder.append(',').append(' ');
-                    }
-                }
-                if (hasGivenPart) {
-                    nameBuilder.append(givenPart.getTextTrim());
-                }
+        List<Element> nameParts = nameEl.getChildren("namePart", JDOMNamespaceUtil.MODS_V3_NS);
+        if (nameParts.size() == 1) {
+            String nameTypeValue = nameParts.get(0).getAttributeValue("type");
+            if (nameTypeValue == null || (nameTypeValue.equals("family") || nameTypeValue.equals("given"))) {
+                nameValue = nameParts.get(0).getTextTrim();
+            }
+        } else if (nameParts.size() > 1) {
+            Element givenPart = JDOMQueryUtil.getElementByAttribute(nameParts, "type", null);
+            if (!hasNodeValue(givenPart)) {
+                givenPart = JDOMQueryUtil.getElementByAttribute(nameParts, "type", "given");
+            }
+            // If there were multiple non-generic name parts, then try to piece them together
+            Element familyPart = JDOMQueryUtil.getElementByAttribute(nameParts, "type", "family");
+            Element termsOfAddressPart = JDOMQueryUtil.getElementByAttribute(nameParts, "type", "termsOfAddress");
+            Element datePart = JDOMQueryUtil.getElementByAttribute(nameParts, "type", "date");
+            StringBuilder nameBuilder = new StringBuilder();
 
-                if (hasFamilyPart || hasGivenPart) {
-                    if (hasNodeValue(termsOfAddressPart)) {
-                        nameBuilder.append(", ").append(termsOfAddressPart.getTextTrim());
-                    }
-                    if (hasNodeValue(datePart)) {
-                        nameBuilder.append(", ").append(datePart.getTextTrim());
-                    }
-                }
-
-                if (nameBuilder.length() > 0) {
-                    nameValue = nameBuilder.toString();
+            boolean hasFamilyPart = hasNodeValue(familyPart);
+            boolean hasGivenPart = hasNodeValue(givenPart);
+            if (hasFamilyPart) {
+                nameBuilder.append(familyPart.getTextTrim());
+                if (hasNodeValue(givenPart)) {
+                    nameBuilder.append(',').append(' ');
                 }
             }
+            if (hasGivenPart) {
+                nameBuilder.append(givenPart.getTextTrim());
+            }
+
+            if (hasFamilyPart || hasGivenPart) {
+                if (hasNodeValue(termsOfAddressPart)) {
+                    nameBuilder.append(", ").append(termsOfAddressPart.getTextTrim());
+                }
+                if (hasNodeValue(datePart)) {
+                    nameBuilder.append(", ").append(datePart.getTextTrim());
+                }
+            }
+
+            if (nameBuilder.length() > 0) {
+                nameValue = nameBuilder.toString();
+            }
         }
+
         return nameValue;
     }
 
