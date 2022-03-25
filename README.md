@@ -56,5 +56,6 @@ mvn -pl '!clamav-java' test
 mvn -pl '!clamav-java' verify 
 
 # JavaScript Tests
-npm --prefix static/js/vue-cdr-access run test:unit
+npm --prefix static/js/admin/vue-permissions-editor run test
+npm --prefix static/js/vue-cdr-access run test
 ```
