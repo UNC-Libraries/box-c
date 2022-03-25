@@ -180,7 +180,7 @@
     <field name="dateAdded" type="date" indexed="true" stored="true" docValues="true"/>
     <!-- Date when this object was originally created -->
     <field name="dateCreated" type="date" indexed="true" stored="true" docValues="true"/>
-    <field name="dateCreatedYear" type="dateRange" indexed="true" stored="true" docValues="true"/>
+    <field name="dateCreatedYear" type="dateRange" indexed="true" stored="true"/>
     <!-- Date when the object was last updated in the repository -->
     <field name="dateUpdated" type="date" indexed="true" stored="true" docValues="true"/>
     <!-- Filesize of the default web data for this object, used for sorting -->
@@ -290,7 +290,7 @@
   <copyField source="id" dest="keywordIndex"/>
   <copyField source="identifier" dest="keywordIndex"/>
 
-  <!-- Same as the keyword index plus full text.  Too bad recursive copy fields don't work -->
+  <!-- Same as the keyword index plus full text. Too bad recursive copy fields don't work -->
   <copyField source="title" dest="text"/>
   <copyField source="title" dest="text"/>
   <copyField source="otherTitle" dest="text"/>
