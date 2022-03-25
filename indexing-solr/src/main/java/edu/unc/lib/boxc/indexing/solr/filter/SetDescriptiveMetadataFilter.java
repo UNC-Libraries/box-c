@@ -84,6 +84,7 @@ public class SetDescriptiveMetadataFilter implements IndexDocumentFilter {
             this.extractCollectionId(mods, idb);
             this.extractLanguages(mods, idb);
             this.extractSubjects(mods, idb);
+            this.extractOtherSubjects(mods, idb);
             this.extractLocations(mods, idb);
             this.extractPublisher(mods, idb);
             this.extractDateCreated(mods, idb);
@@ -280,6 +281,31 @@ public class SetDescriptiveMetadataFilter implements IndexDocumentFilter {
             idb.setSubject(null);
         }
 
+    }
+
+    private void extractOtherSubjects(Element mods, IndexDocumentBean idb) {
+        List<Element> otherSubjectEls = mods.getChildren("subject", JDOMNamespaceUtil.MODS_V3_NS);
+        List<String> otherSubjects = new ArrayList<>();
+        if (!otherSubjectEls.isEmpty()) {
+            for (Element otherSubjectObj : otherSubjectEls) {
+                List<Element> subjectParts = otherSubjectObj.getChildren();
+                for (Element otherSubject : subjectParts) {
+                    String otherSubjectName = otherSubject.getName();
+                    if (otherSubjectName.equals("name") || otherSubjectName.equals("topic")) {
+                        continue;
+                    }
+
+                    if (otherSubject.getChildren().isEmpty()) {
+                        addIfNotBlank(otherSubjects, otherSubject.getValue());
+                    }
+                }
+            }
+        }
+        if (otherSubjects.size() > 0) {
+            idb.setOtherSubject(otherSubjects);
+        } else {
+            idb.setOtherSubject(otherSubjects);
+        }
     }
 
     private void extractLocations(Element mods, IndexDocumentBean idb) {

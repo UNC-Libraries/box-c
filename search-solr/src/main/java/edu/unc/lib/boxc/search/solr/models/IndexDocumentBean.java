@@ -42,6 +42,7 @@ import static edu.unc.lib.boxc.search.api.SearchFieldKey.KEYWORD;
 import static edu.unc.lib.boxc.search.api.SearchFieldKey.LANGUAGE;
 import static edu.unc.lib.boxc.search.api.SearchFieldKey.LAST_INDEXED;
 import static edu.unc.lib.boxc.search.api.SearchFieldKey.LOCATION;
+import static edu.unc.lib.boxc.search.api.SearchFieldKey.OTHER_SUBJECTS;
 import static edu.unc.lib.boxc.search.api.SearchFieldKey.OTHER_TITLES;
 import static edu.unc.lib.boxc.search.api.SearchFieldKey.PARENT_COLLECTION;
 import static edu.unc.lib.boxc.search.api.SearchFieldKey.PARENT_UNIT;
@@ -354,6 +355,15 @@ public class IndexDocumentBean {
     @Field
     public void setSubject(List<String> subject) {
         fields.put(SUBJECT.getSolrField(), subject);
+    }
+
+    public List<String> getOtherSubject() {
+        return (List<String>) fields.get(OTHER_SUBJECTS.getSolrField());
+    }
+
+    @Field
+    public void setOtherSubject(List<String> otherSubject) {
+        fields.put(OTHER_SUBJECTS.getSolrField(), otherSubject);
     }
 
     @Field

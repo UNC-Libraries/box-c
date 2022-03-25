@@ -20,6 +20,11 @@
   <mods:subject authority="lcsh">
     <mods:geographic>Germany</mods:geographic>
   </mods:subject>
+  <mods:subject authority="lcsh">
+    <mods:geographic>Canada</mods:geographic>
+    <mods:occupation>Explorer</mods:occupation>
+    <mods:topic>Snowshoes</mods:topic>
+  </mods:subject>
   <mods:typeOfResource>text</mods:typeOfResource>
   <mods:note>note</mods:note>
   <mods:relatedItem type="otherFormat" displayLabel="Source">

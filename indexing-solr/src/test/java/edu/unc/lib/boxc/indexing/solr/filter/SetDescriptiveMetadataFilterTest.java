@@ -157,6 +157,11 @@ public class SetDescriptiveMetadataFilterTest {
 
         assertEquals("2006-04", dateFormat.format(idb.getDateCreated()));
 
+        assertTrue(idb.getOtherSubject().contains("Canada"));
+        assertTrue(idb.getOtherSubject().contains("Explorer"));
+        assertFalse(idb.getOtherSubject().contains("Snowshoes"));
+        assertFalse(idb.getOtherSubject().contains("rules, boxy"));
+
         List<String> ids = idb.getIdentifier();
         assertTrue(ids.contains("local|abc123"));
         assertFalse(ids.contains("uri|http://example.com"));
