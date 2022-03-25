@@ -63,7 +63,7 @@
                                 :disabled="shouldDisable">Remove</button>
                     </li>
                     <li>
-                        <button @click="addPrincipal" id="add-principal" :disabled="shouldDisable">Add Group</button>
+                        <button @click="addPrincipal()" id="add-principal" :disabled="shouldDisable">Add Group</button>
                     </li>
                 </ul>
             </li>
@@ -82,11 +82,11 @@
             <li>
                 <button id="is-submitting"
                         type="submit"
-                        @click="saveRoles"
+                        @click="saveRoles()"
                         :class="{'btn-disabled': !saveChangesAllowed}"
                         :disabled="!saveChangesAllowed">Save Changes</button>
             </li>
-            <li><button @click="showModal" id="is-canceling" class="cancel" type="reset">{{ closeEditorText }}</button></li>
+            <li><button @click="showModal()" id="is-canceling" class="cancel" type="reset">{{ closeEditorText }}</button></li>
         </ul>
     </div>
 </template>
