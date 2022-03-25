@@ -59,3 +59,7 @@ mvn -pl '!clamav-java' verify
 npm --prefix static/js/admin/vue-permissions-editor run test
 npm --prefix static/js/vue-cdr-access run test
 ```
+
+Creating a New Vue Project
+run `npm init vue@3` and follow the prompts if you need to scaffold a new Vue project. This will create a vite based 
+application similar to our current Vue applications.
