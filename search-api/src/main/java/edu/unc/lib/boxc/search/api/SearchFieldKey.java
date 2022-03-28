@@ -64,6 +64,8 @@ public enum SearchFieldKey {
     READ_GROUP("readGroup", "readGroup", "Read Group"),
     RESOURCE_TYPE("resourceType", "type", "Resource Type"),
     RESOURCE_TYPE_SORT("resourceTypeSort", "typeSort", "Resource Type Sort"),
+    RIGHT("right", "right", "Rights"),
+    RIGHT_URI("rightUri", "rightUri", "Rights URI"),
     RLA_SITE_CODE("rla_site_code_d", "rla.siteCode", ""),
     RLA_CATALOG_NUMBER("rla_catalog_number_d", "rla.catalogNumber", ""),
     RLA_CONTEXT_1("rla_context_1_d", "rla.context1", ""),

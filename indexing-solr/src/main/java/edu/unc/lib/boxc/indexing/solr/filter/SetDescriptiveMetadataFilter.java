@@ -87,6 +87,7 @@ public class SetDescriptiveMetadataFilter implements IndexDocumentFilter {
             this.extractLocations(mods, idb);
             this.extractPublisher(mods, idb);
             this.extractDateCreated(mods, idb);
+            this.extractRights(mods, idb);
             this.extractIdentifiers(mods, idb);
             this.extractCitation(mods, idb);
             this.extractKeywords(mods, idb);
@@ -390,6 +391,35 @@ public class SetDescriptiveMetadataFilter implements IndexDocumentFilter {
             } else if (dateCaptured != null) {
                 idb.setDateCreated(dateCaptured);
             }
+        }
+    }
+
+    private void extractRights(Element mods, IndexDocumentBean idb) {
+        List<Element> rightsEls = mods.getChildren("accessCondition", JDOMNamespaceUtil.MODS_V3_NS);
+        List<String> rights = new ArrayList<>();
+        List<String> rightsUri = new ArrayList<>();
+        for (Element rightsEl : rightsEls) {
+            String accessType = rightsEl.getAttributeValue("type");
+            if (accessType != null && accessType.trim().equalsIgnoreCase("use and reproduction")) {
+                String href = rightsEl.getAttributeValue("href", JDOMNamespaceUtil.XLINK_NS);
+                if (!StringUtils.isBlank(href)) {
+                    rightsUri.add(href);
+                } else {
+                    rights.add(rightsEl.getTextTrim());
+                }
+            }
+        }
+
+        if (rights.size() > 0) {
+            idb.setRights(rights);
+        } else {
+            idb.setRights(null);
+        }
+
+        if (rightsUri.size() > 0) {
+            idb.setRightsUri(rightsUri);
+        } else {
+            idb.setRightsUri(null);
         }
     }
 

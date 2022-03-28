@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<mods:mods xmlns:mods="http://www.loc.gov/mods/v3" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+<mods:mods xmlns:mods="http://www.loc.gov/mods/v3" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xmlns:xlink="http://www.w3.org/1999/xlink">
   <mods:titleInfo>
     <mods:title>Paper title</mods:title>
   </mods:titleInfo>
@@ -111,4 +112,8 @@
   <mods:identifier type="uri">http://example.com</mods:identifier>
   <mods:identifier type="local">abc123</mods:identifier>
   <mods:identifier displayLabel="Collection Number" type="local">40148</mods:identifier>
+  <mods:accessCondition displayLabel="Rights" type="use and reproduction">
+    For copyright information or permissions questions, see our intellectual property statement https://library.unc.edu/wilson/research/perm/
+  </mods:accessCondition>
+  <mods:accessCondition displayLabel="Rights" type="use and reproduction" xlink:href="http://rightsstatements.org/vocab/CNE/1.0/">Copyright Not Evaluated</mods:accessCondition>
 </mods:mods>

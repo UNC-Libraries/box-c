@@ -157,6 +157,13 @@ public class SetDescriptiveMetadataFilterTest {
 
         assertEquals("2006-04", dateFormat.format(idb.getDateCreated()));
 
+        assertEquals(1, idb.getRights().size());
+        assertTrue(idb.getRights().contains("For copyright information or permissions questions, see our " +
+                "intellectual property statement https://library.unc.edu/wilson/research/perm/"));
+
+        assertEquals(1, idb.getRightsUri().size());
+        assertTrue(idb.getRightsUri().contains("http://rightsstatements.org/vocab/CNE/1.0/"));
+
         List<String> ids = idb.getIdentifier();
         assertTrue(ids.contains("local|abc123"));
         assertFalse(ids.contains("uri|http://example.com"));
