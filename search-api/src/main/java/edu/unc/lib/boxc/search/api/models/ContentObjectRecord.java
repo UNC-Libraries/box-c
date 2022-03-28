@@ -57,8 +57,6 @@ public interface ContentObjectRecord {
 
     public List<String> getAncestorPath();
 
-    public String getAncestorNames();
-
     public String getAncestorIds();
 
     public String getParentCollectionName();
@@ -75,21 +73,11 @@ public interface ContentObjectRecord {
 
     public Long getFilesizeTotal();
 
-    public List<String> getRelations();
-
-    public List<String> getRelation(String relationName);
-
-    public Boolean getIsPart();
-
-    public List<String> getContentModel();
-
     public String getResourceType();
 
     public Integer getResourceTypeSort();
 
     public String getCreatorSort();
-
-    public Long getDisplayOrder();
 
     public List<String> getContentType();
 
@@ -111,9 +99,9 @@ public interface ContentObjectRecord {
 
     public String getIdentifierSort();
 
-    public String getLabel();
-
     public String getTitle();
+
+    public String getAncestorNames();
 
     public List<String> getOtherTitle();
 
@@ -137,8 +125,6 @@ public interface ContentObjectRecord {
 
     public List<String> getPublisher();
 
-    public List<String> getDepartment();
-
     public Date getDateCreated();
 
     public String getDateCreatedYear();
@@ -152,8 +138,6 @@ public interface ContentObjectRecord {
     public String getFullText();
 
     public Map<String,Object> getDynamicFields();
-
-    public Date getActiveEmbargo();
 
     String getCollectionId();
 

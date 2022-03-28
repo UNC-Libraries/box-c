@@ -38,7 +38,7 @@ Facet list component, used to display all the values of facets and provide links
 
 <script>
     import sortBy from 'lodash.sortby';
-    import slider from "@/components/slider";
+    import slider from "@/components/slider.vue";
     import routeUtils from '../mixins/routeUtils';
 
     const UUID_REGEX = /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i;

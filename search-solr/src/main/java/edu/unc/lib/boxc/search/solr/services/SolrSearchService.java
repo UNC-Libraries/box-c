@@ -358,10 +358,6 @@ public class SolrSearchService extends AbstractQueryService {
             }
         }
 
-        if (!searchState.getIncludeParts()) {
-            solrQuery.addFilterQuery(SearchFieldKey.IS_PART.getSolrField() + ":false");
-        }
-
         // Add sort parameters
         addSort(solrQuery, searchState.getSortType(), searchState.getSortNormalOrder());
 

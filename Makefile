@@ -33,11 +33,8 @@ build-admin-concat:
 		static/css/admin/fontawesome/all.min.css \
 		static/css/structure_browse.css \
 		static/css/cdr_vue_modal_styles.css \
+		static/js/admin/vue-permissions-editor/dist/assets/index.css \
 		> static/css/cdr_admin.css
-
-ifeq ($(DEPLOY_TYPE), prod)
-	cat static/js/admin/vue-permissions-editor/dist/css/app*css >> static/css/cdr_admin.css
-endif
 
 ifneq ($(VERSION), "")
 	for i in static/js/admin/*.js; do \
@@ -56,12 +53,8 @@ else
 	npm --prefix static/js/admin/vue-permissions-editor run build-dev
 endif
 
-	cat /dev/null > static/js/vue-permissions.js
-	cat static/js/admin/vue-permissions-editor/dist/js/chunk-vendors*js > static/js/vue-permissions.js
-
-	# Add new line so app*.js doesn't get commented out
-	echo >> static/js/vue-permissions.js
-	cat static/js/admin/vue-permissions-editor/dist/js/app*js >> static/js/vue-permissions.js
+	cp static/js/admin/vue-permissions-editor/dist/assets/vue-permissions-vendor.js static/js/vue-permissions-vendor.js
+	cp static/js/admin/vue-permissions-editor/dist/assets/vue-permissions-index.js static/js/vue-permissions-index.js
 
 build-access-concat:
 	# Make sure file is empty
@@ -87,11 +80,9 @@ build-access-concat:
 		static/css/structure_browse.css \
 		static/css/cdr-ui.css \
 		static/css/cdr_vue_modal_styles.css \
+		static/js/vue-cdr-access/dist/assets/index.css \
 		> static/css/cdr_access.css
 
-ifeq ($(DEPLOY_TYPE), prod)
-	cat static/js/vue-cdr-access/dist/css/app*css >> static/css/cdr_access.css
-endif
 SUSPEND = "n"
 
 build-access-npm:
@@ -114,13 +105,8 @@ endif
 	# npm install minify -g
 	# minify static/plugins/pdfjs/web/viewer.js > static/plugins/pdfjs/web/viewer.min.js
 
-	# Make sure files are empty
-	cat /dev/null > static/js/vue-access.js
-	cat static/js/vue-cdr-access/dist/js/chunk-vendors*js >> static/js/vue-access.js
-
-	# Add new line so app*.js doesn't get commented out
-	echo >> static/js/vue-access.js
-	cat static/js/vue-cdr-access/dist/js/app*js >> static/js/vue-access.js
+	cp static/js/vue-cdr-access/dist/assets/vue-access-vendor.js static/js/vue-access-vendor.js
+	cp static/js/vue-cdr-access/dist/assets/vue-access-index.js static/js/vue-access-index.js
 SUSPEND = "n"
 
 build-bxc:

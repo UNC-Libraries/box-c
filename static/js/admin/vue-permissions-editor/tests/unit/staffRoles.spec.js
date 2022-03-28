@@ -2,7 +2,7 @@ import { shallowMount } from '@vue/test-utils'
 import '@testing-library/jest-dom'
 import staffRoles from '@/components/staffRoles.vue'
 import moxios from "moxios";
-import store from '../../src/store';
+import store from '@/store';
 
 const response = {
     inherited: { roles: [{ principal: 'test_admin', role: 'administrator' }] },
@@ -96,16 +96,16 @@ describe('staffRoles.vue', () => {
         });
     });
 
-    it("it adds un-added users and then sends current staff roles to the server", async (done) => {
+    it("it adds un-added users and then sends current staff roles to the server", (done) => {
         let added_user = { principal: 'dean', role: 'canAccess', type: 'new' };
         let all_users = { roles: [...response.assigned.roles, ...[added_user]] };
 
-        await wrapper.setData({
-            user_name: 'dean'
-        });
-        await wrapper.find('#is-submitting').trigger('click');
+        moxios.wait(async () => {
+            await wrapper.setData({
+                user_name: 'dean'
+            });
+            await wrapper.find('#is-submitting').trigger('click');
 
-        moxios.wait(() => {
             let request = moxios.requests.mostRecent();
             expect(request.config.method).toEqual('put');
             expect(JSON.parse(request.config.data)).toEqual(all_users);

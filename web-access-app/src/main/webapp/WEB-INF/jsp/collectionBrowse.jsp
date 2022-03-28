@@ -28,4 +28,5 @@
 		</div>
 	</div>
 </div>
-<script src="static/js/vue-access.js"></script>
+<script type="module" crossorigin src="static/js/vue-access-vendor.js"></script>
+<script type="module" crossorigin src="static/js/vue-access-index.js"></script>

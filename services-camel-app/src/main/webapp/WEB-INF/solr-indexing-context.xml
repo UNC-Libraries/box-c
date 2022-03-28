@@ -31,7 +31,6 @@
                 <ref bean="setContentStatusFilter" />
                 <ref bean="setFullTextFilter" />
                 <ref bean="setObjectTypeFilter" />
-                <ref bean="setRelationsFilter" />
                 <ref bean="setCollectionSupplementalInformationFilter" />
             </list>
         </property>
@@ -44,7 +43,6 @@
                 <ref bean="setRecordDatesFilter" />
                 <ref bean="setAccessControlFilter" />
                 <ref bean="setAccessStatusFilter" />
-                <ref bean="setRelationsFilter" />
             </list>
         </property>
     </bean>
@@ -228,10 +226,6 @@
     
     <bean id="setRecordDatesFilter"
         class="edu.unc.lib.boxc.indexing.solr.filter.SetRecordDatesFilter">
-    </bean>
-    
-    <bean id="setRelationsFilter"
-        class="edu.unc.lib.boxc.indexing.solr.filter.SetRelationsFilter">
     </bean>
 
     <!-- Ingest Actions -->

@@ -17,7 +17,6 @@ package edu.unc.lib.boxc.search.solr.models;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -26,8 +25,6 @@ import org.apache.solr.client.solrj.beans.Field;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import edu.unc.lib.boxc.common.util.DateTimeUtil;
-import edu.unc.lib.boxc.model.api.rdf.CdrAcl;
 import edu.unc.lib.boxc.search.api.SearchFieldKey;
 import edu.unc.lib.boxc.search.api.facets.HierarchicalFacet;
 import edu.unc.lib.boxc.search.api.models.ContentObjectRecord;
@@ -59,7 +56,6 @@ public class ContentObjectSolrRecord extends IndexDocumentBean implements Conten
     // Inverted map of the roleGroup, clustering roles into buckets by group
     Map<String, Collection<String>> groupRoleMap;
     protected Map<String, Long> countMap;
-    protected Map<String, List<String>> relationsMap;
     protected String thumbnailId;
 
     public ContentObjectSolrRecord() {
@@ -193,42 +189,11 @@ public class ContentObjectSolrRecord extends IndexDocumentBean implements Conten
     }
 
     @Override
-    @Field
-    public void setRelations(List<String> relations) {
-        super.setRelations(relations);
-
-        this.relationsMap = new HashMap<>(relations.size());
-        for (String relation: relations) {
-            if (relation == null) {
-                continue;
-            }
-            String[] rdfParts = relation.split("\\|", 2);
-
-            List<String> values = this.relationsMap.get(rdfParts[0]);
-            if (values == null) {
-                values = new ArrayList<>();
-                this.relationsMap.put(rdfParts[0], values);
-            }
-            values.add(rdfParts[1]);
-        }
-    }
-
-    @Override
-    public List<String> getRelation(String relationName) {
-        if (relationsMap == null) {
-            return null;
-        }
-        return this.relationsMap.get(relationName);
-    }
-
-    @Override
     public String toString() {
         StringBuffer sb = new StringBuffer();
         sb.append("id: " + getId() + "\n");
         sb.append("ancestorPath: " + getAncestorPath() + "\n");
-        sb.append("ancestorNames: " + ancestorNames + "\n");
         sb.append("resourceType: " + getResourceType() + "\n");
-        sb.append("displayOrder: " + getDisplayOrder() + "\n");
         sb.append("contentType: " + getContentType() + "\n");
         sb.append("datastream: " + getDatastream() + "\n");
         sb.append("title: " + getTitle() + "\n");
@@ -240,7 +205,6 @@ public class ContentObjectSolrRecord extends IndexDocumentBean implements Conten
         sb.append("creator: " + getCreator() + "\n");
         sb.append("contributor: " + getContributor() + "\n");
         sb.append("creatorContributor: " + getCreatorContributor() + "\n");
-        sb.append("department: " + getDepartment() + "\n");
         sb.append("dateCreated: " + getDateCreated() + "\n");
         sb.append("dateCreatedYear: " + getDateCreatedYear() + "\n");
         sb.append("dateAdded: " + getDateAdded() + "\n");
@@ -277,30 +241,6 @@ public class ContentObjectSolrRecord extends IndexDocumentBean implements Conten
     @Override
     public void setCountMap(Map<String, Long> countMap) {
         this.countMap = countMap;
-    }
-
-    @Override
-    public Date getActiveEmbargo() {
-        List<String> embargoUntil = getRelation(CdrAcl.embargoUntil.getURI());
-        if (embargoUntil != null) {
-            Date result = null;
-            Date dateNow = new Date();
-            for (String embargo : embargoUntil) {
-                Date embargoDate;
-                try {
-                    embargoDate = DateTimeUtil.parseUTCToDate(embargo);
-                    if (embargoDate.after(dateNow)) {
-                        if (result == null || embargoDate.after(result)) {
-                            result = embargoDate;
-                        }
-                    }
-                } catch (IllegalArgumentException e) {
-                    LOG.error("Failed to parse embargo", e);
-                }
-            }
-            return result;
-        }
-        return null;
     }
 
     @Override

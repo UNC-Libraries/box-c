@@ -2,7 +2,7 @@ import { shallowMount, flushPromises } from '@vue/test-utils';
 import { createI18n } from 'vue-i18n';
 import  { createRouter, createWebHistory } from 'vue-router';
 import browseSearch from '@/components/browseSearch.vue';
-import displayWrapper from "@/components/displayWrapper";
+import displayWrapper from "@/components/displayWrapper.vue";
 import translations from "@/translations";
 
 const query = 'Test Collection';

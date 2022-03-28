@@ -87,7 +87,6 @@ public class SerializationUtilTest extends Assert {
     @Test
     public void briefMetadataToJSONTest() throws Exception {
         md.setTitle("Test Item");
-        md.setIsPart(Boolean.FALSE);
         md.setDatastream(DATASTREAMS);
 
         String json = SerializationUtil.metadataToJSON(md, null);
@@ -95,7 +94,6 @@ public class SerializationUtilTest extends Assert {
 
         assertEquals("48aeb594-6d95-45e9-bb20-dd631ecc93e9", jsonMap.get("id"));
         assertEquals("Test Item", jsonMap.get("title"));
-        assertEquals(false, jsonMap.get("isPart"));
         assertEquals(1, ((List<String>) jsonMap.get("datastream")).size());
     }
 

@@ -65,7 +65,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Date;
 import java.util.List;
 
 import static edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore.getAgentPrincipals;
@@ -205,11 +204,6 @@ public class FullRecordController extends AbstractErrorHandlingSearchController 
 
         // Get path information.
         model.addAttribute("briefObject", briefObject);
-
-        Date embargoUntil = briefObject.getActiveEmbargo();
-        if (embargoUntil != null) {
-            model.addAttribute("embargoDate", embargoUntil);
-        }
 
         // Get additional information depending on the type of object since the user has access
         String resourceType = briefObject.getResourceType();

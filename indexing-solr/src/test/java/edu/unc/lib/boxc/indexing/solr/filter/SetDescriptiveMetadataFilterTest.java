@@ -138,7 +138,6 @@ public class SetDescriptiveMetadataFilterTest {
         assertTrue(creatorContributors.contains("Test, contributor"));
         assertTrue(creatorContributors.contains("Boxy, Assistant"));
         assertTrue(creatorContributors.contains("Boxy, Role Free"));
-        
 
         assertEquals("Abstract text", idb.getAbstractText());
 
@@ -216,6 +215,9 @@ public class SetDescriptiveMetadataFilterTest {
         when(dip.getMods()).thenReturn(modsDoc.detachRootElement());
 
         filter.filter(dip);
+
+        // Don't index displayForm tags
+        assertFalse((idb.getCreator().contains("Boxy, Ruler of Digital Collections")));
 
         assertTrue(idb.getCreator().contains("Repo, Boxy"));
         assertTrue(idb.getCreator().contains("Repo2, Boxy"));
