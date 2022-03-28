@@ -15,21 +15,20 @@
  */
 package edu.unc.lib.boxc.services.camel.util;
 
-import static org.slf4j.LoggerFactory.getLogger;
-
+import edu.unc.lib.boxc.auth.fcrepo.services.ObjectAclFactory;
+import edu.unc.lib.boxc.fcrepo.FcrepoJmsConstants;
+import edu.unc.lib.boxc.model.api.ids.PID;
+import edu.unc.lib.boxc.model.api.ids.PIDConstants;
+import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.api.services.ContentPathFactory;
+import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
 import org.apache.camel.Processor;
 import org.fcrepo.camel.FcrepoHeaders;
 import org.slf4j.Logger;
 
-import edu.unc.lib.boxc.auth.fcrepo.services.ObjectAclFactory;
-import edu.unc.lib.boxc.fcrepo.FcrepoJmsConstants;
-import edu.unc.lib.boxc.model.api.ids.PID;
-import edu.unc.lib.boxc.model.api.ids.PIDConstants;
-import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
-import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
+import static org.slf4j.LoggerFactory.getLogger;
 
 /**
  * Processor which invalidates cache entries for updated objects

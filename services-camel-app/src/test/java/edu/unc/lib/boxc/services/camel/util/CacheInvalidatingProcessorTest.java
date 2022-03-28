@@ -15,6 +15,20 @@
  */
 package edu.unc.lib.boxc.services.camel.util;
 
+import edu.unc.lib.boxc.auth.fcrepo.services.ObjectAclFactory;
+import edu.unc.lib.boxc.fcrepo.FcrepoJmsConstants;
+import edu.unc.lib.boxc.model.api.ids.PID;
+import edu.unc.lib.boxc.model.api.ids.PIDConstants;
+import edu.unc.lib.boxc.model.api.services.ContentPathFactory;
+import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
+import edu.unc.lib.boxc.model.fcrepo.services.RepositoryObjectLoaderImpl;
+import edu.unc.lib.boxc.model.fcrepo.test.TestHelper;
+import org.apache.camel.Exchange;
+import org.apache.camel.Message;
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.Mock;
+
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
@@ -22,21 +36,6 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
-
-import edu.unc.lib.boxc.model.api.services.ContentPathFactory;
-import org.apache.camel.Exchange;
-import org.apache.camel.Message;
-import org.junit.Before;
-import org.junit.Test;
-import org.mockito.Mock;
-
-import edu.unc.lib.boxc.auth.fcrepo.services.ObjectAclFactory;
-import edu.unc.lib.boxc.fcrepo.FcrepoJmsConstants;
-import edu.unc.lib.boxc.model.api.ids.PID;
-import edu.unc.lib.boxc.model.api.ids.PIDConstants;
-import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
-import edu.unc.lib.boxc.model.fcrepo.services.RepositoryObjectLoaderImpl;
-import edu.unc.lib.boxc.model.fcrepo.test.TestHelper;
 
 /**
  * @author bbpennel
