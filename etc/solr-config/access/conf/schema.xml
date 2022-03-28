@@ -43,7 +43,6 @@
 
     <!-- The format for this date field is of the form 1995-12-31T23:59:59Z -->
     <fieldType name="date" class="solr.DatePointField" positionIncrementGap="0"/>
-
     <!-- https://solr.apache.org/guide/8_11/working-with-dates.html#date-range-formatting -->
     <fieldType name="dateRange" class="solr.DateRangeField"/>
 
@@ -170,10 +169,10 @@
     <field name="contributor" type="string" indexed="true" stored="true" multiValued="true"/>
     <!-- <field name="roleName" type="string" indexed="true" stored="true" multiValued="true"/> -->
     <field name="creator" type="string" indexed="true" stored="true" multiValued="true"/>
-    <!-- Sort order fields -->
-    <field name="creatorSort" type="string_lc" indexed="true" stored="true"/>
     <!-- Used for faceting creators and contributors as a single facet -->
     <field name="creatorContributor" type="string" indexed="true" stored="true" multiValued="true" docValues="true"/>
+    <!-- Sort order fields -->
+    <field name="creatorSort" type="string_lc" indexed="true" stored="true"/>
     <!-- DS name|mimetype|extension|filesize|checksum|owner -->
     <field name="datastream" type="string" indexed="true" stored="true" multiValued="true" docValues="true"/>
     <!-- Date when the object was added to the repository -->
@@ -281,8 +280,8 @@
   <copyField source="title" dest="keywordIndex"/>
   <copyField source="title" dest="keywordIndex"/>
   <copyField source="otherTitle" dest="keywordIndex"/>
-  <copyField source="creator" dest="keywordIndex"/>
   <copyField source="contributor" dest="keywordIndex"/>
+  <copyField source="creator" dest="keywordIndex"/>
   <copyField source="subject" dest="keywordIndex"/>
   <copyField source="abstract" dest="keywordIndex"/>
   <copyField source="keyword" dest="keywordIndex"/>
@@ -294,8 +293,8 @@
   <copyField source="title" dest="text"/>
   <copyField source="title" dest="text"/>
   <copyField source="otherTitle" dest="text"/>
-  <copyField source="creator" dest="text"/>
   <copyField source="contributor" dest="text"/>
+  <copyField source="creator" dest="text"/>
   <copyField source="subject" dest="text"/>
   <copyField source="abstract" dest="text"/>
   <copyField source="keyword" dest="text"/>
