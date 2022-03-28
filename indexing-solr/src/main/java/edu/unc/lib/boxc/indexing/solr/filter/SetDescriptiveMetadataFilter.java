@@ -491,7 +491,7 @@ public class SetDescriptiveMetadataFilter implements IndexDocumentFilter {
             boolean hasGivenPart = hasNodeValue(givenPart);
             if (hasFamilyPart) {
                 nameBuilder.append(familyPart.getTextTrim());
-                if (hasNodeValue(givenPart)) {
+                if (hasGivenPart) {
                     nameBuilder.append(',').append(' ');
                 }
             }
