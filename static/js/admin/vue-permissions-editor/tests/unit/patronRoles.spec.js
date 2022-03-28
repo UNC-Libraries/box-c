@@ -1,7 +1,7 @@
 import {shallowMount} from '@vue/test-utils';
 import patronRoles from '@/components/patronRoles.vue';
 import moxios from 'moxios';
-import store from '../../src/store';
+import store from '@/store';
 
 const UUID = '73bc003c-9603-4cd9-8a65-93a22520ef6a';
 const embargo_date = '2099-01-01';
@@ -58,15 +58,6 @@ describe('patronRoles.vue', () => {
         store.commit('setActionHandler', { addEvent: jest.fn() });
         store.commit('setAlertHandler', { alertHandler: jest.fn() });
         store.commit('setMetadata', { id: UUID, type: 'Folder', deleted: false, embargo: null });
-
-        wrapper = shallowMount(patronRoles, {
-            global: {
-                plugins: [store]
-            }
-        });
-
-        global.confirm = jest.fn().mockReturnValue(true);
-        selects = wrapper.findAll('select');
     });
 
     it("submits updated roles to the server", (done) => {
@@ -99,7 +90,7 @@ describe('patronRoles.vue', () => {
         moxios.wait(async () => {
             expect(wrapper.vm.hasUnsavedChanges).toBe(false);
 
-            await wrapper.find('#user_type_staff').trigger('click');
+            await wrapper.find('#user_type_staff').trigger('change');
             expect(wrapper.vm.user_type).toEqual('staff');
 
             expect(wrapper.vm.hasUnsavedChanges).toBe(true);
@@ -405,7 +396,7 @@ describe('patronRoles.vue', () => {
         moxios.wait(async () => {
             expect(wrapper.vm.assignedPatronRoles).toEqual(expected_assigned);
 
-            await wrapper.find('#user_type_parent').trigger('click');
+            await wrapper.find('#user_type_parent').trigger('change');
             expect(wrapper.vm.assignedPatronRoles).toEqual([]);
 
             let assigned_patrons = wrapper.findAll('.patron-assigned');
@@ -417,7 +408,7 @@ describe('patronRoles.vue', () => {
             expect(assigned_patrons[2].findAll('p')[0].text()).toEqual('Special Group');
             expect(assigned_patrons[2].findAll('select')[0].element.value).toEqual('canViewOriginals');
 
-            await wrapper.find('#user_type_patron').trigger('click');
+            await wrapper.find('#user_type_patron').trigger('change');
             expect(wrapper.vm.assignedPatronRoles).toEqual(expected_assigned);
 
             done();
@@ -459,7 +450,7 @@ describe('patronRoles.vue', () => {
             { principal: "everyone", role: "none", assignedTo: null },
             { principal: "authenticated", role: "none", assignedTo: null }
         ];
-        stubDataLoad(empty_response)
+        stubDataLoad(empty_response);
 
         moxios.wait(() => {
             expect(wrapper.vm.displayAssignments).toEqual([
@@ -632,13 +623,13 @@ describe('patronRoles.vue', () => {
             await wrapper.find('label[for="user_type_staff"]').trigger('click');
             expect(wrapper.vm.user_type).toBe('staff');
 
-            await wrapper.find('#user_type_parent').trigger('click');
+            await wrapper.find('#user_type_parent').trigger('change');
             expect(wrapper.vm.user_type).toBe('parent');
 
-            await wrapper.find('#user_type_patron').trigger('click');
+            await wrapper.find('#user_type_patron').trigger('change');
             expect(wrapper.vm.user_type).toBe('patron');
 
-            await wrapper.find('#user_type_staff').trigger('click');
+            await wrapper.find('#user_type_staff').trigger('change');
             expect(wrapper.vm.user_type).toBe('staff');
 
             done();
@@ -684,7 +675,7 @@ describe('patronRoles.vue', () => {
             expect(selects[0].attributes()).not.toHaveProperty('disabled');
             expect(selects[1].attributes()).not.toHaveProperty('disabled');
 
-            await wrapper.find('#user_type_staff').trigger('click');
+            await wrapper.find('#user_type_staff').trigger('change');
             expect(wrapper.vm.user_type).toEqual('staff');
             let updated_selects = wrapper.findAll('select');
             expect(updated_selects[0].attributes()).toHaveProperty('disabled');
@@ -740,7 +731,7 @@ describe('patronRoles.vue', () => {
                 {principal: 'authenticated', role: 'canViewAccessCopies', assignedTo: UUID }
             ]);
 
-            await wrapper.find('#user_type_staff').trigger('click');
+            await wrapper.find('#user_type_staff').trigger('change');
 
             expect(wrapper.vm.displayAssignments).toEqual([
                 { principal: "staff", role: 'none', type: 'assigned', deleted: false, embargo: false, assignedTo: UUID }
@@ -782,7 +773,7 @@ describe('patronRoles.vue', () => {
                 {principal: 'authenticated', role: 'canViewAccessCopies', assignedTo: UUID }
             ]);
 
-            await wrapper.find('#user_type_parent').trigger('click');
+            await wrapper.find('#user_type_parent').trigger('change');
 
             expect(wrapper.vm.displayAssignments).toEqual([
                 { principal: "patron", role: 'canViewOriginals', type: 'inherited', deleted: false, embargo: false, assignedTo: null }
@@ -1007,6 +998,7 @@ describe('patronRoles.vue', () => {
     });
 
     it("disables 'submit' by default", () => {
+        mountApp();
         expectSaveButtonDisabled();
     });
 
@@ -1035,6 +1027,7 @@ describe('patronRoles.vue', () => {
     });
 
     it("prompts the user if 'Cancel' is clicked and saved and unsaved changes arrays aren't the same size", async () => {
+        mountApp();
         await wrapper.setData({
             saved_details: {
                 roles: []
@@ -1055,6 +1048,7 @@ describe('patronRoles.vue', () => {
     });
 
     it("prompts the user if 'Cancel' is clicked and saved and unsaved changes arrays don't have the same values", async () => {
+        mountApp();
         await wrapper.setData({
             saved_details: {
                 roles: [{
@@ -1083,6 +1077,7 @@ describe('patronRoles.vue', () => {
     });
 
     it("prompts the user if 'Cancel' is clicked and an embargo has been added", async() => {
+        mountApp();
         wrapper.setData({
             saved_details: {
                 embargo: null
@@ -1094,6 +1089,7 @@ describe('patronRoles.vue', () => {
     });
 
     it("prompts the user if 'Cancel' is clicked and an embargo has been removed", async() => {
+        mountApp();
         await wrapper.setData({
             saved_details: {
                 embargo: '2099-12-31'
@@ -1105,6 +1101,7 @@ describe('patronRoles.vue', () => {
     });
 
     it("prompts the user if 'Cancel' is clicked and a new user has been added", async() => {
+        mountApp();
         wrapper.setData({
             saved_details: {
                 embargo: null
@@ -1117,6 +1114,7 @@ describe('patronRoles.vue', () => {
     });
 
     it("Updates 'cancel' button text if there are unsaved changes", async () => {
+        mountApp();
         await wrapper.setData({
             saved_details: null
         });
@@ -1139,6 +1137,7 @@ describe('patronRoles.vue', () => {
     it("Save button to disabled when no changes for bulk update", (done) => {
         mountBulk(resultObjectsTwoFolders);
         stubAllowedPrincipals([]);
+        mountApp();
 
         moxios.wait(async () => {
             expect(wrapper.find('.inherited-permissions').exists()).toBe(false)
@@ -1156,10 +1155,10 @@ describe('patronRoles.vue', () => {
             await wrapper.vm.$nextTick();
             expectSaveButtonDisabled();
 
-            await wrapper.find('#user_type_staff').trigger('click');
+            await wrapper.find('#user_type_staff').trigger('change');
             expectSaveButtonDisabled(false);
 
-            await wrapper.find('#user_type_ignore').trigger('click');
+            await wrapper.find('#user_type_ignore').trigger('change');
             expectSaveButtonDisabled();
             done();
         });
@@ -1167,9 +1166,10 @@ describe('patronRoles.vue', () => {
 
     it("User type changes to staff only during bulk update", (done) => {
         mountBulk(resultObjectsTwoFolders);
+        mountApp();
 
         moxios.wait(async () => {
-            await wrapper.find('#user_type_staff').trigger('click');
+            await wrapper.find('#user_type_staff').trigger('change');
 
             expect(wrapper.vm.user_type).toEqual('staff');
             expect(wrapper.vm.assignedPatronRoles).toEqual([
@@ -1184,12 +1184,14 @@ describe('patronRoles.vue', () => {
         });
     });
 
-    it("Can submit custom groups during bulk update", async(done) => {
+    it("Can submit custom groups during bulk update", (done) => {
         stubAllowedPrincipals([{principal: "my:special:group", name: "Special Group"}]);
         mountBulk(resultObjectsTwoFolders);
+        mountApp();
 
         moxios.wait(async () => {
-            await wrapper.find('#user_type_patron').trigger('click');
+            await wrapper.find('#user_type_patron').trigger('change');
+
             await wrapper.findAll('.patron-assigned')[0].findAll('option')[1].setSelected();
             await wrapper.findAll('.patron-assigned')[1].findAll('option')[2].setSelected();
 
@@ -1227,6 +1229,7 @@ describe('patronRoles.vue', () => {
     it("Bulk update submits added embargo", (done) => {
         stubAllowedPrincipals([]);
         mountBulk(resultObjectsTwoFolders);
+        mountApp();
 
         moxios.wait(async () => {
             await wrapper.vm.$store.commit('setEmbargoInfo', { embargo: embargo_date, skipEmbargo: false });
@@ -1256,6 +1259,7 @@ describe('patronRoles.vue', () => {
 
     it("Enables 'save' by default in bulk mode", (done) => {
         mountBulk(resultObjectsTwoFolders);
+        mountApp();
         moxios.wait(() => {
             expectSaveButtonDisabled(false);
             done();
@@ -1284,16 +1288,27 @@ describe('patronRoles.vue', () => {
         store.commit('setMetadata', { type: null, id: null });
     }
 
+    function mountApp() {
+        wrapper = shallowMount(patronRoles, {
+            global: {
+                plugins: [store]
+            }
+        });
+
+        global.confirm = jest.fn().mockReturnValue(true);
+        selects = wrapper.findAll('select');
+    }
+
     afterEach(() => {
         moxios.uninstall();
     });
 
-    function stubDataLoad(load = response) {
-        moxios.stubRequest(`/services/api/acl/patron/${wrapper.vm.uuid}`, {
+    function stubDataLoad(load = response, uuid = UUID) {
+        moxios.stubRequest(`/services/api/acl/patron/${uuid}`, {
             status: 200,
             response: JSON.stringify(load)
         });
-        wrapper.vm.getRoles();
+        mountApp();
     }
 
     function stubDataSaveResponse() {
@@ -1307,7 +1322,6 @@ describe('patronRoles.vue', () => {
             status: 200,
             response: JSON.stringify(load)
         });
-        wrapper.vm.getRoles();
     }
 
     function stubBulkDataSaveResponse() {

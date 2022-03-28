@@ -7,7 +7,7 @@ Top level component wrapper for search pages
             Search results for "{{ $route.query.anywhere }}"
             <filter-tags :facet-list="facet_list"></filter-tags>
         </div>
-        <img v-if="is_loading" src="/static/images/ajax-loader-lg.gif" alt="data loading icon">
+        <img v-if="is_loading" :src="nonVueStaticImageUrl('ajax-loader-lg.gif')" alt="data loading icon">
         <div v-if="!is_loading">
             <div class="columns">
                 <div v-if="hasFacets" class="facet-list column is-one-quarter facets-border border-box-left-top">
@@ -37,11 +37,11 @@ Top level component wrapper for search pages
 </template>
 
 <script>
-    import browseSort from "./browseSort";
-    import facets from "./facets";
-    import filterTags from "./filterTags";
-    import listDisplay from "./listDisplay";
-    import pagination from "./pagination";
+    import browseSort from "@/components/browseSort.vue";
+    import facets from "@/components/facets.vue";
+    import filterTags from "@/components/filterTags.vue";
+    import listDisplay from "@/components/listDisplay.vue";
+    import pagination from "@/components/pagination.vue";
     import routeUtils from "../mixins/routeUtils";
     import get from 'axios';
 

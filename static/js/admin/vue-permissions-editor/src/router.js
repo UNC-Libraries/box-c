@@ -1,8 +1,8 @@
 import { createRouter, createWebHistory } from 'vue-router';
-import modalEditor from "./components/modalEditor";
+import modalEditor from "@/components/modalEditor.vue";
 
 const router = createRouter({
-  history: createWebHistory(process.env.BASE_URL),
+  history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
     {
       path: '/admin/list/:uuid?',

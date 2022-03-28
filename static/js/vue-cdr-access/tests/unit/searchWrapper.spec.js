@@ -2,7 +2,7 @@ import { shallowMount } from '@vue/test-utils'
 import { createRouter, createWebHistory } from 'vue-router';
 import searchWrapper from '@/components/searchWrapper.vue';
 import moxios from "moxios";
-import displayWrapper from "@/components/displayWrapper";
+import displayWrapper from "@/components/displayWrapper.vue";
 import {createI18n} from "vue-i18n";
 import translations from "@/translations";
 

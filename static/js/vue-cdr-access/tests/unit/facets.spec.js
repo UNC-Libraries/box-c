@@ -1,8 +1,8 @@
-import {shallowMount, flushPromises, mount} from '@vue/test-utils'
+import {shallowMount, flushPromises} from '@vue/test-utils'
 import { createRouter, createWebHistory } from 'vue-router';
-import facets from '@/components/facets';
-import searchWrapper from '@/components/searchWrapper';
-import displayWrapper from '@/components/displayWrapper';
+import facets from '@/components/facets.vue';
+import searchWrapper from '@/components/searchWrapper.vue';
+import displayWrapper from '@/components/displayWrapper.vue';
 import {createI18n} from "vue-i18n";
 import translations from "@/translations";
 

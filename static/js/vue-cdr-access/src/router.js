@@ -1,10 +1,10 @@
 import { createWebHistory, createRouter } from 'vue-router'
-import displayWrapper from "./components/displayWrapper";
-import searchWrapper from "./components/searchWrapper";
-import collectionBrowse from "./components/collectionBrowse";
+import displayWrapper from "@/components/displayWrapper.vue";
+import searchWrapper from "@/components/searchWrapper.vue";
+import collectionBrowse from "@/components/collectionBrowse.vue";
 
 export default createRouter({
-  history: createWebHistory(process.env.BASE_URL),
+  history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
     {
       path: '/record/:uuid/',
