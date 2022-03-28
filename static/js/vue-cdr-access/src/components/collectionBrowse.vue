@@ -8,7 +8,7 @@ Top level component used for the collection browse page
 </template>
 
 <script>
-    import listDisplay from "./listDisplay";
+    import listDisplay from "@/components/listDisplay.vue";
     import get from 'axios';
 
     export default {

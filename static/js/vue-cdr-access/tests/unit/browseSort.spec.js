@@ -1,8 +1,8 @@
 import { mount, flushPromises } from '@vue/test-utils';
 import { createRouter, createWebHistory } from 'vue-router';
 import browseSort from '@/components/browseSort.vue';
-import displayWrapper from '@/components/displayWrapper';
-import searchWrapper from '@/components/searchWrapper';
+import displayWrapper from '@/components/displayWrapper.vue';
+import searchWrapper from '@/components/searchWrapper.vue';
 import {createI18n} from "vue-i18n";
 import translations from "@/translations";
 

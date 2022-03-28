@@ -1,6 +1,6 @@
 import { shallowMount } from '@vue/test-utils';
 import modalEditor from '@/components/modalEditor.vue';
-import store from '../../src/store';
+import store from '@/store';
 
 const metadata = {
     id: 'd77fd8c9-744b-42ab-8e20-5ad9bdf8194e',

@@ -222,6 +222,9 @@ public class SetDescriptiveMetadataFilterTest {
 
         filter.filter(dip);
 
+        // Don't index displayForm tags
+        assertFalse((idb.getCreator().contains("Boxy, Ruler of Digital Collections")));
+
         assertTrue(idb.getCreator().contains("Repo, Boxy"));
         assertTrue(idb.getCreator().contains("Repo2, Boxy"));
         assertTrue(idb.getCreator().contains("Test, author"));

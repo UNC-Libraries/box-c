@@ -1,6 +1,6 @@
 import { shallowMount } from '@vue/test-utils'
 import staffRolesSelect from '@/components/staffRolesSelect.vue'
-import staffRoleList from '@/mixins/staffRoleList.js';
+import staffRoleList from '@/mixins/staffRoleList';
 
 const collection_roles = [
     { text: 'can Access', value: 'canAccess' },

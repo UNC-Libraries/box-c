@@ -1,6 +1,6 @@
 import { shallowMount } from '@vue/test-utils';
 import staffRolesSelect from '@/components/staffRolesSelect.vue';
-import store from '../../src/store';
+import store from '@/store';
 
 let wrapper;
 

@@ -1,7 +1,7 @@
 import { shallowMount } from '@vue/test-utils'
 import { createRouter, createWebHistory } from 'vue-router';
 import listDisplay from '@/components/listDisplay.vue';
-import displayWrapper from '@/components/displayWrapper';
+import displayWrapper from '@/components/displayWrapper.vue';
 import {createI18n} from "vue-i18n";
 import translations from "@/translations";
 
