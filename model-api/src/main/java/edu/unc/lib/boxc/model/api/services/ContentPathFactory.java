@@ -34,4 +34,9 @@ public interface ContentPathFactory {
      */
     List<PID> getAncestorPids(PID pid);
 
+    /**
+     * Invalidates cached data for the provided pid
+     * @param pid
+     */
+    void invalidate(PID pid);
 }

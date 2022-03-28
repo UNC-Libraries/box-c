@@ -17,6 +17,7 @@ package edu.unc.lib.boxc.services.camel.util;
 
 import static org.slf4j.LoggerFactory.getLogger;
 
+import edu.unc.lib.boxc.model.api.services.ContentPathFactory;
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
 import org.apache.camel.Processor;
@@ -39,6 +40,7 @@ public class CacheInvalidatingProcessor implements Processor {
     private static final Logger log = getLogger(CacheInvalidatingProcessor.class);
     private RepositoryObjectLoader repoObjLoader;
     private ObjectAclFactory objectAclFactory;
+    private ContentPathFactory contentPathFactory;
 
     @Override
     public void process(Exchange exchange) throws Exception {
@@ -64,6 +66,7 @@ public class CacheInvalidatingProcessor implements Processor {
         log.debug("Invalidating caches for {}", pid);
         repoObjLoader.invalidate(pid);
         objectAclFactory.invalidate(pid);
+        contentPathFactory.invalidate(pid);
     }
 
     public void setRepositoryObjectLoader(RepositoryObjectLoader repoObjLoader) {
@@ -72,5 +75,9 @@ public class CacheInvalidatingProcessor implements Processor {
 
     public void setObjectAclFactory(ObjectAclFactory objectAclFactory) {
         this.objectAclFactory = objectAclFactory;
+    }
+
+    public void setContentPathFactory(ContentPathFactory contentPathFactory) {
+        this.contentPathFactory = contentPathFactory;
     }
 }
