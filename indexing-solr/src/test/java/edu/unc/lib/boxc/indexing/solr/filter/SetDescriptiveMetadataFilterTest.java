@@ -150,6 +150,7 @@ public class SetDescriptiveMetadataFilterTest {
         assertFalse(idb.getSubject().contains("Germany"));
 
         assertTrue(idb.getLocation().contains("Germany"));
+        assertTrue(idb.getLocation().contains("Canada"));
 
         assertTrue(idb.getLanguage().contains("English"));
 
@@ -157,10 +158,10 @@ public class SetDescriptiveMetadataFilterTest {
 
         assertEquals("2006-04", dateFormat.format(idb.getDateCreated()));
 
+        assertTrue(idb.getOtherSubject().contains("Germany"));
         assertTrue(idb.getOtherSubject().contains("Canada"));
         assertTrue(idb.getOtherSubject().contains("Explorer"));
-        assertFalse(idb.getOtherSubject().contains("Snowshoes"));
-        assertFalse(idb.getOtherSubject().contains("rules, boxy"));
+        assertEquals(3, idb.getOtherSubject().size());
 
         List<String> ids = idb.getIdentifier();
         assertTrue(ids.contains("local|abc123"));

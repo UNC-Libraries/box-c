@@ -42,8 +42,8 @@ import static edu.unc.lib.boxc.search.api.SearchFieldKey.KEYWORD;
 import static edu.unc.lib.boxc.search.api.SearchFieldKey.LANGUAGE;
 import static edu.unc.lib.boxc.search.api.SearchFieldKey.LAST_INDEXED;
 import static edu.unc.lib.boxc.search.api.SearchFieldKey.LOCATION;
-import static edu.unc.lib.boxc.search.api.SearchFieldKey.OTHER_SUBJECTS;
-import static edu.unc.lib.boxc.search.api.SearchFieldKey.OTHER_TITLES;
+import static edu.unc.lib.boxc.search.api.SearchFieldKey.OTHER_SUBJECT;
+import static edu.unc.lib.boxc.search.api.SearchFieldKey.OTHER_TITLE;
 import static edu.unc.lib.boxc.search.api.SearchFieldKey.PARENT_COLLECTION;
 import static edu.unc.lib.boxc.search.api.SearchFieldKey.PARENT_UNIT;
 import static edu.unc.lib.boxc.search.api.SearchFieldKey.PUBLISHER;
@@ -313,12 +313,12 @@ public class IndexDocumentBean {
     }
 
     public List<String> getOtherTitle() {
-        return (List<String>) fields.get(OTHER_TITLES.getSolrField());
+        return (List<String>) fields.get(OTHER_TITLE.getSolrField());
     }
 
     @Field
     public void setOtherTitle(List<String> otherTitle) {
-        fields.put(OTHER_TITLES.getSolrField(), otherTitle);
+        fields.put(OTHER_TITLE.getSolrField(), otherTitle);
     }
 
     public String getAbstractText() {
@@ -358,12 +358,12 @@ public class IndexDocumentBean {
     }
 
     public List<String> getOtherSubject() {
-        return (List<String>) fields.get(OTHER_SUBJECTS.getSolrField());
+        return (List<String>) fields.get(OTHER_SUBJECT.getSolrField());
     }
 
     @Field
     public void setOtherSubject(List<String> otherSubject) {
-        fields.put(OTHER_SUBJECTS.getSolrField(), otherSubject);
+        fields.put(OTHER_SUBJECT.getSolrField(), otherSubject);
     }
 
     @Field

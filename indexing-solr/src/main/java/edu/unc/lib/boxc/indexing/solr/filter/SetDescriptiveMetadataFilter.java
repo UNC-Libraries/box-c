@@ -291,20 +291,19 @@ public class SetDescriptiveMetadataFilter implements IndexDocumentFilter {
                 List<Element> subjectParts = otherSubjectObj.getChildren();
                 for (Element otherSubject : subjectParts) {
                     String otherSubjectName = otherSubject.getName();
-                    if (otherSubjectName.equals("name") || otherSubjectName.equals("topic")) {
+                    if (!otherSubject.getChildren().isEmpty() ||
+                            otherSubjectName.equals("name") || otherSubjectName.equals("topic")) {
                         continue;
                     }
 
-                    if (otherSubject.getChildren().isEmpty()) {
-                        addIfNotBlank(otherSubjects, otherSubject.getValue());
-                    }
+                    addIfNotBlank(otherSubjects, otherSubject.getValue());
                 }
             }
         }
         if (otherSubjects.size() > 0) {
             idb.setOtherSubject(otherSubjects);
         } else {
-            idb.setOtherSubject(otherSubjects);
+            idb.setOtherSubject(null);
         }
     }
 
