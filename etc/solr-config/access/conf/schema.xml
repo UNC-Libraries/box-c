@@ -167,9 +167,9 @@
     -->
     <field name="contentType" type="string" indexed="true" stored="true" multiValued="true" docValues="true"/>
     <!-- All names, searchable, and used in copy indexes -->
-    <field name="contributor" type="string" indexed="true" stored="true" multiValued="true" docValues="true"/>
+    <field name="contributor" type="string" indexed="true" stored="true" multiValued="true"/>
     <!-- <field name="roleName" type="string" indexed="true" stored="true" multiValued="true"/> -->
-    <field name="creator" type="string" indexed="true" stored="true" multiValued="true" docValues="true"/>
+    <field name="creator" type="string" indexed="true" stored="true" multiValued="true"/>
     <!-- Sort order fields -->
     <field name="creatorSort" type="string_lc" indexed="true" stored="true"/>
     <!-- Used for faceting creators and contributors as a single facet -->
