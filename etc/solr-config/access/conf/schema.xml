@@ -198,7 +198,7 @@
     <!-- the identifier used for sorting (to be used if titles or labels don't sort as required) -->
     <field name="identifierSort" type="string_lc" indexed="true" stored="true"/>
     <!-- Other keywords, for use in copy indexes -->
-    <field name="keyword" type="string" indexed="false" stored="true" multiValued="true" docValues="true"/>
+    <field name="keyword" type="string" indexed="false" stored="true" multiValued="true"/>
     <!-- Languages presented in the resource, in human readable form-->
     <field name="language" type="string" indexed="true" stored="true" multiValued="true" docValues="true"/>
     <!-- Timestamp when this record was fully indexed -->
