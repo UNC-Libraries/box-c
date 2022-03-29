@@ -31,6 +31,7 @@ const TYPES = {
     creatorContributor: 'Creator/Contributor',
     createdYear: 'Date Created',
     format: 'Format',
+    language: 'Language',
     location: 'Location',
     publisher: 'Publisher',
     subject: 'Subject',
@@ -38,7 +39,7 @@ const TYPES = {
     titleIndex: 'Title',
     genre: 'Genre'
 }
-const MULTI_VALUED_FIELDS = ['format', 'collection', 'creatorContributor', 'publisher'];
+const MULTI_VALUED_FIELDS = ['format', 'collection', 'creatorContributor', 'publisher', 'language'];
 
 export default {
     name: "filterTags",
