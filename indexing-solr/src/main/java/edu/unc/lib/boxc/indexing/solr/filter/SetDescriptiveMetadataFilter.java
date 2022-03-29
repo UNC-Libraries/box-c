@@ -285,26 +285,48 @@ public class SetDescriptiveMetadataFilter implements IndexDocumentFilter {
 
     private void extractOtherSubjects(Element mods, IndexDocumentBean idb) {
         List<Element> otherSubjectEls = mods.getChildren("subject", JDOMNamespaceUtil.MODS_V3_NS);
-        List<String> otherSubjects = new ArrayList<>();
-        if (!otherSubjectEls.isEmpty()) {
-            for (Element otherSubjectObj : otherSubjectEls) {
-                List<Element> subjectParts = otherSubjectObj.getChildren();
-                for (Element otherSubject : subjectParts) {
-                    String otherSubjectName = otherSubject.getName();
-                    if (!otherSubject.getChildren().isEmpty() ||
-                            otherSubjectName.equals("name") || otherSubjectName.equals("topic")) {
-                        continue;
-                    }
-
-                    addIfNotBlank(otherSubjects, otherSubject.getValue());
-                }
-            }
-        }
+        List<String> otherSubjects = extractNestedSubjects(otherSubjectEls, new ArrayList<>());
         if (otherSubjects.size() > 0) {
             idb.setOtherSubject(otherSubjects);
         } else {
             idb.setOtherSubject(null);
         }
+    }
+
+    private List<String> extractNestedSubjects(List<Element> otherSubjectEls, List<String> otherSubjects) {
+        if (!otherSubjectEls.isEmpty()) {
+            for (Element otherSubjectEl : otherSubjectEls) {
+                List<Element> otherSubjectParts = otherSubjectEl.getChildren();
+
+                // No further levels of recursive nesting
+                if (otherSubjectParts.isEmpty()) {
+                    if (!invalidOtherSubject(otherSubjectEl)) {
+                        addIfNotBlank(otherSubjects, otherSubjectEl.getValue());
+                    }
+                    continue;
+                }
+
+                for (Element otherSubjectPart : otherSubjectParts) {
+                    if (invalidOtherSubject(otherSubjectPart)) {
+                        continue;
+                    }
+
+                    List<Element> childrenEls = otherSubjectPart.getChildren();
+                    if (childrenEls.isEmpty()) {
+                        addIfNotBlank(otherSubjects, otherSubjectPart.getValue());
+                    } else {
+                        extractNestedSubjects(childrenEls, otherSubjects);
+                    }
+                }
+            }
+        }
+
+        return otherSubjects;
+    }
+
+    private boolean invalidOtherSubject(Element otherSubject) {
+        String otherSubjectName = otherSubject.getName();
+        return otherSubjectName.equals("name") || otherSubjectName.equals("topic");
     }
 
     private void extractLocations(Element mods, IndexDocumentBean idb) {
