@@ -95,6 +95,11 @@ public class ContentPathFactoryImpl implements ContentPathFactory {
         }
     }
 
+    @Override
+    public void invalidate(PID pid) {
+        childToParentCache.invalidate(pid);
+    }
+
     private List<PID> buildPath(PID pid) {
         PID currentPid = pid;
         List<PID> result = new ArrayList<>();
