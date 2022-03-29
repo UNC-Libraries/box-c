@@ -285,7 +285,8 @@ public class SetDescriptiveMetadataFilter implements IndexDocumentFilter {
 
     private void extractOtherSubjects(Element mods, IndexDocumentBean idb) {
         List<Element> otherSubjectEls = mods.getChildren("subject", JDOMNamespaceUtil.MODS_V3_NS);
-        List<String> otherSubjects = extractNestedSubjects(otherSubjectEls, new ArrayList<>());
+        List<String> otherSubjects = new ArrayList<>();
+        extractNestedSubjects(otherSubjectEls, otherSubjects);
         if (otherSubjects.size() > 0) {
             idb.setOtherSubject(otherSubjects);
         } else {
@@ -293,35 +294,35 @@ public class SetDescriptiveMetadataFilter implements IndexDocumentFilter {
         }
     }
 
-    private List<String> extractNestedSubjects(List<Element> otherSubjectEls, List<String> otherSubjects) {
-        if (!otherSubjectEls.isEmpty()) {
-            for (Element otherSubjectEl : otherSubjectEls) {
-                List<Element> otherSubjectParts = otherSubjectEl.getChildren();
+    private void extractNestedSubjects(List<Element> otherSubjectEls, List<String> otherSubjects) {
+        if (otherSubjectEls.isEmpty()) {
+            return;
+        }
 
-                // No further levels of recursive nesting
-                if (otherSubjectParts.isEmpty()) {
-                    if (!invalidOtherSubject(otherSubjectEl)) {
-                        addIfNotBlank(otherSubjects, otherSubjectEl.getValue());
-                    }
+        for (Element otherSubjectEl : otherSubjectEls) {
+            List<Element> otherSubjectParts = otherSubjectEl.getChildren();
+
+            // No further levels of recursive nesting
+            if (otherSubjectParts.isEmpty()) {
+                if (!invalidOtherSubject(otherSubjectEl)) {
+                    addIfNotBlank(otherSubjects, otherSubjectEl.getValue());
+                }
+                continue;
+            }
+
+            for (Element otherSubjectPart : otherSubjectParts) {
+                if (invalidOtherSubject(otherSubjectPart)) {
                     continue;
                 }
 
-                for (Element otherSubjectPart : otherSubjectParts) {
-                    if (invalidOtherSubject(otherSubjectPart)) {
-                        continue;
-                    }
-
-                    List<Element> childrenEls = otherSubjectPart.getChildren();
-                    if (childrenEls.isEmpty()) {
-                        addIfNotBlank(otherSubjects, otherSubjectPart.getValue());
-                    } else {
-                        extractNestedSubjects(childrenEls, otherSubjects);
-                    }
+                List<Element> childrenEls = otherSubjectPart.getChildren();
+                if (childrenEls.isEmpty()) {
+                    addIfNotBlank(otherSubjects, otherSubjectPart.getValue());
+                } else {
+                    extractNestedSubjects(childrenEls, otherSubjects);
                 }
             }
         }
-
-        return otherSubjects;
     }
 
     private boolean invalidOtherSubject(Element otherSubject) {
