@@ -18,17 +18,22 @@ package edu.unc.lib.boxc.indexing.solr.filter;
 import static edu.unc.lib.boxc.model.api.xml.DescriptionConstants.COLLECTION_NUMBER_EL;
 import static edu.unc.lib.boxc.model.api.xml.DescriptionConstants.COLLECTION_NUMBER_LABEL;
 import static edu.unc.lib.boxc.model.api.xml.DescriptionConstants.COLLECTION_NUMBER_TYPE;
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
+import java.util.Set;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.Resource;
@@ -58,6 +63,7 @@ public class SetDescriptiveMetadataFilter implements IndexDocumentFilter {
     private static final Logger log = LoggerFactory.getLogger(SetDescriptiveMetadataFilter.class);
 
     private final Properties languageCodeMap;
+    private final Set<String> rightsUriMap;
     public final static String AFFIL_URI = "http://cdr.unc.edu/vocabulary/Affiliation";
     private final List<String> CREATOR_LIST = Arrays.asList("creator", "author", "interviewer", "interviewee");
 
@@ -68,6 +74,19 @@ public class SetDescriptiveMetadataFilter implements IndexDocumentFilter {
                     "/iso639LangMappings.txt")));
         } catch (IOException e) {
             log.error("Failed to load code language mappings", e);
+        }
+
+        rightsUriMap = new HashSet<>();
+        try {
+            InputStream rightsStream = getClass().getClassLoader().getResourceAsStream(
+                    "/rightsUriMappings.txt");
+            if (rightsStream == null) {
+                throw new IOException();
+            }
+            List<String> rights = IOUtils.readLines(rightsStream, UTF_8);
+            rightsUriMap.addAll(rights);
+        } catch (IOException e) {
+            log.error("Failed to load rights uri mappings", e);
         }
     }
 
@@ -403,6 +422,9 @@ public class SetDescriptiveMetadataFilter implements IndexDocumentFilter {
             if (accessType != null && accessType.trim().equalsIgnoreCase("use and reproduction")) {
                 String href = rightsEl.getAttributeValue("href", JDOMNamespaceUtil.XLINK_NS);
                 if (!StringUtils.isBlank(href)) {
+                    if (!rightsUriMap.contains(href)) {
+                        log.warn("URI, {} wasn't found in the rights uri mappings.", href);
+                    }
                     rightsUri.add(href);
                 } else {
                     rights.add(rightsEl.getTextTrim());
@@ -410,7 +432,7 @@ public class SetDescriptiveMetadataFilter implements IndexDocumentFilter {
             }
         }
 
-        if (rights.size() > 0) {
+        if (!rights.isEmpty()) {
             idb.setRights(rights);
         } else {
             idb.setRights(null);

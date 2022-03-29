@@ -217,6 +217,10 @@
     <field name="resourceType" type="string" indexed="true" stored="true" required="true" docValues="true"/>
     <!-- Sort order for this item based on resource type -->
     <field name="resourceTypeSort" type="int" indexed="true" stored="true" docValues="true"/>
+    <!-- Rights statement text. Used in copy indexes -->
+    <field name="rights" type="string" indexed="false" stored="true" multiValued="true"/>
+    <!-- Rights statement URI. Used in copy indexes -->
+    <field name="rightsUri" type="string" indexed="false" stored="true" multiValued="true"/>
     <!-- Contains role|group pairings describing all access control group assignments for this object -->
     <field name="roleGroup" type="string" indexed="true" stored="true" required="true" multiValued="true" default="" docValues="true"/>
     <!-- Rollup identifier, generally the PID for the current object, or the PID of the parent for this object -->
