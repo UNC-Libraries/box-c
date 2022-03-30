@@ -23,8 +23,10 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
 import java.util.Date;
 
+import org.joda.time.Chronology;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
+import org.joda.time.chrono.GJChronology;
 import org.joda.time.format.ISODateTimeFormat;
 
 /**
@@ -49,12 +51,14 @@ public class DateTimeUtil {
 
     /**
      * This is only visible for testing until we switch to java 8 time implementation
+     * Parses Julian or Gregorian dates, cutoff year is 1582.
      * @param utcDate
      * @return
      */
     protected static DateTime parseUTCToDateTime(String utcDate) {
         // TODO remove jodatime dependency. At the moment it is required for extensive ISO8601 parsing
-        DateTime isoDT = ISODateTimeFormat.dateTimeParser().withOffsetParsed()
+        Chronology chrono = GJChronology.getInstance();
+        DateTime isoDT = ISODateTimeFormat.dateTimeParser().withChronology(chrono).withOffsetParsed()
                 .parseDateTime(utcDate);
         return isoDT.withZone(DateTimeZone.forID("UTC"));
     }
