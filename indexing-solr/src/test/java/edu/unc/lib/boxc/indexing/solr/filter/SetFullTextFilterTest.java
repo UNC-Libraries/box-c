@@ -106,7 +106,7 @@ public class SetFullTextFilterTest {
 
         filter.filter(dip);
 
-        assertEquals(EXAMPLE_TEXT, dip.getDocument().getFullText());
+        assertNull(dip.getDocument().getFullText());
     }
 
     @Test
