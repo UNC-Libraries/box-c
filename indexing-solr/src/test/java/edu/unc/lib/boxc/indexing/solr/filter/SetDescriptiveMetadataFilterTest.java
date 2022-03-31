@@ -155,6 +155,7 @@ public class SetDescriptiveMetadataFilterTest {
         assertTrue(idb.getLanguage().contains("English"));
 
         assertTrue(idb.getPublisher().contains("Knopf"));
+        assertEquals(1, idb.getPublisher().size());
 
         assertEquals("2006-04", dateFormat.format(idb.getDateCreated()));
 
