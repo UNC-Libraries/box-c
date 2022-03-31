@@ -26,7 +26,6 @@ import edu.unc.lib.boxc.indexing.solr.exception.IndexingException;
 import edu.unc.lib.boxc.indexing.solr.indexing.DocumentIndexingPackage;
 import edu.unc.lib.boxc.model.api.objects.ContentObject;
 import edu.unc.lib.boxc.model.api.objects.FileObject;
-import edu.unc.lib.boxc.model.api.objects.WorkObject;
 import edu.unc.lib.boxc.model.fcrepo.services.DerivativeService;
 import edu.unc.lib.boxc.model.fcrepo.services.DerivativeService.Derivative;
 
@@ -61,15 +60,12 @@ public class SetFullTextFilter implements IndexDocumentFilter {
 
     private FileObject getFileObject(DocumentIndexingPackage dip) throws IndexingException {
         ContentObject contentObj = dip.getContentObject();
-        // object being indexed must be a work or a file object
-        if (!(contentObj instanceof WorkObject) && !(contentObj instanceof FileObject)) {
+        // object being indexed must be a file object
+        if (!(contentObj instanceof FileObject)) {
             return null;
         }
-        if (contentObj instanceof WorkObject) {
-            return ((WorkObject) contentObj).getPrimaryObject();
-        } else {
-            return (FileObject) contentObj;
-        }
+
+        return (FileObject) contentObj;
     }
 
     /**
