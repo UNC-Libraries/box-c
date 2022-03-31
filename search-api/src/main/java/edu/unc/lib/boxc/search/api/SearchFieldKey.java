@@ -77,7 +77,6 @@ public enum SearchFieldKey {
     TIMESTAMP("timestamp", "timestamp", "Timestamp"),
     TITLE("title", "title", "Title"),
     TITLE_INDEX("titleIndex", "titleIndex", "Title Index"),
-    TITLE_LC("title_lc", "title_lc", "Title"),
     VERSION("_version_", "version", "Version");
 
     private final String solrField;

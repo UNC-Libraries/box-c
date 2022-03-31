@@ -45,6 +45,8 @@
     <fieldType name="date" class="solr.DatePointField" positionIncrementGap="0"/>
     <!-- https://solr.apache.org/guide/8_11/working-with-dates.html#date-range-formatting -->
     <fieldType name="dateRange" class="solr.DateRangeField"/>
+    <!-- https://solr.apache.org/guide/8_11/field-types-included-with-solr.html -->
+    <fieldType name="sortableText" class="solr.SortableTextField"/>
 
     <!-- The "RandomSortField" is not used to store or search any
          data.  You can declare fields of this type it in your schema
@@ -96,13 +98,6 @@
     <fieldType name="text_tl" class="solr.TextField" positionIncrementGap="100">
       <analyzer>
         <tokenizer class="solr.StandardTokenizerFactory"/>
-        <filter class="solr.LowerCaseFilterFactory"/>
-      </analyzer>
-    </fieldType>
-
-    <fieldType name="string_lc" class="solr.TextField" sortMissingLast="true">
-      <analyzer>
-        <tokenizer class="solr.KeywordTokenizerFactory"/>
         <filter class="solr.LowerCaseFilterFactory"/>
       </analyzer>
     </fieldType>
@@ -172,7 +167,7 @@
     <!-- Used for faceting creators and contributors as a single facet -->
     <field name="creatorContributor" type="string" indexed="true" stored="true" multiValued="true" docValues="true"/>
     <!-- Sort order fields -->
-    <field name="creatorSort" type="string_lc" indexed="true" stored="true"/>
+    <field name="creatorSort" type="sortableText" indexed="true" stored="true"/>
     <!-- DS name|mimetype|extension|filesize|checksum|owner -->
     <field name="datastream" type="string" indexed="true" stored="true" multiValued="true" docValues="true"/>
     <!-- Date when the object was added to the repository -->
@@ -195,7 +190,7 @@
     <!-- identifiers, prefixed with the identifier type, such as doi|10.1186/1471-2458-11-702 -->
     <field name="identifier" type="string" indexed="true" stored="true" multiValued="true"/>
     <!-- the identifier used for sorting (to be used if titles or labels don't sort as required) -->
-    <field name="identifierSort" type="string_lc" indexed="true" stored="true"/>
+    <field name="identifierSort" type="sortableText" indexed="true" stored="true"/>
     <!-- Other keywords, for use in copy indexes -->
     <field name="keyword" type="string" indexed="false" stored="true" multiValued="true"/>
     <!-- Languages presented in the resource, in human readable form-->
@@ -230,7 +225,6 @@
     <field name="timestamp" type="date" indexed="true" stored="true" default="NOW" multiValued="false"/>
     <!-- Descriptive Fields -->
     <field name="title" type="string" indexed="true" stored="true" required="true" docValues="true"/>
-    <field name="title_lc" type="string_lc" indexed="true"/>
 
     <!-- Index fields -->
     <!-- Specific field indexes -->
@@ -305,6 +299,4 @@
   <copyField source="id" dest="text"/>
   <copyField source="identifier" dest="text"/>
   <copyField source="fullText" dest="text"/>
-
-  <copyField source="title" dest="title_lc"/>
 </schema>

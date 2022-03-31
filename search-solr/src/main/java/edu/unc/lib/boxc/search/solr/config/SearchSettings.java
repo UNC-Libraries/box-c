@@ -60,7 +60,7 @@ public class SearchSettings extends AbstractSettings {
             "default", constructSortFields(
                     "SCORE|desc,RESOURCE_TYPE_SORT|asc,IDENTIFIER_SORT|asc,TITLE|asc"),
             "resourceType", constructSortFields("RESOURCE_TYPE_SORT|asc"),
-            "title", constructSortFields("TITLE_LC|asc,ID|asc")
+            "title", constructSortFields("TITLE|asc,ID|asc")
     );
 
     public static final Collection<String> DEFAULT_RESOURCE_TYPES =

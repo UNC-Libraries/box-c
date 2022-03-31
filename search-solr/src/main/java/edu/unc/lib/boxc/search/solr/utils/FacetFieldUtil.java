@@ -32,7 +32,6 @@ import edu.unc.lib.boxc.search.api.facets.SearchFacet;
 import edu.unc.lib.boxc.search.api.requests.SearchState;
 import edu.unc.lib.boxc.search.solr.config.SearchSettings;
 import edu.unc.lib.boxc.search.solr.config.SolrSettings;
-import edu.unc.lib.boxc.search.solr.facets.CaseInsensitiveFacet;
 import edu.unc.lib.boxc.search.solr.facets.GenericFacet;
 import edu.unc.lib.boxc.search.solr.facets.MultivaluedHierarchicalFacet;
 import edu.unc.lib.boxc.search.solr.services.FacetFieldFactory;
@@ -92,8 +91,6 @@ public class FacetFieldUtil {
             addFacetValue(facetObject, solrQuery, cutoffFacetToFq);
         } else if (facetIsOfType(facetObject, MultivaluedHierarchicalFacet.class)) {
             addHierarchicalFacetValue(facetObject, solrQuery, multivaluedFacetToFq);
-        } else if (facetIsOfType(facetObject, CaseInsensitiveFacet.class)) {
-            addFacetValue(facetObject, solrQuery, caseInsensitiveFacetToFq);
         } else if (facetIsOfType(facetObject, GenericFacet.class)) {
             addFacetValue(facetObject, solrQuery, genericFacetToFq);
         }
@@ -166,12 +163,6 @@ public class FacetFieldUtil {
     private Function<SearchFacet, String> genericFacetToFq = (facet) -> {
         String solrFieldName = SearchFieldKey.valueOf(facet.getFieldName()).getSolrField();
         return SearchFieldKey.valueOf(facet.getFieldName()).getSolrField() + ":\""
-                + SolrSettings.sanitize(facet.getSearchValue()) + "\"";
-    };
-
-    private Function<SearchFacet, String> caseInsensitiveFacetToFq = (inFacet) -> {
-        CaseInsensitiveFacet facet = (CaseInsensitiveFacet) inFacet;
-        return SearchFieldKey.valueOf(facet.getSearchName()).getSolrField() + ":\""
                 + SolrSettings.sanitize(facet.getSearchValue()) + "\"";
     };
 
