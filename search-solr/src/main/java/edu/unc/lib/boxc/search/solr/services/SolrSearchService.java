@@ -358,10 +358,6 @@ public class SolrSearchService extends AbstractQueryService {
             }
         }
 
-        if (!searchState.getIncludeParts()) {
-            solrQuery.addFilterQuery(SearchFieldKey.IS_PART.getSolrField() + ":false");
-        }
-
         // Add sort parameters
         addSort(solrQuery, searchState.getSortType(), searchState.getSortNormalOrder());
 
@@ -443,7 +439,7 @@ public class SolrSearchService extends AbstractQueryService {
         return solrQuery;
     }
 
-    private static final String ANYWHERE_FIELD = SearchFieldKey.DEFAULT_INDEX.getSolrField();
+    private static final String ANYWHERE_FIELD = SearchFieldKey.DEFAULT_INDEX.name();
 
     /**
      * Add search fields from a search state to the given termQuery
@@ -454,26 +450,28 @@ public class SolrSearchService extends AbstractQueryService {
     private void addSearchFields(SearchState searchState, SolrQuery solrQuery) {
         // Generate search term query string
         var searchFields = searchState.getSearchFields();
+        if (searchFields == null || searchFields.isEmpty()) {
+            return;
+        }
         var searchOp = searchState.getSearchTermOperator();
-        if (searchFields != null && !searchFields.isEmpty()) {
-            Iterator<String> searchTypeIt = searchFields.keySet().iterator();
-            while (searchTypeIt.hasNext()) {
-                String searchType = searchTypeIt.next();
-                String fieldValue = searchState.getSearchFields().get(searchType);
-                String searchValue = computeSearchValue(searchType, fieldValue, searchOp);
-                if (searchValue == null) {
-                    continue;
-                }
-                if (ANYWHERE_FIELD.equals(searchType)) {
-                    solrQuery.setQuery(searchValue);
-                    continue;
-                }
-                var field = SearchFieldKey.valueOf(searchType);
-                if (field == null) {
-                    continue;
-                }
-                solrQuery.addFilterQuery(field.getSolrField() + ":" + searchValue);
+        var terms = new ArrayList<String>();
+        Iterator<String> searchTypeIt = searchFields.keySet().iterator();
+        while (searchTypeIt.hasNext()) {
+            String searchType = searchTypeIt.next();
+            String fieldValue = searchState.getSearchFields().get(searchType);
+            String searchValue = computeSearchValue(searchType, fieldValue, searchOp);
+            if (StringUtils.isBlank(searchValue)) {
+                continue;
             }
+            if (ANYWHERE_FIELD.equals(searchType)) {
+                solrQuery.setQuery(searchValue);
+                continue;
+            }
+            var field = SearchFieldKey.valueOf(searchType);
+            if (field == null) {
+                continue;
+            }
+            solrQuery.addFilterQuery(field.getSolrField() + ":" + searchValue);
         }
     }
 

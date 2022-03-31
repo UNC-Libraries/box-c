@@ -21,36 +21,33 @@ import static edu.unc.lib.boxc.search.api.SearchFieldKey.ANCESTOR_IDS;
 import static edu.unc.lib.boxc.search.api.SearchFieldKey.ANCESTOR_PATH;
 import static edu.unc.lib.boxc.search.api.SearchFieldKey.CITATION;
 import static edu.unc.lib.boxc.search.api.SearchFieldKey.COLLECTION_ID;
-import static edu.unc.lib.boxc.search.api.SearchFieldKey.CONTENT_MODEL;
 import static edu.unc.lib.boxc.search.api.SearchFieldKey.CONTENT_STATUS;
 import static edu.unc.lib.boxc.search.api.SearchFieldKey.CONTENT_TYPE;
 import static edu.unc.lib.boxc.search.api.SearchFieldKey.CONTRIBUTOR;
 import static edu.unc.lib.boxc.search.api.SearchFieldKey.CREATOR;
+import static edu.unc.lib.boxc.search.api.SearchFieldKey.CREATOR_CONTRIBUTOR;
 import static edu.unc.lib.boxc.search.api.SearchFieldKey.CREATOR_SORT;
 import static edu.unc.lib.boxc.search.api.SearchFieldKey.DATASTREAM;
 import static edu.unc.lib.boxc.search.api.SearchFieldKey.DATE_ADDED;
 import static edu.unc.lib.boxc.search.api.SearchFieldKey.DATE_CREATED;
 import static edu.unc.lib.boxc.search.api.SearchFieldKey.DATE_CREATED_YEAR;
 import static edu.unc.lib.boxc.search.api.SearchFieldKey.DATE_UPDATED;
-import static edu.unc.lib.boxc.search.api.SearchFieldKey.DEPARTMENT;
-import static edu.unc.lib.boxc.search.api.SearchFieldKey.DISPLAY_ORDER;
 import static edu.unc.lib.boxc.search.api.SearchFieldKey.FILESIZE;
 import static edu.unc.lib.boxc.search.api.SearchFieldKey.FILESIZE_TOTAL;
 import static edu.unc.lib.boxc.search.api.SearchFieldKey.FULL_TEXT;
 import static edu.unc.lib.boxc.search.api.SearchFieldKey.ID;
 import static edu.unc.lib.boxc.search.api.SearchFieldKey.IDENTIFIER;
 import static edu.unc.lib.boxc.search.api.SearchFieldKey.IDENTIFIER_SORT;
-import static edu.unc.lib.boxc.search.api.SearchFieldKey.IS_PART;
 import static edu.unc.lib.boxc.search.api.SearchFieldKey.KEYWORD;
-import static edu.unc.lib.boxc.search.api.SearchFieldKey.LABEL;
 import static edu.unc.lib.boxc.search.api.SearchFieldKey.LANGUAGE;
 import static edu.unc.lib.boxc.search.api.SearchFieldKey.LAST_INDEXED;
 import static edu.unc.lib.boxc.search.api.SearchFieldKey.LOCATION;
-import static edu.unc.lib.boxc.search.api.SearchFieldKey.OTHER_TITLES;
+import static edu.unc.lib.boxc.search.api.SearchFieldKey.OTHER_SUBJECT;
+import static edu.unc.lib.boxc.search.api.SearchFieldKey.OTHER_TITLE;
 import static edu.unc.lib.boxc.search.api.SearchFieldKey.PARENT_COLLECTION;
 import static edu.unc.lib.boxc.search.api.SearchFieldKey.PARENT_UNIT;
+import static edu.unc.lib.boxc.search.api.SearchFieldKey.PUBLISHER;
 import static edu.unc.lib.boxc.search.api.SearchFieldKey.READ_GROUP;
-import static edu.unc.lib.boxc.search.api.SearchFieldKey.RELATIONS;
 import static edu.unc.lib.boxc.search.api.SearchFieldKey.RESOURCE_TYPE;
 import static edu.unc.lib.boxc.search.api.SearchFieldKey.RESOURCE_TYPE_SORT;
 import static edu.unc.lib.boxc.search.api.SearchFieldKey.ROLE_GROUP;
@@ -144,15 +141,6 @@ public class IndexDocumentBean {
         fields.put(PARENT_UNIT.getSolrField(), parentUnit);
     }
 
-    public String getLabel() {
-        return (String) fields.get(LABEL.getSolrField());
-    }
-
-    @Field
-    public void setLabel(String label) {
-        fields.put(LABEL.getSolrField(), label);
-    }
-
     public String getRollup() {
         return (String) fields.get(ROLLUP_ID.getSolrField());
     }
@@ -160,15 +148,6 @@ public class IndexDocumentBean {
     @Field
     public void setRollup(String rollup) {
         fields.put(ROLLUP_ID.getSolrField(), rollup);
-    }
-
-    public Boolean getIsPart() {
-        return (Boolean) fields.get(IS_PART.getSolrField());
-    }
-
-    @Field
-    public void setIsPart(Boolean isPart) {
-        fields.put(IS_PART.getSolrField(), isPart);
     }
 
     public Long get_version_() {
@@ -207,24 +186,6 @@ public class IndexDocumentBean {
         fields.put(FILESIZE_TOTAL.getSolrField(), filesizeTotal);
     }
 
-    public List<String> getRelations() {
-        return (List<String>) fields.get(RELATIONS.getSolrField());
-    }
-
-    @Field
-    public void setRelations(List<String> relations) {
-        fields.put(RELATIONS.getSolrField(), relations);
-    }
-
-    public List<String> getContentModel() {
-        return (List<String>) fields.get(CONTENT_MODEL.getSolrField());
-    }
-
-    @Field
-    public void setContentModel(List<String> contentModel) {
-        fields.put(CONTENT_MODEL.getSolrField(), contentModel);
-    }
-
     public String getResourceType() {
         return (String) fields.get(RESOURCE_TYPE.getSolrField());
     }
@@ -250,15 +211,6 @@ public class IndexDocumentBean {
     @Field
     public void setCreatorSort(String creatorSort) {
         fields.put(CREATOR_SORT.getSolrField(), creatorSort);
-    }
-
-    public Long getDisplayOrder() {
-        return (Long) fields.get(DISPLAY_ORDER.getSolrField());
-    }
-
-    @Field
-    public void setDisplayOrder(Long displayOrder) {
-        fields.put(DISPLAY_ORDER.getSolrField(), displayOrder);
     }
 
     public List<String> getContentType() {
@@ -361,12 +313,12 @@ public class IndexDocumentBean {
     }
 
     public List<String> getOtherTitle() {
-        return (List<String>) fields.get(OTHER_TITLES.getSolrField());
+        return (List<String>) fields.get(OTHER_TITLE.getSolrField());
     }
 
     @Field
     public void setOtherTitle(List<String> otherTitle) {
-        fields.put(OTHER_TITLES.getSolrField(), otherTitle);
+        fields.put(OTHER_TITLE.getSolrField(), otherTitle);
     }
 
     public String getAbstractText() {
@@ -403,6 +355,15 @@ public class IndexDocumentBean {
     @Field
     public void setSubject(List<String> subject) {
         fields.put(SUBJECT.getSolrField(), subject);
+    }
+
+    public List<String> getOtherSubject() {
+        return (List<String>) fields.get(OTHER_SUBJECT.getSolrField());
+    }
+
+    @Field
+    public void setOtherSubject(List<String> otherSubject) {
+        fields.put(OTHER_SUBJECT.getSolrField(), otherSubject);
     }
 
     @Field
@@ -459,13 +420,13 @@ public class IndexDocumentBean {
         fields.put(CONTRIBUTOR.getSolrField(), contributor);
     }
 
-    public List<String> getDepartment() {
-        return (List<String>) fields.get(DEPARTMENT.getSolrField());
+    public List<String> getCreatorContributor() {
+        return (List<String>) fields.get(CREATOR_CONTRIBUTOR.getSolrField());
     }
 
     @Field
-    public void setDepartment(List<String> department) {
-        fields.put(DEPARTMENT.getSolrField(), department);
+    public void setCreatorContributor(List<String> creatorsContributors) {
+        fields.put(CREATOR_CONTRIBUTOR.getSolrField(), creatorsContributors);
     }
 
     public Date getDateCreated() {
@@ -510,6 +471,15 @@ public class IndexDocumentBean {
     @Field
     public void setCitation(String citation) {
         fields.put(CITATION.getSolrField(), citation);
+    }
+
+    public List<String> getPublisher() {
+        return (List<String>) fields.get(PUBLISHER.getSolrField());
+    }
+
+    @Field
+    public void setPublisher(List<String> publishers) {
+        fields.put(PUBLISHER.getSolrField(), publishers);
     }
 
     public String getFullText() {

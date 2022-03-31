@@ -36,7 +36,7 @@
 					<label for="title">Title</label> <input id="title" name="${searchSettings.searchFieldParams['TITLE_INDEX']}" class="advsearch_text" type="text" />
 				</p>
 				<p class="clear has-text-weight-bold">
-					<label for="contributor">Contributor</label> <input id="contributor"name="${searchSettings.searchFieldParams['CONTRIBUTOR_INDEX']}" class="advsearch_text" type="text" />
+					<label for="contributor">Creator/Contributor</label> <input id="contributor"name="${searchSettings.searchFieldParams['CONTRIBUTOR_INDEX']}" class="advsearch_text" type="text" />
 				</p>
 				<p class="clear has-text-weight-bold">
 					<label for="subject">Subject</label> <input id="subject" name="${searchSettings.searchFieldParams['SUBJECT_INDEX']}" class="advsearch_text" type="text" />

@@ -27,7 +27,6 @@
                 <ref bean="setContentStatusFilter" />
                 <ref bean="setFullTextFilter" />
                 <ref bean="setObjectTypeFilter" />
-                <ref bean="setRelationsFilter" />
                 <ref bean="setCollectionSupplementalInformationFilter" />
             </list>
         </property>
@@ -216,9 +215,6 @@
           class="edu.unc.lib.boxc.indexing.solr.filter.SetRecordDatesFilter">
     </bean>
 
-    <bean id="setRelationsFilter"
-          class="edu.unc.lib.boxc.indexing.solr.filter.SetRelationsFilter">
-    </bean>
 
     <bean id="dipDataLoader"
           class="edu.unc.lib.boxc.indexing.solr.indexing.DocumentIndexingPackageDataLoader">

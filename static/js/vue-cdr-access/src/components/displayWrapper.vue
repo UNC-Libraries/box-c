@@ -17,7 +17,7 @@ Top level component for full record pages with searching/browsing, including Adm
                 <view-type></view-type>
             </div>
         </div>
-        <img v-if="is_page_loading" src="/static/images/ajax-loader-lg.gif" alt="data loading icon">
+        <img v-if="is_page_loading" :src="nonVueStaticImageUrl('ajax-loader-lg.gif')" alt="data loading icon">
         <div v-if="showWidget && !is_page_loading" class="columns">
             <div class="facet-list column is-one-quarter facets-border">
                 <facets :facet-list="facet_list" :min-created-year="minimumCreatedYear" :show-clear-button="false"></facets>
@@ -34,15 +34,15 @@ Top level component for full record pages with searching/browsing, including Adm
 </template>
 
 <script>
-    import browseDisplay from './browseDisplay';
-    import browseSearch from './browseSearch';
-    import browseSort from './browseSort';
-    import listDisplay from './listDisplay';
-    import facets from "./facets";
-    import modalMetadata from './modalMetadata';
-    import pagination from './pagination';
-    import viewType from './viewType';
-    import worksOnly from './worksOnly';
+    import browseDisplay from '@/components/browseDisplay.vue';
+    import browseSearch from '@/components/browseSearch.vue';
+    import browseSort from '@/components/browseSort.vue';
+    import listDisplay from '@/components/listDisplay.vue';
+    import facets from "@/components/facets.vue";
+    import modalMetadata from '@/components/modalMetadata.vue';
+    import pagination from '@/components/pagination.vue';
+    import viewType from '@/components/viewType.vue';
+    import worksOnly from '@/components/worksOnly.vue';
     import get from 'axios';
     import isEmpty from 'lodash.isempty';
     import routeUtils from '../mixins/routeUtils';

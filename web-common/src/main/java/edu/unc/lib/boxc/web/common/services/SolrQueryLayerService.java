@@ -39,14 +39,11 @@ import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
 import edu.unc.lib.boxc.auth.api.services.PrincipalClassifier;
 import edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore;
 import edu.unc.lib.boxc.model.api.ResourceType;
-import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.boxc.search.api.SearchFieldKey;
-import edu.unc.lib.boxc.search.api.facets.FacetFieldObject;
 import edu.unc.lib.boxc.search.api.models.ContentObjectRecord;
 import edu.unc.lib.boxc.search.api.requests.SearchRequest;
 import edu.unc.lib.boxc.search.api.requests.SearchState;
 import edu.unc.lib.boxc.search.solr.config.SolrSettings;
-import edu.unc.lib.boxc.search.solr.facets.CaseInsensitiveFacet;
 import edu.unc.lib.boxc.search.solr.responses.SearchResultResponse;
 import edu.unc.lib.boxc.search.solr.services.ObjectPathFactory;
 import edu.unc.lib.boxc.search.solr.services.SearchStateFactory;
@@ -85,37 +82,6 @@ public class SolrQueryLayerService extends SolrSearchService {
 
         searchRequest.setSearchState(searchState);
         return getSearchResults(searchRequest);
-    }
-
-    public SearchResultResponse getDepartmentList(AccessGroupSet accessGroups, String pid) {
-        SearchState searchState;
-        Boolean hasPid = (pid != null) ? true : false;
-
-        searchState = searchStateFactory.createFacetSearchState(SearchFieldKey.DEPARTMENT.name(), "index",
-                Integer.MAX_VALUE);
-
-        SearchRequest searchRequest = new SearchRequest(searchState, accessGroups, true);
-        searchRequest.setRootPid(PIDs.get(pid));
-        ContentObjectRecord selectedContainer = null;
-
-        if (hasPid) {
-            selectedContainer = addSelectedContainer(searchRequest.getRootPid(), searchState,
-                    false, accessGroups);
-        }
-
-        SearchResultResponse results = getSearchResults(searchRequest);
-
-        if (hasPid) {
-            results.setSelectedContainer(selectedContainer);
-        }
-
-        if (results.getFacetFields() != null && results.getFacetFields().size() > 0) {
-            FacetFieldObject deptField = results.getFacetFields().get(0);
-            if (deptField != null) {
-                CaseInsensitiveFacet.deduplicateCaseInsensitiveValues(deptField);
-            }
-        }
-        return results;
     }
 
     /**
@@ -227,23 +193,6 @@ public class SolrQueryLayerService extends SolrSearchService {
 
     public void setSearchStateFactory(SearchStateFactory searchStateFactory) {
         this.searchStateFactory = searchStateFactory;
-    }
-
-    public SearchResultResponse getRelationSet(SearchRequest searchRequest, String relationName) {
-
-        SolrQuery query = generateSearch(searchRequest);
-
-        query.setQuery(query.getQuery() + " AND " + SearchFieldKey.RELATIONS.getSolrField() + ":"
-                + SolrSettings.sanitize(relationName) + "|*");
-        query.setRows(1000);
-
-        try {
-            return executeSearch(query, searchRequest.getSearchState(), false, false);
-        } catch (SolrServerException e) {
-            LOG.error("Error retrieving Solr object request: " + e);
-        }
-
-        return null;
     }
 
     /**

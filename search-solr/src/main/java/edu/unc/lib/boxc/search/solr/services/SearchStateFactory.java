@@ -20,7 +20,6 @@ import edu.unc.lib.boxc.search.api.exceptions.InvalidFacetException;
 import edu.unc.lib.boxc.search.api.facets.SearchFacet;
 import edu.unc.lib.boxc.search.api.requests.SearchState;
 import edu.unc.lib.boxc.search.solr.config.SearchSettings;
-import edu.unc.lib.boxc.search.solr.facets.CaseInsensitiveFacet;
 import edu.unc.lib.boxc.search.solr.facets.GenericFacet;
 import edu.unc.lib.boxc.search.solr.facets.MultivaluedHierarchicalFacet;
 import edu.unc.lib.boxc.search.solr.utils.FacetFieldUtil;
@@ -454,12 +453,6 @@ public class SearchStateFactory {
         parameter = getParameter(request, searchSettings.searchFieldParam(SearchFieldKey.PARENT_COLLECTION.name()));
         if (parameter != null && parameter.length() > 0) {
             searchState.setFacet(new GenericFacet(SearchFieldKey.PARENT_COLLECTION, parameter));
-        }
-
-        parameter = getParameter(request, searchSettings.searchFieldParam(SearchFieldKey.DEPARTMENT.name()));
-        if (parameter != null && parameter.length() > 0) {
-            CaseInsensitiveFacet facet = new CaseInsensitiveFacet(SearchFieldKey.DEPARTMENT.name(), parameter);
-            searchState.addFacet(facet);
         }
 
         parameter = getParameter(request, searchSettings.searchFieldParam(SearchFieldKey.CONTENT_TYPE.name()));

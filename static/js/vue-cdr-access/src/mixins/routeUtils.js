@@ -4,7 +4,8 @@ export default {
     data() {
         return {
             rows_per_page: this.$route.query.rows || 20,
-            possible_facet_fields: ['collection', 'createdYear', 'format', 'language', 'subject', 'location'],
+            possible_facet_fields: ['collection', 'createdYear', 'format', 'language', 'subject', 'location',
+                'creatorContributor', 'publisher'],
             min_created_year: undefined
         }
     },
@@ -153,6 +154,16 @@ export default {
                     throw e;
                 }
             });
+        },
+
+        /**
+         * Vite really, really wants all images to be in the project being built and referenced via imports.
+         * This doesn't make sense for some of our images. The project won't build unless an import or url is given.
+         * So just return the image url for images that are external to the Vue project.
+         * @param image
+         */
+        nonVueStaticImageUrl(image) {
+            return `https://${window.location.host}/static/images/${image}`;
         }
     },
 

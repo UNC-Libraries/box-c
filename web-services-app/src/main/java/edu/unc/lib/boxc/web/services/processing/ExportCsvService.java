@@ -74,7 +74,6 @@ public class ExportCsvService {
     public static final String PID_HEADER = "PID";
     public static final String TITLE_HEADER = "Title";
     public static final String PATH_HEADER = "Path";
-    public static final String LABEL_HEADER = "Label";
     public static final String DEPTH_HEADER = "Depth";
     public static final String DELETED_HEADER = "Deleted";
     public static final String DATE_ADDED_HEADER = "Date Added";
@@ -88,7 +87,7 @@ public class ExportCsvService {
     public static final String EMBARGO_HEADER = "Embargoed";
 
     private static final String[] CSV_HEADERS = new String[] {
-            OBJ_TYPE_HEADER, PID_HEADER, TITLE_HEADER, PATH_HEADER, LABEL_HEADER,
+            OBJ_TYPE_HEADER, PID_HEADER, TITLE_HEADER, PATH_HEADER,
             DEPTH_HEADER, DELETED_HEADER, DATE_ADDED_HEADER, DATE_UPDATED_HEADER,
             MIME_TYPE_HEADER, CHECKSUM_HEADER, FILE_SIZE_HEADER, NUM_CHILDREN_HEADER,
             DESCRIBED_HEADER, PATRON_PERMISSIONS_HEADER, EMBARGO_HEADER};
@@ -97,9 +96,9 @@ public class ExportCsvService {
             SearchFieldKey.TITLE.name(),
             SearchFieldKey.RESOURCE_TYPE.name(), SearchFieldKey.ANCESTOR_IDS.name(),
             SearchFieldKey.STATUS.name(), SearchFieldKey.DATASTREAM.name(),
-            SearchFieldKey.ANCESTOR_PATH.name(), SearchFieldKey.CONTENT_MODEL.name(),
+            SearchFieldKey.ANCESTOR_PATH.name(),
             SearchFieldKey.DATE_ADDED.name(), SearchFieldKey.DATE_UPDATED.name(),
-            SearchFieldKey.LABEL.name(), SearchFieldKey.CONTENT_STATUS.name(),
+            SearchFieldKey.CONTENT_STATUS.name(),
             SearchFieldKey.ROLE_GROUP.name());
 
     private ChildrenCountService childrenCountService;
@@ -219,15 +218,6 @@ public class ExportCsvService {
         printer.print(object.getId());
         printer.print(object.getTitle());
         printer.print(object.getAncestorNames());
-
-        String label = object.getLabel();
-
-        if (label != null) {
-            printer.print(label);
-        } else {
-            printer.print("");
-        }
-
         printer.print(object.getAncestorPathFacet().getHighestTier());
 
         // Status: deleted

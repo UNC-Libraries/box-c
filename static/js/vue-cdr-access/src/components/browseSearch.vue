@@ -26,8 +26,8 @@ Search form component displayed on full record pages, allowing keyword searches 
 
 <script>
     import routeUtils from '../mixins/routeUtils';
-    import filterTags from "./filterTags";
-    import clearFacetsButton from "./clearFacetsButton";
+    import filterTags from "@/components/filterTags.vue";
+    import clearFacetsButton from "@/components/clearFacetsButton.vue";
 
     export default {
         name: 'browseSearch',

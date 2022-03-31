@@ -25,7 +25,7 @@
 </c:if>
 
 <c:set var="allowsPublicAccess" value="${permsHelper.allowsPublicAccess(briefObject)}" />
-<c:if test="${not empty briefObject && (not allowsPublicAccess || not empty briefObject.activeEmbargo)}">
+<c:if test="${not empty briefObject && not allowsPublicAccess}">
 	<c:set var="isProtected" value="protected" scope="page"/>
 </c:if>
 
@@ -34,7 +34,7 @@
 		<c:when test="${markedForDeletion}">
 			trash
 		</c:when>
-		<c:when test="${not empty briefObject && (not permsHelper.allowsPublicAccess(briefObject) || not empty briefObject.activeEmbargo)}">
+		<c:when test="${not empty briefObject && not permsHelper.allowsPublicAccess(briefObject)}">
 			lock
 		</c:when>
 	</c:choose>

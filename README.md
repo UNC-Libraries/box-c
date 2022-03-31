@@ -34,6 +34,18 @@ See https://brew.sh/ for instructions.
 brew install node
 # Build the project
 mvn clean install -DskipTests
+# Build development vue access app
+npm --prefix static/js/vue-cdr-access run build-dev
+# Build production vue access app
+npm --prefix static/js/vue-cdr-access run build
+# Build development vue permissions app
+npm --prefix static/js/admin/vue-permissions-editor run build-dev
+# Build production vue permissions app
+npm --prefix static/js/admin/vue-permissions-editor run build
+# Install new NPM package
+npm install <package-name> --save
+# Install a new NPM package used only in development, for example Jest, that's only used to run test
+npm install <package-name> --saveDev
 ```
 
 IDE Developer Setup
@@ -56,5 +68,12 @@ mvn -pl '!clamav-java' test
 mvn -pl '!clamav-java' verify 
 
 # JavaScript Tests
-npm --prefix static/js/vue-cdr-access run test:unit
+npm --prefix static/js/admin/vue-permissions-editor run test
+npm --prefix static/js/vue-cdr-access run test
 ```
+
+Creating a New Vue Project
+--------------------------
+
+run `npm init vue@3` and follow the prompts if you need to scaffold a new Vue project. This will create a vite based 
+application similar to our current Vue applications.

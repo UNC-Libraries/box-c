@@ -15,7 +15,7 @@ Facet list component, used to display all the values of facets and provide links
                 </li>
             </ul>
             <slider v-if="facet.name === 'DATE_CREATED_YEAR'" ref="sliderInfo"
-                    :start-range="[dates.selected_dates.start, currentYear]"
+                    :start-range="[dates.selected_dates.start, dates.selected_dates.end]"
                     :range-values="{min: dates.selected_dates.start, max: currentYear}" @sliderUpdated="sliderUpdated"></slider>
             <form v-if="facet.name === 'DATE_CREATED_YEAR'">
                 <input type="number" v-model="dates.selected_dates.start" name="start_date"
@@ -33,8 +33,8 @@ Facet list component, used to display all the values of facets and provide links
 
 <script>
     import sortBy from 'lodash.sortby';
-    import slider from "@/components/slider";
-    import clearFacetsButton from "./clearFacetsButton";
+    import slider from "@/components/slider.vue";
+    import clearFacetsButton from "@/components/clearFacetsButton.vue";
     import routeUtils from '../mixins/routeUtils';
 
     const UUID_REGEX = /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i;
@@ -79,7 +79,7 @@ Facet list component, used to display all the values of facets and provide links
                 deep: true
             },
             minCreatedYear(newValue, oldValue) {
-                if (newValue < oldValue) {
+                if (oldValue === undefined || newValue < oldValue) {
                     this.dates.selected_dates.start = newValue;
                 }
             }
@@ -148,7 +148,7 @@ Facet list component, used to display all the values of facets and provide links
             },
 
             isSelected(facet) {
-                return this.selectedFacetInfo.findIndex(uf => uf.value === facet) !== -1;
+                return this.selectedFacetInfo.findIndex(uf => uf.value.toLowerCase() === facet.toLowerCase()) !== -1;
             },
 
             /**
@@ -265,6 +265,10 @@ Facet list component, used to display all the values of facets and provide links
                         return 'Genre';
                     case 'DATE_CREATED_YEAR':
                         return 'Date Created';
+                    case 'PUBLISHER':
+                        return 'Publisher';
+                    case 'CREATOR_CONTRIBUTOR':
+                        return 'Creator/Contributor';
                     default:
                         return value;
                 }
@@ -286,6 +290,10 @@ Facet list component, used to display all the values of facets and provide links
                         return 'genre=';
                     case 'DATE_CREATED_YEAR':
                         return 'createdYear=';
+                    case 'PUBLISHER':
+                        return 'publisher=';
+                    case 'CREATOR_CONTRIBUTOR':
+                        return 'creatorContributor=';
                     default:
                         return '';
                 }
@@ -347,6 +355,7 @@ Facet list component, used to display all the values of facets and provide links
                     this.dates.selected_dates.start = start_year;
                     this.dates.selected_dates.end = end_year;
                 } else {
+                    this.dates.selected_dates.start = this.minCreatedYear;
                     this.dates.selected_dates.end = this.currentYear;
                 }
             },
