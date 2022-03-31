@@ -203,6 +203,8 @@
     <!-- Timestamp when this record was fully indexed -->
     <field name="lastIndexed" type="date" indexed="true" stored="true" default="NOW" multiValued="false"/>
     <field name="location" type="string" indexed="true" stored="true" multiValued="true" docValues="true"/>
+    <!-- Alternative subjects, not searchable, for use in copy indexes -->
+    <field name="otherSubject" type="string" indexed="false" stored="true" multiValued="true"/>
     <!-- Alternative titles, not searchable, for use in copy indexes -->
     <field name="otherTitle" type="string" indexed="false" stored="true" multiValued="true"/>
     <!-- PID of the collection in this objects ancestry -->
@@ -273,7 +275,6 @@
   <copyField source="otherTitle" dest="titleIndex"/>
 
   <copyField source="subject" dest="subjectIndex"/>
-
   <copyField source="contributor" dest="contributorIndex"/>
   <copyField source="creator" dest="contributorIndex"/>
 
@@ -283,6 +284,7 @@
   <copyField source="contributor" dest="keywordIndex"/>
   <copyField source="creator" dest="keywordIndex"/>
   <copyField source="subject" dest="keywordIndex"/>
+  <copyField source="otherSubject" dest="keywordIndex"/>
   <copyField source="abstract" dest="keywordIndex"/>
   <copyField source="keyword" dest="keywordIndex"/>
   <copyField source="publisher" dest="keywordIndex"/>
@@ -296,6 +298,7 @@
   <copyField source="contributor" dest="text"/>
   <copyField source="creator" dest="text"/>
   <copyField source="subject" dest="text"/>
+  <copyField source="otherSubject" dest="text"/>
   <copyField source="abstract" dest="text"/>
   <copyField source="keyword" dest="text"/>
   <copyField source="publisher" dest="text"/>
