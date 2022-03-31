@@ -162,6 +162,7 @@ public class SetDescriptiveMetadataFilterTest {
         assertTrue(idb.getOtherSubject().contains("Canada"));
         assertTrue(idb.getOtherSubject().contains("Explorer"));
         assertTrue(idb.getOtherSubject().contains("scale"));
+        assertTrue(idb.getOtherSubject().contains("Subject Title"));
         assertEquals(5, idb.getOtherSubject().size());
 
         List<String> ids = idb.getIdentifier();
