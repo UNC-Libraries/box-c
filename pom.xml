@@ -67,7 +67,7 @@
         <fcrepo-indexing-triplestore.version>5.0.0</fcrepo-indexing-triplestore.version>
         <clamav-java.version>1.0.2-SNAPSHOT</clamav-java.version>
         
-        <spring.version>5.3.15</spring.version>
+        <spring.version>5.3.18</spring.version>
         <spring.ws.version>3.1.2</spring.ws.version>
         
         <junit.version>4.13.1</junit.version>
