@@ -386,7 +386,11 @@ public class SetDescriptiveMetadataFilter implements IndexDocumentFilter {
         for (Element originInfoEl : originInfoEls) {
             List<Element> publisherEls = originInfoEl.getChildren("publisher", JDOMNamespaceUtil.MODS_V3_NS);
             for (Element publisher : publisherEls) {
-                publishers.add(publisher.getTextTrim());
+                String publisherText = publisher.getTextTrim();
+                if (StringUtils.isBlank(publisherText)) {
+                    continue;
+                }
+                publishers.add(publisherText);
             }
         }
 
