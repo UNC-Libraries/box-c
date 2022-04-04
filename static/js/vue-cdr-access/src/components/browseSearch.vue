@@ -12,21 +12,34 @@ Search form component displayed on full record pages, allowing keyword searches 
                 <button @click="getResults" class="button">{{ $t('search.search') }}</button>
             </div>
         </div>
-        <a class="clear-results" href="#" @click.prevent="clearSearch">{{ $t('search.clear_search') }}</a>
+        <div class="clear-options">
+            <a id="clear-results" class="button is-link is-small" v-bind:class="{ 'disabled' : !this.enableStartOverButton}"
+                    href="#" @click.prevent="clearSearch">
+                <span class="icon is-small">
+                    <i class="fas fa-times"></i>
+                </span> {{ $t('search.clear_search')}}</a>
+            <clear-facets-button></clear-facets-button>
+            <filter-tags :facet-list="facetList"></filter-tags>
+        </div>
     </div>
 </template>
 
 <script>
     import routeUtils from '../mixins/routeUtils';
+    import filterTags from "@/components/filterTags.vue";
+    import clearFacetsButton from "@/components/clearFacetsButton.vue";
 
     export default {
         name: 'browseSearch',
+
+        components: {filterTags, clearFacetsButton},
 
         props: {
             objectType: {
                 default: 'object',
                 type: String
-            }
+            },
+            facetList: Array
         },
 
         watch: {
@@ -57,23 +70,27 @@ Search form component displayed on full record pages, allowing keyword searches 
                 const object_type = this.objectType.toLowerCase();
                 const object_text = (object_type === 'adminunit') ? 'collection' : object_type;
                 return `Search within this ${object_text}`
+            },
+            allPossibleSearchParameters() {
+                return this.possible_facet_fields.concat(['anywhere']);
+            },
+            enableStartOverButton() {
+                return this.anyParamsPopulated(this.allPossibleSearchParameters);
             }
         },
 
         methods: {
             getResults() {
                 let update_params = { anywhere: encodeURIComponent(this.search_query) };
-                this.$router.push({ name: 'displayRecords', query: this.urlParams(update_params) })
-                    .catch((e) => {
-                        if (this.nonDuplicateNavigationError(e)) {
-                            throw e;
-                        }
-                    });
+                this.routeWithParams(this.urlParams(update_params, 'displayRecords'));
             },
 
             clearSearch() {
-                this.search_query = '';
-                this.getResults();
+                this.routeWithParams(this.removeQueryParameters(this.allPossibleSearchParameters));
+            },
+
+            clearAllFacets() {
+                this.routeWithParams(this.removeQueryParameters(this.possible_facet_fields));
             }
         },
 
@@ -94,12 +111,16 @@ Search form component displayed on full record pages, allowing keyword searches 
         }
     }
 
+    .clear-options {
+        display: flex;
+    }
+
     .clear-results {
         font-size: 16px;
     }
 
     .button {
-        background-color: #F0F0F0;
+        margin-right: 6px;
     }
 
     input, button {

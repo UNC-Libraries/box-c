@@ -3,7 +3,10 @@ import isEmpty from 'lodash.isempty';
 export default {
     data() {
         return {
-            rows_per_page: this.$route.query.rows || 20
+            rows_per_page: this.$route.query.rows || 20,
+            possible_facet_fields: ['collection', 'createdYear', 'format', 'language', 'subject', 'location',
+                'creatorContributor', 'publisher'],
+            min_created_year: undefined
         }
     },
 
@@ -23,7 +26,7 @@ export default {
                     'a.setStartRow': 0,
                     rows: this.rows_per_page,
                     sort: 'default,normal',
-                    facetSelect: 'collection,format,location,subject,language,createdYear,publisher,creatorContributor'
+                    facetSelect: this.possible_facet_fields.join(',')
                 };
             } else {
                 defaults = {
@@ -102,6 +105,22 @@ export default {
         },
 
         /**
+         * Checks the current URLs query parameters against the provided list of parameter names,
+         * returning true if at least one parameter is present and not empty.
+         * @param param_names
+         * @returns {boolean}
+         */
+        anyParamsPopulated(param_names) {
+            const params = Object.assign({}, this.$route.query);
+            for (const name of param_names) {
+                if (name in params && params[name]) {
+                    return true;
+                }
+            }
+            return false;
+        },
+
+        /**
          * Vue router doesn't seem to like dynamically adding params to current route
          * So catch any duplicate navigation errors and ignore
          * @param error
@@ -112,6 +131,32 @@ export default {
         },
 
         /**
+         * Returns a list of query parameters from the current URLs minus the specified set of parameters
+         * @param param_names names of query parameters to remove
+         * @returns {LocationQuery} list of query parameters with specified parameters removed
+         */
+        removeQueryParameters(param_names) {
+            const params = Object.assign({}, this.$route.query);
+            for (const remove_param of param_names) {
+                delete params[remove_param];
+            }
+            return params;
+        },
+
+        /**
+         * Push updated url to history, using the provided query parambers
+         * @param params query parameters to push to url
+         * @param route_name optional name for pushed route
+         */
+        routeWithParams(params, route_name = undefined) {
+            this.$router.push({ query: params, name: route_name }).catch((e) => {
+                if (this.nonDuplicateNavigationError(e)) {
+                    throw e;
+                }
+            });
+        },
+
+        /**
          * Vite really, really wants all images to be in the project being built and referenced via imports.
          * This doesn't make sense for some of our images. The project won't build unless an import or url is given.
          * So just return the image url for images that are external to the Vue project.
@@ -119,6 +164,15 @@ export default {
          */
         nonVueStaticImageUrl(image) {
             return `https://${window.location.host}/static/images/${image}`;
+        }
+    },
+
+    computed: {
+        minimumCreatedYear() {
+            if (this.min_created_year !== undefined) {
+                return parseInt(this.min_created_year)
+            }
+            return undefined;
         }
     }
 }
