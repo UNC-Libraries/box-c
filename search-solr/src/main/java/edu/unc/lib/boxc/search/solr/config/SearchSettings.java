@@ -53,7 +53,7 @@ public class SearchSettings extends AbstractSettings {
             "bestMatch", constructSortFields("SCORE|desc,TITLE|asc"),
             "collection", constructSortFields(
                     "ANCESTOR_IDS|asc,IDENTIFIER_SORT|asc,TITLE|asc"),
-            "creator", constructSortFields("CREATOR_SORT|asc"),
+            "creator", constructSortFields("CREATOR|asc"),
             "dateAdded", constructSortFields("DATE_ADDED|desc"),
             "dateCreated", constructSortFields("DATE_CREATED|desc"),
             "dateUpdated", constructSortFields("DATE_UPDATED|desc"),

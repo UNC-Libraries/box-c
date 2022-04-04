@@ -168,11 +168,10 @@
     <!-- All names, searchable, and used in copy indexes -->
     <field name="contributor" type="string" indexed="true" stored="true" multiValued="true"/>
     <!-- <field name="roleName" type="string" indexed="true" stored="true" multiValued="true"/> -->
-    <field name="creator" type="string" indexed="true" stored="true" multiValued="true"/>
+    <field name="creator" type="sortableText" indexed="true" stored="true" multiValued="true"/>
     <!-- Used for faceting creators and contributors as a single facet -->
     <field name="creatorContributor" type="string" indexed="true" stored="true" multiValued="true" docValues="true"/>
     <!-- Sort order fields -->
-    <field name="creatorSort" type="sortableText" indexed="true" stored="true"/>
     <!-- DS name|mimetype|extension|filesize|checksum|owner -->
     <field name="datastream" type="string" indexed="true" stored="true" multiValued="true" docValues="true"/>
     <!-- Date when the object was added to the repository -->
