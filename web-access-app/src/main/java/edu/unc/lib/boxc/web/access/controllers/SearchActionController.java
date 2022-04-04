@@ -26,7 +26,7 @@ import edu.unc.lib.boxc.search.api.requests.SearchState;
 import edu.unc.lib.boxc.search.solr.facets.CutoffFacetImpl;
 import edu.unc.lib.boxc.search.solr.responses.SearchResultResponse;
 import edu.unc.lib.boxc.search.solr.services.MultiSelectFacetListService;
-import edu.unc.lib.boxc.search.solr.services.ParentCollectionFacetTitleService;
+import edu.unc.lib.boxc.search.solr.services.SetFacetTitleByIdService;
 import edu.unc.lib.boxc.web.common.controllers.AbstractErrorHandlingSearchController;
 import edu.unc.lib.boxc.web.common.services.AccessCopiesService;
 import org.apache.commons.lang3.StringUtils;
@@ -59,7 +59,7 @@ public class SearchActionController extends AbstractErrorHandlingSearchControlle
     @Autowired
     private MultiSelectFacetListService multiSelectFacetListService;
     @Autowired
-    private ParentCollectionFacetTitleService parentCollectionFacetTitleService;
+    private SetFacetTitleByIdService setFacetTitleByIdService;
     @Autowired
     private AccessCopiesService accessCopiesService;
 
@@ -162,7 +162,7 @@ public class SearchActionController extends AbstractErrorHandlingSearchControlle
         }
 
         SearchResultResponse resultResponseFacets = multiSelectFacetListService.getFacetListResult(facetRequest);
-        parentCollectionFacetTitleService.populateTitles(resultResponseFacets.getFacetFields());
+        setFacetTitleByIdService.populateTitles(resultResponseFacets.getFacetFields());
         resultResponse.setFacetFields(resultResponseFacets.getFacetFields());
 
         // Get minimum year for date created "facet" search

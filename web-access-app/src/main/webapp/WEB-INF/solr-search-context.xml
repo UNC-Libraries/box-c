@@ -141,7 +141,7 @@
         <property name="searchService" ref="queryLayer" />
     </bean>
     
-    <bean id="parentCollectionFacetTitleService" class="edu.unc.lib.boxc.search.solr.services.ParentCollectionFacetTitleService">
+    <bean id="setFacetTitleByIdService" class="edu.unc.lib.boxc.search.solr.services.SetFacetTitleByIdService">
         <property name="pathFactory" ref="pathFactory" />
     </bean>
     

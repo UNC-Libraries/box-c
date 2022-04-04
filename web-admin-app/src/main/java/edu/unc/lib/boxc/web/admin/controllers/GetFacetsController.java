@@ -29,7 +29,7 @@ import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.boxc.search.api.requests.SearchRequest;
 import edu.unc.lib.boxc.search.solr.responses.SearchResultResponse;
 import edu.unc.lib.boxc.search.solr.services.MultiSelectFacetListService;
-import edu.unc.lib.boxc.search.solr.services.ParentCollectionFacetTitleService;
+import edu.unc.lib.boxc.search.solr.services.SetFacetTitleByIdService;
 import edu.unc.lib.boxc.search.solr.utils.SearchStateUtil;
 
 /**
@@ -44,7 +44,7 @@ public class GetFacetsController extends AbstractSearchController {
     @Autowired
     private MultiSelectFacetListService multiSelectFacetListService;
     @Autowired
-    private ParentCollectionFacetTitleService parentCollectionFacetTitleService;
+    private SetFacetTitleByIdService setFacetTitleByIdService;
 
     @RequestMapping("/facets/{pid}")
     public String getFacets(@PathVariable("pid") String pid, Model model, HttpServletRequest request) {
@@ -70,7 +70,7 @@ public class GetFacetsController extends AbstractSearchController {
         LOG.debug("Retrieving facet list");
         // Retrieve the facet result set
         SearchResultResponse resultResponse = multiSelectFacetListService.getFacetListResult(searchRequest);
-        parentCollectionFacetTitleService.populateTitles(resultResponse.getFacetFields());
+        setFacetTitleByIdService.populateTitles(resultResponse.getFacetFields());
         model.addAttribute("facetFields", resultResponse.getFacetFields());
         String searchStateUrl = SearchStateUtil.generateSearchParameterString(searchRequest.getSearchState());
         model.addAttribute("searchStateUrl", searchStateUrl);

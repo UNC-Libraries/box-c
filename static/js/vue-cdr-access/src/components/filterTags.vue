@@ -23,6 +23,7 @@ import routeUtils from "../mixins/routeUtils";
 
 const TYPES = {
     added: 'Date Added',
+    unit: 'Administrative Unit',
     collection: 'Collection',
     created: 'Date Created',
     contributor: 'Contributor',

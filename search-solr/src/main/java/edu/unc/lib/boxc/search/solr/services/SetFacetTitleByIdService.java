@@ -17,37 +17,43 @@ package edu.unc.lib.boxc.search.solr.services;
 
 import edu.unc.lib.boxc.search.api.SearchFieldKey;
 import edu.unc.lib.boxc.search.api.facets.FacetFieldList;
-import edu.unc.lib.boxc.search.api.facets.FacetFieldObject;
-import edu.unc.lib.boxc.search.api.facets.SearchFacet;
 import edu.unc.lib.boxc.search.solr.facets.GenericFacet;
 
+import java.util.Arrays;
+import java.util.List;
+
 /**
- * Query service which fills in missing titles for parent collection facet
+ * Query service which fills in missing titles for facets containing object ids
  * @author bbpennel
  */
-public class ParentCollectionFacetTitleService {
+public class SetFacetTitleByIdService {
+    private static final List<String> APPLICABLE_FACET_NAMES = Arrays.asList(
+            SearchFieldKey.PARENT_COLLECTION.name(), SearchFieldKey.PARENT_UNIT.name()
+    );
 
     private ObjectPathFactory pathFactory;
 
     /**
-     * Populate displayValues (titles) for the parent collection facet if present
+     * Populate displayValues (titles) for facet if present
      * @param facetFields facet field list to add titles to
      */
     public void populateTitles(FacetFieldList facetFields) {
-        if (facetFields == null || !facetFields.hasFacet(SearchFieldKey.PARENT_COLLECTION.name())) {
+        if (facetFields == null || facetFields.isEmpty()) {
             return;
         }
 
-        FacetFieldObject parentCollectionFacet = facetFields.get(SearchFieldKey.PARENT_COLLECTION.name());
+        for (var facetName: APPLICABLE_FACET_NAMES) {
+            var facet = facetFields.get(facetName);
+            if (facet == null) {
+                continue;
+            }
+            for (var facetValue: facet.getValues()) {
+                GenericFacet pidFacet = (GenericFacet) facetValue;
+                var facetTitle = pathFactory.getName(pidFacet.getSearchValue());
 
-        if (parentCollectionFacet != null) {
-            for (SearchFacet searchFacet : parentCollectionFacet.getValues()) {
-                GenericFacet pidFacet = (GenericFacet) searchFacet;
-                String parentName = pathFactory.getName(pidFacet.getSearchValue());
-
-                if (parentName != null) {
-                    pidFacet.setFieldName(SearchFieldKey.PARENT_COLLECTION.name());
-                    pidFacet.setDisplayValue(parentName);
+                if (facetTitle != null) {
+                    pidFacet.setFieldName(facetName);
+                    pidFacet.setDisplayValue(facetTitle);
                 }
             }
         }

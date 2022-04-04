@@ -253,6 +253,8 @@ Facet list component, used to display all the values of facets and provide links
                 switch (value) {
                     case 'PARENT_COLLECTION':
                         return 'Collection';
+                    case 'PARENT_UNIT':
+                        return 'Administrative Unit';
                     case 'CONTENT_TYPE':
                         return 'Format';
                     case 'LANGUAGE':
@@ -278,6 +280,8 @@ Facet list component, used to display all the values of facets and provide links
                 switch (value.fieldName) {
                     case 'PARENT_COLLECTION':
                         return 'collection=';
+                    case 'PARENT_UNIT':
+                        return 'unit=';
                     case 'CONTENT_TYPE':
                         return 'format=';
                     case 'LANGUAGE':

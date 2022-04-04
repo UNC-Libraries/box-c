@@ -4,7 +4,7 @@ export default {
     data() {
         return {
             rows_per_page: this.$route.query.rows || 20,
-            possible_facet_fields: ['collection', 'createdYear', 'format', 'language', 'subject', 'location',
+            possible_facet_fields: ['unit', 'collection', 'createdYear', 'format', 'language', 'subject', 'location',
                 'creatorContributor', 'publisher'],
             min_created_year: undefined
         }

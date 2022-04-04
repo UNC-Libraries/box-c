@@ -42,11 +42,6 @@ import edu.unc.lib.boxc.search.api.requests.SearchRequest;
 import edu.unc.lib.boxc.search.api.requests.SearchState;
 import edu.unc.lib.boxc.search.solr.facets.MultivaluedHierarchicalFacet;
 import edu.unc.lib.boxc.search.solr.responses.SearchResultResponse;
-import edu.unc.lib.boxc.search.solr.services.FacetFieldFactory;
-import edu.unc.lib.boxc.search.solr.services.MultiSelectFacetListService;
-import edu.unc.lib.boxc.search.solr.services.ObjectPathFactory;
-import edu.unc.lib.boxc.search.solr.services.ParentCollectionFacetTitleService;
-import edu.unc.lib.boxc.search.solr.services.SolrSearchService;
 import edu.unc.lib.boxc.search.solr.test.BaseEmbeddedSolrTest;
 import edu.unc.lib.boxc.search.solr.test.TestCorpus;
 import edu.unc.lib.boxc.search.solr.utils.AccessRestrictionUtil;
@@ -55,14 +50,14 @@ import edu.unc.lib.boxc.search.solr.utils.FacetFieldUtil;
 /**
  * @author bbpennel
  */
-public class ParentCollectionFacetTitleServiceIT extends BaseEmbeddedSolrTest {
+public class SetFacetTitleByIdServiceIT extends BaseEmbeddedSolrTest {
 
     private TestCorpus testCorpus;
     private boolean corpusLoaded;
     private AccessGroupSet accessGroups;
 
     private ObjectPathFactory pathFactory;
-    private ParentCollectionFacetTitleService titleService;
+    private SetFacetTitleByIdService titleService;
 
     private MultiSelectFacetListService facetListService;
 
@@ -73,7 +68,7 @@ public class ParentCollectionFacetTitleServiceIT extends BaseEmbeddedSolrTest {
     private AccessRestrictionUtil accessRestrictionUtil;
     private SolrSearchService searchService;
 
-    public ParentCollectionFacetTitleServiceIT() {
+    public SetFacetTitleByIdServiceIT() {
         testCorpus = new TestCorpus();
     }
 
@@ -115,7 +110,7 @@ public class ParentCollectionFacetTitleServiceIT extends BaseEmbeddedSolrTest {
         pathFactory.setSearch(searchService);
         pathFactory.init();
 
-        titleService = new ParentCollectionFacetTitleService();
+        titleService = new SetFacetTitleByIdService();
         titleService.setPathFactory(pathFactory);
 
         accessGroups = new AccessGroupSetImpl("unitOwner", PUBLIC_PRINC);
@@ -134,8 +129,8 @@ public class ParentCollectionFacetTitleServiceIT extends BaseEmbeddedSolrTest {
 
         FacetFieldObject parentFacet = facetFieldList.get(PARENT_COLLECTION.name());
         assertEquals(2, parentFacet.getValues().size());
-        assertFacetTitleEquals(parentFacet, testCorpus.coll1Pid, "Collection 1");
-        assertFacetTitleEquals(parentFacet, testCorpus.coll2Pid, "Collection 2");
+        assertFacetTitleEquals(parentFacet, PARENT_COLLECTION, testCorpus.coll1Pid, "Collection 1");
+        assertFacetTitleEquals(parentFacet, PARENT_COLLECTION, testCorpus.coll2Pid, "Collection 2");
     }
 
     @Test
@@ -168,15 +163,37 @@ public class ParentCollectionFacetTitleServiceIT extends BaseEmbeddedSolrTest {
         assertTrue(parentFacet.getValues().isEmpty());
     }
 
+    @Test
+    public void populateCollectionAndUnitTest() throws Exception {
+        SearchState searchState = new SearchState();
+        searchState.setFacetsToRetrieve(Arrays.asList(PARENT_COLLECTION.name(), SearchFieldKey.PARENT_UNIT.name()));
+
+        SearchRequest request = new SearchRequest(searchState, accessGroups);
+        SearchResultResponse resp = facetListService.getFacetListResult(request);
+        FacetFieldList facetFieldList = resp.getFacetFields();
+
+        titleService.populateTitles(facetFieldList);
+
+        FacetFieldObject parentFacet = facetFieldList.get(PARENT_COLLECTION.name());
+        assertEquals(2, parentFacet.getValues().size());
+        assertFacetTitleEquals(parentFacet, PARENT_COLLECTION, testCorpus.coll1Pid, "Collection 1");
+        assertFacetTitleEquals(parentFacet, PARENT_COLLECTION, testCorpus.coll2Pid, "Collection 2");
+
+        FacetFieldObject unitFacet = facetFieldList.get(SearchFieldKey.PARENT_UNIT.name());
+        assertEquals(1, unitFacet.getValues().size());
+        assertFacetTitleEquals(unitFacet, SearchFieldKey.PARENT_UNIT, testCorpus.unitPid, "Unit");
+    }
+
     private SearchFacet getFacetByValue(FacetFieldObject ffo, String value) {
         return ffo.getValues().stream().filter(f -> f.getSearchValue().equals(value)).findFirst().orElse(null);
     }
 
-    private void assertFacetTitleEquals(FacetFieldObject ffo, PID pid, String expectedTitle) {
+    private void assertFacetTitleEquals(FacetFieldObject ffo, SearchFieldKey expectedKey,
+                                        PID pid, String expectedTitle) {
         SearchFacet facetValue = getFacetByValue(ffo, pid.getId());
         assertNotNull(facetValue);
         assertEquals(expectedTitle, facetValue.getDisplayValue());
-        assertEquals(PARENT_COLLECTION.name(), facetValue.getFieldName());
+        assertEquals(expectedKey.name(), facetValue.getFieldName());
         assertTrue(facetValue.getCount( )> 0);
     }
 }
