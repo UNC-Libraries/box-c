@@ -50,6 +50,7 @@ import static edu.unc.lib.boxc.search.api.SearchFieldKey.READ_GROUP;
 import static edu.unc.lib.boxc.search.api.SearchFieldKey.RESOURCE_TYPE;
 import static edu.unc.lib.boxc.search.api.SearchFieldKey.RESOURCE_TYPE_SORT;
 import static edu.unc.lib.boxc.search.api.SearchFieldKey.RIGHTS;
+import static edu.unc.lib.boxc.search.api.SearchFieldKey.RIGHTS_OAI_PMH;
 import static edu.unc.lib.boxc.search.api.SearchFieldKey.RIGHTS_URI;
 import static edu.unc.lib.boxc.search.api.SearchFieldKey.ROLE_GROUP;
 import static edu.unc.lib.boxc.search.api.SearchFieldKey.ROLLUP_ID;
@@ -481,6 +482,15 @@ public class IndexDocumentBean {
     @Field
     public void setRights(List<String> rights) {
         fields.put(RIGHTS.getSolrField(), rights);
+    }
+
+    @Field
+    public void setRightsOaiPmh(List<String> rights) {
+        fields.put(RIGHTS_OAI_PMH.getSolrField(), rights);
+    }
+
+    public List<String> getRightsOaiPmh() {
+        return (List<String>) fields.get(RIGHTS_OAI_PMH.getSolrField());
     }
 
     public List<String> getRightsUri() {

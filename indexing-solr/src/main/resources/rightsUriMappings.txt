@@ -1,40 +1,26 @@
-http://rightsstatements.org/vocab/InC/1.0/
-http://rightsstatements.org/vocab/InC-OW-EU/1.0/
-http://rightsstatements.org/vocab/InC-EDU/1.0/
-http://rightsstatements.org/vocab/InC-NC/1.0/
-http://rightsstatements.org/vocab/InC-RUU/1.0/
-http://rightsstatements.org/vocab/NoC-CR/1.0/
-http://rightsstatements.org/vocab/NoC-NC/1.0/
-http://rightsstatements.org/vocab/NoC-OKLR/1.0/
-http://rightsstatements.org/vocab/NoC-US/1.0/
-http://rightsstatements.org/vocab/CNE/1.0/
-http://rightsstatements.org/vocab/UND/1.0/
-http://rightsstatements.org/vocab/NKC/1.0/
-https://creativecommons.org/licenses/by/4.0
-https://creativecommons.org/licenses/by-sa/4.0
-https://creativecommons.org/licenses/by-nd/4.0
-https://creativecommons.org/licenses/by-nc/4.0
-https://creativecommons.org/licenses/by-nc-sa/4.0
-https://creativecommons.org/licenses/by-nc-nd/4.0
-http://creativecommons.org/licenses/by/4.0
-http://creativecommons.org/licenses/by-sa/4.0
-http://creativecommons.org/licenses/by-nd/4.0
-http://creativecommons.org/licenses/by-nc/4.0
-http://creativecommons.org/licenses/by-nc-sa/4.0
-http://creativecommons.org/licenses/by-nc-nd/4.0
-https://creativecommons.org/licenses/by/3.0/us/
-https://creativecommons.org/licenses/by-sa/3.0/us/
-https://creativecommons.org/licenses/by-nd/3.0/us/
-https://creativecommons.org/licenses/by-nc/3.0/us/
-https://creativecommons.org/licenses/by-nc-sa/3.0/us/
-https://creativecommons.org/licenses/by-nc-nd/3.0/us/
-http://creativecommons.org/licenses/by/3.0/us/
-http://creativecommons.org/licenses/by-sa/3.0/us/
-http://creativecommons.org/licenses/by-nd/3.0/us/
-http://creativecommons.org/licenses/by-nc/3.0/us/
-http://creativecommons.org/licenses/by-nc-sa/3.0/us/
-http://creativecommons.org/licenses/by-nc-nd/3.0/us/
-https://creativecommons.org/publicdomain/zero/1.0/
-https://creativecommons.org/publicdomain/mark/1.0/
-http://creativecommons.org/publicdomain/zero/1.0/
-http://creativecommons.org/publicdomain/mark/1.0/
+https://rightsstatements.org/vocab/InC/1.0/=In Copyright
+https://rightsstatements.org/vocab/InC-OW-EU/1.0/=In Copyright - EU Orphan Work
+https://rightsstatements.org/vocab/InC-EDU/1.0/=In Copyright - Educational Use Permitted
+https://rightsstatements.org/vocab/InC-NC/1.0/=In Copyright - Non-Commercial Use Permitted
+https://rightsstatements.org/vocab/InC-RUU/1.0/=In Copyright - Rights-Holder(s) Unlocatable or Unidentifiable
+https://rightsstatements.org/vocab/NoC-CR/1.0/=No Copyright - Contractual Restrictions
+https://rightsstatements.org/vocab/NoC-NC/1.0/=No Copyright - Non-Commercial Use Only
+https://rightsstatements.org/vocab/NoC-OKLR/1.0/=No Copyright - Other Known Legal Restrictions
+https://rightsstatements.org/vocab/NoC-US/1.0/=No Copyright - United States
+https://rightsstatements.org/vocab/CNE/1.0/=Copyright Not Evaluated
+https://rightsstatements.org/vocab/UND/1.0/=Copyright Undetermined
+https://rightsstatements.org/vocab/NKC/1.0/=No Known Copyright
+https://creativecommons.org/licenses/by/4.0=Attribution 4.0 International (CC BY 4.0)
+https://creativecommons.org/licenses/by-sa/4.0=Attribution-ShareAlike 4.0 International (CC BY-SA 4.0)
+https://creativecommons.org/licenses/by-nd/4.0=Attribution-NoDerivatives 4.0 International (CC BY-ND 4.0)
+https://creativecommons.org/licenses/by-nc/4.0=Attribution-NonCommercial 4.0 International (CC BY-NC 4.0)
+https://creativecommons.org/licenses/by-nc-sa/4.0=Attribution-NonCommercial-ShareAlike 4.0 International (CC BY-NC-SA 4.0)
+https://creativecommons.org/licenses/by-nc-nd/4.0=Attribution-NonCommercial-NoDerivatives 4.0 International (CC BY-NC-ND 4.0)
+https://creativecommons.org/licenses/by/3.0/us/=Attribution 3.0 United States (CC BY 3.0 US)
+https://creativecommons.org/licenses/by-sa/3.0/us/=Attribution-ShareAlike 3.0 United States (CC BY-SA 3.0 US)
+https://creativecommons.org/licenses/by-nd/3.0/us/=Attribution-NoDerivs 3.0 United States (CC BY-ND 3.0 US)
+https://creativecommons.org/licenses/by-nc/3.0/us/=Attribution-NonCommercial 3.0 United States (CC BY-NC 3.0 US)
+https://creativecommons.org/licenses/by-nc-sa/3.0/us/=Attribution-NonCommercial-ShareAlike 3.0 United States (CC BY-NC-SA 3.0 US)
+https://creativecommons.org/licenses/by-nc-nd/3.0/us/=Attribution-NonCommercial-NoDerivs 3.0 United States (CC BY-NC-ND 3.0 US)
+https://creativecommons.org/publicdomain/zero/1.0/=CC0 1.0 Universal (CC0 1.0) Public Domain Dedication
+https://creativecommons.org/publicdomain/mark/1.0/=Public Domain Mark 1.0

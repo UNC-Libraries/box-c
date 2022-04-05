@@ -30,6 +30,7 @@ import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
+import java.util.Random;
 
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.Statement;
@@ -157,12 +158,26 @@ public class SetDescriptiveMetadataFilterTest {
 
         assertEquals("2006-04", dateFormat.format(idb.getDateCreated()));
 
-        assertEquals(1, idb.getRights().size());
+        assertEquals(4, idb.getRights().size());
+        assertTrue(idb.getRights().contains("Copyright Not Evaluated"));
         assertTrue(idb.getRights().contains("For copyright information or permissions questions, see our " +
                 "intellectual property statement https://library.unc.edu/wilson/research/perm/"));
+        assertTrue(idb.getRights().contains("Copyright Not Evaluated"));
+        assertTrue(idb.getRights().contains("Random Rights"));
 
-        assertEquals(1, idb.getRightsUri().size());
-        assertTrue(idb.getRightsUri().contains("http://rightsstatements.org/vocab/CNE/1.0/"));
+        assertEquals(4, idb.getRightsUri().size());
+        assertTrue(idb.getRightsUri().contains("https://rightsstatements.org/vocab/CNE/1.0/"));
+        assertTrue(idb.getRightsUri().contains("https://creativecommons.org/licenses/by-sa/3.0/us/"));
+        assertTrue(idb.getRightsUri().contains("https://random.url/rights/no_text/"));
+        assertTrue(idb.getRightsUri().contains("https://random.url/rights/text/"));
+
+        assertEquals(6, idb.getRightsOaiPmh().size());
+        assertTrue(idb.getRightsOaiPmh().contains("http://rightsstatements.org/vocab/CNE/1.0/"));
+        assertTrue(idb.getRightsOaiPmh().contains("http://creativecommons.org/licenses/by-sa/3.0/us/"));
+        assertTrue(idb.getRightsOaiPmh().contains("http://random.url/rights/text/"));
+        assertTrue(idb.getRightsOaiPmh().contains("Copyright Not Evaluated"));
+        assertTrue(idb.getRightsOaiPmh().contains("Attribution-ShareAlike 3.0 United States (CC BY-SA 3.0 US)"));
+        assertTrue(idb.getRightsOaiPmh().contains("Random Rights"));
 
         List<String> ids = idb.getIdentifier();
         assertTrue(ids.contains("local|abc123"));

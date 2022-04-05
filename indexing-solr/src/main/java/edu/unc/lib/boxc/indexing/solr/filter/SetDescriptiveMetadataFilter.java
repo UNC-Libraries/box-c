@@ -28,10 +28,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.HashSet;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Properties;
-import java.util.Set;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -63,7 +62,7 @@ public class SetDescriptiveMetadataFilter implements IndexDocumentFilter {
     private static final Logger log = LoggerFactory.getLogger(SetDescriptiveMetadataFilter.class);
 
     private final Properties languageCodeMap;
-    private final Set<String> rightsUriMap;
+    private final HashMap<String, String> rightsUriMap;
     public final static String AFFIL_URI = "http://cdr.unc.edu/vocabulary/Affiliation";
     private final List<String> CREATOR_LIST = Arrays.asList("creator", "author", "interviewer", "interviewee");
 
@@ -76,15 +75,19 @@ public class SetDescriptiveMetadataFilter implements IndexDocumentFilter {
             log.error("Failed to load code language mappings", e);
         }
 
-        rightsUriMap = new HashSet<>();
+        // URIS aren't great for property keys
+        rightsUriMap = new HashMap<>();
         try {
             InputStream rightsStream = getClass().getClassLoader().getResourceAsStream(
-                    "/rightsUriMappings.txt");
+                    "rightsUriMappings.txt");
             if (rightsStream == null) {
                 throw new IOException();
             }
             List<String> rights = IOUtils.readLines(rightsStream, UTF_8);
-            rightsUriMap.addAll(rights);
+            for (String right : rights) {
+                String[] rightsParts = right.split("=");
+                rightsUriMap.put(rightsParts[0], rightsParts[1]);
+            }
         } catch (IOException e) {
             log.error("Failed to load rights uri mappings", e);
         }
@@ -414,20 +417,56 @@ public class SetDescriptiveMetadataFilter implements IndexDocumentFilter {
     }
 
     private void extractRights(Element mods, IndexDocumentBean idb) {
-        List<Element> rightsEls = mods.getChildren("accessCondition", JDOMNamespaceUtil.MODS_V3_NS);
         List<String> rights = new ArrayList<>();
+        List<String> rightsOaiPmh = new ArrayList<>();
         List<String> rightsUri = new ArrayList<>();
+
+        List<Element> rightsEls = mods.getChildren("accessCondition", JDOMNamespaceUtil.MODS_V3_NS);
         for (Element rightsEl : rightsEls) {
             String accessType = rightsEl.getAttributeValue("type");
             if (accessType != null && accessType.trim().equalsIgnoreCase("use and reproduction")) {
                 String href = rightsEl.getAttributeValue("href", JDOMNamespaceUtil.XLINK_NS);
-                if (!StringUtils.isBlank(href)) {
-                    if (!rightsUriMap.contains(href)) {
-                        log.warn("URI, {} wasn't found in the rights uri mappings.", href);
+                String modsRightsStatement = rightsEl.getTextTrim();
+                boolean hasUrl = !StringUtils.isBlank(href);
+                boolean hasRightsText = !StringUtils.isBlank(modsRightsStatement);
+
+                if (!hasRightsText && !hasUrl) {
+                    continue;
+                }
+
+                // No vocabulary. Add MODS text
+                if (hasRightsText && !hasUrl) {
+                    rights.add(modsRightsStatement);
+                }
+
+                if (hasUrl && !hasRightsText) {
+                    String trimmedHref = href.trim();
+                    if (rightsUriMap.containsKey(trimmedHref)) {
+                        String mappedRightsText = rightsUriMap.get(trimmedHref);
+                        rightsOaiPmh.add(setUrlProtocol(trimmedHref));
+                        rightsOaiPmh.add(mappedRightsText);
+                        rights.add(mappedRightsText);
                     }
-                    rightsUri.add(href);
-                } else {
-                    rights.add(rightsEl.getTextTrim());
+                    rightsUri.add(trimmedHref);
+                }
+
+                if (hasRightsText && hasUrl) {
+                    String trimmedHref = href.trim();
+                    rightsUri.add(trimmedHref);
+                    rightsOaiPmh.add(setUrlProtocol(trimmedHref));
+
+                    String rightsMapText = rightsUriMap.get(trimmedHref);
+                    boolean hasRightsKey = rightsMapText != null;
+                    String indexingText = (hasRightsKey) ? rightsMapText : modsRightsStatement;
+                    rights.add(indexingText);
+                    rightsOaiPmh.add(indexingText);
+
+                    if (!hasRightsKey) {
+                        log.warn("URI, {} wasn't found in the rights uri mappings.", trimmedHref);
+                    } else if (!rightsMapText.equals(modsRightsStatement)) {
+                        log.warn("Rights text, {}, does not match the rights statement for, {}.",
+                                modsRightsStatement, href);
+                    }
                 }
             }
         }
@@ -438,11 +477,24 @@ public class SetDescriptiveMetadataFilter implements IndexDocumentFilter {
             idb.setRights(null);
         }
 
-        if (rightsUri.size() > 0) {
+        if (!rightsOaiPmh.isEmpty()) {
+            idb.setRightsOaiPmh(rightsOaiPmh);
+        } else {
+            idb.setRightsOaiPmh(null);
+        }
+
+        if (!rightsUri.isEmpty()) {
             idb.setRightsUri(rightsUri);
         } else {
             idb.setRightsUri(null);
         }
+    }
+
+    private String setUrlProtocol(String uri) {
+        if (uri.startsWith("http:")) {
+            return uri;
+        }
+        return uri.replace("https", "http");
     }
 
     private void extractIdentifiers(Element mods, IndexDocumentBean idb) {

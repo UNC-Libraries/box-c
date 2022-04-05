@@ -115,5 +115,12 @@
   <mods:accessCondition displayLabel="Rights" type="use and reproduction">
     For copyright information or permissions questions, see our intellectual property statement https://library.unc.edu/wilson/research/perm/
   </mods:accessCondition>
-  <mods:accessCondition displayLabel="Rights" type="use and reproduction" xlink:href="http://rightsstatements.org/vocab/CNE/1.0/">Copyright Not Evaluated</mods:accessCondition>
+  <mods:accessCondition displayLabel="Rights" type="use and reproduction" xlink:href="https://rightsstatements.org/vocab/CNE/1.0/">Copyright Not Evaluated</mods:accessCondition>
+  <mods:accessCondition displayLabel="Rights" type="use and reproduction"
+                        xlink:href="https://creativecommons.org/licenses/by-sa/3.0/us/"/>
+  <mods:accessCondition displayLabel="Rights" type="use and reproduction"/>
+  <mods:accessCondition displayLabel="Rights" type="use and reproduction"
+                        xlink:href="https://random.url/rights/no_text/"/>
+  <mods:accessCondition displayLabel="Rights" type="use and reproduction"
+                        xlink:href="https://random.url/rights/text/">Random Rights</mods:accessCondition>
 </mods:mods>

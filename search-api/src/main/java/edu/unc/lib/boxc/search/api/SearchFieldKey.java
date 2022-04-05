@@ -65,6 +65,7 @@ public enum SearchFieldKey {
     RESOURCE_TYPE("resourceType", "type", "Resource Type"),
     RESOURCE_TYPE_SORT("resourceTypeSort", "typeSort", "Resource Type Sort"),
     RIGHTS("rights", "rights", "Rights"),
+    RIGHTS_OAI_PMH("rightsOaiPmh", "rightsOaiPmh", "Rights OAI-PMH"),
     RIGHTS_URI("rightsUri", "rightsUri", "Rights URI"),
     RLA_SITE_CODE("rla_site_code_d", "rla.siteCode", ""),
     RLA_CATALOG_NUMBER("rla_catalog_number_d", "rla.catalogNumber", ""),
