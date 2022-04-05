@@ -5,7 +5,7 @@ Top level component for full record pages with searching/browsing, including Adm
     <div>
         <div class="columns is-tablet">
             <div class="column is-6">
-                <browse-search :object-type="container_metadata.type"></browse-search>
+                <browse-search :object-type="container_metadata.type" :facet-list="facet_list"></browse-search>
             </div>
             <div class="column is-2" v-if="showWidget">
                 <browse-sort browse-type="display"></browse-sort>
@@ -17,9 +17,15 @@ Top level component for full record pages with searching/browsing, including Adm
                 <view-type></view-type>
             </div>
         </div>
-        <div v-if="showWidget">
-            <browse-display v-if="isBrowseDisplay" :record-list="record_list"></browse-display>
-            <list-display v-else :record-list="record_list" :is-record-browse="true"></list-display>
+        <img v-if="is_page_loading" :src="nonVueStaticImageUrl('ajax-loader-lg.gif')" alt="data loading icon">
+        <div v-if="showWidget && !is_page_loading" class="columns">
+            <div class="facet-list column is-one-quarter facets-border">
+                <facets :facet-list="facet_list" :min-created-year="minimumCreatedYear" :show-clear-button="false"></facets>
+            </div>
+            <div class="column is-three-quarters">
+                <browse-display v-if="isBrowseDisplay" :record-list="record_list"></browse-display>
+                <list-display v-else :record-list="record_list" :is-record-browse="true"></list-display>
+            </div>  
         </div>
         <p v-else class="spacing">{{ $t('search.no_results') }}</p>
         <modal-metadata :uuid="uuid" :title="container_name"></modal-metadata>
@@ -32,6 +38,7 @@ Top level component for full record pages with searching/browsing, including Adm
     import browseSearch from '@/components/browseSearch.vue';
     import browseSort from '@/components/browseSort.vue';
     import listDisplay from '@/components/listDisplay.vue';
+    import facets from "@/components/facets.vue";
     import modalMetadata from '@/components/modalMetadata.vue';
     import pagination from '@/components/pagination.vue';
     import viewType from '@/components/viewType.vue';
@@ -62,7 +69,8 @@ Top level component for full record pages with searching/browsing, including Adm
             modalMetadata,
             pagination,
             viewType,
-            worksOnly
+            worksOnly,
+            facets
         },
 
         mixins: [routeUtils],
@@ -78,6 +86,7 @@ Top level component for full record pages with searching/browsing, including Adm
                 is_page_loading: true,
                 record_count: 0,
                 record_list: [],
+                facet_list: [],
                 search_method: 'listJson',
                 uuid: ''
             }
@@ -94,21 +103,21 @@ Top level component for full record pages with searching/browsing, including Adm
 
             showWorksOnly() {
                 return this.showWidget || this.coerceWorksOnly(this.$route.query.works_only);
-            },
-
-
+            }
         },
 
         methods: {
             retrieveData() {
-                let param_string = this.formatParamsString(this.updateParams());
+                let param_string = this.formatParamsString(this.updateParams()) + '&getFacets=true';
                 this.uuid = location.pathname.split('/')[2];
 
                 get(`${this.search_method}/${this.uuid}${param_string}`).then((response) => {
                     this.record_count = response.data.resultCount;
                     this.record_list = response.data.metadata;
+                    this.facet_list = response.data.facetFields;
                     this.container_name = response.data.container.title;
                     this.container_metadata = response.data.container;
+                    this.min_created_year = response.data.minSearchYear;
                     this.is_page_loading = false;
                 }).catch(function (error) {
                     console.log(error);
@@ -188,6 +197,16 @@ Top level component for full record pages with searching/browsing, including Adm
 
     .is-6 {
         padding-left: 50px;
+    }
+
+    #facetList {
+        .facet-header {
+            padding: 0 0 20px 0;
+        }
+    }
+
+    #facetList.contentarea {
+        margin: 0 20px 20px 38px;
     }
 
     @media screen and (max-width: 768px) {

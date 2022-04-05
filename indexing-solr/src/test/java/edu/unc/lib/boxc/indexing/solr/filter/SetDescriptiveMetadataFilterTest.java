@@ -151,10 +151,12 @@ public class SetDescriptiveMetadataFilterTest {
         assertFalse(idb.getSubject().contains("Germany"));
 
         assertTrue(idb.getLocation().contains("Germany"));
+        assertTrue(idb.getLocation().contains("Canada"));
 
         assertTrue(idb.getLanguage().contains("English"));
 
         assertTrue(idb.getPublisher().contains("Knopf"));
+        assertEquals(1, idb.getPublisher().size());
 
         assertEquals("2006-04", dateFormat.format(idb.getDateCreated()));
 
@@ -178,6 +180,13 @@ public class SetDescriptiveMetadataFilterTest {
         assertTrue(idb.getRightsOaiPmh().contains("Copyright Not Evaluated"));
         assertTrue(idb.getRightsOaiPmh().contains("Attribution-ShareAlike 3.0 United States (CC BY-SA 3.0 US)"));
         assertTrue(idb.getRightsOaiPmh().contains("Random Rights"));
+
+        assertTrue(idb.getOtherSubject().contains("Germany"));
+        assertTrue(idb.getOtherSubject().contains("Canada"));
+        assertTrue(idb.getOtherSubject().contains("Explorer"));
+        assertTrue(idb.getOtherSubject().contains("scale"));
+        assertTrue(idb.getOtherSubject().contains("Subject Title"));
+        assertEquals(5, idb.getOtherSubject().size());
 
         List<String> ids = idb.getIdentifier();
         assertTrue(ids.contains("local|abc123"));
@@ -237,6 +246,9 @@ public class SetDescriptiveMetadataFilterTest {
         when(dip.getMods()).thenReturn(modsDoc.detachRootElement());
 
         filter.filter(dip);
+
+        // Don't index displayForm tags
+        assertFalse((idb.getCreator().contains("Boxy, Ruler of Digital Collections")));
 
         assertTrue(idb.getCreator().contains("Repo, Boxy"));
         assertTrue(idb.getCreator().contains("Repo2, Boxy"));

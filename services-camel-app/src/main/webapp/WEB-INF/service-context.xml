@@ -206,6 +206,7 @@
     <bean id="cacheInvalidatingProcessor" class="edu.unc.lib.boxc.services.camel.util.CacheInvalidatingProcessor">
         <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
         <property name="objectAclFactory" ref="objectAclFactory" />
+        <property name="contentPathFactory" ref="contentPathFactory" />
     </bean>
 
     <bean id="addSmallThumbnailProcessor" class="edu.unc.lib.boxc.services.camel.images.AddDerivativeProcessor">

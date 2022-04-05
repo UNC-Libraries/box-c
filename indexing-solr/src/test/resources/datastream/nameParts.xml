@@ -18,6 +18,12 @@
         </mods:role>
     </mods:name>
     <mods:name>
+        <mods:displayForm>Boxy, Ruler of Digital Collections</mods:displayForm>
+        <mods:role>
+            <mods:roleTerm authority="marcrelator" type="text">Creator</mods:roleTerm>
+        </mods:role>
+    </mods:name>
+    <mods:name>
         <mods:affiliation>Music</mods:affiliation>
         <mods:namePart>Test, author</mods:namePart>
         <mods:role>

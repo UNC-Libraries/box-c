@@ -66,7 +66,7 @@ public abstract class AbstractQueryService {
             SearchFieldKey.LANGUAGE.name(),
             SearchFieldKey.LAST_INDEXED.name(),
             SearchFieldKey.LOCATION.name(),
-            SearchFieldKey.OTHER_TITLES.name(),
+            SearchFieldKey.OTHER_TITLE.name(),
             SearchFieldKey.PARENT_COLLECTION.name(),
             SearchFieldKey.PARENT_UNIT.name(),
             SearchFieldKey.PUBLISHER.name(),
