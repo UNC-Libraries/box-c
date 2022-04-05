@@ -47,10 +47,10 @@
     <fieldType name="dateRange" class="solr.DateRangeField"/>
     <!-- https://solr.apache.org/guide/8_11/field-types-included-with-solr.html -->
     <fieldType name="sortableText" class="solr.SortableTextField">
-        <analyzer>
-            <tokenizer class="solr.KeywordTokenizerFactory"/>
-            <filter class="solr.LowerCaseFilterFactory"/>
-        </analyzer>
+      <analyzer>
+        <tokenizer class="solr.KeywordTokenizerFactory"/>
+        <filter class="solr.LowerCaseFilterFactory"/>
+      </analyzer>
     </fieldType>
 
     <!-- The "RandomSortField" is not used to store or search any
@@ -75,6 +75,8 @@
         <filter class="solr.LowerCaseFilterFactory"/>
         <filter class="solr.EnglishPossessiveFilterFactory"/>
         <filter class="solr.EnglishMinimalStemFilterFactory"/>
+        <filter class="solr.WordDelimiterGraphFilterFactory"/>
+        <filter class="solr.FlattenGraphFilterFactory"/>
       </analyzer>
       <analyzer type="query">
         <tokenizer class="solr.StandardTokenizerFactory"/>
@@ -83,6 +85,7 @@
         <filter class="solr.LowerCaseFilterFactory"/>
         <filter class="solr.EnglishPossessiveFilterFactory"/>
         <filter class="solr.EnglishMinimalStemFilterFactory"/>
+        <filter class="solr.WordDelimiterGraphFilterFactory" preserveOriginal="1"/>
       </analyzer>
     </fieldType>
 
