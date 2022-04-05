@@ -26,6 +26,8 @@ export default {
             "relevance": "Sort by Relevance",
             "title_a-z": "Title A-Z",
             "title_z-a": "Title Z-A",
+            "date_added_newest": "Date Added (newest)",
+            "date_added_oldest": "Date Added (oldest)",
             "date_created_newest": "Date Created (newest)",
             "date_created_oldest": "Date Created (oldest)"
         },
