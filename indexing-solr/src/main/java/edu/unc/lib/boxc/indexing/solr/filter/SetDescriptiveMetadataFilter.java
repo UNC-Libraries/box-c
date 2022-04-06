@@ -30,6 +30,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 
 import org.apache.commons.io.IOUtils;
@@ -62,34 +63,27 @@ public class SetDescriptiveMetadataFilter implements IndexDocumentFilter {
     private static final Logger log = LoggerFactory.getLogger(SetDescriptiveMetadataFilter.class);
 
     private final Properties languageCodeMap;
-    private final HashMap<String, String> rightsUriMap;
+    private final Map<String, String> rightsUriMap;
     public final static String AFFIL_URI = "http://cdr.unc.edu/vocabulary/Affiliation";
     private final List<String> CREATOR_LIST = Arrays.asList("creator", "author", "interviewer", "interviewee");
 
-    public SetDescriptiveMetadataFilter() {
+    public SetDescriptiveMetadataFilter() throws IOException {
         languageCodeMap = new Properties();
-        try {
-            languageCodeMap.load(new InputStreamReader(getClass().getResourceAsStream(
+        languageCodeMap.load(new InputStreamReader(getClass().getResourceAsStream(
                     "/iso639LangMappings.txt")));
-        } catch (IOException e) {
-            log.error("Failed to load code language mappings", e);
-        }
+
 
         // URIS aren't great for property keys
         rightsUriMap = new HashMap<>();
-        try {
-            InputStream rightsStream = getClass().getClassLoader().getResourceAsStream(
-                    "rightsUriMappings.txt");
-            if (rightsStream == null) {
-                throw new IOException();
-            }
-            List<String> rights = IOUtils.readLines(rightsStream, UTF_8);
-            for (String right : rights) {
-                String[] rightsParts = right.split("=");
-                rightsUriMap.put(rightsParts[0], rightsParts[1]);
-            }
-        } catch (IOException e) {
-            log.error("Failed to load rights uri mappings", e);
+        InputStream rightsStream = getClass().getClassLoader().getResourceAsStream(
+                "rightsUriMappings.txt");
+        if (rightsStream == null) {
+            throw new IOException();
+        }
+        List<String> rights = IOUtils.readLines(rightsStream, UTF_8);
+        for (String right : rights) {
+            String[] rightsParts = right.split("=", 2);
+            rightsUriMap.put(rightsParts[0], rightsParts[1]);
         }
     }
 
@@ -489,36 +483,26 @@ public class SetDescriptiveMetadataFilter implements IndexDocumentFilter {
                 // No vocabulary. Add MODS text
                 if (hasRightsText && !hasUrl) {
                     rights.add(modsRightsStatement);
+                    continue;
                 }
 
-                if (hasUrl && !hasRightsText) {
-                    String trimmedHref = href.trim();
-                    if (rightsUriMap.containsKey(trimmedHref)) {
-                        String mappedRightsText = rightsUriMap.get(trimmedHref);
-                        rightsOaiPmh.add(setUrlProtocol(trimmedHref));
-                        rightsOaiPmh.add(mappedRightsText);
-                        rights.add(mappedRightsText);
-                    }
-                    rightsUri.add(trimmedHref);
-                }
-
-                if (hasRightsText && hasUrl) {
-                    String trimmedHref = href.trim();
-                    rightsUri.add(trimmedHref);
-                    rightsOaiPmh.add(setUrlProtocol(trimmedHref));
-
-                    String rightsMapText = rightsUriMap.get(trimmedHref);
-                    boolean hasRightsKey = rightsMapText != null;
-                    String indexingText = (hasRightsKey) ? rightsMapText : modsRightsStatement;
-                    rights.add(indexingText);
-                    rightsOaiPmh.add(indexingText);
-
-                    if (!hasRightsKey) {
-                        log.warn("URI, {} wasn't found in the rights uri mappings.", trimmedHref);
-                    } else if (!rightsMapText.equals(modsRightsStatement)) {
-                        log.warn("Rights text, {}, does not match the rights statement for, {}.",
+                String trimmedHref = href.trim();
+                if (rightsUriMap.containsKey(trimmedHref)) {
+                    String mappedRightsText = rightsUriMap.get(trimmedHref);
+                    if (hasRightsText && !mappedRightsText.equals(modsRightsStatement)) {
+                        log.error("MODS rights text, {}, does not match the rights vocabulary for, {}.",
                                 modsRightsStatement, href);
                     }
+                    rightsOaiPmh.add(convertUrlProtocol(trimmedHref));
+                    rightsOaiPmh.add(mappedRightsText);
+                    rights.add(mappedRightsText);
+                    rightsUri.add(trimmedHref);
+                } else {
+                    if (hasRightsText) {
+                        rights.add(modsRightsStatement);
+                        rightsOaiPmh.add(modsRightsStatement);
+                    }
+                    log.warn("URI, {} wasn't found in the rights uri mappings.", trimmedHref);
                 }
             }
         }
@@ -542,7 +526,7 @@ public class SetDescriptiveMetadataFilter implements IndexDocumentFilter {
         }
     }
 
-    private String setUrlProtocol(String uri) {
+    private String convertUrlProtocol(String uri) {
         if (uri.startsWith("http:")) {
             return uri;
         }

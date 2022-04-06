@@ -223,7 +223,7 @@
     <field name="rights" type="string" indexed="false" stored="true" multiValued="true"/>
     <field name="rightsOaiPmh" type="string" indexed="false" stored="true" multiValued="true"/>
     <!-- Rights statement URI. Used in copy indexes -->
-    <field name="rightsUri" type="string" indexed="false" stored="true" multiValued="true"/>
+    <field name="rightsUri" type="string" indexed="true" stored="true" multiValued="true"/>
     <!-- Contains role|group pairings describing all access control group assignments for this object -->
     <field name="roleGroup" type="string" indexed="true" stored="true" required="true" multiValued="true" default="" docValues="true"/>
     <!-- Rollup identifier, generally the PID for the current object, or the PID of the parent for this object -->

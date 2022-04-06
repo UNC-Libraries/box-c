@@ -167,16 +167,13 @@ public class SetDescriptiveMetadataFilterTest {
         assertTrue(idb.getRights().contains("Copyright Not Evaluated"));
         assertTrue(idb.getRights().contains("Random Rights"));
 
-        assertEquals(4, idb.getRightsUri().size());
+        assertEquals(2, idb.getRightsUri().size());
         assertTrue(idb.getRightsUri().contains("https://rightsstatements.org/vocab/CNE/1.0/"));
         assertTrue(idb.getRightsUri().contains("https://creativecommons.org/licenses/by-sa/3.0/us/"));
-        assertTrue(idb.getRightsUri().contains("https://random.url/rights/no_text/"));
-        assertTrue(idb.getRightsUri().contains("https://random.url/rights/text/"));
 
-        assertEquals(6, idb.getRightsOaiPmh().size());
+        assertEquals(5, idb.getRightsOaiPmh().size());
         assertTrue(idb.getRightsOaiPmh().contains("http://rightsstatements.org/vocab/CNE/1.0/"));
         assertTrue(idb.getRightsOaiPmh().contains("http://creativecommons.org/licenses/by-sa/3.0/us/"));
-        assertTrue(idb.getRightsOaiPmh().contains("http://random.url/rights/text/"));
         assertTrue(idb.getRightsOaiPmh().contains("Copyright Not Evaluated"));
         assertTrue(idb.getRightsOaiPmh().contains("Attribution-ShareAlike 3.0 United States (CC BY-SA 3.0 US)"));
         assertTrue(idb.getRightsOaiPmh().contains("Random Rights"));
