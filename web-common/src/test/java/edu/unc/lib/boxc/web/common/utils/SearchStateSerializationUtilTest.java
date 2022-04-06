@@ -166,7 +166,4 @@ public class SearchStateSerializationUtilTest {
         assertTrue("Results did not contain field " + paramName + ", contained: " + result,
                 result.containsKey(paramName));
     }
-
-    // with subject facet
-    // with stuff that shouldn't be returned, like rows, start page, etc
 }

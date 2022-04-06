@@ -17,6 +17,8 @@ package edu.unc.lib.boxc.search.solr.services;
 
 import edu.unc.lib.boxc.search.api.SearchFieldKey;
 import edu.unc.lib.boxc.search.api.facets.FacetFieldList;
+import edu.unc.lib.boxc.search.api.facets.SearchFacet;
+import edu.unc.lib.boxc.search.api.requests.SearchState;
 import edu.unc.lib.boxc.search.solr.facets.GenericFacet;
 
 import java.util.Arrays;
@@ -34,7 +36,7 @@ public class SetFacetTitleByIdService {
     private ObjectPathFactory pathFactory;
 
     /**
-     * Populate displayValues (titles) for facet if present
+     * Populate displayValues (titles) for facets in a FacetFieldList if present
      * @param facetFields facet field list to add titles to
      */
     public void populateTitles(FacetFieldList facetFields) {
@@ -47,14 +49,36 @@ public class SetFacetTitleByIdService {
             if (facet == null) {
                 continue;
             }
-            for (var facetValue: facet.getValues()) {
-                GenericFacet pidFacet = (GenericFacet) facetValue;
-                var facetTitle = pathFactory.getName(pidFacet.getSearchValue());
+            populateInList(facetName, facet.getValues());
+        }
+    }
 
-                if (facetTitle != null) {
-                    pidFacet.setFieldName(facetName);
-                    pidFacet.setDisplayValue(facetTitle);
-                }
+    /**
+     *
+     * @param searchState
+     */
+    public void populateSearchState(SearchState searchState) {
+        if (searchState.getFacets() == null || searchState.getFacets().isEmpty()) {
+            return;
+        }
+
+        for (var facetName: APPLICABLE_FACET_NAMES) {
+            var facetValues = searchState.getFacets().get(facetName);
+            if (facetValues == null) {
+                continue;
+            }
+            populateInList(facetName, facetValues);
+        }
+    }
+
+    private void populateInList(String facetName, List<SearchFacet> facetList) {
+        for (var facetValue: facetList) {
+            GenericFacet pidFacet = (GenericFacet) facetValue;
+            var facetTitle = pathFactory.getName(pidFacet.getSearchValue());
+
+            if (facetTitle != null) {
+                pidFacet.setFieldName(facetName);
+                pidFacet.setDisplayValue(facetTitle);
             }
         }
     }

@@ -59,8 +59,6 @@ public class SearchActionController extends AbstractErrorHandlingSearchControlle
     @Autowired
     private MultiSelectFacetListService multiSelectFacetListService;
     @Autowired
-    private SetFacetTitleByIdService setFacetTitleByIdService;
-    @Autowired
     private AccessCopiesService accessCopiesService;
 
     @RequestMapping("/search")
@@ -162,7 +160,6 @@ public class SearchActionController extends AbstractErrorHandlingSearchControlle
         }
 
         SearchResultResponse resultResponseFacets = multiSelectFacetListService.getFacetListResult(facetRequest);
-        setFacetTitleByIdService.populateTitles(resultResponseFacets.getFacetFields());
         resultResponse.setFacetFields(resultResponseFacets.getFacetFields());
 
         // Get minimum year for date created "facet" search

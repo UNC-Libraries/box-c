@@ -18,6 +18,8 @@ package edu.unc.lib.boxc.search.solr.services;
 import static edu.unc.lib.boxc.auth.api.AccessPrincipalConstants.PUBLIC_PRINC;
 import static edu.unc.lib.boxc.search.api.SearchFieldKey.CONTENT_TYPE;
 import static edu.unc.lib.boxc.search.api.SearchFieldKey.PARENT_COLLECTION;
+import static edu.unc.lib.boxc.search.api.SearchFieldKey.PARENT_UNIT;
+import static edu.unc.lib.boxc.search.api.SearchFieldKey.SUBJECT;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -25,6 +27,7 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.MockitoAnnotations.initMocks;
 
 import java.util.Arrays;
+import java.util.Map;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -67,6 +70,7 @@ public class SetFacetTitleByIdServiceIT extends BaseEmbeddedSolrTest {
     private FacetFieldUtil facetFieldUtil;
     private AccessRestrictionUtil accessRestrictionUtil;
     private SolrSearchService searchService;
+    private SearchStateFactory searchStateFactory;
 
     public SetFacetTitleByIdServiceIT() {
         testCorpus = new TestCorpus();
@@ -114,6 +118,10 @@ public class SetFacetTitleByIdServiceIT extends BaseEmbeddedSolrTest {
         titleService.setPathFactory(pathFactory);
 
         accessGroups = new AccessGroupSetImpl("unitOwner", PUBLIC_PRINC);
+
+        searchStateFactory = new SearchStateFactory();
+        searchStateFactory.setFacetFieldFactory(facetFieldFactory);
+        searchStateFactory.setSearchSettings(searchSettings);
     }
 
     @Test
@@ -166,7 +174,7 @@ public class SetFacetTitleByIdServiceIT extends BaseEmbeddedSolrTest {
     @Test
     public void populateCollectionAndUnitTest() throws Exception {
         SearchState searchState = new SearchState();
-        searchState.setFacetsToRetrieve(Arrays.asList(PARENT_COLLECTION.name(), SearchFieldKey.PARENT_UNIT.name()));
+        searchState.setFacetsToRetrieve(Arrays.asList(PARENT_COLLECTION.name(), PARENT_UNIT.name()));
 
         SearchRequest request = new SearchRequest(searchState, accessGroups);
         SearchResultResponse resp = facetListService.getFacetListResult(request);
@@ -179,9 +187,41 @@ public class SetFacetTitleByIdServiceIT extends BaseEmbeddedSolrTest {
         assertFacetTitleEquals(parentFacet, PARENT_COLLECTION, testCorpus.coll1Pid, "Collection 1");
         assertFacetTitleEquals(parentFacet, PARENT_COLLECTION, testCorpus.coll2Pid, "Collection 2");
 
-        FacetFieldObject unitFacet = facetFieldList.get(SearchFieldKey.PARENT_UNIT.name());
+        FacetFieldObject unitFacet = facetFieldList.get(PARENT_UNIT.name());
         assertEquals(1, unitFacet.getValues().size());
-        assertFacetTitleEquals(unitFacet, SearchFieldKey.PARENT_UNIT, testCorpus.unitPid, "Unit");
+        assertFacetTitleEquals(unitFacet, PARENT_UNIT, testCorpus.unitPid, "Unit");
+    }
+
+    @Test
+    public void populateSearchStateCollectionAndUnitTest() throws Exception {
+        var subject = "Digital Repositories";
+        var state = searchStateFactory.createSearchState(Map.of(
+                PARENT_UNIT.getUrlParam(), new String[] { testCorpus.unitPid.getId() },
+                SearchFieldKey.PARENT_COLLECTION.getUrlParam(), new String[] { testCorpus.coll1Pid.getId() },
+                SearchFieldKey.DEFAULT_INDEX.getUrlParam(), new String[] { "boxc" },
+                SearchFieldKey.SUBJECT.getUrlParam(), new String[] { subject }
+        ));
+
+        assertHasSearchFacet(state, PARENT_COLLECTION, testCorpus.coll1Pid.getId(), testCorpus.coll1Pid.getId());
+        assertHasSearchFacet(state, PARENT_UNIT, testCorpus.unitPid.getId(), testCorpus.unitPid.getId());
+        assertHasSearchFacet(state, SUBJECT, subject, subject);
+
+        titleService.populateSearchState(state);
+
+        assertHasSearchFacet(state, PARENT_COLLECTION, testCorpus.coll1Pid.getId(), "Collection 1");
+        assertHasSearchFacet(state, PARENT_UNIT, testCorpus.unitPid.getId(), "Unit");
+        assertHasSearchFacet(state, SUBJECT, subject, subject);
+        assertEquals(3, state.getFacets().size());
+        assertEquals("boxc", state.getSearchFields().get(SearchFieldKey.DEFAULT_INDEX.name()));
+        assertEquals(1, state.getSearchFields().size());
+    }
+
+    private void assertHasSearchFacet(SearchState state, SearchFieldKey field, String value, String displayValue) {
+        var facetValues = state.getFacets().get(field.name());
+        assertNotNull("Search state did not contain facet " + field.name(), facetValues);
+        var facet = state.getFacets().get(field.name()).get(0);
+        assertEquals("Incorrect facet value for " + field.name(), value, facet.getValue());
+        assertEquals("Incorrect display value for " + field.name(), displayValue, facet.getDisplayValue());
     }
 
     private SearchFacet getFacetByValue(FacetFieldObject ffo, String value) {
