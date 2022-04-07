@@ -18,7 +18,6 @@ Displays tags for currently active filters in a search result, with the option t
 </template>
 
 <script>
-import cloneDeep from "lodash.clonedeep";
 import routeUtils from "../mixins/routeUtils";
 
 const TYPES = {
@@ -40,7 +39,6 @@ const TYPES = {
     titleIndex: 'Title',
     genre: 'Genre'
 }
-const MULTI_VALUED_FIELDS = ['format', 'collection', 'creatorContributor', 'publisher', 'language'];
 
 export default {
     name: "filterTags",
@@ -48,14 +46,13 @@ export default {
     mixins: [routeUtils],
 
     props: {
-        facetList: Array
+        filterParameters: Object
     },
 
     computed: {
         searchQueryDisplay() {
-            const params = Object.keys(this.$route.query);
-            const query_text = params.map((param) => {
-                return this.formatSearchValue(this.$route.query[param], param);
+            const query_text = Object.keys(this.filterParameters).map((paramName) => {
+                return this.formatSearchValue(this.filterParameters[paramName], paramName);
             }).flat();
             return query_text.filter(v => v !== '');
         }
@@ -64,11 +61,7 @@ export default {
     methods: {
         updateQueryUrl(event) {
             const params = this._updateParams(event);
-            this.$router.push({ name: 'searchRecords', query: params }).catch((e) => {
-                if (this.nonDuplicateNavigationError(e)) {
-                    throw e;
-                }
-            });
+            this.routeWithParams(params, "searchRecords");
         },
 
         _updateParams(event) {
@@ -100,27 +93,36 @@ export default {
             if (fieldValue === undefined || TYPES[type] === undefined) {
                 return '';
             }
-            let display_text = decodeURIComponent(fieldValue);
-
-            // Format time based tags
-            if (type === 'added' || type === 'created' || type === 'createdYear') {
-                display_text = this._formatTime(fieldValue);
-            }
-
-            let tag_info = {
-                type: type,
-                type_text: TYPES[type],
-                original_value: fieldValue,
-                value_text: display_text
-            };
-
-            // Return non multi-value tags
-            if (!MULTI_VALUED_FIELDS.includes(type)) {
+            if (Array.isArray(fieldValue)) {
+                // Multivalued fields
+                return fieldValue.map((value) => {
+                    let tag_info = {
+                        type: type,
+                        type_text: TYPES[type]
+                    };
+                    if (typeof value === 'object' && value !== null) {
+                        tag_info.original_value = value.value;
+                        tag_info.value_text = value.displayValue;
+                    } else {
+                        tag_info.original_value = value;
+                        tag_info.value_text = value;
+                    }
+                    return tag_info;
+                });
+            } else {
+                // Single valued fields
+                let tag_info = {
+                    type: type,
+                    type_text: TYPES[type],
+                    original_value: fieldValue
+                };
+                if (type === 'added' || type === 'created' || type === 'createdYear') {
+                    tag_info.value_text = this._formatTime(fieldValue);
+                } else {
+                    tag_info.value_text = fieldValue;
+                }
                 return tag_info;
             }
-
-            // Multi-value tags
-            return this._updateMultiValueTags(display_text, type, tag_info);
         },
 
         _formatTime(field) {
@@ -132,41 +134,6 @@ export default {
                 const date_values = field.split(',');
                 return `${date_values[0]} to ${date_values[1]}`
             }
-        },
-
-        _updateMultiValueTags(display_text, type, tag_info) {
-            const tag_values = display_text.split('||');
-
-            // Format collection tags
-            if (type === 'collection') {
-                const collections = this.facetList.find(f => f.name === 'PARENT_COLLECTION');
-                if (collections === undefined) {
-                    return tag_info;
-                }
-
-                return tag_values.map((f_value) => {
-                    let collection_text = f_value;
-                    let original_value = f_value;
-
-                    const selected_collection = collections.values.find(c => c.limitToValue === f_value);
-                    if (selected_collection !== undefined) {
-                        collection_text = selected_collection.displayValue;
-                        original_value = selected_collection.limitToValue;
-                    }
-
-                    return this._multiValueDisplay(tag_info, collection_text, original_value);
-                });
-            }
-
-            // All other multi-value tags
-            return tag_values.map(f => this._multiValueDisplay(tag_info, f, f));
-        },
-
-        _multiValueDisplay(facet_info, display_value, original_value) {
-            let current_facet_info = cloneDeep(facet_info);
-            current_facet_info['value_text'] = display_value;
-            current_facet_info['original_value'] = original_value;
-            return current_facet_info;
         },
 
         truncateText(text) {
