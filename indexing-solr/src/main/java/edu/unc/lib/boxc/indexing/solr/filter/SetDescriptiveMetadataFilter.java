@@ -228,10 +228,8 @@ public class SetDescriptiveMetadataFilter implements IndexDocumentFilter {
         }
         if (creators.size() > 0) {
             idb.setCreator(creators);
-            idb.setCreatorSort(creators.get(0));
         } else {
             idb.setCreator(null);
-            idb.setCreatorSort(null);
         }
         if (creatorsContributors.size() > 0) {
             idb.setCreatorContributor(creatorsContributors);

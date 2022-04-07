@@ -53,14 +53,14 @@ public class SearchSettings extends AbstractSettings {
             "bestMatch", constructSortFields("SCORE|desc,TITLE|asc"),
             "collection", constructSortFields(
                     "ANCESTOR_IDS|asc,IDENTIFIER_SORT|asc,TITLE|asc"),
-            "creator", constructSortFields("CREATOR_SORT|asc"),
+            "creator", constructSortFields("CREATOR|asc"),
             "dateAdded", constructSortFields("DATE_ADDED|desc"),
             "dateCreated", constructSortFields("DATE_CREATED|desc"),
             "dateUpdated", constructSortFields("DATE_UPDATED|desc"),
             "default", constructSortFields(
                     "SCORE|desc,RESOURCE_TYPE_SORT|asc,IDENTIFIER_SORT|asc,TITLE|asc"),
             "resourceType", constructSortFields("RESOURCE_TYPE_SORT|asc"),
-            "title", constructSortFields("TITLE_LC|asc,ID|asc")
+            "title", constructSortFields("TITLE|asc,ID|asc")
     );
 
     public static final Collection<String> DEFAULT_RESOURCE_TYPES =

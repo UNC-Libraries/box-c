@@ -39,7 +39,6 @@ public enum SearchFieldKey {
     CONTRIBUTOR_INDEX("contributorIndex", "contributorIndex", "Creator/Contributor"),
     CREATOR("creator", "creator", "Creator"),
     CREATOR_CONTRIBUTOR("creatorContributor", "creatorContributor", "Creator/Contributor"),
-    CREATOR_SORT("creatorSort", "creatorSort", "Creator Sort"),
     DATASTREAM("datastream", "datastream", "Datastream"),
     DATE_ADDED("dateAdded", "added", "Date Deposited"),
     DATE_CREATED("dateCreated", "created", "Date Created"),
@@ -80,7 +79,6 @@ public enum SearchFieldKey {
     TIMESTAMP("timestamp", "timestamp", "Timestamp"),
     TITLE("title", "title", "Title"),
     TITLE_INDEX("titleIndex", "titleIndex", "Title Index"),
-    TITLE_LC("title_lc", "title_lc", "Title"),
     VERSION("_version_", "version", "Version");
 
     private final String solrField;

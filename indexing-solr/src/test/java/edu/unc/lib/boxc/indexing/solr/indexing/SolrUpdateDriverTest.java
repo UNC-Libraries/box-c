@@ -63,8 +63,7 @@ public class SolrUpdateDriverTest {
         "resourceType",
         "roleGroup",
         "rollup",
-        "title",
-        "title_lc"
+        "title"
     };
 
     @Before

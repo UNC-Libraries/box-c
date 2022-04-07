@@ -27,7 +27,6 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import edu.unc.lib.boxc.search.solr.config.SolrSettings;
-import edu.unc.lib.boxc.search.solr.facets.CaseInsensitiveFacet;
 import edu.unc.lib.boxc.search.solr.facets.CutoffFacetImpl;
 import edu.unc.lib.boxc.search.solr.facets.GenericFacet;
 import edu.unc.lib.boxc.search.solr.facets.MultivaluedHierarchicalFacet;
@@ -156,20 +155,6 @@ public class FacetFieldUtilTest {
         assertEquals(1, filterQueries.length);
 
         assertEquals("contentType:\\^text,* OR contentType:\\/image\\^png,*", filterQueries[0]);
-    }
-
-    @Test
-    public void addCaseInsensitiveFacetToQuery() {
-        SolrQuery query = new SolrQuery();
-
-        CaseInsensitiveFacet facet = new CaseInsensitiveFacet("TITLE", "department of boxy");
-
-        facetFieldUtil.addToSolrQuery(facet, query);
-
-        String[] filterQueries = query.getFilterQueries();
-        assertEquals(1, filterQueries.length);
-
-        assertEquals("title_lc:\"department\\ of\\ boxy\"", filterQueries[0]);
     }
 
     @Test

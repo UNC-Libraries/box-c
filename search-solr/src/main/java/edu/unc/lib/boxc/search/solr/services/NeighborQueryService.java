@@ -16,7 +16,7 @@
 package edu.unc.lib.boxc.search.solr.services;
 
 import static edu.unc.lib.boxc.search.api.SearchFieldKey.RESOURCE_TYPE;
-import static edu.unc.lib.boxc.search.api.SearchFieldKey.TITLE_LC;
+import static edu.unc.lib.boxc.search.api.SearchFieldKey.TITLE;
 import static edu.unc.lib.boxc.search.solr.config.SolrSettings.sanitize;
 import static java.lang.String.format;
 import static org.apache.commons.lang3.StringUtils.isBlank;
@@ -58,7 +58,7 @@ public class NeighborQueryService extends AbstractQueryService {
      *           Record which the window pivots around.
      * @param windowSize
      *           max number of items in the window. This includes the pivot, so odd numbers are recommended.
-     * @param accessGroups
+     * @param principals
      *           Access groups of the user making this request.
      * @return
      */
@@ -102,7 +102,7 @@ public class NeighborQueryService extends AbstractQueryService {
         }
         String pItemsQuery = format(
                 pTitlesClause + "(%1$s:\"%2$s\" AND %3$s:{* TO \"%4$s\"})) AND !%3$s:\"%4$s\"",
-                solrField(TITLE_LC), sanitize(metadata.getTitle().toLowerCase()),
+                solrField(TITLE), sanitize(metadata.getTitle().toLowerCase()),
                 solrField(SearchFieldKey.ID), metadata.getId());
         // Get set of preceding neighbors
         precedingQuery.setQuery(pItemsQuery);
@@ -124,7 +124,7 @@ public class NeighborQueryService extends AbstractQueryService {
         // OR if the title is the same, to ids after the target.
         String sItemsQuery = format(
                 "(%1$s:{\"%2$s\" TO *} OR (%1$s:\"%2$s\" AND %3$s:{\"%4$s\" TO *})) AND !%3$s:\"%4$s\"",
-                solrField(TITLE_LC), sanitize(metadata.getTitle().toLowerCase()),
+                solrField(TITLE), sanitize(metadata.getTitle().toLowerCase()),
                 solrField(SearchFieldKey.ID), metadata.getId());
         // Get set of succeeding neighbors
         succeedingQuery.setQuery(sItemsQuery);

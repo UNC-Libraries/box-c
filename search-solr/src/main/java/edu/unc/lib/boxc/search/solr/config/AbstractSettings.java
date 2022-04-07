@@ -45,10 +45,7 @@ public abstract class AbstractSettings {
         Iterator<Map.Entry<String, String>> pairIt = map.entrySet().iterator();
         while (pairIt.hasNext()) {
             Map.Entry<String, String> pair = pairIt.next();
-            // Prevent the search form of a field from becoming the representative field
-            if (!pair.getKey().endsWith("_LC")) {
-                inverted.put(pair.getValue(), pair.getKey());
-            }
+            inverted.put(pair.getValue(), pair.getKey());
         }
         return inverted;
     }
@@ -114,7 +111,7 @@ public abstract class AbstractSettings {
      *
      * @param propertyName
      * @param c
-     * @param propEntry
+     * @param properties
      * @param delimiter
      */
     protected void populateCollectionFromProperty(String propertyName, Collection<String> c, Properties properties,

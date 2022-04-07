@@ -26,7 +26,6 @@ import static edu.unc.lib.boxc.search.api.SearchFieldKey.CONTENT_TYPE;
 import static edu.unc.lib.boxc.search.api.SearchFieldKey.CONTRIBUTOR;
 import static edu.unc.lib.boxc.search.api.SearchFieldKey.CREATOR;
 import static edu.unc.lib.boxc.search.api.SearchFieldKey.CREATOR_CONTRIBUTOR;
-import static edu.unc.lib.boxc.search.api.SearchFieldKey.CREATOR_SORT;
 import static edu.unc.lib.boxc.search.api.SearchFieldKey.DATASTREAM;
 import static edu.unc.lib.boxc.search.api.SearchFieldKey.DATE_ADDED;
 import static edu.unc.lib.boxc.search.api.SearchFieldKey.DATE_CREATED;
@@ -205,15 +204,6 @@ public class IndexDocumentBean {
     @Field
     public void setResourceTypeSort(Integer resourceTypeSort) {
         fields.put(RESOURCE_TYPE_SORT.getSolrField(), resourceTypeSort);
-    }
-
-    public String getCreatorSort() {
-        return (String) fields.get(CREATOR_SORT.getSolrField());
-    }
-
-    @Field
-    public void setCreatorSort(String creatorSort) {
-        fields.put(CREATOR_SORT.getSolrField(), creatorSort);
     }
 
     public List<String> getContentType() {

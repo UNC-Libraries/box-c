@@ -199,11 +199,6 @@ public class GroupedContentObjectSolrRecord implements GroupedContentObjectRecor
     }
 
     @Override
-    public String getCreatorSort() {
-        return this.representative.getCreatorSort();
-    }
-
-    @Override
     public List<String> getContentType() {
         return this.representative.getContentType();
     }

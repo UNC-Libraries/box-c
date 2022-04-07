@@ -77,8 +77,6 @@ public interface ContentObjectRecord {
 
     public Integer getResourceTypeSort();
 
-    public String getCreatorSort();
-
     public List<String> getContentType();
 
     public Date getTimestamp();
