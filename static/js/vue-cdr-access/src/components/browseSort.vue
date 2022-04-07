@@ -7,8 +7,10 @@ Sort drop down menu used in search results
             <option value="default,normal">{{ $t('sort.relevance') }}</option>
             <option value="title,normal">{{ $t('sort.title_a-z') }}</option>
             <option value="title,reverse">{{ $t('sort.title_z-a') }}</option>
-            <option value="dateAdded,normal">{{ $t('sort.date_created_newest') }}</option>
-            <option value="dateAdded,reverse">{{ $t('sort.date_created_oldest') }}</option>
+            <option value="dateCreated,normal">{{ $t('sort.date_created_newest') }}</option>
+            <option value="dateCreated,reverse">{{ $t('sort.date_created_oldest') }}</option>
+            <option value="dateAdded,normal">{{ $t('sort.date_added_newest') }}</option>
+            <option value="dateAdded,reverse">{{ $t('sort.date_added_oldest') }}</option>
         </select>
     </div>
 </template>
