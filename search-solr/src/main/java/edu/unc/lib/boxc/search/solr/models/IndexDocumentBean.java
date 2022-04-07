@@ -50,6 +50,9 @@ import static edu.unc.lib.boxc.search.api.SearchFieldKey.PUBLISHER;
 import static edu.unc.lib.boxc.search.api.SearchFieldKey.READ_GROUP;
 import static edu.unc.lib.boxc.search.api.SearchFieldKey.RESOURCE_TYPE;
 import static edu.unc.lib.boxc.search.api.SearchFieldKey.RESOURCE_TYPE_SORT;
+import static edu.unc.lib.boxc.search.api.SearchFieldKey.RIGHTS;
+import static edu.unc.lib.boxc.search.api.SearchFieldKey.RIGHTS_OAI_PMH;
+import static edu.unc.lib.boxc.search.api.SearchFieldKey.RIGHTS_URI;
 import static edu.unc.lib.boxc.search.api.SearchFieldKey.ROLE_GROUP;
 import static edu.unc.lib.boxc.search.api.SearchFieldKey.ROLLUP_ID;
 import static edu.unc.lib.boxc.search.api.SearchFieldKey.STATUS;
@@ -480,6 +483,33 @@ public class IndexDocumentBean {
     @Field
     public void setPublisher(List<String> publishers) {
         fields.put(PUBLISHER.getSolrField(), publishers);
+    }
+
+    public List<String> getRights() {
+        return (List<String>) fields.get(RIGHTS.getSolrField());
+    }
+
+    @Field
+    public void setRights(List<String> rights) {
+        fields.put(RIGHTS.getSolrField(), rights);
+    }
+
+    @Field
+    public void setRightsOaiPmh(List<String> rights) {
+        fields.put(RIGHTS_OAI_PMH.getSolrField(), rights);
+    }
+
+    public List<String> getRightsOaiPmh() {
+        return (List<String>) fields.get(RIGHTS_OAI_PMH.getSolrField());
+    }
+
+    public List<String> getRightsUri() {
+        return (List<String>) fields.get(RIGHTS_URI.getSolrField());
+    }
+
+    @Field
+    public void setRightsUri(List<String> rightsUri) {
+        fields.put(RIGHTS_URI.getSolrField(), rightsUri);
     }
 
     public String getFullText() {

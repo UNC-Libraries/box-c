@@ -27,7 +27,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
@@ -41,7 +40,6 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 
-import edu.unc.lib.boxc.indexing.solr.filter.SetDescriptiveMetadataFilter;
 import edu.unc.lib.boxc.indexing.solr.indexing.DocumentIndexingPackage;
 import edu.unc.lib.boxc.indexing.solr.indexing.DocumentIndexingPackageDataLoader;
 import edu.unc.lib.boxc.model.api.ids.PID;
@@ -158,6 +156,24 @@ public class SetDescriptiveMetadataFilterTest {
         assertEquals(1, idb.getPublisher().size());
 
         assertEquals("2006-04", dateFormat.format(idb.getDateCreated()));
+
+        assertEquals(4, idb.getRights().size());
+        assertTrue(idb.getRights().contains("Copyright Not Evaluated"));
+        assertTrue(idb.getRights().contains("For copyright information or permissions questions, see our " +
+                "intellectual property statement https://library.unc.edu/wilson/research/perm/"));
+        assertTrue(idb.getRights().contains("Copyright Not Evaluated"));
+        assertTrue(idb.getRightsOaiPmh().contains("More Random Rights"));
+
+        assertEquals(2, idb.getRightsUri().size());
+        assertTrue(idb.getRightsUri().contains("https://rightsstatements.org/vocab/CNE/1.0/"));
+        assertTrue(idb.getRightsUri().contains("https://creativecommons.org/licenses/by-sa/3.0/us/"));
+
+        assertEquals(6, idb.getRightsOaiPmh().size());
+        assertTrue(idb.getRightsOaiPmh().contains("http://rightsstatements.org/vocab/CNE/1.0/"));
+        assertTrue(idb.getRightsOaiPmh().contains("http://creativecommons.org/licenses/by-sa/3.0/us/"));
+        assertTrue(idb.getRightsOaiPmh().contains("Copyright Not Evaluated"));
+        assertTrue(idb.getRightsOaiPmh().contains("Attribution-ShareAlike 3.0 United States (CC BY-SA 3.0 US)"));
+        assertTrue(idb.getRightsOaiPmh().contains("More Random Rights"));
 
         assertTrue(idb.getOtherSubject().contains("Germany"));
         assertTrue(idb.getOtherSubject().contains("Canada"));

@@ -219,6 +219,11 @@
     <field name="resourceType" type="string" indexed="true" stored="true" required="true" docValues="true"/>
     <!-- Sort order for this item based on resource type -->
     <field name="resourceTypeSort" type="int" indexed="true" stored="true" docValues="true"/>
+    <!-- Rights statement text. Used in copy indexes -->
+    <field name="rights" type="string" indexed="false" stored="true" multiValued="true"/>
+    <field name="rightsOaiPmh" type="string" indexed="false" stored="true" multiValued="true"/>
+    <!-- Rights statement URI. Used in copy indexes -->
+    <field name="rightsUri" type="string" indexed="true" stored="true" multiValued="true"/>
     <!-- Contains role|group pairings describing all access control group assignments for this object -->
     <field name="roleGroup" type="string" indexed="true" stored="true" required="true" multiValued="true" default="" docValues="true"/>
     <!-- Rollup identifier, generally the PID for the current object, or the PID of the parent for this object -->
@@ -290,6 +295,9 @@
   <copyField source="publisher" dest="keywordIndex"/>
   <copyField source="id" dest="keywordIndex"/>
   <copyField source="identifier" dest="keywordIndex"/>
+  <copyField source="rights" dest="keywordIndex"/>
+  <copyField source="rightsOaiPmh" dest="keywordIndex"/>
+  <copyField source="rightsUri" dest="keywordIndex"/>
 
   <!-- Same as the keyword index plus full text. Too bad recursive copy fields don't work -->
   <copyField source="title" dest="text"/>
@@ -304,6 +312,9 @@
   <copyField source="publisher" dest="text"/>
   <copyField source="id" dest="text"/>
   <copyField source="identifier" dest="text"/>
+  <copyField source="rights" dest="text"/>
+  <copyField source="rightsOaiPmh" dest="text"/>
+  <copyField source="rightsUri" dest="text"/>
   <copyField source="fullText" dest="text"/>
 
   <copyField source="title" dest="title_lc"/>
