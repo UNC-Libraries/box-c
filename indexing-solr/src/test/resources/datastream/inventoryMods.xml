@@ -136,4 +136,5 @@
                         xlink:href="https://random.url/rights/no_text/"/>
   <mods:accessCondition displayLabel="Rights" type="use and reproduction"
                         xlink:href="https://random.url/rights/text/">Random Rights</mods:accessCondition>
+  <mods:accessCondition displayLabel="Rights" type="use and reproduction">More Random Rights</mods:accessCondition>
 </mods:mods>
