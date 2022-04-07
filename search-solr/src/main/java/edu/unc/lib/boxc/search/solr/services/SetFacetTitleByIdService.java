@@ -54,7 +54,7 @@ public class SetFacetTitleByIdService {
     }
 
     /**
-     *
+     * Populate displayValues (titles) for facets in a SearchState if present
      * @param searchState
      */
     public void populateSearchState(SearchState searchState) {

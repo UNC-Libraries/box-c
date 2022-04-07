@@ -26,7 +26,6 @@ import edu.unc.lib.boxc.search.api.requests.SearchState;
 import edu.unc.lib.boxc.search.solr.facets.CutoffFacetImpl;
 import edu.unc.lib.boxc.search.solr.responses.SearchResultResponse;
 import edu.unc.lib.boxc.search.solr.services.MultiSelectFacetListService;
-import edu.unc.lib.boxc.search.solr.services.SetFacetTitleByIdService;
 import edu.unc.lib.boxc.web.common.controllers.AbstractErrorHandlingSearchController;
 import edu.unc.lib.boxc.web.common.services.AccessCopiesService;
 import org.apache.commons.lang3.StringUtils;
