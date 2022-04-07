@@ -498,10 +498,6 @@ public class SetDescriptiveMetadataFilter implements IndexDocumentFilter {
                     rights.add(mappedRightsText);
                     rightsUri.add(trimmedHref);
                 } else {
-                    if (hasRightsText) {
-                        rights.add(modsRightsStatement);
-                        rightsOaiPmh.add(modsRightsStatement);
-                    }
                     log.warn("URI, {} wasn't found in the rights uri mappings.", trimmedHref);
                 }
             }
