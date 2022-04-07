@@ -483,6 +483,7 @@ public class SetDescriptiveMetadataFilter implements IndexDocumentFilter {
                 // No vocabulary. Add MODS text
                 if (hasRightsText && !hasUrl) {
                     rights.add(modsRightsStatement);
+                    rightsOaiPmh.add(modsRightsStatement);
                     continue;
                 }
 
