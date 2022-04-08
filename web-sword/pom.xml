@@ -63,7 +63,17 @@
                     <artifactId>xom</artifactId>
                     <groupId>xom</groupId>
                 </exclusion>
+                <exclusion>
+                    <artifactId>log4j</artifactId>
+                    <groupId>log4j</groupId>
+                </exclusion>
             </exclusions>
+        </dependency>
+
+        <!-- Overriding log4j 1.x from sword2-server until it can be updated to log4j2 -->
+        <dependency>
+            <groupId>ch.qos.reload4j</groupId>
+            <artifactId>reload4j</artifactId>
         </dependency>
 
         <dependency>
