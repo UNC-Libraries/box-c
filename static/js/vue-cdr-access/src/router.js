@@ -1,7 +1,7 @@
 import { createWebHistory, createRouter } from 'vue-router'
 import displayWrapper from "@/components/displayWrapper.vue";
 import searchWrapper from "@/components/searchWrapper.vue";
-import collectionBrowse from "@/components/collectionBrowse.vue";
+import collectionBrowseWrapper from "@/components/collectionBrowseWrapper.vue";
 
 export default createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -19,7 +19,7 @@ export default createRouter({
     {
       path: '/collections/',
       name: 'collectionBrowse',
-      component: collectionBrowse
+      component: collectionBrowseWrapper
     }
   ]
 });

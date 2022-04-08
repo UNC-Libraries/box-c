@@ -23,7 +23,7 @@ Top level component for full record pages with searching/browsing, including Adm
                 <facets :facet-list="facet_list" :min-created-year="minimumCreatedYear" :show-clear-button="false"></facets>
             </div>
             <div class="column is-three-quarters">
-                <browse-display v-if="isBrowseDisplay" :record-list="record_list"></browse-display>
+                <gallery-display v-if="isBrowseDisplay" :record-list="record_list"></gallery-display>
                 <list-display v-else :record-list="record_list" :is-record-browse="true"></list-display>
             </div>  
         </div>
@@ -34,9 +34,9 @@ Top level component for full record pages with searching/browsing, including Adm
 </template>
 
 <script>
-    import browseDisplay from '@/components/browseDisplay.vue';
     import browseSearch from '@/components/browseSearch.vue';
     import browseSort from '@/components/browseSort.vue';
+    import galleryDisplay from '@/components/galleryDisplay.vue';
     import listDisplay from '@/components/listDisplay.vue';
     import facets from "@/components/facets.vue";
     import modalMetadata from '@/components/modalMetadata.vue';
@@ -62,9 +62,9 @@ Top level component for full record pages with searching/browsing, including Adm
         },
 
         components: {
-            browseDisplay,
             browseSearch,
             browseSort,
+            galleryDisplay,
             listDisplay,
             modalMetadata,
             pagination,

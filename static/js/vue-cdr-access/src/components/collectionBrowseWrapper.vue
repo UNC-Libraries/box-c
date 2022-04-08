@@ -12,7 +12,7 @@ Top level component used for the collection browse page
     import get from 'axios';
 
     export default {
-        name: 'collectionBrowse',
+        name: 'collectionBrowseWrapper',
 
         components: {listDisplay},
 
