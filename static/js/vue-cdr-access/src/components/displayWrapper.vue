@@ -5,7 +5,7 @@ Top level component for full record pages with searching/browsing, including Adm
     <div>
         <div class="columns is-tablet">
             <div class="column is-6">
-                <browse-search :object-type="container_metadata.type" :facet-list="facet_list"></browse-search>
+                <browse-search :object-type="container_metadata.type" :filter-parameters="filter_parameters"></browse-search>
             </div>
             <div class="column is-2" v-if="showWidget">
                 <browse-sort browse-type="display"></browse-sort>
@@ -88,7 +88,8 @@ Top level component for full record pages with searching/browsing, including Adm
                 record_list: [],
                 facet_list: [],
                 search_method: 'listJson',
-                uuid: ''
+                uuid: '',
+                filter_parameters: {}
             }
         },
 
@@ -118,6 +119,7 @@ Top level component for full record pages with searching/browsing, including Adm
                     this.container_name = response.data.container.title;
                     this.container_metadata = response.data.container;
                     this.min_created_year = response.data.minSearchYear;
+                    this.filterParameters = response.data.filterParameters;
                     this.is_page_loading = false;
                 }).catch(function (error) {
                     console.log(error);

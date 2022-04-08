@@ -24,6 +24,8 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
+import edu.unc.lib.boxc.search.solr.services.SetFacetTitleByIdService;
+import edu.unc.lib.boxc.web.common.utils.SearchStateSerializationUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -60,6 +62,8 @@ public abstract class AbstractSolrSearchController {
     protected SearchStateFactory searchStateFactory;
     @Autowired
     protected ChildrenCountService childrenCountService;
+    @Autowired
+    private SetFacetTitleByIdService setFacetTitleByIdService;
 
     protected SearchRequest generateSearchRequest(HttpServletRequest request) {
         return this.generateSearchRequest(request, null, new SearchRequest());
@@ -149,13 +153,20 @@ public abstract class AbstractSolrSearchController {
         results.put("metadata", resultList);
 
         SearchState state = resp.getSearchState();
+        // Add display values for filter parameters with separate search and display forms
+        setFacetTitleByIdService.populateSearchState(state);
+
         results.put("pageStart", state.getStartRow());
         results.put("pageRows", state.getRowsPerPage());
         results.put("resultCount", resp.getResultCount());
         results.put("searchStateUrl", SearchStateUtil.generateStateParameterString(state));
         results.put("searchQueryUrl", SearchStateUtil.generateSearchParameterString(state));
+        results.put("filterParameters", SearchStateSerializationUtil.getFilterParameters(state));
         results.put("queryMethod", queryMethod);
-        results.put("facetFields", resp.getFacetFields());
+        if (resp.getFacetFields() != null) {
+            setFacetTitleByIdService.populateTitles(resp.getFacetFields());
+            results.put("facetFields", resp.getFacetFields());
+        }
         results.put("onyen", GroupsThreadStore.getUsername());
         results.put("email", GroupsThreadStore.getEmail());
 

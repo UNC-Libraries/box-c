@@ -5,7 +5,7 @@ Top level component wrapper for search pages
     <div>
         <div class="search-query-text">
             Search results for "{{ $route.query.anywhere }}"
-            <filter-tags :facet-list="facet_list"></filter-tags>
+            <filter-tags :filter-parameters="filter_parameters" :facet-list="facet_list"></filter-tags>
         </div>
         <img v-if="is_loading" :src="nonVueStaticImageUrl('ajax-loader-lg.gif')" alt="data loading icon">
         <div v-if="!is_loading">
@@ -59,6 +59,7 @@ Top level component wrapper for search pages
                 anywhere: '',
                 collection: '',
                 facet_list: [],
+                filter_parameters: {},
                 is_loading: true,
                 records: [],
                 total_records: 0
@@ -106,6 +107,7 @@ Top level component wrapper for search pages
                     this.records = response.data.metadata;
                     this.total_records = response.data.resultCount;
                     this.facet_list = response.data.facetFields;
+                    this.filter_parameters = response.data.filterParameters;
                     this.min_created_year = response.data.minSearchYear;
                     this.is_loading = false;
                 }).catch(function (error) {

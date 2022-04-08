@@ -92,6 +92,10 @@
         <property name="solrSettings" ref="solrSettings" />
     </bean>
 
+    <bean id="setFacetTitleByIdService" class="edu.unc.lib.boxc.search.solr.services.SetFacetTitleByIdService">
+        <property name="pathFactory" ref="pathFactory" />
+    </bean>
+
     <bean class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
         <property name="staticMethod" value="edu.unc.lib.boxc.search.solr.models.ContentObjectSolrRecord.setPathFactory"/>
         <property name="arguments">
