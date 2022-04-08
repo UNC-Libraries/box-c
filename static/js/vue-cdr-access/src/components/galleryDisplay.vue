@@ -39,7 +39,7 @@ Renders search results in a gallery view display in full record pages.
     import chunk from 'lodash.chunk';
 
     export default {
-        name: 'browseDisplay',
+        name: 'galleryDisplay',
 
         props: {
             recordList: {

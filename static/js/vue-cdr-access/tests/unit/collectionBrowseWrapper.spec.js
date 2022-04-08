@@ -1,5 +1,5 @@
 import { shallowMount } from '@vue/test-utils'
-import collectionBrowse from '@/components/collectionBrowse.vue';
+import collectionBrowseWrapper from '@/components/collectionBrowseWrapper.vue';
 import moxios from "moxios";
 
 let response = {
@@ -53,11 +53,11 @@ let response = {
 
 let wrapper;
 
-describe('collectionBrowse.vue', () => {
+describe('collectionBrowseWrapper.vue', () => {
     beforeEach(() => {
         moxios.install();
 
-        wrapper = shallowMount(collectionBrowse);
+        wrapper = shallowMount(collectionBrowseWrapper);
 
         moxios.stubRequest('collectionsJson', {
             status: 200,

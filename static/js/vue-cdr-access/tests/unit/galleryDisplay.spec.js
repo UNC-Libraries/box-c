@@ -1,5 +1,5 @@
 import { shallowMount } from '@vue/test-utils'
-import browseDisplay from '@/components/browseDisplay.vue';
+import galleryDisplay from '@/components/galleryDisplay.vue';
 
 let wrapper;
 const record_list = [
@@ -29,9 +29,9 @@ const record_list = [
 
 let records = [...record_list, ...record_list, ...record_list, ...record_list]; // Creates 8 returned records
 
-describe('browseDisplay.vue', () => {
+describe('galleryDisplay.vue', () => {
     beforeEach(() => {
-        wrapper = shallowMount(browseDisplay, {
+        wrapper = shallowMount(galleryDisplay, {
             props: {
                 recordList: records
             },
