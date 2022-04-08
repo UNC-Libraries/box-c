@@ -19,7 +19,7 @@ Search form component displayed on full record pages, allowing keyword searches 
                     <i class="fas fa-times"></i>
                 </span> {{ $t('search.clear_search')}}</a>
             <clear-facets-button></clear-facets-button>
-            <filter-tags :filter-parameters="this.filterParameters"></filter-tags>
+            <filter-tags :filter-parameters="filterParameters"></filter-tags>
         </div>
     </div>
 </template>

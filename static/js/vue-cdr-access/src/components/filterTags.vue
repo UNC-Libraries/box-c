@@ -96,33 +96,29 @@ export default {
             if (Array.isArray(fieldValue)) {
                 // Multivalued fields
                 return fieldValue.map((value) => {
-                    let tag_info = {
-                        type: type,
-                        type_text: TYPES[type]
-                    };
                     if (typeof value === 'object' && value !== null) {
-                        tag_info.original_value = value.value;
-                        tag_info.value_text = value.displayValue;
+                        return this._makeTagInfo(type, value.value, value.displayValue);
                     } else {
-                        tag_info.original_value = value;
-                        tag_info.value_text = value;
+                        return this._makeTagInfo(type, value, value);
                     }
-                    return tag_info;
                 });
             } else {
                 // Single valued fields
-                let tag_info = {
-                    type: type,
-                    type_text: TYPES[type],
-                    original_value: fieldValue
-                };
                 if (type === 'added' || type === 'created' || type === 'createdYear') {
-                    tag_info.value_text = this._formatTime(fieldValue);
+                    return this._makeTagInfo(type, fieldValue, this._formatTime(fieldValue));
                 } else {
-                    tag_info.value_text = fieldValue;
+                    return this._makeTagInfo(type, fieldValue, fieldValue);
                 }
-                return tag_info;
             }
+        },
+
+        _makeTagInfo(type, original_val, display_val) {
+            return {
+                type: type,
+                type_text: TYPES[type],
+                original_value: original_val,
+                value_text: display_val
+            };
         },
 
         _formatTime(field) {
