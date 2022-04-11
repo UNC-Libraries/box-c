@@ -78,7 +78,8 @@ describe('displayWrapper.vue', () => {
                     is_folder: false,
                     record_count: 0,
                     record_list: [],
-                    uuid: '0410e5c1-a036-4b7c-8d7d-63bfda2d6a36'
+                    uuid: '0410e5c1-a036-4b7c-8d7d-63bfda2d6a36',
+                    filter_parameters: {}
                 }
             }
         });
@@ -122,7 +123,23 @@ describe('displayWrapper.vue', () => {
     });
 
     it("uses the correct search parameters if search text is specified", async () => {
+        await wrapper.setData({
+            filter_parameters: { "anywhere" : "search query"}
+        });
         await router.push('/record/1234?anywhere=search query');
+
+        wrapper.vm.updateUrl();
+        wrapper.vm.retrieveData();
+        await flushPromises();
+        expect(wrapper.vm.search_method).toEqual('searchJson');
+        expect(wrapper.vm.$router.currentRoute.value.query.types).toEqual('Work,Folder,Collection');
+    });
+
+    it("uses the correct search parameters if facet parameter is specified", async () => {
+        await wrapper.setData({
+            filter_parameters: { "subject" : "subj value"}
+        });
+        await router.push('/record/1234?subject=subj value');
 
         wrapper.vm.updateUrl();
         wrapper.vm.retrieveData();

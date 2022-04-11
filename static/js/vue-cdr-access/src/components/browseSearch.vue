@@ -71,9 +71,6 @@ Search form component displayed on full record pages, allowing keyword searches 
                 const object_text = (object_type === 'adminunit') ? 'collection' : object_type;
                 return `Search within this ${object_text}`
             },
-            allPossibleSearchParameters() {
-                return this.possible_facet_fields.concat(['anywhere']);
-            },
             enableStartOverButton() {
                 return this.anyParamsPopulated(this.allPossibleSearchParameters);
             }

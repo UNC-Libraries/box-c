@@ -136,8 +136,9 @@ Top level component for full record pages with searching/browsing, including Adm
             },
 
             hasSearchQuery() {
-                let query = this.$route.query.anywhere;
-                return query !== undefined && query !== '';
+                let query_params = this.$route.query;
+                return Object.keys(query_params).some(key => query_params[key]
+                        && this.allPossibleSearchParameters.indexOf(key) >= 0);
             },
 
             updateParams() {

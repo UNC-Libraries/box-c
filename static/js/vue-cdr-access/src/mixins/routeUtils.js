@@ -173,6 +173,9 @@ export default {
                 return parseInt(this.min_created_year)
             }
             return undefined;
-        }
+        },
+        allPossibleSearchParameters() {
+            return this.possible_facet_fields.concat(['anywhere']);
+        },
     }
 }
