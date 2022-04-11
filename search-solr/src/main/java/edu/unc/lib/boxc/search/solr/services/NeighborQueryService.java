@@ -80,7 +80,7 @@ public class NeighborQueryService extends AbstractQueryService {
             // We want only objects at the same level of the hierarchy
             ancestorPath.setCutoff(ancestorPath.getHighestTier() + 1);
 
-            facetFieldUtil.addToSolrQuery(ancestorPath, solrQuery);
+            facetFieldUtil.addToSolrQuery(ancestorPath, true, solrQuery);
         }
 
         // Query for a window of results to either side of the target

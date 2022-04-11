@@ -74,21 +74,27 @@ public class FacetFieldUtil {
     /**
      * Apply facet restrictions to a solr query based on the type of facet provided
      * @param facetObject Facet to add to the query
+     * @param applyCutoffs whether cutoff restrictions from CutoffFacets should be applied to the query
      * @param solrQuery
      */
-    public void addToSolrQuery(SearchFacet facetObject, SolrQuery solrQuery) {
-        addToSolrQuery(Arrays.asList(facetObject), solrQuery);
+    public void addToSolrQuery(SearchFacet facetObject, boolean applyCutoffs, SolrQuery solrQuery) {
+        addToSolrQuery(Arrays.asList(facetObject), applyCutoffs, solrQuery);
     }
 
     /**
      * Apply facet restrictions to a solr query based on the type of facet provided
      *
      * @param facetObject list of facets to add to query
+     * @param applyCutoffs whether cutoff restrictions from CutoffFacets should be applied to the query
      * @param solrQuery
      */
-    public void addToSolrQuery(List<SearchFacet> facetObject, SolrQuery solrQuery) {
+    public void addToSolrQuery(List<SearchFacet> facetObject, boolean applyCutoffs, SolrQuery solrQuery) {
         if (facetIsOfType(facetObject, CutoffFacet.class)) {
-            addFacetValue(facetObject, solrQuery, cutoffFacetToFq);
+            if (applyCutoffs) {
+                addFacetValue(facetObject, solrQuery, cutoffFacetApplyCutoffsToFq);
+            } else {
+                addFacetValue(facetObject, solrQuery, cutoffFacetToFq);
+            }
         } else if (facetIsOfType(facetObject, MultivaluedHierarchicalFacet.class)) {
             addHierarchicalFacetValue(facetObject, solrQuery, multivaluedFacetToFq);
         } else if (facetIsOfType(facetObject, GenericFacet.class)) {
@@ -130,6 +136,14 @@ public class FacetFieldUtil {
     }
 
     private Function<SearchFacet, String> cutoffFacetToFq = (inFacet) -> {
+        return generateCutoffFacetQuery(inFacet, false);
+    };
+
+    private Function<SearchFacet, String> cutoffFacetApplyCutoffsToFq = (inFacet) -> {
+        return generateCutoffFacetQuery(inFacet, true);
+    };
+
+    private String generateCutoffFacetQuery(SearchFacet inFacet, boolean applyCutoffs) {
         CutoffFacet facet = (CutoffFacet) inFacet;
         List<HierarchicalFacetNode> facetNodes = facet.getFacetNodes();
         CutoffFacetNode endNode = (CutoffFacetNode) facetNodes.get(facetNodes.size() - 1);
@@ -143,12 +157,12 @@ public class FacetFieldUtil {
             filterQuery.append('*');
         }
 
-        if (facet.getCutoff() != null) {
+        if (applyCutoffs && facet.getCutoff() != null) {
             filterQuery.append(" AND !").append(solrFieldName).append(':').append(facet.getCutoff())
-                .append(',').append('*');
+                    .append(',').append('*');
         }
         return filterQuery.append(')').toString();
-    };
+    }
 
     private Function<SearchFacet, String> multivaluedFacetToFq = (inFacet) -> {
         MultivaluedHierarchicalFacet facet = (MultivaluedHierarchicalFacet) inFacet;
