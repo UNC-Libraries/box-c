@@ -1,4 +1,4 @@
-import { shallowMount, flushPromises } from '@vue/test-utils'
+import { mount, flushPromises } from '@vue/test-utils'
 import { createRouter, createWebHistory } from 'vue-router';
 import displayWrapper from '@/components/displayWrapper.vue';
 import moxios from "moxios";
@@ -17,6 +17,7 @@ const record_list = [
         "uri": "https://dcr.lib.unc.edu/record/dd8890d6-5756-4924-890c-48bc54e3edda",
         "id": "dd8890d6-5756-4924-890c-48bc54e3edda",
         "updated": "2018-06-29T18:38:22.588Z",
+        "objectPath": [{ pid: "collections" }, { pid: "34e9ce20-0c7a-44a6-9fa4-d7cd27f7c502" }]
     },
     {
         "added": "2018-07-19T20:24:41.477Z",
@@ -28,6 +29,7 @@ const record_list = [
         "uri": "https://dcr.lib.unc.edu/record/87f54f12-5c50-4a14-bf8c-66cf64b00533",
         "id": "87f54f12-5c50-4a14-bf8c-66cf64b00533",
         "updated": "2018-07-19T20:24:41.477Z",
+        "objectPath": [{ pid: "collections" }, { pid: "34e9ce20-0c7a-44a6-9fa4-d7cd27f7c502" }]
     }
 ];
 
@@ -41,7 +43,8 @@ const response = {
         updated: "2017-12-20T13:44:46.264Z",
     },
     metadata: [...record_list, ...record_list, ...record_list, ...record_list], // Creates 8 returned records
-    resultCount: 8
+    resultCount: 8,
+    facetFields: []
 };
 
 describe('displayWrapper.vue', () => {
@@ -65,7 +68,7 @@ describe('displayWrapper.vue', () => {
             ]
         });
 
-        wrapper = shallowMount(displayWrapper, {
+        wrapper = mount(displayWrapper, {
             global: {
                 plugins: [router, i18n]
             },
@@ -85,11 +88,15 @@ describe('displayWrapper.vue', () => {
         });
     });
 
-    it("retrieves data", (done) => {
-        moxios.stubRequest(`listJson/${response.container.id}?rows=20&start=0&sort=default%2Cnormal&browse_type=list-display&works_only=false&types=Work%2CFolder%2CCollection&getFacets=true`, {
+    function stubQueryResponse(url_pattern, response) {
+        moxios.stubRequest(new RegExp(url_pattern), {
             status: 200,
             response: JSON.stringify(response)
         });
+    };
+
+    it("retrieves data", (done) => {
+        stubQueryResponse(`listJson/${response.container.id}?.+`, response);
         wrapper.vm.retrieveData();
 
         moxios.wait(() => {
@@ -148,7 +155,8 @@ describe('displayWrapper.vue', () => {
         expect(wrapper.vm.$router.currentRoute.value.query.types).toEqual('Work,Folder,Collection');
     });
 
-    it("uses the correct parameters for admin set browse", async () => {
+    it("uses the correct parameters for admin unit browse", async () => {
+        stubQueryResponse(`listJson/1234?.+`, response);
         await wrapper.setData({
             is_admin_unit: true,
             is_collection: false,
@@ -161,6 +169,8 @@ describe('displayWrapper.vue', () => {
         await flushPromises();
         expect(wrapper.vm.search_method).toEqual('listJson');
         expect(wrapper.vm.$router.currentRoute.value.query.types).toEqual('Work,Folder,Collection');
+        expect(wrapper.find(".container-note").exists()).toBe(true);
+        expect(wrapper.find('#browse-display-type').exists()).toBe(true);
     });
 
     it("updates the url when work type changes", async () => {
@@ -176,6 +186,7 @@ describe('displayWrapper.vue', () => {
     });
 
     it("displays a 'works only' option if the 'works only' box is checked and no records are works", async () => {
+        stubQueryResponse(`searchJson/1234?.+`, response);
         await router.push('/record/1234?works_only=true');
 
         wrapper.vm.updateUrl();
@@ -183,6 +194,7 @@ describe('displayWrapper.vue', () => {
         await flushPromises();
         let works_only = wrapper.find('.container-note');
         expect(works_only.exists()).toBe(true);
+        expect(wrapper.find('#browse-display-type').exists()).toBe(true);
     });
 
     it("does not display a 'works only' option if the 'works only' box is not checked and no records are works", async () => {

@@ -3,7 +3,7 @@ Checkbox to switch search result modes between including only works with a flatt
 and including all types with hierarchy retained.
 -->
 <template>
-    <div id="browse-display-type" class="display-wrapper" v-if="!adminUnit">
+    <div id="browse-display-type" class="display-wrapper">
         <div class="field">
             <input @click="showWorks" type="checkbox" id="works-only" class="is-checkradio is-large" v-model="works_only">
             <label for="works-only"><p>{{ $t('works_only.show')}}</p></label>
@@ -22,10 +22,6 @@ and including all types with hierarchy retained.
 
     export default {
         name: 'worksOnly',
-
-        props: {
-            adminUnit: Boolean
-        },
 
         mixins: [routeUtils],
 

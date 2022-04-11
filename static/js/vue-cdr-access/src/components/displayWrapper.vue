@@ -10,8 +10,8 @@ Top level component for full record pages with searching/browsing, including Adm
             <div class="column is-2" v-if="showWidget">
                 <browse-sort browse-type="display"></browse-sort>
             </div>
-            <div class="column is-2 container-note" v-if="showWorksOnly">
-                <works-only :admin-unit="is_admin_unit"></works-only>
+            <div class="column is-2 container-note" v-if="showWidget">
+                <works-only></works-only>
             </div>
             <div class="column is-narrow-tablet" v-if="showWidget">
                 <view-type></view-type>
@@ -101,10 +101,6 @@ Top level component for full record pages with searching/browsing, including Adm
             showWidget() {
                 return this.record_list.length > 0;
             },
-
-            showWorksOnly() {
-                return this.showWidget || this.coerceWorksOnly(this.$route.query.works_only);
-            }
         },
 
         methods: {

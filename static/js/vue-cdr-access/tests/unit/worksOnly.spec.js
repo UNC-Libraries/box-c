@@ -45,17 +45,6 @@ describe('worksOnly.vue', () => {
 
     afterEach(() => router = null);
 
-    it("does not display for admin unit records", async () => {
-        await wrapper.setProps({
-            adminUnit: true
-        });
-        expect(wrapper.find('#browse-display-type').exists()).toBe(false);
-    });
-
-    it("does display for non admin units", () => {
-        expect(wrapper.find('#browse-display-type').exists()).toBe(true);
-    });
-
     it("updates route to only show works if button is checked for a gallery view",  async () => {
         await router.push('/record/1234/?browse_type=gallery-display');
         await wrapper.setData({ works_only: false });
