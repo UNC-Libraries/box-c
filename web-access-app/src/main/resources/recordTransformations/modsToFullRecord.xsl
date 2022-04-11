@@ -125,7 +125,7 @@
 				<th>
 					<xsl:choose>
 						<xsl:when test="$groupKey = local-name()">
-							<xsl:value-of>Creator</xsl:value-of>
+							<xsl:value-of>Contributor</xsl:value-of>
 						</xsl:when>
 						<xsl:otherwise>
 							<xsl:value-of select="concat(upper-case(substring($groupKey,1,1)), substring($groupKey,2))"/>
