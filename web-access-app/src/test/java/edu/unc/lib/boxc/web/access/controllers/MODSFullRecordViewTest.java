@@ -59,7 +59,7 @@ public class MODSFullRecordViewTest {
 
         Document resultDoc = getResultDoc(view.renderView(doc.getRootElement(), parameters));
 
-        assertEquals("unc", getFieldValue("Creator", resultDoc));
+        assertEquals("unc", getFieldValue("Contributor", resultDoc));
         assertEquals("Object Title", getFieldValue("Title", resultDoc));
         assertNull(getFieldValue("Abstract", resultDoc));
     }
