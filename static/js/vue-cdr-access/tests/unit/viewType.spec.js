@@ -4,6 +4,7 @@ import viewType from '@/components/viewType.vue'
 import displayWrapper from "@/components/displayWrapper.vue";
 import {createI18n} from "vue-i18n";
 import translations from "@/translations";
+import store from '@/store';
 
 let wrapper, btns, router;
 
@@ -28,7 +29,7 @@ describe('viewType.vue', () => {
         sessionStorage.clear();
         wrapper = shallowMount(viewType, {
             global: {
-                plugins: [router, i18n]
+                plugins: [router, store, i18n]
             }
         });
 

@@ -173,7 +173,7 @@ Facet list component, used to display all the values of facets and provide links
                 };
 
                 // Unset current facets
-                this.possible_facet_fields.forEach((facet) => delete base_search.query[facet]);
+                this.possibleFacetFields.forEach((facet) => delete base_search.query[facet]);
                 // Add/Update with new facets
                 base_search.query = Object.assign(base_search.query, updated_facet_params.queryFacets);
                 this.$router.push(base_search).catch((e) => {
@@ -389,7 +389,7 @@ Facet list component, used to display all the values of facets and provide links
              */
             setFacetsFromParams() {
                 let params = this.urlParams();
-                this.possible_facet_fields.forEach((type) => {
+                this.possibleFacetFields.forEach((type) => {
                     this._setFacetFromRoute(type, params[type]);
                 });
             },

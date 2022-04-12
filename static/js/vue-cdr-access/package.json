@@ -22,7 +22,8 @@
     "nouislider": "^15.5.1",
     "vue": "^3.2.31",
     "vue-i18n": "^9.1.9",
-    "vue-router": "^4.0.14"
+    "vue-router": "^4.0.14",
+    "vuex": "^4.0.2"
   },
   "devDependencies": {
     "@babel/plugin-transform-runtime": "^7.17.0",

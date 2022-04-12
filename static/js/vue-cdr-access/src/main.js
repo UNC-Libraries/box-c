@@ -2,6 +2,7 @@ import { createApp, h } from 'vue'
 import { createI18n } from 'vue-i18n'
 import App from './App.vue'
 import router from './router'
+import store from './store'
 import translations from '@/translations';
 import './assets/common-styles.css';
 import './assets/nouislider.css'; // Imported here, otherwise it breaks component tests, as an invalid import
@@ -17,5 +18,5 @@ if (document.getElementById('app') !== null && window.dcr_browse_records === und
     render() {
       return h(App);
     }
-  }).use(router).use(i18n).mount('#app');
+  }).use(router).use(store).use(i18n).mount('#app');
 }

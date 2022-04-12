@@ -17,12 +17,12 @@ export default {
 
     computed: {
         showButton() {
-            return this.anyParamsPopulated(this.possible_facet_fields);
+            return this.anyParamsPopulated(this.possibleFacetFields);
         }
     },
     methods: {
         clearAllFacets() {
-            this.routeWithParams(this.removeQueryParameters(this.possible_facet_fields));
+            this.routeWithParams(this.removeQueryParameters(this.possibleFacetFields));
         }
     }
 };

@@ -103,7 +103,7 @@ Top level component for full record pages with searching/browsing, including Adm
 
             showWidget() {
                 return this.record_list.length > 0;
-            },
+            }
         },
 
         methods: {
@@ -174,7 +174,7 @@ Top level component for full record pages with searching/browsing, including Adm
                 } else if (this.is_collection || this.is_folder) {
                     facets_to_remove = FACETS_REMOVE_COLLECTION_AND_CHILDREN;
                 }
-                this.possible_facet_fields = this.possible_facet_fields.filter(f => facets_to_remove.indexOf(f) < 0);
+                this.$store.commit('removePossibleFacetFields', facets_to_remove);
             }
         },
 

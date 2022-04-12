@@ -6,6 +6,7 @@ import displayWrapper from '@/components/displayWrapper.vue';
 import searchWrapper from '@/components/searchWrapper.vue';
 import {createI18n} from "vue-i18n";
 import translations from "@/translations";
+import store from '@/store';
 
 let router, wrapper;
 
@@ -34,7 +35,7 @@ describe('pagination.vue', () => {
         });
         wrapper = shallowMount(pagination, {
             global: {
-                plugins: [router, i18n]
+                plugins: [router, store, i18n]
             },
             props: {
                 browseType: 'display',

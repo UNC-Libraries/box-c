@@ -1,6 +1,7 @@
 import { flushPromises, mount } from '@vue/test-utils';
 import { createI18n } from 'vue-i18n';
 import  { createRouter, createWebHistory } from 'vue-router';
+import store from '@/store';
 import browseSearch from '@/components/browseSearch.vue';
 import displayWrapper from "@/components/displayWrapper.vue";
 import translations from "@/translations";
@@ -28,7 +29,7 @@ describe('browseSearch.vue', () => {
         });
         wrapper = mount(browseSearch, {
             global: {
-                plugins: [i18n, router]
+                plugins: [i18n, store, router]
             },
             props: {
                 objectType: 'Folder',
@@ -95,7 +96,7 @@ describe('browseSearch.vue', () => {
                 mocks: {
                     $route
                 },
-                plugins: [i18n]
+                plugins: [i18n, store]
             },
             props: { filterParameters: {} }
         });
@@ -114,7 +115,7 @@ describe('browseSearch.vue', () => {
                 mocks: {
                     $route
                 },
-                plugins: [i18n]
+                plugins: [i18n, store]
             },
             props: {
                 objectType: 'Folder',

@@ -1,13 +1,10 @@
 import isEmpty from 'lodash.isempty';
-
-const POSSIBLE_FACET_FIELDS = ['unit', 'collection', 'createdYear', 'format', 'language', 'subject', 'location',
-    'creatorContributor', 'publisher'];
+import store from '../store'
 
 export default {
     data() {
         return {
             rows_per_page: this.$route.query.rows || 20,
-            possible_facet_fields: POSSIBLE_FACET_FIELDS.slice(),
             min_created_year: undefined
         }
     },
@@ -25,7 +22,7 @@ export default {
                 start: 0,
                 rows: this.rows_per_page,
                 sort: 'default,normal',
-                facetSelect: this.possible_facet_fields.join(',')
+                facetSelect: this.possibleFacetFields.join(',')
             };
 
             if (!is_search) {
@@ -163,6 +160,9 @@ export default {
     },
 
     computed: {
+        possibleFacetFields() {
+            return this.$store.state.possibleFacetFields;
+        },
         minimumCreatedYear() {
             if (this.min_created_year !== undefined) {
                 return parseInt(this.min_created_year)
@@ -170,7 +170,7 @@ export default {
             return undefined;
         },
         allPossibleSearchParameters() {
-            return this.possible_facet_fields.concat(['anywhere']);
-        },
+            return this.possibleFacetFields.concat(['anywhere']);
+        }
     }
 }

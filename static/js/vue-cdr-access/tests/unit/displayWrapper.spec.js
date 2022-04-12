@@ -1,6 +1,7 @@
 import { mount, flushPromises } from '@vue/test-utils'
 import { createRouter, createWebHistory } from 'vue-router';
 import displayWrapper from '@/components/displayWrapper.vue';
+import store from '@/store';
 import moxios from "moxios";
 import {createI18n} from "vue-i18n";
 import translations from "@/translations";
@@ -84,7 +85,7 @@ describe('displayWrapper.vue', () => {
         let data = {...default_data, ...data_overrides};
         wrapper = mount(displayWrapper, {
             global: {
-                plugins: [router, i18n]
+                plugins: [router, store, i18n]
             },
             data() {
                 return data;
@@ -222,8 +223,8 @@ describe('displayWrapper.vue', () => {
         await router.push('/record/73bc003c-9603-4cd9-8a65-93a22520ef6a');
 
         // Verify that there are still other facets, but that the unit facet has been removed
-        expect(wrapper.vm.possible_facet_fields.length).toBeGreaterThan(0);
-        expect(wrapper.vm.possible_facet_fields.indexOf('unit')).toEqual(-1);
+        expect(wrapper.vm.$store.state.possibleFacetFields.length).toBeGreaterThan(0);
+        expect(wrapper.vm.$store.state.possibleFacetFields.indexOf('unit')).toEqual(-1);
         // Verify that record list is displaying, indicating that a request was made which did not include unit facet
         expect(wrapper.find('#fullRecordSearchResultDisplay').exists()).toBe(true);
     });
@@ -235,9 +236,9 @@ describe('displayWrapper.vue', () => {
         await router.push('/record/73bc003c-9603-4cd9-8a65-93a22520ef6a');
 
         // Verify that there are still other facets, but that the unit and collection facets have been removed
-        expect(wrapper.vm.possible_facet_fields.length).toBeGreaterThan(0);
-        expect(wrapper.vm.possible_facet_fields.indexOf('unit')).toEqual(-1);
-        expect(wrapper.vm.possible_facet_fields.indexOf('collection')).toEqual(-1);
+        expect(wrapper.vm.$store.state.possibleFacetFields.length).toBeGreaterThan(0);
+        expect(wrapper.vm.$store.state.possibleFacetFields.indexOf('unit')).toEqual(-1);
+        expect(wrapper.vm.$store.state.possibleFacetFields.indexOf('collection')).toEqual(-1);
         // Verify that record list is displaying, indicating that a request was made which did not include unwanted facets
         expect(wrapper.find('#fullRecordSearchResultDisplay').exists()).toBe(true);
     });
@@ -249,9 +250,9 @@ describe('displayWrapper.vue', () => {
         await router.push('/record/73bc003c-9603-4cd9-8a65-93a22520ef6a');
 
         // Verify that there are still other facets, but that the unit and collection facets have been removed
-        expect(wrapper.vm.possible_facet_fields.length).toBeGreaterThan(0);
-        expect(wrapper.vm.possible_facet_fields.indexOf('unit')).toEqual(-1);
-        expect(wrapper.vm.possible_facet_fields.indexOf('collection')).toEqual(-1);
+        expect(wrapper.vm.$store.state.possibleFacetFields.length).toBeGreaterThan(0);
+        expect(wrapper.vm.$store.state.possibleFacetFields.indexOf('unit')).toEqual(-1);
+        expect(wrapper.vm.$store.state.possibleFacetFields.indexOf('collection')).toEqual(-1);
         // Verify that record list is displaying, indicating that a request was made which did not include unwanted facets
         expect(wrapper.find('#fullRecordSearchResultDisplay').exists()).toBe(true);
     });

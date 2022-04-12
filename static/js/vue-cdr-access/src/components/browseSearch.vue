@@ -87,7 +87,7 @@ Search form component displayed on full record pages, allowing keyword searches 
             },
 
             clearAllFacets() {
-                this.routeWithParams(this.removeQueryParameters(this.possible_facet_fields));
+                this.routeWithParams(this.removeQueryParameters(this.possibleFacetFields));
             }
         },
 
