@@ -45,8 +45,6 @@ Top level component wrapper for search pages
     import routeUtils from "../mixins/routeUtils";
     import get from 'axios';
 
-    const UUID_REGEX = /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i;
-
     export default {
         name: 'searchWrapper',
 
@@ -101,7 +99,7 @@ Top level component wrapper for search pages
             retrieveData() {
                 let param_string = `${this.formatParamsString(this.$route.query)}&getFacets=true`;
                 let search_path = 'searchJson';
-                this.collection = UUID_REGEX.test(this.$route.path) ? this.$route.path.split('/')[2] : '';
+                this.collection = this.routeHasPathId ? this.$route.path.split('/')[2] : '';
 
                 get(`${search_path}/${param_string}`).then((response) => {
                     this.records = response.data.metadata;

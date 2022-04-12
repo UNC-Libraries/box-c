@@ -1,6 +1,6 @@
 import isEmpty from 'lodash.isempty';
-import store from '../store'
 
+const UUID_REGEX = /([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})/i;
 export default {
     data() {
         return {
@@ -136,12 +136,13 @@ export default {
         },
 
         /**
-         * Push updated url to history, using the provided query parambers
+         * Push updated url to history, using the provided query parameters
          * @param params query parameters to push to url
          * @param route_name optional name for pushed route
+         * @param route_params path parameters for formatting into route
          */
-        routeWithParams(params, route_name = undefined) {
-            this.$router.push({ query: params, name: route_name }).catch((e) => {
+        routeWithParams(params, route_name = undefined, route_params = undefined) {
+            this.$router.push({ query: params, name: route_name, params: route_params }).catch((e) => {
                 if (this.nonDuplicateNavigationError(e)) {
                     throw e;
                 }
@@ -171,6 +172,17 @@ export default {
         },
         allPossibleSearchParameters() {
             return this.possibleFacetFields.concat(['anywhere']);
+        },
+        routeParams() {
+            let params = {};
+            let match = UUID_REGEX.exec(this.$route.path);
+            if (match != null) {
+                params.uuid = match[1];
+            }
+            return params;
+        },
+        routeHasPathId() {
+            return UUID_REGEX.test(this.$route.path);
         }
     }
 }

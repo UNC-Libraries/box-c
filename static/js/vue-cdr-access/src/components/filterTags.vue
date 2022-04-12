@@ -61,7 +61,7 @@ export default {
     methods: {
         updateQueryUrl(event) {
             const params = this._updateParams(event);
-            this.routeWithParams(params, "searchRecords");
+            this.routeWithParams(params, this.$route.name, this.routeParams);
         },
 
         _updateParams(event) {

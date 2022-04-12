@@ -37,7 +37,6 @@ Facet list component, used to display all the values of facets and provide links
     import clearFacetsButton from "@/components/clearFacetsButton.vue";
     import routeUtils from '../mixins/routeUtils';
 
-    const UUID_REGEX = /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i;
     const CURRENT_YEAR = new Date().getFullYear();
 
     export default {
@@ -86,10 +85,6 @@ Facet list component, used to display all the values of facets and provide links
         },
 
         computed: {
-            routeHasCollectionId() {
-                return UUID_REGEX.test(this.$route.path);
-            },
-
             selectedFacetInfo() {
                 const display_list = [];
                 this.selected_facets.map((f) => {
