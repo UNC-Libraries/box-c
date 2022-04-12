@@ -77,7 +77,7 @@ Top level component wrapper for search pages
 
         computed: {
             recordDisplayCounts() {
-                let search_start = parseInt(this.$route.query['a.setStartRow']);
+                let search_start = parseInt(this.$route.query.start);
                 let start = (search_start > 0) ? search_start + 1 : 1;
                 let records = (this.records.length < this.rows_per_page) ? this.records.length : parseInt(this.rows_per_page);
                 let offset = (search_start > 0) ? search_start : 0;

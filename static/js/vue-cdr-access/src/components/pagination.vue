@@ -50,14 +50,14 @@ Pagination component for search results, listing pages, previous/next buttons, c
         computed: {
             currentPage() {
                 let query = this.$route.query;
-                let display_type = (this.$route.name === 'searchRecords') ? query['a.setStartRow'] : query.start;
+                let start_row = query.start;
 
-                if (isEmpty(query) || parseInt(query.start) === 0 ||  (this.$route.name === 'searchRecords' &&
-                    (query['a.setStartRow'] === undefined || parseInt(query['a.setStartRow']) === 0))) {
+                if (isEmpty(query) || parseInt(start_row) === 0 ||  (this.$route.name === 'searchRecords' &&
+                    (start_row === undefined || parseInt(start_row) === 0))) {
                     return 1;
                 }
 
-                return Math.ceil(parseInt(display_type) / parseInt(this.rows_per_page)) + 1;
+                return Math.ceil(parseInt(start_row) / parseInt(this.rows_per_page)) + 1;
             },
 
             currentPageList() {
@@ -113,7 +113,7 @@ Pagination component for search results, listing pages, previous/next buttons, c
                     });
                 } else {
                     this.$router.push({ path: this.$route.path, query: this.urlParams(update_params = {
-                            'a.setStartRow': start_record,
+                            start: start_record,
                             rows: this.rows_per_page + ''
                         }, true)
                     }).catch((e) => {

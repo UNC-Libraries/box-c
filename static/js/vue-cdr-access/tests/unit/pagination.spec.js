@@ -92,7 +92,7 @@ describe('pagination.vue', () => {
 
         await wrapper.findAll('.page-number')[1].trigger('click');
         await flushPromises();
-        expect(wrapper.vm.$router.currentRoute.value.query['a.setStartRow']).toEqual('20');
+        expect(wrapper.vm.$router.currentRoute.value.query.start).toEqual('20');
     });
 
     it("displays a link to jump to the first page if the user in on a page beyond the pageLimit", async () => {
