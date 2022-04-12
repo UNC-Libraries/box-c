@@ -152,7 +152,7 @@ Facet list component, used to display all the values of facets and provide links
             },
 
             /**
-             * Used to determine if a collection has been selected. If so, remove collections from facets to select from
+             * Determine if a facet should be displayed or not
              * @param facet
              * @returns {boolean|boolean}
              */
@@ -160,8 +160,7 @@ Facet list component, used to display all the values of facets and provide links
                 if (facet.name === 'DATE_CREATED_YEAR' && this.minCreatedYear !== undefined) {
                     return true;
                 }
-                return facet.values.length > 0 &&
-                    (facet.name !== 'PARENT_COLLECTION' || (facet.name === 'PARENT_COLLECTION' && !this.routeHasCollectionId));
+                return facet.values.length > 0;
             },
 
             /**

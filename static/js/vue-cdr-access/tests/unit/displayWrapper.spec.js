@@ -67,26 +67,30 @@ describe('displayWrapper.vue', () => {
                 }
             ]
         });
+    });
 
+    function mountApp(data_overrides = {}) {
+        const default_data = {
+            container_name: '',
+            container_metadata: {},
+            is_admin_unit: false,
+            is_collection: true,
+            is_folder: false,
+            record_count: 0,
+            record_list: [],
+            uuid: '0410e5c1-a036-4b7c-8d7d-63bfda2d6a36',
+            filter_parameters: {}
+        };
+        let data = {...default_data, ...data_overrides};
         wrapper = mount(displayWrapper, {
             global: {
                 plugins: [router, i18n]
             },
             data() {
-                return {
-                    container_name: '',
-                    container_metadata: {},
-                    is_admin_unit: false,
-                    is_collection: true,
-                    is_folder: false,
-                    record_count: 0,
-                    record_list: [],
-                    uuid: '0410e5c1-a036-4b7c-8d7d-63bfda2d6a36',
-                    filter_parameters: {}
-                }
+                return data;
             }
         });
-    });
+    };
 
     function stubQueryResponse(url_pattern, response) {
         moxios.stubRequest(new RegExp(url_pattern), {
@@ -97,7 +101,7 @@ describe('displayWrapper.vue', () => {
 
     it("retrieves data", (done) => {
         stubQueryResponse(`listJson/${response.container.id}?.+`, response);
-        wrapper.vm.retrieveData();
+        mountApp();
 
         moxios.wait(() => {
             expect(wrapper.vm.search_method).toEqual('listJson');
@@ -110,7 +114,8 @@ describe('displayWrapper.vue', () => {
     });
 
     it("uses the correct search parameter for non admin set browse works only browse", async () => {
-        await router.push('/record/1234/?works_only=true')
+        mountApp();
+        await router.push('/record/73bc003c-9603-4cd9-8a65-93a22520ef6a/?works_only=true')
 
         wrapper.vm.updateUrl();
         wrapper.vm.retrieveData();
@@ -120,7 +125,8 @@ describe('displayWrapper.vue', () => {
     });
 
     it("uses the correct search parameters for non admin works only browse",  async () => {
-        await router.push('/record/1234/?works_only=false');
+        mountApp();
+        await router.push('/record/73bc003c-9603-4cd9-8a65-93a22520ef6a/?works_only=false');
 
         wrapper.vm.updateUrl();
         wrapper.vm.retrieveData();
@@ -130,10 +136,10 @@ describe('displayWrapper.vue', () => {
     });
 
     it("uses the correct search parameters if search text is specified", async () => {
-        await wrapper.setData({
+        mountApp({
             filter_parameters: { "anywhere" : "search query"}
         });
-        await router.push('/record/1234?anywhere=search query');
+        await router.push('/record/73bc003c-9603-4cd9-8a65-93a22520ef6a?anywhere=search query');
 
         wrapper.vm.updateUrl();
         wrapper.vm.retrieveData();
@@ -143,10 +149,10 @@ describe('displayWrapper.vue', () => {
     });
 
     it("uses the correct search parameters if facet parameter is specified", async () => {
-        await wrapper.setData({
-            filter_parameters: { "subject" : "subj value"}
+        mountApp({
+            filter_parameters: { "subject" : "subj value" }
         });
-        await router.push('/record/1234?subject=subj value');
+        await router.push('/record/73bc003c-9603-4cd9-8a65-93a22520ef6a?subject=subj value');
 
         wrapper.vm.updateUrl();
         wrapper.vm.retrieveData();
@@ -156,13 +162,13 @@ describe('displayWrapper.vue', () => {
     });
 
     it("uses the correct parameters for admin unit browse", async () => {
-        stubQueryResponse(`listJson/1234?.+`, response);
-        await wrapper.setData({
+        stubQueryResponse(`listJson/73bc003c-9603-4cd9-8a65-93a22520ef6a?.+`, response);
+        mountApp({
             is_admin_unit: true,
             is_collection: false,
             is_folder: false
         });
-        await router.push('/record/1234?works_only=false');
+        await router.push('/record/73bc003c-9603-4cd9-8a65-93a22520ef6a?works_only=false');
 
         wrapper.vm.updateUrl();
         wrapper.vm.retrieveData();
@@ -174,20 +180,22 @@ describe('displayWrapper.vue', () => {
     });
 
     it("updates the url when work type changes", async () => {
-        await wrapper.setData({
+        mountApp({
             is_admin_unit: false,
-            is_collection: true
+            is_collection: true,
+            is_folder: false
         });
 
-        await router.push('/record/1234?browse_type=gallery-display');
+        await router.push('/record/73bc003c-9603-4cd9-8a65-93a22520ef6a?browse_type=gallery-display');
         wrapper.vm.updateUrl();
         await flushPromises();
         expect(wrapper.vm.$router.currentRoute.value.query.types).toEqual('Work,Folder,Collection');
     });
 
     it("displays a 'works only' option if the 'works only' box is checked and no records are works", async () => {
-        stubQueryResponse(`searchJson/1234?.+`, response);
-        await router.push('/record/1234?works_only=true');
+        stubQueryResponse(`searchJson/73bc003c-9603-4cd9-8a65-93a22520ef6a?.+`, response);
+        mountApp();
+        await router.push('/record/73bc003c-9603-4cd9-8a65-93a22520ef6a?works_only=true');
 
         wrapper.vm.updateUrl();
         wrapper.vm.retrieveData();
@@ -198,7 +206,8 @@ describe('displayWrapper.vue', () => {
     });
 
     it("does not display a 'works only' option if the 'works only' box is not checked and no records are works", async () => {
-        await router.push('/record/1234?works_only=false');
+        mountApp();
+        await router.push('/record/73bc003c-9603-4cd9-8a65-93a22520ef6a?works_only=false');
         wrapper.vm.updateUrl();
         wrapper.vm.retrieveData();
         await flushPromises();
@@ -206,9 +215,52 @@ describe('displayWrapper.vue', () => {
         expect(works_only.exists()).toBe(false)
     });
 
+    it("adjusts facets retrieved for admin unit", async () => {
+        document.body.innerHTML = document.body.innerHTML + '<div id="is-admin-unit"></div>';
+        stubQueryResponse(`listJson/73bc003c-9603-4cd9-8a65-93a22520ef6a?.+&facetSelect=collection%2CcreatedYear%2Cformat%2Clanguage%2Csubject%2Clocation%2CcreatorContributor%2Cpublisher&.*`, response);
+        mountApp();
+        await router.push('/record/73bc003c-9603-4cd9-8a65-93a22520ef6a');
+
+        // Verify that there are still other facets, but that the unit facet has been removed
+        expect(wrapper.vm.possible_facet_fields.length).toBeGreaterThan(0);
+        expect(wrapper.vm.possible_facet_fields.indexOf('unit')).toEqual(-1);
+        // Verify that record list is displaying, indicating that a request was made which did not include unit facet
+        expect(wrapper.find('#fullRecordSearchResultDisplay').exists()).toBe(true);
+    });
+
+    it("adjusts facets retrieved for collection object", async () => {
+        document.body.innerHTML = document.body.innerHTML + '<div id="is-collection"></div>';
+        stubQueryResponse(`listJson/73bc003c-9603-4cd9-8a65-93a22520ef6a?.+&facetSelect=createdYear%2Cformat%2Clanguage%2Csubject%2Clocation%2CcreatorContributor%2Cpublisher&.*`, response);
+        mountApp();
+        await router.push('/record/73bc003c-9603-4cd9-8a65-93a22520ef6a');
+
+        // Verify that there are still other facets, but that the unit and collection facets have been removed
+        expect(wrapper.vm.possible_facet_fields.length).toBeGreaterThan(0);
+        expect(wrapper.vm.possible_facet_fields.indexOf('unit')).toEqual(-1);
+        expect(wrapper.vm.possible_facet_fields.indexOf('collection')).toEqual(-1);
+        // Verify that record list is displaying, indicating that a request was made which did not include unwanted facets
+        expect(wrapper.find('#fullRecordSearchResultDisplay').exists()).toBe(true);
+    });
+
+    it("adjusts facets retrieved for folder object", async () => {
+        document.body.innerHTML = document.body.innerHTML + '<div id="is-folder"></div>';
+        stubQueryResponse(`listJson/73bc003c-9603-4cd9-8a65-93a22520ef6a?.+&facetSelect=createdYear%2Cformat%2Clanguage%2Csubject%2Clocation%2CcreatorContributor%2Cpublisher&.*`, response);
+        mountApp();
+        await router.push('/record/73bc003c-9603-4cd9-8a65-93a22520ef6a');
+
+        // Verify that there are still other facets, but that the unit and collection facets have been removed
+        expect(wrapper.vm.possible_facet_fields.length).toBeGreaterThan(0);
+        expect(wrapper.vm.possible_facet_fields.indexOf('unit')).toEqual(-1);
+        expect(wrapper.vm.possible_facet_fields.indexOf('collection')).toEqual(-1);
+        // Verify that record list is displaying, indicating that a request was made which did not include unwanted facets
+        expect(wrapper.find('#fullRecordSearchResultDisplay').exists()).toBe(true);
+    });
+
     afterEach(() => {
         moxios.uninstall();
         wrapper = null;
         router = null;
+        // Reset the dom to avoid tags added persisting across tests
+        document.getElementsByTagName('html')[0].innerHTML = '';
     });
 });

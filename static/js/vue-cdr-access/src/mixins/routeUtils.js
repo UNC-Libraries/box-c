@@ -1,11 +1,13 @@
 import isEmpty from 'lodash.isempty';
 
+const POSSIBLE_FACET_FIELDS = ['unit', 'collection', 'createdYear', 'format', 'language', 'subject', 'location',
+    'creatorContributor', 'publisher'];
+
 export default {
     data() {
         return {
             rows_per_page: this.$route.query.rows || 20,
-            possible_facet_fields: ['unit', 'collection', 'createdYear', 'format', 'language', 'subject', 'location',
-                'creatorContributor', 'publisher'],
+            possible_facet_fields: POSSIBLE_FACET_FIELDS.slice(),
             min_created_year: undefined
         }
     },
@@ -19,23 +21,16 @@ export default {
          * @returns {any}
          */
         urlParams(params_to_update = {}, is_search = false) {
-            let defaults;
+            let defaults = {
+                start: 0,
+                rows: this.rows_per_page,
+                sort: 'default,normal',
+                facetSelect: this.possible_facet_fields.join(',')
+            };
 
-            if (is_search) {
-                defaults = {
-                    'a.setStartRow': 0,
-                    rows: this.rows_per_page,
-                    sort: 'default,normal',
-                    facetSelect: this.possible_facet_fields.join(',')
-                };
-            } else {
-                defaults = {
-                    rows: this.rows_per_page,
-                    start: 0,
-                    sort: 'default,normal',
-                    browse_type: 'list-display',
-                    works_only: false
-                };
+            if (!is_search) {
+                defaults.works_only = false;
+                defaults.browse_type = 'list-display';
             }
 
             let route_params = Object.assign(defaults, this.$route.query);

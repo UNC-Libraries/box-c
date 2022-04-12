@@ -22,7 +22,7 @@ Top level component for full record pages with searching/browsing, including Adm
             <div class="facet-list column is-one-quarter facets-border">
                 <facets :facet-list="facet_list" :min-created-year="minimumCreatedYear" :show-clear-button="false"></facets>
             </div>
-            <div class="column is-three-quarters">
+            <div id="fullRecordSearchResultDisplay" class="column is-three-quarters">
                 <gallery-display v-if="isBrowseDisplay" :record-list="record_list"></gallery-display>
                 <list-display v-else :record-list="record_list" :is-record-browse="true"></list-display>
             </div>  
@@ -46,6 +46,9 @@ Top level component for full record pages with searching/browsing, including Adm
     import get from 'axios';
     import isEmpty from 'lodash.isempty';
     import routeUtils from '../mixins/routeUtils';
+
+    const FACETS_REMOVE_ADMIN_UNIT = [ 'unit' ];
+    const FACETS_REMOVE_COLLECTION_AND_CHILDREN = [ 'unit', 'collection' ];
 
     export default {
         name: 'displayWrapper',
@@ -159,11 +162,25 @@ Top level component for full record pages with searching/browsing, including Adm
                 if (!isEmpty(this.$route.query)) {
                     this.updateUrl();
                 }
+            },
+
+            /**
+             * Adjusts which facets should be retrieved and displayed based on what type of object is being viewed
+             */
+            adjustFacetsForRetrieval() {
+                let facets_to_remove = [];
+                if (this.is_admin_unit) {
+                    facets_to_remove = FACETS_REMOVE_ADMIN_UNIT;
+                } else if (this.is_collection || this.is_folder) {
+                    facets_to_remove = FACETS_REMOVE_COLLECTION_AND_CHILDREN;
+                }
+                this.possible_facet_fields = this.possible_facet_fields.filter(f => facets_to_remove.indexOf(f) < 0);
             }
         },
 
         mounted() {
             this.findPageType();
+            this.adjustFacetsForRetrieval();
             this.retrieveData();
         },
     }
