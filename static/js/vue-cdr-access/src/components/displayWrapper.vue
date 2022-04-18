@@ -157,11 +157,6 @@ Top level component for full record pages with searching/browsing, including Adm
                 this.is_admin_unit = document.getElementById('is-admin-unit') !== null;
                 this.is_collection = document.getElementById('is-collection') !== null;
                 this.is_folder = document.getElementById('is-folder') !== null;
-
-                // Don't update route if no url parameters are passed in
-                if (!isEmpty(this.$route.query)) {
-                    this.updateUrl();
-                }
             },
 
             /**
@@ -181,6 +176,10 @@ Top level component for full record pages with searching/browsing, including Adm
         mounted() {
             this.findPageType();
             this.adjustFacetsForRetrieval();
+            // Don't update route if no url parameters are passed in
+            if (!isEmpty(this.$route.query)) {
+                this.updateUrl();
+            }
             this.retrieveData();
         },
     }
