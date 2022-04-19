@@ -10,8 +10,8 @@ Top level component for full record pages with searching/browsing, including Adm
             <div class="column is-2" v-if="showWidget">
                 <browse-sort browse-type="display"></browse-sort>
             </div>
-            <div class="column is-2 container-note" v-if="showWorksOnly">
-                <works-only :admin-unit="is_admin_unit"></works-only>
+            <div class="column is-2 container-note" v-if="showWidget">
+                <works-only></works-only>
             </div>
             <div class="column is-narrow-tablet" v-if="showWidget">
                 <view-type></view-type>
@@ -22,7 +22,7 @@ Top level component for full record pages with searching/browsing, including Adm
             <div class="facet-list column is-one-quarter facets-border">
                 <facets :facet-list="facet_list" :min-created-year="minimumCreatedYear" :show-clear-button="false"></facets>
             </div>
-            <div class="column is-three-quarters">
+            <div id="fullRecordSearchResultDisplay" class="column is-three-quarters">
                 <gallery-display v-if="isBrowseDisplay" :record-list="record_list"></gallery-display>
                 <list-display v-else :record-list="record_list" :is-record-browse="true"></list-display>
             </div>  
@@ -46,6 +46,9 @@ Top level component for full record pages with searching/browsing, including Adm
     import get from 'axios';
     import isEmpty from 'lodash.isempty';
     import routeUtils from '../mixins/routeUtils';
+
+    const FACETS_REMOVE_ADMIN_UNIT = [ 'unit' ];
+    const FACETS_REMOVE_COLLECTION_AND_CHILDREN = [ 'unit', 'collection' ];
 
     export default {
         name: 'displayWrapper',
@@ -100,10 +103,6 @@ Top level component for full record pages with searching/browsing, including Adm
 
             showWidget() {
                 return this.record_list.length > 0;
-            },
-
-            showWorksOnly() {
-                return this.showWidget || this.coerceWorksOnly(this.$route.query.works_only);
             }
         },
 
@@ -136,8 +135,9 @@ Top level component for full record pages with searching/browsing, including Adm
             },
 
             hasSearchQuery() {
-                let query = this.$route.query.anywhere;
-                return query !== undefined && query !== '';
+                let query_params = this.$route.query;
+                return Object.keys(query_params).some(key => query_params[key]
+                        && this.allPossibleSearchParameters.indexOf(key) >= 0);
             },
 
             updateParams() {
@@ -157,16 +157,29 @@ Top level component for full record pages with searching/browsing, including Adm
                 this.is_admin_unit = document.getElementById('is-admin-unit') !== null;
                 this.is_collection = document.getElementById('is-collection') !== null;
                 this.is_folder = document.getElementById('is-folder') !== null;
+            },
 
-                // Don't update route if no url parameters are passed in
-                if (!isEmpty(this.$route.query)) {
-                    this.updateUrl();
+            /**
+             * Adjusts which facets should be retrieved and displayed based on what type of object is being viewed
+             */
+            adjustFacetsForRetrieval() {
+                let facets_to_remove = [];
+                if (this.is_admin_unit) {
+                    facets_to_remove = FACETS_REMOVE_ADMIN_UNIT;
+                } else if (this.is_collection || this.is_folder) {
+                    facets_to_remove = FACETS_REMOVE_COLLECTION_AND_CHILDREN;
                 }
+                this.$store.commit('removePossibleFacetFields', facets_to_remove);
             }
         },
 
         mounted() {
             this.findPageType();
+            this.adjustFacetsForRetrieval();
+            // Don't update route if no url parameters are passed in
+            if (!isEmpty(this.$route.query)) {
+                this.updateUrl();
+            }
             this.retrieveData();
         },
     }

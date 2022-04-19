@@ -6,6 +6,7 @@ import displayWrapper from '@/components/displayWrapper.vue';
 import searchWrapper from '@/components/searchWrapper.vue';
 import {createI18n} from "vue-i18n";
 import translations from "@/translations";
+import store from '@/store';
 
 let router, wrapper;
 
@@ -34,7 +35,7 @@ describe('pagination.vue', () => {
         });
         wrapper = shallowMount(pagination, {
             global: {
-                plugins: [router, i18n]
+                plugins: [router, store, i18n]
             },
             props: {
                 browseType: 'display',
@@ -92,7 +93,7 @@ describe('pagination.vue', () => {
 
         await wrapper.findAll('.page-number')[1].trigger('click');
         await flushPromises();
-        expect(wrapper.vm.$router.currentRoute.value.query['a.setStartRow']).toEqual('20');
+        expect(wrapper.vm.$router.currentRoute.value.query.start).toEqual('20');
     });
 
     it("displays a link to jump to the first page if the user in on a page beyond the pageLimit", async () => {

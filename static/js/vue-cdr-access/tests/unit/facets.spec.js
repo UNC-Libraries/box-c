@@ -3,6 +3,7 @@ import { createRouter, createWebHistory } from 'vue-router';
 import facets from '@/components/facets.vue';
 import searchWrapper from '@/components/searchWrapper.vue';
 import displayWrapper from '@/components/displayWrapper.vue';
+import store from '@/store';
 import {createI18n} from "vue-i18n";
 import translations from "@/translations";
 
@@ -35,7 +36,7 @@ describe('facets.vue', () => {
 
         wrapper = mount(facets, {
             global: {
-                plugins: [router, i18n]
+                plugins: [router, store, i18n]
             },
             props: {
                 minCreatedYear: 2011,
@@ -131,7 +132,7 @@ describe('facets.vue', () => {
     it("does not display facets with no returned results", () => {
         let emptyFacetWrapper = mount(facets, {
             global: {
-                plugins: [router, i18n]
+                plugins: [router, store, i18n]
             },
             props: {
                 minSearchYear: 2011,
@@ -190,7 +191,7 @@ describe('facets.vue', () => {
     it("does not display date facets with no minimum search year set", () => {
         let emptyFacetWrapper = mount(facets, {
             global: {
-                plugins: [router, i18n]
+                plugins: [router, store, i18n]
             },
             props: {
                 minCreatedYear: undefined,

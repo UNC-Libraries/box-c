@@ -403,13 +403,11 @@ public class SolrSearchService extends AbstractQueryService {
                 Entry<String, List<SearchFacet>> facetEntry = facetIt.next();
                 LOG.debug("Adding facet {} as a  {}", facetEntry.getKey(),
                         facetEntry.getValue().getClass().getName());
-                facetFieldUtil.addToSolrQuery(facetEntry.getValue(), solrQuery);
+                facetFieldUtil.addToSolrQuery(facetEntry.getValue(), searchRequest.isApplyCutoffs(), solrQuery);
             }
         }
 
-        // Scope hierarchical facet results to the highest tier selected within the facet tree
-        if (searchRequest.isRetrieveFacets() && searchRequest.isApplyCutoffs()
-                && searchState.getFacetsToRetrieve() != null) {
+        if (searchRequest.isRetrieveFacets() && searchState.getFacetsToRetrieve() != null) {
             Set<String> facetsQueried = searchState.getFacets().keySet();
             // Apply closing cutoff to all cutoff facets that are being retrieved but not being queried for
             for (String fieldKey : searchState.getFacetsToRetrieve()) {

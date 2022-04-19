@@ -37,7 +37,6 @@ Facet list component, used to display all the values of facets and provide links
     import clearFacetsButton from "@/components/clearFacetsButton.vue";
     import routeUtils from '../mixins/routeUtils';
 
-    const UUID_REGEX = /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i;
     const CURRENT_YEAR = new Date().getFullYear();
 
     export default {
@@ -86,10 +85,6 @@ Facet list component, used to display all the values of facets and provide links
         },
 
         computed: {
-            routeHasCollectionId() {
-                return UUID_REGEX.test(this.$route.path);
-            },
-
             selectedFacetInfo() {
                 const display_list = [];
                 this.selected_facets.map((f) => {
@@ -152,7 +147,7 @@ Facet list component, used to display all the values of facets and provide links
             },
 
             /**
-             * Used to determine if a collection has been selected. If so, remove collections from facets to select from
+             * Determine if a facet should be displayed or not
              * @param facet
              * @returns {boolean|boolean}
              */
@@ -160,8 +155,7 @@ Facet list component, used to display all the values of facets and provide links
                 if (facet.name === 'DATE_CREATED_YEAR' && this.minCreatedYear !== undefined) {
                     return true;
                 }
-                return facet.values.length > 0 &&
-                    (facet.name !== 'PARENT_COLLECTION' || (facet.name === 'PARENT_COLLECTION' && !this.routeHasCollectionId));
+                return facet.values.length > 0;
             },
 
             /**
@@ -174,7 +168,7 @@ Facet list component, used to display all the values of facets and provide links
                 };
 
                 // Unset current facets
-                this.possible_facet_fields.forEach((facet) => delete base_search.query[facet]);
+                this.possibleFacetFields.forEach((facet) => delete base_search.query[facet]);
                 // Add/Update with new facets
                 base_search.query = Object.assign(base_search.query, updated_facet_params.queryFacets);
                 this.$router.push(base_search).catch((e) => {
@@ -390,7 +384,7 @@ Facet list component, used to display all the values of facets and provide links
              */
             setFacetsFromParams() {
                 let params = this.urlParams();
-                this.possible_facet_fields.forEach((type) => {
+                this.possibleFacetFields.forEach((type) => {
                     this._setFacetFromRoute(type, params[type]);
                 });
             },

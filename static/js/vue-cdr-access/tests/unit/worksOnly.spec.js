@@ -4,6 +4,7 @@ import worksOnly from '@/components/worksOnly.vue';
 import displayWrapper from '@/components/displayWrapper.vue';
 import {createI18n} from "vue-i18n";
 import translations from "@/translations";
+import store from '@/store';
 
 
 let wrapper, record_input, router;
@@ -28,7 +29,7 @@ describe('worksOnly.vue', () => {
         });
         wrapper = shallowMount(worksOnly, {
             global: {
-                plugins: [router, i18n]
+                plugins: [router, store, i18n]
             },
             props: {
                 adminUnit: false
@@ -44,17 +45,6 @@ describe('worksOnly.vue', () => {
     });
 
     afterEach(() => router = null);
-
-    it("does not display for admin unit records", async () => {
-        await wrapper.setProps({
-            adminUnit: true
-        });
-        expect(wrapper.find('#browse-display-type').exists()).toBe(false);
-    });
-
-    it("does display for non admin units", () => {
-        expect(wrapper.find('#browse-display-type').exists()).toBe(true);
-    });
 
     it("updates route to only show works if button is checked for a gallery view",  async () => {
         await router.push('/record/1234/?browse_type=gallery-display');

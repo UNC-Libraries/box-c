@@ -120,6 +120,7 @@ public class TestCorpus {
                 rootPid, unitPid, coll1Pid, folder1Pid);
         addAclProperties(newDoc, PUBLIC_PRINC, "unitOwner", "manager");
         addFileProperties(newDoc, ContentCategory.text, "txt");
+        addFileProperties(newDoc, ContentCategory.text, "pdf");
         docs.add(newDoc);
 
         newDoc = makeFileDocument(work1File1Pid, "File 1",
@@ -217,7 +218,12 @@ public class TestCorpus {
     public void addFileProperties(SolrInputDocument doc, ContentCategory typeCategory, String typeExt) {
         String tier1 = "^" + typeCategory.name() + "," + typeCategory.getDisplayName();
         String tier2 = "/" + typeCategory.name() + "^" + typeExt + "," + typeExt;
-        doc.addField("contentType", Arrays.asList(tier1, tier2));
+        var existing = doc.getField("contentType");
+        if (existing == null) {
+            doc.addField("contentType", new ArrayList<>(Arrays.asList(tier1, tier2)));
+        } else {
+            existing.addValue(Arrays.asList(tier1, tier2));
+        }
     }
 
     public void addAclProperties(SolrInputDocument doc, String readGroup, String unitOwner, String manager) {

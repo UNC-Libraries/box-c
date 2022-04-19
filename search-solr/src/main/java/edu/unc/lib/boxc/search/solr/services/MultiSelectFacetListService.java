@@ -74,6 +74,7 @@ public class MultiSelectFacetListService extends AbstractQueryService {
 
         // Calculate facets with facet filters applied
         SearchRequest facetRequest = new SearchRequest(searchState, searchRequest.getAccessGroups(), true);
+        facetRequest.setApplyCutoffs(searchRequest.isApplyCutoffs());
 
         searchState.setRowsPerPage(0);
         // Set the resource types counted in the facets to exclude File objects

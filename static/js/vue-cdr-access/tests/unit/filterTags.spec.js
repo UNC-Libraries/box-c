@@ -235,4 +235,20 @@ describe('filterTags.vue', () => {
         await router.push('/search?added=,2005');
         expect(wrapper.find('.search-text').text()).toMatch(/Date\sAdded.*?All\sdates\sthrough\s2005/s);
     });
+
+    it("clears anywhere term when container selected", async () => {
+        mountWithFilterParameters({
+            anywhere: "barns"
+        });
+        await router.push('/search/d77fd8c9-744b-42ab-8e20-5ad9bdf8194e?anywhere=barns');
+        expect(global.window.location.href).toEqual('https://localhost/search/d77fd8c9-744b-42ab-8e20-5ad9bdf8194e?anywhere=barns');
+        let selected_tags = wrapper.findAll('.search-text');
+        expect(selected_tags[0].text()).toMatch(/barns/);
+
+        await wrapper.find('.search-text').trigger('click');
+        await wrapper.setProps({ filterParameters: {} });
+        await flushPromises();
+        expect(global.window.location.href).toEqual('https://localhost/search/d77fd8c9-744b-42ab-8e20-5ad9bdf8194e');
+        expect(wrapper.find('.search-text').exists()).toBe(false);
+    });
 });

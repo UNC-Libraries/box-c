@@ -57,7 +57,7 @@ public class FacetFieldUtilTest {
 
         CutoffFacetImpl facet = new CutoffFacetImpl("ANCESTOR_PATH", "2,test");
 
-        facetFieldUtil.addToSolrQuery(facet, query);
+        facetFieldUtil.addToSolrQuery(facet, true, query);
 
         String[] filterQueries = query.getFilterQueries();
         assertEquals(1, filterQueries.length);
@@ -71,12 +71,26 @@ public class FacetFieldUtilTest {
 
         CutoffFacetImpl facet = new CutoffFacetImpl("ANCESTOR_PATH", "2,test!3");
 
-        facetFieldUtil.addToSolrQuery(facet, query);
+        facetFieldUtil.addToSolrQuery(facet, true, query);
 
         String[] filterQueries = query.getFilterQueries();
         assertEquals(1, filterQueries.length);
 
         assertEquals("(ancestorPath:2,test AND !ancestorPath:3,*)", filterQueries[0]);
+    }
+
+    @Test
+    public void addFacetCutoffWithCutoffToQueryDisableApplyCutoffs() {
+        SolrQuery query = new SolrQuery();
+
+        CutoffFacetImpl facet = new CutoffFacetImpl("ANCESTOR_PATH", "2,test!3");
+
+        facetFieldUtil.addToSolrQuery(facet, false, query);
+
+        String[] filterQueries = query.getFilterQueries();
+        assertEquals(1, filterQueries.length);
+
+        assertEquals("(ancestorPath:2,test)", filterQueries[0]);
     }
 
     @Test
@@ -86,7 +100,7 @@ public class FacetFieldUtilTest {
         CutoffFacetImpl facet = new CutoffFacetImpl("ANCESTOR_PATH", "2,test1");
         CutoffFacetImpl facet2 = new CutoffFacetImpl("ANCESTOR_PATH", "3,test2!4");
 
-        facetFieldUtil.addToSolrQuery(Arrays.asList(facet, facet2), query);
+        facetFieldUtil.addToSolrQuery(Arrays.asList(facet, facet2), true, query);
 
         String[] filterQueries = query.getFilterQueries();
         assertEquals(1, filterQueries.length);
@@ -100,7 +114,7 @@ public class FacetFieldUtilTest {
 
         MultivaluedHierarchicalFacet facet = new MultivaluedHierarchicalFacet("CONTENT_TYPE", "image/jpg");
 
-        facetFieldUtil.addToSolrQuery(facet, query);
+        facetFieldUtil.addToSolrQuery(facet, true, query);
 
         String[] filterQueries = query.getFilterQueries();
         assertEquals(1, filterQueries.length);
@@ -116,7 +130,7 @@ public class FacetFieldUtilTest {
         MultivaluedHierarchicalFacet facet2 = new MultivaluedHierarchicalFacet("CONTENT_TYPE", "text^pdf");
         MultivaluedHierarchicalFacet facet3 = new MultivaluedHierarchicalFacet("CONTENT_TYPE", "text^txt");
 
-        facetFieldUtil.addToSolrQuery(Arrays.asList(facet1, facet2, facet3), query);
+        facetFieldUtil.addToSolrQuery(Arrays.asList(facet1, facet2, facet3), true, query);
 
         String[] filterQueries = query.getFilterQueries();
         assertEquals(1, filterQueries.length);
@@ -133,7 +147,7 @@ public class FacetFieldUtilTest {
         MultivaluedHierarchicalFacet facet3 = new MultivaluedHierarchicalFacet("CONTENT_TYPE", "image");
         MultivaluedHierarchicalFacet facet4 = new MultivaluedHierarchicalFacet("CONTENT_TYPE", "image^png");
 
-        facetFieldUtil.addToSolrQuery(Arrays.asList(facet1, facet2, facet3, facet4), query);
+        facetFieldUtil.addToSolrQuery(Arrays.asList(facet1, facet2, facet3, facet4), true, query);
 
         String[] filterQueries = query.getFilterQueries();
         assertEquals(1, filterQueries.length);
@@ -149,7 +163,7 @@ public class FacetFieldUtilTest {
         MultivaluedHierarchicalFacet facet2 = new MultivaluedHierarchicalFacet("CONTENT_TYPE", "image");
         MultivaluedHierarchicalFacet facet3 = new MultivaluedHierarchicalFacet("CONTENT_TYPE", "image^png");
 
-        facetFieldUtil.addToSolrQuery(Arrays.asList(facet1, facet2, facet3), query);
+        facetFieldUtil.addToSolrQuery(Arrays.asList(facet1, facet2, facet3), true, query);
 
         String[] filterQueries = query.getFilterQueries();
         assertEquals(1, filterQueries.length);
@@ -163,7 +177,7 @@ public class FacetFieldUtilTest {
 
         GenericFacet facet = new RoleGroupFacet("ROLE_GROUP", "canManage|some_group");
 
-        facetFieldUtil.addToSolrQuery(facet, query);
+        facetFieldUtil.addToSolrQuery(facet, true, query);
 
         String[] filterQueries = query.getFilterQueries();
         assertEquals(1, filterQueries.length);
@@ -176,10 +190,10 @@ public class FacetFieldUtilTest {
         SolrQuery query = new SolrQuery();
 
         CutoffFacetImpl facet = new CutoffFacetImpl("ANCESTOR_PATH", "2,test");
-        facetFieldUtil.addToSolrQuery(facet, query);
+        facetFieldUtil.addToSolrQuery(facet, true, query);
 
         MultivaluedHierarchicalFacet facet2 = new MultivaluedHierarchicalFacet("CONTENT_TYPE", "image/jpg");
-        facetFieldUtil.addToSolrQuery(facet2, query);
+        facetFieldUtil.addToSolrQuery(facet2, true, query);
 
         String[] filterQueries = query.getFilterQueries();
         assertEquals(2, filterQueries.length);

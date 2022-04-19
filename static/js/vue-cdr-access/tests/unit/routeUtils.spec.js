@@ -3,6 +3,7 @@ import { createRouter, createWebHistory } from 'vue-router';
 import pagination from '@/components/pagination.vue'
 import displayWrapper from "@/components/displayWrapper.vue";
 import routeUtils from '@/mixins/routeUtils.js';
+import store from '@/store';
 
 const gallery = 'gallery-display';
 const list_display = 'list-display';
@@ -23,7 +24,7 @@ describe('routeUtils',  () => {
         // Set wrapper using any component that uses routeUtils mixin to avoid test warnings about missing template
         wrapper = shallowMount(pagination, {
             global: {
-                plugins: [router]
+                plugins: [router, store]
             }
         });
         await router.push('/record/1234');
@@ -51,16 +52,16 @@ describe('routeUtils',  () => {
 
     it("sets default url parameters for search view if none are given", () => {
         const defaults = {
-            'a.setStartRow': 0,
+            start: 0,
             rows: 20,
             sort: 'default,normal',
-            facetSelect: wrapper.vm.possible_facet_fields.join(',')
+            facetSelect: wrapper.vm.possibleFacetFields.join(',')
         };
 
         let results = wrapper.vm.urlParams({}, true);
 
         expect(results.rows).toEqual(defaults.rows);
-        expect(results['a.setStartRow']).toEqual(defaults['a.setStartRow']);
+        expect(results.start).toEqual(defaults.start);
         expect(results.sort).toEqual(defaults.sort);
         expect(results.facetSelect).toEqual(defaults.facetSelect);
     });
@@ -87,16 +88,16 @@ describe('routeUtils',  () => {
 
     it("updates url parameters for a search view", () => {
         const defaults = {
-            'a.setStartRow': 0,
+            start: 0,
             rows: 20,
             sort: 'default,normal',
-            facetSelect: wrapper.vm.possible_facet_fields.join(',')
+            facetSelect: wrapper.vm.possibleFacetFields.join(',')
         };
 
-        let results = wrapper.vm.urlParams({'a.setStartRow': 20}, true);
+        let results = wrapper.vm.urlParams({start: 20}, true);
 
         expect(results.rows).toEqual(defaults.rows);
-        expect(results['a.setStartRow']).toEqual(20);
+        expect(results.start).toEqual(20);
         expect(results.sort).toEqual(defaults.sort);
         expect(results.facetSelect).toEqual(defaults.facetSelect);
     });

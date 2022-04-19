@@ -1,11 +1,10 @@
 import isEmpty from 'lodash.isempty';
 
+const UUID_REGEX = /([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})/i;
 export default {
     data() {
         return {
             rows_per_page: this.$route.query.rows || 20,
-            possible_facet_fields: ['unit', 'collection', 'createdYear', 'format', 'language', 'subject', 'location',
-                'creatorContributor', 'publisher'],
             min_created_year: undefined
         }
     },
@@ -19,23 +18,16 @@ export default {
          * @returns {any}
          */
         urlParams(params_to_update = {}, is_search = false) {
-            let defaults;
+            let defaults = {
+                start: 0,
+                rows: this.rows_per_page,
+                sort: 'default,normal',
+                facetSelect: this.possibleFacetFields.join(',')
+            };
 
-            if (is_search) {
-                defaults = {
-                    'a.setStartRow': 0,
-                    rows: this.rows_per_page,
-                    sort: 'default,normal',
-                    facetSelect: this.possible_facet_fields.join(',')
-                };
-            } else {
-                defaults = {
-                    rows: this.rows_per_page,
-                    start: 0,
-                    sort: 'default,normal',
-                    browse_type: 'list-display',
-                    works_only: false
-                };
+            if (!is_search) {
+                defaults.works_only = false;
+                defaults.browse_type = 'list-display';
             }
 
             let route_params = Object.assign(defaults, this.$route.query);
@@ -144,12 +136,13 @@ export default {
         },
 
         /**
-         * Push updated url to history, using the provided query parambers
+         * Push updated url to history, using the provided query parameters
          * @param params query parameters to push to url
          * @param route_name optional name for pushed route
+         * @param route_params path parameters for formatting into route
          */
-        routeWithParams(params, route_name = undefined) {
-            this.$router.push({ query: params, name: route_name }).catch((e) => {
+        routeWithParams(params, route_name = undefined, route_params = undefined) {
+            this.$router.push({ query: params, name: route_name, params: route_params }).catch((e) => {
                 if (this.nonDuplicateNavigationError(e)) {
                     throw e;
                 }
@@ -168,11 +161,28 @@ export default {
     },
 
     computed: {
+        possibleFacetFields() {
+            return this.$store.state.possibleFacetFields;
+        },
         minimumCreatedYear() {
             if (this.min_created_year !== undefined) {
                 return parseInt(this.min_created_year)
             }
             return undefined;
+        },
+        allPossibleSearchParameters() {
+            return this.possibleFacetFields.concat(['anywhere']);
+        },
+        routeParams() {
+            let params = {};
+            let match = UUID_REGEX.exec(this.$route.path);
+            if (match != null) {
+                params.uuid = match[1];
+            }
+            return params;
+        },
+        routeHasPathId() {
+            return UUID_REGEX.test(this.$route.path);
         }
     }
 }

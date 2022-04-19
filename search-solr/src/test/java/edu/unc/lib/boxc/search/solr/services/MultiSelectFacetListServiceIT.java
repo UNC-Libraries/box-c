@@ -28,6 +28,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import edu.unc.lib.boxc.model.api.ResourceType;
+import edu.unc.lib.boxc.search.solr.facets.CutoffFacetImpl;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
@@ -61,6 +63,9 @@ public class MultiSelectFacetListServiceIT extends BaseEmbeddedSolrTest {
 
     private static final List<String> FACETS_TO_RETRIEVE = Arrays.asList(
             CONTENT_TYPE.name(), ROLE_GROUP.name(), PARENT_COLLECTION.name());
+    private static final List<String> RESOURCE_TYPES_TO_RETRIEVE = Arrays.asList(
+            ResourceType.AdminUnit.name(), ResourceType.Collection.name(),
+            ResourceType.Folder.name(), ResourceType.Work.name());
 
     private TestCorpus testCorpus;
     private boolean corpusLoaded;
@@ -196,10 +201,11 @@ public class MultiSelectFacetListServiceIT extends BaseEmbeddedSolrTest {
         assertFacetValueCount(resp, PARENT_COLLECTION, testCorpus.coll1Pid.getId(), 1);
         assertFacetValueCount(resp, PARENT_COLLECTION, testCorpus.coll2Pid.getId(), 1);
 
-        assertNumberFacetsReturned(resp, CONTENT_TYPE, 3);
+        assertNumberFacetsReturned(resp, CONTENT_TYPE, 4);
         assertFacetValueCount(resp, CONTENT_TYPE, "^text", 2);
         assertFacetValueCount(resp, CONTENT_TYPE, "^image", 2);
         assertFacetValueCount(resp, CONTENT_TYPE, "/text^txt", 2);
+        assertFacetValueCount(resp, CONTENT_TYPE, "/text^pdf", 1);
 
         assertNumberFacetsReturned(resp, ROLE_GROUP, 3);
         assertFacetValueCount(resp, ROLE_GROUP, "canViewOriginals|everyone", 2);
@@ -276,10 +282,11 @@ public class MultiSelectFacetListServiceIT extends BaseEmbeddedSolrTest {
         assertFacetValueCount(resp, PARENT_COLLECTION, testCorpus.coll1Pid.getId(), 2);
         assertFacetValueCount(resp, PARENT_COLLECTION, testCorpus.coll2Pid.getId(), 2);
 
-        assertNumberFacetsReturned(resp, CONTENT_TYPE, 5);
+        assertNumberFacetsReturned(resp, CONTENT_TYPE, 6);
         assertFacetValueCount(resp, CONTENT_TYPE, "^text", 2);
         assertFacetValueCount(resp, CONTENT_TYPE, "^image", 2);
         assertFacetValueCount(resp, CONTENT_TYPE, "/text^txt", 2);
+        assertFacetValueCount(resp, CONTENT_TYPE, "/text^pdf", 1);
         assertFacetValueCount(resp, CONTENT_TYPE, "/image^jpg", 1);
         assertFacetValueCount(resp, CONTENT_TYPE, "/image^png", 1);
 
@@ -363,6 +370,31 @@ public class MultiSelectFacetListServiceIT extends BaseEmbeddedSolrTest {
     }
 
     @Test
+    public void setContainerAncestorPathCutoffUnitTest() throws Exception {
+        SearchState searchState = new SearchState();
+        searchState.setFacetsToRetrieve(FACETS_TO_RETRIEVE);
+        searchState.setResourceTypes(RESOURCE_TYPES_TO_RETRIEVE);
+
+        SearchRequest request = new SearchRequest(searchState, accessGroups);
+        searchState.addFacet(new CutoffFacetImpl(SearchFieldKey.ANCESTOR_PATH.name(), "2," + testCorpus.unitPid.getId() + "!3"));
+        request.setApplyCutoffs(false);
+        SearchResultResponse resp = service.getFacetListResult(request);
+
+        assertNumberFacetsReturned(resp, PARENT_COLLECTION, 2);
+        assertFacetValueCount(resp, PARENT_COLLECTION, testCorpus.coll1Pid.getId(), 3);
+        assertFacetValueCount(resp, PARENT_COLLECTION, testCorpus.coll2Pid.getId(), 3);
+
+        assertNumberFacetsReturned(resp, CONTENT_TYPE, 2);
+        assertFacetValueCount(resp, CONTENT_TYPE, "^text", 2);
+        assertFacetValueCount(resp, CONTENT_TYPE, "^image", 2);
+
+        assertNumberFacetsReturned(resp, ROLE_GROUP, 3);
+        assertFacetValueCount(resp, ROLE_GROUP, "canViewOriginals|everyone", 6);
+        assertFacetValueCount(resp, ROLE_GROUP, "unitOwner|unitOwner", 8);
+        assertFacetValueCount(resp, ROLE_GROUP, "canManage|manager", 4);
+    }
+
+    @Test
     public void setContainerAndContentTypeTest() throws Exception {
         SearchState searchState = new SearchState();
         searchState.setFacetsToRetrieve(FACETS_TO_RETRIEVE);
@@ -376,10 +408,11 @@ public class MultiSelectFacetListServiceIT extends BaseEmbeddedSolrTest {
         assertNumberFacetsReturned(resp, PARENT_COLLECTION, 1);
         assertFacetValueCount(resp, PARENT_COLLECTION, testCorpus.coll1Pid.getId(), 1);
 
-        assertNumberFacetsReturned(resp, CONTENT_TYPE, 3);
+        assertNumberFacetsReturned(resp, CONTENT_TYPE, 4);
         assertFacetValueCount(resp, CONTENT_TYPE, "^text", 1);
         assertFacetValueCount(resp, CONTENT_TYPE, "^image", 1);
         assertFacetValueCount(resp, CONTENT_TYPE, "/text^txt", 1);
+        assertFacetValueCount(resp, CONTENT_TYPE, "/text^pdf", 1);
 
         assertNumberFacetsReturned(resp, ROLE_GROUP, 3);
         assertFacetValueCount(resp, ROLE_GROUP, "canViewOriginals|everyone", 1);
@@ -402,10 +435,11 @@ public class MultiSelectFacetListServiceIT extends BaseEmbeddedSolrTest {
         assertFacetValueCount(resp, PARENT_COLLECTION, testCorpus.coll1Pid.getId(), 1);
         assertFacetValueCount(resp, PARENT_COLLECTION, testCorpus.coll2Pid.getId(), 1);
 
-        assertNumberFacetsReturned(resp, CONTENT_TYPE, 3);
+        assertNumberFacetsReturned(resp, CONTENT_TYPE, 4);
         assertFacetValueCount(resp, CONTENT_TYPE, "^text", 1);
         assertFacetValueCount(resp, CONTENT_TYPE, "^image", 1);
         assertFacetValueCount(resp, CONTENT_TYPE, "/text^txt", 1);
+        assertFacetValueCount(resp, CONTENT_TYPE, "/text^pdf", 1);
 
         assertNumberFacetsReturned(resp, ROLE_GROUP, 3);
         assertFacetValueCount(resp, ROLE_GROUP, "canViewOriginals|everyone", 1);
