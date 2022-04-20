@@ -78,16 +78,16 @@ Search form component displayed on full record pages, allowing keyword searches 
 
         methods: {
             getResults() {
-                let update_params = { anywhere: encodeURIComponent(this.search_query) };
+                let update_params = { anywhere: encodeURIComponent(this.search_query), start: 0 };
                 this.routeWithParams(this.urlParams(update_params, 'displayRecords'));
             },
 
             clearSearch() {
-                this.routeWithParams(this.removeQueryParameters(this.allPossibleSearchParameters));
+                this.routeWithParams(this.removeQueryParameters(this.allPossibleSearchParameters, true));
             },
 
             clearAllFacets() {
-                this.routeWithParams(this.removeQueryParameters(this.possibleFacetFields));
+                this.routeWithParams(this.removeQueryParameters(this.possibleFacetFields, true));
             }
         },
 

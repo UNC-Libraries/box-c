@@ -125,9 +125,13 @@ export default {
         /**
          * Returns a list of query parameters from the current URLs minus the specified set of parameters
          * @param param_names names of query parameters to remove
+         * @param reset_start_row Start row should be reset to 0 for searching, pagination purposes
          * @returns {LocationQuery} list of query parameters with specified parameters removed
          */
-        removeQueryParameters(param_names) {
+        removeQueryParameters(param_names, reset_start_row = false) {
+            if (reset_start_row) {
+                this.$route.query.start = '0';
+            }
             const params = Object.assign({}, this.$route.query);
             for (const remove_param of param_names) {
                 delete params[remove_param];

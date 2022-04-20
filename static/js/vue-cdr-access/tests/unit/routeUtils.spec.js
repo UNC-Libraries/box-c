@@ -94,10 +94,11 @@ describe('routeUtils',  () => {
             facetSelect: wrapper.vm.possibleFacetFields.join(',')
         };
 
-        let results = wrapper.vm.urlParams({start: 20}, true);
+        let results = wrapper.vm.urlParams({anywhere: 'test', start: 0}, true);
 
         expect(results.rows).toEqual(defaults.rows);
-        expect(results.start).toEqual(20);
+        expect(results.anywhere).toEqual('test');
+        expect(results.start).toEqual(0);
         expect(results.sort).toEqual(defaults.sort);
         expect(results.facetSelect).toEqual(defaults.facetSelect);
     });
@@ -132,6 +133,21 @@ describe('routeUtils',  () => {
         expect(wrapper.vm.coerceWorksOnly('true')).toEqual(true);
         expect(wrapper.vm.coerceWorksOnly(false)).toEqual(false);
         expect(wrapper.vm.coerceWorksOnly('false')).toEqual(false);
+    });
+
+    it("removes query parameters", () => {
+        wrapper.vm.$router.currentRoute.value.query.works_only = 'true';
+        // Remove no parameters
+        expect(wrapper.vm.removeQueryParameters([])).toEqual({ works_only: 'true' });
+        // Remove parameter
+        expect(wrapper.vm.removeQueryParameters(['works_only'])).toEqual({});
+    });
+
+    it("resets start row when removing query parameters", () => {
+        wrapper.vm.$router.currentRoute.value.query.works_only = 'true';
+        wrapper.vm.$router.currentRoute.value.query.start = '20';
+
+        expect(wrapper.vm.removeQueryParameters([], true)).toEqual({ works_only: 'true', start: '0' });
     });
 
     it("determines if a duplicate route error has been throw", () => {
