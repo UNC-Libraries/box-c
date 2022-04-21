@@ -143,13 +143,6 @@ describe('routeUtils',  () => {
         expect(wrapper.vm.removeQueryParameters(['works_only'])).toEqual({});
     });
 
-    it("resets start row when removing query parameters", () => {
-        wrapper.vm.$router.currentRoute.value.query.works_only = 'true';
-        wrapper.vm.$router.currentRoute.value.query.start = '20';
-
-        expect(wrapper.vm.removeQueryParameters([], true)).toEqual({ works_only: 'true', start: '0' });
-    });
-
     it("determines if a duplicate route error has been throw", () => {
         expect(wrapper.vm.nonDuplicateNavigationError(
             { name: 'NavigationDuplicated', message:'something awful' })).toBe(false);

@@ -97,8 +97,7 @@ Top level component wrapper for search pages
 
         methods: {
             retrieveData() {
-                this.$route.query.start = 0;
-                let param_string = `${this.formatParamsString(this.$route.query)}&getFacets=true`;
+                let param_string = `${this.formatParamsString(this.resetStartRow(this.$route.query))}&getFacets=true`;
                 let search_path = 'searchJson';
                 this.collection = this.routeHasPathId ? this.$route.path.split('/')[2] : '';
 
