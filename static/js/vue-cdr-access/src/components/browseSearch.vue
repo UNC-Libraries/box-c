@@ -78,8 +78,8 @@ Search form component displayed on full record pages, allowing keyword searches 
 
         methods: {
             getResults() {
-                const reset_search_start_row = this.resetStartRow({ anywhere: encodeURIComponent(this.search_query) });
-                const update_parameters = this.urlParams(reset_search_start_row, 'displayRecords');
+                const encode_search = { anywhere: encodeURIComponent(this.search_query), start: 0 };
+                const update_parameters = this.urlParams(encode_search, 'displayRecords');
                 this.routeWithParams(update_parameters);
             },
 
