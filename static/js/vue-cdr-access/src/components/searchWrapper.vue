@@ -44,6 +44,7 @@ Top level component wrapper for search pages
     import pagination from "@/components/pagination.vue";
     import routeUtils from "../mixins/routeUtils";
     import get from 'axios';
+    import isEqual from "lodash.isequal";
 
     export default {
         name: 'searchWrapper',
@@ -59,6 +60,7 @@ Top level component wrapper for search pages
                 facet_list: [],
                 filter_parameters: {},
                 is_loading: true,
+                query_changed: false,
                 records: [],
                 total_records: 0
             }
@@ -97,7 +99,10 @@ Top level component wrapper for search pages
 
         methods: {
             retrieveData() {
-                let param_string = `${this.formatParamsString(this.resetStartRow(this.$route.query))}&getFacets=true`;
+                if (this.query_changed) {
+                    this.$route.query = this.resetStartRow(this.$route.query);
+                }
+                let param_string = `${this.formatParamsString(this.$route.query)}&getFacets=true`;
                 let search_path = 'searchJson';
                 this.collection = this.routeHasPathId ? this.$route.path.split('/')[2] : '';
 
@@ -108,10 +113,18 @@ Top level component wrapper for search pages
                     this.filter_parameters = response.data.filterParameters;
                     this.min_created_year = response.data.minSearchYear;
                     this.is_loading = false;
+                    this.query_changed = false;
                 }).catch(function (error) {
                     console.log(error);
+                    this.query_changed = false;
                 });
             }
+        },
+
+        // check if query params other than "start" have changed otherwise pagination can't get past the first page
+        beforeRouteUpdate(to, from) {
+            this.query_changed = !isEqual(this.removeQueryParameters(['start'], to.query),
+                this.removeQueryParameters(['start'], from.query));
         },
 
         created() {

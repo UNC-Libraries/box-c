@@ -22,7 +22,9 @@ export default {
     },
     methods: {
         clearAllFacets() {
-            this.routeWithParams(this.removeQueryParameters(this.possibleFacetFields));
+            const remove_params = this.removeQueryParameters(this.possibleFacetFields);
+            const reset_start_row = this.resetStartRow(remove_params);
+            this.routeWithParams(reset_start_row);
         }
     }
 };
