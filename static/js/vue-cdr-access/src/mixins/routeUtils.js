@@ -128,7 +128,7 @@ export default {
          * @returns {LocationQuery} list of query parameters with specified parameters removed
          */
         removeQueryParameters(param_names) {
-            const params = Object.assign({}, query);
+            const params = Object.assign({}, this.$route.query);
             for (const remove_param of param_names) {
                 delete params[remove_param];
             }
