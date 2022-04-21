@@ -45,7 +45,6 @@ Top level component wrapper for search pages
     import routeUtils from "../mixins/routeUtils";
     import get from 'axios';
     import cloneDeep from 'lodash.clonedeep';
-    import isEqual from "lodash.isequal";
 
     export default {
         name: 'searchWrapper',
@@ -61,7 +60,6 @@ Top level component wrapper for search pages
                 facet_list: [],
                 filter_parameters: {},
                 is_loading: true,
-                query_changed: false,
                 records: [],
                 total_records: 0
             }
@@ -101,9 +99,6 @@ Top level component wrapper for search pages
         methods: {
             retrieveData() {
                 let query = cloneDeep(this.$route.query);
-                if (this.query_changed) {
-                    query = this.resetStartRow(query);
-                }
                 let param_string = `${this.formatParamsString(query)}&getFacets=true`;
                 let search_path = 'searchJson';
                 this.collection = this.routeHasPathId ? this.$route.path.split('/')[2] : '';
@@ -121,12 +116,6 @@ Top level component wrapper for search pages
                     this.query_changed = false;
                 });
             }
-        },
-
-        // check if query params other than "start" have changed otherwise pagination can't get past the first page
-        beforeRouteUpdate(to, from) {
-            this.query_changed = !isEqual(this.removeQueryParameters(['start'], to.query),
-                this.removeQueryParameters(['start'], from.query));
         },
 
         created() {

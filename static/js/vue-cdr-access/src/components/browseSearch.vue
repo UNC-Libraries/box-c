@@ -84,18 +84,18 @@ Search form component displayed on full record pages, allowing keyword searches 
             },
 
             clearSearch() {
-                this.clear(this.allPossibleSearchParameters);
+                this.clearParameters(this.allPossibleSearchParameters);
             },
 
             clearAllFacets() {
-                this.clear(this.possibleFacetFields);
+                this.clearParameters(this.possibleFacetFields);
             },
 
             /**
              * Clears facets/searches
              * @param param_to_clear
              */
-            clear(param_to_clear) {
+            clearParameters(param_to_clear) {
                 const reset_params = this.removeQueryParameters(param_to_clear);
                 const reset_start_row = this.resetStartRow(reset_params);
                 this.routeWithParams(reset_start_row);
