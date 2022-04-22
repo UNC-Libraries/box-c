@@ -118,7 +118,7 @@ Top level component for full record pages with searching/browsing, including Adm
                     this.container_name = response.data.container.title;
                     this.container_metadata = response.data.container;
                     this.min_created_year = response.data.minSearchYear;
-                    this.filterParameters = response.data.filterParameters;
+                    this.filter_parameters = response.data.filterParameters;
                     this.is_page_loading = false;
                 }).catch(function (error) {
                     console.log(error);
