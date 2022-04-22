@@ -17,7 +17,6 @@ package edu.unc.lib.boxc.indexing.solr.filter;
 
 import edu.unc.lib.boxc.indexing.solr.exception.IndexingException;
 import edu.unc.lib.boxc.indexing.solr.indexing.DocumentIndexingPackage;
-import edu.unc.lib.boxc.indexing.solr.utils.ContentTypeUtils;
 import edu.unc.lib.boxc.model.api.ResourceType;
 import edu.unc.lib.boxc.model.api.objects.BinaryObject;
 import edu.unc.lib.boxc.model.api.objects.FileObject;
@@ -31,6 +30,7 @@ import edu.unc.lib.boxc.search.solr.facets.CutoffFacetImpl;
 import edu.unc.lib.boxc.search.solr.facets.GenericFacet;
 import edu.unc.lib.boxc.search.solr.models.IndexDocumentBean;
 import edu.unc.lib.boxc.search.solr.services.SolrSearchService;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,6 +38,8 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
 import java.util.regex.Matcher;
@@ -87,9 +89,14 @@ public class SetContentTypeFilter implements IndexDocumentFilter {
             String filepath = binObj.getFilename();
             String mimetype = binObj.getMimetype();
             log.debug("The binary {} has filepath {} and mimetype {}", binObj.getPid(), filepath, mimetype);
-            List<String> contentTypes = new ArrayList<>();
-            extractContentType(filepath, mimetype, contentTypes);
-            dip.getDocument().setContentType(contentTypes);
+            String extension = getExtension(filepath, mimetype);
+            if (StringUtils.isBlank(extension)) {
+                doc.setFileFormatType(Collections.singletonList(ContentCategory.unknown.name()));
+            } else {
+                doc.setFileFormatType(Collections.singletonList(extension));
+            }
+            ContentCategory contentCategory = getContentCategory(mimetype, extension);
+            doc.setFileFormatCategory(Collections.singletonList(contentCategory.getDisplayName()));
         }
     }
 
@@ -103,13 +110,20 @@ public class SetContentTypeFilter implements IndexDocumentFilter {
         var searchRequest = new SearchRequest();
         searchRequest.setSearchState(searchState);
         var result = solrSearchService.getSearchResults(searchRequest);
-        var contentTypes = result.getResultList().stream()
-                .flatMap(r -> r.getContentType().stream())
-                .distinct()
-                .collect(Collectors.toList());
-        log.debug("Query for children of work {} had contentTypes {} from {} files",
-                doc.getId(), contentTypes, result.getResultCount());
-        doc.setContentType(contentTypes);
+        var categories = new HashSet<String>();
+        var fileTypes = new HashSet<String>();
+        for (var child: result.getResultList()) {
+            if (child.getFileFormatType() != null) {
+                fileTypes.addAll(child.getFileFormatType());
+            }
+            if (child.getFileFormatCategory() != null) {
+                categories.addAll(child.getFileFormatCategory());
+            }
+        }
+        log.debug("Query for children of work {} had categories {} and file types {} from {} files",
+                doc.getId(), categories, fileTypes, result.getResultCount());
+        doc.setFileFormatCategory(new ArrayList<>(categories));
+        doc.setFileFormatType(new ArrayList<>(fileTypes));
     }
 
     private CutoffFacet getObjectPath(IndexDocumentBean doc) {
@@ -137,12 +151,6 @@ public class SetContentTypeFilter implements IndexDocumentFilter {
             return mimetypeToExtensionMap.getProperty(mimetype);
         }
         return null;
-    }
-
-    private void extractContentType(String filepath, String mimetype, List<String> contentTypes) {
-        String extension = getExtension(filepath, mimetype);
-        ContentCategory contentCategory = getContentCategory(mimetype, extension);
-        ContentTypeUtils.addContentTypeFacets(contentCategory, extension, contentTypes);
     }
 
     private ContentCategory getContentCategory(String mimetype, String extension) {

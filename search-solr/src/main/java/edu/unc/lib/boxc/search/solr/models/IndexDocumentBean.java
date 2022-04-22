@@ -206,6 +206,24 @@ public class IndexDocumentBean {
         fields.put(RESOURCE_TYPE_SORT.getSolrField(), resourceTypeSort);
     }
 
+    public List<String> getFileFormatCategory() {
+        return (List<String>) fields.get(SearchFieldKey.FILE_FORMAT_CATEGORY.getSolrField());
+    }
+
+    @Field
+    public void setFileFormatCategory(List<String> categories) {
+        fields.put(SearchFieldKey.FILE_FORMAT_CATEGORY.getSolrField(), categories);
+    }
+
+    public List<String> getFileFormatType() {
+        return (List<String>) fields.get(SearchFieldKey.FILE_FORMAT_TYPE.getSolrField());
+    }
+
+    @Field
+    public void setFileFormatType(List<String> types) {
+        fields.put(SearchFieldKey.FILE_FORMAT_TYPE.getSolrField(), types);
+    }
+
     public List<String> getContentType() {
         return (List<String>) fields.get(CONTENT_TYPE.getSolrField());
     }

@@ -79,6 +79,10 @@ public interface ContentObjectRecord {
 
     public List<String> getContentType();
 
+    public List<String> getFileFormatCategory();
+
+    public List<String> getFileFormatType();
+
     public Date getTimestamp();
 
     public Date getLastIndexed();

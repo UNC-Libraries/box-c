@@ -204,6 +204,16 @@ public class GroupedContentObjectSolrRecord implements GroupedContentObjectRecor
     }
 
     @Override
+    public List<String> getFileFormatCategory() {
+        return this.representative.getFileFormatCategory();
+    }
+
+    @Override
+    public List<String> getFileFormatType() {
+        return this.representative.getFileFormatType();
+    }
+
+    @Override
     public Date getTimestamp() {
         return this.representative.getTimestamp();
     }

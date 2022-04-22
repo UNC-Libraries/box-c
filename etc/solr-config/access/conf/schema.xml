@@ -143,38 +143,12 @@
     <field name="collectionId" type="string" indexed="true" stored="true"/>
     <!-- Status information related to the content of an object, such as if it is described or not -->
     <field name="contentStatus" type="string" indexed="true" stored="true" multiValued="true" docValues="true"/>
-    <!--
-    Hierarchical facet describing the type of content and mimetypes of important.
-
-    Supports multiple hierarchies for a single item.  Allows filtering to a specific tier and viewing only the next tier after
-    it in the facet list.  Also, it keeps the next tier per hierarchy on the same item distinct so you don't end up with
-    /text/mp3 situations on audio recordings with transcripts.
-
-    Syntax:
-    The end tier is prefixed with a '|' and has a display form.  All preceeding tiers are prefixed with a '/' and
-    do not include a display form.  One entry per tier per hierarchy:
-    /<search key>/<search key>...|<search key>,<display form>
-
-    Example, object with mp3 derivative of a wav, plus a transcript:
-     <str>|audio,Audio</str>
-     <str>/audio|wav,wav</str>
-     <str>|audio,Audio</str>
-     <str>/audio|mp3,mp3</str>
-     <str>/audio/mp3|356k,356k</str>
-     <str>|text</str>
-     <str>/text|txt</str>
-
-    Querying example, for selecting mp3's and showing the next tier:
-      fq=contentType:/audio|mp3,*&f.contentType.facet.prefix=/audio/mp3|
-    -->
-    <field name="contentType" type="string" indexed="true" stored="true" multiValued="true" docValues="true"/>
     <!-- All names, searchable, and used in copy indexes -->
     <field name="contributor" type="string" indexed="true" stored="true" multiValued="true"/>
     <!-- <field name="roleName" type="string" indexed="true" stored="true" multiValued="true"/> -->
     <field name="creator" type="sortableText" indexed="true" stored="true" multiValued="true"/>
     <!-- Used for faceting creators and contributors as a single facet -->
     <field name="creatorContributor" type="string" indexed="true" stored="true" multiValued="true" docValues="true"/>
-    <!-- Sort order fields -->
     <!-- DS name|mimetype|extension|filesize|checksum|owner -->
     <field name="datastream" type="string" indexed="true" stored="true" multiValued="true" docValues="true"/>
     <!-- Date when the object was added to the repository -->
@@ -184,6 +158,10 @@
     <field name="dateCreatedYear" type="dateRange" indexed="true" stored="true"/>
     <!-- Date when the object was last updated in the repository -->
     <field name="dateUpdated" type="date" indexed="true" stored="true" docValues="true"/>
+    <!-- High level category for the content of binaries, values like Image, Audio, Text, etc. -->
+    <field name="fileFormatCategory" type="string" indexed="true" stored="true" multiValued="true" docValues="true"/>
+    <!-- Specific format of binary content, represented as a file extension -->
+    <field name="fileFormatType" type="string" indexed="true" stored="true" multiValued="true" docValues="true"/>
     <!-- Filesize of the default web data for this object, used for sorting -->
     <field name="filesizeSort" type="long" indexed="true" stored="true" docValues="true"/>
     <!-- Sum of all datastreams filesizes for this object -->

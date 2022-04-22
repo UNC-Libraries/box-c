@@ -24,6 +24,7 @@ import edu.unc.lib.boxc.model.api.objects.FileObject;
 import edu.unc.lib.boxc.model.api.objects.FolderObject;
 import edu.unc.lib.boxc.model.api.objects.WorkObject;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
+import edu.unc.lib.boxc.search.api.ContentCategory;
 import edu.unc.lib.boxc.search.api.SearchFieldKey;
 import edu.unc.lib.boxc.search.api.facets.CutoffFacet;
 import edu.unc.lib.boxc.search.api.requests.SearchRequest;
@@ -32,6 +33,7 @@ import edu.unc.lib.boxc.search.solr.models.ContentObjectSolrRecord;
 import edu.unc.lib.boxc.search.solr.models.IndexDocumentBean;
 import edu.unc.lib.boxc.search.solr.responses.SearchResultResponse;
 import edu.unc.lib.boxc.search.solr.services.SolrSearchService;
+import org.apache.commons.collections.CollectionUtils;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
@@ -108,14 +110,14 @@ public class SetContentTypeFilterTest {
         when(workObj.getPrimaryObject()).thenReturn(fileObj);
 
         var fileRec = new ContentObjectSolrRecord();
-        fileRec.setContentType(Arrays.asList("^text,Text", "/text^xml,xml"));
+        fileRec.setFileFormatCategory(Collections.singletonList(ContentCategory.text.getDisplayName()));
+        fileRec.setFileFormatType(Collections.singletonList("xml"));
         when(searchResultResponse.getResultList()).thenReturn(Collections.singletonList(fileRec));
 
         filter.filter(dip);
 
-        assertEquals("^text,Text", idb.getContentType().get(0));
-        assertEquals("/text^xml,xml", idb.getContentType().get(1));
-        assertEquals(2, idb.getContentType().size());
+        assertHasFileTypes(idb, "xml");
+        assertHasCategories(idb, ContentCategory.text);
     }
 
     @Test
@@ -124,9 +126,8 @@ public class SetContentTypeFilterTest {
 
         filter.filter(dip);
 
-        assertEquals("^dataset,Dataset", idb.getContentType().get(0));
-        assertEquals("/dataset^csv,csv", idb.getContentType().get(1));
-        assertEquals(2, idb.getContentType().size());
+        assertHasFileTypes(idb, "csv");
+        assertHasCategories(idb, ContentCategory.dataset);
     }
 
     @Test
@@ -136,9 +137,8 @@ public class SetContentTypeFilterTest {
 
         filter.filter(dip);
 
-        assertEquals("^unknown,Unknown", idb.getContentType().get(0));
-        assertEquals("/unknown^x3f,x3f", idb.getContentType().get(1));
-        assertEquals(2, idb.getContentType().size());
+        assertHasFileTypes(idb, "x3f");
+        assertHasCategories(idb, ContentCategory.unknown);
     }
 
     @Test
@@ -147,7 +147,8 @@ public class SetContentTypeFilterTest {
 
         filter.filter(dip);
 
-        assertNull(idb.getContentType());
+        assertTrue(CollectionUtils.isEmpty(idb.getFileFormatType()));
+        assertTrue(CollectionUtils.isEmpty(idb.getFileFormatCategory()));
     }
 
     @Test
@@ -155,14 +156,14 @@ public class SetContentTypeFilterTest {
         dip.setContentObject(workObj);
 
         var fileRec = new ContentObjectSolrRecord();
-        fileRec.setContentType(Arrays.asList("^text,Text", "/text^xml,xml"));
+        fileRec.setFileFormatCategory(Collections.singletonList(ContentCategory.text.getDisplayName()));
+        fileRec.setFileFormatType(Collections.singletonList("xml"));
         when(searchResultResponse.getResultList()).thenReturn(Collections.singletonList(fileRec));
 
         filter.filter(dip);
 
-        assertEquals("^text,Text", idb.getContentType().get(0));
-        assertEquals("/text^xml,xml", idb.getContentType().get(1));
-        assertEquals(2, idb.getContentType().size());
+        assertHasFileTypes(idb, "xml");
+        assertHasCategories(idb, ContentCategory.text);
     }
 
     @Test
@@ -171,9 +172,8 @@ public class SetContentTypeFilterTest {
 
         filter.filter(dip);
 
-        assertEquals("^text,Text", idb.getContentType().get(0));
-        assertEquals("/text^txt,txt", idb.getContentType().get(1));
-        assertEquals(2, idb.getContentType().size());
+        assertHasFileTypes(idb, "txt");
+        assertHasCategories(idb, ContentCategory.text);
     }
 
     @Test
@@ -182,9 +182,8 @@ public class SetContentTypeFilterTest {
 
         filter.filter(dip);
 
-        assertEquals("^unknown,Unknown", idb.getContentType().get(0));
-        assertEquals("/unknown^pdf,pdf", idb.getContentType().get(1));
-        assertEquals(2, idb.getContentType().size());
+        assertHasFileTypes(idb, "pdf");
+        assertHasCategories(idb, ContentCategory.unknown);
     }
 
     @Test
@@ -193,9 +192,8 @@ public class SetContentTypeFilterTest {
 
         filter.filter(dip);
 
-        assertEquals("^image,Image", idb.getContentType().get(0));
-        assertEquals("/image^jpg,jpg", idb.getContentType().get(1));
-        assertEquals(2, idb.getContentType().size());
+        assertHasFileTypes(idb, "jpg");
+        assertHasCategories(idb, ContentCategory.image);
     }
 
     @Test
@@ -204,9 +202,8 @@ public class SetContentTypeFilterTest {
 
         filter.filter(dip);
 
-        assertEquals("^video,Video", idb.getContentType().get(0));
-        assertEquals("/video^mp4,mp4", idb.getContentType().get(1));
-        assertEquals(2, idb.getContentType().size());
+        assertHasFileTypes(idb, "mp4");
+        assertHasCategories(idb, ContentCategory.video);
     }
 
     @Test
@@ -215,9 +212,8 @@ public class SetContentTypeFilterTest {
 
         filter.filter(dip);
 
-        assertEquals("^audio,Audio", idb.getContentType().get(0));
-        assertEquals("/audio^wav,wav", idb.getContentType().get(1));
-        assertEquals(2, idb.getContentType().size());
+        assertHasFileTypes(idb, "wav");
+        assertHasCategories(idb, ContentCategory.audio);
     }
 
     @Test
@@ -226,9 +222,8 @@ public class SetContentTypeFilterTest {
 
         filter.filter(dip);
 
-        assertEquals("^unknown,Unknown", idb.getContentType().get(0));
-        assertEquals("/unknown^stuff,stuff", idb.getContentType().get(1));
-        assertEquals(2, idb.getContentType().size());
+        assertHasFileTypes(idb, "stuff");
+        assertHasCategories(idb, ContentCategory.unknown);
     }
 
     @Test
@@ -237,9 +232,8 @@ public class SetContentTypeFilterTest {
 
         filter.filter(dip);
 
-        assertEquals("^text,Text", idb.getContentType().get(0));
-        assertEquals("/text^txt,txt", idb.getContentType().get(1));
-        assertEquals(2, idb.getContentType().size());
+        assertHasFileTypes(idb, "txt");
+        assertHasCategories(idb, ContentCategory.text);
     }
 
     @Test
@@ -248,9 +242,8 @@ public class SetContentTypeFilterTest {
 
         filter.filter(dip);
 
-        assertEquals("^unknown,Unknown", idb.getContentType().get(0));
-        assertEquals("/unknown^unknown,unknown", idb.getContentType().get(1));
-        assertEquals(2, idb.getContentType().size());
+        assertHasFileTypes(idb, "unknown");
+        assertHasCategories(idb, ContentCategory.unknown);
     }
 
     @Test
@@ -259,9 +252,8 @@ public class SetContentTypeFilterTest {
 
         filter.filter(dip);
 
-        assertEquals("^unknown,Unknown", idb.getContentType().get(0));
-        assertEquals("/unknown^unknown,unknown", idb.getContentType().get(1));
-        assertEquals(2, idb.getContentType().size());
+        assertHasFileTypes(idb, "unknown");
+        assertHasCategories(idb, ContentCategory.unknown);
     }
 
     @Test
@@ -270,9 +262,8 @@ public class SetContentTypeFilterTest {
 
         filter.filter(dip);
 
-        assertEquals("^text,Text", idb.getContentType().get(0));
-        assertEquals("/text^txt,txt", idb.getContentType().get(1));
-        assertEquals(2, idb.getContentType().size());
+        assertHasFileTypes(idb, "txt");
+        assertHasCategories(idb, ContentCategory.text);
     }
 
     @Test
@@ -283,7 +274,8 @@ public class SetContentTypeFilterTest {
 
         filter.filter(dip);
 
-        assertTrue(idb.getContentType().isEmpty());
+        assertTrue(CollectionUtils.isEmpty(idb.getFileFormatType()));
+        assertTrue(CollectionUtils.isEmpty(idb.getFileFormatCategory()));
     }
 
     @Test
@@ -291,25 +283,25 @@ public class SetContentTypeFilterTest {
         dip.setContentObject(workObj);
 
         var fileRec1 = new ContentObjectSolrRecord();
-        fileRec1.setContentType(Arrays.asList("^text,Text", "/text^xml,xml"));
+        fileRec1.setFileFormatCategory(Collections.singletonList(ContentCategory.text.getDisplayName()));
+        fileRec1.setFileFormatType(Collections.singletonList("xml"));
         var fileRec2 = new ContentObjectSolrRecord();
-        fileRec2.setContentType(Arrays.asList("^text,Text", "/text^plain,txt"));
+        fileRec2.setFileFormatCategory(Collections.singletonList(ContentCategory.text.getDisplayName()));
+        fileRec2.setFileFormatType(Collections.singletonList("txt"));
         var fileRec3 = new ContentObjectSolrRecord();
-        fileRec3.setContentType(Arrays.asList("^text,Text", "/text^plain,txt"));
+        fileRec3.setFileFormatCategory(Collections.singletonList(ContentCategory.text.getDisplayName()));
+        fileRec3.setFileFormatType(Collections.singletonList("txt"));
         var fileRec4 = new ContentObjectSolrRecord();
-        fileRec4.setContentType(Arrays.asList("^audio,Audio", "/audio^wav,wav"));
+        fileRec3.setFileFormatCategory(Collections.singletonList(ContentCategory.audio.getDisplayName()));
+        fileRec3.setFileFormatType(Collections.singletonList("wav"));
         when(searchResultResponse.getResultList()).thenReturn(Arrays.asList(
                 fileRec1, fileRec2, fileRec3, fileRec4));
 
         filter.filter(dip);
 
         var cTypes = idb.getContentType();
-        assertTrue(cTypes.contains("^text,Text"));
-        assertTrue(cTypes.contains("/text^xml,xml"));
-        assertTrue(cTypes.contains("/text^plain,txt"));
-        assertTrue(cTypes.contains("^audio,Audio"));
-        assertTrue(cTypes.contains("/audio^wav,wav"));
-        assertEquals(5, idb.getContentType().size());
+        assertHasFileTypes(idb, "xml", "txt", "wav");
+        assertHasCategories(idb, ContentCategory.text, ContentCategory.audio);
     }
 
     @Test
@@ -318,14 +310,14 @@ public class SetContentTypeFilterTest {
         idb.setAncestorPath(Arrays.asList("2," + pid.getId()));
 
         var fileRec = new ContentObjectSolrRecord();
-        fileRec.setContentType(Arrays.asList("^text,Text", "/text^xml,xml"));
+        fileRec.setFileFormatCategory(Collections.singletonList(ContentCategory.text.getDisplayName()));
+        fileRec.setFileFormatType(Collections.singletonList("xml"));
         when(searchResultResponse.getResultList()).thenReturn(Collections.singletonList(fileRec));
 
         filter.filter(dip);
 
-        assertEquals("^text,Text", idb.getContentType().get(0));
-        assertEquals("/text^xml,xml", idb.getContentType().get(1));
-        assertEquals(2, idb.getContentType().size());
+        assertHasFileTypes(idb, "xml");
+        assertHasCategories(idb, ContentCategory.text);
         verify(solrSearchService, never()).getAncestorPath(anyString(), any(AccessGroupSet.class));
     }
 
@@ -334,5 +326,24 @@ public class SetContentTypeFilterTest {
         when(fileObj.getOriginalFile()).thenReturn(binObj);
         when(binObj.getFilename()).thenReturn(filename);
         when(binObj.getMimetype()).thenReturn(mimetype);
+    }
+
+    private void assertHasFileTypes(IndexDocumentBean idb, String... expectedTypes) {
+        for (var expected: expectedTypes) {
+            assertTrue("Object did not have expected type " + expected + ", types were: " + idb.getFileFormatType(),
+                    idb.getFileFormatType().contains(expected));
+        }
+        assertEquals("Incorrect number of types, expected: " + expectedTypes + ", found: " + idb.getFileFormatType(),
+                expectedTypes.length, idb.getFileFormatType().size());
+    }
+
+    private void assertHasCategories(IndexDocumentBean idb, ContentCategory... expectedCats) {
+        for (var expected: expectedCats) {
+            assertTrue("Object did not have expected category " + expected
+                            + ", categories were: " + idb.getFileFormatCategory(),
+                    idb.getFileFormatCategory().contains(expected.getDisplayName()));
+        }
+        assertEquals("Incorrect number of categories, expected: " + expectedCats + ", found: " + idb.getFileFormatCategory(),
+                expectedCats.length, idb.getFileFormatCategory().size());
     }
 }
