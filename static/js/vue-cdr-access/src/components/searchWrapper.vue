@@ -110,10 +110,8 @@ Top level component wrapper for search pages
                     this.filter_parameters = response.data.filterParameters;
                     this.min_created_year = response.data.minSearchYear;
                     this.is_loading = false;
-                    this.query_changed = false;
                 }).catch(function (error) {
                     console.log(error);
-                    this.query_changed = false;
                 });
             }
         },
