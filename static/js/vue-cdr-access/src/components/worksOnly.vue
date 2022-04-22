@@ -48,7 +48,7 @@ and including all types with hierarchy retained.
                 params.types = this.updateWorkType(this.works_only).types;
                 params.works_only = this.works_only;
 
-                this.$router.push({ name: 'displayRecords', query: params }).catch((e) => {
+                this.$router.push({ name: 'displayRecords', query: this.resetStartRow(params) }).catch((e) => {
                     if (e.name !== 'NavigationDuplicated') {
                         throw e;
                     }

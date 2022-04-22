@@ -44,12 +44,15 @@ Sort drop down menu used in search results
         },
 
         methods: {
+            /**
+             * Pushes url with the desired sort order and resets start row to 0, since a new query is being run
+             */
             sortRecords() {
                 let is_search_sort = this.browseType === 'search';
 
                 this.$router.push({
                     path: this.$route.path,
-                    query: this.urlParams({ sort: this.sort_order }, is_search_sort)
+                    query: this.urlParams({ sort: this.sort_order, start: 0 }, is_search_sort)
                 }).catch((e) => {
                     if (this.nonDuplicateNavigationError(e)) {
                         throw e;

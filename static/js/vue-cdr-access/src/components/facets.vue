@@ -160,11 +160,12 @@ Facet list component, used to display all the values of facets and provide links
 
             /**
              * Push new url after a facet is selected/deselected
+             * Reset start row of search to 0
              */
             selectedFacets() {
                 let updated_facet_params = this.updateUrl();
                 let base_search = {
-                    query: this.urlParams({}, true)
+                    query: this.urlParams({ start: 0 }, true)
                 };
 
                 // Unset current facets

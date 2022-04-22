@@ -150,6 +150,18 @@ export default {
         },
 
         /**
+         * Resets start row, so searches end up on the first page of results
+         * @param query_params
+         * @returns {*}
+         */
+        resetStartRow(query_params) {
+            if (query_params.start !== undefined) {
+                query_params.start = 0;
+            }
+            return query_params;
+        },
+
+        /**
          * Vite really, really wants all images to be in the project being built and referenced via imports.
          * This doesn't make sense for some of our images. The project won't build unless an import or url is given.
          * So just return the image url for images that are external to the Vue project.

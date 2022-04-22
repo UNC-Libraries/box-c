@@ -44,6 +44,7 @@ Top level component wrapper for search pages
     import pagination from "@/components/pagination.vue";
     import routeUtils from "../mixins/routeUtils";
     import get from 'axios';
+    import cloneDeep from 'lodash.clonedeep';
 
     export default {
         name: 'searchWrapper',
@@ -97,7 +98,8 @@ Top level component wrapper for search pages
 
         methods: {
             retrieveData() {
-                let param_string = `${this.formatParamsString(this.$route.query)}&getFacets=true`;
+                let query = cloneDeep(this.$route.query);
+                let param_string = `${this.formatParamsString(query)}&getFacets=true`;
                 let search_path = 'searchJson';
                 this.collection = this.routeHasPathId ? this.$route.path.split('/')[2] : '';
 
