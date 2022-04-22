@@ -45,7 +45,8 @@ const response = {
     },
     metadata: [...record_list, ...record_list, ...record_list, ...record_list], // Creates 8 returned records
     resultCount: 8,
-    facetFields: []
+    facetFields: [],
+    filterParameters: {}
 };
 
 describe('displayWrapper.vue', () => {
