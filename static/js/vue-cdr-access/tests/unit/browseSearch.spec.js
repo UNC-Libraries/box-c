@@ -32,8 +32,7 @@ describe('browseSearch.vue', () => {
                 plugins: [i18n, store, router]
             },
             props: {
-                objectType: 'Folder',
-                filterParameters: {}
+                objectType: 'Folder'
             }
         });
 
@@ -97,8 +96,7 @@ describe('browseSearch.vue', () => {
                     $route
                 },
                 plugins: [i18n, store]
-            },
-            props: { filterParameters: {} }
+            }
         });
         expect(wrapper.find('input').attributes('placeholder')).toBe('Search within this object');
     });
@@ -118,8 +116,7 @@ describe('browseSearch.vue', () => {
                 plugins: [i18n, store]
             },
             props: {
-                objectType: 'Folder',
-                filterParameters: {}
+                objectType: 'Folder'
             }
         });
 

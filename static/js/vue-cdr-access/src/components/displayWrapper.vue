@@ -5,7 +5,7 @@ Top level component for full record pages with searching/browsing, including Adm
     <div>
         <div class="columns is-tablet">
             <div class="column is-6">
-                <browse-search :object-type="container_metadata.type" :filter-parameters="filter_parameters"></browse-search>
+                <browse-search :object-type="container_metadata.type"></browse-search>
             </div>
             <div class="column is-2" v-if="showWidget">
                 <browse-sort browse-type="display"></browse-sort>
@@ -16,6 +16,9 @@ Top level component for full record pages with searching/browsing, including Adm
             <div class="column is-narrow-tablet" v-if="showWidget">
                 <view-type></view-type>
             </div>
+        </div>
+        <div class="tags">
+            <filter-tags :filter-parameters="filter_parameters"></filter-tags>
         </div>
         <img v-if="is_page_loading" :src="nonVueStaticImageUrl('ajax-loader-lg.gif')" alt="data loading icon">
         <div v-if="showWidget && !is_page_loading" class="columns">
@@ -39,6 +42,7 @@ Top level component for full record pages with searching/browsing, including Adm
     import galleryDisplay from '@/components/galleryDisplay.vue';
     import listDisplay from '@/components/listDisplay.vue';
     import facets from "@/components/facets.vue";
+    import filterTags from "@/components/filterTags.vue";
     import modalMetadata from '@/components/modalMetadata.vue';
     import pagination from '@/components/pagination.vue';
     import viewType from '@/components/viewType.vue';
@@ -73,7 +77,8 @@ Top level component for full record pages with searching/browsing, including Adm
             pagination,
             viewType,
             worksOnly,
-            facets
+            facets,
+            filterTags
         },
 
         mixins: [routeUtils],
@@ -208,6 +213,15 @@ Top level component for full record pages with searching/browsing, including Adm
 
     .container-note {
         padding: 20px 0;
+    }
+
+    .columns {
+        margin-bottom: 0;
+    }
+
+    .tags {
+        margin-bottom: 0;
+        margin-left: 30px;
     }
 
     .is-6 {

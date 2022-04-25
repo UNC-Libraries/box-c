@@ -19,27 +19,24 @@ Search form component displayed on full record pages, allowing keyword searches 
                     <i class="fas fa-times"></i>
                 </span> {{ $t('search.clear_search')}}</a>
             <clear-facets-button></clear-facets-button>
-            <filter-tags :filter-parameters="filterParameters"></filter-tags>
         </div>
     </div>
 </template>
 
 <script>
     import routeUtils from '../mixins/routeUtils';
-    import filterTags from "@/components/filterTags.vue";
     import clearFacetsButton from "@/components/clearFacetsButton.vue";
 
     export default {
         name: 'browseSearch',
 
-        components: {filterTags, clearFacetsButton},
+        components: {clearFacetsButton},
 
         props: {
             objectType: {
                 default: 'object',
                 type: String
-            },
-            filterParameters: Object
+            }
         },
 
         watch: {
