@@ -15,18 +15,18 @@
  */
 package edu.unc.lib.boxc.integration.factories;
 
-import edu.unc.lib.boxc.model.api.objects.FolderObject;
+import edu.unc.lib.boxc.model.api.objects.AdminUnit;
 
 import java.util.Map;
 
 /**
  * @author sharonluong
  */
-public class FolderFactory extends ContentObjectFactory{
-    public FolderObject createFolder(Map<String, String> options) throws Exception {
-        var folder = repositoryObjectFactory.createFolderObject(null);
-        prepareObject(folder, options);
+public class AdminUnitFactory extends ContentObjectFactory {
+    public AdminUnit createAdminUnit(Map<String, String> options) throws Exception {
+        var adminUnit = repositoryObjectFactory.createAdminUnit(null);
+        prepareObject(adminUnit, options);
 
-        return folder;
+        return adminUnit;
     }
 }
