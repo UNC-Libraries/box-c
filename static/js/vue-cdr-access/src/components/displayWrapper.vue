@@ -17,9 +17,7 @@ Top level component for full record pages with searching/browsing, including Adm
                 <view-type></view-type>
             </div>
         </div>
-        <div class="tags">
-            <filter-tags :filter-parameters="filter_parameters"></filter-tags>
-        </div>
+        <clear-filters :filter-parameters="filter_parameters"></clear-filters>
         <img v-if="is_page_loading" :src="nonVueStaticImageUrl('ajax-loader-lg.gif')" alt="data loading icon">
         <div v-if="showWidget && !is_page_loading" class="columns">
             <div class="facet-list column is-one-quarter facets-border">
@@ -39,10 +37,10 @@ Top level component for full record pages with searching/browsing, including Adm
 <script>
     import browseSearch from '@/components/browseSearch.vue';
     import browseSort from '@/components/browseSort.vue';
+    import clearFilters from '@/components/clearFilters.vue';
     import galleryDisplay from '@/components/galleryDisplay.vue';
     import listDisplay from '@/components/listDisplay.vue';
     import facets from "@/components/facets.vue";
-    import filterTags from "@/components/filterTags.vue";
     import modalMetadata from '@/components/modalMetadata.vue';
     import pagination from '@/components/pagination.vue';
     import viewType from '@/components/viewType.vue';
@@ -71,14 +69,14 @@ Top level component for full record pages with searching/browsing, including Adm
         components: {
             browseSearch,
             browseSort,
+            clearFilters,
             galleryDisplay,
             listDisplay,
             modalMetadata,
             pagination,
             viewType,
             worksOnly,
-            facets,
-            filterTags
+            facets
         },
 
         mixins: [routeUtils],
