@@ -19,6 +19,9 @@ import edu.unc.lib.boxc.indexing.solr.test.RepositoryObjectSolrIndexer;
 import edu.unc.lib.boxc.model.api.objects.FolderObject;
 import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
 import edu.unc.lib.boxc.model.fcrepo.test.RepositoryObjectTreeIndexer;
+import edu.unc.lib.boxc.operations.impl.edit.UpdateDescriptionService;
+
+import java.util.Map;
 
 /**
  * @author sharonluong
@@ -27,10 +30,15 @@ public class FolderFactory {
     private RepositoryObjectFactory repositoryObjectFactory;
     private RepositoryObjectTreeIndexer repositoryObjectTreeIndexer;
     private RepositoryObjectSolrIndexer repositoryObjectSolrIndexer;
+    private ModsFactory modsFactory;
+    private UpdateDescriptionService updateDescriptionService;
 
-    public FolderObject createFolder() throws Exception {
+    public FolderObject createFolder(Map<String, String> options) throws Exception {
         // create folder in Fedora
         var folder = repositoryObjectFactory.createFolderObject(null);
+        var modsDocument = modsFactory.createDocument(options);
+        updateDescriptionService.updateDescription(modsDocument)
+
         // index folder in triple store
         repositoryObjectTreeIndexer.indexAll(folder.getUri().toString());
         // index into solr
