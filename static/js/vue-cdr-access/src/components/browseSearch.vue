@@ -12,34 +12,23 @@ Search form component displayed on full record pages, allowing keyword searches 
                 <button @click="getResults" class="button">{{ $t('search.search') }}</button>
             </div>
         </div>
-        <div class="clear-options">
-            <a id="clear-results" class="button is-link is-small" v-bind:class="{ 'disabled' : !this.enableStartOverButton}"
-                    href="#" @click.prevent="clearSearch">
-                <span class="icon is-small">
-                    <i class="fas fa-times"></i>
-                </span> {{ $t('search.clear_search')}}</a>
-            <clear-facets-button></clear-facets-button>
-            <filter-tags :filter-parameters="filterParameters"></filter-tags>
-        </div>
     </div>
 </template>
 
 <script>
     import routeUtils from '../mixins/routeUtils';
-    import filterTags from "@/components/filterTags.vue";
     import clearFacetsButton from "@/components/clearFacetsButton.vue";
 
     export default {
         name: 'browseSearch',
 
-        components: {filterTags, clearFacetsButton},
+        components: {clearFacetsButton},
 
         props: {
             objectType: {
                 default: 'object',
                 type: String
-            },
-            filterParameters: Object
+            }
         },
 
         watch: {
@@ -70,9 +59,6 @@ Search form component displayed on full record pages, allowing keyword searches 
                 const object_type = this.objectType.toLowerCase();
                 const object_text = (object_type === 'adminunit') ? 'collection' : object_type;
                 return `Search within this ${object_text}`
-            },
-            enableStartOverButton() {
-                return this.anyParamsPopulated(this.allPossibleSearchParameters);
             }
         },
 
@@ -81,24 +67,6 @@ Search form component displayed on full record pages, allowing keyword searches 
                 const encode_search = { anywhere: encodeURIComponent(this.search_query), start: 0 };
                 const update_parameters = this.urlParams(encode_search, 'displayRecords');
                 this.routeWithParams(update_parameters);
-            },
-
-            clearSearch() {
-                this.clearParameters(this.allPossibleSearchParameters);
-            },
-
-            clearAllFacets() {
-                this.clearParameters(this.possibleFacetFields);
-            },
-
-            /**
-             * Clears facets/searches
-             * @param param_to_clear
-             */
-            clearParameters(param_to_clear) {
-                const reset_params = this.removeQueryParameters(param_to_clear);
-                const reset_start_row = this.resetStartRow(reset_params);
-                this.routeWithParams(reset_start_row);
             }
         },
 

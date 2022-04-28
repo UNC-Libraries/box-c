@@ -32,8 +32,7 @@ describe('browseSearch.vue', () => {
                 plugins: [i18n, store, router]
             },
             props: {
-                objectType: 'Folder',
-                filterParameters: {}
+                objectType: 'Folder'
             }
         });
 
@@ -49,35 +48,6 @@ describe('browseSearch.vue', () => {
         await btn.trigger('click');
         await flushPromises();
         expect(wrapper.vm.$router.currentRoute.value.query.anywhere).toEqual(encodeURIComponent(query));
-    });
-
-    it("clears search results", async() => {
-        wrapper.find('input').setValue(query);
-        let btn = wrapper.find('button');
-        await btn.trigger('click');
-        await flushPromises();
-        expect(wrapper.vm.$router.currentRoute.value.query.anywhere).toEqual(encodeURIComponent(query));
-
-        let clearLink = wrapper.find('a#clear-results');
-        await clearLink.trigger('click');
-        await flushPromises();
-        expect(wrapper.vm.$router.currentRoute.value.query.anywhere).not.toBeDefined();
-    });
-
-    it("start over button clears keyword and facets", async() => {
-        await router.push('/record/1234?anywhere=test&subject=topic');
-        await flushPromises();
-
-        expect(wrapper.vm.$router.currentRoute.value.query.anywhere).toEqual("test");
-        expect(wrapper.vm.$router.currentRoute.value.query.subject).toEqual("topic");
-
-        let clearLink = wrapper.find('a#clear-results');
-        expect(clearLink.classes()).not.toContain('disabled');
-
-        await clearLink.trigger('click');
-        await flushPromises();
-        expect(wrapper.vm.$router.currentRoute.value.query.anywhere).not.toBeDefined();
-        expect(wrapper.vm.$router.currentRoute.value.query.subject).not.toBeDefined();
     });
 
     it("sets placeholder text from the object type", () => {
@@ -97,8 +67,7 @@ describe('browseSearch.vue', () => {
                     $route
                 },
                 plugins: [i18n, store]
-            },
-            props: { filterParameters: {} }
+            }
         });
         expect(wrapper.find('input').attributes('placeholder')).toBe('Search within this object');
     });
@@ -118,38 +87,10 @@ describe('browseSearch.vue', () => {
                 plugins: [i18n, store]
             },
             props: {
-                objectType: 'Folder',
-                filterParameters: {}
+                objectType: 'Folder'
             }
         });
 
         expect(wrapper.vm.search_query).toEqual('Test Folder');
-    });
-
-    it("clear all facets button not displayed when no facets selected", async() => {
-        await router.push('/record/1234?anywhere=test');
-        await flushPromises();
-        let clearFacetsButton = wrapper.find('.clear-all-facets');
-
-        expect(clearFacetsButton.exists()).toBe(false);
-        expect(wrapper.vm.$router.currentRoute.value.query.anywhere).toEqual(encodeURIComponent('test'));
-        expect(wrapper.vm.$router.currentRoute.value.query.subject).not.toBeDefined();
-    });
-
-    it("displays and uses clear all facets button", async() => {
-        await router.push('/record/1234?anywhere=test&subject=topic');
-        await flushPromises();
-        let clearFacetsButton = wrapper.find('.clear-all-facets');
-        expect(clearFacetsButton.exists()).toBe(true);
-        expect(wrapper.vm.$router.currentRoute.value.query.anywhere).toEqual(encodeURIComponent('test'));
-        expect(wrapper.vm.$router.currentRoute.value.query.subject).toEqual(encodeURIComponent('topic'));
-
-        await clearFacetsButton.trigger('click');
-        await flushPromises();
-
-        clearFacetsButton = wrapper.find('.clear-all-facets');
-        expect(clearFacetsButton.exists()).toBe(false);
-        expect(wrapper.vm.$router.currentRoute.value.query.anywhere).toEqual(encodeURIComponent('test'));
-        expect(wrapper.vm.$router.currentRoute.value.query.subject).not.toBeDefined();
     });
 });

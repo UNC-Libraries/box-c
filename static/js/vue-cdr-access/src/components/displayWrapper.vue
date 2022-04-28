@@ -5,7 +5,7 @@ Top level component for full record pages with searching/browsing, including Adm
     <div>
         <div class="columns is-tablet">
             <div class="column is-6">
-                <browse-search :object-type="container_metadata.type" :filter-parameters="filter_parameters"></browse-search>
+                <browse-search :object-type="container_metadata.type"></browse-search>
             </div>
             <div class="column is-2" v-if="showWidget">
                 <browse-sort browse-type="display"></browse-sort>
@@ -17,6 +17,7 @@ Top level component for full record pages with searching/browsing, including Adm
                 <view-type></view-type>
             </div>
         </div>
+        <clear-filters :filter-parameters="filter_parameters"></clear-filters>
         <img v-if="is_page_loading" :src="nonVueStaticImageUrl('ajax-loader-lg.gif')" alt="data loading icon">
         <div v-if="showWidget && !is_page_loading" class="columns">
             <div class="facet-list column is-one-quarter facets-border">
@@ -36,6 +37,7 @@ Top level component for full record pages with searching/browsing, including Adm
 <script>
     import browseSearch from '@/components/browseSearch.vue';
     import browseSort from '@/components/browseSort.vue';
+    import clearFilters from '@/components/clearFilters.vue';
     import galleryDisplay from '@/components/galleryDisplay.vue';
     import listDisplay from '@/components/listDisplay.vue';
     import facets from "@/components/facets.vue";
@@ -67,6 +69,7 @@ Top level component for full record pages with searching/browsing, including Adm
         components: {
             browseSearch,
             browseSort,
+            clearFilters,
             galleryDisplay,
             listDisplay,
             modalMetadata,
@@ -208,6 +211,15 @@ Top level component for full record pages with searching/browsing, including Adm
 
     .container-note {
         padding: 20px 0;
+    }
+
+    .columns {
+        margin-bottom: 0;
+    }
+
+    .tags {
+        margin-bottom: 0;
+        margin-left: 30px;
     }
 
     .is-6 {
