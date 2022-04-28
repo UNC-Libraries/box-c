@@ -31,9 +31,9 @@ export default {
 
 <style scoped  lang="scss">
     a {
-        margin-left: 10px;
+        margin-left: 5px;
     }
     i {
-        padding-left: 5px;
+        padding-left: 10px;
     }
 </style>
