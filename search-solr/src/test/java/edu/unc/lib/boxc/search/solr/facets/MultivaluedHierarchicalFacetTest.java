@@ -130,15 +130,6 @@ public class MultivaluedHierarchicalFacetTest extends Assert {
 
         FacetField facetField = mock(FacetField.class);
         when(facetField.getValues()).thenReturn(countList);
-
-        FacetFieldFactory facetFieldFactory = new FacetFieldFactory();
-
-        FacetFieldObject ffo = facetFieldFactory.createFacetFieldObject("CONTENT_TYPE", facetField);
-        assertTrue(ffo.getValues().get(0) instanceof MultivaluedHierarchicalFacet);
-        assertEquals("^text", ffo.getValues().get(0).getSearchValue());
-        assertEquals("^text", ffo.getValues().get(0).getValue());
-        assertEquals(1, ffo.getValues().get(0).getCount());
-        assertNull(ffo.getValues().get(0).getDisplayValue());
     }
 
     @Test

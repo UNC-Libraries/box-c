@@ -32,7 +32,6 @@ import edu.unc.lib.boxc.search.api.models.Datastream;
 import edu.unc.lib.boxc.search.api.models.ObjectPath;
 import edu.unc.lib.boxc.search.api.models.ObjectPathEntry;
 import edu.unc.lib.boxc.search.solr.facets.CutoffFacetImpl;
-import edu.unc.lib.boxc.search.solr.facets.MultivaluedHierarchicalFacet;
 import edu.unc.lib.boxc.search.solr.services.ObjectPathFactory;
 
 /**
@@ -113,13 +112,6 @@ public class ContentObjectSolrRecord extends IndexDocumentBean implements Conten
         return contentTypeFacet;
     }
 
-    @Field
-    public void setContentType(List<String> contentTypes) {
-        super.setContentType(contentTypes);
-        this.contentTypeFacet = MultivaluedHierarchicalFacet.createMultivaluedHierarchicalFacets(
-                SearchFieldKey.CONTENT_TYPE.name(), contentTypes);
-    }
-
     @Override
     public List<Datastream> getDatastreamObjects() {
         return datastreamObjects;
@@ -194,7 +186,8 @@ public class ContentObjectSolrRecord extends IndexDocumentBean implements Conten
         sb.append("id: " + getId() + "\n");
         sb.append("ancestorPath: " + getAncestorPath() + "\n");
         sb.append("resourceType: " + getResourceType() + "\n");
-        sb.append("contentType: " + getContentType() + "\n");
+        sb.append("fileFormatCategory: " + getFileFormatCategory() + "\n");
+        sb.append("fileFormatType: " + getFileFormatType() + "\n");
         sb.append("datastream: " + getDatastream() + "\n");
         sb.append("title: " + getTitle() + "\n");
         sb.append("abstractText: " + getAbstractText() + "\n");

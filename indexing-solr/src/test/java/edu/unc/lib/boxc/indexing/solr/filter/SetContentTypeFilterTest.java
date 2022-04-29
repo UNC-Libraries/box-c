@@ -18,11 +18,14 @@ package edu.unc.lib.boxc.indexing.solr.filter;
 import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
 import edu.unc.lib.boxc.indexing.solr.indexing.DocumentIndexingPackage;
 import edu.unc.lib.boxc.indexing.solr.indexing.DocumentIndexingPackageDataLoader;
+import edu.unc.lib.boxc.indexing.solr.utils.TechnicalMetadataService;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.objects.BinaryObject;
 import edu.unc.lib.boxc.model.api.objects.FileObject;
 import edu.unc.lib.boxc.model.api.objects.FolderObject;
+import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.api.objects.WorkObject;
+import edu.unc.lib.boxc.model.fcrepo.ids.DatastreamPids;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.boxc.search.api.ContentCategory;
 import edu.unc.lib.boxc.search.api.SearchFieldKey;
@@ -39,7 +42,11 @@ import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
+import org.springframework.util.MimeType;
 
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -71,6 +78,8 @@ public class SetContentTypeFilterTest {
     @Mock
     private BinaryObject binObj;
     @Mock
+    private BinaryObject techMdObj;
+    @Mock
     private FolderObject folderObj;
     private IndexDocumentBean idb;
     @Captor
@@ -79,6 +88,9 @@ public class SetContentTypeFilterTest {
     private SolrSearchService solrSearchService;
     @Mock
     private DocumentIndexingPackageDataLoader documentIndexingPackageDataLoader;
+    @Mock
+    private RepositoryObjectLoader repositoryObjectLoader;
+    private TechnicalMetadataService technicalMetadataService;
     private CutoffFacet ancestorPath;
     @Mock
     private SearchResultResponse searchResultResponse;
@@ -100,8 +112,13 @@ public class SetContentTypeFilterTest {
         when(solrSearchService.getSearchResults(any(SearchRequest.class))).thenReturn(searchResultResponse);
         when(solrSearchService.getAncestorPath(pid.getId(), null)).thenReturn(ancestorPath);
 
+        technicalMetadataService = new TechnicalMetadataService();
+        technicalMetadataService.setRepositoryObjectLoader(repositoryObjectLoader);
+        when(repositoryObjectLoader.getBinaryObject(any(PID.class))).thenReturn(techMdObj);
+
         filter = new SetContentTypeFilter();
         filter.setSolrSearchService(solrSearchService);
+        filter.setTechnicalMetadataService(technicalMetadataService);
     }
 
     @Test
@@ -111,33 +128,37 @@ public class SetContentTypeFilterTest {
 
         var fileRec = new ContentObjectSolrRecord();
         fileRec.setFileFormatCategory(Collections.singletonList(ContentCategory.text.getDisplayName()));
-        fileRec.setFileFormatType(Collections.singletonList("xml"));
+        fileRec.setFileFormatType(Collections.singletonList("text/xml"));
+        fileRec.setFileFormatDescription(Collections.singletonList("Extensible Markup Language"));
         when(searchResultResponse.getResultList()).thenReturn(Collections.singletonList(fileRec));
 
         filter.filter(dip);
 
-        assertHasFileTypes(idb, "xml");
+        assertHasFileTypes(idb, "text/xml");
+        assertHasFileDescriptions(idb, "Extensible Markup Language");
         assertHasCategories(idb, ContentCategory.text);
     }
 
     @Test
     public void testGetContentTypeFromFileObject() throws Exception {
-        mockFile("data.csv", "ext.csv");
+        mockFile("data.csv", "Unknown Binary", "text/csv");
 
         filter.filter(dip);
 
-        assertHasFileTypes(idb, "csv");
+        assertHasFileTypes(idb, "text/csv");
+        assertHasFileDescriptions(idb, "Comma-Separated Values");
         assertHasCategories(idb, ContentCategory.dataset);
     }
 
-    @Test
+     @Test
     public void testExtensionNotFoundInMapping() throws Exception {
         // use filename with raw image extension not found in our mapping
-        mockFile("image.x3f", "some_wacky_type");
+        mockFile("image.x3f", "Unknown Binary", "some_wacky_type");
 
         filter.filter(dip);
 
-        assertHasFileTypes(idb, "x3f");
+        assertHasFileTypes(idb, "some_wacky_type");
+        assertNull(idb.getFileFormatDescription());
         assertHasCategories(idb, ContentCategory.unknown);
     }
 
@@ -148,6 +169,7 @@ public class SetContentTypeFilterTest {
         filter.filter(dip);
 
         assertTrue(CollectionUtils.isEmpty(idb.getFileFormatType()));
+        assertTrue(CollectionUtils.isEmpty(idb.getFileFormatDescription()));
         assertTrue(CollectionUtils.isEmpty(idb.getFileFormatCategory()));
     }
 
@@ -157,113 +179,127 @@ public class SetContentTypeFilterTest {
 
         var fileRec = new ContentObjectSolrRecord();
         fileRec.setFileFormatCategory(Collections.singletonList(ContentCategory.text.getDisplayName()));
-        fileRec.setFileFormatType(Collections.singletonList("xml"));
+        fileRec.setFileFormatType(Collections.singletonList("text/xml"));
+        fileRec.setFileFormatDescription(Collections.singletonList("Extensible Markup Language"));
         when(searchResultResponse.getResultList()).thenReturn(Collections.singletonList(fileRec));
 
         filter.filter(dip);
 
-        assertHasFileTypes(idb, "xml");
+        assertHasFileTypes(idb, "text/xml");
+        assertHasFileDescriptions(idb, "Extensible Markup Language");
         assertHasCategories(idb, ContentCategory.text);
     }
 
     @Test
     public void testGetPlainTextContentType() throws Exception {
-        mockFile("file.txt", "text/plain");
+        mockFile("file.txt", "Unknown Binary", "text/plain");
 
         filter.filter(dip);
 
-        assertHasFileTypes(idb, "txt");
+        assertHasFileTypes(idb, "text/plain");
+        assertHasFileDescriptions(idb, "Plain Text");
+        assertHasCategories(idb, ContentCategory.text);
+    }
+
+    @Test
+    public void testGetPlainTextWithCharsetContentType() throws Exception {
+        mockFile("file.txt", "Unknown Binary", "text/plain; charset=UTF-8");
+        when(techMdObj.getPid()).thenReturn(DatastreamPids.getTechnicalMetadataPid(pid));
+        var mime = MimeType.valueOf("text/plain");
+
+        filter.filter(dip);
+
+        assertHasFileTypes(idb, "text/plain");
+        assertHasFileDescriptions(idb, "Plain Text");
+        assertHasCategories(idb, ContentCategory.text);
+    }
+
+    @Test
+    public void testRtfMimetypeOverride() throws Exception {
+        mockFile("file.rtf", "Unknown Binary", "text/plain");
+
+        filter.filter(dip);
+
+        assertHasFileTypes(idb, "application/rtf");
+        assertHasFileDescriptions(idb, "Rich Text Format");
         assertHasCategories(idb, ContentCategory.text);
     }
 
     @Test
     public void testAppleDoublePdf() throws Exception {
-        mockFile("._doc.pdf", "multipart/appledouble");
+        mockFile("._doc.pdf", "AppleDouble Resource Fork", "multipart/appledouble");
 
         filter.filter(dip);
 
-        assertHasFileTypes(idb, "pdf");
+        assertHasFileTypes(idb, "multipart/appledouble");
+        assertHasFileDescriptions(idb, "AppleDouble Resource Fork");
         assertHasCategories(idb, ContentCategory.unknown);
     }
 
     @Test
     public void testImageJpg() throws Exception {
-        mockFile("picture.jpg", "image/jpg");
+        mockFile("picture.jpg", "JPEG EXIF", "image/jpeg");
 
         filter.filter(dip);
 
-        assertHasFileTypes(idb, "jpg");
+        assertHasFileTypes(idb, "image/jpeg");
+        assertHasFileDescriptions(idb, "JPEG Image");
         assertHasCategories(idb, ContentCategory.image);
     }
 
     @Test
     public void testVideoMp4() throws Exception {
-        mockFile("my_video", "video/mp4");
+        mockFile("my_video", "MPEG-4", "video/mp4");
 
         filter.filter(dip);
 
-        assertHasFileTypes(idb, "mp4");
+        assertHasFileTypes(idb, "video/mp4");
+        assertHasFileDescriptions(idb, "MPEG-4");
         assertHasCategories(idb, ContentCategory.video);
     }
 
     @Test
     public void testAudioWav() throws Exception {
-        mockFile("sound_file.wav", "audio/wav");
+        mockFile("sound_file.wav", "WAVE Audio File Format", "audio/wav");
 
         filter.filter(dip);
 
-        assertHasFileTypes(idb, "wav");
+        assertHasFileTypes(idb, "audio/wav");
+        assertHasFileDescriptions(idb, "WAVE Audio File Format");
         assertHasCategories(idb, ContentCategory.audio);
     }
 
     @Test
     public void testNoMimetype() throws Exception {
-        mockFile("unidentified.stuff", null);
+        mockFile("unidentified.stuff", "Unknown Binary", null);
 
         filter.filter(dip);
 
-        assertHasFileTypes(idb, "stuff");
-        assertHasCategories(idb, ContentCategory.unknown);
-    }
-
-    @Test
-    public void testExtensionTooLongFallbackToMimetype() throws Exception {
-        mockFile("unidentified.superlongextension", "text/plain");
-
-        filter.filter(dip);
-
-        assertHasFileTypes(idb, "txt");
-        assertHasCategories(idb, ContentCategory.text);
-    }
-
-    @Test
-    public void testExtensionTooLongNoFallback() throws Exception {
-        mockFile("unidentified.superlongextension", "application/boxc-stuff");
-
-        filter.filter(dip);
-
-        assertHasFileTypes(idb, "unknown");
+        assertHasFileTypes(idb, "application/octet-stream");
+        assertNull(idb.getFileFormatDescription());
         assertHasCategories(idb, ContentCategory.unknown);
     }
 
     @Test
     public void testNoExtensionNoMimetype() throws Exception {
-        mockFile("unidentified", null);
+        mockFile("unidentified", "Unknown Binary", null);
 
         filter.filter(dip);
 
-        assertHasFileTypes(idb, "unknown");
+        assertHasFileTypes(idb, "application/octet-stream");
+        assertNull(idb.getFileFormatDescription());
         assertHasCategories(idb, ContentCategory.unknown);
     }
 
     @Test
-    public void testInvalidExtensionFallbackToMimetype() throws Exception {
-        mockFile("unidentified.20210401", "text/plain");
+    public void testBlankMimetype() throws Exception {
+        mockFile("unidentified", "Unknown Binary", "");
 
         filter.filter(dip);
 
-        assertHasFileTypes(idb, "txt");
-        assertHasCategories(idb, ContentCategory.text);
+        assertHasFileTypes(idb, "application/octet-stream");
+        assertNull(idb.getFileFormatDescription());
+        assertHasCategories(idb, ContentCategory.unknown);
     }
 
     @Test
@@ -275,6 +311,7 @@ public class SetContentTypeFilterTest {
         filter.filter(dip);
 
         assertTrue(CollectionUtils.isEmpty(idb.getFileFormatType()));
+        assertTrue(CollectionUtils.isEmpty(idb.getFileFormatDescription()));
         assertTrue(CollectionUtils.isEmpty(idb.getFileFormatCategory()));
     }
 
@@ -284,23 +321,27 @@ public class SetContentTypeFilterTest {
 
         var fileRec1 = new ContentObjectSolrRecord();
         fileRec1.setFileFormatCategory(Collections.singletonList(ContentCategory.text.getDisplayName()));
-        fileRec1.setFileFormatType(Collections.singletonList("xml"));
+        fileRec1.setFileFormatType(Collections.singletonList("text/xml"));
+        fileRec1.setFileFormatDescription(Collections.singletonList("Extensible Markup Language"));
         var fileRec2 = new ContentObjectSolrRecord();
         fileRec2.setFileFormatCategory(Collections.singletonList(ContentCategory.text.getDisplayName()));
-        fileRec2.setFileFormatType(Collections.singletonList("txt"));
+        fileRec2.setFileFormatType(Collections.singletonList("text/plain"));
+        fileRec2.setFileFormatDescription(Collections.singletonList("Plain Text"));
         var fileRec3 = new ContentObjectSolrRecord();
         fileRec3.setFileFormatCategory(Collections.singletonList(ContentCategory.text.getDisplayName()));
-        fileRec3.setFileFormatType(Collections.singletonList("txt"));
+        fileRec3.setFileFormatType(Collections.singletonList("text/plain"));
+        fileRec3.setFileFormatDescription(Collections.singletonList("Plain Text"));
         var fileRec4 = new ContentObjectSolrRecord();
-        fileRec3.setFileFormatCategory(Collections.singletonList(ContentCategory.audio.getDisplayName()));
-        fileRec3.setFileFormatType(Collections.singletonList("wav"));
+        fileRec4.setFileFormatCategory(Collections.singletonList(ContentCategory.audio.getDisplayName()));
+        fileRec4.setFileFormatType(Collections.singletonList("audio/wav"));
+        fileRec4.setFileFormatDescription(Collections.singletonList("WAVE Audio File Format"));
         when(searchResultResponse.getResultList()).thenReturn(Arrays.asList(
                 fileRec1, fileRec2, fileRec3, fileRec4));
 
         filter.filter(dip);
 
-        var cTypes = idb.getContentType();
-        assertHasFileTypes(idb, "xml", "txt", "wav");
+        assertHasFileTypes(idb, "text/xml", "text/plain", "audio/wav");
+        assertHasFileDescriptions(idb, "Extensible Markup Language", "Plain Text", "WAVE Audio File Format");
         assertHasCategories(idb, ContentCategory.text, ContentCategory.audio);
     }
 
@@ -311,21 +352,37 @@ public class SetContentTypeFilterTest {
 
         var fileRec = new ContentObjectSolrRecord();
         fileRec.setFileFormatCategory(Collections.singletonList(ContentCategory.text.getDisplayName()));
-        fileRec.setFileFormatType(Collections.singletonList("xml"));
+        fileRec.setFileFormatType(Collections.singletonList("text/xml"));
+        fileRec.setFileFormatDescription(Collections.singletonList("Extensible Markup Language"));
         when(searchResultResponse.getResultList()).thenReturn(Collections.singletonList(fileRec));
 
         filter.filter(dip);
 
-        assertHasFileTypes(idb, "xml");
+        assertHasFileTypes(idb, "text/xml");
+        assertHasFileDescriptions(idb, "Extensible Markup Language");
         assertHasCategories(idb, ContentCategory.text);
         verify(solrSearchService, never()).getAncestorPath(anyString(), any(AccessGroupSet.class));
     }
 
-    private void mockFile(String filename, String mimetype) {
+    private void mockFile(String filename, String identity, String mimetype) {
         when(dip.getContentObject()).thenReturn(fileObj);
         when(fileObj.getOriginalFile()).thenReturn(binObj);
         when(binObj.getFilename()).thenReturn(filename);
+        if (identity != null) {
+            when(techMdObj.getPid()).thenReturn(DatastreamPids.getTechnicalMetadataPid(pid));
+            when(techMdObj.getBinaryStream()).thenReturn(createTechMdBody(identity));
+        }
         when(binObj.getMimetype()).thenReturn(mimetype);
+        when(fileObj.getPid()).thenReturn(pid);
+    }
+
+    private void assertHasFileDescriptions(IndexDocumentBean idb, String... expectedDescs) {
+        for (var expected: expectedDescs) {
+            assertTrue("Object did not have expected description " + expected + ", were: " + idb.getFileFormatDescription(),
+                    idb.getFileFormatDescription().contains(expected));
+        }
+        assertEquals("Incorrect number of descriptions, expected: " + expectedDescs + ", found: " + idb.getFileFormatDescription(),
+                expectedDescs.length, idb.getFileFormatDescription().size());
     }
 
     private void assertHasFileTypes(IndexDocumentBean idb, String... expectedTypes) {
@@ -345,5 +402,22 @@ public class SetContentTypeFilterTest {
         }
         assertEquals("Incorrect number of categories, expected: " + expectedCats + ", found: " + idb.getFileFormatCategory(),
                 expectedCats.length, idb.getFileFormatCategory().size());
+    }
+
+    private InputStream createTechMdBody(String formatIdentity) {
+        String body =
+                "<premis3:premis xmlns:premis3=\"http://www.loc.gov/premis/v3\">\n" +
+                "  <premis3:object xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:type=\"premis3:file\">\n" +
+                "    <premis3:objectCharacteristics>\n" +
+                "      <premis3:compositionLevel>0</premis3:compositionLevel>\n" +
+                "      <premis3:format>\n" +
+                "        <premis3:formatDesignation>\n" +
+                "          <premis3:formatName>" + formatIdentity + "</premis3:formatName>\n" +
+                "        </premis3:formatDesignation>\n" +
+                "      </premis3:format>\n" +
+                "     </premis3:objectCharacteristics>\n" +
+                "  </premis3:object>\n" +
+                "</premis3:premis>";
+        return new ByteArrayInputStream(body.getBytes(StandardCharsets.UTF_8));
     }
 }

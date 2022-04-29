@@ -47,6 +47,7 @@ public enum SearchFieldKey {
     DEFAULT_INDEX("text", "anywhere", "Anywhere"),
     FILE_FORMAT_CATEGORY("fileFormatCategory", "format", "Format"),
     FILE_FORMAT_TYPE("fileFormatType", "fileType", "File Type"),
+    FILE_FORMAT_DESCRIPTION("fileFormatDescription", "fileDesc", "File Type Description"),
     FILESIZE("filesizeSort", "filesize", "Filesize"),
     FILESIZE_TOTAL("filesizeTotal", "filesizeTotal", "Filesize Total"),
     FULL_TEXT("fullText", "fullText", "Full Text"),

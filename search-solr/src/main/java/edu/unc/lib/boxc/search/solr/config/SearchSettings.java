@@ -19,7 +19,6 @@ import edu.unc.lib.boxc.model.api.ResourceType;
 import edu.unc.lib.boxc.search.api.SearchFieldKey;
 import edu.unc.lib.boxc.search.solr.facets.CutoffFacetImpl;
 import edu.unc.lib.boxc.search.solr.facets.GenericFacet;
-import edu.unc.lib.boxc.search.solr.facets.MultivaluedHierarchicalFacet;
 import edu.unc.lib.boxc.search.solr.facets.RoleGroupFacet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -85,7 +84,6 @@ public class SearchSettings extends AbstractSettings {
     // Classes for facet fields. If not specified, then it is a GenericFacet
     private static final Map<String, Class<?>> FACET_CLASS_MAP = Map.of(
             SearchFieldKey.ANCESTOR_PATH.name(), CutoffFacetImpl.class,
-            SearchFieldKey.CONTENT_TYPE.name(), MultivaluedHierarchicalFacet.class,
             SearchFieldKey.ROLE_GROUP.name(), RoleGroupFacet.class
     );
 

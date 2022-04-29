@@ -16,7 +16,7 @@
 package edu.unc.lib.boxc.search.solr.services;
 
 import static edu.unc.lib.boxc.auth.api.AccessPrincipalConstants.PUBLIC_PRINC;
-import static edu.unc.lib.boxc.search.api.SearchFieldKey.CONTENT_TYPE;
+import static edu.unc.lib.boxc.search.api.SearchFieldKey.FILE_FORMAT_CATEGORY;
 import static edu.unc.lib.boxc.search.api.SearchFieldKey.PARENT_COLLECTION;
 import static edu.unc.lib.boxc.search.api.SearchFieldKey.PARENT_UNIT;
 import static edu.unc.lib.boxc.search.api.SearchFieldKey.SUBJECT;
@@ -29,6 +29,7 @@ import static org.mockito.MockitoAnnotations.initMocks;
 import java.util.Arrays;
 import java.util.Map;
 
+import edu.unc.lib.boxc.search.solr.facets.GenericFacet;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
@@ -43,7 +44,6 @@ import edu.unc.lib.boxc.search.api.facets.FacetFieldObject;
 import edu.unc.lib.boxc.search.api.facets.SearchFacet;
 import edu.unc.lib.boxc.search.api.requests.SearchRequest;
 import edu.unc.lib.boxc.search.api.requests.SearchState;
-import edu.unc.lib.boxc.search.solr.facets.MultivaluedHierarchicalFacet;
 import edu.unc.lib.boxc.search.solr.responses.SearchResultResponse;
 import edu.unc.lib.boxc.search.solr.test.BaseEmbeddedSolrTest;
 import edu.unc.lib.boxc.search.solr.test.TestCorpus;
@@ -161,7 +161,7 @@ public class SetFacetTitleByIdServiceIT extends BaseEmbeddedSolrTest {
         searchState.setFacetsToRetrieve(Arrays.asList(PARENT_COLLECTION.name()));
 
         SearchRequest request = new SearchRequest(searchState, accessGroups);
-        request.getSearchState().addFacet(new MultivaluedHierarchicalFacet(CONTENT_TYPE.name(), "unknown"));
+        request.getSearchState().addFacet(new GenericFacet(FILE_FORMAT_CATEGORY.name(), "Unknown"));
         SearchResultResponse resp = facetListService.getFacetListResult(request);
         FacetFieldList facetFieldList = resp.getFacetFields();
 

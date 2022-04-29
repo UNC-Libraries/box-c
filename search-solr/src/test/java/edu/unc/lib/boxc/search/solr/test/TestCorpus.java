@@ -22,10 +22,12 @@ import static java.util.Arrays.asList;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import edu.unc.lib.boxc.search.api.SearchFieldKey;
 import org.apache.solr.common.SolrInputDocument;
 
 import edu.unc.lib.boxc.auth.api.UserRole;
@@ -47,7 +49,7 @@ import edu.unc.lib.boxc.search.api.ContentCategory;
  *          > file1 -> text/txt
  *          > file2 -> text/pdf
  *        > work2
- *          > file1 -> image/jpg
+ *          > file1 -> image/jpeg
  *    > coll2
  *      > work3
  *        > file1 -> text/txt
@@ -119,32 +121,32 @@ public class TestCorpus {
         newDoc = makeContainerDocument(work1Pid, "Work 1", ResourceType.Work,
                 rootPid, unitPid, coll1Pid, folder1Pid);
         addAclProperties(newDoc, PUBLIC_PRINC, "unitOwner", "manager");
-        addFileProperties(newDoc, ContentCategory.text, "txt");
-        addFileProperties(newDoc, ContentCategory.text, "pdf");
+        addFileProperties(newDoc, ContentCategory.text, "text/plain", "Plain Text");
+        addFileProperties(newDoc, ContentCategory.text, "application/pdf", "PDF");
         docs.add(newDoc);
 
         newDoc = makeFileDocument(work1File1Pid, "File 1",
                 rootPid, unitPid, coll1Pid, folder1Pid, work1Pid);
-        addFileProperties(newDoc, ContentCategory.text, "txt");
+        addFileProperties(newDoc, ContentCategory.text, "text/plain", "Plain Text");
         addAclProperties(newDoc, PUBLIC_PRINC, "unitOwner", "manager");
         docs.add(newDoc);
 
         newDoc = makeFileDocument(work1File2Pid, "File 2",
                 rootPid, unitPid, coll1Pid, folder1Pid, work1Pid);
         addAclProperties(newDoc, PUBLIC_PRINC, "unitOwner", "manager");
-        addFileProperties(newDoc, ContentCategory.text, "pdf");
+        addFileProperties(newDoc, ContentCategory.text, "application/pdf", "PDF");
         docs.add(newDoc);
 
         newDoc = makeContainerDocument(work2Pid, "Work 2", ResourceType.Work,
                 rootPid, unitPid, coll1Pid, folder1Pid);
         addAclProperties(newDoc, PUBLIC_PRINC, "unitOwner", "manager");
-        addFileProperties(newDoc, ContentCategory.image, "jpg");
+        addFileProperties(newDoc, ContentCategory.image, "image/jpeg", "JPEG Image");
         docs.add(newDoc);
 
         newDoc = makeFileDocument(work2File1Pid, "File 3",
                 rootPid, unitPid, coll1Pid, folder1Pid, work2Pid);
         addAclProperties(newDoc, PUBLIC_PRINC, "unitOwner", "manager");
-        addFileProperties(newDoc, ContentCategory.image, "jpg");
+        addFileProperties(newDoc, ContentCategory.image, "image/jpeg", "JPEG Image");
         docs.add(newDoc);
 
         newDoc = makeContainerDocument(coll2Pid, "Collection 2", ResourceType.Collection,
@@ -155,13 +157,13 @@ public class TestCorpus {
         newDoc = makeContainerDocument(work3Pid, "Work 3", ResourceType.Work,
                 rootPid, unitPid, coll2Pid);
         addAclProperties(newDoc, PUBLIC_PRINC, "unitOwner", null);
-        addFileProperties(newDoc, ContentCategory.text, "txt");
+        addFileProperties(newDoc, ContentCategory.text, "text/plain", "Plain Text");
         docs.add(newDoc);
 
         newDoc = makeFileDocument(work3File1Pid, "File 1",
                 rootPid, unitPid, coll2Pid, work3Pid);
         addAclProperties(newDoc, PUBLIC_PRINC, "unitOwner", null);
-        addFileProperties(newDoc, ContentCategory.text, "txt");
+        addFileProperties(newDoc, ContentCategory.text, "text/plain", "Plain Text");
         docs.add(newDoc);
 
         newDoc = makeContainerDocument(privateFolderPid, "Private Folder", ResourceType.Folder,
@@ -172,13 +174,13 @@ public class TestCorpus {
         newDoc = makeContainerDocument(privateWorkPid, "Private Work", ResourceType.Work,
                 rootPid, unitPid, coll2Pid, privateFolderPid);
         addAclProperties(newDoc, null, "unitOwner", null);
-        addFileProperties(newDoc, ContentCategory.image, "png");
+        addFileProperties(newDoc, ContentCategory.image, "image/png", "Portable Network Graphics");
         docs.add(newDoc);
 
         newDoc = makeFileDocument(privateWorkFile1Pid, "Private File",
                 rootPid, unitPid, coll2Pid, privateFolderPid, privateWorkPid);
         addAclProperties(newDoc, null, "unitOwner", null);
-        addFileProperties(newDoc, ContentCategory.image, "png");
+        addFileProperties(newDoc, ContentCategory.image, "image/png", "Portable Network Graphics");
         docs.add(newDoc);
 
         return docs;
@@ -215,14 +217,23 @@ public class TestCorpus {
         }
     }
 
-    public void addFileProperties(SolrInputDocument doc, ContentCategory typeCategory, String typeExt) {
-        String tier1 = "^" + typeCategory.name() + "," + typeCategory.getDisplayName();
-        String tier2 = "/" + typeCategory.name() + "^" + typeExt + "," + typeExt;
-        var existing = doc.getField("contentType");
-        if (existing == null) {
-            doc.addField("contentType", new ArrayList<>(Arrays.asList(tier1, tier2)));
+    public void addFileProperties(SolrInputDocument doc, ContentCategory typeCategory, String mimeType, String desc) {
+        if (doc.getField(SearchFieldKey.FILE_FORMAT_CATEGORY.getSolrField()) != null) {
+            doc.getField(SearchFieldKey.FILE_FORMAT_CATEGORY.getSolrField()).addValue(typeCategory.getDisplayName());
         } else {
-            existing.addValue(Arrays.asList(tier1, tier2));
+            doc.addField(SearchFieldKey.FILE_FORMAT_CATEGORY.getSolrField(), new ArrayList<>(Arrays.asList(typeCategory.getDisplayName())));
+        }
+        if (doc.getField(SearchFieldKey.FILE_FORMAT_TYPE.getSolrField()) != null) {
+            doc.getField(SearchFieldKey.FILE_FORMAT_TYPE.getSolrField()).addValue(mimeType);
+        } else {
+            doc.addField(SearchFieldKey.FILE_FORMAT_TYPE.getSolrField(), new ArrayList<>(Arrays.asList(mimeType)));
+        }
+        if (desc != null) {
+            if (doc.getField(SearchFieldKey.FILE_FORMAT_DESCRIPTION.getSolrField()) != null) {
+                doc.getField(SearchFieldKey.FILE_FORMAT_DESCRIPTION.getSolrField()).addValue(desc);
+            } else {
+                doc.addField(SearchFieldKey.FILE_FORMAT_DESCRIPTION.getSolrField(), new ArrayList<>(Arrays.asList(desc)));
+            }
         }
     }
 

@@ -106,7 +106,6 @@ public class AccessCopiesServiceTest  {
         List<String> imgDatastreams = Arrays.asList(
                 ORIGINAL_FILE.getId() + "|image/png|file.png|png|766|urn:sha1:checksum|",
                 DatastreamType.THUMBNAIL_LARGE.getId() + "|image/png|thumb|png|55||");
-        mdObjectImg.setContentType(Arrays.asList('^' + ContentCategory.image.getJoined()));
         mdObjectImg.setFileFormatCategory(Collections.singletonList(ContentCategory.image.getDisplayName()));
         mdObjectImg.setFileFormatType(Collections.singletonList("png"));
         mdObjectImg.setDatastream(imgDatastreams);
@@ -296,7 +295,6 @@ public class AccessCopiesServiceTest  {
     @Test
     public void noFilesThumbnailMultipleFiles() {
         hasPermissions(noOriginalFileObj, true);
-        noOriginalFileObj.setContentType(Collections.emptyList());
         List<ContentObjectSolrRecord> resultList = Collections.emptyList();
         when(queryResponse.getBeans(ContentObjectSolrRecord.class)).thenReturn(resultList);
         when(queryResponse.getResults().size()).thenReturn(resultList.size());

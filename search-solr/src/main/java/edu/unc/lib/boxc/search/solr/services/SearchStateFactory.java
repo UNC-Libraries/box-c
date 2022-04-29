@@ -21,7 +21,6 @@ import edu.unc.lib.boxc.search.api.facets.SearchFacet;
 import edu.unc.lib.boxc.search.api.requests.SearchState;
 import edu.unc.lib.boxc.search.solr.config.SearchSettings;
 import edu.unc.lib.boxc.search.solr.facets.GenericFacet;
-import edu.unc.lib.boxc.search.solr.facets.MultivaluedHierarchicalFacet;
 import edu.unc.lib.boxc.search.solr.utils.FacetFieldUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -455,11 +454,10 @@ public class SearchStateFactory {
             searchState.setFacet(new GenericFacet(SearchFieldKey.PARENT_COLLECTION, parameter));
         }
 
-        parameter = getParameter(request, searchSettings.searchFieldParam(SearchFieldKey.CONTENT_TYPE.name()));
+        parameter = getParameter(request, searchSettings.searchFieldParam(SearchFieldKey.FILE_FORMAT_CATEGORY.name()));
         if (parameter != null && parameter.length() > 0) {
-            MultivaluedHierarchicalFacet hierFacet = new MultivaluedHierarchicalFacet(
-                    SearchFieldKey.CONTENT_TYPE.name(), parameter);
-            searchState.addFacet(hierFacet);
+            var fileFormatCat = new GenericFacet(SearchFieldKey.FILE_FORMAT_CATEGORY.name(), parameter);
+            searchState.addFacet(fileFormatCat);
         }
 
         //Store date added.

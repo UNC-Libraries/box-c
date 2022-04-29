@@ -162,6 +162,8 @@
     <field name="fileFormatCategory" type="string" indexed="true" stored="true" multiValued="true" docValues="true"/>
     <!-- Specific format of binary content, represented as a file extension -->
     <field name="fileFormatType" type="string" indexed="true" stored="true" multiValued="true" docValues="true"/>
+    <!-- Specific format of binary content, represented as a file extension -->
+    <field name="fileFormatDescription" type="string" indexed="true" stored="true" multiValued="true"/>
     <!-- Filesize of the default web data for this object, used for sorting -->
     <field name="filesizeSort" type="long" indexed="true" stored="true" docValues="true"/>
     <!-- Sum of all datastreams filesizes for this object -->

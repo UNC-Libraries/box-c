@@ -16,7 +16,8 @@
 package edu.unc.lib.boxc.search.solr.services;
 
 import static edu.unc.lib.boxc.auth.api.AccessPrincipalConstants.PUBLIC_PRINC;
-import static edu.unc.lib.boxc.search.api.SearchFieldKey.CONTENT_TYPE;
+import static edu.unc.lib.boxc.search.api.SearchFieldKey.FILE_FORMAT_CATEGORY;
+import static edu.unc.lib.boxc.search.api.SearchFieldKey.FILE_FORMAT_TYPE;
 import static edu.unc.lib.boxc.search.api.SearchFieldKey.PARENT_COLLECTION;
 import static edu.unc.lib.boxc.search.api.SearchFieldKey.ROLE_GROUP;
 import static org.junit.Assert.assertEquals;
@@ -62,7 +63,7 @@ import edu.unc.lib.boxc.search.solr.utils.FacetFieldUtil;
 public class MultiSelectFacetListServiceIT extends BaseEmbeddedSolrTest {
 
     private static final List<String> FACETS_TO_RETRIEVE = Arrays.asList(
-            CONTENT_TYPE.name(), ROLE_GROUP.name(), PARENT_COLLECTION.name());
+            FILE_FORMAT_CATEGORY.name(), FILE_FORMAT_TYPE.name(), ROLE_GROUP.name(), PARENT_COLLECTION.name());
     private static final List<String> RESOURCE_TYPES_TO_RETRIEVE = Arrays.asList(
             ResourceType.AdminUnit.name(), ResourceType.Collection.name(),
             ResourceType.Folder.name(), ResourceType.Work.name());
@@ -131,9 +132,15 @@ public class MultiSelectFacetListServiceIT extends BaseEmbeddedSolrTest {
         assertFacetValueCount(resp, PARENT_COLLECTION, testCorpus.coll1Pid.getId(), 3);
         assertFacetValueCount(resp, PARENT_COLLECTION, testCorpus.coll2Pid.getId(), 3);
 
-        assertNumberFacetsReturned(resp, CONTENT_TYPE, 2);
-        assertFacetValueCount(resp, CONTENT_TYPE, "^text", 2);
-        assertFacetValueCount(resp, CONTENT_TYPE, "^image", 2);
+        assertNumberFacetsReturned(resp, FILE_FORMAT_CATEGORY, 2);
+        assertFacetValueCount(resp, FILE_FORMAT_CATEGORY, "Text", 2);
+        assertFacetValueCount(resp, FILE_FORMAT_CATEGORY, "Image", 2);
+
+        assertNumberFacetsReturned(resp, FILE_FORMAT_TYPE, 4);
+        assertFacetValueCount(resp, FILE_FORMAT_TYPE, "text/plain", 2);
+        assertFacetValueCount(resp, FILE_FORMAT_TYPE, "application/pdf", 1);
+        assertFacetValueCount(resp, FILE_FORMAT_TYPE, "image/jpeg", 1);
+        assertFacetValueCount(resp, FILE_FORMAT_TYPE, "image/png", 1);
 
         assertNumberFacetsReturned(resp, ROLE_GROUP, 3);
         assertFacetValueCount(resp, ROLE_GROUP, "canViewOriginals|everyone", 7);
@@ -154,9 +161,14 @@ public class MultiSelectFacetListServiceIT extends BaseEmbeddedSolrTest {
         assertFacetValueCount(resp, PARENT_COLLECTION, testCorpus.coll1Pid.getId(), 3);
         assertFacetValueCount(resp, PARENT_COLLECTION, testCorpus.coll2Pid.getId(), 3);
 
-        assertNumberFacetsReturned(resp, CONTENT_TYPE, 2);
-        assertFacetValueCount(resp, CONTENT_TYPE, "^text", 1);
-        assertFacetValueCount(resp, CONTENT_TYPE, "^image", 1);
+        assertNumberFacetsReturned(resp, FILE_FORMAT_CATEGORY, 2);
+        assertFacetValueCount(resp, FILE_FORMAT_CATEGORY, "Text", 1);
+        assertFacetValueCount(resp, FILE_FORMAT_CATEGORY, "Image", 1);
+
+        assertNumberFacetsReturned(resp, FILE_FORMAT_TYPE, 3);
+        assertFacetValueCount(resp, FILE_FORMAT_TYPE, "text/plain", 1);
+        assertFacetValueCount(resp, FILE_FORMAT_TYPE, "application/pdf", 1);
+        assertFacetValueCount(resp, FILE_FORMAT_TYPE, "image/jpeg", 1);
 
         assertNumberFacetsReturned(resp, ROLE_GROUP, 3);
         assertFacetValueCount(resp, ROLE_GROUP, "canViewOriginals|everyone", 3);
@@ -178,9 +190,15 @@ public class MultiSelectFacetListServiceIT extends BaseEmbeddedSolrTest {
         assertFacetValueCount(resp, PARENT_COLLECTION, testCorpus.coll1Pid.getId(), 3);
         assertFacetValueCount(resp, PARENT_COLLECTION, testCorpus.coll2Pid.getId(), 3);
 
-        assertNumberFacetsReturned(resp, CONTENT_TYPE, 2);
-        assertFacetValueCount(resp, CONTENT_TYPE, "^text", 2);
-        assertFacetValueCount(resp, CONTENT_TYPE, "^image", 2);
+        assertNumberFacetsReturned(resp, FILE_FORMAT_CATEGORY, 2);
+        assertFacetValueCount(resp, FILE_FORMAT_CATEGORY, "Text", 2);
+        assertFacetValueCount(resp, FILE_FORMAT_CATEGORY, "Image", 2);
+
+        assertNumberFacetsReturned(resp, FILE_FORMAT_TYPE, 4);
+        assertFacetValueCount(resp, FILE_FORMAT_TYPE, "text/plain", 2);
+        assertFacetValueCount(resp, FILE_FORMAT_TYPE, "application/pdf", 1);
+        assertFacetValueCount(resp, FILE_FORMAT_TYPE, "image/jpeg", 1);
+        assertFacetValueCount(resp, FILE_FORMAT_TYPE, "image/png", 1);
 
         assertNumberFacetsReturned(resp, ROLE_GROUP, 3);
         assertFacetValueCount(resp, ROLE_GROUP, "canViewOriginals|everyone", 4);
@@ -189,10 +207,10 @@ public class MultiSelectFacetListServiceIT extends BaseEmbeddedSolrTest {
     }
 
     @Test
-    public void singleContentTypeFacetTest() throws Exception {
+    public void singleFileFormatCategoryTest() throws Exception {
         SearchState searchState = new SearchState();
         searchState.setFacetsToRetrieve(FACETS_TO_RETRIEVE);
-        searchState.setFacet(new MultivaluedHierarchicalFacet(CONTENT_TYPE.name(), "text"));
+        searchState.addFacet(new GenericFacet(FILE_FORMAT_CATEGORY.name(), "Text"));
 
         SearchRequest request = new SearchRequest(searchState, accessGroups);
         SearchResultResponse resp = service.getFacetListResult(request);
@@ -201,11 +219,13 @@ public class MultiSelectFacetListServiceIT extends BaseEmbeddedSolrTest {
         assertFacetValueCount(resp, PARENT_COLLECTION, testCorpus.coll1Pid.getId(), 1);
         assertFacetValueCount(resp, PARENT_COLLECTION, testCorpus.coll2Pid.getId(), 1);
 
-        assertNumberFacetsReturned(resp, CONTENT_TYPE, 4);
-        assertFacetValueCount(resp, CONTENT_TYPE, "^text", 2);
-        assertFacetValueCount(resp, CONTENT_TYPE, "^image", 2);
-        assertFacetValueCount(resp, CONTENT_TYPE, "/text^txt", 2);
-        assertFacetValueCount(resp, CONTENT_TYPE, "/text^pdf", 1);
+        assertNumberFacetsReturned(resp, FILE_FORMAT_CATEGORY, 2);
+        assertFacetValueCount(resp, FILE_FORMAT_CATEGORY, "Text", 2);
+        assertFacetValueCount(resp, FILE_FORMAT_CATEGORY, "Image", 2);
+
+        assertNumberFacetsReturned(resp, FILE_FORMAT_TYPE, 2);
+        assertFacetValueCount(resp, FILE_FORMAT_TYPE, "text/plain", 2);
+        assertFacetValueCount(resp, FILE_FORMAT_TYPE, "application/pdf", 1);
 
         assertNumberFacetsReturned(resp, ROLE_GROUP, 3);
         assertFacetValueCount(resp, ROLE_GROUP, "canViewOriginals|everyone", 2);
@@ -216,10 +236,10 @@ public class MultiSelectFacetListServiceIT extends BaseEmbeddedSolrTest {
     }
 
     @Test
-    public void secondTierContentTypeFacetTest() throws Exception {
+    public void singleFileFormatTypeTest() throws Exception {
         SearchState searchState = new SearchState();
         searchState.setFacetsToRetrieve(FACETS_TO_RETRIEVE);
-        searchState.setFacet(new MultivaluedHierarchicalFacet(CONTENT_TYPE.name(), "image/jpg"));
+        searchState.addFacet(new GenericFacet(FILE_FORMAT_TYPE.name(), "image/jpeg"));
 
         SearchRequest request = new SearchRequest(searchState, accessGroups);
         SearchResultResponse resp = service.getFacetListResult(request);
@@ -227,11 +247,14 @@ public class MultiSelectFacetListServiceIT extends BaseEmbeddedSolrTest {
         assertNumberFacetsReturned(resp, PARENT_COLLECTION, 1);
         assertFacetValueCount(resp, PARENT_COLLECTION, testCorpus.coll1Pid.getId(), 1);
 
-        assertNumberFacetsReturned(resp, CONTENT_TYPE, 4);
-        assertFacetValueCount(resp, CONTENT_TYPE, "^text", 2);
-        assertFacetValueCount(resp, CONTENT_TYPE, "^image", 2);
-        assertFacetValueCount(resp, CONTENT_TYPE, "/image^jpg", 1);
-        assertFacetValueCount(resp, CONTENT_TYPE, "/image^png", 1);
+        assertNumberFacetsReturned(resp, FILE_FORMAT_CATEGORY, 1);
+        assertFacetValueCount(resp, FILE_FORMAT_CATEGORY, "Image", 1);
+
+        assertNumberFacetsReturned(resp, FILE_FORMAT_TYPE, 4);
+        assertFacetValueCount(resp, FILE_FORMAT_TYPE, "text/plain", 2);
+        assertFacetValueCount(resp, FILE_FORMAT_TYPE, "application/pdf", 1);
+        assertFacetValueCount(resp, FILE_FORMAT_TYPE, "image/jpeg", 1);
+        assertFacetValueCount(resp, FILE_FORMAT_TYPE, "image/png", 1);
 
         assertNumberFacetsReturned(resp, ROLE_GROUP, 3);
         assertFacetValueCount(resp, ROLE_GROUP, "canViewOriginals|everyone", 1);
@@ -242,11 +265,11 @@ public class MultiSelectFacetListServiceIT extends BaseEmbeddedSolrTest {
     }
 
     @Test
-    public void parentAndChildContentTypeFacetTest() throws Exception {
+    public void fileFormatCategoryAndTypeTest() throws Exception {
         SearchState searchState = new SearchState();
         searchState.setFacetsToRetrieve(FACETS_TO_RETRIEVE);
-        searchState.addFacet(new MultivaluedHierarchicalFacet(CONTENT_TYPE.name(), "image"));
-        searchState.addFacet(new MultivaluedHierarchicalFacet(CONTENT_TYPE.name(), "image/jpg"));
+        searchState.addFacet(new GenericFacet(FILE_FORMAT_CATEGORY.name(), "Image"));
+        searchState.addFacet(new GenericFacet(FILE_FORMAT_TYPE.name(), "image/jpeg"));
 
         SearchRequest request = new SearchRequest(searchState, accessGroups);
         SearchResultResponse resp = service.getFacetListResult(request);
@@ -254,11 +277,12 @@ public class MultiSelectFacetListServiceIT extends BaseEmbeddedSolrTest {
         assertNumberFacetsReturned(resp, PARENT_COLLECTION, 1);
         assertFacetValueCount(resp, PARENT_COLLECTION, testCorpus.coll1Pid.getId(), 1);
 
-        assertNumberFacetsReturned(resp, CONTENT_TYPE, 4);
-        assertFacetValueCount(resp, CONTENT_TYPE, "^text", 2);
-        assertFacetValueCount(resp, CONTENT_TYPE, "^image", 2);
-        assertFacetValueCount(resp, CONTENT_TYPE, "/image^jpg", 1);
-        assertFacetValueCount(resp, CONTENT_TYPE, "/image^png", 1);
+        assertNumberFacetsReturned(resp, FILE_FORMAT_CATEGORY, 1);
+        assertFacetValueCount(resp, FILE_FORMAT_CATEGORY, "Image", 1);
+
+        assertNumberFacetsReturned(resp, FILE_FORMAT_TYPE, 2);
+        assertFacetValueCount(resp, FILE_FORMAT_TYPE, "image/jpeg", 1);
+        assertFacetValueCount(resp, FILE_FORMAT_TYPE, "image/png", 1);
 
         assertNumberFacetsReturned(resp, ROLE_GROUP, 3);
         assertFacetValueCount(resp, ROLE_GROUP, "canViewOriginals|everyone", 1);
@@ -269,41 +293,12 @@ public class MultiSelectFacetListServiceIT extends BaseEmbeddedSolrTest {
     }
 
     @Test
-    public void multipleContentTypeFacetTest() throws Exception {
+    public void multipleFileFormatCategoriesSingleTypeTest() throws Exception {
         SearchState searchState = new SearchState();
         searchState.setFacetsToRetrieve(FACETS_TO_RETRIEVE);
-        searchState.addFacet(new MultivaluedHierarchicalFacet(CONTENT_TYPE.name(), "text/txt"));
-        searchState.addFacet(new MultivaluedHierarchicalFacet(CONTENT_TYPE.name(), "image"));
-
-        SearchRequest request = new SearchRequest(searchState, accessGroups);
-        SearchResultResponse resp = service.getFacetListResult(request);
-
-        assertNumberFacetsReturned(resp, PARENT_COLLECTION, 2);
-        assertFacetValueCount(resp, PARENT_COLLECTION, testCorpus.coll1Pid.getId(), 2);
-        assertFacetValueCount(resp, PARENT_COLLECTION, testCorpus.coll2Pid.getId(), 2);
-
-        assertNumberFacetsReturned(resp, CONTENT_TYPE, 6);
-        assertFacetValueCount(resp, CONTENT_TYPE, "^text", 2);
-        assertFacetValueCount(resp, CONTENT_TYPE, "^image", 2);
-        assertFacetValueCount(resp, CONTENT_TYPE, "/text^txt", 2);
-        assertFacetValueCount(resp, CONTENT_TYPE, "/text^pdf", 1);
-        assertFacetValueCount(resp, CONTENT_TYPE, "/image^jpg", 1);
-        assertFacetValueCount(resp, CONTENT_TYPE, "/image^png", 1);
-
-        assertNumberFacetsReturned(resp, ROLE_GROUP, 3);
-        assertFacetValueCount(resp, ROLE_GROUP, "canViewOriginals|everyone", 3);
-        assertFacetValueCount(resp, ROLE_GROUP, "unitOwner|unitOwner", 4);
-        assertFacetValueCount(resp, ROLE_GROUP, "canManage|manager", 2);
-
-        assertEquals(4, resp.getResultCount());
-    }
-
-    @Test
-    public void multipleSameParentContentTypeFacetTest() throws Exception {
-        SearchState searchState = new SearchState();
-        searchState.setFacetsToRetrieve(FACETS_TO_RETRIEVE);
-        searchState.addFacet(new MultivaluedHierarchicalFacet(CONTENT_TYPE.name(), "image/jpg"));
-        searchState.addFacet(new MultivaluedHierarchicalFacet(CONTENT_TYPE.name(), "image/png"));
+        searchState.addFacet(new GenericFacet(FILE_FORMAT_CATEGORY.name(), "Image"));
+        searchState.addFacet(new GenericFacet(FILE_FORMAT_CATEGORY.name(), "Text"));
+        searchState.addFacet(new GenericFacet(FILE_FORMAT_TYPE.name(), "text/plain"));
 
         SearchRequest request = new SearchRequest(searchState, accessGroups);
         SearchResultResponse resp = service.getFacetListResult(request);
@@ -312,11 +307,43 @@ public class MultiSelectFacetListServiceIT extends BaseEmbeddedSolrTest {
         assertFacetValueCount(resp, PARENT_COLLECTION, testCorpus.coll1Pid.getId(), 1);
         assertFacetValueCount(resp, PARENT_COLLECTION, testCorpus.coll2Pid.getId(), 1);
 
-        assertFacetValueCount(resp, CONTENT_TYPE, "^text", 2);
-        assertFacetValueCount(resp, CONTENT_TYPE, "^image", 2);
-        assertFacetValueCount(resp, CONTENT_TYPE, "/image^png", 1);
-        assertFacetValueCount(resp, CONTENT_TYPE, "/image^jpg", 1);
-        assertNumberFacetsReturned(resp, CONTENT_TYPE, 4);
+        assertNumberFacetsReturned(resp, FILE_FORMAT_CATEGORY, 1);
+        assertFacetValueCount(resp, FILE_FORMAT_CATEGORY, "Text", 2);
+
+        assertNumberFacetsReturned(resp, FILE_FORMAT_TYPE, 4);
+        assertFacetValueCount(resp, FILE_FORMAT_TYPE, "text/plain", 2);
+        assertFacetValueCount(resp, FILE_FORMAT_TYPE, "application/pdf", 1);
+
+        assertNumberFacetsReturned(resp, ROLE_GROUP, 3);
+        assertFacetValueCount(resp, ROLE_GROUP, "canViewOriginals|everyone", 2);
+        assertFacetValueCount(resp, ROLE_GROUP, "unitOwner|unitOwner", 2);
+        assertFacetValueCount(resp, ROLE_GROUP, "canManage|manager", 1);
+
+        assertEquals(2, resp.getResultCount());
+    }
+
+    @Test
+    public void multipleFileFormatTypesInSameCategoryTest() throws Exception {
+        SearchState searchState = new SearchState();
+        searchState.setFacetsToRetrieve(FACETS_TO_RETRIEVE);
+        searchState.addFacet(new GenericFacet(FILE_FORMAT_TYPE.name(), "image/jpeg"));
+        searchState.addFacet(new GenericFacet(FILE_FORMAT_TYPE.name(), "image/png"));
+
+        SearchRequest request = new SearchRequest(searchState, accessGroups);
+        SearchResultResponse resp = service.getFacetListResult(request);
+
+        assertNumberFacetsReturned(resp, PARENT_COLLECTION, 2);
+        assertFacetValueCount(resp, PARENT_COLLECTION, testCorpus.coll1Pid.getId(), 1);
+        assertFacetValueCount(resp, PARENT_COLLECTION, testCorpus.coll2Pid.getId(), 1);
+
+        assertNumberFacetsReturned(resp, FILE_FORMAT_CATEGORY, 1);
+        assertFacetValueCount(resp, FILE_FORMAT_CATEGORY, "Image", 2);
+
+        assertNumberFacetsReturned(resp, FILE_FORMAT_TYPE, 4);
+        assertFacetValueCount(resp, FILE_FORMAT_TYPE, "text/plain", 2);
+        assertFacetValueCount(resp, FILE_FORMAT_TYPE, "application/pdf", 1);
+        assertFacetValueCount(resp, FILE_FORMAT_TYPE, "image/jpeg", 1);
+        assertFacetValueCount(resp, FILE_FORMAT_TYPE, "image/png", 1);
 
         assertNumberFacetsReturned(resp, ROLE_GROUP, 3);
         assertFacetValueCount(resp, ROLE_GROUP, "canViewOriginals|everyone", 1);
@@ -336,9 +363,14 @@ public class MultiSelectFacetListServiceIT extends BaseEmbeddedSolrTest {
         assertNumberFacetsReturned(resp, PARENT_COLLECTION, 1);
         assertFacetValueCount(resp, PARENT_COLLECTION, testCorpus.coll1Pid.getId(), 3);
 
-        assertNumberFacetsReturned(resp, CONTENT_TYPE, 2);
-        assertFacetValueCount(resp, CONTENT_TYPE, "^text", 1);
-        assertFacetValueCount(resp, CONTENT_TYPE, "^image", 1);
+        assertNumberFacetsReturned(resp, FILE_FORMAT_CATEGORY, 2);
+        assertFacetValueCount(resp, FILE_FORMAT_CATEGORY, "Text", 1);
+        assertFacetValueCount(resp, FILE_FORMAT_CATEGORY, "Image", 1);
+
+        assertNumberFacetsReturned(resp, FILE_FORMAT_TYPE, 3);
+        assertFacetValueCount(resp, FILE_FORMAT_TYPE, "text/plain", 1);
+        assertFacetValueCount(resp, FILE_FORMAT_TYPE, "application/pdf", 1);
+        assertFacetValueCount(resp, FILE_FORMAT_TYPE, "image/jpeg", 1);
 
         assertNumberFacetsReturned(resp, ROLE_GROUP, 3);
         assertFacetValueCount(resp, ROLE_GROUP, "canViewOriginals|everyone", 7);
@@ -359,9 +391,14 @@ public class MultiSelectFacetListServiceIT extends BaseEmbeddedSolrTest {
         assertNumberFacetsReturned(resp, PARENT_COLLECTION, 1);
         assertFacetValueCount(resp, PARENT_COLLECTION, testCorpus.coll1Pid.getId(), 2);
 
-        assertNumberFacetsReturned(resp, CONTENT_TYPE, 2);
-        assertFacetValueCount(resp, CONTENT_TYPE, "^text", 1);
-        assertFacetValueCount(resp, CONTENT_TYPE, "^image", 1);
+        assertNumberFacetsReturned(resp, FILE_FORMAT_CATEGORY, 2);
+        assertFacetValueCount(resp, FILE_FORMAT_CATEGORY, "Text", 1);
+        assertFacetValueCount(resp, FILE_FORMAT_CATEGORY, "Image", 1);
+
+        assertNumberFacetsReturned(resp, FILE_FORMAT_TYPE, 3);
+        assertFacetValueCount(resp, FILE_FORMAT_TYPE, "text/plain", 1);
+        assertFacetValueCount(resp, FILE_FORMAT_TYPE, "application/pdf", 1);
+        assertFacetValueCount(resp, FILE_FORMAT_TYPE, "image/jpeg", 1);
 
         assertNumberFacetsReturned(resp, ROLE_GROUP, 3);
         assertFacetValueCount(resp, ROLE_GROUP, "canViewOriginals|everyone", 2);
@@ -384,9 +421,15 @@ public class MultiSelectFacetListServiceIT extends BaseEmbeddedSolrTest {
         assertFacetValueCount(resp, PARENT_COLLECTION, testCorpus.coll1Pid.getId(), 3);
         assertFacetValueCount(resp, PARENT_COLLECTION, testCorpus.coll2Pid.getId(), 3);
 
-        assertNumberFacetsReturned(resp, CONTENT_TYPE, 2);
-        assertFacetValueCount(resp, CONTENT_TYPE, "^text", 2);
-        assertFacetValueCount(resp, CONTENT_TYPE, "^image", 2);
+        assertNumberFacetsReturned(resp, FILE_FORMAT_CATEGORY, 2);
+        assertFacetValueCount(resp, FILE_FORMAT_CATEGORY, "Text", 2);
+        assertFacetValueCount(resp, FILE_FORMAT_CATEGORY, "Image", 2);
+
+        assertNumberFacetsReturned(resp, FILE_FORMAT_TYPE, 4);
+        assertFacetValueCount(resp, FILE_FORMAT_TYPE, "text/plain", 2);
+        assertFacetValueCount(resp, FILE_FORMAT_TYPE, "application/pdf", 1);
+        assertFacetValueCount(resp, FILE_FORMAT_TYPE, "image/jpeg", 1);
+        assertFacetValueCount(resp, FILE_FORMAT_TYPE, "image/png", 1);
 
         assertNumberFacetsReturned(resp, ROLE_GROUP, 3);
         assertFacetValueCount(resp, ROLE_GROUP, "canViewOriginals|everyone", 6);
@@ -395,10 +438,10 @@ public class MultiSelectFacetListServiceIT extends BaseEmbeddedSolrTest {
     }
 
     @Test
-    public void setContainerAndContentTypeTest() throws Exception {
+    public void setContainerAndFileFormatTypeTest() throws Exception {
         SearchState searchState = new SearchState();
         searchState.setFacetsToRetrieve(FACETS_TO_RETRIEVE);
-        searchState.addFacet(new MultivaluedHierarchicalFacet(CONTENT_TYPE.name(), "text/txt"));
+        searchState.addFacet(new GenericFacet(FILE_FORMAT_TYPE.name(), "text/plain"));
 
         SearchRequest request = new SearchRequest(searchState, accessGroups);
         request.setRootPid(testCorpus.folder1Pid);
@@ -408,11 +451,13 @@ public class MultiSelectFacetListServiceIT extends BaseEmbeddedSolrTest {
         assertNumberFacetsReturned(resp, PARENT_COLLECTION, 1);
         assertFacetValueCount(resp, PARENT_COLLECTION, testCorpus.coll1Pid.getId(), 1);
 
-        assertNumberFacetsReturned(resp, CONTENT_TYPE, 4);
-        assertFacetValueCount(resp, CONTENT_TYPE, "^text", 1);
-        assertFacetValueCount(resp, CONTENT_TYPE, "^image", 1);
-        assertFacetValueCount(resp, CONTENT_TYPE, "/text^txt", 1);
-        assertFacetValueCount(resp, CONTENT_TYPE, "/text^pdf", 1);
+        assertNumberFacetsReturned(resp, FILE_FORMAT_CATEGORY, 1);
+        assertFacetValueCount(resp, FILE_FORMAT_CATEGORY, "Text", 1);
+
+        assertNumberFacetsReturned(resp, FILE_FORMAT_TYPE, 3);
+        assertFacetValueCount(resp, FILE_FORMAT_TYPE, "text/plain", 1);
+        assertFacetValueCount(resp, FILE_FORMAT_TYPE, "application/pdf", 1);
+        assertFacetValueCount(resp, FILE_FORMAT_TYPE, "image/jpeg", 1);
 
         assertNumberFacetsReturned(resp, ROLE_GROUP, 3);
         assertFacetValueCount(resp, ROLE_GROUP, "canViewOriginals|everyone", 1);
@@ -421,11 +466,11 @@ public class MultiSelectFacetListServiceIT extends BaseEmbeddedSolrTest {
     }
 
     @Test
-    public void setParentCollectionAndContentTypeTest() throws Exception {
+    public void setParentCollectionAndFileFormatTypeTest() throws Exception {
         SearchState searchState = new SearchState();
         searchState.setFacetsToRetrieve(FACETS_TO_RETRIEVE);
         searchState.setFacet(new GenericFacet(PARENT_COLLECTION.name(), testCorpus.coll1Pid.getId()));
-        searchState.addFacet(new MultivaluedHierarchicalFacet(CONTENT_TYPE.name(), "text/txt"));
+        searchState.addFacet(new GenericFacet(FILE_FORMAT_TYPE.name(), "text/plain"));
 
         SearchRequest request = new SearchRequest(searchState, accessGroups);
         request.setApplyCutoffs(false);
@@ -435,11 +480,13 @@ public class MultiSelectFacetListServiceIT extends BaseEmbeddedSolrTest {
         assertFacetValueCount(resp, PARENT_COLLECTION, testCorpus.coll1Pid.getId(), 1);
         assertFacetValueCount(resp, PARENT_COLLECTION, testCorpus.coll2Pid.getId(), 1);
 
-        assertNumberFacetsReturned(resp, CONTENT_TYPE, 4);
-        assertFacetValueCount(resp, CONTENT_TYPE, "^text", 1);
-        assertFacetValueCount(resp, CONTENT_TYPE, "^image", 1);
-        assertFacetValueCount(resp, CONTENT_TYPE, "/text^txt", 1);
-        assertFacetValueCount(resp, CONTENT_TYPE, "/text^pdf", 1);
+        assertNumberFacetsReturned(resp, FILE_FORMAT_CATEGORY, 1);
+        assertFacetValueCount(resp, FILE_FORMAT_CATEGORY, "Text", 1);
+
+        assertNumberFacetsReturned(resp, FILE_FORMAT_TYPE, 3);
+        assertFacetValueCount(resp, FILE_FORMAT_TYPE, "text/plain", 1);
+        assertFacetValueCount(resp, FILE_FORMAT_TYPE, "application/pdf", 1);
+        assertFacetValueCount(resp, FILE_FORMAT_TYPE, "image/jpeg", 1);
 
         assertNumberFacetsReturned(resp, ROLE_GROUP, 3);
         assertFacetValueCount(resp, ROLE_GROUP, "canViewOriginals|everyone", 1);
@@ -460,7 +507,8 @@ public class MultiSelectFacetListServiceIT extends BaseEmbeddedSolrTest {
         assertFacetValueCount(resp, PARENT_COLLECTION, testCorpus.coll1Pid.getId(), 3);
         assertFacetValueCount(resp, PARENT_COLLECTION, testCorpus.coll2Pid.getId(), 3);
 
-        assertNumberFacetsReturned(resp, CONTENT_TYPE, 0);
+        assertNumberFacetsReturned(resp, FILE_FORMAT_CATEGORY, 0);
+        assertNumberFacetsReturned(resp, FILE_FORMAT_TYPE, 0);
 
         assertNumberFacetsReturned(resp, ROLE_GROUP, 0);
     }
@@ -480,9 +528,14 @@ public class MultiSelectFacetListServiceIT extends BaseEmbeddedSolrTest {
         assertFacetValueCount(resp, PARENT_COLLECTION, testCorpus.coll1Pid.getId(), 3);
         assertFacetValueCount(resp, PARENT_COLLECTION, testCorpus.coll2Pid.getId(), 1);
 
-        assertNumberFacetsReturned(resp, CONTENT_TYPE, 2);
-        assertFacetValueCount(resp, CONTENT_TYPE, "^text", 2);
-        assertFacetValueCount(resp, CONTENT_TYPE, "^image", 1);
+        assertNumberFacetsReturned(resp, FILE_FORMAT_CATEGORY, 2);
+        assertFacetValueCount(resp, FILE_FORMAT_CATEGORY, "Text", 2);
+        assertFacetValueCount(resp, FILE_FORMAT_CATEGORY, "Image", 1);
+
+        assertNumberFacetsReturned(resp, FILE_FORMAT_TYPE, 3);
+        assertFacetValueCount(resp, FILE_FORMAT_TYPE, "text/plain", 2);
+        assertFacetValueCount(resp, FILE_FORMAT_TYPE, "application/pdf", 1);
+        assertFacetValueCount(resp, FILE_FORMAT_TYPE, "image/jpeg", 1);
 
         assertNumberFacetsReturned(resp, ROLE_GROUP, 3);
         assertFacetValueCount(resp, ROLE_GROUP, "canViewOriginals|everyone", 7);
@@ -507,7 +560,7 @@ public class MultiSelectFacetListServiceIT extends BaseEmbeddedSolrTest {
     public void filterByFacetNotBeingRetrievedTest() throws Exception {
         SearchState searchState = new SearchState();
         searchState.setFacetsToRetrieve(Arrays.asList(
-                CONTENT_TYPE.name(), ROLE_GROUP.name()));
+                FILE_FORMAT_CATEGORY.name(), ROLE_GROUP.name()));
         searchState.setFacet(new GenericFacet(PARENT_COLLECTION.name(), testCorpus.coll1Pid.getId()));
 
         SearchRequest request = new SearchRequest(searchState, accessGroups);
@@ -516,9 +569,9 @@ public class MultiSelectFacetListServiceIT extends BaseEmbeddedSolrTest {
 
         assertFalse(resp.getFacetFields().hasFacet(PARENT_COLLECTION.name()));
 
-        assertNumberFacetsReturned(resp, CONTENT_TYPE, 2);
-        assertFacetValueCount(resp, CONTENT_TYPE, "^text", 1);
-        assertFacetValueCount(resp, CONTENT_TYPE, "^image", 1);
+        assertNumberFacetsReturned(resp, FILE_FORMAT_CATEGORY, 2);
+        assertFacetValueCount(resp, FILE_FORMAT_CATEGORY, "Text", 1);
+        assertFacetValueCount(resp, FILE_FORMAT_CATEGORY, "Image", 1);
 
         assertNumberFacetsReturned(resp, ROLE_GROUP, 3);
         assertFacetValueCount(resp, ROLE_GROUP, "canViewOriginals|everyone", 3);
@@ -529,7 +582,7 @@ public class MultiSelectFacetListServiceIT extends BaseEmbeddedSolrTest {
     @Test
     public void retainFacetOrderTest() throws Exception {
         SearchState searchState = new SearchState();
-        List<String> facetsInOrder = Arrays.asList(PARENT_COLLECTION.name(), CONTENT_TYPE.name(), ROLE_GROUP.name());
+        List<String> facetsInOrder = Arrays.asList(PARENT_COLLECTION.name(), FILE_FORMAT_CATEGORY.name(), ROLE_GROUP.name());
         searchState.setFacetsToRetrieve(facetsInOrder);
 
         SearchRequest request1 = new SearchRequest(searchState, accessGroups);

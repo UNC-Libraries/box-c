@@ -171,6 +171,10 @@
         <property name="accessRestrictionUtil" ref="solrAccessRestrictionUtil" />
     </bean>
 
+    <bean id="technicalMetadataService" class="edu.unc.lib.boxc.indexing.solr.utils.TechnicalMetadataService">
+        <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
+    </bean>
+
     <!-- Solr ingest filters -->
     <bean id="setAccessControlFilter"
           class="edu.unc.lib.boxc.indexing.solr.filter.SetAccessControlFilter">
@@ -193,11 +197,13 @@
 
     <bean id="setContentTypeFilter" class="edu.unc.lib.boxc.indexing.solr.filter.SetContentTypeFilter">
         <property name="solrSearchService" ref="solrSearchService" />
+        <property name="technicalMetadataService" ref="technicalMetadataService" />
     </bean>
 
     <bean id="setDatastreamFilter"
           class="edu.unc.lib.boxc.indexing.solr.filter.SetDatastreamFilter">
         <property name="derivativeService" ref="derivativeService" />
+        <property name="technicalMetadataService" ref="technicalMetadataService" />
     </bean>
 
     <bean id="setDescriptiveMetadataFilter"

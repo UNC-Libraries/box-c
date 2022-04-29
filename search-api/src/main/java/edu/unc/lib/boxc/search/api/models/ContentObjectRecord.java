@@ -77,11 +77,11 @@ public interface ContentObjectRecord {
 
     public Integer getResourceTypeSort();
 
-    public List<String> getContentType();
-
     public List<String> getFileFormatCategory();
 
     public List<String> getFileFormatType();
+
+    public List<String> getFileFormatDescription();
 
     public Date getTimestamp();
 
