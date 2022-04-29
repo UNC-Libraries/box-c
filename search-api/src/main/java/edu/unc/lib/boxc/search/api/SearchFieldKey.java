@@ -34,7 +34,6 @@ public enum SearchFieldKey {
     CITATION("citation", "citation", "Citation"),
     COLLECTION_ID("collectionId", "collectionId", "Archival Collection ID"),
     CONTENT_STATUS("contentStatus", "contentStatus", "Content Status"),
-    CONTENT_TYPE("contentType", "formatOLD", "Format"),
     CONTRIBUTOR("contributor", "contributor", "Contributor"),
     CONTRIBUTOR_INDEX("contributorIndex", "contributorIndex", "Creator/Contributor"),
     CREATOR("creator", "creator", "Creator"),

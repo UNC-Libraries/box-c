@@ -1,6 +1,6 @@
 import { createStore } from 'vuex'
 
-const POSSIBLE_FACET_FIELDS = ['unit', 'collection', 'createdYear', 'format', 'language', 'subject', 'location',
+const POSSIBLE_FACET_FIELDS = ['unit', 'collection', 'createdYear', 'format', 'genre', 'language', 'subject', 'location',
     'creatorContributor', 'publisher'];
 
 // Create a new store instance.

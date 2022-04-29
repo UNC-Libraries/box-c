@@ -56,7 +56,7 @@ public class AbstractStructureResultsController extends AbstractSolrSearchContro
     }
 
     protected HierarchicalBrowseResultResponse getStructureResult(String pid, boolean includeFiles,
-            boolean collectionMode, boolean retrieveFacets, HttpServletRequest request) {
+            boolean collectionMode, HttpServletRequest request) {
         int depth;
         try {
             depth = Integer.parseInt(request.getParameter("depth"));
@@ -70,15 +70,8 @@ public class AbstractStructureResultsController extends AbstractSolrSearchContro
         // Request object for the search
         HierarchicalBrowseRequest browseRequest = new HierarchicalBrowseRequest(depth,
                 getAgentPrincipals().getPrincipals());
-        browseRequest.setRetrieveFacets(retrieveFacets);
-        if (retrieveFacets) {
-            browseRequest.setSearchState(this.searchStateFactory.createHierarchicalBrowseSearchState(request
-                    .getParameterMap()));
-
-        } else {
-            browseRequest.setSearchState(this.searchStateFactory.createStructureBrowseSearchState(request
-                    .getParameterMap()));
-        }
+        browseRequest.setSearchState(this.searchStateFactory.createStructureBrowseSearchState(request
+                .getParameterMap()));
         if (pid != null) {
             browseRequest.setRootPid(PIDs.get(pid));
         }
@@ -105,9 +98,6 @@ public class AbstractStructureResultsController extends AbstractSolrSearchContro
 
         resultResponse.setSearchState(searchState);
 
-        if (retrieveFacets) {
-            queryLayer.populateBreadcrumbs(browseRequest, resultResponse);
-        }
         return resultResponse;
     }
 }
