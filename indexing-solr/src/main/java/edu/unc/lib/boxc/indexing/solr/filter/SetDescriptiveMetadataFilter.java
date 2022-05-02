@@ -572,8 +572,34 @@ public class SetDescriptiveMetadataFilter implements IndexDocumentFilter {
     }
 
     private void extractGenre(Element mods, IndexDocumentBean idb) {
-        idb.setGenre(new ArrayList<>());
-        this.addValuesToList(idb.getGenre(), mods.getChildren("genre", JDOMNamespaceUtil.MODS_V3_NS));
+        ArrayList<String> genres = new ArrayList<>();
+        List<String> genreAttrs = Arrays.asList("authority", "authorityURI", "valueURI");
+        List<Element> genreList = mods.getChildren("genre", JDOMNamespaceUtil.MODS_V3_NS);
+
+        for (Element genre : genreList) {
+            if (hasAttribute(genre, genreAttrs)) {
+                String genreValue = genre.getTextTrim();
+                if (!StringUtils.isBlank(genreValue)) {
+                    genres.add(genreValue);
+                }
+            }
+        }
+
+        if (!genres.isEmpty()) {
+            idb.setGenre(genres);
+        } else {
+            idb.setGenre(null);
+        }
+    }
+
+    private boolean hasAttribute(Element el, List<String> attributes) {
+        for (String attr : attributes) {
+            if (el.getAttribute(attr) != null &&
+                    !StringUtils.isBlank(el.getAttributeValue(attr))) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private void addIfNotBlank(List<String> values, String newValue) {

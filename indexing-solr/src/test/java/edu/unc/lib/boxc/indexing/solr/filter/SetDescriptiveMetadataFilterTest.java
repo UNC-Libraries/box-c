@@ -195,6 +195,9 @@ public class SetDescriptiveMetadataFilterTest {
         assertTrue(keywords.contains("Cited source"));
 
         assertTrue(idb.getGenre().contains("Dissertation"));
+        assertTrue(idb.getGenre().contains("Paper"));
+        assertTrue(idb.getGenre().contains("Letter"));
+        assertEquals(3, idb.getGenre().size());
 
         assertEquals("citation text", idb.getCitation());
     }
