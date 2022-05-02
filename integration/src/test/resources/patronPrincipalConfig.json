@@ -1,0 +1,1 @@
+[{"ipInclude": "10.0.0.0-10.0.255.255", "name": "External Users", "principal": "unc:patron:ipp:external_grp"}, {"ipInclude": "::1", "name": "Local Users", "principal": "unc:patron:ipp:local_grp"}]

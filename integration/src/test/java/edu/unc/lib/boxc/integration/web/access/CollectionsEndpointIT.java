@@ -21,6 +21,11 @@ import edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore;
 import edu.unc.lib.boxc.integration.factories.AdminUnitFactory;
 import edu.unc.lib.boxc.model.fcrepo.test.TestHelper;
 import org.apache.solr.client.solrj.embedded.EmbeddedSolrServer;
+import org.eclipse.jetty.server.Server;
+import org.eclipse.jetty.util.component.AbstractLifeCycle;
+import org.eclipse.jetty.util.component.LifeCycle;
+import org.eclipse.jetty.webapp.WebAppContext;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -32,7 +37,9 @@ import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import org.springframework.web.context.WebApplicationContext;
+
+import java.io.File;
+import java.util.Properties;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -45,14 +52,14 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
         @ContextConfiguration("/spring-test/cdr-client-container.xml"),
         @ContextConfiguration("/spring-test/acl-service-context.xml"),
         @ContextConfiguration("/spring-test/solr-indexing-context.xml"),
-        @ContextConfiguration("/spring-test/object-factory-context.xml"),
-        @ContextConfiguration("/access-search-api-servlet.xml")
+        @ContextConfiguration("/spring-test/object-factory-context.xml")
 })
 @RunWith(SpringJUnit4ClassRunner.class)
 @WebAppConfiguration
 public class CollectionsEndpointIT {
     @Autowired
-    private EmbeddedSolrServer server;
+    private EmbeddedSolrServer solrServer;
+    private Server webServer;
 
     private AdminUnitFactory adminUnitFactory;
 
@@ -61,15 +68,18 @@ public class CollectionsEndpointIT {
 
     @Autowired(required = false)
     protected String baseAddress;
-    @Autowired
-    protected WebApplicationContext context;
-    protected MockMvc mvc;
 
     @Before
-    public void setup() {
-        mvc = MockMvcBuilders
-                .webAppContextSetup(context)
-                .build();
+    public void setup() throws Exception {
+        webServer = new Server(48080);
+        setUpSystemProperties(webServer);
+        webServer.setStopAtShutdown(true);
+        WebAppContext webAppContext = new WebAppContext();
+        webAppContext.setContextPath("/");
+        webAppContext.setResourceBase("../web-access-app/src/main/webapp");
+        webAppContext.setClassLoader(getClass().getClassLoader());
+        webServer.setHandler(webAppContext);
+        webServer.start();
 
         TestHelper.setContentBase("http://localhost:48085/rest");
 
@@ -77,10 +87,36 @@ public class CollectionsEndpointIT {
         GroupsThreadStore.storeGroups(GROUPS);
     }
 
+    @After
+    public void shutdownServer() throws Exception {
+        webServer.stop();
+    }
+
+    private void setUpSystemProperties(Server jettyServer) {
+        final Properties systemProperties = new Properties();
+        // set your system properties...
+        String classpath = new File(".").getAbsolutePath();
+        systemProperties.setProperty("server.properties.uri", "file:" + classpath + "/src/test/resources/access-app.properties");
+        systemProperties.setProperty("acl.properties.uri", "file:" + classpath + "/src/test/resources/empty.properties");
+        systemProperties.setProperty("acl.patronPrincipalConfig.path", classpath + "/src/test/resources/patronPrincipalConfig.json");
+        jettyServer.addLifeCycleListener(new SystemPropertiesLifeCycleListener(systemProperties));
+    }
+
+    private class SystemPropertiesLifeCycleListener extends AbstractLifeCycle.AbstractLifeCycleListener {
+        private Properties toSet;
+
+        public SystemPropertiesLifeCycleListener(Properties toSet) {
+            this.toSet = toSet;
+        }
+
+        @Override
+        public void lifeCycleStarting(LifeCycle anyLifeCycle) {
+            // add to (don't replace) System.getProperties()
+            System.getProperties().putAll(toSet);
+        }
+    }
+
     @Test
     public void testCollections() throws Exception {
-        MvcResult result = mvc.perform(get("/collections"))
-                .andExpect(status().is2xxSuccessful())
-                .andReturn();
     }
 }

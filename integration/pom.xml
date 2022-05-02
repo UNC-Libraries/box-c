@@ -57,11 +57,6 @@
         </dependency>
         <dependency>
             <groupId>edu.unc.lib.cdr</groupId>
-            <artifactId>web-access-app</artifactId>
-            <version>${cdr.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>edu.unc.lib.cdr</groupId>
             <artifactId>operations</artifactId>
         </dependency>
         <dependency>
