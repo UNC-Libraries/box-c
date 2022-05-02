@@ -15,20 +15,15 @@
  */
 package edu.unc.lib.boxc.search.solr.responses;
 
-import java.util.ArrayList;
-import java.util.List;
-
+import edu.unc.lib.boxc.search.api.facets.FacetFieldList;
+import edu.unc.lib.boxc.search.api.models.ContentObjectRecord;
+import edu.unc.lib.boxc.search.api.requests.SearchState;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import edu.unc.lib.boxc.search.api.SearchFieldKey;
-import edu.unc.lib.boxc.search.api.facets.FacetFieldList;
-import edu.unc.lib.boxc.search.api.facets.SearchFacet;
-import edu.unc.lib.boxc.search.api.models.ContentObjectRecord;
-import edu.unc.lib.boxc.search.api.models.GroupedContentObjectRecord;
-import edu.unc.lib.boxc.search.api.requests.SearchState;
-import edu.unc.lib.boxc.search.solr.facets.MultivaluedHierarchicalFacet;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Response object for a search request.  Contains the list of results from the selected

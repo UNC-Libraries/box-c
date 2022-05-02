@@ -22,25 +22,15 @@ import edu.unc.lib.boxc.search.api.requests.SearchState;
 import edu.unc.lib.boxc.search.solr.responses.SearchResultResponse;
 import edu.unc.lib.boxc.search.solr.utils.SearchStateUtil;
 import edu.unc.lib.boxc.web.common.controllers.AbstractErrorHandlingSearchController;
-import org.jdom2.Document;
-import org.jdom2.Element;
-import org.jdom2.JDOMException;
-import org.jdom2.input.SAXBuilder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
-import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.Arrays;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.stream.Collectors;
-
-import static edu.unc.lib.boxc.common.xml.SecureXMLFactory.createSAXBuilder;
 
 /**
  * Handles requests to the advanced search page, sending users to the form if there are no

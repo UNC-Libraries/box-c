@@ -15,16 +15,21 @@
  */
 package edu.unc.lib.boxc.web.common.services;
 
-import static edu.unc.lib.boxc.web.common.utils.SearchConstants.MAX_COLLECTIONS_TO_RETRIEVE;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
-
+import edu.unc.lib.boxc.auth.api.UserRole;
+import edu.unc.lib.boxc.auth.api.exceptions.AccessRestrictionException;
+import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
+import edu.unc.lib.boxc.auth.api.services.PrincipalClassifier;
+import edu.unc.lib.boxc.model.api.ResourceType;
+import edu.unc.lib.boxc.search.api.SearchFieldKey;
+import edu.unc.lib.boxc.search.api.models.ContentObjectRecord;
+import edu.unc.lib.boxc.search.api.requests.SearchRequest;
+import edu.unc.lib.boxc.search.api.requests.SearchState;
 import edu.unc.lib.boxc.search.solr.config.SearchSettings;
+import edu.unc.lib.boxc.search.solr.config.SolrSettings;
+import edu.unc.lib.boxc.search.solr.responses.SearchResultResponse;
+import edu.unc.lib.boxc.search.solr.services.ObjectPathFactory;
+import edu.unc.lib.boxc.search.solr.services.SearchStateFactory;
+import edu.unc.lib.boxc.search.solr.services.SolrSearchService;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.response.FacetField;
@@ -33,21 +38,13 @@ import org.apache.solr.client.solrj.response.QueryResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import edu.unc.lib.boxc.auth.api.UserRole;
-import edu.unc.lib.boxc.auth.api.exceptions.AccessRestrictionException;
-import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
-import edu.unc.lib.boxc.auth.api.services.PrincipalClassifier;
-import edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore;
-import edu.unc.lib.boxc.model.api.ResourceType;
-import edu.unc.lib.boxc.search.api.SearchFieldKey;
-import edu.unc.lib.boxc.search.api.models.ContentObjectRecord;
-import edu.unc.lib.boxc.search.api.requests.SearchRequest;
-import edu.unc.lib.boxc.search.api.requests.SearchState;
-import edu.unc.lib.boxc.search.solr.config.SolrSettings;
-import edu.unc.lib.boxc.search.solr.responses.SearchResultResponse;
-import edu.unc.lib.boxc.search.solr.services.ObjectPathFactory;
-import edu.unc.lib.boxc.search.solr.services.SearchStateFactory;
-import edu.unc.lib.boxc.search.solr.services.SolrSearchService;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+import static edu.unc.lib.boxc.web.common.utils.SearchConstants.MAX_COLLECTIONS_TO_RETRIEVE;
 
 /**
  * Solr query construction layer. Constructs search states specific to common tasks before passing them on to lower
