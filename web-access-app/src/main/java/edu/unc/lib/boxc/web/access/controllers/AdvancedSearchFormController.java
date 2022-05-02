@@ -17,6 +17,7 @@ package edu.unc.lib.boxc.web.access.controllers;
 
 import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
 import edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore;
+import edu.unc.lib.boxc.search.api.ContentCategory;
 import edu.unc.lib.boxc.search.api.requests.SearchState;
 import edu.unc.lib.boxc.search.solr.responses.SearchResultResponse;
 import edu.unc.lib.boxc.search.solr.utils.SearchStateUtil;
@@ -34,8 +35,10 @@ import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static edu.unc.lib.boxc.common.xml.SecureXMLFactory.createSAXBuilder;
 
@@ -48,28 +51,10 @@ import static edu.unc.lib.boxc.common.xml.SecureXMLFactory.createSAXBuilder;
 @Controller
 @RequestMapping("/advancedSearch")
 public class AdvancedSearchFormController extends AbstractErrorHandlingSearchController {
-    LinkedHashMap<String, String> dropdownVals = new LinkedHashMap<>();
-
-    @PostConstruct
-    public void init() throws IOException, JDOMException {
-        SAXBuilder builder = createSAXBuilder();
-        Document document = null;
-
-        try (InputStream responseStream = this.getClass().getResourceAsStream("/mappings/dropdownMappings.xml")) {
-            document = builder.build(responseStream);
-            Element rootNode = document.getRootElement();
-            Element element = rootNode.getChild("mapping");
-            List<Element> list = element.getChildren("pair");
-
-            for (int i = 0; i < list.size(); i++) {
-                Element node = list.get(i);
-                String dropdownKey = node.getAttribute("key").getValue();
-                String dropdownVal = node.getTextTrim();
-
-                dropdownVals.put(dropdownKey, dropdownVal);
-            }
-        }
-    }
+    private List<String> FORMAT_VALUES = Arrays.stream(ContentCategory.values())
+            .map(ContentCategory::getDisplayName)
+            .sorted()
+            .collect(Collectors.toList());
 
     @RequestMapping(method = RequestMethod.GET)
     public String handleRequest(Model model, HttpServletRequest request) {
@@ -81,7 +66,7 @@ public class AdvancedSearchFormController extends AbstractErrorHandlingSearchCon
             SearchResultResponse collectionResultResponse = queryLayer.getCollectionList(accessGroups);
             model.addAttribute("collectionList", collectionResultResponse.getResultList());
             model.addAttribute("pageSubtitle", "Advanced Search");
-            model.addAttribute("formatMap", dropdownVals);
+            model.addAttribute("formats", FORMAT_VALUES);
             return "advancedSearch";
         }
 
