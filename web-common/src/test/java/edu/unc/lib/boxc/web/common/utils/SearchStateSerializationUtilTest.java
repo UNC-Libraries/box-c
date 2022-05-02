@@ -19,7 +19,6 @@ import edu.unc.lib.boxc.search.api.SearchFieldKey;
 import edu.unc.lib.boxc.search.api.requests.SearchState;
 import edu.unc.lib.boxc.search.solr.config.SearchSettings;
 import edu.unc.lib.boxc.search.solr.facets.GenericFacet;
-import edu.unc.lib.boxc.search.solr.facets.MultivaluedHierarchicalFacet;
 import edu.unc.lib.boxc.search.solr.services.FacetFieldFactory;
 import edu.unc.lib.boxc.search.solr.services.SearchStateFactory;
 import org.junit.Before;
@@ -30,10 +29,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 import static edu.unc.lib.boxc.web.common.utils.SearchStateSerializationUtil.FACET_DISPLAY_VALUE_KEY;
 import static edu.unc.lib.boxc.web.common.utils.SearchStateSerializationUtil.FACET_VALUE_KEY;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 /**
  * @author bbpennel

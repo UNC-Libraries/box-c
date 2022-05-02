@@ -15,33 +15,30 @@
  */
 package edu.unc.lib.boxc.search.solr.models;
 
+import edu.unc.lib.boxc.search.api.SearchFieldKey;
+import edu.unc.lib.boxc.search.api.facets.SearchFacet;
+import edu.unc.lib.boxc.search.api.requests.SearchState;
+import edu.unc.lib.boxc.search.solr.facets.GenericFacet;
+import org.junit.Test;
+
+import java.util.List;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
-import java.util.List;
-
-import org.junit.Test;
-
-import edu.unc.lib.boxc.search.api.facets.HierarchicalFacet;
-import edu.unc.lib.boxc.search.api.facets.SearchFacet;
-import edu.unc.lib.boxc.search.api.requests.SearchState;
-import edu.unc.lib.boxc.search.solr.facets.MultivaluedHierarchicalFacet;
-
 public class SearchStateTest {
 
     @Test
-    public void hierarchicalFacetCloning() {
+    public void fileFormatCategoryFacetCloning() {
         SearchState searchState = new SearchState();
-        searchState.setFacet(new MultivaluedHierarchicalFacet("CONTENT_TYPE", "^text,Text"));
+        searchState.setFacet(new GenericFacet(SearchFieldKey.FILE_FORMAT_CATEGORY.name(), "Text"));
 
         SearchState searchStatePartDeux = new SearchState(searchState);
-        List<SearchFacet> facetObject = searchStatePartDeux.getFacets().get("CONTENT_TYPE");
+        List<SearchFacet> facetObject = searchStatePartDeux.getFacets().get(SearchFieldKey.FILE_FORMAT_CATEGORY.name());
         assertNotNull(facetObject);
 
-        assertTrue(facetObject.get(0) instanceof MultivaluedHierarchicalFacet);
-
-        assertEquals(1, ((HierarchicalFacet)facetObject.get(0)).getFacetNodes().size());
-
+        assertTrue(facetObject.get(0) instanceof GenericFacet);
+        assertEquals("Text", facetObject.get(0).getSearchValue());
     }
 }

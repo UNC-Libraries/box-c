@@ -98,6 +98,8 @@ public class AccessCopiesServiceTest  {
         mdObject.setId(UUID.randomUUID().toString());
         List<String> datastreams = Collections.singletonList(
                 ORIGINAL_FILE.getId() + "|application/pdf|file.pdf|pdf|766|urn:sha1:checksum|");
+        mdObject.setFileFormatCategory(Collections.singletonList(ContentCategory.text.getDisplayName()));
+        mdObject.setFileFormatType(Collections.singletonList("application/pdf"));
         mdObject.setDatastream(datastreams);
 
         mdObjectImg = new ContentObjectSolrRecord();
@@ -107,7 +109,7 @@ public class AccessCopiesServiceTest  {
                 ORIGINAL_FILE.getId() + "|image/png|file.png|png|766|urn:sha1:checksum|",
                 DatastreamType.THUMBNAIL_LARGE.getId() + "|image/png|thumb|png|55||");
         mdObjectImg.setFileFormatCategory(Collections.singletonList(ContentCategory.image.getDisplayName()));
-        mdObjectImg.setFileFormatType(Collections.singletonList("png"));
+        mdObjectImg.setFileFormatType(Collections.singletonList("image/png"));
         mdObjectImg.setDatastream(imgDatastreams);
 
         mdObjectAudio = new ContentObjectSolrRecord();
@@ -116,7 +118,7 @@ public class AccessCopiesServiceTest  {
         List<String> audioDatastreams = Collections.singletonList(
                 ORIGINAL_FILE.getId() + "|audio/mpeg|file.mp3|mp3|766|urn:sha1:checksum|");
         mdObjectAudio.setFileFormatCategory(Collections.singletonList(ContentCategory.audio.getDisplayName()));
-        mdObjectAudio.setFileFormatType(Collections.singletonList("mp3"));
+        mdObjectAudio.setFileFormatType(Collections.singletonList("audio/mpeg"));
         mdObjectAudio.setDatastream(audioDatastreams);
 
         noOriginalFileObj = new ContentObjectSolrRecord();
@@ -129,7 +131,7 @@ public class AccessCopiesServiceTest  {
         List<String> xmlDatastreams = Collections.singletonList(
                 TECHNICAL_METADATA.getId() + "|text.xml|file.xml|xml|766|urn:sha1:checksum|");
         mdObjectXml.setFileFormatCategory(Collections.singletonList(ContentCategory.text.getDisplayName()));
-        mdObjectXml.setFileFormatType(Collections.singletonList("xml"));
+        mdObjectXml.setFileFormatType(Collections.singletonList("text/xml"));
         mdObjectXml.setDatastream(xmlDatastreams);
 
         principals = new AccessGroupSetImpl("group");

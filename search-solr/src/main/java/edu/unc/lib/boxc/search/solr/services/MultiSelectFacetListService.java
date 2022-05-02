@@ -15,27 +15,22 @@
  */
 package edu.unc.lib.boxc.search.solr.services;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map.Entry;
-import java.util.Set;
-import java.util.stream.Collectors;
-
 import edu.unc.lib.boxc.model.api.ResourceType;
 import edu.unc.lib.boxc.model.api.exceptions.NotFoundException;
 import edu.unc.lib.boxc.search.api.SearchFieldKey;
 import edu.unc.lib.boxc.search.api.facets.FacetFieldList;
-import edu.unc.lib.boxc.search.api.facets.FacetFieldObject;
 import edu.unc.lib.boxc.search.api.facets.SearchFacet;
 import edu.unc.lib.boxc.search.api.models.ContentObjectRecord;
 import edu.unc.lib.boxc.search.api.requests.SearchRequest;
 import edu.unc.lib.boxc.search.api.requests.SearchState;
-import edu.unc.lib.boxc.search.solr.facets.MultivaluedHierarchicalFacet;
 import edu.unc.lib.boxc.search.solr.responses.SearchResultResponse;
-import edu.unc.lib.boxc.search.solr.utils.FacetFieldUtil;
+
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map.Entry;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Service for retrieving facet listings for searches supporting selection of multiple values for the same facet.
@@ -108,14 +103,7 @@ public class MultiSelectFacetListService extends AbstractQueryService {
             SearchRequest selectedRequest = new SearchRequest(selectedState, searchRequest.getAccessGroups(), true);
             SearchResultResponse selectedResponse = searchService.getSearchResults(selectedRequest);
 
-            // For MultivaluedHierarchicalFacet need to pull in the facets for child tiers
-            if (FacetFieldUtil.facetIsOfType(facetEntry.getValue(), MultivaluedHierarchicalFacet.class)) {
-                List<SearchFacet> merged = getMergedHierarchivalFacetValues(facetName, facetEntry.getValue(),
-                        selectedResponse, searchRequest);
-                resultFacets.add(new FacetFieldObject(facetName, merged));
-            } else {
-                resultFacets.add(selectedResponse.getFacetFields().get(0));
-            }
+            resultFacets.add(selectedResponse.getFacetFields().get(0));
         }
 
         resultFacets.sort(searchRequest.getSearchState().getFacetsToRetrieve());
@@ -143,34 +131,6 @@ public class MultiSelectFacetListService extends AbstractQueryService {
         } catch (IndexOutOfBoundsException e) {
             return null;
         }
-    }
-
-    private List<SearchFacet> getMergedHierarchivalFacetValues(String facetName, List<SearchFacet> filterValues,
-            SearchResultResponse baseResponse, SearchRequest originalRequest) {
-        List<SearchFacet> merged = new ArrayList<>(baseResponse.getFacetFields().get(0).getValues());
-        Set<String> alreadyRetrieved = new HashSet<>();
-        for (SearchFacet selectedFacet: filterValues) {
-            MultivaluedHierarchicalFacet hierFacet = (MultivaluedHierarchicalFacet) selectedFacet;
-            // Since no facets currently use more than 2 tiers, lazily only retrieve results one tier down
-            String facetValue = hierFacet.getFacetNodes().get(0).getFacetValue();
-            // Skip if multiple selected values would retrieve same parent set
-            if (alreadyRetrieved.contains(facetValue)) {
-                continue;
-            }
-            alreadyRetrieved.add(facetValue);
-            MultivaluedHierarchicalFacet tierFacet = new MultivaluedHierarchicalFacet(
-                    facetName, hierFacet.getFacetNodes().get(0).getFacetValue());
-
-            SearchState selectedState = (SearchState) baseResponse.getSearchState().clone();
-            selectedState.setFacet(tierFacet);
-            selectedState.setFacetsToRetrieve(Arrays.asList(facetName));
-
-            SearchRequest selectedRequest = new SearchRequest(
-                    selectedState, originalRequest.getAccessGroups(), true);
-            SearchResultResponse selectedResponse = searchService.getSearchResults(selectedRequest);
-            merged.addAll(selectedResponse.getFacetFields().get(0).getValues());
-        }
-        return merged;
     }
 
     public void setSearchService(SolrSearchService searchService) {

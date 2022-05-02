@@ -15,6 +15,33 @@
  */
 package edu.unc.lib.boxc.search.solr.services;
 
+import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
+import edu.unc.lib.boxc.auth.api.services.GlobalPermissionEvaluator;
+import edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl;
+import edu.unc.lib.boxc.model.api.ResourceType;
+import edu.unc.lib.boxc.model.api.exceptions.NotFoundException;
+import edu.unc.lib.boxc.search.api.SearchFieldKey;
+import edu.unc.lib.boxc.search.api.facets.FacetFieldList;
+import edu.unc.lib.boxc.search.api.facets.FacetFieldObject;
+import edu.unc.lib.boxc.search.api.facets.SearchFacet;
+import edu.unc.lib.boxc.search.api.requests.SearchRequest;
+import edu.unc.lib.boxc.search.api.requests.SearchState;
+import edu.unc.lib.boxc.search.solr.facets.CutoffFacetImpl;
+import edu.unc.lib.boxc.search.solr.facets.GenericFacet;
+import edu.unc.lib.boxc.search.solr.facets.RoleGroupFacet;
+import edu.unc.lib.boxc.search.solr.responses.SearchResultResponse;
+import edu.unc.lib.boxc.search.solr.test.BaseEmbeddedSolrTest;
+import edu.unc.lib.boxc.search.solr.test.TestCorpus;
+import edu.unc.lib.boxc.search.solr.utils.AccessRestrictionUtil;
+import edu.unc.lib.boxc.search.solr.utils.FacetFieldUtil;
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.Mock;
+
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
+
 import static edu.unc.lib.boxc.auth.api.AccessPrincipalConstants.PUBLIC_PRINC;
 import static edu.unc.lib.boxc.search.api.SearchFieldKey.FILE_FORMAT_CATEGORY;
 import static edu.unc.lib.boxc.search.api.SearchFieldKey.FILE_FORMAT_TYPE;
@@ -24,38 +51,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.mockito.MockitoAnnotations.initMocks;
-
-import java.util.Arrays;
-import java.util.List;
-import java.util.stream.Collectors;
-
-import edu.unc.lib.boxc.model.api.ResourceType;
-import edu.unc.lib.boxc.search.solr.facets.CutoffFacetImpl;
-import org.junit.Before;
-import org.junit.Test;
-import org.mockito.Mock;
-
-import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
-import edu.unc.lib.boxc.auth.api.services.GlobalPermissionEvaluator;
-import edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl;
-import edu.unc.lib.boxc.model.api.exceptions.NotFoundException;
-import edu.unc.lib.boxc.search.api.SearchFieldKey;
-import edu.unc.lib.boxc.search.api.facets.FacetFieldList;
-import edu.unc.lib.boxc.search.api.facets.FacetFieldObject;
-import edu.unc.lib.boxc.search.api.facets.SearchFacet;
-import edu.unc.lib.boxc.search.api.requests.SearchRequest;
-import edu.unc.lib.boxc.search.api.requests.SearchState;
-import edu.unc.lib.boxc.search.solr.facets.GenericFacet;
-import edu.unc.lib.boxc.search.solr.facets.MultivaluedHierarchicalFacet;
-import edu.unc.lib.boxc.search.solr.facets.RoleGroupFacet;
-import edu.unc.lib.boxc.search.solr.responses.SearchResultResponse;
-import edu.unc.lib.boxc.search.solr.services.FacetFieldFactory;
-import edu.unc.lib.boxc.search.solr.services.MultiSelectFacetListService;
-import edu.unc.lib.boxc.search.solr.services.SolrSearchService;
-import edu.unc.lib.boxc.search.solr.test.BaseEmbeddedSolrTest;
-import edu.unc.lib.boxc.search.solr.test.TestCorpus;
-import edu.unc.lib.boxc.search.solr.utils.AccessRestrictionUtil;
-import edu.unc.lib.boxc.search.solr.utils.FacetFieldUtil;
 
 /**
  * @author bbpennel

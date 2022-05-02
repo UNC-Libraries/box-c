@@ -15,16 +15,7 @@
  */
 package edu.unc.lib.boxc.search.solr.utils;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Set;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-
 import edu.unc.lib.boxc.search.api.SearchFieldKey;
-import org.apache.solr.client.solrj.SolrQuery;
-import org.springframework.beans.factory.annotation.Autowired;
-
 import edu.unc.lib.boxc.search.api.facets.CutoffFacet;
 import edu.unc.lib.boxc.search.api.facets.CutoffFacetNode;
 import edu.unc.lib.boxc.search.api.facets.HierarchicalFacetNode;
@@ -33,8 +24,14 @@ import edu.unc.lib.boxc.search.api.requests.SearchState;
 import edu.unc.lib.boxc.search.solr.config.SearchSettings;
 import edu.unc.lib.boxc.search.solr.config.SolrSettings;
 import edu.unc.lib.boxc.search.solr.facets.GenericFacet;
-import edu.unc.lib.boxc.search.solr.facets.MultivaluedHierarchicalFacet;
 import edu.unc.lib.boxc.search.solr.services.FacetFieldFactory;
+import org.apache.solr.client.solrj.SolrQuery;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import java.util.Arrays;
+import java.util.List;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
  *
@@ -60,12 +57,6 @@ public class FacetFieldUtil {
                 var field = SearchFieldKey.valueOf(facet.getFieldName());
                 if (facet.getFacetCutoff() != null && field != null) {
                     solrQuery.setFacetPrefix(field.getSolrField(), facet.getFacetCutoff() + ",");
-                }
-            } else if (facetIsOfType(facets, MultivaluedHierarchicalFacet.class)) {
-                MultivaluedHierarchicalFacet facet = (MultivaluedHierarchicalFacet) facets.get(0);
-                var field = SearchFieldKey.valueOf(facet.getFieldName());
-                if (field != null) {
-                    solrQuery.setFacetPrefix(field.getSolrField(), facet.getPivotValue());
                 }
             }
         });
@@ -95,8 +86,6 @@ public class FacetFieldUtil {
             } else {
                 addFacetValue(facetObject, solrQuery, cutoffFacetToFq);
             }
-        } else if (facetIsOfType(facetObject, MultivaluedHierarchicalFacet.class)) {
-            addHierarchicalFacetValue(facetObject, solrQuery, multivaluedFacetToFq);
         } else if (facetIsOfType(facetObject, GenericFacet.class)) {
             addFacetValue(facetObject, solrQuery, genericFacetToFq);
         }
@@ -117,21 +106,6 @@ public class FacetFieldUtil {
     private void addFacetValue(List<SearchFacet> facets, SolrQuery solrQuery,
             Function<SearchFacet, String> toFqFunct) {
         String fq = facets.stream().map(toFqFunct).collect(Collectors.joining(" OR "));
-        solrQuery.addFilterQuery(fq);
-    }
-
-    private void addHierarchicalFacetValue(List<SearchFacet> facets, SolrQuery solrQuery,
-            Function<SearchFacet, String> toFqFunct) {
-        // Find all the parent facet values for selected nested values
-        Set<String> parentSearchValues = facets.stream().map(f -> (MultivaluedHierarchicalFacet) f)
-                .filter(f -> f.getFacetNodes().size() > 1)
-                .map(f -> f.getFacetNodes().get(f.getFacetNodes().size() - 2).getSearchValue())
-                .collect(Collectors.toSet());
-        String fq = facets.stream()
-                // Exclude any parent facet values if child selected, as the child value takes precedence
-                .filter(f -> !parentSearchValues.contains(f.getSearchValue()))
-                .map(toFqFunct)
-                .collect(Collectors.joining(" OR "));
         solrQuery.addFilterQuery(fq);
     }
 
@@ -164,16 +138,6 @@ public class FacetFieldUtil {
         return filterQuery.append(')').toString();
     }
 
-    private Function<SearchFacet, String> multivaluedFacetToFq = (inFacet) -> {
-        MultivaluedHierarchicalFacet facet = (MultivaluedHierarchicalFacet) inFacet;
-        StringBuilder filterQuery = new StringBuilder();
-        String solrFieldName = SearchFieldKey.valueOf(facet.getFieldName()).getSolrField();
-
-        filterQuery.append(solrFieldName).append(":").append(
-                SolrSettings.sanitize(facet.getSearchValue())).append(",*");
-        return filterQuery.toString();
-    };
-
     private Function<SearchFacet, String> genericFacetToFq = (facet) -> {
         String solrFieldName = SearchFieldKey.valueOf(facet.getFieldName()).getSolrField();
         return SearchFieldKey.valueOf(facet.getFieldName()).getSolrField() + ":\""
@@ -199,8 +163,6 @@ public class FacetFieldUtil {
         String solrFieldName = SearchFieldKey.valueOf(fieldKey).getSolrField();
         if (CutoffFacet.class.equals(facetClass)) {
             solrQuery.add("f." + solrFieldName + ".facet.prefix", "1,");
-        } else if (MultivaluedHierarchicalFacet.class.equals(facetClass)) {
-            solrQuery.add("f." + solrFieldName + ".facet.prefix", "^");
         }
     }
 

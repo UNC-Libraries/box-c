@@ -15,22 +15,21 @@
  */
 package edu.unc.lib.boxc.search.solr.utils;
 
-import static org.junit.Assert.assertEquals;
-
-import java.io.FileInputStream;
-import java.util.Arrays;
-import java.util.Properties;
-
+import edu.unc.lib.boxc.search.api.SearchFieldKey;
+import edu.unc.lib.boxc.search.solr.config.SolrSettings;
+import edu.unc.lib.boxc.search.solr.facets.CutoffFacetImpl;
+import edu.unc.lib.boxc.search.solr.facets.GenericFacet;
+import edu.unc.lib.boxc.search.solr.facets.RoleGroupFacet;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import edu.unc.lib.boxc.search.solr.config.SolrSettings;
-import edu.unc.lib.boxc.search.solr.facets.CutoffFacetImpl;
-import edu.unc.lib.boxc.search.solr.facets.GenericFacet;
-import edu.unc.lib.boxc.search.solr.facets.MultivaluedHierarchicalFacet;
-import edu.unc.lib.boxc.search.solr.facets.RoleGroupFacet;
+import java.io.FileInputStream;
+import java.util.Arrays;
+import java.util.Properties;
+
+import static org.junit.Assert.assertEquals;
 
 public class FacetFieldUtilTest {
 
@@ -109,69 +108,6 @@ public class FacetFieldUtilTest {
     }
 
     @Test
-    public void addMultivaluedHierarchicalFacetToQuery() {
-        SolrQuery query = new SolrQuery();
-
-        MultivaluedHierarchicalFacet facet = new MultivaluedHierarchicalFacet("CONTENT_TYPE", "image/jpg");
-
-        facetFieldUtil.addToSolrQuery(facet, true, query);
-
-        String[] filterQueries = query.getFilterQueries();
-        assertEquals(1, filterQueries.length);
-
-        assertEquals("contentType:\\/image\\^jpg,*", filterQueries[0]);
-    }
-
-    @Test
-    public void addMultivaluedHierarchicalParentAndChildrenToQuery() {
-        SolrQuery query = new SolrQuery();
-
-        MultivaluedHierarchicalFacet facet1 = new MultivaluedHierarchicalFacet("CONTENT_TYPE", "text");
-        MultivaluedHierarchicalFacet facet2 = new MultivaluedHierarchicalFacet("CONTENT_TYPE", "text^pdf");
-        MultivaluedHierarchicalFacet facet3 = new MultivaluedHierarchicalFacet("CONTENT_TYPE", "text^txt");
-
-        facetFieldUtil.addToSolrQuery(Arrays.asList(facet1, facet2, facet3), true, query);
-
-        String[] filterQueries = query.getFilterQueries();
-        assertEquals(1, filterQueries.length);
-
-        assertEquals("contentType:\\/text\\^pdf,* OR contentType:\\/text\\^txt,*", filterQueries[0]);
-    }
-
-    @Test
-    public void addMultivaluedHierarchicalMultipleParentAndChildToQuery() {
-        SolrQuery query = new SolrQuery();
-
-        MultivaluedHierarchicalFacet facet1 = new MultivaluedHierarchicalFacet("CONTENT_TYPE", "text");
-        MultivaluedHierarchicalFacet facet2 = new MultivaluedHierarchicalFacet("CONTENT_TYPE", "text^txt");
-        MultivaluedHierarchicalFacet facet3 = new MultivaluedHierarchicalFacet("CONTENT_TYPE", "image");
-        MultivaluedHierarchicalFacet facet4 = new MultivaluedHierarchicalFacet("CONTENT_TYPE", "image^png");
-
-        facetFieldUtil.addToSolrQuery(Arrays.asList(facet1, facet2, facet3, facet4), true, query);
-
-        String[] filterQueries = query.getFilterQueries();
-        assertEquals(1, filterQueries.length);
-
-        assertEquals("contentType:\\/text\\^txt,* OR contentType:\\/image\\^png,*", filterQueries[0]);
-    }
-
-    @Test
-    public void addMultivaluedHierarchicalMultipleParentOneChildToQuery() {
-        SolrQuery query = new SolrQuery();
-
-        MultivaluedHierarchicalFacet facet1 = new MultivaluedHierarchicalFacet("CONTENT_TYPE", "text");
-        MultivaluedHierarchicalFacet facet2 = new MultivaluedHierarchicalFacet("CONTENT_TYPE", "image");
-        MultivaluedHierarchicalFacet facet3 = new MultivaluedHierarchicalFacet("CONTENT_TYPE", "image^png");
-
-        facetFieldUtil.addToSolrQuery(Arrays.asList(facet1, facet2, facet3), true, query);
-
-        String[] filterQueries = query.getFilterQueries();
-        assertEquals(1, filterQueries.length);
-
-        assertEquals("contentType:\\^text,* OR contentType:\\/image\\^png,*", filterQueries[0]);
-    }
-
-    @Test
     public void addGenericFacetToQuery() {
         SolrQuery query = new SolrQuery();
 
@@ -192,13 +128,13 @@ public class FacetFieldUtilTest {
         CutoffFacetImpl facet = new CutoffFacetImpl("ANCESTOR_PATH", "2,test");
         facetFieldUtil.addToSolrQuery(facet, true, query);
 
-        MultivaluedHierarchicalFacet facet2 = new MultivaluedHierarchicalFacet("CONTENT_TYPE", "image/jpg");
+        var facet2 = new GenericFacet(SearchFieldKey.FILE_FORMAT_CATEGORY, "Image");
         facetFieldUtil.addToSolrQuery(facet2, true, query);
 
         String[] filterQueries = query.getFilterQueries();
         assertEquals(2, filterQueries.length);
 
         assertEquals("(ancestorPath:2,test)", filterQueries[0]);
-        assertEquals("contentType:\\/image\\^jpg,*", filterQueries[1]);
+        assertEquals("fileFormatCategory:\"Image\"", filterQueries[1]);
     }
 }
