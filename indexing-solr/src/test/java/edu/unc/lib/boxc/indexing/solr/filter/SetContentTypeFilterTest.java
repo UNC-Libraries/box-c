@@ -115,6 +115,7 @@ public class SetContentTypeFilterTest {
         technicalMetadataService = new TechnicalMetadataService();
         technicalMetadataService.setRepositoryObjectLoader(repositoryObjectLoader);
         when(repositoryObjectLoader.getBinaryObject(any(PID.class))).thenReturn(techMdObj);
+        technicalMetadataService.init();
 
         filter = new SetContentTypeFilter();
         filter.setSolrSearchService(solrSearchService);

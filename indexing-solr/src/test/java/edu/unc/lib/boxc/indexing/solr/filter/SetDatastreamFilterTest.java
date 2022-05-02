@@ -139,6 +139,7 @@ public class SetDatastreamFilterTest {
         when(fileObj.getBinaryObjects()).thenReturn(Arrays.asList(binObj));
 
         technicalMetadataService = new TechnicalMetadataService();
+        technicalMetadataService.init();
 
         filter = new SetDatastreamFilter();
         filter.setDerivativeService(derivativeService);

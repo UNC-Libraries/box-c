@@ -181,7 +181,8 @@
         <property name="derivativeDir" value="${derivative.dir}" />
     </bean>
 
-    <bean id="technicalMetadataService" class="edu.unc.lib.boxc.indexing.solr.utils.TechnicalMetadataService">
+    <bean id="technicalMetadataService" class="edu.unc.lib.boxc.indexing.solr.utils.TechnicalMetadataService"
+            init-method="init">
         <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
     </bean>
     
