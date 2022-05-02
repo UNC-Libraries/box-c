@@ -64,4 +64,24 @@ public class ContentObjectFactory {
         }
         return options;
     }
+
+    public void setRepositoryObjectFactory(RepositoryObjectFactory repositoryObjectFactory) {
+        this.repositoryObjectFactory = repositoryObjectFactory;
+    }
+
+    public void setRepositoryObjectTreeIndexer(RepositoryObjectTreeIndexer repositoryObjectTreeIndexer) {
+        this.repositoryObjectTreeIndexer = repositoryObjectTreeIndexer;
+    }
+
+    public void setRepositoryObjectSolrIndexer(RepositoryObjectSolrIndexer repositoryObjectSolrIndexer) {
+        this.repositoryObjectSolrIndexer = repositoryObjectSolrIndexer;
+    }
+
+    public void setModsFactory(ModsFactory modsFactory) {
+        this.modsFactory = modsFactory;
+    }
+
+    public void setUpdateDescriptionService(UpdateDescriptionService updateDescriptionService) {
+        this.updateDescriptionService = updateDescriptionService;
+    }
 }

@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans-4.3.xsd">
+
+    <bean id="storageLocationManager" class="edu.unc.lib.boxc.persist.impl.storage.StorageLocationTestHelper"
+          factory-method="createLocationManagerWithBasicConfig">
+        <constructor-arg ref="repositoryObjectLoader" />
+    </bean>
+
+    <bean id="binaryTransferService" class="edu.unc.lib.boxc.persist.impl.transfer.BinaryTransferServiceImpl">
+        <property name="storageLocationManager" ref="storageLocationManager" />
+    </bean>
+
+    <bean id="transactionManager" class="edu.unc.lib.boxc.fcrepo.utils.TransactionManager">
+        <property name="client" ref="fcrepoClient" />
+        <property name="binaryTransferService" ref="binaryTransferService" />
+    </bean>
+
+    <bean id="versionedDatastreamService" class="edu.unc.lib.boxc.operations.impl.versioning.VersionedDatastreamService" >
+        <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
+        <property name="repositoryObjectFactory" ref="repositoryObjectFactory" />
+        <property name="binaryTransferService" ref="binaryTransferService" />
+        <property name="transactionManager" ref="transactionManager" />
+    </bean>
+
+    <bean id="updateDescriptionService" class="edu.unc.lib.boxc.operations.impl.edit.UpdateDescriptionService" >
+        <property name="aclService" ref="aclService" />
+        <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
+        <property name="repositoryObjectFactory" ref="repositoryObjectFactory" />
+        <property name="validate" value="false" />
+        <property name="checksAccess" value="false" />
+        <property name="sendsMessages" value="false" />
+        <property name="versionedDatastreamService" ref="versionedDatastreamService" />
+    </bean>
+
+    <bean id="modsFactory" class="edu.unc.lib.boxc.integration.factories.ModsFactory">
+    </bean>
+
+    <bean id="adminUnitFactory" class="edu.unc.lib.boxc.integration.factories.AdminUnitFactory">
+        <property name="repositoryObjectFactory" ref="repositoryObjectFactory" />
+        <property name="repositoryObjectSolrIndexer" ref="repositoryObjectSolrIndexer" />
+        <property name="repositoryObjectTreeIndexer" ref="treeIndexer" />
+        <property name="modsFactory" ref="modsFactory" />
+        <property name="updateDescriptionService" ref="updateDescriptionService" />
+    </bean>
+</beans>
