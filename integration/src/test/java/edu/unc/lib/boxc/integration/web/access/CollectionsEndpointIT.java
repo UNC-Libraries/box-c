@@ -20,6 +20,9 @@ import edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl;
 import edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore;
 import edu.unc.lib.boxc.integration.factories.AdminUnitFactory;
 import edu.unc.lib.boxc.model.fcrepo.test.TestHelper;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.HttpClients;
 import org.apache.solr.client.solrj.embedded.EmbeddedSolrServer;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.util.component.AbstractLifeCycle;
@@ -39,8 +42,10 @@ import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import java.io.File;
+import java.util.Map;
 import java.util.Properties;
 
+import static org.junit.Assert.assertEquals;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -61,6 +66,7 @@ public class CollectionsEndpointIT {
     private EmbeddedSolrServer solrServer;
     private Server webServer;
 
+    @Autowired
     private AdminUnitFactory adminUnitFactory;
 
     protected final static String USERNAME = "test_user";
@@ -118,5 +124,13 @@ public class CollectionsEndpointIT {
 
     @Test
     public void testCollections() throws Exception {
+        var adminUnit = adminUnitFactory.createAdminUnit(Map.of("title", "title1"));
+        var httpClient = HttpClients.createDefault();
+
+        HttpGet method = new HttpGet("http://localhost:48080/collectionsJson");
+        try (CloseableHttpResponse httpResp = httpClient.execute(method)) {
+            var statusCode = httpResp.getStatusLine().getStatusCode();
+            assertEquals(200, statusCode);
+        }
     }
 }
