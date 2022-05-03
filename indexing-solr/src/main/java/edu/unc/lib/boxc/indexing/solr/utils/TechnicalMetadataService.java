@@ -30,24 +30,32 @@ import java.io.InputStream;
 import java.util.Map;
 
 /**
+ * Service for retrieving technical metadata information about binaries
+ *
  * @author bbpennel
  */
 public class TechnicalMetadataService {
     private RepositoryObjectLoader repositoryObjectLoader;
 
     // Max number of entries allowed in the cache
-    private int cacheSize = 64;
+    private final static int CACHE_SIZE = 64;
 
     private Map<String, Document> techMdCache;
 
     public void init() {
         var mapBuilder = new ConcurrentLinkedHashMap.Builder<String, Document>();
-        mapBuilder.maximumWeightedCapacity(cacheSize);
+        mapBuilder.maximumWeightedCapacity(CACHE_SIZE);
         techMdCache = mapBuilder.build();
     }
 
+    /**
+     * Retrieve the techmd datastream for the specified file object, as an xml Document
+     * @param filePid
+     * @return
+     */
     public Document retrieveDocument(PID filePid) {
         var techMdPid = DatastreamPids.getTechnicalMetadataPid(filePid);
+        // Use cached version if available
         if (techMdCache.containsKey(techMdPid.getId())) {
             return techMdCache.get(techMdPid.getId());
         }
@@ -55,21 +63,28 @@ public class TechnicalMetadataService {
         return retrieveAndDeserialize(techMdObj);
     }
 
+    /**
+     * Retrieve the techmd datastream for the specified techmd binary object, as an xml Document
+     * @param techMdObj techmd binary object
+     * @return
+     */
     public Document retrieveDocument(BinaryObject techMdObj) {
         var techMdId = techMdObj.getPid().getId();
+        // Use cached version if available
         if (techMdCache.containsKey(techMdId)) {
             return techMdCache.get(techMdId);
         }
         return retrieveAndDeserialize(techMdObj);
     }
 
-    public Document retrieveAndDeserialize(BinaryObject techMdObj) {
+    private Document retrieveAndDeserialize(BinaryObject techMdObj) {
         InputStream techMdData = techMdObj.getBinaryStream();
         String techMdId = techMdObj.getPid().getId();
 
         try {
             SAXBuilder builder = new SAXBuilder();
             var doc = builder.build(techMdData);
+            // Cache the value for future use
             techMdCache.put(techMdId, doc);
             return doc;
         } catch (JDOMException | IOException e) {
