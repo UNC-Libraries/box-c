@@ -66,6 +66,7 @@ public class SetDescriptiveMetadataFilter implements IndexDocumentFilter {
     private final Map<String, String> rightsUriMap;
     public final static String AFFIL_URI = "http://cdr.unc.edu/vocabulary/Affiliation";
     private final List<String> CREATOR_LIST = Arrays.asList("creator", "author", "interviewer", "interviewee");
+    private final List<String> GENRE_ATTRIBUTES = Arrays.asList("authority", "authorityURI", "valueURI");
 
     public SetDescriptiveMetadataFilter() throws IOException {
         languageCodeMap = new Properties();
@@ -572,12 +573,11 @@ public class SetDescriptiveMetadataFilter implements IndexDocumentFilter {
     }
 
     private void extractGenre(Element mods, IndexDocumentBean idb) {
-        ArrayList<String> genres = new ArrayList<>();
-        List<String> genreAttrs = Arrays.asList("authority", "authorityURI", "valueURI");
+        var genres = new ArrayList<String>();
         List<Element> genreList = mods.getChildren("genre", JDOMNamespaceUtil.MODS_V3_NS);
 
         for (Element genre : genreList) {
-            if (hasAttribute(genre, genreAttrs)) {
+            if (hasAttribute(genre, GENRE_ATTRIBUTES)) {
                 String genreValue = genre.getTextTrim();
                 if (!StringUtils.isBlank(genreValue)) {
                     genres.add(genreValue);
@@ -594,8 +594,8 @@ public class SetDescriptiveMetadataFilter implements IndexDocumentFilter {
 
     private boolean hasAttribute(Element el, List<String> attributes) {
         for (String attr : attributes) {
-            if (el.getAttribute(attr) != null &&
-                    !StringUtils.isBlank(el.getAttributeValue(attr))) {
+            String attrValue = el.getAttributeValue(attr);
+            if (!StringUtils.isBlank(attrValue)) {
                 return true;
             }
         }

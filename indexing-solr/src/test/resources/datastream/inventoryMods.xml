@@ -7,13 +7,13 @@
 
   <mods:genre authority="local">Dissertation</mods:genre>
   <mods:genre authority="local"></mods:genre>
-  <mods:genre authority="">Dissertation</mods:genre>
+  <mods:genre authority="">Another Dissertation</mods:genre>
   <mods:genre authorityURI="http://id.loc.gov/authorities/genreForms">Paper</mods:genre>
   <mods:genre authorityURI="http://id.loc.gov/authorities/genreForms"></mods:genre>
-  <mods:genre authorityURI="">Paper</mods:genre>
+  <mods:genre authorityURI="">Another Paper</mods:genre>
   <mods:genre valueURI="http://id.loc.gov/authorities/genreForms">Letter</mods:genre>
   <mods:genre valueURI="http://id.loc.gov/authorities/genreForms"></mods:genre>
-  <mods:genre valueURI="">Letter</mods:genre>
+  <mods:genre valueURI="">Another Letter</mods:genre>
   <mods:genre>Book</mods:genre>
   <mods:genre></mods:genre>
 
