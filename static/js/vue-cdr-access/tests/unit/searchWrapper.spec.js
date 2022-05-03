@@ -50,10 +50,10 @@ const response = {
     ],
     "facetFields": [
         {
-            "name": "CONTENT_TYPE",
+            "name": "FILE_FORMAT_CATEGORY",
             "values": [
                 {
-                    "fieldName": "CONTENT_TYPE",
+                    "fieldName": "FILE_FORMAT_CATEGORY",
                     "count": 1,
                     "displayValue": "Image"
                 }
@@ -79,7 +79,7 @@ const no_results = {
     "searchQueryUrl": "anywhere=",
     "metadata": [],
     "facetFields": [{
-        name: "CONTENT_TYPE",
+        name: "FILE_FORMAT_CATEGORY",
         values: []
     }],
     "resultCount": 0
@@ -102,10 +102,10 @@ const facets_no_results = {
     "metadata": [],
     "facetFields": [
         {
-            "name": "CONTENT_TYPE",
+            "name": "FILE_FORMAT_CATEGORY",
             "values": [
                 {
-                    "fieldName": "CONTENT_TYPE",
+                    "fieldName": "FILE_FORMAT_CATEGORY",
                     "count": 1,
                     "displayValue": "Image"
                 }

@@ -18,12 +18,14 @@ package edu.unc.lib.boxc.indexing.solr.filter;
 import edu.unc.lib.boxc.indexing.solr.exception.IndexingException;
 import edu.unc.lib.boxc.indexing.solr.indexing.DocumentIndexingPackage;
 import edu.unc.lib.boxc.indexing.solr.indexing.DocumentIndexingPackageDataLoader;
+import edu.unc.lib.boxc.indexing.solr.utils.TechnicalMetadataService;
 import edu.unc.lib.boxc.model.api.DatastreamType;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.objects.BinaryObject;
 import edu.unc.lib.boxc.model.api.objects.ContentObject;
 import edu.unc.lib.boxc.model.api.objects.FileObject;
 import edu.unc.lib.boxc.model.api.objects.FolderObject;
+import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.api.objects.WorkObject;
 import edu.unc.lib.boxc.model.api.rdf.Ebucore;
 import edu.unc.lib.boxc.model.api.rdf.Premis;
@@ -119,6 +121,7 @@ public class SetDatastreamFilterTest {
     private DerivativeService derivativeService;
     @Mock
     private DocumentIndexingPackageDataLoader documentIndexingPackageDataLoader;
+    private TechnicalMetadataService technicalMetadataService;
 
     private SetDatastreamFilter filter;
 
@@ -135,8 +138,12 @@ public class SetDatastreamFilterTest {
         when(binObj.getPid()).thenReturn(DatastreamPids.getOriginalFilePid(pid));
         when(fileObj.getBinaryObjects()).thenReturn(Arrays.asList(binObj));
 
+        technicalMetadataService = new TechnicalMetadataService();
+        technicalMetadataService.init();
+
         filter = new SetDatastreamFilter();
         filter.setDerivativeService(derivativeService);
+        filter.setTechnicalMetadataService(technicalMetadataService);
 
         when(binObj.getResource()).thenReturn(
                 fileResource(ORIGINAL_FILE.getId(), FILE_SIZE, FILE_MIMETYPE, FILE_NAME, FILE_DIGEST));

@@ -22,7 +22,6 @@ import static edu.unc.lib.boxc.search.api.SearchFieldKey.ANCESTOR_PATH;
 import static edu.unc.lib.boxc.search.api.SearchFieldKey.CITATION;
 import static edu.unc.lib.boxc.search.api.SearchFieldKey.COLLECTION_ID;
 import static edu.unc.lib.boxc.search.api.SearchFieldKey.CONTENT_STATUS;
-import static edu.unc.lib.boxc.search.api.SearchFieldKey.CONTENT_TYPE;
 import static edu.unc.lib.boxc.search.api.SearchFieldKey.CONTRIBUTOR;
 import static edu.unc.lib.boxc.search.api.SearchFieldKey.CREATOR;
 import static edu.unc.lib.boxc.search.api.SearchFieldKey.CREATOR_CONTRIBUTOR;
@@ -206,13 +205,31 @@ public class IndexDocumentBean {
         fields.put(RESOURCE_TYPE_SORT.getSolrField(), resourceTypeSort);
     }
 
-    public List<String> getContentType() {
-        return (List<String>) fields.get(CONTENT_TYPE.getSolrField());
+    public List<String> getFileFormatCategory() {
+        return (List<String>) fields.get(SearchFieldKey.FILE_FORMAT_CATEGORY.getSolrField());
     }
 
     @Field
-    public void setContentType(List<String> contentType) {
-        fields.put(CONTENT_TYPE.getSolrField(), contentType);
+    public void setFileFormatCategory(List<String> categories) {
+        fields.put(SearchFieldKey.FILE_FORMAT_CATEGORY.getSolrField(), categories);
+    }
+
+    public List<String> getFileFormatType() {
+        return (List<String>) fields.get(SearchFieldKey.FILE_FORMAT_TYPE.getSolrField());
+    }
+
+    @Field
+    public void setFileFormatType(List<String> types) {
+        fields.put(SearchFieldKey.FILE_FORMAT_TYPE.getSolrField(), types);
+    }
+
+    public List<String> getFileFormatDescription() {
+        return (List<String>) fields.get(SearchFieldKey.FILE_FORMAT_DESCRIPTION.getSolrField());
+    }
+
+    @Field
+    public void setFileFormatDescription(List<String> types) {
+        fields.put(SearchFieldKey.FILE_FORMAT_DESCRIPTION.getSolrField(), types);
     }
 
     public Date getTimestamp() {

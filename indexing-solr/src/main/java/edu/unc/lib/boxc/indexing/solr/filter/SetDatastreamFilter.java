@@ -21,20 +21,17 @@ import static edu.unc.lib.boxc.model.api.xml.JDOMNamespaceUtil.FITS_NS;
 import static edu.unc.lib.boxc.model.api.xml.JDOMNamespaceUtil.PREMIS_V3_NS;
 
 import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import edu.unc.lib.boxc.indexing.solr.utils.TechnicalMetadataService;
+import edu.unc.lib.boxc.model.api.exceptions.RepositoryException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.Statement;
-import org.jdom2.Document;
 import org.jdom2.Element;
-import org.jdom2.JDOMException;
-import org.jdom2.input.SAXBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -65,6 +62,7 @@ public class SetDatastreamFilter implements IndexDocumentFilter {
     private static final Logger log = LoggerFactory.getLogger(SetDatastreamFilter.class);
 
     private DerivativeService derivativeService;
+    private TechnicalMetadataService technicalMetadataService;
 
     @Override
     public void filter(DocumentIndexingPackage dip) throws IndexingException {
@@ -122,14 +120,12 @@ public class SetDatastreamFilter implements IndexDocumentFilter {
             return null;
         }
 
-        InputStream fitsData = fits.getBinaryStream();
         String fitsId = fits.getPid().getId();
         String extent = null;
 
         try {
-            SAXBuilder builder = new SAXBuilder();
-            Document doc = builder.build(fitsData);
-            Element fitsMd = doc.getRootElement().getChild("object", PREMIS_V3_NS)
+            var techMdDoc = technicalMetadataService.retrieveDocument(fits);
+            Element fitsMd = techMdDoc.getRootElement().getChild("object", PREMIS_V3_NS)
                     .getChild("objectCharacteristics", PREMIS_V3_NS)
                     .getChild("objectCharacteristicsExtension", PREMIS_V3_NS)
                     .getChild("fits", FITS_NS)
@@ -154,7 +150,7 @@ public class SetDatastreamFilter implements IndexDocumentFilter {
                 }
             }
             return extent;
-        } catch (JDOMException | IOException e) {
+        } catch (RepositoryException e) {
             log.warn("Unable to parse FITS for {}", fitsId, e);
             return null;
         }
@@ -260,5 +256,9 @@ public class SetDatastreamFilter implements IndexDocumentFilter {
      */
     public void setDerivativeService(DerivativeService derivativeService) {
         this.derivativeService = derivativeService;
+    }
+
+    public void setTechnicalMetadataService(TechnicalMetadataService technicalMetadataService) {
+        this.technicalMetadataService = technicalMetadataService;
     }
 }

@@ -42,7 +42,7 @@ Renders search results in a list view display format
                             <div v-if="record.objectPath.length >= 3 && showCollection(record)">
                                 <p class="collection_id"><span class="has-text-weight-bold">{{ $t('display.collection_number') }}:</span> {{ record.objectPath[2].collectionId }}</p>
                             </div>
-                            <div v-if="record.type === 'Work' || record.type === 'File'"><span class="has-text-weight-bold">{{ $t('display.file_type') }}:</span> {{ getFileType(record.datastream) }}</div>
+                            <div v-if="record.type === 'Work' || record.type === 'File'"><span class="has-text-weight-bold">{{ $t('display.file_type') }}:</span> {{ getFileType(record) }}</div>
                         </div>
                     </li>
                 </ul>
@@ -109,18 +109,24 @@ Renders search results in a list view display format
                 return '';
             },
 
-            getFileType(datastream_info) {
-                for (let i in datastream_info) {
-                    let ds_parts = datastream_info[i].split('\|');
-
-                    if (ds_parts.length < 5 || ds_parts[0] !== 'original_file') {
-                        continue;
-                    }
-
-                    return ds_parts[3];
+            /**
+             * @param record
+             * @returns {string} File Type value for a work or file object. Will return the descriptive
+             *      form of the file type if available, and fall back to the mimetype if not
+             */
+            getFileType(record) {
+                let fileTypes = record.fileDesc;
+                let fileType;
+                if (fileTypes && fileTypes.length > 0) {
+                    fileType = fileTypes[0];
                 }
-
-                return '';
+                if (!fileType) {
+                    fileTypes = record.fileType;
+                    if (fileTypes && fileTypes.length > 0) {
+                        fileType = fileTypes[0];
+                    }
+                }
+                return fileType || '';
             },
 
             showCollection(record) {

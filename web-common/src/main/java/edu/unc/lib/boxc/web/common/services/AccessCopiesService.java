@@ -139,7 +139,7 @@ public class AccessCopiesService extends SolrSearchService {
         return DatastreamUtil.getOriginalFileUrl(contentObjectRecord);
     }
 
-    private static final String IMAGE_CONTENT_TYPE = '^' + ContentCategory.image.getJoined();
+    private static final String IMAGE_CONTENT_TYPE = ContentCategory.image.getDisplayName();
 
     /**
      * @param contentObjectRecord
@@ -158,8 +158,8 @@ public class AccessCopiesService extends SolrSearchService {
         }
         // Don't need to check any further if object isn't a work or doesn't contain files with thumbnails
         if (!ResourceType.Work.name().equals(contentObjectRecord.getResourceType())
-                || contentObjectRecord.getContentType() == null
-                || !contentObjectRecord.getContentType().contains(IMAGE_CONTENT_TYPE)) {
+                || contentObjectRecord.getFileFormatCategory() == null
+                || !contentObjectRecord.getFileFormatCategory().contains(IMAGE_CONTENT_TYPE)) {
             log.debug("Record {} is not applicable for a thumbnail", contentObjectRecord.getId());
             return null;
         }

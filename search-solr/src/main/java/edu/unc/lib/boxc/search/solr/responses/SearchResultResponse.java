@@ -15,20 +15,15 @@
  */
 package edu.unc.lib.boxc.search.solr.responses;
 
-import java.util.ArrayList;
-import java.util.List;
-
+import edu.unc.lib.boxc.search.api.facets.FacetFieldList;
+import edu.unc.lib.boxc.search.api.models.ContentObjectRecord;
+import edu.unc.lib.boxc.search.api.requests.SearchState;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import edu.unc.lib.boxc.search.api.SearchFieldKey;
-import edu.unc.lib.boxc.search.api.facets.FacetFieldList;
-import edu.unc.lib.boxc.search.api.facets.SearchFacet;
-import edu.unc.lib.boxc.search.api.models.ContentObjectRecord;
-import edu.unc.lib.boxc.search.api.models.GroupedContentObjectRecord;
-import edu.unc.lib.boxc.search.api.requests.SearchState;
-import edu.unc.lib.boxc.search.solr.facets.MultivaluedHierarchicalFacet;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Response object for a search request.  Contains the list of results from the selected
@@ -104,44 +99,6 @@ public class SearchResultResponse {
 
     public void setSelectedContainer(ContentObjectRecord selectedContainer) {
         this.selectedContainer = selectedContainer;
-    }
-
-    public void extractCrumbDisplayValueFromRepresentative(ContentObjectRecord representative) {
-        List<SearchFacet> contentTypeValue = searchState.getFacets().get(SearchFieldKey.CONTENT_TYPE.name());
-        if (contentTypeValue instanceof MultivaluedHierarchicalFacet) {
-            LOG.debug("Replacing content type search value "
-                    + searchState.getFacets().get(SearchFieldKey.CONTENT_TYPE.name()));
-            MultivaluedHierarchicalFacet repFacet = null;
-            // If we're dealing with a rolled up result then hunt through all its items to find the matching content
-            // type
-            if (representative instanceof GroupedContentObjectRecord) {
-                GroupedContentObjectRecord groupRep = (GroupedContentObjectRecord) representative;
-
-                int i = 0;
-                do {
-                    representative = groupRep.getItems().get(i);
-
-                    if (representative.getContentTypeFacet() != null) {
-                        repFacet = (MultivaluedHierarchicalFacet) representative.getContentTypeFacet().get(0);
-                        LOG.debug("Pulling content type from representative {}: {}",
-                                representative.getId(), repFacet);
-                        if (repFacet.contains(((MultivaluedHierarchicalFacet) contentTypeValue))) {
-                            break;
-                        } else {
-                            repFacet = null;
-                        }
-                    }
-                } while (++i < groupRep.getItems().size());
-            } else {
-                // If its not a rolled up result, take it easy
-                repFacet = (MultivaluedHierarchicalFacet) representative.getContentTypeFacet().get(0);
-            }
-
-            if (repFacet != null) {
-                ((MultivaluedHierarchicalFacet) contentTypeValue).setDisplayValues(repFacet);
-                searchState.setFacet(SearchFieldKey.CONTENT_TYPE, contentTypeValue);
-            }
-        }
     }
 
     public List<String> getIdList() {

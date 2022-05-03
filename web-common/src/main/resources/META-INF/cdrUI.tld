@@ -69,10 +69,10 @@
 		</function-signature>
 	</function>
 	<function>
-		<name>getOriginalFileMimetype</name>
+		<name>getFileType</name>
 		<function-class>edu.unc.lib.boxc.web.common.utils.DatastreamUtil</function-class>
 		<function-signature>
-			java.lang.String getOriginalFileMimetype(edu.unc.lib.boxc.search.api.models.ContentObjectRecord)
+			java.lang.String getFileType(edu.unc.lib.boxc.search.api.models.ContentObjectRecord)
 		</function-signature>
 	</function>
 	<function>

@@ -99,7 +99,7 @@
                             </c:forEach>
                         </li>
                     </c:if>
-                    <li><span class="has-text-weight-bold">File Type:</span> <c:out value="${briefObject.contentTypeFacet[0].displayValue}" /></li>
+                    <li><span class="has-text-weight-bold">File Type:</span> <c:out value="${cdr:getFileType(briefObject)}" /></li>
                     <c:if test="${briefObject.filesizeSort != -1}"><li><span class="has-text-weight-bold">${searchSettings.searchFieldLabels['FILESIZE']}:</span> <c:out value="${cdr:formatFilesize(briefObject.filesizeSort, 1)}"/></li></c:if>
                     <c:if test="${not empty briefObject.dateCreated}"><li><span class="has-text-weight-bold">${searchSettings.searchFieldLabels['DATE_CREATED']}:</span> <fmt:formatDate pattern="yyyy-MM-dd" value="${briefObject.dateCreated}" /></li></c:if>
                     <c:if test="${not empty embargoDate}"><li><span class="has-text-weight-bold">Embargoed Until:</span> <fmt:formatDate pattern="yyyy-MM-dd" value="${embargoDate}" /></li></c:if>

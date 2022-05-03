@@ -29,8 +29,8 @@
 </c:set>
 
 <c:set var="contentType">
-	<c:if test="${not empty thumbnailObject.contentTypeFacet[0].displayValue && thumbnailObject.contentTypeFacet[0].displayValue != 'unknown'}">
-		<c:out value="${thumbnailObject.contentTypeFacet[0].displayValue}" />
+	<c:if test="${not empty thumbnailObject.fileFormatCategory[0] && thumbnailObject.fileFormatCategory[0] != 'unknown'}">
+		<c:out value="${thumbnailObject.fileFormatCategory[0]}" />
 	</c:if>
 </c:set>
 

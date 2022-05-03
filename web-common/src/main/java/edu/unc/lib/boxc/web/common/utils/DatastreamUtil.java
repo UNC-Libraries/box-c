@@ -24,6 +24,7 @@ import java.util.List;
 import edu.unc.lib.boxc.model.api.DatastreamType;
 import edu.unc.lib.boxc.search.api.models.ContentObjectRecord;
 import edu.unc.lib.boxc.search.api.models.Datastream;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * Utility methods for presenting datastreams in views.
@@ -92,15 +93,23 @@ public class DatastreamUtil {
     }
 
     /**
-     * @param metadata metadata record for object
-     * @return Get the mimetype of the original file datastream, or null if no original file
+     * @param metadata
+     * @return Get the file type for the given record, preferring the file format description and
+     *      falling back to the mimetype when needed.
      */
-    public static String getOriginalFileMimetype(ContentObjectRecord metadata) {
-        Datastream preferredDS = getPreferredDatastream(metadata, ORIGINAL_FILE.getId());
-        if (preferredDS == null) {
-            return null;
+    public static String getFileType(ContentObjectRecord metadata) {
+        var fileTypes = metadata.getFileFormatDescription();
+        String fileType = "";
+        if (fileTypes != null && !fileTypes.isEmpty()) {
+            fileType = fileTypes.get(0);
         }
-        return preferredDS.getMimetype();
+        if (StringUtils.isBlank(fileType)) {
+            fileTypes = metadata.getFileFormatType();
+            if (fileTypes != null && !fileTypes.isEmpty()) {
+                fileType = fileTypes.get(0);
+            }
+        }
+        return StringUtils.isBlank(fileType) ? "" : fileType;
     }
 
     /**
@@ -109,8 +118,12 @@ public class DatastreamUtil {
      * @return
      */
     public static boolean originalFileMimetypeMatches(ContentObjectRecord metadata, String pattern) {
-        String mimetype = getOriginalFileMimetype(metadata);
-        if (mimetype == null) {
+        var formatTypes = metadata.getFileFormatType();
+        if (formatTypes == null || formatTypes.isEmpty()) {
+            return false;
+        }
+        String mimetype = formatTypes.get(0);
+        if (StringUtils.isBlank(mimetype)) {
             return false;
         }
         return mimetype.matches(pattern);

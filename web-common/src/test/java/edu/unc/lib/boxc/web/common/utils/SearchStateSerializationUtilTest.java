@@ -19,7 +19,6 @@ import edu.unc.lib.boxc.search.api.SearchFieldKey;
 import edu.unc.lib.boxc.search.api.requests.SearchState;
 import edu.unc.lib.boxc.search.solr.config.SearchSettings;
 import edu.unc.lib.boxc.search.solr.facets.GenericFacet;
-import edu.unc.lib.boxc.search.solr.facets.MultivaluedHierarchicalFacet;
 import edu.unc.lib.boxc.search.solr.services.FacetFieldFactory;
 import edu.unc.lib.boxc.search.solr.services.SearchStateFactory;
 import org.junit.Before;
@@ -30,10 +29,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 import static edu.unc.lib.boxc.web.common.utils.SearchStateSerializationUtil.FACET_DISPLAY_VALUE_KEY;
 import static edu.unc.lib.boxc.web.common.utils.SearchStateSerializationUtil.FACET_VALUE_KEY;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 /**
  * @author bbpennel
@@ -78,15 +77,14 @@ public class SearchStateSerializationUtilTest {
     @Test
     public void getFilterParametersWithMultipleContentTypes() throws Exception {
         var state = searchStateFactory.createSearchState(Map.of(
-                SearchFieldKey.CONTENT_TYPE.getUrlParam(), new String[] { "image%7C%7Cimage%2Fjpg%7C%7Caudio" }
+                SearchFieldKey.FILE_FORMAT_CATEGORY.getUrlParam(), new String[] { "Image%7C%7CAudio" }
         ));
         var result = SearchStateSerializationUtil.getFilterParameters(state);
         assertEquals(1, result.size());
-        var contentTypeValues = (List<Map<String, String>>) result.get(SearchFieldKey.CONTENT_TYPE.getUrlParam());
-        assertHasFacetValue(result, SearchFieldKey.CONTENT_TYPE, "image", "image");
-        assertHasFacetValue(result, SearchFieldKey.CONTENT_TYPE, "image/jpg", "jpg");
-        assertHasFacetValue(result, SearchFieldKey.CONTENT_TYPE, "audio", "audio");
-        assertEquals(3, contentTypeValues.size());
+        var contentTypeValues = (List<Map<String, String>>) result.get(SearchFieldKey.FILE_FORMAT_CATEGORY.getUrlParam());
+        assertHasFacetValue(result, SearchFieldKey.FILE_FORMAT_CATEGORY, "Image", "Image");
+        assertHasFacetValue(result, SearchFieldKey.FILE_FORMAT_CATEGORY, "Audio", "Audio");
+        assertEquals(2, contentTypeValues.size());
     }
 
     @Test

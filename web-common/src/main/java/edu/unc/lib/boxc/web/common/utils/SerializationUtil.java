@@ -26,6 +26,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import edu.unc.lib.boxc.search.api.SearchFieldKey;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -159,6 +160,18 @@ public class SerializationUtil {
 
         if (metadata.getDatastream() != null) {
             result.put("datastream", metadata.getDatastream());
+        }
+
+        if (metadata.getFileFormatCategory() != null) {
+            result.put(SearchFieldKey.FILE_FORMAT_CATEGORY.getUrlParam(), metadata.getFileFormatCategory());
+        }
+
+        if (metadata.getFileFormatDescription() != null) {
+            result.put(SearchFieldKey.FILE_FORMAT_DESCRIPTION.getUrlParam(), metadata.getFileFormatDescription());
+        }
+
+        if (metadata.getFileFormatType() != null) {
+            result.put(SearchFieldKey.FILE_FORMAT_TYPE.getUrlParam(), metadata.getFileFormatType());
         }
 
         if (metadata.getIdentifier() != null) {

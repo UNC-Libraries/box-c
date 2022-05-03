@@ -51,7 +51,7 @@ public class StructureResultsController extends AbstractStructureResultsControll
             HttpServletRequest request, HttpServletResponse response) {
         response.setContentType("application/json");
         HierarchicalBrowseResultResponse result = getStructureResult(getContentRootPid().getId(),
-                "true".equals(includeFiles), false, false, request);
+                "true".equals(includeFiles), false, request);
         return SerializationUtil.structureToJSON(result, getAgentPrincipals().getPrincipals());
     }
 
@@ -61,7 +61,7 @@ public class StructureResultsController extends AbstractStructureResultsControll
             @RequestParam(value = "files", required = false) String includeFiles,
             Model model, HttpServletRequest request, HttpServletResponse response) {
         response.setContentType("application/json");
-        HierarchicalBrowseResultResponse result = getStructureResult(pid, "true".equals(includeFiles), false, false,
+        HierarchicalBrowseResultResponse result = getStructureResult(pid, "true".equals(includeFiles), false,
                 request);
         return SerializationUtil.structureToJSON(result, getAgentPrincipals().getPrincipals());
     }
@@ -72,7 +72,7 @@ public class StructureResultsController extends AbstractStructureResultsControll
             Model model, HttpServletRequest request, HttpServletResponse response) {
         response.setContentType("application/json");
         HierarchicalBrowseResultResponse result = getStructureResult(getContentRootPid().getId(),
-                "true".equals(includeFiles), true, false, request);
+                "true".equals(includeFiles), true, request);
         return SerializationUtil.structureToJSON(result, getAgentPrincipals().getPrincipals());
     }
 
@@ -85,7 +85,7 @@ public class StructureResultsController extends AbstractStructureResultsControll
             @RequestParam(value = "files", required = false) String includeFiles,
             Model model, HttpServletRequest request, HttpServletResponse response) {
         response.setContentType("application/json");
-        HierarchicalBrowseResultResponse result = getStructureResult(pid, "true".equals(includeFiles), true, false,
+        HierarchicalBrowseResultResponse result = getStructureResult(pid, "true".equals(includeFiles), true,
                 request);
         return SerializationUtil.structureToJSON(result, getAgentPrincipals().getPrincipals());
     }
@@ -109,7 +109,7 @@ public class StructureResultsController extends AbstractStructureResultsControll
         response.setContentType("application/json");
         HierarchicalBrowseResultResponse result = getStructureResult(
                 selectedContainer.getAncestorPathFacet().getSearchKey(),
-                "true".equals(includeFiles), false, false, request);
+                "true".equals(includeFiles), false, request);
 
         return SerializationUtil.structureToJSON(result, GroupsThreadStore.getPrincipals());
     }

@@ -61,28 +61,21 @@ describe('facets.vue', () => {
                         ]
                     },
                     {
-                        name: "CONTENT_TYPE",
+                        name: "FILE_FORMAT_CATEGORY",
                         values: [
                             {
                                 count: 8,
                                 displayValue: "Image",
-                                limitToValue: "image",
-                                value: "^image,Image",
-                                fieldName: "CONTENT_TYPE"
+                                limitToValue: "Image",
+                                value: "Image",
+                                fieldName: "FILE_FORMAT_CATEGORY"
                             },
                             {
                                 count: 2,
                                 displayValue: "Text",
-                                limitToValue: "text",
-                                value: "^text,Text",
-                                fieldName: "CONTENT_TYPE"
-                            },
-                            {
-                                count: 2,
-                                displayValue: "png",
-                                limitToValue: "image/png",
-                                value: "/image^png,png",
-                                fieldName: "CONTENT_TYPE"
+                                limitToValue: "Text",
+                                value: "Text",
+                                fieldName: "FILE_FORMAT_CATEGORY"
                             }
                         ]
                     }, {
@@ -117,7 +110,7 @@ describe('facets.vue', () => {
 
         expect(facet_headers[1].text()).toBe('Format');
         expect(facets[2].find('a').text()).toBe('Image (8)');
-        expect(facets[3].find('a').text()).toBe('png (2)');
+        expect(facets[3].find('a').text()).toBe('Text (2)');
     });
 
     it("displays 'Date Created' facet if a minimum search year is set", () => {
@@ -138,14 +131,14 @@ describe('facets.vue', () => {
                 minSearchYear: 2011,
                 facetList: [
                     {
-                        name: "CONTENT_TYPE",
+                        name: "FILE_FORMAT_CATEGORY",
                         values: [
                             {
                                 count: 8,
                                 displayValue: "Image",
                                 limitToValue: "image",
-                                value: "^image,Image",
-                                fieldName: "CONTENT_TYPE"
+                                value: "Image",
+                                fieldName: "FILE_FORMAT_CATEGORY"
                             }
                         ]
                     },
@@ -197,14 +190,14 @@ describe('facets.vue', () => {
                 minCreatedYear: undefined,
                 facetList: [
                     {
-                        name: "CONTENT_TYPE",
+                        name: "FILE_FORMAT_CATEGORY",
                         values: [
                             {
                                 count: 8,
                                 displayValue: "Image",
-                                limitToValue: "image",
-                                value: "^image,Image",
-                                fieldName: "CONTENT_TYPE"
+                                limitToValue: "Image",
+                                value: "Image",
+                                fieldName: "FILE_FORMAT_CATEGORY"
                             }
                         ]
                     },
@@ -240,7 +233,7 @@ describe('facets.vue', () => {
         let facet_list = wrapper.findAll('.facet-display a');
         selected_facet = facet_list[2];
         expect(selected_facet.html()).toMatch(/Image.*8.*fas.fa-times/); // facet value and checkmark
-        expect(wrapper.vm.selected_facets).toContain('format=image');
+        expect(wrapper.vm.selected_facets).toContain('format=Image');
     });
 
     it("displays a clear all facets button", async () => {
@@ -259,7 +252,7 @@ describe('facets.vue', () => {
         await router.push('/search/?collection=d77fd8c9-744b-42ab-8e20-5ad9bdf8194e');
         selected_facet.trigger('click');
         await flushPromises();
-        expect(wrapper.vm.selected_facets).toContain('format=image');
+        expect(wrapper.vm.selected_facets).toContain('format=Image');
 
         await wrapper.find('.clear-all-facets').trigger('click');
         await flushPromises();
@@ -276,7 +269,7 @@ describe('facets.vue', () => {
         selected_facet = facet_list[2];
 
         expect(selected_facet.html()).toContain('fas fa-times'); // Look for X checkmark
-        expect(wrapper.vm.selected_facets).toContain('format=image');
+        expect(wrapper.vm.selected_facets).toContain('format=Image');
 
         // Remove facet
         selected_facet.trigger('click');
@@ -284,7 +277,7 @@ describe('facets.vue', () => {
         facet_list = wrapper.findAll('.facet-display a');
         selected_facet = facet_list[2];
         expect(selected_facet.html()).not.toContain('fas fa-times'); // Look for X checkmark
-        expect(wrapper.vm.selected_facets).not.toContain('format=image');
+        expect(wrapper.vm.selected_facets).not.toContain('format=Image');
     });
 
     it("updates the query parameters if a facet is selected", async () => {
@@ -294,7 +287,7 @@ describe('facets.vue', () => {
         await router.push('/search/?collection=d77fd8c9-744b-42ab-8e20-5ad9bdf8194e');
         selected_facet.trigger('click');
         await flushPromises();
-        expect(wrapper.vm.$router.currentRoute.value.query.format).toEqual('image');
+        expect(wrapper.vm.$router.currentRoute.value.query.format).toEqual('Image');
     });
 
     it("updates the query parameters if a facet is removed", async () => {
@@ -302,7 +295,7 @@ describe('facets.vue', () => {
         await router.push('/search/?collection=d77fd8c9-744b-42ab-8e20-5ad9bdf8194e');
         selected_facet.trigger('click');
         await flushPromises();
-        expect(wrapper.vm.$router.currentRoute.value.query.format).toEqual('image');
+        expect(wrapper.vm.$router.currentRoute.value.query.format).toEqual('Image');
 
         // Remove facet
         let facet_list = wrapper.findAll('.facet-display a');
@@ -324,7 +317,7 @@ describe('facets.vue', () => {
         await flushPromises();
         selected_facet.trigger('click');
         await flushPromises();
-        expect(wrapper.vm.selected_facets).toEqual(['collection=d77fd8c9-744b-42ab-8e20-5ad9bdf8194e', 'format=image']);
+        expect(wrapper.vm.selected_facets).toEqual(['collection=d77fd8c9-744b-42ab-8e20-5ad9bdf8194e', 'format=Image']);
     });
 
     it("accepts multiple facets and facets of the same type", async () => {
@@ -335,30 +328,18 @@ describe('facets.vue', () => {
         await flushPromises();
         selected_sub_facet.trigger('click');
         await flushPromises();
-        expect(wrapper.vm.selected_facets).toEqual(['collection=d77fd8c9-744b-42ab-8e20-5ad9bdf8194e', 'format=image||image/png']);
+        expect(wrapper.vm.selected_facets).toEqual(['collection=d77fd8c9-744b-42ab-8e20-5ad9bdf8194e', 'format=Image||Text']);
     });
 
-    it("removes the child facet if a parent facet is removed", async () => {
-        await router.push('/search?format=image%257C%257Cimage%252Fpng');
-        expect(wrapper.vm.selected_facets).toEqual(['format=image||image/png']);
-
-        // Should always be above child facet
-        let facet_list = wrapper.findAll('.facet-display a');
-        selected_facet = facet_list[2];
-        selected_facet.trigger('click');
+    it("sets selected facets, including multiple from same facet, if the page is reloaded", async () => {
+        await router.push('/search/?format=Image%257C%257CText');
         await flushPromises();
-        expect(wrapper.vm.selected_facets).toEqual([]);
-    });
-
-    it("sets selected facets, including parent facets, if the page is reloaded", async () => {
-        await router.push('/search/?format=image%257C%257Cimage%252Fpng');
-        await flushPromises();
-        expect(wrapper.vm.selected_facets).toEqual(['format=image||image/png']);
+        expect(wrapper.vm.selected_facets).toEqual(['format=Image||Text']);
         let facet_list = wrapper.findAll('.facet-display a');
         selected_facet = facet_list[2];
         selected_sub_facet = facet_list[3];
         expect(selected_facet.html()).toMatch(/Image.*8.*fas.fa-times/); // facet values and checkmark
-        expect(selected_sub_facet.html()).toMatch(/png.*2.*fas.fa-times/); // facet values and checkmark
+        expect(selected_sub_facet.html()).toMatch(/Text.*2.*fas.fa-times/); // facet values and checkmark
     });
 
     it("it doesn't allow start date to be after the end date for the 'created date' picker", async () => {

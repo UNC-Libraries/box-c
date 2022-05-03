@@ -35,6 +35,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import edu.unc.lib.boxc.operations.jms.MessageSender;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.io.FileUtils;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
@@ -145,7 +146,7 @@ public class SolrIngestProcessorIT extends AbstractSolrProcessorIT {
         assertNotNull(workMd.getDatastreamObject(ORIGINAL_FILE.getId()));
         assertNotNull(workMd.getDatastreamObject(MD_DESCRIPTIVE.getId()));
 
-        assertTrue("Content type was not set to text", workMd.getContentType().get(0).contains("text"));
+        assertTrue("Content type was not set to text", workMd.getFileFormatCategory().get(0).contains("Text"));
 
         assertTrue("Read groups did not contain assigned group", workMd.getReadGroup().contains(AUTHENTICATED_PRINC));
         assertTrue("Admin groups did not contain assigned group", workMd.getAdminGroup().contains("admin"));
@@ -175,7 +176,7 @@ public class SolrIngestProcessorIT extends AbstractSolrProcessorIT {
 
         assertNull(collMd.getDatastream());
 
-        assertNull(collMd.getContentType());
+        assertTrue(CollectionUtils.isEmpty(collMd.getFileFormatCategory()));
 
         assertTrue("Read groups did not contain assigned group", collMd.getReadGroup().contains(AUTHENTICATED_PRINC));
         assertTrue("Admin groups did not contain assigned group", collMd.getAdminGroup().contains("admin"));
@@ -222,7 +223,8 @@ public class SolrIngestProcessorIT extends AbstractSolrProcessorIT {
         assertNotNull(fileMd.getDatastreamObject(ORIGINAL_FILE.getId()));
         assertNotNull(fileMd.getDatastreamObject(DatastreamType.FULLTEXT_EXTRACTION.getId()));
 
-        assertTrue("Content type was not set to text", fileMd.getContentType().get(0).contains("text"));
+        assertTrue("Content type was not set to text:" + fileMd.getFileFormatCategory(),
+                fileMd.getFileFormatCategory().get(0).contains("Text"));
 
         assertFalse("Read group should not be assigned", fileMd.getReadGroup().contains(AUTHENTICATED_PRINC));
         assertTrue("Admin groups did not contain assigned group", fileMd.getAdminGroup().contains("admin"));
@@ -261,7 +263,7 @@ public class SolrIngestProcessorIT extends AbstractSolrProcessorIT {
         assertEquals(1, workMd.getDatastream().size());
         assertNotNull(workMd.getDatastreamObject(ORIGINAL_FILE.getId()));
 
-        assertTrue("Content type was not set to text", workMd.getContentType().get(0).contains("text"));
+        assertTrue("Content type was not set to text", workMd.getFileFormatCategory().get(0).contains("Text"));
 
         idRequest = new SimpleIdRequest(fileObj.getPid(), accessGroups);
         ContentObjectRecord fileMd = solrSearchService.getObjectById(idRequest);

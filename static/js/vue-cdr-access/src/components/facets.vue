@@ -102,14 +102,7 @@ Facet list component, used to display all the values of facets and provide links
             },
 
             sortedFacetsList() {
-                return this.facetList
-                    .filter((facet) => this.showFacetDisplay(facet))
-                    .map((facet) => {
-                        if (facet.name === 'CONTENT_TYPE') {
-                            facet.values = sortBy(facet.values, ['limitToValue', 'count']);
-                        }
-                        return facet;
-                });
+                return this.facetList.filter((facet) => this.showFacetDisplay(facet));
             },
 
             currentYear() {
@@ -202,13 +195,7 @@ Facet list component, used to display all the values of facets and provide links
                    const facet_parts = this.selected_facets[current_index].split('=');
                    const current_values = facet_parts[1].split('||');
 
-                   let updated_values;
-                   if (facet_type.startsWith('format')) {
-                       let current_value_regex = new RegExp(facet.limitToValue);
-                       updated_values = current_values.filter(f => !current_value_regex.test(f)).join('||');
-                   } else {
-                       updated_values = current_values.filter(f => f !== facet.limitToValue).join('||');
-                   }
+                   let updated_values = current_values.filter(f => f !== facet.limitToValue).join('||');
 
                    if (updated_values === '') {
                        this.selected_facets.splice(current_index, 1);
@@ -250,7 +237,7 @@ Facet list component, used to display all the values of facets and provide links
                         return 'Collection';
                     case 'PARENT_UNIT':
                         return 'Administrative Unit';
-                    case 'CONTENT_TYPE':
+                    case 'FILE_FORMAT_CATEGORY':
                         return 'Format';
                     case 'LANGUAGE':
                         return 'Language';
@@ -277,7 +264,7 @@ Facet list component, used to display all the values of facets and provide links
                         return 'collection=';
                     case 'PARENT_UNIT':
                         return 'unit=';
-                    case 'CONTENT_TYPE':
+                    case 'FILE_FORMAT_CATEGORY':
                         return 'format=';
                     case 'LANGUAGE':
                         return 'language=';

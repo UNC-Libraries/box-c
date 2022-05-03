@@ -24,7 +24,6 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import edu.unc.lib.boxc.indexing.solr.utils.ContentTypeUtils;
 import edu.unc.lib.boxc.model.api.DatastreamType;
 import edu.unc.lib.boxc.model.api.ResourceType;
 import edu.unc.lib.boxc.search.api.ContentCategory;
@@ -134,8 +133,8 @@ public class TestCorpus {
                 ORIGINAL_FILE.getId() + "|image/png|file.png|png|766|urn:sha1:checksum|",
                 DatastreamType.THUMBNAIL_LARGE.getId() + "|image/png|thumb|png|55||");
         newDoc.addField(SearchFieldKey.DATASTREAM.getSolrField(), imgDatastreams);
-        newDoc.addField(SearchFieldKey.CONTENT_TYPE.getSolrField(),
-                ContentTypeUtils.constructContentTypeFacets(ContentCategory.image, "png"));
+        newDoc.addField(SearchFieldKey.FILE_FORMAT_CATEGORY.getSolrField(), ContentCategory.image.getDisplayName());
+        newDoc.addField(SearchFieldKey.FILE_FORMAT_TYPE.getSolrField(), "png");
         docs.add(newDoc);
 
         newDoc = new SolrInputDocument();
@@ -151,8 +150,8 @@ public class TestCorpus {
         imgDatastreams.set(0, imgDatastreams.get(0) + pid6File.getId());
         imgDatastreams.set(1, imgDatastreams.get(1) + pid6File.getId());
         newDoc.addField(SearchFieldKey.DATASTREAM.getSolrField(), imgDatastreams);
-        newDoc.addField(SearchFieldKey.CONTENT_TYPE.getSolrField(),
-                ContentTypeUtils.constructContentTypeFacets(ContentCategory.image, "png"));
+        newDoc.addField(SearchFieldKey.FILE_FORMAT_CATEGORY.getSolrField(), ContentCategory.image.getDisplayName());
+        newDoc.addField(SearchFieldKey.FILE_FORMAT_TYPE.getSolrField(), "png");
         docs.add(newDoc);
 
         newDoc = new SolrInputDocument();

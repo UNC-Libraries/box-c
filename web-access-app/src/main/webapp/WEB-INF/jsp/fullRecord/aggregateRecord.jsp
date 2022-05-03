@@ -104,8 +104,8 @@
                             </c:if>
 
                             <c:choose>
-                                <c:when test="${not empty briefObject.contentTypeFacet[0].displayValue}">
-                                    <li><span class="has-text-weight-bold">File Type:</span> <c:out value="${briefObject.contentTypeFacet[0].displayValue}" /></li>
+                                <c:when test="${not empty briefObject.fileFormatType}">
+                                    <li><span class="has-text-weight-bold">File Type:</span> <c:out value="${cdr:getFileType(briefObject)}" /></li>
                                     <c:if test="${briefObject.filesizeSort != -1}"> <li><span class="has-text-weight-bold">${searchSettings.searchFieldLabels['FILESIZE']}:</span> <c:out value="${cdr:formatFilesize(briefObject.filesizeSort, 1)}"/></li></c:if>
                                 </c:when>
                                 <c:otherwise>

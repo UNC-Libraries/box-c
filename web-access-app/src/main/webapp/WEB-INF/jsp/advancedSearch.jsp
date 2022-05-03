@@ -52,10 +52,10 @@
 						<option value="<c:out value='${collectionRecord.id}' />"><c:out value="${collectionRecord.title}" /></option>
 					</c:forEach>
 				</select>
-				<select name="${searchSettings.searchFieldParams['CONTENT_TYPE']}" class="advsearch_select" aria-label="format">
+				<select name="${searchSettings.searchFieldParams['FILE_FORMAT_CATEGORY']}" class="advsearch_select" aria-label="format">
 					<option value="">Format</option>
-					<c:forEach items="${formatMap}" var="formatEntry">
-						<option value="${formatEntry.key}"><c:out value="${formatEntry.value}"/></option>
+					<c:forEach items="${formats}" var="formatEntry">
+						<option value="${formatEntry}"><c:out value="${formatEntry}"/></option>
 					</c:forEach>
 				</select>
 				

@@ -77,7 +77,8 @@ public class DatastreamController {
     private AccessCopiesService accessCopiesService;
 
     private static final List<String> THUMB_QUERY_FIELDS = Arrays.asList(
-            SearchFieldKey.ID.name(), SearchFieldKey.CONTENT_TYPE.name(), SearchFieldKey.DATASTREAM.name(),
+            SearchFieldKey.ID.name(), SearchFieldKey.DATASTREAM.name(),
+            SearchFieldKey.FILE_FORMAT_CATEGORY.name(), SearchFieldKey.FILE_FORMAT_TYPE.name(),
             SearchFieldKey.RESOURCE_TYPE.name(), SearchFieldKey.ANCESTOR_PATH.name());
 
     @RequestMapping("/file/{pid}")

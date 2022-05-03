@@ -15,16 +15,21 @@
  */
 package edu.unc.lib.boxc.web.common.services;
 
-import static edu.unc.lib.boxc.web.common.utils.SearchConstants.MAX_COLLECTIONS_TO_RETRIEVE;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
-
+import edu.unc.lib.boxc.auth.api.UserRole;
+import edu.unc.lib.boxc.auth.api.exceptions.AccessRestrictionException;
+import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
+import edu.unc.lib.boxc.auth.api.services.PrincipalClassifier;
+import edu.unc.lib.boxc.model.api.ResourceType;
+import edu.unc.lib.boxc.search.api.SearchFieldKey;
+import edu.unc.lib.boxc.search.api.models.ContentObjectRecord;
+import edu.unc.lib.boxc.search.api.requests.SearchRequest;
+import edu.unc.lib.boxc.search.api.requests.SearchState;
 import edu.unc.lib.boxc.search.solr.config.SearchSettings;
+import edu.unc.lib.boxc.search.solr.config.SolrSettings;
+import edu.unc.lib.boxc.search.solr.responses.SearchResultResponse;
+import edu.unc.lib.boxc.search.solr.services.ObjectPathFactory;
+import edu.unc.lib.boxc.search.solr.services.SearchStateFactory;
+import edu.unc.lib.boxc.search.solr.services.SolrSearchService;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.response.FacetField;
@@ -33,21 +38,13 @@ import org.apache.solr.client.solrj.response.QueryResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import edu.unc.lib.boxc.auth.api.UserRole;
-import edu.unc.lib.boxc.auth.api.exceptions.AccessRestrictionException;
-import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
-import edu.unc.lib.boxc.auth.api.services.PrincipalClassifier;
-import edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore;
-import edu.unc.lib.boxc.model.api.ResourceType;
-import edu.unc.lib.boxc.search.api.SearchFieldKey;
-import edu.unc.lib.boxc.search.api.models.ContentObjectRecord;
-import edu.unc.lib.boxc.search.api.requests.SearchRequest;
-import edu.unc.lib.boxc.search.api.requests.SearchState;
-import edu.unc.lib.boxc.search.solr.config.SolrSettings;
-import edu.unc.lib.boxc.search.solr.responses.SearchResultResponse;
-import edu.unc.lib.boxc.search.solr.services.ObjectPathFactory;
-import edu.unc.lib.boxc.search.solr.services.SearchStateFactory;
-import edu.unc.lib.boxc.search.solr.services.SolrSearchService;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+import static edu.unc.lib.boxc.web.common.utils.SearchConstants.MAX_COLLECTIONS_TO_RETRIEVE;
 
 /**
  * Solr query construction layer. Constructs search states specific to common tasks before passing them on to lower
@@ -167,30 +164,6 @@ public class SolrQueryLayerService extends SolrSearchService {
         return resultResponse;
     }
 
-    public void populateBreadcrumbs(SearchRequest searchRequest, SearchResultResponse resultResponse) {
-        SearchState searchState = searchRequest.getSearchState();
-        if (searchState.getFacets().containsKey(SearchFieldKey.CONTENT_TYPE.name())) {
-            if (resultResponse.getResultCount() == 0 || searchState.getResultFields() == null
-                    || !searchState.getResultFields().contains(SearchFieldKey.CONTENT_TYPE.name())) {
-                SearchState contentTypeSearchState = new SearchState();
-                contentTypeSearchState.setRowsPerPage(1);
-                contentTypeSearchState.setFacet(SearchFieldKey.CONTENT_TYPE,
-                        searchState.getFacets().get(SearchFieldKey.CONTENT_TYPE.name()));
-                contentTypeSearchState.setResultFields(Arrays.asList(SearchFieldKey.CONTENT_TYPE.name()));
-
-                SearchRequest contentTypeRequest = new SearchRequest(contentTypeSearchState, GroupsThreadStore
-                                .getAgentPrincipals().getPrincipals());
-                SearchResultResponse contentTypeResponse = getSearchResults(contentTypeRequest);
-                if (contentTypeResponse.getResultCount() > 0) {
-                    resultResponse.extractCrumbDisplayValueFromRepresentative(
-                            contentTypeResponse.getResultList().get(0));
-                }
-            } else {
-                resultResponse.extractCrumbDisplayValueFromRepresentative(resultResponse.getResultList().get(0));
-            }
-        }
-    }
-
     public void setSearchStateFactory(SearchStateFactory searchStateFactory) {
         this.searchStateFactory = searchStateFactory;
     }
@@ -201,40 +174,24 @@ public class SolrQueryLayerService extends SolrSearchService {
      * @return a map from format name to count
      */
     public Map<String, Long> getFormatCounts(AccessGroupSet accessGroups) {
-        Map<String, Long> counts = new HashMap<>();
-
         try {
             SolrQuery query = new SolrQuery();
 
             query.setQuery("*:*");
             addAccessRestrictions(query, accessGroups);
             query.setRows(0);
-            query.addFacetField("contentType");
+            query.addFacetField(SearchFieldKey.FILE_FORMAT_CATEGORY.getSolrField());
             query.setFacetLimit(-1);
 
             QueryResponse response = this.executeQuery(query);
-            FacetField facetField = response.getFacetField("contentType");
-
-            for (Count count : facetField.getValues()) {
-
-                if (count.getName().startsWith("^text")) {
-                    counts.put("text", count.getCount());
-                } else if (count.getName().startsWith("^image")) {
-                    counts.put("image", count.getCount());
-                } else if (count.getName().startsWith("^dataset")) {
-                    counts.put("dataset", count.getCount());
-                } else if (count.getName().startsWith("^audio")) {
-                    counts.put("audio", count.getCount());
-                } else if (count.getName().startsWith("^video")) {
-                    counts.put("video", count.getCount());
-                }
-
-            }
+            FacetField facetField = response.getFacetField(SearchFieldKey.FILE_FORMAT_CATEGORY.getSolrField());
+            return facetField.getValues().stream().collect(
+                    Collectors.toMap(c -> c.getName().toLowerCase(), Count::getCount));
         } catch (SolrServerException | AccessRestrictionException e) {
             LOG.error("Error retrieving format counts", e);
         }
 
-        return counts;
+        return new HashMap<String, Long>();
 }
 
     public static String getWriteRoleFilter(AccessGroupSet groups) {

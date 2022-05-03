@@ -116,7 +116,7 @@ define('fullRecord', ['module', 'jquery', 'JP2Viewer', 'StructureView', 'dataTab
 				}, targets: 0
 			},
 			{ render: function (data, type, row) { return '<a href="/record/' + row.id + '" + aria-label="View ' + row.title +'">' +row.title + '</a>'; }, targets: 1 },
-			{ render: function (data, type, row) { return getOriginalFileValue(row.datastream, 'file_type'); }, targets: 2 },
+			{ render: function (data, type, row) { return getFileType(row); }, targets: 2 },
 			{ render: function (data, type, row) { return getOriginalFileValue(row.datastream, 'file_size');  }, targets: 3 },
 			{ render: function (data, type, row) { return '<a href="/record/' + row.id + '" aria-label="View ' + row.title +'">' +
 					'<i class="fa fa-search-plus is-icon"' + ' title="View"></a>'; },
@@ -187,6 +187,21 @@ define('fullRecord', ['module', 'jquery', 'JP2Viewer', 'StructureView', 'dataTab
 				}
 			}
 			return "";
+		}
+
+		function getFileType(record) {
+			let fileTypes = record.fileDesc;
+			let fileType;
+			if (fileTypes && fileTypes.length > 0) {
+				fileType = fileTypes[0];
+			}
+			if (!fileType) {
+				fileTypes = record.fileType;
+				if (fileTypes && fileTypes.length > 0) {
+					fileType = fileTypes[0];
+				}
+			}
+			return fileType || '';
 		}
 
 		function showBadge(data) {

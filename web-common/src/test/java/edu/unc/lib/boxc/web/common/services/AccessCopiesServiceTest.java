@@ -98,6 +98,8 @@ public class AccessCopiesServiceTest  {
         mdObject.setId(UUID.randomUUID().toString());
         List<String> datastreams = Collections.singletonList(
                 ORIGINAL_FILE.getId() + "|application/pdf|file.pdf|pdf|766|urn:sha1:checksum|");
+        mdObject.setFileFormatCategory(Collections.singletonList(ContentCategory.text.getDisplayName()));
+        mdObject.setFileFormatType(Collections.singletonList("application/pdf"));
         mdObject.setDatastream(datastreams);
 
         mdObjectImg = new ContentObjectSolrRecord();
@@ -106,7 +108,8 @@ public class AccessCopiesServiceTest  {
         List<String> imgDatastreams = Arrays.asList(
                 ORIGINAL_FILE.getId() + "|image/png|file.png|png|766|urn:sha1:checksum|",
                 DatastreamType.THUMBNAIL_LARGE.getId() + "|image/png|thumb|png|55||");
-        mdObjectImg.setContentType(Arrays.asList('^' + ContentCategory.image.getJoined()));
+        mdObjectImg.setFileFormatCategory(Collections.singletonList(ContentCategory.image.getDisplayName()));
+        mdObjectImg.setFileFormatType(Collections.singletonList("image/png"));
         mdObjectImg.setDatastream(imgDatastreams);
 
         mdObjectAudio = new ContentObjectSolrRecord();
@@ -114,7 +117,8 @@ public class AccessCopiesServiceTest  {
         mdObjectAudio.setId(UUID.randomUUID().toString());
         List<String> audioDatastreams = Collections.singletonList(
                 ORIGINAL_FILE.getId() + "|audio/mpeg|file.mp3|mp3|766|urn:sha1:checksum|");
-        mdObjectAudio.setContentType(Arrays.asList('^' + ContentCategory.audio.getJoined()));
+        mdObjectAudio.setFileFormatCategory(Collections.singletonList(ContentCategory.audio.getDisplayName()));
+        mdObjectAudio.setFileFormatType(Collections.singletonList("audio/mpeg"));
         mdObjectAudio.setDatastream(audioDatastreams);
 
         noOriginalFileObj = new ContentObjectSolrRecord();
@@ -126,7 +130,8 @@ public class AccessCopiesServiceTest  {
         mdObjectXml.setId(UUID.randomUUID().toString());
         List<String> xmlDatastreams = Collections.singletonList(
                 TECHNICAL_METADATA.getId() + "|text.xml|file.xml|xml|766|urn:sha1:checksum|");
-        mdObjectXml.setContentType(Arrays.asList('^' + ContentCategory.text.getJoined()));
+        mdObjectXml.setFileFormatCategory(Collections.singletonList(ContentCategory.text.getDisplayName()));
+        mdObjectXml.setFileFormatType(Collections.singletonList("text/xml"));
         mdObjectXml.setDatastream(xmlDatastreams);
 
         principals = new AccessGroupSetImpl("group");
@@ -237,8 +242,8 @@ public class AccessCopiesServiceTest  {
         hasPermissions(noOriginalFileObj, true);
         hasPermissions(mdObjectXml, true);
         hasPermissions(mdObjectImg, true);
-        noOriginalFileObj.setContentType(Arrays.asList('^' + ContentCategory.image.getJoined(),
-                '^' + ContentCategory.text.getJoined()));
+        noOriginalFileObj.setFileFormatCategory(Collections.singletonList(ContentCategory.image.getDisplayName()));
+        noOriginalFileObj.setFileFormatType(Collections.singletonList("png"));
         List<ContentObjectSolrRecord> resultList = Arrays.asList(mdObjectImg);
         when(queryResponse.getBeans(ContentObjectSolrRecord.class)).thenReturn(resultList);
         when(queryResponse.getResults().size()).thenReturn(resultList.size());
@@ -252,7 +257,8 @@ public class AccessCopiesServiceTest  {
     public void noPrimaryObjNoThumbnail() {
         hasPermissions(noOriginalFileObj, true);
         hasPermissions(mdObjectXml, true);
-        noOriginalFileObj.setContentType(Arrays.asList('^' + ContentCategory.text.getJoined()));
+        noOriginalFileObj.setFileFormatCategory(Collections.singletonList(ContentCategory.text.getDisplayName()));
+        noOriginalFileObj.setFileFormatType(Collections.singletonList("txt"));
         List<ContentObjectSolrRecord> resultList = Collections.emptyList();
         when(queryResponse.getBeans(ContentObjectSolrRecord.class)).thenReturn(resultList);
         when(queryResponse.getResults().size()).thenReturn(resultList.size());
@@ -269,14 +275,15 @@ public class AccessCopiesServiceTest  {
         var imgDatastreams = Arrays.asList(
                 ORIGINAL_FILE.getId() + "|image/jpg|file2.png|png|555|urn:sha1:checksum|",
                 DatastreamType.THUMBNAIL_LARGE.getId() + "|image/png|thumb|png|55||");
-        mdObjectImg2.setContentType(Arrays.asList('^' + ContentCategory.image.getJoined()));
+        mdObjectImg2.setFileFormatCategory(Collections.singletonList(ContentCategory.image.getDisplayName()));
+        mdObjectImg2.setFileFormatType(Collections.singletonList("png"));
         mdObjectImg2.setDatastream(imgDatastreams);
 
         hasPermissions(noOriginalFileObj, true);
         hasPermissions(mdObjectImg2, true);
         hasPermissions(mdObjectImg, true);
-        noOriginalFileObj.setContentType(Arrays.asList('^' + ContentCategory.image.getJoined(),
-                '^' + ContentCategory.text.getJoined()));
+        noOriginalFileObj.setFileFormatCategory(Collections.singletonList(ContentCategory.image.getDisplayName()));
+        noOriginalFileObj.setFileFormatType(Collections.singletonList("png"));
         List<ContentObjectSolrRecord> resultList = Arrays.asList(mdObjectImg2);
         when(queryResponse.getBeans(ContentObjectSolrRecord.class)).thenReturn(resultList);
         when(queryResponse.getResults().size()).thenReturn(resultList.size());
@@ -290,7 +297,6 @@ public class AccessCopiesServiceTest  {
     @Test
     public void noFilesThumbnailMultipleFiles() {
         hasPermissions(noOriginalFileObj, true);
-        noOriginalFileObj.setContentType(Collections.emptyList());
         List<ContentObjectSolrRecord> resultList = Collections.emptyList();
         when(queryResponse.getBeans(ContentObjectSolrRecord.class)).thenReturn(resultList);
         when(queryResponse.getResults().size()).thenReturn(resultList.size());
