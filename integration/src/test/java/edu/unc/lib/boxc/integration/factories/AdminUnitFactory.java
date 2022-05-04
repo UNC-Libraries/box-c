@@ -16,6 +16,8 @@
 package edu.unc.lib.boxc.integration.factories;
 
 import edu.unc.lib.boxc.model.api.objects.AdminUnit;
+import edu.unc.lib.boxc.model.api.objects.ContentRootObject;
+import edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPaths;
 
 import java.util.Map;
 
@@ -25,6 +27,9 @@ import java.util.Map;
 public class AdminUnitFactory extends ContentObjectFactory {
     public AdminUnit createAdminUnit(Map<String, String> options) throws Exception {
         var adminUnit = repositoryObjectFactory.createAdminUnit(null);
+        ContentRootObject contentRoot = repositoryObjectLoader.getContentRootObject(
+                RepositoryPaths.getContentRootPid());
+        contentRoot.addMember(adminUnit);
         prepareObject(adminUnit, options);
 
         return adminUnit;

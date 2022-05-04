@@ -19,7 +19,10 @@ import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
 import edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl;
 import edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore;
 import edu.unc.lib.boxc.integration.factories.AdminUnitFactory;
+import edu.unc.lib.boxc.model.fcrepo.services.RepositoryInitializer;
 import edu.unc.lib.boxc.model.fcrepo.test.TestHelper;
+import edu.unc.lib.boxc.search.api.requests.SimpleIdRequest;
+import edu.unc.lib.boxc.search.solr.services.SolrSearchService;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.HttpClients;
@@ -75,28 +78,36 @@ public class CollectionsEndpointIT {
     @Autowired(required = false)
     protected String baseAddress;
 
+    @Autowired
+    protected RepositoryInitializer repoInitializer;
+
+    @Autowired
+    protected SolrSearchService solrSearchService;
+
     @Before
     public void setup() throws Exception {
-        webServer = new Server(48080);
-        setUpSystemProperties(webServer);
-        webServer.setStopAtShutdown(true);
-        WebAppContext webAppContext = new WebAppContext();
-        webAppContext.setContextPath("/");
-        webAppContext.setResourceBase("../web-access-app/src/main/webapp");
-        webAppContext.setClassLoader(getClass().getClassLoader());
-        webServer.setHandler(webAppContext);
-        webServer.start();
+//        webServer = new Server(48080);
+//        setUpSystemProperties(webServer);
+//        webServer.setStopAtShutdown(true);
+//        WebAppContext webAppContext = new WebAppContext();
+//        webAppContext.setContextPath("/");
+//        webAppContext.setResourceBase("../web-access-app/src/main/webapp");
+//        webAppContext.setClassLoader(getClass().getClassLoader());
+//        webServer.setHandler(webAppContext);
+//        webServer.start();
 
         TestHelper.setContentBase("http://localhost:48085/rest");
 
         GroupsThreadStore.storeUsername(USERNAME);
         GroupsThreadStore.storeGroups(GROUPS);
+
+        repoInitializer.initializeRepository();
     }
 
-    @After
-    public void shutdownServer() throws Exception {
-        webServer.stop();
-    }
+//    @After
+//    public void shutdownServer() throws Exception {
+//        webServer.stop();
+//    }
 
     private void setUpSystemProperties(Server jettyServer) {
         final Properties systemProperties = new Properties();
@@ -127,10 +138,13 @@ public class CollectionsEndpointIT {
         var adminUnit = adminUnitFactory.createAdminUnit(Map.of("title", "title1"));
         var httpClient = HttpClients.createDefault();
 
-        HttpGet method = new HttpGet("http://localhost:48080/collectionsJson");
-        try (CloseableHttpResponse httpResp = httpClient.execute(method)) {
-            var statusCode = httpResp.getStatusLine().getStatusCode();
-            assertEquals(200, statusCode);
-        }
+        var thingWeWant = solrSearchService.getObjectById(new SimpleIdRequest(adminUnit.getPid(), GROUPS));
+        System.out.println();
+
+//        HttpGet method = new HttpGet("http://localhost:48080/collectionsJson");
+//        try (CloseableHttpResponse httpResp = httpClient.execute(method)) {
+//            var statusCode = httpResp.getStatusLine().getStatusCode();
+//            assertEquals(200, statusCode);
+//        }
     }
 }

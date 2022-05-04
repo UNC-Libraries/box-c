@@ -44,5 +44,6 @@
         <property name="repositoryObjectTreeIndexer" ref="treeIndexer" />
         <property name="modsFactory" ref="modsFactory" />
         <property name="updateDescriptionService" ref="updateDescriptionService" />
+        <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
     </bean>
 </beans>

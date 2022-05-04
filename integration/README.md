@@ -15,6 +15,9 @@ The parent factory is the `ContentObjectFactory` which holds validation and prep
 methods for adding created factory objects in Fedora and indexes them in the triple store
 and Solr. New factories extend this parent factory in order to use these methods.
 
+Each factory must specify a parent according to the type of object. For example, the 
+AdminUnitFactory's parent is `ContentRootObject`.
+
 ### Adding properties to and instantiating a factory
 
 #### Available properties
