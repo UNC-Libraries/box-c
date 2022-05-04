@@ -23,15 +23,6 @@ import edu.unc.lib.boxc.model.fcrepo.services.RepositoryInitializer;
 import edu.unc.lib.boxc.model.fcrepo.test.TestHelper;
 import edu.unc.lib.boxc.search.api.requests.SimpleIdRequest;
 import edu.unc.lib.boxc.search.solr.services.SolrSearchService;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.HttpClients;
-import org.apache.solr.client.solrj.embedded.EmbeddedSolrServer;
-import org.eclipse.jetty.server.Server;
-import org.eclipse.jetty.util.component.AbstractLifeCycle;
-import org.eclipse.jetty.util.component.LifeCycle;
-import org.eclipse.jetty.webapp.WebAppContext;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -40,17 +31,11 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.ContextHierarchy;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.MvcResult;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
-import java.io.File;
 import java.util.Map;
-import java.util.Properties;
 
 import static org.junit.Assert.assertEquals;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.junit.Assert.assertNotNull;
 
 /**
  * @author bbpennel
@@ -65,10 +50,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @RunWith(SpringJUnit4ClassRunner.class)
 @WebAppConfiguration
 public class CollectionsEndpointIT {
-    @Autowired
-    private EmbeddedSolrServer solrServer;
-    private Server webServer;
-
     @Autowired
     private AdminUnitFactory adminUnitFactory;
 
@@ -85,18 +66,8 @@ public class CollectionsEndpointIT {
     protected SolrSearchService solrSearchService;
 
     @Before
-    public void setup() throws Exception {
-//        webServer = new Server(48080);
-//        setUpSystemProperties(webServer);
-//        webServer.setStopAtShutdown(true);
-//        WebAppContext webAppContext = new WebAppContext();
-//        webAppContext.setContextPath("/");
-//        webAppContext.setResourceBase("../web-access-app/src/main/webapp");
-//        webAppContext.setClassLoader(getClass().getClassLoader());
-//        webServer.setHandler(webAppContext);
-//        webServer.start();
-
-        TestHelper.setContentBase("http://localhost:48085/rest");
+    public void setup() {
+        TestHelper.setContentBase(baseAddress);
 
         GroupsThreadStore.storeUsername(USERNAME);
         GroupsThreadStore.storeGroups(GROUPS);
@@ -104,47 +75,16 @@ public class CollectionsEndpointIT {
         repoInitializer.initializeRepository();
     }
 
-//    @After
-//    public void shutdownServer() throws Exception {
-//        webServer.stop();
-//    }
-
-    private void setUpSystemProperties(Server jettyServer) {
-        final Properties systemProperties = new Properties();
-        // set your system properties...
-        String classpath = new File(".").getAbsolutePath();
-        systemProperties.setProperty("server.properties.uri", "file:" + classpath + "/src/test/resources/access-app.properties");
-        systemProperties.setProperty("acl.properties.uri", "file:" + classpath + "/src/test/resources/empty.properties");
-        systemProperties.setProperty("acl.patronPrincipalConfig.path", classpath + "/src/test/resources/patronPrincipalConfig.json");
-        jettyServer.addLifeCycleListener(new SystemPropertiesLifeCycleListener(systemProperties));
-    }
-
-    private class SystemPropertiesLifeCycleListener extends AbstractLifeCycle.AbstractLifeCycleListener {
-        private Properties toSet;
-
-        public SystemPropertiesLifeCycleListener(Properties toSet) {
-            this.toSet = toSet;
-        }
-
-        @Override
-        public void lifeCycleStarting(LifeCycle anyLifeCycle) {
-            // add to (don't replace) System.getProperties()
-            System.getProperties().putAll(toSet);
-        }
-    }
-
+    /**
+     * Temporary test to demonstrate that factory object creation works
+     * @throws Exception
+     */
     @Test
-    public void testCollections() throws Exception {
+    public void testAdminUnitConstruction() throws Exception {
         var adminUnit = adminUnitFactory.createAdminUnit(Map.of("title", "title1"));
-        var httpClient = HttpClients.createDefault();
 
-        var thingWeWant = solrSearchService.getObjectById(new SimpleIdRequest(adminUnit.getPid(), GROUPS));
-        System.out.println();
-
-//        HttpGet method = new HttpGet("http://localhost:48080/collectionsJson");
-//        try (CloseableHttpResponse httpResp = httpClient.execute(method)) {
-//            var statusCode = httpResp.getStatusLine().getStatusCode();
-//            assertEquals(200, statusCode);
-//        }
+        var adminUnitRecord = solrSearchService.getObjectById(new SimpleIdRequest(adminUnit.getPid(), GROUPS));
+        assertNotNull(adminUnitRecord);
+        assertEquals("title1", adminUnitRecord.getTitle());
     }
 }
