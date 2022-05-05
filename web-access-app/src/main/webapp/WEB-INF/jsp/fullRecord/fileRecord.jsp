@@ -115,6 +115,7 @@
                             </c:otherwise>
                         </c:choose>
                     </c:if>
+                    <li><a href="/record/${containingWorkUUID}">View Parent Work</a></li>
                 </ul>
             </div>
         </div>

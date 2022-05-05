@@ -211,6 +211,12 @@ public class FullRecordController extends AbstractErrorHandlingSearchController 
             briefObject.getCountMap().put("child", childrenCountService.getChildrenCount(briefObject, principals));
         }
 
+        // Get parent id
+        if (ResourceType.File.nameEquals(resourceType)) {
+            String[] ancestors = briefObject.getAncestorIds().split("/");
+            model.addAttribute("containingWorkUUID", ancestors[ancestors.length - 1]);
+        }
+
         if (ResourceType.Folder.nameEquals(resourceType) ||
                 ResourceType.File.nameEquals(resourceType) ||
                 ResourceType.Work.nameEquals(resourceType) ||
