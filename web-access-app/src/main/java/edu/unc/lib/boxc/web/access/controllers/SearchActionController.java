@@ -70,6 +70,13 @@ public class SearchActionController extends AbstractErrorHandlingSearchControlle
         return "searchResults";
     }
 
+    /**
+     * Endpoint which returns search results, ignoring hierarchy, with any supplied filters limiting the results.
+     * @param getFacets if true, then will retrieve facet results as well
+     * @param request
+     * @param response
+     * @return
+     */
     @RequestMapping(value = "/searchJson", method = RequestMethod.GET, produces = "application/json")
     public @ResponseBody
     Map<String, Object> searchJson(@RequestParam("getFacets") Optional<Boolean> getFacets, HttpServletRequest request,
@@ -77,6 +84,15 @@ public class SearchActionController extends AbstractErrorHandlingSearchControlle
         return searchJsonRequest(request, getFacets.orElse(false), null);
     }
 
+    /**
+     * Endpoint which returns search results containing children of the specified object, ignoring hierarchy, with any
+     * supplied filters limiting the results.
+     * @param pid ID of the parent object whose children will be searched.
+     * @param getFacets if true, then will retrieve facet results as well
+     * @param request
+     * @param response
+     * @return
+     */
     @RequestMapping(value = "/searchJson/{pid}", method = RequestMethod.GET, produces = "application/json")
     public @ResponseBody
     Map<String, Object> searchJson(@PathVariable("pid") String pid,
@@ -90,6 +106,15 @@ public class SearchActionController extends AbstractErrorHandlingSearchControlle
         return "redirect:/record/{pid}";
     }
 
+    /**
+     * Endpoint which returns search results containing the immediate children of the object specified, with any
+     * supplied filters limiting the results.
+     * @param pid ID of the parent object whose immediate children will be searched.
+     * @param getFacets if true, then will retrieve facet results as well
+     * @param request
+     * @param response
+     * @return
+     */
     @RequestMapping(value = "/listJson/{pid}", method = RequestMethod.GET, produces = "application/json")
     public @ResponseBody
     Map<String, Object> listJson(@PathVariable("pid") String pid,
@@ -113,11 +138,18 @@ public class SearchActionController extends AbstractErrorHandlingSearchControlle
         return "collectionBrowse";
     }
 
+    /**
+     * Endpoint which returns all the admin units in the repository
+     * @param request
+     * @param response
+     * @return
+     */
     @RequestMapping(value = "/collectionsJson", method = RequestMethod.GET, produces = "application/json")
     public @ResponseBody Map<String, Object> browseCollectionsJson(HttpServletRequest request,
                                                                HttpServletResponse response) {
         SearchRequest searchRequest = generateSearchRequest(request);
         searchRequest.setRootPid(RepositoryPaths.getContentRootPid());
+        // Restrict results to the immediate children of the root of the repository
         CutoffFacet cutoff = new CutoffFacetImpl(SearchFieldKey.ANCESTOR_PATH.name(), "1,*!2");
         searchRequest.getSearchState().addFacet(cutoff);
         searchRequest.setApplyCutoffs(true);

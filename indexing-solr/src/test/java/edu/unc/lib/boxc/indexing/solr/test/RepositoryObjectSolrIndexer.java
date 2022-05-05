@@ -84,7 +84,7 @@ public class RepositoryObjectSolrIndexer {
             return;
         }
 
-        index(pid);
+        indexObject(pid);
 
         if (Cdr.FileObject.equals(resourceType)) {
             return;
@@ -110,7 +110,7 @@ public class RepositoryObjectSolrIndexer {
      */
     public void index(PID... pids) {
         for (PID pid: pids) {
-            index(pid);
+            indexObject(pid);
         }
         solrUpdateDriver.commit();
     }
@@ -119,7 +119,7 @@ public class RepositoryObjectSolrIndexer {
      * Index a single resource
      * @param pid
      */
-    public void index(PID pid) {
+    private void indexObject(PID pid) {
         SolrUpdateRequest updateRequest = new SolrUpdateRequest(
                 pid.getRepositoryPath(), IndexingActionType.ADD);
 
