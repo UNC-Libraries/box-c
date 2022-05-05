@@ -22,7 +22,7 @@ import java.util.Map;
 /**
  * @author sharonluong
  */
-public class FolderFactory extends ContentObjectFactory{
+public class FolderFactory extends ContentObjectFactory {
     public FolderObject createFolder(Map<String, String> options) throws Exception {
         var folder = repositoryObjectFactory.createFolderObject(null);
         prepareObject(folder, options);

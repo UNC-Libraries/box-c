@@ -26,7 +26,6 @@ import java.util.Map;
  * @author sharonluong
  */
 public class ModsFactory {
-
     public Document createDocument(Map<String, String> options) {
         var xmlDoc = new Document().addContent(new Element("mods",MODS_V3_NS));
         var modsElement = xmlDoc.getRootElement();
