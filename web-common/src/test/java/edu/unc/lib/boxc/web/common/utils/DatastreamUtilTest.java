@@ -30,9 +30,9 @@ import org.junit.Test;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.search.solr.models.ContentObjectSolrRecord;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 
 /**
  *
@@ -48,7 +48,7 @@ public class DatastreamUtilTest {
     private final static String FITS_DS = TECHNICAL_METADATA.getId() + "|text/xml|fits.xml|xml|5555||";
     private final static String THUMB_SMALL_DS = THUMBNAIL_SMALL.getId() + "|image/png|small|png|3333||";
     private final static String THUMB_LARGE_DS = THUMBNAIL_LARGE.getId() + "|image/png|small|png|10000||";
-    private final static ArrayList<String> emptyList = new ArrayList<>();
+    private final static List<String> EMPTY_LIST = Collections.emptyList();
 
     @Before
     public void setup() {
@@ -134,8 +134,8 @@ public class DatastreamUtilTest {
         PID pid = makePid();
         ContentObjectSolrRecord mdObj = new ContentObjectSolrRecord();
         mdObj.setId(pid.getId());
-        mdObj.setFileFormatDescription(emptyList);
-        mdObj.setFileFormatType(emptyList);
+        mdObj.setFileFormatDescription(EMPTY_LIST);
+        mdObj.setFileFormatType(EMPTY_LIST);
         String fileType = DatastreamUtil.getFileType(mdObj);
         assertEquals("", fileType);
     }
@@ -146,7 +146,7 @@ public class DatastreamUtilTest {
         ContentObjectSolrRecord mdObj = new ContentObjectSolrRecord();
         mdObj.setId(pid.getId());
         mdObj.setFileFormatDescription(Collections.singletonList("Portable Network Graphics"));
-        mdObj.setFileFormatType(emptyList);
+        mdObj.setFileFormatType(EMPTY_LIST);
         String fileType = DatastreamUtil.getFileType(mdObj);
         assertEquals("Portable Network Graphics", fileType);
     }
@@ -157,7 +157,7 @@ public class DatastreamUtilTest {
         ContentObjectSolrRecord mdObj = new ContentObjectSolrRecord();
         mdObj.setId(pid.getId());
         mdObj.setFileFormatDescription(Arrays.asList("Portable Network Graphics", "Joint Photographic Experts Group"));
-        mdObj.setFileFormatType(emptyList);
+        mdObj.setFileFormatType(EMPTY_LIST);
         String fileType = DatastreamUtil.getFileType(mdObj);
         assertEquals("Various", fileType);
     }
@@ -168,7 +168,7 @@ public class DatastreamUtilTest {
         ContentObjectSolrRecord mdObj = new ContentObjectSolrRecord();
         mdObj.setId(pid.getId());
         mdObj.setFileFormatDescription(Arrays.asList("Portable Network Graphics", "Portable Network Graphics"));
-        mdObj.setFileFormatType(emptyList);
+        mdObj.setFileFormatType(EMPTY_LIST);
         String fileType = DatastreamUtil.getFileType(mdObj);
         assertEquals("Portable Network Graphics", fileType);
     }
@@ -178,7 +178,7 @@ public class DatastreamUtilTest {
         PID pid = makePid();
         ContentObjectSolrRecord mdObj = new ContentObjectSolrRecord();
         mdObj.setId(pid.getId());
-        mdObj.setFileFormatDescription(emptyList);
+        mdObj.setFileFormatDescription(EMPTY_LIST);
         mdObj.setFileFormatType(Collections.singletonList("image/png"));
         String fileType = DatastreamUtil.getFileType(mdObj);
         assertEquals("image/png", fileType);
@@ -189,7 +189,7 @@ public class DatastreamUtilTest {
         PID pid = makePid();
         ContentObjectSolrRecord mdObj = new ContentObjectSolrRecord();
         mdObj.setId(pid.getId());
-        mdObj.setFileFormatDescription(emptyList);
+        mdObj.setFileFormatDescription(EMPTY_LIST);
         mdObj.setFileFormatType(Arrays.asList("image/png", "image/jpeg"));
         String fileType = DatastreamUtil.getFileType(mdObj);
         assertEquals("Various", fileType);
@@ -200,7 +200,7 @@ public class DatastreamUtilTest {
         PID pid = makePid();
         ContentObjectSolrRecord mdObj = new ContentObjectSolrRecord();
         mdObj.setId(pid.getId());
-        mdObj.setFileFormatDescription(emptyList);
+        mdObj.setFileFormatDescription(EMPTY_LIST);
         mdObj.setFileFormatType(Arrays.asList("image/png", "image/png"));
         String fileType = DatastreamUtil.getFileType(mdObj);
         assertEquals("image/png", fileType);
