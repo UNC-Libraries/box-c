@@ -161,6 +161,50 @@ describe('listDisplay.vue', () => {
         expect(wrapper.vm.getFileType(wrapper.vm.recordList[1])).toEqual('Portable Network Graphics');
     });
 
+    it("file type from description and displays 'Various' if more than one fileType and they are different", () => {
+        expect(wrapper.vm.getFileType({
+            "title": "Imagy File",
+            "type": "File",
+            "datastream": [
+                "techmd_fits|text\/xml|aaa66f91-4870-4937-b7ba-06b015959e4f.xml|xml|5480|urn:sha1:82c71472051b8279a0fbaa537a340c57e3d842f6|aaa66f91-4870-4937-b7ba-06b015959e4f",
+                "original_file|image\/png|Screen+Shot+2018-10-17+at+3.02.53+PM.png|png|232738|urn:md5:f5397b230bb5dfa4d53f57ad35514405|aaa66f91-4870-4937-b7ba-06b015959e4f",
+                "thumbnail_small|image\/png|aaa66f91-4870-4937-b7ba-06b015959e4f.png|png|2454||aaa66f91-4870-4937-b7ba-06b015959e4f",
+                "thumbnail_large|image\/png|aaa66f91-4870-4937-b7ba-06b015959e4f.png|png|5892||aaa66f91-4870-4937-b7ba-06b015959e4f"
+            ],
+            "fileDesc": ["Portable Network Graphics", "Joint Photographic Experts Group"],
+            "fileType": [
+                "image/png", "image/jpeg"
+            ],
+            "fileCategory": [
+                "Image"
+            ],
+            "id": "e3931f0d-a32f-4b84-b6a4-4baf0ca9b576",
+            "updated": "2019-10-29T17:22:01.830Z",
+        })).toEqual('Various');
+    });
+
+    it("file type from description and displays the filetype if more than one fileType and they are the same", () => {
+        expect(wrapper.vm.getFileType({
+            "title": "Imagy File",
+            "type": "File",
+            "datastream": [
+                "techmd_fits|text\/xml|aaa66f91-4870-4937-b7ba-06b015959e4f.xml|xml|5480|urn:sha1:82c71472051b8279a0fbaa537a340c57e3d842f6|aaa66f91-4870-4937-b7ba-06b015959e4f",
+                "original_file|image\/png|Screen+Shot+2018-10-17+at+3.02.53+PM.png|png|232738|urn:md5:f5397b230bb5dfa4d53f57ad35514405|aaa66f91-4870-4937-b7ba-06b015959e4f",
+                "thumbnail_small|image\/png|aaa66f91-4870-4937-b7ba-06b015959e4f.png|png|2454||aaa66f91-4870-4937-b7ba-06b015959e4f",
+                "thumbnail_large|image\/png|aaa66f91-4870-4937-b7ba-06b015959e4f.png|png|5892||aaa66f91-4870-4937-b7ba-06b015959e4f"
+            ],
+            "fileDesc": ["Portable Network Graphics", "Portable Network Graphics"],
+            "fileType": [
+                "image/png", "image/png"
+            ],
+            "fileCategory": [
+                "Image"
+            ],
+            "id": "e3931f0d-a32f-4b84-b6a4-4baf0ca9b576",
+            "updated": "2019-10-29T17:22:01.830Z",
+        })).toEqual('Portable Network Graphics');
+    });
+
     it("file type falls back to mimetype when description empty", () => {
         expect(wrapper.vm.getFileType({
             "title": "Imagy File",
@@ -174,6 +218,50 @@ describe('listDisplay.vue', () => {
             "fileDesc": [],
             "fileType": [
                 "image/png"
+            ],
+            "fileCategory": [
+                "Image"
+            ],
+            "id": "e3931f0d-a32f-4b84-b6a4-4baf0ca9b576",
+            "updated": "2019-10-29T17:22:01.830Z",
+        })).toEqual('image/png');
+    });
+
+    it("file type falls back to mimetype when there's no description and displays 'Various' if more than one fileType", () => {
+        expect(wrapper.vm.getFileType({
+            "title": "Imagy File",
+            "type": "File",
+            "datastream": [
+                "techmd_fits|text\/xml|aaa66f91-4870-4937-b7ba-06b015959e4f.xml|xml|5480|urn:sha1:82c71472051b8279a0fbaa537a340c57e3d842f6|aaa66f91-4870-4937-b7ba-06b015959e4f",
+                "original_file|image\/png|Screen+Shot+2018-10-17+at+3.02.53+PM.png|png|232738|urn:md5:f5397b230bb5dfa4d53f57ad35514405|aaa66f91-4870-4937-b7ba-06b015959e4f",
+                "thumbnail_small|image\/png|aaa66f91-4870-4937-b7ba-06b015959e4f.png|png|2454||aaa66f91-4870-4937-b7ba-06b015959e4f",
+                "thumbnail_large|image\/png|aaa66f91-4870-4937-b7ba-06b015959e4f.png|png|5892||aaa66f91-4870-4937-b7ba-06b015959e4f"
+            ],
+            "fileDesc": [],
+            "fileType": [
+                "image/png", "image/jpeg"
+            ],
+            "fileCategory": [
+                "Image"
+            ],
+            "id": "e3931f0d-a32f-4b84-b6a4-4baf0ca9b576",
+            "updated": "2019-10-29T17:22:01.830Z",
+        })).toEqual('Various');
+    });
+
+    it("file type falls back to mimetype when there's no description and displays filetype if all filetypes are the same", () => {
+        expect(wrapper.vm.getFileType({
+            "title": "Imagy File",
+            "type": "File",
+            "datastream": [
+                "techmd_fits|text\/xml|aaa66f91-4870-4937-b7ba-06b015959e4f.xml|xml|5480|urn:sha1:82c71472051b8279a0fbaa537a340c57e3d842f6|aaa66f91-4870-4937-b7ba-06b015959e4f",
+                "original_file|image\/png|Screen+Shot+2018-10-17+at+3.02.53+PM.png|png|232738|urn:md5:f5397b230bb5dfa4d53f57ad35514405|aaa66f91-4870-4937-b7ba-06b015959e4f",
+                "thumbnail_small|image\/png|aaa66f91-4870-4937-b7ba-06b015959e4f.png|png|2454||aaa66f91-4870-4937-b7ba-06b015959e4f",
+                "thumbnail_large|image\/png|aaa66f91-4870-4937-b7ba-06b015959e4f.png|png|5892||aaa66f91-4870-4937-b7ba-06b015959e4f"
+            ],
+            "fileDesc": [],
+            "fileType": [
+                "image/png", "image/png"
             ],
             "fileCategory": [
                 "Image"

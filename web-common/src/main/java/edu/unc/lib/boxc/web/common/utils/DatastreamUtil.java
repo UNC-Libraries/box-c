@@ -19,6 +19,7 @@ import static edu.unc.lib.boxc.model.api.DatastreamType.ORIGINAL_FILE;
 import static java.util.Arrays.asList;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
+import java.util.HashSet;
 import java.util.List;
 
 import edu.unc.lib.boxc.model.api.DatastreamType;
@@ -98,23 +99,34 @@ public class DatastreamUtil {
      *      falling back to the mimetype when needed.
      */
     public static String getFileType(ContentObjectRecord metadata) {
-        var fileTypes = metadata.getFileFormatDescription();
-        String fileType = "";
-        if (fileTypes != null && !fileTypes.isEmpty()) {
-            fileType = fileTypes.get(0);
-        }
+        String fileType = determineFileType(metadata.getFileFormatDescription());
         if (StringUtils.isBlank(fileType)) {
-            fileTypes = metadata.getFileFormatType();
-            if (fileTypes != null && !fileTypes.isEmpty()) {
-                fileType = fileTypes.get(0);
-            }
+            fileType = determineFileType(metadata.getFileFormatType());
         }
         return StringUtils.isBlank(fileType) ? "" : fileType;
     }
 
     /**
+     * Determines which filetype should be shown. Null if no filetypes found.
+     * Otherwise it de-dupes the array and if only one value returns that, otherwise returns 'Various'
+     * @param fileTypes
+     * @return
+     */
+    private static String determineFileType(List<String> fileTypes) {
+        if (fileTypes == null) {
+            return null;
+        }
+
+        if (!fileTypes.isEmpty()) {
+            return (new HashSet<>(fileTypes).size() == 1) ? fileTypes.get(0) : "Various";
+        } else {
+            return null;
+        }
+    }
+
+    /**
      * @param metadata metadata record for object
-     * @param suffix mimetype suffix
+     * @param pattern mimetype suffix
      * @return
      */
     public static boolean originalFileMimetypeMatches(ContentObjectRecord metadata, String pattern) {
