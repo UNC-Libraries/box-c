@@ -22,12 +22,15 @@ import static java.util.Arrays.asList;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
 import edu.unc.lib.boxc.search.api.SearchFieldKey;
+import edu.unc.lib.boxc.search.solr.facets.FilterableDisplayValueFacet;
 import org.apache.solr.common.SolrInputDocument;
 
 import edu.unc.lib.boxc.auth.api.UserRole;
@@ -78,6 +81,8 @@ public class TestCorpus {
     public PID privateWorkFile1Pid;
 
     public static final String TEST_COLL_ID = "10478";
+
+    private Map<PID, String> titleCache = new HashMap<>();
 
     public TestCorpus() {
         // Initialize all pids
@@ -189,6 +194,7 @@ public class TestCorpus {
     public SolrInputDocument makeContainerDocument(PID pid, String title, ResourceType type, PID... ancestors) {
         SolrInputDocument newDoc = new SolrInputDocument();
         newDoc.addField("title", title);
+        titleCache.put(pid, title);
         newDoc.addField("id", pid.getId());
         newDoc.addField("rollup", pid.getId());
         addPathProperties(newDoc, pid, ancestors);
@@ -210,10 +216,14 @@ public class TestCorpus {
         newDoc.addField("ancestorIds", makeAncestorIds(selfPid, ancestors));
         newDoc.addField("ancestorPath", makeAncestorPath(ancestors));
         if (ancestors.length > 1) {
-            newDoc.addField("parentUnit", ancestors[1].getId());
+            var title = titleCache.get(ancestors[1]);
+            var value = FilterableDisplayValueFacet.buildValue(title, ancestors[1].getId());
+            newDoc.addField("parentUnit", value);
         }
         if (ancestors.length > 2) {
-            newDoc.addField("parentCollection", ancestors[2].getId());
+            var title = titleCache.get(ancestors[2]);
+            var value = FilterableDisplayValueFacet.buildValue(title, ancestors[2].getId());
+            newDoc.addField("parentCollection", value);
         }
     }
 

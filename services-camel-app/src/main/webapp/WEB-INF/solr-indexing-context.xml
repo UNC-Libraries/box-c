@@ -185,6 +185,11 @@
             init-method="init">
         <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
     </bean>
+
+    <bean id="titleRetrievalService" class="edu.unc.lib.boxc.search.solr.services.TitleRetrievalService"
+          init-method="init">
+        <property name="solrSearchService" ref="queryLayer" />
+    </bean>
     
     <!-- Solr ingest filters -->
     <bean id="setAccessControlFilter"
@@ -229,7 +234,8 @@
     </bean>
     
     <bean id="setPathFilter" class="edu.unc.lib.boxc.indexing.solr.filter.SetPathFilter">
-       <property name="pathFactory" ref="contentPathFactory" />
+        <property name="pathFactory" ref="contentPathFactory" />
+        <property name="titleRetrievalService" ref="titleRetrievalService" />
     </bean>
     
     <bean id="setRecordDatesFilter"

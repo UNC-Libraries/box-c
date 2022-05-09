@@ -19,6 +19,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import edu.unc.lib.boxc.search.solr.facets.FilterableDisplayValueFacet;
+import edu.unc.lib.boxc.search.solr.services.TitleRetrievalService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -45,6 +47,7 @@ public class SetPathFilter implements IndexDocumentFilter {
     private static final Logger log = LoggerFactory.getLogger(SetPathFilter.class);
 
     private ContentPathFactory pathFactory;
+    private TitleRetrievalService titleRetrievalService;
 
     @Override
     public void filter(DocumentIndexingPackage dip) throws IndexingException {
@@ -78,11 +81,11 @@ public class SetPathFilter implements IndexDocumentFilter {
         idb.setAncestorIds(ancestorIds);
 
         if (pids.size() > ContentPathConstants.COLLECTION_DEPTH) {
-            idb.setParentCollection(pids.get(ContentPathConstants.COLLECTION_DEPTH).getId());
+            idb.setParentCollection(buildParentValue(pids.get(ContentPathConstants.COLLECTION_DEPTH)));
         }
 
         if (pids.size() > ContentPathConstants.UNIT_DEPTH) {
-            idb.setParentUnit(pids.get(ContentPathConstants.UNIT_DEPTH).getId());
+            idb.setParentUnit(buildParentValue(pids.get(ContentPathConstants.UNIT_DEPTH)));
         }
 
         ContentObject contentObject = dip.getContentObject();
@@ -98,6 +101,11 @@ public class SetPathFilter implements IndexDocumentFilter {
         idb.setRollup(rollup);
     }
 
+    private String buildParentValue(PID pid) {
+        var title = titleRetrievalService.retrieveTitle(pid);
+        return FilterableDisplayValueFacet.buildValue(title, pid.getId());
+    }
+
     /**
      * Set path factory
      *
@@ -105,5 +113,9 @@ public class SetPathFilter implements IndexDocumentFilter {
      */
     public void setPathFactory(ContentPathFactory pathFactory) {
         this.pathFactory = pathFactory;
+    }
+
+    public void setTitleRetrievalService(TitleRetrievalService titleRetrievalService) {
+        this.titleRetrievalService = titleRetrievalService;
     }
 }
