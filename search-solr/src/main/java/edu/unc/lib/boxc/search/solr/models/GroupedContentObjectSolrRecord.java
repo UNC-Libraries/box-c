@@ -274,6 +274,11 @@ public class GroupedContentObjectSolrRecord implements GroupedContentObjectRecor
     }
 
     @Override
+    public List<String> getExhibit() {
+        return this.representative.getExhibit();
+    }
+
+    @Override
     public List<String> getSubject() {
         return this.representative.getSubject();
     }

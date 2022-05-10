@@ -110,6 +110,7 @@ public class SetDescriptiveMetadataFilter implements IndexDocumentFilter {
             this.extractCitation(mods, idb);
             this.extractKeywords(mods, idb);
             this.extractGenre(mods, idb);
+            this.extractExhibit(mods, idb);
         }
 
         if (idb.getTitle() == null) {
@@ -569,6 +570,43 @@ public class SetDescriptiveMetadataFilter implements IndexDocumentFilter {
             for (Element childChildObj : childChildren) {
                 this.addValuesToList(idb.getKeyword(), childChildObj.getChildren());
             }
+        }
+    }
+
+    /**
+     * Extract exhibit name and url
+     * @param mods
+     * @param idb
+     */
+    private void extractExhibit(Element mods, IndexDocumentBean idb) {
+        var exhibits = new ArrayList<String>();
+        List<Element> relatedItems = mods.getChildren("relatedItem", JDOMNamespaceUtil.MODS_V3_NS);
+        for (Element relatedItem : relatedItems) {
+            String itemType = relatedItem.getAttributeValue("type");
+            String displayLabel = relatedItem.getAttributeValue("displayLabel");
+
+            if (!StringUtils.isBlank(itemType) && itemType.equals("isReferencedBy") &&
+                    !StringUtils.isBlank(displayLabel) && displayLabel.equals("Digital Exhibit"))  {
+                List<Element> locations = relatedItem.getChildren("location", JDOMNamespaceUtil.MODS_V3_NS);
+                for (Element location : locations) {
+                    List<Element> locationLinks = location.getChildren("url", JDOMNamespaceUtil.MODS_V3_NS);
+                    for (Element locationLink : locationLinks) {
+                        String exhibitLabel = locationLink.getAttributeValue("displayLabel");
+                        String exhibitLink = locationLink.getTextTrim();
+
+                        if (!StringUtils.isBlank(exhibitLink)) {
+                            String label = !StringUtils.isBlank(exhibitLabel) ? exhibitLabel : exhibitLink;
+                            exhibits.add(label + "|" + exhibitLink);
+                        }
+                    }
+                }
+            }
+        }
+
+        if (!exhibits.isEmpty()) {
+            idb.setExhibit(exhibits);
+        } else {
+            idb.setExhibit(null);
         }
     }
 

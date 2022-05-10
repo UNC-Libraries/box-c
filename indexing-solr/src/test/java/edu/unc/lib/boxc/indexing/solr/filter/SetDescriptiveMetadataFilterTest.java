@@ -200,6 +200,11 @@ public class SetDescriptiveMetadataFilterTest {
         assertEquals(3, idb.getGenre().size());
 
         assertEquals("citation text", idb.getCitation());
+
+        List<String> exhibits = idb.getExhibit();
+        assertEquals(2, exhibits.size());
+        assertTrue(exhibits.contains("Wonderful Exhibit|https://digital-exhibit.lib.unc.edu"));
+        assertTrue(exhibits.contains("https://no-url-label-digital-exhibit.lib.unc.edu|https://no-url-label-digital-exhibit.lib.unc.edu"));
     }
 
     /*

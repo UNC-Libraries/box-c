@@ -158,6 +158,8 @@
     <field name="dateCreatedYear" type="dateRange" indexed="true" stored="true"/>
     <!-- Date when the object was last updated in the repository -->
     <field name="dateUpdated" type="date" indexed="true" stored="true" docValues="true"/>
+    <!-- Name and link to an external digital exhibit -->
+    <field name="exhibit" type="string" indexed="true" stored="true" multiValued="true"/>
     <!-- High level category for the content of binaries, values like Image, Audio, Text, etc. -->
     <field name="fileFormatCategory" type="string" indexed="true" stored="true" multiValued="true" docValues="true"/>
     <!-- Specific format of binary content, represented as a file extension -->

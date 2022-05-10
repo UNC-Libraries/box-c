@@ -65,7 +65,9 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore.getAgentPrincipals;
 import static edu.unc.lib.boxc.common.xml.SecureXMLFactory.createSAXBuilder;
@@ -225,6 +227,24 @@ public class FullRecordController extends AbstractErrorHandlingSearchController 
             String faUrl = findingAidUrlService.getFindingAidUrl(collectionId);
             model.addAttribute("collectionId", collectionId);
             model.addAttribute("findingAidUrl", faUrl);
+
+            // Get digital exhibits found on a collection
+            ContentObjectRecord exhibitObj = briefObject;
+            if (!ResourceType.Collection.nameEquals(resourceType)) {
+                PID parentCollPid = PIDs.get(briefObject.getParentCollection());
+                SimpleIdRequest collIdRequest = new SimpleIdRequest(parentCollPid, principals);
+                exhibitObj = queryLayer.getObjectById(collIdRequest);
+            }
+
+            List<String> collExhibits = exhibitObj.getExhibit();
+            if (collExhibits != null) {
+                Map<String, String> exhibitList = new HashMap<>();
+                for (String exhibit : collExhibits) {
+                    String[] exhibitValues = exhibit.split("\\|");
+                    exhibitList.put(exhibitValues[0], exhibitValues[1]);
+                }
+                model.addAttribute("exhibits", exhibitList);
+            }
         }
 
         if (ResourceType.File.nameEquals(briefObject.getResourceType()) ||
