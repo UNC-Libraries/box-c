@@ -110,6 +110,8 @@ public class SolrIngestProcessorIT extends AbstractSolrProcessorIT {
         WorkObject workObj = repositoryObjectFactory.createWorkObject(null);
         collObj.addMember(workObj);
 
+        repositoryObjectSolrIndexer.index(unitObj.getPid(), collObj.getPid());
+
         FileObject fileObj = workObj.addDataFile(makeContentUri(CONTENT_TEXT),
                 "text.txt", "text/plain", null, null);
         workObj.setPrimaryObject(fileObj.getPid());
@@ -155,6 +157,7 @@ public class SolrIngestProcessorIT extends AbstractSolrProcessorIT {
     @Test
     public void testIndexCollection() throws Exception {
         indexObjectsInTripleStore();
+        repositoryObjectSolrIndexer.index(unitObj.getPid());
 
         setMessageTarget(collObj);
         processor.process(exchange);
@@ -184,6 +187,8 @@ public class SolrIngestProcessorIT extends AbstractSolrProcessorIT {
 
     @Test
     public void testIndexFileObject() throws Exception {
+        repositoryObjectSolrIndexer.index(unitObj.getPid(), collObj.getPid());
+
         WorkObject workObj = repositoryObjectFactory.createWorkObject(null);
         collObj.addMember(workObj);
 
@@ -234,6 +239,8 @@ public class SolrIngestProcessorIT extends AbstractSolrProcessorIT {
 
     @Test
     public void testIndexBinaryInWork() throws Exception {
+        repositoryObjectSolrIndexer.index(unitObj.getPid(), collObj.getPid());
+
         WorkObject workObj = repositoryObjectFactory.createWorkObject(null);
         collObj.addMember(workObj);
 

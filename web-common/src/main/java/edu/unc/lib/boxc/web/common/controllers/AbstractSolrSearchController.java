@@ -154,7 +154,7 @@ public abstract class AbstractSolrSearchController {
 
         SearchState state = resp.getSearchState();
         // Add display values for filter parameters with separate search and display forms
-        setFacetTitleByIdService.populateSearchState(state);
+//        setFacetTitleByIdService.populateSearchState(state);
 
         results.put("pageStart", state.getStartRow());
         results.put("pageRows", state.getRowsPerPage());
@@ -164,7 +164,7 @@ public abstract class AbstractSolrSearchController {
         results.put("filterParameters", SearchStateSerializationUtil.getFilterParameters(state));
         results.put("queryMethod", queryMethod);
         if (resp.getFacetFields() != null) {
-            setFacetTitleByIdService.populateTitles(resp.getFacetFields());
+//            setFacetTitleByIdService.populateTitles(resp.getFacetFields());
             results.put("facetFields", resp.getFacetFields());
         }
         results.put("onyen", GroupsThreadStore.getUsername());

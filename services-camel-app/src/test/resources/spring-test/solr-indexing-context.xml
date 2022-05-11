@@ -140,7 +140,7 @@
     <bean id="solrUpdateDriver"
           class="edu.unc.lib.boxc.indexing.solr.indexing.SolrUpdateDriver">
         <property name="solrSettings" ref="solrSettings" />
-        <property name="autoPushCount" value="1000" />
+        <property name="autoPushCount" value="1" />
         <property name="updateThreads" value="2" />
         <property name="solrClient" ref="embeddedSolrServer" />
         <property name="updateSolrClient" ref="embeddedSolrServer" />
@@ -214,6 +214,7 @@
 
     <bean id="setDescriptiveMetadataFilter"
           class="edu.unc.lib.boxc.indexing.solr.filter.SetDescriptiveMetadataFilter">
+        <property name="titleRetrievalService" ref="titleRetrievalService" />
     </bean>
 
     <bean id="setFullTextFilter" class="edu.unc.lib.boxc.indexing.solr.filter.SetFullTextFilter">

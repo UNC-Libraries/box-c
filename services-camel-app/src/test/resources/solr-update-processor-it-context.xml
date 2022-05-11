@@ -94,6 +94,12 @@
         <property name="pipeline" ref="solrMoveUpdatePipeline" />
         <property name="addDocumentMode" value="false" />
     </bean>
+
+    <bean id="updateParentPathInfoAction"
+          class="edu.unc.lib.boxc.indexing.solr.action.UpdateObjectAction">
+        <property name="pipeline" ref="solrUpdateParentPathInfoPipeline" />
+        <property name="addDocumentMode" value="false" />
+    </bean>
     
     <bean id="moveObjectsAction"
         class="edu.unc.lib.boxc.indexing.solr.action.UpdateTreeSetAction">
@@ -121,10 +127,10 @@
         <property name="actionType" value="ADD" />
         <property name="treeIndexer" ref="recursiveTreeIndexer" />
     </bean>
-    
+
     <util:map id="solrIndexingActionMap"
-        key-type="edu.unc.lib.boxc.operations.jms.indexing.IndexingActionType"
-        value-type="edu.unc.lib.boxc.indexing.solr.action.IndexingAction">
+              key-type="edu.unc.lib.boxc.operations.jms.indexing.IndexingActionType"
+              value-type="edu.unc.lib.boxc.indexing.solr.action.IndexingAction">
         <entry key="ADD" value-ref="updateObjectAction" />
         <entry key="UPDATE_DESCRIPTION" value-ref="updateDescriptionAction" />
         <entry key="UPDATE_DATASTREAMS" value-ref="updateDatastreamsAction" />
@@ -141,6 +147,8 @@
         <entry key="UPDATE_ACCESS" value-ref="updateAccessControlAction" />
         <entry key="UPDATE_ACCESS_TREE" value-ref="updateAccessTreeAction" />
         <entry key="MOVE" value-ref="moveObjectsAction" />
+        <entry key="UPDATE_PATH" value-ref="updatePathAction" />
+        <entry key="UPDATE_PARENT_PATH_INFO" value-ref="updateParentPathInfoAction" />
         <entry key="ADD_SET_TO_PARENT" value-ref="addSetToParentAction" />
         <entry key="UPDATE_TYPE" value-ref="updateTypeAction" />
         <entry key="UPDATE_TYPE_TREE" value-ref="updateTypeTreeAction" />
@@ -164,11 +172,15 @@
         <property name="solrIndexingActionMap" ref="solrIndexingActionMap"/>
         <property name="updateWorkSender" ref="updateWorkSender" />
         <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
+        <property name="indexingMessageSender" ref="indexingMessageSender" />
+        <property name="titleRetrievalService" ref="titleRetrievalService" />
     </bean>
     
     <bean id="solrLargeUpdateProcessor" class="edu.unc.lib.boxc.services.camel.solrUpdate.SolrUpdateProcessor">
         <property name="solrIndexingActionMap" ref="solrIndexingActionMap"/>
         <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
+        <property name="indexingMessageSender" ref="indexingMessageSender" />
+        <property name="titleRetrievalService" ref="titleRetrievalService" />
     </bean>
     
     <bean id="cacheInvalidatingProcessor" class="edu.unc.lib.boxc.services.camel.util.CacheInvalidatingProcessor">

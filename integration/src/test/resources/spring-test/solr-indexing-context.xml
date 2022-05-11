@@ -228,6 +228,7 @@
 
     <bean id="setDescriptiveMetadataFilter"
           class="edu.unc.lib.boxc.indexing.solr.filter.SetDescriptiveMetadataFilter">
+        <property name="titleRetrievalService" ref="titleRetrievalService" />
     </bean>
 
     <bean id="setFullTextFilter" class="edu.unc.lib.boxc.indexing.solr.filter.SetFullTextFilter">

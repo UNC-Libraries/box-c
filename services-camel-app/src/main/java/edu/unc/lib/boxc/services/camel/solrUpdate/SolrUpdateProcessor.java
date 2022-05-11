@@ -18,12 +18,17 @@ package edu.unc.lib.boxc.services.camel.solrUpdate;
 import edu.unc.lib.boxc.indexing.solr.ChildSetRequest;
 import edu.unc.lib.boxc.indexing.solr.SolrUpdateRequest;
 import edu.unc.lib.boxc.indexing.solr.action.IndexingAction;
+import edu.unc.lib.boxc.model.api.objects.AdminUnit;
+import edu.unc.lib.boxc.model.api.objects.CollectionObject;
 import edu.unc.lib.boxc.model.api.objects.FileObject;
+import edu.unc.lib.boxc.model.api.objects.RepositoryObject;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.api.objects.WorkObject;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.boxc.operations.jms.MessageSender;
 import edu.unc.lib.boxc.operations.jms.indexing.IndexingActionType;
+import edu.unc.lib.boxc.operations.jms.indexing.IndexingMessageSender;
+import edu.unc.lib.boxc.search.solr.services.TitleRetrievalService;
 import edu.unc.lib.boxc.services.camel.util.MessageUtil;
 import io.dropwizard.metrics5.Timer;
 import org.apache.camel.Exchange;
@@ -37,6 +42,7 @@ import org.slf4j.LoggerFactory;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -55,11 +61,15 @@ public class SolrUpdateProcessor implements Processor {
     private static final Logger log = LoggerFactory.getLogger(SolrUpdateProcessor.class);
     private static final Timer timer = createTimerForClass(SolrUpdateProcessor.class);
 
+    private TitleRetrievalService titleRetrievalService;
     private RepositoryObjectLoader repoObjLoader;
     private MessageSender updateWorkSender;
+    private IndexingMessageSender indexingMessageSender;
     private Map<IndexingActionType, IndexingAction> solrIndexingActionMap;
     private Set<IndexingActionType> NEED_UPDATE_PARENT_WORK = EnumSet.of(
             IndexingActionType.DELETE, IndexingActionType.ADD);
+    private Set<IndexingActionType> NEED_UPDATE_CHILDREN_PATH_INFO = EnumSet.of(
+            IndexingActionType.UPDATE_DESCRIPTION);
 
     @Override
     public void process(Exchange exchange) throws Exception {
@@ -95,22 +105,47 @@ public class SolrUpdateProcessor implements Processor {
             if (indexingAction == null) {
                 return;
             }
+            var targetPid = PIDs.get(pid);
+            var targetObj = repoObjLoader.getRepositoryObject(targetPid);
+            String previousTitle = null;
+            if (needsUpdateOfChildrenPathInfo(targetObj, actionType)) {
+                previousTitle = titleRetrievalService.retrieveTitle(targetPid);
+            }
             log.info("Performing action {} on object {}", action, pid);
             indexingAction.performAction(updateRequest);
 
-            // Trigger update of parent work obj for files if the action requires it
-            if (NEED_UPDATE_PARENT_WORK.contains(actionType)) {
-                var targetPid = PIDs.get(pid);
-                var targetObj = repoObjLoader.getRepositoryObject(targetPid);
-                if (targetObj instanceof FileObject) {
-                    var parent = targetObj.getParent();
-                    if (parent instanceof WorkObject) {
-                        log.debug("Requesting indexing of work {} containing file {}", parent.getPid().getId(), pid);
-                        updateWorkSender.sendMessage(parent.getPid().getQualifiedId());
-                    }
+            triggerFollowupActions(targetObj, actionType, previousTitle);
+        }
+    }
+
+    private void triggerFollowupActions(RepositoryObject targetObj, IndexingActionType actionType,
+                                        String previousTitle) {
+        // Trigger update of parent work obj for files if the action requires it
+        if (NEED_UPDATE_PARENT_WORK.contains(actionType)) {
+            if (targetObj instanceof FileObject) {
+                var parent = targetObj.getParent();
+                if (parent instanceof WorkObject) {
+                    log.debug("Requesting indexing of work {} containing file {}",
+                            parent.getPid().getId(), targetObj.getPid().getId());
+                    updateWorkSender.sendMessage(parent.getPid().getQualifiedId());
                 }
             }
+        } else if (needsUpdateOfChildrenPathInfo(targetObj, actionType)) {
+            // Trigger update of path info of unit/collection objects if their description changes
+            log.debug("Requesting indexing of {}'s children to update path info", targetObj.getPid().getId());
+            // Only trigger update of path info at this time if the title of this object has changed
+            var newTitle = titleRetrievalService.retrieveTitle(targetObj.getPid());
+            if (Objects.equals(newTitle, previousTitle)) {
+                return;
+            }
+            indexingMessageSender.sendIndexingOperation("", targetObj.getPid(),
+                    IndexingActionType.UPDATE_PARENT_PATH_INFO);
         }
+    }
+
+    private boolean needsUpdateOfChildrenPathInfo(RepositoryObject targetObj, IndexingActionType actionType) {
+        return NEED_UPDATE_CHILDREN_PATH_INFO.contains(actionType) &&
+                (targetObj instanceof AdminUnit || targetObj instanceof CollectionObject);
     }
 
     private List<String> extractChildren(Element body) {
@@ -145,5 +180,13 @@ public class SolrUpdateProcessor implements Processor {
 
     public void setUpdateWorkSender(MessageSender updateWorkSender) {
         this.updateWorkSender = updateWorkSender;
+    }
+
+    public void setTitleRetrievalService(TitleRetrievalService titleRetrievalService) {
+        this.titleRetrievalService = titleRetrievalService;
+    }
+
+    public void setIndexingMessageSender(IndexingMessageSender indexingMessageSender) {
+        this.indexingMessageSender = indexingMessageSender;
     }
 }

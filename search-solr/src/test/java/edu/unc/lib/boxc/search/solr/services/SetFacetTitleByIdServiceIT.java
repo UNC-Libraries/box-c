@@ -31,6 +31,7 @@ import java.util.Map;
 
 import edu.unc.lib.boxc.search.solr.facets.GenericFacet;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.Mock;
 
@@ -53,6 +54,7 @@ import edu.unc.lib.boxc.search.solr.utils.FacetFieldUtil;
 /**
  * @author bbpennel
  */
+@Ignore
 public class SetFacetTitleByIdServiceIT extends BaseEmbeddedSolrTest {
 
     private TestCorpus testCorpus;

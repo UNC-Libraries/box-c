@@ -142,6 +142,7 @@ public class SolrUpdateProcessorTest {
     public void testFileMessageUpdateWork() throws Exception {
         populateEntry(IndexingActionType.ADD);
         var targetFile = mock(FileObject.class);
+        when(targetFile.getPid()).thenReturn(targetPid);
         var parentWork = mock(WorkObject.class);
         var workPid = PIDs.get(UUID.randomUUID().toString());
         when(targetFile.getParent()).thenReturn(parentWork);

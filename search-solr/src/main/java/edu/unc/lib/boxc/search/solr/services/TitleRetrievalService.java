@@ -23,6 +23,7 @@ import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.search.api.SearchFieldKey;
 import org.apache.solr.client.solrj.SolrQuery;
 
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -34,7 +35,7 @@ public class TitleRetrievalService {
     private LoadingCache<String, String> titleCache;
 
     private long cacheTimeToLive = 10 * 60;
-    private long cacheMaxSize = 256;
+    private long cacheMaxSize = 1024;
 
     private SolrSearchService solrSearchService;
 
@@ -65,7 +66,23 @@ public class TitleRetrievalService {
      * @return title
      */
     public String retrieveTitle(PID pid) {
-        return titleCache.getUnchecked(pid.getId());
+        try {
+            return titleCache.get(pid.getId());
+        } catch (ExecutionException e) {
+            if (e.getCause() instanceof RuntimeException) {
+                throw (RuntimeException) e.getCause();
+            }
+            throw new RuntimeException("Failed to retrieve title for " + pid, e);
+        }
+    }
+
+    /**
+     * Store a title entry to the cache
+     * @param pid
+     * @param title
+     */
+    public void storeTitle(PID pid, String title) {
+        titleCache.put(pid.getId(), title);
     }
 
     /**

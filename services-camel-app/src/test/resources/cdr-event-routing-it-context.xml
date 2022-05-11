@@ -60,13 +60,25 @@
 
     <bean id="solrSmallUpdateProcessor"
         class="edu.unc.lib.boxc.services.camel.solrUpdate.SolrUpdateProcessor">
+        <property name="titleRetrievalService" ref="titleRetrievalService" />
+        <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
     </bean>
     
     <bean id="solrLargeUpdateProcessor"
         class="edu.unc.lib.boxc.services.camel.solrUpdate.SolrUpdateProcessor">
+        <property name="titleRetrievalService" ref="titleRetrievalService" />
+        <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
     </bean>
     
     <bean id="solrUpdatePreprocessor" class="edu.unc.lib.boxc.services.camel.solrUpdate.SolrUpdatePreprocessor">
+    </bean>
+
+    <bean id="repositoryObjectLoader" class="org.mockito.Mockito" factory-method="mock">
+        <constructor-arg value="edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader" />
+    </bean>
+
+    <bean id="titleRetrievalService" class="org.mockito.Mockito" factory-method="mock">
+        <constructor-arg value="edu.unc.lib.boxc.search.solr.services.TitleRetrievalService" />
     </bean>
     
     <bean id="cacheInvalidatingProcessor" class="org.mockito.Mockito" factory-method="mock">

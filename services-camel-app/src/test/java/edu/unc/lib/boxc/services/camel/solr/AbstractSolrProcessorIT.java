@@ -26,6 +26,7 @@ import java.io.File;
 import java.io.InputStream;
 import java.net.URI;
 
+import edu.unc.lib.boxc.indexing.solr.test.RepositoryObjectSolrIndexer;
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
 import org.apache.camel.test.spring.CamelSpringRunner;
@@ -101,6 +102,8 @@ public abstract class AbstractSolrProcessorIT {
     private RepositoryInitializer repoInitializer;
     @Autowired
     private RepositoryObjectTreeIndexer treeIndexer;
+    @Autowired
+    protected RepositoryObjectSolrIndexer repositoryObjectSolrIndexer;
 
     protected ContentRootObject rootObj;
     protected AdminUnit unitObj;

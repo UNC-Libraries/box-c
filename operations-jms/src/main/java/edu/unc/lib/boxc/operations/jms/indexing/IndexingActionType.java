@@ -48,6 +48,8 @@ public enum IndexingActionType {
     UPDATE_STATUS("Update status",
             "Partial update operation which refreshes the status of an object and all of its children"),
     UPDATE_PATH("Update Path", "Partial update which updates location related properties of an object"),
+    UPDATE_PARENT_PATH_INFO("Update Parent Path Info",
+            "Partial update to the path information of children of the specified object"),
     MOVE("Move", "Partial update which updates the location and access control of an object and all its children"),
     UPDATE_ACCESS("Update access control",
             "Partial update which refreshes the access control for an object"),
