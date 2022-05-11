@@ -141,10 +141,6 @@
         <property name="searchService" ref="queryLayer" />
     </bean>
     
-    <bean id="setFacetTitleByIdService" class="edu.unc.lib.boxc.search.solr.services.SetFacetTitleByIdService">
-        <property name="pathFactory" ref="pathFactory" />
-    </bean>
-    
     <bean id="unrestrictedSolrAccessRestrictionUtil" class="edu.unc.lib.boxc.search.solr.utils.AccessRestrictionUtil">
         <property name="searchSettings" ref="searchSettings" />
         <property name="disablePermissionFiltering" value="true" />

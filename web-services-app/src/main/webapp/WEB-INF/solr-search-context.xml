@@ -69,10 +69,6 @@
         <property name="globalPermissionEvaluator" ref="globalPermissionEvaluator" />
     </bean>
 
-    <bean id="setFacetTitleByIdService" class="edu.unc.lib.boxc.search.solr.services.SetFacetTitleByIdService">
-        <property name="pathFactory" ref="objectPathFactory" />
-    </bean>
-
     <bean id="unrestrictedSolrAccessRestrictionUtil" class="edu.unc.lib.boxc.search.solr.utils.AccessRestrictionUtil">
         <property name="searchSettings" ref="searchSettings" />
         <property name="disablePermissionFiltering" value="true" />

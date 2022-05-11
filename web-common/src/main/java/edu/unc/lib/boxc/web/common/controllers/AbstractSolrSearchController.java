@@ -15,21 +15,6 @@
  */
 package edu.unc.lib.boxc.web.common.controllers;
 
-import static edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore.getAgentPrincipals;
-
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
-
-import edu.unc.lib.boxc.search.solr.services.SetFacetTitleByIdService;
-import edu.unc.lib.boxc.web.common.utils.SearchStateSerializationUtil;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-
 import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
 import edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore;
 import edu.unc.lib.boxc.search.api.exceptions.InvalidHierarchicalFacetException;
@@ -43,7 +28,19 @@ import edu.unc.lib.boxc.search.solr.services.SearchStateFactory;
 import edu.unc.lib.boxc.search.solr.utils.SearchStateUtil;
 import edu.unc.lib.boxc.web.common.search.SearchActionService;
 import edu.unc.lib.boxc.web.common.services.SolrQueryLayerService;
+import edu.unc.lib.boxc.web.common.utils.SearchStateSerializationUtil;
 import edu.unc.lib.boxc.web.common.utils.SerializationUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import static edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore.getAgentPrincipals;
 
 /**
  * Abstract base class for controllers which interact with solr services.
@@ -62,8 +59,6 @@ public abstract class AbstractSolrSearchController {
     protected SearchStateFactory searchStateFactory;
     @Autowired
     protected ChildrenCountService childrenCountService;
-    @Autowired
-    private SetFacetTitleByIdService setFacetTitleByIdService;
 
     protected SearchRequest generateSearchRequest(HttpServletRequest request) {
         return this.generateSearchRequest(request, null, new SearchRequest());
@@ -153,8 +148,6 @@ public abstract class AbstractSolrSearchController {
         results.put("metadata", resultList);
 
         SearchState state = resp.getSearchState();
-        // Add display values for filter parameters with separate search and display forms
-//        setFacetTitleByIdService.populateSearchState(state);
 
         results.put("pageStart", state.getStartRow());
         results.put("pageRows", state.getRowsPerPage());
@@ -164,7 +157,6 @@ public abstract class AbstractSolrSearchController {
         results.put("filterParameters", SearchStateSerializationUtil.getFilterParameters(state));
         results.put("queryMethod", queryMethod);
         if (resp.getFacetFields() != null) {
-//            setFacetTitleByIdService.populateTitles(resp.getFacetFields());
             results.put("facetFields", resp.getFacetFields());
         }
         results.put("onyen", GroupsThreadStore.getUsername());
