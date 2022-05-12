@@ -63,8 +63,8 @@ public class FilterableDisplayValueFacet extends GenericFacet {
      */
     public static String buildValue(String displayValue, String searchValue) {
         if (displayValue == null) {
-            return "*|" + searchValue;
+            return "*|" + searchValue.trim();
         }
-        return displayValue.replaceAll("\\|", "") + "|" + searchValue;
+        return displayValue.replaceAll("\\|", "").trim() + "|" + searchValue.trim();
     }
 }

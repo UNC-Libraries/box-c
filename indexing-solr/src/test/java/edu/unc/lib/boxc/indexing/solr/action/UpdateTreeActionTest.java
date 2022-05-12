@@ -19,6 +19,7 @@ import static edu.unc.lib.boxc.indexing.solr.test.MockRepositoryObjectHelpers.ad
 import static edu.unc.lib.boxc.indexing.solr.test.MockRepositoryObjectHelpers.addFileObjectToParent;
 import static edu.unc.lib.boxc.indexing.solr.test.MockRepositoryObjectHelpers.makeContainer;
 import static edu.unc.lib.boxc.operations.jms.indexing.IndexingActionType.RECURSIVE_ADD;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
@@ -137,6 +138,21 @@ public class UpdateTreeActionTest {
                 pidCaptor.capture(), eq(IndexingActionType.ADD));
 
         List<PID> pids = pidCaptor.getAllValues();
+        assertTrue(pids.contains(corpus.pid6));
+    }
+
+    @Test
+    public void testSkipStartingObject() throws Exception {
+        action.setSkipIndexingStartingObject(true);
+        action.performAction(new SolrUpdateRequest(corpus.pid2.getRepositoryPath(),
+                RECURSIVE_ADD, "1", USER));
+
+        verify(messageSender, times(2)).sendIndexingOperation(eq(USER), pidCaptor.capture(),
+                eq(IndexingActionType.ADD));
+
+        List<PID> pids = pidCaptor.getAllValues();
+        assertFalse(pids.contains(corpus.pid2));
+        assertTrue(pids.contains(corpus.pid4));
         assertTrue(pids.contains(corpus.pid6));
     }
 

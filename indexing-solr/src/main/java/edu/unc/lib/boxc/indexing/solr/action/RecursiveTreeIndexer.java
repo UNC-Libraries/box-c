@@ -63,6 +63,13 @@ public class RecursiveTreeIndexer {
     public RecursiveTreeIndexer() {
     }
 
+    /**
+     * Index the provided repoObj and all of its children
+     * @param repoObj
+     * @param actionType Type of indexing action to perform
+     * @param userid
+     * @throws IndexingException
+     */
     public void index(RepositoryObject repoObj, IndexingActionType actionType, String userid)
             throws IndexingException {
         PID pid = repoObj.getPid();
@@ -89,7 +96,14 @@ public class RecursiveTreeIndexer {
         }
     }
 
-    private void indexChildren(PID parentPid, IndexingActionType actionType, String userid)
+    /**
+     * Index all the children of the provided parentPid
+     * @param parentPid
+     * @param actionType Type of indexing action to perform
+     * @param userid
+     * @throws IndexingException
+     */
+    public void indexChildren(PID parentPid, IndexingActionType actionType, String userid)
             throws IndexingException {
         Map<String, Set<String>> childToTypes = getMembers(parentPid);
 

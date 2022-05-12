@@ -361,6 +361,14 @@
         <property name="pipeline" ref="solrUpdateParentPathInfoPipeline" />
         <property name="addDocumentMode" value="false" />
     </bean>
+
+    <bean id="updateParentPathInfoTreeAction"
+          class="edu.unc.lib.boxc.indexing.solr.action.UpdateTreeAction">
+        <property name="actionType" value="UPDATE_PARENT_PATH_INFO" />
+        <property name="treeIndexer" ref="recursiveTreeIndexer" />
+        <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
+        <property name="skipIndexingStartingObject" value="true" />
+    </bean>
     
     <bean id="moveObjectsAction"
         class="edu.unc.lib.boxc.indexing.solr.action.UpdateTreeSetAction">
@@ -410,6 +418,7 @@
         <entry key="MOVE" value-ref="moveObjectsAction" />
         <entry key="UPDATE_PATH" value-ref="updatePathAction" />
         <entry key="UPDATE_PARENT_PATH_INFO" value-ref="updateParentPathInfoAction" />
+        <entry key="UPDATE_PARENT_PATH_TREE" value-ref="updateParentPathInfoTreeAction" />
         <entry key="ADD_SET_TO_PARENT" value-ref="addSetToParentAction" />
         <entry key="UPDATE_TYPE" value-ref="updateTypeAction" />
         <entry key="UPDATE_TYPE_TREE" value-ref="updateTypeTreeAction" />
@@ -437,19 +446,23 @@
         <property name="indexingMessageSender" ref="indexingMessageSender" />
     </bean>
     
-    <bean id="solrLargeUpdateProcessor" class="edu.unc.lib.boxc.services.camel.solrUpdate.SolrUpdateProcessor">
+    <bean id="solrLargeUpdateProcessor" class="edu.unc.lib.boxc.services.camel.solrUpdate.SolrUpdateProcessor"
+            init-method="init">
         <property name="solrIndexingActionMap" ref="solrIndexingActionMap"/>
         <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
         <property name="indexingMessageSender" ref="indexingMessageSender" />
         <property name="titleRetrievalService" ref="titleRetrievalService" />
+        <property name="solrSettings" ref="solrSettings" />
     </bean>
     
-    <bean id="solrSmallUpdateProcessor" class="edu.unc.lib.boxc.services.camel.solrUpdate.SolrUpdateProcessor">
+    <bean id="solrSmallUpdateProcessor" class="edu.unc.lib.boxc.services.camel.solrUpdate.SolrUpdateProcessor"
+            init-method="init">
         <property name="solrIndexingActionMap" ref="solrIndexingActionMap"/>
         <property name="updateWorkSender" ref="updateWorkSender" />
         <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
         <property name="indexingMessageSender" ref="indexingMessageSender" />
         <property name="titleRetrievalService" ref="titleRetrievalService" />
+        <property name="solrSettings" ref="solrSettings" />
     </bean>
     
     <bean id="solrUpdatePreprocessor" class="edu.unc.lib.boxc.services.camel.solrUpdate.SolrUpdatePreprocessor">

@@ -44,7 +44,10 @@ import java.util.concurrent.TimeUnit;
 import javax.annotation.Resource;
 
 import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
+import edu.unc.lib.boxc.model.fcrepo.services.RepositoryObjectLoaderImpl;
 import edu.unc.lib.boxc.operations.jms.MessageSender;
+import edu.unc.lib.boxc.operations.jms.indexing.IndexingMessageSender;
+import edu.unc.lib.boxc.search.solr.facets.FilterableDisplayValueFacet;
 import edu.unc.lib.boxc.search.solr.services.TitleRetrievalService;
 import org.apache.camel.CamelContext;
 import org.apache.camel.builder.NotifyBuilder;
@@ -116,6 +119,8 @@ public class SolrUpdateProcessorIT extends AbstractSolrProcessorIT {
     @Autowired
     private MessageSender updateWorkSender;
     @Autowired
+    private IndexingMessageSender indexingMessageSender;
+    @Autowired
     private TitleRetrievalService titleRetrievalService;
 
     @Resource(name = "solrIndexingActionMap")
@@ -132,10 +137,14 @@ public class SolrUpdateProcessorIT extends AbstractSolrProcessorIT {
         processor.setRepositoryObjectLoader(repositoryObjectLoader);
         processor.setUpdateWorkSender(updateWorkSender);
         processor.setTitleRetrievalService(titleRetrievalService);
+        processor.setIndexingMessageSender(indexingMessageSender);
+        processor.setSolrClient(solrClient);
 
         when(exchange.getIn()).thenReturn(message);
 
         generateBaseStructure();
+
+        ((RepositoryObjectLoaderImpl) repositoryObjectLoader).invalidateAll();
     }
 
     @Test
@@ -178,16 +187,29 @@ public class SolrUpdateProcessorIT extends AbstractSolrProcessorIT {
 
     @Test
     public void testUpdateDescription() throws Exception {
+        var folderObj = repositoryObjectFactory.createFolderObject(null);
+        collObj.addMember(folderObj);
+        indexObjectsInTripleStore();
+        repositoryObjectSolrIndexer.index(unitObj.getPid(), collObj.getPid(), folderObj.getPid());
+
+        var origCollTitle = getSolrMetadata(collObj).getTitle();
+        assertEquals(origCollTitle, collObj.getPid().getId());
+        var origFolderParentColl = getSolrMetadata(folderObj).getParentCollection();
+        assertEquals(FilterableDisplayValueFacet.buildValue(origCollTitle, origCollTitle), origFolderParentColl);
+
         InputStream modsStream = streamResource("/datastreams/simpleMods.xml");
         updateDescriptionService.updateDescription(new UpdateDescriptionRequest(agent, collObj, modsStream));
 
-        indexObjectsInTripleStore();
-
-        repositoryObjectSolrIndexer.index(unitObj.getPid(), collObj.getPid());
+        NotifyBuilder notify = new NotifyBuilder(cdrServiceSolrUpdate)
+                .whenCompleted(2)
+                .create();
 
         makeIndexingMessage(collObj, null, UPDATE_DESCRIPTION);
 
         processor.process(exchange);
+
+        notify.matches(5l, TimeUnit.SECONDS);
+
         server.commit();
 
         ContentObjectRecord collMd = getSolrMetadata(collObj);
@@ -199,6 +221,11 @@ public class SolrUpdateProcessorIT extends AbstractSolrProcessorIT {
 
         assertNotNull(collMd.getDateAdded());
         assertNotNull(collMd.getDateUpdated());
+
+        // Verify that child object got its parent collection title updated
+        var updatedFolderParentColl = getSolrMetadata(folderObj);
+        assertEquals(FilterableDisplayValueFacet.buildValue("Object title", collMd.getId()),
+                updatedFolderParentColl.getParentCollection());
     }
 
     @Test

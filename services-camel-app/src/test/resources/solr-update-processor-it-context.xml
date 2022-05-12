@@ -100,7 +100,15 @@
         <property name="pipeline" ref="solrUpdateParentPathInfoPipeline" />
         <property name="addDocumentMode" value="false" />
     </bean>
-    
+
+    <bean id="updateParentPathInfoTreeAction"
+          class="edu.unc.lib.boxc.indexing.solr.action.UpdateTreeAction">
+        <property name="actionType" value="UPDATE_PARENT_PATH_INFO" />
+        <property name="treeIndexer" ref="recursiveTreeIndexer" />
+        <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
+        <property name="skipIndexingStartingObject" value="true" />
+    </bean>
+
     <bean id="moveObjectsAction"
         class="edu.unc.lib.boxc.indexing.solr.action.UpdateTreeSetAction">
         <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
@@ -149,6 +157,7 @@
         <entry key="MOVE" value-ref="moveObjectsAction" />
         <entry key="UPDATE_PATH" value-ref="updatePathAction" />
         <entry key="UPDATE_PARENT_PATH_INFO" value-ref="updateParentPathInfoAction" />
+        <entry key="UPDATE_PARENT_PATH_TREE" value-ref="updateParentPathInfoTreeAction" />
         <entry key="ADD_SET_TO_PARENT" value-ref="addSetToParentAction" />
         <entry key="UPDATE_TYPE" value-ref="updateTypeAction" />
         <entry key="UPDATE_TYPE_TREE" value-ref="updateTypeTreeAction" />
@@ -174,6 +183,7 @@
         <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
         <property name="indexingMessageSender" ref="indexingMessageSender" />
         <property name="titleRetrievalService" ref="titleRetrievalService" />
+        <property name="solrClient" ref="embeddedSolrServer" />
     </bean>
     
     <bean id="solrLargeUpdateProcessor" class="edu.unc.lib.boxc.services.camel.solrUpdate.SolrUpdateProcessor">
@@ -181,12 +191,14 @@
         <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
         <property name="indexingMessageSender" ref="indexingMessageSender" />
         <property name="titleRetrievalService" ref="titleRetrievalService" />
+        <property name="solrClient" ref="embeddedSolrServer" />
     </bean>
     
     <bean id="cacheInvalidatingProcessor" class="edu.unc.lib.boxc.services.camel.util.CacheInvalidatingProcessor">
         <property name="repositoryObjectLoader" ref="repositoryObjectLoader"/>
         <property name="objectAclFactory" ref="objectAclFactory"/>
         <property name="contentPathFactory" ref="contentPathFactory"/>
+        <property name="titleRetrievalService" ref="titleRetrievalService" />
     </bean>
     
     <bean id="solrUpdatePreprocessor" class="edu.unc.lib.boxc.services.camel.solrUpdate.SolrUpdatePreprocessor">
