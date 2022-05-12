@@ -25,6 +25,7 @@ import edu.unc.lib.boxc.search.solr.config.SearchSettings;
 import edu.unc.lib.boxc.search.solr.responses.SearchResultResponse;
 import edu.unc.lib.boxc.search.solr.services.ChildrenCountService;
 import edu.unc.lib.boxc.search.solr.services.SearchStateFactory;
+import edu.unc.lib.boxc.search.solr.services.SetFacetTitleByIdService;
 import edu.unc.lib.boxc.search.solr.utils.SearchStateUtil;
 import edu.unc.lib.boxc.web.common.search.SearchActionService;
 import edu.unc.lib.boxc.web.common.services.SolrQueryLayerService;
@@ -59,6 +60,8 @@ public abstract class AbstractSolrSearchController {
     protected SearchStateFactory searchStateFactory;
     @Autowired
     protected ChildrenCountService childrenCountService;
+    @Autowired
+    private SetFacetTitleByIdService setFacetTitleByIdService;
 
     protected SearchRequest generateSearchRequest(HttpServletRequest request) {
         return this.generateSearchRequest(request, null, new SearchRequest());
@@ -148,6 +151,8 @@ public abstract class AbstractSolrSearchController {
         results.put("metadata", resultList);
 
         SearchState state = resp.getSearchState();
+        // Add display values for filter parameters with separate search and display forms
+        setFacetTitleByIdService.populateSearchState(state);
 
         results.put("pageStart", state.getStartRow());
         results.put("pageRows", state.getRowsPerPage());

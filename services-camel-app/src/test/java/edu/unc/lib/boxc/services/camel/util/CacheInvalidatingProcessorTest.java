@@ -23,6 +23,7 @@ import edu.unc.lib.boxc.model.api.services.ContentPathFactory;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.boxc.model.fcrepo.services.RepositoryObjectLoaderImpl;
 import edu.unc.lib.boxc.model.fcrepo.test.TestHelper;
+import edu.unc.lib.boxc.search.solr.services.TitleRetrievalService;
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
 import org.junit.Before;
@@ -51,6 +52,8 @@ public class CacheInvalidatingProcessorTest {
     private ObjectAclFactory objectAclFactory;
     @Mock
     private ContentPathFactory contentPathFactory;
+    @Mock
+    private TitleRetrievalService titleRetrievalService;
 
     private CacheInvalidatingProcessor processor;
 
@@ -62,6 +65,7 @@ public class CacheInvalidatingProcessorTest {
         processor.setRepositoryObjectLoader(repoObjLoader);
         processor.setObjectAclFactory(objectAclFactory);
         processor.setContentPathFactory(contentPathFactory);
+        processor.setTitleRetrievalService(titleRetrievalService);
     }
 
     @Test
