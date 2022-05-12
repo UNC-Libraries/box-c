@@ -81,7 +81,7 @@
             </c:if>
             <c:if test="${not empty exhibits }">
                 <c:forEach var="exhibit" items="${exhibits}">
-                    <p><strong>Related Digital Exhibit:</strong> <a href="${exhibit.value}">${exhibit.key}</a></p>
+                    <p><strong>Related Digital Exhibits:</strong> <a href="${exhibit.value}">${exhibit.key}</a></p>
                 </c:forEach>
             </c:if>
 
