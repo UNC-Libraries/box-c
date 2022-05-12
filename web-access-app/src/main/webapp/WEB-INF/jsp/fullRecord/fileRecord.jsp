@@ -115,6 +115,11 @@
                             </c:otherwise>
                         </c:choose>
                     </c:if>
+                    <c:if test="${not empty exhibits }">
+                        <c:forEach var="exhibit" items="${exhibits}">
+                            <li><span class="has-text-weight-bold">Related Digital Exhibit:</span> <a href="${exhibit.value}">${exhibit.key}</a></li>
+                        </c:forEach>
+                    </c:if>
                     <li><a href="/record/${containingWorkUUID}">View Parent Work</a></li>
                 </ul>
             </div>
