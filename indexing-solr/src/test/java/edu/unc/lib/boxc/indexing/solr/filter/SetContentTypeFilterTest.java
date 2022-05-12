@@ -148,7 +148,7 @@ public class SetContentTypeFilterTest {
 
         assertHasFileTypes(idb, "text/csv");
         assertHasFileDescriptions(idb, "Comma-Separated Values");
-        assertHasCategories(idb, ContentCategory.dataset);
+        assertHasCategories(idb, ContentCategory.spreadsheet);
     }
 
      @Test
@@ -235,6 +235,28 @@ public class SetContentTypeFilterTest {
         assertHasFileTypes(idb, "multipart/appledouble");
         assertHasFileDescriptions(idb, "AppleDouble Resource Fork");
         assertHasCategories(idb, ContentCategory.unknown);
+    }
+
+    @Test
+    public void testAccessDb() throws Exception {
+        mockFile("._doc.mdb", "Microsoft Access database", "application/x-msaccess");
+
+        filter.filter(dip);
+
+        assertHasFileTypes(idb, "application/x-msaccess");
+        assertHasFileDescriptions(idb, "Microsoft Access database");
+        assertHasCategories(idb, ContentCategory.database);
+    }
+
+    @Test
+    public void testEmail() throws Exception {
+        mockFile("email.msg", "Email", "message/partial");
+
+        filter.filter(dip);
+
+        assertHasFileTypes(idb, "message/partial");
+        assertHasFileDescriptions(idb, "Email");
+        assertHasCategories(idb, ContentCategory.email);
     }
 
     @Test

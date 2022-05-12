@@ -21,8 +21,9 @@ package edu.unc.lib.boxc.search.api;
  *
  */
 public enum ContentCategory {
-    dataset("Dataset"), image("Image"), diskimage("Disk Image"), video("Video"), software("Software"),
-    audio("Audio"), archive("Archive File"), text("Text"), unknown("Unknown");
+    image("Image"), diskimage("Disk Image"), video("Video"), software("Software"),
+    spreadsheet("Spreadsheet"), audio("Audio"), archive("Archive File"),
+    text("Text"), database("Database"), email("Email"), unknown("Unknown");
 
     private String displayName;
     private String joined;
