@@ -101,7 +101,7 @@ public abstract class AbstractSolrProcessorIT {
     @Autowired
     private RepositoryInitializer repoInitializer;
     @Autowired
-    private RepositoryObjectTreeIndexer treeIndexer;
+    protected RepositoryObjectTreeIndexer treeIndexer;
     @Autowired
     protected RepositoryObjectSolrIndexer repositoryObjectSolrIndexer;
 

@@ -143,8 +143,6 @@ public class SolrUpdateProcessorIT extends AbstractSolrProcessorIT {
         when(exchange.getIn()).thenReturn(message);
 
         generateBaseStructure();
-
-        ((RepositoryObjectLoaderImpl) repositoryObjectLoader).invalidateAll();
     }
 
     @Test
@@ -199,6 +197,7 @@ public class SolrUpdateProcessorIT extends AbstractSolrProcessorIT {
 
         InputStream modsStream = streamResource("/datastreams/simpleMods.xml");
         updateDescriptionService.updateDescription(new UpdateDescriptionRequest(agent, collObj, modsStream));
+        treeIndexer.indexTree(collObj.getModel());
 
         NotifyBuilder notify = new NotifyBuilder(cdrServiceSolrUpdate)
                 .whenCompleted(2)
@@ -217,7 +216,7 @@ public class SolrUpdateProcessorIT extends AbstractSolrProcessorIT {
         assertEquals("Object title", collMd.getTitle());
         assertEquals("Boxy", collMd.getCreator().get(0));
 
-        assertTrue(collMd.getContentStatus().contains(FacetConstants.CONTENT_DESCRIBED));
+        assertTrue(collMd.getContentStatus().toString(), collMd.getContentStatus().contains(FacetConstants.CONTENT_DESCRIBED));
 
         assertNotNull(collMd.getDateAdded());
         assertNotNull(collMd.getDateUpdated());

@@ -88,6 +88,7 @@ public class RecursiveTreeIndexer {
             return;
         }
 
+        log.debug("Queueing indexing of {} {}", pid, actionType);
         messageSender.sendIndexingOperation(userid, pid, actionType);
 
         if (types.stream().anyMatch(CONTAINER_TYPES::contains)) {
