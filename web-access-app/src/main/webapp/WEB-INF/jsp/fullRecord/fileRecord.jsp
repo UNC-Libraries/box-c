@@ -116,9 +116,11 @@
                         </c:choose>
                     </c:if>
                     <c:if test="${not empty exhibits }">
-                        <c:forEach var="exhibit" items="${exhibits}">
-                            <li><span class="has-text-weight-bold">Related Digital Exhibits:</span> <a href="${exhibit.value}">${exhibit.key}</a></li>
-                        </c:forEach>
+                        <li><span class="has-text-weight-bold">Related Digital Exhibits:</span>
+                            <c:forEach var="exhibit" items="${exhibits}" varStatus="status">
+                                <a href="${exhibit.value}">${exhibit.key}</a><c:if test="${not status.last}">; </c:if>
+                            </c:forEach>
+                        </li>
                     </c:if>
                     <li><a href="/record/${containingWorkUUID}">View Parent Work</a></li>
                 </ul>
