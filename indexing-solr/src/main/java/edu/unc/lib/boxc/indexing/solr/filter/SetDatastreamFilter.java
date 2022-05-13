@@ -27,6 +27,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import edu.unc.lib.boxc.indexing.solr.utils.TechnicalMetadataService;
+import edu.unc.lib.boxc.model.api.exceptions.FedoraException;
 import edu.unc.lib.boxc.model.api.exceptions.RepositoryException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.rdf.model.Resource;
@@ -150,7 +151,7 @@ public class SetDatastreamFilter implements IndexDocumentFilter {
                 }
             }
             return extent;
-        } catch (RepositoryException e) {
+        } catch (RepositoryException | FedoraException e) {
             log.warn("Unable to parse FITS for {}", fitsId, e);
             return null;
         }

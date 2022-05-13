@@ -20,6 +20,7 @@ import static edu.unc.lib.boxc.common.xml.SecureXMLFactory.createSAXBuilder;
 import java.io.IOException;
 import java.io.InputStream;
 
+import edu.unc.lib.boxc.model.api.exceptions.FedoraException;
 import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.JDOMException;
@@ -31,6 +32,8 @@ import edu.unc.lib.boxc.model.api.objects.ContentObject;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObject;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.api.objects.Tombstone;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Loads data to populate fields in a DocumentIndexingPackage
@@ -39,6 +42,7 @@ import edu.unc.lib.boxc.model.api.objects.Tombstone;
  * @date Jun 22, 2015
  */
 public class DocumentIndexingPackageDataLoader {
+    private static final Logger log = LoggerFactory.getLogger(DocumentIndexingPackageDataLoader.class);
     private RepositoryObjectLoader repoObjLoader;
 
     private long cacheTimeToLive;
@@ -55,8 +59,9 @@ public class DocumentIndexingPackageDataLoader {
         try (InputStream modsStream = modsBinary.getBinaryStream()) {
             Document dsDoc = createSAXBuilder().build(modsStream);
             return dsDoc.detachRootElement();
-        } catch (JDOMException | IOException e) {
-            throw new IndexingException("Failed to parse MODS stream for object " + dip.getPid(), e);
+        } catch (JDOMException | IOException | FedoraException e) {
+            log.error("Failed to parse MODS stream for object {}", dip.getPid(), e);
+            return null;
         }
     }
 
