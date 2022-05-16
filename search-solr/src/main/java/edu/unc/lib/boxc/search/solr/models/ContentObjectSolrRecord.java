@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Map;
 
 import edu.unc.lib.boxc.search.solr.facets.FilterableDisplayValueFacet;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.solr.client.solrj.beans.Field;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -213,8 +214,10 @@ public class ContentObjectSolrRecord extends IndexDocumentBean implements Conten
         if (parentName != null) {
             return parentName;
         }
-
         String parentCollection = getParentCollection();
+        if (StringUtils.isBlank(parentCollection)) {
+            return null;
+        }
         var facetVal = new FilterableDisplayValueFacet(SearchFieldKey.PARENT_COLLECTION.name(), parentCollection);
         parentName = facetVal.getDisplayValue();
         return parentName;
