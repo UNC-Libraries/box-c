@@ -585,8 +585,7 @@ public class SetDescriptiveMetadataFilter implements IndexDocumentFilter {
             String itemType = relatedItem.getAttributeValue("type");
             String displayLabel = relatedItem.getAttributeValue("displayLabel");
 
-            if (!StringUtils.isBlank(itemType) && itemType.equals("isReferencedBy") &&
-                    !StringUtils.isBlank(displayLabel) && displayLabel.equals("Digital Exhibit"))  {
+            if ("isReferencedBy".equals(itemType) && "Digital Exhibit".equals(displayLabel)) {
                 List<Element> locations = relatedItem.getChildren("location", JDOMNamespaceUtil.MODS_V3_NS);
                 for (Element location : locations) {
                     List<Element> locationLinks = location.getChildren("url", JDOMNamespaceUtil.MODS_V3_NS);

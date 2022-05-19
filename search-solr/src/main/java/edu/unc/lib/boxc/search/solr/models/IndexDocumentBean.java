@@ -481,7 +481,7 @@ public class IndexDocumentBean {
     }
 
     @Field
-    public void setExhibit(ArrayList<String> exhibits) {
+    public void setExhibit(List<String> exhibits) {
         fields.put(EXHIBIT.getSolrField(), exhibits);
     }
 
