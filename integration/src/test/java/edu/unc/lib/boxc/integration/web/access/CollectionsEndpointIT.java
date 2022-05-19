@@ -23,6 +23,9 @@ import edu.unc.lib.boxc.model.fcrepo.services.RepositoryInitializer;
 import edu.unc.lib.boxc.model.fcrepo.test.TestHelper;
 import edu.unc.lib.boxc.search.api.requests.SimpleIdRequest;
 import edu.unc.lib.boxc.search.solr.services.SolrSearchService;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.HttpClients;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -65,6 +68,8 @@ public class CollectionsEndpointIT {
     @Autowired
     protected SolrSearchService solrSearchService;
 
+    @Autowired
+
     @Before
     public void setup() {
         TestHelper.setContentBase(baseAddress);
@@ -86,5 +91,12 @@ public class CollectionsEndpointIT {
         var adminUnitRecord = solrSearchService.getObjectById(new SimpleIdRequest(adminUnit.getPid(), GROUPS));
         assertNotNull(adminUnitRecord);
         assertEquals("title1", adminUnitRecord.getTitle());
+
+//        Thread.sleep(30000);
+        var httpClient = HttpClients.createDefault();
+        var getMethod = new HttpGet("http://localhost:48080/access/collectionsJson");
+        try (var resp = httpClient.execute(getMethod)) {
+            assertEquals(200, resp.getStatusLine().getStatusCode());
+        }
     }
 }
