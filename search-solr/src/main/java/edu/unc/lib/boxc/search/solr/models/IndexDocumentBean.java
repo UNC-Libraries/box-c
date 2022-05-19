@@ -62,7 +62,6 @@ import static edu.unc.lib.boxc.search.api.SearchFieldKey.VERSION;
 
 
 import java.text.ParseException;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
