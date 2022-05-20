@@ -236,29 +236,6 @@ describe('facets.vue', () => {
         expect(wrapper.vm.selected_facets).toContain('format=Image');
     });
 
-    it("displays a clear all facets button", async () => {
-        expect(wrapper.find('.clear-all-facets').exists()).toBe(false);
-        await router.push('/search/?collection=d77fd8c9-744b-42ab-8e20-5ad9bdf8194e');
-        selected_facet.trigger('click');
-        await flushPromises();
-        expect(wrapper.find('.clear-all-facets').isVisible()).toBe(true);
-    });
-
-    it("does not display a clear all facets button if no facets are selected", async () => {
-        expect(wrapper.find('.clear-all-facets').exists()).toBe(false);
-    });
-
-    it("clears all selected facets if 'Clear Filters' button is clicked", async () => {
-        await router.push('/search/?collection=d77fd8c9-744b-42ab-8e20-5ad9bdf8194e');
-        selected_facet.trigger('click');
-        await flushPromises();
-        expect(wrapper.vm.selected_facets).toContain('format=Image');
-
-        await wrapper.find('.clear-all-facets').trigger('click');
-        await flushPromises();
-        expect(wrapper.vm.selected_facets).toEqual([]);
-    });
-
     it("clears a selected facet if it is unchecked", async () => {
         await router.push('/search/?collection=d77fd8c9-744b-42ab-8e20-5ad9bdf8194e');
         // Add facet
