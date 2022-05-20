@@ -103,7 +103,7 @@ public class DocumentIndexingPackageDataLoaderTest {
         verify(repoObjLoader).getRepositoryObject(any(PID.class));
     }
 
-    @Test(expected = IndexingException.class)
+    @Test
     public void testLoadBadMods() throws Exception {
         InputStream badModsStream = new ByteArrayInputStream("<mods:mod".getBytes());
 
@@ -111,6 +111,8 @@ public class DocumentIndexingPackageDataLoaderTest {
         when(contentObj.getDescription()).thenReturn(modsBinary);
         when(modsBinary.getBinaryStream()).thenReturn(badModsStream);
 
-        dataLoader.loadMods(dip);
+        Element modsElement = dataLoader.loadMods(dip);
+
+        assertNull(modsElement);
     }
 }

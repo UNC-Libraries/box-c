@@ -15,8 +15,11 @@
  */
 package edu.unc.lib.boxc.web.admin.controllers;
 
-import javax.servlet.http.HttpServletRequest;
-
+import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
+import edu.unc.lib.boxc.search.api.requests.SearchRequest;
+import edu.unc.lib.boxc.search.solr.responses.SearchResultResponse;
+import edu.unc.lib.boxc.search.solr.services.MultiSelectFacetListService;
+import edu.unc.lib.boxc.search.solr.utils.SearchStateUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,12 +28,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 
-import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
-import edu.unc.lib.boxc.search.api.requests.SearchRequest;
-import edu.unc.lib.boxc.search.solr.responses.SearchResultResponse;
-import edu.unc.lib.boxc.search.solr.services.MultiSelectFacetListService;
-import edu.unc.lib.boxc.search.solr.services.SetFacetTitleByIdService;
-import edu.unc.lib.boxc.search.solr.utils.SearchStateUtil;
+import javax.servlet.http.HttpServletRequest;
 
 /**
  *
@@ -43,8 +41,6 @@ public class GetFacetsController extends AbstractSearchController {
 
     @Autowired
     private MultiSelectFacetListService multiSelectFacetListService;
-    @Autowired
-    private SetFacetTitleByIdService setFacetTitleByIdService;
 
     @RequestMapping("/facets/{pid}")
     public String getFacets(@PathVariable("pid") String pid, Model model, HttpServletRequest request) {
@@ -70,7 +66,6 @@ public class GetFacetsController extends AbstractSearchController {
         LOG.debug("Retrieving facet list");
         // Retrieve the facet result set
         SearchResultResponse resultResponse = multiSelectFacetListService.getFacetListResult(searchRequest);
-        setFacetTitleByIdService.populateTitles(resultResponse.getFacetFields());
         model.addAttribute("facetFields", resultResponse.getFacetFields());
         String searchStateUrl = SearchStateUtil.generateSearchParameterString(searchRequest.getSearchState());
         model.addAttribute("searchStateUrl", searchStateUrl);

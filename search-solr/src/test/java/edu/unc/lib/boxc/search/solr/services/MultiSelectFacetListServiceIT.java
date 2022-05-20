@@ -27,6 +27,7 @@ import edu.unc.lib.boxc.search.api.facets.SearchFacet;
 import edu.unc.lib.boxc.search.api.requests.SearchRequest;
 import edu.unc.lib.boxc.search.api.requests.SearchState;
 import edu.unc.lib.boxc.search.solr.facets.CutoffFacetImpl;
+import edu.unc.lib.boxc.search.solr.facets.FilterableDisplayValueFacet;
 import edu.unc.lib.boxc.search.solr.facets.GenericFacet;
 import edu.unc.lib.boxc.search.solr.facets.RoleGroupFacet;
 import edu.unc.lib.boxc.search.solr.responses.SearchResultResponse;
@@ -124,8 +125,8 @@ public class MultiSelectFacetListServiceIT extends BaseEmbeddedSolrTest {
         SearchResultResponse resp = service.getFacetListResult(request);
 
         assertNumberFacetsReturned(resp, PARENT_COLLECTION, 2);
-        assertFacetValueCount(resp, PARENT_COLLECTION, testCorpus.coll1Pid.getId(), 3);
-        assertFacetValueCount(resp, PARENT_COLLECTION, testCorpus.coll2Pid.getId(), 3);
+        assertFacetDisplayValueCount(resp, PARENT_COLLECTION, "Collection 1", testCorpus.coll1Pid.getId(), 3);
+        assertFacetDisplayValueCount(resp, PARENT_COLLECTION, "Collection 2", testCorpus.coll2Pid.getId(), 3);
 
         assertNumberFacetsReturned(resp, FILE_FORMAT_CATEGORY, 2);
         assertFacetValueCount(resp, FILE_FORMAT_CATEGORY, "Text", 2);
@@ -147,14 +148,14 @@ public class MultiSelectFacetListServiceIT extends BaseEmbeddedSolrTest {
     public void singleCollectionFacetTest() throws Exception {
         SearchState searchState = new SearchState();
         searchState.setFacetsToRetrieve(FACETS_TO_RETRIEVE);
-        searchState.setFacet(new GenericFacet(PARENT_COLLECTION.name(), testCorpus.coll1Pid.getId()));
+        searchState.setFacet(new FilterableDisplayValueFacet(PARENT_COLLECTION.name(), testCorpus.coll1Pid.getId()));
 
         SearchRequest request = new SearchRequest(searchState, accessGroups);
         SearchResultResponse resp = service.getFacetListResult(request);
 
         assertNumberFacetsReturned(resp, PARENT_COLLECTION, 2);
-        assertFacetValueCount(resp, PARENT_COLLECTION, testCorpus.coll1Pid.getId(), 3);
-        assertFacetValueCount(resp, PARENT_COLLECTION, testCorpus.coll2Pid.getId(), 3);
+        assertFacetDisplayValueCount(resp, PARENT_COLLECTION, "Collection 1", testCorpus.coll1Pid.getId(), 3);
+        assertFacetDisplayValueCount(resp, PARENT_COLLECTION, "Collection 2", testCorpus.coll2Pid.getId(), 3);
 
         assertNumberFacetsReturned(resp, FILE_FORMAT_CATEGORY, 2);
         assertFacetValueCount(resp, FILE_FORMAT_CATEGORY, "Text", 1);
@@ -175,15 +176,15 @@ public class MultiSelectFacetListServiceIT extends BaseEmbeddedSolrTest {
     public void multipleCollectionsFacetTest() throws Exception {
         SearchState searchState = new SearchState();
         searchState.setFacetsToRetrieve(FACETS_TO_RETRIEVE);
-        searchState.addFacet(new GenericFacet(PARENT_COLLECTION.name(), testCorpus.coll1Pid.getId()));
-        searchState.addFacet(new GenericFacet(PARENT_COLLECTION.name(), testCorpus.coll2Pid.getId()));
+        searchState.addFacet(new FilterableDisplayValueFacet(PARENT_COLLECTION.name(), testCorpus.coll1Pid.getId()));
+        searchState.addFacet(new FilterableDisplayValueFacet(PARENT_COLLECTION.name(), testCorpus.coll2Pid.getId()));
 
         SearchRequest request = new SearchRequest(searchState, accessGroups);
         SearchResultResponse resp = service.getFacetListResult(request);
 
         assertNumberFacetsReturned(resp, PARENT_COLLECTION, 2);
-        assertFacetValueCount(resp, PARENT_COLLECTION, testCorpus.coll1Pid.getId(), 3);
-        assertFacetValueCount(resp, PARENT_COLLECTION, testCorpus.coll2Pid.getId(), 3);
+        assertFacetDisplayValueCount(resp, PARENT_COLLECTION, "Collection 1", testCorpus.coll1Pid.getId(), 3);
+        assertFacetDisplayValueCount(resp, PARENT_COLLECTION, "Collection 2", testCorpus.coll2Pid.getId(), 3);
 
         assertNumberFacetsReturned(resp, FILE_FORMAT_CATEGORY, 2);
         assertFacetValueCount(resp, FILE_FORMAT_CATEGORY, "Text", 2);
@@ -211,8 +212,8 @@ public class MultiSelectFacetListServiceIT extends BaseEmbeddedSolrTest {
         SearchResultResponse resp = service.getFacetListResult(request);
 
         assertNumberFacetsReturned(resp, PARENT_COLLECTION, 2);
-        assertFacetValueCount(resp, PARENT_COLLECTION, testCorpus.coll1Pid.getId(), 1);
-        assertFacetValueCount(resp, PARENT_COLLECTION, testCorpus.coll2Pid.getId(), 1);
+        assertFacetDisplayValueCount(resp, PARENT_COLLECTION, "Collection 1", testCorpus.coll1Pid.getId(), 1);
+        assertFacetDisplayValueCount(resp, PARENT_COLLECTION, "Collection 2", testCorpus.coll2Pid.getId(), 1);
 
         assertNumberFacetsReturned(resp, FILE_FORMAT_CATEGORY, 2);
         assertFacetValueCount(resp, FILE_FORMAT_CATEGORY, "Text", 2);
@@ -241,6 +242,7 @@ public class MultiSelectFacetListServiceIT extends BaseEmbeddedSolrTest {
 
         assertNumberFacetsReturned(resp, PARENT_COLLECTION, 1);
         assertFacetValueCount(resp, PARENT_COLLECTION, testCorpus.coll1Pid.getId(), 1);
+        assertFacetDisplayValueCount(resp, PARENT_COLLECTION, "Collection 1", testCorpus.coll1Pid.getId(), 1);
 
         assertNumberFacetsReturned(resp, FILE_FORMAT_CATEGORY, 1);
         assertFacetValueCount(resp, FILE_FORMAT_CATEGORY, "Image", 1);
@@ -270,7 +272,7 @@ public class MultiSelectFacetListServiceIT extends BaseEmbeddedSolrTest {
         SearchResultResponse resp = service.getFacetListResult(request);
 
         assertNumberFacetsReturned(resp, PARENT_COLLECTION, 1);
-        assertFacetValueCount(resp, PARENT_COLLECTION, testCorpus.coll1Pid.getId(), 1);
+        assertFacetDisplayValueCount(resp, PARENT_COLLECTION, "Collection 1", testCorpus.coll1Pid.getId(), 1);
 
         assertNumberFacetsReturned(resp, FILE_FORMAT_CATEGORY, 1);
         assertFacetValueCount(resp, FILE_FORMAT_CATEGORY, "Image", 1);
@@ -299,8 +301,8 @@ public class MultiSelectFacetListServiceIT extends BaseEmbeddedSolrTest {
         SearchResultResponse resp = service.getFacetListResult(request);
 
         assertNumberFacetsReturned(resp, PARENT_COLLECTION, 2);
-        assertFacetValueCount(resp, PARENT_COLLECTION, testCorpus.coll1Pid.getId(), 1);
-        assertFacetValueCount(resp, PARENT_COLLECTION, testCorpus.coll2Pid.getId(), 1);
+        assertFacetDisplayValueCount(resp, PARENT_COLLECTION, "Collection 1", testCorpus.coll1Pid.getId(), 1);
+        assertFacetDisplayValueCount(resp, PARENT_COLLECTION, "Collection 2", testCorpus.coll2Pid.getId(), 1);
 
         assertNumberFacetsReturned(resp, FILE_FORMAT_CATEGORY, 1);
         assertFacetValueCount(resp, FILE_FORMAT_CATEGORY, "Text", 2);
@@ -328,8 +330,8 @@ public class MultiSelectFacetListServiceIT extends BaseEmbeddedSolrTest {
         SearchResultResponse resp = service.getFacetListResult(request);
 
         assertNumberFacetsReturned(resp, PARENT_COLLECTION, 2);
-        assertFacetValueCount(resp, PARENT_COLLECTION, testCorpus.coll1Pid.getId(), 1);
-        assertFacetValueCount(resp, PARENT_COLLECTION, testCorpus.coll2Pid.getId(), 1);
+        assertFacetDisplayValueCount(resp, PARENT_COLLECTION, "Collection 1", testCorpus.coll1Pid.getId(), 1);
+        assertFacetDisplayValueCount(resp, PARENT_COLLECTION, "Collection 2", testCorpus.coll2Pid.getId(), 1);
 
         assertNumberFacetsReturned(resp, FILE_FORMAT_CATEGORY, 1);
         assertFacetValueCount(resp, FILE_FORMAT_CATEGORY, "Image", 2);
@@ -356,7 +358,7 @@ public class MultiSelectFacetListServiceIT extends BaseEmbeddedSolrTest {
         SearchResultResponse resp = service.getFacetListResult(request);
 
         assertNumberFacetsReturned(resp, PARENT_COLLECTION, 1);
-        assertFacetValueCount(resp, PARENT_COLLECTION, testCorpus.coll1Pid.getId(), 3);
+        assertFacetDisplayValueCount(resp, PARENT_COLLECTION, "Collection 1", testCorpus.coll1Pid.getId(), 3);
 
         assertNumberFacetsReturned(resp, FILE_FORMAT_CATEGORY, 2);
         assertFacetValueCount(resp, FILE_FORMAT_CATEGORY, "Text", 1);
@@ -384,7 +386,7 @@ public class MultiSelectFacetListServiceIT extends BaseEmbeddedSolrTest {
         SearchResultResponse resp = service.getFacetListResult(request);
 
         assertNumberFacetsReturned(resp, PARENT_COLLECTION, 1);
-        assertFacetValueCount(resp, PARENT_COLLECTION, testCorpus.coll1Pid.getId(), 2);
+        assertFacetDisplayValueCount(resp, PARENT_COLLECTION, "Collection 1", testCorpus.coll1Pid.getId(), 2);
 
         assertNumberFacetsReturned(resp, FILE_FORMAT_CATEGORY, 2);
         assertFacetValueCount(resp, FILE_FORMAT_CATEGORY, "Text", 1);
@@ -413,8 +415,8 @@ public class MultiSelectFacetListServiceIT extends BaseEmbeddedSolrTest {
         SearchResultResponse resp = service.getFacetListResult(request);
 
         assertNumberFacetsReturned(resp, PARENT_COLLECTION, 2);
-        assertFacetValueCount(resp, PARENT_COLLECTION, testCorpus.coll1Pid.getId(), 3);
-        assertFacetValueCount(resp, PARENT_COLLECTION, testCorpus.coll2Pid.getId(), 3);
+        assertFacetDisplayValueCount(resp, PARENT_COLLECTION, "Collection 1", testCorpus.coll1Pid.getId(), 3);
+        assertFacetDisplayValueCount(resp, PARENT_COLLECTION, "Collection 2", testCorpus.coll2Pid.getId(), 3);
 
         assertNumberFacetsReturned(resp, FILE_FORMAT_CATEGORY, 2);
         assertFacetValueCount(resp, FILE_FORMAT_CATEGORY, "Text", 2);
@@ -444,7 +446,7 @@ public class MultiSelectFacetListServiceIT extends BaseEmbeddedSolrTest {
         SearchResultResponse resp = service.getFacetListResult(request);
 
         assertNumberFacetsReturned(resp, PARENT_COLLECTION, 1);
-        assertFacetValueCount(resp, PARENT_COLLECTION, testCorpus.coll1Pid.getId(), 1);
+        assertFacetDisplayValueCount(resp, PARENT_COLLECTION, "Collection 1", testCorpus.coll1Pid.getId(), 1);
 
         assertNumberFacetsReturned(resp, FILE_FORMAT_CATEGORY, 1);
         assertFacetValueCount(resp, FILE_FORMAT_CATEGORY, "Text", 1);
@@ -464,7 +466,7 @@ public class MultiSelectFacetListServiceIT extends BaseEmbeddedSolrTest {
     public void setParentCollectionAndFileFormatTypeTest() throws Exception {
         SearchState searchState = new SearchState();
         searchState.setFacetsToRetrieve(FACETS_TO_RETRIEVE);
-        searchState.setFacet(new GenericFacet(PARENT_COLLECTION.name(), testCorpus.coll1Pid.getId()));
+        searchState.setFacet(new FilterableDisplayValueFacet(PARENT_COLLECTION.name(), testCorpus.coll1Pid.getId()));
         searchState.addFacet(new GenericFacet(FILE_FORMAT_TYPE.name(), "text/plain"));
 
         SearchRequest request = new SearchRequest(searchState, accessGroups);
@@ -472,8 +474,8 @@ public class MultiSelectFacetListServiceIT extends BaseEmbeddedSolrTest {
         SearchResultResponse resp = service.getFacetListResult(request);
 
         assertNumberFacetsReturned(resp, PARENT_COLLECTION, 2);
-        assertFacetValueCount(resp, PARENT_COLLECTION, testCorpus.coll1Pid.getId(), 1);
-        assertFacetValueCount(resp, PARENT_COLLECTION, testCorpus.coll2Pid.getId(), 1);
+        assertFacetDisplayValueCount(resp, PARENT_COLLECTION, "Collection 1", testCorpus.coll1Pid.getId(), 1);
+        assertFacetDisplayValueCount(resp, PARENT_COLLECTION, "Collection 2", testCorpus.coll2Pid.getId(), 1);
 
         assertNumberFacetsReturned(resp, FILE_FORMAT_CATEGORY, 1);
         assertFacetValueCount(resp, FILE_FORMAT_CATEGORY, "Text", 1);
@@ -493,14 +495,14 @@ public class MultiSelectFacetListServiceIT extends BaseEmbeddedSolrTest {
     public void noMatchesParentCollectionTest() throws Exception {
         SearchState searchState = new SearchState();
         searchState.setFacetsToRetrieve(FACETS_TO_RETRIEVE);
-        searchState.setFacet(new GenericFacet(PARENT_COLLECTION.name(), "doesnotexist"));
+        searchState.setFacet(new FilterableDisplayValueFacet(PARENT_COLLECTION.name(), "doesnotexist"));
 
         SearchRequest request = new SearchRequest(searchState, accessGroups);
         SearchResultResponse resp = service.getFacetListResult(request);
 
         assertNumberFacetsReturned(resp, PARENT_COLLECTION, 2);
-        assertFacetValueCount(resp, PARENT_COLLECTION, testCorpus.coll1Pid.getId(), 3);
-        assertFacetValueCount(resp, PARENT_COLLECTION, testCorpus.coll2Pid.getId(), 3);
+        assertFacetDisplayValueCount(resp, PARENT_COLLECTION, "Collection 1", testCorpus.coll1Pid.getId(), 3);
+        assertFacetDisplayValueCount(resp, PARENT_COLLECTION, "Collection 2", testCorpus.coll2Pid.getId(), 3);
 
         assertNumberFacetsReturned(resp, FILE_FORMAT_CATEGORY, 0);
         assertNumberFacetsReturned(resp, FILE_FORMAT_TYPE, 0);
@@ -520,8 +522,8 @@ public class MultiSelectFacetListServiceIT extends BaseEmbeddedSolrTest {
         SearchResultResponse resp = service.getFacetListResult(request);
 
         assertNumberFacetsReturned(resp, PARENT_COLLECTION, 2);
-        assertFacetValueCount(resp, PARENT_COLLECTION, testCorpus.coll1Pid.getId(), 3);
-        assertFacetValueCount(resp, PARENT_COLLECTION, testCorpus.coll2Pid.getId(), 1);
+        assertFacetDisplayValueCount(resp, PARENT_COLLECTION, "Collection 1", testCorpus.coll1Pid.getId(), 3);
+        assertFacetDisplayValueCount(resp, PARENT_COLLECTION, "Collection 2", testCorpus.coll2Pid.getId(), 1);
 
         assertNumberFacetsReturned(resp, FILE_FORMAT_CATEGORY, 2);
         assertFacetValueCount(resp, FILE_FORMAT_CATEGORY, "Text", 2);
@@ -556,7 +558,7 @@ public class MultiSelectFacetListServiceIT extends BaseEmbeddedSolrTest {
         SearchState searchState = new SearchState();
         searchState.setFacetsToRetrieve(Arrays.asList(
                 FILE_FORMAT_CATEGORY.name(), ROLE_GROUP.name()));
-        searchState.setFacet(new GenericFacet(PARENT_COLLECTION.name(), testCorpus.coll1Pid.getId()));
+        searchState.setFacet(new FilterableDisplayValueFacet(PARENT_COLLECTION.name(), testCorpus.coll1Pid.getId()));
 
         SearchRequest request = new SearchRequest(searchState, accessGroups);
         request.setApplyCutoffs(false);
@@ -588,7 +590,7 @@ public class MultiSelectFacetListServiceIT extends BaseEmbeddedSolrTest {
         assertEquals(facetsInOrder, names1);
 
         // Add filter to first facet, to ensure that it stays at the first first
-        searchState.setFacet(new GenericFacet(PARENT_COLLECTION.name(), testCorpus.coll1Pid.getId()));
+        searchState.setFacet(new FilterableDisplayValueFacet(PARENT_COLLECTION.name(), testCorpus.coll1Pid.getId()));
 
         SearchRequest request2 = new SearchRequest(searchState, accessGroups);
         SearchResultResponse resp2 = service.getFacetListResult(request2);
@@ -607,6 +609,15 @@ public class MultiSelectFacetListServiceIT extends BaseEmbeddedSolrTest {
         SearchFacet facetValue = getFacetByValue(ffo, value);
         assertNotNull(facetValue);
         assertEquals(expectedCount, facetValue.getCount());
+    }
+
+    private void assertFacetDisplayValueCount(SearchResultResponse resp, SearchFieldKey key, String display,
+                                              String value, int expectedCount) {
+        FacetFieldObject ffo = resp.getFacetFields().get(key.name());
+        SearchFacet facetValue = getFacetByValue(ffo, value);
+        assertNotNull(facetValue);
+        assertEquals(expectedCount, facetValue.getCount());
+        assertEquals(display, facetValue.getDisplayValue());
     }
 
     private void assertNumberFacetsReturned(SearchResultResponse resp, SearchFieldKey key, int expectedCount) {

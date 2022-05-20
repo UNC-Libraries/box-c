@@ -18,6 +18,7 @@ package edu.unc.lib.boxc.search.solr.config;
 import edu.unc.lib.boxc.model.api.ResourceType;
 import edu.unc.lib.boxc.search.api.SearchFieldKey;
 import edu.unc.lib.boxc.search.solr.facets.CutoffFacetImpl;
+import edu.unc.lib.boxc.search.solr.facets.FilterableDisplayValueFacet;
 import edu.unc.lib.boxc.search.solr.facets.GenericFacet;
 import edu.unc.lib.boxc.search.solr.facets.RoleGroupFacet;
 import org.slf4j.Logger;
@@ -84,7 +85,9 @@ public class SearchSettings extends AbstractSettings {
     // Classes for facet fields. If not specified, then it is a GenericFacet
     private static final Map<String, Class<?>> FACET_CLASS_MAP = Map.of(
             SearchFieldKey.ANCESTOR_PATH.name(), CutoffFacetImpl.class,
-            SearchFieldKey.ROLE_GROUP.name(), RoleGroupFacet.class
+            SearchFieldKey.ROLE_GROUP.name(), RoleGroupFacet.class,
+            SearchFieldKey.PARENT_COLLECTION.name(), FilterableDisplayValueFacet.class,
+            SearchFieldKey.PARENT_UNIT.name(), FilterableDisplayValueFacet.class
     );
 
     public static final String URL_PARAM_FACET_LIMIT_FIELDS = "facetLimits";

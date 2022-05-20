@@ -70,7 +70,7 @@ import edu.unc.lib.boxc.services.camel.solrUpdate.SolrUpdateProcessor;
     @ContextConfiguration("/cdr-event-routing-it-context.xml")
 })
 @DirtiesContext(classMode = ClassMode.AFTER_EACH_TEST_METHOD)
-public class CdrEventRoutingIT {
+public class CdrEventRoutingTest {
 
     private static final String USER_ID = "user";
     private static final String DEPOSIT_ID = "deposit";

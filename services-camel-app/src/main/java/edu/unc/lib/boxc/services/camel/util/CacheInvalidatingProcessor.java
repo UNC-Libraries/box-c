@@ -17,11 +17,14 @@ package edu.unc.lib.boxc.services.camel.util;
 
 import edu.unc.lib.boxc.auth.fcrepo.services.ObjectAclFactory;
 import edu.unc.lib.boxc.fcrepo.FcrepoJmsConstants;
+import edu.unc.lib.boxc.model.api.DatastreamType;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.ids.PIDConstants;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.api.services.ContentPathFactory;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
+import edu.unc.lib.boxc.operations.jms.indexing.IndexingActionType;
+import edu.unc.lib.boxc.search.solr.services.TitleRetrievalService;
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
 import org.apache.camel.Processor;
@@ -40,10 +43,18 @@ public class CacheInvalidatingProcessor implements Processor {
     private RepositoryObjectLoader repoObjLoader;
     private ObjectAclFactory objectAclFactory;
     private ContentPathFactory contentPathFactory;
+    private TitleRetrievalService titleRetrievalService;
 
     @Override
     public void process(Exchange exchange) throws Exception {
         Message in = exchange.getIn();
+        var solrUpdateAction = (IndexingActionType) in.getHeader(CdrFcrepoHeaders.CdrSolrUpdateAction);
+        // Skip invalidation for large actions
+        if (IndexingActionUtil.LARGE_ACTIONS.contains(solrUpdateAction)) {
+            log.debug("No invalidation for {}", solrUpdateAction);
+            return;
+        }
+
         String fcrepoUri = (String) in.getHeader(FcrepoHeaders.FCREPO_URI);
         if (fcrepoUri == null) {
             String fcrepoId = (String) in.getHeader(FcrepoJmsConstants.IDENTIFIER);
@@ -66,6 +77,9 @@ public class CacheInvalidatingProcessor implements Processor {
         repoObjLoader.invalidate(pid);
         objectAclFactory.invalidate(pid);
         contentPathFactory.invalidate(pid);
+        if (pid.getComponentPath() == null || pid.getComponentPath().contains(DatastreamType.MD_DESCRIPTIVE.getId())) {
+            titleRetrievalService.invalidate(pid);
+        }
     }
 
     public void setRepositoryObjectLoader(RepositoryObjectLoader repoObjLoader) {
@@ -78,5 +92,9 @@ public class CacheInvalidatingProcessor implements Processor {
 
     public void setContentPathFactory(ContentPathFactory contentPathFactory) {
         this.contentPathFactory = contentPathFactory;
+    }
+
+    public void setTitleRetrievalService(TitleRetrievalService titleRetrievalService) {
+        this.titleRetrievalService = titleRetrievalService;
     }
 }

@@ -175,6 +175,10 @@ public class RepositoryObjectLoaderImpl implements RepositoryObjectLoader {
         repositoryObjCache.invalidate(pid);
     }
 
+    public void invalidateAll() {
+        repositoryObjCache.invalidateAll();
+    }
+
     public LoadingCache<PID, RepositoryObject> getRepositoryObjectCache() {
         return repositoryObjCache;
     }

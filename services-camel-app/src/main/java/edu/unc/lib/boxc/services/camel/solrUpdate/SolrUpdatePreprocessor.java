@@ -15,18 +15,12 @@
  */
 package edu.unc.lib.boxc.services.camel.solrUpdate;
 
-import static edu.unc.lib.boxc.model.api.xml.JDOMNamespaceUtil.ATOM_NS;
-import static edu.unc.lib.boxc.operations.jms.indexing.IndexingActionType.ADD_SET_TO_PARENT;
-import static edu.unc.lib.boxc.operations.jms.indexing.IndexingActionType.CLEAN_REINDEX;
-import static edu.unc.lib.boxc.operations.jms.indexing.IndexingActionType.DELETE_CHILDREN_PRIOR_TO_TIMESTAMP;
-import static edu.unc.lib.boxc.operations.jms.indexing.IndexingActionType.DELETE_SOLR_TREE;
-import static edu.unc.lib.boxc.operations.jms.indexing.IndexingActionType.RECURSIVE_ADD;
-import static edu.unc.lib.boxc.operations.jms.indexing.IndexingActionType.RECURSIVE_REINDEX;
-import static edu.unc.lib.boxc.operations.jms.indexing.IndexingActionType.UPDATE_ACCESS_TREE;
-
-import java.util.EnumSet;
-import java.util.Set;
-
+import edu.unc.lib.boxc.model.api.ids.PID;
+import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
+import edu.unc.lib.boxc.operations.jms.indexing.IndexingActionType;
+import edu.unc.lib.boxc.services.camel.util.CdrFcrepoHeaders;
+import edu.unc.lib.boxc.services.camel.util.IndexingActionUtil;
+import edu.unc.lib.boxc.services.camel.util.MessageUtil;
 import org.apache.camel.Body;
 import org.apache.camel.Exchange;
 import org.apache.camel.Header;
@@ -40,11 +34,7 @@ import org.jdom2.output.XMLOutputter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import edu.unc.lib.boxc.model.api.ids.PID;
-import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
-import edu.unc.lib.boxc.operations.jms.indexing.IndexingActionType;
-import edu.unc.lib.boxc.services.camel.util.CdrFcrepoHeaders;
-import edu.unc.lib.boxc.services.camel.util.MessageUtil;
+import static edu.unc.lib.boxc.model.api.xml.JDOMNamespaceUtil.ATOM_NS;
 
 /**
  * Processor which prepares update messages for further processing
@@ -77,35 +67,20 @@ public class SolrUpdatePreprocessor implements Processor {
         }
     }
 
-    private static final Set<IndexingActionType> LARGE_ACTIONS =
-            EnumSet.of(RECURSIVE_REINDEX, RECURSIVE_ADD, CLEAN_REINDEX, DELETE_SOLR_TREE, IndexingActionType.MOVE,
-                    ADD_SET_TO_PARENT, UPDATE_ACCESS_TREE, DELETE_CHILDREN_PRIOR_TO_TIMESTAMP);
-
     /**
      * @param action
      * @return true if the action is classified as large
      */
     public static boolean isLargeAction(@Header(CdrFcrepoHeaders.CdrSolrUpdateAction) IndexingActionType action) {
-        return LARGE_ACTIONS.contains(action);
+        return IndexingActionUtil.LARGE_ACTIONS.contains(action);
     }
-
-    private static final Set<IndexingActionType> SMALL_ACTIONS =
-            EnumSet.of(IndexingActionType.ADD,
-                    IndexingActionType.UPDATE_DESCRIPTION,
-                    IndexingActionType.UPDATE_ACCESS,
-                    IndexingActionType.UPDATE_PATH,
-                    IndexingActionType.UPDATE_DATASTREAMS,
-                    IndexingActionType.UPDATE_WORK_FILES,
-                    IndexingActionType.UPDATE_FULL_TEXT,
-                    IndexingActionType.COMMIT,
-                    IndexingActionType.DELETE);
 
     /**
      * @param action
      * @return true if the action is classified as small
      */
     public static boolean isSmallAction(@Header(CdrFcrepoHeaders.CdrSolrUpdateAction) IndexingActionType action) {
-        return SMALL_ACTIONS.contains(action);
+        return IndexingActionUtil.SMALL_ACTIONS.contains(action);
     }
 
     /**
