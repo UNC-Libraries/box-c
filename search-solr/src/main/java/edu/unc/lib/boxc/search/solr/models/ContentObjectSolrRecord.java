@@ -188,6 +188,7 @@ public class ContentObjectSolrRecord extends IndexDocumentBean implements Conten
         sb.append("id: " + getId() + "\n");
         sb.append("ancestorPath: " + getAncestorPath() + "\n");
         sb.append("resourceType: " + getResourceType() + "\n");
+        sb.append("exhibit: " + getExhibit() + "\n");
         sb.append("fileFormatCategory: " + getFileFormatCategory() + "\n");
         sb.append("fileFormatType: " + getFileFormatType() + "\n");
         sb.append("datastream: " + getDatastream() + "\n");

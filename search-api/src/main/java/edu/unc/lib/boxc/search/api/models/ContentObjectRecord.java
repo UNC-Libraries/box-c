@@ -111,6 +111,8 @@ public interface ContentObjectRecord {
 
     public List<String> getKeyword();
 
+    public List<String> getExhibit();
+
     public List<String> getSubject();
 
     public List<String> getLocation();

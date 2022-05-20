@@ -79,6 +79,13 @@
                     </c:otherwise>
                 </c:choose>
             </c:if>
+            <c:if test="${not empty exhibits }">
+                <p><strong>Related Digital Exhibits:</strong>
+                    <c:forEach var="exhibit" items="${exhibits}" varStatus="status">
+                        <a href="${exhibit.value}">${exhibit.key}</a><c:if test="${not status.last}">; </c:if>
+                    </c:forEach>
+                </p>
+            </c:if>
 
             <p><a id="metadata-modal-link" href="#">View Additional Metadata</a></p>
         </div>
