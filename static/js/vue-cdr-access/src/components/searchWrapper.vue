@@ -5,8 +5,8 @@ Top level component wrapper for search pages
     <div>
         <div class="search-query-text">
             Search results for "{{ $route.query.anywhere }}"
-            <filter-tags :filter-parameters="filter_parameters" :facet-list="facet_list"></filter-tags>
         </div>
+        <clear-filters :filter-parameters="filter_parameters"></clear-filters>
         <img v-if="is_loading" :src="nonVueStaticImageUrl('ajax-loader-lg.gif')" alt="data loading icon">
         <div v-if="!is_loading">
             <div class="columns">
@@ -38,8 +38,8 @@ Top level component wrapper for search pages
 
 <script>
     import browseSort from "@/components/browseSort.vue";
+    import clearFilters from "@/components/clearFilters.vue";
     import facets from "@/components/facets.vue";
-    import filterTags from "@/components/filterTags.vue";
     import listDisplay from "@/components/listDisplay.vue";
     import pagination from "@/components/pagination.vue";
     import routeUtils from "../mixins/routeUtils";
@@ -49,7 +49,7 @@ Top level component wrapper for search pages
     export default {
         name: 'searchWrapper',
 
-        components: {browseSort, facets, filterTags, listDisplay, pagination},
+        components: {browseSort, clearFilters, facets, listDisplay, pagination},
 
         mixins: [routeUtils],
 

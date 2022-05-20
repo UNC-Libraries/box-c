@@ -62,7 +62,8 @@ export default {
     .clear-options {
         display: inline-flex;
         flex-wrap: wrap;
+        margin-bottom: 10px;
         margin-left: 35px;
-        margin-top: -16px
+        margin-top: -20px
     }
 </style>
