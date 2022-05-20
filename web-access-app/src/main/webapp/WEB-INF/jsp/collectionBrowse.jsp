@@ -19,7 +19,7 @@
 <%@ page trimDirectiveWhitespaces="true" %>
 <div>
 	<div class="search-query-text collection-list has-text-centered">
-		<h2>Collections</h2>
+		<h2>Collecting Units</h2>
 	</div>
 
 	<div class="columns">
