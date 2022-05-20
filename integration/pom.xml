@@ -39,6 +39,76 @@
                 </executions>
             </plugin>
             <plugin>
+                <groupId>com.googlecode.maven-download-plugin</groupId>
+                <artifactId>download-maven-plugin</artifactId>
+                <version>1.6.8</version>
+                <executions>
+                    <execution>
+                        <id>install-solr</id>
+                        <phase>pre-integration-test</phase>
+                        <goals>
+                            <goal>wget</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <url>https://www.apache.org/dyn/closer.lua/lucene/solr/${solr.version}/solr-${solr.version}.tgz?action=download</url>
+                    <unpack>true</unpack>
+                    <outputDirectory>${project.build.directory}/solr/</outputDirectory>
+<!--                    <sha512>4893f836aec84b03d7bfe574e59e305c03b5ede4a48020034fbe81440b8feee79e55fd9ead230e5b89b3f25124e9b56c1ddc4bb5c7f631cf4e846b9cab5f9a45</sha512>-->
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>Start solr</id>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <phase>pre-integration-test</phase>
+                    </execution>
+                </executions>
+                <configuration>
+                    <async>true</async>
+                    <executable>${project.build.directory}/solr/solr-${solr.version}/bin/solr</executable>
+                    <arguments>
+                        <argument>start</argument>
+                        <argument>-p</argument>
+                        <argument>48983</argument>
+                        <argument>-s</argument>
+                        <argument>${project.build.directory}/../../etc/solr-config/</argument>
+                    </arguments>
+                    <systemProperties>
+                        <systemProperty>
+                            <name>solr.solr.home</name>
+                            <value>${project.build.directory}/../../etc/solr-config/</value>
+                        </systemProperty>
+                    </systemProperties>
+                </configuration>
+            </plugin>
+<!--            <plugin>-->
+<!--                <groupId>org.codehaus.mojo</groupId>-->
+<!--                <artifactId>exec-maven-plugin</artifactId>-->
+<!--                <executions>-->
+<!--                    <execution>-->
+<!--                        <id>Stop solr</id>-->
+<!--                        <goals>-->
+<!--                            <goal>exec</goal>-->
+<!--                        </goals>-->
+<!--                        <phase>post-integration-test</phase>-->
+<!--                    </execution>-->
+<!--                </executions>-->
+<!--                <configuration>-->
+<!--                    <async>true</async>-->
+<!--                    <executable>${project.build.directory}/solr/solr-${solr.version}/bin/solr</executable>-->
+<!--                    <arguments>-->
+<!--                        <argument>stop</argument>-->
+<!--                    </arguments>-->
+<!--                </configuration>-->
+<!--            </plugin>-->
+            <plugin>
                 <groupId>org.eclipse.jetty</groupId>
                 <artifactId>jetty-maven-plugin</artifactId>
                 <version>9.4.19.v20190610</version>
@@ -241,5 +311,11 @@
             <groupId>org.apache.solr</groupId>
             <artifactId>solr-core</artifactId>
         </dependency>
+<!--        <dependency>-->
+<!--            <groupId>org.apache.solr</groupId>-->
+<!--            <artifactId>solr-test-framework</artifactId>-->
+<!--            <version>${solr.version}</version>-->
+<!--            <scope>test</scope>-->
+<!--        </dependency>-->
     </dependencies>
 </project>
