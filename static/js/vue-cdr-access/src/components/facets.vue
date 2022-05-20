@@ -236,7 +236,7 @@ Facet list component, used to display all the values of facets and provide links
                     case 'PARENT_COLLECTION':
                         return 'Collection';
                     case 'PARENT_UNIT':
-                        return 'Administrative Unit';
+                        return 'Collecting Unit';
                     case 'FILE_FORMAT_CATEGORY':
                         return 'Format';
                     case 'LANGUAGE':
