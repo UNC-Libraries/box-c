@@ -90,7 +90,6 @@ public class CollectionsEndpointIT {
         assertNotNull(adminUnitRecord);
         assertEquals("title1", adminUnitRecord.getTitle());
 
-        Thread.sleep(30000);
         var httpClient = HttpClients.createDefault();
         var getMethod = new HttpGet("http://localhost:48080/access/collectionsJson");
         try (var resp = httpClient.execute(getMethod)) {

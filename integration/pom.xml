@@ -11,6 +11,12 @@
     <packaging>jar</packaging>
     <name>Box-c Integration tests</name>
     <build>
+        <testResources>
+            <testResource>
+                <directory>src/test/resources</directory>
+                <filtering>true</filtering>
+            </testResource>
+        </testResources>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -55,7 +61,6 @@
                     <url>https://www.apache.org/dyn/closer.lua/lucene/solr/${solr.version}/solr-${solr.version}.tgz?action=download</url>
                     <unpack>true</unpack>
                     <outputDirectory>${project.build.directory}/solr/</outputDirectory>
-<!--                    <sha512>4893f836aec84b03d7bfe574e59e305c03b5ede4a48020034fbe81440b8feee79e55fd9ead230e5b89b3f25124e9b56c1ddc4bb5c7f631cf4e846b9cab5f9a45</sha512>-->
                 </configuration>
             </plugin>
             <plugin>
@@ -68,18 +73,36 @@
                             <goal>exec</goal>
                         </goals>
                         <phase>pre-integration-test</phase>
+                        <configuration>
+                            <async>true</async>
+                            <executable>${project.build.directory}/solr/solr-${solr.version}/bin/solr</executable>
+                            <arguments>
+                                <argument>start</argument>
+                                <argument>-p</argument>
+                                <argument>48983</argument>
+                                <argument>-s</argument>
+                                <argument>${project.build.directory}/../../etc/solr-config/</argument>
+                            </arguments>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>Stop solr</id>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <phase>post-integration-test</phase>
+                        <configuration>
+                            <async>true</async>
+                            <executable>${project.build.directory}/solr/solr-${solr.version}/bin/solr</executable>
+                            <arguments>
+                                <argument>stop</argument>
+                                <argument>-p</argument>
+                                <argument>48983</argument>
+                            </arguments>
+                        </configuration>
                     </execution>
                 </executions>
                 <configuration>
-                    <async>true</async>
-                    <executable>${project.build.directory}/solr/solr-${solr.version}/bin/solr</executable>
-                    <arguments>
-                        <argument>start</argument>
-                        <argument>-p</argument>
-                        <argument>48983</argument>
-                        <argument>-s</argument>
-                        <argument>${project.build.directory}/../../etc/solr-config/</argument>
-                    </arguments>
                     <systemProperties>
                         <systemProperty>
                             <name>solr.solr.home</name>
@@ -88,38 +111,12 @@
                     </systemProperties>
                 </configuration>
             </plugin>
-<!--            <plugin>-->
-<!--                <groupId>org.codehaus.mojo</groupId>-->
-<!--                <artifactId>exec-maven-plugin</artifactId>-->
-<!--                <executions>-->
-<!--                    <execution>-->
-<!--                        <id>Stop solr</id>-->
-<!--                        <goals>-->
-<!--                            <goal>exec</goal>-->
-<!--                        </goals>-->
-<!--                        <phase>post-integration-test</phase>-->
-<!--                    </execution>-->
-<!--                </executions>-->
-<!--                <configuration>-->
-<!--                    <async>true</async>-->
-<!--                    <executable>${project.build.directory}/solr/solr-${solr.version}/bin/solr</executable>-->
-<!--                    <arguments>-->
-<!--                        <argument>stop</argument>-->
-<!--                    </arguments>-->
-<!--                </configuration>-->
-<!--            </plugin>-->
             <plugin>
                 <groupId>org.eclipse.jetty</groupId>
                 <artifactId>jetty-maven-plugin</artifactId>
                 <version>9.4.19.v20190610</version>
                 <configuration>
                     <supportedPackagings>jar</supportedPackagings>
-                    <httpConnector>
-                        <port>48080</port>
-                    </httpConnector>
-                    <stopKey>quit</stopKey>
-                    <stopPort>49000</stopPort>
-                    <daemon>true</daemon>
                     <systemProperties>
                         <force>true</force>
                         <systemProperty>
@@ -135,6 +132,10 @@
                             <value>http://localhost:48085/fcrepo/rest</value>
                         </systemProperty>
                     </systemProperties>
+                    <scanIntervalSeconds>10</scanIntervalSeconds>
+                    <stopKey>STOP</stopKey>
+                    <stopPort>49000</stopPort>
+                    <daemon>true</daemon>
                 </configuration>
                 <executions>
                     <execution>
@@ -145,6 +146,7 @@
                             <goal>start</goal>
                         </goals>
                         <configuration>
+                            <jettyXml>${project.build.directory}/test-classes/jetty-test.xml</jettyXml>
                             <scanIntervalSeconds>0</scanIntervalSeconds>
                             <contextHandlers>
                                 <contextHandler implementation="org.eclipse.jetty.maven.plugin.JettyWebAppContext">
