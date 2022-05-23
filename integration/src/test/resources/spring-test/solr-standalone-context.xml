@@ -15,16 +15,6 @@
         <property name="properties" ref="solrProperties" />
     </bean>
 
-<!--    <bean id="solrDataPath" class="java.nio.file.Files" factory-method="createTempDirectory">-->
-<!--        <constructor-arg type="java.lang.String" value="solr_data" />-->
-<!--        <constructor-arg>-->
-<!--            <list value-type="java.nio.file.attribute.FileAttribute"></list>-->
-<!--        </constructor-arg>-->
-<!--    </bean>-->
-
-<!--    <bean id="solrDataDir" class="java.io.File" factory-bean="solrDataPath" factory-method="toFile">-->
-<!--    </bean>-->
-
     <bean id="solrClient" class="org.apache.solr.client.solrj.SolrClient"
           factory-bean="solrSettings" factory-method="getSolrClient" destroy-method="close">
     </bean>

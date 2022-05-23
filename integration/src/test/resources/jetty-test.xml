@@ -23,14 +23,6 @@
 <!-- configuration that may be set here.                             -->
 <!-- =============================================================== -->
 <Configure id="Server" class="org.eclipse.jetty.server.Server">
-<!--    <Call name="addBean">-->
-<!--        <Arg>-->
-<!--            <New class="org.eclipse.jetty.security.HashLoginService">-->
-<!--                <Set name="name">fcrepo</Set>-->
-<!--                <Set name="config"><SystemProperty name="jetty-users" default="${jetty.users.file}"/></Set>-->
-<!--            </New>-->
-<!--        </Arg>-->
-<!--    </Call>-->
 
     <Set name="connectors">
         <Array type="org.eclipse.jetty.server.Connector">

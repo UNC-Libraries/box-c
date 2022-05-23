@@ -1,0 +1,11 @@
+
+<mods xmlns="http://www.loc.gov/mods/v3">
+  <titleInfo>
+    <title>Testing with Related Items</title>
+  </titleInfo>
+  <relatedItem type="preceding">
+    <titleInfo>
+      <title>Preceding title here</title>
+    </titleInfo>
+  </relatedItem>
+</mods>
