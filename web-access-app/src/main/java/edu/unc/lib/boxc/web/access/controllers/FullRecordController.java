@@ -28,8 +28,10 @@ import edu.unc.lib.boxc.model.api.objects.BinaryObject;
 import edu.unc.lib.boxc.model.api.objects.ContentObject;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
+import edu.unc.lib.boxc.search.api.SearchFieldKey;
 import edu.unc.lib.boxc.search.api.models.ContentObjectRecord;
 import edu.unc.lib.boxc.search.api.requests.SimpleIdRequest;
+import edu.unc.lib.boxc.search.solr.facets.FilterableDisplayValueFacet;
 import edu.unc.lib.boxc.search.solr.services.ChildrenCountService;
 import edu.unc.lib.boxc.search.solr.services.GetCollectionIdService;
 import edu.unc.lib.boxc.search.solr.services.NeighborQueryService;
@@ -308,7 +310,9 @@ public class FullRecordController extends AbstractErrorHandlingSearchController 
         ContentObjectRecord exhibitObj = briefObject;
 
         if (!ResourceType.Collection.nameEquals(briefObject.getResourceType())) {
-            PID parentCollPid = PIDs.get(briefObject.getParentCollection());
+            var pColl = new FilterableDisplayValueFacet(
+                    SearchFieldKey.PARENT_COLLECTION, briefObject.getParentCollection());
+            PID parentCollPid = PIDs.get(pColl.getValue());
             SimpleIdRequest collIdRequest = new SimpleIdRequest(parentCollPid, principals);
             exhibitObj = queryLayer.getObjectById(collIdRequest);
         }
