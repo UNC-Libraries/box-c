@@ -10,6 +10,9 @@
     </parent>
     <packaging>jar</packaging>
     <name>Box-c Integration tests</name>
+    <properties>
+        <build-tools.path>${project.basedir}/../common-utils/src/main/resources/</build-tools.path>
+    </properties>
     <build>
         <testResources>
             <testResource>
