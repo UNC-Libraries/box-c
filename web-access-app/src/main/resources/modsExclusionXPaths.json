@@ -3,4 +3,7 @@
   "//mods:identifier[@type=\"filename\"]",
   "//mods:physicalDescription/mods:note[@type=\"technical\"]",
   "//mods:originInfo/mods:place/mods:placeTerm[@type=\"code\" and @authority=\"marccountry\"]",
-  "//mods:originInfo/mods:dateIssued[@encoding=\"marc\"]"]
+  "//mods:originInfo/mods:dateIssued[@encoding=\"marc\"]",
+  "//mods:identifier[@displayLabel=\"HookID\" and @type=\"local\"]",
+  "//mods:physicalDescription/mods:note[@displayLabel=\"Container type\"]",
+  "//mods:identifier[@displayLabel=\"CONTENTdm number\" and @type=\"local\"]"]
