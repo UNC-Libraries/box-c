@@ -46,4 +46,14 @@
         <property name="updateDescriptionService" ref="updateDescriptionService" />
         <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
     </bean>
+
+    <bean id="fileFactory" class="edu.unc.lib.boxc.integration.factories.FileFactory">
+        <property name="repositoryObjectFactory" ref="repositoryObjectFactory" />
+        <property name="repositoryObjectSolrIndexer" ref="repositoryObjectSolrIndexer" />
+        <property name="repositoryObjectTreeIndexer" ref="treeIndexer" />
+        <property name="modsFactory" ref="modsFactory" />
+        <property name="updateDescriptionService" ref="updateDescriptionService" />
+        <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
+        <property name="derivativeService" ref="derivativeService" />
+    </bean>
 </beans>
