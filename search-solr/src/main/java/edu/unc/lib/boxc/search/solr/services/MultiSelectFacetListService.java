@@ -37,24 +37,12 @@ import java.util.stream.Collectors;
  *
  * @author bbpennel
  */
-public class MultiSelectFacetListService extends AbstractQueryService {
-    private static final List<String> DEFAULT_RESOURCE_TYPES = Arrays.asList(
-            ResourceType.AdminUnit.name(), ResourceType.Collection.name(),
-            ResourceType.Folder.name(), ResourceType.Work.name());
-
-    private SolrSearchService searchService;
+public class MultiSelectFacetListService extends AbstractFacetListService {
 
     public SearchResultResponse getFacetListResult(SearchRequest searchRequest) {
         SearchState searchState = (SearchState) searchRequest.getSearchState().clone();
 
-        ContentObjectRecord selectedContainer = null;
-        if (searchRequest.getRootPid() != null) {
-            selectedContainer = searchService.addSelectedContainer(searchRequest.getRootPid(), searchState,
-                    searchRequest.isApplyCutoffs(), searchRequest.getAccessGroups());
-            if (selectedContainer == null) {
-                throw new NotFoundException("Invalid container selected");
-            }
-        }
+        ContentObjectRecord selectedContainer = addSelectedContainer(searchRequest);
 
         // Turning off rollup because it is really slow
         searchState.setRollup(false);
@@ -73,13 +61,7 @@ public class MultiSelectFacetListService extends AbstractQueryService {
 
         searchState.setRowsPerPage(0);
         // Set the resource types counted in the facets to exclude File objects
-        if (searchState.getResourceTypes() == null) {
-            searchState.setResourceTypes(DEFAULT_RESOURCE_TYPES);
-        } else {
-            searchState.setResourceTypes(searchState.getResourceTypes().stream()
-                    .filter(t -> !t.equals(ResourceType.File.name()))
-                    .collect(Collectors.toList()));
-        }
+        assignResourceTypes(searchState);
 
         // Perform base search with all filters applied, generating the base result response which will be returned.
         SearchResultResponse resultResponse = searchService.getSearchResults(facetRequest);
@@ -131,9 +113,5 @@ public class MultiSelectFacetListService extends AbstractQueryService {
         } catch (IndexOutOfBoundsException e) {
             return null;
         }
-    }
-
-    public void setSearchService(SolrSearchService searchService) {
-        this.searchService = searchService;
     }
 }

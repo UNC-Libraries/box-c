@@ -15,9 +15,9 @@
  */
 package edu.unc.lib.boxc.search.solr.services;
 
-import edu.unc.lib.boxc.search.api.SearchFieldKey;
 import edu.unc.lib.boxc.search.api.exceptions.SolrRuntimeException;
 import edu.unc.lib.boxc.search.api.facets.FacetFieldObject;
+import edu.unc.lib.boxc.search.api.requests.FacetValuesRequest;
 import edu.unc.lib.boxc.search.api.requests.SearchRequest;
 import edu.unc.lib.boxc.search.api.requests.SearchState;
 import org.apache.solr.client.solrj.SolrQuery;
@@ -34,40 +34,41 @@ import static org.springframework.util.Assert.notNull;
  * Service for navigating and returning values of facets
  * @author bbpennel
  */
-public class FacetValuesService {
+public class FacetValuesService extends AbstractFacetListService {
     private final static Set<String> SORT_VALUES = new HashSet<>(Arrays.asList(
             FacetParams.FACET_SORT_COUNT, FacetParams.FACET_SORT_INDEX));
 
-    private SolrSearchService searchService;
     private FacetFieldFactory facetFieldFactory;
 
     /**
      * List a page of values from the specified facet
-     * @param facetFieldKey facet to retrieve values for
-     * @param sort sort order for the results, defaults to count.
-     * @param start offset into the result set at which to start for paging
-     * @param rows number of values to return in the page
-     * @param searchRequest base request around which the facet values will be scoped
+     * @param request details of request to retrieve facet values
      * @return FacetFieldObject contains the facet values
      */
-    public FacetFieldObject listValues(SearchFieldKey facetFieldKey, String sort, Integer start, Integer rows,
-                                       SearchRequest searchRequest) {
-        notNull(facetFieldKey, "Must provide a facetFieldKey");
-        var facetSolrField = facetFieldKey.getSolrField();
+    public FacetFieldObject listValues(FacetValuesRequest request) {
+        notNull(request.getFacetFieldKey(), "Must provide a facetFieldKey");
+        var facetSolrField = request.getFacetFieldKey().getSolrField();
 
+        var searchState = request.getBaseSearchRequest().getSearchState();
+        assignResourceTypes(searchState);
+        addSelectedContainer(request.getBaseSearchRequest());
+        request.getBaseSearchRequest().setApplyCutoffs(false);
+        // Remove any filters from the same facet being retrieved, so that all values from the facet are visible
+        searchState.getFacets().remove(request.getFacetFieldKey().name());
         // Produce base query from provided searchRequest and its state
-        var query = searchService.generateSearch(searchRequest);
+        SolrQuery query = searchService.generateSearch(request.getBaseSearchRequest());
         query.setRows(0);
         query.addFacetField(facetSolrField);
         query.setFacetMinCount(1);
-        if (start != null && start >= 0) {
-            query.set(FacetParams.FACET_OFFSET, start.toString());
+
+        if (request.getStart() != null && request.getStart() >= 0) {
+            query.set(FacetParams.FACET_OFFSET, request.getStart().toString());
         }
-        if (sort != null && SORT_VALUES.contains(sort)) {
-            query.setFacetSort(sort);
+        if (request.getSort() != null && SORT_VALUES.contains(request.getSort())) {
+            query.setFacetSort(request.getSort());
         }
-        if (rows != null && rows > 0) {
-            query.setFacetLimit(rows);
+        if (request.getRows() != null && request.getRows() > 0) {
+            query.setFacetLimit(request.getRows());
         }
 
         try {

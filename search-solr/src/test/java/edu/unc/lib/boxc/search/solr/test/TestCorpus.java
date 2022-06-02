@@ -260,11 +260,11 @@ public class TestCorpus {
         }
         if (readGroup != null) {
             roleGroups.add(UserRole.canViewOriginals.name() + "|" + readGroup);
-            doc.addField("readGroup", asList(readGroup));
+            doc.setField("readGroup", asList(readGroup));
         }
 
-        doc.addField("roleGroup", roleGroups);
-        doc.addField("adminGroup", adminList);
+        doc.setField("roleGroup", roleGroups);
+        doc.setField("adminGroup", adminList);
     }
 
     public String makeAncestorIds(PID self, PID... pids) {
