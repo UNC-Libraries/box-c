@@ -14,14 +14,22 @@ go to:
 
 ## Running the tests in the terminal
 You will first need to build the project, which can be done using the following:
-`mvn clean package -DskipTests`
+```
+mvn clean package -DskipTests
+```
 
 Then to run all of the tests in the integration module, use:
-`mvn verify -pl integration`
+```
+mvn verify -pl integration
+```
 Or to run an individual test, use:
-`mvn -Dit.test=<name of test> verify -pl integration`
+```
+mvn -Dit.test=<name of test> verify -pl integration
+```
 For example:
-`mvn -Dit.test=CollectionsEndpointIT verify -pl integration`
+```
+mvn -Dit.test=CollectionsEndpointIT verify -pl integration
+```
 
 ## Creating New Web App Tests
 ### How to set up 
