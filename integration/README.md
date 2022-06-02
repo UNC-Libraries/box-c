@@ -1,5 +1,36 @@
 # Integration Tests
 
+## Running individual tests in Intellij
+For integration tests which depend on maven to set up additional applications (such as solr or the dcr access
+application), the test needs to be run as a maven command rather than a regular junit test. To do this in Intellij,
+go to:
+
+* Run > Edit Configurations
+* Click the "+" button in the top left and select "Maven" from the drop down.
+* In the commandline field, enter a command like: `-Dit.test=CollectionsEndpointIT verify` where CollectionsEndpointIT is the name of the test you want to run.
+* Set the "Working Directory" to the path to the integration module within your boxc project.
+* Give a name to the test, such as "CollectionsEndpointIT verify", then click "Okay"
+* The test can then be executed using "Run > Run...", or the test running dropdown menu in the top menu bar.
+
+## Running the tests in the terminal
+You will first need to build the project, which can be done using the following:
+```
+mvn clean package -DskipTests
+```
+
+Then to run all of the tests in the integration module, use:
+```
+mvn verify -pl integration
+```
+Or to run an individual test, use:
+```
+mvn -Dit.test=<name of test> verify -pl integration
+```
+For example:
+```
+mvn -Dit.test=CollectionsEndpointIT verify -pl integration
+```
+
 ## Creating New Web App Tests
 ### How to set up 
 Choose which endpoint you'd like to test and create the test file in the correct web package

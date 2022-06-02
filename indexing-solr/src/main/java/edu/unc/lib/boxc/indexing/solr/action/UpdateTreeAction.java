@@ -42,12 +42,19 @@ public class UpdateTreeAction extends AbstractIndexingAction {
 
     protected RecursiveTreeIndexer treeIndexer;
 
+    protected boolean skipIndexingStartingObject = false;
+
     @Override
     public void performAction(SolrUpdateRequest updateRequest) throws IndexingException {
         log.debug("Queuing update tree of {}", updateRequest.getPid());
 
         // Perform updates
-        index(updateRequest);
+        if (skipIndexingStartingObject) {
+            PID startingPid = updateRequest.getPid();
+            treeIndexer.indexChildren(startingPid, actionType, updateRequest.getUserID());
+        } else {
+            index(updateRequest);
+        }
 
         log.debug("Finished queuing update of tree for {}.", updateRequest.getPid());
     }
@@ -77,5 +84,9 @@ public class UpdateTreeAction extends AbstractIndexingAction {
     public void setActionType(String actionName) {
         actionType = IndexingActionType.valueOf(actionName);
         Assert.notNull(actionType, "Invalid indexing action type requested: " + actionName);
+    }
+
+    public void setSkipIndexingStartingObject(boolean skipIndexingStartingObject) {
+        this.skipIndexingStartingObject = skipIndexingStartingObject;
     }
 }

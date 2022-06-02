@@ -19,6 +19,7 @@ import edu.unc.lib.boxc.indexing.solr.exception.IndexingException;
 import edu.unc.lib.boxc.indexing.solr.indexing.DocumentIndexingPackage;
 import edu.unc.lib.boxc.indexing.solr.utils.TechnicalMetadataService;
 import edu.unc.lib.boxc.model.api.ResourceType;
+import edu.unc.lib.boxc.model.api.exceptions.FedoraException;
 import edu.unc.lib.boxc.model.api.exceptions.RepositoryException;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.objects.BinaryObject;
@@ -200,7 +201,7 @@ public class SetContentTypeFilter implements IndexDocumentFilter {
             if (!StringUtils.isEmpty(formatName) && !"Unknown Binary".equals(formatName)) {
                 return formatName;
             }
-        } catch (RepositoryException e) {
+        } catch (RepositoryException | FedoraException e) {
             log.warn("Unable to retrieve techmd datastream for {}", filePid, e);
         } catch (NullPointerException e) {
             log.warn("Invalid techmd datastream, unable to extract formatName for {}", filePid, e);

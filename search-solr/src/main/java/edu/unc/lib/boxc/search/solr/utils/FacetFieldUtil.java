@@ -23,6 +23,7 @@ import edu.unc.lib.boxc.search.api.facets.SearchFacet;
 import edu.unc.lib.boxc.search.api.requests.SearchState;
 import edu.unc.lib.boxc.search.solr.config.SearchSettings;
 import edu.unc.lib.boxc.search.solr.config.SolrSettings;
+import edu.unc.lib.boxc.search.solr.facets.FilterableDisplayValueFacet;
 import edu.unc.lib.boxc.search.solr.facets.GenericFacet;
 import edu.unc.lib.boxc.search.solr.services.FacetFieldFactory;
 import org.apache.solr.client.solrj.SolrQuery;
@@ -86,6 +87,8 @@ public class FacetFieldUtil {
             } else {
                 addFacetValue(facetObject, solrQuery, cutoffFacetToFq);
             }
+        } else if (facetIsOfType(facetObject, FilterableDisplayValueFacet.class)) {
+            addFacetValue(facetObject, solrQuery, filterableDisplayValueFacetToFq);
         } else if (facetIsOfType(facetObject, GenericFacet.class)) {
             addFacetValue(facetObject, solrQuery, genericFacetToFq);
         }
@@ -138,10 +141,14 @@ public class FacetFieldUtil {
         return filterQuery.append(')').toString();
     }
 
+    private Function<SearchFacet, String> filterableDisplayValueFacetToFq = (facet) -> {
+        String solrFieldName = SearchFieldKey.valueOf(facet.getFieldName()).getSolrField();
+        return solrFieldName + ":(*|" + SolrSettings.sanitize(facet.getSearchValue()) + ")";
+    };
+
     private Function<SearchFacet, String> genericFacetToFq = (facet) -> {
         String solrFieldName = SearchFieldKey.valueOf(facet.getFieldName()).getSolrField();
-        return SearchFieldKey.valueOf(facet.getFieldName()).getSolrField() + ":\""
-                + SolrSettings.sanitize(facet.getSearchValue()) + "\"";
+        return solrFieldName + ":\"" + SolrSettings.sanitize(facet.getSearchValue()) + "\"";
     };
 
     /**

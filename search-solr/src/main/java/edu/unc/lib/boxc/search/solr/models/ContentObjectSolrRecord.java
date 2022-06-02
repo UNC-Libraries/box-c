@@ -21,6 +21,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import edu.unc.lib.boxc.search.solr.facets.FilterableDisplayValueFacet;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.solr.client.solrj.beans.Field;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -186,6 +188,7 @@ public class ContentObjectSolrRecord extends IndexDocumentBean implements Conten
         sb.append("id: " + getId() + "\n");
         sb.append("ancestorPath: " + getAncestorPath() + "\n");
         sb.append("resourceType: " + getResourceType() + "\n");
+        sb.append("exhibit: " + getExhibit() + "\n");
         sb.append("fileFormatCategory: " + getFileFormatCategory() + "\n");
         sb.append("fileFormatType: " + getFileFormatType() + "\n");
         sb.append("datastream: " + getDatastream() + "\n");
@@ -209,20 +212,15 @@ public class ContentObjectSolrRecord extends IndexDocumentBean implements Conten
 
     @Override
     public String getParentCollectionName() {
-
         if (parentName != null) {
             return parentName;
         }
-
         String parentCollection = getParentCollection();
-        if (objectPath == null) {
-            if (pathFactory != null && parentCollection != null) {
-                parentName = pathFactory.getName(parentCollection);
-            }
-        } else {
-            parentName = objectPath.getName(parentCollection);
+        if (StringUtils.isBlank(parentCollection)) {
+            return null;
         }
-
+        var facetVal = new FilterableDisplayValueFacet(SearchFieldKey.PARENT_COLLECTION.name(), parentCollection);
+        parentName = facetVal.getDisplayValue();
         return parentName;
     }
 

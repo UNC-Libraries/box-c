@@ -26,6 +26,7 @@ import static edu.unc.lib.boxc.operations.jms.indexing.IndexingActionType.UPDATE
 import static edu.unc.lib.boxc.operations.jms.indexing.IndexingMessageHelper.makeIndexingOperationBody;
 import static java.util.Collections.singleton;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
@@ -43,7 +44,11 @@ import java.util.concurrent.TimeUnit;
 import javax.annotation.Resource;
 
 import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
+import edu.unc.lib.boxc.model.fcrepo.services.RepositoryObjectLoaderImpl;
 import edu.unc.lib.boxc.operations.jms.MessageSender;
+import edu.unc.lib.boxc.operations.jms.indexing.IndexingMessageSender;
+import edu.unc.lib.boxc.search.solr.facets.FilterableDisplayValueFacet;
+import edu.unc.lib.boxc.search.solr.services.TitleRetrievalService;
 import org.apache.camel.CamelContext;
 import org.apache.camel.builder.NotifyBuilder;
 import org.apache.commons.io.FileUtils;
@@ -113,6 +118,10 @@ public class SolrUpdateProcessorIT extends AbstractSolrProcessorIT {
     private RepositoryObjectLoader repositoryObjectLoader;
     @Autowired
     private MessageSender updateWorkSender;
+    @Autowired
+    private IndexingMessageSender indexingMessageSender;
+    @Autowired
+    private TitleRetrievalService titleRetrievalService;
 
     @Resource(name = "solrIndexingActionMap")
     private Map<IndexingActionType, IndexingAction> solrIndexingActionMap;
@@ -127,6 +136,9 @@ public class SolrUpdateProcessorIT extends AbstractSolrProcessorIT {
         processor.setSolrIndexingActionMap(solrIndexingActionMap);
         processor.setRepositoryObjectLoader(repositoryObjectLoader);
         processor.setUpdateWorkSender(updateWorkSender);
+        processor.setTitleRetrievalService(titleRetrievalService);
+        processor.setIndexingMessageSender(indexingMessageSender);
+        processor.setSolrClient(solrClient);
 
         when(exchange.getIn()).thenReturn(message);
 
@@ -137,8 +149,7 @@ public class SolrUpdateProcessorIT extends AbstractSolrProcessorIT {
     public void testReindexAcls() throws Exception {
         indexObjectsInTripleStore();
 
-        indexDummyDocument(unitObj);
-        indexDummyDocument(collObj);
+        repositoryObjectSolrIndexer.index(unitObj.getPid(), collObj.getPid());
 
         makeIndexingMessage(unitObj, null, UPDATE_ACCESS_TREE);
 
@@ -154,7 +165,7 @@ public class SolrUpdateProcessorIT extends AbstractSolrProcessorIT {
 
         ContentObjectRecord unitMd = getSolrMetadata(unitObj);
 
-        assertEquals("Title should not have updated", "dummy title", unitMd.getTitle());
+        assertEquals("Title should not have updated", unitMd.getId(), unitMd.getTitle());
 
         assertTrue("Read groups did not contain assigned group", unitMd.getReadGroup().contains(PUBLIC_PRINC));
         assertTrue("Admin groups did not contain assigned group", unitMd.getAdminGroup().contains("admin"));
@@ -163,7 +174,7 @@ public class SolrUpdateProcessorIT extends AbstractSolrProcessorIT {
 
         ContentObjectRecord collMd = getSolrMetadata(collObj);
 
-        assertEquals("Title should not have updated", "dummy title", collMd.getTitle());
+        assertEquals("Title should not have updated", collMd.getId(), collMd.getTitle());
 
         assertTrue("Read groups did not contain assigned group", collMd.getReadGroup().contains(AUTHENTICATED_PRINC));
         assertTrue("Admin groups did not contain assigned group", collMd.getAdminGroup().contains("admin"));
@@ -174,16 +185,30 @@ public class SolrUpdateProcessorIT extends AbstractSolrProcessorIT {
 
     @Test
     public void testUpdateDescription() throws Exception {
+        var folderObj = repositoryObjectFactory.createFolderObject(null);
+        collObj.addMember(folderObj);
+        indexObjectsInTripleStore();
+        repositoryObjectSolrIndexer.index(unitObj.getPid(), collObj.getPid(), folderObj.getPid());
+
+        var origCollTitle = getSolrMetadata(collObj).getTitle();
+        assertEquals(origCollTitle, collObj.getPid().getId());
+        var origFolderParentColl = getSolrMetadata(folderObj).getParentCollection();
+        assertEquals(FilterableDisplayValueFacet.buildValue(origCollTitle, origCollTitle), origFolderParentColl);
+
         InputStream modsStream = streamResource("/datastreams/simpleMods.xml");
         updateDescriptionService.updateDescription(new UpdateDescriptionRequest(agent, collObj, modsStream));
+        treeIndexer.indexTree(collObj.getModel());
 
-        indexObjectsInTripleStore();
-
-        indexDummyDocument(collObj);
+        NotifyBuilder notify = new NotifyBuilder(cdrServiceSolrUpdate)
+                .whenCompleted(2)
+                .create();
 
         makeIndexingMessage(collObj, null, UPDATE_DESCRIPTION);
 
         processor.process(exchange);
+
+        notify.matches(5l, TimeUnit.SECONDS);
+
         server.commit();
 
         ContentObjectRecord collMd = getSolrMetadata(collObj);
@@ -191,10 +216,15 @@ public class SolrUpdateProcessorIT extends AbstractSolrProcessorIT {
         assertEquals("Object title", collMd.getTitle());
         assertEquals("Boxy", collMd.getCreator().get(0));
 
-        assertTrue(collMd.getContentStatus().contains(FacetConstants.CONTENT_DESCRIBED));
+        assertTrue(collMd.getContentStatus().toString(), collMd.getContentStatus().contains(FacetConstants.CONTENT_DESCRIBED));
 
         assertNotNull(collMd.getDateAdded());
         assertNotNull(collMd.getDateUpdated());
+
+        // Verify that child object got its parent collection title updated
+        var updatedFolderParentColl = getSolrMetadata(folderObj);
+        assertEquals(FilterableDisplayValueFacet.buildValue("Object title", collMd.getId()),
+                updatedFolderParentColl.getParentCollection());
     }
 
     @Test
@@ -205,9 +235,11 @@ public class SolrUpdateProcessorIT extends AbstractSolrProcessorIT {
 
         indexObjectsInTripleStore();
 
-        indexDummyDocument(unitObj);
-        indexDummyDocument(collObj);
-        indexDummyDocument(coll2Obj);
+        repositoryObjectSolrIndexer.index(unitObj.getPid(), collObj.getPid(), coll2Obj.getPid());
+
+        var origUnitUpdated = getSolrMetadata(unitObj).get_version_();
+        var origColl1Updated = getSolrMetadata(collObj).get_version_();
+        var origColl2Updated = getSolrMetadata(coll2Obj).get_version_();
 
         // Send message indicating the coll2 was added to the unit
         makeIndexingMessage(unitObj, singleton(coll2Obj.getPid()), ADD_SET_TO_PARENT);
@@ -223,10 +255,10 @@ public class SolrUpdateProcessorIT extends AbstractSolrProcessorIT {
         server.commit();
 
         ContentObjectRecord unitMd = getSolrMetadata(unitObj);
-        assertNull("Unit record should not have been updated", unitMd.getDateUpdated());
+        assertEquals("Unit record should not have been updated", origUnitUpdated, unitMd.get_version_());
 
         ContentObjectRecord coll1Md = getSolrMetadata(collObj);
-        assertNull("First collection should not have been updated", coll1Md.getDateUpdated());
+        assertEquals("First collection should not have been updated", origColl1Updated, coll1Md.get_version_());
 
         ContentObjectRecord coll2Md = getSolrMetadata(coll2Obj);
         assertEquals(coll2Obj.getPid().getId(), coll2Md.getTitle());
@@ -236,7 +268,7 @@ public class SolrUpdateProcessorIT extends AbstractSolrProcessorIT {
         assertTrue("Admin groups did not contain assigned group", coll2Md.getAdminGroup().contains("admin"));
 
         assertNotNull(coll2Md.getDateAdded());
-        assertNotNull(coll2Md.getDateUpdated());
+        assertNotEquals(origColl2Updated, coll2Md.get_version_());
 
         assertEquals(2, coll2Md.getAncestorPath().size());
     }
@@ -245,8 +277,7 @@ public class SolrUpdateProcessorIT extends AbstractSolrProcessorIT {
     public void testDelete() throws Exception {
         indexObjectsInTripleStore();
 
-        indexDummyDocument(unitObj);
-        indexDummyDocument(collObj);
+        repositoryObjectSolrIndexer.index(unitObj.getPid(), collObj.getPid());
 
         makeIndexingMessage(collObj, null, DELETE);
 
@@ -261,9 +292,7 @@ public class SolrUpdateProcessorIT extends AbstractSolrProcessorIT {
     public void testDeleteTree() throws Exception {
         indexObjectsInTripleStore();
 
-        indexDummyDocument(rootObj);
-        indexDummyDocument(unitObj);
-        indexDummyDocument(collObj);
+        repositoryObjectSolrIndexer.index(rootObj.getPid(), unitObj.getPid(), collObj.getPid());
 
         // Wait for indexing to complete
         NotifyBuilder notify = new NotifyBuilder(cdrServiceSolrUpdate)
@@ -311,7 +340,7 @@ public class SolrUpdateProcessorIT extends AbstractSolrProcessorIT {
 
         indexObjectsInTripleStore();
 
-        indexDummyDocument(collObj);
+        repositoryObjectSolrIndexer.index(unitObj.getPid(), collObj.getPid());
 
         makeIndexingMessage(collObj, null, indexingType);
 
@@ -351,31 +380,5 @@ public class SolrUpdateProcessorIT extends AbstractSolrProcessorIT {
             return results.get(0);
         }
         return null;
-    }
-
-    private void indexDummyDocument(RepositoryObject obj) throws Exception {
-        SolrInputDocument doc = new SolrInputDocument();
-
-        doc.setField("id", obj.getPid().getId());
-        doc.setField("rollup", obj.getPid().getId());
-
-        doc.setField("title", "dummy title");
-
-        doc.addField("adminGroup", "dummyGroup");
-        doc.addField("readGroup", "dummyGroup");
-        doc.addField("roleGroup", "dummyGroup");
-
-        String resourceType;
-        if (obj instanceof AdminUnit) {
-            resourceType = ResourceType.AdminUnit.name();
-        } else if (obj instanceof CollectionObject) {
-            resourceType = ResourceType.Collection.name();
-        } else {
-            resourceType = ResourceType.ContentRoot.name();
-        }
-        doc.setField("resourceType", resourceType);
-
-        server.add(doc);
-        server.commit();
     }
 }

@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:util="http://www.springframework.org/schema/util"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans-4.3.xsd
+        http://www.springframework.org/schema/util
+        http://www.springframework.org/schema/util/spring-util.xsd">
+
+    <util:properties id="solrProperties" location="classpath:solr.properties">
+        <prop key="solr.path">http://localhost:8983/solr</prop>
+    </util:properties>
+
+    <bean id="solrSettings" class="edu.unc.lib.boxc.search.solr.config.SolrSettings">
+        <property name="properties" ref="solrProperties" />
+    </bean>
+
+    <bean id="solrDataPath" class="java.nio.file.Files" factory-method="createTempDirectory">
+        <constructor-arg type="java.lang.String" value="solr_data" />
+        <constructor-arg>
+            <list value-type="java.nio.file.attribute.FileAttribute"></list>
+        </constructor-arg>
+    </bean>
+
+    <bean id="solrDataDir" class="java.io.File" factory-bean="solrDataPath" factory-method="toFile">
+    </bean>
+
+    <bean class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
+        <property name="targetObject" value="#{@systemProperties}" />
+        <property name="targetMethod" value="setProperty" />
+        <property name="arguments">
+            <util:list>
+                <value>solr.data.dir</value>
+                <value>#{solrDataDir.getAbsolutePath()}</value>
+            </util:list>
+        </property>
+    </bean>
+
+    <bean id="solrClient" class="org.apache.solr.client.solrj.embedded.EmbeddedSolrServer"
+          destroy-method="close">
+        <constructor-arg ref="coreContainer" />
+        <constructor-arg value="access" />
+    </bean>
+
+    <bean id="solrHomePath" class="java.io.File">
+        <constructor-arg value="../etc/solr-config" />
+    </bean>
+
+    <bean id="solrConfigPath" class="java.io.File">
+        <constructor-arg value="../etc/solr-config/solr.xml" />
+    </bean>
+
+    <bean id="coreContainer" class="org.apache.solr.core.CoreContainer" factory-method="createAndLoad" init-method="load">
+        <constructor-arg value="#{solrHomePath.toPath()}" />
+        <constructor-arg value="#{solrConfigPath.toPath()}" />
+    </bean>
+</beans>

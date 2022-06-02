@@ -33,6 +33,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
+import edu.unc.lib.boxc.model.api.objects.AdminUnit;
+import edu.unc.lib.boxc.model.api.objects.CollectionObject;
+import edu.unc.lib.boxc.search.solr.services.TitleRetrievalService;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.rdf.model.Property;
@@ -67,6 +70,7 @@ public class SetDescriptiveMetadataFilter implements IndexDocumentFilter {
     public final static String AFFIL_URI = "http://cdr.unc.edu/vocabulary/Affiliation";
     private final List<String> CREATOR_LIST = Arrays.asList("creator", "author", "interviewer", "interviewee");
     private final List<String> GENRE_ATTRIBUTES = Arrays.asList("authority", "authorityURI", "valueURI");
+    private TitleRetrievalService titleRetrievalService;
 
     public SetDescriptiveMetadataFilter() throws IOException {
         languageCodeMap = new Properties();
@@ -110,10 +114,15 @@ public class SetDescriptiveMetadataFilter implements IndexDocumentFilter {
             this.extractCitation(mods, idb);
             this.extractKeywords(mods, idb);
             this.extractGenre(mods, idb);
+            this.extractExhibit(mods, idb);
         }
 
         if (idb.getTitle() == null) {
             idb.setTitle(getAlternativeTitle(dip));
+        }
+        // Store title to cache for units/collections, in case their children are updated in the same batch
+        if (dip.getContentObject() instanceof AdminUnit || dip.getContentObject() instanceof CollectionObject) {
+            titleRetrievalService.storeTitle(idb.getPid(), idb.getTitle());
         }
         if (idb.getDateCreated() == null) {
             idb.setDateCreated(idb.getDateAdded());
@@ -572,6 +581,42 @@ public class SetDescriptiveMetadataFilter implements IndexDocumentFilter {
         }
     }
 
+    /**
+     * Extract exhibit name and url
+     * @param mods
+     * @param idb
+     */
+    private void extractExhibit(Element mods, IndexDocumentBean idb) {
+        var exhibits = new ArrayList<String>();
+        List<Element> relatedItems = mods.getChildren("relatedItem", JDOMNamespaceUtil.MODS_V3_NS);
+        for (Element relatedItem : relatedItems) {
+            String itemType = relatedItem.getAttributeValue("type");
+            String displayLabel = relatedItem.getAttributeValue("displayLabel");
+
+            if ("isReferencedBy".equals(itemType) && "Digital Exhibit".equals(displayLabel)) {
+                List<Element> locations = relatedItem.getChildren("location", JDOMNamespaceUtil.MODS_V3_NS);
+                for (Element location : locations) {
+                    List<Element> locationLinks = location.getChildren("url", JDOMNamespaceUtil.MODS_V3_NS);
+                    for (Element locationLink : locationLinks) {
+                        String exhibitLabel = locationLink.getAttributeValue("displayLabel");
+                        String exhibitLink = locationLink.getTextTrim();
+
+                        if (!StringUtils.isBlank(exhibitLink)) {
+                            String label = !StringUtils.isBlank(exhibitLabel) ? exhibitLabel : exhibitLink;
+                            exhibits.add(label + "|" + exhibitLink);
+                        }
+                    }
+                }
+            }
+        }
+
+        if (!exhibits.isEmpty()) {
+            idb.setExhibit(exhibits);
+        } else {
+            idb.setExhibit(null);
+        }
+    }
+
     private void extractGenre(Element mods, IndexDocumentBean idb) {
         var genres = new ArrayList<String>();
         List<Element> genreList = mods.getChildren("genre", JDOMNamespaceUtil.MODS_V3_NS);
@@ -685,5 +730,9 @@ public class SetDescriptiveMetadataFilter implements IndexDocumentFilter {
 
     private boolean hasNodeValue(Element node) {
         return node != null && !StringUtils.isBlank(node.getTextTrim());
+    }
+
+    public void setTitleRetrievalService(TitleRetrievalService titleRetrievalService) {
+        this.titleRetrievalService = titleRetrievalService;
     }
 }

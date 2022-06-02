@@ -30,6 +30,7 @@ import static edu.unc.lib.boxc.search.api.SearchFieldKey.DATE_ADDED;
 import static edu.unc.lib.boxc.search.api.SearchFieldKey.DATE_CREATED;
 import static edu.unc.lib.boxc.search.api.SearchFieldKey.DATE_CREATED_YEAR;
 import static edu.unc.lib.boxc.search.api.SearchFieldKey.DATE_UPDATED;
+import static edu.unc.lib.boxc.search.api.SearchFieldKey.EXHIBIT;
 import static edu.unc.lib.boxc.search.api.SearchFieldKey.FILESIZE;
 import static edu.unc.lib.boxc.search.api.SearchFieldKey.FILESIZE_TOTAL;
 import static edu.unc.lib.boxc.search.api.SearchFieldKey.FULL_TEXT;
@@ -476,6 +477,15 @@ public class IndexDocumentBean {
 
     public String getCitation() {
         return (String) fields.get(CITATION.getSolrField());
+    }
+
+    @Field
+    public void setExhibit(List<String> exhibits) {
+        fields.put(EXHIBIT.getSolrField(), exhibits);
+    }
+
+    public List<String> getExhibit() {
+        return (List<String>) fields.get(EXHIBIT.getSolrField());
     }
 
     @Field

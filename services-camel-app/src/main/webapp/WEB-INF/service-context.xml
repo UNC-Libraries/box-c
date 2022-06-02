@@ -207,6 +207,7 @@
         <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
         <property name="objectAclFactory" ref="objectAclFactory" />
         <property name="contentPathFactory" ref="contentPathFactory" />
+        <property name="titleRetrievalService" ref="titleRetrievalService" />
     </bean>
 
     <bean id="addSmallThumbnailProcessor" class="edu.unc.lib.boxc.services.camel.images.AddDerivativeProcessor">

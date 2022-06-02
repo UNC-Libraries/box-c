@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:util="http://www.springframework.org/schema/util"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans-4.3.xsd
+        http://www.springframework.org/schema/util
+        http://www.springframework.org/schema/util/spring-util.xsd">
+
+    <util:properties id="solrProperties" location="classpath:solr.properties">
+        <prop key="solr.path">http://localhost:48983/solr</prop>
+    </util:properties>
+
+    <bean id="solrSettings" class="edu.unc.lib.boxc.search.solr.config.SolrSettings">
+        <property name="properties" ref="solrProperties" />
+    </bean>
+
+    <bean id="solrClient" class="org.apache.solr.client.solrj.SolrClient"
+          factory-bean="solrSettings" factory-method="getSolrClient" destroy-method="close">
+    </bean>
+</beans>

@@ -49,7 +49,7 @@
                 <c:import url="common/thumbnail.jsp">
                     <c:param name="size" value="large" />
                 </c:import>
-                </i> <c:out value="${briefObject.title}"/> <span class="item_container_count"><c:out value="${childCount}" /> items</span>
+                <c:out value="${briefObject.title}"/> <span class="item_container_count"><c:out value="${childCount}" /> items</span>
             </h2>
             <c:if test="${not empty briefObject.dateAdded}">
                 <p><strong>${searchSettings.searchFieldLabels['DATE_ADDED']}:</strong> <fmt:formatDate pattern="yyyy-MM-dd" value="${briefObject.dateAdded}" /></p>
@@ -78,6 +78,13 @@
                         <p><c:out value="${briefObject.abstractText}"/></p>
                     </c:otherwise>
                 </c:choose>
+            </c:if>
+            <c:if test="${not empty exhibits }">
+                <p><strong>Related Digital Exhibits:</strong>
+                    <c:forEach var="exhibit" items="${exhibits}" varStatus="status">
+                        <a href="${exhibit.value}">${exhibit.key}</a><c:if test="${not status.last}">; </c:if>
+                    </c:forEach>
+                </p>
             </c:if>
 
             <p><a id="metadata-modal-link" href="#">View Additional Metadata</a></p>

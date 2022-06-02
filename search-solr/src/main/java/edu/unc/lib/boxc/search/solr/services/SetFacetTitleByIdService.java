@@ -16,7 +16,6 @@
 package edu.unc.lib.boxc.search.solr.services;
 
 import edu.unc.lib.boxc.search.api.SearchFieldKey;
-import edu.unc.lib.boxc.search.api.facets.FacetFieldList;
 import edu.unc.lib.boxc.search.api.facets.SearchFacet;
 import edu.unc.lib.boxc.search.api.requests.SearchState;
 import edu.unc.lib.boxc.search.solr.facets.GenericFacet;
@@ -34,24 +33,6 @@ public class SetFacetTitleByIdService {
     );
 
     private ObjectPathFactory pathFactory;
-
-    /**
-     * Populate displayValues (titles) for facets in a FacetFieldList if present
-     * @param facetFields facet field list to add titles to
-     */
-    public void populateTitles(FacetFieldList facetFields) {
-        if (facetFields == null || facetFields.isEmpty()) {
-            return;
-        }
-
-        for (var facetName: APPLICABLE_FACET_NAMES) {
-            var facet = facetFields.get(facetName);
-            if (facet == null) {
-                continue;
-            }
-            populateInList(facetName, facet.getValues());
-        }
-    }
 
     /**
      * Populate displayValues (titles) for facets in a SearchState if present

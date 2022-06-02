@@ -32,6 +32,7 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import edu.unc.lib.boxc.search.solr.services.TitleRetrievalService;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
@@ -58,6 +59,9 @@ import edu.unc.lib.boxc.model.api.objects.FileObject;
  *
  */
 public class SetPathFilterTest {
+    private final static String UNIT_TITLE = "Administration of Boxy";
+    private final static String COLLECTION_TITLE = "Collection of Boxes";
+
     @Mock
     private ContentPathFactory pathFactory;
     @Mock
@@ -68,6 +72,8 @@ public class SetPathFilterTest {
     private IndexDocumentBean idb;
     @Mock
     private ContentObject contentObject;
+    @Mock
+    private TitleRetrievalService titleRetrievalService;
     private PID pid;
     @Mock
     private FileObject fileObject;
@@ -93,6 +99,7 @@ public class SetPathFilterTest {
 
         filter = new SetPathFilter();
         filter.setPathFactory(pathFactory);
+        filter.setTitleRetrievalService(titleRetrievalService);
     }
 
     @Test
@@ -120,6 +127,7 @@ public class SetPathFilterTest {
         List<PID> pids = makePidList(2);
         when(pathFactory.getAncestorPids(pid)).thenReturn(pids);
         when(idb.getResourceType()).thenReturn(ResourceType.Collection.name());
+        when(titleRetrievalService.retrieveTitle(pids.get(1))).thenReturn(UNIT_TITLE);
 
         filter.filter(dip);
 
@@ -130,7 +138,7 @@ public class SetPathFilterTest {
 
         assertAncestorIds(pids, true);
 
-        verify(idb).setParentUnit(eq(pids.get(1).getId()));
+        verify(idb).setParentUnit(eq(UNIT_TITLE + "|" + pids.get(1).getId()));
         verify(idb, never()).setParentCollection(anyString());
 
     }
@@ -141,6 +149,8 @@ public class SetPathFilterTest {
         List<PID> pids = makePidList(3);
         when(pathFactory.getAncestorPids(pid)).thenReturn(pids);
         when(idb.getResourceType()).thenReturn(ResourceType.Work.name());
+        when(titleRetrievalService.retrieveTitle(pids.get(1))).thenReturn(UNIT_TITLE);
+        when(titleRetrievalService.retrieveTitle(pids.get(2))).thenReturn(COLLECTION_TITLE);
 
         filter.filter(dip);
 
@@ -151,6 +161,8 @@ public class SetPathFilterTest {
 
         assertAncestorIds(pids, true);
 
+        verify(idb).setParentUnit(eq(UNIT_TITLE + "|" + pids.get(1).getId()));
+        verify(idb).setParentCollection(eq(COLLECTION_TITLE + "|" + pids.get(2).getId()));
         verify(idb).setRollup(eq(contentObject.getPid().getId()));
     }
 
@@ -177,6 +189,8 @@ public class SetPathFilterTest {
         List<PID> pids = makePidList(4);
         when(pathFactory.getAncestorPids(pid)).thenReturn(pids);
         when(idb.getResourceType()).thenReturn(ResourceType.File.name());
+        when(titleRetrievalService.retrieveTitle(pids.get(1))).thenReturn(UNIT_TITLE);
+        when(titleRetrievalService.retrieveTitle(pids.get(2))).thenReturn(COLLECTION_TITLE);
 
         filter.filter(dip);
 
@@ -187,6 +201,8 @@ public class SetPathFilterTest {
 
         assertAncestorIds(pids, false);
 
+        verify(idb).setParentUnit(eq(UNIT_TITLE + "|" + pids.get(1).getId()));
+        verify(idb).setParentCollection(eq(COLLECTION_TITLE + "|" + pids.get(2).getId()));
         verify(idb).setRollup(eq(pids.get(WORK_OBJECT_DEPTH).getId()));
     }
 

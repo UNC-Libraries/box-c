@@ -21,7 +21,7 @@ Top level component for full record pages with searching/browsing, including Adm
         <img v-if="is_page_loading" :src="nonVueStaticImageUrl('ajax-loader-lg.gif')" alt="data loading icon">
         <div v-if="showWidget && !is_page_loading" class="columns">
             <div class="facet-list column is-one-quarter facets-border">
-                <facets :facet-list="facet_list" :min-created-year="minimumCreatedYear" :show-clear-button="false"></facets>
+                <facets :facet-list="facet_list" :min-created-year="minimumCreatedYear"></facets>
             </div>
             <div id="fullRecordSearchResultDisplay" class="column is-three-quarters">
                 <gallery-display v-if="isBrowseDisplay" :record-list="record_list"></gallery-display>

@@ -58,6 +58,31 @@
       <mods:url displayLabel="Link to finding aid">https://finding-aids.lib.unc.edu/1234</mods:url>
     </mods:location>
   </mods:relatedItem>
+  <mods:relatedItem type="isReferencedBy" displayLabel="Digital Exhibit">
+    <mods:location>
+      <mods:url displayLabel="Wonderful Exhibit">https://digital-exhibit.lib.unc.edu</mods:url>
+    </mods:location>
+  </mods:relatedItem>
+  <mods:relatedItem type="isReferencedBy" displayLabel="Digital Exhibit">
+    <mods:location>
+      <mods:url>https://no-url-label-digital-exhibit.lib.unc.edu</mods:url>
+    </mods:location>
+  </mods:relatedItem>
+  <mods:relatedItem type="isReferencedBy" displayLabel="Digital Exhibit">
+    <mods:location>
+      <mods:url displayLabel="No URL Exhibit"/>
+    </mods:location>
+  </mods:relatedItem>
+  <mods:relatedItem displayLabel="Digital Exhibit">
+    <mods:location>
+      <mods:url>https://no-type.digital-exhibit.lib.unc.edu</mods:url>
+    </mods:location>
+  </mods:relatedItem>
+  <mods:relatedItem type="isReferencedBy">
+    <mods:location>
+      <mods:url>https://no-label-2-digital-exhibit.lib.unc.edu</mods:url>
+    </mods:location>
+  </mods:relatedItem>
   <mods:note type="citation/reference">citation text</mods:note>
   <mods:name type="personal">
     <mods:affiliation>Music</mods:affiliation>

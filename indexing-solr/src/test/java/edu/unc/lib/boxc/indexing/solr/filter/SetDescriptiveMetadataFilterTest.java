@@ -30,6 +30,7 @@ import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
 
+import edu.unc.lib.boxc.search.solr.services.TitleRetrievalService;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.Statement;
 import org.jdom2.Document;
@@ -63,6 +64,8 @@ public class SetDescriptiveMetadataFilterTest {
     private DocumentIndexingPackageDataLoader loader;
     @Mock
     private DocumentIndexingPackage dip;
+    @Mock
+    private TitleRetrievalService titleRetrievalService;
 
     private IndexDocumentBean idb;
     @Mock
@@ -100,6 +103,7 @@ public class SetDescriptiveMetadataFilterTest {
         when(contentObj.getResource()).thenReturn(objResc);
 
         filter = new SetDescriptiveMetadataFilter();
+        filter.setTitleRetrievalService(titleRetrievalService);
     }
 
     @Test
@@ -200,6 +204,11 @@ public class SetDescriptiveMetadataFilterTest {
         assertEquals(3, idb.getGenre().size());
 
         assertEquals("citation text", idb.getCitation());
+
+        List<String> exhibits = idb.getExhibit();
+        assertEquals(2, exhibits.size());
+        assertTrue(exhibits.contains("Wonderful Exhibit|https://digital-exhibit.lib.unc.edu"));
+        assertTrue(exhibits.contains("https://no-url-label-digital-exhibit.lib.unc.edu|https://no-url-label-digital-exhibit.lib.unc.edu"));
     }
 
     /*

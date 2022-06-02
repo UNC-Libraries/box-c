@@ -3,7 +3,6 @@ Facet list component, used to display all the values of facets and provide links
 -->
 <template>
     <div id="facetList" class="contentarea">
-        <clear-facets-button v-if="showClearButton"></clear-facets-button>
         <h2 class="facet-header">{{ $t('facets.filter') }}</h2>
         <div class="facet-display" v-for="facet in this.sortedFacetsList">
             <h3>{{ facetName(facet.name) }}</h3>
@@ -32,9 +31,7 @@ Facet list component, used to display all the values of facets and provide links
 </template>
 
 <script>
-    import sortBy from 'lodash.sortby';
     import slider from "@/components/slider.vue";
-    import clearFacetsButton from "@/components/clearFacetsButton.vue";
     import routeUtils from '../mixins/routeUtils';
 
     const CURRENT_YEAR = new Date().getFullYear();
@@ -42,15 +39,11 @@ Facet list component, used to display all the values of facets and provide links
     export default {
         name: 'facets',
 
-        components: {slider, clearFacetsButton},
+        components: {slider},
 
         props: {
             facetList: Array,
-            minCreatedYear: Number,
-            showClearButton: {
-                default: true,
-                type: Boolean
-            }
+            minCreatedYear: Number
         },
 
         mixins: [routeUtils],
@@ -236,7 +229,7 @@ Facet list component, used to display all the values of facets and provide links
                     case 'PARENT_COLLECTION':
                         return 'Collection';
                     case 'PARENT_UNIT':
-                        return 'Administrative Unit';
+                        return 'Collecting Unit';
                     case 'FILE_FORMAT_CATEGORY':
                         return 'Format';
                     case 'LANGUAGE':

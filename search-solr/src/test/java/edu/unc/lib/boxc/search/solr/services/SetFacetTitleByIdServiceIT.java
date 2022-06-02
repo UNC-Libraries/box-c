@@ -125,74 +125,6 @@ public class SetFacetTitleByIdServiceIT extends BaseEmbeddedSolrTest {
     }
 
     @Test
-    public void populateTitlesTest() throws Exception {
-        SearchState searchState = new SearchState();
-        searchState.setFacetsToRetrieve(Arrays.asList(PARENT_COLLECTION.name()));
-
-        SearchRequest request = new SearchRequest(searchState, accessGroups);
-        SearchResultResponse resp = facetListService.getFacetListResult(request);
-        FacetFieldList facetFieldList = resp.getFacetFields();
-
-        titleService.populateTitles(facetFieldList);
-
-        FacetFieldObject parentFacet = facetFieldList.get(PARENT_COLLECTION.name());
-        assertEquals(2, parentFacet.getValues().size());
-        assertFacetTitleEquals(parentFacet, PARENT_COLLECTION, testCorpus.coll1Pid, "Collection 1");
-        assertFacetTitleEquals(parentFacet, PARENT_COLLECTION, testCorpus.coll2Pid, "Collection 2");
-    }
-
-    @Test
-    public void populateNoParentCollectionFacetTest() throws Exception {
-        SearchState searchState = new SearchState();
-        searchState.setFacetsToRetrieve(Arrays.asList(SearchFieldKey.ROLE_GROUP.name()));
-
-        SearchRequest request = new SearchRequest(searchState, accessGroups);
-        SearchResultResponse resp = facetListService.getFacetListResult(request);
-        FacetFieldList facetFieldList = resp.getFacetFields();
-
-        titleService.populateTitles(facetFieldList);
-
-        assertNull(facetFieldList.get(PARENT_COLLECTION.name()));
-    }
-
-    @Test
-    public void populateNoParentCollectionValuesTest() throws Exception {
-        SearchState searchState = new SearchState();
-        searchState.setFacetsToRetrieve(Arrays.asList(PARENT_COLLECTION.name()));
-
-        SearchRequest request = new SearchRequest(searchState, accessGroups);
-        request.getSearchState().addFacet(new GenericFacet(FILE_FORMAT_CATEGORY.name(), "Unknown"));
-        SearchResultResponse resp = facetListService.getFacetListResult(request);
-        FacetFieldList facetFieldList = resp.getFacetFields();
-
-        titleService.populateTitles(facetFieldList);
-
-        FacetFieldObject parentFacet = facetFieldList.get(PARENT_COLLECTION.name());
-        assertTrue(parentFacet.getValues().isEmpty());
-    }
-
-    @Test
-    public void populateCollectionAndUnitTest() throws Exception {
-        SearchState searchState = new SearchState();
-        searchState.setFacetsToRetrieve(Arrays.asList(PARENT_COLLECTION.name(), PARENT_UNIT.name()));
-
-        SearchRequest request = new SearchRequest(searchState, accessGroups);
-        SearchResultResponse resp = facetListService.getFacetListResult(request);
-        FacetFieldList facetFieldList = resp.getFacetFields();
-
-        titleService.populateTitles(facetFieldList);
-
-        FacetFieldObject parentFacet = facetFieldList.get(PARENT_COLLECTION.name());
-        assertEquals(2, parentFacet.getValues().size());
-        assertFacetTitleEquals(parentFacet, PARENT_COLLECTION, testCorpus.coll1Pid, "Collection 1");
-        assertFacetTitleEquals(parentFacet, PARENT_COLLECTION, testCorpus.coll2Pid, "Collection 2");
-
-        FacetFieldObject unitFacet = facetFieldList.get(PARENT_UNIT.name());
-        assertEquals(1, unitFacet.getValues().size());
-        assertFacetTitleEquals(unitFacet, PARENT_UNIT, testCorpus.unitPid, "Unit");
-    }
-
-    @Test
     public void populateSearchStateCollectionAndUnitTest() throws Exception {
         var subject = "Digital Repositories";
         var state = searchStateFactory.createSearchState(Map.of(
@@ -202,8 +134,8 @@ public class SetFacetTitleByIdServiceIT extends BaseEmbeddedSolrTest {
                 SearchFieldKey.SUBJECT.getUrlParam(), new String[] { subject }
         ));
 
-        assertHasSearchFacet(state, PARENT_COLLECTION, testCorpus.coll1Pid.getId(), testCorpus.coll1Pid.getId());
-        assertHasSearchFacet(state, PARENT_UNIT, testCorpus.unitPid.getId(), testCorpus.unitPid.getId());
+        assertHasSearchFacet(state, PARENT_COLLECTION, testCorpus.coll1Pid.getId(), "*");
+        assertHasSearchFacet(state, PARENT_UNIT, testCorpus.unitPid.getId(), "*");
         assertHasSearchFacet(state, SUBJECT, subject, subject);
 
         titleService.populateSearchState(state);

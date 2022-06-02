@@ -191,6 +191,11 @@
         <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
     </bean>
 
+    <bean id="titleRetrievalService" class="edu.unc.lib.boxc.search.solr.services.TitleRetrievalService"
+          init-method="init">
+        <property name="solrSearchService" ref="solrSearchService" />
+    </bean>
+
     <!-- Solr ingest filters -->
     <bean id="setAccessControlFilter"
           class="edu.unc.lib.boxc.indexing.solr.filter.SetAccessControlFilter">
@@ -224,6 +229,7 @@
 
     <bean id="setDescriptiveMetadataFilter"
           class="edu.unc.lib.boxc.indexing.solr.filter.SetDescriptiveMetadataFilter">
+        <property name="titleRetrievalService" ref="titleRetrievalService" />
     </bean>
 
     <bean id="setFullTextFilter" class="edu.unc.lib.boxc.indexing.solr.filter.SetFullTextFilter">
@@ -235,6 +241,7 @@
 
     <bean id="setPathFilter" class="edu.unc.lib.boxc.indexing.solr.filter.SetPathFilter">
         <property name="pathFactory" ref="contentPathFactory" />
+        <property name="titleRetrievalService" ref="titleRetrievalService" />
     </bean>
 
     <bean id="setRecordDatesFilter"

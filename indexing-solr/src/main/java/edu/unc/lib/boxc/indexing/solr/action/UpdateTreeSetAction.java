@@ -51,9 +51,9 @@ public class UpdateTreeSetAction extends UpdateTreeAction {
         }
 
         if (log.isDebugEnabled()) {
-            log.debug("Finished updating tree of {}.  {} objects updated in {} ms.", new Object[] {
-                    updateRequest.getPid().toString(), updateRequest.getChildrenPending(),
-                    (System.currentTimeMillis() - updateRequest.getTimeStarted()) });
+            log.debug("Finished updating tree of {}.  {} objects updated in {} ms.",
+                    updateRequest.getPid(), updateRequest.getChildrenPending(),
+                    (System.currentTimeMillis() - updateRequest.getTimeStarted()));
         }
     }
 }
