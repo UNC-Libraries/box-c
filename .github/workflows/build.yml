@@ -33,7 +33,9 @@ jobs:
         key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
         restore-keys: ${{ runner.os }}-m2
     - name: Build with Maven
-      run: mvn -B -U clean install -DskipTests
+      run: mvn -B -U -pl '!integration' clean install -DskipTests
+    - name: Package integration module with Maven
+      run: mvn -B -U -pl integration clean package -DskipTests
     - name: Verify DCR modules
       run: mvn -pl '!clamav-java' verify 
 

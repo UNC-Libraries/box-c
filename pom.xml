@@ -158,7 +158,6 @@
         <module>deposit-utils</module>
         <module>fcrepo-utils</module>
         <module>indexing-solr</module>
-        <module>integration</module>
         <module>model-api</module>
         <module>model-fcrepo</module>
         <module>operations-jms</module>
@@ -174,6 +173,7 @@
         <module>web-common</module>
         <module>web-services-app</module>
         <module>web-sword</module>
+        <module>integration</module>
     </modules>
 
     <reporting>

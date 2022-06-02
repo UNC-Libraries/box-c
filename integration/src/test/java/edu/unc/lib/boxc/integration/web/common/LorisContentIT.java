@@ -85,6 +85,7 @@ import edu.unc.lib.boxc.auth.api.UserRole;
     @ContextConfiguration("/spring-test/test-fedora-container.xml"),
     @ContextConfiguration("/spring-test/cdr-client-container.xml"),
     @ContextConfiguration("/spring-test/acl-service-context.xml"),
+    @ContextConfiguration("/spring-test/solr-embedded-context.xml"),
     @ContextConfiguration("/spring-test/solr-indexing-context.xml"),
     @ContextConfiguration("/loris-content-it-servlet.xml")
 })
