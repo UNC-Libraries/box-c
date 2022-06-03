@@ -54,6 +54,10 @@ public class ContentObjectFactory {
         // index folder in triple store
         repositoryObjectTreeIndexer.indexAll(object.getUri().toString());
         // index into solr
+        indexSolr(object);
+    }
+
+    public void indexSolr(ContentObject object) {
         repositoryObjectSolrIndexer.index(object.getPid());
     }
 

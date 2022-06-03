@@ -23,10 +23,20 @@ import java.util.Map;
  * @author sharonluong
  */
 public class WorkFactory extends ContentObjectFactory{
+    FileFactory fileFactory;
     public WorkObject createWork(Map<String, String> options) throws Exception {
         var work = repositoryObjectFactory.createWorkObject(null);
         prepareObject(work, options);
 
         return work;
+    }
+
+    public void createFileInWork(WorkObject work, Map<String, String> options) throws Exception {
+        var file = fileFactory.createFile(options);
+        var originalFile = file.getOriginalFile();
+
+        work.addDataFile(file.getUri(), originalFile.getFilename(), originalFile.getMimetype(), null, null);
+
+        indexSolr(work);
     }
 }
