@@ -22,6 +22,7 @@ import edu.unc.lib.boxc.search.api.requests.SearchRequest;
 import edu.unc.lib.boxc.search.solr.config.SearchSettings;
 import edu.unc.lib.boxc.search.solr.services.FacetValuesService;
 import edu.unc.lib.boxc.web.common.controllers.AbstractSolrSearchController;
+import edu.unc.lib.boxc.web.common.utils.SearchStateSerializationUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -32,6 +33,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import javax.servlet.http.HttpServletRequest;
+
+import java.util.HashMap;
 
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
@@ -83,6 +86,10 @@ public class FacetRestController extends AbstractSolrSearchController {
             throw new IllegalArgumentException("Invalid facet field specified: " + facetId);
         }
         FacetValuesService.assertValidFacetSortValue(sort);
+        if (rows != null && rows > searchSettings.getMaxFacetsPerPage()) {
+            throw new IllegalArgumentException("Invalid facetRows value, max value is: "
+                    + searchSettings.getMaxFacetsPerPage());
+        }
 
         SearchRequest searchRequest = generateSearchRequest(request);
         if (rootId != null) {
@@ -96,6 +103,21 @@ public class FacetRestController extends AbstractSolrSearchController {
         facetRequest.setRows(rows);
         var facetResp = facetValuesService.listValues(facetRequest);
 
-        return new ResponseEntity<>(facetResp, HttpStatus.OK);
+        var respBody = new HashMap<String, Object>();
+        respBody.put("facetName", facetResp.getName());
+        if (sort != null) {
+            respBody.put("facetSort", sort);
+        }
+        if (start != null) {
+            respBody.put("facetStart", start);
+        }
+        if (rows != null) {
+            respBody.put("facetRows", rows);
+        }
+        respBody.put("filterParameters", SearchStateSerializationUtil.getFilterParameters(
+                searchRequest.getSearchState()));
+        respBody.put("values", facetResp.getValues());
+
+        return new ResponseEntity<>(respBody, HttpStatus.OK);
     }
 }

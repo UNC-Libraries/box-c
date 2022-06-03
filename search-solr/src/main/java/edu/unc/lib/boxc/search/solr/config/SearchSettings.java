@@ -109,6 +109,8 @@ public class SearchSettings extends AbstractSettings {
     public int maxPerPage;
     // Upper limit to the number of results allowed in a browse request.
     public int maxBrowsePerPage;
+    // Upper limit to the number of facet values that can be returned at once
+    public int maxFacetsPerPage;
     // Upper limit to the number of page navigation links to display at a time.
     public int pagesToDisplay;
     // Max number of neighbor items to display in the neighbor view
@@ -177,6 +179,7 @@ public class SearchSettings extends AbstractSettings {
         setMaxBrowsePerPage(Integer.parseInt(properties.getProperty("search.results.maxBrowsePerPage", "100")));
         setPagesToDisplay(Integer.parseInt(properties.getProperty("search.results.pagesToDisplay", "10")));
         setMaxNeighborResults(Integer.parseInt(properties.getProperty("search.results.neighborItems", "7")));
+        setMaxFacetsPerPage(Integer.parseInt(properties.getProperty("search.results.maxFacetsPerPage", "1000")));
 
         setStructuredDepthDefault(Integer.parseInt(properties.getProperty("search.structure.depth.default", "1")));
         setStructuredDepthMax(Integer.parseInt(properties.getProperty("search.structure.depth.max", "4")));
@@ -256,6 +259,14 @@ public class SearchSettings extends AbstractSettings {
 
     public void setMaxBrowsePerPage(int maxBrowsePerPage) {
         this.maxBrowsePerPage = maxBrowsePerPage;
+    }
+
+    public int getMaxFacetsPerPage() {
+        return maxFacetsPerPage;
+    }
+
+    public void setMaxFacetsPerPage(int maxFacetsPerPage) {
+        this.maxFacetsPerPage = maxFacetsPerPage;
     }
 
     public Set<String> getSearchableFields() {

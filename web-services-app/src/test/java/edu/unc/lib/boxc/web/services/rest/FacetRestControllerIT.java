@@ -49,7 +49,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 })
 @RunWith(SpringJUnit4ClassRunner.class)
 @WebAppConfiguration
-public class FacetRestControllerTest extends AbstractAPIIT {
+public class FacetRestControllerIT extends AbstractAPIIT {
     // non-facet field selected
     // invalid field
     // with root id
@@ -161,10 +161,19 @@ public class FacetRestControllerTest extends AbstractAPIIT {
         assertValuePresent(values, 1, "image/png", 1);
     }
 
+    @Test
+    public void exceedMaxRowsTest() throws Exception {
+        var result = mvc.perform(get("/facet/fileType/listValues?facetRows=100000"))
+                .andExpect(status().is4xxClientError())
+                .andReturn();
+        assertTrue("Incorrect response: " + result.getResponse().getContentAsString(),
+                result.getResponse().getContentAsString().contains("Invalid facetRows value, max value is:"));
+    }
+
     private List<JsonNode> extractResponseFacetValues(MvcResult result) throws Exception {
         ObjectMapper mapper = new ObjectMapper();
         var respJson = mapper.readTree(result.getResponse().getContentAsString());
-        assertEquals(SearchFieldKey.FILE_FORMAT_TYPE.name(), respJson.get("name").asText());
+        assertEquals(SearchFieldKey.FILE_FORMAT_TYPE.name(), respJson.get("facetName").asText());
         return IteratorUtils.toList(respJson.get("values").elements());
     }
 

@@ -15,8 +15,6 @@
  */
 package edu.unc.lib.boxc.search.solr.services;
 
-import edu.unc.lib.boxc.model.api.ResourceType;
-import edu.unc.lib.boxc.model.api.exceptions.NotFoundException;
 import edu.unc.lib.boxc.search.api.SearchFieldKey;
 import edu.unc.lib.boxc.search.api.facets.FacetFieldList;
 import edu.unc.lib.boxc.search.api.facets.SearchFacet;
