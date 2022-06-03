@@ -312,7 +312,7 @@ public class SetDescriptiveMetadataFilterTest {
     }
 
     @Test
-    public void noMODS() throws Exception {
+    public void noMODS() {
         Date dateAdded = new Date();
         idb.setDateAdded(dateAdded);
 
@@ -333,12 +333,12 @@ public class SetDescriptiveMetadataFilterTest {
 
         // check that title, keyword and date created still get set
         assertEquals("test label", idb.getTitle());
-        assertEquals(dateAdded, idb.getDateCreated());
+        assertNull(idb.getDateCreated());
         assertTrue(idb.getKeyword().contains(PID_STRING));
     }
 
     @Test
-    public void dcTitle() throws Exception {
+    public void dcTitle() {
         idb.setTitle(null);
 
         when(objResc.hasProperty(DcElements.title)).thenReturn(true);
@@ -352,7 +352,7 @@ public class SetDescriptiveMetadataFilterTest {
     }
 
     @Test
-    public void ebucoreTitle() throws Exception {
+    public void ebucoreTitle() {
         idb.setTitle(null);
 
         when(objResc.hasProperty(DcElements.title)).thenReturn(false);
@@ -367,7 +367,7 @@ public class SetDescriptiveMetadataFilterTest {
     }
 
     @Test
-    public void fileTitle() throws Exception {
+    public void fileTitle() {
         idb.setTitle(null);
 
         when(objResc.hasProperty(DcElements.title)).thenReturn(false);
