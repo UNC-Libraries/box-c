@@ -24,6 +24,7 @@ import java.util.Map;
  */
 public class WorkFactory extends ContentObjectFactory{
     FileFactory fileFactory;
+
     public WorkObject createWork(Map<String, String> options) throws Exception {
         var work = repositoryObjectFactory.createWorkObject(null);
         prepareObject(work, options);
@@ -33,10 +34,13 @@ public class WorkFactory extends ContentObjectFactory{
 
     public void createFileInWork(WorkObject work, Map<String, String> options) throws Exception {
         var file = fileFactory.createFile(options);
-        var originalFile = file.getOriginalFile();
-
-        work.addDataFile(file.getUri(), originalFile.getFilename(), originalFile.getMimetype(), null, null);
-
+        work.addMember(file);
+        if ("true".equals(options.get("isPrimaryObject"))) {
+            work.setPrimaryObject(file.getPid());
+            // need to reindex in triple store if adding primary object
+            indexTripleStore(work);
+        }
+        // need to reindex in solr after adding file object
         indexSolr(work);
     }
 }

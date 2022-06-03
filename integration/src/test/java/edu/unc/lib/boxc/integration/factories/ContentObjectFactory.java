@@ -52,9 +52,13 @@ public class ContentObjectFactory {
         // put mods in fedora
         updateDescriptionService.updateDescription(agent, object.getPid(), inputStream);
         // index folder in triple store
-        repositoryObjectTreeIndexer.indexAll(object.getUri().toString());
+        indexTripleStore(object);
         // index into solr
         indexSolr(object);
+    }
+
+    public void indexTripleStore(ContentObject object) throws Exception {
+        repositoryObjectTreeIndexer.indexAll(object.getUri().toString());
     }
 
     public void indexSolr(ContentObject object) {
