@@ -37,10 +37,10 @@ public class AbstractFacetListService extends AbstractQueryService {
 
     protected SolrSearchService searchService;
 
-    protected ContentObjectRecord addSelectedContainer(SearchRequest searchRequest) {
+    protected ContentObjectRecord addSelectedContainer(SearchRequest searchRequest, SearchState searchState) {
         if (searchRequest.getRootPid() != null) {
             var selectedContainer = searchService.addSelectedContainer(searchRequest.getRootPid(),
-                    searchRequest.getSearchState(), searchRequest.isApplyCutoffs(), searchRequest.getAccessGroups());
+                    searchState, searchRequest.isApplyCutoffs(), searchRequest.getAccessGroups());
             if (selectedContainer == null) {
                 throw new NotFoundException("Invalid container selected");
             }

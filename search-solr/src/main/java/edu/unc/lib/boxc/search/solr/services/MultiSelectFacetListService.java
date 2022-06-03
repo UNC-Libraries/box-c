@@ -40,7 +40,7 @@ public class MultiSelectFacetListService extends AbstractFacetListService {
     public SearchResultResponse getFacetListResult(SearchRequest searchRequest) {
         SearchState searchState = (SearchState) searchRequest.getSearchState().clone();
 
-        ContentObjectRecord selectedContainer = addSelectedContainer(searchRequest);
+        ContentObjectRecord selectedContainer = addSelectedContainer(searchRequest, searchState);
 
         // Turning off rollup because it is really slow
         searchState.setRollup(false);

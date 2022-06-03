@@ -49,7 +49,7 @@ public class FacetValuesService extends AbstractFacetListService {
 
         var searchState = request.getBaseSearchRequest().getSearchState();
         assignResourceTypes(searchState);
-        addSelectedContainer(request.getBaseSearchRequest());
+        addSelectedContainer(request.getBaseSearchRequest(), searchState);
         request.getBaseSearchRequest().setApplyCutoffs(false);
         // Remove any filters from the same facet being retrieved, so that all values from the facet are visible
         searchState.getFacets().remove(request.getFacetFieldKey().name());
