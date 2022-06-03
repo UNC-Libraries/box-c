@@ -18,8 +18,6 @@ package edu.unc.lib.boxc.search.solr.services;
 import edu.unc.lib.boxc.search.api.exceptions.SolrRuntimeException;
 import edu.unc.lib.boxc.search.api.facets.FacetFieldObject;
 import edu.unc.lib.boxc.search.api.requests.FacetValuesRequest;
-import edu.unc.lib.boxc.search.api.requests.SearchRequest;
-import edu.unc.lib.boxc.search.api.requests.SearchState;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.common.params.FacetParams;
@@ -73,7 +71,8 @@ public class FacetValuesService extends AbstractFacetListService {
 
         try {
             var resp = searchService.executeQuery(query);
-            return facetFieldFactory.createFacetFieldObject(facetSolrField, resp.getFacetField(facetSolrField));
+            return facetFieldFactory.createFacetFieldObject(request.getFacetFieldKey(),
+                    resp.getFacetField(facetSolrField));
         } catch (SolrServerException e) {
             throw new SolrRuntimeException(e);
         }

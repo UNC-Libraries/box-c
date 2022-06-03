@@ -125,7 +125,7 @@ public class FacetValuesServiceIT extends BaseEmbeddedSolrTest {
     }
 
     private void assertUnfilteredCountSort(FacetFieldObject result) throws Exception {
-        assertEquals(SearchFieldKey.SUBJECT.getSolrField(), result.getName());
+        assertEquals(SearchFieldKey.SUBJECT.name(), result.getName());
         assertEquals(8, result.getValues().size());
 
         assertValuePresent(result, 0, SUBJECT_5, 4);
@@ -173,7 +173,7 @@ public class FacetValuesServiceIT extends BaseEmbeddedSolrTest {
         request.setSort("index");
 
         var result = facetValuesService.listValues(request);
-        assertEquals(SearchFieldKey.SUBJECT.getSolrField(), result.getName());
+        assertEquals(SearchFieldKey.SUBJECT.name(), result.getName());
         assertEquals(8, result.getValues().size());
 
         assertValuePresent(result, 0, SUBJECT_5, 4);
@@ -192,7 +192,7 @@ public class FacetValuesServiceIT extends BaseEmbeddedSolrTest {
         request.getBaseSearchRequest().setRootPid(testCorpus.coll1Pid);
 
         var result = facetValuesService.listValues(request);
-        assertEquals(SearchFieldKey.SUBJECT.getSolrField(), result.getName());
+        assertEquals(SearchFieldKey.SUBJECT.name(), result.getName());
         assertEquals(5, result.getValues().size());
 
         assertValuePresent(result, 0, SUBJECT_2, 2);
@@ -209,7 +209,7 @@ public class FacetValuesServiceIT extends BaseEmbeddedSolrTest {
                 Map.of(SearchFieldKey.DEFAULT_INDEX.name(), "north"));
 
         var result = facetValuesService.listValues(request);
-        assertEquals(SearchFieldKey.SUBJECT.getSolrField(), result.getName());
+        assertEquals(SearchFieldKey.SUBJECT.name(), result.getName());
         assertEquals(3, result.getValues().size());
 
         assertValuePresent(result, 0, SUBJECT_2, 2);

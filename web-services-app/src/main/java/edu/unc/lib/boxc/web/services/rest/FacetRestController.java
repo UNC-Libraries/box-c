@@ -17,6 +17,7 @@ package edu.unc.lib.boxc.web.services.rest;
 
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.boxc.search.api.SearchFieldKey;
+import edu.unc.lib.boxc.search.api.requests.FacetValuesRequest;
 import edu.unc.lib.boxc.search.api.requests.SearchRequest;
 import edu.unc.lib.boxc.search.solr.config.SearchSettings;
 import edu.unc.lib.boxc.search.solr.services.FacetValuesService;
@@ -49,9 +50,9 @@ public class FacetRestController extends AbstractSolrSearchController {
     @RequestMapping(value = "/facet/{facetId}/listValues", produces = APPLICATION_JSON_VALUE)
     public @ResponseBody
     ResponseEntity<Object> listValues(@PathVariable("facetId") String facetId,
-                                      @RequestParam("facetSort") String sort,
-                                      @RequestParam("facetStart") Integer start,
-                                      @RequestParam("facetRows") Integer rows,
+                                      @RequestParam(value = "facetSort", required = false) String sort,
+                                      @RequestParam(value = "facetStart", required = false) Integer start,
+                                      @RequestParam(value = "facetRows", required = false) Integer rows,
                                       HttpServletRequest request) {
         return listValues(facetId, null, sort, start, rows, request);
     }
@@ -69,16 +70,16 @@ public class FacetRestController extends AbstractSolrSearchController {
     public @ResponseBody
     ResponseEntity<Object> listValues(@PathVariable("facetId") String facetId,
                                       @PathVariable("rootId") String rootId,
-                                      @RequestParam("facetSort") String sort,
-                                      @RequestParam("facetStart") Integer start,
-                                      @RequestParam("facetRows") Integer rows,
+                                      @RequestParam(value = "facetSort", required = false) String sort,
+                                      @RequestParam(value = "facetStart", required = false) Integer start,
+                                      @RequestParam(value = "facetRows", required = false) Integer rows,
                                       HttpServletRequest request) {
 
         var facetKey = SearchFieldKey.getByUrlParam(facetId);
         if (facetKey == null) {
             throw new IllegalArgumentException("Unknown facet field specified");
         }
-        if (!searchSettings.getFacetNames().contains(facetId)) {
+        if (!searchSettings.getFacetNames().contains(facetKey.name())) {
             throw new IllegalArgumentException("Invalid facet field specified: " + facetId);
         }
         FacetValuesService.assertValidFacetSortValue(sort);
@@ -88,7 +89,12 @@ public class FacetRestController extends AbstractSolrSearchController {
             searchRequest.setRootPid(PIDs.get(rootId));
         }
 
-        var facetResp = facetValuesService.listValues(facetKey, sort, start, rows, searchRequest);
+        var facetRequest = new FacetValuesRequest(facetKey);
+        facetRequest.setBaseSearchRequest(searchRequest);
+        facetRequest.setSort(sort);
+        facetRequest.setStart(start);
+        facetRequest.setRows(rows);
+        var facetResp = facetValuesService.listValues(facetRequest);
 
         return new ResponseEntity<>(facetResp, HttpStatus.OK);
     }
