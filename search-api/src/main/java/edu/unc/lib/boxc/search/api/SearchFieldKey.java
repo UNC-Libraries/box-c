@@ -91,6 +91,9 @@ public enum SearchFieldKey {
     private static Map<String, SearchFieldKey> nameToKey = Arrays.stream(SearchFieldKey.values())
             .collect(Collectors.toMap(SearchFieldKey::getSolrField, Function.identity()));
 
+    private static Map<String, SearchFieldKey> urlParamToKey = Arrays.stream(SearchFieldKey.values())
+            .collect(Collectors.toMap(SearchFieldKey::getUrlParam, Function.identity()));
+
     private SearchFieldKey(String solrField, String urlParam, String displayLabel) {
         this.solrField = solrField;
         this.urlParam = urlParam;
@@ -125,5 +128,13 @@ public enum SearchFieldKey {
      */
     public static SearchFieldKey getByName(String name) {
         return nameToKey.get(name);
+    }
+
+    /**
+     * @param urlParam
+     * @return the SearchFieldKey which has a urlParam matching the provided value
+     */
+    public static SearchFieldKey getByUrlParam(String urlParam) {
+        return urlParamToKey.get(urlParam);
     }
 }

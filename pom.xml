@@ -508,6 +508,13 @@
             </dependency>
             <dependency>
                 <groupId>edu.unc.lib.cdr</groupId>
+                <artifactId>search-solr</artifactId>
+                <version>${cdr.version}</version>
+                <scope>test</scope>
+                <type>test-jar</type>
+            </dependency>
+            <dependency>
+                <groupId>edu.unc.lib.cdr</groupId>
                 <artifactId>indexing-solr</artifactId>
                 <version>${cdr.version}</version>
             </dependency>

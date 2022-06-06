@@ -73,7 +73,7 @@ public class CutoffFacetTest extends Assert {
 
         FacetFieldFactory facetFieldFactory = new FacetFieldFactory();
 
-        FacetFieldObject ffo = facetFieldFactory.createFacetFieldObject("ANCESTOR_PATH", facetField);
+        FacetFieldObject ffo = facetFieldFactory.createFacetFieldObject(SearchFieldKey.ANCESTOR_PATH, facetField);
         assertTrue(ffo.getValues().get(0) instanceof CutoffFacet);
         assertEquals("1,uuid:a", ffo.getValues().get(0).getSearchValue());
         assertEquals("1,uuid:a", ffo.getValues().get(0).getValue());

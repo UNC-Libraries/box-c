@@ -124,9 +124,6 @@ public class SetDescriptiveMetadataFilter implements IndexDocumentFilter {
         if (dip.getContentObject() instanceof AdminUnit || dip.getContentObject() instanceof CollectionObject) {
             titleRetrievalService.storeTitle(idb.getPid(), idb.getTitle());
         }
-        if (idb.getDateCreated() == null) {
-            idb.setDateCreated(idb.getDateAdded());
-        }
         idb.getKeyword().add(dip.getPid().getId());
     }
 

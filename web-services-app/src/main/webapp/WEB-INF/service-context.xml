@@ -415,6 +415,15 @@
         <property name="aclService" ref="aclService"/>
         <property name="queryLayer" ref="queryLayer"/>
     </bean>
+
+    <bean id="facetValuesService" class="edu.unc.lib.boxc.search.solr.services.FacetValuesService"
+          init-method="initializeSolrServer">
+        <property name="searchSettings" ref="searchSettings" />
+        <property name="searchService" ref="queryLayer" />
+        <property name="facetFieldFactory" ref="facetFieldFactory" />
+        <property name="accessRestrictionUtil" ref="solrAccessRestrictionUtil" />
+        <property name="solrSettings" ref="solrSettings" />
+    </bean>
     
     <bean class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
         <property name="staticMethod" value="edu.unc.lib.boxc.web.common.utils.SerializationUtil.injectSettings"/>
