@@ -50,4 +50,8 @@ public class WorkFactory extends ContentObjectFactory{
         // need to reindex in solr after adding file object
         indexSolr(work);
     }
+
+    public void setFileFactory(FileFactory fileFactory) {
+        this.fileFactory = fileFactory;
+    }
 }
