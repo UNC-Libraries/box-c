@@ -34,30 +34,32 @@ import java.util.Map;
 import java.util.Objects;
 
 /**
+ * Factory for creating test FileObjects
  * @author snluong
  */
 public class FileFactory extends ContentObjectFactory {
-    public static final String FILE_FORMAT = "fileFormat";
-    public static final String IMAGE_FORMAT = "image";
-    public static final String TEXT_FORMAT = "text";
-    public static final String PDF_FORMAT = "pdf";
-    public static final String AUDIO_FORMAT = "audio";
-    public static final String VIDEO_FORMAT = "video";
+    public static final String FILE_FORMAT_OPTION = "fileFormat";
+    public static final String IMAGE_FORMAT_OPTION = "image";
+    public static final String TEXT_FORMAT_OPTION = "text";
+    public static final String PDF_FORMAT_OPTION = "pdf";
+    public static final String AUDIO_FORMAT_OPTION = "audio";
+    public static final String VIDEO_FORMAT_OPTION = "video";
 
     private DerivativeService derivativeService;
 
     public FileObject createFile(Map<String, String> options) throws Exception {
         var file = repositoryObjectFactory.createFileObject(null);
+        addFileFormat(file, options);
         prepareObject(file, options);
 
         return file;
     }
 
     private void addFileFormat(FileObject file, Map<String, String> options) throws Exception {
-        var fileFormat = options.get(FILE_FORMAT);
+        var fileFormat = options.get(FILE_FORMAT_OPTION);
 
         switch (fileFormat) {
-        case IMAGE_FORMAT:
+        case IMAGE_FORMAT_OPTION:
             createOriginalFile(file, "image/jpeg", "data", ".jpg");
 
             var derivativePath = derivativeService.getDerivativePath(file.getPid(), DatastreamType.THUMBNAIL_LARGE);
@@ -73,24 +75,24 @@ public class FileFactory extends ContentObjectFactory {
             file.addBinary(fitsPid, fitsUri, TECHNICAL_METADATA.getDefaultFilename(), TECHNICAL_METADATA.getMimetype(),
                     null, null, IanaRelation.derivedfrom, DCTerms.conformsTo, createResource(FITS_URI));
             break;
-        case TEXT_FORMAT:
+        case TEXT_FORMAT_OPTION:
             var data = "we have a lot of text to get through. more than usual";
             createOriginalFile(file, "text/plain", data, ".txt");
             // full text derivatives
             var textPath = derivativeService.getDerivativePath(file.getPid(), DatastreamType.FULLTEXT_EXTRACTION);
             FileUtils.write(textPath.toFile(), data, "UTF-8");
             break;
-        case PDF_FORMAT:
+        case PDF_FORMAT_OPTION:
             var pdfData = "this is a very legitimate PDF";
             createOriginalFile(file, "application/pdf", pdfData,".pdf");
             // full text derivatives
             var pdfTextPath = derivativeService.getDerivativePath(file.getPid(), DatastreamType.FULLTEXT_EXTRACTION);
             FileUtils.write(pdfTextPath.toFile(), pdfData, "UTF-8");
             break;
-        case AUDIO_FORMAT:
+        case AUDIO_FORMAT_OPTION:
             createOriginalFile(file, "audio/mp3", "This is an mp3", ".mp3");
             break;
-        case VIDEO_FORMAT:
+        case VIDEO_FORMAT_OPTION:
             createOriginalFile(file, "video/mp4", "This is a video", ".mp4");
             break;
         default:
