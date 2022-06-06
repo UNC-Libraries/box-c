@@ -64,7 +64,6 @@
         <property name="modsFactory" ref="modsFactory" />
         <property name="updateDescriptionService" ref="updateDescriptionService" />
         <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
-        <property name="derivativeService" ref="derivativeService" />
         <property name="fileFactory" ref="fileFactory" />
     </bean>
 </beans>
