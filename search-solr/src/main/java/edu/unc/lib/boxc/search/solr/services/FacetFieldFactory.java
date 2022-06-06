@@ -88,9 +88,9 @@ public class FacetFieldFactory {
         }
         FacetFieldList facetFieldList = new FacetFieldList();
         for (FacetField facetField : facetFields) {
-            String fieldName = SearchFieldKey.getByName(facetField.getName()).name();
+            var fieldKey = SearchFieldKey.getByName(facetField.getName());
             if (facetField.getValueCount() > 0) {
-                facetFieldList.add(createFacetFieldObject(fieldName, facetField));
+                facetFieldList.add(createFacetFieldObject(fieldKey, facetField));
             }
         }
         return facetFieldList;
@@ -103,16 +103,16 @@ public class FacetFieldFactory {
      * @param facetField
      * @return
      */
-    public FacetFieldObject createFacetFieldObject(String fieldKey, FacetField facetField) {
+    public FacetFieldObject createFacetFieldObject(SearchFieldKey fieldKey, FacetField facetField) {
         List<SearchFacet> values = new ArrayList<SearchFacet>();
 
         // Generate list of facet values from Solr facet fields if they are provided.
         if (facetField != null) {
-            Class<?> facetClass = SearchSettings.getFacetClass(fieldKey);
+            Class<?> facetClass = SearchSettings.getFacetClass(fieldKey.name());
             try {
                 Constructor<?> constructor = facetClass.getConstructor(String.class, FacetField.Count.class);
                 for (FacetField.Count value : facetField.getValues()) {
-                    values.add((GenericFacet) constructor.newInstance(fieldKey, value));
+                    values.add((GenericFacet) constructor.newInstance(fieldKey.name(), value));
                 }
             } catch (Exception e) {
                 throw new InvalidFacetException(
@@ -121,7 +121,7 @@ public class FacetFieldFactory {
             }
         }
 
-        return new FacetFieldObject(fieldKey, values);
+        return new FacetFieldObject(fieldKey.name(), values);
     }
 
     /**
@@ -132,7 +132,7 @@ public class FacetFieldFactory {
     public void addMissingFacetFieldObjects(FacetFieldList facetFieldList, Collection<String> allFacetNames) {
         for (String facetName : allFacetNames) {
             if (!facetFieldList.contains(facetName)) {
-                facetFieldList.add(createFacetFieldObject(facetName, null));
+                facetFieldList.add(createFacetFieldObject(SearchFieldKey.valueOf(facetName), null));
             }
         }
     }
