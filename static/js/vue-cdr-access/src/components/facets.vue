@@ -149,7 +149,7 @@ Facet list component, used to display all the values of facets and provide links
             },
 
             showMoreResults(facet) {
-                return facet.name !== 'DATE_CREATED_YEAR' && facet.values.length === FACET_RESULT_COUNT;
+                return facet.name !== 'DATE_CREATED_YEAR' && facet.values.length >= FACET_RESULT_COUNT;
             },
 
             /**

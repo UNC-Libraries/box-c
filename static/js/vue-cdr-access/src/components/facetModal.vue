@@ -20,22 +20,24 @@
                                 <slot name="body">
                                     <div id="response-text">
                                         <ul>
-                                            <li v-for="facet_value in facet_data.values">
-                                                <a @click.prevent="selectedFacet(facet_value)" href="/">{{ facet_value.displayValue }} ({{ facet_value.count }})</a>
-                                            </li>
+                                            <template v-for="(facet_value, index) in facet_data.values">
+                                                <li v-if="index < displayCount">
+                                                    <a @click.prevent="selectedFacet(facet_value)" href="/">{{ facet_value.displayValue }} ({{ facet_value.count }})</a>
+                                                </li>
+                                            </template>
                                         </ul>
                                     </div>
                                 </slot>
                             </div>
-                            <div class="modal-footer is-flex is-align-content-flex-end is-flex-wrap-wrap">
+                            <div class="modal-footer">
                                 <slot name="footer">
                                     <div class="columns">
                                         <div class="column field is-grouped" @click.prevent="">
-                                            <button @click="getPage(-20)" :disabled="start_row === 0" :class="{no_link: start_row === 0}" class="button">
+                                            <button @click="getPage(-displayCount)" :disabled="start_row === 0" :class="{no_link: start_row === 0}" class="button">
                                                 <span class="icon"><i class="fa fa-backward"></i></span>
                                                 <span>Previous</span>
                                             </button>
-                                            <button :disabled="disableNextBtn" class="button" @click="getPage(20)">
+                                            <button :disabled="disableNextBtn" class="button" @click="getPage(displayCount)">
                                                 <span>Next</span>
                                                 <span class="icon"><i class="fa fa-forward"></i></span>
                                             </button>
@@ -74,17 +76,13 @@ export default {
 
     props: {
         facetId: String,
-        facetName: String,
-        rootId: {
-            type: String,
-            default: null
-        }
+        facetName: String
     },
 
     data() {
         return {
             facet_data: {},
-            num_rows: 20,
+            num_rows: 21, // Request one more than shown, so we can determine if there's another page
             show_modal: false,
             start_row: 0,
             sort_type: 'count' // options 'count' or 'index'
@@ -98,7 +96,7 @@ export default {
             let base_url = `/services/api/facet/${this.facetId}/listValues`;
             const query_params = `?facetSort=${this.sort_type}&facetRows=${this.num_rows}&facetStart=${this.start_row}`;
 
-            const collection = this.$route.query.collection;
+            const collection = this.$route.params.uuid;
             if (collection !== undefined) {
                 base_url += `/${collection}`;
             }
@@ -112,7 +110,11 @@ export default {
         },
 
         disableNextBtn() {
-            return this.numberOfResults - this.start_row - this.num_rows <= 0;
+            return this.numberOfResults < this.num_rows;
+        },
+
+        displayCount() {
+            return this.num_rows - 1;
         }
     },
 
@@ -133,6 +135,7 @@ export default {
 
         sortFacets(sort) {
             this.sort_type = sort;
+            this.start_row = 0;
             this.retrieveResults();
         },
 
