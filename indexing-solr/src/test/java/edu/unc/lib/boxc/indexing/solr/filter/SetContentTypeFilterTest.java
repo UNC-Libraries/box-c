@@ -25,6 +25,7 @@ import edu.unc.lib.boxc.model.api.objects.FileObject;
 import edu.unc.lib.boxc.model.api.objects.FolderObject;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.api.objects.WorkObject;
+import edu.unc.lib.boxc.model.api.services.ContentPathFactory;
 import edu.unc.lib.boxc.model.fcrepo.ids.DatastreamPids;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.boxc.search.api.ContentCategory;
@@ -87,6 +88,8 @@ public class SetContentTypeFilterTest {
     @Mock
     private SolrSearchService solrSearchService;
     @Mock
+    private ContentPathFactory contentPathFactory;
+    @Mock
     private DocumentIndexingPackageDataLoader documentIndexingPackageDataLoader;
     @Mock
     private RepositoryObjectLoader repositoryObjectLoader;
@@ -120,6 +123,7 @@ public class SetContentTypeFilterTest {
         filter = new SetContentTypeFilter();
         filter.setSolrSearchService(solrSearchService);
         filter.setTechnicalMetadataService(technicalMetadataService);
+        filter.setContentPathFactory(contentPathFactory);
     }
 
     @Test

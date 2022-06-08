@@ -219,6 +219,7 @@
     <bean id="setContentTypeFilter" class="edu.unc.lib.boxc.indexing.solr.filter.SetContentTypeFilter">
         <property name="solrSearchService" ref="solrSearchService" />
         <property name="technicalMetadataService" ref="technicalMetadataService" />
+        <property name="contentPathFactory" ref="contentPathFactory" />
     </bean>
 
     <bean id="setDatastreamFilter"
