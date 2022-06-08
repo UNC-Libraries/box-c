@@ -1,3 +1,6 @@
+<!--
+Modal facet component, used to display all the values of a particular facet in a paginated form and provide links for applying those values as filters on the current search.
+-->
 <template>
     <div class="meta-modal">
         <a href="#" @click.prevent="retrieveResults">More</a>
@@ -32,7 +35,7 @@
                             <div class="modal-footer">
                                 <slot name="footer">
                                     <div class="columns">
-                                        <div class="column field is-grouped" @click.prevent="">
+                                        <div class="column field is-grouped paging">
                                             <button @click="getPage(-displayCount)" :disabled="start_row === 0" :class="{no_link: start_row === 0}" class="button">
                                                 <span class="icon"><i class="fa fa-backward"></i></span>
                                                 <span>Previous</span>
@@ -68,7 +71,7 @@
 </template>
 
 <script>
-import get from 'axios';
+import axios from 'axios';
 
 
 export default {
@@ -89,7 +92,7 @@ export default {
         };
     },
 
-    emits: ['facetsUpdated'],
+    emits: ['facetValueAdded'],
 
     computed: {
         facetUrl() {
@@ -120,7 +123,7 @@ export default {
 
     methods: {
         retrieveResults() {
-            get(this.facetUrl).then((response) => {
+            axios.get(this.facetUrl).then((response) => {
                 this.facet_data = response.data;
                 this.show_modal = true;
             }).catch(function (error) {
