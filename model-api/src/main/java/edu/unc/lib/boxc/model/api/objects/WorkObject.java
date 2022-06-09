@@ -71,14 +71,13 @@ public interface WorkObject extends ContentContainerObject {
      * original file, using the provided pid as the identifier for the new
      * FileObject.
      *
-     *
-     * @param contentStream
-     *            Inputstream containing the binary content for the data file. Required.
+     * @param filePid
+     * @param storageUri
      * @param filename
      * @param mimetype
      * @param sha1Checksum
+     * @param md5Checksum
      * @param model
-     *            model containing properties for the new fileObject
      * @return
      */
     FileObject addDataFile(PID filePid, URI storageUri, String filename, String mimetype, String sha1Checksum,

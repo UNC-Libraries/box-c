@@ -127,7 +127,7 @@ public abstract class AbstractDestroyObjectsJob implements Runnable {
         }
         cleanupBinaryUris.forEach(contentUri -> {
             try {
-                log.error("Deleting destroyed binary {}", contentUri);
+                log.debug("Deleting destroyed binary {}", contentUri);
                 StorageLocation storageLoc = locManager.getStorageLocationForUri(contentUri);
                 transferSession.forDestination(storageLoc)
                         .delete(contentUri);

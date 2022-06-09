@@ -15,57 +15,6 @@
  */
 package edu.unc.lib.boxc.operations.impl.destroy;
 
-import static edu.unc.lib.boxc.model.api.rdf.CdrAcl.markedForDeletion;
-import static edu.unc.lib.boxc.model.api.sparql.SparqlUpdateHelper.createSparqlReplace;
-import static edu.unc.lib.boxc.model.api.xml.JDOMNamespaceUtil.CDR_MESSAGE_NS;
-import static edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPaths.getContentRootPid;
-import static edu.unc.lib.boxc.operations.jms.indexing.IndexingActionType.DELETE_SOLR_TREE;
-import static java.util.Arrays.asList;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-import static org.mockito.MockitoAnnotations.initMocks;
-
-import java.io.File;
-import java.net.URI;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import org.apache.commons.io.FileUtils;
-import org.apache.jena.rdf.model.Model;
-import org.apache.jena.rdf.model.Resource;
-import org.apache.jena.vocabulary.RDF;
-import org.fcrepo.client.FcrepoClient;
-import org.jdom2.Document;
-import org.jdom2.Element;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
-import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
-import org.mockito.Mock;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.ContextHierarchy;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-
 import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
 import edu.unc.lib.boxc.auth.api.models.AgentPrincipals;
 import edu.unc.lib.boxc.auth.api.services.AccessControlService;
@@ -75,6 +24,7 @@ import edu.unc.lib.boxc.auth.fcrepo.services.InheritedAclFactory;
 import edu.unc.lib.boxc.fcrepo.utils.TransactionManager;
 import edu.unc.lib.boxc.model.api.ResourceType;
 import edu.unc.lib.boxc.model.api.ids.PID;
+import edu.unc.lib.boxc.model.api.ids.PIDMinter;
 import edu.unc.lib.boxc.model.api.objects.AdminUnit;
 import edu.unc.lib.boxc.model.api.objects.BinaryObject;
 import edu.unc.lib.boxc.model.api.objects.CollectionObject;
@@ -104,6 +54,57 @@ import edu.unc.lib.boxc.persist.api.transfer.BinaryTransferService;
 import edu.unc.lib.boxc.persist.impl.storage.StorageLocationManagerImpl;
 import edu.unc.lib.boxc.search.api.models.ObjectPath;
 import edu.unc.lib.boxc.search.solr.services.ObjectPathFactory;
+import org.apache.commons.io.FileUtils;
+import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.RDFNode;
+import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.vocabulary.RDF;
+import org.fcrepo.client.FcrepoClient;
+import org.jdom2.Document;
+import org.jdom2.Element;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
+import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
+import org.mockito.Mock;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.ContextHierarchy;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+
+import java.io.File;
+import java.net.URI;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import static edu.unc.lib.boxc.model.api.rdf.CdrAcl.markedForDeletion;
+import static edu.unc.lib.boxc.model.api.sparql.SparqlUpdateHelper.createSparqlReplace;
+import static edu.unc.lib.boxc.model.api.xml.JDOMNamespaceUtil.CDR_MESSAGE_NS;
+import static edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPaths.getContentRootPid;
+import static edu.unc.lib.boxc.operations.jms.indexing.IndexingActionType.DELETE_SOLR_TREE;
+import static java.util.Arrays.asList;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import static org.mockito.MockitoAnnotations.initMocks;
 
 /**
  *
@@ -161,6 +162,8 @@ public class DestroyObjectsJobIT {
     private StorageLocationManagerImpl locationManager;
     @Autowired
     private BinaryTransferService transferService;
+    @Autowired
+    private PIDMinter pidMinter;
 
     private AgentPrincipals agent;
 
@@ -222,6 +225,59 @@ public class DestroyObjectsJobIT {
         verify(binaryDestroyedMessageSender).sendMessage(docCaptor.capture());
 
         assertMessagePresent(docCaptor.getAllValues(), filesToCleanup, null);
+    }
+
+    @Test
+    public void destroyPrimaryObjectInMultiFileWorkTest() throws Exception {
+        PID fileObjPid = objsToDestroy.get(2);
+        var workObj = repoObjLoader.getWorkObject(objsToDestroy.get(1));
+        workObj.setPrimaryObject(fileObjPid);
+        // Add a second file
+        var fileObj2 = addFileToWork(workObj);
+        treeIndexer.indexAll(baseAddress);
+
+        initializeJob(asList(fileObjPid));
+
+        FileObject fileObj = repoObjLoader.getFileObject(fileObjPid);
+        Map<URI, Map<String, String>> filesToCleanup = derivativesToCleanup(fileObj);
+
+        URI contentUri = fileObj.getOriginalFile().getContentUri();
+        assertTrue(Files.exists(Paths.get(contentUri)));
+
+        job.run();
+
+        Model logParentModel = fileObj.getParent().getPremisLog().getEventsModel();
+        assertTrue(logParentModel.contains(null, RDF.type, Premis.Deletion));
+        assertTrue(logParentModel.contains(null, Premis.note,
+                "1 object(s) were destroyed"));
+
+        Tombstone stoneFile = repoObjLoader.getTombstone(fileObjPid);
+        Resource stoneResc = stoneFile.getResource();
+        assertTrue(stoneResc.hasProperty(RDF.type, Cdr.Tombstone));
+        assertTrue(stoneResc.hasProperty(RDF.type, Cdr.FileObject));
+        // check to make sure metadata from binary was retained by file obj's tombstone
+        assertTrue(stoneResc.hasProperty(Ebucore.filename));
+        assertTrue(stoneResc.hasProperty(Cdr.hasMessageDigest));
+        assertTrue(stoneResc.hasProperty(Ebucore.hasMimeType));
+        assertTrue(stoneResc.hasProperty(Cdr.hasSize));
+
+        assertFalse("Original file must be deleted", Files.exists(Paths.get(contentUri)));
+
+        verify(indexingMessageSender).sendIndexingOperation(anyString(), eq(fileObjPid), eq(DELETE_SOLR_TREE));
+
+        verify(binaryDestroyedMessageSender).sendMessage(docCaptor.capture());
+
+        assertMessagePresent(docCaptor.getAllValues(), filesToCleanup, null);
+
+        workObj.shouldRefresh();
+
+        assertNull("Primary object of work must now be null", workObj.getPrimaryObject());
+        var members = workObj.getMembers();
+        assertTrue("Second file must still be present", members.stream()
+                .anyMatch(m -> m.getPid().equals(fileObj2.getPid())));
+        assertEquals(2, members.size());
+        assertFalse("Primary object must be unset",
+                workObj.getModel().contains(null, Cdr.primaryObject, (RDFNode) null));
     }
 
     @Test
@@ -383,15 +439,7 @@ public class DestroyObjectsJobIT {
         collection.addMember(folder2);
         WorkObject work = repoObjFactory.createWorkObject(null);
         folder.addMember(work);
-        String bodyString = "Content";
-        String mimetype = "text/plain";
-        Path storagePath = Paths.get(locationManager.getStorageLocationById(LOC1_ID).getNewStorageUri(work.getPid()));
-        Files.createDirectories(storagePath);
-        File contentFile = Files.createTempFile(storagePath, "file", ".txt").toFile();
-        String sha1 = "4f9be057f0ea5d2ba72fd2c810e8d7b9aa98b469";
-        String filename = contentFile.getName();
-        FileUtils.writeStringToFile(contentFile, bodyString, "UTF-8");
-        FileObject file = work.addDataFile(contentFile.toPath().toUri(), filename, mimetype, sha1, null);
+        var file = addFileToWork(work);
 
         treeIndexer.indexAll(baseAddress);
 
@@ -402,6 +450,20 @@ public class DestroyObjectsJobIT {
         markObjsForDeletion(objsToDestroy);
 
         return objsToDestroy;
+    }
+
+    private FileObject addFileToWork(WorkObject workObj) throws Exception {
+        String bodyString = "Content";
+        String mimetype = "text/plain";
+        PID filePid = pidMinter.mintContentPid();
+        Path storagePath = Paths.get(locationManager.getStorageLocationById(LOC1_ID)
+                .getNewStorageUri(filePid));
+        Files.createDirectories(storagePath);
+        File contentFile = Files.createTempFile(storagePath, "file", ".txt").toFile();
+        String sha1 = "4f9be057f0ea5d2ba72fd2c810e8d7b9aa98b469";
+        String filename = contentFile.getName();
+        FileUtils.writeStringToFile(contentFile, bodyString, "UTF-8");
+        return workObj.addDataFile(filePid, contentFile.toPath().toUri(), filename, mimetype, sha1, null, null);
     }
 
     private void initializeJob(List<PID> objsToDestroy) {
