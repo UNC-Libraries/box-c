@@ -146,6 +146,7 @@ describe('modalMetadata.vue', () => {
 
     it("shows the previous page of results when 'Previous' is clicked", async  () => {
         wrapper.setData({
+            current_page: 3,
             num_rows: 3,
             start_row: 4
         });
@@ -169,6 +170,27 @@ describe('modalMetadata.vue', () => {
         expect(facets_previous[1].text()).toContain('Efik (1)');
     });
 
+    it("updates the current page number when navigating between pages", async () => {
+        wrapper.setData({
+            current_page: 3,
+            num_rows: 3,
+            start_row: 4
+        });
+        jest.spyOn(axios, 'get')
+            .mockResolvedValueOnce( pageThreeData())
+            .mockResolvedValueOnce(pageTwoData());
+        await wrapper.find('a').trigger('click');
+        await flushPromises();
+
+        expect(wrapper.find('.current-page').text()).toEqual('Page: 3');
+
+        const sorting = wrapper.findAll('.paging button');
+        await sorting[0].trigger('click');
+        await flushPromises();
+
+        expect(wrapper.find('.current-page').text()).toEqual('Page: 2');
+    });
+
     it("sorts results alphabetically", async () => {
         jest.spyOn(axios, 'get')
             .mockResolvedValueOnce(defaultData())
@@ -185,7 +207,7 @@ describe('modalMetadata.vue', () => {
         expect(facets[5].text()).toContain('Ewe (1)');
 
         const sort = wrapper.findAll('.sorting button');
-        await sort[0].trigger('click');
+        await sort[1].trigger('click');
 
         const facets_alpha = wrapper.findAll('li');
         expect(facets_alpha[0].text()).toContain('Danish (1)');
@@ -212,7 +234,7 @@ describe('modalMetadata.vue', () => {
         expect(facets_alpha[5].text()).toContain('Ewe (1)');
 
         const sort = wrapper.findAll('.sorting button');
-        await sort[1].trigger('click');
+        await sort[0].trigger('click');
 
         const facets = wrapper.findAll('li');
         expect(facets[0].text()).toContain('English (10)');

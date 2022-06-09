@@ -3,8 +3,8 @@ Modal facet component, used to display all the values of a particular facet in a
 -->
 <template>
     <div class="meta-modal">
-        <a href="#" @click.prevent="retrieveResults">More</a>
-        <div v-if="show_modal" @close="show_modal = false">
+        <a href="#" class="button more" @click.prevent="retrieveResults">View more</a>
+        <div v-if="show_modal">
             <transition name="modal">
                 <div class="modal-mask">
                     <div class="modal-wrapper">
@@ -14,7 +14,7 @@ Modal facet component, used to display all the values of a particular facet in a
                                 <slot name="header">
                                     <div class="column is-12">
                                         <h3>{{ facetName }}</h3>
-                                        <button class="button is-small" @click="show_modal = false">{{ $t('modal.close') }}</button>
+                                        <button class="button" @click="closeModal">X</button>
                                     </div>
                                 </slot>
                             </div>
@@ -36,7 +36,7 @@ Modal facet component, used to display all the values of a particular facet in a
                                 <slot name="footer">
                                     <div class="columns">
                                         <div class="column field is-grouped paging">
-                                            <button @click="getPage(-displayCount)" :disabled="start_row === 0" :class="{no_link: start_row === 0}" class="button">
+                                            <button :disabled="start_row === 0" class="button" @click="getPage(-displayCount)">
                                                 <span class="icon"><i class="fa fa-backward"></i></span>
                                                 <span>Previous</span>
                                             </button>
@@ -44,19 +44,20 @@ Modal facet component, used to display all the values of a particular facet in a
                                                 <span>Next</span>
                                                 <span class="icon"><i class="fa fa-forward"></i></span>
                                             </button>
+                                            <span class="current-page">Page: {{ current_page }}</span>
                                         </div>
-                                        <div class="column field is-grouped sorting">
-                                            <button class="button" @click.prevent="sortFacets('index')">
-                                                <span class="icon">
-                                                    <i class="fa fa-sort-alpha-down"></i>
-                                                </span>
-                                                <span>A-Z Sort</span>
-                                            </button>
-                                            <button class="button" @click.prevent="sortFacets('count')">
+                                        <div class="column field sorting buttons has-addons">
+                                            <button class="button" :class="{default: sort_type !== 'count'}" @click.prevent="sortFacets('count')">
                                                 <span class="icon">
                                                     <i class="fa fa-sort-numeric-up"></i>
                                                 </span>
                                                 <span>Numerical Sort</span>
+                                            </button>
+                                            <button class="button" :class="{default: sort_type !== 'index'}" @click.prevent="sortFacets('index')">
+                                                <span class="icon">
+                                                    <i class="fa fa-sort-alpha-down"></i>
+                                                </span>
+                                                <span>A-Z Sort</span>
                                             </button>
                                         </div>
                                     </div>
@@ -73,7 +74,6 @@ Modal facet component, used to display all the values of a particular facet in a
 <script>
 import axios from 'axios';
 
-
 export default {
     name: "facetModal",
 
@@ -84,6 +84,7 @@ export default {
 
     data() {
         return {
+            current_page: 1,
             facet_data: {},
             num_rows: 21, // Request one more than shown, so we can determine if there's another page
             show_modal: false,
@@ -148,8 +149,28 @@ export default {
                 start = 0;
             }
             this.start_row = start;
+            const new_page = (start_row < 0) ? -1 : 1;
+            this.current_page += new_page;
             this.retrieveResults();
+        },
+
+        closeModal() {
+            this.show_modal = false;
+        },
+
+        closeEsc(e) {
+            if (e.keyCode === 27) {
+                this.closeModal();
+            }
         }
+    },
+
+    mounted() {
+        document.addEventListener("keydown", this.closeEsc);
+    },
+
+    beforeDestroy() {
+        document.removeEventListener("keydown", this.closeEsc);
     }
 }
 </script>
@@ -162,8 +183,25 @@ export default {
         max-height: 90vh;
     }
 
+    .more.button.is-focused,
+    .more.button:focus {
+        color: black;
+    }
+
+    .column {
+        padding: .25rem .75rem;
+    }
+
     .modal-header {
-        border-bottom: $grey-border
+        border-bottom: $grey-border;
+
+        button {
+            font-weight: bold;
+        }
+
+        h3 {
+            text-align: left;
+        }
     }
 
     .meta-modal button[disabled]:hover {
@@ -188,12 +226,21 @@ export default {
             }
         }
 
-        .no-link {
-            pointer-events: none;
+        .current-page {
+            font-size: 1rem;
+            font-weight: bold;
+            margin: auto 10px;
         }
 
         .button[disabled] {
             background-color: #007FAE
+        }
+
+        .sorting {
+            .default {
+                background-color: white;
+                color: black;
+            }
         }
     }
 
