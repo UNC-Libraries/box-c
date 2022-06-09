@@ -23,6 +23,9 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 
+import edu.unc.lib.boxc.model.api.exceptions.NotFoundException;
+import edu.unc.lib.boxc.model.api.exceptions.TombstoneFoundException;
+import edu.unc.lib.boxc.model.api.objects.Tombstone;
 import org.apache.http.HttpStatus;
 import org.apache.jena.query.QueryExecution;
 import org.apache.jena.query.QuerySolution;
@@ -162,6 +165,9 @@ public class RepositoryObjectDriver {
     public <T extends RepositoryObject> T getRepositoryObject(PID pid, Class<T> type)
             throws ObjectTypeMismatchException {
         RepositoryObject repoObj = repositoryObjectLoader.getRepositoryObject(pid);
+        if (repoObj instanceof Tombstone) {
+            throw new TombstoneFoundException("Tombstone found, requested object " + pid + " no longer exists");
+        }
         if (!type.isInstance(repoObj)) {
             throw new ObjectTypeMismatchException("Requested object " + pid + " is not a " + type.getName());
         }
