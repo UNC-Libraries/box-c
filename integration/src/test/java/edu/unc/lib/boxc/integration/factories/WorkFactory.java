@@ -28,7 +28,7 @@ public class WorkFactory extends ContentObjectFactory{
     public static final String PRIMARY_OBJECT_KEY = "isPrimaryObject";
     FileFactory fileFactory;
 
-    public WorkObject createWork(Map<String, String> options, CollectionObject collection) throws Exception {
+    public WorkObject createWork(CollectionObject collection, Map<String, String> options) throws Exception {
         var work = repositoryObjectFactory.createWorkObject(null);
         collection.addMember(work);
         prepareObject(work, options);

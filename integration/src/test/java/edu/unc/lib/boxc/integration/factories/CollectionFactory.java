@@ -25,7 +25,7 @@ import java.util.Map;
  * @author sharonluong
  */
 public class CollectionFactory extends ContentObjectFactory {
-    public CollectionObject createCollection(Map<String, String> options, AdminUnit adminUnit) throws Exception {
+    public CollectionObject createCollection(AdminUnit adminUnit, Map<String, String> options) throws Exception {
         var collection = repositoryObjectFactory.createCollectionObject(null);
         adminUnit.addMember(collection);
         prepareObject(collection, options);

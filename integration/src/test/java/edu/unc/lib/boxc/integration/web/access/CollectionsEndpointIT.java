@@ -19,15 +19,15 @@ import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
 import edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl;
 import edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore;
 import edu.unc.lib.boxc.integration.factories.AdminUnitFactory;
+import edu.unc.lib.boxc.integration.factories.CollectionFactory;
+import edu.unc.lib.boxc.integration.factories.WorkFactory;
 import edu.unc.lib.boxc.model.fcrepo.services.RepositoryInitializer;
 import edu.unc.lib.boxc.model.fcrepo.test.TestHelper;
 import edu.unc.lib.boxc.search.api.requests.SimpleIdRequest;
 import edu.unc.lib.boxc.search.solr.services.SolrSearchService;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.HttpClients;
-import org.junit.AfterClass;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -55,6 +55,10 @@ import static org.junit.Assert.assertNotNull;
 public class CollectionsEndpointIT {
     @Autowired
     private AdminUnitFactory adminUnitFactory;
+    @Autowired
+    private WorkFactory workFactory;
+    @Autowired
+    private CollectionFactory collectionFactory;
 
     protected final static String USERNAME = "test_user";
     protected final static AccessGroupSet GROUPS = new AccessGroupSetImpl("adminGroup");
@@ -83,12 +87,15 @@ public class CollectionsEndpointIT {
      * @throws Exception
      */
     @Test
-    public void testAdminUnitConstruction() throws Exception {
-        var adminUnit = adminUnitFactory.createAdminUnit(Map.of("title", "title1"));
+    public void testFactoryConstruction() throws Exception {
+        var options = Map.of("title", "Best title");
+        var adminUnit = adminUnitFactory.createAdminUnit(options);
+        var collection = collectionFactory.createCollection(adminUnit, options);
+        var work = workFactory.createWork(collection, options);
 
         var adminUnitRecord = solrSearchService.getObjectById(new SimpleIdRequest(adminUnit.getPid(), GROUPS));
         assertNotNull(adminUnitRecord);
-        assertEquals("title1", adminUnitRecord.getTitle());
+        assertEquals("Best title", adminUnitRecord.getTitle());
 
         var httpClient = HttpClients.createDefault();
         var getMethod = new HttpGet("http://localhost:48080/access/collectionsJson");
