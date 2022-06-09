@@ -25,6 +25,7 @@ import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.objects.BinaryObject;
 import edu.unc.lib.boxc.model.api.objects.FileObject;
 import edu.unc.lib.boxc.model.api.objects.WorkObject;
+import edu.unc.lib.boxc.model.api.services.ContentPathFactory;
 import edu.unc.lib.boxc.search.api.ContentCategory;
 import edu.unc.lib.boxc.search.api.SearchFieldKey;
 import edu.unc.lib.boxc.search.api.facets.CutoffFacet;
@@ -70,6 +71,7 @@ public class SetContentTypeFilter implements IndexDocumentFilter {
             SearchFieldKey.FILE_FORMAT_CATEGORY.name(), SearchFieldKey.FILE_FORMAT_TYPE.name());
     private SolrSearchService solrSearchService;
     private TechnicalMetadataService technicalMetadataService;
+    private ContentPathFactory contentPathFactory;
 
     public SetContentTypeFilter() throws IOException {
         contentTypeProperties = new Properties();
@@ -153,7 +155,8 @@ public class SetContentTypeFilter implements IndexDocumentFilter {
         if (doc.getAncestorPath() != null && !doc.getAncestorPath().isEmpty()) {
             ancestorPath = new CutoffFacetImpl(SearchFieldKey.ANCESTOR_PATH.name(), doc.getAncestorPath(), -1);
         } else {
-            ancestorPath = (CutoffFacetImpl) solrSearchService.getAncestorPath(doc.getId(), null);
+            var ancestorPids = contentPathFactory.getAncestorPids(doc.getPid());
+            ancestorPath = new CutoffFacetImpl(SearchFieldKey.ANCESTOR_PATH.name(), ancestorPids);
         }
         ancestorPath.addNode(doc.getId());
         return ancestorPath;
@@ -248,6 +251,10 @@ public class SetContentTypeFilter implements IndexDocumentFilter {
 
     public void setSolrSearchService(SolrSearchService solrSearchService) {
         this.solrSearchService = solrSearchService;
+    }
+
+    public void setContentPathFactory(ContentPathFactory contentPathFactory) {
+        this.contentPathFactory = contentPathFactory;
     }
 
     public void setTechnicalMetadataService(TechnicalMetadataService technicalMetadataService) {

@@ -41,6 +41,7 @@
     <bean id="aggregateWorkForFileProcessor" class="edu.unc.lib.boxc.services.camel.solrUpdate.AggregateUpdateProcessor">
         <property name="indexingMessageSender" ref="mockIndexingMessageSender" />
         <property name="actionType" value="UPDATE_WORK_FILES" />
+        <property name="forceCommit" value="true" />
     </bean>
 
     <bean id="orderedSetAggregationStrategy" class="edu.unc.lib.boxc.services.camel.util.OrderedSetAggregationStrategy"/>

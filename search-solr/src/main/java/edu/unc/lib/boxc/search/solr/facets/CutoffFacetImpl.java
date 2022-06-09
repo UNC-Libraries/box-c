@@ -19,6 +19,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
+import edu.unc.lib.boxc.model.api.ids.PID;
 import org.apache.solr.client.solrj.response.FacetField;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -71,6 +72,20 @@ public class CutoffFacetImpl extends AbstractHierarchicalFacet implements Cutoff
         CutoffFacetNodeImpl node = new CutoffFacetNodeImpl(this.value);
         this.facetNodes.add(node);
 
+    }
+
+    /**
+     * Instantiate a CutoffFacet from an ordered list of ancestor PIDs
+     * @param fieldName
+     * @param tierPids
+     */
+    public CutoffFacetImpl(String fieldName, List<PID> tierPids) {
+        super(fieldName, (String) null);
+        for (int i = 0; i < tierPids.size(); i++) {
+            var facetString = (i + 1) + "," + tierPids.get(i).getId();
+            CutoffFacetNodeImpl node = new CutoffFacetNodeImpl(facetString);
+            this.facetNodes.add(node);
+        }
     }
 
     public CutoffFacetImpl(String fieldName, List<String> facetStrings, long count) {
