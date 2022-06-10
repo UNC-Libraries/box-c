@@ -75,6 +75,7 @@ Modal facet component, used to display all the values of a particular facet in a
 
 <script>
 import axios from 'axios';
+import cloneDeep from "lodash.clonedeep";
 
 export default {
     name: "facetModal",
@@ -98,9 +99,22 @@ export default {
     emits: ['facetValueAdded'],
 
     computed: {
+        facetQuery() {
+            const current_query = cloneDeep(this.$route.query);
+            const skip = ['facetSelect', 'rows', 'sort', 'start'];
+            let updated_query = '';
+            Object.keys(current_query).forEach((key) => {
+                if (!skip.includes(key)) {
+                    updated_query += `&${key}=${current_query[key]}`;
+                }
+            })
+            return updated_query;
+        },
+
         facetUrl() {
             let base_url = `/services/api/facet/${this.facetId}/listValues`;
-            const query_params = `?facetSort=${this.sort_type}&facetRows=${this.num_rows}&facetStart=${this.start_row}`;
+            let query_params = `?facetSort=${this.sort_type}&facetRows=${this.num_rows}&facetStart=${this.start_row}`;
+            query_params += `&${this.facetQuery}`;
 
             const collection = this.$route.params.uuid;
             if (collection !== undefined) {
@@ -267,5 +281,18 @@ export default {
     .sorting {
         justify-content: flex-end;
         margin-right: -25px;
+    }
+
+    @media screen and (max-width: 768px) {
+        .sorting {
+            justify-content: flex-start;
+            margin-right: 0;
+        }
+    }
+
+    @media screen and (max-width: 600px) {
+        a.button {
+            width: initial;
+        }
     }
 </style>
