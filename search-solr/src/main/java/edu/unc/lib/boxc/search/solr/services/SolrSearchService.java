@@ -471,6 +471,7 @@ public class SolrSearchService extends AbstractQueryService {
             }
             solrQuery.addFilterQuery(field.getSolrField() + ":" + searchValue);
         }
+        solrQuery.set("q.op", "AND");
     }
 
     private String computeSearchValue(String searchType, String fieldValue, String searchTermOp) {
@@ -481,7 +482,7 @@ public class SolrSearchService extends AbstractQueryService {
         if (searchFragments == null || searchFragments.isEmpty()) {
             return null;
         }
-        String searchValue = String.join(' ' + searchTermOp + ' ', searchFragments);
+        String searchValue = String.join(" ", searchFragments);
         if (searchFragments.size() > 1) {
             searchValue = "(" + searchValue + ")";
         }
