@@ -15,6 +15,7 @@
  */
 package edu.unc.lib.boxc.integration.factories;
 
+import edu.unc.lib.boxc.model.api.objects.CollectionObject;
 import edu.unc.lib.boxc.model.api.objects.WorkObject;
 
 import java.util.Map;
@@ -27,9 +28,9 @@ public class WorkFactory extends ContentObjectFactory{
     public static final String PRIMARY_OBJECT_KEY = "isPrimaryObject";
     FileFactory fileFactory;
 
-    public WorkObject createWork(Map<String, String> options) throws Exception {
+    public WorkObject createWork(CollectionObject collection, Map<String, String> options) throws Exception {
         var work = repositoryObjectFactory.createWorkObject(null);
-        // TODO BXC-3661 add collection factory as a parent for this work
+        collection.addMember(work);
         prepareObject(work, options);
 
         return work;
