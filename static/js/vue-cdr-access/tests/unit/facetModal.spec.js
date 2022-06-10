@@ -82,9 +82,9 @@ describe('modalMetadata.vue', () => {
 
     it("disables 'Previous/Next' buttons if there is only one page of results", async () => {
         await openModal();
-        const sorting = wrapper.findAll('.paging button');
-        expect(sorting[0].attributes()).toHaveProperty('disabled');
-        expect(sorting[1].attributes()).toHaveProperty('disabled');
+        const paging = wrapper.findAll('.paging button');
+        expect(paging[0].attributes()).toHaveProperty('disabled');
+        expect(paging[1].attributes()).toHaveProperty('disabled');
     });
 
     it("disables 'Previous' button if on the first page of results and there's more than one page", async () => {
@@ -92,9 +92,9 @@ describe('modalMetadata.vue', () => {
             num_rows: 3
         });
         await openModal(pageOneData());
-        const sorting = wrapper.findAll('.paging button');
-        expect(sorting[0].attributes()).toHaveProperty('disabled');
-        expect(sorting[1].attributes()).not.toHaveProperty('disabled');
+        const paging = wrapper.findAll('.paging button');
+        expect(paging[0].attributes()).toHaveProperty('disabled');
+        expect(paging[1].attributes()).not.toHaveProperty('disabled');
     });
 
     it("disables 'Next' button if on the last page of results and there's more than one page", async () => {
@@ -103,9 +103,9 @@ describe('modalMetadata.vue', () => {
             start_row: 4
         });
         await openModal(pageThreeData());
-        const sorting = wrapper.findAll('.paging button');
-        expect(sorting[0].attributes()).not.toHaveProperty('disabled');
-        expect(sorting[1].attributes()).toHaveProperty('disabled');
+        const paging = wrapper.findAll('.paging button');
+        expect(paging[0].attributes()).not.toHaveProperty('disabled');
+        expect(paging[1].attributes()).toHaveProperty('disabled');
     });
 
     it("enables paging buttons if there's a previous page and a next page", async () => {
@@ -114,9 +114,9 @@ describe('modalMetadata.vue', () => {
             start_row: 2
         });
         await openModal(pageTwoData());
-        const sorting = wrapper.findAll('.paging button');
-        expect(sorting[0].attributes()).not.toHaveProperty('disabled');
-        expect(sorting[1].attributes()).not.toHaveProperty('disabled');
+        const paging = wrapper.findAll('.paging button');
+        expect(paging[0].attributes()).not.toHaveProperty('disabled');
+        expect(paging[1].attributes()).not.toHaveProperty('disabled');
     });
 
     it("shows the next page of results when 'Next' is clicked", async  () => {
@@ -135,8 +135,8 @@ describe('modalMetadata.vue', () => {
         expect(facets[0].text()).toContain('Dinka (1)');
         expect(facets[1].text()).toContain('Efik (1)');
 
-        const sorting = wrapper.findAll('.paging button');
-        await sorting[1].trigger('click');
+        const paging = wrapper.findAll('.paging button');
+        await paging[1].trigger('click');
         await flushPromises();
 
         const facets_next = wrapper.findAll('li');
@@ -160,8 +160,8 @@ describe('modalMetadata.vue', () => {
         expect(facets).toHaveLength(1);
         expect(facets[0].text()).toContain('Estonian (1)');
 
-        const sorting = wrapper.findAll('.paging button');
-        await sorting[0].trigger('click');
+        const paging = wrapper.findAll('.paging button');
+        await paging[0].trigger('click');
         await flushPromises();
 
         const facets_previous = wrapper.findAll('li');
@@ -184,8 +184,8 @@ describe('modalMetadata.vue', () => {
 
         expect(wrapper.find('.current-page').text()).toEqual('Page: 3');
 
-        const sorting = wrapper.findAll('.paging button');
-        await sorting[0].trigger('click');
+        const paging = wrapper.findAll('.paging button');
+        await paging[0].trigger('click');
         await flushPromises();
 
         expect(wrapper.find('.current-page').text()).toEqual('Page: 2');
@@ -219,6 +219,9 @@ describe('modalMetadata.vue', () => {
     });
 
     it("sorts results by count", async () => {
+        wrapper.setData({
+            sort: 'index'
+        });
         jest.spyOn(axios, 'get')
             .mockResolvedValueOnce(defaultDataAlpha())
             .mockResolvedValueOnce(defaultData());
@@ -352,7 +355,7 @@ describe('modalMetadata.vue', () => {
                 "facetName": "LANGUAGE",
                 "facetRows": 21,
                 "filterParameters": {},
-                "facetSort": "count",
+                "facetSort": "index",
                 "values": [
                     {
                         "fieldName": "LANGUAGE",

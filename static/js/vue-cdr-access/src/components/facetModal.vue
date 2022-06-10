@@ -36,11 +36,11 @@ Modal facet component, used to display all the values of a particular facet in a
                                 <slot name="footer">
                                     <div class="columns">
                                         <div class="column field is-grouped paging">
-                                            <button :disabled="start_row === 0" class="button" @click="getPage(-displayCount)">
+                                            <button :disabled="start_row === 0" class="button" @click="changePage(-displayCount)">
                                                 <span class="icon"><i class="fa fa-backward"></i></span>
                                                 <span>Previous</span>
                                             </button>
-                                            <button :disabled="disableNextBtn" class="button" @click="getPage(displayCount)">
+                                            <button :disabled="disableNextBtn" class="button" @click="changePage(displayCount)">
                                                 <span>Next</span>
                                                 <span class="icon"><i class="fa fa-forward"></i></span>
                                             </button>
@@ -101,7 +101,7 @@ export default {
     computed: {
         facetQuery() {
             const current_query = cloneDeep(this.$route.query);
-            const skip = ['facetSelect', 'rows', 'sort', 'start'];
+            const skip = ['facetSelect', 'rows', 'sort', 'start', 'browse_type'];
             let updated_query = '';
             Object.keys(current_query).forEach((key) => {
                 if (!skip.includes(key)) {
@@ -114,11 +114,11 @@ export default {
         facetUrl() {
             let base_url = `/services/api/facet/${this.facetId}/listValues`;
             let query_params = `?facetSort=${this.sort_type}&facetRows=${this.num_rows}&facetStart=${this.start_row}`;
-            query_params += `&${this.facetQuery}`;
+            query_params += `${this.facetQuery}`;
 
-            const collection = this.$route.params.uuid;
-            if (collection !== undefined) {
-                base_url += `/${collection}`;
+            const uuid = this.$route.params.uuid;
+            if (uuid !== undefined) {
+                base_url += `/${uuid}`;
             }
 
             return base_url + query_params;
@@ -163,13 +163,13 @@ export default {
             return this.sort_type === sort_type;
         },
 
-        getPage(start_row) {
-            let start = this.start_row + parseInt(start_row);
+        changePage(row_offset) {
+            let start = this.start_row + parseInt(row_offset);
             if (start < 0) {
                 start = 0;
             }
             this.start_row = start;
-            const new_page = (start_row < 0) ? -1 : 1;
+            const new_page = (row_offset < 0) ? -1 : 1;
             this.current_page += new_page;
             this.retrieveResults();
         },
