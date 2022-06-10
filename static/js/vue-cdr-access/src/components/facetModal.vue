@@ -14,7 +14,7 @@ Modal facet component, used to display all the values of a particular facet in a
                                 <slot name="header">
                                     <div class="column is-12">
                                         <h3>{{ facetName }}</h3>
-                                        <button class="button" @click="closeModal">X</button>
+                                        <button title="Close" class="button" @click="closeModal">X</button>
                                     </div>
                                 </slot>
                             </div>
@@ -47,13 +47,15 @@ Modal facet component, used to display all the values of a particular facet in a
                                             <span class="current-page">Page: {{ current_page }}</span>
                                         </div>
                                         <div class="column field sorting buttons has-addons">
-                                            <button class="button" :class="{default: sort_type !== 'count'}" @click.prevent="sortFacets('count')">
+                                            <button class="button" :aria-pressed="hasSort('count')"
+                                                    :class="{active: hasSort('count')}" @click.prevent="sortFacets('count')">
                                                 <span class="icon">
                                                     <i class="fa fa-sort-numeric-up"></i>
                                                 </span>
                                                 <span>Numerical Sort</span>
                                             </button>
-                                            <button class="button" :class="{default: sort_type !== 'index'}" @click.prevent="sortFacets('index')">
+                                            <button class="button" :aria-pressed="hasSort('index')"
+                                                    :class="{active: hasSort('index')}" @click.prevent="sortFacets('index')">
                                                 <span class="icon">
                                                     <i class="fa fa-sort-alpha-down"></i>
                                                 </span>
@@ -143,6 +145,10 @@ export default {
             this.retrieveResults();
         },
 
+        hasSort(sort_type) {
+            return this.sort_type === sort_type;
+        },
+
         getPage(start_row) {
             let start = this.start_row + parseInt(start_row);
             if (start < 0) {
@@ -213,6 +219,11 @@ export default {
             column-count: 2;
             text-align: left;
         }
+
+        li {
+            line-break: normal;
+            margin-bottom: 8px;
+        }
     }
 
     .modal-footer {
@@ -237,9 +248,18 @@ export default {
         }
 
         .sorting {
-            .default {
+            .button {
                 background-color: white;
                 color: black;
+            }
+
+            .active {
+                box-shadow: inset 0 3px 5px rgba(0,0,0,0.125);
+                color: #333;
+                background-color: #e6e6e6 !important;
+                border-color: #adadad;
+                pointer-events: none;
+                cursor: pointer;
             }
         }
     }
