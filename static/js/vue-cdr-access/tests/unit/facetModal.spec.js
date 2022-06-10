@@ -80,6 +80,16 @@ describe('modalMetadata.vue', () => {
         expect(axios.get).toHaveBeenCalledWith(`/services/api/facet/language/listValues/${uuid}?facetSort=count&facetRows=21&facetStart=0`);
     });
 
+    it("it appends some current url params, if present", async () => {
+        const route = '/search/?start=0&rows=20&sort=default,normal&' +
+            'facetSelect=createdYear,format,genre,language,subject,location,creatorContributor,publisher&' +
+            'works_only=false&browse_type=gallery-display&types=Work,Folder,Collection';
+        await router.push(route);
+        await openModal();
+        const query = '/services/api/facet/language/listValues/?facetSort=count&facetRows=21&facetStart=0&works_only=false&types=Work,Folder,Collection';
+        expect(axios.get).toHaveBeenCalledWith(query);
+    });
+
     it("disables 'Previous/Next' buttons if there is only one page of results", async () => {
         await openModal();
         const paging = wrapper.findAll('.paging button');
