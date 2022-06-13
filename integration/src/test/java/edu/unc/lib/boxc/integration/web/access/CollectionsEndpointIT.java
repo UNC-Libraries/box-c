@@ -23,6 +23,7 @@ import edu.unc.lib.boxc.integration.factories.CollectionFactory;
 import edu.unc.lib.boxc.integration.factories.WorkFactory;
 import edu.unc.lib.boxc.model.fcrepo.services.RepositoryInitializer;
 import edu.unc.lib.boxc.model.fcrepo.test.TestHelper;
+import edu.unc.lib.boxc.search.api.models.ContentObjectRecord;
 import edu.unc.lib.boxc.search.api.requests.SimpleIdRequest;
 import edu.unc.lib.boxc.search.solr.services.SolrSearchService;
 import org.apache.http.client.methods.HttpGet;
@@ -60,9 +61,6 @@ public class CollectionsEndpointIT {
     @Autowired
     private CollectionFactory collectionFactory;
 
-    protected final static String USERNAME = "test_user";
-    protected final static AccessGroupSet GROUPS = new AccessGroupSetImpl("adminGroup");
-
     @Autowired
     protected String baseAddress;
 
@@ -72,14 +70,26 @@ public class CollectionsEndpointIT {
     @Autowired
     protected SolrSearchService solrSearchService;
 
+    protected final static String USERNAME = "test_user";
+    protected final static AccessGroupSet GROUPS = new AccessGroupSetImpl("adminGroup");
+
+    private ContentObjectRecord adminUnitRecord;
+
     @Before
-    public void setup() {
+    public void setup() throws Exception {
         TestHelper.setContentBase(baseAddress);
 
         GroupsThreadStore.storeUsername(USERNAME);
         GroupsThreadStore.storeGroups(GROUPS);
 
         repoInitializer.initializeRepository();
+
+        var options = Map.of("title", "Best title");
+        var adminUnit = adminUnitFactory.createAdminUnit(options);
+        var collection = collectionFactory.createCollection(adminUnit, options);
+        var work = workFactory.createWork(collection, options);
+
+        adminUnitRecord = solrSearchService.getObjectById(new SimpleIdRequest(adminUnit.getPid(), GROUPS));
     }
 
     /**
@@ -88,12 +98,6 @@ public class CollectionsEndpointIT {
      */
     @Test
     public void testFactoryConstruction() throws Exception {
-        var options = Map.of("title", "Best title");
-        var adminUnit = adminUnitFactory.createAdminUnit(options);
-        var collection = collectionFactory.createCollection(adminUnit, options);
-        var work = workFactory.createWork(collection, options);
-
-        var adminUnitRecord = solrSearchService.getObjectById(new SimpleIdRequest(adminUnit.getPid(), GROUPS));
         assertNotNull(adminUnitRecord);
         assertEquals("Best title", adminUnitRecord.getTitle());
 
