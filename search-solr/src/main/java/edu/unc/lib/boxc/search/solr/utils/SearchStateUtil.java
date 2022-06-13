@@ -29,7 +29,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import edu.unc.lib.boxc.search.api.SearchFieldKey;
 import edu.unc.lib.boxc.search.api.facets.SearchFacet;
 import edu.unc.lib.boxc.search.api.requests.SearchState;
-import edu.unc.lib.boxc.search.api.requests.SearchState.RangePair;
 import edu.unc.lib.boxc.search.solr.config.SearchSettings;
 
 /**
@@ -70,9 +69,9 @@ public class SearchStateUtil {
         }
 
         if (searchState.getRangeFields() != null && searchState.getRangeFields().size() > 0) {
-            for (Entry<String, RangePair> field: searchState.getRangeFields().entrySet()) {
+            for (var field: searchState.getRangeFields().entrySet()) {
                 String fieldName = searchSettings.searchFieldParam(field.getKey());
-                params.put(fieldName, urlEncodeParameter(field.getValue().toString()));
+                params.put(fieldName, urlEncodeParameter(field.getValue().getParameterValue()));
             }
         }
         String ancestorPath = SearchFieldKey.ANCESTOR_PATH.toString();

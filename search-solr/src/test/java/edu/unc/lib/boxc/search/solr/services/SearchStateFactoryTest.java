@@ -172,7 +172,7 @@ public class SearchStateFactoryTest {
         SearchState searchState = searchStateFactory.createSearchState(parameters);
         assertTrue(searchState.getRangeFields().containsKey(SearchFieldKey.DATE_CREATED_YEAR.name()));
         assertEquals("2020,2022", searchState.getRangeFields()
-                .get(SearchFieldKey.DATE_CREATED_YEAR.name()).toString());
+                .get(SearchFieldKey.DATE_CREATED_YEAR.name()).getParameterValue());
     }
 
     @Test
@@ -184,7 +184,7 @@ public class SearchStateFactoryTest {
         SearchState searchState = searchStateFactory.createSearchState(parameters);
         assertTrue(searchState.getRangeFields().containsKey(SearchFieldKey.DATE_CREATED_YEAR.name()));
         assertEquals("2020,2020", searchState.getRangeFields()
-                .get(SearchFieldKey.DATE_CREATED_YEAR.name()).toString());
+                .get(SearchFieldKey.DATE_CREATED_YEAR.name()).getParameterValue());
     }
 
     @Test
@@ -205,7 +205,8 @@ public class SearchStateFactoryTest {
 
         SearchState searchState = searchStateFactory.createSearchState(parameters);
         assertTrue(searchState.getRangeFields().containsKey(SearchFieldKey.DATE_CREATED_YEAR.name()));
-        assertEquals("2022,", searchState.getRangeFields().get(SearchFieldKey.DATE_CREATED_YEAR.name()).toString());
+        assertEquals("2022,", searchState.getRangeFields()
+                .get(SearchFieldKey.DATE_CREATED_YEAR.name()).getParameterValue());
     }
 
     @Test
@@ -216,7 +217,8 @@ public class SearchStateFactoryTest {
 
         SearchState searchState = searchStateFactory.createSearchState(parameters);
         assertTrue(searchState.getRangeFields().containsKey(SearchFieldKey.DATE_CREATED_YEAR.name()));
-        assertEquals(",2022", searchState.getRangeFields().get(SearchFieldKey.DATE_CREATED_YEAR.name()).toString());
+        assertEquals(",2022", searchState.getRangeFields()
+                .get(SearchFieldKey.DATE_CREATED_YEAR.name()).getParameterValue());
     }
 
     @Test

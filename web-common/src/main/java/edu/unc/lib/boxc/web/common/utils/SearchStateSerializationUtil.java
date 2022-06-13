@@ -51,7 +51,7 @@ public class SearchStateSerializationUtil {
             searchState.getRangeFields().forEach((name, value) -> {
                 var field = SearchFieldKey.valueOf(name);
                 // Need to call toString to ensure that RangePairs are formatted correctly
-                params.put(field.getUrlParam(), value.toString());
+                params.put(field.getUrlParam(), value.getParameterValue());
             });
         }
         if (searchState.getFacets() != null) {

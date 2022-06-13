@@ -26,6 +26,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import edu.unc.lib.boxc.search.solr.config.SearchSettings;
+import edu.unc.lib.boxc.search.solr.ranges.RangePair;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrServerException;
@@ -530,17 +531,21 @@ public class SolrSearchService extends AbstractQueryService {
     }
 
     private void addRangeFields(SearchState searchState, SolrQuery query) {
-        Map<String, SearchState.RangePair> rangeFields = searchState.getRangeFields();
+        var rangeFields = searchState.getRangeFields();
         if (rangeFields != null) {
-            Iterator<Map.Entry<String, SearchState.RangePair>> rangeTermIt = rangeFields.entrySet().iterator();
+            var rangeTermIt = rangeFields.entrySet().iterator();
             while (rangeTermIt.hasNext()) {
-                Map.Entry<String, SearchState.RangePair> rangeTerm = rangeTermIt.next();
+                var rangeTerm = rangeTermIt.next();
                 if (rangeTerm == null) {
                     continue;
                 }
+                if (!(rangeTerm.getValue() instanceof RangePair)) {
+                    continue;
+                }
+                var rangePair = (RangePair) rangeTerm.getValue();
                 String key = rangeTerm.getKey();
-                String left = getRangeValue(key, rangeTerm.getValue().getLeftHand());
-                String right = getRangeValue(key, rangeTerm.getValue().getRightHand());
+                String left = getRangeValue(key, rangePair.getLeftHand());
+                String right = getRangeValue(key, rangePair.getRightHand());
                 if (left.equals("*") && right.equals("*")) {
                     continue;
                 }
