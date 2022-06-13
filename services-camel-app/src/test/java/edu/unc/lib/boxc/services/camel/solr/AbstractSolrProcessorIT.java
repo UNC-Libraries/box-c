@@ -25,8 +25,13 @@ import static org.mockito.Mockito.when;
 import java.io.File;
 import java.io.InputStream;
 import java.net.URI;
+import java.nio.file.Paths;
+import java.util.UUID;
 
 import edu.unc.lib.boxc.indexing.solr.test.RepositoryObjectSolrIndexer;
+import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
+import edu.unc.lib.boxc.persist.api.storage.StorageLocationManager;
+import edu.unc.lib.boxc.persist.impl.storage.StorageLocationTestHelper;
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
 import org.apache.camel.test.spring.CamelSpringRunner;
@@ -104,6 +109,8 @@ public abstract class AbstractSolrProcessorIT {
     protected RepositoryObjectTreeIndexer treeIndexer;
     @Autowired
     protected RepositoryObjectSolrIndexer repositoryObjectSolrIndexer;
+    @Autowired
+    protected StorageLocationManager locManager;
 
     protected ContentRootObject rootObj;
     protected AdminUnit unitObj;
@@ -143,10 +150,12 @@ public abstract class AbstractSolrProcessorIT {
     }
 
     protected URI makeContentUri(String content) throws Exception {
-        File contentFile = File.createTempFile("test", ".txt");
+        var loc1 = locManager.getStorageLocationById(StorageLocationTestHelper.LOC1_ID);
+        var storageUri = loc1.getNewStorageUri(PIDs.get(UUID.randomUUID().toString()));
+        var contentFile = new File(storageUri);
         contentFile.deleteOnExit();
         FileUtils.write(contentFile, content, UTF_8);
-        return contentFile.toPath().toUri();
+        return storageUri;
     }
 
     protected InputStream streamResource(String resourcePath) throws Exception {

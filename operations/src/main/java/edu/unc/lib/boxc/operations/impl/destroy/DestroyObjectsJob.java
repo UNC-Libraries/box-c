@@ -27,6 +27,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import edu.unc.lib.boxc.model.api.objects.WorkObject;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.NodeIterator;
@@ -95,6 +96,14 @@ public class DestroyObjectsJob extends AbstractDestroyObjectsJob {
 
                 if (!repoObj.getResource(true).hasProperty(RDF.type, Cdr.Tombstone)) {
                     RepositoryObject parentObj = repoObj.getParent();
+                    // If the object being deleted is the primary object of a work, then clear the relation
+                    if (parentObj instanceof WorkObject && repoObj instanceof FileObject) {
+                        var parentWork = (WorkObject) parentObj;
+                        var primaryObj = parentWork.getPrimaryObject();
+                        if (primaryObj != null && primaryObj.getPid().equals(repoObj.getPid())) {
+                            parentWork.clearPrimaryObject();
+                        }
+                    }
 
                     // purge tree with repoObj as root from repository
                     // Add the root of the tree to delete

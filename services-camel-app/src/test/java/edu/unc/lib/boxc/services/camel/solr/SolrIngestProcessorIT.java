@@ -19,6 +19,7 @@ import static edu.unc.lib.boxc.auth.api.AccessPrincipalConstants.AUTHENTICATED_P
 import static edu.unc.lib.boxc.fcrepo.FcrepoJmsConstants.RESOURCE_TYPE;
 import static edu.unc.lib.boxc.model.api.DatastreamType.MD_DESCRIPTIVE;
 import static edu.unc.lib.boxc.model.api.DatastreamType.ORIGINAL_FILE;
+import static edu.unc.lib.boxc.model.api.DatastreamType.MD_EVENTS;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -34,12 +35,29 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import edu.unc.lib.boxc.auth.api.services.AccessControlService;
+import edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl;
+import edu.unc.lib.boxc.auth.fcrepo.models.AgentPrincipalsImpl;
+import edu.unc.lib.boxc.auth.fcrepo.services.InheritedAclFactory;
+import edu.unc.lib.boxc.fcrepo.utils.TransactionManager;
+import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
+import edu.unc.lib.boxc.model.api.sparql.SparqlUpdateService;
+import edu.unc.lib.boxc.operations.api.events.PremisLoggerFactory;
+import edu.unc.lib.boxc.operations.impl.delete.MarkForDeletionJob;
+import edu.unc.lib.boxc.operations.impl.delete.MarkForDeletionService;
+import edu.unc.lib.boxc.operations.impl.destroy.DestroyObjectsJob;
 import edu.unc.lib.boxc.operations.jms.MessageSender;
+import edu.unc.lib.boxc.operations.jms.destroy.DestroyObjectsRequest;
+import edu.unc.lib.boxc.operations.jms.indexing.IndexingMessageSender;
+import edu.unc.lib.boxc.persist.api.storage.StorageLocationManager;
+import edu.unc.lib.boxc.persist.api.transfer.BinaryTransferService;
+import edu.unc.lib.boxc.search.solr.services.ObjectPathFactory;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.io.FileUtils;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Resource;
+import org.fcrepo.client.FcrepoClient;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
@@ -86,15 +104,35 @@ public class SolrIngestProcessorIT extends AbstractSolrProcessorIT {
     private RepositoryObjectLoader repositoryObjectLoader;
     @Autowired
     private DerivativeService derivativeService;
-    @Mock
     private AgentPrincipals agent;
     @Autowired
     private MessageSender updateWorkSender;
+    @Autowired
+    private AccessControlService aclService;
+    @Autowired
+    private TransactionManager txManager;
+    @Autowired
+    private ObjectPathFactory pathFactory;
+    @Autowired
+    private FcrepoClient fcrepoClient;
+    @Autowired
+    private InheritedAclFactory inheritedAclFactory;
+    @Autowired
+    private BinaryTransferService transferService;
+    @Mock
+    private IndexingMessageSender indexingMessageSender;
+    @Mock
+    private MessageSender binaryDestroyedMessageSender;
+    @Autowired
+    private PremisLoggerFactory premisLoggerFactory;
+    @Autowired
+    private SparqlUpdateService sparqlUpdateService;
 
     @Before
     public void setUp() throws Exception {
         initMocks(this);
 
+        agent = new AgentPrincipalsImpl("user", new AccessGroupSetImpl("group"));
         TestHelper.setContentBase(baseAddress);
 
         processor = new SolrIngestProcessor(dipFactory, solrFullUpdatePipeline, driver, repositoryObjectLoader);
@@ -281,6 +319,84 @@ public class SolrIngestProcessorIT extends AbstractSolrProcessorIT {
 
         assertEquals(1, fileMd.getDatastream().size());
         assertNotNull(fileMd.getDatastreamObject(ORIGINAL_FILE.getId()));
+    }
+
+    // Relates to bug: BXC-3676
+    @Test
+    public void testWorkWithTombstonePrimaryObject() throws Exception {
+        repositoryObjectSolrIndexer.index(unitObj.getPid(), collObj.getPid());
+
+        WorkObject workObj = repositoryObjectFactory.createWorkObject(null);
+        InputStream modsStream = streamResource("/datastreams/simpleMods.xml");
+        updateDescriptionService.updateDescription(new UpdateDescriptionRequest(agent, workObj.getPid(), modsStream));
+        collObj.addMember(workObj);
+
+        FileObject fileObj = workObj.addDataFile(makeContentUri(CONTENT_TEXT),
+                "text.txt", "text/plain", null, null);
+        workObj.setPrimaryObject(fileObj.getPid());
+
+        indexObjectsInTripleStore();
+
+        setMessageTarget(fileObj);
+        when(message.getHeader(RESOURCE_TYPE)).thenReturn(Cdr.FileObject.getURI());
+        processor.process(exchange);
+        server.commit();
+
+        setMessageTarget(workObj);
+        processor.process(exchange);
+        server.commit();
+
+        // Replace primary object with tombstone
+        deleteAndDestroyObject(fileObj);
+
+        indexObjectsInTripleStore();
+
+        setMessageTarget(workObj);
+        processor.process(exchange);
+        server.commit();
+
+        SimpleIdRequest idRequest = new SimpleIdRequest(workObj.getPid(), accessGroups);
+        ContentObjectRecord workMd = solrSearchService.getObjectById(idRequest);
+
+        assertEquals("Work", workMd.getResourceType());
+
+        assertNotNull("Date added must be set", workMd.getDateAdded());
+        assertNotNull("Date updated must be set", workMd.getDateUpdated());
+
+        assertEquals("Object title", workMd.getTitle());
+        assertEquals("Boxy", workMd.getCreator().get(0));
+
+        assertAncestorIds(workMd, rootObj, unitObj, collObj, workObj);
+
+        // Should not have an original file, but other datastreams should still be present
+        assertEquals(2, workMd.getDatastream().size());
+        assertNull(workMd.getDatastreamObject(ORIGINAL_FILE.getId()));
+        assertNotNull(workMd.getDatastreamObject(MD_DESCRIPTIVE.getId()));
+        assertNotNull(workMd.getDatastreamObject(MD_EVENTS.getId()));
+    }
+
+    private void deleteAndDestroyObject(RepositoryObject repoObj) {
+        // Object must be marked for deletion before destroying it
+        var markForDeleteJob = new MarkForDeletionJob(repoObj.getPid(), "delete me", agent, repositoryObjectLoader,
+                sparqlUpdateService, aclService, premisLoggerFactory);
+        markForDeleteJob.run();
+
+        // Now destroy it
+        var destroyRequest = new DestroyObjectsRequest("job", agent, repoObj.getPid().getId());
+        var destroyJob = new DestroyObjectsJob(destroyRequest);
+        destroyJob.setPathFactory(pathFactory);
+        destroyJob.setInheritedAclFactory(inheritedAclFactory);
+        destroyJob.setBinaryDestroyedMessageSender(binaryDestroyedMessageSender);
+        destroyJob.setAclService(aclService);
+        destroyJob.setFcrepoClient(fcrepoClient);
+        destroyJob.setPremisLoggerFactory(premisLoggerFactory);
+        destroyJob.setRepoObjFactory(repositoryObjectFactory);
+        destroyJob.setRepoObjLoader(repositoryObjectLoader);
+        destroyJob.setIndexingMessageSender(indexingMessageSender);
+        destroyJob.setStorageLocationManager(locManager);
+        destroyJob.setTransactionManager(txManager);
+        destroyJob.setBinaryTransferService(transferService);
+        destroyJob.run();
     }
 
     private void assertAncestorIds(ContentObjectRecord md, RepositoryObject... ancestorObjs) {

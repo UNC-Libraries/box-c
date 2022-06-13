@@ -17,6 +17,8 @@ package edu.unc.lib.boxc.model.fcrepo.objects;
 
 import java.net.URI;
 
+import edu.unc.lib.boxc.model.api.exceptions.NotFoundException;
+import edu.unc.lib.boxc.model.api.exceptions.TombstoneFoundException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
@@ -39,6 +41,8 @@ import edu.unc.lib.boxc.model.api.rdf.Cdr;
 import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.boxc.model.fcrepo.services.RepositoryObjectDriver;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * A repository object which represents a single work, and should contain one or
@@ -51,6 +55,7 @@ import edu.unc.lib.boxc.model.fcrepo.services.RepositoryObjectDriver;
  *
  */
 public class WorkObjectImpl extends AbstractContentContainerObject implements WorkObject {
+    private static final Logger log = LoggerFactory.getLogger(WorkObjectImpl.class);
 
     protected WorkObjectImpl(PID pid, RepositoryObjectDriver driver, RepositoryObjectFactory repoObjFactory) {
         super(pid, driver, repoObjFactory);
@@ -116,7 +121,12 @@ public class WorkObjectImpl extends AbstractContentContainerObject implements Wo
         }
 
         PID primaryPid = PIDs.get(primaryStmt.getResource().getURI());
-        return driver.getRepositoryObject(primaryPid, FileObject.class);
+        try {
+            return driver.getRepositoryObject(primaryPid, FileObject.class);
+        } catch (TombstoneFoundException e) {
+            log.debug("Cannot retrieve primary object for {}", getPid().getId(), e);
+        }
+        return null;
     }
 
     @Override
