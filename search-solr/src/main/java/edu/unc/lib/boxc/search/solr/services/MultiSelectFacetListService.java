@@ -22,6 +22,9 @@ import edu.unc.lib.boxc.search.api.models.ContentObjectRecord;
 import edu.unc.lib.boxc.search.api.requests.SearchRequest;
 import edu.unc.lib.boxc.search.api.requests.SearchState;
 import edu.unc.lib.boxc.search.solr.responses.SearchResultResponse;
+import org.apache.solr.client.solrj.SolrServerException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -36,6 +39,7 @@ import java.util.stream.Collectors;
  * @author bbpennel
  */
 public class MultiSelectFacetListService extends AbstractFacetListService {
+    private static final Logger log = LoggerFactory.getLogger(MultiSelectFacetListService.class);
 
     public SearchResultResponse getFacetListResult(SearchRequest searchRequest) {
         SearchState searchState = (SearchState) searchRequest.getSearchState().clone();
@@ -104,12 +108,17 @@ public class MultiSelectFacetListService extends AbstractFacetListService {
 
         SearchRequest selectedRequest = new SearchRequest(
                 selectedState, originalRequest.getAccessGroups(), false);
-        SearchResultResponse selectedResponse = searchService.getSearchResults(selectedRequest);
+        var query = searchService.generateSearch(selectedRequest);
+        query.addFilterQuery(SearchFieldKey.DATE_CREATED_YEAR.getSolrField() + ":[* TO *]");
 
         try {
-            return selectedResponse.getResultList().get(0).getDateCreatedYear();
+            var resp = searchService.executeQuery(query);
+            return (String) resp.getResults().get(0).getFieldValue(SearchFieldKey.DATE_CREATED_YEAR.getSolrField());
+        } catch (SolrServerException e) {
+            log.error("Error retrieving Solr search result request", e);
         } catch (IndexOutOfBoundsException e) {
-            return null;
+            log.debug("No results were returned for minimum date query: {}", query);
         }
+        return null;
     }
 }

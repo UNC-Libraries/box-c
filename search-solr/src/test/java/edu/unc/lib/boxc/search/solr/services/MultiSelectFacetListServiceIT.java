@@ -51,6 +51,7 @@ import static edu.unc.lib.boxc.search.api.SearchFieldKey.ROLE_GROUP;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.mockito.MockitoAnnotations.initMocks;
 
 /**
@@ -598,6 +599,42 @@ public class MultiSelectFacetListServiceIT extends BaseEmbeddedSolrTest {
         FacetFieldList facets2 = resp2.getFacetFields();
         List<String> names2 = facets2.stream().map(FacetFieldObject::getName).collect(Collectors.toList());
         assertEquals(facetsInOrder, names2);
+    }
+
+    @Test
+    public void getMinimumDateCreatedYearBlankSearchTest() throws Exception {
+        SearchState searchState = new SearchState();
+        SearchRequest request = new SearchRequest(searchState, accessGroups);
+        String result = service.getMinimumDateCreatedYear(searchState, request);
+        assertEquals("2017", result);
+    }
+
+    @Test
+    public void getMinimumDateCreatedYearScopedTest() throws Exception {
+        SearchState searchState = new SearchState();
+        searchState.setFacet(new CutoffFacetImpl(
+                SearchFieldKey.ANCESTOR_PATH.name(), "4," + testCorpus.folder1Pid.getId()));
+        SearchRequest request = new SearchRequest(searchState, accessGroups);
+        String result = service.getMinimumDateCreatedYear(searchState, request);
+        assertEquals("2018", result);
+    }
+
+    @Test
+    public void getMinimumDateCreatedYearNoValuesTest() throws Exception {
+        SearchState searchState = new SearchState();
+        searchState.setResourceTypes(Arrays.asList(ResourceType.AdminUnit.name()));
+        SearchRequest request = new SearchRequest(searchState, accessGroups);
+        String result = service.getMinimumDateCreatedYear(searchState, request);
+        assertNull(result);
+    }
+
+    @Test
+    public void getMinimumDateCreatedYearNoResultsTest() throws Exception {
+        SearchState searchState = new SearchState();
+        searchState.getSearchFields().put(SearchFieldKey.DEFAULT_INDEX.name(), "notgoingtofindthisnoway");
+        SearchRequest request = new SearchRequest(searchState, accessGroups);
+        String result = service.getMinimumDateCreatedYear(searchState, request);
+        assertNull(result);
     }
 
     private SearchFacet getFacetByValue(FacetFieldObject ffo, String value) {

@@ -191,7 +191,7 @@ public class StructureQueryServiceIT extends BaseEmbeddedSolrTest {
     public void getEmptyStructureTest() throws Exception {
         PID emptyPid = PIDs.get(UUID.randomUUID().toString());
         index(testCorpus.makeContainerDocument(emptyPid, "empty", Folder,
-                testCorpus.rootPid, testCorpus.unitPid, testCorpus.coll1Pid));
+                "2017-01-01", testCorpus.rootPid, testCorpus.unitPid, testCorpus.coll1Pid));
 
         HierarchicalBrowseRequest browseRequest = makeRequest(emptyPid);
         HierarchicalBrowseResultResponse resp = structureService.getExpandedStructurePath(browseRequest);
@@ -247,7 +247,7 @@ public class StructureQueryServiceIT extends BaseEmbeddedSolrTest {
         // Add a child to coll1 with a subject for filter matching
         PID filterPid = PIDs.get(UUID.randomUUID().toString());
         SolrInputDocument doc = testCorpus.makeContainerDocument(filterPid, "with subj", Folder,
-                testCorpus.rootPid, testCorpus.unitPid, testCorpus.coll1Pid);
+                "2017-01-01", testCorpus.rootPid, testCorpus.unitPid, testCorpus.coll1Pid);
         doc.setField("subject", "computers");
         index(doc);
 
@@ -278,7 +278,7 @@ public class StructureQueryServiceIT extends BaseEmbeddedSolrTest {
         // Add a child to coll1 with a subject for filter matching
         PID filterPid = PIDs.get(UUID.randomUUID().toString());
         SolrInputDocument doc = testCorpus.makeContainerDocument(filterPid, "with subj", Folder,
-                testCorpus.rootPid, testCorpus.unitPid, testCorpus.coll1Pid);
+                "2017-01-01", testCorpus.rootPid, testCorpus.unitPid, testCorpus.coll1Pid);
         doc.setField("title", "target item");
         index(doc);
 

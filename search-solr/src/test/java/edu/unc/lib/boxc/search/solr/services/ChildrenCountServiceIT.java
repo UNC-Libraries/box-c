@@ -172,13 +172,13 @@ public class ChildrenCountServiceIT extends BaseEmbeddedSolrTest {
         for (int i = 0; i < 100; i++) {
             PID pid = PIDs.get(UUID.randomUUID().toString());
             SolrInputDocument doc = testCorpus.makeContainerDocument(pid, pid.getId(), ResourceType.Folder,
-                    testCorpus.rootPid, testCorpus.unitPid, testCorpus.coll1Pid);
+                    "2017-01-01", testCorpus.rootPid, testCorpus.unitPid, testCorpus.coll1Pid);
             docs.add(doc);
 
             // Add a child to the folder so it will have a count
             PID pid2 = PIDs.get(UUID.randomUUID().toString());
             SolrInputDocument doc2 = testCorpus.makeContainerDocument(pid2, pid2.getId(), ResourceType.Folder,
-                    testCorpus.rootPid, testCorpus.unitPid, testCorpus.coll1Pid, pid);
+                    "2017-01-01", testCorpus.rootPid, testCorpus.unitPid, testCorpus.coll1Pid, pid);
             docs.add(doc2);
         }
 

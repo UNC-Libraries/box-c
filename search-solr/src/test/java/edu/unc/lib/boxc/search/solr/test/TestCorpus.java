@@ -31,6 +31,7 @@ import java.util.stream.Collectors;
 
 import edu.unc.lib.boxc.search.api.SearchFieldKey;
 import edu.unc.lib.boxc.search.solr.facets.FilterableDisplayValueFacet;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.solr.common.SolrInputDocument;
 
 import edu.unc.lib.boxc.auth.api.UserRole;
@@ -103,27 +104,28 @@ public class TestCorpus {
     public List<SolrInputDocument> populate() {
         List<SolrInputDocument> docs = new ArrayList<>();
 
-        SolrInputDocument newDoc = makeContainerDocument(rootPid, "Collections", ResourceType.ContentRoot);
+        SolrInputDocument newDoc = makeContainerDocument(rootPid, "Collections", ResourceType.ContentRoot,
+                null);
         addAclProperties(newDoc, PUBLIC_PRINC, null, null);
         docs.add(newDoc);
 
-        newDoc = makeContainerDocument(unitPid, "Unit", ResourceType.AdminUnit,
+        newDoc = makeContainerDocument(unitPid, "Unit", ResourceType.AdminUnit, null,
                 rootPid);
         addAclProperties(newDoc, PUBLIC_PRINC, "unitOwner", null);
         docs.add(newDoc);
 
-        newDoc = makeContainerDocument(coll1Pid, "Collection 1", ResourceType.Collection,
+        newDoc = makeContainerDocument(coll1Pid, "Collection 1", ResourceType.Collection, "2017-01-01",
                 rootPid, unitPid);
         addAclProperties(newDoc, PUBLIC_PRINC, "unitOwner", "manager");
         newDoc.addField("collectionId", TEST_COLL_ID);
         docs.add(newDoc);
 
-        newDoc = makeContainerDocument(folder1Pid, "Folder 1", ResourceType.Folder,
+        newDoc = makeContainerDocument(folder1Pid, "Folder 1", ResourceType.Folder, null,
                 rootPid, unitPid, coll1Pid);
         addAclProperties(newDoc, PUBLIC_PRINC, "unitOwner", "manager");
         docs.add(newDoc);
 
-        newDoc = makeContainerDocument(work1Pid, "Work 1", ResourceType.Work,
+        newDoc = makeContainerDocument(work1Pid, "Work 1", ResourceType.Work, "2018-06-01",
                 rootPid, unitPid, coll1Pid, folder1Pid);
         addAclProperties(newDoc, PUBLIC_PRINC, "unitOwner", "manager");
         addFileProperties(newDoc, ContentCategory.text, "text/plain", "Plain Text");
@@ -142,7 +144,7 @@ public class TestCorpus {
         addFileProperties(newDoc, ContentCategory.text, "application/pdf", "PDF");
         docs.add(newDoc);
 
-        newDoc = makeContainerDocument(work2Pid, "Work 2", ResourceType.Work,
+        newDoc = makeContainerDocument(work2Pid, "Work 2", ResourceType.Work, "2019-01-01",
                 rootPid, unitPid, coll1Pid, folder1Pid);
         addAclProperties(newDoc, PUBLIC_PRINC, "unitOwner", "manager");
         addFileProperties(newDoc, ContentCategory.image, "image/jpeg", "JPEG Image");
@@ -154,12 +156,12 @@ public class TestCorpus {
         addFileProperties(newDoc, ContentCategory.image, "image/jpeg", "JPEG Image");
         docs.add(newDoc);
 
-        newDoc = makeContainerDocument(coll2Pid, "Collection 2", ResourceType.Collection,
+        newDoc = makeContainerDocument(coll2Pid, "Collection 2", ResourceType.Collection, "2020-01-01",
                 rootPid, unitPid);
         addAclProperties(newDoc, PUBLIC_PRINC, "unitOwner", null);
         docs.add(newDoc);
 
-        newDoc = makeContainerDocument(work3Pid, "Work 3", ResourceType.Work,
+        newDoc = makeContainerDocument(work3Pid, "Work 3", ResourceType.Work, "2020-01-01",
                 rootPid, unitPid, coll2Pid);
         addAclProperties(newDoc, PUBLIC_PRINC, "unitOwner", null);
         addFileProperties(newDoc, ContentCategory.text, "text/plain", "Plain Text");
@@ -171,12 +173,12 @@ public class TestCorpus {
         addFileProperties(newDoc, ContentCategory.text, "text/plain", "Plain Text");
         docs.add(newDoc);
 
-        newDoc = makeContainerDocument(privateFolderPid, "Private Folder", ResourceType.Folder,
+        newDoc = makeContainerDocument(privateFolderPid, "Private Folder", ResourceType.Folder, "2018-01-01",
                 rootPid, unitPid, coll2Pid);
         addAclProperties(newDoc, null, "unitOwner", null);
         docs.add(newDoc);
 
-        newDoc = makeContainerDocument(privateWorkPid, "Private Work", ResourceType.Work,
+        newDoc = makeContainerDocument(privateWorkPid, "Private Work", ResourceType.Work, "2019-01-01",
                 rootPid, unitPid, coll2Pid, privateFolderPid);
         addAclProperties(newDoc, null, "unitOwner", null);
         addFileProperties(newDoc, ContentCategory.image, "image/png", "Portable Network Graphics");
@@ -191,12 +193,18 @@ public class TestCorpus {
         return docs;
     }
 
-    public SolrInputDocument makeContainerDocument(PID pid, String title, ResourceType type, PID... ancestors) {
+    public SolrInputDocument makeContainerDocument(PID pid, String title, ResourceType type, String dateCreated,
+                                                   PID... ancestors) {
         SolrInputDocument newDoc = new SolrInputDocument();
         newDoc.addField("title", title);
         titleCache.put(pid, title);
         newDoc.addField("id", pid.getId());
         newDoc.addField("rollup", pid.getId());
+        if (dateCreated != null) {
+            newDoc.addField(SearchFieldKey.DATE_CREATED.getSolrField(), dateCreated + "T00:00:00Z");
+            newDoc.addField(SearchFieldKey.DATE_CREATED_YEAR.getSolrField(),
+                    StringUtils.substringBefore(dateCreated, "-"));
+        }
         addPathProperties(newDoc, pid, ancestors);
         newDoc.addField("resourceType", type.name());
         return newDoc;
