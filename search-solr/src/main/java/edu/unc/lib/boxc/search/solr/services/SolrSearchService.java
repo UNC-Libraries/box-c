@@ -27,6 +27,7 @@ import java.util.Set;
 
 import edu.unc.lib.boxc.search.solr.config.SearchSettings;
 import edu.unc.lib.boxc.search.solr.ranges.RangePair;
+import edu.unc.lib.boxc.search.solr.ranges.UnknownRange;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrServerException;
@@ -539,22 +540,25 @@ public class SolrSearchService extends AbstractQueryService {
                 if (rangeTerm == null) {
                     continue;
                 }
-                if (!(rangeTerm.getValue() instanceof RangePair)) {
+                String key = rangeTerm.getKey();
+                var field = SearchFieldKey.valueOf(key);
+                if (field == null) {
                     continue;
                 }
+                // Unknown range, find results that do not include this field
+                if (rangeTerm.getValue() instanceof UnknownRange) {
+                    query.addFilterQuery("-" + field.getSolrField() + ":[* TO *]");
+                    continue;
+                }
+                // Assume RangePair, as the only other implementation at present
                 var rangePair = (RangePair) rangeTerm.getValue();
-                String key = rangeTerm.getKey();
                 String left = getRangeValue(key, rangePair.getLeftHand());
                 String right = getRangeValue(key, rangePair.getRightHand());
                 if (left.equals("*") && right.equals("*")) {
                     continue;
                 }
-
-                var field = SearchFieldKey.valueOf(key);
-                if (field != null) {
-                    query.addFilterQuery(String.format("%s:[%s TO %s]",
-                            field.getSolrField(), left, right));
-                }
+                query.addFilterQuery(String.format("%s:[%s TO %s]",
+                        field.getSolrField(), left, right));
             }
         }
     }
@@ -583,7 +587,7 @@ public class SolrSearchService extends AbstractQueryService {
      * @param searchState
      *           the search state used to generate this SolrQuery
      * @param isRetrieveFacetsRequest
-     *           indicates if facet results hould be returned
+     *           indicates if facet results should be returned
      * @param returnQuery
      *           indicates whether to return the solr query object as part of the response.
      * @return

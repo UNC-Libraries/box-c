@@ -18,10 +18,12 @@ package edu.unc.lib.boxc.search.solr.services;
 import edu.unc.lib.boxc.search.api.SearchFieldKey;
 import edu.unc.lib.boxc.search.api.exceptions.InvalidFacetException;
 import edu.unc.lib.boxc.search.api.facets.SearchFacet;
+import edu.unc.lib.boxc.search.api.ranges.RangeValue;
 import edu.unc.lib.boxc.search.api.requests.SearchState;
 import edu.unc.lib.boxc.search.solr.config.SearchSettings;
 import edu.unc.lib.boxc.search.solr.facets.GenericFacet;
 import edu.unc.lib.boxc.search.solr.ranges.RangePair;
+import edu.unc.lib.boxc.search.solr.ranges.UnknownRange;
 import edu.unc.lib.boxc.search.solr.utils.FacetFieldUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -404,8 +406,13 @@ public class SearchStateFactory {
                 parameter = getParameter(request, searchSettings.searchFieldParam(
                         SearchFieldKey.DATE_CREATED_YEAR.name()));
                 if (parameter != null && parameter.length() > 0) {
-                    var dateCreatedYear = new RangePair(parameter);
-                    searchState.getRangeFields().put(SearchFieldKey.DATE_CREATED_YEAR.name(), dateCreatedYear);
+                    RangeValue rangeVal;
+                    if (UnknownRange.isUnknown(parameter)) {
+                        rangeVal = new UnknownRange();
+                    } else {
+                        rangeVal = new RangePair(parameter);
+                    }
+                    searchState.getRangeFields().put(SearchFieldKey.DATE_CREATED_YEAR.name(), rangeVal);
                 }
             } catch (IllegalArgumentException e) {
                 // An invalid range was specified, throw away the range pair

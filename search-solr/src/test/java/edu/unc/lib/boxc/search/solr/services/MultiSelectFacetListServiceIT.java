@@ -30,6 +30,7 @@ import edu.unc.lib.boxc.search.solr.facets.CutoffFacetImpl;
 import edu.unc.lib.boxc.search.solr.facets.FilterableDisplayValueFacet;
 import edu.unc.lib.boxc.search.solr.facets.GenericFacet;
 import edu.unc.lib.boxc.search.solr.facets.RoleGroupFacet;
+import edu.unc.lib.boxc.search.solr.ranges.UnknownRange;
 import edu.unc.lib.boxc.search.solr.responses.SearchResultResponse;
 import edu.unc.lib.boxc.search.solr.test.BaseEmbeddedSolrTest;
 import edu.unc.lib.boxc.search.solr.test.TestCorpus;
@@ -44,6 +45,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import static edu.unc.lib.boxc.auth.api.AccessPrincipalConstants.PUBLIC_PRINC;
+import static edu.unc.lib.boxc.search.api.SearchFieldKey.DATE_CREATED_YEAR;
 import static edu.unc.lib.boxc.search.api.SearchFieldKey.FILE_FORMAT_CATEGORY;
 import static edu.unc.lib.boxc.search.api.SearchFieldKey.FILE_FORMAT_TYPE;
 import static edu.unc.lib.boxc.search.api.SearchFieldKey.PARENT_COLLECTION;
@@ -599,6 +601,32 @@ public class MultiSelectFacetListServiceIT extends BaseEmbeddedSolrTest {
         FacetFieldList facets2 = resp2.getFacetFields();
         List<String> names2 = facets2.stream().map(FacetFieldObject::getName).collect(Collectors.toList());
         assertEquals(facetsInOrder, names2);
+    }
+
+    @Test
+    public void facetIncludeUnknownTest() throws Exception {
+        SearchState searchState = new SearchState();
+        searchState.setFacetsToRetrieve(Arrays.asList(DATE_CREATED_YEAR.name()));
+
+        SearchRequest request = new SearchRequest(searchState, accessGroups);
+        SearchResultResponse resp = service.getFacetListResult(request);
+
+        assertNumberFacetsReturned(resp, DATE_CREATED_YEAR, 1);
+        assertFacetValueCount(resp, DATE_CREATED_YEAR, UnknownRange.UNKNOWN_VALUE, 2);
+    }
+
+    @Test
+    public void facetIncludeUnknownWithFiltersTest() throws Exception {
+        SearchState searchState = new SearchState();
+        searchState.getSearchFields().put(SearchFieldKey.DEFAULT_INDEX.name(), "folder");
+
+        searchState.setFacetsToRetrieve(Arrays.asList(DATE_CREATED_YEAR.name()));
+
+        SearchRequest request = new SearchRequest(searchState, accessGroups);
+        SearchResultResponse resp = service.getFacetListResult(request);
+
+        assertNumberFacetsReturned(resp, DATE_CREATED_YEAR, 1);
+        assertFacetValueCount(resp, DATE_CREATED_YEAR, UnknownRange.UNKNOWN_VALUE, 1);
     }
 
     @Test
