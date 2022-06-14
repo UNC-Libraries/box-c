@@ -6,13 +6,6 @@ Facet list component, used to display all the values of facets and provide links
         <h2 class="facet-header">{{ $t('facets.filter') }}</h2>
         <div class="facet-display" v-for="facet in this.sortedFacetsList">
             <h3>{{ facetName(facet.name) }}</h3>
-            <ul v-if="facet.name !=='DATE_CREATED_YEAR'">
-                <li v-for="value in facet.values">
-                    <a class="is-selected" v-if="isSelected(value.limitToValue)" @click.prevent="updateAll(value, true)">
-                        {{ value.displayValue }} ({{ value.count }}) <i class="fas fa-times"></i></a>
-                    <a v-else @click.prevent="updateAll(value)">{{ value.displayValue }} ({{ value.count }})</a>
-                </li>
-            </ul>
             <slider v-if="facet.name === 'DATE_CREATED_YEAR'" ref="sliderInfo"
                     :start-range="[dates.selected_dates.start, dates.selected_dates.end]"
                     :range-values="{min: dates.selected_dates.start, max: currentYear}" @sliderUpdated="sliderUpdated"></slider>
@@ -22,10 +15,18 @@ Facet list component, used to display all the values of facets and provide links
                 &ndash;
                 <input type="number" v-model="dates.selected_dates.end" name="end_date"
                        aria-label="End Date" placeholder="End Date" />
-                <br />
                 <input type="submit" value="Limit" @click.prevent="setDateFacetUrl()" class="button is-small" />
                 <p class="date_error" v-if="dates.invalid_date_range">The start date cannot be after the end date</p>
             </form>
+
+            <ul>
+                <li v-for="value in facet.values">
+                    <a class="is-selected" v-if="isSelected(value.limitToValue)" @click.prevent="updateAll(value, true)">
+                        {{ value.displayValue }} ({{ value.count }}) <i class="fas fa-times"></i></a>
+                    <a v-else @click.prevent="updateAll(value)">{{ value.displayValue }} ({{ value.count }})</a>
+                </li>
+            </ul>
+
             <facet-modal v-if="showMoreResults(facet)" :facet-id="facetType(facet.name, false)"
                          :facet-name="facetName(facet.name)" @facetValueAdded="modalFacetValueAdded" ></facet-modal>
         </div>
@@ -452,11 +453,13 @@ Facet list component, used to display all the values of facets and provide links
             float: none;
             margin-bottom: 25px;
             margin-top: 5px;
+            margin-left: 15px;
             input[type=number] {
                 max-width: 100px;
+                padding: 3px;
             }
             input[type=submit] {
-                margin-top: 10px;
+                margin-left: 8px;
                 background-color: $cdr-blue;
                 color: white;
                 font-weight: bold;

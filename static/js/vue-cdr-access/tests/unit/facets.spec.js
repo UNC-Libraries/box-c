@@ -127,7 +127,15 @@ describe('facets.vue', () => {
                     },
                     {
                         name: "DATE_CREATED_YEAR",
-                        values: []
+                        values: [
+                            {
+                                count: 4,
+                                displayValue: "unknown",
+                                limitToValue: "unknown",
+                                value: "unknown",
+                                fieldName: "DATE_CREATED_YEAR"
+                            }
+                        ]
                     }
                 ]
             },
@@ -158,6 +166,9 @@ describe('facets.vue', () => {
         expect(facet_headers[1].text()).toBe('Format');
         expect(facets[2].find('a').text()).toBe('Image (8)');
         expect(facets[3].find('a').text()).toBe('Text (2)');
+
+        expect(facet_headers[2].text()).toBe('Date Created');
+        expect(facets[4].find('a').text()).toBe('unknown (4)');
     });
 
     it("displays 'Date Created' facet if a minimum search year is set", () => {
@@ -167,6 +178,9 @@ describe('facets.vue', () => {
         expect(wrapper.find('form').isVisible()).toBe(true);
         expect(wrapper.vm.dates.selected_dates.start).toEqual(2011);
         expect(wrapper.vm.dates.selected_dates.end).toEqual(end_year);
+
+        let facets = wrapper.findAll('.facet-display li');
+        expect(facets[4].find('a').text()).toBe('unknown (4)');
     });
 
     it("does not display facets with no returned results", () => {
