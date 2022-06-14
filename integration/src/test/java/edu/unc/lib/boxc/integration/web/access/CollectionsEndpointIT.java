@@ -28,9 +28,12 @@ import edu.unc.lib.boxc.search.api.models.ContentObjectRecord;
 import edu.unc.lib.boxc.search.api.requests.SimpleIdRequest;
 import edu.unc.lib.boxc.search.solr.services.SolrSearchService;
 import org.apache.commons.collections4.IteratorUtils;
+import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.solr.client.solrj.SolrClient;
+import org.glassfish.grizzly.Closeable;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -82,7 +85,8 @@ public class CollectionsEndpointIT {
     protected final static String USERNAME = "test_user";
     protected final static AccessGroupSet GROUPS = new AccessGroupSetImpl("adminGroup");
 
-    private ContentObjectRecord adminUnitRecord;
+    private CloseableHttpClient httpClient;
+    private HttpGet getMethod;
 
     @Before
     public void setup() throws Exception {
@@ -92,30 +96,11 @@ public class CollectionsEndpointIT {
         repoInitializer.initializeRepository();
         // reset solr before every test
         solrClient.deleteByQuery("*:*");
+        httpClient = HttpClients.createDefault();
+        getMethod = new HttpGet("http://localhost:48080/access/collectionsJson");
 
-//        var options = Map.of("title", "Best title");
-//        var adminUnit = adminUnitFactory.createAdminUnit(options);
-//        var collection = collectionFactory.createCollection(adminUnit, options);
-//        var work = workFactory.createWork(collection, options);
-//
 //        adminUnitRecord = solrSearchService.getObjectById(new SimpleIdRequest(adminUnit.getPid(), GROUPS));
     }
-
-    /**
-     * Temporary test to demonstrate that factory object creation works
-     * @throws Exception
-     */
-//    @Test
-//    public void testFactoryConstruction() throws Exception {
-//        assertNotNull(adminUnitRecord);
-//        assertEquals("Best title", adminUnitRecord.getTitle());
-//
-//        var httpClient = HttpClients.createDefault();
-//        var getMethod = new HttpGet("http://localhost:48080/access/collectionsJson");
-//        try (var resp = httpClient.execute(getMethod)) {
-//            assertEquals(200, resp.getStatusLine().getStatusCode());
-//        }
-//    }
 
     @Test
     public void testCollectionsJsonOnlyReturnsAdminUnits() throws Exception {
@@ -124,21 +109,38 @@ public class CollectionsEndpointIT {
         var adminUnit2 = adminUnitFactory.createAdminUnit(Map.of("title", "Object2"));
         collectionFactory.createCollection(adminUnit1, options);
 
-        var httpClient = HttpClients.createDefault();
-        var getMethod = new HttpGet("http://localhost:48080/access/collectionsJson");
         try (var resp = httpClient.execute(getMethod)) {
-            ObjectMapper mapper = new ObjectMapper();
-            var respJson = mapper.readTree(resp.getEntity().getContent());
-            var metadata = IteratorUtils.toList(respJson.get("metadata").elements());
+            var metadata = getMetadataFromResponse(resp);
 
-            assertEquals(200, resp.getStatusLine().getStatusCode());
-            assertValuePresent(metadata, 0, "AdminUnit");
-            assertValuePresent(metadata, 1, "AdminUnit");
+            assertSuccessfulResponse(resp);
+            assertValuePresent(metadata, 0, "type", "AdminUnit");
+            assertValuePresent(metadata, 1, "type", "AdminUnit");
         }
     }
 
-    private void assertValuePresent(List<JsonNode> json, int index, String value) {
+    public void testCollectionsJsonReturnsCorrectTitle() throws Exception {
+        adminUnitFactory.createAdminUnit(Map.of("title", "Object2"));
+
+        try (var resp = httpClient.execute(getMethod)) {
+            var metadata = getMetadataFromResponse(resp);
+
+            assertSuccessfulResponse(resp);
+            assertValuePresent(metadata, 0, "title", "Object2");
+        }
+    }
+
+    private void assertValuePresent(List<JsonNode> json, int index, String key, String value) {
         var result = json.get(index);
-        assertEquals(value, result.get("type").asText());
+        assertEquals(value, result.get(key).asText());
+    }
+
+    private void assertSuccessfulResponse(CloseableHttpResponse response) {
+        assertEquals(200, response.getStatusLine().getStatusCode());
+    }
+
+    private List<JsonNode> getMetadataFromResponse(CloseableHttpResponse response) throws IOException {
+        ObjectMapper mapper = new ObjectMapper();
+        var respJson = mapper.readTree(response.getEntity().getContent());
+        return IteratorUtils.toList(respJson.get("metadata").elements());
     }
 }
