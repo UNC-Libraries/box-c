@@ -24,8 +24,6 @@ import edu.unc.lib.boxc.integration.factories.CollectionFactory;
 import edu.unc.lib.boxc.integration.factories.WorkFactory;
 import edu.unc.lib.boxc.model.fcrepo.services.RepositoryInitializer;
 import edu.unc.lib.boxc.model.fcrepo.test.TestHelper;
-import edu.unc.lib.boxc.search.api.models.ContentObjectRecord;
-import edu.unc.lib.boxc.search.api.requests.SimpleIdRequest;
 import edu.unc.lib.boxc.search.solr.services.SolrSearchService;
 import org.apache.commons.collections4.IteratorUtils;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -33,7 +31,6 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.solr.client.solrj.SolrClient;
-import org.glassfish.grizzly.Closeable;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -129,9 +126,55 @@ public class CollectionsEndpointIT {
         }
     }
 
+    public void testCollectionsJsonReturnsThumbnailUrl() throws Exception {
+        var options = Map.of("title", "Object1", "addThumbnail", "true");
+        adminUnitFactory.createAdminUnit(options);
+
+        try (var resp = httpClient.execute(getMethod)) {
+            var metadata = getMetadataFromResponse(resp);
+
+            assertSuccessfulResponse(resp);
+            assertValuePresent(metadata, 0, "thumbnail_url");
+        }
+    }
+
+    public void testCollectionsJsonReturnsChildrenCount() throws Exception {
+        var options = Map.of("title", "Object1", "addThumbnail", "true");
+        var adminUnit = adminUnitFactory.createAdminUnit(options);
+        collectionFactory.createCollection(adminUnit, Map.of("title", "Collection1"));
+
+        try (var resp = httpClient.execute(getMethod)) {
+            var metadata = getMetadataFromResponse(resp);
+            var childCount = metadata.get(0).get("counts").get("child").asText();
+
+            assertSuccessfulResponse(resp);
+            assertValuePresent(metadata, 0, "counts");
+        }
+    }
+
+    public void testCollectionsJsonReturnsChildrenCountAccordingToPermission() throws Exception {
+        var options = Map.of("title", "Object1", "addThumbnail", "true");
+        var adminUnit = adminUnitFactory.createAdminUnit(options);
+        collectionFactory.createCollection(adminUnit, Map.of("title", "Collection1"));
+
+        try (var resp = httpClient.execute(getMethod)) {
+            var metadata = getMetadataFromResponse(resp);
+            var childCount = metadata.get(0).get("counts").get("child").asText();
+
+            assertSuccessfulResponse(resp);
+            assertValuePresent(metadata, 0, "counts");
+        }
+    }
+
     private void assertValuePresent(List<JsonNode> json, int index, String key, String value) {
         var result = json.get(index);
         assertEquals(value, result.get(key).asText());
+    }
+
+    private void assertValuePresent(List<JsonNode> json, int index, String key) {
+        System.out.println("json = " + json + ", index = " + index + ", key = " + key);
+        var result = json.get(index);
+        assertNotNull(result.get(key).asText());
     }
 
     private void assertSuccessfulResponse(CloseableHttpResponse response) {
@@ -141,6 +184,8 @@ public class CollectionsEndpointIT {
     private List<JsonNode> getMetadataFromResponse(CloseableHttpResponse response) throws IOException {
         ObjectMapper mapper = new ObjectMapper();
         var respJson = mapper.readTree(response.getEntity().getContent());
+//        System.out.println(respJson);
+        System.out.println(IteratorUtils.toList(respJson.get("metadata").elements()));
         return IteratorUtils.toList(respJson.get("metadata").elements());
     }
 }

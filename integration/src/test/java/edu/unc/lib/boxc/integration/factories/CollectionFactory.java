@@ -17,6 +17,7 @@ package edu.unc.lib.boxc.integration.factories;
 
 import edu.unc.lib.boxc.model.api.objects.AdminUnit;
 import edu.unc.lib.boxc.model.api.objects.CollectionObject;
+import edu.unc.lib.boxc.model.fcrepo.services.DerivativeService;
 
 import java.util.Map;
 
@@ -28,8 +29,17 @@ public class CollectionFactory extends ContentObjectFactory {
     public CollectionObject createCollection(AdminUnit adminUnit, Map<String, String> options) throws Exception {
         var collection = repositoryObjectFactory.createCollectionObject(null);
         adminUnit.addMember(collection);
+        // if options has "hasThumbnail = true" then add a thumbnail
+        if ("true".equals(options.get("addThumbnail"))) {
+            addThumbnail(adminUnit);
+        }
+
         prepareObject(collection, options);
 
         return collection;
+    }
+
+    public void setDerivativeService(DerivativeService derivativeService) {
+        this.derivativeService = derivativeService;
     }
 }

@@ -17,6 +17,7 @@ package edu.unc.lib.boxc.integration.factories;
 
 import edu.unc.lib.boxc.model.api.objects.CollectionObject;
 import edu.unc.lib.boxc.model.api.objects.WorkObject;
+import edu.unc.lib.boxc.model.fcrepo.services.DerivativeService;
 
 import java.util.Map;
 
@@ -54,5 +55,9 @@ public class WorkFactory extends ContentObjectFactory{
 
     public void setFileFactory(FileFactory fileFactory) {
         this.fileFactory = fileFactory;
+    }
+
+    public void setDerivativeService(DerivativeService derivativeService) {
+        this.derivativeService = derivativeService;
     }
 }

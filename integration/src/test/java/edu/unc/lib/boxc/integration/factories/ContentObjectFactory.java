@@ -19,16 +19,20 @@ import edu.unc.lib.boxc.auth.api.models.AgentPrincipals;
 import edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl;
 import edu.unc.lib.boxc.auth.fcrepo.models.AgentPrincipalsImpl;
 import edu.unc.lib.boxc.indexing.solr.test.RepositoryObjectSolrIndexer;
+import edu.unc.lib.boxc.model.api.DatastreamType;
 import edu.unc.lib.boxc.model.api.objects.ContentObject;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
+import edu.unc.lib.boxc.model.fcrepo.services.DerivativeService;
 import edu.unc.lib.boxc.model.fcrepo.test.RepositoryObjectTreeIndexer;
 import edu.unc.lib.boxc.operations.impl.edit.UpdateDescriptionService;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jdom2.output.Format;
 import org.jdom2.output.XMLOutputter;
 
+import java.io.IOException;
 import java.util.Map;
 
 /**
@@ -41,6 +45,7 @@ public class ContentObjectFactory {
     protected RepositoryObjectLoader repositoryObjectLoader;
     protected ModsFactory modsFactory;
     protected UpdateDescriptionService updateDescriptionService;
+    protected DerivativeService derivativeService;
     protected final AgentPrincipals agent = new AgentPrincipalsImpl("user", new AccessGroupSetImpl("adminGroup"));
 
     public void prepareObject(ContentObject object, Map<String, String> options) throws Exception {
@@ -72,6 +77,11 @@ public class ContentObjectFactory {
         return options;
     }
 
+    public void addThumbnail(ContentObject object) throws IOException {
+        var derivativePath = derivativeService.getDerivativePath(object.getPid(), DatastreamType.THUMBNAIL_LARGE);
+        FileUtils.write(derivativePath.toFile(), "image", "UTF-8");
+    }
+
     public void setRepositoryObjectFactory(RepositoryObjectFactory repositoryObjectFactory) {
         this.repositoryObjectFactory = repositoryObjectFactory;
     }
@@ -94,5 +104,9 @@ public class ContentObjectFactory {
 
     public void setRepositoryObjectLoader(RepositoryObjectLoader repositoryObjectLoader) {
         this.repositoryObjectLoader = repositoryObjectLoader;
+    }
+
+    public void setDerivativeService(DerivativeService derivativeService) {
+        this.derivativeService = derivativeService;
     }
 }
