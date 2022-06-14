@@ -6,7 +6,7 @@ Facet list component, used to display all the values of facets and provide links
         <h2 class="facet-header">{{ $t('facets.filter') }}</h2>
         <div class="facet-display" v-for="facet in this.sortedFacetsList">
             <h3>{{ facetName(facet.name) }}</h3>
-            <ul v-if="facet.name !=='DATE_CREATED_YEAR'" >
+            <ul v-if="facet.name !=='DATE_CREATED_YEAR'">
                 <li v-for="value in facet.values">
                     <a class="is-selected" v-if="isSelected(value.limitToValue)" @click.prevent="updateAll(value, true)">
                         {{ value.displayValue }} ({{ value.count }}) <i class="fas fa-times"></i></a>
@@ -26,20 +26,24 @@ Facet list component, used to display all the values of facets and provide links
                 <input type="submit" value="Limit" @click.prevent="setDateFacetUrl()" class="button is-small" />
                 <p class="date_error" v-if="dates.invalid_date_range">The start date cannot be after the end date</p>
             </form>
+            <facet-modal v-if="showMoreResults(facet)" :facet-id="facetType(facet.name, false)"
+                         :facet-name="facetName(facet.name)" @facetValueAdded="modalFacetValueAdded" ></facet-modal>
         </div>
     </div>
 </template>
 
 <script>
+    import facetModal from "@/components/facetModal.vue";
     import slider from "@/components/slider.vue";
     import routeUtils from '../mixins/routeUtils';
 
     const CURRENT_YEAR = new Date().getFullYear();
+    const FACET_RESULT_COUNT = 6;
 
     export default {
         name: 'facets',
 
-        components: {slider},
+        components: {facetModal, slider},
 
         props: {
             facetList: Array,
@@ -144,6 +148,10 @@ Facet list component, used to display all the values of facets and provide links
                 return facet.values.length > 0;
             },
 
+            showMoreResults(facet) {
+                return facet.name !== 'DATE_CREATED_YEAR' && facet.values.length >= FACET_RESULT_COUNT;
+            },
+
             /**
              * Push new url after a facet is selected/deselected
              * Reset start row of search to 0
@@ -181,7 +189,7 @@ Facet list component, used to display all the values of facets and provide links
              * @param facet
              */
             facetInfoRemove(facet) {
-               const facet_type = this.facetType(facet);
+               const facet_type = this.facetType(facet.fieldName);
                const current_index = this.selected_facets.findIndex(sf => sf.startsWith(facet_type));
 
                if (current_index !== -1) {
@@ -251,31 +259,45 @@ Facet list component, used to display all the values of facets and provide links
                 }
             },
 
-            facetType(value) {
-                switch (value.fieldName) {
+            facetType(value, query_value = true) {
+                let type = ''
+
+                switch (value) {
                     case 'PARENT_COLLECTION':
-                        return 'collection=';
+                        type = 'collection';
+                        break;
                     case 'PARENT_UNIT':
-                        return 'unit=';
+                        type = 'unit';
+                        break;
                     case 'FILE_FORMAT_CATEGORY':
-                        return 'format=';
+                        type = 'format';
+                        break;
                     case 'LANGUAGE':
-                        return 'language=';
+                        type = 'language';
+                        break;
                     case 'LOCATION':
-                        return 'location=';
+                        type = 'location';
+                        break;
                     case 'SUBJECT':
-                        return 'subject=';
+                        type = 'subject';
+                        break;
                     case 'GENRE':
-                        return 'genre=';
+                        type = 'genre';
+                        break;
                     case 'DATE_CREATED_YEAR':
-                        return 'createdYear=';
+                        type = 'createdYear';
+                        break;
                     case 'PUBLISHER':
-                        return 'publisher=';
+                        type = 'publisher';
+                        break;
                     case 'CREATOR_CONTRIBUTOR':
-                        return 'creatorContributor=';
+                        type = 'creatorContributor';
+                        break;
                     default:
-                        return '';
+                        break;
                 }
+
+                return query_value ? `${type}=`: type;
             },
 
             /**
@@ -284,7 +306,7 @@ Facet list component, used to display all the values of facets and provide links
              * @returns {string}
              */
             facetValue(value) {
-                const facet_type = this.facetType(value);
+                const facet_type = this.facetType(value.fieldName);
                 const current_facet_value = this.selected_facets.filter(f => f.startsWith(facet_type));
 
                 if (current_facet_value.length === 1) {
@@ -373,6 +395,10 @@ Facet list component, used to display all the values of facets and provide links
             sliderUpdated(values) {
                 this.dates.selected_dates.start = values[0];
                 this.dates.selected_dates.end = values[1];
+            },
+
+            modalFacetValueAdded(facet) {
+                this.updateAll(facet);
             }
         },
 

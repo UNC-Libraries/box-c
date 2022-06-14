@@ -78,7 +78,54 @@ describe('facets.vue', () => {
                                 fieldName: "FILE_FORMAT_CATEGORY"
                             }
                         ]
-                    }, {
+                    },   {
+                        name: "LOCATION",
+                        values: [
+                            {
+                                count: 1,
+                                displayValue: "California",
+                                limitToValue: "California",
+                                value: "California",
+                                fieldName: "LOCATION"
+                            },
+                            {
+                                count: 1,
+                                displayValue: "Delaware",
+                                limitToValue: "Delaware",
+                                value: "Delaware",
+                                fieldName: "LOCATION"
+                            },
+                            {
+                                count: 1,
+                                displayValue: "Georgia",
+                                limitToValue: "Georgia",
+                                value: "Georgia",
+                                fieldName: "LOCATION"
+                            },
+                            {
+                                count: 1,
+                                displayValue: "Indiana",
+                                limitToValue: "Indiana",
+                                value: "Indiana",
+                                fieldName: "LOCATION"
+                            },
+                            {
+                                count: 1,
+                                displayValue: "North Carolina",
+                                limitToValue: "North Carolina",
+                                value: "North Carolina",
+                                fieldName: "LOCATION"
+                            },
+                            {
+                                count: 1,
+                                displayValue: "South Carolina",
+                                limitToValue: "South Carolina",
+                                value: "South Carolina",
+                                fieldName: "LOCATION"
+                            }
+                        ]
+                    },
+                    {
                         name: "DATE_CREATED_YEAR",
                         values: []
                     }
@@ -116,7 +163,7 @@ describe('facets.vue', () => {
     it("displays 'Date Created' facet if a minimum search year is set", () => {
         let facet_headers = wrapper.findAll('.facet-display h3');
 
-        expect(facet_headers[2].text()).toBe('Date Created');
+        expect(facet_headers[3].text()).toBe('Date Created');
         expect(wrapper.find('form').isVisible()).toBe(true);
         expect(wrapper.vm.dates.selected_dates.start).toEqual(2011);
         expect(wrapper.vm.dates.selected_dates.end).toEqual(end_year);
@@ -155,7 +202,7 @@ describe('facets.vue', () => {
                                 limitToValue: "North Carolina",
                                 value: "North Carolina",
                                 fieldName: "LOCATION"
-                            }
+                            },
                         ]
                     }
                 ]
@@ -234,6 +281,26 @@ describe('facets.vue', () => {
         selected_facet = facet_list[2];
         expect(selected_facet.html()).toMatch(/Image.*8.*fas.fa-times/); // facet value and checkmark
         expect(wrapper.vm.selected_facets).toContain('format=Image');
+    });
+
+    it("displays a 'More' link if facet values equal FACET_RESULT_COUNT for a facet", async () => {
+        const facet_list = wrapper.findAll('.facet-display');
+        expect(facet_list[2].find('h3').text()).toEqual('Location');
+        expect(facet_list[2].findAll('li').length).toEqual(6);
+        expect(facet_list[2].find('.meta-modal a').exists()).toBe(true);
+    });
+
+    it("does not display a 'More' link if facet values are less than FACET_RESULT_COUNT for a facet", async () => {
+        const facet_list = wrapper.findAll('.facet-display');
+        expect(facet_list[0].find('h3').text()).toEqual('Collection');
+        expect(facet_list[0].findAll('li').length).toEqual(2);
+        expect(facet_list[0].find('.meta-modal a').exists()).toBe(false);
+    });
+
+    it("does not display a 'More' link for date created", async () => {
+        const facet_list = wrapper.findAll('.facet-display');
+        expect(facet_list[3].find('h3').text()).toEqual('Date Created')
+        expect(facet_list[3].find('.meta-modal a').exists()).toBe(false);
     });
 
     it("clears a selected facet if it is unchecked", async () => {
