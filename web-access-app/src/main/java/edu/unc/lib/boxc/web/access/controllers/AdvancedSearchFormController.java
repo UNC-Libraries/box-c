@@ -64,7 +64,6 @@ public class AdvancedSearchFormController extends AbstractErrorHandlingSearchCon
         // and forward them to the search servlet.
         SearchState searchState = searchStateFactory.createSearchStateAdvancedSearch(request.getParameterMap());
 
-        request.getSession().setAttribute("searchState", searchState);
         model.addAllAttributes(SearchStateUtil.generateStateParameters(searchState));
 
         return "redirect:/search";
