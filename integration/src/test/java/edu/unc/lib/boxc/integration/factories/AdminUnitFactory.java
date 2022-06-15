@@ -33,7 +33,7 @@ public class AdminUnitFactory extends ContentObjectFactory {
                 RepositoryPaths.getContentRootPid());
         contentRoot.addMember(adminUnit);
         // if options has "hasThumbnail = true" then add a thumbnail
-        if ("true".equals(options.get("addThumbnail"))) {
+        if (options.containsKey("addThumbnail") && "true".equals(options.get("addThumbnail"))) {
             addThumbnail(adminUnit);
         }
         prepareObject(adminUnit, options);

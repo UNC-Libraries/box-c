@@ -50,7 +50,7 @@ public class ContentObjectFactory {
     protected DerivativeService derivativeService;
     protected final AgentPrincipals agent = new AgentPrincipalsImpl("user", new AccessGroupSetImpl("adminGroup"));
 
-    public void prepareObject(ContentObject object, Map<String, String> options) throws Exception {
+    protected void prepareObject(ContentObject object, Map<String, String> options) throws Exception {
         options = validateOptions(options);
         var modsDocument = modsFactory.createDocument(options);
         var modsString = new XMLOutputter(Format.getPrettyFormat()).outputString(modsDocument);
@@ -79,15 +79,15 @@ public class ContentObjectFactory {
         return options;
     }
 
-    public void addThumbnail(ContentObject object) throws IOException {
+    protected void addThumbnail(ContentObject object) throws IOException {
         var derivativePath = derivativeService.getDerivativePath(object.getPid(), DatastreamType.THUMBNAIL_LARGE);
         FileUtils.write(derivativePath.toFile(), "image", "UTF-8");
     }
 
-    public Model getAccessGroup(Map<String, String> options) {
+    protected Model getAccessModel(Map<String, String> options) {
         Model accessGroup;
         if (options.containsKey("readGroup")) {
-            accessGroup = new AclModelBuilder(options.get("title"))
+            accessGroup = new AclModelBuilder(options.getOrDefault("title", ""))
                     .addCanViewOriginals(options.get("readGroup"))
                     .model;
         } else {

@@ -121,6 +121,13 @@ public class CollectionsEndpointIT {
         }
     }
 
+    @Test
+    public void testCollectionsJsonReturnsSuccessWithNoAdminUnits() throws Exception {
+        try (var resp = httpClient.execute(getMethod)) {
+            assertSuccessfulResponse(resp);
+        }
+    }
+
     public void testCollectionsJsonReturnsCorrectTitle() throws Exception {
         adminUnitFactory.createAdminUnit(Map.of("title", "Object2"));
 

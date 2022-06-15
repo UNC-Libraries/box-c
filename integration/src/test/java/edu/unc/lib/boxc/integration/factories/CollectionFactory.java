@@ -27,8 +27,8 @@ import java.util.Map;
  */
 public class CollectionFactory extends ContentObjectFactory {
     public CollectionObject createCollection(AdminUnit adminUnit, Map<String, String> options) throws Exception {
-        var accessGroup = getAccessGroup(options);
-        var collection = repositoryObjectFactory.createCollectionObject(accessGroup);
+        var accessModel = getAccessModel(options);
+        var collection = repositoryObjectFactory.createCollectionObject(accessModel);
         // if options has "hasThumbnail = true" then add a thumbnail
         if ("true".equals(options.get("addThumbnail"))) {
             addThumbnail(collection);
