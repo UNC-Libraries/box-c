@@ -18,6 +18,8 @@ package edu.unc.lib.boxc.integration.factories;
 import edu.unc.lib.boxc.model.api.objects.AdminUnit;
 import edu.unc.lib.boxc.model.api.objects.CollectionObject;
 import edu.unc.lib.boxc.model.fcrepo.services.DerivativeService;
+import edu.unc.lib.boxc.model.fcrepo.test.AclModelBuilder;
+import org.apache.jena.rdf.model.Model;
 
 import java.util.Map;
 
@@ -27,13 +29,14 @@ import java.util.Map;
  */
 public class CollectionFactory extends ContentObjectFactory {
     public CollectionObject createCollection(AdminUnit adminUnit, Map<String, String> options) throws Exception {
-        var collection = repositoryObjectFactory.createCollectionObject(null);
-        adminUnit.addMember(collection);
+        var accessGroup = getAccessGroup(options);
+        var collection = repositoryObjectFactory.createCollectionObject(accessGroup);
         // if options has "hasThumbnail = true" then add a thumbnail
         if ("true".equals(options.get("addThumbnail"))) {
-            addThumbnail(adminUnit);
+            addThumbnail(collection);
         }
 
+        adminUnit.addMember(collection);
         prepareObject(collection, options);
 
         return collection;

@@ -24,11 +24,13 @@ import edu.unc.lib.boxc.model.api.objects.ContentObject;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
 import edu.unc.lib.boxc.model.fcrepo.services.DerivativeService;
+import edu.unc.lib.boxc.model.fcrepo.test.AclModelBuilder;
 import edu.unc.lib.boxc.model.fcrepo.test.RepositoryObjectTreeIndexer;
 import edu.unc.lib.boxc.operations.impl.edit.UpdateDescriptionService;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.jena.rdf.model.Model;
 import org.jdom2.output.Format;
 import org.jdom2.output.XMLOutputter;
 
@@ -80,6 +82,17 @@ public class ContentObjectFactory {
     public void addThumbnail(ContentObject object) throws IOException {
         var derivativePath = derivativeService.getDerivativePath(object.getPid(), DatastreamType.THUMBNAIL_LARGE);
         FileUtils.write(derivativePath.toFile(), "image", "UTF-8");
+    }
+    public Model getAccessGroup(Map<String, String> options) {
+        Model accessGroup;
+        if (options.containsKey("readGroup")) {
+            accessGroup = new AclModelBuilder(options.get("title"))
+                    .addCanViewOriginals(options.get("readGroup"))
+                    .model;
+        } else {
+            accessGroup = null;
+        }
+        return accessGroup;
     }
 
     public void setRepositoryObjectFactory(RepositoryObjectFactory repositoryObjectFactory) {

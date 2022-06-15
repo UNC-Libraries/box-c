@@ -39,6 +39,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.ContextHierarchy;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import static edu.unc.lib.boxc.auth.api.AccessPrincipalConstants.PUBLIC_PRINC;
 
 import java.io.IOException;
 import java.util.List;
@@ -141,28 +142,33 @@ public class CollectionsEndpointIT {
     public void testCollectionsJsonReturnsChildrenCount() throws Exception {
         var options = Map.of("title", "Object1", "addThumbnail", "true");
         var adminUnit = adminUnitFactory.createAdminUnit(options);
-        collectionFactory.createCollection(adminUnit, Map.of("title", "Collection1"));
+        collectionFactory.createCollection(adminUnit,
+                Map.of("title", "Collection1", "readGroup", PUBLIC_PRINC));
 
         try (var resp = httpClient.execute(getMethod)) {
             var metadata = getMetadataFromResponse(resp);
-            var childCount = metadata.get(0).get("counts").get("child").asText();
+            var childCount = metadata.get(0).get("counts").get("child").asInt();
 
             assertSuccessfulResponse(resp);
             assertValuePresent(metadata, 0, "counts");
+            assertEquals(1, childCount);
         }
     }
 
     public void testCollectionsJsonReturnsChildrenCountAccordingToPermission() throws Exception {
         var options = Map.of("title", "Object1", "addThumbnail", "true");
         var adminUnit = adminUnitFactory.createAdminUnit(options);
+        // no readGroup permission
         collectionFactory.createCollection(adminUnit, Map.of("title", "Collection1"));
 
         try (var resp = httpClient.execute(getMethod)) {
             var metadata = getMetadataFromResponse(resp);
-            var childCount = metadata.get(0).get("counts").get("child").asText();
+            var childCount = metadata.get(0).get("counts").get("child").asInt();
 
             assertSuccessfulResponse(resp);
             assertValuePresent(metadata, 0, "counts");
+            // childCount should be 0 because no one has permission to see the child Collection
+            assertEquals(0, childCount);
         }
     }
 
