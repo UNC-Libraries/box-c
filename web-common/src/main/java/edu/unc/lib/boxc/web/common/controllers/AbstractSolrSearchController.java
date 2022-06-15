@@ -90,15 +90,10 @@ public abstract class AbstractSolrSearchController {
 
         //Retrieve the last search state
         if (searchState == null) {
-            searchState = (SearchState)session.getAttribute("searchState");
-            if (searchState == null) {
-                if (searchRequest != null && searchRequest instanceof HierarchicalBrowseRequest) {
-                    searchState = searchStateFactory.createHierarchicalBrowseSearchState(request.getParameterMap());
-                } else {
-                    searchState = searchStateFactory.createSearchState(request.getParameterMap());
-                }
+            if (searchRequest != null && searchRequest instanceof HierarchicalBrowseRequest) {
+                searchState = searchStateFactory.createHierarchicalBrowseSearchState(request.getParameterMap());
             } else {
-                session.removeAttribute("searchState");
+                searchState = searchStateFactory.createSearchState(request.getParameterMap());
             }
         }
 

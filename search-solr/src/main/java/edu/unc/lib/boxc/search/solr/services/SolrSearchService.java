@@ -451,13 +451,11 @@ public class SolrSearchService extends AbstractQueryService {
         if (searchFields == null || searchFields.isEmpty()) {
             return;
         }
-        var searchOp = searchState.getSearchTermOperator();
-        var terms = new ArrayList<String>();
         Iterator<String> searchTypeIt = searchFields.keySet().iterator();
         while (searchTypeIt.hasNext()) {
             String searchType = searchTypeIt.next();
             String fieldValue = searchState.getSearchFields().get(searchType);
-            String searchValue = computeSearchValue(searchType, fieldValue, searchOp);
+            String searchValue = computeSearchValue(searchType, fieldValue);
             if (StringUtils.isBlank(searchValue)) {
                 continue;
             }
@@ -471,9 +469,10 @@ public class SolrSearchService extends AbstractQueryService {
             }
             solrQuery.addFilterQuery(field.getSolrField() + ":" + searchValue);
         }
+        solrQuery.set("q.op", searchState.getSearchTermOperator());
     }
 
-    private String computeSearchValue(String searchType, String fieldValue, String searchTermOp) {
+    private String computeSearchValue(String searchType, String fieldValue) {
         if ("*".equals(fieldValue)) {
             return fieldValue;
         }
@@ -481,7 +480,7 @@ public class SolrSearchService extends AbstractQueryService {
         if (searchFragments == null || searchFragments.isEmpty()) {
             return null;
         }
-        String searchValue = String.join(' ' + searchTermOp + ' ', searchFragments);
+        String searchValue = String.join(" ", searchFragments);
         if (searchFragments.size() > 1) {
             searchValue = "(" + searchValue + ")";
         }
