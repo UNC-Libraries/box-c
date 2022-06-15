@@ -3,6 +3,7 @@ import { createRouter, createWebHistory } from 'vue-router';
 import facets from '@/components/facets.vue';
 import searchWrapper from '@/components/searchWrapper.vue';
 import displayWrapper from '@/components/displayWrapper.vue';
+import moxios from 'moxios';
 import store from '@/store';
 import {createI18n} from "vue-i18n";
 import translations from "@/translations";
@@ -194,6 +195,42 @@ describe('facets.vue', () => {
         expect(wrapper.find('form input[name="end_date"]').exists()).toBe(false);
 
         let facets = wrapper.findAll('.facet-display li');
+        expect(facets[10].find('a').text()).toBe('unknown (4)');
+    });
+
+    it("deselects existing date created value when unknown is selected", async () => {
+        await router.push('/search/');
+
+        let facet_headers = wrapper.findAll('.facet-display h3');
+
+        expect(facet_headers[3].text()).toBe('Date Created');
+        let date_boxes = wrapper.findAll('form input[type=number');
+        date_boxes[0].setValue(2019);
+        date_boxes[1].setValue(2022);
+        await wrapper.find('form input[type=submit]').trigger('click');
+        expect(wrapper.vm.selected_facets).toEqual(["createdYear=2019,2022"]);
+
+        // Now select unknown value
+        let facets = wrapper.findAll('.facet-display li');
+        await facets[10].find('a').trigger('click');
+
+        // date created form should be gone
+        expect(facet_headers[3].text()).toBe('Date Created');
+        expect(wrapper.find('form').exists()).toBe(false);
+        expect(wrapper.vm.selected_facets).toEqual(["createdYear=unknown"]);
+
+        // Click unknown again to clear it
+        await facets[10].find('a').trigger('click');
+        await flushPromises();
+
+        expect(wrapper.vm.selected_facets).toEqual([]);
+        expect(wrapper.find('form').exists()).toBe(true);
+        expect(wrapper.vm.selected_facets).toEqual([]);
+        expect(wrapper.vm.dates.selected_dates.start).toBe(2011);
+        expect(wrapper.vm.dates.selected_dates.end).toBe(wrapper.vm.currentYear);
+
+        // Unknown should still be visible
+        facets = wrapper.findAll('.facet-display li');
         expect(facets[10].find('a').text()).toBe('unknown (4)');
     });
 

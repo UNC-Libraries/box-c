@@ -324,7 +324,7 @@ Facet list component, used to display all the values of facets and provide links
                 const facet_type = this.facetType(value.fieldName);
                 const current_facet_value = this.selected_facets.filter(f => f.startsWith(facet_type));
 
-                if (current_facet_value.length === 1) {
+                if (current_facet_value.length === 1 && value.fieldName !== 'DATE_CREATED_YEAR') {
                     const selected_facet_parts = current_facet_value[0]
                         .replace(facet_type, '')
                         .split('||');
