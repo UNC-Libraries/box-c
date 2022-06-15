@@ -18,14 +18,12 @@ package edu.unc.lib.boxc.integration.factories;
 import edu.unc.lib.boxc.model.api.objects.AdminUnit;
 import edu.unc.lib.boxc.model.api.objects.CollectionObject;
 import edu.unc.lib.boxc.model.fcrepo.services.DerivativeService;
-import edu.unc.lib.boxc.model.fcrepo.test.AclModelBuilder;
-import org.apache.jena.rdf.model.Model;
 
 import java.util.Map;
 
 /**
  * Factory for creating collection objects
- * @author sharonluong
+ * @author snluong
  */
 public class CollectionFactory extends ContentObjectFactory {
     public CollectionObject createCollection(AdminUnit adminUnit, Map<String, String> options) throws Exception {

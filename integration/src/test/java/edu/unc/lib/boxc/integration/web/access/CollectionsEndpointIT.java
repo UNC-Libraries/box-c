@@ -21,6 +21,8 @@ import edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl;
 import edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore;
 import edu.unc.lib.boxc.integration.factories.AdminUnitFactory;
 import edu.unc.lib.boxc.integration.factories.CollectionFactory;
+import edu.unc.lib.boxc.integration.factories.FileFactory;
+import edu.unc.lib.boxc.integration.factories.FolderFactory;
 import edu.unc.lib.boxc.integration.factories.WorkFactory;
 import edu.unc.lib.boxc.model.fcrepo.services.RepositoryInitializer;
 import edu.unc.lib.boxc.model.fcrepo.test.TestHelper;
@@ -49,7 +51,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
 /**
- * @author bbpennel
+ * @author bbpennel, snluong
  */
 @ContextHierarchy({
         @ContextConfiguration("/spring-test/test-fedora-container.xml"),
@@ -67,16 +69,14 @@ public class CollectionsEndpointIT {
     private WorkFactory workFactory;
     @Autowired
     private CollectionFactory collectionFactory;
-
+    @Autowired
+    private FolderFactory folderFactory;
+    @Autowired
+    private FileFactory fileFactory;
     @Autowired
     protected String baseAddress;
-
     @Autowired
     protected RepositoryInitializer repoInitializer;
-
-    @Autowired
-    protected SolrSearchService solrSearchService;
-
     @Autowired
     protected SolrClient solrClient;
 
@@ -96,16 +96,20 @@ public class CollectionsEndpointIT {
         solrClient.deleteByQuery("*:*");
         httpClient = HttpClients.createDefault();
         getMethod = new HttpGet("http://localhost:48080/access/collectionsJson");
-
-//        adminUnitRecord = solrSearchService.getObjectById(new SimpleIdRequest(adminUnit.getPid(), GROUPS));
     }
 
     @Test
     public void testCollectionsJsonOnlyReturnsAdminUnits() throws Exception {
-        var options = Map.of("title", "Object" + System.nanoTime());
         var adminUnit1 = adminUnitFactory.createAdminUnit(Map.of("title", "Object1"));
         var adminUnit2 = adminUnitFactory.createAdminUnit(Map.of("title", "Object2"));
-        collectionFactory.createCollection(adminUnit1, options);
+        var collection = collectionFactory.createCollection(adminUnit1, Map.of("title", "Object" + System.nanoTime()));
+        var work = workFactory.createWork(collection, Map.of("title", "Object" + System.nanoTime()));
+        var fileOptions = Map.of(
+                "title", "Object" + System.nanoTime(),
+                WorkFactory.PRIMARY_OBJECT_KEY, "false",
+                FileFactory.FILE_FORMAT_OPTION, FileFactory.AUDIO_FORMAT);
+        workFactory.createFileInWork(work, fileOptions);
+        folderFactory.createFolder(collection, Map.of("title", "Object" + System.nanoTime()));
 
         try (var resp = httpClient.execute(getMethod)) {
             var metadata = getMetadataFromResponse(resp);
@@ -113,6 +117,7 @@ public class CollectionsEndpointIT {
             assertSuccessfulResponse(resp);
             assertValuePresent(metadata, 0, "type", "AdminUnit");
             assertValuePresent(metadata, 1, "type", "AdminUnit");
+            assertEquals(2, metadata.size());
         }
     }
 
@@ -178,7 +183,6 @@ public class CollectionsEndpointIT {
     }
 
     private void assertValuePresent(List<JsonNode> json, int index, String key) {
-        System.out.println("json = " + json + ", index = " + index + ", key = " + key);
         var result = json.get(index);
         assertNotNull(result.get(key).asText());
     }
@@ -190,8 +194,7 @@ public class CollectionsEndpointIT {
     private List<JsonNode> getMetadataFromResponse(CloseableHttpResponse response) throws IOException {
         ObjectMapper mapper = new ObjectMapper();
         var respJson = mapper.readTree(response.getEntity().getContent());
-//        System.out.println(respJson);
-        System.out.println(IteratorUtils.toList(respJson.get("metadata").elements()));
+
         return IteratorUtils.toList(respJson.get("metadata").elements());
     }
 }

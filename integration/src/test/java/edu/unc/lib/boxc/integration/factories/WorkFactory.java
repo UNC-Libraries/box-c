@@ -23,7 +23,7 @@ import java.util.Map;
 
 /**
  * Factory for creating test WorkObjects and their files
- * @author sharonluong
+ * @author snluong
  */
 public class WorkFactory extends ContentObjectFactory{
     public static final String PRIMARY_OBJECT_KEY = "isPrimaryObject";
@@ -44,7 +44,9 @@ public class WorkFactory extends ContentObjectFactory{
     public void createFileInWork(WorkObject work, Map<String, String> options) throws Exception {
         var file = fileFactory.createFile(options);
         work.addMember(file);
-        if ("true".equals(options.get(PRIMARY_OBJECT_KEY))) {
+        prepareObject(file, options);
+
+        if (options.containsKey(PRIMARY_OBJECT_KEY) && "true".equals(options.get(PRIMARY_OBJECT_KEY))) {
             work.setPrimaryObject(file.getPid());
             // need to reindex in triple store if adding primary object
             indexTripleStore(work);

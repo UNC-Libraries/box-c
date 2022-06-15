@@ -38,7 +38,7 @@ import java.io.IOException;
 import java.util.Map;
 
 /**
- * @author sharonluong
+ * @author snluong
  */
 public class ContentObjectFactory {
     protected RepositoryObjectFactory repositoryObjectFactory;
@@ -83,6 +83,7 @@ public class ContentObjectFactory {
         var derivativePath = derivativeService.getDerivativePath(object.getPid(), DatastreamType.THUMBNAIL_LARGE);
         FileUtils.write(derivativePath.toFile(), "image", "UTF-8");
     }
+
     public Model getAccessGroup(Map<String, String> options) {
         Model accessGroup;
         if (options.containsKey("readGroup")) {

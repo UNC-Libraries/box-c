@@ -23,7 +23,8 @@ import edu.unc.lib.boxc.model.fcrepo.services.DerivativeService;
 import java.util.Map;
 
 /**
- * @author sharonluong
+ * Factory for making AdminUnit objects
+ * @author snluong
  */
 public class AdminUnitFactory extends ContentObjectFactory {
     public AdminUnit createAdminUnit(Map<String, String> options) throws Exception {
