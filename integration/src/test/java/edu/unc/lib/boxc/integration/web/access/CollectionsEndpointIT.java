@@ -124,7 +124,9 @@ public class CollectionsEndpointIT {
     @Test
     public void testCollectionsJsonReturnsSuccessWithNoAdminUnits() throws Exception {
         try (var resp = httpClient.execute(getMethod)) {
+            var metadata = getMetadataFromResponse(resp);
             assertSuccessfulResponse(resp);
+            assertEquals(0, metadata.size());
         }
     }
 
@@ -136,6 +138,7 @@ public class CollectionsEndpointIT {
 
             assertSuccessfulResponse(resp);
             assertValuePresent(metadata, 0, "title", "Object2");
+            assertEquals(1, metadata.size());
         }
     }
 
@@ -148,6 +151,7 @@ public class CollectionsEndpointIT {
 
             assertSuccessfulResponse(resp);
             assertValuePresent(metadata, 0, "thumbnail_url");
+            assertEquals(1, metadata.size());
         }
     }
 
@@ -162,8 +166,8 @@ public class CollectionsEndpointIT {
             var childCount = metadata.get(0).get("counts").get("child").asInt();
 
             assertSuccessfulResponse(resp);
-            assertValuePresent(metadata, 0, "counts");
             assertEquals(1, childCount);
+            assertEquals(1, metadata.size());
         }
     }
 
@@ -178,9 +182,9 @@ public class CollectionsEndpointIT {
             var childCount = metadata.get(0).get("counts").get("child").asInt();
 
             assertSuccessfulResponse(resp);
-            assertValuePresent(metadata, 0, "counts");
             // childCount should be 0 because no one has permission to see the child Collection
             assertEquals(0, childCount);
+            assertEquals(1, metadata.size());
         }
     }
 
