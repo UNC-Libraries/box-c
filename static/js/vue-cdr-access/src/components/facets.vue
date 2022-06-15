@@ -6,10 +6,10 @@ Facet list component, used to display all the values of facets and provide links
         <h2 class="facet-header">{{ $t('facets.filter') }}</h2>
         <div class="facet-display" v-for="facet in this.sortedFacetsList">
             <h3>{{ facetName(facet.name) }}</h3>
-            <slider v-if="facet.name === 'DATE_CREATED_YEAR'" ref="sliderInfo"
+            <slider v-if="showDateSelectors(facet) && hasValidDateRangeValues(dates.selected_dates)" ref="sliderInfo"
                     :start-range="[dates.selected_dates.start, dates.selected_dates.end]"
                     :range-values="{min: dates.selected_dates.start, max: currentYear}" @sliderUpdated="sliderUpdated"></slider>
-            <form v-if="facet.name === 'DATE_CREATED_YEAR'">
+            <form v-if="showDateSelectors(facet)">
                 <input type="number" v-model="dates.selected_dates.start" name="start_date"
                        aria-label="Start Date" placeholder="Start Date" />
                 &ndash;
@@ -151,6 +151,20 @@ Facet list component, used to display all the values of facets and provide links
 
             showMoreResults(facet) {
                 return facet.name !== 'DATE_CREATED_YEAR' && facet.values.length >= FACET_RESULT_COUNT;
+            },
+
+            showDateSelectors(facet) {
+                if (facet.name !== 'DATE_CREATED_YEAR') {
+                    return false;
+                }
+                const facet_type = this.facetType(facet.name);
+                const current_facet_value = this.selected_facets.filter(f => f.startsWith(facet_type));
+                return current_facet_value.length === 0 || current_facet_value[0] !== (facet_type + "unknown");
+            },
+
+            hasValidDateRangeValues(date_values) {
+                return date_values.start && isFinite(date_values.start)
+                    && date_values.end && isFinite(date_values.end);
             },
 
             /**
@@ -451,7 +465,7 @@ Facet list component, used to display all the values of facets and provide links
 
         form {
             float: none;
-            margin-bottom: 25px;
+            margin-bottom: 15px;
             margin-top: 5px;
             margin-left: 15px;
             input[type=number] {

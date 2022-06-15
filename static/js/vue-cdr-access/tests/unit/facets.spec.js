@@ -167,8 +167,8 @@ describe('facets.vue', () => {
         expect(facets[2].find('a').text()).toBe('Image (8)');
         expect(facets[3].find('a').text()).toBe('Text (2)');
 
-        expect(facet_headers[2].text()).toBe('Date Created');
-        expect(facets[4].find('a').text()).toBe('unknown (4)');
+        expect(facet_headers[3].text()).toBe('Date Created');
+        expect(facets[10].find('a').text()).toBe('unknown (4)');
     });
 
     it("displays 'Date Created' facet if a minimum search year is set", () => {
@@ -180,7 +180,21 @@ describe('facets.vue', () => {
         expect(wrapper.vm.dates.selected_dates.end).toEqual(end_year);
 
         let facets = wrapper.findAll('.facet-display li');
-        expect(facets[4].find('a').text()).toBe('unknown (4)');
+        expect(facets[10].find('a').text()).toBe('unknown (4)');
+    });
+
+    it("does not display slider/form for 'Date Created' facet if unknown is set", async () => {
+        await router.push('/search/?createdYear=unknown');
+
+        let facet_headers = wrapper.findAll('.facet-display h3');
+
+        expect(facet_headers[3].text()).toBe('Date Created');
+        expect(wrapper.find('form').exists()).toBe(false);
+        expect(wrapper.find('form input[name="start_date"]').exists()).toBe(false);
+        expect(wrapper.find('form input[name="end_date"]').exists()).toBe(false);
+
+        let facets = wrapper.findAll('.facet-display li');
+        expect(facets[10].find('a').text()).toBe('unknown (4)');
     });
 
     it("does not display facets with no returned results", () => {

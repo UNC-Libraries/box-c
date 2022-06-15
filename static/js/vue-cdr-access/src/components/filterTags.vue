@@ -122,7 +122,9 @@ export default {
         },
 
         _formatTime(field) {
-            if (field.startsWith(',')) {
+            if (field === 'unknown') {
+                return field;
+            } else if (field.startsWith(',')) {
                 return `All dates through ${field.replace(',', '')}`;
             } else if (field.endsWith(',')) {
                 return `${field.replace(',', '')} to present date`;

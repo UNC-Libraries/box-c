@@ -30,6 +30,7 @@ import edu.unc.lib.boxc.search.solr.facets.CutoffFacetImpl;
 import edu.unc.lib.boxc.search.solr.facets.FilterableDisplayValueFacet;
 import edu.unc.lib.boxc.search.solr.facets.GenericFacet;
 import edu.unc.lib.boxc.search.solr.facets.RoleGroupFacet;
+import edu.unc.lib.boxc.search.solr.ranges.RangePair;
 import edu.unc.lib.boxc.search.solr.ranges.UnknownRange;
 import edu.unc.lib.boxc.search.solr.responses.SearchResultResponse;
 import edu.unc.lib.boxc.search.solr.test.BaseEmbeddedSolrTest;
@@ -660,6 +661,24 @@ public class MultiSelectFacetListServiceIT extends BaseEmbeddedSolrTest {
     public void getMinimumDateCreatedYearNoResultsTest() throws Exception {
         SearchState searchState = new SearchState();
         searchState.getSearchFields().put(SearchFieldKey.DEFAULT_INDEX.name(), "notgoingtofindthisnoway");
+        SearchRequest request = new SearchRequest(searchState, accessGroups);
+        String result = service.getMinimumDateCreatedYear(searchState, request);
+        assertNull(result);
+    }
+
+    @Test
+    public void getMinimumDateCreatedYearDateSelectTest() throws Exception {
+        SearchState searchState = new SearchState();
+        searchState.getRangeFields().put(DATE_CREATED_YEAR.name(), new RangePair("2019", "2022"));
+        SearchRequest request = new SearchRequest(searchState, accessGroups);
+        String result = service.getMinimumDateCreatedYear(searchState, request);
+        assertEquals("2019", result);
+    }
+
+    @Test
+    public void getMinimumDateCreatedYearUnknownSelectedTest() throws Exception {
+        SearchState searchState = new SearchState();
+        searchState.getRangeFields().put(DATE_CREATED_YEAR.name(), new UnknownRange());
         SearchRequest request = new SearchRequest(searchState, accessGroups);
         String result = service.getMinimumDateCreatedYear(searchState, request);
         assertNull(result);
