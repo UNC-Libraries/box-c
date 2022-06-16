@@ -28,7 +28,6 @@ import edu.unc.lib.boxc.search.solr.facets.GenericFacet;
 import edu.unc.lib.boxc.search.solr.ranges.UnknownRange;
 import edu.unc.lib.boxc.search.solr.responses.SearchResultResponse;
 import org.apache.solr.client.solrj.SolrServerException;
-import org.apache.solr.client.solrj.response.FacetField;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

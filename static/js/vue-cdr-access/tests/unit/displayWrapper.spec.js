@@ -219,7 +219,7 @@ describe('displayWrapper.vue', () => {
 
     it("adjusts facets retrieved for admin unit", async () => {
         document.body.innerHTML = document.body.innerHTML + '<div id="is-admin-unit"></div>';
-        stubQueryResponse(`listJson/73bc003c-9603-4cd9-8a65-93a22520ef6a?.+&facetSelect=collection%2CcreatedYear%2Cformat%2Cgenre%2Clanguage%2Csubject%2Clocation%2CcreatorContributor%2Cpublisher&.*`, response);
+        stubQueryResponse(`listJson/73bc003c-9603-4cd9-8a65-93a22520ef6a?.+&facetSelect=collection%2Cformat%2Cgenre%2Clanguage%2Csubject%2Clocation%2CcreatedYear%2CcreatorContributor%2Cpublisher&.*`, response);
         await router.push('/record/73bc003c-9603-4cd9-8a65-93a22520ef6a');
         mountApp();
         await flushPromises();
@@ -233,7 +233,7 @@ describe('displayWrapper.vue', () => {
 
     it("adjusts facets retrieved for collection object", async () => {
         document.body.innerHTML = document.body.innerHTML + '<div id="is-collection"></div>';
-        stubQueryResponse(`listJson/73bc003c-9603-4cd9-8a65-93a22520ef6a?.+&facetSelect=createdYear%2Cformat%2Cgenre%2Clanguage%2Csubject%2Clocation%2CcreatorContributor%2Cpublisher&.*`, response);
+        stubQueryResponse(`listJson/73bc003c-9603-4cd9-8a65-93a22520ef6a?.+&facetSelect=format%2Cgenre%2Clanguage%2Csubject%2Clocation%2CcreatedYear%2CcreatorContributor%2Cpublisher&.*`, response);
         await router.push('/record/73bc003c-9603-4cd9-8a65-93a22520ef6a');
         mountApp();
         await flushPromises();
@@ -248,7 +248,7 @@ describe('displayWrapper.vue', () => {
 
     it("adjusts facets retrieved for folder object", async () => {
         document.body.innerHTML = document.body.innerHTML + '<div id="is-folder"></div>';
-        stubQueryResponse(`listJson/73bc003c-9603-4cd9-8a65-93a22520ef6a?.+&facetSelect=createdYear%2Cformat%2Cgenre%2Clanguage%2Csubject%2Clocation%2CcreatorContributor%2Cpublisher&.*`, response);
+        stubQueryResponse(`listJson/73bc003c-9603-4cd9-8a65-93a22520ef6a?.+&facetSelect=format%2Cgenre%2Clanguage%2Csubject%2Clocation%2CcreatedYear%2CcreatorContributor%2Cpublisher&.*`, response);
         await router.push('/record/73bc003c-9603-4cd9-8a65-93a22520ef6a');
         mountApp();
         await flushPromises();
@@ -263,7 +263,7 @@ describe('displayWrapper.vue', () => {
 
     it("adjusts facets retrieved for admin unit and maintains them after checking works only", async () => {
         document.body.innerHTML = document.body.innerHTML + '<div id="is-admin-unit"></div>';
-        stubQueryResponse(`listJson/73bc003c-9603-4cd9-8a65-93a22520ef6a?.+&facetSelect=collection%2CcreatedYear%2Cformat%2Cgenre%2Clanguage%2Csubject%2Clocation%2CcreatorContributor%2Cpublisher&.*`, response);
+        stubQueryResponse(`listJson/73bc003c-9603-4cd9-8a65-93a22520ef6a?.+&facetSelect=collection%2Cformat%2Cgenre%2Clanguage%2Csubject%2Clocation%2CcreatedYear%2CcreatorContributor%2Cpublisher&.*`, response);
         await router.push('/record/73bc003c-9603-4cd9-8a65-93a22520ef6a/?browse_type=list-display');
         mountApp();
         await flushPromises();
