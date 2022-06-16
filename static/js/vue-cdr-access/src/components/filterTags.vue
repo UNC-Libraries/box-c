@@ -162,6 +162,7 @@ export default {
             margin-left: 5px;
             padding-left: 7px;
             text-indent: 0;
+            text-transform: capitalize;
         }
     }
 

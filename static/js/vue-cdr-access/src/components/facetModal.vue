@@ -14,7 +14,7 @@ Modal facet component, used to display all the values of a particular facet in a
                                 <slot name="header">
                                     <div class="column is-12">
                                         <h3>{{ facetName }}</h3>
-                                        <button title="Close" class="button" @click="closeModal">X</button>
+                                        <button title="Close" class="button" aria-label="Close" @click="closeModal">&times;</button>
                                     </div>
                                 </slot>
                             </div>
@@ -198,11 +198,6 @@ export default {
 <style scoped lang="scss">
     $grey-border: 1px solid lightgray;
 
-    .modal-container {
-        height: auto;
-        max-height: 90vh;
-    }
-
     .more.button.is-focused,
     .more.button:focus {
         color: black;
@@ -212,16 +207,37 @@ export default {
         padding: .25rem .75rem;
     }
 
+    .modal-container {
+        height: initial;
+        padding: 15px 0;
+    }
+
     .modal-header {
         border-bottom: $grey-border;
+        padding: 0 15px;
+        margin: 0;
 
         button {
+            font-size: 24px;
             font-weight: bold;
+            height: 32px;
+            padding: 0 4px 4px;
+            width: 32px;
         }
 
         h3 {
             text-align: left;
         }
+
+        div {
+            padding-left: 0;
+            padding-right: 0;
+        }
+    }
+
+    .modal-body,
+    .modal-footer {
+        padding: 0 15px;
     }
 
     .meta-modal button[disabled]:hover {
@@ -229,6 +245,9 @@ export default {
     }
 
     #response-text {
+        height: 45vh;
+        overflow-y: auto;
+
         ul {
             column-count: 2;
             text-align: left;
@@ -254,7 +273,7 @@ export default {
         .current-page {
             font-size: 1rem;
             font-weight: bold;
-            margin: auto 10px;
+            margin: auto;
         }
 
         .button[disabled] {
@@ -262,6 +281,10 @@ export default {
         }
 
         .sorting {
+            margin-bottom: 12px;
+            padding-bottom: 0;
+            padding-top: 4px;
+
             .button {
                 background-color: white;
                 color: black;
