@@ -21,6 +21,7 @@ import edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl;
 import edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore;
 import edu.unc.lib.boxc.integration.factories.AdminUnitFactory;
 import edu.unc.lib.boxc.integration.factories.CollectionFactory;
+import edu.unc.lib.boxc.integration.factories.ContentRootObjectFactory;
 import edu.unc.lib.boxc.integration.factories.FileFactory;
 import edu.unc.lib.boxc.integration.factories.FolderFactory;
 import edu.unc.lib.boxc.integration.factories.WorkFactory;
@@ -72,7 +73,7 @@ public class CollectionsEndpointIT {
     @Autowired
     private FolderFactory folderFactory;
     @Autowired
-    private FileFactory fileFactory;
+    private ContentRootObjectFactory contentRootObjectFactory;
     @Autowired
     protected String baseAddress;
     @Autowired
@@ -91,11 +92,11 @@ public class CollectionsEndpointIT {
         TestHelper.setContentBase(baseAddress);
         GroupsThreadStore.storeUsername(USERNAME);
         GroupsThreadStore.storeGroups(GROUPS);
-        repoInitializer.initializeRepository();
         // reset solr before every test
         solrClient.deleteByQuery("*:*");
         httpClient = HttpClients.createDefault();
         getMethod = new HttpGet("http://localhost:48080/access/collectionsJson");
+        contentRootObjectFactory.initializeRepository();
     }
 
     @Test
@@ -130,6 +131,7 @@ public class CollectionsEndpointIT {
         }
     }
 
+    @Test
     public void testCollectionsJsonReturnsCorrectTitle() throws Exception {
         adminUnitFactory.createAdminUnit(Map.of("title", "Object2"));
 
@@ -142,6 +144,7 @@ public class CollectionsEndpointIT {
         }
     }
 
+    @Test
     public void testCollectionsJsonReturnsThumbnailUrl() throws Exception {
         var options = Map.of("title", "Object1", "addThumbnail", "true");
         adminUnitFactory.createAdminUnit(options);
@@ -155,6 +158,7 @@ public class CollectionsEndpointIT {
         }
     }
 
+    @Test
     public void testCollectionsJsonReturnsChildrenCount() throws Exception {
         var options = Map.of("title", "Object1", "addThumbnail", "true");
         var adminUnit = adminUnitFactory.createAdminUnit(options);
@@ -171,6 +175,7 @@ public class CollectionsEndpointIT {
         }
     }
 
+    @Test
     public void testCollectionsJsonReturnsChildrenCountAccordingToPermission() throws Exception {
         var options = Map.of("title", "Object1", "addThumbnail", "true");
         var adminUnit = adminUnitFactory.createAdminUnit(options);

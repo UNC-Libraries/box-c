@@ -53,11 +53,13 @@ public class ContentObjectFactory {
     protected void prepareObject(ContentObject object, Map<String, String> options) throws Exception {
         options = validateOptions(options);
         var modsDocument = modsFactory.createDocument(options);
-        var modsString = new XMLOutputter(Format.getPrettyFormat()).outputString(modsDocument);
-        var inputStream = IOUtils.toInputStream(modsString, "utf-8");
+        if (modsDocument != null) {
+            var modsString = new XMLOutputter(Format.getPrettyFormat()).outputString(modsDocument);
+            var inputStream = IOUtils.toInputStream(modsString, "utf-8");
 
-        // put mods in fedora
-        updateDescriptionService.updateDescription(agent, object.getPid(), inputStream);
+            // put mods in fedora
+            updateDescriptionService.updateDescription(agent, object.getPid(), inputStream);
+        }
         // index folder in triple store
         indexTripleStore(object);
         // index into solr

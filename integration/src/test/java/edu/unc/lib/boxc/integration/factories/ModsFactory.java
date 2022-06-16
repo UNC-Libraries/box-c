@@ -26,6 +26,10 @@ import java.util.Map;
  * @author sharonluong
  */
 public class ModsFactory {
+    /**
+     * @param options
+     * @return MODS document with specified fields, or null of no fields were set
+     */
     public Document createDocument(Map<String, String> options) {
         var xmlDoc = new Document().addContent(new Element("mods",MODS_V3_NS));
         var modsElement = xmlDoc.getRootElement();
@@ -40,6 +44,6 @@ public class ModsFactory {
                         .setText(options.get("abstract")));
         }
 
-        return xmlDoc;
+        return modsElement.getChildren().isEmpty() ? null : xmlDoc;
     }
 }

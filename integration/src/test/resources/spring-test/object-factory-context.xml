@@ -38,6 +38,14 @@
     <bean id="modsFactory" class="edu.unc.lib.boxc.integration.factories.ModsFactory">
     </bean>
 
+    <bean id="contentRootObjectFactory" class="edu.unc.lib.boxc.integration.factories.ContentRootObjectFactory">
+        <property name="repositoryObjectSolrIndexer" ref="repositoryObjectSolrIndexer" />
+        <property name="repositoryObjectTreeIndexer" ref="treeIndexer" />
+        <property name="modsFactory" ref="modsFactory" />
+        <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
+        <property name="repositoryInitializer" ref="repositoryInitializer" />
+    </bean>
+
     <bean id="adminUnitFactory" class="edu.unc.lib.boxc.integration.factories.AdminUnitFactory">
         <property name="repositoryObjectFactory" ref="repositoryObjectFactory" />
         <property name="repositoryObjectSolrIndexer" ref="repositoryObjectSolrIndexer" />

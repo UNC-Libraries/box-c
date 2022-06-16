@@ -67,13 +67,6 @@ public class FileFactory extends ContentObjectFactory {
 
             var jp2Path = derivativeService.getDerivativePath(file.getPid(), DatastreamType.JP2_ACCESS_COPY);
             FileUtils.write(jp2Path.toFile(), "image", "UTF-8");
-
-            var fitsPid = DatastreamPids.getTechnicalMetadataPid(file.getPid());
-            var fitsUri = Objects.requireNonNull(
-                    this.getClass().getResource("/datastream/techmd_image.xml")).toURI();
-            // add FITS file
-            file.addBinary(fitsPid, fitsUri, TECHNICAL_METADATA.getDefaultFilename(), TECHNICAL_METADATA.getMimetype(),
-                    null, null, IanaRelation.derivedfrom, DCTerms.conformsTo, createResource(FITS_URI));
             break;
         case TEXT_FORMAT:
             var data = "we have a lot of text to get through. more than usual";
@@ -99,6 +92,13 @@ public class FileFactory extends ContentObjectFactory {
             throw new IllegalArgumentException("File format: " + fileFormat +
                     " isn't recognized in FileFactory creation.");
         }
+
+        var fitsPid = DatastreamPids.getTechnicalMetadataPid(file.getPid());
+        var fitsUri = Objects.requireNonNull(
+                this.getClass().getResource("/datastream/techmd_image.xml")).toURI();
+        // add FITS file. Same one for all formats at the moment
+        file.addBinary(fitsPid, fitsUri, TECHNICAL_METADATA.getDefaultFilename(), TECHNICAL_METADATA.getMimetype(),
+                null, null, IanaRelation.derivedfrom, DCTerms.conformsTo, createResource(FITS_URI));
     }
 
     public void setDerivativeService(DerivativeService derivativeService) {

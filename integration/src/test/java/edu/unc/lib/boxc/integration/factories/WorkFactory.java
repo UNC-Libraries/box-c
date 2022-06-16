@@ -25,7 +25,7 @@ import java.util.Map;
  * Factory for creating test WorkObjects and their files
  * @author snluong
  */
-public class WorkFactory extends ContentObjectFactory{
+public class WorkFactory extends ContentObjectFactory {
     public static final String PRIMARY_OBJECT_KEY = "isPrimaryObject";
     FileFactory fileFactory;
 
