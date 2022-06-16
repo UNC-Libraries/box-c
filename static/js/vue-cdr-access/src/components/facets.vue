@@ -4,7 +4,7 @@ Facet list component, used to display all the values of facets and provide links
 <template>
     <div id="facetList" class="contentarea">
         <h2 class="facet-header">{{ $t('facets.filter') }}</h2>
-        <div class="facet-display" v-for="facet in this.sortedFacetsList">
+        <div class="facet-display" :id="'facet-display-' + facetType(facet.name, false)" v-for="facet in this.sortedFacetsList">
             <h3>{{ facetName(facet.name) }}</h3>
             <slider v-if="showDateSelectors(facet) && hasValidDateRangeValues(dates.selected_dates)" ref="sliderInfo"
                     :start-range="[dates.selected_dates.start, dates.selected_dates.end]"
@@ -21,7 +21,7 @@ Facet list component, used to display all the values of facets and provide links
 
             <ul>
                 <li v-for="value in facet.values">
-                    <a class="is-selected" v-if="isSelected(value.limitToValue)" @click.prevent="updateAll(value, true)">
+                    <a class="is-selected" v-if="isSelected(value)" @click.prevent="updateAll(value, true)">
                         {{ value.displayValue }} ({{ value.count }}) <i class="fas fa-times"></i></a>
                     <a v-else @click.prevent="updateAll(value)">{{ value.displayValue }} ({{ value.count }})</a>
                 </li>
@@ -134,7 +134,10 @@ Facet list component, used to display all the values of facets and provide links
             },
 
             isSelected(facet) {
-                return this.selectedFacetInfo.findIndex(uf => uf.value.toLowerCase() === facet.toLowerCase()) !== -1;
+                const facet_type = this.facetType(facet.fieldName, false);
+                const facet_value = facet.value.toLowerCase();
+                return this.selectedFacetInfo.findIndex(uf => uf.type === facet_type
+                        && uf.value.toLowerCase() === facet_value) !== -1;
             },
 
             /**
