@@ -15,33 +15,30 @@
  */
 package edu.unc.lib.boxc.integration.factories;
 
-import edu.unc.lib.boxc.model.api.objects.AdminUnit;
 import edu.unc.lib.boxc.model.api.objects.ContentRootObject;
 import edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPaths;
-import edu.unc.lib.boxc.model.fcrepo.services.DerivativeService;
+import edu.unc.lib.boxc.model.fcrepo.services.RepositoryInitializer;
 
-import java.util.Map;
+import java.util.Collections;
 
 /**
- * Factory for making AdminUnit objects
- * @author snluong
+ * @author bbpennel
  */
-public class AdminUnitFactory extends ContentObjectFactory {
-    public AdminUnit createAdminUnit(Map<String, String> options) throws Exception {
-        var adminUnit = repositoryObjectFactory.createAdminUnit(null);
+public class ContentRootObjectFactory extends ContentObjectFactory {
+    protected RepositoryInitializer repositoryInitializer;
+
+    /**
+     * Initialize and prepare root of the repository
+     * @throws Exception
+     */
+    public void initializeRepository() throws Exception {
+        repositoryInitializer.initializeRepository();
         ContentRootObject contentRoot = repositoryObjectLoader.getContentRootObject(
                 RepositoryPaths.getContentRootPid());
-        contentRoot.addMember(adminUnit);
-        // if options has "hasThumbnail = true" then add a thumbnail
-        if (options.containsKey("addThumbnail") && "true".equals(options.get("addThumbnail"))) {
-            addThumbnail(adminUnit);
-        }
-        prepareObject(adminUnit, options);
-
-        return adminUnit;
+        prepareObject(contentRoot, Collections.emptyMap());
     }
 
-    public void setDerivativeService(DerivativeService derivativeService) {
-        this.derivativeService = derivativeService;
+    public void setRepositoryInitializer(RepositoryInitializer repoInitializer) {
+        this.repositoryInitializer = repoInitializer;
     }
 }

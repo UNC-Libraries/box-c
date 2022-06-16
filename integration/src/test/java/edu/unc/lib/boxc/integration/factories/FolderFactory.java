@@ -15,16 +15,18 @@
  */
 package edu.unc.lib.boxc.integration.factories;
 
+import edu.unc.lib.boxc.model.api.objects.CollectionObject;
 import edu.unc.lib.boxc.model.api.objects.FolderObject;
 
 import java.util.Map;
 
 /**
- * @author sharonluong
+ * @author snluong
  */
 public class FolderFactory extends ContentObjectFactory {
-    public FolderObject createFolder(Map<String, String> options) throws Exception {
+    public FolderObject createFolder(CollectionObject collection, Map<String, String> options) throws Exception {
         var folder = repositoryObjectFactory.createFolderObject(null);
+        collection.addMember(folder);
         prepareObject(folder, options);
 
         return folder;

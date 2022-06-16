@@ -29,7 +29,6 @@ import static org.apache.jena.rdf.model.ResourceFactory.createResource;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.URISyntaxException;
 import java.util.Map;
 import java.util.Objects;
 
@@ -47,10 +46,13 @@ public class FileFactory extends ContentObjectFactory {
 
     private DerivativeService derivativeService;
 
+    /*
+    Creates a basic File with a FileFormat
+    Needs WorkFactory createFileInWork to be a legitimate File with a Work as a parent
+     */
     public FileObject createFile(Map<String, String> options) throws Exception {
         var file = repositoryObjectFactory.createFileObject(null);
         addFileFormat(file, options);
-        prepareObject(file, options);
 
         return file;
     }
@@ -61,19 +63,10 @@ public class FileFactory extends ContentObjectFactory {
         switch (fileFormat) {
         case IMAGE_FORMAT:
             createOriginalFile(file, "image/jpeg", "data", ".jpg");
-
-            var derivativePath = derivativeService.getDerivativePath(file.getPid(), DatastreamType.THUMBNAIL_LARGE);
-            FileUtils.write(derivativePath.toFile(), "image", "UTF-8");
+            addThumbnail(file);
 
             var jp2Path = derivativeService.getDerivativePath(file.getPid(), DatastreamType.JP2_ACCESS_COPY);
             FileUtils.write(jp2Path.toFile(), "image", "UTF-8");
-
-            var fitsPid = DatastreamPids.getTechnicalMetadataPid(file.getPid());
-            var fitsUri = Objects.requireNonNull(
-                    this.getClass().getResource("/datastream/techmd_image.xml")).toURI();
-            // add FITS file
-            file.addBinary(fitsPid, fitsUri, TECHNICAL_METADATA.getDefaultFilename(), TECHNICAL_METADATA.getMimetype(),
-                    null, null, IanaRelation.derivedfrom, DCTerms.conformsTo, createResource(FITS_URI));
             break;
         case TEXT_FORMAT:
             var data = "we have a lot of text to get through. more than usual";
@@ -99,6 +92,13 @@ public class FileFactory extends ContentObjectFactory {
             throw new IllegalArgumentException("File format: " + fileFormat +
                     " isn't recognized in FileFactory creation.");
         }
+
+        var fitsPid = DatastreamPids.getTechnicalMetadataPid(file.getPid());
+        var fitsUri = Objects.requireNonNull(
+                this.getClass().getResource("/datastream/techmd_image.xml")).toURI();
+        // add FITS file. Same one for all formats at the moment
+        file.addBinary(fitsPid, fitsUri, TECHNICAL_METADATA.getDefaultFilename(), TECHNICAL_METADATA.getMimetype(),
+                null, null, IanaRelation.derivedfrom, DCTerms.conformsTo, createResource(FITS_URI));
     }
 
     public void setDerivativeService(DerivativeService derivativeService) {

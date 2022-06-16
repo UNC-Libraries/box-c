@@ -19,20 +19,26 @@ import edu.unc.lib.boxc.auth.api.models.AgentPrincipals;
 import edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl;
 import edu.unc.lib.boxc.auth.fcrepo.models.AgentPrincipalsImpl;
 import edu.unc.lib.boxc.indexing.solr.test.RepositoryObjectSolrIndexer;
+import edu.unc.lib.boxc.model.api.DatastreamType;
 import edu.unc.lib.boxc.model.api.objects.ContentObject;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
+import edu.unc.lib.boxc.model.fcrepo.services.DerivativeService;
+import edu.unc.lib.boxc.model.fcrepo.test.AclModelBuilder;
 import edu.unc.lib.boxc.model.fcrepo.test.RepositoryObjectTreeIndexer;
 import edu.unc.lib.boxc.operations.impl.edit.UpdateDescriptionService;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.jena.rdf.model.Model;
 import org.jdom2.output.Format;
 import org.jdom2.output.XMLOutputter;
 
+import java.io.IOException;
 import java.util.Map;
 
 /**
- * @author sharonluong
+ * @author snluong
  */
 public class ContentObjectFactory {
     protected RepositoryObjectFactory repositoryObjectFactory;
@@ -41,16 +47,19 @@ public class ContentObjectFactory {
     protected RepositoryObjectLoader repositoryObjectLoader;
     protected ModsFactory modsFactory;
     protected UpdateDescriptionService updateDescriptionService;
+    protected DerivativeService derivativeService;
     protected final AgentPrincipals agent = new AgentPrincipalsImpl("user", new AccessGroupSetImpl("adminGroup"));
 
-    public void prepareObject(ContentObject object, Map<String, String> options) throws Exception {
+    protected void prepareObject(ContentObject object, Map<String, String> options) throws Exception {
         options = validateOptions(options);
         var modsDocument = modsFactory.createDocument(options);
-        var modsString = new XMLOutputter(Format.getPrettyFormat()).outputString(modsDocument);
-        var inputStream = IOUtils.toInputStream(modsString, "utf-8");
+        if (modsDocument != null) {
+            var modsString = new XMLOutputter(Format.getPrettyFormat()).outputString(modsDocument);
+            var inputStream = IOUtils.toInputStream(modsString, "utf-8");
 
-        // put mods in fedora
-        updateDescriptionService.updateDescription(agent, object.getPid(), inputStream);
+            // put mods in fedora
+            updateDescriptionService.updateDescription(agent, object.getPid(), inputStream);
+        }
         // index folder in triple store
         indexTripleStore(object);
         // index into solr
@@ -70,6 +79,23 @@ public class ContentObjectFactory {
             options.put("title", "Object" + System.nanoTime());
         }
         return options;
+    }
+
+    protected void addThumbnail(ContentObject object) throws IOException {
+        var derivativePath = derivativeService.getDerivativePath(object.getPid(), DatastreamType.THUMBNAIL_LARGE);
+        FileUtils.write(derivativePath.toFile(), "image", "UTF-8");
+    }
+
+    protected Model getAccessModel(Map<String, String> options) {
+        Model accessGroup;
+        if (options.containsKey("readGroup")) {
+            accessGroup = new AclModelBuilder(options.getOrDefault("title", ""))
+                    .addCanViewOriginals(options.get("readGroup"))
+                    .model;
+        } else {
+            accessGroup = null;
+        }
+        return accessGroup;
     }
 
     public void setRepositoryObjectFactory(RepositoryObjectFactory repositoryObjectFactory) {
@@ -94,5 +120,9 @@ public class ContentObjectFactory {
 
     public void setRepositoryObjectLoader(RepositoryObjectLoader repositoryObjectLoader) {
         this.repositoryObjectLoader = repositoryObjectLoader;
+    }
+
+    public void setDerivativeService(DerivativeService derivativeService) {
+        this.derivativeService = derivativeService;
     }
 }
