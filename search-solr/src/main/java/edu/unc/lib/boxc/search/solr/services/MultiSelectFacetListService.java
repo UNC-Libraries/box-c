@@ -125,7 +125,8 @@ public class MultiSelectFacetListService extends AbstractFacetListService {
             selectedState.setFacetsToRetrieve(Collections.emptyList());
             selectedState.getRangeFields().put(facetName, new UnknownRange());
             selectedState.setRowsPerPage(0);
-            SearchRequest selectedRequest = new SearchRequest(selectedState, accessGroups, true);
+            SearchRequest selectedRequest = new SearchRequest(selectedState, accessGroups, false);
+            selectedRequest.setApplyCutoffs(false);
             SearchResultResponse selectedResponse = searchService.getSearchResults(selectedRequest);
             var unknownFacet = new GenericFacet(facetName, UnknownRange.UNKNOWN_VALUE);
             unknownFacet.setCount(selectedResponse.getResultCount());

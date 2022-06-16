@@ -631,6 +631,20 @@ public class MultiSelectFacetListServiceIT extends BaseEmbeddedSolrTest {
     }
 
     @Test
+    public void facetIncludeUnknownScopedToContainerIgnoreCutoffTest() throws Exception {
+        SearchState searchState = new SearchState();
+        searchState.addFacet(new CutoffFacetImpl(SearchFieldKey.ANCESTOR_PATH.name(), "2," + testCorpus.unitPid.getId() + "!3"));
+
+        searchState.setFacetsToRetrieve(Arrays.asList(DATE_CREATED_YEAR.name()));
+
+        SearchRequest request = new SearchRequest(searchState, accessGroups);
+        SearchResultResponse resp = service.getFacetListResult(request);
+
+        assertNumberFacetsReturned(resp, DATE_CREATED_YEAR, 1);
+        assertFacetValueCount(resp, DATE_CREATED_YEAR, UnknownRange.UNKNOWN_VALUE, 1);
+    }
+
+    @Test
     public void getMinimumDateCreatedYearBlankSearchTest() throws Exception {
         SearchState searchState = new SearchState();
         SearchRequest request = new SearchRequest(searchState, accessGroups);
