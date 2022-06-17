@@ -9,7 +9,7 @@ Facet list component, used to display all the values of facets and provide links
             <slider v-if="showDateSelectors(facet) && hasValidDateRangeValues(dates.selected_dates)" ref="sliderInfo"
                     :start-range="[dates.selected_dates.start, dates.selected_dates.end]"
                     :range-values="{min: dates.selected_dates.start, max: currentYear}" @sliderUpdated="sliderUpdated"></slider>
-            <form v-if="showDateSelectors(facet)">
+            <form v-if="showDateSelectors(facet) && hasValidDateRangeValues(dates.selected_dates)">
                 <input type="number" v-model="dates.selected_dates.start" name="start_date"
                        aria-label="Start Date" placeholder="Start Date" />
                 &ndash;
