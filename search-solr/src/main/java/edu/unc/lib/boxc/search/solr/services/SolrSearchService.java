@@ -26,6 +26,8 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import edu.unc.lib.boxc.search.solr.config.SearchSettings;
+import edu.unc.lib.boxc.search.solr.ranges.RangePair;
+import edu.unc.lib.boxc.search.solr.ranges.UnknownRange;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrServerException;
@@ -529,26 +531,33 @@ public class SolrSearchService extends AbstractQueryService {
     }
 
     private void addRangeFields(SearchState searchState, SolrQuery query) {
-        Map<String, SearchState.RangePair> rangeFields = searchState.getRangeFields();
+        var rangeFields = searchState.getRangeFields();
         if (rangeFields != null) {
-            Iterator<Map.Entry<String, SearchState.RangePair>> rangeTermIt = rangeFields.entrySet().iterator();
+            var rangeTermIt = rangeFields.entrySet().iterator();
             while (rangeTermIt.hasNext()) {
-                Map.Entry<String, SearchState.RangePair> rangeTerm = rangeTermIt.next();
+                var rangeTerm = rangeTermIt.next();
                 if (rangeTerm == null) {
                     continue;
                 }
                 String key = rangeTerm.getKey();
-                String left = getRangeValue(key, rangeTerm.getValue().getLeftHand());
-                String right = getRangeValue(key, rangeTerm.getValue().getRightHand());
+                var field = SearchFieldKey.valueOf(key);
+                if (field == null) {
+                    continue;
+                }
+                // Unknown range, find results that do not include this field
+                if (rangeTerm.getValue() instanceof UnknownRange) {
+                    query.addFilterQuery("-" + field.getSolrField() + ":[* TO *]");
+                    continue;
+                }
+                // Assume RangePair, as the only other implementation at present
+                var rangePair = (RangePair) rangeTerm.getValue();
+                String left = getRangeValue(key, rangePair.getLeftHand());
+                String right = getRangeValue(key, rangePair.getRightHand());
                 if (left.equals("*") && right.equals("*")) {
                     continue;
                 }
-
-                var field = SearchFieldKey.valueOf(key);
-                if (field != null) {
-                    query.addFilterQuery(String.format("%s:[%s TO %s]",
-                            field.getSolrField(), left, right));
-                }
+                query.addFilterQuery(String.format("%s:[%s TO %s]",
+                        field.getSolrField(), left, right));
             }
         }
     }
@@ -577,7 +586,7 @@ public class SolrSearchService extends AbstractQueryService {
      * @param searchState
      *           the search state used to generate this SolrQuery
      * @param isRetrieveFacetsRequest
-     *           indicates if facet results hould be returned
+     *           indicates if facet results should be returned
      * @param returnQuery
      *           indicates whether to return the solr query object as part of the response.
      * @return

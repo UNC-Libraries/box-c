@@ -3,6 +3,7 @@ import { createRouter, createWebHistory } from 'vue-router';
 import facets from '@/components/facets.vue';
 import searchWrapper from '@/components/searchWrapper.vue';
 import displayWrapper from '@/components/displayWrapper.vue';
+import moxios from 'moxios';
 import store from '@/store';
 import {createI18n} from "vue-i18n";
 import translations from "@/translations";
@@ -127,7 +128,15 @@ describe('facets.vue', () => {
                     },
                     {
                         name: "DATE_CREATED_YEAR",
-                        values: []
+                        values: [
+                            {
+                                count: 4,
+                                displayValue: "unknown",
+                                limitToValue: "unknown",
+                                value: "unknown",
+                                fieldName: "DATE_CREATED_YEAR"
+                            }
+                        ]
                     }
                 ]
             },
@@ -158,6 +167,9 @@ describe('facets.vue', () => {
         expect(facet_headers[1].text()).toBe('Format');
         expect(facets[2].find('a').text()).toBe('Image (8)');
         expect(facets[3].find('a').text()).toBe('Text (2)');
+
+        expect(facet_headers[3].text()).toBe('Date Created');
+        expect(facets[10].find('a').text()).toBe('unknown (4)');
     });
 
     it("displays 'Date Created' facet if a minimum search year is set", () => {
@@ -167,6 +179,61 @@ describe('facets.vue', () => {
         expect(wrapper.find('form').isVisible()).toBe(true);
         expect(wrapper.vm.dates.selected_dates.start).toEqual(2011);
         expect(wrapper.vm.dates.selected_dates.end).toEqual(end_year);
+
+        let facets = wrapper.findAll('.facet-display li');
+        expect(facets[10].find('a').text()).toBe('unknown (4)');
+    });
+
+    it("does not display slider/form for 'Date Created' facet if unknown is set", async () => {
+        await router.push('/search/?createdYear=unknown');
+
+        let facet_headers = wrapper.findAll('.facet-display h3');
+
+        expect(facet_headers[3].text()).toBe('Date Created');
+        expect(wrapper.find('form').exists()).toBe(false);
+        expect(wrapper.find('form input[name="start_date"]').exists()).toBe(false);
+        expect(wrapper.find('form input[name="end_date"]').exists()).toBe(false);
+
+        let created_facets = listFacetEntries('createdYear');
+        expectFacetValueSelected(created_facets, 'unknown');
+    });
+
+    it("deselects existing date created value when unknown is selected", async () => {
+        await router.push('/search/');
+
+        let facet_headers = wrapper.findAll('.facet-display h3');
+
+        expect(facet_headers[3].text()).toBe('Date Created');
+        let date_boxes = wrapper.findAll('form input[type=number');
+        date_boxes[0].setValue(2019);
+        date_boxes[1].setValue(2022);
+        await wrapper.find('form input[type=submit]').trigger('click');
+        expect(wrapper.vm.selected_facets).toEqual(["createdYear=2019,2022"]);
+
+        // Now select unknown value
+        let facets = wrapper.findAll('.facet-display li');
+        await facets[10].find('a').trigger('click');
+
+        // date created form should be gone
+        expect(facet_headers[3].text()).toBe('Date Created');
+        expect(wrapper.find('form').exists()).toBe(false);
+        expect(wrapper.vm.selected_facets).toEqual(["createdYear=unknown"]);
+
+        let created_facets = listFacetEntries('createdYear');
+        expectFacetValueSelected(created_facets, 'unknown');
+
+        // Click unknown again to clear it
+        await created_facets[0].find('a').trigger('click');
+        await flushPromises();
+
+        expect(wrapper.vm.selected_facets).toEqual([]);
+        expect(wrapper.find('form').exists()).toBe(true);
+        expect(wrapper.vm.selected_facets).toEqual([]);
+        expect(wrapper.vm.dates.selected_dates.start).toBe(2011);
+        expect(wrapper.vm.dates.selected_dates.end).toBe(wrapper.vm.currentYear);
+
+        // Unknown should still be visible
+        expectFacetValueNotSelected(created_facets, 'unknown');
     });
 
     it("does not display facets with no returned results", () => {
@@ -277,9 +344,8 @@ describe('facets.vue', () => {
         await router.push('/search/?collection=d77fd8c9-744b-42ab-8e20-5ad9bdf8194e');
         selected_facet.trigger('click');
         await flushPromises();
-        let facet_list = wrapper.findAll('.facet-display a');
-        selected_facet = facet_list[2];
-        expect(selected_facet.html()).toMatch(/Image.*8.*fas.fa-times/); // facet value and checkmark
+        let format_facets = listFacetEntries('format')
+        expectFacetValueSelected(format_facets, 'Image');
         expect(wrapper.vm.selected_facets).toContain('format=Image');
     });
 
@@ -309,18 +375,15 @@ describe('facets.vue', () => {
         selected_facet.trigger('click');
         await flushPromises();
 
-        let facet_list = wrapper.findAll('.facet-display a');
-        selected_facet = facet_list[2];
-
-        expect(selected_facet.html()).toContain('fas fa-times'); // Look for X checkmark
-        expect(wrapper.vm.selected_facets).toContain('format=Image');
+        let format_facets = listFacetEntries('format');
+        expectFacetValueSelected(format_facets, 'Image');
 
         // Remove facet
+        selected_facet = format_facets[0].find('a');
         selected_facet.trigger('click');
         await flushPromises();
-        facet_list = wrapper.findAll('.facet-display a');
-        selected_facet = facet_list[2];
-        expect(selected_facet.html()).not.toContain('fas fa-times'); // Look for X checkmark
+
+        expectFacetValueNotSelected(format_facets, 'Image');
         expect(wrapper.vm.selected_facets).not.toContain('format=Image');
     });
 
@@ -379,11 +442,9 @@ describe('facets.vue', () => {
         await router.push('/search/?format=Image%257C%257CText');
         await flushPromises();
         expect(wrapper.vm.selected_facets).toEqual(['format=Image||Text']);
-        let facet_list = wrapper.findAll('.facet-display a');
-        selected_facet = facet_list[2];
-        selected_sub_facet = facet_list[3];
-        expect(selected_facet.html()).toMatch(/Image.*8.*fas.fa-times/); // facet values and checkmark
-        expect(selected_sub_facet.html()).toMatch(/Text.*2.*fas.fa-times/); // facet values and checkmark
+        let format_facets = listFacetEntries('format');
+        expectFacetValueSelected(format_facets, 'Image');
+        expectFacetValueSelected(format_facets, 'Text');
     });
 
     it("it doesn't allow start date to be after the end date for the 'created date' picker", async () => {
@@ -416,4 +477,112 @@ describe('facets.vue', () => {
         wrapper.vm.sliderUpdated([1991, 2000])
         expect(wrapper.vm.dates.selected_dates).toEqual({"start": 1991, "end": 2000, });
     });
+
+    it("selecting Unknown date does not select Unknown format", (done) => {
+        wrapper = mount(facets, {
+            global: {
+                plugins: [router, store, i18n]
+            },
+            props: {
+                minCreatedYear: 2015,
+                facetList: [
+                    {
+                        name: "FILE_FORMAT_CATEGORY",
+                        values: [
+                            {
+                                count: 8,
+                                displayValue: "Image",
+                                limitToValue: "Image",
+                                value: "Image",
+                                fieldName: "FILE_FORMAT_CATEGORY"
+                            },
+                            {
+                                count: 4,
+                                displayValue: "Unknown",
+                                limitToValue: "Unknown",
+                                value: "Unknown",
+                                fieldName: "FILE_FORMAT_CATEGORY"
+                            }
+                        ]
+                    },
+                    {
+                        name: "DATE_CREATED_YEAR",
+                        values: [
+                            {
+                                count: 4,
+                                displayValue: "unknown",
+                                limitToValue: "unknown",
+                                value: "unknown",
+                                fieldName: "DATE_CREATED_YEAR"
+                            }
+                        ]
+                    }
+                ]
+            },
+            data() {
+                return {
+                    selected_facets: []
+                }
+            }
+        });
+
+        moxios.wait(async () => {
+            await router.push('/search/?createdYear=unknown');
+
+            let facet_headers = wrapper.findAll('.facet-display h3');
+            expect(facet_headers[1].text()).toBe('Date Created');
+            expect(wrapper.find('form').exists()).toBe(false);
+
+            let created_facets = listFacetEntries('createdYear');
+            expectFacetValueSelected(created_facets, 'unknown');
+
+            let format_facets = listFacetEntries('format')
+            expectFacetValueNotSelected(format_facets, 'Unknown');
+            done();
+        });
+    });
+
+    /**
+     * Returns a list of facet value li for the named facet.
+     * @param facet_name name of the facet to get values for, in facet type format (ex, collection, subject)
+     */
+    function listFacetEntries(facet_name) {
+        return wrapper.findAll(`#facet-display-${facet_name} li`);
+    }
+
+    /**
+     * Asserts that a facet with the given value exists and is selected
+     *
+     * @param facet_entries List of facet li elements
+     * @param target_value display value of the facet to find
+     */
+    function expectFacetValueSelected(facet_entries, target_value) {
+        for (const entry of facet_entries) {
+            const link = entry.find('a');
+            const text = link.text();
+            if (text.startsWith(target_value + " (")) {
+                expect(link.classes()).toContain('is-selected');
+                return;
+            }
+        }
+        throw new Error(`Value ${target_value} was not found in list of entries: ${facet_entries}`);
+    }
+
+    /**
+     * Asserts that a facet with the given value exists and is NOT selected
+     *
+     * @param facet_entries List of facet li elements
+     * @param target_value display value of the facet to find
+     */
+    function expectFacetValueNotSelected(facet_entries, target_value) {
+        for (const entry of facet_entries) {
+            const link = entry.find('a');
+            const text = link.text();
+            if (text.startsWith(target_value + " (")) {
+                expect(link.classes()).not.toContain('is-selected');
+                return;
+            }
+        }
+        throw new Error(`Value ${target_value} was not found in list of entries: ${facet_entries}`);
+    }
 });

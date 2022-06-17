@@ -18,9 +18,12 @@ package edu.unc.lib.boxc.search.solr.services;
 import edu.unc.lib.boxc.search.api.SearchFieldKey;
 import edu.unc.lib.boxc.search.api.exceptions.InvalidFacetException;
 import edu.unc.lib.boxc.search.api.facets.SearchFacet;
+import edu.unc.lib.boxc.search.api.ranges.RangeValue;
 import edu.unc.lib.boxc.search.api.requests.SearchState;
 import edu.unc.lib.boxc.search.solr.config.SearchSettings;
 import edu.unc.lib.boxc.search.solr.facets.GenericFacet;
+import edu.unc.lib.boxc.search.solr.ranges.RangePair;
+import edu.unc.lib.boxc.search.solr.ranges.UnknownRange;
 import edu.unc.lib.boxc.search.solr.utils.FacetFieldUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -248,9 +251,9 @@ public class SearchStateFactory {
     }
 
     private void populateQueryableFields(SearchState searchState, Map<String,String[]> request) {
-        Map<String,String> searchFields = searchState.getSearchFields();
-        Map<String,SearchState.RangePair> rangeFields = searchState.getRangeFields();
-        Map<String,List<SearchFacet>> facetFields = searchState.getFacets();
+        var searchFields = searchState.getSearchFields();
+        var rangeFields = searchState.getRangeFields();
+        var facetFields = searchState.getFacets();
 
         Iterator<Entry<String, String[]>> paramIt = request.entrySet().iterator();
         while (paramIt.hasNext()) {
@@ -273,7 +276,7 @@ public class SearchStateFactory {
                 searchFields.put(key, value);
             } else if (SearchSettings.FIELDS_RANGE_SEARCHABLE.contains(key)) {
                 try {
-                    rangeFields.put(key, new SearchState.RangePair(value));
+                    rangeFields.put(key, new RangePair(value));
                 } catch (ArrayIndexOutOfBoundsException | IllegalArgumentException e) {
                     //An invalid range was specified, throw away the term pair
                 }
@@ -403,12 +406,17 @@ public class SearchStateFactory {
                 parameter = getParameter(request, searchSettings.searchFieldParam(
                         SearchFieldKey.DATE_CREATED_YEAR.name()));
                 if (parameter != null && parameter.length() > 0) {
-                    SearchState.RangePair dateCreatedYear = new SearchState.RangePair(parameter);
-                    searchState.getRangeFields().put(SearchFieldKey.DATE_CREATED_YEAR.name(), dateCreatedYear);
+                    RangeValue rangeVal;
+                    if (UnknownRange.isUnknown(parameter)) {
+                        rangeVal = new UnknownRange();
+                    } else {
+                        rangeVal = new RangePair(parameter);
+                    }
+                    searchState.getRangeFields().put(SearchFieldKey.DATE_CREATED_YEAR.name(), rangeVal);
                 }
             } catch (IllegalArgumentException e) {
                 // An invalid range was specified, throw away the range pair
-                Map<String, SearchState.RangePair> currentRangeFields = searchState.getRangeFields();
+                var currentRangeFields = searchState.getRangeFields();
                 currentRangeFields.remove(SearchFieldKey.DATE_CREATED_YEAR.name());
                 log.info(e.getMessage());
             }
@@ -461,7 +469,7 @@ public class SearchStateFactory {
         }
 
         //Store date added.
-        SearchState.RangePair dateAdded = new SearchState.RangePair();
+        RangePair dateAdded = new RangePair();
         parameter = getParameter(request, searchSettings.searchFieldParam(
                 SearchFieldKey.DATE_ADDED.name()) + "Start");
         if (parameter != null && parameter.length() > 0) {
@@ -479,7 +487,7 @@ public class SearchStateFactory {
         }
 
         //Store date added.
-        SearchState.RangePair dateCreated = new SearchState.RangePair();
+        RangePair dateCreated = new RangePair();
         parameter = getParameter(request, searchSettings.searchFieldParam(
                 SearchFieldKey.DATE_CREATED.name()) + "Start");
         if (parameter != null && parameter.length() > 0) {

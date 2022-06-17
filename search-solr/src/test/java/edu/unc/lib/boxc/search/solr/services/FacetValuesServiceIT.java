@@ -335,7 +335,7 @@ public class FacetValuesServiceIT extends BaseEmbeddedSolrTest {
             var workPid = PIDs.get(UUID.randomUUID().toString());
             var timestamp = System.nanoTime();
             var workDoc = makeContainerDocument(workPid, "Work " + timestamp, ResourceType.Work,
-                    ancestors);
+                    "2017-01-01", ancestors);
             if (publicAccess) {
                 addAclProperties(workDoc, PUBLIC_PRINC, "unitOwner", "manager");
             } else {

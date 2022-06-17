@@ -82,6 +82,10 @@ public class SearchSettings extends AbstractSettings {
     public static final Set<String> FIELDS_DATE_SEARCHABLE = Set.of(
             SearchFieldKey.DATE_CREATED.name(), SearchFieldKey.DATE_ADDED.name(), SearchFieldKey.DATE_UPDATED.name());
 
+    // Set of range field which should include an Unknown value in facet results
+    public static final Set<String> FIELDS_RANGE_INCLUDE_UNKNOWN = Set.of(
+            SearchFieldKey.DATE_CREATED_YEAR.name());
+
     // Classes for facet fields. If not specified, then it is a GenericFacet
     private static final Map<String, Class<?>> FACET_CLASS_MAP = Map.of(
             SearchFieldKey.ANCESTOR_PATH.name(), CutoffFacetImpl.class,

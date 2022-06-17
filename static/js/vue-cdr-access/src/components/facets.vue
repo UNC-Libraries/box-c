@@ -4,28 +4,29 @@ Facet list component, used to display all the values of facets and provide links
 <template>
     <div id="facetList" class="contentarea">
         <h2 class="facet-header">{{ $t('facets.filter') }}</h2>
-        <div class="facet-display" v-for="facet in this.sortedFacetsList">
+        <div class="facet-display" :id="'facet-display-' + facetType(facet.name, false)" v-for="facet in this.sortedFacetsList">
             <h3>{{ facetName(facet.name) }}</h3>
-            <ul v-if="facet.name !=='DATE_CREATED_YEAR'">
-                <li v-for="value in facet.values">
-                    <a class="is-selected" v-if="isSelected(value.limitToValue)" @click.prevent="updateAll(value, true)">
-                        {{ value.displayValue }} ({{ value.count }}) <i class="fas fa-times"></i></a>
-                    <a v-else @click.prevent="updateAll(value)">{{ value.displayValue }} ({{ value.count }})</a>
-                </li>
-            </ul>
-            <slider v-if="facet.name === 'DATE_CREATED_YEAR'" ref="sliderInfo"
+            <slider v-if="showDateSelectors(facet) && hasValidDateRangeValues(dates.selected_dates)" ref="sliderInfo"
                     :start-range="[dates.selected_dates.start, dates.selected_dates.end]"
                     :range-values="{min: dates.selected_dates.start, max: currentYear}" @sliderUpdated="sliderUpdated"></slider>
-            <form v-if="facet.name === 'DATE_CREATED_YEAR'">
+            <form v-if="showDateSelectors(facet) && hasValidDateRangeValues(dates.selected_dates)">
                 <input type="number" v-model="dates.selected_dates.start" name="start_date"
                        aria-label="Start Date" placeholder="Start Date" />
                 &ndash;
                 <input type="number" v-model="dates.selected_dates.end" name="end_date"
                        aria-label="End Date" placeholder="End Date" />
-                <br />
                 <input type="submit" value="Limit" @click.prevent="setDateFacetUrl()" class="button is-small" />
                 <p class="date_error" v-if="dates.invalid_date_range">The start date cannot be after the end date</p>
             </form>
+
+            <ul>
+                <li v-for="value in facet.values">
+                    <a class="is-selected" v-if="isSelected(value)" @click.prevent="updateAll(value, true)">
+                        {{ value.displayValue }} ({{ value.count }}) <i class="fas fa-times"></i></a>
+                    <a v-else @click.prevent="updateAll(value)">{{ value.displayValue }} ({{ value.count }})</a>
+                </li>
+            </ul>
+
             <facet-modal v-if="showMoreResults(facet)" :facet-id="facetType(facet.name, false)"
                          :facet-name="facetName(facet.name)" @facetValueAdded="modalFacetValueAdded" ></facet-modal>
         </div>
@@ -133,7 +134,10 @@ Facet list component, used to display all the values of facets and provide links
             },
 
             isSelected(facet) {
-                return this.selectedFacetInfo.findIndex(uf => uf.value.toLowerCase() === facet.toLowerCase()) !== -1;
+                const facet_type = this.facetType(facet.fieldName, false);
+                const facet_value = facet.value.toLowerCase();
+                return this.selectedFacetInfo.findIndex(uf => uf.type === facet_type
+                        && uf.value.toLowerCase() === facet_value) !== -1;
             },
 
             /**
@@ -150,6 +154,20 @@ Facet list component, used to display all the values of facets and provide links
 
             showMoreResults(facet) {
                 return facet.name !== 'DATE_CREATED_YEAR' && facet.values.length >= FACET_RESULT_COUNT;
+            },
+
+            showDateSelectors(facet) {
+                if (facet.name !== 'DATE_CREATED_YEAR') {
+                    return false;
+                }
+                const facet_type = this.facetType(facet.name);
+                const current_facet_value = this.selected_facets.filter(f => f.startsWith(facet_type));
+                return current_facet_value.length === 0 || current_facet_value[0] !== (facet_type + "unknown");
+            },
+
+            hasValidDateRangeValues(date_values) {
+                return date_values.start && isFinite(date_values.start)
+                    && date_values.end && isFinite(date_values.end);
             },
 
             /**
@@ -309,7 +327,7 @@ Facet list component, used to display all the values of facets and provide links
                 const facet_type = this.facetType(value.fieldName);
                 const current_facet_value = this.selected_facets.filter(f => f.startsWith(facet_type));
 
-                if (current_facet_value.length === 1) {
+                if (current_facet_value.length === 1 && value.fieldName !== 'DATE_CREATED_YEAR') {
                     const selected_facet_parts = current_facet_value[0]
                         .replace(facet_type, '')
                         .split('||');
@@ -450,13 +468,15 @@ Facet list component, used to display all the values of facets and provide links
 
         form {
             float: none;
-            margin-bottom: 25px;
+            margin-bottom: 15px;
             margin-top: 5px;
+            margin-left: 15px;
             input[type=number] {
                 max-width: 100px;
+                padding: 3px;
             }
             input[type=submit] {
-                margin-top: 10px;
+                margin-left: 8px;
                 background-color: $cdr-blue;
                 color: white;
                 font-weight: bold;
