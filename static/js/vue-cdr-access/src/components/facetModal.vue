@@ -254,7 +254,7 @@ export default {
         }
 
         li {
-            line-break: normal;
+            display: inline-block;
             margin-bottom: 8px;
         }
     }
