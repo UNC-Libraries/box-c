@@ -192,13 +192,13 @@ describe('modalMetadata.vue', () => {
         await wrapper.find('a').trigger('click');
         await flushPromises();
 
-        expect(wrapper.find('.current-page').text()).toEqual('Page: 3');
+        expect(wrapper.find('.current-page').text()).toContain('Viewing Page: 3');
 
         const paging = wrapper.findAll('.paging button');
         await paging[0].trigger('click');
         await flushPromises();
 
-        expect(wrapper.find('.current-page').text()).toEqual('Page: 2');
+        expect(wrapper.find('.current-page').text()).toContain('Viewing Page: 2');
     });
 
     it("sorts results alphabetically", async () => {
