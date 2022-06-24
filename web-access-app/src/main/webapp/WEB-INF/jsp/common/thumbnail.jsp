@@ -39,7 +39,7 @@
 		<c:when test="${markedForDeletion}">
 			trash
 		</c:when>
-		<c:when test="${not empty thumbnailObject && not permsHelper.allowsPublicAccess(thumbnailObject)}">
+		<c:when test="${not empty thumbnailObject && thumbnailObject.resourceType != 'AdminUnit' && not permsHelper.allowsPublicAccess(thumbnailObject)}">
 			lock
 		</c:when>
 	</c:choose>
