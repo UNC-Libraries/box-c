@@ -274,6 +274,7 @@ export default {
             font-size: 1rem;
             font-weight: bold;
             margin: auto;
+            padding-left: 5px;
         }
 
         .button[disabled] {
