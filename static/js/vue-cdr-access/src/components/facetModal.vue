@@ -44,7 +44,7 @@ Modal facet component, used to display all the values of a particular facet in a
                                                 <span>Next</span>
                                                 <span class="icon"><i class="fa fa-forward"></i></span>
                                             </button>
-                                            <span class="current-page">Page: {{ current_page }}</span>
+                                            <span class="current-page">Viewing Page: {{ current_page }}&hellip;</span>
                                         </div>
                                         <div class="column field sorting buttons has-addons">
                                             <button class="button" :aria-pressed="hasSort('count')"
