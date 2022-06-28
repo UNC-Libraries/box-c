@@ -34,6 +34,7 @@ export default {
         },
 
         isRestricted(record) {
+            if (record.type === 'AdminUnit') return false;
             if (record.status === undefined) return true;
             return !record.status.includes('Public Access');
         },
