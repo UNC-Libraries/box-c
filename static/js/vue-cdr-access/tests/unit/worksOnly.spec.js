@@ -84,5 +84,7 @@ describe('worksOnly.vue', () => {
     afterEach(() => {
         // Make sure box is unchecked
         wrapper.setData({ works_only: false });
+        wrapper.vm.$store.dispatch("resetState");
+        wrapper = null;
     });
 });

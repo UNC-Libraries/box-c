@@ -42,7 +42,10 @@ describe('modalMetadata.vue', () => {
         await router.push('/record/1234');
     });
 
-    afterEach(() => router = null);
+    afterEach(() => {
+        wrapper = null;
+        router = null;
+    });
 
     it("fetches the record metadata when the metadata button is clicked", () => {
         // Mock event

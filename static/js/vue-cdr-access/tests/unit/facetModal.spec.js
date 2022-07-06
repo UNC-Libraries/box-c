@@ -6,6 +6,7 @@ import searchWrapper from "@/components/searchWrapper.vue";
 import {createI18n} from "vue-i18n";
 import translations from "@/translations";
 import axios from 'axios';
+import moxios from "moxios";
 
 describe('modalMetadata.vue', () => {
     const i18n = createI18n({
@@ -49,6 +50,11 @@ describe('modalMetadata.vue', () => {
                 facetName: 'Language'
             }
         });
+    });
+
+    afterEach(() => {
+        wrapper = null;
+        router = null;
     });
 
     it("opens the modal when 'More' link is clicked", async () => {

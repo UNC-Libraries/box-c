@@ -82,8 +82,10 @@ describe('browseSort.vue', () => {
     });
 
     afterEach(() => {
-        wrapper.setData({ sort_order: '' });
-        wrapper_search.setData({ sort_order: '' });
+        wrapper.vm.$store.dispatch("resetState");
+        wrapper = null;
+        wrapper_search.vm.$store.dispatch("resetState");
+        wrapper_search = null;
         router = null;
     });
 });

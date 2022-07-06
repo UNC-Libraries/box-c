@@ -24,6 +24,10 @@ describe('modalEditor.vue', () => {
             });
     });
 
+    afterEach(() => {
+        wrapper = null;
+    });
+
     it("is hidden by default", () => {
         expect(wrapper.find('.meta-modal .modal-body').exists()).toBe(false);
     });

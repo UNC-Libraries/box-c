@@ -13,6 +13,10 @@ describe('slider.vue', () => {
         });
     });
 
+    afterEach(() => {
+        wrapper = null;
+    });
+
     it("displays a slider", () => {
         // Look for value class added by the slider
         expect(wrapper.find('.noUi-target').isVisible()).toBe(true)

@@ -54,7 +54,11 @@ describe('pagination.vue', () => {
         await router.push('/record/1234');
     });
 
-    afterEach(() => router = null);
+    afterEach(() => {
+        wrapper.vm.$store.dispatch("resetState");
+        wrapper = null;
+        router = null;
+    });
 
     it("calculates the total number of pages", () => {
         expect(wrapper.vm.totalPageCount).toEqual(10);

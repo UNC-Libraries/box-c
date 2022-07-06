@@ -412,5 +412,6 @@ describe('staffRoles.vue', () => {
 
     afterEach(() => {
         moxios.uninstall();
+        wrapper = null;
     });
 });

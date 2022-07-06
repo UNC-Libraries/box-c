@@ -31,6 +31,10 @@ describe('embargo.vue', () => {
         global.confirm = jest.fn().mockReturnValue(true);
     });
 
+    afterEach(() => {
+        wrapper = null;
+    });
+
     it("sets an embargo if one is returned from the server", async () => {
         await wrapper.setData(embargo_from_server);
         await wrapper.vm.$store.commit('setEmbargoInfo', {
