@@ -27,7 +27,6 @@ import edu.unc.lib.boxc.integration.factories.FolderFactory;
 import edu.unc.lib.boxc.integration.factories.WorkFactory;
 import edu.unc.lib.boxc.model.fcrepo.services.RepositoryInitializer;
 import edu.unc.lib.boxc.model.fcrepo.test.TestHelper;
-import edu.unc.lib.boxc.search.solr.services.SolrSearchService;
 import org.apache.commons.collections4.IteratorUtils;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
@@ -49,7 +48,6 @@ import java.util.List;
 import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
 
 /**
  * @author bbpennel, snluong
@@ -63,17 +61,7 @@ import static org.junit.Assert.assertNotNull;
         @ContextConfiguration("/spring-test/object-factory-context.xml")
 })
 @RunWith(SpringJUnit4ClassRunner.class)
-public class CollectionsEndpointIT {
-    @Autowired
-    private AdminUnitFactory adminUnitFactory;
-    @Autowired
-    private WorkFactory workFactory;
-    @Autowired
-    private CollectionFactory collectionFactory;
-    @Autowired
-    private FolderFactory folderFactory;
-    @Autowired
-    private ContentRootObjectFactory contentRootObjectFactory;
+public class CollectionsEndpointIT extends EndpointIT{
     @Autowired
     protected String baseAddress;
     @Autowired
@@ -101,23 +89,24 @@ public class CollectionsEndpointIT {
 
     @Test
     public void testCollectionsJsonOnlyReturnsAdminUnits() throws Exception {
-        var adminUnit1 = adminUnitFactory.createAdminUnit(Map.of("title", "Object1"));
-        var adminUnit2 = adminUnitFactory.createAdminUnit(Map.of("title", "Object2"));
-        var collection = collectionFactory.createCollection(adminUnit1, Map.of("title", "Object" + System.nanoTime()));
-        var work = workFactory.createWork(collection, Map.of("title", "Object" + System.nanoTime()));
-        var fileOptions = Map.of(
-                "title", "Object" + System.nanoTime(),
-                WorkFactory.PRIMARY_OBJECT_KEY, "false",
-                FileFactory.FILE_FORMAT_OPTION, FileFactory.AUDIO_FORMAT);
-        workFactory.createFileInWork(work, fileOptions);
-        folderFactory.createFolder(collection, Map.of("title", "Object" + System.nanoTime()));
+//        var adminUnit1 = adminUnitFactory.createAdminUnit(Map.of("title", "Object1"));
+//        var adminUnit2 = adminUnitFactory.createAdminUnit(Map.of("title", "Object2"));
+//        var collection = collectionFactory.createCollection(adminUnit1, Map.of("title", "Object" + System.nanoTime()));
+//        var work = workFactory.createWork(collection, Map.of("title", "Object" + System.nanoTime()));
+//        var fileOptions = Map.of(
+//                "title", "Object" + System.nanoTime(),
+//                WorkFactory.PRIMARY_OBJECT_KEY, "false",
+//                FileFactory.FILE_FORMAT_OPTION, FileFactory.AUDIO_FORMAT);
+//        workFactory.createFileInWork(work, fileOptions);
+//        folderFactory.createFolder(collection, Map.of("title", "Object" + System.nanoTime()));
+        createDefaultObjects();
 
         try (var resp = httpClient.execute(getMethod)) {
             var metadata = getMetadataFromResponse(resp);
 
-            assertSuccessfulResponse(resp);
-            assertValuePresent(metadata, 0, "type", "AdminUnit");
-            assertValuePresent(metadata, 1, "type", "AdminUnit");
+            SearchEndpointTestUtility.assertSuccessfulResponse(resp);
+            SearchEndpointTestUtility.assertValuePresent(metadata, 0, "type", "AdminUnit");
+            SearchEndpointTestUtility.assertValuePresent(metadata, 1, "type", "AdminUnit");
             assertEquals(2, metadata.size());
         }
     }
@@ -126,7 +115,7 @@ public class CollectionsEndpointIT {
     public void testCollectionsJsonReturnsSuccessWithNoAdminUnits() throws Exception {
         try (var resp = httpClient.execute(getMethod)) {
             var metadata = getMetadataFromResponse(resp);
-            assertSuccessfulResponse(resp);
+            SearchEndpointTestUtility.assertSuccessfulResponse(resp);
             assertEquals(0, metadata.size());
         }
     }
@@ -138,8 +127,8 @@ public class CollectionsEndpointIT {
         try (var resp = httpClient.execute(getMethod)) {
             var metadata = getMetadataFromResponse(resp);
 
-            assertSuccessfulResponse(resp);
-            assertValuePresent(metadata, 0, "title", "Object2");
+            SearchEndpointTestUtility.assertSuccessfulResponse(resp);
+            SearchEndpointTestUtility.assertValuePresent(metadata, 0, "title", "Object2");
             assertEquals(1, metadata.size());
         }
     }
@@ -152,8 +141,8 @@ public class CollectionsEndpointIT {
         try (var resp = httpClient.execute(getMethod)) {
             var metadata = getMetadataFromResponse(resp);
 
-            assertSuccessfulResponse(resp);
-            assertValuePresent(metadata, 0, "thumbnail_url");
+            SearchEndpointTestUtility.assertSuccessfulResponse(resp);
+            SearchEndpointTestUtility.assertValuePresent(metadata, 0, "thumbnail_url");
             assertEquals(1, metadata.size());
         }
     }
@@ -169,7 +158,7 @@ public class CollectionsEndpointIT {
             var metadata = getMetadataFromResponse(resp);
             var childCount = metadata.get(0).get("counts").get("child").asInt();
 
-            assertSuccessfulResponse(resp);
+            SearchEndpointTestUtility.assertSuccessfulResponse(resp);
             assertEquals(1, childCount);
             assertEquals(1, metadata.size());
         }
@@ -186,31 +175,10 @@ public class CollectionsEndpointIT {
             var metadata = getMetadataFromResponse(resp);
             var childCount = metadata.get(0).get("counts").get("child").asInt();
 
-            assertSuccessfulResponse(resp);
+            SearchEndpointTestUtility.assertSuccessfulResponse(resp);
             // childCount should be 0 because no one has permission to see the child Collection
             assertEquals(0, childCount);
             assertEquals(1, metadata.size());
         }
-    }
-
-    private void assertValuePresent(List<JsonNode> json, int index, String key, String value) {
-        var result = json.get(index);
-        assertEquals(value, result.get(key).asText());
-    }
-
-    private void assertValuePresent(List<JsonNode> json, int index, String key) {
-        var result = json.get(index);
-        assertNotNull(result.get(key).asText());
-    }
-
-    private void assertSuccessfulResponse(CloseableHttpResponse response) {
-        assertEquals(200, response.getStatusLine().getStatusCode());
-    }
-
-    private List<JsonNode> getMetadataFromResponse(CloseableHttpResponse response) throws IOException {
-        ObjectMapper mapper = new ObjectMapper();
-        var respJson = mapper.readTree(response.getEntity().getContent());
-
-        return IteratorUtils.toList(respJson.get("metadata").elements());
     }
 }
