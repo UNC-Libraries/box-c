@@ -60,6 +60,11 @@ describe('patronRoles.vue', () => {
         store.commit('setMetadata', { id: UUID, type: 'Folder', deleted: false, embargo: null });
     });
 
+    afterEach(() => {
+        moxios.uninstall();
+        wrapper = null;
+    });
+
     it("submits updated roles to the server", (done) => {
         stubDataLoad();
 
@@ -348,8 +353,8 @@ describe('patronRoles.vue', () => {
                 { principal: "less:special:group", name: "Another Group" }]
         };
 
-        wrapper.vm.$store.commit('setMetadata', { type: 'Collection', id: UUID });
         stubDataLoad(resp_with_allowed_patrons);
+        wrapper.vm.$store.commit('setMetadata', { type: 'Collection', id: UUID });
 
         moxios.wait(async () => {
             expect(wrapper.vm.assignedPatronRoles).toEqual(assigned_other_roles);
@@ -464,14 +469,13 @@ describe('patronRoles.vue', () => {
     });
 
     it("collection with no assigned roles shows preview of staff only", (done) => {
-        wrapper.vm.$store.commit('setMetadata', { type: 'Collection', id: UUID })
-
         const response = {
             inherited: { roles: [], deleted: false, embargo: null },
             assigned: { roles: [], deleted: false, embargo: null }
         };
 
         stubDataLoad(response);
+        wrapper.vm.$store.commit('setMetadata', { type: 'Collection', id: UUID })
 
         moxios.wait(() => {
             expect(wrapper.vm.user_type).toEqual('staff');
@@ -494,8 +498,6 @@ describe('patronRoles.vue', () => {
     });
 
     it("does not set default inherited display roles for collections and sets assigned permissions to returned roles", (done) => {
-        wrapper.vm.$store.commit('setMetadata', { type: 'Collection', id: UUID })
-
         const assigned_roles =  [
             { principal: 'everyone', role: 'canViewMetadata', assignedTo: UUID },
             { principal: 'authenticated', role: 'canViewOriginals', assignedTo: UUID }
@@ -506,6 +508,7 @@ describe('patronRoles.vue', () => {
         };
 
         stubDataLoad(response);
+        wrapper.vm.$store.commit('setMetadata', { type: 'Collection', id: UUID });
 
         moxios.wait(() => {
             expect(wrapper.vm.submissionAccessDetails().roles).toEqual(assigned_roles);
@@ -1298,10 +1301,6 @@ describe('patronRoles.vue', () => {
         global.confirm = jest.fn().mockReturnValue(true);
         selects = wrapper.findAll('select');
     }
-
-    afterEach(() => {
-        moxios.uninstall();
-    });
 
     function stubDataLoad(load = response, uuid = UUID) {
         moxios.stubRequest(`/services/api/acl/patron/${uuid}`, {

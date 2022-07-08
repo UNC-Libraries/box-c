@@ -154,7 +154,11 @@ describe('facets.vue', () => {
         selected_sub_facet = facet_list[3];
     });
 
-    afterEach(() => router = null);
+    afterEach(() => {
+        wrapper.vm.$store.dispatch("resetState");
+        wrapper = null;
+        router = null;
+    });
 
     it("displays returned facets with counts", () => {
         let facet_headers = wrapper.findAll('.facet-display h3');

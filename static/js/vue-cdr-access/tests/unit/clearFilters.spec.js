@@ -39,7 +39,11 @@ describe('clearFilters.vue', () => {
         wrapper.vm.$router.currentRoute.value.query.anywhere = '';
     });
 
-    afterEach(() => router = null);
+    afterEach(() => {
+        wrapper.vm.$store.dispatch("resetState");
+        wrapper = null;
+        router = null;
+    });
 
     it("start over button clears keyword and facets", async() => {
         await router.push('/record/1234?anywhere=test&subject=topic');

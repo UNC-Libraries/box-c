@@ -18,6 +18,10 @@ describe('patronRoles.vue', () => {
         role = columns[1];
     });
 
+    afterEach(() => {
+        wrapper = null;
+    });
+
     it("displays patron roles", () => {
         wrapper = shallowMount(patronDisplayRow, {
             props: {

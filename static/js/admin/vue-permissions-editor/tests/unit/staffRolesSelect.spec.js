@@ -18,6 +18,10 @@ describe('staffRolesSelect.vue', () => {
         });
     });
 
+    afterEach(() => {
+        wrapper = null;
+    });
+
     it("displays the correct role if preset", () => {
         let select = wrapper.find('select');
         expect(select.element.value).toEqual('canAccess');

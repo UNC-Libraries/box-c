@@ -36,7 +36,11 @@ describe('viewType.vue', () => {
         btns = wrapper.findAll('#browse-btns i');
     });
 
-    afterEach(() => router = null);
+    afterEach(() => {
+        wrapper.vm.$store.dispatch("resetState");
+        wrapper = null;
+        router = null;
+    });
 
     it("sets a browse type when clicked", async () => {
         await router.push('/record/1234/?browse_type=list-display');

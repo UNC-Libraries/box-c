@@ -30,7 +30,11 @@ describe('routeUtils',  () => {
         await router.push('/record/1234');
     });
 
-    afterEach(() => router = null);
+    afterEach(() => {
+        wrapper.vm.$store.dispatch("resetState");
+        wrapper = null;
+        router = null;
+    });
 
     it("sets default url parameters for browse view if none are given", () => {
         const defaults = {

@@ -145,6 +145,10 @@ describe('listDisplay.vue', () => {
         });
     });
 
+    afterEach(() => {
+        wrapper = null;
+    });
+
     it("displays records", () => {
         expect(wrapper.vm.recordList.length).toEqual(2);
     });

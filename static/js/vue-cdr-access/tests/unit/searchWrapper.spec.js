@@ -199,6 +199,7 @@ describe('searchWrapper.vue', () => {
 
     afterEach(() => {
         moxios.uninstall();
+        wrapper = null;
         router = null
     });
 });

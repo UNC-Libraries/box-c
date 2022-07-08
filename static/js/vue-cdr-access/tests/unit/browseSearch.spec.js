@@ -40,7 +40,11 @@ describe('browseSearch.vue', () => {
         wrapper.vm.$router.currentRoute.value.query.anywhere = '';
     });
 
-    afterEach(() => router = null);
+    afterEach(() =>  {
+        wrapper.vm.$store.dispatch("resetState");
+        wrapper = null;
+        router = null;
+    });
 
     it("updates the url when search results change", async() => {
         wrapper.find('input').setValue(query);

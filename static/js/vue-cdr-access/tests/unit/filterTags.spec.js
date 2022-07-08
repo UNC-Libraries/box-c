@@ -38,7 +38,10 @@ describe('filterTags.vue', () => {
         facet_tags = wrapper.findAll('ul li');
     }
 
-    afterEach(() => router = null);
+    afterEach(() => {
+        wrapper = null;
+        router = null;
+    });
 
     it("displays selected tags", async () => {
         mountWithFilterParameters({
