@@ -15,66 +15,25 @@
  */
 package edu.unc.lib.boxc.integration.web.access;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
-import edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl;
 import edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore;
-import edu.unc.lib.boxc.integration.factories.AdminUnitFactory;
-import edu.unc.lib.boxc.integration.factories.CollectionFactory;
-import edu.unc.lib.boxc.integration.factories.ContentRootObjectFactory;
-import edu.unc.lib.boxc.integration.factories.FileFactory;
-import edu.unc.lib.boxc.integration.factories.FolderFactory;
-import edu.unc.lib.boxc.integration.factories.WorkFactory;
-import edu.unc.lib.boxc.model.fcrepo.services.RepositoryInitializer;
 import edu.unc.lib.boxc.model.fcrepo.test.TestHelper;
-import org.apache.commons.collections4.IteratorUtils;
-import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
-import org.apache.solr.client.solrj.SolrClient;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.ContextHierarchy;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import static edu.unc.lib.boxc.auth.api.AccessPrincipalConstants.PUBLIC_PRINC;
 
-import java.io.IOException;
-import java.util.List;
 import java.util.Map;
 
+import static edu.unc.lib.boxc.auth.api.AccessPrincipalConstants.PUBLIC_PRINC;
 import static org.junit.Assert.assertEquals;
 
 /**
  * @author bbpennel, snluong
  */
-@ContextHierarchy({
-        @ContextConfiguration("/spring-test/test-fedora-container.xml"),
-        @ContextConfiguration("/spring-test/cdr-client-container.xml"),
-        @ContextConfiguration("/spring-test/acl-service-context.xml"),
-        @ContextConfiguration("/spring-test/solr-standalone-context.xml"),
-        @ContextConfiguration("/spring-test/solr-indexing-context.xml"),
-        @ContextConfiguration("/spring-test/object-factory-context.xml")
-})
 @RunWith(SpringJUnit4ClassRunner.class)
 public class CollectionsEndpointIT extends EndpointIT{
-    @Autowired
-    protected String baseAddress;
-    @Autowired
-    protected RepositoryInitializer repoInitializer;
-    @Autowired
-    protected SolrClient solrClient;
-
-    protected final static String USERNAME = "test_user";
-    protected final static AccessGroupSet GROUPS = new AccessGroupSetImpl("adminGroup");
-
-    private CloseableHttpClient httpClient;
-    private HttpGet getMethod;
-
     @Before
     public void setup() throws Exception {
         TestHelper.setContentBase(baseAddress);
@@ -89,16 +48,6 @@ public class CollectionsEndpointIT extends EndpointIT{
 
     @Test
     public void testCollectionsJsonOnlyReturnsAdminUnits() throws Exception {
-//        var adminUnit1 = adminUnitFactory.createAdminUnit(Map.of("title", "Object1"));
-//        var adminUnit2 = adminUnitFactory.createAdminUnit(Map.of("title", "Object2"));
-//        var collection = collectionFactory.createCollection(adminUnit1, Map.of("title", "Object" + System.nanoTime()));
-//        var work = workFactory.createWork(collection, Map.of("title", "Object" + System.nanoTime()));
-//        var fileOptions = Map.of(
-//                "title", "Object" + System.nanoTime(),
-//                WorkFactory.PRIMARY_OBJECT_KEY, "false",
-//                FileFactory.FILE_FORMAT_OPTION, FileFactory.AUDIO_FORMAT);
-//        workFactory.createFileInWork(work, fileOptions);
-//        folderFactory.createFolder(collection, Map.of("title", "Object" + System.nanoTime()));
         createDefaultObjects();
 
         try (var resp = httpClient.execute(getMethod)) {

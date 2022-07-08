@@ -15,56 +15,24 @@
  */
 package edu.unc.lib.boxc.integration.web.access;
 
-import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
-import edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl;
 import edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore;
-import edu.unc.lib.boxc.integration.factories.AdminUnitFactory;
-import edu.unc.lib.boxc.integration.factories.CollectionFactory;
-import edu.unc.lib.boxc.integration.factories.ContentRootObjectFactory;
-import edu.unc.lib.boxc.integration.factories.FolderFactory;
-import edu.unc.lib.boxc.integration.factories.WorkFactory;
-import edu.unc.lib.boxc.model.fcrepo.services.RepositoryInitializer;
 import edu.unc.lib.boxc.model.fcrepo.test.TestHelper;
 import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
-import org.apache.solr.client.solrj.SolrClient;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.ContextHierarchy;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import java.io.IOException;
+import static org.junit.Assert.assertEquals;
 
 /**
+ * Integration tests for searchJson endpoints
  * @author snluong
  */
-@ContextHierarchy({
-        @ContextConfiguration("/spring-test/test-fedora-container.xml"),
-        @ContextConfiguration("/spring-test/cdr-client-container.xml"),
-        @ContextConfiguration("/spring-test/acl-service-context.xml"),
-        @ContextConfiguration("/spring-test/solr-standalone-context.xml"),
-        @ContextConfiguration("/spring-test/solr-indexing-context.xml"),
-        @ContextConfiguration("/spring-test/object-factory-context.xml")
-})
+
 @RunWith(SpringJUnit4ClassRunner.class)
 public class SearchEndpointIT extends EndpointIT {
-    @Autowired
-    protected String baseAddress;
-    @Autowired
-    protected RepositoryInitializer repoInitializer;
-    @Autowired
-    protected SolrClient solrClient;
-
-    protected final static String USERNAME = "test_user";
-    protected final static AccessGroupSet GROUPS = new AccessGroupSetImpl("adminGroup");
-
-    private CloseableHttpClient httpClient;
-    private HttpGet getMethod;
-
     @Before
     public void setup() throws Exception {
         TestHelper.setContentBase(baseAddress);
@@ -78,12 +46,14 @@ public class SearchEndpointIT extends EndpointIT {
     }
 
     @Test
-    public void testBlankSearch() throws Exception {
+    public void testBlankSearchReturnsRightNumberOfObjects() throws Exception {
         createDefaultObjects();
+
         try (var resp = httpClient.execute(getMethod)) {
             var metadata = getMetadataFromResponse(resp);
-            System.out.println(metadata);
             SearchEndpointTestUtility.assertSuccessfulResponse(resp);
+            // two admin units, 1 collection (nested in the admin unit), 1 work (with nested file), and 1 folder
+            assertEquals(5, metadata.size());
         }
     }
 }
