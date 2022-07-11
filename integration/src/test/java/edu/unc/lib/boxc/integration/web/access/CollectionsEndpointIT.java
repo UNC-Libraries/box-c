@@ -53,9 +53,9 @@ public class CollectionsEndpointIT extends EndpointIT{
         try (var resp = httpClient.execute(getMethod)) {
             var metadata = getMetadataFromResponse(resp);
 
-            SearchEndpointTestUtility.assertSuccessfulResponse(resp);
-            SearchEndpointTestUtility.assertValuePresent(metadata, 0, "type", "AdminUnit");
-            SearchEndpointTestUtility.assertValuePresent(metadata, 1, "type", "AdminUnit");
+            assertSuccessfulResponse(resp);
+            assertValuePresent(metadata, 0, "type", "AdminUnit");
+            assertValuePresent(metadata, 1, "type", "AdminUnit");
             assertEquals(2, metadata.size());
         }
     }
@@ -64,7 +64,7 @@ public class CollectionsEndpointIT extends EndpointIT{
     public void testCollectionsJsonReturnsSuccessWithNoAdminUnits() throws Exception {
         try (var resp = httpClient.execute(getMethod)) {
             var metadata = getMetadataFromResponse(resp);
-            SearchEndpointTestUtility.assertSuccessfulResponse(resp);
+            assertSuccessfulResponse(resp);
             assertEquals(0, metadata.size());
         }
     }
@@ -76,8 +76,8 @@ public class CollectionsEndpointIT extends EndpointIT{
         try (var resp = httpClient.execute(getMethod)) {
             var metadata = getMetadataFromResponse(resp);
 
-            SearchEndpointTestUtility.assertSuccessfulResponse(resp);
-            SearchEndpointTestUtility.assertValuePresent(metadata, 0, "title", "Object2");
+            assertSuccessfulResponse(resp);
+            assertValuePresent(metadata, 0, "title", "Object2");
             assertEquals(1, metadata.size());
         }
     }
@@ -90,8 +90,8 @@ public class CollectionsEndpointIT extends EndpointIT{
         try (var resp = httpClient.execute(getMethod)) {
             var metadata = getMetadataFromResponse(resp);
 
-            SearchEndpointTestUtility.assertSuccessfulResponse(resp);
-            SearchEndpointTestUtility.assertValuePresent(metadata, 0, "thumbnail_url");
+            assertSuccessfulResponse(resp);
+            assertValuePresent(metadata, 0, "thumbnail_url");
             assertEquals(1, metadata.size());
         }
     }
@@ -107,7 +107,7 @@ public class CollectionsEndpointIT extends EndpointIT{
             var metadata = getMetadataFromResponse(resp);
             var childCount = metadata.get(0).get("counts").get("child").asInt();
 
-            SearchEndpointTestUtility.assertSuccessfulResponse(resp);
+            assertSuccessfulResponse(resp);
             assertEquals(1, childCount);
             assertEquals(1, metadata.size());
         }
@@ -124,7 +124,7 @@ public class CollectionsEndpointIT extends EndpointIT{
             var metadata = getMetadataFromResponse(resp);
             var childCount = metadata.get(0).get("counts").get("child").asInt();
 
-            SearchEndpointTestUtility.assertSuccessfulResponse(resp);
+            assertSuccessfulResponse(resp);
             // childCount should be 0 because no one has permission to see the child Collection
             assertEquals(0, childCount);
             assertEquals(1, metadata.size());

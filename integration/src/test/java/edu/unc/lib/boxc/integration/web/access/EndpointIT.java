@@ -39,6 +39,9 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+
 /**
  * A parent class for SearchActionController Endpoint tests.
  * @author snluong
@@ -98,5 +101,19 @@ public class EndpointIT {
         var respJson = mapper.readTree(response.getEntity().getContent());
 
         return IteratorUtils.toList(respJson.get("metadata").elements());
+    }
+
+    public void assertValuePresent(List<JsonNode> json, int index, String key, String value) {
+        var result = json.get(index);
+        assertEquals(value, result.get(key).asText());
+    }
+
+    public void assertValuePresent(List<JsonNode> json, int index, String key) {
+        var result = json.get(index);
+        assertNotNull(result.get(key).asText());
+    }
+
+    public void assertSuccessfulResponse(CloseableHttpResponse response) {
+        assertEquals(200, response.getStatusLine().getStatusCode());
     }
 }

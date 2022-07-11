@@ -51,7 +51,7 @@ public class SearchEndpointIT extends EndpointIT {
 
         try (var resp = httpClient.execute(getMethod)) {
             var metadata = getMetadataFromResponse(resp);
-            SearchEndpointTestUtility.assertSuccessfulResponse(resp);
+            assertSuccessfulResponse(resp);
             // two admin units, 1 collection (nested in the admin unit), 1 work (with nested file), and 1 folder
             assertEquals(5, metadata.size());
         }
