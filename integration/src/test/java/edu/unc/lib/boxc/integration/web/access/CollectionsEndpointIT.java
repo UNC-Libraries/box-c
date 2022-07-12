@@ -34,6 +34,8 @@ import static org.junit.Assert.assertEquals;
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 public class CollectionsEndpointIT extends EndpointIT{
+    protected HttpGet getMethod;
+
     @Before
     public void setup() throws Exception {
         TestHelper.setContentBase(baseAddress);
