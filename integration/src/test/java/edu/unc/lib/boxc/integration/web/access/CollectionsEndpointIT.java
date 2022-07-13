@@ -34,6 +34,8 @@ import static org.junit.Assert.assertEquals;
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 public class CollectionsEndpointIT extends EndpointIT{
+    protected HttpGet getMethod;
+
     @Before
     public void setup() throws Exception {
         TestHelper.setContentBase(baseAddress);
@@ -42,7 +44,7 @@ public class CollectionsEndpointIT extends EndpointIT{
         // reset solr before every test
         solrClient.deleteByQuery("*:*");
         httpClient = HttpClients.createDefault();
-        getMethod = new HttpGet("http://localhost:48080/access/collectionsJson");
+        getMethod = new HttpGet( ACCESS_URL + "/collectionsJson");
         contentRootObjectFactory.initializeRepository();
     }
 

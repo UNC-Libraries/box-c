@@ -25,6 +25,9 @@ import edu.unc.lib.boxc.integration.factories.ContentRootObjectFactory;
 import edu.unc.lib.boxc.integration.factories.FileFactory;
 import edu.unc.lib.boxc.integration.factories.FolderFactory;
 import edu.unc.lib.boxc.integration.factories.WorkFactory;
+import edu.unc.lib.boxc.model.api.objects.AdminUnit;
+import edu.unc.lib.boxc.model.api.objects.CollectionObject;
+import edu.unc.lib.boxc.model.api.objects.WorkObject;
 import edu.unc.lib.boxc.model.fcrepo.services.RepositoryInitializer;
 import org.apache.commons.collections4.IteratorUtils;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -75,16 +78,19 @@ public class EndpointIT {
 
     protected final static String USERNAME = "test_user";
     protected final static AccessGroupSet GROUPS = new AccessGroupSetImpl("adminGroup");
+    protected final static String ACCESS_URL = "http://localhost:48080/access";
 
     protected CloseableHttpClient httpClient;
-    protected HttpGet getMethod;
+    protected CollectionObject collection;
+    protected WorkObject work;
+    protected AdminUnit adminUnit1;
 
     public void createDefaultObjects() throws Exception {
-        var adminUnit1 = adminUnitFactory.createAdminUnit(Map.of("title", "Object1"));
+        adminUnit1 = adminUnitFactory.createAdminUnit(Map.of("title", "Object1"));
         var adminUnit2 = adminUnitFactory.createAdminUnit(Map.of("title", "Object2"));
-        var collection = collectionFactory.createCollection(adminUnit1,
+        collection = collectionFactory.createCollection(adminUnit1,
                 Map.of("title", "Object" + System.nanoTime(), "readGroup", "everyone"));
-        var work = workFactory.createWork(collection,
+        work = workFactory.createWork(collection,
                 Map.of("title", "Object" + System.nanoTime(), "readGroup", "everyone"));
         var fileOptions = Map.of(
                 "title", "Object" + System.nanoTime(),

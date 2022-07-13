@@ -16,6 +16,8 @@
 package edu.unc.lib.boxc.integration.web.access;
 
 import edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore;
+import edu.unc.lib.boxc.integration.factories.FileFactory;
+import edu.unc.lib.boxc.integration.factories.WorkFactory;
 import edu.unc.lib.boxc.model.fcrepo.test.TestHelper;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.HttpClients;
@@ -23,6 +25,8 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+
+import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
 
@@ -33,6 +37,8 @@ import static org.junit.Assert.assertEquals;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 public class SearchEndpointIT extends EndpointIT {
+    protected final static String SEARCH_URL = ACCESS_URL + "/searchJson";
+
     @Before
     public void setup() throws Exception {
         TestHelper.setContentBase(baseAddress);
@@ -41,19 +47,76 @@ public class SearchEndpointIT extends EndpointIT {
         // reset solr before every test
         solrClient.deleteByQuery("*:*");
         httpClient = HttpClients.createDefault();
-        getMethod = new HttpGet("http://localhost:48080/access/searchJson");
         contentRootObjectFactory.initializeRepository();
     }
 
     @Test
     public void testBlankSearchReturnsRightNumberOfObjects() throws Exception {
         createDefaultObjects();
+        var getMethod = new HttpGet(SEARCH_URL);
 
         try (var resp = httpClient.execute(getMethod)) {
             var metadata = getMetadataFromResponse(resp);
             assertSuccessfulResponse(resp);
             // two admin units, 1 collection (nested in the admin unit), 1 work (with nested file), and 1 folder
             assertEquals(5, metadata.size());
+        }
+    }
+
+    @Test
+    public void testSearchTermInTitle() throws Exception {
+        createDefaultObjects();
+        collectionFactory.createCollection(adminUnit1,
+                Map.of("title", "Text Collection", "readGroup", "everyone"));
+        // make another file in the default work that is a text file with "text"
+        var fileOptions = Map.of(
+                "title", "Object" + System.nanoTime(),
+                WorkFactory.PRIMARY_OBJECT_KEY, "false",
+                FileFactory.FILE_FORMAT_OPTION, FileFactory.TEXT_FORMAT,
+                "readGroup", "everyone");
+        workFactory.createFileInWork(work, fileOptions);
+
+        var getMethod = new HttpGet(SEARCH_URL + "/?titleIndex=text");
+
+        try (var resp = httpClient.execute(getMethod)) {
+            var metadata = getMetadataFromResponse(resp);
+            assertSuccessfulResponse(resp);
+            // find the one collection with "Text" in the title, but not the work with the text file
+            assertEquals(1, metadata.size());
+            assertValuePresent(metadata, 0, "type", "Collection");
+            assertValuePresent(metadata, 0, "title", "Text Collection");
+        }
+    }
+
+    @Test
+    public void testSearchTermInAnyField() throws Exception {
+        createDefaultObjects();
+        collectionFactory.createCollection(adminUnit1,
+                Map.of("title", "Through the lens", "readGroup", "everyone"));
+        var textWork = workFactory.createWork(collection,
+                Map.of("title", "Work with text file", "readGroup", "everyone"));
+        // make another file in the default work that is a text file with the word "Through"
+        var fileOptions = Map.of(
+                "title", "Object" + System.nanoTime(),
+                WorkFactory.PRIMARY_OBJECT_KEY, "false",
+                FileFactory.FILE_FORMAT_OPTION, FileFactory.TEXT_FORMAT,
+                "readGroup", "everyone");
+        workFactory.createFileInWork(textWork, fileOptions);
+
+        var getMethod = new HttpGet(SEARCH_URL + "/?anywhere=through");
+
+        try (var resp = httpClient.execute(getMethod)) {
+            var metadata = getMetadataFromResponse(resp);
+
+            assertSuccessfulResponse(resp);
+            // find the two items
+            assertEquals(2, metadata.size());
+            // check for the collection
+            assertValuePresent(metadata, 0, "type", "Collection");
+            assertValuePresent(metadata, 0, "title", "Through the lens");
+            // check for the work that has the file
+            assertValuePresent(metadata, 1, "type", "Work");
+            assertValuePresent(metadata, 1, "title", "Work with text file");
         }
     }
 }
