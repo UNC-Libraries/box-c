@@ -119,4 +119,41 @@ public class SearchEndpointIT extends EndpointIT {
             assertValuePresent(metadata, 1, "title", "Work with text file");
         }
     }
+
+    @Test
+    public void testSearchTypeParamWithOneType() throws Exception {
+        createDefaultObjects();
+
+        var getMethod = new HttpGet(SEARCH_URL + "/?types=Work");
+
+        try (var resp = httpClient.execute(getMethod)) {
+            var metadata = getMetadataFromResponse(resp);
+
+            assertSuccessfulResponse(resp);
+            // find the one work
+            assertEquals(1, metadata.size());
+            // check for the work
+            assertValuePresent(metadata, 0, "type", "Work");
+        }
+    }
+    
+    @Test
+    public void testSearchTypeParamWithFileSpecified() throws Exception {
+        createDefaultObjects();
+
+        // rollup=false disables the FileObjects getting grouped into their associated Works
+        var getMethod = new HttpGet(SEARCH_URL + "/?types=Work,File&rollup=false");
+
+        try (var resp = httpClient.execute(getMethod)) {
+            var metadata = getMetadataFromResponse(resp);
+
+            assertSuccessfulResponse(resp);
+            // find the two items
+            assertEquals(2, metadata.size());
+            // check for the work
+            assertValuePresent(metadata, 0, "type", "Work");
+            // check for the file
+            assertValuePresent(metadata, 1, "type", "File");
+        }
+    }
 }
