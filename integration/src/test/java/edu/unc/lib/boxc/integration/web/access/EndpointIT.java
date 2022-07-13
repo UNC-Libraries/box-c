@@ -78,6 +78,7 @@ public class EndpointIT {
 
     protected final static String USERNAME = "test_user";
     protected final static AccessGroupSet GROUPS = new AccessGroupSetImpl("adminGroup");
+    protected final static String ACCESS_URL = "http://localhost:48080/access";
 
     protected CloseableHttpClient httpClient;
     protected CollectionObject collection;

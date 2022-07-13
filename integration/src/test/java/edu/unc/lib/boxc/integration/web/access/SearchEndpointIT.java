@@ -37,10 +37,10 @@ import static org.junit.Assert.assertEquals;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 public class SearchEndpointIT extends EndpointIT {
-    private String searchUrl;
+    protected final static String SEARCH_URL = ACCESS_URL + "/searchJson";
+
     @Before
     public void setup() throws Exception {
-        searchUrl = "http://localhost:48080/access/searchJson";
         TestHelper.setContentBase(baseAddress);
         GroupsThreadStore.storeUsername(USERNAME);
         GroupsThreadStore.storeGroups(GROUPS);
@@ -53,7 +53,7 @@ public class SearchEndpointIT extends EndpointIT {
     @Test
     public void testBlankSearchReturnsRightNumberOfObjects() throws Exception {
         createDefaultObjects();
-        var getMethod = new HttpGet(searchUrl);
+        var getMethod = new HttpGet(SEARCH_URL);
 
         try (var resp = httpClient.execute(getMethod)) {
             var metadata = getMetadataFromResponse(resp);
@@ -76,7 +76,7 @@ public class SearchEndpointIT extends EndpointIT {
                 "readGroup", "everyone");
         workFactory.createFileInWork(work, fileOptions);
 
-        var getMethod = new HttpGet(searchUrl + "/?titleIndex=text");
+        var getMethod = new HttpGet(SEARCH_URL + "/?titleIndex=text");
 
         try (var resp = httpClient.execute(getMethod)) {
             var metadata = getMetadataFromResponse(resp);
@@ -95,7 +95,7 @@ public class SearchEndpointIT extends EndpointIT {
                 Map.of("title", "Through the lens", "readGroup", "everyone"));
         var textWork = workFactory.createWork(collection,
                 Map.of("title", "Work with text file", "readGroup", "everyone"));
-        // make another file in the default work that is a text file with the word "Through
+        // make another file in the default work that is a text file with the word "Through"
         var fileOptions = Map.of(
                 "title", "Object" + System.nanoTime(),
                 WorkFactory.PRIMARY_OBJECT_KEY, "false",
@@ -103,7 +103,7 @@ public class SearchEndpointIT extends EndpointIT {
                 "readGroup", "everyone");
         workFactory.createFileInWork(textWork, fileOptions);
 
-        var getMethod = new HttpGet(searchUrl + "/?anywhere=through");
+        var getMethod = new HttpGet(SEARCH_URL + "/?anywhere=through");
 
         try (var resp = httpClient.execute(getMethod)) {
             var metadata = getMetadataFromResponse(resp);

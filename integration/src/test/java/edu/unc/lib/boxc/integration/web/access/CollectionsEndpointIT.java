@@ -44,7 +44,7 @@ public class CollectionsEndpointIT extends EndpointIT{
         // reset solr before every test
         solrClient.deleteByQuery("*:*");
         httpClient = HttpClients.createDefault();
-        getMethod = new HttpGet("http://localhost:48080/access/collectionsJson");
+        getMethod = new HttpGet( ACCESS_URL + "/collectionsJson");
         contentRootObjectFactory.initializeRepository();
     }
 
