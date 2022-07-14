@@ -156,4 +156,46 @@ public class SearchEndpointIT extends EndpointIT {
             assertValuePresent(metadata, 1, "type", "File");
         }
     }
+
+    @Test
+    public void testSearchWithNormalSorting() throws Exception {
+        createDefaultObjects();
+        collectionFactory.createCollection(adminUnit1,
+                Map.of("title", "A first collection", "readGroup", "everyone"));
+
+        // rollup=false disables the FileObjects getting grouped into their associated Works
+        var getMethod = new HttpGet(SEARCH_URL + "/?sort=title,normal");
+
+        try (var resp = httpClient.execute(getMethod)) {
+            var metadata = getMetadataFromResponse(resp);
+
+            assertSuccessfulResponse(resp);
+            // make sure all items return
+            assertEquals(6, metadata.size());
+            // check for the collection, should be first
+            assertValuePresent(metadata, 0, "type", "Collection");
+            assertValuePresent(metadata, 0, "title", "A first collection");
+        }
+    }
+
+    @Test
+    public void testSearchWithReversedSorting() throws Exception {
+        createDefaultObjects();
+        collectionFactory.createCollection(adminUnit1,
+                Map.of("title", "A first collection", "readGroup", "everyone"));
+
+        // rollup=false disables the FileObjects getting grouped into their associated Works
+        var getMethod = new HttpGet(SEARCH_URL + "/?sort=title,reverse");
+
+        try (var resp = httpClient.execute(getMethod)) {
+            var metadata = getMetadataFromResponse(resp);
+
+            assertSuccessfulResponse(resp);
+            // make sure all items return
+            assertEquals(6, metadata.size());
+            // check for the collection, should be last
+            assertValuePresent(metadata, 5, "type", "Collection");
+            assertValuePresent(metadata, 5, "title", "A first collection");
+        }
+    }
 }
