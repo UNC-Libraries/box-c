@@ -162,7 +162,7 @@ public class SearchEndpointIT extends EndpointIT {
         createDefaultObjects();
         collectionFactory.createCollection(adminUnit1,
                 Map.of("title", "A first collection", "readGroup", "everyone"));
-
+        
         var getMethod = new HttpGet(SEARCH_URL + "/?sort=title,normal");
 
         try (var resp = httpClient.execute(getMethod)) {

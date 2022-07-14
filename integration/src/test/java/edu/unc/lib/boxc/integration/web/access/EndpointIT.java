@@ -86,14 +86,14 @@ public class EndpointIT {
     protected AdminUnit adminUnit1;
 
     public void createDefaultObjects() throws Exception {
-        adminUnit1 = adminUnitFactory.createAdminUnit(Map.of("title", " Admin Object1"));
-        var adminUnit2 = adminUnitFactory.createAdminUnit(Map.of("title", " Admin Object2"));
+        adminUnit1 = adminUnitFactory.createAdminUnit(Map.of("title", "Admin Object1"));
+        var adminUnit2 = adminUnitFactory.createAdminUnit(Map.of("title", "Admin Object2"));
         collection = collectionFactory.createCollection(adminUnit1,
                 Map.of("title", "Collection Object", "readGroup", "everyone"));
         work = workFactory.createWork(collection,
-                Map.of("title", " Work Object", "readGroup", "everyone"));
+                Map.of("title", "Work Object", "readGroup", "everyone"));
         var fileOptions = Map.of(
-                "title", " File Object",
+                "title", "File Object",
                 WorkFactory.PRIMARY_OBJECT_KEY, "false",
                 FileFactory.FILE_FORMAT_OPTION, FileFactory.AUDIO_FORMAT,
                 "readGroup", "everyone");
