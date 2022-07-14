@@ -86,20 +86,20 @@ public class EndpointIT {
     protected AdminUnit adminUnit1;
 
     public void createDefaultObjects() throws Exception {
-        adminUnit1 = adminUnitFactory.createAdminUnit(Map.of("title", "Object1"));
-        var adminUnit2 = adminUnitFactory.createAdminUnit(Map.of("title", "Object2"));
+        adminUnit1 = adminUnitFactory.createAdminUnit(Map.of("title", " Admin Object1"));
+        var adminUnit2 = adminUnitFactory.createAdminUnit(Map.of("title", " Admin Object2"));
         collection = collectionFactory.createCollection(adminUnit1,
-                Map.of("title", "Object" + System.nanoTime(), "readGroup", "everyone"));
+                Map.of("title", "Collection Object", "readGroup", "everyone"));
         work = workFactory.createWork(collection,
-                Map.of("title", "Object" + System.nanoTime(), "readGroup", "everyone"));
+                Map.of("title", " Work Object", "readGroup", "everyone"));
         var fileOptions = Map.of(
-                "title", "Object" + System.nanoTime(),
+                "title", " File Object",
                 WorkFactory.PRIMARY_OBJECT_KEY, "false",
                 FileFactory.FILE_FORMAT_OPTION, FileFactory.AUDIO_FORMAT,
                 "readGroup", "everyone");
         workFactory.createFileInWork(work, fileOptions);
         folderFactory.createFolder(collection,
-                Map.of("title", "Object" + System.nanoTime(), "readGroup", "everyone"));
+                Map.of("title", "Folder Object", "readGroup", "everyone"));
     }
 
     public List<JsonNode> getMetadataFromResponse(CloseableHttpResponse response) throws IOException {

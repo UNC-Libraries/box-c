@@ -163,7 +163,6 @@ public class SearchEndpointIT extends EndpointIT {
         collectionFactory.createCollection(adminUnit1,
                 Map.of("title", "A first collection", "readGroup", "everyone"));
 
-        // rollup=false disables the FileObjects getting grouped into their associated Works
         var getMethod = new HttpGet(SEARCH_URL + "/?sort=title,normal");
 
         try (var resp = httpClient.execute(getMethod)) {
@@ -172,9 +171,13 @@ public class SearchEndpointIT extends EndpointIT {
             assertSuccessfulResponse(resp);
             // make sure all items return
             assertEquals(6, metadata.size());
-            // check for the collection, should be first
-            assertValuePresent(metadata, 0, "type", "Collection");
+            // objects should be in A-Z order by title
             assertValuePresent(metadata, 0, "title", "A first collection");
+            assertValuePresent(metadata, 1, "title", "Admin Object1");
+            assertValuePresent(metadata, 2, "title", "Admin Object2");
+            assertValuePresent(metadata, 3, "title", "Collection Object");
+            assertValuePresent(metadata, 4, "title", "Folder Object");
+            assertValuePresent(metadata, 5, "title", "Work Object");
         }
     }
 
@@ -183,8 +186,7 @@ public class SearchEndpointIT extends EndpointIT {
         createDefaultObjects();
         collectionFactory.createCollection(adminUnit1,
                 Map.of("title", "A first collection", "readGroup", "everyone"));
-
-        // rollup=false disables the FileObjects getting grouped into their associated Works
+        
         var getMethod = new HttpGet(SEARCH_URL + "/?sort=title,reverse");
 
         try (var resp = httpClient.execute(getMethod)) {
@@ -193,9 +195,13 @@ public class SearchEndpointIT extends EndpointIT {
             assertSuccessfulResponse(resp);
             // make sure all items return
             assertEquals(6, metadata.size());
-            // check for the collection, should be last
-            assertValuePresent(metadata, 5, "type", "Collection");
+            // objects should be in Z-A order by title
             assertValuePresent(metadata, 5, "title", "A first collection");
+            assertValuePresent(metadata, 4, "title", "Admin Object1");
+            assertValuePresent(metadata, 3, "title", "Admin Object2");
+            assertValuePresent(metadata, 2, "title", "Collection Object");
+            assertValuePresent(metadata, 1, "title", "Folder Object");
+            assertValuePresent(metadata, 0, "title", "Work Object");
         }
     }
 }
