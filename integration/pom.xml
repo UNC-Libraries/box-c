@@ -79,13 +79,7 @@
                         <configuration>
                             <async>true</async>
                             <executable>${project.build.directory}/solr/solr-${solr.version}/bin/solr</executable>
-                            <arguments>
-                                <argument>start</argument>
-                                <argument>-p</argument>
-                                <argument>48983</argument>
-                                <argument>-s</argument>
-                                <argument>${project.build.directory}/../../etc/solr-config/</argument>
-                            </arguments>
+                            <commandlineArgs>start -p 48983 -s ${project.build.directory}/../../etc/solr-config/</commandlineArgs>
                         </configuration>
                     </execution>
                     <execution>

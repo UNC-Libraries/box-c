@@ -139,7 +139,7 @@
         <maven-checkstyle-plugin.version>3.0.0</maven-checkstyle-plugin.version>
         <license-maven-plugin.version>3.0</license-maven-plugin.version>
         <maven-release-plugin.version>2.5.3</maven-release-plugin.version>
-        <exec-maven-plugin.version>1.6.0</exec-maven-plugin.version>
+        <exec-maven-plugin.version>3.1.0</exec-maven-plugin.version>
         <maven-scm-provider-svnjava.version>2.1.2</maven-scm-provider-svnjava.version>
         <build-helper-maven-plugin.version>1.12</build-helper-maven-plugin.version>
         <maven-jar-plugin.version>3.1.0</maven-jar-plugin.version>
