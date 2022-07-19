@@ -31,7 +31,6 @@
 </head>
 <body>
 <div id="permissions-app"></div>
-<script type="module" crossorigin src="/static/js/vue-permissions-vendor.js"></script>
 <script type="module" crossorigin src="/static/js/vue-permissions-index.js"></script>
 
 <div id="pagewrap">
