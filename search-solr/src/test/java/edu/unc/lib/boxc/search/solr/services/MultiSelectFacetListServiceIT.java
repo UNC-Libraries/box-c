@@ -698,6 +698,15 @@ public class MultiSelectFacetListServiceIT extends BaseEmbeddedSolrTest {
         assertNull(result);
     }
 
+    @Test
+    public void getMinimumDateCreatedYearWithRollupEnabledTest() throws Exception {
+        SearchState searchState = new SearchState();
+        searchState.setRollup(true);
+        SearchRequest request = new SearchRequest(searchState, accessGroups);
+        String result = service.getMinimumDateCreatedYear(searchState, request);
+        assertEquals("2017", result);
+    }
+
     private SearchFacet getFacetByValue(FacetFieldObject ffo, String value) {
         return ffo.getValues().stream().filter(f -> f.getSearchValue().equals(value)).findFirst().orElse(null);
     }

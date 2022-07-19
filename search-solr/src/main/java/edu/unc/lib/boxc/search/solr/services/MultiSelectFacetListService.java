@@ -151,6 +151,7 @@ public class MultiSelectFacetListService extends AbstractFacetListService {
         selectedState.setResultFields(Collections.singletonList(SearchFieldKey.DATE_CREATED_YEAR.name()));
         selectedState.setSortNormalOrder(false);
         selectedState.setSortType("dateCreated");
+        selectedState.setRollup(false);
 
         SearchRequest selectedRequest = new SearchRequest(
                 selectedState, originalRequest.getAccessGroups(), false);
