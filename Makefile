@@ -53,7 +53,6 @@ else
 	npm --prefix static/js/admin/vue-permissions-editor run build-dev
 endif
 
-	cp static/js/admin/vue-permissions-editor/dist/assets/vue-permissions-vendor.js static/js/vue-permissions-vendor.js
 	cp static/js/admin/vue-permissions-editor/dist/assets/vue-permissions-index.js static/js/vue-permissions-index.js
 
 build-access-concat:
@@ -105,7 +104,6 @@ endif
 	# npm install minify -g
 	# minify static/plugins/pdfjs/web/viewer.js > static/plugins/pdfjs/web/viewer.min.js
 
-	cp static/js/vue-cdr-access/dist/assets/vue-access-vendor.js static/js/vue-access-vendor.js
 	cp static/js/vue-cdr-access/dist/assets/vue-access-index.js static/js/vue-access-index.js
 SUSPEND = "n"
 
