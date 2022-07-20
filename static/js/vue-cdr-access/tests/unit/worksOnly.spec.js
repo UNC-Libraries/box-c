@@ -51,7 +51,7 @@ describe('worksOnly.vue', () => {
         await wrapper.setData({ works_only: false });
         await record_input.trigger('click');
         await flushPromises();
-        expect(wrapper.vm.$router.currentRoute.value.query.types).toEqual('Work');
+        expect(wrapper.vm.$router.currentRoute.value.query.types).toEqual('Work,File');
     });
 
     it("updates route to only show works and folders if button is unchecked for a gallery view", async  () => {
@@ -60,7 +60,7 @@ describe('worksOnly.vue', () => {
         await record_input.trigger('click');
         await flushPromises();
 
-        expect(wrapper.vm.$router.currentRoute.value.query.types).toEqual('Work,Folder,Collection');
+        expect(wrapper.vm.$router.currentRoute.value.query.types).toEqual('Work,Folder,Collection,File');
     });
 
     it("updates route to only show works if button is checked for a list view", async() => {
@@ -69,7 +69,7 @@ describe('worksOnly.vue', () => {
         await record_input.trigger('click');
         await flushPromises();
 
-        expect(wrapper.vm.$router.currentRoute.value.query.types).toEqual('Work');
+        expect(wrapper.vm.$router.currentRoute.value.query.types).toEqual('Work,File');
     });
 
     it("updates route to show works and folders if button is unchecked for a list view", async () => {
@@ -78,7 +78,7 @@ describe('worksOnly.vue', () => {
         await record_input.trigger('click');
         await flushPromises();
 
-        expect(wrapper.vm.$router.currentRoute.value.query.types).toEqual('Work,Folder,Collection');
+        expect(wrapper.vm.$router.currentRoute.value.query.types).toEqual('Work,Folder,Collection,File');
     });
 
     afterEach(() => {

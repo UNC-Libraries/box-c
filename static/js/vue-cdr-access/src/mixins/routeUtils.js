@@ -65,9 +65,9 @@ export default {
             let params = this.urlParams();
 
             if (!this.coerceWorksOnly(works_only)) {
-                params.types = 'Work,Folder,Collection';
+                params.types = 'Work,Folder,Collection,File';
             } else {
-                params.types = 'Work';
+                params.types = 'Work,File';
             }
 
             return params;
