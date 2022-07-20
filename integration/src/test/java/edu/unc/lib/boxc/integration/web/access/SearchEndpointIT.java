@@ -204,4 +204,40 @@ public class SearchEndpointIT extends EndpointIT {
             assertValuePresent(metadata, 0, "title", "Work Object");
         }
     }
+
+    @Test
+    public void testSearchWithALowerPageSize() throws Exception {
+        createDefaultObjects();
+        collectionFactory.createCollection(adminUnit1,
+                Map.of("title", "A first collection", "readGroup", "everyone"));
+        folderFactory.createFolder(collection,
+                Map.of("title", "Folder Object 2", "readGroup", "everyone"));
+
+        var getMethod = new HttpGet(SEARCH_URL + "/?start=0&rows=5");
+
+        try (var resp = httpClient.execute(getMethod)) {
+            var metadata = getMetadataFromResponse(resp);
+
+            assertSuccessfulResponse(resp);
+            // there are seven objects but this search should only return 5 because of page size
+            assertEquals(5, metadata.size());
+        }
+    }
+
+    @Test
+    public void testSearchWithADifferentStartIndex() throws Exception {
+        createDefaultObjects();
+        collectionFactory.createCollection(adminUnit1,
+                Map.of("title", "A first collection", "readGroup", "everyone"));
+
+        var getMethod = new HttpGet(SEARCH_URL + "/?start=3");
+
+        try (var resp = httpClient.execute(getMethod)) {
+            var metadata = getMetadataFromResponse(resp);
+
+            assertSuccessfulResponse(resp);
+            // there are 6 total items, but since the index starts at 3 we should have only 3 results
+            assertEquals(3, metadata.size());
+        }
+    }
 }
