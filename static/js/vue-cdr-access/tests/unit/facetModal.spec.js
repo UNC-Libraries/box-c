@@ -89,10 +89,10 @@ describe('modalMetadata.vue', () => {
     it("it appends some current url params, if present", async () => {
         const route = '/search/?start=0&rows=20&sort=default,normal&' +
             'facetSelect=createdYear,format,genre,language,subject,location,creatorContributor,publisher&' +
-            'works_only=false&browse_type=gallery-display&types=Work,Folder,Collection';
+            'works_only=false&browse_type=gallery-display&types=Work,Folder,Collection,File';
         await router.push(route);
         await openModal();
-        const query = '/services/api/facet/language/listValues/?facetSort=count&facetRows=21&facetStart=0&works_only=false&types=Work,Folder,Collection';
+        const query = '/services/api/facet/language/listValues/?facetSort=count&facetRows=21&facetStart=0&works_only=false&types=Work,Folder,Collection,File';
         expect(axios.get).toHaveBeenCalledWith(query);
     });
 

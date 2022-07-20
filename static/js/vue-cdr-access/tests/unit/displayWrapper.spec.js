@@ -123,7 +123,7 @@ describe('displayWrapper.vue', () => {
         wrapper.vm.retrieveData();
         await flushPromises();
         expect(wrapper.vm.search_method).toEqual('searchJson');
-        expect(wrapper.vm.$router.currentRoute.value.query.types).toEqual('Work');
+        expect(wrapper.vm.$router.currentRoute.value.query.types).toEqual('Work,File');
     });
 
     it("uses the correct search parameters for non admin works only browse",  async () => {
@@ -134,7 +134,7 @@ describe('displayWrapper.vue', () => {
         wrapper.vm.retrieveData();
         await flushPromises();
         expect(wrapper.vm.search_method).toEqual('listJson');
-        expect(wrapper.vm.$router.currentRoute.value.query.types).toEqual('Work,Folder,Collection');
+        expect(wrapper.vm.$router.currentRoute.value.query.types).toEqual('Work,Folder,Collection,File');
     });
 
     it("uses the correct search parameters if search text is specified", async () => {
@@ -147,7 +147,7 @@ describe('displayWrapper.vue', () => {
         wrapper.vm.retrieveData();
         await flushPromises();
         expect(wrapper.vm.search_method).toEqual('searchJson');
-        expect(wrapper.vm.$router.currentRoute.value.query.types).toEqual('Work,Folder,Collection');
+        expect(wrapper.vm.$router.currentRoute.value.query.types).toEqual('Work,Folder,Collection,File');
     });
 
     it("uses the correct search parameters if facet parameter is specified", async () => {
@@ -160,7 +160,7 @@ describe('displayWrapper.vue', () => {
         wrapper.vm.retrieveData();
         await flushPromises();
         expect(wrapper.vm.search_method).toEqual('searchJson');
-        expect(wrapper.vm.$router.currentRoute.value.query.types).toEqual('Work,Folder,Collection');
+        expect(wrapper.vm.$router.currentRoute.value.query.types).toEqual('Work,Folder,Collection,File');
     });
 
     it("uses the correct parameters for admin unit browse", async () => {
@@ -176,7 +176,7 @@ describe('displayWrapper.vue', () => {
         wrapper.vm.retrieveData();
         await flushPromises();
         expect(wrapper.vm.search_method).toEqual('listJson');
-        expect(wrapper.vm.$router.currentRoute.value.query.types).toEqual('Work,Folder,Collection');
+        expect(wrapper.vm.$router.currentRoute.value.query.types).toEqual('Work,Folder,Collection,File');
         expect(wrapper.find(".container-note").exists()).toBe(true);
         expect(wrapper.find('#browse-display-type').exists()).toBe(true);
     });
@@ -191,7 +191,7 @@ describe('displayWrapper.vue', () => {
 
         wrapper.vm.updateUrl();
         await flushPromises();
-        expect(wrapper.vm.$router.currentRoute.value.query.types).toEqual('Work,Folder,Collection');
+        expect(wrapper.vm.$router.currentRoute.value.query.types).toEqual('Work,Folder,Collection,File');
     });
 
     it("displays a 'works only' option if the 'works only' box is checked and no records are works", async () => {
