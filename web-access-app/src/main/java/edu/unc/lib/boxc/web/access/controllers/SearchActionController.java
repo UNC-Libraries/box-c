@@ -182,20 +182,19 @@ public class SearchActionController extends AbstractErrorHandlingSearchControlle
     private void retrieveFacets(SearchRequest searchRequest, SearchResultResponse resultResponse) {
         SearchState searchState = searchRequest.getSearchState();
         AccessGroupSet principals = searchRequest.getAccessGroups();
-        SearchRequest facetRequest = new SearchRequest(searchState, principals, true);
+        SearchState facetState = (SearchState) searchState.clone();
+        SearchRequest facetRequest = new SearchRequest(facetState, principals, true);
         facetRequest.setApplyCutoffs(false);
         if (resultResponse.getSelectedContainer() != null) {
-            SearchState facetState = (SearchState) searchState.clone();
             facetState.addFacet(resultResponse.getSelectedContainer().getPath());
-            facetRequest.setSearchState(facetState);
         }
 
         SearchResultResponse resultResponseFacets = multiSelectFacetListService.getFacetListResult(facetRequest);
         resultResponse.setFacetFields(resultResponseFacets.getFacetFields());
 
         // Get minimum year for date created "facet" search
-        if (facetRequest.getSearchState().getFacetsToRetrieve().contains(SearchFieldKey.DATE_CREATED_YEAR.name())) {
-            String minSearchYear = multiSelectFacetListService.getMinimumDateCreatedYear(searchState, searchRequest);
+        if (facetState.getFacetsToRetrieve().contains(SearchFieldKey.DATE_CREATED_YEAR.name())) {
+            String minSearchYear = multiSelectFacetListService.getMinimumDateCreatedYear(facetState, searchRequest);
             resultResponse.setMinimumDateCreatedYear(minSearchYear);
         }
     }
