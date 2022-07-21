@@ -53,10 +53,10 @@
         <div class="info container">
             <h3>What's in the repository?</h3>
             <div class="info-icons">
-                <div><a href="search?format=image"><i class="fas fa-image"></i><c:out value="${formatCounts.image}"/> images</a></div>
-                <div><a href="search?format=video"><i class="fas fa-video"></i><c:out value="${formatCounts.video}"/> video files</a></div>
-                <div><a href="search?format=audio"><i class="fas fa-music"></i><c:out value="${formatCounts.audio}"/> audio files</a></div>
-                <div><a href="search?format=text"><i class="fas fa-file-alt"></i><c:out value="${formatCounts.text}"/> texts</a></div>
+                <div><a href="search?format=Image"><i class="fas fa-image"></i><c:out value="${formatCounts.image}"/> images</a></div>
+                <div><a href="search?format=Video"><i class="fas fa-video"></i><c:out value="${formatCounts.video}"/> video files</a></div>
+                <div><a href="search?format=Audio"><i class="fas fa-music"></i><c:out value="${formatCounts.audio}"/> audio files</a></div>
+                <div><a href="search?format=Text"><i class="fas fa-file-alt"></i><c:out value="${formatCounts.text}"/> texts</a></div>
             </div>
             <p>Interested in seeing more?</p>
             <p>See <a href="https://library.unc.edu/find/digitalcollections/">more digital collections</a> or visit the <a href="https://library.unc.edu/wilson">Wilson Special Collections Library</a> website.</p>
