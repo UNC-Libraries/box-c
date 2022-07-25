@@ -182,7 +182,7 @@ public class SolrQueryLayerService extends SolrSearchService {
             query.setRows(0);
             query.addFacetField(SearchFieldKey.FILE_FORMAT_CATEGORY.getSolrField());
             query.setFacetLimit(-1);
-            query.addFilterQuery("resourceType:(Work)");
+            query.addFilterQuery(SearchFieldKey.RESOURCE_TYPE.getSolrField() + ":(" + ResourceType.Work.name() + ")");
 
             QueryResponse response = this.executeQuery(query);
             FacetField facetField = response.getFacetField(SearchFieldKey.FILE_FORMAT_CATEGORY.getSolrField());
