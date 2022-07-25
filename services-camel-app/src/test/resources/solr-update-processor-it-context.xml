@@ -208,6 +208,7 @@
         <property name="indexingMessageSender" ref="indexingMessageSender" />
         <property name="actionType" value="UPDATE_WORK_FILES" />
         <property name="forceCommit" value="true" />
+        <property name="solrClient" ref="embeddedSolrServer" />
     </bean>
 
     <bean id="updateWorkJmsTemplate" class="org.springframework.jms.core.JmsTemplate">
