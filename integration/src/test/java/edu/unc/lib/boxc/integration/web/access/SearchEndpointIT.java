@@ -15,6 +15,7 @@
  */
 package edu.unc.lib.boxc.integration.web.access;
 
+import edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl;
 import edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore;
 import edu.unc.lib.boxc.integration.factories.FileFactory;
 import edu.unc.lib.boxc.integration.factories.WorkFactory;
@@ -238,6 +239,40 @@ public class SearchEndpointIT extends EndpointIT {
             assertSuccessfulResponse(resp);
             // there are 6 total items, but since the index starts at 3 we should have only 3 results
             assertEquals(3, metadata.size());
+        }
+    }
+
+    @Test
+    public void testSearchPublicUserCannotSeeStaffOnlyObjects() throws Exception {
+        GroupsThreadStore.storeGroups(new AccessGroupSetImpl("public"));
+        createDefaultObjects();
+        collectionFactory.createCollection(adminUnit1,
+                Map.of("title", "A first collection", "readGroup", "admin_access"));
+
+        var getMethod = new HttpGet(SEARCH_URL);
+
+        try (var resp = httpClient.execute(getMethod)) {
+            var metadata = getMetadataFromResponse(resp);
+            assertSuccessfulResponse(resp);
+            // two admin units, 1 collection (nested in the admin unit), 1 work (with nested file), and 1 folder
+            assertEquals(5, metadata.size());
+        }
+    }
+
+    @Test
+    public void testSearchStaffUserCanSeeStaffOnlyObjects() throws Exception {
+        GroupsThreadStore.storeGroups(GROUPS);
+        createDefaultObjects();
+        collectionFactory.createCollection(adminUnit1,
+                Map.of("title", "A first collection", "readGroup", "admin_access"));
+
+        var getMethod = new HttpGet(SEARCH_URL);
+
+        try (var resp = httpClient.execute(getMethod)) {
+            var metadata = getMetadataFromResponse(resp);
+            assertSuccessfulResponse(resp);
+            // two admin units, 1 collection (nested in the admin unit), 1 work (with nested file), and 1 folder
+            assertEquals(6, metadata.size());
         }
     }
 }
