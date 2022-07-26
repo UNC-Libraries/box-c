@@ -22,11 +22,15 @@ import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.URIResolver;
 import javax.xml.transform.stream.StreamSource;
+import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
 
 import org.jdom2.input.SAXBuilder;
+import org.xml.sax.SAXException;
 import org.xml.sax.SAXNotRecognizedException;
 import org.xml.sax.SAXNotSupportedException;
+
+import java.util.List;
 
 /**
  * Factory for common XML based classes with XXE turned off and other security settings
@@ -104,5 +108,18 @@ public class SecureXMLFactory {
             throw new RuntimeException("Unable to configure schema factory", e);
         }
         return factory;
+    }
+
+    /**
+     * Create a Schema instance initialized with the provided Sources
+     * @param schemaFactory
+     * @param sources list of source paths, typically in "/schemas/xml.xsd" format
+     * @return new Schema object
+     */
+    public static Schema createSchema(SchemaFactory schemaFactory, List<String> sources) throws SAXException {
+        var sourceArray = sources.stream()
+                .map(s -> new StreamSource(SecureXMLFactory.class.getResourceAsStream(s)))
+                .toArray(Source[]::new);
+        return schemaFactory.newSchema(sourceArray);
     }
 }
