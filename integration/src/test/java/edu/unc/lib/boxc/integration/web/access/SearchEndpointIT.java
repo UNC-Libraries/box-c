@@ -244,10 +244,9 @@ public class SearchEndpointIT extends EndpointIT {
 
     @Test
     public void testSearchPublicUserCannotSeeStaffOnlyObjects() throws Exception {
-        GroupsThreadStore.storeGroups(new AccessGroupSetImpl("public"));
         createDefaultObjects();
         collectionFactory.createCollection(adminUnit1,
-                Map.of("title", "A first collection", "readGroup", "admin_access"));
+                Map.of("title", "A first collection", "adminGroup", "adminGroup"));
 
         var getMethod = new HttpGet(SEARCH_URL);
 
@@ -261,17 +260,34 @@ public class SearchEndpointIT extends EndpointIT {
 
     @Test
     public void testSearchStaffUserCanSeeStaffOnlyObjects() throws Exception {
-        GroupsThreadStore.storeGroups(GROUPS);
         createDefaultObjects();
         collectionFactory.createCollection(adminUnit1,
-                Map.of("title", "A first collection", "readGroup", "admin_access"));
+                Map.of("title", "A first collection", "adminGroup", "adminGroup"));
+
+        var getMethod = new HttpGet(SEARCH_URL);
+        getMethod.setHeader("isMemberof","adminGroup");
+
+        try (var resp = httpClient.execute(getMethod)) {
+            var metadata = getMetadataFromResponse(resp);
+            assertSuccessfulResponse(resp);
+            assertEquals(6, metadata.size());
+        }
+    }
+
+    @Test
+    public void testSearchPublicUserWithMetadataOnlyPermissionCanSeeMetadata() throws Exception {
+        createDefaultObjects();
+        collectionFactory.createCollection(adminUnit1,
+                Map.of("title", "A first collection", "metadataGroup", "everyone"));
 
         var getMethod = new HttpGet(SEARCH_URL);
 
         try (var resp = httpClient.execute(getMethod)) {
             var metadata = getMetadataFromResponse(resp);
+            var collectionMetadata = metadata.get(2);
             assertSuccessfulResponse(resp);
-            // two admin units, 1 collection (nested in the admin unit), 1 work (with nested file), and 1 folder
+            // check "permissions" field in affected result only lists "viewMetadata"
+            assertEquals("viewMetadata", collectionMetadata.get("permissions").get(0).asText());
             assertEquals(6, metadata.size());
         }
     }
