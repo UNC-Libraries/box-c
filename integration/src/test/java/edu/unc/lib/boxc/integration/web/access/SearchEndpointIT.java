@@ -30,6 +30,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Integration tests for searchJson endpoints
@@ -245,23 +246,25 @@ public class SearchEndpointIT extends EndpointIT {
     @Test
     public void testSearchPublicUserCannotSeeStaffOnlyObjects() throws Exception {
         createDefaultObjects();
-        collectionFactory.createCollection(adminUnit1,
+        var staffOnlyCollection = collectionFactory.createCollection(adminUnit1,
                 Map.of("title", "A first collection", "adminGroup", "adminGroup"));
 
         var getMethod = new HttpGet(SEARCH_URL);
 
         try (var resp = httpClient.execute(getMethod)) {
             var metadata = getMetadataFromResponse(resp);
+            var collectionId = staffOnlyCollection.getPid().getId();
             assertSuccessfulResponse(resp);
             // two admin units, 1 collection (nested in the admin unit), 1 work (with nested file), and 1 folder
             assertEquals(5, metadata.size());
+            assertTrue(metadata.stream().noneMatch(entry -> collectionId.equals(entry.get("id"))));
         }
     }
 
     @Test
     public void testSearchStaffUserCanSeeStaffOnlyObjects() throws Exception {
         createDefaultObjects();
-        collectionFactory.createCollection(adminUnit1,
+        var staffOnlyCollection = collectionFactory.createCollection(adminUnit1,
                 Map.of("title", "A first collection", "adminGroup", "adminGroup"));
 
         var getMethod = new HttpGet(SEARCH_URL);
@@ -269,8 +272,11 @@ public class SearchEndpointIT extends EndpointIT {
 
         try (var resp = httpClient.execute(getMethod)) {
             var metadata = getMetadataFromResponse(resp);
+            var collectionId = staffOnlyCollection.getPid().getId();
             assertSuccessfulResponse(resp);
             assertEquals(6, metadata.size());
+            System.out.println(metadata);
+            assertTrue(metadata.stream().anyMatch(entry -> collectionId.equals(entry.get("id"))));
         }
     }
 

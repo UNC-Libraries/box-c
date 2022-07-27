@@ -87,8 +87,7 @@ public class ContentObjectFactory {
     }
 
     protected Model getAccessModel(Map<String, String> options) {
-        Model accessGroup;
-        accessGroup = null;
+        Model accessGroup = null;
         var group = new AclModelBuilder(options.getOrDefault("title", ""));
         if (options.containsKey("readGroup")) {
             accessGroup = group.addCanViewOriginals(options.get("readGroup")).model;
@@ -98,7 +97,7 @@ public class ContentObjectFactory {
         }
         if (options.containsKey("adminGroup")) {
             var adminOption = options.get("adminGroup");
-            accessGroup = group.addCanIngest(adminOption).addUnitOwner(adminOption).addCanManage(adminOption).model;
+            accessGroup = group.addCanManage(adminOption).model;
         }
         if (options.containsKey("metadataGroup")) {
             accessGroup = group.addCanViewMetadata(options.get("metadataGroup")).model;
