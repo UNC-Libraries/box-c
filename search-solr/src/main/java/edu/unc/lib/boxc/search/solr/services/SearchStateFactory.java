@@ -437,32 +437,32 @@ public class SearchStateFactory {
      * @param request
      */
     private void populateSearchStateAdvancedSearch(SearchState searchState, Map<String,String[]> request) {
-        String parameter = getParameter(request, searchSettings.searchFieldParam(SearchFieldKey.DEFAULT_INDEX.name()));
+        String parameter = getParameter(request, SearchFieldKey.DEFAULT_INDEX.getUrlParam());
         if (parameter != null && parameter.length() > 0) {
             searchState.getSearchFields().put(SearchFieldKey.DEFAULT_INDEX.name(), parameter);
         }
 
-        parameter = getParameter(request, searchSettings.searchFieldParam(SearchFieldKey.SUBJECT_INDEX.name()));
+        parameter = getParameter(request, SearchFieldKey.SUBJECT_INDEX.getUrlParam());
         if (parameter != null && parameter.length() > 0) {
             searchState.getSearchFields().put(SearchFieldKey.SUBJECT_INDEX.name(), parameter);
         }
 
-        parameter = getParameter(request, searchSettings.searchFieldParam(SearchFieldKey.CONTRIBUTOR_INDEX.name()));
+        parameter = getParameter(request, SearchFieldKey.CONTRIBUTOR_INDEX.getUrlParam());
         if (parameter != null && parameter.length() > 0) {
             searchState.getSearchFields().put(SearchFieldKey.CONTRIBUTOR_INDEX.name(), parameter);
         }
 
-        parameter = getParameter(request, searchSettings.searchFieldParam(SearchFieldKey.TITLE_INDEX.name()));
+        parameter = getParameter(request, SearchFieldKey.TITLE_INDEX.getUrlParam());
         if (parameter != null && parameter.length() > 0) {
             searchState.getSearchFields().put(SearchFieldKey.TITLE_INDEX.name(), parameter);
         }
 
-        parameter = getParameter(request, searchSettings.searchFieldParam(SearchFieldKey.PARENT_COLLECTION.name()));
+        parameter = getParameter(request, SearchFieldKey.PARENT_COLLECTION.getUrlParam());
         if (parameter != null && parameter.length() > 0) {
             searchState.setFacet(new GenericFacet(SearchFieldKey.PARENT_COLLECTION, parameter));
         }
 
-        parameter = getParameter(request, searchSettings.searchFieldParam(SearchFieldKey.FILE_FORMAT_CATEGORY.name()));
+        parameter = getParameter(request, SearchFieldKey.FILE_FORMAT_CATEGORY.getUrlParam());
         if (parameter != null && parameter.length() > 0) {
             var fileFormatCat = new GenericFacet(SearchFieldKey.FILE_FORMAT_CATEGORY.name(), parameter);
             searchState.addFacet(fileFormatCat);
@@ -470,14 +470,12 @@ public class SearchStateFactory {
 
         //Store date added.
         RangePair dateAdded = new RangePair();
-        parameter = getParameter(request, searchSettings.searchFieldParam(
-                SearchFieldKey.DATE_ADDED.name()) + "Start");
+        parameter = getParameter(request, SearchFieldKey.DATE_ADDED.getUrlParam() + "Start");
         if (parameter != null && parameter.length() > 0) {
             dateAdded.setLeftHand(parameter);
         }
 
-        parameter = getParameter(request, searchSettings.searchFieldParam(
-                SearchFieldKey.DATE_ADDED.name()) + "End");
+        parameter = getParameter(request, SearchFieldKey.DATE_ADDED.getUrlParam() + "End");
         if (parameter != null && parameter.length() > 0) {
             dateAdded.setRightHand(parameter);
         }
@@ -488,20 +486,18 @@ public class SearchStateFactory {
 
         //Store date added.
         RangePair dateCreated = new RangePair();
-        parameter = getParameter(request, searchSettings.searchFieldParam(
-                SearchFieldKey.DATE_CREATED.name()) + "Start");
+        parameter = getParameter(request, SearchFieldKey.DATE_CREATED_YEAR.getUrlParam() + "Start");
         if (parameter != null && parameter.length() > 0) {
             dateCreated.setLeftHand(parameter);
         }
 
-        parameter = getParameter(request, searchSettings.searchFieldParam(
-                SearchFieldKey.DATE_CREATED.name()) + "End");
+        parameter = getParameter(request, SearchFieldKey.DATE_CREATED_YEAR.getUrlParam() + "End");
         if (parameter != null && parameter.length() > 0) {
             dateCreated.setRightHand(parameter);
         }
 
         if (dateCreated.getLeftHand() != null || dateCreated.getRightHand() != null) {
-            searchState.getRangeFields().put(SearchFieldKey.DATE_CREATED.name(), dateCreated);
+            searchState.getRangeFields().put(SearchFieldKey.DATE_CREATED_YEAR.name(), dateCreated);
         }
     }
 
