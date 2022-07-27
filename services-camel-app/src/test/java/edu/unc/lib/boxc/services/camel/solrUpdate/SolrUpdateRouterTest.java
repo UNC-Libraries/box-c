@@ -30,6 +30,7 @@ import org.apache.camel.ProducerTemplate;
 import org.apache.camel.builder.NotifyBuilder;
 import org.apache.camel.test.spring.CamelSpringRunner;
 import org.apache.camel.test.spring.CamelTestContextBootstrapper;
+import org.apache.solr.client.solrj.SolrClient;
 import org.jdom2.Document;
 import org.jdom2.Element;
 import org.junit.Before;
@@ -93,6 +94,9 @@ public class SolrUpdateRouterTest {
 
     @Autowired
     private SolrUpdatePreprocessor solrUpdatePreprocessor;
+
+    @Autowired
+    private SolrClient solrClient;
 
     private ArgumentCaptor<Exchange> exchangeCaptor;
 
@@ -262,6 +266,7 @@ public class SolrUpdateRouterTest {
 
         notify.matches(3l, TimeUnit.SECONDS);
 
+        verify(solrClient).commit();
         verify(indexingMessageSender).sendIndexingOperation(null, targetPid1, IndexingActionType.UPDATE_WORK_FILES);
         verify(indexingMessageSender).sendIndexingOperation(null, targetPid2, IndexingActionType.UPDATE_WORK_FILES);
     }

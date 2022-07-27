@@ -38,10 +38,15 @@
         <constructor-arg value="edu.unc.lib.boxc.operations.jms.indexing.IndexingMessageSender" />
     </bean>
 
+    <bean id="mockSolrClient" class="org.mockito.Mockito" factory-method="mock">
+        <constructor-arg value="org.apache.solr.client.solrj.SolrClient" />
+    </bean>
+
     <bean id="aggregateWorkForFileProcessor" class="edu.unc.lib.boxc.services.camel.solrUpdate.AggregateUpdateProcessor">
         <property name="indexingMessageSender" ref="mockIndexingMessageSender" />
         <property name="actionType" value="UPDATE_WORK_FILES" />
         <property name="forceCommit" value="true" />
+        <property name="solrClient" ref="mockSolrClient" />
     </bean>
 
     <bean id="orderedSetAggregationStrategy" class="edu.unc.lib.boxc.services.camel.util.OrderedSetAggregationStrategy"/>

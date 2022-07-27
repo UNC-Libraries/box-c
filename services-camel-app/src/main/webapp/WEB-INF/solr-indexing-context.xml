@@ -469,10 +469,12 @@
     <bean id="solrUpdatePreprocessor" class="edu.unc.lib.boxc.services.camel.solrUpdate.SolrUpdatePreprocessor">
     </bean>
 
-    <bean id="aggregateWorkForFileProcessor" class="edu.unc.lib.boxc.services.camel.solrUpdate.AggregateUpdateProcessor">
+    <bean id="aggregateWorkForFileProcessor" class="edu.unc.lib.boxc.services.camel.solrUpdate.AggregateUpdateProcessor"
+          init-method="init">
         <property name="indexingMessageSender" ref="indexingMessageSender" />
         <property name="actionType" value="UPDATE_WORK_FILES" />
         <property name="forceCommit" value="true" />
+        <property name="solrSettings" ref="solrSettings" />
     </bean>
 
     <bean id="updateWorkJmsTemplate" class="org.springframework.jms.core.JmsTemplate">
