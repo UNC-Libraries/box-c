@@ -29,8 +29,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import java.util.Map;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 /**
  * Integration tests for searchJson endpoints
@@ -257,7 +256,7 @@ public class SearchEndpointIT extends EndpointIT {
             assertSuccessfulResponse(resp);
             // two admin units, 1 collection (nested in the admin unit), 1 work (with nested file), and 1 folder
             assertEquals(5, metadata.size());
-            assertTrue(metadata.stream().noneMatch(entry -> collectionId.equals(entry.get("id"))));
+            assertTrue(metadata.stream().noneMatch(entry -> collectionId.equals(entry.get("id").asText())));
         }
     }
 
@@ -275,8 +274,7 @@ public class SearchEndpointIT extends EndpointIT {
             var collectionId = staffOnlyCollection.getPid().getId();
             assertSuccessfulResponse(resp);
             assertEquals(6, metadata.size());
-            System.out.println(metadata);
-            assertTrue(metadata.stream().anyMatch(entry -> collectionId.equals(entry.get("id"))));
+            assertTrue(metadata.stream().anyMatch(entry -> collectionId.equals(entry.get("id").asText())));
         }
     }
 
