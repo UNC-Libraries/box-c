@@ -21,7 +21,7 @@ Displays tags for currently active filters in a search result, with the option t
 import routeUtils from "../mixins/routeUtils";
 
 const TYPES = {
-    added: 'Date Added',
+    added: 'Date Deposited',
     unit: 'Administrative Unit',
     collection: 'Collection',
     created: 'Date Created',
