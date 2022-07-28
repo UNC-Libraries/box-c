@@ -15,7 +15,6 @@
  */
 package edu.unc.lib.boxc.integration.web.access;
 
-import edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl;
 import edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore;
 import edu.unc.lib.boxc.integration.factories.FileFactory;
 import edu.unc.lib.boxc.integration.factories.WorkFactory;
@@ -27,6 +26,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 import static org.junit.Assert.*;
@@ -299,13 +300,9 @@ public class SearchEndpointIT extends EndpointIT {
     @Test
     public void testSearchWithCreatedDateRangeSpecified() throws Exception {
         createDefaultObjects();
-        var adminUnit = adminUnitFactory.createAdminUnit(
-                Map.of("title", "Dated Admin Object", "dateCreated", "2018-07-01"));
-        var datedCollection = collectionFactory.createCollection(adminUnit,
-                Map.of("title", "A dated collection",
-                        "dateCreated", "2022-07-01",
-                        "readGroup", "everyone"));
-        var datedCollectionId = datedCollection.getPid().getId();
+        var ids = createDatedObjects();
+        var datedCollectionId = ids.get(1);
+
         var getMethod = new HttpGet(SEARCH_URL + "/?createdYear=2022,2022");
 
         try (var resp = httpClient.execute(getMethod)) {
@@ -322,14 +319,10 @@ public class SearchEndpointIT extends EndpointIT {
     @Test
     public void testSearchWithCreatedDateRangeSpecifiedAsUnknown() throws Exception {
         createDefaultObjects();
-        var datedAdminUnit = adminUnitFactory.createAdminUnit(
-                Map.of("title", "Dated Admin Object", "dateCreated", "2018-07-01"));
-        var datedCollection = collectionFactory.createCollection(datedAdminUnit,
-                Map.of("title", "A dated collection",
-                        "dateCreated", "2022-07-01",
-                        "readGroup", "everyone"));
-        var datedAdminUnitId = datedAdminUnit.getPid().getId();
-        var datedCollectionId = datedCollection.getPid().getId();
+        var ids = createDatedObjects();
+        var datedAdminUnitId = ids.get(0);
+        var datedCollectionId = ids.get(1);
+
         var getMethod = new HttpGet(SEARCH_URL + "/?createdYear=unknown");
 
         try (var resp = httpClient.execute(getMethod)) {
@@ -341,5 +334,18 @@ public class SearchEndpointIT extends EndpointIT {
             assertIdMatchesNone(metadata, datedAdminUnitId);
             assertIdMatchesNone(metadata, datedCollectionId);
         }
+    }
+
+    private List<String> createDatedObjects() throws Exception {
+        List<String> ids = new ArrayList<>();
+        var datedAdminUnit = adminUnitFactory.createAdminUnit(
+                Map.of("title", "Dated Admin Object", "dateCreated", "2018-07-01"));
+        var datedCollection = collectionFactory.createCollection(datedAdminUnit,
+                Map.of("title", "A dated collection",
+                        "dateCreated", "2022-07-01",
+                        "readGroup", "everyone"));
+        ids.add(datedAdminUnit.getPid().getId());
+        ids.add(datedCollection.getPid().getId());
+        return ids;
     }
 }
