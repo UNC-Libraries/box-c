@@ -15,6 +15,7 @@
  */
 package edu.unc.lib.boxc.integration.web.access;
 
+import edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl;
 import edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore;
 import edu.unc.lib.boxc.integration.factories.FileFactory;
 import edu.unc.lib.boxc.integration.factories.WorkFactory;
@@ -28,7 +29,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import java.util.Map;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 
 /**
  * Integration tests for searchJson endpoints
@@ -238,6 +239,60 @@ public class SearchEndpointIT extends EndpointIT {
             assertSuccessfulResponse(resp);
             // there are 6 total items, but since the index starts at 3 we should have only 3 results
             assertEquals(3, metadata.size());
+        }
+    }
+
+    @Test
+    public void testSearchPublicUserCannotSeeStaffOnlyObjects() throws Exception {
+        createDefaultObjects();
+        var staffOnlyCollection = collectionFactory.createCollection(adminUnit1,
+                Map.of("title", "A first collection", "adminGroup", "adminGroup"));
+
+        var getMethod = new HttpGet(SEARCH_URL);
+
+        try (var resp = httpClient.execute(getMethod)) {
+            var metadata = getMetadataFromResponse(resp);
+            var collectionId = staffOnlyCollection.getPid().getId();
+            assertSuccessfulResponse(resp);
+            // two admin units, 1 collection (nested in the admin unit), 1 work (with nested file), and 1 folder
+            assertEquals(5, metadata.size());
+            assertTrue(metadata.stream().noneMatch(entry -> collectionId.equals(entry.get("id").asText())));
+        }
+    }
+
+    @Test
+    public void testSearchStaffUserCanSeeStaffOnlyObjects() throws Exception {
+        createDefaultObjects();
+        var staffOnlyCollection = collectionFactory.createCollection(adminUnit1,
+                Map.of("title", "A first collection", "adminGroup", "adminGroup"));
+
+        var getMethod = new HttpGet(SEARCH_URL);
+        getMethod.setHeader("isMemberof","adminGroup");
+
+        try (var resp = httpClient.execute(getMethod)) {
+            var metadata = getMetadataFromResponse(resp);
+            var collectionId = staffOnlyCollection.getPid().getId();
+            assertSuccessfulResponse(resp);
+            assertEquals(6, metadata.size());
+            assertTrue(metadata.stream().anyMatch(entry -> collectionId.equals(entry.get("id").asText())));
+        }
+    }
+
+    @Test
+    public void testSearchPublicUserWithMetadataOnlyPermissionCanSeeMetadata() throws Exception {
+        createDefaultObjects();
+        collectionFactory.createCollection(adminUnit1,
+                Map.of("title", "A first collection", "metadataGroup", "everyone"));
+
+        var getMethod = new HttpGet(SEARCH_URL);
+
+        try (var resp = httpClient.execute(getMethod)) {
+            var metadata = getMetadataFromResponse(resp);
+            var collectionMetadata = metadata.get(2);
+            assertSuccessfulResponse(resp);
+            // check "permissions" field in affected result only lists "viewMetadata"
+            assertEquals("viewMetadata", collectionMetadata.get("permissions").get(0).asText());
+            assertEquals(6, metadata.size());
         }
     }
 }
