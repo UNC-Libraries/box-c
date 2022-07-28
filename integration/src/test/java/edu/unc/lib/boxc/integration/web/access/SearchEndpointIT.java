@@ -240,4 +240,23 @@ public class SearchEndpointIT extends EndpointIT {
             assertEquals(3, metadata.size());
         }
     }
+
+    @Test
+    public void testSearchWithCreatedDateRangeSpecified() throws Exception {
+        var adminUnit = adminUnitFactory.createAdminUnit(
+                Map.of("title", "Admin Object", "dateCreated", "2018-07-01"));
+        collectionFactory.createCollection(adminUnit,
+                Map.of("title", "A first collection", "dateCreated", "2022-07-01", "readGroup", "everyone"));
+        var getMethod = new HttpGet(SEARCH_URL + "/?createdStart=2022&createdEnd=2022");
+
+
+        try (var resp = httpClient.execute(getMethod)) {
+            var metadata = getMetadataFromResponse(resp);
+
+            assertSuccessfulResponse(resp);
+
+            assertEquals(2, metadata.size());
+            assertValuePresent(metadata, 1, "type", "Collection");
+        }
+    }
 }

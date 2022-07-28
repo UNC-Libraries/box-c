@@ -44,6 +44,12 @@ public class ModsFactory {
                         .setText(options.get("abstract")));
         }
 
+        if (options.containsKey("dateCreated"))  {
+            modsElement.addContent(new Element("originInfo", MODS_V3_NS)
+                    .addContent(new Element("dateCreated").setAttribute("encoding", "iso8601"))
+                    .setText(options.get("dateCreated")));
+        }
+
         return modsElement.getChildren().isEmpty() ? null : xmlDoc;
     }
 }
