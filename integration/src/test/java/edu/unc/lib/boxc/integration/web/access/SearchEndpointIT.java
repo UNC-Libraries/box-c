@@ -298,20 +298,47 @@ public class SearchEndpointIT extends EndpointIT {
 
     @Test
     public void testSearchWithCreatedDateRangeSpecified() throws Exception {
+        createDefaultObjects();
         var adminUnit = adminUnitFactory.createAdminUnit(
-                Map.of("title", "Admin Object", "dateCreated", "2018-07-01"));
+                Map.of("title", "Dated Admin Object", "dateCreated", "2018-07-01"));
         collectionFactory.createCollection(adminUnit,
-                Map.of("title", "A first collection", "dateCreated", "2022-07-01", "readGroup", "everyone"));
-        var getMethod = new HttpGet(SEARCH_URL + "/?createdStart=2022&createdEnd=2022");
+                Map.of("title", "A dated collection",
+                        "dateCreated", "2022-07-01",
+                        "readGroup", "everyone"));
+        var getMethod = new HttpGet(SEARCH_URL + "/?createdYear=2022,2022");
 
 
         try (var resp = httpClient.execute(getMethod)) {
             var metadata = getMetadataFromResponse(resp);
 
             assertSuccessfulResponse(resp);
+            // should only find the collection, not the admin unit that has a created date
+            assertEquals(1, metadata.size());
+            assertValuePresent(metadata, 0, "type", "Collection");
+        }
+    }
 
-            assertEquals(2, metadata.size());
-            assertValuePresent(metadata, 1, "type", "Collection");
+    @Test
+    public void testSearchWithCreatedDateRangeSpecifiedAsUnknown() throws Exception {
+        createDefaultObjects();
+        var datedAdminUnit = adminUnitFactory.createAdminUnit(
+                Map.of("title", "Dated Admin Object", "dateCreated", "2018-07-01"));
+        var datedCollection = collectionFactory.createCollection(datedAdminUnit,
+                Map.of("title", "A dated collection",
+                        "dateCreated", "2022-07-01",
+                        "readGroup", "everyone"));
+        var datedAdminUnitId = datedAdminUnit.getPid().getId();
+        var datedCollectionId = datedCollection.getPid().getId();
+        var getMethod = new HttpGet(SEARCH_URL + "/?createdYear=unknown");
+
+        try (var resp = httpClient.execute(getMethod)) {
+            var metadata = getMetadataFromResponse(resp);
+
+            assertSuccessfulResponse(resp);
+            // should only find the five default objects, not the dated admin unit or dated collection
+            assertEquals(5, metadata.size());
+            assertTrue(metadata.stream().noneMatch(entry -> datedAdminUnitId.equals(entry.get("id").asText())));
+            assertTrue(metadata.stream().noneMatch(entry -> datedCollectionId.equals(entry.get("id").asText())));
         }
     }
 }
