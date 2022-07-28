@@ -87,14 +87,22 @@ public class ContentObjectFactory {
     }
 
     protected Model getAccessModel(Map<String, String> options) {
-        Model accessGroup;
+        Model accessGroup = null;
+        var group = new AclModelBuilder(options.getOrDefault("title", ""));
         if (options.containsKey("readGroup")) {
-            accessGroup = new AclModelBuilder(options.getOrDefault("title", ""))
-                    .addCanViewOriginals(options.get("readGroup"))
-                    .model;
-        } else {
-            accessGroup = null;
+            accessGroup = group.addCanViewOriginals(options.get("readGroup")).model;
         }
+        if (options.containsKey("noneGroup")) {
+            accessGroup = group.addNoneRole(options.get("noneGroup")).model;
+        }
+        if (options.containsKey("adminGroup")) {
+            var adminOption = options.get("adminGroup");
+            accessGroup = group.addCanManage(adminOption).model;
+        }
+        if (options.containsKey("metadataGroup")) {
+            accessGroup = group.addCanViewMetadata(options.get("metadataGroup")).model;
+        }
+
         return accessGroup;
     }
 
