@@ -15,7 +15,6 @@
  */
 package edu.unc.lib.boxc.integration.web.access;
 
-import edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl;
 import edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore;
 import edu.unc.lib.boxc.integration.factories.FileFactory;
 import edu.unc.lib.boxc.integration.factories.WorkFactory;
@@ -27,6 +26,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
+import java.io.IOException;
+import java.time.Year;
 import java.util.Map;
 
 import static org.junit.Assert.*;
@@ -293,6 +294,29 @@ public class SearchEndpointIT extends EndpointIT {
             // check "permissions" field in affected result only lists "viewMetadata"
             assertEquals("viewMetadata", collectionMetadata.get("permissions").get(0).asText());
             assertEquals(6, metadata.size());
+        }
+    }
+
+    @Test
+    public void testDateDepositedInclusiveSearch() throws Exception {
+        createDefaultObjects();
+        var currentYear = Year.now().getValue();
+        assertResultCountEquals(SEARCH_URL + "/?added=" + currentYear + ",", 5);
+        assertResultCountEquals(SEARCH_URL + "/?added=" + currentYear + "," + currentYear, 5);
+        assertResultCountEquals(SEARCH_URL + "/?added=," + currentYear, 5);
+        assertResultCountEquals(SEARCH_URL + "/?added=" + (currentYear + 1) + ",", 0);
+    }
+
+    private void assertResultCountEquals(String url, int expectedCount) throws IOException {
+        assertResultCountEquals(new HttpGet(url), expectedCount);
+    }
+
+    private void assertResultCountEquals(HttpGet getMethod, int expectedCount) throws IOException {
+        try (var resp = httpClient.execute(getMethod)) {
+            var metadata = getMetadataFromResponse(resp);
+            assertSuccessfulResponse(resp);
+            // two admin units, 1 collection (nested in the admin unit), 1 work (with nested file), and 1 folder
+            assertEquals(expectedCount, metadata.size());
         }
     }
 }
