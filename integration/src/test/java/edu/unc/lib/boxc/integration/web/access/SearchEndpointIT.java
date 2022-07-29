@@ -309,19 +309,6 @@ public class SearchEndpointIT extends EndpointIT {
         assertResultCountEquals(SEARCH_URL + "/?added=" + (currentYear + 1) + ",", 0);
     }
 
-    private void assertResultCountEquals(String url, int expectedCount) throws IOException {
-        assertResultCountEquals(new HttpGet(url), expectedCount);
-    }
-
-    private void assertResultCountEquals(HttpGet getMethod, int expectedCount) throws IOException {
-        try (var resp = httpClient.execute(getMethod)) {
-            var metadata = getMetadataFromResponse(resp);
-            assertSuccessfulResponse(resp);
-            // two admin units, 1 collection (nested in the admin unit), 1 work (with nested file), and 1 folder
-            assertEquals(expectedCount, metadata.size());
-        }
-    }
-
     @Test
     public void testSearchWithCreatedDateRangeSpecified() throws Exception {
         createDefaultObjects();
