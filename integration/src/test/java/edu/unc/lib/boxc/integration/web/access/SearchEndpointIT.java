@@ -26,12 +26,13 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import java.io.IOException;
 import java.time.Year;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import static edu.unc.lib.boxc.integration.factories.FileFactory.FILE_FORMAT_OPTION;
+import static edu.unc.lib.boxc.integration.factories.FileFactory.IMAGE_FORMAT;
 import static org.junit.Assert.assertEquals;
 
 /**
@@ -76,7 +77,7 @@ public class SearchEndpointIT extends EndpointIT {
         var fileOptions = Map.of(
                 "title", "Object" + System.nanoTime(),
                 WorkFactory.PRIMARY_OBJECT_KEY, "false",
-                FileFactory.FILE_FORMAT_OPTION, FileFactory.TEXT_FORMAT,
+                FILE_FORMAT_OPTION, FileFactory.TEXT_FORMAT,
                 "readGroup", "everyone");
         workFactory.createFileInWork(work, fileOptions);
 
@@ -103,7 +104,7 @@ public class SearchEndpointIT extends EndpointIT {
         var fileOptions = Map.of(
                 "title", "Object" + System.nanoTime(),
                 WorkFactory.PRIMARY_OBJECT_KEY, "false",
-                FileFactory.FILE_FORMAT_OPTION, FileFactory.TEXT_FORMAT,
+                FILE_FORMAT_OPTION, FileFactory.TEXT_FORMAT,
                 "readGroup", "everyone");
         workFactory.createFileInWork(textWork, fileOptions);
 
@@ -359,5 +360,28 @@ public class SearchEndpointIT extends EndpointIT {
         ids.add(datedAdminUnit.getPid().getId());
         ids.add(datedCollection.getPid().getId());
         return ids;
+    }
+
+    @Test
+    public void testMultiImageWorkHasFirstImageAsThumbnail() throws Exception {
+        createDefaultObjects();
+        var mWork = workFactory.createWork(collection, Map.of("title", "Multifile work"));
+        workFactory.createFileInWork(mWork, Map.of("title", "File C", FILE_FORMAT_OPTION, IMAGE_FORMAT));
+        workFactory.createFileInWork(mWork, Map.of("title", "File B", FILE_FORMAT_OPTION, IMAGE_FORMAT));
+        var firstFile = workFactory.createFileInWork(mWork, Map.of("title", "File A", FILE_FORMAT_OPTION, IMAGE_FORMAT));
+        workFactory.createFileInWork(mWork, Map.of("title", "File D", FILE_FORMAT_OPTION, IMAGE_FORMAT));
+
+        var getMethod = new HttpGet(SEARCH_URL + "/?id=" + mWork.getPid().getId());
+
+        try (var resp = httpClient.execute(getMethod)) {
+            var metadata = getMetadataFromResponse(resp);
+            assertSuccessfulResponse(resp);
+            assertEquals(1, metadata.size());
+
+            var workRecord = metadata.get(0);
+            var thumbnailUrl = workRecord.get("thumbnail_url").asText();
+            assertEquals("http://localhost:48080/services/api/thumb/" + firstFile.getPid().getId() + "/large",
+                    thumbnailUrl);
+        }
     }
 }

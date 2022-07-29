@@ -17,20 +17,19 @@ package edu.unc.lib.boxc.integration.factories;
 
 import edu.unc.lib.boxc.model.api.DatastreamType;
 import edu.unc.lib.boxc.model.api.objects.FileObject;
-import edu.unc.lib.boxc.model.fcrepo.ids.DatastreamPids;
-import edu.unc.lib.boxc.model.fcrepo.services.DerivativeService;
-import org.apache.commons.io.FileUtils;
 import edu.unc.lib.boxc.model.api.rdf.IanaRelation;
+import edu.unc.lib.boxc.model.fcrepo.ids.DatastreamPids;
+import org.apache.commons.io.FileUtils;
 import org.apache.jena.vocabulary.DCTerms;
-
-import static edu.unc.lib.boxc.model.api.DatastreamType.TECHNICAL_METADATA;
-import static edu.unc.lib.boxc.model.api.xml.NamespaceConstants.FITS_URI;
-import static org.apache.jena.rdf.model.ResourceFactory.createResource;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.Map;
 import java.util.Objects;
+
+import static edu.unc.lib.boxc.model.api.DatastreamType.TECHNICAL_METADATA;
+import static edu.unc.lib.boxc.model.api.xml.NamespaceConstants.FITS_URI;
+import static org.apache.jena.rdf.model.ResourceFactory.createResource;
 
 /**
  * Factory for creating test FileObjects
@@ -43,8 +42,6 @@ public class FileFactory extends ContentObjectFactory {
     public static final String PDF_FORMAT = "pdf";
     public static final String AUDIO_FORMAT = "audio";
     public static final String VIDEO_FORMAT = "video";
-
-    private DerivativeService derivativeService;
 
     /*
     Creates a basic File with a FileFormat
@@ -99,10 +96,6 @@ public class FileFactory extends ContentObjectFactory {
         // add FITS file. Same one for all formats at the moment
         file.addBinary(fitsPid, fitsUri, TECHNICAL_METADATA.getDefaultFilename(), TECHNICAL_METADATA.getMimetype(),
                 null, null, IanaRelation.derivedfrom, DCTerms.conformsTo, createResource(FITS_URI));
-    }
-
-    public void setDerivativeService(DerivativeService derivativeService) {
-        this.derivativeService = derivativeService;
     }
 
     private void createOriginalFile(FileObject file, String mimetype, String data, String suffix) throws IOException {
