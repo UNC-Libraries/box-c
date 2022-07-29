@@ -50,6 +50,19 @@ public class ModsFactory {
                     .setText(options.get("dateCreated"))));
         }
 
+        if (options.containsKey("language")) {
+            modsElement.addContent(new Element("language", MODS_V3_NS)
+                    .addContent(new Element("languageTerm", MODS_V3_NS)
+                            .setAttribute("authority", "iso639-2b")
+                            .setAttribute("type", "code")
+                    .setText(options.get("languageTerm"))));
+        }
+
+        if (options.containsKey("subject")) {
+            modsElement.addContent(new Element("subject", MODS_V3_NS)
+                    .addContent(new Element("topic", MODS_V3_NS).setText(options.get("topic"))));
+        }
+
         return modsElement.getChildren().isEmpty() ? null : xmlDoc;
     }
 }

@@ -138,7 +138,7 @@ public class SearchEndpointIT extends EndpointIT {
             assertValuePresent(metadata, 0, "type", "Work");
         }
     }
-    
+
     @Test
     public void testSearchTypeParamWithFileSpecified() throws Exception {
         createDefaultObjects();
@@ -164,7 +164,7 @@ public class SearchEndpointIT extends EndpointIT {
         createDefaultObjects();
         collectionFactory.createCollection(adminUnit1,
                 Map.of("title", "A first collection", "readGroup", "everyone"));
-        
+
         var getMethod = new HttpGet(SEARCH_URL + "/?sort=title,normal");
 
         try (var resp = httpClient.execute(getMethod)) {
@@ -188,7 +188,7 @@ public class SearchEndpointIT extends EndpointIT {
         createDefaultObjects();
         collectionFactory.createCollection(adminUnit1,
                 Map.of("title", "A first collection", "readGroup", "everyone"));
-        
+
         var getMethod = new HttpGet(SEARCH_URL + "/?sort=title,reverse");
 
         try (var resp = httpClient.execute(getMethod)) {
@@ -333,6 +333,29 @@ public class SearchEndpointIT extends EndpointIT {
             assertEquals(5, metadata.size());
             assertIdMatchesNone(metadata, datedAdminUnitId);
             assertIdMatchesNone(metadata, datedCollectionId);
+        }
+    }
+
+    @Test
+    public void testSearchWithOneFacetFilter() throws Exception {
+        createDefaultObjects();
+        var languageAdminUnit = adminUnitFactory.createAdminUnit(
+                Map.of("title", "Admin Object", "languageTerm", "eng"));
+        var languageCollection = collectionFactory.createCollection(languageAdminUnit,
+                Map.of("title", "A language collection",
+                        "languageTerm", "eng",
+                        "readGroup", "everyone"));
+        var languageCollectionId = languageCollection.getPid().getId();
+
+        var getMethod = new HttpGet(SEARCH_URL + "/?facetSelect=unit%2Ccollection%2CcreatedYear%2Cformat%2Cgenre%2Clanguage%2Csubject%2Clocation%2CcreatorContributor%2Cpublisher&language=English&getFacets=true");
+
+        try (var resp = httpClient.execute(getMethod)) {
+            var metadata = getMetadataFromResponse(resp);
+            //System.out.println(metadata);
+
+            assertSuccessfulResponse(resp);
+            // should only find the language admin unit and collection
+            assertEquals(1, metadata.size());
         }
     }
 
