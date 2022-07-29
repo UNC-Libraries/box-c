@@ -15,7 +15,6 @@
  */
 package edu.unc.lib.boxc.integration.web.access;
 
-import edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl;
 import edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore;
 import edu.unc.lib.boxc.integration.factories.FileFactory;
 import edu.unc.lib.boxc.integration.factories.WorkFactory;
@@ -27,6 +26,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 import static org.junit.Assert.*;
@@ -256,7 +257,7 @@ public class SearchEndpointIT extends EndpointIT {
             assertSuccessfulResponse(resp);
             // two admin units, 1 collection (nested in the admin unit), 1 work (with nested file), and 1 folder
             assertEquals(5, metadata.size());
-            assertTrue(metadata.stream().noneMatch(entry -> collectionId.equals(entry.get("id").asText())));
+            assertIdMatchesNone(metadata, collectionId);
         }
     }
 
@@ -274,7 +275,7 @@ public class SearchEndpointIT extends EndpointIT {
             var collectionId = staffOnlyCollection.getPid().getId();
             assertSuccessfulResponse(resp);
             assertEquals(6, metadata.size());
-            assertTrue(metadata.stream().anyMatch(entry -> collectionId.equals(entry.get("id").asText())));
+            assertIdMatchesAny(metadata, collectionId);
         }
     }
 
@@ -294,5 +295,57 @@ public class SearchEndpointIT extends EndpointIT {
             assertEquals("viewMetadata", collectionMetadata.get("permissions").get(0).asText());
             assertEquals(6, metadata.size());
         }
+    }
+
+    @Test
+    public void testSearchWithCreatedDateRangeSpecified() throws Exception {
+        createDefaultObjects();
+        var ids = createDatedObjects();
+        var datedCollectionId = ids.get(1);
+
+        var getMethod = new HttpGet(SEARCH_URL + "/?createdYear=2022,2022");
+
+        try (var resp = httpClient.execute(getMethod)) {
+            var metadata = getMetadataFromResponse(resp);
+
+            assertSuccessfulResponse(resp);
+            // should only find the collection, not the admin unit that has a created date
+            assertEquals(1, metadata.size());
+            assertValuePresent(metadata, 0, "title", "A dated collection");
+            assertIdMatchesAny(metadata, datedCollectionId);
+        }
+    }
+
+    @Test
+    public void testSearchWithCreatedDateRangeSpecifiedAsUnknown() throws Exception {
+        createDefaultObjects();
+        var ids = createDatedObjects();
+        var datedAdminUnitId = ids.get(0);
+        var datedCollectionId = ids.get(1);
+
+        var getMethod = new HttpGet(SEARCH_URL + "/?createdYear=unknown");
+
+        try (var resp = httpClient.execute(getMethod)) {
+            var metadata = getMetadataFromResponse(resp);
+
+            assertSuccessfulResponse(resp);
+            // should only find the five default objects, not the dated admin unit or dated collection
+            assertEquals(5, metadata.size());
+            assertIdMatchesNone(metadata, datedAdminUnitId);
+            assertIdMatchesNone(metadata, datedCollectionId);
+        }
+    }
+
+    private List<String> createDatedObjects() throws Exception {
+        List<String> ids = new ArrayList<>();
+        var datedAdminUnit = adminUnitFactory.createAdminUnit(
+                Map.of("title", "Dated Admin Object", "dateCreated", "2018-07-01"));
+        var datedCollection = collectionFactory.createCollection(datedAdminUnit,
+                Map.of("title", "A dated collection",
+                        "dateCreated", "2022-07-01",
+                        "readGroup", "everyone"));
+        ids.add(datedAdminUnit.getPid().getId());
+        ids.add(datedCollection.getPid().getId());
+        return ids;
     }
 }
