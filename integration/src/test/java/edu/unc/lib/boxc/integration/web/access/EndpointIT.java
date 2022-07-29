@@ -44,6 +44,7 @@ import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 /**
  * A parent class for SearchActionController Endpoint tests.
@@ -121,5 +122,13 @@ public class EndpointIT {
 
     public void assertSuccessfulResponse(CloseableHttpResponse response) {
         assertEquals(200, response.getStatusLine().getStatusCode());
+    }
+
+    public void assertIdMatchesAny(List<JsonNode> json, String id) {
+        assertTrue(json.stream().anyMatch(entry -> id.equals(entry.get("id").asText())));
+    }
+
+    public void assertIdMatchesNone(List<JsonNode> json, String id) {
+        assertTrue(json.stream().noneMatch(entry -> id.equals(entry.get("id").asText())));
     }
 }
