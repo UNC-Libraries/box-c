@@ -28,7 +28,7 @@ public class NamedDatastreamFilter implements QueryFilter {
     private DatastreamType datastreamType;
     private SearchFieldKey fieldKey;
 
-    public NamedDatastreamFilter(SearchFieldKey fieldKey, DatastreamType datastreamType) {
+    protected NamedDatastreamFilter(SearchFieldKey fieldKey, DatastreamType datastreamType) {
         this.datastreamType = datastreamType;
         this.fieldKey = fieldKey;
     }
@@ -36,6 +36,10 @@ public class NamedDatastreamFilter implements QueryFilter {
     @Override
     public String toFilterString() {
         return getFieldKey().getSolrField() + ":" + datastreamType.getId() + "|*";
+    }
+
+    public DatastreamType getDatastreamType() {
+        return datastreamType;
     }
 
     @Override

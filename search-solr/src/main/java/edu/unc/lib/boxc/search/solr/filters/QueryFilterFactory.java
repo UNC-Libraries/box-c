@@ -29,7 +29,7 @@ public class QueryFilterFactory {
     }
     /**
      * @param datastreamType
-     * @return new DatastreamFilter instance with the provided type
+     * @return new QueryFilter instance with the provided type
      */
     public static QueryFilter createFilter(SearchFieldKey fieldKey, DatastreamType datastreamType) {
         return new NamedDatastreamFilter(fieldKey, datastreamType);

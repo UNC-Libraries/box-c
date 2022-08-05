@@ -62,7 +62,6 @@ public class AccessCopiesService {
      * @param principals
      * @return
      */
-    @SuppressWarnings("unchecked")
     public List<ContentObjectRecord> listViewableFiles(PID pid, AccessGroupSet principals) {
         ContentObjectRecord briefObj = solrSearchService.getObjectById(new SimpleIdRequest(pid, principals));
         String resourceType = briefObj.getResourceType();
@@ -203,8 +202,6 @@ public class AccessCopiesService {
         CutoffFacet selectedPath = briefObj.getPath();
         searchState.addFacet(selectedPath);
         SearchRequest searchRequest = new SearchRequest(searchState, principals);
-        searchRequest.setSearchState(searchState);
-        searchRequest.setAccessGroups(principals);
         searchRequest.setApplyCutoffs(true);
         return searchRequest;
     }
@@ -220,7 +217,8 @@ public class AccessCopiesService {
         CutoffFacet selectedPath = briefObj.getPath();
         searchState.addFacet(selectedPath);
         searchState.setSortType("default");
-        QueryFilterFactory.createFilter(SearchFieldKey.DATASTREAM, DatastreamType.JP2_ACCESS_COPY);
+        searchState.getFilters().add(
+                QueryFilterFactory.createFilter(SearchFieldKey.DATASTREAM, DatastreamType.JP2_ACCESS_COPY));
 
         var searchRequest = new SearchRequest(searchState, principals);
         return solrSearchService.getSearchResults(searchRequest);
