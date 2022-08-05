@@ -199,6 +199,7 @@ public class AccessCopiesService {
         SearchState searchState = new SearchState();
         searchState.setFacetsToRetrieve(null);
         searchState.setRowsPerPage(1);
+        searchState.setSortType("default");
         CutoffFacet selectedPath = briefObj.getPath();
         searchState.addFacet(selectedPath);
         SearchRequest searchRequest = new SearchRequest(searchState, principals);

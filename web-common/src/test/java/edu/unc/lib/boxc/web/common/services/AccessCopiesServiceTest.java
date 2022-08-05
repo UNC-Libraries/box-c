@@ -268,6 +268,7 @@ public class AccessCopiesServiceTest  {
         // Gets the ID of the specific child with a thumbnail
         assertEquals(mdObjectImg.getId(), accessCopiesService.getThumbnailId(noOriginalFileObj, principals, true));
         assertRequestedDatastreamFilter(DatastreamType.THUMBNAIL_LARGE);
+        assertSortType("default");
     }
 
     @Test
@@ -308,14 +309,20 @@ public class AccessCopiesServiceTest  {
         // Gets the ID of the specific child with a thumbnail
         assertEquals(mdObjectImg2.getId(), accessCopiesService.getThumbnailId(noOriginalFileObj, principals, true));
         assertRequestedDatastreamFilter(DatastreamType.THUMBNAIL_LARGE);
+        assertSortType("default");
     }
 
     private void assertRequestedDatastreamFilter(DatastreamType expectedType) {
-        var searchRequest = searchRequestCaptor.getValue();
-        var searchState = searchRequest.getSearchState();
+        var searchState = searchRequestCaptor.getValue().getSearchState();
         var queryFilter = (NamedDatastreamFilter) searchState.getFilters().get(0);
         assertEquals("Expected request to be filtered by datastream " + expectedType.name(),
                 expectedType, queryFilter.getDatastreamType());
+    }
+
+    private void assertSortType(String expectedSort) {
+        var searchState = searchRequestCaptor.getValue().getSearchState();
+        assertEquals("Expected request to be sorted by type",
+                expectedSort, searchState.getSortType());
     }
 
     @Test
