@@ -133,9 +133,8 @@
                 <c:import url="fullRecord/pdfViewer.jsp" />
             </c:when>
             <c:when test="${permsHelper.hasImagePreviewAccess(requestScope.accessGroupSet, briefObject)}">
-                <link rel="stylesheet" href="/static/plugins/uv/uv.css">
                 <div class="clear_space"></div>
-                <div id="jp2_viewer" class="jp2_imageviewer_window" data-url='${briefObject.id}'></div>
+                <c:import url="fullRecord/uvViewer.jsp" />
             </c:when>
             <c:when test="${hasOriginalFileAccess && cdr:originalFileMimetypeMatches(briefObject, 'audio/(x-)?mpeg(-?3)?')}">
                 <div class="clear_space"></div>

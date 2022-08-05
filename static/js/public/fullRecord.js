@@ -10,12 +10,8 @@ require.config({
 		'underscore' : 'lib/underscore',
 		'StructureEntry' : 'cdr-access',
 		'StructureView' : 'cdr-access',
-		'JP2Viewer' : 'cdr-access',
 		'AudioPlayer' : 'cdr-access',
 		'dataTables': '/static/plugins/DataTables/datatables.min',
-		'uvOffline': '/static/plugins/uv/lib/offline',
-		'uvHelpers': '/static/plugins/uv/helpers',
-		'uv': '/static/plugins/uv/uv',
 		'audiojs' : '/static/plugins/audiojs/audio',
 		'promise': 'lib/promise-polyfill.min',
 		'fetch' : 'lib/fetch-polyfill.min'
@@ -31,9 +27,8 @@ require.config({
 	},
 	waitSeconds: 120
 });
-define('fullRecord', ['module', 'jquery', 'JP2Viewer', 'StructureView', 'dataTables', 'AudioPlayer', 'thumbnails'], function(module, $) {
-	var $jp2Window = $(".jp2_imageviewer_window"),
-		$audioPlayer = $(".audio_player"),
+define('fullRecord', ['module', 'jquery', 'StructureView', 'dataTables', 'AudioPlayer', 'thumbnails'], function(module, $) {
+	var $audioPlayer = $(".audio_player"),
 		$childFilesTable = $("#child-files"),
 		$modsDisplay = $("#mods_data_display");
 
@@ -44,14 +39,9 @@ define('fullRecord', ['module', 'jquery', 'JP2Viewer', 'StructureView', 'dataTab
 		});
 	}
 
-	if ($jp2Window.length > 0) {
-		loadViewer($jp2Window, 'jp2Viewer', $(".jp2_viewer_link"));
-	}
-
 	if ($audioPlayer.length > 0) {
 		loadViewer($audioPlayer, 'audioPlayer');
 	}
-
 
 	if ($modsDisplay.length > 0) {
 		$.ajax({
