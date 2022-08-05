@@ -551,8 +551,8 @@ public class SolrSearchService extends AbstractQueryService {
                 }
                 // Assume RangePair, as the only other implementation at present
                 var rangePair = (RangePair) rangeTerm.getValue();
-                String left = getRangeValue(key, rangePair.getLeftHand());
-                String right = getRangeValue(key, rangePair.getRightHand());
+                String left = getRangeValue(key, rangePair.getLeftHand(), false);
+                String right = getRangeValue(key, rangePair.getRightHand(), true);
                 if (left.equals("*") && right.equals("*")) {
                     continue;
                 }
@@ -562,14 +562,14 @@ public class SolrSearchService extends AbstractQueryService {
         }
     }
 
-    private String getRangeValue(String key, String value) {
+    private String getRangeValue(String key, String value, boolean endRange) {
         if (StringUtils.isBlank(value)) {
             return "*";
         }
 
         if (SearchSettings.FIELDS_DATE_SEARCHABLE.contains(key)) {
             try {
-                return DateFormatUtil.getFormattedDate(value, true, true);
+                return DateFormatUtil.getFormattedDate(value, true, endRange);
             } catch (NumberFormatException e) {
                 return "*";
             }
