@@ -166,7 +166,7 @@ public class AccessCopiesService {
         var request = buildFirstChildQuery(contentObjectRecord, principals);
         // Limit query to just children which have a thumbnail datastream
         var searchState = request.getSearchState();
-        searchState.getFilters().add(
+        searchState.addFilter(
                 QueryFilterFactory.createFilter(SearchFieldKey.DATASTREAM, DatastreamType.THUMBNAIL_LARGE));
 
         var resp = solrSearchService.getSearchResults(request);
@@ -218,7 +218,7 @@ public class AccessCopiesService {
         CutoffFacet selectedPath = briefObj.getPath();
         searchState.addFacet(selectedPath);
         searchState.setSortType("default");
-        searchState.getFilters().add(
+        searchState.addFilter(
                 QueryFilterFactory.createFilter(SearchFieldKey.DATASTREAM, DatastreamType.JP2_ACCESS_COPY));
 
         var searchRequest = new SearchRequest(searchState, principals);

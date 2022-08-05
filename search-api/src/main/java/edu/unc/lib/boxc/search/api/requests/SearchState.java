@@ -276,8 +276,8 @@ public class SearchState implements Serializable, Cloneable {
         return filters;
     }
 
-    public void setFilters(List<QueryFilter> filters) {
-        this.filters = filters;
+    public void addFilter(QueryFilter filter) {
+        filters.add(filter);
     }
 
     public Collection<Permission> getPermissionLimits() {

@@ -15,42 +15,6 @@
  */
 package edu.unc.lib.boxc.services.camel.exportxml;
 
-import static edu.unc.lib.boxc.common.xml.SecureXMLFactory.createSAXBuilder;
-import static edu.unc.lib.boxc.operations.jms.exportxml.BulkXMLConstants.BULK_MD_TAG;
-import static java.nio.charset.StandardCharsets.UTF_8;
-
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipOutputStream;
-
-import org.apache.camel.Exchange;
-import org.apache.camel.Message;
-import org.apache.camel.Processor;
-import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.solr.client.solrj.SolrQuery;
-import org.apache.solr.client.solrj.SolrServerException;
-import org.jdom2.Document;
-import org.jdom2.Element;
-import org.jdom2.JDOMException;
-import org.jdom2.output.Format;
-import org.jdom2.output.XMLOutputter;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import edu.unc.lib.boxc.auth.api.Permission;
 import edu.unc.lib.boxc.auth.api.services.AccessControlService;
 import edu.unc.lib.boxc.common.metrics.TimerFactory;
@@ -73,10 +37,43 @@ import edu.unc.lib.boxc.search.api.models.ContentObjectRecord;
 import edu.unc.lib.boxc.search.api.models.Datastream;
 import edu.unc.lib.boxc.search.api.requests.SearchRequest;
 import edu.unc.lib.boxc.search.api.requests.SearchState;
+import edu.unc.lib.boxc.search.solr.filters.QueryFilterFactory;
 import edu.unc.lib.boxc.search.solr.responses.SearchResultResponse;
 import edu.unc.lib.boxc.search.solr.services.SearchStateFactory;
 import edu.unc.lib.boxc.search.solr.services.SolrSearchService;
 import io.dropwizard.metrics5.Timer;
+import org.apache.camel.Exchange;
+import org.apache.camel.Message;
+import org.apache.camel.Processor;
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.jdom2.Document;
+import org.jdom2.Element;
+import org.jdom2.JDOMException;
+import org.jdom2.output.Format;
+import org.jdom2.output.XMLOutputter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Set;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
+
+import static edu.unc.lib.boxc.common.xml.SecureXMLFactory.createSAXBuilder;
+import static edu.unc.lib.boxc.operations.jms.exportxml.BulkXMLConstants.BULK_MD_TAG;
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * Job that performs the work of retrieving metadata documents and compiling them into the export document.
@@ -212,20 +209,12 @@ public class ExportXMLProcessor implements Processor {
             searchState.setIgnoreMaxRows(true);
             searchState.setResultFields(resultFieldsChildren);
             searchRequest.setApplyCutoffs(false);
-            SolrQuery solrQuery = searchService.generateSearch(searchRequest);
             if (request.getExcludeNoDatastreams()) {
-                String dsIncludeFilter = request.getDatastreams().stream()
-                        // Filtering datastreams to exclude those owned by other objects
-                        .map(ds -> dsField + ":" + ds.getId() + "|*||")
-                        .collect(Collectors.joining(" OR ", "(", ")"));
-                solrQuery.addFilterQuery(dsIncludeFilter);
+                searchState.addFilter(
+                        QueryFilterFactory.createFilter(SearchFieldKey.DATASTREAM, request.getDatastreams()));
             }
-            SearchResultResponse resultResponse = null;
-            try {
-                resultResponse = searchService.executeSearch(solrQuery, searchState, false, false);
-            } catch (SolrServerException e) {
-                throw new ServiceException(e);
-            }
+
+            SearchResultResponse resultResponse = searchService.getSearchResults(searchRequest);
             if (resultResponse == null) {
                 throw new ServiceException("An error occurred while retrieving children of " + pid + " for export.");
             }
