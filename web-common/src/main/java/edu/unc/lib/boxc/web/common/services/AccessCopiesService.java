@@ -15,47 +15,44 @@
  */
 package edu.unc.lib.boxc.web.common.services;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-
-import edu.unc.lib.boxc.search.api.ContentCategory;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.solr.client.solrj.SolrQuery;
-import org.apache.solr.client.solrj.SolrServerException;
-import org.apache.solr.client.solrj.response.QueryResponse;
-
 import edu.unc.lib.boxc.auth.api.Permission;
 import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
 import edu.unc.lib.boxc.auth.api.services.GlobalPermissionEvaluator;
 import edu.unc.lib.boxc.model.api.DatastreamType;
 import edu.unc.lib.boxc.model.api.ResourceType;
 import edu.unc.lib.boxc.model.api.ids.PID;
+import edu.unc.lib.boxc.search.api.ContentCategory;
 import edu.unc.lib.boxc.search.api.SearchFieldKey;
-import edu.unc.lib.boxc.search.api.exceptions.SolrRuntimeException;
 import edu.unc.lib.boxc.search.api.facets.CutoffFacet;
 import edu.unc.lib.boxc.search.api.models.ContentObjectRecord;
 import edu.unc.lib.boxc.search.api.models.Datastream;
 import edu.unc.lib.boxc.search.api.requests.SearchRequest;
 import edu.unc.lib.boxc.search.api.requests.SearchState;
 import edu.unc.lib.boxc.search.api.requests.SimpleIdRequest;
-import edu.unc.lib.boxc.search.solr.models.ContentObjectSolrRecord;
+import edu.unc.lib.boxc.search.solr.filters.QueryFilterFactory;
+import edu.unc.lib.boxc.search.solr.responses.SearchResultResponse;
 import edu.unc.lib.boxc.search.solr.services.SolrSearchService;
 import edu.unc.lib.boxc.web.common.utils.DatastreamUtil;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * Service to check for or list resources with access copies
  *
  * @author bbpennel
  */
-public class AccessCopiesService extends SolrSearchService {
+public class AccessCopiesService {
     private static final Logger log = LoggerFactory.getLogger(AccessCopiesService.class);
 
     private static final int MAX_FILES = 2000;
     private GlobalPermissionEvaluator globalPermissionEvaluator;
     private PermissionsHelper permissionsHelper;
+    private SolrSearchService solrSearchService;
     public static final String AUDIO_MIMETYPE_REGEX = "audio/(x-)?mpeg(-?3)?";
     public static final String PDF_MIMETYPE_REGEX = "application/(x-)?pdf";
 
@@ -67,7 +64,7 @@ public class AccessCopiesService extends SolrSearchService {
      */
     @SuppressWarnings("unchecked")
     public List<ContentObjectRecord> listViewableFiles(PID pid, AccessGroupSet principals) {
-        ContentObjectRecord briefObj = getObjectById(new SimpleIdRequest(pid, principals));
+        ContentObjectRecord briefObj = solrSearchService.getObjectById(new SimpleIdRequest(pid, principals));
         String resourceType = briefObj.getResourceType();
         if (ResourceType.File.nameEquals(resourceType)) {
             if (briefObj.getDatastreamObject(DatastreamType.JP2_ACCESS_COPY.getId()) != null) {
@@ -80,9 +77,8 @@ public class AccessCopiesService extends SolrSearchService {
             return Collections.emptyList();
         }
 
-        QueryResponse resp = performQuery(briefObj, principals, MAX_FILES);
-        List<?> results = resp.getBeans(ContentObjectSolrRecord.class);
-        List<ContentObjectRecord> mdObjs = (List<ContentObjectRecord>) results;
+        var resp = performQuery(briefObj, principals, MAX_FILES);
+        List<ContentObjectRecord> mdObjs = resp.getResultList();
         mdObjs.add(0, briefObj);
         return mdObjs;
     }
@@ -104,8 +100,8 @@ public class AccessCopiesService extends SolrSearchService {
             return false;
         }
 
-        QueryResponse resp = performQuery(briefObj, principals, 0);
-        return resp.getResults().getNumFound() > 0;
+        var resp = performQuery(briefObj, principals, 0);
+        return resp.getResultCount() > 0;
     }
 
     /**
@@ -168,24 +164,20 @@ public class AccessCopiesService extends SolrSearchService {
             return contentObjectRecord.getId();
         }
 
-        SolrQuery query = buildFirstChildQuery(contentObjectRecord, principals);
+        var request = buildFirstChildQuery(contentObjectRecord, principals);
         // Limit query to just children which have a thumbnail datastream
-        query.addFilterQuery(SearchFieldKey.DATASTREAM.getSolrField() + ":"
-                + DatastreamType.THUMBNAIL_LARGE.getId() + "|*");
+        var searchState = request.getSearchState();
+        searchState.getFilters().add(
+                QueryFilterFactory.createFilter(SearchFieldKey.DATASTREAM, DatastreamType.THUMBNAIL_LARGE));
 
-        try {
-            QueryResponse resp = executeQuery(query);
-            if (resp.getResults().getNumFound() > 0) {
-                var results = resp.getBeans(ContentObjectSolrRecord.class);
-                var id = results.get(0).getId();
-                log.debug("Found thumbnail object {} for work {}", id, contentObjectRecord.getId());
-                return results.get(0).getId();
-            } else {
-                log.debug("No thumbnail objects for work {}", contentObjectRecord.getId());
-                return null;
-            }
-        } catch (SolrServerException e) {
-            throw new SolrRuntimeException("Error listing viewable files: " + query, e);
+        var resp = solrSearchService.getSearchResults(request);
+        if (resp.getResultCount() > 0) {
+            var id = resp.getResultList().get(0).getId();
+            log.debug("Found thumbnail object {} for work {}", id, contentObjectRecord.getId());
+            return id;
+        } else {
+            log.debug("No thumbnail objects for work {}", contentObjectRecord.getId());
+            return null;
         }
     }
 
@@ -204,34 +196,7 @@ public class AccessCopiesService extends SolrSearchService {
         }
     }
 
-    /**
-     * Retrieves the first ContentObjectRecord of a work,
-     * and checks if it's the only ContentObjectRecord in the work.
-     * @param briefObj
-     * @param principals
-     * @return String
-     */
-    private ContentObjectRecord getChildFileObject(ContentObjectRecord briefObj, AccessGroupSet principals) {
-        if (!briefObj.getResourceType().equals(ResourceType.Work.name())) {
-            return null;
-        }
-
-        SolrQuery query = buildFirstChildQuery(briefObj, principals);
-        try {
-            QueryResponse resp = executeQuery(query);
-
-            if (resp.getResults().getNumFound() == 1) {
-                List<?> results = resp.getBeans(ContentObjectSolrRecord.class);
-                return (ContentObjectRecord) results.get(0);
-            }
-        } catch (SolrServerException e) {
-            throw new SolrRuntimeException("Error listing viewable files: " + query, e);
-        }
-
-        return null;
-    }
-
-    private SolrQuery buildFirstChildQuery(ContentObjectRecord briefObj, AccessGroupSet principals) {
+    private SearchRequest buildFirstChildQuery(ContentObjectRecord briefObj, AccessGroupSet principals) {
         SearchState searchState = new SearchState();
         searchState.setFacetsToRetrieve(null);
         searchState.setRowsPerPage(1);
@@ -241,10 +206,10 @@ public class AccessCopiesService extends SolrSearchService {
         searchRequest.setSearchState(searchState);
         searchRequest.setAccessGroups(principals);
         searchRequest.setApplyCutoffs(true);
-        return generateSearch(searchRequest);
+        return searchRequest;
     }
 
-    private QueryResponse performQuery(ContentObjectRecord briefObj, AccessGroupSet principals, int rows) {
+    private SearchResultResponse performQuery(ContentObjectRecord briefObj, AccessGroupSet principals, int rows) {
         // Search for child objects with jp2 datastreams with user can access
         SearchState searchState = new SearchState();
         if (!globalPermissionEvaluator.hasGlobalPrincipal(principals)) {
@@ -255,18 +220,10 @@ public class AccessCopiesService extends SolrSearchService {
         CutoffFacet selectedPath = briefObj.getPath();
         searchState.addFacet(selectedPath);
         searchState.setSortType("default");
+        QueryFilterFactory.createFilter(SearchFieldKey.DATASTREAM, DatastreamType.JP2_ACCESS_COPY);
 
-        SearchRequest searchRequest = new SearchRequest(searchState, principals);
-        SolrQuery query = generateSearch(searchRequest);
-        query.addFilterQuery(SearchFieldKey.DATASTREAM.getSolrField() + ":"
-                + DatastreamType.JP2_ACCESS_COPY.getId() + "|*");
-
-        try {
-            QueryResponse resp = executeQuery(query);
-            return resp;
-        } catch (SolrServerException e) {
-            throw new SolrRuntimeException("Error listing viewable files: " + query, e);
-        }
+        var searchRequest = new SearchRequest(searchState, principals);
+        return solrSearchService.getSearchResults(searchRequest);
     }
 
     public void setGlobalPermissionEvaluator(GlobalPermissionEvaluator globalPermissionEvaluator) {
@@ -275,5 +232,9 @@ public class AccessCopiesService extends SolrSearchService {
 
     public void setPermissionsHelper(PermissionsHelper permissionsHelper) {
         this.permissionsHelper = permissionsHelper;
+    }
+
+    public void setSolrSearchService(SolrSearchService solrSearchService) {
+        this.solrSearchService = solrSearchService;
     }
 }

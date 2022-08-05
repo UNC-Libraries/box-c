@@ -21,9 +21,14 @@ import edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl;
 import edu.unc.lib.boxc.model.api.DatastreamType;
 import edu.unc.lib.boxc.model.api.ResourceType;
 import edu.unc.lib.boxc.search.api.ContentCategory;
+import edu.unc.lib.boxc.search.api.models.ContentObjectRecord;
+import edu.unc.lib.boxc.search.api.requests.SearchRequest;
+import edu.unc.lib.boxc.search.api.requests.SearchState;
 import edu.unc.lib.boxc.search.solr.config.SearchSettings;
 import edu.unc.lib.boxc.search.solr.config.SolrSettings;
 import edu.unc.lib.boxc.search.solr.models.ContentObjectSolrRecord;
+import edu.unc.lib.boxc.search.solr.responses.SearchResultResponse;
+import edu.unc.lib.boxc.search.solr.services.SolrSearchService;
 import edu.unc.lib.boxc.search.solr.utils.AccessRestrictionUtil;
 import edu.unc.lib.boxc.search.solr.utils.FacetFieldUtil;
 import org.apache.solr.client.solrj.SolrClient;
@@ -77,17 +82,9 @@ public class AccessCopiesServiceTest  {
     @Mock
     private AccessControlService accessControlService;
     @Mock
-    private AccessRestrictionUtil restrictionUtil;
+    private SolrSearchService solrSearchService;
     @Mock
-    private SolrSettings solrSettings;
-    @Mock
-    private FacetFieldUtil facetFieldUtil;
-    @Mock
-    private SolrClient solrClient;
-    @Mock
-    private QueryResponse queryResponse;
-    @Mock
-    private SolrDocumentList solrDocumentList;
+    private SearchResultResponse searchResultResponse;
 
     @Before
     public void init() throws IOException, SolrServerException {
@@ -139,22 +136,12 @@ public class AccessCopiesServiceTest  {
         helper = new PermissionsHelper();
         helper.setAccessControlService(accessControlService);
 
-        Properties searchProps = new Properties();
-        searchProps.load(this.getClass().getResourceAsStream("/search.properties"));
-        SearchSettings searchSettings = new SearchSettings();
-        searchSettings.setProperties(searchProps);
-
         accessCopiesService = new AccessCopiesService();
         accessCopiesService.setPermissionsHelper(helper);
-        accessCopiesService.setAccessRestrictionUtil(restrictionUtil);
-        accessCopiesService.setSolrSettings(solrSettings);
-        accessCopiesService.setSearchSettings(searchSettings);
-        accessCopiesService.setFacetFieldUtil(facetFieldUtil);
-        accessCopiesService.setSolrClient(solrClient);
+        accessCopiesService.setSolrSearchService(solrSearchService);
 
-        when(solrClient.query(any(SolrQuery.class))).thenReturn(queryResponse);
-        when(queryResponse.getResults()).thenReturn(solrDocumentList);
-        when(solrDocumentList.getNumFound()).thenReturn(1L);
+        when(solrSearchService.getSearchResults(any(SearchRequest.class))).thenReturn(searchResultResponse);
+        when(searchResultResponse.getResultCount()).thenReturn(1l);
     }
 
     @Test
@@ -244,9 +231,8 @@ public class AccessCopiesServiceTest  {
         hasPermissions(mdObjectImg, true);
         noOriginalFileObj.setFileFormatCategory(Collections.singletonList(ContentCategory.image.getDisplayName()));
         noOriginalFileObj.setFileFormatType(Collections.singletonList("png"));
-        List<ContentObjectSolrRecord> resultList = Arrays.asList(mdObjectImg);
-        when(queryResponse.getBeans(ContentObjectSolrRecord.class)).thenReturn(resultList);
-        when(queryResponse.getResults().size()).thenReturn(resultList.size());
+        populateResultList(mdObjectImg);
+        when(searchResultResponse.getResultCount()).thenReturn(2l);
 
         assertEquals(noOriginalFileObj.getId(), accessCopiesService.getThumbnailId(noOriginalFileObj, principals, false));
         // Gets the ID of the specific child with a thumbnail
@@ -259,9 +245,8 @@ public class AccessCopiesServiceTest  {
         hasPermissions(mdObjectXml, true);
         noOriginalFileObj.setFileFormatCategory(Collections.singletonList(ContentCategory.text.getDisplayName()));
         noOriginalFileObj.setFileFormatType(Collections.singletonList("txt"));
-        List<ContentObjectSolrRecord> resultList = Collections.emptyList();
-        when(queryResponse.getBeans(ContentObjectSolrRecord.class)).thenReturn(resultList);
-        when(queryResponse.getResults().size()).thenReturn(resultList.size());
+
+        populateResultList();
 
         assertNull(accessCopiesService.getThumbnailId(noOriginalFileObj, principals, false));
         assertNull(accessCopiesService.getThumbnailId(noOriginalFileObj, principals, true));
@@ -284,10 +269,8 @@ public class AccessCopiesServiceTest  {
         hasPermissions(mdObjectImg, true);
         noOriginalFileObj.setFileFormatCategory(Collections.singletonList(ContentCategory.image.getDisplayName()));
         noOriginalFileObj.setFileFormatType(Collections.singletonList("png"));
-        List<ContentObjectSolrRecord> resultList = Arrays.asList(mdObjectImg2);
-        when(queryResponse.getBeans(ContentObjectSolrRecord.class)).thenReturn(resultList);
-        when(queryResponse.getResults().size()).thenReturn(resultList.size());
-        when(solrDocumentList.getNumFound()).thenReturn(2L);
+        populateResultList(mdObjectImg2);
+        when(searchResultResponse.getResultCount()).thenReturn(2l);
 
         assertEquals(noOriginalFileObj.getId(), accessCopiesService.getThumbnailId(noOriginalFileObj, principals, false));
         // Gets the ID of the specific child with a thumbnail
@@ -297,10 +280,7 @@ public class AccessCopiesServiceTest  {
     @Test
     public void noFilesThumbnailMultipleFiles() {
         hasPermissions(noOriginalFileObj, true);
-        List<ContentObjectSolrRecord> resultList = Collections.emptyList();
-        when(queryResponse.getBeans(ContentObjectSolrRecord.class)).thenReturn(resultList);
-        when(queryResponse.getResults().size()).thenReturn(resultList.size());
-        when(solrDocumentList.getNumFound()).thenReturn(0L);
+        populateResultList();
 
         assertNull(accessCopiesService.getThumbnailId(noOriginalFileObj, principals, false));
         assertNull(accessCopiesService.getThumbnailId(noOriginalFileObj, principals, true));
@@ -333,5 +313,9 @@ public class AccessCopiesServiceTest  {
 
     private void hasPermissions(ContentObjectSolrRecord contentObject, boolean hasAccess) {
         when(accessControlService.hasAccess(contentObject.getPid(), principals, viewOriginal)).thenReturn(hasAccess);
+    }
+
+    private void populateResultList(ContentObjectRecord... objects) {
+        when(searchResultResponse.getResultList()).thenReturn(Arrays.asList(objects));
     }
 }

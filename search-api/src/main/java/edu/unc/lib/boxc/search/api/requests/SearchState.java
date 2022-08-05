@@ -26,6 +26,7 @@ import java.util.Map.Entry;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import edu.unc.lib.boxc.search.api.filters.QueryFilter;
 import edu.unc.lib.boxc.search.api.ranges.RangeValue;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -49,6 +50,7 @@ public class SearchState implements Serializable, Cloneable {
     private Map<String, List<SearchFacet>> facets;
     private Map<String, Integer> facetLimits;
     private Map<String, String> facetSorts;
+    private List<QueryFilter> filters;
     private List<String> facetsToRetrieve;
     private Collection<Permission> permissionLimits;
     private Integer baseFacetLimit;
@@ -66,12 +68,13 @@ public class SearchState implements Serializable, Cloneable {
 
     public SearchState() {
         LOG.debug("Instantiating new SearchState");
-        searchFields = new HashMap<String, String>();
-        rangeFields = new HashMap<String, RangeValue>();
+        searchFields = new HashMap<>();
+        rangeFields = new HashMap<>();
         permissionLimits = null;
-        facets = new HashMap<String, List<SearchFacet>>();
-        facetLimits = new HashMap<String, Integer>();
-        facetSorts = new HashMap<String, String>();
+        facets = new HashMap<>();
+        facetLimits = new HashMap<>();
+        facetSorts = new HashMap<>();
+        filters = new ArrayList<>();
         resultFields = null;
         facetsToRetrieve = null;
         rollup = null;
@@ -81,6 +84,7 @@ public class SearchState implements Serializable, Cloneable {
     }
 
     public SearchState(SearchState searchState) {
+        this();
         if (searchState.getSearchFields() != null) {
             this.searchFields = new HashMap<>(searchState.getSearchFields());
         }
@@ -95,6 +99,9 @@ public class SearchState implements Serializable, Cloneable {
             for (Entry<String, List<SearchFacet>> item : searchState.getFacets().entrySet()) {
                 facets.put(item.getKey(), item.getValue());
             }
+        }
+        if (searchState.getFilters() != null) {
+            this.filters = new ArrayList<>(searchState.getFilters());
         }
         if (searchState.getFacetLimits() != null) {
             this.facetLimits = new HashMap<String, Integer>(searchState.getFacetLimits());
@@ -260,6 +267,17 @@ public class SearchState implements Serializable, Cloneable {
 
     public void setRangeFields(Map<String, RangeValue> rangeFields) {
         this.rangeFields = rangeFields;
+    }
+
+    /**
+     * @return List of QueryFilters being used to limit the results of this search, which do not impact relevancy
+     */
+    public List<QueryFilter> getFilters() {
+        return filters;
+    }
+
+    public void setFilters(List<QueryFilter> filters) {
+        this.filters = filters;
     }
 
     public Collection<Permission> getPermissionLimits() {

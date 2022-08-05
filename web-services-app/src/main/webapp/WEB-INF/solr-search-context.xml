@@ -123,11 +123,9 @@
         <property name="accessControlService" ref="aclService" />
     </bean>
 
-    <bean id="accessCopiesService" class="edu.unc.lib.boxc.web.common.services.AccessCopiesService"
-          init-method="initializeSolrServer">
-        <property name="accessRestrictionUtil" ref="solrAccessRestrictionUtil" />
-        <property name="facetFieldUtil" ref="facetFieldUtil" />
+    <bean id="accessCopiesService" class="edu.unc.lib.boxc.web.common.services.AccessCopiesService">
         <property name="globalPermissionEvaluator" ref="globalPermissionEvaluator" />
         <property name="permissionsHelper" ref="permsHelper" />
+        <property name="solrSearchService" ref="queryLayer" />
     </bean>
 </beans>
