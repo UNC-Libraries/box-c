@@ -45,6 +45,6 @@ public class QueryFilterFactory {
      * @return new QueryFilter instance with the provided datastream types
      */
     public static QueryFilter createFilter(SearchFieldKey fieldKey, Set<DatastreamType> datastreamTypes) {
-        return new MultipleSelfOwnedDatastreamsFilter(fieldKey, datastreamTypes);
+        return new MultipleDirectlyOwnedDatastreamsFilter(fieldKey, datastreamTypes);
     }
 }

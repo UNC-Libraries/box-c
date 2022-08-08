@@ -28,11 +28,11 @@ import java.util.stream.Collectors;
  *
  * @author bbpennel
  */
-public class MultipleSelfOwnedDatastreamsFilter implements QueryFilter {
+public class MultipleDirectlyOwnedDatastreamsFilter implements QueryFilter {
     private Set<DatastreamType> datastreamTypes;
     private SearchFieldKey fieldKey;
 
-    protected MultipleSelfOwnedDatastreamsFilter(SearchFieldKey fieldKey, Set<DatastreamType> datastreamTypes) {
+    protected MultipleDirectlyOwnedDatastreamsFilter(SearchFieldKey fieldKey, Set<DatastreamType> datastreamTypes) {
         this.datastreamTypes = datastreamTypes;
         this.fieldKey = fieldKey;
     }
