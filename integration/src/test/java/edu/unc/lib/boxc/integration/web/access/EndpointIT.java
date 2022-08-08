@@ -39,6 +39,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.ContextHierarchy;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -103,11 +104,43 @@ public class EndpointIT {
                 Map.of("title", "Folder Object", "readGroup", "everyone"));
     }
 
-    public List<JsonNode> getMetadataFromResponse(CloseableHttpResponse response) throws IOException {
+    public List<String> createDatedObjects() throws Exception {
+        List<String> ids = new ArrayList<>();
+        var datedAdminUnit = adminUnitFactory.createAdminUnit(
+                Map.of("title", "Dated Admin Object", "dateCreated", "2018-07-01"));
+        var datedCollection = collectionFactory.createCollection(datedAdminUnit,
+                Map.of("title", "A dated collection",
+                        "dateCreated", "2022-07-01",
+                        "readGroup", "everyone"));
+        ids.add(datedAdminUnit.getPid().getId());
+        ids.add(datedCollection.getPid().getId());
+        return ids;
+    }
+
+    public void createLanguageSubjectObjects() throws Exception {
+        //language facet selected
+        var languageAdminUnit = adminUnitFactory.createAdminUnit(
+                Map.of("title", "Admin Object", "languageTerm", "eng"));
+        collectionFactory.createCollection(languageAdminUnit,
+                Map.of("title", "A language collection",
+                        "languageTerm", "eng",
+                        "readGroup", "everyone"));
+        folderFactory.createFolder(collection,
+                Map.of("title","A language folder","languageTerm", "eng",
+                        "subject", "NorthCarolina","readGroup", "everyone"));
+        adminUnitFactory.createAdminUnit(Map.of(
+                "title", "English Language Admin", "languageTerm", "eng",
+                "subject", "NorthCarolina", "readGroup", "everyone"));
+        adminUnitFactory.createAdminUnit(Map.of(
+                "title", "Cherokee Language Admin", "languageTerm", "chr",
+                "subject", "UNC", "readGroup", "everyone"));
+    }
+
+    public List<JsonNode> getNodeFromResponse(CloseableHttpResponse response, String fieldName) throws IOException {
         ObjectMapper mapper = new ObjectMapper();
         var respJson = mapper.readTree(response.getEntity().getContent());
 
-        return IteratorUtils.toList(respJson.get("metadata").elements());
+        return IteratorUtils.toList(respJson.get(fieldName).elements());
     }
 
     public void assertValuePresent(List<JsonNode> json, int index, String key, String value) {

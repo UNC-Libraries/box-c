@@ -50,7 +50,7 @@ public class ModsFactory {
                     .setText(options.get("dateCreated"))));
         }
 
-        if (options.containsKey("language")) {
+        if (options.containsKey("languageTerm")) {
             modsElement.addContent(new Element("language", MODS_V3_NS)
                     .addContent(new Element("languageTerm", MODS_V3_NS)
                             .setAttribute("authority", "iso639-2b")

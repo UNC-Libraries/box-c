@@ -53,7 +53,7 @@ public class CollectionsEndpointIT extends EndpointIT{
         createDefaultObjects();
 
         try (var resp = httpClient.execute(getMethod)) {
-            var metadata = getMetadataFromResponse(resp);
+            var metadata = getNodeFromResponse(resp, "metadata");
 
             assertSuccessfulResponse(resp);
             assertValuePresent(metadata, 0, "type", "AdminUnit");
@@ -65,7 +65,7 @@ public class CollectionsEndpointIT extends EndpointIT{
     @Test
     public void testCollectionsJsonReturnsSuccessWithNoAdminUnits() throws Exception {
         try (var resp = httpClient.execute(getMethod)) {
-            var metadata = getMetadataFromResponse(resp);
+            var metadata = getNodeFromResponse(resp, "metadata");
             assertSuccessfulResponse(resp);
             assertEquals(0, metadata.size());
         }
@@ -76,7 +76,7 @@ public class CollectionsEndpointIT extends EndpointIT{
         adminUnitFactory.createAdminUnit(Map.of("title", "Object2"));
 
         try (var resp = httpClient.execute(getMethod)) {
-            var metadata = getMetadataFromResponse(resp);
+            var metadata = getNodeFromResponse(resp, "metadata");
 
             assertSuccessfulResponse(resp);
             assertValuePresent(metadata, 0, "title", "Object2");
@@ -90,7 +90,7 @@ public class CollectionsEndpointIT extends EndpointIT{
         adminUnitFactory.createAdminUnit(options);
 
         try (var resp = httpClient.execute(getMethod)) {
-            var metadata = getMetadataFromResponse(resp);
+            var metadata = getNodeFromResponse(resp, "metadata");
 
             assertSuccessfulResponse(resp);
             assertValuePresent(metadata, 0, "thumbnail_url");
@@ -106,7 +106,7 @@ public class CollectionsEndpointIT extends EndpointIT{
                 Map.of("title", "Collection1", "readGroup", PUBLIC_PRINC));
 
         try (var resp = httpClient.execute(getMethod)) {
-            var metadata = getMetadataFromResponse(resp);
+            var metadata = getNodeFromResponse(resp, "metadata");
             var childCount = metadata.get(0).get("counts").get("child").asInt();
 
             assertSuccessfulResponse(resp);
@@ -123,7 +123,7 @@ public class CollectionsEndpointIT extends EndpointIT{
         collectionFactory.createCollection(adminUnit, Map.of("title", "Collection1"));
 
         try (var resp = httpClient.execute(getMethod)) {
-            var metadata = getMetadataFromResponse(resp);
+            var metadata = getNodeFromResponse(resp, "metadata");
             var childCount = metadata.get(0).get("counts").get("child").asInt();
 
             assertSuccessfulResponse(resp);
