@@ -15,6 +15,7 @@
  */
 package edu.unc.lib.boxc.integration.web.access;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore;
 import edu.unc.lib.boxc.integration.factories.FileFactory;
 import edu.unc.lib.boxc.integration.factories.WorkFactory;
@@ -31,6 +32,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import static edu.unc.lib.boxc.integration.factories.FileFactory.FILE_FORMAT_OPTION;
+import static edu.unc.lib.boxc.integration.factories.FileFactory.IMAGE_FORMAT;
 import static edu.unc.lib.boxc.integration.factories.FileFactory.FILE_FORMAT_OPTION;
 import static edu.unc.lib.boxc.integration.factories.FileFactory.IMAGE_FORMAT;
 import static org.junit.Assert.assertEquals;
@@ -141,7 +144,7 @@ public class SearchEndpointIT extends EndpointIT {
             assertValuePresent(metadata, 0, "type", "Work");
         }
     }
-    
+
     @Test
     public void testSearchTypeParamWithFileSpecified() throws Exception {
         createDefaultObjects();
@@ -167,7 +170,7 @@ public class SearchEndpointIT extends EndpointIT {
         createDefaultObjects();
         collectionFactory.createCollection(adminUnit1,
                 Map.of("title", "A first collection", "readGroup", "everyone"));
-        
+
         var getMethod = new HttpGet(SEARCH_URL + "/?sort=title,normal");
 
         try (var resp = httpClient.execute(getMethod)) {
@@ -191,7 +194,7 @@ public class SearchEndpointIT extends EndpointIT {
         createDefaultObjects();
         collectionFactory.createCollection(adminUnit1,
                 Map.of("title", "A first collection", "readGroup", "everyone"));
-        
+
         var getMethod = new HttpGet(SEARCH_URL + "/?sort=title,reverse");
 
         try (var resp = httpClient.execute(getMethod)) {
@@ -349,19 +352,6 @@ public class SearchEndpointIT extends EndpointIT {
         }
     }
 
-    private List<String> createDatedObjects() throws Exception {
-        List<String> ids = new ArrayList<>();
-        var datedAdminUnit = adminUnitFactory.createAdminUnit(
-                Map.of("title", "Dated Admin Object", "dateCreated", "2018-07-01"));
-        var datedCollection = collectionFactory.createCollection(datedAdminUnit,
-                Map.of("title", "A dated collection",
-                        "dateCreated", "2022-07-01",
-                        "readGroup", "everyone"));
-        ids.add(datedAdminUnit.getPid().getId());
-        ids.add(datedCollection.getPid().getId());
-        return ids;
-    }
-
     @Test
     public void testMultiImageWorkHasFirstImageAsThumbnail() throws Exception {
         createDefaultObjects();
@@ -383,5 +373,94 @@ public class SearchEndpointIT extends EndpointIT {
             assertEquals("http://localhost:48080/services/api/thumb/" + firstFile.getPid().getId() + "/large",
                     thumbnailUrl);
         }
+    }
+
+    @Test
+    public void testSearchWithOneFacetFilter() throws Exception {
+        createDefaultObjects();
+        createLanguageSubjectObjects();
+
+        var getMethod = new HttpGet(SEARCH_URL + "/?facetSelect=language&language=English&getFacets=true");
+
+        try (var resp = httpClient.execute(getMethod)) {
+            var facetFields = getNodeFromResponse(resp, "facetFields");
+
+            assertSuccessfulResponse(resp);
+            // should only find the language facet
+            assertEquals(1, facetFields.size());
+        }
+    }
+
+    @Test
+    public void testSearchWithLanguageFilterSelectedDisplaysAllAvailableLanguages() throws Exception {
+        createDefaultObjects();
+        createLanguageSubjectObjects();
+
+        var getMethod = new HttpGet(SEARCH_URL + "/?facetSelect=language&language=English&getFacets=true");
+
+        try (var resp = httpClient.execute(getMethod)) {
+            var facetFields = getNodeFromResponse(resp, "facetFields");
+            var languageFields = new ArrayList<JsonNode>();
+            facetFields.get(0).get("values").elements().forEachRemaining(languageFields::add);
+
+            assertSuccessfulResponse(resp);
+            // should find all available languages: English, Cherokee
+            assertValuePresent(languageFields, 0, "value", "English");
+            assertValuePresent(languageFields, 1, "value", "Cherokee");
+        }
+    }
+
+    @Test
+    public void testSearchWithSubjectFilterSelectedDisplaysAvailableLanguages() throws Exception {
+        createDefaultObjects();
+        createLanguageSubjectObjects();
+
+        var getMethod = new HttpGet(SEARCH_URL + "/?facetSelect=language%2Csubject&subject=North%2520Carolina&getFacets=true");
+
+        try (var resp = httpClient.execute(getMethod)) {
+            var facetFields = getNodeFromResponse(resp, "facetFields");
+            var languageFields = new ArrayList<JsonNode>();
+            facetFields.get(0).get("values").elements().forEachRemaining(languageFields::add);
+            var subjectFields = new ArrayList<JsonNode>();
+            facetFields.get(1).get("values").elements().forEachRemaining(subjectFields::add);
+
+            assertSuccessfulResponse(resp);
+            // should find all available languages (English) and subjects (North Carolina)
+            assertEquals(2,facetFields.size());
+            assertEquals(1,languageFields.size());
+            assertValuePresent(languageFields, 0, "value", "English");
+            assertValuePresent(subjectFields, 0, "value", "North Carolina");
+        }
+    }
+
+    public List<String> createDatedObjects() throws Exception {
+        List<String> ids = new ArrayList<>();
+        var datedAdminUnit = adminUnitFactory.createAdminUnit(
+                Map.of("title", "Dated Admin Object", "dateCreated", "2018-07-01"));
+        var datedCollection = collectionFactory.createCollection(datedAdminUnit,
+                Map.of("title", "A dated collection",
+                        "dateCreated", "2022-07-01",
+                        "readGroup", "everyone"));
+        ids.add(datedAdminUnit.getPid().getId());
+        ids.add(datedCollection.getPid().getId());
+        return ids;
+    }
+
+    public void createLanguageSubjectObjects() throws Exception {
+        var languageAdminUnit = adminUnitFactory.createAdminUnit(
+                Map.of("title", "Admin Object", "languageTerm", "eng"));
+        collectionFactory.createCollection(languageAdminUnit,
+                Map.of("title", "A language collection",
+                        "languageTerm", "eng",
+                        "readGroup", "everyone"));
+        folderFactory.createFolder(collection,
+                Map.of("title","A language folder","languageTerm", "eng",
+                        "topic", "North Carolina","readGroup", "everyone"));
+        adminUnitFactory.createAdminUnit(Map.of(
+                "title", "English Language Admin", "languageTerm", "eng",
+                "topic", "North Carolina", "readGroup", "everyone"));
+        adminUnitFactory.createAdminUnit(Map.of(
+                "title", "Cherokee Language Admin", "languageTerm", "chr",
+                "topic", "UNC", "readGroup", "everyone"));
     }
 }
