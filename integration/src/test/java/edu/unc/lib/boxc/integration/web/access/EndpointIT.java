@@ -170,7 +170,7 @@ public class EndpointIT {
 
     protected void assertResultCountEquals(HttpGet getMethod, int expectedCount) throws IOException {
         try (var resp = httpClient.execute(getMethod)) {
-            var metadata = getMetadataFromResponse(resp);
+            var metadata = getNodeFromResponse(resp, "metadata");
             assertSuccessfulResponse(resp);
             // two admin units, 1 collection (nested in the admin unit), 1 work (with nested file), and 1 folder
             assertEquals(expectedCount, metadata.size());
