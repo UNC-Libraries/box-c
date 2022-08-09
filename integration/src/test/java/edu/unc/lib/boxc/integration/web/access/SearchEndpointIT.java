@@ -384,4 +384,11 @@ public class SearchEndpointIT extends EndpointIT {
                     thumbnailUrl);
         }
     }
+
+    @Test
+    public void testGetFacetsFalseSearchReturnsNoFacets() throws Exception {
+        createDefaultObjects();
+
+        var getMethod = new HttpGet(SEARCH_URL + "/?getFacets=false");
+    }
 }
