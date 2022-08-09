@@ -25,6 +25,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import edu.unc.lib.boxc.search.api.filters.QueryFilter;
 import edu.unc.lib.boxc.search.solr.config.SearchSettings;
 import edu.unc.lib.boxc.search.solr.ranges.RangePair;
 import edu.unc.lib.boxc.search.solr.ranges.UnknownRange;
@@ -323,6 +324,9 @@ public class SolrSearchService extends AbstractQueryService {
         // Add range Fields to the query
         addRangeFields(searchState, solrQuery);
 
+        // Add other filter queries which to not impact relevancy
+        addQueryFilters(searchState, solrQuery);
+
         // No query terms given, make it an everything query
         if (StringUtils.isEmpty(solrQuery.getQuery())) {
             solrQuery.setQuery("*:*");
@@ -527,6 +531,12 @@ public class SolrSearchService extends AbstractQueryService {
 
             filter.append(')');
             query.addFilterQuery(filter.toString());
+        }
+    }
+
+    private void addQueryFilters(SearchState searchState, SolrQuery query) {
+        for (QueryFilter filter : searchState.getFilters()) {
+            query.addFilterQuery(filter.toFilterString());
         }
     }
 

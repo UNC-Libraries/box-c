@@ -17,13 +17,20 @@ package edu.unc.lib.boxc.web.common.services;
 
 import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
 import edu.unc.lib.boxc.auth.api.services.AccessControlService;
+import edu.unc.lib.boxc.auth.api.services.GlobalPermissionEvaluator;
 import edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl;
 import edu.unc.lib.boxc.model.api.DatastreamType;
 import edu.unc.lib.boxc.model.api.ResourceType;
 import edu.unc.lib.boxc.search.api.ContentCategory;
+import edu.unc.lib.boxc.search.api.models.ContentObjectRecord;
+import edu.unc.lib.boxc.search.api.requests.SearchRequest;
+import edu.unc.lib.boxc.search.api.requests.SearchState;
 import edu.unc.lib.boxc.search.solr.config.SearchSettings;
 import edu.unc.lib.boxc.search.solr.config.SolrSettings;
+import edu.unc.lib.boxc.search.solr.filters.NamedDatastreamFilter;
 import edu.unc.lib.boxc.search.solr.models.ContentObjectSolrRecord;
+import edu.unc.lib.boxc.search.solr.responses.SearchResultResponse;
+import edu.unc.lib.boxc.search.solr.services.SolrSearchService;
 import edu.unc.lib.boxc.search.solr.utils.AccessRestrictionUtil;
 import edu.unc.lib.boxc.search.solr.utils.FacetFieldUtil;
 import org.apache.solr.client.solrj.SolrClient;
@@ -33,6 +40,8 @@ import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.solr.common.SolrDocumentList;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.Mock;
 
 import java.io.IOException;
@@ -48,8 +57,10 @@ import static edu.unc.lib.boxc.model.api.DatastreamType.TECHNICAL_METADATA;
 import static edu.unc.lib.boxc.web.common.services.AccessCopiesService.AUDIO_MIMETYPE_REGEX;
 import static edu.unc.lib.boxc.web.common.services.AccessCopiesService.PDF_MIMETYPE_REGEX;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
@@ -77,84 +88,90 @@ public class AccessCopiesServiceTest  {
     @Mock
     private AccessControlService accessControlService;
     @Mock
-    private AccessRestrictionUtil restrictionUtil;
+    private GlobalPermissionEvaluator globalPermissionEvaluator;
     @Mock
-    private SolrSettings solrSettings;
+    private SolrSearchService solrSearchService;
     @Mock
-    private FacetFieldUtil facetFieldUtil;
-    @Mock
-    private SolrClient solrClient;
-    @Mock
-    private QueryResponse queryResponse;
-    @Mock
-    private SolrDocumentList solrDocumentList;
+    private SearchResultResponse searchResultResponse;
+    @Captor
+    private ArgumentCaptor<SearchRequest> searchRequestCaptor;
 
     @Before
     public void init() throws IOException, SolrServerException {
         initMocks(this);
 
-        mdObject = new ContentObjectSolrRecord();
-        mdObject.setResourceType(ResourceType.Work.name());
-        mdObject.setId(UUID.randomUUID().toString());
-        List<String> datastreams = Collections.singletonList(
-                ORIGINAL_FILE.getId() + "|application/pdf|file.pdf|pdf|766|urn:sha1:checksum|");
-        mdObject.setFileFormatCategory(Collections.singletonList(ContentCategory.text.getDisplayName()));
-        mdObject.setFileFormatType(Collections.singletonList("application/pdf"));
-        mdObject.setDatastream(datastreams);
-
-        mdObjectImg = new ContentObjectSolrRecord();
-        mdObjectImg.setResourceType(ResourceType.Work.name());
-        mdObjectImg.setId(UUID.randomUUID().toString());
-        List<String> imgDatastreams = Arrays.asList(
-                ORIGINAL_FILE.getId() + "|image/png|file.png|png|766|urn:sha1:checksum|",
-                DatastreamType.THUMBNAIL_LARGE.getId() + "|image/png|thumb|png|55||");
-        mdObjectImg.setFileFormatCategory(Collections.singletonList(ContentCategory.image.getDisplayName()));
-        mdObjectImg.setFileFormatType(Collections.singletonList("image/png"));
-        mdObjectImg.setDatastream(imgDatastreams);
-
-        mdObjectAudio = new ContentObjectSolrRecord();
-        mdObjectAudio.setResourceType(ResourceType.Work.name());
-        mdObjectAudio.setId(UUID.randomUUID().toString());
-        List<String> audioDatastreams = Collections.singletonList(
-                ORIGINAL_FILE.getId() + "|audio/mpeg|file.mp3|mp3|766|urn:sha1:checksum|");
-        mdObjectAudio.setFileFormatCategory(Collections.singletonList(ContentCategory.audio.getDisplayName()));
-        mdObjectAudio.setFileFormatType(Collections.singletonList("audio/mpeg"));
-        mdObjectAudio.setDatastream(audioDatastreams);
+        mdObject = createPdfObject(ResourceType.Work);
+        mdObjectImg = createImgObject(ResourceType.Work);
+        mdObjectAudio = createAudioObject(ResourceType.Work);
 
         noOriginalFileObj = new ContentObjectSolrRecord();
         noOriginalFileObj.setResourceType(ResourceType.Work.name());
         noOriginalFileObj.setId("45c8d1c5-14a1-4ed3-b0c0-6da67fa5f6d1");
 
-        mdObjectXml = new ContentObjectSolrRecord();
-        mdObjectXml.setResourceType(ResourceType.Work.name());
-        mdObjectXml.setId(UUID.randomUUID().toString());
-        List<String> xmlDatastreams = Collections.singletonList(
-                TECHNICAL_METADATA.getId() + "|text.xml|file.xml|xml|766|urn:sha1:checksum|");
-        mdObjectXml.setFileFormatCategory(Collections.singletonList(ContentCategory.text.getDisplayName()));
-        mdObjectXml.setFileFormatType(Collections.singletonList("text/xml"));
-        mdObjectXml.setDatastream(xmlDatastreams);
+        mdObjectXml = createXmlObject(ResourceType.Work);
 
         principals = new AccessGroupSetImpl("group");
 
         helper = new PermissionsHelper();
         helper.setAccessControlService(accessControlService);
 
-        Properties searchProps = new Properties();
-        searchProps.load(this.getClass().getResourceAsStream("/search.properties"));
-        SearchSettings searchSettings = new SearchSettings();
-        searchSettings.setProperties(searchProps);
-
         accessCopiesService = new AccessCopiesService();
         accessCopiesService.setPermissionsHelper(helper);
-        accessCopiesService.setAccessRestrictionUtil(restrictionUtil);
-        accessCopiesService.setSolrSettings(solrSettings);
-        accessCopiesService.setSearchSettings(searchSettings);
-        accessCopiesService.setFacetFieldUtil(facetFieldUtil);
-        accessCopiesService.setSolrClient(solrClient);
+        accessCopiesService.setSolrSearchService(solrSearchService);
+        accessCopiesService.setGlobalPermissionEvaluator(globalPermissionEvaluator);
 
-        when(solrClient.query(any(SolrQuery.class))).thenReturn(queryResponse);
-        when(queryResponse.getResults()).thenReturn(solrDocumentList);
-        when(solrDocumentList.getNumFound()).thenReturn(1L);
+        when(solrSearchService.getSearchResults(searchRequestCaptor.capture())).thenReturn(searchResultResponse);
+        when(searchResultResponse.getResultCount()).thenReturn(1l);
+    }
+
+    private ContentObjectSolrRecord createAudioObject(ResourceType resourceType) {
+        var mdObjectAudio = new ContentObjectSolrRecord();
+        mdObjectAudio.setResourceType(resourceType.name());
+        mdObjectAudio.setId(UUID.randomUUID().toString());
+        List<String> audioDatastreams = Collections.singletonList(
+                ORIGINAL_FILE.getId() + "|audio/mpeg|file.mp3|mp3|766|urn:sha1:checksum|");
+        mdObjectAudio.setFileFormatCategory(Collections.singletonList(ContentCategory.audio.getDisplayName()));
+        mdObjectAudio.setFileFormatType(Collections.singletonList("audio/mpeg"));
+        mdObjectAudio.setDatastream(audioDatastreams);
+        return mdObjectAudio;
+    }
+
+    private ContentObjectSolrRecord createPdfObject(ResourceType resourceType) {
+        var mdObject = new ContentObjectSolrRecord();
+        mdObject.setResourceType(resourceType.name());
+        mdObject.setId(UUID.randomUUID().toString());
+        List<String> datastreams = Collections.singletonList(
+                ORIGINAL_FILE.getId() + "|application/pdf|file.pdf|pdf|766|urn:sha1:checksum|");
+        mdObject.setFileFormatCategory(Collections.singletonList(ContentCategory.text.getDisplayName()));
+        mdObject.setFileFormatType(Collections.singletonList("application/pdf"));
+        mdObject.setDatastream(datastreams);
+        return mdObject;
+    }
+
+    private ContentObjectSolrRecord createImgObject(ResourceType resourceType) {
+        var mdObjectImg = new ContentObjectSolrRecord();
+        mdObjectImg.setResourceType(resourceType.name());
+        mdObjectImg.setId(UUID.randomUUID().toString());
+        List<String> imgDatastreams = Arrays.asList(
+                ORIGINAL_FILE.getId() + "|image/png|file.png|png|766|urn:sha1:checksum|",
+                DatastreamType.THUMBNAIL_LARGE.getId() + "|image/png|thumb|png|55||",
+                DatastreamType.JP2_ACCESS_COPY.getId() + "|image/jp2|thumb|jp2|555||");
+        mdObjectImg.setFileFormatCategory(Collections.singletonList(ContentCategory.image.getDisplayName()));
+        mdObjectImg.setFileFormatType(Collections.singletonList("image/png"));
+        mdObjectImg.setDatastream(imgDatastreams);
+        return mdObjectImg;
+    }
+
+    private ContentObjectSolrRecord createXmlObject(ResourceType resourceType) {
+        var mdObjectXml = new ContentObjectSolrRecord();
+        mdObjectXml.setResourceType(resourceType.name());
+        mdObjectXml.setId(UUID.randomUUID().toString());
+        List<String> xmlDatastreams = Collections.singletonList(
+                TECHNICAL_METADATA.getId() + "|text.xml|file.xml|xml|766|urn:sha1:checksum|");
+        mdObjectXml.setFileFormatCategory(Collections.singletonList(ContentCategory.text.getDisplayName()));
+        mdObjectXml.setFileFormatType(Collections.singletonList("text/xml"));
+        mdObjectXml.setDatastream(xmlDatastreams);
+        return mdObjectXml;
     }
 
     @Test
@@ -244,13 +261,14 @@ public class AccessCopiesServiceTest  {
         hasPermissions(mdObjectImg, true);
         noOriginalFileObj.setFileFormatCategory(Collections.singletonList(ContentCategory.image.getDisplayName()));
         noOriginalFileObj.setFileFormatType(Collections.singletonList("png"));
-        List<ContentObjectSolrRecord> resultList = Arrays.asList(mdObjectImg);
-        when(queryResponse.getBeans(ContentObjectSolrRecord.class)).thenReturn(resultList);
-        when(queryResponse.getResults().size()).thenReturn(resultList.size());
+        populateResultList(mdObjectImg);
+        when(searchResultResponse.getResultCount()).thenReturn(2l);
 
         assertEquals(noOriginalFileObj.getId(), accessCopiesService.getThumbnailId(noOriginalFileObj, principals, false));
         // Gets the ID of the specific child with a thumbnail
         assertEquals(mdObjectImg.getId(), accessCopiesService.getThumbnailId(noOriginalFileObj, principals, true));
+        assertRequestedDatastreamFilter(DatastreamType.THUMBNAIL_LARGE);
+        assertSortType("default");
     }
 
     @Test
@@ -259,9 +277,8 @@ public class AccessCopiesServiceTest  {
         hasPermissions(mdObjectXml, true);
         noOriginalFileObj.setFileFormatCategory(Collections.singletonList(ContentCategory.text.getDisplayName()));
         noOriginalFileObj.setFileFormatType(Collections.singletonList("txt"));
-        List<ContentObjectSolrRecord> resultList = Collections.emptyList();
-        when(queryResponse.getBeans(ContentObjectSolrRecord.class)).thenReturn(resultList);
-        when(queryResponse.getResults().size()).thenReturn(resultList.size());
+
+        populateResultList();
 
         assertNull(accessCopiesService.getThumbnailId(noOriginalFileObj, principals, false));
         assertNull(accessCopiesService.getThumbnailId(noOriginalFileObj, principals, true));
@@ -284,23 +301,34 @@ public class AccessCopiesServiceTest  {
         hasPermissions(mdObjectImg, true);
         noOriginalFileObj.setFileFormatCategory(Collections.singletonList(ContentCategory.image.getDisplayName()));
         noOriginalFileObj.setFileFormatType(Collections.singletonList("png"));
-        List<ContentObjectSolrRecord> resultList = Arrays.asList(mdObjectImg2);
-        when(queryResponse.getBeans(ContentObjectSolrRecord.class)).thenReturn(resultList);
-        when(queryResponse.getResults().size()).thenReturn(resultList.size());
-        when(solrDocumentList.getNumFound()).thenReturn(2L);
+        populateResultList(mdObjectImg2);
+        when(searchResultResponse.getResultCount()).thenReturn(2l);
 
         assertEquals(noOriginalFileObj.getId(), accessCopiesService.getThumbnailId(noOriginalFileObj, principals, false));
+
         // Gets the ID of the specific child with a thumbnail
         assertEquals(mdObjectImg2.getId(), accessCopiesService.getThumbnailId(noOriginalFileObj, principals, true));
+        assertRequestedDatastreamFilter(DatastreamType.THUMBNAIL_LARGE);
+        assertSortType("default");
+    }
+
+    private void assertRequestedDatastreamFilter(DatastreamType expectedType) {
+        var searchState = searchRequestCaptor.getValue().getSearchState();
+        var queryFilter = (NamedDatastreamFilter) searchState.getFilters().get(0);
+        assertEquals("Expected request to be filtered by datastream " + expectedType.name(),
+                expectedType, queryFilter.getDatastreamType());
+    }
+
+    private void assertSortType(String expectedSort) {
+        var searchState = searchRequestCaptor.getValue().getSearchState();
+        assertEquals("Expected request to be sorted by type",
+                expectedSort, searchState.getSortType());
     }
 
     @Test
     public void noFilesThumbnailMultipleFiles() {
         hasPermissions(noOriginalFileObj, true);
-        List<ContentObjectSolrRecord> resultList = Collections.emptyList();
-        when(queryResponse.getBeans(ContentObjectSolrRecord.class)).thenReturn(resultList);
-        when(queryResponse.getResults().size()).thenReturn(resultList.size());
-        when(solrDocumentList.getNumFound()).thenReturn(0L);
+        populateResultList();
 
         assertNull(accessCopiesService.getThumbnailId(noOriginalFileObj, principals, false));
         assertNull(accessCopiesService.getThumbnailId(noOriginalFileObj, principals, true));
@@ -331,7 +359,35 @@ public class AccessCopiesServiceTest  {
         assertEquals(mdObjectImg.getId(), mdObjectImg.getThumbnailId());
     }
 
+    @Test
+    public void hasViewableFilesImageFileTest() {
+        var mdObjectImg = createImgObject(ResourceType.File);
+        hasPermissions(mdObjectImg, true);
+
+        assertTrue(accessCopiesService.hasViewableFiles(mdObjectImg, principals));
+    }
+
+    @Test
+    public void hasViewableFilesAudioFileTest() {
+        var mdObjectAudio = createAudioObject(ResourceType.File);
+        hasPermissions(mdObjectAudio, true);
+
+        assertFalse(accessCopiesService.hasViewableFiles(mdObjectAudio, principals));
+    }
+
+    @Test
+    public void hasViewableFilesImageWorkTest() {
+        hasPermissions(mdObjectImg, true);
+
+        assertTrue(accessCopiesService.hasViewableFiles(mdObjectImg, principals));
+        assertRequestedDatastreamFilter(DatastreamType.JP2_ACCESS_COPY);
+    }
+
     private void hasPermissions(ContentObjectSolrRecord contentObject, boolean hasAccess) {
         when(accessControlService.hasAccess(contentObject.getPid(), principals, viewOriginal)).thenReturn(hasAccess);
+    }
+
+    private void populateResultList(ContentObjectRecord... objects) {
+        when(searchResultResponse.getResultList()).thenReturn(Arrays.asList(objects));
     }
 }
