@@ -15,7 +15,7 @@ require.config({
 });
 define('advancedSearch', ['module', 'jquery', 'datepicker', 'qtip'], function(module, $) {
 	$(".advsearch_date").datepicker({showOn: false});
-	$(".advsearch_date").datepicker("option", "dateFormat", "yy-mm-dd");
+	$(".advsearch_date").datepicker("option", "dateFormat", "yy");
 	$(".date_field_tooltip").qtip({
 		content: {
 			text: false

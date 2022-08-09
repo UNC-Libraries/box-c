@@ -220,7 +220,7 @@ describe('filterTags.vue', () => {
             added: "1999,2005"
         });
         await router.push('/search?added=1999,2005');
-        expect(wrapper.find('.search-text').text()).toMatch(/Date\sAdded.*?1999\sto\s2005/s);
+        expect(wrapper.find('.search-text').text()).toMatch(/Date\sDeposited.*?1999\sto\s2005/s);
     });
 
     it("correctly displays a date search with no end date", async () => {
@@ -236,7 +236,7 @@ describe('filterTags.vue', () => {
             added: ",2005"
         });
         await router.push('/search?added=,2005');
-        expect(wrapper.find('.search-text').text()).toMatch(/Date\sAdded.*?All\sdates\sthrough\s2005/s);
+        expect(wrapper.find('.search-text').text()).toMatch(/Date\sDeposited.*?All\sdates\sthrough\s2005/s);
     });
 
     it("clears anywhere term when container selected", async () => {

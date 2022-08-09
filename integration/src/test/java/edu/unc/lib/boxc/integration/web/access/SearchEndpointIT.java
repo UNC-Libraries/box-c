@@ -28,6 +28,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
+import java.io.IOException;
+import java.time.Year;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -297,6 +299,16 @@ public class SearchEndpointIT extends EndpointIT {
             assertEquals("viewMetadata", collectionMetadata.get("permissions").get(0).asText());
             assertEquals(6, metadata.size());
         }
+    }
+
+    @Test
+    public void testDateDepositedInclusiveSearch() throws Exception {
+        createDefaultObjects();
+        var currentYear = Year.now().getValue();
+        assertResultCountEquals(SEARCH_URL + "/?added=" + currentYear + ",", 5);
+        assertResultCountEquals(SEARCH_URL + "/?added=" + currentYear + "," + currentYear, 5);
+        assertResultCountEquals(SEARCH_URL + "/?added=," + currentYear, 5);
+        assertResultCountEquals(SEARCH_URL + "/?added=" + (currentYear + 1) + ",", 0);
     }
 
     @Test

@@ -163,4 +163,17 @@ public class EndpointIT {
     public void assertIdMatchesNone(List<JsonNode> json, String id) {
         assertTrue(json.stream().noneMatch(entry -> id.equals(entry.get("id").asText())));
     }
+
+    protected void assertResultCountEquals(String url, int expectedCount) throws IOException {
+        assertResultCountEquals(new HttpGet(url), expectedCount);
+    }
+
+    protected void assertResultCountEquals(HttpGet getMethod, int expectedCount) throws IOException {
+        try (var resp = httpClient.execute(getMethod)) {
+            var metadata = getMetadataFromResponse(resp);
+            assertSuccessfulResponse(resp);
+            // two admin units, 1 collection (nested in the admin unit), 1 work (with nested file), and 1 folder
+            assertEquals(expectedCount, metadata.size());
+        }
+    }
 }

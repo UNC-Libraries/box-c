@@ -386,7 +386,7 @@ public class ExtractTechnicalMetadataJob extends AbstractConcurrentDepositJob {
 
             return createSAXBuilder().build(respBodyStream);
         } catch (IOException | JDOMException e) {
-            failJob(e, "Failed to stream report for file '{0}' with id {1} from server to report document",
+            failJob(e, "Failed to stream report for file ''{0}'' with id {1} from server to report document",
                     stagedPath, objPid.getId());
         }
         return null;
