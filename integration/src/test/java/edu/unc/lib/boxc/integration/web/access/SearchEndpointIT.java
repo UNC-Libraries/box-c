@@ -29,6 +29,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import java.time.Year;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
@@ -59,7 +60,7 @@ public class SearchEndpointIT extends EndpointIT {
         var getMethod = new HttpGet(SEARCH_URL);
 
         try (var resp = httpClient.execute(getMethod)) {
-            var metadata = getNodeFromResponse(resp, "metadata");
+            var metadata = getMetadataFromResponse(resp);
             assertSuccessfulResponse(resp);
             // two admin units, 1 collection (nested in the admin unit), 1 work (with nested file), and 1 folder
             assertEquals(5, metadata.size());
@@ -82,7 +83,7 @@ public class SearchEndpointIT extends EndpointIT {
         var getMethod = new HttpGet(SEARCH_URL + "/?titleIndex=text");
 
         try (var resp = httpClient.execute(getMethod)) {
-            var metadata = getNodeFromResponse(resp, "metadata");
+            var metadata = getMetadataFromResponse(resp);
             assertSuccessfulResponse(resp);
             // find the one collection with "Text" in the title, but not the work with the text file
             assertEquals(1, metadata.size());
@@ -109,7 +110,7 @@ public class SearchEndpointIT extends EndpointIT {
         var getMethod = new HttpGet(SEARCH_URL + "/?anywhere=through");
 
         try (var resp = httpClient.execute(getMethod)) {
-            var metadata = getNodeFromResponse(resp, "metadata");
+            var metadata = getMetadataFromResponse(resp);
 
             assertSuccessfulResponse(resp);
             // find the two items
@@ -130,7 +131,7 @@ public class SearchEndpointIT extends EndpointIT {
         var getMethod = new HttpGet(SEARCH_URL + "/?types=Work");
 
         try (var resp = httpClient.execute(getMethod)) {
-            var metadata = getNodeFromResponse(resp, "metadata");
+            var metadata = getMetadataFromResponse(resp);
 
             assertSuccessfulResponse(resp);
             // find the one work
@@ -148,7 +149,7 @@ public class SearchEndpointIT extends EndpointIT {
         var getMethod = new HttpGet(SEARCH_URL + "/?types=Work,File&rollup=false");
 
         try (var resp = httpClient.execute(getMethod)) {
-            var metadata = getNodeFromResponse(resp, "metadata");
+            var metadata = getMetadataFromResponse(resp);
 
             assertSuccessfulResponse(resp);
             // find the two items
@@ -169,7 +170,7 @@ public class SearchEndpointIT extends EndpointIT {
         var getMethod = new HttpGet(SEARCH_URL + "/?sort=title,normal");
 
         try (var resp = httpClient.execute(getMethod)) {
-            var metadata = getNodeFromResponse(resp, "metadata");
+            var metadata = getMetadataFromResponse(resp);
 
             assertSuccessfulResponse(resp);
             // make sure all items return
@@ -193,7 +194,7 @@ public class SearchEndpointIT extends EndpointIT {
         var getMethod = new HttpGet(SEARCH_URL + "/?sort=title,reverse");
 
         try (var resp = httpClient.execute(getMethod)) {
-            var metadata = getNodeFromResponse(resp, "metadata");
+            var metadata = getMetadataFromResponse(resp);
 
             assertSuccessfulResponse(resp);
             // make sure all items return
@@ -219,7 +220,7 @@ public class SearchEndpointIT extends EndpointIT {
         var getMethod = new HttpGet(SEARCH_URL + "/?start=0&rows=5");
 
         try (var resp = httpClient.execute(getMethod)) {
-            var metadata = getNodeFromResponse(resp, "metadata");
+            var metadata = getMetadataFromResponse(resp);
 
             assertSuccessfulResponse(resp);
             // there are seven objects but this search should only return 5 because of page size
@@ -236,7 +237,7 @@ public class SearchEndpointIT extends EndpointIT {
         var getMethod = new HttpGet(SEARCH_URL + "/?start=3");
 
         try (var resp = httpClient.execute(getMethod)) {
-            var metadata = getNodeFromResponse(resp, "metadata");
+            var metadata = getMetadataFromResponse(resp);
 
             assertSuccessfulResponse(resp);
             // there are 6 total items, but since the index starts at 3 we should have only 3 results
@@ -253,7 +254,7 @@ public class SearchEndpointIT extends EndpointIT {
         var getMethod = new HttpGet(SEARCH_URL);
 
         try (var resp = httpClient.execute(getMethod)) {
-            var metadata = getNodeFromResponse(resp, "metadata");
+            var metadata = getMetadataFromResponse(resp);
             var collectionId = staffOnlyCollection.getPid().getId();
             assertSuccessfulResponse(resp);
             // two admin units, 1 collection (nested in the admin unit), 1 work (with nested file), and 1 folder
@@ -272,7 +273,7 @@ public class SearchEndpointIT extends EndpointIT {
         getMethod.setHeader("isMemberof","adminGroup");
 
         try (var resp = httpClient.execute(getMethod)) {
-            var metadata = getNodeFromResponse(resp, "metadata");
+            var metadata = getMetadataFromResponse(resp);
             var collectionId = staffOnlyCollection.getPid().getId();
             assertSuccessfulResponse(resp);
             assertEquals(6, metadata.size());
@@ -289,7 +290,7 @@ public class SearchEndpointIT extends EndpointIT {
         var getMethod = new HttpGet(SEARCH_URL);
 
         try (var resp = httpClient.execute(getMethod)) {
-            var metadata = getNodeFromResponse(resp, "metadata");
+            var metadata = getMetadataFromResponse(resp);
             var collectionMetadata = metadata.get(2);
             assertSuccessfulResponse(resp);
             // check "permissions" field in affected result only lists "viewMetadata"
@@ -317,7 +318,7 @@ public class SearchEndpointIT extends EndpointIT {
         var getMethod = new HttpGet(SEARCH_URL + "/?createdYear=2022,2022");
 
         try (var resp = httpClient.execute(getMethod)) {
-            var metadata = getNodeFromResponse(resp, "metadata");
+            var metadata = getMetadataFromResponse(resp);
 
             assertSuccessfulResponse(resp);
             // should only find the collection, not the admin unit that has a created date
@@ -337,7 +338,7 @@ public class SearchEndpointIT extends EndpointIT {
         var getMethod = new HttpGet(SEARCH_URL + "/?createdYear=unknown");
 
         try (var resp = httpClient.execute(getMethod)) {
-            var metadata = getNodeFromResponse(resp, "metadata");
+            var metadata = getMetadataFromResponse(resp);
 
             assertSuccessfulResponse(resp);
             // should only find the five default objects, not the dated admin unit or dated collection
@@ -377,8 +378,8 @@ public class SearchEndpointIT extends EndpointIT {
 
             assertSuccessfulResponse(resp);
             // should find all available languages: English, Cherokee
-            assertValuePresent(languageFields,0,"value", "English");
-            assertValuePresent(languageFields,1,"value", "Cherokee");
+            assertValuePresent(languageFields, 0, "value", "English");
+            assertValuePresent(languageFields, 1, "value", "Cherokee");
         }
     }
 
@@ -393,12 +394,46 @@ public class SearchEndpointIT extends EndpointIT {
             var facetFields = getNodeFromResponse(resp, "facetFields");
             var languageFields = new ArrayList<JsonNode>();
             facetFields.get(0).get("values").elements().forEachRemaining(languageFields::add);
+            var subjectFields = new ArrayList<JsonNode>();
+            facetFields.get(1).get("values").elements().forEachRemaining(subjectFields::add);
 
             assertSuccessfulResponse(resp);
-            // should find all available languages: English
+            // should find all available languages (English) and subjects (North Carolina)
             assertEquals(2,facetFields.size());
             assertEquals(1,languageFields.size());
-            assertValuePresent(languageFields,0,"value", "English");
+            assertValuePresent(languageFields, 0, "value", "English");
+            assertValuePresent(subjectFields, 0, "value", "North Carolina");
         }
+    }
+
+    public List<String> createDatedObjects() throws Exception {
+        List<String> ids = new ArrayList<>();
+        var datedAdminUnit = adminUnitFactory.createAdminUnit(
+                Map.of("title", "Dated Admin Object", "dateCreated", "2018-07-01"));
+        var datedCollection = collectionFactory.createCollection(datedAdminUnit,
+                Map.of("title", "A dated collection",
+                        "dateCreated", "2022-07-01",
+                        "readGroup", "everyone"));
+        ids.add(datedAdminUnit.getPid().getId());
+        ids.add(datedCollection.getPid().getId());
+        return ids;
+    }
+
+    public void createLanguageSubjectObjects() throws Exception {
+        var languageAdminUnit = adminUnitFactory.createAdminUnit(
+                Map.of("title", "Admin Object", "languageTerm", "eng"));
+        collectionFactory.createCollection(languageAdminUnit,
+                Map.of("title", "A language collection",
+                        "languageTerm", "eng",
+                        "readGroup", "everyone"));
+        folderFactory.createFolder(collection,
+                Map.of("title","A language folder","languageTerm", "eng",
+                        "topic", "North Carolina","readGroup", "everyone"));
+        adminUnitFactory.createAdminUnit(Map.of(
+                "title", "English Language Admin", "languageTerm", "eng",
+                "topic", "North Carolina", "readGroup", "everyone"));
+        adminUnitFactory.createAdminUnit(Map.of(
+                "title", "Cherokee Language Admin", "languageTerm", "chr",
+                "topic", "UNC", "readGroup", "everyone"));
     }
 }

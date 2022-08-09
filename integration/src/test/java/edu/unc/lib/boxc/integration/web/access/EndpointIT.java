@@ -104,42 +104,15 @@ public class EndpointIT {
                 Map.of("title", "Folder Object", "readGroup", "everyone"));
     }
 
-    public List<String> createDatedObjects() throws Exception {
-        List<String> ids = new ArrayList<>();
-        var datedAdminUnit = adminUnitFactory.createAdminUnit(
-                Map.of("title", "Dated Admin Object", "dateCreated", "2018-07-01"));
-        var datedCollection = collectionFactory.createCollection(datedAdminUnit,
-                Map.of("title", "A dated collection",
-                        "dateCreated", "2022-07-01",
-                        "readGroup", "everyone"));
-        ids.add(datedAdminUnit.getPid().getId());
-        ids.add(datedCollection.getPid().getId());
-        return ids;
-    }
-
-    public void createLanguageSubjectObjects() throws Exception {
-        var languageAdminUnit = adminUnitFactory.createAdminUnit(
-                Map.of("title", "Admin Object", "languageTerm", "eng"));
-        collectionFactory.createCollection(languageAdminUnit,
-                Map.of("title", "A language collection",
-                        "languageTerm", "eng",
-                        "readGroup", "everyone"));
-        folderFactory.createFolder(collection,
-                Map.of("title","A language folder","languageTerm", "eng",
-                        "topic", "North Carolina","readGroup", "everyone"));
-        adminUnitFactory.createAdminUnit(Map.of(
-                "title", "English Language Admin", "languageTerm", "eng",
-                "topic", "North Carolina", "readGroup", "everyone"));
-        adminUnitFactory.createAdminUnit(Map.of(
-                "title", "Cherokee Language Admin", "languageTerm", "chr",
-                "topic", "UNC", "readGroup", "everyone"));
-    }
-
     public List<JsonNode> getNodeFromResponse(CloseableHttpResponse response, String fieldName) throws IOException {
         ObjectMapper mapper = new ObjectMapper();
         var respJson = mapper.readTree(response.getEntity().getContent());
 
         return IteratorUtils.toList(respJson.get(fieldName).elements());
+    }
+
+    public List<JsonNode> getMetadataFromResponse(CloseableHttpResponse response) throws IOException {
+        return getNodeFromResponse(response, "metadata");
     }
 
     public void assertValuePresent(List<JsonNode> json, int index, String key, String value) {
@@ -170,7 +143,7 @@ public class EndpointIT {
 
     protected void assertResultCountEquals(HttpGet getMethod, int expectedCount) throws IOException {
         try (var resp = httpClient.execute(getMethod)) {
-            var metadata = getNodeFromResponse(resp, "metadata");
+            var metadata = getMetadataFromResponse(resp);
             assertSuccessfulResponse(resp);
             // two admin units, 1 collection (nested in the admin unit), 1 work (with nested file), and 1 folder
             assertEquals(expectedCount, metadata.size());
