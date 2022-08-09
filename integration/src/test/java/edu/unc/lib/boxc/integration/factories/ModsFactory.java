@@ -58,7 +58,7 @@ public class ModsFactory {
                     .setText(options.get("languageTerm"))));
         }
 
-        if (options.containsKey("subject")) {
+        if (options.containsKey("topic")) {
             modsElement.addContent(new Element("subject", MODS_V3_NS)
                     .addContent(new Element("topic", MODS_V3_NS).setText(options.get("topic"))));
         }

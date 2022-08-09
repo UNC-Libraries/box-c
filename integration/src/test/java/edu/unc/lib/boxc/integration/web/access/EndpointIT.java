@@ -118,7 +118,6 @@ public class EndpointIT {
     }
 
     public void createLanguageSubjectObjects() throws Exception {
-        //language facet selected
         var languageAdminUnit = adminUnitFactory.createAdminUnit(
                 Map.of("title", "Admin Object", "languageTerm", "eng"));
         collectionFactory.createCollection(languageAdminUnit,
@@ -127,13 +126,13 @@ public class EndpointIT {
                         "readGroup", "everyone"));
         folderFactory.createFolder(collection,
                 Map.of("title","A language folder","languageTerm", "eng",
-                        "subject", "NorthCarolina","readGroup", "everyone"));
+                        "topic", "North Carolina","readGroup", "everyone"));
         adminUnitFactory.createAdminUnit(Map.of(
                 "title", "English Language Admin", "languageTerm", "eng",
-                "subject", "NorthCarolina", "readGroup", "everyone"));
+                "topic", "North Carolina", "readGroup", "everyone"));
         adminUnitFactory.createAdminUnit(Map.of(
                 "title", "Cherokee Language Admin", "languageTerm", "chr",
-                "subject", "UNC", "readGroup", "everyone"));
+                "topic", "UNC", "readGroup", "everyone"));
     }
 
     public List<JsonNode> getNodeFromResponse(CloseableHttpResponse response, String fieldName) throws IOException {

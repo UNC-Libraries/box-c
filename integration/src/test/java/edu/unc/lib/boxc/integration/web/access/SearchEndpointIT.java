@@ -15,6 +15,7 @@
  */
 package edu.unc.lib.boxc.integration.web.access;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore;
 import edu.unc.lib.boxc.integration.factories.FileFactory;
 import edu.unc.lib.boxc.integration.factories.WorkFactory;
@@ -362,7 +363,8 @@ public class SearchEndpointIT extends EndpointIT {
 
         try (var resp = httpClient.execute(getMethod)) {
             var facetFields = getNodeFromResponse(resp, "facetFields");
-            var languageFields = IteratorUtils.toList(facetFields.get(0).get("values").elements());
+            var languageFields = new ArrayList<JsonNode>();
+            facetFields.get(0).get("values").elements().forEachRemaining(languageFields::add);
 
             assertSuccessfulResponse(resp);
             // should find all available languages: English, Cherokee
@@ -376,18 +378,17 @@ public class SearchEndpointIT extends EndpointIT {
         createDefaultObjects();
         createLanguageSubjectObjects();
 
-        var getMethod = new HttpGet(SEARCH_URL + "/?facetSelect=language%2Csubject&subject=NorthCarolina&language=English&getFacets=true");
+        var getMethod = new HttpGet(SEARCH_URL + "/?facetSelect=language%2Csubject&subject=North%2520Carolina&getFacets=true");
 
         try (var resp = httpClient.execute(getMethod)) {
             var facetFields = getNodeFromResponse(resp, "facetFields");
-            var languageFields = IteratorUtils.toList(facetFields.get(0).get("values").elements());
+            var languageFields = new ArrayList<JsonNode>();
+            facetFields.get(0).get("values").elements().forEachRemaining(languageFields::add);
 
             assertSuccessfulResponse(resp);
             // should find all available languages: English
-            System.out.println(facetFields);
-            System.out.println(languageFields);
             assertEquals(2,facetFields.size());
-            //assertEquals(1,languageFields.size());
+            assertEquals(1,languageFields.size());
             assertValuePresent(languageFields,0,"value", "English");
         }
     }
