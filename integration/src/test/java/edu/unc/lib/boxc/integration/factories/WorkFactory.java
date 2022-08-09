@@ -16,8 +16,8 @@
 package edu.unc.lib.boxc.integration.factories;
 
 import edu.unc.lib.boxc.model.api.objects.CollectionObject;
+import edu.unc.lib.boxc.model.api.objects.FileObject;
 import edu.unc.lib.boxc.model.api.objects.WorkObject;
-import edu.unc.lib.boxc.model.fcrepo.services.DerivativeService;
 
 import java.util.Map;
 
@@ -41,7 +41,7 @@ public class WorkFactory extends ContentObjectFactory {
      * Adds a specified file (options should have what type of file) to the work
      * optional boolean in options can make this file the primary object in the work
      */
-    public void createFileInWork(WorkObject work, Map<String, String> options) throws Exception {
+    public FileObject createFileInWork(WorkObject work, Map<String, String> options) throws Exception {
         var file = fileFactory.createFile(options);
         work.addMember(file);
         prepareObject(file, options);
@@ -53,13 +53,10 @@ public class WorkFactory extends ContentObjectFactory {
         }
         // need to reindex in solr after adding file object
         indexSolr(work);
+        return file;
     }
 
     public void setFileFactory(FileFactory fileFactory) {
         this.fileFactory = fileFactory;
-    }
-
-    public void setDerivativeService(DerivativeService derivativeService) {
-        this.derivativeService = derivativeService;
     }
 }

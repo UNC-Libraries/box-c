@@ -18,7 +18,6 @@ package edu.unc.lib.boxc.integration.factories;
 import edu.unc.lib.boxc.model.api.objects.AdminUnit;
 import edu.unc.lib.boxc.model.api.objects.ContentRootObject;
 import edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPaths;
-import edu.unc.lib.boxc.model.fcrepo.services.DerivativeService;
 
 import java.util.Map;
 
@@ -39,9 +38,5 @@ public class AdminUnitFactory extends ContentObjectFactory {
         prepareObject(adminUnit, options);
 
         return adminUnit;
-    }
-
-    public void setDerivativeService(DerivativeService derivativeService) {
-        this.derivativeService = derivativeService;
     }
 }
