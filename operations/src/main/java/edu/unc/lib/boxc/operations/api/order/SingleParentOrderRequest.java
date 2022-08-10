@@ -15,9 +15,7 @@
  */
 package edu.unc.lib.boxc.operations.api.order;
 
-import edu.unc.lib.boxc.auth.api.models.AgentPrincipals;
 import edu.unc.lib.boxc.model.api.ids.PID;
-import edu.unc.lib.boxc.model.api.objects.ContentContainerObject;
 
 import java.util.List;
 
@@ -26,19 +24,20 @@ import java.util.List;
  *
  * @author bbpennel
  */
-public class OrderChildrenRequest {
-    private ContentContainerObject parentObject;
+public class SingleParentOrderRequest implements OrderRequest {
+    private PID parentPid;
     private List<PID> orderedChildren;
+    private OrderOperationType operation;
 
-    public OrderChildrenRequest() {
+    public SingleParentOrderRequest() {
     }
 
-    public ContentContainerObject getParentObject() {
-        return parentObject;
+    public PID getParentPid() {
+        return parentPid;
     }
 
-    public void setParentObject(ContentContainerObject parentObject) {
-        this.parentObject = parentObject;
+    public void setParentPid(PID parentPid) {
+        this.parentPid = parentPid;
     }
 
     public List<PID> getOrderedChildren() {
@@ -47,5 +46,23 @@ public class OrderChildrenRequest {
 
     public void setOrderedChildren(List<PID> orderedChildren) {
         this.orderedChildren = orderedChildren;
+    }
+
+    @Override
+    public OrderOperationType getOperation() {
+        return operation;
+    }
+
+    public void setOperation(OrderOperationType operation) {
+        this.operation = operation;
+    }
+
+    @Override
+    public String toString() {
+        return "SingleParentOrderRequest{" +
+                "parentPid=" + parentPid +
+                ", orderedChildren=" + orderedChildren +
+                ", operation=" + operation +
+                '}';
     }
 }

@@ -15,34 +15,45 @@
  */
 package edu.unc.lib.boxc.operations.impl.order;
 
+import edu.unc.lib.boxc.model.api.ids.PID;
+import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.api.rdf.Cdr;
 import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
-import edu.unc.lib.boxc.operations.api.order.OrderChildrenRequest;
+import edu.unc.lib.boxc.operations.api.order.SingleParentOrderRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.stream.Collectors;
+
 /**
- * Job which clears the order of children in a container
+ * Job which sets/overwrites the order of children for a container object
  *
  * @author bbpennel
  */
-public class ClearChildrenOrderJob implements Runnable {
-    private static final Logger log = LoggerFactory.getLogger(ClearChildrenOrderJob.class);
+public class SetOrderJob implements Runnable {
+    private static final Logger log = LoggerFactory.getLogger(SetOrderJob.class);
 
+    private RepositoryObjectLoader repositoryObjectLoader;
     private RepositoryObjectFactory repositoryObjectFactory;
-    private OrderChildrenRequest request;
+    private SingleParentOrderRequest request;
 
     @Override
     public void run() {
-        log.debug("Deleting order property for {}", request.getParentObject().getPid());
-        repositoryObjectFactory.deleteProperty(request.getParentObject(), Cdr.memberOrder);
+        var parentObject = repositoryObjectLoader.getRepositoryObject(request.getParentPid());
+        var order = request.getOrderedChildren().stream().map(PID::getId).collect(Collectors.joining("|"));
+        log.debug("Updating order property for {} to {}", request.getParentPid(), order);
+        repositoryObjectFactory.createExclusiveRelationship(parentObject, Cdr.memberOrder, order);
     }
 
     public void setRepositoryObjectFactory(RepositoryObjectFactory repositoryObjectFactory) {
         this.repositoryObjectFactory = repositoryObjectFactory;
     }
 
-    public void setRequest(OrderChildrenRequest request) {
+    public void setRepositoryObjectLoader(RepositoryObjectLoader repositoryObjectLoader) {
+        this.repositoryObjectLoader = repositoryObjectLoader;
+    }
+
+    public void setRequest(SingleParentOrderRequest request) {
         this.request = request;
     }
 }
