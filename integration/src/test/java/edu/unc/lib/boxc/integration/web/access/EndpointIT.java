@@ -115,6 +115,10 @@ public class EndpointIT {
         return getNodeFromResponse(response, "metadata");
     }
 
+    public List<JsonNode> getFacetsFromResponse(CloseableHttpResponse response) throws IOException {
+        return getNodeFromResponse(response, "facetFields");
+    }
+
     public void assertValuePresent(List<JsonNode> json, int index, String key, String value) {
         var result = json.get(index);
         assertEquals(value, result.get(key).asText());
