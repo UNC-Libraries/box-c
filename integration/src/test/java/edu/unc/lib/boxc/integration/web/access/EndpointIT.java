@@ -39,6 +39,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.ContextHierarchy;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -103,11 +104,15 @@ public class EndpointIT {
                 Map.of("title", "Folder Object", "readGroup", "everyone"));
     }
 
-    public List<JsonNode> getMetadataFromResponse(CloseableHttpResponse response) throws IOException {
+    public List<JsonNode> getNodeFromResponse(CloseableHttpResponse response, String fieldName) throws IOException {
         ObjectMapper mapper = new ObjectMapper();
         var respJson = mapper.readTree(response.getEntity().getContent());
 
-        return IteratorUtils.toList(respJson.get("metadata").elements());
+        return IteratorUtils.toList(respJson.get(fieldName).elements());
+    }
+
+    public List<JsonNode> getMetadataFromResponse(CloseableHttpResponse response) throws IOException {
+        return getNodeFromResponse(response, "metadata");
     }
 
     public void assertValuePresent(List<JsonNode> json, int index, String key, String value) {
