@@ -17,6 +17,7 @@ package edu.unc.lib.boxc.operations.impl.order;
 
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.boxc.operations.api.order.OrderOperationType;
+import edu.unc.lib.boxc.operations.api.order.OrderRequest;
 import edu.unc.lib.boxc.operations.api.order.SingleParentOrderRequest;
 
 import java.util.Collections;
@@ -36,10 +37,10 @@ public class OrderRequestFactory {
      *
      * @param operation
      * @param parentId
-     * @return new SingleParentOrderRequest with the provided parameters
+     * @return new OrderRequest with the provided parameters
      */
-    public static SingleParentOrderRequest createRequest(OrderOperationType operation,
-                                                         String parentId) {
+    public static OrderRequest createRequest(OrderOperationType operation,
+                                             String parentId) {
         return createRequest(operation, parentId, Collections.emptyList());
     }
 
@@ -47,9 +48,9 @@ public class OrderRequestFactory {
      * @param operation
      * @param parentId
      * @param children
-     * @return new SingleParentOrderRequest with the provided parameters
+     * @return new OrderRequest with the provided parameters
      */
-    public static SingleParentOrderRequest createRequest(OrderOperationType operation,
+    public static OrderRequest createRequest(OrderOperationType operation,
                                                          String parentId,
                                                          List<String> children) {
         var request = new SingleParentOrderRequest();

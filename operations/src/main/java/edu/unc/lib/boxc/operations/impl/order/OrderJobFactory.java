@@ -18,7 +18,6 @@ package edu.unc.lib.boxc.operations.impl.order;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
 import edu.unc.lib.boxc.operations.api.order.OrderRequest;
-import edu.unc.lib.boxc.operations.api.order.SingleParentOrderRequest;
 
 /**
  * Factory which constructs jobs for updating ordering of objects
@@ -39,14 +38,14 @@ public class OrderJobFactory {
             var job = new SetOrderJob();
             job.setRepositoryObjectFactory(repositoryObjectFactory);
             job.setRepositoryObjectLoader(repositoryObjectLoader);
-            job.setRequest((SingleParentOrderRequest) request);
+            job.setRequest(request);
             return job;
         }
         case CLEAR: {
             var job = new ClearOrderJob();
             job.setRepositoryObjectFactory(repositoryObjectFactory);
             job.setRepositoryObjectLoader(repositoryObjectLoader);
-            job.setRequest((SingleParentOrderRequest) request);
+            job.setRequest(request);
             return job;
         }
         default:

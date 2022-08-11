@@ -32,6 +32,7 @@ public class SingleParentOrderRequest implements OrderRequest {
     public SingleParentOrderRequest() {
     }
 
+    @Override
     public PID getParentPid() {
         return parentPid;
     }
@@ -40,6 +41,7 @@ public class SingleParentOrderRequest implements OrderRequest {
         this.parentPid = parentPid;
     }
 
+    @Override
     public List<PID> getOrderedChildren() {
         return orderedChildren;
     }

@@ -19,7 +19,7 @@ import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.api.rdf.Cdr;
 import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
-import edu.unc.lib.boxc.operations.api.order.SingleParentOrderRequest;
+import edu.unc.lib.boxc.operations.api.order.OrderRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -35,7 +35,7 @@ public class SetOrderJob implements Runnable {
 
     private RepositoryObjectLoader repositoryObjectLoader;
     private RepositoryObjectFactory repositoryObjectFactory;
-    private SingleParentOrderRequest request;
+    private OrderRequest request;
 
     @Override
     public void run() {
@@ -53,7 +53,7 @@ public class SetOrderJob implements Runnable {
         this.repositoryObjectLoader = repositoryObjectLoader;
     }
 
-    public void setRequest(SingleParentOrderRequest request) {
+    public void setRequest(OrderRequest request) {
         this.request = request;
     }
 }

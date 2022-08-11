@@ -22,6 +22,7 @@ import edu.unc.lib.boxc.model.api.rdf.Cdr;
 import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.boxc.operations.api.order.OrderOperationType;
+import edu.unc.lib.boxc.operations.api.order.OrderRequest;
 import edu.unc.lib.boxc.operations.api.order.SingleParentOrderRequest;
 import org.junit.Before;
 import org.junit.Test;
@@ -94,7 +95,7 @@ public class SetOrderJobTest {
         assertMemberOrderSetWithValue(CHILD2_UUID + "|" + CHILD3_UUID + "|" + CHILD1_UUID);
     }
 
-    private SingleParentOrderRequest createRequest(String... children) {
+    private OrderRequest createRequest(String... children) {
         return OrderRequestFactory.createRequest(
                 OrderOperationType.SET, PARENT_UUID, Arrays.asList(children));
     }
