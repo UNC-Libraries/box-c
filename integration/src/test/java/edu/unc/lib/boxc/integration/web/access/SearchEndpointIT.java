@@ -16,6 +16,7 @@
 package edu.unc.lib.boxc.integration.web.access;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore;
 import edu.unc.lib.boxc.integration.factories.FileFactory;
 import edu.unc.lib.boxc.integration.factories.WorkFactory;
@@ -29,23 +30,27 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import java.time.Year;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
 import static edu.unc.lib.boxc.integration.factories.FileFactory.FILE_FORMAT_OPTION;
 import static edu.unc.lib.boxc.integration.factories.FileFactory.IMAGE_FORMAT;
-import static edu.unc.lib.boxc.integration.factories.FileFactory.FILE_FORMAT_OPTION;
-import static edu.unc.lib.boxc.integration.factories.FileFactory.IMAGE_FORMAT;
+
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 
 /**
  * Integration tests for searchJson endpoints
- * @author snluong
+ * @author snluong, krwong, bbpennel
  */
 
 @RunWith(SpringJUnit4ClassRunner.class)
 public class SearchEndpointIT extends EndpointIT {
     protected final static String SEARCH_URL = ACCESS_URL + "/searchJson";
+    protected final static List<String> DEFAULT_FACETS = Arrays.asList("PARENT_UNIT", "PARENT_COLLECTION",
+            "FILE_FORMAT_CATEGORY", "GENRE", "SUBJECT", "LANGUAGE", "LOCATION", "PUBLISHER",
+            "DATE_CREATED_YEAR", "CREATOR_CONTRIBUTOR");
 
     @Before
     public void setup() throws Exception {
@@ -383,7 +388,7 @@ public class SearchEndpointIT extends EndpointIT {
         var getMethod = new HttpGet(SEARCH_URL + "/?facetSelect=language&language=English&getFacets=true");
 
         try (var resp = httpClient.execute(getMethod)) {
-            var facetFields = getNodeFromResponse(resp, "facetFields");
+            var facetFields = getFacetsFromResponse(resp);
 
             assertSuccessfulResponse(resp);
             // should only find the language facet
@@ -399,7 +404,7 @@ public class SearchEndpointIT extends EndpointIT {
         var getMethod = new HttpGet(SEARCH_URL + "/?facetSelect=language&language=English&getFacets=true");
 
         try (var resp = httpClient.execute(getMethod)) {
-            var facetFields = getNodeFromResponse(resp, "facetFields");
+            var facetFields = getFacetsFromResponse(resp);
             var languageFields = new ArrayList<JsonNode>();
             facetFields.get(0).get("values").elements().forEachRemaining(languageFields::add);
 
@@ -418,7 +423,7 @@ public class SearchEndpointIT extends EndpointIT {
         var getMethod = new HttpGet(SEARCH_URL + "/?facetSelect=language%2Csubject&subject=North%2520Carolina&getFacets=true");
 
         try (var resp = httpClient.execute(getMethod)) {
-            var facetFields = getNodeFromResponse(resp, "facetFields");
+            var facetFields = getFacetsFromResponse(resp);
             var languageFields = new ArrayList<JsonNode>();
             facetFields.get(0).get("values").elements().forEachRemaining(languageFields::add);
             var subjectFields = new ArrayList<JsonNode>();
@@ -432,6 +437,96 @@ public class SearchEndpointIT extends EndpointIT {
             assertValuePresent(subjectFields, 0, "value", "North Carolina");
         }
     }
+
+    @Test
+    public void testGetFacetsFalseSearchReturnsNoFacets() throws Exception {
+        createDefaultObjects();
+        createLanguageSubjectObjects();
+
+        var getMethod = new HttpGet(SEARCH_URL + "/?getFacets=false");
+
+        try (var resp = httpClient.execute(getMethod)) {
+            var respJson = getResponseAsJson(resp);
+
+            assertSuccessfulResponse(resp);
+            assertFalse(respJson.has("facetFields"));
+        }
+    }
+
+    @Test
+    public void testGetFacetsTrueSearchReturnsDefaultFacets() throws Exception {
+        createDefaultObjects();
+        var getMethod = new HttpGet(SEARCH_URL + "/?getFacets=true");
+
+        try (var resp = httpClient.execute(getMethod)) {
+            var facetFields = getFacetsFromResponse(resp);
+            var facetNames = new ArrayList<String>();
+
+            for (JsonNode facet : facetFields) {
+                facetNames.add(facet.get("name").asText());
+            }
+
+            assertSuccessfulResponse(resp);
+            assertEquals(10, facetFields.size());
+            assertEquals(DEFAULT_FACETS, facetNames);
+        }
+    }
+
+    @Test
+    public void testSearchWithFacetSelectOnlyShowsThoseFacets() throws Exception {
+        createDefaultObjects();
+        var getMethod = new HttpGet(SEARCH_URL + "/?facetSelect=language%2Csubject&getFacets=true");
+
+        try (var resp = httpClient.execute(getMethod)) {
+            var facetFields = getFacetsFromResponse(resp);
+
+            assertSuccessfulResponse(resp);
+            assertEquals(2, facetFields.size());
+            assertEquals("LANGUAGE", facetFields.get(0).get("name").asText());
+            assertEquals("SUBJECT", facetFields.get(1).get("name").asText());
+        }
+    }
+
+    @Test
+    public void testSearchWithFacetSelectCannotShowDisallowedFacets() throws Exception {
+        createDefaultObjects();
+        var getMethod = new HttpGet(SEARCH_URL + "/?facetSelect=language,subject,contentStatus&getFacets=true");
+
+        try (var resp = httpClient.execute(getMethod)) {
+            var facetFields = getFacetsFromResponse(resp);
+
+            assertSuccessfulResponse(resp);
+            assertEquals(2, facetFields.size());
+            assertEquals("LANGUAGE", facetFields.get(0).get("name").asText());
+            assertEquals("SUBJECT", facetFields.get(1).get("name").asText());
+        }
+    }
+
+    @Test
+    public void testFacetCountsReflectUserPermissions() throws Exception {
+        createDefaultObjects();
+        createLanguageSubjectObjects();
+        // create admin-restricted collections in different languages
+        collectionFactory.createCollection(adminUnit1,
+                Map.of("title", "Collection Object", "adminGroup", "adminGroup", "languageTerm", "kor"));
+        collectionFactory.createCollection(adminUnit1,
+                Map.of("title", "Collection Object", "adminGroup", "adminGroup", "languageTerm", "por"));
+
+        var getMethod = new HttpGet(SEARCH_URL + "/?facetSelect=language&getFacets=true");
+
+        try (var resp = httpClient.execute(getMethod)) {
+            var facetFields = getFacetsFromResponse(resp);
+            var languageFields = new ArrayList<JsonNode>();
+            facetFields.get(0).get("values").elements().forEachRemaining(languageFields::add);
+
+            assertSuccessfulResponse(resp);
+            assertEquals(2, languageFields.size());
+            // should display only languages associated with public objects: English, Cherokee
+            assertValuePresent(languageFields, 0, "value", "English");
+            assertValuePresent(languageFields, 1, "value", "Cherokee");
+        }
+    }
+
 
     public List<String> createDatedObjects() throws Exception {
         List<String> ids = new ArrayList<>();

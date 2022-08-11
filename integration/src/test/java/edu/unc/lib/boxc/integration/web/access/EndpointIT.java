@@ -105,14 +105,22 @@ public class EndpointIT {
     }
 
     public List<JsonNode> getNodeFromResponse(CloseableHttpResponse response, String fieldName) throws IOException {
-        ObjectMapper mapper = new ObjectMapper();
-        var respJson = mapper.readTree(response.getEntity().getContent());
+        var respJson = getResponseAsJson(response);
 
         return IteratorUtils.toList(respJson.get(fieldName).elements());
     }
 
+    public JsonNode getResponseAsJson(CloseableHttpResponse response) throws IOException {
+        ObjectMapper mapper = new ObjectMapper();
+        return mapper.readTree(response.getEntity().getContent());
+    }
+
     public List<JsonNode> getMetadataFromResponse(CloseableHttpResponse response) throws IOException {
         return getNodeFromResponse(response, "metadata");
+    }
+
+    public List<JsonNode> getFacetsFromResponse(CloseableHttpResponse response) throws IOException {
+        return getNodeFromResponse(response, "facetFields");
     }
 
     public void assertValuePresent(List<JsonNode> json, int index, String key, String value) {
