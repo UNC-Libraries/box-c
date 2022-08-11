@@ -30,6 +30,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import java.time.Year;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -47,6 +48,9 @@ import static org.junit.Assert.assertFalse;
 @RunWith(SpringJUnit4ClassRunner.class)
 public class SearchEndpointIT extends EndpointIT {
     protected final static String SEARCH_URL = ACCESS_URL + "/searchJson";
+    protected final static List<String> DEFAULT_FACETS = Arrays.asList("PARENT_UNIT", "PARENT_COLLECTION",
+            "FILE_FORMAT_CATEGORY", "GENRE", "SUBJECT", "LANGUAGE", "LOCATION", "PUBLISHER",
+            "DATE_CREATED_YEAR", "CREATOR_CONTRIBUTOR");
 
     @Before
     public void setup() throws Exception {
@@ -442,8 +446,7 @@ public class SearchEndpointIT extends EndpointIT {
         var getMethod = new HttpGet(SEARCH_URL + "/?getFacets=false");
 
         try (var resp = httpClient.execute(getMethod)) {
-            ObjectMapper mapper = new ObjectMapper();
-            var respJson = mapper.readTree(resp.getEntity().getContent());
+            var respJson = getResponseAsJson(resp);
 
             assertSuccessfulResponse(resp);
             assertFalse(respJson.has("facetFields"));
@@ -464,8 +467,8 @@ public class SearchEndpointIT extends EndpointIT {
             }
 
             assertSuccessfulResponse(resp);
-            assertEquals(10,facetFields.size());
-            assertEquals(defaultFacets(), facetNames);
+            assertEquals(10, facetFields.size());
+            assertEquals(DEFAULT_FACETS, facetNames);
         }
     }
 
@@ -478,7 +481,7 @@ public class SearchEndpointIT extends EndpointIT {
             var facetFields = getFacetsFromResponse(resp);
 
             assertSuccessfulResponse(resp);
-            assertEquals(2,facetFields.size());
+            assertEquals(2, facetFields.size());
             assertEquals("LANGUAGE", facetFields.get(0).get("name").asText());
             assertEquals("SUBJECT", facetFields.get(1).get("name").asText());
         }
@@ -487,13 +490,13 @@ public class SearchEndpointIT extends EndpointIT {
     @Test
     public void testSearchWithFacetSelectCannotShowDisallowedFacets() throws Exception {
         createDefaultObjects();
-        var getMethod = new HttpGet(SEARCH_URL + "/?facetSelect=language,subject,content+status&getFacets=true");
+        var getMethod = new HttpGet(SEARCH_URL + "/?facetSelect=language,subject,contentStatus&getFacets=true");
 
         try (var resp = httpClient.execute(getMethod)) {
             var facetFields = getFacetsFromResponse(resp);
 
             assertSuccessfulResponse(resp);
-            assertEquals(2,facetFields.size());
+            assertEquals(2, facetFields.size());
             assertEquals("LANGUAGE", facetFields.get(0).get("name").asText());
             assertEquals("SUBJECT", facetFields.get(1).get("name").asText());
         }
@@ -517,26 +520,11 @@ public class SearchEndpointIT extends EndpointIT {
             facetFields.get(0).get("values").elements().forEachRemaining(languageFields::add);
 
             assertSuccessfulResponse(resp);
-            assertEquals(2,languageFields.size());
+            assertEquals(2, languageFields.size());
             // should display only languages associated with public objects: English, Cherokee
             assertValuePresent(languageFields, 0, "value", "English");
             assertValuePresent(languageFields, 1, "value", "Cherokee");
         }
-    }
-
-    private ArrayList<String> defaultFacets() {
-        ArrayList<String> facets = new ArrayList<>();
-        facets.add("PARENT_UNIT");
-        facets.add("PARENT_COLLECTION");
-        facets.add("FILE_FORMAT_CATEGORY");
-        facets.add("GENRE");
-        facets.add("SUBJECT");
-        facets.add("LANGUAGE");
-        facets.add("LOCATION");
-        facets.add("PUBLISHER");
-        facets.add("DATE_CREATED_YEAR");
-        facets.add("CREATOR_CONTRIBUTOR");
-        return facets;
     }
 
 
