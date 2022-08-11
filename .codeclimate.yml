@@ -10,6 +10,6 @@ plugins:
     enabled: true
 exclude_patterns:
   - "/static/js/lib/"
-  - "/static/js/admin/performance_visualizations/assets/d3/d3.js"
+  - "/static/js/admin/performance_visualizations/assets/"
   - "**/test/"
   - "**/tests/"
