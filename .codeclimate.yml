@@ -3,13 +3,13 @@ plugins:
   checkstyle:
     enabled: true
     config:
-      file: "/common-utils/src/main/resources/checkstyle/checkstyle.xml"
+      file: "common-utils/src/main/resources/checkstyle/checkstyle.xml"
   sonar-java:
     enabled: true
   pmd:
     enabled: true
 exclude_patterns:
-  - "/static/js/lib/"
-  - "/static/js/admin/performance_visualizations/assets/"
+  - "static/js/lib/"
+  - "static/js/admin/performance_visualizations/assets/"
   - "**/test/"
   - "**/tests/"
