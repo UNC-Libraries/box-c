@@ -36,9 +36,7 @@ import java.util.Map;
 
 import static edu.unc.lib.boxc.integration.factories.FileFactory.FILE_FORMAT_OPTION;
 import static edu.unc.lib.boxc.integration.factories.FileFactory.IMAGE_FORMAT;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.*;
 
 /**
  * Integration tests for searchJson endpoints
@@ -527,6 +525,42 @@ public class SearchEndpointIT extends EndpointIT {
         }
     }
 
+    @Test
+    public void testSearchAllExpectedFieldsForRecordReturned() throws Exception {
+        createDefaultObjects();
+        createWorkAndFileObjects();
+
+        var getMethod = new HttpGet(SEARCH_URL);
+
+        try (var resp = httpClient.execute(getMethod)) {
+            var metadata = getMetadataFromResponse(resp);
+            assertSuccessfulResponse(resp);
+
+            //assertValuePresent(metadata, 5, "thumbnail_url");
+            assertValuePresent(metadata, 5, "id");
+            assertValuePresent(metadata, 5, "title");
+            assertValuePresent(metadata, 5, "_version_");
+            assertValuePresent(metadata, 5, "status");
+            assertValuePresent(metadata, 5, "contentStatus");
+            assertValuePresent(metadata, 5, "subject");
+            assertValuePresent(metadata, 5, "type");
+            //assertValuePresent(metadata, 5, "creator");
+            assertValuePresent(metadata, 5, "datastream");
+            //assertValuePresent(metadata, 5, "fileFormatCategory");
+            //assertValuePresent(metadata, 5, "fileFormatDescription");
+            //assertValuePresent(metadata, 5, "fileFormatType");
+            assertValuePresent(metadata, 5, "identifier");
+            assertValuePresent(metadata, 5, "ancestorPath");
+            assertValuePresent(metadata, 5, "objectPath");
+            assertValuePresent(metadata, 5, "rollup");
+            assertValuePresent(metadata, 5, "counts");
+            assertValuePresent(metadata, 5, "added");
+            assertValuePresent(metadata, 5, "updated");
+            assertValuePresent(metadata, 5, "created");
+            assertValuePresent(metadata, 5, "timestamp");
+            assertValuePresent(metadata, 5, "permissions");
+        }
+    }
 
     public List<String> createDatedObjects() throws Exception {
         List<String> ids = new ArrayList<>();
@@ -557,5 +591,19 @@ public class SearchEndpointIT extends EndpointIT {
         adminUnitFactory.createAdminUnit(Map.of(
                 "title", "Cherokee Language Admin", "languageTerm", "chr",
                 "topic", "UNC", "readGroup", "everyone"));
+    }
+
+    public void createWorkAndFileObjects() throws Exception {
+        work = workFactory.createWork(collection,
+                Map.of("title", "Work Record", "dateCreated", "2022-07-01",
+                        "topic", "North Carolina", "identifier", "abc123",
+                        "readGroup", "everyone"));
+        var fileOptions = Map.of(
+                "title", "File Record", "dateCreated", "2022-07-01",
+                "topic", "North Carolina", "identifier", "abc123",
+                WorkFactory.PRIMARY_OBJECT_KEY, "false",
+                FileFactory.FILE_FORMAT_OPTION, FileFactory.AUDIO_FORMAT,
+                "readGroup", "everyone");
+        workFactory.createFileInWork(work, fileOptions);
     }
 }

@@ -63,6 +63,13 @@ public class ModsFactory {
                     .addContent(new Element("topic", MODS_V3_NS).setText(options.get("topic"))));
         }
 
+        if (options.containsKey("identifier")) {
+            modsElement.addContent(new Element("identifier", MODS_V3_NS)
+                    .setAttribute("type", "local")
+                    .setAttribute("displayLabel", "Collection Number")
+                    .setText(options.get("identifier")));
+        }
+
         return modsElement.getChildren().isEmpty() ? null : xmlDoc;
     }
 }
