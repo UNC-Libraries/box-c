@@ -543,7 +543,7 @@ public class SearchEndpointIT extends EndpointIT {
             assertArrayValuePresent(metadata, 1, "contentStatus");
             assertArrayValuePresent(metadata, 1, "subject");
             assertStringValuePresent(metadata, 1, "type");
-            //assertStringValuePresent(metadata, 1, "creator");
+            assertArrayValuePresent(metadata, 0, "creator");
             assertArrayValuePresent(metadata, 1, "datastream");
             assertArrayValuePresent(metadata, 1, "format");
             assertArrayValuePresent(metadata, 1, "fileDesc");
@@ -603,7 +603,6 @@ public class SearchEndpointIT extends EndpointIT {
         var fileOptions = Map.of(
                 "title", "File Record", "dateCreated", "2022-07-01",
                 "topic", "North Carolina", "identifier", "abc123",
-                "creator", "Creator?",
                 WorkFactory.PRIMARY_OBJECT_KEY, "false",
                 FileFactory.FILE_FORMAT_OPTION, IMAGE_FORMAT,
                 "readGroup", "everyone");
