@@ -43,9 +43,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 /**
  * A parent class for SearchActionController Endpoint tests.
@@ -128,9 +126,14 @@ public class EndpointIT {
         assertEquals(value, result.get(key).asText());
     }
 
-    public void assertValuePresent(List<JsonNode> json, int index, String key) {
+    public void assertStringValuePresent(List<JsonNode> json, int index, String key) {
         var result = json.get(index);
         assertNotNull(result.get(key).asText());
+    }
+
+    public void assertArrayValuePresent(List<JsonNode> json, int index, String key) {
+        var result = json.get(index);
+        assertFalse(result.get(key).isEmpty());
     }
 
     public void assertSuccessfulResponse(CloseableHttpResponse response) {

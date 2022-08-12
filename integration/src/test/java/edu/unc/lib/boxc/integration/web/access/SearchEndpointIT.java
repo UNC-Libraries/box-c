@@ -527,38 +527,37 @@ public class SearchEndpointIT extends EndpointIT {
 
     @Test
     public void testSearchAllExpectedFieldsForRecordReturned() throws Exception {
-        createDefaultObjects();
         createWorkAndFileObjects();
 
-        var getMethod = new HttpGet(SEARCH_URL);
+        var getMethod = new HttpGet(SEARCH_URL + "/?types=Work,File&rollup=false");
 
         try (var resp = httpClient.execute(getMethod)) {
             var metadata = getMetadataFromResponse(resp);
             assertSuccessfulResponse(resp);
 
-            //assertValuePresent(metadata, 5, "thumbnail_url");
-            assertValuePresent(metadata, 5, "id");
-            assertValuePresent(metadata, 5, "title");
-            assertValuePresent(metadata, 5, "_version_");
-            assertValuePresent(metadata, 5, "status");
-            assertValuePresent(metadata, 5, "contentStatus");
-            assertValuePresent(metadata, 5, "subject");
-            assertValuePresent(metadata, 5, "type");
-            //assertValuePresent(metadata, 5, "creator");
-            assertValuePresent(metadata, 5, "datastream");
-            //assertValuePresent(metadata, 5, "fileFormatCategory");
-            //assertValuePresent(metadata, 5, "fileFormatDescription");
-            //assertValuePresent(metadata, 5, "fileFormatType");
-            assertValuePresent(metadata, 5, "identifier");
-            assertValuePresent(metadata, 5, "ancestorPath");
-            assertValuePresent(metadata, 5, "objectPath");
-            assertValuePresent(metadata, 5, "rollup");
-            assertValuePresent(metadata, 5, "counts");
-            assertValuePresent(metadata, 5, "added");
-            assertValuePresent(metadata, 5, "updated");
-            assertValuePresent(metadata, 5, "created");
-            assertValuePresent(metadata, 5, "timestamp");
-            assertValuePresent(metadata, 5, "permissions");
+            assertStringValuePresent(metadata, 1, "thumbnail_url");
+            assertStringValuePresent(metadata, 1, "id");
+            assertStringValuePresent(metadata, 1, "title");
+            assertStringValuePresent(metadata, 1, "_version_");
+            assertArrayValuePresent(metadata, 1, "status");
+            assertArrayValuePresent(metadata, 1, "contentStatus");
+            assertArrayValuePresent(metadata, 1, "subject");
+            assertStringValuePresent(metadata, 1, "type");
+            //assertStringValuePresent(metadata, 1, "creator");
+            assertArrayValuePresent(metadata, 1, "datastream");
+            assertArrayValuePresent(metadata, 1, "format");
+            assertArrayValuePresent(metadata, 1, "fileDesc");
+            assertArrayValuePresent(metadata, 1, "fileType");
+            assertArrayValuePresent(metadata, 1, "identifier");
+            assertArrayValuePresent(metadata, 1, "ancestorPath");
+            assertArrayValuePresent(metadata, 1, "objectPath");
+            assertStringValuePresent(metadata, 1, "rollup");
+            assertArrayValuePresent(metadata, 0, "counts");
+            assertStringValuePresent(metadata, 1, "added");
+            assertStringValuePresent(metadata, 1, "updated");
+            assertStringValuePresent(metadata, 1, "created");
+            assertStringValuePresent(metadata, 1, "timestamp");
+            assertArrayValuePresent(metadata, 1, "permissions");
         }
     }
 
@@ -594,15 +593,19 @@ public class SearchEndpointIT extends EndpointIT {
     }
 
     public void createWorkAndFileObjects() throws Exception {
+        adminUnit1 = adminUnitFactory.createAdminUnit(Map.of("title", "Admin Object1"));
+        collection = collectionFactory.createCollection(adminUnit1,
+                Map.of("title", "Collection Object", "readGroup", "everyone"));
         work = workFactory.createWork(collection,
                 Map.of("title", "Work Record", "dateCreated", "2022-07-01",
                         "topic", "North Carolina", "identifier", "abc123",
-                        "readGroup", "everyone"));
+                        "roleTerm", "creator", "readGroup", "everyone"));
         var fileOptions = Map.of(
                 "title", "File Record", "dateCreated", "2022-07-01",
                 "topic", "North Carolina", "identifier", "abc123",
+                "roleTerm", "creator",
                 WorkFactory.PRIMARY_OBJECT_KEY, "false",
-                FileFactory.FILE_FORMAT_OPTION, FileFactory.AUDIO_FORMAT,
+                FileFactory.FILE_FORMAT_OPTION, IMAGE_FORMAT,
                 "readGroup", "everyone");
         workFactory.createFileInWork(work, fileOptions);
     }

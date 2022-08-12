@@ -93,7 +93,7 @@ public class CollectionsEndpointIT extends EndpointIT{
             var metadata = getMetadataFromResponse(resp);
 
             assertSuccessfulResponse(resp);
-            assertValuePresent(metadata, 0, "thumbnail_url");
+            assertStringValuePresent(metadata, 0, "thumbnail_url");
             assertEquals(1, metadata.size());
         }
     }
