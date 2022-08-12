@@ -552,7 +552,7 @@ public class SearchEndpointIT extends EndpointIT {
             assertArrayValuePresent(metadata, 1, "ancestorPath");
             assertArrayValuePresent(metadata, 1, "objectPath");
             assertStringValuePresent(metadata, 1, "rollup");
-            assertArrayValuePresent(metadata, 0, "counts");
+            assertArrayValuePresent(metadata, 0, "counts"); //counts in work and not file
             assertStringValuePresent(metadata, 1, "added");
             assertStringValuePresent(metadata, 1, "updated");
             assertStringValuePresent(metadata, 1, "created");
@@ -599,11 +599,11 @@ public class SearchEndpointIT extends EndpointIT {
         work = workFactory.createWork(collection,
                 Map.of("title", "Work Record", "dateCreated", "2022-07-01",
                         "topic", "North Carolina", "identifier", "abc123",
-                        "roleTerm", "creator", "readGroup", "everyone"));
+                        "creator", "Creator?", "readGroup", "everyone"));
         var fileOptions = Map.of(
                 "title", "File Record", "dateCreated", "2022-07-01",
                 "topic", "North Carolina", "identifier", "abc123",
-                "roleTerm", "creator",
+                "creator", "Creator?",
                 WorkFactory.PRIMARY_OBJECT_KEY, "false",
                 FileFactory.FILE_FORMAT_OPTION, IMAGE_FORMAT,
                 "readGroup", "everyone");

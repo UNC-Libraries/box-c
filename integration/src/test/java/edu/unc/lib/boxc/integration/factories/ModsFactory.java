@@ -72,13 +72,12 @@ public class ModsFactory {
 
         if (options.containsKey("roleTerm")) {
             modsElement.addContent(new Element("name", MODS_V3_NS).setAttribute("type", "personal")
-                    .addContent(new Element("affiliation")).setText("Music")
-                    .addContent(new Element("namePart")).setText("Test, author")
-                    .addContent(new Element("role"))
-                    .addContent(new Element("roleTerm"))
+                    .addContent(new Element("namePart").setText("test")
+                    .addContent(new Element("role")
+                    .addContent(new Element("roleTerm")
                         .setAttribute("authority", "marcrelator")
                         .setAttribute("type", "text")
-                        .setText(options.get("roleTerm")));
+                        .setText(options.get("creator"))))));
         }
 
         return modsElement.getChildren().isEmpty() ? null : xmlDoc;
