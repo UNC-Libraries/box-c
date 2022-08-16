@@ -48,7 +48,8 @@ public class FileFactory extends ContentObjectFactory {
     Needs WorkFactory createFileInWork to be a legitimate File with a Work as a parent
      */
     public FileObject createFile(Map<String, String> options) throws Exception {
-        var file = repositoryObjectFactory.createFileObject(null);
+        var accessModel = getAccessModel(options);
+        var file = repositoryObjectFactory.createFileObject(accessModel);
         addFileFormat(file, options);
 
         return file;
