@@ -174,7 +174,7 @@ public class FullRecordController extends AbstractErrorHandlingSearchController 
             LOG.error("Failed to retrieve object {} from fedora", idRequest.getId(), e);
         } catch (RenderViewException e) {
             LOG.error("Failed to render full record view for {}", idRequest.getId(), e);
-        } catch (JDOMException | IOException e) {
+        } catch (JDOMException | IOException | IllegalStateException e) {
             LOG.error("Failed to parse MODS document for {}", idRequest.getId(), e);
         }
 
