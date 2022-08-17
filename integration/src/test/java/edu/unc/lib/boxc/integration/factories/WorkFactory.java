@@ -30,7 +30,8 @@ public class WorkFactory extends ContentObjectFactory {
     FileFactory fileFactory;
 
     public WorkObject createWork(CollectionObject collection, Map<String, String> options) throws Exception {
-        var work = repositoryObjectFactory.createWorkObject(null);
+        var accessModel = getAccessModel(options);
+        var work = repositoryObjectFactory.createWorkObject(accessModel);
         collection.addMember(work);
         prepareObject(work, options);
 

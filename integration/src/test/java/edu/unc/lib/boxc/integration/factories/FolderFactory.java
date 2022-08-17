@@ -25,7 +25,8 @@ import java.util.Map;
  */
 public class FolderFactory extends ContentObjectFactory {
     public FolderObject createFolder(CollectionObject collection, Map<String, String> options) throws Exception {
-        var folder = repositoryObjectFactory.createFolderObject(null);
+        var accessModel = getAccessModel(options);
+        var folder = repositoryObjectFactory.createFolderObject(accessModel);
         collection.addMember(folder);
         prepareObject(folder, options);
 
