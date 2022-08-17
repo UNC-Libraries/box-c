@@ -535,11 +535,14 @@ public class SearchEndpointIT extends EndpointIT {
             var metadata = getMetadataFromResponse(resp);
             assertSuccessfulResponse(resp);
 
+            var workId = metadata.get(0).get("id").asText();
+
             //work assertions
             assertValuePresent(metadata, 0, "title", "Work Record");
             assertValuePresent(metadata, 0, "type", "Work");
             assertArrayValuePresent(metadata, 0, "creator", "[\"Creator?\"]");
             assertArrayValuePresent(metadata, 0, "counts");
+            assertValuePresent(metadata, 0, "rollup", workId);
 
             //file assertions
             assertStringValuePresent(metadata, 1, "thumbnail_url");
@@ -557,7 +560,7 @@ public class SearchEndpointIT extends EndpointIT {
             assertArrayValuePresent(metadata, 1, "identifier", "[\"local|abc123\"]");
             assertArrayValuePresent(metadata, 1, "ancestorPath");
             assertArrayValuePresent(metadata, 1, "objectPath");
-            assertStringValuePresent(metadata, 1, "rollup");
+            assertValuePresent(metadata, 1, "rollup", workId);
             assertStringValuePresent(metadata, 1, "added");
             assertStringValuePresent(metadata, 1, "updated");
             assertStringValuePresent(metadata, 1, "created");
