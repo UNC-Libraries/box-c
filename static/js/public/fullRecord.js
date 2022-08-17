@@ -72,7 +72,7 @@ define('fullRecord', ['module', 'jquery', 'JP2Viewer', 'StructureView', 'dataTab
 	}
 
 	if ($childFilesTable.length > 0) {
-		var excluded_columns = [0, 4];
+		var excluded_columns = [0, 4, 5];
 		var column_defs = [
 			{ orderable: false, targets: excluded_columns },
 			{ searchable: false, target: excluded_columns },
@@ -112,32 +112,34 @@ define('fullRecord', ['module', 'jquery', 'JP2Viewer', 'StructureView', 'dataTab
 				return img
 				}, targets: 0
 			},
-			{ render: function (data, type, row) { return '<a href="/record/' + row.id + '" + aria-label="View ' + row.title +'">' +row.title + '</a>'; }, targets: 1 },
+			{ render: function (data, type, row) { return '<a href="/record/' + row.id + '" aria-label="View ' + row.title +'">' +row.title + '</a>'; }, targets: 1 },
 			{ render: function (data, type, row) { return getFileType(row); }, targets: 2 },
 			{ render: function (data, type, row) { return getOriginalFileValue(row.datastream, 'file_size');  }, targets: 3 },
 			{ render: function (data, type, row) { return '<a href="/record/' + row.id + '" aria-label="View ' + row.title +'">' +
 					'<i class="fa fa-search-plus is-icon"' + ' title="View"></a>'; },
 				targets: 4
+			},
+			{ render: function (data, type, row) {
+					if (row.permissions.indexOf('viewOriginal') === -1) {
+						return '<i class="fa fa-download is-icon no-download" title="Download Unavailable">';
+					}
+					return '<a href="/indexablecontent/' + row.id + '?dl=true" aria-label="Download ' + row.title +'">' +
+						'<i class="fa fa-download is-icon" title="Download"></a>';
+				},
+				targets: 5
 			}
 		];
 
-		var num_columns = $('#child-files th').length;
-
-		// Check if user can see the download button
-		if (num_columns >= 6) {
-			excluded_columns.push(5); // download button
-			updateExcludedColumns(excluded_columns);
-			column_defs.push({ render: function (data, type, row) { return '<a href="/indexablecontent/' + row.id + '?dl=true" aria-label="Download ' + row.title +'">' +
-					'<i class="fa fa-download is-icon" title="Download"></a>'; },
-				targets: 5
-			});
-		}
-
-		// Check if user can see the edit button
-		if (num_columns === 7) {
+		if ($('#child-files th').length === 7) {
 			excluded_columns.push(6); // edit button
-			updateExcludedColumns(excluded_columns);
-			column_defs.push({ render: function (data, type, row) {
+
+			// Add to orderable, searchable exclusions
+			[0, 1].forEach(function(d) {
+				column_defs[d].targets = excluded_columns;
+			});
+
+			column_defs.push(
+				{ render: function (data, type, row) {
 						return '<a href="/admin/describe/' + row.id + '" aria-label="Edit ' + row.title +'">' +
 							'<i class="fa fa-edit is-icon" title="Edit"></i></a>'
 					},
@@ -169,13 +171,6 @@ define('fullRecord', ['module', 'jquery', 'JP2Viewer', 'StructureView', 'dataTab
 
 		$('#child-files_filter input').addClass('input');
 		$('.child-records h3').css('margin-bottom', '-30px'); // adjust margin to line up with search box
-
-		function updateExcludedColumns(columns) {
-			// Add to orderable, searchable exclusions
-			[0, 1].forEach(function(d) {
-				column_defs[d].targets = columns;
-			});
-		}
 
 		function getOriginalFileValue(datastream_info, type) {
 			for (var i in datastream_info) {

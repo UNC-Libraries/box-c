@@ -173,9 +173,7 @@
                 <th>File Type</th>
                 <th>File Size</th>
                 <th><span class="sr-only">View file</span></th>
-                <c:if test="${not empty dataFileUrl}">
-                    <th><span class="sr-only">Download file</span></th>
-                </c:if>
+                <th><span class="sr-only">Download file</span></th>
                 <c:if test="${permsHelper.hasEditAccess(accessGroupSet, briefObject)}">
                     <th><span class="sr-only">Edit MODS</span></th>
                 </c:if>
