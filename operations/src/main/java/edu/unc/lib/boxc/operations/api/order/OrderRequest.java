@@ -13,23 +13,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package edu.unc.lib.boxc.integration.factories;
+package edu.unc.lib.boxc.operations.api.order;
 
-import edu.unc.lib.boxc.model.api.objects.CollectionObject;
-import edu.unc.lib.boxc.model.api.objects.FolderObject;
+import edu.unc.lib.boxc.model.api.ids.PID;
 
-import java.util.Map;
+import java.util.List;
 
 /**
- * @author snluong
+ * Request to perform an ordering operation
+ *
+ * @author bbpennel
  */
-public class FolderFactory extends ContentObjectFactory {
-    public FolderObject createFolder(CollectionObject collection, Map<String, String> options) throws Exception {
-        var accessModel = getAccessModel(options);
-        var folder = repositoryObjectFactory.createFolderObject(accessModel);
-        collection.addMember(folder);
-        prepareObject(folder, options);
+public interface OrderRequest {
+    /**
+     * @return the operation type for this request
+     */
+    public OrderOperationType getOperation();
 
-        return folder;
-    }
+    /**
+     * @return parent of the objects being ordered
+     */
+    public PID getParentPid();
+
+    /**
+     * @return list of ordered children
+     */
+    public List<PID> getOrderedChildren();
 }

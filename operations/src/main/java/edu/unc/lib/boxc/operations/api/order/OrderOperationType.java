@@ -13,23 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package edu.unc.lib.boxc.integration.factories;
-
-import edu.unc.lib.boxc.model.api.objects.CollectionObject;
-import edu.unc.lib.boxc.model.api.objects.FolderObject;
-
-import java.util.Map;
+package edu.unc.lib.boxc.operations.api.order;
 
 /**
- * @author snluong
+ * Enumeration of member ordering operation types
+ *
+ * @author bbpennel
  */
-public class FolderFactory extends ContentObjectFactory {
-    public FolderObject createFolder(CollectionObject collection, Map<String, String> options) throws Exception {
-        var accessModel = getAccessModel(options);
-        var folder = repositoryObjectFactory.createFolderObject(accessModel);
-        collection.addMember(folder);
-        prepareObject(folder, options);
-
-        return folder;
-    }
+public enum OrderOperationType {
+    SET, CLEAR, REMOVE_FROM, ADD_TO;
 }

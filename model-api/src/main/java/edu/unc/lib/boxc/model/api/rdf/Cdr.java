@@ -129,6 +129,11 @@ public class Cdr {
     public static final Property originalDeposit = createProperty(
             "http://cdr.unc.edu/definitions/model#originalDeposit" );
 
+    /** Property which records custom ordering of members within a container
+     */
+    public static final Property memberOrder = createProperty(
+            "http://cdr.unc.edu/definitions/model#memberOrder" );
+
     /** Relation from a work to a child which will be treated as the primary
      *  object for this work.
      */

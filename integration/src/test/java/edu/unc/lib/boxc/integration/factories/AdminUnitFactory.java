@@ -27,7 +27,8 @@ import java.util.Map;
  */
 public class AdminUnitFactory extends ContentObjectFactory {
     public AdminUnit createAdminUnit(Map<String, String> options) throws Exception {
-        var adminUnit = repositoryObjectFactory.createAdminUnit(null);
+        var accessModel = getAccessModel(options);
+        var adminUnit = repositoryObjectFactory.createAdminUnit(accessModel);
         ContentRootObject contentRoot = repositoryObjectLoader.getContentRootObject(
                 RepositoryPaths.getContentRootPid());
         contentRoot.addMember(adminUnit);
