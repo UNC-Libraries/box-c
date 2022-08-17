@@ -136,6 +136,11 @@ public class EndpointIT {
         assertFalse(result.get(key).isEmpty());
     }
 
+    public void assertArrayValuePresent(List<JsonNode> json, int index, String key, String value) {
+        var result = json.get(index);
+        assertEquals(value, result.get(key).toString());
+    }
+
     public void assertSuccessfulResponse(CloseableHttpResponse response) {
         assertEquals(200, response.getStatusLine().getStatusCode());
     }

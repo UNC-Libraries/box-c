@@ -16,7 +16,6 @@
 package edu.unc.lib.boxc.integration.web.access;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore;
 import edu.unc.lib.boxc.integration.factories.FileFactory;
 import edu.unc.lib.boxc.integration.factories.WorkFactory;
@@ -36,7 +35,8 @@ import java.util.Map;
 
 import static edu.unc.lib.boxc.integration.factories.FileFactory.FILE_FORMAT_OPTION;
 import static edu.unc.lib.boxc.integration.factories.FileFactory.IMAGE_FORMAT;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 
 /**
  * Integration tests for searchJson endpoints
@@ -535,24 +535,29 @@ public class SearchEndpointIT extends EndpointIT {
             var metadata = getMetadataFromResponse(resp);
             assertSuccessfulResponse(resp);
 
+            //work assertions
+            assertValuePresent(metadata, 0, "title", "Work Record");
+            assertValuePresent(metadata, 0, "type", "Work");
+            assertArrayValuePresent(metadata, 0, "creator", "[\"Creator?\"]");
+            assertArrayValuePresent(metadata, 0, "counts");
+
+            //file assertions
             assertStringValuePresent(metadata, 1, "thumbnail_url");
             assertStringValuePresent(metadata, 1, "id");
-            assertStringValuePresent(metadata, 1, "title");
+            assertValuePresent(metadata, 1, "title", "File Record");
             assertStringValuePresent(metadata, 1, "_version_");
             assertArrayValuePresent(metadata, 1, "status");
             assertArrayValuePresent(metadata, 1, "contentStatus");
             assertArrayValuePresent(metadata, 1, "subject");
-            assertStringValuePresent(metadata, 1, "type");
-            assertArrayValuePresent(metadata, 0, "creator");
+            assertValuePresent(metadata, 1, "type", "File");
             assertArrayValuePresent(metadata, 1, "datastream");
-            assertArrayValuePresent(metadata, 1, "format");
+            assertArrayValuePresent(metadata, 1, "format", "[\"Image\"]");
             assertArrayValuePresent(metadata, 1, "fileDesc");
-            assertArrayValuePresent(metadata, 1, "fileType");
-            assertArrayValuePresent(metadata, 1, "identifier");
+            assertArrayValuePresent(metadata, 1, "fileType", "[\"image/jpeg\"]");
+            assertArrayValuePresent(metadata, 1, "identifier", "[\"local|abc123\"]");
             assertArrayValuePresent(metadata, 1, "ancestorPath");
             assertArrayValuePresent(metadata, 1, "objectPath");
             assertStringValuePresent(metadata, 1, "rollup");
-            assertArrayValuePresent(metadata, 0, "counts"); //counts in work and not file
             assertStringValuePresent(metadata, 1, "added");
             assertStringValuePresent(metadata, 1, "updated");
             assertStringValuePresent(metadata, 1, "created");
@@ -593,16 +598,18 @@ public class SearchEndpointIT extends EndpointIT {
     }
 
     public void createWorkAndFileObjects() throws Exception {
+        // this method creates the full structure (including the admin unit and collection)
+        // doesn't depend on createDefaultObjects()
         adminUnit1 = adminUnitFactory.createAdminUnit(Map.of("title", "Admin Object1"));
         collection = collectionFactory.createCollection(adminUnit1,
                 Map.of("title", "Collection Object", "readGroup", "everyone"));
         work = workFactory.createWork(collection,
                 Map.of("title", "Work Record", "dateCreated", "2022-07-01",
-                        "topic", "North Carolina", "identifier", "abc123",
+                        "topic", "North Carolina", "collectionNumber", "abc123",
                         "creator", "Creator?", "readGroup", "everyone"));
         var fileOptions = Map.of(
                 "title", "File Record", "dateCreated", "2022-07-01",
-                "topic", "North Carolina", "identifier", "abc123",
+                "topic", "North Carolina", "collectionNumber", "abc123",
                 WorkFactory.PRIMARY_OBJECT_KEY, "false",
                 FileFactory.FILE_FORMAT_OPTION, IMAGE_FORMAT,
                 "readGroup", "everyone");

@@ -63,11 +63,11 @@ public class ModsFactory {
                     .addContent(new Element("topic", MODS_V3_NS).setText(options.get("topic"))));
         }
 
-        if (options.containsKey("identifier")) {
+        if (options.containsKey("collectionNumber")) {
             modsElement.addContent(new Element("identifier", MODS_V3_NS)
                     .setAttribute("type", "local")
                     .setAttribute("displayLabel", "Collection Number")
-                    .setText(options.get("identifier")));
+                    .setText(options.get("collectionNumber")));
         }
 
         if (options.containsKey("creator")) {
