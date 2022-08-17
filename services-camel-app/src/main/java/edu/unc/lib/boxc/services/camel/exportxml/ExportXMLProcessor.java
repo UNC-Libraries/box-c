@@ -121,7 +121,7 @@ public class ExportXMLProcessor implements Processor {
 
     private void performExport(ExportXMLRequest request, long startTime) throws IOException {
         int originalPidCount = request.getPids().size();
-        if (request.getExportChildren() || request.getExcludeNoDatastreams()) {
+        if (request.getExportChildren() || request.getOnlyIncludeValidDatastreams()) {
             adjustRequestPids(request);
             log.debug("Finished retrieving children PIDs for export in {}ms", System.currentTimeMillis() - startTime);
         }
@@ -188,7 +188,7 @@ public class ExportXMLProcessor implements Processor {
             SearchRequest searchRequest = new SearchRequest(searchState, request.getAgent().getPrincipals());
             ContentObjectRecord parent = searchService.addSelectedContainer(
                     PIDs.get(pid), searchState, false, request.getAgent().getPrincipals());
-            if (request.getExcludeNoDatastreams()) {
+            if (request.getOnlyIncludeValidDatastreams()) {
                 for (DatastreamType includedDs : request.getDatastreams()) {
                     Datastream ds = parent.getDatastreamObject(includedDs.getId());
                     if (ds != null && StringUtils.isEmpty(ds.getOwner())) {
@@ -209,7 +209,7 @@ public class ExportXMLProcessor implements Processor {
             searchState.setIgnoreMaxRows(true);
             searchState.setResultFields(resultFieldsChildren);
             searchRequest.setApplyCutoffs(false);
-            if (request.getExcludeNoDatastreams()) {
+            if (request.getOnlyIncludeValidDatastreams()) {
                 searchState.addFilter(
                         QueryFilterFactory.createFilter(SearchFieldKey.DATASTREAM, request.getDatastreams()));
             }
@@ -379,7 +379,7 @@ public class ExportXMLProcessor implements Processor {
     private void sendEmailNoResults(ExportXMLRequest request, int originalPidCount) {
         String emailBody = "Request to export metadata for objects initiated by " + request.getAgent().getUsername()
                 + " at " + request.getRequestedTimestamp() + " returned no results.\n";
-        if (request.getExcludeNoDatastreams()) {
+        if (request.getOnlyIncludeValidDatastreams()) {
                 emailBody += "\nThe request specified " + originalPidCount + " objects for export, but "
                         + "no objects contained the requested datastreams.";
         }
