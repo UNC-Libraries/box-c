@@ -63,6 +63,7 @@ import java.util.List;
 import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 import static edu.unc.lib.boxc.common.xml.SecureXMLFactory.createSAXBuilder;
 import static edu.unc.lib.boxc.model.api.rdf.CdrDeposit.mimetype;
@@ -323,7 +324,6 @@ public class ExtractTechnicalMetadataJob extends AbstractConcurrentDepositJob {
         Path stagedPath;
         if (!stagedUri.isAbsolute()) {
             stagedPath = Paths.get(getDepositDirectory().toString(), stagedUriString);
-            stagedUri = stagedPath.toUri();
         } else {
             stagedPath = Paths.get(stagedUri);
         }
@@ -392,26 +392,51 @@ public class ExtractTechnicalMetadataJob extends AbstractConcurrentDepositJob {
         return null;
     }
 
+    // Pattern to match reserved characters for bash commands that need to be escaped
+    private static Pattern ESCAPE_CLI_PATTERN = Pattern.compile("[$*?\\[\\]|;&><\"'`\\\\!#~]+");
+
+    /**
+     * Sanitize a staging path so that it is safe for usage in a CLI call
+     * @param stagedPath
+     * @return sanitized path
+     */
+    protected Path sanitizeCliPath(Path stagedPath) {
+        var path = stagedPath.toString();
+        path = CharMatcher.ascii().negate().replaceFrom(path, '_');
+        path = ESCAPE_CLI_PATTERN.matcher(path).replaceAll("_");
+        return Paths.get(path);
+    }
+
+    /**
+     * Symlink the provided file into the temp directory, inside of parent directory based on the id of the object.
+     * Filename of the symlink is based off the sanitized form of the path.
+     * @param objPid
+     * @param sanitizedPath Sanitized version of the staging path, does not need to resolve to a file
+     * @param stagedPath Original staging path of the file, must resolve to the file being linked
+     * @return Symlink path
+     * @throws IOException
+     */
+    protected Path symlinkFile(PID objPid, Path sanitizedPath, Path stagedPath) throws IOException {
+        var parentDir = TMP_PATH.resolve(objPid.getId());
+        Files.createDirectories(parentDir);
+        var linkPath = parentDir.resolve(sanitizedPath.getFileName());
+        Files.createSymbolicLink(linkPath, stagedPath);
+        return linkPath;
+    }
+
     private Document extractUsingCLI(PID objPid, Path stagedPath) {
         String stdout = null;
         Path fileLink = null;
         try {
-            String targetPath;
-            // Create a symlink to the file to scan if it contains any non-ascii characters in its path,
+            Path targetPath = stagedPath;
+            var sanitizedPath = sanitizeCliPath(stagedPath);
+            // Create a symlink to the file to avoid problems with non-ascii characters and reserved linux characters
             // otherwise there will be encoding mismatches between boxc, the terminal, and FITS.
-            if (!charactersInBoundsForAscii(stagedPath)) {
-                String linkName = objPid.getId();
-                String ext = FilenameUtils.getExtension(stagedPath.getFileName().toString());
-                if (ext != null) {
-                    linkName += "." + ext;
-                }
-                fileLink = TMP_PATH.resolve(linkName);
-                Files.createSymbolicLink(fileLink, stagedPath);
-                targetPath = fileLink.toString();
-            } else {
-                targetPath = stagedPath.toString().replaceAll("\"", "\\\\\"");
+            if (!stagedPath.equals(sanitizedPath)) {
+                fileLink = symlinkFile(objPid, sanitizedPath, stagedPath);
+                targetPath = fileLink;
             }
-            String[] command = new String[] { fitsCommandPath.toString(), "-i", targetPath };
+            String[] command = new String[] { fitsCommandPath.toString(), "-i", targetPath.toString() };
             Process process = Runtime.getRuntime().exec(command);
             int exitCode = process.waitFor();
             stdout = IOUtils.toString(process.getInputStream(), UTF_8);
@@ -426,9 +451,11 @@ public class ExtractTechnicalMetadataJob extends AbstractConcurrentDepositJob {
             failJob(e, "Failed to generate report for file {0} with id {1}, output was:\n{2}",
                     stagedPath, objPid.getId(), stdout);
         } finally {
+            // Cleanup symlink and parent directory containing symlink, if a symlink was used
             if (fileLink != null) {
                 try {
                     Files.delete(fileLink);
+                    Files.delete(fileLink.getParent());
                 } catch (IOException e) {
                     log.warn("Failed to cleanup symlink", e);
                 }
@@ -527,10 +554,6 @@ public class ExtractTechnicalMetadataJob extends AbstractConcurrentDepositJob {
         return premisDoc.getRootElement()
                 .getChild("object", PREMIS_V3_NS)
                 .getChild("objectCharacteristics", PREMIS_V3_NS);
-    }
-
-    private boolean charactersInBoundsForAscii(Path path) {
-        return CharMatcher.ascii().matchesAllOf(path.toString());
     }
 
     /**

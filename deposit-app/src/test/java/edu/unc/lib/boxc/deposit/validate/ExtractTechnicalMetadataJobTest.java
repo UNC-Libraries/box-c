@@ -494,6 +494,39 @@ public class ExtractTechnicalMetadataJobTest extends AbstractDepositJobTest {
         verifyFileResults(filePid, IMAGE_MIMETYPE, IMAGE_FORMAT, IMAGE_MD5, 1);
     }
 
+    @Test
+    public void sanitizeCliPathNoSpecialCharactersTest() throws Exception {
+        var expected = Paths.get("/path/to/file.txt");
+        assertEquals(expected, job.sanitizeCliPath(expected));
+    }
+
+    @Test
+    public void sanitizeCliPathUnicodeTest() throws Exception {
+        var stagingUri = new File("/path/\uD83D\uDC7Eto/fi\uD83D\uDC7Dle.txt").getAbsolutePath();
+        var stagingPath = Paths.get(stagingUri);
+        var expected = Paths.get("/path/__to/fi__le.txt");
+        assertEquals(expected, job.sanitizeCliPath(stagingPath));
+    }
+
+    @Test
+    public void sanitizeCliPathReservedTest() throws Exception {
+        var stagingPath = Paths.get("/path/to/fi$4l?*\"'!e.txt<<1");
+        var expected = Paths.get("/path/to/fi_4l_e.txt_1");
+        assertEquals(expected, job.sanitizeCliPath(stagingPath));
+    }
+
+    @Test
+    public void symlinkFileTest() throws Exception {
+        PID pid = makePid();
+        var originalPath = tmpFolder.newFile("file.txt").toPath();
+        var sanitizedPath = tmpFolder.newFile("fi_l_e.txt").toPath();
+        var result = job.symlinkFile(pid, sanitizedPath, originalPath);
+
+        assertEquals("fi_l_e.txt", result.getFileName().toString());
+        assertEquals(pid.getId(), result.getParent().getFileName().toString());
+        assertTrue(Files.isSymbolicLink(result));
+    }
+
     private HttpUriRequest getRequest() throws Exception {
         ArgumentCaptor<HttpUriRequest> requestCaptor = ArgumentCaptor.forClass(HttpUriRequest.class);
         verify(httpClient).execute(requestCaptor.capture());
