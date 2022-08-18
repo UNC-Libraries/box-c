@@ -72,7 +72,7 @@
                     </c:if>
                     <c:if test="${not empty briefObject.parentCollection && briefObject.ancestorPathFacet.highestTier > 0}">
                         <li>
-                            <c:url var="parentUrl" scope="page" value="record/${briefObject.parentCollection}" />
+                            <c:url var="parentUrl" scope="page" value="record/${briefObject.parentCollectionId}" />
                             <span class="has-text-weight-bold">Collection:</span>
                             <a href="<c:out value='${parentUrl}' />"><c:out value="${briefObject.parentCollectionName}"/></a>
                         </li>

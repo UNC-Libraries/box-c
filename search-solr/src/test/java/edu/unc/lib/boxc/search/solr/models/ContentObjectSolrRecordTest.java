@@ -48,8 +48,10 @@ public class ContentObjectSolrRecordTest extends Assert {
     @Test
     public void getParentCollectionNameAndId() {
         ContentObjectSolrRecord solrRecord = new ContentObjectSolrRecord();
-        solrRecord.setParentCollection("Best Collection|ee8604fb-6d12-4c42-a42f-7fa68679ccbb");
+        var parentString = "Best Collection|ee8604fb-6d12-4c42-a42f-7fa68679ccbb";
+        solrRecord.setParentCollection(parentString);
 
+        assertEquals(parentString, solrRecord.getParentCollection());
         assertEquals("Best Collection", solrRecord.getParentCollectionName());
         assertEquals("ee8604fb-6d12-4c42-a42f-7fa68679ccbb", solrRecord.getParentCollectionId());
     }
