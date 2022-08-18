@@ -54,7 +54,7 @@
             <c:if test="${not empty briefObject.dateAdded}">
                 <p><strong>${searchSettings.searchFieldLabels['DATE_ADDED']}:</strong> <fmt:formatDate pattern="yyyy-MM-dd" value="${briefObject.dateAdded}" /></p>
             </c:if>
-            <p><strong>Collection:</strong> <a href="<c:out value="record/${briefObject.parentCollection}"/>"><c:out value="${briefObject.parentCollectionName}"/></a></p>
+            <p><strong>Collection:</strong> <a href="<c:out value="record/${briefObject.parentCollectionId}"/>"><c:out value="${briefObject.parentCollectionName}"/></a></p>
             <c:if test="${not empty collectionId}">
                 <p><strong>Collection Number: </strong><c:out value="${collectionId}"></c:out></p>
             </c:if>
