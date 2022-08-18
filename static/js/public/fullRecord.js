@@ -103,8 +103,8 @@ define('fullRecord', ['module', 'jquery', 'JP2Viewer', 'StructureView', 'dataTab
 
 					img += '<div class="thumbnail-badge thumbnail-badge-' + whichBadge + '">' +
 							'<div class="fa-stack">' +
-								'<i class="fas fa-circle fa-stack-2x background"></i></i>' +
-								'<i class="fas fa-' + whichBadge + ' fa-stack-1x foreground"></i></i>' +
+								'<i class="fas fa-circle fa-stack-2x background"></i>' +
+								'<i class="fas fa-' + whichBadge + ' fa-stack-1x foreground"></i>' +
 							'</div>' +
 						'</div>';
 				}
