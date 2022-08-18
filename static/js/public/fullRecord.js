@@ -103,8 +103,8 @@ define('fullRecord', ['module', 'jquery', 'JP2Viewer', 'StructureView', 'dataTab
 
 					img += '<div class="thumbnail-badge thumbnail-badge-' + whichBadge + '">' +
 							'<div class="fa-stack">' +
-								'<i class="fas fa-circle fa-stack-2x background"></i>' +
-								'<i class="fas fa-' + whichBadge + ' fa-stack-1x foreground"></i>' +
+								'<i class="fas fa-circle fa-stack-2x background"></i></i>' +
+								'<i class="fas fa-' + whichBadge + ' fa-stack-1x foreground"></i></i>' +
 							'</div>' +
 						'</div>';
 				}
@@ -116,15 +116,15 @@ define('fullRecord', ['module', 'jquery', 'JP2Viewer', 'StructureView', 'dataTab
 			{ render: function (data, type, row) { return getFileType(row); }, targets: 2 },
 			{ render: function (data, type, row) { return getOriginalFileValue(row.datastream, 'file_size');  }, targets: 3 },
 			{ render: function (data, type, row) { return '<a href="/record/' + row.id + '" aria-label="View ' + row.title +'">' +
-					'<i class="fa fa-search-plus is-icon"' + ' title="View"></a>'; },
+					'<i class="fa fa-search-plus is-icon"' + ' title="View"></i></a>'; },
 				targets: 4
 			},
 			{ render: function (data, type, row) {
 					if (row.permissions.indexOf('viewOriginal') === -1) {
-						return '<i class="fa fa-download is-icon no-download" title="Download Unavailable">';
+						return '<i class="fa fa-download is-icon no-download" title="Download Unavailable"></i>';
 					}
 					return '<a href="/indexablecontent/' + row.id + '?dl=true" aria-label="Download ' + row.title +'">' +
-						'<i class="fa fa-download is-icon" title="Download"></a>';
+						'<i class="fa fa-download is-icon" title="Download"></i></a>';
 				},
 				targets: 5
 			}
