@@ -77,9 +77,6 @@ define('fullRecord', ['module', 'jquery', 'JP2Viewer', 'StructureView', 'dataTab
 			{ orderable: false, targets: excluded_columns },
 			{ searchable: false, target: excluded_columns },
 			{ type: 'file-size', targets: 3 },
-			{ width: '5%', targets: [0, 4, 5] },
-			{ width: '20%', targets: [2, 3] },
-			{ width: '40%', targets: 1 },
 			{ render: function (data, type, row, meta) {
 				var img;
 				var hasIntersectionObserver = 'IntersectionObserver' in window;
@@ -115,20 +112,24 @@ define('fullRecord', ['module', 'jquery', 'JP2Viewer', 'StructureView', 'dataTab
 				return img
 				}, targets: 0
 			},
-			{ render: function (data, type, row) { return '<a href="/record/' + row.id + '" + aria-label="View ' + row.title +'">' +row.title + '</a>'; }, targets: 1 },
+			{ render: function (data, type, row) { return '<a href="/record/' + row.id + '" aria-label="View ' + row.title +'">' +row.title + '</a>'; }, targets: 1 },
 			{ render: function (data, type, row) { return getFileType(row); }, targets: 2 },
 			{ render: function (data, type, row) { return getOriginalFileValue(row.datastream, 'file_size');  }, targets: 3 },
 			{ render: function (data, type, row) { return '<a href="/record/' + row.id + '" aria-label="View ' + row.title +'">' +
-					'<i class="fa fa-search-plus is-icon"' + ' title="View"></a>'; },
+					'<i class="fa fa-search-plus is-icon"' + ' title="View"></i></a>'; },
 				targets: 4
 			},
-			{ render: function (data, type, row) { return '<a href="/indexablecontent/' + row.id + '?dl=true" aria-label="Download ' + row.title +'">' +
-					'<i class="fa fa-download is-icon" title="Download"></a>'; },
+			{ render: function (data, type, row) {
+					if (row.permissions.indexOf('viewOriginal') === -1) {
+						return '<i class="fa fa-download is-icon no-download" title="Download Unavailable"></i>';
+					}
+					return '<a href="/indexablecontent/' + row.id + '?dl=true" aria-label="Download ' + row.title +'">' +
+						'<i class="fa fa-download is-icon" title="Download"></i></a>';
+				},
 				targets: 5
 			}
 		];
 
-		// Check if user can see edit button
 		if ($('#child-files th').length === 7) {
 			excluded_columns.push(6); // edit button
 
@@ -136,9 +137,6 @@ define('fullRecord', ['module', 'jquery', 'JP2Viewer', 'StructureView', 'dataTab
 			[0, 1].forEach(function(d) {
 				column_defs[d].targets = excluded_columns;
 			});
-
-			// Add edit btn to 10% width group
-			column_defs[2].targets = [4, 5, 6];
 
 			column_defs.push(
 				{ render: function (data, type, row) {
