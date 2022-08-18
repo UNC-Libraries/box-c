@@ -63,6 +63,8 @@ public interface ContentObjectRecord {
 
     public String getParentCollection();
 
+    public String getParentCollectionId();
+
     public String getRollup();
 
     public Long get_version_();
