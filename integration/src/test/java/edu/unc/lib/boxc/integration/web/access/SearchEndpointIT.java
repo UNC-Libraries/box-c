@@ -16,7 +16,6 @@
 package edu.unc.lib.boxc.integration.web.access;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore;
 import edu.unc.lib.boxc.integration.factories.FileFactory;
 import edu.unc.lib.boxc.integration.factories.WorkFactory;
@@ -36,7 +35,6 @@ import java.util.Map;
 
 import static edu.unc.lib.boxc.integration.factories.FileFactory.FILE_FORMAT_OPTION;
 import static edu.unc.lib.boxc.integration.factories.FileFactory.IMAGE_FORMAT;
-
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 
@@ -527,6 +525,49 @@ public class SearchEndpointIT extends EndpointIT {
         }
     }
 
+    @Test
+    public void testSearchAllExpectedFieldsForRecordReturned() throws Exception {
+        createWorkAndFileObjects();
+
+        var getMethod = new HttpGet(SEARCH_URL + "/?types=Work,File&rollup=false");
+
+        try (var resp = httpClient.execute(getMethod)) {
+            var metadata = getMetadataFromResponse(resp);
+            assertSuccessfulResponse(resp);
+
+            var workId = metadata.get(0).get("id").asText();
+
+            //work assertions
+            assertValuePresent(metadata, 0, "title", "Work Record");
+            assertValuePresent(metadata, 0, "type", "Work");
+            assertArrayValuePresent(metadata, 0, "creator", "[\"Creator?\"]");
+            assertArrayValuePresent(metadata, 0, "counts");
+            assertValuePresent(metadata, 0, "rollup", workId);
+
+            //file assertions
+            assertStringValuePresent(metadata, 1, "thumbnail_url");
+            assertStringValuePresent(metadata, 1, "id");
+            assertValuePresent(metadata, 1, "title", "File Record");
+            assertStringValuePresent(metadata, 1, "_version_");
+            assertArrayValuePresent(metadata, 1, "status");
+            assertArrayValuePresent(metadata, 1, "contentStatus");
+            assertArrayValuePresent(metadata, 1, "subject");
+            assertValuePresent(metadata, 1, "type", "File");
+            assertArrayValuePresent(metadata, 1, "datastream");
+            assertArrayValuePresent(metadata, 1, "format", "[\"Image\"]");
+            assertArrayValuePresent(metadata, 1, "fileDesc");
+            assertArrayValuePresent(metadata, 1, "fileType", "[\"image/jpeg\"]");
+            assertArrayValuePresent(metadata, 1, "identifier", "[\"local|abc123\"]");
+            assertArrayValuePresent(metadata, 1, "ancestorPath");
+            assertArrayValuePresent(metadata, 1, "objectPath");
+            assertValuePresent(metadata, 1, "rollup", workId);
+            assertStringValuePresent(metadata, 1, "added");
+            assertStringValuePresent(metadata, 1, "updated");
+            assertStringValuePresent(metadata, 1, "created");
+            assertStringValuePresent(metadata, 1, "timestamp");
+            assertArrayValuePresent(metadata, 1, "permissions");
+        }
+    }
 
     public List<String> createDatedObjects() throws Exception {
         List<String> ids = new ArrayList<>();
@@ -557,5 +598,24 @@ public class SearchEndpointIT extends EndpointIT {
         adminUnitFactory.createAdminUnit(Map.of(
                 "title", "Cherokee Language Admin", "languageTerm", "chr",
                 "topic", "UNC", "readGroup", "everyone"));
+    }
+
+    public void createWorkAndFileObjects() throws Exception {
+        // this method creates the full structure (including the admin unit and collection)
+        // doesn't depend on createDefaultObjects()
+        adminUnit1 = adminUnitFactory.createAdminUnit(Map.of("title", "Admin Object1"));
+        collection = collectionFactory.createCollection(adminUnit1,
+                Map.of("title", "Collection Object", "readGroup", "everyone"));
+        work = workFactory.createWork(collection,
+                Map.of("title", "Work Record", "dateCreated", "2022-07-01",
+                        "topic", "North Carolina", "collectionNumber", "abc123",
+                        "creator", "Creator?", "readGroup", "everyone"));
+        var fileOptions = Map.of(
+                "title", "File Record", "dateCreated", "2022-07-01",
+                "topic", "North Carolina", "collectionNumber", "abc123",
+                WorkFactory.PRIMARY_OBJECT_KEY, "false",
+                FileFactory.FILE_FORMAT_OPTION, IMAGE_FORMAT,
+                "readGroup", "everyone");
+        workFactory.createFileInWork(work, fileOptions);
     }
 }

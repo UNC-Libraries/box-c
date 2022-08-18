@@ -39,12 +39,12 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.ContextHierarchy;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 /**
@@ -128,9 +128,19 @@ public class EndpointIT {
         assertEquals(value, result.get(key).asText());
     }
 
-    public void assertValuePresent(List<JsonNode> json, int index, String key) {
+    public void assertStringValuePresent(List<JsonNode> json, int index, String key) {
         var result = json.get(index);
         assertNotNull(result.get(key).asText());
+    }
+
+    public void assertArrayValuePresent(List<JsonNode> json, int index, String key) {
+        var result = json.get(index);
+        assertFalse(result.get(key).isEmpty());
+    }
+
+    public void assertArrayValuePresent(List<JsonNode> json, int index, String key, String value) {
+        var result = json.get(index);
+        assertEquals(value, result.get(key).toString());
     }
 
     public void assertSuccessfulResponse(CloseableHttpResponse response) {

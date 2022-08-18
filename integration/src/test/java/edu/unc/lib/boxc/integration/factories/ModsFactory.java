@@ -63,6 +63,23 @@ public class ModsFactory {
                     .addContent(new Element("topic", MODS_V3_NS).setText(options.get("topic"))));
         }
 
+        if (options.containsKey("collectionNumber")) {
+            modsElement.addContent(new Element("identifier", MODS_V3_NS)
+                    .setAttribute("type", "local")
+                    .setAttribute("displayLabel", "Collection Number")
+                    .setText(options.get("collectionNumber")));
+        }
+
+        if (options.containsKey("creator")) {
+            modsElement.addContent(new Element("name", MODS_V3_NS).setAttribute("type", "personal")
+                    .addContent(new Element("namePart", MODS_V3_NS).setText(options.get("creator")))
+                    .addContent(new Element("role", MODS_V3_NS)
+                        .addContent(new Element("roleTerm", MODS_V3_NS)
+                            .setAttribute("authority", "marcrelator")
+                            .setAttribute("type", "text")
+                            .setText("creator"))));
+        }
+
         return modsElement.getChildren().isEmpty() ? null : xmlDoc;
     }
 }
