@@ -579,7 +579,7 @@ public class ExportXMLRouteIT {
         ExportXMLRequest request = new ExportXMLRequest();
         request.setAgent(agent);
         request.setExportChildren(exportChildren);
-        request.setExcludeNoDatastreams(excludeNoDs);
+        request.setOnlyIncludeValidDatastreams(excludeNoDs);
         request.setPids(Arrays.stream(pids).map(PID::getId).collect(Collectors.toList()));
         request.setEmail(EMAIL);
         request.setRequestedTimestamp(Instant.now());
