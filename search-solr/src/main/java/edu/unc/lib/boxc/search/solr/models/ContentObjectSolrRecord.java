@@ -52,6 +52,7 @@ public class ContentObjectSolrRecord extends IndexDocumentBean implements Conten
     protected ObjectPath objectPath;
     protected String ancestorNames;
     protected String parentName;
+    protected String parentId;
     protected List<HierarchicalFacet> contentTypeFacet;
     protected List<Datastream> datastreamObjects;
     // Inverted map of the roleGroup, clustering roles into buckets by group
@@ -222,6 +223,19 @@ public class ContentObjectSolrRecord extends IndexDocumentBean implements Conten
         var facetVal = new FilterableDisplayValueFacet(SearchFieldKey.PARENT_COLLECTION.name(), parentCollection);
         parentName = facetVal.getDisplayValue();
         return parentName;
+    }
+
+    public String getParentCollectionId() {
+        if (parentId != null) {
+            return parentId;
+        }
+        String parentCollection = getParentCollection();
+        if (StringUtils.isBlank(parentCollection)) {
+            return null;
+        }
+        // split the parent collection string at | and get the second part
+        parentId = parentCollection.split("[|]")[1];
+        return parentId;
     }
 
     @Override

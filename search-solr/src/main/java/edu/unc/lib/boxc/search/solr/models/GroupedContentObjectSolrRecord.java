@@ -118,6 +118,10 @@ public class GroupedContentObjectSolrRecord implements GroupedContentObjectRecor
         return this.representative.getParentCollectionName();
     }
 
+    public String getParentCollectionId() {
+        return this.representative.getParentCollectionId();
+    }
+
     @Override
     public String getCollectionId() {
         return this.representative.getCollectionId();
