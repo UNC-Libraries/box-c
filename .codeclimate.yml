@@ -1,0 +1,21 @@
+version: "2"
+plugins:
+  # checkstyle is disabled until we figure out
+  # how to incorporate our file suppressions config.
+  checkstyle:
+    enabled: false
+    # config:
+    #   file: "common-utils/src/main/resources/checkstyle/checkstyle.xml"
+  sonar-java:
+    enabled: true
+  pmd:
+    enabled: true
+exclude_patterns:
+  - "static/js/lib/"
+  - "static/js/admin/performance_visualizations/assets/"
+  - "static/js/admin/lib/"
+  - "static/js/xmleditor/"
+  - "static/plugins/"
+  - "static/plugins/"
+  - "**/test/"
+  - "**/tests/"
