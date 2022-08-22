@@ -25,6 +25,7 @@ import java.util.List;
 
 import edu.unc.lib.boxc.model.api.exceptions.TombstoneFoundException;
 import edu.unc.lib.boxc.model.api.objects.Tombstone;
+import edu.unc.lib.boxc.model.fcrepo.sparql.SparqlListingHelper;
 import org.apache.http.HttpStatus;
 import org.apache.jena.query.QueryExecution;
 import org.apache.jena.query.QuerySolution;
@@ -244,22 +245,7 @@ public class RepositoryObjectDriver {
         PID pid = obj.getPid();
         String queryString = String.format("select ?pid where { ?pid <%1$s> <%2$s> }",
                 relation, pid.getURI());
-        List<PID> related = new ArrayList<>();
-
-        try (QueryExecution qexec = sparqlQueryService.executeQuery(queryString)) {
-            ResultSet results = qexec.execSelect();
-
-            while (results.hasNext()) {
-                QuerySolution soln = results.nextSolution();
-                Resource res = soln.getResource("pid");
-
-                if (res != null) {
-                    related.add(PIDs.get(res.getURI()));
-                }
-            }
-        }
-
-        return related;
+        return SparqlListingHelper.listPids(sparqlQueryService, queryString);
     }
 
     /**
