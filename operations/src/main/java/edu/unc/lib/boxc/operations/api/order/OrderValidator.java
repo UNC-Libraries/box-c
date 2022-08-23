@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package edu.unc.lib.boxc.operations.impl.order;
+package edu.unc.lib.boxc.operations.api.order;
 
 import java.util.List;
 

@@ -18,6 +18,7 @@ package edu.unc.lib.boxc.operations.impl.order;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.api.services.MembershipService;
 import edu.unc.lib.boxc.operations.api.order.OrderRequest;
+import edu.unc.lib.boxc.operations.api.order.OrderValidator;
 
 /**
  * Factory to construct validators for order request

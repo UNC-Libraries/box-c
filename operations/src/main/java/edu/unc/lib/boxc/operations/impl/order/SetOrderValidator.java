@@ -20,11 +20,13 @@ import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.api.services.MembershipService;
 import edu.unc.lib.boxc.operations.api.order.OrderRequest;
+import edu.unc.lib.boxc.operations.api.order.OrderValidator;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -61,26 +63,28 @@ public class SetOrderValidator implements OrderValidator {
         var requestPidSet = new HashSet<>(request.getOrderedChildren());
         if (requestPidSet.size() < request.getOrderedChildren().size()) {
             var duplicates = computeDuplicates(request.getOrderedChildren());
-            errors.add("Invalid request to set order for " + parentId
-                    + ", it contained duplicate member IDs: " + duplicates);
+            errors.add(formatErrorMessage(parentId, "it contained duplicate member IDs", duplicates));
         }
 
         var members = membershipService.listMembers(request.getParentPid());
         var membersNotInRequest = difference(members, requestPidSet);
         if (!membersNotInRequest.isEmpty()) {
-            errors.add("Invalid request to set order for " + parentId
-                    + ", the following members were expected but not listed: "
-                    + membersNotInRequest.stream().map(PID::getId).collect(Collectors.joining(", ")));
+            errors.add(formatErrorMessage(parentId,
+                    "the following members were expected but not listed", membersNotInRequest));
         }
 
         var requestedNotInMembers = difference(requestPidSet, members);
         if (!requestedNotInMembers.isEmpty()) {
-            errors.add("Invalid request to set order for " + parentId
-                    + ", the following IDs are not members: "
-                    + requestedNotInMembers.stream().map(PID::getId).collect(Collectors.joining(", ")));
+            errors.add(formatErrorMessage(parentId, "the following IDs are not members", requestedNotInMembers));
         }
 
         return errors.isEmpty();
+    }
+
+    private String formatErrorMessage(String parentId, String reason, Collection<PID> problemPids) {
+        return "Invalid request to set order for " + parentId
+                + ", " + reason + ": "
+                + problemPids.stream().map(PID::getId).collect(Collectors.joining(", "));
     }
 
     /**
@@ -94,16 +98,15 @@ public class SetOrderValidator implements OrderValidator {
         return result;
     }
 
-    private String computeDuplicates(List<PID> pids) {
+    private List<PID> computeDuplicates(List<PID> pids) {
         // Produces a map of pids to number of times the pid appears
         return pids.stream().collect(Collectors.groupingBy(Function.identity(), Collectors.counting()))
                 .entrySet()
                 .stream()
                 // filter to all the pids that appear more than once
                 .filter(e -> e.getValue() > 1)
-                .map(e -> e.getKey().getId())
-                // Return as a joined string
-                .collect(Collectors.joining(", "));
+                .map(Map.Entry::getKey)
+                .collect(Collectors.toList());
     }
 
     @Override

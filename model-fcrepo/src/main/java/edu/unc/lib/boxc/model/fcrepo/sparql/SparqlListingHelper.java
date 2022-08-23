@@ -31,6 +31,9 @@ import java.util.List;
  * @author bbpennel
  */
 public class SparqlListingHelper {
+    private SparqlListingHelper() {
+    }
+
     /**
      * Retrieve a list of PID results for a sparql query. Query should contain a select parameter named 'pid'
      * @param sparqlQueryService
