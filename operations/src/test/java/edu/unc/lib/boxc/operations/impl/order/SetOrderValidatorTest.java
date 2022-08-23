@@ -61,6 +61,7 @@ public class SetOrderValidatorTest {
         MockitoAnnotations.initMocks(this);
         validator = new SetOrderValidator();
         validator.setRepositoryObjectLoader(repositoryObjectLoader);
+        validator.setMembershipService(membershipService);
 
         parentPid = PIDs.get(PARENT_UUID);
         child1Pid = PIDs.get(CHILD1_UUID);
@@ -72,7 +73,6 @@ public class SetOrderValidatorTest {
 
     private void mockParentType(ResourceType resourceType) {
         when(parentObj.getResourceType()).thenReturn(resourceType);
-
     }
 
     @Test
@@ -100,19 +100,6 @@ public class SetOrderValidatorTest {
     }
 
     @Test
-    public void noMembersListedTest() throws Exception {
-        when(membershipService.listMembers(parentPid)).thenReturn(Arrays.asList(child3Pid));
-
-        var request = OrderRequestFactory.createRequest(OrderOperationType.SET, PARENT_UUID,
-                Collections.emptyList());
-        validator.setRequest(request);
-
-        assertFalse(validator.isValid());
-        assertHasErrors("Invalid request to set order for " + PARENT_UUID +
-                ", must specify one or more member IDs, but none were provided");
-    }
-
-    @Test
     public void membersNotListedTest() throws Exception {
         when(membershipService.listMembers(parentPid)).thenReturn(Arrays.asList(child1Pid, child2Pid, child3Pid));
 
@@ -136,9 +123,9 @@ public class SetOrderValidatorTest {
         assertFalse(validator.isValid());
         assertHasErrors(
                 "Invalid request to set order for " + PARENT_UUID
-                        + ", the following members were expected but not listed: " + CHILD2_UUID,
+                        + ", the following members were expected but not listed: " + CHILD1_UUID,
                 "Invalid request to set order for " + PARENT_UUID
-                        + ", the following IDs are not members: " + CHILD1_UUID);
+                        + ", the following IDs are not members: " + CHILD2_UUID);
     }
 
     @Test
@@ -166,8 +153,20 @@ public class SetOrderValidatorTest {
         assertTrue(validator.getErrors().isEmpty());
     }
 
+    @Test
+    public void validEmptyRequestTest() throws Exception {
+        when(membershipService.listMembers(parentPid)).thenReturn(Collections.emptyList());
+
+        var request = OrderRequestFactory.createRequest(OrderOperationType.SET, PARENT_UUID,
+                Collections.emptyList());
+        validator.setRequest(request);
+
+        assertTrue(validator.isValid());
+        assertTrue(validator.getErrors().isEmpty());
+    }
+
     private void assertHasErrors(String... expected) {
-        var msg = "Expected errors " + expected + " but errors were " + validator.getErrors();
+        var msg = "Expected errors:\n[" + String.join(",", expected) + "]\nbut errors were:\n" + validator.getErrors();
         assertTrue(msg, validator.getErrors().containsAll(Arrays.asList(expected)));
         assertEquals(msg, expected.length, validator.getErrors().size());
     }
