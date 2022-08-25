@@ -30,6 +30,7 @@ public enum Permission {
     editDescription,
     bulkUpdateDescription,
     ingest,
+    orderMembers,
     move,
     markForDeletion,
     markForDeletionUnit,
