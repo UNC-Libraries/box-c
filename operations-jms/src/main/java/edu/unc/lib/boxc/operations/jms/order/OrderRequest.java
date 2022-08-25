@@ -13,13 +13,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package edu.unc.lib.boxc.operations.api.order;
+package edu.unc.lib.boxc.operations.jms.order;
+
+import edu.unc.lib.boxc.model.api.ids.PID;
+
+import java.util.List;
 
 /**
- * Enumeration of member ordering operation types
+ * Request to perform an ordering operation
  *
  * @author bbpennel
  */
-public enum OrderOperationType {
-    SET, CLEAR, REMOVE_FROM, ADD_TO;
+public interface OrderRequest {
+    /**
+     * @return the operation type for this request
+     */
+    public OrderOperationType getOperation();
+
+    /**
+     * @return parent of the objects being ordered
+     */
+    public PID getParentPid();
+
+    /**
+     * @return list of ordered children
+     */
+    public List<PID> getOrderedChildren();
 }

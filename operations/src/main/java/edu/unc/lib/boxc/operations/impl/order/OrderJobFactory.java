@@ -17,7 +17,7 @@ package edu.unc.lib.boxc.operations.impl.order;
 
 import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
-import edu.unc.lib.boxc.operations.api.order.OrderRequest;
+import edu.unc.lib.boxc.operations.jms.order.OrderRequest;
 
 /**
  * Factory which constructs jobs for updating ordering of objects
