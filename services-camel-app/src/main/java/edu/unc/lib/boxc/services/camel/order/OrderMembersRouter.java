@@ -15,8 +15,6 @@
  */
 package edu.unc.lib.boxc.services.camel.order;
 
-import edu.unc.lib.boxc.services.camel.exportxml.ExportXMLProcessor;
-import edu.unc.lib.boxc.services.camel.exportxml.ExportXMLRouter;
 import org.apache.camel.BeanInject;
 import org.apache.camel.builder.RouteBuilder;
 import org.slf4j.Logger;
