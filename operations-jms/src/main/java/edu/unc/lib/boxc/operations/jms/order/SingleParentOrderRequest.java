@@ -29,9 +29,6 @@ public class SingleParentOrderRequest implements OrderRequest {
     private List<PID> orderedChildren;
     private OrderOperationType operation;
 
-    public SingleParentOrderRequest() {
-    }
-
     @Override
     public PID getParentPid() {
         return parentPid;

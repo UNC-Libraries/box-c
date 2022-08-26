@@ -34,9 +34,6 @@ public class MultiParentOrderRequest {
     private AgentPrincipals agent;
     private String email;
 
-    public MultiParentOrderRequest() {
-    }
-
     /**
      * @return the operation type for this request
      */
