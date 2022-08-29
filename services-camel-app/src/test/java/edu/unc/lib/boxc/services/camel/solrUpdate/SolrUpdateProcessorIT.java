@@ -36,6 +36,7 @@ import static org.mockito.MockitoAnnotations.initMocks;
 import java.io.File;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -183,6 +184,11 @@ public class SolrUpdateProcessorIT extends AbstractSolrProcessorIT {
         assertNotNull(collMd.getDateUpdated());
     }
 
+    // Invalidate cached objects in object loader, to avoid issues with stale data
+    private void invalidateCache(PID... pids) {
+        Arrays.stream(pids).forEach(repositoryObjectLoader::invalidate);
+    }
+
     @Test
     public void testUpdateDescription() throws Exception {
         var folderObj = repositoryObjectFactory.createFolderObject(null);
@@ -197,6 +203,10 @@ public class SolrUpdateProcessorIT extends AbstractSolrProcessorIT {
 
         InputStream modsStream = streamResource("/datastreams/simpleMods.xml");
         updateDescriptionService.updateDescription(new UpdateDescriptionRequest(agent, collObj, modsStream));
+
+        // Invalidate cached details for object before starting updates, otherwise new description is sometimes missed
+        invalidateCache(unitObj.getPid(), collObj.getPid(), folderObj.getPid());
+
         treeIndexer.indexTree(collObj.getModel());
 
         NotifyBuilder notify = new NotifyBuilder(cdrServiceSolrUpdate)
