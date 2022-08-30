@@ -16,6 +16,10 @@
 package edu.unc.lib.boxc.model.fcrepo.objects;
 
 import java.net.URI;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import edu.unc.lib.boxc.model.api.exceptions.NotFoundException;
 import edu.unc.lib.boxc.model.api.exceptions.TombstoneFoundException;
@@ -212,5 +216,14 @@ public class WorkObjectImpl extends AbstractContentContainerObject implements Wo
         shouldRefresh();
 
         return fileObj;
+    }
+
+    @Override
+    public List<PID> getMemberOrder() {
+        var memberOrder = getResource().getProperty(Cdr.memberOrder);
+        if (memberOrder == null) {
+            return Collections.emptyList();
+        }
+        return Arrays.stream(memberOrder.getString().split("\\|")).map(PIDs::get).collect(Collectors.toList());
     }
 }
