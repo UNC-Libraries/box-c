@@ -17,6 +17,7 @@ package edu.unc.lib.boxc.services.camel.util;
 
 import edu.unc.lib.boxc.auth.fcrepo.services.ObjectAclFactory;
 import edu.unc.lib.boxc.fcrepo.FcrepoJmsConstants;
+import edu.unc.lib.boxc.indexing.solr.utils.MemberOrderService;
 import edu.unc.lib.boxc.model.api.DatastreamType;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.ids.PIDConstants;
@@ -44,6 +45,7 @@ public class CacheInvalidatingProcessor implements Processor {
     private ObjectAclFactory objectAclFactory;
     private ContentPathFactory contentPathFactory;
     private TitleRetrievalService titleRetrievalService;
+    private MemberOrderService memberOrderService;
 
     @Override
     public void process(Exchange exchange) throws Exception {
@@ -77,6 +79,7 @@ public class CacheInvalidatingProcessor implements Processor {
         repoObjLoader.invalidate(pid);
         objectAclFactory.invalidate(pid);
         contentPathFactory.invalidate(pid);
+        memberOrderService.invalidate(pid);
         if (pid.getComponentPath() == null || pid.getComponentPath().contains(DatastreamType.MD_DESCRIPTIVE.getId())) {
             titleRetrievalService.invalidate(pid);
         }
@@ -96,5 +99,9 @@ public class CacheInvalidatingProcessor implements Processor {
 
     public void setTitleRetrievalService(TitleRetrievalService titleRetrievalService) {
         this.titleRetrievalService = titleRetrievalService;
+    }
+
+    public void setMemberOrderService(MemberOrderService memberOrderService) {
+        this.memberOrderService = memberOrderService;
     }
 }

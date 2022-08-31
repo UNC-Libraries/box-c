@@ -30,6 +30,7 @@ import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
@@ -56,8 +57,7 @@ public class MemberOrderServiceTest {
     public void setup() {
         MockitoAnnotations.initMocks(this);
         memberOrderService = new MemberOrderService();
-        memberOrderService.setRepositoryObjectLoader(repositoryObjectLoader);
-
+        memberOrderService.init();
     }
 
     @Test
@@ -130,6 +130,27 @@ public class MemberOrderServiceTest {
                 randomUuid(), randomUuid(), randomUuid(), CHILD1_UUID, randomUuid()));
 
         assertEquals(Integer.valueOf(3), memberOrderService.getOrderValue(subject));
+    }
+
+    @Test
+    public void invalidateTest() {
+        var subject1 = mockRepositoryObject(FileObject.class, CHILD1_UUID);
+        var subject2 = mockRepositoryObject(FileObject.class, CHILD2_UUID);
+        var parent = mockRepositoryObject(WorkObject.class, PARENT_UUID);
+        associateWithParent(subject1, parent);
+        associateWithParent(subject2, parent);
+        when(parent.getMemberOrder()).thenReturn(pidList(CHILD2_UUID));
+
+        assertNull(memberOrderService.getOrderValue(subject1));
+        assertEquals(Integer.valueOf(0), memberOrderService.getOrderValue(subject2));
+
+        // Change the list of ordered children then invalidate the cache
+        when(parent.getMemberOrder()).thenReturn(pidList(CHILD1_UUID, CHILD2_UUID));
+        memberOrderService.invalidate(PIDs.get(PARENT_UUID));
+
+        // Now both children should return order values
+        assertEquals(Integer.valueOf(0), memberOrderService.getOrderValue(subject1));
+        assertEquals(Integer.valueOf(1), memberOrderService.getOrderValue(subject2));
     }
 
     private <T> T mockRepositoryObject(Class<T> classToMock, String uuid) {
