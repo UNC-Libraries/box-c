@@ -71,4 +71,11 @@ public class MemberOrderService {
     public void invalidate(PID pid) {
         cache.remove(pid);
     }
+
+    /**
+     * Invalidate all cached entries
+     */
+    public void invalidateAll() {
+        cache.clear();
+    }
 }

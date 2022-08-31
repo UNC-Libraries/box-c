@@ -136,6 +136,26 @@
         <property name="treeIndexer" ref="recursiveTreeIndexer" />
     </bean>
 
+    <bean id="updateMemberOrderTreeAction"
+          class="edu.unc.lib.boxc.indexing.solr.action.SeparateRootAndDescendantsUpdateAction">
+        <property name="rootActionType" value="UPDATE_MEMBER_ORDER_PARENT" />
+        <property name="descendantsActionType" value="UPDATE_MEMBER_ORDER_CHILD" />
+        <property name="treeIndexer" ref="recursiveTreeIndexer" />
+        <property name="messageSender" ref="indexingMessageSender" />
+    </bean>
+
+    <bean id="updateMemberOrderParentAction"
+          class="edu.unc.lib.boxc.indexing.solr.action.UpdateObjectAction">
+        <property name="pipeline" ref="solrOrderMembersParentUpdatePipeline" />
+        <property name="addDocumentMode" value="false" />
+    </bean>
+
+    <bean id="updateMemberOrderChildAction"
+          class="edu.unc.lib.boxc.indexing.solr.action.UpdateObjectAction">
+        <property name="pipeline" ref="solrOrderMembersChildUpdatePipeline" />
+        <property name="addDocumentMode" value="false" />
+    </bean>
+
     <util:map id="solrIndexingActionMap"
               key-type="edu.unc.lib.boxc.operations.jms.indexing.IndexingActionType"
               value-type="edu.unc.lib.boxc.indexing.solr.action.IndexingAction">
@@ -161,6 +181,9 @@
         <entry key="ADD_SET_TO_PARENT" value-ref="addSetToParentAction" />
         <entry key="UPDATE_TYPE" value-ref="updateTypeAction" />
         <entry key="UPDATE_TYPE_TREE" value-ref="updateTypeTreeAction" />
+        <entry key="UPDATE_MEMBER_ORDER" value-ref="updateMemberOrderTreeAction" />
+        <entry key="UPDATE_MEMBER_ORDER_PARENT" value-ref="updateMemberOrderParentAction" />
+        <entry key="UPDATE_MEMBER_ORDER_CHILD" value-ref="updateMemberOrderChildAction" />
     </util:map>
     
     <bean id="solrUpdateJmsTemplate" class="org.springframework.jms.core.JmsTemplate">
@@ -199,6 +222,7 @@
         <property name="objectAclFactory" ref="objectAclFactory"/>
         <property name="contentPathFactory" ref="contentPathFactory"/>
         <property name="titleRetrievalService" ref="titleRetrievalService" />
+        <property name="memberOrderService" ref="memberOrderService" />
     </bean>
     
     <bean id="solrUpdatePreprocessor" class="edu.unc.lib.boxc.services.camel.solrUpdate.SolrUpdatePreprocessor">

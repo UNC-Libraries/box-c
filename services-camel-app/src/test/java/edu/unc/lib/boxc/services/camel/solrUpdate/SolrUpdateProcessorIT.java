@@ -17,6 +17,8 @@ package edu.unc.lib.boxc.services.camel.solrUpdate;
 
 import static edu.unc.lib.boxc.auth.api.AccessPrincipalConstants.AUTHENTICATED_PRINC;
 import static edu.unc.lib.boxc.auth.api.AccessPrincipalConstants.PUBLIC_PRINC;
+import static edu.unc.lib.boxc.model.api.DatastreamType.TECHNICAL_METADATA;
+import static edu.unc.lib.boxc.model.api.xml.NamespaceConstants.FITS_URI;
 import static edu.unc.lib.boxc.operations.jms.indexing.IndexingActionType.ADD_SET_TO_PARENT;
 import static edu.unc.lib.boxc.operations.jms.indexing.IndexingActionType.DELETE;
 import static edu.unc.lib.boxc.operations.jms.indexing.IndexingActionType.DELETE_SOLR_TREE;
@@ -25,6 +27,7 @@ import static edu.unc.lib.boxc.operations.jms.indexing.IndexingActionType.UPDATE
 import static edu.unc.lib.boxc.operations.jms.indexing.IndexingActionType.UPDATE_DESCRIPTION;
 import static edu.unc.lib.boxc.operations.jms.indexing.IndexingMessageHelper.makeIndexingOperationBody;
 import static java.util.Collections.singleton;
+import static org.apache.jena.rdf.model.ResourceFactory.createResource;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
@@ -34,25 +37,39 @@ import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
 import javax.annotation.Resource;
 
+import edu.unc.lib.boxc.indexing.solr.utils.MemberOrderService;
+import edu.unc.lib.boxc.model.api.objects.FileObject;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
+import edu.unc.lib.boxc.model.api.objects.WorkObject;
+import edu.unc.lib.boxc.model.api.rdf.IanaRelation;
+import edu.unc.lib.boxc.model.fcrepo.ids.DatastreamPids;
 import edu.unc.lib.boxc.model.fcrepo.services.RepositoryObjectLoaderImpl;
+import edu.unc.lib.boxc.operations.impl.order.OrderJobFactory;
+import edu.unc.lib.boxc.operations.impl.order.OrderRequestFactory;
+import edu.unc.lib.boxc.operations.impl.order.SetOrderJob;
 import edu.unc.lib.boxc.operations.jms.MessageSender;
 import edu.unc.lib.boxc.operations.jms.indexing.IndexingMessageSender;
+import edu.unc.lib.boxc.operations.jms.order.OrderOperationType;
 import edu.unc.lib.boxc.search.solr.facets.FilterableDisplayValueFacet;
 import edu.unc.lib.boxc.search.solr.services.TitleRetrievalService;
 import org.apache.camel.CamelContext;
 import org.apache.camel.builder.NotifyBuilder;
 import org.apache.commons.io.FileUtils;
+import org.apache.jena.vocabulary.DCTerms;
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.response.QueryResponse;
@@ -123,6 +140,8 @@ public class SolrUpdateProcessorIT extends AbstractSolrProcessorIT {
     private IndexingMessageSender indexingMessageSender;
     @Autowired
     private TitleRetrievalService titleRetrievalService;
+    @Autowired
+    private MemberOrderService memberOrderService;
 
     @Resource(name = "solrIndexingActionMap")
     private Map<IndexingActionType, IndexingAction> solrIndexingActionMap;
@@ -367,6 +386,78 @@ public class SolrUpdateProcessorIT extends AbstractSolrProcessorIT {
         assertEquals(2, dynamics.size());
         assertEquals("BoXC 5", dynamics.get(RLASupplementalFilter.SITE_CODE_FIELD));
         assertEquals("12345", dynamics.get(RLASupplementalFilter.CATALOG_FIELD));
+    }
+
+    @Test
+    public void testOrderMembers() throws Exception {
+        var workObj = repositoryObjectFactory.createWorkObject(null);
+        var fileObj1 = addFileObject(workObj);
+        var fileObj2 = addFileObject(workObj);
+        var fileObj3 = addFileObject(workObj);
+        collObj.addMember(workObj);
+
+        indexObjectsInTripleStore();
+        var testPids = new PID[] { unitObj.getPid(), collObj.getPid(), workObj.getPid(),
+                fileObj1.getPid(), fileObj2.getPid(), fileObj3.getPid()};
+        repositoryObjectSolrIndexer.index(testPids);
+
+        // Set order on the work
+        var setOrderRequest = OrderRequestFactory.createRequest(OrderOperationType.SET,
+                workObj.getPid().getId(),
+                Arrays.asList(fileObj2.getPid().getId(), fileObj3.getPid().getId(), fileObj1.getPid().getId()));
+        var orderJobFactory = new OrderJobFactory();
+        orderJobFactory.setRepositoryObjectFactory(repositoryObjectFactory);
+        orderJobFactory.setRepositoryObjectLoader(repositoryObjectLoader);
+        orderJobFactory.createJob(setOrderRequest).run();
+
+        // Invalidate caches
+        memberOrderService.invalidateAll();
+        invalidateCache(testPids);
+
+        // Update the work's record in the triple store
+        treeIndexer.indexTree(workObj.getModel());
+
+        System.out.println("Model for work: " + workObj.getModel(true));
+
+        NotifyBuilder notify = new NotifyBuilder(cdrServiceSolrUpdate)
+                .whenCompleted(5)
+                .create();
+
+        makeIndexingMessage(workObj, null, IndexingActionType.UPDATE_MEMBER_ORDER);
+
+        processor.process(exchange);
+
+        notify.matches(5l, TimeUnit.SECONDS);
+
+        server.commit();
+
+        var workMd = getSolrMetadata(workObj);
+        assertNull(workMd.getMemberOrderId());
+        // Test tags
+
+        var fileObj1Md = getSolrMetadata(fileObj1);
+        assertEquals(Integer.valueOf(2), fileObj1Md.getMemberOrderId());
+
+        var fileObj2Md = getSolrMetadata(fileObj2);
+        assertEquals(Integer.valueOf(0), fileObj2Md.getMemberOrderId());
+
+        var fileObj3Md = getSolrMetadata(fileObj3);
+        assertEquals(Integer.valueOf(1), fileObj3Md.getMemberOrderId());
+    }
+
+    private FileObject addFileObject(WorkObject work) throws Exception {
+        var file = tmpFolder.newFile();
+        var filename = file.getName();
+        FileUtils.writeStringToFile(file, filename, "UTF-8");
+        var fileObject = work.addDataFile(file.toPath().toUri(), filename, null, null, null);
+
+        var fitsPid = DatastreamPids.getTechnicalMetadataPid(fileObject.getPid());
+        var fitsUri = Objects.requireNonNull(
+                this.getClass().getResource("/datastream/techmd.xml")).toURI();
+        // add FITS file. Same one for all formats at the moment
+        fileObject.addBinary(fitsPid, fitsUri, TECHNICAL_METADATA.getDefaultFilename(), TECHNICAL_METADATA.getMimetype(),
+                null, null, IanaRelation.derivedfrom, DCTerms.conformsTo, createResource(FITS_URI));
+        return fileObject;
     }
 
     private void makeIndexingMessage(RepositoryObject targetObj, Collection<PID> children, IndexingActionType action) {

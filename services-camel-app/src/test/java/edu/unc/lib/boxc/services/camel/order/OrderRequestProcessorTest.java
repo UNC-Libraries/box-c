@@ -29,12 +29,14 @@ import edu.unc.lib.boxc.operations.jms.indexing.IndexingActionType;
 import edu.unc.lib.boxc.operations.jms.indexing.IndexingMessageSender;
 import edu.unc.lib.boxc.operations.jms.order.MultiParentOrderRequest;
 import edu.unc.lib.boxc.operations.jms.order.OrderOperationType;
+import edu.unc.lib.boxc.operations.jms.order.OrderRequest;
 import edu.unc.lib.boxc.operations.jms.order.OrderRequestSerializationHelper;
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
+import org.mockito.ArgumentMatcher;
 import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -51,6 +53,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.argThat;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
@@ -170,7 +173,7 @@ public class OrderRequestProcessorTest {
     @Test
     public void invalidRequestTest() throws Exception {
         var errors = new String[] { "This doesn't look good", "Whoa no thanks" };
-        mockRequestAsNotValid(errors);
+        produceInvalidValidator(PARENT1_UUID, errors);
 
         var requestExchange = createRequestExchange(Map.of(PARENT1_UUID, Arrays.asList(CHILD1_UUID)));
         processor.process(requestExchange);
@@ -220,10 +223,9 @@ public class OrderRequestProcessorTest {
     @Test
     public void mixOfValidAndInvalidTest() throws Exception {
         var validationError = "Bad bad very not good";
-        // First request invalid, others are valid
-        when(orderValidator.isValid()).thenReturn(false)
-                        .thenReturn(true);
-        when(orderValidator.getErrors()).thenReturn(Arrays.asList(validationError));
+        // All requests except for one for PARENT1 are valid
+        mockRequestAsValid();
+        produceInvalidValidator(PARENT1_UUID, validationError);
         // Second one does not have permission
         mockDoesNotHavePermission(PARENT2_UUID);
 
@@ -283,9 +285,17 @@ public class OrderRequestProcessorTest {
         when(orderValidator.isValid()).thenReturn(true);
     }
 
-    private void mockRequestAsNotValid(String... errors) {
-        when(orderValidator.isValid()).thenReturn(false);
-        when(orderValidator.getErrors()).thenReturn(Arrays.asList(errors));
+    // Setup production of a validator that will return errors for the given id
+    private void produceInvalidValidator(String uuid, String... errors) {
+        var validator = mock(OrderValidator.class);
+        when(validator.isValid()).thenReturn(false);
+        when(validator.getErrors()).thenReturn(Arrays.asList(errors));
+        when(orderValidatorFactory.createValidator(argThat(new ArgumentMatcher<>() {
+            @Override
+            public boolean matches(Object argument) {
+                return ((OrderRequest)argument).getParentPid().getId().equals(uuid);
+            }
+        }))).thenReturn(validator);
     }
 
     private void assertIndexingMessageSent(String parentId) {

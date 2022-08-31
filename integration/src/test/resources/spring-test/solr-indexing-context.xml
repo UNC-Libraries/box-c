@@ -27,6 +27,7 @@
                 <ref bean="setContentStatusFilter" />
                 <ref bean="setFullTextFilter" />
                 <ref bean="setObjectTypeFilter" />
+                <ref bean="setMemberOrderFilter" />
                 <ref bean="setCollectionSupplementalInformationFilter" />
             </list>
         </property>
@@ -143,6 +144,10 @@
         <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
     </bean>
 
+    <bean id="memberOrderService" class="edu.unc.lib.boxc.indexing.solr.utils.MemberOrderService"
+          init-method="init">
+    </bean>
+
     <bean id="titleRetrievalService" class="edu.unc.lib.boxc.search.solr.services.TitleRetrievalService"
           init-method="init">
         <property name="solrSearchService" ref="solrSearchService" />
@@ -199,6 +204,10 @@
 
     <bean id="setRecordDatesFilter"
           class="edu.unc.lib.boxc.indexing.solr.filter.SetRecordDatesFilter">
+    </bean>
+
+    <bean id="setMemberOrderFilter" class="edu.unc.lib.boxc.indexing.solr.filter.SetMemberOrderFilter">
+        <property name="memberOrderService" ref="memberOrderService" />
     </bean>
 
     <bean id="dipDataLoader"
