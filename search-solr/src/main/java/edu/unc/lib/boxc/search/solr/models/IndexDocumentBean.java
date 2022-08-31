@@ -314,6 +314,15 @@ public class IndexDocumentBean {
         fields.put(IDENTIFIER_SORT.getSolrField(), identifierSort);
     }
 
+    public Integer getMemberOrderId() {
+        return (Integer) fields.get(SearchFieldKey.MEMBER_ORDER_ID.getSolrField());
+    }
+
+    @Field
+    public void setMemberOrderId(Integer value) {
+        fields.put(SearchFieldKey.MEMBER_ORDER_ID.getSolrField(), value);
+    }
+
     public String getTitle() {
         return (String) fields.get(TITLE.getSolrField());
     }
