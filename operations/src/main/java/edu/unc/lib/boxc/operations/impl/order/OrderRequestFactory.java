@@ -16,9 +16,9 @@
 package edu.unc.lib.boxc.operations.impl.order;
 
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
-import edu.unc.lib.boxc.operations.api.order.OrderOperationType;
-import edu.unc.lib.boxc.operations.api.order.OrderRequest;
-import edu.unc.lib.boxc.operations.api.order.SingleParentOrderRequest;
+import edu.unc.lib.boxc.operations.jms.order.OrderOperationType;
+import edu.unc.lib.boxc.operations.jms.order.OrderRequest;
+import edu.unc.lib.boxc.operations.jms.order.SingleParentOrderRequest;
 
 import java.util.Collections;
 import java.util.List;

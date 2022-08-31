@@ -19,7 +19,7 @@ import edu.unc.lib.boxc.model.api.ResourceType;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.api.services.MembershipService;
-import edu.unc.lib.boxc.operations.api.order.OrderRequest;
+import edu.unc.lib.boxc.operations.jms.order.OrderRequest;
 import edu.unc.lib.boxc.operations.api.order.OrderValidator;
 
 import java.util.ArrayList;

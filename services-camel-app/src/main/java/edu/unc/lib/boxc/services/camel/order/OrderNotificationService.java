@@ -13,30 +13,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package edu.unc.lib.boxc.operations.api.order;
+package edu.unc.lib.boxc.services.camel.order;
 
 import edu.unc.lib.boxc.model.api.ids.PID;
+import edu.unc.lib.boxc.operations.jms.order.MultiParentOrderRequest;
 
 import java.util.List;
 
 /**
- * Request to perform an ordering operation
+ * Service which sends user notifications about the outcome of order updating requests
  *
  * @author bbpennel
  */
-public interface OrderRequest {
+public class OrderNotificationService {
     /**
-     * @return the operation type for this request
+     * Send a notification about the results of an order operation caused by a MultiParentOrderRequest
+     * @param request
+     * @param successes list of pids for objects that successfully updated
+     * @param errors
      */
-    public OrderOperationType getOperation();
-
-    /**
-     * @return parent of the objects being ordered
-     */
-    public PID getParentPid();
-
-    /**
-     * @return list of ordered children
-     */
-    public List<PID> getOrderedChildren();
+    public void sendResults(MultiParentOrderRequest request, List<PID> successes, List<String> errors) {
+        // TODO implement this
+    }
 }

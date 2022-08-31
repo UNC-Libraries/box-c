@@ -19,7 +19,7 @@ import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.api.rdf.Cdr;
 import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
-import edu.unc.lib.boxc.operations.api.order.OrderRequest;
+import edu.unc.lib.boxc.operations.jms.order.OrderRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

@@ -21,7 +21,7 @@ import edu.unc.lib.boxc.model.api.objects.WorkObject;
 import edu.unc.lib.boxc.model.api.rdf.Cdr;
 import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
-import edu.unc.lib.boxc.operations.api.order.OrderOperationType;
+import edu.unc.lib.boxc.operations.jms.order.OrderOperationType;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;

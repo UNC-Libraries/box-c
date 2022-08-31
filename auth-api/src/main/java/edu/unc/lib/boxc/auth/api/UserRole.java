@@ -28,6 +28,7 @@ import static edu.unc.lib.boxc.auth.api.Permission.ingest;
 import static edu.unc.lib.boxc.auth.api.Permission.markForDeletion;
 import static edu.unc.lib.boxc.auth.api.Permission.markForDeletionUnit;
 import static edu.unc.lib.boxc.auth.api.Permission.move;
+import static edu.unc.lib.boxc.auth.api.Permission.orderMembers;
 import static edu.unc.lib.boxc.auth.api.Permission.reindex;
 import static edu.unc.lib.boxc.auth.api.Permission.runEnhancements;
 import static edu.unc.lib.boxc.auth.api.Permission.viewAccessCopies;
@@ -76,15 +77,15 @@ public enum UserRole {
     canDescribe("canDescribe", true, viewHidden, viewMetadata, viewAccessCopies, viewOriginal,
             editDescription, bulkUpdateDescription),
     canProcess("canProcess", true, viewHidden, viewMetadata, viewAccessCopies, viewOriginal,
-            editDescription, bulkUpdateDescription, move, markForDeletion, changePatronAccess),
+            editDescription, bulkUpdateDescription, move, orderMembers, markForDeletion, changePatronAccess),
     canManage("canManage", true, viewHidden, viewMetadata, viewAccessCopies, viewOriginal,
-            ingest, editDescription, bulkUpdateDescription, move, markForDeletion,
+            ingest, editDescription, bulkUpdateDescription, move, orderMembers, markForDeletion,
             changePatronAccess, editResourceType, createCollection),
     unitOwner("unitOwner", true, viewHidden, viewMetadata, viewAccessCopies, viewOriginal,
-            ingest, editDescription, bulkUpdateDescription, move, markForDeletion, markForDeletionUnit,
+            ingest, editDescription, bulkUpdateDescription, move, orderMembers, markForDeletion, markForDeletionUnit,
             changePatronAccess, editResourceType, destroy, createCollection, assignStaffRoles),
     administrator("administrator", true, viewHidden, viewMetadata, viewAccessCopies, viewOriginal,
-            ingest, editDescription, bulkUpdateDescription, move, markForDeletion, markForDeletionUnit,
+            ingest, editDescription, bulkUpdateDescription, move, orderMembers, markForDeletion, markForDeletionUnit,
             changePatronAccess, editResourceType, destroy, destroyUnit, createCollection,
             createAdminUnit, assignStaffRoles, runEnhancements, reindex);
 
