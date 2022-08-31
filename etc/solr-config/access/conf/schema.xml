@@ -187,6 +187,8 @@
     <!-- Timestamp when this record was fully indexed -->
     <field name="lastIndexed" type="date" indexed="true" stored="true" default="NOW" multiValued="false"/>
     <field name="location" type="string" indexed="true" stored="true" multiValued="true" docValues="true"/>
+    <!-- Sort order of members within their parent container, if custom ordering is specified -->
+    <field name="memberOrderId" type="int" indexed="true" stored="true" docValues="true" sortMissingLast="true"/>
     <!-- Alternative subjects, not searchable, for use in copy indexes -->
     <field name="otherSubject" type="string" indexed="false" stored="true" multiValued="true"/>
     <!-- Alternative titles, not searchable, for use in copy indexes -->
