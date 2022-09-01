@@ -452,10 +452,9 @@ public class SolrUpdateProcessorIT extends AbstractSolrProcessorIT {
         var fileObject = work.addDataFile(file.toPath().toUri(), filename, null, null, null);
 
         var fitsPid = DatastreamPids.getTechnicalMetadataPid(fileObject.getPid());
-        var fitsUri = Objects.requireNonNull(
-                this.getClass().getResource("/datastream/techmd.xml")).toURI();
-        // add FITS file. Same one for all formats at the moment
-        fileObject.addBinary(fitsPid, fitsUri, TECHNICAL_METADATA.getDefaultFilename(), TECHNICAL_METADATA.getMimetype(),
+        var fitsFile = tmpFolder.newFile();
+        FileUtils.copyInputStreamToFile(this.getClass().getResourceAsStream("/datastream/techmd.xml"), fitsFile);
+        fileObject.addBinary(fitsPid, fitsFile.toURI(), TECHNICAL_METADATA.getDefaultFilename(), TECHNICAL_METADATA.getMimetype(),
                 null, null, IanaRelation.derivedfrom, DCTerms.conformsTo, createResource(FITS_URI));
         return fileObject;
     }
