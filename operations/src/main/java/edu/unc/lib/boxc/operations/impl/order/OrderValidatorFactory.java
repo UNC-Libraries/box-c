@@ -23,7 +23,7 @@ import edu.unc.lib.boxc.operations.api.order.OrderValidator;
 /**
  * Factory to construct validators for order request
  *
- * @author bbpennel
+ * @author bbpennel, snluong
  */
 public class OrderValidatorFactory {
     private RepositoryObjectLoader repositoryObjectLoader;
@@ -35,11 +35,23 @@ public class OrderValidatorFactory {
      * @return new validator
      */
     public OrderValidator createValidator(OrderRequest request) {
-        var validator = new SetOrderValidator();
-        validator.setMembershipService(membershipService);
-        validator.setRepositoryObjectLoader(repositoryObjectLoader);
-        validator.setRequest(request);
-        return validator;
+        switch(request.getOperation()) {
+        case SET: {
+            var validator = new SetOrderValidator();
+            validator.setMembershipService(membershipService);
+            validator.setRepositoryObjectLoader(repositoryObjectLoader);
+            validator.setRequest(request);
+            return validator;
+        }
+        case CLEAR: {
+            var validator = new ClearOrderValidator();
+            validator.setRepositoryObjectLoader(repositoryObjectLoader);
+            validator.setRequest(request);
+            return validator;
+        }
+        default:
+            throw new UnsupportedOperationException("Unable to determine validator for request " + request);
+        }
     }
 
     public void setRepositoryObjectLoader(RepositoryObjectLoader repositoryObjectLoader) {

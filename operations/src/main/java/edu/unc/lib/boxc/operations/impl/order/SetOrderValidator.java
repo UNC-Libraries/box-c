@@ -45,7 +45,7 @@ public class SetOrderValidator implements OrderValidator {
     @Override
     public boolean isValid() {
         if (result != null) {
-            return result.booleanValue();
+            return result;
         }
         result = validate();
         return result;
@@ -56,7 +56,7 @@ public class SetOrderValidator implements OrderValidator {
         var parentObj = repositoryObjectLoader.getRepositoryObject(request.getParentPid());
         if (!ResourceType.Work.equals(parentObj.getResourceType())) {
             errors.add("Object " + parentId + " of type " + parentObj.getResourceType().name()
-                    + " does not support setting member order");
+                    + " does not support member ordering");
             return false;
         }
 
