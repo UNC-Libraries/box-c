@@ -27,9 +27,9 @@
 
 		<p>Or if you believe the record exists and would like to get access to it,  
 			<c:if test="${empty sessionScope.user || empty sessionScope.user.userName}">
-				try <a href="<c:out value='${loginUrl}'/>">logging in</a> or
+				try <a href="<c:out value='${loginUrl}'/>">logging in (UNC Onyen)</a> or
 			</c:if>
-			you may <a href="">request</a> permission.
+			you may <a href="https://library.unc.edu/wilson/contact/?refer=https%3A%2F%2Fdcr.lib.unc.edu">Contact Wilson Library for access information</a>.
 		</p>
 	</div>
 </div>

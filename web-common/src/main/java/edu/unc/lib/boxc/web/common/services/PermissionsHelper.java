@@ -15,8 +15,10 @@
  */
 package edu.unc.lib.boxc.web.common.services;
 
+import static edu.unc.lib.boxc.auth.api.AccessPrincipalConstants.AUTHENTICATED_PRINC;
 import static edu.unc.lib.boxc.auth.api.AccessPrincipalConstants.PUBLIC_PRINC;
 import static edu.unc.lib.boxc.auth.api.Permission.editDescription;
+import static edu.unc.lib.boxc.auth.api.UserRole.canViewMetadata;
 import static edu.unc.lib.boxc.auth.api.UserRole.canViewOriginals;
 import static edu.unc.lib.boxc.auth.api.services.DatastreamPermissionUtil.getPermissionForDatastream;
 import static edu.unc.lib.boxc.model.api.DatastreamType.JP2_ACCESS_COPY;
@@ -31,6 +33,8 @@ import edu.unc.lib.boxc.auth.api.services.AccessControlService;
 import edu.unc.lib.boxc.model.api.DatastreamType;
 import edu.unc.lib.boxc.search.api.models.ContentObjectRecord;
 
+import java.util.List;
+
 /**
  * Helper for determining permissions of view objects.
  *
@@ -41,6 +45,9 @@ public class PermissionsHelper {
 
     // RoleGroup value used to identify patron full public access
     private static final String PUBLIC_ROLE_VALUE = canViewOriginals.getPredicate() + "|" + PUBLIC_PRINC;
+    private static final String AUTHENTICATED_ROLE_VALUE = canViewOriginals.getPredicate() + "|" + AUTHENTICATED_PRINC;
+    private static final String AUTHENTICATED_METADATA_VALUE =
+            canViewMetadata.getPredicate() + "|" + AUTHENTICATED_PRINC;
 
     private AccessControlService accessControlService;
 
@@ -114,7 +121,6 @@ public class PermissionsHelper {
                 || !containsDatastream(metadata, dsIdentifier)) {
             return false;
         }
-
         Permission permission = getPermissionForDatastream(datastream);
         return accessControlService.hasAccess(metadata.getPid(), principals, permission);
     }
@@ -137,6 +143,25 @@ public class PermissionsHelper {
         notNull(metadata, "Requires metadata object");
 
         return accessControlService.hasAccess(metadata.getPid(), principals, editDescription);
+    }
+
+    /**
+     * True if authenticated permissions are greater than no access
+     * @param metadata
+     * @return
+     */
+    public boolean enhancedAuthenticatedAccess(AccessGroupSet principals, ContentObjectRecord metadata) {
+        List<String> groups = metadata.getRoleGroup();
+
+        if (groups == null) {
+            return false;
+        }
+
+        if (groups.contains(AUTHENTICATED_METADATA_VALUE) && hasDescriptionAccess(principals, metadata)) {
+            return false;
+        }
+
+        return groups.contains(AUTHENTICATED_ROLE_VALUE);
     }
 
     /**

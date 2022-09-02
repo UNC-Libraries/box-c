@@ -17,6 +17,7 @@ package edu.unc.lib.boxc.web.common.services;
 
 import static edu.unc.lib.boxc.auth.api.Permission.editDescription;
 import static edu.unc.lib.boxc.auth.api.Permission.viewAccessCopies;
+import static edu.unc.lib.boxc.auth.api.Permission.viewMetadata;
 import static edu.unc.lib.boxc.auth.api.Permission.viewOriginal;
 import static edu.unc.lib.boxc.model.api.DatastreamType.JP2_ACCESS_COPY;
 import static edu.unc.lib.boxc.model.api.DatastreamType.ORIGINAL_FILE;
@@ -41,7 +42,6 @@ import edu.unc.lib.boxc.auth.api.services.AccessControlService;
 import edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.search.solr.models.ContentObjectSolrRecord;
-import edu.unc.lib.boxc.web.common.services.PermissionsHelper;
 
 /**
  *
@@ -145,6 +145,25 @@ public class PermissionsHelperTest {
         assignPermission(editDescription, true);
 
         assertTrue(helper.hasEditAccess(null, mdObject));
+    }
+
+    @Test
+    public void testHasEnhancedAccessNoGroups() {
+        assertFalse(helper.enhancedAuthenticatedAccess(null, mdObject));
+    }
+
+    @Test
+    public void testHasEnhancedAccessIfLoggedIn() {
+        assignPermission(viewMetadata, true);
+        roleGroups.add("canViewOriginals|authenticated");
+        assertTrue(helper.enhancedAuthenticatedAccess(principals, mdObject));
+    }
+
+    @Test
+    public void testDoesNotHaveEnhancedIfLoggedIn() {
+        assignPermission(viewMetadata, true);
+        roleGroups.add("canViewMetadata|authenticated");
+        assertFalse(helper.enhancedAuthenticatedAccess(principals, mdObject));
     }
 
     private void assignPermission(Permission permission, boolean value) {

@@ -40,6 +40,7 @@
                         <h2 class="item-title ${isDeleted}"><c:out value="${briefObject.title}" /></h2>
                     </div>
                     <div class="column is-narrow-desktop action-btn item-actions">
+                        <c:import url="fullRecord/accessInfo.jsp" />
                         <c:if test="${permsHelper.hasEditAccess(accessGroupSet, briefObject)}">
                             <s:eval var="editDescriptionUrl" expression=
                                 "T(edu.unc.lib.boxc.common.util.URIUtil).join(adminBaseUrl, 'describe', briefObject.id)" />
