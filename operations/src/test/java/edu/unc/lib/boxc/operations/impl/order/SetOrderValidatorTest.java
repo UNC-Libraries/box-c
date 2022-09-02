@@ -83,7 +83,7 @@ public class SetOrderValidatorTest {
         validator.setRequest(request);
 
         assertFalse(validator.isValid());
-        assertHasErrors("Object " + PARENT_UUID + " of type AdminUnit does not support setting member order");
+        assertHasErrors("Object " + PARENT_UUID + " of type AdminUnit does not support member ordering");
     }
 
     @Test
