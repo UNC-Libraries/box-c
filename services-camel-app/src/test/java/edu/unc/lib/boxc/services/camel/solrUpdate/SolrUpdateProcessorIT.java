@@ -417,8 +417,7 @@ public class SolrUpdateProcessorIT extends AbstractSolrProcessorIT {
         // Update the work's record in the triple store
         treeIndexer.indexTree(workObj.getModel());
 
-        System.out.println("Model for work: " + workObj.getModel(true));
-
+        // Initial message should produce 4 individual record indexing messages, need to wait for all 5
         NotifyBuilder notify = new NotifyBuilder(cdrServiceSolrUpdate)
                 .whenCompleted(5)
                 .create();

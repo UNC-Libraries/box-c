@@ -40,7 +40,7 @@ public class SeparateRootAndDescendantsUpdateAction extends AbstractIndexingActi
         log.debug("Queuing update of root {}", updateRequest.getPid());
         indexRoot(updateRequest);
         log.debug("Queuing update of descendants of {}", updateRequest.getPid());
-        indexDescendents(updateRequest);
+        indexDescendants(updateRequest);
         log.debug("Finished queuing updates for root and descendants for {}.", updateRequest.getPid());
     }
 
@@ -48,7 +48,7 @@ public class SeparateRootAndDescendantsUpdateAction extends AbstractIndexingActi
         messageSender.sendIndexingOperation(updateRequest.getUserID(), updateRequest.getPid(), rootActionType);
     }
 
-    private void indexDescendents(SolrUpdateRequest updateRequest) throws IndexingException {
+    private void indexDescendants(SolrUpdateRequest updateRequest) throws IndexingException {
         treeIndexer.indexChildren(updateRequest.getPid(), descendantsActionType, updateRequest.getUserID());
     }
 

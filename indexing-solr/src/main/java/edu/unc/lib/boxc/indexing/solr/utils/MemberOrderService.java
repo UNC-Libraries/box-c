@@ -46,22 +46,22 @@ public class MemberOrderService {
      *      Null if its parent does not support ordering, or if the member is not ordered within its parent.
      */
     public Integer getOrderValue(RepositoryObject memberObj) {
-        if (memberObj instanceof FileObject) {
-            var parentPid = memberObj.getParentPid();
-            List<PID> order;
-            // Get order info from cache if available
-            if (cache.containsKey(parentPid)) {
-                order = cache.get(parentPid);
-            } else {
-                // Otherwise, retrieve it from the parent and cache it
-                var parent = (WorkObject) memberObj.getParent();
-                order = parent.getMemberOrder();
-                cache.put(parentPid, order);
-            }
-            var index = order.indexOf(memberObj.getPid());
-            return index == -1 ? null : index;
+        if (!(memberObj instanceof FileObject)) {
+            return null;
         }
-        return null;
+        var parentPid = memberObj.getParentPid();
+        List<PID> order;
+        // Get order info from cache if available
+        if (cache.containsKey(parentPid)) {
+            order = cache.get(parentPid);
+        } else {
+            // Otherwise, retrieve it from the parent and cache it
+            var parent = (WorkObject) memberObj.getParent();
+            order = parent.getMemberOrder();
+            cache.put(parentPid, order);
+        }
+        var index = order.indexOf(memberObj.getPid());
+        return index == -1 ? null : index;
     }
 
     /**

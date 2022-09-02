@@ -173,7 +173,7 @@ public class OrderRequestProcessorTest {
     @Test
     public void invalidRequestTest() throws Exception {
         var errors = new String[] { "This doesn't look good", "Whoa no thanks" };
-        produceInvalidValidator(PARENT1_UUID, errors);
+        produceValidatorWithErrors(PARENT1_UUID, errors);
 
         var requestExchange = createRequestExchange(Map.of(PARENT1_UUID, Arrays.asList(CHILD1_UUID)));
         processor.process(requestExchange);
@@ -225,7 +225,7 @@ public class OrderRequestProcessorTest {
         var validationError = "Bad bad very not good";
         // All requests except for one for PARENT1 are valid
         mockRequestAsValid();
-        produceInvalidValidator(PARENT1_UUID, validationError);
+        produceValidatorWithErrors(PARENT1_UUID, validationError);
         // Second one does not have permission
         mockDoesNotHavePermission(PARENT2_UUID);
 
@@ -286,7 +286,7 @@ public class OrderRequestProcessorTest {
     }
 
     // Setup production of a validator that will return errors for the given id
-    private void produceInvalidValidator(String uuid, String... errors) {
+    private void produceValidatorWithErrors(String uuid, String... errors) {
         var validator = mock(OrderValidator.class);
         when(validator.isValid()).thenReturn(false);
         when(validator.getErrors()).thenReturn(Arrays.asList(errors));

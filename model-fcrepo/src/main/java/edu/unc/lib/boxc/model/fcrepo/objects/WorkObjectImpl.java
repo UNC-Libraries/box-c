@@ -224,6 +224,9 @@ public class WorkObjectImpl extends AbstractContentContainerObject implements Wo
         if (memberOrder == null) {
             return Collections.emptyList();
         }
-        return Arrays.stream(memberOrder.getString().split("\\|")).map(PIDs::get).collect(Collectors.toList());
+        // Split the value from fedora up by pipes, convert into PID objects, return as a list
+        return Arrays.stream(memberOrder.getString().split("\\|"))
+                .map(PIDs::get)
+                .collect(Collectors.toList());
     }
 }

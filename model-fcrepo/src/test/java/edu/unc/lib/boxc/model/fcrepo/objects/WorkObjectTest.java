@@ -290,7 +290,8 @@ public class WorkObjectTest extends AbstractFedoraObjectTest {
         var member2 = makePid();
         var member3 = makePid();
         var members = Arrays.asList(member1, member2, member3);
-        resc.addProperty(Cdr.memberOrder, members.stream().map(PID::getId).collect(Collectors.joining("|")));
+        var memberValue = member1.getId() + "|" + member2.getId() + "|" + member3.getId();
+        resc.addProperty(Cdr.memberOrder, memberValue);
         assertEquals(members, work.getMemberOrder());
     }
 
