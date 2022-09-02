@@ -50,7 +50,7 @@ public class OrderValidatorFactory {
             return validator;
         }
         default:
-            throw new UnsupportedOperationException("Unable to determine order for request " + request);
+            throw new UnsupportedOperationException("Unable to determine validator for request " + request);
         }
     }
 

@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
+ * Validator for a request to clear member order of a work
  * @author snluong
  */
 public class ClearOrderValidator implements OrderValidator {
@@ -46,7 +47,7 @@ public class ClearOrderValidator implements OrderValidator {
         var parentObj = repositoryObjectLoader.getRepositoryObject(request.getParentPid());
         if (!ResourceType.Work.equals(parentObj.getResourceType())) {
             errors.add("Object " + parentId + " of type " + parentObj.getResourceType().name()
-                    + " does not support setting member order");
+                    + " does not support member ordering");
             return false;
         }
         return true;

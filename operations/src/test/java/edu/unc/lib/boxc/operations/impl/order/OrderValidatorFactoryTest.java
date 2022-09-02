@@ -61,7 +61,7 @@ public class OrderValidatorFactoryTest {
 
     @Test
     public void forClearOrderRequestTest() {
-        var request = OrderRequestFactory.createRequest(OrderOperationType.CLEAR, PARENT_UUID, Arrays.asList(CHILD1_UUID));
+        var request = OrderRequestFactory.createRequest(OrderOperationType.CLEAR, PARENT_UUID);
         assertTrue(factory.createValidator(request) instanceof ClearOrderValidator);
     }
 }
