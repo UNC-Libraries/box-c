@@ -16,6 +16,7 @@
 package edu.unc.lib.boxc.model.api.objects;
 
 import java.net.URI;
+import java.util.List;
 
 import org.apache.jena.rdf.model.Model;
 
@@ -83,4 +84,10 @@ public interface WorkObject extends ContentContainerObject {
     FileObject addDataFile(PID filePid, URI storageUri, String filename, String mimetype, String sha1Checksum,
             String md5Checksum, Model model);
 
+    /**
+     * Retrieves the list of ordered member ids within this container
+     *
+     * @return Ordered list of member ids, or an empty list if members aren't ordered.
+     */
+    List<PID> getMemberOrder();
 }

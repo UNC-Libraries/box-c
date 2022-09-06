@@ -31,6 +31,7 @@
                 <ref bean="setContentStatusFilter" />
                 <ref bean="setFullTextFilter" />
                 <ref bean="setObjectTypeFilter" />
+                <ref bean="setMemberOrderFilter" />
                 <ref bean="setCollectionSupplementalInformationFilter" />
             </list>
         </property>
@@ -126,6 +127,26 @@
         </property>
     </bean>
 
+    <bean id="solrOrderMembersParentUpdatePipeline"
+          class="edu.unc.lib.boxc.indexing.solr.indexing.DocumentIndexingPipeline">
+        <property name="filters">
+            <list>
+                <ref bean="setRecordDatesFilter" />
+                <ref bean="setContentStatusFilter" />
+            </list>
+        </property>
+    </bean>
+
+    <bean id="solrOrderMembersChildUpdatePipeline"
+          class="edu.unc.lib.boxc.indexing.solr.indexing.DocumentIndexingPipeline">
+        <property name="filters">
+            <list>
+                <ref bean="setRecordDatesFilter" />
+                <ref bean="setMemberOrderFilter" />
+            </list>
+        </property>
+    </bean>
+
     <bean id="solrUpdateDriver"
         class="edu.unc.lib.boxc.indexing.solr.indexing.SolrUpdateDriver"
         init-method="init">
@@ -196,6 +217,10 @@
         <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
     </bean>
 
+    <bean id="memberOrderService" class="edu.unc.lib.boxc.indexing.solr.utils.MemberOrderService"
+          init-method="init">
+    </bean>
+
     <bean id="titleRetrievalService" class="edu.unc.lib.boxc.search.solr.services.TitleRetrievalService"
           init-method="init">
         <property name="solrSearchService" ref="queryLayer" />
@@ -252,6 +277,10 @@
     
     <bean id="setRecordDatesFilter"
         class="edu.unc.lib.boxc.indexing.solr.filter.SetRecordDatesFilter">
+    </bean>
+
+    <bean id="setMemberOrderFilter" class="edu.unc.lib.boxc.indexing.solr.filter.SetMemberOrderFilter">
+        <property name="memberOrderService" ref="memberOrderService" />
     </bean>
 
     <!-- Ingest Actions -->
@@ -397,6 +426,26 @@
         <property name="actionType" value="ADD" />
         <property name="treeIndexer" ref="recursiveTreeIndexer" />
     </bean>
+
+    <bean id="updateMemberOrderTreeAction"
+          class="edu.unc.lib.boxc.indexing.solr.action.SeparateRootAndDescendantsUpdateAction">
+        <property name="rootActionType" value="UPDATE_MEMBER_ORDER_PARENT" />
+        <property name="descendantsActionType" value="UPDATE_MEMBER_ORDER_CHILD" />
+        <property name="treeIndexer" ref="recursiveTreeIndexer" />
+        <property name="messageSender" ref="indexingMessageSender" />
+    </bean>
+
+    <bean id="updateMemberOrderParentAction"
+          class="edu.unc.lib.boxc.indexing.solr.action.UpdateObjectAction">
+        <property name="pipeline" ref="solrOrderMembersParentUpdatePipeline" />
+        <property name="addDocumentMode" value="false" />
+    </bean>
+
+    <bean id="updateMemberOrderChildAction"
+          class="edu.unc.lib.boxc.indexing.solr.action.UpdateObjectAction">
+        <property name="pipeline" ref="solrOrderMembersChildUpdatePipeline" />
+        <property name="addDocumentMode" value="false" />
+    </bean>
     
     <util:map id="solrIndexingActionMap"
         key-type="edu.unc.lib.boxc.operations.jms.indexing.IndexingActionType"
@@ -423,6 +472,9 @@
         <entry key="ADD_SET_TO_PARENT" value-ref="addSetToParentAction" />
         <entry key="UPDATE_TYPE" value-ref="updateTypeAction" />
         <entry key="UPDATE_TYPE_TREE" value-ref="updateTypeTreeAction" />
+        <entry key="UPDATE_MEMBER_ORDER" value-ref="updateMemberOrderTreeAction" />
+        <entry key="UPDATE_MEMBER_ORDER_PARENT" value-ref="updateMemberOrderParentAction" />
+        <entry key="UPDATE_MEMBER_ORDER_CHILD" value-ref="updateMemberOrderChildAction" />
     </util:map>
     
     <bean id="dipDataLoader"

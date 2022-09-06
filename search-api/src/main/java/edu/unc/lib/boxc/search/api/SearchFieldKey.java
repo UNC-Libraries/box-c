@@ -59,6 +59,7 @@ public enum SearchFieldKey {
     LANGUAGE("language", "language", "Language"),
     LAST_INDEXED("lastIndexed", "lastIndexed", "lastIndexed"),
     LOCATION("location", "location", "Location"),
+    MEMBER_ORDER_ID("memberOrderId", "memberOrderId", "Member Order ID"),
     OTHER_SUBJECT("otherSubject", "otherSubject", "Other Subject"),
     OTHER_TITLE("otherTitle", "otherTitle", "otherTitle"),
     PARENT_COLLECTION("parentCollection", "collection", "Collection"),

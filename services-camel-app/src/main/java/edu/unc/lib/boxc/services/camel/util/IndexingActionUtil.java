@@ -48,6 +48,7 @@ public class IndexingActionUtil {
                     ADD_SET_TO_PARENT,
                     UPDATE_ACCESS_TREE,
                     DELETE_CHILDREN_PRIOR_TO_TIMESTAMP,
+                    IndexingActionType.UPDATE_MEMBER_ORDER,
                     UPDATE_PARENT_PATH_TREE);
 
     // Indexing actions which impact one object, or no objects directly
@@ -60,6 +61,8 @@ public class IndexingActionUtil {
                     IndexingActionType.UPDATE_WORK_FILES,
                     IndexingActionType.UPDATE_FULL_TEXT,
                     IndexingActionType.UPDATE_PARENT_PATH_INFO,
+                    IndexingActionType.UPDATE_MEMBER_ORDER_CHILD,
+                    IndexingActionType.UPDATE_MEMBER_ORDER_PARENT,
                     IndexingActionType.COMMIT,
                     IndexingActionType.DELETE);
 }

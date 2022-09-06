@@ -208,6 +208,7 @@
         <property name="objectAclFactory" ref="objectAclFactory" />
         <property name="contentPathFactory" ref="contentPathFactory" />
         <property name="titleRetrievalService" ref="titleRetrievalService" />
+        <property name="memberOrderService" ref="memberOrderService" />
     </bean>
 
     <bean id="addSmallThumbnailProcessor" class="edu.unc.lib.boxc.services.camel.images.AddDerivativeProcessor">

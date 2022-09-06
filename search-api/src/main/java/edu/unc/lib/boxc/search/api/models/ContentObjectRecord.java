@@ -103,6 +103,8 @@ public interface ContentObjectRecord {
 
     public String getIdentifierSort();
 
+    public Integer getMemberOrderId();
+
     public String getTitle();
 
     public String getAncestorNames();

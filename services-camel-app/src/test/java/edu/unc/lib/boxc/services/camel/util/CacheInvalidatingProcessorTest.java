@@ -17,6 +17,7 @@ package edu.unc.lib.boxc.services.camel.util;
 
 import edu.unc.lib.boxc.auth.fcrepo.services.ObjectAclFactory;
 import edu.unc.lib.boxc.fcrepo.FcrepoJmsConstants;
+import edu.unc.lib.boxc.indexing.solr.utils.MemberOrderService;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.ids.PIDConstants;
 import edu.unc.lib.boxc.model.api.services.ContentPathFactory;
@@ -54,6 +55,8 @@ public class CacheInvalidatingProcessorTest {
     private ContentPathFactory contentPathFactory;
     @Mock
     private TitleRetrievalService titleRetrievalService;
+    @Mock
+    private MemberOrderService memberOrderService;
 
     private CacheInvalidatingProcessor processor;
 
@@ -66,6 +69,7 @@ public class CacheInvalidatingProcessorTest {
         processor.setObjectAclFactory(objectAclFactory);
         processor.setContentPathFactory(contentPathFactory);
         processor.setTitleRetrievalService(titleRetrievalService);
+        processor.setMemberOrderService(memberOrderService);
     }
 
     @Test
@@ -79,6 +83,7 @@ public class CacheInvalidatingProcessorTest {
         verify(repoObjLoader).invalidate(pid);
         verify(objectAclFactory).invalidate(pid);
         verify(contentPathFactory).invalidate(pid);
+        verify(memberOrderService).invalidate(pid);
     }
 
     @Test
@@ -91,6 +96,7 @@ public class CacheInvalidatingProcessorTest {
         verify(repoObjLoader, never()).invalidate(any(PID.class));
         verify(objectAclFactory, never()).invalidate(any(PID.class));
         verify(contentPathFactory, never()).invalidate(any(PID.class));
+        verify(memberOrderService, never()).invalidate(any(PID.class));
     }
 
     @Test
@@ -103,6 +109,7 @@ public class CacheInvalidatingProcessorTest {
         verify(repoObjLoader, never()).invalidate(any(PID.class));
         verify(objectAclFactory, never()).invalidate(any(PID.class));
         verify(contentPathFactory, never()).invalidate(any(PID.class));
+        verify(memberOrderService, never()).invalidate(any(PID.class));
     }
 
     private Exchange mockExchange(String rescPath) {

@@ -31,8 +31,10 @@ import static org.mockito.MockitoAnnotations.initMocks;
 
 import java.net.URI;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
@@ -275,6 +277,22 @@ public class WorkObjectTest extends AbstractFedoraObjectTest {
     public void addDataFileNoContentTest() {
 
         work.addDataFile(null, FILENAME, MIMETYPE, SHA1, MD5);
+    }
+
+    @Test
+    public void getMemberOrderNotSet() {
+        assertEquals(Collections.emptyList(), work.getMemberOrder());
+    }
+
+    @Test
+    public void getMemberOrderWithMembers() {
+        var member1 = makePid();
+        var member2 = makePid();
+        var member3 = makePid();
+        var members = Arrays.asList(member1, member2, member3);
+        var memberValue = member1.getId() + "|" + member2.getId() + "|" + member3.getId();
+        resc.addProperty(Cdr.memberOrder, memberValue);
+        assertEquals(members, work.getMemberOrder());
     }
 
     private PID makePid() {

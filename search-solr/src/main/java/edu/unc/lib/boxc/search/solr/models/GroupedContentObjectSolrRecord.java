@@ -373,6 +373,11 @@ public class GroupedContentObjectSolrRecord implements GroupedContentObjectRecor
     }
 
     @Override
+    public Integer getMemberOrderId() {
+        return representative.getMemberOrderId();
+    }
+
+    @Override
     public String getThumbnailId() {
         return representative.getThumbnailId();
     }
