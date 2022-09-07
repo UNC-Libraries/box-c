@@ -22,7 +22,6 @@
 <%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn" %>
 <%@ taglib prefix="cdr" uri="http://cdr.lib.unc.edu/cdrUI"%>
 
-<c:if test="${not permsHelper.allowsPublicAccess(briefObject) && empty cdr:getUsername()}">
     <div class="restricted-access">
         <h2>This ${fn:toLowerCase(briefObject.resourceType)} has restricted content</h2>
         <c:if test="${permsHelper.enhancedAuthenticatedAccess(accessGroupSet, briefObject)}">
@@ -30,4 +29,3 @@
         </c:if>
         <div class="actionlink"><a class="button" href="https://library.unc.edu/wilson/contact/?refer=https%3A%2F%2Fdcr.lib.unc.edu"><i class="fa fa-envelope"></i> Contact Wilson Library for access</a></div>
     </div>
-</c:if>

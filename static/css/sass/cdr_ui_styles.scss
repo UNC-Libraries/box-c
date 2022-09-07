@@ -754,7 +754,10 @@ table.dataTable {
     border: 1px solid;
     border-radius: 5px;
     padding: 15px;
-    text-align: center;
+
+    .button {
+      text-align: left;
+    }
 
     h2 {
       font-size: 1rem;
@@ -1033,6 +1036,16 @@ table.dataTable {
 
   .collinfo_metadata {
     margin: auto 0;
+
+    .is-8 {
+      padding-bottom: 0;
+    }
+  }
+
+  .restricted-access {
+    h2 {
+      text-align: center;
+    }
   }
 
   .item-title {

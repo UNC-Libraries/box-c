@@ -48,7 +48,7 @@
             </div>
         </div>
         <div class="columns">
-            <div class="column is-8">
+            <div class="column <c:if test="hasRestrictedContent">is-8</c:if>">
                 <h2 class="${isDeleted}">
                     <c:set var="thumbnailObject" value="${briefObject}" scope="request" />
                     <c:import url="common/thumbnail.jsp">
@@ -94,9 +94,11 @@
 
                 <p><a id="metadata-modal-link" href="#">View Additional Metadata</a></p>
             </div>
-            <div class="column is-narrow-desktop item-actions">
-                <c:import url="fullRecord/accessInfo.jsp" />
-            </div>
+            <c:if test="${hasRestrictedContent && empty cdr:getUsername()}">
+                <div class="column is-narrow-desktop item-actions">
+                    <c:import url="fullRecord/accessInfo.jsp" />
+                </div>
+            </c:if>
         </div>
     </div>
     <c:import url="fullRecord/browseView.jsp"/>
