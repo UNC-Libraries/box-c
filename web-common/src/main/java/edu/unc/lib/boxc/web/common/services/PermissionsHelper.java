@@ -46,8 +46,6 @@ public class PermissionsHelper {
     // RoleGroup value used to identify patron full public access
     private static final String PUBLIC_ROLE_VALUE = canViewOriginals.getPredicate() + "|" + PUBLIC_PRINC;
     private static final String AUTHENTICATED_ROLE_VALUE = canViewOriginals.getPredicate() + "|" + AUTHENTICATED_PRINC;
-    private static final String AUTHENTICATED_METADATA_VALUE =
-            canViewMetadata.getPredicate() + "|" + AUTHENTICATED_PRINC;
 
     private AccessControlService accessControlService;
 
