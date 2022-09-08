@@ -54,7 +54,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.mockito.ArgumentCaptor;
-import org.mockito.ArgumentMatcher;
 import org.mockito.Captor;
 import org.mockito.Mock;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -69,8 +68,6 @@ import edu.unc.lib.boxc.model.api.objects.BinaryObject;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.boxc.operations.impl.edit.UpdateDescriptionService;
 import edu.unc.lib.boxc.operations.impl.edit.UpdateDescriptionService.UpdateDescriptionRequest;
-import edu.unc.lib.boxc.operations.impl.importxml.ImportXMLJob;
-import edu.unc.lib.boxc.operations.impl.importxml.ImportXMLRequest;
 import edu.unc.lib.boxc.persist.api.storage.StorageLocation;
 import edu.unc.lib.boxc.persist.api.storage.StorageLocationManager;
 import edu.unc.lib.boxc.persist.api.transfer.BinaryTransferService;
@@ -346,13 +343,7 @@ public class ImportXMLJobTest {
     }
 
     private void assertAddressesSet(String... expectedAddresses) throws Exception {
-        verify(msg).setFrom(argThat(new ArgumentMatcher<Address>() {
-            @Override
-            public boolean matches(Object argument) {
-                Address address = (Address) argument;
-                return address.toString().equals(FROM_EMAIL);
-            }
-        }));
+        verify(msg).setFrom(argThat(address -> address.toString().equals(FROM_EMAIL)));
         verify(msg, times(expectedAddresses.length))
                 .addRecipient(eq(Message.RecipientType.TO), addressCaptor.capture());
         List<Address> toAddresses = addressCaptor.getAllValues();

@@ -137,7 +137,7 @@ public class AddContainerServiceTest {
         doAnswer(new Answer<Object>() {
             @Override
             public Object answer(InvocationOnMock invocation) throws Throwable {
-                throw new TransactionCancelledException("", invocation.getArgumentAt(0, Throwable.class));
+                throw new TransactionCancelledException("", invocation.getArgument(0, Throwable.class));
             }
 
         }).when(tx).cancel(any(Throwable.class));

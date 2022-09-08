@@ -29,14 +29,12 @@ import edu.unc.lib.boxc.operations.jms.indexing.IndexingActionType;
 import edu.unc.lib.boxc.operations.jms.indexing.IndexingMessageSender;
 import edu.unc.lib.boxc.operations.jms.order.MultiParentOrderRequest;
 import edu.unc.lib.boxc.operations.jms.order.OrderOperationType;
-import edu.unc.lib.boxc.operations.jms.order.OrderRequest;
 import edu.unc.lib.boxc.operations.jms.order.OrderRequestSerializationHelper;
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
-import org.mockito.ArgumentMatcher;
 import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -290,12 +288,8 @@ public class OrderRequestProcessorTest {
         var validator = mock(OrderValidator.class);
         when(validator.isValid()).thenReturn(false);
         when(validator.getErrors()).thenReturn(Arrays.asList(errors));
-        when(orderValidatorFactory.createValidator(argThat(new ArgumentMatcher<>() {
-            @Override
-            public boolean matches(Object argument) {
-                return ((OrderRequest)argument).getParentPid().getId().equals(uuid);
-            }
-        }))).thenReturn(validator);
+        when(orderValidatorFactory.createValidator(argThat(
+                argument -> argument.getParentPid().getId().equals(uuid)))).thenReturn(validator);
     }
 
     private void assertIndexingMessageSent(String parentId) {

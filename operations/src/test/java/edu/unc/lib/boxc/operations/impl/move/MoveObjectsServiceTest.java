@@ -158,7 +158,7 @@ public class MoveObjectsServiceTest {
         doAnswer(new Answer<Exception>() {
             @Override
             public Exception answer(InvocationOnMock invocation) throws Throwable {
-                throw new TransactionCancelledException("", invocation.getArgumentAt(0, Exception.class));
+                throw new TransactionCancelledException("", invocation.getArgument(0));
             }
         }).when(mockTx).cancel(any(Exception.class));
 

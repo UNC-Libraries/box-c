@@ -109,7 +109,7 @@ public class RepositoryPremisLoggerIT extends AbstractFedoraIT {
                 .thenAnswer(new Answer<BinaryTransferOutcome>()  {
                     @Override
                     public BinaryTransferOutcome answer(InvocationOnMock invocation) throws Throwable {
-                        InputStream contentStream = invocation.getArgumentAt(1, InputStream.class);
+                        InputStream contentStream = invocation.getArgument(1);
                         DigestInputStream digestStream = new DigestInputStream(
                                 contentStream, MessageDigest.getInstance(DigestAlgorithm.DEFAULT_ALGORITHM.getName()));
                         Path tempFilePath = createTempFile("temp_content", null);

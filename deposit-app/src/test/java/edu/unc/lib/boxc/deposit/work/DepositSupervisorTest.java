@@ -146,7 +146,7 @@ public class DepositSupervisorTest {
         when(jobFactory.materializeJob(any())).thenAnswer(new Answer<Object>() {
             @Override
             public Object answer(InvocationOnMock invocation) throws Throwable {
-                Job job = invocation.getArgumentAt(0, Job.class);
+                Job job = invocation.getArgument(0);
                 if (job == null) {
                     return null;
                 }
