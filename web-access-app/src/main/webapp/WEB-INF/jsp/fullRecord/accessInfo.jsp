@@ -24,8 +24,8 @@
 
     <div class="restricted-access">
         <h2>This ${fn:toLowerCase(briefObject.resourceType)} has restricted content</h2>
-        <c:if test="${permsHelper.enhancedAuthenticatedAccess(accessGroupSet, briefObject)}">
+        <c:if test="${permsHelper.allowsFullAuthenticatedAccess(briefObject)}">
             <div class="actionlink"><a class="button" href="${loginUrl}"><i class="fa fa-id-card"></i> Log in for access (UNC Onyen)</a></div>
         </c:if>
-        <div class="actionlink"><a class="button" href="https://library.unc.edu/wilson/contact/?refer=https%3A%2F%2Fdcr.lib.unc.edu"><i class="fa fa-envelope"></i> Contact Wilson Library for access</a></div>
+        <div class="actionlink"><a class="button" href="${contactUrl}"><i class="fa fa-envelope"></i> Contact Wilson Library for access</a></div>
     </div>

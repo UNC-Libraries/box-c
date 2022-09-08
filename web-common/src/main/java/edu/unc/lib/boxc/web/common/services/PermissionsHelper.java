@@ -150,14 +150,10 @@ public class PermissionsHelper {
      * @param metadata
      * @return
      */
-    public boolean enhancedAuthenticatedAccess(AccessGroupSet principals, ContentObjectRecord metadata) {
+    public boolean allowsFullAuthenticatedAccess(ContentObjectRecord metadata) {
         List<String> groups = metadata.getRoleGroup();
 
         if (groups == null) {
-            return false;
-        }
-
-        if (groups.contains(AUTHENTICATED_METADATA_VALUE) && hasDescriptionAccess(principals, metadata)) {
             return false;
         }
 

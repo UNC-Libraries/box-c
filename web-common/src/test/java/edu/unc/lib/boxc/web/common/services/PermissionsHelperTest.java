@@ -149,21 +149,21 @@ public class PermissionsHelperTest {
 
     @Test
     public void testHasEnhancedAccessNoGroups() {
-        assertFalse(helper.enhancedAuthenticatedAccess(null, mdObject));
+        assertFalse(helper.allowsFullAuthenticatedAccess(mdObject));
     }
 
     @Test
     public void testHasEnhancedAccessIfLoggedIn() {
         assignPermission(viewMetadata, true);
         roleGroups.add("canViewOriginals|authenticated");
-        assertTrue(helper.enhancedAuthenticatedAccess(principals, mdObject));
+        assertTrue(helper.allowsFullAuthenticatedAccess(mdObject));
     }
 
     @Test
     public void testDoesNotHaveEnhancedIfLoggedIn() {
         assignPermission(viewMetadata, true);
         roleGroups.add("canViewMetadata|authenticated");
-        assertFalse(helper.enhancedAuthenticatedAccess(principals, mdObject));
+        assertFalse(helper.allowsFullAuthenticatedAccess(mdObject));
     }
 
     private void assignPermission(Permission permission, boolean value) {
