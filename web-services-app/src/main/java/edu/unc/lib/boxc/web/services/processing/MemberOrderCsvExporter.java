@@ -66,11 +66,11 @@ public class MemberOrderCsvExporter {
             MIME_TYPE_HEADER, DELETED_HEADER, ORDER_HEADER};
 
     private static final List<String> PARENT_REQUEST_FIELDS = Arrays.asList(
-            SearchFieldKey.ANCESTOR_PATH.name(), SearchFieldKey.RESOURCE_TYPE.name());
+            SearchFieldKey.ID.name(), SearchFieldKey.ANCESTOR_PATH.name(), SearchFieldKey.RESOURCE_TYPE.name());
 
     private static final List<String> MEMBER_REQUEST_FIELDS = Arrays.asList(
             SearchFieldKey.ID.name(), SearchFieldKey.TITLE.name(), SearchFieldKey.DATASTREAM.name(),
-            SearchFieldKey.STATUS.name(), SearchFieldKey.FILE_FORMAT_TYPE.name(),
+            SearchFieldKey.STATUS.name(), SearchFieldKey.FILE_FORMAT_TYPE.name(), SearchFieldKey.RESOURCE_TYPE.name(),
             SearchFieldKey.ANCESTOR_PATH.name(), SearchFieldKey.MEMBER_ORDER_ID.name());
 
     private SolrSearchService solrSearchService;
@@ -133,8 +133,7 @@ public class MemberOrderCsvExporter {
             printer.print(original.getFilename());
         }
         printer.print(object.getFileFormatType() == null ? "" : object.getFileFormatType().get(0));
-        var deleted = object.getStatus() == null ?
-                false : object.getStatus().contains(MARKED_FOR_DELETION);
+        var deleted = object.getStatus() != null && object.getStatus().contains(MARKED_FOR_DELETION);
         printer.print(deleted);
         printer.print(object.getMemberOrderId() == null ? "" : object.getMemberOrderId());
         printer.println();

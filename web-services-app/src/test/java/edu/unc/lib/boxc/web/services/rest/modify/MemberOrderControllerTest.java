@@ -20,6 +20,7 @@ import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
 import edu.unc.lib.boxc.auth.api.models.AgentPrincipals;
 import edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl;
 import edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore;
+import edu.unc.lib.boxc.model.api.exceptions.InvalidOperationForObjectType;
 import edu.unc.lib.boxc.model.api.exceptions.RepositoryException;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.boxc.web.services.processing.MemberOrderCsvExporter;
@@ -117,6 +118,17 @@ public class MemberOrderControllerTest {
 
         mvc.perform(get("/edit/memberOrder/export/csv?ids=" + ids))
                 .andExpect(status().isForbidden())
+                .andReturn();
+    }
+
+    @Test
+    public void memberOrderCsvExportInvalidResourceTypeTest() throws Exception {
+        var ids = PARENT1_UUID;
+        when(csvExporter.export(eq(Arrays.asList(PIDs.get(PARENT1_UUID))), any(AgentPrincipals.class)))
+                .thenThrow(new InvalidOperationForObjectType());
+
+        mvc.perform(get("/edit/memberOrder/export/csv?ids=" + ids))
+                .andExpect(status().is4xxClientError())
                 .andReturn();
     }
 
