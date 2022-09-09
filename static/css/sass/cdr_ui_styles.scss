@@ -603,6 +603,11 @@ img.data-thumb {
   }
 
   .browse-header {
+    .columns {
+      margin: auto;
+      width: 100%
+    }
+
     h2.item-title {
       padding-left: 15px;
     }
@@ -739,7 +744,27 @@ table.dataTable {
     a {
       font-size: 16px;
       padding: 15px 15px 30px 15px;
-      vertical-align: middle;
+    }
+  }
+}
+
+.content-wrap.full_record,
+#is-admin-unit {
+  .restricted-access {
+    border: 1px solid;
+    border-radius: 5px;
+    padding: 15px;
+
+    .button {
+      text-align: left;
+    }
+
+    h2 {
+      font-size: 1rem;
+    }
+
+    .actionlink {
+      margin-bottom: 8px;
     }
   }
 }
@@ -1001,16 +1026,22 @@ table.dataTable {
     }
   }
 
-  #is-admin-unit.browse-header, #is-collection.browse-header {
-    display: flex;
-  }
-
   .actionlink.right {
     float: left;
   }
 
   .collinfo_metadata {
     margin: auto 0;
+
+    .is-8 {
+      padding-bottom: 0;
+    }
+  }
+
+  .restricted-access {
+    h2 {
+      text-align: center;
+    }
   }
 
   .item-title {

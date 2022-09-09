@@ -33,33 +33,11 @@
 </c:choose>
 
 <div class="full_record_top">
-            <div class="collinfo_metadata browse-header aggregate-record">
-                <c:import url="fullRecord/navigationBar.jsp" />
-                <div class="columns">
-                    <div class="column is-8">
-                        <h2 class="item-title ${isDeleted}"><c:out value="${briefObject.title}" /></h2>
-                    </div>
-                    <div class="column is-narrow-desktop action-btn item-actions">
-                        <c:if test="${permsHelper.hasEditAccess(accessGroupSet, briefObject)}">
-                            <s:eval var="editDescriptionUrl" expression=
-                                "T(edu.unc.lib.boxc.common.util.URIUtil).join(adminBaseUrl, 'describe', briefObject.id)" />
-                            <div class="actionlink right"><a class="button" href="${editDescriptionUrl}"><i class="fa fa-edit"></i> Edit</a></div>
-                        </c:if>
-
-                        <c:choose>
-                            <c:when test="${not empty dataFileUrl}">
-                                <div class="actionlink right download">
-                                    <a class="button" href="${dataFileUrl}?dl=true"><i class="fa fa-download"></i> Download</a>
-                                </div>
-                            </c:when>
-                            <c:when test="${not empty embargoDate && not empty dataFileUrl}">
-                                <div class="noaction right">
-                                    Available after <fmt:formatDate value="${embargoDate}" pattern="d MMMM, yyyy"/>
-                                </div>
-                            </c:when>
-                        </c:choose>
-                    </div>
-                </div>
+    <div class="collinfo_metadata browse-header aggregate-record">
+        <c:import url="fullRecord/navigationBar.jsp" />
+        <div class="columns">
+            <div class="column is-8">
+                <h2 class="item-title ${isDeleted}"><c:out value="${briefObject.title}" /></h2>
                 <div class="columns columns-resize aggregate-info">
                     <div class="column is-narrow-tablet ${isDeleted}">
                         <c:set var="thumbnailObject" value="${briefObject}" scope="request" />
@@ -68,7 +46,7 @@
                             <c:param name="size" value="large" />
                         </c:import>
                     </div>
-                    <div class="column is-10">
+                    <div class="column">
                         <ul>
                             <c:if test="${not empty briefObject.dateAdded}">
                                 <li><span class="has-text-weight-bold">${searchSettings.searchFieldLabels['DATE_ADDED']}:</span> <fmt:formatDate pattern="yyyy-MM-dd" value="${briefObject.dateAdded}" /></li>
@@ -138,24 +116,50 @@
                     </div>
                 </div>
             </div>
+            <div class="column is-narrow-desktop action-btn item-actions">
+                <c:if test="${hasRestrictedContent && empty cdr:getUsername()}">
+                    <c:import url="fullRecord/accessInfo.jsp" />
+                </c:if>
+                <c:if test="${permsHelper.hasEditAccess(accessGroupSet, briefObject)}">
+                    <s:eval var="editDescriptionUrl" expression=
+                            "T(edu.unc.lib.boxc.common.util.URIUtil).join(adminBaseUrl, 'describe', briefObject.id)" />
+                    <div class="actionlink right"><a class="button" href="${editDescriptionUrl}"><i class="fa fa-edit"></i> Edit</a></div>
+                </c:if>
 
-            <div class="clear">
                 <c:choose>
-                    <c:when test="${viewerType == 'uv'}">
-                        <div class="clear_space"></div>
-                        <link rel="stylesheet" href="/static/plugins/uv/uv.css">
-                        <div id="jp2_viewer" class="jp2_imageviewer_window" data-url="${briefObject.id}"></div>
+                    <c:when test="${not empty dataFileUrl}">
+                        <div class="actionlink right download">
+                            <a class="button" href="${dataFileUrl}?dl=true"><i class="fa fa-download"></i> Download</a>
+                        </div>
                     </c:when>
-                    <c:when test="${viewerType == 'pdf'}">
-                        <c:import url="fullRecord/pdfViewer.jsp" />
-                    </c:when>
-                    <c:when test="${viewerType == 'audio'}">
-                        <div class="clear_space"></div>
-                        <audio class="audio_player inline_viewer" src="${dataFileUrl}">
-                        </audio>
+                    <c:when test="${not empty embargoDate && not empty dataFileUrl}">
+                        <div class="noaction right">
+                            Available after <fmt:formatDate value="${embargoDate}" pattern="d MMMM, yyyy"/>
+                        </div>
                     </c:when>
                 </c:choose>
             </div>
+        </div>
+
+    </div>
+
+    <div class="clear">
+        <c:choose>
+            <c:when test="${viewerType == 'uv'}">
+                <div class="clear_space"></div>
+                <link rel="stylesheet" href="/static/plugins/uv/uv.css">
+                <div id="jp2_viewer" class="jp2_imageviewer_window" data-url="${briefObject.id}"></div>
+            </c:when>
+            <c:when test="${viewerType == 'pdf'}">
+                <c:import url="fullRecord/pdfViewer.jsp" />
+            </c:when>
+            <c:when test="${viewerType == 'audio'}">
+                <div class="clear_space"></div>
+                <audio class="audio_player inline_viewer" src="${dataFileUrl}">
+                </audio>
+            </c:when>
+        </c:choose>
+    </div>
 </div>
 
 <%-- Reenable once child counts are working --%>

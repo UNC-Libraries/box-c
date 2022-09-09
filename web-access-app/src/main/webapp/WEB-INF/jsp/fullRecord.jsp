@@ -29,12 +29,14 @@
 	<c:set var="isProtected" value="protected" scope="page"/>
 </c:if>
 
+<c:set var="hasRestrictedContent" value="${not empty briefObject && not permsHelper.allowsPublicAccess(briefObject)}" scope="request"/>
+
 <c:set var="badgeIcon" scope="request">
 	<c:choose>
 		<c:when test="${markedForDeletion}">
 			trash
 		</c:when>
-		<c:when test="${not empty briefObject && not permsHelper.allowsPublicAccess(briefObject)}">
+		<c:when test="${hasRestrictedContent}">
 			lock
 		</c:when>
 	</c:choose>
