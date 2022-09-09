@@ -37,7 +37,16 @@ jobs:
     - name: Package integration module with Maven
       run: mvn -B -U -pl integration clean package -DskipTests
     - name: Verify DCR modules
-      run: mvn -pl '!clamav-java' verify 
+      run: mvn -pl '!clamav-java' verify
+
+    - name: Report to CodeClimate
+      uses: paambaati/codeclimate-action@v3.0.0
+      env:
+        CC_TEST_REPORTER_ID: ${{secrets.CC_TEST_REPORTER_ID}}
+        JACOCO_SOURCE_PATH: "${{github.workspace}}/auth-api/src/main/java ${{github.workspace}}/auth-fcrepo/src/main/java ${{github.workspace}}/common-utils/src/main/java ${{github.workspace}}/deposit-app/src/main/java ${{github.workspace}}/deposit-utils/src/main/java ${{github.workspace}}/fcrepo-utils/src/main/java ${{github.workspace}}/indexing-solr/src/main/java ${{github.workspace}}/integration/src/main/java ${{github.workspace}}/model-api/src/main/java ${{github.workspace}}/model-fcrepo/src/main/java ${{github.workspace}}/operations/src/main/java ${{github.workspace}}/operations-jms/src/main/java ${{github.workspace}}/persistence/src/main/java ${{github.workspace}}/persistence-api/src/main/java ${{github.workspace}}/search-api/src/main/java ${{github.workspace}}/search-solr/src/main/java ${{github.workspace}}/services-camel-app/src/main/java ${{github.workspace}}/web-access-app/src/main/java ${{github.workspace}}/web-access-war/src/main/java ${{github.workspace}}/web-admin-app/src/main/java ${{github.workspace}}/web-common/src/main/java ${{github.workspace}}/web-services-app/src/main/java ${{github.workspace}}/web-sword/src/main/java"
+      with:
+        coverageCommand: mvn test
+        coverageLocations: ${{github.workspace}}/**/target/site/jacoco/jacoco.xml:jacoco
 
     - name: Set up nodejs
       uses: actions/setup-node@v2
@@ -56,12 +65,3 @@ jobs:
     - run: npm install -g jest-cli@28.1.2
     - run: npm --prefix static/js/vue-cdr-access run test
     - run: npm --prefix static/js/admin/vue-permissions-editor run test
-
-    - name: Report to CodeClimate
-      uses: paambaati/codeclimate-action@v3.0.0
-      env:
-        CC_TEST_REPORTER_ID: 54f7fdb7cddcd3bc935b2e887f506e80e2aa281444ad630db99c8469a89b10b0
-        JACOCO_SOURCE_PATH: "${{github.workspace}}/src/main/java"
-      with:
-        coverageCommand: mvn test
-        coverageLocations: ${{github.workspace}}/target/site/jacoco/jacoco.xml:jacoco
