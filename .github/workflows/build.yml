@@ -36,16 +36,16 @@ jobs:
       run: mvn -B -U -pl '!integration' clean install -DskipTests
     - name: Package integration module with Maven
       run: mvn -B -U -pl integration clean package -DskipTests
-    - name: Verify DCR modules
-      run: mvn -pl '!clamav-java' verify
+    # - name: Verify DCR modules
+    #   run: mvn -pl '!clamav-java' verify
 
     - name: Report to CodeClimate
       uses: paambaati/codeclimate-action@v3.0.0
       env:
         CC_TEST_REPORTER_ID: ${{secrets.CC_TEST_REPORTER_ID}}
-        JACOCO_SOURCE_PATH: "${{github.workspace}}/auth-api/src/main/java ${{github.workspace}}/auth-fcrepo/src/main/java ${{github.workspace}}/common-utils/src/main/java ${{github.workspace}}/deposit-app/src/main/java ${{github.workspace}}/deposit-utils/src/main/java ${{github.workspace}}/fcrepo-utils/src/main/java ${{github.workspace}}/indexing-solr/src/main/java ${{github.workspace}}/integration/src/main/java ${{github.workspace}}/model-api/src/main/java ${{github.workspace}}/model-fcrepo/src/main/java ${{github.workspace}}/operations/src/main/java ${{github.workspace}}/operations-jms/src/main/java ${{github.workspace}}/persistence/src/main/java ${{github.workspace}}/persistence-api/src/main/java ${{github.workspace}}/search-api/src/main/java ${{github.workspace}}/search-solr/src/main/java ${{github.workspace}}/services-camel-app/src/main/java ${{github.workspace}}/web-access-app/src/main/java ${{github.workspace}}/web-access-war/src/main/java ${{github.workspace}}/web-admin-app/src/main/java ${{github.workspace}}/web-common/src/main/java ${{github.workspace}}/web-services-app/src/main/java ${{github.workspace}}/web-sword/src/main/java"
+        JACOCO_SOURCE_PATH: "${{github.workspace}}/auth-api/src/main/java ${{github.workspace}}/auth-fcrepo/src/main/java ${{github.workspace}}/common-utils/src/main/java ${{github.workspace}}/deposit-app/src/main/java ${{github.workspace}}/deposit-utils/src/main/java ${{github.workspace}}/fcrepo-utils/src/main/java ${{github.workspace}}/indexing-solr/src/main/java ${{github.workspace}}/integration/src/main/java ${{github.workspace}}/model-api/src/main/java ${{github.workspace}}/model-fcrepo/src/main/java ${{github.workspace}}/operations/src/main/java ${{github.workspace}}/operations-jms/src/main/java ${{github.workspace}}/persistence/src/main/java ${{github.workspace}}/persistence-api/src/main/java ${{github.workspace}}/search-api/src/main/java ${{github.workspace}}/search-solr/src/main/java ${{github.workspace}}/services-camel-app/src/main/java ${{github.workspace}}/web-access-app/src/main/java ${{github.workspace}}/web-access-war/src/main/java ${{github.workspace}}/web-admin-app/src/main/java ${{github.workspace}}/web-common/src/main/java ${{github.workspace}}/web-services-app/src/main/java ${{github.workspace}}/web-sword/src/main/java  ${{github.workspace}}/clamav-java/src/main/java"
       with:
-        coverageCommand: mvn test
+        coverageCommand: mvn -pl 'auth-api,auth-fcrepo,common-utils,deposit-app,deposit-utils,fcrepo-utils,indexing-solr,integration,model-api,model-fcrepo,operations,operations-jms,persistence,persistence-api,search-api,search-solr,services-camel-app,web-access-app,web-access-war,web-admin-app,web-common,web-services-app,web-sword' test
         coverageLocations: ${{github.workspace}}/**/target/site/jacoco/jacoco.xml:jacoco
 
     - name: Set up nodejs
