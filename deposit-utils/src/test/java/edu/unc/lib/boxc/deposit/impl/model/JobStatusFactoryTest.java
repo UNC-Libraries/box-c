@@ -15,27 +15,25 @@
  */
 package edu.unc.lib.boxc.deposit.impl.model;
 
-import static edu.unc.lib.boxc.deposit.api.RedisWorkerConstants.JOB_STATUS_PREFIX;
-import static org.mockito.Matchers.anyInt;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Matchers.isNull;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-import static org.mockito.MockitoAnnotations.initMocks;
+import edu.unc.lib.boxc.deposit.api.RedisWorkerConstants.JobField;
+import edu.unc.lib.boxc.model.api.exceptions.RepositoryException;
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.Mock;
+import redis.clients.jedis.Jedis;
+import redis.clients.jedis.JedisPool;
+import redis.clients.jedis.exceptions.JedisConnectionException;
 
 import java.net.SocketTimeoutException;
 import java.util.UUID;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.mockito.Mock;
-
-import edu.unc.lib.boxc.deposit.api.RedisWorkerConstants.JobField;
-import edu.unc.lib.boxc.model.api.exceptions.RepositoryException;
-import redis.clients.jedis.Jedis;
-import redis.clients.jedis.JedisPool;
-import redis.clients.jedis.exceptions.JedisConnectionException;
+import static edu.unc.lib.boxc.deposit.api.RedisWorkerConstants.JOB_STATUS_PREFIX;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import static org.mockito.MockitoAnnotations.initMocks;
 
 /**
  * @author bbpennel
@@ -78,7 +76,7 @@ public class JobStatusFactoryTest {
     public void incrCompletionInterruptRecovery() {
         SocketTimeoutException cause = new SocketTimeoutException("Timed out");
         JedisConnectionException ex = new JedisConnectionException(cause);
-        when(jedis.hincrBy(anyString(), anyString(), anyInt())).thenThrow(ex).thenReturn(1L);
+        when(jedis.hincrBy(anyString(), anyString(), anyLong())).thenThrow(ex).thenReturn(1L);
 
         statusFactory.incrCompletion(jobUUID, 1);
 
@@ -89,7 +87,7 @@ public class JobStatusFactoryTest {
     public void incrCompletionInterruptFail() {
         SocketTimeoutException cause = new SocketTimeoutException("Timed out");
         JedisConnectionException ex = new JedisConnectionException(cause);
-        when(jedis.hincrBy(anyString(), anyString(), anyInt())).thenThrow(ex);
+        when(jedis.hincrBy(anyString(), anyString(), anyLong())).thenThrow(ex);
 
         statusFactory.incrCompletion(jobUUID, 1);
     }
@@ -97,7 +95,7 @@ public class JobStatusFactoryTest {
     @Test(expected = RepositoryException.class)
     public void incrCompletionUnexpectedException() {
         Exception ex = new RepositoryException("Oops");
-        when(jedis.hincrBy(anyString(), isNull(), anyInt())).thenThrow(ex).thenReturn(1L);
+        when(jedis.hincrBy(anyString(), anyString(), anyLong())).thenThrow(ex).thenReturn(1L);
 
         statusFactory.incrCompletion(jobUUID, 1);
     }
