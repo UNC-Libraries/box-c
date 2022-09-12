@@ -6,7 +6,7 @@
     "dev": "vite",
     "serve": "vite preview",
     "build": "vite build",
-    "test": "jest",
+    "test": "jest --coverage",
     "build-dev": "vite build --mode development"
   },
   "dependencies": {
