@@ -71,7 +71,6 @@ import edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl;
 import edu.unc.lib.boxc.common.test.SelfReturningAnswer;
 import edu.unc.lib.boxc.deposit.api.RedisWorkerConstants.DepositField;
 import edu.unc.lib.boxc.deposit.api.RedisWorkerConstants.DepositState;
-import edu.unc.lib.boxc.deposit.fcrepo4.IngestContentObjectsJob;
 import edu.unc.lib.boxc.deposit.impl.model.DepositModelHelpers;
 import edu.unc.lib.boxc.deposit.validate.VerifyObjectsAreInFedoraService;
 import edu.unc.lib.boxc.deposit.work.JobFailedException;
@@ -311,7 +310,7 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
         job.closeModel();
 
         when(work.addDataFile(any(PID.class), any(URI.class),
-                anyString(), anyString(), anyString(), anyString(), any(Model.class)))
+                anyString(), anyString(), isNull(), isNull(), any(Model.class)))
                 .thenReturn(mockFileObj);
         when(mockFileObj.getPid()).thenReturn(mainPid).thenReturn(supPid);
         when(repoObjLoader.getWorkObject(eq(workPid))).thenReturn(work);
@@ -322,9 +321,9 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
         verify(destinationObj).addMember(eq(work));
 
         verify(work).addDataFile(eq(mainPid), any(URI.class), eq(mainLoc),
-                eq(mainMime), anyString(), anyString(), any(Model.class));
+                eq(mainMime), isNull(), isNull(), any(Model.class));
         verify(work).addDataFile(eq(supPid), any(URI.class), eq(supLoc),
-                eq(supMime), anyString(), anyString(), any(Model.class));
+                eq(supMime), isNull(), isNull(), any(Model.class));
         verify(work).setPrimaryObject(mainPid);
 
         // Add work and file count
@@ -373,7 +372,7 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
         job.closeModel();
 
         when(work.addDataFile(any(PID.class), any(URI.class),
-                anyString(), anyString(), anyString(), anyString(), any(Model.class)))
+                anyString(), anyString(), isNull(), isNull(), any(Model.class)))
                 .thenThrow(new FedoraException("Fail"))
                 .thenReturn(mockFileObj);
         when(repoObjLoader.getWorkObject(eq(workPid))).thenReturn(work);
@@ -433,7 +432,7 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
         job.closeModel();
 
         when(work.addDataFile(any(PID.class), any(URI.class),
-                anyString(), anyString(), anyString(), anyString(), any(Model.class)))
+                anyString(), anyString(), isNull(), isNull(), any(Model.class)))
                 .thenReturn(mockFileObj);
         when(mockFileObj.getPid()).thenReturn(mainPid).thenReturn(supPid);
 
@@ -451,13 +450,13 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
 
         // Main file object should not be touched
         verify(work, never()).addDataFile(eq(mainPid), any(URI.class),
-                anyString(), anyString(), anyString(), anyString(), any(Model.class));
+                anyString(), anyString(), isNull(), isNull(), any(Model.class));
         verify(repoObjLoader, never()).getFileObject(eq(mainPid));
 
         // Supplemental file should be created
         verify(repoObjLoader, never()).getFileObject(eq(supPid));
         verify(work).addDataFile(eq(supPid), any(URI.class), eq(supLoc),
-                eq(supMime), anyString(), anyString(), any(Model.class));
+                eq(supMime), isNull(), isNull(), any(Model.class));
 
         // Ensure that the primary object still got set
         verify(work).setPrimaryObject(mainPid);
@@ -492,7 +491,7 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
         job.closeModel();
 
         when(work.addDataFile(any(PID.class), any(URI.class),
-                anyString(), anyString(), anyString(), anyString(), any(Model.class)))
+                anyString(), anyString(), isNull(), isNull(), any(Model.class)))
                 .thenThrow(new ChecksumMismatchException("Temporarily bad"))
                 .thenReturn(mockFileObj);
         when(mockFileObj.getPid()).thenReturn(mainPid).thenReturn(supPid);
@@ -506,9 +505,9 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
         verify(updateDescService).updateDescription(any(UpdateDescriptionRequest.class));
 
         verify(work, times(2)).addDataFile(eq(mainPid), any(URI.class), eq(mainLoc),
-                eq(mainMime), anyString(), anyString(), any(Model.class));
+                eq(mainMime), isNull(), isNull(), any(Model.class));
         verify(work).addDataFile(eq(supPid), any(URI.class), eq(supLoc),
-                eq(supMime), anyString(), anyString(), any(Model.class));
+                eq(supMime), isNull(), isNull(), any(Model.class));
         verify(work).setPrimaryObject(mainPid);
 
         // Add work and file count
@@ -534,7 +533,7 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
         job.closeModel();
 
         when(work.addDataFile(any(PID.class), any(URI.class),
-                anyString(), anyString(), anyString(), anyString(), any(Model.class)))
+                anyString(), anyString(), isNull(), isNull(), any(Model.class)))
                 .thenReturn(mockFileObj);
         when(mockFileObj.getPid()).thenReturn(mainPid);
         when(repoObjLoader.getWorkObject(eq(workPid))).thenReturn(work);
@@ -560,7 +559,7 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
         verify(destinationObj, times(2)).addMember(eq(work));
 
         verify(work).addDataFile(eq(mainPid), any(URI.class), eq(mainLoc),
-                eq(mainMime), anyString(), anyString(), any(Model.class));
+                eq(mainMime), isNull(), isNull(), any(Model.class));
         verify(work).setPrimaryObject(mainPid);
 
         verify(jobStatusFactory, times(2)).setTotalCompletion(eq(jobUUID), eq(2));
@@ -725,7 +724,7 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
         job.closeModel();
 
         when(work.addDataFile(any(PID.class), any(URI.class),
-                anyString(), anyString(), anyString(), anyString(), any(Model.class)))
+                anyString(), anyString(), isNull(), isNull(), any(Model.class)))
                 .thenReturn(mockFileObj);
         when(mockFileObj.getPid()).thenReturn(mainPid);
         when(repoObjLoader.getWorkObject(eq(workPid))).thenReturn(work);
@@ -739,7 +738,7 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
                 workAipResc.hasProperty(CdrAcl.embargoUntil));
 
         verify(work).addDataFile(eq(mainPid), any(URI.class), eq(mainLoc),
-                eq(mainMime), anyString(), anyString(), modelCaptor.capture());
+                eq(mainMime), isNull(), isNull(), modelCaptor.capture());
 
         Resource fileAipResc = modelCaptor.getValue().getResource(mainPid.getRepositoryPath());
         assertTrue("File object did not contain assigned restriction",
