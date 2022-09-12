@@ -42,6 +42,8 @@ import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
 
+import static edu.unc.lib.boxc.operations.api.order.MemberOrderHelper.formatUnsupportedMessage;
+import static edu.unc.lib.boxc.operations.api.order.MemberOrderHelper.supportsMemberOrdering;
 import static edu.unc.lib.boxc.search.api.FacetConstants.MARKED_FOR_DELETION;
 
 /**
@@ -162,9 +164,9 @@ public class MemberOrderCsvExporter {
             throw new NotFoundException("Unable to find requested record " + pid.getId()
                     + ", it either does not exist or is not accessible");
         }
-        if (!ResourceType.Work.nameEquals(parentRec.getResourceType())) {
-            throw new InvalidOperationForObjectType("Object " + pid.getId() + " of type " + parentRec.getResourceType()
-                    + " does not support member ordering");
+        var resourceType = ResourceType.valueOf(parentRec.getResourceType());
+        if (!supportsMemberOrdering(resourceType)) {
+            throw new InvalidOperationForObjectType(formatUnsupportedMessage(pid, resourceType));
         }
     }
 

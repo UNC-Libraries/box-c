@@ -15,12 +15,11 @@
  */
 package edu.unc.lib.boxc.operations.impl.order;
 
-import edu.unc.lib.boxc.model.api.ResourceType;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.api.services.MembershipService;
-import edu.unc.lib.boxc.operations.jms.order.OrderRequest;
 import edu.unc.lib.boxc.operations.api.order.OrderValidator;
+import edu.unc.lib.boxc.operations.jms.order.OrderRequest;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -30,6 +29,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+
+import static edu.unc.lib.boxc.operations.api.order.MemberOrderHelper.formatUnsupportedMessage;
+import static edu.unc.lib.boxc.operations.api.order.MemberOrderHelper.supportsMemberOrdering;
 
 /**
  * Validator for a request to set order. This is a stateful class, and will only validate once per instance.
@@ -54,9 +56,8 @@ public class SetOrderValidator implements OrderValidator {
     private boolean validate() {
         var parentId = request.getParentPid().getId();
         var parentObj = repositoryObjectLoader.getRepositoryObject(request.getParentPid());
-        if (!ResourceType.Work.equals(parentObj.getResourceType())) {
-            errors.add("Object " + parentId + " of type " + parentObj.getResourceType().name()
-                    + " does not support member ordering");
+        if (!supportsMemberOrdering(parentObj.getResourceType())) {
+            errors.add(formatUnsupportedMessage(request.getParentPid(), parentObj.getResourceType()));
             return false;
         }
 
