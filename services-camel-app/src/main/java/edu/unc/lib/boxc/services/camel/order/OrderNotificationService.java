@@ -16,6 +16,7 @@
 package edu.unc.lib.boxc.services.camel.order;
 
 import edu.unc.lib.boxc.model.api.ids.PID;
+import edu.unc.lib.boxc.operations.impl.utils.EmailHandler;
 import edu.unc.lib.boxc.operations.jms.order.MultiParentOrderRequest;
 
 import java.util.List;
@@ -26,6 +27,7 @@ import java.util.List;
  * @author bbpennel
  */
 public class OrderNotificationService {
+    private EmailHandler emailHandler;
     /**
      * Send a notification about the results of an order operation caused by a MultiParentOrderRequest
      * @param request
@@ -33,6 +35,27 @@ public class OrderNotificationService {
      * @param errors
      */
     public void sendResults(MultiParentOrderRequest request, List<PID> successes, List<String> errors) {
-        // TODO implement this
+        if (request.getEmail().isEmpty()) {
+            return;
+        }
+
+        var emailBody = "Here are the results of your bulk SetOrderUpdate request.\n";
+        var parentCount = request.getParentToOrdered().keySet().size();
+        var successCount = successes.size();
+        emailBody += "There were " + parentCount + " parent objects requested, and "
+                + successCount + " were successfully updated.\n";
+
+        StringBuilder emailErrors;
+        if (errors.isEmpty()) {
+            emailErrors = new StringBuilder("There were no errors.");
+        } else {
+            emailErrors = new StringBuilder("There were the following errors:\n");
+            for (String error : errors) {
+                emailErrors.append("-- ").append(error).append("\n");
+            }
+        }
+        emailBody += emailErrors.toString();
+
+        emailHandler.sendEmail(request.getEmail(), "Order Request Notification", emailBody, null, null);
     }
 }
