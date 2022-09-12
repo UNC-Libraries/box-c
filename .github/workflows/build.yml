@@ -48,7 +48,9 @@ jobs:
         JACOCO_SOURCE_PATH: "${{github.workspace}}/auth-api/src/main/java ${{github.workspace}}/auth-fcrepo/src/main/java ${{github.workspace}}/common-utils/src/main/java ${{github.workspace}}/deposit-app/src/main/java ${{github.workspace}}/deposit-utils/src/main/java ${{github.workspace}}/fcrepo-utils/src/main/java ${{github.workspace}}/indexing-solr/src/main/java ${{github.workspace}}/integration/src/main/java ${{github.workspace}}/model-api/src/main/java ${{github.workspace}}/model-fcrepo/src/main/java ${{github.workspace}}/operations/src/main/java ${{github.workspace}}/operations-jms/src/main/java ${{github.workspace}}/persistence/src/main/java ${{github.workspace}}/persistence-api/src/main/java ${{github.workspace}}/search-api/src/main/java ${{github.workspace}}/search-solr/src/main/java ${{github.workspace}}/services-camel-app/src/main/java ${{github.workspace}}/web-access-app/src/main/java ${{github.workspace}}/web-access-war/src/main/java ${{github.workspace}}/web-admin-app/src/main/java ${{github.workspace}}/web-common/src/main/java ${{github.workspace}}/web-services-app/src/main/java ${{github.workspace}}/web-sword/src/main/java  ${{github.workspace}}/clamav-java/src/main/java"
       with:
         coverageCommand: mvn -pl !clamav-java verify
-        coverageLocations: ${{github.workspace}}/**/target/site/jacoco/jacoco.xml:jacoco
+        coverageLocations: |
+          ${{github.workspace}}/**/target/site/jacoco/jacoco.xml:jacoco
+          ${{github.workspace}}/**/target/site/jacoco-it/jacoco.xml:jacoco
 
     - name: Set up nodejs
       uses: actions/setup-node@v2
