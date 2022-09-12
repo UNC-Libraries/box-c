@@ -29,9 +29,10 @@ public class MemberOrderHelper {
 
     /**
      * @param resourceType resource type to test
-     * @return true if the supplied resourceType supposed member ordering
+     * @return true if the supplied resourceType supports member ordering
      */
     public static boolean supportsMemberOrdering(ResourceType resourceType) {
+        // Currently, only works support the operation, but that is expected to change in the future
         return ResourceType.Work.equals(resourceType);
     }
 
