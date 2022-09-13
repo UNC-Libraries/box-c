@@ -28,33 +28,19 @@ import java.util.List;
  */
 public class OrderNotificationService {
     private EmailHandler emailHandler;
+    private OrderNotificationBuilder orderNotificationBuilder;
     /**
-     * Send a notification about the results of an order operation caused by a MultiParentOrderRequest
+     * Send a notification about the results of a MultiParentOrderRequest
      * @param request
      * @param successes list of pids for objects that successfully updated
-     * @param errors
+     * @param errors list of errors for unsuccessful order operations
      */
     public void sendResults(MultiParentOrderRequest request, List<PID> successes, List<String> errors) {
         if (request.getEmail().isEmpty()) {
             return;
         }
 
-        var emailBody = "Here are the results of your bulk SetOrderUpdate request.\n";
-        var parentCount = request.getParentToOrdered().keySet().size();
-        var successCount = successes.size();
-        emailBody += "There were " + parentCount + " parent objects requested, and "
-                + successCount + " were successfully updated.\n";
-
-        StringBuilder emailErrors;
-        if (errors.isEmpty()) {
-            emailErrors = new StringBuilder("There were no errors.");
-        } else {
-            emailErrors = new StringBuilder("There were the following errors:\n");
-            for (String error : errors) {
-                emailErrors.append("-- ").append(error).append("\n");
-            }
-        }
-        emailBody += emailErrors.toString();
+        var emailBody = orderNotificationBuilder.construct(request, successes, errors);
 
         emailHandler.sendEmail(request.getEmail(), "Order Request Notification", emailBody, null, null);
     }
