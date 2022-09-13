@@ -20,12 +20,23 @@ import edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl;
 import edu.unc.lib.boxc.auth.fcrepo.models.AgentPrincipalsImpl;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
+import edu.unc.lib.boxc.operations.impl.utils.EmailHandler;
 import edu.unc.lib.boxc.operations.jms.order.MultiParentOrderRequest;
 import edu.unc.lib.boxc.operations.jms.order.OrderOperationType;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
+import org.springframework.beans.factory.annotation.Autowired;
 
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.times;
+
+import java.io.File;
 import java.util.Arrays;
+
 
 /**
  * @author snluong
@@ -41,6 +52,20 @@ public class OrderNotificationServiceTest {
     private MultiParentOrderRequest request = new MultiParentOrderRequest();
     private OrderNotificationService orderNotificationService;
 
+    @Autowired
+    private EmailHandler emailHandler;
+
+    @Captor
+    private ArgumentCaptor<String> toCaptor;
+    @Captor
+    private ArgumentCaptor<String> subjectCaptor;
+    @Captor
+    private ArgumentCaptor<String> bodyCaptor;
+    @Captor
+    private ArgumentCaptor<String> filenameCaptor;
+    @Captor
+    private ArgumentCaptor<File> attachmentCaptor;
+
     @Before
     public void setup() {
         request.setAgent(agent);
@@ -54,12 +79,22 @@ public class OrderNotificationServiceTest {
         var successes = Arrays.asList(parentPid1, parentPid2);
         var errors = Arrays.asList("First error", "Another error oh no");
         orderNotificationService.sendResults(request, successes, errors);
+        assertEmailSent();
     }
     @Test
     public void doNotSendResultsEmailIfNoEmailAddress() {
         var successes = Arrays.asList(parentPid1, parentPid2);
         var errors = Arrays.asList("First error", "Another error oh no");
         orderNotificationService.sendResults(request, successes, errors);
+        assertEmailNotSent();
+    }
 
+    private void assertEmailSent() {
+        verify(emailHandler, times(1)).sendEmail(toCaptor.capture(), subjectCaptor.capture(),
+                bodyCaptor.capture(), filenameCaptor.capture(), attachmentCaptor.capture());
+    }
+
+    private void assertEmailNotSent() {
+        verify(orderNotificationService, never()).sendResults(any(MultiParentOrderRequest.class), any(), any());
     }
 }
