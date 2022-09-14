@@ -109,29 +109,48 @@
                 </configuration>
             </plugin>
             <plugin>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>integration-prepare-agent</id>
+                        <goals>
+                            <goal>prepare-agent</goal>
+                        </goals>
+                        <configuration>
+                            <propertyName>jacoco.agent.it.arg</propertyName>
+                            <destFile>${project.build.directory}/jacoco-integration.exec</destFile>
+                            <append>true</append>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>pre-integration-test</id>
+                        <phase>pre-integration-test</phase>
+                        <goals>
+                            <goal>prepare-agent</goal>
+                        </goals>
+                        <configuration>
+                            <propertyName>jacoco.agent.it.arg</propertyName>
+                            <destFile>${project.build.directory}/jacoco-integration.exec</destFile>
+                            <append>true</append>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
                 <groupId>org.eclipse.jetty</groupId>
                 <artifactId>jetty-maven-plugin</artifactId>
                 <version>9.4.19.v20190610</version>
                 <configuration>
                     <supportedPackagings>jar</supportedPackagings>
-                    <systemProperties>
-                        <force>true</force>
-                        <systemProperty>
-                            <name>server.properties.uri</name>
-                            <value>file:${project.build.directory}/test-classes/access-app.properties</value>
-                        </systemProperty>
-                        <systemProperty>
-                            <name>acl.properties.uri</name>
-                            <value>file:${project.build.directory}/test-classes/patronPrincipalConfig.json</value>
-                        </systemProperty>
-                        <systemProperty>
-                            <name>fcrepo.baseUri</name>
-                            <value>http://localhost:48085/fcrepo/rest</value>
-                        </systemProperty>
-                    </systemProperties>
-                    <scanIntervalSeconds>10</scanIntervalSeconds>
+                    <jettyXml>integration/src/test/jetty-test.xml</jettyXml>
+                    <contextXml>integration/src/test/resources/jetty_context.xml</contextXml>
                     <stopKey>STOP</stopKey>
+                    <stopWait>10</stopWait>
                     <stopPort>49000</stopPort>
+                    <httpConnector>
+                        <port>48080</port>
+                    </httpConnector>
                     <daemon>true</daemon>
                 </configuration>
                 <executions>
@@ -140,17 +159,17 @@
                         <phase>pre-integration-test</phase>
                         <goals>
                             <goal>stop</goal>
-                            <goal>start</goal>
+                            <goal>run-forked</goal>
                         </goals>
                         <configuration>
-                            <jettyXml>${project.build.directory}/test-classes/jetty-test.xml</jettyXml>
+                            <jvmArgs>${jacoco.agent.it.arg} -Djetty.port=48080 -Dserver.properties.uri=file:${project.build.directory}/test-classes/access-app.properties -Dacl.properties.uri=file:${project.build.directory}/test-classes/patronPrincipalConfig.json -Dfcrepo.baseUri=http://localhost:48085/fcrepo/rest</jvmArgs>
+                            <waitForChild>false</waitForChild>
+                            <maxStartupLines>200</maxStartupLines>
+                            <maxChildChecks>400</maxChildChecks>
+                            <maxChildCheckInterval>250</maxChildCheckInterval>
+                            <daemon>true</daemon>
+
                             <scanIntervalSeconds>0</scanIntervalSeconds>
-                            <contextHandlers>
-                                <contextHandler implementation="org.eclipse.jetty.maven.plugin.JettyWebAppContext">
-                                    <war>${project.build.directory}/web-access-app.war</war>
-                                    <contextPath>/access</contextPath>
-                                </contextHandler>
-                            </contextHandlers>
                         </configuration>
                     </execution>
 
@@ -172,6 +191,7 @@
                     </systemPropertyVariables>
                 </configuration>
             </plugin>
+
         </plugins>
     </build>
     <dependencies>
