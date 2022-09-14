@@ -461,24 +461,12 @@
                         <goals>
                             <goal>prepare-agent</goal>
                         </goals>
-
-<!--                        <configuration>-->
-<!--                            <destFile>${jacoco.reportPath}</destFile>-->
-<!--                            <propertyName>jacoco.agent.unit.arg</propertyName>-->
-<!--                            <append>true</append>-->
-<!--                        </configuration>-->
                     </execution>
                     <execution>
                         <id>default-prepare-agent-integration</id>
                         <goals>
                             <goal>prepare-agent-integration</goal>
                         </goals>
-
-<!--                        <configuration>-->
-<!--                            <destFile>${jacoco.itReportPath}</destFile>-->
-<!--                            <propertyName>jacoco.agent.it.arg</propertyName>-->
-<!--                            <append>true</append>-->
-<!--                        </configuration>-->
                     </execution>
                     <execution>
                         <id>default-report</id>
@@ -486,12 +474,6 @@
                         <goals>
                             <goal>report</goal>
                         </goals>
-<!--                        <configuration>-->
-<!--                            &lt;!&ndash; Sets the path to the file which contains the execution data. &ndash;&gt;-->
-<!--                            <dataFile>${project.build.directory}/jacoco.exec</dataFile>-->
-<!--                            &lt;!&ndash; Sets the output directory for the code coverage report. &ndash;&gt;-->
-<!--                            <outputDirectory>${project.build.directory}/site/jacoco</outputDirectory>-->
-<!--                        </configuration>-->
                     </execution>
                     <execution>
                         <id>default-report-integration</id>
@@ -499,17 +481,6 @@
                             <goal>report-integration</goal>
                         </goals>
                     </execution>
-<!--                    <execution>-->
-<!--                        <id>it-report</id>-->
-<!--                        <phase>verify</phase>-->
-<!--                        <goals>-->
-<!--                            <goal>report-aggregate</goal>-->
-<!--                        </goals>-->
-<!--                        <configuration>-->
-<!--                            <dataFileIncludes>**/jacoco-it.exec</dataFileIncludes>-->
-<!--                            <outputDirectory>${project.reporting.directory}/jacoco</outputDirectory>-->
-<!--                        </configuration>-->
-<!--                    </execution>-->
                 </executions>
             </plugin>
         </plugins>
