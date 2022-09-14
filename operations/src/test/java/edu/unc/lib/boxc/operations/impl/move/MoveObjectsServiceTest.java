@@ -191,7 +191,7 @@ public class MoveObjectsServiceTest {
     @Test(expected = AccessRestrictionException.class)
     public void testNoPermissionOnDestination() throws Exception {
         doThrow(new AccessRestrictionException()).when(aclService)
-                .assertHasAccess(anyString(), eq(destPid), any(AccessGroupSetImpl.class), eq(Permission.move));
+                .assertHasAccess(anyString(), eq(destPid), any(), eq(Permission.move));
 
         service.moveObjects(mockAgent, destPid, asList(makeMoveObject(mockParent)));
     }
@@ -211,7 +211,7 @@ public class MoveObjectsServiceTest {
         PID movePid = makeMoveObject(mockParent);
 
         doThrow(new AccessRestrictionException()).when(aclService)
-                .assertHasAccess(anyString(), eq(movePid), any(AccessGroupSetImpl.class), eq(Permission.move));
+                .assertHasAccess(anyString(), eq(movePid), any(), eq(Permission.move));
 
         service.moveObjects(mockAgent, destPid, asList(movePid));
     }

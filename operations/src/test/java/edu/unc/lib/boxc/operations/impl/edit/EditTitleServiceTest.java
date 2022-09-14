@@ -143,7 +143,7 @@ public class EditTitleServiceTest {
         when(binaryObj.getBinaryStream()).thenReturn(convertDocumentToStream(document));
 
         doThrow(new AccessRestrictionException()).when(aclService)
-                .assertHasAccess(anyString(), eq(pid), any(AccessGroupSetImpl.class), any(Permission.class));
+                .assertHasAccess(anyString(), eq(pid), any(), any(Permission.class));
 
         service.editTitle(agent, pid, title);
     }

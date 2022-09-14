@@ -198,7 +198,7 @@ public class EditFilenameServiceTest {
     @Test(expected = TransactionCancelledException.class)
     public void insufficientAccessTest() {
         doThrow(new AccessRestrictionException()).when(aclService)
-            .assertHasAccess(anyString(), eq(pid), any(AccessGroupSetImpl.class), eq(Permission.editDescription));
+            .assertHasAccess(anyString(), eq(pid), any(), eq(Permission.editDescription));
 
         service.editLabel(agent, pid, "label");
     }

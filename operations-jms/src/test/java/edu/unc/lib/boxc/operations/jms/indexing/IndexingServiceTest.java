@@ -125,7 +125,7 @@ public class IndexingServiceTest {
     @Test(expected = AccessRestrictionException.class)
     public void insufficientAccessTest() {
         doThrow(new AccessRestrictionException()).when(aclService)
-                .assertHasAccess(anyString(), any(PID.class), any(AccessGroupSetImpl.class), eq(reindex));
+                .assertHasAccess(anyString(), any(PID.class), any(), eq(reindex));
 
         service.reindexObject(agent, objPid);
     }
