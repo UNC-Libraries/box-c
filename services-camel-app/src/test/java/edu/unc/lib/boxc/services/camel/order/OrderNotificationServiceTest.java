@@ -25,14 +25,16 @@ import edu.unc.lib.boxc.operations.jms.order.MultiParentOrderRequest;
 import edu.unc.lib.boxc.operations.jms.order.OrderOperationType;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.isNull;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.times;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.when;
 
 import java.io.File;
 import java.util.Arrays;
@@ -52,29 +54,25 @@ public class OrderNotificationServiceTest {
     private MultiParentOrderRequest request = new MultiParentOrderRequest();
     private OrderNotificationService orderNotificationService;
 
-    @Autowired
+    @Mock
     private EmailHandler emailHandler;
-
-    @Captor
-    private ArgumentCaptor<String> toCaptor;
-    @Captor
-    private ArgumentCaptor<String> subjectCaptor;
-    @Captor
-    private ArgumentCaptor<String> bodyCaptor;
-    @Captor
-    private ArgumentCaptor<String> filenameCaptor;
-    @Captor
-    private ArgumentCaptor<File> attachmentCaptor;
+    @Mock
+    private OrderNotificationBuilder orderNotificationBuilder;
 
     @Before
     public void setup() {
+        MockitoAnnotations.initMocks(this);
         request.setAgent(agent);
         request.setOperation(OrderOperationType.SET);
         parentPid1 = PIDs.get(PARENT1_UUID);
         parentPid2 = PIDs.get(PARENT2_UUID);
+        orderNotificationService = new OrderNotificationService();
+        orderNotificationService.setOrderNotificationBuilder(orderNotificationBuilder);
+        orderNotificationService.setEmailHandler(emailHandler);
     }
     @Test
     public void sendResultsSendsEmail() {
+        when(orderNotificationBuilder.construct(any(), any(), any())).thenReturn("Hi there");
         request.setEmail(EMAIL);
         var successes = Arrays.asList(parentPid1, parentPid2);
         var errors = Arrays.asList("First error", "Another error oh no");
@@ -90,11 +88,11 @@ public class OrderNotificationServiceTest {
     }
 
     private void assertEmailSent() {
-        verify(emailHandler, times(1)).sendEmail(toCaptor.capture(), subjectCaptor.capture(),
-                bodyCaptor.capture(), filenameCaptor.capture(), attachmentCaptor.capture());
+        verify(emailHandler, times(1)).sendEmail(
+                eq(EMAIL), any(), eq("Hi there"), isNull(String.class), isNull(File.class));
     }
 
     private void assertEmailNotSent() {
-        verify(orderNotificationService, never()).sendResults(any(MultiParentOrderRequest.class), any(), any());
+        verify(emailHandler, never()).sendEmail(any(), any(), any(), any(), any());
     }
 }

@@ -36,8 +36,8 @@ public class OrderNotificationBuilder {
         var successCount = successes.size();
         var emailBody = "Here are the results of your bulk SetOrderUpdate request.\n";
 
-        emailBody += "There were " + parentCount + " parent objects requested, and "
-                + successCount + " were successfully updated.\n";
+        emailBody += "Number of parent objects requested: " + parentCount + "\n";
+        emailBody += "Number successfully updated: " + successCount + "\n";
 
         StringBuilder emailErrors;
         if (errors.isEmpty()) {

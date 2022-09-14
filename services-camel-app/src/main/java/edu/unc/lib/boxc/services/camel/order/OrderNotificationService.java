@@ -36,12 +36,20 @@ public class OrderNotificationService {
      * @param errors list of errors for unsuccessful order operations
      */
     public void sendResults(MultiParentOrderRequest request, List<PID> successes, List<String> errors) {
-        if (request.getEmail().isEmpty()) {
+        if (request.getEmail() == null) {
             return;
         }
 
         var emailBody = orderNotificationBuilder.construct(request, successes, errors);
 
         emailHandler.sendEmail(request.getEmail(), "Order Request Notification", emailBody, null, null);
+    }
+
+    public void setEmailHandler(EmailHandler emailHandler) {
+        this.emailHandler = emailHandler;
+    }
+
+    public void setOrderNotificationBuilder(OrderNotificationBuilder orderNotificationBuilder) {
+        this.orderNotificationBuilder = orderNotificationBuilder;
     }
 }
