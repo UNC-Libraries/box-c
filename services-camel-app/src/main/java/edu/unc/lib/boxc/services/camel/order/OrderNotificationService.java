@@ -42,7 +42,7 @@ public class OrderNotificationService {
 
         var emailBody = orderNotificationBuilder.construct(request, successes, errors);
 
-        emailHandler.sendEmail(request.getEmail(), "Order Request Notification", emailBody, null, null);
+        emailHandler.sendEmail(request.getEmail(), "DCR Member Order update completed", emailBody, null, null);
     }
 
     public void setEmailHandler(EmailHandler emailHandler) {
