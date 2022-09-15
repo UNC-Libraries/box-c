@@ -1,5 +1,8 @@
 module.exports = {
   automock: false,
+  collectCoverage: true,
+  collectCoverageFrom: ["**/src/components/**", "**/src/mixins/**"],
+  coverageProvider: 'v8',
   setupFiles: ['jest-localstorage-mock'],
   moduleFileExtensions: ['vue', 'js', 'json'],
   testEnvironment: 'jsdom',

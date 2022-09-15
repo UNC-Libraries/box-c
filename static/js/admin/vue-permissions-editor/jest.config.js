@@ -1,4 +1,7 @@
 module.exports = {
+  collectCoverage: true,
+  collectCoverageFrom: ["**/src/components/**", "**/src/mixins/**"],
+  coverageProvider: 'v8',
   moduleFileExtensions: ['vue', 'js', 'json'],
   testEnvironment: 'jsdom',
   testEnvironmentOptions: {
