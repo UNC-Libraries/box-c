@@ -15,6 +15,7 @@
  */
 package edu.unc.lib.boxc.web.services.rest.exceptions;
 
+import edu.unc.lib.boxc.model.api.exceptions.InvalidOperationForObjectType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpHeaders;
@@ -67,6 +68,12 @@ public class RestResponseEntityExceptionHandler extends ResponseEntityExceptionH
     protected ResponseEntity<Object> handleObjectNotFound(RuntimeException ex, WebRequest request) {
         String bodyOfResponse = "Object not found";
         return handleExceptionInternal(ex, bodyOfResponse, new HttpHeaders(), HttpStatus.NOT_FOUND, request);
+    }
+
+    @ExceptionHandler(value = { InvalidOperationForObjectType.class })
+    protected ResponseEntity<Object> handleInvalidOperationForObjectType(RuntimeException ex, WebRequest request) {
+        String bodyOfResponse = "Unsupported operation for object type";
+        return handleExceptionInternal(ex, bodyOfResponse, new HttpHeaders(), HttpStatus.BAD_REQUEST, request);
     }
 
     @ExceptionHandler(value = { IllegalArgumentException.class })

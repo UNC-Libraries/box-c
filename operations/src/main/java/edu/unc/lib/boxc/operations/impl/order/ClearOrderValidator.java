@@ -15,13 +15,15 @@
  */
 package edu.unc.lib.boxc.operations.impl.order;
 
-import edu.unc.lib.boxc.model.api.ResourceType;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.operations.api.order.OrderValidator;
 import edu.unc.lib.boxc.operations.jms.order.OrderRequest;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import static edu.unc.lib.boxc.operations.api.order.MemberOrderHelper.formatUnsupportedMessage;
+import static edu.unc.lib.boxc.operations.api.order.MemberOrderHelper.supportsMemberOrdering;
 
 /**
  * Validator for a request to clear member order of a work
@@ -43,11 +45,10 @@ public class ClearOrderValidator implements OrderValidator {
     }
 
     private boolean validate() {
-        var parentId = request.getParentPid().getId();
-        var parentObj = repositoryObjectLoader.getRepositoryObject(request.getParentPid());
-        if (!ResourceType.Work.equals(parentObj.getResourceType())) {
-            errors.add("Object " + parentId + " of type " + parentObj.getResourceType().name()
-                    + " does not support member ordering");
+        var parentPid = request.getParentPid();
+        var parentObj = repositoryObjectLoader.getRepositoryObject(parentPid);
+        if (!supportsMemberOrdering(parentObj.getResourceType())) {
+            errors.add(formatUnsupportedMessage(parentPid, parentObj.getResourceType()));
             return false;
         }
         return true;

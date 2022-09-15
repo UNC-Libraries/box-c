@@ -49,8 +49,6 @@ public class MemberOrderServiceTest {
     private static final String CHILD1_UUID = "83c2d7f8-2e6b-4f0b-ab7e-7397969c0682";
     private static final String CHILD2_UUID = "0e33ad0b-7a16-4bfa-b833-6126c262d889";
 
-    @Mock
-    private RepositoryObjectLoader repositoryObjectLoader;
     private MemberOrderService memberOrderService;
 
     @Before

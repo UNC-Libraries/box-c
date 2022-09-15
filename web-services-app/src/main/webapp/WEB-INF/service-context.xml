@@ -389,6 +389,11 @@
         <property name="transactionManager" ref="transactionManager" />
         <property name="premisLoggerFactory" ref="premisLoggerFactory" />
     </bean>
+
+    <bean id="memberOrderCsvExporter" class="edu.unc.lib.boxc.web.services.processing.MemberOrderCsvExporter">
+        <property name="aclService" ref="aclService" />
+        <property name="solrSearchService" ref="queryLayer" />
+    </bean>
     
     <bean id="binaryTransferService" class="edu.unc.lib.boxc.persist.impl.transfer.BinaryTransferServiceImpl">
         <property name="storageLocationManager" ref="storageLocationManager" />
