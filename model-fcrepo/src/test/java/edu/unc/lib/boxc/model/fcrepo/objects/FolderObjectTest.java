@@ -16,8 +16,8 @@
 package edu.unc.lib.boxc.model.fcrepo.objects;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Matchers.isNull;
 import static org.mockito.Mockito.verify;
@@ -122,7 +122,7 @@ public class FolderObjectTest extends AbstractFedoraObjectTest {
 
         verify(repoObjFactory).createWorkObject(null);
 
-        assertTrue("Incorrect type of child added", workObj != null);
+        assertNotNull("Incorrect type of child added", workObj);
         assertEquals("Child did not have the expected pid", childPid, workObj.getPid());
     }
 }
