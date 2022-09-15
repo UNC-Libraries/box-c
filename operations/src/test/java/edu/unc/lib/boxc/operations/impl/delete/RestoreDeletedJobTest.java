@@ -109,7 +109,7 @@ public class RestoreDeletedJobTest {
     @Test(expected = AccessRestrictionException.class)
     public void insufficientAccessTest() {
         doThrow(new AccessRestrictionException()).when(aclService)
-                .assertHasAccess(anyString(), eq(pid), any(AccessGroupSetImpl.class), eq(markForDeletion));
+                .assertHasAccess(anyString(), eq(pid), any(), eq(markForDeletion));
 
         job.run();
     }
@@ -119,7 +119,7 @@ public class RestoreDeletedJobTest {
         when(repositoryObjectLoader.getRepositoryObject(pid)).thenReturn(repoObj);
 
         doThrow(new AccessRestrictionException()).when(aclService)
-                .assertHasAccess(anyString(), eq(pid), any(AccessGroupSetImpl.class), eq(markForDeletionUnit));
+                .assertHasAccess(anyString(), eq(pid), any(), eq(markForDeletionUnit));
 
         job.run();
     }

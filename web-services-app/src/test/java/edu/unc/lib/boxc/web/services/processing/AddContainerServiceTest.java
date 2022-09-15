@@ -18,8 +18,8 @@ package edu.unc.lib.boxc.web.services.processing;
 import static edu.unc.lib.boxc.auth.api.Permission.ingest;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyCollectionOf;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doAnswer;
@@ -47,7 +47,6 @@ import edu.unc.lib.boxc.auth.api.exceptions.AccessRestrictionException;
 import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
 import edu.unc.lib.boxc.auth.api.models.AgentPrincipals;
 import edu.unc.lib.boxc.auth.api.services.AccessControlService;
-import edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl;
 import edu.unc.lib.boxc.common.test.SelfReturningAnswer;
 import edu.unc.lib.boxc.fcrepo.exceptions.TransactionCancelledException;
 import edu.unc.lib.boxc.fcrepo.utils.FedoraTransaction;
@@ -70,7 +69,6 @@ import edu.unc.lib.boxc.operations.impl.edit.UpdateDescriptionService;
 import edu.unc.lib.boxc.operations.jms.OperationsMessageSender;
 import edu.unc.lib.boxc.persist.api.storage.StorageLocation;
 import edu.unc.lib.boxc.persist.api.storage.StorageLocationManager;
-import edu.unc.lib.boxc.web.services.processing.AddContainerService;
 import edu.unc.lib.boxc.web.services.processing.AddContainerService.AddContainerRequest;
 
 /**
@@ -137,7 +135,7 @@ public class AddContainerServiceTest {
         doAnswer(new Answer<Object>() {
             @Override
             public Object answer(InvocationOnMock invocation) throws Throwable {
-                throw new TransactionCancelledException("", invocation.getArgumentAt(0, Throwable.class));
+                throw new TransactionCancelledException("", invocation.getArgument(0, Throwable.class));
             }
 
         }).when(tx).cancel(any(Throwable.class));
@@ -170,7 +168,7 @@ public class AddContainerServiceTest {
     @Test(expected = TransactionCancelledException.class)
     public void insufficientAccessTest() {
         doThrow(new AccessRestrictionException()).when(aclService)
-                .assertHasAccess(anyString(), eq(parentPid), any(AccessGroupSetImpl.class), eq(ingest));
+                .assertHasAccess(anyString(), eq(parentPid), any(), eq(ingest));
 
         try {
             service.addContainer(createRequest("folder", false, ResourceType.Folder));
@@ -201,21 +199,19 @@ public class AddContainerServiceTest {
         CollectionObject collection = mock(CollectionObject.class);
         FolderObject folder = mock(FolderObject.class);
         when(repoObjLoader.getRepositoryObject(eq(parentPid))).thenReturn(collection);
-        when(repoObjFactory.createFolderObject(any(PID.class), any(Model.class))).thenAnswer(new Answer<FolderObject>() {
-            @Override
-            public FolderObject answer(InvocationOnMock invocation) throws Throwable {
-                childPid = (PID) invocation.getArguments()[0];
-                when(folder.getPid()).thenReturn(childPid);
-                return folder;
-            }
-        });
+        when(repoObjFactory.createFolderObject(any(PID.class), any(Model.class)))
+                .thenAnswer((Answer<FolderObject>) invocation -> {
+                    childPid = (PID) invocation.getArguments()[0];
+                    when(folder.getPid()).thenReturn(childPid);
+                    return folder;
+                });
 
         service.addContainer(createRequest("folder", false, ResourceType.Folder));
 
         verify(premisLogger).buildEvent(eq(Premis.Creation));
         verify(eventBuilder).writeAndClose();
         verify(messageSender).sendAddOperation(anyString(), destinationsCaptor.capture(),
-                addedContainersCaptor.capture(), anyCollectionOf(PID.class), anyString());
+                addedContainersCaptor.capture(), isNull(), isNull());
 
         verify(repoObjFactory).createFolderObject(any(PID.class), modelCaptor.capture());
         Model model = modelCaptor.getValue();
@@ -250,7 +246,7 @@ public class AddContainerServiceTest {
         verify(premisLogger).buildEvent(eq(Premis.Creation));
         verify(eventBuilder).writeAndClose();
         verify(messageSender).sendAddOperation(anyString(), destinationsCaptor.capture(),
-                addedContainersCaptor.capture(), anyCollectionOf(PID.class), anyString());
+                addedContainersCaptor.capture(), isNull(), isNull());
 
         verify(repoObjFactory).createWorkObject(any(PID.class), modelCaptor.capture());
         Model model = modelCaptor.getValue();

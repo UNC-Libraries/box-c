@@ -22,7 +22,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyCollectionOf;
-import static org.mockito.Matchers.anyMapOf;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Matchers.isNull;
@@ -51,8 +50,6 @@ import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.boxc.operations.jms.JMSMessageUtil.CDRActions;
 import edu.unc.lib.boxc.operations.jms.indexing.IndexingActionType;
 import edu.unc.lib.boxc.operations.jms.indexing.IndexingMessageSender;
-import edu.unc.lib.boxc.operations.jms.indexing.IndexingPriority;
-import edu.unc.lib.boxc.services.camel.solr.CdrEventToSolrUpdateProcessor;
 
 /**
  *
@@ -130,7 +127,7 @@ public class CdrEventToSolrUpdateProcessorTest {
         processor.process(exchange);
 
         verify(messageSender).sendIndexingOperation(stringCaptor.capture(), pidCaptor.capture(), pidsCaptor.capture(),
-                actionTypeCaptor.capture(), anyMapOf(String.class, String.class), isNull(IndexingPriority.class));
+                actionTypeCaptor.capture(), isNull(), isNull());
 
         verifyTargetPid(pidCaptor.getValue());
 
@@ -151,7 +148,7 @@ public class CdrEventToSolrUpdateProcessorTest {
         processor.process(exchange);
 
         verify(messageSender).sendIndexingOperation(stringCaptor.capture(), pidCaptor.capture(), pidsCaptor.capture(),
-                actionTypeCaptor.capture(), anyMapOf(String.class, String.class), isNull(IndexingPriority.class));
+                actionTypeCaptor.capture(), isNull(), isNull());
 
         verifyTargetPid(pidCaptor.getValue());
 

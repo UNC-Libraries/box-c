@@ -44,7 +44,6 @@ import org.mockito.ArgumentMatcher;
 import org.mockito.Mock;
 
 import edu.unc.lib.boxc.common.util.URIUtil;
-import edu.unc.lib.boxc.deposit.CleanupDepositJob;
 import edu.unc.lib.boxc.deposit.fcrepo4.AbstractDepositJobTest;
 import edu.unc.lib.boxc.model.api.rdf.CdrDeposit;
 import edu.unc.lib.boxc.persist.api.exceptions.UnknownIngestSourceException;
@@ -295,7 +294,7 @@ public class CleanupDepositJobTest extends AbstractDepositJobTest {
         return cleanupFile;
     }
 
-    private class FileBeginsWithMatcher extends ArgumentMatcher<URI> {
+    private class FileBeginsWithMatcher implements ArgumentMatcher<URI> {
         private String basePath;
 
         public FileBeginsWithMatcher(File baseFile) {
@@ -303,11 +302,9 @@ public class CleanupDepositJobTest extends AbstractDepositJobTest {
         }
 
         @Override
-        public boolean matches(Object argument) {
-            URI compareUri = (URI) argument;
+        public boolean matches(URI compareUri) {
             String comparePath = compareUri.getPath();
             return comparePath.startsWith(basePath);
         }
-
     }
 }

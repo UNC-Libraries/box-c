@@ -16,8 +16,8 @@
 package edu.unc.lib.boxc.model.fcrepo.objects;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Matchers.isNull;
 import static org.mockito.Mockito.verify;
@@ -98,7 +98,7 @@ public class FolderObjectTest extends AbstractFedoraObjectTest {
     public void addFolderTest() {
         FolderObjectImpl childFolder = new FolderObjectImpl(childPid, driver, repoObjFactory);
 
-        when(repoObjFactory.createFolderObject(any(Model.class)))
+        when(repoObjFactory.createFolderObject(isNull()))
                 .thenReturn(childFolder);
 
         folder.addFolder();
@@ -116,13 +116,13 @@ public class FolderObjectTest extends AbstractFedoraObjectTest {
     @Test
     public void addWorkTest() {
         WorkObjectImpl childObj = new WorkObjectImpl(childPid, driver, repoObjFactory);
-        when(repoObjFactory.createWorkObject(any(Model.class))).thenReturn(childObj);
+        when(repoObjFactory.createWorkObject(isNull())).thenReturn(childObj);
 
         WorkObject workObj = folder.addWork();
 
         verify(repoObjFactory).createWorkObject(null);
 
-        assertTrue("Incorrect type of child added", workObj instanceof WorkObject);
+        assertNotNull("Incorrect type of child added", workObj);
         assertEquals("Child did not have the expected pid", childPid, workObj.getPid());
     }
 }

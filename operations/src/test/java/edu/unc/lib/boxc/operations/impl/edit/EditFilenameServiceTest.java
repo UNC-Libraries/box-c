@@ -62,7 +62,6 @@ import edu.unc.lib.boxc.model.fcrepo.services.RepositoryObjectFactoryImpl;
 import edu.unc.lib.boxc.operations.api.events.PremisEventBuilder;
 import edu.unc.lib.boxc.operations.api.events.PremisLogger;
 import edu.unc.lib.boxc.operations.api.events.PremisLoggerFactory;
-import edu.unc.lib.boxc.operations.impl.edit.EditFilenameService;
 import edu.unc.lib.boxc.operations.jms.OperationsMessageSender;
 
 /**
@@ -146,7 +145,7 @@ public class EditFilenameServiceTest {
         doAnswer(new Answer<Object>() {
             @Override
             public Object answer(InvocationOnMock invocation) throws Throwable {
-                throw new TransactionCancelledException("", invocation.getArgumentAt(0, Throwable.class));
+                throw new TransactionCancelledException("", invocation.getArgument(0));
             }
 
         }).when(tx).cancel(any(Throwable.class));
@@ -199,7 +198,7 @@ public class EditFilenameServiceTest {
     @Test(expected = TransactionCancelledException.class)
     public void insufficientAccessTest() {
         doThrow(new AccessRestrictionException()).when(aclService)
-            .assertHasAccess(anyString(), eq(pid), any(AccessGroupSetImpl.class), eq(Permission.editDescription));
+            .assertHasAccess(anyString(), eq(pid), any(), eq(Permission.editDescription));
 
         service.editLabel(agent, pid, "label");
     }

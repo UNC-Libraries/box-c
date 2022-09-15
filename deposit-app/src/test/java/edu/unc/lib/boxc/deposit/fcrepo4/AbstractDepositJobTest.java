@@ -138,7 +138,7 @@ public class AbstractDepositJobTest {
             @Override
             public Void answer(InvocationOnMock invocation) throws Throwable {
                 throw new TransactionCancelledException("Tx cancelled",
-                        invocation.getArgumentAt(0, Exception.class));
+                        invocation.getArgument(0));
             }
         }).when(tx).cancel(any(Exception.class));
 
@@ -147,12 +147,12 @@ public class AbstractDepositJobTest {
         when(depositStatusFactory.getState(anyString())).thenReturn(DepositState.running);
 
         doAnswer(invocation -> {
-            String objId = invocation.getArgumentAt(1, String.class);
+            String objId = invocation.getArgument(1);
             completedIds.add(objId);
             return null;
         }).when(jobStatusFactory).addObjectCompleted(anyString(), anyString());
         when(jobStatusFactory.objectIsCompleted(anyString(), anyString())).thenAnswer(invocation -> {
-            String objId = invocation.getArgumentAt(1, String.class);
+            String objId = invocation.getArgument(1);
             return completedIds.contains(objId);
         });
     }

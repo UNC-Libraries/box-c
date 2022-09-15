@@ -18,6 +18,7 @@ package edu.unc.lib.boxc.web.services.processing;
 import static edu.unc.lib.boxc.auth.api.Permission.editResourceType;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
@@ -40,7 +41,6 @@ import edu.unc.lib.boxc.auth.api.exceptions.AccessRestrictionException;
 import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
 import edu.unc.lib.boxc.auth.api.models.AgentPrincipals;
 import edu.unc.lib.boxc.auth.api.services.AccessControlService;
-import edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl;
 import edu.unc.lib.boxc.model.api.exceptions.InvalidOperationForObjectType;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.objects.FileObject;
@@ -50,7 +50,6 @@ import edu.unc.lib.boxc.model.api.objects.WorkObject;
 import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.boxc.operations.jms.OperationsMessageSender;
-import edu.unc.lib.boxc.web.services.processing.SetAsPrimaryObjectService;
 
 /**
  *
@@ -116,7 +115,7 @@ public class SetAsPrimaryObjectServiceTest {
         service.setAsPrimaryObject(agent, fileObjPid);
 
         verify(workObj).setPrimaryObject(fileObjPid);
-        verify(messageSender).sendSetAsPrimaryObjectOperation(anyString(), pidsCaptor.capture());
+        verify(messageSender).sendSetAsPrimaryObjectOperation(isNull(), pidsCaptor.capture());
 
         Collection<PID> collections = pidsCaptor.getValue();
         assertEquals(collections.size(), 2);
@@ -127,7 +126,7 @@ public class SetAsPrimaryObjectServiceTest {
     @Test(expected = AccessRestrictionException.class)
     public void insufficientAccessTest() {
         doThrow(new AccessRestrictionException()).when(aclService)
-        .assertHasAccess(anyString(), eq(fileObjPid), any(AccessGroupSetImpl.class), eq(editResourceType));
+        .assertHasAccess(anyString(), eq(fileObjPid), any(), eq(editResourceType));
 
         service.setAsPrimaryObject(agent, fileObjPid);
     }
@@ -154,7 +153,7 @@ public class SetAsPrimaryObjectServiceTest {
         service.clearPrimaryObject(agent, fileObjPid);
 
         verify(workObj).clearPrimaryObject();
-        verify(messageSender).sendSetAsPrimaryObjectOperation(anyString(), pidsCaptor.capture());
+        verify(messageSender).sendSetAsPrimaryObjectOperation(isNull(), pidsCaptor.capture());
 
         Collection<PID> collections = pidsCaptor.getValue();
         assertEquals(collections.size(), 2);
@@ -170,7 +169,7 @@ public class SetAsPrimaryObjectServiceTest {
         service.clearPrimaryObject(agent, workObjPid);
 
         verify(workObj).clearPrimaryObject();
-        verify(messageSender).sendSetAsPrimaryObjectOperation(anyString(), pidsCaptor.capture());
+        verify(messageSender).sendSetAsPrimaryObjectOperation(isNull(), pidsCaptor.capture());
 
         Collection<PID> collections = pidsCaptor.getValue();
         assertEquals(collections.size(), 2);
@@ -184,7 +183,7 @@ public class SetAsPrimaryObjectServiceTest {
 
         service.clearPrimaryObject(agent, workObjPid);
 
-        verify(messageSender).sendSetAsPrimaryObjectOperation(anyString(), pidsCaptor.capture());
+        verify(messageSender).sendSetAsPrimaryObjectOperation(isNull(), pidsCaptor.capture());
 
         Collection<PID> collections = pidsCaptor.getValue();
         assertEquals(collections.size(), 1);
@@ -194,7 +193,7 @@ public class SetAsPrimaryObjectServiceTest {
     @Test(expected = AccessRestrictionException.class)
     public void testClearPrimaryObjectAccessRestriction() {
         doThrow(new AccessRestrictionException()).when(aclService)
-            .assertHasAccess(anyString(), eq(workObjPid), any(AccessGroupSetImpl.class), eq(editResourceType));
+            .assertHasAccess(anyString(), eq(workObjPid), any(), eq(editResourceType));
 
         when(fileObj.getParent()).thenReturn(workObj);
 

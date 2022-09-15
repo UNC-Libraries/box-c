@@ -164,7 +164,7 @@ public class UpdateDescriptionServiceTest {
     @Test(expected = AccessRestrictionException.class)
     public void insufficientAccessTest() throws Exception {
         doThrow(new AccessRestrictionException()).when(aclService)
-                .assertHasAccess(anyString(), eq(objPid), any(AccessGroupSetImpl.class), any(Permission.class));
+                .assertHasAccess(anyString(), eq(objPid), any(), any(Permission.class));
 
         service.updateDescription(new UpdateDescriptionRequest(agent, objPid, modsStream));
     }
@@ -172,7 +172,7 @@ public class UpdateDescriptionServiceTest {
     @Test
     public void insufficientAccessDisableAccessCheckTest() throws Exception {
         doThrow(new AccessRestrictionException()).when(aclService)
-                .assertHasAccess(anyString(), eq(objPid), any(AccessGroupSetImpl.class), any(Permission.class));
+                .assertHasAccess(anyString(), eq(objPid), any(), any(Permission.class));
 
         service.setChecksAccess(false);
 
@@ -228,7 +228,7 @@ public class UpdateDescriptionServiceTest {
 
     private void assertMessageSent() {
         verify(messageSender).sendUpdateDescriptionOperation(
-                anyString(), pidsCaptor.capture(), any(IndexingPriority.class));
+                anyString(), pidsCaptor.capture(), any());
         Collection<PID> pids = pidsCaptor.getValue();
         assertEquals(1, pids.size());
         assertTrue(pids.contains(objPid));
