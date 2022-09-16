@@ -1,4 +1,8 @@
 module.exports = {
+  collectCoverage: true,
+  collectCoverageFrom: ["**/src/components/**", "**/src/mixins/**"],
+  coverageProvider: 'v8',
+  coverageReporters: [["lcov", {"projectRoot": "../../../../"}], "json", "text"],
   moduleFileExtensions: ['vue', 'js', 'json'],
   testEnvironment: 'jsdom',
   testEnvironmentOptions: {
