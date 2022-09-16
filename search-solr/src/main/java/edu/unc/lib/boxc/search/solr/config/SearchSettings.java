@@ -58,7 +58,7 @@ public class SearchSettings extends AbstractSettings {
             "dateCreated", constructSortFields("DATE_CREATED|desc"),
             "dateUpdated", constructSortFields("DATE_UPDATED|desc"),
             "default", constructSortFields(
-                    "SCORE|desc,RESOURCE_TYPE_SORT|asc,IDENTIFIER_SORT|asc,TITLE|asc"),
+                    "SCORE|desc,RESOURCE_TYPE_SORT|asc,MEMBER_ORDER_ID|asc,IDENTIFIER_SORT|asc,TITLE|asc"),
             "resourceType", constructSortFields("RESOURCE_TYPE_SORT|asc"),
             "title", constructSortFields("TITLE|asc,ID|asc")
     );
