@@ -233,17 +233,17 @@ public class MemberOrderCsvExporterTest {
     private void assertContainsEntry(List<CSVRecord> csvRecords, String uuid, String parentUuid,
                                      String title, String filename, String mimetype, boolean deleted, Integer order) {
         for (CSVRecord record : csvRecords) {
-            if (!uuid.equals(record.get(MemberOrderCsvExporter.PID_HEADER))) {
+            if (!uuid.equals(record.get(MemberOrderCsvConstants.PID_HEADER))) {
                 continue;
             }
-            assertEquals(parentUuid, record.get(MemberOrderCsvExporter.PARENT_PID_HEADER));
-            assertEquals(ResourceType.File.name(), record.get(MemberOrderCsvExporter.OBJ_TYPE_HEADER));
-            assertEquals(title, record.get(MemberOrderCsvExporter.TITLE_HEADER));
-            assertEquals(filename, record.get(MemberOrderCsvExporter.FILENAME_HEADER));
-            assertEquals(mimetype, record.get(MemberOrderCsvExporter.MIME_TYPE_HEADER));
-            assertEquals(Boolean.toString(deleted), record.get(MemberOrderCsvExporter.DELETED_HEADER));
+            assertEquals(parentUuid, record.get(MemberOrderCsvConstants.PARENT_PID_HEADER));
+            assertEquals(ResourceType.File.name(), record.get(MemberOrderCsvConstants.OBJ_TYPE_HEADER));
+            assertEquals(title, record.get(MemberOrderCsvConstants.TITLE_HEADER));
+            assertEquals(filename, record.get(MemberOrderCsvConstants.FILENAME_HEADER));
+            assertEquals(mimetype, record.get(MemberOrderCsvConstants.MIME_TYPE_HEADER));
+            assertEquals(Boolean.toString(deleted), record.get(MemberOrderCsvConstants.DELETED_HEADER));
             var expectOrder = order == null ? "" : order.toString();
-            assertEquals(expectOrder, record.get(MemberOrderCsvExporter.ORDER_HEADER));
+            assertEquals(expectOrder, record.get(MemberOrderCsvConstants.ORDER_HEADER));
             return;
         }
         fail("No entry found for uuid " + uuid);
@@ -261,7 +261,7 @@ public class MemberOrderCsvExporterTest {
         Reader reader = Files.newBufferedReader(csvPath);
         return new CSVParser(reader, CSVFormat.DEFAULT
                 .withFirstRecordAsHeader()
-                .withHeader(MemberOrderCsvExporter.CSV_HEADERS)
+                .withHeader(MemberOrderCsvConstants.CSV_HEADERS)
                 .withTrim())
                 .getRecords();
     }
