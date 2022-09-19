@@ -41,9 +41,6 @@ import java.util.stream.Collectors;
  * @author bbpennel
  */
 public class MemberOrderCsvTransformer {
-    public MemberOrderCsvTransformer() {
-    }
-
     /**
      * Transform the provided CSV document into a request for setting the order of members of one or more containers.
      *
@@ -108,8 +105,7 @@ public class MemberOrderCsvTransformer {
     private static String getRequiredValue(CSVRecord csvRecord, String fieldName) {
         var value = csvRecord.get(fieldName);
         if (StringUtils.isBlank(value)) {
-            throw new IllegalArgumentException("Record " + csvRecord.getRecordNumber()
-                    + " does not specify a value for required field '" + fieldName + "'");
+            throw invalidRecordError(csvRecord, "does not specify a value for required field '" + fieldName + "'");
         }
         return value;
     }
@@ -120,8 +116,7 @@ public class MemberOrderCsvTransformer {
         try {
             return PIDs.get(value).getId();
         } catch (InvalidPidException e) {
-            throw new IllegalArgumentException("Record " + csvRecord.getRecordNumber()
-                    + " contains an invalid PID value for field '" + fieldName + "'.");
+            throw invalidRecordError(csvRecord, "contains an invalid PID value for field '" + fieldName + "'.");
         }
     }
 
@@ -131,14 +126,19 @@ public class MemberOrderCsvTransformer {
         try {
             var intVal = Integer.parseInt(value);
             if (intVal < 0) {
-                throw new IllegalArgumentException("Record " + csvRecord.getRecordNumber()
-                        + " contains an invalid value for field '" + fieldName + "', it must be >= 0.");
+                throw invalidRecordError(csvRecord,
+                        "contains an invalid value for field '" + fieldName + "', it must be >= 0.");
             }
             return intVal;
         } catch (NumberFormatException e) {
-            throw new IllegalArgumentException("Record " + csvRecord.getRecordNumber()
-                    + " contains an invalid value for field '" + fieldName + "', it must be an integer.");
+            throw invalidRecordError(csvRecord,
+                    "contains an invalid value for field '" + fieldName + "', it must be an integer.");
         }
+    }
+
+    private static IllegalArgumentException invalidRecordError(CSVRecord csvRecord, String message) {
+        return new IllegalArgumentException("Record " + csvRecord.getRecordNumber()
+                + " " + message);
     }
 
     private static CSVParser createCsvParser(Path csvPath) throws IOException {
