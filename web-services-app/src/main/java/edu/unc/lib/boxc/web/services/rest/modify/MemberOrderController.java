@@ -18,11 +18,14 @@ package edu.unc.lib.boxc.web.services.rest.modify;
 import edu.unc.lib.boxc.auth.api.exceptions.AccessRestrictionException;
 import edu.unc.lib.boxc.auth.api.models.AgentPrincipals;
 import edu.unc.lib.boxc.auth.fcrepo.models.AgentPrincipalsImpl;
+import edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore;
 import edu.unc.lib.boxc.model.api.exceptions.InvalidOperationForObjectType;
 import edu.unc.lib.boxc.model.api.exceptions.InvalidPidException;
 import edu.unc.lib.boxc.model.api.exceptions.RepositoryException;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
+import edu.unc.lib.boxc.operations.jms.order.MemberOrderRequestSender;
 import edu.unc.lib.boxc.web.services.processing.MemberOrderCsvExporter;
+import edu.unc.lib.boxc.web.services.processing.MemberOrderCsvTransformer;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,8 +36,10 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletResponse;
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -42,7 +47,12 @@ import java.time.Instant;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.stream.Collectors;
+
+import static java.io.File.createTempFile;
+import static org.apache.commons.io.FileUtils.copyInputStreamToFile;
 
 /**
  * Controller for interacting with member order
@@ -56,6 +66,10 @@ public class MemberOrderController {
     private static final String EXPORT_DATE_FORMAT = "yyyy_MM_dd_HH_mm_ss";
     @Autowired
     private MemberOrderCsvExporter memberOrderCsvExporter;
+    @Autowired
+    private MemberOrderRequestSender memberOrderRequestSender;
+    @Autowired
+    private MemberOrderCsvTransformer memberOrderCsvTransformer;
 
     @RequestMapping(value = "export/csv", method = RequestMethod.GET)
     public ResponseEntity<Object> exportCsv(@RequestParam("ids") String ids, HttpServletResponse response) {
@@ -97,5 +111,34 @@ public class MemberOrderController {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern(EXPORT_DATE_FORMAT)
                 .withZone(ZoneId.systemDefault());
         return "member_order" + formatter.format(Instant.now()) + ".csv";
+    }
+
+    @RequestMapping(value = "import/csv", method = RequestMethod.POST)
+    public ResponseEntity<Object> exportCsv(@RequestParam("file") MultipartFile csvFile) {
+        var agent = AgentPrincipalsImpl.createFromThread();
+        Path csvPath = null;
+        try {
+            csvPath = storeCsvToTemp(csvFile);
+            var orderRequest = memberOrderCsvTransformer.toRequest(csvPath);
+            orderRequest.setAgent(agent);
+            orderRequest.setEmail(GroupsThreadStore.getEmail());
+            memberOrderRequestSender.sendToQueue(orderRequest);
+
+            Map<String, Object> result = new HashMap<>();
+            result.put("action", "import member order");
+            result.put("timestamp", System.currentTimeMillis());
+            return new ResponseEntity<>(result, HttpStatus.OK);
+        } catch (IOException e) {
+            log.error("Error exporting CSV for {}", agent.getUsername(), e);
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        } finally {
+            cleanupCsv(csvPath);
+        }
+    }
+
+    private Path storeCsvToTemp(MultipartFile csvFile) throws IOException {
+        File importFile = createTempFile("import_order", ".xml");
+        copyInputStreamToFile(csvFile.getInputStream(), importFile);
+        return importFile.toPath();
     }
 }

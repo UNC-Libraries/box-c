@@ -468,6 +468,37 @@
         <property name="patronAccessAssignmentService" ref="patronAccessAssignmentService" />
     </bean>
 
+    <!-- member ordering -->
+    <bean id="orderJobFactory" class="edu.unc.lib.boxc.operations.impl.order.OrderJobFactory">
+        <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
+        <property name="repositoryObjectFactory" ref="repositoryObjectFactory" />
+    </bean>
+
+    <bean id="pcdmMembershipService" class="edu.unc.lib.boxc.model.fcrepo.services.PcdmMembershipService">
+        <property name="sparqlQueryService" ref="sparqlQueryService" />
+    </bean>
+
+    <bean id="orderValidatorFactory" class="edu.unc.lib.boxc.operations.impl.order.OrderValidatorFactory">
+        <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
+        <property name="membershipService" ref="pcdmMembershipService" />
+    </bean>
+
+    <bean id="orderNotificationBuilder" class="edu.unc.lib.boxc.services.camel.order.OrderNotificationBuilder">
+    </bean>
+
+    <bean id="orderNotificationService" class="edu.unc.lib.boxc.services.camel.order.OrderNotificationService">
+        <property name="emailHandler" ref="emailHandler" />
+        <property name="orderNotificationBuilder" ref="orderNotificationBuilder" />
+    </bean>
+
+    <bean id="orderRequestProcessor" class="edu.unc.lib.boxc.services.camel.order.OrderRequestProcessor">
+        <property name="accessControlService" ref="aclService" />
+        <property name="indexingMessageSender" ref="indexingMessageSender" />
+        <property name="orderJobFactory" ref="orderJobFactory" />
+        <property name="orderValidatorFactory" ref="orderValidatorFactory" />
+        <property name="orderNotificationService" ref="orderNotificationService" />
+    </bean>
+
     <!-- Camel contexts -->
 
     <camel:camelContext id="FcrepoTriplestoreIndexer">
@@ -520,5 +551,9 @@
     
     <camel:camelContext id="CdrUpdatePatronAccess">
         <camel:package>edu.unc.lib.boxc.services.camel.patronAccess</camel:package>
+    </camel:camelContext>
+
+    <camel:camelContext id="CdrMemberOrder">
+        <camel:package>edu.unc.lib.boxc.services.camel.order</camel:package>
     </camel:camelContext>
 </beans>

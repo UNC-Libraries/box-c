@@ -34,6 +34,6 @@ public class MemberOrderCsvConstants {
             PARENT_PID_HEADER, PID_HEADER, TITLE_HEADER, OBJ_TYPE_HEADER, FILENAME_HEADER,
             MIME_TYPE_HEADER, DELETED_HEADER, ORDER_HEADER};
 
-    private MemberOrderCsvConstants(){
+    private MemberOrderCsvConstants() {
     }
 }

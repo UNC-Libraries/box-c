@@ -394,6 +394,19 @@
         <property name="aclService" ref="aclService" />
         <property name="solrSearchService" ref="queryLayer" />
     </bean>
+
+    <bean id="memberOrderCsvTransformer" class="edu.unc.lib.boxc.web.services.processing.MemberOrderCsvTransformer">
+    </bean>
+
+    <bean id="importMemberOrderJmsTemplate" class="org.springframework.jms.core.JmsTemplate">
+        <property name="connectionFactory" ref="jmsFactory" />
+        <property name="defaultDestinationName" value="${cdr.ordermembers.stream}" />
+        <property name="pubSubDomain" value="false" />
+    </bean>
+
+    <bean id="memberOrderRequestSender" class="edu.unc.lib.boxc.operations.jms.order.MemberOrderRequestSender">
+        <property name="jmsTemplate" ref="importMemberOrderJmsTemplate"/>
+    </bean>
     
     <bean id="binaryTransferService" class="edu.unc.lib.boxc.persist.impl.transfer.BinaryTransferServiceImpl">
         <property name="storageLocationManager" ref="storageLocationManager" />

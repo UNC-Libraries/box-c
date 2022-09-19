@@ -22,6 +22,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
+import edu.unc.lib.boxc.web.services.rest.MvcTestHelpers;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.runner.RunWith;
@@ -111,9 +112,7 @@ public abstract class AbstractAPIIT {
     }
 
     protected Map<String, Object> getMapFromResponse(MvcResult result) throws Exception {
-        MapType type = defaultInstance().constructMapType(HashMap.class, String.class, Object.class);
-        ObjectMapper mapper = new ObjectMapper();
-        return mapper.readValue(result.getResponse().getContentAsString(), type);
+        return MvcTestHelpers.getMapFromResponse(result);
     }
 
     protected byte[] makeRequestBody(Object details) throws Exception {

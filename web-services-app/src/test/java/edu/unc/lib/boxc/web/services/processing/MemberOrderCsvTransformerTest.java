@@ -19,6 +19,7 @@ import edu.unc.lib.boxc.model.api.ResourceType;
 import edu.unc.lib.boxc.operations.jms.order.OrderOperationType;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -51,6 +52,12 @@ public class MemberOrderCsvTransformerTest {
 
     @Rule
     public final TemporaryFolder tmpFolder = new TemporaryFolder();
+    private MemberOrderCsvTransformer transformer;
+
+    @Before
+    public void setup() {
+        transformer = new MemberOrderCsvTransformer();
+    }
 
     @Test
     public void toSetRequestNoParentIdTest() throws Exception {
@@ -59,7 +66,7 @@ public class MemberOrderCsvTransformerTest {
                 "file.txt", "text/plain", false, 1));
         var csvPath = writeCsvFile(entries);
         try {
-            MemberOrderCsvTransformer.toSetRequest(csvPath);
+            transformer.toRequest(csvPath);
             fail();
         } catch (IllegalArgumentException e) {
             assertErrorMessageContains(e, "does not specify a value for required field 'Parent PID'");
@@ -73,7 +80,7 @@ public class MemberOrderCsvTransformerTest {
                 "file.txt", "text/plain", false, 1));
         var csvPath = writeCsvFile(entries);
         try {
-            MemberOrderCsvTransformer.toSetRequest(csvPath);
+            transformer.toRequest(csvPath);
             fail();
         } catch (IllegalArgumentException e) {
             assertErrorMessageContains(e, "does not specify a value for required field 'PID'");
@@ -87,7 +94,7 @@ public class MemberOrderCsvTransformerTest {
                 "file.txt", "text/plain", false, 1));
         var csvPath = writeCsvFile(entries);
         try {
-            MemberOrderCsvTransformer.toSetRequest(csvPath);
+            transformer.toRequest(csvPath);
             fail();
         } catch (IllegalArgumentException e) {
             assertErrorMessageContains(e, "contains an invalid PID value for field 'Parent PID'");
@@ -101,7 +108,7 @@ public class MemberOrderCsvTransformerTest {
                 "file.txt", "text/plain", false, ""));
         var csvPath = writeCsvFile(entries);
         try {
-            MemberOrderCsvTransformer.toSetRequest(csvPath);
+            transformer.toRequest(csvPath);
             fail();
         } catch (IllegalArgumentException e) {
             assertErrorMessageContains(e, "does not specify a value for required field 'Member Order'");
@@ -115,7 +122,7 @@ public class MemberOrderCsvTransformerTest {
                 "file.txt", "text/plain", false, "hmm"));
         var csvPath = writeCsvFile(entries);
         try {
-            MemberOrderCsvTransformer.toSetRequest(csvPath);
+            transformer.toRequest(csvPath);
             fail();
         } catch (IllegalArgumentException e) {
             assertErrorMessageContains(e, "invalid value for field 'Member Order', it must be an integer");
@@ -129,7 +136,7 @@ public class MemberOrderCsvTransformerTest {
                 "file.txt", "text/plain", false, -4));
         var csvPath = writeCsvFile(entries);
         try {
-            MemberOrderCsvTransformer.toSetRequest(csvPath);
+            transformer.toRequest(csvPath);
             fail();
         } catch (IllegalArgumentException e) {
             assertErrorMessageContains(e, "invalid value for field 'Member Order', it must be >= 0");
@@ -149,7 +156,7 @@ public class MemberOrderCsvTransformerTest {
                 "file4.txt", "text/plain", false, 0));
         var csvPath = writeCsvFile(entries);
 
-        var request = MemberOrderCsvTransformer.toSetRequest(csvPath);
+        var request = transformer.toRequest(csvPath);
         assertEquals(OrderOperationType.SET, request.getOperation());
         var parentToOrder = request.getParentToOrdered();
         var parent1Children = parentToOrder.get(PARENT1_UUID);
@@ -165,7 +172,7 @@ public class MemberOrderCsvTransformerTest {
         entries.add(Arrays.asList(PARENT1_UUID, CHILD2_UUID, 1));
         var csvPath = writeCsvFile(entries, PARENT_PID_HEADER, PID_HEADER, ORDER_HEADER);
 
-        var request = MemberOrderCsvTransformer.toSetRequest(csvPath);
+        var request = transformer.toRequest(csvPath);
         assertEquals(OrderOperationType.SET, request.getOperation());
         var parentToOrder = request.getParentToOrdered();
         var parent1Children = parentToOrder.get(PARENT1_UUID);

@@ -15,16 +15,11 @@
  */
 package edu.unc.lib.boxc.operations.jms;
 
-import static edu.unc.lib.boxc.model.api.xml.JDOMNamespaceUtil.ATOM_NS;
-
-import javax.jms.JMSException;
-import javax.jms.Message;
-import javax.jms.Session;
-
 import org.jdom2.Document;
 import org.jdom2.output.XMLOutputter;
 import org.springframework.jms.core.JmsTemplate;
-import org.springframework.jms.core.MessageCreator;
+
+import static edu.unc.lib.boxc.model.api.xml.JDOMNamespaceUtil.ATOM_NS;
 
 /**
  * A class to hold common helper methods for message senders
@@ -42,15 +37,12 @@ public class MessageSender {
     }
 
     public void sendMessage(String msgStr) {
-        jmsTemplate.send(new MessageCreator() {
-            @Override
-            public Message createMessage(Session session) throws JMSException {
-                // Committing the session to flush changes in long running threads
-                if (session.getTransacted()) {
-                    session.commit();
-                }
-                return session.createTextMessage(msgStr);
+        jmsTemplate.send(session -> {
+            // Committing the session to flush changes in long running threads
+            if (session.getTransacted()) {
+                session.commit();
             }
+            return session.createTextMessage(msgStr);
         });
     }
 

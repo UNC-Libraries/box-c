@@ -41,7 +41,7 @@ import java.util.stream.Collectors;
  * @author bbpennel
  */
 public class MemberOrderCsvTransformer {
-    private MemberOrderCsvTransformer() {
+    public MemberOrderCsvTransformer() {
     }
 
     /**
@@ -54,7 +54,7 @@ public class MemberOrderCsvTransformer {
      * @return constructed request
      * @throws IOException if the CSV cannot be parsed
      */
-    public static MultiParentOrderRequest toSetRequest(Path csvPath) throws IOException {
+    public MultiParentOrderRequest toRequest(Path csvPath) throws IOException {
         var parentToChildren = parseCsvToMapping(csvPath);
         var parentToOrdered = sortParentToChildren(parentToChildren);
         var request = new MultiParentOrderRequest();
