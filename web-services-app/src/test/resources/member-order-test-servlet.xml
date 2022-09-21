@@ -36,4 +36,12 @@
     <bean id="memberOrderCsvExporter" class="org.mockito.Mockito" factory-method="mock">
         <constructor-arg value="edu.unc.lib.boxc.web.services.processing.MemberOrderCsvExporter" />
     </bean>
+
+    <bean id="memberOrderCsvTransformer" class="org.mockito.Mockito" factory-method="mock">
+        <constructor-arg value="edu.unc.lib.boxc.web.services.processing.MemberOrderCsvTransformer" />
+    </bean>
+
+    <bean id="memberOrderRequestSender" class="org.mockito.Mockito" factory-method="mock">
+        <constructor-arg value="edu.unc.lib.boxc.operations.jms.order.MemberOrderRequestSender" />
+    </bean>
 </beans>
