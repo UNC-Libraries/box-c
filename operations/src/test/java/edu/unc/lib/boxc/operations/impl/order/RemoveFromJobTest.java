@@ -30,15 +30,18 @@ import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
+import java.util.Arrays;
+import java.util.LinkedList;
+
 import static org.junit.Assert.assertEquals;
-import static org.mockito.Matchers.eq;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 /**
- * @author bbpennel
+ * @author snluong
  */
-public class SetOrderJobTest {
+public class RemoveFromJobTest {
     private static final String PARENT_UUID = "f277bb38-272c-471c-a28a-9887a1328a1f";
     private static final String CHILD1_UUID = "83c2d7f8-2e6b-4f0b-ab7e-7397969c0682";
     private static final String CHILD2_UUID = "0e33ad0b-7a16-4bfa-b833-6126c262d889";
@@ -62,34 +65,28 @@ public class SetOrderJobTest {
         orderJobFactory = new OrderJobFactory();
         orderJobFactory.setRepositoryObjectFactory(repositoryObjectFactory);
         orderJobFactory.setRepositoryObjectLoader(repositoryObjectLoader);
-        when(repositoryObjectLoader.getRepositoryObject(parentPid)).thenReturn(parentWork);
+        when(repositoryObjectLoader.getWorkObject(parentPid)).thenReturn(parentWork);
+        var listOfPids = Arrays.asList(PIDs.get(CHILD1_UUID), PIDs.get(CHILD2_UUID), PIDs.get(CHILD3_UUID));
+        // need to make list modifiable
+        var childrenOrder = new LinkedList<>(listOfPids);
+        when(parentWork.getMemberOrder()).thenReturn(childrenOrder);
     }
 
     @Test
-    public void singleChildTest() {
-        var request = OrderJobTestHelper.createRequest(OrderOperationType.SET, PARENT_UUID, CHILD1_UUID);
+    public void removeOneChildFromMemberOrder() {
+        var request = OrderJobTestHelper.createRequest(OrderOperationType.REMOVE_FROM, PARENT_UUID, CHILD1_UUID);
         var job = orderJobFactory.createJob(request);
         job.run();
-
-        assertMemberOrderSetWithValue(CHILD1_UUID);
+        assertMemberOrderSetWithValue(CHILD2_UUID + "|" + CHILD3_UUID);
     }
 
     @Test
-    public void multipleChildrenTest() {
-        var request = OrderJobTestHelper.createRequest(OrderOperationType.SET, PARENT_UUID, CHILD1_UUID, CHILD2_UUID, CHILD3_UUID);
+    public void removeChildrenFromMemberOrder() {
+        var request = OrderJobTestHelper.createRequest(OrderOperationType.REMOVE_FROM, PARENT_UUID, CHILD1_UUID, CHILD2_UUID);
         var job = orderJobFactory.createJob(request);
         job.run();
 
-        assertMemberOrderSetWithValue(CHILD1_UUID + "|" + CHILD2_UUID + "|" + CHILD3_UUID);
-    }
-
-    @Test
-    public void multipleChildrenAlternateOrderTest() {
-        var request = OrderJobTestHelper.createRequest(OrderOperationType.SET, PARENT_UUID, CHILD2_UUID, CHILD3_UUID, CHILD1_UUID);
-        var job = orderJobFactory.createJob(request);
-        job.run();
-
-        assertMemberOrderSetWithValue(CHILD2_UUID + "|" + CHILD3_UUID + "|" + CHILD1_UUID);
+        assertMemberOrderSetWithValue(CHILD3_UUID);
     }
 
     private void assertMemberOrderSetWithValue(String expectedValue) {

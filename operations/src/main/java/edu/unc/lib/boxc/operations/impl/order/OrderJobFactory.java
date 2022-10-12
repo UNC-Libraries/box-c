@@ -48,6 +48,13 @@ public class OrderJobFactory {
             job.setRequest(request);
             return job;
         }
+        case REMOVE_FROM: {
+            var job = new RemoveFromOrderJob();
+            job.setRepositoryObjectFactory(repositoryObjectFactory);
+            job.setRepositoryObjectLoader(repositoryObjectLoader);
+            job.setRequest(request);
+            return job;
+        }
         default:
             throw new UnsupportedOperationException("Unable to determine job type for request " + request);
         }
