@@ -30,6 +30,9 @@ import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
+import java.util.Arrays;
+import java.util.LinkedList;
+
 import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
@@ -54,7 +57,6 @@ public class RemoveFromJobTest {
     private PID parentPid;
     @Captor
     private ArgumentCaptor<Object> childrenValueCaptor;
-    private String order = CHILD1_UUID + "|" + CHILD2_UUID + "|" + CHILD3_UUID;
 
     @Before
     public void init() {
@@ -63,24 +65,29 @@ public class RemoveFromJobTest {
         orderJobFactory = new OrderJobFactory();
         orderJobFactory.setRepositoryObjectFactory(repositoryObjectFactory);
         orderJobFactory.setRepositoryObjectLoader(repositoryObjectLoader);
-        when(repositoryObjectLoader.getRepositoryObject(parentPid)).thenReturn(parentWork);
-        setUpMemberOrder();
+        when(repositoryObjectLoader.getWorkObject(parentPid)).thenReturn(parentWork);
+        var listOfPids = Arrays.asList(PIDs.get(CHILD1_UUID), PIDs.get(CHILD2_UUID), PIDs.get(CHILD3_UUID));
+        // need to make list modifiable
+        var childrenOrder = new LinkedList<>(listOfPids);
+        when(parentWork.getMemberOrder()).thenReturn(childrenOrder);
     }
 
     @Test
-    public void removeOneChildFromOrder() {
+    public void removeOneChildFromMemberOrder() {
         var request = OrderJobTestHelper.createRequest(OrderOperationType.REMOVE_FROM, PARENT_UUID, CHILD1_UUID);
         var job = orderJobFactory.createJob(request);
         job.run();
         assertMemberOrderSetWithValue(CHILD2_UUID + "|" + CHILD3_UUID);
     }
 
-    private void setUpMemberOrder() {
-        var request = OrderJobTestHelper.createRequest(OrderOperationType.SET, PARENT_UUID, CHILD1_UUID, CHILD2_UUID, CHILD3_UUID);
+    @Test
+    public void removeChildrenFromMemberOrder() {
+        var request = OrderJobTestHelper.createRequest(OrderOperationType.REMOVE_FROM, PARENT_UUID, CHILD1_UUID, CHILD2_UUID);
         var job = orderJobFactory.createJob(request);
         job.run();
-    }
 
+        assertMemberOrderSetWithValue(CHILD3_UUID);
+    }
 
     private void assertMemberOrderSetWithValue(String expectedValue) {
         verify(repositoryObjectFactory).createExclusiveRelationship(
