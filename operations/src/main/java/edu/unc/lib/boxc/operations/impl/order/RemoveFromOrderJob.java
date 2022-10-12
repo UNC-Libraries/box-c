@@ -20,7 +20,6 @@ import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.api.rdf.Cdr;
 import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
 import edu.unc.lib.boxc.operations.jms.order.OrderRequest;
-import org.apache.jena.atlas.lib.ListUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

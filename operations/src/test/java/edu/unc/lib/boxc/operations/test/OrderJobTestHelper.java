@@ -15,32 +15,17 @@
  */
 package edu.unc.lib.boxc.operations.test;
 
-import edu.unc.lib.boxc.model.api.objects.WorkObject;
-import edu.unc.lib.boxc.model.api.rdf.Cdr;
-import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
 import edu.unc.lib.boxc.operations.impl.order.OrderRequestFactory;
 import edu.unc.lib.boxc.operations.jms.order.OrderOperationType;
 import edu.unc.lib.boxc.operations.jms.order.OrderRequest;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
-import org.mockito.Mock;
 
 import java.util.Arrays;
-
-import static org.junit.Assert.assertEquals;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.verify;
 
 /**
  * Helper methods for all OrderJob related tests
  * @author snluong
  */
 public class OrderJobTestHelper {
-    @Mock
-    private static RepositoryObjectFactory repositoryObjectFactory;
-    @Captor
-    private static ArgumentCaptor<Object> captor;
-
     public static OrderRequest createRequest(OrderOperationType operationType, String parentUuid, String... children) {
         return OrderRequestFactory.createRequest(
                 operationType, parentUuid, Arrays.asList(children));
