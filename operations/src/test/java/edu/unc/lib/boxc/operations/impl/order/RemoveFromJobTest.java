@@ -22,7 +22,7 @@ import edu.unc.lib.boxc.model.api.rdf.Cdr;
 import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.boxc.operations.jms.order.OrderOperationType;
-import edu.unc.lib.boxc.operations.test.OrderJobTestHelper;
+import edu.unc.lib.boxc.operations.test.OrderTestHelper;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
@@ -37,6 +37,8 @@ import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+
+import static edu.unc.lib.boxc.operations.test.OrderTestHelper.createRequest;
 
 /**
  * @author snluong
@@ -74,7 +76,7 @@ public class RemoveFromJobTest {
 
     @Test
     public void removeOneChildFromMemberOrder() {
-        var request = OrderJobTestHelper.createRequest(OrderOperationType.REMOVE_FROM, PARENT_UUID, CHILD1_UUID);
+        var request = createRequest(OrderOperationType.REMOVE_FROM, PARENT_UUID, CHILD1_UUID);
         var job = orderJobFactory.createJob(request);
         job.run();
         assertMemberOrderSetWithValue(CHILD2_UUID + "|" + CHILD3_UUID);
@@ -82,7 +84,7 @@ public class RemoveFromJobTest {
 
     @Test
     public void removeChildrenFromMemberOrder() {
-        var request = OrderJobTestHelper.createRequest(OrderOperationType.REMOVE_FROM, PARENT_UUID, CHILD1_UUID, CHILD2_UUID);
+        var request = createRequest(OrderOperationType.REMOVE_FROM, PARENT_UUID, CHILD1_UUID, CHILD2_UUID);
         var job = orderJobFactory.createJob(request);
         job.run();
 
