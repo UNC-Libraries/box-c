@@ -19,6 +19,7 @@ import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.api.services.MembershipService;
 import edu.unc.lib.boxc.operations.api.order.OrderValidator;
+import edu.unc.lib.boxc.operations.jms.order.OrderOperationType;
 import edu.unc.lib.boxc.operations.jms.order.OrderRequest;
 
 import java.util.ArrayList;
@@ -63,19 +64,19 @@ public class SetOrderValidator implements OrderValidator {
         var requestPidSet = new HashSet<>(request.getOrderedChildren());
         if (requestPidSet.size() < request.getOrderedChildren().size()) {
             var duplicates = computeDuplicates(request.getOrderedChildren());
-            errors.add(formatErrorMessage(parentId, "it contained duplicate member IDs", duplicates));
+            errors.add(formatErrorMessage(OrderOperationType.SET, parentId, "it contained duplicate member IDs", duplicates));
         }
 
         var members = membershipService.listMembers(request.getParentPid());
         var membersNotInRequest = difference(members, requestPidSet);
         if (!membersNotInRequest.isEmpty()) {
-            errors.add(formatErrorMessage(parentId,
+            errors.add(formatErrorMessage(OrderOperationType.SET, parentId,
                     "the following members were expected but not listed", membersNotInRequest));
         }
 
         var requestedNotInMembers = difference(requestPidSet, members);
         if (!requestedNotInMembers.isEmpty()) {
-            errors.add(formatErrorMessage(parentId, "the following IDs are not members", requestedNotInMembers));
+            errors.add(formatErrorMessage(OrderOperationType.SET, parentId, "the following IDs are not members", requestedNotInMembers));
         }
 
         return errors.isEmpty();

@@ -17,6 +17,7 @@ package edu.unc.lib.boxc.operations.api.order;
 
 import edu.unc.lib.boxc.model.api.ResourceType;
 import edu.unc.lib.boxc.model.api.ids.PID;
+import edu.unc.lib.boxc.operations.jms.order.OrderOperationType;
 
 import java.util.Collection;
 import java.util.List;
@@ -60,8 +61,8 @@ public class MemberOrderHelper {
      * @param problemPids PIDs of child objects that are not valid to be ordered
      * @return formatted error message
      */
-    public static String formatErrorMessage(String parentId, String reason, Collection<PID> problemPids) {
-        return "Invalid request to set order for " + parentId
+    public static String formatErrorMessage(OrderOperationType type, String parentId, String reason, Collection<PID> problemPids) {
+        return "Invalid request to " + type + " order for " + parentId
                 + ", " + reason + ": "
                 + problemPids.stream().map(PID::getId).collect(Collectors.joining(", "));
     }

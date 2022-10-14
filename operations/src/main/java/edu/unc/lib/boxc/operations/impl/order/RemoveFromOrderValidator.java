@@ -16,8 +16,8 @@
 package edu.unc.lib.boxc.operations.impl.order;
 
 import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
-import edu.unc.lib.boxc.model.api.services.MembershipService;
 import edu.unc.lib.boxc.operations.api.order.OrderValidator;
+import edu.unc.lib.boxc.operations.jms.order.OrderOperationType;
 import edu.unc.lib.boxc.operations.jms.order.OrderRequest;
 
 import java.util.ArrayList;
@@ -59,7 +59,7 @@ public class RemoveFromOrderValidator implements OrderValidator {
         var requestPidSet = new HashSet<>(request.getOrderedChildren());
         if (requestPidSet.size() < request.getOrderedChildren().size()) {
             var duplicates = computeDuplicates(request.getOrderedChildren());
-            errors.add(formatErrorMessage(parentId, "it contained duplicate member IDs", duplicates));
+            errors.add(formatErrorMessage(OrderOperationType.REMOVE_FROM, parentId, "it contained duplicate member IDs", duplicates));
         }
 
         return errors.isEmpty();

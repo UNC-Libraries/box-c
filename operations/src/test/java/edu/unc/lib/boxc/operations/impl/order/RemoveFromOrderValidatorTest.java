@@ -29,8 +29,10 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import java.util.Arrays;
+import java.util.List;
 
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.when;
 import static edu.unc.lib.boxc.operations.test.OrderTestHelper.mockParentType;
 import static edu.unc.lib.boxc.operations.test.OrderTestHelper.assertHasErrors;
@@ -90,7 +92,19 @@ public class RemoveFromOrderValidatorTest {
         validator.setRequest(request);
 
         assertFalse(validator.isValid());
-        assertHasErrors(validator,"Invalid request to set order for " + PARENT_UUID
+        assertHasErrors(validator,"Invalid request to REMOVE_FROM order for " + PARENT_UUID
                 + ", it contained duplicate member IDs: " + CHILD1_UUID);
+    }
+
+    @Test
+    public void validRequestTest(){
+        when(membershipService.listMembers(parentPid)).thenReturn(Arrays.asList(child1Pid, child2Pid, child3Pid));
+
+        var request = OrderRequestFactory.createRequest(OrderOperationType.REMOVE_FROM, PARENT_UUID,
+                List.of(CHILD1_UUID));
+        validator.setRequest(request);
+
+        assertTrue(validator.isValid());
+        assertTrue(validator.getErrors().isEmpty());
     }
 }

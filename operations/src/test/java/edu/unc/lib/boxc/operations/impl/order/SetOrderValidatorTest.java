@@ -96,7 +96,7 @@ public class SetOrderValidatorTest {
         assertFalse(validator.isValid());
         assertHasErrors(
                 validator,
-                "Invalid request to set order for " + PARENT_UUID
+                "Invalid request to SET order for " + PARENT_UUID
                 + ", the following IDs are not members: " + CHILD1_UUID + ", " + CHILD2_UUID);
     }
 
@@ -111,7 +111,7 @@ public class SetOrderValidatorTest {
         assertFalse(validator.isValid());
         assertHasErrors(
                 validator,
-                "Invalid request to set order for " + PARENT_UUID
+                "Invalid request to SET order for " + PARENT_UUID
                 + ", the following members were expected but not listed: " + CHILD1_UUID + ", " + CHILD3_UUID);
     }
 
@@ -126,9 +126,9 @@ public class SetOrderValidatorTest {
         assertFalse(validator.isValid());
         assertHasErrors(
                 validator,
-                "Invalid request to set order for " + PARENT_UUID
+                "Invalid request to SET order for " + PARENT_UUID
                         + ", the following members were expected but not listed: " + CHILD1_UUID,
-                "Invalid request to set order for " + PARENT_UUID
+                "Invalid request to SET order for " + PARENT_UUID
                         + ", the following IDs are not members: " + CHILD2_UUID);
     }
 
@@ -141,7 +141,7 @@ public class SetOrderValidatorTest {
         validator.setRequest(request);
 
         assertFalse(validator.isValid());
-        assertHasErrors(validator,"Invalid request to set order for " + PARENT_UUID
+        assertHasErrors(validator,"Invalid request to SET order for " + PARENT_UUID
                 + ", it contained duplicate member IDs: " + CHILD1_UUID);
     }
 
