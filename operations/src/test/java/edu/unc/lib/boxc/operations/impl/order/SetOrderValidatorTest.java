@@ -30,10 +30,11 @@ import org.mockito.MockitoAnnotations;
 import java.util.Arrays;
 import java.util.Collections;
 
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.when;
+import static edu.unc.lib.boxc.operations.test.OrderTestHelper.assertHasErrors;
+import static edu.unc.lib.boxc.operations.test.OrderTestHelper.mockParentType;
 
 /**
  * @author bbpennel
@@ -68,22 +69,20 @@ public class SetOrderValidatorTest {
         child2Pid = PIDs.get(CHILD2_UUID);
         child3Pid = PIDs.get(CHILD3_UUID);
         when(repositoryObjectLoader.getRepositoryObject(parentPid)).thenReturn(parentObj);
-        mockParentType(ResourceType.Work);
-    }
-
-    private void mockParentType(ResourceType resourceType) {
-        when(parentObj.getResourceType()).thenReturn(resourceType);
+        mockParentType(parentObj, ResourceType.Work);
     }
 
     @Test
     public void targetNotAWorkTest() throws Exception {
-        mockParentType(ResourceType.AdminUnit);
+        mockParentType(parentObj, ResourceType.AdminUnit);
         var request = OrderRequestFactory.createRequest(OrderOperationType.SET, PARENT_UUID,
                 Arrays.asList(CHILD1_UUID, CHILD2_UUID));
         validator.setRequest(request);
 
         assertFalse(validator.isValid());
-        assertHasErrors("Object " + PARENT_UUID + " of type AdminUnit does not support member ordering");
+        assertHasErrors(
+                validator,
+                "Object " + PARENT_UUID + " of type AdminUnit does not support member ordering");
     }
 
     @Test
@@ -95,7 +94,9 @@ public class SetOrderValidatorTest {
         validator.setRequest(request);
 
         assertFalse(validator.isValid());
-        assertHasErrors("Invalid request to set order for " + PARENT_UUID
+        assertHasErrors(
+                validator,
+                "Invalid request to SET order for " + PARENT_UUID
                 + ", the following IDs are not members: " + CHILD1_UUID + ", " + CHILD2_UUID);
     }
 
@@ -108,7 +109,9 @@ public class SetOrderValidatorTest {
         validator.setRequest(request);
 
         assertFalse(validator.isValid());
-        assertHasErrors("Invalid request to set order for " + PARENT_UUID
+        assertHasErrors(
+                validator,
+                "Invalid request to SET order for " + PARENT_UUID
                 + ", the following members were expected but not listed: " + CHILD1_UUID + ", " + CHILD3_UUID);
     }
 
@@ -122,9 +125,10 @@ public class SetOrderValidatorTest {
 
         assertFalse(validator.isValid());
         assertHasErrors(
-                "Invalid request to set order for " + PARENT_UUID
+                validator,
+                "Invalid request to SET order for " + PARENT_UUID
                         + ", the following members were expected but not listed: " + CHILD1_UUID,
-                "Invalid request to set order for " + PARENT_UUID
+                "Invalid request to SET order for " + PARENT_UUID
                         + ", the following IDs are not members: " + CHILD2_UUID);
     }
 
@@ -137,7 +141,7 @@ public class SetOrderValidatorTest {
         validator.setRequest(request);
 
         assertFalse(validator.isValid());
-        assertHasErrors("Invalid request to set order for " + PARENT_UUID
+        assertHasErrors(validator,"Invalid request to SET order for " + PARENT_UUID
                 + ", it contained duplicate member IDs: " + CHILD1_UUID);
     }
 
@@ -163,11 +167,5 @@ public class SetOrderValidatorTest {
 
         assertTrue(validator.isValid());
         assertTrue(validator.getErrors().isEmpty());
-    }
-
-    private void assertHasErrors(String... expected) {
-        var msg = "Expected errors:\n[" + String.join(",", expected) + "]\nbut errors were:\n" + validator.getErrors();
-        assertTrue(msg, validator.getErrors().containsAll(Arrays.asList(expected)));
-        assertEquals(msg, expected.length, validator.getErrors().size());
     }
 }

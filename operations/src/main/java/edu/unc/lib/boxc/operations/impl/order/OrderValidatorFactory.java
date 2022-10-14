@@ -49,6 +49,12 @@ public class OrderValidatorFactory {
             validator.setRequest(request);
             return validator;
         }
+        case REMOVE_FROM: {
+            var validator = new RemoveFromOrderValidator();
+            validator.setRepositoryObjectLoader(repositoryObjectLoader);
+            validator.setRequest(request);
+            return validator;
+        }
         default:
             throw new UnsupportedOperationException("Unable to determine validator for request " + request);
         }

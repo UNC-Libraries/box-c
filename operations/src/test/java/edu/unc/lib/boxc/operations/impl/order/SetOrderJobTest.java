@@ -22,7 +22,7 @@ import edu.unc.lib.boxc.model.api.rdf.Cdr;
 import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.boxc.operations.jms.order.OrderOperationType;
-import edu.unc.lib.boxc.operations.test.OrderJobTestHelper;
+import edu.unc.lib.boxc.operations.test.OrderTestHelper;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
@@ -67,7 +67,7 @@ public class SetOrderJobTest {
 
     @Test
     public void singleChildTest() {
-        var request = OrderJobTestHelper.createRequest(OrderOperationType.SET, PARENT_UUID, CHILD1_UUID);
+        var request = OrderTestHelper.createRequest(OrderOperationType.SET, PARENT_UUID, CHILD1_UUID);
         var job = orderJobFactory.createJob(request);
         job.run();
 
@@ -76,7 +76,7 @@ public class SetOrderJobTest {
 
     @Test
     public void multipleChildrenTest() {
-        var request = OrderJobTestHelper.createRequest(OrderOperationType.SET, PARENT_UUID, CHILD1_UUID, CHILD2_UUID, CHILD3_UUID);
+        var request = OrderTestHelper.createRequest(OrderOperationType.SET, PARENT_UUID, CHILD1_UUID, CHILD2_UUID, CHILD3_UUID);
         var job = orderJobFactory.createJob(request);
         job.run();
 
@@ -85,7 +85,7 @@ public class SetOrderJobTest {
 
     @Test
     public void multipleChildrenAlternateOrderTest() {
-        var request = OrderJobTestHelper.createRequest(OrderOperationType.SET, PARENT_UUID, CHILD2_UUID, CHILD3_UUID, CHILD1_UUID);
+        var request = OrderTestHelper.createRequest(OrderOperationType.SET, PARENT_UUID, CHILD2_UUID, CHILD3_UUID, CHILD1_UUID);
         var job = orderJobFactory.createJob(request);
         job.run();
 

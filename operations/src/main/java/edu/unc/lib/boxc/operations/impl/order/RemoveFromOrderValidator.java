@@ -15,31 +15,26 @@
  */
 package edu.unc.lib.boxc.operations.impl.order;
 
-import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
-import edu.unc.lib.boxc.model.api.services.MembershipService;
 import edu.unc.lib.boxc.operations.api.order.OrderValidator;
 import edu.unc.lib.boxc.operations.jms.order.OrderOperationType;
 import edu.unc.lib.boxc.operations.jms.order.OrderRequest;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import static edu.unc.lib.boxc.operations.api.order.MemberOrderHelper.formatUnsupportedMessage;
 import static edu.unc.lib.boxc.operations.api.order.MemberOrderHelper.supportsMemberOrdering;
-import static edu.unc.lib.boxc.operations.api.order.MemberOrderHelper.formatErrorMessage;
 import static edu.unc.lib.boxc.operations.api.order.MemberOrderHelper.computeDuplicates;
+import static edu.unc.lib.boxc.operations.api.order.MemberOrderHelper.formatErrorMessage;
 
 /**
- * Validator for a request to set order. This is a stateful class, and will only validate once per instance.
- * @author bbpennel
+ * Validator for a request to remove member(s) from order of a work
+ * @author snluong
  */
-public class SetOrderValidator implements OrderValidator {
+public class RemoveFromOrderValidator implements OrderValidator {
     private RepositoryObjectLoader repositoryObjectLoader;
-    private MembershipService membershipService;
     private OrderRequest request;
     private Boolean result;
     private List<String> errors = new ArrayList<>();
@@ -64,35 +59,11 @@ public class SetOrderValidator implements OrderValidator {
         var requestPidSet = new HashSet<>(request.getOrderedChildren());
         if (requestPidSet.size() < request.getOrderedChildren().size()) {
             var duplicates = computeDuplicates(request.getOrderedChildren());
-            errors.add(formatErrorMessage(OrderOperationType.SET,
+            errors.add(formatErrorMessage(OrderOperationType.REMOVE_FROM,
                     parentId, "it contained duplicate member IDs", duplicates));
         }
 
-        var members = membershipService.listMembers(request.getParentPid());
-        var membersNotInRequest = difference(members, requestPidSet);
-        if (!membersNotInRequest.isEmpty()) {
-            errors.add(formatErrorMessage(OrderOperationType.SET, parentId,
-                    "the following members were expected but not listed", membersNotInRequest));
-        }
-
-        var requestedNotInMembers = difference(requestPidSet, members);
-        if (!requestedNotInMembers.isEmpty()) {
-            errors.add(formatErrorMessage(OrderOperationType.SET,
-                    parentId, "the following IDs are not members", requestedNotInMembers));
-        }
-
         return errors.isEmpty();
-    }
-
-    /**
-     * @param setOne
-     * @param setTwo
-     * @return the difference from (setOne - setTwo)
-     */
-    private static Set<PID> difference(Collection<PID> setOne, Collection<PID> setTwo) {
-        Set<PID> result = new HashSet<>(setOne);
-        result.removeAll(setTwo);
-        return result;
     }
 
     @Override
@@ -102,10 +73,6 @@ public class SetOrderValidator implements OrderValidator {
 
     public void setRepositoryObjectLoader(RepositoryObjectLoader repositoryObjectLoader) {
         this.repositoryObjectLoader = repositoryObjectLoader;
-    }
-
-    public void setMembershipService(MembershipService membershipService) {
-        this.membershipService = membershipService;
     }
 
     public void setRequest(OrderRequest request) {
