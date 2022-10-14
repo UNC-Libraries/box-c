@@ -61,7 +61,10 @@ public class MemberOrderHelper {
      * @param problemPids PIDs of child objects that are not valid to be ordered
      * @return formatted error message
      */
-    public static String formatErrorMessage(OrderOperationType type, String parentId, String reason, Collection<PID> problemPids) {
+    public static String formatErrorMessage(OrderOperationType type,
+                                            String parentId,
+                                            String reason,
+                                            Collection<PID> problemPids) {
         return "Invalid request to " + type + " order for " + parentId
                 + ", " + reason + ": "
                 + problemPids.stream().map(PID::getId).collect(Collectors.joining(", "));

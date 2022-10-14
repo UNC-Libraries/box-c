@@ -59,7 +59,8 @@ public class RemoveFromOrderValidator implements OrderValidator {
         var requestPidSet = new HashSet<>(request.getOrderedChildren());
         if (requestPidSet.size() < request.getOrderedChildren().size()) {
             var duplicates = computeDuplicates(request.getOrderedChildren());
-            errors.add(formatErrorMessage(OrderOperationType.REMOVE_FROM, parentId, "it contained duplicate member IDs", duplicates));
+            errors.add(formatErrorMessage(OrderOperationType.REMOVE_FROM,
+                    parentId, "it contained duplicate member IDs", duplicates));
         }
 
         return errors.isEmpty();

@@ -64,7 +64,8 @@ public class SetOrderValidator implements OrderValidator {
         var requestPidSet = new HashSet<>(request.getOrderedChildren());
         if (requestPidSet.size() < request.getOrderedChildren().size()) {
             var duplicates = computeDuplicates(request.getOrderedChildren());
-            errors.add(formatErrorMessage(OrderOperationType.SET, parentId, "it contained duplicate member IDs", duplicates));
+            errors.add(formatErrorMessage(OrderOperationType.SET,
+                    parentId, "it contained duplicate member IDs", duplicates));
         }
 
         var members = membershipService.listMembers(request.getParentPid());
@@ -76,7 +77,8 @@ public class SetOrderValidator implements OrderValidator {
 
         var requestedNotInMembers = difference(requestPidSet, members);
         if (!requestedNotInMembers.isEmpty()) {
-            errors.add(formatErrorMessage(OrderOperationType.SET, parentId, "the following IDs are not members", requestedNotInMembers));
+            errors.add(formatErrorMessage(OrderOperationType.SET,
+                    parentId, "the following IDs are not members", requestedNotInMembers));
         }
 
         return errors.isEmpty();
