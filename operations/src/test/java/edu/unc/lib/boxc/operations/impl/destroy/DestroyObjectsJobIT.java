@@ -50,6 +50,9 @@ import edu.unc.lib.boxc.operations.api.events.PremisLoggerFactory;
 import edu.unc.lib.boxc.operations.jms.MessageSender;
 import edu.unc.lib.boxc.operations.jms.destroy.DestroyObjectsRequest;
 import edu.unc.lib.boxc.operations.jms.indexing.IndexingMessageSender;
+import edu.unc.lib.boxc.operations.jms.order.MemberOrderRequestSender;
+import edu.unc.lib.boxc.operations.jms.order.MultiParentOrderRequest;
+import edu.unc.lib.boxc.operations.jms.order.OrderOperationType;
 import edu.unc.lib.boxc.persist.api.transfer.BinaryTransferService;
 import edu.unc.lib.boxc.persist.impl.storage.StorageLocationManagerImpl;
 import edu.unc.lib.boxc.search.api.models.ObjectPath;
@@ -173,10 +176,13 @@ public class DestroyObjectsJobIT {
 
     private DestroyObjectsJob job;
 
+    private MemberOrderRequestSender memberOrderRequestSender;
+
     @Before
     public void init() throws Exception {
         initMocks(this);
         TestHelper.setContentBase(baseAddress);
+        job.setMemberOrderRequestSender(memberOrderRequestSender);
 
         AccessGroupSet testPrincipals = new AccessGroupSetImpl(USER_GROUPS);
         agent = new AgentPrincipalsImpl(USER_NAME, testPrincipals);
@@ -225,6 +231,12 @@ public class DestroyObjectsJobIT {
         verify(binaryDestroyedMessageSender).sendMessage(docCaptor.capture());
 
         assertMessagePresent(docCaptor.getAllValues(), filesToCleanup, null);
+
+        // assert that the remove order request was sent
+        var request = new MultiParentOrderRequest();
+        request.setParentToOrdered(Map.of(fileObj.getParentPid().getId(), Collections.singletonList(fileObjPid.getId())));
+        request.setOperation( OrderOperationType.REMOVE_FROM);
+        verify(memberOrderRequestSender).sendToQueue(request);
     }
 
     @Test

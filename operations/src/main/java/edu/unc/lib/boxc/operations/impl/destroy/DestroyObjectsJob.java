@@ -24,10 +24,15 @@ import static edu.unc.lib.boxc.operations.jms.indexing.IndexingActionType.DELETE
 import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 import edu.unc.lib.boxc.model.api.objects.WorkObject;
+import edu.unc.lib.boxc.operations.jms.order.MemberOrderRequestSender;
+import edu.unc.lib.boxc.operations.jms.order.MultiParentOrderRequest;
+import edu.unc.lib.boxc.operations.jms.order.OrderOperationType;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.NodeIterator;
@@ -75,6 +80,7 @@ public class DestroyObjectsJob extends AbstractDestroyObjectsJob {
 
     private ObjectPathFactory pathFactory;
     private InheritedAclFactory inheritedAclFactory;
+    private MemberOrderRequestSender memberOrderRequestSender;
 
     public DestroyObjectsJob(DestroyObjectsRequest request) {
         super(request);
@@ -103,6 +109,8 @@ public class DestroyObjectsJob extends AbstractDestroyObjectsJob {
                         if (primaryObj != null && primaryObj.getPid().equals(repoObj.getPid())) {
                             parentWork.clearPrimaryObject();
                         }
+                        // remove object to be deleted from parent object's member order
+                        sendRemoveOrderRequest(parentWork.getPid().getId(), repoObj.getPid().getId());
                     }
 
                     // purge tree with repoObj as root from repository
@@ -250,12 +258,23 @@ public class DestroyObjectsJob extends AbstractDestroyObjectsJob {
         }
     }
 
+    private void sendRemoveOrderRequest(String parentId, String childId) throws IOException {
+        var request = new MultiParentOrderRequest();
+        request.setParentToOrdered(Map.of(parentId, Collections.singletonList(childId)));
+        request.setOperation( OrderOperationType.REMOVE_FROM);
+        memberOrderRequestSender.sendToQueue(request);
+    }
+
     public void setPathFactory(ObjectPathFactory pathFactory) {
         this.pathFactory = pathFactory;
     }
 
     public void setInheritedAclFactory(InheritedAclFactory inheritedAclFactory) {
         this.inheritedAclFactory = inheritedAclFactory;
+    }
+
+    public void setMemberOrderRequestSender(MemberOrderRequestSender memberOrderRequestSender) {
+        this.memberOrderRequestSender = memberOrderRequestSender;
     }
 
 }
