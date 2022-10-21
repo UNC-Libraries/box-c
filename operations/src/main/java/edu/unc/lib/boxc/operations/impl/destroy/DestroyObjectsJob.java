@@ -261,7 +261,7 @@ public class DestroyObjectsJob extends AbstractDestroyObjectsJob {
     private void sendRemoveOrderRequest(String parentId, String childId) throws IOException {
         var request = new MultiParentOrderRequest();
         request.setParentToOrdered(Map.of(parentId, Collections.singletonList(childId)));
-        request.setOperation( OrderOperationType.REMOVE_FROM);
+        request.setOperation(OrderOperationType.REMOVE_FROM);
         memberOrderRequestSender.sendToQueue(request);
     }
 

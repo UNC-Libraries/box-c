@@ -176,13 +176,15 @@ public class DestroyObjectsJobIT {
 
     private DestroyObjectsJob job;
 
+    @Mock
     private MemberOrderRequestSender memberOrderRequestSender;
+    @Captor
+    private ArgumentCaptor<MultiParentOrderRequest> requestCaptor;
 
     @Before
     public void init() throws Exception {
         initMocks(this);
         TestHelper.setContentBase(baseAddress);
-        job.setMemberOrderRequestSender(memberOrderRequestSender);
 
         AccessGroupSet testPrincipals = new AccessGroupSetImpl(USER_GROUPS);
         agent = new AgentPrincipalsImpl(USER_NAME, testPrincipals);
@@ -233,10 +235,7 @@ public class DestroyObjectsJobIT {
         assertMessagePresent(docCaptor.getAllValues(), filesToCleanup, null);
 
         // assert that the remove order request was sent
-        var request = new MultiParentOrderRequest();
-        request.setParentToOrdered(Map.of(fileObj.getParentPid().getId(), Collections.singletonList(fileObjPid.getId())));
-        request.setOperation( OrderOperationType.REMOVE_FROM);
-        verify(memberOrderRequestSender).sendToQueue(request);
+        verify(memberOrderRequestSender).sendToQueue(requestCaptor.capture());
     }
 
     @Test
@@ -280,6 +279,9 @@ public class DestroyObjectsJobIT {
         verify(binaryDestroyedMessageSender).sendMessage(docCaptor.capture());
 
         assertMessagePresent(docCaptor.getAllValues(), filesToCleanup, null);
+
+        // assert that the remove order request was sent
+        verify(memberOrderRequestSender).sendToQueue(requestCaptor.capture());
 
         workObj.shouldRefresh();
 
@@ -494,6 +496,7 @@ public class DestroyObjectsJobIT {
         job.setIndexingMessageSender(indexingMessageSender);
         job.setBinaryDestroyedMessageSender(binaryDestroyedMessageSender);
         job.setPremisLoggerFactory(premisLoggerFactory);
+        job.setMemberOrderRequestSender(memberOrderRequestSender);
     }
 
     private void assertMessagePresent(List<Document> returnedDocs, Map<URI, Map<String, String>> filesToCleanup,
