@@ -49,6 +49,7 @@ import edu.unc.lib.boxc.operations.impl.destroy.DestroyObjectsJob;
 import edu.unc.lib.boxc.operations.jms.MessageSender;
 import edu.unc.lib.boxc.operations.jms.destroy.DestroyObjectsRequest;
 import edu.unc.lib.boxc.operations.jms.indexing.IndexingMessageSender;
+import edu.unc.lib.boxc.operations.jms.order.MemberOrderRequestSender;
 import edu.unc.lib.boxc.persist.api.storage.StorageLocationManager;
 import edu.unc.lib.boxc.persist.api.transfer.BinaryTransferService;
 import edu.unc.lib.boxc.search.solr.services.ObjectPathFactory;
@@ -127,6 +128,8 @@ public class SolrIngestProcessorIT extends AbstractSolrProcessorIT {
     private PremisLoggerFactory premisLoggerFactory;
     @Autowired
     private SparqlUpdateService sparqlUpdateService;
+    @Mock
+    private MemberOrderRequestSender memberOrderRequestSender;
 
     @Before
     public void setUp() throws Exception {
@@ -396,6 +399,7 @@ public class SolrIngestProcessorIT extends AbstractSolrProcessorIT {
         destroyJob.setStorageLocationManager(locManager);
         destroyJob.setTransactionManager(txManager);
         destroyJob.setBinaryTransferService(transferService);
+        destroyJob.setMemberOrderRequestSender(memberOrderRequestSender);
         destroyJob.run();
     }
 
