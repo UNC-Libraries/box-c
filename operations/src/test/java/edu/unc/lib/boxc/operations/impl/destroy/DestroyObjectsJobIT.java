@@ -52,7 +52,6 @@ import edu.unc.lib.boxc.operations.jms.destroy.DestroyObjectsRequest;
 import edu.unc.lib.boxc.operations.jms.indexing.IndexingMessageSender;
 import edu.unc.lib.boxc.operations.jms.order.MemberOrderRequestSender;
 import edu.unc.lib.boxc.operations.jms.order.MultiParentOrderRequest;
-import edu.unc.lib.boxc.operations.jms.order.OrderOperationType;
 import edu.unc.lib.boxc.persist.api.transfer.BinaryTransferService;
 import edu.unc.lib.boxc.persist.impl.storage.StorageLocationManagerImpl;
 import edu.unc.lib.boxc.search.api.models.ObjectPath;
