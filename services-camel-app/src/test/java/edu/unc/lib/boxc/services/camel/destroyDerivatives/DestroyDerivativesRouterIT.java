@@ -33,6 +33,7 @@ import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.List;
 
+import edu.unc.lib.boxc.operations.jms.order.MemberOrderRequestSender;
 import org.apache.camel.BeanInject;
 import org.apache.camel.CamelContext;
 import org.apache.camel.Exchange;
@@ -132,6 +133,8 @@ public class DestroyDerivativesRouterIT {
     private IndexingMessageSender indexingMessageSender;
     @Mock
     private ObjectPath path;
+    @Mock
+    private MemberOrderRequestSender memberOrderRequestSender;
 
     @BeanInject(value = "destroyedMsgProcessor")
     private DestroyedMsgProcessor destroyedMsgProcessor;
@@ -337,5 +340,7 @@ public class DestroyDerivativesRouterIT {
         destroyJob.setIndexingMessageSender(indexingMessageSender);
         destroyJob.setBinaryDestroyedMessageSender(binaryDestroyedMessageSender);
         destroyJob.setPremisLoggerFactory(premisLoggerFactory);
+        destroyJob.setMemberOrderRequestSender(memberOrderRequestSender);
+
     }
 }

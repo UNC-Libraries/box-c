@@ -50,6 +50,8 @@ import edu.unc.lib.boxc.operations.api.events.PremisLoggerFactory;
 import edu.unc.lib.boxc.operations.jms.MessageSender;
 import edu.unc.lib.boxc.operations.jms.destroy.DestroyObjectsRequest;
 import edu.unc.lib.boxc.operations.jms.indexing.IndexingMessageSender;
+import edu.unc.lib.boxc.operations.jms.order.MemberOrderRequestSender;
+import edu.unc.lib.boxc.operations.jms.order.MultiParentOrderRequest;
 import edu.unc.lib.boxc.persist.api.transfer.BinaryTransferService;
 import edu.unc.lib.boxc.persist.impl.storage.StorageLocationManagerImpl;
 import edu.unc.lib.boxc.search.api.models.ObjectPath;
@@ -173,6 +175,11 @@ public class DestroyObjectsJobIT {
 
     private DestroyObjectsJob job;
 
+    @Mock
+    private MemberOrderRequestSender memberOrderRequestSender;
+    @Captor
+    private ArgumentCaptor<MultiParentOrderRequest> requestCaptor;
+
     @Before
     public void init() throws Exception {
         initMocks(this);
@@ -225,6 +232,12 @@ public class DestroyObjectsJobIT {
         verify(binaryDestroyedMessageSender).sendMessage(docCaptor.capture());
 
         assertMessagePresent(docCaptor.getAllValues(), filesToCleanup, null);
+
+        // assert that the remove order request was sent, and has the right map
+        verify(memberOrderRequestSender).sendToQueue(requestCaptor.capture());
+        var parentId = fileObj.getParentPid().getId();
+        var map = Map.of(parentId, Collections.singletonList(fileObjPid.getId()));
+        assertEquals(map, requestCaptor.getValue().getParentToOrdered());
     }
 
     @Test
@@ -268,6 +281,12 @@ public class DestroyObjectsJobIT {
         verify(binaryDestroyedMessageSender).sendMessage(docCaptor.capture());
 
         assertMessagePresent(docCaptor.getAllValues(), filesToCleanup, null);
+
+        // assert that the remove order request was sent, and has the right map
+        verify(memberOrderRequestSender).sendToQueue(requestCaptor.capture());
+        var parentId = fileObj.getParentPid().getId();
+        var map = Map.of(parentId, Collections.singletonList(fileObjPid.getId()));
+        assertEquals(map, requestCaptor.getValue().getParentToOrdered());
 
         workObj.shouldRefresh();
 
@@ -482,6 +501,7 @@ public class DestroyObjectsJobIT {
         job.setIndexingMessageSender(indexingMessageSender);
         job.setBinaryDestroyedMessageSender(binaryDestroyedMessageSender);
         job.setPremisLoggerFactory(premisLoggerFactory);
+        job.setMemberOrderRequestSender(memberOrderRequestSender);
     }
 
     private void assertMessagePresent(List<Document> returnedDocs, Map<URI, Map<String, String>> filesToCleanup,
