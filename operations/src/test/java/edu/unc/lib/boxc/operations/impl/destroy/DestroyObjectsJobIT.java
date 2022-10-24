@@ -233,8 +233,11 @@ public class DestroyObjectsJobIT {
 
         assertMessagePresent(docCaptor.getAllValues(), filesToCleanup, null);
 
-        // assert that the remove order request was sent
+        // assert that the remove order request was sent, and has the right map
         verify(memberOrderRequestSender).sendToQueue(requestCaptor.capture());
+        var parentId = fileObj.getParentPid().getId();
+        var map = Map.of(parentId, Collections.singletonList(fileObjPid.getId()));
+        assertEquals(map, requestCaptor.getValue().getParentToOrdered());
     }
 
     @Test
@@ -279,8 +282,11 @@ public class DestroyObjectsJobIT {
 
         assertMessagePresent(docCaptor.getAllValues(), filesToCleanup, null);
 
-        // assert that the remove order request was sent
+        // assert that the remove order request was sent, and has the right map
         verify(memberOrderRequestSender).sendToQueue(requestCaptor.capture());
+        var parentId = fileObj.getParentPid().getId();
+        var map = Map.of(parentId, Collections.singletonList(fileObjPid.getId()));
+        assertEquals(map, requestCaptor.getValue().getParentToOrdered());
 
         workObj.shouldRefresh();
 
