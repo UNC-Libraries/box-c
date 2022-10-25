@@ -65,6 +65,12 @@ public class SetContentStatusFilter implements IndexDocumentFilter{
             } else {
                 status.add(FacetConstants.NO_PRIMARY_OBJECT);
             }
+
+            if (resc.hasProperty(Cdr.memberOrder)) {
+                status.add(FacetConstants.MEMBERS_ARE_ORDERED);
+            } else {
+                status.add(FacetConstants.MEMBERS_ARE_UNORDERED);
+            }
         }
 
         if (obj instanceof FileObject) {

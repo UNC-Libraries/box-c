@@ -36,4 +36,6 @@ public abstract class FacetConstants {
     public static final String INHERITED_PATRON_SETTINGS = "Inherited Patron Settings";
     public static final String PUBLIC_ACCESS = "Public Access";
     public static final String STAFF_ONLY_ACCESS = "Staff-Only Access";
+    public static final String MEMBERS_ARE_ORDERED = "Members Are Ordered";
+    public static final String MEMBERS_ARE_UNORDERED = "Members Are Unordered";
 }
