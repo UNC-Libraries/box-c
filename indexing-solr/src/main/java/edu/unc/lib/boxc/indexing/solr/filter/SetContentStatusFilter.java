@@ -60,17 +60,7 @@ public class SetContentStatusFilter implements IndexDocumentFilter{
         }
 
         if (obj instanceof WorkObject) {
-            if (resc.hasProperty(Cdr.primaryObject)) {
-                status.add(FacetConstants.HAS_PRIMARY_OBJECT);
-            } else {
-                status.add(FacetConstants.NO_PRIMARY_OBJECT);
-            }
-
-            if (resc.hasProperty(Cdr.memberOrder)) {
-                status.add(FacetConstants.MEMBERS_ARE_ORDERED);
-            } else {
-                status.add(FacetConstants.MEMBERS_ARE_UNORDERED);
-            }
+            addWorkObjectStatuses(status, resc);
         }
 
         if (obj instanceof FileObject) {
@@ -81,5 +71,19 @@ public class SetContentStatusFilter implements IndexDocumentFilter{
         }
 
         return status;
+    }
+
+    private void addWorkObjectStatuses(List<String> status, Resource resource) {
+        if (resource.hasProperty(Cdr.primaryObject)) {
+            status.add(FacetConstants.HAS_PRIMARY_OBJECT);
+        } else {
+            status.add(FacetConstants.NO_PRIMARY_OBJECT);
+        }
+
+        if (resource.hasProperty(Cdr.memberOrder)) {
+            status.add(FacetConstants.MEMBERS_ARE_ORDERED);
+        } else {
+            status.add(FacetConstants.MEMBERS_ARE_UNORDERED);
+        }
     }
 }
