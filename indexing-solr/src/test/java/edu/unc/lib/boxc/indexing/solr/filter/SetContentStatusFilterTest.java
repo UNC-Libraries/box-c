@@ -165,4 +165,29 @@ public class SetContentStatusFilterTest {
 
         verify(idb).setContentStatus(listCaptor.capture());
     }
+
+    @Test
+    public void testWorkWithMemberOrder() {
+        when(dip.getContentObject()).thenReturn(workObj);
+        when(workObj.getResource()).thenReturn(resc);
+        when(resc.hasProperty(Cdr.memberOrder)).thenReturn(true);
+
+        filter.filter(dip);
+
+        verify(idb).setContentStatus(listCaptor.capture());
+        assertTrue(listCaptor.getValue().contains(FacetConstants.MEMBERS_ARE_ORDERED));
+        assertFalse(listCaptor.getValue().contains(FacetConstants.MEMBERS_ARE_UNORDERED));
+    }
+
+    @Test
+    public void testWorkWithoutMemberOrder() {
+        when(dip.getContentObject()).thenReturn(workObj);
+        when(workObj.getResource()).thenReturn(resc);
+
+        filter.filter(dip);
+
+        verify(idb).setContentStatus(listCaptor.capture());
+        assertTrue(listCaptor.getValue().contains(FacetConstants.MEMBERS_ARE_UNORDERED));
+        assertFalse(listCaptor.getValue().contains(FacetConstants.MEMBERS_ARE_ORDERED));
+    }
 }
