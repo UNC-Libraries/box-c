@@ -781,6 +781,9 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
             String val = dResc.getProperty(Cdr.storageLocation).getString();
             aResc.addLiteral(Cdr.storageLocation, val);
         }
+        if (dResc.hasProperty(Cdr.memberOrder)) {
+            aResc.addProperty(Cdr.memberOrder, dResc.getProperty(Cdr.memberOrder).getString());
+        }
     }
 
     private void overrideModifiedTimestamp(ContentObject contentObj, Resource dResc) {
