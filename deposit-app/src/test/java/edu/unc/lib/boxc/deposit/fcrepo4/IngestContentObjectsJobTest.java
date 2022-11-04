@@ -766,6 +766,30 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
         job.run();
     }
 
+    @Test
+    public void ingestWorkWithMemberOrder() {
+        PID workPid = makePid(RepositoryPathConstants.CONTENT_BASE);
+        WorkObject work = mock(WorkObject.class);
+        Bag workBag = setupWork(workPid, work);
+        String child1 = "f277bb38-272c-471c-a28a-9887a1328a1f";
+        String child2 = "83c2d7f8-2e6b-4f0b-ab7e-7397969c0682";
+        String memberOrder = child1 + "|" + child2;
+
+        workBag.addProperty(Cdr.memberOrder, memberOrder);
+
+        job.closeModel();
+
+        when(repoObjLoader.getWorkObject(eq(workPid))).thenReturn(work);
+
+        job.run();
+
+        verify(repoObjFactory).createWorkObject(eq(workPid), modelCaptor.capture());
+
+        Resource workAipResc = modelCaptor.getValue().getResource(workPid.getRepositoryPath());
+        assertTrue("Work object did not contain member order",
+                workAipResc.hasProperty(Cdr.memberOrder));
+    }
+
     private PID addFileObject(Bag parent, String stagingLocation, String mimetype) throws Exception {
         PID filePid = makePid(RepositoryPathConstants.CONTENT_BASE);
 
