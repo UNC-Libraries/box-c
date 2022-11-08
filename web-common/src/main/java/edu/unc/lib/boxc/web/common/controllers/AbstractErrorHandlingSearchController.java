@@ -42,10 +42,9 @@ public abstract class AbstractErrorHandlingSearchController extends AbstractSolr
     private static final Logger log = LoggerFactory.getLogger(AbstractErrorHandlingSearchController.class);
 
     @ResponseStatus(HttpStatus.NOT_FOUND)
-    @ExceptionHandler({ InvalidRecordRequestException.class, InvalidPidException.class,
-            NotFoundException.class, ResourceNotFoundException.class })
+    @ExceptionHandler({ NotFoundException.class, ResourceNotFoundException.class })
     public String handleInvalidRecordRequest(RuntimeException ex, HttpServletRequest request) {
-        request.setAttribute("pageSubtitle", "Invalid request");
+        request.setAttribute("pageSubtitle", "Not found");
         log.debug("Invalid record request", ex);
         return "error/invalidRecord";
     }
@@ -53,13 +52,14 @@ public abstract class AbstractErrorHandlingSearchController extends AbstractSolr
     @ResponseStatus(HttpStatus.FORBIDDEN)
     @ExceptionHandler({ AccessRestrictionException.class, AuthorizationException.class })
     public String handleForbiddenRecordRequest(RuntimeException ex, HttpServletRequest request) {
-        request.setAttribute("pageSubtitle", "Invalid request");
+        request.setAttribute("pageSubtitle", "Access restricted");
         log.debug("Access denied", ex);
         return "error/invalidRecord";
     }
 
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    @ExceptionHandler({ IllegalArgumentException.class, ObjectTypeMismatchException.class })
+    @ExceptionHandler({ IllegalArgumentException.class, ObjectTypeMismatchException.class,
+            InvalidRecordRequestException.class, InvalidPidException.class })
     public String handleObjectTypeMismatchException(RuntimeException ex, WebRequest request) {
         request.setAttribute("pageSubtitle", "Invalid request", WebRequest.SCOPE_REQUEST);
         log.info("Bad request to {}: {}", getRequestUri(request), ex.getMessage());

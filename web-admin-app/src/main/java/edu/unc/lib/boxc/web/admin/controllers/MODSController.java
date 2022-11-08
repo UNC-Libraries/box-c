@@ -24,6 +24,7 @@ import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import edu.unc.lib.boxc.model.api.exceptions.NotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -79,7 +80,7 @@ public class MODSController extends AbstractSolrSearchController {
         SimpleIdRequest objectRequest = new SimpleIdRequest(PIDs.get(pid), accessGroups);
         ContentObjectRecord resultObject = queryLayer.getObjectById(objectRequest);
         if (resultObject == null) {
-            throw new InvalidRecordRequestException();
+            throw new NotFoundException("No record found for " + pid);
         }
 
         model.addAttribute("resultObject", resultObject);
