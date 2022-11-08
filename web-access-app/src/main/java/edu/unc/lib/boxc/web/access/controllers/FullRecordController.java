@@ -16,12 +16,10 @@
 package edu.unc.lib.boxc.web.access.controllers;
 
 import edu.unc.lib.boxc.auth.api.Permission;
-import edu.unc.lib.boxc.auth.api.exceptions.AccessRestrictionException;
 import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
 import edu.unc.lib.boxc.auth.api.services.AccessControlService;
 import edu.unc.lib.boxc.model.api.ResourceType;
 import edu.unc.lib.boxc.model.api.exceptions.FedoraException;
-import edu.unc.lib.boxc.model.api.exceptions.InvalidPidException;
 import edu.unc.lib.boxc.model.api.exceptions.NotFoundException;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.objects.BinaryObject;
@@ -36,9 +34,7 @@ import edu.unc.lib.boxc.search.solr.services.ChildrenCountService;
 import edu.unc.lib.boxc.search.solr.services.GetCollectionIdService;
 import edu.unc.lib.boxc.search.solr.services.NeighborQueryService;
 import edu.unc.lib.boxc.web.common.controllers.AbstractErrorHandlingSearchController;
-import edu.unc.lib.boxc.web.common.exceptions.InvalidRecordRequestException;
 import edu.unc.lib.boxc.web.common.exceptions.RenderViewException;
-import edu.unc.lib.boxc.web.common.exceptions.ResourceNotFoundException;
 import edu.unc.lib.boxc.web.common.services.AccessCopiesService;
 import edu.unc.lib.boxc.web.common.services.FindingAidUrlService;
 import edu.unc.lib.boxc.web.common.services.XmlDocumentFilteringService;
@@ -53,13 +49,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.View;
 
@@ -74,7 +68,7 @@ import java.util.Map;
 import static edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore.getAgentPrincipals;
 import static edu.unc.lib.boxc.common.xml.SecureXMLFactory.createSAXBuilder;
 import static edu.unc.lib.boxc.search.api.FacetConstants.MARKED_FOR_DELETION;
-import static edu.unc.lib.boxc.web.common.services.AccessCopiesService.AUDIO_MIMETYPE_REGEX ;
+import static edu.unc.lib.boxc.web.common.services.AccessCopiesService.AUDIO_MIMETYPE_REGEX;
 import static edu.unc.lib.boxc.web.common.services.AccessCopiesService.PDF_MIMETYPE_REGEX;
 
 /**
@@ -189,21 +183,15 @@ public class FullRecordController extends AbstractErrorHandlingSearchController 
         PID pid = PIDs.get(pidString);
 
         AccessGroupSet principals = getAgentPrincipals().getPrincipals();
-
-        try {
-            aclService.assertHasAccess("Insufficient permissions to access full record for " + pidString,
-                    pid, principals, Permission.viewMetadata);
-        } catch (AccessRestrictionException e) {
-            LOG.info("{}", e.getMessage());
-            throw new InvalidRecordRequestException();
-        }
+        aclService.assertHasAccess("Insufficient permissions to access full record for " + pidString,
+                pid, principals, Permission.viewMetadata);
 
         // Retrieve the object's record from Solr
         SimpleIdRequest idRequest = new SimpleIdRequest(pid, principals);
         ContentObjectRecord briefObject = queryLayer.getObjectById(idRequest);
 
         if (briefObject == null) {
-            throw new InvalidRecordRequestException();
+            throw new NotFoundException("No record found for " + pid.getId());
         }
 
         // Get path information.
@@ -285,15 +273,6 @@ public class FullRecordController extends AbstractErrorHandlingSearchController 
 
         model.addAttribute("pageSubtitle", briefObject.getTitle());
         return "fullRecord";
-    }
-
-    @ResponseStatus(value = HttpStatus.FORBIDDEN)
-    @ExceptionHandler({ InvalidRecordRequestException.class, InvalidPidException.class,
-            NotFoundException.class, ResourceNotFoundException.class })
-    public String handleInvalidRecordRequest(RuntimeException ex, HttpServletRequest request) {
-        request.setAttribute("pageSubtitle", "Invalid request");
-        LOG.debug("Invalid record request", ex);
-        return "error/invalidRecord";
     }
 
     public void setXslViewResolver(XSLViewResolver xslViewResolver) {
