@@ -147,7 +147,7 @@
             <list>
                 <value>/schemas/xml.xsd</value>
                 <value>/schemas/xlink.xsd</value>
-                <value>/schemas/mods-3-7.xsd</value>
+                <value>/schemas/mods-3-8.xsd</value>
             </list>
         </constructor-arg>
     </bean>

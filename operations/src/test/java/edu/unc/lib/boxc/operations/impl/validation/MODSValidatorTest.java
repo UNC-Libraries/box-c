@@ -73,7 +73,7 @@ public class MODSValidatorTest {
         StreamSource[] xsdSources = {
                 new StreamSource(getClass().getResourceAsStream("/schemas/xml.xsd")),
                 new StreamSource(getClass().getResourceAsStream("/schemas/xlink.xsd")),
-                new StreamSource(getClass().getResourceAsStream("/schemas/mods-3-7.xsd"))
+                new StreamSource(getClass().getResourceAsStream("/schemas/mods-3-8.xsd"))
         };
 
         SchemaFactory factory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);

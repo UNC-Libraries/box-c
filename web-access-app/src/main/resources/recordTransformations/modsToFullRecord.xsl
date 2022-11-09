@@ -359,7 +359,7 @@
 	</xsl:template>
 <!-- mods:originInfo dates -->
 	<xsl:template name="modsOriginDates">
-		<xsl:for-each-group select="*[local-name() = 'originInfo']/*[contains(local-name(), 'date') or local-name() = 'copyrightDate']" group-by="../@displayLabel, local-name(.[not(../@displayLabel)])[. != '']">
+		<xsl:for-each-group select="*[local-name() = 'originInfo']/*[contains(local-name(), 'date') or local-name() = 'copyrightDate' or local-name() = 'displayDate']" group-by="../@displayLabel, local-name(.[not(../@displayLabel)])[. != '']">
 			<xsl:variable name="groupKey" select="current-grouping-key()"/>
 			<tr>
 				<th>
@@ -384,6 +384,9 @@
 						</xsl:when>
 						<xsl:when test="$groupKey = 'dateOther'">
 							<xsl:value-of>Other Date</xsl:value-of>
+						</xsl:when>
+						<xsl:when test="$groupKey = 'displayDate'">
+							<xsl:value-of>Display Date</xsl:value-of>
 						</xsl:when>
 						<xsl:otherwise>
 							<xsl:value-of select="concat(upper-case(substring($groupKey,1,1)), substring($groupKey,2))"/>
@@ -992,7 +995,7 @@
 		<xsl:variable name="frequency" select="*[local-name() = 'originInfo']/*[local-name() = 'frequency']"/>
 		<xsl:variable name="edition" select="*[local-name() = 'originInfo']/*[local-name() = 'edition']"/>
 		<xsl:variable name="place" select="*[local-name() = 'originInfo']/*[local-name() = 'place']"/>
-		<xsl:variable name="originDate" select="*[local-name() = 'originInfo']/*[contains(local-name(), 'date') or local-name() = 'copyrightDate']"/>
+		<xsl:variable name="originDate" select="*[local-name() = 'originInfo']/*[contains(local-name(), 'date') or local-name() = 'copyrightDate' or local-name() = 'displayDate']"/>
 
 		<xsl:if test="boolean($publisher) or boolean($issuance) or boolean($frequency) or boolean($edition) or boolean($place) or boolean($originDate)">
 			<table>
