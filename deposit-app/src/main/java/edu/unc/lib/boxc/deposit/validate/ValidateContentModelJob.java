@@ -116,6 +116,9 @@ public class ValidateContentModelJob extends AbstractDepositJob{
         // Validate each object in this deposit for ACL issues and others not covered by the schema
         // Start with the destination object as the parent, iterating through the new resources in the bag
         validateChildren(parentObject.getResource(), getChildIterator(depositBag));
+
+        // Validate member order property
+        validateMemberOrder(model);
     }
 
     private void validatePrimaryObjects(Model model) {
@@ -239,8 +242,9 @@ public class ValidateContentModelJob extends AbstractDepositJob{
             }
             var orderValidator = new DepositSetMemberOrderValidator();
             orderValidator.setResource(subj);
-            if (orderValidator.isValid()) {
-                // Throw some errors
+            if (!orderValidator.isValid()) {
+                failJob(null, "Member order is invalid for {0}, with the following errors: {1}",
+                        subj.getURI(), orderValidator.getErrors());
             }
         }
     }

@@ -15,15 +15,17 @@
  */
 package edu.unc.lib.boxc.deposit.validate;
 
-import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.api.rdf.Cdr;
-import edu.unc.lib.boxc.model.api.services.MembershipService;
+import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.boxc.operations.api.order.OrderValidator;
-import org.apache.jena.rdf.model.NodeIterator;
 import org.apache.jena.rdf.model.Resource;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import static edu.unc.lib.boxc.deposit.work.DepositGraphUtils.getChildIterator;
 
@@ -48,14 +50,51 @@ public class DepositSetMemberOrderValidator implements OrderValidator {
 
     private boolean validate() {
         var order = resource.getProperty(Cdr.memberOrder).getString();
+        var memberOrderIds = Arrays.asList(order.split("\\|"));
         var iterator = getChildIterator(resource);
+        var resourceId = PIDs.get(resource.getURI()).getId();
+        var childIds = new HashSet<String>();
         while (iterator.hasNext()) {
             // collect all the ids into a list, passing through PIDs.get() so we can just get the id
-            Resource childResc = (Resource) iterator.next();
+            Resource childResource = (Resource) iterator.next();
+            var childId = PIDs.get(childResource.getURI()).getId();
+            childIds.add(childId);
         }
-        // compare list of children against the order ids to verify they are children
-        // Make sure all the children are accounted for in the member order list
         // Make sure there are no duplicates in the member order list
+        var distinctIds = new HashSet<>(memberOrderIds);
+        if (distinctIds.size() < memberOrderIds.size()) {
+            Set<String> duplicates = new HashSet<>();
+            Set<String> noDuplicates = new HashSet<>();
+
+            for (String id : memberOrderIds) {
+                if (!noDuplicates.add(id)) {
+                    duplicates.add(id);
+                }
+            }
+
+            errors.add("Invalid member order for " + resourceId
+                    + ", it contained duplicate member IDs: " + convertToString(duplicates) );
+        }
+
+        // compare list of children against the order ids to verify they are children
+        var nonChildrenIds = new HashSet<>(distinctIds);
+        nonChildrenIds.removeAll(childIds);
+
+        if (!nonChildrenIds.isEmpty()) {
+            errors.add("Invalid member order for " + resourceId
+                    + ", the following IDs are not members: " + convertToString(nonChildrenIds));
+        }
+
+        // Make sure all the children are accounted for in the member order list
+        var childrenIds = new HashSet<>(childIds);
+        childrenIds.removeAll(distinctIds);
+
+        if (!childrenIds.isEmpty()) {
+            errors.add("Invalid member order for " + resourceId
+                    + ", the following members were expected but not listed: " + convertToString(childrenIds));
+        }
+
+        return errors.isEmpty();
     }
 
     @Override
@@ -65,5 +104,9 @@ public class DepositSetMemberOrderValidator implements OrderValidator {
 
     public void setResource(Resource resource) {
         this.resource = resource;
+    }
+
+    private String convertToString(Set<String> set) {
+        return String.join(",", set);
     }
 }
