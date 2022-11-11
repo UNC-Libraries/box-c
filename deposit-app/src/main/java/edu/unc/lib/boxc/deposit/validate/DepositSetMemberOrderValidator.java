@@ -19,10 +19,13 @@ import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.api.rdf.Cdr;
 import edu.unc.lib.boxc.model.api.services.MembershipService;
 import edu.unc.lib.boxc.operations.api.order.OrderValidator;
+import org.apache.jena.rdf.model.NodeIterator;
 import org.apache.jena.rdf.model.Resource;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import static edu.unc.lib.boxc.deposit.work.DepositGraphUtils.getChildIterator;
 
 /**
  * Validator that determines if the deposit object's member order
@@ -45,7 +48,14 @@ public class DepositSetMemberOrderValidator implements OrderValidator {
 
     private boolean validate() {
         var order = resource.getProperty(Cdr.memberOrder).getString();
-        resource.
+        var iterator = getChildIterator(resource);
+        while (iterator.hasNext()) {
+            // collect all the ids into a list, passing through PIDs.get() so we can just get the id
+            Resource childResc = (Resource) iterator.next();
+        }
+        // compare list of children against the order ids to verify they are children
+        // Make sure all the children are accounted for in the member order list
+        // Make sure there are no duplicates in the member order list
     }
 
     @Override

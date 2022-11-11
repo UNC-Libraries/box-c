@@ -69,7 +69,6 @@ public class ValidateContentModelJob extends AbstractDepositJob{
 
     private RepositoryObjectLoader repoObjLoader;
 
-    private DepositSetMemberOrderValidator orderValidator = new DepositSetMemberOrderValidator();
     private final Model cdrSchema;
     private final Reasoner reasoner;
 
@@ -238,7 +237,11 @@ public class ValidateContentModelJob extends AbstractDepositJob{
                 failJob(null, "Invalid property on {0}, only cdr:Work objects may specify member order.",
                         subj.getURI());
             }
-
+            var orderValidator = new DepositSetMemberOrderValidator();
+            orderValidator.setResource(subj);
+            if (orderValidator.isValid()) {
+                // Throw some errors
+            }
         }
     }
 
@@ -254,9 +257,5 @@ public class ValidateContentModelJob extends AbstractDepositJob{
      */
     public void setRepositoryObjectLoader(RepositoryObjectLoader repoObjLoader) {
         this.repoObjLoader = repoObjLoader;
-    }
-
-    public void setDepositSetMemberOrderValidator(DepositSetMemberOrderValidator orderValidator) {
-        this.orderValidator = orderValidator;
     }
 }
