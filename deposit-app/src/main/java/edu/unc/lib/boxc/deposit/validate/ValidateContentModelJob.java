@@ -229,7 +229,7 @@ public class ValidateContentModelJob extends AbstractDepositJob{
 
     private void validateMemberOrder(Model model) {
         StmtIterator iterator = model.listStatements((Resource) null, Cdr.memberOrder, (RDFNode) null);
-        orderValidator.setRepositoryObjectLoader(repoObjLoader);
+
         while (iterator.hasNext()) {
             Statement statement = iterator.next();
 

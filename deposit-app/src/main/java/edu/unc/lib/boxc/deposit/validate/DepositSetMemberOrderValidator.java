@@ -16,8 +16,10 @@
 package edu.unc.lib.boxc.deposit.validate;
 
 import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
+import edu.unc.lib.boxc.model.api.rdf.Cdr;
 import edu.unc.lib.boxc.model.api.services.MembershipService;
 import edu.unc.lib.boxc.operations.api.order.OrderValidator;
+import org.apache.jena.rdf.model.Resource;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,6 +32,7 @@ import java.util.List;
 public class DepositSetMemberOrderValidator implements OrderValidator {
     private Boolean result;
     private List<String> errors = new ArrayList<>();
+    private Resource resource;
 
     @Override
     public boolean isValid() {
@@ -41,7 +44,8 @@ public class DepositSetMemberOrderValidator implements OrderValidator {
     }
 
     private boolean validate() {
-        return true;
+        var order = resource.getProperty(Cdr.memberOrder).getString();
+        resource.
     }
 
     @Override
@@ -49,11 +53,7 @@ public class DepositSetMemberOrderValidator implements OrderValidator {
         return errors;
     }
 
-    public void setRepositoryObjectLoader(RepositoryObjectLoader repositoryObjectLoader) {
-        this.repositoryObjectLoader = repositoryObjectLoader;
-    }
-
-    public void setMembershipService(MembershipService membershipService) {
-        this.membershipService = membershipService;
+    public void setResource(Resource resource) {
+        this.resource = resource;
     }
 }
