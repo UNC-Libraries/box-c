@@ -274,6 +274,59 @@ public class ValidateContentModelJobTest extends AbstractDepositJobTest {
         job.run();
     }
 
+    @Test
+    public void workValidMemberOrderTest() {
+        PID objPid = makePid(CONTENT_BASE);
+        Bag objBag = model.createBag(objPid.getRepositoryPath());
+        objBag.addProperty(RDF.type, Cdr.Work);
+
+        PID childPid = makePid(CONTENT_BASE);
+        Resource childResource = model.getResource(childPid.getRepositoryPath());
+        childResource.addProperty(RDF.type, Cdr.FileObject);
+        Resource origResource = DepositModelHelpers.addDatastream(childResource);
+        origResource.addLiteral(CdrDeposit.stagingLocation, "path");
+        objBag.add(childResource);
+
+        PID child2Pid = makePid(CONTENT_BASE);
+        Resource child2Resource = model.getResource(child2Pid.getRepositoryPath());
+        child2Resource.addProperty(RDF.type, Cdr.FileObject);
+        Resource origResc = DepositModelHelpers.addDatastream(child2Resource);
+        origResc.addLiteral(CdrDeposit.stagingLocation, "path");
+        objBag.add(child2Resource);
+
+        objBag.addProperty(Cdr.memberOrder, childPid.getId() + "|" + child2Pid.getId());
+
+        depBag.add(objBag);
+
+        job.closeModel();
+
+        job.run();
+    }
+
+    @Test(expected = JobFailedException.class)
+    public void workInvalidMemberOrderTest() {
+        PID objPid = makePid(CONTENT_BASE);
+        Bag objBag = model.createBag(objPid.getRepositoryPath());
+        objBag.addProperty(RDF.type, Cdr.Work);
+
+        PID childPid = makePid(CONTENT_BASE);
+        Resource childResource = model.getResource(childPid.getRepositoryPath());
+        childResource.addProperty(RDF.type, Cdr.FileObject);
+        Resource origResource = DepositModelHelpers.addDatastream(childResource);
+        origResource.addLiteral(CdrDeposit.stagingLocation, "path");
+        objBag.add(childResource);
+
+        PID randomPid = makePid(CONTENT_BASE);
+
+        objBag.addProperty(Cdr.memberOrder, childPid.getId() + "|" + randomPid.getId());
+
+        depBag.add(objBag);
+
+        job.closeModel();
+
+        job.run();
+    }
+
     @Test(expected = JobFailedException.class)
     public void fileObjectBagTest() {
         PID objPid = makePid(CONTENT_BASE);

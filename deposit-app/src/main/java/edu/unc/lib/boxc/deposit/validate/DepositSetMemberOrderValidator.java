@@ -19,13 +19,13 @@ import edu.unc.lib.boxc.model.api.rdf.Cdr;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.boxc.operations.api.order.OrderValidator;
 import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.vocabulary.RDF;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import static edu.unc.lib.boxc.deposit.work.DepositGraphUtils.getChildIterator;
 
@@ -49,23 +49,25 @@ public class DepositSetMemberOrderValidator implements OrderValidator {
     }
 
     private boolean validate() {
+        var resourceId = PIDs.get(resource.getURI()).getId();
+        // check if resource is valid for member ordering
+        if (!resource.hasProperty(RDF.type, Cdr.Work)) {
+            errors.add("Object " + resourceId + " does not support member ordering");
+            return false;
+        }
+
         var order = resource.getProperty(Cdr.memberOrder).getString();
         var memberOrderIds = Arrays.asList(order.split("\\|"));
-        var iterator = getChildIterator(resource);
-        var resourceId = PIDs.get(resource.getURI()).getId();
-        var childIds = new HashSet<String>();
-        while (iterator.hasNext()) {
-            // collect all the ids into a list, passing through PIDs.get() so we can just get the id
-            Resource childResource = (Resource) iterator.next();
-            var childId = PIDs.get(childResource.getURI()).getId();
-            childIds.add(childId);
-        }
+        var childIds = getChildIds(resource);
+
         // Make sure there are no duplicates in the member order list
         var distinctIds = new HashSet<>(memberOrderIds);
         if (distinctIds.size() < memberOrderIds.size()) {
             Set<String> duplicates = new HashSet<>();
             Set<String> noDuplicates = new HashSet<>();
-
+            // we will try to add the ID in memberOrderIds to the noDuplicates set
+            // if it returns false, that means there is already an identical ID in the set
+            // then we'll add it to the duplicates set instead
             for (String id : memberOrderIds) {
                 if (!noDuplicates.add(id)) {
                     duplicates.add(id);
@@ -107,6 +109,20 @@ public class DepositSetMemberOrderValidator implements OrderValidator {
     }
 
     private String convertToString(Set<String> set) {
-        return String.join(",", set);
+        return String.join(", ", set);
+    }
+
+    private HashSet<String> getChildIds(Resource resource) {
+        var iterator = getChildIterator(resource);
+        var childIds = new HashSet<String>();
+        while (true) {
+            assert iterator != null;
+            if (!iterator.hasNext()) break;
+            // collect all the ids into a list, passing through PIDs.get() so we can just get the id
+            Resource childResource = (Resource) iterator.next();
+            var childId = PIDs.get(childResource.getURI()).getId();
+            childIds.add(childId);
+        }
+        return childIds;
     }
 }

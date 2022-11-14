@@ -236,10 +236,6 @@ public class ValidateContentModelJob extends AbstractDepositJob{
             Statement statement = iterator.next();
 
             Resource subj = statement.getSubject();
-            if (!subj.hasProperty(RDF.type, Cdr.Work)) {
-                failJob(null, "Invalid property on {0}, only cdr:Work objects may specify member order.",
-                        subj.getURI());
-            }
             var orderValidator = new DepositSetMemberOrderValidator();
             orderValidator.setResource(subj);
             if (!orderValidator.isValid()) {

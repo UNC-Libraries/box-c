@@ -68,17 +68,28 @@ public class DepositSetMemberOrderValidatorTest {
         validator.setResource(workBag);
     }
 
-    // not a work
-    // order list contains ids that are not children
-    // not all the children are accounted for in the order list
-    // member order is valid
-    // duplicate ids in the order list
-
     @Test
     public void validMemberOrderTest() throws Exception {
         workBag.addProperty(Cdr.memberOrder,CHILD1_UUID + "|" + CHILD2_UUID);
         assertTrue(validator.isValid());
         assertTrue(validator.getErrors().isEmpty());
+    }
+
+    @Test
+    public void resourceIsNotAWorkTest() {
+        var folderId = "8dd13ef6-1011-4acc-9f2f-ac1cdf03d800";
+        var folderPid = PIDs.get(folderId);
+        var folderBag = depositModel.createBag(folderPid.getRepositoryPath());
+        folderBag.addProperty(Cdr.memberOrder,CHILD1_UUID + "|" + CHILD2_UUID);
+        folderBag.addProperty(RDF.type, Cdr.Folder);
+        var newValidator = new DepositSetMemberOrderValidator();
+        newValidator.setResource(folderBag);
+
+        assertFalse(newValidator.isValid());
+        assertFalse(newValidator.getErrors().isEmpty());
+        assertHasErrors(
+            newValidator,
+            "Object " + folderId + " does not support member ordering");
     }
 
     @Test
