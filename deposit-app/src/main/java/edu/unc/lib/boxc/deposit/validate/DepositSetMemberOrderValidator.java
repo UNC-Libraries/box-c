@@ -69,10 +69,12 @@ public class DepositSetMemberOrderValidator implements OrderValidator {
         }
 
         // compare list of children against the order ids to verify they are children
-        verifyIdsAreChildren(distinctIds, childIds, errorMsgStart);
+        var nonMemberErrorMsg = errorMsgStart + "the following IDs are not members: ";
+        validateIds(distinctIds, childIds, nonMemberErrorMsg);
 
         // Make sure all the children are accounted for in the member order list
-        verifyAllChildrenArePresent(distinctIds, childIds, errorMsgStart);
+        var childrenNotAllPresentErrorMsg = errorMsgStart + "the following members were expected but not listed: ";
+        validateIds(childIds, distinctIds, childrenNotAllPresentErrorMsg);
 
         return errors.isEmpty();
     }
@@ -117,20 +119,10 @@ public class DepositSetMemberOrderValidator implements OrderValidator {
         return duplicates;
     }
 
-    private void verifyIdsAreChildren(Set<String> memberOrderIds, Set<String> childIds, String errorMsgStart) {
-        var nonChildrenIds = getLeftoverIds(memberOrderIds, childIds);
-
-        if (!nonChildrenIds.isEmpty()) {
-            errors.add(errorMsgStart + "the following IDs are not members: " + convertToString(nonChildrenIds));
-        }
-    }
-
-    private void verifyAllChildrenArePresent(Set<String> memberOrderIds, Set<String> childIds, String errorMsgStart) {
-        var childrenIds = getLeftoverIds(childIds, memberOrderIds);
-
-        if (!childrenIds.isEmpty()) {
-            errors.add(errorMsgStart + "the following members were expected but not listed: "
-                    + convertToString(childrenIds));
+    private void validateIds(Set<String> mainSet, Set<String> setToSubtract, String errorMsg) {
+        var leftoverIds = getLeftoverIds(mainSet, setToSubtract);
+        if (!leftoverIds.isEmpty()) {
+            errors.add(errorMsg + convertToString(leftoverIds));
         }
     }
 
