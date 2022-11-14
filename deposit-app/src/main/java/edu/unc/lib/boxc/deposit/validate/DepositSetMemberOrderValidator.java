@@ -50,6 +50,7 @@ public class DepositSetMemberOrderValidator implements OrderValidator {
 
     private boolean validate() {
         var resourceId = PIDs.get(resource.getURI()).getId();
+        var errorMsgStart = "Invalid member order for " + resourceId + ", ";
         // check if resource is valid for member ordering
         if (!resource.hasProperty(RDF.type, Cdr.Work)) {
             errors.add("Object " + resourceId + " does not support member ordering");
@@ -58,43 +59,20 @@ public class DepositSetMemberOrderValidator implements OrderValidator {
 
         var order = resource.getProperty(Cdr.memberOrder).getString();
         var memberOrderIds = Arrays.asList(order.split("\\|"));
+        var distinctIds = new HashSet<>(memberOrderIds);
         var childIds = getChildIds(resource);
 
         // Make sure there are no duplicates in the member order list
-        var distinctIds = new HashSet<>(memberOrderIds);
         if (distinctIds.size() < memberOrderIds.size()) {
-            Set<String> duplicates = new HashSet<>();
-            Set<String> noDuplicates = new HashSet<>();
-            // we will try to add the ID in memberOrderIds to the noDuplicates set
-            // if it returns false, that means there is already an identical ID in the set
-            // then we'll add it to the duplicates set instead
-            for (String id : memberOrderIds) {
-                if (!noDuplicates.add(id)) {
-                    duplicates.add(id);
-                }
-            }
-
-            errors.add("Invalid member order for " + resourceId
-                    + ", it contained duplicate member IDs: " + convertToString(duplicates) );
+            var duplicates = findDuplicates(memberOrderIds);
+            errors.add(errorMsgStart + "it contained duplicate member IDs: " + convertToString(duplicates) );
         }
 
         // compare list of children against the order ids to verify they are children
-        var nonChildrenIds = new HashSet<>(distinctIds);
-        nonChildrenIds.removeAll(childIds);
-
-        if (!nonChildrenIds.isEmpty()) {
-            errors.add("Invalid member order for " + resourceId
-                    + ", the following IDs are not members: " + convertToString(nonChildrenIds));
-        }
+        verifyIdsAreChildren(distinctIds, childIds, errorMsgStart);
 
         // Make sure all the children are accounted for in the member order list
-        var childrenIds = new HashSet<>(childIds);
-        childrenIds.removeAll(distinctIds);
-
-        if (!childrenIds.isEmpty()) {
-            errors.add("Invalid member order for " + resourceId
-                    + ", the following members were expected but not listed: " + convertToString(childrenIds));
-        }
+        verifyAllChildrenArePresent(distinctIds, childIds, errorMsgStart);
 
         return errors.isEmpty();
     }
@@ -122,5 +100,39 @@ public class DepositSetMemberOrderValidator implements OrderValidator {
             childIds.add(childId);
         }
         return childIds;
+    }
+    /*
+        we will try to add the ID in memberOrderIds to the noDuplicates set
+        if it returns false, that means there is already an identical ID in the set
+        then we'll add it to the duplicates set instead
+     */
+    private Set<String> findDuplicates(List<String> memberOrderIds) {
+        Set<String> duplicates = new HashSet<>();
+        Set<String> noDuplicates = new HashSet<>();
+        for (String id : memberOrderIds) {
+            if (!noDuplicates.add(id)) {
+                duplicates.add(id);
+            }
+        }
+        return duplicates;
+    }
+
+    private void verifyIdsAreChildren(Set<String> memberOrderIds, Set<String> childIds, String errorMsgStart) {
+        var nonChildrenIds = new HashSet<>(memberOrderIds);
+        nonChildrenIds.removeAll(childIds);
+
+        if (!nonChildrenIds.isEmpty()) {
+            errors.add(errorMsgStart + "the following IDs are not members: " + convertToString(nonChildrenIds));
+        }
+    }
+
+    private void verifyAllChildrenArePresent(Set<String> memberOrderIds, Set<String> childIds, String errorMsgStart) {
+        var childrenIds = new HashSet<>(childIds);
+        childrenIds.removeAll(memberOrderIds);
+
+        if (!childrenIds.isEmpty()) {
+            errors.add(errorMsgStart + "the following members were expected but not listed: "
+                    + convertToString(childrenIds));
+        }
     }
 }
