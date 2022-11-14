@@ -118,8 +118,7 @@ public class DepositSetMemberOrderValidator implements OrderValidator {
     }
 
     private void verifyIdsAreChildren(Set<String> memberOrderIds, Set<String> childIds, String errorMsgStart) {
-        var nonChildrenIds = new HashSet<>(memberOrderIds);
-        nonChildrenIds.removeAll(childIds);
+        var nonChildrenIds = getLeftoverIds(memberOrderIds, childIds);
 
         if (!nonChildrenIds.isEmpty()) {
             errors.add(errorMsgStart + "the following IDs are not members: " + convertToString(nonChildrenIds));
@@ -127,12 +126,17 @@ public class DepositSetMemberOrderValidator implements OrderValidator {
     }
 
     private void verifyAllChildrenArePresent(Set<String> memberOrderIds, Set<String> childIds, String errorMsgStart) {
-        var childrenIds = new HashSet<>(childIds);
-        childrenIds.removeAll(memberOrderIds);
+        var childrenIds = getLeftoverIds(childIds, memberOrderIds);
 
         if (!childrenIds.isEmpty()) {
             errors.add(errorMsgStart + "the following members were expected but not listed: "
                     + convertToString(childrenIds));
         }
+    }
+
+    private Set<String> getLeftoverIds(Set<String> mainSet, Set<String> setToSubtract) {
+        var leftoverSet = new HashSet<>(mainSet);
+        leftoverSet.removeAll(setToSubtract);
+        return leftoverSet;
     }
 }

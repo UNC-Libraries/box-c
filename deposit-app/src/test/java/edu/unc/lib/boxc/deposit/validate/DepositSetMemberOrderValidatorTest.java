@@ -33,7 +33,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 /**
- * @author bbpennel
+ * @author bbpennel, snluong
  */
 public class DepositSetMemberOrderValidatorTest {
     private static final String PARENT_UUID = "f277bb38-272c-471c-a28a-9887a1328a1f";
