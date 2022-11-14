@@ -115,7 +115,7 @@ public class DepositSetMemberOrderValidator implements OrderValidator {
     private HashSet<String> getChildIds(Resource resource) {
         var iterator = getChildIterator(resource);
         var childIds = new HashSet<String>();
-        if (!iterator.hasNext()) {
+        while (iterator.hasNext()) {
             // collect all the ids into a list, passing through PIDs.get() so we can just get the id
             Resource childResource = (Resource) iterator.next();
             var childId = PIDs.get(childResource.getURI()).getId();
