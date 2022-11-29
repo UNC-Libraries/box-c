@@ -137,7 +137,6 @@
         <compiler.plugin.version>3.8.0</compiler.plugin.version>
         <maven-eclipse-plugin.version>2.10</maven-eclipse-plugin.version>
         <maven-checkstyle-plugin.version>3.0.0</maven-checkstyle-plugin.version>
-        <license-maven-plugin.version>3.0</license-maven-plugin.version>
         <maven-release-plugin.version>2.5.3</maven-release-plugin.version>
         <exec-maven-plugin.version>3.1.0</exec-maven-plugin.version>
         <maven-scm-provider-svnjava.version>2.1.2</maven-scm-provider-svnjava.version>
@@ -246,41 +245,6 @@
                             <failsOnError>true</failsOnError>
                             <linkXRef>false</linkXRef>
                         </configuration>
-                        <goals>
-                            <goal>check</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <groupId>com.mycila</groupId>
-                <artifactId>license-maven-plugin</artifactId>
-                <version>${license-maven-plugin.version}</version>
-                <configuration>
-                    <header>${build-tools.path}license/header.txt</header>
-                    <mapping>
-                        <java>JAVADOC_STYLE</java>
-                        <jsp>DYNASCRIPT_STYLE</jsp>
-                    </mapping>
-                    <includes>
-                        <include>**/src/main/java/**</include>
-                        <include>**/src/test/java/**</include>
-                        <include>**/*.jsp</include>
-                    </includes>
-                    <excludes>
-                        <exclude>clamav-java/**</exclude>
-                        <exclude>fcrepo/**</exclude>
-                        <exclude>**/*.properties</exclude>
-                    </excludes>
-                    <properties>
-                        <year>${project.copyrightYear}</year>
-                        <owner>The University of North Carolina at Chapel Hill</owner>
-                    </properties>
-                    <encoding>UTF-8</encoding>
-                    <strictCheck>true</strictCheck>
-                </configuration>
-                <executions>
-                    <execution>
                         <goals>
                             <goal>check</goal>
                         </goals>
