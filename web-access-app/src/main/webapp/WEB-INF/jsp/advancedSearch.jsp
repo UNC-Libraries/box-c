@@ -25,6 +25,9 @@
 				<p class="clear has-text-weight-bold">
 					<label for="subject">Subject</label> <input id="subject" name="${SearchFieldKey.SUBJECT_INDEX.getUrlParam()}" class="advsearch_text" type="text" />
 				</p>
+				<p class="clear has-text-weight-bold">
+					<label for="subject">Collection Number</label> <input id="collection_id" name="${SearchFieldKey.COLLECTION_ID.getUrlParam()}" class="advsearch_text" type="text" />
+				</p>
 			</div>
 		</div>
 		<div class="twocol light shadowtop">
