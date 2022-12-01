@@ -15,30 +15,6 @@ Click the gear menu next to the "Scheme" input box, and select "Import Scheme" >
 
 Then navigate to and select `box-c/etc/ide_setup/boxc_code_profile.xml`
 
-## Code Templates
-Preferences > Editor > File and Code Templates
-
-Under the "Files" tab, we want to update the template for the following types:
-* Class
-* Interface
-* Enum
-* AnnotationType
-
-Overwrite the lines in the window on the right before the `public class` (etc) section with the following snippet:
-
-```
-#parse("File Header.java")
-
-#if (${PACKAGE_NAME} && ${PACKAGE_NAME} != "")package ${PACKAGE_NAME};#end
-
-
-/**
- * @author ${USER}
- */
-```
-And uncheck "Reformat according to style"
-
-
 # Eclipse setup
 
 A version of Eclipse with m2e is required
