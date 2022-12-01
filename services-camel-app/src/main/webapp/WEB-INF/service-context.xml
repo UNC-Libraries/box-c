@@ -529,7 +529,7 @@
     </camel:camelContext>
     
     <!-- Initialize metaServicesRouter after the routes it depends on -->
-    <camel:camelContext id="MetaServicesRouter">
+    <camel:camelContext id="metaServicesRouter">
         <camel:package>edu.unc.lib.boxc.services.camel.routing</camel:package>
     </camel:camelContext>
     
