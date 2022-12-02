@@ -37,7 +37,8 @@ const TYPES = {
     subject: 'Subject',
     subjectIndex: 'Subject',
     titleIndex: 'Title',
-    genre: 'Genre'
+    genre: 'Genre',
+    collectionId: 'Collection Number'
 }
 
 export default {
