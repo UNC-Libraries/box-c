@@ -46,7 +46,7 @@
 					</c:forEach>
 				</select>
 				
-				<p class="clear"><br /></p>
+				<p class="clear"><br /><br /></p>
 				<p class="clear has-text-weight-bold">
 					<label>Date Deposited</label> from <input aria-label="deposited-start-date" name="${SearchFieldKey.DATE_ADDED.getUrlParam()}Start" class="advsearch_date" type="text" />
 						 to <input aria-label="deposited-end-date" name="${SearchFieldKey.DATE_ADDED.getUrlParam()}End" class="advsearch_date" type="text" />
