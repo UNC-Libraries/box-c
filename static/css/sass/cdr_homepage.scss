@@ -148,6 +148,10 @@ body {
   background-repeat: no-repeat;
   background-position: center;
   box-shadow: inset 0 0 10px black;
+
+  .button.is-link {
+    font-size: 1.5rem;
+  }
 }
 
 .banner {
