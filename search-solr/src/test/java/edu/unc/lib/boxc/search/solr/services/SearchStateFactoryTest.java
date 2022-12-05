@@ -254,4 +254,15 @@ public class SearchStateFactoryTest {
         SearchState searchState = searchStateFactory.createSearchState(parameters);
         assertFalse(searchState.getRangeFields().containsKey(SearchFieldKey.DATE_CREATED_YEAR.name()));
     }
+
+    @Test
+    public void extractAdvancedSearchCollectionIdRight() {
+        Map<String, String[]> parameters = new LinkedHashMap<>();
+        parameters.put("collectionId", new String[]{"40000"});
+
+        SearchState searchState = searchStateFactory.createSearchStateAdvancedSearch(parameters);
+        assertTrue(searchState.getSearchFields().containsKey(SearchFieldKey.COLLECTION_ID.name()));
+        assertEquals("40000", searchState.getSearchFields()
+                .get(SearchFieldKey.COLLECTION_ID.name()));
+    }
 }
