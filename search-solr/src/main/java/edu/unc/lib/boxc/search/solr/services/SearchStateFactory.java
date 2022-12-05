@@ -443,6 +443,11 @@ public class SearchStateFactory {
             searchState.addFacet(fileFormatCat);
         }
 
+        parameter = getParameter(request, SearchFieldKey.COLLECTION_ID.getUrlParam());
+        if (parameter != null && parameter.length() > 0) {
+            searchState.getSearchFields().put(SearchFieldKey.COLLECTION_ID.name(), parameter);
+        }
+
         //Store date added.
         RangePair dateAdded = new RangePair();
         parameter = getParameter(request, SearchFieldKey.DATE_ADDED.getUrlParam() + "Start");
