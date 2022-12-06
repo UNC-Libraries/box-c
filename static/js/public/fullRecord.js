@@ -155,6 +155,7 @@ define('fullRecord', ['module', 'jquery', 'JP2Viewer', 'StructureView', 'dataTab
 					return d.metadata;
 				}
 			},
+			serverSide: true,
 			bLengthChange: false, // Remove option to show different number of results
 			columnDefs: column_defs,
 			language: { search: '', searchPlaceholder: 'Search for keywords' },
