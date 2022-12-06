@@ -154,6 +154,7 @@ define('fullRecord', ['module', 'jquery', 'JP2Viewer', 'StructureView', 'dataTab
 					return d.metadata;
 				},
 				data: function (d) {
+					d.anywhere=d.search['value'];
 					console.log(d);
 				}
 			},
