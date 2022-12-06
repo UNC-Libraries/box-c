@@ -152,6 +152,9 @@ define('fullRecord', ['module', 'jquery', 'JP2Viewer', 'StructureView', 'dataTab
 				url: '/listJson/' + $childFilesTable.attr('data-pid') + "?rows=2000",
 				dataSrc: function(d) {
 					return d.metadata;
+				},
+				data: function (d) {
+					console.log(d);
 				}
 			},
 			processing: true,
