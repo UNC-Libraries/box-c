@@ -149,12 +149,12 @@ define('fullRecord', ['module', 'jquery', 'JP2Viewer', 'StructureView', 'dataTab
 
 		$childFilesTable.DataTable({
 			ajax: {
-				processing: true,
 				url: '/listJson/' + $childFilesTable.attr('data-pid') + "?rows=2000",
 				dataSrc: function(d) {
 					return d.metadata;
 				}
 			},
+			processing: true,
 			serverSide: true,
 			bLengthChange: false, // Remove option to show different number of results
 			columnDefs: column_defs,
