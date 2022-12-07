@@ -10,11 +10,11 @@ define('ExportMenu', [ 'jquery', 'jquery-ui', 'underscore', 'ImportMetadataXMLFo
 
         ExportMenu.prototype.getMenuItems = function() {
             let items = {};
-
-            if ($.inArray('bulkUpdateDescription', this.container.metadata.permissions) !== -1) {
+            const metadata = this.container.metadata;
+            if (metadata.type !== 'File' && $.inArray('viewHidden', metadata.permissions) !== -1) {
                 items["exportMemberOrder"] = {name : "Member Order"};
             }
-            if ($.inArray('bulkUpdateDescription', this.container.metadata.permissions) !== -1) {
+            if ($.inArray('editDescription', metadata.permissions) !== -1) {
                 items["exportXML"] = {name : "Bulk Metadata"};
             }
 
@@ -33,6 +33,11 @@ define('ExportMenu', [ 'jquery', 'jquery-ui', 'underscore', 'ImportMetadataXMLFo
             } else {
                 $(this.options.selector).show();
             }
+        }
+
+        ExportMenu.prototype.getTargetIds = function(targets) {
+            let ids = targets.map(d => d.metadata.id);
+            return ids.join(',');
         }
 
         ExportMenu.prototype.init = function() {
@@ -58,9 +63,11 @@ define('ExportMenu', [ 'jquery', 'jquery-ui', 'underscore', 'ImportMetadataXMLFo
                         callback : function(key, options) {
                             switch (key) {
                                 case "exportMemberOrder" :
-                                    new ImportMetadataXMLForm({
-                                        alertHandler : self.options.alertHandler
-                                    }).open();
+                                    self.options.actionHandler.addEvent({
+                                        action : 'ChangeLocation',
+                                        url : "api/edit/memberOrder/export/csv?ids=" + self.getTargetIds(self.options.targets),
+                                        application: "services"
+                                    });
                                     break;
                                 case "exportXML" :
                                     self.options.actionHandler.addEvent({

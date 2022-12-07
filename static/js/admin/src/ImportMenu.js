@@ -1,5 +1,5 @@
-define('ImportMenu', [ 'jquery', 'jquery-ui', 'underscore', 'ImportMetadataXMLForm', 'qtip'],
-    function($, ui, _, ImportMetadataXMLForm) {
+define('ImportMenu', [ 'jquery', 'jquery-ui', 'underscore', 'ImportMemberOrderForm', 'ImportMetadataXMLForm', 'qtip'],
+    function($, ui, _, ImportMemberOrderForm, ImportMetadataXMLForm) {
 
         function ImportMenu(options) {
             this.options = $.extend({}, options);
@@ -58,7 +58,7 @@ define('ImportMenu', [ 'jquery', 'jquery-ui', 'underscore', 'ImportMetadataXMLFo
                         callback : function(key, options) {
                             switch (key) {
                                 case "importMemberOrder" :
-                                    new ImportMetadataXMLForm({
+                                    new ImportMemberOrderForm({
                                         alertHandler : self.options.alertHandler
                                     }).open();
                                     break;
