@@ -157,18 +157,18 @@ define('fullRecord', ['module', 'jquery', 'JP2Viewer', 'StructureView', 'dataTab
 					d.anywhere=d.search['value'];
 					d.length=10;
 					console.log(d);
-				}
+				},
+				dataFilter: function(data){
+					let json = jQuery.parseJSON( data );
+					json.recordsTotal = json.resultCount;
+					json.recordsFiltered = json.resultCount;
+					json.data = json.list;
+
+					return JSON.stringify( json ); // return JSON string
+				},
 			},
 			search: {
 				return: true,
-			},
-			dataFilter: function(data){
-				let json = jQuery.parseJSON( data );
-				json.recordsTotal = json.resultCount;
-				json.recordsFiltered = json.resultCount;
-				json.data = json.list;
-
-				return JSON.stringify( json ); // return JSON string
 			},
 			processing: true,
 			serverSide: true,
