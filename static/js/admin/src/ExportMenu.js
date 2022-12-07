@@ -11,7 +11,7 @@ define('ExportMenu', [ 'jquery', 'jquery-ui', 'underscore', 'ImportMetadataXMLFo
         ExportMenu.prototype.getMenuItems = function() {
             let items = {};
             const metadata = this.container.metadata;
-            if (metadata.type !== 'File' && $.inArray('viewHidden', metadata.permissions) !== -1) {
+            if (metadata.type === 'Work' && $.inArray('viewHidden', metadata.permissions) !== -1) {
                 items["exportMemberOrder"] = {name : "Member Order"};
             }
             if ($.inArray('editDescription', metadata.permissions) !== -1) {
