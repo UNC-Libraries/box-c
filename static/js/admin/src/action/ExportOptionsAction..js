@@ -24,7 +24,7 @@ define('ExportOptionsAction', [ 'jquery', 'AbstractBatchAction', 'ExportMenu'], 
         } else {
             this.exportMenu = new ExportMenu({
                 container: targets[0],
-                selector: "#export_menu",
+                selector: ".ExportOptions_selected",
                 alertHandler: self.context.view.$alertHandler,
                 actionHandler: self.context.actionHandler,
                 targets: targets

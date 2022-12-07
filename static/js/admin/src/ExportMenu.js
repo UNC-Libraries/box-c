@@ -11,11 +11,11 @@ define('ExportMenu', [ 'jquery', 'jquery-ui', 'underscore', 'ImportMetadataXMLFo
         ExportMenu.prototype.getMenuItems = function() {
             let items = {};
 
-            if ($.inArray('bulkUpdateDescription', this.container.permissions) !== -1) {
+            if ($.inArray('bulkUpdateDescription', this.container.metadata.permissions) !== -1) {
                 items["exportMemberOrder"] = {name : "Member Order"};
             }
-            if ($.inArray('bulkUpdateDescription', this.container.permissions) !== -1) {
-                items["exportXML"] = {name : "Bulk MODS"};
+            if ($.inArray('bulkUpdateDescription', this.container.metadata.permissions) !== -1) {
+                items["exportXML"] = {name : "Bulk Metadata"};
             }
 
             return items;
@@ -59,13 +59,13 @@ define('ExportMenu', [ 'jquery', 'jquery-ui', 'underscore', 'ImportMetadataXMLFo
                             switch (key) {
                                 case "exportMemberOrder" :
                                     new ImportMetadataXMLForm({
-                                        alertHandler : self.context.view.$alertHandler
+                                        alertHandler : self.options.alertHandler
                                     }).open();
                                     break;
                                 case "exportXML" :
                                     self.options.actionHandler.addEvent({
                                         action : 'ExportMetadataXMLBatch',
-                                        targets : self.targets
+                                        targets : self.options.targets
                                     });
                                     break;
                             }

@@ -193,10 +193,6 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'A
 			if (metadata.type !== 'File' && $.inArray('viewHidden', metadata.permissions) != -1) {
 				items["exportCSV"] = {name : 'Export as CSV'};
 			}
-
-			if ($.inArray('editDescription', metadata.permissions) != -1) {
-				items["exportXML"] = {name : 'Export Metadata'};
-			}
 		}
 
 		items["copyid"] = {name : 'Copy PID to Clipboard'};
@@ -399,13 +395,6 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'A
 							action : 'ChangeLocation',
 							url : "api/exportTree/csv/" + metadata.id,
 							application: "services"
-						});
-						break;
-					
-					case "exportXML" :
-						self.actionHandler.addEvent({
-							action : 'ExportMetadataXMLBatch',
-							targets : [resultObject]
 						});
 						break;
 					case "runEnhancements" :

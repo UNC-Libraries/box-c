@@ -24,7 +24,7 @@ define('ImportOptionsAction', [ 'jquery', 'AbstractBatchAction', 'ImportMenu'], 
         } else {
             this.importMenu = new ImportMenu({
                 container: targets[0],
-                selector: "#import_menu",
+                selector: ".ImportOptions_selected",
                 alertHandler: self.context.view.$alertHandler,
                 actionHandler: self.context.actionHandler,
                 targets: targets
