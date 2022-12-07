@@ -162,13 +162,9 @@ define('fullRecord', ['module', 'jquery', 'JP2Viewer', 'StructureView', 'dataTab
 					let json = jQuery.parseJSON( data );
 					json.recordsTotal = json.resultCount;
 					json.recordsFiltered = json.resultCount;
-					json.data = json.list;
 
 					return JSON.stringify( json ); // return JSON string
 				},
-			},
-			search: {
-				return: true,
 			},
 			processing: true,
 			serverSide: true,
