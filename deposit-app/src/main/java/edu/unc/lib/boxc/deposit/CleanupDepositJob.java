@@ -37,6 +37,7 @@ public class CleanupDepositJob extends AbstractDepositJob {
 
     private IngestSourceManager sourceManager;
 
+    // Redis expects to receive ints for its delays
     private int statusKeysExpireSeconds;
 
     public CleanupDepositJob() {

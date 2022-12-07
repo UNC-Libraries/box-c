@@ -144,28 +144,28 @@ public class DepositSupervisor implements WorkerListener {
 
     private long actionMonitorDelay = 1000l;
 
-    private int cleanupDelaySeconds;
+    private long cleanupDelaySeconds;
 
-    private int unavailableDelaySeconds;
+    private long unavailableDelaySeconds;
 
     private boolean isQuieted;
 
     // Visible for testing
     protected ActionMonitoringTask actionMonitoringTask;
 
-    public int getCleanupDelaySeconds() {
+    public long getCleanupDelaySeconds() {
         return cleanupDelaySeconds;
     }
 
-    public void setCleanupDelaySeconds(int cleanupDelaySeconds) {
+    public void setCleanupDelaySeconds(long cleanupDelaySeconds) {
         this.cleanupDelaySeconds = cleanupDelaySeconds;
     }
 
-    public int getUnavailableDelaySeconds() {
+    public long getUnavailableDelaySeconds() {
         return unavailableDelaySeconds;
     }
 
-    public void setUnavailableDelaySeconds(int unavailableDelaySeconds) {
+    public void setUnavailableDelaySeconds(long unavailableDelaySeconds) {
         this.unavailableDelaySeconds = unavailableDelaySeconds;
     }
 
@@ -882,7 +882,7 @@ public class DepositSupervisor implements WorkerListener {
             Job cleanJob = makeJob(CleanupDepositJob.class, depositUUID);
             LOG.info("Queuing {} for deposit {}",
                     cleanJob.getClassName(), depositUUID);
-            enqueueJob(cleanJob, status, 1000 * this.getCleanupDelaySeconds());
+            enqueueJob(cleanJob, status, 1000l * this.getCleanupDelaySeconds());
         }
     }
 
