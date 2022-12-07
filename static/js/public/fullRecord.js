@@ -155,14 +155,26 @@ define('fullRecord', ['module', 'jquery', 'JP2Viewer', 'StructureView', 'dataTab
 				},
 				data: function (d) {
 					d.anywhere=d.search['value'];
+					d.length=10;
 					console.log(d);
 				}
+			},
+			search: {
+				return: true,
+			},
+			dataFilter: function(data){
+				let json = jQuery.parseJSON( data );
+				json.recordsTotal = json.resultCount;
+				json.recordsFiltered = json.resultCount;
+				json.data = json.list;
+
+				return JSON.stringify( json ); // return JSON string
 			},
 			processing: true,
 			serverSide: true,
 			bLengthChange: false, // Remove option to show different number of results
 			columnDefs: column_defs,
-			language: { search: '', searchPlaceholder: 'Search for keywords' },
+			language: { search: '', searchPlaceholder: 'Search within this work' },
 			order: [[1, 'asc']],
 			rowCallback: function(row, data) {
 				if (showBadge(data).markDeleted) {
