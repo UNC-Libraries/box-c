@@ -8,10 +8,6 @@ define('ExportOptionsAction', [ 'jquery', 'AbstractBatchAction', 'ExportMenu'], 
     ExportOptionsAction.prototype = Object.create(AbstractBatchAction.prototype);
 
     ExportOptionsAction.prototype.getTargets = function() {
-        let self = this;
-        if (self.context.targets) {
-            return self.context.targets;
-        }
         return AbstractBatchAction.prototype.getTargets.call(this);
     };
 

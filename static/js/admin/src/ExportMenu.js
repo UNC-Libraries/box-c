@@ -11,7 +11,7 @@ define('ExportMenu', [ 'jquery', 'jquery-ui', 'underscore', 'ImportMetadataXMLFo
         ExportMenu.prototype.getMenuItems = function() {
             let items = {};
             const metadata = this.container.metadata;
-            if (metadata.type === 'Work' && $.inArray('viewHidden', metadata.permissions) !== -1) {
+            if (this.isValidTarget(this.container)) {
                 items["exportMemberOrder"] = {name : "Member Order"};
             }
             if ($.inArray('editDescription', metadata.permissions) !== -1) {
@@ -39,6 +39,11 @@ define('ExportMenu', [ 'jquery', 'jquery-ui', 'underscore', 'ImportMetadataXMLFo
             let ids = targets.map(d => d.metadata.id);
             return ids.join(',');
         }
+
+        ExportMenu.prototype.isValidTarget = function(target) {
+            return target.isSelected() && target.isEnabled() && $.inArray("viewHidden", target.metadata.permissions) !== -1
+                && "Work" === target.getMetadata().type;
+        };
 
         ExportMenu.prototype.init = function() {
             let self = this;
