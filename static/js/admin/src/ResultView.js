@@ -1,6 +1,6 @@
 define('ResultView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtilities', 
-		'ResultObjectActionMenu', 'ResultTableActionMenu', 'ConfirmationDialog', 'ActionEventHandler', 'AlertHandler', 'ParentResultObject', 'AddMenu', 'ResultTableView', 'SearchMenu', 'detachplus', 'qtip'], 
-		function($, ui, ResultObjectList, URLUtilities, ResultObjectActionMenu, ResultTableActionMenu, ConfirmationDialog, ActionEventHandler, AlertHandler, ParentResultObject, AddMenu, ResultTableView) {
+		'ResultObjectActionMenu', 'ResultTableActionMenu', 'ConfirmationDialog', 'ActionEventHandler', 'AlertHandler', 'ParentResultObject', 'AddMenu', 'ImportMenu', 'ResultTableView', 'SearchMenu', 'detachplus', 'qtip'],
+		function($, ui, ResultObjectList, URLUtilities, ResultObjectActionMenu, ResultTableActionMenu, ConfirmationDialog, ActionEventHandler, AlertHandler, ParentResultObject, AddMenu, ImportMenu, ResultTableView) {
 	$.widget("cdr.resultView", {
 		options : {
 			url : null,
@@ -21,8 +21,7 @@ define('ResultView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtilities'
 			resultActions : [
 						{
 							actions : [
-								{action : 'ExportOptions', label : 'Export'},
-								{action : 'ImportOptions', label : 'Import'}
+								{action : 'ExportOptions', label : 'Export'}
 							]
 						},
 						{
@@ -226,6 +225,16 @@ define('ResultView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtilities'
 						alertHandler : this.$alertHandler
 					});
 				}
+			}
+
+			if (this.importMenu) {
+				this.importMenu.setContainer(container).refresh();
+			} else {
+				this.importMenu = new ImportMenu({
+					container : container,
+					selector : "#import_menu",
+					alertHandler : this.$alertHandler
+				});
 			}
 			
 			$(document).on('mouseover', '.warning_symbol', function(event) {

@@ -107,6 +107,13 @@ define('ResultTableActionMenu', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'Ac
 				actionGroup.css('display', 'inline-block')
 			}
 		}
+
+		if ($('.container_action_group:visible').not('.importing').length > 0) {
+			$('.importing').addClass('import-export');
+		} else {
+			$('.importing').removeClass('import-export');
+		}
+
 	};
 	
 	return ResultTableActionMenu;

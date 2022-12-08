@@ -29,7 +29,7 @@ define('AddMenu', [ 'jquery', 'jquery-ui', 'underscore', 'CreateContainerForm', 
 				items["addWork"] = { name : "Add Work" };
 			}
 			
-			if (this.container.type == "Work") {
+			if (this.container.type === "Work") {
 				items["addFile"] = { name : "Add File" };
 				items["ingestSourceFilesOnly"] = { name : "Add Files from Server" }
 			}
@@ -38,9 +38,6 @@ define('AddMenu', [ 'jquery', 'jquery-ui', 'underscore', 'CreateContainerForm', 
 				// items["ingestPackage"] = { name : "Add Ingest Package" }
 				items["ingestSource"] = { name : "Add from File Server" }
 			}
-		}
-		if ($.inArray('bulkUpdateDescription', this.container.permissions) !== -1) {
-			items["importMetadata"] = {name : "Import MODS"};
 		}
 		
 		return items;
@@ -113,11 +110,6 @@ define('AddMenu', [ 'jquery', 'jquery-ui', 'underscore', 'CreateContainerForm', 
 								new AddFileForm({
 									alertHandler : self.options.alertHandler
 								}).open(self.container.id);
-								break;
-							case "importMetadata" :
-								new ImportMetadataXMLForm({
-									alertHandler : self.options.alertHandler
-								}).open();
 								break;
 						}
 					},
