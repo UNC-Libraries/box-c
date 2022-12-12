@@ -516,7 +516,7 @@ ul.fpfeed_list li {
 }
 
 .advsearch_text {
-	width: 320px;
+	width: 300px;
 	border: 1px solid #c8d8e0;
 	padding: 5px;
 	font-size: 12px;
@@ -549,6 +549,10 @@ ul.fpfeed_list li {
 
 #advsearch_submit:hover {
 	background-color: #862e03;
+}
+
+#advanced-search-form label {
+	width: 125px;
 }
 
 label {

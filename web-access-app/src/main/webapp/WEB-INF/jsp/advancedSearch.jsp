@@ -25,6 +25,9 @@
 				<p class="clear has-text-weight-bold">
 					<label for="subject">Subject</label> <input id="subject" name="${SearchFieldKey.SUBJECT_INDEX.getUrlParam()}" class="advsearch_text" type="text" />
 				</p>
+				<p class="clear has-text-weight-bold">
+					<label for="subject">Archival Collection ID</label> <input id="collection_id" name="${SearchFieldKey.COLLECTION_ID.getUrlParam()}" class="advsearch_text" type="text" />
+				</p>
 			</div>
 		</div>
 		<div class="twocol light shadowtop">
@@ -43,7 +46,7 @@
 					</c:forEach>
 				</select>
 				
-				<p class="clear"><br /></p>
+				<p class="clear"><br /><br /></p>
 				<p class="clear has-text-weight-bold">
 					<label>Date Deposited</label> from <input aria-label="deposited-start-date" name="${SearchFieldKey.DATE_ADDED.getUrlParam()}Start" class="advsearch_date" type="text" />
 						 to <input aria-label="deposited-end-date" name="${SearchFieldKey.DATE_ADDED.getUrlParam()}End" class="advsearch_date" type="text" />
