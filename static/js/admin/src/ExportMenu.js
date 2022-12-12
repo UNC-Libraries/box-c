@@ -62,6 +62,7 @@ define('ExportMenu', [ 'jquery', 'jquery-ui', 'underscore', 'qtip', 'cycle'],
                             },
                             hide: function() {
                                 this.removeClass("active");
+                                sessionStorage.clear();
                             }
                         },
                         items: items,
