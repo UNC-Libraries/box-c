@@ -1,30 +1,40 @@
-define('ExportMenu', [ 'jquery', 'jquery-ui', 'underscore', 'ImportMetadataXMLForm', 'qtip'],
-    function($, ui, _, ImportMetadataXMLForm) {
+define('ExportMenu', [ 'jquery', 'jquery-ui', 'underscore', 'qtip', 'cycle'],
+    function($, ui, _) {
 
         function ExportMenu(options) {
             this.options = $.extend({}, options);
-            this.container = this.options.container;
             this.init();
             this.refresh();
         }
 
         ExportMenu.prototype.getMenuItems = function() {
             let items = {};
-            const metadata = this.container.metadata;
-            if (this.isValidTarget(this.container)) {
+            let targets = this.getTargets();
+
+            if (this.getTargetIds() !== '') {
                 items["exportMemberOrder"] = {name : "Member Order"};
             }
-            if ($.inArray('editDescription', metadata.permissions) !== -1) {
+            if ($.inArray('editDescription', targets[0].metadata.permissions) !== -1) {
                 items["exportXML"] = {name : "Bulk Metadata"};
             }
 
             return items;
         };
 
-        ExportMenu.prototype.setContainer = function(container) {
-            this.container = container;
-            return this;
-        };
+        ExportMenu.prototype.getTargetIds = function() {
+            let ids = this.getTargets().filter((d) => {
+                return $.inArray("viewHidden", d.metadata.permissions) !== -1 && d.metadata.type === "Work"
+            }).map(d => d.metadata.id);
+            return ids.join(',');
+        }
+
+        ExportMenu.prototype.canEditDescription = function() {
+            return $.inArray('editDescription', this.getTargets()[0].metadata.permissions) !== -1;
+        }
+
+        ExportMenu.prototype.getTargets = function() {
+            return JSON.retrocycle(JSON.parse(sessionStorage.getItem('exportTargets')));
+        }
 
         ExportMenu.prototype.refresh = function() {
             let items = this.getMenuItems();
@@ -34,16 +44,6 @@ define('ExportMenu', [ 'jquery', 'jquery-ui', 'underscore', 'ImportMetadataXMLFo
                 $(this.options.selector).show();
             }
         }
-
-        ExportMenu.prototype.getTargetIds = function(targets) {
-            let ids = targets.map(d => d.metadata.id);
-            return ids.join(',');
-        }
-
-        ExportMenu.prototype.isValidTarget = function(target) {
-            return target.isSelected() && target.isEnabled() && $.inArray("viewHidden", target.metadata.permissions) !== -1
-                && "Work" === target.getMetadata().type;
-        };
 
         ExportMenu.prototype.init = function() {
             let self = this;
@@ -70,15 +70,17 @@ define('ExportMenu', [ 'jquery', 'jquery-ui', 'underscore', 'ImportMetadataXMLFo
                                 case "exportMemberOrder" :
                                     self.options.actionHandler.addEvent({
                                         action : 'ChangeLocation',
-                                        url : "api/edit/memberOrder/export/csv?ids=" + self.getTargetIds(self.options.targets),
+                                        url : "api/edit/memberOrder/export/csv?ids=" + self.getTargetIds(),
                                         application: "services"
                                     });
+                                    sessionStorage.clear();
                                     break;
                                 case "exportXML" :
                                     self.options.actionHandler.addEvent({
                                         action : 'ExportMetadataXMLBatch',
-                                        targets : self.options.targets
+                                        targets : self.getTargets()
                                     });
+                                    sessionStorage.clear();
                                     break;
                             }
                         },

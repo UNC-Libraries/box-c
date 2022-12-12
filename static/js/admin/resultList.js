@@ -6,6 +6,7 @@ require.config({
 		"jquery-ui" : "cdr-admin",
 		"text" : "lib/text",
 		"underscore" : "lib/underscore",
+		"cycle": "lib/cycle",
 		"tpl" : "lib/tpl",
 		"qtip" : "lib/jquery.qtip.min",
 		"PID" : "cdr-admin",
