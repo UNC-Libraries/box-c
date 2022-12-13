@@ -74,7 +74,7 @@ define('ExportMetadataXMLBatchAction', [ 'jquery', 'AbstractBatchAction', "tpl!.
 
 			var pids = [];
 			for (var index in self.targets) {
-				pids.push(self.targets[index].getPid());
+				pids.push(self.targets[index].pid);
 			}
 			
 			$.ajax({
