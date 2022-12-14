@@ -156,7 +156,7 @@ define('fullRecord', ['module', 'jquery', 'JP2Viewer', 'StructureView', 'dataTab
 				data: function (d) {
 					const sorts = ['title', 'fileFormatDescription', 'fileSize'];
 					const sortOrder = {'asc': 'normal', 'desc': 'reverse'};
-					d.anywhere=d.search['value'] + '*';
+					d.anywhere=d.search['value'];
 					d.length=10;
 					d.rollup=false;
 					d.sort=sorts[d.order[0]['column'] - 1] + ',' + sortOrder[d.order[0]['dir']];
