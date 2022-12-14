@@ -1,0 +1,19 @@
+<iframe id="upload_file_frame" name="upload_file_frame" height="0" width="0" style="display: none;"></iframe>
+<form id="import_mods_metadata_form" method="post" action="/services/api/edit/memberOrder/import/csv" enctype="multipart/form-data" target="upload_file_container" class="edit_form">
+    <p>Select the member order CSV document you wish to import.</p>
+    <p>To produce a member order CSV document, select on or more items and then use the Export > Member order action.</p>
+    <p>You will be sent an email notification when the import completes.</p>
+    <div class="form_field">
+        <label>Update File*</label>
+        <input type="file" id="data_file" name="file"/>
+        <div class="file_info">&nbsp;</div>
+    </div>
+    <div class="update_field">
+        <input type="submit" id="object_submit_button" class="update_button" value="Import" />
+    </div>
+    <div class="errors">
+        <h3>Errors</h3>
+        <div class="error_stack">
+        </div>
+    </div>
+</form>

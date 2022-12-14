@@ -196,6 +196,17 @@
 	margin-left: 1em;
 }
 
+.container_action_group.importing + .container_action_group {
+	border-bottom-left-radius: 0;
+	border-top-left-radius: 0;
+	margin-left: -5px;
+}
+
+.import-export {
+	border-bottom-right-radius: 0;
+	border-top-right-radius: 0;
+}
+
 .container_action {
 	display: inline-block;
 	padding: 4px 8px;
@@ -218,7 +229,7 @@
 
 .container_action.active {
 	background-color: #59AACE;
-	border: 1px solid #0F80B3;
+	border-color: #0F80B3;
 	box-shadow: 0 0 8px 0 #55ABE0;
 	color: white;
 }
