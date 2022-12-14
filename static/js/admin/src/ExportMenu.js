@@ -11,7 +11,7 @@ define('ExportMenu', [ 'jquery', 'jquery-ui', 'underscore', 'qtip', 'cycle'],
             let items = {};
             let targets = this.getTargets();
 
-            if (this.getTargetIds() !== '') {
+            if (this.getMemberOrderTargetIds() !== '') {
                 items["exportMemberOrder"] = {name : "Member Order"};
             }
             if ($.inArray('editDescription', targets[0].metadata.permissions) !== -1) {
@@ -21,7 +21,7 @@ define('ExportMenu', [ 'jquery', 'jquery-ui', 'underscore', 'qtip', 'cycle'],
             return items;
         };
 
-        ExportMenu.prototype.getTargetIds = function() {
+        ExportMenu.prototype.getMemberOrderTargetIds = function() {
             let ids = this.getTargets().filter((d) => {
                 return $.inArray("viewHidden", d.metadata.permissions) !== -1 && d.metadata.type === "Work"
             }).map(d => d.metadata.id);
@@ -62,7 +62,7 @@ define('ExportMenu', [ 'jquery', 'jquery-ui', 'underscore', 'qtip', 'cycle'],
                             },
                             hide: function() {
                                 this.removeClass("active");
-                                sessionStorage.clear();
+                                sessionStorage.removeItem('exportTargets');
                             }
                         },
                         items: items,
@@ -71,17 +71,17 @@ define('ExportMenu', [ 'jquery', 'jquery-ui', 'underscore', 'qtip', 'cycle'],
                                 case "exportMemberOrder" :
                                     self.options.actionHandler.addEvent({
                                         action : 'ChangeLocation',
-                                        url : "api/edit/memberOrder/export/csv?ids=" + self.getTargetIds(),
+                                        url : "api/edit/memberOrder/export/csv?ids=" + self.getMemberOrderTargetIds(),
                                         application: "services"
                                     });
-                                    sessionStorage.clear();
+                                    sessionStorage.removeItem('exportTargets');
                                     break;
                                 case "exportXML" :
                                     self.options.actionHandler.addEvent({
                                         action : 'ExportMetadataXMLBatch',
                                         targets : self.getTargets()
                                     });
-                                    sessionStorage.clear();
+                                    sessionStorage.removeItem('exportTargets');
                                     break;
                             }
                         },
