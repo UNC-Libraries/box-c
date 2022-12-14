@@ -156,17 +156,17 @@ define('fullRecord', ['module', 'jquery', 'JP2Viewer', 'StructureView', 'dataTab
 				data: function (d) {
 					const sorts = ['title', 'fileFormatDescription', 'fileSize'];
 					const sortOrder = {'asc': 'normal', 'desc': 'reverse'};
-					d.anywhere=d.search['value'];
-					d.length=10;
-					d.rollup=false;
-					d.sort=sorts[d.order[0]['column'] - 1] + ',' + sortOrder[d.order[0]['dir']];
+					d.anywhere = d.search['value'];
+					d.length = 10;
+					d.rollup = false;
+					d.sort = sorts[d.order[0]['column'] - 1] + ',' + sortOrder[d.order[0]['dir']];
 				},
 				dataFilter: function(data){
-					let json = jQuery.parseJSON( data );
+					let json = JSON.parse(data);
 					json.recordsTotal = json.resultCount;
 					json.recordsFiltered = json.resultCount;
 
-					return JSON.stringify( json ); // return JSON string
+					return JSON.stringify(json); // return JSON string
 				},
 			},
 			processing: true,
