@@ -22,6 +22,8 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import static java.util.Map.entry;
+
 /**
  * Stores properties related to searching retrieved from a properties file. Includes default values and lists of
  * possible field types for validation or lookup purposes.
@@ -34,18 +36,20 @@ public class SearchSettings extends AbstractSettings {
     public static final String DEFAULT_OPERATOR = "AND";
     public static final String SORT_ORDER_REVERSED = "reverse";
     // Sort types, which are groupings of any number of field names with matching sort orders.
-    private static final Map<String, List<SortField>> SORT_TYPES = Map.of(
-            "bestMatch", constructSortFields("SCORE|desc,TITLE|asc"),
-            "collection", constructSortFields(
-                    "ANCESTOR_IDS|asc,IDENTIFIER_SORT|asc,TITLE|asc"),
-            "creator", constructSortFields("CREATOR|asc"),
-            "dateAdded", constructSortFields("DATE_ADDED|desc"),
-            "dateCreated", constructSortFields("DATE_CREATED|desc"),
-            "dateUpdated", constructSortFields("DATE_UPDATED|desc"),
-            "default", constructSortFields(
-                    "SCORE|desc,RESOURCE_TYPE_SORT|asc,MEMBER_ORDER_ID|asc,IDENTIFIER_SORT|asc,TITLE|asc"),
-            "resourceType", constructSortFields("RESOURCE_TYPE_SORT|asc"),
-            "title", constructSortFields("TITLE|asc,ID|asc")
+    private static final Map<String, List<SortField>> SORT_TYPES = Map.ofEntries(
+            entry("bestMatch", constructSortFields("SCORE|desc,TITLE|asc")),
+            entry("collection", constructSortFields(
+                    "ANCESTOR_IDS|asc,IDENTIFIER_SORT|asc,TITLE|asc")),
+            entry("creator", constructSortFields("CREATOR|asc")),
+            entry("dateAdded", constructSortFields("DATE_ADDED|desc")),
+            entry("dateCreated", constructSortFields("DATE_CREATED|desc")),
+            entry("dateUpdated", constructSortFields("DATE_UPDATED|desc")),
+            entry("default", constructSortFields(
+                    "SCORE|desc,RESOURCE_TYPE_SORT|asc,MEMBER_ORDER_ID|asc,IDENTIFIER_SORT|asc,TITLE|asc")),
+            entry("fileFormatDescription", constructSortFields("FILE_FORMAT_DESCRIPTION|asc")),
+            entry("fileSize", constructSortFields("FILESIZE|asc")),
+            entry("resourceType", constructSortFields("RESOURCE_TYPE_SORT|asc")),
+            entry("title", constructSortFields("TITLE|asc,ID|asc"))
     );
 
     public static final Collection<String> DEFAULT_RESOURCE_TYPES =

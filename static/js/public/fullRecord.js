@@ -149,15 +149,31 @@ define('fullRecord', ['module', 'jquery', 'JP2Viewer', 'StructureView', 'dataTab
 
 		$childFilesTable.DataTable({
 			ajax: {
-				processing: true,
 				url: '/listJson/' + $childFilesTable.attr('data-pid') + "?rows=2000",
 				dataSrc: function(d) {
 					return d.metadata;
-				}
+				},
+				data: function (d) {
+					const sorts = ['title', 'fileFormatDescription', 'fileSize'];
+					const sortOrder = {'asc': 'normal', 'desc': 'reverse'};
+					d.anywhere = d.search['value'];
+					d.length = 10;
+					d.rollup = false;
+					d.sort = sorts[d.order[0]['column'] - 1] + ',' + sortOrder[d.order[0]['dir']];
+				},
+				dataFilter: function(data){
+					let json = JSON.parse(data);
+					json.recordsTotal = json.resultCount;
+					json.recordsFiltered = json.resultCount;
+
+					return JSON.stringify(json); // return JSON string
+				},
 			},
+			processing: true,
+			serverSide: true,
 			bLengthChange: false, // Remove option to show different number of results
 			columnDefs: column_defs,
-			language: { search: '', searchPlaceholder: 'Search for keywords' },
+			language: { search: '', searchPlaceholder: 'Search within this work' },
 			order: [[1, 'asc']],
 			rowCallback: function(row, data) {
 				if (showBadge(data).markDeleted) {
