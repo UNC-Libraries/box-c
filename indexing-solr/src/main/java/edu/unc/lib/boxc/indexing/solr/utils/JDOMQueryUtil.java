@@ -55,21 +55,18 @@ public class JDOMQueryUtil {
 
     public static Date parseISO6392bDateChild(final Element parent, final String childName,
             final Namespace namespace) {
-        Date dateValue = null;
-
         List<Element> children = parent.getChildren(childName, namespace);
         for (Element child : children) {
             String dateString = child.getTextTrim();
             if (dateString != null) {
                 try {
-                    dateValue = DateTimeUtil.parseUTCToDate(dateString);
-                    break;
+                    return DateTimeUtil.parseUTCToDate(dateString);
                 } catch (IllegalArgumentException e) {
                     // Wasn't a valid date, ignore it.
                 }
             }
         }
 
-        return dateValue;
+        return null;
     }
 }
