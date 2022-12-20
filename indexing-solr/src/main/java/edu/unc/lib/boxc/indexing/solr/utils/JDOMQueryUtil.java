@@ -55,14 +55,18 @@ public class JDOMQueryUtil {
 
     public static Date parseISO6392bDateChild(final Element parent, final String childName,
             final Namespace namespace) {
-        String dateString = parent.getChildText(childName, namespace);
-        if (dateString != null) {
-            try {
-                return DateTimeUtil.parseUTCToDate(dateString);
-            } catch (IllegalArgumentException e) {
-                // Wasn't a valid date, ignore it.
+        List<Element> children = parent.getChildren(childName, namespace);
+        for (Element child : children) {
+            String dateString = child.getTextTrim();
+            if (dateString != null) {
+                try {
+                    return DateTimeUtil.parseUTCToDate(dateString);
+                } catch (IllegalArgumentException e) {
+                    // Wasn't a valid date, ignore it.
+                }
             }
         }
+
         return null;
     }
 }
