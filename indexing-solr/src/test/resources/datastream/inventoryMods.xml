@@ -140,6 +140,7 @@
     <mods:dateIssued encoding="iso8601" keyDate="yes">2006-05</mods:dateIssued>
   </mods:originInfo>
   <mods:originInfo>
+    <mods:dateCreated>May 1999</mods:dateCreated> <!-- Invalid ISO6392b date -->
     <mods:dateCreated encoding="iso8601">2006-04</mods:dateCreated>
   </mods:originInfo>
   <mods:originInfo>
