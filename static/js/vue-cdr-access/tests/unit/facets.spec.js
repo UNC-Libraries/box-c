@@ -477,7 +477,8 @@ describe('facets.vue', () => {
     // This isn't very satisfying, but something seems to have changed between vue 2 and 3
     // regarding emitting an event
     it("sets the date picker values if the slider is updated", () => {
-        expect(wrapper.vm.dates.selected_dates).toEqual({"start": 2011, "end": 2022, });
+        const CURRENT_YEAR = new Date().getFullYear();
+        expect(wrapper.vm.dates.selected_dates).toEqual({"start": 2011, "end": CURRENT_YEAR });
         wrapper.vm.sliderUpdated([1991, 2000])
         expect(wrapper.vm.dates.selected_dates).toEqual({"start": 1991, "end": 2000, });
     });
