@@ -9,6 +9,7 @@ import java.util.List;
 
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrQuery;
+import org.apache.solr.client.solrj.SolrRequest;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.response.QueryResponse;
 import org.slf4j.Logger;
@@ -185,7 +186,7 @@ public abstract class AbstractQueryService {
     protected QueryResponse executeQuery(SolrQuery query) throws SolrServerException {
         try {
             log.debug("Executing solr query: {}", query);
-            return solrClient.query(query);
+            return solrClient.query(query, SolrRequest.METHOD.POST);
         } catch (IOException e) {
             throw new SolrServerException(e);
         }
