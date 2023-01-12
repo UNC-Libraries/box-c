@@ -3,9 +3,9 @@ package edu.unc.lib.boxc.model.fcrepo.services;
 import static edu.unc.lib.boxc.model.api.DatastreamType.JP2_ACCESS_COPY;
 import static edu.unc.lib.boxc.model.api.DatastreamType.ORIGINAL_FILE;
 import static edu.unc.lib.boxc.model.api.DatastreamType.THUMBNAIL_SMALL;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 import java.io.File;
 import java.nio.file.Path;
@@ -13,10 +13,9 @@ import java.nio.file.Paths;
 import java.util.List;
 
 import org.apache.commons.io.FileUtils;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 import edu.unc.lib.boxc.model.api.DatastreamType;
 import edu.unc.lib.boxc.model.api.ids.PID;
@@ -34,8 +33,8 @@ public class DerivativeServiceTest {
     private static final String ID = "c9d57df5-f67c-4330-917e-b46c1d0bec26";
     private static final String HASHED_ID = "c9/d5/7d/f5/c9d57df5-f67c-4330-917e-b46c1d0bec26";
 
-    @Rule
-    public TemporaryFolder tmpDir = new TemporaryFolder();
+    @TempDir
+    public File tmpDir;
 
     private File derivativeDir;
     private String derivativePath;
@@ -44,9 +43,9 @@ public class DerivativeServiceTest {
 
     private DerivativeService derivativeService;
 
-    @Before
+    @BeforeEach
     public void init() throws Exception {
-        derivativeDir = tmpDir.getRoot();
+        derivativeDir = tmpDir;
         derivativePath = derivativeDir.getAbsolutePath();
 
         derivativeService = new DerivativeService();

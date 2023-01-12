@@ -2,7 +2,7 @@ package edu.unc.lib.boxc.model.fcrepo.objects;
 
 import static org.mockito.MockitoAnnotations.initMocks;
 
-import org.junit.Before;
+import org.junit.jupiter.api.BeforeEach;
 import org.mockito.Mock;
 
 import edu.unc.lib.boxc.model.api.ids.PIDMinter;
@@ -29,7 +29,7 @@ public class AbstractFedoraObjectTest {
 
     protected PIDMinter pidMinter;
 
-    @Before
+    @BeforeEach
     public void initBase() {
         initMocks(this);
 

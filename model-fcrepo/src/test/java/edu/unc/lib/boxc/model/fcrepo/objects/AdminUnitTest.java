@@ -1,7 +1,7 @@
 package edu.unc.lib.boxc.model.fcrepo.objects;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -11,8 +11,9 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.invocation.InvocationOnMock;
@@ -44,7 +45,7 @@ public class AdminUnitTest extends AbstractFedoraObjectTest {
     @Mock
     private WorkObject workChildObj;
 
-    @Before
+    @BeforeEach
     public void init() {
         initMocks(this);
 
@@ -72,24 +73,26 @@ public class AdminUnitTest extends AbstractFedoraObjectTest {
         unit.validateType();
     }
 
-    @Test(expected = ObjectTypeMismatchException.class)
+    @Test
     public void invalidTypeTest() {
-        List<String> types = Arrays.asList(PcdmModels.Object.getURI(), Cdr.Work.getURI());
-        when(driver.loadTypes(eq(unit))).thenAnswer(new Answer<RepositoryObjectDriver>() {
-            @Override
-            public RepositoryObjectDriver answer(InvocationOnMock invocation) throws Throwable {
-                ((AdminUnitImpl) unit).setTypes(types);
-                return driver;
-            }
-        });
+        Assertions.assertThrows(ObjectTypeMismatchException.class, () -> {
+            List<String> types = Arrays.asList(PcdmModels.Object.getURI(), Cdr.Work.getURI());
+            when(driver.loadTypes(eq(unit))).thenAnswer(new Answer<RepositoryObjectDriver>() {
+                @Override
+                public RepositoryObjectDriver answer(InvocationOnMock invocation) throws Throwable {
+                    ((AdminUnitImpl) unit).setTypes(types);
+                    return driver;
+                }
+            });
 
-        unit.validateType();
+            unit.validateType();
+        });
     }
 
     // should not be able to add a Work object as a member of AdminUnit
-    @Test(expected = ObjectTypeMismatchException.class)
+    @Test
     public void addWorkMemberTest() {
-        unit.addMember(workChildObj);
+        Assertions.assertThrows(ObjectTypeMismatchException.class, () -> unit.addMember(workChildObj));
     }
 
     @Test
@@ -101,8 +104,8 @@ public class AdminUnitTest extends AbstractFedoraObjectTest {
         verify(repoObjFactory).addMember(eq(unit), captor.capture());
 
         ContentObject child = captor.getValue();
-        assertTrue("Incorrect type of child added", child instanceof CollectionObject);
-        assertEquals("Child did not have the expected pid", collectionChildPid, child.getPid());
+        assertTrue(child instanceof CollectionObject, "Incorrect type of child added");
+        assertEquals(collectionChildPid, child.getPid(), "Child did not have the expected pid");
     }
 
 }

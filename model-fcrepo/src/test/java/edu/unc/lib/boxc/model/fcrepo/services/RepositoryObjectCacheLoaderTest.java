@@ -2,8 +2,8 @@ package edu.unc.lib.boxc.model.fcrepo.services;
 
 import static edu.unc.lib.boxc.model.api.rdf.RDFModelUtil.streamModel;
 import static org.apache.jena.rdf.model.ResourceFactory.createResource;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -19,8 +19,9 @@ import org.apache.jena.vocabulary.RDF;
 import org.fcrepo.client.FcrepoClient;
 import org.fcrepo.client.FcrepoResponse;
 import org.fcrepo.client.RequestBuilder;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
@@ -66,7 +67,7 @@ public class RepositoryObjectCacheLoaderTest {
     @Mock
     private PID pid;
 
-    @Before
+    @BeforeEach
     public void init() {
         initMocks(this);
 
@@ -187,20 +188,24 @@ public class RepositoryObjectCacheLoaderTest {
         assertTrue(obj.getResource().hasProperty(RDF.type, Ldp.NonRdfSource));
     }
 
-    @Test(expected = ObjectTypeMismatchException.class)
+    @Test
     public void loadUnsupportedTypeTest() throws Exception {
-        mockResponseBodyWithType(pid, Fcrepo4Repository.Pairtree);
+        Assertions.assertThrows(ObjectTypeMismatchException.class, () -> {
+            mockResponseBodyWithType(pid, Fcrepo4Repository.Pairtree);
 
-        objectCacheLoader.load(pid);
+            objectCacheLoader.load(pid);
+        });
     }
 
-    @Test(expected = ObjectTypeMismatchException.class)
+    @Test
     public void invalidContentPidTest() throws Exception {
-        pid = PIDs.get(RepositoryPathConstants.DEPOSIT_RECORD_BASE + "/" + UUID.randomUUID().toString());
+        Assertions.assertThrows(ObjectTypeMismatchException.class, () -> {
+            pid = PIDs.get(RepositoryPathConstants.DEPOSIT_RECORD_BASE + "/" + UUID.randomUUID().toString());
 
-        mockResponseBodyWithType(pid, Cdr.Work);
+            mockResponseBodyWithType(pid, Cdr.Work);
 
-        objectCacheLoader.load(pid);
+            objectCacheLoader.load(pid);
+        });
     }
 
     private void mockResponseBodyWithType(PID pid, Resource rdfType) throws IOException {

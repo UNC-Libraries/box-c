@@ -1,13 +1,13 @@
 package edu.unc.lib.boxc.model.fcrepo.ids;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.UUID;
 import java.util.concurrent.locks.Lock;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
@@ -22,7 +22,7 @@ public class PidLockManagerTest {
 
     private PidLockManager lockManager;
 
-    @Before
+    @BeforeEach
     public void setup() {
         pid = PIDs.get(UUID.randomUUID().toString());
         lockManager = new PidLockManager();
