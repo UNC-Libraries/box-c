@@ -1,9 +1,9 @@
 package edu.unc.lib.boxc.model.api.sparql;
 
 import static org.apache.jena.rdf.model.ResourceFactory.createProperty;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -18,7 +18,8 @@ import org.apache.jena.update.UpdateFactory;
 import org.apache.jena.update.UpdateRequest;
 import org.apache.jena.vocabulary.DC;
 import org.apache.jena.vocabulary.RDF;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import edu.unc.lib.boxc.model.api.rdf.Cdr;
 import edu.unc.lib.boxc.model.api.rdf.DcElements;
@@ -110,9 +111,11 @@ public class SparqlUpdateHelperTest {
         assertEquals("\"false\"^^<http://www.w3.org/2001/XMLSchema#boolean>", objString);
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void getObjectAsStringNonapplicableTest() {
-        SparqlUpdateHelper.getObjectAsString(new Object());
+        Assertions.assertThrows(IllegalArgumentException.class, () -> {
+            SparqlUpdateHelper.getObjectAsString(new Object());
+        });
     }
 
     @Test
