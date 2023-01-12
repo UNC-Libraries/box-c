@@ -1,9 +1,9 @@
 package edu.unc.lib.boxc.auth.fcrepo.services;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
-public class GroupsThreadStoreTest extends Assert {
+public class GroupsThreadStoreTest extends Assertions {
 
     @Test
     public void nullGroupsTest() {

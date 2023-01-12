@@ -1,11 +1,11 @@
 package edu.unc.lib.boxc.auth.fcrepo.services;
 
 import static edu.unc.lib.boxc.auth.api.AccessPrincipalConstants.PUBLIC_PRINC;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
@@ -29,8 +29,9 @@ import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.vocabulary.RDF;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 
 import edu.unc.lib.boxc.auth.api.models.RoleAssignment;
@@ -68,7 +69,7 @@ public class ObjectACLFactoryTest {
 
     private PID pid;
 
-    @Before
+    @BeforeEach
     public void init() {
         initMocks(this);
 
@@ -92,10 +93,10 @@ public class ObjectACLFactoryTest {
 
         Map<String, Set<String>> results = aclFactory.getPrincipalRoles(pid);
 
-        assertEquals("Incorrect number of principals returned", 1, results.size());
+        assertEquals(1, results.size(), "Incorrect number of principals returned");
         Set<String> roles = results.get(MANAGE_GRP);
         assertNotNull(roles);
-        assertEquals("Incorrect number of roles for principal", 1, roles.size());
+        assertEquals(1, roles.size(), "Incorrect number of roles for principal");
         assertTrue(roles.contains(CdrAcl.canManage.toString()));
     }
 
@@ -103,7 +104,7 @@ public class ObjectACLFactoryTest {
     public void getPrincipalRoleNoPropertiesTest() throws Exception {
         Map<String, Set<String>> results = aclFactory.getPrincipalRoles(pid);
 
-        assertEquals("No principals should be returned", 0, results.size());
+        assertEquals(0, results.size(), "No principals should be returned");
     }
 
     @Test
@@ -112,7 +113,7 @@ public class ObjectACLFactoryTest {
 
         Map<String, Set<String>> results = aclFactory.getPrincipalRoles(pid);
 
-        assertEquals("No principals should be returned", 0, results.size());
+        assertEquals(0, results.size(), "No principals should be returned");
     }
 
     @Test
@@ -123,17 +124,17 @@ public class ObjectACLFactoryTest {
 
         Map<String, Set<String>> results = aclFactory.getPrincipalRoles(pid);
 
-        assertEquals("Incorrect number of principals returned", 3, results.size());
+        assertEquals(3, results.size(), "Incorrect number of principals returned");
         Set<String> roles = results.get(MANAGE_GRP);
-        assertEquals("Incorrect number of roles for manager grp", 1, roles.size());
+        assertEquals(1, roles.size(), "Incorrect number of roles for manager grp");
         assertTrue(roles.contains(CdrAcl.canManage.toString()));
 
         Set<String> roles2 = results.get(PATRON_GRP);
-        assertEquals("Incorrect number of roles for patron grp", 1, roles2.size());
+        assertEquals(1, roles2.size(), "Incorrect number of roles for patron grp");
         assertTrue(roles2.contains(CdrAcl.canDiscover.toString()));
 
         Set<String> roles3 = results.get(USER_PRINC);
-        assertEquals("Incorrect number of roles for user", 1, roles3.size());
+        assertEquals(1, roles3.size(), "Incorrect number of roles for user");
         assertTrue(roles3.contains(CdrAcl.unitOwner.toString()));
     }
 
@@ -144,10 +145,10 @@ public class ObjectACLFactoryTest {
 
         Map<String, Set<String>> results = aclFactory.getPrincipalRoles(pid);
 
-        assertEquals("Incorrect number of principals returned", 1, results.size());
+        assertEquals(1, results.size(), "Incorrect number of principals returned");
         Set<String> roles = results.get(MANAGE_GRP);
         assertNotNull(roles);
-        assertEquals("Incorrect number of roles for principal", 2, roles.size());
+        assertEquals(2, roles.size(), "Incorrect number of roles for principal");
         assertTrue(roles.contains(CdrAcl.canManage.toString()));
         assertTrue(roles.contains(CdrAcl.canDescribe.toString()));
     }
@@ -210,9 +211,11 @@ public class ObjectACLFactoryTest {
         assertNull(embargoDate);
     }
 
-    @Test(expected = NotImplementedException.class)
+    @Test
     public void getPatronAccessTest() throws Exception {
-        aclFactory.getPatronAccess(pid);
+        Assertions.assertThrows(NotImplementedException.class, () -> {
+            aclFactory.getPatronAccess(pid);
+        });
     }
 
     @Test
@@ -220,7 +223,7 @@ public class ObjectACLFactoryTest {
         objResc.addLiteral(CdrAcl.canManage, MANAGE_GRP);
 
         Map<String, Set<String>> results = aclFactory.getPrincipalRoles(pid);
-        assertEquals("Incorrect number of principals returned", 1, results.size());
+        assertEquals(1, results.size(), "Incorrect number of principals returned");
 
         verify(repositoryObjectLoader).getRepositoryObject(pid);
 
@@ -229,9 +232,9 @@ public class ObjectACLFactoryTest {
 
         verify(repositoryObjectLoader).getRepositoryObject(pid);
 
-        assertEquals("Incorrect number of principals on second run", 1, results.size());
+        assertEquals(1, results.size(), "Incorrect number of principals on second run");
         Set<String> roles = results.get(MANAGE_GRP);
-        assertEquals("Incorrect number of roles for principal on second run", 1, roles.size());
+        assertEquals(1, roles.size(), "Incorrect number of roles for principal on second run");
         assertTrue(roles.contains(CdrAcl.canManage.toString()));
     }
 
@@ -241,14 +244,14 @@ public class ObjectACLFactoryTest {
 
         Map<String, Set<String>> results = aclFactory.getPrincipalRoles(pid);
         verify(repositoryObjectLoader).getRepositoryObject(pid);
-        assertEquals("Incorrect number of principals returned", 1, results.size());
+        assertEquals(1, results.size(), "Incorrect number of principals returned");
 
         // Wait for expiration time
         Thread.sleep(CACHE_TIME_TO_LIVE * 2);
 
         results = aclFactory.getPrincipalRoles(pid);
-        assertEquals("Incorrect number of principals returned", 1, results.size());
-        assertEquals("Incorrect number of roles for principal", 1, results.get(MANAGE_GRP).size());
+        assertEquals(1, results.size(), "Incorrect number of principals returned");
+        assertEquals(1, results.get(MANAGE_GRP).size(), "Incorrect number of roles for principal");
 
         verify(repositoryObjectLoader, times(2)).getRepositoryObject(pid);
     }
@@ -258,9 +261,9 @@ public class ObjectACLFactoryTest {
         objResc.addLiteral(CdrAcl.canManage, MANAGE_GRP);
 
         Map<String, Set<String>> results = aclFactory.getPrincipalRoles(pid);
-        assertEquals("Incorrect number of principals returned for pid1", 1, results.size());
+        assertEquals(1, results.size(), "Incorrect number of principals returned for pid1");
         Set<String> roles = results.get(MANAGE_GRP);
-        assertEquals("Incorrect number of roles for principal for pid1", 1, roles.size());
+        assertEquals(1, roles.size(), "Incorrect number of roles for principal for pid1");
         assertTrue(roles.contains(CdrAcl.canManage.toString()));
 
         PID pid2 = makePid();
@@ -274,16 +277,16 @@ public class ObjectACLFactoryTest {
         resc2.addLiteral(CdrAcl.canIngest, USER_PRINC);
 
         results = aclFactory.getPrincipalRoles(pid2);
-        assertEquals("Incorrect number of principals returned for pid2", 2, results.size());
-        assertEquals("Incorrect number of roles for patron for pid2", 1, results.get(PATRON_GRP).size());
-        assertEquals("Incorrect number of roles for user for pid2", 1, results.get(USER_PRINC).size());
+        assertEquals( 2, results.size(), "Incorrect number of principals returned for pid2");
+        assertEquals(1, results.get(PATRON_GRP).size(), "Incorrect number of roles for patron for pid2");
+        assertEquals(1, results.get(USER_PRINC).size(), "Incorrect number of roles for user for pid2");
 
         verify(repositoryObjectLoader, times(2)).getRepositoryObject(any(PID.class));
 
         results = aclFactory.getPrincipalRoles(pid);
-        assertEquals("Incorrect number of principals cached for pid1", 1, results.size());
+        assertEquals(1, results.size(), "Incorrect number of principals cached for pid1");
         results = aclFactory.getPrincipalRoles(pid2);
-        assertEquals("Incorrect number of principals cached for pid2", 2, results.size());
+        assertEquals(2, results.size(), "Incorrect number of principals cached for pid2");
 
         verify(repositoryObjectLoader, times(2)).getRepositoryObject(any(PID.class));
     }
