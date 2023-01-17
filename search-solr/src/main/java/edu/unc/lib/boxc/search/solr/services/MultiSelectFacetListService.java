@@ -140,6 +140,7 @@ public class MultiSelectFacetListService extends AbstractFacetListService {
 
         SearchRequest selectedRequest = new SearchRequest(
                 selectedState, originalRequest.getAccessGroups(), false);
+        selectedRequest.setApplyCutoffs(false);
         var query = searchService.generateSearch(selectedRequest);
         query.addFilterQuery(SearchFieldKey.DATE_CREATED_YEAR.getSolrField() + ":[* TO *]");
 
