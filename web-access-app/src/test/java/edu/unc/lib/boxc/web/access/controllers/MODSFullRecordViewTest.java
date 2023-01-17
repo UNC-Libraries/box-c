@@ -1,8 +1,8 @@
 package edu.unc.lib.boxc.web.access.controllers;
 
 import static edu.unc.lib.boxc.model.api.xml.JDOMNamespaceUtil.MODS_V3_NS;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
@@ -16,8 +16,8 @@ import org.jdom2.filter.Filters;
 import org.jdom2.input.SAXBuilder;
 import org.jdom2.xpath.XPathExpression;
 import org.jdom2.xpath.XPathFactory;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import edu.unc.lib.boxc.web.common.view.XSLComponentView;
 
@@ -28,7 +28,7 @@ public class MODSFullRecordViewTest {
     private Map<String,Object> parameters;
     XPathFactory xPathFactory;
 
-    @Before
+    @BeforeEach
     public void init() throws Exception {
         parameters = new HashMap<>();
 
