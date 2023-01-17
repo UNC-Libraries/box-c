@@ -7,10 +7,10 @@ import java.util.Map;
 
 import org.apache.abdera.i18n.iri.IRI;
 import org.apache.abdera.model.Feed;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.swordapp.server.AuthCredentials;
@@ -18,14 +18,14 @@ import org.swordapp.server.AuthCredentials;
 import edu.unc.lib.boxc.web.sword.SwordConfigurationImpl;
 import edu.unc.lib.boxc.web.sword.managers.CollectionListManagerImpl;
 
-@Ignore
-public class CollectionListManagerTest extends Assert {
+@Disabled
+public class CollectionListManagerTest extends Assertions {
     private static Logger log = LoggerFactory.getLogger(CollectionListManagerTest.class);
 
     private CollectionListManagerImpl manager;
     private SwordConfigurationImpl config;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         manager = new CollectionListManagerImpl();
 
