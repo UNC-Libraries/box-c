@@ -3,8 +3,8 @@ package edu.unc.lib.boxc.operations.jms.order;
 import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
 import edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl;
 import edu.unc.lib.boxc.auth.fcrepo.models.AgentPrincipalsImpl;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.jms.core.JmsTemplate;
@@ -31,7 +31,7 @@ public class MemberOrderRequestSenderTest {
     private JmsTemplate jmsTemplate;
     private MemberOrderRequestSender requestSender;
 
-    @Before
+    @BeforeEach
     public void setup() {
         MockitoAnnotations.openMocks(this);
         requestSender = new MemberOrderRequestSender();
