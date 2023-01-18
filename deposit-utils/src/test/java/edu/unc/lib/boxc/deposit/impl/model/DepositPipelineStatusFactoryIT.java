@@ -1,15 +1,15 @@
 package edu.unc.lib.boxc.deposit.impl.model;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import edu.unc.lib.boxc.deposit.api.RedisWorkerConstants.DepositPipelineAction;
 import edu.unc.lib.boxc.deposit.api.RedisWorkerConstants.DepositPipelineState;
@@ -19,7 +19,7 @@ import redis.clients.jedis.JedisPool;
 /**
  * @author bbpennel
  */
-@RunWith(SpringJUnit4ClassRunner.class)
+@ExtendWith(SpringExtension.class)
 @ContextConfiguration({"/spring/jedis-context.xml"})
 public class DepositPipelineStatusFactoryIT {
 
@@ -28,7 +28,7 @@ public class DepositPipelineStatusFactoryIT {
     private JedisPool jedisPool;
     private Jedis jedisResource;
 
-    @Before
+    @BeforeEach
     public void init() {
         factory = new DepositPipelineStatusFactory();
         factory.setJedisPool(jedisPool);
@@ -36,7 +36,7 @@ public class DepositPipelineStatusFactoryIT {
         jedisResource.flushAll();
     }
 
-    @After
+    @AfterEach
     public void cleanup() {
         jedisResource.close();
     }

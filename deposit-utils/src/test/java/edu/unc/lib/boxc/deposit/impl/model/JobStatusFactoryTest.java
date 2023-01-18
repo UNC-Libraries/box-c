@@ -2,8 +2,9 @@ package edu.unc.lib.boxc.deposit.impl.model;
 
 import edu.unc.lib.boxc.deposit.api.RedisWorkerConstants.JobField;
 import edu.unc.lib.boxc.model.api.exceptions.RepositoryException;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
@@ -34,7 +35,7 @@ public class JobStatusFactoryTest {
 
     private JobStatusFactory statusFactory;
 
-    @Before
+    @BeforeEach
     public void setup() {
         initMocks(this);
 
@@ -68,20 +69,25 @@ public class JobStatusFactoryTest {
         verify(jedis, times(2)).hincrBy(JOB_STATUS_PREFIX + jobUUID, JobField.num.name(), 1);
     }
 
-    @Test(expected = JedisConnectionException.class)
+    @Test
     public void incrCompletionInterruptFail() {
-        SocketTimeoutException cause = new SocketTimeoutException("Timed out");
-        JedisConnectionException ex = new JedisConnectionException(cause);
-        when(jedis.hincrBy(anyString(), anyString(), anyLong())).thenThrow(ex);
+        Assertions.assertThrows(JedisConnectionException.class, () -> {
+            SocketTimeoutException cause = new SocketTimeoutException("Timed out");
+            JedisConnectionException ex = new JedisConnectionException(cause);
+            when(jedis.hincrBy(anyString(), anyString(), anyLong())).thenThrow(ex);
 
-        statusFactory.incrCompletion(jobUUID, 1);
+            statusFactory.incrCompletion(jobUUID, 1);
+        });
     }
 
-    @Test(expected = RepositoryException.class)
+    @Test
     public void incrCompletionUnexpectedException() {
-        Exception ex = new RepositoryException("Oops");
-        when(jedis.hincrBy(anyString(), anyString(), anyLong())).thenThrow(ex).thenReturn(1L);
+        Assertions.assertThrows(RepositoryException.class, () -> {
+            Exception ex = new RepositoryException("Oops");
+            when(jedis.hincrBy(anyString(), anyString(), anyLong())).thenThrow(ex).thenReturn(1L);
 
-        statusFactory.incrCompletion(jobUUID, 1);
+            statusFactory.incrCompletion(jobUUID, 1);
+        });
+
     }
 }

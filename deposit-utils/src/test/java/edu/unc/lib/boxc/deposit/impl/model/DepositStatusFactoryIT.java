@@ -1,21 +1,21 @@
 package edu.unc.lib.boxc.deposit.impl.model;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import edu.unc.lib.boxc.deposit.api.RedisWorkerConstants.DepositAction;
 import edu.unc.lib.boxc.deposit.api.RedisWorkerConstants.DepositField;
@@ -28,7 +28,7 @@ import redis.clients.jedis.JedisPool;
  * @author harring
  *
  */
-@RunWith(SpringJUnit4ClassRunner.class)
+@ExtendWith(SpringExtension.class)
 @ContextConfiguration({"/spring/jedis-context.xml"})
 public class DepositStatusFactoryIT {
 
@@ -37,7 +37,7 @@ public class DepositStatusFactoryIT {
     private JedisPool jedisPool;
     private Jedis jedisResource;
 
-    @Before
+    @BeforeEach
     public void init() {
         factory = new DepositStatusFactory();
         factory.setJedisPool(jedisPool);
@@ -45,7 +45,7 @@ public class DepositStatusFactoryIT {
         jedisResource.flushAll();
     }
 
-    @After
+    @AfterEach
     public void cleanup() {
         jedisResource.close();
     }

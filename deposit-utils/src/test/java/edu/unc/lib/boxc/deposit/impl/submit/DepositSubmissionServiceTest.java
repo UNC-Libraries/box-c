@@ -8,8 +8,9 @@ import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 
 import edu.unc.lib.boxc.auth.api.models.AgentPrincipals;
@@ -50,7 +51,7 @@ public class DepositSubmissionServiceTest {
 
     private DepositSubmissionService depositService;
 
-    @Before
+    @BeforeEach
     public void init() throws Exception {
         initMocks(this);
 
@@ -89,25 +90,29 @@ public class DepositSubmissionServiceTest {
         verify(depositHandler2).doDeposit(depositPid, deposit);
     }
 
-    @Test(expected = UnsupportedPackagingTypeException.class)
+    @Test
     public void testSubmitDepositUnregisteredPackage() throws Exception {
-        DepositData deposit = new DepositData(FILEPATH.toUri(),
-                MIMETYPE,
-                PackagingType.ATOM,
-                DEPOSIT_METHOD,
-                depositingAgent);
+        Assertions.assertThrows(UnsupportedPackagingTypeException.class, () -> {
+            DepositData deposit = new DepositData(FILEPATH.toUri(),
+                    MIMETYPE,
+                    PackagingType.ATOM,
+                    DEPOSIT_METHOD,
+                    depositingAgent);
 
-        depositService.submitDeposit(depositPid, deposit);
+            depositService.submitDeposit(depositPid, deposit);
+        });
     }
 
-    @Test(expected = UnsupportedPackagingTypeException.class)
+    @Test
     public void testSubmitDepositNullPackage() throws Exception {
-        DepositData deposit = new DepositData(FILEPATH.toUri(),
-                MIMETYPE,
-                null,
-                DEPOSIT_METHOD,
-                depositingAgent);
+        Assertions.assertThrows(UnsupportedPackagingTypeException.class, () -> {
+            DepositData deposit = new DepositData(FILEPATH.toUri(),
+                    MIMETYPE,
+                    null,
+                    DEPOSIT_METHOD,
+                    depositingAgent);
 
-        depositService.submitDeposit(depositPid, deposit);
+            depositService.submitDeposit(depositPid, deposit);
+        });
     }
 }
