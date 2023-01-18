@@ -1,25 +1,26 @@
 package edu.unc.lib.boxc.deposit.work;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.when;
 import static org.slf4j.LoggerFactory.getLogger;
 import static org.springframework.test.util.ReflectionTestUtils.setField;
 
+import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.api.io.TempDir;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 import org.slf4j.Logger;
@@ -27,7 +28,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.annotation.DirtiesContext.MethodMode;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import edu.unc.lib.boxc.auth.api.models.AgentPrincipals;
 import edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl;
@@ -62,7 +63,7 @@ import redis.embedded.RedisServer;
 /**
  * @author bbpennel
  */
-@RunWith(SpringJUnit4ClassRunner.class)
+@ExtendWith(SpringExtension.class)
 @ContextConfiguration( locations = { "/spring-test/cdr-client-container.xml",
     "/spring-test/deposit-supervisor-test-context.xml"} )
 public class DepositSupervisorTest {
@@ -71,8 +72,8 @@ public class DepositSupervisorTest {
 
     private final long STATE_POLL_PERIOD = 25l;
 
-    @Rule
-    public final TemporaryFolder tmpFolder = new TemporaryFolder();
+    @TempDir
+    public Path tmpFolder;
 
     @Autowired
     private Config jesqueConfig;
@@ -121,12 +122,12 @@ public class DepositSupervisorTest {
 
     }
 
-    @AfterClass
+    @AfterAll
     public static void afterClass() throws Exception {
         redisServer.stop();
     }
 
-    @Before
+    @BeforeEach
     public void setup() throws Exception {
         when(jobFactory.materializeJob(any())).thenAnswer(new Answer<Object>() {
             @Override
@@ -160,7 +161,7 @@ public class DepositSupervisorTest {
         actionMonitor = supervisor.actionMonitoringTask;
     }
 
-    @After
+    @AfterEach
     public void cleanup() throws Exception {
         supervisor.stop(true);
         try (Jedis jedis = jedisPool.getResource()) {
@@ -480,26 +481,28 @@ public class DepositSupervisorTest {
         assertEquals(BagIt2N3BagJob.class.getName(), job.getClassName());
     }
 
-    @Test(expected = DepositFailedException.class)
+    @Test
     public void nextJobInvalidSuccessfulJobsTest() throws Exception {
-        Map<String, String> status = new HashMap<>();
-        status.put(DepositField.packagingType.name(), PackagingType.BAGIT.getUri());
-        List<String> successfulJobs = Arrays.asList(PackageIntegrityCheckJob.class.getName(),
-                "edu.unc.lib.old.stuff.CDRMETS2N3BagJob");
-        supervisor.getNextJob("12345", status, successfulJobs);
+        Assertions.assertThrows(DepositFailedException.class, () -> {
+            Map<String, String> status = new HashMap<>();
+            status.put(DepositField.packagingType.name(), PackagingType.BAGIT.getUri());
+            List<String> successfulJobs = Arrays.asList(PackageIntegrityCheckJob.class.getName(),
+                    "edu.unc.lib.old.stuff.CDRMETS2N3BagJob");
+            supervisor.getNextJob("12345", status, successfulJobs);
+        });
     }
 
     private void assertWorkersPaused(boolean expectedValue) {
         for (WorkerPool workerPool : depositWorkerPools) {
-            assertEquals("Expected worker to be " + (expectedValue ? "" : "un") + "paused, but it was not",
-                    expectedValue, workerPool.isPaused());
+            assertEquals(expectedValue, workerPool.isPaused(),
+                    "Expected worker to be " + (expectedValue ? "" : "un") + "paused, but it was not");
         }
     }
 
     private void assertWorkersShutdown(boolean expectedValue) {
         for (WorkerPool workerPool : depositWorkerPools) {
-            assertEquals("Expected worker to " + (expectedValue ? "not " : "") + " be shutdown, but it was",
-                    expectedValue, workerPool.isShutdown());
+            assertEquals(expectedValue, workerPool.isShutdown(),
+                    "Expected worker to " + (expectedValue ? "not " : "") + " be shutdown, but it was");
         }
     }
 
@@ -604,7 +607,7 @@ public class DepositSupervisorTest {
         };
         depositHandler.setDepositStatusFactory(depositStatusFactory);
         depositHandler.setPidMinter(pidMinter);
-        depositHandler.setDepositsDirectory(tmpFolder.getRoot());
+        depositHandler.setDepositsDirectory(tmpFolder.toFile());
 
         DepositData deposit = new DepositData(null, null, packagingType, null, agent);
         deposit.setPriority(priority);

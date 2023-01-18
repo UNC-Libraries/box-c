@@ -13,13 +13,15 @@ import static org.mockito.Mockito.when;
 import java.util.HashMap;
 import java.util.Map;
 
+import net.greghaines.jesque.Job;
 import org.apache.jena.rdf.model.Bag;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.vocabulary.RDF;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 
 import edu.unc.lib.boxc.model.api.ids.PID;
@@ -60,7 +62,7 @@ public class ValidateContentModelJobTest extends AbstractDepositJobTest {
     @Mock
     private Resource destResc;
 
-    @Before
+    @BeforeEach
     public void init() throws Exception {
         destPid = makePid();
 
@@ -105,34 +107,38 @@ public class ValidateContentModelJobTest extends AbstractDepositJobTest {
         verify(aclValidator).validate(eq(folderBag));
     }
 
-    @Test(expected = JobFailedException.class)
+    @Test
     public void folderInvalidEmbargoTest() {
-        PID folderPid = makePid(CONTENT_BASE);
-        Bag folderBag = model.createBag(folderPid.getRepositoryPath());
-        folderBag.addProperty(RDF.type, Cdr.Folder);
-        folderBag.addProperty(CdrAcl.embargoUntil, "forever");
+        Assertions.assertThrows(JobFailedException.class, () -> {
+            PID folderPid = makePid(CONTENT_BASE);
+            Bag folderBag = model.createBag(folderPid.getRepositoryPath());
+            folderBag.addProperty(RDF.type, Cdr.Folder);
+            folderBag.addProperty(CdrAcl.embargoUntil, "forever");
 
-        depBag.add(folderBag);
+            depBag.add(folderBag);
 
-        job.closeModel();
+            job.closeModel();
 
-        job.run();
+            job.run();
+        });
     }
 
-    @Test(expected = InvalidAssignmentException.class)
+    @Test
     public void folderInvalidAclsTest() {
-        doThrow(new InvalidAssignmentException()).when(aclValidator).validate(any(Resource.class));
+        Assertions.assertThrows(InvalidAssignmentException.class, () -> {
+            doThrow(new InvalidAssignmentException()).when(aclValidator).validate(any(Resource.class));
 
-        PID folderPid = makePid(CONTENT_BASE);
-        Bag folderBag = model.createBag(folderPid.getRepositoryPath());
-        folderBag.addProperty(RDF.type, Cdr.Folder);
-        folderBag.addProperty(CdrAcl.canDescribe, "user");
+            PID folderPid = makePid(CONTENT_BASE);
+            Bag folderBag = model.createBag(folderPid.getRepositoryPath());
+            folderBag.addProperty(RDF.type, Cdr.Folder);
+            folderBag.addProperty(CdrAcl.canDescribe, "user");
 
-        depBag.add(folderBag);
+            depBag.add(folderBag);
 
-        job.closeModel();
+            job.closeModel();
 
-        job.run();
+            job.run();
+        });
     }
 
     @Test
@@ -160,103 +166,112 @@ public class ValidateContentModelJobTest extends AbstractDepositJobTest {
         verify(aclValidator).validate(eq(childResc));
     }
 
-    @Test(expected = JobFailedException.class)
+    @Test
     public void missingStagingLocationTest() {
-        PID objPid = makePid(CONTENT_BASE);
-        Bag objBag = model.createBag(objPid.getRepositoryPath());
-        objBag.addProperty(RDF.type, Cdr.Work);
+        Assertions.assertThrows(JobFailedException.class, () -> {
+            PID objPid = makePid(CONTENT_BASE);
+            Bag objBag = model.createBag(objPid.getRepositoryPath());
+            objBag.addProperty(RDF.type, Cdr.Work);
 
-        PID childPid = makePid(CONTENT_BASE);
-        Resource childResc = model.getResource(childPid.getRepositoryPath());
-        childResc.addProperty(RDF.type, Cdr.FileObject);
-        DepositModelHelpers.addDatastream(childResc);
-        objBag.add(childResc);
+            PID childPid = makePid(CONTENT_BASE);
+            Resource childResc = model.getResource(childPid.getRepositoryPath());
+            childResc.addProperty(RDF.type, Cdr.FileObject);
+            DepositModelHelpers.addDatastream(childResc);
+            objBag.add(childResc);
 
-        objBag.addProperty(Cdr.primaryObject, childResc);
+            objBag.addProperty(Cdr.primaryObject, childResc);
 
-        depBag.add(objBag);
+            depBag.add(objBag);
 
-        job.closeModel();
+            job.closeModel();
 
-        job.run();
+            job.run();
+        });
     }
 
-    @Test(expected = JobFailedException.class)
+    @Test
     public void missingOriginalDatastreamTest() {
-        PID objPid = makePid(CONTENT_BASE);
-        Bag objBag = model.createBag(objPid.getRepositoryPath());
-        objBag.addProperty(RDF.type, Cdr.Work);
+        Assertions.assertThrows(JobFailedException.class, () -> {
+            PID objPid = makePid(CONTENT_BASE);
+            Bag objBag = model.createBag(objPid.getRepositoryPath());
+            objBag.addProperty(RDF.type, Cdr.Work);
 
-        PID childPid = makePid(CONTENT_BASE);
-        Resource childResc = model.getResource(childPid.getRepositoryPath());
-        childResc.addProperty(RDF.type, Cdr.FileObject);
-        objBag.add(childResc);
+            PID childPid = makePid(CONTENT_BASE);
+            Resource childResc = model.getResource(childPid.getRepositoryPath());
+            childResc.addProperty(RDF.type, Cdr.FileObject);
+            objBag.add(childResc);
 
-        objBag.addProperty(Cdr.primaryObject, childResc);
+            objBag.addProperty(Cdr.primaryObject, childResc);
 
-        depBag.add(objBag);
+            depBag.add(objBag);
 
-        job.closeModel();
+            job.closeModel();
 
-        job.run();
+            job.run();
+        });
     }
 
-    @Test(expected = JobFailedException.class)
+    @Test
     public void fileObjectOutsideOfWorkTest() {
+        Assertions.assertThrows(JobFailedException.class, () -> {
+            PID childPid = makePid(CONTENT_BASE);
+            Resource childResc = model.getResource(childPid.getRepositoryPath());
+            childResc.addProperty(RDF.type, Cdr.FileObject);
+            Resource origResc = DepositModelHelpers.addDatastream(childResc);
+            origResc.addLiteral(CdrDeposit.stagingLocation, "path");
 
-        PID childPid = makePid(CONTENT_BASE);
-        Resource childResc = model.getResource(childPid.getRepositoryPath());
-        childResc.addProperty(RDF.type, Cdr.FileObject);
-        Resource origResc = DepositModelHelpers.addDatastream(childResc);
-        origResc.addLiteral(CdrDeposit.stagingLocation, "path");
+            depBag.add(childResc);
 
-        depBag.add(childResc);
+            job.closeModel();
 
-        job.closeModel();
-
-        job.run();
+            job.run();
+        });
     }
 
-    @Test(expected = JobFailedException.class)
+    @Test
     public void workInvalidPrimaryObjectTest() {
-        PID objPid = makePid(CONTENT_BASE);
-        Bag objBag = model.createBag(objPid.getRepositoryPath());
-        objBag.addProperty(RDF.type, Cdr.Work);
+        Assertions.assertThrows(JobFailedException.class, () -> {
+            PID objPid = makePid(CONTENT_BASE);
+            Bag objBag = model.createBag(objPid.getRepositoryPath());
+            objBag.addProperty(RDF.type, Cdr.Work);
 
-        PID childPid = makePid(CONTENT_BASE);
-        Resource childResc = model.getResource(childPid.getRepositoryPath());
-        childResc.addProperty(RDF.type, Cdr.Folder);
-        objBag.add(childResc);
+            PID childPid = makePid(CONTENT_BASE);
+            Resource childResc = model.getResource(childPid.getRepositoryPath());
+            childResc.addProperty(RDF.type, Cdr.Folder);
+            objBag.add(childResc);
 
-        objBag.addProperty(Cdr.primaryObject, childResc);
+            objBag.addProperty(Cdr.primaryObject, childResc);
 
-        depBag.add(objBag);
+            depBag.add(objBag);
 
-        job.closeModel();
+            job.closeModel();
 
-        job.run();
+            job.run();
+        });
     }
 
-    @Test(expected = JobFailedException.class)
+    @Test
     public void primaryObjectOnInvalidObjectTest() {
-        PID objPid = makePid(CONTENT_BASE);
-        Bag objBag = model.createBag(objPid.getRepositoryPath());
-        objBag.addProperty(RDF.type, Cdr.Folder);
+        Assertions.assertThrows(JobFailedException.class, () -> {
+            PID objPid = makePid(CONTENT_BASE);
+            Bag objBag = model.createBag(objPid.getRepositoryPath());
+            objBag.addProperty(RDF.type, Cdr.Folder);
 
-        PID childPid = makePid(CONTENT_BASE);
-        Resource childResc = model.getResource(childPid.getRepositoryPath());
-        childResc.addProperty(RDF.type, Cdr.FileObject);
-        Resource origResc = DepositModelHelpers.addDatastream(childResc);
-        origResc.addLiteral(CdrDeposit.stagingLocation, "path");
-        objBag.add(childResc);
+            PID childPid = makePid(CONTENT_BASE);
+            Resource childResc = model.getResource(childPid.getRepositoryPath());
+            childResc.addProperty(RDF.type, Cdr.FileObject);
+            Resource origResc = DepositModelHelpers.addDatastream(childResc);
+            origResc.addLiteral(CdrDeposit.stagingLocation, "path");
+            objBag.add(childResc);
 
-        objBag.addProperty(Cdr.primaryObject, childResc);
+            objBag.addProperty(Cdr.primaryObject, childResc);
 
-        depBag.add(objBag);
+            depBag.add(objBag);
 
-        job.closeModel();
+            job.closeModel();
 
-        job.run();
+            job.run();
+        });
     }
 
     @Test
@@ -288,48 +303,52 @@ public class ValidateContentModelJobTest extends AbstractDepositJobTest {
         job.run();
     }
 
-    @Test(expected = JobFailedException.class)
+    @Test
     public void workInvalidMemberOrderTest() {
-        PID objPid = makePid(CONTENT_BASE);
-        Bag objBag = model.createBag(objPid.getRepositoryPath());
-        objBag.addProperty(RDF.type, Cdr.Work);
+        Assertions.assertThrows(JobFailedException.class, () -> {
+            PID objPid = makePid(CONTENT_BASE);
+            Bag objBag = model.createBag(objPid.getRepositoryPath());
+            objBag.addProperty(RDF.type, Cdr.Work);
 
-        PID childPid = makePid(CONTENT_BASE);
-        Resource childResource = model.getResource(childPid.getRepositoryPath());
-        childResource.addProperty(RDF.type, Cdr.FileObject);
-        Resource origResource = DepositModelHelpers.addDatastream(childResource);
-        origResource.addLiteral(CdrDeposit.stagingLocation, "path");
-        objBag.add(childResource);
+            PID childPid = makePid(CONTENT_BASE);
+            Resource childResource = model.getResource(childPid.getRepositoryPath());
+            childResource.addProperty(RDF.type, Cdr.FileObject);
+            Resource origResource = DepositModelHelpers.addDatastream(childResource);
+            origResource.addLiteral(CdrDeposit.stagingLocation, "path");
+            objBag.add(childResource);
 
-        PID randomPid = makePid(CONTENT_BASE);
+            PID randomPid = makePid(CONTENT_BASE);
 
-        objBag.addProperty(Cdr.memberOrder, childPid.getId() + "|" + randomPid.getId());
+            objBag.addProperty(Cdr.memberOrder, childPid.getId() + "|" + randomPid.getId());
 
-        depBag.add(objBag);
+            depBag.add(objBag);
 
-        job.closeModel();
+            job.closeModel();
 
-        job.run();
+            job.run();
+        });
     }
 
-    @Test(expected = JobFailedException.class)
+    @Test
     public void fileObjectBagTest() {
-        PID objPid = makePid(CONTENT_BASE);
-        Bag objBag = model.createBag(objPid.getRepositoryPath());
-        objBag.addProperty(RDF.type, Cdr.FileObject);
+        Assertions.assertThrows(JobFailedException.class, () -> {
+            PID objPid = makePid(CONTENT_BASE);
+            Bag objBag = model.createBag(objPid.getRepositoryPath());
+            objBag.addProperty(RDF.type, Cdr.FileObject);
 
-        PID childPid = makePid(CONTENT_BASE);
-        Resource childResc = model.getResource(childPid.getRepositoryPath());
-        childResc.addProperty(RDF.type, Cdr.FileObject);
-        Resource origResc = DepositModelHelpers.addDatastream(childResc);
-        origResc.addLiteral(CdrDeposit.stagingLocation, "path");
-        objBag.add(childResc);
+            PID childPid = makePid(CONTENT_BASE);
+            Resource childResc = model.getResource(childPid.getRepositoryPath());
+            childResc.addProperty(RDF.type, Cdr.FileObject);
+            Resource origResc = DepositModelHelpers.addDatastream(childResc);
+            origResc.addLiteral(CdrDeposit.stagingLocation, "path");
+            objBag.add(childResc);
 
-        depBag.add(objBag);
+            depBag.add(objBag);
 
-        job.closeModel();
+            job.closeModel();
 
-        job.run();
+            job.run();
+        });
     }
 
     @Test
@@ -351,67 +370,75 @@ public class ValidateContentModelJobTest extends AbstractDepositJobTest {
         verify(aclValidator).validate(eq(childResc));
     }
 
-    @Test(expected = JobFailedException.class)
+    @Test
     public void fileObjectToFolderDestinationTest() {
-        destResc.addProperty(RDF.type, Cdr.Folder);
+        Assertions.assertThrows(JobFailedException.class, () -> {
+            destResc.addProperty(RDF.type, Cdr.Folder);
 
-        PID childPid = makePid(CONTENT_BASE);
-        Resource childResc = model.getResource(childPid.getRepositoryPath());
-        childResc.addProperty(RDF.type, Cdr.FileObject);
-        Resource origResc = DepositModelHelpers.addDatastream(childResc);
-        origResc.addLiteral(CdrDeposit.stagingLocation, "path");
+            PID childPid = makePid(CONTENT_BASE);
+            Resource childResc = model.getResource(childPid.getRepositoryPath());
+            childResc.addProperty(RDF.type, Cdr.FileObject);
+            Resource origResc = DepositModelHelpers.addDatastream(childResc);
+            origResc.addLiteral(CdrDeposit.stagingLocation, "path");
 
-        depBag.add(childResc);
+            depBag.add(childResc);
 
-        job.closeModel();
+            job.closeModel();
 
-        job.run();
+            job.run();
+        });
     }
 
-    @Test(expected = JobFailedException.class)
+    @Test
     public void objectWithNoTypeTest() {
-        PID objPid = makePid(CONTENT_BASE);
-        Bag objBag = model.createBag(objPid.getRepositoryPath());
-        objBag.addProperty(CdrDeposit.stagingLocation, "file");
+        Assertions.assertThrows(JobFailedException.class, () -> {
+            PID objPid = makePid(CONTENT_BASE);
+            Bag objBag = model.createBag(objPid.getRepositoryPath());
+            objBag.addProperty(CdrDeposit.stagingLocation, "file");
 
-        depBag.add(objBag);
+            depBag.add(objBag);
 
-        job.closeModel();
+            job.closeModel();
 
-        job.run();
+            job.run();
+        });
     }
 
-    @Test(expected = JobFailedException.class)
+    @Test
     public void objectWithInvalidTypeTest() {
-        PID objPid = makePid(CONTENT_BASE);
-        Bag objBag = model.createBag(objPid.getRepositoryPath());
-        objBag.addProperty(RDF.type, createResource("http://example.com/invalidType"));
+        Assertions.assertThrows(JobFailedException.class, () -> {
+            PID objPid = makePid(CONTENT_BASE);
+            Bag objBag = model.createBag(objPid.getRepositoryPath());
+            objBag.addProperty(RDF.type, createResource("http://example.com/invalidType"));
 
-        depBag.add(objBag);
+            depBag.add(objBag);
 
-        job.closeModel();
+            job.closeModel();
 
-        job.run();
+            job.run();
+        });
     }
 
-    @Test(expected = InvalidAssignmentException.class)
+    @Test
     public void invalidChildAclsTest() {
-        PID objPid = makePid(CONTENT_BASE);
-        Bag objBag = model.createBag(objPid.getRepositoryPath());
-        objBag.addProperty(RDF.type, Cdr.Folder);
+        Assertions.assertThrows(InvalidAssignmentException.class, () -> {
+            PID objPid = makePid(CONTENT_BASE);
+            Bag objBag = model.createBag(objPid.getRepositoryPath());
+            objBag.addProperty(RDF.type, Cdr.Folder);
 
-        PID childPid = makePid(CONTENT_BASE);
-        Resource childResc = model.getResource(childPid.getRepositoryPath());
-        childResc.addProperty(RDF.type, Cdr.Work);
-        childResc.addProperty(CdrAcl.canDescribe, "user");
-        objBag.add(childResc);
+            PID childPid = makePid(CONTENT_BASE);
+            Resource childResc = model.getResource(childPid.getRepositoryPath());
+            childResc.addProperty(RDF.type, Cdr.Work);
+            childResc.addProperty(CdrAcl.canDescribe, "user");
+            objBag.add(childResc);
 
-        doNothing().doThrow(new InvalidAssignmentException()).when(aclValidator).validate(any(Resource.class));
+            doNothing().doThrow(new InvalidAssignmentException()).when(aclValidator).validate(any(Resource.class));
 
-        depBag.add(objBag);
+            depBag.add(objBag);
 
-        job.closeModel();
+            job.closeModel();
 
-        job.run();
+            job.run();
+        });
     }
 }

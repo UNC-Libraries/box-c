@@ -2,10 +2,10 @@ package edu.unc.lib.boxc.deposit.normalize;
 
 import static edu.unc.lib.boxc.common.test.TestHelpers.setField;
 import static edu.unc.lib.boxc.model.api.ids.RepositoryPathConstants.CONTENT_BASE;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
@@ -24,8 +24,8 @@ import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ResIterator;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.vocabulary.RDF;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
@@ -69,7 +69,7 @@ public class NormalizeFileObjectsJobTest extends AbstractDepositJobTest {
     @Mock
     private PIDMinter pidMinter;
 
-    @Before
+    @BeforeEach
     public void init() {
         job = new NormalizeFileObjectsJob();
         job.setDepositUUID(depositUUID);
@@ -111,7 +111,7 @@ public class NormalizeFileObjectsJobTest extends AbstractDepositJobTest {
 
         // Check that no additional objects were added
         Map<String, Resource> map = getResourceMap(model);
-        assertEquals("Number of objects in model must not change", 3, map.size());
+        assertEquals(3, map.size(), "Number of objects in model must not change");
 
         assertNotNull(map.get(workBag.getURI()));
         assertNotNull(map.get(childResc.getURI()));
@@ -134,7 +134,7 @@ public class NormalizeFileObjectsJobTest extends AbstractDepositJobTest {
 
         // Check that no additional objects were added
         Map<String, Resource> map = getResourceMap(model);
-        assertEquals("Must be one more resource than originally added", 4, map.size());
+        assertEquals(4, map.size(), "Must be one more resource than originally added");
 
         // Verify that work was created
         Resource workResc = model.listResourcesWithProperty(RDF.type, Cdr.Work).next();
@@ -145,9 +145,7 @@ public class NormalizeFileObjectsJobTest extends AbstractDepositJobTest {
 
         folderBag = model.getBag(folderUri);
         // Verify that the folder contains the work, not the file
-        assertEquals("Folder must contain work",
-                folderBag.iterator().next().asResource(),
-                workResc);
+        assertEquals(folderBag.iterator().next().asResource(), workResc, "Folder must contain work");
 
         childResc = model.getResource(childResc.getURI());
         // Verify that ACL properties are transfered to work
@@ -155,9 +153,7 @@ public class NormalizeFileObjectsJobTest extends AbstractDepositJobTest {
         assertTrue(workResc.hasProperty(CdrAcl.embargoUntil));
 
         // Check that the work contains the fileObject
-        assertEquals("Folder must contain work",
-                model.getBag(workResc).iterator().next().asResource(),
-                childResc);
+        assertEquals(model.getBag(workResc).iterator().next().asResource(), childResc, "Folder must contain work");
 
         // Work must have fileObject as primary
         assertTrue(workResc.hasProperty(Cdr.primaryObject, childResc));
@@ -211,7 +207,7 @@ public class NormalizeFileObjectsJobTest extends AbstractDepositJobTest {
 
         // Check that no additional objects were added
         Map<String, Resource> map = getResourceMap(model);
-        assertEquals("Number of objects in model must not change", 2, map.size());
+        assertEquals(2, map.size(), "Number of objects in model must not change");
 
         // Check that no objects changed
         Resource workResc = map.get(workBag.getURI());

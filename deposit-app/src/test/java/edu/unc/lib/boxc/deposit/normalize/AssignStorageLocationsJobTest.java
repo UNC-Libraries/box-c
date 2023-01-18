@@ -2,8 +2,8 @@ package edu.unc.lib.boxc.deposit.normalize;
 
 import static edu.unc.lib.boxc.common.test.TestHelpers.setField;
 import static java.util.Arrays.asList;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -15,8 +15,9 @@ import org.apache.jena.rdf.model.Bag;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.vocabulary.RDF;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 
 import edu.unc.lib.boxc.deposit.api.RedisWorkerConstants.DepositField;
@@ -49,7 +50,7 @@ public class AssignStorageLocationsJobTest extends AbstractNormalizationJobTest 
     private Model depositModel;
     private Bag depBag;
 
-    @Before
+    @BeforeEach
     public void init() throws Exception {
         destPid = makePid();
 
@@ -139,14 +140,16 @@ public class AssignStorageLocationsJobTest extends AbstractNormalizationJobTest 
         assertFalse(postUntypedResc.hasProperty(Cdr.storageLocation));
     }
 
-    @Test(expected = UnknownStorageLocationException.class)
+    @Test
     public void depositNoDefaultStorageLocation() throws Exception {
-        when(locationManager.getStorageLocation(destPid)).thenReturn(null);
+        Assertions.assertThrows(UnknownStorageLocationException.class, () -> {
+            when(locationManager.getStorageLocation(destPid)).thenReturn(null);
 
-        addContainerObject(depBag, Cdr.Folder);
-        job.closeModel();
+            addContainerObject(depBag, Cdr.Folder);
+            job.closeModel();
 
-        job.run();
+            job.run();
+        });
     }
 
     @Test
@@ -175,36 +178,40 @@ public class AssignStorageLocationsJobTest extends AbstractNormalizationJobTest 
         assertTrue(postFolderBag.hasProperty(Cdr.storageLocation, loc2Id));
     }
 
-    @Test(expected = UnknownStorageLocationException.class)
+    @Test
     public void depositWithInvalidStorageLocation() throws Exception {
-        String providedLoc = "somestorage";
+        Assertions.assertThrows(UnknownStorageLocationException.class, () -> {
+            String providedLoc = "somestorage";
 
-        // Provide a specific storage location to use which is different from the default
-        depositStatus.put(DepositField.storageLocation.name(), providedLoc);
+            // Provide a specific storage location to use which is different from the default
+            depositStatus.put(DepositField.storageLocation.name(), providedLoc);
 
-        addContainerObject(depBag, Cdr.Folder);
-        job.closeModel();
+            addContainerObject(depBag, Cdr.Folder);
+            job.closeModel();
 
-        job.run();
+            job.run();
+        });
     }
 
-    @Test(expected = JobFailedException.class)
+    @Test
     public void depositWithProvidedStorageLocationNoAvailableForDest() throws Exception {
-        String loc2Id = "loc2";
-        StorageLocation storageLoc2 = mock(StorageLocation.class);
-        when(storageLoc2.getId()).thenReturn(loc2Id);
+        Assertions.assertThrows(JobFailedException.class, () -> {
+            String loc2Id = "loc2";
+            StorageLocation storageLoc2 = mock(StorageLocation.class);
+            when(storageLoc2.getId()).thenReturn(loc2Id);
 
-        when(locationManager.getStorageLocationById(loc2Id)).thenReturn(storageLoc2);
-        // The second storage location is not in the list of available locations
-        when(locationManager.listAvailableStorageLocations(destPid))
-                .thenReturn(asList(storageLoc));
+            when(locationManager.getStorageLocationById(loc2Id)).thenReturn(storageLoc2);
+            // The second storage location is not in the list of available locations
+            when(locationManager.listAvailableStorageLocations(destPid))
+                    .thenReturn(asList(storageLoc));
 
-        depositStatus.put(DepositField.storageLocation.name(), loc2Id);
+            depositStatus.put(DepositField.storageLocation.name(), loc2Id);
 
-        addContainerObject(depBag, Cdr.Folder);
-        job.closeModel();
+            addContainerObject(depBag, Cdr.Folder);
+            job.closeModel();
 
-        job.run();
+            job.run();
+        });
     }
 
     private Bag addContainerObject(Bag parent, Resource type) {

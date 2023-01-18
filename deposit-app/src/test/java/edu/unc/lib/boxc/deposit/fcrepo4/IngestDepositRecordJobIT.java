@@ -4,9 +4,9 @@ import static edu.unc.lib.boxc.common.test.TestHelpers.setField;
 import static edu.unc.lib.boxc.persist.impl.storage.StorageLocationTestHelper.LOC1_ID;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.apache.commons.io.FileUtils.writeStringToFile;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.slf4j.LoggerFactory.getLogger;
 
 import java.net.URI;
@@ -25,8 +25,8 @@ import org.apache.jena.rdf.model.Bag;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.vocabulary.RDF;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -66,7 +66,7 @@ public class IngestDepositRecordJobIT extends AbstractFedoraDepositJobIT {
     @Autowired
     private RepositoryObjectLoader repoObjLoader;
 
-    @Before
+    @BeforeEach
     public void init() throws Exception {
 
         job = new IngestDepositRecordJob();
@@ -112,8 +112,8 @@ public class IngestDepositRecordJobIT extends AbstractFedoraDepositJobIT {
         job.run();
 
         DepositRecord record = repoObjLoader.getDepositRecord(depositPid);
-        assertTrue("Storage location property was not set",
-                record.getResource().hasLiteral(Cdr.storageLocation, LOC1_ID));
+        assertTrue(record.getResource().hasLiteral(Cdr.storageLocation, LOC1_ID),
+                "Storage location property was not set");
 
         List<PID> manifestPids = record.listManifests();
 

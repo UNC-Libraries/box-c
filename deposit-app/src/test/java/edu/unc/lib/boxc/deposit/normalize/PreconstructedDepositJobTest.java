@@ -1,9 +1,9 @@
 package edu.unc.lib.boxc.deposit.normalize;
 
 import static edu.unc.lib.boxc.common.test.TestHelpers.setField;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.when;
 
@@ -18,8 +18,8 @@ import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.vocabulary.DC;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import edu.unc.lib.boxc.deposit.api.RedisWorkerConstants.DepositField;
 import edu.unc.lib.boxc.deposit.fcrepo4.AbstractDepositJobTest;
@@ -34,7 +34,7 @@ public class PreconstructedDepositJobTest extends AbstractDepositJobTest {
     private PreconstructedDepositJob job;
     private Map<String, String> status;
 
-    @Before
+    @BeforeEach
     public void setup() throws Exception {
         status = new HashMap<>();
         when(depositStatusFactory.get(anyString())).thenReturn(status);
@@ -65,7 +65,8 @@ public class PreconstructedDepositJobTest extends AbstractDepositJobTest {
 
     @Test
     public void withExternalSourceNoModelFile() throws Exception {
-        Path externalBasePath = tmpFolder.newFolder().toPath();
+        Path externalBasePath = tmpFolder.resolve("newFolder");
+        Files.createDirectory(externalBasePath);
         DepositDirectoryManager extDirManager = new DepositDirectoryManager(depositPid, externalBasePath, true);
         status.put(DepositField.sourceUri.name(), extDirManager.getDepositDir().toUri().toString());
         Files.createFile(extDirManager.getPremisPath(depositPid));
@@ -119,7 +120,7 @@ public class PreconstructedDepositJobTest extends AbstractDepositJobTest {
 
     @Test
     public void withSourceWithModelFile() throws Exception {
-        Path externalBasePath = tmpFolder.newFolder().toPath();
+        Path externalBasePath = tmpFolder.resolve("testFolder");
         DepositDirectoryManager extDirManager = new DepositDirectoryManager(
                 depositPid, externalBasePath, true);
         Model importModel = ModelFactory.createDefaultModel();
@@ -169,7 +170,8 @@ public class PreconstructedDepositJobTest extends AbstractDepositJobTest {
 
     @Test
     public void sourceDirDoesNotExistTest() throws Exception {
-        Path externalBasePath = tmpFolder.newFolder().toPath();
+        Path externalBasePath = tmpFolder.resolve("testFolder");
+        Files.createDirectory(externalBasePath);
         Files.delete(externalBasePath);
         DepositDirectoryManager extDirManager = new DepositDirectoryManager(depositPid, externalBasePath, true, false);
         status.put(DepositField.sourceUri.name(), extDirManager.getDepositDir().toUri().toString());

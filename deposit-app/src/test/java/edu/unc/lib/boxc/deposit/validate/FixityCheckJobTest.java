@@ -5,10 +5,10 @@ import static edu.unc.lib.boxc.deposit.impl.model.DepositModelHelpers.addDatastr
 import static edu.unc.lib.boxc.deposit.impl.model.DepositModelHelpers.getDatastream;
 import static edu.unc.lib.boxc.model.api.DatastreamType.ORIGINAL_FILE;
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.times;
@@ -36,9 +36,9 @@ import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.Statement;
 import org.apache.jena.vocabulary.RDF;
 import org.jgroups.util.UUID;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 
 import edu.unc.lib.boxc.deposit.api.RedisWorkerConstants.DepositState;
@@ -79,7 +79,7 @@ public class FixityCheckJobTest extends AbstractDepositJobTest {
 
     private final static ExecutorService executorService = Executors.newFixedThreadPool(2);
 
-    @Before
+    @BeforeEach
     public void setup() throws Exception {
         pidMinter = new RepositoryPIDMinter();
 
@@ -90,7 +90,7 @@ public class FixityCheckJobTest extends AbstractDepositJobTest {
 
         depositJobId = depositUUID + ":" + job.getClass().getName();
 
-        stagingDir = tmpFolder.newFolder("staged");
+        stagingDir = tmpFolder.resolve("staged").toFile();
     }
 
     private void initializeJob() {
@@ -106,7 +106,7 @@ public class FixityCheckJobTest extends AbstractDepositJobTest {
         job.init();
     }
 
-    @AfterClass
+    @AfterAll
     public static void afterTestClass() {
         executorService.shutdown();
     }
@@ -474,7 +474,7 @@ public class FixityCheckJobTest extends AbstractDepositJobTest {
         List<Resource> events = eventsModel.listResourcesWithProperty(
                 RDF.type, Premis.MessageDigestCalculation).toList();
         // There can be more than one event in the case of interruption
-        assertTrue("Expected at least one premis event", 1 <= events.size());
+        assertTrue(1 <= events.size(), "Expected at least one premis event");
         Resource eventResc = events.get(0);
         eventResc.hasProperty(Premis.note, alg.getName().toUpperCase() + " checksum calculated: " + digest);
     }

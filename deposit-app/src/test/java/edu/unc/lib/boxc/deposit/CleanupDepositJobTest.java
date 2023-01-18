@@ -1,8 +1,8 @@
 package edu.unc.lib.boxc.deposit;
 
 import static edu.unc.lib.boxc.common.test.TestHelpers.setField;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyInt;
 import static org.mockito.Matchers.anyString;
@@ -23,8 +23,9 @@ import java.util.Map;
 import org.apache.commons.io.FileUtils;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Resource;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentMatcher;
 import org.mockito.Mock;
 
@@ -56,12 +57,13 @@ public class CleanupDepositJobTest extends AbstractDepositJobTest {
 
     private CleanupDepositJob job;
 
-    @Before
+    @BeforeEach
     public void setup() throws Exception {
         depositStatus = new HashMap<>();
         when(depositStatusFactory.get(anyString())).thenReturn(depositStatus);
 
-        stagesDir = tmpFolder.newFolder("stages");
+        stagesDir = tmpFolder.resolve("stages").toFile();
+        Files.createDirectory(tmpFolder.resolve("stages"));
 
         stagingFolder = new File(stagesDir, "staging_folder");
         stagingPath = stagingFolder.getAbsolutePath();
@@ -110,7 +112,7 @@ public class CleanupDepositJobTest extends AbstractDepositJobTest {
     }
 
     private void assertDepositCleanedUp() {
-        assertFalse("Deposit directory not cleaned up", depositDir.exists());
+        assertFalse(depositDir.exists(), "Deposit directory not cleaned up");
 
         verify(depositStatusFactory).expireKeys(eq(depositUUID), anyInt());
         verify(depositStatusFactory).expireKeys(eq(depositUUID), anyInt());
@@ -230,14 +232,16 @@ public class CleanupDepositJobTest extends AbstractDepositJobTest {
         assertNothingDeleted(stagingFolder2);
     }
 
-    @Test(expected = UnknownIngestSourceException.class)
+    @Test
     public void noCleanupPolicyTest() throws Exception {
-        when(sourceManager.getIngestSourceForUri(any(URI.class)))
-                .thenThrow(new UnknownIngestSourceException("Nope"));
+        Assertions.assertThrows(UnknownIngestSourceException.class, () -> {
+            when(sourceManager.getIngestSourceForUri(any(URI.class)))
+                    .thenThrow(new UnknownIngestSourceException("Nope"));
 
-        addIngestedFilesToModel();
+            addIngestedFilesToModel();
 
-        job.run();
+            job.run();
+        });
     }
 
     @Test
@@ -249,7 +253,7 @@ public class CleanupDepositJobTest extends AbstractDepositJobTest {
 
         job.run();
 
-        assertFalse("Cleanup file was not deleted", cleanupFile.exists());
+        assertFalse(cleanupFile.exists(), "Cleanup file was not deleted");
     }
 
     @Test
@@ -261,7 +265,7 @@ public class CleanupDepositJobTest extends AbstractDepositJobTest {
 
         job.run();
 
-        assertTrue("Cleanup file should not have been deleted", cleanupFile.exists());
+        assertTrue(cleanupFile.exists(), "Cleanup file should not have been deleted");
     }
 
     private File addCleanupFile() throws Exception {

@@ -1,6 +1,7 @@
 package edu.unc.lib.boxc.deposit.validate;
 
 import static edu.unc.lib.boxc.common.test.TestHelpers.setField;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
@@ -18,10 +19,9 @@ import org.apache.jena.rdf.model.Bag;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.vocabulary.RDF;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 
 import edu.unc.lib.boxc.deposit.api.RedisWorkerConstants.DepositState;
@@ -44,9 +44,6 @@ import edu.unc.lib.boxc.persist.api.sources.IngestSourceManager;
  *
  */
 public class ValidateFileAvailabilityJobTest extends AbstractDepositJobTest {
-    @Rule
-    public ExpectedException exception = ExpectedException.none();
-
     private PID depositPid;
 
     private ValidateFileAvailabilityJob job;
@@ -56,7 +53,7 @@ public class ValidateFileAvailabilityJobTest extends AbstractDepositJobTest {
     @Mock
     private IngestSource ingestSource;
 
-    @Before
+    @BeforeEach
     public void init() throws Exception {
 
         job = new ValidateFileAvailabilityJob();
@@ -124,63 +121,71 @@ public class ValidateFileAvailabilityJobTest extends AbstractDepositJobTest {
         verify(jobStatusFactory, times(2)).incrCompletion(eq(jobUUID), eq(1));
     }
 
-    @Test(expected = JobFailedException.class)
+    @Test
     public void invalidSourceTest() {
-        Model model = job.getWritableModel();
-        Bag depBag = model.createBag(depositPid.getRepositoryPath());
+        Assertions.assertThrows(JobFailedException.class, () -> {
+            Model model = job.getWritableModel();
+            Bag depBag = model.createBag(depositPid.getRepositoryPath());
 
-        when(sourceManager.getIngestSourceForUri(any(URI.class)))
-                .thenThrow(new UnknownIngestSourceException("Not source"));
+            when(sourceManager.getIngestSourceForUri(any(URI.class)))
+                    .thenThrow(new UnknownIngestSourceException("Not source"));
 
-        addFileObject(depBag, "missing.pdf");
+            addFileObject(depBag, "missing.pdf");
 
-        job.closeModel();
+            job.closeModel();
 
-        job.run();
+            job.run();
+        });
     }
 
-    @Test(expected = JobFailedException.class)
+    @Test
     public void missingFileTest() {
-        Model model = job.getWritableModel();
-        Bag depBag = model.createBag(depositPid.getRepositoryPath());
+        Assertions.assertThrows(JobFailedException.class, () -> {
+            Model model = job.getWritableModel();
+            Bag depBag = model.createBag(depositPid.getRepositoryPath());
 
-        when(ingestSource.exists(any(URI.class))).thenReturn(false);
+            when(ingestSource.exists(any(URI.class))).thenReturn(false);
 
-        addFileObject(depBag, "missing.pdf");
+            addFileObject(depBag, "missing.pdf");
 
-        job.closeModel();
+            job.closeModel();
 
-        job.run();
+            job.run();
+        });
     }
 
-    @Test(expected = JobInterruptedException.class)
+    @Test
     public void interruptedTest() {
-        when(depositStatusFactory.getState(anyString()))
-                .thenReturn(DepositState.paused);
+        Assertions.assertThrows(JobInterruptedException.class, () -> {
+            when(depositStatusFactory.getState(anyString()))
+                    .thenReturn(DepositState.paused);
 
-        Model model = job.getWritableModel();
-        Bag depBag = model.createBag(depositPid.getRepositoryPath());
+            Model model = job.getWritableModel();
+            Bag depBag = model.createBag(depositPid.getRepositoryPath());
 
-        addFileObject(depBag, "pdf.pdf");
+            addFileObject(depBag, "pdf.pdf");
 
-        job.closeModel();
+            job.closeModel();
 
-        job.run();
+            job.run();
 
-        verify(jobStatusFactory, never()).incrCompletion(eq(jobUUID), eq(1));
+            verify(jobStatusFactory, never()).incrCompletion(eq(jobUUID), eq(1));
+        });
     }
 
     @Test
     public void badStagingLocation() {
-        exception.expect(JobFailedException.class);
-        exception.expectMessage("Deposit references invalid files");
-        when(sourceManager.getIngestSourceForUri(any(URI.class)))
-                .thenThrow(new UnknownIngestSourceException("nope"));
-        Model model = job.getWritableModel();
-        Bag depBag = model.createBag(depositPid.getRepositoryPath());
-        addFileObject(depBag, "some/random/location");
-        job.closeModel();
-        job.run();
+        Exception exception = Assertions.assertThrows(JobFailedException.class, () -> {
+            when(sourceManager.getIngestSourceForUri(any(URI.class)))
+                    .thenThrow(new UnknownIngestSourceException("nope"));
+            Model model = job.getWritableModel();
+            Bag depBag = model.createBag(depositPid.getRepositoryPath());
+            addFileObject(depBag, "some/random/location");
+            job.closeModel();
+            job.run();
+        });
+
+        assertTrue(exception.getMessage().contains("Deposit references invalid files"));
     }
 
     private PID addFileObject(Bag parent, String stagingLocation) {

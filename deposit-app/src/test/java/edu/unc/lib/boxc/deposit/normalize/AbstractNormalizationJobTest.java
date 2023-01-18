@@ -1,6 +1,6 @@
 package edu.unc.lib.boxc.deposit.normalize;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.when;
 
@@ -15,7 +15,7 @@ import org.apache.jena.rdf.model.Resource;
 import org.jdom2.Content;
 import org.jdom2.Element;
 import org.jdom2.filter.Filters;
-import org.junit.Before;
+import org.junit.jupiter.api.BeforeEach;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
@@ -32,7 +32,7 @@ import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
  */
 public abstract class AbstractNormalizationJobTest extends AbstractDepositJobTest {
 
-    @Before
+    @BeforeEach
     public void initNorm() throws Exception {
         String pidString =  UUID.randomUUID().toString();
         PID premisEventPid = PIDs.get(pidString);
@@ -50,7 +50,7 @@ public abstract class AbstractNormalizationJobTest extends AbstractDepositJobTes
             String fileLabel) {
         String filePath = resource.getProperty(CdrDeposit.stagingLocation).getLiteral().getString();
         File file = new File(depositDirectory, filePath);
-        assertTrue(fileLabel + " file did not exist", file.exists());
+        assertTrue(file.exists(), fileLabel + " file did not exist");
 
         return file;
     }

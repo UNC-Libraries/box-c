@@ -1,7 +1,7 @@
 package edu.unc.lib.boxc.deposit.normalize;
 
 import static edu.unc.lib.boxc.common.test.TestHelpers.setField;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.doAnswer;
@@ -24,8 +24,8 @@ import org.apache.jena.rdf.model.Resource;
 import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.input.SAXBuilder;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
@@ -56,7 +56,7 @@ public class VocabularyEnforcementJobTest extends AbstractNormalizationJobTest {
 
     private PID rescPid;
 
-    @Before
+    @BeforeEach
     public void setup() throws Exception {
         job = new VocabularyEnforcementJob();
         job.setDepositUUID(depositUUID);
@@ -105,7 +105,7 @@ public class VocabularyEnforcementJobTest extends AbstractNormalizationJobTest {
 
         Document modsDoc = getMODSDocument(rescPid.getUUID());
         Element testElement = element("/mods:mods/testElement", modsDoc);
-        assertTrue("Document was not modified", testElement != null);
+        assertTrue(testElement != null, "Document was not modified");
     }
 
     @Test
@@ -123,7 +123,7 @@ public class VocabularyEnforcementJobTest extends AbstractNormalizationJobTest {
         job.run();
 
         verify(mockHelper).updateDocumentTerms(any(Element.class));
-        assertTrue("Timestamp on MODS file changed", modified == path.toFile().lastModified());
+        assertTrue(modified == path.toFile().lastModified(), "Timestamp on MODS file changed");
     }
 
     private Document getMODSDocument(String uuid) throws Exception {

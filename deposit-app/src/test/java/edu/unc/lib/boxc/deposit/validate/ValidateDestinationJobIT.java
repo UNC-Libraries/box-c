@@ -2,8 +2,8 @@ package edu.unc.lib.boxc.deposit.validate;
 
 import static edu.unc.lib.boxc.common.test.TestHelpers.setField;
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -15,9 +15,10 @@ import org.apache.jena.rdf.model.Bag;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.vocabulary.RDF;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import edu.unc.lib.boxc.model.api.ids.PID;
@@ -65,7 +66,7 @@ public class ValidateDestinationJobIT extends AbstractFedoraDepositJobIT {
     private Model depModel;
     private Bag depBag;
 
-    @Before
+    @BeforeEach
     public void init() throws Exception {
         job = new ValidateDestinationJob();
         job.setJobUUID(jobUUID);
@@ -79,7 +80,7 @@ public class ValidateDestinationJobIT extends AbstractFedoraDepositJobIT {
         depBag = depModel.createBag(depositPid.getRepositoryPath());
     }
 
-    @After
+    @AfterEach
     public void tearDown() {
         job.closeModel();
     }
@@ -126,25 +127,26 @@ public class ValidateDestinationJobIT extends AbstractFedoraDepositJobIT {
         for (Resource childResc: childRescs) {
             childResc = model.getResource(childResc.getURI());
             String childId = PIDs.get(childResc.getURI()).getId();
-            assertTrue("Expected child " + childId + " with types " + childResc.listProperties(RDF.type).toList()
-                    + " to fail validation, but it passed",
-                    details.contains(childId));
+            assertTrue(details.contains(childId), "Expected child " + childId + " with types " +
+                    childResc.listProperties(RDF.type).toList() + " to fail validation, but it passed");
         }
 
         assertTrue(details.contains(childRescs.length +  " object(s) for deposit do not meet this requirement"));
     }
 
-    @Test(expected = AccessRestrictionException.class)
+    @Test
     public void rootObject_AddAdminUnit_InsufficientPermissions() throws Exception {
-        treeIndexer.indexAll(baseAddress);
+        Assertions.assertThrows(AccessRestrictionException.class, () -> {
+            treeIndexer.indexAll(baseAddress);
 
-        setDestinationAndPermissions(rootObj.getPid(), DEPOSITOR_NAME, GLOBAL_INGESTOR_PRINC);
+            setDestinationAndPermissions(rootObj.getPid(), DEPOSITOR_NAME, GLOBAL_INGESTOR_PRINC);
 
-        addChildContainer(depBag, Cdr.AdminUnit, "Boxc Unit");
+            addChildContainer(depBag, Cdr.AdminUnit, "Boxc Unit");
 
-        job.closeModel();
+            job.closeModel();
 
-        job.run();
+            job.run();
+        });
     }
 
     @Test
@@ -189,20 +191,22 @@ public class ValidateDestinationJobIT extends AbstractFedoraDepositJobIT {
         }
     }
 
-    @Test(expected = AccessRestrictionException.class)
+    @Test
     public void unit_AddCollection_InsufficientPermssions() throws Exception {
-        AdminUnit unitObj = repoObjFactory.createAdminUnit(null);
-        rootObj.addMember(unitObj);
+        Assertions.assertThrows(AccessRestrictionException.class, () -> {
+            AdminUnit unitObj = repoObjFactory.createAdminUnit(null);
+            rootObj.addMember(unitObj);
 
-        treeIndexer.indexAll(baseAddress);
+            treeIndexer.indexAll(baseAddress);
 
-        setDestinationAndPermissions(unitObj.getPid(), DEPOSITOR_NAME, GLOBAL_INGESTOR_PRINC);
+            setDestinationAndPermissions(unitObj.getPid(), DEPOSITOR_NAME, GLOBAL_INGESTOR_PRINC);
 
-        addChildContainer(depBag, Cdr.Collection, "New Collection");
+            addChildContainer(depBag, Cdr.Collection, "New Collection");
 
-        job.closeModel();
+            job.closeModel();
 
-        job.run();
+            job.run();
+        });
     }
 
     @Test
@@ -251,22 +255,24 @@ public class ValidateDestinationJobIT extends AbstractFedoraDepositJobIT {
         }
     }
 
-    @Test(expected = AccessRestrictionException.class)
+    @Test
     public void collect_AddFolder_InsufficientPermssions() throws Exception {
-        AdminUnit unitObj = repoObjFactory.createAdminUnit(null);
-        rootObj.addMember(unitObj);
-        CollectionObject collObj = repoObjFactory.createCollectionObject(null);
-        unitObj.addMember(collObj);
+        Assertions.assertThrows(AccessRestrictionException.class, () -> {
+            AdminUnit unitObj = repoObjFactory.createAdminUnit(null);
+            rootObj.addMember(unitObj);
+            CollectionObject collObj = repoObjFactory.createCollectionObject(null);
+            unitObj.addMember(collObj);
 
-        treeIndexer.indexAll(baseAddress);
+            treeIndexer.indexAll(baseAddress);
 
-        setDestinationAndPermissions(collObj.getPid(), DEPOSITOR_NAME, "some_group");
+            setDestinationAndPermissions(collObj.getPid(), DEPOSITOR_NAME, "some_group");
 
-        addChildContainer(depBag, Cdr.Folder, "New Folder");
+            addChildContainer(depBag, Cdr.Folder, "New Folder");
 
-        job.closeModel();
+            job.closeModel();
 
-        job.run();
+            job.run();
+        });
     }
 
     @Test
@@ -319,24 +325,26 @@ public class ValidateDestinationJobIT extends AbstractFedoraDepositJobIT {
         }
     }
 
-    @Test(expected = AccessRestrictionException.class)
+    @Test
     public void folder_AddFolder_InsufficientPermssions() throws Exception {
-        AdminUnit unitObj = repoObjFactory.createAdminUnit(null);
-        rootObj.addMember(unitObj);
-        CollectionObject collObj = repoObjFactory.createCollectionObject(null);
-        unitObj.addMember(collObj);
-        FolderObject folderObj = repoObjFactory.createFolderObject(null);
-        collObj.addMember(folderObj);
+        Assertions.assertThrows(AccessRestrictionException.class, () -> {
+            AdminUnit unitObj = repoObjFactory.createAdminUnit(null);
+            rootObj.addMember(unitObj);
+            CollectionObject collObj = repoObjFactory.createCollectionObject(null);
+            unitObj.addMember(collObj);
+            FolderObject folderObj = repoObjFactory.createFolderObject(null);
+            collObj.addMember(folderObj);
 
-        treeIndexer.indexAll(baseAddress);
+            treeIndexer.indexAll(baseAddress);
 
-        setDestinationAndPermissions(folderObj.getPid(), DEPOSITOR_NAME, "some_group");
+            setDestinationAndPermissions(folderObj.getPid(), DEPOSITOR_NAME, "some_group");
 
-        addChildContainer(depBag, Cdr.Folder, "New Folder");
+            addChildContainer(depBag, Cdr.Folder, "New Folder");
 
-        job.closeModel();
+            job.closeModel();
 
-        job.run();
+            job.run();
+        });
     }
 
     @Test
@@ -393,26 +401,28 @@ public class ValidateDestinationJobIT extends AbstractFedoraDepositJobIT {
         }
     }
 
-    @Test(expected = AccessRestrictionException.class)
+    @Test
     public void work_AddFile_InsufficientPermissions() throws Exception {
-        AdminUnit unitObj = repoObjFactory.createAdminUnit(null);
-        rootObj.addMember(unitObj);
-        CollectionObject collObj = repoObjFactory.createCollectionObject(null);
-        unitObj.addMember(collObj);
-        FolderObject folderObj = repoObjFactory.createFolderObject(null);
-        collObj.addMember(folderObj);
-        WorkObject workObj = repoObjFactory.createWorkObject(null);
-        folderObj.addMember(workObj);
+        Assertions.assertThrows(AccessRestrictionException.class, () -> {
+            AdminUnit unitObj = repoObjFactory.createAdminUnit(null);
+            rootObj.addMember(unitObj);
+            CollectionObject collObj = repoObjFactory.createCollectionObject(null);
+            unitObj.addMember(collObj);
+            FolderObject folderObj = repoObjFactory.createFolderObject(null);
+            collObj.addMember(folderObj);
+            WorkObject workObj = repoObjFactory.createWorkObject(null);
+            folderObj.addMember(workObj);
 
-        treeIndexer.indexAll(baseAddress);
+            treeIndexer.indexAll(baseAddress);
 
-        setDestinationAndPermissions(workObj.getPid(), DEPOSITOR_NAME, "no_one_important");
+            setDestinationAndPermissions(workObj.getPid(), DEPOSITOR_NAME, "no_one_important");
 
-        addChildFile(depBag, "File1", true);
+            addChildFile(depBag, "File1", true);
 
-        job.closeModel();
+            job.closeModel();
 
-        job.run();
+            job.run();
+        });
     }
 
     @Test

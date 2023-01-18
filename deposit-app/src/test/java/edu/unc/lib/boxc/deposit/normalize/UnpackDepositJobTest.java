@@ -1,7 +1,7 @@
 package edu.unc.lib.boxc.deposit.normalize;
 
 import static edu.unc.lib.boxc.common.test.TestHelpers.setField;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.when;
 
@@ -9,8 +9,8 @@ import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import edu.unc.lib.boxc.deposit.DepositTestUtils;
 import edu.unc.lib.boxc.deposit.api.RedisWorkerConstants.DepositField;
@@ -21,7 +21,7 @@ public class UnpackDepositJobTest extends AbstractDepositJobTest {
 
     private UnpackDepositJob job;
 
-    @Before
+    @BeforeEach
     public void setup() {
         job = new UnpackDepositJob(jobUUID, depositUUID);
         job.setDepositStatusFactory(depositStatusFactory);
@@ -43,6 +43,6 @@ public class UnpackDepositJobTest extends AbstractDepositJobTest {
         job.run();
 
         File metsFile = new File(workDir, "data/mets.xml");
-        assertTrue("METS file must exist after unpacking", metsFile.exists());
+        assertTrue(metsFile.exists(), "METS file must exist after unpacking");
     }
 }
