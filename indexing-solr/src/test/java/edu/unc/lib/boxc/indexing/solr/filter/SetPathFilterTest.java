@@ -1,8 +1,8 @@
 package edu.unc.lib.boxc.indexing.solr.filter;
 
 import static java.util.Collections.emptyList;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
@@ -18,8 +18,9 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 import edu.unc.lib.boxc.search.solr.services.TitleRetrievalService;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
@@ -71,7 +72,7 @@ public class SetPathFilterTest {
 
     private int WORK_OBJECT_DEPTH = 3;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         initMocks(this);
 
@@ -191,10 +192,12 @@ public class SetPathFilterTest {
         verify(idb).setRollup(eq(pids.get(WORK_OBJECT_DEPTH).getId()));
     }
 
-    @Test(expected = IndexingException.class)
+    @Test
     public void testNoAncestors() throws Exception {
-        when(pathFactory.getAncestorPids(pid)).thenReturn(Collections.emptyList());
-        filter.filter(dip);
+        Assertions.assertThrows(IndexingException.class, () -> {
+            when(pathFactory.getAncestorPids(pid)).thenReturn(Collections.emptyList());
+            filter.filter(dip);
+        });
     }
 
     private List<PID> makePidList(int numPids) {

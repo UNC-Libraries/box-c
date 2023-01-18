@@ -9,8 +9,8 @@ import java.util.Properties;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrDocumentList;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 
 import edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl;
@@ -46,7 +46,7 @@ public class DeleteSolrTreeTest extends BaseEmbeddedSolrTest {
     @Mock
     private ContentObjectSolrRecord metadata;
 
-    @Before
+    @BeforeEach
     public void setup() throws SolrServerException, IOException {
         initMocks(this);
 
@@ -113,7 +113,7 @@ public class DeleteSolrTreeTest extends BaseEmbeddedSolrTest {
         server.commit();
 
         SolrDocumentList docListAfter = getDocumentList();
-        assertEquals("One object should have been removed", 5, docListAfter.getNumFound());
+        assertEquals(5, docListAfter.getNumFound(), "One object should have been removed");
 
         assertObjectsNotExist(corpus.pid6);
     }
@@ -127,7 +127,7 @@ public class DeleteSolrTreeTest extends BaseEmbeddedSolrTest {
 
         SolrDocumentList docListAfter = getDocumentList();
 
-        assertEquals("Index should be empty", 0, docListAfter.getNumFound());
+        assertEquals(0, docListAfter.getNumFound(), "Index should be empty");
     }
 
     private void assertObjectsNotExist(PID... pids) throws Exception {

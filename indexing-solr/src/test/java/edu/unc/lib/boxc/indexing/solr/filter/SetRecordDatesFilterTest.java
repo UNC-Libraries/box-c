@@ -1,6 +1,7 @@
 package edu.unc.lib.boxc.indexing.solr.filter;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
@@ -9,10 +10,9 @@ import java.text.SimpleDateFormat;
 import org.apache.jena.rdf.model.Literal;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.Statement;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 
 import edu.unc.lib.boxc.indexing.solr.exception.IndexingException;
@@ -56,13 +56,10 @@ public class SetRecordDatesFilterTest {
     @Mock
     private Object object2;
 
-    @Rule
-    public ExpectedException expectedEx = ExpectedException.none();
-
     private IndexDocumentBean idb;
     private SetRecordDatesFilter filter;
 
-    @Before
+    @BeforeEach
     public void setup() throws Exception {
         idb = new IndexDocumentBean();
         initMocks(this);
@@ -101,13 +98,13 @@ public class SetRecordDatesFilterTest {
 
     @Test
     public void testUnparseableDate() throws Exception {
-        expectedEx.expect((IndexingException.class));
+        Exception expected = Assertions.assertThrows(IndexingException.class, () -> {
+            when(object2.toString()).thenReturn(BAD_DATE);
+
+            filter.filter(dip);
+        });
         // checks that the exception message contains the substring param
-        expectedEx.expectMessage("Failed to parse record dates from ");
-
-        when(object2.toString()).thenReturn(BAD_DATE);
-
-        filter.filter(dip);
+        assertTrue(expected.getMessage().contains("Failed to parse record dates from "));
     }
 
 }

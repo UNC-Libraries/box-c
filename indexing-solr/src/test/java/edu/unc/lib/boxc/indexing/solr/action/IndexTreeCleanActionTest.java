@@ -1,7 +1,7 @@
 package edu.unc.lib.boxc.indexing.solr.action;
 
 import static edu.unc.lib.boxc.operations.jms.indexing.IndexingActionType.CLEAN_REINDEX;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.verify;
@@ -12,8 +12,8 @@ import java.util.UUID;
 
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
@@ -62,7 +62,7 @@ public class IndexTreeCleanActionTest {
 
     private IndexTreeCleanAction action;
 
-    @Before
+    @BeforeEach
     public void setup() throws Exception {
         initMocks(this);
 

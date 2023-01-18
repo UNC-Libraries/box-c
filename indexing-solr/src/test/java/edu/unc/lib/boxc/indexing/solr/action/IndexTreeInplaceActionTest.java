@@ -5,8 +5,8 @@ import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl;
 import edu.unc.lib.boxc.indexing.solr.SolrUpdateRequest;
@@ -20,7 +20,7 @@ import edu.unc.lib.boxc.operations.jms.indexing.IndexingActionType;
  *
  */
 public class IndexTreeInplaceActionTest extends UpdateTreeActionTest {
-    @Before
+    @BeforeEach
     public void setupInplace() throws Exception {
 
         action.setAccessGroups(new AccessGroupSetImpl("admin"));

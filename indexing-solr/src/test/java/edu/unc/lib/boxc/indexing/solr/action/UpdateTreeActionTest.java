@@ -4,8 +4,8 @@ import static edu.unc.lib.boxc.indexing.solr.test.MockRepositoryObjectHelpers.ad
 import static edu.unc.lib.boxc.indexing.solr.test.MockRepositoryObjectHelpers.addFileObjectToParent;
 import static edu.unc.lib.boxc.indexing.solr.test.MockRepositoryObjectHelpers.makeContainer;
 import static edu.unc.lib.boxc.operations.jms.indexing.IndexingActionType.RECURSIVE_ADD;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
@@ -17,8 +17,8 @@ import java.util.List;
 
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
@@ -63,7 +63,7 @@ public class UpdateTreeActionTest {
 
     protected SparqlQueryService sparqlQueryService;
 
-    @Before
+    @BeforeEach
     public void setupTreeAction() throws Exception {
         initMocks(this);
 

@@ -1,8 +1,8 @@
 package edu.unc.lib.boxc.indexing.solr.indexing;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.verify;
@@ -15,8 +15,8 @@ import java.io.FileInputStream;
 import java.io.InputStream;
 
 import org.jdom2.Element;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 
 import edu.unc.lib.boxc.indexing.solr.exception.IndexingException;
@@ -48,7 +48,7 @@ public class DocumentIndexingPackageDataLoaderTest {
     @Mock
     private BinaryObject modsBinary;
 
-    @Before
+    @BeforeEach
     public void setup() throws Exception {
         initMocks(this);
 

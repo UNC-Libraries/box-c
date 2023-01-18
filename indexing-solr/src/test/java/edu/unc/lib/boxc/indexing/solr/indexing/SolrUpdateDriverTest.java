@@ -10,8 +10,9 @@ import java.util.Map;
 
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.common.SolrInputDocument;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 
 import edu.unc.lib.boxc.indexing.solr.exception.IndexingException;
@@ -51,7 +52,7 @@ public class SolrUpdateDriverTest {
         "title"
     };
 
-    @Before
+    @BeforeEach
     public void setup() throws Exception {
         initMocks(this);
 
@@ -63,11 +64,13 @@ public class SolrUpdateDriverTest {
         when(solrSettings.getRequiredFields()).thenReturn(REQUIRED_INDEXING_FIELDS);
     }
 
-    @Test(expected = IndexingException.class)
+    @Test
     public void testRequiredIndexingFieldsMissing() throws Exception {
-        when(idb.getFields()).thenReturn(missingFields);
+        Assertions.assertThrows(IndexingException.class, () -> {
+            when(idb.getFields()).thenReturn(missingFields);
 
-        driver.addDocument(idb);
+            driver.addDocument(idb);
+        });
     }
 
     @Test

@@ -7,9 +7,9 @@ import static org.mockito.MockitoAnnotations.initMocks;
 import java.util.Arrays;
 import java.util.List;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 
 import edu.unc.lib.boxc.indexing.solr.exception.IndexingException;
@@ -22,7 +22,7 @@ import edu.unc.lib.boxc.indexing.solr.indexing.DocumentIndexingPipeline;
  * @author bbpennel
  *
  */
-public class DocumentIndexingPipelineTest extends Assert {
+public class DocumentIndexingPipelineTest extends Assertions {
 
     private DocumentIndexingPipeline pipeline;
 
@@ -35,7 +35,7 @@ public class DocumentIndexingPipelineTest extends Assert {
     @Mock
     private IndexDocumentFilter mockFilter2;
 
-    @Before
+    @BeforeEach
     public void setup() throws Exception {
         initMocks(this);
 
@@ -53,10 +53,12 @@ public class DocumentIndexingPipelineTest extends Assert {
         verify(mockFilter2).filter(dip);
     }
 
-    @Test(expected = IndexingException.class)
+    @Test
     public void testProcessIndexingException() throws Exception {
-        doThrow(new IndexingException("")).when(mockFilter2).filter(dip);
+        Assertions.assertThrows(IndexingException.class, () -> {
+            doThrow(new IndexingException("")).when(mockFilter2).filter(dip);
 
-        pipeline.process(dip);
+            pipeline.process(dip);
+        });
     }
 }
