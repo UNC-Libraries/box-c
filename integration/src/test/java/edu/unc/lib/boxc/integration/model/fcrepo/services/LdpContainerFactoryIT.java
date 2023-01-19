@@ -1,7 +1,7 @@
 package edu.unc.lib.boxc.integration.model.fcrepo.services;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import java.net.URI;
 
@@ -9,7 +9,7 @@ import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.Statement;
 import org.fcrepo.client.FcrepoResponse;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import edu.unc.lib.boxc.integration.fcrepo.AbstractFedoraIT;
@@ -49,9 +49,9 @@ public class LdpContainerFactoryIT extends AbstractFedoraIT {
         Resource objResc = model.getResource(objUri.toString());
         Statement member = objResc.getProperty(PcdmModels.hasMember);
 
-        assertNotNull("No hasMember relationship", member);
-        assertEquals("hasMember relation references the wrong object",
-                childUri.toString(), member.getResource().toString());
+        assertNotNull(member, "No hasMember relationship");
+        assertEquals(childUri.toString(), member.getResource().toString(),
+                "hasMember relation references the wrong object");
     }
 
     @Test
@@ -81,8 +81,8 @@ public class LdpContainerFactoryIT extends AbstractFedoraIT {
         Resource objResc = model.getResource(objUri.toString());
         Statement member = objResc.getProperty(PcdmModels.hasRelatedObject);
 
-        assertNotNull("No hasRelatedObject relationship", member);
-        assertEquals("hasRelatedObject relation references the wrong object",
-                childUri.toString(), member.getResource().toString());
+        assertNotNull(member, "No hasRelatedObject relationship");
+        assertEquals(childUri.toString(), member.getResource().toString(),
+                "hasRelatedObject relation references the wrong object");
     }
 }

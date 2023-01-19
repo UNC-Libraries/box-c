@@ -1,11 +1,11 @@
 package edu.unc.lib.boxc.integration.fcrepo;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.MockitoAnnotations.initMocks;
 
 import java.io.IOException;
@@ -16,8 +16,9 @@ import org.apache.jena.rdf.model.Resource;
 import org.fcrepo.client.FcrepoClient;
 import org.fcrepo.client.FcrepoOperationFailedException;
 import org.fcrepo.client.FcrepoResponse;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 
 import edu.unc.lib.boxc.fcrepo.exceptions.TransactionCancelledException;
@@ -41,7 +42,7 @@ public class FedoraTransactionIT extends AbstractFedoraIT {
     @Mock
     private BinaryTransferService binaryTransferService;
 
-    @Before
+    @BeforeEach
     public void init() {
         initMocks(this);
         txManager.setBinaryTransferService(binaryTransferService);
@@ -72,15 +73,17 @@ public class FedoraTransactionIT extends AbstractFedoraIT {
         verifyNonTxStatusCode(obj.getPid(), 200);
     }
 
-    @Test (expected = TransactionCancelledException.class)
+    @Test
     public void createRollbackTxTest() {
-        FedoraTransaction tx = txManager.startTransaction();
-        FolderObject obj = repoObjFactory.createFolderObject(model);
-        tx.cancel();
-        assertNull(repoObjLoader.getFolderObject(obj.getPid()));
-        assertNull(obj.getUri());
-        assertFalse(FedoraTransaction.hasTxId());
-        assertFalse(FedoraTransaction.isStillAlive());
+        Assertions.assertThrows(TransactionCancelledException.class, () -> {
+            FedoraTransaction tx = txManager.startTransaction();
+            FolderObject obj = repoObjFactory.createFolderObject(model);
+            tx.cancel();
+            assertNull(repoObjLoader.getFolderObject(obj.getPid()));
+            assertNull(obj.getUri());
+            assertFalse(FedoraTransaction.hasTxId());
+            assertFalse(FedoraTransaction.isStillAlive());
+        });
     }
 
     @Test

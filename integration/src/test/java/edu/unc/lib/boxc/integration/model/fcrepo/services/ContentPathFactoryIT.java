@@ -1,14 +1,15 @@
 package edu.unc.lib.boxc.integration.model.fcrepo.services;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import edu.unc.lib.boxc.integration.fcrepo.AbstractFedoraIT;
@@ -38,7 +39,7 @@ public class ContentPathFactoryIT extends AbstractFedoraIT {
     private AdminUnit adminUnit;
     private CollectionObject collObj;
 
-    @Before
+    @BeforeEach
     public void init() {
         contentRootPid = RepositoryPaths.getContentRootPid();
         repoInitializer.initializeRepository();
@@ -55,16 +56,18 @@ public class ContentPathFactoryIT extends AbstractFedoraIT {
     public void testGetAncestorPids() throws Exception {
         List<PID> ancestors = pathFactory.getAncestorPids(collObj.getPid());
 
-        assertEquals("Incorrect number of ancestors", 2, ancestors.size());
+        assertEquals(2, ancestors.size(), "Incorrect number of ancestors");
         assertEquals(contentRootPid, ancestors.get(0));
         assertEquals(adminUnit.getPid(), ancestors.get(1));
     }
 
-    @Test(expected = NotFoundException.class)
+    @Test
     public void testObjectNotFound() throws Exception {
-        PID pid = pidMinter.mintContentPid();
+        Assertions.assertThrows(NotFoundException.class, () -> {
+            PID pid = pidMinter.mintContentPid();
 
-        pathFactory.getAncestorPids(pid);
+            pathFactory.getAncestorPids(pid);
+        });
     }
 
     @Test
@@ -78,7 +81,7 @@ public class ContentPathFactoryIT extends AbstractFedoraIT {
 
         List<PID> ancestors = pathFactory.getAncestorPids(binObj.getPid());
 
-        assertEquals("Incorrect number of ancestors", 5, ancestors.size());
+        assertEquals(5, ancestors.size(), "Incorrect number of ancestors");
         assertEquals(contentRootPid, ancestors.get(0));
         assertEquals(adminUnit.getPid(), ancestors.get(1));
         assertEquals(collObj.getPid(), ancestors.get(2));
@@ -92,7 +95,7 @@ public class ContentPathFactoryIT extends AbstractFedoraIT {
 
         List<PID> ancestors = pathFactory.getAncestorPids(collObj.getPid());
 
-        assertEquals("Incorrect number of ancestors", 2, ancestors.size());
+        assertEquals(2, ancestors.size(), "Incorrect number of ancestors");
         assertEquals(contentRootPid, ancestors.get(0));
         assertEquals(adminUnit.getPid(), ancestors.get(1));
 
@@ -106,8 +109,8 @@ public class ContentPathFactoryIT extends AbstractFedoraIT {
         TimeUnit.MILLISECONDS.sleep(200);
 
         ancestors = pathFactory.getAncestorPids(collObj.getPid());
-        assertEquals("Incorrect number of ancestors", 2, ancestors.size());
+        assertEquals(2, ancestors.size(), "Incorrect number of ancestors");
         assertEquals(contentRootPid, ancestors.get(0));
-        assertEquals("Ancestors did not update to new unit", adminUnit2.getPid(), ancestors.get(1));
+        assertEquals(adminUnit2.getPid(), ancestors.get(1), "Ancestors did not update to new unit");
     }
 }

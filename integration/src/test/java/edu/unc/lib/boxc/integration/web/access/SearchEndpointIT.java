@@ -7,10 +7,10 @@ import edu.unc.lib.boxc.integration.factories.WorkFactory;
 import edu.unc.lib.boxc.model.fcrepo.test.TestHelper;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.HttpClients;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.time.Year;
 import java.util.ArrayList;
@@ -20,22 +20,22 @@ import java.util.Map;
 
 import static edu.unc.lib.boxc.integration.factories.FileFactory.FILE_FORMAT_OPTION;
 import static edu.unc.lib.boxc.integration.factories.FileFactory.IMAGE_FORMAT;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
 /**
  * Integration tests for searchJson endpoints
  * @author snluong, krwong, bbpennel
  */
 
-@RunWith(SpringJUnit4ClassRunner.class)
+@ExtendWith(SpringExtension.class)
 public class SearchEndpointIT extends EndpointIT {
     protected final static String SEARCH_URL = ACCESS_URL + "/searchJson";
     protected final static List<String> DEFAULT_FACETS = Arrays.asList("PARENT_UNIT", "PARENT_COLLECTION",
             "FILE_FORMAT_CATEGORY", "GENRE", "SUBJECT", "LANGUAGE", "LOCATION", "PUBLISHER",
             "DATE_CREATED_YEAR", "CREATOR_CONTRIBUTOR");
 
-    @Before
+    @BeforeEach
     public void setup() throws Exception {
         TestHelper.setContentBase(baseAddress);
         GroupsThreadStore.storeUsername(USERNAME);

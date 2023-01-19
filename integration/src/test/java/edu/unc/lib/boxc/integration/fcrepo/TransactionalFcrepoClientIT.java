@@ -3,8 +3,8 @@ package edu.unc.lib.boxc.integration.fcrepo;
 import static edu.unc.lib.boxc.model.api.rdf.RDFModelUtil.createModel;
 import static org.apache.jena.rdf.model.ResourceFactory.createResource;
 import static org.fcrepo.client.FedoraTypes.LDP_NON_RDF_SOURCE;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 
 import java.io.InputStream;
@@ -20,11 +20,11 @@ import org.apache.jena.vocabulary.RDF;
 import org.apache.tika.io.IOUtils;
 import org.fcrepo.client.FcrepoResponse;
 import org.fusesource.hawtbuf.ByteArrayInputStream;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import edu.unc.lib.boxc.fcrepo.exceptions.TransactionCancelledException;
 import edu.unc.lib.boxc.fcrepo.utils.FedoraTransaction;
@@ -39,7 +39,7 @@ import edu.unc.lib.boxc.persist.api.transfer.BinaryTransferService;
 /**
  * @author bbpennel
  */
-@RunWith(SpringJUnit4ClassRunner.class)
+@ExtendWith(SpringExtension.class)
 @ContextConfiguration({"/spring-test/test-fedora-container.xml"})
 public class TransactionalFcrepoClientIT {
 
@@ -50,7 +50,7 @@ public class TransactionalFcrepoClientIT {
 
     private TransactionManager txManager;
 
-    @Before
+    @BeforeEach
     public void setup() {
         TestHelper.setContentBase(BASE_PATH);
 
@@ -73,8 +73,7 @@ public class TransactionalFcrepoClientIT {
             objUri = response.getLocation();
         }
 
-        assertTrue("Location must be within transaction",
-                objUri.toString().startsWith(tx.getTxUri().toString()));
+        assertTrue(objUri.toString().startsWith(tx.getTxUri().toString()), "Location must be within transaction");
 
         // Verify that the response triples have non-tx uris
         try (FcrepoResponse response = fcrepoClient.get(objUri).perform()) {
@@ -84,7 +83,7 @@ public class TransactionalFcrepoClientIT {
             Model model = createModel(response.getBody());
 
             Resource resc = model.getResource(nonTxObjUri);
-            assertTrue("Subject must be non-tx uri", resc.hasProperty(RDF.type));
+            assertTrue(resc.hasProperty(RDF.type), "Subject must be non-tx uri");
         } finally {
             tx.close();
         }
@@ -145,8 +144,7 @@ public class TransactionalFcrepoClientIT {
             objUri = response.getLocation();
         }
 
-        assertTrue("Location must be within transaction",
-                objUri.toString().startsWith(tx.getTxUri().toString()));
+        assertTrue(objUri.toString().startsWith(tx.getTxUri().toString()), "Location must be within transaction");
 
         tx.close();
 

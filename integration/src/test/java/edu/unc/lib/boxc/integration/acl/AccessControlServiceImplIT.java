@@ -3,16 +3,17 @@ package edu.unc.lib.boxc.integration.acl;
 import static edu.unc.lib.boxc.auth.api.AccessPrincipalConstants.AUTHENTICATED_PRINC;
 import static edu.unc.lib.boxc.auth.api.AccessPrincipalConstants.PATRON_NAMESPACE;
 import static edu.unc.lib.boxc.auth.api.AccessPrincipalConstants.PUBLIC_PRINC;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.List;
 import java.util.Properties;
 import java.util.stream.Collectors;
 
 import org.apache.jena.vocabulary.RDF;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import edu.unc.lib.boxc.auth.api.Permission;
@@ -92,7 +93,7 @@ public class AccessControlServiceImplIT extends AbstractFedoraIT {
 
     private AccessControlServiceImpl aclService;
 
-    @Before
+    @BeforeEach
     public void init() throws Exception {
         Properties properties = new Properties();
         properties.load(this.getClass().getResourceAsStream("/acl/config.properties"));
@@ -251,24 +252,24 @@ public class AccessControlServiceImplIT extends AbstractFedoraIT {
     public void localHigherPermissionOverridesGlobal() {
         final AccessGroupSet principals = new AccessGroupSetImpl(STAFF_PRINC);
 
-        assertTrue("canManage role on collection 2 should override global canDescribe",
-                aclService.hasAccess(collObj2.getPid(), principals, Permission.markForDeletion));
+        assertTrue(aclService.hasAccess(collObj2.getPid(), principals, Permission.markForDeletion),
+                "canManage role on collection 2 should override global canDescribe");
     }
 
     @Test
     public void unitHasPatronPermissionTest() {
         final AccessGroupSet principals = new AccessGroupSetImpl(PUBLIC_PRINC);
 
-        assertTrue("Everyone should be able to view unit",
-                aclService.hasAccess(adminUnit1.getPid(), principals, Permission.viewMetadata));
+        assertTrue(aclService.hasAccess(adminUnit1.getPid(), principals, Permission.viewMetadata),
+                "Everyone should be able to view unit");
     }
 
     @Test
     public void everyoneHasAccessToPublicWorkTest() {
         final AccessGroupSet principals = new AccessGroupSetImpl(PUBLIC_PRINC);
 
-        assertTrue("Everyone should be able to access unrestricted work",
-                aclService.hasAccess(collObj1Work2.getPid(), principals, Permission.viewOriginal));
+        assertTrue(aclService.hasAccess(collObj1Work2.getPid(), principals, Permission.viewOriginal),
+                "Everyone should be able to access unrestricted work");
     }
 
     @Test
@@ -278,149 +279,151 @@ public class AccessControlServiceImplIT extends AbstractFedoraIT {
         aclService.assertHasAccess(null, collObj1Work2.getPid(), principals, Permission.viewOriginal);
     }
 
-    @Test(expected = AccessRestrictionException.class)
+    @Test
     public void assertEveryoneCannotAccess() {
-        final AccessGroupSet principals = new AccessGroupSetImpl(PUBLIC_PRINC);
+        Assertions.assertThrows(AccessRestrictionException.class, () -> {
+            final AccessGroupSet principals = new AccessGroupSetImpl(PUBLIC_PRINC);
 
-        aclService.assertHasAccess(null, collObj1Folder1Work1.getPid(), principals, Permission.viewOriginal);
+            aclService.assertHasAccess(null, collObj1Folder1Work1.getPid(), principals, Permission.viewOriginal);
+        });
     }
 
     @Test
     public void everyoneCannotAccessRestrictedFolderTest() {
         final AccessGroupSet principals = new AccessGroupSetImpl(PUBLIC_PRINC);
 
-        assertFalse("Everyone should not be able to access staff only folder",
-                aclService.hasAccess(collObj1Folder1.getPid(), principals, Permission.viewOriginal));
+        assertFalse(aclService.hasAccess(collObj1Folder1.getPid(), principals, Permission.viewOriginal),
+                "Everyone should not be able to access staff only folder");
     }
 
     @Test
     public void everyoneCannotAccessWorkInheritedFromFolderTest() {
         final AccessGroupSet principals = new AccessGroupSetImpl(PUBLIC_PRINC);
 
-        assertFalse("Everyone should not be able to access work in a staff only folder",
-                aclService.hasAccess(collObj2Work2.getPid(), principals, Permission.viewOriginal));
+        assertFalse(aclService.hasAccess(collObj2Work2.getPid(), principals, Permission.viewOriginal),
+                "Everyone should not be able to access work in a staff only folder");
     }
 
     @Test
     public void everyoneCannotAccessRestrictedCollTest() {
         final AccessGroupSet principals = new AccessGroupSetImpl(PUBLIC_PRINC);
 
-        assertFalse("Everyone should not be able to access staff only collection",
-                aclService.hasAccess(collObj2.getPid(), principals, Permission.viewOriginal));
+        assertFalse(aclService.hasAccess(collObj2.getPid(), principals, Permission.viewOriginal),
+                "Everyone should not be able to access staff only collection");
     }
 
     @Test
     public void everyoneCannotAccessWorkInRestrictedCollTest() {
         final AccessGroupSet principals = new AccessGroupSetImpl(PUBLIC_PRINC);
 
-        assertFalse("Everyone should not be able to work in restricted collection",
-                aclService.hasAccess(collObj2Folder1Work1.getPid(), principals, Permission.viewOriginal));
+        assertFalse(aclService.hasAccess(collObj2Folder1Work1.getPid(), principals, Permission.viewOriginal),
+                "Everyone should not be able to work in restricted collection");
     }
 
     @Test
     public void everyoneDowngradedAccess() {
         final AccessGroupSet principals = new AccessGroupSetImpl(PUBLIC_PRINC);
 
-        assertTrue("Everyone must have view metadata access",
-                aclService.hasAccess(collObj1Folder2Work1.getPid(), principals, Permission.viewMetadata));
-        assertFalse("Everyone must not have originals access",
-                aclService.hasAccess(collObj1Folder2Work1.getPid(), principals, Permission.viewOriginal));
+        assertTrue(aclService.hasAccess(collObj1Folder2Work1.getPid(), principals, Permission.viewMetadata),
+                "Everyone must have view metadata access");
+        assertFalse(aclService.hasAccess(collObj1Folder2Work1.getPid(), principals, Permission.viewOriginal),
+                "Everyone must not have originals access");
     }
 
     @Test
     public void authenticatedHigherPermissions() {
         final AccessGroupSet principals = new AccessGroupSetImpl(PUBLIC_PRINC, AUTHENTICATED_PRINC);
 
-        assertTrue("Authenticated must have view originals access for folder",
-                aclService.hasAccess(collObj1Folder2.getPid(), principals, Permission.viewOriginal));
-        assertTrue("Authenticated must have view originals access for work",
-                aclService.hasAccess(collObj1Folder2Work1.getPid(), principals, Permission.viewOriginal));
+        assertTrue(aclService.hasAccess(collObj1Folder2.getPid(), principals, Permission.viewOriginal),
+                "Authenticated must have view originals access for folder");
+        assertTrue(aclService.hasAccess(collObj1Folder2Work1.getPid(), principals, Permission.viewOriginal),
+                "Authenticated must have view originals access for work");
     }
 
     @Test
     public void specialPatronGroupHigherPermissions() {
         final AccessGroupSet principals = new AccessGroupSetImpl(PUBLIC_PRINC, PATRON_GROUP);
 
-        assertTrue("Patron group must have view originals access for folder",
-                aclService.hasAccess(collObj1Folder2.getPid(), principals, Permission.viewOriginal));
-        assertTrue("Patron group must have view originals access for work",
-                aclService.hasAccess(collObj1Folder2Work1.getPid(), principals, Permission.viewOriginal));
+        assertTrue(aclService.hasAccess(collObj1Folder2.getPid(), principals, Permission.viewOriginal),
+                "Patron group must have view originals access for folder");
+        assertTrue(aclService.hasAccess(collObj1Folder2Work1.getPid(), principals, Permission.viewOriginal),
+                "Patron group must have view originals access for work");
     }
 
     @Test
     public void specialPatronGroupStaffOnly() {
         final AccessGroupSet principals = new AccessGroupSetImpl(PUBLIC_PRINC, PATRON_GROUP);
 
-        assertFalse("Patron group must have no access for work",
-                aclService.hasAccess(collObj1Folder2Work2.getPid(), principals, Permission.viewMetadata));
+        assertFalse(aclService.hasAccess(collObj1Folder2Work2.getPid(), principals, Permission.viewMetadata),
+                "Patron group must have no access for work");
     }
 
     @Test
     public void specialPatronGroupStaffOnlyReUpped() {
         final AccessGroupSet principals = new AccessGroupSetImpl(PUBLIC_PRINC, PATRON_GROUP);
 
-        assertTrue("Patron group must have originals access for work",
-                aclService.hasAccess(collObj1Folder2Work3.getPid(), principals, Permission.viewOriginal));
+        assertTrue(aclService.hasAccess(collObj1Folder2Work3.getPid(), principals, Permission.viewOriginal),
+                "Patron group must have originals access for work");
     }
 
     @Test
     public void staffViewerCanAccessStaffOnlyWorkInRestrictedCollTest() {
         final AccessGroupSet principals = new AccessGroupSetImpl(VIEWER_PRINC);
 
-        assertTrue("Staff user should be able to access patron restricted work",
-                aclService.hasAccess(collObj2Work2.getPid(), principals, Permission.viewOriginal));
+        assertTrue(aclService.hasAccess(collObj2Work2.getPid(), principals, Permission.viewOriginal),
+                "Staff user should be able to access patron restricted work");
     }
 
     @Test
     public void staffViewerCannotModifyCollectionTest() {
         final AccessGroupSet principals = new AccessGroupSetImpl(VIEWER_PRINC);
 
-        assertFalse("Staff user should not be able to modify collection",
-                aclService.hasAccess(collObj2.getPid(), principals, Permission.editDescription));
+        assertFalse(aclService.hasAccess(collObj2.getPid(), principals, Permission.editDescription),
+                "Staff user should not be able to modify collection");
     }
 
     @Test
     public void collStaffCannotViewOtherColl() {
         final AccessGroupSet principals = new AccessGroupSetImpl(VIEWER_PRINC);
 
-        assertFalse("Collection assigned staff user should not be able to access a different collection",
-                aclService.hasAccess(collObj3.getPid(), principals, Permission.viewOriginal));
+        assertFalse(aclService.hasAccess(collObj3.getPid(), principals, Permission.viewOriginal),
+                "Collection assigned staff user should not be able to access a different collection");
     }
 
     @Test
     public void unitOwnerHasAccessTest() {
         final AccessGroupSet principals = new AccessGroupSetImpl(UNIT_OWNER_PRINC);
 
-        assertTrue("Unit owner should be able to create collections in unit",
-                aclService.hasAccess(adminUnit1.getPid(), principals, Permission.createCollection));
-        assertTrue("Unit owner should be able to modify contained collection",
-                aclService.hasAccess(collObj1.getPid(), principals, Permission.ingest));
-        assertTrue("Unit owner should be able to modify restricted work",
-                aclService.hasAccess(collObj2Work2.getPid(), principals, Permission.destroy));
+        assertTrue(aclService.hasAccess(adminUnit1.getPid(), principals, Permission.createCollection),
+                "Unit owner should be able to create collections in unit");
+        assertTrue(aclService.hasAccess(collObj1.getPid(), principals, Permission.ingest),
+                "Unit owner should be able to modify contained collection");
+        assertTrue(aclService.hasAccess(collObj2Work2.getPid(), principals, Permission.destroy),
+                "Unit owner should be able to modify restricted work");
     }
 
     @Test
     public void unitOwnerCannotModifyOtherUnitTest() {
         final AccessGroupSet principals = new AccessGroupSetImpl(UNIT_OWNER_PRINC);
 
-        assertFalse("Unit owner 1 should not be able to create collections in another unit",
-                aclService.hasAccess(adminUnit2.getPid(), principals, Permission.createCollection));
+        assertFalse(aclService.hasAccess(adminUnit2.getPid(), principals, Permission.createCollection),
+                "Unit owner 1 should not be able to create collections in another unit");
     }
 
     @Test
     public void unitManagerHasAccessTest() {
         final AccessGroupSet principals = new AccessGroupSetImpl(UNIT_MANAGER_PRINC);
 
-        assertTrue("Manager should be able to modify unit",
-                aclService.hasAccess(adminUnit1.getPid(), principals, Permission.editDescription));
-        assertFalse("Manager should not be able to create collections in unit",
-                aclService.hasAccess(adminUnit1.getPid(), principals, Permission.destroy));
-        assertTrue("Manager should be able to modify contained collection",
-                aclService.hasAccess(collObj1.getPid(), principals, Permission.ingest));
-        assertTrue("Manager should be able to modify all contained collections",
-                aclService.hasAccess(collObj2.getPid(), principals, Permission.ingest));
-        assertTrue("Manager should be able to modify restricted work in all contained collections",
-                aclService.hasAccess(collObj2Work2.getPid(), principals, Permission.editDescription));
+        assertTrue(aclService.hasAccess(adminUnit1.getPid(), principals, Permission.editDescription),
+                "Manager should be able to modify unit");
+        assertFalse(aclService.hasAccess(adminUnit1.getPid(), principals, Permission.destroy),
+                "Manager should not be able to create collections in unit");
+        assertTrue(aclService.hasAccess(collObj1.getPid(), principals, Permission.ingest),
+                "Manager should be able to modify contained collection");
+        assertTrue(aclService.hasAccess(collObj2.getPid(), principals, Permission.ingest),
+                "Manager should be able to modify all contained collections");
+        assertTrue(aclService.hasAccess(collObj2Work2.getPid(), principals, Permission.editDescription),
+                "Manager should be able to modify restricted work in all contained collections");
     }
 
     private List<PID> getAllContentObjects() {

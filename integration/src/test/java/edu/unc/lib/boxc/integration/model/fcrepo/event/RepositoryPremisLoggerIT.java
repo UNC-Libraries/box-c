@@ -3,11 +3,11 @@ package edu.unc.lib.boxc.integration.model.fcrepo.event;
 import static java.nio.file.Files.createTempFile;
 import static org.apache.commons.codec.binary.Hex.encodeHexString;
 import static org.apache.commons.io.FileUtils.copyInputStreamToFile;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -32,8 +32,8 @@ import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.vocabulary.DCTerms;
 import org.apache.jena.vocabulary.RDF;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
@@ -79,7 +79,7 @@ public class RepositoryPremisLoggerIT extends AbstractFedoraIT {
     @Autowired
     private PremisLoggerFactoryImpl premisLoggerFactory;
 
-    @Before
+    @BeforeEach
     public void init() throws Exception {
         initMocks(this);
 
@@ -128,8 +128,8 @@ public class RepositoryPremisLoggerIT extends AbstractFedoraIT {
         Model logModel = logger.getEventsModel();
         Resource logEventResc = logModel.getResource(eventResc.getURI());
 
-        assertTrue("Must contain prov:used references from obj to event",
-                logModel.contains(logEventResc, Prov.used, parentObject.getResource()));
+        assertTrue(logModel.contains(logEventResc, Prov.used, parentObject.getResource()),
+                "Must contain prov:used references from obj to event");
         assertTrue(logEventResc.hasProperty(RDF.type, Premis.VirusCheck));
 
         Resource objResc = logModel.getResource(parentObject.getPid().getRepositoryPath());
@@ -205,7 +205,7 @@ public class RepositoryPremisLoggerIT extends AbstractFedoraIT {
         PremisLogger retrieveLogger = new RepositoryPremisLogger(parentObject, mockSession,
                 pidMinter, repoObjLoader, repoObjFactory);
         Model initialLogModel = retrieveLogger.getEventsModel();
-        assertFalse("New premis already contains events", initialLogModel.listObjects().hasNext());
+        assertFalse(initialLogModel.listObjects().hasNext(), "New premis already contains events");
 
         // add original event
         Resource originalEventResc = logger.buildEvent(Premis.note)
@@ -273,7 +273,7 @@ public class RepositoryPremisLoggerIT extends AbstractFedoraIT {
         PremisLogger retrieveLogger = new RepositoryPremisLogger(parentObject, mockSession,
                 pidMinter, repoObjLoader, repoObjFactory);
         Model initialLogModel = retrieveLogger.getEventsModel();
-        assertFalse("New premis already contains events", initialLogModel.listObjects().hasNext());
+        assertFalse(initialLogModel.listObjects().hasNext(), "New premis already contains events");
 
         // add an event
         Resource event = logger.buildEvent(Premis.note)
@@ -316,7 +316,7 @@ public class RepositoryPremisLoggerIT extends AbstractFedoraIT {
         PremisLogger retrieveLogger = new RepositoryPremisLogger(parentObject, mockSession,
                 pidMinter, repoObjLoader, repoObjFactory);
         Model initialLogModel = retrieveLogger.getEventsModel();
-        assertFalse("New premis already contains events", initialLogModel.listObjects().hasNext());
+        assertFalse(initialLogModel.listObjects().hasNext(), "New premis already contains events");
 
         // start write thread
         Resource anotherEvent = logger.buildEvent(Premis.note)
@@ -394,7 +394,7 @@ public class RepositoryPremisLoggerIT extends AbstractFedoraIT {
         PremisLogger retrieveLogger = new RepositoryPremisLogger(parentObject, mockSession,
                 pidMinter, repoObjLoader, repoObjFactory);
         Model initialLogModel = retrieveLogger.getEventsModel();
-        assertFalse("New premis already contains events", initialLogModel.listObjects().hasNext());
+        assertFalse(initialLogModel.listObjects().hasNext(), "New premis already contains events");
 
         // create a read lock
         PID logPid = DatastreamPids.getMdEventsPid(parentObject.getPid());
@@ -438,7 +438,7 @@ public class RepositoryPremisLoggerIT extends AbstractFedoraIT {
         assertNotNull("No sha1 set for events log", newDigest);
         String previousDigest = previousDigestMap.get(eventsPid);
         if (previousDigest != null) {
-            assertNotEquals("Digest did not change from previous version", previousDigest, newDigest);
+            assertNotEquals(previousDigest, newDigest, "Digest did not change from previous version");
         }
         previousDigestMap.put(eventsPid, newDigest);
     }

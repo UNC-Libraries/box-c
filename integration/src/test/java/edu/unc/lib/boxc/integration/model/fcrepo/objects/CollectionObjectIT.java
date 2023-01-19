@@ -1,11 +1,11 @@
 package edu.unc.lib.boxc.integration.model.fcrepo.objects;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import java.util.List;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import edu.unc.lib.boxc.model.api.objects.AdminUnit;
 import edu.unc.lib.boxc.model.api.objects.CollectionObject;
@@ -34,13 +34,13 @@ public class CollectionObjectIT extends AbstractFedoraIT {
         treeIndexer.indexAll(baseAddress);
 
         List<ContentObject> members = collObj.getMembers();
-        assertEquals("Incorrect number of members", 2, members.size());
+        assertEquals(2, members.size(), "Incorrect number of members");
 
         WorkObject workMember = (WorkObject) findContentObjectByPid(members, work.getPid());
         FolderObject folderMember = (FolderObject) findContentObjectByPid(members, folder.getPid());
 
-        assertNotNull("Must return the created work as a member", workMember);
-        assertNotNull("Must return the created folder as a member", folderMember);
+        assertNotNull(workMember, "Must return the created work as a member");
+        assertNotNull(folderMember, "Must return the created folder as a member");
     }
 
     @Test
@@ -51,7 +51,6 @@ public class CollectionObjectIT extends AbstractFedoraIT {
         adminObj.addMember(collObj);
 
         RepositoryObject parent = collObj.getParent();
-        assertEquals("Parent for collection must be the created admin unit",
-                adminObj.getPid(), parent.getPid());
+        assertEquals(adminObj.getPid(), parent.getPid(), "Parent for collection must be the created admin unit");
     }
 }

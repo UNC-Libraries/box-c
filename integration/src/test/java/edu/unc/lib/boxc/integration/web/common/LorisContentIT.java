@@ -6,8 +6,8 @@ import static edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPaths.getContentRootPi
 import static edu.unc.lib.boxc.auth.api.AccessPrincipalConstants.AUTHENTICATED_PRINC;
 import static edu.unc.lib.boxc.auth.api.AccessPrincipalConstants.PUBLIC_PRINC;
 import static org.apache.jena.rdf.model.ResourceFactory.createResource;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -19,15 +19,15 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.io.FileUtils;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.vocabulary.DCTerms;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.ContextHierarchy;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
@@ -74,7 +74,7 @@ import edu.unc.lib.boxc.auth.api.UserRole;
     @ContextConfiguration("/spring-test/solr-indexing-context.xml"),
     @ContextConfiguration("/loris-content-it-servlet.xml")
 })
-@RunWith(SpringJUnit4ClassRunner.class)
+@ExtendWith(SpringExtension.class)
 @WebAppConfiguration
 public class LorisContentIT {
 
@@ -108,7 +108,7 @@ public class LorisContentIT {
     protected AdminUnit unitObj;
     protected CollectionObject collObj;
 
-    @Before
+    @BeforeEach
     public void setup() throws Exception {
 
         mvc = MockMvcBuilders
@@ -123,7 +123,7 @@ public class LorisContentIT {
         generateBaseStructure();
     }
 
-    @After
+    @AfterEach
     public void tearDown() {
         GroupsThreadStore.clearStore();
     }

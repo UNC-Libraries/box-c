@@ -1,16 +1,16 @@
 package edu.unc.lib.boxc.integration.model.fcrepo.objects;
 
 import static edu.unc.lib.boxc.model.api.rdf.PcdmModels.memberOf;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.List;
 
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Resource;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import edu.unc.lib.boxc.model.api.objects.ContentObject;
 import edu.unc.lib.boxc.model.api.objects.FolderObject;
@@ -53,8 +53,8 @@ public class FolderObjectIT extends AbstractFedoraIT {
         assertObjectExists(child.getPid());
         assertTrue(child.getTypes().contains(Cdr.Folder.getURI()));
 
-        assertTrue("Added child must be a member of the folder",
-                child.getResource().hasProperty(memberOf, obj.getResource()));
+        assertTrue(child.getResource().hasProperty(memberOf, obj.getResource()),
+                "Added child must be a member of the folder");
     }
 
     @Test
@@ -72,8 +72,8 @@ public class FolderObjectIT extends AbstractFedoraIT {
         assertEquals("Work Title", work.getResource()
                 .getProperty(DcElements.title).getString());
 
-        assertTrue("Added child must be a member of the folder",
-                work.getResource().hasProperty(memberOf, obj.getResource()));
+        assertTrue(work.getResource().hasProperty(memberOf, obj.getResource()),
+                "Added child must be a member of the folder");
     }
 
     @Test
@@ -86,7 +86,7 @@ public class FolderObjectIT extends AbstractFedoraIT {
         treeIndexer.indexAll(baseAddress);
 
         List<ContentObject> members = obj.getMembers();
-        assertEquals("Incorrect number of members", 2, members.size());
+        assertEquals(2, members.size(), "Incorrect number of members");
 
         WorkObject member1 = (WorkObject) findContentObjectByPid(members, child1.getPid());
         FolderObject member2 = (FolderObject) findContentObjectByPid(members, child2.getPid());
@@ -108,10 +108,10 @@ public class FolderObjectIT extends AbstractFedoraIT {
         treeIndexer.indexAll(baseAddress);
 
         List<ContentObject> members1 = folder1.getMembers();
-        assertEquals("Incorrect number of members", 0, members1.size());
+        assertEquals(0, members1.size(), "Incorrect number of members");
 
         List<ContentObject> members2 = folder2.getMembers();
-        assertEquals("Incorrect number of members", 1, members2.size());
+        assertEquals(1, members2.size(), "Incorrect number of members");
 
         assertEquals(child.getPid(), members2.get(0).getPid());
     }
@@ -122,7 +122,7 @@ public class FolderObjectIT extends AbstractFedoraIT {
         FolderObject child = obj.addFolder();
 
         RepositoryObject parent = child.getParent();
-        assertEquals("Parent returned by the child must match the folder it was created in",
-                parent.getPid(), obj.getPid());
+        assertEquals(parent.getPid(), obj.getPid(),
+                "Parent returned by the child must match the folder it was created in");
     }
 }

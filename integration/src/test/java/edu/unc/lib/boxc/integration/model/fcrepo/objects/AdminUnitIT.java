@@ -1,14 +1,14 @@
 package edu.unc.lib.boxc.integration.model.fcrepo.objects;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.List;
 
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Resource;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import edu.unc.lib.boxc.model.api.objects.AdminUnit;
 import edu.unc.lib.boxc.model.api.objects.CollectionObject;
@@ -53,8 +53,8 @@ public class AdminUnitIT extends AbstractFedoraIT {
 
         List<ContentObject> members = obj.getMembers();
         assertEquals(1, members.size());
-        assertEquals("Must return the created collection as a member",
-                collectionObj.getPid(), members.get(0).getPid());
+        assertEquals(collectionObj.getPid(), members.get(0).getPid(),
+                "Must return the created collection as a member");
     }
 
     @Test
@@ -68,7 +68,7 @@ public class AdminUnitIT extends AbstractFedoraIT {
         contentRoot.addMember(adminUnit);
 
         RepositoryObject parent = adminUnit.getParent();
-        assertEquals("Parent returned by the child must match the folder it was created in",
-                contentRoot.getPid(), parent.getPid());
+        assertEquals(contentRoot.getPid(), parent.getPid(),
+                "Parent returned by the child must match the folder it was created in");
     }
 }
