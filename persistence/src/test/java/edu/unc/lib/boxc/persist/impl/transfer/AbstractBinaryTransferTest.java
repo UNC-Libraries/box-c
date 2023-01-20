@@ -1,15 +1,15 @@
 package edu.unc.lib.boxc.persist.impl.transfer;
 
 import static edu.unc.lib.boxc.model.fcrepo.ids.DatastreamPids.getOriginalFilePid;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.UUID;
 
 import org.apache.commons.io.FileUtils;
-import org.junit.Rule;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.io.TempDir;
 
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
@@ -22,15 +22,16 @@ public abstract class AbstractBinaryTransferTest {
 
     protected static final String FILE_CONTENT = "File content";
 
-    @Rule
-    public final TemporaryFolder tmpFolder = new TemporaryFolder();
+    @TempDir
+    public Path tmpFolder;
     protected Path sourcePath;
     protected Path storagePath;
 
     protected void createPaths() throws Exception {
-        tmpFolder.create();
-        sourcePath = tmpFolder.newFolder("source").toPath();
-        storagePath = tmpFolder.newFolder("storage").toPath();
+        sourcePath = tmpFolder.resolve("source");
+        Files.createDirectory(sourcePath);
+        storagePath = tmpFolder.resolve("storage");
+        Files.createDirectory(storagePath);
     }
 
     protected Path createSourceFile() throws Exception {
@@ -51,7 +52,7 @@ public abstract class AbstractBinaryTransferTest {
     }
 
     protected void assertFileContent(Path path, String content) throws Exception {
-        assertTrue("File was not present at " + path, path.toFile().exists());
+        assertTrue(path.toFile().exists(), "File was not present at " + path);
         assertEquals(content, FileUtils.readFileToString(path.toFile(), "UTF-8"));
     }
 

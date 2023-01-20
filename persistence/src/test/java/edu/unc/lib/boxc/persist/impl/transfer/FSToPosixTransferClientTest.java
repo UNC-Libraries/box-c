@@ -1,8 +1,8 @@
 package edu.unc.lib.boxc.persist.impl.transfer;
 
 import static edu.unc.lib.boxc.model.fcrepo.ids.DatastreamPids.getOriginalFilePid;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.MockitoAnnotations.initMocks;
 
 import java.net.URI;
@@ -12,8 +12,8 @@ import java.nio.file.Paths;
 import java.nio.file.attribute.PosixFilePermission;
 import java.util.Set;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.boxc.persist.api.transfer.BinaryTransferOutcome;
@@ -28,12 +28,13 @@ public class FSToPosixTransferClientTest extends FSToFSTransferClientTest {
     private FSToPosixTransferClient posixClient;
 
     @Override
-    @Before
+    @BeforeEach
     public void setup() throws Exception {
         initMocks(this);
-        tmpFolder.create();
-        sourcePath = tmpFolder.newFolder("source").toPath();
-        storagePath = tmpFolder.newFolder("storage").toPath();
+        sourcePath = tmpFolder.resolve("source");
+        Files.createDirectory(sourcePath);
+        storagePath = tmpFolder.resolve("storage");
+        Files.createDirectory(storagePath);
 
         HashedPosixStorageLocation hashedLoc = new HashedPosixStorageLocation();
         hashedLoc.setBase(storagePath.toString());

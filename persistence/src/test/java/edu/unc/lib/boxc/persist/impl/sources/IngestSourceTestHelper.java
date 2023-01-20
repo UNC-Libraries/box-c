@@ -1,7 +1,7 @@
 package edu.unc.lib.boxc.persist.impl.sources;
 
 import static java.util.Arrays.asList;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.io.File;
 import java.nio.file.Files;

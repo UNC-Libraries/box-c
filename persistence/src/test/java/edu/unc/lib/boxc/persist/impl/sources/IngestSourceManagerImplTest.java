@@ -8,23 +8,24 @@ import static edu.unc.lib.boxc.persist.impl.sources.IngestSourceTestHelper.creat
 import static edu.unc.lib.boxc.persist.impl.sources.IngestSourceTestHelper.findCandidateByPath;
 import static edu.unc.lib.boxc.persist.impl.sources.IngestSourceTestHelper.serializeLocationMappings;
 import static java.util.Arrays.asList;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
 import java.net.URI;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.mockito.Mock;
 
 import edu.unc.lib.boxc.model.api.exceptions.OrphanedObjectException;
@@ -41,8 +42,8 @@ import edu.unc.lib.boxc.persist.impl.sources.IngestSourceManagerImpl.IngestSourc
  * @author bbpennel
  */
 public class IngestSourceManagerImplTest {
-    @Rule
-    public final TemporaryFolder tmpFolder = new TemporaryFolder();
+    @TempDir
+    public Path tmpFolder;
     private Path sourceFolderPath;
 
     private Path configPath;
@@ -59,11 +60,11 @@ public class IngestSourceManagerImplTest {
     private PID adminUnitPid;
     private PID destPid;
 
-    @Before
+    @BeforeEach
     public void init() throws Exception {
         initMocks(this);
-        tmpFolder.create();
-        sourceFolderPath = tmpFolder.newFolder().toPath();
+        sourceFolderPath = tmpFolder.resolve("sourceFolder");
+        Files.createDirectory(sourceFolderPath);
 
         mappingList = new ArrayList<>();
 
@@ -84,29 +85,33 @@ public class IngestSourceManagerImplTest {
         sourceMan.init();
     }
 
-    @Test(expected = UnknownIngestSourceException.class)
+    @Test
     public void testMappingToNonExistentSource() throws Exception {
-        IngestSourceMapping mapping = new IngestSourceMapping();
-        mapping.setId(destPid.getId());
-        mapping.setSources(asList("wutsource"));
-        mappingList.add(mapping);
+        Assertions.assertThrows(UnknownIngestSourceException.class, () -> {
+            IngestSourceMapping mapping = new IngestSourceMapping();
+            mapping.setId(destPid.getId());
+            mapping.setSources(asList("wutsource"));
+            mappingList.add(mapping);
 
-        configPath = createConfigFile();
+            configPath = createConfigFile();
 
-        initializeManager();
+            initializeManager();
+        });
     }
 
-    @Test(expected = IllegalStateException.class)
+    @Test
     public void testDuplicateMappingForContainerId() throws Exception {
-        configPath = createConfigFile(createBasicConfig("testsource1", destPid));
+        Assertions.assertThrows(IllegalStateException.class, () -> {
+            configPath = createConfigFile(createBasicConfig("testsource1", destPid));
 
-        // Add duplicate mapping
-        IngestSourceMapping mapping = new IngestSourceMapping();
-        mapping.setId(destPid.getId());
-        mapping.setSources(asList("testsource1"));
-        mappingList.add(mapping);
+            // Add duplicate mapping
+            IngestSourceMapping mapping = new IngestSourceMapping();
+            mapping.setId(destPid.getId());
+            mapping.setSources(asList("testsource1"));
+            mappingList.add(mapping);
 
-        initializeManager();
+            initializeManager();
+        });
     }
 
     @Test
@@ -134,7 +139,7 @@ public class IngestSourceManagerImplTest {
 
         List<IngestSource> sources = sourceMan.listSources(destPid);
 
-        assertEquals("Only one source should match the path", 1, sources.size());
+        assertEquals(1, sources.size(), "Only one source should match the path");
         assertContainsSource(sources, "testsource");
     }
 
@@ -147,7 +152,7 @@ public class IngestSourceManagerImplTest {
 
         List<IngestSource> sources = sourceMan.listSources(destPid);
 
-        assertEquals("Internal source should not be returned", 0, sources.size());
+        assertEquals(0, sources.size(), "Internal source should not be returned");
     }
 
     @Test
@@ -157,7 +162,7 @@ public class IngestSourceManagerImplTest {
 
         List<IngestSource> sources = sourceMan.listSources(destPid);
 
-        assertEquals("Only one source should match the path", 1, sources.size());
+        assertEquals(1, sources.size(), "Only one source should match the path");
         assertContainsSource(sources, "testsource");
     }
 
@@ -170,7 +175,7 @@ public class IngestSourceManagerImplTest {
 
         List<IngestSource> sources = sourceMan.listSources(destPid);
 
-        assertEquals("Two sources should match the path", 2, sources.size());
+        assertEquals(2, sources.size(), "Two sources should match the path");
         assertContainsSource(sources, "testsource1");
         assertContainsSource(sources, "testsource2");
     }
@@ -183,7 +188,7 @@ public class IngestSourceManagerImplTest {
 
         List<IngestSource> sources = sourceMan.listSources(destPid);
 
-        assertTrue("No sources expected", sources.isEmpty());
+        assertTrue(sources.isEmpty(), "No sources expected");
     }
 
     @Test
@@ -194,16 +199,18 @@ public class IngestSourceManagerImplTest {
 
         List<IngestSource> sources = sourceMan.listSources(destPid);
 
-        assertTrue("No sources expected", sources.isEmpty());
+        assertTrue(sources.isEmpty(), "No sources expected");
     }
 
-    @Test(expected = OrphanedObjectException.class)
+    @Test
     public void testListSourcesOrphanedTarget() throws Exception {
-        configPath = createConfigFile(createBasicConfig("testsource", adminUnitPid));
-        initializeManager();
+        Assertions.assertThrows(OrphanedObjectException.class, () -> {
+            configPath = createConfigFile(createBasicConfig("testsource", adminUnitPid));
+            initializeManager();
 
-        mockAncestors(destPid);
-        sourceMan.listSources(destPid);
+            mockAncestors(destPid);
+            sourceMan.listSources(destPid);
+        });
     }
 
     @Test
@@ -215,7 +222,7 @@ public class IngestSourceManagerImplTest {
 
         List<IngestSource> sources = sourceMan.listSources(destPid);
 
-        assertEquals("Two sources should match the path", 2, sources.size());
+        assertEquals(2, sources.size(), "Two sources should match the path");
         assertContainsSource(sources, "testsource1");
         assertContainsSource(sources, "testsource2");
     }
@@ -228,7 +235,7 @@ public class IngestSourceManagerImplTest {
 
         List<IngestSource> sources = sourceMan.listSources(destPid);
 
-        assertEquals("Only one source should match the path", 1, sources.size());
+        assertEquals(1, sources.size(), "Only one source should match the path");
         assertContainsSource(sources, "testsource");
     }
 
@@ -260,7 +267,8 @@ public class IngestSourceManagerImplTest {
 
     @Test
     public void testListCandidatesFromMultipleSources() throws Exception {
-        Path source2FolderPath = tmpFolder.newFolder().toPath();
+        Path source2FolderPath = tmpFolder.resolve("source2Folder");
+        Files.createDirectory(source2FolderPath);
 
         addBagToSource(source2FolderPath, "bag_with_files", "second_bag");
         addBagToSource(sourceFolderPath);
@@ -298,13 +306,14 @@ public class IngestSourceManagerImplTest {
 
         List<IngestSourceCandidate> candidates = sourceMan.listCandidates(destPid);
 
-        assertTrue("No candidates expected", candidates.isEmpty());
+        assertTrue(candidates.isEmpty(), "No candidates expected");
     }
 
     @Test
     public void testGetIngestSourceForUri_NestedUri() throws Exception {
         configPath = createConfigFile(createBasicConfig("testsource", destPid));
-        Path source2FolderPath = tmpFolder.newFolder().toPath();
+        Path source2FolderPath = tmpFolder.resolve("source2Folder");
+        Files.createDirectory(source2FolderPath);
 
         Map<String, Object> source2 = createConfig(
                 "testsource2",
@@ -370,8 +379,8 @@ public class IngestSourceManagerImplTest {
     }
 
     private void assertContainsSource(List<IngestSource> sources, String sourceId) {
-        assertTrue("Did not contain expected source " + sourceId,
-                sources.stream().anyMatch(s -> s.getId().equals(sourceId)));
+        assertTrue(sources.stream().anyMatch(s -> s.getId().equals(sourceId)),
+                "Did not contain expected source " + sourceId);
     }
 
     private Map<String, Object> createBasicConfig(String id, PID... containers) {
