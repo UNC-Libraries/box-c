@@ -1,15 +1,15 @@
 package edu.unc.lib.boxc.search.solr.utils;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Arrays;
 import java.util.Map;
 import java.util.Properties;
 import java.util.stream.Collectors;
 
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 import edu.unc.lib.boxc.search.api.SearchFieldKey;
 import edu.unc.lib.boxc.search.api.requests.SearchState;
@@ -22,7 +22,7 @@ import edu.unc.lib.boxc.search.solr.utils.SearchStateUtil;
  */
 public class SearchStateUtilTest {
 
-    @BeforeClass
+    @BeforeAll
     public static void setupClass() throws Exception {
         Properties searchProps = new Properties();
         searchProps.load(SearchStateUtilTest.class.getResourceAsStream("/search.properties"));

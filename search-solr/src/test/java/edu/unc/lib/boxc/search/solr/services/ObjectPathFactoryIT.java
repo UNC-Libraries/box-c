@@ -1,7 +1,7 @@
 package edu.unc.lib.boxc.search.solr.services;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.MockitoAnnotations.initMocks;
 
@@ -9,8 +9,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 
 import edu.unc.lib.boxc.common.test.TestHelpers;
@@ -43,7 +43,7 @@ public class ObjectPathFactoryIT extends BaseEmbeddedSolrTest {
         testCorpus = new TestCorpus();
     }
 
-    @Before
+    @BeforeEach
     public void init() throws Exception {
         initMocks(this);
 

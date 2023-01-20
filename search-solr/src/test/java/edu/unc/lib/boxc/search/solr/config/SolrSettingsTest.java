@@ -2,12 +2,12 @@ package edu.unc.lib.boxc.search.solr.config;
 
 import java.util.List;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import edu.unc.lib.boxc.search.solr.config.SolrSettings;
 
-public class SolrSettingsTest extends Assert {
+public class SolrSettingsTest extends Assertions {
 
     @Test
     public void sanitizeTest() {

@@ -1,13 +1,14 @@
 package edu.unc.lib.boxc.search.solr.utils;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Matchers.anySetOf;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
 import org.apache.solr.client.solrj.SolrQuery;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 
 import edu.unc.lib.boxc.auth.api.exceptions.AccessRestrictionException;
@@ -36,7 +37,7 @@ public class AccessRestrictionUtilTest {
 
     private AccessRestrictionUtil restrictionUtil;
 
-    @Before
+    @BeforeEach
     public void init() throws Exception {
         initMocks(this);
 
@@ -57,12 +58,14 @@ public class AccessRestrictionUtilTest {
         assertEquals("q=" + BASE_QUERY, query.toString());
     }
 
-    @Test(expected = AccessRestrictionException.class)
+    @Test
     public void addAccessNoGroupsTest() {
-        accessGroups = new AccessGroupSetImpl();
+        Assertions.assertThrows(AccessRestrictionException.class, () -> {
+            accessGroups = new AccessGroupSetImpl();
 
-        SolrQuery query = new SolrQuery(BASE_QUERY);
-        restrictionUtil.add(query, accessGroups);
+            SolrQuery query = new SolrQuery(BASE_QUERY);
+            restrictionUtil.add(query, accessGroups);
+        });
     }
 
     @Test

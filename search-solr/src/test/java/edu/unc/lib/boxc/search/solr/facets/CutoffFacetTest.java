@@ -9,8 +9,8 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.solr.client.solrj.response.FacetField;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import edu.unc.lib.boxc.search.api.SearchFieldKey;
 import edu.unc.lib.boxc.search.api.exceptions.InvalidHierarchicalFacetException;
@@ -20,7 +20,7 @@ import edu.unc.lib.boxc.search.solr.config.SearchSettings;
 import edu.unc.lib.boxc.search.solr.facets.CutoffFacetImpl;
 import edu.unc.lib.boxc.search.solr.services.FacetFieldFactory;
 
-public class CutoffFacetTest extends Assert {
+public class CutoffFacetTest extends Assertions {
 
     @Test
     public void parseTest() {
@@ -72,9 +72,10 @@ public class CutoffFacetTest extends Assert {
         assertEquals("1,uuid:123456", facet.getNodeBySearchKey("uuid:123456").getSearchValue());
     }
 
-    @Test(expected=InvalidHierarchicalFacetException.class)
+    @Test
     public void nullfacetStringConstructorTest() {
-        new CutoffFacetImpl("ANCESTOR_PATH", ",uuid:123456");
+        Assertions.assertThrows(InvalidHierarchicalFacetException.class,
+                () -> new CutoffFacetImpl("ANCESTOR_PATH", ",uuid:123456"));
     }
 
     @Test

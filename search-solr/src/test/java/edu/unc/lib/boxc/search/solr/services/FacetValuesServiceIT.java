@@ -20,8 +20,8 @@ import edu.unc.lib.boxc.search.solr.utils.AccessRestrictionUtil;
 import edu.unc.lib.boxc.search.solr.utils.FacetFieldUtil;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.solr.common.SolrInputDocument;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 
 import java.util.List;
@@ -30,9 +30,9 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 import static edu.unc.lib.boxc.auth.api.AccessPrincipalConstants.PUBLIC_PRINC;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.MockitoAnnotations.initMocks;
 
 /**
@@ -65,7 +65,7 @@ public class FacetValuesServiceIT extends BaseEmbeddedSolrTest {
         testCorpus = new FacetValueTestCorpus();
     }
 
-    @Before
+    @BeforeEach
     public void setupFacets() throws Exception {
         initMocks(this);
 

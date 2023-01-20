@@ -22,8 +22,9 @@ import edu.unc.lib.boxc.search.solr.test.BaseEmbeddedSolrTest;
 import edu.unc.lib.boxc.search.solr.test.TestCorpus;
 import edu.unc.lib.boxc.search.solr.utils.AccessRestrictionUtil;
 import edu.unc.lib.boxc.search.solr.utils.FacetFieldUtil;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 
 import java.util.Arrays;
@@ -36,10 +37,10 @@ import static edu.unc.lib.boxc.search.api.SearchFieldKey.FILE_FORMAT_CATEGORY;
 import static edu.unc.lib.boxc.search.api.SearchFieldKey.FILE_FORMAT_TYPE;
 import static edu.unc.lib.boxc.search.api.SearchFieldKey.PARENT_COLLECTION;
 import static edu.unc.lib.boxc.search.api.SearchFieldKey.ROLE_GROUP;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.MockitoAnnotations.initMocks;
 
 /**
@@ -69,7 +70,7 @@ public class MultiSelectFacetListServiceIT extends BaseEmbeddedSolrTest {
         testCorpus = new TestCorpus();
     }
 
-    @Before
+    @BeforeEach
     public void init() throws Exception {
         initMocks(this);
         if (!corpusLoaded) {
@@ -529,17 +530,19 @@ public class MultiSelectFacetListServiceIT extends BaseEmbeddedSolrTest {
         assertFacetValueCount(resp, ROLE_GROUP, "canManage|manager", 4);
     }
 
-    @Test(expected = NotFoundException.class)
+    @Test
     public void noAccessTest() throws Exception {
-        accessGroups = new AccessGroupSetImpl(PUBLIC_PRINC);
+        Assertions.assertThrows(NotFoundException.class, () -> {
+            accessGroups = new AccessGroupSetImpl(PUBLIC_PRINC);
 
-        SearchState searchState = new SearchState();
-        searchState.setFacetsToRetrieve(FACETS_TO_RETRIEVE);
+            SearchState searchState = new SearchState();
+            searchState.setFacetsToRetrieve(FACETS_TO_RETRIEVE);
 
-        SearchRequest request = new SearchRequest(searchState, accessGroups);
-        request.setRootPid(testCorpus.privateFolderPid);
-        request.setApplyCutoffs(false);
-        service.getFacetListResult(request);
+            SearchRequest request = new SearchRequest(searchState, accessGroups);
+            request.setRootPid(testCorpus.privateFolderPid);
+            request.setApplyCutoffs(false);
+            service.getFacetListResult(request);
+        });
     }
 
     @Test

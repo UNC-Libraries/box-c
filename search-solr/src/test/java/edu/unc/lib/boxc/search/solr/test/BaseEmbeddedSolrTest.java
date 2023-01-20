@@ -1,6 +1,8 @@
 package edu.unc.lib.boxc.search.solr.test;
 
 import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.Properties;
@@ -12,10 +14,9 @@ import org.apache.solr.common.SolrDocumentList;
 import org.apache.solr.common.SolrInputDocument;
 import org.apache.solr.common.params.ModifiableSolrParams;
 import org.apache.solr.core.CoreContainer;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.io.TempDir;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -33,14 +34,15 @@ public class BaseEmbeddedSolrTest {
 
     protected CoreContainer container;
 
-    @Rule
-    public TemporaryFolder dataBaseDir = new TemporaryFolder();
+    @TempDir
+    public Path dataBaseDir;
 
     private File dataDir;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
-        dataDir = dataBaseDir.newFolder();
+        dataDir = dataBaseDir.resolve("dataDir").toFile();
+        Files.createDirectory(dataBaseDir.resolve("dataDir"));
 
         System.setProperty("solr.data.dir", dataDir.getAbsolutePath());
         container = CoreContainer.createAndLoad(Paths.get("../etc/solr-config"),
@@ -82,7 +84,7 @@ public class BaseEmbeddedSolrTest {
         server.commit();
     }
 
-    @After
+    @AfterEach
     public void tearDown() throws Exception {
         server.close();
         log.debug("Cleaning up data directory");
