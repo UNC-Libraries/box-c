@@ -1,13 +1,17 @@
 package edu.unc.lib.boxc.web.access.controllers;
 
-import static edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore.getAgentPrincipals;
-import static edu.unc.lib.boxc.model.api.DatastreamType.ORIGINAL_FILE;
-
-import java.io.IOException;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
+import edu.unc.lib.boxc.auth.api.exceptions.AccessRestrictionException;
+import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
+import edu.unc.lib.boxc.model.api.exceptions.NotFoundException;
+import edu.unc.lib.boxc.model.api.exceptions.ObjectTypeMismatchException;
+import edu.unc.lib.boxc.model.api.ids.PID;
+import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
+import edu.unc.lib.boxc.search.api.requests.SimpleIdRequest;
+import edu.unc.lib.boxc.web.common.exceptions.ResourceNotFoundException;
+import edu.unc.lib.boxc.web.common.services.FedoraContentService;
+import edu.unc.lib.boxc.web.common.services.SolrQueryLayerService;
+import edu.unc.lib.boxc.web.common.utils.AnalyticsTrackerUtil;
+import edu.unc.lib.boxc.web.common.utils.DatastreamUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,19 +25,12 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.context.request.WebRequest;
 
-import edu.unc.lib.boxc.auth.api.exceptions.AccessRestrictionException;
-import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
-import edu.unc.lib.boxc.model.api.exceptions.NotFoundException;
-import edu.unc.lib.boxc.model.api.exceptions.ObjectTypeMismatchException;
-import edu.unc.lib.boxc.model.api.ids.PID;
-import edu.unc.lib.boxc.model.api.objects.FileObject;
-import edu.unc.lib.boxc.model.api.objects.RepositoryObject;
-import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
-import edu.unc.lib.boxc.model.api.objects.WorkObject;
-import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
-import edu.unc.lib.boxc.web.common.exceptions.ResourceNotFoundException;
-import edu.unc.lib.boxc.web.common.services.FedoraContentService;
-import edu.unc.lib.boxc.web.common.utils.AnalyticsTrackerUtil;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+
+import static edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore.getAgentPrincipals;
+import static edu.unc.lib.boxc.model.api.DatastreamType.ORIGINAL_FILE;
 
 /**
  * Controller which handles requests for specific content datastreams from Fedora and streams the results back as the
@@ -50,7 +47,7 @@ public class FedoraContentController {
     @Autowired
     private AnalyticsTrackerUtil analyticsTracker;
     @Autowired
-    private RepositoryObjectLoader repoObjLoader;
+    private SolrQueryLayerService queryLayer;
 
     @RequestMapping(value = {"/content/{pid}", "/indexablecontent/{pid}"})
     public void getDefaultDatastream(@PathVariable("pid") String pid,
@@ -78,12 +75,14 @@ public class FedoraContentController {
         PID pid = PIDs.get(pidString);
         AccessGroupSet principals = getAgentPrincipals().getPrincipals();
 
-        RepositoryObject repoObj = repoObjLoader.getRepositoryObject(pid);
-        if (repoObj instanceof WorkObject) {
-            FileObject primaryObj = ((WorkObject) repoObj).getPrimaryObject();
-            if (primaryObj != null) {
-                pid = primaryObj.getPid();
-            }
+        // Redirect to the correct object's PID if the requested datastream is not owned by the object itself
+        var record = queryLayer.getObjectById(new SimpleIdRequest(pid, principals));
+        var preferredDatastream = DatastreamUtil.getPreferredDatastream(record, datastream);
+        if (preferredDatastream == null) {
+            throw new NotFoundException("Requested datastream does not exist for " + pid.getId());
+        }
+        if (!StringUtils.isBlank(preferredDatastream.getOwner())) {
+            pid = PIDs.get(preferredDatastream.getOwner());
         }
 
         try {

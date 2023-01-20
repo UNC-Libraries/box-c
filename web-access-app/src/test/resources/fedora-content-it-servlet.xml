@@ -15,6 +15,22 @@
     <mvc:annotation-driven/>
 
     <context:component-scan resource-pattern="**/FedoraContentController*" base-package="edu.unc.lib.boxc.web.access.controllers"/>
+
+    <bean id="facetFieldFactory" class="org.mockito.Mockito" factory-method="mock">
+        <constructor-arg value="edu.unc.lib.boxc.search.solr.services.FacetFieldFactory" />
+    </bean>
+
+    <bean id="solrSettings" class="org.mockito.Mockito" factory-method="mock">
+        <constructor-arg value="edu.unc.lib.boxc.search.solr.config.SolrSettings" />
+    </bean>
+
+    <bean id="searchSettings" class="org.mockito.Mockito" factory-method="mock">
+        <constructor-arg value="edu.unc.lib.boxc.search.solr.config.SearchSettings" />
+    </bean>
+
+    <bean id="solrSearchService" class="org.mockito.Mockito" factory-method="mock">
+        <constructor-arg value="edu.unc.lib.boxc.web.common.services.SolrQueryLayerService" />
+    </bean>
     
     <bean id="fedoraContentService" class="edu.unc.lib.boxc.web.common.services.FedoraContentService">
         <property name="accessControlService" ref="aclService" />
