@@ -36,7 +36,7 @@
                             </c:if>
                             <c:if test="${not empty collectionId}">
                                 <li>
-                                    <span class="has-text-weight-bold">Collection Number: </span>
+                                    <span class="has-text-weight-bold">Archival Collection ID: </span>
                                     <c:out value="${collectionId}"></c:out>
                                 </li>
                             </c:if>
