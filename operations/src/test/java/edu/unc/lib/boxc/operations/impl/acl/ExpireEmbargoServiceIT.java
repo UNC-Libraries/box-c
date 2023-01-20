@@ -1,9 +1,9 @@
 package edu.unc.lib.boxc.operations.impl.acl;
 
 import static edu.unc.lib.boxc.common.util.DateTimeUtil.formatDateToUTC;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyCollectionOf;
 import static org.mockito.Matchers.anyString;
@@ -21,16 +21,15 @@ import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.Statement;
 import org.apache.jena.rdf.model.StmtIterator;
 import org.apache.jena.vocabulary.RDF;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.ContextHierarchy;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import edu.unc.lib.boxc.fcrepo.utils.TransactionManager;
 import edu.unc.lib.boxc.model.api.SoftwareAgentConstants.SoftwareAgent;
@@ -55,8 +54,9 @@ import edu.unc.lib.boxc.operations.api.events.PremisLoggerFactory;
 import edu.unc.lib.boxc.operations.impl.acl.ExpireEmbargoService;
 import edu.unc.lib.boxc.operations.jms.JMSMessageUtil;
 import edu.unc.lib.boxc.operations.jms.OperationsMessageSender;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-@RunWith(SpringJUnit4ClassRunner.class)
+@ExtendWith(SpringExtension.class)
 @ContextHierarchy({
         @ContextConfiguration("/spring-test/test-fedora-container.xml"),
         @ContextConfiguration("/spring-test/cdr-client-container.xml")
@@ -88,7 +88,7 @@ public class ExpireEmbargoServiceIT {
 
     private ContentRootObject contentRoot;
 
-    @Before
+    @BeforeEach
     public void init() throws Exception {
         initMocks(this);
         TestHelper.setContentBase(baseAddress);
@@ -224,14 +224,12 @@ public class ExpireEmbargoServiceIT {
 
     private void assertNoEmbargo(RepositoryObject obj) {
         Resource resc = obj.getResource();
-        assertFalse("Unexpected embargo assigned to " + obj.getPid().getId(),
-                resc.hasProperty(CdrAcl.embargoUntil));
+        assertFalse(resc.hasProperty(CdrAcl.embargoUntil), "Unexpected embargo assigned to " + obj.getPid().getId());
     }
 
     private void assertEmbargo(RepositoryObject obj) {
         Resource resc = obj.getResource();
-        assertTrue("No embargo assigned to " + obj.getPid().getId(),
-                resc.hasProperty(CdrAcl.embargoUntil));
+        assertTrue(resc.hasProperty(CdrAcl.embargoUntil), "No embargo assigned to " + obj.getPid().getId());
     }
 
     private List<String> getEventDetails(RepositoryObject repoObj) {
@@ -244,8 +242,7 @@ public class ExpireEmbargoServiceIT {
             Statement stmt = it.next();
             Resource eventResc = stmt.getSubject();
 
-            assertTrue("Event type was not set",
-                    eventResc.hasProperty(RDF.type, Premis.Dissemination));
+            assertTrue(eventResc.hasProperty(RDF.type, Premis.Dissemination), "Event type was not set");
             Resource execAgent = eventResc.getProperty(Premis.hasEventRelatedAgentExecutor).getResource();
             assertEquals(AgentPids.forSoftware(SoftwareAgent.embargoExpirationService).getRepositoryPath(),
                     execAgent.getURI());
@@ -256,8 +253,8 @@ public class ExpireEmbargoServiceIT {
     }
 
     private void assertEventWithDetail(List<String> eventDetails, String expected) {
-        assertTrue("No event with expected detail '" + expected + "'",
-                eventDetails.stream().anyMatch(d -> d.contains(expected)));
+        assertTrue(eventDetails.stream().anyMatch(d -> d.contains(expected)),
+                "No event with expected detail '" + expected + "'");
     }
 
     private void assertMessageSent(PID pid) {

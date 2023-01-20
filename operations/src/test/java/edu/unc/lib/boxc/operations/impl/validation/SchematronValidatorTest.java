@@ -7,8 +7,8 @@ import org.apache.commons.logging.LogFactory;
 import org.jdom2.Document;
 import org.jdom2.output.Format;
 import org.jdom2.output.XMLOutputter;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.springframework.core.io.ClassPathResource;
 
 /**
@@ -17,7 +17,7 @@ import org.springframework.core.io.ClassPathResource;
  * @author count0
  *
  */
-public class SchematronValidatorTest extends Assert {
+public class SchematronValidatorTest extends Assertions {
     private static final Log log = LogFactory.getLog(SchematronValidatorTest.class);
 
     /**
@@ -41,7 +41,7 @@ public class SchematronValidatorTest extends Assert {
             XMLOutputter dbout = new XMLOutputter();
             dbout.setFormat(Format.getPrettyFormat());
             log.info(dbout.outputString(output));
-            assertTrue("This XML should be valid according to the schema", valid);
+            assertTrue(valid, "This XML should be valid according to the schema");
         } catch (IOException e) {
             fail("Got exception" + e.getMessage());
         }
@@ -69,7 +69,7 @@ public class SchematronValidatorTest extends Assert {
             XMLOutputter dbout = new XMLOutputter();
             dbout.setFormat(Format.getPrettyFormat());
             log.info(dbout.outputString(output));
-            assertFalse("This XML must be invalid according to the schema", valid);
+            assertFalse(valid, "This XML must be invalid according to the schema");
         } catch (IOException e) {
             fail("Got exception" + e.getMessage());
         }
@@ -96,7 +96,7 @@ public class SchematronValidatorTest extends Assert {
             XMLOutputter dbout = new XMLOutputter();
             dbout.setFormat(Format.getPrettyFormat());
             log.info(dbout.outputString(output));
-            assertFalse("This XML must be invalid according to the schema", valid);
+            assertFalse(valid, "This XML must be invalid according to the schema");
         } catch (IOException e) {
             fail("Got exception" + e.getMessage());
         }
@@ -122,7 +122,7 @@ public class SchematronValidatorTest extends Assert {
             XMLOutputter dbout = new XMLOutputter();
             dbout.setFormat(Format.getPrettyFormat());
             log.info(dbout.outputString(output));
-            assertFalse("This XML must be invalid according to the schema", valid);
+            assertFalse(valid, "This XML must be invalid according to the schema");
         } catch (IOException e) {
             fail("Got exception" + e.getMessage());
         }
@@ -148,7 +148,7 @@ public class SchematronValidatorTest extends Assert {
             XMLOutputter dbout = new XMLOutputter();
             dbout.setFormat(Format.getPrettyFormat());
             log.info(dbout.outputString(output));
-            assertFalse("This XML must be invalid according to the schema", valid);
+            assertFalse(valid, "This XML must be invalid according to the schema");
         } catch (IOException e) {
             fail("Got exception" + e.getMessage());
         }
@@ -175,7 +175,7 @@ public class SchematronValidatorTest extends Assert {
             XMLOutputter dbout = new XMLOutputter();
             dbout.setFormat(Format.getPrettyFormat());
             log.info(dbout.outputString(output));
-            assertTrue("This XML must be valid according to the schema", valid);
+            assertTrue(valid, "This XML must be valid according to the schema");
         } catch (IOException e) {
             fail("Got exception" + e.getMessage());
         }
@@ -203,7 +203,7 @@ public class SchematronValidatorTest extends Assert {
             dbout.setFormat(Format.getPrettyFormat());
             String msg = dbout.outputString(output);
             log.info(msg);
-            assertTrue("This XML must be valid according to the schema \n"+msg, valid);
+            assertTrue(valid, "This XML must be valid according to the schema \n" + msg);
         } catch (IOException e) {
             fail("Got exception" + e.getMessage());
         }
@@ -272,7 +272,7 @@ public class SchematronValidatorTest extends Assert {
             String doc = out.outputString(report);
             log.info(doc);
             boolean valid = sv.isValid(mods, "object-mods");
-            assertTrue("The Raschke example MODS file should be valid.", valid);
+            assertTrue(valid, "The Raschke example MODS file should be valid.");
         } catch (IOException e) {
             log.error("cannot read test file", e);
             fail(e.getLocalizedMessage());

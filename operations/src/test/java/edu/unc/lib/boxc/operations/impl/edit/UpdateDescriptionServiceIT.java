@@ -5,8 +5,8 @@ import static edu.unc.lib.boxc.model.api.DatastreamType.MD_DESCRIPTIVE_HISTORY;
 import static edu.unc.lib.boxc.model.api.xml.JDOMNamespaceUtil.MODS_V3_NS;
 import static edu.unc.lib.boxc.operations.test.ModsTestHelper.documentToInputStream;
 import static edu.unc.lib.boxc.operations.test.ModsTestHelper.modsWithTitleAndDate;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.MockitoAnnotations.initMocks;
 
 import java.io.IOException;
@@ -17,14 +17,14 @@ import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.JDOMException;
 import org.jdom2.input.SAXBuilder;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.ContextHierarchy;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import edu.unc.lib.boxc.auth.api.models.AgentPrincipals;
 import edu.unc.lib.boxc.model.api.DatastreamType;
@@ -41,7 +41,7 @@ import edu.unc.lib.boxc.operations.impl.edit.UpdateDescriptionService.UpdateDesc
 /**
  * @author bbpennel
  */
-@RunWith(SpringJUnit4ClassRunner.class)
+@ExtendWith(SpringExtension.class)
 @ContextHierarchy({
     @ContextConfiguration("/spring-test/test-fedora-container.xml"),
     @ContextConfiguration("/spring-test/cdr-client-container.xml"),
@@ -59,7 +59,7 @@ public class UpdateDescriptionServiceIT {
     @Mock
     private AgentPrincipals agent;
 
-    @Before
+    @BeforeEach
     public void init_() throws Exception {
         initMocks(this);
 

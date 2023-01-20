@@ -4,10 +4,10 @@ import static edu.unc.lib.boxc.model.api.sparql.SparqlUpdateHelper.createSparqlR
 import static edu.unc.lib.boxc.model.api.xml.JDOMNamespaceUtil.CDR_MESSAGE_NS;
 import static edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPaths.getContentRootPid;
 import static edu.unc.lib.boxc.operations.jms.indexing.IndexingActionType.DELETE_SOLR_TREE;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
@@ -32,18 +32,17 @@ import org.fcrepo.client.FcrepoOperationFailedException;
 import org.fcrepo.client.FcrepoResponse;
 import org.jdom2.Document;
 import org.jdom2.Element;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.api.io.TempDir;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.ContextHierarchy;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import edu.unc.lib.boxc.auth.api.exceptions.AccessRestrictionException;
 import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
@@ -83,7 +82,7 @@ import edu.unc.lib.boxc.persist.impl.storage.StorageLocationManagerImpl;
 /**
  * @author bbpennel
  */
-@RunWith(SpringJUnit4ClassRunner.class)
+@ExtendWith(SpringExtension.class)
 @ContextHierarchy({
     @ContextConfiguration("/spring-test/test-fedora-container.xml"),
     @ContextConfiguration("/spring-test/cdr-client-container.xml"),
@@ -95,8 +94,8 @@ public class DestroyObjectsCompletelyJobIT {
     private static final String USER_NAME = "user";
     private static final String USER_GROUPS = "edu:lib:staff_grp";
 
-    @Rule
-    public final TemporaryFolder tmpFolder = new TemporaryFolder();
+    @TempDir
+    public Path tmpFolder;
 
     @Autowired
     private String baseAddress;
@@ -140,7 +139,7 @@ public class DestroyObjectsCompletelyJobIT {
 
     private DestroyObjectsCompletelyJob job;
 
-    @Before
+    @BeforeEach
     public void init() throws Exception {
         initMocks(this);
         TestHelper.setContentBase(baseAddress);
@@ -414,7 +413,7 @@ public class DestroyObjectsCompletelyJobIT {
                 List<String> expectedUris = Arrays.stream(contentFiles).map(f -> f.toURI().toString())
                         .collect(Collectors.toList());
                 assertEquals(expectedUris.size(), msgContentUris.size());
-                assertTrue("Did not contain all expected URIS", msgContentUris.containsAll(expectedUris));
+                assertTrue(msgContentUris.containsAll(expectedUris), "Did not contain all expected URIS");
             }
             return;
         }

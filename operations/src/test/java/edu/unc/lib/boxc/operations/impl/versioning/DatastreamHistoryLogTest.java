@@ -3,7 +3,7 @@ package edu.unc.lib.boxc.operations.impl.versioning;
 import static edu.unc.lib.boxc.common.util.DateTimeUtil.parseUTCToDate;
 import static edu.unc.lib.boxc.model.api.xml.JDOMNamespaceUtil.DCR_PACKAGING_NS;
 import static edu.unc.lib.boxc.model.api.xml.JDOMNamespaceUtil.MODS_V3_NS;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.MockitoAnnotations.initMocks;
 
 import java.io.ByteArrayInputStream;
@@ -17,8 +17,9 @@ import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.output.Format;
 import org.jdom2.output.XMLOutputter;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import edu.unc.lib.boxc.common.xml.SecureXMLFactory;
 import edu.unc.lib.boxc.fcrepo.exceptions.ServiceException;
@@ -40,7 +41,7 @@ public class DatastreamHistoryLogTest {
 
     private PID dsPid;
 
-    @Before
+    @BeforeEach
     public void setup() throws Exception {
         initMocks(this);
         dsPid = PIDs.get(TEST_ID);
@@ -85,14 +86,16 @@ public class DatastreamHistoryLogTest {
         assertEquals(dsContent, versionEl.getText());
     }
 
-    @Test(expected = ServiceException.class)
+    @Test
     public void addVersion_NewLog_TextContentWithXmlType_Fail() throws Exception {
-        DatastreamHistoryLog historyLog = new DatastreamHistoryLog(dsPid);
+        Assertions.assertThrows(ServiceException.class, () -> {
+            DatastreamHistoryLog historyLog = new DatastreamHistoryLog(dsPid);
 
-        String dsContent = "all of my content";
-        InputStream contentStream = new ByteArrayInputStream(dsContent.getBytes());
+            String dsContent = "all of my content";
+            InputStream contentStream = new ByteArrayInputStream(dsContent.getBytes());
 
-        historyLog.addVersion(contentStream, "text/xml", VERSION1_DATE);
+            historyLog.addVersion(contentStream, "text/xml", VERSION1_DATE);
+        });
     }
 
     @Test
@@ -167,8 +170,8 @@ public class DatastreamHistoryLogTest {
 
     private void assertLogObjectIdEquals(PID expected, Document logDoc) {
         String id = logDoc.getRootElement().getAttributeValue(DatastreamHistoryLog.ID_ATTR);
-        assertEquals("Identifier in log doc did not match expected id",
-                expected.getQualifiedId(), id);
+        assertEquals(expected.getQualifiedId(), id,
+                "Identifier in log doc did not match expected id");
     }
 
     private void assertVersionHasModsTitle(String expected, Element versionEl) {

@@ -1,6 +1,6 @@
 package edu.unc.lib.boxc.operations.impl.edit;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
@@ -16,8 +16,9 @@ import java.util.UUID;
 
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Resource;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
@@ -98,7 +99,7 @@ public class EditFilenameServiceTest {
 
     private EditFilenameService service;
 
-    @Before
+    @BeforeEach
     public void init() throws Exception {
         initMocks(this);
 
@@ -180,11 +181,13 @@ public class EditFilenameServiceTest {
         }
     }
 
-    @Test(expected = TransactionCancelledException.class)
+    @Test
     public void insufficientAccessTest() {
-        doThrow(new AccessRestrictionException()).when(aclService)
-            .assertHasAccess(anyString(), eq(pid), any(), eq(Permission.editDescription));
+        Assertions.assertThrows(TransactionCancelledException.class, () -> {
+            doThrow(new AccessRestrictionException()).when(aclService)
+                    .assertHasAccess(anyString(), eq(pid), any(), eq(Permission.editDescription));
 
-        service.editLabel(agent, pid, "label");
+            service.editLabel(agent, pid, "label");
+        });
     }
 }

@@ -49,18 +49,17 @@ import org.apache.jena.vocabulary.RDF;
 import org.fcrepo.client.FcrepoClient;
 import org.jdom2.Document;
 import org.jdom2.Element;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.api.io.TempDir;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.ContextHierarchy;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.io.File;
 import java.net.URI;
@@ -81,10 +80,10 @@ import static edu.unc.lib.boxc.model.api.xml.JDOMNamespaceUtil.CDR_MESSAGE_NS;
 import static edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPaths.getContentRootPid;
 import static edu.unc.lib.boxc.operations.jms.indexing.IndexingActionType.DELETE_SOLR_TREE;
 import static java.util.Arrays.asList;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
@@ -98,7 +97,7 @@ import static org.mockito.MockitoAnnotations.initMocks;
  * @author harring
  *
  */
-@RunWith(SpringJUnit4ClassRunner.class)
+@ExtendWith(SpringExtension.class)
 @ContextHierarchy({
     @ContextConfiguration("/spring-test/test-fedora-container.xml"),
     @ContextConfiguration("/spring-test/cdr-client-container.xml"),
@@ -109,8 +108,8 @@ public class DestroyObjectsJobIT {
     private static final String USER_NAME = "user";
     private static final String USER_GROUPS = "edu:lib:staff_grp";
 
-    @Rule
-    public final TemporaryFolder tmpFolder = new TemporaryFolder();
+    @TempDir
+    public Path tmpFolder;
 
     @Autowired
     private String baseAddress;
@@ -165,7 +164,7 @@ public class DestroyObjectsJobIT {
     @Captor
     private ArgumentCaptor<MultiParentOrderRequest> requestCaptor;
 
-    @Before
+    @BeforeEach
     public void init() throws Exception {
         initMocks(this);
         TestHelper.setContentBase(baseAddress);
@@ -210,7 +209,7 @@ public class DestroyObjectsJobIT {
         assertTrue(stoneResc.hasProperty(Ebucore.hasMimeType));
         assertTrue(stoneResc.hasProperty(Cdr.hasSize));
 
-        assertFalse("Original file must be deleted", Files.exists(Paths.get(contentUri)));
+        assertFalse(Files.exists(Paths.get(contentUri)), "Original file must be deleted");
 
         verify(indexingMessageSender).sendIndexingOperation(anyString(), eq(fileObjPid), eq(DELETE_SOLR_TREE));
 
@@ -259,7 +258,7 @@ public class DestroyObjectsJobIT {
         assertTrue(stoneResc.hasProperty(Ebucore.hasMimeType));
         assertTrue(stoneResc.hasProperty(Cdr.hasSize));
 
-        assertFalse("Original file must be deleted", Files.exists(Paths.get(contentUri)));
+        assertFalse(Files.exists(Paths.get(contentUri)), "Original file must be deleted");
 
         verify(indexingMessageSender).sendIndexingOperation(anyString(), eq(fileObjPid), eq(DELETE_SOLR_TREE));
 
@@ -275,13 +274,13 @@ public class DestroyObjectsJobIT {
 
         workObj.shouldRefresh();
 
-        assertNull("Primary object of work must now be null", workObj.getPrimaryObject());
+        assertNull(workObj.getPrimaryObject(), "Primary object of work must now be null");
         var members = workObj.getMembers();
-        assertTrue("Second file must still be present", members.stream()
-                .anyMatch(m -> m.getPid().equals(fileObj2.getPid())));
+        assertTrue(members.stream().anyMatch(m -> m.getPid().equals(fileObj2.getPid())),
+                "Second file must still be present");
         assertEquals(2, members.size());
-        assertFalse("Primary object must be unset",
-                workObj.getModel().contains(null, Cdr.primaryObject, (RDFNode) null));
+        assertFalse(workObj.getModel().contains(null, Cdr.primaryObject, (RDFNode) null),
+                "Primary object must be unset");
     }
 
     @Test

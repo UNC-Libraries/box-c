@@ -2,9 +2,9 @@ package edu.unc.lib.boxc.operations.impl.move;
 
 import static java.util.Arrays.asList;
 import static org.hamcrest.CoreMatchers.isA;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyListOf;
 import static org.mockito.Matchers.anyString;
@@ -27,11 +27,10 @@ import org.apache.jena.query.QuerySolution;
 import org.apache.jena.query.ResultSet;
 import org.apache.jena.rdf.model.Resource;
 import org.fcrepo.client.FcrepoClient;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
@@ -89,9 +88,6 @@ public class MoveObjectsServiceTest {
     @Mock
     private ObjectPathFactory objectPathFactory;
 
-    @Rule
-    public ExpectedException expectedException = ExpectedException.none();
-
     private PID destPid;
     private PID sourcePid;
     @Mock
@@ -121,7 +117,7 @@ public class MoveObjectsServiceTest {
 
     private ListAppender<ILoggingEvent> actionAppender;
 
-    @Before
+    @BeforeEach
     public void init() throws Exception {
         initMocks(this);
 
@@ -168,37 +164,41 @@ public class MoveObjectsServiceTest {
         actionAppender.start();
     }
 
-    @After
+    @AfterEach
     public void after() {
         actionAppender.stop();
     }
 
-    @Test(expected = AccessRestrictionException.class)
+    @Test
     public void testNoPermissionOnDestination() throws Exception {
-        doThrow(new AccessRestrictionException()).when(aclService)
-                .assertHasAccess(anyString(), eq(destPid), any(), eq(Permission.move));
+        Assertions.assertThrows(AccessRestrictionException.class, () -> {
+            doThrow(new AccessRestrictionException()).when(aclService)
+                    .assertHasAccess(anyString(), eq(destPid), any(), eq(Permission.move));
 
-        service.moveObjects(mockAgent, destPid, asList(makeMoveObject(mockParent)));
+            service.moveObjects(mockAgent, destPid, asList(makeMoveObject(mockParent)));
+        });
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void testDestinationInvalidType() {
-        FileObject destFile = mock(FileObject.class);
-        when(repositoryObjectLoader.getRepositoryObject(destPid)).thenReturn(destFile);
+        Assertions.assertThrows(IllegalArgumentException.class, () -> {
+            FileObject destFile = mock(FileObject.class);
+            when(repositoryObjectLoader.getRepositoryObject(destPid)).thenReturn(destFile);
 
-        service.moveObjects(mockAgent, destPid, asList(makePid()));
+            service.moveObjects(mockAgent, destPid, asList(makePid()));
+        });
     }
 
     @Test
     public void testNoPermissionToMoveObject() throws Exception {
-        expectedException.expectCause(isA(AccessRestrictionException.class));
+        Assertions.assertThrows(AccessRestrictionException.class, () -> {
+            PID movePid = makeMoveObject(mockParent);
 
-        PID movePid = makeMoveObject(mockParent);
+            doThrow(new AccessRestrictionException()).when(aclService)
+                    .assertHasAccess(anyString(), eq(movePid), any(), eq(Permission.move));
 
-        doThrow(new AccessRestrictionException()).when(aclService)
-                .assertHasAccess(anyString(), eq(movePid), any(), eq(Permission.move));
-
-        service.moveObjects(mockAgent, destPid, asList(movePid));
+            service.moveObjects(mockAgent, destPid, asList(movePid));
+        });
     }
 
     @Test
@@ -215,50 +215,53 @@ public class MoveObjectsServiceTest {
 
     @Test
     public void testMoveCollectionIntoWork() {
-        expectedException.expect(IllegalArgumentException.class);
-        expectedException.expectMessage("is not a file and cannot be added to a work");
+        Exception expected = Assertions.assertThrows(IllegalArgumentException.class, () -> {
+            WorkObject mockWorkObj = mock(WorkObject.class);
+            when(repositoryObjectLoader.getRepositoryObject(destPid)).thenReturn(mockWorkObj);
 
-        WorkObject mockWorkObj = mock(WorkObject.class);
-        when(repositoryObjectLoader.getRepositoryObject(destPid)).thenReturn(mockWorkObj);
+            PID movePid = makePid();
+            CollectionObject moveObj = mock(CollectionObject.class);
+            when(repositoryObjectLoader.getRepositoryObject(movePid)).thenReturn(moveObj);
 
-        PID movePid = makePid();
-        CollectionObject moveObj = mock(CollectionObject.class);
-        when(repositoryObjectLoader.getRepositoryObject(movePid)).thenReturn(moveObj);
+            List<PID> movePids = asList(movePid);
+            service.moveObjects(mockAgent, destPid, movePids);
+        });
 
-        List<PID> movePids = asList(movePid);
-        service.moveObjects(mockAgent, destPid, movePids);
+        assertTrue(expected.getMessage().contains("is not a file and cannot be added to a work"));
     }
 
     @Test
     public void testMoveAdminUnitIntoFolder() {
-        expectedException.expect(IllegalArgumentException.class);
-        expectedException.expectMessage("is not a folder or a work and cannot be added to a folder");
+        Exception expected = Assertions.assertThrows(IllegalArgumentException.class, () -> {
+            FolderObject mockFolderObj = mock(FolderObject.class);
+            when(repositoryObjectLoader.getRepositoryObject(destPid)).thenReturn(mockFolderObj);
 
-        FolderObject mockFolderObj = mock(FolderObject.class);
-        when(repositoryObjectLoader.getRepositoryObject(destPid)).thenReturn(mockFolderObj);
+            PID movePid = makePid();
+            AdminUnit moveObj = mock(AdminUnit.class);
+            when(repositoryObjectLoader.getRepositoryObject(movePid)).thenReturn(moveObj);
 
-        PID movePid = makePid();
-        AdminUnit moveObj = mock(AdminUnit.class);
-        when(repositoryObjectLoader.getRepositoryObject(movePid)).thenReturn(moveObj);
+            List<PID> movePids = asList(movePid);
+            service.moveObjects(mockAgent, destPid, movePids);
+        });
 
-        List<PID> movePids = asList(movePid);
-        service.moveObjects(mockAgent, destPid, movePids);
+        assertTrue(expected.getMessage().contains("is not a folder or a work and cannot be added to a folder"));
     }
 
     @Test
     public void testMoveFolderIntoWork() {
-        expectedException.expect(IllegalArgumentException.class);
-        expectedException.expectMessage("is not a file and cannot be added to a work");
+        Exception expected = Assertions.assertThrows(IllegalArgumentException.class, () -> {
+            WorkObject mockWorkObj = mock(WorkObject.class);
+            when(repositoryObjectLoader.getRepositoryObject(destPid)).thenReturn(mockWorkObj);
 
-        WorkObject mockWorkObj = mock(WorkObject.class);
-        when(repositoryObjectLoader.getRepositoryObject(destPid)).thenReturn(mockWorkObj);
+            PID movePid = makePid();
+            FolderObject moveObj = mock(FolderObject.class);
+            when(repositoryObjectLoader.getRepositoryObject(movePid)).thenReturn(moveObj);
 
-        PID movePid = makePid();
-        FolderObject moveObj = mock(FolderObject.class);
-        when(repositoryObjectLoader.getRepositoryObject(movePid)).thenReturn(moveObj);
+            List<PID> movePids = asList(movePid);
+            service.moveObjects(mockAgent, destPid, movePids);
+        });
 
-        List<PID> movePids = asList(movePid);
-        service.moveObjects(mockAgent, destPid, movePids);
+        assertTrue(expected.getMessage().contains("is not a file and cannot be added to a work"));
     }
 
     @Test
@@ -282,12 +285,10 @@ public class MoveObjectsServiceTest {
         assertNotNull(logRoot.get("move_id"));
         assertEquals("user", logRoot.get("user").asText());
         assertEquals(destPid.getId(), logRoot.get("destination_id").asText());
-        assertEquals("Incorrect path for destination",
-                DEST_OBJ_PATH, logRoot.get("destination_path").asText());
+        assertEquals(DEST_OBJ_PATH, logRoot.get("destination_path").asText(), "Incorrect path for destination");
 
         JsonNode sourceNode = logRoot.get("sources").get(sourcePid.getId());
-        assertEquals("Incorrect path for source",
-                SOURCE_OBJ_PATH, sourceNode.get("path").asText());
+        assertEquals(SOURCE_OBJ_PATH, sourceNode.get("path").asText(), "Incorrect path for source");
         JsonNode sourceObjsNode = sourceNode.get("objects");
 
         // Build a list of objects logged for the source
@@ -298,30 +299,38 @@ public class MoveObjectsServiceTest {
             pidsFromSource.add(PIDs.get(objNode.asText()));
         }
 
-        assertTrue("Source did not contain all expected pids", pidsFromSource.containsAll(pids));
-        assertEquals("Incorrect number of pids from source", pids.size(), pidsFromSource.size());
+        assertTrue(pidsFromSource.containsAll(pids), "Source did not contain all expected pids");
+        assertEquals(pids.size(), pidsFromSource.size(), "Incorrect number of pids from source");
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void testNoDestination() throws Exception {
-        service.moveObjects(mockAgent, null, asList(makePid()));
+        Assertions.assertThrows(IllegalArgumentException.class, () -> {
+            service.moveObjects(mockAgent, null, asList(makePid()));
+        });
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void testNoPids() throws Exception {
-        service.moveObjects(mockAgent, destPid, asList());
+        Assertions.assertThrows(IllegalArgumentException.class, () -> {
+            service.moveObjects(mockAgent, destPid, asList());
+        });
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void testNoUsername() throws Exception {
-        when(mockAgent.getUsername()).thenReturn(null);
-        service.moveObjects(mockAgent, destPid, asList(makePid()));
+        Assertions.assertThrows(IllegalArgumentException.class, () -> {
+            when(mockAgent.getUsername()).thenReturn(null);
+            service.moveObjects(mockAgent, destPid, asList(makePid()));
+        });
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void testNoPrincipals() throws Exception {
-        when(mockAgent.getPrincipals()).thenReturn(null);
-        service.moveObjects(mockAgent, destPid, asList(makePid()));
+        Assertions.assertThrows(IllegalArgumentException.class, () -> {
+            when(mockAgent.getPrincipals()).thenReturn(null);
+            service.moveObjects(mockAgent, destPid, asList(makePid()));
+        });
     }
 
     private PID makeMoveObject(ContentContainerObject parent) {

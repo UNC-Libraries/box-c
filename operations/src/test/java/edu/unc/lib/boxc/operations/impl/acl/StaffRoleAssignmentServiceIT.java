@@ -9,10 +9,10 @@ import static edu.unc.lib.boxc.auth.api.UserRole.unitOwner;
 import static java.util.Arrays.asList;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.not;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
@@ -32,16 +32,17 @@ import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.Statement;
 import org.apache.jena.rdf.model.StmtIterator;
 import org.apache.jena.vocabulary.RDF;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.ContextHierarchy;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import edu.unc.lib.boxc.auth.api.Permission;
 import edu.unc.lib.boxc.auth.api.UserRole;
@@ -85,7 +86,7 @@ import edu.unc.lib.boxc.operations.jms.JMSMessageUtil.CDRActions;
  * @author bbpennel
  *
  */
-@RunWith(SpringJUnit4ClassRunner.class)
+@ExtendWith({SpringExtension.class})
 @ContextHierarchy({
     @ContextConfiguration("/spring-test/test-fedora-container.xml"),
     @ContextConfiguration("/spring-test/cdr-client-container.xml"),
@@ -129,7 +130,7 @@ public class StaffRoleAssignmentServiceIT {
 
     private ContentRootObject contentRoot;
 
-    @Before
+    @BeforeEach
     public void init() throws Exception {
         initMocks(this);
         TestHelper.setContentBase(baseAddress);
@@ -151,30 +152,34 @@ public class StaffRoleAssignmentServiceIT {
         contentRoot = repoObjLoader.getContentRootObject(contentRootPid);
     }
 
-    @Test(expected = AccessRestrictionException.class)
+    @Test
     public void testInsufficientPermissions() throws Exception {
-        PID pid = pidMinter.mintContentPid();
+        Assertions.assertThrows(AccessRestrictionException.class, () -> {
+            PID pid = pidMinter.mintContentPid();
 
-        doThrow(new AccessRestrictionException()).when(aclService)
-            .assertHasAccess(anyString(), eq(pid), any(AccessGroupSetImpl.class), eq(Permission.assignStaffRoles));
+            doThrow(new AccessRestrictionException()).when(aclService)
+                    .assertHasAccess(anyString(), eq(pid), any(AccessGroupSetImpl.class), eq(Permission.assignStaffRoles));
 
-        Set<RoleAssignment> assignments = new HashSet<>(asList(
-                new RoleAssignment(USER_PRINC, canAccess)));
+            Set<RoleAssignment> assignments = new HashSet<>(asList(
+                    new RoleAssignment(USER_PRINC, canAccess)));
 
-        roleService.updateRoles(agent, pid, assignments);
+            roleService.updateRoles(agent, pid, assignments);
+        });
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void testNoAgent() throws Exception {
-        PID pid = pidMinter.mintContentPid();
-        AdminUnit unit = repoObjFactory.createAdminUnit(pid, null);
-        contentRoot.addMember(unit);
-        treeIndexer.indexAll(baseAddress);
+        Assertions.assertThrows(IllegalArgumentException.class, () -> {
+            PID pid = pidMinter.mintContentPid();
+            AdminUnit unit = repoObjFactory.createAdminUnit(pid, null);
+            contentRoot.addMember(unit);
+            treeIndexer.indexAll(baseAddress);
 
-        Set<RoleAssignment> assignments = new HashSet<>(asList(
-                new RoleAssignment(USER_PRINC, canAccess)));
+            Set<RoleAssignment> assignments = new HashSet<>(asList(
+                    new RoleAssignment(USER_PRINC, canAccess)));
 
-        roleService.updateRoles(null, pid, assignments);
+            roleService.updateRoles(null, pid, assignments);
+        });
     }
 
     @Test
@@ -249,53 +254,59 @@ public class StaffRoleAssignmentServiceIT {
         assertThat(eventDetail, containsString(unitOwner.name() + ": " + USER_PRINC));
     }
 
-    @Test(expected = InvalidAssignmentException.class)
+    @Test
     public void testSetUnitOwnerForCollection() throws Exception {
-        PID pid = pidMinter.mintContentPid();
-        AdminUnit unit = repoObjFactory.createAdminUnit(null);
-        contentRoot.addMember(unit);
-        CollectionObject coll = repoObjFactory.createCollectionObject(pid, null);
-        unit.addMember(coll);
-        treeIndexer.indexAll(baseAddress);
+        Assertions.assertThrows(InvalidAssignmentException.class, () -> {
+            PID pid = pidMinter.mintContentPid();
+            AdminUnit unit = repoObjFactory.createAdminUnit(null);
+            contentRoot.addMember(unit);
+            CollectionObject coll = repoObjFactory.createCollectionObject(pid, null);
+            unit.addMember(coll);
+            treeIndexer.indexAll(baseAddress);
 
-        Set<RoleAssignment> assignments = new HashSet<>(asList(
-                new RoleAssignment(USER_PRINC, unitOwner)));
+            Set<RoleAssignment> assignments = new HashSet<>(asList(
+                    new RoleAssignment(USER_PRINC, unitOwner)));
 
-        roleService.updateRoles(agent, pid, assignments);
+            roleService.updateRoles(agent, pid, assignments);
+        });
     }
 
-    @Test(expected = InvalidAssignmentException.class)
+    @Test
     public void testSetCanManageForFolder() throws Exception {
-        PID pid = pidMinter.mintContentPid();
-        AdminUnit unit = repoObjFactory.createAdminUnit(null);
-        contentRoot.addMember(unit);
-        CollectionObject coll = repoObjFactory.createCollectionObject(null);
-        unit.addMember(coll);
-        FolderObject folder = repoObjFactory.createFolderObject(pid, null);
-        coll.addMember(folder);
-        treeIndexer.indexAll(baseAddress);
+        Assertions.assertThrows(InvalidAssignmentException.class, () -> {
+            PID pid = pidMinter.mintContentPid();
+            AdminUnit unit = repoObjFactory.createAdminUnit(null);
+            contentRoot.addMember(unit);
+            CollectionObject coll = repoObjFactory.createCollectionObject(null);
+            unit.addMember(coll);
+            FolderObject folder = repoObjFactory.createFolderObject(pid, null);
+            coll.addMember(folder);
+            treeIndexer.indexAll(baseAddress);
 
-        Set<RoleAssignment> assignments = new HashSet<>(asList(
-                new RoleAssignment(USER_PRINC, canManage)));
+            Set<RoleAssignment> assignments = new HashSet<>(asList(
+                    new RoleAssignment(USER_PRINC, canManage)));
 
-        roleService.updateRoles(agent, pid, assignments);
+            roleService.updateRoles(agent, pid, assignments);
+        });
     }
 
-    @Test(expected = InvalidAssignmentException.class)
+    @Test
     public void testSetCanManageForWork() throws Exception {
-        PID pid = pidMinter.mintContentPid();
-        AdminUnit unit = repoObjFactory.createAdminUnit(null);
-        contentRoot.addMember(unit);
-        CollectionObject coll = repoObjFactory.createCollectionObject(null);
-        unit.addMember(coll);
-        WorkObject work = repoObjFactory.createWorkObject(pid, null);
-        coll.addMember(work);
-        treeIndexer.indexAll(baseAddress);
+        Assertions.assertThrows(InvalidAssignmentException.class, () -> {
+            PID pid = pidMinter.mintContentPid();
+            AdminUnit unit = repoObjFactory.createAdminUnit(null);
+            contentRoot.addMember(unit);
+            CollectionObject coll = repoObjFactory.createCollectionObject(null);
+            unit.addMember(coll);
+            WorkObject work = repoObjFactory.createWorkObject(pid, null);
+            coll.addMember(work);
+            treeIndexer.indexAll(baseAddress);
 
-        Set<RoleAssignment> assignments = new HashSet<>(asList(
-                new RoleAssignment(USER_PRINC, canManage)));
+            Set<RoleAssignment> assignments = new HashSet<>(asList(
+                    new RoleAssignment(USER_PRINC, canManage)));
 
-        roleService.updateRoles(agent, pid, assignments);
+            roleService.updateRoles(agent, pid, assignments);
+        });
     }
 
     @Test
@@ -324,20 +335,22 @@ public class StaffRoleAssignmentServiceIT {
         assertThat(eventDetail, containsString(canManage.name() + ": " + USER_PRINC));
     }
 
-    @Test(expected = InvalidAssignmentException.class)
+    @Test
     public void testPrincipalWithMultipleRoles() throws Exception {
-        PID pid = pidMinter.mintContentPid();
-        AdminUnit unit = repoObjFactory.createAdminUnit(null);
-        contentRoot.addMember(unit);
-        CollectionObject coll = repoObjFactory.createCollectionObject(pid, null);
-        unit.addMember(coll);
-        treeIndexer.indexAll(baseAddress);
+        Assertions.assertThrows(InvalidAssignmentException.class, () -> {
+            PID pid = pidMinter.mintContentPid();
+            AdminUnit unit = repoObjFactory.createAdminUnit(null);
+            contentRoot.addMember(unit);
+            CollectionObject coll = repoObjFactory.createCollectionObject(pid, null);
+            unit.addMember(coll);
+            treeIndexer.indexAll(baseAddress);
 
-        Set<RoleAssignment> assignments = new HashSet<>(asList(
-                new RoleAssignment(USER_PRINC, canManage),
-                new RoleAssignment(USER_PRINC, canAccess)));
+            Set<RoleAssignment> assignments = new HashSet<>(asList(
+                    new RoleAssignment(USER_PRINC, canManage),
+                    new RoleAssignment(USER_PRINC, canAccess)));
 
-        roleService.updateRoles(agent, pid, assignments);
+            roleService.updateRoles(agent, pid, assignments);
+        });
     }
 
     @Test
@@ -433,34 +446,38 @@ public class StaffRoleAssignmentServiceIT {
         assertThat(eventDetail, not(containsString(AUTHENTICATED_PRINC)));
     }
 
-    @Test(expected = InvalidAssignmentException.class)
+    @Test
     public void testAssignStaffRoleToPatronPrincipal() throws Exception {
-        PID pid = pidMinter.mintContentPid();
-        AdminUnit unit = repoObjFactory.createAdminUnit(null);
-        contentRoot.addMember(unit);
-        CollectionObject coll = repoObjFactory.createCollectionObject(pid, null);
-        unit.addMember(coll);
-        treeIndexer.indexAll(baseAddress);
+        Assertions.assertThrows(InvalidAssignmentException.class, () -> {
+            PID pid = pidMinter.mintContentPid();
+            AdminUnit unit = repoObjFactory.createAdminUnit(null);
+            contentRoot.addMember(unit);
+            CollectionObject coll = repoObjFactory.createCollectionObject(pid, null);
+            unit.addMember(coll);
+            treeIndexer.indexAll(baseAddress);
 
-        Set<RoleAssignment> assignments = new HashSet<>(asList(
-                new RoleAssignment(PUBLIC_PRINC, canManage)));
+            Set<RoleAssignment> assignments = new HashSet<>(asList(
+                    new RoleAssignment(PUBLIC_PRINC, canManage)));
 
-        roleService.updateRoles(agent, pid, assignments);
+            roleService.updateRoles(agent, pid, assignments);
+        });
     }
 
-    @Test(expected = ServiceException.class)
+    @Test
     public void testAssignPatron() throws Exception {
-        PID pid = pidMinter.mintContentPid();
-        AdminUnit unit = repoObjFactory.createAdminUnit(null);
-        contentRoot.addMember(unit);
-        CollectionObject coll = repoObjFactory.createCollectionObject(pid, null);
-        unit.addMember(coll);
-        treeIndexer.indexAll(baseAddress);
+        Assertions.assertThrows(ServiceException.class, () -> {
+            PID pid = pidMinter.mintContentPid();
+            AdminUnit unit = repoObjFactory.createAdminUnit(null);
+            contentRoot.addMember(unit);
+            CollectionObject coll = repoObjFactory.createCollectionObject(pid, null);
+            unit.addMember(coll);
+            treeIndexer.indexAll(baseAddress);
 
-        Set<RoleAssignment> assignments = new HashSet<>(asList(
-                new RoleAssignment(PUBLIC_PRINC, canViewOriginals)));
+            Set<RoleAssignment> assignments = new HashSet<>(asList(
+                    new RoleAssignment(PUBLIC_PRINC, canViewOriginals)));
 
-        roleService.updateRoles(agent, pid, assignments);
+            roleService.updateRoles(agent, pid, assignments);
+        });
     }
 
     private void assertNoStaffRoles(ContentObject obj) {
@@ -472,22 +489,21 @@ public class StaffRoleAssignmentServiceIT {
             Statement stmt = it.next();
             UserRole role = UserRole.getRoleByProperty(stmt.getPredicate().getURI());
             if (role != null) {
-                assertFalse("No staff roles should be set, but " + role + " present",
-                        staffRoles.contains(role));
+                assertFalse(staffRoles.contains(role), "No staff roles should be set, but " + role + " present");
             }
         }
     }
 
     private void assertHasAssignment(String princ, UserRole role, ContentObject obj) {
         Resource resc = obj.getResource();
-        assertTrue("Expected role " + role.name() + " was not assigned for " + princ,
-                resc.hasProperty(role.getProperty(), princ));
+        assertTrue(resc.hasProperty(role.getProperty(), princ),
+                "Expected role " + role.name() + " was not assigned for " + princ);
     }
 
     private void assertNoAssignment(String princ, UserRole role, ContentObject obj) {
         Resource resc = obj.getResource();
-        assertFalse("Unexpected role " + role.name() + " was assigned for " + princ,
-                resc.hasProperty(role.getProperty(), princ));
+        assertFalse(resc.hasProperty(role.getProperty(), princ),
+                "Unexpected role " + role.name() + " was assigned for " + princ);
     }
 
     private void assertMessageSent(PID pid) {
@@ -501,8 +517,8 @@ public class StaffRoleAssignmentServiceIT {
         Resource objResc = eventsModel.getResource(repoObj.getPid().getRepositoryPath());
         List<Resource> eventRescs = eventsModel.listResourcesWithProperty(Prov.used, objResc).toList();
         Resource eventResc = eventRescs.get(0);
-        assertTrue("Event type was not set",
-                eventResc.hasProperty(RDF.type, Premis.PolicyAssignment));
+        assertTrue(eventResc.hasProperty(RDF.type, Premis.PolicyAssignment),
+                "Event type was not set");
         Resource agentResc = eventResc.getPropertyResourceValue(Premis.hasEventRelatedAgentImplementor);
         assertEquals(AgentPids.forPerson(USER_PRINC).getRepositoryPath(), agentResc.getURI());
         String eventDetail = eventResc.getProperty(Premis.note).getString();
@@ -512,6 +528,6 @@ public class StaffRoleAssignmentServiceIT {
 
     private void assertEmbargoPresent(ContentObject obj) {
         Resource resc = obj.getResource();
-        assertTrue("Embargo was not present", resc.hasProperty(CdrAcl.embargoUntil));
+        assertTrue(resc.hasProperty(CdrAcl.embargoUntil), "Embargo was not present");
     }
 }

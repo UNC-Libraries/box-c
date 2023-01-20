@@ -2,9 +2,9 @@ package edu.unc.lib.boxc.operations.impl.edit;
 
 import static edu.unc.lib.boxc.common.xml.SecureXMLFactory.createSAXBuilder;
 import static edu.unc.lib.boxc.model.api.xml.JDOMNamespaceUtil.MODS_V3_NS;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
@@ -25,8 +25,9 @@ import org.jdom2.Element;
 import org.jdom2.JDOMException;
 import org.jdom2.input.SAXBuilder;
 import org.jdom2.output.XMLOutputter;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
@@ -75,7 +76,7 @@ public class EditTitleServiceTest {
     private PID pid;
     private Document document;
 
-    @Before
+    @BeforeEach
     public void init() throws Exception {
         initMocks(this);
 
@@ -119,18 +120,20 @@ public class EditTitleServiceTest {
         assertEquals(pid, pidListCaptor.getValue().get(0));
     }
 
-    @Test(expected = AccessRestrictionException.class)
+    @Test
     public void insufficientAccessTest() throws Exception {
-        String title = "new title";
-        document.addContent(new Element("mods", MODS_V3_NS)
-                .addContent(new Element("titleInfo", MODS_V3_NS)
-                        .addContent(new Element("title", MODS_V3_NS).setText("original title"))));
-        when(binaryObj.getBinaryStream()).thenReturn(convertDocumentToStream(document));
+        Assertions.assertThrows(AccessRestrictionException.class, () -> {
+            String title = "new title";
+            document.addContent(new Element("mods", MODS_V3_NS)
+                    .addContent(new Element("titleInfo", MODS_V3_NS)
+                            .addContent(new Element("title", MODS_V3_NS).setText("original title"))));
+            when(binaryObj.getBinaryStream()).thenReturn(convertDocumentToStream(document));
 
-        doThrow(new AccessRestrictionException()).when(aclService)
-                .assertHasAccess(anyString(), eq(pid), any(), any(Permission.class));
+            doThrow(new AccessRestrictionException()).when(aclService)
+                    .assertHasAccess(anyString(), eq(pid), any(), any(Permission.class));
 
-        service.editTitle(agent, pid, title);
+            service.editTitle(agent, pid, title);
+        });
     }
 
     @Test

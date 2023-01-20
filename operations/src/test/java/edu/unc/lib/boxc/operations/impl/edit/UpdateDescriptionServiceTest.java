@@ -1,8 +1,8 @@
 package edu.unc.lib.boxc.operations.impl.edit;
 
 import static edu.unc.lib.boxc.model.fcrepo.ids.DatastreamPids.getMdDescriptivePid;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
@@ -18,8 +18,9 @@ import java.util.Collection;
 import java.util.UUID;
 
 import org.apache.commons.io.IOUtils;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
@@ -92,7 +93,7 @@ public class UpdateDescriptionServiceTest {
     private InputStream modsStream;
 
     @SuppressWarnings("unchecked")
-    @Before
+    @BeforeEach
     public void init() throws Exception{
         initMocks(this);
 
@@ -146,12 +147,14 @@ public class UpdateDescriptionServiceTest {
         assertMessageSent();
     }
 
-    @Test(expected = AccessRestrictionException.class)
+    @Test
     public void insufficientAccessTest() throws Exception {
-        doThrow(new AccessRestrictionException()).when(aclService)
-                .assertHasAccess(anyString(), eq(objPid), any(), any(Permission.class));
+        Assertions.assertThrows(AccessRestrictionException.class, () -> {
+            doThrow(new AccessRestrictionException()).when(aclService)
+                    .assertHasAccess(anyString(), eq(objPid), any(), any(Permission.class));
 
-        service.updateDescription(new UpdateDescriptionRequest(agent, objPid, modsStream));
+            service.updateDescription(new UpdateDescriptionRequest(agent, objPid, modsStream));
+        });
     }
 
     @Test
@@ -167,11 +170,13 @@ public class UpdateDescriptionServiceTest {
         assertMessageSent();
     }
 
-    @Test(expected = MetadataValidationException.class)
+    @Test
     public void invalidModsTest() throws Exception {
-        doThrow(new MetadataValidationException()).when(modsValidator).validate(any(InputStream.class));
+        Assertions.assertThrows(MetadataValidationException.class, () -> {
+            doThrow(new MetadataValidationException()).when(modsValidator).validate(any(InputStream.class));
 
-        service.updateDescription(new UpdateDescriptionRequest(agent, objPid, modsStream));
+            service.updateDescription(new UpdateDescriptionRequest(agent, objPid, modsStream));
+        });
     }
 
     @Test
