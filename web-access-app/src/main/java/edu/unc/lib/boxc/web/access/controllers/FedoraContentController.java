@@ -6,12 +6,9 @@ import edu.unc.lib.boxc.model.api.exceptions.NotFoundException;
 import edu.unc.lib.boxc.model.api.exceptions.ObjectTypeMismatchException;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
-import edu.unc.lib.boxc.search.api.requests.SimpleIdRequest;
 import edu.unc.lib.boxc.web.common.exceptions.ResourceNotFoundException;
 import edu.unc.lib.boxc.web.common.services.FedoraContentService;
-import edu.unc.lib.boxc.web.common.services.SolrQueryLayerService;
 import edu.unc.lib.boxc.web.common.utils.AnalyticsTrackerUtil;
-import edu.unc.lib.boxc.web.common.utils.DatastreamUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -46,8 +43,6 @@ public class FedoraContentController {
     private FedoraContentService fedoraContentService;
     @Autowired
     private AnalyticsTrackerUtil analyticsTracker;
-    @Autowired
-    private SolrQueryLayerService queryLayer;
 
     @RequestMapping(value = {"/content/{pid}", "/indexablecontent/{pid}"})
     public void getDefaultDatastream(@PathVariable("pid") String pid,
@@ -74,16 +69,6 @@ public class FedoraContentController {
                             HttpServletResponse response) {
         PID pid = PIDs.get(pidString);
         AccessGroupSet principals = getAgentPrincipals().getPrincipals();
-
-        // Redirect to the correct object's PID if the requested datastream is not owned by the object itself
-        var record = queryLayer.getObjectById(new SimpleIdRequest(pid, principals));
-        var preferredDatastream = DatastreamUtil.getPreferredDatastream(record, datastream);
-        if (preferredDatastream == null) {
-            throw new NotFoundException("Requested datastream does not exist for " + pid.getId());
-        }
-        if (!StringUtils.isBlank(preferredDatastream.getOwner())) {
-            pid = PIDs.get(preferredDatastream.getOwner());
-        }
 
         try {
             fedoraContentService.streamData(pid, datastream, principals, asAttachment, response);

@@ -69,8 +69,6 @@ public class FedoraContentControllerIT {
     private RepositoryObjectFactory repositoryObjectFactory;
     @Autowired
     private AccessControlService accessControlService;
-    @Autowired
-    private SolrQueryLayerService queryLayer;
 
     protected MockMvc mvc;
     @Autowired
@@ -93,23 +91,9 @@ public class FedoraContentControllerIT {
 
     }
 
-    private ContentObjectRecord mockSolrRecord(PID pid) {
-        var contentRecord = mock(ContentObjectRecord.class);
-        when(contentRecord.getId()).thenReturn(pid.getId());
-        when(queryLayer.getObjectById(any())).thenReturn(contentRecord);
-        return contentRecord;
-    }
-
-    private Datastream makeDatastream() {
-        return new DatastreamImpl(null, DatastreamType.ORIGINAL_FILE.getId(), 0l, "text/plain",
-                "file.txt", "txt", null, null);
-    }
-
     @Test
     public void testGetDatastream() throws Exception {
         PID filePid = makePid();
-        var contentRecord = mockSolrRecord(filePid);
-        when(contentRecord.getDatastreamObjects()).thenReturn(Arrays.asList(makeDatastream()));
 
         FileObject fileObj = repositoryObjectFactory.createFileObject(filePid, null);
         fileObj.addOriginalFile(makeContentUri(BINARY_CONTENT), "file.txt", "text/plain", null, null);
@@ -130,8 +114,6 @@ public class FedoraContentControllerIT {
     @Test
     public void testGetDatastreamDownload() throws Exception {
         PID filePid = makePid();
-        var contentRecord = mockSolrRecord(filePid);
-        when(contentRecord.getDatastreamObjects()).thenReturn(Arrays.asList(makeDatastream()));
 
         FileObject fileObj = repositoryObjectFactory.createFileObject(filePid, null);
         fileObj.addOriginalFile(makeContentUri(BINARY_CONTENT), "file.txt", "text/plain", null, null);
@@ -153,8 +135,6 @@ public class FedoraContentControllerIT {
     @Test
     public void testGetDatastreamNoFilename() throws Exception {
         PID filePid = makePid();
-        var contentRecord = mockSolrRecord(filePid);
-        when(contentRecord.getDatastreamObjects()).thenReturn(Arrays.asList(makeDatastream()));
 
         FileObject fileObj = repositoryObjectFactory.createFileObject(filePid, null);
         fileObj.addOriginalFile(makeContentUri(BINARY_CONTENT), null, "text/plain", null, null);
@@ -176,8 +156,6 @@ public class FedoraContentControllerIT {
     @Test
     public void testGetDatastreamInsufficientPermissions() throws Exception {
         PID filePid = makePid();
-        var contentRecord = mockSolrRecord(filePid);
-        when(contentRecord.getDatastreamObjects()).thenReturn(Arrays.asList(makeDatastream()));
 
         FileObject fileObj = repositoryObjectFactory.createFileObject(filePid, null);
         fileObj.addOriginalFile(makeContentUri(BINARY_CONTENT), null, "text/plain", null, null);
@@ -205,10 +183,6 @@ public class FedoraContentControllerIT {
 
     private void testGetMultipleDatastreams(String requestPath) throws Exception {
         PID filePid = makePid();
-        var contentRecord = mockSolrRecord(filePid);
-        var fitsDs = new DatastreamImpl(null, TECHNICAL_METADATA.getId(), 0l, "application/xml",
-                "fits.xml", "xml", null, null);
-        when(contentRecord.getDatastreamObjects()).thenReturn(Arrays.asList(makeDatastream(), fitsDs));
 
         String content = "<fits>content</fits>";
 
@@ -240,10 +214,6 @@ public class FedoraContentControllerIT {
     @Test
     public void testGetAdministrativeDatastreamNoPermissions() throws Exception {
         PID filePid = makePid();
-        var contentRecord = mockSolrRecord(filePid);
-        var fitsDs = new DatastreamImpl(null, TECHNICAL_METADATA.getId(), 0l, "application/xml",
-                "fits.xml", "xml", null, null);
-        when(contentRecord.getDatastreamObjects()).thenReturn(Arrays.asList(fitsDs));
 
         String content = "<fits>content</fits>";
 
@@ -293,28 +263,16 @@ public class FedoraContentControllerIT {
     @Test
     public void testGetDatastreamFromWork() throws Exception {
         PID workPid = makePid();
-        var contentRecord = mockSolrRecord(workPid);
         PID filePid = makePid();
-        var childOriginal = new DatastreamImpl(filePid.getId(), DatastreamType.ORIGINAL_FILE.getId(), 0l, "text/plain",
-                "file.txt", "txt", null, null);
-        when(contentRecord.getDatastreamObjects()).thenReturn(Arrays.asList(childOriginal));
 
         var workObj = repositoryObjectFactory.createWorkObject(workPid, null);
         FileObject fileObj = repositoryObjectFactory.createFileObject(filePid, null);
         fileObj.addOriginalFile(makeContentUri(BINARY_CONTENT), "file.txt", "text/plain", null, null);
         workObj.addMember(fileObj);
 
-        MvcResult result = mvc.perform(get("/content/" + workPid.getId()))
-                .andExpect(status().is2xxSuccessful())
+        mvc.perform(get("/content/" + workPid.getId()))
+                .andExpect(status().isBadRequest())
                 .andReturn();
-
-        // Verify content was retrieved
-        MockHttpServletResponse response = result.getResponse();
-        assertEquals(BINARY_CONTENT, response.getContentAsString());
-
-        assertEquals(BINARY_CONTENT.length(), response.getContentLength());
-        assertEquals("text/plain", response.getContentType());
-        assertEquals("inline; filename=\"file.txt\"", response.getHeader(CONTENT_DISPOSITION));
     }
 
     private URI makeContentUri(String content) throws Exception {
