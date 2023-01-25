@@ -6,18 +6,19 @@ import edu.unc.lib.boxc.common.xml.SecureXMLFactory;
 import org.jdom2.Document;
 import org.jdom2.input.SAXBuilder;
 import org.jdom2.output.XMLOutputter;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Arrays;
 
 import static edu.unc.lib.boxc.model.api.xml.JDOMNamespaceUtil.MODS_V3_NS;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 /**
  * @author bbpennel
@@ -26,20 +27,21 @@ public class XmlDocumentFilteringServiceTest {
     private XmlDocumentFilteringService service;
     private Document doc;
 
-    @Rule
-    public final TemporaryFolder tmpFolder = new TemporaryFolder();
+    @TempDir
+    public Path tmpFolder;
 
-    @Before
+    @BeforeEach
     public void setup() throws Exception {
         service = new XmlDocumentFilteringService();
         SAXBuilder saxBuilder = SecureXMLFactory.createSAXBuilder();
         doc = saxBuilder.build(new File("src/test/resources/mods/test_record.xml"));
-        tmpFolder.create();
+        tmpFolder.resolve("testFolder");
+        Files.createDirectory(tmpFolder.resolve("testFolder"));
     }
 
     private void initWithXPath(String... xpaths) throws Exception {
         ObjectWriter writer = new ObjectMapper().writer();
-        File configFile = tmpFolder.newFile("config.json");
+        File configFile = tmpFolder.resolve("config.json").toFile();
         writer.writeValue(configFile, Arrays.asList(xpaths));
         service.setConfigPath(configFile.toPath());
         service.init();

@@ -4,13 +4,14 @@ import static edu.unc.lib.boxc.auth.api.AccessPrincipalConstants.AUTHENTICATED_P
 import static edu.unc.lib.boxc.auth.api.AccessPrincipalConstants.IP_PRINC_NAMESPACE;
 import static edu.unc.lib.boxc.auth.api.AccessPrincipalConstants.PUBLIC_PRINC;
 import static edu.unc.lib.boxc.web.common.auth.RemoteUserUtil.REMOTE_USER;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
 import java.io.File;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -19,10 +20,10 @@ import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -32,8 +33,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  */
 public class PatronPrincipalProviderTest {
 
-    @Rule
-    public final TemporaryFolder tmpFolder = new TemporaryFolder();
+    @TempDir
+    public Path tmpFolder;
     private File configFile;
     private static final ObjectMapper objectMapper = new ObjectMapper();
     private List<Map<String, String>> patronConfig;
@@ -50,13 +51,12 @@ public class PatronPrincipalProviderTest {
     private static final String TEST_GROUP_ID2 = IP_PRINC_NAMESPACE + "other_grp";
     private static final String TEST_GROUP_NAME2 = "Other Group";
 
-    @Before
+    @BeforeEach
     public void setup() throws Exception {
         initMocks(this);
         provider = new PatronPrincipalProvider();
 
-        tmpFolder.create();
-        configFile = tmpFolder.newFile("patronConfig.json");
+        configFile = tmpFolder.resolve("patronConfig.json").toFile();
 
         provider.setPatronGroupConfigPath(configFile.getAbsolutePath());
         patronConfig = new ArrayList<>();
@@ -88,98 +88,120 @@ public class PatronPrincipalProviderTest {
         assertTrue(provider.getConfiguredPatronPrincipals().isEmpty());
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void missingPrincipalTest() throws Exception {
-        addPatronConfig(null, TEST_GROUP_NAME, TEST_IP2);
-        serializeConfigAndInit();
+        Assertions.assertThrows(IllegalArgumentException.class, () -> {
+            addPatronConfig(null, TEST_GROUP_NAME, TEST_IP2);
+            serializeConfigAndInit();
+        });
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void invalidPrincipalTest() throws Exception {
-        addPatronConfig("some:group:here", TEST_GROUP_NAME, TEST_IP2);
-        serializeConfigAndInit();
+        Assertions.assertThrows(IllegalArgumentException.class, () -> {
+            addPatronConfig("some:group:here", TEST_GROUP_NAME, TEST_IP2);
+            serializeConfigAndInit();
+        });
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void missingPrincipalNameTest() throws Exception {
-        addPatronConfig(TEST_GROUP_ID, null, TEST_IP2);
-        serializeConfigAndInit();
+        Assertions.assertThrows(IllegalArgumentException.class, () -> {
+            addPatronConfig(TEST_GROUP_ID, null, TEST_IP2);
+            serializeConfigAndInit();
+        });
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void missingPrincipalIpTest() throws Exception {
-        addPatronConfig(TEST_GROUP_ID, TEST_GROUP_NAME, null);
-        serializeConfigAndInit();
+        Assertions.assertThrows(IllegalArgumentException.class, () -> {
+            addPatronConfig(TEST_GROUP_ID, TEST_GROUP_NAME, null);
+            serializeConfigAndInit();
+        });
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void missingPrincipalInvalidIpTest() throws Exception {
-        addPatronConfig(TEST_GROUP_ID, TEST_GROUP_NAME, "what.is.this.thing");
-        try {
-            serializeConfigAndInit();
-        } catch (JsonMappingException e) {
-            throw (Exception) e.getCause();
-        }
+        Assertions.assertThrows(IllegalArgumentException.class, () -> {
+            addPatronConfig(TEST_GROUP_ID, TEST_GROUP_NAME, "what.is.this.thing");
+            try {
+                serializeConfigAndInit();
+            } catch (JsonMappingException e) {
+                throw (Exception) e.getCause();
+            }
+        });
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void missingPrincipalUnclosedRangeTest() throws Exception {
-        addPatronConfig(TEST_GROUP_ID, TEST_GROUP_NAME, TEST_IP2 + "-");
-        try {
-            serializeConfigAndInit();
-        } catch (JsonMappingException e) {
-            throw (Exception) e.getCause();
-        }
+        Assertions.assertThrows(IllegalArgumentException.class, () -> {
+            addPatronConfig(TEST_GROUP_ID, TEST_GROUP_NAME, TEST_IP2 + "-");
+            try {
+                serializeConfigAndInit();
+            } catch (JsonMappingException e) {
+                throw (Exception) e.getCause();
+            }
+        });
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void missingPrincipalBlankRangeStartTest() throws Exception {
-        addPatronConfig(TEST_GROUP_ID, TEST_GROUP_NAME, "-" + TEST_IP2);
-        try {
-            serializeConfigAndInit();
-        } catch (JsonMappingException e) {
-            throw (Exception) e.getCause();
-        }
+        Assertions.assertThrows(IllegalArgumentException.class, () -> {
+            addPatronConfig(TEST_GROUP_ID, TEST_GROUP_NAME, "-" + TEST_IP2);
+            try {
+                serializeConfigAndInit();
+            } catch (JsonMappingException e) {
+                throw (Exception) e.getCause();
+            }
+        });
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void missingPrincipalInvalidRangeEndTest() throws Exception {
-        addPatronConfig(TEST_GROUP_ID, TEST_GROUP_NAME, TEST_IP2 + "-what.is.this.thing");
-        try {
-            serializeConfigAndInit();
-        } catch (JsonMappingException e) {
-            throw (Exception) e.getCause();
-        }
+        Assertions.assertThrows(IllegalArgumentException.class, () -> {
+            addPatronConfig(TEST_GROUP_ID, TEST_GROUP_NAME, TEST_IP2 + "-what.is.this.thing");
+            try {
+                serializeConfigAndInit();
+            } catch (JsonMappingException e) {
+                throw (Exception) e.getCause();
+            }
+        });
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void missingPrincipalInvalidNumberRangePartsTest() throws Exception {
-        addPatronConfig(TEST_GROUP_ID, TEST_GROUP_NAME, TEST_IP2 + "-" + TEST_IP2 + "-" + TEST_IP2);
-        try {
-            serializeConfigAndInit();
-        } catch (JsonMappingException e) {
-            throw (Exception) e.getCause();
-        }
+        Assertions.assertThrows(IllegalArgumentException.class, () -> {
+            addPatronConfig(TEST_GROUP_ID, TEST_GROUP_NAME, TEST_IP2 + "-" + TEST_IP2 + "-" + TEST_IP2);
+            try {
+                serializeConfigAndInit();
+            } catch (JsonMappingException e) {
+                throw (Exception) e.getCause();
+            }
+        });
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void missingPrincipalEndBeforeStartTest() throws Exception {
-        addPatronConfig(TEST_GROUP_ID, TEST_GROUP_NAME, TEST_IP3 + "-" + TEST_IP2);
-        try {
-            serializeConfigAndInit();
-        } catch (JsonMappingException e) {
-            throw (Exception) e.getCause();
-        }
+        Assertions.assertThrows(IllegalArgumentException.class, () -> {
+            addPatronConfig(TEST_GROUP_ID, TEST_GROUP_NAME, TEST_IP3 + "-" + TEST_IP2);
+            try {
+                serializeConfigAndInit();
+            } catch (JsonMappingException e) {
+                throw (Exception) e.getCause();
+            }
+        });
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void missingPrincipalIpTooBigTest() throws Exception {
-        addPatronConfig(TEST_GROUP_ID, TEST_GROUP_NAME, "500.0.0.1");
-        try {
-            serializeConfigAndInit();
-        } catch (JsonMappingException e) {
-            throw (Exception) e.getCause();
-        }
+        Assertions.assertThrows(IllegalArgumentException.class, () -> {
+            addPatronConfig(TEST_GROUP_ID, TEST_GROUP_NAME, "500.0.0.1");
+            try {
+                serializeConfigAndInit();
+            } catch (JsonMappingException e) {
+                throw (Exception) e.getCause();
+            }
+        });
     }
 
     @Test
@@ -327,8 +349,8 @@ public class PatronPrincipalProviderTest {
 
     private void assertContainsPrincipals(List<String> princs, String... expected) {
         String msg = "Expected [" + String.join(",", expected) + "] received " + princs;
-        assertEquals(msg, expected.length, princs.size());
-        assertTrue(msg, princs.containsAll(Arrays.asList(expected)));
+        assertEquals(expected.length, princs.size(), msg);
+        assertTrue(princs.containsAll(Arrays.asList(expected)), msg);
     }
 
     private HttpServletRequest mockRequest(boolean isAuthenticated, String ipAddr) {

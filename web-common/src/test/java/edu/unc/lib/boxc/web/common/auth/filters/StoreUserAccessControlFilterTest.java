@@ -7,27 +7,27 @@ import static edu.unc.lib.boxc.web.common.auth.HttpAuthHeaders.FORWARDED_GROUPS_
 import static edu.unc.lib.boxc.web.common.auth.HttpAuthHeaders.FORWARDED_MAIL_HEADER;
 import static edu.unc.lib.boxc.web.common.auth.HttpAuthHeaders.SHIBBOLETH_GROUPS_HEADER;
 import static edu.unc.lib.boxc.web.common.auth.filters.StoreUserAccessControlFilter.FORWARDING_ROLE;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
 import java.io.File;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
 
 import javax.servlet.FilterChain;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.io.FileUtils;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.mockito.Mock;
 
 import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
@@ -56,17 +56,16 @@ public class StoreUserAccessControlFilterTest {
     private static final String CONFIG = "[{ \"principal\" : \"" + TEST_IP_PRINC
             + "\", \"name\" : \"Test Group\", \"ipInclude\" : \"" + TEST_IP + "\"}]";
 
-    @Rule
-    public final TemporaryFolder tmpFolder = new TemporaryFolder();
+    @TempDir
+    public Path tmpFolder;
     private File configFile;
     private PatronPrincipalProvider patronProvider;
 
 
-    @Before
+    @BeforeEach
     public void init() throws Exception {
         initMocks(this);
-        tmpFolder.create();
-        configFile = tmpFolder.newFile("patronConfig.json");
+        configFile = tmpFolder.resolve("patronConfig.json").toFile();
         FileUtils.writeStringToFile(configFile, CONFIG, StandardCharsets.US_ASCII);
 
         patronProvider = new PatronPrincipalProvider();
@@ -80,7 +79,7 @@ public class StoreUserAccessControlFilterTest {
         when(request.getServletPath()).thenReturn("/path/to/resource");
     }
 
-    @After
+    @AfterEach
     public void cleanup() {
         GroupsThreadStore.clearStore();
     }
@@ -92,7 +91,7 @@ public class StoreUserAccessControlFilterTest {
         assertEquals("", GroupsThreadStore.getUsername());
         assertNull(GroupsThreadStore.getEmail());
         AccessGroupSet accessGroups = GroupsThreadStore.getGroups();
-        assertTrue("Public must be assigned", accessGroups.contains(PUBLIC_PRINC));
+        assertTrue(accessGroups.contains(PUBLIC_PRINC), "Public must be assigned");
         verify(request).setAttribute("accessGroupSet", accessGroups);
     }
 
@@ -110,9 +109,9 @@ public class StoreUserAccessControlFilterTest {
         AccessGroupSet accessGroups = GroupsThreadStore.getPrincipals();
         verify(request).setAttribute("accessGroupSet", accessGroups);
 
-        assertTrue("Public must be assigned", accessGroups.contains(PUBLIC_PRINC));
-        assertTrue("Authenticated must be assigned", accessGroups.contains(AUTHENTICATED_PRINC));
-        assertTrue("User principal must be assigned", accessGroups.contains("unc:onyen:user"));
+        assertTrue(accessGroups.contains(PUBLIC_PRINC), "Public must be assigned");
+        assertTrue(accessGroups.contains(AUTHENTICATED_PRINC), "Authenticated must be assigned");
+        assertTrue(accessGroups.contains("unc:onyen:user"), "User principal must be assigned");
     }
 
     @Test
@@ -128,9 +127,9 @@ public class StoreUserAccessControlFilterTest {
         AccessGroupSet accessGroups = GroupsThreadStore.getPrincipals();
         verify(request).setAttribute("accessGroupSet", accessGroups);
 
-        assertTrue("Public must be assigned", accessGroups.contains(PUBLIC_PRINC));
-        assertTrue("Authenticated must be assigned", accessGroups.contains(AUTHENTICATED_PRINC));
-        assertTrue("User principal must be assigned", accessGroups.contains("unc:onyen:user"));
+        assertTrue(accessGroups.contains(PUBLIC_PRINC), "Public must be assigned");
+        assertTrue(accessGroups.contains(AUTHENTICATED_PRINC), "Authenticated must be assigned");
+        assertTrue(accessGroups.contains("unc:onyen:user"), "User principal must be assigned");
     }
 
     @Test
@@ -146,8 +145,8 @@ public class StoreUserAccessControlFilterTest {
         verify(request).setAttribute("accessGroupSet", accessGroups);
 
         assertEquals(2, accessGroups.size());
-        assertTrue("Public must be assigned", accessGroups.contains(PUBLIC_PRINC));
-        assertTrue("IP Group must be assigned", accessGroups.contains(TEST_IP_PRINC));
+        assertTrue(accessGroups.contains(PUBLIC_PRINC), "Public must be assigned");
+        assertTrue(accessGroups.contains(TEST_IP_PRINC), "IP Group must be assigned");
     }
 
     @Test
@@ -164,10 +163,10 @@ public class StoreUserAccessControlFilterTest {
         AccessGroupSet accessGroups = GroupsThreadStore.getPrincipals();
         verify(request).setAttribute("accessGroupSet", accessGroups);
 
-        assertTrue("Public must be assigned", accessGroups.contains(PUBLIC_PRINC));
-        assertTrue("Authenticated must be assigned", accessGroups.contains(AUTHENTICATED_PRINC));
-        assertTrue("Group one must be assigned", accessGroups.contains("one"));
-        assertTrue("Group one must be assigned", accessGroups.contains("two"));
+        assertTrue(accessGroups.contains(PUBLIC_PRINC), "Public must be assigned");
+        assertTrue(accessGroups.contains(AUTHENTICATED_PRINC), "Authenticated must be assigned");
+        assertTrue(accessGroups.contains("one"), "Group one must be assigned");
+        assertTrue(accessGroups.contains("two"), "Group one must be assigned");
     }
 
     @Test
@@ -179,9 +178,9 @@ public class StoreUserAccessControlFilterTest {
         filter.doFilter(request, response, filterChain);
 
         AccessGroupSet accessGroups = GroupsThreadStore.getGroups();
-        assertFalse("Public was not forwarded, must not be assigned", accessGroups.contains(PUBLIC_PRINC));
-        assertTrue("Forwarded groups must be assigned", accessGroups.contains("f1"));
-        assertTrue("Forwarded groups must be assigned", accessGroups.contains("f2"));
+        assertFalse(accessGroups.contains(PUBLIC_PRINC), "Public was not forwarded, must not be assigned");
+        assertTrue(accessGroups.contains("f1"), "Forwarded groups must be assigned");
+        assertTrue(accessGroups.contains("f2"), "Forwarded groups must be assigned");
     }
 
     @Test
