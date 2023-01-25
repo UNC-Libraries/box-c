@@ -2,8 +2,8 @@ package edu.unc.lib.boxc.services.camel.images;
 
 import static edu.unc.lib.boxc.services.camel.util.CdrFcrepoHeaders.CdrBinaryMimeType;
 import static org.fcrepo.camel.FcrepoHeaders.FCREPO_URI;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
@@ -13,14 +13,15 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.file.Path;
 
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
 import org.apache.camel.component.exec.ExecResult;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.mockito.Mock;
 
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
@@ -43,11 +44,11 @@ public class AddDerivativeProcessorTest {
 
     private static final String RESC_ID = FEDORA_BASE + "content/de/75/d8/11/de75d811-9e0f-4b1f-8631-2060ab3580cc";
 
-    @Rule
-    public TemporaryFolder tmpDir = new TemporaryFolder();
+    @TempDir
+    public Path tmpDir;
 
-    @Rule
-    public TemporaryFolder moveDir = new TemporaryFolder();
+    @TempDir
+    public Path moveDir;
 
     @Mock
     private ExecResult result;
@@ -58,20 +59,20 @@ public class AddDerivativeProcessorTest {
     @Mock
     private Message message;
 
-    @Before
+    @BeforeEach
     public void init() throws Exception {
         initMocks(this);
 
         TestHelper.setContentBase(FEDORA_BASE);
 
-        finalDir = moveDir.getRoot();
+        finalDir = moveDir.toFile();
 
         processor = new AddDerivativeProcessor(fileExtension, finalDir.getAbsolutePath());
 
         pathId = PIDs.get(RESC_ID).getId();
 
         // Derivative file stored with extension
-        file = tmpDir.newFile(pathId + "." + fileExtension);
+        file = tmpDir.resolve(pathId + "." + fileExtension).toFile();
         String derivTmpPath = file.getAbsolutePath();
         // Path to file from exec result not expected to have extension
         derivTmpPath = derivTmpPath.substring(0, derivTmpPath.length() - fileExtension.length() - 1);
@@ -115,11 +116,13 @@ public class AddDerivativeProcessorTest {
         assertFalse(mvFile.exists());
     }
 
-    @Test(expected = IOException.class)
+    @Test
     public void resultFileDoesNotExistTest() throws Exception {
-        when(result.getStdout()).thenReturn(new ByteArrayInputStream(".png".getBytes()));
+        Assertions.assertThrows(IOException.class, () -> {
+            when(result.getStdout()).thenReturn(new ByteArrayInputStream(".png".getBytes()));
 
-        processor.process(exchange);
+            processor.process(exchange);
+        });
     }
 
     @Test

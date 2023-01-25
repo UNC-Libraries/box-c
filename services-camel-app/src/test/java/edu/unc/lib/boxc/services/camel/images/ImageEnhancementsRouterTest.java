@@ -10,6 +10,8 @@ import static org.fcrepo.camel.FcrepoHeaders.FCREPO_BASE_URL;
 import static org.fcrepo.camel.FcrepoHeaders.FCREPO_DATE_TIME;
 import static org.fcrepo.camel.FcrepoHeaders.FCREPO_EVENT_TYPE;
 import static org.fcrepo.camel.FcrepoHeaders.FCREPO_URI;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
@@ -30,18 +32,20 @@ import org.apache.camel.Processor;
 import org.apache.camel.Produce;
 import org.apache.camel.ProducerTemplate;
 import org.apache.camel.PropertyInject;
-import org.apache.camel.builder.AdviceWithRouteBuilder;
+import org.apache.camel.builder.AdviceWith;
 import org.apache.camel.component.mock.MockEndpoint;
-import org.apache.camel.test.spring.CamelSpringTestSupport;
+import org.apache.camel.test.spring.junit5.CamelSpringTestSupport;
+import org.apache.camel.test.spring.junit5.UseAdviceWith;
 import org.apache.commons.io.FileUtils;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.context.support.AbstractApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import edu.unc.lib.boxc.services.camel.images.AddDerivativeProcessor;
 
+@UseAdviceWith
 public class ImageEnhancementsRouterTest extends CamelSpringTestSupport {
     private static final String EVENT_NS = "http://fedora.info/definitions/v4/event#";
     private static final String EVENT_TYPE = "org.fcrepo.jms.eventType";
@@ -80,14 +84,14 @@ public class ImageEnhancementsRouterTest extends CamelSpringTestSupport {
         return new ClassPathXmlApplicationContext("/service-context.xml", "/images-context.xml");
     }
 
-    @Before
+    @BeforeEach
     public void setup() throws Exception {
         doNothing().when(addSmallThumbnailProcessor).process(any(Exchange.class));
         doNothing().when(addLargeThumbnailProcessor).process(any(Exchange.class));
         doNothing().when(addAccessCopyProcessor).process(any(Exchange.class));
     }
 
-    @After
+    @AfterEach
     public void cleanup() throws IOException {
         FileUtils.deleteDirectory(new File("target/34"));
     }
@@ -100,7 +104,7 @@ public class ImageEnhancementsRouterTest extends CamelSpringTestSupport {
         getMockEndpoint("mock:direct:large.thumbnail").expectedMessageCount(1);
         template.sendBodyAndHeaders("", createEvent(fileID, eventTypes, "false"));
 
-        assertMockEndpointsSatisfied();
+        MockEndpoint.assertIsSatisfied(context);
     }
 
     @Test
@@ -115,7 +119,7 @@ public class ImageEnhancementsRouterTest extends CamelSpringTestSupport {
 
         template.sendBodyAndHeaders("", headers);
 
-        assertMockEndpointsSatisfied();
+        MockEndpoint.assertIsSatisfied(context);
     }
 
     @Test
@@ -130,7 +134,7 @@ public class ImageEnhancementsRouterTest extends CamelSpringTestSupport {
 
         template.sendBodyAndHeaders("", headers);
 
-        assertMockEndpointsSatisfied();
+        MockEndpoint.assertIsSatisfied(context);
     }
 
     @Test
@@ -144,7 +148,7 @@ public class ImageEnhancementsRouterTest extends CamelSpringTestSupport {
 
         verify(addSmallThumbnailProcessor).process(any(Exchange.class));
         verify(addSmallThumbnailProcessor).cleanupTempFile(any(Exchange.class));
-        assertMockEndpointsSatisfied();
+        MockEndpoint.assertIsSatisfied(context);
     }
 
     @Test
@@ -170,7 +174,7 @@ public class ImageEnhancementsRouterTest extends CamelSpringTestSupport {
 
         verify(addSmallThumbnailProcessor, never()).process(any(Exchange.class));
         verify(addSmallThumbnailProcessor).cleanupTempFile(any(Exchange.class));
-        assertMockEndpointsSatisfied();
+        MockEndpoint.assertIsSatisfied(context);
     }
 
     @Test
@@ -184,7 +188,7 @@ public class ImageEnhancementsRouterTest extends CamelSpringTestSupport {
 
         verify(addSmallThumbnailProcessor).process(any(Exchange.class));
         verify(addSmallThumbnailProcessor).cleanupTempFile(any(Exchange.class));
-        assertMockEndpointsSatisfied();
+        MockEndpoint.assertIsSatisfied(context);
     }
 
     @Test
@@ -202,7 +206,7 @@ public class ImageEnhancementsRouterTest extends CamelSpringTestSupport {
 
         verify(addSmallThumbnailProcessor, never()).process(any(Exchange.class));
         verify(addSmallThumbnailProcessor, never()).cleanupTempFile(any(Exchange.class));
-        assertMockEndpointsSatisfied();
+        MockEndpoint.assertIsSatisfied(context);
     }
 
     @Test
@@ -219,7 +223,7 @@ public class ImageEnhancementsRouterTest extends CamelSpringTestSupport {
         template.sendBodyAndHeaders("", headers);
 
         verify(addSmallThumbnailProcessor).process(any(Exchange.class));
-        assertMockEndpointsSatisfied();
+        MockEndpoint.assertIsSatisfied(context);
     }
 
     @Test
@@ -236,7 +240,7 @@ public class ImageEnhancementsRouterTest extends CamelSpringTestSupport {
 
         verify(addLargeThumbnailProcessor).process(any(Exchange.class));
         verify(addLargeThumbnailProcessor).cleanupTempFile(any(Exchange.class));
-        assertMockEndpointsSatisfied();
+        MockEndpoint.assertIsSatisfied(context);
     }
 
     @Test
@@ -262,7 +266,7 @@ public class ImageEnhancementsRouterTest extends CamelSpringTestSupport {
 
         verify(addLargeThumbnailProcessor, never()).process(any(Exchange.class));
         verify(addLargeThumbnailProcessor).cleanupTempFile(any(Exchange.class));
-        assertMockEndpointsSatisfied();
+        MockEndpoint.assertIsSatisfied(context);
     }
 
     @Test
@@ -279,7 +283,7 @@ public class ImageEnhancementsRouterTest extends CamelSpringTestSupport {
 
         verify(addLargeThumbnailProcessor).process(any(Exchange.class));
         verify(addLargeThumbnailProcessor).cleanupTempFile(any(Exchange.class));
-        assertMockEndpointsSatisfied();
+        MockEndpoint.assertIsSatisfied(context);
     }
 
     @Test
@@ -299,7 +303,7 @@ public class ImageEnhancementsRouterTest extends CamelSpringTestSupport {
 
         verify(addLargeThumbnailProcessor, never()).process(any(Exchange.class));
         verify(addLargeThumbnailProcessor, never()).cleanupTempFile(any(Exchange.class));
-        assertMockEndpointsSatisfied();
+        MockEndpoint.assertIsSatisfied(context);
     }
 
     @Test
@@ -318,7 +322,7 @@ public class ImageEnhancementsRouterTest extends CamelSpringTestSupport {
         doThrow(Exception.class).when(addLargeThumbnailProcessor).process(any(Exchange.class));
 
         verify(addLargeThumbnailProcessor).process(any(Exchange.class));
-        assertMockEndpointsSatisfied();
+        MockEndpoint.assertIsSatisfied(context);
     }
 
     @Test
@@ -333,7 +337,7 @@ public class ImageEnhancementsRouterTest extends CamelSpringTestSupport {
 
         verify(addAccessCopyProcessor).process(any(Exchange.class));
         verify(addAccessCopyProcessor).cleanupTempFile(any(Exchange.class));
-        assertMockEndpointsSatisfied();
+        MockEndpoint.assertIsSatisfied(context);
     }
 
     @Test
@@ -359,7 +363,7 @@ public class ImageEnhancementsRouterTest extends CamelSpringTestSupport {
 
         verify(addAccessCopyProcessor, never()).process(any(Exchange.class));
         verify(addAccessCopyProcessor).cleanupTempFile(any(Exchange.class));
-        assertMockEndpointsSatisfied();
+        MockEndpoint.assertIsSatisfied(context);
     }
 
     @Test
@@ -373,7 +377,7 @@ public class ImageEnhancementsRouterTest extends CamelSpringTestSupport {
         template.sendBodyAndHeaders("", headers);
 
         verify(addAccessCopyProcessor).process(any(Exchange.class));
-        assertMockEndpointsSatisfied();
+        MockEndpoint.assertIsSatisfied(context);
     }
 
     @Test
@@ -392,7 +396,7 @@ public class ImageEnhancementsRouterTest extends CamelSpringTestSupport {
 
         verify(addAccessCopyProcessor, never()).process(any(Exchange.class));
         verify(addAccessCopyProcessor, never()).cleanupTempFile(any(Exchange.class));
-        assertMockEndpointsSatisfied();
+        MockEndpoint.assertIsSatisfied(context);
     }
 
     @Test
@@ -410,7 +414,7 @@ public class ImageEnhancementsRouterTest extends CamelSpringTestSupport {
         template.sendBodyAndHeaders("", headers);
 
         verify(addAccessCopyProcessor).process(any(Exchange.class));
-        assertMockEndpointsSatisfied();
+        MockEndpoint.assertIsSatisfied(context);
     }
 
     @Test
@@ -425,7 +429,7 @@ public class ImageEnhancementsRouterTest extends CamelSpringTestSupport {
         template.sendBodyAndHeaders("", headers);
 
         verify(addAccessCopyProcessor, never()).process(any(Exchange.class));
-        assertMockEndpointsSatisfied();
+        MockEndpoint.assertIsSatisfied(context);
     }
 
     @Test
@@ -440,16 +444,13 @@ public class ImageEnhancementsRouterTest extends CamelSpringTestSupport {
         template.sendBodyAndHeaders("", headers);
 
         verify(addAccessCopyProcessor, never()).process(any(Exchange.class));
-        assertMockEndpointsSatisfied();
+        MockEndpoint.assertIsSatisfied(context);
     }
 
     private void createContext(String routeName) throws Exception {
-        context.getRouteDefinition(routeName).adviceWith(context, new AdviceWithRouteBuilder() {
-            @Override
-            public void configure() throws Exception {
-                replaceFromWith("direct:process.binary.original");
-                mockEndpointsAndSkip("*");
-            }
+        AdviceWith.adviceWith(context, routeName, a -> {
+            a.replaceFromWith("direct:process.binary.original");
+            a.mockEndpointsAndSkip("*");
         });
 
         context.start();

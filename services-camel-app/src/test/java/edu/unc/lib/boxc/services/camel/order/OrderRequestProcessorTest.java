@@ -17,8 +17,8 @@ import edu.unc.lib.boxc.operations.jms.order.OrderOperationType;
 import edu.unc.lib.boxc.operations.jms.order.OrderRequestSerializationHelper;
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
@@ -32,9 +32,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.argThat;
 import static org.mockito.Matchers.eq;
@@ -79,7 +79,7 @@ public class OrderRequestProcessorTest {
     private AgentPrincipals agent = new AgentPrincipalsImpl(USERNAME, new AccessGroupSetImpl("agroup"));
     private OrderRequestProcessor processor;
 
-    @Before
+    @BeforeEach
     public void setup() {
         MockitoAnnotations.initMocks(this);
         processor = new OrderRequestProcessor();
@@ -317,8 +317,8 @@ public class OrderRequestProcessorTest {
         var expected = Arrays.asList(expectedErrors);
         var errors = errorsCaptor.getValue();
         var message = "Expected errors:\n" + expected + "\nBut received:\n" + errors;
-        assertTrue(message, errors.containsAll(expected));
-        assertEquals(message, expectedErrors.length, errors.size());
+        assertTrue(errors.containsAll(expected), message);
+        assertEquals(expectedErrors.length, errors.size(), message);
     }
 
     private void assertNotificationWithoutSuccesses() {
@@ -330,8 +330,8 @@ public class OrderRequestProcessorTest {
         var expected = Arrays.stream(expectedSuccesses).map(PIDs::get).collect(Collectors.toList());
         var successes = successesCaptor.getValue();
         var message = "Expected successes:\n" + expected + "\nBut received:\n" + successes;
-        assertTrue(message, successes.containsAll(expected));
-        assertEquals(message, expectedSuccesses.length, successes.size());
+        assertTrue(successes.containsAll(expected), message);
+        assertEquals(expectedSuccesses.length, successes.size(), message);
     }
 
     private Exchange createRequestExchange(Map<String, List<String>> parentToOrder) throws IOException {

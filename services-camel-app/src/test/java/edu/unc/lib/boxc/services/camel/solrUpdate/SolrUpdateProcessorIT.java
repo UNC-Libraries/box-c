@@ -13,11 +13,11 @@ import static edu.unc.lib.boxc.operations.jms.indexing.IndexingActionType.UPDATE
 import static edu.unc.lib.boxc.operations.jms.indexing.IndexingMessageHelper.makeIndexingOperationBody;
 import static java.util.Collections.singleton;
 import static org.apache.jena.rdf.model.ResourceFactory.createResource;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
@@ -60,10 +60,9 @@ import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.solr.common.SolrInputDocument;
 import org.jdom2.Document;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.annotation.DirtiesContext;
@@ -102,8 +101,8 @@ import edu.unc.lib.boxc.services.camel.solrUpdate.SolrUpdateProcessor;
 @DirtiesContext(classMode = ClassMode.AFTER_EACH_TEST_METHOD)
 public class SolrUpdateProcessorIT extends AbstractSolrProcessorIT {
 
-    @Rule
-    public final TemporaryFolder tmpFolder = new TemporaryFolder();
+    @TempDir
+    public Path tmpFolder;
 
     private SolrUpdateProcessor processor;
 
@@ -131,7 +130,7 @@ public class SolrUpdateProcessorIT extends AbstractSolrProcessorIT {
     @Resource(name = "solrIndexingActionMap")
     private Map<IndexingActionType, IndexingAction> solrIndexingActionMap;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         initMocks(this);
 
@@ -170,19 +169,19 @@ public class SolrUpdateProcessorIT extends AbstractSolrProcessorIT {
 
         ContentObjectRecord unitMd = getSolrMetadata(unitObj);
 
-        assertEquals("Title should not have updated", unitMd.getId(), unitMd.getTitle());
+        assertEquals(unitMd.getId(), unitMd.getTitle(), "Title should not have updated");
 
-        assertTrue("Read groups did not contain assigned group", unitMd.getReadGroup().contains(PUBLIC_PRINC));
-        assertTrue("Admin groups did not contain assigned group", unitMd.getAdminGroup().contains("admin"));
+        assertTrue(unitMd.getReadGroup().contains(PUBLIC_PRINC), "Read groups did not contain assigned group");
+        assertTrue(unitMd.getAdminGroup().contains("admin"), "Admin groups did not contain assigned group");
 
         assertNotNull(unitMd.getDateAdded());
 
         ContentObjectRecord collMd = getSolrMetadata(collObj);
 
-        assertEquals("Title should not have updated", collMd.getId(), collMd.getTitle());
+        assertEquals(collMd.getId(), collMd.getTitle(), "Title should not have updated");
 
-        assertTrue("Read groups did not contain assigned group", collMd.getReadGroup().contains(AUTHENTICATED_PRINC));
-        assertTrue("Admin groups did not contain assigned group", collMd.getAdminGroup().contains("admin"));
+        assertTrue(collMd.getReadGroup().contains(AUTHENTICATED_PRINC), "Read groups did not contain assigned group");
+        assertTrue(collMd.getAdminGroup().contains("admin"), "Admin groups did not contain assigned group");
 
         assertNotNull(collMd.getDateAdded());
         assertNotNull(collMd.getDateUpdated());
@@ -230,7 +229,8 @@ public class SolrUpdateProcessorIT extends AbstractSolrProcessorIT {
         assertEquals("Object title", collMd.getTitle());
         assertEquals("Boxy", collMd.getCreator().get(0));
 
-        assertTrue(collMd.getContentStatus().toString(), collMd.getContentStatus().contains(FacetConstants.CONTENT_DESCRIBED));
+        assertTrue(collMd.getContentStatus().contains(FacetConstants.CONTENT_DESCRIBED),
+                collMd.getContentStatus().toString());
 
         assertNotNull(collMd.getDateAdded());
         assertNotNull(collMd.getDateUpdated());
@@ -269,17 +269,17 @@ public class SolrUpdateProcessorIT extends AbstractSolrProcessorIT {
         server.commit();
 
         ContentObjectRecord unitMd = getSolrMetadata(unitObj);
-        assertEquals("Unit record should not have been updated", origUnitUpdated, unitMd.get_version_());
+        assertEquals(origUnitUpdated, unitMd.get_version_(), "Unit record should not have been updated");
 
         ContentObjectRecord coll1Md = getSolrMetadata(collObj);
-        assertEquals("First collection should not have been updated", origColl1Updated, coll1Md.get_version_());
+        assertEquals(origColl1Updated, coll1Md.get_version_(), "First collection should not have been updated");
 
         ContentObjectRecord coll2Md = getSolrMetadata(coll2Obj);
         assertEquals(coll2Obj.getPid().getId(), coll2Md.getTitle());
 
         assertEquals(1, coll2Md.getReadGroup().size());
-        assertTrue("Only admin group should have read assigned", coll2Md.getReadGroup().contains("admin"));
-        assertTrue("Admin groups did not contain assigned group", coll2Md.getAdminGroup().contains("admin"));
+        assertTrue(coll2Md.getReadGroup().contains("admin") ,"Only admin group should have read assigned");
+        assertTrue(coll2Md.getAdminGroup().contains("admin"), "Admin groups did not contain assigned group");
 
         assertNotNull(coll2Md.getDateAdded());
         assertNotEquals(origColl2Updated, coll2Md.get_version_());
@@ -298,8 +298,8 @@ public class SolrUpdateProcessorIT extends AbstractSolrProcessorIT {
         processor.process(exchange);
         server.commit();
 
-        assertNotNull("Unit must still be present", getSolrMetadata(unitObj));
-        assertNull("Collection record must be removed", getSolrMetadata(collObj));
+        assertNotNull(getSolrMetadata(unitObj), "Unit must still be present");
+        assertNull(getSolrMetadata(collObj), "Collection record must be removed");
     }
 
     @Test
@@ -325,9 +325,9 @@ public class SolrUpdateProcessorIT extends AbstractSolrProcessorIT {
 
         server.commit();
 
-        assertNotNull("Root must still be present", getSolrMetadata(rootObj));
-        assertNull("Unit record must be removed", getSolrMetadata(unitObj));
-        assertNull("Collection record must be removed", getSolrMetadata(collObj));
+        assertNotNull(getSolrMetadata(rootObj), "Root must still be present");
+        assertNull(getSolrMetadata(unitObj), "Unit record must be removed");
+        assertNull(getSolrMetadata(collObj), "Collection record must be removed");
     }
 
     @Test
@@ -342,8 +342,8 @@ public class SolrUpdateProcessorIT extends AbstractSolrProcessorIT {
 
     public void collectionFilterTest(IndexingActionType indexingType) throws Exception {
         // Configure collection filter to apply to the item being updated
-        tmpFolder.create();
-        File file = tmpFolder.newFile("collConfig.properties");
+        File file = tmpFolder.resolve("collConfig.properties").toFile();
+        Files.createFile(tmpFolder.resolve("collConfig.properties"));
         FileUtils.writeStringToFile(file,
                 collObj.getPid().getId() + "=" + RLASupplementalFilter.class.getName(),
                 StandardCharsets.UTF_8);
@@ -430,13 +430,15 @@ public class SolrUpdateProcessorIT extends AbstractSolrProcessorIT {
     }
 
     private FileObject addFileObject(WorkObject work) throws Exception {
-        var file = tmpFolder.newFile();
+        var file = tmpFolder.resolve("testFile").toFile();
+        Files.createFile(tmpFolder.resolve("testFile"));
         var filename = file.getName();
         FileUtils.writeStringToFile(file, filename, "UTF-8");
         var fileObject = work.addDataFile(file.toPath().toUri(), filename, null, null, null);
 
         var fitsPid = DatastreamPids.getTechnicalMetadataPid(fileObject.getPid());
-        var fitsFile = tmpFolder.newFile();
+        var fitsFile = tmpFolder.resolve("fitsFile").toFile();
+        Files.createFile(tmpFolder.resolve("fitsFile"));
         FileUtils.copyInputStreamToFile(this.getClass().getResourceAsStream("/datastream/techmd.xml"), fitsFile);
         fileObject.addBinary(fitsPid, fitsFile.toURI(), TECHNICAL_METADATA.getDefaultFilename(), TECHNICAL_METADATA.getMimetype(),
                 null, null, IanaRelation.derivedfrom, DCTerms.conformsTo, createResource(FITS_URI));

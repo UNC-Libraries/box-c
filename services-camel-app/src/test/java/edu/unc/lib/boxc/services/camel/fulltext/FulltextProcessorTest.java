@@ -3,22 +3,22 @@ package edu.unc.lib.boxc.services.camel.fulltext;
 import static edu.unc.lib.boxc.services.camel.util.CdrFcrepoHeaders.CdrBinaryPath;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.fcrepo.camel.FcrepoHeaders.FCREPO_URI;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
 import java.io.File;
+import java.nio.file.Path;
 
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
 import org.apache.commons.io.FileUtils;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.mockito.Mock;
 
 import com.google.common.io.Files;
@@ -40,8 +40,8 @@ public class FulltextProcessorTest {
 
     private static final String RESC_ID = FEDORA_BASE + "content/de/75/d8/11/de75d811-9e0f-4b1f-8631-2060ab3580cc";
 
-    @Rule
-    public TemporaryFolder tmpDir = new TemporaryFolder();
+    @TempDir
+    public Path tmpDir;
 
     @Mock
     private Exchange exchange;
@@ -49,13 +49,13 @@ public class FulltextProcessorTest {
     @Mock
     private Message message;
 
-    @Before
+    @BeforeEach
     public void init() throws Exception {
         initMocks(this);
 
         TestHelper.setContentBase(FEDORA_BASE);
 
-        derivPath = tmpDir.newFolder().getAbsolutePath();
+        derivPath = tmpDir.resolve("derivFolder").toAbsolutePath().toString();
         processor = new FulltextProcessor(derivPath);
 
 
@@ -69,7 +69,7 @@ public class FulltextProcessorTest {
 
     @Test
     public void extractFulltextTest() throws Exception {
-        originalFile = tmpDir.newFile(originalFileName);
+        originalFile = tmpDir.resolve(originalFileName).toFile();
         FileUtils.write(originalFile, testText, "UTF-8");
 
         when(message.getHeader(eq(CdrBinaryPath)))
@@ -82,7 +82,7 @@ public class FulltextProcessorTest {
 
     @Test
     public void extractFromEmptyFileTest() throws Exception {
-        originalFile = tmpDir.newFile(originalFileName);
+        originalFile = tmpDir.resolve(originalFileName).toFile();
         FileUtils.write(originalFile, "", "UTF-8");
 
         when(message.getHeader(eq(CdrBinaryPath)))
@@ -95,7 +95,7 @@ public class FulltextProcessorTest {
 
     @Test
     public void extractFromInvalidPdfTest() throws Exception {
-        originalFile = tmpDir.newFile("invalid.pdf");
+        originalFile = tmpDir.resolve("invalid.pdf").toFile();
         Files.copy(new File("src/test/resources/datastreams/invalid.pdf"), originalFile);
 
         when(message.getHeader(eq(CdrBinaryPath)))
@@ -109,7 +109,7 @@ public class FulltextProcessorTest {
     public void extractFulltextExceedsCharacterLimit() throws Exception {
         processor.setCharacterLimit(10);
 
-        originalFile = tmpDir.newFile(originalFileName);
+        originalFile = tmpDir.resolve(originalFileName).toFile();
         FileUtils.write(originalFile, testText, "UTF-8");
 
         when(message.getHeader(eq(CdrBinaryPath)))

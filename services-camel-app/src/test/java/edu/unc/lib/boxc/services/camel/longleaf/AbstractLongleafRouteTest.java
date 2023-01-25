@@ -1,7 +1,7 @@
 package edu.unc.lib.boxc.services.camel.longleaf;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.slf4j.LoggerFactory.getLogger;
 
 import java.net.URI;
@@ -56,14 +56,14 @@ public abstract class AbstractLongleafRouteTest {
                 contentPath = Paths.get(uri);
             }
             String basePath = FileSystemTransferHelpers.getBaseBinaryPath(contentPath);
-            assertTrue("Expected content uri to be submitted: " + contentPath,
-                    output.stream().anyMatch(line -> line.contains(basePath)));
+            assertTrue(output.stream().anyMatch(line -> line.contains(basePath)),
+                    "Expected content uri to be submitted: " + contentPath);
         }
     }
 
     protected void assertNoSubmittedPaths() throws Exception {
         output = LongleafTestHelpers.readOutput(outputPath);
-        assertEquals("Expected no calls to longleaf, but received output:\n" + String.join("\n", output),
-                0, output.size());
+        assertEquals(0, output.size(),
+                "Expected no calls to longleaf, but received output:\n" + String.join("\n", output));
     }
 }

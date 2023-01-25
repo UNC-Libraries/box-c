@@ -9,7 +9,7 @@ import static edu.unc.lib.boxc.model.api.rdf.Fcrepo4Repository.Binary;
 import static edu.unc.lib.boxc.model.api.rdf.Fcrepo4Repository.Container;
 import static edu.unc.lib.boxc.model.fcrepo.ids.DatastreamPids.getTechnicalMetadataPid;
 import static edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPaths.idToPath;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -36,15 +36,14 @@ import org.apache.camel.Produce;
 import org.apache.camel.ProducerTemplate;
 import org.apache.camel.builder.NotifyBuilder;
 import org.apache.commons.io.FileUtils;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.api.io.TempDir;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.ContextHierarchy;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import edu.unc.lib.boxc.auth.fcrepo.models.AgentPrincipalsImpl;
 import edu.unc.lib.boxc.model.api.ids.PID;
@@ -69,7 +68,7 @@ import edu.unc.lib.boxc.services.camel.solr.SolrIngestProcessor;
  * @author bbpennel
  *
  */
-@RunWith(SpringJUnit4ClassRunner.class)
+@ExtendWith(SpringExtension.class)
 @ContextHierarchy({
     @ContextConfiguration("/spring-test/test-fedora-container.xml"),
     @ContextConfiguration("/spring-test/cdr-client-container.xml"),
@@ -115,15 +114,15 @@ public class EnhancementRouterIT {
     @Autowired
     private UpdateDescriptionService updateDescriptionService;
 
-    @Rule
-    public final TemporaryFolder tmpFolder = new TemporaryFolder();
+    @TempDir
+    public Path tmpFolder;
 
     private File tempDir;
 
     @Autowired
     private NonBinaryEnhancementProcessor nbh;
 
-    @Before
+    @BeforeEach
     public void init() throws Exception {
         initMocks(this);
 
@@ -137,7 +136,8 @@ public class EnhancementRouterIT {
         when(addAccessCopyProcessor.needsRun(any(Exchange.class))).thenReturn(true);
 
         TestHelper.setContentBase(baseAddress);
-        tempDir = tmpFolder.newFolder("target");
+        tempDir = tmpFolder.resolve("target").toFile();
+        Files.createDirectory(tmpFolder.resolve("target"));
         nbh.setSourceImagesDir(tempDir.getAbsolutePath());
 
         File thumbScriptFile = new File("target/convertScaleStage.sh");
@@ -199,7 +199,7 @@ public class EnhancementRouterIT {
         template.sendBodyAndHeaders("", headers);
 
         boolean result1 = notify1.matches(5l, TimeUnit.SECONDS);
-        assertTrue("Enhancement route not satisfied", result1);
+        assertTrue(result1, "Enhancement route not satisfied");
 
         verify(addSmallThumbnailProcessor, timeout(ALLOW_WAIT)).process(any(Exchange.class));
         verify(addLargeThumbnailProcessor, timeout(ALLOW_WAIT)).process(any(Exchange.class));
@@ -228,7 +228,7 @@ public class EnhancementRouterIT {
 
         boolean result = notify.matches(5l, TimeUnit.SECONDS);
 
-        assertTrue("Processing message did not match expectations", result);
+        assertTrue(result, "Processing message did not match expectations");
 
         verify(addSmallThumbnailProcessor, never()).process(any(Exchange.class));
         verify(addLargeThumbnailProcessor, never()).process(any(Exchange.class));
@@ -254,7 +254,7 @@ public class EnhancementRouterIT {
 
         boolean result = notify.matches(5l, TimeUnit.SECONDS);
 
-        assertTrue("Processing message did not match expectations", result);
+        assertTrue(result, "Processing message did not match expectations");
 
         verify(addSmallThumbnailProcessor, never()).process(any(Exchange.class));
         verify(fulltextProcessor,  never()).process(any(Exchange.class));
@@ -277,7 +277,7 @@ public class EnhancementRouterIT {
 
         boolean result = notify.matches(5l, TimeUnit.SECONDS);
 
-        assertTrue("Processing message did not match expectations", result);
+        assertTrue(result, "Processing message did not match expectations");
 
         verify(solrIngestProcessor, never()).process(any(Exchange.class));
     }
@@ -300,7 +300,7 @@ public class EnhancementRouterIT {
 
         boolean result = notify.matches(5l, TimeUnit.SECONDS);
 
-        assertTrue("Processing message did not match expectations", result);
+        assertTrue(result, "Processing message did not match expectations");
 
         verify(addSmallThumbnailProcessor, never()).process(any(Exchange.class));
         verify(addLargeThumbnailProcessor, never()).process(any(Exchange.class));

@@ -2,7 +2,7 @@ package edu.unc.lib.boxc.services.camel.cdrEvents;
 
 import static edu.unc.lib.boxc.model.api.xml.JDOMNamespaceUtil.ATOM_NS;
 import static edu.unc.lib.boxc.services.camel.util.CdrFcrepoHeaders.CdrUpdateAction;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -18,8 +18,8 @@ import org.jdom2.output.XMLOutputter;
 import org.joda.time.DateTimeUtils;
 import org.joda.time.format.DateTimeFormatter;
 import org.joda.time.format.ISODateTimeFormat;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
@@ -44,7 +44,7 @@ public class CdrEventProcessorTest {
     @Captor
     private ArgumentCaptor<Object> bodyCaptor;
 
-    @Before
+    @BeforeEach
     public void init() throws Exception {
         initMocks(this);
 

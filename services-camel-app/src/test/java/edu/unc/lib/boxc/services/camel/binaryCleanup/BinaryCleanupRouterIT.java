@@ -1,9 +1,9 @@
 package edu.unc.lib.boxc.services.camel.binaryCleanup;
 
 import static edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPaths.getContentRootPid;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.MockitoAnnotations.initMocks;
 
 import java.io.File;
@@ -15,13 +15,13 @@ import org.apache.camel.CamelContext;
 import org.apache.camel.Produce;
 import org.apache.camel.ProducerTemplate;
 import org.apache.camel.builder.NotifyBuilder;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.ContextHierarchy;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import com.google.common.collect.ImmutableMap;
 
@@ -49,7 +49,7 @@ import edu.unc.lib.boxc.persist.impl.storage.StorageLocationTestHelper;
 /**
  * @author bbpennel
  */
-@RunWith(SpringJUnit4ClassRunner.class)
+@ExtendWith(SpringExtension.class)
 @ContextHierarchy({
     @ContextConfiguration("/spring-test/test-fedora-container.xml"),
     @ContextConfiguration("/spring-test/cdr-client-container.xml"),
@@ -85,7 +85,7 @@ public class BinaryCleanupRouterIT {
 
     private CollectionObject collection;
 
-    @Before
+    @BeforeEach
     public void init() {
         initMocks(this);
 
@@ -112,7 +112,7 @@ public class BinaryCleanupRouterIT {
 
         template.sendBody(ImmutableMap.of(dsPid.getRepositoryPath(), "file:///path/to/something.txt"));
 
-        assertTrue("Route not satisfied", notify.matches(5l, TimeUnit.SECONDS));
+        assertTrue(notify.matches(5l, TimeUnit.SECONDS), "Route not satisfied");
     }
 
     @Test
@@ -127,7 +127,7 @@ public class BinaryCleanupRouterIT {
         BinaryObject mdEventsObj = repoObjectLoader.getBinaryObject(mdEventsPid);
         URI mdEventsUri = mdEventsObj.getContentUri();
         File headContentFile = new File(mdEventsUri);
-        assertTrue("Binary must exist prior to cleanup", headContentFile.exists());
+        assertTrue(headContentFile.exists(), "Binary must exist prior to cleanup");
 
         NotifyBuilder notify = new NotifyBuilder(cdrBinaryCleanup)
                 .whenCompleted(1)
@@ -135,9 +135,9 @@ public class BinaryCleanupRouterIT {
 
         template.sendBody(ImmutableMap.of(mdEventsPid.getRepositoryPath(), mdEventsUri.toString()));
 
-        assertTrue("Route not satisfied", notify.matches(5l, TimeUnit.SECONDS));
+        assertTrue(notify.matches(5l, TimeUnit.SECONDS), "Route not satisfied");
 
-        assertTrue("Binary must exist after cleanup", headContentFile.exists());
+        assertTrue(headContentFile.exists(), "Binary must exist after cleanup");
     }
 
     @Test
@@ -161,7 +161,7 @@ public class BinaryCleanupRouterIT {
         BinaryObject mdEventsObj = repoObjectLoader.getBinaryObject(mdEventsPid);
         URI headContentUri = mdEventsObj.getContentUri();
         File headContentFile = new File(headContentUri);
-        assertTrue("Binary must exist prior to cleanup", headContentFile.exists());
+        assertTrue(headContentFile.exists(), "Binary must exist prior to cleanup");
 
         StorageLocation storageLoc = storageLocationManager.getStorageLocationById(StorageLocationTestHelper.LOC1_ID);
         List<URI> startingUris = storageLoc.getAllStorageUris(mdEventsPid);
@@ -173,9 +173,9 @@ public class BinaryCleanupRouterIT {
 
         template.sendBody(ImmutableMap.of(mdEventsPid.getRepositoryPath(), headContentUri.toString()));
 
-        assertTrue("Route not satisfied", notify1.matches(5l, TimeUnit.SECONDS));
+        assertTrue(notify1.matches(5l, TimeUnit.SECONDS), "Route not satisfied");
 
-        assertTrue("Head binary must exist after cleanup", headContentFile.exists());
+        assertTrue(headContentFile.exists(), "Head binary must exist after cleanup");
 
         List<URI> afterUris = storageLoc.getAllStorageUris(mdEventsPid);
         assertEquals(1, afterUris.size());
@@ -195,7 +195,7 @@ public class BinaryCleanupRouterIT {
         BinaryObject mdEventsObj = repoObjectLoader.getBinaryObject(mdEventsPid);
         URI headContentUri = mdEventsObj.getContentUri();
         File headContentFile = new File(headContentUri);
-        assertTrue("Binary must exist prior to cleanup", headContentFile.exists());
+        assertTrue(headContentFile.exists(), "Binary must exist prior to cleanup");
 
         StorageLocation storageLoc = storageLocationManager.getStorageLocationById(StorageLocationTestHelper.LOC1_ID);
 
@@ -214,7 +214,7 @@ public class BinaryCleanupRouterIT {
 
             template.sendBody(ImmutableMap.of(mdEventsPid.getRepositoryPath(), headContentUri.toString()));
 
-            assertTrue("Route not satisfied", notify1.matches(5l, TimeUnit.SECONDS));
+            assertTrue(notify1.matches(5l, TimeUnit.SECONDS), "Route not satisfied");
 
             // Both the head version and the uncommitted tx version should exist
             List<URI> afterUris = storageLoc.getAllStorageUris(mdEventsPid);
@@ -228,7 +228,7 @@ public class BinaryCleanupRouterIT {
         // Check that correct files are in place after ending the tx
         BinaryObject afterMdEventsObj = repoObjectLoader.getBinaryObject(mdEventsPid);
         URI afterContentUri = afterMdEventsObj.getContentUri();
-        assertNotEquals("Content URI of Event Log must have updated", afterContentUri, headContentUri);
+        assertNotEquals(afterContentUri, headContentUri, "Content URI of Event Log must have updated");
 
         NotifyBuilder notify2 = new NotifyBuilder(cdrBinaryCleanup)
                 .whenCompleted(1)
@@ -236,7 +236,7 @@ public class BinaryCleanupRouterIT {
 
         template.sendBody(ImmutableMap.of(mdEventsPid.getRepositoryPath(), afterContentUri.toString()));
 
-        assertTrue("Route not satisfied", notify2.matches(5l, TimeUnit.SECONDS));
+        assertTrue(notify2.matches(5l, TimeUnit.SECONDS), "Route not satisfied");
 
         // Both the head version and the uncommitted tx version should exist
         List<URI> afterUris = storageLoc.getAllStorageUris(mdEventsPid);

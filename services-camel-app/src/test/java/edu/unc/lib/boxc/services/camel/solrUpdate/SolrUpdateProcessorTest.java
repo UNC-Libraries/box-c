@@ -4,7 +4,7 @@ import static edu.unc.lib.boxc.model.api.xml.JDOMNamespaceUtil.ATOM_NS;
 import static edu.unc.lib.boxc.model.api.xml.JDOMNamespaceUtil.CDR_MESSAGE_NS;
 import static edu.unc.lib.boxc.operations.jms.indexing.IndexingActionType.ADD;
 import static edu.unc.lib.boxc.operations.jms.indexing.IndexingActionType.DELETE;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.mock;
@@ -27,8 +27,8 @@ import org.apache.camel.Exchange;
 import org.apache.camel.Message;
 import org.jdom2.Document;
 import org.jdom2.Element;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
@@ -71,7 +71,7 @@ public class SolrUpdateProcessorTest {
     @Captor
     private ArgumentCaptor<ChildSetRequest> childSetCaptor;
 
-    @Before
+    @BeforeEach
     public void init() {
         initMocks(this);
 

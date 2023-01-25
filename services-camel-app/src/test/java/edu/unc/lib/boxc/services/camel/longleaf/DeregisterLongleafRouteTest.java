@@ -3,11 +3,12 @@ package edu.unc.lib.boxc.services.camel.longleaf;
 import static edu.unc.lib.boxc.model.api.xml.JDOMNamespaceUtil.ATOM_NS;
 import static edu.unc.lib.boxc.model.api.xml.JDOMNamespaceUtil.CDR_MESSAGE_NS;
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.File;
 import java.net.URI;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -17,17 +18,15 @@ import org.apache.camel.EndpointInject;
 import org.apache.camel.Exchange;
 import org.apache.camel.builder.NotifyBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
-import org.apache.camel.test.spring.CamelSpringRunner;
-import org.apache.camel.test.spring.CamelTestContextBootstrapper;
+import org.apache.camel.test.spring.junit5.CamelSpringBootTest;
+import org.apache.camel.test.spring.junit5.CamelTestContextBootstrapper;
 import org.apache.commons.io.FileUtils;
 import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jgroups.util.UUID;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.annotation.DirtiesContext.ClassMode;
@@ -42,7 +41,7 @@ import edu.unc.lib.boxc.services.camel.longleaf.DeregisterLongleafProcessor;
 /**
  * @author bbpennel
  */
-@RunWith(CamelSpringRunner.class)
+@CamelSpringBootTest
 @BootstrapWith(CamelTestContextBootstrapper.class)
 @ContextHierarchy({
     @ContextConfiguration("/spring-test/jms-context.xml"),
@@ -61,15 +60,14 @@ public class DeregisterLongleafRouteTest extends AbstractLongleafRouteTest {
     @Autowired
     private CamelContext cdrLongleaf;
 
-    @Rule
-    public final TemporaryFolder tmpFolder = new TemporaryFolder();
+    @TempDir
+    public Path tmpFolder;
 
     private String longleafScript;
 
-    @Before
+    @BeforeEach
     public void setup() throws Exception {
-        tmpFolder.create();
-        outputPath = tmpFolder.newFile().getPath();
+        outputPath = tmpFolder.resolve("output").toString();
         longleafScript = LongleafTestHelpers.getLongleafScript(outputPath);
         deregisterLongleafProcessor.setLongleafBaseCommand(longleafScript);
     }
@@ -85,7 +83,7 @@ public class DeregisterLongleafRouteTest extends AbstractLongleafRouteTest {
         sendMessages(contentUri);
 
         boolean result1 = notify.matches(5l, TimeUnit.SECONDS);
-        assertTrue("Deregister route not satisfied", result1);
+        assertTrue(result1, "Deregister route not satisfied");
 
         assertSubmittedPaths(2000, contentUri);
     }
@@ -101,7 +99,7 @@ public class DeregisterLongleafRouteTest extends AbstractLongleafRouteTest {
         sendMessages(contentUris);
 
         boolean result1 = notify.matches(5l, TimeUnit.SECONDS);
-        assertTrue("Deregister route not satisfied", result1);
+        assertTrue(result1, "Deregister route not satisfied");
 
         assertSubmittedPaths(2000, contentUris);
     }
@@ -116,7 +114,7 @@ public class DeregisterLongleafRouteTest extends AbstractLongleafRouteTest {
         sendMessages(contentUris);
 
         boolean result1 = notify.matches(5l, TimeUnit.SECONDS);
-        assertTrue("Deregister route not satisfied", result1);
+        assertTrue(result1, "Deregister route not satisfied");
 
         assertSubmittedPaths(5000, contentUris);
     }
@@ -141,7 +139,7 @@ public class DeregisterLongleafRouteTest extends AbstractLongleafRouteTest {
         sendMessages(contentUris);
 
         boolean result1 = notify.matches(5l, TimeUnit.SECONDS);
-        assertTrue("Deregister route not satisfied", result1);
+        assertTrue(result1, "Deregister route not satisfied");
 
         assertSubmittedPaths(10000, successUris);
     }
@@ -168,7 +166,7 @@ public class DeregisterLongleafRouteTest extends AbstractLongleafRouteTest {
         sendMessages(contentUris);
 
         boolean result1 = notify.matches(20l, TimeUnit.SECONDS);
-        assertTrue("Deregister route not satisfied", result1);
+        assertTrue(result1, "Deregister route not satisfied");
 
         assertSubmittedPaths(5000, contentUris);
 
@@ -177,9 +175,9 @@ public class DeregisterLongleafRouteTest extends AbstractLongleafRouteTest {
 
         Exchange failed = dlqExchanges.get(0);
         List<String> failedList = failed.getIn().getBody(List.class);
-        assertEquals("Only two uris should be in the failed message body", 1, failedList.size());
-        assertTrue("Exchange in DLQ must contain the fcrepo uri of the failed binary",
-                failedList.contains(contentUris[1]));
+        assertEquals(1, failedList.size(), "Only two uris should be in the failed message body");
+        assertTrue(failedList.contains(contentUris[1]),
+                "Exchange in DLQ must contain the fcrepo uri of the failed binary");
     }
 
     @SuppressWarnings("unchecked")
@@ -201,7 +199,7 @@ public class DeregisterLongleafRouteTest extends AbstractLongleafRouteTest {
         sendMessages(contentUris);
 
         boolean result1 = notify.matches(5l, TimeUnit.SECONDS);
-        assertTrue("Deregister route not satisfied", result1);
+        assertTrue(result1, "Deregister route not satisfied");
 
         assertSubmittedPaths(5000, contentUris);
 
@@ -210,10 +208,10 @@ public class DeregisterLongleafRouteTest extends AbstractLongleafRouteTest {
         List<Exchange> dlqExchanges = mockDlq.getExchanges();
         Exchange failed = dlqExchanges.get(0);
         List<String> failedList = failed.getIn().getBody(List.class);
-        assertEquals("Only one uri should be in the failed message body", 1, failedList.size());
+        assertEquals(1, failedList.size(), "Only one uri should be in the failed message body");
 
-        assertTrue("Exchange in DLQ must contain the fcrepo uri of the unprocessed binary",
-                failedList.contains(contentUris[0]));
+        assertTrue(failedList.contains(contentUris[0]),
+                "Exchange in DLQ must contain the fcrepo uri of the unprocessed binary");
     }
 
     private String generateContentUri() {

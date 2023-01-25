@@ -19,12 +19,14 @@ import org.apache.camel.EndpointInject;
 import org.apache.camel.Produce;
 import org.apache.camel.ProducerTemplate;
 import org.apache.camel.PropertyInject;
+import org.apache.camel.builder.AdviceWith;
 import org.apache.camel.builder.AdviceWithRouteBuilder;
 import org.apache.camel.builder.NotifyBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
-import org.apache.camel.test.spring.CamelSpringTestSupport;
-import org.junit.Before;
-import org.junit.Test;
+import org.apache.camel.test.spring.junit5.CamelSpringTestSupport;
+import org.apache.camel.test.spring.junit5.UseAdviceWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.context.support.AbstractApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
@@ -38,6 +40,7 @@ import edu.unc.lib.boxc.model.fcrepo.test.TestHelper;
  * @author lfarrell
  *
  */
+@UseAdviceWith
 public class MetaServicesRouterTest extends CamelSpringTestSupport {
 
     private static final String CONTAINER_ID = "/content/43/e2/27/ac/43e227ac-983a-4a18-94c9-c9cff8d28441";
@@ -61,7 +64,7 @@ public class MetaServicesRouterTest extends CamelSpringTestSupport {
         return new ClassPathXmlApplicationContext("/service-context.xml", "/metaservices-context.xml");
     }
 
-    @Before
+    @BeforeEach
     public void setup() {
         TestHelper.setContentBase("http://example.com/rest/");
     }
@@ -78,7 +81,7 @@ public class MetaServicesRouterTest extends CamelSpringTestSupport {
         template.sendBodyAndHeaders("", createEvent(CONTAINER_ID, Container.getURI()));
         notify.matches(1l, TimeUnit.SECONDS);
 
-        assertMockEndpointsSatisfied();
+        MockEndpoint.assertIsSatisfied(context);
     }
 
     @Test
@@ -96,7 +99,7 @@ public class MetaServicesRouterTest extends CamelSpringTestSupport {
         Thread.sleep(100);
         notify.matches(1l, TimeUnit.SECONDS);
 
-        assertMockEndpointsSatisfied();
+        MockEndpoint.assertIsSatisfied(context);
     }
 
     @Test
@@ -114,7 +117,7 @@ public class MetaServicesRouterTest extends CamelSpringTestSupport {
         Thread.sleep(100);
         notify.matches(1l, TimeUnit.SECONDS);
 
-        assertMockEndpointsSatisfied();
+        MockEndpoint.assertIsSatisfied(context);
     }
 
     @Test
@@ -132,7 +135,7 @@ public class MetaServicesRouterTest extends CamelSpringTestSupport {
         Thread.sleep(100);
         notify.matches(1l, TimeUnit.SECONDS);
 
-        assertMockEndpointsSatisfied();
+        MockEndpoint.assertIsSatisfied(context);
     }
 
     @Test
@@ -150,7 +153,7 @@ public class MetaServicesRouterTest extends CamelSpringTestSupport {
         Thread.sleep(100);
         notify.matches(1l, TimeUnit.SECONDS);
 
-        assertMockEndpointsSatisfied();
+        MockEndpoint.assertIsSatisfied(context);
     }
 
     @Test
@@ -167,7 +170,7 @@ public class MetaServicesRouterTest extends CamelSpringTestSupport {
                 Fcrepo4Repository.Container.getURI()));
         notify.matches(1l, TimeUnit.SECONDS);
 
-        assertMockEndpointsSatisfied();
+        MockEndpoint.assertIsSatisfied(context);
     }
 
     @Test
@@ -189,7 +192,7 @@ public class MetaServicesRouterTest extends CamelSpringTestSupport {
 
         notify.matches(1l, TimeUnit.SECONDS);
 
-        assertMockEndpointsSatisfied();
+        MockEndpoint.assertIsSatisfied(context);
     }
 
     @Test
@@ -205,7 +208,7 @@ public class MetaServicesRouterTest extends CamelSpringTestSupport {
                 Fcrepo4Repository.Binary.getURI()));
         notify.matches(1l, TimeUnit.SECONDS);
 
-        assertMockEndpointsSatisfied();
+        MockEndpoint.assertIsSatisfied(context);
     }
 
     @Test
@@ -223,7 +226,7 @@ public class MetaServicesRouterTest extends CamelSpringTestSupport {
         Thread.sleep(100);
         notify.matches(1l, TimeUnit.SECONDS);
 
-        assertMockEndpointsSatisfied();
+        MockEndpoint.assertIsSatisfied(context);
     }
 
     @Test
@@ -239,7 +242,7 @@ public class MetaServicesRouterTest extends CamelSpringTestSupport {
         template.sendBodyAndHeaders("", headers);
         notify.matches(1l, TimeUnit.SECONDS);
 
-        assertMockEndpointsSatisfied();
+        MockEndpoint.assertIsSatisfied(context);
     }
 
     @Test
@@ -253,7 +256,7 @@ public class MetaServicesRouterTest extends CamelSpringTestSupport {
         template.sendBodyAndHeaders("", headers);
         notify.matches(1l, TimeUnit.SECONDS);
 
-        assertMockEndpointsSatisfied();
+        MockEndpoint.assertIsSatisfied(context);
     }
 
     @Test
@@ -269,7 +272,7 @@ public class MetaServicesRouterTest extends CamelSpringTestSupport {
         template.sendBodyAndHeaders("", headers);
         notify.matches(1l, TimeUnit.SECONDS);
 
-        assertMockEndpointsSatisfied();
+        MockEndpoint.assertIsSatisfied(context);
     }
 
     @Test
@@ -283,16 +286,13 @@ public class MetaServicesRouterTest extends CamelSpringTestSupport {
         template.sendBodyAndHeaders("", headers);
         notify.matches(1l, TimeUnit.SECONDS);
 
-        assertMockEndpointsSatisfied();
+        MockEndpoint.assertIsSatisfied(context);
     }
 
     private void createContext(String routeName) throws Exception {
-        context.getRouteDefinition(routeName).adviceWith(context, new AdviceWithRouteBuilder() {
-            @Override
-            public void configure() throws Exception {
-                replaceFromWith("direct:start");
-                mockEndpointsAndSkip("*");
-            }
+        AdviceWith.adviceWith(context, routeName, a -> {
+            a.replaceFromWith("direct:start");
+            a.mockEndpointsAndSkip("*");
         });
 
         context.start();

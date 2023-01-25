@@ -1,15 +1,15 @@
 package edu.unc.lib.boxc.services.camel.longleaf;
 
 import static org.fcrepo.camel.FcrepoHeaders.FCREPO_URI;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.ids.PIDMinter;
@@ -25,7 +25,7 @@ public class RegisterToLongleafProcessorTest {
     private PIDMinter pidMinter;
     private PID filePid;
 
-    @Before
+    @BeforeEach
     public void setup() {
         pidMinter = new RepositoryPIDMinter();
         filePid = pidMinter.mintContentPid();

@@ -20,8 +20,9 @@ import edu.unc.lib.boxc.operations.jms.MessageSender;
 import edu.unc.lib.boxc.operations.jms.indexing.IndexingActionType;
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 
 import edu.unc.lib.boxc.indexing.solr.exception.IndexingException;
@@ -71,7 +72,7 @@ public class SolrIngestProcessorTest {
     @Mock
     private Message message;
 
-    @Before
+    @BeforeEach
     public void init() throws Exception {
         TestHelper.setContentBase(CONTENT_BASE_URI);
         initMocks(this);
@@ -94,11 +95,13 @@ public class SolrIngestProcessorTest {
         verify(solrUpdateDriver).addDocument(eq(docBean));
     }
 
-    @Test(expected = IndexingException.class)
+    @Test
     public void testIndexingFailed() throws Exception {
-        doThrow(new IndexingException("Fail")).when(pipeline).process(any(DocumentIndexingPackage.class));
+        Assertions.assertThrows(IndexingException.class, () -> {
+            doThrow(new IndexingException("Fail")).when(pipeline).process(any(DocumentIndexingPackage.class));
 
-        processor.process(exchange);
+            processor.process(exchange);
+        });
     }
 
     @Test

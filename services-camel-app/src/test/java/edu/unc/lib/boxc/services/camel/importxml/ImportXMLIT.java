@@ -2,34 +2,35 @@ package edu.unc.lib.boxc.services.camel.importxml;
 
 import static edu.unc.lib.boxc.model.api.xml.JDOMNamespaceUtil.MODS_V3_NS;
 import static edu.unc.lib.boxc.persist.impl.storage.StorageLocationTestHelper.newStorageLocationTestHelper;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
 import java.io.InputStream;
+import java.nio.file.Path;
 import java.util.concurrent.TimeUnit;
 
 import javax.mail.internet.MimeMessage;
 
 import org.apache.camel.CamelContext;
 import org.apache.camel.builder.NotifyBuilder;
+import org.apache.camel.test.spring.junit5.CamelSpringBootTest;
 import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.input.SAXBuilder;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.api.io.TempDir;
 import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jms.core.JmsTemplate;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.ContextHierarchy;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import com.samskivert.mustache.Template;
 
@@ -49,7 +50,8 @@ import edu.unc.lib.boxc.services.camel.importxml.ImportXMLProcessor;
  * @author bbpennel
  *
  */
-@RunWith(SpringJUnit4ClassRunner.class)
+@ExtendWith(SpringExtension.class)
+@CamelSpringBootTest
 @ContextHierarchy({
     @ContextConfiguration("/spring-test/test-fedora-container.xml"),
     @ContextConfiguration("/spring-test/cdr-client-container.xml"),
@@ -63,8 +65,8 @@ public class ImportXMLIT {
     private final static String UPDATED_TITLE = "Updated Work Title";
     private final static String UPDATED_DATE = "2018-04-06";
 
-    @Rule
-    public final TemporaryFolder tmpFolder = new TemporaryFolder();
+    @TempDir
+    public Path tmpFolder;
 
     @Autowired
     private String baseAddress;
@@ -97,7 +99,7 @@ public class ImportXMLIT {
     @Mock
     private AgentPrincipals agent;
 
-    @Before
+    @BeforeEach
     public void setup() throws Exception {
         initMocks(this);
 
@@ -105,7 +107,7 @@ public class ImportXMLIT {
 
         importXmlService = new ImportXMLService();
         importXmlService.setJmsTemplate(importXmlJmsTemplate);
-        importXmlService.setDataDir(tmpFolder.getRoot().getAbsolutePath());
+        importXmlService.setDataDir(tmpFolder.toAbsolutePath().toString());
         importXmlService.init();
 
         locationManager = newStorageLocationTestHelper()
@@ -134,7 +136,7 @@ public class ImportXMLIT {
                 .create();
 
         boolean result = notify.matches(5l, TimeUnit.SECONDS);
-        assertTrue("Processing message did not match expectations", result);
+        assertTrue(result, "Processing message did not match expectations");
 
         FolderObject updateObject = repoObjectLoader.getFolderObject(folderObject.getPid());
         Document modsDoc = parseDescription(updateObject);
