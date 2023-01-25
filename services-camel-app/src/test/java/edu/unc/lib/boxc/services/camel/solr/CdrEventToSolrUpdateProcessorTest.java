@@ -3,8 +3,8 @@ package edu.unc.lib.boxc.services.camel.solr;
 import static edu.unc.lib.boxc.model.api.xml.JDOMNamespaceUtil.ATOM_NS;
 import static edu.unc.lib.boxc.model.api.xml.JDOMNamespaceUtil.CDR_MESSAGE_NS;
 import static edu.unc.lib.boxc.services.camel.util.CdrFcrepoHeaders.CdrUpdateAction;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyCollectionOf;
 import static org.mockito.Matchers.anyString;
@@ -24,8 +24,8 @@ import org.apache.camel.Exchange;
 import org.apache.camel.Message;
 import org.jdom2.Document;
 import org.jdom2.Element;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.Before;
+import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
@@ -66,7 +66,7 @@ public class CdrEventToSolrUpdateProcessorTest {
 
     private PID targetPid;
 
-    @BeforeEach
+    @Before
     public void init() throws Exception {
         initMocks(this);
 

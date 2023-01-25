@@ -6,11 +6,11 @@ import static edu.unc.lib.boxc.model.api.DatastreamType.MD_DESCRIPTIVE;
 import static edu.unc.lib.boxc.model.api.DatastreamType.ORIGINAL_FILE;
 import static edu.unc.lib.boxc.model.api.DatastreamType.MD_EVENTS;
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
@@ -44,8 +44,8 @@ import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Resource;
 import org.fcrepo.client.FcrepoClient;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.Before;
+import org.junit.Test;
 import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -116,7 +116,7 @@ public class SolrIngestProcessorIT extends AbstractSolrProcessorIT {
     @Mock
     private MemberOrderRequestSender memberOrderRequestSender;
 
-    @BeforeEach
+    @Before
     public void setUp() throws Exception {
         initMocks(this);
 
@@ -160,8 +160,8 @@ public class SolrIngestProcessorIT extends AbstractSolrProcessorIT {
 
         assertEquals("Work", workMd.getResourceType());
 
-        assertNotNull(workMd.getDateAdded(), "Date added must be set");
-        assertNotNull(workMd.getDateUpdated(), "Date updated must be set");
+        assertNotNull("Date added must be set", workMd.getDateAdded());
+        assertNotNull("Date updated must be set", workMd.getDateUpdated());
 
         assertEquals("Object title", workMd.getTitle());
         assertEquals("Boxy", workMd.getCreator().get(0));
@@ -174,11 +174,10 @@ public class SolrIngestProcessorIT extends AbstractSolrProcessorIT {
         assertNotNull(workMd.getDatastreamObject(ORIGINAL_FILE.getId()));
         assertNotNull(workMd.getDatastreamObject(MD_DESCRIPTIVE.getId()));
 
-        assertTrue(workMd.getFileFormatCategory().get(0).contains("Text"), "Content type was not set to text");
+        assertTrue("Content type was not set to text", workMd.getFileFormatCategory().get(0).contains("Text"));
 
-        assertTrue(workMd.getReadGroup().contains(AUTHENTICATED_PRINC),
-                "Read groups did not contain assigned group");
-        assertTrue(workMd.getAdminGroup().contains("admin"), "Admin groups did not contain assigned group");
+        assertTrue("Read groups did not contain assigned group", workMd.getReadGroup().contains(AUTHENTICATED_PRINC));
+        assertTrue("Admin groups did not contain assigned group", workMd.getAdminGroup().contains("admin"));
     }
 
     @Test
@@ -195,8 +194,8 @@ public class SolrIngestProcessorIT extends AbstractSolrProcessorIT {
 
         assertEquals("Collection", collMd.getResourceType());
 
-        assertNotNull(collMd.getDateAdded(), "Date added must be set");
-        assertNotNull(collMd.getDateUpdated(), "Date updated must be set");
+        assertNotNull("Date added must be set", collMd.getDateAdded());
+        assertNotNull("Date updated must be set", collMd.getDateUpdated());
 
         assertEquals(collObj.getPid().getId(), collMd.getTitle());
 
@@ -208,9 +207,8 @@ public class SolrIngestProcessorIT extends AbstractSolrProcessorIT {
 
         assertTrue(CollectionUtils.isEmpty(collMd.getFileFormatCategory()));
 
-        assertTrue(collMd.getReadGroup().contains(AUTHENTICATED_PRINC),
-                "Read groups did not contain assigned group");
-        assertTrue(collMd.getAdminGroup().contains("admin") ,"Admin groups did not contain assigned group");
+        assertTrue("Read groups did not contain assigned group", collMd.getReadGroup().contains(AUTHENTICATED_PRINC));
+        assertTrue("Admin groups did not contain assigned group", collMd.getAdminGroup().contains("admin"));
     }
 
     @Test
@@ -243,8 +241,8 @@ public class SolrIngestProcessorIT extends AbstractSolrProcessorIT {
 
         assertEquals(ResourceType.File.name(), fileMd.getResourceType());
 
-        assertNotNull(fileMd.getDateAdded(), "Date added must be set");
-        assertNotNull(fileMd.getDateUpdated(), "Date updated must be set");
+        assertNotNull("Date added must be set", fileMd.getDateAdded());
+        assertNotNull("Date updated must be set", fileMd.getDateUpdated());
 
         assertEquals("text.txt", fileMd.getTitle());
 
@@ -256,11 +254,11 @@ public class SolrIngestProcessorIT extends AbstractSolrProcessorIT {
         assertNotNull(fileMd.getDatastreamObject(ORIGINAL_FILE.getId()));
         assertNotNull(fileMd.getDatastreamObject(DatastreamType.FULLTEXT_EXTRACTION.getId()));
 
-        assertTrue(fileMd.getFileFormatCategory().get(0).contains("Text"),
-                "Content type was not set to text:" + fileMd.getFileFormatCategory());
+        assertTrue("Content type was not set to text:" + fileMd.getFileFormatCategory(),
+                fileMd.getFileFormatCategory().get(0).contains("Text"));
 
-        assertFalse(fileMd.getReadGroup().contains(AUTHENTICATED_PRINC), "Read group should not be assigned");
-        assertTrue(fileMd.getAdminGroup().contains("admin"), "Admin groups did not contain assigned group");
+        assertFalse("Read group should not be assigned", fileMd.getReadGroup().contains(AUTHENTICATED_PRINC));
+        assertTrue("Admin groups did not contain assigned group", fileMd.getAdminGroup().contains("admin"));
 
         assertEquals(TEXT_EXTRACT, fileMd.getFullText());
     }
@@ -298,7 +296,7 @@ public class SolrIngestProcessorIT extends AbstractSolrProcessorIT {
         assertEquals(1, workMd.getDatastream().size());
         assertNotNull(workMd.getDatastreamObject(ORIGINAL_FILE.getId()));
 
-        assertTrue(workMd.getFileFormatCategory().get(0).contains("Text"), "Content type was not set to text");
+        assertTrue("Content type was not set to text", workMd.getFileFormatCategory().get(0).contains("Text"));
 
         idRequest = new SimpleIdRequest(fileObj.getPid(), accessGroups);
         ContentObjectRecord fileMd = solrSearchService.getObjectById(idRequest);
@@ -350,8 +348,8 @@ public class SolrIngestProcessorIT extends AbstractSolrProcessorIT {
 
         assertEquals("Work", workMd.getResourceType());
 
-        assertNotNull(workMd.getDateAdded(), "Date added must be set");
-        assertNotNull(workMd.getDateUpdated(), "Date updated must be set");
+        assertNotNull("Date added must be set", workMd.getDateAdded());
+        assertNotNull("Date updated must be set", workMd.getDateUpdated());
 
         assertEquals("Object title", workMd.getTitle());
         assertEquals("Boxy", workMd.getCreator().get(0));

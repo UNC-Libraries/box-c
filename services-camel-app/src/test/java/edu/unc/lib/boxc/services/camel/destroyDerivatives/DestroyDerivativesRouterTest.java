@@ -14,11 +14,9 @@ import org.apache.camel.BeanInject;
 import org.apache.camel.Exchange;
 import org.apache.camel.Produce;
 import org.apache.camel.ProducerTemplate;
-import org.apache.camel.builder.AdviceWith;
-import org.apache.camel.component.mock.MockEndpoint;
-import org.apache.camel.test.spring.junit5.CamelSpringTestSupport;
-import org.apache.camel.test.spring.junit5.UseAdviceWith;
-import org.junit.jupiter.api.Test;
+import org.apache.camel.builder.AdviceWithRouteBuilder;
+import org.apache.camel.test.spring.CamelSpringTestSupport;
+import org.junit.Test;
 import org.springframework.context.support.AbstractApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
@@ -26,7 +24,6 @@ import edu.unc.lib.boxc.model.api.rdf.Cdr;
 import edu.unc.lib.boxc.services.camel.destroyDerivatives.DestroyDerivativesProcessor;
 import edu.unc.lib.boxc.services.camel.destroyDerivatives.DestroyedMsgProcessor;
 
-@UseAdviceWith
 public class DestroyDerivativesRouterTest extends CamelSpringTestSupport {
     private static final String DESTROY_DERIVATIVES_ROUTE = "CdrDestroyDerivatives";
     private static final String DESTROY_FULLTEXT_ROUTE = "CdrDestroyFullText";
@@ -69,7 +66,7 @@ public class DestroyDerivativesRouterTest extends CamelSpringTestSupport {
         template.sendBodyAndHeaders("", createEvent("text/plain", Cdr.FileObject.getURI()));
         verify(destroyedMsgProcessor).process(any(Exchange.class));
 
-        MockEndpoint.assertIsSatisfied(context);
+        assertMockEndpointsSatisfied();
     }
 
     @Test
@@ -81,7 +78,7 @@ public class DestroyDerivativesRouterTest extends CamelSpringTestSupport {
         template.sendBodyAndHeaders("", createEvent("image/png", Cdr.FileObject.getURI()));
         verify(destroyedMsgProcessor).process(any(Exchange.class));
 
-        MockEndpoint.assertIsSatisfied(context);
+        assertMockEndpointsSatisfied();
     }
 
     @Test
@@ -92,7 +89,7 @@ public class DestroyDerivativesRouterTest extends CamelSpringTestSupport {
         createContext(DESTROY_DERIVATIVES_ROUTE);
         template.sendBodyAndHeaders("", createEvent("application", Cdr.FileObject.getURI()));
 
-        MockEndpoint.assertIsSatisfied(context);
+        assertMockEndpointsSatisfied();
     }
 
     @Test
@@ -135,7 +132,7 @@ public class DestroyDerivativesRouterTest extends CamelSpringTestSupport {
         verify(destroyAccessCopyProcessor, never()).process(any(Exchange.class));
         verify(destroyFulltextProcessor, never()).process(any(Exchange.class));
 
-        MockEndpoint.assertIsSatisfied(context);
+        assertMockEndpointsSatisfied();
     }
 
     @Test
@@ -159,7 +156,7 @@ public class DestroyDerivativesRouterTest extends CamelSpringTestSupport {
         template.sendBodyAndHeaders("", createEvent("", Cdr.Collection.getURI()));
         verify(destroyedMsgProcessor).process(any(Exchange.class));
 
-        MockEndpoint.assertIsSatisfied(context);
+        assertMockEndpointsSatisfied();
     }
 
     @Test
@@ -172,9 +169,12 @@ public class DestroyDerivativesRouterTest extends CamelSpringTestSupport {
     }
 
     private void createContext(String routeName) throws Exception {
-        AdviceWith.adviceWith(context, routeName, a -> {
-            a.replaceFromWith("direct:start");
-            a.mockEndpointsAndSkip("*");
+        context.getRouteDefinition(routeName).adviceWith(context, new AdviceWithRouteBuilder() {
+            @Override
+            public void configure() throws Exception {
+                replaceFromWith("direct:start");
+                mockEndpointsAndSkip("*");
+            }
         });
 
         context.start();

@@ -2,12 +2,11 @@ package edu.unc.lib.boxc.services.camel.longleaf;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.fcrepo.camel.FcrepoHeaders.FCREPO_URI;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.net.URI;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.List;
@@ -21,14 +20,16 @@ import org.apache.camel.Produce;
 import org.apache.camel.ProducerTemplate;
 import org.apache.camel.builder.NotifyBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
-import org.apache.camel.test.spring.junit5.CamelSpringBootTest;
-import org.apache.camel.test.spring.junit5.CamelTestContextBootstrapper;
+import org.apache.camel.test.spring.CamelSpringRunner;
+import org.apache.camel.test.spring.CamelTestContextBootstrapper;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.FileUtils;
 import org.fusesource.hawtbuf.ByteArrayInputStream;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.io.TempDir;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
+import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.annotation.DirtiesContext.ClassMode;
@@ -52,7 +53,7 @@ import edu.unc.lib.boxc.services.camel.longleaf.RegisterToLongleafProcessor;
 /**
  * @author bbpennel
  */
-@CamelSpringBootTest
+@RunWith(CamelSpringRunner.class)
 @BootstrapWith(CamelTestContextBootstrapper.class)
 @ContextHierarchy({
     @ContextConfiguration("/spring-test/test-fedora-container.xml"),
@@ -74,8 +75,8 @@ public class RegisterLongleafRouteTest extends AbstractLongleafRouteTest {
     @EndpointInject(uri = "mock:direct:registrationSuccessful")
     private MockEndpoint mockSuccess;
 
-    @TempDir
-    public Path tmpFolder;
+    @Rule
+    public final TemporaryFolder tmpFolder = new TemporaryFolder();
     @Autowired
     private String baseAddress;
     @Autowired
@@ -94,11 +95,12 @@ public class RegisterLongleafRouteTest extends AbstractLongleafRouteTest {
 
     private String longleafScript;
 
-    @BeforeEach
+    @Before
     public void init() throws Exception {
         TestHelper.setContentBase(baseAddress);
+        tmpFolder.create();
 
-        outputPath = tmpFolder.resolve("output").toString();
+        outputPath = tmpFolder.newFile().getPath();
         output = null;
         longleafScript = LongleafTestHelpers.getLongleafScript(outputPath);
         processor.setLongleafBaseCommand(longleafScript);
@@ -123,7 +125,7 @@ public class RegisterLongleafRouteTest extends AbstractLongleafRouteTest {
         template.sendBodyAndHeaders("", createEvent(origBin.getPid()));
 
         boolean result1 = notify.matches(5l, TimeUnit.SECONDS);
-        assertTrue(result1, "Register route not satisfied");
+        assertTrue("Register route not satisfied", result1);
 
         mockDlq.assertIsSatisfied();
         mockSuccess.assertIsSatisfied(1000);
@@ -146,7 +148,7 @@ public class RegisterLongleafRouteTest extends AbstractLongleafRouteTest {
         template.sendBodyAndHeaders("", createEvent(binPid));
 
         boolean result1 = notify.matches(5l, TimeUnit.SECONDS);
-        assertTrue(result1, "Register route not satisfied");
+        assertTrue("Register route not satisfied", result1);
 
         mockDlq.assertIsSatisfied();
         mockSuccess.assertIsSatisfied();
@@ -171,7 +173,7 @@ public class RegisterLongleafRouteTest extends AbstractLongleafRouteTest {
         template.sendBodyAndHeaders("", createEvent(origBin.getPid()));
 
         boolean result1 = notify.matches(5l, TimeUnit.SECONDS);
-        assertTrue(result1, "Register route not satisfied");
+        assertTrue("Register route not satisfied", result1);
 
         mockDlq.assertIsSatisfied(1000);
         mockSuccess.assertIsSatisfied();
@@ -207,7 +209,7 @@ public class RegisterLongleafRouteTest extends AbstractLongleafRouteTest {
         template.sendBodyAndHeaders("", createEvent(origBin2.getPid()));
 
         boolean result1 = notify.matches(5l, TimeUnit.SECONDS);
-        assertTrue(result1, "Register route not satisfied");
+        assertTrue("Register route not satisfied", result1);
 
         assertSubmittedPaths(2000, contentUri1.toString(), contentUri2.toString());
 
@@ -217,9 +219,9 @@ public class RegisterLongleafRouteTest extends AbstractLongleafRouteTest {
 
         Exchange failed = dlqExchanges.get(0);
         List<String> failedList = failed.getIn().getBody(List.class);
-        assertEquals(1, failedList.size(), "Only one uri should be in the failed message body");
-        assertTrue(failedList.contains(origBin2.getPid().getRepositoryPath()),
-                "Exchange in DLQ must contain the fcrepo uri of the failed binary");
+        assertEquals("Only one uri should be in the failed message body", 1, failedList.size());
+        assertTrue("Exchange in DLQ must contain the fcrepo uri of the failed binary",
+                failedList.contains(origBin2.getPid().getRepositoryPath()));
     }
 
     // command fails with usage error, but successful response
@@ -243,7 +245,7 @@ public class RegisterLongleafRouteTest extends AbstractLongleafRouteTest {
         template.sendBodyAndHeaders("", createEvent(origBin.getPid()));
 
         boolean result1 = notify.matches(5l, TimeUnit.SECONDS);
-        assertTrue(result1, "Register route not satisfied");
+        assertTrue("Register route not satisfied", result1);
 
         mockDlq.assertIsSatisfied(1000);
         mockSuccess.assertIsSatisfied();
@@ -252,9 +254,9 @@ public class RegisterLongleafRouteTest extends AbstractLongleafRouteTest {
         assertEquals(1, dlqExchanges.size());
         Exchange failed = dlqExchanges.get(0);
         List<String> failedList = failed.getIn().getBody(List.class);
-        assertEquals(1, failedList.size(), "Only one uri should be in the failed message body");
-        assertTrue(failedList.contains(origBin.getPid().getRepositoryPath()),
-                "Exchange in DLQ must contain the fcrepo uri of the failed binary");
+        assertEquals("Only one uri should be in the failed message body", 1, failedList.size());
+        assertTrue("Exchange in DLQ must contain the fcrepo uri of the failed binary",
+                failedList.contains(origBin.getPid().getRepositoryPath()));
     }
 
     private BinaryObject createOriginalBinary(FileObject fileObj, String content, String sha1, String md5) {

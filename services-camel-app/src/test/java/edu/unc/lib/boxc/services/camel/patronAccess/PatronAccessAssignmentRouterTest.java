@@ -3,7 +3,6 @@ package edu.unc.lib.boxc.services.camel.patronAccess;
 import static edu.unc.lib.boxc.auth.api.AccessPrincipalConstants.AUTHENTICATED_PRINC;
 import static edu.unc.lib.boxc.auth.api.UserRole.canViewMetadata;
 import static java.util.Arrays.asList;
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.timeout;
 import static org.mockito.Mockito.verify;
@@ -11,10 +10,10 @@ import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
 import org.apache.camel.BeanInject;
-import org.apache.camel.test.spring.junit5.CamelSpringTestSupport;
+import org.apache.camel.test.spring.CamelSpringTestSupport;
 import org.jgroups.util.UUID;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.Before;
+import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.springframework.context.support.AbstractApplicationContext;
@@ -48,7 +47,7 @@ public class PatronAccessAssignmentRouterTest extends CamelSpringTestSupport {
     @Captor
     private ArgumentCaptor<PatronAccessAssignmentRequest> requestCaptor;
 
-    @BeforeEach
+    @Before
     public void init() throws Exception {
         initMocks(this);
     }

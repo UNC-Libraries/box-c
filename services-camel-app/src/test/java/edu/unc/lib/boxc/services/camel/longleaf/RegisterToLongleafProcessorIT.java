@@ -1,9 +1,9 @@
 package edu.unc.lib.boxc.services.camel.longleaf;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
-import static org.junit.jupiter.api.Assertions.fail;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -22,15 +22,16 @@ import org.apache.camel.ProducerTemplate;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.fcrepo.client.FcrepoClient;
 import org.fusesource.hawtbuf.ByteArrayInputStream;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.junit.jupiter.api.io.TempDir;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
+import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.ContextHierarchy;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.ids.PIDMinter;
@@ -54,7 +55,7 @@ import edu.unc.lib.boxc.services.camel.longleaf.RegisterToLongleafProcessor;
  * @author bbpennel
  * @author smithjp
  */
-@ExtendWith(SpringExtension.class)
+@RunWith(SpringJUnit4ClassRunner.class)
 @ContextHierarchy({
     @ContextConfiguration("/spring-test/test-fedora-container.xml"),
     @ContextConfiguration("/spring-test/cdr-client-container.xml")
@@ -71,8 +72,8 @@ public class RegisterToLongleafProcessorIT {
     private static final String TEXT4_BODY = "Maybe some more metadata";
     private static final String TEXT4_MD5 = DigestUtils.md5Hex(TEXT4_BODY);
 
-    @TempDir
-    public Path tmpFolder;
+    @Rule
+    public final TemporaryFolder tmpFolder = new TemporaryFolder();
 
     @Autowired
     private String baseAddress;
@@ -96,14 +97,15 @@ public class RegisterToLongleafProcessorIT {
 
     private RegisterToLongleafProcessor processor;
 
-    @BeforeEach
+    @Before
     public void init() throws Exception {
         TestHelper.setContentBase(baseAddress);
+        tmpFolder.create();
 
         processor = new RegisterToLongleafProcessor();
         processor.setFcrepoClient(fcrepoClient);
         processor.setRepositoryObjectLoader(repoObjLoader);
-        outputPath = tmpFolder.resolve("output").toString();
+        outputPath = tmpFolder.newFile().getPath();
         output = null;
         longleafScript = LongleafTestHelpers.getLongleafScript(outputPath);
         processor.setLongleafBaseCommand(longleafScript);
@@ -112,7 +114,7 @@ public class RegisterToLongleafProcessorIT {
         transferSession = transferService.getSession(loc);
     }
 
-    @AfterEach
+    @After
     public void tearDown() throws Exception {
         transferSession.close();
     }
@@ -220,7 +222,7 @@ public class RegisterToLongleafProcessorIT {
 
     private void assertManifestEntry(String alg, String expectedDigest, URI storageUri) {
         int algIndex = output.indexOf(alg + ":");
-        assertNotEquals(-1, algIndex, "Expected digest algorithm " + alg + " not found in manifest");
+        assertNotEquals("Expected digest algorithm " + alg + " not found in manifest", -1, algIndex);
 
         Path storagePath = Paths.get(storageUri);
         String expectedBase = FileSystemTransferHelpers.getBaseBinaryPath(storagePath);

@@ -1,18 +1,18 @@
 package edu.unc.lib.boxc.services.camel.http;
 
 import org.apache.camel.CamelContext;
-import org.apache.camel.spi.annotations.HealthCheck;
+import org.apache.camel.health.HealthCheck;
 import org.apache.camel.health.HealthCheckRegistry;
 import org.apache.camel.health.HealthCheckResultBuilder;
 import org.apache.camel.health.HealthCheckService;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
@@ -30,7 +30,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 /**
  * @author bbpennel
  */
-@ExtendWith(SpringExtension.class)
+@RunWith(SpringJUnit4ClassRunner.class)
 @WebAppConfiguration
 @ContextConfiguration("/health-check-test-context.xml")
 public class HealthChecksControllerTest {
@@ -42,7 +42,7 @@ public class HealthChecksControllerTest {
     private HealthCheckService healthCheckService;
     private MockMvc mvc;
 
-    @BeforeEach
+    @Before
     public void init() {
         MockitoAnnotations.openMocks(this);
 

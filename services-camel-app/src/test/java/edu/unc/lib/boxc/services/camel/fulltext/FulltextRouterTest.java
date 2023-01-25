@@ -23,20 +23,18 @@ import org.apache.camel.Exchange;
 import org.apache.camel.Produce;
 import org.apache.camel.ProducerTemplate;
 import org.apache.camel.PropertyInject;
-import org.apache.camel.builder.AdviceWith;
+import org.apache.camel.builder.AdviceWithRouteBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
-import org.apache.camel.test.spring.junit5.CamelSpringTestSupport;
-import org.apache.camel.test.spring.junit5.UseAdviceWith;
+import org.apache.camel.test.spring.CamelSpringTestSupport;
 import org.apache.commons.io.FileUtils;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Test;
+import org.junit.After;
+import org.junit.Test;
 import org.springframework.context.support.AbstractApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import edu.unc.lib.boxc.services.camel.fulltext.FulltextProcessor;
 import edu.unc.lib.boxc.services.camel.images.AddDerivativeProcessor;
 
-@UseAdviceWith
 public class FulltextRouterTest extends CamelSpringTestSupport {
     private static final String ENHANCEMENT_ROUTE = "CdrServiceFulltextExtraction";
     private static final String EXTRACTION_ROUTE = "ExtractingText";
@@ -62,7 +60,7 @@ public class FulltextRouterTest extends CamelSpringTestSupport {
         return new ClassPathXmlApplicationContext("/service-context.xml", "/fulltext-context.xml");
     }
 
-    @AfterEach
+    @After
     public void cleanup() throws IOException {
         FileUtils.deleteDirectory(new File("target/34"));
     }
@@ -73,7 +71,7 @@ public class FulltextRouterTest extends CamelSpringTestSupport {
         createContext(ENHANCEMENT_ROUTE);
 
         template.sendBodyAndHeaders("", createEvent());
-        MockEndpoint.assertIsSatisfied(context);
+        assertMockEndpointsSatisfied();
     }
 
     @Test
@@ -84,7 +82,7 @@ public class FulltextRouterTest extends CamelSpringTestSupport {
         Map<String, Object> headers = createEvent();
         headers.put("force", "true");
         template.sendBodyAndHeaders("", headers);
-        MockEndpoint.assertIsSatisfied(context);
+        assertMockEndpointsSatisfied();
     }
 
     @Test
@@ -98,7 +96,7 @@ public class FulltextRouterTest extends CamelSpringTestSupport {
 
         Map<String, Object> headers = createEvent();
         template.sendBodyAndHeaders("", createEvent());
-        MockEndpoint.assertIsSatisfied(context);
+        assertMockEndpointsSatisfied();
     }
 
     @Test
@@ -113,7 +111,7 @@ public class FulltextRouterTest extends CamelSpringTestSupport {
         Map<String, Object> headers = createEvent();
         headers.put("force", "true");
         template.sendBodyAndHeaders("", headers);
-        MockEndpoint.assertIsSatisfied(context);
+        assertMockEndpointsSatisfied();
     }
 
     @Test
@@ -127,7 +125,7 @@ public class FulltextRouterTest extends CamelSpringTestSupport {
 
         template.sendBodyAndHeaders("", headers);
 
-        MockEndpoint.assertIsSatisfied(context);
+        assertMockEndpointsSatisfied();
     }
 
     @Test
@@ -141,9 +139,12 @@ public class FulltextRouterTest extends CamelSpringTestSupport {
     }
 
     private void createContext(String routeName) throws Exception {
-        AdviceWith.adviceWith(context, routeName, a -> {
-            a.replaceFromWith("direct:start");
-            a.mockEndpointsAndSkip("*");
+        context.getRouteDefinition(routeName).adviceWith(context, new AdviceWithRouteBuilder() {
+            @Override
+            public void configure() throws Exception {
+                replaceFromWith("direct:start");
+                mockEndpointsAndSkip("*");
+            }
         });
 
         context.start();

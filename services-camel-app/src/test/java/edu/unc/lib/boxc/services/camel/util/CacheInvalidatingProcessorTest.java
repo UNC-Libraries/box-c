@@ -12,8 +12,8 @@ import edu.unc.lib.boxc.model.fcrepo.test.TestHelper;
 import edu.unc.lib.boxc.search.solr.services.TitleRetrievalService;
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.Before;
+import org.junit.Test;
 import org.mockito.Mock;
 
 import static org.mockito.Matchers.any;
@@ -45,7 +45,7 @@ public class CacheInvalidatingProcessorTest {
 
     private CacheInvalidatingProcessor processor;
 
-    @BeforeEach
+    @Before
     public void init() throws Exception {
         initMocks(this);
         TestHelper.setContentBase(FEDORA_BASE);

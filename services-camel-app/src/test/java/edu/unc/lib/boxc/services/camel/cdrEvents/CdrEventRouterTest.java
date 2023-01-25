@@ -11,11 +11,9 @@ import org.apache.camel.BeanInject;
 import org.apache.camel.Exchange;
 import org.apache.camel.Produce;
 import org.apache.camel.ProducerTemplate;
-import org.apache.camel.builder.AdviceWith;
-import org.apache.camel.component.mock.MockEndpoint;
-import org.apache.camel.test.spring.junit5.CamelSpringTestSupport;
-import org.apache.camel.test.spring.junit5.UseAdviceWith;
-import org.junit.jupiter.api.Test;
+import org.apache.camel.builder.AdviceWithRouteBuilder;
+import org.apache.camel.test.spring.CamelSpringTestSupport;
+import org.junit.Test;
 import org.springframework.context.support.AbstractApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
@@ -28,7 +26,6 @@ import edu.unc.lib.boxc.services.camel.solr.CdrEventToSolrUpdateProcessor;
  * @author lfarrell
  *
  */
-@UseAdviceWith
 public class CdrEventRouterTest extends CamelSpringTestSupport {
     @Produce(uri = "direct:start")
     private ProducerTemplate template;
@@ -49,7 +46,7 @@ public class CdrEventRouterTest extends CamelSpringTestSupport {
         getMockEndpoint("mock:direct:solr-update").expectedMessageCount(1);
         createContext("CdrServiceCdrEvents");
         template.sendBodyAndHeaders("", createEvent(CDRActions.MOVE.toString()));
-        MockEndpoint.assertIsSatisfied(context);
+        assertMockEndpointsSatisfied();
     }
 
     @Test
@@ -57,7 +54,7 @@ public class CdrEventRouterTest extends CamelSpringTestSupport {
         getMockEndpoint("mock:direct:solr-update").expectedMessageCount(1);
         createContext("CdrServiceCdrEvents");
         template.sendBodyAndHeaders("", createEvent(CDRActions.REMOVE.toString()));
-        MockEndpoint.assertIsSatisfied(context);
+        assertMockEndpointsSatisfied();
     }
 
     @Test
@@ -65,7 +62,7 @@ public class CdrEventRouterTest extends CamelSpringTestSupport {
         getMockEndpoint("mock:direct:solr-update").expectedMessageCount(1);
         createContext("CdrServiceCdrEvents");
         template.sendBodyAndHeaders("", createEvent(CDRActions.ADD.toString()));
-        MockEndpoint.assertIsSatisfied(context);
+        assertMockEndpointsSatisfied();
     }
 
     @Test
@@ -73,7 +70,7 @@ public class CdrEventRouterTest extends CamelSpringTestSupport {
         getMockEndpoint("mock:direct:solr-update").expectedMessageCount(1);
         createContext("CdrServiceCdrEvents");
         template.sendBodyAndHeaders("", createEvent(CDRActions.MARK_FOR_DELETION.toString()));
-        MockEndpoint.assertIsSatisfied(context);
+        assertMockEndpointsSatisfied();
     }
 
     @Test
@@ -81,7 +78,7 @@ public class CdrEventRouterTest extends CamelSpringTestSupport {
         getMockEndpoint("mock:direct:solr-update").expectedMessageCount(1);
         createContext("CdrServiceCdrEvents");
         template.sendBodyAndHeaders("", createEvent(CDRActions.EDIT_ACCESS_CONTROL.toString()));
-        MockEndpoint.assertIsSatisfied(context);
+        assertMockEndpointsSatisfied();
     }
 
     @Test
@@ -89,7 +86,7 @@ public class CdrEventRouterTest extends CamelSpringTestSupport {
         getMockEndpoint("mock:direct:solr-update").expectedMessageCount(1);
         createContext("CdrServiceCdrEvents");
         template.sendBodyAndHeaders("", createEvent(CDRActions.EDIT_TYPE.toString()));
-        MockEndpoint.assertIsSatisfied(context);
+        assertMockEndpointsSatisfied();
     }
 
     @Test
@@ -97,7 +94,7 @@ public class CdrEventRouterTest extends CamelSpringTestSupport {
         getMockEndpoint("mock:direct:solr-update").expectedMessageCount(0);
         createContext("CdrServiceCdrEvents");
         template.sendBodyAndHeaders("", createEvent("none"));
-        MockEndpoint.assertIsSatisfied(context);
+        assertMockEndpointsSatisfied();
     }
 
     @Test
@@ -115,9 +112,12 @@ public class CdrEventRouterTest extends CamelSpringTestSupport {
     }
 
     private void createContext(String routeName) throws Exception {
-        AdviceWith.adviceWith(context, routeName, a -> {
-            a.replaceFromWith("direct:start");
-            a.mockEndpointsAndSkip("*");
+        context.getRouteDefinition(routeName).adviceWith(context, new AdviceWithRouteBuilder() {
+            @Override
+            public void configure() throws Exception {
+                replaceFromWith("direct:start");
+                mockEndpointsAndSkip("*");
+            }
         });
 
         context.start();

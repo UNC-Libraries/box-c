@@ -4,7 +4,7 @@ import static edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPaths.getContentRootPi
 import static edu.unc.lib.boxc.operations.jms.indexing.IndexingActionType.RECURSIVE_REINDEX;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.apache.jena.rdf.model.ModelFactory.createDefaultModel;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
@@ -16,8 +16,8 @@ import org.apache.camel.CamelContext;
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
 import org.apache.camel.builder.NotifyBuilder;
-import org.apache.camel.test.spring.junit5.CamelSpringBootTest;
-import org.apache.camel.test.spring.junit5.CamelTestContextBootstrapper;
+import org.apache.camel.test.spring.CamelSpringRunner;
+import org.apache.camel.test.spring.CamelTestContextBootstrapper;
 import org.apache.commons.io.FileUtils;
 import org.apache.jena.fuseki.main.FusekiServer;
 import org.apache.jena.query.Dataset;
@@ -25,9 +25,10 @@ import org.apache.jena.query.QueryExecution;
 import org.apache.jena.query.ResultSet;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.sparql.core.DatasetImpl;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.annotation.DirtiesContext;
@@ -61,7 +62,7 @@ import edu.unc.lib.boxc.operations.jms.indexing.IndexingMessageSender;
  * @author bbpennel
  *
  */
-@CamelSpringBootTest
+@RunWith(CamelSpringRunner.class)
 @BootstrapWith(CamelTestContextBootstrapper.class)
 @ContextHierarchy({
     @ContextConfiguration("/spring-test/test-fedora-container.xml"),
@@ -112,7 +113,7 @@ public class TriplesReindexingRouterIT {
     private WorkObject workObj;
     private FileObject fileObj;
 
-    @BeforeEach
+    @Before
     public void setUp() throws Exception {
         initMocks(this);
 
@@ -136,7 +137,7 @@ public class TriplesReindexingRouterIT {
         generateBaseStructure();
     }
 
-    @AfterEach
+    @After
     public void tearDown() throws Exception {
         fusekiServer.stop();
     }
@@ -235,7 +236,7 @@ public class TriplesReindexingRouterIT {
         try (QueryExecution qExecution = sparqlQueryService.executeQuery(query)) {
             ResultSet resultSet = qExecution.execSelect();
 
-            assertTrue(resultSet.hasNext(), "Object " + repoObj.getPid() + " was not indexed");
+            assertTrue("Object " + repoObj.getPid() + " was not indexed", resultSet.hasNext());
             return;
         }
     }

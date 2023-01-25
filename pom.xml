@@ -130,7 +130,7 @@
         <jena.fuseki.version>4.4.0</jena.fuseki.version>
         
         <fcrepo-camel.version>5.0.0</fcrepo-camel.version>
-        <camel.version>3.20.1</camel.version>
+        <camel.version>2.25.4</camel.version>
         <tika.version>1.19.1</tika.version>
         
         <maven.failsafe.version>2.22.1</maven.failsafe.version>

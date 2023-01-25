@@ -14,14 +14,13 @@ import java.util.UUID;
 import org.apache.camel.BeanInject;
 import org.apache.camel.Produce;
 import org.apache.camel.ProducerTemplate;
-import org.apache.camel.builder.AdviceWith;
-import org.apache.camel.test.spring.junit5.CamelSpringTestSupport;
-import org.apache.camel.test.spring.junit5.UseAdviceWith;
+import org.apache.camel.builder.AdviceWithRouteBuilder;
+import org.apache.camel.test.spring.CamelSpringTestSupport;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.vocabulary.RDF;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.Before;
+import org.junit.Test;
 import org.mockito.Mock;
 import org.springframework.context.support.AbstractApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
@@ -49,7 +48,6 @@ import edu.unc.lib.boxc.search.solr.services.ObjectPathFactory;
  * @author bbpennel
  *
  */
-@UseAdviceWith
 public class DestroyObjectsRouterTest extends CamelSpringTestSupport {
     private static final String DESTROY_ROUTE = "CdrDestroyObjects";
 
@@ -80,7 +78,7 @@ public class DestroyObjectsRouterTest extends CamelSpringTestSupport {
     @Mock
     private ObjectPath objPath;
 
-    @BeforeEach
+    @Before
     public void setup() {
         initMocks(this);
         AccessGroupSet testPrincipals = new AccessGroupSetImpl(USER_GROUPS);
@@ -123,9 +121,12 @@ public class DestroyObjectsRouterTest extends CamelSpringTestSupport {
     }
 
     private void createContext(String routeName, String currentRoute) throws Exception {
-        AdviceWith.adviceWith(context, routeName, a -> {
-            a.replaceFromWith(currentRoute);
-            a.mockEndpointsAndSkip("*");
+        context.getRouteDefinition(routeName).adviceWith(context, new AdviceWithRouteBuilder() {
+            @Override
+            public void configure() throws Exception {
+                replaceFromWith(currentRoute);
+                mockEndpointsAndSkip("*");
+            }
         });
 
         context.start();

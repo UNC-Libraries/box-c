@@ -10,10 +10,10 @@ import edu.unc.lib.boxc.operations.jms.order.OrderRequestSerializationHelper;
 import org.apache.camel.BeanInject;
 import org.apache.camel.Produce;
 import org.apache.camel.ProducerTemplate;
-import org.apache.camel.builder.AdviceWith;
-import org.apache.camel.test.spring.junit5.CamelSpringTestSupport;
-import org.apache.camel.test.spring.junit5.UseAdviceWith;
-import org.junit.jupiter.api.Test;
+import org.apache.camel.builder.AdviceWithRouteBuilder;
+import org.apache.camel.test.spring.CamelSpringTestSupport;
+import org.junit.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.support.AbstractApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
@@ -26,7 +26,6 @@ import static org.mockito.Mockito.verify;
 /**
  * @author bbpennel
  */
-@UseAdviceWith
 public class OrderMembersRouterTest extends CamelSpringTestSupport {
     private static final String PARENT1_UUID = "f277bb38-272c-471c-a28a-9887a1328a1f";
     private static final String CHILD1_UUID = "83c2d7f8-2e6b-4f0b-ab7e-7397969c0682";
@@ -60,9 +59,12 @@ public class OrderMembersRouterTest extends CamelSpringTestSupport {
     }
 
     private void createContext(String routeName) throws Exception {
-        AdviceWith.adviceWith(context, routeName, a -> {
-            a.replaceFromWith("direct:start");
-            a.mockEndpointsAndSkip("*");
+        context.getRouteDefinition(routeName).adviceWith(context, new AdviceWithRouteBuilder() {
+            @Override
+            public void configure() throws Exception {
+                replaceFromWith("direct:start");
+                mockEndpointsAndSkip("*");
+            }
         });
 
         context.start();

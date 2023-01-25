@@ -15,8 +15,6 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
 
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
@@ -26,9 +24,10 @@ import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.riot.RDFDataMgr;
 import org.apache.jena.riot.RDFFormat;
 import org.apache.jena.vocabulary.RDF;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.io.TempDir;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 import org.mockito.Mock;
 
 import edu.unc.lib.boxc.model.api.exceptions.ObjectTypeMismatchException;
@@ -51,8 +50,8 @@ public class BinaryMetadataProcessorTest {
 
     private BinaryMetadataProcessor processor;
 
-    @TempDir
-    public Path tmpFolder;
+    @Rule
+    public final TemporaryFolder tmpFolder = new TemporaryFolder();
 
     private static final String FEDORA_BASE = "http://example.com/rest/";
 
@@ -78,14 +77,13 @@ public class BinaryMetadataProcessorTest {
     private BinaryObject binaryObject;
     private DerivativeService derivativeService;
 
-    @BeforeEach
+    @Before
     public void init() throws Exception {
         initMocks(this);
 
         TestHelper.setContentBase(FEDORA_BASE);
 
-        binaryBase = tmpFolder.resolve("testFolder").toString();
-        Files.createDirectory(tmpFolder.resolve("testFolder"));
+        binaryBase = tmpFolder.newFolder().getAbsolutePath();
 
         derivativeService = new DerivativeService();
         derivativeService.setDerivativeDir(binaryBase);

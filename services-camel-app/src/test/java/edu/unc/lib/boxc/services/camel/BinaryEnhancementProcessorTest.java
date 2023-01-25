@@ -13,16 +13,16 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
-import java.nio.file.Path;
 import java.util.Collections;
 
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
 import org.jdom2.Document;
 import org.jdom2.Element;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.io.TempDir;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 import org.mockito.Mock;
 
 import edu.unc.lib.boxc.model.api.ids.PID;
@@ -40,8 +40,8 @@ import edu.unc.lib.boxc.services.camel.BinaryEnhancementProcessor;
 public class BinaryEnhancementProcessorTest {
     private BinaryEnhancementProcessor processor;
 
-    @TempDir
-    public Path tmpFolder;
+    @Rule
+    public final TemporaryFolder tmpFolder = new TemporaryFolder();
 
     private static final String FEDORA_BASE = "http://example.com/rest/";
 
@@ -59,7 +59,7 @@ public class BinaryEnhancementProcessorTest {
     @Mock
     private CollectionObject collObj;
 
-    @BeforeEach
+    @Before
     public void init() throws Exception {
         initMocks(this);
 
