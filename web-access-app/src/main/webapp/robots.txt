@@ -1,2 +1,7 @@
 User-agent: *
 Disallow: /content
+Disallow: /jp2Proxy
+Disallow: /sort
+Disallow: /Shibboleth.sso
+Disallow: /searchJson
+Disallow: /structure
