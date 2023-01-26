@@ -10,12 +10,12 @@ import static org.mockito.MockitoAnnotations.initMocks;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
 
 import edu.unc.lib.boxc.search.solr.services.TitleRetrievalService;
+import edu.unc.lib.boxc.search.solr.utils.DateFormatUtil;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.Statement;
 import org.jdom2.Document;
@@ -41,8 +41,6 @@ import edu.unc.lib.boxc.search.solr.models.IndexDocumentBean;
  *
  */
 public class SetDescriptiveMetadataFilterTest {
-
-    private static SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM");
     private static final String PID_STRING = "uuid:07d9594f-310d-4095-ab67-79a1056e7430";
 
     @Mock
@@ -143,7 +141,8 @@ public class SetDescriptiveMetadataFilterTest {
         assertTrue(idb.getPublisher().contains("Knopf"));
         assertEquals(1, idb.getPublisher().size());
 
-        assertEquals("2006-04", dateFormat.format(idb.getDateCreated()));
+        assertEquals("2006-04-01T00:00:00.000Z", DateFormatUtil.formatter.format(idb.getDateCreated()));
+        assertEquals("2006", idb.getDateCreatedYear());
 
         assertEquals(4, idb.getRights().size());
         assertTrue(idb.getRights().contains("Copyright Not Evaluated"));
@@ -208,7 +207,7 @@ public class SetDescriptiveMetadataFilterTest {
 
         filter.filter(dip);
 
-        assertEquals("2006-05", dateFormat.format(idb.getDateCreated()));
+        assertEquals("2006-05-01T00:00:00.000Z", DateFormatUtil.formatter.format(idb.getDateCreated()));
         assertEquals("2006", idb.getDateCreatedYear());
     }
 
@@ -224,7 +223,7 @@ public class SetDescriptiveMetadataFilterTest {
 
         filter.filter(dip);
 
-        assertEquals("2006-03", dateFormat.format(idb.getDateCreated()));
+        assertEquals("2006-03-01T00:00:00.000Z", DateFormatUtil.formatter.format(idb.getDateCreated()));
         assertNull(idb.getDateCreatedYear());
     }
 
@@ -362,5 +361,19 @@ public class SetDescriptiveMetadataFilterTest {
         filter.filter(dip);
 
         assertEquals("uuid: 1234", idb.getTitle());
+    }
+
+    @Test
+    public void testDateCreatedYearBxc3941() throws Exception {
+        SAXBuilder builder = new SAXBuilder();
+        Document modsDoc = builder.build(new FileInputStream(new File(
+                "src/test/resources/datastream/dateCreatedYearIssue.xml")));
+        when(dip.getMods()).thenReturn(modsDoc.detachRootElement());
+
+        filter.filter(dip);
+
+        assertEquals("1862-01-01T00:00:00.000Z", DateFormatUtil.formatter.format(idb.getDateCreated()));
+        assertEquals("1862", idb.getDateCreatedYear());
+
     }
 }
