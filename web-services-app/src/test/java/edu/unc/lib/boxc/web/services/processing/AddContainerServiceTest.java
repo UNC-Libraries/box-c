@@ -1,8 +1,8 @@
 package edu.unc.lib.boxc.web.services.processing;
 
 import static edu.unc.lib.boxc.auth.api.Permission.ingest;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
@@ -20,8 +20,9 @@ import java.util.UUID;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.impl.ModelCom;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
@@ -104,7 +105,7 @@ public class AddContainerServiceTest {
     private PID childPid;
     private AddContainerService service;
 
-    @Before
+    @BeforeEach
     public void init() {
         initMocks(this);
 
@@ -150,33 +151,37 @@ public class AddContainerServiceTest {
         return req.withContainerType(containerType).withAgent(agent);
     }
 
-    @Test(expected = TransactionCancelledException.class)
+    @Test
     public void insufficientAccessTest() {
-        doThrow(new AccessRestrictionException()).when(aclService)
-                .assertHasAccess(anyString(), eq(parentPid), any(), eq(ingest));
+        Assertions.assertThrows(TransactionCancelledException.class, () -> {
+            doThrow(new AccessRestrictionException()).when(aclService)
+                    .assertHasAccess(anyString(), eq(parentPid), any(), eq(ingest));
 
-        try {
-            service.addContainer(createRequest("folder", false, ResourceType.Folder));
-        } catch (TransactionCancelledException e) {
-            assertEquals(AccessRestrictionException.class, e.getCause().getClass());
-            throw new TransactionCancelledException();
-        }
+            try {
+                service.addContainer(createRequest("folder", false, ResourceType.Folder));
+            } catch (TransactionCancelledException e) {
+                assertEquals(AccessRestrictionException.class, e.getCause().getClass());
+                throw new TransactionCancelledException();
+            }
+        });
     }
 
-    @Test(expected = TransactionCancelledException.class)
+    @Test
     public void addCollectionToFolderTest() {
-        FolderObject folder = mock(FolderObject.class);
-        CollectionObject collection = mock(CollectionObject.class);
-        when(repoObjLoader.getRepositoryObject(eq(parentPid))).thenReturn(folder);
-        when(repoObjFactory.createCollectionObject(any(PID.class), any(ModelCom.class))).thenReturn(collection);
-        doThrow(new ObjectTypeMismatchException("")).when(folder).addMember(collection);
+        Assertions.assertThrows(TransactionCancelledException.class, () -> {
+            FolderObject folder = mock(FolderObject.class);
+            CollectionObject collection = mock(CollectionObject.class);
+            when(repoObjLoader.getRepositoryObject(eq(parentPid))).thenReturn(folder);
+            when(repoObjFactory.createCollectionObject(any(PID.class), any(ModelCom.class))).thenReturn(collection);
+            doThrow(new ObjectTypeMismatchException("")).when(folder).addMember(collection);
 
-        try {
-            service.addContainer(createRequest("collection", false, ResourceType.Collection));
-        } catch (TransactionCancelledException e) {
-            assertEquals(ObjectTypeMismatchException.class, e.getCause().getClass());
-            throw new TransactionCancelledException();
-        }
+            try {
+                service.addContainer(createRequest("collection", false, ResourceType.Collection));
+            } catch (TransactionCancelledException e) {
+                assertEquals(ObjectTypeMismatchException.class, e.getCause().getClass());
+                throw new TransactionCancelledException();
+            }
+        });
     }
 
     @Test

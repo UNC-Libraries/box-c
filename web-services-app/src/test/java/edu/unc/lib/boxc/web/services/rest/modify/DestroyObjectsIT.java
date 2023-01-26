@@ -1,7 +1,7 @@
 package edu.unc.lib.boxc.web.services.rest.modify;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.reset;
@@ -13,8 +13,8 @@ import java.net.URI;
 import java.util.Map;
 
 import org.apache.jena.rdf.model.Model;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jms.core.JmsTemplate;
 import org.springframework.jms.core.MessageCreator;
@@ -50,7 +50,7 @@ public class DestroyObjectsIT extends AbstractAPIIT {
     @Autowired
     private JmsTemplate jmsTemplate;
 
-    @Before
+    @BeforeEach
     public void setup() throws Exception {
         reset(jmsTemplate);
 
@@ -162,7 +162,7 @@ public class DestroyObjectsIT extends AbstractAPIIT {
 
     private void assertResponseSuccess(MvcResult mvcResult) throws Exception {
         Map<String, Object> resp = getMapFromResponse(mvcResult);
-        assertTrue("Missing job id", resp.containsKey("job"));
+        assertTrue(resp.containsKey("job"), "Missing job id");
         assertEquals("destroy", resp.get("action"));
     }
 

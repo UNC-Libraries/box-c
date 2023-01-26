@@ -3,16 +3,16 @@ package edu.unc.lib.boxc.web.services.rest;
 import static edu.unc.lib.boxc.web.services.rest.DepositPipelineController.ACTION_KEY;
 import static edu.unc.lib.boxc.web.services.rest.DepositPipelineController.ERROR_KEY;
 import static edu.unc.lib.boxc.web.services.rest.DepositPipelineController.STATE_KEY;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.util.Map;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.ContextHierarchy;
@@ -36,7 +36,7 @@ public class DepositPipelineControllerIT extends AbstractAPIIT {
     @Autowired
     private DepositPipelineStatusFactory pipelineStatusFactory;
 
-    @Before
+    @BeforeEach
     public void setup() {
         pipelineStatusFactory.clearPipelineActionRequest();
         pipelineStatusFactory.setPipelineState(null);

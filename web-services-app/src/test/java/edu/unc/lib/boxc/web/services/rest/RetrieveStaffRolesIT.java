@@ -8,7 +8,7 @@ import static edu.unc.lib.boxc.auth.api.UserRole.unitOwner;
 import static edu.unc.lib.boxc.web.services.rest.AccessControlRetrievalController.ASSIGNED_ROLES;
 import static edu.unc.lib.boxc.web.services.rest.AccessControlRetrievalController.INHERITED_ROLES;
 import static edu.unc.lib.boxc.web.services.rest.AccessControlRetrievalController.ROLES_KEY;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -18,9 +18,9 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.io.FileUtils;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.ContextHierarchy;
 import org.springframework.test.web.servlet.MvcResult;
@@ -63,7 +63,7 @@ public class RetrieveStaffRolesIT extends AbstractAPIIT {
     private static final String origFilename = "original.txt";
     private static final String origMimetype = "text/plain";
 
-    @Before
+    @BeforeEach
     public void init_() throws Exception {
         AccessGroupSet testPrincipals = new AccessGroupSetImpl(GRP_PRINC);
         GroupsThreadStore.storeUsername(USER_PRINC);
@@ -71,7 +71,7 @@ public class RetrieveStaffRolesIT extends AbstractAPIIT {
         setupContentRoot();
     }
 
-    @After
+    @AfterEach
     public void teardown() throws Exception {
         GroupsThreadStore.clearStore();
     }
@@ -335,25 +335,25 @@ public class RetrieveStaffRolesIT extends AbstractAPIIT {
     private void assertHasInheritedRole(String princ, UserRole role, PID pid,
             Map<String, Map<String, List<RoleAssignment>>> respMap) {
         List<RoleAssignment> inherited = respMap.get(INHERITED_ROLES).get(ROLES_KEY);
-        assertTrue("Response did not contain required inherited role " + princ + " " + role,
-                inherited.contains(new RoleAssignment(princ, role, pid)));
+        assertTrue(inherited.contains(new RoleAssignment(princ, role, pid)),
+                "Response did not contain required inherited role " + princ + " " + role);
     }
 
     private void assertHasAssignedRole(String princ, UserRole role, PID pid,
             Map<String, Map<String, List<RoleAssignment>>> respMap) {
         List<RoleAssignment> assigned = respMap.get(ASSIGNED_ROLES).get(ROLES_KEY);
-        assertTrue("Response did not contain required assigned role " + princ + " " + role,
-                assigned.contains(new RoleAssignment(princ, role, pid)));
+        assertTrue(assigned.contains(new RoleAssignment(princ, role, pid)),
+                "Response did not contain required assigned role " + princ + " " + role);
     }
 
     private void assertNoInheritedRoles(Map<String, Map<String, List<RoleAssignment>>> respMap) {
         List<RoleAssignment> inherited = respMap.get(INHERITED_ROLES).get(ROLES_KEY);
-        assertTrue("Inherited role map was expected to be empty", inherited.isEmpty());
+        assertTrue(inherited.isEmpty(), "Inherited role map was expected to be empty");
     }
 
     private void assertNoAssignedRoles(Map<String, Map<String, List<RoleAssignment>>> respMap) {
         List<RoleAssignment> assigned = respMap.get(ASSIGNED_ROLES).get(ROLES_KEY);
-        assertTrue("Assigned role map was expected to be empty", assigned.isEmpty());
+        assertTrue(assigned.isEmpty(), "Assigned role map was expected to be empty");
     }
 
     protected Map<String, Map<String, List<RoleAssignment>>> getRolesFromResponse(MvcResult result) throws Exception {

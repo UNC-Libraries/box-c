@@ -19,8 +19,9 @@ import edu.unc.lib.boxc.search.solr.services.SolrSearchService;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
@@ -33,8 +34,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import static edu.unc.lib.boxc.search.api.FacetConstants.MARKED_FOR_DELETION;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
@@ -60,7 +61,7 @@ public class MemberOrderCsvExporterTest {
     private AgentPrincipals agent = new AgentPrincipalsImpl("user", new AccessGroupSetImpl("agroup"));
     private MemberOrderCsvExporter csvService;
 
-    @Before
+    @BeforeEach
     public void setup() {
         MockitoAnnotations.initMocks(this);
         csvService = new MemberOrderCsvExporter();
@@ -191,12 +192,14 @@ public class MemberOrderCsvExporterTest {
         }
     }
 
-    @Test(expected = AccessRestrictionException.class)
+    @Test
     public void exportInsufficientPermissionsTest() throws Exception {
-        doThrow(new AccessRestrictionException())
-                .when(aclService)
-                .assertHasAccess(anyString(), eq(PIDs.get(PARENT1_UUID)), any(), eq(Permission.viewHidden));
-        csvService.export(asPidList(PARENT1_UUID), agent);
+        Assertions.assertThrows(AccessRestrictionException.class, () -> {
+            doThrow(new AccessRestrictionException())
+                    .when(aclService)
+                    .assertHasAccess(anyString(), eq(PIDs.get(PARENT1_UUID)), any(), eq(Permission.viewHidden));
+            csvService.export(asPidList(PARENT1_UUID), agent);
+        });
     }
 
     private void mockChildrenResults(ContentObjectRecord... results) {

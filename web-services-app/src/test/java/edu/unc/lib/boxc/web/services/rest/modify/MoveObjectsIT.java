@@ -1,10 +1,10 @@
 package edu.unc.lib.boxc.web.services.rest.modify;
 
 import static java.util.Arrays.asList;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -14,12 +14,12 @@ import java.util.stream.Collectors;
 
 import javax.ws.rs.core.MediaType;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.ContextHierarchy;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MvcResult;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -37,7 +37,7 @@ import edu.unc.lib.boxc.web.services.rest.modify.MoveObjectsController.MoveReque
  * @author bbpennel
  *
  */
-@RunWith(SpringJUnit4ClassRunner.class)
+@ExtendWith(SpringExtension.class)
 @ContextHierarchy({
     @ContextConfiguration("/spring-test/test-fedora-container.xml"),
     @ContextConfiguration("/spring-test/cdr-client-container.xml"),
@@ -50,7 +50,7 @@ public class MoveObjectsIT extends AbstractAPIIT {
     private ContentContainerObject sourceContainer;
     private ContentContainerObject destContainer;
 
-    @Before
+    @BeforeEach
     public void setup() {
         setupContentRoot();
         createHierarchy();
@@ -114,8 +114,8 @@ public class MoveObjectsIT extends AbstractAPIIT {
 
         assertObjectsRemovedFromSource(movePids, sourceContainer);
 
-        assertTrue("Unmoved object not present in source", sourceContainer.getMembers().stream().
-                filter(m -> m.getPid().equals(stayPid)).findAny().isPresent());
+        assertTrue(sourceContainer.getMembers().stream().filter(m -> m.getPid().equals(stayPid)).findAny().isPresent(),
+                "Unmoved object not present in source");
     }
 
     @Test
@@ -186,17 +186,17 @@ public class MoveObjectsIT extends AbstractAPIIT {
         destContainer.setEtag(null);
         List<ContentObject> destMembers = destContainer.getMembers();
         for (PID movePid : movePids) {
-            assertTrue("Destination did not contain moved object", destMembers.stream().
-                    filter(m -> m.getPid().equals(movePid)).findAny().isPresent());
+            assertTrue(destMembers.stream().filter(m -> m.getPid().equals(movePid)).findAny().isPresent(),
+                    "Destination did not contain moved object");
         }
-        assertEquals("Incorrect number of objects in container", movePids.size(), destMembers.size());
+        assertEquals(movePids.size(), destMembers.size(), "Incorrect number of objects in container");
     }
 
     private void assertObjectsRemovedFromSource(List<PID> movePids, ContentContainerObject source) {
         List<ContentObject> sourceMembers = source.getMembers();
         for (PID movePid : movePids) {
-            assertFalse("Source contained moved object", sourceMembers.stream().
-                    filter(m -> m.getPid().equals(movePid)).findAny().isPresent());
+            assertFalse(sourceMembers.stream().filter(m -> m.getPid().equals(movePid)).findAny().isPresent(),
+                    "Source contained moved object");
         }
     }
 

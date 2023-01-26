@@ -5,10 +5,10 @@ import static edu.unc.lib.boxc.auth.api.AccessPrincipalConstants.PUBLIC_PRINC;
 import static edu.unc.lib.boxc.auth.api.AccessPrincipalConstants.USER_NAMESPACE;
 import static edu.unc.lib.boxc.auth.api.UserRole.canViewMetadata;
 import static edu.unc.lib.boxc.auth.api.UserRole.canViewOriginals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -21,9 +21,9 @@ import java.util.TimeZone;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.jena.rdf.model.Model;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.ContextHierarchy;
 import org.springframework.test.web.servlet.MvcResult;
@@ -69,7 +69,7 @@ public class RetrievePatronRolesIT extends AbstractAPIIT {
     private AdminUnit adminUnit;
     private CollectionObject collObj;
 
-    @Before
+    @BeforeEach
     public void init_() throws Exception {
         AccessGroupSet testPrincipals = new AccessGroupSetImpl(PUBLIC_PRINC);
         GroupsThreadStore.storeUsername(USER_PRINC);
@@ -77,7 +77,7 @@ public class RetrievePatronRolesIT extends AbstractAPIIT {
         setupContentRoot();
     }
 
-    @After
+    @AfterEach
     public void teardown() throws Exception {
         GroupsThreadStore.clearStore();
     }
@@ -652,9 +652,8 @@ public class RetrievePatronRolesIT extends AbstractAPIIT {
     }
 
     private void assertHasRole(PatronAccessDetails info, String princ, UserRole role) {
-        assertTrue("Response info does not contain required assigned role " + princ + " " + role,
-                info.getRoles().stream()
-                .anyMatch(a -> a.getPrincipal().equals(princ) && a.getRole().equals(role)));
+        assertTrue(info.getRoles().stream().anyMatch(a -> a.getPrincipal().equals(princ) && a.getRole().equals(role)),
+                "Response info does not contain required assigned role " + princ + " " + role);
     }
 
     private void createCollectionInUnit(Model collModel, Model unitModel) {

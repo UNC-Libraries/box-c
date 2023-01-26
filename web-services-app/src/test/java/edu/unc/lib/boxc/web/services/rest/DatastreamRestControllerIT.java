@@ -12,8 +12,8 @@ import static edu.unc.lib.boxc.model.fcrepo.ids.DatastreamPids.getTechnicalMetad
 import static edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPaths.idToPath;
 import static edu.unc.lib.boxc.web.common.services.FedoraContentService.CONTENT_DISPOSITION;
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
@@ -32,16 +32,15 @@ import org.apache.commons.io.IOUtils;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.vocabulary.RDF;
 import org.apache.solr.client.solrj.embedded.EmbeddedSolrServer;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.api.io.TempDir;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.ContextHierarchy;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.test.web.servlet.MvcResult;
 
@@ -64,7 +63,7 @@ import edu.unc.lib.boxc.web.services.rest.modify.AbstractAPIIT;
  * @author bbpennel
  *
  */
-@RunWith(SpringJUnit4ClassRunner.class)
+@ExtendWith(SpringExtension.class)
 @WebAppConfiguration
 @ContextHierarchy({
     @ContextConfiguration("/spring-test/test-fedora-container.xml"),
@@ -88,13 +87,13 @@ public class DatastreamRestControllerIT extends AbstractAPIIT {
     @Autowired
     private EmbeddedSolrServer embeddedSolrServer;
 
-    @Rule
-    public TemporaryFolder derivDir = new TemporaryFolder();
+    @TempDir
+    public Path derivDir;
     private String derivDirPath;
 
-    @Before
+    @BeforeEach
     public void setup() {
-        derivDirPath = derivDir.getRoot().getAbsolutePath();
+        derivDirPath = derivDir.toString();
 
         DerivativeService derivService = new DerivativeService();
         derivService.setDerivativeDir(derivDirPath);
@@ -233,7 +232,7 @@ public class DatastreamRestControllerIT extends AbstractAPIIT {
                 .andReturn();
 
         MockHttpServletResponse response = result.getResponse();
-        assertEquals("Content must not be returned", "", response.getContentAsString());
+        assertEquals("", response.getContentAsString(), "Content must not be returned");
     }
 
     private TestCorpus populateCorpus() throws Exception {
@@ -292,10 +291,10 @@ public class DatastreamRestControllerIT extends AbstractAPIIT {
         assertEquals("inline; filename=\"" + id + "_event_log.ttl\"", response.getHeader(CONTENT_DISPOSITION));
 
         Model premisModel = createModel(IOUtils.toInputStream(response.getContentAsString(), UTF_8), "TURTLE");
-        assertEquals("Response did not contain expected premis event",
-                1, premisModel.listResourcesWithProperty(RDF.type, Premis.Creation).toList().size());
+        assertEquals(1, premisModel.listResourcesWithProperty(RDF.type, Premis.Creation).toList().size(),
+                "Response did not contain expected premis event");
 
-        assertTrue("Expected content length to be set", response.getContentLength() > 0);
+        assertTrue(response.getContentLength() > 0, "Expected content length to be set");
     }
 
     @Test
@@ -312,7 +311,7 @@ public class DatastreamRestControllerIT extends AbstractAPIIT {
         MockHttpServletResponse response = result.getResponse();
 
         assertEquals("text/turtle", response.getContentType());
-        assertEquals("Expected empty response", 0, response.getContentLength());
+        assertEquals(0, response.getContentLength(), "Expected empty response");
     }
 
     @Test
@@ -334,7 +333,7 @@ public class DatastreamRestControllerIT extends AbstractAPIIT {
                 .andReturn();
 
         MockHttpServletResponse response = result.getResponse();
-        assertEquals("Content must not be returned", "", response.getContentAsString());
+        assertEquals("", response.getContentAsString(), "Content must not be returned");
     }
 
     private File createDerivative(String id, DatastreamType dsType, byte[] content) throws Exception {

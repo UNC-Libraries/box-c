@@ -8,11 +8,11 @@ import java.util.Map;
 import java.util.UUID;
 
 import edu.unc.lib.boxc.web.services.rest.MvcTestHelpers;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
@@ -41,7 +41,7 @@ import edu.unc.lib.boxc.model.fcrepo.test.TestHelper;
  * @author harring
  *
  */
-@RunWith(SpringJUnit4ClassRunner.class)
+@ExtendWith(SpringExtension.class)
 @WebAppConfiguration
 public abstract class AbstractAPIIT {
     protected final static String USERNAME = "test_user";
@@ -68,7 +68,7 @@ public abstract class AbstractAPIIT {
 
     protected MockMvc mvc;
 
-    @Before
+    @BeforeEach
     public void init() {
 
         mvc = MockMvcBuilders
@@ -82,7 +82,7 @@ public abstract class AbstractAPIIT {
 
     }
 
-    @After
+    @AfterEach
     public void tearDown() {
         GroupsThreadStore.clearStore();
     }

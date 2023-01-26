@@ -4,10 +4,9 @@ import edu.unc.lib.boxc.model.api.ResourceType;
 import edu.unc.lib.boxc.operations.jms.order.OrderOperationType;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -20,9 +19,9 @@ import static edu.unc.lib.boxc.web.services.processing.MemberOrderCsvConstants.C
 import static edu.unc.lib.boxc.web.services.processing.MemberOrderCsvConstants.ORDER_HEADER;
 import static edu.unc.lib.boxc.web.services.processing.MemberOrderCsvConstants.PARENT_PID_HEADER;
 import static edu.unc.lib.boxc.web.services.processing.MemberOrderCsvConstants.PID_HEADER;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 /**
  * @author bbpennel
@@ -35,11 +34,11 @@ public class MemberOrderCsvTransformerTest {
     private static final String CHILD3_UUID = "8e0040b2-9951-48a3-9d65-780ae7106951";
     private static final String CHILD4_UUID = "9cb6cc61-d88e-403e-b959-2396cd331a12";
 
-    @Rule
-    public final TemporaryFolder tmpFolder = new TemporaryFolder();
+    @TempDir
+    public Path tmpFolder;
     private MemberOrderCsvTransformer transformer;
 
-    @Before
+    @BeforeEach
     public void setup() {
         transformer = new MemberOrderCsvTransformer();
     }
@@ -165,8 +164,8 @@ public class MemberOrderCsvTransformerTest {
     }
 
     private void assertErrorMessageContains(Exception e, String expected) {
-        assertTrue("Expected message:\n" + expected + "\nReceived:\n" + e.getMessage(),
-                e.getMessage().contains(expected));
+        assertTrue(e.getMessage().contains(expected),
+                "Expected message:\n" + expected + "\nReceived:\n" + e.getMessage());
     }
 
     private Path writeCsvFile(List<List<Object>> entries) throws IOException {
@@ -174,7 +173,7 @@ public class MemberOrderCsvTransformerTest {
     }
 
     private Path writeCsvFile(List<List<Object>> entries, String... headers) throws IOException {
-        var csvPath = tmpFolder.newFile().toPath();
+        var csvPath = tmpFolder.resolve("newFile");
         try (var writer = Files.newBufferedWriter(csvPath);
             var csvPrinter = new CSVPrinter(writer, CSVFormat.DEFAULT
                 .withHeader(headers))) {

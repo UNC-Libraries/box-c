@@ -1,11 +1,11 @@
 package edu.unc.lib.boxc.web.services.rest.modify;
 
 import static edu.unc.lib.boxc.common.test.TestHelpers.setField;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.MockitoAnnotations.initMocks;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -30,10 +30,10 @@ import javax.ws.rs.core.MediaType;
 import org.apache.activemq.ActiveMQConnectionFactory;
 import org.apache.activemq.junit.EmbeddedActiveMQBroker;
 import org.awaitility.Awaitility;
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jms.core.JmsTemplate;
 import org.springframework.test.context.ContextConfiguration;
@@ -66,7 +66,7 @@ public class ExportXMLIT extends AbstractAPIIT {
     @Rule
     public EmbeddedActiveMQBroker broker = new EmbeddedActiveMQBroker();
 
-    @Before
+    @BeforeEach
     public void setup() throws Exception {
         initMocks(this);
         pidMinter = new RepositoryPIDMinter();
@@ -96,7 +96,7 @@ public class ExportXMLIT extends AbstractAPIIT {
         conn.start();
     }
 
-    @After
+    @AfterEach
     public void shutdown() throws Exception {
         consumer.close();
         session.close();

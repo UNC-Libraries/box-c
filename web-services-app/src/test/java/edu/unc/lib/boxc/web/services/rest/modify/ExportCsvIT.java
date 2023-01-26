@@ -7,9 +7,9 @@ import static edu.unc.lib.boxc.common.test.TestHelpers.setField;
 import static edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPaths.getContentRootPid;
 import static edu.unc.lib.boxc.search.api.FacetConstants.CONTENT_DESCRIBED;
 import static edu.unc.lib.boxc.search.api.FacetConstants.CONTENT_NOT_DESCRIBED;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -34,8 +34,8 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.jena.rdf.model.Model;
 import org.apache.solr.client.solrj.embedded.EmbeddedSolrServer;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.test.context.ContextConfiguration;
@@ -134,7 +134,7 @@ public class ExportCsvIT extends AbstractAPIIT {
     protected CollectionObject collObj2;
     protected FolderObject folderObj;
 
-    @Before
+    @BeforeEach
     public void setup() throws Exception {
         setupContentRoot();
         generateBaseStructure();
@@ -157,7 +157,7 @@ public class ExportCsvIT extends AbstractAPIIT {
         assertValidFileInfo(response, id);
 
         List<CSVRecord> csvList = parseCsvResponse(response);
-        assertEquals("Unexpected number of results", 2, csvList.size());
+        assertEquals(2, csvList.size(), "Unexpected number of results");
         assertContainerRecord(csvList, ResourceType.Collection, collObj.getPid(), "Collection",
                 COLLECTION_PATH, 2, false, 1, false, "Authenticated", false);
         assertContainerRecord(csvList, ResourceType.Folder, folderObj.getPid(), "Folder",
@@ -184,7 +184,7 @@ public class ExportCsvIT extends AbstractAPIIT {
         assertValidFileInfo(response, id);
 
         List<CSVRecord> csvList = parseCsvResponse(response);
-        assertEquals("Unexpected number of results", 3, csvList.size());
+        assertEquals(3, csvList.size(), "Unexpected number of results");
 
         assertContainerRecord(csvList, ResourceType.Folder, folderObj.getPid(), "Folder",
                 FOLDER_PATH, 3, false, 1, false, "Authenticated", false);
@@ -299,7 +299,7 @@ public class ExportCsvIT extends AbstractAPIIT {
         assertValidFileInfo(response, id);
 
         List<CSVRecord> csvList = parseCsvResponse(response);
-        assertEquals("Unexpected number of results", 1, csvList.size());
+        assertEquals(1, csvList.size(), "Unexpected number of results");
 
         String pathToFile = FOLDER_PATH + "/" + workPid.getId() + "/file.txt";
         assertCsvRecord(csvList, ResourceType.File, filePid, "TestWork3",
@@ -323,7 +323,7 @@ public class ExportCsvIT extends AbstractAPIIT {
         assertValidFileInfo(response, id);
 
         List<CSVRecord> csvList = parseCsvResponse(response);
-        assertEquals("Unexpected number of results", 1, csvList.size());
+        assertEquals(1, csvList.size(), "Unexpected number of results");
         assertContainerRecord(csvList, ResourceType.Folder, folderPid, "Folder",
                 FOLDER_PATH, 3, false, null, false, "Authenticated", false);
     }
@@ -348,7 +348,7 @@ public class ExportCsvIT extends AbstractAPIIT {
         assertValidFileInfo(response, id);
 
         List<CSVRecord> csvList = parseCsvResponse(response);
-        assertEquals("Unexpected number of results", 1, csvList.size());
+        assertEquals(1, csvList.size(), "Unexpected number of results");
         assertContainerRecord(csvList, ResourceType.Folder, folderPid, "Folder",
                 FOLDER_PATH, 3, false, null, false, "Restricted", true);
     }
@@ -373,7 +373,7 @@ public class ExportCsvIT extends AbstractAPIIT {
         assertValidFileInfo(response, id);
 
         List<CSVRecord> csvList = parseCsvResponse(response);
-        assertEquals("Unexpected number of results", 1, csvList.size());
+        assertEquals(1, csvList.size(), "Unexpected number of results");
         assertContainerRecord(csvList, ResourceType.Collection, collPid, "Collection",
                 COLLECTION_PATH, 2, false, null, false, "Public", false);
     }
@@ -399,7 +399,7 @@ public class ExportCsvIT extends AbstractAPIIT {
         assertValidFileInfo(response, id);
 
         List<CSVRecord> csvList = parseCsvResponse(response);
-        assertEquals("Unexpected number of results", 1, csvList.size());
+        assertEquals(1, csvList.size(), "Unexpected number of results");
         assertContainerRecord(csvList, ResourceType.Collection, collPid, "Collection",
                 COLLECTION_PATH, 2, false, null, false, "Authenticated", false);
     }
@@ -425,7 +425,7 @@ public class ExportCsvIT extends AbstractAPIIT {
         assertValidFileInfo(response, id);
 
         List<CSVRecord> csvList = parseCsvResponse(response);
-        assertEquals("Unexpected number of results", 1, csvList.size());
+        assertEquals(1, csvList.size(), "Unexpected number of results");
         assertContainerRecord(csvList, ResourceType.Collection, collPid, "Collection",
                 COLLECTION_PATH, 2, false, null, false, "Staff-only", false);
     }
@@ -455,7 +455,7 @@ public class ExportCsvIT extends AbstractAPIIT {
         assertValidFileInfo(response, id);
 
         List<CSVRecord> csvList = parseCsvResponse(response);
-        assertEquals("Unexpected number of results", 2, csvList.size());
+        assertEquals(2, csvList.size(), "Unexpected number of results");
         assertContainerRecord(csvList, ResourceType.Collection, collPid, "Collection",
                 COLLECTION_PATH, 2, false, 1, false, "Public", false);
         assertContainerRecord(csvList, ResourceType.Folder, folderPid, "Folder",
@@ -487,7 +487,7 @@ public class ExportCsvIT extends AbstractAPIIT {
         assertValidFileInfo(response, id);
 
         List<CSVRecord> csvList = parseCsvResponse(response);
-        assertEquals("Unexpected number of results", 2, csvList.size());
+        assertEquals(2, csvList.size(), "Unexpected number of results");
         assertContainerRecord(csvList, ResourceType.Collection, collPid, "Collection",
                 COLLECTION_PATH, 2, false, 1, false, "Staff-only", false);
         assertContainerRecord(csvList, ResourceType.Folder, folderPid, "Folder",
@@ -515,7 +515,7 @@ public class ExportCsvIT extends AbstractAPIIT {
         assertValidFileInfo(response, id);
 
         List<CSVRecord> csvList = parseCsvResponse(response);
-        assertEquals("Unexpected number of results", 1, csvList.size());
+        assertEquals(1, csvList.size(), "Unexpected number of results");
         assertContainerRecord(csvList, ResourceType.Collection, collPid, "Collection",
                 COLLECTION_PATH, 2, false, null, false, "Restricted", false);
     }
@@ -566,7 +566,7 @@ public class ExportCsvIT extends AbstractAPIIT {
         assertValidFileInfo(response, id);
 
         List<CSVRecord> csvList = parseCsvResponse(response);
-        assertEquals("Unexpected number of results", 5, csvList.size());
+        assertEquals(5, csvList.size(), "Unexpected number of results");
 
         assertContainerRecord(csvList, ResourceType.Folder, folderObj.getPid(), "Folder",
                 FOLDER_PATH, 3, false, 1, false, "Authenticated", false);
@@ -647,8 +647,9 @@ public class ExportCsvIT extends AbstractAPIIT {
 
     private void assertValidFileInfo(MockHttpServletResponse response, String id) {
         String filename = String.format("\"%s.csv\"", id);
-        assertTrue("Expected header to end with " + filename + " but was " + response.getHeader("Content-Disposition"),
-                response.getHeader("Content-Disposition").endsWith(filename));
+        assertTrue(response.getHeader("Content-Disposition").endsWith(filename),
+                "Expected header to end with " + filename +
+                        " but was " + response.getHeader("Content-Disposition"));
         assertEquals("text/csv", response.getContentType());
     }
 

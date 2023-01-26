@@ -1,6 +1,6 @@
 package edu.unc.lib.boxc.web.services.rest;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.reset;
@@ -14,8 +14,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.MvcResult;
@@ -34,7 +34,7 @@ public class ItemInfoRestControllerIT extends AbstractAPIIT {
     @Autowired
     private SolrQueryLayerService solrSearchService;
 
-    @Before
+    @BeforeEach
     public void setup() {
         initMocks(this);
         reset(solrSearchService);
