@@ -690,8 +690,8 @@ public class ExportCsvIT extends AbstractAPIIT {
             }
 
             String expectedDescribed = described ? CONTENT_DESCRIBED : CONTENT_NOT_DESCRIBED;
-            assertEquals("Unexpected description field value",
-                    expectedDescribed, rec.get(ExportCsvService.DESCRIBED_HEADER));
+            assertEquals(expectedDescribed, rec.get(ExportCsvService.DESCRIBED_HEADER),
+                    "Unexpected description field value");
             assertEquals(permissions, rec.get(ExportCsvService.PATRON_PERMISSIONS_HEADER));
             assertEquals(embargoed, Boolean.parseBoolean(rec.get(ExportCsvService.EMBARGO_HEADER)));
             return;

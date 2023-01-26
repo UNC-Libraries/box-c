@@ -25,7 +25,6 @@ import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.vocabulary.RDF;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.io.TempDir;
 import org.slf4j.Logger;
 
 import edu.unc.lib.boxc.deposit.api.RedisWorkerConstants.DepositField;
@@ -37,9 +36,6 @@ import edu.unc.lib.boxc.model.api.rdf.CdrDeposit;
 
 public class DirectoryToBagJobTest extends AbstractNormalizationJobTest {
     private static final Logger log = getLogger(DirectoryToBagJobTest.class);
-
-    @TempDir
-    public Path tmpFolder;
 
     private DirectoryToBagJob job;
 
@@ -240,8 +236,8 @@ public class DirectoryToBagJobTest extends AbstractNormalizationJobTest {
         assertEquals(1, depositBag.size());
 
         Bag bagFolder = model.getBag((Resource) depositBag.iterator().next());
-        assertEquals("Bag folder label was not set", "Unicode Test File",
-                bagFolder.getProperty(CdrDeposit.label).getString());
+        assertEquals("Unicode Test File", bagFolder.getProperty(CdrDeposit.label).getString(),
+                "Bag folder label was not set");
         assertTrue(bagFolder.hasProperty(RDF.type, RDF.Bag), "Content model was not set");
         assertTrue(bagFolder.hasProperty(RDF.type, Cdr.Folder), "Content model was not set");
 

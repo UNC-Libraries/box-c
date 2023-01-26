@@ -191,7 +191,7 @@ public class MoveObjectsServiceTest {
 
     @Test
     public void testNoPermissionToMoveObject() throws Exception {
-        Assertions.assertThrows(AccessRestrictionException.class, () -> {
+        Assertions.assertThrows(TransactionCancelledException.class, () -> {
             PID movePid = makeMoveObject(mockParent);
 
             doThrow(new AccessRestrictionException()).when(aclService)

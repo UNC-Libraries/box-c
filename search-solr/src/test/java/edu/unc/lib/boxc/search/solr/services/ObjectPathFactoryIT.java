@@ -111,8 +111,7 @@ public class ObjectPathFactoryIT extends BaseEmbeddedSolrTest {
         List<ObjectPathEntry> pathEntries = path.getEntries();
 
         for (int i = 0; i < pids.length; i++) {
-            assertEquals("Path entry did not contain expected value",
-                    pids[i].getId(), pathEntries.get(i).getPid());
+            assertEquals(pids[i].getId(), pathEntries.get(i).getPid(), "Path entry did not contain expected value");
         }
 
         String joinedPath = "/" + Arrays.stream(pids).map(p -> p.getId()).collect(Collectors.joining("/"));
