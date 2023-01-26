@@ -27,13 +27,13 @@ import javax.jms.Session;
 import javax.jms.TextMessage;
 import javax.ws.rs.core.MediaType;
 
+import edu.unc.lib.boxc.web.services.utils.EmbeddedActiveMQBroker;
 import org.apache.activemq.ActiveMQConnectionFactory;
-import org.apache.activemq.junit.EmbeddedActiveMQBroker;
 import org.awaitility.Awaitility;
-import org.junit.Rule;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jms.core.JmsTemplate;
 import org.springframework.test.context.ContextConfiguration;
@@ -63,8 +63,8 @@ public class ExportXMLIT extends AbstractAPIIT {
     private PIDMinter pidMinter;
     private List<ExportXMLRequest> receivedMessages;
 
-    @Rule
-    public EmbeddedActiveMQBroker broker = new EmbeddedActiveMQBroker();
+    @RegisterExtension
+    final public EmbeddedActiveMQBroker broker = new EmbeddedActiveMQBroker();
 
     @BeforeEach
     public void setup() throws Exception {
