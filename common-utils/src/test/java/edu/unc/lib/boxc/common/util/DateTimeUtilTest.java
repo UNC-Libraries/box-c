@@ -32,65 +32,44 @@ public class DateTimeUtilTest {
     }
 
     @Test
-    public void utcToDateTimeTest() throws Exception {
-        DateTime date = DateTimeUtil.parseUTCToDateTime("2001");
-        assertEquals(2001, date.getYear());
+    public void parseUTCToDateYearTest() throws Exception {
+        var date = DateTimeUtil.parseUTCToDate("2001");
+        assertEquals("2001-01-01T00:00:00.000Z", DateTimeUtil.formatDateToUTC(date));
+    }
 
-        date = DateTimeUtil.parseUTCToDateTime("2001-05-08");
-        assertEquals(2001, date.getYear());
-        assertEquals(5, date.getMonthOfYear());
-        assertEquals(8, date.getDayOfMonth());
+    @Test
+    public void parseUTCToDateYyyymmddTest() throws Exception {
+        var date = DateTimeUtil.parseUTCToDate("2001-05-08");
+        assertEquals("2001-05-08T00:00:00.000Z", DateTimeUtil.formatDateToUTC(date));
+    }
 
-        date = DateTimeUtil.parseUTCToDateTime("2002-02-01T12:13:14");
-        assertEquals(2002, date.getYear());
-        assertEquals(2, date.getMonthOfYear());
-        assertEquals(1, date.getDayOfMonth());
-        assertEquals(17, date.getHourOfDay());
-        assertEquals(13, date.getMinuteOfHour());
-        assertEquals(14, date.getSecondOfMinute());
+    @Test
+    public void parseUTCToDateTimestampUnspecifiedZoneTest() throws Exception {
+        var date = DateTimeUtil.parseUTCToDate("2002-02-01T12:13:14");
+        assertEquals("2002-02-01T12:13:14.000Z", DateTimeUtil.formatDateToUTC(date));
+    }
 
-        date = DateTimeUtil.parseUTCToDateTime("2004-02-04T12:13:14.005");
-        assertEquals(2004, date.getYear());
-        assertEquals(2, date.getMonthOfYear());
-        assertEquals(4, date.getDayOfMonth());
-        assertEquals(17, date.getHourOfDay());
-        assertEquals(13, date.getMinuteOfHour());
-        assertEquals(14, date.getSecondOfMinute());
-        assertEquals(5, date.getMillisOfSecond());
+    @Test
+    public void parseUTCToDateTimestampWithZoneTest() throws Exception {
+        var date = DateTimeUtil.parseUTCToDate("2002-02-01T12:13:14-05:00");
+        assertEquals("2002-02-01T17:13:14.000Z", DateTimeUtil.formatDateToUTC(date));
+    }
 
-        date = DateTimeUtil.parseUTCToDateTime("2004-02-04T12:13:14+04:00");
-        date = date.withZone(DateTimeZone.forID("UTC"));
-        assertEquals(2004, date.getYear());
-        assertEquals(2, date.getMonthOfYear());
-        assertEquals(4, date.getDayOfMonth());
-        assertEquals(8, date.getHourOfDay());
-        assertEquals(13, date.getMinuteOfHour());
-        assertEquals(14, date.getSecondOfMinute());
-        assertEquals(0, date.getMillisOfSecond());
+    @Test
+    public void parseUTCToDateTimestampUtcMilliTest() throws Exception {
+        var date = DateTimeUtil.parseUTCToDate("2004-02-04T12:13:14.005Z");
+        assertEquals("2004-02-04T12:13:14.005Z", DateTimeUtil.formatDateToUTC(date));
+    }
 
-        date = DateTimeUtil.parseUTCToDateTime("2004-02-04T12:13:14.005Z");
-        assertEquals(2004, date.getYear());
-        assertEquals(2, date.getMonthOfYear());
-        assertEquals(4, date.getDayOfMonth());
-        assertEquals(12, date.getHourOfDay());
-        assertEquals(13, date.getMinuteOfHour());
-        assertEquals(14, date.getSecondOfMinute());
-        assertEquals(5, date.getMillisOfSecond());
+    @Test
+    public void parseUTCToDateTimestampUtcMinuteTest() throws Exception {
+        var date = DateTimeUtil.parseUTCToDate("2004-02-04T12:13Z");
+        assertEquals("2004-02-04T12:13:00.000Z", DateTimeUtil.formatDateToUTC(date));
+    }
 
-        date = DateTimeUtil.parseUTCToDateTime("2004-02-04T12:13Z");
-        assertEquals(2004, date.getYear());
-        assertEquals(2, date.getMonthOfYear());
-        assertEquals(4, date.getDayOfMonth());
-        assertEquals(12, date.getHourOfDay());
-        assertEquals(13, date.getMinuteOfHour());
-        assertEquals(0, date.getSecondOfMinute());
-        assertEquals(0, date.getMillisOfSecond());
-
-        try {
-            date = DateTimeUtil.parseUTCToDateTime("not even close");
-            fail();
-        } catch (IllegalArgumentException e) {
-        }
+    @Test(expected = IllegalArgumentException.class)
+    public void parseUTCToDateNotADateTest() throws Exception {
+        DateTimeUtil.parseUTCToDate("not a date");
     }
 
     @Test

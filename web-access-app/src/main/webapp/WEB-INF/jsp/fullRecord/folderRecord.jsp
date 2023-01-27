@@ -44,7 +44,7 @@
                 </c:if>
                 <p><strong>Collection:</strong> <a href="<c:out value="record/${briefObject.parentCollectionId}"/>"><c:out value="${briefObject.parentCollectionName}"/></a></p>
                 <c:if test="${not empty collectionId}">
-                    <p><strong>Collection Number: </strong><c:out value="${collectionId}"></c:out></p>
+                    <p><strong>Archival Collection ID: </strong><c:out value="${collectionId}"></c:out></p>
                 </c:if>
                 <p><strong>Finding Aid: </strong>
                     <c:choose>

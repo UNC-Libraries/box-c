@@ -1,21 +1,19 @@
 package edu.unc.lib.boxc.web.access.controllers;
 
-import static edu.unc.lib.boxc.model.api.DatastreamType.TECHNICAL_METADATA;
-import static edu.unc.lib.boxc.model.fcrepo.ids.DatastreamPids.getTechnicalMetadataPid;
-import static edu.unc.lib.boxc.model.fcrepo.test.TestHelper.makePid;
-import static edu.unc.lib.boxc.web.common.services.FedoraContentService.CONTENT_DISPOSITION;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.doThrow;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
-import java.io.File;
-import java.net.URI;
-import java.nio.file.Path;
-
+import edu.unc.lib.boxc.auth.api.Permission;
+import edu.unc.lib.boxc.auth.api.exceptions.AccessRestrictionException;
+import edu.unc.lib.boxc.auth.api.services.AccessControlService;
+import edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl;
+import edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore;
+import edu.unc.lib.boxc.model.api.DatastreamType;
+import edu.unc.lib.boxc.model.api.ids.PID;
+import edu.unc.lib.boxc.model.api.objects.FileObject;
+import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
+import edu.unc.lib.boxc.model.fcrepo.test.TestHelper;
+import edu.unc.lib.boxc.search.api.models.ContentObjectRecord;
+import edu.unc.lib.boxc.search.api.models.Datastream;
+import edu.unc.lib.boxc.search.solr.models.DatastreamImpl;
+import edu.unc.lib.boxc.web.common.services.SolrQueryLayerService;
 import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -32,16 +30,21 @@ import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
-import edu.unc.lib.boxc.model.api.ids.PID;
-import edu.unc.lib.boxc.model.api.objects.FileObject;
-import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
-import edu.unc.lib.boxc.model.api.objects.FileObject;
-import edu.unc.lib.boxc.model.fcrepo.test.TestHelper;
-import edu.unc.lib.boxc.auth.api.exceptions.AccessRestrictionException;
-import edu.unc.lib.boxc.auth.api.services.AccessControlService;
-import edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl;
-import edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore;
-import edu.unc.lib.boxc.auth.api.Permission;
+import java.io.File;
+import java.net.URI;
+import java.nio.file.Path;
+
+import static edu.unc.lib.boxc.model.api.DatastreamType.TECHNICAL_METADATA;
+import static edu.unc.lib.boxc.model.fcrepo.ids.DatastreamPids.getTechnicalMetadataPid;
+import static edu.unc.lib.boxc.model.fcrepo.test.TestHelper.makePid;
+import static edu.unc.lib.boxc.web.common.services.FedoraContentService.CONTENT_DISPOSITION;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.doThrow;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 /**
  *
@@ -250,6 +253,21 @@ public class FedoraContentControllerIT {
         repositoryObjectFactory.createWorkObject(objPid, null);
 
         mvc.perform(get("/content/" + objPid.getId()))
+                .andExpect(status().isBadRequest())
+                .andReturn();
+    }
+
+    @Test
+    public void testGetDatastreamFromWork() throws Exception {
+        PID workPid = makePid();
+        PID filePid = makePid();
+
+        var workObj = repositoryObjectFactory.createWorkObject(workPid, null);
+        FileObject fileObj = repositoryObjectFactory.createFileObject(filePid, null);
+        fileObj.addOriginalFile(makeContentUri(BINARY_CONTENT), "file.txt", "text/plain", null, null);
+        workObj.addMember(fileObj);
+
+        mvc.perform(get("/content/" + workPid.getId()))
                 .andExpect(status().isBadRequest())
                 .andReturn();
     }

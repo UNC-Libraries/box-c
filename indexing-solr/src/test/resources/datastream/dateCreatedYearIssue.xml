@@ -1,0 +1,10 @@
+<mods:mods xmlns:mods="http://www.loc.gov/mods/v3">
+    <mods:identifier displayLabel="CONTENTdm number" type="local">120</mods:identifier>
+    <mods:titleInfo>
+        <mods:title>Map of Hanover, Henrico, and and part of Chesterfield Counties, Virginia</mods:title>
+    </mods:titleInfo>
+    <mods:originInfo>
+        <mods:dateCreated>1862</mods:dateCreated>
+        <mods:dateCreated encoding="edtf" keyDate="yes">1862</mods:dateCreated>
+    </mods:originInfo>
+</mods:mods>

@@ -26,7 +26,7 @@ public class DateTimeUtil {
             new DateTimeFormatterBuilder().appendInstant(3).toFormatter();
 
     /**
-     * Parse a UTC formatted timestamp as a date
+     * Parse a UTC formatted timestamp as a date. Assumes UTC timezone if none specified in provided value
      * @param utcDate
      * @return
      */
@@ -42,7 +42,7 @@ public class DateTimeUtil {
      */
     protected static DateTime parseUTCToDateTime(String utcDate) {
         // TODO remove jodatime dependency. At the moment it is required for extensive ISO8601 parsing
-        Chronology chrono = GJChronology.getInstance();
+        Chronology chrono = GJChronology.getInstanceUTC();
         DateTime isoDT = ISODateTimeFormat.dateTimeParser().withChronology(chrono).withOffsetParsed()
                 .parseDateTime(utcDate);
         return isoDT.withZone(DateTimeZone.forID("UTC"));
