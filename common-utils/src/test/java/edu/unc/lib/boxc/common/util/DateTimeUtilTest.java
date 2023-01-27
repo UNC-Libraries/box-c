@@ -11,6 +11,7 @@ import java.util.Date;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -67,9 +68,11 @@ public class DateTimeUtilTest {
         assertEquals("2004-02-04T12:13:00.000Z", DateTimeUtil.formatDateToUTC(date));
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void parseUTCToDateNotADateTest() throws Exception {
-        DateTimeUtil.parseUTCToDate("not a date");
+        Assertions.assertThrows(IllegalArgumentException.class, () -> {
+            DateTimeUtil.parseUTCToDate("not a date");
+        });
     }
 
     @Test
