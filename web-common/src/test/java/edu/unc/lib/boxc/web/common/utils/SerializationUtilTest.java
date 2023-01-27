@@ -13,12 +13,14 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.type.MapType;
@@ -39,8 +41,9 @@ import edu.unc.lib.boxc.search.solr.responses.SearchResultResponse;
  * @author bbpennel
  *
  */
-@RunWith(MockitoJUnitRunner.class)
-public class SerializationUtilTest extends Assert {
+@ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
+public class SerializationUtilTest extends Assertions {
     private static final List<String> DATASTREAMS =
             singletonList("datastream|image/jpeg|image.jpg|jpg|orig|582753|");
 
@@ -55,7 +58,7 @@ public class SerializationUtilTest extends Assert {
 
     private ContentObjectSolrRecord md;
 
-    @Before
+    @BeforeEach
     public void init() {
         mapper = new ObjectMapper();
         SerializationUtil.injectSettings(searchSettings, solrSettings,
@@ -199,8 +202,8 @@ public class SerializationUtilTest extends Assert {
             assertTrue(permissions.isEmpty());
         } else {
             assertTrue(permissions.containsAll(expectedRole.getPermissionNames()));
-            assertEquals("Unexpected additional permissions present",
-                    expectedRole.getPermissions().size(), permissions.size());
+            assertEquals(expectedRole.getPermissions().size(), permissions.size(),
+                    "Unexpected additional permissions present");
         }
 
         return groupMap;

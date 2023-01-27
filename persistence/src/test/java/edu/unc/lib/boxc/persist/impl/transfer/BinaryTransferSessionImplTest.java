@@ -1,9 +1,9 @@
 package edu.unc.lib.boxc.persist.impl.transfer;
 
 import static edu.unc.lib.boxc.persist.api.storage.StorageType.FILESYSTEM;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -15,8 +15,9 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 
 import org.apache.commons.lang3.NotImplementedException;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 
 import edu.unc.lib.boxc.model.api.ids.PID;
@@ -47,7 +48,7 @@ public class BinaryTransferSessionImplTest extends AbstractBinaryTransferTest {
     private PID binPid;
     private Path binDestPath;
 
-    @Before
+    @BeforeEach
     public void setup() throws Exception {
         initMocks(this);
         createPaths();
@@ -78,21 +79,24 @@ public class BinaryTransferSessionImplTest extends AbstractBinaryTransferTest {
         }
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void transferNoDestination() throws Exception {
-        session = new BinaryTransferSessionImpl(sourceManager, null, bts);
+        Assertions.assertThrows(IllegalArgumentException.class,
+                () -> session = new BinaryTransferSessionImpl(sourceManager, null, bts));
     }
 
-    @Test(expected = NotImplementedException.class)
+    @Test
     public void transferUnknownStorageTypeMatchup() throws Exception {
-        when(ingestSource.getStorageType()).thenReturn(FILESYSTEM);
-        when(storageLoc.getStorageType()).thenReturn(null);
+        Assertions.assertThrows(NotImplementedException.class, () -> {
+            when(ingestSource.getStorageType()).thenReturn(FILESYSTEM);
+            when(storageLoc.getStorageType()).thenReturn(null);
 
-        session = new BinaryTransferSessionImpl(sourceManager, storageLoc, bts);
+            session = new BinaryTransferSessionImpl(sourceManager, storageLoc, bts);
 
-        Path sourceFile = createSourceFile();
+            Path sourceFile = createSourceFile();
 
-        session.transfer(binPid, sourceFile.toUri());
+            session.transfer(binPid, sourceFile.toUri());
+        });
     }
 
     @Test
@@ -125,7 +129,8 @@ public class BinaryTransferSessionImplTest extends AbstractBinaryTransferTest {
         when(storageLoc.getStorageType()).thenReturn(FILESYSTEM);
 
         Path sourceFile = createSourceFile();
-        Path sourcePath2 = tmpFolder.newFolder("source2").toPath();
+        Path sourcePath2 = tmpFolder.resolve("source2");
+        Files.createDirectory(sourcePath2);
         Path sourceFile2 = createFile(sourcePath2.resolve("another.txt"), "stuff");
 
         PID binPid2 = makeBinPid();
@@ -171,16 +176,18 @@ public class BinaryTransferSessionImplTest extends AbstractBinaryTransferTest {
         }
     }
 
-    @Test(expected = NotImplementedException.class)
+    @Test
     public void transferVersionFSToFS() throws Exception {
-        when(ingestSource.getStorageType()).thenReturn(FILESYSTEM);
-        when(storageLoc.getStorageType()).thenReturn(FILESYSTEM);
+        Assertions.assertThrows(NotImplementedException.class, () -> {
+            when(ingestSource.getStorageType()).thenReturn(FILESYSTEM);
+            when(storageLoc.getStorageType()).thenReturn(FILESYSTEM);
 
-        Path sourceFile = createSourceFile();
+            Path sourceFile = createSourceFile();
 
-        try (BinaryTransferSessionImpl session = new BinaryTransferSessionImpl(sourceManager, storageLoc, bts)) {
-            session.transferVersion(binPid, sourceFile.toUri());
-        }
+            try (BinaryTransferSessionImpl session = new BinaryTransferSessionImpl(sourceManager, storageLoc, bts)) {
+                session.transferVersion(binPid, sourceFile.toUri());
+            }
+        });
     }
 
     @Test
@@ -195,6 +202,6 @@ public class BinaryTransferSessionImplTest extends AbstractBinaryTransferTest {
         try (BinaryTransferSessionImpl session = new BinaryTransferSessionImpl(sourceManager, storageLoc, bts)) {
             session.delete(sourceFile.toUri());
         }
-        assertFalse("File must be deleted", Files.exists(sourceFile));
+        assertFalse(Files.exists(sourceFile), "File must be deleted");
     }
 }

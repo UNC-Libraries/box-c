@@ -1,10 +1,11 @@
 package edu.unc.lib.boxc.common.http;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import edu.unc.lib.boxc.common.http.EntityTag;
 
@@ -29,10 +30,12 @@ public class EntityTagTest {
         assertTrue(etag.isWeak());
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void invalidEtagTest() {
-        String value = "123456789";
+        Assertions.assertThrows(IllegalArgumentException.class, () -> {
+            String value = "123456789";
 
-        new EntityTag(value);
+            new EntityTag(value);
+        });
     }
 }

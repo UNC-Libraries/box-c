@@ -1,7 +1,7 @@
 package edu.unc.lib.boxc.model.fcrepo.objects;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -10,8 +10,9 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.invocation.InvocationOnMock;
@@ -48,7 +49,7 @@ public class CollectionObjectTest extends AbstractFedoraObjectTest {
     @Mock
     private CollectionObject collectionChildObj;
 
-    @Before
+    @BeforeEach
     public void init() {
         pid = PIDs.get(UUID.randomUUID().toString());
 
@@ -76,18 +77,20 @@ public class CollectionObjectTest extends AbstractFedoraObjectTest {
         collection.validateType();
     }
 
-    @Test(expected = ObjectTypeMismatchException.class)
+    @Test
     public void invalidTypeTest() {
-        List<String> types = Arrays.asList(PcdmModels.Object.getURI(), Cdr.Folder.getURI());
-        when(driver.loadTypes(eq(collection))).thenAnswer(new Answer<RepositoryObjectDriver>() {
-            @Override
-            public RepositoryObjectDriver answer(InvocationOnMock invocation) throws Throwable {
-                collection.setTypes(types);
-                return driver;
-            }
-        });
+        Assertions.assertThrows(ObjectTypeMismatchException.class, () -> {
+            List<String> types = Arrays.asList(PcdmModels.Object.getURI(), Cdr.Folder.getURI());
+            when(driver.loadTypes(eq(collection))).thenAnswer(new Answer<RepositoryObjectDriver>() {
+                @Override
+                public RepositoryObjectDriver answer(InvocationOnMock invocation) throws Throwable {
+                    collection.setTypes(types);
+                    return driver;
+                }
+            });
 
-        collection.validateType();
+            collection.validateType();
+        });
     }
 
     @Test
@@ -98,8 +101,8 @@ public class CollectionObjectTest extends AbstractFedoraObjectTest {
         verify(repoObjFactory).addMember(eq(collection), captor.capture());
 
         ContentObject child = captor.getValue();
-        assertTrue("Incorrect type of child added", child instanceof WorkObject);
-        assertEquals("Child did not have the expected pid", workChildPid, child.getPid());
+        assertTrue(child instanceof WorkObject, "Incorrect type of child added");
+        assertEquals(workChildPid, child.getPid(), "Child did not have the expected pid");
     }
 
     @Test
@@ -110,14 +113,15 @@ public class CollectionObjectTest extends AbstractFedoraObjectTest {
         verify(repoObjFactory).addMember(eq(collection), captor.capture());
 
         ContentObject child = captor.getValue();
-        assertTrue("Incorrect type of child added", child instanceof FolderObject);
-        assertEquals("Child did not have the expected pid", folderChildPid, child.getPid());
+        assertTrue(child instanceof FolderObject, "Incorrect type of child added");
+        assertEquals(folderChildPid, child.getPid(), "Child did not have the expected pid");
     }
 
     // should not be able to add a Collection object as a member
-    @Test(expected = ObjectTypeMismatchException.class)
+    @Test
     public void addCollectionObjectMemberTest() {
-        collection.addMember(collectionChildObj);
+        Assertions.assertThrows(ObjectTypeMismatchException.class, () -> collection.addMember(collectionChildObj));
+
     }
 
 }

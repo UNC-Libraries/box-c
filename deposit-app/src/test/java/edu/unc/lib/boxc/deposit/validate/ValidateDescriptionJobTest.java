@@ -2,8 +2,8 @@ package edu.unc.lib.boxc.deposit.validate;
 
 import static edu.unc.lib.boxc.common.test.TestHelpers.setField;
 import static org.hamcrest.CoreMatchers.isA;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doNothing;
@@ -13,10 +13,9 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 
 import edu.unc.lib.boxc.deposit.fcrepo4.AbstractDepositJobTest;
@@ -32,16 +31,12 @@ import edu.unc.lib.boxc.operations.impl.validation.MODSValidator;
  *
  */
 public class ValidateDescriptionJobTest extends AbstractDepositJobTest {
-
-    @Rule
-    public ExpectedException thrown = ExpectedException.none();
-
     @Mock
     private MODSValidator modsValidator;
 
     private ValidateDescriptionJob job;
 
-    @Before
+    @BeforeEach
     public void init() {
         job = new ValidateDescriptionJob();
         job.setJobUUID(jobUUID);
@@ -74,66 +69,72 @@ public class ValidateDescriptionJobTest extends AbstractDepositJobTest {
         job.run();
     }
 
-    @Test(expected = JobFailedException.class)
+    @Test
     public void testInvalid() throws Exception {
-        doThrow(new MetadataValidationException()).when(modsValidator).validate(any(File.class));
+        Assertions.assertThrows(JobFailedException.class, () -> {
+            doThrow(new MetadataValidationException()).when(modsValidator).validate(any(File.class));
 
-        PID pid1 = makeDescriptionFile();
+            PID pid1 = makeDescriptionFile();
 
-        try {
-            job.run();
-        } catch (JobFailedException e) {
-            assertTrue(e.getDetails().contains(pid1.toString()));
-            throw e;
-        }
+            try {
+                job.run();
+            } catch (JobFailedException e) {
+                assertTrue(e.getDetails().contains(pid1.toString()));
+                throw e;
+            }
+        });
     }
 
-    @Test(expected = JobFailedException.class)
+    @Test
     public void testMultipleInvalid() throws Exception {
-        doThrow(new MetadataValidationException()).when(modsValidator).validate(any(File.class));
+        Assertions.assertThrows(JobFailedException.class, () -> {
+            doThrow(new MetadataValidationException()).when(modsValidator).validate(any(File.class));
 
-        PID pid1 = makeDescriptionFile();
-        PID pid2 = makeDescriptionFile();
+            PID pid1 = makeDescriptionFile();
+            PID pid2 = makeDescriptionFile();
 
-        try {
-            job.run();
-        } catch (JobFailedException e) {
-            assertTrue(e.getDetails().contains(pid1.toString()));
-            assertTrue(e.getDetails().contains(pid2.toString()));
-            throw e;
-        }
+            try {
+                job.run();
+            } catch (JobFailedException e) {
+                assertTrue(e.getDetails().contains(pid1.toString()));
+                assertTrue(e.getDetails().contains(pid2.toString()));
+                throw e;
+            }
+        });
     }
 
-    @Test(expected = JobFailedException.class)
+    @Test
     public void testOneInvalid() throws Exception {
-        PID pid1 = makeDescriptionFile();
-        PID pid2 = makeDescriptionFile();
-        PID pid3 = makeDescriptionFile();
+        Assertions.assertThrows(JobFailedException.class, () -> {
+            PID pid1 = makeDescriptionFile();
+            PID pid2 = makeDescriptionFile();
+            PID pid3 = makeDescriptionFile();
 
-        doNothing().when(modsValidator).validate(any(File.class));
-        doThrow(new MetadataValidationException()).when(modsValidator).validate(eq(getDescriptionFile(pid2)));
+            doNothing().when(modsValidator).validate(any(File.class));
+            doThrow(new MetadataValidationException()).when(modsValidator).validate(eq(getDescriptionFile(pid2)));
 
-        try {
-            job.run();
-        } catch (JobFailedException e) {
-            assertFalse(e.getDetails().contains(pid1.toString()));
-            assertTrue(e.getDetails().contains(pid2.toString()));
-            assertFalse(e.getDetails().contains(pid3.toString()));
-            throw e;
-        }
+            try {
+                job.run();
+            } catch (JobFailedException e) {
+                assertFalse(e.getDetails().contains(pid1.toString()));
+                assertTrue(e.getDetails().contains(pid2.toString()));
+                assertFalse(e.getDetails().contains(pid3.toString()));
+                throw e;
+            }
+        });
     }
 
     @Test
     public void testIOException() throws Exception {
-        doThrow(new IOException()).when(modsValidator).validate(any(File.class));
+        Exception exception = Assertions.assertThrows(JobFailedException.class, () -> {
+            doThrow(new IOException()).when(modsValidator).validate(any(File.class));
 
-        makeDescriptionFile();
+            makeDescriptionFile();
 
-        thrown.expect(JobFailedException.class);
-        thrown.expectCause(isA(IOException.class));
-        thrown.expectMessage("Failed to read description");
+            job.run();
+        });
 
-        job.run();
+        assertTrue(exception.getMessage().contains("Failed to read description"));
     }
 
     private PID makeDescriptionFile() throws IOException {

@@ -1,17 +1,19 @@
 package edu.unc.lib.boxc.persist.impl.transfer;
 
 import static edu.unc.lib.boxc.persist.api.storage.StorageType.FILESYSTEM;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
 import java.net.URI;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 
 import edu.unc.lib.boxc.model.api.ids.PID;
@@ -49,7 +51,7 @@ public class MultiDestinationTransferSessionImplTest extends AbstractBinaryTrans
     private PID binPid;
     private Path binDestPath;
 
-    @Before
+    @BeforeEach
     public void setup() throws Exception {
         initMocks(this);
         createPaths();
@@ -68,12 +70,14 @@ public class MultiDestinationTransferSessionImplTest extends AbstractBinaryTrans
         bts = new BinaryTransferServiceImpl();
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void noDestination() throws Exception {
-        try (MultiDestinationTransferSessionImpl session = new MultiDestinationTransferSessionImpl(
-                sourceManager, storageLocationManager, bts)) {
-            session.forDestination(null);
-        }
+        Assertions.assertThrows(IllegalArgumentException.class, () -> {
+            try (MultiDestinationTransferSessionImpl session = new MultiDestinationTransferSessionImpl(
+                    sourceManager, storageLocationManager, bts)) {
+                session.forDestination(null);
+            }
+        });
     }
 
     @Test
@@ -104,7 +108,8 @@ public class MultiDestinationTransferSessionImplTest extends AbstractBinaryTrans
     public void transfer_FSToFS_MultipleFiles_DifferentDestination() throws Exception {
         when(storageLoc2.getId()).thenReturn("loc2");
         when(storageLoc2.getStorageType()).thenReturn(FILESYSTEM);
-        storagePath2 = tmpFolder.newFolder("storage2").toPath();
+        storagePath2 = tmpFolder.resolve("storage2");
+        Files.createDirectory(storagePath2);
 
         PID binPid2 = makeBinPid();
         Path binDestPath2 = storagePath2.resolve(binPid2.getComponentId());

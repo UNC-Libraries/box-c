@@ -6,9 +6,9 @@ import static edu.unc.lib.boxc.auth.api.UserRole.canAccess;
 import static edu.unc.lib.boxc.auth.api.UserRole.canManage;
 import static edu.unc.lib.boxc.auth.api.UserRole.unitOwner;
 import static java.util.Arrays.asList;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
@@ -23,9 +23,9 @@ import java.util.Map;
 import javax.ws.rs.core.MediaType;
 
 import org.apache.jena.rdf.model.Resource;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.ContextHierarchy;
 import org.springframework.test.web.servlet.MvcResult;
@@ -56,7 +56,7 @@ public class UpdateStaffRolesIT extends AbstractAPIIT {
     private static final String USER_URI = USER_NAMESPACE + USER_NAME;
     private static final String USER_GROUPS = "edu:lib:admin_grp";
 
-    @Before
+    @BeforeEach
     public void setup() throws Exception {
         AccessGroupSet testPrincipals = new AccessGroupSetImpl(USER_GROUPS);
 
@@ -66,7 +66,7 @@ public class UpdateStaffRolesIT extends AbstractAPIIT {
         setupContentRoot();
     }
 
-    @After
+    @AfterEach
     public void teardown() throws Exception {
         GroupsThreadStore.clearStore();
     }
@@ -297,14 +297,14 @@ public class UpdateStaffRolesIT extends AbstractAPIIT {
 
     private void assertHasAssignment(String princ, UserRole role, ContentObject obj) {
         Resource resc = obj.getResource();
-        assertTrue("Expected role " + role.name() + " was not assigned for " + princ,
-                resc.hasProperty(role.getProperty(), princ));
+        assertTrue(resc.hasProperty(role.getProperty(), princ),
+                "Expected role " + role.name() + " was not assigned for " + princ);
     }
 
     private void assertNoAssignment(String princ, UserRole role, ContentObject obj) {
         Resource resc = obj.getResource();
-        assertFalse("Unexpected role " + role.name() + " was assigned for " + princ,
-                resc.hasProperty(role.getProperty(), princ));
+        assertFalse(resc.hasProperty(role.getProperty(), princ),
+                "Unexpected role " + role.name() + " was assigned for " + princ);
     }
 
     private byte[] serializeAssignments(List<RoleAssignment> assignments) throws Exception {

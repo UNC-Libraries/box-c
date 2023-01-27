@@ -7,8 +7,8 @@ import static edu.unc.lib.boxc.auth.api.UserRole.canManage;
 import static edu.unc.lib.boxc.auth.api.UserRole.canViewAccessCopies;
 import static edu.unc.lib.boxc.auth.api.UserRole.canViewMetadata;
 import static edu.unc.lib.boxc.auth.api.UserRole.canViewOriginals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -17,8 +17,8 @@ import static org.mockito.MockitoAnnotations.initMocks;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
@@ -58,7 +58,7 @@ public class SetAccessControlFilterTest {
 
     private SetAccessControlFilter filter;
 
-    @Before
+    @BeforeEach
     public void setup() throws Exception {
         initMocks(this);
 
@@ -76,8 +76,7 @@ public class SetAccessControlFilterTest {
         filter.filter(dip);
 
         verify(idb).setAdminGroup(listCaptor.capture());
-        assertTrue("Patron principal must not have admin viewing rights",
-                listCaptor.getValue().isEmpty());
+        assertTrue(listCaptor.getValue().isEmpty(), "Patron principal must not have admin viewing rights");
 
         verify(idb).setReadGroup(listCaptor.capture());
         assertPrincipalsPresent("Patron principal must have patron viewing rights",
@@ -112,16 +111,13 @@ public class SetAccessControlFilterTest {
         filter.filter(dip);
 
         verify(idb).setAdminGroup(listCaptor.capture());
-        assertTrue("No admin rights should be granted",
-                listCaptor.getValue().isEmpty());
+        assertTrue(listCaptor.getValue().isEmpty(), "No admin rights should be granted");
 
         verify(idb).setReadGroup(listCaptor.capture());
-        assertTrue("No read rights should be granted",
-                listCaptor.getValue().isEmpty());
+        assertTrue(listCaptor.getValue().isEmpty(), "No read rights should be granted");
 
         verify(idb).setRoleGroup(listCaptor.capture());
-        assertTrue("No role assignments should be present",
-                listCaptor.getValue().isEmpty());
+        assertTrue(listCaptor.getValue().isEmpty(), "No role assignments should be present");
     }
 
     @Test
@@ -165,8 +161,7 @@ public class SetAccessControlFilterTest {
                 listCaptor.getValue(), PRINC1);
 
         verify(idb).setRoleGroup(listCaptor.capture());
-        assertEquals("Principal should appear with each role granted",
-                2, listCaptor.getValue().size());
+        assertEquals(2, listCaptor.getValue().size(), "Principal should appear with each role granted");
         assertTrue(listCaptor.getValue().contains(
                 canManage.name() + "|" + PRINC1));
         assertTrue(listCaptor.getValue().contains(
@@ -227,8 +222,8 @@ public class SetAccessControlFilterTest {
         verify(idb).setAdminGroup(listCaptor.capture());
         List<String> adminPrincipals = listCaptor.getValue();
         assertEquals(1, adminPrincipals.size());
-        assertTrue("Admin access principal must be have admin viewing rights for content root",
-                adminPrincipals.contains(AccessPrincipalConstants.ADMIN_ACCESS_PRINC));
+        assertTrue(adminPrincipals.contains(AccessPrincipalConstants.ADMIN_ACCESS_PRINC),
+                "Admin access principal must be have admin viewing rights for content root");
 
         verify(idb).setReadGroup(listCaptor.capture());
         List<String> patronPrincipals = listCaptor.getValue();
@@ -237,12 +232,11 @@ public class SetAccessControlFilterTest {
                 listCaptor.getValue(), PUBLIC_PRINC);
 
         verify(idb).setRoleGroup(listCaptor.capture());
-        assertTrue("No role grants should be present for ContentRoot",
-                listCaptor.getValue().isEmpty());
+        assertTrue(listCaptor.getValue().isEmpty(), "No role grants should be present for ContentRoot");
     }
 
     private void assertPrincipalsPresent(String message, List<String> values, String... principals) {
-        assertEquals(message, principals.length, values.size());
+        assertEquals(principals.length, values.size(), message);
         for (String principal : principals) {
             assertTrue(values.contains(principal));
         }

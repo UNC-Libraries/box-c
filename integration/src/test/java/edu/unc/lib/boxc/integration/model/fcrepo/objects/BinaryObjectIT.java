@@ -1,7 +1,7 @@
 package edu.unc.lib.boxc.integration.model.fcrepo.objects;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -12,8 +12,8 @@ import org.apache.commons.io.FileUtils;
 import org.apache.jena.vocabulary.RDF;
 import org.apache.tika.io.IOUtils;
 import org.fcrepo.client.FcrepoResponse;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.objects.BinaryObject;
@@ -36,7 +36,7 @@ public class BinaryObjectIT extends AbstractFedoraIT {
 
     private URI contentUri;
 
-    @Before
+    @BeforeEach
     public void setup() throws Exception {
         File contentFile = File.createTempFile("test_file", ".txt");
         FileUtils.write(contentFile, BODY_STRING, "UTF-8");
@@ -54,7 +54,7 @@ public class BinaryObjectIT extends AbstractFedoraIT {
 
         // Verify that the body of the binary is retrieved
         String respString = IOUtils.toString(obj.getBinaryStream());
-        assertEquals("Binary content did not match submitted value", BODY_STRING, respString);
+        assertEquals(BODY_STRING, respString, "Binary content did not match submitted value");
 
         // Check that metadata is retrieved
         assertEquals(FILENAME, obj.getFilename());
@@ -78,7 +78,7 @@ public class BinaryObjectIT extends AbstractFedoraIT {
 
         // Verify that the body of the binary is retrieved
         String respString = IOUtils.toString(obj.getBinaryStream());
-        assertEquals("Binary content did not match submitted value", BODY_STRING, respString);
+        assertEquals(BODY_STRING, respString, "Binary content did not match submitted value");
 
         // Check that metadata is retrieved
         assertEquals(FILENAME, obj.getFilename());
@@ -98,7 +98,7 @@ public class BinaryObjectIT extends AbstractFedoraIT {
         treeIndexer.indexAll(baseAddress);
 
         RepositoryObject parent = binObj.getParent();
-        assertEquals("Parent of the binary must match the file object which created it",
-                parent.getPid(), fileObj.getPid());
+        assertEquals(parent.getPid(), fileObj.getPid(),
+                "Parent of the binary must match the file object which created it");
     }
 }

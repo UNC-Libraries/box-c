@@ -1,7 +1,7 @@
 package edu.unc.lib.boxc.web.services.rest.modify;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.reset;
@@ -10,14 +10,15 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import java.io.File;
 import java.net.URI;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Map;
 
 import org.jdom2.Document;
 import org.jgroups.util.UUID;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jms.core.JmsTemplate;
 import org.springframework.jms.core.MessageCreator;
@@ -44,8 +45,8 @@ import edu.unc.lib.boxc.operations.test.ModsTestHelper;
 })
 public class ImportXMLIT extends AbstractAPIIT {
 
-    @Rule
-    public final TemporaryFolder tmpFolder = new TemporaryFolder();
+    @TempDir
+    public Path tmpFolder;
 
     @Autowired
     private ImportXMLService service;
@@ -54,11 +55,12 @@ public class ImportXMLIT extends AbstractAPIIT {
 
     private File tempDir;
 
-    @Before
+    @BeforeEach
     public void init_() throws Exception {
         reset(jmsTemplate);
 
-        tempDir = tmpFolder.newFolder();
+        tempDir = tmpFolder.resolve("testFolder").toFile();
+        Files.createDirectory(tmpFolder.resolve("testFolder"));
         service.setDataDir(tempDir.getAbsolutePath());
         service.setJmsTemplate(jmsTemplate);
         service.init();

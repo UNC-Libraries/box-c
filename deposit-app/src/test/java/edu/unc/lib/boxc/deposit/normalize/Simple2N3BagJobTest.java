@@ -1,9 +1,9 @@
 package edu.unc.lib.boxc.deposit.normalize;
 
 import static edu.unc.lib.boxc.common.test.TestHelpers.setField;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.when;
 
@@ -16,8 +16,9 @@ import org.apache.jena.rdf.model.Bag;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.vocabulary.RDF;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import edu.unc.lib.boxc.deposit.api.RedisWorkerConstants.DepositField;
 import edu.unc.lib.boxc.deposit.impl.model.DepositModelHelpers;
@@ -36,7 +37,7 @@ public class Simple2N3BagJobTest extends AbstractNormalizationJobTest {
 
     private Map<String, String> status;
 
-    @Before
+    @BeforeEach
     public void setup() throws Exception {
 
         status = new HashMap<>();
@@ -71,8 +72,8 @@ public class Simple2N3BagJobTest extends AbstractNormalizationJobTest {
         Bag depositBag = model.getBag(job.getDepositPID().getURI());
         Resource mainResource = depositBag.iterator().next().asResource();
 
-        assertEquals("Label was not set", mainResource.getProperty(CdrDeposit.label).getString(), name);
-        assertTrue("Must have FileObject type", mainResource.hasProperty(RDF.type, Cdr.FileObject));
+        assertEquals(mainResource.getProperty(CdrDeposit.label).getString(), name, "Label was not set");
+        assertTrue(mainResource.hasProperty(RDF.type, Cdr.FileObject), "Must have FileObject type");
 
         Resource originalResc = DepositModelHelpers.getDatastream(mainResource);
         assertEquals(stagingUri.toString(), originalResc.getProperty(CdrDeposit.stagingLocation).getString());
@@ -81,14 +82,14 @@ public class Simple2N3BagJobTest extends AbstractNormalizationJobTest {
 
     }
 
-    @Test(expected = JobFailedException.class)
+    @Test
     public void depositSimpleMissingFile() throws Exception {
+        Assertions.assertThrows(JobFailedException.class, () -> {
+            status.put(DepositField.depositSlug.name(), "name");
+            URI stagingUri = Paths.get(depositDir.getAbsolutePath(), "data_file.xml").toUri();
+            status.put(DepositField.sourceUri.name(), stagingUri.toString());
 
-        status.put(DepositField.depositSlug.name(), "name");
-        URI stagingUri = Paths.get(depositDir.getAbsolutePath(), "data_file.xml").toUri();
-        status.put(DepositField.sourceUri.name(), stagingUri.toString());
-
-        job.run();
-
+            job.run();
+        });
     }
 }

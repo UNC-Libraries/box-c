@@ -2,9 +2,9 @@ package edu.unc.lib.boxc.web.services.rest.modify;
 
 import static edu.unc.lib.boxc.persist.api.PackagingType.METS_CDR;
 import static edu.unc.lib.boxc.persist.api.PackagingType.SIMPLE_OBJECT;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
@@ -14,15 +14,16 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import java.io.File;
 import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Map;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.ContextConfiguration;
@@ -56,8 +57,8 @@ public class IngestControllerIT extends AbstractAPIIT {
     private static final String DEPOSITOR = "adminuser";
     private static final String DEPOSITOR_EMAIL = "adminuser@example.com";
 
-    @Rule
-    public final TemporaryFolder tmpFolder = new TemporaryFolder();
+    @TempDir
+    public Path tmpFolder;
     private File depositsDir;
 
     private PID destPid;
@@ -70,12 +71,12 @@ public class IngestControllerIT extends AbstractAPIIT {
     @Autowired
     private DepositStatusFactory depositStatusFactory;
 
-    @Before
+    @BeforeEach
     public void setup() throws Exception {
         destPid = makePid();
 
-        tmpFolder.create();
-        depositsDir = tmpFolder.newFolder("deposits");
+        depositsDir = tmpFolder.resolve("deposits").toFile();
+        Files.createDirectory(tmpFolder.resolve("deposits"));
         metsHandler.setDepositsDirectory(depositsDir);
         simpleHandler.setDepositsDirectory(depositsDir);
 
@@ -86,7 +87,7 @@ public class IngestControllerIT extends AbstractAPIIT {
         GroupsThreadStore.storeEmail(DEPOSITOR_EMAIL);
     }
 
-    @After
+    @AfterEach
     public void teardown() throws Exception {
         GroupsThreadStore.clearStore();
     }
@@ -215,12 +216,12 @@ public class IngestControllerIT extends AbstractAPIIT {
         assertEquals(DEPOSITOR, status.get(DepositField.depositorName.name()));
         assertEquals(DEPOSITOR_EMAIL, status.get(DepositField.depositorEmail.name()));
         AccessGroupSet depositPrincipals = new AccessGroupSetImpl(status.get(DepositField.permissionGroups.name()));
-        assertTrue("admins principal must be set in deposit", depositPrincipals.contains("admins"));
+        assertTrue(depositPrincipals.contains("admins"), "admins principal must be set in deposit");
     }
 
     private void assertDepositFileStored(String depositId, String filename, String fileContent) throws Exception {
         File depositDir = new File(depositsDir, depositId);
-        assertTrue("Deposit directory does not exist", depositDir.exists());
+        assertTrue(depositDir.exists(), "Deposit directory does not exist");
         File dataDir = new File(depositDir, "data");
         File originalFile = new File(dataDir, filename);
         assertEquals(fileContent, FileUtils.readFileToString(originalFile, "UTF-8"));

@@ -7,12 +7,12 @@ import static edu.unc.lib.boxc.auth.api.UserRole.canViewMetadata;
 import static edu.unc.lib.boxc.auth.api.UserRole.canViewOriginals;
 import static edu.unc.lib.boxc.common.util.DateTimeUtil.formatDateToUTC;
 import static java.util.Arrays.asList;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyCollectionOf;
 import static org.mockito.Matchers.anyString;
@@ -35,16 +35,17 @@ import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.Statement;
 import org.apache.jena.rdf.model.StmtIterator;
 import org.apache.jena.vocabulary.RDF;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.ContextHierarchy;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import edu.unc.lib.boxc.auth.api.Permission;
 import edu.unc.lib.boxc.auth.api.UserRole;
@@ -84,7 +85,7 @@ import edu.unc.lib.boxc.operations.impl.acl.PatronAccessAssignmentService.Patron
 import edu.unc.lib.boxc.operations.jms.OperationsMessageSender;
 import edu.unc.lib.boxc.operations.jms.JMSMessageUtil.CDRActions;
 
-@RunWith(SpringJUnit4ClassRunner.class)
+@ExtendWith(SpringExtension.class)
 @ContextHierarchy({
     @ContextConfiguration("/spring-test/test-fedora-container.xml"),
     @ContextConfiguration("/spring-test/cdr-client-container.xml")
@@ -126,7 +127,7 @@ public class PatronAccessAssignmentServiceIT {
     private AdminUnit adminUnit;
     private CollectionObject collObj;
 
-    @Before
+    @BeforeEach
     public void init() throws Exception {
         initMocks(this);
         TestHelper.setContentBase(baseAddress);
@@ -147,82 +148,92 @@ public class PatronAccessAssignmentServiceIT {
         contentRoot = repoObjLoader.getContentRootObject(contentRootPid);
     }
 
-    @Test(expected = AccessRestrictionException.class)
+    @Test
     public void insufficientPermissions() throws Exception {
-        createCollectionInUnit(null);
-        PID pid = collObj.getPid();
-        treeIndexer.indexAll(baseAddress);
+        Assertions.assertThrows(AccessRestrictionException.class, () -> {
+            createCollectionInUnit(null);
+            PID pid = collObj.getPid();
+            treeIndexer.indexAll(baseAddress);
 
-        doThrow(new AccessRestrictionException()).when(aclService)
-            .assertHasAccess(anyString(), eq(pid), any(AccessGroupSetImpl.class), eq(Permission.changePatronAccess));
+            doThrow(new AccessRestrictionException()).when(aclService)
+                    .assertHasAccess(anyString(), eq(pid), any(AccessGroupSetImpl.class), eq(Permission.changePatronAccess));
 
-        PatronAccessDetails accessDetails = new PatronAccessDetails();
-        accessDetails.setRoles(asList(
-                new RoleAssignment(PUBLIC_PRINC, canViewOriginals)));
+            PatronAccessDetails accessDetails = new PatronAccessDetails();
+            accessDetails.setRoles(asList(
+                    new RoleAssignment(PUBLIC_PRINC, canViewOriginals)));
 
-        patronService.updatePatronAccess(new PatronAccessAssignmentRequest(agent, pid, accessDetails));
+            patronService.updatePatronAccess(new PatronAccessAssignmentRequest(agent, pid, accessDetails));
+        });
     }
 
-    @Test(expected = AccessRestrictionException.class)
+    @Test
     public void insufficientPermissionsNewFolder() throws Exception {
-        createCollectionInUnit(null);
-        PID pid = collObj.getPid();
-        treeIndexer.indexAll(baseAddress);
+        Assertions.assertThrows(AccessRestrictionException.class, () -> {
+            createCollectionInUnit(null);
+            PID pid = collObj.getPid();
+            treeIndexer.indexAll(baseAddress);
 
-        doThrow(new AccessRestrictionException()).when(aclService)
-                .assertHasAccess(anyString(), eq(pid), any(AccessGroupSetImpl.class), eq(Permission.ingest));
+            doThrow(new AccessRestrictionException()).when(aclService)
+                    .assertHasAccess(anyString(), eq(pid), any(AccessGroupSetImpl.class), eq(Permission.ingest));
 
-        PatronAccessDetails accessDetails = new PatronAccessDetails();
-        accessDetails.setRoles(asList(
-                new RoleAssignment(PUBLIC_PRINC, canViewOriginals)));
+            PatronAccessDetails accessDetails = new PatronAccessDetails();
+            accessDetails.setRoles(asList(
+                    new RoleAssignment(PUBLIC_PRINC, canViewOriginals)));
 
-        patronService.updatePatronAccess(new PatronAccessAssignmentRequest(agent, pid, accessDetails)
-                .withFolderCreation(true));
+            patronService.updatePatronAccess(new PatronAccessAssignmentRequest(agent, pid, accessDetails)
+                    .withFolderCreation(true));
+        });
     }
 
-    @Test(expected = ServiceException.class)
+    @Test
     public void setStaffRolesFailure() throws Exception {
-        createCollectionInUnit(null);
-        PID pid = collObj.getPid();
-        treeIndexer.indexAll(baseAddress);
+        Assertions.assertThrows(ServiceException.class, () -> {
+            createCollectionInUnit(null);
+            PID pid = collObj.getPid();
+            treeIndexer.indexAll(baseAddress);
 
-        PatronAccessDetails accessDetails = new PatronAccessDetails();
-        accessDetails.setRoles(asList(
-                new RoleAssignment(PUBLIC_PRINC, canManage)));
+            PatronAccessDetails accessDetails = new PatronAccessDetails();
+            accessDetails.setRoles(asList(
+                    new RoleAssignment(PUBLIC_PRINC, canManage)));
 
-        patronService.updatePatronAccess(new PatronAccessAssignmentRequest(agent, pid, accessDetails));
+            patronService.updatePatronAccess(new PatronAccessAssignmentRequest(agent, pid, accessDetails));
+        });
     }
 
-    @Test(expected = InvalidAssignmentException.class)
+    @Test
     public void assignToBinaryObject() throws Exception {
-        createCollectionInUnit(null);
-        WorkObject work = repoObjFactory.createWorkObject(null);
-        collObj.addMember(work);
-        URI contentUri = Files.createTempFile("test", ".txt").toUri();
-        FileObject fileObj = work.addDataFile(contentUri, origFilename, origMimetype, null, null);
-        BinaryObject binObj = fileObj.getOriginalFile();
+        Assertions.assertThrows(InvalidAssignmentException.class, () -> {
+            createCollectionInUnit(null);
+            WorkObject work = repoObjFactory.createWorkObject(null);
+            collObj.addMember(work);
+            URI contentUri = Files.createTempFile("test", ".txt").toUri();
+            FileObject fileObj = work.addDataFile(contentUri, origFilename, origMimetype, null, null);
+            BinaryObject binObj = fileObj.getOriginalFile();
 
-        PID pid = binObj.getPid();
-        treeIndexer.indexAll(baseAddress);
+            PID pid = binObj.getPid();
+            treeIndexer.indexAll(baseAddress);
 
-        PatronAccessDetails accessDetails = new PatronAccessDetails();
-        accessDetails.setRoles(asList(
-                new RoleAssignment(PUBLIC_PRINC, canViewOriginals)));
+            PatronAccessDetails accessDetails = new PatronAccessDetails();
+            accessDetails.setRoles(asList(
+                    new RoleAssignment(PUBLIC_PRINC, canViewOriginals)));
 
-        patronService.updatePatronAccess(new PatronAccessAssignmentRequest(agent, pid, accessDetails));
+            patronService.updatePatronAccess(new PatronAccessAssignmentRequest(agent, pid, accessDetails));
+        });
     }
 
-    @Test(expected = InvalidAssignmentException.class)
+    @Test
     public void assignRolesToAdminUnit() throws Exception {
-        createCollectionInUnit(null);
-        PID pid = adminUnit.getPid();
-        treeIndexer.indexAll(baseAddress);
+        Assertions.assertThrows(InvalidAssignmentException.class, () -> {
+            createCollectionInUnit(null);
+            PID pid = adminUnit.getPid();
+            treeIndexer.indexAll(baseAddress);
 
-        PatronAccessDetails accessDetails = new PatronAccessDetails();
-        accessDetails.setRoles(asList(
-                new RoleAssignment(PUBLIC_PRINC, canViewMetadata)));
+            PatronAccessDetails accessDetails = new PatronAccessDetails();
+            accessDetails.setRoles(asList(
+                    new RoleAssignment(PUBLIC_PRINC, canViewMetadata)));
 
-        patronService.updatePatronAccess(new PatronAccessAssignmentRequest(agent, pid, accessDetails));
+            patronService.updatePatronAccess(new PatronAccessAssignmentRequest(agent, pid, accessDetails));
+        });
     }
 
     @Test
@@ -252,77 +263,89 @@ public class PatronAccessAssignmentServiceIT {
         assertMessageSent(pid);
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void missingAgent() throws Exception {
-        createCollectionInUnit(null);
-        PID pid = collObj.getPid();
-        treeIndexer.indexAll(baseAddress);
+        Assertions.assertThrows(IllegalArgumentException.class, () -> {
+            createCollectionInUnit(null);
+            PID pid = collObj.getPid();
+            treeIndexer.indexAll(baseAddress);
 
-        PatronAccessDetails accessDetails = new PatronAccessDetails();
-        accessDetails.setRoles(asList(
-                new RoleAssignment(PUBLIC_PRINC, canViewMetadata)));
+            PatronAccessDetails accessDetails = new PatronAccessDetails();
+            accessDetails.setRoles(asList(
+                    new RoleAssignment(PUBLIC_PRINC, canViewMetadata)));
 
-        patronService.updatePatronAccess(new PatronAccessAssignmentRequest(null, pid, accessDetails));
+            patronService.updatePatronAccess(new PatronAccessAssignmentRequest(null, pid, accessDetails));
+        });
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void missingTarget() throws Exception {
-        createCollectionInUnit(null);
-        treeIndexer.indexAll(baseAddress);
+        Assertions.assertThrows(IllegalArgumentException.class, () -> {
+            createCollectionInUnit(null);
+            treeIndexer.indexAll(baseAddress);
 
-        PatronAccessDetails accessDetails = new PatronAccessDetails();
-        accessDetails.setRoles(asList(
-                new RoleAssignment(PUBLIC_PRINC, canViewMetadata)));
+            PatronAccessDetails accessDetails = new PatronAccessDetails();
+            accessDetails.setRoles(asList(
+                    new RoleAssignment(PUBLIC_PRINC, canViewMetadata)));
 
-        patronService.updatePatronAccess(new PatronAccessAssignmentRequest(agent, null, accessDetails));
+            patronService.updatePatronAccess(new PatronAccessAssignmentRequest(agent, null, accessDetails));
+        });
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void missingAccessDetails() throws Exception {
-        createCollectionInUnit(null);
-        PID pid = collObj.getPid();
-        treeIndexer.indexAll(baseAddress);
+        Assertions.assertThrows(IllegalArgumentException.class, () -> {
+            createCollectionInUnit(null);
+            PID pid = collObj.getPid();
+            treeIndexer.indexAll(baseAddress);
 
-        patronService.updatePatronAccess(new PatronAccessAssignmentRequest(agent, pid, null));
+            patronService.updatePatronAccess(new PatronAccessAssignmentRequest(agent, pid, null));
+        });
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void missingRole() throws Exception {
-        createCollectionInUnit(null);
-        PID pid = collObj.getPid();
-        treeIndexer.indexAll(baseAddress);
+        Assertions.assertThrows(IllegalArgumentException.class, () -> {
+            createCollectionInUnit(null);
+            PID pid = collObj.getPid();
+            treeIndexer.indexAll(baseAddress);
 
-        PatronAccessDetails accessDetails = new PatronAccessDetails();
-        accessDetails.setRoles(asList(
-                new RoleAssignment(PUBLIC_PRINC, null)));
+            PatronAccessDetails accessDetails = new PatronAccessDetails();
+            accessDetails.setRoles(asList(
+                    new RoleAssignment(PUBLIC_PRINC, null)));
 
-        patronService.updatePatronAccess(new PatronAccessAssignmentRequest(agent, pid, accessDetails));
+            patronService.updatePatronAccess(new PatronAccessAssignmentRequest(agent, pid, accessDetails));
+        });
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void missingPrinicipal() throws Exception {
-        createCollectionInUnit(null);
-        PID pid = collObj.getPid();
-        treeIndexer.indexAll(baseAddress);
+        Assertions.assertThrows(IllegalArgumentException.class, () -> {
+            createCollectionInUnit(null);
+            PID pid = collObj.getPid();
+            treeIndexer.indexAll(baseAddress);
 
-        PatronAccessDetails accessDetails = new PatronAccessDetails();
-        accessDetails.setRoles(asList(
-                new RoleAssignment(null, canViewMetadata)));
+            PatronAccessDetails accessDetails = new PatronAccessDetails();
+            accessDetails.setRoles(asList(
+                    new RoleAssignment(null, canViewMetadata)));
 
-        patronService.updatePatronAccess(new PatronAccessAssignmentRequest(agent, pid, accessDetails));
+            patronService.updatePatronAccess(new PatronAccessAssignmentRequest(agent, pid, accessDetails));
+        });
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void blankPrinicipal() throws Exception {
-        createCollectionInUnit(null);
-        PID pid = collObj.getPid();
-        treeIndexer.indexAll(baseAddress);
+        Assertions.assertThrows(IllegalArgumentException.class, () -> {
+            createCollectionInUnit(null);
+            PID pid = collObj.getPid();
+            treeIndexer.indexAll(baseAddress);
 
-        PatronAccessDetails accessDetails = new PatronAccessDetails();
-        accessDetails.setRoles(asList(
-                new RoleAssignment("  ", null)));
+            PatronAccessDetails accessDetails = new PatronAccessDetails();
+            accessDetails.setRoles(asList(
+                    new RoleAssignment("  ", null)));
 
-        patronService.updatePatronAccess(new PatronAccessAssignmentRequest(agent, pid, accessDetails));
+            patronService.updatePatronAccess(new PatronAccessAssignmentRequest(agent, pid, accessDetails));
+        });
     }
 
     @Test
@@ -429,17 +452,19 @@ public class PatronAccessAssignmentServiceIT {
         assertMessageSent(pid);
     }
 
-    @Test(expected = InvalidAssignmentException.class)
+    @Test
     public void addExpiredEmbargo() throws Exception {
-        createCollectionInUnit(null);
-        PID pid = collObj.getPid();
-        treeIndexer.indexAll(baseAddress);
+        Assertions.assertThrows(InvalidAssignmentException.class, () -> {
+            createCollectionInUnit(null);
+            PID pid = collObj.getPid();
+            treeIndexer.indexAll(baseAddress);
 
-        Date embargoUntil = new Date(0);
-        PatronAccessDetails accessDetails = new PatronAccessDetails();
-        accessDetails.setEmbargo(embargoUntil);
+            Date embargoUntil = new Date(0);
+            PatronAccessDetails accessDetails = new PatronAccessDetails();
+            accessDetails.setEmbargo(embargoUntil);
 
-        patronService.updatePatronAccess(new PatronAccessAssignmentRequest(agent, pid, accessDetails));
+            patronService.updatePatronAccess(new PatronAccessAssignmentRequest(agent, pid, accessDetails));
+        });
     }
 
     @Test
@@ -759,17 +784,19 @@ public class PatronAccessAssignmentServiceIT {
         assertMessageSent(pid);
     }
 
-    @Test(expected = InvalidAssignmentException.class)
+    @Test
     public void addPatronRoleToStaffPrincipal() throws Exception {
-        createCollectionInUnit(null);
-        PID pid = collObj.getPid();
-        treeIndexer.indexAll(baseAddress);
+        Assertions.assertThrows(InvalidAssignmentException.class, () -> {
+            createCollectionInUnit(null);
+            PID pid = collObj.getPid();
+            treeIndexer.indexAll(baseAddress);
 
-        PatronAccessDetails accessDetails = new PatronAccessDetails();
-        accessDetails.setRoles(asList(
-                new RoleAssignment(GRP_PRINC, canViewMetadata)));
+            PatronAccessDetails accessDetails = new PatronAccessDetails();
+            accessDetails.setRoles(asList(
+                    new RoleAssignment(GRP_PRINC, canViewMetadata)));
 
-        patronService.updatePatronAccess(new PatronAccessAssignmentRequest(agent, pid, accessDetails));
+            patronService.updatePatronAccess(new PatronAccessAssignmentRequest(agent, pid, accessDetails));
+        });
     }
 
     private void createCollectionInUnit(Model collModel) {
@@ -781,29 +808,27 @@ public class PatronAccessAssignmentServiceIT {
 
     private void assertHasAssignment(String princ, UserRole role, RepositoryObject obj) {
         Resource resc = obj.getResource();
-        assertTrue("Expected role " + role.name() + " was not assigned for " + princ,
-                resc.hasProperty(role.getProperty(), princ));
+        assertTrue(resc.hasProperty(role.getProperty(), princ),
+                "Expected role " + role.name() + " was not assigned for " + princ);
     }
 
     private void assertNoAssignment(String princ, RepositoryObject obj) {
         Resource resc = obj.getResource();
-        assertFalse("No roles expected for " + princ,
-                obj.getModel().contains(resc, null, princ));
+        assertFalse(obj.getModel().contains(resc, null, princ), "No roles expected for " + princ);
     }
 
     private void assertNoEmbargo(RepositoryObject obj) {
         Resource resc = obj.getResource();
-        assertFalse("Unexpect embargo assigned to " + obj.getPid().getId(),
-                resc.hasProperty(CdrAcl.embargoUntil));
+        assertFalse(resc.hasProperty(CdrAcl.embargoUntil),
+                "Unexpect embargo assigned to " + obj.getPid().getId());
     }
 
     private void assertHasEmbargo(Date expectedEmbargo, RepositoryObject obj) {
         Resource resc = obj.getResource();
         Statement embargoStmt = resc.getProperty(CdrAcl.embargoUntil);
-        assertNotNull("Embargo was expected by not found", embargoStmt);
+        assertNotNull(embargoStmt, "Embargo was expected by not found");
         Date assigned = ((XSDDateTime) embargoStmt.getLiteral().getValue()).asCalendar().getTime();
-        assertEquals("Embargo did not match expected value",
-                expectedEmbargo, assigned);
+        assertEquals(expectedEmbargo, assigned, "Embargo did not match expected value");
     }
 
     private void assertMessageSent(PID pid) {
@@ -818,8 +843,8 @@ public class PatronAccessAssignmentServiceIT {
     }
 
     private void assertEventWithDetail(List<String> eventDetails, String expected) {
-        assertTrue("No event with expected detail '" + expected + "'",
-                eventDetails.stream().anyMatch(d -> d.contains(expected)));
+        assertTrue(eventDetails.stream().anyMatch(d -> d.contains(expected)),
+                "No event with expected detail '" + expected + "'");
     }
 
     private List<String> getEventDetails(RepositoryObject repoObj) {
@@ -832,8 +857,7 @@ public class PatronAccessAssignmentServiceIT {
             Statement stmt = it.next();
             Resource eventResc = stmt.getSubject();
 
-            assertTrue("Event type was not set",
-                    eventResc.hasProperty(RDF.type, Premis.PolicyAssignment));
+            assertTrue(eventResc.hasProperty(RDF.type, Premis.PolicyAssignment), "Event type was not set");
             Resource agentResc = eventResc.getPropertyResourceValue(Premis.hasEventRelatedAgentImplementor);
             assertEquals(AgentPids.forPerson(USER_PRINC).getRepositoryPath(), agentResc.getURI());
             details.add(eventResc.getProperty(Premis.note).getString());

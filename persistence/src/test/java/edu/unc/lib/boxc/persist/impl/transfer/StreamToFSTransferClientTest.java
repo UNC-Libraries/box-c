@@ -1,11 +1,11 @@
 package edu.unc.lib.boxc.persist.impl.transfer;
 
 import static edu.unc.lib.boxc.model.fcrepo.ids.DatastreamPids.getOriginalFilePid;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyInt;
 import static org.mockito.Mockito.mock;
@@ -22,10 +22,10 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 
 import org.apache.commons.io.FileUtils;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
@@ -48,20 +48,21 @@ public class StreamToFSTransferClientTest {
 
     protected StreamToFSTransferClient client;
 
-    @Rule
-    public final TemporaryFolder tmpFolder = new TemporaryFolder();
+    @TempDir
+    public Path tmpFolder;
     protected Path sourcePath;
     protected Path storagePath;
     protected StorageLocation storageLoc;
 
     protected PID binPid;
 
-    @Before
+    @BeforeEach
     public void setup() throws Exception {
         initMocks(this);
-        tmpFolder.create();
-        sourcePath = tmpFolder.newFolder("source").toPath();
-        storagePath = tmpFolder.newFolder("storage").toPath();
+        sourcePath = tmpFolder.resolve("source");
+        Files.createDirectory(sourcePath);
+        storagePath = tmpFolder.resolve("storage");
+        Files.createDirectory(storagePath);
 
         HashedFilesystemStorageLocation hashedLoc = new HashedFilesystemStorageLocation();
         hashedLoc.setBase(storagePath.toString());
@@ -83,32 +84,36 @@ public class StreamToFSTransferClientTest {
         assertOutcome(outcome, STREAM_CONTENT_SHA1);
     }
 
-    @Test(expected = BinaryAlreadyExistsException.class)
+    @Test
     public void transfer_ExistingFile() throws Exception {
-        // Create existing file content
-        Path destPath = createFile();
+        Assertions.assertThrows(BinaryAlreadyExistsException.class, () -> {
+            // Create existing file content
+            Path destPath = createFile();
 
-        // Attempt to transfer new content
-        InputStream sourceStream = toStream(STREAM_CONTENT);
+            // Attempt to transfer new content
+            InputStream sourceStream = toStream(STREAM_CONTENT);
 
-        try {
-            client.transfer(binPid, sourceStream);
-        } finally {
-            // Verify that the file was not replaced
-            assertContent(destPath, ORIGINAL_CONTENT);
-        }
+            try {
+                client.transfer(binPid, sourceStream);
+            } finally {
+                // Verify that the file was not replaced
+                assertContent(destPath, ORIGINAL_CONTENT);
+            }
+        });
     }
 
-    @Test(expected = BinaryTransferException.class)
+    @Test
     public void transfer_StreamThrowsException() throws Exception {
-        InputStream sourceStream = mock(InputStream.class);
-        when(sourceStream.read(any(), anyInt(), anyInt())).thenThrow(new IOException());
+        Assertions.assertThrows(BinaryTransferException.class, () -> {
+            InputStream sourceStream = mock(InputStream.class);
+            when(sourceStream.read(any(), anyInt(), anyInt())).thenThrow(new IOException());
 
-        try {
-            client.transfer(binPid, sourceStream);
-        } finally {
-            assertNull(storageLoc.getCurrentStorageUri(binPid));
-        }
+            try {
+                client.transfer(binPid, sourceStream);
+            } finally {
+                assertNull(storageLoc.getCurrentStorageUri(binPid));
+            }
+        });
     }
 
     @Test
@@ -124,20 +129,22 @@ public class StreamToFSTransferClientTest {
         assertOutcome(outcome, STREAM_CONTENT_SHA1);
     }
 
-    @Test(expected = BinaryTransferException.class)
+    @Test
     public void transferReplaceExisting_ExistingFile_WriteFails() throws Exception {
-        InputStream sourceStream = mock(InputStream.class);
-        when(sourceStream.read(any(), anyInt(), anyInt())).thenThrow(new IOException());
+        Assertions.assertThrows(BinaryTransferException.class, () -> {
+            InputStream sourceStream = mock(InputStream.class);
+            when(sourceStream.read(any(), anyInt(), anyInt())).thenThrow(new IOException());
 
-        // Create existing file content
-        Path destPath = createFile();
+            // Create existing file content
+            Path destPath = createFile();
 
-        try {
-            client.transferReplaceExisting(binPid, sourceStream);
-        } finally {
-            // Verify that the content was not replaced
-            assertContent(destPath, ORIGINAL_CONTENT);
-        }
+            try {
+                client.transferReplaceExisting(binPid, sourceStream);
+            } finally {
+                // Verify that the content was not replaced
+                assertContent(destPath, ORIGINAL_CONTENT);
+            }
+        });
     }
 
     @Test
@@ -152,7 +159,7 @@ public class StreamToFSTransferClientTest {
         try {
             client.transferReplaceExisting(binPid, sourceStream);
         } catch (BinaryTransferException e) {
-            assertTrue("Original file should be present", destFile.exists());
+            assertTrue(destFile.exists(), "Original file should be present");
             assertEquals(1, parentDir.listFiles().length);
         } finally {
             parentDir.setWritable(true);
@@ -171,10 +178,12 @@ public class StreamToFSTransferClientTest {
         assertFalse(Files.exists(Paths.get(outcome.getDestinationUri())));
     }
 
-    @Test(expected = BinaryTransferException.class)
+    @Test
     public void deleteNonExistent() throws Exception {
-        URI destUri = storageLoc.getNewStorageUri(binPid);
-        client.delete(destUri);
+        Assertions.assertThrows(BinaryTransferException.class, () -> {
+            URI destUri = storageLoc.getNewStorageUri(binPid);
+            client.delete(destUri);
+        });
     }
 
     protected void assertContent(BinaryTransferOutcome outcome, String content) throws Exception {
@@ -182,7 +191,7 @@ public class StreamToFSTransferClientTest {
     }
 
     protected void assertContent(Path path, String content) throws Exception {
-        assertTrue("Source content was not present at " + path, path.toFile().exists());
+        assertTrue(path.toFile().exists(), "Source content was not present at " + path);
         assertEquals(content, FileUtils.readFileToString(path.toFile(), "UTF-8"));
     }
 
@@ -197,9 +206,9 @@ public class StreamToFSTransferClientTest {
     }
 
     protected void assertOutcome(BinaryTransferOutcome outcome, String expectedSha1) {
-        assertNotNull("Outcome was not returned", outcome);
-        assertTrue("Destination file must be in the destination storage location",
-                Paths.get(outcome.getDestinationUri()).startsWith(storagePath));
-        assertEquals("Unexpected outcome digest", expectedSha1, outcome.getSha1());
+        assertNotNull(outcome, "Outcome was not returned");
+        assertTrue(Paths.get(outcome.getDestinationUri()).startsWith(storagePath),
+                "Destination file must be in the destination storage location");
+        assertEquals(expectedSha1, outcome.getSha1(), "Unexpected outcome digest");
     }
 }

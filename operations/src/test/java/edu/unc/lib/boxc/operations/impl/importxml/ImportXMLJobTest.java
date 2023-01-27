@@ -5,9 +5,9 @@ import static edu.unc.lib.boxc.operations.test.ModsTestHelper.addObjectUpdate;
 import static edu.unc.lib.boxc.operations.test.ModsTestHelper.makeUpdateDocument;
 import static edu.unc.lib.boxc.operations.test.ModsTestHelper.modsWithTitleAndDate;
 import static edu.unc.lib.boxc.operations.test.ModsTestHelper.writeToFile;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyObject;
 import static org.mockito.Matchers.argThat;
@@ -19,6 +19,8 @@ import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
 import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -34,10 +36,9 @@ import javax.xml.stream.events.XMLEvent;
 
 import org.jdom2.Document;
 import org.jdom2.Element;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
@@ -123,10 +124,10 @@ public class ImportXMLJobTest {
     @Captor
     private ArgumentCaptor<Map<String, Object>> mapCaptor;
 
-    @Rule
-    public final TemporaryFolder tmpFolder = new TemporaryFolder();
+    @TempDir
+    public Path tmpFolder;
 
-    @Before
+    @BeforeEach
     public void init() throws Exception {
         initMocks(this);
 
@@ -140,7 +141,8 @@ public class ImportXMLJobTest {
     @SuppressWarnings("unchecked")
     @Test
     public void emptyFileTest() throws Exception {
-        File importFile = tmpFolder.newFile();
+        File importFile = tmpFolder.resolve("emptyFile.xml").toFile();
+        Files.createFile(tmpFolder.resolve("emptyFile.xml"));
         setupJob(importFile);
         job.run();
 
@@ -155,7 +157,7 @@ public class ImportXMLJobTest {
         assertEquals("The import file contains XML errors", problem.getValue());
 
         verify(msg).setSubject(subjectCaptor.capture());
-        assertEquals("DCR Metadata update failed", subjectCaptor.getValue());
+        assertEquals(subjectCaptor.getValue(), "DCR Metadata update failed");
 
         assertAddressesSet(USER_EMAIL);
     }
@@ -174,11 +176,11 @@ public class ImportXMLJobTest {
         assertEquals(1, dataMap.get("problemCount"));
         Set<Entry<String, String>> problems = (Set<Entry<String, String>>) dataMap.get("problems");
         Entry<String, String> problem = problems.iterator().next();
-        assertTrue("Failure message did not match excepted value, was: " + problem.getValue(),
-                problem.getValue().contains("Failed to read import file"));
+        assertTrue(problem.getValue().contains("Failed to read import file"),
+                "Failure message did not match excepted value, was: " + problem.getValue());
 
         verify(msg).setSubject(subjectCaptor.capture());
-        assertEquals("DCR Metadata update failed", subjectCaptor.getValue());
+        assertEquals(subjectCaptor.getValue(), "DCR Metadata update failed");
 
         assertAddressesSet(USER_EMAIL);
     }
@@ -209,10 +211,10 @@ public class ImportXMLJobTest {
         assertEquals(1, dataMap.get("problemCount"));
         Set<Entry<String, String>> problems = (Set<Entry<String, String>>) dataMap.get("problems");
         Entry<String, String> problem = problems.iterator().next();
-        assertEquals("File is not a bulk-metadata-update doc", problem.getValue());
+        assertEquals(problem.getValue(), "File is not a bulk-metadata-update doc");
 
         verify(msg).setSubject(subjectCaptor.capture());
-        assertEquals("DCR Metadata update failed", subjectCaptor.getValue());
+        assertEquals(subjectCaptor.getValue(), "DCR Metadata update failed");
 
         assertAddressesSet(USER_EMAIL);
     }
@@ -271,8 +273,8 @@ public class ImportXMLJobTest {
         assertEquals(1, failed.size());
         Entry<String, String> failedEntry = failed.iterator().next();
         assertEquals(PIDs.get(OBJ2_ID).getQualifiedId(), failedEntry.getKey());
-        assertTrue("Unexpected failure message: " + failedEntry.getValue(),
-                failedEntry.getValue().contains("User doesn't have permission"));
+        assertTrue(failedEntry.getValue().contains("User doesn't have permission"),
+                "Unexpected failure message: " + failedEntry.getValue());
         assertEquals(1, dataMap.get("failedCount"));
 
         verify(msg).setSubject(subjectCaptor.capture());
@@ -306,8 +308,8 @@ public class ImportXMLJobTest {
         assertEquals(1, failed.size());
         Entry<String, String> failedEntry = failed.iterator().next();
         assertEquals("definitelynotapid", failedEntry.getKey());
-        assertTrue("Unexpected failure message: " + failedEntry.getValue(),
-                failedEntry.getValue().contains("Invalid PID attribute"));
+        assertTrue(failedEntry.getValue().contains("Invalid PID attribute"),
+                "Unexpected failure message: " + failedEntry.getValue());
         assertEquals(1, dataMap.get("failedCount"));
 
         verify(msg).setSubject(subjectCaptor.capture());
@@ -333,8 +335,8 @@ public class ImportXMLJobTest {
                 .addRecipient(eq(Message.RecipientType.TO), addressCaptor.capture());
         List<Address> toAddresses = addressCaptor.getAllValues();
         for (String expectedAddress : expectedAddresses) {
-            assertTrue("Expected to address " + expectedAddress,
-                    toAddresses.stream().anyMatch(a -> a.toString().equals(expectedAddress)));
+            assertTrue(toAddresses.stream().anyMatch(a -> a.toString().equals(expectedAddress)),
+                    "Expected to address " + expectedAddress);
         }
     }
 

@@ -1,21 +1,21 @@
 package edu.unc.lib.boxc.indexing.solr.filter;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
 import java.io.File;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.UUID;
 
 import org.apache.commons.io.FileUtils;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.mockito.Mock;
 
 import edu.unc.lib.boxc.indexing.solr.filter.SetFullTextFilter;
@@ -35,8 +35,8 @@ import edu.unc.lib.boxc.model.fcrepo.services.DerivativeService;
  */
 public class SetFullTextFilterTest {
 
-    @Rule
-    public TemporaryFolder tempDir = new TemporaryFolder();
+    @TempDir
+    public Path tempDir;
 
     private File derivativeDir;
 
@@ -58,11 +58,12 @@ public class SetFullTextFilterTest {
 
     private SetFullTextFilter filter;
 
-    @Before
+    @BeforeEach
     public void setup() throws Exception {
         initMocks(this);
 
-        derivativeDir = tempDir.newFolder();
+        derivativeDir = tempDir.resolve("testFolder").toFile();
+        Files.createDirectory(tempDir.resolve("testFolder"));
 
         factory = new DocumentIndexingPackageFactory();
         factory.setDataLoader(loader);

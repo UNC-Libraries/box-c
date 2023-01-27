@@ -1,6 +1,6 @@
 package edu.unc.lib.boxc.integration.fcrepo;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.net.URI;
 
@@ -9,12 +9,12 @@ import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.vocabulary.DC;
 import org.fcrepo.client.FcrepoClient;
 import org.fcrepo.client.FcrepoResponse;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import edu.unc.lib.boxc.fcrepo.utils.FedoraSparqlUpdateService;
 import edu.unc.lib.boxc.model.api.rdf.RDFModelUtil;
@@ -25,7 +25,7 @@ import edu.unc.lib.boxc.model.fcrepo.test.TestHelper;
  * @author bbpennel
  *
  */
-@RunWith(SpringJUnit4ClassRunner.class)
+@ExtendWith(SpringExtension.class)
 @ContextConfiguration({"/spring-test/test-fedora-container.xml", "/spring-test/cdr-client-container.xml"})
 public class FedoraSparqlUpdateServiceIT {
 
@@ -38,7 +38,7 @@ public class FedoraSparqlUpdateServiceIT {
 
     private FedoraSparqlUpdateService updateService;
 
-    @Before
+    @BeforeEach
     public void init_() {
         TestHelper.setContentBase(baseAddress);
         baseUri = URI.create(baseAddress);

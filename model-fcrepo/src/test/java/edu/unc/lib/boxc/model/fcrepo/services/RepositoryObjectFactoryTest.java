@@ -1,9 +1,9 @@
 package edu.unc.lib.boxc.model.fcrepo.services;
 
 import static org.apache.jena.rdf.model.ResourceFactory.createResource;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
@@ -25,8 +25,8 @@ import org.fcrepo.client.FcrepoOperationFailedException;
 import org.fcrepo.client.FcrepoResponse;
 import org.fcrepo.client.PostBuilder;
 import org.fcrepo.client.PutBuilder;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 
 import edu.unc.lib.boxc.common.test.SelfReturningAnswer;
@@ -72,7 +72,7 @@ public class RepositoryObjectFactoryTest {
     private PIDMinter pidMinter;
     private List<URI> linkHeaders;
 
-    @Before
+    @BeforeEach
     public void init() throws FcrepoOperationFailedException, URISyntaxException {
         initMocks(this);
         repoObjFactory = new RepositoryObjectFactoryImpl();

@@ -1,6 +1,7 @@
 package edu.unc.lib.boxc.operations.impl.validation;
 
 import static edu.unc.lib.boxc.model.api.xml.JDOMNamespaceUtil.MODS_V3_NS;
+import static org.junit.Assert.assertTrue;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -20,10 +21,9 @@ import javax.xml.validation.SchemaFactory;
 import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.output.XMLOutputter;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
 
@@ -35,9 +35,6 @@ import edu.unc.lib.boxc.operations.api.exceptions.MetadataValidationException;
  *
  */
 public class MODSValidatorTest {
-    @Rule
-    public ExpectedException thrown = ExpectedException.none();
-
     private MODSValidator validator;
     private Schema schema;
 
@@ -45,7 +42,7 @@ public class MODSValidatorTest {
 
     private Document doc;
 
-    @Before
+    @BeforeEach
     public void init() throws Exception {
         Map<String, Resource> schemas = new HashMap<>();
         schemas.put("object-mods", new ClassPathResource("edu/unc/lib/boxc/operations/impl/validation/object-mods.sch"));
@@ -73,12 +70,13 @@ public class MODSValidatorTest {
 
     @Test
     public void testNonModsDocument() throws Exception {
-        thrown.expect(MetadataValidationException.class);
-        thrown.expectMessage("schema");
+        Exception expected = Assertions.assertThrows(MetadataValidationException.class, () -> {
+            doc.addContent(new Element("root"));
 
-        doc.addContent(new Element("root"));
+            validator.validate(convertDocumentToStream(doc));
+        });
 
-        validator.validate(convertDocumentToStream(doc));
+        assertTrue(expected.getMessage().contains("schema"));
     }
 
     @Test
@@ -116,43 +114,46 @@ public class MODSValidatorTest {
 
     @Test
     public void testSchemaFailure() throws Exception {
-        thrown.expect(MetadataValidationException.class);
-        thrown.expectMessage("schema");
+        Exception expected = Assertions.assertThrows(MetadataValidationException.class, () -> {
+            doc.addContent(new Element("mods", MODS_V3_NS)
+                    .addContent(new Element("invalid", MODS_V3_NS)));
 
-        doc.addContent(new Element("mods", MODS_V3_NS)
-                .addContent(new Element("invalid", MODS_V3_NS)));
+            validator.validate(convertDocumentToStream(doc));
+        });
 
-        validator.validate(convertDocumentToStream(doc));
+        assertTrue(expected.getMessage().contains("schema"));
     }
 
     @Test
     public void testInvalidLanguageCode() throws Exception {
-        thrown.expect(MetadataValidationException.class);
-        thrown.expectMessage("local conventions");
+        Exception expected = Assertions.assertThrows(MetadataValidationException.class, () -> {
+            doc.addContent(new Element("mods", MODS_V3_NS)
+                    .addContent(new Element("language", MODS_V3_NS)
+                            .addContent(new Element("languageTerm", MODS_V3_NS)
+                                    .setText("java")
+                                    .setAttribute("authority", "iso639-2b")
+                                    .setAttribute("type", "code"))));
 
-        doc.addContent(new Element("mods", MODS_V3_NS)
-                .addContent(new Element("language", MODS_V3_NS)
-                        .addContent(new Element("languageTerm", MODS_V3_NS)
-                                .setText("java")
-                                .setAttribute("authority", "iso639-2b")
-                                .setAttribute("type", "code"))));
+            validator.validate(convertDocumentToStream(doc));
+        });
 
-        validator.validate(convertDocumentToStream(doc));
+        assertTrue(expected.getMessage().contains("local conventions"));
     }
 
     @Test
     public void testUnacceptableLanguageAuthority() throws Exception {
-        thrown.expect(MetadataValidationException.class);
-        thrown.expectMessage("local conventions");
+        Exception expected = Assertions.assertThrows(MetadataValidationException.class, () -> {
+            doc.addContent(new Element("mods", MODS_V3_NS)
+                    .addContent(new Element("language", MODS_V3_NS)
+                            .addContent(new Element("languageTerm", MODS_V3_NS)
+                                    .setText("eng")
+                                    .setAttribute("authority", "rfc3066")
+                                    .setAttribute("type", "code"))));
 
-        doc.addContent(new Element("mods", MODS_V3_NS)
-                .addContent(new Element("language", MODS_V3_NS)
-                        .addContent(new Element("languageTerm", MODS_V3_NS)
-                                .setText("eng")
-                                .setAttribute("authority", "rfc3066")
-                                .setAttribute("type", "code"))));
+            validator.validate(convertDocumentToStream(doc));
+        });
 
-        validator.validate(convertDocumentToStream(doc));
+        assertTrue(expected.getMessage().contains("local conventions"));
     }
 
     @Test
@@ -179,12 +180,14 @@ public class MODSValidatorTest {
         validator.validate(docFile);
     }
 
-    @Test(expected = IOException.class)
+    @Test
     public void testMissingFile() throws Exception {
-        File docFile = Files.createTempFile("mods", ".xml").toFile();
-        docFile.delete();
+        Assertions.assertThrows(IOException.class, () -> {
+            File docFile = Files.createTempFile("mods", ".xml").toFile();
+            docFile.delete();
 
-        validator.validate(docFile);
+            validator.validate(docFile);
+        });
     }
 
     private InputStream convertDocumentToStream(Document doc) throws IOException {

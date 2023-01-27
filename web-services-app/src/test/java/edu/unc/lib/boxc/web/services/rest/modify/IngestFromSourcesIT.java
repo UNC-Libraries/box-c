@@ -8,10 +8,10 @@ import static edu.unc.lib.boxc.persist.impl.sources.IngestSourceTestHelper.creat
 import static edu.unc.lib.boxc.persist.impl.sources.IngestSourceTestHelper.createFilesystemConfig;
 import static edu.unc.lib.boxc.persist.impl.sources.IngestSourceTestHelper.serializeLocationMappings;
 import static java.util.Arrays.asList;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
@@ -31,11 +31,10 @@ import java.util.Map;
 
 import javax.ws.rs.core.MediaType;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.ContextHierarchy;
@@ -76,8 +75,8 @@ public class IngestFromSourcesIT extends AbstractAPIIT {
     private static final String DEPOSITOR = "adminuser";
     private static final String DEPOSITOR_EMAIL = "adminuser@example.com";
 
-    @Rule
-    public final TemporaryFolder tmpFolder = new TemporaryFolder();
+    @TempDir
+    public Path tmpFolder;
     private String sourceFolderPath;
 
     private List<IngestSourceMapping> mappingList;
@@ -93,14 +92,14 @@ public class IngestFromSourcesIT extends AbstractAPIIT {
     @Autowired
     private ContentPathFactory contentPathFactory;
 
-    @Before
+    @BeforeEach
     public void setup() throws Exception {
         rootPid = RepositoryPaths.getContentRootPid();
         adminUnitPid = makePid();
         destPid = makePid();
 
-        tmpFolder.create();
-        sourceFolderPath = tmpFolder.newFolder().getAbsolutePath();
+        sourceFolderPath = tmpFolder.resolve("sourceFolder").toString();
+        Files.createDirectory(tmpFolder.resolve("sourceFolder"));
         mappingList = new ArrayList<>();
 
         AccessGroupSet testPrincipals = new AccessGroupSetImpl("admins");
@@ -110,7 +109,7 @@ public class IngestFromSourcesIT extends AbstractAPIIT {
         GroupsThreadStore.storeEmail(DEPOSITOR_EMAIL);
     }
 
-    @After
+    @AfterEach
     public void teardown() throws Exception {
         GroupsThreadStore.clearStore();
     }
@@ -164,7 +163,8 @@ public class IngestFromSourcesIT extends AbstractAPIIT {
 
     @Test
     public void listSourcesWithSourcesAndCandidates() throws Exception {
-        String sourceFolderPath2 = tmpFolder.newFolder().getAbsolutePath();
+        String sourceFolderPath2 = tmpFolder.resolve("sourceFolder2").toString();
+        Files.createDirectory(tmpFolder.resolve("sourceFolder2"));
 
         createBagCandidate(sourceFolderPath, "cand1");
         createDirCandidate(sourceFolderPath2, "cand2");
@@ -205,7 +205,8 @@ public class IngestFromSourcesIT extends AbstractAPIIT {
 
     @Test
     public void listSourcesWithExcludedSource() throws Exception {
-        String sourceFolderPath2 = tmpFolder.newFolder().getAbsolutePath();
+        String sourceFolderPath2 = tmpFolder.resolve("sourceFolder2").toString();
+        Files.createDirectory(tmpFolder.resolve("sourceFolder2"));
 
         createBagCandidate(sourceFolderPath, "cand1");
         createBagCandidate(sourceFolderPath2, "cand2");
@@ -358,7 +359,8 @@ public class IngestFromSourcesIT extends AbstractAPIIT {
     @Test
     public void ingestCandidateOutsideOfSource() throws Exception {
         // Candidate in path that doesn't match the path of the configured source
-        String sourceFolderPath2 = tmpFolder.newFolder().getAbsolutePath();
+        String sourceFolderPath2 = tmpFolder.resolve("sourceFolder2").toString();
+        Files.createDirectory(tmpFolder.resolve("sourceFolder2"));
         Path candPath1 = createBagCandidate(sourceFolderPath2, "cand1");
 
         Path configPath = createConfigFile(
@@ -401,7 +403,8 @@ public class IngestFromSourcesIT extends AbstractAPIIT {
 
     @Test
     public void ingestBagAndDirectory() throws Exception {
-        String sourceFolderPath2 = tmpFolder.newFolder().getAbsolutePath();
+        String sourceFolderPath2 = tmpFolder.resolve("sourceFolder2").toString();
+        Files.createDirectory(tmpFolder.resolve("sourceFolder2"));
 
         Path candPath1 = createBagCandidate(sourceFolderPath, "cand1");
         Path candPath2 = createDirCandidate(sourceFolderPath2, "cand2");
@@ -534,7 +537,7 @@ public class IngestFromSourcesIT extends AbstractAPIIT {
         assertEquals(DEPOSITOR, status.get(DepositField.depositorName.name()));
         assertEquals(DEPOSITOR_EMAIL, status.get(DepositField.depositorEmail.name()));
         AccessGroupSet depositPrincipals = new AccessGroupSetImpl(status.get(DepositField.permissionGroups.name()));
-        assertTrue("admins principal must be set in deposit", depositPrincipals.contains("admins"));
+        assertTrue(depositPrincipals.contains("admins"), "admins principal must be set in deposit");
     }
 
     private Map<String, Object> createBasicConfig(String id, String path, PID... containers) {

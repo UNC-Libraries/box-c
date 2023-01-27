@@ -7,15 +7,16 @@ import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
 import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 
 import org.apache.jena.rdf.model.Resource;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.io.TempDir;
 import org.mockito.Matchers;
 import org.mockito.Mock;
 import org.mockito.invocation.InvocationOnMock;
@@ -56,8 +57,8 @@ public class AbstractDepositJobTest {
     @Mock
     protected TransactionManager txManager;
 
-    @Rule
-    public final TemporaryFolder tmpFolder = new TemporaryFolder();
+    @TempDir
+    public Path tmpFolder;
 
     protected File depositsDirectory;
     protected File depositDir;
@@ -91,7 +92,7 @@ public class AbstractDepositJobTest {
 
     private Set<String> completedIds;
 
-    @Before
+    @BeforeEach
     public void initBase() throws Exception {
         initMocks(this);
 
@@ -106,8 +107,8 @@ public class AbstractDepositJobTest {
         when(premisEventBuilder.addSoftwareAgent(any(PID.class))).thenReturn(premisEventBuilder);
         when(premisEventBuilder.create()).thenReturn(testResource);
 
-        tmpFolder.create();
-        depositsDirectory = tmpFolder.newFolder("deposits");
+        Files.createDirectory(tmpFolder.resolve("deposits"));
+        depositsDirectory = tmpFolder.resolve("deposits").toFile();
 
         jobUUID = UUID.randomUUID().toString();
 
@@ -142,7 +143,7 @@ public class AbstractDepositJobTest {
         });
     }
 
-    @After
+    @AfterEach
     public void tearDown() {
         depositModelManager.close();
     }

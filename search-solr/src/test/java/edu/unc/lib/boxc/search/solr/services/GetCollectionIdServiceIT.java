@@ -1,12 +1,12 @@
 package edu.unc.lib.boxc.search.solr.services;
 
 import static edu.unc.lib.boxc.common.test.TestHelpers.setField;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.MockitoAnnotations.initMocks;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 
 import edu.unc.lib.boxc.model.api.ids.PID;
@@ -32,7 +32,7 @@ public class GetCollectionIdServiceIT extends BaseEmbeddedSolrTest {
         testCorpus = new TestCorpus();
     }
 
-    @Before
+    @BeforeEach
     public void init() throws Exception {
         initMocks(this);
 

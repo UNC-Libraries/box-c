@@ -3,14 +3,14 @@ package edu.unc.lib.boxc.operations.impl.order;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.api.services.MembershipService;
 import edu.unc.lib.boxc.operations.jms.order.OrderOperationType;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import java.util.Arrays;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * @author bbpennel
@@ -24,7 +24,7 @@ public class OrderValidatorFactoryTest {
     private MembershipService membershipService;
     private OrderValidatorFactory factory;
 
-    @Before
+    @BeforeEach
     public void setup() {
         MockitoAnnotations.initMocks(this);
         factory = new OrderValidatorFactory();

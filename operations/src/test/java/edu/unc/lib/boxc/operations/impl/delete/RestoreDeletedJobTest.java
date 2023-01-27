@@ -14,8 +14,9 @@ import static org.mockito.MockitoAnnotations.initMocks;
 import java.net.URI;
 import java.util.UUID;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 
 import edu.unc.lib.boxc.auth.api.exceptions.AccessRestrictionException;
@@ -70,7 +71,7 @@ public class RestoreDeletedJobTest {
 
     private RestoreDeletedJob job;
 
-    @Before
+    @BeforeEach
     public void init() {
         initMocks(this);
 
@@ -91,30 +92,36 @@ public class RestoreDeletedJobTest {
                 aclService, premisLoggerFactory);
     }
 
-    @Test(expected = AccessRestrictionException.class)
+    @Test
     public void insufficientAccessTest() {
-        doThrow(new AccessRestrictionException()).when(aclService)
-                .assertHasAccess(anyString(), eq(pid), any(), eq(markForDeletion));
+        Assertions.assertThrows(AccessRestrictionException.class, () -> {
+            doThrow(new AccessRestrictionException()).when(aclService)
+                    .assertHasAccess(anyString(), eq(pid), any(), eq(markForDeletion));
 
-        job.run();
+            job.run();
+        });
     }
 
-    @Test(expected = AccessRestrictionException.class)
+    @Test
     public void insufficientAccessAdminUnitTest() {
-        when(repositoryObjectLoader.getRepositoryObject(pid)).thenReturn(repoObj);
+        Assertions.assertThrows(AccessRestrictionException.class, () -> {
+            when(repositoryObjectLoader.getRepositoryObject(pid)).thenReturn(repoObj);
 
-        doThrow(new AccessRestrictionException()).when(aclService)
-                .assertHasAccess(anyString(), eq(pid), any(), eq(markForDeletionUnit));
+            doThrow(new AccessRestrictionException()).when(aclService)
+                    .assertHasAccess(anyString(), eq(pid), any(), eq(markForDeletionUnit));
 
-        job.run();
+            job.run();
+        });
     }
 
-    @Test(expected = InvalidOperationForObjectType.class)
+    @Test
     public void invalidObjectTypeTest() {
-        DepositRecord depObj = mock(DepositRecord.class);
-        when(repositoryObjectLoader.getRepositoryObject(any(PID.class))).thenReturn(depObj);
+        Assertions.assertThrows(InvalidOperationForObjectType.class, () -> {
+            DepositRecord depObj = mock(DepositRecord.class);
+            when(repositoryObjectLoader.getRepositoryObject(any(PID.class))).thenReturn(depObj);
 
-        job.run();
+            job.run();
+        });
     }
 
     @Test

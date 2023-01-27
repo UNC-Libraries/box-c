@@ -1,6 +1,6 @@
 package edu.unc.lib.boxc.integration.fcrepo;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.io.IOException;
 import java.net.URI;
@@ -11,11 +11,11 @@ import org.apache.jena.rdf.model.Model;
 import org.fcrepo.client.FcrepoClient;
 import org.fcrepo.client.FcrepoOperationFailedException;
 import org.fcrepo.client.FcrepoResponse;
-import org.junit.Before;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import edu.unc.lib.boxc.common.util.URIUtil;
 import edu.unc.lib.boxc.fcrepo.utils.TransactionManager;
@@ -34,7 +34,7 @@ import edu.unc.lib.boxc.model.fcrepo.test.TestHelper;
  * @author harring
  *
  */
-@RunWith(SpringJUnit4ClassRunner.class)
+@ExtendWith(SpringExtension.class)
 @ContextConfiguration({"/spring-test/test-fedora-container.xml", "/spring-test/cdr-client-container.xml"})
 public abstract class AbstractFedoraIT {
 
@@ -62,7 +62,7 @@ public abstract class AbstractFedoraIT {
     @Autowired
     protected RepositoryInitializer repoInitializer;
 
-    @Before
+    @BeforeEach
     public void init_() {
         // Override base uri for IT tests
         TestHelper.setContentBase("http://localhost:48085/rest");

@@ -1,9 +1,9 @@
 package edu.unc.lib.boxc.deposit.impl.submit;
 
 import static edu.unc.lib.boxc.persist.api.PackagingType.METS_CDR;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -12,15 +12,16 @@ import static org.mockito.MockitoAnnotations.initMocks;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.InputStream;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Map;
 import java.util.UUID;
 
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
@@ -52,8 +53,8 @@ public class CDRMETSDepositHandlerTest {
     private static final String DEPOSITOR = "adminuser";
     private static final String DEPOSIT_METHOD = "unitTest";
 
-    @Rule
-    public final TemporaryFolder tmpFolder = new TemporaryFolder();
+    @TempDir
+    public Path tmpFolder;
 
     @Mock
     private PIDMinter pidMinter;
@@ -71,12 +72,12 @@ public class CDRMETSDepositHandlerTest {
 
     private CDRMETSDepositHandler depositHandler;
 
-    @Before
+    @BeforeEach
     public void init() throws Exception {
         initMocks(this);
 
-        tmpFolder.create();
-        depositsDir = tmpFolder.newFolder("deposits");
+        Files.createDirectory(tmpFolder.resolve("deposits"));
+        depositsDir = tmpFolder.resolve("deposits").toFile();
 
         destPid = PIDs.get(UUID.randomUUID().toString());
         depositPid = PIDs.get("deposit", UUID.randomUUID().toString());
@@ -92,12 +93,14 @@ public class CDRMETSDepositHandlerTest {
         depositHandler.setDepositStatusFactory(depositStatusFactory);
     }
 
-    @Test(expected = DepositException.class)
+    @Test
     public void testNoInputStream() throws Exception {
-        DepositData deposit = new DepositData(null, FILENAME, MIMETYPE, METS_CDR,
-                DEPOSIT_METHOD, depositingAgent);
+        Assertions.assertThrows(DepositException.class, () -> {
+            DepositData deposit = new DepositData(null, FILENAME, MIMETYPE, METS_CDR,
+                    DEPOSIT_METHOD, depositingAgent);
 
-        depositHandler.doDeposit(destPid, deposit);
+            depositHandler.doDeposit(destPid, deposit);
+        });
     }
 
     @Test
@@ -129,25 +132,29 @@ public class CDRMETSDepositHandlerTest {
         verifyDepositFields(depositPid, status);
     }
 
-    @Test(expected = DepositException.class)
+    @Test
     public void testInvalidMETS() throws Exception {
-        InputStream fileStream = new ByteArrayInputStream("Not mets".getBytes());
-        DepositData deposit = new DepositData(fileStream, FILENAME, MIMETYPE,
-                METS_CDR, DEPOSIT_METHOD, depositingAgent);
+        Assertions.assertThrows(DepositException.class, () -> {
+            InputStream fileStream = new ByteArrayInputStream("Not mets".getBytes());
+            DepositData deposit = new DepositData(fileStream, FILENAME, MIMETYPE,
+                    METS_CDR, DEPOSIT_METHOD, depositingAgent);
 
-        depositPid = depositHandler.doDeposit(destPid, deposit);
+            depositPid = depositHandler.doDeposit(destPid, deposit);
+        });
     }
 
-    @Test(expected = DepositException.class)
+    @Test
     public void testDepositsDirNotAvailable() throws Exception {
-        depositsDir.delete();
+        Assertions.assertThrows(DepositException.class, () -> {
+            depositsDir.delete();
 
-        InputStream fileStream = getMETSInputStream();
+            InputStream fileStream = getMETSInputStream();
 
-        DepositData deposit = new DepositData(fileStream, FILENAME, MIMETYPE,
-                METS_CDR, DEPOSIT_METHOD, depositingAgent);
+            DepositData deposit = new DepositData(fileStream, FILENAME, MIMETYPE,
+                    METS_CDR, DEPOSIT_METHOD, depositingAgent);
 
-        depositHandler.doDeposit(destPid, deposit);
+            depositHandler.doDeposit(destPid, deposit);
+        });
     }
 
     private void verifyDepositFields(PID depositPid, Map<String, String> status) {
@@ -170,8 +177,8 @@ public class CDRMETSDepositHandlerTest {
         assertEquals(DepositState.unregistered.name(), status.get(DepositField.state.name()));
         assertEquals(DepositAction.register.name(), status.get(DepositField.actionRequest.name()));
         AccessGroupSet depositPrincipals = new AccessGroupSetImpl(status.get(DepositField.permissionGroups.name()));
-        assertTrue("admin principal must be set in deposit", depositPrincipals.contains("admin"));
-        assertTrue("adminGroup principal must be set in deposit", depositPrincipals.contains("adminGroup"));
+        assertTrue(depositPrincipals.contains("admin"), "admin principal must be set in deposit");
+        assertTrue(depositPrincipals.contains("adminGroup"), "adminGroup principal must be set in deposit");
     }
 
     private InputStream getMETSInputStream() throws Exception {

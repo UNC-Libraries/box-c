@@ -5,18 +5,18 @@ import static edu.unc.lib.boxc.search.api.SearchFieldKey.FILE_FORMAT_CATEGORY;
 import static edu.unc.lib.boxc.search.api.SearchFieldKey.PARENT_COLLECTION;
 import static edu.unc.lib.boxc.search.api.SearchFieldKey.PARENT_UNIT;
 import static edu.unc.lib.boxc.search.api.SearchFieldKey.SUBJECT;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.MockitoAnnotations.initMocks;
 
 import java.util.Arrays;
 import java.util.Map;
 
 import edu.unc.lib.boxc.search.solr.facets.GenericFacet;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 
 import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
@@ -61,7 +61,7 @@ public class SetFacetTitleByIdServiceIT extends BaseEmbeddedSolrTest {
         testCorpus = new TestCorpus();
     }
 
-    @Before
+    @BeforeEach
     public void init() throws Exception {
         initMocks(this);
         if (!corpusLoaded) {
@@ -135,10 +135,10 @@ public class SetFacetTitleByIdServiceIT extends BaseEmbeddedSolrTest {
 
     private void assertHasSearchFacet(SearchState state, SearchFieldKey field, String value, String displayValue) {
         var facetValues = state.getFacets().get(field.name());
-        assertNotNull("Search state did not contain facet " + field.name(), facetValues);
+        assertNotNull(facetValues, "Search state did not contain facet " + field.name());
         var facet = state.getFacets().get(field.name()).get(0);
-        assertEquals("Incorrect facet value for " + field.name(), value, facet.getValue());
-        assertEquals("Incorrect display value for " + field.name(), displayValue, facet.getDisplayValue());
+        assertEquals(value, facet.getValue(), "Incorrect facet value for " + field.name());
+        assertEquals(displayValue, facet.getDisplayValue(), "Incorrect display value for " + field.name());
     }
 
     private SearchFacet getFacetByValue(FacetFieldObject ffo, String value) {

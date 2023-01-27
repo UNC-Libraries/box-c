@@ -1,7 +1,7 @@
 package edu.unc.lib.boxc.auth.fcrepo.services;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.MockitoAnnotations.initMocks;
 
 import java.util.Arrays;
@@ -10,8 +10,9 @@ import java.util.HashSet;
 import java.util.Properties;
 import java.util.Set;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import edu.unc.lib.boxc.auth.api.AccessPrincipalConstants;
 import edu.unc.lib.boxc.auth.api.Permission;
@@ -29,7 +30,7 @@ public class GlobalPermissionEvaluatorTest {
 
     private GlobalPermissionEvaluator evaluator;
 
-    @Before
+    @BeforeEach
     public void init() {
         initMocks(this);
 
@@ -47,19 +48,23 @@ public class GlobalPermissionEvaluatorTest {
         assertTrue(evaluator.hasGlobalPermission(principals, Permission.destroy));
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void illegalRoleTest() {
-        configProperties.setProperty(
-                GlobalPermissionEvaluatorImpl.GLOBAL_PROP_PREFIX + "boxy", PRINC_GRP1);
+        Assertions.assertThrows(IllegalArgumentException.class, () -> {
+            configProperties.setProperty(
+                    GlobalPermissionEvaluatorImpl.GLOBAL_PROP_PREFIX + "boxy", PRINC_GRP1);
 
-        evaluator = new GlobalPermissionEvaluatorImpl(configProperties);
+            evaluator = new GlobalPermissionEvaluatorImpl(configProperties);
+        });
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void illegalPatronRoleTest() {
-        addGlobalAssignment(UserRole.canViewOriginals, PRINC_GRP1);
+        Assertions.assertThrows(IllegalArgumentException.class, () -> {
+            addGlobalAssignment(UserRole.canViewOriginals, PRINC_GRP1);
 
-        evaluator = new GlobalPermissionEvaluatorImpl(configProperties);
+            evaluator = new GlobalPermissionEvaluatorImpl(configProperties);
+        });
     }
 
     @Test
@@ -71,11 +76,13 @@ public class GlobalPermissionEvaluatorTest {
         assertFalse(evaluator.hasGlobalPermission(principals, Permission.destroy));
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void illegalPatronPrincipalTest() {
-        addGlobalAssignment(UserRole.canAccess, AccessPrincipalConstants.AUTHENTICATED_PRINC);
+        Assertions.assertThrows(IllegalArgumentException.class, () -> {
+            addGlobalAssignment(UserRole.canAccess, AccessPrincipalConstants.AUTHENTICATED_PRINC);
 
-        new GlobalPermissionEvaluatorImpl(configProperties);
+            new GlobalPermissionEvaluatorImpl(configProperties);
+        });
     }
 
     @Test
@@ -98,12 +105,14 @@ public class GlobalPermissionEvaluatorTest {
         assertFalse(evaluator.hasGlobalPermission(principals, Permission.viewHidden));
     }
 
-    @Test(expected = IllegalStateException.class)
+    @Test
     public void multipleRolesPerPrincipal() {
-        addGlobalAssignment(UserRole.canAccess, PRINC_GRP1);
-        addGlobalAssignment(UserRole.canManage, PRINC_GRP1);
+        Assertions.assertThrows(IllegalStateException.class, () -> {
+            addGlobalAssignment(UserRole.canAccess, PRINC_GRP1);
+            addGlobalAssignment(UserRole.canManage, PRINC_GRP1);
 
-        evaluator = new GlobalPermissionEvaluatorImpl(configProperties);
+            evaluator = new GlobalPermissionEvaluatorImpl(configProperties);
+        });
     }
 
     @Test

@@ -2,12 +2,12 @@ package edu.unc.lib.boxc.auth.fcrepo.model;
 
 import java.util.ArrayList;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl;
 
-public class AccessGroupSetImplTest extends Assert {
+public class AccessGroupSetImplTest extends Assertions {
 
     @Test
     public void testGroups() {
@@ -49,38 +49,38 @@ public class AccessGroupSetImplTest extends Assert {
 
         String members = "testGroup1";
         groupSet = new AccessGroupSetImpl(members);
-        Assert.assertTrue(groupSet.size() == 1);
+        assertTrue(groupSet.size() == 1);
 
-        Assert.assertTrue(groupSet.contains("testGroup1"));
+        assertTrue(groupSet.contains("testGroup1"));
 
         members = "testGroup1;testGroup2;testGroup3;oddGroup";
         groupSet = new AccessGroupSetImpl(members);
-        Assert.assertEquals(4, groupSet.size());
-        Assert.assertTrue(groupSet.contains("testGroup1"));
-        Assert.assertTrue(groupSet.contains("oddGroup"));
+        assertEquals(4, groupSet.size());
+        assertTrue(groupSet.contains("testGroup1"));
+        assertTrue(groupSet.contains("oddGroup"));
 
         members = "testGroup1:testGroupExtended;testGroup2";
         groupSet = new AccessGroupSetImpl(members);
-        Assert.assertTrue(groupSet.size() == 2);
+        assertTrue(groupSet.size() == 2);
 
         members = ";testGroup1;";
         groupSet = new AccessGroupSetImpl(members);
-        Assert.assertTrue(groupSet.size() == 1);
+        assertTrue(groupSet.size() == 1);
 
         members = "";
         groupSet = new AccessGroupSetImpl(members);
-        Assert.assertTrue(groupSet.size() == 0);
-        Assert.assertTrue(members.equals(groupSet.joinAccessGroups(";", "", false)));
+        assertTrue(groupSet.size() == 0);
+        assertTrue(members.equals(groupSet.joinAccessGroups(";", "", false)));
 
         members = "edu:unc:lib:cdr:admin;edu:unc:lib:cdr:sfc";
         groupSet = new AccessGroupSetImpl(members);
-        Assert.assertTrue(groupSet.size() == 2);
+        assertTrue(groupSet.size() == 2);
 
-        Assert.assertTrue(members.equals(groupSet.joinAccessGroups(";", "", false)) ||
+        assertTrue(members.equals(groupSet.joinAccessGroups(";", "", false)) ||
                 "edu:unc:lib:cdr:sfc;edu:unc:lib:cdr:admin".equals(groupSet.joinAccessGroups(";", "", false)));
 
         groupSet.remove("edu:unc:lib:cdr:admin");
-        Assert.assertTrue(groupSet.size() == 1);
+        assertTrue(groupSet.size() == 1);
 
     }
 }

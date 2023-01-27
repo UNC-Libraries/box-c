@@ -1,10 +1,11 @@
 package edu.unc.lib.boxc.web.common.utils;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 import org.apache.commons.lang3.StringUtils;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import edu.unc.lib.boxc.web.common.utils.StringFormatUtil;
 
@@ -22,10 +23,12 @@ public class StringFormatUtilTest {
         assertEquals(50, StringFormatUtil.truncateText(text, 50).length());
     }
 
-    @Test(expected = IndexOutOfBoundsException.class)
+    @Test
     public void testTruncateTextNegativeIndex() {
-        String text = StringUtils.repeat('1', 5);
-        StringFormatUtil.truncateText(text, -1);
+        Assertions.assertThrows(IndexOutOfBoundsException.class, () -> {
+            String text = StringUtils.repeat('1', 5);
+            StringFormatUtil.truncateText(text, -1);
+        });
     }
 
     @Test

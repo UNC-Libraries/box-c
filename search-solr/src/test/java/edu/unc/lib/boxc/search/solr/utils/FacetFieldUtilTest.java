@@ -6,22 +6,22 @@ import edu.unc.lib.boxc.search.solr.facets.CutoffFacetImpl;
 import edu.unc.lib.boxc.search.solr.facets.GenericFacet;
 import edu.unc.lib.boxc.search.solr.facets.RoleGroupFacet;
 import org.apache.solr.client.solrj.SolrQuery;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 import java.io.FileInputStream;
 import java.util.Arrays;
 import java.util.Properties;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class FacetFieldUtilTest {
 
     private static SolrSettings solrSettings;
     private FacetFieldUtil facetFieldUtil;
 
-    @BeforeClass
+    @BeforeAll
     public static void setupOnce() throws Exception {
         Properties properties = new Properties();
         properties.load(new FileInputStream("src/test/resources/solr.properties"));
@@ -29,7 +29,7 @@ public class FacetFieldUtilTest {
         solrSettings.setProperties(properties);
     }
 
-    @Before
+    @BeforeEach
     public void setup() throws Exception {
         facetFieldUtil = new FacetFieldUtil();
         facetFieldUtil.setSolrSettings(solrSettings);

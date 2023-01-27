@@ -1,14 +1,16 @@
 package edu.unc.lib.boxc.persist.impl.storage;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.nio.file.Files;
 import java.nio.file.attribute.PosixFilePermission;
 import java.util.Set;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import edu.unc.lib.boxc.persist.api.storage.StorageType;
 import edu.unc.lib.boxc.persist.impl.storage.HashedPosixStorageLocation;
@@ -21,9 +23,10 @@ public class HashedPosixStorageLocationTest extends HashedFilesystemStorageLocat
     private HashedPosixStorageLocation posixLoc;
 
     @Override
-    @Before
+    @BeforeEach
     public void setup() throws Exception {
-        storagePath = tmpFolder.newFolder("storage").toPath();
+        storagePath = tmpFolder.resolve("storage");
+        Files.createDirectory(storagePath);
 
         posixLoc = new HashedPosixStorageLocation();
         posixLoc.setBase(storagePath.toString());
@@ -36,9 +39,11 @@ public class HashedPosixStorageLocationTest extends HashedFilesystemStorageLocat
         assertEquals(StorageType.POSIX_FS, loc.getStorageType());
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void setPermissionsInvalidFormat() {
-        posixLoc.setPermissions("what");
+        Assertions.assertThrows(IllegalArgumentException.class, () -> {
+            posixLoc.setPermissions("what");
+        });
     }
 
     @Test

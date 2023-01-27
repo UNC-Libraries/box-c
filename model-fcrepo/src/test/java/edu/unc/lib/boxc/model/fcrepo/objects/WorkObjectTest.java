@@ -2,9 +2,9 @@ package edu.unc.lib.boxc.model.fcrepo.objects;
 
 import static edu.unc.lib.boxc.auth.api.AccessPrincipalConstants.PUBLIC_PRINC;
 import static org.apache.jena.rdf.model.ResourceFactory.createResource;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyBoolean;
 import static org.mockito.Matchers.eq;
@@ -26,8 +26,9 @@ import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.vocabulary.DC;
 import org.apache.jena.vocabulary.RDF;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.invocation.InvocationOnMock;
@@ -72,7 +73,7 @@ public class WorkObjectTest extends AbstractFedoraObjectTest {
     private Model model;
     private Resource resc;
 
-    @Before
+    @BeforeEach
     public void init() {
         initMocks(this);
 
@@ -112,11 +113,13 @@ public class WorkObjectTest extends AbstractFedoraObjectTest {
         assertEquals(work, work.validateType());
     }
 
-    @Test(expected = ObjectTypeMismatchException.class)
+    @Test
     public void invalidTypeTest() {
-        types = Arrays.asList(PcdmModels.Object.getURI(), Cdr.Folder.getURI());
+        Assertions.assertThrows(ObjectTypeMismatchException.class, () -> {
+            types = Arrays.asList(PcdmModels.Object.getURI(), Cdr.Folder.getURI());
 
-        assertEquals(work, work.validateType());
+            assertEquals(work, work.validateType());
+        });
     }
 
     @Test
@@ -132,39 +135,43 @@ public class WorkObjectTest extends AbstractFedoraObjectTest {
                 eq(primaryResc));
     }
 
-    @Test(expected = InvalidRelationshipException.class)
+    @Test
     public void setPrimaryObjectToNonMemberTest() {
-        PID anotherPid =  makePid();
-        WorkObject anotherWork = mock(WorkObject.class);
-        when(anotherWork.getPid()).thenReturn(anotherPid);
+        Assertions.assertThrows(InvalidRelationshipException.class, () -> {
+            PID anotherPid =  makePid();
+            WorkObject anotherWork = mock(WorkObject.class);
+            when(anotherWork.getPid()).thenReturn(anotherPid);
 
-        // Assign the file object to a different parent
-        when(fileObj.getParent()).thenReturn(anotherWork);
+            // Assign the file object to a different parent
+            when(fileObj.getParent()).thenReturn(anotherWork);
 
-        PID primaryPid = makePid();
+            PID primaryPid = makePid();
 
-        try {
-            work.setPrimaryObject(primaryPid);
-        } finally {
-            verify(repoObjFactory, never()).createExclusiveRelationship(any(RepositoryObject.class),
-                    eq(Cdr.primaryObject), any(Resource.class));
-        }
+            try {
+                work.setPrimaryObject(primaryPid);
+            } finally {
+                verify(repoObjFactory, never()).createExclusiveRelationship(any(RepositoryObject.class),
+                        eq(Cdr.primaryObject), any(Resource.class));
+            }
+        });
     }
 
-    @Test(expected = InvalidOperationForObjectType.class)
+    @Test
     public void setPrimaryObjectToInvalidTypeTest() {
-        PID anotherPid =  makePid();
-        WorkObject anotherWork = mock(WorkObject.class);
-        when(anotherWork.getPid()).thenReturn(anotherPid);
+        Assertions.assertThrows(InvalidOperationForObjectType.class, () -> {
+            PID anotherPid =  makePid();
+            WorkObject anotherWork = mock(WorkObject.class);
+            when(anotherWork.getPid()).thenReturn(anotherPid);
 
-        when(driver.getRepositoryObject(eq(anotherPid))).thenReturn(anotherWork);
+            when(driver.getRepositoryObject(eq(anotherPid))).thenReturn(anotherWork);
 
-        try {
-            work.setPrimaryObject(anotherPid);
-        } finally {
-            verify(repoObjFactory, never()).createExclusiveRelationship(any(RepositoryObject.class),
-                    eq(Cdr.primaryObject), any(Resource.class));
-        }
+            try {
+                work.setPrimaryObject(anotherPid);
+            } finally {
+                verify(repoObjFactory, never()).createExclusiveRelationship(any(RepositoryObject.class),
+                        eq(Cdr.primaryObject), any(Resource.class));
+            }
+        });
     }
 
     @Test
@@ -204,13 +211,15 @@ public class WorkObjectTest extends AbstractFedoraObjectTest {
         verify(repoObjFactory).addMember(eq(work), eq(fileObj));
     }
 
-    @Test(expected = ObjectTypeMismatchException.class)
+    @Test
     public void addMemberFolderTest() {
-        FolderObject folderObj = mock(FolderObject.class);
+        Assertions.assertThrows(ObjectTypeMismatchException.class, () -> {
+            FolderObject folderObj = mock(FolderObject.class);
 
-        work.addMember(folderObj);
+            work.addMember(folderObj);
 
-        verify(repoObjFactory).addMember(any(ContentObject.class), any(ContentObject.class));
+            verify(repoObjFactory).addMember(any(ContentObject.class), any(ContentObject.class));
+        });
     }
 
     @Test
@@ -258,10 +267,10 @@ public class WorkObjectTest extends AbstractFedoraObjectTest {
         verify(repoObjFactory).addMember(eq(work), eq(fileObj));
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void addDataFileNoContentTest() {
-
-        work.addDataFile(null, FILENAME, MIMETYPE, SHA1, MD5);
+        Assertions.assertThrows(IllegalArgumentException.class,
+                () -> work.addDataFile(null, FILENAME, MIMETYPE, SHA1, MD5));
     }
 
     @Test

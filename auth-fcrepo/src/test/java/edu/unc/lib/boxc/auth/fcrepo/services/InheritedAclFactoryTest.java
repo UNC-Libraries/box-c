@@ -11,11 +11,11 @@ import static edu.unc.lib.boxc.auth.api.UserRole.canViewOriginals;
 import static edu.unc.lib.boxc.auth.api.UserRole.unitOwner;
 import static edu.unc.lib.boxc.model.api.ids.RepositoryPathConstants.CONTENT_ROOT_ID;
 import static java.util.Arrays.asList;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.when;
@@ -33,8 +33,8 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 
 import edu.unc.lib.boxc.auth.api.UserRole;
@@ -61,7 +61,7 @@ public class InheritedAclFactoryTest {
 
     private PID pid;
 
-    @Before
+    @BeforeEach
     public void init() {
         initMocks(this);
 
@@ -120,8 +120,7 @@ public class InheritedAclFactoryTest {
 
         Map<String, Set<String>> princRoles = aclFactory.getPrincipalRoles(pid);
 
-        assertEquals("Incorrect number of principal assignments on collection",
-                2, princRoles.size());
+        assertEquals(2, princRoles.size(), "Incorrect number of principal assignments on collection");
 
         assertPrincipalHasRoles("Incorrect inherited/merged roles for the manger principal",
                 princRoles, MANAGE_PRINC, canManage, canAccess);
@@ -135,7 +134,7 @@ public class InheritedAclFactoryTest {
 
         Map<String, Set<String>> princRoles = aclFactory.getPrincipalRoles(pid);
 
-        assertEquals("No assignments should be present on collection", 0, princRoles.size());
+        assertEquals(0, princRoles.size(), "No assignments should be present on collection");
     }
 
     @Test
@@ -150,8 +149,7 @@ public class InheritedAclFactoryTest {
 
         Map<String, Set<String>> princRoles = aclFactory.getPrincipalRoles(pid);
 
-        assertEquals("Incorrect number of principal assignments on content",
-                3, princRoles.size());
+        assertEquals(3, princRoles.size(), "Incorrect number of principal assignments on content");
         assertPrincipalHasRoles("Incorrect inherited roles for the manger principal",
                 princRoles, MANAGE_PRINC, canManage);
         assertPrincipalHasRoles("Incorrect inherited patron roles for the patron principal",
@@ -171,7 +169,7 @@ public class InheritedAclFactoryTest {
 
         Map<String, Set<String>> princRoles = aclFactory.getPrincipalRoles(pid);
 
-        assertEquals("All access to content object should be removed", 0, princRoles.size());
+        assertEquals(0, princRoles.size(), "All access to content object should be removed");
     }
 
     @Test
@@ -183,7 +181,7 @@ public class InheritedAclFactoryTest {
 
         Map<String, Set<String>> princRoles = aclFactory.getPrincipalRoles(pid);
 
-        assertEquals("All access to content object should be removed", 0, princRoles.size());
+        assertEquals(0, princRoles.size(), "All access to content object should be removed");
     }
 
     @Test
@@ -199,7 +197,7 @@ public class InheritedAclFactoryTest {
 
         Map<String, Set<String>> princRoles = aclFactory.getPrincipalRoles(pid);
 
-        assertEquals("Only one patron principal should be present", 1, princRoles.size());
+        assertEquals(1, princRoles.size(), "Only one patron principal should be present");
         assertPrincipalHasRoles("Authenticated principal should still be assigned",
                 princRoles, AUTHENTICATED_PRINC, canViewOriginals);
     }
@@ -215,7 +213,7 @@ public class InheritedAclFactoryTest {
 
         Map<String, Set<String>> princRoles = aclFactory.getPrincipalRoles(pid);
 
-        assertEquals("Only one patron principal should be present", 1, princRoles.size());
+        assertEquals(1, princRoles.size(), "Only one patron principal should be present");
         assertPrincipalHasRoles("Embargo should not impact the roles returned",
                 princRoles, PUBLIC_PRINC, canViewOriginals);
     }
@@ -231,7 +229,7 @@ public class InheritedAclFactoryTest {
 
         Map<String, Set<String>> princRoles = aclFactory.getPrincipalRoles(pid);
 
-        assertEquals("Only owner should be returned for content object", 1, princRoles.size());
+        assertEquals(1, princRoles.size(), "Only owner should be returned for content object");
         assertPrincipalHasRoles("Owner principal role not set correctly",
                 princRoles, OWNER_PRINC, unitOwner);
     }
@@ -245,8 +243,7 @@ public class InheritedAclFactoryTest {
 
         Map<String, Set<String>> princRoles = aclFactory.getPrincipalRoles(pid);
 
-        assertEquals("Incorrect number of principal assignments on content",
-                1, princRoles.size());
+        assertEquals(1, princRoles.size(), "Incorrect number of principal assignments on content");
         assertPrincipalHasRoles("Incorrect inherited patron roles for the patron group",
                 princRoles, PATRON_GROUP, canViewOriginals);
     }
@@ -261,8 +258,7 @@ public class InheritedAclFactoryTest {
 
         Map<String, Set<String>> princRoles = aclFactory.getPrincipalRoles(pid);
 
-        assertEquals("Incorrect number of principal assignments on content",
-                1, princRoles.size());
+        assertEquals(1, princRoles.size(), "Incorrect number of principal assignments on content");
         assertPrincipalHasRoles("Incorrect inherited patron roles for the patron group",
                 princRoles, PATRON_GROUP, canViewMetadata);
     }
@@ -277,8 +273,7 @@ public class InheritedAclFactoryTest {
 
         Map<String, Set<String>> princRoles = aclFactory.getPrincipalRoles(pid);
 
-        assertEquals("Incorrect number of principal assignments on content",
-                0, princRoles.size());
+        assertEquals(0, princRoles.size(), "Incorrect number of principal assignments on content");
     }
 
     @Test
@@ -319,7 +314,7 @@ public class InheritedAclFactoryTest {
 
         when(objectAclFactory.getEmbargoUntil(any(PID.class))).thenReturn(null);
 
-        assertNull("No embargo should return null", aclFactory.getEmbargoUntil(pid));
+        assertNull(aclFactory.getEmbargoUntil(pid), "No embargo should return null");
     }
 
     @Test
@@ -377,7 +372,7 @@ public class InheritedAclFactoryTest {
         addPidToAncestors();
 
         List<RoleAssignment> assignments = aclFactory.getPatronAccess(pid);
-        assertTrue("No patron assignments expected", assignments.isEmpty());
+        assertTrue(assignments.isEmpty(), "No patron assignments expected");
     }
 
     @Test
@@ -453,7 +448,7 @@ public class InheritedAclFactoryTest {
         addPrincipalRoles(pid, PUBLIC_PRINC, UserRole.none);
 
         List<RoleAssignment> assignments = aclFactory.getPatronAccess(pid);
-        assertTrue("All assignments should be revoked", assignments.isEmpty());
+        assertTrue(assignments.isEmpty(), "All assignments should be revoked");
     }
 
     @Test
@@ -466,7 +461,7 @@ public class InheritedAclFactoryTest {
         addPrincipalRoles(parentPid, PUBLIC_PRINC, UserRole.none);
 
         List<RoleAssignment> assignments = aclFactory.getPatronAccess(pid);
-        assertTrue("All assignments should be revoked", assignments.isEmpty());
+        assertTrue(assignments.isEmpty(), "All assignments should be revoked");
     }
 
     @Test
@@ -861,7 +856,7 @@ public class InheritedAclFactoryTest {
         PID collPid = makePid();
 
         List<RoleAssignment> assignments = aclFactory.getPatronRoleAssignments(collPid);
-        assertTrue("No assignments should be returned", assignments.isEmpty());
+        assertTrue(assignments.isEmpty(), "No assignments should be returned");
     }
 
     private RoleAssignment getAssignmentByPrincipal(List<RoleAssignment> assignments, String principal) {

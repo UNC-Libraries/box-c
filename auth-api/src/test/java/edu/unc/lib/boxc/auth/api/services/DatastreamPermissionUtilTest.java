@@ -6,9 +6,10 @@ import static edu.unc.lib.boxc.auth.api.Permission.viewOriginal;
 import static edu.unc.lib.boxc.auth.api.services.DatastreamPermissionUtil.getPermissionForDatastream;
 import static edu.unc.lib.boxc.model.api.DatastreamType.JP2_ACCESS_COPY;
 import static edu.unc.lib.boxc.model.api.DatastreamType.ORIGINAL_FILE;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 /**
  *
@@ -22,9 +23,9 @@ public class DatastreamPermissionUtilTest {
         assertEquals(viewOriginal, getPermissionForDatastream(ORIGINAL_FILE.getId()));
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void testGetDatastreamPermissionNoName() {
-        getPermissionForDatastream("");
+        Assertions.assertThrows(IllegalArgumentException.class, () -> getPermissionForDatastream(""));
     }
 
     @Test

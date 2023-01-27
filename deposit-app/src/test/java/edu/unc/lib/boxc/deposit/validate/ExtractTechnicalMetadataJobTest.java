@@ -4,10 +4,10 @@ import static edu.unc.lib.boxc.common.test.TestHelpers.setField;
 import static edu.unc.lib.boxc.model.api.xml.JDOMNamespaceUtil.FITS_NS;
 import static edu.unc.lib.boxc.model.api.xml.JDOMNamespaceUtil.PREMIS_V3_NS;
 import static org.awaitility.Awaitility.await;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
@@ -49,9 +49,9 @@ import org.apache.jena.vocabulary.RDF;
 import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.input.SAXBuilder;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.invocation.InvocationOnMock;
@@ -123,9 +123,11 @@ public class ExtractTechnicalMetadataJobTest extends AbstractDepositJobTest {
 
     private final static ExecutorService executorService = Executors.newFixedThreadPool(2);
 
-    @Before
+    @BeforeEach
     public void init() throws Exception {
-        File fitsHome = tmpFolder.newFolder("fits");
+        Path fitsHomePath = tmpFolder.resolve("fits");
+        Files.createDirectory(fitsHomePath);
+        File fitsHome = fitsHomePath.toFile();
         // Create fits command and make it executable
         fitsCommand = new File(fitsHome, "fits.sh").toPath();
 
@@ -162,7 +164,7 @@ public class ExtractTechnicalMetadataJobTest extends AbstractDepositJobTest {
         techmdDir = new File(job.getDepositDirectory(), DepositConstants.TECHMD_DIR);
     }
 
-    @AfterClass
+    @AfterAll
     public static void afterTestClass() {
         executorService.shutdown();
     }
@@ -414,7 +416,7 @@ public class ExtractTechnicalMetadataJobTest extends AbstractDepositJobTest {
             job.run();
             fail("Expected job to fail");
         } catch (RepositoryException e) {
-            assertEquals("Expect failure with message", "Boom", e.getMessage());
+            assertEquals("Boom", e.getMessage(), "Expect failure with message");
         }
     }
 
@@ -428,7 +430,7 @@ public class ExtractTechnicalMetadataJobTest extends AbstractDepositJobTest {
         workBag.addProperty(RDF.type, Cdr.Work);
         depositBag.add(workBag);
         String filename = "weird\uD83D\uDC7D.txt";
-        File sourceFile = tmpFolder.newFile(filename);
+        File sourceFile = tmpFolder.resolve(filename).toFile();
         PID filePid = addFileObject(workBag, sourceFile.getAbsolutePath(), IMAGE_MIMETYPE, IMAGE_MD5);
 
         job.closeModel();
@@ -448,7 +450,7 @@ public class ExtractTechnicalMetadataJobTest extends AbstractDepositJobTest {
         workBag.addProperty(RDF.type, Cdr.Work);
         depositBag.add(workBag);
         String filename = "commencement.MOV";
-        File sourceFile = tmpFolder.newFile(filename);
+        File sourceFile = tmpFolder.resolve(filename).toFile();
         PID filePid = addFileObject(workBag, sourceFile.getAbsolutePath(), IMAGE_MIMETYPE, IMAGE_MD5);
 
         job.closeModel();
@@ -467,7 +469,7 @@ public class ExtractTechnicalMetadataJobTest extends AbstractDepositJobTest {
         workBag.addProperty(RDF.type, Cdr.Work);
         depositBag.add(workBag);
         String parentFolderName = "paren(goes)here";
-        File parentFolder = tmpFolder.newFolder(parentFolderName);
+        File parentFolder = tmpFolder.resolve(parentFolderName).toFile();
         String filename = "commencement.MOV";
         File sourceFile = new File(parentFolder, "commence.mov");
         PID filePid = addFileObject(workBag, sourceFile.getAbsolutePath(), IMAGE_MIMETYPE, IMAGE_MD5);
@@ -503,8 +505,8 @@ public class ExtractTechnicalMetadataJobTest extends AbstractDepositJobTest {
     @Test
     public void symlinkFileTest() throws Exception {
         PID pid = makePid();
-        var originalPath = tmpFolder.newFile("file.txt").toPath();
-        var sanitizedPath = tmpFolder.newFile("fi_l_e.txt").toPath();
+        var originalPath = tmpFolder.resolve("file.txt");
+        var sanitizedPath = tmpFolder.resolve("fi_l_e.txt");
         var result = job.symlinkFile(pid, sanitizedPath, originalPath);
 
         assertEquals("fi_l_e.txt", result.getFileName().toString());
@@ -531,7 +533,7 @@ public class ExtractTechnicalMetadataJobTest extends AbstractDepositJobTest {
         HttpUriRequest request = getRequest();
         String submittedPath = getSubmittedFilePath(request);
 
-        assertEquals("FITS service not called with the expected path", absFilePath.replace("/", "%2F"), submittedPath);
+        assertEquals(absFilePath.replace("/", "%2F"), submittedPath, "FITS service not called with the expected path");
     }
 
     private void verifyFileResults(PID filePid, String expectedMimetype, String expectedFormat,
@@ -541,11 +543,10 @@ public class ExtractTechnicalMetadataJobTest extends AbstractDepositJobTest {
         // Post-run model info for the file object
         Resource fileResc = model.getResource(filePid.getRepositoryPath());
 
-        assertEquals("Incorrect number of reports in output dir",
-                numberReports, techmdDir.list().length);
+        assertEquals(numberReports, techmdDir.list().length, "Incorrect number of reports in output dir");
 
         File reportFile = job.getTechMdPath(filePid, false).toFile();
-        assertTrue("Report file not created", reportFile.exists());
+        assertTrue(reportFile.exists(), "Report file not created");
 
         Document premisDoc = new SAXBuilder().build(new FileInputStream(reportFile));
         Element premisEl = premisDoc.getRootElement();
@@ -562,19 +563,18 @@ public class ExtractTechnicalMetadataJobTest extends AbstractDepositJobTest {
         // Verify that the FITS result report was added to the premis
         Element fitsEl = premisObjCharsEl.getChild("objectCharacteristicsExtension", PREMIS_V3_NS)
                 .getChild("fits", FITS_NS);
-        assertNotNull("FITS results not added to report", fitsEl);
-        assertNotNull("FITS contents missing from report",
-                fitsEl.getChild("identification", FITS_NS));
+        assertNotNull(fitsEl, "FITS results not added to report");
+        assertNotNull(fitsEl.getChild("identification", FITS_NS), "FITS contents missing from report");
 
         // Check that the format got set
         String formatName = premisObjCharsEl.getChild("format", PREMIS_V3_NS)
                 .getChild("formatDesignation", PREMIS_V3_NS)
                 .getChildText("formatName", PREMIS_V3_NS);
-        assertEquals("Format not set in premis report", expectedFormat, formatName);
+        assertEquals(expectedFormat, formatName, "Format not set in premis report");
 
         Resource origResc = DepositModelHelpers.getDatastream(fileResc);
-        assertEquals("Mimetype not set in deposit model", expectedMimetype,
-                origResc.getProperty(CdrDeposit.mimetype).getString());
+        assertEquals(expectedMimetype, origResc.getProperty(CdrDeposit.mimetype).getString(),
+                "Mimetype not set in deposit model");
 
         verify(jobStatusFactory).setTotalCompletion(eq(jobUUID), eq(1));
         verify(jobStatusFactory, times(1)).incrCompletion(eq(jobUUID), eq(1));

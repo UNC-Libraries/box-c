@@ -1,6 +1,6 @@
 package edu.unc.lib.boxc.operations.jms.indexing;
 import static edu.unc.lib.boxc.auth.api.Permission.reindex;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
@@ -11,9 +11,10 @@ import static org.mockito.MockitoAnnotations.initMocks;
 
 import java.util.UUID;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
@@ -58,7 +59,7 @@ public class IndexingServiceTest {
     private IndexingService service;
     private PID objPid;
 
-    @Before
+    @BeforeEach
     public void init() throws Exception{
         initMocks(this);
 
@@ -72,7 +73,7 @@ public class IndexingServiceTest {
         service.setIndexingMessageSender(messageSender);
     }
 
-    @After
+    @AfterEach
     public void tearDown() {
         GroupsThreadStore.clearStore();
     }
@@ -107,12 +108,14 @@ public class IndexingServiceTest {
         verifyParameters(IndexingActionType.CLEAN_REINDEX);
     }
 
-    @Test(expected = AccessRestrictionException.class)
+    @Test
     public void insufficientAccessTest() {
-        doThrow(new AccessRestrictionException()).when(aclService)
-                .assertHasAccess(anyString(), any(PID.class), any(), eq(reindex));
+        Assertions.assertThrows(AccessRestrictionException.class, () -> {
+            doThrow(new AccessRestrictionException()).when(aclService)
+                    .assertHasAccess(anyString(), any(PID.class), any(), eq(reindex));
 
-        service.reindexObject(agent, objPid);
+            service.reindexObject(agent, objPid);
+        });
     }
 
     private void verifyParameters(IndexingActionType expectedActionType) {

@@ -1,10 +1,10 @@
 package edu.unc.lib.boxc.model.fcrepo.ids;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.ids.PIDMinter;
@@ -19,7 +19,7 @@ import edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPIDMinter;
 public class RepositoryPIDMinterTest {
     private PIDMinter pidMinter;
 
-    @Before
+    @BeforeEach
     public void init() {
         pidMinter = new RepositoryPIDMinter();
     }

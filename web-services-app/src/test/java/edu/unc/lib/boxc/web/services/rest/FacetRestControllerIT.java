@@ -6,21 +6,21 @@ import edu.unc.lib.boxc.search.api.SearchFieldKey;
 import edu.unc.lib.boxc.web.services.rest.modify.AbstractAPIIT;
 import org.apache.commons.collections4.IteratorUtils;
 import org.apache.solr.client.solrj.embedded.EmbeddedSolrServer;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.ContextHierarchy;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.context.web.WebAppConfiguration;
 import edu.unc.lib.boxc.search.solr.test.TestCorpus;
 import org.springframework.test.web.servlet.MvcResult;
 
 import java.util.List;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -32,7 +32,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
         @ContextConfiguration("/spring-test/solr-indexing-context.xml"),
         @ContextConfiguration("/facet-rest-it-servlet.xml")
 })
-@RunWith(SpringJUnit4ClassRunner.class)
+@ExtendWith(SpringExtension.class)
 @WebAppConfiguration
 public class FacetRestControllerIT extends AbstractAPIIT {
     // non-facet field selected
@@ -46,7 +46,7 @@ public class FacetRestControllerIT extends AbstractAPIIT {
     private TestCorpus testCorpus;
     private static boolean corpusPopulated;
 
-    @Before
+    @BeforeEach
     public void setup() throws Exception {
         if (!corpusPopulated) {
             testCorpus = new TestCorpus();
@@ -118,8 +118,8 @@ public class FacetRestControllerIT extends AbstractAPIIT {
         var result = mvc.perform(get("/facet/fileType/listValues?facetSort=what"))
                 .andExpect(status().is4xxClientError())
                 .andReturn();
-        assertTrue("Incorrect response: " + result.getResponse().getContentAsString(),
-                result.getResponse().getContentAsString().contains("Invalid facet sort type"));
+        assertTrue(result.getResponse().getContentAsString().contains("Invalid facet sort type"),
+                "Incorrect response: " + result.getResponse().getContentAsString());
     }
 
     @Test
@@ -151,8 +151,8 @@ public class FacetRestControllerIT extends AbstractAPIIT {
         var result = mvc.perform(get("/facet/fileType/listValues?facetRows=100000"))
                 .andExpect(status().is4xxClientError())
                 .andReturn();
-        assertTrue("Incorrect response: " + result.getResponse().getContentAsString(),
-                result.getResponse().getContentAsString().contains("Invalid facetRows value, max value is:"));
+        assertTrue(result.getResponse().getContentAsString().contains("Invalid facetRows value, max value is:"),
+                "Incorrect response: " + result.getResponse().getContentAsString());
     }
 
     private List<JsonNode> extractResponseFacetValues(MvcResult result) throws Exception {

@@ -1,7 +1,7 @@
 package edu.unc.lib.boxc.deposit.validate;
 
 import static edu.unc.lib.boxc.common.test.TestHelpers.setField;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyBoolean;
 import static org.mockito.Matchers.anyInt;
@@ -25,9 +25,9 @@ import org.apache.jena.rdf.model.Bag;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.vocabulary.RDF;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
@@ -71,7 +71,7 @@ public class VirusScanJobTest extends AbstractDepositJobTest {
 
     private final static ExecutorService executorService = MoreExecutors.newDirectExecutorService();
 
-    @Before
+    @BeforeEach
     public void init() throws Exception {
 
         initializeJob();
@@ -117,7 +117,7 @@ public class VirusScanJobTest extends AbstractDepositJobTest {
         job.init();
     }
 
-    @AfterClass
+    @AfterAll
     public static void afterTestClass() {
         executorService.shutdown();
     }

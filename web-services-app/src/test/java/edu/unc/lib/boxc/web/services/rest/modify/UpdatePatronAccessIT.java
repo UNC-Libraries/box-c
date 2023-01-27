@@ -7,10 +7,10 @@ import static edu.unc.lib.boxc.auth.api.UserRole.canManage;
 import static edu.unc.lib.boxc.auth.api.UserRole.canViewMetadata;
 import static edu.unc.lib.boxc.auth.api.UserRole.canViewOriginals;
 import static java.util.Arrays.asList;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.reset;
@@ -30,9 +30,9 @@ import java.util.TimeZone;
 import javax.ws.rs.core.MediaType;
 
 import org.apache.jena.rdf.model.Model;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -83,7 +83,7 @@ public class UpdatePatronAccessIT extends AbstractAPIIT {
     private ArgumentCaptor<String> stringCaptor;
     private static final ObjectReader MAPPER = new ObjectMapper().readerFor(PatronAccessAssignmentRequest.class);
 
-    @Before
+    @BeforeEach
     public void setup() throws Exception {
         initMocks(this);
         reset(patronAccessOperationTemplate);
@@ -96,7 +96,7 @@ public class UpdatePatronAccessIT extends AbstractAPIIT {
         setupContentRoot();
     }
 
-    @After
+    @AfterEach
     public void teardown() throws Exception {
         GroupsThreadStore.clearStore();
     }

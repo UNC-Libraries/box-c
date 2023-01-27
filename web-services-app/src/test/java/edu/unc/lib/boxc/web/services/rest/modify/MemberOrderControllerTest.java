@@ -16,15 +16,14 @@ import edu.unc.lib.boxc.web.services.processing.MemberOrderCsvExporter;
 import edu.unc.lib.boxc.web.services.processing.MemberOrderCsvTransformer;
 import edu.unc.lib.boxc.web.services.rest.MvcTestHelpers;
 import org.apache.commons.io.FileUtils;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.api.io.TempDir;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
@@ -35,12 +34,13 @@ import org.springframework.web.context.WebApplicationContext;
 import java.io.IOException;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
 import static com.fasterxml.jackson.databind.type.TypeFactory.defaultInstance;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
@@ -53,7 +53,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 /**
  * @author bbpennel
  */
-@RunWith(SpringJUnit4ClassRunner.class)
+@ExtendWith(SpringExtension.class)
 @WebAppConfiguration
 @ContextConfiguration("/member-order-test-servlet.xml")
 public class MemberOrderControllerTest {
@@ -69,12 +69,12 @@ public class MemberOrderControllerTest {
     private MemberOrderRequestSender requestSender;
     @Autowired
     private MemberOrderCsvTransformer csvTransformer;
-    @Rule
-    public final TemporaryFolder tmpFolder = new TemporaryFolder();
+    @TempDir
+    public Path tmpFolder;
 
     private MockMvc mvc;
 
-    @Before
+    @BeforeEach
     public void init() throws Exception {
         reset(csvTransformer, csvExporter, requestSender);
         mvc = MockMvcBuilders
@@ -82,12 +82,11 @@ public class MemberOrderControllerTest {
                 .build();
         GroupsThreadStore.storeUsername(USERNAME);
         GroupsThreadStore.storeGroups(GROUPS);
-        tmpFolder.create();
     }
 
     @Test
     public void memberOrderCsvExportSuccessTest() throws Exception {
-        var csvPath = tmpFolder.newFile().toPath();
+        var csvPath = tmpFolder.resolve("testFile").toAbsolutePath();
         var expectedContent = "some,csv,data,goes,here";
         FileUtils.writeStringToFile(csvPath.toFile(), expectedContent, StandardCharsets.UTF_8);
 

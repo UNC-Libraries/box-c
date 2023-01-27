@@ -4,10 +4,10 @@ import static edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPaths.getContentRootPi
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.nio.file.Files.createTempFile;
 import static org.apache.commons.io.FileUtils.writeStringToFile;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -20,7 +20,8 @@ import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.vocabulary.RDF;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import edu.unc.lib.boxc.model.api.exceptions.ObjectTypeMismatchException;
 import edu.unc.lib.boxc.model.api.ids.PID;
@@ -51,14 +52,16 @@ public class DepositRecordIT extends AbstractFedoraIT {
         assertTrue(record.getTypes().contains(Cdr.DepositRecord.getURI()));
     }
 
-    @Test(expected = ObjectTypeMismatchException.class)
+    @Test
     public void getInvalidDepositRecord() throws Exception {
-        PID pid = pidMinter.mintContentPid();
-        // Create a dummy non-depositRecord object
-        client.put(pid.getRepositoryUri()).perform().close();
+        Assertions.assertThrows(ObjectTypeMismatchException.class, () -> {
+            PID pid = pidMinter.mintContentPid();
+            // Create a dummy non-depositRecord object
+            client.put(pid.getRepositoryUri()).perform().close();
 
-        // Try (and fail) to retrieve it as a deposit record
-        repoObjLoader.getDepositRecord(pid);
+            // Try (and fail) to retrieve it as a deposit record
+            repoObjLoader.getDepositRecord(pid);
+        });
     }
 
     @Test
@@ -101,23 +104,23 @@ public class DepositRecordIT extends AbstractFedoraIT {
 
         // Verify that listing returns all the expected manifests
         Collection<PID> manifestPids = record.listManifests();
-        assertEquals("Incorrect number of manifests retrieved", 2, manifestPids.size());
+        assertEquals(2, manifestPids.size(), "Incorrect number of manifests retrieved");
 
-        assertTrue("Manifest1 was not listed", manifestPids.contains(manifest1.getPid()));
-        assertTrue("Manifest2 was not listed", manifestPids.contains(manifest2.getPid()));
+        assertTrue(manifestPids.contains(manifest1.getPid()), "Manifest1 was not listed");
+        assertTrue(manifestPids.contains(manifest2.getPid()), "Manifest2 was not listed");
 
         String respString1 = new BufferedReader(new InputStreamReader(manifest1.getBinaryStream()))
                 .lines().collect(Collectors.joining("\n"));
-        assertEquals("Manifest content did not match submitted value", bodyString1, respString1);
+        assertEquals(bodyString1, respString1, "Manifest content did not match submitted value");
 
         // Verify that retrieving the manifest returns the correct object
         BinaryObject gotManifest2 = record.getManifest(manifest2.getPid());
-        assertNotNull("Get manifest did not return", gotManifest2);
+        assertNotNull(gotManifest2, "Get manifest did not return");
         assertEquals(mimetype2, gotManifest2.getMimetype());
 
         String respString2 = new BufferedReader(new InputStreamReader(manifest2.getBinaryStream()))
                 .lines().collect(Collectors.joining("\n"));
-        assertEquals("Manifest content did not match submitted value", bodyString2, respString2);
+        assertEquals(bodyString2, respString2, "Manifest content did not match submitted value");
     }
 
     @Test

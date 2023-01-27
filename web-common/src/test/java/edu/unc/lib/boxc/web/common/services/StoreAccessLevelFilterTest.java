@@ -1,9 +1,9 @@
 package edu.unc.lib.boxc.web.common.services;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.never;
@@ -19,15 +19,15 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import edu.unc.lib.boxc.auth.api.AccessPrincipalConstants;
 import edu.unc.lib.boxc.auth.api.UserRole;
@@ -41,7 +41,7 @@ import edu.unc.lib.boxc.web.common.auth.filters.StoreAccessLevelFilter;
 /**
  * @author bbpennel
  */
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class StoreAccessLevelFilterTest {
     @Mock
     private HttpServletRequest request;
@@ -62,7 +62,7 @@ public class StoreAccessLevelFilterTest {
     @InjectMocks
     private StoreAccessLevelFilter filter;
 
-    @Before
+    @BeforeEach
     public void setup() {
         initMocks(StoreAccessLevelFilterTest.class);
         principals = new AccessGroupSetImpl();
@@ -71,7 +71,7 @@ public class StoreAccessLevelFilterTest {
         when(request.getSession(true)).thenReturn(session);
     }
 
-    @After
+    @AfterEach
     public void tearDown() {
         GroupsThreadStore.clearStore();
     }
@@ -157,12 +157,12 @@ public class StoreAccessLevelFilterTest {
     }
 
     private void assertHasAdminAccessPrincipal() {
-        assertTrue("Did not set admin_access principal for the request",
-                GroupsThreadStore.getPrincipals().contains(AccessPrincipalConstants.ADMIN_ACCESS_PRINC));
+        assertTrue(GroupsThreadStore.getPrincipals().contains(AccessPrincipalConstants.ADMIN_ACCESS_PRINC),
+                "Did not set admin_access principal for the request");
     }
 
     private void assertAdminAccessPrincipalNotGranted() {
-        assertFalse("Was granted admin_access principal, which must not be present",
-                GroupsThreadStore.getPrincipals().contains(AccessPrincipalConstants.ADMIN_ACCESS_PRINC));
+        assertFalse(GroupsThreadStore.getPrincipals().contains(AccessPrincipalConstants.ADMIN_ACCESS_PRINC),
+                "Was granted admin_access principal, which must not be present");
     }
 }

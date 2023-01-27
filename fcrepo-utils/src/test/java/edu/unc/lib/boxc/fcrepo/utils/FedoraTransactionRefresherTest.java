@@ -1,7 +1,7 @@
 package edu.unc.lib.boxc.fcrepo.utils;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.atLeast;
 import static org.mockito.Mockito.never;
@@ -11,9 +11,9 @@ import static org.mockito.MockitoAnnotations.initMocks;
 
 import java.net.URI;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 
 import edu.unc.lib.boxc.fcrepo.utils.FedoraTransaction;
@@ -35,7 +35,7 @@ public class FedoraTransactionRefresherTest {
     private static long originalMaxTimeToLive = FedoraTransactionRefresher.getMaxTimeToLive();
     private static long originalRefreshInterval = FedoraTransactionRefresher.getRefreshInterval();
 
-    @Before
+    @BeforeEach
     public void setup() {
         initMocks(this);
         txUri = URI.create("http://example.com/tx");
@@ -44,7 +44,7 @@ public class FedoraTransactionRefresherTest {
         when(tx.getTxUri()).thenReturn(txUri);
     }
 
-    @After
+    @AfterEach
     public void cleanup() {
         FedoraTransactionRefresher.setMaxTimeToLive(originalMaxTimeToLive);
         FedoraTransactionRefresher.setRefreshInterval(originalRefreshInterval);

@@ -1,11 +1,12 @@
 package edu.unc.lib.boxc.model.fcrepo.ids;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 import edu.unc.lib.boxc.auth.api.models.AgentPrincipals;
 import edu.unc.lib.boxc.model.api.SoftwareAgentConstants;
@@ -19,8 +20,8 @@ public class AgentPidsTest {
 
     private static final String BASE_URI = "http://example.com/rest/";
 
-    @BeforeClass
-    public static void beforeClass() {
+    @BeforeAll
+    public static void beforeAll() {
         TestHelper.setContentBase(BASE_URI);
         SoftwareAgentConstants.setCdrVersion("5.x");
     }
@@ -35,9 +36,11 @@ public class AgentPidsTest {
                 AgentPids.forSoftware(SoftwareAgent.servicesAPI).getId());
     }
 
-    @Test(expected = NullPointerException.class)
+    @Test
     public void pidForNullSoftwareAgent() throws Exception {
-        AgentPids.forSoftware((SoftwareAgent) null);
+        Assertions.assertThrows(NullPointerException.class, () -> {
+            AgentPids.forSoftware((SoftwareAgent) null);
+        });
     }
 
     @Test
@@ -46,9 +49,11 @@ public class AgentPidsTest {
                 AgentPids.forSoftware("useful-software").getRepositoryPath());
     }
 
-    @Test(expected = NullPointerException.class)
+    @Test
     public void pidForNullSoftwareName() throws Exception {
-        AgentPids.forSoftware((String) null);
+        Assertions.assertThrows(NullPointerException.class, () -> {
+            AgentPids.forSoftware((String) null);
+        });
     }
 
     @Test
@@ -61,9 +66,11 @@ public class AgentPidsTest {
                 AgentPids.forPerson("someuser").getId());
     }
 
-    @Test(expected = NullPointerException.class)
+    @Test
     public void pidForNullPersonUsername() throws Exception {
-        AgentPids.forPerson((String) null);
+        Assertions.assertThrows(NullPointerException.class, () -> {
+            AgentPids.forPerson((String) null);
+        });
     }
 
     @Test
@@ -74,8 +81,10 @@ public class AgentPidsTest {
                 AgentPids.forPerson(princs).getRepositoryPath());
     }
 
-    @Test(expected = NullPointerException.class)
+    @Test
     public void pidForNullPersonAgentPrincipals() throws Exception {
-        AgentPids.forPerson((AgentPrincipals) null);
+        Assertions.assertThrows(NullPointerException.class, () -> {
+            AgentPids.forPerson((AgentPrincipals) null);
+        });
     }
 }

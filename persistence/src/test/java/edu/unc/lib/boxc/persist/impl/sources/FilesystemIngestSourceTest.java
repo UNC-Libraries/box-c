@@ -5,9 +5,9 @@ import static edu.unc.lib.boxc.persist.impl.sources.IngestSourceTestHelper.asser
 import static edu.unc.lib.boxc.persist.impl.sources.IngestSourceTestHelper.assertDirectoryDetails;
 import static edu.unc.lib.boxc.persist.impl.sources.IngestSourceTestHelper.findCandidateByPath;
 import static java.util.Arrays.asList;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.File;
 import java.net.URI;
@@ -17,10 +17,10 @@ import java.nio.file.Paths;
 import java.util.List;
 
 import org.apache.commons.io.FileUtils;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 import edu.unc.lib.boxc.persist.api.exceptions.InvalidIngestSourceCandidateException;
 import edu.unc.lib.boxc.persist.api.sources.IngestSourceCandidate;
@@ -32,16 +32,16 @@ import edu.unc.lib.boxc.persist.api.storage.StorageType;
  */
 public class FilesystemIngestSourceTest {
 
-    @Rule
-    public final TemporaryFolder tmpFolder = new TemporaryFolder();
+    @TempDir
+    public Path tmpFolder;
     private FilesystemIngestSource ingestSource;
 
     private Path sourceFolderPath;
 
-    @Before
+    @BeforeEach
     public void setup() throws Exception {
-        tmpFolder.create();
-        sourceFolderPath = tmpFolder.newFolder().toPath();
+        sourceFolderPath = tmpFolder.resolve("sourceFolder");
+        Files.createDirectory(sourceFolderPath);
 
         ingestSource = new FilesystemIngestSource();
     }
@@ -51,9 +51,9 @@ public class FilesystemIngestSourceTest {
         assertEquals(StorageType.FILESYSTEM, ingestSource.getStorageType());
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void baseFieldWithoutScheme() {
-        ingestSource.setBase(sourceFolderPath.toAbsolutePath().toString());
+        Assertions.assertThrows(IllegalArgumentException.class, () -> ingestSource.setBase(sourceFolderPath.toAbsolutePath().toString()));
     }
 
     @Test
@@ -61,9 +61,9 @@ public class FilesystemIngestSourceTest {
         ingestSource.setBase(sourceFolderPath.toUri().toString());
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void baseFieldFromNonFileUri() {
-        ingestSource.setBase("http://example.com/stuff");
+        Assertions.assertThrows(IllegalArgumentException.class, () -> ingestSource.setBase("http://example.com/stuff"));
     }
 
     @Test
@@ -88,7 +88,8 @@ public class FilesystemIngestSourceTest {
     public void isValidUriNotWithinBase() throws Exception {
         ingestSource.setBase(sourceFolderPath.toUri().toString());
 
-        Path otherSourcePath = tmpFolder.newFolder().toPath();
+        Path otherSourcePath = tmpFolder.resolve("otherSourceFolder");
+        Files.createDirectory(otherSourcePath);
 
         assertFalse(ingestSource.isValidUri(otherSourcePath.toUri()));
     }
@@ -329,25 +330,29 @@ public class FilesystemIngestSourceTest {
         assertEquals(sourceFolderPath.resolve("bag_with_files/data/test1.txt").toUri(), candUri);
     }
 
-    @Test(expected = InvalidIngestSourceCandidateException.class)
+    @Test
     public void resolveRelativePathBagNestedNotExist() throws Exception {
-        ingestSource.setId("testsource");
-        ingestSource.setBase(sourceFolderPath.toUri().toString());
-        ingestSource.setPatterns(asList("*"));
+        Assertions.assertThrows(InvalidIngestSourceCandidateException.class, () -> {
+            ingestSource.setId("testsource");
+            ingestSource.setBase(sourceFolderPath.toUri().toString());
+            ingestSource.setPatterns(asList("*"));
 
-        addBagToSource(sourceFolderPath);
+            addBagToSource(sourceFolderPath);
 
-        ingestSource.resolveRelativePath("bag_with_files/data/ohno.txt");
+            ingestSource.resolveRelativePath("bag_with_files/data/ohno.txt");
+        });
     }
 
-    @Test(expected = InvalidIngestSourceCandidateException.class)
+    @Test
     public void resolveRelativePathOutsideOfSource() throws Exception {
-        ingestSource.setId("testsource");
-        ingestSource.setBase(sourceFolderPath.toUri().toString());
-        ingestSource.setPatterns(asList("*"));
+        Assertions.assertThrows(InvalidIngestSourceCandidateException.class, () -> {
+            ingestSource.setId("testsource");
+            ingestSource.setBase(sourceFolderPath.toUri().toString());
+            ingestSource.setPatterns(asList("*"));
 
-        addBagToSource(sourceFolderPath);
+            addBagToSource(sourceFolderPath);
 
-        ingestSource.resolveRelativePath("../../bag_with_files");
+            ingestSource.resolveRelativePath("../../bag_with_files");
+        });
     }
 }

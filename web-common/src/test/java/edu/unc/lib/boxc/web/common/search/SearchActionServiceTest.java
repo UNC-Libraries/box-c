@@ -3,29 +3,29 @@ package edu.unc.lib.boxc.web.common.search;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import edu.unc.lib.boxc.search.api.requests.SearchState;
 import edu.unc.lib.boxc.search.solr.config.SearchSettings;
 import edu.unc.lib.boxc.search.solr.utils.SearchStateUtil;
 import edu.unc.lib.boxc.web.common.search.SearchActionService;
 
-@RunWith(SpringJUnit4ClassRunner.class)
+@ExtendWith(SpringExtension.class)
 @ContextConfiguration(locations = { "/solr-search-context-unit.xml" })
-public class SearchActionServiceTest extends Assert {
+public class SearchActionServiceTest extends Assertions {
     @Autowired
     private SearchSettings searchSettings;
     @Autowired
     private SearchActionService searchActionService;
     private String emptyStateString = null;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         SearchState searchState = new SearchState();
         this.emptyStateString = SearchStateUtil.generateStateParameterString(searchState);

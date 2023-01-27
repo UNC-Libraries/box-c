@@ -4,7 +4,7 @@ import static edu.unc.lib.boxc.auth.api.Permission.editDescription;
 import static edu.unc.lib.boxc.model.api.xml.JDOMNamespaceUtil.ATOM_NS;
 import static edu.unc.lib.boxc.model.api.xml.JDOMNamespaceUtil.CDR_MESSAGE_NS;
 import static edu.unc.lib.boxc.operations.jms.JMSMessageUtil.CDRActions.RUN_ENHANCEMENTS;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
@@ -18,14 +18,14 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import java.io.File;
 import java.io.FileInputStream;
 import java.net.URI;
+import java.nio.file.Path;
 
 import org.apache.commons.io.IOUtils;
 import org.jdom2.Document;
 import org.jdom2.Element;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -59,8 +59,8 @@ public class EditThumbIT extends AbstractAPIIT {
     private static final String ADMIN_GROUP = "adminGroup";
     private CollectionObject collection;
 
-    @Rule
-    public final TemporaryFolder tmpFolder = new TemporaryFolder();
+    @TempDir
+    public Path tmpFolder;
 
     @Captor
     private ArgumentCaptor<Document> docCaptor;
@@ -76,14 +76,14 @@ public class EditThumbIT extends AbstractAPIIT {
 
     private File tempDir;
 
-    @Before
+    @BeforeEach
     public void init_() throws Exception {
-        tempDir = tmpFolder.newFolder();
+        tempDir = tmpFolder.toFile();
         service.setSourceImagesDir(tempDir.getAbsolutePath());
         service.init();
     }
 
-    @Before
+    @BeforeEach
     public void setup() {
         initMocks(this);
         reset(messageSender);

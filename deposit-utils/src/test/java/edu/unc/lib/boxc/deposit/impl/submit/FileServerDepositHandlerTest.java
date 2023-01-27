@@ -2,22 +2,22 @@ package edu.unc.lib.boxc.deposit.impl.submit;
 
 import static edu.unc.lib.boxc.persist.api.PackagingType.BAGIT;
 import static edu.unc.lib.boxc.persist.api.PackagingType.DIRECTORY;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Map;
 import java.util.UUID;
 
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
@@ -44,8 +44,8 @@ public class FileServerDepositHandlerTest {
     private static final String DEPOSIT_METHOD = "unitTest";
     private static final String DEPOSITOR_EMAIL = "adminuser@example.com";
 
-    @Rule
-    public final TemporaryFolder tmpFolder = new TemporaryFolder();
+    @TempDir
+    public Path tmpFolder;
     private Path sourcePath;
 
     @Mock
@@ -63,12 +63,12 @@ public class FileServerDepositHandlerTest {
 
     private FileServerDepositHandler depositHandler;
 
-    @Before
+    @BeforeEach
     public void init() throws Exception {
         initMocks(this);
 
-        tmpFolder.create();
-        sourcePath = tmpFolder.newFolder("source").toPath();
+        sourcePath = tmpFolder.resolve("source");
+        Files.createDirectory(sourcePath);
 
         depositPid = PIDs.get("deposit", UUID.randomUUID().toString());
         destPid = PIDs.get(UUID.randomUUID().toString());
@@ -125,7 +125,7 @@ public class FileServerDepositHandlerTest {
         assertEquals(DepositState.unregistered.name(), status.get(DepositField.state.name()));
         assertEquals(DepositAction.register.name(), status.get(DepositField.actionRequest.name()));
         AccessGroupSet depositPrincipals = new AccessGroupSetImpl(status.get(DepositField.permissionGroups.name()));
-        assertTrue("admin principal must be set in deposit", depositPrincipals.contains("admin"));
-        assertTrue("adminGroup principal must be set in deposit", depositPrincipals.contains("adminGroup"));
+        assertTrue(depositPrincipals.contains("admin"), "admin principal must be set in deposit");
+        assertTrue(depositPrincipals.contains("adminGroup"), "adminGroup principal must be set in deposit");
     }
 }

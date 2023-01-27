@@ -4,14 +4,14 @@ import static edu.unc.lib.boxc.auth.api.AccessPrincipalConstants.AUTHENTICATED_P
 import static edu.unc.lib.boxc.auth.api.AccessPrincipalConstants.PUBLIC_PRINC;
 import static edu.unc.lib.boxc.auth.api.services.PrincipalClassifier.classifyPrincipals;
 import static edu.unc.lib.boxc.auth.api.services.PrincipalClassifier.getPatronPrincipals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class PrincipalClassifierTest {
 

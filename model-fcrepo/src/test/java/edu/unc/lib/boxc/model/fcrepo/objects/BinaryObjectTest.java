@@ -1,7 +1,7 @@
 package edu.unc.lib.boxc.model.fcrepo.objects;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Matchers.anyBoolean;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.when;
@@ -15,8 +15,9 @@ import java.util.List;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Resource;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.mockito.invocation.InvocationOnMock;
@@ -48,7 +49,7 @@ public class BinaryObjectTest extends AbstractFedoraObjectTest {
 
     private URI baseUri;
 
-    @Before
+    @BeforeEach
     public void init() throws URISyntaxException {
         MockitoAnnotations.initMocks(this);
 
@@ -95,17 +96,19 @@ public class BinaryObjectTest extends AbstractFedoraObjectTest {
         binObj.validateType();
     }
 
-    @Test(expected = ObjectTypeMismatchException.class)
+    @Test
     public void invalidTypeTest() {
-        when(driver.loadTypes(eq(binObj))).thenAnswer(new Answer<RepositoryObjectDriver>() {
-            @Override
-             public RepositoryObjectDriver answer(InvocationOnMock invocation) throws Throwable {
-                binObj.setTypes(Arrays.asList());
-                return driver;
-             }
-        });
+        Assertions.assertThrows(ObjectTypeMismatchException.class, () -> {
+            when(driver.loadTypes(eq(binObj))).thenAnswer(new Answer<RepositoryObjectDriver>() {
+                @Override
+                public RepositoryObjectDriver answer(InvocationOnMock invocation) throws Throwable {
+                    binObj.setTypes(Arrays.asList());
+                    return driver;
+                }
+            });
 
-         binObj.validateType();
+            binObj.validateType();
+        });
      }
 
     @Test

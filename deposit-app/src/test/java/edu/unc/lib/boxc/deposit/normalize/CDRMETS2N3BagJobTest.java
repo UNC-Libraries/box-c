@@ -1,9 +1,9 @@
 package edu.unc.lib.boxc.deposit.normalize;
 
 import static edu.unc.lib.boxc.common.test.TestHelpers.setField;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
@@ -27,8 +27,9 @@ import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.NodeIterator;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.vocabulary.RDF;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Matchers;
 import org.mockito.Mock;
 import org.xml.sax.SAXException;
@@ -69,7 +70,7 @@ public class CDRMETS2N3BagJobTest extends AbstractNormalizationJobTest {
     private String stagingBaseUri;
 
 
-    @Before
+    @BeforeEach
     public void setup() throws Exception {
         status = new HashMap<>();
 
@@ -108,21 +109,23 @@ public class CDRMETS2N3BagJobTest extends AbstractNormalizationJobTest {
         job.run();
     }
 
-    @Test(expected = JobFailedException.class)
+    @Test
     public void testMissingFile() throws Exception {
         // checks case where no file is provided
-        job.run();
+        Assertions.assertThrows(JobFailedException.class, () -> job.run());
     }
 
-    @Test(expected = JobFailedException.class)
+    @Test
     public void testMETSInvalid() throws Exception {
-        try {
-            doThrow(new SAXException()).when(metsValidator).validate(any(StreamSource.class));
-            Files.copy(new File("src/test/resources/mets.xml"), new File(data, "mets.xml"));
-            job.run();
-        } finally {
-            verify(metsValidator).validate(any(StreamSource.class));
-        }
+        Assertions.assertThrows(JobFailedException.class, () -> {
+            try {
+                doThrow(new SAXException()).when(metsValidator).validate(any(StreamSource.class));
+                Files.copy(new File("src/test/resources/mets.xml"), new File(data, "mets.xml"));
+                job.run();
+            } finally {
+                verify(metsValidator).validate(any(StreamSource.class));
+            }
+        });
     }
 
     @Test

@@ -2,8 +2,8 @@ package edu.unc.lib.boxc.integration.model.fcrepo.objects;
 
 import static edu.unc.lib.boxc.model.fcrepo.ids.DatastreamPids.getOriginalFilePid;
 import static edu.unc.lib.boxc.model.fcrepo.ids.DatastreamPids.getTechnicalMetadataPid;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -16,8 +16,9 @@ import java.util.stream.Collectors;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.FileUtils;
 import org.apache.jena.vocabulary.RDF;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import edu.unc.lib.boxc.model.api.DatastreamType;
 import edu.unc.lib.boxc.model.api.exceptions.ObjectTypeMismatchException;
@@ -44,7 +45,7 @@ public class FileObjectIT extends AbstractFedoraIT {
     private static final String origSha1Checksum = DigestUtils.sha1Hex(origBodyString);
     private static final String origMd5Checksum = DigestUtils.md5Hex(origBodyString);
 
-    @Before
+    @BeforeEach
     public void init() throws Exception {
         createBaseContainer(RepositoryPathConstants.CONTENT_BASE);
     }
@@ -97,7 +98,7 @@ public class FileObjectIT extends AbstractFedoraIT {
         // Retrieve the binary objects directly
         List<BinaryObject> binaries = fileObj.getBinaryObjects();
 
-        assertEquals("Incorrect number of binaries added", 2, binaries.size());
+        assertEquals(2, binaries.size(), "Incorrect number of binaries added");
 
         // Find each of the created binaries by pid
         BinaryObject rObj1 = findBinaryByPid(binaries, bObj1.getPid());
@@ -124,13 +125,15 @@ public class FileObjectIT extends AbstractFedoraIT {
         verifyFile(binObj, origFilename, origMimetype, origBodyString);
     }
 
-    @Test(expected = ObjectTypeMismatchException.class)
+    @Test
     public void getNonFileObject() throws Exception {
-        PID objPid = PIDs.get("uuid:" + UUID.randomUUID().toString());
+        Assertions.assertThrows(ObjectTypeMismatchException.class, () -> {
+            PID objPid = PIDs.get("uuid:" + UUID.randomUUID().toString());
 
-        client.put(objPid.getRepositoryUri()).perform().close();
+            client.put(objPid.getRepositoryUri()).perform().close();
 
-        repoObjLoader.getFileObject(objPid);
+            repoObjLoader.getFileObject(objPid);
+        });
     }
 
     @Test
@@ -145,8 +148,7 @@ public class FileObjectIT extends AbstractFedoraIT {
         treeIndexer.indexAll(baseAddress);
 
         RepositoryObject parent = fileObj.getParent();
-        assertEquals("Parent of the file must match the work it was created in",
-                parent.getPid(), work.getPid());
+        assertEquals(parent.getPid(), work.getPid(), "Parent of the file must match the work it was created in");
     }
 
     private void verifyOriginalFile(BinaryObject origObj) {
@@ -159,7 +161,7 @@ public class FileObjectIT extends AbstractFedoraIT {
 
         String respString = new BufferedReader(new InputStreamReader(bObj.getBinaryStream())).lines()
                 .collect(Collectors.joining("\n"));
-        assertEquals("Original content did not match submitted value", bodyString, respString);
+        assertEquals(bodyString, respString, "Original content did not match submitted value");
     }
 
     private BinaryObject findBinaryByPid(List<BinaryObject> binaries, PID pid) {

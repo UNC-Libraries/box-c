@@ -3,6 +3,7 @@ package edu.unc.lib.boxc.deposit.fcrepo4;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
+import java.nio.file.Path;
 import java.util.List;
 import java.util.UUID;
 
@@ -10,16 +11,15 @@ import org.apache.http.HttpStatus;
 import org.fcrepo.client.FcrepoClient;
 import org.fcrepo.client.FcrepoOperationFailedException;
 import org.fcrepo.client.FcrepoResponse;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.rules.TemporaryFolder;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.api.io.TempDir;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.ContextHierarchy;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import edu.unc.lib.boxc.deposit.api.RedisWorkerConstants.DepositState;
 import edu.unc.lib.boxc.deposit.impl.model.ActivityMetricsClient;
@@ -47,7 +47,7 @@ import redis.embedded.RedisServer;
  * @author bbpennel
  *
  */
-@RunWith(SpringJUnit4ClassRunner.class)
+@ExtendWith(SpringExtension.class)
 @ContextHierarchy({
     @ContextConfiguration("/spring-test/test-fedora-container.xml"),
     @ContextConfiguration("/spring-test/cdr-client-container.xml")
@@ -76,8 +76,8 @@ public abstract class AbstractFedoraDepositJobIT {
     protected BinaryTransferService binaryTransferService;
     @Autowired
     protected StorageLocationManager storageLocationManager;
-    @Rule
-    public final TemporaryFolder tmpFolder = new TemporaryFolder();
+    @TempDir
+    public Path tmpFolder;
     @Autowired
     protected RepositoryInitializer repositoryInitializer;
     @Autowired
@@ -105,16 +105,16 @@ public abstract class AbstractFedoraDepositJobIT {
 
     }
 
-    @AfterClass
-    public static void afterClass() throws Exception {
+    @AfterAll
+    public static void afterAll() throws Exception {
         redisServer.stop();
     }
 
-    @Before
+    @BeforeEach
     public void initBase() throws Exception {
         TestHelper.setContentBase(baseAddress);
 
-        depositsDirectory = tmpFolder.newFolder("deposits");
+        depositsDirectory = tmpFolder.resolve("deposits").toFile();
 
         jobUUID = UUID.randomUUID().toString();
 
@@ -129,7 +129,7 @@ public abstract class AbstractFedoraDepositJobIT {
         rootObj = repoObjLoader.getContentRootObject(RepositoryPaths.getContentRootPid());
     }
 
-    @After
+    @AfterEach
     public void cleanupRedis() throws Exception {
         try (Jedis jedis = jedisPool.getResource()) {
             jedis.flushDB();

@@ -1,9 +1,9 @@
 package edu.unc.lib.boxc.web.services.rest.modify;
 
 import static edu.unc.lib.boxc.auth.api.Permission.editDescription;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
@@ -18,8 +18,8 @@ import java.io.InputStream;
 import java.util.Map;
 
 import org.apache.tika.io.IOUtils;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
@@ -49,7 +49,7 @@ public class UpdateDescriptionIT extends AbstractAPIIT {
     @Autowired
     private UpdateDescriptionService updateDescriptionService;
 
-    @Before
+    @BeforeEach
     public void setup() throws Exception {
         initMocks(this);
 

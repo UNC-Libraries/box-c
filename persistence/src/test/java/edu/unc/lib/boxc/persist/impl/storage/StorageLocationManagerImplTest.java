@@ -2,14 +2,15 @@ package edu.unc.lib.boxc.persist.impl.storage;
 
 import static edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPaths.getContentRootPid;
 import static java.util.Arrays.asList;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
 import java.net.URI;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -17,10 +18,10 @@ import java.util.UUID;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Resource;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.mockito.Mock;
 
 import edu.unc.lib.boxc.model.api.ids.PID;
@@ -56,13 +57,12 @@ public class StorageLocationManagerImplTest {
 
     private StorageLocationTestHelper helper;
 
-    @Rule
-    public final TemporaryFolder tmpFolder = new TemporaryFolder();
+    @TempDir
+    public Path tmpFolder;
 
-    @Before
+    @BeforeEach
     public void setup() throws Exception {
         initMocks(this);
-        tmpFolder.create();
 
         locManager = new StorageLocationManagerImpl();
         locManager.setPathFactory(pathFactory);
@@ -78,44 +78,52 @@ public class StorageLocationManagerImplTest {
         locManager.init();
     }
 
-    @Test(expected = IllegalStateException.class)
+    @Test
     public void duplicateLocationId() throws Exception {
-        helper.addStorageLocation(LOC1_ID, LOC1_NAME, LOC1_BASE);
-        helper.addStorageLocation(LOC1_ID, LOC2_NAME, LOC2_BASE);
+        Assertions.assertThrows(IllegalStateException.class, () -> {
+            helper.addStorageLocation(LOC1_ID, LOC1_NAME, LOC1_BASE);
+            helper.addStorageLocation(LOC1_ID, LOC2_NAME, LOC2_BASE);
 
-        initializeManager();
+            initializeManager();
+        });
     }
 
-    @Test(expected = IllegalStateException.class)
+    @Test
     public void duplicateMappingContainerId() throws Exception {
-        helper.addStorageLocation(LOC1_ID, LOC1_NAME, LOC1_BASE);
-        helper.addStorageLocation(LOC2_ID, LOC2_NAME, LOC2_BASE);
-        PID unitPid = makePid();
-        helper.addMapping(unitPid.getId(), LOC1_ID);
-        helper.addMapping(unitPid.getRepositoryPath(), LOC2_ID);
+        Assertions.assertThrows(IllegalStateException.class, () -> {
+            helper.addStorageLocation(LOC1_ID, LOC1_NAME, LOC1_BASE);
+            helper.addStorageLocation(LOC2_ID, LOC2_NAME, LOC2_BASE);
+            PID unitPid = makePid();
+            helper.addMapping(unitPid.getId(), LOC1_ID);
+            helper.addMapping(unitPid.getRepositoryPath(), LOC2_ID);
 
-        initializeManager();
+            initializeManager();
+        });
     }
 
-    @Test(expected = UnknownStorageLocationException.class)
+    @Test
     public void mappingToNonexistentLocation() throws Exception {
-        helper.addStorageLocation(LOC1_ID, LOC1_NAME, LOC1_BASE);
-        PID unitPid = makePid();
-        helper.addMapping(unitPid.getId(), LOC2_ID);
+        Assertions.assertThrows(UnknownStorageLocationException.class, () -> {
+            helper.addStorageLocation(LOC1_ID, LOC1_NAME, LOC1_BASE);
+            PID unitPid = makePid();
+            helper.addMapping(unitPid.getId(), LOC2_ID);
 
-        initializeManager();
+            initializeManager();
+        });
     }
 
-    @Test(expected = UnknownStorageLocationException.class)
+    @Test
     public void getDefaultStorageLocationNoMappings() throws Exception {
-        PID unitPid = makePid();
-        mockAncestors(unitPid, getContentRootPid());
+        Assertions.assertThrows(UnknownStorageLocationException.class, () -> {
+            PID unitPid = makePid();
+            mockAncestors(unitPid, getContentRootPid());
 
-        helper.addStorageLocation(LOC1_ID, LOC1_NAME, LOC1_BASE);
+            helper.addStorageLocation(LOC1_ID, LOC1_NAME, LOC1_BASE);
 
-        initializeManager();
+            initializeManager();
 
-        locManager.getDefaultStorageLocation(unitPid);
+            locManager.getDefaultStorageLocation(unitPid);
+        });
     }
 
     @Test
@@ -271,26 +279,28 @@ public class StorageLocationManagerImplTest {
         assertIsLocation1(loc);
     }
 
-    @Test(expected = UnknownStorageLocationException.class)
+    @Test
     public void getStorageLocationWithInvalidLocation() throws Exception {
-        PID unitPid = makePid();
-        PID collPid = makePid();
-        mockAncestors(collPid, getContentRootPid(), unitPid);
+        Assertions.assertThrows(UnknownStorageLocationException.class, () -> {
+            PID unitPid = makePid();
+            PID collPid = makePid();
+            mockAncestors(collPid, getContentRootPid(), unitPid);
 
-        helper.addStorageLocation(LOC1_ID, LOC1_NAME, LOC1_BASE);
-        helper.addMapping(getContentRootPid().getId(), LOC1_ID);
+            helper.addStorageLocation(LOC1_ID, LOC1_NAME, LOC1_BASE);
+            helper.addMapping(getContentRootPid().getId(), LOC1_ID);
 
-        initializeManager();
+            initializeManager();
 
-        Model model = ModelFactory.createDefaultModel();
-        Resource resc = model.getResource(collPid.getRepositoryPath());
-        // Loc2 is not configured
-        resc.addProperty(Cdr.storageLocation, LOC2_ID);
-        CollectionObject collObj = mock(CollectionObject.class);
-        when(collObj.getPid()).thenReturn(collPid);
-        when(collObj.getResource()).thenReturn(resc);
+            Model model = ModelFactory.createDefaultModel();
+            Resource resc = model.getResource(collPid.getRepositoryPath());
+            // Loc2 is not configured
+            resc.addProperty(Cdr.storageLocation, LOC2_ID);
+            CollectionObject collObj = mock(CollectionObject.class);
+            when(collObj.getPid()).thenReturn(collPid);
+            when(collObj.getResource()).thenReturn(resc);
 
-        locManager.getStorageLocation(collObj);
+            locManager.getStorageLocation(collObj);
+        });
     }
 
     @Test
@@ -338,22 +348,26 @@ public class StorageLocationManagerImplTest {
         assertIsLocation2(locManager.getStorageLocationForUri(URI.create(LOC2_BASE + "/other/path")));
     }
 
-    @Test(expected = UnknownStorageLocationException.class)
+    @Test
     public void getStorageLocationForUriParentUri() throws Exception {
-        helper.addStorageLocation(LOC1_ID, LOC1_NAME, LOC1_BASE);
+        Assertions.assertThrows(UnknownStorageLocationException.class, () -> {
+            helper.addStorageLocation(LOC1_ID, LOC1_NAME, LOC1_BASE);
 
-        initializeManager();
+            initializeManager();
 
-        locManager.getStorageLocationForUri(URI.create("file://some"));
+            locManager.getStorageLocationForUri(URI.create("file://some"));
+        });
     }
 
-    @Test(expected = UnknownStorageLocationException.class)
+    @Test
     public void getStorageLocationForUriNoMatching() throws Exception {
-        helper.addStorageLocation(LOC1_ID, LOC1_NAME, LOC1_BASE);
+        Assertions.assertThrows(UnknownStorageLocationException.class, () -> {
+            helper.addStorageLocation(LOC1_ID, LOC1_NAME, LOC1_BASE);
 
-        initializeManager();
+            initializeManager();
 
-        locManager.getStorageLocationForUri(URI.create("file://random/location"));
+            locManager.getStorageLocationForUri(URI.create("file://random/location"));
+        });
     }
 
     @Test

@@ -1,11 +1,11 @@
 package edu.unc.lib.boxc.persist.impl.storage;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
 import java.net.URI;
@@ -16,10 +16,10 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.apache.commons.io.FileUtils;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
@@ -34,15 +34,16 @@ public class HashedFilesystemStorageLocationTest {
 
     private static final String TEST_UUID = "2e8f7551-ef3c-4387-8c3d-a38609927800";
 
-    @Rule
-    public final TemporaryFolder tmpFolder = new TemporaryFolder();
+    @TempDir
+    public Path tmpFolder;
     protected Path storagePath;
 
     protected HashedFilesystemStorageLocation loc;
 
-    @Before
+    @BeforeEach
     public void setup() throws Exception {
-        storagePath = tmpFolder.newFolder("storage").toPath();
+        storagePath = tmpFolder.resolve("storage");
+        Files.createDirectory(storagePath);
 
         loc = new HashedFilesystemStorageLocation();
         loc.setBase(storagePath.toString());
@@ -91,10 +92,12 @@ public class HashedFilesystemStorageLocationTest {
         assertEquals(URI.create(expectedBase), loc.getBaseUri());
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void baseFieldWithInvalidScheme() {
-        String assignedBase = "http://example.com/to/my/stuff/";
-        loc.setBase(assignedBase);
+        Assertions.assertThrows(IllegalArgumentException.class, () -> {
+            String assignedBase = "http://example.com/to/my/stuff/";
+            loc.setBase(assignedBase);
+        });
     }
 
     @Test

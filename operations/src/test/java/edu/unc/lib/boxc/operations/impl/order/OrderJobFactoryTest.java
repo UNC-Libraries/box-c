@@ -3,14 +3,15 @@ package edu.unc.lib.boxc.operations.impl.order;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
 import edu.unc.lib.boxc.operations.jms.order.OrderOperationType;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import java.util.Arrays;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * @author bbpennel
@@ -25,7 +26,7 @@ public class OrderJobFactoryTest {
     private RepositoryObjectLoader repositoryObjectLoader;
     private OrderJobFactory factory;
 
-    @Before
+    @BeforeEach
     public void init() {
         MockitoAnnotations.initMocks(this);
         factory = new OrderJobFactory();
@@ -48,10 +49,12 @@ public class OrderJobFactoryTest {
         assertTrue(job instanceof SetOrderJob);
     }
 
-    @Test(expected = UnsupportedOperationException.class)
+    @Test
     public void createUnsupportedOperationequestTest() {
-        var request = OrderRequestFactory.createRequest(OrderOperationType.ADD_TO, PARENT_UUID,
-                Arrays.asList(CHILD1_UUID));
-        factory.createJob(request);
+        Assertions.assertThrows(UnsupportedOperationException.class, () -> {
+            var request = OrderRequestFactory.createRequest(OrderOperationType.ADD_TO, PARENT_UUID,
+                    Arrays.asList(CHILD1_UUID));
+            factory.createJob(request);
+        });
     }
 }

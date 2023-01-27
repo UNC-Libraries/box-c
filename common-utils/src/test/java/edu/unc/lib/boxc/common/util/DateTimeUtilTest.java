@@ -3,16 +3,17 @@
  */
 package edu.unc.lib.boxc.common.util;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.util.Date;
 
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 /**
  * @author Gregory Jansen
@@ -21,12 +22,12 @@ import org.junit.Test;
 public class DateTimeUtilTest {
     private final DateTimeZone defaultTimeZone = DateTimeZone.getDefault();
 
-    @Before
+    @BeforeEach
     public void init() {
         DateTimeZone.setDefault(DateTimeZone.forID("EST"));
     }
 
-    @After
+    @AfterEach
     public void after() {
         DateTimeZone.setDefault(defaultTimeZone);
     }
@@ -67,9 +68,11 @@ public class DateTimeUtilTest {
         assertEquals("2004-02-04T12:13:00.000Z", DateTimeUtil.formatDateToUTC(date));
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void parseUTCToDateNotADateTest() throws Exception {
-        DateTimeUtil.parseUTCToDate("not a date");
+        Assertions.assertThrows(IllegalArgumentException.class, () -> {
+            DateTimeUtil.parseUTCToDate("not a date");
+        });
     }
 
     @Test

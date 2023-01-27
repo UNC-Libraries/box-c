@@ -2,7 +2,7 @@ package edu.unc.lib.boxc.auth.fcrepo.services;
 
 import static edu.unc.lib.boxc.auth.api.AccessPrincipalConstants.AUTHENTICATED_PRINC;
 import static edu.unc.lib.boxc.auth.api.AccessPrincipalConstants.PUBLIC_PRINC;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
@@ -12,8 +12,9 @@ import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.vocabulary.RDF;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 
 import edu.unc.lib.boxc.auth.api.exceptions.InvalidAssignmentException;
@@ -42,7 +43,7 @@ public class ContentObjectAccessRestrictionValidatorTest {
     private Model model;
     private Resource resc;
 
-    @Before
+    @BeforeEach
     public void init() {
         initMocks(this);
 
@@ -70,34 +71,38 @@ public class ContentObjectAccessRestrictionValidatorTest {
         validator.validate(resc);
     }
 
-    @Test(expected = InvalidAssignmentException.class)
+    @Test
     public void workInvalidPatronAccessTest() throws Exception {
-        model.add(resc, RDF.type, Cdr.Work);
-        model.add(resc, CdrAcl.canViewOriginals, "nobodynohow");
+        Assertions.assertThrows(InvalidAssignmentException.class, () -> {
+            model.add(resc, RDF.type, Cdr.Work);
+            model.add(resc, CdrAcl.canViewOriginals, "nobodynohow");
 
-        try {
-            validator.validate(resc);
-        } catch (InvalidAssignmentException e) {
-            assertTrue(e.getMessage().contains("Invalid staff principal"));
-            throw e;
-        }
+            try {
+                validator.validate(resc);
+            } catch (InvalidAssignmentException e) {
+                assertTrue(e.getMessage().contains("Invalid staff principal"));
+                throw e;
+            }
+        });
     }
 
-    @Test(expected = InvalidAssignmentException.class)
+    @Test
     public void workInvalidAclsTest() {
-        model.add(resc, RDF.type, Cdr.Work);
-        model.add(resc, CdrAcl.canAccess, STAFF_PRINC);
-        model.add(resc, CdrAcl.unitOwner, OWNER_PRINC);
+        Assertions.assertThrows(InvalidAssignmentException.class, () -> {
+            model.add(resc, RDF.type, Cdr.Work);
+            model.add(resc, CdrAcl.canAccess, STAFF_PRINC);
+            model.add(resc, CdrAcl.unitOwner, OWNER_PRINC);
 
-        try {
-            validator.validate(resc);
-        } catch (InvalidAssignmentException e) {
-            assertTrue(e.getMessage().contains("invalid acl properties"));
-            assertTrue(e.getMessage().contains(CdrAcl.canAccess.getLocalName()));
-            assertTrue(e.getMessage().contains(CdrAcl.unitOwner.getLocalName()));
+            try {
+                validator.validate(resc);
+            } catch (InvalidAssignmentException e) {
+                assertTrue(e.getMessage().contains("invalid acl properties"));
+                assertTrue(e.getMessage().contains(CdrAcl.canAccess.getLocalName()));
+                assertTrue(e.getMessage().contains(CdrAcl.unitOwner.getLocalName()));
 
-            throw e;
-        }
+                throw e;
+            }
+        });
     }
 
     @Test
@@ -142,56 +147,64 @@ public class ContentObjectAccessRestrictionValidatorTest {
         validator.validate(resc);
     }
 
-    @Test(expected = InvalidAssignmentException.class)
+    @Test
     public void invalidPatronPrincipalCollectionTest() throws Exception {
-        model.add(resc, RDF.type, Cdr.Collection);
-        model.add(resc, CdrAcl.canIngest, PUBLIC_PRINC);
+        Assertions.assertThrows(InvalidAssignmentException.class, () -> {
+            model.add(resc, RDF.type, Cdr.Collection);
+            model.add(resc, CdrAcl.canIngest, PUBLIC_PRINC);
 
-        try {
-            validator.validate(resc);
-        } catch (InvalidAssignmentException e) {
-            assertTrue(e.getMessage().contains("Invalid patron principal"));
-            throw e;
-        }
+            try {
+                validator.validate(resc);
+            } catch (InvalidAssignmentException e) {
+                assertTrue(e.getMessage().contains("Invalid patron principal"));
+                throw e;
+            }
+        });
     }
 
-    @Test(expected = InvalidAssignmentException.class)
+    @Test
     public void invalidStaffPrincipalCollectionTest() throws Exception {
-        model.add(resc, RDF.type, Cdr.Collection);
-        model.add(resc, CdrAcl.canViewMetadata, STAFF_PRINC);
+        Assertions.assertThrows(InvalidAssignmentException.class, () -> {
+            model.add(resc, RDF.type, Cdr.Collection);
+            model.add(resc, CdrAcl.canViewMetadata, STAFF_PRINC);
 
-        try {
-            validator.validate(resc);
-        } catch (InvalidAssignmentException e) {
-            assertTrue(e.getMessage().contains("Invalid staff principal"));
-            throw e;
-        }
+            try {
+                validator.validate(resc);
+            } catch (InvalidAssignmentException e) {
+                assertTrue(e.getMessage().contains("Invalid staff principal"));
+                throw e;
+            }
+        });
     }
 
-    @Test(expected = InvalidAssignmentException.class)
+    @Test
     public void emptyPrincipalCollectionTest() throws Exception {
-        model.add(resc, RDF.type, Cdr.Collection);
-        model.add(resc, CdrAcl.canViewOriginals, "");
+        Assertions.assertThrows(InvalidAssignmentException.class, () -> {
+            model.add(resc, RDF.type, Cdr.Collection);
+            model.add(resc, CdrAcl.canViewOriginals, "");
 
-        try {
-            validator.validate(resc);
-        } catch (InvalidAssignmentException e) {
-            assertTrue(e.getMessage().contains("Cannot assign empty principal to role"));
-            throw e;
-        }
+            try {
+                validator.validate(resc);
+            } catch (InvalidAssignmentException e) {
+                assertTrue(e.getMessage().contains("Cannot assign empty principal to role"));
+                throw e;
+            }
+        });
     }
 
-    @Test(expected = InvalidAssignmentException.class)
+    @Test
     public void assignedUnitOwnerCollectionTest() throws Exception {
-        model.add(resc, RDF.type, Cdr.Collection);
-        model.add(resc, CdrAcl.unitOwner, OWNER_PRINC);
+        Assertions.assertThrows(InvalidAssignmentException.class, () -> {
+            model.add(resc, RDF.type, Cdr.Collection);
+            model.add(resc, CdrAcl.unitOwner, OWNER_PRINC);
 
-        try {
-            validator.validate(resc);
-        } catch (InvalidAssignmentException e) {
-            assertTrue(e.getMessage().contains("invalid acl properties"));
-            throw e;
-        }
+            try {
+                validator.validate(resc);
+            } catch (InvalidAssignmentException e) {
+                assertTrue(e.getMessage().contains("invalid acl properties"));
+                throw e;
+            }
+        });
     }
 
     @Test
@@ -203,87 +216,101 @@ public class ContentObjectAccessRestrictionValidatorTest {
         validator.validate(resc);
     }
 
-    @Test(expected = InvalidAssignmentException.class)
+    @Test
     public void invalidAclAdminUnitTest() throws Exception {
-        model.add(resc, RDF.type, Cdr.AdminUnit);
-        model.add(resc, CdrAcl.embargoUntil, model.createTypedLiteral(Calendar.getInstance()));
-        model.add(resc, CdrAcl.canViewOriginals, AUTHENTICATED_PRINC);
-        model.add(resc, CdrAcl.canViewMetadata, OWNER_PRINC);
+        Assertions.assertThrows(InvalidAssignmentException.class, () -> {
+            model.add(resc, RDF.type, Cdr.AdminUnit);
+            model.add(resc, CdrAcl.embargoUntil, model.createTypedLiteral(Calendar.getInstance()));
+            model.add(resc, CdrAcl.canViewOriginals, AUTHENTICATED_PRINC);
+            model.add(resc, CdrAcl.canViewMetadata, OWNER_PRINC);
 
-        try {
-            validator.validate(resc);
-        } catch (InvalidAssignmentException e) {
-            assertTrue(e.getMessage().contains("invalid acl properties"));
-            assertTrue(e.getMessage().contains(CdrAcl.embargoUntil.getLocalName()));
-            assertTrue(e.getMessage().contains(CdrAcl.canViewOriginals.getLocalName()));
-            assertTrue(e.getMessage().contains(CdrAcl.canViewMetadata.getLocalName()));
+            try {
+                validator.validate(resc);
+            } catch (InvalidAssignmentException e) {
+                assertTrue(e.getMessage().contains("invalid acl properties"));
+                assertTrue(e.getMessage().contains(CdrAcl.embargoUntil.getLocalName()));
+                assertTrue(e.getMessage().contains(CdrAcl.canViewOriginals.getLocalName()));
+                assertTrue(e.getMessage().contains(CdrAcl.canViewMetadata.getLocalName()));
 
-            throw e;
-        }
+                throw e;
+            }
+        });
     }
 
-    @Test(expected = InvalidAssignmentException.class)
+    @Test
     public void invalidPatronPrincipalAdminUnitTest() throws Exception {
-        model.add(resc, RDF.type, Cdr.AdminUnit);
-        model.add(resc, CdrAcl.canIngest, PUBLIC_PRINC);
+        Assertions.assertThrows(InvalidAssignmentException.class, () -> {
+            model.add(resc, RDF.type, Cdr.AdminUnit);
+            model.add(resc, CdrAcl.canIngest, PUBLIC_PRINC);
 
-        try {
-            validator.validate(resc);
-        } catch (InvalidAssignmentException e) {
-            assertTrue(e.getMessage().contains("Invalid patron principal"));
-            throw e;
-        }
+            try {
+                validator.validate(resc);
+            } catch (InvalidAssignmentException e) {
+                assertTrue(e.getMessage().contains("Invalid patron principal"));
+                throw e;
+            }
+        });
     }
 
-    @Test(expected = InvalidAssignmentException.class)
+    @Test
     public void emptyPrincipalAdminUnitTest() throws Exception {
-        model.add(resc, RDF.type, Cdr.AdminUnit);
-        model.add(resc, CdrAcl.canDescribe, "");
+        Assertions.assertThrows(InvalidAssignmentException.class, () -> {
+            model.add(resc, RDF.type, Cdr.AdminUnit);
+            model.add(resc, CdrAcl.canDescribe, "");
 
-        try {
-            validator.validate(resc);
-        } catch (InvalidAssignmentException e) {
-            assertTrue(e.getMessage().contains("Cannot assign empty principal to role"));
-            throw e;
-        }
+            try {
+                validator.validate(resc);
+            } catch (InvalidAssignmentException e) {
+                assertTrue(e.getMessage().contains("Cannot assign empty principal to role"));
+                throw e;
+            }
+        });
     }
 
-    @Test(expected = InvalidAssignmentException.class)
+    @Test
     public void invalidObjectTypeTest() {
-        model.add(resc, RDF.type, Cdr.ContentRoot);
+        Assertions.assertThrows(InvalidAssignmentException.class, () -> {
+            model.add(resc, RDF.type, Cdr.ContentRoot);
 
-        try {
-            validator.validate(resc);
-        } catch (InvalidAssignmentException e) {
-            assertTrue(e.getMessage().contains("not applicable for access restrictions"));
-            throw e;
-        }
+            try {
+                validator.validate(resc);
+            } catch (InvalidAssignmentException e) {
+                assertTrue(e.getMessage().contains("not applicable for access restrictions"));
+                throw e;
+            }
+        });
     }
 
-    @Test(expected = InvalidAssignmentException.class)
+    @Test
     public void duplicatePrincipalUnit() throws Exception {
-        model.add(resc, RDF.type, Cdr.AdminUnit);
-        model.add(resc, CdrAcl.canManage, STAFF_PRINC);
-        model.add(resc, CdrAcl.canIngest, STAFF_PRINC);
+        Assertions.assertThrows(InvalidAssignmentException.class, () -> {
+            model.add(resc, RDF.type, Cdr.AdminUnit);
+            model.add(resc, CdrAcl.canManage, STAFF_PRINC);
+            model.add(resc, CdrAcl.canIngest, STAFF_PRINC);
 
-        validator.validate(resc);
+            validator.validate(resc);
+        });
     }
 
-    @Test(expected = InvalidAssignmentException.class)
+    @Test
     public void duplicatePrincipalCollection() throws Exception {
-        model.add(resc, RDF.type, Cdr.AdminUnit);
-        model.add(resc, CdrAcl.canManage, STAFF_PRINC);
-        model.add(resc, CdrAcl.canIngest, STAFF_PRINC);
+        Assertions.assertThrows(InvalidAssignmentException.class, () -> {
+            model.add(resc, RDF.type, Cdr.AdminUnit);
+            model.add(resc, CdrAcl.canManage, STAFF_PRINC);
+            model.add(resc, CdrAcl.canIngest, STAFF_PRINC);
 
-        validator.validate(resc);
+            validator.validate(resc);
+        });
     }
 
-    @Test(expected = InvalidAssignmentException.class)
+    @Test
     public void duplicatePrincipalContent() throws Exception {
-        model.add(resc, RDF.type, Cdr.AdminUnit);
-        model.add(resc, CdrAcl.canViewAccessCopies, PUBLIC_PRINC);
-        model.add(resc, CdrAcl.none, PUBLIC_PRINC);
+        Assertions.assertThrows(InvalidAssignmentException.class, () -> {
+            model.add(resc, RDF.type, Cdr.AdminUnit);
+            model.add(resc, CdrAcl.canViewAccessCopies, PUBLIC_PRINC);
+            model.add(resc, CdrAcl.none, PUBLIC_PRINC);
 
-        validator.validate(resc);
+            validator.validate(resc);
+        });
     }
 }

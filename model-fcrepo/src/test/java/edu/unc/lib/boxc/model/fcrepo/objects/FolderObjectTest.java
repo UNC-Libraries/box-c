@@ -1,8 +1,8 @@
 package edu.unc.lib.boxc.model.fcrepo.objects;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Matchers.isNull;
 import static org.mockito.Mockito.verify;
@@ -12,8 +12,9 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.apache.jena.rdf.model.Model;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
@@ -41,7 +42,7 @@ public class FolderObjectTest extends AbstractFedoraObjectTest {
 
     private FolderObjectImpl folder;
 
-    @Before
+    @BeforeEach
     public void init() {
 
         pid = pidMinter.mintContentPid();
@@ -66,17 +67,19 @@ public class FolderObjectTest extends AbstractFedoraObjectTest {
         folder.validateType();
     }
 
-    @Test(expected = ObjectTypeMismatchException.class)
+    @Test
     public void invalidTypeTest() {
-        when(driver.loadTypes(eq(folder))).thenAnswer(new Answer<RepositoryObjectDriver>() {
-            @Override
-            public RepositoryObjectDriver answer(InvocationOnMock invocation) throws Throwable {
-                folder.setTypes(Arrays.asList());
-                return driver;
-            }
-        });
+        Assertions.assertThrows(ObjectTypeMismatchException.class, () -> {
+            when(driver.loadTypes(eq(folder))).thenAnswer(new Answer<RepositoryObjectDriver>() {
+                @Override
+                public RepositoryObjectDriver answer(InvocationOnMock invocation) throws Throwable {
+                    folder.setTypes(Arrays.asList());
+                    return driver;
+                }
+            });
 
-        folder.validateType();
+            folder.validateType();
+        });
     }
 
     @Test
@@ -94,8 +97,8 @@ public class FolderObjectTest extends AbstractFedoraObjectTest {
         verify(repoObjFactory).addMember(eq(folder), captor.capture());
 
         ContentObject child = captor.getValue();
-        assertTrue("Incorrect type of child added", child instanceof FolderObject);
-        assertEquals("Child did not have the expected pid", childPid, child.getPid());
+        assertTrue(child instanceof FolderObject, "Incorrect type of child added");
+        assertEquals(childPid, child.getPid(), "Child did not have the expected pid");
     }
 
     @Test
@@ -107,7 +110,7 @@ public class FolderObjectTest extends AbstractFedoraObjectTest {
 
         verify(repoObjFactory).createWorkObject(null);
 
-        assertNotNull("Incorrect type of child added", workObj);
-        assertEquals("Child did not have the expected pid", childPid, workObj.getPid());
+        assertNotNull(workObj, "Incorrect type of child added");
+        assertEquals(childPid, workObj.getPid(), "Child did not have the expected pid");
     }
 }

@@ -1,7 +1,7 @@
 package edu.unc.lib.boxc.web.common.services;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
@@ -11,8 +11,9 @@ import org.apache.http.StatusLine;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpHead;
 import org.apache.http.impl.client.CloseableHttpClient;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 
 import edu.unc.lib.boxc.web.common.services.FindingAidUrlService;
@@ -33,7 +34,7 @@ public class FindingAidUrlServiceTest {
     @Mock
     private StatusLine statusLine;
 
-    @Before
+    @BeforeEach
     public void setup() throws Exception {
         initMocks(this);
         service = new FindingAidUrlService();
@@ -92,9 +93,11 @@ public class FindingAidUrlServiceTest {
         assertNull(service.getFindingAidUrl(collId));
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void noBaseUrlTest() {
-        service.setFindingAidBaseUrl(null);
-        service.init();
+        Assertions.assertThrows(IllegalArgumentException.class, () -> {
+            service.setFindingAidBaseUrl(null);
+            service.init();
+        });
     }
 }

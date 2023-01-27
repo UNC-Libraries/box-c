@@ -1,10 +1,10 @@
 package edu.unc.lib.boxc.deposit.normalize;
 
 import static edu.unc.lib.boxc.common.test.TestHelpers.setField;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-import static org.mockito.Matchers.anyString;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+import static org.mockito.Mockito.anyString;
 import static org.mockito.Mockito.when;
 import static org.slf4j.LoggerFactory.getLogger;
 
@@ -23,10 +23,8 @@ import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.NodeIterator;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.vocabulary.RDF;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 
 import edu.unc.lib.boxc.deposit.api.RedisWorkerConstants.DepositField;
@@ -39,18 +37,16 @@ import edu.unc.lib.boxc.model.api.rdf.CdrDeposit;
 public class DirectoryToBagJobTest extends AbstractNormalizationJobTest {
     private static final Logger log = getLogger(DirectoryToBagJobTest.class);
 
-    @Rule
-    public final TemporaryFolder tmpDir = new TemporaryFolder();
-
     private DirectoryToBagJob job;
 
     private Map<String, String> status;
 
     private File depositDirectory;
 
-    @Before
+    @BeforeEach
     public void setup() throws Exception {
-        depositDirectory = tmpDir.newFolder("directory-deposit");
+        Files.createDirectory(tmpFolder.resolve("directory-deposit"));
+        depositDirectory = tmpFolder.resolve("directory-deposit").toFile();
 
         File emptyDir = new File(depositDirectory, "empty_test");
         emptyDir.mkdir();
@@ -91,19 +87,19 @@ public class DirectoryToBagJobTest extends AbstractNormalizationJobTest {
         assertEquals(1, depositBag.size());
 
         Bag bagFolder = model.getBag((Resource) depositBag.iterator().next());
-        assertEquals("Bag folder label was not set", "Test File", bagFolder.getProperty(CdrDeposit.label).getString());
-        assertTrue("Content model was not set", bagFolder.hasProperty(RDF.type, RDF.Bag));
-        assertTrue("Content model was not set", bagFolder.hasProperty(RDF.type, Cdr.Folder));
+        assertEquals("Test File", bagFolder.getProperty(CdrDeposit.label).getString(), "Bag folder label was not set");
+        assertTrue(bagFolder.hasProperty(RDF.type, RDF.Bag), "Content model was not set");
+        assertTrue(bagFolder.hasProperty(RDF.type, Cdr.Folder), "Content model was not set");
 
         Resource emptyFolder = getChildByLabel(bagFolder, "empty_test");
-        assertTrue("Content model was not set", emptyFolder.hasProperty(RDF.type, Cdr.Folder));
+        assertTrue(emptyFolder.hasProperty(RDF.type, Cdr.Folder), "Content model was not set");
 
         Bag emptyBag = model.getBag(emptyFolder.getURI());
 
         assertEquals(0, emptyBag.size());
 
         Resource folder = getChildByLabel(bagFolder, "test");
-        assertTrue("Content model was not set", folder.hasProperty(RDF.type, Cdr.Folder));
+        assertTrue(folder.hasProperty(RDF.type, Cdr.Folder), "Content model was not set");
 
         Bag childrenBag = model.getBag(folder.getURI());
 
@@ -111,11 +107,11 @@ public class DirectoryToBagJobTest extends AbstractNormalizationJobTest {
 
         // Verify that file and its properties were added to work
         Resource work = getChildByLabel(childrenBag, "lorem.txt");
-        assertTrue("Type was not set", work.hasProperty(RDF.type, Cdr.Work));
+        assertTrue(work.hasProperty(RDF.type, Cdr.Work), "Type was not set");
 
         Bag workBag = model.getBag(work.getURI());
         Resource file = getChildByLabel(workBag, "lorem.txt");
-        assertTrue("Type was not set", file.hasProperty(RDF.type, Cdr.FileObject));
+        assertTrue(file.hasProperty(RDF.type, Cdr.FileObject), "Type was not set");
 
         Resource originalResc = DepositModelHelpers.getDatastream(file);
         String tagPath = originalResc.getProperty(CdrDeposit.stagingLocation).getString();
@@ -161,7 +157,8 @@ public class DirectoryToBagJobTest extends AbstractNormalizationJobTest {
 
     @Test
     public void nestedDirectoryTest() throws Exception {
-        File nestedDepositDir = tmpDir.newFolder("nested");
+        File nestedDepositDir = tmpFolder.resolve("nested").toFile();
+        Files.createDirectory(tmpFolder.resolve("nested"));
 
         File subdir1 = new File(nestedDepositDir, "subdir1");
         subdir1.mkdir();
@@ -190,37 +187,39 @@ public class DirectoryToBagJobTest extends AbstractNormalizationJobTest {
         assertEquals(1, depositBag.size());
 
         Bag bagRootContainer = model.getBag((Resource) depositBag.iterator().next());
-        assertEquals("Bag folder label was not set", "Test File", bagRootContainer.getProperty(CdrDeposit.label).getString());
+        assertEquals("Test File", bagRootContainer.getProperty(CdrDeposit.label).getString(),
+                "Bag folder label was not set");
         assertEquals(1, bagRootContainer.iterator().toList().size());
 
         Resource rescSubdir1 = getChildByLabel(bagRootContainer, "subdir1");
-        assertTrue("Content model was not set", rescSubdir1.hasProperty(RDF.type, Cdr.Folder));
+        assertTrue(rescSubdir1.hasProperty(RDF.type, Cdr.Folder), "Content model was not set");
 
         Bag bagSubdir1 = model.getBag(rescSubdir1);
         assertEquals(1, bagSubdir1.iterator().toList().size());
 
         Resource rescSubdir2 = getChildByLabel(bagSubdir1, "subdir2");
-        assertTrue("Content model was not set", rescSubdir2.hasProperty(RDF.type, Cdr.Folder));
+        assertTrue(rescSubdir2.hasProperty(RDF.type, Cdr.Folder), "Content model was not set");
 
         Bag bagSubdir2 = model.getBag(rescSubdir2);
         assertEquals(2, bagSubdir2.iterator().toList().size());
 
         Resource rescFile1 = getChildByLabel(bagSubdir2, "lorem.txt");
-        assertTrue("Type was not set", rescFile1.hasProperty(RDF.type, Cdr.Work));
+        assertTrue(rescFile1.hasProperty(RDF.type, Cdr.Work), "Type was not set");
 
         Resource rescSubdir3 = getChildByLabel(bagSubdir2, "subdir3");
-        assertTrue("Content model was not set", rescSubdir3.hasProperty(RDF.type, Cdr.Folder));
+        assertTrue(rescSubdir3.hasProperty(RDF.type, Cdr.Folder), "Content model was not set");
 
         Bag bagSubdir3 = model.getBag(rescSubdir3);
         assertEquals(1, bagSubdir3.iterator().toList().size());
 
         Resource rescFile2 = getChildByLabel(bagSubdir3, "ipsum.txt");
-        assertTrue("Type was not set", rescFile2.hasProperty(RDF.type, Cdr.Work));
+        assertTrue(rescFile2.hasProperty(RDF.type, Cdr.Work), "Type was not set");
     }
 
     @Test
     public void unicodeFilenameTest() throws Exception {
-        File unicodeDepDir = tmpDir.newFolder("unicode_test");
+        File unicodeDepDir = tmpFolder.resolve("unicode_test").toFile();
+        Files.createDirectory(tmpFolder.resolve("unicode_test"));
         String filename = "weird\uD83D\uDC7D.txt";
         File testFile2 = new File(unicodeDepDir, filename);
         testFile2.createNewFile();
@@ -237,29 +236,30 @@ public class DirectoryToBagJobTest extends AbstractNormalizationJobTest {
         assertEquals(1, depositBag.size());
 
         Bag bagFolder = model.getBag((Resource) depositBag.iterator().next());
-        assertEquals("Bag folder label was not set", "Unicode Test File",
-                bagFolder.getProperty(CdrDeposit.label).getString());
-        assertTrue("Content model was not set", bagFolder.hasProperty(RDF.type, RDF.Bag));
-        assertTrue("Content model was not set", bagFolder.hasProperty(RDF.type, Cdr.Folder));
+        assertEquals("Unicode Test File", bagFolder.getProperty(CdrDeposit.label).getString(),
+                "Bag folder label was not set");
+        assertTrue(bagFolder.hasProperty(RDF.type, RDF.Bag), "Content model was not set");
+        assertTrue(bagFolder.hasProperty(RDF.type, Cdr.Folder), "Content model was not set");
 
         // Verify that file and its properties were added to work
         Resource work = getChildByLabel(bagFolder, testFile2.getName());
-        assertTrue("Type was not set", work.hasProperty(RDF.type, Cdr.Work));
-        assertEquals("Work label incorrect", filename, work.getProperty(CdrDeposit.label).getString());
+        assertTrue(work.hasProperty(RDF.type, Cdr.Work), "Type was not set");
+        assertEquals(filename, work.getProperty(CdrDeposit.label).getString(), "Work label incorrect");
 
         Bag workBag = model.getBag(work.getURI());
         Resource file = getChildByLabel(workBag, testFile2.getName());
-        assertTrue("Type was not set", file.hasProperty(RDF.type, Cdr.FileObject));
-        assertEquals("File label incorrect", filename, file.getProperty(CdrDeposit.label).getString());
+        assertTrue(file.hasProperty(RDF.type, Cdr.FileObject), "Type was not set");
+        assertEquals(filename, file.getProperty(CdrDeposit.label).getString(), "File label incorrect");
 
         Resource originalResc = DepositModelHelpers.getDatastream(file);
         String tagPath = originalResc.getProperty(CdrDeposit.stagingLocation).getString();
-        assertTrue("Unexpected path " + tagPath, tagPath.endsWith("unicode_test/weird%F0%9F%91%BD.txt"));
+        assertTrue(tagPath.endsWith("unicode_test/weird%F0%9F%91%BD.txt"), "Unexpected path " + tagPath);
     }
 
     @Test
     public void unicodeNestedDirectoryTest() throws Exception {
-        File unicodeDepDir = tmpDir.newFolder("unicode_test");
+        File unicodeDepDir = tmpFolder.resolve("unicode_test").toFile();
+        Files.createDirectory(tmpFolder.resolve("unicode_test"));
         String nestedFilename = "\uD83D\uDC7D_sightings";
         Path unicodeNested = Paths.get(unicodeDepDir.getAbsolutePath(), nestedFilename);
         Files.createDirectory(unicodeNested);
@@ -278,26 +278,26 @@ public class DirectoryToBagJobTest extends AbstractNormalizationJobTest {
         assertEquals(1, depositBag.size());
 
         Bag bagFolder = model.getBag((Resource) depositBag.iterator().next());
-        assertEquals("Bag folder label was not set", "Unicode Nested Test File",
-                bagFolder.getProperty(CdrDeposit.label).getString());
-        assertTrue("Content model was not set", bagFolder.hasProperty(RDF.type, RDF.Bag));
-        assertTrue("Content model was not set", bagFolder.hasProperty(RDF.type, Cdr.Folder));
+        assertEquals("Unicode Nested Test File", bagFolder.getProperty(CdrDeposit.label).getString(),
+                "Bag folder label was not set");
+        assertTrue(bagFolder.hasProperty(RDF.type, RDF.Bag), "Content model was not set");
+        assertTrue(bagFolder.hasProperty(RDF.type, Cdr.Folder), "Content model was not set");
 
         Bag nestedFolder = model.getBag((Resource) bagFolder.iterator().next());
-        assertEquals("Bag folder label was not set", nestedFilename,
-                nestedFolder.getProperty(CdrDeposit.label).getString());
+        assertEquals(nestedFilename, nestedFolder.getProperty(CdrDeposit.label).getString(),
+                "Bag folder label was not set");
 
         // Verify that file and its properties were added to work
         Resource work = getChildByLabel(nestedFolder, testFile.getFileName().toString());
-        assertTrue("Type was not set", work.hasProperty(RDF.type, Cdr.Work));
+        assertTrue(work.hasProperty(RDF.type, Cdr.Work), "Type was not set");
 
         Bag workBag = model.getBag(work.getURI());
         Resource file = getChildByLabel(workBag, testFile.getFileName().toString());
-        assertTrue("Type was not set", file.hasProperty(RDF.type, Cdr.FileObject));
+        assertTrue(file.hasProperty(RDF.type, Cdr.FileObject), "Type was not set");
 
         Resource originalResc = DepositModelHelpers.getDatastream(file);
         String tagPath = originalResc.getProperty(CdrDeposit.stagingLocation).getString();
-        assertTrue("Unexpected path " + tagPath, tagPath.endsWith("unicode_test/%F0%9F%91%BD_sightings/ufo.txt"));
+        assertTrue(tagPath.endsWith("unicode_test/%F0%9F%91%BD_sightings/ufo.txt"), "Unexpected path " + tagPath);
     }
 
     @Test
@@ -314,14 +314,14 @@ public class DirectoryToBagJobTest extends AbstractNormalizationJobTest {
         assertEquals(2, depositBag.size());
 
         Resource emptyFolder = getChildByLabel(depositBag, "empty_test");
-        assertTrue("Content model was not set", emptyFolder.hasProperty(RDF.type, Cdr.Folder));
+        assertTrue(emptyFolder.hasProperty(RDF.type, Cdr.Folder), "Content model was not set");
 
         Bag emptyBag = model.getBag(emptyFolder.getURI());
 
         assertEquals(0, emptyBag.size());
 
         Resource folder = getChildByLabel(depositBag, "test");
-        assertTrue("Content model was not set", folder.hasProperty(RDF.type, Cdr.Folder));
+        assertTrue(folder.hasProperty(RDF.type, Cdr.Folder), "Content model was not set");
 
         Bag childrenBag = model.getBag(folder.getURI());
 
@@ -329,11 +329,11 @@ public class DirectoryToBagJobTest extends AbstractNormalizationJobTest {
 
         // Verify that file and its properties were added to work
         Resource work = getChildByLabel(childrenBag, "lorem.txt");
-        assertTrue("Type was not set", work.hasProperty(RDF.type, Cdr.Work));
+        assertTrue(work.hasProperty(RDF.type, Cdr.Work), "Type was not set");
 
         Bag workBag = model.getBag(work.getURI());
         Resource file = getChildByLabel(workBag, "lorem.txt");
-        assertTrue("Type was not set", file.hasProperty(RDF.type, Cdr.FileObject));
+        assertTrue(file.hasProperty(RDF.type, Cdr.FileObject), "Type was not set");
 
         Resource originalResc = DepositModelHelpers.getDatastream(file);
         String tagPath = originalResc.getProperty(CdrDeposit.stagingLocation).getString();
@@ -350,14 +350,15 @@ public class DirectoryToBagJobTest extends AbstractNormalizationJobTest {
             job.run();
             fail();
         } catch (JobFailedException e) {
-            assertTrue("Incorrect exception message: " + e.getMessage(),
-                    e.getMessage().contains("Subfolders are not allowed for this deposit"));
+            assertTrue(e.getMessage().contains("Subfolders are not allowed for this deposit"),
+                    "Incorrect exception message: " + e.getMessage());
         }
     }
 
     @Test
     public void testFilesOnlyModeWithFlatStructure() throws Exception {
-        File flatDepositDir = tmpDir.newFolder("flat");
+        File flatDepositDir = tmpFolder.resolve("flat").toFile();
+        Files.createDirectory(tmpFolder.resolve("flat"));
 
         File file1 = new File(flatDepositDir, "file1.txt");
         file1.createNewFile();
@@ -377,16 +378,16 @@ public class DirectoryToBagJobTest extends AbstractNormalizationJobTest {
         assertEquals(2, depositBag.size());
 
         Resource file1Resc = getChildByLabel(depositBag, "file1.txt");
-        assertTrue("Content model was not set", file1Resc.hasProperty(RDF.type, Cdr.FileObject));
+        assertTrue(file1Resc.hasProperty(RDF.type, Cdr.FileObject), "Content model was not set");
         Resource originalResc1 = DepositModelHelpers.getDatastream(file1Resc);
         String tagPath1 = originalResc1.getProperty(CdrDeposit.stagingLocation).getString();
-        assertTrue("Unexpected path " + tagPath1, tagPath1.endsWith("flat/file1.txt"));
+        assertTrue(tagPath1.endsWith("flat/file1.txt"), "Unexpected path " + tagPath1);
 
         Resource file2Resc = getChildByLabel(depositBag, "file2.txt");
-        assertTrue("Content model was not set", file2Resc.hasProperty(RDF.type, Cdr.FileObject));
+        assertTrue(file2Resc.hasProperty(RDF.type, Cdr.FileObject), "Content model was not set");
         Resource originalResc2 = DepositModelHelpers.getDatastream(file2Resc);
         String tagPath2 = originalResc2.getProperty(CdrDeposit.stagingLocation).getString();
-        assertTrue("Unexpected path " + tagPath2, tagPath2.endsWith("flat/file2.txt"));
+        assertTrue(tagPath2.endsWith("flat/file2.txt"), "Unexpected path " + tagPath2);
     }
 
     private Resource getChildByLabel(Bag bagResc, String seekLabel) {

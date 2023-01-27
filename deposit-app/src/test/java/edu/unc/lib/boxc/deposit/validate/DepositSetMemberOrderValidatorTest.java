@@ -8,14 +8,14 @@ import org.apache.jena.rdf.model.Bag;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.vocabulary.RDF;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * @author bbpennel, snluong
@@ -33,7 +33,7 @@ public class DepositSetMemberOrderValidatorTest {
     private DepositSetMemberOrderValidator validator;
     private Bag workBag;
 
-    @Before
+    @BeforeEach
     public void setup() {
         parentPid = PIDs.get(PARENT_UUID);
         child1Pid = PIDs.get(CHILD1_UUID);
@@ -126,7 +126,7 @@ public class DepositSetMemberOrderValidatorTest {
 
     public static void assertHasErrors(OrderValidator validator, String... expected) {
         var msg = "Expected errors:\n[" + String.join(",", expected) + "]\nbut errors were:\n" + validator.getErrors();
-        assertTrue(msg, validator.getErrors().containsAll(Arrays.asList(expected)));
-        assertEquals(msg, expected.length, validator.getErrors().size());
+        assertTrue(validator.getErrors().containsAll(Arrays.asList(expected)), msg);
+        assertEquals(expected.length, validator.getErrors().size(), msg);
     }
 }

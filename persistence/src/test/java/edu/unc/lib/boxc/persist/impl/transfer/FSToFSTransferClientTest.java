@@ -2,12 +2,12 @@ package edu.unc.lib.boxc.persist.impl.transfer;
 
 import static edu.unc.lib.boxc.model.fcrepo.ids.DatastreamPids.getOriginalFilePid;
 import static org.apache.commons.codec.binary.Hex.encodeHexString;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
@@ -22,10 +22,10 @@ import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.NotImplementedException;
 import org.awaitility.Awaitility;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.mockito.Mock;
 
 import edu.unc.lib.boxc.model.api.ids.PID;
@@ -51,8 +51,8 @@ public class FSToFSTransferClientTest {
 
     protected FSToFSTransferClient client;
 
-    @Rule
-    public final TemporaryFolder tmpFolder = new TemporaryFolder();
+    @TempDir
+    public Path tmpFolder;
     protected Path sourcePath;
     protected Path storagePath;
     @Mock
@@ -61,12 +61,13 @@ public class FSToFSTransferClientTest {
 
     protected PID binPid;
 
-    @Before
+    @BeforeEach
     public void setup() throws Exception {
         initMocks(this);
-        tmpFolder.create();
-        sourcePath = tmpFolder.newFolder("source").toPath();
-        storagePath = tmpFolder.newFolder("storage").toPath();
+        sourcePath = tmpFolder.resolve("source");
+        Files.createDirectory(sourcePath);
+        storagePath = tmpFolder.resolve("storage");
+        Files.createDirectory(storagePath);
 
         HashedFilesystemStorageLocation hashedLoc = new HashedFilesystemStorageLocation();
         hashedLoc.setBase(storagePath.toString());
@@ -78,10 +79,12 @@ public class FSToFSTransferClientTest {
         binPid = getOriginalFilePid(PIDs.get(TEST_UUID));
     }
 
-    @Test(expected = BinaryTransferException.class)
+    @Test
     public void transferFileThatDoesNotExist() {
-        Path sourceFile = sourcePath.resolve("nofilehere.txt");
-        client.transfer(binPid, sourceFile.toUri());
+        Assertions.assertThrows(BinaryTransferException.class, () -> {
+            Path sourceFile = sourcePath.resolve("nofilehere.txt");
+            client.transfer(binPid, sourceFile.toUri());
+        });
     }
 
     @Test
@@ -109,22 +112,26 @@ public class FSToFSTransferClientTest {
         assertOutcome(outcome, FILE_CONTENT_SHA1);
     }
 
-    @Test(expected = BinaryAlreadyExistsException.class)
+    @Test
     public void transferFileAlreadyExists() throws Exception {
-        String existingContent = "I exist";
+        Assertions.assertThrows(BinaryAlreadyExistsException.class, () -> {
+            String existingContent = "I exist";
 
-        Path destPath = Paths.get(storageLoc.getNewStorageUri(binPid));
-        Files.createDirectories(destPath.getParent());
-        createFile(destPath, existingContent);
-        Path sourceFile = createSourceFile();
+            Path destPath = Paths.get(storageLoc.getNewStorageUri(binPid));
+            Files.createDirectories(destPath.getParent());
+            createFile(destPath, existingContent);
+            Path sourceFile = createSourceFile();
 
-        client.transfer(binPid, sourceFile.toUri());
+            client.transfer(binPid, sourceFile.toUri());
+        });
     }
 
-    @Test(expected = BinaryTransferException.class)
+    @Test
     public void transferReplaceFileThatDoesNotExist() {
-        Path sourceFile = sourcePath.resolve("nofilehere.txt");
-        client.transferReplaceExisting(binPid, sourceFile.toUri());
+        Assertions.assertThrows(BinaryTransferException.class, () -> {
+            Path sourceFile = sourcePath.resolve("nofilehere.txt");
+            client.transferReplaceExisting(binPid, sourceFile.toUri());
+        });
     }
 
     @Test
@@ -184,7 +191,7 @@ public class FSToFSTransferClientTest {
         try {
             client.transferReplaceExisting(binPid, sourceFile.toUri());
         } catch (BinaryTransferException e) {
-            assertTrue("Original file should be present", destFile.exists());
+            assertTrue(destFile.exists(), "Original file should be present");
             assertEquals(1, parentDir.listFiles().length);
         } finally {
             parentDir.setWritable(true);
@@ -192,10 +199,12 @@ public class FSToFSTransferClientTest {
         }
     }
 
-    @Test(expected = NotImplementedException.class)
+    @Test
     public void transferVersion() throws Exception {
-        Path sourceFile = createSourceFile();
-        client.transferVersion(binPid, sourceFile.toUri());
+        Assertions.assertThrows(NotImplementedException.class, () -> {
+            Path sourceFile = createSourceFile();
+            client.transferVersion(binPid, sourceFile.toUri());
+        });
     }
 
     // Verify that file larger than file transfer buffer size is transferred
@@ -206,6 +215,7 @@ public class FSToFSTransferClientTest {
         long fileSize = 100 * 1024 * 1024;
         // Generate a 100mb file for transferring
         Path sourceFile = sourcePath.resolve("file.txt");
+        Files.createFile(sourceFile);
         try (RandomAccessFile filler = new RandomAccessFile(sourceFile.toFile(), "rw")) {
             filler.setLength(fileSize);
         }
@@ -225,6 +235,7 @@ public class FSToFSTransferClientTest {
 
         // Generate a 100mb file for transferring
         Path sourceFile = sourcePath.resolve("file.txt");
+        Files.createFile(sourceFile);
         try (RandomAccessFile filler = new RandomAccessFile(sourceFile.toFile(), "rw")) {
             filler.setLength(100 * 1024 * 1024);
         }
@@ -337,14 +348,14 @@ public class FSToFSTransferClientTest {
     }
 
     protected void assertIsSourceFile(Path path) throws Exception {
-        assertTrue("Source file was not present at " + path, path.toFile().exists());
+        assertTrue(path.toFile().exists(), "Source file was not present at " + path);
         assertEquals(FILE_CONTENT, FileUtils.readFileToString(path.toFile(), "UTF-8"));
     }
 
     protected void assertOutcome(BinaryTransferOutcome outcome, String expectedSha1) {
-        assertNotNull("Outcome was not returned", outcome);
-        assertTrue("Destination file must be in the destination storage location",
-                Paths.get(outcome.getDestinationUri()).startsWith(storagePath));
-        assertEquals("Unexpected outcome digest", expectedSha1, outcome.getSha1());
+        assertNotNull(outcome, "Outcome was not returned");
+        assertTrue(Paths.get(outcome.getDestinationUri()).startsWith(storagePath),
+                "Destination file must be in the destination storage location");
+        assertEquals(expectedSha1, outcome.getSha1(), "Unexpected outcome digest");
     }
 }

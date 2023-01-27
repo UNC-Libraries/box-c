@@ -6,8 +6,8 @@ import edu.unc.lib.boxc.search.solr.config.SearchSettings;
 import edu.unc.lib.boxc.search.solr.facets.GenericFacet;
 import edu.unc.lib.boxc.search.solr.services.FacetFieldFactory;
 import edu.unc.lib.boxc.search.solr.services.SearchStateFactory;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.io.FileInputStream;
 import java.util.List;
@@ -16,8 +16,8 @@ import java.util.Properties;
 
 import static edu.unc.lib.boxc.web.common.utils.SearchStateSerializationUtil.FACET_DISPLAY_VALUE_KEY;
 import static edu.unc.lib.boxc.web.common.utils.SearchStateSerializationUtil.FACET_VALUE_KEY;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * @author bbpennel
@@ -25,7 +25,7 @@ import static org.junit.Assert.assertTrue;
 public class SearchStateSerializationUtilTest {
     private SearchStateFactory searchStateFactory;
 
-    @Before
+    @BeforeEach
     public void setup() throws Exception {
         var properties = new Properties();
         properties.load(new FileInputStream("src/test/resources/search.properties"));
@@ -130,23 +130,22 @@ public class SearchStateSerializationUtilTest {
     private void assertHasSearchTerm(Map<String, Object> result, SearchFieldKey field, String value) {
         assertContainsField(result, field);
         var paramName = field.getUrlParam();
-        assertEquals("Results field " + paramName + " had wrong value",
-                value, result.get(paramName));
+        assertEquals(value, result.get(paramName), "Results field " + paramName + " had wrong value");
     }
 
     private void assertHasFacetValue(Map<String, Object> result, SearchFieldKey field,
                                      String value, String displayValue) {
         assertContainsField(result, field);
         var facetValues = (List<Map<String, String>>) result.get(field.getUrlParam());
-        assertTrue("Results did not contain " + field.getUrlParam()
-                        + " with value=" + value + ", display=" + displayValue + ": " + result,
-                facetValues.stream().anyMatch(f -> value.equals(f.get(FACET_VALUE_KEY))
-                        && displayValue.equals(f.get(FACET_DISPLAY_VALUE_KEY))));
+        assertTrue(facetValues.stream().anyMatch(f -> value.equals(f.get(FACET_VALUE_KEY))
+                        && displayValue.equals(f.get(FACET_DISPLAY_VALUE_KEY))),
+                "Results did not contain " + field.getUrlParam()
+                        + " with value=" + value + ", display=" + displayValue + ": " + result);
     }
 
     private void assertContainsField(Map<String, Object> result, SearchFieldKey field) {
         var paramName = field.getUrlParam();
-        assertTrue("Results did not contain field " + paramName + ", contained: " + result,
-                result.containsKey(paramName));
+        assertTrue(result.containsKey(paramName),
+                "Results did not contain field " + paramName + ", contained: " + result);
     }
 }

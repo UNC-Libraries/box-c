@@ -10,8 +10,8 @@ import static edu.unc.lib.boxc.auth.api.UserRole.canViewMetadata;
 import static edu.unc.lib.boxc.auth.api.UserRole.canViewOriginals;
 import static edu.unc.lib.boxc.model.api.ids.RepositoryPathConstants.CONTENT_ROOT_ID;
 import static java.util.Arrays.asList;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
@@ -29,8 +29,9 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 
 import edu.unc.lib.boxc.auth.api.Permission;
@@ -68,7 +69,7 @@ public class InheritedPermissionEvaluatorTest {
 
     private PID pid;
 
-    @Before
+    @BeforeEach
     public void init() {
         initMocks(this);
 
@@ -483,11 +484,13 @@ public class InheritedPermissionEvaluatorTest {
         assertFalse(evaluator.hasPermission(pid, STAFF_PRINCIPLES, Permission.ingest));
     }
 
-    @Test(expected = OrphanedObjectException.class)
+    @Test
     public void orphanedObjectFailure() {
-        when(pathFactory.getAncestorPids(any(PID.class))).thenReturn(Collections.emptyList());
+        Assertions.assertThrows(OrphanedObjectException.class, () -> {
+            when(pathFactory.getAncestorPids(any(PID.class))).thenReturn(Collections.emptyList());
 
-        evaluator.hasPermission(pid, STAFF_PRINCIPLES, Permission.ingest);
+            evaluator.hasPermission(pid, STAFF_PRINCIPLES, Permission.ingest);
+        });
     }
 
     @Test

@@ -23,8 +23,8 @@ import edu.unc.lib.boxc.search.solr.models.IndexDocumentBean;
 import edu.unc.lib.boxc.search.solr.responses.SearchResultResponse;
 import edu.unc.lib.boxc.search.solr.services.SolrSearchService;
 import org.apache.commons.collections.CollectionUtils;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
@@ -38,9 +38,9 @@ import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.never;
@@ -85,7 +85,7 @@ public class SetContentTypeFilterTest {
 
     private SetContentTypeFilter filter;
 
-    @Before
+    @BeforeEach
     public void setup() throws Exception {
         initMocks(this);
 
@@ -390,30 +390,30 @@ public class SetContentTypeFilterTest {
 
     private void assertHasFileDescriptions(IndexDocumentBean idb, String... expectedDescs) {
         for (var expected: expectedDescs) {
-            assertTrue("Object did not have expected description " + expected + ", were: " + idb.getFileFormatDescription(),
-                    idb.getFileFormatDescription().contains(expected));
+            assertTrue(idb.getFileFormatDescription().contains(expected),
+                    "Object did not have expected description " + expected + ", were: " + idb.getFileFormatDescription());
         }
-        assertEquals("Incorrect number of descriptions, expected: " + expectedDescs + ", found: " + idb.getFileFormatDescription(),
-                expectedDescs.length, idb.getFileFormatDescription().size());
+        assertEquals(expectedDescs.length, idb.getFileFormatDescription().size(),
+                "Incorrect number of descriptions, expected: " + expectedDescs + ", found: " + idb.getFileFormatDescription());
     }
 
     private void assertHasFileTypes(IndexDocumentBean idb, String... expectedTypes) {
         for (var expected: expectedTypes) {
-            assertTrue("Object did not have expected type " + expected + ", types were: " + idb.getFileFormatType(),
-                    idb.getFileFormatType().contains(expected));
+            assertTrue(idb.getFileFormatType().contains(expected),
+                    "Object did not have expected type " + expected + ", types were: " + idb.getFileFormatType());
         }
-        assertEquals("Incorrect number of types, expected: " + expectedTypes + ", found: " + idb.getFileFormatType(),
-                expectedTypes.length, idb.getFileFormatType().size());
+        assertEquals(expectedTypes.length, idb.getFileFormatType().size(),
+                "Incorrect number of types, expected: " + expectedTypes + ", found: " + idb.getFileFormatType());
     }
 
     private void assertHasCategories(IndexDocumentBean idb, ContentCategory... expectedCats) {
         for (var expected: expectedCats) {
-            assertTrue("Object did not have expected category " + expected
-                            + ", categories were: " + idb.getFileFormatCategory(),
-                    idb.getFileFormatCategory().contains(expected.getDisplayName()));
+            assertTrue(idb.getFileFormatCategory().contains(expected.getDisplayName()),
+                    "Object did not have expected category " + expected
+                    + ", categories were: " + idb.getFileFormatCategory());
         }
-        assertEquals("Incorrect number of categories, expected: " + expectedCats + ", found: " + idb.getFileFormatCategory(),
-                expectedCats.length, idb.getFileFormatCategory().size());
+        assertEquals(expectedCats.length, idb.getFileFormatCategory().size(),
+                "Incorrect number of categories, expected: " + expectedCats + ", found: " + idb.getFileFormatCategory());
     }
 
     private InputStream createTechMdBody(String formatIdentity) {

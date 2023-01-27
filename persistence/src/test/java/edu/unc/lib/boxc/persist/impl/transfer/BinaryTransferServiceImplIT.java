@@ -1,8 +1,8 @@
 package edu.unc.lib.boxc.persist.impl.transfer;
 
 import static java.util.Arrays.asList;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.File;
 import java.io.IOException;
@@ -15,15 +15,15 @@ import java.util.Map;
 
 import org.apache.commons.io.FileUtils;
 import org.awaitility.Awaitility;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.api.io.TempDir;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.ContextHierarchy;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -53,7 +53,7 @@ import edu.unc.lib.boxc.persist.impl.transfer.BinaryTransferServiceImpl;
  * @author bbpennel
  *
  */
-@RunWith(SpringJUnit4ClassRunner.class)
+@ExtendWith(SpringExtension.class)
 @ContextHierarchy({
     @ContextConfiguration("/spring-test/test-fedora-container.xml"),
     @ContextConfiguration("/spring-test/cdr-client-container.xml")
@@ -77,8 +77,8 @@ public class BinaryTransferServiceImplIT {
     @Autowired
     private RepositoryObjectLoader repoObjLoader;
 
-    @Rule
-    public final TemporaryFolder tmpFolder = new TemporaryFolder();
+    @TempDir
+    public Path tmpFolder;
     private Path sourceConfigPath;
     private Path storageConfigPath;
 
@@ -87,17 +87,17 @@ public class BinaryTransferServiceImplIT {
     private Path storagePath1;
     private Path storagePath2;
 
-    @Before
+    @BeforeEach
     public void setup() throws Exception {
-        tmpFolder.create();
-
         TestHelper.setContentBase(baseAddress);
 
-        File sourceMappingFile = new File(tmpFolder.getRoot(), "sourceMapping.json");
+        File sourceMappingFile = new File(tmpFolder.toFile(), "sourceMapping.json");
         FileUtils.writeStringToFile(sourceMappingFile, "[]", "UTF-8");
 
-        sourcePath1 = tmpFolder.newFolder("source_wr").toPath();
-        sourcePath2 = tmpFolder.newFolder("source_ro").toPath();
+        sourcePath1 = tmpFolder.resolve("source_wr");
+        Files.createDirectory(sourcePath1);
+        sourcePath2 = tmpFolder.resolve("source_ro");
+        Files.createDirectory(sourcePath2);
         sourceConfigPath = IngestSourceTestHelper.createConfigFile(
                 IngestSourceTestHelper.createFilesystemConfig("source_wr", "Mod", sourcePath1, asList("*")),
                 IngestSourceTestHelper.createFilesystemConfig("source_ro", "RO", sourcePath2, asList("*"), true));
@@ -109,11 +109,13 @@ public class BinaryTransferServiceImplIT {
 
         transferService.setIngestSourceManager(sourceManager);
 
-        File storageMappingFile = new File(tmpFolder.getRoot(), "storageMapping.json");
+        File storageMappingFile = new File(tmpFolder.toFile(), "storageMapping.json");
         FileUtils.writeStringToFile(storageMappingFile, "[]", "UTF-8");
 
-        storagePath1 = tmpFolder.newFolder("storage1").toPath();
-        storagePath2 = tmpFolder.newFolder("storage2").toPath();
+        storagePath1 = tmpFolder.resolve("storage1");
+        Files.createDirectory(storagePath1);
+        storagePath2 = tmpFolder.resolve("storage2");
+        Files.createDirectory(storagePath2);
         storageConfigPath = createStorageConfigFile(
                 addStorageLocation("loc1", "Loc 1", storagePath1),
                 addStorageLocation("loc2", "Loc 2", storagePath2));
@@ -153,28 +155,30 @@ public class BinaryTransferServiceImplIT {
             StorageLocation dest2 = storageManager.getStorageLocationById("loc2");
             BinaryTransferOutcome outcome2 = session.forDestination(dest2).transfer(binPid2, sourceFile2.toUri());
             assertTrue(new File(outcome2.getDestinationUri()).exists());
-            assertTrue("Transfer from read only source should not delete source file",
-                    sourceFile2.toFile().exists());
+            assertTrue(sourceFile2.toFile().exists(),
+                    "Transfer from read only source should not delete source file");
         }
     }
 
-    @Test(expected = BinaryAlreadyExistsException.class)
+    @Test
     public void repeatTransfer() throws Exception {
-        PID binPid = pidMinter.mintContentPid();
+        Assertions.assertThrows(BinaryAlreadyExistsException.class, () -> {
+            PID binPid = pidMinter.mintContentPid();
 
-        StorageLocation destination = storageManager.getStorageLocationById("loc1");
-        Path sourceFile = createSourceFile(sourcePath2, "myfile.txt", "some content");
+            StorageLocation destination = storageManager.getStorageLocationById("loc1");
+            Path sourceFile = createSourceFile(sourcePath2, "myfile.txt", "some content");
 
-        try (BinaryTransferSession session = transferService.getSession(destination)) {
-            BinaryTransferOutcome outcome = session.transfer(binPid, sourceFile.toUri());
+            try (BinaryTransferSession session = transferService.getSession(destination)) {
+                BinaryTransferOutcome outcome = session.transfer(binPid, sourceFile.toUri());
 
-            assertTrue(new File(outcome.getDestinationUri()).exists());
-            assertTrue("Transfer from read only source should not delete source file",
-                    sourceFile.toFile().exists());
+                assertTrue(new File(outcome.getDestinationUri()).exists());
+                assertTrue(sourceFile.toFile().exists(),
+                        "Transfer from read only source should not delete source file");
 
-            // Try to transfer the file again
-            session.transfer(binPid, sourceFile.toUri());
-        }
+                // Try to transfer the file again
+                session.transfer(binPid, sourceFile.toUri());
+            }
+        });
     }
 
     @Test
@@ -260,18 +264,18 @@ public class BinaryTransferServiceImplIT {
                     outcome.getDestinationUri(), filename, "text/plain", null, null, null);
 
             BinaryObject originalBinary = repoObjLoader.getBinaryObject(originalPid);
-            assertTrue("Content of the binary in tx must match the updated content",
-                    FileUtils.contentEquals(new File(sourceUri2), new File(originalBinary.getContentUri())));
+            assertTrue(FileUtils.contentEquals(new File(sourceUri2), new File(originalBinary.getContentUri())),
+                    "Content of the binary in tx must match the updated content");
 
-            assertTrue("First version must still exist", new File(firstVersionContentUri).exists());
-            assertTrue("New file version must exist", new File(outcome.getDestinationUri()).exists());
+            assertTrue(new File(firstVersionContentUri).exists(), "First version must still exist");
+            assertTrue(new File(outcome.getDestinationUri()).exists(), "New file version must exist");
 
             // Rollback the transaction
             tx.cancelAndIgnore();
 
             originalBinary = repoObjLoader.getBinaryObject(originalPid);
-            assertTrue("Content of the binary after canceling tx must be the original file",
-                    FileUtils.contentEquals(new File(sourceUri1), new File(originalBinary.getContentUri())));
+            assertTrue(FileUtils.contentEquals(new File(sourceUri1), new File(originalBinary.getContentUri())),
+                    "Content of the binary after canceling tx must be the original file");
 
             // old binary should still exist
             assertTrue(new File(firstVersionContentUri).exists());

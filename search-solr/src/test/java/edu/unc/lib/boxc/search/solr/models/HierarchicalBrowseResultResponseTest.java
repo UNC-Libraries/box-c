@@ -9,15 +9,15 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import edu.unc.lib.boxc.search.api.models.ContentObjectRecord;
 import edu.unc.lib.boxc.search.solr.models.ContentObjectSolrRecord;
 import edu.unc.lib.boxc.search.solr.responses.HierarchicalBrowseResultResponse;
 
 
-public class HierarchicalBrowseResultResponseTest extends Assert {
+public class HierarchicalBrowseResultResponseTest extends Assertions {
 
     private List<ContentObjectRecord> getMetadataObjects() {
         ContentObjectSolrRecord md1 = new ContentObjectSolrRecord();

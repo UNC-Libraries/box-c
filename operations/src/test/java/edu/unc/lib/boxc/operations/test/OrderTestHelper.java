@@ -10,8 +10,8 @@ import edu.unc.lib.boxc.operations.jms.order.OrderRequest;
 
 import java.util.Arrays;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.when;
 
 /**
@@ -30,7 +30,7 @@ public class OrderTestHelper {
 
     public static void assertHasErrors(OrderValidator validator, String... expected) {
         var msg = "Expected errors:\n[" + String.join(",", expected) + "]\nbut errors were:\n" + validator.getErrors();
-        assertTrue(msg, validator.getErrors().containsAll(Arrays.asList(expected)));
-        assertEquals(msg, expected.length, validator.getErrors().size());
+        assertTrue(validator.getErrors().containsAll(Arrays.asList(expected)), msg);
+        assertEquals(expected.length, validator.getErrors().size(), msg);
     }
 }

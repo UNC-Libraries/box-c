@@ -8,8 +8,9 @@ import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import edu.unc.lib.boxc.deposit.DepositTestUtils;
@@ -22,7 +23,7 @@ public class PackageIntegrityCheckJobTest extends AbstractNormalizationJobTest {
 
     private PackageIntegrityCheckJob job;
 
-    @Before
+    @BeforeEach
     public void setup() {
         job = new PackageIntegrityCheckJob(jobUUID, depositUUID);
         job.setDepositStatusFactory(depositStatusFactory);
@@ -48,17 +49,19 @@ public class PackageIntegrityCheckJobTest extends AbstractNormalizationJobTest {
         job.run();
     }
 
-    @Test(expected = JobFailedException.class)
+    @Test
     public void testFileCorrupted() {
-        DepositTestUtils.makeTestDir(
-                depositsDirectory,
-                depositUUID, new File("src/test/resources/depositFileZipped.zip"));
+        Assertions.assertThrows(JobFailedException.class, () -> {
+            DepositTestUtils.makeTestDir(
+                    depositsDirectory,
+                    depositUUID, new File("src/test/resources/depositFileZipped.zip"));
 
-        Map<String, String> status = new HashMap<>();
-        status.put(DepositField.depositMd5.name(), "a949138500f67e8617ac9968d2632d4e");
-        status.put(DepositField.fileName.name(), "cdrMETS.zip");
-        when(depositStatusFactory.get(anyString())).thenReturn(status);
+            Map<String, String> status = new HashMap<>();
+            status.put(DepositField.depositMd5.name(), "a949138500f67e8617ac9968d2632d4e");
+            status.put(DepositField.fileName.name(), "cdrMETS.zip");
+            when(depositStatusFactory.get(anyString())).thenReturn(status);
 
-        job.run();
+            job.run();
+        });
     }
 }

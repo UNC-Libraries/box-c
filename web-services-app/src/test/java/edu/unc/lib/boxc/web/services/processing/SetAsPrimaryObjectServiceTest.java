@@ -1,8 +1,8 @@
 package edu.unc.lib.boxc.web.services.processing;
 
 import static edu.unc.lib.boxc.auth.api.Permission.editResourceType;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
@@ -16,8 +16,9 @@ import java.util.Collection;
 import java.util.UUID;
 
 import org.apache.jena.rdf.model.Resource;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
@@ -71,7 +72,7 @@ public class SetAsPrimaryObjectServiceTest {
     private PID workObjPid;
     private SetAsPrimaryObjectService service;
 
-    @Before
+    @BeforeEach
     public void init() {
         initMocks(this);
 
@@ -108,26 +109,32 @@ public class SetAsPrimaryObjectServiceTest {
         assertTrue(collections.contains(fileObj.getParent().getPid()));
     }
 
-    @Test(expected = AccessRestrictionException.class)
+    @Test
     public void insufficientAccessTest() {
-        doThrow(new AccessRestrictionException()).when(aclService)
-        .assertHasAccess(anyString(), eq(fileObjPid), any(), eq(editResourceType));
+        Assertions.assertThrows(AccessRestrictionException.class, () -> {
+            doThrow(new AccessRestrictionException()).when(aclService)
+                    .assertHasAccess(anyString(), eq(fileObjPid), any(), eq(editResourceType));
 
-        service.setAsPrimaryObject(agent, fileObjPid);
+            service.setAsPrimaryObject(agent, fileObjPid);
+        });
     }
 
-    @Test(expected = InvalidOperationForObjectType.class)
+    @Test
     public void setNonFileAsPrimaryTest() {
-        when(repoObjLoader.getRepositoryObject(eq(folderObjPid))).thenReturn(folderObj);
+        Assertions.assertThrows(InvalidOperationForObjectType.class, () -> {
+            when(repoObjLoader.getRepositoryObject(eq(folderObjPid))).thenReturn(folderObj);
 
-        service.setAsPrimaryObject(agent, folderObjPid);
+            service.setAsPrimaryObject(agent, folderObjPid);
+        });
     }
 
-    @Test(expected = InvalidOperationForObjectType.class)
+    @Test
     public void setPrimaryObjectOnNonWork() {
-        when(fileObj.getParent()).thenReturn(folderObj);
+        Assertions.assertThrows(InvalidOperationForObjectType.class, () -> {
+            when(fileObj.getParent()).thenReturn(folderObj);
 
-        service.setAsPrimaryObject(agent, fileObjPid);
+            service.setAsPrimaryObject(agent, fileObjPid);
+        });
     }
 
     @Test
@@ -175,14 +182,16 @@ public class SetAsPrimaryObjectServiceTest {
         assertTrue(collections.contains(workObjPid));
     }
 
-    @Test(expected = AccessRestrictionException.class)
+    @Test
     public void testClearPrimaryObjectAccessRestriction() {
-        doThrow(new AccessRestrictionException()).when(aclService)
-            .assertHasAccess(anyString(), eq(workObjPid), any(), eq(editResourceType));
+        Assertions.assertThrows(AccessRestrictionException.class, () -> {
+            doThrow(new AccessRestrictionException()).when(aclService)
+                    .assertHasAccess(anyString(), eq(workObjPid), any(), eq(editResourceType));
 
-        when(fileObj.getParent()).thenReturn(workObj);
+            when(fileObj.getParent()).thenReturn(workObj);
 
-        service.clearPrimaryObject(agent, fileObjPid);
+            service.clearPrimaryObject(agent, fileObjPid);
+        });
     }
 
     private PID makePid() {

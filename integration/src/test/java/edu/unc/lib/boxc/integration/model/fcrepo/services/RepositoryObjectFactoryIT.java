@@ -2,9 +2,9 @@ package edu.unc.lib.boxc.integration.model.fcrepo.services;
 
 import static edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPaths.getMetadataContainerUri;
 import static org.apache.jena.rdf.model.ResourceFactory.createResource;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
@@ -19,7 +19,7 @@ import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.vocabulary.DC;
 import org.apache.jena.vocabulary.RDF;
 import org.fcrepo.client.FcrepoResponse;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import edu.unc.lib.boxc.common.util.URIUtil;
 import edu.unc.lib.boxc.fcrepo.utils.FedoraTransaction;
@@ -55,19 +55,20 @@ public class RepositoryObjectFactoryIT extends AbstractFedoraIT {
         URI uri = pid.getRepositoryUri();
         String path = uri.toString();
 
-        assertEquals("Requested URI did not match result", uri, depRec.getUri());
+        assertEquals(uri, depRec.getUri(), "Requested URI did not match result");
 
         try (FcrepoResponse resp = client.get(uri).perform()) {
             Model respModel = RDFModelUtil.createModel(resp.getBody());
 
             Resource respResc = respModel.getResource(path);
-            assertTrue("Did not have deposit record type", respResc.hasProperty(RDF.type, Cdr.DepositRecord));
+            assertTrue(respResc.hasProperty(RDF.type, Cdr.DepositRecord), "Did not have deposit record type");
 
             String manifestPath = path + "/" + RepositoryPathConstants.DEPOSIT_MANIFEST_CONTAINER;
-            assertTrue("Manifest container not created",
-                    respResc.hasProperty(Ldp.contains, createResource(manifestPath)));
+            assertTrue(respResc.hasProperty(Ldp.contains, createResource(manifestPath)),
+                    "Manifest container not created");
             String eventPath = path + "/" + RepositoryPathConstants.METADATA_CONTAINER;
-            assertTrue("Event container not created", respResc.hasProperty(Ldp.contains, createResource(eventPath)));
+            assertTrue(respResc.hasProperty(Ldp.contains, createResource(eventPath)),
+                    "Event container not created");
         }
     }
 
@@ -95,7 +96,7 @@ public class RepositoryObjectFactoryIT extends AbstractFedoraIT {
             String respString = new BufferedReader(new InputStreamReader(resp.getBody())).lines()
                     .collect(Collectors.joining("\n"));
 
-            assertEquals("Binary content did not match submitted value", bodyString, respString);
+            assertEquals(bodyString, respString, "Binary content did not match submitted value");
         }
 
         // Verify that triples were added
@@ -137,7 +138,7 @@ public class RepositoryObjectFactoryIT extends AbstractFedoraIT {
             String respString = new BufferedReader(new InputStreamReader(resp.getBody())).lines()
                     .collect(Collectors.joining("\n"));
 
-            assertEquals("Binary content did not match submitted value", bodyString, respString);
+            assertEquals(bodyString, respString, "Binary content did not match submitted value");
         }
 
         // Verify that triples were added
@@ -179,7 +180,7 @@ public class RepositoryObjectFactoryIT extends AbstractFedoraIT {
             String respString = new BufferedReader(new InputStreamReader(resp.getBody())).lines()
                     .collect(Collectors.joining("\n"));
 
-            assertEquals("Binary content did not match submitted value", bodyString, respString);
+            assertEquals(bodyString, respString, "Binary content did not match submitted value");
         }
 
         // Verify that triples were added
@@ -204,7 +205,7 @@ public class RepositoryObjectFactoryIT extends AbstractFedoraIT {
         URI uri = pid.getRepositoryUri();
         String objPath = uri.toString();
 
-        assertEquals("Requested URI did not match result", uri, fileObj.getUri());
+        assertEquals(uri, fileObj.getUri(), "Requested URI did not match result");
 
         try (FcrepoResponse resp = client.get(uri).perform()) {
             Model respModel = RDFModelUtil.createModel(resp.getBody());
@@ -229,7 +230,7 @@ public class RepositoryObjectFactoryIT extends AbstractFedoraIT {
         URI uri = pid.getRepositoryUri();
         String objPath = uri.toString();
 
-        assertEquals("Requested URI did not match result", uri, workObj.getUri());
+        assertEquals(uri, workObj.getUri(), "Requested URI did not match result");
 
         try (FcrepoResponse resp = client.get(uri).perform()) {
             Model respModel = RDFModelUtil.createModel(resp.getBody());
@@ -250,7 +251,7 @@ public class RepositoryObjectFactoryIT extends AbstractFedoraIT {
         PID pid = folderObj.getPid();
         URI uri = pid.getRepositoryUri();
         String objPath = uri.toString();
-        assertEquals("Requested URI did not match result", uri, folderObj.getUri());
+        assertEquals(uri, folderObj.getUri(), "Requested URI did not match result");
 
         try (FcrepoResponse resp = client.get(uri).perform()) {
             Model respModel = RDFModelUtil.createModel(resp.getBody());
@@ -272,7 +273,7 @@ public class RepositoryObjectFactoryIT extends AbstractFedoraIT {
         URI uri = pid.getRepositoryUri();
         String objPath = uri.toString();
 
-        assertEquals("Requested URI did not match result", uri, adminUnit.getUri());
+        assertEquals(uri, adminUnit.getUri(), "Requested URI did not match result");
 
         try (FcrepoResponse resp = client.get(uri).perform()) {
             Model respModel = RDFModelUtil.createModel(resp.getBody());
@@ -293,7 +294,7 @@ public class RepositoryObjectFactoryIT extends AbstractFedoraIT {
         PID pid = collObj.getPid();
         URI uri = pid.getRepositoryUri();
         String objPath = uri.toString();
-        assertEquals("Requested URI did not match result", uri, collObj.getUri());
+        assertEquals(uri, collObj.getUri(), "Requested URI did not match result");
 
         try (FcrepoResponse resp = client.get(uri).perform()) {
             Model respModel = RDFModelUtil.createModel(resp.getBody());

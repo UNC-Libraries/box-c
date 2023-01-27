@@ -7,8 +7,8 @@ import static edu.unc.lib.boxc.model.api.DatastreamType.ORIGINAL_FILE;
 import static edu.unc.lib.boxc.model.api.DatastreamType.TECHNICAL_METADATA;
 import static edu.unc.lib.boxc.persist.impl.storage.StorageLocationTestHelper.LOC1_ID;
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyCollectionOf;
 import static org.mockito.Matchers.anyString;
@@ -43,8 +43,9 @@ import org.apache.jena.vocabulary.RDF;
 import org.fcrepo.client.FcrepoClient;
 import org.fcrepo.client.FcrepoOperationFailedException;
 import org.fcrepo.client.HeadBuilder;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
@@ -163,7 +164,7 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
     @Mock
     private VerifyObjectsAreInFedoraService verificationService;
 
-    @Before
+    @BeforeEach
     public void init() throws Exception {
         job = new IngestContentObjectsJob();
         job.setJobUUID(jobUUID);
@@ -195,7 +196,8 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
 
         FileUtils.copyDirectory(new File("src/test/resources/examples"), depositDir);
 
-        storageLocPath = tmpFolder.newFolder("storageLoc").toPath();
+        storageLocPath = tmpFolder.resolve("storageLoc");
+        Files.createDirectory(storageLocPath);
 
         // Setup logging dependencies
         mockPremisEventBuilder = mock(PremisEventBuilder.class, new SelfReturningAnswer());
@@ -323,66 +325,72 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
      * Test that the deposit fails if a file object is specified but not given a
      * staging location
      */
-    @Test(expected = JobFailedException.class)
+    @Test
     public void ingestWorkWithFileWithoutLocation() throws Exception {
-        PID workPid = makePid(RepositoryPathConstants.CONTENT_BASE);
-        WorkObject work = mock(WorkObject.class);
-        Bag workBag = setupWork(workPid, work);
+        Assertions.assertThrows(JobFailedException.class, () -> {
+            PID workPid = makePid(RepositoryPathConstants.CONTENT_BASE);
+            WorkObject work = mock(WorkObject.class);
+            Bag workBag = setupWork(workPid, work);
 
-        PID filePid = makePid(RepositoryPathConstants.CONTENT_BASE);
+            PID filePid = makePid(RepositoryPathConstants.CONTENT_BASE);
 
-        Resource fileResc = model.createResource(filePid.getRepositoryPath());
-        fileResc.addProperty(RDF.type, Cdr.FileObject);
-        fileResc.addProperty(CdrDeposit.mimetype, "text/plain");
-        workBag.add(fileResc);
+            Resource fileResc = model.createResource(filePid.getRepositoryPath());
+            fileResc.addProperty(RDF.type, Cdr.FileObject);
+            fileResc.addProperty(CdrDeposit.mimetype, "text/plain");
+            workBag.add(fileResc);
 
-        job.closeModel();
+            job.closeModel();
 
-        when(repoObjLoader.getWorkObject(eq(workPid))).thenReturn(work);
+            when(repoObjLoader.getWorkObject(eq(workPid))).thenReturn(work);
 
-        job.run();
+            job.run();
+        });
     }
 
     /**
      * Test that deposit fails if depositing a file path that doesn't exist
      */
-    @Test(expected = JobFailedException.class)
+    @Test
     public void ingestWorkWithFileDoesNotExist() throws Exception {
-        PID workPid = makePid(RepositoryPathConstants.CONTENT_BASE);
-        WorkObject work = mock(WorkObject.class);
-        Bag workBag = setupWork(workPid, work);
+        Assertions.assertThrows(JobFailedException.class, () -> {
+            PID workPid = makePid(RepositoryPathConstants.CONTENT_BASE);
+            WorkObject work = mock(WorkObject.class);
+            Bag workBag = setupWork(workPid, work);
 
-        addFileObject(workBag, "doesnotexist.txt", "text/plain");
+            addFileObject(workBag, "doesnotexist.txt", "text/plain");
 
-        job.closeModel();
+            job.closeModel();
 
-        when(work.addDataFile(any(PID.class), any(URI.class),
-                anyString(), anyString(), isNull(), isNull(), any(Model.class)))
-                .thenThrow(new FedoraException("Fail"))
-                .thenReturn(mockFileObj);
-        when(repoObjLoader.getWorkObject(eq(workPid))).thenReturn(work);
+            when(work.addDataFile(any(PID.class), any(URI.class),
+                    anyString(), anyString(), isNull(), isNull(), any(Model.class)))
+                    .thenThrow(new FedoraException("Fail"))
+                    .thenReturn(mockFileObj);
+            when(repoObjLoader.getWorkObject(eq(workPid))).thenReturn(work);
 
-        job.run();
+            job.run();
+        });
     }
 
     /**
      * Test that deposit fails when no permission to write to destination
      */
-    @Test(expected = AccessRestrictionException.class)
+    @Test
     public void ingestFailNoPermissionsTest() throws Exception {
-        PID workPid = makePid(RepositoryPathConstants.CONTENT_BASE);
-        WorkObject work = mock(WorkObject.class);
-        Bag workBag = setupWork(workPid, work);
+        Assertions.assertThrows(AccessRestrictionException.class, () -> {
+            PID workPid = makePid(RepositoryPathConstants.CONTENT_BASE);
+            WorkObject work = mock(WorkObject.class);
+            Bag workBag = setupWork(workPid, work);
 
-        addFileObject(workBag, "pdf.pdf", "application/pdf");
+            addFileObject(workBag, "pdf.pdf", "application/pdf");
 
-        doThrow(new AccessRestrictionException()).when(aclService)
-                .assertHasAccess(anyString(), eq(destinationPid),
-                        any(AccessGroupSetImpl.class), eq(Permission.ingest));
+            doThrow(new AccessRestrictionException()).when(aclService)
+                    .assertHasAccess(anyString(), eq(destinationPid),
+                            any(AccessGroupSetImpl.class), eq(Permission.ingest));
 
-        job.closeModel();
+            job.closeModel();
 
-        job.run();
+            job.run();
+        });
     }
 
     /**
@@ -577,34 +585,35 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
         verify(jobStatusFactory).incrCompletion(eq(jobUUID), eq(1));
 
         Resource adminAipResc = modelCaptor.getValue().getResource(adminPid.getRepositoryPath());
-        assertTrue("Admin object did not contain assigned restriction",
-                adminAipResc.hasProperty(CdrAcl.canManage));
+        assertTrue(adminAipResc.hasProperty(CdrAcl.canManage), "Admin object did not contain assigned restriction");
     }
 
-    @Test(expected = AccessRestrictionException.class)
+    @Test
     public void ingestAdminUnitNoPermissionTest() {
-        destinationObj = mock(ContentRootObject.class);
-        when(destinationObj.getPid()).thenReturn(destinationPid);
-        when(repoObjLoader.getRepositoryObject(eq(destinationPid))).thenReturn(destinationObj);
+        Assertions.assertThrows(AccessRestrictionException.class, () -> {
+            destinationObj = mock(ContentRootObject.class);
+            when(destinationObj.getPid()).thenReturn(destinationPid);
+            when(repoObjLoader.getRepositoryObject(eq(destinationPid))).thenReturn(destinationObj);
 
-        // Throw access exception for creating admin unit
-        doThrow(new AccessRestrictionException()).when(aclService)
-                .assertHasAccess(anyString(), eq(destinationPid), any(AccessGroupSetImpl.class),
-                        eq(Permission.createAdminUnit));
+            // Throw access exception for creating admin unit
+            doThrow(new AccessRestrictionException()).when(aclService)
+                    .assertHasAccess(anyString(), eq(destinationPid), any(AccessGroupSetImpl.class),
+                            eq(Permission.createAdminUnit));
 
-        AdminUnit adminUnit = mock(AdminUnit.class);
-        when(repoObjFactory.createAdminUnit(any(PID.class), any(Model.class))).thenReturn(adminUnit);
+            AdminUnit adminUnit = mock(AdminUnit.class);
+            when(repoObjFactory.createAdminUnit(any(PID.class), any(Model.class))).thenReturn(adminUnit);
 
-        PID adminPid = makePid(RepositoryPathConstants.CONTENT_BASE);
-        Bag adminBag = model.createBag(adminPid.getRepositoryPath());
-        adminBag.addProperty(RDF.type, Cdr.AdminUnit);
-        when(adminUnit.getPid()).thenReturn(adminPid);
+            PID adminPid = makePid(RepositoryPathConstants.CONTENT_BASE);
+            Bag adminBag = model.createBag(adminPid.getRepositoryPath());
+            adminBag.addProperty(RDF.type, Cdr.AdminUnit);
+            when(adminUnit.getPid()).thenReturn(adminPid);
 
-        depBag.add(adminBag);
+            depBag.add(adminBag);
 
-        job.closeModel();
+            job.closeModel();
 
-        job.run();
+            job.run();
+        });
     }
 
     @Test
@@ -635,34 +644,36 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
         verify(jobStatusFactory).incrCompletion(eq(jobUUID), eq(1));
 
         Resource collAipResc = modelCaptor.getValue().getResource(collectionPid.getRepositoryPath());
-        assertTrue("Collection object did not contain assigned restriction",
-                collAipResc.hasProperty(CdrAcl.canViewOriginals, AUTHENTICATED_PRINC));
+        assertTrue(collAipResc.hasProperty(CdrAcl.canViewOriginals, AUTHENTICATED_PRINC),
+                "Collection object did not contain assigned restriction");
     }
 
-    @Test(expected = AccessRestrictionException.class)
+    @Test
     public void ingestCollectionNoPermisionTest() {
-        destinationObj = mock(AdminUnit.class);
-        when(destinationObj.getPid()).thenReturn(destinationPid);
-        when(repoObjLoader.getRepositoryObject(eq(destinationPid))).thenReturn(destinationObj);
+        Assertions.assertThrows(AccessRestrictionException.class, () -> {
+            destinationObj = mock(AdminUnit.class);
+            when(destinationObj.getPid()).thenReturn(destinationPid);
+            when(repoObjLoader.getRepositoryObject(eq(destinationPid))).thenReturn(destinationObj);
 
-        // Throw access exception for creating collection
-        doThrow(new AccessRestrictionException()).when(aclService)
-                .assertHasAccess(anyString(), eq(destinationPid), any(AccessGroupSetImpl.class),
-                        eq(Permission.createCollection));
+            // Throw access exception for creating collection
+            doThrow(new AccessRestrictionException()).when(aclService)
+                    .assertHasAccess(anyString(), eq(destinationPid), any(AccessGroupSetImpl.class),
+                            eq(Permission.createCollection));
 
-        CollectionObject collection = mock(CollectionObject.class);
-        when(repoObjFactory.createCollectionObject(any(PID.class), any(Model.class))).thenReturn(collection);
+            CollectionObject collection = mock(CollectionObject.class);
+            when(repoObjFactory.createCollectionObject(any(PID.class), any(Model.class))).thenReturn(collection);
 
-        PID collectionPid = makePid(RepositoryPathConstants.CONTENT_BASE);
-        Bag collectionBag = model.createBag(collectionPid.getRepositoryPath());
-        collectionBag.addProperty(RDF.type, Cdr.Collection);
-        when(collection.getPid()).thenReturn(collectionPid);
+            PID collectionPid = makePid(RepositoryPathConstants.CONTENT_BASE);
+            Bag collectionBag = model.createBag(collectionPid.getRepositoryPath());
+            collectionBag.addProperty(RDF.type, Cdr.Collection);
+            when(collection.getPid()).thenReturn(collectionPid);
 
-        depBag.add(collectionBag);
+            depBag.add(collectionBag);
 
-        job.closeModel();
+            job.closeModel();
 
-        job.run();
+            job.run();
+        });
     }
 
     @Test
@@ -719,36 +730,36 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
         verify(repoObjFactory).createWorkObject(eq(workPid), modelCaptor.capture());
 
         Resource workAipResc = modelCaptor.getValue().getResource(workPid.getRepositoryPath());
-        assertTrue("Work object did not contain assigned restriction",
-                workAipResc.hasProperty(CdrAcl.embargoUntil));
+        assertTrue(workAipResc.hasProperty(CdrAcl.embargoUntil), "Work object did not contain assigned restriction");
 
         verify(work).addDataFile(eq(mainPid), any(URI.class), eq(mainLoc),
                 eq(mainMime), isNull(), isNull(), modelCaptor.capture());
 
         Resource fileAipResc = modelCaptor.getValue().getResource(mainPid.getRepositoryPath());
-        assertTrue("File object did not contain assigned restriction",
-                fileAipResc.hasProperty(CdrAcl.canViewOriginals));
+        assertTrue(fileAipResc.hasProperty(CdrAcl.canViewOriginals), "File object did not contain assigned restriction");
     }
 
-    @Test(expected=JobFailedException.class)
+    @Test
     public void testObjectsNotInFedoraAfterIngest() throws Exception {
-        FolderObject folder = mock(FolderObject.class);
-        when(repoObjFactory.createFolderObject(any(PID.class), any(Model.class))).thenReturn(folder);
+        Assertions.assertThrows(JobFailedException.class, () -> {
+            FolderObject folder = mock(FolderObject.class);
+            when(repoObjFactory.createFolderObject(any(PID.class), any(Model.class))).thenReturn(folder);
 
-        PID folderPid = makePid(RepositoryPathConstants.CONTENT_BASE);
-        Bag folderBag = model.createBag(folderPid.getRepositoryPath());
-        folderBag.addProperty(RDF.type, Cdr.Folder);
-        when(folder.getPid()).thenReturn(folderPid);
+            PID folderPid = makePid(RepositoryPathConstants.CONTENT_BASE);
+            Bag folderBag = model.createBag(folderPid.getRepositoryPath());
+            folderBag.addProperty(RDF.type, Cdr.Folder);
+            when(folder.getPid()).thenReturn(folderPid);
 
-        depBag.add(folderBag);
+            depBag.add(folderBag);
 
-        job.closeModel();
+            job.closeModel();
 
-        // have verification service return a non-empty list
-        when(verificationService.listObjectsNotInFedora(anyCollectionOf(String.class)))
-                .thenReturn(Arrays.asList(folderPid));
+            // have verification service return a non-empty list
+            when(verificationService.listObjectsNotInFedora(anyCollectionOf(String.class)))
+                    .thenReturn(Arrays.asList(folderPid));
 
-        job.run();
+            job.run();
+        });
     }
 
     @Test
@@ -771,8 +782,7 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
         verify(repoObjFactory).createWorkObject(eq(workPid), modelCaptor.capture());
 
         Resource workAipResc = modelCaptor.getValue().getResource(workPid.getRepositoryPath());
-        assertTrue("Work object did not contain member order",
-                workAipResc.hasProperty(Cdr.memberOrder));
+        assertTrue(workAipResc.hasProperty(Cdr.memberOrder), "Work object did not contain member order");
     }
 
     private PID addFileObject(Bag parent, String stagingLocation, String mimetype) throws Exception {

@@ -3,7 +3,7 @@ package edu.unc.lib.boxc.indexing.solr.action;
 import static edu.unc.lib.boxc.indexing.solr.test.MockRepositoryObjectHelpers.addContainerToParent;
 import static edu.unc.lib.boxc.indexing.solr.test.MockRepositoryObjectHelpers.makeContainer;
 import static java.util.Arrays.asList;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
@@ -14,8 +14,9 @@ import java.util.List;
 
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
@@ -58,7 +59,7 @@ public class UpdateTreeSetActionTest {
     protected Model sparqlModel;
     protected SparqlQueryService sparqlQueryService;
 
-    @Before
+    @BeforeEach
     public void setup() throws Exception {
         initMocks(this);
 
@@ -141,19 +142,23 @@ public class UpdateTreeSetActionTest {
         assertTrue(pids.contains(childObj.getPid()));
     }
 
-    @Test(expected = IndexingException.class)
+    @Test
     public void testNotChildSetRequest() throws Exception {
-        SolrUpdateRequest request = mock(SolrUpdateRequest.class);
+        Assertions.assertThrows(IndexingException.class, () -> {
+            SolrUpdateRequest request = mock(SolrUpdateRequest.class);
 
-        action.performAction(request);
+            action.performAction(request);
+        });
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void testNoChildrenRequest() throws Exception {
-        request = new ChildSetRequest(null, asList(),
-                IndexingActionType.ADD, USER);
+        Assertions.assertThrows(IllegalArgumentException.class, () -> {
+            request = new ChildSetRequest(null, asList(),
+                    IndexingActionType.ADD, USER);
 
-        action.performAction(request);
+            action.performAction(request);
+        });
     }
 
     private void indexTriples(ContentObject... objs) {

@@ -1,7 +1,7 @@
 package edu.unc.lib.boxc.deposit.validate;
 
 import static edu.unc.lib.boxc.common.test.TestHelpers.setField;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
@@ -19,8 +19,8 @@ import org.fcrepo.client.FcrepoClient;
 import org.fcrepo.client.FcrepoOperationFailedException;
 import org.fcrepo.client.FcrepoResponse;
 import org.fcrepo.client.HeadBuilder;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 
 import edu.unc.lib.boxc.deposit.validate.VerifyObjectsAreInFedoraService;
@@ -50,7 +50,7 @@ public class VerifyObjectsAreInFedoraServiceTest {
     private HeadBuilder builder;
 
 
-    @Before
+    @BeforeEach
     public void init() throws Exception {
         initMocks(this);
         verificationService = new VerifyObjectsAreInFedoraService();

@@ -1,12 +1,12 @@
 package edu.unc.lib.boxc.common.util;
 
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class ZipFileUtilTest {
 

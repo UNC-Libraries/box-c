@@ -23,15 +23,16 @@ import org.apache.commons.io.FileUtils;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Resource;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 
 import java.io.File;
+import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -43,10 +44,10 @@ import static edu.unc.lib.boxc.model.api.DatastreamType.THUMBNAIL_LARGE;
 import static edu.unc.lib.boxc.model.api.DatastreamType.THUMBNAIL_SMALL;
 import static edu.unc.lib.boxc.model.fcrepo.ids.DatastreamPids.getOriginalFilePid;
 import static org.apache.jena.rdf.model.ResourceFactory.createResource;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
@@ -88,8 +89,8 @@ public class SetDatastreamFilterTest {
     private static final String PREMIS_DIGEST = "urn:sha1:da39a3ee5e6b4b0d3255bfef95601890afd80709";
     private static final long PREMIS_SIZE = 893l;
 
-    @Rule
-    public TemporaryFolder derivDir = new TemporaryFolder();
+    @TempDir
+    public Path derivDir;
 
     private DocumentIndexingPackage dip;
     private IndexDocumentBean idb;
@@ -110,7 +111,7 @@ public class SetDatastreamFilterTest {
 
     private SetDatastreamFilter filter;
 
-    @Before
+    @BeforeEach
     public void setup() throws Exception {
         initMocks(this);
 
@@ -241,15 +242,17 @@ public class SetDatastreamFilterTest {
         assertEquals(FILE_SIZE + FILE2_SIZE, (long) idb.getFilesizeTotal());
     }
 
-    @Test(expected = IndexingException.class)
+    @Test
     public void fileObjectNoOriginalTest() throws Exception {
-        when(binObj.getResource()).thenReturn(
-                fileResource(TECHNICAL_METADATA.getId(), FILE2_SIZE, FILE2_MIMETYPE, FILE2_NAME, FILE2_DIGEST));
+        Assertions.assertThrows(IndexingException.class, () -> {
+            when(binObj.getResource()).thenReturn(
+                    fileResource(TECHNICAL_METADATA.getId(), FILE2_SIZE, FILE2_MIMETYPE, FILE2_NAME, FILE2_DIGEST));
 
-        when(fileObj.getBinaryObjects()).thenReturn(Arrays.asList(binObj));
-        dip.setContentObject(fileObj);
+            when(fileObj.getBinaryObjects()).thenReturn(Arrays.asList(binObj));
+            dip.setContentObject(fileObj);
 
-        filter.filter(dip);
+            filter.filter(dip);
+        });
     }
 
     @Test
@@ -325,7 +328,7 @@ public class SetDatastreamFilterTest {
         when(fileObj.getBinaryObjects()).thenReturn(Arrays.asList(binObj));
         dip.setContentObject(fileObj);
 
-        File derivFile = derivDir.newFile("deriv.png");
+        File derivFile = derivDir.resolve("deriv.png").toFile();
         FileUtils.write(derivFile, "content", "UTF-8");
         long derivSize = 7l;
 
@@ -352,7 +355,7 @@ public class SetDatastreamFilterTest {
 
         filter.filter(dip);
 
-        assertTrue("Did not contain datastream", idb.getDatastream().contains(ORIGINAL_FILE.getId() + "|||||||"));
+        assertTrue(idb.getDatastream().contains(ORIGINAL_FILE.getId() + "|||||||"), "Did not contain datastream");
         assertEquals(0, (long) idb.getFilesizeSort());
         assertEquals(0, (long) idb.getFilesizeTotal());
     }
@@ -376,7 +379,7 @@ public class SetDatastreamFilterTest {
         String joined = components.stream()
                 .map(c -> c == null ? "" : c.toString())
                 .collect(Collectors.joining("|"));
-        assertTrue("Did not contain datastream " + name, values.contains(joined));
+        assertTrue(values.contains(joined), "Did not contain datastream " + name);
     }
 
     private void addMetadataDatastreams(ContentObject obj) throws Exception {

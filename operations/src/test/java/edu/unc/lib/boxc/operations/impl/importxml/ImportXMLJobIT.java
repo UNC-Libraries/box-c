@@ -8,7 +8,7 @@ import static edu.unc.lib.boxc.operations.test.ModsTestHelper.modsWithTitleAndDa
 import static edu.unc.lib.boxc.operations.test.ModsTestHelper.writeToFile;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.apache.commons.io.FileUtils.writeStringToFile;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -18,6 +18,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.time.Instant;
 import java.util.UUID;
 
@@ -27,17 +28,16 @@ import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.JDOMException;
 import org.jdom2.input.SAXBuilder;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.api.io.TempDir;
 import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.ContextHierarchy;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import com.samskivert.mustache.Template;
 
@@ -60,7 +60,7 @@ import edu.unc.lib.boxc.persist.impl.transfer.BinaryTransferServiceImpl;
  * @author harring
  *
  */
-@RunWith(SpringJUnit4ClassRunner.class)
+@ExtendWith(SpringExtension.class)
 @ContextHierarchy({
     @ContextConfiguration("/spring-test/test-fedora-container.xml"),
     @ContextConfiguration("/spring-test/cdr-client-container.xml"),
@@ -96,8 +96,8 @@ public class ImportXMLJobIT {
     private String fromAddress = "no-reply@example.com";
     private String adminAddress = "admin@example.com";
 
-    @Rule
-    public final TemporaryFolder tmpFolder = new TemporaryFolder();
+    @TempDir
+    public Path tmpFolder;
     private File tempDir;
 
     @Autowired
@@ -115,11 +115,11 @@ public class ImportXMLJobIT {
     @Autowired
     private String baseAddress;
 
-    @Before
+    @BeforeEach
     public void init_() throws Exception {
         initMocks(this);
 
-        tempDir = tmpFolder.newFolder();
+        tempDir = tmpFolder.resolve("tempDir").toFile();
 
         when(mailSender.createMimeMessage()).thenReturn(mimeMsg);
         when(completeTemplate.execute(any(Object.class))).thenReturn("update was successful");
@@ -212,7 +212,7 @@ public class ImportXMLJobIT {
 
         assertModsNotUpdated(descriptionStream(workPid));
         verify(mailSender).send(any(MimeMessage.class));
-        assertEquals("File is not a bulk-metadata-update doc", job.getFailed().get(importFile.getAbsolutePath()));
+        assertEquals(job.getFailed().get(importFile.getAbsolutePath()), "File is not a bulk-metadata-update doc");
     }
 
     @Test
@@ -234,7 +234,7 @@ public class ImportXMLJobIT {
     public void testUpdateFileHasXMLErrors() throws Exception {
         PID workPid = populateFedora();
 
-        importFile = Files.createTempFile(tempDir.toPath(), "import", ".xml").toFile();
+        importFile = tempDir.toPath().resolve("import.xml").toFile();
         writeStringToFile(importFile, "<bulkMetadata><mods>busted</mods>", UTF_8);
         createJob();
 
@@ -242,7 +242,7 @@ public class ImportXMLJobIT {
 
         assertModsNotUpdated(descriptionStream(workPid));
         verify(mailSender).send(any(MimeMessage.class));
-        assertEquals("The import file contains XML errors", job.getFailed().get(importFile.getAbsolutePath()));
+        assertEquals(job.getFailed().get(importFile.getAbsolutePath()), "The import file contains XML errors");
     }
 
     @Test
@@ -258,7 +258,7 @@ public class ImportXMLJobIT {
         job.run();
 
         verify(mailSender).send(any(MimeMessage.class));
-        assertEquals("Object not found", job.getFailed().get(workPid.getQualifiedId()));
+        assertEquals(job.getFailed().get(workPid.getQualifiedId()), "Object not found");
     }
 
     @Test

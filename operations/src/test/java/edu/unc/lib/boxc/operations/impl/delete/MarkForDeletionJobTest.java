@@ -2,7 +2,7 @@ package edu.unc.lib.boxc.operations.impl.delete;
 
 import static edu.unc.lib.boxc.auth.api.Permission.markForDeletion;
 import static edu.unc.lib.boxc.auth.api.Permission.markForDeletionUnit;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
@@ -17,8 +17,9 @@ import java.net.URI;
 import java.util.List;
 import java.util.UUID;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
@@ -83,7 +84,7 @@ public class MarkForDeletionJobTest {
 
     private MarkForDeletionJob job;
 
-    @Before
+    @BeforeEach
     public void init() {
         initMocks(this);
 
@@ -104,29 +105,35 @@ public class MarkForDeletionJobTest {
                 premisLoggerFactory);
     }
 
-    @Test(expected = AccessRestrictionException.class)
+    @Test
     public void insufficientAccessTest() {
-        doThrow(new AccessRestrictionException()).when(aclService)
-                .assertHasAccess(anyString(), eq(pid), any(), eq(markForDeletion));
+        Assertions.assertThrows(AccessRestrictionException.class, () -> {
+            doThrow(new AccessRestrictionException()).when(aclService)
+                    .assertHasAccess(anyString(), eq(pid), any(), eq(markForDeletion));
 
-        job.run();
+            job.run();
+        });
     }
 
-    @Test(expected = AccessRestrictionException.class)
+    @Test
     public void insufficientAccessAdminUnitTest() {
-        when(repositoryObjectLoader.getRepositoryObject(pid)).thenReturn(repoObj);
-        doThrow(new AccessRestrictionException()).when(aclService)
-                .assertHasAccess(anyString(), eq(pid), any(), eq(markForDeletionUnit));
+        Assertions.assertThrows(AccessRestrictionException.class, () -> {
+            when(repositoryObjectLoader.getRepositoryObject(pid)).thenReturn(repoObj);
+            doThrow(new AccessRestrictionException()).when(aclService)
+                    .assertHasAccess(anyString(), eq(pid), any(), eq(markForDeletionUnit));
 
-        job.run();
+            job.run();
+        });
     }
 
-    @Test(expected = InvalidOperationForObjectType.class)
+    @Test
     public void invalidObjectTypeTest() {
-        DepositRecord depObj = mock(DepositRecord.class);
-        when(repositoryObjectLoader.getRepositoryObject(any(PID.class))).thenReturn(depObj);
+        Assertions.assertThrows(InvalidOperationForObjectType.class, () -> {
+            DepositRecord depObj = mock(DepositRecord.class);
+            when(repositoryObjectLoader.getRepositoryObject(any(PID.class))).thenReturn(depObj);
 
-        job.run();
+            job.run();
+        });
     }
 
     @Test

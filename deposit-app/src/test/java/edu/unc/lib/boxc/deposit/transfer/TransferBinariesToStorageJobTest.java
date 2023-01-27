@@ -10,11 +10,11 @@ import static edu.unc.lib.boxc.persist.impl.sources.IngestSourceTestHelper.seria
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.times;
@@ -48,9 +48,10 @@ import org.apache.jena.rdf.model.Statement;
 import org.apache.jena.rdf.model.StmtIterator;
 import org.apache.jena.vocabulary.RDF;
 import org.awaitility.Awaitility;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.slf4j.Logger;
 
@@ -123,12 +124,16 @@ public class TransferBinariesToStorageJobTest extends AbstractNormalizationJobTe
     @Mock
     private RepositoryObjectFactory repoObjFactory;
 
-    @Before
+    @BeforeEach
     public void init() throws Exception {
-        loc1Path = tmpFolder.newFolder("loc1").toPath();
-        loc2Path = tmpFolder.newFolder("loc2").toPath();
-        derivStoragePath = tmpFolder.newFolder("derivs").toPath();
-        derivStagingPath = tmpFolder.newFolder("derivStaging").toPath();
+        loc1Path = tmpFolder.resolve("loc1");
+        Files.createDirectory(loc1Path);
+        loc2Path = tmpFolder.resolve("loc2");
+        Files.createDirectory(loc2Path);
+        derivStoragePath = tmpFolder.resolve("derivs");
+        Files.createDirectory(derivStoragePath);
+        derivStagingPath = tmpFolder.resolve("derivStaging");
+        Files.createDirectory(derivStagingPath);
 
         locTestHelper = new StorageLocationTestHelper();
         locTestHelper.addStorageLocation(LOC1_ID, "Location 1", loc1Path.toString());
@@ -137,7 +142,7 @@ public class TransferBinariesToStorageJobTest extends AbstractNormalizationJobTe
         locationManager = locTestHelper.createLocationManager(null);
         storageLoc = locationManager.getStorageLocationById(LOC1_ID);
 
-        sourcePath = tmpFolder.newFolder(SOURCE_ID).toPath();
+        sourcePath = tmpFolder.resolve(SOURCE_ID);
         depositDirManager = new DepositDirectoryManager(depositPid, depositsDirectory.toPath(), true);
         candidatePath = depositDirManager.getDepositDir();
         sourceManager = new IngestSourceManagerImpl();
@@ -177,7 +182,7 @@ public class TransferBinariesToStorageJobTest extends AbstractNormalizationJobTe
         job.init();
     }
 
-    @AfterClass
+    @AfterAll
     public static void afterTestClass() {
         executorService.shutdown();
     }
@@ -189,7 +194,7 @@ public class TransferBinariesToStorageJobTest extends AbstractNormalizationJobTe
 
         job.run();
 
-        assertEquals("No file should have been transferred", 0, loc1Path.toFile().list().length);
+        assertEquals(0, loc1Path.toFile().list().length, "No file should have been transferred");
     }
 
     @Test
@@ -238,8 +243,8 @@ public class TransferBinariesToStorageJobTest extends AbstractNormalizationJobTe
         Resource historyResc = DepositModelHelpers.getDatastream(postFileResc, TECHNICAL_METADATA_HISTORY);
         URI historyUri = URI.create(historyResc.getProperty(CdrDeposit.storageUri).getString());
         Path historyPath = Paths.get(historyUri);
-        assertTrue("History file should exist at storage uri", Files.exists(historyPath));
-        assertTrue("Transfered history must be in the expected storage location", storageLoc.isValidUri(historyUri));
+        assertTrue(Files.exists(historyPath), "History file should exist at storage uri");
+        assertTrue(storageLoc.isValidUri(historyUri), "Transfered history must be in the expected storage location");
         assertPathIsDatastream(historyPath, TECHNICAL_METADATA_HISTORY);
         assertNotNull(historyResc.getProperty(CdrDeposit.sha1sum));
 
@@ -253,18 +258,20 @@ public class TransferBinariesToStorageJobTest extends AbstractNormalizationJobTe
         assertTrue(path.toString().matches(".+" + dsType.getId() + "\\.[^/]+"));
     }
 
-    @Test(expected = InvalidChecksumException.class)
+    @Test
     public void depositFileWithIncorrectDigest() throws Exception {
-        Bag workBag = addContainerObject(depBag, Cdr.Work);
-        Resource fileResc = addFileObject(workBag, FILE_CONTENT1, true);
-        PID originalPid = DatastreamPids.getOriginalFilePid(PIDs.get(fileResc.getURI()));
-        Resource originalResc = depositModel.getResource(originalPid.getRepositoryPath());
-        originalResc.addLiteral(CdrDeposit.sha1sum, "whoasowrong");
-        workBag.addProperty(Cdr.primaryObject, fileResc);
+        Assertions.assertThrows(InvalidChecksumException.class, () -> {
+            Bag workBag = addContainerObject(depBag, Cdr.Work);
+            Resource fileResc = addFileObject(workBag, FILE_CONTENT1, true);
+            PID originalPid = DatastreamPids.getOriginalFilePid(PIDs.get(fileResc.getURI()));
+            Resource originalResc = depositModel.getResource(originalPid.getRepositoryPath());
+            originalResc.addLiteral(CdrDeposit.sha1sum, "whoasowrong");
+            workBag.addProperty(Cdr.primaryObject, fileResc);
 
-        job.closeModel();
+            job.closeModel();
 
-        job.run();
+            job.run();
+        });
     }
 
     @Test
@@ -294,7 +301,7 @@ public class TransferBinariesToStorageJobTest extends AbstractNormalizationJobTe
         Resource dsResc = DepositModelHelpers.getDatastream(postFileResc, DatastreamType.ACCESS_SURROGATE);
         URI surrogateUri = URI.create(dsResc.getProperty(CdrDeposit.storageUri).getString());
         Path surrogatePath = Paths.get(surrogateUri);
-        assertTrue("Surrogate file should exist at storage uri", Files.exists(surrogatePath));
+        assertTrue(Files.exists(surrogatePath), "Surrogate file should exist at storage uri");
         assertEquals("derived", FileUtils.readFileToString(surrogatePath.toFile(), StandardCharsets.UTF_8));
 
         verify(jobStatusFactory).setTotalCompletion(eq(jobUUID), eq(3));
@@ -395,8 +402,8 @@ public class TransferBinariesToStorageJobTest extends AbstractNormalizationJobTe
         Resource historyResc = DepositModelHelpers.getDatastream(postWorkResc, MD_DESCRIPTIVE_HISTORY);
         URI historyUri = URI.create(historyResc.getProperty(CdrDeposit.storageUri).getString());
         Path historyPath = Paths.get(historyUri);
-        assertTrue("History file should exist at storage uri", Files.exists(historyPath));
-        assertTrue("Transfered history must be in the expected storage location", storageLoc.isValidUri(historyUri));
+        assertTrue(Files.exists(historyPath), "History file should exist at storage uri");
+        assertTrue(storageLoc.isValidUri(historyUri), "Transfered history must be in the expected storage location");
         assertPathIsDatastream(historyPath, MD_DESCRIPTIVE_HISTORY);
         assertNotNull(historyResc.getProperty(CdrDeposit.sha1sum));
 
@@ -565,10 +572,10 @@ public class TransferBinariesToStorageJobTest extends AbstractNormalizationJobTe
             job.run();
             fail("Expected exception");
         } catch (JobFailedException e) {
-            assertTrue("Expected exception indicating that the object to which the binary belongs already exists",
-                    e.getMessage().contains("already exists"));
-            assertEquals("Existing file must not have been modified",
-                    existingContent, FileUtils.readFileToString(new File(fileUri), "UTF-8"));
+            assertTrue(e.getMessage().contains("already exists"),
+                    "Expected exception indicating that the object to which the binary belongs already exists");
+            assertEquals(existingContent, FileUtils.readFileToString(new File(fileUri), "UTF-8"),
+                    "Existing file must not have been modified");
         }
     }
 
@@ -685,9 +692,9 @@ public class TransferBinariesToStorageJobTest extends AbstractNormalizationJobTe
         Resource dsResc = DepositModelHelpers.getDatastream(resc);
         URI storageUri = URI.create(dsResc.getProperty(CdrDeposit.storageUri).getString());
         Path storagePath = Paths.get(storageUri);
-        assertTrue("Binary should exist at storage uri", Files.exists(storagePath));
+        assertTrue(Files.exists(storagePath), "Binary should exist at storage uri");
         assertEquals(expectedContent, FileUtils.readFileToString(storagePath.toFile(), "UTF-8"));
-        assertTrue("Transfered file must be in the expected storage location", storageLoc.isValidUri(storageUri));
+        assertTrue(storageLoc.isValidUri(storageUri), "Transfered file must be in the expected storage location");
         assertNotNull(dsResc.getProperty(CdrDeposit.sha1sum));
     }
 
@@ -695,8 +702,8 @@ public class TransferBinariesToStorageJobTest extends AbstractNormalizationJobTe
         Resource dsResc = DepositModelHelpers.getDatastream(resc, DatastreamType.TECHNICAL_METADATA);
         URI fitsUri = URI.create(dsResc.getProperty(CdrDeposit.storageUri).getString());
         Path fitsPath = Paths.get(fitsUri);
-        assertTrue("FITS file should exist at storage uri", Files.exists(fitsPath));
-        assertTrue("Transfered FITS must be in the expected storage location", storageLoc.isValidUri(fitsUri));
+        assertTrue(Files.exists(fitsPath), "FITS file should exist at storage uri");
+        assertTrue(storageLoc.isValidUri(fitsUri), "Transfered FITS must be in the expected storage location");
         assertNotNull(dsResc.getProperty(CdrDeposit.sha1sum));
     }
 

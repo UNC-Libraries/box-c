@@ -2,8 +2,8 @@ package edu.unc.lib.boxc.search.solr.models;
 
 import java.util.Arrays;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import edu.unc.lib.boxc.search.solr.models.ContentObjectSolrRecord;
 
@@ -12,7 +12,7 @@ import edu.unc.lib.boxc.search.solr.models.ContentObjectSolrRecord;
  * @author bbpennel
  *
  */
-public class ContentObjectSolrRecordTest extends Assert {
+public class ContentObjectSolrRecordTest extends Assertions {
 
     @Test
     public void setRoleGroupsEmpty() {

@@ -1,8 +1,8 @@
 package edu.unc.lib.boxc.operations.impl.vocab;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -16,8 +16,8 @@ import java.util.Set;
 import org.jdom2.Document;
 import org.jdom2.Namespace;
 import org.jdom2.input.SAXBuilder;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import edu.unc.lib.boxc.model.api.xml.JDOMNamespaceUtil;
 import edu.unc.lib.boxc.operations.impl.vocab.JSONVocabularyHelper;
@@ -30,7 +30,7 @@ public class JSONVocabularyHelperTest {
 
     private JSONVocabularyHelper helper;
 
-    @Before
+    @BeforeEach
     public void init() throws Exception {
         helper = new JSONVocabularyHelper();
         helper.setContent(Files.readAllBytes(Paths.get("src/test/resources/jsonVocab.json")));
@@ -64,8 +64,8 @@ public class JSONVocabularyHelperTest {
 
         Set<String> invalids = helper.getInvalidTerms(modsDoc.getRootElement());
 
-        assertEquals("Incorrect number of invalid terms", 2, invalids.size());
-        assertTrue("Designated Destroyer not detected", invalids.contains("Designated Destroyer"));
+        assertEquals(2, invalids.size(), "Incorrect number of invalid terms");
+        assertTrue(invalids.contains("Designated Destroyer"), "Designated Destroyer not detected");
         assertTrue(invalids.contains("Advisor"));
     }
 

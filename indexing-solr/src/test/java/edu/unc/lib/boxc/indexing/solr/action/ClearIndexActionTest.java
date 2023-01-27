@@ -8,15 +8,15 @@ import java.util.List;
 
 import org.apache.solr.common.SolrDocumentList;
 import org.apache.solr.common.SolrInputDocument;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import edu.unc.lib.boxc.indexing.solr.SolrUpdateRequest;
 import edu.unc.lib.boxc.indexing.solr.action.ClearIndexAction;
 
 public class ClearIndexActionTest extends BaseEmbeddedSolrTest {
 
-    @Before
+    @BeforeEach
     public void setup() throws Exception {
 
         server.add(populate());
@@ -28,7 +28,7 @@ public class ClearIndexActionTest extends BaseEmbeddedSolrTest {
     public void testDeleteAll() throws Exception {
 
         SolrDocumentList docListBefore = getDocumentList();
-        assertEquals("Index should contain contents before delete", 4, docListBefore.size());
+        assertEquals(4, docListBefore.size(), "Index should contain contents before delete");
 
         ClearIndexAction action = new ClearIndexAction();
         action.setSolrUpdateDriver(driver);
@@ -38,7 +38,7 @@ public class ClearIndexActionTest extends BaseEmbeddedSolrTest {
 
         SolrDocumentList docListAfter = getDocumentList();
 
-        assertEquals("Index must be empty after delete all", 0, docListAfter.size());
+        assertEquals(0, docListAfter.size(), "Index must be empty after delete all");
     }
 
     protected List<SolrInputDocument> populate() {

@@ -9,10 +9,10 @@ import static edu.unc.lib.boxc.model.api.ids.RepositoryPathConstants.CONTENT_ROO
 import static edu.unc.lib.boxc.model.api.xml.DescriptionConstants.COLLECTION_NUMBER_EL;
 import static edu.unc.lib.boxc.model.api.xml.DescriptionConstants.COLLECTION_NUMBER_LABEL;
 import static edu.unc.lib.boxc.model.api.xml.JDOMNamespaceUtil.MODS_V3_NS;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -22,8 +22,8 @@ import org.apache.jena.rdf.model.Resource;
 import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.input.SAXBuilder;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.ContextHierarchy;
 import org.springframework.test.web.servlet.MvcResult;
@@ -57,7 +57,7 @@ import edu.unc.lib.boxc.model.fcrepo.test.AclModelBuilder;
 public class AddContainerIT extends AbstractAPIIT {
     private static final String UNIT_MANAGER_PRINC = "wilsontech";
 
-    @Before
+    @BeforeEach
     public void initRoot() {
         setupContentRoot();
     }
@@ -424,7 +424,7 @@ public class AddContainerIT extends AbstractAPIIT {
         Document doc = sb.build(member.getDescription().getBinaryStream());
         String title = doc.getRootElement().getChild("titleInfo", MODS_V3_NS)
                 .getChildText("title", MODS_V3_NS);
-        assertEquals("Title did not match expected value", label, title);
+        assertEquals(label, title, "Title did not match expected value");
 
         Element idEl = doc.getRootElement().getChild(COLLECTION_NUMBER_EL, MODS_V3_NS);
         if (expectedCollNum != null) {
@@ -449,13 +449,13 @@ public class AddContainerIT extends AbstractAPIIT {
 
     private void assertNoAssignment(String princ, UserRole role, RepositoryObject obj) {
         Resource resc = obj.getResource();
-        assertFalse("Expected role " + role.name() + " was assigned for " + princ,
-                resc.hasProperty(role.getProperty(), princ));
+        assertFalse(resc.hasProperty(role.getProperty(), princ),
+                "Expected role " + role.name() + " was assigned for " + princ);
     }
 
     private void assertHasAssignment(String princ, UserRole role, RepositoryObject obj) {
         Resource resc = obj.getResource();
-        assertTrue("Expected role " + role.name() + " was not assigned for " + princ,
-                resc.hasProperty(role.getProperty(), princ));
+        assertTrue(resc.hasProperty(role.getProperty(), princ),
+                "Expected role " + role.name() + " was not assigned for " + princ);
     }
 }

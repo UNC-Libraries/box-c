@@ -8,8 +8,9 @@ import static org.mockito.MockitoAnnotations.initMocks;
 import java.util.Arrays;
 import java.util.Collections;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 
 import edu.unc.lib.boxc.indexing.solr.exception.IndexingException;
@@ -41,7 +42,7 @@ public class SetObjectTypeFilterTest {
     @Mock
     private PID pid;
 
-    @Before
+    @BeforeEach
     public void setup() throws Exception {
         initMocks(this);
 
@@ -76,17 +77,21 @@ public class SetObjectTypeFilterTest {
         verify(idb).setResourceTypeSort(eq(ResourceType.AdminUnit.getDisplayOrder()));
     }
 
-    @Test(expected = IndexingException.class)
+    @Test
     public void testNoResourceType() throws Exception {
-        when(contentObj.getTypes()).thenReturn(Collections.emptyList());
+        Assertions.assertThrows(IndexingException.class, () -> {
+            when(contentObj.getTypes()).thenReturn(Collections.emptyList());
 
-        filter.filter(dip);
+            filter.filter(dip);
+        });
     }
 
-    @Test(expected = IndexingException.class)
+    @Test
     public void testBadResourceType() throws Exception {
-        when(contentObj.getTypes()).thenReturn(Arrays.asList("http://example.com/bad"));
+        Assertions.assertThrows(IndexingException.class, () -> {
+            when(contentObj.getTypes()).thenReturn(Arrays.asList("http://example.com/bad"));
 
-        filter.filter(dip);
+            filter.filter(dip);
+        });
     }
 }

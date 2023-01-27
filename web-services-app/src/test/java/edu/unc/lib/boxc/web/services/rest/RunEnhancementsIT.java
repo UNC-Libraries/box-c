@@ -5,8 +5,8 @@ import static edu.unc.lib.boxc.model.api.xml.JDOMNamespaceUtil.ATOM_NS;
 import static edu.unc.lib.boxc.model.api.xml.JDOMNamespaceUtil.CDR_MESSAGE_NS;
 import static edu.unc.lib.boxc.operations.jms.JMSMessageUtil.CDRActions.RUN_ENHANCEMENTS;
 import static java.util.Arrays.asList;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
@@ -22,16 +22,16 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import java.io.File;
 import java.net.URI;
+import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Map;
 
 import org.apache.commons.io.FileUtils;
 import org.jdom2.Document;
 import org.jdom2.Element;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -88,10 +88,10 @@ public class RunEnhancementsIT extends AbstractAPIIT {
 
     private SearchResultResponse results;
 
-    @Rule
-    public final TemporaryFolder tmpFolder = new TemporaryFolder();
+    @TempDir
+    public Path tmpFolder;
 
-    @Before
+    @BeforeEach
     public void setup() throws Exception {
         initMocks(this);
         reset(messageSender);
@@ -195,12 +195,12 @@ public class RunEnhancementsIT extends AbstractAPIIT {
 
     private void assertResponseSuccess(MvcResult mvcResult) throws Exception {
         Map<String, Object> resp = getMapFromResponse(mvcResult);
-        assertTrue("Missing run enhancements message", resp.containsKey("message"));
+        assertTrue(resp.containsKey("message"), "Missing run enhancements message");
         assertEquals("runEnhancements", resp.get("action"));
     }
 
     private URI makeContentUri(String content) throws Exception {
-        File dataFile = tmpFolder.newFile();
+        File dataFile = tmpFolder.resolve("dataFile").toFile();
         FileUtils.write(dataFile, content, "UTF-8");
         return dataFile.toPath().toUri();
     }

@@ -10,16 +10,16 @@ import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.solr.common.SolrDocumentList;
 import org.apache.solr.common.params.ModifiableSolrParams;
 import org.apache.solr.core.CoreContainer;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import edu.unc.lib.boxc.indexing.solr.indexing.SolrUpdateDriver;
 import edu.unc.lib.boxc.search.solr.config.SolrSettings;
 
-public class BaseEmbeddedSolrTest extends Assert {
+public class BaseEmbeddedSolrTest extends Assertions {
     private static final Logger log = LoggerFactory.getLogger(BaseEmbeddedSolrTest.class);
 
     protected SolrSettings solrSettings;
@@ -32,7 +32,7 @@ public class BaseEmbeddedSolrTest extends Assert {
 
     private File dataDir;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         dataDir = new File("target/solr_data/");
         dataDir.mkdir();
@@ -67,7 +67,7 @@ public class BaseEmbeddedSolrTest extends Assert {
         return getDocumentList("*:*", "id,resourceType,timestamp,_version_");
     }
 
-    @After
+    @AfterEach
     public void tearDown() throws Exception {
         server.close();
         container.shutdown();

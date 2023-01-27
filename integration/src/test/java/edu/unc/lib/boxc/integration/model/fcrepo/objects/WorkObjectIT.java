@@ -1,8 +1,8 @@
 package edu.unc.lib.boxc.integration.model.fcrepo.objects;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -16,8 +16,8 @@ import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.vocabulary.DC;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import edu.unc.lib.boxc.model.api.ids.RepositoryPathConstants;
 import edu.unc.lib.boxc.model.api.objects.BinaryObject;
@@ -38,7 +38,7 @@ import edu.unc.lib.boxc.model.api.rdf.PcdmModels;
  */
 public class WorkObjectIT extends AbstractFedoraIT {
 
-    @Before
+    @BeforeEach
     public void init() throws Exception {
         createBaseContainer(RepositoryPathConstants.CONTENT_BASE);
     }
@@ -84,7 +84,7 @@ public class WorkObjectIT extends AbstractFedoraIT {
 
         String respString = new BufferedReader(new InputStreamReader(bObj.getBinaryStream()))
                 .lines().collect(Collectors.joining("\n"));
-        assertEquals("Original content did not match submitted value", bodyString, respString);
+        assertEquals(bodyString, respString, "Original content did not match submitted value");
     }
 
     @Test
@@ -121,14 +121,14 @@ public class WorkObjectIT extends AbstractFedoraIT {
 
         String respString = new BufferedReader(new InputStreamReader(primaryBinary.getBinaryStream()))
                 .lines().collect(Collectors.joining("\n"));
-        assertEquals("Original content did not match submitted value", bodyString, respString);
+        assertEquals(bodyString, respString, "Original content did not match submitted value");
 
         // Get all members of this work and verify everything is there
         List<ContentObject> members = obj.getMembers();
-        assertEquals("Incorrect number of members assigned to work", 2, members.size());
+        assertEquals(2, members.size(), "Incorrect number of members assigned to work");
 
         FileObject primaryMember = (FileObject) findContentObjectByPid(members, primaryObj.getPid());
-        assertNotNull("Primary object not found in members", primaryMember);
+        assertNotNull(primaryMember, "Primary object not found in members");
 
         FileObject suppMember = (FileObject) findContentObjectByPid(members, supp.getPid());
         BinaryObject suppFile = suppMember.getOriginalFile();
@@ -141,7 +141,7 @@ public class WorkObjectIT extends AbstractFedoraIT {
         WorkObject child = obj.addWork();
 
         RepositoryObject parent = child.getParent();
-        assertEquals("Parent returned by the child must match the folder it was created in",
-                obj.getPid(), parent.getPid());
+        assertEquals(obj.getPid(), parent.getPid(),
+                "Parent returned by the child must match the folder it was created in");
     }
 }

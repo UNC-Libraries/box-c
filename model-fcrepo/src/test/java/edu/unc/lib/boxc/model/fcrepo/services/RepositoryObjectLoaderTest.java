@@ -1,8 +1,8 @@
 package edu.unc.lib.boxc.model.fcrepo.services;
 
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
@@ -11,8 +11,9 @@ import static org.mockito.MockitoAnnotations.initMocks;
 
 import java.net.URI;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 
 import com.google.common.cache.LoadingCache;
@@ -51,7 +52,7 @@ public class RepositoryObjectLoaderTest {
     private PID depositRecordPid;
     private PID premisPid;
 
-    @Before
+    @BeforeEach
     public void init() {
         initMocks(this);
 
@@ -139,13 +140,15 @@ public class RepositoryObjectLoaderTest {
         assertNotNull(repoObjLoader.getDepositRecord(pid));
     }
 
-    @Test(expected = ObjectTypeMismatchException.class)
+    @Test
     public void getDepositRecordWrongTypeTest() {
-        PID pid = pidMinter.mintDepositRecordPid();
+        Assertions.assertThrows(ObjectTypeMismatchException.class, () -> {
+            PID pid = pidMinter.mintDepositRecordPid();
 
-        when(objectCacheLoader.load(eq(pid))).thenReturn(mock(WorkObject.class));
+            when(objectCacheLoader.load(eq(pid))).thenReturn(mock(WorkObject.class));
 
-        repoObjLoader.getDepositRecord(pid);
+            repoObjLoader.getDepositRecord(pid);
+        });
     }
 
     @Test
@@ -158,14 +161,16 @@ public class RepositoryObjectLoaderTest {
         assertTrue(resultObj instanceof FolderObject);
     }
 
-    @Test(expected = NotFoundException.class)
+    @Test
     public void getRepositoryObjectExecutionExceptionTest() throws Exception {
-        PID pid = pidMinter.mintContentPid();
+        Assertions.assertThrows(NotFoundException.class, () -> {
+            PID pid = pidMinter.mintContentPid();
 
-        FedoraException fedoraE = new NotFoundException("Not found");
+            FedoraException fedoraE = new NotFoundException("Not found");
 
-        when(objectCacheLoader.load(eq(pid))).thenThrow(fedoraE);
-        repoObjLoader.getRepositoryObject(pid);
+            when(objectCacheLoader.load(eq(pid))).thenThrow(fedoraE);
+            repoObjLoader.getRepositoryObject(pid);
+        });
     }
 
     @Test

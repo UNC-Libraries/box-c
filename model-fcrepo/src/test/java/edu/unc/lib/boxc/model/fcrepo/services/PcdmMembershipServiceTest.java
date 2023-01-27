@@ -7,11 +7,11 @@ import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.boxc.model.fcrepo.sparql.JenaSparqlQueryServiceImpl;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * @author bbpennel
@@ -29,7 +29,7 @@ public class PcdmMembershipServiceTest {
     private SparqlQueryService sparqlQueryService;
     private PcdmMembershipService membershipService;
 
-    @Before
+    @BeforeEach
     public void setup() {
         model = ModelFactory.createDefaultModel();
         sparqlQueryService = new JenaSparqlQueryServiceImpl(model);

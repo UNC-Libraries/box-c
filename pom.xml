@@ -71,9 +71,11 @@
         <spring.ws.version>3.1.2</spring.ws.version>
         
         <junit.version>4.13.1</junit.version>
+        <junit.jupiter.version>5.9.0</junit.jupiter.version>
         <grizzly.version>2.4.4</grizzly.version>
         <jersey.version>2.34</jersey.version>
         <mockito.version>3.12.4</mockito.version>
+        <mockito.junit.version>5.0.0</mockito.junit.version>
         <fcrepo.client.version>5.0.0</fcrepo.client.version>
         <mock.server.version>5.4.1</mock.server.version>
         <powermock.version>1.7.4</powermock.version>
@@ -652,6 +654,24 @@
                 <groupId>junit</groupId>
                 <artifactId>junit</artifactId>
                 <version>${junit.version}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.junit.jupiter</groupId>
+                <artifactId>junit-jupiter-engine</artifactId>
+                <version>${junit.jupiter.version}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.junit.jupiter</groupId>
+                <artifactId>junit-jupiter-api</artifactId>
+                <version>${junit.jupiter.version}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.junit.jupiter</groupId>
+                <artifactId>junit-jupiter-params</artifactId>
+                <version>${junit.jupiter.version}</version>
                 <scope>test</scope>
             </dependency>
             <dependency>

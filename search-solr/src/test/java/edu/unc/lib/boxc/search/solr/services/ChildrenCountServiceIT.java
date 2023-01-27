@@ -6,7 +6,7 @@ import static edu.unc.lib.boxc.model.api.ResourceType.File;
 import static edu.unc.lib.boxc.search.api.SearchFieldKey.RESOURCE_TYPE;
 import static edu.unc.lib.boxc.search.solr.services.ChildrenCountService.CHILD_COUNT;
 import static java.util.Arrays.asList;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Matchers.anySetOf;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
@@ -17,8 +17,8 @@ import java.util.UUID;
 
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.common.SolrInputDocument;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 
 import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
@@ -60,7 +60,7 @@ public class ChildrenCountServiceIT extends BaseEmbeddedSolrTest {
         testCorpus = new TestCorpus();
     }
 
-    @Before
+    @BeforeEach
     public void init() throws Exception {
         initMocks(this);
 
@@ -182,6 +182,6 @@ public class ChildrenCountServiceIT extends BaseEmbeddedSolrTest {
     }
 
     private void assertCountEquals(long count, ContentObjectRecord md, String countType) {
-        assertEquals("Incorrect number of children", count, md.getCountMap().get(countType).intValue());
+        assertEquals(count, md.getCountMap().get(countType).intValue(), "Incorrect number of children");
     }
 }

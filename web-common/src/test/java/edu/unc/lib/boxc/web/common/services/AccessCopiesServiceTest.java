@@ -23,8 +23,8 @@ import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.solr.common.SolrDocumentList;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
@@ -41,11 +41,11 @@ import static edu.unc.lib.boxc.model.api.DatastreamType.ORIGINAL_FILE;
 import static edu.unc.lib.boxc.model.api.DatastreamType.TECHNICAL_METADATA;
 import static edu.unc.lib.boxc.web.common.services.AccessCopiesService.AUDIO_MIMETYPE_REGEX;
 import static edu.unc.lib.boxc.web.common.services.AccessCopiesService.PDF_MIMETYPE_REGEX;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
@@ -81,7 +81,7 @@ public class AccessCopiesServiceTest  {
     @Captor
     private ArgumentCaptor<SearchRequest> searchRequestCaptor;
 
-    @Before
+    @BeforeEach
     public void init() throws IOException, SolrServerException {
         initMocks(this);
 
@@ -227,8 +227,8 @@ public class AccessCopiesServiceTest  {
     @Test
     public void doesNotHavePlayableAudiofile() {
         hasPermissions(mdObjectImg, true);
-        assertNull("Playable audio file pid found",
-                accessCopiesService.getDatastreamPid(mdObjectImg, principals, AUDIO_MIMETYPE_REGEX));
+        assertNull(accessCopiesService.getDatastreamPid(mdObjectImg, principals, AUDIO_MIMETYPE_REGEX),
+                "Playable audio file pid found");
     }
 
     @Test
@@ -300,14 +300,13 @@ public class AccessCopiesServiceTest  {
     private void assertRequestedDatastreamFilter(DatastreamType expectedType) {
         var searchState = searchRequestCaptor.getValue().getSearchState();
         var queryFilter = (NamedDatastreamFilter) searchState.getFilters().get(0);
-        assertEquals("Expected request to be filtered by datastream " + expectedType.name(),
-                expectedType, queryFilter.getDatastreamType());
+        assertEquals(expectedType, queryFilter.getDatastreamType(),
+                "Expected request to be filtered by datastream " + expectedType.name());
     }
 
     private void assertSortType(String expectedSort) {
         var searchState = searchRequestCaptor.getValue().getSearchState();
-        assertEquals("Expected request to be sorted by type",
-                expectedSort, searchState.getSortType());
+        assertEquals(expectedSort, searchState.getSortType(), "Expected request to be sorted by type");
     }
 
     @Test

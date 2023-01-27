@@ -6,11 +6,11 @@ import static edu.unc.lib.boxc.model.api.DatastreamType.THUMBNAIL_LARGE;
 import static edu.unc.lib.boxc.model.api.DatastreamType.THUMBNAIL_SMALL;
 import static edu.unc.lib.boxc.model.fcrepo.test.TestHelper.makePid;
 import static java.util.Arrays.asList;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.search.solr.models.ContentObjectSolrRecord;
@@ -35,7 +35,7 @@ public class DatastreamUtilTest {
     private final static String THUMB_LARGE_DS = THUMBNAIL_LARGE.getId() + "|image/png|small|png|10000||";
     private final static List<String> EMPTY_LIST = Collections.emptyList();
 
-    @Before
+    @BeforeEach
     public void setup() {
         DatastreamUtil.setDatastreamEndpoint(ENDPOINT_URL);
     }

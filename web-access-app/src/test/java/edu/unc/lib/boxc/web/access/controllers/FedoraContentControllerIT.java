@@ -15,16 +15,15 @@ import edu.unc.lib.boxc.search.api.models.Datastream;
 import edu.unc.lib.boxc.search.solr.models.DatastreamImpl;
 import edu.unc.lib.boxc.web.common.services.SolrQueryLayerService;
 import org.apache.commons.io.FileUtils;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.api.io.TempDir;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.ContextHierarchy;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
@@ -33,19 +32,17 @@ import org.springframework.web.context.WebApplicationContext;
 
 import java.io.File;
 import java.net.URI;
-import java.util.Arrays;
+import java.nio.file.Path;
 
 import static edu.unc.lib.boxc.model.api.DatastreamType.TECHNICAL_METADATA;
 import static edu.unc.lib.boxc.model.fcrepo.ids.DatastreamPids.getTechnicalMetadataPid;
 import static edu.unc.lib.boxc.model.fcrepo.test.TestHelper.makePid;
 import static edu.unc.lib.boxc.web.common.services.FedoraContentService.CONTENT_DISPOSITION;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -54,7 +51,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * @author bbpennel
  *
  */
-@RunWith(SpringJUnit4ClassRunner.class)
+@ExtendWith(SpringExtension.class)
 @WebAppConfiguration
 @ContextHierarchy({
     @ContextConfiguration("/spring-test/test-fedora-container.xml"),
@@ -74,10 +71,10 @@ public class FedoraContentControllerIT {
     @Autowired
     protected WebApplicationContext context;
 
-    @Rule
-    public final TemporaryFolder tmpFolder = new TemporaryFolder();
+    @TempDir
+    public Path tmpFolder;
 
-    @Before
+    @BeforeEach
     public void init() {
 
         mvc = MockMvcBuilders
@@ -168,7 +165,7 @@ public class FedoraContentControllerIT {
                 .andReturn();
 
         MockHttpServletResponse response = result.getResponse();
-        assertEquals("Must not return file content", "", response.getContentAsString());
+        assertEquals("", response.getContentAsString(), "Must not return file content");
     }
 
     @Test
@@ -196,7 +193,7 @@ public class FedoraContentControllerIT {
                 .andExpect(status().is2xxSuccessful())
                 .andReturn();
 
-        assertEquals(BINARY_CONTENT, result1.getResponse().getContentAsString());
+        assertEquals(content, result1.getResponse().getContentAsString());
 
         // Verify administrative datastream retrievable
         MvcResult result2 = mvc.perform(get(requestPath + filePid.getId() + "/" + TECHNICAL_METADATA.getId()))
@@ -231,7 +228,7 @@ public class FedoraContentControllerIT {
                 .andReturn();
 
         MockHttpServletResponse response = result.getResponse();
-        assertEquals("Must not return file content", "", response.getContentAsString());
+        assertEquals("", response.getContentAsString(), "Must not return file content");
     }
 
     @Test
@@ -246,7 +243,7 @@ public class FedoraContentControllerIT {
                 .andReturn();
 
         MockHttpServletResponse response = result.getResponse();
-        assertEquals("Must not return file content", "", response.getContentAsString());
+        assertEquals("", response.getContentAsString(), "Must not return file content");
     }
 
     @Test
@@ -276,7 +273,7 @@ public class FedoraContentControllerIT {
     }
 
     private URI makeContentUri(String content) throws Exception {
-        File dataFile = tmpFolder.newFile();
+        File dataFile = tmpFolder.resolve("testFile").toFile();
         FileUtils.write(dataFile, content, "UTF-8");
         return dataFile.toPath().toUri();
     }

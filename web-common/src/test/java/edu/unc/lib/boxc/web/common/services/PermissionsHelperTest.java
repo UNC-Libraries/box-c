@@ -6,8 +6,8 @@ import static edu.unc.lib.boxc.auth.api.Permission.viewMetadata;
 import static edu.unc.lib.boxc.auth.api.Permission.viewOriginal;
 import static edu.unc.lib.boxc.model.api.DatastreamType.JP2_ACCESS_COPY;
 import static edu.unc.lib.boxc.model.api.DatastreamType.ORIGINAL_FILE;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.when;
@@ -17,8 +17,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 
 import edu.unc.lib.boxc.auth.api.Permission;
@@ -46,7 +47,7 @@ public class PermissionsHelperTest {
     @Mock
     private AccessControlService accessControlService;
 
-    @Before
+    @BeforeEach
     public void init() {
         initMocks(this);
 
@@ -70,24 +71,21 @@ public class PermissionsHelperTest {
     public void testAllowsPublicAccess() {
         roleGroups.add("canViewOriginals|everyone");
 
-        assertTrue("Failed to determine object has full patron access",
-                helper.allowsPublicAccess(mdObject));
+        assertTrue(helper.allowsPublicAccess(mdObject), "Failed to determine object has full patron access");
     }
 
     @Test
     public void testDoesNotAllowPublicAccess() {
         roleGroups.add("canViewMetadata|everyone");
 
-        assertFalse("Object must not have full patron access",
-                helper.allowsPublicAccess(mdObject));
+        assertFalse(helper.allowsPublicAccess(mdObject), "Object must not have full patron access");
     }
 
     @Test
     public void testAllowsPublicAccessNoRoleGroups() {
         mdObject.setRoleGroup(null);
 
-        assertFalse("Object must not have full patron access",
-                helper.allowsPublicAccess(mdObject));
+        assertFalse(helper.allowsPublicAccess(mdObject), "Object must not have full patron access");
     }
 
     @Test
@@ -125,11 +123,13 @@ public class PermissionsHelperTest {
         assertFalse(helper.hasEditAccess(principals, mdObject));
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void testHasEditAccessNoPrincipals() {
-        assignPermission(editDescription, true);
+        Assertions.assertThrows(IllegalArgumentException.class, () -> {
+            assignPermission(editDescription, true);
 
-        assertTrue(helper.hasEditAccess(null, mdObject));
+            assertTrue(helper.hasEditAccess(null, mdObject));
+        });
     }
 
     @Test

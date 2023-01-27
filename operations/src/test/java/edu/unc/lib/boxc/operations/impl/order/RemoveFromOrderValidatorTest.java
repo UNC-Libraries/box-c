@@ -8,16 +8,16 @@ import edu.unc.lib.boxc.model.api.services.MembershipService;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.boxc.operations.jms.order.OrderOperationType;
 import edu.unc.lib.boxc.operations.test.OrderTestHelper;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import java.util.Arrays;
 import java.util.List;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.when;
 import static edu.unc.lib.boxc.operations.test.OrderTestHelper.mockParentType;
 import static edu.unc.lib.boxc.operations.test.OrderTestHelper.assertHasErrors;
@@ -42,7 +42,7 @@ public class RemoveFromOrderValidatorTest {
     private RepositoryObject parentObj;
     private RemoveFromOrderValidator validator;
 
-    @Before
+    @BeforeEach
     public void setup() {
         MockitoAnnotations.initMocks(this);
         validator = new RemoveFromOrderValidator();
