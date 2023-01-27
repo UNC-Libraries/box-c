@@ -47,7 +47,7 @@ plugins:
   # how to incorporate our file suppressions config.
   checkstyle:
     enabled: true
-     config:
+    config:
        file: "common-utils/src/main/resources/checkstyle/checkstyle.xml"
   sonar-java:
     enabled: true
