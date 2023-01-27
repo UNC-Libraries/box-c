@@ -2,33 +2,43 @@ version: "2"
 
 checks:
   argument-count:
+    enabled: true
     config:
       threshold: 4
   complex-logic:
+    enabled: true
     config:
       threshold: 4
   file-lines:
+    enabled: true
     config:
       threshold: 250
   method-complexity:
+    enabled: true
     config:
       threshold: 5
   method-count:
+    enabled: true
     config:
       threshold: 20
   method-lines:
+    enabled: true
     config:
       threshold: 25
   nested-control-flow:
+    enabled: true
     config:
       threshold: 4
   return-statements:
+    enabled: true
     config:
       threshold: 4
   similar-code:
+    enabled: true
     config:
       threshold: # language-specific defaults. an override will affect all languages.
   identical-code:
+    enabled: true
     config:
       threshold: # language-specific defaults. an override will affect all languages.
 
@@ -36,9 +46,9 @@ plugins:
   # checkstyle is disabled until we figure out
   # how to incorporate our file suppressions config.
   checkstyle:
-    enabled: false
-    # config:
-    #   file: "common-utils/src/main/resources/checkstyle/checkstyle.xml"
+    enabled: true
+     config:
+       file: "common-utils/src/main/resources/checkstyle/checkstyle.xml"
   sonar-java:
     enabled: true
   pmd:
