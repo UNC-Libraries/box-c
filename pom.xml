@@ -242,6 +242,7 @@
                         <configuration>
                             <configLocation>${build-tools.path}checkstyle/checkstyle.xml</configLocation>
                             <suppressionsLocation>common-utils/src/main/resources/checkstyle/checkstyle-suppressions.xml</suppressionsLocation>
+                            <suppressionsFileExpression>checkstyle.suppressions.file</suppressionsFileExpression>
                             <encoding>UTF-8</encoding>
                             <consoleOutput>true</consoleOutput>
                             <failsOnError>true</failsOnError>
