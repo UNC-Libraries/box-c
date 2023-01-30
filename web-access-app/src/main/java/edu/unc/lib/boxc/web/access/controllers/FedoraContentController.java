@@ -2,6 +2,7 @@ package edu.unc.lib.boxc.web.access.controllers;
 
 import edu.unc.lib.boxc.auth.api.exceptions.AccessRestrictionException;
 import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
+import edu.unc.lib.boxc.model.api.exceptions.InvalidPidException;
 import edu.unc.lib.boxc.model.api.exceptions.NotFoundException;
 import edu.unc.lib.boxc.model.api.exceptions.ObjectTypeMismatchException;
 import edu.unc.lib.boxc.model.api.ids.PID;
@@ -14,6 +15,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -38,6 +40,7 @@ import static edu.unc.lib.boxc.model.api.DatastreamType.ORIGINAL_FILE;
 @Controller
 public class FedoraContentController {
     private static final Logger log = LoggerFactory.getLogger(FedoraContentController.class);
+    private PID contentPid;
 
     @Autowired
     private FedoraContentService fedoraContentService;
@@ -45,10 +48,15 @@ public class FedoraContentController {
     private AnalyticsTrackerUtil analyticsTracker;
 
     @RequestMapping(value = {"/content/{pid}", "/indexablecontent/{pid}"})
-    public void getDefaultDatastream(@PathVariable("pid") String pid,
+    public ResponseEntity<Object> getDefaultDatastream(@PathVariable("pid") String pid,
                                      @RequestParam(value = "dl", defaultValue = "false") boolean download,
                                      HttpServletRequest request, HttpServletResponse response) {
-        streamData(pid, ORIGINAL_FILE.getId(), download, request, response);
+        try {
+            streamData(pid, ORIGINAL_FILE.getId(), download, request, response);
+            return null;
+        } catch (InvalidPidException e) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
     }
 
     @RequestMapping(value = {"/content/{pid}/{datastream}", "/indexablecontent/{pid}/{datastream}"})
@@ -66,15 +74,20 @@ public class FedoraContentController {
     }
 
     private void streamData(String pidString, String datastream, boolean asAttachment, HttpServletRequest request,
-                            HttpServletResponse response) {
-        PID pid = PIDs.get(pidString);
+                                              HttpServletResponse response) {
+        try {
+            contentPid = PIDs.get(pidString);
+        } catch (InvalidPidException e) {
+            log.debug("Invalid pid for {}", pidString);
+            throw e;
+        }
         AccessGroupSet principals = getAgentPrincipals().getPrincipals();
 
         try {
-            fedoraContentService.streamData(pid, datastream, principals, asAttachment, response);
-            recordDownloadEvent(pid, datastream, principals, request);
+            fedoraContentService.streamData(contentPid, datastream, principals, asAttachment, response);
+            recordDownloadEvent(contentPid, datastream, principals, request);
         } catch (IOException e) {
-            log.error("Problem retrieving {} for {}", pid.toString(), datastream, e);
+            log.error("Problem retrieving {} for {}", contentPid.toString(), datastream, e);
         }
     }
 
