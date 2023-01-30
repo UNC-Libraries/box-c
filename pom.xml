@@ -241,7 +241,7 @@
                         <phase>verify</phase>
                         <configuration>
                             <configLocation>${build-tools.path}checkstyle/checkstyle.xml</configLocation>
-                            <suppressionsLocation>${build-tools.path}checkstyle/checkstyle-suppressions.xml</suppressionsLocation>
+                            <suppressionsLocation>common-utils/src/main/resources/checkstyle/checkstyle-suppressions.xml</suppressionsLocation>
                             <encoding>UTF-8</encoding>
                             <consoleOutput>true</consoleOutput>
                             <failsOnError>true</failsOnError>
