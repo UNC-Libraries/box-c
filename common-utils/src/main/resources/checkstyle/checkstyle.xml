@@ -32,6 +32,11 @@
         <property name="eachLine" value="true" />
         <property name="fileExtensions" value="css,java,js,jsp,xml,xsl" />
     </module>
+
+    <!-- Checks for long lines. -->
+    <module name="LineLength">
+        <property name="max" value="120"/>
+    </module>
     
     <!-- License Header module disabled in favor of license-maven-plugin -->
     <module name="TreeWalker">
@@ -134,11 +139,6 @@
             http://checkstyle.sourceforge.net/config_coding.html#MultipleVariableDeclarations
         -->
         <module name="MultipleVariableDeclarations" />
-    </module>
-
-    <!-- Checks for long lines. -->
-    <module name="LineLength">
-        <property name="max" value="120"/>
     </module>
     
     <!-- No Trailing Whitespace, except on lines that only have an asterisk 
