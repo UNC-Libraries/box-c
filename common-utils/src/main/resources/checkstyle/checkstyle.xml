@@ -45,11 +45,6 @@
         <!-- Check that finds import statements that use the * notation. -->
         <module name="AvoidStarImport" />
         
-        <!-- Checks for long lines. -->
-        <module name="LineLength">
-            <property name="max" value="120"/>
-        </module>
-        
         <!-- Write Javadocs for public methods and classes. Keep it short and to 
             the point /** * @author Joe Developer * @date MMM DD, YYYY */ public class 
             MyClass -->
@@ -141,6 +136,11 @@
             http://checkstyle.sourceforge.net/config_coding.html#MultipleVariableDeclarations
         -->
         <module name="MultipleVariableDeclarations" />
+    </module>
+
+    <!-- Checks for long lines. -->
+    <module name="LineLength">
+        <property name="max" value="120"/>
     </module>
     
     <!-- No Trailing Whitespace, except on lines that only have an asterisk 
