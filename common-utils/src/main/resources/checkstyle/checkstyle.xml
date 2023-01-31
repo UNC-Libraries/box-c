@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE module PUBLIC
-    "-//Puppy Crawl//DTD Check Configuration 1.2//EN"
-    "http://www.puppycrawl.com/dtds/configuration_1_2.dtd">
+    "-//Checkstyle//DTD Checkstyle Configuration 1.2//EN"
+    "https://checkstyle.or/dtds/configuration_1_2.dtd">
 <!-- Checkstyle configuration that checks the Fedora coding conventions from: 
     - the Fedora FcRepo4 Code Style Guide https://wiki.duraspace.org/display/FF/Code+Style+Guide 
     - some best practices Checkstyle is very configurable. Be sure to read the 
@@ -18,19 +18,26 @@
         http://checkstyle.sourceforge.net/property_types.html
     -->
 <module name="Checker">
+    <property name="severity" value="warning"/>
     
     <!-- Suppress 
         The fcrepo based suppression file disables JavaDoc checks in unit test and IT test files.
         It also disables indentation checking, e.g. 4 spaces for all java files
     -->
     <module name="SuppressionFilter">
-        <property name="file" value="${checkstyle.suppressions.file}"/>
+        <property name="file" value="common-utils/src/main/resources/checkstyle/checkstyle-suppressions.xml"/>
     </module>
     
     <!-- Checks that there are no tab characters ('\t') in the source code. -->
     <module name="FileTabCharacter">
         <property name="eachLine" value="true" />
         <property name="fileExtensions" value="css,java,js,jsp,xml,xsl" />
+    </module>
+
+    <!-- Checks for long lines. -->
+    <module name="LineLength">
+        <property name="fileExtensions" value="java"/>
+        <property name="max" value="120"/>
     </module>
     
     <!-- License Header module disabled in favor of license-maven-plugin -->
@@ -44,11 +51,6 @@
         
         <!-- Check that finds import statements that use the * notation. -->
         <module name="AvoidStarImport" />
-        
-        <!-- Checks for long lines. -->
-        <module name="LineLength">
-            <property name="max" value="120"/>
-        </module>
         
         <!-- Write Javadocs for public methods and classes. Keep it short and to 
             the point /** * @author Joe Developer * @date MMM DD, YYYY */ public class 
@@ -70,11 +72,8 @@
         
         <!-- Relaxes syntax options for JavaDoc comments -->
         <module name="JavadocMethod">
-            <property name="scope" value="public" />
             <!-- whether to allow documented exceptions that are not declared if they are a subclass of java.lang.RuntimeException -->
-            <property name="allowUndeclaredRTE" value="true" /> 
             <property name="allowMissingParamTags" value="true" />
-            <property name="allowMissingThrowsTags" value="true" />
             <property name="allowMissingReturnTag" value="true" />
         </module>
         
