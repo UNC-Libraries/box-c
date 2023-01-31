@@ -272,6 +272,13 @@ public class FedoraContentControllerIT {
                 .andReturn();
     }
 
+    @Test
+    public void testInvalidPid() throws Exception {
+        mvc.perform(get("/content/some_pids"))
+                .andExpect(status().isNotFound())
+                .andReturn();
+    }
+
     private URI makeContentUri(String content) throws Exception {
         File dataFile = tmpFolder.resolve("testFile").toFile();
         FileUtils.write(dataFile, content, "UTF-8");

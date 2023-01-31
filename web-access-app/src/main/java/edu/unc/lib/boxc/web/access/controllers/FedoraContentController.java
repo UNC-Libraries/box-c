@@ -2,6 +2,7 @@ package edu.unc.lib.boxc.web.access.controllers;
 
 import edu.unc.lib.boxc.auth.api.exceptions.AccessRestrictionException;
 import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
+import edu.unc.lib.boxc.model.api.exceptions.InvalidPidException;
 import edu.unc.lib.boxc.model.api.exceptions.NotFoundException;
 import edu.unc.lib.boxc.model.api.exceptions.ObjectTypeMismatchException;
 import edu.unc.lib.boxc.model.api.ids.PID;
@@ -66,7 +67,7 @@ public class FedoraContentController {
     }
 
     private void streamData(String pidString, String datastream, boolean asAttachment, HttpServletRequest request,
-                            HttpServletResponse response) {
+                                              HttpServletResponse response) {
         PID pid = PIDs.get(pidString);
         AccessGroupSet principals = getAgentPrincipals().getPrincipals();
 
@@ -87,7 +88,7 @@ public class FedoraContentController {
     }
 
     @ResponseStatus(value = HttpStatus.NOT_FOUND)
-    @ExceptionHandler({ResourceNotFoundException.class, NotFoundException.class})
+    @ExceptionHandler({ResourceNotFoundException.class, NotFoundException.class, InvalidPidException.class})
     public String handleResourceNotFound(HttpServletRequest request) {
         request.setAttribute("pageSubtitle", "Invalid content");
         return "error/invalidRecord";
