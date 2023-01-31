@@ -18,6 +18,7 @@
         http://checkstyle.sourceforge.net/property_types.html
     -->
 <module name="Checker">
+    <property name="severity" value="warning"/>
     
     <!-- Suppress 
         The fcrepo based suppression file disables JavaDoc checks in unit test and IT test files.
