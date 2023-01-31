@@ -138,7 +138,7 @@
         <maven.surefire.version>2.22.1</maven.surefire.version>
         <compiler.plugin.version>3.8.0</compiler.plugin.version>
         <maven-eclipse-plugin.version>2.10</maven-eclipse-plugin.version>
-        <maven-checkstyle-plugin.version>3.0.0</maven-checkstyle-plugin.version>
+        <maven-checkstyle-plugin.version>3.2.1</maven-checkstyle-plugin.version>
         <maven-release-plugin.version>2.5.3</maven-release-plugin.version>
         <exec-maven-plugin.version>3.1.0</exec-maven-plugin.version>
         <maven-scm-provider-svnjava.version>2.1.2</maven-scm-provider-svnjava.version>
