@@ -24,7 +24,7 @@
         It also disables indentation checking, e.g. 4 spaces for all java files
     -->
     <module name="SuppressionFilter">
-        <property name="file" value="${checkstyle.suppressions.file}"/>
+        <property name="file" value="common-utils/src/main/resources/checkstyle/checkstyle-suppressions.xml"/>
     </module>
     
     <!-- Checks that there are no tab characters ('\t') in the source code. -->
