@@ -58,7 +58,7 @@ plugins:
     config:
       languages:
         java:
-          mass_threshold: 50
+          mass_threshold: 45
 
 exclude_patterns:
   - "static/js/lib/"
