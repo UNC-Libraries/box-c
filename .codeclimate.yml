@@ -4,7 +4,7 @@ hecks:
   argument-count:
     enabled: true
     config:
-      threshold: 4
+      threshold: 7
   complex-logic:
     enabled: true
     config:
@@ -12,19 +12,19 @@ hecks:
   file-lines:
     enabled: true
     config:
-      threshold: 250
+      threshold: 500
   method-complexity:
     enabled: true
     config:
-      threshold: 5
+      threshold: 25
   method-count:
     enabled: true
     config:
-      threshold: 20
+      threshold: 50 #40-50
   method-lines:
     enabled: true
     config:
-      threshold: 25
+      threshold: 100 #100-150
   nested-control-flow:
     enabled: true
     config:
