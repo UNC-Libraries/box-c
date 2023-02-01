@@ -54,7 +54,7 @@ plugins:
   pmd:
     enabled: true
   duplication:
-    enabled: false
+    enabled: true
     config:
       languages:
         java:
