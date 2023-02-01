@@ -1,15 +1,66 @@
 version: "2"
+
+checks:
+  argument-count:
+    enabled: true
+    config:
+      threshold: 7
+  complex-logic:
+    enabled: true
+    config:
+      threshold: 4
+  file-lines:
+    enabled: true
+    config:
+      threshold: 500
+  method-complexity:
+    enabled: true
+    config:
+      threshold: 25
+  method-count:
+    enabled: true
+    config:
+      threshold: 50
+  method-lines:
+    enabled: true
+    config:
+      threshold: 150
+  nested-control-flow:
+    enabled: true
+    config:
+      threshold: 4
+  return-statements:
+    enabled: true
+    config:
+      threshold: 4
+  similar-code:
+    enabled: true
+    config:
+      threshold: # language-specific defaults. an override will affect all languages.
+  identical-code:
+    enabled: true
+    config:
+      threshold: # language-specific defaults. an override will affect all languages.
+
 plugins:
-  # checkstyle is disabled until we figure out
-  # how to incorporate our file suppressions config.
+  # there are 16,000+ errors/warnings when checkstyle is enabled
   checkstyle:
     enabled: false
-    # config:
-    #   file: "common-utils/src/main/resources/checkstyle/checkstyle.xml"
+    config:
+      file: "common-utils/src/main/resources/checkstyle/checkstyle.xml"
   sonar-java:
     enabled: true
   pmd:
     enabled: true
+  # duplication plugin affects similar-code and identical-code
+  duplication:
+    enabled: true
+    config:
+      count_threshold: 5
+      languages:
+        java:
+          mass_threshold: 40 # default threshold
+
 exclude_patterns:
   - "static/js/lib/"
   - "static/js/admin/performance_visualizations/assets/"
