@@ -1,6 +1,6 @@
 version: "2"
 
-hecks:
+checks:
   argument-count:
     enabled: true
     config:
