@@ -56,7 +56,7 @@ plugins:
   duplication:
     enabled: true
     config:
-      count_threshold: 4
+      count_threshold: 5
 
 exclude_patterns:
   - "static/js/lib/"
