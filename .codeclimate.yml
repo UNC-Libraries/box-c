@@ -34,11 +34,11 @@ checks:
     config:
       threshold: 4
   similar-code:
-    enabled: true
+    enabled: false
     config:
       threshold: # language-specific defaults. an override will affect all languages.
   identical-code:
-    enabled: true
+    enabled: false
     config:
       threshold: # language-specific defaults. an override will affect all languages.
 
@@ -53,6 +53,12 @@ plugins:
     enabled: true
   pmd:
     enabled: true
+  duplication:
+    enabled: false
+    config:
+      languages:
+        java:
+
 exclude_patterns:
   - "static/js/lib/"
   - "static/js/admin/performance_visualizations/assets/"
