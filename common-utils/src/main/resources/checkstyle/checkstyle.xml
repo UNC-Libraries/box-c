@@ -72,7 +72,6 @@
         
         <!-- Relaxes syntax options for JavaDoc comments -->
         <module name="JavadocMethod">
-            <!-- whether to allow documented exceptions that are not declared if they are a subclass of java.lang.RuntimeException -->
             <property name="allowMissingParamTags" value="true" />
             <property name="allowMissingReturnTag" value="true" />
         </module>

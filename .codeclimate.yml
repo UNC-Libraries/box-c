@@ -20,11 +20,11 @@ checks:
   method-count:
     enabled: true
     config:
-      threshold: 50 #40-50
+      threshold: 50
   method-lines:
     enabled: true
     config:
-      threshold: 150 #100-150
+      threshold: 150
   nested-control-flow:
     enabled: true
     config:
@@ -43,8 +43,7 @@ checks:
       threshold: # language-specific defaults. an override will affect all languages.
 
 plugins:
-  # checkstyle is disabled until we figure out
-  # how to incorporate our file suppressions config.
+  # there are 16,000+ errors/warnings when checkstyle is enabled
   checkstyle:
     enabled: false
     config:
@@ -53,10 +52,14 @@ plugins:
     enabled: true
   pmd:
     enabled: true
+  # duplication plugin affects similar-code and identical-code
   duplication:
     enabled: true
     config:
       count_threshold: 5
+      languages:
+        java:
+          mass_threshold: 40 # default threshold
 
 exclude_patterns:
   - "static/js/lib/"
