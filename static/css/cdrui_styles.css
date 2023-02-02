@@ -1,8 +1,8 @@
 .relateditem {
 	width: 14%;
 	float: left;
-	margin: 0px 0 10px 0;
-	padding: 10px 0px;
+	margin: 0 0 10px 0;
+	padding: 10px 0;
 	text-align: center;
 	overflow: hidden;
 	border: 1px solid transparent;
@@ -402,7 +402,7 @@ form {
 }
 
 .fpsearch_advanced_link {
-	margin-bottom: 0pt;
+	margin-bottom: 0;
 	margin-top: 5px;
 }
 
@@ -414,7 +414,7 @@ form {
 .fpsearch_browse_separator {
 	float: left;
 	clear: both;
-	margin: -15px 0pt 5px;
+	margin: -15px 0 5px;
 	color: rgb(96, 155, 182) !important;
 }
 
@@ -485,7 +485,7 @@ ul.fpfeed_list li {
 }
 
 .full_record_browse {
-	padding: 5px 0px 0px 5px
+	padding: 5px 0 0 5px
 }
 
 .pipe_list {
@@ -502,63 +502,6 @@ ul.fpfeed_list li {
 
 .pipe_list li:last-child {
 	border-right: 0 none;
-}
-
-.advsearch_select {
-	float: left;
-	clear: both;
-	width: 440px;
-	border: none;
-	margin-bottom: 10px;
-	padding: 3px;
-	color: #555;
-	border: 1px solid #c8d8e0;
-}
-
-.advsearch_text {
-	width: 300px;
-	border: 1px solid #c8d8e0;
-	padding: 5px;
-	font-size: 12px;
-	float: right;
-	color: #555;
-	margin: -4px 0 15px 0;
-}
-
-.advsearch_date {
-	width: 100px;
-	border: 1px solid #c8d8e0;
-	padding: 5px;
-	font-size: 12px;
-	color: #555;
-	margin: -4px 0 5px 0;
-}
-
-#advsearch_submit {
-	font-size: 12px;
-	color: #fff;
-	padding: 5px 10px;
-	width: 100px;
-	font-size: 15px;
-	text-align: center;
-	margin-bottom: 20px;
-	cursor: pointer;
-	background-color: #c34d13;
-	border: 1px solid #862e03;
-}
-
-#advsearch_submit:hover {
-	background-color: #862e03;
-}
-
-#advanced-search-form label {
-	width: 125px;
-}
-
-label {
-	display: block;
-	float: left;
-	width: 100px;
 }
 
 .bottomline {
@@ -581,7 +524,7 @@ label {
 }
 
 .collinfo .actionlink, .collinfo .noaction {
-	margin: 0px 5px 6px 0;
+	margin: 0 5px 6px 0;
 }
 
 .actionlink a {
@@ -742,7 +685,7 @@ label {
 	font-size: 15px;
 	margin: 0;
 	padding: 10px 18px;
-	text-indent: 0px;
+	text-indent: 0;
 	cursor: pointer;
 }
 
@@ -751,7 +694,7 @@ label {
 	color: #333;
 	background-color: #fff;
 	border-radius: 3px 3px 0 0;
-	border-width: 1px 1px 0px;
+	border-width: 1px 1px 0;
 	border-color: #e5e5e5;
 	border-style: solid;
 }
@@ -821,7 +764,7 @@ label {
 	color: #FF3333;
 	display: block;
 	font-size: 80%;
-	padding: 5px 5px 0px 15px;
+	padding: 5px 5px 0 15px;
 	position: relative;
 	top: 2px;
 }
@@ -855,7 +798,7 @@ label {
 }
 
 .about_page p,.about_page ul {
-	padding: 0px 10px;
+	padding: 0 10px;
 }
 
 .about_page h3 {
