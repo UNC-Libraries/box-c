@@ -125,7 +125,7 @@
                                 <input aria-label="created-start-date" placeholder="YYYY" min="0" name="createdYearStart" type="number" class="input is-small" />
                             </div>
                         </div>
-                        <span>{{ $t('adv_search.date_from') }}</span>
+                        <span>{{ $t('adv_search.date_to') }}</span>
                         <div class="field">
                             <div class="control">
                                 <input aria-label="created-end-date" placeholder="YYYY" min="1" name="createdYearEnd" type="number" class="input is-small" />
