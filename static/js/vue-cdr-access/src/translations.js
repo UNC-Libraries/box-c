@@ -1,5 +1,24 @@
 export default {
     "en": {
+        "adv_search": {
+            "advanced": "Advanced Search",
+            "anywhere": "Anywhere",
+            "collection_id": "Archival Collection ID",
+            "creator_contributor": "Creator/Contributor",
+            "date_created": "Date Created",
+            "date_deposited": "Date Deposited",
+            "date_from": "From",
+            "date_to": "to",
+            "dates_end_note": "Enter dates in YYYY format. " +
+                "Leave the right hand date empty to search for items with dates starting " +
+                "at the left hand date, and vice versa.",
+            "deposited_end_note": "",
+            "limit_by": "Limit By",
+            "search": "Search",
+            "search_for": "Search for",
+            "subject": "Subject",
+            "title": "Title"
+        },
         "display": {
             "collection": "Collection",
             "collection_number": "Collection Number",

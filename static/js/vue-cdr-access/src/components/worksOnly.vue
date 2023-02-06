@@ -9,9 +9,8 @@ and including all types with hierarchy retained.
             <label for="works-only"><p>{{ $t('works_only.show')}}</p></label>
         </div>
         <div class="note">
-            <div class="display-note-btn">?
-                <div class="arrow"></div>
-                <span class="browse-tip">{{ $t('works_only.show_tip') }}</span>
+            <div class="display-note-btn has-tooltip-arrow has-tooltip-bottom"
+                 :data-tooltip="$t('works_only.show_tip')">?
             </div>
         </div>
     </div>
@@ -89,6 +88,18 @@ and including all types with hierarchy retained.
         p {
             font-size: 18px;
             padding-top: 10px;
+        }
+
+        [data-tooltip]:not(.is-disabled).has-tooltip-bottom.has-tooltip-arrow::after,
+        [data-tooltip]:not(.is-loading).has-tooltip-bottom.has-tooltip-arrow::after,
+        [data-tooltip]:not([disabled]).has-tooltip-bottom.has-tooltip-arrow::after {
+            bottom: -5px;
+        }
+
+        [data-tooltip]:not(.is-disabled).has-tooltip-bottom::before,
+        [data-tooltip]:not(.is-loading).has-tooltip-bottom::before,
+        [data-tooltip]:not([disabled]).has-tooltip-bottom::before {
+            margin-bottom: -10px;
         }
     }
 
