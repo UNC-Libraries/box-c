@@ -36,14 +36,14 @@ public class AdvancedSearchFormController extends AbstractErrorHandlingSearchCon
             .sorted()
             .collect(Collectors.toList());
 
-    @RequestMapping(path = "/collections", method = RequestMethod.GET, produces = APPLICATION_JSON_VALUE)
+    @RequestMapping(path = "/advancedSearch/collections", produces = APPLICATION_JSON_VALUE)
     public @ResponseBody String getCollections() {
         AccessGroupSet accessGroups = GroupsThreadStore.getPrincipals();
         SearchResultResponse collectionResultResponse = queryLayer.getCollectionList(accessGroups);
         return SerializationUtil.resultsToJSON(collectionResultResponse, accessGroups);
     }
 
-    @RequestMapping(path = "/formats", method = RequestMethod.GET, produces = APPLICATION_JSON_VALUE)
+    @RequestMapping(path = "/advancedSearch/formats", produces = APPLICATION_JSON_VALUE)
     public @ResponseBody String getFormats() throws JsonProcessingException {
         ObjectMapper mapper = new ObjectMapper();
         return mapper.writeValueAsString(FORMAT_VALUES);

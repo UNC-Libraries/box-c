@@ -159,7 +159,7 @@ export default {
 
     methods: {
         getCollections() {
-            get(`/collections`).then((response) => {
+            get('/advancedSearch/collections').then((response) => {
                 this.collections = response.data;
             }).catch(function (error) {
                 console.log(error);
@@ -167,7 +167,7 @@ export default {
         },
 
         getFormats() {
-            get(`/formats`).then((response) => {
+            get('/advancedSearch/formats').then((response) => {
                 this.formats = response.data;
             }).catch(function (error) {
                 console.log(error);
