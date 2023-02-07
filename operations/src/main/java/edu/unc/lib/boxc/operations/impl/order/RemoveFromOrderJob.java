@@ -4,6 +4,7 @@ import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.api.rdf.Cdr;
 import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
+import edu.unc.lib.boxc.operations.api.order.MemberOrderHelper;
 import edu.unc.lib.boxc.operations.jms.order.OrderRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,7 +31,7 @@ public class RemoveFromOrderJob implements Runnable {
         // subtract children from original order
         memberOrder.removeAll(childrenToRemove);
         // transform PIDs into UUIDs
-        var updatedOrder = memberOrder.stream().map(PID::getId).collect(Collectors.joining("|"));
+        var updatedOrder = MemberOrderHelper.serializeOrder(memberOrder);
         log.debug("Updating order property for {} to {}", request.getParentPid(), updatedOrder);
         repositoryObjectFactory.createExclusiveRelationship(workObject, Cdr.memberOrder, updatedOrder);
     }

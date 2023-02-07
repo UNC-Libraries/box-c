@@ -4,6 +4,7 @@ import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.api.rdf.Cdr;
 import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
+import edu.unc.lib.boxc.operations.api.order.MemberOrderHelper;
 import edu.unc.lib.boxc.operations.jms.order.OrderRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,7 +26,7 @@ public class SetOrderJob implements Runnable {
     @Override
     public void run() {
         var parentObject = repositoryObjectLoader.getRepositoryObject(request.getParentPid());
-        var order = request.getOrderedChildren().stream().map(PID::getId).collect(Collectors.joining("|"));
+        var order = MemberOrderHelper.serializeOrder(request.getOrderedChildren());
         log.debug("Updating order property for {} to {}", request.getParentPid(), order);
         repositoryObjectFactory.createExclusiveRelationship(parentObject, Cdr.memberOrder, order);
     }

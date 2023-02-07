@@ -70,4 +70,13 @@ public class MemberOrderHelper {
                 .map(Map.Entry::getKey)
                 .collect(Collectors.toList());
     }
+
+    /**
+     * Serialize a list of PIDs for storage in the repository
+     * @param pids list of PIDs
+     * @return String containing pids as an order field value.
+     */
+    public static String serializeOrder(List<PID> pids) {
+        return pids.stream().map(PID::getId).collect(Collectors.joining("|"));
+    }
 }
