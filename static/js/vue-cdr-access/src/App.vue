@@ -1,14 +1,14 @@
 <template>
     <router-view/>
-    <footer/>
+    <cdrFooter/>
 </template>
 
 <script>
-import footer from "@/components/footer.vue";
+import footer from "@/components/cdrFooter.vue";
 
 export default {
     components: {
-        footer
+        cdrFooter
     }
 }
 </script>
