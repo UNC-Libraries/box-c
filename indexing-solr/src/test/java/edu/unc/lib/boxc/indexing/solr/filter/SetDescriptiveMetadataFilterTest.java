@@ -136,7 +136,7 @@ public class SetDescriptiveMetadataFilterTest {
         assertTrue(idb.getLocation().contains("Germany"));
         assertTrue(idb.getLocation().contains("Canada"));
 
-        assertTrue(idb.getLanguage().contains("English"));
+        assertTrue(idb.getLanguage().contains("Provençal, Old (to 1500);Occitan, Old (to 1500)"));
 
         assertTrue(idb.getPublisher().contains("Knopf"));
         assertEquals(1, idb.getPublisher().size());
@@ -291,7 +291,7 @@ public class SetDescriptiveMetadataFilterTest {
 
         filter.filter(dip);
 
-        assertTrue(idb.getLanguage().contains("English"));
+        assertTrue(idb.getLanguage().contains("Provençal, Old (to 1500);Occitan, Old (to 1500)"));
         assertTrue(idb.getLanguage().contains("Cherokee"));
     }
 
