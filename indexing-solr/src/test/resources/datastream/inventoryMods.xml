@@ -153,7 +153,7 @@
     <mods:publisher></mods:publisher>
   </mods:originInfo>
   <mods:language>
-    <mods:languageTerm authority="iso639-2b" type="code">eng</mods:languageTerm>
+    <mods:languageTerm authority="iso639-2b" type="code">pro</mods:languageTerm>
   </mods:language>
   <mods:language>
     <mods:languageTerm authority="iso639-2b" type="code">chr</mods:languageTerm>

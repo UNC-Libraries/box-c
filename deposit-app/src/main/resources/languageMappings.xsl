@@ -396,7 +396,7 @@
 			<xsl:when test="$langCode = 'pon'">Pohnpeian</xsl:when>
 			<xsl:when test="$langCode = 'por'">Portuguese</xsl:when>
 			<xsl:when test="$langCode = 'pra'">Prakrit languages</xsl:when>
-			<xsl:when test="$langCode = 'pro'">Proven√Åal, Old (to 1500);Occitan, Old (to 1500)</xsl:when>
+			<xsl:when test="$langCode = 'pro'">Provençal, Old (to 1500);Occitan, Old (to 1500)</xsl:when>
 			<xsl:when test="$langCode = 'pus'">Pushto; Pashto</xsl:when>
 			<xsl:when test="$langCode = 'qaa-qtz'">Reserved for local use</xsl:when>
 			<xsl:when test="$langCode = 'que'">Quechua</xsl:when>
