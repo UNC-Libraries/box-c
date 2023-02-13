@@ -1,10 +1,10 @@
 <template>
     <footer>
         <p class="footer-menu container">
-            <a href="${accessBaseUrl}">Home</a> |
-            <a href="collections">Browse Collections</a> |
-            <a href="aboutRepository">About</a> |
-            <a href="${contactUrl}">Contact Us</a> |
+            <a href="https://dcr.lib.unc.edu/">Home</a> |
+            <a href="https://dcr.lib.unc.edu/collections">Browse Collections</a> |
+            <a href="https://dcr.lib.unc.edu/aboutRepository">About</a> |
+            <a href="https://library.unc.edu/wilson/contact/">Contact Us</a> |
             <a href="https://library.unc.edu">Library Home</a> |
             <a href="https://library.unc.edu/privacy-policy/">Privacy Policy</a> |
             <a href="https://digitalaccess.unc.edu/report">Accessibility</a>
@@ -19,6 +19,13 @@ export default {
 </script>
 
 <style scoped lang="scss">
+    @mixin mobile-margin {
+        @media only screen and (max-width: 1088px) {
+            margin-left: 5px;
+            margin-right: 16px;
+        }
+    }
+
     footer {
         color: white;
         background-color: #13294B;
