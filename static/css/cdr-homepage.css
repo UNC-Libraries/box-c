@@ -11,7 +11,7 @@ a {
   background-color: #4B9CD3;
 }
 
-.menu-row, .banner-row, .search-row, footer {
+.menu-row, .banner-row, .search-row {
   background-color: #13294B;
 }
 
@@ -230,30 +230,6 @@ a {
   margin-bottom: 32px;
   padding: 0 16px;
   width: 100%;
-}
-
-footer {
-  color: white;
-  display: inline-flex;
-  text-align: center;
-  width: 100%;
-  flex-wrap: wrap;
-}
-footer .footer-menu {
-  padding: 12px 0;
-}
-@media only screen and (max-width: 1088px) {
-  footer .footer-menu {
-    margin-left: 16px;
-    margin-right: 16px;
-  }
-}
-footer a {
-  color: white;
-  font-size: 16px;
-}
-footer a:hover, footer a:active {
-  color: #4B9CD3;
 }
 
 /**
