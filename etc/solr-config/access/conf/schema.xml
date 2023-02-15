@@ -285,7 +285,6 @@
   <copyField source="rightsOaiPmh" dest="keywordIndex"/>
   <copyField source="rightsUri" dest="keywordIndex"/>
   <copyField source="genre" dest="keywordIndex"/>
-  <copyField source="otherSubject" dest="keywordIndex"/>
 
   <!-- Same as the keyword index plus full text. Too bad recursive copy fields don't work -->
   <copyField source="title" dest="text"/>
@@ -305,5 +304,4 @@
   <copyField source="rightsUri" dest="text"/>
   <copyField source="fullText" dest="text"/>
   <copyField source="genre" dest="text"/>
-  <copyField source="otherSubject" dest="text"/>
 </schema>
