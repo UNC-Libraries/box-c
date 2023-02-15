@@ -949,19 +949,15 @@
 								<xsl:with-param name="field" select="*[local-name() = 'note' and not(@type = 'admin')]"/>
 							</xsl:call-template>
 
-							<xsl:variable name="collectionIdentifier" select="*[local-name() = 'identifier' and @displayLabel='Collection Number']"/>
-							<xsl:variable name="identifier" select="*[local-name() = 'identifier' and not(@displayLabel='Collection Number')]"/>
-							<xsl:if test="boolean($collectionIdentifier) or boolean($identifier)">
-								<xsl:call-template name="modsCollectionIdentifier">
-									<xsl:with-param name="defaultLabel">Archival Collection ID</xsl:with-param>
-									<xsl:with-param name="field" select="$collectionIdentifier"/>
-								</xsl:call-template>
+							<xsl:call-template name="modsCollectionIdentifier">
+								<xsl:with-param name="defaultLabel">Archival Collection ID</xsl:with-param>
+								<xsl:with-param name="field" select="*[local-name() = 'identifier' and @displayLabel='Collection Number']"/>
+							</xsl:call-template>
 
-								<xsl:call-template name="modsGroupedFieldWithType">
-									<xsl:with-param name="defaultLabel">Identifier</xsl:with-param>
-									<xsl:with-param name="field" select="$identifier"/>
-								</xsl:call-template>
-							</xsl:if>
+							<xsl:call-template name="modsGroupedFieldWithType">
+								<xsl:with-param name="defaultLabel">Identifier</xsl:with-param>
+								<xsl:with-param name="field" select="*[local-name() = 'identifier' and not(@displayLabel='Collection Number')]"/>
+							</xsl:call-template>
 							<xsl:call-template name="modsSubjects"/>
 							<xsl:call-template name="modsClassifications"/>
 							<xsl:call-template name="modsAbstract"/>
