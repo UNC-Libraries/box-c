@@ -6,6 +6,10 @@ import edu.unc.lib.boxc.model.api.exceptions.InvalidPidException;
 import edu.unc.lib.boxc.model.api.exceptions.NotFoundException;
 import edu.unc.lib.boxc.model.api.exceptions.ObjectTypeMismatchException;
 import edu.unc.lib.boxc.model.api.ids.PID;
+import edu.unc.lib.boxc.model.api.objects.FileObject;
+import edu.unc.lib.boxc.model.api.objects.RepositoryObject;
+import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
+import edu.unc.lib.boxc.model.api.objects.WorkObject;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.boxc.web.common.exceptions.ResourceNotFoundException;
 import edu.unc.lib.boxc.web.common.services.FedoraContentService;
@@ -44,6 +48,8 @@ public class FedoraContentController {
     private FedoraContentService fedoraContentService;
     @Autowired
     private AnalyticsTrackerUtil analyticsTracker;
+    @Autowired
+    private RepositoryObjectLoader repoObjLoader;
 
     @RequestMapping(value = {"/content/{pid}", "/indexablecontent/{pid}"})
     public void getDefaultDatastream(@PathVariable("pid") String pid,
@@ -70,6 +76,14 @@ public class FedoraContentController {
                                               HttpServletResponse response) {
         PID pid = PIDs.get(pidString);
         AccessGroupSet principals = getAgentPrincipals().getPrincipals();
+
+        RepositoryObject repoObj = repoObjLoader.getRepositoryObject(pid);
+        if (repoObj instanceof WorkObject) {
+            FileObject primaryObj = ((WorkObject) repoObj).getPrimaryObject();
+            if (primaryObj != null) {
+                pid = primaryObj.getPid();
+            }
+        }
 
         try {
             fedoraContentService.streamData(pid, datastream, principals, asAttachment, response);
