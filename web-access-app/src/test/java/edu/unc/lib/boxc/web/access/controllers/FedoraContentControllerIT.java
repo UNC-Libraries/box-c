@@ -7,6 +7,7 @@ import edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl;
 import edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.objects.FileObject;
+import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
 import edu.unc.lib.boxc.model.fcrepo.test.TestHelper;
 import org.apache.commons.io.FileUtils;
@@ -59,6 +60,8 @@ public class FedoraContentControllerIT {
 
     @Autowired
     private RepositoryObjectFactory repositoryObjectFactory;
+    @Autowired
+    private RepositoryObjectLoader repositoryObjectLoader;
     @Autowired
     private AccessControlService accessControlService;
 
@@ -261,10 +264,17 @@ public class FedoraContentControllerIT {
         FileObject fileObj = repositoryObjectFactory.createFileObject(filePid, null);
         fileObj.addOriginalFile(makeContentUri(BINARY_CONTENT), "file.txt", "text/plain", null, null);
         workObj.addMember(fileObj);
+        workObj.setPrimaryObject(filePid);
+        repositoryObjectLoader.invalidate(workPid);
 
-        mvc.perform(get("/content/" + workPid.getId()))
-                .andExpect(status().isBadRequest())
+        var result = mvc.perform(get("/content/" + workPid.getId()))
+                .andExpect(status().is2xxSuccessful())
                 .andReturn();
+
+        // Verify content was retrieved from file object
+        MockHttpServletResponse response = result.getResponse();
+        assertEquals(BINARY_CONTENT, response.getContentAsString());
+        assertEquals("text/plain", response.getContentType());
     }
 
     @Test

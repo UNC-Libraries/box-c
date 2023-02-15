@@ -81,6 +81,8 @@ public class FedoraContentController {
         if (repoObj instanceof WorkObject) {
             FileObject primaryObj = ((WorkObject) repoObj).getPrimaryObject();
             if (primaryObj != null) {
+                log.warn("Request to download work {}, redirecting to primary object {}",
+                        pid.getId(), primaryObj.getPid().getId());
                 pid = primaryObj.getPid();
             }
         }
