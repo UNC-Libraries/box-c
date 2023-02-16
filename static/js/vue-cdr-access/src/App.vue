@@ -1,10 +1,10 @@
 <template>
     <router-view/>
-    <cdrFooter/>
+    <cdr-footer/>
 </template>
 
 <script>
-import footer from "@/components/cdrFooter.vue";
+import cdrFooter from "@/components/cdrFooter.vue";
 
 export default {
     components: {
