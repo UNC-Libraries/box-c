@@ -2,8 +2,8 @@
 Displays the MODS descriptive record for an object inside of a modal
 -->
 <template>
-    <div class="meta-modal">
-        <div v-if="showModal" @close="showModal = false">
+    <div class="meta-modal"  v-if="openModal" @close="closeModal()">
+        <div>
             <transition name="modal">
                 <div class="modal-mask">
                     <div class="modal-wrapper">
@@ -13,7 +13,7 @@ Displays the MODS descriptive record for an object inside of a modal
                                 <slot name="header">
                                     <div class="column is-12">
                                         <h3>{{ title }}</h3>
-                                        <button class="button is-small" @click="showModal = false">{{ $t('modal.close') }}</button>
+                                        <button class="button is-small" @click="closeModal()">{{ $t('modal.close') }}</button>
                                     </div>
                                 </slot>
                             </div>
@@ -38,40 +38,51 @@ Displays the MODS descriptive record for an object inside of a modal
         name: 'modalMetadata',
 
         props: {
-            uuid: '',
-            title: ''
-        },
-
-        data() {
-            return {
-                metadata: '',
-                showModal: false
-            };
-        },
-
-        methods: {
-            showMetadata(e) {
-                e.preventDefault();
-                this.retrieveContainerMetadata();
+            openModal: {
+                type: Boolean,
+                default: false
             },
-
-            retrieveContainerMetadata() {
-                get(`record/${this.uuid}/metadataView`).then((response) => {
-                    this.metadata = response.data;
-                    this.showModal = true;
-                }).catch(function (error) {
-                    console.log(error);
-                    this.metadata = '<p>Unable to retrieve metadata for this item</p>';
-                    this.showModal = true;
-                });
+            uuid: {
+                type: String,
+                default: ''
+            },
+            title:  {
+                type: String,
+                default: ''
             }
         },
 
-        mounted() {
-            const metadata_link = document.getElementById('metadata-modal-link');
+        emits: ['display-metadata'],
 
-            if (metadata_link !== null) {
-                metadata_link.addEventListener('click', this.showMetadata);
+        data() {
+            return {
+                metadata: ''
+            };
+        },
+
+        watch: {
+            openModal(display) {
+                if (display) {
+                    this.modalOpen = display;
+                    if (this.metadata === '') {
+                        this.loadMetadata();
+                    }
+                }
+            }
+        },
+
+        methods: {
+            loadMetadata() {
+                get(`record/${this.uuid}/metadataView`).then((response) => {
+                    this.metadata = response.data;
+                }).catch((error) => {
+                    console.log(error);
+                    this.metadata = `<p>${this.$t('modal.error')}</p>`;
+                });
+            },
+
+            closeModal() {
+                this.$emit('display-metadata', false)
             }
         }
     }

@@ -24,6 +24,7 @@ import edu.unc.lib.boxc.web.common.services.AccessCopiesService;
 import edu.unc.lib.boxc.web.common.services.FindingAidUrlService;
 import edu.unc.lib.boxc.web.common.services.XmlDocumentFilteringService;
 import edu.unc.lib.boxc.web.common.utils.ModsUtil;
+import edu.unc.lib.boxc.web.common.utils.SerializationUtil;
 import edu.unc.lib.boxc.web.common.view.XSLViewResolver;
 import org.jdom2.Document;
 import org.jdom2.JDOMException;
@@ -55,6 +56,7 @@ import static edu.unc.lib.boxc.common.xml.SecureXMLFactory.createSAXBuilder;
 import static edu.unc.lib.boxc.search.api.FacetConstants.MARKED_FOR_DELETION;
 import static edu.unc.lib.boxc.web.common.services.AccessCopiesService.AUDIO_MIMETYPE_REGEX;
 import static edu.unc.lib.boxc.web.common.services.AccessCopiesService.PDF_MIMETYPE_REGEX;
+import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 /**
  * Controller which retrieves data necessary for populating the full record page, retrieving supplemental information
@@ -258,6 +260,109 @@ public class FullRecordController extends AbstractErrorHandlingSearchController 
 
         model.addAttribute("pageSubtitle", briefObject.getTitle());
         return "fullRecord";
+    }
+
+    /**
+     * JSON representation of full record
+     * Can remove the non-JSON version of the full record once all JSP files are ported over
+     * @param pidString
+     * @return
+     */
+    @GetMapping(path = "/{pid}/json", produces = APPLICATION_JSON_VALUE)
+    public @ResponseBody String handleRequest(@PathVariable("pid")String pidString) {
+        PID pid = PIDs.get(pidString);
+
+        AccessGroupSet principals = getAgentPrincipals().getPrincipals();
+        aclService.assertHasAccess("Insufficient permissions to access full record for " + pidString,
+                pid, principals, Permission.viewMetadata);
+
+        // Retrieve the object's record from Solr
+        SimpleIdRequest idRequest = new SimpleIdRequest(pid, principals);
+        ContentObjectRecord briefObject = queryLayer.getObjectById(idRequest);
+
+        if (briefObject == null) {
+            throw new NotFoundException("No record found for " + pid.getId());
+        }
+
+        // Get additional information depending on the type of object since the user has access
+        String resourceType = briefObject.getResourceType();
+        if (!ResourceType.File.nameEquals(resourceType)) {
+            briefObject.getCountMap().put("child", childrenCountService.getChildrenCount(briefObject, principals));
+        }
+
+        HashMap<String, Object> recordProperties = new HashMap<>();
+        recordProperties.put("briefObject", briefObject);
+
+        // Get parent id
+        if (ResourceType.File.nameEquals(resourceType)) {
+            String[] ancestors = briefObject.getAncestorIds().split("/");
+            recordProperties.put("containingWorkUUID", ancestors[ancestors.length - 1]);
+        }
+
+        if (ResourceType.Folder.nameEquals(resourceType) ||
+                ResourceType.File.nameEquals(resourceType) ||
+                ResourceType.Work.nameEquals(resourceType) ||
+                ResourceType.Collection.nameEquals(resourceType)) {
+            String collectionId = collectionIdService.getCollectionId(briefObject);
+            String faUrl = findingAidUrlService.getFindingAidUrl(collectionId);
+            recordProperties.put("collectionId", collectionId);
+            recordProperties.put("findingAidUrl", faUrl);
+
+            // Get digital exhibits found on a collection
+            Map<String, String> exhibitList = getExhibitList(briefObject, principals);
+            if (exhibitList != null) {
+                recordProperties.put("exhibits", exhibitList);
+            }
+        }
+
+        if (ResourceType.File.nameEquals(briefObject.getResourceType()) ||
+                ResourceType.Work.nameEquals(briefObject.getResourceType())) {
+            List<ContentObjectRecord> neighbors = neighborService.getNeighboringItems(briefObject,
+                    searchSettings.maxNeighborResults, principals);
+            accessCopiesService.populateThumbnailIds(neighbors, principals, true);
+            recordProperties.put("neighborList", neighbors);
+        }
+
+        if (ResourceType.Work.nameEquals(briefObject.getResourceType())) {
+            String viewerType = null;
+            String viewerPid = null;
+            boolean imageViewerNeeded = accessCopiesService.hasViewableFiles(briefObject, principals);
+            if (imageViewerNeeded) {
+                viewerType = "uv";
+            } else {
+                // Check for PDF to display
+                viewerPid = accessCopiesService.getDatastreamPid(briefObject, principals, PDF_MIMETYPE_REGEX);
+                if (viewerPid != null) {
+                    viewerType = "pdf";
+                } else {
+                    // Check for viewable audio file
+                    viewerPid = accessCopiesService.getDatastreamPid(briefObject, principals, AUDIO_MIMETYPE_REGEX);
+                    if (viewerPid != null) {
+                        viewerType = "audio";
+                    }
+                }
+            }
+
+            recordProperties.put("viewerType", viewerType);
+            recordProperties.put("viewerPid", viewerPid);
+
+            // Get the file to download
+            String dataFileUrl = accessCopiesService.getDownloadUrl(briefObject, principals);
+            recordProperties.put("dataFileUrl", dataFileUrl);
+        }
+
+        accessCopiesService.populateThumbnailId(briefObject, principals, true);
+
+        List<String> objectStatus = briefObject.getStatus();
+        boolean isMarkedForDeletion = false;
+
+        if (objectStatus != null) {
+            isMarkedForDeletion = objectStatus.contains(MARKED_FOR_DELETION);
+        }
+        recordProperties.put("markedForDeletion", isMarkedForDeletion);
+        recordProperties.put("pageSubtitle", briefObject.getTitle());
+
+        return SerializationUtil.objectToJSON(recordProperties);
     }
 
     public void setXslViewResolver(XSLViewResolver xslViewResolver) {

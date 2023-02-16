@@ -19,6 +19,9 @@ export default {
             "subject": "Subject",
             "title": "Title"
         },
+        "breadcrumbs": {
+            "collections": "Collections"
+        },
         "display": {
             "collection": "Collection",
             "collection_number": "Collection Number",
@@ -29,8 +32,15 @@ export default {
             "clear": "Clear filters",
             "filter": "Filter results by..."
         },
+        "full_record": {
+            "additional_metadata": "View Additional Metadata",
+            "no_subjects": "There are no subjects listed for this record",
+            "read_more": "Read more",
+            "read_less": "Read less"
+        },
         "modal": {
-            "close": "Close"
+            "close": "Close",
+            "error": "Unable to retrieve metadata for this item"
         },
         "pagination": {
             "next": "Next",
