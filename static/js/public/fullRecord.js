@@ -149,7 +149,7 @@ define('fullRecord', ['module', 'jquery', 'JP2Viewer', 'StructureView', 'dataTab
 
 		$childFilesTable.DataTable({
 			ajax: {
-				url: '/listJson/' + $childFilesTable.attr('data-pid') + "?rows=2000",
+				url: '/listJson/' + $childFilesTable.attr('data-pid') + "?rows=10",
 				dataSrc: function(d) {
 					return d.metadata;
 				},
@@ -159,7 +159,9 @@ define('fullRecord', ['module', 'jquery', 'JP2Viewer', 'StructureView', 'dataTab
 					d.anywhere = d.search['value'];
 					d.length = 10;
 					d.rollup = false;
-					d.sort = sorts[d.order[0]['column'] - 1] + ',' + sortOrder[d.order[0]['dir']];
+					if (d.order[0] !== undefined) {
+						d.sort = sorts[d.order[0]['column'] - 1] + ',' + sortOrder[d.order[0]['dir']];
+					}
 				},
 				dataFilter: function(data){
 					let json = JSON.parse(data);
@@ -174,7 +176,7 @@ define('fullRecord', ['module', 'jquery', 'JP2Viewer', 'StructureView', 'dataTab
 			bLengthChange: false, // Remove option to show different number of results
 			columnDefs: column_defs,
 			language: { search: '', searchPlaceholder: 'Search within this work' },
-			order: [[1, 'asc']],
+			order: [], // do not set initial sort in case there is member order
 			rowCallback: function(row, data) {
 				if (showBadge(data).markDeleted) {
 					$(row).addClass('deleted');
