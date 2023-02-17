@@ -159,7 +159,9 @@ define('fullRecord', ['module', 'jquery', 'JP2Viewer', 'StructureView', 'dataTab
 					d.anywhere = d.search['value'];
 					d.length = 10;
 					d.rollup = false;
-					d.sort = sorts[d.order[0]['column'] - 1] + ',' + sortOrder[d.order[0]['dir']];
+					if (d.order[0] !== undefined) {
+						d.sort = sorts[d.order[0]['column'] - 1] + ',' + sortOrder[d.order[0]['dir']];
+					}
 				},
 				dataFilter: function(data){
 					let json = JSON.parse(data);
