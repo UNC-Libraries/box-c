@@ -174,7 +174,7 @@ define('fullRecord', ['module', 'jquery', 'JP2Viewer', 'StructureView', 'dataTab
 			bLengthChange: false, // Remove option to show different number of results
 			columnDefs: column_defs,
 			language: { search: '', searchPlaceholder: 'Search within this work' },
-			order: [[1, 'asc']],
+			order: [], // do not set initial sort in case there is member order
 			rowCallback: function(row, data) {
 				if (showBadge(data).markDeleted) {
 					$(row).addClass('deleted');
