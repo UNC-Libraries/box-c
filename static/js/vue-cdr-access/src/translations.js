@@ -1,5 +1,9 @@
 export default {
     "en": {
+        "access": {
+            "contact": "Contact Wilson Library for access",
+            "login": "Log in for access (UNC Onyen)"
+        },
         "adv_search": {
             "advanced": "Advanced Search",
             "anywhere": "Anywhere",
@@ -34,9 +38,14 @@ export default {
         },
         "full_record": {
             "additional_metadata": "View Additional Metadata",
+            "archival_collection_id": "Archival Collection ID",
+            "date_added": "Date Added",
+            "finding_aid": "Finding Aid",
             "no_subjects": "There are no subjects listed for this record",
             "read_more": "Read more",
-            "read_less": "Read less"
+            "read_less": "Read less",
+            "related_digital_exhibits": "Related Digital Exhibits",
+            "subjects": "Subjects"
         },
         "modal": {
             "close": "Close",

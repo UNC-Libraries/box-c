@@ -20,7 +20,8 @@ Displays the MODS descriptive record for an object inside of a modal
 
                             <div class="modal-body" id="mods_data_display">
                                 <slot name="body">
-                                    <div id="response-text" v-html="metadata"></div>
+                                    <img v-if="!hasLoaded" :src="nonVueStaticImageUrl('ajax-loader-lg.gif')" alt="data loading icon">
+                                    <div id="response-text" v-if="hasLoaded" v-html="metadata"></div>
                                 </slot>
                             </div>
                         </div>
@@ -33,6 +34,7 @@ Displays the MODS descriptive record for an object inside of a modal
 
 <script>
     import get from 'axios';
+    import imageUtils from '../mixins/imageUtils';
 
     export default {
         name: 'modalMetadata',
@@ -54,8 +56,11 @@ Displays the MODS descriptive record for an object inside of a modal
 
         emits: ['display-metadata'],
 
+        mixins: [imageUtils],
+
         data() {
             return {
+                hasLoaded: false,
                 metadata: ''
             };
         },
@@ -63,7 +68,6 @@ Displays the MODS descriptive record for an object inside of a modal
         watch: {
             openModal(display) {
                 if (display) {
-                    this.modalOpen = display;
                     if (this.metadata === '') {
                         this.loadMetadata();
                     }
@@ -75,14 +79,16 @@ Displays the MODS descriptive record for an object inside of a modal
             loadMetadata() {
                 get(`record/${this.uuid}/metadataView`).then((response) => {
                     this.metadata = response.data;
+                    this.hasLoaded = true;
                 }).catch((error) => {
                     console.log(error);
                     this.metadata = `<p>${this.$t('modal.error')}</p>`;
+                    this.hasLoaded = true;
                 });
             },
 
             closeModal() {
-                this.$emit('display-metadata', false)
+                this.$emit('display-metadata', false);
             }
         }
     }

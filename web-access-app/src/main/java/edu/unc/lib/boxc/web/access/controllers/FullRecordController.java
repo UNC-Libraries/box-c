@@ -292,6 +292,7 @@ public class FullRecordController extends AbstractErrorHandlingSearchController 
 
         HashMap<String, Object> recordProperties = new HashMap<>();
         recordProperties.put("briefObject", briefObject);
+        recordProperties.put("resourceType", resourceType);
 
         // Get parent id
         if (ResourceType.File.nameEquals(resourceType)) {

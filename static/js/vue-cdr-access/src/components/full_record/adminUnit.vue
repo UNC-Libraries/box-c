@@ -1,5 +1,5 @@
 <template>
-    <div v-if="hasLoaded" class="browse-header">
+    <div class="browse-header">
         <div class="columns">
             <div class="column">
                 <bread-crumbs :ignore-search-state="false"
@@ -10,11 +10,11 @@
         <div class="columns">
             <div class="column">
                 <h2 :class="isDeleted">
-                    <thumbnail :brief-object="recordData.briefObject"></thumbnail>
+                    <thumbnail :thumbnail-data="recordData"></thumbnail>
                     {{ recordData.briefObject.title }}
                 </h2>
                 <p>
-                    <strong>Subjects:</strong>
+                    <strong>{{ $t('full_record.subjects') }}:</strong>
                     <template v-if="hasSubjects">
                         {{ recordData.briefObject.subject.join(', ')}}
                     </template>
@@ -30,12 +30,11 @@
                 </template>
                 <p><a @click.prevent="metadataDisplay()" href="#">{{ $t('full_record.additional_metadata') }}</a></p>
             </div>
-            <modal-metadata :title="recordData.briefObject.title"
-                            :uuid="recordData.briefObject.id"
-                            :open-modal="displayMetadate"
-                            @display-metadata="hideMetadata"></modal-metadata>
         </div>
-
+        <modal-metadata :title="recordData.briefObject.title"
+                        :uuid="recordData.briefObject.id"
+                        :open-modal="displayMetadate"
+                        @display-metadata="hideMetadata"></modal-metadata>
     </div>
 </template>
 
@@ -43,75 +42,23 @@
 import breadCrumbs from '@/components/full_record/breadCrumbs.vue';
 import modalMetadata from '@/components/modalMetadata.vue';
 import thumbnail from '@/components/full_record/thumbnail.vue';
-import get from 'axios';
+import fullRecordUtils from '../../mixins/fullRecordUtils';
 
 export default {
     name: 'adminUnit',
 
+    mixins: [fullRecordUtils],
+
     components: { breadCrumbs, modalMetadata, thumbnail },
 
-    data() {
-        return {
-            displayMetadate: false,
-            hasLoaded: false,
-            recordData: {},
-            showFullAbstract: false
-        }
+    props: {
+        recordData: Object
     },
 
     computed: {
-        abstractLinkText() {
-            return this.showFullAbstract ? this.$t('full_record.read_less'): this.$t('full_record.read_more');
-        },
-
-        truncateAbstract() {
-            return this.recordData.briefObject.abstractText !== undefined &&
-                this.recordData.briefObject.abstractText.length > 350;
-        },
-
-        truncatedAbstractText() {
-            if (this.truncateAbstract && !this.showFullAbstract) {
-                return this.recordData.briefObject.abstractText.substring(0, 350);
-            }
-
-            return this.recordData.briefObject.abstractText;
-        },
-
-        isDeleted() {
-            if (this.recordData.markedForDeletion) {
-                return 'deleted';
-            }
-            return '';
-        },
-
         hasSubjects() {
             return this.recordData.briefObject.subject !== undefined && this.recordData.briefObject.subject.length > 0
         }
-    },
-
-    methods: {
-        getBriefObject() {
-            get(`${window.location.pathname}json`).then((response) => {
-                this.recordData = response.data;
-                this.hasLoaded = true;
-            }).catch(error => console.log(error));
-        },
-
-        abstractDisplay() {
-            this.showFullAbstract = !this.showFullAbstract;
-        },
-
-        metadataDisplay() {
-            this.displayMetadate = true;
-        },
-
-        hideMetadata(show) {
-            this.displayMetadate = show;
-        }
-    },
-
-    created() {
-        this.getBriefObject();
     }
 }
 </script>
