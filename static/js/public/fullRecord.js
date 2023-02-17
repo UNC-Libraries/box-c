@@ -149,7 +149,7 @@ define('fullRecord', ['module', 'jquery', 'JP2Viewer', 'StructureView', 'dataTab
 
 		$childFilesTable.DataTable({
 			ajax: {
-				url: '/listJson/' + $childFilesTable.attr('data-pid') + "?rows=2000",
+				url: '/listJson/' + $childFilesTable.attr('data-pid') + "?rows=10",
 				dataSrc: function(d) {
 					return d.metadata;
 				},
