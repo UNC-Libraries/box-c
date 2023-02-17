@@ -10,7 +10,7 @@ describe('cdrFooter.vue', () => {
     });
 
     it("verify Home url", () => {
-        const homeUrl = "https://dcr.lib.unc.edu/";
+        const homeUrl = window.location.hostname;
         const wrapper = shallowMount(cdrFooter);
         expect(wrapper.html()).toContain(homeUrl);
     });

@@ -1,9 +1,9 @@
 <template>
     <footer>
         <p class="footer-menu container">
-            <a href="https://dcr.lib.unc.edu/">Home</a> |
-            <a href="https://dcr.lib.unc.edu/collections">Browse Collections</a> |
-            <a href="https://dcr.lib.unc.edu/aboutRepository">About</a> |
+            <a :href="homeUrl">Home</a> |
+            <a href="/collections">Browse Collections</a> |
+            <a href="/aboutRepository">About</a> |
             <a href="https://library.unc.edu/wilson/contact/">Contact Us</a> |
             <a href="https://library.unc.edu">Library Home</a> |
             <a href="https://library.unc.edu/privacy-policy/">Privacy Policy</a> |
@@ -14,7 +14,13 @@
 
 <script>
 export default {
-    name: "cdrFooter"
+    name: "cdrFooter",
+    computed: {
+        homeUrl() {
+            let url = window.location.href;
+            return url.slice(0, url.lastIndexOf('/'));
+        }
+    }
 };
 </script>
 
