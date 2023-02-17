@@ -1,9 +1,9 @@
 import { shallowMount } from '@vue/test-utils';
-import cdrFooter from '@/components/cdrFooter.vue';
+import cdrFooter from '@/components/dcrFooter.vue';
 
-describe('cdrFooter.vue', () => {
+describe('dcrFooter.vue', () => {
 
-    it("loads the cdrFooter", () => {
+    it("loads the dcrFooter", () => {
         const wrapper = shallowMount(cdrFooter);
         wrapper.find('footer');
         expect(wrapper.find('footer').exists()).toBe(true);

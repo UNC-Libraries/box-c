@@ -14,7 +14,7 @@
 
 <script>
 export default {
-    name: "cdrFooter",
+    name: "dcrFooter",
     computed: {
         homeUrl() {
             let url = window.location.href;
