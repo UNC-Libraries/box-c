@@ -1,7 +1,7 @@
 <template>
-    <a :href="thumbUrl" :title="tooltip" :aria-label="ariaText" class="thumbnail" :class="imgClasses">
+    <a :href="currentPage" :title="tooltip" :aria-label="ariaText" class="thumbnail" :class="imgClasses">
         <div class="thumbnail-placeholder">
-            <span v-if="contentType !== ''" class="thumbnail-content-type">{{ contentType }}</span>
+            <span v-if="src === ''" class="thumbnail-content-type">{{ contentType }}</span>
         </div>
 
         <div v-if="src !== ''" class="thumbnail-preview">
@@ -18,7 +18,6 @@
 </template>
 
 <script>
-import isEmpty from "lodash.isempty";
 
 const types = ['AdminUnit', 'Collection', 'Folder', 'Work'];
 
@@ -26,6 +25,10 @@ export default {
     name: 'thumbnail',
 
     props: {
+        allowsFullAccess: {
+            type: Boolean,
+            default: false
+        },
         thumbnailData: {
             type: Object,
             default: {}
@@ -58,11 +61,11 @@ export default {
 
         imgClasses() {
             let class_list = [
-                `thumbnail-resource-type-${this.thumbnailData.resourceType.toLowerCase()}`,
                 `thumbnail-size-${this.size}`
             ];
             if (this.src === '') {
-                class_list.push('placeholder')
+                class_list.push('placeholder');
+                class_list.push(`thumbnail-resource-type-${this.placeholder}`);
             }
             if (this.thumbnailData.markedForDeletion) {
                 class_list.push('deleted');
@@ -75,12 +78,28 @@ export default {
         },
 
         contentType() {
-            return '';
+            const file_type = this.thumbnailData.briefObject.fileFormatCategory;
+            if (file_type === undefined || file_type.length === 0 || file_type[0] === 'unknown') {
+                return ''
+            }
+            return file_type[0];
+        },
+
+        placeholder() {
+            const type = this.thumbnailData.resourceType.toLowerCase();
+            if (type === 'adminunit' || type === 'work') {
+                return 'document';
+            }
+            return type;
+        },
+
+        currentPage() {
+            return window.location;
         },
 
         src() {
             if (this.thumbnailData.briefObject.thumbnailId !== undefined) {
-                return `https://${window.location.host}/services/api/thumb/${this.thumbnailData.briefObject.thumbnailId}/${this.size}`;
+                return `https://${this.currentPage.host}/services/api/thumb/${this.thumbnailData.briefObject.thumbnailId}/${this.size}`;
             }
 
             return '';
@@ -101,21 +120,7 @@ export default {
             }
 
             return '';
-        },
-
-        allowsFullAuthenticatedAccess() {
-            const group_roles = this.thumbnailData.briefObject.groupRoleMap;
-            if (group_roles === undefined || isEmpty(group_roles)) {
-                return false;
-            }
-
-            return Object.keys(group_roles).includes('authenticated') &&
-                group_roles.authenticated.includes('canViewOriginals');
         }
-    },
-
-    methods: {
-
     }
 }
 </script>

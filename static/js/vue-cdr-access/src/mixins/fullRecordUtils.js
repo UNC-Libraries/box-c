@@ -45,12 +45,17 @@ export default {
         },
 
         restrictedContent() {
-            return this.recordData.briefObject.restrictedContent;
+            const brief_object = this.recordData.briefObject;
+            if (brief_object === undefined || brief_object.roleGroup === undefined) {
+                return false;
+            }
+
+            return !brief_object.roleGroup.includes('canViewOriginals|everyone');
         },
 
         loginUrl() {
-            let current_page = window.location;
-            return encodeURIComponent(`https://${current_page.hostname}/Shibboleth.sso/Login?target=${current_page}`);
+            const current_page = window.location;
+            return `https://${current_page.host}/Shibboleth.sso/Login?target=${encodeURIComponent(current_page)}`;
         },
 
         allowsFullAuthenticatedAccess() {

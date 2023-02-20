@@ -10,7 +10,8 @@
         <div class="columns">
             <div class="column" :class="{restrictedContent: 'is-8'}">
                 <h2 :class="isDeleted">
-                    <thumbnail :thumbnail-data="recordData"></thumbnail>
+                    <thumbnail :thumbnail-data="recordData"
+                               :allows-full-access="allowsFullAuthenticatedAccess"></thumbnail>
                     {{ recordData.briefObject.title }}
                     <span class="item_container_count">{{ childCount }} {{ pluralizeItems }}</span>
                 </h2>
@@ -42,12 +43,12 @@
                     </template>
                 </p>
                 <p><a @click.prevent="metadataDisplay()" href="#">{{ $t('full_record.additional_metadata') }}</a></p>
-                <div v-if="restrictedContent" class="column is-narrow-desktop item-actions">
-                    <div class="restricted-access">
-                        <h2>This {{ recordData.briefObject.resourceType.toLowerCase() }} has restricted content</h2>
-                        <div v-if="allowsFullAuthenticatedAccess" class="actionlink"><a class="button" :href="loginUrl"><i class="fa fa-id-card"></i> {{ $t('access.login') }}</a></div>
-                        <div class="actionlink"><a class="button" href="https://library.unc.edu/wilson/contact/"><i class="fa fa-envelope"></i> {{ $t('access.contact') }}</a></div>
-                    </div>
+            </div>
+            <div v-if="restrictedContent" class="column is-narrow-desktop item-actions">
+                <div class="restricted-access">
+                    <h2>This {{ recordData.briefObject.resourceType.toLowerCase() }} has restricted content</h2>
+                    <div v-if="allowsFullAuthenticatedAccess" class="actionlink"><a class="button" :href="loginUrl"><i class="fa fa-id-card"></i> {{ $t('access.login') }}</a></div>
+                    <div class="actionlink"><a class="button" href="https://library.unc.edu/wilson/contact/"><i class="fa fa-envelope"></i> {{ $t('access.contact') }}</a></div>
                 </div>
             </div>
         </div>
@@ -74,12 +75,6 @@ export default {
 
     props: {
         recordData: Object
-    },
-
-    computed: {
-        restrictedContent() {
-            return this.recordData.restricted;
-        },
     },
 
     methods: {
