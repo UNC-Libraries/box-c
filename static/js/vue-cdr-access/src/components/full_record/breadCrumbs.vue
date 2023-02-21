@@ -14,12 +14,14 @@
                     </template>
                 </template>
                 <template v-else>
-                    <template v-if="index === 3">
+                    <template v-if="index === 3 && !showFullBreadCrumb">
                         <span class="quote">&raquo;</span>
-                        <a :class="{hidden: showFullBreadCrumb}" @click.prevent="showFullCrumb" href="#">&hellip;</a>
+                        <a id="expand-breadcrumb" :class="{hidden: showFullBreadCrumb}" @click.prevent="showFullCrumb" href="#">&hellip;</a>
                     </template>
-                    <span v-else class="full-crumb quote" :class="{hidden: !showFullBreadCrumb}">&raquo;</span>
-                    <a :href="shiftFacetUrl(path.pid)" class="full-crumb" :class="{hidden: !showFullBreadCrumb}">{{ path.name }}</a>
+                    <template v-else>
+                        <span class="full-crumb quote" :class="{hidden: !showFullBreadCrumb}">&raquo;</span>
+                        <a :href="shiftFacetUrl(path.pid)" class="full-crumb" :class="{hidden: !showFullBreadCrumb}">{{ path.name }}</a>
+                    </template>
                 </template>
             </template>
         </span>
@@ -35,7 +37,7 @@ export default {
             type: Boolean,
             default: false
         },
-        objectPath: Array,
+        objectPath: Object,
         queryPath: {
             type: String,
             default: 'record'

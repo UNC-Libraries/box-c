@@ -1,11 +1,20 @@
+import breadCrumbs from '@/components/full_record/breadCrumbs.vue';
+import modalMetadata from '@/components/modalMetadata.vue';
+import thumbnail from '@/components/full_record/thumbnail.vue';
 import isEmpty from 'lodash.isempty';
 
 export default {
+    components: { breadCrumbs, modalMetadata, thumbnail },
+
     data() {
         return {
             displayMetadate: false,
             showFullAbstract: false
         }
+    },
+
+    props: {
+        recordData: Object
     },
 
     computed: {
@@ -61,7 +70,7 @@ export default {
         allowsFullAuthenticatedAccess() {
             const group_roles = this.recordData.briefObject.groupRoleMap;
             if (group_roles === undefined || isEmpty(group_roles)) {
-                return false;
+                return true;
             }
 
             return Object.keys(group_roles).includes('authenticated') &&

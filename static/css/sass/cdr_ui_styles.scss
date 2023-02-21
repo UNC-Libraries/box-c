@@ -640,6 +640,27 @@ img.data-thumb {
   }
 }
 
+/*@TODO remove breadcrumb css one full record page is converted to Vue */
+#full_record_trail {
+  border: 1px solid #E0E0E0;
+  background-color: #E0E0E0;
+  border-radius: 5px;
+  font-size: 18px;
+  line-height: 1.2;
+  margin: 0 auto 25px auto;
+  padding: 20px;
+  text-indent: 0;
+  width: 100%;
+
+  a {
+    color: $container-blue;
+  }
+}
+
+#expand-breadcrumb {
+  font-size: 24px;
+}
+
 .actionlink {
   a {
     color: white;

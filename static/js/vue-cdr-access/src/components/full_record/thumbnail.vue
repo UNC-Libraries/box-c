@@ -8,7 +8,7 @@
             <img :src="src" :alt="thumbnailData.briefObject.title"/>
         </div>
 
-        <div v-if="badgeIcon !== ''" class="thumbnail-badge thumbnail-badge-${badgeIcon}" :class="badgeIcon">
+        <div v-if="badgeIcon !== ''" class="thumbnail-badge">
             <div class="fa-stack">
                 <i class="fas fa-circle fa-stack-2x background"></i>
                 <i class="fas fa-stack-1x foreground" :class="badgeIcon"></i>
@@ -27,7 +27,7 @@ export default {
     props: {
         allowsFullAccess: {
             type: Boolean,
-            default: false
+            default: true
         },
         thumbnailData: {
             type: Object,
@@ -52,7 +52,7 @@ export default {
             if (this.hasThumbnail && this.thumbnailData.markedForDeletion) {
                 return 'fa-trash';
             } else if (this.hasThumbnail && this.thumbnailData.resourceType !== 'AdminUnit'
-                && !this.allowsFullAuthenticatedAccess) {
+                && !this.allowsFullAccess) {
                 return 'fa-lock';
             } else {
                 return '';

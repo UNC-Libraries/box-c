@@ -29,12 +29,10 @@
                     </template>
                     <template v-else>Doesn't have a finding aid</template>
                 </p>
-                <template v-if="fieldExists(recordData.briefObject.abstractText)">
-                    <template v-if="truncateAbstract">
-                        <p>{{ truncatedAbstractText }}... <a class="abstract-text" @click.prevent="abstractDisplay()"
-                                                             href="#">{{ abstractLinkText }}</a></p>
-                    </template>
-                    <template v-else><p>{{ recordData.briefObject.abstractText }}</p></template>
+                <template v-if="recordData.briefObject.abstractText">
+                    <p v-if="truncateAbstract" class="abstract">{{ truncatedAbstractText }}... <a class="abstract-text" @click.prevent="abstractDisplay()"
+                                                                                                  href="#">{{ abstractLinkText }}</a></p>
+                    <p v-else class="abstract">{{ recordData.briefObject.abstractText }}</p>
                 </template>
                 <p v-if="fieldExists(recordData.exhibits)">
                     <strong>{{ $t('full_record.related_digital_exhibits') }}: </strong>
@@ -47,8 +45,8 @@
             <div v-if="restrictedContent" class="column is-narrow-desktop item-actions">
                 <div class="restricted-access">
                     <h2>This {{ recordData.briefObject.resourceType.toLowerCase() }} has restricted content</h2>
-                    <div v-if="allowsFullAuthenticatedAccess" class="actionlink"><a class="button" :href="loginUrl"><i class="fa fa-id-card"></i> {{ $t('access.login') }}</a></div>
-                    <div class="actionlink"><a class="button" href="https://library.unc.edu/wilson/contact/"><i class="fa fa-envelope"></i> {{ $t('access.contact') }}</a></div>
+                    <div v-if="allowsFullAuthenticatedAccess" class="actionlink"><a class="button login-link" :href="loginUrl"><i class="fa fa-id-card"></i> {{ $t('access.login') }}</a></div>
+                    <div class="actionlink"><a class="button contact" href="https://library.unc.edu/wilson/contact/"><i class="fa fa-envelope"></i> {{ $t('access.contact') }}</a></div>
                 </div>
             </div>
         </div>
@@ -60,22 +58,13 @@
 </template>
 
 <script>
-import breadCrumbs from '@/components/full_record/breadCrumbs.vue';
-import modalMetadata from '@/components/modalMetadata.vue';
-import thumbnail from '@/components/full_record/thumbnail.vue';
 import fullRecordUtils from '../../mixins/fullRecordUtils';
-import {format} from "date-fns";
+import {format} from 'date-fns';
 
 export default {
     name: 'collectionFolder',
 
     mixins: [fullRecordUtils],
-
-    components: { breadCrumbs, modalMetadata, thumbnail },
-
-    props: {
-        recordData: Object
-    },
 
     methods: {
         fieldExists(value) {

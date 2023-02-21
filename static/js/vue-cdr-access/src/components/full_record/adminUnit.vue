@@ -24,12 +24,11 @@
                     </template>
                 </p>
                 <template v-if="recordData.briefObject.abstractText">
-                    <template v-if="truncateAbstract">
-                        <p>{{ truncatedAbstractText }}... <a class="abstract-text" @click.prevent="abstractDisplay()"
+                        <p v-if="truncateAbstract" class="abstract">{{ truncatedAbstractText }}... <a class="abstract-text" @click.prevent="abstractDisplay()"
                                                              href="#">{{ abstractLinkText }}</a></p>
-                    </template>
+                        <p v-else class="abstract">{{ recordData.briefObject.abstractText }}</p>
                 </template>
-                <p><a @click.prevent="metadataDisplay()" href="#">{{ $t('full_record.additional_metadata') }}</a></p>
+                <p><a @click.prevent="metadataDisplay()" class="metadata-link" href="#">{{ $t('full_record.additional_metadata') }}</a></p>
             </div>
         </div>
         <modal-metadata :title="recordData.briefObject.title"
@@ -40,21 +39,12 @@
 </template>
 
 <script>
-import breadCrumbs from '@/components/full_record/breadCrumbs.vue';
-import modalMetadata from '@/components/modalMetadata.vue';
-import thumbnail from '@/components/full_record/thumbnail.vue';
 import fullRecordUtils from '../../mixins/fullRecordUtils';
 
 export default {
     name: 'adminUnit',
 
     mixins: [fullRecordUtils],
-
-    components: { breadCrumbs, modalMetadata, thumbnail },
-
-    props: {
-        recordData: Object
-    },
 
     computed: {
         hasSubjects() {
