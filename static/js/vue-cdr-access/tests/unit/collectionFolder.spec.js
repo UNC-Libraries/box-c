@@ -35,13 +35,6 @@ const recordData = {
                 'Described'
             ],
             dateUpdated: 1676571326304,
-            datastream: [
-                'thumbnail_small|image/png|fc77a9be-b49d-4f4e-b656-1644c9e964fc.png|png|6768|||',
-                'thumbnail_large|image/png|fc77a9be-b49d-4f4e-b656-1644c9e964fc.png|png|23535|||',
-                'event_log|application/n-triples|event_log.nt|nt|5633|urn:sha1:afc8ffad2c76ceef21e6256a6c3d0b046a5ce5ce||',
-                'md_descriptive_history|text/xml|||527|urn:sha1:563b7938cd45259679eb183ae2219820e287ccd8||',
-                'md_descriptive|text/xml|md_descriptive.xml|xml|235|urn:sha1:bbf36218009159506760b51dd30467839d454277||'
-            ],
             ancestorPath: [
                 '1,collections',
                 '2,353ee09f-a4ed-461e-a436-18a1bee77b01'
@@ -64,93 +57,6 @@ const recordData = {
             ],
             resourceType: 'Collection'
         },
-        ancestorPathFacet: {
-            fieldName: 'ANCESTOR_PATH',
-            count: 0,
-            displayValue: '353ee09f-a4ed-461e-a436-18a1bee77b01',
-            facetNodes: [
-                {
-                    searchValue: '1,collections',
-                    searchKey: 'collections',
-                    facetValue: '1,collections',
-                    tier: 1,
-                    limitToValue: '1,collections!2',
-                    displayValue: 'collections',
-                    pivotValue: '2,'
-                },
-                {
-                    searchValue: '2,353ee09f-a4ed-461e-a436-18a1bee77b01',
-                    searchKey: '353ee09f-a4ed-461e-a436-18a1bee77b01',
-                    facetValue: '2,353ee09f-a4ed-461e-a436-18a1bee77b01',
-                    tier: 2,
-                    limitToValue: '2,353ee09f-a4ed-461e-a436-18a1bee77b01!3',
-                    displayValue: '353ee09f-a4ed-461e-a436-18a1bee77b01',
-                    pivotValue: '3,'
-                }
-            ],
-            searchKey: '353ee09f-a4ed-461e-a436-18a1bee77b01',
-            searchValue: '2,353ee09f-a4ed-461e-a436-18a1bee77b01',
-            limitToValue: '2,353ee09f-a4ed-461e-a436-18a1bee77b01!3',
-            highestTier: 2,
-            highestTierNode: {
-                searchValue: '2,353ee09f-a4ed-461e-a436-18a1bee77b01',
-                searchKey: '353ee09f-a4ed-461e-a436-18a1bee77b01',
-                facetValue: '2,353ee09f-a4ed-461e-a436-18a1bee77b01',
-                tier: 2,
-                limitToValue: '2,353ee09f-a4ed-461e-a436-18a1bee77b01!3',
-                displayValue: '353ee09f-a4ed-461e-a436-18a1bee77b01',
-                pivotValue: '3,'
-            },
-            pivotValue: '3,'
-        },
-        path: {
-            fieldName: 'ANCESTOR_PATH',
-            count: 0,
-            displayValue: 'fc77a9be-b49d-4f4e-b656-1644c9e964fc',
-            facetNodes: [
-                {
-                    searchValue: '1,collections',
-                    searchKey: 'collections',
-                    facetValue: '1,collections',
-                    tier: 1,
-                    limitToValue: '1,collections!2',
-                    displayValue: 'collections',
-                    pivotValue: '2,'
-                },
-                {
-                    searchValue: '2,353ee09f-a4ed-461e-a436-18a1bee77b01',
-                    searchKey: '353ee09f-a4ed-461e-a436-18a1bee77b01',
-                    facetValue: '2,353ee09f-a4ed-461e-a436-18a1bee77b01',
-                    tier: 2,
-                    limitToValue: '2,353ee09f-a4ed-461e-a436-18a1bee77b01!3',
-                    displayValue: '353ee09f-a4ed-461e-a436-18a1bee77b01',
-                    pivotValue: '3,'
-                },
-                {
-                    searchValue: '3,fc77a9be-b49d-4f4e-b656-1644c9e964fc',
-                    searchKey: 'fc77a9be-b49d-4f4e-b656-1644c9e964fc',
-                    facetValue: '3,fc77a9be-b49d-4f4e-b656-1644c9e964fc',
-                    tier: 3,
-                    limitToValue: '3,fc77a9be-b49d-4f4e-b656-1644c9e964fc!4',
-                    displayValue: 'fc77a9be-b49d-4f4e-b656-1644c9e964fc',
-                    pivotValue: '4,'
-                }
-            ],
-            searchKey: 'fc77a9be-b49d-4f4e-b656-1644c9e964fc',
-            searchValue: '3,fc77a9be-b49d-4f4e-b656-1644c9e964fc',
-            limitToValue: '3,fc77a9be-b49d-4f4e-b656-1644c9e964fc!4',
-            highestTier: 3,
-            highestTierNode: {
-                searchValue: '3,fc77a9be-b49d-4f4e-b656-1644c9e964fc',
-                searchKey: 'fc77a9be-b49d-4f4e-b656-1644c9e964fc',
-                facetValue: '3,fc77a9be-b49d-4f4e-b656-1644c9e964fc',
-                tier: 3,
-                limitToValue: '3,fc77a9be-b49d-4f4e-b656-1644c9e964fc!4',
-                displayValue: 'fc77a9be-b49d-4f4e-b656-1644c9e964fc',
-                pivotValue: '4,'
-            },
-            pivotValue: '4,'
-        },
         objectPath: {
             entries: [
                 {
@@ -171,63 +77,6 @@ const recordData = {
             ]
         },
         ancestorNames: '/Content Collections Root/testAdminUnit/testCollection',
-        datastreamObjects: [
-            {
-                owner: '',
-                name: 'thumbnail_small',
-                filesize: 6768,
-                mimetype: 'image/png',
-                filename: 'fc77a9be-b49d-4f4e-b656-1644c9e964fc.png',
-                extension: 'png',
-                checksum: '',
-                extent: '',
-                datastreamIdentifier: '/thumbnail_small'
-            },
-            {
-                owner: '',
-                name: 'thumbnail_large',
-                filesize: 23535,
-                mimetype: 'image/png',
-                filename: 'fc77a9be-b49d-4f4e-b656-1644c9e964fc.png',
-                extension: 'png',
-                checksum: '',
-                extent: '',
-                datastreamIdentifier: '/thumbnail_large'
-            },
-            {
-                owner: '',
-                name: 'event_log',
-                filesize: 5633,
-                mimetype: 'application/n-triples',
-                filename: 'event_log.nt',
-                extension: 'nt',
-                checksum: 'urn:sha1:afc8ffad2c76ceef21e6256a6c3d0b046a5ce5ce',
-                extent: '',
-                datastreamIdentifier: '/event_log'
-            },
-            {
-                owner: '',
-                name: 'md_descriptive_history',
-                filesize: 527,
-                mimetype: 'text/xml',
-                filename: '',
-                extension: '',
-                checksum: 'urn:sha1:563b7938cd45259679eb183ae2219820e287ccd8',
-                extent: '',
-                datastreamIdentifier: '/md_descriptive_history'
-            },
-            {
-                owner: '',
-                name: 'md_descriptive',
-                filesize: 235,
-                mimetype: 'text/xml',
-                filename: 'md_descriptive.xml',
-                extension: 'xml',
-                checksum: 'urn:sha1:bbf36218009159506760b51dd30467839d454277',
-                extent: '',
-                datastreamIdentifier: '/md_descriptive'
-            }
-        ],
         groupRoleMap: {
             authenticated: [
                 'canViewOriginals'
@@ -244,13 +93,6 @@ const recordData = {
         ancestorPath: [
             '1,collections',
             '2,353ee09f-a4ed-461e-a436-18a1bee77b01'
-        ],
-        datastream: [
-            'thumbnail_small|image/png|fc77a9be-b49d-4f4e-b656-1644c9e964fc.png|png|6768|||',
-            'thumbnail_large|image/png|fc77a9be-b49d-4f4e-b656-1644c9e964fc.png|png|23535|||',
-            'event_log|application/n-triples|event_log.nt|nt|5633|urn:sha1:afc8ffad2c76ceef21e6256a6c3d0b046a5ce5ce||',
-            'md_descriptive_history|text/xml|||527|urn:sha1:563b7938cd45259679eb183ae2219820e287ccd8||',
-            'md_descriptive|text/xml|md_descriptive.xml|xml|235|urn:sha1:bbf36218009159506760b51dd30467839d454277||'
         ],
         roleGroup: [
             'canViewOriginals|authenticated',

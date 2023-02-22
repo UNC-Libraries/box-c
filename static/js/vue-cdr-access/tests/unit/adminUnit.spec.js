@@ -80,11 +80,6 @@ const recordData = {
         ancestorPath: [
             '1,collections'
         ],
-        datastream: [
-            'event_log|application/n-triples|event_log.nt|nt|1431|urn:sha1:be44fc23ba7da95ba3ad67121144efc8224448ad||',
-            'md_descriptive_history|text/xml|||1308|urn:sha1:5e7361d5029aefbae7216c8d5cf5fd1a29a8feca||',
-            'md_descriptive|text/xml|md_descriptive.xml|xml|3736|urn:sha1:ca835bc6b3d6bd7dc445336a94d862c6be6fdc28||'
-        ],
         roleGroup: [
             ''
         ],
