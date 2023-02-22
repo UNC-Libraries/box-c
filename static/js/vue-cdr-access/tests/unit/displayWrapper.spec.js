@@ -48,6 +48,89 @@ const response = {
     facetFields: [],
     filterParameters: {}
 };
+const briefObjectData = {
+    pageSubtitle: 'testCollection',
+    briefObject: {
+        pid: {
+            id: 'fc77a9be-b49d-4f4e-b656-1644c9e964fc',
+            qualifier: 'content',
+            qualifiedId: 'content/fc77a9be-b49d-4f4e-b656-1644c9e964fc',
+            componentId: 'fc77a9be-b49d-4f4e-b656-1644c9e964fc',
+            repositoryUri: 'http://localhost:8181/fcrepo/rest/content/fc/77/a9/be/fc77a9be-b49d-4f4e-b656-1644c9e964fc',
+            repositoryPath: 'http://localhost:8181/fcrepo/rest/content/fc/77/a9/be/fc77a9be-b49d-4f4e-b656-1644c9e964fc',
+            pid: 'uuid:fc77a9be-b49d-4f4e-b656-1644c9e964fc',
+            uri: 'http://localhost:8181/fcrepo/rest/content/fc/77/a9/be/fc77a9be-b49d-4f4e-b656-1644c9e964fc',
+            uuid: 'fc77a9be-b49d-4f4e-b656-1644c9e964fc'
+        },
+        objectPath: {
+            entries: [
+                {
+                    pid: 'collections',
+                    name: 'Content Collections Root',
+                    container: true
+                },
+                {
+                    pid: '353ee09f-a4ed-461e-a436-18a1bee77b01',
+                    name: 'testAdminUnit',
+                    container: true
+                },
+                {
+                    pid: 'fc77a9be-b49d-4f4e-b656-1644c9e964fc',
+                    name: 'testCollection',
+                    container: true
+                }
+            ]
+        },
+        ancestorNames: '/Content Collections Root/testAdminUnit/testCollection',
+        groupRoleMap: {
+            authenticated: [
+                'canViewOriginals'
+            ],
+            everyone: [
+                'canViewMetadata'
+            ]
+        },
+        countMap: {
+            child: 1
+        },
+        thumbnailId: 'fc77a9be-b49d-4f4e-b656-1644c9e964fc',
+        idWithoutPrefix: 'fc77a9be-b49d-4f4e-b656-1644c9e964fc',
+        ancestorPath: [
+            '1,collections',
+            '2,353ee09f-a4ed-461e-a436-18a1bee77b01'
+        ],
+        roleGroup: [
+            'canViewOriginals|authenticated',
+            'canViewMetadata|everyone'
+        ],
+        id: 'fc77a9be-b49d-4f4e-b656-1644c9e964fc',
+        keyword: [
+            'fc77a9be-b49d-4f4e-b656-1644c9e964fc'
+        ],
+        timestamp: 1676916737707,
+        status: [
+            'Patron Settings'
+        ],
+        title: 'testCollection',
+        resourceType: 'Collection',
+        rollup: 'fc77a9be-b49d-4f4e-b656-1644c9e964fc',
+        ancestorIds: '/collections/353ee09f-a4ed-461e-a436-18a1bee77b01/fc77a9be-b49d-4f4e-b656-1644c9e964fc',
+        readGroup: [
+            'authenticated',
+            'everyone'
+        ],
+        adminGroup: [
+            ''
+        ],
+        contentStatus: [
+            'Described'
+        ],
+        dateAdded: 1673963549596,
+        parentUnit: 'testAdminUnit|353ee09f-a4ed-461e-a436-18a1bee77b01'
+    },
+    markedForDeletion: false,
+    resourceType: 'Collection'
+}
 
 describe('displayWrapper.vue', () => {
     const i18n = createI18n({
@@ -74,10 +157,7 @@ describe('displayWrapper.vue', () => {
     function mountApp(data_overrides = {}) {
         const default_data = {
             container_name: '',
-            container_metadata: {},
-            is_admin_unit: false,
-            is_collection: true,
-            is_folder: false,
+            container_info: briefObjectData,
             record_count: 0,
             record_list: [],
             uuid: '0410e5c1-a036-4b7c-8d7d-63bfda2d6a36',
@@ -92,14 +172,14 @@ describe('displayWrapper.vue', () => {
                 return data;
             }
         });
-    };
+    }
 
     function stubQueryResponse(url_pattern, response) {
         moxios.stubRequest(new RegExp(url_pattern), {
             status: 200,
             response: JSON.stringify(response)
         });
-    };
+    }
 
     it("retrieves data", (done) => {
         stubQueryResponse(`listJson/${response.container.id}?.+`, response);
@@ -119,8 +199,9 @@ describe('displayWrapper.vue', () => {
         await router.push('/record/73bc003c-9603-4cd9-8a65-93a22520ef6a/?works_only=true');
         mountApp();
 
+        wrapper.vm.getBriefObject();
         wrapper.vm.updateUrl();
-        wrapper.vm.retrieveData();
+        wrapper.vm.retrieveSearchResults();
         await flushPromises();
         expect(wrapper.vm.search_method).toEqual('searchJson');
         expect(wrapper.vm.$router.currentRoute.value.query.types).toEqual('Work,File');
@@ -130,8 +211,9 @@ describe('displayWrapper.vue', () => {
         await router.push('/record/73bc003c-9603-4cd9-8a65-93a22520ef6a/?works_only=false');
         mountApp();
 
+        wrapper.vm.getBriefObject();
         wrapper.vm.updateUrl();
-        wrapper.vm.retrieveData();
+        wrapper.vm.retrieveSearchResults();
         await flushPromises();
         expect(wrapper.vm.search_method).toEqual('listJson');
         expect(wrapper.vm.$router.currentRoute.value.query.types).toEqual('Work,Folder,Collection,File');
@@ -143,8 +225,9 @@ describe('displayWrapper.vue', () => {
             filter_parameters: { "anywhere" : "search query"}
         });
 
+        wrapper.vm.getBriefObject();
         wrapper.vm.updateUrl();
-        wrapper.vm.retrieveData();
+        wrapper.vm.retrieveSearchResults();
         await flushPromises();
         expect(wrapper.vm.search_method).toEqual('searchJson');
         expect(wrapper.vm.$router.currentRoute.value.query.types).toEqual('Work,Folder,Collection,File');
@@ -156,8 +239,9 @@ describe('displayWrapper.vue', () => {
             filter_parameters: { "subject" : "subj value" }
         });
 
+        wrapper.vm.getBriefObject();
         wrapper.vm.updateUrl();
-        wrapper.vm.retrieveData();
+        wrapper.vm.retrieveSearchResults();
         await flushPromises();
         expect(wrapper.vm.search_method).toEqual('searchJson');
         expect(wrapper.vm.$router.currentRoute.value.query.types).toEqual('Work,Folder,Collection,File');
@@ -167,13 +251,30 @@ describe('displayWrapper.vue', () => {
         stubQueryResponse(`listJson/73bc003c-9603-4cd9-8a65-93a22520ef6a?.+`, response);
         await router.push('/record/73bc003c-9603-4cd9-8a65-93a22520ef6a?works_only=false');
         mountApp({
-            is_admin_unit: true,
-            is_collection: false,
-            is_folder: false
+            container_info: {
+                resourceType: 'AdminUnit',
+                briefObject: {
+                    objectPath: {
+                        entries: [
+                            {
+                                pid: 'collections',
+                                name: 'Content Collections Root',
+                                container: true
+                            },
+                            {
+                                pid: '353ee09f-a4ed-461e-a436-18a1bee77b01',
+                                name: 'testAdminUnit',
+                                container: true
+                            }
+                        ]
+                    }
+                }
+            }
         });
 
+        wrapper.vm.getBriefObject();
         wrapper.vm.updateUrl();
-        wrapper.vm.retrieveData();
+        wrapper.vm.retrieveSearchResults();
         await flushPromises();
         expect(wrapper.vm.search_method).toEqual('listJson');
         expect(wrapper.vm.$router.currentRoute.value.query.types).toEqual('Work,Folder,Collection,File');
@@ -184,9 +285,28 @@ describe('displayWrapper.vue', () => {
     it("updates the url when work type changes", async () => {
         await router.push('/record/73bc003c-9603-4cd9-8a65-93a22520ef6a?browse_type=gallery-display');
         mountApp({
-            is_admin_unit: false,
-            is_collection: true,
-            is_folder: false
+            container_info: {
+                resourceType: 'Collection',
+                objectPath: {
+                    entries: [
+                        {
+                            pid: 'collections',
+                            name: 'Content Collections Root',
+                            container: true
+                        },
+                        {
+                            pid: '353ee09f-a4ed-461e-a436-18a1bee77b01',
+                            name: 'testAdminUnit',
+                            container: true
+                        },
+                        {
+                            pid: 'fc77a9be-b49d-4f4e-b656-1644c9e964fc',
+                            name: 'testCollection',
+                            container: true
+                        }
+                    ]
+                }
+            }
         });
 
         wrapper.vm.updateUrl();
@@ -199,8 +319,9 @@ describe('displayWrapper.vue', () => {
         await router.push('/record/73bc003c-9603-4cd9-8a65-93a22520ef6a?works_only=true');
         mountApp();
 
+        wrapper.vm.getBriefObject();
         wrapper.vm.updateUrl();
-        wrapper.vm.retrieveData();
+        wrapper.vm.retrieveSearchResults();
         await flushPromises();
         let works_only = wrapper.find('.container-note');
         expect(works_only.exists()).toBe(true);
@@ -210,8 +331,9 @@ describe('displayWrapper.vue', () => {
     it("does not display a 'works only' option if the 'works only' box is not checked and no records are works", async () => {
         await router.push('/record/73bc003c-9603-4cd9-8a65-93a22520ef6a?works_only=false');
         mountApp();
+        // wrapper.vm.getBriefObject();
         // wrapper.vm.updateUrl();
-        // wrapper.vm.retrieveData();
+        // wrapper.vm.retrieveSearchResults();
         // await flushPromises();
         let works_only = wrapper.find('.container-note');
         expect(works_only.exists()).toBe(false)
@@ -221,7 +343,27 @@ describe('displayWrapper.vue', () => {
         document.body.innerHTML = document.body.innerHTML + '<div id="is-admin-unit"></div>';
         stubQueryResponse(`listJson/73bc003c-9603-4cd9-8a65-93a22520ef6a?.+&facetSelect=collection%2Cformat%2Cgenre%2Clanguage%2Csubject%2Clocation%2CcreatedYear%2CcreatorContributor%2Cpublisher&.*`, response);
         await router.push('/record/73bc003c-9603-4cd9-8a65-93a22520ef6a');
-        mountApp();
+        mountApp({
+            container_info: {
+                resourceType: 'AdminUnit',
+                briefObject: {
+                    objectPath: {
+                        entries: [
+                            {
+                                pid: 'collections',
+                                name: 'Content Collections Root',
+                                container: true
+                            },
+                            {
+                                pid: '353ee09f-a4ed-461e-a436-18a1bee77b01',
+                                name: 'testAdminUnit',
+                                container: true
+                            }
+                        ]
+                    }
+                }
+            }
+        });
         await flushPromises();
 
         // Verify that there are still other facets, but that the unit facet has been removed
@@ -265,7 +407,27 @@ describe('displayWrapper.vue', () => {
         document.body.innerHTML = document.body.innerHTML + '<div id="is-admin-unit"></div>';
         stubQueryResponse(`listJson/73bc003c-9603-4cd9-8a65-93a22520ef6a?.+&facetSelect=collection%2Cformat%2Cgenre%2Clanguage%2Csubject%2Clocation%2CcreatedYear%2CcreatorContributor%2Cpublisher&.*`, response);
         await router.push('/record/73bc003c-9603-4cd9-8a65-93a22520ef6a/?browse_type=list-display');
-        mountApp();
+        mountApp({
+            container_info: {
+                resourceType: 'AdminUnit',
+                briefObject: {
+                    objectPath: {
+                        entries: [
+                            {
+                                pid: 'collections',
+                                name: 'Content Collections Root',
+                                container: true
+                            },
+                            {
+                                pid: '353ee09f-a4ed-461e-a436-18a1bee77b01',
+                                name: 'testAdminUnit',
+                                container: true
+                            }
+                        ]
+                    }
+                }
+            }
+        });
         await flushPromises();
 
         // Verify that there are still other facets, but that the unit facet has been removed

@@ -7,9 +7,9 @@ Top level component for full record pages with searching/browsing, including Adm
             <img :src="nonVueStaticImageUrl('ajax-loader-lg.gif')" alt="data loading icon">
         </div>
         <div v-if="!is_page_loading">
-            <admin-unit v-if="brief_object.resourceType === 'AdminUnit'" :record-data="brief_object"></admin-unit>
-            <collection-folder v-if="brief_object.resourceType === 'Collection' || brief_object.resourceType === 'Folder'"
-                               :record-data="brief_object"></collection-folder>
+            <admin-unit v-if="container_info.resourceType === 'AdminUnit'" :record-data="container_info"></admin-unit>
+            <collection-folder v-if="container_info.resourceType === 'Collection' || container_info.resourceType === 'Folder'"
+                               :record-data="container_info"></collection-folder>
 
             <div class="columns is-tablet">
                 <div class="column is-6">
@@ -97,7 +97,7 @@ Top level component for full record pages with searching/browsing, including Adm
 
         data() {
             return {
-                brief_object: {},
+                container_info: {},
                 container_name: '',
                 container_metadata: {},
                 default_work_type: 'Work',
@@ -146,7 +146,7 @@ Top level component for full record pages with searching/browsing, including Adm
                 }
 
                 await get(`${link}json`).then((response) => {
-                    this.brief_object = response.data;
+                    this.container_info = response.data;
                 }).catch(error => console.log(error));
             },
 
@@ -186,10 +186,10 @@ Top level component for full record pages with searching/browsing, including Adm
              */
             adjustFacetsForRetrieval() {
                 let facets_to_remove = [];
-                if (this.brief_object.resourceType === 'AdminUnit') {
+                if (this.container_info.resourceType === 'AdminUnit') {
                     facets_to_remove = FACETS_REMOVE_ADMIN_UNIT;
-                } else if (this.brief_object.resourceType === 'Collection' ||
-                    this.brief_object.resourceType === 'Folder') {
+                } else if (this.container_info.resourceType === 'Collection' ||
+                    this.container_info.resourceType === 'Folder') {
                     facets_to_remove = FACETS_REMOVE_COLLECTION_AND_CHILDREN;
                 }
                 this.$store.commit('removePossibleFacetFields', facets_to_remove);
