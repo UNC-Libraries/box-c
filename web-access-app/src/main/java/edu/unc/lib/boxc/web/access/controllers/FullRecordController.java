@@ -68,6 +68,8 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 @RequestMapping("/record")
 public class FullRecordController extends AbstractErrorHandlingSearchController {
     private static final Logger LOG = LoggerFactory.getLogger(FullRecordController.class);
+    private final String VIEWER_PID = "viewerPid";
+    private final String VIEWER_TYPE = "viewerType";
 
     @Autowired
     private AccessControlService aclService;
@@ -323,8 +325,8 @@ public class FullRecordController extends AbstractErrorHandlingSearchController 
 
         if (ResourceType.Work.nameEquals(resourceType)) {
             HashMap<String, Object> viewerProperties = getViewerProperties(briefObject, principals);
-            recordProperties.put("viewerType", viewerProperties.get("viewerType"));
-            recordProperties.put("viewerPid", viewerProperties.get("viewerPid"));
+            recordProperties.put(VIEWER_TYPE, viewerProperties.get(VIEWER_TYPE));
+            recordProperties.put(VIEWER_PID, viewerProperties.get(VIEWER_PID));
 
             // Get the file to download
             String dataFileUrl = accessCopiesService.getDownloadUrl(briefObject, principals);
@@ -371,8 +373,8 @@ public class FullRecordController extends AbstractErrorHandlingSearchController 
         }
 
         var viewerProperties = new HashMap<String, Object>();
-        viewerProperties.put("viewerType", viewerType);
-        viewerProperties.put("viewerPid", viewerPid);
+        viewerProperties.put(VIEWER_TYPE, viewerType);
+        viewerProperties.put(VIEWER_PID, viewerPid);
 
         return viewerProperties;
     }
