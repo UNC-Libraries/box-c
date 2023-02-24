@@ -290,7 +290,7 @@ public class FullRecordController extends AbstractErrorHandlingSearchController 
             briefObject.getCountMap().put("child", childrenCountService.getChildrenCount(briefObject, principals));
         }
 
-        HashMap<String, Object> recordProperties = new HashMap<>();
+        var recordProperties = new HashMap<String, Object>();
         recordProperties.put("briefObject", briefObject);
         recordProperties.put("resourceType", resourceType);
 
@@ -300,10 +300,7 @@ public class FullRecordController extends AbstractErrorHandlingSearchController 
             recordProperties.put("containingWorkUUID", ancestors[ancestors.length - 1]);
         }
 
-        if (ResourceType.Folder.nameEquals(resourceType) ||
-                ResourceType.File.nameEquals(resourceType) ||
-                ResourceType.Work.nameEquals(resourceType) ||
-                ResourceType.Collection.nameEquals(resourceType)) {
+        if (!ResourceType.AdminUnit.nameEquals(resourceType)) {
             String collectionId = collectionIdService.getCollectionId(briefObject);
             String faUrl = findingAidUrlService.getFindingAidUrl(collectionId);
             recordProperties.put("collectionId", collectionId);
@@ -316,36 +313,18 @@ public class FullRecordController extends AbstractErrorHandlingSearchController 
             }
         }
 
-        if (ResourceType.File.nameEquals(briefObject.getResourceType()) ||
-                ResourceType.Work.nameEquals(briefObject.getResourceType())) {
+        if (ResourceType.File.nameEquals(resourceType) ||
+                ResourceType.Work.nameEquals(resourceType)) {
             List<ContentObjectRecord> neighbors = neighborService.getNeighboringItems(briefObject,
                     searchSettings.maxNeighborResults, principals);
             accessCopiesService.populateThumbnailIds(neighbors, principals, true);
             recordProperties.put("neighborList", neighbors);
         }
 
-        if (ResourceType.Work.nameEquals(briefObject.getResourceType())) {
-            String viewerType = null;
-            String viewerPid = null;
-            boolean imageViewerNeeded = accessCopiesService.hasViewableFiles(briefObject, principals);
-            if (imageViewerNeeded) {
-                viewerType = "uv";
-            } else {
-                // Check for PDF to display
-                viewerPid = accessCopiesService.getDatastreamPid(briefObject, principals, PDF_MIMETYPE_REGEX);
-                if (viewerPid != null) {
-                    viewerType = "pdf";
-                } else {
-                    // Check for viewable audio file
-                    viewerPid = accessCopiesService.getDatastreamPid(briefObject, principals, AUDIO_MIMETYPE_REGEX);
-                    if (viewerPid != null) {
-                        viewerType = "audio";
-                    }
-                }
-            }
-
-            recordProperties.put("viewerType", viewerType);
-            recordProperties.put("viewerPid", viewerPid);
+        if (ResourceType.Work.nameEquals(resourceType)) {
+            HashMap<String, Object> viewerProperties = getViewerProperties(briefObject, principals);
+            recordProperties.put("viewerType", viewerProperties.get("viewerType"));
+            recordProperties.put("viewerPid", viewerProperties.get("viewerPid"));
 
             // Get the file to download
             String dataFileUrl = accessCopiesService.getDownloadUrl(briefObject, principals);
@@ -370,6 +349,33 @@ public class FullRecordController extends AbstractErrorHandlingSearchController 
         this.xslViewResolver = xslViewResolver;
     }
 
+    private HashMap<String, Object> getViewerProperties(ContentObjectRecord briefObject, AccessGroupSet principals) {
+        String viewerType = null;
+        String viewerPid = null;
+
+        boolean imageViewerNeeded = accessCopiesService.hasViewableFiles(briefObject, principals);
+        if (imageViewerNeeded) {
+            viewerType = "uv";
+        } else {
+            // Check for PDF to display
+            viewerPid = accessCopiesService.getDatastreamPid(briefObject, principals, PDF_MIMETYPE_REGEX);
+            if (viewerPid != null) {
+                viewerType = "pdf";
+            } else {
+                // Check for viewable audio file
+                viewerPid = accessCopiesService.getDatastreamPid(briefObject, principals, AUDIO_MIMETYPE_REGEX);
+                if (viewerPid != null) {
+                    viewerType = "audio";
+                }
+            }
+        }
+
+        var viewerProperties = new HashMap<String, Object>();
+        viewerProperties.put("viewerType", viewerType);
+        viewerProperties.put("viewerPid", viewerPid);
+
+        return viewerProperties;
+    }
     /**
      * Get list of digital exhibits associated with an object
      * @param briefObject

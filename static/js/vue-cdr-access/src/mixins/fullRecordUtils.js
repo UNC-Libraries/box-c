@@ -42,15 +42,13 @@ export default {
             return '';
         },
 
-        childCount() {
+        displayChildCount() {
             if (this.recordData.briefObject.countMap === undefined) {
-                return 0;
+                return `0 ${this.$t('full_record.items')}`;
             }
-            return this.recordData.briefObject.countMap.child;
-        },
-
-        pluralizeItems() {
-            return this.childCount === 1 ? 'item' : 'items';
+            const childCount = this.recordData.briefObject.countMap.child;
+            const pluralizeItems = childCount === 1 ? this.$t('full_record.item') : this.$t('full_record.items');
+            return `${childCount} ${pluralizeItems}`;
         },
 
         restrictedContent() {
@@ -70,7 +68,7 @@ export default {
         allowsFullAuthenticatedAccess() {
             const group_roles = this.recordData.briefObject.groupRoleMap;
             if (group_roles === undefined || isEmpty(group_roles)) {
-                return true;
+                return false;
             }
 
             return Object.keys(group_roles).includes('authenticated') &&
@@ -79,15 +77,15 @@ export default {
     },
 
     methods: {
-        abstractDisplay() {
+        toggleAbstractDisplay() {
             this.showFullAbstract = !this.showFullAbstract;
         },
 
-        metadataDisplay() {
+        displayMetadata() {
             this.displayMetadate = true;
         },
 
-        hideMetadata(show) {
+        toggleMetadata(show) {
             this.displayMetadate = show;
         }
     }

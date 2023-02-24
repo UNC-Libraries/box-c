@@ -16,11 +16,11 @@
                 <template v-else>
                     <template v-if="index === 3 && !showFullBreadCrumb">
                         <span class="quote">&raquo;</span>
-                        <a id="expand-breadcrumb" :class="{hidden: showFullBreadCrumb}" @click.prevent="showFullCrumb" href="#">&hellip;</a>
+                        <a id="expand-breadcrumb" @click.prevent="showFullCrumb" href="#">&hellip;</a>
                     </template>
                     <template v-else>
-                        <span class="full-crumb quote" :class="{hidden: !showFullBreadCrumb}">&raquo;</span>
-                        <a :href="shiftFacetUrl(path.pid)" class="full-crumb" :class="{hidden: !showFullBreadCrumb}">{{ path.name }}</a>
+                        <span class="full-crumb quote">&raquo;</span>
+                        <a :href="shiftFacetUrl(path.pid)" class="full-crumb">{{ path.name }}</a>
                     </template>
                 </template>
             </template>
@@ -33,10 +33,6 @@ export default {
     name: 'breadCrumbs',
 
     props: {
-        ignoreSearchState: {
-            type: Boolean,
-            default: false
-        },
         objectPath: Object,
         queryPath: {
             type: String,
@@ -56,7 +52,7 @@ export default {
         },
 
         shiftFacetUrlBase() {
-            if (this.searchStateUrl === '' || this.ignoreSearchState) {
+            if (this.searchStateUrl === '') {
                 return '';
             }
             return `/${this.searchStateUrl}`;

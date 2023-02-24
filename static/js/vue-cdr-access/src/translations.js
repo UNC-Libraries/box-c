@@ -41,6 +41,8 @@ export default {
             "archival_collection_id": "Archival Collection ID",
             "date_added": "Date Added",
             "finding_aid": "Finding Aid",
+            "item": "item",
+            "items": "items",
             "no_subjects": "There are no subjects listed for this record",
             "read_more": "Read more",
             "read_less": "Read less",

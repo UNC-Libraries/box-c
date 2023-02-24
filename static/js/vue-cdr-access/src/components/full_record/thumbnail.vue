@@ -44,14 +44,10 @@ export default {
             return `Visit ${this.thumbnailData.briefObject.title}`
         },
 
-        hasThumbnail() {
-            return Object.keys(this.thumbnailData).length > 0;
-        },
-
         badgeIcon() {
-            if (this.hasThumbnail && this.thumbnailData.markedForDeletion) {
+            if (this.thumbnailData.markedForDeletion) {
                 return 'fa-trash';
-            } else if (this.hasThumbnail && this.thumbnailData.resourceType !== 'AdminUnit'
+            } else if (this.thumbnailData.resourceType !== 'AdminUnit'
                 && !this.allowsFullAccess) {
                 return 'fa-lock';
             } else {

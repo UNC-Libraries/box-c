@@ -27,7 +27,7 @@ Top level component for full record pages with searching/browsing, including Adm
             </div>
             <clear-filters :filter-parameters="filter_parameters"></clear-filters>
 
-            <div v-if="showWidget && !is_page_loading" class="columns">
+            <div v-if="showWidget" class="columns">
                 <div class="facet-list column is-one-quarter facets-border">
                     <facets :facet-list="facet_list" :min-created-year="minimumCreatedYear"></facets>
                 </div>
@@ -148,10 +148,6 @@ Top level component for full record pages with searching/browsing, including Adm
                 await get(`${link}json`).then((response) => {
                     this.container_info = response.data;
                 }).catch(error => console.log(error));
-            },
-
-            recordType(type) {
-                return type === 'AdminUnit'
             },
 
             updateUrl() {

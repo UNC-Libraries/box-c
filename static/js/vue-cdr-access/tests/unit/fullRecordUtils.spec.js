@@ -210,26 +210,15 @@ describe('fullrecordUtils', () => {
         expect(wrapper.vm.isDeleted).toEqual('deleted');
     });
 
-    it('determines the number of child records', async () => {
-        expect(wrapper.vm.childCount).toEqual(2);
-
-        let updatedChildren = cloneDeep(recordData);
-        updatedChildren.briefObject.countMap = undefined;
-        await wrapper.setProps({
-            recordData: updatedChildren
-        });
-        expect(wrapper.vm.childCount).toEqual(0);
-    });
-
-    it('pluralizes items text', async () => {
-        expect(wrapper.vm.pluralizeItems).toEqual('items');
+    it('sets display text for child count', async () => {
+        expect(wrapper.vm.displayChildCount).toEqual('2 items');
 
         let updatedChildren = cloneDeep(recordData);
         updatedChildren.briefObject.countMap.child = 1;
         await wrapper.setProps({
             recordData: updatedChildren
         });
-        expect(wrapper.vm.pluralizeItems).toEqual('item');
+        expect(wrapper.vm.displayChildCount).toEqual('1 item');
     });
 
     it('checks for restricted content', async () => {
@@ -250,7 +239,8 @@ describe('fullrecordUtils', () => {
     })
 
     it('allows full access for authenticated user', async () => {
-        expect(wrapper.vm.allowsFullAuthenticatedAccess).toBe(true);
+        // No access rights set
+        expect(wrapper.vm.allowsFullAuthenticatedAccess).toBe(false);
 
         let canViewMetadata = cloneDeep(recordData);
         canViewMetadata.briefObject.groupRoleMap = {

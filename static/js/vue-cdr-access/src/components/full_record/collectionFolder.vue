@@ -2,8 +2,7 @@
     <div class="browse-header">
         <div class="columns">
             <div class="column">
-                <bread-crumbs :ignore-search-state="false"
-                              :object-path="recordData.briefObject.objectPath">
+                <bread-crumbs :object-path="recordData.briefObject.objectPath">
                 </bread-crumbs>
             </div>
         </div>
@@ -13,7 +12,7 @@
                     <thumbnail :thumbnail-data="recordData"
                                :allows-full-access="allowsFullAuthenticatedAccess"></thumbnail>
                     {{ recordData.briefObject.title }}
-                    <span class="item_container_count">{{ childCount }} {{ pluralizeItems }}</span>
+                    <span class="item_container_count">{{ displayChildCount }}</span>
                 </h2>
                 <p v-if="fieldExists(recordData.briefObject.dateAdded)">
                     <strong>{{ $t('full_record.date_added') }}: </strong>
@@ -30,7 +29,7 @@
                     <template v-else>Doesn't have a finding aid</template>
                 </p>
                 <template v-if="recordData.briefObject.abstractText">
-                    <p v-if="truncateAbstract" class="abstract">{{ truncatedAbstractText }}... <a class="abstract-text" @click.prevent="abstractDisplay()"
+                    <p v-if="truncateAbstract" class="abstract">{{ truncatedAbstractText }}... <a class="abstract-text" @click.prevent="toggleAbstractDisplay()"
                                                                                                   href="#">{{ abstractLinkText }}</a></p>
                     <p v-else class="abstract">{{ recordData.briefObject.abstractText }}</p>
                 </template>
@@ -40,7 +39,7 @@
                         <a :href="exhibit.value">{{ exhibit.key }}</a><template v-if="index < recordData.exhibits.length - 1">;</template>
                     </template>
                 </p>
-                <p><a @click.prevent="metadataDisplay()" href="#">{{ $t('full_record.additional_metadata') }}</a></p>
+                <p><a @click.prevent="displayMetadata()" href="#">{{ $t('full_record.additional_metadata') }}</a></p>
             </div>
             <div v-if="restrictedContent" class="column is-narrow-desktop item-actions">
                 <div class="restricted-access">
@@ -53,7 +52,7 @@
         <modal-metadata :title="recordData.briefObject.title"
                         :uuid="recordData.briefObject.id"
                         :open-modal="displayMetadate"
-                        @display-metadata="hideMetadata"></modal-metadata>
+                        @display-metadata="toggleMetadata"></modal-metadata>
     </div>
 </template>
 
@@ -77,14 +76,3 @@ export default {
     }
 }
 </script>
-
-<style scoped lang="scss">
-h2 {
-    font-size: 2.5rem;
-    line-height: 1;
-    margin: 0 20px 20px 25px;
-    padding-left: 0;
-    font-weight: bold;
-    color: #0A5274;
-}
-</style>
