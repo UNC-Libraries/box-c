@@ -146,9 +146,9 @@ describe('fullrecordUtils', () => {
     });
 
     it('displays full metadata on click', async () => {
-        expect(wrapper.vm.displayMetadate).toBe(false);
+        expect(wrapper.vm.showMetadata).toBe(false);
         await wrapper.find('.metadata-link').trigger('click');
-        expect(wrapper.vm.displayMetadate).toBe(true);
+        expect(wrapper.vm.showMetadata).toBe(true);
     });
 
     it('shows full text for short abstracts', () => {

@@ -8,8 +8,8 @@ export default {
 
     data() {
         return {
-            displayMetadata: false,
-            showFullAbstract: false
+            showFullAbstract: false,
+            showMetadata: false
         }
     },
 
@@ -82,11 +82,11 @@ export default {
         },
 
         displayMetadata() {
-            this.displayMetadata = true;
+            this.showMetadata = true;
         },
 
         toggleMetadata(show) {
-            this.displayMetadata = show;
+            this.showMetadata = show;
         }
     }
 }
