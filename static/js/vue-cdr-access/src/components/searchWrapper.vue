@@ -42,6 +42,7 @@ Top level component wrapper for search pages
     import facets from "@/components/facets.vue";
     import listDisplay from "@/components/listDisplay.vue";
     import pagination from "@/components/pagination.vue";
+    import imageUtils from "../mixins/imageUtils";
     import routeUtils from "../mixins/routeUtils";
     import get from 'axios';
     import cloneDeep from 'lodash.clonedeep';
@@ -51,7 +52,7 @@ Top level component wrapper for search pages
 
         components: {browseSort, clearFilters, facets, listDisplay, pagination},
 
-        mixins: [routeUtils],
+        mixins: [imageUtils, routeUtils],
 
         data() {
             return {

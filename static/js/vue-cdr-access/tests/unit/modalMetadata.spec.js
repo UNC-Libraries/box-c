@@ -35,6 +35,7 @@ describe('modalMetadata.vue', () => {
                 plugins: [router, i18n]
             },
             props: {
+                openModal: true,
                 uuid: '',
                 title: title
             }
@@ -47,9 +48,7 @@ describe('modalMetadata.vue', () => {
         router = null;
     });
 
-    it("fetches the record metadata when the metadata button is clicked", () => {
-        // Mock event
-        const event = { preventDefault: jest.fn() };
+    it("fetches the record metadata when the modal is opened", () => {
         moxios.install();
         moxios.stubRequest(`record/${updated_uuid}/metadataView`, {
             status: 200,
@@ -57,9 +56,6 @@ describe('modalMetadata.vue', () => {
                 data: response
             }
         });
-
-        // link is outside of Vue, so just trigger it
-        wrapper.vm.showMetadata(event);
 
         moxios.wait(() => {
             expect(wrapper.vm.metadata).toEqual(response);
@@ -69,15 +65,14 @@ describe('modalMetadata.vue', () => {
         moxios.uninstall();
     });
 
-    it("is hidden by default", () => {
-        expect(wrapper.find('.meta-modal').element).not.toContain('.modal-container');
+    it("is hidden by default", async () => {
+        await wrapper.setProps({
+            openModal: false
+        });
+        expect(wrapper.find('.meta-modal').exists()).toBe(false);
     });
 
     it("displays a record title when triggered", async () => {
-        await wrapper.setData({
-            showModal: true
-        });
-
         const record = wrapper.find('h3');
         expect(record.text()).toBe(title);
     });
@@ -85,10 +80,15 @@ describe('modalMetadata.vue', () => {
     it("displays metadata when triggered", async () => {
         await wrapper.setData({
             metadata: response,
-            showModal: true
+            hasLoaded: true
         });
 
         const record = wrapper.find('table');
         expect(record.html()).toBe(wrapper.vm.metadata);
+    });
+
+    it("emits an action to close the modal", async () => {
+        await wrapper.find('button').trigger('click');
+        expect(wrapper.emitted()['display-metadata'][0][0]).toBe(false);
     });
 });

@@ -20,3 +20,12 @@ a.button.is-link.disabled {
 a.button.is-link span {
     padding-right: 10px;
 }
+
+.browse-header h2 {
+    font-size: 2.5rem;
+    line-height: 1;
+    margin: 0 20px 20px 25px;
+    padding-left: 0;
+    font-weight: bold;
+    color: #0A5274;
+}
