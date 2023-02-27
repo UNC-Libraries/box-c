@@ -324,7 +324,7 @@ public class FullRecordController extends AbstractErrorHandlingSearchController 
         }
 
         if (ResourceType.Work.nameEquals(resourceType)) {
-            HashMap<String, Object> viewerProperties = getViewerProperties(briefObject, principals);
+            var viewerProperties = getViewerProperties(briefObject, principals);
             recordProperties.put(VIEWER_TYPE, viewerProperties.get(VIEWER_TYPE));
             recordProperties.put(VIEWER_PID, viewerProperties.get(VIEWER_PID));
 
@@ -351,7 +351,7 @@ public class FullRecordController extends AbstractErrorHandlingSearchController 
         this.xslViewResolver = xslViewResolver;
     }
 
-    private HashMap<String, Object> getViewerProperties(ContentObjectRecord briefObject, AccessGroupSet principals) {
+    private Map<String, Object> getViewerProperties(ContentObjectRecord briefObject, AccessGroupSet principals) {
         String viewerType = null;
         String viewerPid = null;
 

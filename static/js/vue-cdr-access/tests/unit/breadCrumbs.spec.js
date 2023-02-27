@@ -55,7 +55,7 @@ const longObjectPath = {
     ]
 }
 
-let wrapper, router, windowSpy;
+let wrapper, router;
 
 describe('breadCrumbs.vue', () => {
     const i18n = createI18n({
@@ -104,29 +104,5 @@ describe('breadCrumbs.vue', () => {
         await wrapper.setProps({ objectPath: longObjectPath });
         await wrapper.find('#expand-breadcrumb').trigger('click');
         expect(wrapper.find('#full_record_trail').text()).toEqual('Collections»testAdminUnit»testFolder»testFolder2»testFolder3»testWork');
-    });
-
-    it('adds the current search state, if present', async () => {
-        windowSpy = jest.spyOn(window, 'location', 'get');
-        windowSpy.mockImplementation(() => ({
-            search: '?anywhere='
-        }));
-
-        await wrapper.setProps({ objectPath: longObjectPath });
-        const crumbs = wrapper.findAll('.quote + a');
-        expect(crumbs[1].attributes('href')).toEqual(expect.stringContaining('?anywhere='));
-        windowSpy.mockRestore();
-    });
-
-    it('does not add a current search state, if search state is absent', async () => {
-        windowSpy = jest.spyOn(window, 'location', 'get');
-        windowSpy.mockImplementation(() => ({
-            search: ''
-        }));
-
-        await wrapper.setProps({ objectPath: longObjectPath });
-        const crumbs = wrapper.findAll('.quote + a');
-        expect(crumbs[1].attributes('href')).toEqual(expect.not.stringContaining('?anywhere='));
-        windowSpy.mockRestore();
     });
 });

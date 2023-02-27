@@ -32,7 +32,7 @@
         </div>
         <modal-metadata :title="recordData.briefObject.title"
                         :uuid="recordData.briefObject.id"
-                        :open-modal="displayMetadate"
+                        :open-modal="displayMetadata"
                         @display-metadata="toggleMetadata"></modal-metadata>
     </div>
 </template>

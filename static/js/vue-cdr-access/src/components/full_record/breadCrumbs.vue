@@ -49,23 +49,12 @@ export default {
     computed: {
         breadcrumbSize() {
             return this.objectPath.entries.length;
-        },
-
-        shiftFacetUrlBase() {
-            if (this.searchStateUrl === '') {
-                return '';
-            }
-            return `/${this.searchStateUrl}`;
-        },
-
-        searchStateUrl() {
-            return window.location.search;
         }
     },
 
     methods: {
         shiftFacetUrl(pid) {
-            return `${this.queryPath}/${pid}${this.shiftFacetUrlBase}`;
+            return `${this.queryPath}/${pid}`;
         },
 
         showFullCrumb() {
