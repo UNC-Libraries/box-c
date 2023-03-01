@@ -40,19 +40,15 @@ export default {
         },
 
         getUsername() {
-            let address = window.location.search;
-            let parameterList = new URLSearchParams(address);
-            if (parameterList.get("username") !== undefined && parameterList.get("username") !== '') {
+            const username = document.getElementById("pagewrap").dataset.username;
+            if (username !== null) {
                 return true;
             }
+            return false;
         },
 
         adminAccess() {
-            let address = window.location.search;
-            let parameterList = new URLSearchParams(address);
-            if (parameterList.get("accessLevel") === "admin") {
-                return true;
-            }
+            return document.getElementById("pagewrap").dataset.admin;
         }
     }
 }
