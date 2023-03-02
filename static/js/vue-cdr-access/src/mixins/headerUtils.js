@@ -1,8 +1,4 @@
-import fullRecordUtils from "./fullRecordUtils";
-
 export default {
-    mixins: [fullRecordUtils],
-
     computed: {
         adminUrl() {
             const current_page = window.location;
@@ -15,18 +11,29 @@ export default {
         },
 
         jumptoAdminUrl() {
+            //TODO: jumptoAdmin urls
+            // <c:if test="${sessionScope.accessLevel != null && sessionScope.accessLevel.viewAdmin}">
+            //     <c:choose>
+            //         <c:when test="${not empty resultResponse && not empty resultResponse.selectedContainer}">
+            //             <s:eval var="jumpToAdmin" expression=
+            //                 "T(edu.unc.lib.boxc.common.util.URIUtil).join(adminBaseUrl, 'list', resultResponse.selectedContainer.id)"/>
+            //         </c:when>
+            //         <c:when test="${not empty briefObject && briefObject.resourceType == 'File'}">
+            //             <s:eval var="jumpToAdmin" expression=
+            //                 "T(edu.unc.lib.boxc.common.util.URIUtil).join(adminBaseUrl, 'list', briefObject.ancestorPathFacet.searchKey)"/>
+            //         </c:when>
+            //         <c:when test="${not empty briefObject}">
+            //             <s:eval var="jumpToAdmin" expression=
+            //                 "T(edu.unc.lib.boxc.common.util.URIUtil).join(adminBaseUrl, 'list', briefObject.id)"/>
+            //         </c:when>
+            //         <c:otherwise>
+            //             <c:set var="jumpToAdmin" value="${adminBaseUrl}"/>
+            //         </c:otherwise>
+            //     </c:choose>
+            //     <a href="${jumpToAdmin}" className="navbar-item" target="_blank">Admin</a>
+            // </c:if>
             const current_page = window.location;
-            // <c:when test="${not empty resultResponse && not empty resultResponse.selectedContainer}">
-            //     <s:eval var="jumpToAdmin" expression=
-            //         "T(edu.unc.lib.boxc.common.util.URIUtil).join(adminBaseUrl, 'list', resultResponse.selectedContainer.id)" />
-            // </c:when>
-            if (this.recordData.briefObject != null && this.recordData.briefObject.resourceType == 'File') {
-                return `https://${current_page.host}/admin/list/${this.recordData.briefObject.ancestorPathFacet.searchKey}`
-            } else if (this.recordData.briefObject != null) {
-                return `https://${current_page.host}/admin/list/${this.recordData.briefObject.id}`
-            } else {
-                return `https://${current_page.host}/admin/`
-            }
+            return `https://${current_page.host}/admin/`;
         },
 
         logoutUrl() {
