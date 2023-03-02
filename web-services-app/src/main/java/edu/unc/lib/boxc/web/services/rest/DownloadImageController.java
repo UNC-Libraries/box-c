@@ -27,6 +27,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.Objects;
 
 import static edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore.getAgentPrincipals;
@@ -40,6 +41,7 @@ public class DownloadImageController {
     private static final Logger log = LoggerFactory.getLogger(EditThumbnailController.class);
     @Autowired
     private AccessControlService aclService;
+    @Autowired
     private DownloadImageService downloadImageService;
 
     @RequestMapping("/downloadImage/{pid}/{size}")
@@ -53,16 +55,21 @@ public class DownloadImageController {
         aclService.assertHasAccess("Insufficient permissions to download access copy for " + pidString,
                 pid, principals, Permission.viewAccessCopies);
 
-        if (Objects.equals(size, "full")) {
+        String validatedSize = downloadImageService.getSize(pidString, size);
+
+        if (Objects.equals(validatedSize, "full")) {
             aclService.assertHasAccess("Insufficient permissions to download full size copy for " + pidString,
                     pid, principals, Permission.viewOriginal);
         }
 
         try {
-            return downloadImageService.streamImage(pidString, size, principals, response);
+            return downloadImageService.streamImage(pidString, validatedSize, response);
         } catch (FileNotFoundException e) {
-            log.error("Error streaming access copy image for {}", pidString, e);
+            log.error("Error streaming access copy image for {} at size {}", pidString, validatedSize, e);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
+        return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
 
     @ResponseStatus(value = HttpStatus.FORBIDDEN)
