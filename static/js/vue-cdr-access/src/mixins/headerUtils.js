@@ -1,9 +1,4 @@
 export default {
-    props: {
-        searchResults: Object,
-        recordData: Object
-    },
-
     computed: {
         adminUrl() {
             const current_page = window.location;
@@ -16,19 +11,14 @@ export default {
         },
 
         jumpToAdminUrl() {
+            const current_page = window.location.href;
             const admin_base = `https://${window.location.host}/admin/`;
-            const container_id = this.searchResults.container_metadata.id;
-            const search_key = this.recordData.briefObject.ancestorPathFacet.searchKey;
-            const object_id = this.recordData.briefObject.id;
-            if (this.searchResults.container_metadata !== null) {
-                return `https://${admin_base}/list/${container_id}`;
-            } else if (this.recordData.briefObject.resourceType === 'File') {
-                return `https://${admin_base}/list/${search_key}`;
-            } else if (this.recordData.briefObject !== null) {
-                return `https://${admin_base}/list/${object_id}`;
-            } else {
-                return admin_base;
+            if ((current_page).includes('record')) {
+                let split_url = current_page.split('/');
+                let id = split_url[4];
+                return `https://${admin_base}list/${id}`;
             }
+            return admin_base;
         },
 
         logoutUrl() {
