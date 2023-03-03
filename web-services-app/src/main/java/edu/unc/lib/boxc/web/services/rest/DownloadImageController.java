@@ -8,7 +8,10 @@ import edu.unc.lib.boxc.auth.api.services.AccessControlService;
 import edu.unc.lib.boxc.model.api.exceptions.NotFoundException;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
+import edu.unc.lib.boxc.search.api.requests.SimpleIdRequest;
+import edu.unc.lib.boxc.search.solr.services.SolrSearchService;
 import edu.unc.lib.boxc.web.common.exceptions.ResourceNotFoundException;
+import edu.unc.lib.boxc.web.common.services.SolrQueryLayerService;
 import edu.unc.lib.boxc.web.services.processing.DownloadImageService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,47 +41,36 @@ import static edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore.getAgentPr
  */
 @Controller
 public class DownloadImageController {
-    private static final Logger log = LoggerFactory.getLogger(EditThumbnailController.class);
+    private static final Logger log = LoggerFactory.getLogger(DownloadImageController.class);
     @Autowired
     private AccessControlService aclService;
     @Autowired
     private DownloadImageService downloadImageService;
+    @Autowired
+    private SolrQueryLayerService solrSearchService;
 
     @RequestMapping("/downloadImage/{pid}/{size}")
     public ResponseEntity<InputStreamResource> getImage(@PathVariable("pid") String pidString,
-                                                        @PathVariable("size") String size,
-                                                        HttpServletRequest request,
-                                                        HttpServletResponse response) {
+                                                        @PathVariable("size") String size) {
         PID pid = PIDs.get(pidString);
 
         AccessGroupSet principals = getAgentPrincipals().getPrincipals();
-        aclService.assertHasAccess("Insufficient permissions to download access copy for " + pidString,
-                pid, principals, Permission.viewAccessCopies);
-
-        String validatedSize = downloadImageService.getSize(pidString, size);
+        var record = solrSearchService.getObjectById(new SimpleIdRequest(pid, principals));
+        String validatedSize = downloadImageService.getSize(record, size);
 
         if (Objects.equals(validatedSize, "full")) {
             aclService.assertHasAccess("Insufficient permissions to download full size copy for " + pidString,
                     pid, principals, Permission.viewOriginal);
+        } else {
+            aclService.assertHasAccess("Insufficient permissions to download access copy for " + pidString,
+                    pid, principals, Permission.viewAccessCopies);
         }
 
         try {
-            return downloadImageService.streamImage(pidString, validatedSize, response);
-        } catch (FileNotFoundException e) {
-            log.error("Error streaming access copy image for {} at size {}", pidString, validatedSize, e);
+            return downloadImageService.streamImage(pidString, validatedSize);
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            log.error("Error streaming access copy image for {} at size {}", pidString, validatedSize, e);
         }
         return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-    }
-
-    @ResponseStatus(value = HttpStatus.FORBIDDEN)
-    @ExceptionHandler(AccessRestrictionException.class)
-    public void handleInvalidRecordRequest() {
-    }
-
-    @ResponseStatus(value = HttpStatus.NOT_FOUND)
-    @ExceptionHandler({ResourceNotFoundException.class, NotFoundException.class, FileNotFoundException.class})
-    public void handleResourceNotFound() {
     }
 }

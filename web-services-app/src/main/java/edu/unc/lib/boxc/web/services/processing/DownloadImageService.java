@@ -3,7 +3,9 @@ package edu.unc.lib.boxc.web.services.processing;
 
 import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
 import edu.unc.lib.boxc.auth.api.services.AccessControlService;
+import edu.unc.lib.boxc.model.api.DatastreamType;
 import edu.unc.lib.boxc.search.api.models.ContentObjectRecord;
+import edu.unc.lib.boxc.search.api.models.Datastream;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -24,23 +26,18 @@ import java.util.Objects;
  * @author snluong
  */
 public class DownloadImageService {
-    private ContentObjectRecord contentObjectRecord;
+    private String iiifBasePath;
 
-    public ResponseEntity<InputStreamResource> streamImage(String id,
-                                                           String size,
-                                                           HttpServletResponse response)
+    public ResponseEntity<InputStreamResource> streamImage(String pidString, String size)
             throws IOException {
-        response.setContentType("image/jpeg");
 
-        String url = buildURL(id, size);
-
-        MediaType mediaType = MediaTypeUtils.getMediaTypeForFileName(this.servletContext, file);
+        String url = buildURL(pidString, size);
         InputStream input = new URL(url).openStream();
         InputStreamResource resource = new InputStreamResource(input);
 
         return ResponseEntity.ok()
-                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=generic_file_name.bin")
-                .contentType(mediaType)
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=image_" + size + ".jpg")
+                .contentType(MediaType.IMAGE_JPEG)
                 .body(resource);
     }
 
@@ -48,14 +45,14 @@ public class DownloadImageService {
     A method that builds the IIIF URL based on an assumption of full region, 0 rotation, and default quality.
      */
     private String buildURL(String id, String size) {
-        String base = "http://localhost:48080/loris/";
-        return base + id + "/full/" + size + "/0/default.jpg";
+        // TODO update to !1200,1200
+        return iiifBasePath + id + "/full/" + size + "/0/default.jpg";
     }
 
-    public String getSize(String id, String size) {
+    public String getSize(ContentObjectRecord contentObjectRecord, String size) {
         if (!Objects.equals(size, "full")) {
             // format of dimensions is like 800x1200
-            String dimensions = contentObjectRecord.getDatastreamObject(id).getExtent();
+            String dimensions = contentObjectRecord.getDatastreamObject(DatastreamType.ORIGINAL_FILE.getId()).getExtent();
             String[] dimensionParts = dimensions.split("x");
             int longerSide = Math.max(Integer.parseInt(dimensionParts[0]), Integer.parseInt(dimensionParts[1]));
 
@@ -63,12 +60,11 @@ public class DownloadImageService {
                 // request is bigger than or equal to full size, so we will switch to full size
                 return "full";
             }
-            return size;
         }
         return size;
     }
 
-    public void setContentObjectRecord(ContentObjectRecord contentObjectRecord) {
-        this.contentObjectRecord = contentObjectRecord;
+    public void setIiifBasePath(String iiifBasePath) {
+        this.iiifBasePath = iiifBasePath;
     }
 }
