@@ -1,5 +1,6 @@
 export default {
     props: {
+        searchResults: Object,
         recordData: Object
     },
 
@@ -15,19 +16,18 @@ export default {
         },
 
         jumpToAdminUrl() {
-            //         <c:when test="${not empty resultResponse && not empty resultResponse.selectedContainer}">
-            //             <s:eval var="jumpToAdmin" expression=
-            //                 "T(edu.unc.lib.boxc.common.util.URIUtil).join(adminBaseUrl, 'list', resultResponse.selectedContainer.id)"/>
-            //         </c:when>
-            const current_page = window.location;
+            const admin_base = `https://${window.location.host}/admin/`;
+            const container_id = this.searchResults.container_metadata.id;
             const search_key = this.recordData.briefObject.ancestorPathFacet.searchKey;
-            const id = this.recordData.briefObject.id;
-            if (this.recordData.briefObject.resourceType === 'File') {
-                return `https://${current_page.host}/list/${search_key}`;
+            const object_id = this.recordData.briefObject.id;
+            if (this.searchResults.container_metadata !== null) {
+                return `https://${admin_base}/list/${container_id}`;
+            } else if (this.recordData.briefObject.resourceType === 'File') {
+                return `https://${admin_base}/list/${search_key}`;
             } else if (this.recordData.briefObject !== null) {
-                return `https://${current_page.host}/list/${id}`;
+                return `https://${admin_base}/list/${object_id}`;
             } else {
-                return `https://${current_page.host}/admin/`;
+                return admin_base;
             }
         },
 
