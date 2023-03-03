@@ -25,7 +25,7 @@
                         <a v-if="adminAccess" :href="adminUrl" class="navbar-item" target="_blank">Admin</a>
                     </div>
                     <div class="navbar-end">
-                        <a v-if="getUsername" :href="logoutUrl" class="navbar-item"><i class="fas fa-user"></i>&nbsp;&nbsp;Log out</a>
+                        <a v-if="isLoggedIn" :href="logoutUrl" class="navbar-item"><i class="fas fa-user"></i>&nbsp;&nbsp;Log out</a>
                         <a v-else :href="loginUrl" class="navbar-item"><i class="fas fa-user"></i>&nbsp;&nbsp;Login</a>
                     </div>
                 </div>
@@ -42,7 +42,7 @@
         <div class="search-row search-row-large">
             <div class="search search-large container">
                 <form method="get" action="basicSearch" class="search">
-                    <input name="queryType" type="hidden" value="${searchSettings.searchFieldParams['DEFAULT_INDEX']}">
+                    <input name="queryType" type="hidden" value="anywhere">
                     <label for="hsearch_text">Search the Digital Collections Repository</label>
                     <input name="query" type="text" id="hsearch_text" placeholder="Search all collections">
                     <button type="submit" class="button">Search</button>
