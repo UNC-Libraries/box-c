@@ -45,8 +45,12 @@ public class DownloadImageService {
     A method that builds the IIIF URL based on an assumption of full region, 0 rotation, and default quality.
      */
     private String buildURL(String id, String size) {
-        // TODO update to !1200,1200
-        return iiifBasePath + id + "/full/" + size + "/0/default.jpg";
+        var formattedSize = size;
+        if (!Objects.equals(size, "full")) {
+            // pixel length should be in !123,123 format
+            formattedSize = "!" + size + "," + size;
+        }
+        return iiifBasePath + id + "/full/" + formattedSize + "/0/default.jpg";
     }
 
     public String getSize(ContentObjectRecord contentObjectRecord, String size) {
