@@ -5,7 +5,7 @@
         </div>
 
         <div v-if="src !== ''" class="thumbnail-preview">
-            <img :src="src" :alt="thumbnailData.briefObject.title"/>
+            <img :src="src" :alt="objectData.title"/>
         </div>
 
         <div v-if="badgeIcon !== ''" class="thumbnail-badge">
@@ -40,8 +40,15 @@ export default {
     },
 
     computed: {
+        objectData() {
+            if (this.thumbnailData.briefObject !== undefined) {
+                return this.thumbnailData.briefObject
+            }
+            return this.thumbnailData;
+        },
+
         ariaText() {
-            return `Visit ${this.thumbnailData.briefObject.title}`
+            return `Visit ${this.objectData.title}`
         },
 
         badgeIcon() {
@@ -74,7 +81,7 @@ export default {
         },
 
         contentType() {
-            const file_type = this.thumbnailData.briefObject.fileFormatCategory;
+            const file_type = this.objectData.fileFormatCategory;
             if (file_type === undefined || file_type.length === 0 || file_type[0] === 'unknown') {
                 return ''
             }
@@ -94,8 +101,8 @@ export default {
         },
 
         src() {
-            if (this.thumbnailData.briefObject.thumbnailId !== undefined) {
-                return `https://${this.currentPage.host}/services/api/thumb/${this.thumbnailData.briefObject.thumbnailId}/${this.size}`;
+            if (this.objectData.thumbnailId !== undefined) {
+                return `https://${this.currentPage.host}/services/api/thumb/${this.objectData.thumbnailId}/${this.size}`;
             }
 
             return '';
@@ -104,15 +111,15 @@ export default {
         tooltip() {
             const record_type = this.thumbnailData.resourceType;
             if (types.includes(record_type)) {
-                return `View details for ${this.thumbnailData.briefObject.title}`;
+                return `View details for ${this.objectData.title}`;
             }
 
             if (record_type === 'File') {
-                return `View ${this.thumbnailData.briefObject.title}`;
+                return `View ${this.objectData.title}`;
             }
 
             if (record_type === 'List') {
-                return `View the contents of ${this.thumbnailData.briefObject.title}`;
+                return `View the contents of ${this.objectData.title}`;
             }
 
             return '';
@@ -120,7 +127,3 @@ export default {
     }
 }
 </script>
-
-<style scoped lang="scss">
-
-</style>

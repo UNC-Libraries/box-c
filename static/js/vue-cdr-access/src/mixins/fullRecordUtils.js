@@ -2,6 +2,7 @@ import breadCrumbs from '@/components/full_record/breadCrumbs.vue';
 import modalMetadata from '@/components/modalMetadata.vue';
 import thumbnail from '@/components/full_record/thumbnail.vue';
 import isEmpty from 'lodash.isempty';
+import {format} from 'date-fns';
 
 export default {
     components: { breadCrumbs, modalMetadata, thumbnail },
@@ -43,12 +44,15 @@ export default {
         },
 
         displayChildCount() {
+            const pluralizeItems = this.childCount === 1 ? this.$t('full_record.item') : this.$t('full_record.items');
+            return `${this.childCount} ${pluralizeItems}`;
+        },
+
+        childCount() {
             if (this.recordData.briefObject.countMap === undefined) {
-                return `0 ${this.$t('full_record.items')}`;
+                return 0;
             }
-            const childCount = this.recordData.briefObject.countMap.child;
-            const pluralizeItems = childCount === 1 ? this.$t('full_record.item') : this.$t('full_record.items');
-            return `${childCount} ${pluralizeItems}`;
+            return this.recordData.briefObject.countMap.child;
         },
 
         restrictedContent() {
@@ -73,6 +77,16 @@ export default {
 
             return Object.keys(group_roles).includes('authenticated') &&
                 group_roles.authenticated.includes('canViewOriginals');
+        },
+
+        hasEditAccess() {
+            const group_roles = this.recordData.briefObject.groupRoleMap;
+            if (group_roles === undefined || isEmpty(group_roles)) {
+                return false;
+            }
+
+            return Object.keys(group_roles).includes('authenticated') &&
+                group_roles.authenticated.includes('canDescribe');
         }
     },
 
@@ -87,6 +101,28 @@ export default {
 
         toggleMetadata(show) {
             this.showMetadata = show;
+        },
+
+        fieldExists(value) {
+            return value !== undefined;
+        },
+
+        formatDate(value) {
+            return format(value, 'yyyy-MM-dd');
+        },
+
+        editDescriptionUrl(id) {
+            return `${window.location.host}/describe/${id}`;
+        },
+
+        hasAccess(user_type, permission) {
+            const group_roles = this.recordData.briefObject.groupRoleMap;
+            if (group_roles === undefined || isEmpty(group_roles)) {
+                return false;
+            }
+
+            return Object.keys(group_roles).includes(user_type) &&
+                group_roles[user_type].includes(permission);
         }
     }
 }

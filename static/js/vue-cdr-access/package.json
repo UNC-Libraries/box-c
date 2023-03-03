@@ -11,6 +11,10 @@
   },
   "dependencies": {
     "axios": "^0.27.2",
+    "datatables.net": "^1.13.3",
+    "datatables.net-bm": "^1.13.3",
+    "datatables.net-responsive-bm": "^2.4.0",
+    "datatables.net-vue3": "^2.0.0",
     "date-fns": "^2.29.3",
     "lodash.chunk": "^4.2.0",
     "lodash.clonedeep": "^4.5.0",

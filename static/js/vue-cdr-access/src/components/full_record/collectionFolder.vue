@@ -26,7 +26,7 @@
                     <template v-if="fieldExists(recordData.findingAidUrl)">
                         <a :href="recordData.findingAidUrl">">{{ recordData.findingAidUrl }}</a>
                     </template>
-                    <template v-else>Doesn't have a finding aid</template>
+                    <template v-else>{{ $t('full_record.no_finding_aid') }}</template>
                 </p>
                 <template v-if="recordData.briefObject.abstractText">
                     <p v-if="truncateAbstract" class="abstract">{{ truncatedAbstractText }}... <a class="abstract-text" @click.prevent="toggleAbstractDisplay()"
@@ -58,21 +58,10 @@
 
 <script>
 import fullRecordUtils from '../../mixins/fullRecordUtils';
-import {format} from 'date-fns';
 
 export default {
     name: 'collectionFolder',
 
-    mixins: [fullRecordUtils],
-
-    methods: {
-        fieldExists(value) {
-            return value !== undefined;
-        },
-
-        formatDate(value) {
-            return format(value, 'yyyy-MM-dd');
-        }
-    }
+    mixins: [fullRecordUtils]
 }
 </script>
