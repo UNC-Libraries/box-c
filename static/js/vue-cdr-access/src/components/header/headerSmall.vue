@@ -8,7 +8,7 @@
                 </a>
                 <span class="info-btns">
                     <a href="https://library.unc.edu/wilson/contact/">Contact Us</a>
-                    <a v-if="getUsername" :href="logoutUrl" class="navbar-item"><i class="fas fa-user"></i>&nbsp;&nbsp;Log out</a>
+                    <a v-if="isLoggedIn" :href="logoutUrl" class="navbar-item"><i class="fas fa-user"></i>&nbsp;&nbsp;Log out</a>
                     <a v-else :href="loginUrl" class="navbar-item"><i class="fas fa-user"></i>&nbsp;&nbsp;Login</a>
                 </span>
             </div>
@@ -25,13 +25,13 @@
                 <div id="navbar" class="menu navbar-menu">
                     <a href="collections" class="navbar-item">Browse Collections</a>
                     <a href="aboutRepository" class="navbar-item">What's Here?</a>
-                    <a v-if="adminAccess" :href="jumptoAdminUrl" class="navbar-item" target="_blank">Admin</a>
+                    <a v-if="adminAccess" :href="jumpToAdminUrl" class="navbar-item" target="_blank">Admin</a>
                     <a class="navbar-item navbar-display" href="https://library.unc.edu/wilson/contact/">Contact Us</a>
                 </div>
                 <div class="search-row">
                     <div class="search">
                         <form method="get" action="basicSearch" class="search">
-                            <input name="queryType" type="hidden" value="${searchSettings.searchFieldParams['DEFAULT_INDEX']}">
+                            <input name="queryType" type="hidden" value="anywhere">
                             <label for="hsearch_text">Search the Digital Collections Repository</label>
                             <input name="query" type="text" id="hsearch_text" placeholder="Search all collections">
                             <button type="submit" class="button">Search</button>

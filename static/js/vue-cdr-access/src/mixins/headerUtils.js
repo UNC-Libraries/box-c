@@ -1,4 +1,8 @@
 export default {
+    props: {
+        recordData: Object
+    },
+
     computed: {
         adminUrl() {
             const current_page = window.location;
@@ -6,34 +10,25 @@ export default {
         },
 
         homeUrl() {
-            let url = window.location.href;
-            return url.slice(0, url.lastIndexOf('/'));
+            let current_page = window.location;
+            return `https://${current_page.host}/`;
         },
 
-        jumptoAdminUrl() {
-            //TODO: jumptoAdmin urls
-            // <c:if test="${sessionScope.accessLevel != null && sessionScope.accessLevel.viewAdmin}">
-            //     <c:choose>
+        jumpToAdminUrl() {
             //         <c:when test="${not empty resultResponse && not empty resultResponse.selectedContainer}">
             //             <s:eval var="jumpToAdmin" expression=
             //                 "T(edu.unc.lib.boxc.common.util.URIUtil).join(adminBaseUrl, 'list', resultResponse.selectedContainer.id)"/>
             //         </c:when>
-            //         <c:when test="${not empty briefObject && briefObject.resourceType == 'File'}">
-            //             <s:eval var="jumpToAdmin" expression=
-            //                 "T(edu.unc.lib.boxc.common.util.URIUtil).join(adminBaseUrl, 'list', briefObject.ancestorPathFacet.searchKey)"/>
-            //         </c:when>
-            //         <c:when test="${not empty briefObject}">
-            //             <s:eval var="jumpToAdmin" expression=
-            //                 "T(edu.unc.lib.boxc.common.util.URIUtil).join(adminBaseUrl, 'list', briefObject.id)"/>
-            //         </c:when>
-            //         <c:otherwise>
-            //             <c:set var="jumpToAdmin" value="${adminBaseUrl}"/>
-            //         </c:otherwise>
-            //     </c:choose>
-            //     <a href="${jumpToAdmin}" className="navbar-item" target="_blank">Admin</a>
-            // </c:if>
             const current_page = window.location;
-            return `https://${current_page.host}/admin/`;
+            const search_key = this.recordData.briefObject.ancestorPathFacet.searchKey;
+            const id = this.recordData.briefObject.id;
+            if (this.recordData.briefObject.resourceType === 'File') {
+                return `https://${current_page.host}/list/${search_key}`;
+            } else if (this.recordData.briefObject !== null) {
+                return `https://${current_page.host}/list/${id}`;
+            } else {
+                return `https://${current_page.host}/admin/`;
+            }
         },
 
         logoutUrl() {
@@ -46,12 +41,9 @@ export default {
             return `https://${current_page.host}/Shibboleth.sso/Login?target=${encodeURIComponent(current_page)}`;
         },
 
-        getUsername() {
+        isLoggedIn() {
             const username = document.getElementById("pagewrap").dataset.username;
-            if (username !== null) {
-                return true;
-            }
-            return false;
+            return username !== null;
         },
 
         adminAccess() {
