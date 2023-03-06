@@ -3,10 +3,10 @@
         <div class="contentarea">
             <h2 class="link-list">{{ $t('full_record.neighbor_list') }}</h2>
             <template v-for="neighbor in neighborList">
-                <div class="relateditem" :class="currentItemClass">
+                <div class="relateditem" :class="{current_item: currentRecordId === neighbor.id}">
                     <div class="relatedthumb" :class="neighborIsDeleted(neighbor.status)">
                         <thumbnail :thumbnail-data="neighbor"
-                                   allows-full-access="true"
+                                   :allows-full-access="true"
                                    size="small"></thumbnail>
                     </div>
                     <p><a :href="fullRecordUrl(neighbor.id)">{{ truncateText(neighbor.title) }}</a></p>
@@ -25,7 +25,7 @@ export default {
     components: {thumbnail},
 
     props: {
-        currentRecordId: Number,
+        currentRecordId: String,
         neighborList: {
             type: Array,
             default: []
@@ -33,10 +33,6 @@ export default {
     },
 
     methods: {
-        currentItemClass(neighbor_id) {
-            return this.currentRecordId === neighbor_id;
-        },
-
         fullRecordUrl(neighbor_id) {
             return `record/${neighbor_id}`;
         },
@@ -54,6 +50,7 @@ export default {
 
 <style scoped lang="scss">
     .relateditem {
+        display: inline-block;
         float: none;
     }
 </style>
