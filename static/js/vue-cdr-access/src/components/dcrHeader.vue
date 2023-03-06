@@ -19,7 +19,8 @@ export default {
 
     computed: {
         isHomepage()  {
-            return window.location.href === this.homeUrl;
+            const homeUrl = `https://${window.location.host}/`;
+            return window.location.href == homeUrl;
         }
     }
 }
