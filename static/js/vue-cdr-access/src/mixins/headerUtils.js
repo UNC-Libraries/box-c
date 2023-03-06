@@ -5,11 +5,6 @@ export default {
             return `https://${current_page.host}/admin/`;
         },
 
-        homeUrl() {
-            let current_page = window.location;
-            return `https://${current_page.host}/`;
-        },
-
         jumpToAdminUrl() {
             const current_page = window.location.href;
             const admin_base = `https://${window.location.host}/admin/`;
@@ -33,7 +28,7 @@ export default {
 
         isLoggedIn() {
             const username = document.getElementById("pagewrap").dataset.username;
-            return username !== null;
+            return username !== null && username !== '';
         },
 
         adminAccess() {
