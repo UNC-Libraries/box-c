@@ -105,10 +105,11 @@
         <div class="clear">
             <template v-if="recordData.viewerType === 'uv'">
                 <div class="clear_space"></div>
-                <iframe></iframe>
+                <tify-viewer :object-id="recordData.briefObject.id"></tify-viewer>
+                <!-- <iframe :src="viewer('uv')" allow="fullscreen" scrolling="no"></iframe> -->
             </template>
             <template v-else-if="recordData.viewerType === 'pdf'">
-                <iframe src=""></iframe>
+                <iframe :src="viewer('pdf')" allow="fullscreen" scrolling="no"></iframe>
             </template>
             <template v-else-if="recordData.viewerType === 'audio'"></template>
         </div>
@@ -130,12 +131,13 @@ import fileUtils from '../../mixins/fileUtils';
 import fullRecordUtils from '../../mixins/fullRecordUtils';
 import fileList from '@/components/full_record/fileList.vue';
 import neighborList from '@/components/full_record/neighborList.vue';
+import tifyViewer from '@/components/full_record/tifyViewer.vue';
 import get from 'axios';
 
 export default {
     name: 'aggregateRecord',
 
-    components: {fileList, neighborList},
+    components: {fileList, neighborList, tifyViewer},
 
     mixins: [fileUtils, fullRecordUtils],
 
@@ -161,6 +163,10 @@ export default {
                 this.metadata = '';
                 this.hasLoaded = true;
             });
+        },
+
+        viewer(viewer_type) {
+            return `/record/${this.recordData.briefObject.id}/${viewer_type}Viewer`;
         }
     },
 
@@ -173,5 +179,9 @@ export default {
 </script>
 
 <style scoped lang="scss">
-
+iframe {
+    height: 200vh;
+    overflow: hidden;
+    width: 100%;
+}
 </style>

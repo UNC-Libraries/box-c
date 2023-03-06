@@ -126,7 +126,6 @@ public class FullRecordController extends AbstractErrorHandlingSearchController 
         return getFullObjectView(pid);
     }
 
-
     public String getFullObjectView(String pidString) {
         PID pid = PIDs.get(pidString);
 
@@ -345,6 +344,30 @@ public class FullRecordController extends AbstractErrorHandlingSearchController 
         recordProperties.put("pageSubtitle", briefObject.getTitle());
 
         return SerializationUtil.objectToJSON(recordProperties);
+    }
+
+    @GetMapping("/{pid}/pdfViewer")
+    public String handlePdfViewerRequest(@PathVariable("pid") String pidString, Model model,
+                                         HttpServletRequest request) {
+        PID pid = PIDs.get(pidString);
+
+        AccessGroupSet principals = getAgentPrincipals().getPrincipals();
+        aclService.assertHasAccess("Insufficient permissions to access pdf for " + pidString,
+                pid, principals, Permission.viewMetadata);
+
+        // Retrieve the object's record from Solr
+        SimpleIdRequest idRequest = new SimpleIdRequest(pid, principals);
+        ContentObjectRecord briefObject = queryLayer.getObjectById(idRequest);
+
+        String viewerPid = accessCopiesService.getDatastreamPid(briefObject, principals, PDF_MIMETYPE_REGEX);
+        model.addAttribute("pid", viewerPid);
+        model.addAttribute("briefObject", briefObject);
+        return "fullRecord/pdfViewer";
+    }
+
+    @GetMapping("/{pid}/uvViewer")
+    public String handleUvViewerRequest() {
+        return "fullRecord/uvViewer";
     }
 
     public void setXslViewResolver(XSLViewResolver xslViewResolver) {
