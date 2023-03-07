@@ -52,6 +52,3 @@ export default {
     mixins: [headerUtils]
 }
 </script>
-
-<style scoped lang="scss">
-</style>
