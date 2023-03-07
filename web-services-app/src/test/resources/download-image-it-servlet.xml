@@ -17,7 +17,7 @@
     <context:component-scan resource-pattern="**/DownloadImageController*" base-package="edu.unc.lib.boxc.web.services.rest"/>
 
     <bean id="downloadImageService" class="edu.unc.lib.boxc.web.services.processing.DownloadImageService">
-        <property name="iiifBasePath" value="http://localhost"/>
+        <property name="iiifBasePath" value="http://localhost:8080/"/>
     </bean>
 
     <bean id="aclService" class="org.mockito.Mockito" factory-method="mock">
@@ -26,5 +26,17 @@
 
     <bean id="solrSearchService" class="org.mockito.Mockito" factory-method="mock">
         <constructor-arg value="edu.unc.lib.boxc.web.common.services.SolrQueryLayerService" />
+    </bean>
+
+    <bean id="searchSettings" class="org.mockito.Mockito" factory-method="mock">
+        <constructor-arg value="edu.unc.lib.boxc.search.solr.config.SearchSettings" />
+    </bean>
+
+    <bean id="solrSettings" class="org.mockito.Mockito" factory-method="mock">
+        <constructor-arg value="edu.unc.lib.boxc.search.solr.config.SolrSettings" />
+    </bean>
+
+    <bean id="facetFieldFactory" class="org.mockito.Mockito" factory-method="mock">
+        <constructor-arg value="edu.unc.lib.boxc.search.solr.services.FacetFieldFactory" />
     </bean>
 </beans>
