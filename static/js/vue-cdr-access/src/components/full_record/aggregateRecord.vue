@@ -106,12 +106,13 @@
             <template v-if="recordData.viewerType === 'uv'">
                 <div class="clear_space"></div>
                 <tify-viewer :object-id="recordData.briefObject.id"></tify-viewer>
-                <!-- <iframe :src="viewer('uv')" allow="fullscreen" scrolling="no"></iframe> -->
             </template>
             <template v-else-if="recordData.viewerType === 'pdf'">
                 <iframe :src="viewer('pdf')" allow="fullscreen" scrolling="no"></iframe>
             </template>
-            <template v-else-if="recordData.viewerType === 'audio'"></template>
+            <template v-else-if="recordData.viewerType === 'audio'">
+                <audio-player :datafile-url="recordData.dataFileUrl"></audio-player>
+            </template>
         </div>
         <!-- @TODO Need some way to figure out how to get a user's logged in permissions. -->
         <file-list v-if="childCount > 0"
@@ -129,6 +130,7 @@
 <script>
 import fileUtils from '../../mixins/fileUtils';
 import fullRecordUtils from '../../mixins/fullRecordUtils';
+import audioPlayer from '@/components/full_record/audioPlayer.vue';
 import fileList from '@/components/full_record/fileList.vue';
 import neighborList from '@/components/full_record/neighborList.vue';
 import tifyViewer from '@/components/full_record/tifyViewer.vue';
@@ -137,7 +139,7 @@ import get from 'axios';
 export default {
     name: 'aggregateRecord',
 
-    components: {fileList, neighborList, tifyViewer},
+    components: {audioPlayer, fileList, neighborList, tifyViewer},
 
     mixins: [fileUtils, fullRecordUtils],
 
@@ -179,9 +181,9 @@ export default {
 </script>
 
 <style scoped lang="scss">
-iframe {
-    height: 200vh;
-    overflow: hidden;
-    width: 100%;
-}
+    iframe {
+        height: 200vh;
+        overflow: hidden;
+        width: 100%;
+    }
 </style>
