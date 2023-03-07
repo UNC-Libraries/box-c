@@ -49,11 +49,7 @@ describe('dcrHeader.vue', () => {
         document.body.innerHTML = `<div id="pagewrap" data-username="testUser" data-admin="true">`;
         const current_page = window.location;
         const adminUrl = `https://${window.location.host}/admin/`;
-        const wrapper = mount(dcrHeader, {
-            props: {
-                adminAccess: true
-            }
-        });
+        const wrapper = mount(dcrHeader);
         expect(wrapper.html()).toContain(adminUrl);
     });
 
