@@ -37,7 +37,6 @@ Top level component for full record pages with searching/browsing, including Adm
                 </div>
             </div>
             <p v-else class="spacing">{{ $t('search.no_results') }}</p>
-            <modal-metadata :uuid="uuid" :title="container_name"></modal-metadata>
             <pagination browse-type="display" :number-of-records="record_count"></pagination>
         </div>
     </div>
@@ -86,7 +85,6 @@ Top level component for full record pages with searching/browsing, including Adm
             collectionFolder,
             galleryDisplay,
             listDisplay,
-            modalMetadata,
             pagination,
             viewType,
             worksOnly,
