@@ -80,6 +80,7 @@
         <mock.server.version>5.4.1</mock.server.version>
         <powermock.version>1.7.4</powermock.version>
         <awaitility.version>4.0.3</awaitility.version>
+        <wiremock.version>2.35.0</wiremock.version>
         
         <jackson.version>2.13.2</jackson.version>
         <jackson.databind.version>2.13.4.1</jackson.databind.version>
@@ -696,6 +697,12 @@
                 <groupId>org.awaitility</groupId>
                 <artifactId>awaitility</artifactId>
                 <version>${awaitility.version}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>com.github.tomakehurst</groupId>
+                <artifactId>wiremock-jre8</artifactId>
+                <version>${wiremock.version}</version>
                 <scope>test</scope>
             </dependency>
             
