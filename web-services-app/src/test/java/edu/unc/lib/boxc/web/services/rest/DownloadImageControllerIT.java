@@ -60,9 +60,11 @@ public class DownloadImageControllerIT extends AbstractAPIIT {
         ContentObjectSolrRecord record = mock(ContentObjectSolrRecord.class);
         Datastream datastream = mock(Datastream.class);
 
-        stubFor(WireMock.get(urlMatching(iiifBasePath + "*"))
+        stubFor(WireMock.get(urlMatching("/" + filePid + "/full/full/0/default.jpg"))
                 .willReturn(aResponse()
-                        .withStatus(HttpStatus.OK.value())));
+                        .withStatus(HttpStatus.OK.value())
+                        .withBodyFile("src/test/resources/upload-files/bunny.jpg")
+                        .withHeader("Content-Type", "image/jpeg")));
 
         when(solrSearchService.getObjectById(any(SimpleIdRequest.class))).thenReturn(record);
         when(record.getDatastreamObject(filePid.getId())).thenReturn(datastream);
