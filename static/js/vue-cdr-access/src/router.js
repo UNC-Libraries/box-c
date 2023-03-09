@@ -3,6 +3,7 @@ import advancedSearch from "@/components/advancedSearch.vue";
 import displayWrapper from "@/components/displayWrapper.vue";
 import searchWrapper from "@/components/searchWrapper.vue";
 import collectionBrowseWrapper from "@/components/collectionBrowseWrapper.vue";
+import frontPage from "@/components/frontPage.vue";
 
 export default createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -26,6 +27,11 @@ export default createRouter({
       path: '/collections/',
       name: 'collectionBrowse',
       component: collectionBrowseWrapper
+    },
+    {
+      path: '/',
+      name: 'frontPage',
+      component: frontPage
     }
   ]
 });
