@@ -56,21 +56,21 @@ public class DownloadImageControllerIT extends AbstractAPIIT {
 
     @Test
     public void testGetImageAtFullSize() throws Exception {
-        PID filePid = makePid();
+        var pidString = makePid().getId();
         ContentObjectSolrRecord record = mock(ContentObjectSolrRecord.class);
         Datastream datastream = mock(Datastream.class);
 
-        stubFor(WireMock.get(urlMatching("/" + filePid + "/full/full/0/default.jpg"))
+        stubFor(WireMock.get(urlMatching("/" + pidString + "/full/full/0/default.jpg"))
                 .willReturn(aResponse()
-                        .withStatus(HttpStatus.OK.value())
-                        .withBodyFile("src/test/resources/upload-files/bunny.jpg")
-                        .withHeader("Content-Type", "image/jpeg")));
+                .withStatus(HttpStatus.OK.value())
+                .withBodyFile("bunny.jpg")
+                .withHeader("Content-Type", "image/jpeg")));
 
         when(solrSearchService.getObjectById(any(SimpleIdRequest.class))).thenReturn(record);
-        when(record.getDatastreamObject(filePid.getId())).thenReturn(datastream);
+        when(record.getDatastreamObject(pidString)).thenReturn(datastream);
         when(datastream.getExtent()).thenReturn("800x1200");
 
-        MvcResult result = mvc.perform(get("/downloadImage/" + filePid.getId() + "/full"))
+        MvcResult result = mvc.perform(get("/downloadImage/" + pidString + "/full"))
                 .andExpect(status().is2xxSuccessful())
                 .andReturn();
 
@@ -78,7 +78,7 @@ public class DownloadImageControllerIT extends AbstractAPIIT {
         MockHttpServletResponse response = result.getResponse();
 
         assertEquals("image/jpeg", response.getContentType());
-        assertEquals("attachment; filename=\"image_full.jpg\"", response.getHeader(CONTENT_DISPOSITION));
+        assertEquals("attachment; filename=image_full.jpg", response.getHeader(CONTENT_DISPOSITION));
     }
 
     @Test
