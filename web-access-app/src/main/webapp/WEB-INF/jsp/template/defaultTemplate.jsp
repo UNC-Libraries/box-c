@@ -20,9 +20,9 @@
 			<c:when test="${contentPage.equals('frontPage.jsp')}">
 				<c:import url="common/header.jsp" />
 			</c:when>
-			<c:otherwise>
+			<c:when test="${not contentPage.equals('fullRecord/uvViewer.jsp') && not contentPage.equals('fulleRecord/pdfViewer.jsp')}">
 				<c:import url="common/headerSmall.jsp" />
-			</c:otherwise>
+			</c:when>
 		</c:choose>
 		<div id="content">
 			<c:choose>
@@ -34,7 +34,9 @@
 				</c:otherwise>
 			</c:choose>
 		</div>
-		<c:import url="common/footer.jsp"/>
+		<c:if test="${not contentPage.equals('fullRecord/uvViewer.jsp') && not contentPage.equals('fulleRecord/pdfViewer.jsp')}">
+			<c:import url="common/footer.jsp"/>
+		</c:if>
 	</div>
 </div>
 <c:import url="googleAnalytics.jsp" />

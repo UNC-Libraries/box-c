@@ -362,11 +362,18 @@ public class FullRecordController extends AbstractErrorHandlingSearchController 
         String viewerPid = accessCopiesService.getDatastreamPid(briefObject, principals, PDF_MIMETYPE_REGEX);
         model.addAttribute("pid", viewerPid);
         model.addAttribute("briefObject", briefObject);
+
         return "fullRecord/pdfViewer";
     }
 
     @GetMapping("/{pid}/uvViewer")
-    public String handleUvViewerRequest() {
+    public String handleUvViewerRequest(@PathVariable("pid") String pidString) {
+        PID pid = PIDs.get(pidString);
+
+        AccessGroupSet principals = getAgentPrincipals().getPrincipals();
+        aclService.assertHasAccess("Insufficient permissions to access pdf for " + pidString,
+                pid, principals, Permission.viewMetadata);
+
         return "fullRecord/uvViewer";
     }
 

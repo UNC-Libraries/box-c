@@ -8,7 +8,7 @@
                 </div>
             </div>
             <div class="columns">
-                <div class="column is-8">
+                <div class="column">
                     <h2>{{ recordData.briefObject.title }}</h2>
                     <div class="columns columns-resize aggregate-info">
                         <div class="column is-narrow-tablet" :class="isDeleted">
@@ -80,8 +80,8 @@
                         </ul>
                     </div>
                 </div>
-                <div class="column is-narrow-desktop action-btn item-actions">
-                    <div v-if="restrictedContent" class="column is-narrow-desktop item-actions">
+                <div class="column is-narrow action-btn item-actions">
+                    <div v-if="restrictedContent" class="column is-narrow item-actions">
                         <div class="restricted-access">
                             <h2>This {{ recordData.briefObject.resourceType.toLowerCase() }} has restricted content</h2>
                             <div v-if="allowsFullAuthenticatedAccess" class="actionlink"><a class="button login-link" :href="loginUrl"><i class="fa fa-id-card"></i> {{ $t('access.login') }}</a></div>
@@ -93,7 +93,7 @@
                     </div>
                     <template>
                         <div v-if="fieldExists(recordData.briefObject.dataFileUrl)" class="actionlink right download">
-                            <a class="button" href="${dataFileUrl}?dl=true"><i class="fa fa-download"></i> Download</a>
+                            <a class="button" :href="downloadLink"><i class="fa fa-download"></i> Download</a>
                         </div>
                         <div v-else-if="fieldExists(recordData.briefObject.embargoDate) && fieldExists(recordData.briefObject.dataFileUrl)" class="noaction right">
                             Available after {{ formatDate(recordData.briefObject.embargoDate) }}
@@ -103,12 +103,8 @@
             </div>
         </div>
         <div class="clear">
-            <template v-if="recordData.viewerType === 'uv'">
-                <div class="clear_space"></div>
-                <tify-viewer :object-id="recordData.briefObject.id"></tify-viewer>
-            </template>
-            <template v-else-if="recordData.viewerType === 'pdf'">
-                <iframe :src="viewer('pdf')" allow="fullscreen" scrolling="no"></iframe>
+            <template v-if="recordData.viewerType === 'uv' || recordData.viewerType === 'pdf'">
+                <iframe :src="viewer(recordData.viewerType)" allow="fullscreen" scrolling="no"></iframe>
             </template>
             <template v-else-if="recordData.viewerType === 'audio'">
                 <audio-player :datafile-url="recordData.dataFileUrl"></audio-player>
@@ -152,6 +148,10 @@ export default {
     computed: {
         parentUrl() {
             return `record/${this.recordData.briefObject.parentCollectionId}`
+        },
+
+        downloadLink() {
+            return `${this.recordData.briefObject.dataFileUrl}?dl=true`;
         }
     },
 
@@ -179,11 +179,3 @@ export default {
     }
 }
 </script>
-
-<style scoped lang="scss">
-    iframe {
-        height: 200vh;
-        overflow: hidden;
-        width: 100%;
-    }
-</style>

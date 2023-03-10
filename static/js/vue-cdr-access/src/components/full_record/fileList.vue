@@ -1,7 +1,7 @@
 <template>
-    <div class="child-records">
+    <div class="child-records table-container" id="data-display">
         <h3>List of Items in This Work ({{ childCount }})</h3>
-        <data-table id="child-files" class="responsive table is-striped is-bordered is-fullwidth"
+        <data-table id="child-files" class="table is-striped is-bordered is-fullwidth"
                     :ajax="ajaxOptions"
                     :columns="columns"
                     :options="tableOptions">
@@ -84,12 +84,14 @@ export default {
             return {
                 processing: true,
                 serverSide: true,
+                bAutoWidth: false,
                 bLengthChange: false, // Remove option to show different number of results
                 columnDefs: this.columnDefs,
                 language: { search: '', searchPlaceholder: 'Search within this work' },
                 order: [], // do not set initial sort in case there is member order
                 rowCallback: (row, data) => {
                     if (this.showBadge(data).markDeleted) {
+                        document.querySelector(row).classList.add('deleted');
                         ///$(row).addClass('deleted');
                     }
                 }
@@ -212,7 +214,10 @@ export default {
 
 <style lang="scss">
     @import 'datatables.net-bm';
-    @import 'datatables.net-responsive-bm';
+#data-display {
+    .dataTables_wrapper {
+        margin: 5px;
+    }
 
     .dataTables_filter {
         margin-top: -45px;
@@ -240,4 +245,13 @@ export default {
         background-color: #1A698C;;
         border-color: #1A698C;
     }
+
+    .dtr-details {
+        text-align: left;
+        li {
+            margin: 0;
+            text-indent: 0;
+        }
+    }
+}
 </style>

@@ -1,6 +1,7 @@
 <template>
     <div class="audio-player">
-        <audio controls :src="fileLink">
+        <audio controls >
+            <source :src="fileLink" type="audio/mpeg">
             <a :href="downloadLink">Download file</a>
         </audio>
     </div>
@@ -20,7 +21,7 @@ export default {
         },
 
         fileLink() {
-            return `/${this.datafileUrl}`;
+            return `https://${window.location.host}/${this.datafileUrl}`;
         }
     }
 }
@@ -32,8 +33,11 @@ export default {
         padding-bottom: 25px;
 
         audio {
+            background: black;
             margin-top: 25px;
             margin-left: 50px;
+            min-height: 40px;
+            width: 400px;
         }
     }
 </style>

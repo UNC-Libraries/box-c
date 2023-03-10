@@ -841,6 +841,7 @@ ul.fpfeed_list li {
 	width: 90vw;
 	height: 90vh;
 	display: none;
+	padding: 5px;
 }
 
 .jp2_imageviewer_window.not_loaded {

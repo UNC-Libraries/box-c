@@ -28,15 +28,6 @@
 <div class="content-wrap full_record ${isDeleted}${' '}${isProtected}">
 
 <c:choose>
-	<c:when test="${briefObject.resourceType.equals('AdminUnit')}">
-		<c:import url="fullRecord/adminUnit.jsp" />
-	</c:when>
-	<c:when test="${briefObject.resourceType == searchSettings.resourceTypeCollection}">
-		<c:import url="fullRecord/collectionRecord.jsp" />
-	</c:when>
-	<c:when test="${briefObject.resourceType == searchSettings.resourceTypeFolder}">
-		<c:import url="fullRecord/folderRecord.jsp" />
-	</c:when>
 	<c:when test="${briefObject.resourceType == searchSettings.resourceTypeAggregate}">
 		<c:import url="fullRecord/aggregateRecord.jsp" />
 	</c:when>

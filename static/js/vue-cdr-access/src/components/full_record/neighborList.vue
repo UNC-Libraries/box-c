@@ -51,6 +51,5 @@ export default {
 <style scoped lang="scss">
     .relateditem {
         display: inline-block;
-        float: none;
     }
 </style>
