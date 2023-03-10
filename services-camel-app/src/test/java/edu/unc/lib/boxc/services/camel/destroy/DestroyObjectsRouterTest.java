@@ -2,6 +2,7 @@ package edu.unc.lib.boxc.services.camel.destroy;
 
 import static edu.unc.lib.boxc.operations.jms.destroy.DestroyObjectsHelper.serializeDestroyRequest;
 import static org.apache.jena.rdf.model.ModelFactory.createDefaultModel;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.verify;
@@ -11,6 +12,12 @@ import static org.mockito.MockitoAnnotations.initMocks;
 import java.util.Collections;
 import java.util.UUID;
 
+import edu.unc.lib.boxc.model.api.objects.RepositoryObject;
+import edu.unc.lib.boxc.model.api.rdf.Premis;
+import edu.unc.lib.boxc.operations.api.events.PremisEventBuilder;
+import edu.unc.lib.boxc.operations.api.events.PremisLogger;
+import edu.unc.lib.boxc.operations.api.events.PremisLoggerFactory;
+import edu.unc.lib.boxc.operations.impl.events.PremisEventBuilderImpl;
 import org.apache.camel.BeanInject;
 import org.apache.camel.Produce;
 import org.apache.camel.ProducerTemplate;
@@ -67,6 +74,8 @@ public class DestroyObjectsRouterTest extends CamelSpringTestSupport {
     private InheritedAclFactory inheritedAclFactory;
     @BeanInject(value = "objectPathFactory")
     private ObjectPathFactory objectPathFactory;
+    @BeanInject(value = "premisLoggerFactory")
+    private PremisLoggerFactory premisLoggerFactory;
 
     @BeanInject(value = "transactionManager")
     private TransactionManager txManager;
@@ -77,6 +86,10 @@ public class DestroyObjectsRouterTest extends CamelSpringTestSupport {
     private FedoraTransaction tx;
     @Mock
     private ObjectPath objPath;
+    @Mock
+    private PremisLogger premisLogger;
+    @Mock
+    private PremisEventBuilder eventBuilder;
 
     @Before
     public void setup() {
@@ -95,6 +108,11 @@ public class DestroyObjectsRouterTest extends CamelSpringTestSupport {
     @Test
     public void destroyObject() throws Exception {
         createContext(DESTROY_ROUTE, "direct:start");
+        when(premisLoggerFactory.createPremisLogger(any())).thenReturn(premisLogger);
+        when(premisLogger.buildEvent(Premis.Deletion)).thenReturn(eventBuilder);
+        when(eventBuilder.addAuthorizingAgent(any())).thenReturn(eventBuilder);
+        when(eventBuilder.addOutcome(true)).thenReturn(eventBuilder);
+        when(eventBuilder.addEventDetail(anyString(), any())).thenReturn(eventBuilder);
 
         String id = UUID.randomUUID().toString();
         PID pid = PIDs.get(id);
