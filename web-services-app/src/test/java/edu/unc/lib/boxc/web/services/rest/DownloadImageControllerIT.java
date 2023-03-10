@@ -52,25 +52,71 @@ public class DownloadImageControllerIT extends AbstractAPIIT {
     @Autowired
     private SolrQueryLayerService solrSearchService;
 
-    private String iiifBasePath = "http://localhost:46887/";
-
     @Test
     public void testGetImageAtFullSize() throws Exception {
+        var pidString = makePid().getId();
+
+        stubFor(WireMock.get(urlMatching("/" + pidString + "/full/full/0/default.jpg"))
+                .willReturn(aResponse()
+                        .withStatus(HttpStatus.OK.value())
+                        .withBodyFile("bunny.jpg")
+                        .withHeader("Content-Type", "image/jpeg")));
+
+        MvcResult result = mvc.perform(get("/downloadImage/" + pidString + "/full"))
+                .andExpect(status().is2xxSuccessful())
+                .andReturn();
+
+        // Verify content was retrieved
+        MockHttpServletResponse response = result.getResponse();
+
+        assertEquals("image/jpeg", response.getContentType());
+        assertEquals("attachment; filename=image_full.jpg", response.getHeader(CONTENT_DISPOSITION));
+    }
+
+    @Test
+    public void testGetImageAtPixelSizeSmallerThanFull() throws Exception {
+        var pidString = makePid().getId();
+        ContentObjectSolrRecord record = mock(ContentObjectSolrRecord.class);
+        Datastream datastream = mock(Datastream.class);
+
+        stubFor(WireMock.get(urlMatching("/" + pidString + "/full/!800,800/0/default.jpg"))
+                .willReturn(aResponse()
+                        .withStatus(HttpStatus.OK.value())
+                        .withBodyFile("bunny.jpg")
+                        .withHeader("Content-Type", "image/jpeg")));
+
+        when(solrSearchService.getObjectById(any(SimpleIdRequest.class))).thenReturn(record);
+        when(record.getDatastreamObject("original_file")).thenReturn(datastream);
+        when(datastream.getExtent()).thenReturn("1200x1200");
+
+        MvcResult result = mvc.perform(get("/downloadImage/" + pidString + "/800"))
+                .andExpect(status().is2xxSuccessful())
+                .andReturn();
+
+        // Verify content was retrieved
+        MockHttpServletResponse response = result.getResponse();
+
+        assertEquals("image/jpeg", response.getContentType());
+        assertEquals("attachment; filename=image_800.jpg", response.getHeader(CONTENT_DISPOSITION));
+    }
+
+    @Test
+    public void testGetImageAtPixelSizeBiggerThanFull() throws Exception {
         var pidString = makePid().getId();
         ContentObjectSolrRecord record = mock(ContentObjectSolrRecord.class);
         Datastream datastream = mock(Datastream.class);
 
         stubFor(WireMock.get(urlMatching("/" + pidString + "/full/full/0/default.jpg"))
                 .willReturn(aResponse()
-                .withStatus(HttpStatus.OK.value())
-                .withBodyFile("bunny.jpg")
-                .withHeader("Content-Type", "image/jpeg")));
+                        .withStatus(HttpStatus.OK.value())
+                        .withBodyFile("bunny.jpg")
+                        .withHeader("Content-Type", "image/jpeg")));
 
         when(solrSearchService.getObjectById(any(SimpleIdRequest.class))).thenReturn(record);
-        when(record.getDatastreamObject(pidString)).thenReturn(datastream);
-        when(datastream.getExtent()).thenReturn("800x1200");
+        when(record.getDatastreamObject("original_file")).thenReturn(datastream);
+        when(datastream.getExtent()).thenReturn("1200x1200");
 
-        MvcResult result = mvc.perform(get("/downloadImage/" + pidString + "/full"))
+        MvcResult result = mvc.perform(get("/downloadImage/" + pidString + "/2500"))
                 .andExpect(status().is2xxSuccessful())
                 .andReturn();
 

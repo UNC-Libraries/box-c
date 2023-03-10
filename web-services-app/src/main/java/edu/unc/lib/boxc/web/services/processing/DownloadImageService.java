@@ -56,7 +56,9 @@ public class DownloadImageService {
     public String getSize(ContentObjectRecord contentObjectRecord, String size) {
         if (!Objects.equals(size, "full")) {
             // format of dimensions is like 800x1200
-            String dimensions = contentObjectRecord.getDatastreamObject(DatastreamType.ORIGINAL_FILE.getId()).getExtent();
+            var id = DatastreamType.ORIGINAL_FILE.getId();
+            var datastreamObject = contentObjectRecord.getDatastreamObject(id);
+            String dimensions = datastreamObject.getExtent();
             String[] dimensionParts = dimensions.split("x");
             int longerSide = Math.max(Integer.parseInt(dimensionParts[0]), Integer.parseInt(dimensionParts[1]));
 
