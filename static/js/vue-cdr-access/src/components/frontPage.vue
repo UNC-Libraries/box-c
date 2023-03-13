@@ -32,14 +32,10 @@
             <div class="info container">
                 <h3>What's in the repository?</h3>
                 <div class="info-icons">
-<!--                  <div><a href="search?format=Image"><i class="fas fa-image"></i><c:out value="${formatCounts.image}"/> images</a></div>-->
-<!--                  <div><a href="search?format=Video"><i class="fas fa-video"></i><c:out value="${formatCounts.video}"/> video files</a></div>-->
-<!--                  <div><a href="search?format=Audio"><i class="fas fa-music"></i><c:out value="${formatCounts.audio}"/> audio files</a></div>-->
-<!--                  <div><a href="search?format=Text"><i class="fas fa-file-alt"></i><c:out value="${formatCounts.text}"/> texts</a></div>-->
-                    <div><a href="search?format=Image"><i class="fas fa-image"></i> images</a></div>
-                    <div><a href="search?format=Video"><i class="fas fa-video"></i> video files</a></div>
-                    <div><a href="search?format=Audio"><i class="fas fa-music"></i> audio files</a></div>
-                    <div><a href="search?format=Text"><i class="fas fa-file-alt"></i> texts</a></div>
+                    <div><a href="search?format=Image"><i class="fas fa-image"></i>{{ collectionStats.formatCounts.image }} images</a></div>
+                    <div><a href="search?format=Video"><i class="fas fa-video"></i>{{ collectionStats.formatCounts.video }} video files</a></div>
+                    <div><a href="search?format=Audio"><i class="fas fa-music"></i>{{ collectionStats.formatCounts.audio }} audio files</a></div>
+                    <div><a href="search?format=Text"><i class="fas fa-file-alt"></i>{{ collectionStats.formatCounts.text }} texts</a></div>
                 </div>
                 <p>Interested in seeing more?</p>
                 <p>See <a href="https://library.unc.edu/find/digitalcollections/">more digital collections</a> or visit the <a href="https://library.unc.edu/wilson">Wilson Special Collections Library</a> website.</p>
@@ -49,7 +45,31 @@
 </template>
 
 <script>
+import get from "axios";
+
 export default {
-    name: "frontPage"
+    name: "frontPage",
+
+    data() {
+        return {
+            collectionStats: {
+                formatCounts: {}
+            }
+        }
+    },
+
+    methods: {
+        getCollectionStats() {
+            get('/').then((response) => {
+                this.collectionStats = response.data;
+            }).catch(function (error) {
+                console.log(error);
+            });
+        }
+    },
+
+    mounted() {
+        this.getCollectionStats();
+    }
 }
 </script>
