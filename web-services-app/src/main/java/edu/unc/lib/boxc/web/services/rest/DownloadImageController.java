@@ -47,7 +47,7 @@ public class DownloadImageController {
         var record = solrSearchService.getObjectById(new SimpleIdRequest(pid, principals));
         String validatedSize = downloadImageService.getSize(record, size);
 
-        if (Objects.equals(validatedSize, "full")) {
+        if (Objects.equals(validatedSize, DownloadImageService.FULL_SIZE)) {
             aclService.assertHasAccess("Insufficient permissions to download full size copy for " + pidString,
                     pid, principals, Permission.viewOriginal);
         } else {

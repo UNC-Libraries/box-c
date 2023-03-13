@@ -14,11 +14,17 @@ import java.net.URL;
 import java.util.Objects;
 
 /**
+ * Service to process access copy image downloads
  * @author snluong
  */
 public class DownloadImageService {
     private String iiifBasePath;
+    public static final String FULL_SIZE = "full";
+    public static final String INVALID_SIZE_MESSAGE = "Unable to determine size for access copy download";
 
+    /*
+    Method contacts the IIIF server for the requested access copy image and returns it
+     */
     public ResponseEntity<InputStreamResource> streamImage(String pidString, String size)
             throws IOException {
 
@@ -37,26 +43,35 @@ public class DownloadImageService {
      */
     private String buildURL(String id, String size) {
         var formattedSize = size;
-        if (!Objects.equals(size, "full")) {
+        if (!Objects.equals(size, FULL_SIZE)) {
             // pixel length should be in !123,123 format
             formattedSize = "!" + size + "," + size;
         }
         return iiifBasePath + id + "/full/" + formattedSize + "/0/default.jpg";
     }
 
+    /*
+    Determines size based on original dimensions of requested file, unless requested size is full size.
+     */
     public String getSize(ContentObjectRecord contentObjectRecord, String size) {
-        if (!Objects.equals(size, "full")) {
-            // format of dimensions is like 800x1200
-            var id = DatastreamType.ORIGINAL_FILE.getId();
-            var datastreamObject = contentObjectRecord.getDatastreamObject(id);
-            String dimensions = datastreamObject.getExtent();
-            String[] dimensionParts = dimensions.split("x");
-            int longerSide = Math.max(Integer.parseInt(dimensionParts[0]), Integer.parseInt(dimensionParts[1]));
+        if (!Objects.equals(size, FULL_SIZE)) {
+            try {
+                var integerSize = Integer.parseInt(size);
+                // format of dimensions is like 800x1200
+                var id = DatastreamType.ORIGINAL_FILE.getId();
+                var datastreamObject = contentObjectRecord.getDatastreamObject(id);
+                String dimensions = datastreamObject.getExtent();
+                String[] dimensionParts = dimensions.split("x");
+                int longerSide = Math.max(Integer.parseInt(dimensionParts[0]), Integer.parseInt(dimensionParts[1]));
 
-            if (Integer.parseInt(size) >= longerSide) {
-                // request is bigger than or equal to full size, so we will switch to full size
-                return "full";
+                if (integerSize >= longerSide) {
+                    // request is bigger than or equal to full size, so we will switch to full size
+                    return FULL_SIZE;
+                }
+            } catch (Exception e) {
+                throw new IllegalArgumentException(INVALID_SIZE_MESSAGE);
             }
+
         }
         return size;
     }

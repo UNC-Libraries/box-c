@@ -10,7 +10,9 @@ import edu.unc.lib.boxc.search.api.models.Datastream;
 import edu.unc.lib.boxc.search.api.requests.SimpleIdRequest;
 import edu.unc.lib.boxc.search.solr.models.ContentObjectSolrRecord;
 import edu.unc.lib.boxc.web.common.services.SolrQueryLayerService;
+import edu.unc.lib.boxc.web.services.processing.DownloadImageService;
 import edu.unc.lib.boxc.web.services.rest.modify.AbstractAPIIT;
+import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,6 +29,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.urlMatching;
 import static edu.unc.lib.boxc.auth.api.Permission.viewOriginal;
 import static edu.unc.lib.boxc.web.common.services.FedoraContentService.CONTENT_DISPOSITION;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
@@ -36,6 +39,9 @@ import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import com.github.tomakehurst.wiremock.junit5.WireMockTest;
+
+import java.io.File;
+import java.io.IOException;
 
 /**
  * @author snluong
@@ -65,10 +71,7 @@ public class DownloadImageControllerIT extends AbstractAPIIT {
                 .andExpect(status().is2xxSuccessful())
                 .andReturn();
 
-        // Verify content was retrieved
-        MockHttpServletResponse response = result.getResponse();
-
-        assertEquals("image/jpeg", response.getContentType());
+        var response = result.getResponse();
         assertEquals("attachment; filename=image_full.jpg", response.getHeader(CONTENT_DISPOSITION));
     }
 
@@ -92,11 +95,10 @@ public class DownloadImageControllerIT extends AbstractAPIIT {
                 .andExpect(status().is2xxSuccessful())
                 .andReturn();
 
-        // Verify content was retrieved
-        MockHttpServletResponse response = result.getResponse();
+        var response = result.getResponse();
 
-        assertEquals("image/jpeg", response.getContentType());
         assertEquals("attachment; filename=image_800.jpg", response.getHeader(CONTENT_DISPOSITION));
+        assertCorrectImageReturned(response);
     }
 
     @Test
@@ -119,11 +121,10 @@ public class DownloadImageControllerIT extends AbstractAPIIT {
                 .andExpect(status().is2xxSuccessful())
                 .andReturn();
 
-        // Verify content was retrieved
-        MockHttpServletResponse response = result.getResponse();
+        var response = result.getResponse();
 
-        assertEquals("image/jpeg", response.getContentType());
         assertEquals("attachment; filename=image_full.jpg", response.getHeader(CONTENT_DISPOSITION));
+        assertCorrectImageReturned(response);
     }
 
     @Test
@@ -138,7 +139,66 @@ public class DownloadImageControllerIT extends AbstractAPIIT {
                 .andExpect(status().isForbidden())
                 .andReturn();
 
-        MockHttpServletResponse response = result.getResponse();
+        var response = result.getResponse();
         assertEquals("Insufficient permissions", response.getContentAsString());
+    }
+
+    @Test
+    public void testGetImageAtPixelSizeBiggerThanFullNoPermission() throws Exception {
+        PID filePid = makePid();
+        ContentObjectSolrRecord record = mock(ContentObjectSolrRecord.class);
+        Datastream datastream = mock(Datastream.class);
+        when(solrSearchService.getObjectById(any(SimpleIdRequest.class))).thenReturn(record);
+        doThrow(new AccessRestrictionException()).when(accessControlService)
+                .assertHasAccess(anyString(), eq(filePid), any(AccessGroupSetImpl.class), eq(viewOriginal));
+
+        when(record.getDatastreamObject("original_file")).thenReturn(datastream);
+        when(datastream.getExtent()).thenReturn("1200x1200");
+
+        MvcResult result = mvc.perform(get("/downloadImage/" + filePid.getId() + "/2500"))
+                .andExpect(status().isForbidden())
+                .andReturn();
+
+        var response = result.getResponse();
+        assertEquals("Insufficient permissions", response.getContentAsString());
+    }
+
+    @Test
+    public void testAccessImageInvalidSize() throws Exception {
+        PID filePid = makePid();
+        ContentObjectSolrRecord record = mock(ContentObjectSolrRecord.class);
+        when(solrSearchService.getObjectById(any(SimpleIdRequest.class))).thenReturn(record);
+
+        MvcResult result = mvc.perform(get("/downloadImage/" + filePid.getId() + "/library"))
+                .andExpect(status().isBadRequest())
+                .andReturn();
+
+        var message = result.getResponse().getContentAsString();
+        assertEquals(message, DownloadImageService.INVALID_SIZE_MESSAGE);
+    }
+
+    @Test
+    public void testGetAccessImageNoOriginalFile() throws Exception {
+        var pidString = makePid().getId();
+        ContentObjectSolrRecord record = mock(ContentObjectSolrRecord.class);
+
+        when(solrSearchService.getObjectById(any(SimpleIdRequest.class))).thenReturn(record);
+        when(record.getDatastreamObject("original_file")).thenReturn(null);
+
+        MvcResult result = mvc.perform(get("/downloadImage/" + pidString + "/1200"))
+                .andExpect(status().isBadRequest())
+                .andReturn();
+
+        var message = result.getResponse().getContentAsString();
+        assertEquals(message, DownloadImageService.INVALID_SIZE_MESSAGE);
+    }
+
+    private void assertCorrectImageReturned(MockHttpServletResponse response) throws IOException {
+        assertEquals("image/jpeg", response.getContentType());
+
+        var responseContent = response.getContentAsByteArray();
+        byte[] imageContent = FileUtils.readFileToByteArray(new File("src/test/resources/__files/bunny.jpg"));
+
+        assertArrayEquals(responseContent, imageContent);
     }
 }
