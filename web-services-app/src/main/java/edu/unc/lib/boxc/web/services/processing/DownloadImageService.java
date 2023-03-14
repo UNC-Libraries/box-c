@@ -1,5 +1,6 @@
 
 package edu.unc.lib.boxc.web.services.processing;
+import static edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPaths.idToPath;
 
 import edu.unc.lib.boxc.model.api.DatastreamType;
 import edu.unc.lib.boxc.search.api.models.ContentObjectRecord;
@@ -50,11 +51,13 @@ public class DownloadImageService {
      */
     private String buildURL(String id, String size) {
         var formattedSize = size;
+        var hash = idToPath(id, 4, 2);
+        var formattedId = hash + id + ".jp2";
         if (!Objects.equals(size, FULL_SIZE)) {
             // pixel length should be in !123,123 format
             formattedSize = "!" + size + "," + size;
         }
-        return iiifBasePath + id + "/full/" + formattedSize + "/0/default.jpg";
+        return iiifBasePath + formattedId + "/full/" + formattedSize + "/0/default.jpg";
     }
 
     /**

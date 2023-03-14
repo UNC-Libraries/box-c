@@ -1,6 +1,7 @@
 
 package edu.unc.lib.boxc.web.services.rest;
 
+import static edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPaths.idToPath;
 import com.github.tomakehurst.wiremock.client.WireMock;
 import edu.unc.lib.boxc.auth.api.exceptions.AccessRestrictionException;
 import edu.unc.lib.boxc.auth.api.services.AccessControlService;
@@ -60,8 +61,9 @@ public class DownloadImageControllerIT extends AbstractAPIIT {
     @Test
     public void testGetImageAtFullSize() throws Exception {
         var pidString = makePid().getId();
+        var formattedPid = idToPath(pidString, 4, 2) + pidString + ".jp2";
 
-        stubFor(WireMock.get(urlMatching("/" + pidString + "/full/full/0/default.jpg"))
+        stubFor(WireMock.get(urlMatching("/" + formattedPid + "/full/full/0/default.jpg"))
                 .willReturn(aResponse()
                         .withStatus(HttpStatus.OK.value())
                         .withBodyFile("bunny.jpg")
@@ -78,10 +80,11 @@ public class DownloadImageControllerIT extends AbstractAPIIT {
     @Test
     public void testGetImageAtPixelSizeSmallerThanFull() throws Exception {
         var pidString = makePid().getId();
+        var formattedPid = idToPath(pidString, 4, 2) + pidString + ".jp2";
         ContentObjectSolrRecord record = mock(ContentObjectSolrRecord.class);
         Datastream datastream = mock(Datastream.class);
 
-        stubFor(WireMock.get(urlMatching("/" + pidString + "/full/!800,800/0/default.jpg"))
+        stubFor(WireMock.get(urlMatching("/" + formattedPid + "/full/!800,800/0/default.jpg"))
                 .willReturn(aResponse()
                         .withStatus(HttpStatus.OK.value())
                         .withBodyFile("bunny.jpg")
@@ -104,10 +107,11 @@ public class DownloadImageControllerIT extends AbstractAPIIT {
     @Test
     public void testGetImageAtPixelSizeBiggerThanFull() throws Exception {
         var pidString = makePid().getId();
+        var formattedPid = idToPath(pidString, 4, 2) + pidString + ".jp2";
         ContentObjectSolrRecord record = mock(ContentObjectSolrRecord.class);
         Datastream datastream = mock(Datastream.class);
 
-        stubFor(WireMock.get(urlMatching("/" + pidString + "/full/full/0/default.jpg"))
+        stubFor(WireMock.get(urlMatching("/" + formattedPid + "/full/full/0/default.jpg"))
                 .willReturn(aResponse()
                         .withStatus(HttpStatus.OK.value())
                         .withBodyFile("bunny.jpg")
