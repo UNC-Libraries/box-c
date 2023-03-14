@@ -22,8 +22,12 @@ public class DownloadImageService {
     public static final String FULL_SIZE = "full";
     public static final String INVALID_SIZE_MESSAGE = "Unable to determine size for access copy download";
 
-    /*
-    Method contacts the IIIF server for the requested access copy image and returns it
+    /**
+     * Method contacts the IIIF server for the requested access copy image and returns it
+     * @param pidString the UUID of the file
+     * @param size a string which is either "full" for full size or a pixel length like "1200"
+     * @return a response entity which contains headers and content of the access copy image
+     * @throws IOException
      */
     public ResponseEntity<InputStreamResource> streamImage(String pidString, String size)
             throws IOException {
@@ -38,8 +42,11 @@ public class DownloadImageService {
                 .body(resource);
     }
 
-    /*
-    A method that builds the IIIF URL based on an assumption of full region, 0 rotation, and default quality.
+    /**
+     * A method that builds the IIIF URL based on an assumption of full region, 0 rotation, and default quality.
+     * @param id the UUID of the file
+     * @param size a string which is either "full" for full size or a pixel length like "1200"
+     * @return a string which is the URL to request the IIIF server for the image
      */
     private String buildURL(String id, String size) {
         var formattedSize = size;
@@ -50,8 +57,11 @@ public class DownloadImageService {
         return iiifBasePath + id + "/full/" + formattedSize + "/0/default.jpg";
     }
 
-    /*
-    Determines size based on original dimensions of requested file, unless requested size is full size.
+    /**
+     * Determines size based on original dimensions of requested file, unless requested size is full size.
+     * @param contentObjectRecord solr record of the file
+     * @param size string of the requested size of the image
+     * @return validated size string
      */
     public String getSize(ContentObjectRecord contentObjectRecord, String size) {
         if (!Objects.equals(size, FULL_SIZE)) {
