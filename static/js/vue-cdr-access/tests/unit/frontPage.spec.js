@@ -52,7 +52,7 @@ describe('frontPage.vue', () => {
                 {"text":"46936"}
             ]
         };
-        moxios.stubRequest('/', {
+        moxios.stubRequest('/collectionStats', {
             status: 200,
             response: JSON.stringify(collectionStats)
         });
