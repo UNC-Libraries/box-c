@@ -1,6 +1,7 @@
 
 package edu.unc.lib.boxc.web.services.rest;
 
+import static edu.unc.lib.boxc.auth.api.Permission.viewMetadata;
 import static edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPaths.idToPath;
 import com.github.tomakehurst.wiremock.client.WireMock;
 import edu.unc.lib.boxc.auth.api.exceptions.AccessRestrictionException;
@@ -182,6 +183,34 @@ public class DownloadImageControllerIT extends AbstractAPIIT {
     }
 
     @Test
+    public void testAccessImageNegativeSize() throws Exception {
+        PID filePid = makePid();
+        ContentObjectSolrRecord record = mock(ContentObjectSolrRecord.class);
+        when(solrSearchService.getObjectById(any(SimpleIdRequest.class))).thenReturn(record);
+
+        MvcResult result = mvc.perform(get("/downloadImage/" + filePid.getId() + "/-1"))
+                .andExpect(status().isBadRequest())
+                .andReturn();
+
+        var message = result.getResponse().getContentAsString();
+        assertEquals(message, DownloadImageService.INVALID_SIZE_MESSAGE);
+    }
+
+    @Test
+    public void testAccessImageZeroSize() throws Exception {
+        PID filePid = makePid();
+        ContentObjectSolrRecord record = mock(ContentObjectSolrRecord.class);
+        when(solrSearchService.getObjectById(any(SimpleIdRequest.class))).thenReturn(record);
+
+        MvcResult result = mvc.perform(get("/downloadImage/" + filePid.getId() + "/0"))
+                .andExpect(status().isBadRequest())
+                .andReturn();
+
+        var message = result.getResponse().getContentAsString();
+        assertEquals(message, DownloadImageService.INVALID_SIZE_MESSAGE);
+    }
+
+    @Test
     public void testGetAccessImageNoOriginalFile() throws Exception {
         var pidString = makePid().getId();
         ContentObjectSolrRecord record = mock(ContentObjectSolrRecord.class);
@@ -195,6 +224,20 @@ public class DownloadImageControllerIT extends AbstractAPIIT {
 
         var message = result.getResponse().getContentAsString();
         assertEquals(message, DownloadImageService.INVALID_SIZE_MESSAGE);
+    }
+
+    @Test
+    public void testGetAccessImageNoViewMetadataPermission() throws Exception {
+        var pid = makePid();
+        doThrow(new AccessRestrictionException()).when(accessControlService)
+                .assertHasAccess(anyString(), eq(pid), any(AccessGroupSetImpl.class), eq(viewMetadata));
+
+        MvcResult result = mvc.perform(get("/downloadImage/" + pid.getId() + "/1200"))
+                .andExpect(status().isForbidden())
+                .andReturn();
+
+        var message = result.getResponse().getContentAsString();
+        assertEquals("Insufficient permissions", message);
     }
 
     private void assertCorrectImageReturned(MockHttpServletResponse response) throws IOException {

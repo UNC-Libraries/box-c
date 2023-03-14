@@ -70,16 +70,20 @@ public class DownloadImageService {
         if (!Objects.equals(size, FULL_SIZE)) {
             try {
                 var integerSize = Integer.parseInt(size);
-                // format of dimensions is like 800x1200
-                var id = DatastreamType.ORIGINAL_FILE.getId();
-                var datastreamObject = contentObjectRecord.getDatastreamObject(id);
-                String dimensions = datastreamObject.getExtent();
-                String[] dimensionParts = dimensions.split("x");
-                int longerSide = Math.max(Integer.parseInt(dimensionParts[0]), Integer.parseInt(dimensionParts[1]));
 
-                if (integerSize >= longerSide) {
+                if (integerSize <= 0 ) {
+                    throw new IllegalArgumentException(INVALID_SIZE_MESSAGE);
+                } else {
+                    // format of dimensions is like 800x1200
+                    var id = DatastreamType.ORIGINAL_FILE.getId();
+                    var datastreamObject = contentObjectRecord.getDatastreamObject(id);
+                    String dimensions = datastreamObject.getExtent();
+                    String[] dimensionParts = dimensions.split("x");
+                    int longerSide = Math.max(Integer.parseInt(dimensionParts[0]), Integer.parseInt(dimensionParts[1]));
                     // request is bigger than or equal to full size, so we will switch to full size
-                    return FULL_SIZE;
+                    if (integerSize >= longerSide) {
+                        return FULL_SIZE;
+                    }
                 }
             } catch (Exception e) {
                 throw new IllegalArgumentException(INVALID_SIZE_MESSAGE);

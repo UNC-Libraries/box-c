@@ -44,6 +44,9 @@ public class DownloadImageController {
         PID pid = PIDs.get(pidString);
 
         AccessGroupSet principals = getAgentPrincipals().getPrincipals();
+        aclService.assertHasAccess("Insufficient permissions to access record for " + pidString,
+                pid, principals, Permission.viewMetadata);
+
         var record = solrSearchService.getObjectById(new SimpleIdRequest(pid, principals));
         String validatedSize = downloadImageService.getSize(record, size);
 
