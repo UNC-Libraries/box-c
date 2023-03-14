@@ -170,7 +170,7 @@ public class DownloadImageControllerIT extends AbstractAPIIT {
     }
 
     @Test
-    public void testgetImageNoViewAccessCopyPermission() throws Exception {
+    public void testGetImageNoViewAccessCopyPermission() throws Exception {
         var pid = makePid();
         doThrow(new AccessRestrictionException()).when(accessControlService)
                 .assertHasAccess(anyString(), eq(pid), any(AccessGroupSetImpl.class), eq(viewAccessCopies));
