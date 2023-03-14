@@ -1,6 +1,7 @@
 
 package edu.unc.lib.boxc.web.services.rest;
 
+import static edu.unc.lib.boxc.auth.api.Permission.viewAccessCopies;
 import static edu.unc.lib.boxc.auth.api.Permission.viewMetadata;
 import static edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPaths.idToPath;
 import com.github.tomakehurst.wiremock.client.WireMock;
@@ -133,7 +134,7 @@ public class DownloadImageControllerIT extends AbstractAPIIT {
     }
 
     @Test
-    public void testFullSizeAccessImageNoPermissions() throws Exception {
+    public void testFullSizeAccessImageNoFullSizePermissions() throws Exception {
         PID filePid = makePid();
         ContentObjectSolrRecord record = mock(ContentObjectSolrRecord.class);
         when(solrSearchService.getObjectById(any(SimpleIdRequest.class))).thenReturn(record);
@@ -166,6 +167,20 @@ public class DownloadImageControllerIT extends AbstractAPIIT {
 
         var response = result.getResponse();
         assertEquals("Insufficient permissions", response.getContentAsString());
+    }
+
+    @Test
+    public void testgetImageNoViewAccessCopyPermission() throws Exception {
+        var pid = makePid();
+        doThrow(new AccessRestrictionException()).when(accessControlService)
+                .assertHasAccess(anyString(), eq(pid), any(AccessGroupSetImpl.class), eq(viewAccessCopies));
+
+        MvcResult result = mvc.perform(get("/downloadImage/" + pid.getId() + "/1200"))
+                .andExpect(status().isForbidden())
+                .andReturn();
+
+        var message = result.getResponse().getContentAsString();
+        assertEquals("Insufficient permissions", message);
     }
 
     @Test
@@ -224,20 +239,6 @@ public class DownloadImageControllerIT extends AbstractAPIIT {
 
         var message = result.getResponse().getContentAsString();
         assertEquals(message, DownloadImageService.INVALID_SIZE_MESSAGE);
-    }
-
-    @Test
-    public void testGetAccessImageNoViewMetadataPermission() throws Exception {
-        var pid = makePid();
-        doThrow(new AccessRestrictionException()).when(accessControlService)
-                .assertHasAccess(anyString(), eq(pid), any(AccessGroupSetImpl.class), eq(viewMetadata));
-
-        MvcResult result = mvc.perform(get("/downloadImage/" + pid.getId() + "/1200"))
-                .andExpect(status().isForbidden())
-                .andReturn();
-
-        var message = result.getResponse().getContentAsString();
-        assertEquals("Insufficient permissions", message);
     }
 
     private void assertCorrectImageReturned(MockHttpServletResponse response) throws IOException {

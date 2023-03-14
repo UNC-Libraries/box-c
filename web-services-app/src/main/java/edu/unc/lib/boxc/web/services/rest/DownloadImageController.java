@@ -44,8 +44,8 @@ public class DownloadImageController {
         PID pid = PIDs.get(pidString);
 
         AccessGroupSet principals = getAgentPrincipals().getPrincipals();
-        aclService.assertHasAccess("Insufficient permissions to access record for " + pidString,
-                pid, principals, Permission.viewMetadata);
+        aclService.assertHasAccess("Insufficient permissions to download access copy for " + pidString,
+                pid, principals, Permission.viewAccessCopies);
 
         var record = solrSearchService.getObjectById(new SimpleIdRequest(pid, principals));
         String validatedSize = downloadImageService.getSize(record, size);
@@ -53,9 +53,6 @@ public class DownloadImageController {
         if (Objects.equals(validatedSize, DownloadImageService.FULL_SIZE)) {
             aclService.assertHasAccess("Insufficient permissions to download full size copy for " + pidString,
                     pid, principals, Permission.viewOriginal);
-        } else {
-            aclService.assertHasAccess("Insufficient permissions to download access copy for " + pidString,
-                    pid, principals, Permission.viewAccessCopies);
         }
 
         try {
