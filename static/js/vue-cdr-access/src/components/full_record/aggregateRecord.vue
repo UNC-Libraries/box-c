@@ -13,7 +13,7 @@
                     <div class="columns columns-resize aggregate-info">
                         <div class="column is-narrow-tablet" :class="isDeleted">
                             <thumbnail :thumbnail-data="recordData"
-                                       :allows-full-access="allowsFullAuthenticatedAccess"></thumbnail>
+                                       :allows-full-access="hasAccess('canViewOriginals')"></thumbnail>
                         </div>
                     </div>
                     <div class="column">
@@ -25,7 +25,7 @@
                             <li v-if="fieldExists(recordData.briefObject.parentCollection) &&
                         recordData.briefObject.ancestorPathFacet.highestTier > 0">
                                 <span class="has-text-weight-bold">{{ $t('display.collection') }}: </span>
-                                <a :href="parentUrl">{{ recordData.briefObject.parentCollectionName }}</a>
+                                <a class="parent-collection" :href="parentUrl">{{ recordData.briefObject.parentCollectionName }}</a>
                             </li>
                             <li v-if="fieldExists(recordData.briefObject.collectionId)">
                                 <span class="has-text-weight-bold">{{ $t('full_record.collection_id') }}: </span>
@@ -84,16 +84,16 @@
                     <div v-if="restrictedContent" class="column is-narrow item-actions">
                         <div class="restricted-access">
                             <h2>This {{ recordData.briefObject.resourceType.toLowerCase() }} has restricted content</h2>
-                            <div v-if="allowsFullAuthenticatedAccess" class="actionlink"><a class="button login-link" :href="loginUrl"><i class="fa fa-id-card"></i> {{ $t('access.login') }}</a></div>
+                            <div v-if="hasAccess('canViewOriginals')" class="actionlink"><a class="button login-link" :href="loginUrl"><i class="fa fa-id-card"></i> {{ $t('access.login') }}</a></div>
                             <div class="actionlink"><a class="button contact" href="https://library.unc.edu/wilson/contact/"><i class="fa fa-envelope"></i> {{ $t('access.contact') }}</a></div>
                         </div>
                     </div>
-                    <div v-if="hasEditAccess" class="actionlink right">
-                        <a class="button" :href="editDescriptionUrl(recordData.briefObject.id)"><i class="fa fa-edit"></i> Edit</a>
+                    <div v-if="hasAccess('canDescribe', 'authenticated')" class="actionlink right">
+                        <a class="button" :href="editDescriptionUrl(recordData.briefObject.id)"><i class="fa fa-edit"></i> {{ $t('full_record.edit') }}</a>
                     </div>
                     <template>
                         <div v-if="fieldExists(recordData.briefObject.dataFileUrl)" class="actionlink right download">
-                            <a class="button" :href="downloadLink"><i class="fa fa-download"></i> Download</a>
+                            <a class="button" :href="downloadLink"><i class="fa fa-download"></i> {{ $t('full_record.download') }}</a>
                         </div>
                         <div v-else-if="fieldExists(recordData.briefObject.embargoDate) && fieldExists(recordData.briefObject.dataFileUrl)" class="noaction right">
                             Available after {{ formatDate(recordData.briefObject.embargoDate) }}
@@ -114,12 +114,12 @@
         <file-list v-if="childCount > 0"
                    :child-count="childCount"
                    :work-id="recordData.briefObject.id"
-                   :edit-access="hasAccess('<placeholder>', 'canDescribe')"></file-list>
-        <div v-if="hasAccess('everyone', 'canViewMetadata')">
-            <h2 class="full-metadata">Detailed Metadata</h2>
+                   :edit-access="hasAccess('canDescribe', '<placeholder>')"></file-list>
+        <div v-if="hasAccess('canViewMetadata', 'everyone')">
+            <h2 class="full-metadata">{{ $t('full_record.detailed_metadata') }}</h2>
             <div id="mods_data_display" v-html="metadata"></div>
         </div>
-        <neighbor-list :current-record-id="recordData.briefObject.id" :neighbor-list="recordData.neighborList"></neighbor-list>
+        <neighbor-list :current-record-id="recordData.briefObject.id" :neighbors="recordData.neighborList"></neighbor-list>
     </div>
 </template>
 
@@ -129,13 +129,12 @@ import fullRecordUtils from '../../mixins/fullRecordUtils';
 import audioPlayer from '@/components/full_record/audioPlayer.vue';
 import fileList from '@/components/full_record/fileList.vue';
 import neighborList from '@/components/full_record/neighborList.vue';
-import tifyViewer from '@/components/full_record/tifyViewer.vue';
 import get from 'axios';
 
 export default {
     name: 'aggregateRecord',
 
-    components: {audioPlayer, fileList, neighborList, tifyViewer},
+    components: {audioPlayer, fileList, neighborList},
 
     mixins: [fileUtils, fullRecordUtils],
 
@@ -168,12 +167,12 @@ export default {
         },
 
         viewer(viewer_type) {
-            return `/record/${this.recordData.briefObject.id}/${viewer_type}Viewer`;
+            return `record/${this.recordData.briefObject.id}/${viewer_type}Viewer`;
         }
     },
 
     mounted() {
-        if (this.hasAccess('everyone', 'canViewMetadata')) {
+        if (this.hasAccess('canViewMetadata', 'everyone')) {
             this.loadMetadata();
         }
     }

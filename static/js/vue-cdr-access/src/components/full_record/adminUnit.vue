@@ -10,7 +10,7 @@
             <div class="column">
                 <h2 :class="isDeleted">
                     <thumbnail :thumbnail-data="recordData"
-                               :allows-full-access="allowsFullAuthenticatedAccess"></thumbnail>
+                               :allows-full-access="hasAccess('canViewOriginals')"></thumbnail>
                     {{ recordData.briefObject.title }}
                 </h2>
                 <p>

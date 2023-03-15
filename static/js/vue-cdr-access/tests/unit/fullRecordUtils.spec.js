@@ -240,7 +240,7 @@ describe('fullrecordUtils', () => {
 
     it('allows full access for authenticated user', async () => {
         // No access rights set
-        expect(wrapper.vm.allowsFullAuthenticatedAccess).toBe(false);
+        expect(wrapper.vm.hasAccess('canViewOriginals')).toBe(false);
 
         let canViewMetadata = cloneDeep(recordData);
         canViewMetadata.briefObject.groupRoleMap = {
@@ -250,7 +250,7 @@ describe('fullrecordUtils', () => {
         await wrapper.setProps({
             recordData: canViewMetadata
         });
-        expect(wrapper.vm.allowsFullAuthenticatedAccess).toBe(false);
+        expect(wrapper.vm.hasAccess('canViewOriginals')).toBe(false);
 
         let canViewOriginals = cloneDeep(recordData);
         canViewOriginals.briefObject.groupRoleMap = {
@@ -260,7 +260,7 @@ describe('fullrecordUtils', () => {
         await wrapper.setProps({
             recordData: canViewOriginals
         });
-        expect(wrapper.vm.allowsFullAuthenticatedAccess).toBe(true);
+        expect(wrapper.vm.hasAccess('canViewOriginals')).toBe(true);
     });
 
 

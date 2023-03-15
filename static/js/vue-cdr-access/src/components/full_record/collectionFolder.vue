@@ -10,7 +10,7 @@
             <div class="column" :class="{restrictedContent: 'is-8'}">
                 <h2 :class="isDeleted">
                     <thumbnail :thumbnail-data="recordData"
-                               :allows-full-access="allowsFullAuthenticatedAccess"></thumbnail>
+                               :allows-full-access="hasAccess('canViewOriginals')"></thumbnail>
                     {{ recordData.briefObject.title }}
                     <span class="item_container_count">{{ displayChildCount }}</span>
                 </h2>
@@ -44,7 +44,7 @@
             <div v-if="restrictedContent" class="column is-narrow-desktop item-actions">
                 <div class="restricted-access">
                     <h2>This {{ recordData.briefObject.resourceType.toLowerCase() }} has restricted content</h2>
-                    <div v-if="allowsFullAuthenticatedAccess" class="actionlink"><a class="button login-link" :href="loginUrl"><i class="fa fa-id-card"></i> {{ $t('access.login') }}</a></div>
+                    <div v-if="hasAccess('canViewOriginals')" class="actionlink"><a class="button login-link" :href="loginUrl"><i class="fa fa-id-card"></i> {{ $t('access.login') }}</a></div>
                     <div class="actionlink"><a class="button contact" href="https://library.unc.edu/wilson/contact/"><i class="fa fa-envelope"></i> {{ $t('access.contact') }}</a></div>
                 </div>
             </div>

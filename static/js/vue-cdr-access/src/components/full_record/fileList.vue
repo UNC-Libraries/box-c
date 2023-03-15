@@ -1,19 +1,19 @@
 <template>
     <div class="child-records table-container" id="data-display">
-        <h3>List of Items in This Work ({{ childCount }})</h3>
+        <h3>{{ $t('full_record.item_list') }} ({{ childCount }})</h3>
         <data-table id="child-files" class="table is-striped is-bordered is-fullwidth"
                     :ajax="ajaxOptions"
                     :columns="columns"
                     :options="tableOptions">
             <thead>
             <tr>
-                <th><span class="sr-only">Thumbnail for file</span></th>
-                <th>Title</th>
-                <th>File Type</th>
-                <th>File Size</th>
-                <th><span class="sr-only">View file</span></th>
-                <th><span class="sr-only">Download file</span></th>
-                <th v-if="editAccess"><span class="sr-only">Edit MODS</span></th>
+                <th><span class="sr-only">{{ $t('full_record.thumbnail') }}</span></th>
+                <th>{{ $t('full_record.title') }}</th>
+                <th>{{ $t('full_record.file_type') }}</th>
+                <th>{{ $t('full_record.filesize') }}</th>
+                <th><span class="sr-only">{{ $t('full_record.view_file') }}</span></th>
+                <th><span class="sr-only">{{ $t('full_record.download_file') }}</span></th>
+                <th v-if="editAccess"><span class="sr-only">{{ $t('full_record.mods') }}</span></th>
             </tr>
             </thead>
         </data-table>
@@ -46,12 +46,12 @@ export default {
     data() {
         return {
             columns: [
-                { data: 'Thumbnail for file' },
-                { data: 'Title' },
-                { data: 'File Type' },
-                { data: 'File Size' },
-                { data: 'View file' },
-                { data: 'Download file' }
+                { data: this.$t('full_record.thumbnail') },
+                { data: this.$t('full_record.title') },
+                { data: this.$t('full_record.file_type') },
+                { data: this.$t('full_record.filesize') },
+                { data: this.$t('full_record.view_file') },
+                { data: this.$t('full_record.download_file') }
             ]
         }
     },
@@ -174,7 +174,7 @@ export default {
             ];
 
             if (this.editAccess) {
-                this.columns.push({ data: 'Edit MODS' });
+                this.columns.push({ data: this.$t('full_record.mods') });
                 excluded_columns.push(6); // edit button
 
                 // Add to orderable, searchable exclusions
@@ -214,44 +214,44 @@ export default {
 
 <style lang="scss">
     @import 'datatables.net-bm';
-#data-display {
-    .dataTables_wrapper {
-        margin: 5px;
-    }
+    #data-display {
+        .dataTables_wrapper {
+            margin: 5px;
+        }
 
-    .dataTables_filter {
-        margin-top: -45px;
-    }
+        .dataTables_filter {
+            margin-top: -45px;
+        }
 
-    input[type=search] {
-        margin-bottom: 15px;
-        max-width: 300px;
-    }
+        input[type=search] {
+            margin-bottom: 15px;
+            min-width: 225px;
+        }
 
-    #child-files {
-        border: none;
-    }
+        #child-files {
+            border: none;
+        }
 
-    ul.pagination-list {
-        justify-content: flex-end;
+        ul.pagination-list {
+            justify-content: flex-end;
 
-        li {
-            text-indent: 0 !important;
-            margin: 0 !important;
+            li {
+                text-indent: 0 !important;
+                margin: 0 !important;
+            }
+        }
+
+        .pagination-link.is-current {
+            background-color: #1A698C;;
+            border-color: #1A698C;
+        }
+
+        .dtr-details {
+            text-align: left;
+            li {
+                margin: 0;
+                text-indent: 0;
+            }
         }
     }
-
-    .pagination-link.is-current {
-        background-color: #1A698C;;
-        border-color: #1A698C;
-    }
-
-    .dtr-details {
-        text-align: left;
-        li {
-            margin: 0;
-            text-indent: 0;
-        }
-    }
-}
 </style>

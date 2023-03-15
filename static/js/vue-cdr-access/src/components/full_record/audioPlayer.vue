@@ -1,8 +1,8 @@
 <template>
     <div class="audio-player">
-        <audio controls >
+        <audio controls>
             <source :src="fileLink" type="audio/mpeg">
-            <a :href="downloadLink">Download file</a>
+            <a :href="downloadLink">{{ $t('full_record.download_file') }}</a>
         </audio>
     </div>
 </template>
@@ -21,7 +21,7 @@ export default {
         },
 
         fileLink() {
-            return `https://${window.location.host}/${this.datafileUrl}`;
+            return `/${this.datafileUrl}`;
         }
     }
 }

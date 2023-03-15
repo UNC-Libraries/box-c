@@ -67,26 +67,6 @@ export default {
         loginUrl() {
             const current_page = window.location;
             return `https://${current_page.host}/Shibboleth.sso/Login?target=${encodeURIComponent(current_page)}`;
-        },
-
-        allowsFullAuthenticatedAccess() {
-            const group_roles = this.recordData.briefObject.groupRoleMap;
-            if (group_roles === undefined || isEmpty(group_roles)) {
-                return false;
-            }
-
-            return Object.keys(group_roles).includes('authenticated') &&
-                group_roles.authenticated.includes('canViewOriginals');
-        },
-
-        hasEditAccess() {
-            const group_roles = this.recordData.briefObject.groupRoleMap;
-            if (group_roles === undefined || isEmpty(group_roles)) {
-                return false;
-            }
-
-            return Object.keys(group_roles).includes('authenticated') &&
-                group_roles.authenticated.includes('canDescribe');
         }
     },
 
@@ -115,7 +95,7 @@ export default {
             return `${window.location.host}/describe/${id}`;
         },
 
-        hasAccess(user_type, permission) {
+        hasAccess(permission, user_type= 'authenticated') {
             const group_roles = this.recordData.briefObject.groupRoleMap;
             if (group_roles === undefined || isEmpty(group_roles)) {
                 return false;
