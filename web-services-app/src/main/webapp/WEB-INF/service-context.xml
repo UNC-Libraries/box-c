@@ -417,6 +417,10 @@
         <property name="accessRestrictionUtil" ref="solrAccessRestrictionUtil" />
         <property name="solrSettings" ref="solrSettings" />
     </bean>
+
+    <bean id="downloadImageService" class="edu.unc.lib.boxc.web.services.processing.DownloadImageService">
+        <property name="iiifBasePath" value="${iiif.base.url}"/>
+    </bean>
     
     <bean class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
         <property name="staticMethod" value="edu.unc.lib.boxc.web.common.utils.SerializationUtil.injectSettings"/>
