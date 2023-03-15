@@ -3,10 +3,6 @@ package edu.unc.lib.boxc.web.access.controllers;
 import edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl;
 import edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore;
 import edu.unc.lib.boxc.model.fcrepo.test.TestHelper;
-import edu.unc.lib.boxc.search.solr.config.SearchSettings;
-import edu.unc.lib.boxc.search.solr.config.SolrSettings;
-import edu.unc.lib.boxc.search.solr.services.SolrSearchService;
-import edu.unc.lib.boxc.search.solr.utils.AccessRestrictionUtil;
 import edu.unc.lib.boxc.web.common.services.SolrQueryLayerService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -24,7 +20,7 @@ import org.springframework.web.context.WebApplicationContext;
 
 import java.util.Map;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -36,14 +32,11 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @ExtendWith(SpringExtension.class)
 @WebAppConfiguration
 @ContextHierarchy({
-        @ContextConfiguration("/spring-test/cdr-client-container.xml"),
         @ContextConfiguration("/front-page-it-servlet.xml")
 })
 public class FrontPageControllerIT {
     protected MockMvc mvc;
 
-    @Autowired
-    private AccessRestrictionUtil restrictionUtil;
     @Autowired
     private SolrQueryLayerService queryLayer;
     @Autowired
@@ -59,17 +52,12 @@ public class FrontPageControllerIT {
 
         GroupsThreadStore.storeUsername("test_user");
         GroupsThreadStore.storeGroups(new AccessGroupSetImpl("adminGroup"));
-
-        restrictionUtil = new AccessRestrictionUtil();
-
-        queryLayer = new SolrQueryLayerService();
-        queryLayer.setAccessRestrictionUtil(restrictionUtil);
     }
 
     @Test
     public void testGetCollectionStats() throws Exception {
-        String json = "{\"formatCounts\":[{\"image\":\"386710\"},{\"audio\":\"5027\"},{\"video\":\"21444\"},{\"text\":\"46936\"}]}";
-        var collectionStats = Map.of("image", 386710L, "audio", 5027L, "video", 21444L, "text", 46936L);
+        var collectionStats = Map.of("image", 386710L, "audio", 5027L,
+                "video", 21444L, "text", 46936L);
         when(queryLayer.getFormatCounts(any())).thenReturn(collectionStats);
 
         MvcResult result = mvc.perform(get("/collectionStats")
@@ -78,6 +66,10 @@ public class FrontPageControllerIT {
                         .andReturn();
 
         String resultJson = result.getResponse().getContentAsString();
-        assertEquals(json, resultJson);
+        assertTrue(resultJson.contains("formatCounts"));
+        assertTrue(resultJson.contains("\"image\":386710"));
+        assertTrue(resultJson.contains("\"audio\":5027"));
+        assertTrue(resultJson.contains("\"video\":21444"));
+        assertTrue(resultJson.contains("\"text\":46936"));
     }
 }

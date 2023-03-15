@@ -31,22 +31,24 @@
     <bean id="facetFieldFactory" class="org.mockito.Mockito" factory-method="mock">
         <constructor-arg value="edu.unc.lib.boxc.search.solr.services.FacetFieldFactory" />
     </bean>
+
     <bean id="searchActionService" class="org.mockito.Mockito" factory-method="mock">
         <constructor-arg value="edu.unc.lib.boxc.web.common.search.SearchActionService" />
     </bean>
+
     <bean id="facetFieldUtil" class="org.mockito.Mockito" factory-method="mock">
         <constructor-arg value="edu.unc.lib.boxc.search.solr.utils.FacetFieldUtil" />
     </bean>
+
     <bean id="searchStateFactory" class="org.mockito.Mockito" factory-method="mock">
         <constructor-arg value="edu.unc.lib.boxc.search.solr.services.SearchStateFactory" />
     </bean>
+
     <bean id="childrenCountService" class="org.mockito.Mockito" factory-method="mock">
         <constructor-arg value="edu.unc.lib.boxc.search.solr.services.ChildrenCountService" />
     </bean>
+
     <bean id="setFacetTitleByIdService" class="org.mockito.Mockito" factory-method="mock">
         <constructor-arg value="edu.unc.lib.boxc.search.solr.services.SetFacetTitleByIdService" />
-    </bean>
-    <bean id="solrAccessRestrictionUtil" class="org.mockito.Mockito" factory-method="mock">
-        <constructor-arg value="edu.unc.lib.boxc.search.solr.utils.AccessRestrictionUtil" />
     </bean>
 </beans>
