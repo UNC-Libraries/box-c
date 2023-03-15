@@ -3,12 +3,14 @@ package edu.unc.lib.boxc.web.access.controllers;
 import edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl;
 import edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore;
 import edu.unc.lib.boxc.model.fcrepo.test.TestHelper;
+import edu.unc.lib.boxc.search.solr.config.SearchSettings;
+import edu.unc.lib.boxc.search.solr.config.SolrSettings;
+import edu.unc.lib.boxc.search.solr.services.SolrSearchService;
 import edu.unc.lib.boxc.search.solr.utils.AccessRestrictionUtil;
 import edu.unc.lib.boxc.web.common.services.SolrQueryLayerService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ContextConfiguration;
@@ -40,11 +42,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 public class FrontPageControllerIT {
     protected MockMvc mvc;
 
+    @Autowired
     private AccessRestrictionUtil restrictionUtil;
-
-    @Mock
+    @Autowired
     private SolrQueryLayerService queryLayer;
-
     @Autowired
     protected WebApplicationContext context;
 
@@ -77,7 +78,6 @@ public class FrontPageControllerIT {
                         .andReturn();
 
         String resultJson = result.getResponse().getContentAsString();
-
         assertEquals(json, resultJson);
     }
 }
