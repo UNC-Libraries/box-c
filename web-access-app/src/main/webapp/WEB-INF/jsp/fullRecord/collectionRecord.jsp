@@ -47,14 +47,11 @@
                 <c:if test="${not empty briefObject.collectionId}">
                     <p><strong>Archival Collection ID: </strong><c:out value="${briefObject.collectionId}"></c:out></p>
                 </c:if>
-                <p><strong>Finding Aid: </strong>
-                    <c:choose>
-                        <c:when test="${not empty findingAidUrl}">
-                            <a href="<c:out value="${findingAidUrl}"/>"><c:out value="${findingAidUrl}"/></a>
-                        </c:when>
-                        <c:otherwise>Doesn’t have a finding aid</c:otherwise>
-                    </c:choose>
-                </p>
+                <c:if test="${not empty findingAidUrl}">
+                    <p><strong>Finding Aid: </strong>
+                        <a href="<c:out value='${findingAidUrl}'/>"><c:out value="${findingAidUrl}"/></a>
+                    </p>
+                </c:if>
                 <c:if test="${not empty briefObject.abstractText}">
                     <c:set var="truncatedAbstract" value="${cdr:truncateText(briefObject.abstractText, 350)}"/>
                     <c:choose>
