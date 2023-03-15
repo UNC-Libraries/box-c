@@ -4,6 +4,7 @@ import displayWrapper from "@/components/displayWrapper.vue";
 import searchWrapper from "@/components/searchWrapper.vue";
 import collectionBrowseWrapper from "@/components/collectionBrowseWrapper.vue";
 import frontPage from "@/components/frontPage.vue";
+import aboutRepository from "@/components/aboutRepository.vue";
 
 export default createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -32,6 +33,11 @@ export default createRouter({
       path: '/',
       name: 'frontPage',
       component: frontPage
+    },
+    {
+      path: '/aboutRepository',
+      name: 'aboutRepository',
+      component: aboutRepository
     }
   ]
 });
