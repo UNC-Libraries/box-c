@@ -41,7 +41,7 @@
                 </p>
                 <p><a @click.prevent="displayMetadata()" href="#">{{ $t('full_record.additional_metadata') }}</a></p>
             </div>
-            <div v-if="restrictedContent" class="column is-narrow-desktop item-actions">
+            <div v-if="restrictedContent" class="column is-narrow item-actions">
                 <div class="restricted-access">
                     <h2>This {{ recordData.briefObject.resourceType.toLowerCase() }} has restricted content</h2>
                     <div v-if="hasAccess('canViewOriginals')" class="actionlink"><a class="button login-link" :href="loginUrl"><i class="fa fa-id-card"></i> {{ $t('access.login') }}</a></div>
@@ -65,3 +65,23 @@ export default {
     mixins: [fullRecordUtils]
 }
 </script>
+
+<style scoped lang="scss">
+    .actionlink {
+        margin: 5px auto;
+        max-width: 300px;
+    }
+
+    .browse-header {
+        h2 {
+            font-size: 1.5rem;
+
+        }
+    }
+
+    .restricted-access {
+        h2 {
+            text-align: center;
+        }
+    }
+</style>
