@@ -1,5 +1,5 @@
 <template>
-    <div class="gray shadowtop">
+    <div class="onecol gray shadowtop">
         <div class="contentarea">
             <h2 class="link-list">{{ $t('full_record.neighbor_list') }}</h2>
             <template v-for="neighbor in neighbors">
@@ -58,9 +58,3 @@ export default {
     }
 }
 </script>
-
-<style scoped lang="scss">
-    .relateditem {
-        display: inline-block;
-    }
-</style>
