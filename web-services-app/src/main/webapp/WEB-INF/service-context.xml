@@ -184,6 +184,7 @@
         <property name="gaTrackingID" ref="gaTrackingID" />
         <property name="solrSearchService" ref="unrestrictedSolrSearchService" />
         <property name="httpClientConnectionManager" ref="httpClientConnectionManager" />
+        <property name="repositoryHost" value="${repository.host}" />
     </bean>
     
     <bean id="fedoraContentService" class="edu.unc.lib.boxc.web.common.services.FedoraContentService">
