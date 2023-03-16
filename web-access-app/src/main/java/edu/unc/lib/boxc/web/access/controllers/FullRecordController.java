@@ -270,7 +270,7 @@ public class FullRecordController extends AbstractErrorHandlingSearchController 
      * @return
      */
     @GetMapping(path = "/{pid}/json", produces = APPLICATION_JSON_VALUE)
-    public @ResponseBody String handleRequest(@PathVariable("pid")String pidString) {
+    public @ResponseBody String handleRequest(@PathVariable("pid")String pidString, HttpServletResponse response) {
         PID pid = PIDs.get(pidString);
 
         AccessGroupSet principals = getAgentPrincipals().getPrincipals();
@@ -284,6 +284,9 @@ public class FullRecordController extends AbstractErrorHandlingSearchController 
         if (briefObject == null) {
             throw new NotFoundException("No record found for " + pid.getId());
         }
+
+        // Add username
+        response.addHeader("ONYEN", getAgentPrincipals().getUsername());
 
         // Get additional information depending on the type of object since the user has access
         String resourceType = briefObject.getResourceType();
@@ -342,6 +345,8 @@ public class FullRecordController extends AbstractErrorHandlingSearchController 
         }
         recordProperties.put("markedForDeletion", isMarkedForDeletion);
         recordProperties.put("pageSubtitle", briefObject.getTitle());
+        recordProperties.put("canEditDescription",
+                aclService.hasAccess( pid, principals, Permission.editDescription));
 
         return SerializationUtil.objectToJSON(recordProperties);
     }

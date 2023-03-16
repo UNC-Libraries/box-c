@@ -15,6 +15,7 @@ export default {
     },
 
     props: {
+        onyen: String,
         recordData: Object
     },
 
@@ -67,6 +68,10 @@ export default {
         loginUrl() {
             const current_page = window.location;
             return `https://${current_page.host}/Shibboleth.sso/Login?target=${encodeURIComponent(current_page)}`;
+        },
+
+        isLoggedIn() {
+            return this.onyen !== undefined && this.onyen !== ''
         }
     },
 

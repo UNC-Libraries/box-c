@@ -81,7 +81,7 @@
                     </div>
                 </div>
                 <div class="column is-narrow action-btn item-actions">
-                    <div v-if="restrictedContent" class="column is-narrow item-actions">
+                    <div v-if="restrictedContent && !isLoggedIn" class="column is-narrow item-actions">
                         <div class="restricted-access">
                             <h2>This {{ recordData.briefObject.resourceType.toLowerCase() }} has restricted content</h2>
                             <div v-if="hasAccess('canViewOriginals')" class="actionlink"><a class="button login-link" :href="loginUrl"><i class="fa fa-id-card"></i> {{ $t('access.login') }}</a></div>
@@ -110,11 +110,10 @@
                 <audio-player :datafile-url="recordData.dataFileUrl"></audio-player>
             </template>
         </div>
-        <!-- @TODO Need some way to figure out how to get a user's logged in permissions. -->
         <file-list v-if="childCount > 0"
                    :child-count="childCount"
                    :work-id="recordData.briefObject.id"
-                   :edit-access="hasAccess('canDescribe', '<placeholder>')"></file-list>
+                   :edit-access="recordData.canEditDescription"></file-list>
         <div v-if="hasAccess('canViewMetadata', 'everyone')">
             <h2 class="full-metadata">{{ $t('full_record.detailed_metadata') }}</h2>
             <div id="mods_data_display" v-html="metadata"></div>

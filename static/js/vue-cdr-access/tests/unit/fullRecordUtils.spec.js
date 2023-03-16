@@ -263,5 +263,9 @@ describe('fullrecordUtils', () => {
         expect(wrapper.vm.hasAccess('canViewOriginals')).toBe(true);
     });
 
-
+    it('determines whether a user is logged in', async () => {
+        expect(wrapper.vm.isLoggedIn).toEqual(false);
+        await wrapper.setProps({ onyen: 'test_user' });
+        expect(wrapper.vm.isLoggedIn).toEqual(true);
+    });
 });

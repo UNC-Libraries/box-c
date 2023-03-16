@@ -7,10 +7,11 @@ Top level component for full record pages with searching/browsing, including Adm
             <img :src="nonVueStaticImageUrl('ajax-loader-lg.gif')" alt="data loading icon">
         </div>
         <div v-if="!is_page_loading">
-            <admin-unit v-if="container_info.resourceType === 'AdminUnit'" :record-data="container_info"></admin-unit>
+            <admin-unit v-if="container_info.resourceType === 'AdminUnit'" :onyen="onyen" :record-data="container_info"></admin-unit>
             <collection-folder v-if="container_info.resourceType === 'Collection' || container_info.resourceType === 'Folder'"
+                               :onyen="onyen"
                                :record-data="container_info"></collection-folder>
-            <aggregate-record v-if="container_info.resourceType === 'Work'" :record-data="container_info"></aggregate-record>
+            <aggregate-record v-if="container_info.resourceType === 'Work'" :onyen="onyen" :record-data="container_info"></aggregate-record>
 
             <div v-if="container_info.resourceType !== 'Work'">
                 <div class="columns is-tablet">
@@ -110,7 +111,8 @@ Top level component for full record pages with searching/browsing, including Adm
                 facet_list: [],
                 search_method: 'listJson',
                 uuid: '',
-                filter_parameters: {}
+                filter_parameters: {},
+                onyen: ''
             }
         },
 
@@ -150,6 +152,7 @@ Top level component for full record pages with searching/browsing, including Adm
 
                 await get(`${link}json`).then((response) => {
                     this.container_info = response.data;
+                    this.onyen = response.headers['onyen'];
                 }).catch(error => console.log(error));
             },
 
@@ -198,14 +201,14 @@ Top level component for full record pages with searching/browsing, including Adm
         created() {
             this.getBriefObject();
 
-          //  if (GET_SEARCH_RESULTS.includes(this.container_info.resourceType)) {
+            if (GET_SEARCH_RESULTS.includes(this.container_info.resourceType)) {
                 this.adjustFacetsForRetrieval();
                 // Don't update route if no url parameters are passed in
                 if (!isEmpty(this.$route.query)) {
                     this.updateUrl();
                 }
-                this.retrieveSearchResults();
-          //  }
+            }
+            this.retrieveSearchResults();
         },
     }
 </script>
