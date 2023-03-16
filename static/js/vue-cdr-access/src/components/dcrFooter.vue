@@ -17,8 +17,8 @@ export default {
     name: "dcrFooter",
     computed: {
         homeUrl() {
-            let url = window.location.href;
-            return url.slice(0, url.lastIndexOf('/'));
+            let current_page = window.location;
+            return `https://${current_page.host}/`;
         }
     }
 };

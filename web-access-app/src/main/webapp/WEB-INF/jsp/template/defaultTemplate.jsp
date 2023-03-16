@@ -2,6 +2,7 @@
 <%@ page trimDirectiveWhitespaces="true" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
+<%@ taglib prefix="cdr" uri="http://cdr.lib.unc.edu/cdrUI" %>
 <!doctype html>
 <html lang="en">
 <head>
@@ -14,16 +15,8 @@
 </head>
 <body>
 <c:set var="gaCommands" value="" scope="request" />
-<div id="pagewrap">
+<div id="pagewrap" data-username="${cdr:getUsername()}" data-admin="${sessionScope.accessLevel.viewAdmin}">
 	<div id="pagewrap_inside">
-		<c:choose>
-			<c:when test="${contentPage.equals('frontPage.jsp')}">
-				<c:import url="common/header.jsp" />
-			</c:when>
-			<c:when test="${not contentPage.equals('fullRecord/uvViewer.jsp') && not contentPage.equals('fulleRecord/pdfViewer.jsp')}">
-				<c:import url="common/headerSmall.jsp" />
-			</c:when>
-		</c:choose>
 		<div id="content">
 			<c:choose>
 				<c:when test="${not empty contentPage}">
@@ -34,9 +27,8 @@
 				</c:otherwise>
 			</c:choose>
 		</div>
-		<c:if test="${not contentPage.equals('fullRecord/uvViewer.jsp') && not contentPage.equals('fulleRecord/pdfViewer.jsp')}">
-			<c:import url="common/footer.jsp"/>
-		</c:if>
+
+		<c:import url="common/footer.jsp"/>
 	</div>
 </div>
 <c:import url="googleAnalytics.jsp" />
