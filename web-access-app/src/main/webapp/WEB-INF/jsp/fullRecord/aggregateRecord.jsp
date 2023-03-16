@@ -47,14 +47,12 @@
                                     <c:out value="${collectionId}"></c:out>
                                 </li>
                             </c:if>
-                            <li><span class="has-text-weight-bold">Finding Aid: </span>
-                                <c:choose>
-                                    <c:when test="${not empty findingAidUrl}">
-                                        <a href="<c:out value="${findingAidUrl}"/>"><c:out value="${findingAidUrl}"/></a>
-                                    </c:when>
-                                    <c:otherwise>Doesn’t have a finding aid</c:otherwise>
-                                </c:choose>
-                            </li>
+                            <c:if test="${not empty findingAidUrl}">
+                                <li>
+                                    <span class="has-text-weight-bold">Finding Aid: </span>
+                                    <a href="<c:out value='${findingAidUrl}'/>"><c:out value="${findingAidUrl}"/></a>
+                                </li>
+                            </c:if>
                             <c:if test="${not empty briefObject.creator}">
                                 <li>
                                     <span class="has-text-weight-bold">Creator<c:if test="${fn:length(briefObject.creator) > 1}">s</c:if>:</span>
