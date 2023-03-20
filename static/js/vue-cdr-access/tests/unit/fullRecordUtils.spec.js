@@ -265,7 +265,7 @@ describe('fullrecordUtils', () => {
 
     it('determines whether a user is logged in', async () => {
         expect(wrapper.vm.isLoggedIn).toEqual(false);
-        await wrapper.setProps({ onyen: 'test_user' });
+        await wrapper.setProps({ username: 'test_user' });
         expect(wrapper.vm.isLoggedIn).toEqual(true);
     });
 });

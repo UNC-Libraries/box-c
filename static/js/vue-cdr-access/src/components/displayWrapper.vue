@@ -7,11 +7,11 @@ Top level component for full record pages with searching/browsing, including Adm
             <img :src="nonVueStaticImageUrl('ajax-loader-lg.gif')" alt="data loading icon">
         </div>
         <div v-if="!is_page_loading">
-            <admin-unit v-if="container_info.resourceType === 'AdminUnit'" :onyen="onyen" :record-data="container_info"></admin-unit>
+            <admin-unit v-if="container_info.resourceType === 'AdminUnit'" :username="username" :record-data="container_info"></admin-unit>
             <collection-folder v-if="container_info.resourceType === 'Collection' || container_info.resourceType === 'Folder'"
-                               :onyen="onyen"
+                               :username="username"
                                :record-data="container_info"></collection-folder>
-            <aggregate-record v-if="container_info.resourceType === 'Work'" :onyen="onyen" :record-data="container_info"></aggregate-record>
+            <aggregate-record v-if="container_info.resourceType === 'Work'" :username="username" :record-data="container_info"></aggregate-record>
 
             <div v-if="container_info.resourceType !== 'Work'">
                 <div class="columns is-tablet">
@@ -112,7 +112,7 @@ Top level component for full record pages with searching/browsing, including Adm
                 search_method: 'listJson',
                 uuid: '',
                 filter_parameters: {},
-                onyen: ''
+                username: ''
             }
         },
 
@@ -152,7 +152,7 @@ Top level component for full record pages with searching/browsing, including Adm
 
                 await get(`${link}json`).then((response) => {
                     this.container_info = response.data;
-                    this.onyen = response.headers['onyen'];
+                    this.username = response.headers['username'];
                 }).catch(error => console.log(error));
             },
 

@@ -92,7 +92,6 @@ export default {
                 rowCallback: (row, data) => {
                     if (this.showBadge(data).markDeleted) {
                         document.querySelector(row).classList.add('deleted');
-                        ///$(row).addClass('deleted');
                     }
                 }
             }
@@ -110,10 +109,12 @@ export default {
                         let img;
 
                         if ('thumbnail_url' in row) {
+                            const thumbnail_title = this.$t('full_record.thumbnail_title', { title: row.title })
                             img = `<img class="data-thumb" loading="lazy" src="${row.thumbnail_url}"` +
-                            ` alt="Thumbnail image for ${row.title}">`;
+                            ` alt="${thumbnail_title}">`;
                         } else {
-                            img = '<i class="fa fa-file default-img-icon data-thumb" title="Default thumbnail image"></i>';
+                            const thumbnail_default = this.$t('full_record.thumbnail_default');
+                            img = `<i class="fa fa-file default-img-icon data-thumb" title="${thumbnail_default}"></i>`;
                         }
 
                         const trashBadge = this.showBadge(row).markDeleted;
@@ -136,12 +137,13 @@ export default {
                                 '</div>';
                         }
 
-                        return img
+                        return img;
                     }, targets: 0
                 },
                 {
                     render: (data, type, row) => {
-                        return `<a href="/record/${row.id}" aria-label="View ${row.title}">${row.title}</a>`;
+                        const view_title = this.$t('full_record.view_title', { title: row.title });
+                        return `<a href="/record/${row.id}" aria-label="${view_title}">${row.title}</a>`;
                     }, targets: 1
                 },
                 {
@@ -156,18 +158,23 @@ export default {
                 },
                 {
                     render: (data, type, row) => {
-                        return `<a href="/record/${row.id}" aria-label="View ${row.title}">` +
-                            '<i class="fa fa-search-plus is-icon"' + ' title="View"></i></a>';
+                        const view_title = this.$t('full_record.view_title', { title: row.title });
+                        const view = this.$t('full_record.view');
+                        return `<a href="/record/${row.id}" aria-label="${view_title}">` +
+                            ` <i class="fa fa-search-plus is-icon" title="${view}"></i></a>`;
                     },
                     targets: 4
                 },
                 {
                     render: (data, type, row) => {
                         if (row.permissions.indexOf('viewOriginal') === -1) {
-                            return '<i class="fa fa-download is-icon no-download" title="Download Unavailable"></i>';
+                            const unavailable = this.$t('full_record.download_unavailable');
+                            return `<i class="fa fa-download is-icon no-download" title="${unavailable}"></i>`;
                         }
-                        return `<a href="/indexablecontent/${row.id}?dl=true" aria-label="Download ${row.title}">` +
-                            ' <i class="fa fa-download is-icon" title="Download"></i></a>';
+                        const label_text = this.$t('full_record.download_title', { title: row.title });
+                        const download = this.$t('full_record.download');
+                        return `<a href="/indexablecontent/${row.id}?dl=true" aria-label="${label_text}">` +
+                            ` <i class="fa fa-download is-icon" title="${download}"></i></a>`;
                     },
                     targets: 5
                 }
@@ -183,7 +190,8 @@ export default {
                 column_defs.push(
                     {
                         render: (data, type, row) => {
-                            return `<a href="/admin/describe/${row.id}" aria-label="Edit ${row.title}">` +
+                            const label_text = this.ariaLabelText(row.title);
+                            return `<a href="/admin/describe/${row.id}" aria-label="${label_text}">` +
                                 '<i class="fa fa-edit is-icon" title="Edit"></i></a>'
                         },
                         targets: 6
@@ -207,6 +215,10 @@ export default {
             }
 
             return { markDeleted: markedForDeletion, restricted: restrictedAccess };
+        },
+
+        ariaLabelText(row) {
+            return this.$t('full_record.edit_title', { title: row.title });
         }
     }
 }

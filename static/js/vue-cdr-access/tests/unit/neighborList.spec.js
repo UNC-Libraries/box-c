@@ -443,7 +443,7 @@ const neighbor_list = [
 ];
 let wrapper, router;
 
-describe('audioPlayer.vue', () => {
+describe('neighborList.vue', () => {
     const i18n = createI18n({
         locale: 'en',
         fallbackLocale: 'en',

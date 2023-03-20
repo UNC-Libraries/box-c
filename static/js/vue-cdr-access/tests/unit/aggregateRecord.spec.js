@@ -6,7 +6,6 @@ import {createI18n} from 'vue-i18n';
 import translations from '@/translations';
 import moxios from 'moxios';
 import cloneDeep from 'lodash.clonedeep';
-import pretty from 'pretty';
 
 const record = {
     "briefObject": {
@@ -391,25 +390,118 @@ describe('aggregateRecord.vue', () => {
         expect(wrapper.find('h2').text()).toEqual('Listen for real');
     });
 
-    it("displays an iframe viewer for images", async () => {
-       let updated_record = cloneDeep(record);
-       updated_record.viewerType = 'uv';
-       await wrapper.setProps({
-           recordData: updated_record
-       });
-       expect(wrapper.find('iframe').exists()).toBe(true);
+    it("does not display a finding aid link, if absent", () => {
+        expect(wrapper.find('.finding-aid').exists()).toBe(false);
     });
 
-    it("displays an iframe viewer for pdfs", async () => {
+    it("displays a finding aid link, if present", async () => {
         let updated_record = cloneDeep(record);
-        updated_record.viewerType = 'pdf';
+        updated_record.findingAidUrl = 'https://unc-finding-aid.lib.unc.edu';
+        await wrapper.setProps({
+            recordData: updated_record
+        });
+        expect(wrapper.find('.finding-aid').exists()).toBe(true);
+    });
+
+    it("does not allow users to edit the work by default", () => {
+        expect(wrapper.find('a.edit').exists()).toBe(false);
+    });
+
+    it("allows users to edit the work with the proper permissions", async () => {
+        let updated_record = cloneDeep(record);
+        updated_record.canEditDescription = true;
+        await wrapper.setProps({
+            recordData: updated_record
+        });
+        expect(wrapper.find('a.edit').exists()).toBe(true);
+    });
+
+    it("does not set a download link by default", async () => {
+        expect(wrapper.find('a.download').exists()).toBe(false);
+    });
+
+    it("allows users to download the work if a download link is present", async () => {
+        let updated_record = cloneDeep(record);
+        updated_record.briefObject.dataFileUrl = 'https://download-link.lib.unc.edu';
+        await wrapper.setProps({
+            recordData: updated_record
+        });
+        expect(wrapper.find('a.download').exists()).toBe(true);
+    });
+
+    it("displays an iframe viewer for images", async () => {
+        let updated_record = cloneDeep(record);
+        updated_record.viewerType = 'uv';
+        updated_record.briefObject.groupRoleMap = {
+            everyone: 'canViewAccessCopies'
+        }
         await wrapper.setProps({
             recordData: updated_record
         });
         expect(wrapper.find('iframe').exists()).toBe(true);
     });
 
-    it("uses the audio player component for audio files", () => {
+    it("displays an iframe viewer for images for logged in users", async () => {
+        let updated_record = cloneDeep(record);
+        updated_record.viewerType = 'uv';
+        updated_record.briefObject.groupRoleMap = {
+            everyone: 'canViewMetadata',
+            authenticated: 'canViewAccessCopies'
+        }
+        await wrapper.setProps({
+            recordData: updated_record,
+            username: 'test_user'
+        });
+        expect(wrapper.find('iframe').exists()).toBe(true);
+    });
+
+    it("displays an iframe viewer for pdfs", async () => {
+        let updated_record = cloneDeep(record);
+        updated_record.viewerType = 'pdf';
+        updated_record.briefObject.groupRoleMap = {
+            everyone: 'canViewOriginals'
+        }
+        await wrapper.setProps({
+            recordData: updated_record
+        });
+        expect(wrapper.find('iframe').exists()).toBe(true);
+    });
+
+    it("displays an iframe viewer for pdfs for logged in users", async () => {
+        let updated_record = cloneDeep(record);
+        updated_record.viewerType = 'pdf';
+        updated_record.briefObject.groupRoleMap = {
+            everyone: 'canViewMetadata',
+            authenticated: 'canViewOriginals'
+        }
+        await wrapper.setProps({
+            recordData: updated_record,
+            username: 'test_user'
+        });
+        expect(wrapper.find('iframe').exists()).toBe(true);
+    });
+
+    it("uses the audio player component for audio files", async () => {
+        let updated_record = cloneDeep(record);
+        updated_record.briefObject.groupRoleMap = {
+            everyone: 'canViewAccessCopies'
+        }
+        await wrapper.setProps({
+            recordData: updated_record
+        });
+        expect(wrapper.findComponent({ name: 'audioPlayer' }).exists()).toBe(true);
+    });
+
+    it("uses the audio player component for audio files for logged in users", async () => {
+        let updated_record = cloneDeep(record);
+        updated_record.briefObject.groupRoleMap = {
+            everyone: 'canViewMetadata',
+            authenticated: 'canViewAccessCopies'
+        }
+        await wrapper.setProps({
+            recordData: updated_record,
+            username: 'test_user'
+        });
         expect(wrapper.findComponent({ name: 'audioPlayer' }).exists()).toBe(true);
     });
 

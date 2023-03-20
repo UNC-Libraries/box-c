@@ -15,7 +15,7 @@ export default {
     },
 
     props: {
-        onyen: String,
+        username: String,
         recordData: Object
     },
 
@@ -71,7 +71,7 @@ export default {
         },
 
         isLoggedIn() {
-            return this.onyen !== undefined && this.onyen !== ''
+            return this.username !== undefined && this.username !== ''
         }
     },
 
@@ -97,7 +97,7 @@ export default {
         },
 
         editDescriptionUrl(id) {
-            return `${window.location.host}/describe/${id}`;
+            return `https://${window.location.host}/describe/${id}`;
         },
 
         hasAccess(permission, user_type= 'authenticated') {

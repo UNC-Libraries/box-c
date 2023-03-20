@@ -6,7 +6,7 @@
                 <div class="relateditem" :class="{current_item: currentRecordId === neighbor.id}">
                     <div class="relatedthumb" :class="neighborIsDeleted(neighbor.status)">
                         <thumbnail :thumbnail-data="neighbor"
-                                   :allows-full-access="hasAccess(neighbor, 'canViewOriginals')"
+                                   :allows-full-access="allowsPublicAccess(neighbor)"
                                    size="small"></thumbnail>
                     </div>
                     <p><a :href="fullRecordUrl(neighbor.id)">{{ truncateText(neighbor.title) }}</a></p>
@@ -46,14 +46,14 @@ export default {
             return title.substring(0, 50);
         },
 
-        hasAccess(neighbor, permission) {
+        allowsPublicAccess(neighbor) {
             const group_roles = neighbor.groupRoleMap;
             if (group_roles === undefined || isEmpty(group_roles)) {
                 return false;
             }
 
-            return Object.keys(group_roles).includes('authenticated') &&
-                group_roles.authenticated.includes(permission);
+            return Object.keys(group_roles).includes('everyone') &&
+                group_roles.authenticated.includes('canViewOriginals');
         }
     }
 }

@@ -286,7 +286,7 @@ public class FullRecordController extends AbstractErrorHandlingSearchController 
         }
 
         // Add username
-        response.addHeader("ONYEN", getAgentPrincipals().getUsername());
+        response.addHeader("username", getAgentPrincipals().getUsername());
 
         // Get additional information depending on the type of object since the user has access
         String resourceType = briefObject.getResourceType();
