@@ -38,5 +38,6 @@
 	</div>
 </div>
 <c:import url="googleAnalytics.jsp" />
+<c:import url="matomoAnalytics.jsp" />
 </body>
 </html>
