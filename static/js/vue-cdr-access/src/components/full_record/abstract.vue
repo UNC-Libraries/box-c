@@ -8,9 +8,19 @@
 import fullRecordUtils from "../../mixins/fullRecordUtils";
 
 export default {
-  name: "abstract",
+    name: "abstract",
 
-  mixins: [fullRecordUtils]
+    mixins: [fullRecordUtils],
+
+    data() {
+        return {
+            showFullAbstract: false
+        }
+    },
+
+    props: {
+        briefObject: Object
+    }
 }
 </script>
 
