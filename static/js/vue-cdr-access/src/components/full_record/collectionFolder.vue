@@ -28,11 +28,7 @@
                     </template>
                     <template v-else>Doesn't have a finding aid</template>
                 </p>
-                <template v-if="recordData.briefObject.abstractText">
-                    <p v-if="truncateAbstract" class="abstract">{{ truncatedAbstractText }}... <a class="abstract-text" @click.prevent="toggleAbstractDisplay()"
-                                                                                                  href="#">{{ abstractLinkText }}</a></p>
-                    <p v-else class="abstract">{{ recordData.briefObject.abstractText }}</p>
-                </template>
+                <abstract v-if="recordData.briefObject.abstractText"/>
                 <p v-if="fieldExists(recordData.exhibits)">
                     <strong>{{ $t('full_record.related_digital_exhibits') }}: </strong>
                     <template v-for="(exhibit, index) in recordData.exhibits">
@@ -59,11 +55,16 @@
 <script>
 import fullRecordUtils from '../../mixins/fullRecordUtils';
 import {format} from 'date-fns';
+import abstract from "../full_record/abstract.vue";
 
 export default {
     name: 'collectionFolder',
 
     mixins: [fullRecordUtils],
+
+    components: {
+        abstract
+    },
 
     methods: {
         fieldExists(value) {
