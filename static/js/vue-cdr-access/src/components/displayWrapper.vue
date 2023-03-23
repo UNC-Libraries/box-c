@@ -7,13 +7,13 @@ Top level component for full record pages with searching/browsing, including Adm
             <img :src="nonVueStaticImageUrl('ajax-loader-lg.gif')" alt="data loading icon">
         </div>
         <div v-if="!is_page_loading">
-            <admin-unit v-if="container_info.resourceType === 'AdminUnit'" :username="username" :record-data="container_info"></admin-unit>
-            <collection-folder v-if="container_info.resourceType === 'Collection' || container_info.resourceType === 'Folder'"
+            <admin-unit v-if="container_info.briefObject.type === 'AdminUnit'" :username="username" :record-data="container_info"></admin-unit>
+            <collection-folder v-if="container_info.briefObject.type === 'Collection' || container_info.briefObject.type === 'Folder'"
                                :username="username"
                                :record-data="container_info"></collection-folder>
-            <aggregate-record v-if="container_info.resourceType === 'Work'" :username="username" :record-data="container_info"></aggregate-record>
+            <aggregate-record v-if="container_info.briefObject.type === 'Work'" :username="username" :record-data="container_info"></aggregate-record>
 
-            <div v-if="container_info.resourceType !== 'Work'">
+            <div v-if="container_info.briefObject.type !== 'Work' && container_info.briefObject.type !== 'File'">
                 <div class="columns is-tablet">
                     <div class="column is-6">
                         <browse-search :object-type="container_metadata.type"></browse-search>

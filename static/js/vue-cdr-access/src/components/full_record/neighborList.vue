@@ -53,7 +53,7 @@ export default {
             }
 
             return Object.keys(group_roles).includes('everyone') &&
-                group_roles.authenticated.includes('canViewOriginals');
+                group_roles.everyone.includes('canViewOriginals');
         }
     }
 }

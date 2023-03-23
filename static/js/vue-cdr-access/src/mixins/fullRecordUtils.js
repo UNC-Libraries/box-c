@@ -2,7 +2,6 @@ import breadCrumbs from '@/components/full_record/breadCrumbs.vue';
 import modalMetadata from '@/components/modalMetadata.vue';
 import thumbnail from '@/components/full_record/thumbnail.vue';
 import isEmpty from 'lodash.isempty';
-import {format} from 'date-fns';
 
 export default {
     components: { breadCrumbs, modalMetadata, thumbnail },
@@ -50,19 +49,14 @@ export default {
         },
 
         childCount() {
-            if (this.recordData.briefObject.countMap === undefined) {
+            if (this.recordData.briefObject.counts === undefined) {
                 return 0;
             }
-            return this.recordData.briefObject.countMap.child;
+            return this.recordData.briefObject.counts.child;
         },
 
         restrictedContent() {
-            const brief_object = this.recordData.briefObject;
-            if (brief_object === undefined || brief_object.roleGroup === undefined) {
-                return false;
-            }
-
-            return !brief_object.roleGroup.includes('canViewOriginals|everyone');
+            return !this.recordData.briefObject.groupRoleMap.everyone.includes('canViewOriginals');
         },
 
         loginUrl() {
@@ -93,14 +87,14 @@ export default {
         },
 
         formatDate(value) {
-            return format(value, 'yyyy-MM-dd');
+            return value.split(/[A-Z]/)[0];
         },
 
         editDescriptionUrl(id) {
-            return `https://${window.location.host}/describe/${id}`;
+            return `https://${window.location.host}/admin/describe/${id}`;
         },
 
-        hasAccess(permission, user_type= 'authenticated') {
+        hasGroupRole(permission, user_type= 'everyone') {
             const group_roles = this.recordData.briefObject.groupRoleMap;
             if (group_roles === undefined || isEmpty(group_roles)) {
                 return false;
@@ -108,6 +102,13 @@ export default {
 
             return Object.keys(group_roles).includes(user_type) &&
                 group_roles[user_type].includes(permission);
+        },
+
+        hasPermission(permission) {
+            if (this.recordData.briefObject.permissions === undefined) {
+                return false;
+            }
+            return this.recordData.briefObject.permissions.includes(permission);
         }
     }
 }

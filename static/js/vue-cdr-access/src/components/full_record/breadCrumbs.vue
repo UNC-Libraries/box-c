@@ -1,7 +1,7 @@
 <template>
     <div id="full_record_trail">
         <span class="hierarchicalTrail">
-            <template v-for="(path, index) in objectPath.entries">
+            <template v-for="(path, index) in objectPath">
                 <template v-if="index === (breadcrumbSize - 1)">
                     <span class="quote">&raquo;</span>
                     <span>{{ path.name }}</span>
@@ -48,7 +48,7 @@ export default {
 
     computed: {
         breadcrumbSize() {
-            return this.objectPath.entries.length;
+            return this.objectPath.length;
         }
     },
 

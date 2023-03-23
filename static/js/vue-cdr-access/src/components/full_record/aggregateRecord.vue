@@ -14,16 +14,16 @@
                         <div class="columns columns-resize aggregate-info">
                             <div class="column is-narrow-tablet" :class="isDeleted">
                                 <thumbnail :thumbnail-data="recordData"
-                                           :allows-full-access="hasAccess('canViewOriginals')"></thumbnail>
+                                           :allows-full-access="hasGroupRole('canViewOriginals')"></thumbnail>
                             </div>
                         </div>
                         <div class="column">
                             <ul>
-                                <li v-if="fieldExists(recordData.briefObject.dateAdded)">
+                                <li v-if="fieldExists(recordData.briefObject.added)">
                                     <span class="has-text-weight-bold">{{ $t('full_record.date_added') }}: </span>
-                                    {{ formatDate(recordData.briefObject.dateAdded) }}
+                                    {{ formatDate(recordData.briefObject.added) }}
                                 </li>
-                                <li v-if="fieldExists(recordData.briefObject.parentCollection)">
+                                <li v-if="fieldExists(recordData.briefObject.parentCollectionName)">
                                     <span class="has-text-weight-bold">{{ $t('display.collection') }}: </span>
                                     <a class="parent-collection" :href="parentUrl">{{ recordData.briefObject.parentCollectionName }}</a>
                                 </li>
@@ -83,39 +83,37 @@
                     <div class="column is-narrow action-btn item-actions">
                         <div v-if="restrictedContent && !isLoggedIn" class="column is-narrow item-actions">
                             <div class="restricted-access">
-                                <h2>{{ $t('full_record.restricted_content', { resource_type: recordData.briefObject.resourceType.toLowerCase() }) }}</h2>
-                                <div v-if="hasAccess('canViewOriginals')" class="actionlink"><a class="button login-link" :href="loginUrl"><i class="fa fa-id-card"></i> {{ $t('access.login') }}</a></div>
+                                <h2>{{ $t('full_record.restricted_content', { resource_type: recordData.briefObject.type.toLowerCase() }) }}</h2>
+                                <div v-if="hasGroupRole('canViewOriginals', 'authenticated')" class="actionlink"><a class="button login-link" :href="loginUrl"><i class="fa fa-id-card"></i> {{ $t('access.login') }}</a></div>
                                 <div class="actionlink"><a class="button contact" href="https://library.unc.edu/wilson/contact/"><i class="fa fa-envelope"></i> {{ $t('access.contact') }}</a></div>
                             </div>
                         </div>
-                        <div v-if="recordData.canEditDescription" class="actionlink right">
+                        <div v-if="hasPermission('editDescription')" class="actionlink right">
                             <a class="edit button" :href="editDescriptionUrl(recordData.briefObject.id)"><i class="fa fa-edit"></i> {{ $t('full_record.edit') }}</a>
                         </div>
-                        <template>
-                            <div v-if="fieldExists(recordData.briefObject.dataFileUrl)" class="actionlink right download">
-                                <a class="download button" :href="downloadLink"><i class="fa fa-download"></i> {{ $t('full_record.download') }}</a>
-                            </div>
-                            <div v-else-if="fieldExists(recordData.briefObject.embargoDate) && fieldExists(recordData.briefObject.dataFileUrl)" class="noaction right">
-                                Available after {{ formatDate(recordData.briefObject.embargoDate) }}
-                            </div>
-                        </template>
+                        <div v-if="fieldExists(recordData.dataFileUrl) && hasPermission('viewOriginal')" class="actionlink right download">
+                            <a class="download button" :href="downloadLink"><i class="fa fa-download"></i> {{ $t('full_record.download') }}</a>
+                        </div>
+                        <div v-else-if="fieldExists(recordData.briefObject.embargoDate) && fieldExists(recordData.briefObject.dataFileUrl)" class="noaction right">
+                            Available after {{ formatDate(recordData.briefObject.embargoDate) }}
+                        </div>
                     </div>
                 </div>
             </div>
             <div class="clear">
-                <template v-if="(recordData.viewerType === 'uv' && canView('canViewAccessCopies')) ||
-                (recordData.viewerType === 'pdf' && canView('canViewOriginals'))">
+                <template v-if="(recordData.viewerType === 'uv' && hasPermission('viewAccessCopies')) ||
+                (recordData.viewerType === 'pdf' && hasPermission('viewOriginal'))">
                     <iframe :src="viewer(recordData.viewerType)" allow="fullscreen" scrolling="no"></iframe>
                 </template>
-                <template v-else-if="recordData.viewerType === 'audio' && canView('canViewAccessCopies')">
+                <template v-else-if="recordData.viewerType === 'audio' && hasPermission('viewAccessCopies')">
                     <audio-player :datafile-url="recordData.dataFileUrl"></audio-player>
                 </template>
             </div>
             <file-list v-if="childCount > 0"
                        :child-count="childCount"
                        :work-id="recordData.briefObject.id"
-                       :edit-access="recordData.canEditDescription"></file-list>
-            <div v-if="hasAccess('canViewMetadata', 'everyone')">
+                       :edit-access="hasPermission('editDescription')"></file-list>
+            <div v-if="hasPermission('viewMetadata')">
                 <h2 class="full-metadata">{{ $t('full_record.detailed_metadata') }}</h2>
                 <div id="mods_data_display" v-html="metadata"></div>
             </div>
@@ -151,7 +149,7 @@ export default {
         },
 
         downloadLink() {
-            return `${this.recordData.briefObject.dataFileUrl}?dl=true`;
+            return `${this.recordData.dataFileUrl}?dl=true`;
         }
     },
 
@@ -169,16 +167,11 @@ export default {
 
         viewer(viewer_type) {
             return `record/${this.recordData.briefObject.id}/${viewer_type}Viewer`;
-        },
-
-        canView(permission) {
-            return this.hasAccess(permission, 'everyone') ||
-                (this.hasAccess(permission) && this.isLoggedIn);
         }
     },
 
     mounted() {
-        if (this.hasAccess('canViewMetadata', 'everyone')) {
+        if (this.hasPermission('viewMetadata')) {
             this.loadMetadata();
         }
     }

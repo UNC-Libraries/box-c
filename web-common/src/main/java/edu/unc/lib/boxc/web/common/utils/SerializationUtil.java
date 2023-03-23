@@ -1,5 +1,23 @@
 package edu.unc.lib.boxc.web.common.utils;
 
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import edu.unc.lib.boxc.auth.api.UserRole;
+import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
+import edu.unc.lib.boxc.auth.api.services.GlobalPermissionEvaluator;
+import edu.unc.lib.boxc.common.util.DateTimeUtil;
+import edu.unc.lib.boxc.search.api.SearchFieldKey;
+import edu.unc.lib.boxc.search.api.facets.CutoffFacet;
+import edu.unc.lib.boxc.search.api.facets.HierarchicalFacetNode;
+import edu.unc.lib.boxc.search.api.models.ContentObjectRecord;
+import edu.unc.lib.boxc.search.solr.config.SearchSettings;
+import edu.unc.lib.boxc.search.solr.config.SolrSettings;
+import edu.unc.lib.boxc.search.solr.responses.HierarchicalBrowseResultResponse;
+import edu.unc.lib.boxc.search.solr.responses.SearchResultResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -11,25 +29,8 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import edu.unc.lib.boxc.search.api.SearchFieldKey;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.fasterxml.jackson.annotation.JsonInclude.Include;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
-import edu.unc.lib.boxc.auth.api.UserRole;
-import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
-import edu.unc.lib.boxc.auth.api.services.GlobalPermissionEvaluator;
-import edu.unc.lib.boxc.common.util.DateTimeUtil;
-import edu.unc.lib.boxc.search.api.facets.CutoffFacet;
-import edu.unc.lib.boxc.search.api.facets.HierarchicalFacetNode;
-import edu.unc.lib.boxc.search.api.models.ContentObjectRecord;
-import edu.unc.lib.boxc.search.solr.config.SearchSettings;
-import edu.unc.lib.boxc.search.solr.config.SolrSettings;
-import edu.unc.lib.boxc.search.solr.responses.HierarchicalBrowseResultResponse;
-import edu.unc.lib.boxc.search.solr.responses.SearchResultResponse;
+import static edu.unc.lib.boxc.auth.api.AccessPrincipalConstants.AUTHENTICATED_PRINC;
+import static edu.unc.lib.boxc.auth.api.AccessPrincipalConstants.PUBLIC_PRINC;
 
 /**
  *
@@ -175,6 +176,11 @@ public class SerializationUtil {
             result.put("rollup", metadata.getRollup());
         }
 
+        if (metadata.getParentCollection() != null) {
+            result.put("parentCollectionName", metadata.getParentCollectionName());
+            result.put("parentCollectionId", metadata.getParentCollectionId());
+        }
+
         if (metadata.getCountMap() != null && metadata.getCountMap().size() > 0) {
             result.put("counts", metadata.getCountMap());
         }
@@ -198,6 +204,19 @@ public class SerializationUtil {
 
         if (groups != null && metadata.getRoleGroup() != null) {
             result.put("permissions", getPermissionsByGroups(metadata, groups));
+        }
+
+        if (metadata.getGroupRoleMap() != null) {
+
+            var publicGroups = new HashMap<>();
+            var groupList = metadata.getGroupRoleMap();
+            if (groupList.containsKey(AUTHENTICATED_PRINC)) {
+                publicGroups.put(AUTHENTICATED_PRINC, groupList.get(AUTHENTICATED_PRINC));
+            }
+            if (groupList.containsKey(PUBLIC_PRINC)) {
+                publicGroups.put(PUBLIC_PRINC, groupList.get(PUBLIC_PRINC));
+            }
+            result.put("groupRoleMap", publicGroups);
         }
 
         if (metadata.getDynamicFields() != null) {

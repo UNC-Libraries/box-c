@@ -50,6 +50,7 @@ import java.io.InputStream;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import static edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore.getAgentPrincipals;
 import static edu.unc.lib.boxc.common.xml.SecureXMLFactory.createSAXBuilder;
@@ -295,8 +296,7 @@ public class FullRecordController extends AbstractErrorHandlingSearchController 
         }
 
         var recordProperties = new HashMap<String, Object>();
-        recordProperties.put("briefObject", briefObject);
-        recordProperties.put("resourceType", resourceType);
+        recordProperties.put("briefObject", SerializationUtil.metadataToMap(briefObject, principals));
 
         // Get parent id
         if (ResourceType.File.nameEquals(resourceType)) {
@@ -322,7 +322,9 @@ public class FullRecordController extends AbstractErrorHandlingSearchController 
             List<ContentObjectRecord> neighbors = neighborService.getNeighboringItems(briefObject,
                     searchSettings.maxNeighborResults, principals);
             accessCopiesService.populateThumbnailIds(neighbors, principals, true);
-            recordProperties.put("neighborList", neighbors);
+            var neighborList = neighbors.stream()
+                    .map(d -> SerializationUtil.metadataToMap(d, principals)).collect(Collectors.toList());
+            recordProperties.put("neighborList", neighborList);
         }
 
         if (ResourceType.Work.nameEquals(resourceType)) {
@@ -344,10 +346,6 @@ public class FullRecordController extends AbstractErrorHandlingSearchController 
             isMarkedForDeletion = objectStatus.contains(MARKED_FOR_DELETION);
         }
         recordProperties.put("markedForDeletion", isMarkedForDeletion);
-        recordProperties.put("pageSubtitle", briefObject.getTitle());
-        recordProperties.put("canEditDescription",
-                aclService.hasAccess( pid, principals, Permission.editDescription));
-
         return SerializationUtil.objectToJSON(recordProperties);
     }
 

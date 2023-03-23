@@ -10,7 +10,7 @@
             <div class="column" :class="{restrictedContent: 'is-8'}">
                 <h2 :class="isDeleted">
                     <thumbnail :thumbnail-data="recordData"
-                               :allows-full-access="hasAccess('canViewOriginals')"></thumbnail>
+                               :allows-full-access="hasGroupRole('canViewOriginals')"></thumbnail>
                     {{ recordData.briefObject.title }}
                     <span class="item_container_count">{{ displayChildCount }}</span>
                 </h2>
@@ -41,10 +41,10 @@
                 </p>
                 <p><a @click.prevent="displayMetadata()" href="#">{{ $t('full_record.additional_metadata') }}</a></p>
             </div>
-            <div v-if="restrictedContent" class="column is-narrow item-actions">
+            <div v-if="restrictedContent && !isLoggedIn" class="column is-narrow item-actions">
                 <div class="restricted-access">
-                    <h2>This {{ recordData.briefObject.resourceType.toLowerCase() }} has restricted content</h2>
-                    <div v-if="hasAccess('canViewOriginals')" class="actionlink"><a class="button login-link" :href="loginUrl"><i class="fa fa-id-card"></i> {{ $t('access.login') }}</a></div>
+                    <h2>This {{ recordData.briefObject.type.toLowerCase() }} has restricted content</h2>
+                    <div v-if="hasGroupRole('canViewOriginals', 'authenticated')" class="actionlink"><a class="button login-link" :href="loginUrl"><i class="fa fa-id-card"></i> {{ $t('access.login') }}</a></div>
                     <div class="actionlink"><a class="button contact" href="https://library.unc.edu/wilson/contact/"><i class="fa fa-envelope"></i> {{ $t('access.contact') }}</a></div>
                 </div>
             </div>

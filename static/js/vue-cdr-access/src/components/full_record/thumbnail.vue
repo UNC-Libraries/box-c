@@ -54,7 +54,7 @@ export default {
         badgeIcon() {
             if (this.thumbnailData.markedForDeletion) {
                 return 'fa-trash';
-            } else if (this.thumbnailData.resourceType !== 'AdminUnit'
+            } else if (this.objectData.type !== 'AdminUnit'
                 && !this.allowsFullAccess) {
                 return 'fa-lock';
             } else {
@@ -89,7 +89,7 @@ export default {
         },
 
         placeholder() {
-            const type = this.thumbnailData.resourceType.toLowerCase();
+            const type = this.objectData.type.toLowerCase();
             if (type === 'adminunit' || type === 'work') {
                 return 'document';
             }
@@ -101,15 +101,15 @@ export default {
         },
 
         src() {
-            if (this.objectData.thumbnailId !== undefined) {
-                return `https://${this.currentPage.host}/services/api/thumb/${this.objectData.thumbnailId}/${this.size}`;
+            if (this.objectData.thumbnail_url !== undefined) {
+                return this.objectData.thumbnail_url;
             }
 
             return '';
         },
 
         tooltip() {
-            const record_type = this.thumbnailData.resourceType;
+            const record_type = this.objectData.type;
             if (types.includes(record_type)) {
                 return `View details for ${this.objectData.title}`;
             }
