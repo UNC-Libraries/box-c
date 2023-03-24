@@ -160,6 +160,14 @@ public class SerializationUtil {
             result.put(SearchFieldKey.FILE_FORMAT_TYPE.getUrlParam(), metadata.getFileFormatType());
         }
 
+        if (metadata.getFileFormatDescription() != null) {
+            result.put(SearchFieldKey.FILE_FORMAT_DESCRIPTION.getUrlParam(), metadata.getFileFormatDescription());
+        }
+
+        if (metadata.getFilesizeSort() != null) {
+            result.put("filesizeTotal", metadata.getFilesizeSort());
+        }
+
         if (metadata.getAbstractText() != null) {
             result.put("abstractText", metadata.getAbstractText());
         }
@@ -199,7 +207,7 @@ public class SerializationUtil {
         }
 
         if (metadata.getDateCreated() != null) {
-            result.put("created", metadata.getDateCreated());
+            result.put("created", DateTimeUtil.formatDateToUTC(metadata.getDateCreated()));
         }
 
         if (metadata.getTimestamp() != null) {
@@ -211,7 +219,6 @@ public class SerializationUtil {
         }
 
         if (metadata.getGroupRoleMap() != null) {
-
             var publicGroups = new HashMap<>();
             var groupList = metadata.getGroupRoleMap();
             if (groupList.containsKey(AUTHENTICATED_PRINC)) {
