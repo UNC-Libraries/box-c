@@ -18,23 +18,6 @@ export default {
     },
 
     computed: {
-        abstractLinkText() {
-            return this.showFullAbstract ? this.$t('full_record.read_less'): this.$t('full_record.read_more');
-        },
-
-        truncateAbstract() {
-            return this.recordData.briefObject.abstractText !== undefined &&
-                this.recordData.briefObject.abstractText.length > 350;
-        },
-
-        truncatedAbstractText() {
-            if (this.truncateAbstract && !this.showFullAbstract) {
-                return this.recordData.briefObject.abstractText.substring(0, 350);
-            }
-
-            return this.recordData.briefObject.abstractText;
-        },
-
         isDeleted() {
             if (this.recordData.markedForDeletion) {
                 return 'deleted';

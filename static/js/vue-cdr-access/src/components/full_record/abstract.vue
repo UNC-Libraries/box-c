@@ -5,12 +5,8 @@
 </template>
 
 <script>
-import fullRecordUtils from "../../mixins/fullRecordUtils";
-
 export default {
     name: "abstract",
-
-    mixins: [fullRecordUtils],
 
     data() {
         return {
@@ -20,6 +16,25 @@ export default {
 
     props: {
         briefObject: Object
+    },
+
+    computed: {
+        abstractLinkText() {
+            return this.showFullAbstract ? this.$t('full_record.read_less') : this.$t('full_record.read_more');
+        },
+
+        truncateAbstract() {
+            return this.briefObject.abstractText !== undefined &&
+                this.briefObject.abstractText.length > 350;
+        },
+
+        truncatedAbstractText() {
+            if (this.truncateAbstract && !this.showFullAbstract) {
+                return this.briefObject.abstractText.substring(0, 350);
+            }
+
+            return this.briefObject.abstractText;
+        }
     }
 }
 </script>

@@ -6,11 +6,9 @@ import {createI18n} from 'vue-i18n';
 import translations from '@/translations';
 import cloneDeep from 'lodash.clonedeep';
 
-const recordData = {
-    briefObject: {
-        abstractText: 'Lorem ipsum dolor sit amet',
-        id: '9e3b1754-8e39-494d-8cc4-44e0ddf264d9'
-    }
+const briefObject = {
+    abstractText: 'Lorem ipsum dolor sit amet',
+    id: '9e3b1754-8e39-494d-8cc4-44e0ddf264d9'
 }
 
 let wrapper, router;
@@ -39,7 +37,7 @@ describe('abstract.vue', () => {
                 plugins: [i18n, router]
             },
             props: {
-                briefObject: recordData
+                briefObject: briefObject
             }
         });
     });
@@ -47,13 +45,13 @@ describe('abstract.vue', () => {
     it('show full text for short abstract', () => {
         expect(wrapper.vm.truncateAbstract).toBe(false);
         expect(wrapper.find('.abstract-text').exists()).toBe(false);
-        expect(wrapper.find('.abstract').text()).toEqual(recordData.briefObject.abstractText);
+        expect(wrapper.find('.abstract').text()).toEqual(briefObject.abstractText);
     });
 
     it('truncates long abstracts', async () => {
         expect(wrapper.vm.truncateAbstract).toBe(false);
-        let longAbstract = cloneDeep(recordData);
-        longAbstract.briefObject.abstractText = 'Lorem ipsum dolor sit amet, consectetur adipiscing elit,' +
+        let longAbstract = cloneDeep(briefObject);
+        longAbstract.abstractText = 'Lorem ipsum dolor sit amet, consectetur adipiscing elit,' +
             ' sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Id cursus metus aliquam eleifend' +
             ' mi in nulla. In hendrerit gravida rutrum quisque non. Libero volutpat sed cras ornare arcu dui. Diam' +
             ' maecenas sed enim ut sem viverra aliquet eget. Malesuada fames ac turpis egestas sed tempus. In' +
@@ -85,10 +83,10 @@ describe('abstract.vue', () => {
 
         // Show full abstract
         await show_more.trigger('click');
-        expect(wrapper.find('.abstract').text()).toEqual(longAbstract.briefObject.abstractText + '... Read less');
+        expect(wrapper.find('.abstract').text()).toEqual(longAbstract.abstractText + '... Read less');
 
         // Close abstract
         await show_more.trigger('click');
-        expect(wrapper.find('.abstract').text()).toEqual(longAbstract.briefObject.abstractText.substring(0, 350) + '... Read more');
+        expect(wrapper.find('.abstract').text()).toEqual(longAbstract.abstractText.substring(0, 350) + '... Read more');
     });
 });
