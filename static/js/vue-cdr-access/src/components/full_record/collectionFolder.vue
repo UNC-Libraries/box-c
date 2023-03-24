@@ -28,7 +28,7 @@
                     </template>
                     <template v-else>Doesn't have a finding aid</template>
                 </p>
-                <abstract v-if="recordData.briefObject.abstractText"/>
+                <abstract v-if="recordData.briefObject.abstractText" :brief-object="recordData.briefObject"/>
                 <p v-if="fieldExists(recordData.exhibits)">
                     <strong>{{ $t('full_record.related_digital_exhibits') }}: </strong>
                     <template v-for="(exhibit, index) in recordData.exhibits">

@@ -22,7 +22,7 @@
                         {{ $t('full_record.no_subjects') }}
                     </template>
                 </p>
-                <abstract v-if="recordData.briefObject.abstractText"/>
+                <abstract v-if="recordData.briefObject.abstractText" :brief-object="recordData.briefObject"/>
                 <p><a @click.prevent="displayMetadata()" class="metadata-link" href="#">{{ $t('full_record.additional_metadata') }}</a></p>
             </div>
         </div>

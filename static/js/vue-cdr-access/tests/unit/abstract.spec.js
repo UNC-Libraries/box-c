@@ -39,7 +39,7 @@ describe('abstract.vue', () => {
                 plugins: [i18n, router]
             },
             props: {
-                recordData: recordData
+                briefObject: recordData
             }
         });
     });
