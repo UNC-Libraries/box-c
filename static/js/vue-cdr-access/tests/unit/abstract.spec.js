@@ -73,7 +73,7 @@ describe('abstract.vue', () => {
             ' Pellentesque eu tincidunt tortor aliquam.';
 
         await wrapper.setProps({
-            recordData: longAbstract
+            briefObject: longAbstract
         });
 
         let show_more = wrapper.find('.abstract-text');

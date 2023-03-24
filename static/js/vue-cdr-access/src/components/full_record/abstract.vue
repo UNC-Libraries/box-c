@@ -35,6 +35,12 @@ export default {
 
             return this.briefObject.abstractText;
         }
+    },
+
+    methods: {
+        toggleAbstractDisplay() {
+            this.showFullAbstract = !this.showFullAbstract;
+        }
     }
 }
 </script>

@@ -8,7 +8,6 @@ export default {
 
     data() {
         return {
-            showFullAbstract: false,
             showMetadata: false
         }
     },
@@ -60,10 +59,6 @@ export default {
     },
 
     methods: {
-        toggleAbstractDisplay() {
-            this.showFullAbstract = !this.showFullAbstract;
-        },
-
         displayMetadata() {
             this.showMetadata = true;
         },
