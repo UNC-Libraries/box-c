@@ -7,13 +7,13 @@ Top level component for full record pages with searching/browsing, including Adm
             <img :src="nonVueStaticImageUrl('ajax-loader-lg.gif')" alt="data loading icon">
         </div>
         <div v-if="!is_page_loading">
-            <admin-unit v-if="container_info.briefObject.type === 'AdminUnit'" :username="username" :record-data="container_info"></admin-unit>
-            <collection-folder v-if="container_info.briefObject.type === 'Collection' || container_info.briefObject.type === 'Folder'"
+            <admin-unit v-if="container_info.resourceType === 'AdminUnit'" :username="username" :record-data="container_info"></admin-unit>
+            <collection-folder v-if="container_info.resourceType === 'Collection' || container_info.resourceType === 'Folder'"
                                :username="username"
                                :record-data="container_info"></collection-folder>
-            <aggregate-record v-if="container_info.briefObject.type === 'Work'" :username="username" :record-data="container_info"></aggregate-record>
+            <aggregate-record v-if="container_info.resourceType === 'Work'" :username="username" :record-data="container_info"></aggregate-record>
 
-            <div v-if="container_info.briefObject.type !== 'Work' && container_info.briefObject.type !== 'File'">
+            <div v-if="container_info.resourceType !== 'Work' && container_info.resourceType !== 'File'">
                 <div class="columns is-tablet">
                     <div class="column is-6">
                         <browse-search :object-type="container_metadata.type"></browse-search>
@@ -127,10 +127,10 @@ Top level component for full record pages with searching/browsing, including Adm
         },
 
         methods: {
-            async retrieveSearchResults() {
+            retrieveSearchResults() {
                 let param_string = this.formatParamsString(this.updateParams()) + '&getFacets=true';
                 this.uuid = location.pathname.split('/')[2];
-                await get(`${this.search_method}/${this.uuid}${param_string}`).then((response) => {
+                get(`${this.search_method}/${this.uuid}${param_string}`).then((response) => {
                     this.record_count = response.data.resultCount;
                     this.record_list = response.data.metadata;
                     this.facet_list = response.data.facetFields;
@@ -144,13 +144,13 @@ Top level component for full record pages with searching/browsing, including Adm
                 });
             },
 
-            async getBriefObject() {
+            getBriefObject() {
                 let link = window.location.pathname;
                 if (!(/\/$/.test(link))) {
                     link += '/';
                 }
 
-                await get(`${link}json`).then((response) => {
+                get(`${link}json`).then((response) => {
                     this.container_info = response.data;
                     this.username = response.headers['username'];
                 }).catch(error => console.log(error));
@@ -200,7 +200,9 @@ Top level component for full record pages with searching/browsing, including Adm
 
         created() {
             this.getBriefObject();
+        },
 
+        mounted() {
             if (GET_SEARCH_RESULTS.includes(this.container_info.resourceType)) {
                 this.adjustFacetsForRetrieval();
                 // Don't update route if no url parameters are passed in
@@ -209,7 +211,7 @@ Top level component for full record pages with searching/browsing, including Adm
                 }
             }
             this.retrieveSearchResults();
-        },
+        }
     }
 </script>
 

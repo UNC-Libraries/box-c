@@ -8,341 +8,528 @@ import moxios from 'moxios';
 import cloneDeep from 'lodash.clonedeep';
 
 const record = {
-    "briefObject": {
-        "pid": {
-            "id": "e2f0d544-4f36-482c-b0ca-ba11f1251c01",
-            "qualifier": "content",
-            "qualifiedId": "content/e2f0d544-4f36-482c-b0ca-ba11f1251c01",
-            "componentId": "e2f0d544-4f36-482c-b0ca-ba11f1251c01",
-            "repositoryUri": "http://localhost:8181/fcrepo/rest/content/e2/f0/d5/44/e2f0d544-4f36-482c-b0ca-ba11f1251c01",
-            "repositoryPath": "http://localhost:8181/fcrepo/rest/content/e2/f0/d5/44/e2f0d544-4f36-482c-b0ca-ba11f1251c01",
-            "pid": "uuid:e2f0d544-4f36-482c-b0ca-ba11f1251c01",
-            "uri": "http://localhost:8181/fcrepo/rest/content/e2/f0/d5/44/e2f0d544-4f36-482c-b0ca-ba11f1251c01",
-            "uuid": "e2f0d544-4f36-482c-b0ca-ba11f1251c01"
+    briefObject: {
+        added: "2023-03-07T14:47:46.863Z",
+        counts: {
+            child: 1
         },
-        "fields": {
-            "adminGroup": [
-                "unc:onyen:test_user"
-            ],
-            "filesizeTotal": 4887,
-            "readGroup": [
-                "authenticated",
-                "everyone",
-                "unc:onyen:test_user"
-            ],
-            "language": [
-                "English"
-            ],
-            "fileFormatType": [
-                "audio/mpeg"
-            ],
-            "title": "Listen for real",
-            "dateAdded": 1678200466863,
-            "rollup": "e2f0d544-4f36-482c-b0ca-ba11f1251c01",
-            "parentCollection": "testCollection|fc77a9be-b49d-4f4e-b656-1644c9e964fc",
-            "contentStatus": [
-                "Described",
-                "Has Primary Object",
-                "Members Are Unordered"
-            ],
-            "datastream": [
-                "techmd_fits|text/xml|techmd_fits.xml|xml|4192|urn:sha1:e3150af2b1e846cc96a8e6da428ae619b1502240|8a2f05e5-d2b7-4857-ae71-c24aa28484c1|",
-                "original_file|audio/mpeg|180618_003.MP3|MP3|35845559|urn:sha1:6ad9e78fef388cc7e1e6aa075eaf2cee3699f181|8a2f05e5-d2b7-4857-ae71-c24aa28484c1|",
-                "md_descriptive|text/xml|md_descriptive.xml|xml|366|urn:sha1:bc6aa00b1b046a01298cd0dfff7ad250cc29a74d||",
-                "event_log|application/n-triples|event_log.nt|nt|4521|urn:sha1:ed5db93d079a62f7a939396c721833808409748e||"
-            ],
-            "ancestorPath": [
-                "1,collections",
-                "2,353ee09f-a4ed-461e-a436-18a1bee77b01",
-                "3,fc77a9be-b49d-4f4e-b656-1644c9e964fc"
-            ],
-            "ancestorIds": "/collections/353ee09f-a4ed-461e-a436-18a1bee77b01/fc77a9be-b49d-4f4e-b656-1644c9e964fc/e2f0d544-4f36-482c-b0ca-ba11f1251c01",
-            "lastIndexed": 1678200473004,
-            "id": "e2f0d544-4f36-482c-b0ca-ba11f1251c01",
-            "keyword": [
-                "text",
-                "e2f0d544-4f36-482c-b0ca-ba11f1251c01"
-            ],
-            "roleGroup": [
-                "canDescribe|unc:onyen:test_user",
-                "canViewOriginals|authenticated",
-                "canViewMetadata|everyone"
-            ],
-            "timestamp": 1678200478992,
-            "parentUnit": "testAdminUnit|353ee09f-a4ed-461e-a436-18a1bee77b01",
-            "dateUpdated": 1678200469519,
-            "fileFormatDescription": [
-                "MP3"
-            ],
-            "_version_": 1759720745467904000,
-            "filesizeSort": 35845559,
-            "fileFormatCategory": [
-                "Audio"
-            ],
-            "status": [
-                "Inherited Patron Settings"
-            ],
-            "resourceType": "Work"
-        },
-        "ancestorPathFacet": {
-            "fieldName": "ANCESTOR_PATH",
-            "count": 0,
-            "displayValue": "fc77a9be-b49d-4f4e-b656-1644c9e964fc",
-            "facetNodes": [
-                {
-                    "searchValue": "1,collections",
-                    "searchKey": "collections",
-                    "facetValue": "1,collections",
-                    "tier": 1,
-                    "limitToValue": "1,collections!2",
-                    "displayValue": "collections",
-                    "pivotValue": "2,"
-                },
-                {
-                    "searchValue": "2,353ee09f-a4ed-461e-a436-18a1bee77b01",
-                    "searchKey": "353ee09f-a4ed-461e-a436-18a1bee77b01",
-                    "facetValue": "2,353ee09f-a4ed-461e-a436-18a1bee77b01",
-                    "tier": 2,
-                    "limitToValue": "2,353ee09f-a4ed-461e-a436-18a1bee77b01!3",
-                    "displayValue": "353ee09f-a4ed-461e-a436-18a1bee77b01",
-                    "pivotValue": "3,"
-                },
-                {
-                    "searchValue": "3,fc77a9be-b49d-4f4e-b656-1644c9e964fc",
-                    "searchKey": "fc77a9be-b49d-4f4e-b656-1644c9e964fc",
-                    "facetValue": "3,fc77a9be-b49d-4f4e-b656-1644c9e964fc",
-                    "tier": 3,
-                    "limitToValue": "3,fc77a9be-b49d-4f4e-b656-1644c9e964fc!4",
-                    "displayValue": "fc77a9be-b49d-4f4e-b656-1644c9e964fc",
-                    "pivotValue": "4,"
-                }
-            ],
-            "cutoff": 4,
-            "searchKey": "fc77a9be-b49d-4f4e-b656-1644c9e964fc",
-            "searchValue": "3,fc77a9be-b49d-4f4e-b656-1644c9e964fc",
-            "limitToValue": "3,fc77a9be-b49d-4f4e-b656-1644c9e964fc!4",
-            "highestTier": 3,
-            "highestTierNode": {
-                "searchValue": "3,fc77a9be-b49d-4f4e-b656-1644c9e964fc",
-                "searchKey": "fc77a9be-b49d-4f4e-b656-1644c9e964fc",
-                "facetValue": "3,fc77a9be-b49d-4f4e-b656-1644c9e964fc",
-                "tier": 3,
-                "limitToValue": "3,fc77a9be-b49d-4f4e-b656-1644c9e964fc!4",
-                "displayValue": "fc77a9be-b49d-4f4e-b656-1644c9e964fc",
-                "pivotValue": "4,"
-            },
-            "pivotValue": "4,"
-        },
-        "path": {
-            "fieldName": "ANCESTOR_PATH",
-            "count": 0,
-            "displayValue": "e2f0d544-4f36-482c-b0ca-ba11f1251c01",
-            "facetNodes": [
-                {
-                    "searchValue": "1,collections",
-                    "searchKey": "collections",
-                    "facetValue": "1,collections",
-                    "tier": 1,
-                    "limitToValue": "1,collections!2",
-                    "displayValue": "collections",
-                    "pivotValue": "2,"
-                },
-                {
-                    "searchValue": "2,353ee09f-a4ed-461e-a436-18a1bee77b01",
-                    "searchKey": "353ee09f-a4ed-461e-a436-18a1bee77b01",
-                    "facetValue": "2,353ee09f-a4ed-461e-a436-18a1bee77b01",
-                    "tier": 2,
-                    "limitToValue": "2,353ee09f-a4ed-461e-a436-18a1bee77b01!3",
-                    "displayValue": "353ee09f-a4ed-461e-a436-18a1bee77b01",
-                    "pivotValue": "3,"
-                },
-                {
-                    "searchValue": "3,fc77a9be-b49d-4f4e-b656-1644c9e964fc",
-                    "searchKey": "fc77a9be-b49d-4f4e-b656-1644c9e964fc",
-                    "facetValue": "3,fc77a9be-b49d-4f4e-b656-1644c9e964fc",
-                    "tier": 3,
-                    "limitToValue": "3,fc77a9be-b49d-4f4e-b656-1644c9e964fc!4",
-                    "displayValue": "fc77a9be-b49d-4f4e-b656-1644c9e964fc",
-                    "pivotValue": "4,"
-                },
-                {
-                    "searchValue": "4,e2f0d544-4f36-482c-b0ca-ba11f1251c01",
-                    "searchKey": "e2f0d544-4f36-482c-b0ca-ba11f1251c01",
-                    "facetValue": "4,e2f0d544-4f36-482c-b0ca-ba11f1251c01",
-                    "tier": 4,
-                    "limitToValue": "4,e2f0d544-4f36-482c-b0ca-ba11f1251c01!5",
-                    "displayValue": "e2f0d544-4f36-482c-b0ca-ba11f1251c01",
-                    "pivotValue": "5,"
-                }
-            ],
-            "searchKey": "e2f0d544-4f36-482c-b0ca-ba11f1251c01",
-            "searchValue": "4,e2f0d544-4f36-482c-b0ca-ba11f1251c01",
-            "limitToValue": "4,e2f0d544-4f36-482c-b0ca-ba11f1251c01!5",
-            "highestTier": 4,
-            "highestTierNode": {
-                "searchValue": "4,e2f0d544-4f36-482c-b0ca-ba11f1251c01",
-                "searchKey": "e2f0d544-4f36-482c-b0ca-ba11f1251c01",
-                "facetValue": "4,e2f0d544-4f36-482c-b0ca-ba11f1251c01",
-                "tier": 4,
-                "limitToValue": "4,e2f0d544-4f36-482c-b0ca-ba11f1251c01!5",
-                "displayValue": "e2f0d544-4f36-482c-b0ca-ba11f1251c01",
-                "pivotValue": "5,"
-            },
-            "pivotValue": "5,"
-        },
-        "objectPath": {
-            "entries": [
-                {
-                    "pid": "collections",
-                    "name": "Content Collections Root",
-                    "container": true
-                },
-                {
-                    "pid": "353ee09f-a4ed-461e-a436-18a1bee77b01",
-                    "name": "testAdminUnit",
-                    "container": true
-                },
-                {
-                    "pid": "fc77a9be-b49d-4f4e-b656-1644c9e964fc",
-                    "name": "testCollection",
-                    "container": true
-                },
-                {
-                    "pid": "e2f0d544-4f36-482c-b0ca-ba11f1251c01",
-                    "name": "Listen for real",
-                    "container": true
-                }
-            ]
-        },
-        "ancestorNames": "/Content Collections Root/testAdminUnit/testCollection/Listen for real",
-        "datastreamObjects": [
+        format: [
+            "Audio"
+        ],
+        title: "Listen for real",
+        type: "Work",
+        fileDesc: [
+            "MP3"
+        ],
+        parentCollectionName: "deansCollection",
+        contentStatus: [
+            "Described",
+            "Has Primary Object",
+            "Members Are Unordered"
+        ],
+        rollup: "e2f0d544-4f36-482c-b0ca-ba11f1251c01",
+        objectPath: [
             {
-                "owner": "8a2f05e5-d2b7-4857-ae71-c24aa28484c1",
-                "name": "techmd_fits",
-                "filesize": 4192,
-                "mimetype": "text/xml",
-                "filename": "techmd_fits.xml",
-                "extension": "xml",
-                "checksum": "urn:sha1:e3150af2b1e846cc96a8e6da428ae619b1502240",
-                "extent": "",
-                "datastreamIdentifier": "8a2f05e5-d2b7-4857-ae71-c24aa28484c1/techmd_fits"
+                pid: "collections",
+                name: "Content Collections Root",
+                container: true
             },
             {
-                "owner": "8a2f05e5-d2b7-4857-ae71-c24aa28484c1",
-                "name": "original_file",
-                "filesize": 35845559,
-                "mimetype": "audio/mpeg",
-                "filename": "180618_003.MP3",
-                "extension": "MP3",
-                "checksum": "urn:sha1:6ad9e78fef388cc7e1e6aa075eaf2cee3699f181",
-                "extent": "",
-                "datastreamIdentifier": "8a2f05e5-d2b7-4857-ae71-c24aa28484c1/original_file"
+                pid: "353ee09f-a4ed-461e-a436-18a1bee77b01",
+                name: "deansAdminUnit",
+                container: true
             },
             {
-                "owner": "",
-                "name": "md_descriptive",
-                "filesize": 366,
-                "mimetype": "text/xml",
-                "filename": "md_descriptive.xml",
-                "extension": "xml",
-                "checksum": "urn:sha1:bc6aa00b1b046a01298cd0dfff7ad250cc29a74d",
-                "extent": "",
-                "datastreamIdentifier": "/md_descriptive"
+                pid: "fc77a9be-b49d-4f4e-b656-1644c9e964fc",
+                name: "deansCollection",
+                container: true
             },
             {
-                "owner": "",
-                "name": "event_log",
-                "filesize": 4521,
-                "mimetype": "application/n-triples",
-                "filename": "event_log.nt",
-                "extension": "nt",
-                "checksum": "urn:sha1:ed5db93d079a62f7a939396c721833808409748e",
-                "extent": "",
-                "datastreamIdentifier": "/event_log"
+                pid: "e2f0d544-4f36-482c-b0ca-ba11f1251c01",
+                name: "Listen for real",
+                container: true
             }
         ],
-        "groupRoleMap": {
-            "authenticated": [
-                "canViewOriginals"
-            ],
-            "everyone": [
-                "canViewMetadata"
-            ],
-            "unc:onyen:test_user": [
-                "canDescribe"
-            ]
-        },
-        "countMap": {
-            "child": 1
-        },
-        "parentCollectionName": "testCollection",
-        "parentCollectionId": "fc77a9be-b49d-4f4e-b656-1644c9e964fc",
-        "ancestorPath": [
-            "1,collections",
-            "2,353ee09f-a4ed-461e-a436-18a1bee77b01",
-            "3,fc77a9be-b49d-4f4e-b656-1644c9e964fc"
-        ],
-        "datastream": [
+        datastream: [
             "techmd_fits|text/xml|techmd_fits.xml|xml|4192|urn:sha1:e3150af2b1e846cc96a8e6da428ae619b1502240|8a2f05e5-d2b7-4857-ae71-c24aa28484c1|",
             "original_file|audio/mpeg|180618_003.MP3|MP3|35845559|urn:sha1:6ad9e78fef388cc7e1e6aa075eaf2cee3699f181|8a2f05e5-d2b7-4857-ae71-c24aa28484c1|",
             "md_descriptive|text/xml|md_descriptive.xml|xml|366|urn:sha1:bc6aa00b1b046a01298cd0dfff7ad250cc29a74d||",
             "event_log|application/n-triples|event_log.nt|nt|4521|urn:sha1:ed5db93d079a62f7a939396c721833808409748e||"
         ],
-        "roleGroup": [
-            "canDescribe|unc:onyen:test_user",
-            "canViewOriginals|authenticated",
-            "canViewMetadata|everyone"
+        parentCollectionId: "fc77a9be-b49d-4f4e-b656-1644c9e964fc",
+        ancestorPath: [
+            {
+                id: "collections",
+                title: "collections"
+            },
+            {
+                id: "353ee09f-a4ed-461e-a436-18a1bee77b01",
+                title: "353ee09f-a4ed-461e-a436-18a1bee77b01"
+            },
+            {
+                id: "fc77a9be-b49d-4f4e-b656-1644c9e964fc",
+                title: "fc77a9be-b49d-4f4e-b656-1644c9e964fc"
+            }
         ],
-        "idWithoutPrefix": "e2f0d544-4f36-482c-b0ca-ba11f1251c01",
-        "id": "e2f0d544-4f36-482c-b0ca-ba11f1251c01",
-        "language": [
-            "English"
+        permissions: [
+            "markForDeletionUnit",
+            "move",
+            "reindex",
+            "destroy",
+            "editResourceType",
+            "destroyUnit",
+            "bulkUpdateDescription",
+            "changePatronAccess",
+            "runEnhancements",
+            "createAdminUnit",
+            "ingest",
+            "orderMembers",
+            "viewOriginal",
+            "viewAccessCopies",
+            "viewMetadata",
+            "viewHidden",
+            "assignStaffRoles",
+            "markForDeletion",
+            "editDescription",
+            "createCollection"
         ],
-        "keyword": [
-            "text",
-            "e2f0d544-4f36-482c-b0ca-ba11f1251c01"
-        ],
-        "timestamp": 1678200478992,
-        "status": [
-            "Inherited Patron Settings"
-        ],
-        "title": "Listen for real",
-        "resourceType": "Work",
-        "parentCollection": "testCollection|fc77a9be-b49d-4f4e-b656-1644c9e964fc",
-        "fileFormatCategory": [
-            "Audio"
-        ],
-        "rollup": "e2f0d544-4f36-482c-b0ca-ba11f1251c01",
-        "ancestorIds": "/collections/353ee09f-a4ed-461e-a436-18a1bee77b01/fc77a9be-b49d-4f4e-b656-1644c9e964fc/e2f0d544-4f36-482c-b0ca-ba11f1251c01",
-        "_version_": 1759720745467904000,
-        "filesizeSort": 35845559,
-        "filesizeTotal": 4887,
-        "fileFormatType": [
+        groupRoleMap: {
+            authenticated: [
+                "canViewOriginals"
+            ],
+            everyone: [
+                "canViewMetadata"
+            ]
+        },
+        id: "e2f0d544-4f36-482c-b0ca-ba11f1251c01",
+        updated: "2023-03-07T14:47:49.519Z",
+        fileType: [
             "audio/mpeg"
         ],
-        "fileFormatDescription": [
-            "MP3"
+        status: [
+            "Inherited Patron Settings"
         ],
-        "lastIndexed": 1678200473004,
-        "readGroup": [
-            "authenticated",
-            "everyone",
-            "unc:onyen:test_user"
-        ],
-        "adminGroup": [
-            "unc:onyen:test_user"
-        ],
-        "contentStatus": [
-            "Described",
-            "Has Primary Object",
-            "Members Are Unordered"
-        ],
-        "dateAdded": 1678200466863,
-        "dateUpdated": 1678200469519,
-        "parentUnit": "testAdminUnit|353ee09f-a4ed-461e-a436-18a1bee77b01"
+        timestamp: 1678973289392
     },
-    "viewerPid": "8a2f05e5-d2b7-4857-ae71-c24aa28484c1",
-    "viewerType": "audio"
+    viewerType: "audio",
+    neighborList: [
+        {
+            added: "2023-01-17T13:53:47.387Z",
+            created: 631152000000,
+            format: [
+                "Image"
+            ],
+            thumbnail_url: "https://localhost:8080/services/api/thumb/4053adf7-7bdc-4c9c-8769-8cc5da4ce81d/large",
+            title: "Bees",
+            type: "Work",
+            fileDesc: [
+                "JPEG Image"
+            ],
+            parentCollectionName: "deansCollection",
+            contentStatus: [
+                "Described",
+                "Has Primary Object",
+                "Members Are Unordered"
+            ],
+            rollup: "7d6c30fe-ca72-4362-931d-e9fe28a8ec83",
+            objectPath: [
+                {
+                    pid: "collections",
+                    name: "Content Collections Root",
+                    container: true
+                },
+                {
+                    pid: "353ee09f-a4ed-461e-a436-18a1bee77b01",
+                    name: "deansAdminUnit",
+                    container: true
+                },
+                {
+                    pid: "fc77a9be-b49d-4f4e-b656-1644c9e964fc",
+                    name: "deansCollection",
+                    container: true
+                },
+                {
+                    pid: "7d6c30fe-ca72-4362-931d-e9fe28a8ec83",
+                    name: "Bees",
+                    container: true
+                }
+            ],
+            datastream: [
+                "original_file|image/jpeg|bee1.jpg|jpg|69481|urn:sha1:87d7bed6cb33c87c589cfcdc2a2ce6110712fabb|4053adf7-7bdc-4c9c-8769-8cc5da4ce81d|607x1024",
+                "techmd_fits|text/xml|techmd_fits.xml|xml|7013|urn:sha1:0c4a500c73146214d5fa08f278c0cdaadede79d0|4053adf7-7bdc-4c9c-8769-8cc5da4ce81d|",
+                "jp2|image/jp2|4053adf7-7bdc-4c9c-8769-8cc5da4ce81d.jp2|jp2|415163||4053adf7-7bdc-4c9c-8769-8cc5da4ce81d|",
+                "thumbnail_small|image/png|4053adf7-7bdc-4c9c-8769-8cc5da4ce81d.png|png|4802||4053adf7-7bdc-4c9c-8769-8cc5da4ce81d|",
+                "thumbnail_large|image/png|4053adf7-7bdc-4c9c-8769-8cc5da4ce81d.png|png|16336||4053adf7-7bdc-4c9c-8769-8cc5da4ce81d|",
+                "event_log|application/n-triples|event_log.nt|nt|4504|urn:sha1:b15940ee90b0f6d2b3ab1639eb7a266e54b621f2||",
+                "md_descriptive|text/xml|md_descriptive.xml|xml|459|urn:sha1:17e8dec55960ac14f100541993793dc8da231788||",
+                "md_descriptive_history|text/xml|||4976|urn:sha1:35e4b19ea3c58148c607b6537cc9af510406700c||"
+            ],
+            parentCollectionId: "fc77a9be-b49d-4f4e-b656-1644c9e964fc",
+            ancestorPath: [
+                {
+                    id: "collections",
+                    title: "collections"
+                },
+                {
+                    id: "353ee09f-a4ed-461e-a436-18a1bee77b01",
+                    title: "353ee09f-a4ed-461e-a436-18a1bee77b01"
+                },
+                {
+                    id: "fc77a9be-b49d-4f4e-b656-1644c9e964fc",
+                    title: "fc77a9be-b49d-4f4e-b656-1644c9e964fc"
+                }
+            ],
+            _version_: 1760531096505680000,
+            permissions: [
+                "markForDeletionUnit",
+                "move",
+                "reindex",
+                "destroy",
+                "editResourceType",
+                "destroyUnit",
+                "bulkUpdateDescription",
+                "changePatronAccess",
+                "runEnhancements",
+                "createAdminUnit",
+                "ingest",
+                "orderMembers",
+                "viewOriginal",
+                "viewAccessCopies",
+                "viewMetadata",
+                "viewHidden",
+                "assignStaffRoles",
+                "markForDeletion",
+                "editDescription",
+                "createCollection"
+            ],
+            groupRoleMap: {
+                authenticated: [
+                    "canViewOriginals"
+                ],
+                everyone: [
+                    "canViewMetadata"
+                ]
+            },
+            id: "7d6c30fe-ca72-4362-931d-e9fe28a8ec83",
+            updated: "2023-01-17T14:04:34.419Z",
+            fileType: [
+                "image/jpeg"
+            ],
+            status: [
+                "Inherited Patron Settings"
+            ],
+            timestamp: 1678973289513
+        },
+        {
+            added: "2023-03-07T14:47:46.863Z",
+            counts: {
+                child: 1
+            },
+            format: [
+                "Audio"
+            ],
+            title: "Listen for real",
+            type: "Work",
+            fileDesc: [
+                "MP3"
+            ],
+            parentCollectionName: "deansCollection",
+            contentStatus: [
+                "Described",
+                "Has Primary Object",
+                "Members Are Unordered"
+            ],
+            rollup: "e2f0d544-4f36-482c-b0ca-ba11f1251c01",
+            objectPath: [
+                {
+                    pid: "collections",
+                    name: "Content Collections Root",
+                    container: true
+                },
+                {
+                    pid: "353ee09f-a4ed-461e-a436-18a1bee77b01",
+                    name: "deansAdminUnit",
+                    container: true
+                },
+                {
+                    pid: "fc77a9be-b49d-4f4e-b656-1644c9e964fc",
+                    name: "deansCollection",
+                    container: true
+                },
+                {
+                    pid: "e2f0d544-4f36-482c-b0ca-ba11f1251c01",
+                    name: "Listen for real",
+                    container: true
+                }
+            ],
+            datastream: [
+                "techmd_fits|text/xml|techmd_fits.xml|xml|4192|urn:sha1:e3150af2b1e846cc96a8e6da428ae619b1502240|8a2f05e5-d2b7-4857-ae71-c24aa28484c1|",
+                "original_file|audio/mpeg|180618_003.MP3|MP3|35845559|urn:sha1:6ad9e78fef388cc7e1e6aa075eaf2cee3699f181|8a2f05e5-d2b7-4857-ae71-c24aa28484c1|",
+                "md_descriptive|text/xml|md_descriptive.xml|xml|366|urn:sha1:bc6aa00b1b046a01298cd0dfff7ad250cc29a74d||",
+                "event_log|application/n-triples|event_log.nt|nt|4521|urn:sha1:ed5db93d079a62f7a939396c721833808409748e||"
+            ],
+            parentCollectionId: "fc77a9be-b49d-4f4e-b656-1644c9e964fc",
+            ancestorPath: [
+                {
+                    id: "collections",
+                    title: "collections"
+                },
+                {
+                    id: "353ee09f-a4ed-461e-a436-18a1bee77b01",
+                    title: "353ee09f-a4ed-461e-a436-18a1bee77b01"
+                },
+                {
+                    id: "fc77a9be-b49d-4f4e-b656-1644c9e964fc",
+                    title: "fc77a9be-b49d-4f4e-b656-1644c9e964fc"
+                }
+            ],
+            _version_: 1760531096497291300,
+            permissions: [
+                "markForDeletionUnit",
+                "move",
+                "reindex",
+                "destroy",
+                "editResourceType",
+                "destroyUnit",
+                "bulkUpdateDescription",
+                "changePatronAccess",
+                "runEnhancements",
+                "createAdminUnit",
+                "ingest",
+                "orderMembers",
+                "viewOriginal",
+                "viewAccessCopies",
+                "viewMetadata",
+                "viewHidden",
+                "assignStaffRoles",
+                "markForDeletion",
+                "editDescription",
+                "createCollection"
+            ],
+            groupRoleMap: {
+                authenticated: [
+                    "canViewOriginals"
+                ],
+                everyone: [
+                    "canViewMetadata"
+                ]
+            },
+            id: "e2f0d544-4f36-482c-b0ca-ba11f1251c01",
+            updated: "2023-03-07T14:47:49.519Z",
+            fileType: [
+                "audio/mpeg"
+            ],
+            status: [
+                "Inherited Patron Settings"
+            ],
+            timestamp: 1678973289392
+        },
+        {
+            added: "2023-03-07T14:41:15.746Z",
+            format: [
+                "Video"
+            ],
+            title: "Listen!",
+            type: "Work",
+            fileDesc: [
+                "MPEG"
+            ],
+            parentCollectionName: "deansCollection",
+            contentStatus: [
+                "Described",
+                "Has Primary Object",
+                "Members Are Unordered"
+            ],
+            rollup: "90d9b849-b9ff-4afc-910d-2833a9ed7850",
+            objectPath: [
+                {
+                    pid: "collections",
+                    name: "Content Collections Root",
+                    container: true
+                },
+                {
+                    pid: "353ee09f-a4ed-461e-a436-18a1bee77b01",
+                    name: "deansAdminUnit",
+                    container: true
+                },
+                {
+                    pid: "fc77a9be-b49d-4f4e-b656-1644c9e964fc",
+                    name: "deansCollection",
+                    container: true
+                },
+                {
+                    pid: "90d9b849-b9ff-4afc-910d-2833a9ed7850",
+                    name: "Listen!",
+                    container: true
+                }
+            ],
+            datastream: [
+                "techmd_fits|text/xml|techmd_fits.xml|xml|4598|urn:sha1:03b2309e865aff690806f53d34e7d58bfbd4bcdc|a2824907-7404-4266-925d-302f89c9d215|",
+                "original_file|video/mpeg|Blood_rain_Swallow_loop__from_installation_.mpeg|mpeg|116736|urn:md5:5f7973ff9e4152827994d4149c8af39d|a2824907-7404-4266-925d-302f89c9d215|",
+                "md_descriptive|text/xml|md_descriptive.xml|xml|358|urn:sha1:904729ec5b33b6a660f9f2375dfa1165e844f4ee||",
+                "event_log|application/n-triples|event_log.nt|nt|4521|urn:sha1:4fa4a001f078f1ba50ada50f2ae21417821e5101||"
+            ],
+            parentCollectionId: "fc77a9be-b49d-4f4e-b656-1644c9e964fc",
+            ancestorPath: [
+                {
+                    id: "collections",
+                    title: "collections"
+                },
+                {
+                    id: "353ee09f-a4ed-461e-a436-18a1bee77b01",
+                    title: "353ee09f-a4ed-461e-a436-18a1bee77b01"
+                },
+                {
+                    id: "fc77a9be-b49d-4f4e-b656-1644c9e964fc",
+                    title: "fc77a9be-b49d-4f4e-b656-1644c9e964fc"
+                }
+            ],
+            permissions: [
+                "markForDeletionUnit",
+                "move",
+                "reindex",
+                "destroy",
+                "editResourceType",
+                "destroyUnit",
+                "bulkUpdateDescription",
+                "changePatronAccess",
+                "runEnhancements",
+                "createAdminUnit",
+                "ingest",
+                "orderMembers",
+                "viewOriginal",
+                "viewAccessCopies",
+                "viewMetadata",
+                "viewHidden",
+                "assignStaffRoles",
+                "markForDeletion",
+                "editDescription",
+                "createCollection"
+            ],
+            groupRoleMap: {
+                authenticated: [
+                    "canViewOriginals"
+                ],
+                everyone: [
+                    "canViewMetadata"
+                ]
+            },
+            id: "90d9b849-b9ff-4afc-910d-2833a9ed7850",
+            updated: "2023-03-07T14:41:20.577Z",
+            fileType: [
+                "video/mpeg"
+            ],
+            status: [
+                "Inherited Patron Settings"
+            ],
+            timestamp: 1678973289204
+        },
+        {
+            added: "2023-03-03T20:34:01.799Z",
+            format: [
+                "Text"
+            ],
+            title: "Stuff",
+            type: "Work",
+            fileDesc: [
+                "Portable Document Format"
+            ],
+            parentCollectionName: "deansCollection",
+            contentStatus: [
+                "Described",
+                "Has Primary Object",
+                "Members Are Unordered"
+            ],
+            rollup: "c9aec262-d793-4db2-9db6-f5ad4825c670",
+            objectPath: [
+                {
+                    pid: "collections",
+                    name: "Content Collections Root",
+                    container: true
+                },
+                {
+                    pid: "353ee09f-a4ed-461e-a436-18a1bee77b01",
+                    name: "deansAdminUnit",
+                    container: true
+                },
+                {
+                    pid: "fc77a9be-b49d-4f4e-b656-1644c9e964fc",
+                    name: "deansCollection",
+                    container: true
+                },
+                {
+                    pid: "c9aec262-d793-4db2-9db6-f5ad4825c670",
+                    name: "Stuff",
+                    container: true
+                }
+            ],
+            datastream: [
+                "original_file|application/pdf|COVID-Booster-Incentive-Leave-Attestation-Form.pdf|pdf|228201|urn:md5:db3ef1b490310aa3e0906d433cbc33a7|ee714894-2773-46a8-9ca8-b64922d84765|",
+                "techmd_fits|text/xml|techmd_fits.xml|xml|4308|urn:sha1:d4f176ff6d78dccb4dd1ac00dc91be631f8a3104|ee714894-2773-46a8-9ca8-b64922d84765|",
+                "fulltext|text/plain|ee714894-2773-46a8-9ca8-b64922d84765.txt|txt|2517||ee714894-2773-46a8-9ca8-b64922d84765|",
+                "event_log|application/n-triples|event_log.nt|nt|4521|urn:sha1:97c651c37aee4c3905d545f155fa47687f90a111||",
+                "md_descriptive|text/xml|md_descriptive.xml|xml|356|urn:sha1:66c48b391679049a8d57181643a9a671830a7811||"
+            ],
+            parentCollectionId: "fc77a9be-b49d-4f4e-b656-1644c9e964fc",
+            ancestorPath: [
+                {
+                    id: "collections",
+                    title: "collections"
+                },
+                {
+                    id: "353ee09f-a4ed-461e-a436-18a1bee77b01",
+                    title: "353ee09f-a4ed-461e-a436-18a1bee77b01"
+                },
+                {
+                    id: "fc77a9be-b49d-4f4e-b656-1644c9e964fc",
+                    title: "fc77a9be-b49d-4f4e-b656-1644c9e964fc"
+                }
+            ],
+            permissions: [
+                "markForDeletionUnit",
+                "move",
+                "reindex",
+                "destroy",
+                "editResourceType",
+                "destroyUnit",
+                "bulkUpdateDescription",
+                "changePatronAccess",
+                "runEnhancements",
+                "createAdminUnit",
+                "ingest",
+                "orderMembers",
+                "viewOriginal",
+                "viewAccessCopies",
+                "viewMetadata",
+                "viewHidden",
+                "assignStaffRoles",
+                "markForDeletion",
+                "editDescription",
+                "createCollection"
+            ],
+            groupRoleMap: {
+                authenticated: [
+                    "canViewOriginals"
+                ],
+                everyone: [
+                    "canViewMetadata"
+                ]
+            },
+            id: "c9aec262-d793-4db2-9db6-f5ad4825c670",
+            updated: "2023-03-03T20:34:04.241Z",
+            fileType: [
+                "application/pdf"
+            ],
+            status: [
+                "Inherited Patron Settings"
+            ],
+            timestamp: 1678973289046
+        }
+    ],
+    viewerPid: "8a2f05e5-d2b7-4857-ae71-c24aa28484c1",
+    dataFileUrl: "content/8a2f05e5-d2b7-4857-ae71-c24aa28484c1",
+    markedForDeletion: false,
+    resourceType: "Work"
 }
 
 let wrapper, router;
@@ -403,20 +590,29 @@ describe('aggregateRecord.vue', () => {
         expect(wrapper.find('.finding-aid').exists()).toBe(true);
     });
 
-    it("does not allow users to edit the work by default", () => {
+    it("does not allow users to edit the work by default", async () => {
+        let updated_record = cloneDeep(record);
+        updated_record.briefObject.permissions = [];
+        await wrapper.setProps({
+            recordData: updated_record
+        });
         expect(wrapper.find('a.edit').exists()).toBe(false);
     });
 
     it("allows users to edit the work with the proper permissions", async () => {
-        let updated_record = cloneDeep(record);
-        updated_record.canEditDescription = true;
-        await wrapper.setProps({
-            recordData: updated_record
-        });
         expect(wrapper.find('a.edit').exists()).toBe(true);
     });
 
     it("does not set a download link by default", async () => {
+        let updated_record = cloneDeep(record);
+        updated_record.briefObject.permissions = [];
+        updated_record.briefObject.groupRoleMap = {
+            everyone: 'canViewMetadata',
+            authenticated: 'canViewAccessCopies'
+        }
+        await wrapper.setProps({
+            recordData: updated_record
+        });
         expect(wrapper.find('a.download').exists()).toBe(false);
     });
 

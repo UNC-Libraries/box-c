@@ -160,6 +160,10 @@ public class SerializationUtil {
             result.put(SearchFieldKey.FILE_FORMAT_TYPE.getUrlParam(), metadata.getFileFormatType());
         }
 
+        if (metadata.getAbstractText() != null) {
+            result.put("abstractText", metadata.getAbstractText());
+        }
+
         if (metadata.getIdentifier() != null) {
             result.put("identifier", metadata.getIdentifier());
         }

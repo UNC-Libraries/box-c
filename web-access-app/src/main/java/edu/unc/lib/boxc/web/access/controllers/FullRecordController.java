@@ -297,6 +297,7 @@ public class FullRecordController extends AbstractErrorHandlingSearchController 
 
         var recordProperties = new HashMap<String, Object>();
         recordProperties.put("briefObject", SerializationUtil.metadataToMap(briefObject, principals));
+        recordProperties.put("resourceType", resourceType);
 
         // Get parent id
         if (ResourceType.File.nameEquals(resourceType)) {

@@ -71,8 +71,10 @@ export default {
             thumbnail_title: "Thumbnail for {title}",
             title: "Title",
             view: "View",
-            view_title: "@:view {title}",
-            view_file: "@:view file"
+            view_contents: "View the contents of {title}",
+            view_details: "View details for {title}",
+            view_title: "View {title}",
+            view_file: "View file"
         },
         modal: {
             close: "Close",

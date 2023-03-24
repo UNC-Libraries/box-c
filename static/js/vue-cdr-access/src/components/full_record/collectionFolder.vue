@@ -1,5 +1,5 @@
 <template>
-    <div class="browse-header">
+    <div class="browse-header content-wrap full_record">
         <div class="columns">
             <div class="column">
                 <bread-crumbs :object-path="recordData.briefObject.objectPath">
@@ -14,9 +14,9 @@
                     {{ recordData.briefObject.title }}
                     <span class="item_container_count">{{ displayChildCount }}</span>
                 </h2>
-                <p v-if="fieldExists(recordData.briefObject.dateAdded)">
+                <p v-if="fieldExists(recordData.briefObject.added)">
                     <strong>{{ $t('full_record.date_added') }}: </strong>
-                    {{ formatDate(recordData.briefObject.dateAdded) }}
+                    {{ formatDate(recordData.briefObject.added) }}
                 </p>
                 <p v-if="fieldExists(recordData.briefObject.collectionId)">
                     <strong>{{ $t('full_record.collection_id') }}: </strong>
@@ -43,7 +43,7 @@
             </div>
             <div v-if="restrictedContent && !isLoggedIn" class="column is-narrow item-actions">
                 <div class="restricted-access">
-                    <h2>This {{ recordData.briefObject.type.toLowerCase() }} has restricted content</h2>
+                    <h2>{{ $t('full_record.restricted_content', { resource_type: recordData.briefObject.type.toLowerCase() }) }}</h2>
                     <div v-if="hasGroupRole('canViewOriginals', 'authenticated')" class="actionlink"><a class="button login-link" :href="loginUrl"><i class="fa fa-id-card"></i> {{ $t('access.login') }}</a></div>
                     <div class="actionlink"><a class="button contact" href="https://library.unc.edu/wilson/contact/"><i class="fa fa-envelope"></i> {{ $t('access.contact') }}</a></div>
                 </div>

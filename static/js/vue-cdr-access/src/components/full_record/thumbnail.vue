@@ -111,15 +111,13 @@ export default {
         tooltip() {
             const record_type = this.objectData.type;
             if (types.includes(record_type)) {
-                return `View details for ${this.objectData.title}`;
+                return this.$t('full_record.view_details', { title: this.objectData.title });
             }
-
             if (record_type === 'File') {
-                return `View ${this.objectData.title}`;
+                return this.$t('full_record.view_title', { title: this.objectData.title });
             }
-
             if (record_type === 'List') {
-                return `View the contents of ${this.objectData.title}`;
+                return this.$t('full_record.view_contents', { title: this.objectData.title });
             }
 
             return '';

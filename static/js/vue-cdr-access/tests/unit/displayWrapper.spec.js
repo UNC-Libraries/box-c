@@ -49,88 +49,93 @@ const response = {
     filterParameters: {}
 };
 const briefObjectData = {
-    pageSubtitle: 'testCollection',
     briefObject: {
-        pid: {
-            id: 'fc77a9be-b49d-4f4e-b656-1644c9e964fc',
-            qualifier: 'content',
-            qualifiedId: 'content/fc77a9be-b49d-4f4e-b656-1644c9e964fc',
-            componentId: 'fc77a9be-b49d-4f4e-b656-1644c9e964fc',
-            repositoryUri: 'http://localhost:8181/fcrepo/rest/content/fc/77/a9/be/fc77a9be-b49d-4f4e-b656-1644c9e964fc',
-            repositoryPath: 'http://localhost:8181/fcrepo/rest/content/fc/77/a9/be/fc77a9be-b49d-4f4e-b656-1644c9e964fc',
-            pid: 'uuid:fc77a9be-b49d-4f4e-b656-1644c9e964fc',
-            uri: 'http://localhost:8181/fcrepo/rest/content/fc/77/a9/be/fc77a9be-b49d-4f4e-b656-1644c9e964fc',
-            uuid: 'fc77a9be-b49d-4f4e-b656-1644c9e964fc'
+        added: "2023-01-17T13:52:29.596Z",
+        counts: {
+            child: 4
         },
-        objectPath: {
-            entries: [
-                {
-                    pid: 'collections',
-                    name: 'Content Collections Root',
-                    container: true
-                },
-                {
-                    pid: '353ee09f-a4ed-461e-a436-18a1bee77b01',
-                    name: 'testAdminUnit',
-                    container: true
-                },
-                {
-                    pid: 'fc77a9be-b49d-4f4e-b656-1644c9e964fc',
-                    name: 'testCollection',
-                    container: true
-                }
-            ]
-        },
-        ancestorNames: '/Content Collections Root/testAdminUnit/testCollection',
+        created: 1041379200000,
+        title: "testCollection",
+        type: "Collection",
+        contentStatus: [
+            "Described"
+        ],
+        rollup: "fc77a9be-b49d-4f4e-b656-1644c9e964fc",
+        objectPath: [
+            {
+                pid: "collections",
+                name: "Content Collections Root",
+                container: true
+            },
+            {
+                pid: "353ee09f-a4ed-461e-a436-18a1bee77b01",
+                name: "testAdminUnit",
+                container: true
+            },
+            {
+                pid: "fc77a9be-b49d-4f4e-b656-1644c9e964fc",
+                name: "testCollection",
+                container: true
+            }
+        ],
+        datastream: [
+            "thumbnail_small|image/png|fc77a9be-b49d-4f4e-b656-1644c9e964fc.png|png|6768|||",
+            "thumbnail_large|image/png|fc77a9be-b49d-4f4e-b656-1644c9e964fc.png|png|23535|||",
+            "event_log|application/n-triples|event_log.nt|nt|8206|urn:sha1:54fe67d57b965651e813eea1777c7f0332253168||",
+            "md_descriptive_history|text/xml|||916|urn:sha1:efb4f2b6226d2932229f0e2b89128ec9a651de71||",
+            "md_descriptive|text/xml|md_descriptive.xml|xml|283|urn:sha1:97f7dbdb806f724f9301445820ff1e0c9691cd6b||"
+        ],
+        ancestorPath: [
+            {
+                id: "collections",
+                title: "collections"
+            },
+            {
+                id: "353ee09f-a4ed-461e-a436-18a1bee77b01",
+                title: "353ee09f-a4ed-461e-a436-18a1bee77b01"
+            }
+        ],
+        _version_: 1760531096449056800,
+        permissions: [
+            "markForDeletionUnit",
+            "move",
+            "reindex",
+            "destroy",
+            "editResourceType",
+            "destroyUnit",
+            "bulkUpdateDescription",
+            "changePatronAccess",
+            "runEnhancements",
+            "createAdminUnit",
+            "ingest",
+            "orderMembers",
+            "viewOriginal",
+            "viewAccessCopies",
+            "viewMetadata",
+            "viewHidden",
+            "assignStaffRoles",
+            "markForDeletion",
+            "editDescription",
+            "createCollection"
+        ],
         groupRoleMap: {
             authenticated: [
-                'canViewOriginals'
+                "canViewOriginals"
             ],
             everyone: [
-                'canViewMetadata'
+                "canViewMetadata"
             ]
         },
-        countMap: {
-            child: 1
-        },
-        thumbnailId: 'fc77a9be-b49d-4f4e-b656-1644c9e964fc',
-        idWithoutPrefix: 'fc77a9be-b49d-4f4e-b656-1644c9e964fc',
-        ancestorPath: [
-            '1,collections',
-            '2,353ee09f-a4ed-461e-a436-18a1bee77b01'
-        ],
-        roleGroup: [
-            'canViewOriginals|authenticated',
-            'canViewMetadata|everyone'
-        ],
-        id: 'fc77a9be-b49d-4f4e-b656-1644c9e964fc',
-        keyword: [
-            'fc77a9be-b49d-4f4e-b656-1644c9e964fc'
-        ],
-        timestamp: 1676916737707,
+        id: "fc77a9be-b49d-4f4e-b656-1644c9e964fc",
+        updated: "2023-02-21T18:37:17.705Z",
         status: [
-            'Patron Settings'
+            "Patron Settings"
         ],
-        title: 'testCollection',
-        resourceType: 'Collection',
-        rollup: 'fc77a9be-b49d-4f4e-b656-1644c9e964fc',
-        ancestorIds: '/collections/353ee09f-a4ed-461e-a436-18a1bee77b01/fc77a9be-b49d-4f4e-b656-1644c9e964fc',
-        readGroup: [
-            'authenticated',
-            'everyone'
-        ],
-        adminGroup: [
-            ''
-        ],
-        contentStatus: [
-            'Described'
-        ],
-        dateAdded: 1673963549596,
-        parentUnit: 'testAdminUnit|353ee09f-a4ed-461e-a436-18a1bee77b01'
+        timestamp: 1678973288810
     },
     markedForDeletion: false,
-    resourceType: 'Collection'
-}
+    resourceType: "Collection"
+};
 
 describe('displayWrapper.vue', () => {
     const i18n = createI18n({
@@ -252,8 +257,8 @@ describe('displayWrapper.vue', () => {
         await router.push('/record/73bc003c-9603-4cd9-8a65-93a22520ef6a?works_only=false');
         mountApp({
             container_info: {
-                resourceType: 'AdminUnit',
                 briefObject: {
+                    type: 'AdminUnit',
                     objectPath: {
                         entries: [
                             {
@@ -269,7 +274,8 @@ describe('displayWrapper.vue', () => {
                         ]
                     }
                 }
-            }
+            },
+            resourceType: 'AdminUnit'
         });
 
         wrapper.vm.getBriefObject();
@@ -286,9 +292,9 @@ describe('displayWrapper.vue', () => {
         await router.push('/record/73bc003c-9603-4cd9-8a65-93a22520ef6a?browse_type=gallery-display');
         mountApp({
             container_info: {
-                resourceType: 'Collection',
-                objectPath: {
-                    entries: [
+                briefObject: {
+                    type: 'Collection',
+                    objectPath: [
                         {
                             pid: 'collections',
                             name: 'Content Collections Root',
@@ -305,7 +311,8 @@ describe('displayWrapper.vue', () => {
                             container: true
                         }
                     ]
-                }
+                },
+                resourceType: 'Collection'
             }
         });
 
@@ -340,13 +347,12 @@ describe('displayWrapper.vue', () => {
     });
 
     it("adjusts facets retrieved for admin unit", async () => {
-        document.body.innerHTML = document.body.innerHTML + '<div id="is-admin-unit"></div>';
         stubQueryResponse(`listJson/73bc003c-9603-4cd9-8a65-93a22520ef6a?.+&facetSelect=collection%2Cformat%2Cgenre%2Clanguage%2Csubject%2Clocation%2CcreatedYear%2CcreatorContributor%2Cpublisher&.*`, response);
         await router.push('/record/73bc003c-9603-4cd9-8a65-93a22520ef6a');
         mountApp({
             container_info: {
-                resourceType: 'AdminUnit',
                 briefObject: {
+                    type: 'AdminUnit',
                     objectPath: {
                         entries: [
                             {
@@ -361,7 +367,8 @@ describe('displayWrapper.vue', () => {
                             }
                         ]
                     }
-                }
+                },
+                resourceType: 'AdminUnit'
             }
         });
         await flushPromises();
@@ -374,7 +381,6 @@ describe('displayWrapper.vue', () => {
     });
 
     it("adjusts facets retrieved for collection object", async () => {
-        document.body.innerHTML = document.body.innerHTML + '<div id="is-collection"></div>';
         stubQueryResponse(`listJson/73bc003c-9603-4cd9-8a65-93a22520ef6a?.+&facetSelect=format%2Cgenre%2Clanguage%2Csubject%2Clocation%2CcreatedYear%2CcreatorContributor%2Cpublisher&.*`, response);
         await router.push('/record/73bc003c-9603-4cd9-8a65-93a22520ef6a');
         mountApp();
@@ -389,7 +395,6 @@ describe('displayWrapper.vue', () => {
     });
 
     it("adjusts facets retrieved for folder object", async () => {
-        document.body.innerHTML = document.body.innerHTML + '<div id="is-folder"></div>';
         stubQueryResponse(`listJson/73bc003c-9603-4cd9-8a65-93a22520ef6a?.+&facetSelect=format%2Cgenre%2Clanguage%2Csubject%2Clocation%2CcreatedYear%2CcreatorContributor%2Cpublisher&.*`, response);
         await router.push('/record/73bc003c-9603-4cd9-8a65-93a22520ef6a');
         mountApp();
@@ -404,13 +409,12 @@ describe('displayWrapper.vue', () => {
     });
 
     it("adjusts facets retrieved for admin unit and maintains them after checking works only", async () => {
-        document.body.innerHTML = document.body.innerHTML + '<div id="is-admin-unit"></div>';
         stubQueryResponse(`listJson/73bc003c-9603-4cd9-8a65-93a22520ef6a?.+&facetSelect=collection%2Cformat%2Cgenre%2Clanguage%2Csubject%2Clocation%2CcreatedYear%2CcreatorContributor%2Cpublisher&.*`, response);
         await router.push('/record/73bc003c-9603-4cd9-8a65-93a22520ef6a/?browse_type=list-display');
         mountApp({
             container_info: {
-                resourceType: 'AdminUnit',
                 briefObject: {
+                    type: 'AdminUnit',
                     objectPath: {
                         entries: [
                             {
@@ -425,7 +429,8 @@ describe('displayWrapper.vue', () => {
                             }
                         ]
                     }
-                }
+                },
+                resourceType: "AdminUnit"
             }
         });
         await flushPromises();

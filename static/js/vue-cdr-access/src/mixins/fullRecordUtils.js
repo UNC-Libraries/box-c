@@ -2,6 +2,7 @@ import breadCrumbs from '@/components/full_record/breadCrumbs.vue';
 import modalMetadata from '@/components/modalMetadata.vue';
 import thumbnail from '@/components/full_record/thumbnail.vue';
 import isEmpty from 'lodash.isempty';
+import { format } from 'date-fns';
 
 export default {
     components: { breadCrumbs, modalMetadata, thumbnail },
@@ -56,6 +57,9 @@ export default {
         },
 
         restrictedContent() {
+            if (!this.hasGroups) {
+                return false;
+            }
             return !this.recordData.briefObject.groupRoleMap.everyone.includes('canViewOriginals');
         },
 
@@ -66,7 +70,12 @@ export default {
 
         isLoggedIn() {
             return this.username !== undefined && this.username !== ''
-        }
+        },
+
+        hasGroups() {
+            const group_roles = this.recordData.briefObject.groupRoleMap;
+            return !(group_roles === undefined || isEmpty(group_roles));
+        },
     },
 
     methods: {
@@ -87,7 +96,10 @@ export default {
         },
 
         formatDate(value) {
-            return value.split(/[A-Z]/)[0];
+            if (typeof value === 'string') {
+                return value.split(/[A-Z]/)[0];
+            }
+            return format(value, 'yyyy-MM-dd');
         },
 
         editDescriptionUrl(id) {
@@ -95,11 +107,11 @@ export default {
         },
 
         hasGroupRole(permission, user_type= 'everyone') {
-            const group_roles = this.recordData.briefObject.groupRoleMap;
-            if (group_roles === undefined || isEmpty(group_roles)) {
+            if (!this.hasGroups) {
                 return false;
             }
 
+            const group_roles = this.recordData.briefObject.groupRoleMap;
             return Object.keys(group_roles).includes(user_type) &&
                 group_roles[user_type].includes(permission);
         },

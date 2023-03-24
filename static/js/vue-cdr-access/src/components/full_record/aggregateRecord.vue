@@ -57,9 +57,9 @@
                                         {{ displayChildCount }}
                                     </li>
                                 </template>
-                                <li v-if="fieldExists(recordData.briefObject.dateCreated)">
+                                <li v-if="fieldExists(recordData.briefObject.created)">
                                     <span class="has-text-weight-bold">{{ $t('full_record.date_created') }}: </span>
-                                    {{ formatDate(recordData.briefObject.dateCreated) }}
+                                    {{ formatDate(recordData.briefObject.created) }}
                                 </li>
                                 <li v-if="fieldExists(recordData.briefObject.embargoDate)">
                                     <span class="has-text-weight-bold">{{ $t('full_record.embargo_date') }}: </span>
