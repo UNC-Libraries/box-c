@@ -2,7 +2,7 @@ import breadCrumbs from '@/components/full_record/breadCrumbs.vue';
 import modalMetadata from '@/components/modalMetadata.vue';
 import thumbnail from '@/components/full_record/thumbnail.vue';
 import isEmpty from 'lodash.isempty';
-import { format } from 'date-fns';
+import { formatInTimeZone } from 'date-fns-tz';
 
 export default {
     components: { breadCrumbs, modalMetadata, thumbnail },
@@ -96,10 +96,7 @@ export default {
         },
 
         formatDate(value) {
-            if (typeof value === 'string') {
-                return value.split(/[A-Z]/)[0];
-            }
-            return format(value, 'yyyy-MM-dd');
+            return formatInTimeZone(value, 'America/New_York', 'yyyy-MM-dd');
         },
 
         editDescriptionUrl(id) {
