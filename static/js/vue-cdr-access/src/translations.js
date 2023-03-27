@@ -26,6 +26,7 @@ export default {
         breadcrumbs: {
             collections: "Collections"
         },
+        collecting_units: "Collecting Units",
         display: {
             collection: "Collection",
             collection_number: "Collection Number",
