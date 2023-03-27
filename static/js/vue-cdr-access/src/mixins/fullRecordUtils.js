@@ -103,14 +103,14 @@ export default {
             return `https://${window.location.host}/admin/describe/${id}`;
         },
 
-        hasGroupRole(permission, user_type= 'everyone') {
+        hasGroupRole(role, user_type= 'everyone') {
             if (!this.hasGroups) {
                 return false;
             }
 
             const group_roles = this.recordData.briefObject.groupRoleMap;
             return Object.keys(group_roles).includes(user_type) &&
-                group_roles[user_type].includes(permission);
+                group_roles[user_type].includes(role);
         },
 
         hasPermission(permission) {

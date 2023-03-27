@@ -93,7 +93,7 @@
                             <a class="download button" :href="downloadLink"><i class="fa fa-download"></i> {{ $t('full_record.download') }}</a>
                         </div>
                         <div v-else-if="fieldExists(recordData.briefObject.embargoDate) && fieldExists(recordData.briefObject.dataFileUrl)" class="noaction right">
-                            Available after {{ formatDate(recordData.briefObject.embargoDate) }}
+                            {{ $t('full_record.available_date', { available_date: formatDate(recordData.briefObject.embargoDate) }) }}
                         </div>
                     </div>
                 </div>

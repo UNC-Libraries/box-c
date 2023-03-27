@@ -82,7 +82,6 @@ export default {
 
         tableOptions() {
             return {
-                processing: true,
                 serverSide: true,
                 bAutoWidth: false,
                 bLengthChange: false, // Remove option to show different number of results

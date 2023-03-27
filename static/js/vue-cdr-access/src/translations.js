@@ -38,6 +38,7 @@ export default {
         },
         full_record: {
             additional_metadata: "View Additional Metadata",
+            available_date: "Available after {available_date}",
             collection_id: "Archival Collection ID",
             contains: "Contains",
             creator: "Creator",

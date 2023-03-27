@@ -271,7 +271,7 @@ public class FullRecordController extends AbstractErrorHandlingSearchController 
      * @return
      */
     @GetMapping(path = "/{pid}/json", produces = APPLICATION_JSON_VALUE)
-    public @ResponseBody String handleRequest(@PathVariable("pid")String pidString, HttpServletResponse response) {
+    public @ResponseBody String handleRequest(@PathVariable("pid") String pidString, HttpServletResponse response) {
         PID pid = PIDs.get(pidString);
 
         AccessGroupSet principals = getAgentPrincipals().getPrincipals();
@@ -357,7 +357,7 @@ public class FullRecordController extends AbstractErrorHandlingSearchController 
 
         AccessGroupSet principals = getAgentPrincipals().getPrincipals();
         aclService.assertHasAccess("Insufficient permissions to access pdf for " + pidString,
-                pid, principals, Permission.viewMetadata);
+                pid, principals, Permission.viewOriginal);
 
         // Retrieve the object's record from Solr
         SimpleIdRequest idRequest = new SimpleIdRequest(pid, principals);
@@ -376,7 +376,7 @@ public class FullRecordController extends AbstractErrorHandlingSearchController 
 
         AccessGroupSet principals = getAgentPrincipals().getPrincipals();
         aclService.assertHasAccess("Insufficient permissions to access pdf for " + pidString,
-                pid, principals, Permission.viewMetadata);
+                pid, principals, Permission.viewAccessCopies);
 
         return "fullRecord/uvViewer";
     }

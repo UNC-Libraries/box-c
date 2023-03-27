@@ -587,7 +587,9 @@ describe('aggregateRecord.vue', () => {
         await wrapper.setProps({
             recordData: updated_record
         });
-        expect(wrapper.find('.finding-aid').exists()).toBe(true);
+        const finding_aid_link = wrapper.find('.finding-aid');
+        expect(finding_aid_link.exists()).toBe(true);
+        expect(finding_aid_link.attributes('href')).toEqual('https://unc-finding-aid.lib.unc.edu');
     });
 
     it("does not allow users to edit the work by default", async () => {
