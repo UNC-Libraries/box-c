@@ -90,7 +90,7 @@ export default {
                 order: [], // do not set initial sort in case there is member order
                 rowCallback: (row, data) => {
                     if (this.showBadge(data).markDeleted) {
-                        document.querySelector(row).classList.add('deleted');
+                        row.classList.add('deleted');
                     }
                 }
             }
