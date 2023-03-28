@@ -56,3 +56,4 @@
 	<c:set var="collectionName" value="(no collection)" />
 </c:if>
 <c:set var="gaCommands" scope="request">${gaCommands} ga('unc.send', 'event', '${collectionName}', 'record', '<c:out value="${briefObject.title}|${briefObject.pid}" />');</c:set>
+<c:import url="matomoRecordInfo.jsp" />
