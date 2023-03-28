@@ -620,11 +620,13 @@ describe('aggregateRecord.vue', () => {
 
     it("allows users to download the work if a download link is present", async () => {
         let updated_record = cloneDeep(record);
-        updated_record.briefObject.dataFileUrl = 'https://download-link.lib.unc.edu';
+        updated_record.dataFileUrl = 'https://download-link.lib.unc.edu';
         await wrapper.setProps({
             recordData: updated_record
         });
-        expect(wrapper.find('a.download').exists()).toBe(true);
+        const download = wrapper.find('a.download');
+        expect(download.exists()).toBe(true);
+        expect(download.attributes('href')).toEqual(`${updated_record.dataFileUrl}?dl=true`);
     });
 
     it("displays an iframe viewer for images", async () => {
