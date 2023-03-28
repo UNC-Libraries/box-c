@@ -55,7 +55,7 @@
 <script>
 import fullRecordUtils from '../../mixins/fullRecordUtils';
 import {format} from 'date-fns';
-import abstract from "../full_record/abstract.vue";
+import abstract from "@/components/full_record/abstract.vue";
 
 export default {
     name: 'collectionFolder',
