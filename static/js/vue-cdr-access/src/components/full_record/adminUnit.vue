@@ -22,11 +22,7 @@
                         {{ $t('full_record.no_subjects') }}
                     </template>
                 </p>
-                <template v-if="recordData.briefObject.abstractText">
-                        <p v-if="truncateAbstract" class="abstract">{{ truncatedAbstractText }}... <a class="abstract-text" @click.prevent="toggleAbstractDisplay()"
-                                                             href="#">{{ abstractLinkText }}</a></p>
-                        <p v-else class="abstract">{{ recordData.briefObject.abstractText }}</p>
-                </template>
+                <abstract v-if="recordData.briefObject.abstractText" :brief-object="recordData.briefObject"/>
                 <p><a @click.prevent="displayMetadata()" class="metadata-link" href="#">{{ $t('full_record.additional_metadata') }}</a></p>
             </div>
         </div>
@@ -39,11 +35,16 @@
 
 <script>
 import fullRecordUtils from '../../mixins/fullRecordUtils';
+import abstract from "@/components/full_record/abstract.vue";
 
 export default {
     name: 'adminUnit',
 
     mixins: [fullRecordUtils],
+
+    components: {
+        abstract
+    },
 
     computed: {
         hasSubjects() {
