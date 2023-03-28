@@ -54,7 +54,6 @@
 
 <script>
 import fullRecordUtils from '../../mixins/fullRecordUtils';
-import {format} from 'date-fns';
 import abstract from "@/components/full_record/abstract.vue";
 
 export default {
@@ -69,10 +68,6 @@ export default {
     methods: {
         fieldExists(value) {
             return value !== undefined;
-        },
-
-        formatDate(value) {
-            return format(value, 'yyyy-MM-dd');
         }
     }
 }
