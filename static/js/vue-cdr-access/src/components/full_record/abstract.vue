@@ -1,5 +1,5 @@
 <template>
-    <p v-if="truncateAbstract" class="abstract">{{ truncatedAbstractText }}... <a class="abstract-text" @click.prevent="toggleAbstractDisplay()"
+    <p v-if="truncateAbstract" class="abstract">{{ truncatedAbstractText }} <a class="abstract-text" @click.prevent="toggleAbstractDisplay()"
                                                                                   href="#">{{ abstractLinkText }}</a></p>
     <p v-else class="abstract">{{ briefObject.abstractText }} </p>
 </template>
@@ -30,7 +30,7 @@ export default {
 
         truncatedAbstractText() {
             if (this.truncateAbstract && !this.showFullAbstract) {
-                return this.briefObject.abstractText.substring(0, 350);
+                return this.briefObject.abstractText.substring(0, 350) + "...";
             }
 
             return this.briefObject.abstractText;

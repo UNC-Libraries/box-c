@@ -83,7 +83,7 @@ describe('abstract.vue', () => {
 
         // Show full abstract
         await show_more.trigger('click');
-        expect(wrapper.find('.abstract').text()).toEqual(longAbstract.abstractText + '... Read less');
+        expect(wrapper.find('.abstract').text()).toEqual(longAbstract.abstractText + ' Read less');
 
         // Close abstract
         await show_more.trigger('click');
