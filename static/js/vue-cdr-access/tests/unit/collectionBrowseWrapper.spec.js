@@ -1,6 +1,8 @@
 import { shallowMount } from '@vue/test-utils'
 import collectionBrowseWrapper from '@/components/collectionBrowseWrapper.vue';
 import moxios from "moxios";
+import {createI18n} from 'vue-i18n';
+import translations from '@/translations';
 
 let response = {
     "metadata": [
@@ -54,10 +56,20 @@ let response = {
 let wrapper;
 
 describe('collectionBrowseWrapper.vue', () => {
+    const i18n = createI18n({
+        locale: 'en',
+        fallbackLocale: 'en',
+        messages: translations
+    });
+
     beforeEach(() => {
         moxios.install();
 
-        wrapper = shallowMount(collectionBrowseWrapper);
+        wrapper = shallowMount(collectionBrowseWrapper, {
+            global: {
+                plugins: [i18n]
+            }
+        });
 
         moxios.stubRequest('collectionsJson', {
             status: 200,

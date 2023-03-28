@@ -46,7 +46,7 @@ define("JP2Viewer", [ 'jquery', 'jquery-ui', 'uvOffline', 'uvHelpers', 'uv'],
 			try {
 				createUV('#jp2_viewer', {
 					root: uvRoot,
-					iiifResourceUri: 'jp2Proxy/' + this.options.url + '/jp2/manifest',
+					iiifResourceUri: '/jp2Proxy/' + this.options.url + '/jp2/manifest',
 					configUri: uvRoot + '/unc-uv-config.json',
 					collectionIndex: Number(urlDataProvider.get('c', 0)),
 					manifestIndex: Number(urlDataProvider.get('m', 0)),

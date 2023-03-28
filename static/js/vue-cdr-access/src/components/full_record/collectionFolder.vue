@@ -1,5 +1,5 @@
 <template>
-    <div class="browse-header">
+    <div class="browse-header content-wrap full_record">
         <div class="columns">
             <div class="column">
                 <bread-crumbs :object-path="recordData.briefObject.objectPath">
@@ -10,13 +10,13 @@
             <div class="column" :class="{restrictedContent: 'is-8'}">
                 <h2 :class="isDeleted">
                     <thumbnail :thumbnail-data="recordData"
-                               :allows-full-access="allowsFullAuthenticatedAccess"></thumbnail>
+                               :allows-full-access="hasGroupRole('canViewOriginals')"></thumbnail>
                     {{ recordData.briefObject.title }}
                     <span class="item_container_count">{{ displayChildCount }}</span>
                 </h2>
-                <p v-if="fieldExists(recordData.briefObject.dateAdded)">
+                <p v-if="fieldExists(recordData.briefObject.added)">
                     <strong>{{ $t('full_record.date_added') }}: </strong>
-                    {{ formatDate(recordData.briefObject.dateAdded) }}
+                    {{ formatDate(recordData.briefObject.added) }}
                 </p>
                 <p v-if="fieldExists(recordData.briefObject.collectionId)">
                     <strong>{{ $t('full_record.collection_id') }}: </strong>
@@ -26,7 +26,7 @@
                     <template v-if="fieldExists(recordData.findingAidUrl)">
                         <a :href="recordData.findingAidUrl">">{{ recordData.findingAidUrl }}</a>
                     </template>
-                    <template v-else>Doesn't have a finding aid</template>
+                    <template v-else>{{ $t('full_record.no_finding_aid') }}</template>
                 </p>
                 <abstract v-if="recordData.briefObject.abstractText" :brief-object="recordData.briefObject"/>
                 <p v-if="fieldExists(recordData.exhibits)">
@@ -37,10 +37,10 @@
                 </p>
                 <p><a @click.prevent="displayMetadata()" href="#">{{ $t('full_record.additional_metadata') }}</a></p>
             </div>
-            <div v-if="restrictedContent" class="column is-narrow-desktop item-actions">
+            <div v-if="restrictedContent && !isLoggedIn" class="column is-narrow item-actions">
                 <div class="restricted-access">
-                    <h2>This {{ recordData.briefObject.resourceType.toLowerCase() }} has restricted content</h2>
-                    <div v-if="allowsFullAuthenticatedAccess" class="actionlink"><a class="button login-link" :href="loginUrl"><i class="fa fa-id-card"></i> {{ $t('access.login') }}</a></div>
+                    <h2>{{ $t('full_record.restricted_content', { resource_type: recordData.briefObject.type.toLowerCase() }) }}</h2>
+                    <div v-if="hasGroupRole('canViewOriginals', 'authenticated')" class="actionlink"><a class="button login-link" :href="loginUrl"><i class="fa fa-id-card"></i> {{ $t('access.login') }}</a></div>
                     <div class="actionlink"><a class="button contact" href="https://library.unc.edu/wilson/contact/"><i class="fa fa-envelope"></i> {{ $t('access.contact') }}</a></div>
                 </div>
             </div>
@@ -77,3 +77,22 @@ export default {
     }
 }
 </script>
+
+<style scoped lang="scss">
+    .actionlink {
+        margin: 5px auto;
+        max-width: 300px;
+    }
+
+    .browse-header {
+        h2 {
+            font-size: 1.5rem;
+        }
+    }
+
+    .restricted-access {
+        h2 {
+            text-align: center;
+        }
+    }
+</style>

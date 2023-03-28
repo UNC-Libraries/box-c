@@ -5,55 +5,51 @@ import displayWrapper from '@/components/displayWrapper.vue';
 import {createI18n} from 'vue-i18n';
 import translations from '@/translations';
 
-const objectPath = {
-    entries: [
-        {
-            pid: 'collections',
-            name: 'Content Collections Root',
-            container: true
-        },
-        {
-            pid: '353ee09f-a4ed-461e-a436-18a1bee77b01',
-            name: 'testAdminUnit',
-            container: true
-        }
-    ]
-}
+const objectPath = [
+    {
+        pid: 'collections',
+        name: 'Content Collections Root',
+        container: true
+    },
+    {
+        pid: '353ee09f-a4ed-461e-a436-18a1bee77b01',
+        name: 'testAdminUnit',
+        container: true
+    }
+];
 
-const longObjectPath = {
-    entries: [
-        {
-            pid: 'collections',
-            name: 'Content Collections Root',
-            container: true
-        },
-        {
-            pid: '353ee09f-a4ed-461e-a436-18a1bee77b01',
-            name: 'testAdminUnit',
-            container: true
-        },
-        {
-            pid: '353ee09f-a4ed-461e-a436-18a1bee77b23',
-            name: 'testFolder',
-            container: true
-        },
-        {
-            pid: '353ee09f-a4ed-461e-a436-18a1bee77c91',
-            name: 'testFolder2',
-            container: true
-        },
-        {
-            pid: '813ee09f-a4ed-461e-a436-18a1bee77b23',
-            name: 'testFolder3',
-            container: true
-        },
-        {
-            pid: '813ee09f-a4ed-461e-a436-18a1bee77b23',
-            name: 'testWork',
-            container: false
-        }
-    ]
-}
+const longObjectPath = [
+    {
+        pid: 'collections',
+        name: 'Content Collections Root',
+        container: true
+    },
+    {
+        pid: '353ee09f-a4ed-461e-a436-18a1bee77b01',
+        name: 'testAdminUnit',
+        container: true
+    },
+    {
+        pid: '353ee09f-a4ed-461e-a436-18a1bee77b23',
+        name: 'testFolder',
+        container: true
+    },
+    {
+        pid: '353ee09f-a4ed-461e-a436-18a1bee77c91',
+        name: 'testFolder2',
+        container: true
+    },
+    {
+        pid: '813ee09f-a4ed-461e-a436-18a1bee77b23',
+        name: 'testFolder3',
+        container: true
+    },
+    {
+        pid: '813ee09f-a4ed-461e-a436-18a1bee77b23',
+        name: 'testWork',
+        container: false
+    }
+];
 
 let wrapper, router;
 

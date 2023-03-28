@@ -26,26 +26,10 @@
 </c:set>
 
 <div class="content-wrap full_record ${isDeleted}${' '}${isProtected}">
-
-<c:choose>
-	<c:when test="${briefObject.resourceType.equals('AdminUnit')}">
-		<c:import url="fullRecord/adminUnit.jsp" />
-	</c:when>
-	<c:when test="${briefObject.resourceType == searchSettings.resourceTypeCollection}">
-		<c:import url="fullRecord/collectionRecord.jsp" />
-	</c:when>
-	<c:when test="${briefObject.resourceType == searchSettings.resourceTypeFolder}">
-		<c:import url="fullRecord/folderRecord.jsp" />
-	</c:when>
-	<c:when test="${briefObject.resourceType == searchSettings.resourceTypeAggregate}">
-		<c:import url="fullRecord/aggregateRecord.jsp" />
-		<script type="text/javascript" src="/static/js/lib/require.js" data-main="/static/js/public/fullRecord"></script>
-	</c:when>
-	<c:when test="${briefObject.resourceType == searchSettings.resourceTypeFile}">
+	<c:if test="${briefObject.resourceType == searchSettings.resourceTypeFile}">
 		<c:import url="fullRecord/fileRecord.jsp" />
 		<script type="text/javascript" src="/static/js/lib/require.js" data-main="/static/js/public/fullRecord"></script>
-	</c:when>
-</c:choose>
+	</c:if>
 </div>
 <%-- Add record visit event to the google analytics commands to be run later --%>
 <c:set var="collectionName"><c:out value='${briefObject.parentCollectionName}' /></c:set>
