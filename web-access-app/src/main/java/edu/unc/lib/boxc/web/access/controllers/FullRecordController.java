@@ -50,6 +50,7 @@ import java.io.InputStream;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import static edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore.getAgentPrincipals;
 import static edu.unc.lib.boxc.common.xml.SecureXMLFactory.createSAXBuilder;
@@ -125,7 +126,6 @@ public class FullRecordController extends AbstractErrorHandlingSearchController 
         response.setCharacterEncoding("UTF-8");
         return getFullObjectView(pid);
     }
-
 
     public String getFullObjectView(String pidString) {
         PID pid = PIDs.get(pidString);
@@ -271,7 +271,7 @@ public class FullRecordController extends AbstractErrorHandlingSearchController 
      * @return
      */
     @GetMapping(path = "/{pid}/json", produces = APPLICATION_JSON_VALUE)
-    public @ResponseBody String handleRequest(@PathVariable("pid")String pidString) {
+    public @ResponseBody String handleRequest(@PathVariable("pid") String pidString, HttpServletResponse response) {
         PID pid = PIDs.get(pidString);
 
         AccessGroupSet principals = getAgentPrincipals().getPrincipals();
@@ -286,6 +286,9 @@ public class FullRecordController extends AbstractErrorHandlingSearchController 
             throw new NotFoundException("No record found for " + pid.getId());
         }
 
+        // Add username
+        response.addHeader("username", getAgentPrincipals().getUsername());
+
         // Get additional information depending on the type of object since the user has access
         String resourceType = briefObject.getResourceType();
         if (!ResourceType.File.nameEquals(resourceType)) {
@@ -293,7 +296,7 @@ public class FullRecordController extends AbstractErrorHandlingSearchController 
         }
 
         var recordProperties = new HashMap<String, Object>();
-        recordProperties.put("briefObject", briefObject);
+        recordProperties.put("briefObject", SerializationUtil.metadataToMap(briefObject, principals));
         recordProperties.put("resourceType", resourceType);
 
         // Get parent id
@@ -320,7 +323,9 @@ public class FullRecordController extends AbstractErrorHandlingSearchController 
             List<ContentObjectRecord> neighbors = neighborService.getNeighboringItems(briefObject,
                     searchSettings.maxNeighborResults, principals);
             accessCopiesService.populateThumbnailIds(neighbors, principals, true);
-            recordProperties.put("neighborList", neighbors);
+            var neighborList = neighbors.stream()
+                    .map(d -> SerializationUtil.metadataToMap(d, principals)).collect(Collectors.toList());
+            recordProperties.put("neighborList", neighborList);
         }
 
         if (ResourceType.Work.nameEquals(resourceType)) {
@@ -342,9 +347,40 @@ public class FullRecordController extends AbstractErrorHandlingSearchController 
             isMarkedForDeletion = objectStatus.contains(MARKED_FOR_DELETION);
         }
         recordProperties.put("markedForDeletion", isMarkedForDeletion);
-        recordProperties.put("pageSubtitle", briefObject.getTitle());
-
         return SerializationUtil.objectToJSON(recordProperties);
+    }
+
+    @GetMapping("/{pid}/pdfViewer")
+    public String handlePdfViewerRequest(@PathVariable("pid") String pidString, Model model,
+                                         HttpServletRequest request) {
+        PID pid = PIDs.get(pidString);
+
+        AccessGroupSet principals = getAgentPrincipals().getPrincipals();
+        aclService.assertHasAccess("Insufficient permissions to access pdf for " + pidString,
+                pid, principals, Permission.viewOriginal);
+
+        // Retrieve the object's record from Solr
+        SimpleIdRequest idRequest = new SimpleIdRequest(pid, principals);
+        ContentObjectRecord briefObject = queryLayer.getObjectById(idRequest);
+
+        String viewerPid = accessCopiesService.getDatastreamPid(briefObject, principals, PDF_MIMETYPE_REGEX);
+        model.addAttribute("pid", viewerPid);
+        model.addAttribute("briefObject", briefObject);
+        model.addAttribute("template", "ajax");
+
+        return "fullRecord/pdfViewer";
+    }
+
+    @GetMapping("/{pid}/uvViewer")
+    public String handleUvViewerRequest(@PathVariable("pid") String pidString, Model model) {
+        PID pid = PIDs.get(pidString);
+
+        AccessGroupSet principals = getAgentPrincipals().getPrincipals();
+        aclService.assertHasAccess("Insufficient permissions to access pdf for " + pidString,
+                pid, principals, Permission.viewAccessCopies);
+
+        model.addAttribute("template", "ajax");
+        return "fullRecord/uvViewer";
     }
 
     public void setXslViewResolver(XSLViewResolver xslViewResolver) {

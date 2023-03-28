@@ -7,111 +7,77 @@ import translations from '@/translations';
 import cloneDeep from 'lodash.clonedeep';
 
 const recordData = {
-    pageSubtitle: 'testAdminUnit',
     briefObject: {
-        pid: {
-            id: '353ee09f-a4ed-461e-a436-18a1bee77b01',
-            qualifier: 'content',
-            qualifiedId: 'content/353ee09f-a4ed-461e-a436-18a1bee77b01',
-            componentId: '353ee09f-a4ed-461e-a436-18a1bee77b01',
-            repositoryUri: 'http://localhost:8181/fcrepo/rest/content/35/3e/e0/9f/353ee09f-a4ed-461e-a436-18a1bee77b01',
-            repositoryPath: 'http://localhost:8181/fcrepo/rest/content/35/3e/e0/9f/353ee09f-a4ed-461e-a436-18a1bee77b01',
-            pid: 'uuid:353ee09f-a4ed-461e-a436-18a1bee77b01',
-            uri: 'http://localhost:8181/fcrepo/rest/content/35/3e/e0/9f/353ee09f-a4ed-461e-a436-18a1bee77b01',
-            uuid: '353ee09f-a4ed-461e-a436-18a1bee77b01'
+        added: "2023-01-17T13:52:09.616Z",
+        subject: [
+            "Test data",
+            "Test2 data"
+        ],
+        counts: {
+            child: 5
         },
-        fields: {
-            adminGroup: [
-                'admin_access'
-            ],
-            filesizeTotal: 6475,
-            readGroup: [
-                'everyone'
-            ],
-            abstract: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Nec nam aliquam sem et tortor consequat id. Ornare lectus sit amet est placerat. Imperdiet sed euismod nisi porta lorem mollis aliquam ut porttitor. Ac turpis egestas maecenas pharetra convallis posuere. Mattis nunc sed blandit libero volutpat. Scelerisque viverra mauris in aliquam sem fringilla ut. Ac turpis egestas sed tempus. Id cursus metus aliquam eleifend mi in. Sit amet purus gravida quis blandit turpis cursus in. Ullamcorper a lacus vestibulum sed arcu non odio. Scelerisque purus semper eget duis at tellus. In egestas erat imperdiet sed euismod nisi porta lorem. Massa sed elementum tempus egestas sed sed risus pretium quam. Donec massa sapien faucibus et molestie ac. Ac orci phasellus egestas tellus rutrum tellus pellentesque eu tincidunt. Tortor posuere ac ut consequat semper viverra nam. Nec sagittis aliquam malesuada bibendum.\n\nMagna fringilla urna porttitor rhoncus dolor purus non. Sit amet commodo nulla facilisi nullam vehicula ipsum a. Gravida in fermentum et sollicitudin ac orci phasellus. Ac placerat vestibulum lectus mauris ultrices eros in. Posuere urna nec tincidunt praesent semper feugiat nibh sed. Arcu odio ut sem nulla pharetra diam sit. Neque viverra justo nec ultrices dui sapien eget. Diam maecenas ultricies mi eget mauris pharetra et. Pulvinar pellentesque habitant morbi tristique senectus et. Nec feugiat nisl pretium fusce id velit ut tortor. Leo a diam sollicitudin tempor id eu nisl. Semper viverra nam libero justo laoreet sit amet cursus sit. Sem viverra aliquet eget sit amet tellus. Nullam eget felis eget nunc. Duis ultricies lacus sed turpis tincidunt. Elementum facilisis leo vel fringilla est ullamcorper eget nulla facilisi. Enim blandit volutpat maecenas volutpat. Nibh mauris cursus mattis molestie a iaculis.\n\nPellentesque diam volutpat commodo sed. Egestas sed tempus urna et pharetra pharetra massa. A condimentum vitae sapien pellentesque habitant. Suspendisse interdum consectetur libero id. Ut enim blandit volutpat maecenas. Proin nibh nisl condimentum id. Accumsan sit amet nulla facilisi morbi tempus iaculis urna id. Tincidunt lobortis feugiat vivamus at. Cursus eget nunc scelerisque viverra. Sed sed risus pretium quam vulputate dignissim. Ipsum suspendisse ultrices gravida dictum fusce. Diam phasellus vestibulum lorem sed risus ultricies tristique nulla. Id velit ut tortor pretium viverra suspendisse potenti nullam. Fames ac turpis egestas sed tempus urna et pharetra. Sit amet dictum sit amet justo donec enim diam vulputate. Morbi leo urna molestie at. Habitasse platea dictumst vestibulum rhoncus.\n\nHendrerit gravida rutrum quisque non tellus. Morbi tristique senectus et netus et malesuada fames. Egestas tellus rutrum tellus pellentesque. Amet nulla facilisi morbi tempus. Consequat ac felis donec et odio. Vitae aliquet nec ullamcorper sit amet. Vulputate sapien nec sagittis aliquam. Aliquam purus sit amet luctus venenatis lectus. Commodo nulla facilisi nullam vehicula ipsum a arcu cursus vitae. Nullam ac tortor vitae purus. Fermentum posuere urna nec tincidunt praesent semper. Purus viverra accumsan in nisl nisi scelerisque. Faucibus a pellentesque sit amet porttitor. Nisi est sit amet facilisis magna etiam tempor orci. Dignissim suspendisse in est ante in. Vestibulum morbi blandit cursus risus at. Ultrices dui sapien eget mi proin sed libero.',
-            title: 'testAdminUnit',
-            dateAdded: 1673963529616,
-            rollup: '353ee09f-a4ed-461e-a436-18a1bee77b01',
-            contentStatus: [
-                'Described'
-            ],
-            dateUpdated: 1673964408838,
-            datastream: [
-                'event_log|application/n-triples|event_log.nt|nt|1431|urn:sha1:be44fc23ba7da95ba3ad67121144efc8224448ad||',
-                'md_descriptive_history|text/xml|||1308|urn:sha1:5e7361d5029aefbae7216c8d5cf5fd1a29a8feca||',
-                'md_descriptive|text/xml|md_descriptive.xml|xml|3736|urn:sha1:ca835bc6b3d6bd7dc445336a94d862c6be6fdc28||'
-            ],
-            ancestorPath: [
-                '1,collections'
-            ],
-            dateCreated: 917049600000,
-            _version_: 1757904316712091600,
-            ancestorIds: '/collections/353ee09f-a4ed-461e-a436-18a1bee77b01',
-            lastIndexed: 1673963540129,
-            id: '353ee09f-a4ed-461e-a436-18a1bee77b01',
-            keyword: [
-                '353ee09f-a4ed-461e-a436-18a1bee77b01'
-            ],
-            roleGroup: [
-                ''
-            ],
-            timestamp: 1676468197202,
-            resourceType: 'AdminUnit'
-        },
-        objectPath: {
-            entries: [
-                {
-                    pid: 'collections',
-                    name: 'Content Collections Root',
-                    container: true
-                },
-                {
-                    pid: '353ee09f-a4ed-461e-a436-18a1bee77b01',
-                    name: 'testAdminUnit',
-                    container: true
-                }
-            ]
-        },
-        groupRoleMap: {},
-        countMap: {
-            child: 2
-        },
-        idWithoutPrefix: '353ee09f-a4ed-461e-a436-18a1bee77b01',
-        ancestorPath: [
-            '1,collections'
+        created: 917049600000,
+        title: "testAdminUnit",
+        type: "AdminUnit",
+        contentStatus: [
+            "Described"
+        ],
+        rollup: "353ee09f-a4ed-461e-a436-18a1bee77b01",
+        objectPath: [
+            {
+                pid: "collections",
+                name: "Content Collections Root",
+                container: true
+            },
+            {
+                pid: "353ee09f-a4ed-461e-a436-18a1bee77b01",
+                name: "testAdminUnit",
+                container: true
+            }
         ],
         datastream: [
-            'event_log|application/n-triples|event_log.nt|nt|1431|urn:sha1:be44fc23ba7da95ba3ad67121144efc8224448ad||',
-            'md_descriptive_history|text/xml|||1308|urn:sha1:5e7361d5029aefbae7216c8d5cf5fd1a29a8feca||',
-            'md_descriptive|text/xml|md_descriptive.xml|xml|3736|urn:sha1:ca835bc6b3d6bd7dc445336a94d862c6be6fdc28||'
+            "event_log|application/n-triples|event_log.nt|nt|1431|urn:sha1:be44fc23ba7da95ba3ad67121144efc8224448ad||",
+            "md_descriptive_history|text/xml|||5209|urn:sha1:6082b819133f6be40326bcfe5fb73f4c3cc35da6||",
+            "md_descriptive|text/xml|md_descriptive.xml|xml|3882|urn:sha1:e4c1581e4f978e74382c904a706a34e5942918fa||"
         ],
-        roleGroup: [
-            ''
+        ancestorPath: [
+            {
+                id: "collections",
+                title: "collections"
+            }
         ],
-        id: '353ee09f-a4ed-461e-a436-18a1bee77b01',
-        keyword: [
-            '353ee09f-a4ed-461e-a436-18a1bee77b01'
+        permissions: [
+            "markForDeletionUnit",
+            "move",
+            "reindex",
+            "destroy",
+            "editResourceType",
+            "destroyUnit",
+            "bulkUpdateDescription",
+            "changePatronAccess",
+            "runEnhancements",
+            "createAdminUnit",
+            "ingest",
+            "orderMembers",
+            "viewOriginal",
+            "viewAccessCopies",
+            "viewHidden",
+            "assignStaffRoles",
+            "viewMetadata",
+            "markForDeletion",
+            "editDescription",
+            "createCollection"
         ],
-        timestamp: 1676468197202,
-        title: 'testAdminUnit',
-        abstractText: 'Lorem ipsum dolor sit amet',
-        resourceType: 'AdminUnit',
-        filesizeTotal: 6475,
-        readGroup: [
-            'everyone'
-        ],
-        adminGroup: [
-            'admin_access'
-        ],
-        contentStatus: [
-            'Described'
-        ],
-        dateCreated: 917049600000,
-        dateAdded: 1673963529616,
-        dateUpdated: 1673964408838
+        groupRoleMap: {
+            everyone: "canViewMetadata",
+            authenticated: "canViewMetadata"
+        },
+        id: "353ee09f-a4ed-461e-a436-18a1bee77b01",
+        updated: "2023-03-16T13:28:04.959Z",
+        timestamp: 1678973288794
     },
     markedForDeletion: false,
-    resourceType: 'AdminUnit'
+    resourceType: "AdminUnit"
 }
 
 let wrapper, router;
@@ -151,10 +117,16 @@ describe('fullrecordUtils', () => {
         expect(wrapper.vm.showMetadata).toBe(true);
     });
 
-    it('shows full text for short abstracts', () => {
+    it('shows full text for short abstracts', async () => {
+        expect(wrapper.vm.truncateAbstract).toBe(false);
+        let shortAbstract = cloneDeep(recordData);
+        shortAbstract.briefObject.abstractText = 'short abstract';
+        await wrapper.setProps({
+            recordData: shortAbstract
+        });
         expect(wrapper.vm.truncateAbstract).toBe(false);
         expect(wrapper.find('.abstract-text').exists()).toBe(false);
-        expect(wrapper.find('.abstract').text()).toEqual(recordData.briefObject.abstractText);
+        expect(wrapper.find('.abstract').text()).toEqual(shortAbstract.briefObject.abstractText);
     });
 
     it('truncates long abstracts', async () => {
@@ -211,10 +183,10 @@ describe('fullrecordUtils', () => {
     });
 
     it('sets display text for child count', async () => {
-        expect(wrapper.vm.displayChildCount).toEqual('2 items');
+        expect(wrapper.vm.displayChildCount).toEqual('5 items');
 
         let updatedChildren = cloneDeep(recordData);
-        updatedChildren.briefObject.countMap.child = 1;
+        updatedChildren.briefObject.counts.child = 1;
         await wrapper.setProps({
             recordData: updatedChildren
         });
@@ -225,13 +197,16 @@ describe('fullrecordUtils', () => {
         expect(wrapper.vm.restrictedContent).toBe(true);
 
         let updatePerms = cloneDeep(recordData);
-        updatePerms.briefObject.roleGroup = undefined;
+        updatePerms.briefObject.groupRoleMap = {};
         await wrapper.setProps({
             recordData: updatePerms
         });
         expect(wrapper.vm.restrictedContent).toBe(false);
 
-        updatePerms.briefObject.roleGroup = ['canViewOriginals|everyone'];
+        updatePerms.briefObject.roleGroup = {
+            authenticated: 'canViewOriginals',
+            everyone: 'canViewOriginals',
+        };
         await wrapper.setProps({
             recordData: updatePerms
         });
@@ -239,8 +214,7 @@ describe('fullrecordUtils', () => {
     })
 
     it('allows full access for authenticated user', async () => {
-        // No access rights set
-        expect(wrapper.vm.allowsFullAuthenticatedAccess).toBe(false);
+        expect(wrapper.vm.hasGroupRole('canViewOriginals', 'authenticated')).toBe(false);
 
         let canViewMetadata = cloneDeep(recordData);
         canViewMetadata.briefObject.groupRoleMap = {
@@ -250,7 +224,7 @@ describe('fullrecordUtils', () => {
         await wrapper.setProps({
             recordData: canViewMetadata
         });
-        expect(wrapper.vm.allowsFullAuthenticatedAccess).toBe(false);
+        expect(wrapper.vm.hasGroupRole('canViewOriginals', 'authenticated')).toBe(false);
 
         let canViewOriginals = cloneDeep(recordData);
         canViewOriginals.briefObject.groupRoleMap = {
@@ -260,8 +234,20 @@ describe('fullrecordUtils', () => {
         await wrapper.setProps({
             recordData: canViewOriginals
         });
-        expect(wrapper.vm.allowsFullAuthenticatedAccess).toBe(true);
+        expect(wrapper.vm.hasGroupRole('canViewOriginals', 'authenticated')).toBe(true);
     });
 
+    it('determines whether a user is logged in', async () => {
+        expect(wrapper.vm.isLoggedIn).toEqual(false);
+        await wrapper.setProps({ username: 'test_user' });
+        expect(wrapper.vm.isLoggedIn).toEqual(true);
+    });
 
+    it('formats string dates', () => {
+        expect(wrapper.vm.formatDate(recordData.briefObject.added)).toEqual('2023-01-17');
+    });
+
+    it('formats timestamps to dates', () => {
+        expect(wrapper.vm.formatDate(recordData.briefObject.created)).toEqual('1999-01-22');
+    });
 });

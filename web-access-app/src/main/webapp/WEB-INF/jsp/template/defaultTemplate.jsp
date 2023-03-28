@@ -27,6 +27,7 @@
 				</c:otherwise>
 			</c:choose>
 		</div>
+
 		<c:import url="common/footer.jsp"/>
 	</div>
 </div>
