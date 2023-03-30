@@ -11,7 +11,6 @@
 	<title>
 		Digital Collections Repository<c:if test="${not empty pageSubtitle}"> - <c:out value="${pageSubtitle}"/></c:if>
 	</title>
-	<c:import url="matomoAnalytics.jsp" />
 </head>
 <body>
 <c:set var="gaCommands" value="" scope="request" />
@@ -39,5 +38,6 @@
 	</div>
 </div>
 <c:import url="googleAnalytics.jsp" />
+<c:import url="matomoAnalytics.jsp" />
 </body>
 </html>
