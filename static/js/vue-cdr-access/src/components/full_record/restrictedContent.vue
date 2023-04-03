@@ -7,19 +7,19 @@
                 <div class="actionlink"><a class="button contact" href="https://library.unc.edu/wilson/contact/"><i class="fa fa-envelope"></i> {{ $t('access.contact') }}</a></div>
             </div>
         </div>
-        <div v-if="hasPermission('editDescription')" class="actionlink right">
+        <div v-if="hasPermission('editDescription')" class="actionlink">
             <a class="edit button" :href="editDescriptionUrl(recordData.briefObject.id)"><i class="fa fa-edit"></i> {{ $t('full_record.edit') }}</a>
         </div>
         <template v-if="fieldExists(recordData.dataFileUrl) && hasPermission('viewOriginal')">
-            <div class="actionlink right download">
+            <div class="actionlink download">
                 <a class="download button" :href="downloadLink"><i class="fa fa-download"></i> {{ $t('full_record.download') }}</a>
             </div>
-            <div v-if="recordData.resourceType === 'File'" class="actionlink right">
+            <div v-if="recordData.resourceType === 'File'" class="actionlink">
                 <a class="button view" :href="recordData.dataFileUrl">
                     <i class="fa fa-search" aria-hidden="true"></i> View</a>
             </div>
         </template>
-        <div v-else-if="fieldExists(recordData.briefObject.embargoDate) && fieldExists(recordData.dataFileUrl)" class="noaction right">
+        <div v-else-if="fieldExists(recordData.briefObject.embargoDate) && fieldExists(recordData.dataFileUrl)" class="noaction">
             {{ $t('full_record.available_date', { available_date: formatDate(recordData.briefObject.embargoDate) }) }}
         </div>
     </div>
@@ -38,3 +38,17 @@ export default {
     }
 }
 </script>
+
+<style scoped lang="scss">
+ .button {
+     white-space: normal;
+ }
+ @media (max-width: 768px) {
+     .actionlink {
+         text-align: center;
+         margin: auto;
+         justify-content: center;
+         width: 99%;
+     }
+ }
+</style>
