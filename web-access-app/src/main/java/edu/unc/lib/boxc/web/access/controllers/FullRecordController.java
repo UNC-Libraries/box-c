@@ -328,7 +328,7 @@ public class FullRecordController extends AbstractErrorHandlingSearchController 
             recordProperties.put("neighborList", neighborList);
         }
 
-        if (ResourceType.Work.nameEquals(resourceType)) {
+        if (ResourceType.Work.nameEquals(resourceType) || ResourceType.File.nameEquals(resourceType)) {
             var viewerProperties = getViewerProperties(briefObject, principals);
             recordProperties.put(VIEWER_TYPE, viewerProperties.get(VIEWER_TYPE));
             recordProperties.put(VIEWER_PID, viewerProperties.get(VIEWER_PID));

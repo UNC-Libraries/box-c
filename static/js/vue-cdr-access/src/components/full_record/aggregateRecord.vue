@@ -77,45 +77,22 @@
                                 </li>
                             </ul>
                         </div>
-                    </div>
-                    <div class="column is-narrow action-btn item-actions">
-                        <div v-if="restrictedContent && !isLoggedIn" class="column is-narrow item-actions">
-                            <div class="restricted-access">
-                                <h2>{{ $t('full_record.restricted_content', { resource_type: recordData.briefObject.type.toLowerCase() }) }}</h2>
-                                <div v-if="hasGroupRole('canViewOriginals', 'authenticated')" class="actionlink"><a class="button login-link" :href="loginUrl"><i class="fa fa-id-card"></i> {{ $t('access.login') }}</a></div>
-                                <div class="actionlink"><a class="button contact" href="https://library.unc.edu/wilson/contact/"><i class="fa fa-envelope"></i> {{ $t('access.contact') }}</a></div>
-                            </div>
-                        </div>
-                        <div v-if="hasPermission('editDescription')" class="actionlink right">
-                            <a class="edit button" :href="editDescriptionUrl(recordData.briefObject.id)"><i class="fa fa-edit"></i> {{ $t('full_record.edit') }}</a>
-                        </div>
-                        <div v-if="fieldExists(recordData.dataFileUrl) && hasPermission('viewOriginal')" class="actionlink right download">
-                            <a class="download button" :href="downloadLink"><i class="fa fa-download"></i> {{ $t('full_record.download') }}</a>
-                        </div>
-                        <div v-else-if="fieldExists(recordData.briefObject.embargoDate) && fieldExists(recordData.briefObject.dataFileUrl)" class="noaction right">
-                            {{ $t('full_record.available_date', { available_date: formatDate(recordData.briefObject.embargoDate) }) }}
-                        </div>
+                        <restricted-content :record-data="recordData"></restricted-content>
                     </div>
                 </div>
             </div>
-            <div class="clear">
-                <template v-if="(recordData.viewerType === 'uv' && hasPermission('viewAccessCopies')) ||
-                (recordData.viewerType === 'pdf' && hasPermission('viewOriginal'))">
-                    <iframe :src="viewer(recordData.viewerType)" allow="fullscreen" scrolling="no"></iframe>
-                </template>
-                <template v-else-if="recordData.viewerType === 'audio' && hasPermission('viewAccessCopies')">
-                    <audio-player :datafile-url="recordData.dataFileUrl"></audio-player>
-                </template>
-            </div>
+            <player :record-data="recordData"></player>
             <file-list v-if="childCount > 0"
                        :child-count="childCount"
                        :work-id="recordData.briefObject.id"
-                       :edit-access="hasPermission('editDescription')"></file-list>
-            <div v-if="hasPermission('viewMetadata')">
-                <h2 class="full-metadata">{{ $t('full_record.detailed_metadata') }}</h2>
-                <div id="mods_data_display" v-html="metadata"></div>
-            </div>
-            <neighbor-list :current-record-id="recordData.briefObject.id" :neighbors="recordData.neighborList"></neighbor-list>
+                       :edit-access="hasPermission('editDescription')">
+            </file-list>
+            <metadata-display :uuid="recordData.briefObject.id"
+                              :can-view-metadata="hasPermission('viewMetadata')">
+            </metadata-display>
+            <neighbor-list :current-record-id="recordData.briefObject.id"
+                           :neighbors="recordData.neighborList">
+            </neighbor-list>
         </div>
     </div>
 </template>
@@ -123,55 +100,17 @@
 <script>
 import fileUtils from '../../mixins/fileUtils';
 import fullRecordUtils from '../../mixins/fullRecordUtils';
-import audioPlayer from '@/components/full_record/audioPlayer.vue';
 import fileList from '@/components/full_record/fileList.vue';
+import metadataDisplay from '@/components/full_record/metadataDisplay.vue';
 import neighborList from '@/components/full_record/neighborList.vue';
-import get from 'axios';
+import player from '@/components/full_record/player.vue';
+import restrictedContent from '@/components/full_record/restrictedContent.vue';
 
 export default {
     name: 'aggregateRecord',
 
-    components: {audioPlayer, fileList, neighborList},
+    components: {fileList, neighborList, metadataDisplay, player, restrictedContent},
 
     mixins: [fileUtils, fullRecordUtils],
-
-    data() {
-        return {
-            metadata: ''
-        }
-    },
-
-    computed: {
-        parentUrl() {
-            return `record/${this.recordData.briefObject.parentCollectionId}`
-        },
-
-        downloadLink() {
-            return `${this.recordData.dataFileUrl}?dl=true`;
-        }
-    },
-
-    methods: {
-        loadMetadata() {
-            get(`record/${this.recordData.briefObject.id}/metadataView`).then((response) => {
-                this.metadata = response.data;
-                this.hasLoaded = true;
-            }).catch((error) => {
-                console.log(error);
-                this.metadata = '';
-                this.hasLoaded = true;
-            });
-        },
-
-        viewer(viewer_type) {
-            return `record/${this.recordData.briefObject.id}/${viewer_type}Viewer`;
-        }
-    },
-
-    mounted() {
-        if (this.hasPermission('viewMetadata')) {
-            this.loadMetadata();
-        }
-    }
 }
 </script>

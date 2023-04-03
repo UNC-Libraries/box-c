@@ -1,0 +1,40 @@
+<template>
+    <div class="column is-narrow action-btn item-actions">
+        <div v-if="restrictedContent && !isLoggedIn" class="column is-narrow item-actions">
+            <div class="restricted-access">
+                <h2>{{ $t('full_record.restricted_content', { resource_type: recordData.briefObject.type.toLowerCase() }) }}</h2>
+                <div v-if="hasGroupRole('canViewOriginals', 'authenticated')" class="actionlink"><a class="button login-link" :href="loginUrl"><i class="fa fa-id-card"></i> {{ $t('access.login') }}</a></div>
+                <div class="actionlink"><a class="button contact" href="https://library.unc.edu/wilson/contact/"><i class="fa fa-envelope"></i> {{ $t('access.contact') }}</a></div>
+            </div>
+        </div>
+        <div v-if="hasPermission('editDescription')" class="actionlink right">
+            <a class="edit button" :href="editDescriptionUrl(recordData.briefObject.id)"><i class="fa fa-edit"></i> {{ $t('full_record.edit') }}</a>
+        </div>
+        <template v-if="fieldExists(recordData.dataFileUrl) && hasPermission('viewOriginal')">
+            <div class="actionlink right download">
+                <a class="download button" :href="downloadLink"><i class="fa fa-download"></i> {{ $t('full_record.download') }}</a>
+            </div>
+            <div v-if="recordData.resourceType === 'File'" class="actionlink right">
+                <a class="button view" :href="recordData.dataFileUrl">
+                    <i class="fa fa-search" aria-hidden="true"></i> View</a>
+            </div>
+        </template>
+        <div v-else-if="fieldExists(recordData.briefObject.embargoDate) && fieldExists(recordData.dataFileUrl)" class="noaction right">
+            {{ $t('full_record.available_date', { available_date: formatDate(recordData.briefObject.embargoDate) }) }}
+        </div>
+    </div>
+</template>
+
+<script>
+import fullRecordUtils from '../../mixins/fullRecordUtils';
+
+export default {
+    name: 'restrictedContent',
+
+    mixins: [fullRecordUtils],
+
+    props: {
+        recordData: Object
+    }
+}
+</script>

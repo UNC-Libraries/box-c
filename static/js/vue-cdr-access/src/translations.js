@@ -67,6 +67,7 @@ export default {
             read_less: "Read less",
             related_digital_exhibits: "Related Digital Exhibits",
             restricted_content: "This {resource_type} has restricted content",
+            search_within: "Search within this work",
             subjects: "Subjects",
             thumbnail: "Thumbnail for file",
             thumbnail_default: "Default thumbnail image",
@@ -75,6 +76,7 @@ export default {
             view: "View",
             view_contents: "View the contents of {title}",
             view_details: "View details for {title}",
+            view_parent_work: "View Parent Work",
             view_title: "View {title}",
             view_file: "View file"
         },
