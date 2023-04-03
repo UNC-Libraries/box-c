@@ -34,7 +34,11 @@ export default {
     mixins: [fullRecordUtils],
 
     props: {
-        recordData: Object
+        recordData: Object,
+        username: {
+            type: String,
+            default: ''
+        }
     }
 }
 </script>
@@ -42,6 +46,9 @@ export default {
 <style scoped lang="scss">
  .button {
      white-space: normal;
+ }
+ .restricted-access .actionlink {
+     display: block;
  }
  @media (max-width: 768px) {
      .actionlink {
