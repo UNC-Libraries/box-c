@@ -57,12 +57,7 @@
                                                 <span class="has-text-weight-bold">{{ $t('full_record.embargo_date') }}: </span>
                                                 {{ formatDate(recordData.briefObject.embargoDate) }}
                                             </li>
-                                            <template v-if="fieldExists(recordData.briefObject.abstractText)">
-                                                <li v-if="truncateAbstract" class="abstract">{{ truncatedAbstractText }}...
-                                                    <a class="abstract-text" @click.prevent="toggleAbstractDisplay()" href="#">{{ abstractLinkText }}</a>
-                                                </li>
-                                                <li v-else class="abstract">{{ recordData.briefObject.abstractText }}</li>
-                                            </template>
+                                            <abstract v-if="recordData.briefObject.abstractText" :brief-object="recordData.briefObject"/>
                                             <li v-if="fieldExists(recordData.exhibits)">
                                                 <span class="has-text-weight-bold">{{ $t('full_record.related_digital_exhibits') }}: </span>
                                                 <template v-for="(exhibit, index) in recordData.exhibits">
@@ -96,8 +91,9 @@
 <script>
 import fileUtils from '../../mixins/fileUtils';
 import fullRecordUtils from '../../mixins/fullRecordUtils';
-import player from '@/components/full_record/player.vue';
+import abstract from '@/components/full_record/abstract.vue';
 import fileList from '@/components/full_record/fileList.vue';
+import player from '@/components/full_record/player.vue';
 import metadataDisplay from '@/components/full_record/metadataDisplay.vue';
 import neighborList from '@/components/full_record/neighborList.vue';
 import restrictedContent from '@/components/full_record/restrictedContent.vue';
@@ -105,7 +101,7 @@ import restrictedContent from '@/components/full_record/restrictedContent.vue';
 export default {
     name: 'fileRecord',
 
-    components: {fileList, metadataDisplay, neighborList, player, restrictedContent},
+    components: {abstract, fileList, metadataDisplay, neighborList, player, restrictedContent},
 
     mixins: [fileUtils, fullRecordUtils],
 
