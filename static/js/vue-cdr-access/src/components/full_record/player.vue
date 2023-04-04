@@ -28,13 +28,6 @@ export default {
     methods: {
         viewer(viewer_type) {
             return `record/${this.recordData.briefObject.id}/${viewer_type}Viewer`;
-        },
-
-        hasPermission(permission) {
-            if (this.recordData.briefObject.permissions === undefined) {
-                return false;
-            }
-            return this.recordData.briefObject.permissions.includes(permission);
         }
     }
 }

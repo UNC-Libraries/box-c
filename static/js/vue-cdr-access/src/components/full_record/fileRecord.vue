@@ -77,10 +77,6 @@
                 </div>
             </div>
             <player :record-data="recordData"></player>
-            <file-list :child-count="1"
-                       :work-id="recordData.briefObject.id"
-                       :resource-type="recordData.resourceType"
-                       :edit-access="hasPermission('editDescription')"></file-list>
             <metadata-display :uuid="recordData.briefObject.id"
                               :can-view-metadata="hasPermission('viewMetadata')">
             </metadata-display>
@@ -92,7 +88,6 @@
 import fileUtils from '../../mixins/fileUtils';
 import fullRecordUtils from '../../mixins/fullRecordUtils';
 import abstract from '@/components/full_record/abstract.vue';
-import fileList from '@/components/full_record/fileList.vue';
 import player from '@/components/full_record/player.vue';
 import metadataDisplay from '@/components/full_record/metadataDisplay.vue';
 import neighborList from '@/components/full_record/neighborList.vue';
@@ -101,7 +96,7 @@ import restrictedContent from '@/components/full_record/restrictedContent.vue';
 export default {
     name: 'fileRecord',
 
-    components: {abstract, fileList, metadataDisplay, neighborList, player, restrictedContent},
+    components: {abstract, metadataDisplay, neighborList, player, restrictedContent},
 
     mixins: [fileUtils, fullRecordUtils],
 

@@ -365,7 +365,6 @@ describe('player.vue', () => {
         });
     });
 
-
     it("displays an iframe viewer for images", async () => {
         let updated_record = cloneDeep(record);
         updated_record.briefObject.groupRoleMap = {

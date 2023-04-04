@@ -375,10 +375,6 @@ describe('fileRecord.vue', () => {
         expect(wrapper.find('h2').text()).toEqual('beez');
     });
 
-    it("displays a list of files associated with the work", () => {
-        expect(wrapper.findComponent({ name: 'fileList' }).exists()).toBe(true);
-    });
-
     it('contains a link to its parent work', () => {
         const parent_work = wrapper.find('#parent-url');
         expect(parent_work.attributes('href')).toEqual(`/record/${record.containingWorkUUID}`);

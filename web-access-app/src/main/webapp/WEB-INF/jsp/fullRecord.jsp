@@ -25,8 +25,6 @@
 	</c:choose>
 </c:set>
 
-<div class="content-wrap full_record ${isDeleted}${' '}${isProtected}">
-</div>
 <%-- Add record visit event to the google analytics commands to be run later --%>
 <c:set var="collectionName"><c:out value='${briefObject.parentCollectionName}' /></c:set>
 <c:if test="${empty collectionName && briefObject.resourceType == 'Collection'}">
