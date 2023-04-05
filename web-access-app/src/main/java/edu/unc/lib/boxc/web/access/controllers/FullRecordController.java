@@ -162,7 +162,7 @@ public class FullRecordController extends AbstractErrorHandlingSearchController 
         }
 
         if (fullObjectView == null) {
-            return "No metadata is available for this item";
+            return "";
         }
 
         return fullObjectView;

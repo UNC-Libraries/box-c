@@ -65,6 +65,22 @@ describe('metadataDisplay.vue', () => {
         });
     });
 
+    it("does not load record MODS metadata if empty", (done) => {
+        const html_data = "";
+        const url = `record/${record.uuid}/metadataView`;
+        moxios.stubRequest(new RegExp(url), {
+            status: 200,
+            response: html_data
+        });
+        wrapper.vm.loadMetadata();
+
+        moxios.wait(() => {
+            expect(wrapper.vm.metadata).toEqual('');
+            expect(wrapper.find('#mods_data_display').exists()).toBe(false);
+            done();
+        });
+    });
+
     it('does not display metadata when a user does not have view access', () => {
         let updated_record = cloneDeep(record);
         updated_record.canViewMetadata = false;
