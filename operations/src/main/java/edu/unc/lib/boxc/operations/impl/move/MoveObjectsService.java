@@ -3,6 +3,7 @@ package edu.unc.lib.boxc.operations.impl.move;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 
+import edu.unc.lib.boxc.operations.api.events.PremisLoggerFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -35,6 +36,7 @@ public class MoveObjectsService {
     private TransactionManager transactionManager;
     private OperationsMessageSender operationsMessageSender;
     private ObjectPathFactory objectPathFactory;
+    private PremisLoggerFactory premisLoggerFactory;
     private boolean asynchronous;
     private ExecutorService moveExecutor;
 
@@ -69,6 +71,7 @@ public class MoveObjectsService {
         job.setTransactionManager(transactionManager);
         job.setOperationsMessageSender(operationsMessageSender);
         job.setObjectPathFactory(objectPathFactory);
+        job.setPremisLoggerFactory(premisLoggerFactory);
 
         if (asynchronous) {
             log.info("User {} is queueing move operation {} of {} objects to destination {}",
@@ -150,6 +153,10 @@ public class MoveObjectsService {
      */
     public void setObjectPathFactory(ObjectPathFactory objectPathFactory) {
         this.objectPathFactory = objectPathFactory;
+    }
+
+    public void setPremisLoggerFactory(PremisLoggerFactory premisLoggerFactory) {
+        this.premisLoggerFactory = premisLoggerFactory;
     }
 
     /**

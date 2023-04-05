@@ -80,6 +80,7 @@
         <property name="transactionManager" ref="transactionManager" />
         <property name="operationsMessageSender" ref="operationsMessageSender" />
         <property name="objectPathFactory" ref="objectPathFactory" />
+        <property name="premisLoggerFactory" ref="premisLoggerFactory" />
         <property name="asynchronous" value="true" />
         <property name="moveExecutor" ref="moveExecutor" />
     </bean>
