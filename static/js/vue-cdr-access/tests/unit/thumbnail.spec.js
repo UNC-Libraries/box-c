@@ -54,7 +54,6 @@ const recordData = {
                 title: "353ee09f-a4ed-461e-a436-18a1bee77b01"
             }
         ],
-        _version_: 1760531096449056800,
         permissions: [
             "markForDeletionUnit",
             "move",
@@ -139,6 +138,38 @@ describe('thumbnail.vue', () => {
         expect(wrapper.find('.thumbnail-placeholder .thumbnail-content-type').exists()).toBe(true);
         expect(wrapper.find('a').attributes('class'))
             .toEqual('thumbnail thumbnail-size-large placeholder thumbnail-resource-type-collection has_tooltip')
+    });
+
+    it('displays a "document" placeholder for files, if no thumbnail', async () => {
+        let updatedRecordData = cloneDeep(recordData);
+        updatedRecordData.briefObject.thumbnail_url = undefined;
+        updatedRecordData.briefObject.type = 'File';
+        await wrapper.setProps({ thumbnailData: updatedRecordData });
+        expect(wrapper.find('a').attributes('class')).toContain('thumbnail-resource-type-document')
+    });
+
+    it('displays a "document" placeholder for works, if no thumbnail', async () => {
+        let updatedRecordData = cloneDeep(recordData);
+        updatedRecordData.briefObject.thumbnail_url = undefined;
+        updatedRecordData.briefObject.type = 'Work';
+        await wrapper.setProps({ thumbnailData: updatedRecordData });
+        expect(wrapper.find('a').attributes('class')).toContain('thumbnail-resource-type-document')
+    });
+
+    it('displays a "document" placeholder for admin units resource types, if no thumbnail', async () => {
+        let updatedRecordData = cloneDeep(recordData);
+        updatedRecordData.briefObject.thumbnail_url = undefined;
+        updatedRecordData.briefObject.type = 'AdminUnit';
+        await wrapper.setProps({ thumbnailData: updatedRecordData });
+        expect(wrapper.find('a').attributes('class')).toContain('thumbnail-resource-type-document')
+    });
+
+    it('displays placeholder text, if no thumbnail and format is set', async () => {
+        let updatedRecordData = cloneDeep(recordData);
+        updatedRecordData.briefObject.thumbnail_url = undefined;
+        updatedRecordData.briefObject.format = ['Image'];
+        await wrapper.setProps({ thumbnailData: updatedRecordData });
+        expect(wrapper.find('.thumbnail-placeholder span').text()).toEqual('Image');
     });
 
     it('displays a lock icon if an item is restricted', async () => {

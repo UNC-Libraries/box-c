@@ -81,7 +81,7 @@ export default {
         },
 
         contentType() {
-            const file_type = this.objectData.fileFormatCategory;
+            const file_type = this.objectData.format;
             if (file_type === undefined || file_type.length === 0 || file_type[0] === 'unknown') {
                 return ''
             }
@@ -90,7 +90,7 @@ export default {
 
         placeholder() {
             const type = this.objectData.type.toLowerCase();
-            if (type === 'adminunit' || type === 'work') {
+            if (type === 'adminunit' || type === 'work' || type === 'file') {
                 return 'document';
             }
             return type;
