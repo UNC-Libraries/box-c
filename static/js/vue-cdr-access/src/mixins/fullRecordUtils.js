@@ -51,13 +51,21 @@ export default {
         },
 
         isLoggedIn() {
-            return this.username !== undefined && this.username !== ''
+            return this.username !== undefined && this.username !== '';
         },
 
         hasGroups() {
             const group_roles = this.recordData.briefObject.groupRoleMap;
             return !(group_roles === undefined || isEmpty(group_roles));
         },
+
+        downloadLink() {
+            return `${this.recordData.dataFileUrl}?dl=true`;
+        },
+
+        parentUrl() {
+            return `record/${this.recordData.briefObject.parentCollectionId}`;
+        }
     },
 
     methods: {

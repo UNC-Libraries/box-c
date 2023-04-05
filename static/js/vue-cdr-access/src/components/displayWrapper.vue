@@ -12,6 +12,7 @@ Top level component for full record pages with searching/browsing, including Adm
                                :username="username"
                                :record-data="container_info"></collection-folder>
             <aggregate-record v-if="container_info.resourceType === 'Work'" :username="username" :record-data="container_info"></aggregate-record>
+            <file-record v-if="container_info.resourceType === 'File'" :username="username" :record-data="container_info"></file-record>
 
             <div v-if="container_info.resourceType !== 'Work' && container_info.resourceType !== 'File'">
                 <div class="columns is-tablet">
@@ -53,6 +54,7 @@ Top level component for full record pages with searching/browsing, including Adm
     import browseSort from '@/components/browseSort.vue';
     import clearFilters from '@/components/clearFilters.vue';
     import collectionFolder from '@/components/full_record/collectionFolder.vue';
+    import fileRecord from '@/components/full_record/fileRecord.vue';
     import galleryDisplay from '@/components/galleryDisplay.vue';
     import listDisplay from '@/components/listDisplay.vue';
     import facets from "@/components/facets.vue";
@@ -89,6 +91,7 @@ Top level component for full record pages with searching/browsing, including Adm
             browseSort,
             clearFilters,
             collectionFolder,
+            fileRecord,
             galleryDisplay,
             listDisplay,
             pagination,

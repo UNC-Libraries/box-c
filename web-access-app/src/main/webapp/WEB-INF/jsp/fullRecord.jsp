@@ -25,12 +25,6 @@
 	</c:choose>
 </c:set>
 
-<div class="content-wrap full_record ${isDeleted}${' '}${isProtected}">
-	<c:if test="${briefObject.resourceType == searchSettings.resourceTypeFile}">
-		<c:import url="fullRecord/fileRecord.jsp" />
-		<script type="text/javascript" src="/static/js/lib/require.js" data-main="/static/js/public/fullRecord"></script>
-	</c:if>
-</div>
 <%-- Add record visit event to the google analytics commands to be run later --%>
 <c:set var="collectionName"><c:out value='${briefObject.parentCollectionName}' /></c:set>
 <c:if test="${empty collectionName && briefObject.resourceType == 'Collection'}">

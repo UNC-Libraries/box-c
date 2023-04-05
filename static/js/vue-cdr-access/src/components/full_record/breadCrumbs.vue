@@ -75,6 +75,7 @@ export default {
         padding: 20px;
         text-indent: 0;
         width: 100%;
+        word-wrap: anywhere;
 
         a {
             color: #1A698C;

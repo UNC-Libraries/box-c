@@ -897,6 +897,10 @@ table.dataTable {
   margin-bottom: 15px;
 }
 
+.actionlink {
+  display: inline-flex;
+}
+
 /*** End of Bulma overrides ***/
 
 /* Following Bulma breakpoints */
@@ -979,10 +983,6 @@ table.dataTable {
     }
   }
 
-  .actionlink.right {
-    float: left;
-  }
-
   .collinfo_metadata {
     margin: auto 0;
 
@@ -1016,6 +1016,11 @@ table.dataTable {
         margin-top: -25px;
       }
     }
+  }
+
+  .record-metadata {
+    justify-content: center;
+    display: grid;
   }
 
   .action-btn {
@@ -1058,6 +1063,10 @@ table.dataTable {
         display: none;
       }
     }
+  }
+
+  .record-metadata {
+    justify-content: end;
   }
 
   .content-wrap.full_record {

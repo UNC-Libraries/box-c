@@ -40,7 +40,11 @@ export default {
             default: false,
             type: Boolean
         },
-        workId: String,
+        resourceType: {
+            default: 'Work',
+            type: String
+        },
+        workId: String
     },
 
     data() {
@@ -57,10 +61,12 @@ export default {
     },
 
     computed: {
+        // Datatables expects dataSrc to return an array
+        // File objects don't have any child metadata, so wrap the file object in an array
         ajaxOptions() {
             return  {
                 url: `/listJson/${this.workId}?rows=10`,
-                dataSrc: (d) => d.metadata,
+                dataSrc: (d) => this.resourceType === 'Work' ? d.metadata : [d.container],
                 data: (d) => {
                     const sorts = ['title', 'fileFormatDescription', 'fileSize'];
                     const sortOrder = {'asc': 'normal', 'desc': 'reverse'};
@@ -86,7 +92,7 @@ export default {
                 bAutoWidth: false,
                 bLengthChange: false, // Remove option to show different number of results
                 columnDefs: this.columnDefs,
-                language: { search: '', searchPlaceholder: 'Search within this work' },
+                language: { search: '', searchPlaceholder: this.$t('full_record.search_within') },
                 order: [], // do not set initial sort in case there is member order
                 rowCallback: (row, data) => {
                     if (this.showBadge(data).markDeleted) {
