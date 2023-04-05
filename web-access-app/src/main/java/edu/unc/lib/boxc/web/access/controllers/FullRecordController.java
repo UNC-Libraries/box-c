@@ -296,7 +296,6 @@ public class FullRecordController extends AbstractErrorHandlingSearchController 
         }
 
         var recordProperties = new HashMap<String, Object>();
-        recordProperties.put("briefObject", SerializationUtil.metadataToMap(briefObject, principals));
         recordProperties.put("resourceType", resourceType);
 
         // Get parent id
@@ -347,6 +346,8 @@ public class FullRecordController extends AbstractErrorHandlingSearchController 
             isMarkedForDeletion = objectStatus.contains(MARKED_FOR_DELETION);
         }
         recordProperties.put("markedForDeletion", isMarkedForDeletion);
+        recordProperties.put("briefObject", SerializationUtil.metadataToMap(briefObject, principals));
+        recordProperties.put("pageSubtitle", briefObject.getTitle());
         return SerializationUtil.objectToJSON(recordProperties);
     }
 
