@@ -37,13 +37,7 @@
                 </p>
                 <p><a @click.prevent="displayMetadata()" href="#">{{ $t('full_record.additional_metadata') }}</a></p>
             </div>
-            <div v-if="restrictedContent && !isLoggedIn" class="column is-narrow item-actions">
-                <div class="restricted-access">
-                    <h2>{{ $t('full_record.restricted_content', { resource_type: recordData.briefObject.type.toLowerCase() }) }}</h2>
-                    <div v-if="hasGroupRole('canViewOriginals', 'authenticated')" class="actionlink"><a class="button login-link" :href="loginUrl"><i class="fa fa-id-card"></i> {{ $t('access.login') }}</a></div>
-                    <div class="actionlink"><a class="button contact" href="https://library.unc.edu/wilson/contact/"><i class="fa fa-envelope"></i> {{ $t('access.contact') }}</a></div>
-                </div>
-            </div>
+            <restricted-content :record-data="recordData" :username="this.username"></restricted-content>
         </div>
         <modal-metadata :title="recordData.briefObject.title"
                         :uuid="recordData.briefObject.id"
@@ -55,15 +49,14 @@
 <script>
 import fullRecordUtils from '../../mixins/fullRecordUtils';
 import abstract from "@/components/full_record/abstract.vue";
+import restrictedContent from '@/components/full_record/restrictedContent.vue';
 
 export default {
     name: 'collectionFolder',
 
     mixins: [fullRecordUtils],
 
-    components: {
-        abstract
-    },
+    components: {abstract, restrictedContent},
 
     methods: {
         fieldExists(value) {
