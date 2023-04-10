@@ -4,10 +4,12 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Future;
 
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 
+import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -17,8 +19,10 @@ import org.apache.http.conn.HttpClientConnectionManager;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.message.BasicNameValuePair;
+import org.matomo.java.tracking.MatomoTracker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.matomo.java.tracking.MatomoRequest;
 
 import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
 import edu.unc.lib.boxc.model.api.ids.PID;
@@ -40,6 +44,8 @@ public class AnalyticsTrackerUtil {
     protected static final String DEFAULT_CID = "35009a79-1a05-49d7-b876-2b884d0f825b";
     // Google analytics measurement API url
     private static final String GA_URL = "https://www.google-analytics.com/collect";
+    private static final int MATOMO_SITE_ID = 3;
+    private static final String MATOMO_API_URL = "https://analytics-qa.lib.unc.edu/matomo.php";
 
     // Google analytics tracking id
     private String gaTrackingID;
@@ -105,6 +111,25 @@ public class AnalyticsTrackerUtil {
         // Perform the analytics tracking event asynchronously
         Thread trackerThread = new Thread(new EventTrackerRunnable(userData, category, action, label));
         trackerThread.start();
+    }
+
+    public MatomoRequest matomoTrackRequest(String url, String name) {
+        return MatomoRequest.builder()
+                .siteId(MATOMO_SITE_ID)
+                .actionUrl(url)
+                .actionName(name)
+                .build();
+    }
+
+    public void sendMatomoRequest(String url, String name) {
+        var request = matomoTrackRequest(url, name);
+        var tracker = new MatomoTracker(MATOMO_API_URL);
+
+        try {
+            Future<HttpResponse> response = tracker.sendRequestAsync(request);
+        } catch (Exception e) {
+            log.warn("Error while sending request for {} at {} to Matomo", name, url);
+        }
     }
 
     /**
