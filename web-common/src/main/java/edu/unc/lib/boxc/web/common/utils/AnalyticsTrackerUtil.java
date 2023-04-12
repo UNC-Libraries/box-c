@@ -95,6 +95,9 @@ public class AnalyticsTrackerUtil {
                     : briefObject.getParentCollectionName();
             String viewedObjectLabel = briefObject.getTitle() + "|" + pid;
             trackEvent(userData, parentCollection, action, viewedObjectLabel);
+            // track in matomo
+            var matomoRequest = buildMatomoRequest(getFullURL(request), userData, parentCollection, viewedObjectLabel);
+            sendMatomoRequest(matomoRequest);
         } catch (Exception e) {
             // Prevent analytics exceptions from impacting user
             log.warn("An exception occurred while recording {} event on {}", action, pid, e);
@@ -102,8 +105,6 @@ public class AnalyticsTrackerUtil {
     }
 
     private void trackEvent(AnalyticsUserData userData, String category, String action, String label) {
-
-        // Use a default customer ID if none was provided, since it is required
         if (userData == null) {
             return;
         }
@@ -113,22 +114,40 @@ public class AnalyticsTrackerUtil {
         trackerThread.start();
     }
 
-    public MatomoRequest matomoTrackRequest(String url, String name) {
+    public MatomoRequest buildMatomoRequest(String url, AnalyticsUserData userData, String parentCollection, String label) {
         return MatomoRequest.builder()
                 .siteId(MATOMO_SITE_ID)
+                .visitorId("get from cookie")
                 .actionUrl(url)
-                .actionName(name)
+                .actionName("download")
+                .downloadUrl(url)
+                .eventCategory(parentCollection)
+                .eventAction("download")
+                .eventName(label)
+                .headerUserAgent(userData.userAgent)
+                .authToken("need token")
+                .visitorIp(userData.uip)
                 .build();
     }
 
-    public void sendMatomoRequest(String url, String name) {
-        var request = matomoTrackRequest(url, name);
+    private void sendMatomoRequest(MatomoRequest matomoRequest) {
         var tracker = new MatomoTracker(MATOMO_API_URL);
 
         try {
-            Future<HttpResponse> response = tracker.sendRequestAsync(request);
+            Future<HttpResponse> response = tracker.sendRequestAsync(matomoRequest);
         } catch (Exception e) {
-            log.warn("Error while sending request for {} at {} to Matomo", name, url);
+            log.warn("Error while sending request for download event at {} to Matomo", matomoRequest.getDownloadUrl());
+        }
+    }
+
+    private String getFullURL(HttpServletRequest request) {
+        StringBuilder requestURL = new StringBuilder(request.getRequestURL().toString());
+        String queryString = request.getQueryString();
+
+        if (queryString == null) {
+            return requestURL.toString();
+        } else {
+            return requestURL.append('?').append(queryString).toString();
         }
     }
 
