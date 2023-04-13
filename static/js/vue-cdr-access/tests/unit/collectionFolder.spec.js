@@ -2,6 +2,7 @@ import { mount } from '@vue/test-utils'
 import { createRouter, createWebHistory } from 'vue-router';
 import collectionFolder from '@/components/full_record/collectionFolder.vue';
 import displayWrapper from '@/components/displayWrapper.vue';
+import store from '@/store';
 import {createI18n} from 'vue-i18n';
 import translations from '@/translations';
 import cloneDeep from 'lodash.clonedeep';
@@ -118,7 +119,7 @@ describe('collectionFolder.vue', () => {
 
         wrapper = mount(collectionFolder, {
             global: {
-                plugins: [i18n, router]
+                plugins: [i18n, router, store]
             },
             props: {
                 recordData: recordData

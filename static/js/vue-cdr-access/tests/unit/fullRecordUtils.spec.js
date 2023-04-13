@@ -183,12 +183,6 @@ describe('fullrecordUtils', () => {
         expect(wrapper.vm.hasGroupRole('canViewOriginals', 'authenticated')).toBe(true);
     });
 
-    it('determines whether a user is logged in', async () => {
-        expect(wrapper.vm.isLoggedIn).toEqual(false);
-        await wrapper.setProps({ username: 'test_user' });
-        expect(wrapper.vm.isLoggedIn).toEqual(true);
-    });
-
     it('formats string dates', () => {
         expect(wrapper.vm.formatDate(recordData.briefObject.added)).toEqual('2023-01-17');
     });
