@@ -1,4 +1,4 @@
-import { createStore } from 'vuex'
+import {createStore} from 'vuex'
 
 const POSSIBLE_FACET_FIELDS = ['unit', 'collection', 'format', 'genre', 'language', 'subject', 'location',
     'createdYear', 'creatorContributor', 'publisher'];
@@ -7,7 +7,10 @@ const POSSIBLE_FACET_FIELDS = ['unit', 'collection', 'format', 'genre', 'languag
 const store = createStore({
     state () {
         return {
-            possibleFacetFields: POSSIBLE_FACET_FIELDS.slice()
+            isLoggedIn: false,
+            possibleFacetFields: POSSIBLE_FACET_FIELDS.slice(),
+            username: '',
+            viewAdmin: false
         }
     },
     mutations: {
@@ -16,6 +19,15 @@ const store = createStore({
         },
         resetPossibleFacetFields (state) {
             state.possibleFacetFields = POSSIBLE_FACET_FIELDS.slice();
+        },
+        setIsLoggedIn (state) {
+            state.isLoggedIn = state.username !== undefined && state.username !== '';
+        },
+        setUsername (state, username) {
+            state.username = username || '';
+        },
+        setViewAdmin (state, viewAdmin) {
+            state.viewAdmin = viewAdmin === 'true';
         }
     },
     actions: {

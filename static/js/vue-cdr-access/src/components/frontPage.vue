@@ -58,6 +58,12 @@ export default {
         }
     },
 
+    head() {
+        return {
+            title: 'Home'
+        }
+    },
+
     methods: {
         getCollectionStats() {
             get('/collectionStats').then((response) => {

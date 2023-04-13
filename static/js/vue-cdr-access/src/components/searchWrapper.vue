@@ -66,6 +66,12 @@ Top level component wrapper for search pages
             }
         },
 
+        head() {
+            return {
+                title: 'Search Results'
+            }
+        },
+
         watch: {
             '$route.query': {
                 handler() {

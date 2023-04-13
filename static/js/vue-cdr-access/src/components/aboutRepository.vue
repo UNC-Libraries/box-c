@@ -85,10 +85,41 @@
 
 <script>
 export default {
-    name: "aboutRepository"
+    name: "aboutRepository",
+
+    head() {
+        return {
+            title: 'About'
+        }
+    }
 }
 </script>
 
 <style scoped lang="scss">
+    #about-repo {
+        width: 95%;
 
+        h2 {
+            font-size: 1.2rem;
+            text-align: center;
+        }
+
+        h3 {
+            font-size: 1.1rem;
+        }
+
+        p, a {
+            font-size: .9rem;
+        }
+
+        ul {
+            list-style-type: disc;
+            margin-left: 15px;
+
+            li {
+                margin-left: 25px;
+                text-indent: unset;
+            }
+        }
+    }
 </style>

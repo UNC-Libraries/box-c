@@ -13,10 +13,7 @@ require.config({
 		'JP2Viewer' : 'cdr-access',
 		'uvOffline': '/static/plugins/uv/lib/offline',
 		'uvHelpers': '/static/plugins/uv/helpers',
-		'uv': '/static/plugins/uv/uv',
-		'audiojs' : '/static/plugins/audiojs/audio',
-		'promise': 'lib/promise-polyfill.min',
-		'fetch' : 'lib/fetch-polyfill.min'
+		'uv': '/static/plugins/uv/uv'
 	},
 	shim: {
 		'jquery-ui' : ['jquery'],
@@ -27,8 +24,7 @@ require.config({
 	waitSeconds: 120
 });
 define('fullRecord', ['module', 'jquery', 'JP2Viewer', 'StructureView', 'thumbnails'], function(module, $) {
-	var $jp2Window = $(".jp2_imageviewer_window"),
-		$modsDisplay = $("#mods_data_display");
+	let $jp2Window = $(".jp2_imageviewer_window");
 
 	function loadViewer($viewer, widgetName) {
 		$viewer[widgetName].call($viewer, {
@@ -39,23 +35,5 @@ define('fullRecord', ['module', 'jquery', 'JP2Viewer', 'StructureView', 'thumbna
 
 	if ($jp2Window.length > 0) {
 		loadViewer($jp2Window, 'jp2Viewer', $(".jp2_viewer_link"));
-	}
-
-	if ($modsDisplay.length > 0) {
-		$.ajax({
-			url: "/record/" + $modsDisplay.attr("data-pid") + "/metadataView",
-			dataType: "html",
-			success: function(data) {
-				if (/^no.metadata/i.test($.trim(data))) {
-					data = '<p class="no-mods">' + data + '</p>';
-				}
-				$modsDisplay.html(data);
-			},
-			error: function(e) {
-				var msg = "Unable to retrieve MODS for this record";
-				$modsDisplay.html("<p>" + msg + "</p>");
-				console.log(msg, e);
-			}
-		});
 	}
 });

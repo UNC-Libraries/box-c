@@ -1,13 +1,15 @@
 import { createWebHistory, createRouter } from 'vue-router'
+import axios from 'axios';
 import advancedSearch from "@/components/advancedSearch.vue";
 import displayWrapper from "@/components/displayWrapper.vue";
 import searchWrapper from "@/components/searchWrapper.vue";
 import collectionBrowseWrapper from "@/components/collectionBrowseWrapper.vue";
 import frontPage from "@/components/frontPage.vue";
 import aboutRepository from "@/components/aboutRepository.vue";
+import store from './store'
 
-export default createRouter({
-  history: createWebHistory(import.meta.env.BASE_URL),
+const router = createRouter({
+  history: createWebHistory(),
   routes: [
     {
       path: '/advancedSearch',
@@ -41,3 +43,13 @@ export default createRouter({
     }
   ]
 });
+
+router.beforeEach((to, from) => {
+  axios.head('/userInformation').then((response) => {
+    store.commit('setUsername', response.headers['username']);
+    store.commit('setIsLoggedIn');
+    store.commit('setViewAdmin', response.headers['can-view-admin']);
+  });
+});
+
+export default router

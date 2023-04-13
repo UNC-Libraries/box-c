@@ -1,5 +1,13 @@
+import { mapState } from 'vuex';
+
 export default {
     computed: {
+        ...mapState([
+            'isLoggedIn',
+            'username',
+            'viewAdmin'
+        ]),
+
         adminUrl() {
             const current_page = window.location;
             return `https://${current_page.host}/admin/`;
@@ -26,13 +34,8 @@ export default {
             return `https://${current_page.host}/Shibboleth.sso/Login?target=${encodeURIComponent(current_page)}`;
         },
 
-        isLoggedIn() {
-            const username = document.getElementById("pagewrap").dataset.username;
-            return username !== null && username !== '';
-        },
-
         adminAccess() {
-            return document.getElementById("pagewrap").dataset.admin;
+            return this.viewAdmin;
         }
     }
 }

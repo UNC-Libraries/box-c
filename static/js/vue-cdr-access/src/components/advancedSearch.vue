@@ -157,6 +157,12 @@ export default {
         }
     },
 
+    head() {
+        return {
+            title: 'Advanced Search'
+        }
+    },
+
     methods: {
         getCollections() {
             get('/advancedSearch/collections').then((response) => {

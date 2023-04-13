@@ -72,7 +72,7 @@
                                 </div>
                             </div>
                         </div>
-                        <restricted-content :record-data="recordData" :username="this.username"></restricted-content>
+                        <restricted-content :record-data="recordData"></restricted-content>
                     </div>
                 </div>
             </div>

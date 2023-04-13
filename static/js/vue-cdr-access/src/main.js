@@ -1,5 +1,7 @@
 import { createApp, h } from 'vue'
 import { createI18n } from 'vue-i18n'
+import { createHead, VueHeadMixin } from "@vueuse/head"
+import VueGtag from 'vue-gtag';
 import App from './App.vue'
 import router from './router'
 import store from './store'
@@ -8,15 +10,32 @@ import './assets/common-styles.css';
 import './assets/nouislider.css'; // Imported here, otherwise it breaks component tests, as an invalid import
 
 if (document.getElementById('app') !== null && window.dcr_browse_records === undefined) {
-  const i18n = createI18n({
-    locale: 'en',
-    fallbackLocale: 'en',
-    messages: translations
-  });
+    const i18n = createI18n({
+        locale: 'en',
+        fallbackLocale: 'en',
+        messages: translations
+    });
 
-  window.dcr_browse_records = createApp({
-    render() {
-      return h(App);
-    }
-  }).use(router).use(store).use(i18n).mount('#app');
+    const default_title = 'Digital Collections Repository';
+    const head = createHead({
+        base: { href: `https://${window.location.host}/` },
+        titleTemplate: (title) => {
+            return !title ? default_title : `${default_title} - ${title}`
+        }
+    });
+
+    window.dcr_browse_records = createApp({
+        render() {
+            return h(App);
+        }
+    }).mixin(VueHeadMixin)
+        .use(head)
+        .use(store)
+        .use(router)
+        .use(i18n)
+        .use(VueGtag, {
+            config: {
+                id: ''
+            }
+        }).mount('#app');
 }

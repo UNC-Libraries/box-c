@@ -3,7 +3,7 @@
         <div class="logo-row-small">
             <div class="logo-small container">
                 <a href="/">
-                    <img :src="'static/front/university-libraries-logo.png'" alt="University Libraries Logo">
+                    <img :src="'/static/front/university-libraries-logo.png'" alt="University Libraries Logo">
                     <h1>Digital Collections Repository</h1>
                 </a>
                 <span class="info-btns">

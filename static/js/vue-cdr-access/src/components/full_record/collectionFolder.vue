@@ -37,7 +37,7 @@
                 </p>
                 <p><a @click.prevent="displayMetadata()" href="#">{{ $t('full_record.additional_metadata') }}</a></p>
             </div>
-            <restricted-content :record-data="recordData" :username="this.username"></restricted-content>
+            <restricted-content :record-data="recordData"></restricted-content>
         </div>
         <modal-metadata :title="recordData.briefObject.title"
                         :uuid="recordData.briefObject.id"

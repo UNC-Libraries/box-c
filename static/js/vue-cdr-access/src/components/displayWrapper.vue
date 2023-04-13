@@ -7,12 +7,11 @@ Top level component for full record pages with searching/browsing, including Adm
             <img :src="nonVueStaticImageUrl('ajax-loader-lg.gif')" alt="data loading icon">
         </div>
         <div v-if="!is_page_loading">
-            <admin-unit v-if="container_info.resourceType === 'AdminUnit'" :username="username" :record-data="container_info"></admin-unit>
+            <admin-unit v-if="container_info.resourceType === 'AdminUnit'" :record-data="container_info"></admin-unit>
             <collection-folder v-if="container_info.resourceType === 'Collection' || container_info.resourceType === 'Folder'"
-                               :username="username"
                                :record-data="container_info"></collection-folder>
-            <aggregate-record v-if="container_info.resourceType === 'Work'" :username="username" :record-data="container_info"></aggregate-record>
-            <file-record v-if="container_info.resourceType === 'File'" :username="username" :record-data="container_info"></file-record>
+            <aggregate-record v-if="container_info.resourceType === 'Work'" :record-data="container_info"></aggregate-record>
+            <file-record v-if="container_info.resourceType === 'File'" :record-data="container_info"></file-record>
 
             <div v-if="container_info.resourceType !== 'Work' && container_info.resourceType !== 'File'">
                 <div class="columns is-tablet">
@@ -114,8 +113,13 @@ Top level component for full record pages with searching/browsing, including Adm
                 facet_list: [],
                 search_method: 'listJson',
                 uuid: '',
-                filter_parameters: {},
-                username: ''
+                filter_parameters: {}
+            }
+        },
+
+        head() {
+            return {
+                title: this.container_info.pageSubtitle || ''
             }
         },
 
@@ -133,7 +137,7 @@ Top level component for full record pages with searching/browsing, including Adm
             retrieveSearchResults() {
                 let param_string = this.formatParamsString(this.updateParams()) + '&getFacets=true';
                 this.uuid = location.pathname.split('/')[2];
-                get(`${this.search_method}/${this.uuid}${param_string}`).then((response) => {
+                get(`/${this.search_method}/${this.uuid}${param_string}`).then((response) => {
                     this.record_count = response.data.resultCount;
                     this.record_list = response.data.metadata;
                     this.facet_list = response.data.facetFields;
@@ -155,8 +159,22 @@ Top level component for full record pages with searching/browsing, including Adm
 
                 get(`${link}json`).then((response) => {
                     this.container_info = response.data;
-                    this.username = response.headers['username'];
-                }).catch(error => console.log(error));
+                }).catch(error => {
+                    console.log(error);
+                });
+            },
+
+            getCollectionName(briefObject) {
+                let has_collection_name = briefObject.parentCollectionName !== undefined &&
+                    briefObject.parentCollectionName !== '';
+
+                if (has_collection_name) {
+                    return briefObject.parentCollectionName;
+                } else if (!has_collection_name && briefObject.resourceType === 'Collection') {
+                    return briefObject.title;
+                } else {
+                    return '(no collection)';
+                }
             },
 
             updateUrl() {
@@ -198,6 +216,23 @@ Top level component for full record pages with searching/browsing, including Adm
                     facets_to_remove = FACETS_REMOVE_COLLECTION_AND_CHILDREN;
                 }
                 this.$store.commit('removePossibleFacetFields', facets_to_remove);
+            },
+
+            track() {
+                let collection = this.container_info.briefObject.parentCollectionName || '';
+
+                if (collection === '' && this.container_info.briefObject.type === 'Collection') {
+                    collection = this.container_info.briefObject.title;
+                }
+                if (collection === '') {
+                    collection = '(no collection)';
+                }
+
+                this.$gtag.event('unc.send', {
+                    'event_category': 'record',
+                    'event_label': collection,
+                    'value': `${this.container_info.briefObject.title}|${this.container_info.briefObject.id}`
+                });
             }
         },
 

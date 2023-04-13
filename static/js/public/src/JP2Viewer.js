@@ -16,8 +16,8 @@ define("JP2Viewer", [ 'jquery', 'jquery-ui', 'uvOffline', 'uvHelpers', 'uv'],
 		
 		show : function() {
 			if (!this.initialized) {
-				var self = this;
-				require(['promise', 'fetch', 'uvOffline', 'uvHelpers', 'uv'], function(){
+				let self = this;
+				require(['uvOffline', 'uvHelpers', 'uv'], function(){
 					self.element.show();
 					self._initUv();
 				});
@@ -35,13 +35,13 @@ define("JP2Viewer", [ 'jquery', 'jquery-ui', 'uvOffline', 'uvHelpers', 'uv'],
 		},
 		
 		_initUv : function() {
-			var self = this;
+			let self = this;
 
 			this.initialized = true;
 			this.element.addClass('not_loaded');
-			var $ = window.jsviews || window.jQuery; // jsRender, used by UV, needs to own the $ variable
-			var urlDataProvider = new UV.URLDataProvider();
-			var uvRoot = '/static/plugins/uv';
+			let $ = window.jsviews || window.jQuery; // jsRender, used by UV, needs to own the $ letiable
+			let urlDataProvider = new UV.URLDataProvider();
+			let uvRoot = '/static/plugins/uv';
 
 			try {
 				createUV('#jp2_viewer', {

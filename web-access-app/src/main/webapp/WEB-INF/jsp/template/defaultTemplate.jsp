@@ -31,6 +31,6 @@
 		<c:import url="common/footer.jsp"/>
 	</div>
 </div>
-<c:import url="googleAnalytics.jsp" />
+
 </body>
 </html>

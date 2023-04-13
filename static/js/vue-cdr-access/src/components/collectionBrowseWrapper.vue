@@ -30,6 +30,12 @@ Top level component used for the collection browse page
             }
         },
 
+        head() {
+            return {
+                title: 'Collections'
+            }
+        },
+
         methods: {
             retrieveData() {
                 get('collectionsJson').then((response) => {
