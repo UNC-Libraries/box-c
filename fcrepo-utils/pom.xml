@@ -149,9 +149,5 @@
             <groupId>org.fcrepo</groupId>
             <artifactId>fcrepo-http-api</artifactId>
         </dependency>
-        <dependency>
-            <groupId>org.apache.jena</groupId>
-            <artifactId>jena-fuseki-main</artifactId>
-        </dependency>
     </dependencies>
 </project>

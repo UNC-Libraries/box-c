@@ -13,6 +13,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+import edu.unc.lib.boxc.fcrepo.exceptions.ServiceException;
+import edu.unc.lib.boxc.fcrepo.utils.FedoraTransactionRefresher;
 import edu.unc.lib.boxc.model.api.objects.WorkObject;
 import edu.unc.lib.boxc.operations.jms.order.MemberOrderRequestSender;
 import edu.unc.lib.boxc.operations.jms.order.MultiParentOrderRequest;
@@ -73,60 +75,69 @@ public class DestroyObjectsJob extends AbstractDestroyObjectsJob {
     @Override
     public void run() {
         FedoraTransaction tx = txManager.startTransaction();
+        FedoraTransactionRefresher txRefresher = new FedoraTransactionRefresher(tx);
         try (Timer.Context context = timer.time()) {
+            txRefresher.start();
             // convert each destroyed obj to a tombstone
             for (PID pid : objsToDestroy) {
                 RepositoryObject repoObj = repoObjLoader.getRepositoryObject(pid);
-
                 assertCanDestroy(agent, repoObj, aclService);
                 if (!inheritedAclFactory.isMarkedForDeletion(pid)) {
                     log.warn("Skipping destruction of {}, it is not marked for deletion", pid);
                     continue;
                 }
-
-                if (!repoObj.getResource(true).hasProperty(RDF.type, Cdr.Tombstone)) {
-                    RepositoryObject parentObj = repoObj.getParent();
-                    // If the object being deleted is the primary object of a work, then clear the relation
-                    if (parentObj instanceof WorkObject && repoObj instanceof FileObject) {
-                        var parentWork = (WorkObject) parentObj;
-                        var primaryObj = parentWork.getPrimaryObject();
-                        if (primaryObj != null && primaryObj.getPid().equals(repoObj.getPid())) {
-                            parentWork.clearPrimaryObject();
-                        }
-                        // remove object to be deleted from parent object's member order
-                        sendRemoveOrderRequest(parentWork.getPid().getId(), repoObj.getPid().getId());
-                    }
-
-                    // purge tree with repoObj as root from repository
-                    // Add the root of the tree to delete
-                    deletedObjIds.add(repoObj.getPid().getUUID());
-
-                    destroyTree(repoObj);
-
-                    // Add premis event to parent
-                    String lineSeparator = System.getProperty("line.separator");
-                    premisLoggerFactory.createPremisLogger(parentObj)
-                            .buildEvent(Premis.Deletion)
-                            .addAuthorizingAgent(AgentPids.forPerson(agent))
-                            .addOutcome(true)
-                            .addEventDetail("{0} object(s) were destroyed", deletedObjIds.size())
-                            .addEventDetail("Objects destroyed:" + lineSeparator
-                                            + "{0}", String.join(lineSeparator, deletedObjIds))
-                            .writeAndClose();
+                if (repoObj.getResource(true).hasProperty(RDF.type, Cdr.Tombstone)) {
+                    log.debug("Skipping destruction of tombstone {}", pid);
+                    continue;
                 }
+
+                destroyObject(repoObj);
                 indexingMessageSender.sendIndexingOperation(agent.getUsername(), pid, DELETE_SOLR_TREE);
             }
+            txRefresher.stop();
         } catch (Exception e) {
-             tx.cancel(e);
+            log.error("Failed to destroy objects", e);
+            txRefresher.interrupt();
+            tx.cancelAndIgnore();
+            throw new ServiceException("Destroy operation failed", e);
         } finally {
-             tx.close();
+            tx.close();
         }
-
         // Defer binary cleanup until after fedora destroy transaction completes
         destroyBinaries();
     }
 
+    private void destroyObject(RepositoryObject repoObj) throws IOException, FcrepoOperationFailedException {
+        RepositoryObject parentObj = repoObj.getParent();
+        // If the object being deleted is the primary object of a work, then clear the relation
+        if (parentObj instanceof WorkObject && repoObj instanceof FileObject) {
+            var parentWork = (WorkObject) parentObj;
+            var primaryObj = parentWork.getPrimaryObject();
+            if (primaryObj != null && primaryObj.getPid().equals(repoObj.getPid())) {
+                parentWork.clearPrimaryObject();
+            }
+            // remove object to be deleted from parent object's member order
+            sendRemoveOrderRequest(parentWork.getPid().getId(), repoObj.getPid().getId());
+        }
 
+        // purge tree with repoObj as root from repository
+        // Add the root of the tree to delete
+        deletedObjIds.add(repoObj.getPid().getUUID());
+
+        destroyTree(repoObj);
+
+        // Add premis event to parent
+        String lineSeparator = System.getProperty("line.separator");
+        premisLoggerFactory.createPremisLogger(parentObj)
+                .buildEvent(Premis.Deletion)
+                .addAuthorizingAgent(AgentPids.forPerson(agent))
+                .addOutcome(true)
+                .addEventDetail("{0} object(s) were destroyed", deletedObjIds.size())
+                .addEventDetail("Objects destroyed:" + lineSeparator
+                        + "{0}", String.join(lineSeparator, deletedObjIds))
+                .writeAndClose();
+
+    }
 
     private void destroyTree(RepositoryObject rootOfTree) throws FedoraException, IOException,
             FcrepoOperationFailedException {
