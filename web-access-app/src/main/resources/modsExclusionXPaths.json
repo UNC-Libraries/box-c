@@ -6,4 +6,5 @@
   "//mods:originInfo/mods:dateIssued[@encoding=\"marc\"]",
   "//mods:identifier[@displayLabel=\"HookID\" and @type=\"local\"]",
   "//mods:physicalDescription/mods:note[@displayLabel=\"Container type\"]",
-  "//mods:identifier[@displayLabel=\"CONTENTdm number\" and @type=\"local\"]"]
+  "//mods:identifier[@displayLabel=\"CONTENTdm number\" and @type=\"local\"]",
+  "//mods:accessCondition[@type=\"use and reproduction\" and @displayLabel=\"CONTENTdm Usage Rights\"]"]

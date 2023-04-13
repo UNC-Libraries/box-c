@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:mvc="http://www.springframework.org/schema/mvc"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="
+        http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/context
+        http://www.springframework.org/schema/context/spring-context-3.0.xsd
+        http://www.springframework.org/schema/mvc
+        http://www.springframework.org/schema/mvc/spring-mvc-3.0.xsd">
+
+    <mvc:annotation-driven/>
+
+    <context:component-scan base-package="edu.unc.lib.boxc.web.services.rest.exceptions"/>
+    <context:component-scan resource-pattern="**/DownloadImageController*" base-package="edu.unc.lib.boxc.web.services.rest"/>
+
+    <bean id="downloadImageService" class="edu.unc.lib.boxc.web.services.processing.DownloadImageService">
+        <property name="iiifBasePath" value="http://localhost:46887/"/>
+    </bean>
+
+    <bean id="aclService" class="org.mockito.Mockito" factory-method="mock">
+        <constructor-arg value="edu.unc.lib.boxc.auth.fcrepo.services.AccessControlServiceImpl" />
+    </bean>
+
+    <bean id="solrSearchService" class="org.mockito.Mockito" factory-method="mock">
+        <constructor-arg value="edu.unc.lib.boxc.web.common.services.SolrQueryLayerService" />
+    </bean>
+
+    <bean id="searchSettings" class="org.mockito.Mockito" factory-method="mock">
+        <constructor-arg value="edu.unc.lib.boxc.search.solr.config.SearchSettings" />
+    </bean>
+
+    <bean id="solrSettings" class="org.mockito.Mockito" factory-method="mock">
+        <constructor-arg value="edu.unc.lib.boxc.search.solr.config.SolrSettings" />
+    </bean>
+
+    <bean id="facetFieldFactory" class="org.mockito.Mockito" factory-method="mock">
+        <constructor-arg value="edu.unc.lib.boxc.search.solr.services.FacetFieldFactory" />
+    </bean>
+</beans>
