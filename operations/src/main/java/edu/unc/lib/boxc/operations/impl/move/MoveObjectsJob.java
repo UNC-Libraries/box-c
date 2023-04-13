@@ -93,6 +93,7 @@ public class MoveObjectsJob implements Runnable {
                     moveObject(movePid);
                 }
             } catch (Exception e) {
+                log.error("Failed to perform move job to destination {}", destinationPid, e);
                 tx.cancel(e);
             } finally {
                 tx.close();

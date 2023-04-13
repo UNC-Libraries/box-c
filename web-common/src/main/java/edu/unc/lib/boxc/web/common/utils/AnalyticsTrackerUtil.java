@@ -37,15 +37,16 @@ public class AnalyticsTrackerUtil {
     private static final Logger log = LoggerFactory.getLogger(AnalyticsTrackerUtil.class);
 
     // Made up CID to use if the request does not include one, such as from a API request
-    private static final String DEFAULT_CID = "35009a79-1a05-49d7-b876-2b884d0f825b";
+    protected static final String DEFAULT_CID = "35009a79-1a05-49d7-b876-2b884d0f825b";
     // Google analytics measurement API url
-    private final String GA_URL = "https://www.google-analytics.com/collect";
+    private static final String GA_URL = "https://www.google-analytics.com/collect";
 
     // Google analytics tracking id
     private String gaTrackingID;
 
     private HttpClientConnectionManager httpClientConnectionManager;
     private CloseableHttpClient httpClient;
+    private String repositoryHost;
 
     private SolrSearchService solrSearchService;
 
@@ -60,6 +61,10 @@ public class AnalyticsTrackerUtil {
                 .setConnectionManager(httpClientConnectionManager)
                 .setDefaultRequestConfig(requestConfig)
                 .build();
+    }
+
+    public void setHttpClient(CloseableHttpClient httpClient) {
+        this.httpClient = httpClient;
     }
 
     public void setGaTrackingID(String trackingID) {
@@ -83,14 +88,14 @@ public class AnalyticsTrackerUtil {
                     "(no collection)"
                     : briefObject.getParentCollectionName();
             String viewedObjectLabel = briefObject.getTitle() + "|" + pid;
-            trackEvent(userData, parentCollection, "download", viewedObjectLabel, null);
+            trackEvent(userData, parentCollection, action, viewedObjectLabel);
         } catch (Exception e) {
             // Prevent analytics exceptions from impacting user
             log.warn("An exception occurred while recording {} event on {}", action, pid, e);
         }
     }
 
-    public void trackEvent(AnalyticsUserData userData, String category, String action, String label, Integer value) {
+    private void trackEvent(AnalyticsUserData userData, String category, String action, String label) {
 
         // Use a default customer ID if none was provided, since it is required
         if (userData == null) {
@@ -98,7 +103,7 @@ public class AnalyticsTrackerUtil {
         }
 
         // Perform the analytics tracking event asynchronously
-        Thread trackerThread = new Thread(new EventTrackerRunnable(userData, category, action, label, value));
+        Thread trackerThread = new Thread(new EventTrackerRunnable(userData, category, action, label));
         trackerThread.start();
     }
 
@@ -107,6 +112,10 @@ public class AnalyticsTrackerUtil {
      */
     public void setSolrSearchService(SolrSearchService solrSearchService) {
         this.solrSearchService = solrSearchService;
+    }
+
+    public void setRepositoryHost(String repositoryHost) {
+        this.repositoryHost = repositoryHost;
     }
 
     public static class AnalyticsUserData {
@@ -161,29 +170,24 @@ public class AnalyticsTrackerUtil {
         }
     }
 
-    private class EventTrackerRunnable implements Runnable {
+    protected class EventTrackerRunnable implements Runnable {
 
         private final AnalyticsUserData userData;
         private final String category;
         private final String action;
         private final String label;
-        private final Integer value;
 
-        public EventTrackerRunnable(AnalyticsUserData userData, String category, String action, String label,
-                Integer value) {
+        public EventTrackerRunnable(AnalyticsUserData userData, String category, String action, String label) {
             this.category = category;
             this.action = action;
             this.label = label;
-            this.value = value;
             this.userData = userData;
         }
 
         @Override
         public void run() {
-            if (log.isDebugEnabled()) {
-                log.debug("Tracking user {} with event {} in category {} with label {}",
-                        userData.cid, action, category, label);
-            }
+            log.debug("Tracking user {} with event {} in category {} with label {}",
+                    userData.cid, action, category, label);
 
             URIBuilder builder;
             try {
@@ -201,6 +205,7 @@ public class AnalyticsTrackerUtil {
             params.add(new BasicNameValuePair("t", "event"));
             params.add(new BasicNameValuePair("uip", userData.uip));
             params.add(new BasicNameValuePair("ua", userData.userAgent));
+            params.add(new BasicNameValuePair("dh", repositoryHost));
             params.add(new BasicNameValuePair("an", "cdr"));
             params.add(new BasicNameValuePair("de", "UTF-8"));
             params.add(new BasicNameValuePair("ul", "en-us"));
@@ -216,9 +221,6 @@ public class AnalyticsTrackerUtil {
             }
             if (label != null) {
                 params.add(new BasicNameValuePair("el", label));
-            }
-            if (value != null) {
-                params.add(new BasicNameValuePair("ev", value.toString()));
             }
 
             builder.addParameters(params);

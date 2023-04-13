@@ -80,6 +80,7 @@
         <property name="transactionManager" ref="transactionManager" />
         <property name="operationsMessageSender" ref="operationsMessageSender" />
         <property name="objectPathFactory" ref="objectPathFactory" />
+        <property name="premisLoggerFactory" ref="premisLoggerFactory" />
         <property name="asynchronous" value="true" />
         <property name="moveExecutor" ref="moveExecutor" />
     </bean>
@@ -184,6 +185,7 @@
         <property name="gaTrackingID" ref="gaTrackingID" />
         <property name="solrSearchService" ref="unrestrictedSolrSearchService" />
         <property name="httpClientConnectionManager" ref="httpClientConnectionManager" />
+        <property name="repositoryHost" value="${repository.host}" />
     </bean>
     
     <bean id="fedoraContentService" class="edu.unc.lib.boxc.web.common.services.FedoraContentService">
@@ -416,6 +418,10 @@
         <property name="facetFieldFactory" ref="facetFieldFactory" />
         <property name="accessRestrictionUtil" ref="solrAccessRestrictionUtil" />
         <property name="solrSettings" ref="solrSettings" />
+    </bean>
+
+    <bean id="downloadImageService" class="edu.unc.lib.boxc.web.services.processing.DownloadImageService">
+        <property name="iiifBasePath" value="${iiif.base.url}"/>
     </bean>
     
     <bean class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">

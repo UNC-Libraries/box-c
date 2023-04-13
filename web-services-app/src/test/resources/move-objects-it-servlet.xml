@@ -21,6 +21,7 @@
         <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
         <property name="operationsMessageSender" ref="operationsMessageSender" />
         <property name="objectPathFactory" ref="objectPathFactory" />
+        <property name="premisLoggerFactory" ref="premisLoggerFactory" />
         <property name="transactionManager" ref="transactionManager" />
     </bean>
     
