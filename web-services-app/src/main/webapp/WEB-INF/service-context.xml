@@ -185,6 +185,7 @@
         <property name="solrSearchService" ref="unrestrictedSolrSearchService" />
         <property name="httpClientConnectionManager" ref="httpClientConnectionManager" />
         <property name="repositoryHost" value="${repository.host}" />
+        <property name="matomoAuthToken" value="${matomo.authToken}" />
     </bean>
     
     <bean id="fedoraContentService" class="edu.unc.lib.boxc.web.common.services.FedoraContentService">

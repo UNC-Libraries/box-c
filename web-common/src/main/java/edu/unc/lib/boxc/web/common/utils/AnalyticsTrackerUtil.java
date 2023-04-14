@@ -46,6 +46,7 @@ public class AnalyticsTrackerUtil {
     private static final String GA_URL = "https://www.google-analytics.com/collect";
     private static final int MATOMO_SITE_ID = 3;
     private static final String MATOMO_API_URL = "https://analytics-qa.lib.unc.edu/matomo.php";
+    private static final String MATOMO_ACTION = "download";
 
     // Google analytics tracking id
     private String gaTrackingID;
@@ -53,7 +54,7 @@ public class AnalyticsTrackerUtil {
     private HttpClientConnectionManager httpClientConnectionManager;
     private CloseableHttpClient httpClient;
     private String repositoryHost;
-
+    private String matomoAuthToken;
     private SolrSearchService solrSearchService;
 
     public void setHttpClientConnectionManager(HttpClientConnectionManager manager) {
@@ -117,15 +118,15 @@ public class AnalyticsTrackerUtil {
     public MatomoRequest buildMatomoRequest(String url, AnalyticsUserData userData, String parentCollection, String label) {
         return MatomoRequest.builder()
                 .siteId(MATOMO_SITE_ID)
-                .visitorId("get from cookie")
+                .visitorId(userData.uid)
                 .actionUrl(url)
-                .actionName("download")
+                .actionName(MATOMO_ACTION)
                 .downloadUrl(url)
                 .eventCategory(parentCollection)
-                .eventAction("download")
+                .eventAction(MATOMO_ACTION)
                 .eventName(label)
                 .headerUserAgent(userData.userAgent)
-                .authToken("need token")
+                .authToken(matomoAuthToken)
                 .visitorIp(userData.uip)
                 .build();
     }
@@ -161,6 +162,9 @@ public class AnalyticsTrackerUtil {
     public void setRepositoryHost(String repositoryHost) {
         this.repositoryHost = repositoryHost;
     }
+    public void setMatomoAuthToken(String matomoAuthToken) {
+        this.matomoAuthToken = matomoAuthToken;
+    }
 
     public static class AnalyticsUserData {
         // ip of client
@@ -168,6 +172,8 @@ public class AnalyticsTrackerUtil {
         // client id
         public String cid;
         public String userAgent;
+        // matomo user id
+        public String uid;
 
         public AnalyticsUserData(HttpServletRequest request) {
 
@@ -190,15 +196,21 @@ public class AnalyticsTrackerUtil {
             }
 
             // Store the CID from _ga cookie if it is present
-            Cookie cookies[] = request.getCookies();
+            Cookie[] cookies = request.getCookies();
             if (cookies != null) {
                 for (Cookie cookie : cookies) {
+                    // if both cookies have been found
+                    if (cid != null && uid != null) {
+                        break;
+                    }
                     if ("_ga".equals(cookie.getName())) {
                         String[] parts = cookie.getValue().split("\\.");
                         if (parts.length == 4) {
                             cid = parts[2] + "." + parts[3];
                         }
-                        break;
+                    } else if ("_pk_id".equals(cookie.getName())) {
+                        String[] parts = cookie.getValue().split("\\.");
+                        uid = parts[0];
                     }
                 }
             }
