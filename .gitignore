@@ -16,6 +16,8 @@
 /puppet.tar.gz
 */fcrepo4-data
 .idea
+static/index.html
+static/assets
 static/js/cdr-admin.js
 static/css/cdr_admin.css
 static/js/cdr-access.js
