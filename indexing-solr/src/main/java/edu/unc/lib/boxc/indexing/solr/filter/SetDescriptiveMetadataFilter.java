@@ -463,8 +463,10 @@ public class SetDescriptiveMetadataFilter implements IndexDocumentFilter {
                 String modsRightsStatement = rightsEl.getTextTrim();
                 boolean hasUrl = !StringUtils.isBlank(href);
                 boolean hasRightsText = !StringUtils.isBlank(modsRightsStatement);
+                var displayLabel = rightsEl.getAttributeValue("displayLabel");
+                var disallowedLabel = displayLabel == null || displayLabel.equalsIgnoreCase("CONTENTdm Usage Rights");
 
-                if (!hasRightsText && !hasUrl) {
+                if ((!hasRightsText && !hasUrl) || disallowedLabel) {
                     continue;
                 }
 

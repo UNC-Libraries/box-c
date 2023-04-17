@@ -175,4 +175,7 @@
   <mods:accessCondition displayLabel="Rights" type="use and reproduction"
                         xlink:href="https://random.url/rights/text/">Random Rights</mods:accessCondition>
   <mods:accessCondition displayLabel="Rights" type="use and reproduction">More Random Rights</mods:accessCondition>
+  <mods:accessCondition displayLabel="CONTENTdm Usage Rights" type="use and reproduction">CDM Rights</mods:accessCondition>
+  <mods:accessCondition type="use and reproduction">No label</mods:accessCondition>
+  <mods:accessCondition displayLabel="Rights">No type</mods:accessCondition>
 </mods:mods>
