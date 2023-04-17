@@ -8,8 +8,8 @@
                 </a>
                 <span class="info-btns">
                     <a href="https://library.unc.edu/wilson/contact/">Contact Us</a>
-                    <a v-if="isLoggedIn" :href="logoutUrl" class="navbar-item"><i class="fas fa-user"></i>&nbsp;&nbsp;Log out</a>
-                    <a v-else :href="loginUrl" class="navbar-item"><i class="fas fa-user"></i>&nbsp;&nbsp;Login</a>
+                    <a v-if="isLoggedIn" :href="logoutUrl"><i class="fas fa-user"></i>&nbsp;&nbsp;Log out</a>
+                    <a v-else :href="loginUrl"><i class="fas fa-user"></i>&nbsp;&nbsp;Login</a>
                 </span>
             </div>
         </div>

@@ -15,7 +15,6 @@
     <c:set var="url">${accessBaseUrl}</c:set>
     <base href="${url}" />
     <%@ include file="../../html/headElements.html"%>
-    <link rel="stylesheet" href="/static/plugins/uv/uv.css">
 </head>
 <body>
 <link rel="stylesheet" href="/static/plugins/pdfjs/web/viewer.css">
