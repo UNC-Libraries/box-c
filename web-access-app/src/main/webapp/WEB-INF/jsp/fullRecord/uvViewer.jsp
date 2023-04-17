@@ -7,17 +7,12 @@
     <c:set var="url">${accessBaseUrl}</c:set>
     <base href="${url}" />
     <%@ include file="../../html/headElements.html"%>
-    <link rel="stylesheet" href="/static/plugins/uv/uv.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/universalviewer@4.0.18/dist/uv.css"/>
+    <script src="https://cdn.jsdelivr.net/npm/universalviewer@4.0.18/dist/umd/UV.js"></script>
 </head>
 <body class="white">
     <div class="clear_space"></div>
-    <div id="jp2_viewer" class="jp2_imageviewer_window"></div>
-    <script>
-        (function() {
-            let viewer = document.getElementById('jp2_viewer');
-            viewer.setAttribute('data-url', window.location.pathname.split('/')[2]);
-        })();
-    </script>
-    <script type="text/javascript" src="/static/js/lib/require.js" data-main="/static/js/public/fullRecord"></script>
+    <div id="jp2_viewer" class="jp2_imageviewer_window uv"></div>
+    <script src="/static/plugins/uv/uv_init.js"></script>
 </body>
 </html>
