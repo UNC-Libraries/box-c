@@ -1,15 +1,14 @@
 package edu.unc.lib.boxc.web.common.utils;
 
+import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.Future;
 
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 
-import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -30,6 +29,8 @@ import edu.unc.lib.boxc.search.api.models.ContentObjectRecord;
 import edu.unc.lib.boxc.search.api.requests.SimpleIdRequest;
 import edu.unc.lib.boxc.search.solr.services.SolrSearchService;
 
+import static edu.unc.lib.boxc.web.common.utils.StringFormatUtil.urlEncode;
+
 /**
  * Utility for performing asynchronous analytics tracking events when unable to use the javascript api
  *
@@ -45,7 +46,6 @@ public class AnalyticsTrackerUtil {
     // Google analytics measurement API url
     private static final String GA_URL = "https://www.google-analytics.com/collect";
     private static final int MATOMO_SITE_ID = 3;
-    private static final String MATOMO_API_URL = "https://analytics-qa.lib.unc.edu/matomo.php";
     private static final String MATOMO_ACTION = "download";
 
     // Google analytics tracking id
@@ -55,6 +55,7 @@ public class AnalyticsTrackerUtil {
     private CloseableHttpClient httpClient;
     private String repositoryHost;
     private String matomoAuthToken;
+    private String matomoApiURL;
     private SolrSearchService solrSearchService;
 
     public void setHttpClientConnectionManager(HttpClientConnectionManager manager) {
@@ -115,16 +116,16 @@ public class AnalyticsTrackerUtil {
         trackerThread.start();
     }
 
-    public MatomoRequest buildMatomoRequest(String url, AnalyticsUserData userData, String parentCollection, String label) {
+    private MatomoRequest buildMatomoRequest(String url, AnalyticsUserData userData, String parentCollection, String label) throws UnsupportedEncodingException {
         return MatomoRequest.builder()
                 .siteId(MATOMO_SITE_ID)
                 .visitorId(userData.uid)
-                .actionUrl(url)
-                .actionName(MATOMO_ACTION)
-                .downloadUrl(url)
-                .eventCategory(parentCollection)
-                .eventAction(MATOMO_ACTION)
-                .eventName(label)
+                .actionUrl(urlEncode(url))
+                .actionName(urlEncode(MATOMO_ACTION))
+                .downloadUrl(urlEncode(url))
+                .eventCategory(urlEncode(parentCollection))
+                .eventAction(urlEncode(MATOMO_ACTION))
+                .eventName(urlEncode(label))
                 .headerUserAgent(userData.userAgent)
                 .authToken(matomoAuthToken)
                 .visitorIp(userData.uip)
@@ -132,10 +133,10 @@ public class AnalyticsTrackerUtil {
     }
 
     private void sendMatomoRequest(MatomoRequest matomoRequest) {
-        var tracker = new MatomoTracker(MATOMO_API_URL);
+        var tracker = new MatomoTracker(matomoApiURL);
 
         try {
-            Future<HttpResponse> response = tracker.sendRequestAsync(matomoRequest);
+            tracker.sendRequestAsync(matomoRequest);
         } catch (Exception e) {
             log.warn("Error while sending request for download event at {} to Matomo", matomoRequest.getDownloadUrl());
         }
@@ -164,6 +165,9 @@ public class AnalyticsTrackerUtil {
     }
     public void setMatomoAuthToken(String matomoAuthToken) {
         this.matomoAuthToken = matomoAuthToken;
+    }
+    public void setMatomoApiURL(String matomoApiURL) {
+        this.matomoApiURL = matomoApiURL;
     }
 
     public static class AnalyticsUserData {

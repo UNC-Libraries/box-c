@@ -118,6 +118,11 @@
           <version>${mockito.junit.version}</version>
       </dependency>
       <dependency>
+          <groupId>com.github.tomakehurst</groupId>
+          <artifactId>wiremock-jre8</artifactId>
+          <scope>test</scope>
+      </dependency>
+      <dependency>
           <groupId>edu.unc.lib.cdr</groupId>
           <artifactId>common-utils</artifactId>
           <type>test-jar</type>
