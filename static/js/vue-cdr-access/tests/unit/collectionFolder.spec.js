@@ -1,4 +1,4 @@
-import { mount } from '@vue/test-utils'
+import {mount, RouterLinkStub} from '@vue/test-utils'
 import { createRouter, createWebHistory } from 'vue-router';
 import collectionFolder from '@/components/full_record/collectionFolder.vue';
 import displayWrapper from '@/components/displayWrapper.vue';
@@ -119,7 +119,10 @@ describe('collectionFolder.vue', () => {
 
         wrapper = mount(collectionFolder, {
             global: {
-                plugins: [i18n, router, store]
+                plugins: [i18n, router, store],
+                stubs: {
+                    RouterLink: RouterLinkStub
+                }
             },
             props: {
                 recordData: recordData

@@ -1,9 +1,10 @@
-import { mount, flushPromises } from '@vue/test-utils';
+import { shallowMount, RouterLinkStub } from '@vue/test-utils';
 import { createRouter, createWebHistory } from 'vue-router';
 import advancedSearch from '@/components/advancedSearch.vue';
 import displayWrapper from "@/components/displayWrapper.vue";
 import {createI18n} from "vue-i18n";
 import translations from "@/translations";
+import store from '@/store';
 import moxios from "moxios";
 
 let wrapper, router;
@@ -33,9 +34,12 @@ describe('advancedSearch.vue', () => {
                 }
             ]
         });
-        wrapper = mount(advancedSearch, {
+        wrapper = shallowMount(advancedSearch, {
             global: {
-                plugins: [i18n, router]
+                plugins: [i18n, router, store],
+                stubs: {
+                    RouterLink: RouterLinkStub
+                }
             }
         });
     });

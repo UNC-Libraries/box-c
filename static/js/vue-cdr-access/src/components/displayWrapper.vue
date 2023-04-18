@@ -2,6 +2,7 @@
 Top level component for full record pages with searching/browsing, including AdminUnits, Collections, and Folders.
 -->
 <template>
+    <header-small/>
     <div>
         <div v-if="is_page_loading" class="loading-icon">
             <img :src="nonVueStaticImageUrl('ajax-loader-lg.gif')" alt="data loading icon">
@@ -55,6 +56,7 @@ Top level component for full record pages with searching/browsing, including Adm
     import collectionFolder from '@/components/full_record/collectionFolder.vue';
     import fileRecord from '@/components/full_record/fileRecord.vue';
     import galleryDisplay from '@/components/galleryDisplay.vue';
+    import headerSmall from '@/components/header/headerSmall.vue';
     import listDisplay from '@/components/listDisplay.vue';
     import facets from "@/components/facets.vue";
     import pagination from '@/components/pagination.vue';
@@ -75,12 +77,21 @@ Top level component for full record pages with searching/browsing, including Adm
         watch: {
             '$route.query': {
                 handler(d) {
-                    if (!this.is_page_loading) {
+                    if (!this.is_page_loading && this.container_info.resourceType !== 'File'
+                        && this.container_info.resourceType !== 'Work') {
                         this.retrieveSearchResults();
                     }
                 },
                 deep: true
-            }
+            },
+            '$route.path': {
+                handler(d) {
+                    if (!this.is_page_loading) {
+                        this.getBriefObject();
+                    }
+                },
+                deep: true
+            },
         },
 
         components: {
@@ -92,6 +103,7 @@ Top level component for full record pages with searching/browsing, including Adm
             collectionFolder,
             fileRecord,
             galleryDisplay,
+            headerSmall,
             listDisplay,
             pagination,
             viewType,

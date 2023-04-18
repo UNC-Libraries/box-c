@@ -1,4 +1,4 @@
-import { shallowMount } from '@vue/test-utils'
+import { shallowMount, RouterLinkStub } from '@vue/test-utils'
 import { createRouter, createWebHistory } from 'vue-router';
 import breadCrumbs from '@/components/full_record/breadCrumbs.vue';
 import displayWrapper from '@/components/displayWrapper.vue';
@@ -74,7 +74,10 @@ describe('breadCrumbs.vue', () => {
 
         wrapper = shallowMount(breadCrumbs, {
             global: {
-                plugins: [i18n, router]
+                plugins: [i18n, router],
+                stubs: {
+                    RouterLink: RouterLinkStub
+                }
             },
             props: {
                 objectPath: objectPath

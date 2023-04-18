@@ -2,6 +2,7 @@
 Top level component wrapper for search pages
 -->
 <template>
+    <header-small/>
     <div>
         <div class="search-query-text">
             Search results for "{{ $route.query.anywhere }}"
@@ -40,6 +41,7 @@ Top level component wrapper for search pages
     import browseSort from "@/components/browseSort.vue";
     import clearFilters from "@/components/clearFilters.vue";
     import facets from "@/components/facets.vue";
+    import headerSmall from "@/components/header/headerSmall.vue";
     import listDisplay from "@/components/listDisplay.vue";
     import pagination from "@/components/pagination.vue";
     import imageUtils from "../mixins/imageUtils";
@@ -50,7 +52,7 @@ Top level component wrapper for search pages
     export default {
         name: 'searchWrapper',
 
-        components: {browseSort, clearFilters, facets, listDisplay, pagination},
+        components: {browseSort, clearFilters, facets, headerSmall, listDisplay, pagination},
 
         mixins: [imageUtils, routeUtils],
 

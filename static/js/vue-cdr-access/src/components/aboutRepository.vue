@@ -1,4 +1,5 @@
 <template>
+    <header-small/>
     <div id="about-repo" class="content-wrap">
         <div class="contentarea">
             <h2>About this Repository</h2>
@@ -84,8 +85,12 @@
 </template>
 
 <script>
+import headerSmall from "@/components/header/headerSmall.vue";
+
 export default {
     name: "aboutRepository",
+
+    components: {headerSmall},
 
     head() {
         return {

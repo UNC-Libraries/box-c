@@ -1,4 +1,4 @@
-import { shallowMount } from '@vue/test-utils'
+import { shallowMount, RouterLinkStub } from '@vue/test-utils'
 import { createRouter, createWebHistory } from 'vue-router';
 import neighborList from '@/components/full_record/neighborList.vue';
 import displayWrapper from '@/components/displayWrapper.vue';
@@ -464,7 +464,10 @@ describe('neighborList.vue', () => {
 
         wrapper = shallowMount(neighborList, {
             global: {
-                plugins: [i18n, router]
+                plugins: [i18n, router],
+                stubs: {
+                    RouterLink: RouterLinkStub,
+                }
             },
             props: {
                 currentRecordId: 'e2f0d544-4f36-482c-b0ca-ba11f1251c01',
@@ -494,7 +497,8 @@ describe('neighborList.vue', () => {
     });
 
     it("displays a url to go to the related item", () => {
-        expect(wrapper.find('.relateditem p a').attributes('href')).toEqual('record/7d6c30fe-ca72-4362-931d-e9fe28a8ec83');
+        expect(wrapper.find('.relateditem p').findComponent(RouterLinkStub).props().to)
+            .toEqual('/record/7d6c30fe-ca72-4362-931d-e9fe28a8ec83');
     });
 
     it("adds a deleted class for deleted items", () => {

@@ -1,4 +1,5 @@
 <template>
+    <header-small/>
     <div>
         <h2>{{ $t('adv_search.advanced') }}</h2>
         <form id="advanced-search-form">
@@ -146,9 +147,12 @@
 
 <script>
 import get from 'axios';
+import headerSmall from "@/components/header/headerSmall.vue";
 
 export default {
     name: "advancedSearch",
+
+    components: {headerSmall},
 
     data() {
         return {

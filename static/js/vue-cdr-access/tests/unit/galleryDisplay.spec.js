@@ -1,4 +1,4 @@
-import { shallowMount } from '@vue/test-utils'
+import { shallowMount, RouterLinkStub } from '@vue/test-utils'
 import galleryDisplay from '@/components/galleryDisplay.vue';
 
 let wrapper;
@@ -32,6 +32,11 @@ let records = [...record_list, ...record_list, ...record_list, ...record_list]; 
 describe('galleryDisplay.vue', () => {
     beforeEach(() => {
         wrapper = shallowMount(galleryDisplay, {
+            global: {
+                stubs: {
+                    RouterLink: RouterLinkStub
+                }
+            },
             props: {
                 recordList: records
             },

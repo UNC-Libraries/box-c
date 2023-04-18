@@ -1,8 +1,10 @@
-import { mount } from '@vue/test-utils';
+import {shallowMount, RouterLinkStub} from '@vue/test-utils';
 import { createRouter, createWebHistory } from 'vue-router';
 import frontPage from '@/components/frontPage.vue';
+import displayWrapper from "@/components/displayWrapper.vue";
 import {createI18n} from "vue-i18n";
 import translations from "@/translations";
+import store from '@/store';
 import moxios from "moxios";
 
 let wrapper, router;
@@ -24,12 +26,20 @@ describe('frontPage.vue', () => {
                     path: '/',
                     name: 'frontPage',
                     component: frontPage
+                },
+                { // Add route to avoid test warnings
+                    path: '/record/:uuid',
+                    name: 'displayRecords',
+                    component: displayWrapper
                 }
             ]
         });
-        wrapper = mount(frontPage, {
+        wrapper = shallowMount(frontPage, {
             global: {
-                plugins: [i18n, router]
+                plugins: [i18n, router, store],
+                stubs: {
+                    RouterLink: RouterLinkStub
+                }
             }
         });
     });

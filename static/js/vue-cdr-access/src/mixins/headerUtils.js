@@ -1,6 +1,12 @@
 import { mapState } from 'vuex';
 
 export default {
+    data() {
+        return {
+            mobileMenuOpen: false
+        }
+    },
+
     computed: {
         ...mapState([
             'isLoggedIn',
@@ -36,6 +42,12 @@ export default {
 
         adminAccess() {
             return this.viewAdmin;
+        }
+    },
+
+    methods: {
+        toggleMobileMenu() {
+            this.mobileMenuOpen = !this.mobileMenuOpen;
         }
     }
 }

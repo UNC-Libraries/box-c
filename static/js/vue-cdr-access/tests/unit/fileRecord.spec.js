@@ -1,4 +1,4 @@
-import { shallowMount } from '@vue/test-utils'
+import { shallowMount, RouterLinkStub } from '@vue/test-utils'
 import { createRouter, createWebHistory } from 'vue-router';
 import fileRecord from '@/components/full_record/fileRecord.vue';
 import displayWrapper from '@/components/displayWrapper.vue';
@@ -359,7 +359,10 @@ describe('fileRecord.vue', () => {
 
         wrapper = shallowMount(fileRecord, {
             global: {
-                plugins: [i18n, router]
+                plugins: [i18n, router],
+                stubs: {
+                    RouterLink: RouterLinkStub
+                }
             },
             props: {
                 recordData: record
@@ -377,6 +380,6 @@ describe('fileRecord.vue', () => {
 
     it('contains a link to its parent work', () => {
         const parent_work = wrapper.find('#parent-url');
-        expect(parent_work.attributes('href')).toEqual(`/record/${record.containingWorkUUID}`);
+        expect(parent_work.findComponent(RouterLinkStub).props().to).toEqual(`/record/${record.containingWorkUUID}`);
     })
 });

@@ -1,8 +1,8 @@
-import { mount } from '@vue/test-utils';
-import dcrHeader from '@/components/dcrHeader.vue';
+import {mount, RouterLinkStub} from '@vue/test-utils';
+import dcrHeader from '@/components/header/headerSmall.vue';
 
 let wrapper;
-describe('dcrHeader.vue', () => {
+describe('headerSmall.vue', () => {
     const $store = {
         state: {
             isLoggedIn: false,
@@ -17,27 +17,17 @@ describe('dcrHeader.vue', () => {
             global: {
                 mocks: {
                     $store
+                },
+                stubs: {
+                    RouterLink: RouterLinkStub
                 }
             }
         });
     });
 
-    it("loads the dcrHeader", () => {
+    it("loads the small header", () => {
         expect(wrapper.find('header').exists()).toBe(true);
         expect(wrapper.html()).toContain('header');
-    });
-
-    it("loads headerHome on the home page", async () => {
-        await wrapper.setProps({
-            isHomepage: true
-        });
-        expect(wrapper.html()).toContain('logo-row');
-    });
-
-    it("loads headerSmall on the non-home pages", async () => {
-        await wrapper.setProps({
-            isHomepage: false
-        });
         expect(wrapper.html()).toContain('logo-row-small');
     });
 
@@ -62,6 +52,9 @@ describe('dcrHeader.vue', () => {
             global: {
                 mocks: {
                     $store
+                },
+                stubs: {
+                    RouterLink: RouterLinkStub
                 }
             }
         });
@@ -82,6 +75,9 @@ describe('dcrHeader.vue', () => {
             global: {
                 mocks: {
                     $store
+                },
+                stubs: {
+                    RouterLink: RouterLinkStub
                 }
             }
         });

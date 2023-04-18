@@ -1,5 +1,5 @@
 <template>
-    <a :href="currentPage" :title="tooltip" :aria-label="ariaText" class="thumbnail" :class="imgClasses">
+    <router-link :to="currentPage" :title="tooltip" :aria-label="ariaText" class="thumbnail" :class="imgClasses">
         <div class="thumbnail-placeholder">
             <span v-if="src === ''" class="thumbnail-content-type">{{ contentType }}</span>
         </div>
@@ -14,7 +14,7 @@
                 <i class="fas fa-stack-1x foreground" :class="badgeIcon"></i>
             </div>
         </div>
-    </a>
+    </router-link>
 </template>
 
 <script>
@@ -97,7 +97,7 @@ export default {
         },
 
         currentPage() {
-            return window.location;
+            return `/record/${this.objectData.id}`;
         },
 
         src() {

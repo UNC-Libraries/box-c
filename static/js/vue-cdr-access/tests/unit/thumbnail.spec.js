@@ -1,4 +1,4 @@
-import { mount } from '@vue/test-utils'
+import { mount, RouterLinkStub } from '@vue/test-utils'
 import { createRouter, createWebHistory } from 'vue-router';
 import thumbnail from '@/components/full_record/thumbnail.vue';
 import displayWrapper from '@/components/displayWrapper.vue';
@@ -117,7 +117,10 @@ describe('thumbnail.vue', () => {
 
         wrapper = mount(thumbnail, {
             global: {
-                plugins: [i18n, router]
+                plugins: [i18n, router],
+                stubs: {
+                    RouterLink: RouterLinkStub
+                }
             },
             props: {
                 thumbnailData: recordData
@@ -197,8 +200,8 @@ describe('thumbnail.vue', () => {
     });
 
     it('sets the url for the image', () => {
-        expect(wrapper.find('a').attributes('href'))
-            .toEqual('https://localhost/record/73bc003c-9603-4cd9-8a65-93a22520ef6a');
+        expect(wrapper.findComponent(RouterLinkStub).props().to)
+            .toEqual('/record/fc77a9be-b49d-4f4e-b656-1644c9e964fc');
     });
 
     it('has aria label text', () => {

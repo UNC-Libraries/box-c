@@ -65,7 +65,7 @@ export default {
         },
 
         parentUrl() {
-            return `record/${this.recordData.briefObject.parentCollectionId}`;
+            return `/record/${this.recordData.briefObject.parentCollectionId}`;
         }
     },
 
