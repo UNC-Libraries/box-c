@@ -1,7 +1,14 @@
+<!--
+Loads associated files of an object as a DataTable.
+Note, :key on <data-table> must be something that changes on update,
+so the table updates its contents when switching between records.
+The datatables component only watches for changes on its "data" prop, which we don't use. So we use "key" to
+force it to reload
+-->
 <template>
     <div class="child-records table-container" id="data-display">
         <h3>{{ $t('full_record.item_list') }} ({{ childCount }})</h3>
-        <data-table id="child-files" class="table is-striped is-bordered is-fullwidth"
+        <data-table :key="workId" id="child-files" class="table is-striped is-bordered is-fullwidth"
                     :ajax="ajaxOptions"
                     :columns="columns"
                     :options="tableOptions">
