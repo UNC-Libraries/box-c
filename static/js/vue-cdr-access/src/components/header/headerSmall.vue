@@ -36,7 +36,7 @@
                             <input name="query" type="text" id="hsearch_text" placeholder="Search all collections">
                             <button type="submit" class="button">Search</button>
                         </form>
-                        <router-link to="/advancedSearch">Advanced Search</router-link>
+                        <router-link class="navbar-item" to="/advancedSearch">Advanced Search</router-link>
                     </div>
                 </div>
             </div>
