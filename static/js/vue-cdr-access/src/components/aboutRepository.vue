@@ -1,4 +1,5 @@
 <template>
+    <header-small/>
     <div id="about-repo" class="content-wrap">
         <div class="contentarea">
             <h2>About this Repository</h2>
@@ -84,11 +85,46 @@
 </template>
 
 <script>
+import headerSmall from "@/components/header/headerSmall.vue";
+
 export default {
-    name: "aboutRepository"
+    name: "aboutRepository",
+
+    components: {headerSmall},
+
+    head() {
+        return {
+            title: 'About'
+        }
+    }
 }
 </script>
 
 <style scoped lang="scss">
+    #about-repo {
+        width: 95%;
 
+        h2 {
+            font-size: 1.2rem;
+            text-align: center;
+        }
+
+        h3 {
+            font-size: 1.1rem;
+        }
+
+        p, a {
+            font-size: .9rem;
+        }
+
+        ul {
+            list-style-type: disc;
+            margin-left: 15px;
+
+            li {
+                margin-left: 25px;
+                text-indent: unset;
+            }
+        }
+    }
 </style>

@@ -51,11 +51,6 @@ public class AdvancedSearchFormController extends AbstractErrorHandlingSearchCon
 
     @RequestMapping(path = "/advancedSearch", method = RequestMethod.GET)
     public String handleRequest(Model model, HttpServletRequest request) {
-        //If the user is coming to this servlet without any parameters set then send them to form.
-        if (request.getQueryString() == null || request.getQueryString().length() == 0) {
-            return "advancedSearch";
-        }
-
         // If the user has submitted the search form, then generate a search state
         // and forward them to the search servlet.
         SearchState searchState = searchStateFactory.createSearchStateAdvancedSearch(request.getParameterMap());

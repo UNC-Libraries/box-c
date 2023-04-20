@@ -1,4 +1,4 @@
-import { mount } from '@vue/test-utils'
+import {mount, RouterLinkStub} from '@vue/test-utils'
 import { createRouter, createWebHistory } from 'vue-router';
 import adminUnit from '@/components/full_record/adminUnit.vue';
 import displayWrapper from '@/components/displayWrapper.vue';
@@ -95,7 +95,10 @@ describe('adminUnit.vue', () => {
 
         wrapper = mount(adminUnit, {
             global: {
-                plugins: [i18n, router]
+                plugins: [i18n, router],
+                stubs: {
+                    RouterLink: RouterLinkStub
+                }
             },
             props: {
                 recordData: recordData

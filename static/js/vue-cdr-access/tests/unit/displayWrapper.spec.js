@@ -1,4 +1,4 @@
-import { mount, flushPromises } from '@vue/test-utils'
+import {mount, flushPromises, RouterLinkStub} from '@vue/test-utils'
 import { createRouter, createWebHistory } from 'vue-router';
 import displayWrapper from '@/components/displayWrapper.vue';
 import store from '@/store';
@@ -171,7 +171,10 @@ describe('displayWrapper.vue', () => {
         let data = {...default_data, ...data_overrides};
         wrapper = mount(displayWrapper, {
             global: {
-                plugins: [router, store, i18n]
+                plugins: [router, store, i18n],
+                stubs: {
+                    RouterLink: RouterLinkStub
+                }
             },
             data() {
                 return data;

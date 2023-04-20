@@ -25,7 +25,7 @@
                                         </li>
                                         <li v-if="fieldExists(recordData.briefObject.parentCollectionName)">
                                             <span class="has-text-weight-bold">{{ $t('display.collection') }}: </span>
-                                            <a class="parent-collection" :href="parentUrl">{{ recordData.briefObject.parentCollectionName }}</a>
+                                            <router-link class="parent-collection" :to="parentUrl">{{ recordData.briefObject.parentCollectionName }}</router-link>
                                         </li>
                                         <li v-if="fieldExists(recordData.briefObject.collectionId)">
                                             <span class="has-text-weight-bold">{{ $t('full_record.collection_id') }}: </span>
@@ -75,7 +75,7 @@
                             </div>
                         </div>
                     </div>
-                    <restricted-content :record-data="recordData" :username="this.username"></restricted-content>
+                    <restricted-content :record-data="recordData"></restricted-content>
                 </div>
             </div>
         </div>

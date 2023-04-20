@@ -1,4 +1,4 @@
-import { shallowMount } from '@vue/test-utils'
+import { shallowMount, RouterLinkStub } from '@vue/test-utils'
 import { createRouter, createWebHistory } from 'vue-router';
 import aggregateRecord from '@/components/full_record/aggregateRecord.vue';
 import displayWrapper from '@/components/displayWrapper.vue';
@@ -556,7 +556,10 @@ describe('aggregateRecord.vue', () => {
 
         wrapper = shallowMount(aggregateRecord, {
             global: {
-                plugins: [i18n, router]
+                plugins: [i18n, router],
+                stubs: {
+                    RouterLink: RouterLinkStub
+                }
             },
             props: {
                 recordData: record
@@ -601,6 +604,6 @@ describe('aggregateRecord.vue', () => {
     });
 
     it("sets a link to its parent collection", () => {
-        expect(wrapper.find('.parent-collection').attributes('href')).toEqual(`record/${record.briefObject.parentCollectionId}`);
+        expect(wrapper.find('.parent-collection').findComponent(RouterLinkStub).props().to).toEqual(`/record/${record.briefObject.parentCollectionId}`);
     });
 });

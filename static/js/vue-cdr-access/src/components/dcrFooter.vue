@@ -1,9 +1,9 @@
 <template>
     <footer>
         <p class="footer-menu container">
-            <a :href="homeUrl">Home</a> |
-            <a href="/collections">Browse Collections</a> |
-            <a href="/aboutRepository">About</a> |
+            <router-link to="/">Home</router-link> |
+            <router-link to="/collections">Browse Collections</router-link> |
+            <router-link to="/aboutRepository">About</router-link> |
             <a href="https://library.unc.edu/wilson/contact/">Contact Us</a> |
             <a href="https://library.unc.edu">Library Home</a> |
             <a href="https://library.unc.edu/privacy-policy/">Privacy Policy</a> |
@@ -14,13 +14,7 @@
 
 <script>
 export default {
-    name: "dcrFooter",
-    computed: {
-        homeUrl() {
-            let current_page = window.location;
-            return `https://${current_page.host}/`;
-        }
-    }
+    name: "dcrFooter"
 };
 </script>
 

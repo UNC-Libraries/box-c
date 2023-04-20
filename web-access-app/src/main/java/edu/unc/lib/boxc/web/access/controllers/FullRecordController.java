@@ -32,16 +32,12 @@ import org.jdom2.input.SAXBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.servlet.ModelAndView;
-import org.springframework.web.servlet.View;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -91,32 +87,6 @@ public class FullRecordController extends AbstractErrorHandlingSearchController 
     private XSLViewResolver xslViewResolver;
     @Autowired
     private RepositoryObjectLoader repositoryObjectLoader;
-
-    @GetMapping("/{pid}")
-    public ModelAndView handleRequest(@PathVariable("pid") String pid, Model model, HttpServletRequest request) {
-        String normalizedPid = normalizePid(pid);
-        // Permanently redirect to the normalized PID
-        if (!normalizedPid.equals(pid)) {
-            request.setAttribute(View.RESPONSE_STATUS_ATTRIBUTE, HttpStatus.MOVED_PERMANENTLY);
-            return new ModelAndView("redirect:/record/" + normalizedPid, model.asMap());
-        }
-        return new ModelAndView(getFullRecord(pid, model, request));
-    }
-
-    @GetMapping
-    public ModelAndView handleOldRequest(@RequestParam("id") String id, Model model, HttpServletRequest request) {
-        String normalizedPid = normalizePid(id);
-        // Permanently redirect to current syntax
-        request.setAttribute(View.RESPONSE_STATUS_ATTRIBUTE, HttpStatus.MOVED_PERMANENTLY);
-        return new ModelAndView("redirect:/record/" + normalizedPid, model.asMap());
-    }
-
-    private String normalizePid(String pid) {
-        if (pid == null) {
-            return null;
-        }
-        return pid.trim().replaceFirst("^uuid:", "");
-    }
 
     @GetMapping("/{pid}/metadataView")
     @ResponseBody
@@ -168,102 +138,6 @@ public class FullRecordController extends AbstractErrorHandlingSearchController 
         return fullObjectView;
     }
 
-    public String getFullRecord(String pidString, Model model, HttpServletRequest request) {
-        PID pid = PIDs.get(pidString);
-
-        AccessGroupSet principals = getAgentPrincipals().getPrincipals();
-        aclService.assertHasAccess("Insufficient permissions to access full record for " + pidString,
-                pid, principals, Permission.viewMetadata);
-
-        // Retrieve the object's record from Solr
-        SimpleIdRequest idRequest = new SimpleIdRequest(pid, principals);
-        ContentObjectRecord briefObject = queryLayer.getObjectById(idRequest);
-
-        if (briefObject == null) {
-            throw new NotFoundException("No record found for " + pid.getId());
-        }
-
-        // Get path information.
-        model.addAttribute("briefObject", briefObject);
-
-        // Get additional information depending on the type of object since the user has access
-        String resourceType = briefObject.getResourceType();
-        if (!ResourceType.File.nameEquals(resourceType)) {
-            briefObject.getCountMap().put("child", childrenCountService.getChildrenCount(briefObject, principals));
-        }
-
-        // Get parent id
-        if (ResourceType.File.nameEquals(resourceType)) {
-            String[] ancestors = briefObject.getAncestorIds().split("/");
-            model.addAttribute("containingWorkUUID", ancestors[ancestors.length - 1]);
-        }
-
-        if (ResourceType.Folder.nameEquals(resourceType) ||
-                ResourceType.File.nameEquals(resourceType) ||
-                ResourceType.Work.nameEquals(resourceType) ||
-                ResourceType.Collection.nameEquals(resourceType)) {
-            String collectionId = collectionIdService.getCollectionId(briefObject);
-            String faUrl = findingAidUrlService.getFindingAidUrl(collectionId);
-            model.addAttribute("collectionId", collectionId);
-            model.addAttribute("findingAidUrl", faUrl);
-
-            // Get digital exhibits found on a collection
-            Map<String, String> exhibitList = getExhibitList(briefObject, principals);
-            if (exhibitList != null) {
-                model.addAttribute("exhibits", exhibitList);
-            }
-        }
-
-        if (ResourceType.File.nameEquals(briefObject.getResourceType()) ||
-                ResourceType.Work.nameEquals(briefObject.getResourceType())) {
-            List<ContentObjectRecord> neighbors = neighborService.getNeighboringItems(briefObject,
-                    searchSettings.maxNeighborResults, principals);
-            accessCopiesService.populateThumbnailIds(neighbors, principals, true);
-            model.addAttribute("neighborList", neighbors);
-        }
-
-        if (ResourceType.Work.nameEquals(briefObject.getResourceType())) {
-            String viewerType = null;
-            String viewerPid = null;
-            boolean imageViewerNeeded = accessCopiesService.hasViewableFiles(briefObject, principals);
-            if (imageViewerNeeded) {
-                viewerType = "uv";
-            } else {
-                // Check for PDF to display
-                viewerPid = accessCopiesService.getDatastreamPid(briefObject, principals, PDF_MIMETYPE_REGEX);
-                if (viewerPid != null) {
-                    viewerType = "pdf";
-                } else {
-                    // Check for viewable audio file
-                    viewerPid = accessCopiesService.getDatastreamPid(briefObject, principals, AUDIO_MIMETYPE_REGEX);
-                    if (viewerPid != null) {
-                        viewerType = "audio";
-                    }
-                }
-            }
-
-            model.addAttribute("viewerType", viewerType);
-            model.addAttribute("viewerPid", viewerPid);
-
-            // Get the file to download
-            String dataFileUrl = accessCopiesService.getDownloadUrl(briefObject, principals);
-            model.addAttribute("dataFileUrl", dataFileUrl);
-        }
-
-        accessCopiesService.populateThumbnailId(briefObject, principals, true);
-
-        List<String> objectStatus = briefObject.getStatus();
-        boolean isMarkedForDeletion = false;
-
-        if (objectStatus != null) {
-            isMarkedForDeletion = objectStatus.contains(MARKED_FOR_DELETION);
-        }
-        model.addAttribute("markedForDeletion", isMarkedForDeletion);
-
-        model.addAttribute("pageSubtitle", briefObject.getTitle());
-        return "fullRecord";
-    }
-
     /**
      * JSON representation of full record
      * Can remove the non-JSON version of the full record once all JSP files are ported over
@@ -285,9 +159,6 @@ public class FullRecordController extends AbstractErrorHandlingSearchController 
         if (briefObject == null) {
             throw new NotFoundException("No record found for " + pid.getId());
         }
-
-        // Add username
-        response.addHeader("username", getAgentPrincipals().getUsername());
 
         // Get additional information depending on the type of object since the user has access
         String resourceType = briefObject.getResourceType();

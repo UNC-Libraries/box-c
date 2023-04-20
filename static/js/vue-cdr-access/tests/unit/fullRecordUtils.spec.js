@@ -1,4 +1,4 @@
-import { mount } from '@vue/test-utils'
+import {mount, RouterLinkStub} from '@vue/test-utils'
 import { createRouter, createWebHistory } from 'vue-router';
 import adminUnit from '@/components/full_record/adminUnit.vue';
 import displayWrapper from '@/components/displayWrapper.vue';
@@ -103,7 +103,10 @@ describe('fullrecordUtils', () => {
 
         wrapper = mount(adminUnit, {
             global: {
-                plugins: [i18n, router]
+                plugins: [i18n, router],
+                stubs: {
+                    RouterLink: RouterLinkStub
+                }
             },
             props: {
                 recordData: recordData
@@ -181,12 +184,6 @@ describe('fullrecordUtils', () => {
             recordData: canViewOriginals
         });
         expect(wrapper.vm.hasGroupRole('canViewOriginals', 'authenticated')).toBe(true);
-    });
-
-    it('determines whether a user is logged in', async () => {
-        expect(wrapper.vm.isLoggedIn).toEqual(false);
-        await wrapper.setProps({ username: 'test_user' });
-        expect(wrapper.vm.isLoggedIn).toEqual(true);
     });
 
     it('formats string dates', () => {

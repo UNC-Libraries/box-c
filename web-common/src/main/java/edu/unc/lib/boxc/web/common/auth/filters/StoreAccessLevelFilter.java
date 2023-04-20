@@ -79,6 +79,7 @@ public class StoreAccessLevelFilter extends OncePerRequestFilter implements Serv
         }
 
         boolean canViewAdmin = accessLevel != null && accessLevel.isViewAdmin();
+        response.setHeader("can-view-admin", String.valueOf(canViewAdmin));
         // Add the admin_access group for the current user
         if (canViewAdmin) {
             AccessGroupSet groups = GroupsThreadStore.getGroups();

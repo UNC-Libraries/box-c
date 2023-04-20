@@ -358,9 +358,19 @@ describe('restrictedContent.vue', () => {
             ]
         });
 
+        const $store = {
+            state: {
+                username: ''
+            },
+            commit: jest.fn()
+        }
+
         wrapper = mount(restrictedContent, {
             global: {
-                plugins: [i18n, router]
+                plugins: [i18n, router],
+                mocks: {
+                    $store
+                }
             },
             props: {
                 recordData: record
@@ -369,7 +379,24 @@ describe('restrictedContent.vue', () => {
     });
 
     it('does not show view options if a user is logged in', async () => {
-        await wrapper.setProps({ username: 'test_user' });
+        const $store = {
+            state: {
+                isLoggedIn: true,
+                username: 'test_user'
+            },
+            commit: jest.fn()
+        }
+        wrapper = mount(restrictedContent, {
+            global: {
+                plugins: [i18n, router],
+                mocks: {
+                    $store
+                }
+            },
+            props: {
+                recordData: record
+            }
+        });
         expect(wrapper.find('.restricted-access').exists()).toBe(false);
     });
 
@@ -430,14 +457,12 @@ describe('restrictedContent.vue', () => {
             everyone: 'canViewOriginals'
         }
         await wrapper.setProps({
-            recordData: updated_data,
-            username: ''
+            recordData: updated_data
         });
         expect(wrapper.find('.restricted-access').exists()).toBe(false);
     });
 
-    it('shows view options if a user is not logged in and access is restricted', async () => {
-        await wrapper.setProps({ username: '' });
+    it('shows view options if a user is not logged in and access is restricted', () => {
         expect(wrapper.find('.restricted-access').exists()).toBe(true);
         expect(wrapper.find('.restricted-access .login-link').exists()).toBe(true);
         expect(wrapper.find('.restricted-access .contact').exists()).toBe(true);
@@ -450,8 +475,7 @@ describe('restrictedContent.vue', () => {
             everyone: 'canViewMetadata'
         }
         await wrapper.setProps({
-            recordData: updated_data,
-            username: ''
+            recordData: updated_data
         });
         expect(wrapper.find('.restricted-access .login-link').exists()).toBe(false);
     });

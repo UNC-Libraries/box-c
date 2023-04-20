@@ -11,6 +11,14 @@ import get from 'axios';
 export default {
     name: 'metadataDisplay',
 
+    watch: {
+        uuid(d) {
+            if (this.canViewMetadata) {
+                this.loadMetadata();
+            }
+        }
+    },
+
     props: {
         canViewMetadata: {
             type: Boolean,

@@ -1,4 +1,4 @@
-import { shallowMount } from '@vue/test-utils'
+import {RouterLinkStub, shallowMount} from '@vue/test-utils'
 import { createRouter, createWebHistory } from 'vue-router';
 import fileList from '@/components/full_record/fileList.vue';
 import displayWrapper from '@/components/displayWrapper.vue';
@@ -28,7 +28,10 @@ describe('fileList.vue', () => {
 
         wrapper = shallowMount(fileList, {
             global: {
-                plugins: [i18n, router]
+                plugins: [i18n, router],
+                stubs: {
+                    RouterLink: RouterLinkStub
+                }
             },
 
             props: {

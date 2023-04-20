@@ -3,6 +3,7 @@ import modalMetadata from '@/components/modalMetadata.vue';
 import thumbnail from '@/components/full_record/thumbnail.vue';
 import isEmpty from 'lodash.isempty';
 import { formatInTimeZone } from 'date-fns-tz';
+import { mapState } from 'vuex';
 
 export default {
     components: { breadCrumbs, modalMetadata, thumbnail },
@@ -14,11 +15,15 @@ export default {
     },
 
     props: {
-        username: String,
         recordData: Object
     },
 
     computed: {
+        ...mapState([
+            'isLoggedIn',
+            'username'
+        ]),
+
         isDeleted() {
             if (this.recordData.markedForDeletion) {
                 return 'deleted';
@@ -50,10 +55,6 @@ export default {
             return `https://${current_page.host}/Shibboleth.sso/Login?target=${encodeURIComponent(current_page)}`;
         },
 
-        isLoggedIn() {
-            return this.username !== undefined && this.username !== '';
-        },
-
         hasGroups() {
             const group_roles = this.recordData.briefObject.groupRoleMap;
             return !(group_roles === undefined || isEmpty(group_roles));
@@ -64,7 +65,7 @@ export default {
         },
 
         parentUrl() {
-            return `record/${this.recordData.briefObject.parentCollectionId}`;
+            return `/record/${this.recordData.briefObject.parentCollectionId}`;
         }
     },
 

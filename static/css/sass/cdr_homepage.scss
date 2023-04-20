@@ -63,6 +63,7 @@ body {
 
   .info-btns {
     float: right;
+    padding-top: 13px;
 
     a {
       margin-left: 10px;
@@ -203,9 +204,6 @@ header {
       flex-shrink: 0;
       color: white;
       font-size: 16px;
-      &:hover, &:active {
-        color: $unc-navy;
-      }
     }
   }
 

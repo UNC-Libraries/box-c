@@ -8,7 +8,7 @@ Renders search results in a list view display format
                 <ul :class="{'margin-offset': isRecordBrowse}">
                     <li v-for="(record, index) in recordList" class="columns browseitem" :class="{stripe: index % 2 === 0}">
                         <div class="column is-2">
-                            <a :href="recordUrl(record.id, linkBrowseType)" :aria-label="linkLabel(record.title)" :class="{deleted: markedForDeletion(record)}">
+                            <router-link :to="recordUrl(record.id, linkBrowseType)" :aria-label="linkLabel(record.title)" :class="{deleted: markedForDeletion(record)}">
                                 <img v-if="thumbnailPresent(record.thumbnail_url)" :src="record.thumbnail_url"
                                      :alt="altText(record.title)" class="thumbnail thumbnail-size-large">
                                 <i v-else class="fa" :class="recordType(record.type)"></i>
@@ -28,16 +28,16 @@ Renders search results in a list view display format
                                         <i class="fa fa-lock fa-stack-1x foreground"></i>
                                     </div>
                                 </div>
-                            </a>
+                            </router-link>
                         </div>
                         <div class="column is-10">
                             <div class="result-title">
-                                <a :class="{deleted: markedForDeletion(record)}" :href="recordUrl(record.id, linkBrowseType)">{{ record.title }}</a>
+                                <router-link :class="{deleted: markedForDeletion(record)}" :to="recordUrl(record.id, linkBrowseType)">{{ record.title }}</router-link>
                                 <span v-if="record.type !== 'File'" class="item_container_count">{{ countDisplay(record.counts.child) }}</span>
                             </div>
                             <div><span class="has-text-weight-bold">{{ $t('display.date_deposited') }}:</span> {{ formatDate(record.added) }}</div>
                             <div v-if="record.objectPath.length >= 3 && record.type !== 'Collection'">
-                                <span class="has-text-weight-bold">{{ $t('display.collection') }}:</span> <a class="metadata-link" :href="recordUrl(record.objectPath[2].pid, linkBrowseType)">{{ collectionInfo(record.objectPath) }}</a>
+                                <span class="has-text-weight-bold">{{ $t('display.collection') }}:</span> <router-link class="metadata-link" :to="recordUrl(record.objectPath[2].pid, linkBrowseType)">{{ collectionInfo(record.objectPath) }}</router-link>
                             </div>
                             <div v-if="record.objectPath.length >= 3 && showCollection(record)">
                                 <p class="collection_id"><span class="has-text-weight-bold">{{ $t('display.collection_number') }}:</span> {{ record.objectPath[2].collectionId }}</p>

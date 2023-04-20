@@ -9,7 +9,7 @@
                                    :allows-full-access="allowsPublicAccess(neighbor)"
                                    size="small"></thumbnail>
                     </div>
-                    <p><a :href="fullRecordUrl(neighbor.id)">{{ truncateText(neighbor.title) }}</a></p>
+                    <p><router-link :to="fullRecordUrl(neighbor.id)">{{ truncateText(neighbor.title) }}</router-link></p>
                 </div>
             </template>
         </div>
@@ -35,7 +35,7 @@ export default {
 
     methods: {
         fullRecordUrl(neighbor_id) {
-            return `record/${neighbor_id}`;
+            return `/record/${neighbor_id}`;
         },
 
         neighborIsDeleted(status) {

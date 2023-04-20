@@ -7,10 +7,10 @@
                     <span>{{ path.name }}</span>
                 </template>
                 <template v-else-if="index <= 2 || breadcrumbSize <= 5 || (index === breadcrumbSize - 2)">
-                    <a v-if="index === 0" href="/collections">{{ $t('breadcrumbs.collections') }}</a>
+                    <router-link v-if="index === 0" to="/collections">{{ $t('breadcrumbs.collections') }}</router-link>
                     <template v-else>
                         <span class="quote">&raquo;</span>
-                        <a :href="shiftFacetUrl(path.pid)">{{ path.name }}</a>
+                        <router-link :to="shiftFacetUrl(path.pid)">{{ path.name }}</router-link>
                     </template>
                 </template>
                 <template v-else>
@@ -20,7 +20,7 @@
                     </template>
                     <template v-else>
                         <span class="full-crumb quote">&raquo;</span>
-                        <a :href="shiftFacetUrl(path.pid)" class="full-crumb">{{ path.name }}</a>
+                        <router-link :to="shiftFacetUrl(path.pid)" class="full-crumb">{{ path.name }}</router-link>
                     </template>
                 </template>
             </template>
@@ -54,7 +54,7 @@ export default {
 
     methods: {
         shiftFacetUrl(pid) {
-            return `${this.queryPath}/${pid}`;
+            return `/${this.queryPath}/${pid}`;
         },
 
         showFullCrumb() {

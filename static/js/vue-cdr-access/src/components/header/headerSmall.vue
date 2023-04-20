@@ -2,29 +2,29 @@
     <header>
         <div class="logo-row-small">
             <div class="logo-small container">
-                <a href="/">
-                    <img :src="'static/front/university-libraries-logo.png'" alt="University Libraries Logo">
+                <router-link to="/">
+                    <img :src="'/static/front/university-libraries-logo.png'" alt="University Libraries Logo">
                     <h1>Digital Collections Repository</h1>
-                </a>
+                </router-link>
                 <span class="info-btns">
                     <a href="https://library.unc.edu/wilson/contact/">Contact Us</a>
-                    <a v-if="isLoggedIn" :href="logoutUrl" class="navbar-item"><i class="fas fa-user"></i>&nbsp;&nbsp;Log out</a>
-                    <a v-else :href="loginUrl" class="navbar-item"><i class="fas fa-user"></i>&nbsp;&nbsp;Login</a>
+                    <a v-if="isLoggedIn" :href="logoutUrl"><i class="fas fa-user"></i>&nbsp;&nbsp;Log out</a>
+                    <a v-else :href="loginUrl"><i class="fas fa-user"></i>&nbsp;&nbsp;Login</a>
                 </span>
             </div>
         </div>
         <nav class="menu-row-small navbar" role="navigation">
             <div class="container">
                 <div class="navbar-brand">
-                    <a role="button" id="navbar-burger" class="navbar-burger burger" aria-label="menu" aria-expanded="false" data-target="navbar">
+                    <a @click="toggleMobileMenu()" role="button" id="navbar-burger" class="navbar-burger burger" aria-label="menu" :class="{open: mobileMenuOpen}"  :aria-expanded="mobileMenuOpen" data-target="navbar">
                         <span aria-hidden="true"></span>
                         <span aria-hidden="true"></span>
                         <span aria-hidden="true"></span>
                     </a>
                 </div>
-                <div id="navbar" class="menu navbar-menu">
-                    <a href="collections" class="navbar-item">Browse Collections</a>
-                    <a href="aboutRepository" class="navbar-item">What's Here?</a>
+                <div id="navbar" class="menu navbar-menu" :class="{'is-active': mobileMenuOpen}" >
+                    <router-link to="/collections" class="navbar-item">Browse Collections</router-link>
+                    <router-link to="/aboutRepository" class="navbar-item">What's Here?</router-link>
                     <a v-if="adminAccess" :href="jumpToAdminUrl" class="navbar-item" target="_blank">Admin</a>
                     <a class="navbar-item navbar-display" href="https://library.unc.edu/wilson/contact/">Contact Us</a>
                 </div>
@@ -36,7 +36,7 @@
                             <input name="query" type="text" id="hsearch_text" placeholder="Search all collections">
                             <button type="submit" class="button">Search</button>
                         </form>
-                        <a class="navbar-item" href="advancedSearch">Advanced Search</a>
+                        <router-link class="navbar-item" to="/advancedSearch">Advanced Search</router-link>
                     </div>
                 </div>
             </div>

@@ -34,11 +34,7 @@ export default {
     mixins: [fullRecordUtils],
 
     props: {
-        recordData: Object,
-        username: {
-            type: String,
-            default: ''
-        }
+        recordData: Object
     }
 }
 </script>

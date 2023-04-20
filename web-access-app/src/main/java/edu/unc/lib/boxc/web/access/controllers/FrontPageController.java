@@ -21,17 +21,11 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
  * @author bbpennel, krwong
  */
 @Controller
-@RequestMapping("/")
+@RequestMapping("/collectionStats")
 public class FrontPageController extends AbstractErrorHandlingSearchController {
     private static final Logger LOG = LoggerFactory.getLogger(FrontPageController.class);
 
-    @RequestMapping(method = RequestMethod.GET)
-    public String handleRequest() {
-        LOG.debug("In front page controller");
-        return "frontPage";
-    }
-
-    @RequestMapping(path = "/collectionStats", produces = APPLICATION_JSON_VALUE)
+    @RequestMapping(produces = APPLICATION_JSON_VALUE)
     public @ResponseBody String getCollectionStats() {
         var collectionStats = new HashMap<String, Object>();
         AccessGroupSet groups = GroupsThreadStore.getPrincipals();
