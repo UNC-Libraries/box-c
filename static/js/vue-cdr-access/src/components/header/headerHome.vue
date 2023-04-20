@@ -11,13 +11,13 @@
         <nav class="menu-row navbar" role="navigation">
             <div class="container">
                 <div class="navbar-brand">
-                    <a role="button" id="navbar-burger" class="navbar-burger burger" aria-label="menu" :aria-expanded="mobileMenuOpen" data-target="navbar">
+                    <a @click="toggleMobileMenu()" role="button" id="navbar-burger" class="navbar-burger burger" aria-label="menu" :class="{open: mobileMenuOpen}" :aria-expanded="mobileMenuOpen" data-target="navbar">
                         <span aria-hidden="true"></span>
                         <span aria-hidden="true"></span>
                         <span aria-hidden="true"></span>
                     </a>
                 </div>
-                <div id="navbar" class="menu navbar-menu">
+                <div id="navbar" class="menu navbar-menu" :class="{'is-active': mobileMenuOpen}">
                     <div class="navbar-start">
                         <router-link to="/collections" class="navbar-item">Browse Collections</router-link>
                         <router-link to="/aboutRepository" class="navbar-item">What's Here?</router-link>
