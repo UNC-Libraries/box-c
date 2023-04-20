@@ -24,6 +24,8 @@ if (document.getElementById('app') !== null && window.dcr_browse_records === und
         }
     });
 
+    const gaCode = import.meta.env.VITE_GA_CODE || '';
+
     window.dcr_browse_records = createApp({
         render() {
             return h(App);
@@ -35,7 +37,7 @@ if (document.getElementById('app') !== null && window.dcr_browse_records === und
         .use(i18n)
         .use(VueGtag, {
             config: {
-                id: ''
+                id: gaCode
             }
         }).mount('#app');
 }
