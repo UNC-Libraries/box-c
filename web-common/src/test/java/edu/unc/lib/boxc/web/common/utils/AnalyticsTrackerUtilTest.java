@@ -1,6 +1,8 @@
 package edu.unc.lib.boxc.web.common.utils;
 
+import com.github.tomakehurst.wiremock.client.VerificationException;
 import com.github.tomakehurst.wiremock.client.WireMock;
+import com.github.tomakehurst.wiremock.matching.StringValuePattern;
 import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
 import edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
@@ -17,14 +19,26 @@ import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import com.github.tomakehurst.wiremock.junit5.WireMockTest;
+import org.springframework.http.HttpStatus;
 
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 
+import java.io.UnsupportedEncodingException;
 import java.net.URI;
+import java.util.HashMap;
+import java.util.Map;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
+import static com.github.tomakehurst.wiremock.client.WireMock.containing;
+import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
+import static com.github.tomakehurst.wiremock.client.WireMock.getRequestedFor;
+import static com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
+import static edu.unc.lib.boxc.web.common.utils.StringFormatUtil.urlEncode;
+import static java.util.Map.entry;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
@@ -36,7 +50,7 @@ import static org.mockito.Mockito.when;
 /**
  * @author bbpennel
  */
-@WireMockTest
+@WireMockTest(httpPort = 46887)
 public class AnalyticsTrackerUtilTest {
     private final static String PID_UUID = "03114533-0017-4c83-b9d9-567b08fb2429";
     @Mock
@@ -57,7 +71,7 @@ public class AnalyticsTrackerUtilTest {
     private String repositoryHost = "boxy.example.com";
     private String trackingId = "trackme";
     private String authToken = "secret123456789qwertyasdfghzxcvb";
-    private String apiURL = "https://matomo.lib.unc.edu/matomo.php";
+    private String apiURL = "http://localhost:46887";
 
     @BeforeEach
     public void setup() {
@@ -79,8 +93,9 @@ public class AnalyticsTrackerUtilTest {
         when(cidCookie.getName()).thenReturn("_ga");
         when(cidCookie.getValue()).thenReturn("ga.1.123456789.1234567890");
         var uidCookie = mock(Cookie.class);
+        var userId = "5e462bae5cada463";
         when(uidCookie.getName()).thenReturn("_pk_id");
-        when(uidCookie.getValue()).thenReturn("5e462bae5cada463.1234567890");
+        when(uidCookie.getValue()).thenReturn(userId +".1234567890");
         when(request.getCookies()).thenReturn(new Cookie[]{ cidCookie, uidCookie });
         when(request.getHeader("User-Agent")).thenReturn("boxy-client");
         var urlBuffer = new StringBuffer("https://www.example.org");
@@ -90,15 +105,20 @@ public class AnalyticsTrackerUtilTest {
         when(contentObjectRecord.getTitle()).thenReturn("Test Work");
         when(contentObjectRecord.getParentCollection()).thenReturn("parent_coll");
         when(contentObjectRecord.getParentCollectionName()).thenReturn("Parent Collection");
-        stubFor(WireMock.get(apiURL).willReturn(aResponse().withStatus(HttpStatus.SC_OK.)));
+
+        var params = buildParams(userId, urlBuffer.toString(), true);
+
+        stubFor(WireMock.get(urlPathEqualTo("/")).withQueryParams(params)
+                .willReturn(aResponse().withStatus(HttpStatus.OK.value())));
 
         analyticsTrackerUtil.trackEvent(request, "testAction", pid, principals);
 
         verify(httpClient, timeout(1000).times(1)).execute(httpRequestCaptor.capture());
-
         var gaRequest = httpRequestCaptor.getValue();
         var gaUri = gaRequest.getURI();
         assertGaQueryIsCorrect(gaUri, true);
+
+        assertMatomoQueryIsCorrect(userId, urlBuffer.toString());
     }
 
     @Test
@@ -109,12 +129,18 @@ public class AnalyticsTrackerUtilTest {
         when(contentObjectRecord.getTitle()).thenReturn("Test Work2");
         when(contentObjectRecord.getParentCollection()).thenReturn(null);
         var uidCookie = mock(Cookie.class);
+        var userId = "5e462bae5cada463";
         when(uidCookie.getName()).thenReturn("_pk_id");
-        when(uidCookie.getValue()).thenReturn("5e462bae5cada463.1234567890");
+        when(uidCookie.getValue()).thenReturn(userId + ".1234567890");
         when(request.getCookies()).thenReturn(new Cookie[]{ uidCookie });
         when(request.getHeader("User-Agent")).thenReturn("boxy-client");
         var urlBuffer = new StringBuffer("https://www.example.org");
         when(request.getRequestURL()).thenReturn(urlBuffer);
+
+        var params = buildParams(userId, urlBuffer.toString(), false);
+
+        stubFor(WireMock.get(urlPathEqualTo("/")).withQueryParams(params)
+                .willReturn(aResponse().withStatus(HttpStatus.OK.value())));
 
         analyticsTrackerUtil.trackEvent(request, "testAction", pid, principals);
 
@@ -183,7 +209,51 @@ public class AnalyticsTrackerUtilTest {
         }
     }
 
-    private void assertMatomoQueryIsCorrect(String matomoQuery) {
+    private void assertMatomoQueryIsCorrect(String userId, String urlBuffer) throws UnsupportedEncodingException {
+        var url = urlEncode(urlBuffer);
+        for (int i=0 ; i<100 ; i++) {
+            try {
+                Thread.sleep(10);
+                WireMock.verify(getRequestedFor(urlPathEqualTo("/"))
+                        .withQueryParam("_id", equalTo(userId))
+                        .withQueryParam("action_name", equalTo("download"))
+                        .withQueryParam("cip", equalTo("0.0.0.0"))
+                        .withQueryParam("idsite", equalTo("3"))
+                        .withQueryParam("token_auth", equalTo(urlEncode(authToken)))
+                        .withQueryParam("ua", equalTo("boxy-client"))
+                        .withQueryParam("url", equalTo(url))
+                        .withQueryParam("download", equalTo(url))
+                        .withQueryParam("e_a", equalTo("download"))
+                        .withQueryParam("e_c", equalTo("Parent+Collection"))
+                );
+                return;
+            } catch (VerificationException | InterruptedException ignored) {
+            }
+        }
+        throw new VerificationException("The query was not correct");
+    }
 
+    Map<String, StringValuePattern> buildParams(String userId, String urlBuffer, boolean withCollection) throws UnsupportedEncodingException {
+        Map<String, StringValuePattern> params = new HashMap<>();
+        params.put("_id", equalTo(userId));
+        params.put("action_name", equalTo("download"));
+        params.put("idsite", equalTo("3"));
+        params.put("token_auth", equalTo(urlEncode(authToken)));
+        params.put("ua", equalTo("boxy-client"));
+        params.put("url", equalTo(urlEncode(urlBuffer)));
+        params.put("download", equalTo(urlEncode(urlBuffer)));
+        params.put("e_a", equalTo("download"));
+
+
+        if (withCollection) {
+            params.put("cip", equalTo("0.0.0.0"));
+            params.put("e_c", equalTo("Parent+Collection"));
+            params.put("e_n", equalTo("Test+Work|http://example.com/rest/content/03/11/45/33/03114533-0017-4c83-b9d9-567b08fb2429"));
+        } else {
+            params.put("cip", equalTo("1.1.1.1"));
+            params.put("e_c", equalTo("(no+collection)"));
+            params.put("e_n", equalTo("Test+Work2|http://example.com/rest/content/03/11/45/33/03114533-0017-4c83-b9d9-567b08fb2429"));
+        }
+        return params;
     }
 }
