@@ -45,8 +45,7 @@ public class AnalyticsTrackerUtil {
     protected static final String DEFAULT_CID = "35009a79-1a05-49d7-b876-2b884d0f825b";
     // Google analytics measurement API url
     private static final String GA_URL = "https://www.google-analytics.com/collect";
-    private static final int MATOMO_SITE_ID = 3;
-    private static final String MATOMO_ACTION = "download";
+    public static final String MATOMO_ACTION = "Downloaded";
 
     // Google analytics tracking id
     private String gaTrackingID;
@@ -56,6 +55,7 @@ public class AnalyticsTrackerUtil {
     private String repositoryHost;
     private String matomoAuthToken;
     private String matomoApiURL;
+    private int matomoSiteID;
     private SolrSearchService solrSearchService;
 
     public void setHttpClientConnectionManager(HttpClientConnectionManager manager) {
@@ -118,11 +118,10 @@ public class AnalyticsTrackerUtil {
 
     private MatomoRequest buildMatomoRequest(String url, AnalyticsUserData userData, String parentCollection, String label) throws UnsupportedEncodingException {
         return MatomoRequest.builder()
-                .siteId(MATOMO_SITE_ID)
+                .siteId(matomoSiteID)
                 .visitorId(userData.uid)
                 .actionUrl(urlEncode(url))
-                .actionName(urlEncode(MATOMO_ACTION))
-                .downloadUrl(urlEncode(url))
+                .actionName(urlEncode(parentCollection + " / " + MATOMO_ACTION))
                 .eventCategory(urlEncode(parentCollection))
                 .eventAction(urlEncode(MATOMO_ACTION))
                 .eventName(urlEncode(label))
@@ -168,6 +167,10 @@ public class AnalyticsTrackerUtil {
     }
     public void setMatomoApiURL(String matomoApiURL) {
         this.matomoApiURL = matomoApiURL;
+    }
+
+    public void setMatomoSiteID(int matomoSiteID) {
+        this.matomoSiteID = matomoSiteID;
     }
 
     public static class AnalyticsUserData {

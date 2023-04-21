@@ -70,6 +70,7 @@ public class AnalyticsTrackerUtilTest {
     private String apiURL = "http://localhost:46887";
     private String userId = "5e462bae5cada463";
     private StringBuffer urlBuffer = new StringBuffer("https://www.example.org");
+    private String url = "http://example.com/rest/content/03/11/45/33/03114533-0017-4c83-b9d9-567b08fb2429";
 
     @BeforeEach
     public void setup() {
@@ -103,9 +104,9 @@ public class AnalyticsTrackerUtilTest {
         when(contentObjectRecord.getParentCollectionName()).thenReturn("Parent Collection");
 
         var stringParams = buildStringParams(true);
-        var params = buildPatternParams(stringParams);
+        var expectedParams = buildPatternParams(stringParams);
 
-        stubFor(WireMock.get(urlPathEqualTo("/")).withQueryParams(params)
+        stubFor(WireMock.get(urlPathEqualTo("/")).withQueryParams(expectedParams)
                 .willReturn(aResponse().withStatus(HttpStatus.OK.value())));
 
         analyticsTrackerUtil.trackEvent(request, "testAction", pid, principals);
@@ -115,7 +116,7 @@ public class AnalyticsTrackerUtilTest {
         var gaUri = gaRequest.getURI();
         assertGaQueryIsCorrect(gaUri, true);
 
-        assertMatomoQueryIsCorrect(params);
+        assertMatomoQueryIsCorrect(expectedParams);
     }
 
     @Test
@@ -133,9 +134,9 @@ public class AnalyticsTrackerUtilTest {
         when(request.getRequestURL()).thenReturn(urlBuffer);
 
         var stringParams = buildStringParams(false);
-        var params = buildPatternParams(stringParams);
+        var expectedParams = buildPatternParams(stringParams);
 
-        stubFor(WireMock.get(urlPathEqualTo("/")).withQueryParams(params)
+        stubFor(WireMock.get(urlPathEqualTo("/")).withQueryParams(expectedParams)
                 .willReturn(aResponse().withStatus(HttpStatus.OK.value())));
 
         analyticsTrackerUtil.trackEvent(request, "testAction", pid, principals);
@@ -146,7 +147,7 @@ public class AnalyticsTrackerUtilTest {
         var gaUri = gaRequest.getURI();
         assertGaQueryIsCorrect(gaUri, false);
 
-        assertMatomoQueryIsCorrect(params);
+        assertMatomoQueryIsCorrect(expectedParams);
     }
 
     @Test
@@ -198,12 +199,12 @@ public class AnalyticsTrackerUtilTest {
             assertTrue(gaQuery.contains("&cid=123456789.1234567890"));
             assertTrue(gaQuery.contains("&ec=Parent+Collection"));
             assertTrue(gaQuery.contains("&uip=0.0.0.0"));
-            assertTrue(gaQuery.contains("&el=Test+Work|http://example.com/rest/content/03/11/45/33/03114533-0017-4c83-b9d9-567b08fb2429"));
+            assertTrue(gaQuery.contains("&el=Test+Work|" + url));
         } else {
             assertTrue(gaQuery.contains("&cid=" + AnalyticsTrackerUtil.DEFAULT_CID));
             assertTrue(gaQuery.contains("&ec=(no+collection)"));
             assertTrue(gaQuery.contains("&uip=1.1.1.1"));
-            assertTrue(gaQuery.contains("&el=Test+Work2|http://example.com/rest/content/03/11/45/33/03114533-0017-4c83-b9d9-567b08fb2429"));
+            assertTrue(gaQuery.contains("&el=Test+Work2|" + url));
         }
     }
 
@@ -219,7 +220,6 @@ public class AnalyticsTrackerUtilTest {
                         .withQueryParam("token_auth", params.get("token_auth"))
                         .withQueryParam("ua", params.get("ua"))
                         .withQueryParam("url", params.get("url"))
-                        .withQueryParam("download", params.get("download"))
                         .withQueryParam("e_a", params.get("e_a"))
                         .withQueryParam("e_c", params.get("e_c"))
                 );
@@ -230,7 +230,7 @@ public class AnalyticsTrackerUtilTest {
         throw new VerificationException("The query was not correct");
     }
 
-    Map<String, StringValuePattern> buildPatternParams(Map<String, String> stringParams) {
+    private Map<String, StringValuePattern> buildPatternParams(Map<String, String> stringParams) {
         Map<String, StringValuePattern> params = new HashMap<>();
         for (String key : stringParams.keySet()) {
             params.put(key, equalTo(stringParams.get(key)));
@@ -239,25 +239,29 @@ public class AnalyticsTrackerUtilTest {
         return params;
     }
 
-    Map<String, String> buildStringParams(boolean withCollection) throws UnsupportedEncodingException {
+    private Map<String, String> buildStringParams(boolean withCollection) throws UnsupportedEncodingException {
         Map<String, String> params = new HashMap<>();
         params.put("_id", userId);
-        params.put("action_name", "download");
         params.put("idsite", "3");
         params.put("token_auth", urlEncode(authToken));
         params.put("ua", "boxy-client");
         params.put("url", urlEncode(urlBuffer.toString()));
         params.put("download", urlEncode(urlBuffer.toString()));
-        params.put("e_a", "download");
+        params.put("e_a", AnalyticsTrackerUtil.MATOMO_ACTION);
+        var formattedAction = urlEncode(" / " + AnalyticsTrackerUtil.MATOMO_ACTION);
 
         if (withCollection) {
+            var collectionName = "Parent+Collection";
             params.put("cip", "0.0.0.0");
-            params.put("e_c", "Parent+Collection");
-            params.put("e_n", "Test+Work|http://example.com/rest/content/03/11/45/33/03114533-0017-4c83-b9d9-567b08fb2429");
+            params.put("e_c", collectionName);
+            params.put("action_name", collectionName + formattedAction);
+            params.put("e_n", "Test+Work|" + url);
         } else {
+            var collectionName = urlEncode("(") + "no+collection" + urlEncode(")");
             params.put("cip", "1.1.1.1");
-            params.put("e_c", urlEncode("(") + "no+collection" + urlEncode(")"));
-            params.put("e_n", "Test+Work2|http://example.com/rest/content/03/11/45/33/03114533-0017-4c83-b9d9-567b08fb2429");
+            params.put("e_c", collectionName);
+            params.put("action_name", collectionName + formattedAction);
+            params.put("e_n", "Test+Work2|" + url);
         }
         return params;
     }

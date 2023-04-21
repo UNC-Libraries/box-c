@@ -187,6 +187,7 @@
         <property name="repositoryHost" value="${repository.host}" />
         <property name="matomoAuthToken" value="${matomo.authToken}" />
         <property name="matomoApiURL" value="{matomo.api.url}" />
+        <property name="matomoSiteID" value="{matomo.site.id}" />
     </bean>
     
     <bean id="fedoraContentService" class="edu.unc.lib.boxc.web.common.services.FedoraContentService">
