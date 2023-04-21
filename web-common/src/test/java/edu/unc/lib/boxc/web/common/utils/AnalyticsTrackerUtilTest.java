@@ -30,15 +30,11 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
-import static com.github.tomakehurst.wiremock.client.WireMock.containing;
 import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.getRequestedFor;
-import static com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
-import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
 import static edu.unc.lib.boxc.web.common.utils.StringFormatUtil.urlEncode;
-import static java.util.Map.entry;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
@@ -72,6 +68,8 @@ public class AnalyticsTrackerUtilTest {
     private String trackingId = "trackme";
     private String authToken = "secret123456789qwertyasdfghzxcvb";
     private String apiURL = "http://localhost:46887";
+    private String userId = "5e462bae5cada463";
+    private StringBuffer urlBuffer = new StringBuffer("https://www.example.org");
 
     @BeforeEach
     public void setup() {
@@ -93,12 +91,10 @@ public class AnalyticsTrackerUtilTest {
         when(cidCookie.getName()).thenReturn("_ga");
         when(cidCookie.getValue()).thenReturn("ga.1.123456789.1234567890");
         var uidCookie = mock(Cookie.class);
-        var userId = "5e462bae5cada463";
         when(uidCookie.getName()).thenReturn("_pk_id");
         when(uidCookie.getValue()).thenReturn(userId +".1234567890");
         when(request.getCookies()).thenReturn(new Cookie[]{ cidCookie, uidCookie });
         when(request.getHeader("User-Agent")).thenReturn("boxy-client");
-        var urlBuffer = new StringBuffer("https://www.example.org");
         when(request.getRequestURL()).thenReturn(urlBuffer);
         var pid = PIDs.get(PID_UUID);
         when(solrSearchService.getObjectById(any())).thenReturn(contentObjectRecord);
@@ -106,7 +102,8 @@ public class AnalyticsTrackerUtilTest {
         when(contentObjectRecord.getParentCollection()).thenReturn("parent_coll");
         when(contentObjectRecord.getParentCollectionName()).thenReturn("Parent Collection");
 
-        var params = buildParams(userId, urlBuffer.toString(), true);
+        var stringParams = buildStringParams(true);
+        var params = buildPatternParams(stringParams);
 
         stubFor(WireMock.get(urlPathEqualTo("/")).withQueryParams(params)
                 .willReturn(aResponse().withStatus(HttpStatus.OK.value())));
@@ -118,7 +115,7 @@ public class AnalyticsTrackerUtilTest {
         var gaUri = gaRequest.getURI();
         assertGaQueryIsCorrect(gaUri, true);
 
-        assertMatomoQueryIsCorrect(userId, urlBuffer.toString());
+        assertMatomoQueryIsCorrect(params);
     }
 
     @Test
@@ -129,15 +126,14 @@ public class AnalyticsTrackerUtilTest {
         when(contentObjectRecord.getTitle()).thenReturn("Test Work2");
         when(contentObjectRecord.getParentCollection()).thenReturn(null);
         var uidCookie = mock(Cookie.class);
-        var userId = "5e462bae5cada463";
         when(uidCookie.getName()).thenReturn("_pk_id");
         when(uidCookie.getValue()).thenReturn(userId + ".1234567890");
         when(request.getCookies()).thenReturn(new Cookie[]{ uidCookie });
         when(request.getHeader("User-Agent")).thenReturn("boxy-client");
-        var urlBuffer = new StringBuffer("https://www.example.org");
         when(request.getRequestURL()).thenReturn(urlBuffer);
 
-        var params = buildParams(userId, urlBuffer.toString(), false);
+        var stringParams = buildStringParams(false);
+        var params = buildPatternParams(stringParams);
 
         stubFor(WireMock.get(urlPathEqualTo("/")).withQueryParams(params)
                 .willReturn(aResponse().withStatus(HttpStatus.OK.value())));
@@ -149,6 +145,8 @@ public class AnalyticsTrackerUtilTest {
         var gaRequest = httpRequestCaptor.getValue();
         var gaUri = gaRequest.getURI();
         assertGaQueryIsCorrect(gaUri, false);
+
+        assertMatomoQueryIsCorrect(params);
     }
 
     @Test
@@ -209,22 +207,21 @@ public class AnalyticsTrackerUtilTest {
         }
     }
 
-    private void assertMatomoQueryIsCorrect(String userId, String urlBuffer) throws UnsupportedEncodingException {
-        var url = urlEncode(urlBuffer);
+    private void assertMatomoQueryIsCorrect(Map<String, StringValuePattern> params) {
         for (int i=0 ; i<100 ; i++) {
             try {
                 Thread.sleep(10);
                 WireMock.verify(getRequestedFor(urlPathEqualTo("/"))
-                        .withQueryParam("_id", equalTo(userId))
-                        .withQueryParam("action_name", equalTo("download"))
-                        .withQueryParam("cip", equalTo("0.0.0.0"))
-                        .withQueryParam("idsite", equalTo("3"))
-                        .withQueryParam("token_auth", equalTo(urlEncode(authToken)))
-                        .withQueryParam("ua", equalTo("boxy-client"))
-                        .withQueryParam("url", equalTo(url))
-                        .withQueryParam("download", equalTo(url))
-                        .withQueryParam("e_a", equalTo("download"))
-                        .withQueryParam("e_c", equalTo("Parent+Collection"))
+                        .withQueryParam("_id", params.get("_id"))
+                        .withQueryParam("action_name", params.get("action_name"))
+                        .withQueryParam("cip", params.get("cip"))
+                        .withQueryParam("idsite", params.get("idsite"))
+                        .withQueryParam("token_auth", params.get("token_auth"))
+                        .withQueryParam("ua", params.get("ua"))
+                        .withQueryParam("url", params.get("url"))
+                        .withQueryParam("download", params.get("download"))
+                        .withQueryParam("e_a", params.get("e_a"))
+                        .withQueryParam("e_c", params.get("e_c"))
                 );
                 return;
             } catch (VerificationException | InterruptedException ignored) {
@@ -233,26 +230,34 @@ public class AnalyticsTrackerUtilTest {
         throw new VerificationException("The query was not correct");
     }
 
-    Map<String, StringValuePattern> buildParams(String userId, String urlBuffer, boolean withCollection) throws UnsupportedEncodingException {
+    Map<String, StringValuePattern> buildPatternParams(Map<String, String> stringParams) {
         Map<String, StringValuePattern> params = new HashMap<>();
-        params.put("_id", equalTo(userId));
-        params.put("action_name", equalTo("download"));
-        params.put("idsite", equalTo("3"));
-        params.put("token_auth", equalTo(urlEncode(authToken)));
-        params.put("ua", equalTo("boxy-client"));
-        params.put("url", equalTo(urlEncode(urlBuffer)));
-        params.put("download", equalTo(urlEncode(urlBuffer)));
-        params.put("e_a", equalTo("download"));
+        for (String key : stringParams.keySet()) {
+            params.put(key, equalTo(stringParams.get(key)));
+        }
 
+        return params;
+    }
+
+    Map<String, String> buildStringParams(boolean withCollection) throws UnsupportedEncodingException {
+        Map<String, String> params = new HashMap<>();
+        params.put("_id", userId);
+        params.put("action_name", "download");
+        params.put("idsite", "3");
+        params.put("token_auth", urlEncode(authToken));
+        params.put("ua", "boxy-client");
+        params.put("url", urlEncode(urlBuffer.toString()));
+        params.put("download", urlEncode(urlBuffer.toString()));
+        params.put("e_a", "download");
 
         if (withCollection) {
-            params.put("cip", equalTo("0.0.0.0"));
-            params.put("e_c", equalTo("Parent+Collection"));
-            params.put("e_n", equalTo("Test+Work|http://example.com/rest/content/03/11/45/33/03114533-0017-4c83-b9d9-567b08fb2429"));
+            params.put("cip", "0.0.0.0");
+            params.put("e_c", "Parent+Collection");
+            params.put("e_n", "Test+Work|http://example.com/rest/content/03/11/45/33/03114533-0017-4c83-b9d9-567b08fb2429");
         } else {
-            params.put("cip", equalTo("1.1.1.1"));
-            params.put("e_c", equalTo("(no+collection)"));
-            params.put("e_n", equalTo("Test+Work2|http://example.com/rest/content/03/11/45/33/03114533-0017-4c83-b9d9-567b08fb2429"));
+            params.put("cip", "1.1.1.1");
+            params.put("e_c", urlEncode("(") + "no+collection" + urlEncode(")"));
+            params.put("e_n", "Test+Work2|http://example.com/rest/content/03/11/45/33/03114533-0017-4c83-b9d9-567b08fb2429");
         }
         return params;
     }
