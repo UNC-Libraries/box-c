@@ -189,6 +189,7 @@ describe('thumbnail.vue', () => {
     });
 
     it('displays no icon if an item is not restricted or marked for deletion', async () => {
+        // No lock icon if everyone can view originals
         let updatedData = cloneDeep(recordData);
         updatedData.briefObject.groupRoleMap = {
             authenticated: [
@@ -201,6 +202,13 @@ describe('thumbnail.vue', () => {
         await wrapper.setProps({ thumbnailData: updatedData });
         expect(wrapper.find('.fa-lock').exists()).toBe(false);
         expect(wrapper.find('.fa-trash').exists()).toBe(false);
+
+        // No lock icon if record has public access status
+        let updatedRecordData = cloneDeep(recordData);
+        updatedRecordData.briefObject.roleGroup = undefined;
+        updatedRecordData.briefObject.status.push('Public Access');
+        await wrapper.setProps({ thumbnailData: updatedRecordData });
+        expect(wrapper.find('.fa-lock').exists()).toBe(false);
     });
 
     it('sets the src for the image', () => {

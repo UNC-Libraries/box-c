@@ -51,11 +51,16 @@ export default {
             if (this.thumbnailData.markedForDeletion) {
                 return 'fa-trash';
             } else if (this.objectData.type !== 'AdminUnit'
-                && !this.hasGroupRole(this.objectData, 'canViewOriginals')) {
+                && (!this.hasGroupRole(this.objectData, 'canViewOriginals') && !this.publicAccess)
+            ) {
                 return 'fa-lock';
             } else {
                 return '';
             }
+        },
+
+        publicAccess() {
+            return this.objectData.status !== undefined && this.objectData.status.includes('Public Access');
         },
 
         imgClasses() {
