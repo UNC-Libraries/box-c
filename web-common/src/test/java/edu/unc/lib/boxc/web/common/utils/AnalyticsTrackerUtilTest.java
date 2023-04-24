@@ -71,6 +71,7 @@ public class AnalyticsTrackerUtilTest {
     private String userId = "5e462bae5cada463";
     private StringBuffer urlBuffer = new StringBuffer("https://www.example.org");
     private String url = "http://example.com/rest/content/03/11/45/33/03114533-0017-4c83-b9d9-567b08fb2429";
+    private String siteID = "1";
 
     @BeforeEach
     public void setup() {
@@ -82,6 +83,7 @@ public class AnalyticsTrackerUtilTest {
         analyticsTrackerUtil.setHttpClient(httpClient);
         analyticsTrackerUtil.setMatomoApiURL(apiURL);
         analyticsTrackerUtil.setMatomoAuthToken(authToken);
+        analyticsTrackerUtil.setMatomoSiteID(Integer.parseInt(siteID));
         principals = new AccessGroupSetImpl("some_group");
     }
 
@@ -242,11 +244,10 @@ public class AnalyticsTrackerUtilTest {
     private Map<String, String> buildStringParams(boolean withCollection) throws UnsupportedEncodingException {
         Map<String, String> params = new HashMap<>();
         params.put("_id", userId);
-        params.put("idsite", "3");
+        params.put("idsite", siteID);
         params.put("token_auth", urlEncode(authToken));
         params.put("ua", "boxy-client");
         params.put("url", urlEncode(urlBuffer.toString()));
-        params.put("download", urlEncode(urlBuffer.toString()));
         params.put("e_a", AnalyticsTrackerUtil.MATOMO_ACTION);
         var formattedAction = urlEncode(" / " + AnalyticsTrackerUtil.MATOMO_ACTION);
 
