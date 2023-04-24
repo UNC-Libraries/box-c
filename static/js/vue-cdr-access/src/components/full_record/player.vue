@@ -1,10 +1,10 @@
 <template>
     <div class="clear">
-        <template v-if="(recordData.viewerType === 'uv' && hasPermission('viewAccessCopies')) ||
-                (recordData.viewerType === 'pdf' && hasPermission('viewOriginal'))">
+        <template v-if="(recordData.viewerType === 'uv' && hasPermission(recordData, 'viewAccessCopies')) ||
+                (recordData.viewerType === 'pdf' && hasPermission(recordData, 'viewOriginal'))">
             <iframe :src="viewer(recordData.viewerType)" allow="fullscreen" scrolling="no"></iframe>
         </template>
-        <template v-else-if="recordData.viewerType === 'audio' && hasPermission('viewAccessCopies')">
+        <template v-else-if="recordData.viewerType === 'audio' && hasPermission(recordData, 'viewAccessCopies')">
             <audio-player :datafile-url="recordData.dataFileUrl"></audio-player>
         </template>
     </div>
@@ -12,14 +12,14 @@
 
 <script>
 import audioPlayer from '@/components/full_record/audioPlayer.vue';
-import fullRecordUtils from '../../mixins/fullRecordUtils';
+import permissionUtils from '../../mixins/permissionUtils';
 
 export default {
     name: 'player',
 
     components: {audioPlayer},
 
-    mixins: [fullRecordUtils],
+    mixins: [permissionUtils],
 
     props: {
         recordData: Object

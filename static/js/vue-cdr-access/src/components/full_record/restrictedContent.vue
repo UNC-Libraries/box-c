@@ -3,14 +3,14 @@
         <div v-if="restrictedContent && !isLoggedIn" class="column is-narrow item-actions">
             <div class="restricted-access">
                 <h2>{{ $t('full_record.restricted_content', { resource_type: recordData.briefObject.type.toLowerCase() }) }}</h2>
-                <div v-if="hasGroupRole('canViewOriginals', 'authenticated')" class="actionlink"><a class="button login-link" :href="loginUrl"><i class="fa fa-id-card"></i> {{ $t('access.login') }}</a></div>
+                <div v-if="hasGroupRole(recordData, 'canViewOriginals', 'authenticated')" class="actionlink"><a class="button login-link" :href="loginUrl"><i class="fa fa-id-card"></i> {{ $t('access.login') }}</a></div>
                 <div class="actionlink"><a class="button contact" href="https://library.unc.edu/wilson/contact/"><i class="fa fa-envelope"></i> {{ $t('access.contact') }}</a></div>
             </div>
         </div>
-        <div v-if="hasPermission('editDescription')" class="actionlink">
+        <div v-if="hasPermission(recordData, 'editDescription')" class="actionlink">
             <a class="edit button" :href="editDescriptionUrl(recordData.briefObject.id)"><i class="fa fa-edit"></i> {{ $t('full_record.edit') }}</a>
         </div>
-        <template v-if="fieldExists(recordData.dataFileUrl) && hasPermission('viewOriginal')">
+        <template v-if="fieldExists(recordData.dataFileUrl) && hasPermission(recordData, 'viewOriginal')">
             <div class="actionlink download">
                 <a class="download button" :href="downloadLink"><i class="fa fa-download"></i> {{ $t('full_record.download') }}</a>
             </div>

@@ -1,7 +1,7 @@
 import breadCrumbs from '@/components/full_record/breadCrumbs.vue';
 import modalMetadata from '@/components/modalMetadata.vue';
 import thumbnail from '@/components/full_record/thumbnail.vue';
-import isEmpty from 'lodash.isempty';
+import permissionUtils from "./permissionUtils";
 import { formatInTimeZone } from 'date-fns-tz';
 import { mapState } from 'vuex';
 
@@ -13,6 +13,8 @@ export default {
             showMetadata: false
         }
     },
+
+    mixins: [permissionUtils],
 
     props: {
         recordData: Object
@@ -44,7 +46,7 @@ export default {
         },
 
         restrictedContent() {
-            if (!this.hasGroups) {
+            if (!this.hasGroups(this.recordData)) {
                 return false;
             }
             return !this.recordData.briefObject.groupRoleMap.everyone.includes('canViewOriginals');
@@ -53,11 +55,6 @@ export default {
         loginUrl() {
             const current_page = window.location;
             return `https://${current_page.host}/Shibboleth.sso/Login?target=${encodeURIComponent(current_page)}`;
-        },
-
-        hasGroups() {
-            const group_roles = this.recordData.briefObject.groupRoleMap;
-            return !(group_roles === undefined || isEmpty(group_roles));
         },
 
         downloadLink() {
@@ -88,23 +85,6 @@ export default {
 
         editDescriptionUrl(id) {
             return `https://${window.location.host}/admin/describe/${id}`;
-        },
-
-        hasGroupRole(role, user_type= 'everyone') {
-            if (!this.hasGroups) {
-                return false;
-            }
-
-            const group_roles = this.recordData.briefObject.groupRoleMap;
-            return Object.keys(group_roles).includes(user_type) &&
-                group_roles[user_type].includes(role);
-        },
-
-        hasPermission(permission) {
-            if (this.recordData.briefObject.permissions === undefined) {
-                return false;
-            }
-            return this.recordData.briefObject.permissions.includes(permission);
         }
     }
 }
