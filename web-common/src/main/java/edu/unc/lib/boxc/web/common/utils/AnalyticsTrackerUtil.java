@@ -45,7 +45,7 @@ public class AnalyticsTrackerUtil {
     protected static final String DEFAULT_CID = "35009a79-1a05-49d7-b876-2b884d0f825b";
     // Google analytics measurement API url
     private static final String GA_URL = "https://www.google-analytics.com/collect";
-    public static final String MATOMO_ACTION = "Downloaded";
+    public static final String MATOMO_ACTION = "Downloaded Original";
 
     // Google analytics tracking id
     private String gaTrackingID;
