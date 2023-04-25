@@ -209,6 +209,7 @@ describe('thumbnail.vue', () => {
         updatedRecordData.briefObject.status.push('Public Access');
         await wrapper.setProps({ thumbnailData: updatedRecordData });
         expect(wrapper.find('.fa-lock').exists()).toBe(false);
+        expect(wrapper.find('.fa-trash').exists()).toBe(false);
     });
 
     it('sets the src for the image', () => {

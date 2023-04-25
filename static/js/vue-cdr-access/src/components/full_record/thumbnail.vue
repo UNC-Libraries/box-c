@@ -50,9 +50,7 @@ export default {
         badgeIcon() {
             if (this.thumbnailData.markedForDeletion) {
                 return 'fa-trash';
-            } else if (this.objectData.type !== 'AdminUnit'
-                && (!this.hasGroupRole(this.objectData, 'canViewOriginals') && !this.publicAccess)
-            ) {
+            } else if (this.objectData.type !== 'AdminUnit' && !this.publicAccess) {
                 return 'fa-lock';
             } else {
                 return '';

@@ -115,11 +115,16 @@ describe('permissionUtils', () => {
 
     it("checks for groups", () => {
         expect(wrapper.vm.hasGroups(recordData)).toBe(true);
+    });
 
+    it("checks for groups when none are defined", () => {
         let updatedRecord = cloneDeep(recordData);
         updatedRecord.briefObject.groupRoleMap = undefined;
         expect(wrapper.vm.hasGroups(updatedRecord)).toBe(false);
+    });
 
+    it("checks for groups when the group role map is empty", () => {
+        let updatedRecord = cloneDeep(recordData);
         updatedRecord.briefObject.groupRoleMap = {};
         expect(wrapper.vm.hasGroups(updatedRecord)).toBe(false);
     });

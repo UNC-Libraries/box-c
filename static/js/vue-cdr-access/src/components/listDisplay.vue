@@ -7,10 +7,10 @@ Renders search results in a list view display format
             <div class="column">
                 <ul :class="{'margin-offset': isRecordBrowse}">
                     <li v-for="(record, index) in recordList" class="columns browseitem" :class="{stripe: index % 2 === 0}">
-                        <div class="column is-3">
+                        <div class="column is-narrow">
                             <thumbnail :thumbnail-data="record"></thumbnail>
                         </div>
-                        <div class="column is-9">
+                        <div class="column metadata-fields">
                             <div class="result-title">
                                 <router-link :class="{deleted: markedForDeletion(record)}" :to="recordUrl(record.id, linkBrowseType)">{{ record.title }}</router-link>
                                 <span v-if="record.type !== 'File'" class="item_container_count">{{ countDisplay(record.counts.child) }}</span>
@@ -145,11 +145,6 @@ Renders search results in a list view display format
             padding-top: 20px;
         }
 
-        .is-3 {
-            position: relative;
-            text-align: center;
-        }
-
         a {
             font-size: 1.5rem;
         }
@@ -189,8 +184,8 @@ Renders search results in a list view display format
             top: 100px;
         }
 
-        @media screen and (min-width: 769px) and (max-width: 1023px){
-            .is-9 {
+        @media screen and (max-width: 1023px){
+            .metadata-fields {
                 margin-left: 10px;
             }
         }
@@ -204,6 +199,17 @@ Renders search results in a list view display format
 
             .browseitem {
                 float: none;
+            }
+
+            // images to their left are positioned absolutely with a width of 128px
+            .metadata-fields {
+                margin-left: 150px;
+            }
+        }
+
+        @media screen and (max-width: 576px) {
+            .metadata-fields {
+                margin-left: 0;
             }
         }
     }
