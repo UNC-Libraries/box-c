@@ -27,8 +27,8 @@
         <property name="httpClientConnectionManager" ref="httpClientConnectionManager" />
         <property name="repositoryHost" value="${repository.host}" />
         <property name="matomoAuthToken" value="${matomo.authToken}" />
-        <property name="matomoApiURL" value="{matomo.api.url}" />
-        <property name="matomoSiteID" value="{matomo.site.id}" />
+        <property name="matomoApiURL" value="${matomo.api.url}" />
+        <property name="matomoSiteID" value="${matomo.site.id}" />
     </bean>
     
     <bean class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
