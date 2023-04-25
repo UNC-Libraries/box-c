@@ -50,7 +50,6 @@ const recordData = {
             "markForDeletionUnit",
             "move",
             "reindex",
-            "destroy",
             "editResourceType",
             "destroyUnit",
             "bulkUpdateDescription",
@@ -82,7 +81,7 @@ const recordData = {
 
 let wrapper, router;
 
-describe('fullrecordUtils', () => {
+describe('permissionUtils', () => {
     const i18n = createI18n({
         locale: 'en',
         fallbackLocale: 'en',
@@ -114,83 +113,40 @@ describe('fullrecordUtils', () => {
         });
     });
 
-    it('displays full metadata on click', async () => {
-        expect(wrapper.vm.showMetadata).toBe(false);
-        await wrapper.find('.metadata-link').trigger('click');
-        expect(wrapper.vm.showMetadata).toBe(true);
+    it("checks for groups", () => {
+        expect(wrapper.vm.hasGroups(recordData)).toBe(true);
     });
 
-    it('returns a class name for deleted records', async () => {
-        expect(wrapper.vm.isDeleted).toEqual('');
-
-        let addDeletion = cloneDeep(recordData);
-        addDeletion.markedForDeletion = true;
-        await wrapper.setProps({
-            recordData: addDeletion
-        });
-        expect(wrapper.vm.isDeleted).toEqual('deleted');
+    it("checks for groups when none are defined", () => {
+        let updatedRecord = cloneDeep(recordData);
+        updatedRecord.briefObject.groupRoleMap = undefined;
+        expect(wrapper.vm.hasGroups(updatedRecord)).toBe(false);
     });
 
-    it('sets display text for child count', async () => {
-        expect(wrapper.vm.displayChildCount).toEqual('5 items');
-
-        let updatedChildren = cloneDeep(recordData);
-        updatedChildren.briefObject.counts.child = 1;
-        await wrapper.setProps({
-            recordData: updatedChildren
-        });
-        expect(wrapper.vm.displayChildCount).toEqual('1 item');
+    it("checks for groups when the group role map is empty", () => {
+        let updatedRecord = cloneDeep(recordData);
+        updatedRecord.briefObject.groupRoleMap = {};
+        expect(wrapper.vm.hasGroups(updatedRecord)).toBe(false);
     });
 
-    it('checks for restricted content', async () => {
-        expect(wrapper.vm.restrictedContent).toBe(true);
+    it("checks for group roles", () => {
+        expect(wrapper.vm.hasGroupRole(recordData, 'canViewMetadata')).toBe(true);
+        expect(wrapper.vm.hasGroupRole(recordData, 'canViewOriginals')).toBe(false);
 
-        let updatePerms = cloneDeep(recordData);
-        updatePerms.briefObject.groupRoleMap = {};
-        await wrapper.setProps({
-            recordData: updatePerms
-        });
-        expect(wrapper.vm.restrictedContent).toBe(false);
+        let updatedRecord = cloneDeep(recordData);
+        updatedRecord.briefObject.groupRoleMap = undefined;
+        expect(wrapper.vm.hasGroupRole(updatedRecord, 'canViewMetadata')).toBe(false);
+        expect(wrapper.vm.hasGroupRole(updatedRecord, 'canViewOriginals')).toBe(false);
 
-        updatePerms.briefObject.roleGroup = {
-            authenticated: 'canViewOriginals',
-            everyone: 'canViewOriginals',
-        };
-        await wrapper.setProps({
-            recordData: updatePerms
-        });
-        expect(wrapper.vm.restrictedContent).toBe(false);
-    })
-
-    it('allows full access for authenticated user', async () => {
-        expect(wrapper.vm.hasGroupRole(recordData, 'canViewOriginals', 'authenticated')).toBe(false);
-
-        let canViewMetadata = cloneDeep(recordData);
-        canViewMetadata.briefObject.groupRoleMap = {
-            authenticated: 'canViewMetadata',
-            everyone: 'canViewMetadata'
-        };
-        await wrapper.setProps({
-            recordData: canViewMetadata
-        });
-        expect(wrapper.vm.hasGroupRole(canViewMetadata, 'canViewOriginals', 'authenticated')).toBe(false);
-
-        let canViewOriginals = cloneDeep(recordData);
-        canViewOriginals.briefObject.groupRoleMap = {
-            authenticated: 'canViewOriginals',
-            everyone: 'canViewMetadata'
-        };
-        await wrapper.setProps({
-            recordData: canViewOriginals
-        });
-        expect(wrapper.vm.hasGroupRole(canViewOriginals, 'canViewOriginals', 'authenticated')).toBe(true);
     });
 
-    it('formats string dates', () => {
-        expect(wrapper.vm.formatDate(recordData.briefObject.added)).toEqual('2023-01-17');
-    });
+    it("checks for permissions", () => {
+        expect(wrapper.vm.hasPermission(recordData, 'viewOriginal')).toBe(true);
+        expect(wrapper.vm.hasPermission(recordData, 'destroy')).toBe(false);
 
-    it('formats timestamps to dates', () => {
-        expect(wrapper.vm.formatDate(recordData.briefObject.created)).toEqual('1999-01-22');
+        let updatedRecord = cloneDeep(recordData);
+        updatedRecord.briefObject.permissions = undefined;
+        expect(wrapper.vm.hasPermission(updatedRecord, 'viewOriginal')).toBe(false);
+        expect(wrapper.vm.hasPermission(updatedRecord, 'destroy')).toBe(false);
     });
 });

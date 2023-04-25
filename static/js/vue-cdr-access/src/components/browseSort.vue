@@ -94,7 +94,7 @@ Sort drop down menu used in search results
 
     @media screen and (max-width: 768px) {
         .browse-sort {
-            float: left;
+            float: none;
             padding-left: 15px;
             margin-bottom: 10px;
             margin-top: 0;

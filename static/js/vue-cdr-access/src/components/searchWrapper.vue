@@ -168,4 +168,11 @@ Top level component wrapper for search pages
             display: inline-flex;
         }
     }
+
+    @media screen and (max-width: 768px) {
+        .bottomline {
+            display: inline-block;
+            text-align: center;
+        }
+    }
 </style>

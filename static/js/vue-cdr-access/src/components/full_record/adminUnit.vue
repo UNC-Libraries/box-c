@@ -9,8 +9,7 @@
         <div class="columns">
             <div class="column">
                 <h2 :class="isDeleted">
-                    <thumbnail :thumbnail-data="recordData"
-                               :allows-full-access="hasGroupRole('canViewOriginals')"></thumbnail>
+                    <thumbnail :thumbnail-data="recordData"></thumbnail>
                     {{ recordData.briefObject.title }}
                 </h2>
                 <p>

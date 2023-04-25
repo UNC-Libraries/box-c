@@ -176,7 +176,6 @@ describe('thumbnail.vue', () => {
     });
 
     it('displays a lock icon if an item is restricted', async () => {
-        await wrapper.setProps({ allowsFullAccess: false });
         expect(wrapper.find('.fa-lock').exists()).toBe(true);
     });
 
@@ -189,7 +188,12 @@ describe('thumbnail.vue', () => {
             .toEqual('thumbnail thumbnail-size-large deleted has_tooltip')
     });
 
-    it('displays no icon if an item is not restricted or marked for deletion', () => {
+    it('displays no icon if an item is not restricted or marked for deletion', async () => {
+        // No lock icon if record has public access status
+        let updatedRecordData = cloneDeep(recordData);
+        updatedRecordData.briefObject.roleGroup = undefined;
+        updatedRecordData.briefObject.status.push('Public Access');
+        await wrapper.setProps({ thumbnailData: updatedRecordData });
         expect(wrapper.find('.fa-lock').exists()).toBe(false);
         expect(wrapper.find('.fa-trash').exists()).toBe(false);
     });

@@ -14,8 +14,7 @@
                         <div class="column">
                             <div class="columns is-tablet">
                                 <div class="column is-narrow" :class="isDeleted">
-                                    <thumbnail :thumbnail-data="recordData"
-                                               :allows-full-access="hasGroupRole('canViewOriginals')"></thumbnail>
+                                    <thumbnail :thumbnail-data="recordData"></thumbnail>
                                 </div>
                                 <div class="column">
                                     <ul class="record-metadata">
@@ -78,7 +77,7 @@
             </div>
             <player :record-data="recordData"></player>
             <metadata-display :uuid="recordData.briefObject.id"
-                              :can-view-metadata="hasPermission('viewMetadata')">
+                              :can-view-metadata="hasPermission(recordData, 'viewMetadata')">
             </metadata-display>
             <neighbor-list :current-record-id="recordData.briefObject.id" :neighbors="recordData.neighborList"></neighbor-list>
     </div>

@@ -18,17 +18,16 @@
 </template>
 
 <script>
+import permissionUtils from '../../mixins/permissionUtils';
 
 const types = ['AdminUnit', 'Collection', 'Folder', 'Work'];
 
 export default {
     name: 'thumbnail',
 
+    mixins: [permissionUtils],
+
     props: {
-        allowsFullAccess: {
-            type: Boolean,
-            default: true
-        },
         thumbnailData: {
             type: Object,
             default: {}
@@ -41,10 +40,7 @@ export default {
 
     computed: {
         objectData() {
-            if (this.thumbnailData.briefObject !== undefined) {
-                return this.thumbnailData.briefObject
-            }
-            return this.thumbnailData;
+            return this.permissionData(this.thumbnailData);
         },
 
         ariaText() {
@@ -54,12 +50,15 @@ export default {
         badgeIcon() {
             if (this.thumbnailData.markedForDeletion) {
                 return 'fa-trash';
-            } else if (this.objectData.type !== 'AdminUnit'
-                && !this.allowsFullAccess) {
+            } else if (this.objectData.type !== 'AdminUnit' && !this.publicAccess) {
                 return 'fa-lock';
             } else {
                 return '';
             }
+        },
+
+        publicAccess() {
+            return this.objectData.status !== undefined && this.objectData.status.includes('Public Access');
         },
 
         imgClasses() {
