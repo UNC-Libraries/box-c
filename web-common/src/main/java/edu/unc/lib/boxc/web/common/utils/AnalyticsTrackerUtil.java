@@ -55,7 +55,7 @@ public class AnalyticsTrackerUtil {
     private String repositoryHost;
     private String matomoAuthToken;
     private String matomoApiURL;
-    private int matomoSiteID;
+    private String matomoSiteID;
     private SolrSearchService solrSearchService;
 
     public void setHttpClientConnectionManager(HttpClientConnectionManager manager) {
@@ -118,7 +118,7 @@ public class AnalyticsTrackerUtil {
 
     private MatomoRequest buildMatomoRequest(String url, AnalyticsUserData userData, String parentCollection, String label) throws UnsupportedEncodingException {
         return MatomoRequest.builder()
-                .siteId(matomoSiteID)
+                .siteId(Integer.parseInt(matomoSiteID))
                 .visitorId(userData.uid)
                 .actionUrl(urlEncode(url))
                 .actionName(urlEncode(parentCollection + " / " + MATOMO_ACTION))
@@ -169,7 +169,7 @@ public class AnalyticsTrackerUtil {
         this.matomoApiURL = matomoApiURL;
     }
 
-    public void setMatomoSiteID(int matomoSiteID) {
+    public void setMatomoSiteID(String matomoSiteID) {
         this.matomoSiteID = matomoSiteID;
     }
 

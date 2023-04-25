@@ -248,7 +248,7 @@ public class AnalyticsTrackerUtilTest {
         params.put("token_auth", urlEncode(authToken));
         params.put("ua", "boxy-client");
         params.put("url", urlEncode(urlBuffer.toString()));
-        params.put("e_a", AnalyticsTrackerUtil.MATOMO_ACTION);
+        params.put("e_a", "Downloaded+Original");
         var formattedAction = urlEncode(" / " + AnalyticsTrackerUtil.MATOMO_ACTION);
 
         if (withCollection) {
