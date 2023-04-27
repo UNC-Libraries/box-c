@@ -85,17 +85,24 @@
 </template>
 
 <script>
-import headerSmall from "@/components/header/headerSmall.vue";
+import headerSmall from '@/components/header/headerSmall.vue';
+import gaUtils from '../mixins/gaUtils';
 
 export default {
     name: "aboutRepository",
 
     components: {headerSmall},
 
+    mixins: [gaUtils],
+
     head() {
         return {
             title: 'About'
         }
+    },
+
+    mounted() {
+        this.pageView('About');
     }
 }
 </script>

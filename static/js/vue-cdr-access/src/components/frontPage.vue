@@ -48,11 +48,14 @@
 <script>
 import get from "axios";
 import headerHome from "@/components/header/headerHome.vue";
+import gaUtils from '../mixins/gaUtils';
 
 export default {
     name: "frontPage",
 
     components: {headerHome},
+
+    mixins: [gaUtils],
 
     data() {
         return {
@@ -80,6 +83,7 @@ export default {
 
     mounted() {
         this.getCollectionStats();
+        this.pageView('Home');
     }
 }
 </script>

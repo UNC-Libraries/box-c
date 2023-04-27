@@ -147,12 +147,15 @@
 
 <script>
 import get from 'axios';
-import headerSmall from "@/components/header/headerSmall.vue";
+import headerSmall from '@/components/header/headerSmall.vue';
+import gaUtils from '../mixins/gaUtils';
 
 export default {
     name: "advancedSearch",
 
     components: {headerSmall},
+
+    mixins: [gaUtils],
 
     data() {
         return {
@@ -188,6 +191,7 @@ export default {
     mounted() {
         this.getCollections();
         this.getFormats();
+        this.pageView('Advanced Search')
     }
 }
 </script>
