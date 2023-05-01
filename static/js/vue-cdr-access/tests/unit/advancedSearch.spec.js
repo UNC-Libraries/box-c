@@ -6,6 +6,7 @@ import {createI18n} from "vue-i18n";
 import translations from "@/translations";
 import store from '@/store';
 import moxios from "moxios";
+import { $gtag } from '../fixtures/testHelpers';
 
 let wrapper, router;
 
@@ -18,11 +19,6 @@ describe('advancedSearch.vue', () => {
 
     beforeEach(() => {
         moxios.install();
-
-        const $gtag =  {
-            event: jest.fn(),
-            pageview: jest.fn()
-        };
 
         router = createRouter({
             history: createWebHistory(process.env.BASE_URL),

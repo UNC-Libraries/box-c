@@ -6,6 +6,7 @@ import gaUtils from "../../src/mixins/gaUtils";
 import store from '@/store';
 import { createI18n } from "vue-i18n";
 import translations from "@/translations";
+import { $gtag } from '../fixtures/testHelpers';
 
 let wrapper;
 describe('gaUtils', () => {
@@ -25,10 +26,6 @@ describe('gaUtils', () => {
             }
         ]
     });
-    const $gtag =  {
-        event: jest.fn(),
-        pageview: jest.fn()
-    };
 
     const pageEvent = jest.spyOn(gaUtils.methods, 'pageEvent');
     const pageView = jest.spyOn(gaUtils.methods, 'pageView');
