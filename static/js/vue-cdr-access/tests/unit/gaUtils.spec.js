@@ -7,6 +7,7 @@ import store from '@/store';
 import { createI18n } from "vue-i18n";
 import translations from "@/translations";
 import { $gtag } from '../fixtures/testHelpers';
+import moxios from "moxios";
 
 let wrapper;
 describe('gaUtils', () => {
@@ -32,7 +33,12 @@ describe('gaUtils', () => {
 
     beforeEach(() => {
         jest.resetAllMocks();
-    })
+        moxios.install();
+    });
+
+    afterEach(() => {
+        moxios.uninstall()
+    });
 
     it("sends pageviews to Google Analytics", () => {
         wrapper = mount(advancedSearch, {
@@ -48,9 +54,89 @@ describe('gaUtils', () => {
         expect(pageView).toHaveBeenCalledWith("Advanced Search");
     });
 
-    //@TODO run inside an async in a lifecycle hook that possibly? runs before the mock is added
-    // Would be easier to test it didn't run in async event
-   /*  it("sends events to Google Analytics", async () => {
+    it("sends events to Google Analytics", (done) => {
+        const briefObj = {
+            briefObject: {
+                filesizeTotal: 35845559,
+                added: "2023-03-07T14:47:46.863Z",
+                counts: {
+                    child: 1
+                },
+                format: [
+                    "Audio"
+                ],
+                title: "Listen for real",
+                type: "Work",
+                fileDesc: [
+                    "MP3"
+                ],
+                parentCollectionName: "testCollection",
+                objectPath: [
+                    {
+                        pid: "collections",
+                        name: "Content Collections Root",
+                        container: true
+                    },
+                    {
+                        pid: "353ee09f-a4ed-461e-a436-18a1bee77b01",
+                        name: "testAdminUnit",
+                        container: true
+                    },
+                    {
+                        pid: "fc77a9be-b49d-4f4e-b656-1644c9e964fc",
+                        name: "testCollection",
+                        container: true
+                    },
+                    {
+                        pid: "e2f0d544-4f36-482c-b0ca-ba11f1251c01",
+                        name: "Listen for real",
+                        container: true
+                    }
+                ],
+                parentCollectionId: "fc77a9be-b49d-4f4e-b656-1644c9e964fc",
+                ancestorPath: [
+                    {
+                        id: "collections",
+                        title: "collections"
+                    },
+                    {
+                        id: "353ee09f-a4ed-461e-a436-18a1bee77b01",
+                        title: "353ee09f-a4ed-461e-a436-18a1bee77b01"
+                    },
+                    {
+                        id: "fc77a9be-b49d-4f4e-b656-1644c9e964fc",
+                        title: "fc77a9be-b49d-4f4e-b656-1644c9e964fc"
+                    }
+                ],
+                _version_: 1764089032947531800,
+                permissions: [
+                    "viewAccessCopies",
+                    "viewOriginal",
+                    "viewMetadata"
+                ],
+                groupRoleMap: {
+                    authenticated: [
+                        "canViewOriginals"
+                    ],
+                    everyone: [
+                        "canViewOriginals"
+                    ]
+                },
+                id: "e2f0d544-4f36-482c-b0ca-ba11f1251c01",
+                updated: "2023-04-24T19:58:37.960Z",
+                fileType: [
+                    "audio/mpeg"
+                ],
+                status: [
+                    "Public Access"
+                ]
+            }
+        };
+        moxios.stubRequest(new RegExp(`record/73bc003c-9603-4cd9-8a65-93a22520ef6a?.+`), {
+            status: 200,
+            response: JSON.stringify(briefObj)
+        });
+
         const $route = {
             path: '/record/1234',
             name: 'displayRecords',
@@ -63,26 +149,15 @@ describe('gaUtils', () => {
                 stubs: {
                     RouterLink: RouterLinkStub
                 }
-            },
-            data() {
-                return   {
-                    container_metadata: {
-                        added: "2017-12-20T13:44:46.119Z",
-                        title: "Test Collection",
-                        type: "Collection",
-                        uri: "https://dcr.lib.unc.edu/record/73bc003c-9603-4cd9-8a65-93a22520ef6a",
-                        id: "73bc003c-9603-4cd9-8a65-93a22520ef6a",
-                        parentCollectionName: "AdminUnit",
-                        parentCollectionId: "fc77a9be-b49d-4f4e-b656-1644c9e964fc",
-                        updated: "2017-12-20T13:44:46.264Z",
-                    }
-                }
             }
         });
-        wrapper.vm.getBriefObject();
-        await wrapper.vm.$nextTick();
 
-        expect(pageEvent).toHaveBeenCalled();
-        expect(pageView).toHaveBeenCalled();
-    });*/
+        wrapper.vm.getBriefObject()
+
+        moxios.wait(() => {
+            expect(pageEvent).toHaveBeenCalledWith(briefObj);
+            expect(pageView).toHaveBeenCalledWith(briefObj.title);
+            done();
+        })
+    });
 });
