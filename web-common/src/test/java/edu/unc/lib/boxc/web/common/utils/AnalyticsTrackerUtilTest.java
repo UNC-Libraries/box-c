@@ -247,22 +247,22 @@ public class AnalyticsTrackerUtilTest {
         params.put("idsite", Integer.toString(siteID));
         params.put("token_auth", urlEncode(authToken));
         params.put("ua", "boxy-client");
-        params.put("url", urlEncode(urlBuffer.toString()));
-        params.put("e_a", "Downloaded+Original");
-        var formattedAction = urlEncode(" / " + AnalyticsTrackerUtil.MATOMO_ACTION);
+        params.put("url", urlBuffer.toString());
+        params.put("e_a", "Downloaded Original");
+        var formattedAction = " / " + AnalyticsTrackerUtil.MATOMO_ACTION;
 
         if (withCollection) {
-            var collectionName = "Parent+Collection";
+            var collectionName = "Parent Collection";
             params.put("cip", "0.0.0.0");
             params.put("e_c", collectionName);
             params.put("action_name", collectionName + formattedAction);
-            params.put("e_n", "Test+Work|" + url);
+            params.put("e_n", "Test Work|" + url);
         } else {
-            var collectionName = urlEncode("(") + "no+collection" + urlEncode(")");
+            var collectionName = "(no collection)";
             params.put("cip", "1.1.1.1");
             params.put("e_c", collectionName);
             params.put("action_name", collectionName + formattedAction);
-            params.put("e_n", "Test+Work2|" + url);
+            params.put("e_n", "Test Work2|" + url);
         }
         return params;
     }
