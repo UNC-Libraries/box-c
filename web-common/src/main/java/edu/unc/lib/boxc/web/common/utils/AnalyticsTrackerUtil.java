@@ -202,7 +202,7 @@ public class AnalyticsTrackerUtil {
                 uip = request.getRemoteAddr();
             }
 
-            // Store the CID from _ga cookie if it is present
+            // Store the user ids from cookie if it is present
             Cookie[] cookies = request.getCookies();
             if (cookies != null) {
                 for (Cookie cookie : cookies) {
@@ -210,12 +210,14 @@ public class AnalyticsTrackerUtil {
                     if (cid != null && uid != null) {
                         break;
                     }
-                    if ("_ga".equals(cookie.getName())) {
+                    var cookieName = cookie.getName();
+                    if ("_ga".equals(cookieName)) {
                         String[] parts = cookie.getValue().split("\\.");
                         if (parts.length == 4) {
                             cid = parts[2] + "." + parts[3];
                         }
-                    } else if ("_pk_id".equals(cookie.getName())) {
+                    } else if (cookieName.startsWith("_pk_id")) {
+                        // matomo cookie
                         String[] parts = cookie.getValue().split("\\.");
                         uid = parts[0];
                     }
