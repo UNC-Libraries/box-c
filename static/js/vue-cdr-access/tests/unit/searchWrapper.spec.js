@@ -126,6 +126,11 @@ describe('searchWrapper.vue', () => {
     beforeEach(() => {
         moxios.install();
 
+        const $gtag =  {
+            event: jest.fn(),
+            pageview: jest.fn()
+        };
+
         router = createRouter({
             history: createWebHistory(process.env.BASE_URL),
             routes: [
@@ -139,7 +144,8 @@ describe('searchWrapper.vue', () => {
 
         wrapper = shallowMount(searchWrapper, {
             global: {
-                plugins: [router, i18n]
+                plugins: [router, i18n],
+                mocks: { $gtag }
             }
         });
 

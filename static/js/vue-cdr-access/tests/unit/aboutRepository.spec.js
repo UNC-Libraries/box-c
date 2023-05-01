@@ -19,6 +19,11 @@ describe('aboutRepository.vue', () => {
     beforeEach(() => {
         moxios.install();
 
+        const $gtag =  {
+            event: jest.fn(),
+            pageview: jest.fn()
+        };
+
         router = createRouter({
             history: createWebHistory(process.env.BASE_URL),
             routes: [
@@ -37,6 +42,7 @@ describe('aboutRepository.vue', () => {
         wrapper = shallowMount(aboutRepository, {
             global: {
                 plugins: [i18n, router, store],
+                mocks: { $gtag },
                 stubs: {
                     RouterLink: RouterLinkStub
                 }
