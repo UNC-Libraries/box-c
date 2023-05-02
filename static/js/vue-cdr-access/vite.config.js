@@ -1,11 +1,12 @@
 import { defineConfig } from 'vite';
 import vue from '@vitejs/plugin-vue';
+import UnheadVite from '@unhead/addons/vite';
 
 const path = require('path');
 
 // https://vitejs.dev/config/
 export default defineConfig({
-    plugins: [vue()],
+    plugins: [vue(), UnheadVite()],
     resolve: {
         alias: {
             "@": path.resolve(__dirname, "./src"),
@@ -20,5 +21,6 @@ export default defineConfig({
                 assetFileNames: `assets/[name].[ext]`
             }
         }
-    }
+    },
+    base: '/static/'
 });

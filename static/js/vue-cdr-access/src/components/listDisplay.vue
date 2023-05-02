@@ -4,40 +4,20 @@ Renders search results in a list view display format
 <template>
     <div id="list-records-display">
         <div class="columns">
-            <div class="column is-12">
+            <div class="column">
                 <ul :class="{'margin-offset': isRecordBrowse}">
                     <li v-for="(record, index) in recordList" class="columns browseitem" :class="{stripe: index % 2 === 0}">
-                        <div class="column is-2">
-                            <a :href="recordUrl(record.id, linkBrowseType)" :aria-label="linkLabel(record.title)" :class="{deleted: markedForDeletion(record)}">
-                                <img v-if="thumbnailPresent(record.thumbnail_url)" :src="record.thumbnail_url"
-                                     :alt="altText(record.title)" class="thumbnail thumbnail-size-large">
-                                <i v-else class="fa" :class="recordType(record.type)"></i>
-                                <div v-if="markedForDeletion(record)" class="thumbnail-badge-trash"
-                                     :class="{'has-image-icon': thumbnailPresent(record.thumbnail_url),
-                                     'thumbnail-badge-trash-search ': !isRecordBrowse}">
-                                    <div class="fa-stack">
-                                        <i class="fa fa-circle fa-stack-2x background"></i>
-                                        <i class="fa fa-trash fa-stack-1x foreground"></i>
-                                    </div>
-                                </div>
-                                <div v-else-if="isRestricted(record)" class="thumbnail-badge-lock"
-                                     :class="{'has-image-icon': thumbnailPresent(record.thumbnail_url),
-                                     'thumbnail-badge-lock-search ': !isRecordBrowse}">
-                                    <div class="fa-stack">
-                                        <i class="fa fa-circle fa-stack-2x background"></i>
-                                        <i class="fa fa-lock fa-stack-1x foreground"></i>
-                                    </div>
-                                </div>
-                            </a>
+                        <div class="column is-narrow">
+                            <thumbnail :thumbnail-data="record"></thumbnail>
                         </div>
-                        <div class="column is-10">
+                        <div class="column metadata-fields">
                             <div class="result-title">
-                                <a :class="{deleted: markedForDeletion(record)}" :href="recordUrl(record.id, linkBrowseType)">{{ record.title }}</a>
+                                <router-link :class="{deleted: markedForDeletion(record)}" :to="recordUrl(record.id, linkBrowseType)">{{ record.title }}</router-link>
                                 <span v-if="record.type !== 'File'" class="item_container_count">{{ countDisplay(record.counts.child) }}</span>
                             </div>
                             <div><span class="has-text-weight-bold">{{ $t('display.date_deposited') }}:</span> {{ formatDate(record.added) }}</div>
                             <div v-if="record.objectPath.length >= 3 && record.type !== 'Collection'">
-                                <span class="has-text-weight-bold">{{ $t('display.collection') }}:</span> <a class="metadata-link" :href="recordUrl(record.objectPath[2].pid, linkBrowseType)">{{ collectionInfo(record.objectPath) }}</a>
+                                <span class="has-text-weight-bold">{{ $t('display.collection') }}:</span> <router-link class="metadata-link" :to="recordUrl(record.objectPath[2].pid, linkBrowseType)">{{ collectionInfo(record.objectPath) }}</router-link>
                             </div>
                             <div v-if="record.objectPath.length >= 3 && showCollection(record)">
                                 <p class="collection_id"><span class="has-text-weight-bold">{{ $t('display.collection_number') }}:</span> {{ record.objectPath[2].collectionId }}</p>
@@ -52,13 +32,17 @@ Renders search results in a list view display format
 </template>
 
 <script>
+    import thumbnail from '@/components/full_record/thumbnail.vue';
     import displayUtils from '../mixins/displayUtils';
+    import permissionUtils from '../mixins/permissionUtils';
     import { format } from 'date-fns';
 
     export default {
         name: 'listDisplay',
 
-        mixins: [displayUtils],
+        components: {thumbnail},
+
+        mixins: [displayUtils, permissionUtils],
 
         props: {
             recordList: {
@@ -161,11 +145,6 @@ Renders search results in a list view display format
             padding-top: 20px;
         }
 
-        .is-2 {
-            position: relative;
-            text-align: center;
-        }
-
         a {
             font-size: 1.5rem;
         }
@@ -189,15 +168,6 @@ Renders search results in a list view display format
             padding-right: 25px;
         }
 
-        i {
-            font-size: 7rem;
-        }
-
-        img.thumbnail {
-            float: none;
-            margin: auto;
-        }
-
         span {
             margin-left: 10px;
         }
@@ -210,36 +180,13 @@ Renders search results in a list view display format
             background-color: #f7f7f7;
         }
 
-        .thumbnail-badge-trash,
-        .thumbnail-badge-lock {
-            margin-top: -55px;
-            padding-bottom: 15px;
-            padding-left: 75px;
-
-            .fa-circle {
-                font-size: 4rem;
-            }
-
-            .fa-trash,
-            .fa-lock {
-                font-size: 2rem;
-                margin: 8px 0;
-            }
-        }
-
-
         .has-image-icon {
             top: 100px;
         }
 
-        @media screen and (max-width: 1024px) {
-            .is-2 {
-                margin-right: 25px;
-            }
-
-            .thumbnail-badge-trash,
-            .thumbnail-badge-lock {
-                padding-left: 55px;
+        @media screen and (max-width: 1023px){
+            .metadata-fields {
+                margin-left: 10px;
             }
         }
 
@@ -252,8 +199,17 @@ Renders search results in a list view display format
 
             .browseitem {
                 float: none;
-                padding-left: 15px;
-                text-align: center;
+            }
+
+            // images to their left are positioned absolutely with a width of 128px
+            .metadata-fields {
+                margin-left: 150px;
+            }
+        }
+
+        @media screen and (max-width: 576px) {
+            .metadata-fields {
+                margin-left: 0;
             }
         }
     }

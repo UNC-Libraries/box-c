@@ -34,6 +34,12 @@ $box-shadow: inset 3px 3px 10px -1px $box-shadow-color, 0px 16px 22px -15px $box
   }
 }
 
+#list-records-display {
+  a.thumbnail {
+    font-size: 1rem !important;
+  }
+}
+
 /* Class to display content for screen readers */
 .sr-only {
   position: absolute;
@@ -640,6 +646,7 @@ img.data-thumb {
   }
 }
 
+/*@TODO remove breadcrumb css one full record page is converted to Vue */
 #full_record_trail {
   border: 1px solid #E0E0E0;
   background-color: #E0E0E0;
@@ -896,6 +903,10 @@ table.dataTable {
   margin-bottom: 15px;
 }
 
+.actionlink {
+  display: inline-flex;
+}
+
 /*** End of Bulma overrides ***/
 
 /* Following Bulma breakpoints */
@@ -978,10 +989,6 @@ table.dataTable {
     }
   }
 
-  .actionlink.right {
-    float: left;
-  }
-
   .collinfo_metadata {
     margin: auto 0;
 
@@ -1015,6 +1022,11 @@ table.dataTable {
         margin-top: -25px;
       }
     }
+  }
+
+  .record-metadata {
+    justify-content: center;
+    display: grid;
   }
 
   .action-btn {
@@ -1057,6 +1069,10 @@ table.dataTable {
         display: none;
       }
     }
+  }
+
+  .record-metadata {
+    justify-content: end;
   }
 
   .content-wrap.full_record {
@@ -1112,6 +1128,18 @@ table.dataTable {
     margin: 0;
     word-break: break-all;
   }
+}
+
+/* Iframe viewers */
+iframe {
+  height: 120vh;
+  overflow-y: auto;
+  width: 100%;
+}
+
+#pdfViewer {
+  background-color: white;
+  margin: 25px auto;
 }
 
 /*! @creativebulma/bulma-tooltip v1.2.0 | (c) 2020 Gaetan | MIT License | https://github.com/CreativeBulma/bulma-tooltip */

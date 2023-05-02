@@ -26,7 +26,7 @@ body {
   padding: 5px 0;
 }
 
-.menu-row, .banner-row, footer {
+.menu-row, .banner-row {
   background-color: $unc-navy;
 }
 
@@ -204,9 +204,6 @@ header {
       flex-shrink: 0;
       color: white;
       font-size: 16px;
-      &:hover, &:active {
-        color: $unc-navy;
-      }
     }
   }
 
@@ -340,29 +337,6 @@ header {
   margin-bottom: 32px;
   padding: 0 16px;
   width: 100%;
-}
-
-footer {
-  color: white;
-  display: inline-flex;
-  text-align: center;
-  width: 100%;
-  flex-wrap: wrap;
-
-  .footer-menu {
-    @include mobile-margin;
-    padding: 12px 0;
-  }
-
-  a {
-    color: white;
-    font-size: 16px;
-    padding: 5px;
-    &:hover, &:active {
-      background-color: #fafafa;
-      color: $unc-blue;
-    }
-  }
 }
 
 @media only screen and (min-width: 1088px) {

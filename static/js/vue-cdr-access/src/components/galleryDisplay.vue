@@ -7,25 +7,7 @@ Renders search results in a gallery view display in full record pages.
             <div class="column is-12" >
                 <ul class="column is-12" v-for="records in chunkedRecords">
                     <li v-for="record in records" class="column" :class="column_size">
-                        <a :href="recordUrl(record.id, 'gallery-display')" :class="{deleted: markedForDeletion(record)}">
-                            <img v-if="thumbnailPresent(record.thumbnail_url)" :src="record.thumbnail_url"
-                                 :alt="altText(record.title)" class="thumbnail thumbnail-size-large"
-                                 :class="{restricted: markedForDeletion(record) || isRestricted(record)}">
-                            <i v-else class="fa" :class="recordType(record.type)"></i>
-                            <div v-if="markedForDeletion(record)" class="thumbnail-badge-trash">
-                                <div class="fa-stack">
-                                    <i class="fa fa-circle fa-stack-2x background"></i>
-                                    <i class="fa fa-trash fa-stack-1x foreground"></i>
-                                </div>
-                            </div>
-                            <div v-else-if="isRestricted(record)" class="thumbnail-badge-lock">
-                                <div class="fa-stack">
-                                    <i class="fa fa-circle fa-stack-2x background"></i>
-                                    <i class="fa fa-lock fa-stack-1x foreground"></i>
-                                </div>
-                            </div>
-                            <div class="record-title">{{ record.title }}</div>
-                        </a>
+                        <thumbnail :thumbnail-data="record"></thumbnail>
                     </li>
                 </ul>
             </div>
@@ -34,6 +16,7 @@ Renders search results in a gallery view display in full record pages.
 </template>
 
 <script>
+    import thumbnail from '@/components/full_record/thumbnail.vue';
     import displayUtils from '../mixins/displayUtils';
     import debounce from 'lodash.debounce';
     import chunk from 'lodash.chunk';
@@ -47,6 +30,8 @@ Renders search results in a gallery view display in full record pages.
                 type: Array
             }
         },
+
+        components: {thumbnail},
 
         mixins: [displayUtils],
 

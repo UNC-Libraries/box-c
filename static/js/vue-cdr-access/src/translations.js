@@ -1,62 +1,114 @@
 export default {
-    "en": {
-        "adv_search": {
-            "advanced": "Advanced Search",
-            "anywhere": "Anywhere",
-            "collection_id": "Archival Collection ID",
-            "creator_contributor": "Creator/Contributor",
-            "date_created": "Date Created",
-            "date_deposited": "Date Deposited",
-            "date_from": "From",
-            "date_to": "to",
-            "dates_end_note": "Enter dates in YYYY format. " +
+    en: {
+        access: {
+            contact: "Contact Wilson Library for access",
+            login: "Log in for access (UNC Onyen)"
+        },
+        adv_search: {
+            advanced: "Advanced Search",
+            anywhere: "Anywhere",
+            collection_id: "Archival Collection ID",
+            creator_contributor: "Creator/Contributor",
+            date_created: "Date Created",
+            date_deposited: "Date Deposited",
+            date_from: "From",
+            date_to: "to",
+            dates_end_note: "Enter dates in YYYY format. " +
                 "Leave the right hand date empty to search for items with dates starting " +
                 "at the left hand date, and vice versa.",
-            "deposited_end_note": "",
-            "limit_by": "Limit By",
-            "search": "Search",
-            "search_for": "Search for",
-            "subject": "Subject",
-            "title": "Title"
+            deposited_end_note: "",
+            limit_by: "Limit By",
+            search: "Search",
+            search_for: "Search for",
+            subject: "Subject",
+            title: "Title"
         },
-        "display": {
-            "collection": "Collection",
-            "collection_number": "Collection Number",
-            "date_deposited": "Date Deposited",
-            "file_type": "File Type"
+        breadcrumbs: {
+            collections: "Collections"
         },
-        "facets": {
-            "clear": "Clear filters",
-            "filter": "Filter results by..."
+        collecting_units: "Collecting Units",
+        display: {
+            collection: "Collection",
+            collection_number: "Collection Number",
+            date_deposited: "Date Deposited",
+            file_type: "File Type"
         },
-        "modal": {
-            "close": "Close"
+        facets: {
+            clear: "Clear filters",
+            filter: "Filter results by..."
         },
-        "pagination": {
-            "next": "Next",
-            "previous": "Previous"
+        full_record: {
+            additional_metadata: "View Additional Metadata",
+            available_date: "Available after {available_date}",
+            collection_id: "Archival Collection ID",
+            contains: "Contains",
+            creator: "Creator",
+            date_added: "Date Added",
+            date_created: "Date Created",
+            detailed_metadata: "Detailed Metadata",
+            download: "Download",
+            download_file: "Download file",
+            download_title: "Download {title}",
+            download_unavailable: "Download Unavailable",
+            edit: "Edit",
+            edit_title: "@:edit {title}",
+            embargo_date: "Embargoed Until",
+            filesize: "Filesize",
+            file_type: "File Type",
+            finding_aid: "Finding Aid",
+            item: "item",
+            item_list: "List of Items in This Work",
+            items: "items",
+            mods: "Edit MODS",
+            neighbor_list: "Related Items (neighbors in this collection/folder)",
+            no_finding_aid: "Doesn't have a finding aid",
+            no_subjects: "There are no subjects listed for this record",
+            read_more: "Read more",
+            read_less: "Read less",
+            related_digital_exhibits: "Related Digital Exhibits",
+            restricted_content: "This {resource_type} has restricted content",
+            search_within: "Search within this work",
+            subjects: "Subjects",
+            thumbnail: "Thumbnail for file",
+            thumbnail_default: "Default thumbnail image",
+            thumbnail_title: "Thumbnail for {title}",
+            title: "Title",
+            view: "View",
+            view_contents: "View the contents of {title}",
+            view_details: "View details for {title}",
+            view_parent_work: "View Parent Work",
+            view_title: "View {title}",
+            view_file: "View file"
         },
-        "search": {
-            "clear_search": "Start over",
-            "no_results": "No records were found.",
-            "search": "Search"
+        modal: {
+            close: "Close",
+            error: "Unable to retrieve metadata for this item"
         },
-        "sort": {
-            "relevance": "Sort by Relevance",
+        pagination: {
+            next: "Next",
+            previous: "Previous"
+        },
+        search: {
+            clear_search: "Start over",
+            no_results: "No records were found.",
+            search: "Search"
+        },
+        sort: {
+            relevance: "Sort by Relevance",
             "title_a-z": "Title A-Z",
             "title_z-a": "Title Z-A",
-            "date_added_newest": "Date Deposited (newest)",
-            "date_added_oldest": "Date Deposited (oldest)",
-            "date_created_newest": "Date Created (newest)",
-            "date_created_oldest": "Date Created (oldest)"
+            date_added_newest: "Date Deposited (newest)",
+            date_added_oldest: "Date Deposited (oldest)",
+            date_created_newest: "Date Created (newest)",
+            date_created_oldest: "Date Created (oldest)"
         },
-        "view": {
-            "gallery": "Gallery View",
-            "list": "List View"
+        view: {
+            gallery: "Gallery View",
+            list: "List View"
         },
-        "works_only": {
-            "show": "Show only works",
-            "show_tip": "Show all files without organizational folders."
+        works_only: {
+            show: "Show only works",
+            show_tip: "Show all files without organizational folders."
         }
     }
 }

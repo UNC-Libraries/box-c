@@ -94,17 +94,11 @@ else
 	npm --prefix static/js/vue-cdr-access run build-dev
 endif
 
-	# Build Universal Viewer
-	npm --prefix static/plugins/uv ci
-	cp -R static/plugins/uv/node_modules/universalviewer/dist/* static/plugins/uv/
-	# Custom uv file, a work around to fix issue with jQuery.
-	cp static/plugins/uv/offline.js static/plugins/uv/lib/
-
 	# Minify viewer.js file for pdf viewer (Uncomment the lines below if changes are made to the viewer.js file. Requires nodejs 15.x or higher)
 	# npm install minify -g
 	# minify static/plugins/pdfjs/web/viewer.js > static/plugins/pdfjs/web/viewer.min.js
 
-	cp static/js/vue-cdr-access/dist/assets/vue-access-index.js static/js/vue-access-index.js
+	cp -R static/js/vue-cdr-access/dist/* static/
 SUSPEND = "n"
 
 build-bxc:

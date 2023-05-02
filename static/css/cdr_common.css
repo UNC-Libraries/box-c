@@ -1,5 +1,4 @@
 body {
-	background-color: #ececec;
 	color: #222;
 	font-size: 12px;
 	line-height: 17px;
@@ -7,8 +6,7 @@ body {
 
 /* Layout */
 #pagewrap {
-	width: 960px;
-	margin: 0 auto 0 auto;
+	margin: 0 auto;
 }
 
 #pagewrap_inside {
@@ -111,7 +109,6 @@ body.full_screen {
 
 .white {
 	background-color: #fff;
-	float: left;
 }
 
 .shadowtop {
@@ -244,7 +241,6 @@ li {
 
 #mainmenu {
 	margin: 0;
-
 	padding: 0;
 }
 
@@ -326,7 +322,7 @@ li {
 .secondarymenu > li {
 	float: left;
 	margin: 10px 0 0 0;
-	text-indent: 0px;
+	text-indent: 0;
 }
 
 .secondarymenu > li > a {
@@ -378,34 +374,9 @@ li {
 }
 
 /** Logo word spacing in Safari **/
-
 @media screen and (min-color-index:0) and(-webkit-min-device-pixel-ratio:0) 
 { @media {
   #cdr-logo {
 	word-spacing: -2px;
 	}
 }}
-
-/** About repo page **/
-#about-repo h2 {
-	font-size: 18px;
-	text-align: center;
-}
-
-#about-repo h3 {
-	font-size: 16px;
-}
-
-#about-repo p, #about-repo a {
-	font-size: 14px;
-}
-
-#about-repo ul {
-	list-style-type: disc;
-	margin-left: 15px;
-}
-
-#about-repo ul li {
-	margin-left: 25px;
-	text-indent: unset;
-}

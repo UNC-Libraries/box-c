@@ -54,6 +54,7 @@ public class StoreUserAccessControlFilter extends OncePerRequestFilter implement
                 GroupsThreadStore.clearStore();
             }
         }
+        res.addHeader("username", getRemoteUser(req));
     }
 
     protected void storeUserGroupData(HttpServletRequest request) {

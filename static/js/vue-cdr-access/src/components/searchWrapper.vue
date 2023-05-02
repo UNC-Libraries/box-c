@@ -2,6 +2,7 @@
 Top level component wrapper for search pages
 -->
 <template>
+    <header-small/>
     <div>
         <div class="search-query-text">
             Search results for "{{ $route.query.anywhere }}"
@@ -40,8 +41,11 @@ Top level component wrapper for search pages
     import browseSort from "@/components/browseSort.vue";
     import clearFilters from "@/components/clearFilters.vue";
     import facets from "@/components/facets.vue";
+    import headerSmall from "@/components/header/headerSmall.vue";
     import listDisplay from "@/components/listDisplay.vue";
     import pagination from "@/components/pagination.vue";
+    import analyticsUtils from '../mixins/analyticsUtils';
+    import imageUtils from "../mixins/imageUtils";
     import routeUtils from "../mixins/routeUtils";
     import get from 'axios';
     import cloneDeep from 'lodash.clonedeep';
@@ -49,9 +53,9 @@ Top level component wrapper for search pages
     export default {
         name: 'searchWrapper',
 
-        components: {browseSort, clearFilters, facets, listDisplay, pagination},
+        components: {browseSort, clearFilters, facets, headerSmall, listDisplay, pagination},
 
-        mixins: [routeUtils],
+        mixins: [analyticsUtils, imageUtils, routeUtils],
 
         data() {
             return {
@@ -62,6 +66,12 @@ Top level component wrapper for search pages
                 is_loading: true,
                 records: [],
                 total_records: 0
+            }
+        },
+
+        head() {
+            return {
+                title: 'Search Results'
             }
         },
 
@@ -118,6 +128,10 @@ Top level component wrapper for search pages
 
         created() {
             this.retrieveData();
+        },
+
+        mounted() {
+            this.pageView('Search Results');
         }
     }
 </script>
@@ -157,6 +171,13 @@ Top level component wrapper for search pages
     @media screen and (max-width: 1024px) {
         .bottomline {
             display: inline-flex;
+        }
+    }
+
+    @media screen and (max-width: 768px) {
+        .bottomline {
+            display: inline-block;
+            text-align: center;
         }
     }
 </style>

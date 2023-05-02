@@ -118,11 +118,6 @@ public class SearchActionController extends AbstractErrorHandlingSearchControlle
         return getResults(resultResponse, "list", request);
     }
 
-    @RequestMapping("/collections")
-    public String browseCollections() {
-        return "collectionBrowse";
-    }
-
     /**
      * Endpoint which returns all the admin units in the repository
      * @param request

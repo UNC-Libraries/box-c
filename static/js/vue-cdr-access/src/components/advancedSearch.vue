@@ -1,4 +1,5 @@
 <template>
+    <header-small/>
     <div>
         <h2>{{ $t('adv_search.advanced') }}</h2>
         <form id="advanced-search-form">
@@ -146,14 +147,26 @@
 
 <script>
 import get from 'axios';
+import headerSmall from '@/components/header/headerSmall.vue';
+import analyticsUtils from '../mixins/analyticsUtils';
 
 export default {
     name: "advancedSearch",
+
+    components: {headerSmall},
+
+    mixins: [analyticsUtils],
 
     data() {
         return {
             collections: [],
             formats: [],
+        }
+    },
+
+    head() {
+        return {
+            title: 'Advanced Search'
         }
     },
 
@@ -178,6 +191,7 @@ export default {
     mounted() {
         this.getCollections();
         this.getFormats();
+        this.pageView('Advanced Search')
     }
 }
 </script>

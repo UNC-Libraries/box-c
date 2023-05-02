@@ -9,7 +9,14 @@
         <c:set var="fileId" value="${briefObject.id}"/>
     </c:otherwise>
 </c:choose>
-
+<!doctype html>
+<html lang="en">
+<head>
+    <c:set var="url">${accessBaseUrl}</c:set>
+    <base href="${url}" />
+    <%@ include file="../../html/headElements.html"%>
+</head>
+<body>
 <link rel="stylesheet" href="/static/plugins/pdfjs/web/viewer.css">
 <link rel="resource" type="application/l10n" href="/static/plugins/pdfjs/web/locale/locale.properties">
 <script src="/static/plugins/pdfjs/build/pdf.js" type="text/javascript"></script>
@@ -369,3 +376,5 @@
     <div id="printContainer"></div>
 </div>
 <script src="/static/plugins/pdfjs/web/viewer.min.js"></script>
+</body>
+</html>
