@@ -27,6 +27,7 @@ public class FrontPageController extends AbstractErrorHandlingSearchController {
 
     @RequestMapping(produces = APPLICATION_JSON_VALUE)
     public @ResponseBody String getCollectionStats() {
+        LOG.debug("Requesting front page collection stats");
         var collectionStats = new HashMap<String, Object>();
         AccessGroupSet groups = GroupsThreadStore.getPrincipals();
         collectionStats.put("formatCounts", this.queryLayer.getFormatCounts(groups));
