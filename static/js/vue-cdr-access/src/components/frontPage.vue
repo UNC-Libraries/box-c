@@ -48,14 +48,14 @@
 <script>
 import get from "axios";
 import headerHome from "@/components/header/headerHome.vue";
-import gaUtils from '../mixins/gaUtils';
+import analyticsUtils from '../mixins/analyticsUtils';
 
 export default {
     name: "frontPage",
 
     components: {headerHome},
 
-    mixins: [gaUtils],
+    mixins: [analyticsUtils],
 
     data() {
         return {

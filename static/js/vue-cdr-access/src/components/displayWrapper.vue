@@ -64,7 +64,7 @@ Top level component for full record pages with searching/browsing, including Adm
     import worksOnly from '@/components/worksOnly.vue';
     import get from 'axios';
     import isEmpty from 'lodash.isempty';
-    import gaUtils from '../mixins/gaUtils';
+    import analyticsUtils from '../mixins/analyticsUtils';
     import imageUtils from '../mixins/imageUtils';
     import routeUtils from '../mixins/routeUtils';
 
@@ -112,7 +112,7 @@ Top level component for full record pages with searching/browsing, including Adm
             facets
         },
 
-        mixins: [gaUtils, imageUtils, routeUtils],
+        mixins: [analyticsUtils, imageUtils, routeUtils],
 
         data() {
             return {
@@ -170,7 +170,7 @@ Top level component for full record pages with searching/browsing, including Adm
                     link += '/';
                 }
 
-                get(`${link}json`).then((response) => {
+               get(`${link}json`).then((response) => {
                     this.container_info = response.data;
                     this.pageEvent(response.data);
                     this.pageView(this.container_info.pageSubtitle)

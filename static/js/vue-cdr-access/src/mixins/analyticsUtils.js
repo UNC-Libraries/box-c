@@ -13,7 +13,6 @@ export default {
             this.$gtag.event('record', {
                 'event_category': recordData.briefObject.parentCollectionId,
                 'event_label': `${recordData.briefObject.title}|${recordData.briefObject.id}`,
-                'value': `${recordData.briefObject.title}|${recordData.briefObject.id}`
             });
         },
 
@@ -22,7 +21,7 @@ export default {
                 page_title: `Digital Collections Repository - ${title}`,
                 page_path: this.$route.path,
                 page_location: window.location.href
-            })
+            });
         }
     }
 }

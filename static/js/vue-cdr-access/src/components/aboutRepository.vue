@@ -86,14 +86,14 @@
 
 <script>
 import headerSmall from '@/components/header/headerSmall.vue';
-import gaUtils from '../mixins/gaUtils';
+import analyticsUtils from '../mixins/analyticsUtils';
 
 export default {
     name: "aboutRepository",
 
     components: {headerSmall},
 
-    mixins: [gaUtils],
+    mixins: [analyticsUtils],
 
     head() {
         return {

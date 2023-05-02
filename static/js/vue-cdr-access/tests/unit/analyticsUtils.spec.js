@@ -2,7 +2,7 @@ import {mount, RouterLinkStub} from '@vue/test-utils'
 import { createRouter, createWebHistory } from 'vue-router';
 import advancedSearch from '@/components/advancedSearch.vue';
 import displayWrapper from '@/components/displayWrapper.vue';
-import gaUtils from "../../src/mixins/gaUtils";
+import analyticsUtils from "../../src/mixins/analyticsUtils";
 import store from '@/store';
 import { createI18n } from "vue-i18n";
 import translations from "@/translations";
@@ -10,7 +10,7 @@ import { $gtag } from '../fixtures/testHelpers';
 import moxios from "moxios";
 
 let wrapper;
-describe('gaUtils', () => {
+describe('analyticsUtils', () => {
     const i18n = createI18n({
         locale: 'en',
         fallbackLocale: 'en',
@@ -28,8 +28,8 @@ describe('gaUtils', () => {
         ]
     });
 
-    const pageEvent = jest.spyOn(gaUtils.methods, 'pageEvent');
-    const pageView = jest.spyOn(gaUtils.methods, 'pageView');
+    const pageEvent = jest.spyOn(analyticsUtils.methods, 'pageEvent');
+    const pageView = jest.spyOn(analyticsUtils.methods, 'pageView');
 
     beforeEach(() => {
         jest.resetAllMocks();
@@ -151,8 +151,6 @@ describe('gaUtils', () => {
                 }
             }
         });
-
-        wrapper.vm.getBriefObject()
 
         moxios.wait(() => {
             expect(pageEvent).toHaveBeenCalledWith(briefObj);

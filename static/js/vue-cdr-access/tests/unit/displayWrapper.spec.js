@@ -5,7 +5,7 @@ import store from '@/store';
 import moxios from "moxios";
 import {createI18n} from "vue-i18n";
 import translations from "@/translations";
-import { response, briefObjectData } from "../fixtures/displayWrapFixtures";
+import { response, briefObjectData } from "../fixtures/displayWrapperFixtures";
 
 let wrapper, router;
 

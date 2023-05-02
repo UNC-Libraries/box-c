@@ -44,7 +44,7 @@ Top level component wrapper for search pages
     import headerSmall from "@/components/header/headerSmall.vue";
     import listDisplay from "@/components/listDisplay.vue";
     import pagination from "@/components/pagination.vue";
-    import gaUtils from '../mixins/gaUtils';
+    import analyticsUtils from '../mixins/analyticsUtils';
     import imageUtils from "../mixins/imageUtils";
     import routeUtils from "../mixins/routeUtils";
     import get from 'axios';
@@ -55,7 +55,7 @@ Top level component wrapper for search pages
 
         components: {browseSort, clearFilters, facets, headerSmall, listDisplay, pagination},
 
-        mixins: [gaUtils, imageUtils, routeUtils],
+        mixins: [analyticsUtils, imageUtils, routeUtils],
 
         data() {
             return {

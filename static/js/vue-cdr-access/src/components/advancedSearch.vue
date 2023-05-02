@@ -148,14 +148,14 @@
 <script>
 import get from 'axios';
 import headerSmall from '@/components/header/headerSmall.vue';
-import gaUtils from '../mixins/gaUtils';
+import analyticsUtils from '../mixins/analyticsUtils';
 
 export default {
     name: "advancedSearch",
 
     components: {headerSmall},
 
-    mixins: [gaUtils],
+    mixins: [analyticsUtils],
 
     data() {
         return {
