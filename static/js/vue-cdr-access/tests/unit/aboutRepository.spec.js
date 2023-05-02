@@ -6,6 +6,7 @@ import {createI18n} from "vue-i18n";
 import translations from "@/translations";
 import store from '@/store';
 import moxios from "moxios";
+import { $gtag } from '../fixtures/testHelpers';
 
 let wrapper, router;
 
@@ -37,6 +38,7 @@ describe('aboutRepository.vue', () => {
         wrapper = shallowMount(aboutRepository, {
             global: {
                 plugins: [i18n, router, store],
+                mocks: { $gtag },
                 stubs: {
                     RouterLink: RouterLinkStub
                 }

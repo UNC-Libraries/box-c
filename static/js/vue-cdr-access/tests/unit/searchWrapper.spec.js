@@ -5,6 +5,7 @@ import moxios from "moxios";
 import displayWrapper from "@/components/displayWrapper.vue";
 import {createI18n} from "vue-i18n";
 import translations from "@/translations";
+import { $gtag } from '../fixtures/testHelpers';
 
 const response = {
     "container": {
@@ -139,7 +140,8 @@ describe('searchWrapper.vue', () => {
 
         wrapper = shallowMount(searchWrapper, {
             global: {
-                plugins: [router, i18n]
+                plugins: [router, i18n],
+                mocks: { $gtag }
             }
         });
 
