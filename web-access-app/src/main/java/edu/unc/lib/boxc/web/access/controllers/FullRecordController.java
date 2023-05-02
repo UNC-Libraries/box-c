@@ -99,6 +99,7 @@ public class FullRecordController extends AbstractErrorHandlingSearchController 
 
     public String getFullObjectView(String pidString) {
         PID pid = PIDs.get(pidString);
+        LOG.debug("Getting metadata record for {}", pid);
 
         AccessGroupSet principals = getAgentPrincipals().getPrincipals();
         aclService.assertHasAccess("Insufficient permissions to access full record metadata for " + pidString,
@@ -147,6 +148,7 @@ public class FullRecordController extends AbstractErrorHandlingSearchController 
     @GetMapping(path = "/{pid}/json", produces = APPLICATION_JSON_VALUE)
     public @ResponseBody String handleRequest(@PathVariable("pid") String pidString, HttpServletResponse response) {
         PID pid = PIDs.get(pidString);
+        LOG.debug("Getting full record for {}", pid);
 
         AccessGroupSet principals = getAgentPrincipals().getPrincipals();
         aclService.assertHasAccess("Insufficient permissions to access full record for " + pidString,
