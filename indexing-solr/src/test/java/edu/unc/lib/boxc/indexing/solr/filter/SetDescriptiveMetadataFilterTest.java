@@ -10,6 +10,8 @@ import static org.mockito.MockitoAnnotations.initMocks;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
@@ -91,12 +93,7 @@ public class SetDescriptiveMetadataFilterTest {
 
     @Test
     public void testInventory() throws Exception {
-        SAXBuilder builder = new SAXBuilder();
-        Document modsDoc = builder.build(new FileInputStream(new File(
-                "src/test/resources/datastream/inventoryMods.xml")));
-        when(dip.getMods()).thenReturn(modsDoc.detachRootElement());
-
-        filter.filter(dip);
+        runFilterOnInventoryMods();
 
         assertEquals("Paper title", idb.getTitle());
         assertNull(idb.getOtherTitle());
@@ -144,24 +141,6 @@ public class SetDescriptiveMetadataFilterTest {
         assertEquals("2006-04-01T00:00:00.000Z", DateFormatUtil.formatter.format(idb.getDateCreated()));
         assertEquals("2006", idb.getDateCreatedYear());
 
-        assertEquals(4, idb.getRights().size());
-        assertTrue(idb.getRights().contains("Copyright Not Evaluated"));
-        assertTrue(idb.getRights().contains("For copyright information or permissions questions, see our " +
-                "intellectual property statement https://library.unc.edu/wilson/research/perm/"));
-        assertTrue(idb.getRights().contains("Copyright Not Evaluated"));
-        assertTrue(idb.getRightsOaiPmh().contains("More Random Rights"));
-
-        assertEquals(2, idb.getRightsUri().size());
-        assertTrue(idb.getRightsUri().contains("https://rightsstatements.org/vocab/CNE/1.0/"));
-        assertTrue(idb.getRightsUri().contains("https://creativecommons.org/licenses/by-sa/3.0/us/"));
-
-        assertEquals(6, idb.getRightsOaiPmh().size());
-        assertTrue(idb.getRightsOaiPmh().contains("http://rightsstatements.org/vocab/CNE/1.0/"));
-        assertTrue(idb.getRightsOaiPmh().contains("http://creativecommons.org/licenses/by-sa/3.0/us/"));
-        assertTrue(idb.getRightsOaiPmh().contains("Copyright Not Evaluated"));
-        assertTrue(idb.getRightsOaiPmh().contains("Attribution-ShareAlike 3.0 United States (CC BY-SA 3.0 US)"));
-        assertTrue(idb.getRightsOaiPmh().contains("More Random Rights"));
-
         assertTrue(idb.getOtherSubject().contains("Germany"));
         assertTrue(idb.getOtherSubject().contains("Canada"));
         assertTrue(idb.getOtherSubject().contains("Explorer"));
@@ -193,6 +172,49 @@ public class SetDescriptiveMetadataFilterTest {
         assertEquals(2, exhibits.size());
         assertTrue(exhibits.contains("Wonderful Exhibit|https://digital-exhibit.lib.unc.edu"));
         assertTrue(exhibits.contains("https://no-url-label-digital-exhibit.lib.unc.edu|https://no-url-label-digital-exhibit.lib.unc.edu"));
+    }
+
+    private void runFilterOnInventoryMods() throws Exception {
+        SAXBuilder builder = new SAXBuilder();
+        Document modsDoc = builder.build(Files.newInputStream(
+                Paths.get("src/test/resources/datastream/inventoryMods.xml")));
+        when(dip.getMods()).thenReturn(modsDoc.detachRootElement());
+
+        filter.filter(dip);
+    }
+
+    @Test
+    public void testRightsFromInventory() throws Exception {
+        runFilterOnInventoryMods();
+
+        assertTrue(idb.getRights().contains("Copyright Not Evaluated"));
+        assertTrue(idb.getRights().contains("For copyright information or permissions questions, see our " +
+                "intellectual property statement https://library.unc.edu/wilson/research/perm/"));
+        assertTrue(idb.getRights().contains("Copyright Not Evaluated"));
+        assertTrue(idb.getRights().contains("More Random Rights"));
+        assertEquals(4, idb.getRights().size(), "Incorrect number of rights: " + idb.getRights());
+    }
+
+    @Test
+    public void testRightsUriFromInventory() throws Exception {
+        runFilterOnInventoryMods();
+
+        assertTrue(idb.getRightsUri().contains("https://rightsstatements.org/vocab/CNE/1.0/"));
+        assertTrue(idb.getRightsUri().contains("https://creativecommons.org/licenses/by-sa/3.0/us/"));
+        assertEquals(2, idb.getRightsUri().size(), "Incorrect number of rightsUris: " + idb.getRightsUri());
+    }
+
+    @Test
+    public void testRightsOaiPmhFromInventory() throws Exception {
+        runFilterOnInventoryMods();
+
+        assertTrue(idb.getRightsOaiPmh().contains("http://rightsstatements.org/vocab/CNE/1.0/"));
+        assertTrue(idb.getRightsOaiPmh().contains("http://creativecommons.org/licenses/by-sa/3.0/us/"));
+        assertTrue(idb.getRightsOaiPmh().contains("Copyright Not Evaluated"));
+        assertTrue(idb.getRightsOaiPmh().contains("Attribution-ShareAlike 3.0 United States (CC BY-SA 3.0 US)"));
+        assertTrue(idb.getRightsOaiPmh().contains("More Random Rights"));
+        assertTrue(idb.getRightsOaiPmh().contains("For copyright information or permissions questions, see our intellectual property statement https://library.unc.edu/wilson/research/perm/"));
+        assertEquals(6, idb.getRightsOaiPmh().size(), "Incorrect number of rightsOaiPmh: " + idb.getRightsOaiPmh());
     }
 
     /*
