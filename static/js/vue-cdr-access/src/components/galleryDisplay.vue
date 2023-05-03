@@ -8,6 +8,7 @@ Renders search results in a gallery view display in full record pages.
                 <ul class="column is-12" v-for="records in chunkedRecords">
                     <li v-for="record in records" class="column" :class="column_size">
                         <thumbnail :thumbnail-data="record"></thumbnail>
+                        <router-link :class="{deleted: markedForDeletion(record)}" :to="recordUrl(record.id, 'gallery-display')">{{ record.title }}</router-link>
                     </li>
                 </ul>
             </div>
@@ -18,6 +19,7 @@ Renders search results in a gallery view display in full record pages.
 <script>
     import thumbnail from '@/components/full_record/thumbnail.vue';
     import displayUtils from '../mixins/displayUtils';
+    import permissionUtils from '../mixins/permissionUtils';
     import debounce from 'lodash.debounce';
     import chunk from 'lodash.chunk';
 
@@ -33,7 +35,7 @@ Renders search results in a gallery view display in full record pages.
 
         components: {thumbnail},
 
-        mixins: [displayUtils],
+        mixins: [displayUtils, permissionUtils],
 
         data() {
             return {

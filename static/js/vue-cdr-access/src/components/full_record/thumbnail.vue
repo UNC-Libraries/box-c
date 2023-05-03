@@ -15,14 +15,13 @@
 
 <script>
 import permissionUtils from '../../mixins/permissionUtils';
-import displayUtils from '../../mixins/displayUtils';
 
 const types = ['AdminUnit', 'Collection', 'Folder', 'Work'];
 
 export default {
     name: 'thumbnail',
 
-    mixins: [permissionUtils, displayUtils],
+    mixins: [permissionUtils],
 
     props: {
         thumbnailData: {
@@ -32,6 +31,12 @@ export default {
         size: {
             type: String,
             default: 'large'
+        }
+    },
+
+    methods: {
+        altText(title) {
+            return `Thumbnail for ${title}`;
         }
     },
 
