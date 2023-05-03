@@ -1,13 +1,9 @@
 <template>
     <router-link :to="currentPage" :title="tooltip" :aria-label="ariaText" class="thumbnail" :class="imgClasses">
-        <div class="thumbnail-placeholder">
-            <span v-if="src === ''" class="thumbnail-content-type">{{ contentType }}</span>
-        </div>
-
-        <div v-if="src !== ''" class="thumbnail-preview">
-            <img :src="src" :alt="objectData.title"/>
-        </div>
-
+        <img v-if="src !== ''" :src="objectData.thumbnail_url"
+             :alt="altText(objectData.title)"
+             :class="{restricted: markedForDeletion(objectData) || isRestricted(objectData)}">
+        <i v-else class="placeholder fa" :class="placeholderClass"></i>
         <div v-if="badgeIcon !== ''" class="thumbnail-badge">
             <div class="fa-stack">
                 <i class="fas fa-circle fa-stack-2x background"></i>
@@ -19,13 +15,14 @@
 
 <script>
 import permissionUtils from '../../mixins/permissionUtils';
+import displayUtils from '../../mixins/displayUtils';
 
 const types = ['AdminUnit', 'Collection', 'Folder', 'Work'];
 
 export default {
     name: 'thumbnail',
 
-    mixins: [permissionUtils],
+    mixins: [permissionUtils, displayUtils],
 
     props: {
         thumbnailData: {
@@ -65,10 +62,6 @@ export default {
             let class_list = [
                 `thumbnail-size-${this.size}`
             ];
-            if (this.src === '') {
-                class_list.push('placeholder');
-                class_list.push(`thumbnail-resource-type-${this.placeholder}`);
-            }
             if (this.thumbnailData.markedForDeletion) {
                 class_list.push('deleted');
             }
@@ -79,20 +72,17 @@ export default {
             return class_list.join(' ');
         },
 
-        contentType() {
-            const file_type = this.objectData.format;
-            if (file_type === undefined || file_type.length === 0 || file_type[0] === 'unknown') {
-                return ''
+        placeholderClass() {
+            let type = this.objectData.type;
+            if (type === 'AdminUnit') {
+                return 'fa-university';
+            } else if (type === 'Collection') {
+                return 'fa-archive';
+            } else if (type === 'Folder') {
+                return 'fa-folder';
+            } else {
+                return 'fa-file';
             }
-            return file_type[0];
-        },
-
-        placeholder() {
-            const type = this.objectData.type.toLowerCase();
-            if (type === 'adminunit' || type === 'work' || type === 'file') {
-                return 'document';
-            }
-            return type;
         },
 
         currentPage() {
@@ -129,6 +119,41 @@ export default {
     @media screen and (max-width: 600px) {
         a {
             margin-right: 15px;
+        }
+    }
+
+    .thumbnail.thumbnail-size-large {
+        width: 160px;
+        .placeholder {
+            font-size: 9em;
+        }
+        .thumbnail-badge {
+            font-size: 200%;
+            bottom: 0;
+            right: 8px;
+        }
+    }
+
+    .thumbnail.thumbnail-size-medium {
+        width: 140px;
+        .placeholder {
+            font-size: 7em;
+        }
+        .thumbnail-badge {
+            font-size: 150%;
+            bottom: -50px;
+        }
+    }
+
+    .thumbnail.thumbnail-size-small {
+        width: 64px;
+        overflow-y: hidden;
+        .placeholder {
+            font-size: 5em;
+        }
+        .thumbnail-badge {
+            bottom: 1px;
+            right: 0;
         }
     }
 </style>

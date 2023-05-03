@@ -8,8 +8,8 @@
         </div>
         <div class="columns">
             <div class="column" :class="{restrictedContent: 'is-8'}">
+                <thumbnail :thumbnail-data="recordData"></thumbnail>
                 <h2 :class="isDeleted">
-                    <thumbnail :thumbnail-data="recordData"></thumbnail>
                     {{ recordData.briefObject.title }}
                     <span class="item_container_count">{{ displayChildCount }}</span>
                 </h2>

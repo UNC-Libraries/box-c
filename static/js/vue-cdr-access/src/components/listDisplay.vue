@@ -8,7 +8,7 @@ Renders search results in a list view display format
                 <ul :class="{'margin-offset': isRecordBrowse}">
                     <li v-for="(record, index) in recordList" class="columns browseitem" :class="{stripe: index % 2 === 0}">
                         <div class="column is-narrow">
-                            <thumbnail :thumbnail-data="record"></thumbnail>
+                            <thumbnail :thumbnail-data="record" size="medium"></thumbnail>
                         </div>
                         <div class="column metadata-fields">
                             <div class="result-title">
