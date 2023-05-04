@@ -27,7 +27,6 @@ export default {
 
             if (!is_search) {
                 defaults.works_only = false;
-                defaults.browse_type = 'list-display';
             }
 
             let route_params = Object.assign(defaults, this.$route.query);

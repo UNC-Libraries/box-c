@@ -58,6 +58,8 @@ Buttons for switching display modes in a search result between gallery and list 
             if (this.paramExists('browse_type', current_url_params)) {
                 this.browse_type = current_url_params.browse_type;
                 sessionStorage.setItem('browse-type', this.browse_type);
+            } else {
+                console.log("Attempted to load browse type from sessionStorage", this.browse_type);
             }
         }
     }

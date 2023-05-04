@@ -138,7 +138,11 @@ Top level component for full record pages with searching/browsing, including Adm
 
         computed: {
             isBrowseDisplay() {
-                return this.urlParams().browse_type === 'gallery-display';
+                let browse_type = this.urlParams().browse_type;
+                if (browse_type === undefined) {
+                    browse_type = sessionStorage.getItem('browse-type');
+                }
+                return browse_type === 'gallery-display';
             },
 
             showWidget() {

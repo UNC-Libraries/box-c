@@ -23,7 +23,7 @@ Top level component wrapper for search pages
                         </p>
                         <browse-sort browse-type="search"></browse-sort>
                     </div>
-                    <list-display v-if="records.length > 0" :record-list="records" :use-saved-browse-type="true"></list-display>
+                    <list-display v-if="records.length > 0" :record-list="records" :exclude-browse-type-from-record-urls="true"></list-display>
                 </div>
                 <p v-else class="spacing" :class="facetsWithNoResults">{{ $t('search.no_results') }}</p>
             </div>

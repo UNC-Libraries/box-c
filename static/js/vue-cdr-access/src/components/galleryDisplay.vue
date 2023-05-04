@@ -7,8 +7,8 @@ Renders search results in a gallery view display in full record pages.
             <div class="column is-12" >
                 <ul class="column is-12" v-for="records in chunkedRecords">
                     <li v-for="record in records" class="column" :class="column_size">
-                        <thumbnail :thumbnail-data="record"></thumbnail>
-                        <router-link class="record-title" :class="{deleted: markedForDeletion(record)}" :to="recordUrl(record.id, 'gallery-display')">{{ record.title }}</router-link>
+                        <thumbnail :thumbnail-data="record" :link-to-url="recordUrl(record, 'gallery-display')"></thumbnail>
+                        <router-link class="record-title" :class="{deleted: markedForDeletion(record)}" :to="recordUrl(record, 'gallery-display')">{{ record.title }}</router-link>
                     </li>
                 </ul>
             </div>

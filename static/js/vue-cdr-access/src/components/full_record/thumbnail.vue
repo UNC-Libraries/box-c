@@ -1,5 +1,5 @@
 <template>
-    <router-link :to="currentPage" :title="tooltip" :aria-label="ariaText" class="thumbnail" :class="imgClasses">
+    <router-link :to="linkToPath" :title="tooltip" :aria-label="ariaText" class="thumbnail" :class="imgClasses">
         <div v-if="src !== ''" :style="{ 'background-image': 'url(' + objectData.thumbnail_url + ')'}"
              :aria-label="altText(objectData.title)"
              role="img"
@@ -29,6 +29,11 @@ export default {
         thumbnailData: {
             type: Object,
             default: {}
+        },
+        // If provided, clicking the thumbnail will go to this url. Else it will go to the provided record's page.
+        linkToUrl: {
+            type: String,
+            default: ''
         },
         size: {
             type: String,
@@ -92,7 +97,10 @@ export default {
             }
         },
 
-        currentPage() {
+        linkToPath() {
+            if (this.linkToUrl !== '') {
+                return this.linkToUrl;
+            }
             return `/record/${this.objectData.id}`;
         },
 
