@@ -1,8 +1,10 @@
 <template>
     <router-link :to="currentPage" :title="tooltip" :aria-label="ariaText" class="thumbnail" :class="imgClasses">
-        <img v-if="src !== ''" :src="objectData.thumbnail_url"
-             :alt="altText(objectData.title)"
-             :class="{restricted: markedForDeletion(objectData) || isRestricted(objectData)}">
+        <div v-if="src !== ''" :style="{ 'background-image': 'url(' + objectData.thumbnail_url + ')'}"
+             :aria-label="altText(objectData.title)"
+             role="img"
+             class="thumbnail-viewer"
+             :class="{restricted: markedForDeletion(objectData) || isRestricted(objectData)}"></div>
         <i v-else class="placeholder fa" :class="placeholderClass"></i>
         <div v-if="badgeIcon !== ''" class="thumbnail-badge">
             <div class="fa-stack">
@@ -124,41 +126,6 @@ export default {
     @media screen and (max-width: 600px) {
         a {
             margin-right: 15px;
-        }
-    }
-
-    .thumbnail.thumbnail-size-large {
-        width: 160px;
-        .placeholder {
-            font-size: 9em;
-        }
-        .thumbnail-badge {
-            font-size: 200%;
-            bottom: 0;
-            right: 8px;
-        }
-    }
-
-    .thumbnail.thumbnail-size-medium {
-        width: 140px;
-        .placeholder {
-            font-size: 7em;
-        }
-        .thumbnail-badge {
-            font-size: 150%;
-            bottom: -50px;
-        }
-    }
-
-    .thumbnail.thumbnail-size-small {
-        width: 64px;
-        overflow-y: hidden;
-        .placeholder {
-            font-size: 5em;
-        }
-        .thumbnail-badge {
-            bottom: 1px;
-            right: 0;
         }
     }
 </style>

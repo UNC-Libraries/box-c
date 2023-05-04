@@ -8,7 +8,7 @@ Renders search results in a gallery view display in full record pages.
                 <ul class="column is-12" v-for="records in chunkedRecords">
                     <li v-for="record in records" class="column" :class="column_size">
                         <thumbnail :thumbnail-data="record"></thumbnail>
-                        <router-link :class="{deleted: markedForDeletion(record)}" :to="recordUrl(record.id, 'gallery-display')">{{ record.title }}</router-link>
+                        <router-link class="record-title" :class="{deleted: markedForDeletion(record)}" :to="recordUrl(record.id, 'gallery-display')">{{ record.title }}</router-link>
                     </li>
                 </ul>
             </div>
@@ -104,39 +104,21 @@ Renders search results in a gallery view display in full record pages.
         }
 
         .record-title {
+            display: block;
+            float: left;
             -ms-hyphens: auto;
             -webkit-hyphens: auto;
             hyphens: auto;
             line-height: 1.2;
-            margin-top: 25px;
+            margin-top: 5px;
             max-width: 250px;
             overflow-wrap: break-word;
             width: 95%;
-        }
-
-        .thumbnail + .record-title {
-            margin-top: 165px;
+            font-size: 1.2rem;
         }
 
         img.restricted {
             float: none;
-        }
-
-        .thumbnail-badge-trash,
-        .thumbnail-badge-lock {
-            margin-top: -55px;
-            padding-bottom: 15px;
-            padding-left: 65px;
-
-            .fa-circle {
-                font-size: 4rem;
-            }
-
-            .fa-trash,
-            .fa-lock {
-                font-size: 2rem;
-                margin: 12px 8px;
-            }
         }
     }
 </style>

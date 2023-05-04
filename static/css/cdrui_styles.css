@@ -82,8 +82,6 @@
 .thumbnail {
 	display: block;
 	position:relative;
-	width: 64px;
-	height: 64px;
 	float: left;
 	margin: 0 0 20px 0;
 	text-align: center;
@@ -91,94 +89,27 @@
 	word-break: break-word;
 }
 
-.thumbnail.thumbnail-size-large {
-	width: 128px;
-	height: 128px;
-}
-
-.thumbnail .thumbnail-placeholder {
-	position: absolute;
-	top: 0;
-	left: 0;
+.thumbnail .thumbnail-viewer {
+	background-position: center center;
+	background-repeat: no-repeat;
+	background-size: cover;
 	width: 64px;
 	height: 64px;
-	opacity: 0;
-	transition: opacity 0.3s;
-	margin-top: -5px;
 }
 
-.thumbnail.thumbnail-size-large .thumbnail-placeholder {
+.thumbnail.thumbnail-size-medium .thumbnail-viewer {
+	width: 112px;
+	height: 112px;
+}
+
+.thumbnail.thumbnail-size-large .thumbnail-viewer {
 	width: 128px;
 	height: 128px;
-}
-
-.thumbnail.placeholder .thumbnail-placeholder {
-	opacity: 1;
-	transition: opacity 0s;
-}
-
-.relatedthumb.deleted .thumbnail.placeholder .thumbnail-placeholder,
-.is-narrow-tablet.deleted .thumbnail.placeholder .thumbnail-placeholder {
-	opacity: .3;
-}
-
-.thumbnail.thumbnail-resource-type-collection .thumbnail-placeholder {
-	background: url('/static/images/placeholder/collection-small.png');
-}
-
-.thumbnail.thumbnail-resource-type-folder .thumbnail-placeholder {
-	background: url('/static/images/placeholder/folder-small.png');
-}
-
-.thumbnail.thumbnail-resource-type-document .thumbnail-placeholder {
-	background: url('/static/images/placeholder/document-small.png');
-}
-
-.thumbnail.thumbnail-resource-type-collection.thumbnail-size-large .thumbnail-placeholder {
-	background: url('/static/images/placeholder/collection-large.png');
-}
-
-.thumbnail.thumbnail-resource-type-folder.thumbnail-size-large .thumbnail-placeholder {
-	background: url('/static/images/placeholder/folder-large.png');
-}
-
-.thumbnail.thumbnail-resource-type-document.thumbnail-size-large .thumbnail-placeholder {
-	background: url('/static/images/placeholder/document-large.png');
-}
-
-.thumbnail .thumbnail-placeholder .thumbnail-content-type {
-	position: absolute;
-	bottom: 5px;
-	left: 0;
-	width: 64px;
-	color: #fff;
-	text-transform: uppercase;
-}
-
-.thumbnail.thumbnail-size-large .thumbnail-placeholder .thumbnail-content-type {
-	bottom: 15px;
-	width: 128px;
-	font-size: 150%;
 }
 
 .thumbnail .thumbnail-preview {
 	opacity: 1;
 	transition: opacity 0.3s;
-}
-
-.thumbnail.placeholder .thumbnail-preview {
-	opacity: 0;
-	transition: opacity 0s;
-}
-
-.thumbnail .thumbnail-preview img {
-	max-width: 64px;
-	max-height: 64px;
-}
-
-.thumbnail.thumbnail-size-large .thumbnail-preview img {
-	max-width: 128px;
-	max-height: 128px;
 }
 
 .thumbnail .thumbnail-badge {
@@ -188,10 +119,37 @@
 	bottom: -6px;
 }
 
-.thumbnail.thumbnail-size-large .thumbnail-badge {
-	font-size: 200%;
+.thumbnail.thumbnail-size-medium .thumbnail-badge {
+	font-size: 150%;
 	right: -12px;
 	bottom: -12px;
+}
+
+.thumbnail.thumbnail-size-large .thumbnail-badge {
+	font-size: 200%;
+	right: 2px;
+	bottom: 0;
+}
+
+.browse-records-display .thumbnail.thumbnail-size-large .thumbnail-badge {
+	right: -24px;
+	bottom: -12px;
+}
+
+.browse-header .thumbnail {
+	width: 160px;
+}
+
+.thumbnail .placeholder {
+	font-size: 64px;
+}
+
+.thumbnail.thumbnail-size-medium .placeholder {
+	font-size: 112px;
+}
+
+.thumbnail.thumbnail-size-large .placeholder {
+	font-size: 128px;
 }
 
 .thumbnail-badge .background {
@@ -210,6 +168,10 @@
 
 .iteminfo h2 {
 	word-wrap: break-word;
+}
+
+.record-metadata li {
+	margin-left: 0;
 }
 
 .full_record_top h2 > span {
