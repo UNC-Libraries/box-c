@@ -129,7 +129,7 @@ describe('thumbnail.vue', () => {
     });
 
     it('displays a thumbnail, if present', () => {
-        expect(wrapper.find('.thumbnail-preview img').exists()).toBe(true);
+        expect(wrapper.find('.thumbnail .thumbnail-viewer').exists()).toBe(true);
         expect(wrapper.find('a').attributes('class'))
             .toEqual('thumbnail thumbnail-size-large has_tooltip')
     });
@@ -138,41 +138,48 @@ describe('thumbnail.vue', () => {
         let updatedRecordData = cloneDeep(recordData);
         updatedRecordData.briefObject.thumbnail_url = undefined;
         await wrapper.setProps({ thumbnailData: updatedRecordData });
-        expect(wrapper.find('.thumbnail-placeholder .thumbnail-content-type').exists()).toBe(true);
+        expect(wrapper.find('.thumbnail .placeholder').exists()).toBe(true);
         expect(wrapper.find('a').attributes('class'))
-            .toEqual('thumbnail thumbnail-size-large placeholder thumbnail-resource-type-collection has_tooltip')
+            .toEqual('thumbnail thumbnail-size-large has_tooltip')
     });
 
-    it('displays a "document" placeholder for files, if no thumbnail', async () => {
+    it('displays a "file" placeholder for files, if no thumbnail', async () => {
         let updatedRecordData = cloneDeep(recordData);
         updatedRecordData.briefObject.thumbnail_url = undefined;
         updatedRecordData.briefObject.type = 'File';
         await wrapper.setProps({ thumbnailData: updatedRecordData });
-        expect(wrapper.find('a').attributes('class')).toContain('thumbnail-resource-type-document')
+        expect(wrapper.find('.thumbnail .placeholder').attributes('class')).toContain('fa-file');
     });
 
-    it('displays a "document" placeholder for works, if no thumbnail', async () => {
+    it('displays a "file" placeholder for works, if no thumbnail', async () => {
         let updatedRecordData = cloneDeep(recordData);
         updatedRecordData.briefObject.thumbnail_url = undefined;
         updatedRecordData.briefObject.type = 'Work';
         await wrapper.setProps({ thumbnailData: updatedRecordData });
-        expect(wrapper.find('a').attributes('class')).toContain('thumbnail-resource-type-document')
+        expect(wrapper.find('.thumbnail .placeholder').attributes('class')).toContain('fa-file');
     });
 
-    it('displays a "document" placeholder for admin units resource types, if no thumbnail', async () => {
+    it('displays a "folder" placeholder for works, if no thumbnail', async () => {
+        let updatedRecordData = cloneDeep(recordData);
+        updatedRecordData.briefObject.thumbnail_url = undefined;
+        updatedRecordData.briefObject.type = 'Folder';
+        await wrapper.setProps({ thumbnailData: updatedRecordData });
+        expect(wrapper.find('.thumbnail .placeholder').attributes('class')).toContain('fa-folder');
+    });
+
+    it('displays a "university" placeholder for admin units resource types, if no thumbnail', async () => {
         let updatedRecordData = cloneDeep(recordData);
         updatedRecordData.briefObject.thumbnail_url = undefined;
         updatedRecordData.briefObject.type = 'AdminUnit';
         await wrapper.setProps({ thumbnailData: updatedRecordData });
-        expect(wrapper.find('a').attributes('class')).toContain('thumbnail-resource-type-document')
+        expect(wrapper.find('.thumbnail .placeholder').attributes('class')).toContain('fa-university');
     });
 
-    it('displays placeholder text, if no thumbnail and format is set', async () => {
+    it('displays a "archive" placeholder for admin units resource types, if no thumbnail', async () => {
         let updatedRecordData = cloneDeep(recordData);
         updatedRecordData.briefObject.thumbnail_url = undefined;
-        updatedRecordData.briefObject.format = ['Image'];
         await wrapper.setProps({ thumbnailData: updatedRecordData });
-        expect(wrapper.find('.thumbnail-placeholder span').text()).toEqual('Image');
+        expect(wrapper.find('.thumbnail .placeholder').attributes('class')).toContain('fa-archive');
     });
 
     it('displays a lock icon if an item is restricted', async () => {
@@ -199,8 +206,8 @@ describe('thumbnail.vue', () => {
     });
 
     it('sets the src for the image', () => {
-        expect(wrapper.find('.thumbnail-preview img').attributes('src'))
-            .toEqual('https://localhost:8080/services/api/thumb/fc77a9be-b49d-4f4e-b656-1644c9e964fc/large');
+        expect(wrapper.find('.thumbnail-viewer').attributes('style'))
+            .toEqual('background-image: url(https://localhost:8080/services/api/thumb/fc77a9be-b49d-4f4e-b656-1644c9e964fc/large);');
     });
 
     it('sets the url for the image', () => {
@@ -214,6 +221,13 @@ describe('thumbnail.vue', () => {
 
     it('has tooltip text for admin units, collections, folders and works', () => {
         expect(wrapper.find('a').attributes('title')).toEqual('View details for testCollection')
+    });
+
+    it('does not have tooltip for unknown resource type', async () => {
+        let updatedRecordData = cloneDeep(recordData);
+        updatedRecordData.briefObject.type = 'what';
+        await wrapper.setProps({ thumbnailData: updatedRecordData });
+        expect(wrapper.find('a').attributes('title')).toEqual('')
     });
 
     it('has tooltip text for files', async () => {

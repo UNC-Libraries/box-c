@@ -19,10 +19,6 @@ export default {
             } else {
                 return `/record/${id}`;
             }
-        },
-
-        linkLabel(title) {
-            return `Visit ${title}`;
         }
     }
 }

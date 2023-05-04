@@ -67,4 +67,37 @@ describe('galleryDisplay.vue', () => {
         let two_per_row = [record_list, record_list, record_list, record_list];
         expect(wrapper.vm.chunkedRecords).toEqual(two_per_row);
     });
+
+    it('changes number of columns to 6 for tiny window', async () => {
+        Object.defineProperty(window, 'innerWidth', {
+            writable: true,
+            configurable: true,
+            value: 150,
+        });
+
+        wrapper.vm.numberOfColumns();
+        expect(wrapper.vm.column_size).toEqual("is-6");
+    });
+
+    it('changes number of columns to 4 for medium window', async () => {
+        Object.defineProperty(window, 'innerWidth', {
+            writable: true,
+            configurable: true,
+            value: 800,
+        });
+
+        wrapper.vm.numberOfColumns();
+        expect(wrapper.vm.column_size).toEqual("is-4");
+    });
+
+    it('changes number of columns to 3 for larger window', async () => {
+        Object.defineProperty(window, 'innerWidth', {
+            writable: true,
+            configurable: true,
+            value: 1200,
+        });
+
+        wrapper.vm.numberOfColumns();
+        expect(wrapper.vm.column_size).toEqual("is-3");
+    });
 });
