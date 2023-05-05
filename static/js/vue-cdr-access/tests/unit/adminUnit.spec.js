@@ -106,10 +106,6 @@ describe('adminUnit.vue', () => {
         });
     });
 
-    it('displays breadcrumbs', () => {
-        expect(wrapper.find('#full_record_trail').text()).toEqual(expect.stringMatching(/Collection.*testAdminUnit/));
-    });
-
     it('displays an admin unit header', () => {
         expect(wrapper.find('h2').text()).toBe('testAdminUnit');
     });

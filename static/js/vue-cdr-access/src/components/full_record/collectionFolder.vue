@@ -1,12 +1,6 @@
 <template>
-    <div class="browse-header content-wrap full_record">
-        <div class="columns">
-            <div class="column">
-                <bread-crumbs :object-path="recordData.briefObject.objectPath">
-                </bread-crumbs>
-            </div>
-        </div>
-        <div class="columns">
+    <div class="content-wrap full_record">
+        <div class="columns browse-top">
             <div class="column" :class="{restrictedContent: 'is-8'}">
                 <thumbnail :thumbnail-data="recordData"></thumbnail>
                 <h2 :class="isDeleted">

@@ -1,14 +1,8 @@
 <template>
     <div class="content-wrap full_record">
         <div class="full_record_top">
-            <div class="browse-header aggregate-record">
-                <div class="columns">
-                    <div class="column">
-                        <bread-crumbs :object-path="recordData.briefObject.objectPath">
-                        </bread-crumbs>
-                    </div>
-                </div>
-                <div class="columns">
+            <div class="aggregate-record">
+                <div class="columns browse-top">
                     <div class="column">
                         <h2>{{ recordData.briefObject.title }}</h2>
                         <div class="column">
