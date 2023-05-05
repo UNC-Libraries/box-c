@@ -76,23 +76,28 @@ Top level component for full record pages with searching/browsing, including Adm
         name: 'displayWrapper',
 
         watch: {
-            '$route.query': {
-                handler(d) {
-                    if (!this.is_page_loading && this.container_info.resourceType !== 'File'
-                        && this.container_info.resourceType !== 'Work') {
-                        this.retrieveSearchResults();
+            '$route': {
+                handler(new_data, old_data) {
+                    if (this.is_page_loading) {
+                        return;
+                    }
+                    let path_changed = new_data.path !== old_data.path;
+                    if (path_changed) {
+                        // If the object being viewed has changed, then need to ensure search results
+                        // are requested after it finishes loading.
+                        this.getBriefObject().then(() => {
+                            if (this.needsSearchResults) {
+                                this.retrieveSearchResults();
+                            }
+                        });
+                    } else {
+                        if (this.needsSearchResults) {
+                            this.retrieveSearchResults();
+                        }
                     }
                 },
                 deep: true
-            },
-            '$route.path': {
-                handler(d) {
-                    if (!this.is_page_loading) {
-                        this.getBriefObject();
-                    }
-                },
-                deep: true
-            },
+            }
         },
 
         components: {
@@ -147,6 +152,11 @@ Top level component for full record pages with searching/browsing, including Adm
 
             showWidget() {
                 return this.record_list.length > 0;
+            },
+
+            needsSearchResults() {
+                return this.container_info.resourceType !== 'File'
+                    && this.container_info.resourceType !== 'Work';
             }
         },
 
@@ -174,7 +184,7 @@ Top level component for full record pages with searching/browsing, including Adm
                     link += '/';
                 }
 
-               get(`${link}json`).then((response) => {
+               return get(`${link}json`).then((response) => {
                     this.container_info = response.data;
                     this.pageEvent(response.data);
                     this.pageView(this.container_info.pageSubtitle)
