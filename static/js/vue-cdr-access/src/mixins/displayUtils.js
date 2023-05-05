@@ -1,46 +1,24 @@
+/*
+Utilities for search/browse result pages
+*/
 export default {
     methods: {
-        recordUrl(id, browse_type) {
-            return `/record/${id}/?browse_type=${browse_type}`;
-        },
-
-        recordType(type) {
-            if (type === 'AdminUnit') {
-                return 'fa-university';
-            } else if (type === 'Collection') {
-                return 'fa-archive';
-            } else if (type === 'Folder') {
-                return 'fa-folder';
+        recordUrl(idOrObject, browse_type = null) {
+            let id = null;
+            if (typeof idOrObject === 'string') {
+                id = idOrObject;
             } else {
-                return 'fa-file';
+                id = idOrObject.id;
+                // Don't apply browse types to works and files
+                if (idOrObject.type == 'Work' || idOrObject.type == 'File') {
+                    browse_type = null;
+                }
             }
-        },
-
-        thumbnailPresent(thumb) {
-            return thumb !== undefined && thumb !== '';
-        },
-
-        altText(title) {
-            return `Thumbnail for ${title}`;
-        },
-
-        linkLabel(title) {
-            return `Visit ${title}`;
-        },
-
-        markedForDeletion(record) {
-            if (record.status === undefined) return false;
-            return /marked.*?deletion/i.test(this.restrictions(record));
-        },
-
-        isRestricted(record) {
-            if (record.type === 'AdminUnit') return false;
-            if (record.status === undefined) return true;
-            return !record.status.includes('Public Access');
-        },
-
-        restrictions(record) {
-            return record.status.join(',').toLowerCase();
+            if (browse_type) {
+                return `/record/${id}/?browse_type=${browse_type}`;
+            } else {
+                return `/record/${id}`;
+            }
         }
     }
 }

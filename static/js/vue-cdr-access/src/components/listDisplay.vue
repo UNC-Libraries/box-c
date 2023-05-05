@@ -8,11 +8,11 @@ Renders search results in a list view display format
                 <ul :class="{'margin-offset': isRecordBrowse}">
                     <li v-for="(record, index) in recordList" class="columns browseitem" :class="{stripe: index % 2 === 0}">
                         <div class="column is-narrow">
-                            <thumbnail :thumbnail-data="record"></thumbnail>
+                            <thumbnail :thumbnail-data="record" size="medium" :link-to-url="recordUrl(record, linkBrowseType)"></thumbnail>
                         </div>
                         <div class="column metadata-fields">
                             <div class="result-title">
-                                <router-link :class="{deleted: markedForDeletion(record)}" :to="recordUrl(record.id, linkBrowseType)">{{ record.title }}</router-link>
+                                <router-link :class="{deleted: markedForDeletion(record)}" :to="recordUrl(record, linkBrowseType)">{{ record.title }}</router-link>
                                 <span v-if="record.type !== 'File'" class="item_container_count">{{ countDisplay(record.counts.child) }}</span>
                             </div>
                             <div><span class="has-text-weight-bold">{{ $t('display.date_deposited') }}:</span> {{ formatDate(record.added) }}</div>
@@ -53,7 +53,7 @@ Renders search results in a list view display format
                 default: false,
                 type: Boolean
             },
-            useSavedBrowseType: {
+            excludeBrowseTypeFromRecordUrls: {
                 default: false,
                 type: Boolean
             }
@@ -61,12 +61,11 @@ Renders search results in a list view display format
 
         computed: {
             linkBrowseType() {
-                if (this.useSavedBrowseType) {
-                    let saved_browse_type = sessionStorage.getItem('browse-type');
-                    return saved_browse_type !== null ? saved_browse_type : 'gallery-display';
+                if (this.excludeBrowseTypeFromRecordUrls) {
+                    return null;
+                } else {
+                    return 'list-display';
                 }
-
-                return 'list-display';
             }
         },
 

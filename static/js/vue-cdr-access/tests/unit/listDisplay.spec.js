@@ -296,18 +296,18 @@ describe('listDisplay.vue', () => {
         })).toEqual('image/png');
     });
 
-    it("set a default browse type for record links when saved browse type shouldn't be used", async () => {
+    it("set a default browse type for record links when not excluding them", async () => {
         await wrapper.setProps({
-            useSavedBrowseType: false
+            excludeBrowseTypeFromRecordUrls: false
         });
         expect(wrapper.vm.linkBrowseType).toBe('list-display');
     });
 
-    it("sets a default browse type for record links when saved browse type should be used and no value is set", async () => {
+    it("sets no browse type if parameter indicates it should be excluded", async () => {
         await wrapper.setProps({
-            useSavedBrowseType: true
+            excludeBrowseTypeFromRecordUrls: true
         });
-        expect(wrapper.vm.linkBrowseType).toBe('gallery-display');
+        expect(wrapper.vm.linkBrowseType).toBeNull();
     });
 
     it("sets browse type form sessionStorage for record links when saved browse type should be used", async () => {

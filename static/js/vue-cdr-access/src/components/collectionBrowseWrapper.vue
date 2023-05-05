@@ -10,7 +10,7 @@ Top level component used for the collection browse page
 
         <div class="columns">
             <div class="column collection-browse">
-        <list-display :record-list="records" :use-saved-browse-type="true"></list-display>
+        <list-display :record-list="records" :exclude-browse-type-from-record-urls="true"></list-display>
             </div>
         </div>
     </div>

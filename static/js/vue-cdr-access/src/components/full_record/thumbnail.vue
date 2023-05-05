@@ -1,13 +1,11 @@
 <template>
-    <router-link :to="currentPage" :title="tooltip" :aria-label="ariaText" class="thumbnail" :class="imgClasses">
-        <div class="thumbnail-placeholder">
-            <span v-if="src === ''" class="thumbnail-content-type">{{ contentType }}</span>
-        </div>
-
-        <div v-if="src !== ''" class="thumbnail-preview">
-            <img :src="src" :alt="objectData.title"/>
-        </div>
-
+    <router-link :to="linkToPath" :title="tooltip" :aria-label="ariaText" class="thumbnail" :class="imgClasses">
+        <div v-if="src !== ''" :style="{ 'background-image': 'url(' + objectData.thumbnail_url + ')'}"
+             :aria-label="altText(objectData.title)"
+             role="img"
+             class="thumbnail-viewer"
+             :class="{restricted: markedForDeletion(objectData) || isRestricted(objectData)}"></div>
+        <i v-else class="placeholder fa" :class="placeholderClass"></i>
         <div v-if="badgeIcon !== ''" class="thumbnail-badge">
             <div class="fa-stack">
                 <i class="fas fa-circle fa-stack-2x background"></i>
@@ -32,9 +30,20 @@ export default {
             type: Object,
             default: {}
         },
+        // If provided, clicking the thumbnail will go to this url. Else it will go to the provided record's page.
+        linkToUrl: {
+            type: String,
+            default: ''
+        },
         size: {
             type: String,
             default: 'large'
+        }
+    },
+
+    methods: {
+        altText(title) {
+            return `Thumbnail for ${title}`;
         }
     },
 
@@ -65,10 +74,6 @@ export default {
             let class_list = [
                 `thumbnail-size-${this.size}`
             ];
-            if (this.src === '') {
-                class_list.push('placeholder');
-                class_list.push(`thumbnail-resource-type-${this.placeholder}`);
-            }
             if (this.thumbnailData.markedForDeletion) {
                 class_list.push('deleted');
             }
@@ -79,23 +84,23 @@ export default {
             return class_list.join(' ');
         },
 
-        contentType() {
-            const file_type = this.objectData.format;
-            if (file_type === undefined || file_type.length === 0 || file_type[0] === 'unknown') {
-                return ''
+        placeholderClass() {
+            let type = this.objectData.type;
+            if (type === 'AdminUnit') {
+                return 'fa-university';
+            } else if (type === 'Collection') {
+                return 'fa-archive';
+            } else if (type === 'Folder') {
+                return 'fa-folder';
+            } else {
+                return 'fa-file';
             }
-            return file_type[0];
         },
 
-        placeholder() {
-            const type = this.objectData.type.toLowerCase();
-            if (type === 'adminunit' || type === 'work' || type === 'file') {
-                return 'document';
+        linkToPath() {
+            if (this.linkToUrl !== '') {
+                return this.linkToUrl;
             }
-            return type;
-        },
-
-        currentPage() {
             return `/record/${this.objectData.id}`;
         },
 

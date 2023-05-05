@@ -1,7 +1,7 @@
 import isEmpty from 'lodash.isempty';
 
 export default {
-   methods: {
+    methods: {
         permissionData(recordData) {
             if (recordData.briefObject !== undefined) {
                 return recordData.briefObject;
@@ -32,6 +32,21 @@ export default {
                 return false;
             }
             return recordData.permissions.includes(permission);
+        },
+
+        markedForDeletion(record) {
+           if (record.status === undefined) return false;
+           return /marked.*?deletion/i.test(this.restrictions(record));
+        },
+
+        isRestricted(record) {
+           if (record.type === 'AdminUnit') return false;
+           if (record.status === undefined) return true;
+           return !record.status.includes('Public Access');
+        },
+
+        restrictions(record) {
+            return record.status.join(',').toLowerCase();
         }
     }
 }

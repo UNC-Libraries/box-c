@@ -50,7 +50,7 @@ describe('routeUtils',  () => {
         expect(results.rows).toEqual(defaults.rows);
         expect(results.start).toEqual(defaults.start);
         expect(results.sort).toEqual(defaults.sort);
-        expect(results.browse_type).toEqual(defaults.browse_type);
+        expect(results.browse_type).toBeUndefined();
         expect(results.works_only).toEqual(defaults.works_only);
     });
 
@@ -85,7 +85,7 @@ describe('routeUtils',  () => {
         expect(results.rows).toEqual(defaults.rows);
         expect(results.start).toEqual(defaults.start);
         expect(results.sort).toEqual(defaults.sort);
-        expect(results.browse_type).toEqual(defaults.browse_type);
+        expect(results.browse_type).toBeUndefined();
         expect(results.works_only).toEqual(defaults.works_only);
         expect(results.types).toEqual(defaults.types);
     });

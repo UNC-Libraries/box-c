@@ -7,7 +7,8 @@ Renders search results in a gallery view display in full record pages.
             <div class="column is-12" >
                 <ul class="column is-12" v-for="records in chunkedRecords">
                     <li v-for="record in records" class="column" :class="column_size">
-                        <thumbnail :thumbnail-data="record"></thumbnail>
+                        <thumbnail :thumbnail-data="record" :link-to-url="recordUrl(record, 'gallery-display')"></thumbnail>
+                        <router-link class="record-title" :class="{deleted: markedForDeletion(record)}" :to="recordUrl(record, 'gallery-display')">{{ record.title }}</router-link>
                     </li>
                 </ul>
             </div>
@@ -18,6 +19,7 @@ Renders search results in a gallery view display in full record pages.
 <script>
     import thumbnail from '@/components/full_record/thumbnail.vue';
     import displayUtils from '../mixins/displayUtils';
+    import permissionUtils from '../mixins/permissionUtils';
     import debounce from 'lodash.debounce';
     import chunk from 'lodash.chunk';
 
@@ -33,7 +35,7 @@ Renders search results in a gallery view display in full record pages.
 
         components: {thumbnail},
 
-        mixins: [displayUtils],
+        mixins: [displayUtils, permissionUtils],
 
         data() {
             return {
@@ -102,39 +104,21 @@ Renders search results in a gallery view display in full record pages.
         }
 
         .record-title {
+            display: block;
+            float: left;
             -ms-hyphens: auto;
             -webkit-hyphens: auto;
             hyphens: auto;
             line-height: 1.2;
-            margin-top: 25px;
+            margin-top: 5px;
             max-width: 250px;
             overflow-wrap: break-word;
             width: 95%;
-        }
-
-        .thumbnail + .record-title {
-            margin-top: 165px;
+            font-size: 1.2rem;
         }
 
         img.restricted {
             float: none;
-        }
-
-        .thumbnail-badge-trash,
-        .thumbnail-badge-lock {
-            margin-top: -55px;
-            padding-bottom: 15px;
-            padding-left: 65px;
-
-            .fa-circle {
-                font-size: 4rem;
-            }
-
-            .fa-trash,
-            .fa-lock {
-                font-size: 2rem;
-                margin: 12px 8px;
-            }
         }
     }
 </style>

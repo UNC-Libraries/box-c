@@ -8,8 +8,8 @@
         </div>
         <div class="columns">
             <div class="column">
+                <thumbnail :thumbnail-data="recordData"></thumbnail>
                 <h2 :class="isDeleted">
-                    <thumbnail :thumbnail-data="recordData"></thumbnail>
                     {{ recordData.briefObject.title }}
                 </h2>
                 <p>
