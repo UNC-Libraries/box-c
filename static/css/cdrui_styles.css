@@ -92,7 +92,7 @@
 .thumbnail .thumbnail-viewer {
 	background-position: center center;
 	background-repeat: no-repeat;
-	background-size: cover;
+	background-size: contain;
 	width: 64px;
 	height: 64px;
 }
