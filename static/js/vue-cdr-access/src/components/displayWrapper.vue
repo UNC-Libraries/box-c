@@ -182,7 +182,7 @@ Top level component for full record pages with searching/browsing, including Adm
                     link += '/';
                 }
 
-                return get(`${link}json`).then((response) => {
+               return get(`${link}json`).then((response) => {
                     this.container_info = response.data;
                     this.pageEvent(response.data);
                     this.pageView(this.container_info.pageSubtitle)
