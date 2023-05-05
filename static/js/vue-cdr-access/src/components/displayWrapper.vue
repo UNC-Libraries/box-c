@@ -78,19 +78,20 @@ Top level component for full record pages with searching/browsing, including Adm
         watch: {
             '$route': {
                 handler(new_data, old_data) {
+                    if (this.is_page_loading) {
+                        return;
+                    }
                     let path_changed = new_data.path !== old_data.path;
                     if (path_changed) {
-                        if (!this.is_page_loading) {
-                            // If the object being viewed has changed, then need to ensure search results
-                            // are requested after it finishes loading.
-                            this.getBriefObject().then(() => {
-                                if (this.needsSearchResults) {
-                                    this.retrieveSearchResults();
-                                }
-                            });
-                        }
+                        // If the object being viewed has changed, then need to ensure search results
+                        // are requested after it finishes loading.
+                        this.getBriefObject().then(() => {
+                            if (this.needsSearchResults) {
+                                this.retrieveSearchResults();
+                            }
+                        });
                     } else {
-                        if (!this.is_page_loading && this.needsSearchResults) {
+                        if (this.needsSearchResults) {
                             this.retrieveSearchResults();
                         }
                     }
