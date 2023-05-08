@@ -1,13 +1,7 @@
 <template>
     <div class="content-wrap full_record">
         <div class="full_record_top">
-            <div class="browse-header aggregate-record">
-                <div class="columns">
-                    <div class="column">
-                        <bread-crumbs :object-path="recordData.briefObject.objectPath">
-                        </bread-crumbs>
-                    </div>
-                </div>
+            <div class="aggregate-record browse-top">
                 <div class="columns">
                     <div class="column">
                         <h2>{{ recordData.briefObject.title }}</h2>
@@ -75,11 +69,13 @@
                     </div>
                 </div>
             </div>
+        <div class="background-white">
             <player :record-data="recordData"></player>
             <metadata-display :uuid="recordData.briefObject.id"
                               :can-view-metadata="hasPermission(recordData, 'viewMetadata')">
             </metadata-display>
             <neighbor-list :current-record-id="recordData.briefObject.id" :neighbors="recordData.neighborList"></neighbor-list>
+        </div>
     </div>
 </template>
 

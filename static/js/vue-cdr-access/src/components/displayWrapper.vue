@@ -3,46 +3,50 @@ Top level component for full record pages with searching/browsing, including Adm
 -->
 <template>
     <header-small/>
-    <div>
-        <div v-if="is_page_loading" class="loading-icon">
-            <img :src="nonVueStaticImageUrl('ajax-loader-lg.gif')" alt="data loading icon">
-        </div>
-        <div v-if="!is_page_loading">
-            <admin-unit v-if="container_info.resourceType === 'AdminUnit'" :record-data="container_info"></admin-unit>
-            <collection-folder v-if="container_info.resourceType === 'Collection' || container_info.resourceType === 'Folder'"
-                               :record-data="container_info"></collection-folder>
-            <aggregate-record v-if="container_info.resourceType === 'Work'" :record-data="container_info"></aggregate-record>
-            <file-record v-if="container_info.resourceType === 'File'" :record-data="container_info"></file-record>
-
-            <div v-if="container_info.resourceType !== 'Work' && container_info.resourceType !== 'File'">
-                <div class="columns is-tablet">
-                    <div class="column is-6">
-                        <browse-search :object-type="container_metadata.type"></browse-search>
-                    </div>
-                    <div class="column is-2" v-if="showWidget">
-                        <browse-sort browse-type="display"></browse-sort>
-                    </div>
-                    <div class="column is-2 container-note" v-if="showWidget">
-                        <works-only></works-only>
-                    </div>
-                    <div class="column is-narrow-tablet" v-if="showWidget">
-                        <view-type></view-type>
-                    </div>
-                </div>
-                <clear-filters :filter-parameters="filter_parameters"></clear-filters>
-
-                <div v-if="showWidget" class="columns">
-                    <div class="facet-list column is-one-quarter facets-border">
-                        <facets :facet-list="facet_list" :min-created-year="minimumCreatedYear"></facets>
-                    </div>
-                    <div id="fullRecordSearchResultDisplay" class="column is-three-quarters">
-                        <gallery-display v-if="isBrowseDisplay" :record-list="record_list"></gallery-display>
-                        <list-display v-else :record-list="record_list" :is-record-browse="true"></list-display>
-                    </div>
-                </div>
-                <p v-else class="spacing">{{ $t('search.no_results') }}</p>
-                <pagination browse-type="display" :number-of-records="record_count"></pagination>
+    <div v-if="is_page_loading" class="loading-icon">
+        <img :src="nonVueStaticImageUrl('ajax-loader-lg.gif')" alt="data loading icon">
+    </div>
+    <div v-if="!is_page_loading" class="browse-header">
+        <div class="columns">
+            <div class="column crumbs">
+                <bread-crumbs :object-path="container_info.briefObject.objectPath">
+                </bread-crumbs>
             </div>
+        </div>
+        <admin-unit v-if="container_info.resourceType === 'AdminUnit'" :record-data="container_info"></admin-unit>
+        <collection-folder v-if="container_info.resourceType === 'Collection' || container_info.resourceType === 'Folder'"
+                           :record-data="container_info"></collection-folder>
+        <aggregate-record v-if="container_info.resourceType === 'Work'" :record-data="container_info"></aggregate-record>
+        <file-record v-if="container_info.resourceType === 'File'" :record-data="container_info"></file-record>
+
+        <div v-if="container_info.resourceType !== 'Work' && container_info.resourceType !== 'File'" class="background-white">
+            <div class="columns is-tablet">
+                <div class="column is-6">
+                    <browse-search :object-type="container_metadata.type"></browse-search>
+                </div>
+                <div class="column is-2" v-if="showWidget">
+                    <browse-sort browse-type="display"></browse-sort>
+                </div>
+                <div class="column is-2 container-note" v-if="showWidget">
+                    <works-only></works-only>
+                </div>
+                <div class="column is-narrow-tablet" v-if="showWidget">
+                    <view-type></view-type>
+                </div>
+            </div>
+            <clear-filters :filter-parameters="filter_parameters"></clear-filters>
+
+            <div v-if="showWidget" class="columns">
+                <div class="facet-list column is-one-quarter facets-border">
+                    <facets :facet-list="facet_list" :min-created-year="minimumCreatedYear"></facets>
+                </div>
+                <div id="fullRecordSearchResultDisplay" class="column is-three-quarters">
+                    <gallery-display v-if="isBrowseDisplay" :record-list="record_list"></gallery-display>
+                    <list-display v-else :record-list="record_list" :is-record-browse="true"></list-display>
+                </div>
+            </div>
+            <p v-else class="spacing">{{ $t('search.no_results') }}</p>
+            <pagination browse-type="display" :number-of-records="record_count"></pagination>
         </div>
     </div>
 </template>
@@ -50,6 +54,7 @@ Top level component for full record pages with searching/browsing, including Adm
 <script>
     import adminUnit from '@/components/full_record/adminUnit.vue';
     import aggregateRecord from '@/components/full_record/aggregateRecord.vue';
+    import breadCrumbs from '@/components/full_record/breadCrumbs.vue';
     import browseSearch from '@/components/browseSearch.vue';
     import browseSort from '@/components/browseSort.vue';
     import clearFilters from '@/components/clearFilters.vue';
@@ -103,6 +108,7 @@ Top level component for full record pages with searching/browsing, including Adm
         components: {
             aggregateRecord,
             adminUnit,
+            breadCrumbs,
             browseSearch,
             browseSort,
             clearFilters,
@@ -218,7 +224,7 @@ Top level component for full record pages with searching/browsing, including Adm
             hasSearchQuery() {
                 let query_params = this.$route.query;
                 return Object.keys(query_params).some(key => query_params[key]
-                        && this.allPossibleSearchParameters.indexOf(key) >= 0);
+                    && this.allPossibleSearchParameters.indexOf(key) >= 0);
             },
 
             updateParams() {
@@ -269,6 +275,11 @@ Top level component for full record pages with searching/browsing, including Adm
     .loading-icon {
         margin-top: 50px;
         text-align: center;
+    }
+
+    .crumbs {
+        padding-right: 0;
+        padding-bottom: 0;
     }
 
     .collection-info-bottom,

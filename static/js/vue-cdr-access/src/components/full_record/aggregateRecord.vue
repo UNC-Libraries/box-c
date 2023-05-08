@@ -1,14 +1,8 @@
 <template>
     <div class="content-wrap full_record">
         <div class="full_record_top">
-            <div class="browse-header aggregate-record">
-                <div class="columns">
-                    <div class="column">
-                        <bread-crumbs :object-path="recordData.briefObject.objectPath">
-                        </bread-crumbs>
-                    </div>
-                </div>
-                <div class="columns">
+            <div class="aggregate-record">
+                <div class="columns browse-top">
                     <div class="column">
                         <h2>{{ recordData.briefObject.title }}</h2>
                         <div class="column">
@@ -78,15 +72,17 @@
                 </div>
             </div>
         </div>
-        <player :record-data="recordData"></player>
-        <file-list v-if="childCount > 0"
-                   :child-count="childCount"
-                   :work-id="recordData.briefObject.id"
-                   :edit-access="hasPermission(recordData,'editDescription')">
-        </file-list>
-        <metadata-display :uuid="recordData.briefObject.id"
-                          :can-view-metadata="hasPermission(recordData, 'viewMetadata')">
-        </metadata-display>
+        <div class="background-white">
+            <player :record-data="recordData"></player>
+            <file-list v-if="childCount > 0"
+                       :child-count="childCount"
+                       :work-id="recordData.briefObject.id"
+                       :edit-access="hasPermission(recordData,'editDescription')">
+            </file-list>
+            <metadata-display :uuid="recordData.briefObject.id"
+                              :can-view-metadata="hasPermission(recordData, 'viewMetadata')">
+            </metadata-display>
+        </div>
         <neighbor-list :current-record-id="recordData.briefObject.id"
                        :neighbors="recordData.neighborList">
         </neighbor-list>

@@ -87,6 +87,7 @@ and including all types with hierarchy retained.
 
         p {
             font-size: 18px;
+            margin-left: 0;
             padding-top: 10px;
         }
 

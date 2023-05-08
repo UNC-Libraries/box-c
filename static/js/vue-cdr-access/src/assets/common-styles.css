@@ -28,4 +28,9 @@ a.button.is-link span {
     padding-left: 0;
     font-weight: bold;
     color: #0A5274;
+    word-wrap: anywhere;
+}
+
+.background-white {
+    background-color: white;
 }

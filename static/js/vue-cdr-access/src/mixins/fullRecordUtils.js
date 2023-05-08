@@ -1,4 +1,3 @@
-import breadCrumbs from '@/components/full_record/breadCrumbs.vue';
 import modalMetadata from '@/components/modalMetadata.vue';
 import thumbnail from '@/components/full_record/thumbnail.vue';
 import permissionUtils from "./permissionUtils";
@@ -6,7 +5,7 @@ import { formatInTimeZone } from 'date-fns-tz';
 import { mapState } from 'vuex';
 
 export default {
-    components: { breadCrumbs, modalMetadata, thumbnail },
+    components: { modalMetadata, thumbnail },
 
     data() {
         return {

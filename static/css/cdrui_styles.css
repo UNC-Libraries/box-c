@@ -1,33 +1,3 @@
-.relateditem {
-	width: 14%;
-	float: left;
-	margin: 0 0 10px 0;
-	padding: 10px 0;
-	text-align: center;
-	overflow: hidden;
-	border: 1px solid transparent;
-}
-
-.relateditem.current_item,.relateditem:hover {
-	border-color: #ddd;
-	background-color: #eee;
-}
-
-.relatedthumb {
-	margin: 0 auto 10px auto;
-	height: 64px;
-	width: 64px;
-	display: block;
-	text-align: center;
-}
-
-.relateditem p {
-	font-size: 11px;
-	line-height: 15px;
-	clear: both;
-	margin: 0 5px;
-}
-
 .no_searchbox {
 	border-top: 1px solid #f3f3f3;
 }

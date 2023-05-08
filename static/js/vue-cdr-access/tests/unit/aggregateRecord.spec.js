@@ -572,10 +572,6 @@ describe('aggregateRecord.vue', () => {
         router = null
     });
 
-    it("displays breadcrumbs", () => {
-        expect(wrapper.findComponent({ name: 'breadCrumbs' }).exists()).toBe(true);
-    });
-
     it("displays a work title", () => {
         expect(wrapper.find('h2').text()).toEqual('Listen for real');
     });

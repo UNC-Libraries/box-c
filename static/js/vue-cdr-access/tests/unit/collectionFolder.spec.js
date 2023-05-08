@@ -130,10 +130,6 @@ describe('collectionFolder.vue', () => {
         });
     });
 
-    it('displays breadcrumbs', () => {
-        expect(wrapper.find('#full_record_trail').text()).toEqual(expect.stringMatching(/Collection.*testAdminUnit.*testCollection/));
-    });
-
     it('displays a header', () => {
         expect(wrapper.find('h2').text()).toBe('testCollection 4 items');
     });

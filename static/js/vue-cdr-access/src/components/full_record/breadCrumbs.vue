@@ -71,10 +71,10 @@ export default {
         border-radius: 5px;
         font-size: 18px;
         line-height: 1.2;
-        margin: 0 auto 25px auto;
+        margin: 25px auto;
         padding: 20px;
         text-indent: 0;
-        width: 100%;
+        width: 96%;
         word-wrap: anywhere;
 
         a {

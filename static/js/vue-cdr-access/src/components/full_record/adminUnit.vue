@@ -1,12 +1,6 @@
 <template>
-    <div class="browse-header">
-        <div class="columns">
-            <div class="column">
-                <bread-crumbs :object-path="recordData.briefObject.objectPath">
-                </bread-crumbs>
-            </div>
-        </div>
-        <div class="columns">
+    <div>
+        <div class="columns browse-top">
             <div class="column">
                 <thumbnail :thumbnail-data="recordData"></thumbnail>
                 <h2 :class="isDeleted">
