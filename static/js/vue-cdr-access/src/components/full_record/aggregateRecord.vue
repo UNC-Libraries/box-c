@@ -72,15 +72,17 @@
                 </div>
             </div>
         </div>
-        <player :record-data="recordData"></player>
-        <file-list v-if="childCount > 0"
-                   :child-count="childCount"
-                   :work-id="recordData.briefObject.id"
-                   :edit-access="hasPermission(recordData,'editDescription')">
-        </file-list>
-        <metadata-display :uuid="recordData.briefObject.id"
-                          :can-view-metadata="hasPermission(recordData, 'viewMetadata')">
-        </metadata-display>
+        <div class="background-white">
+            <player :record-data="recordData"></player>
+            <file-list v-if="childCount > 0"
+                       :child-count="childCount"
+                       :work-id="recordData.briefObject.id"
+                       :edit-access="hasPermission(recordData,'editDescription')">
+            </file-list>
+            <metadata-display :uuid="recordData.briefObject.id"
+                              :can-view-metadata="hasPermission(recordData, 'viewMetadata')">
+            </metadata-display>
+        </div>
         <neighbor-list :current-record-id="recordData.briefObject.id"
                        :neighbors="recordData.neighborList">
         </neighbor-list>

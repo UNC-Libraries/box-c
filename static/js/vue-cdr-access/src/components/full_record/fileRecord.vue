@@ -69,11 +69,13 @@
                     </div>
                 </div>
             </div>
+        <div class="background-white">
             <player :record-data="recordData"></player>
             <metadata-display :uuid="recordData.briefObject.id"
                               :can-view-metadata="hasPermission(recordData, 'viewMetadata')">
             </metadata-display>
             <neighbor-list :current-record-id="recordData.briefObject.id" :neighbors="recordData.neighborList"></neighbor-list>
+        </div>
     </div>
 </template>
 

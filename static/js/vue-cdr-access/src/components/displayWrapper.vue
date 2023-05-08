@@ -7,13 +7,19 @@ Top level component for full record pages with searching/browsing, including Adm
         <img :src="nonVueStaticImageUrl('ajax-loader-lg.gif')" alt="data loading icon">
     </div>
     <div v-if="!is_page_loading" class="browse-header">
+        <div class="columns">
+            <div class="column crumbs">
+                <bread-crumbs :object-path="container_info.briefObject.objectPath">
+                </bread-crumbs>
+            </div>
+        </div>
         <admin-unit v-if="container_info.resourceType === 'AdminUnit'" :record-data="container_info"></admin-unit>
         <collection-folder v-if="container_info.resourceType === 'Collection' || container_info.resourceType === 'Folder'"
                            :record-data="container_info"></collection-folder>
         <aggregate-record v-if="container_info.resourceType === 'Work'" :record-data="container_info"></aggregate-record>
         <file-record v-if="container_info.resourceType === 'File'" :record-data="container_info"></file-record>
 
-        <div v-if="container_info.resourceType !== 'Work' && container_info.resourceType !== 'File'">
+        <div v-if="container_info.resourceType !== 'Work' && container_info.resourceType !== 'File'" style="background-color: white">
             <div class="columns is-tablet">
                 <div class="column is-6">
                     <browse-search :object-type="container_metadata.type"></browse-search>
@@ -48,6 +54,7 @@ Top level component for full record pages with searching/browsing, including Adm
 <script>
     import adminUnit from '@/components/full_record/adminUnit.vue';
     import aggregateRecord from '@/components/full_record/aggregateRecord.vue';
+    import breadCrumbs from '@/components/full_record/breadCrumbs.vue';
     import browseSearch from '@/components/browseSearch.vue';
     import browseSort from '@/components/browseSort.vue';
     import clearFilters from '@/components/clearFilters.vue';
@@ -101,6 +108,7 @@ Top level component for full record pages with searching/browsing, including Adm
         components: {
             aggregateRecord,
             adminUnit,
+            breadCrumbs,
             browseSearch,
             browseSort,
             clearFilters,
@@ -267,6 +275,11 @@ Top level component for full record pages with searching/browsing, including Adm
     .loading-icon {
         margin-top: 50px;
         text-align: center;
+    }
+
+    .crumbs {
+        padding-right: 0;
+        padding-bottom: 0;
     }
 
     .collection-info-bottom,
