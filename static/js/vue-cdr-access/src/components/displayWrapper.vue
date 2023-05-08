@@ -19,7 +19,7 @@ Top level component for full record pages with searching/browsing, including Adm
         <aggregate-record v-if="container_info.resourceType === 'Work'" :record-data="container_info"></aggregate-record>
         <file-record v-if="container_info.resourceType === 'File'" :record-data="container_info"></file-record>
 
-        <div v-if="container_info.resourceType !== 'Work' && container_info.resourceType !== 'File'" style="background-color: white">
+        <div v-if="container_info.resourceType !== 'Work' && container_info.resourceType !== 'File'" class="background-white">
             <div class="columns is-tablet">
                 <div class="column is-6">
                     <browse-search :object-type="container_metadata.type"></browse-search>
