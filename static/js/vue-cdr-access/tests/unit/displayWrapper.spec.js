@@ -355,9 +355,7 @@ describe('displayWrapper.vue', () => {
         // Verify that there are still other facets, but that the unit facet has been removed
         let num_facets = wrapper.vm.$store.state.possibleFacetFields.length;
         expect(num_facets).toBeGreaterThan(0);
-        console.log("Possible: ", wrapper.vm.$store.state.possibleFacetFields);
         expect(wrapper.vm.$store.state.possibleFacetFields.indexOf('unit')).toEqual(-1);
-        console.log("Route query: ", wrapper.vm.$route.query.facetSelect);
         expect(wrapper.vm.$route.query.facetSelect.indexOf('unit')).toEqual(-1);
 
         // Trigger works only filter and make sure that the set of facets does not change
