@@ -178,6 +178,9 @@ Top level component for full record pages with searching/browsing, including Adm
                     this.min_created_year = response.data.minSearchYear;
                     this.filter_parameters = response.data.filterParameters;
                     this.is_page_loading = false;
+                    if (!isEmpty(this.$route.query)) {
+                        this.updateUrl();
+                    }
                 }).catch(function (error) {
                     console.log(error);
                 });
@@ -264,13 +267,6 @@ Top level component for full record pages with searching/browsing, including Adm
                     this.retrieveSearchResults();
                 }
             });
-        },
-
-        mounted() {
-            // Don't update route if no url parameters are passed in
-            if (!isEmpty(this.$route.query)) {
-                this.updateUrl();
-            }
         }
     }
 </script>

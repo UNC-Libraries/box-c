@@ -15,7 +15,7 @@ const store = createStore({
     },
     mutations: {
         removePossibleFacetFields (state, removeFacets) {
-            state.possibleFacetFields = state.possibleFacetFields.filter(f => removeFacets.indexOf(f) < 0);
+            state.possibleFacetFields = POSSIBLE_FACET_FIELDS.slice().filter(f => removeFacets.indexOf(f) < 0);
         },
         resetPossibleFacetFields (state) {
             state.possibleFacetFields = POSSIBLE_FACET_FIELDS.slice();
