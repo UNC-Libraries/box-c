@@ -161,8 +161,7 @@ Top level component for full record pages with searching/browsing, including Adm
             },
 
             needsSearchResults() {
-                return this.container_info.resourceType !== 'File'
-                    && this.container_info.resourceType !== 'Work';
+                return GET_SEARCH_RESULTS.includes(this.container_info.resourceType);
             }
         },
 
@@ -191,9 +190,14 @@ Top level component for full record pages with searching/browsing, including Adm
                 }
 
                return get(`${link}json`).then((response) => {
-                    this.container_info = response.data;
-                    this.pageEvent(response.data);
-                    this.pageView(this.container_info.pageSubtitle)
+                   this.container_info = response.data;
+                   this.pageEvent(response.data);
+                   this.pageView(this.container_info.pageSubtitle)
+                   if (this.needsSearchResults) {
+                       this.adjustFacetsForRetrieval();
+                   } else {
+                       this.is_page_loading = false;
+                   }
                 }).catch(error => {
                     console.log(error);
                 });
@@ -255,18 +259,18 @@ Top level component for full record pages with searching/browsing, including Adm
         },
 
         created() {
-            this.getBriefObject();
+            this.getBriefObject().then(() => {
+                if (this.needsSearchResults) {
+                    this.retrieveSearchResults();
+                }
+            });
         },
 
         mounted() {
-            if (GET_SEARCH_RESULTS.includes(this.container_info.resourceType)) {
-                this.adjustFacetsForRetrieval();
-                // Don't update route if no url parameters are passed in
-                if (!isEmpty(this.$route.query)) {
-                    this.updateUrl();
-                }
+            // Don't update route if no url parameters are passed in
+            if (!isEmpty(this.$route.query)) {
+                this.updateUrl();
             }
-            this.retrieveSearchResults();
         }
     }
 </script>
