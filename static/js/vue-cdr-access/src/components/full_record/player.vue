@@ -1,5 +1,5 @@
 <template>
-    <div class="clear">
+    <div>
         <template v-if="(recordData.viewerType === 'uv' && hasPermission(recordData, 'viewAccessCopies')) ||
                 (recordData.viewerType === 'pdf' && hasPermission(recordData, 'viewOriginal'))">
             <iframe :src="viewer(recordData.viewerType)" allow="fullscreen" scrolling="no"></iframe>
