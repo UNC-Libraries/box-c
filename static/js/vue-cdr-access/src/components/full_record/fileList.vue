@@ -250,7 +250,7 @@ export default {
 
 <style lang="scss">
     @import 'datatables.net-bm';
-    @import 'datatables.net-buttons';
+    @import 'datatables.net-buttons-bm';
     #data-display {
         .dataTables_wrapper {
             margin: 5px;
