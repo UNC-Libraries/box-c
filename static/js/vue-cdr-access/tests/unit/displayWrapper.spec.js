@@ -6,6 +6,7 @@ import moxios from "moxios";
 import {createI18n} from "vue-i18n";
 import translations from "@/translations";
 import { response, briefObjectData } from "../fixtures/displayWrapperFixtures";
+import { $gtag } from '../fixtures/testHelpers';
 
 let wrapper, router;
 
@@ -44,6 +45,7 @@ describe('displayWrapper.vue', () => {
         wrapper = mount(displayWrapper, {
             global: {
                 plugins: [router, store, i18n],
+                mocks: { $gtag },
                 stubs: {
                     RouterLink: RouterLinkStub
                 }
@@ -61,18 +63,20 @@ describe('displayWrapper.vue', () => {
         });
     }
 
-    it("retrieves data", (done) => {
+    it("retrieves data", async () => {
         stubQueryResponse(`listJson/${response.container.id}?.+`, response);
+        await router.push(`/record/${response.container.id}`);
         mountApp();
+        wrapper.vm.getBriefObject();
+        wrapper.vm.updateUrl();
+        wrapper.vm.retrieveSearchResults();
+        await flushPromises();
 
-        moxios.wait(() => {
-            expect(wrapper.vm.search_method).toEqual('listJson');
-            expect(wrapper.vm.record_count).toEqual(response.resultCount);
-            expect(wrapper.vm.record_list).toEqual(response.metadata);
-            expect(wrapper.vm.container_name).toEqual(response.container.title);
-            expect(wrapper.vm.container_metadata).toEqual(response.container);
-            done();
-        });
+        expect(wrapper.vm.search_method).toEqual('listJson');
+        expect(wrapper.vm.record_count).toEqual(response.resultCount);
+        expect(wrapper.vm.record_list).toEqual(response.metadata);
+        expect(wrapper.vm.container_name).toEqual(response.container.title);
+        expect(wrapper.vm.container_metadata).toEqual(response.container);
     });
 
     it("uses the correct search parameter for non admin set browse works only browse", async () => {
@@ -223,10 +227,9 @@ describe('displayWrapper.vue', () => {
 
     it("adjusts facets retrieved for admin unit", async () => {
         stubQueryResponse(`listJson/73bc003c-9603-4cd9-8a65-93a22520ef6a?.+&facetSelect=collection%2Cformat%2Cgenre%2Clanguage%2Csubject%2Clocation%2CcreatedYear%2CcreatorContributor%2Cpublisher&.*`, response);
-        await router.push('/record/73bc003c-9603-4cd9-8a65-93a22520ef6a');
-        mountApp({
-            container_info: {
-                briefObject: {
+        stubQueryResponse(`record/73bc003c-9603-4cd9-8a65-93a22520ef6a/json`,
+            {
+                'briefObject': {
                     type: 'AdminUnit',
                     objectPath: {
                         entries: [
@@ -243,9 +246,14 @@ describe('displayWrapper.vue', () => {
                         ]
                     }
                 },
-                resourceType: 'AdminUnit'
-            }
-        });
+                'resourceType': 'AdminUnit',
+                'markedForDeletion': false
+            });
+        await router.push('/record/73bc003c-9603-4cd9-8a65-93a22520ef6a');
+        mountApp();
+        wrapper.vm.getBriefObject();
+        wrapper.vm.updateUrl();
+        wrapper.vm.retrieveSearchResults();
         await flushPromises();
 
         // Verify that there are still other facets, but that the unit facet has been removed
@@ -257,6 +265,12 @@ describe('displayWrapper.vue', () => {
 
     it("adjusts facets retrieved for collection object", async () => {
         stubQueryResponse(`listJson/73bc003c-9603-4cd9-8a65-93a22520ef6a?.+&facetSelect=format%2Cgenre%2Clanguage%2Csubject%2Clocation%2CcreatedYear%2CcreatorContributor%2Cpublisher&.*`, response);
+        stubQueryResponse(`record/73bc003c-9603-4cd9-8a65-93a22520ef6a/json`,
+            {
+                'briefObject': briefObjectData,
+                'resourceType': 'Collection',
+                'markedForDeletion': false
+            });
         await router.push('/record/73bc003c-9603-4cd9-8a65-93a22520ef6a');
         mountApp();
         await flushPromises();
@@ -271,6 +285,33 @@ describe('displayWrapper.vue', () => {
 
     it("adjusts facets retrieved for folder object", async () => {
         stubQueryResponse(`listJson/73bc003c-9603-4cd9-8a65-93a22520ef6a?.+&facetSelect=format%2Cgenre%2Clanguage%2Csubject%2Clocation%2CcreatedYear%2CcreatorContributor%2Cpublisher&.*`, response);
+        stubQueryResponse(`record/73bc003c-9603-4cd9-8a65-93a22520ef6a/json`,
+            {
+                'briefObject': {
+                    type: 'Folder',
+                    objectPath: {
+                        entries: [
+                            {
+                                pid: 'collections',
+                                name: 'Content Collections Root',
+                                container: true
+                            },
+                            {
+                                pid: '353ee09f-a4ed-461e-a436-18a1bee77b01',
+                                name: 'testAdminUnit',
+                                container: true
+                            },
+                            {
+                                pid: '6d824655-b2a0-4d4b-9f8c-d304bbe20286',
+                                name: 'A Collection',
+                                container: true
+                            }
+                        ]
+                    }
+                },
+                'resourceType': 'Folder',
+                'markedForDeletion': false
+            });
         await router.push('/record/73bc003c-9603-4cd9-8a65-93a22520ef6a');
         mountApp();
         await flushPromises();
@@ -285,10 +326,9 @@ describe('displayWrapper.vue', () => {
 
     it("adjusts facets retrieved for admin unit and maintains them after checking works only", async () => {
         stubQueryResponse(`listJson/73bc003c-9603-4cd9-8a65-93a22520ef6a?.+&facetSelect=collection%2Cformat%2Cgenre%2Clanguage%2Csubject%2Clocation%2CcreatedYear%2CcreatorContributor%2Cpublisher&.*`, response);
-        await router.push('/record/73bc003c-9603-4cd9-8a65-93a22520ef6a/?browse_type=list-display');
-        mountApp({
-            container_info: {
-                briefObject: {
+        stubQueryResponse(`record/73bc003c-9603-4cd9-8a65-93a22520ef6a/json`,
+            {
+                'briefObject': {
                     type: 'AdminUnit',
                     objectPath: {
                         entries: [
@@ -305,9 +345,11 @@ describe('displayWrapper.vue', () => {
                         ]
                     }
                 },
-                resourceType: "AdminUnit"
-            }
-        });
+                'resourceType': 'AdminUnit',
+                'markedForDeletion': false
+            });
+        await router.push('/record/73bc003c-9603-4cd9-8a65-93a22520ef6a/?browse_type=list-display');
+        mountApp();
         await flushPromises();
 
         // Verify that there are still other facets, but that the unit facet has been removed

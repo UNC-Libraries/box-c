@@ -72,7 +72,7 @@
                 </div>
             </div>
         </div>
-        <div class="background-white">
+        <div class="full_record_bottom">
             <player :record-data="recordData"></player>
             <file-list v-if="childCount > 0"
                        :child-count="childCount"
