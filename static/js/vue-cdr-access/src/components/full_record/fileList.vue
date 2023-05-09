@@ -31,10 +31,9 @@ force it to reload
 import fileUtils from '../../mixins/fileUtils';
 import DataTable from 'datatables.net-vue3'
 import DataTablesLib from 'datatables.net-bm';
-import Buttons from 'datatables.net-buttons';
+import 'datatables.net-buttons-bm';
 
 DataTable.use(DataTablesLib);
-DataTable.use(Buttons);
 
 export default {
     name: 'fileList',
