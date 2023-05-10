@@ -107,13 +107,14 @@ export default {
                         row.classList.add('deleted');
                     }
                 },
+                dom: 'Bfrtip',
                 buttons: [
                     {
                         text: 'Clear Sort',
                         action: function (e, dt, node, config) {
-                            alert( 'Button activated' );
-                            // dt.order[0] = undefined;
-                            // dt.ajax.reload();
+                            console.log("button is pushed");
+                            dt.data.sort = "";
+                            dt.ajax.url(`/listJson/${this.workId}?rows=10`).load();
                         }
                     }
                 ]
