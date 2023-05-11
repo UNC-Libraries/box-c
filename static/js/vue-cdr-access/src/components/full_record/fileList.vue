@@ -112,9 +112,8 @@ export default {
                     {
                         text: 'Clear Sort',
                         action: function (e, dt, node, config) {
-                            console.log("button is pushed");
-                            dt.data.sort = "";
-                            dt.ajax.url(`/listJson/${this.workId}?rows=10`).load();
+                            dt.data().order().length = 0;
+                            dt.ajax.reload();
                         }
                     }
                 ]
