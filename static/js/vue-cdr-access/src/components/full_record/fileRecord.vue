@@ -26,7 +26,7 @@
                                             </li>
                                             <li v-if="fieldExists(recordData.findingAidUrl)">
                                                 <span class="has-text-weight-bold">{{ $t('full_record.finding_aid') }}: </span>
-                                                <a class="finding-aid" :href="recordData.findingAidUrl">">{{ recordData.findingAidUrl }}</a>
+                                                <a class="finding-aid" :href="recordData.findingAidUrl">{{ recordData.findingAidUrl }}</a>
                                             </li>
                                             <li v-if="fieldExists(recordData.briefObject.creator)">
                                                 <span class="has-text-weight-bold">{{ $t('full_record.creator') }}: </span>

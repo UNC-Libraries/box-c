@@ -17,7 +17,7 @@
                 </p>
                 <p><strong>{{ $t('full_record.finding_aid') }}: </strong>
                     <template v-if="fieldExists(recordData.findingAidUrl)">
-                        <a :href="recordData.findingAidUrl">">{{ recordData.findingAidUrl }}</a>
+                        <a :href="recordData.findingAidUrl">{{ recordData.findingAidUrl }}</a>
                     </template>
                     <template v-else>{{ $t('full_record.no_finding_aid') }}</template>
                 </p>
