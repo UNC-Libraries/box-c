@@ -31,6 +31,7 @@ force it to reload
 import fileUtils from '../../mixins/fileUtils';
 import DataTable from 'datatables.net-vue3'
 import DataTablesLib from 'datatables.net-bm';
+import 'datatables.net-buttons-bm';
 
 DataTable.use(DataTablesLib);
 
@@ -105,7 +106,17 @@ export default {
                     if (this.showBadge(data).markDeleted) {
                         row.classList.add('deleted');
                     }
-                }
+                },
+                dom: 'Bfrtip',
+                buttons: [
+                    {
+                        text: 'Clear Sort',
+                        action: function (e, dt, node, config) {
+                            dt.data().order().length = 0;
+                            dt.ajax.reload();
+                        }
+                    }
+                ]
             }
         },
 
@@ -238,6 +249,7 @@ export default {
 
 <style lang="scss">
     @import 'datatables.net-bm';
+    @import 'datatables.net-buttons-bm';
     #data-display {
         .dataTables_wrapper {
             margin: 5px;
