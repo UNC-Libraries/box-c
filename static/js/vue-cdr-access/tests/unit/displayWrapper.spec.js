@@ -77,6 +77,7 @@ describe('displayWrapper.vue', () => {
         expect(wrapper.vm.record_list).toEqual(response.metadata);
         expect(wrapper.vm.container_name).toEqual(response.container.title);
         expect(wrapper.vm.container_metadata).toEqual(response.container);
+        expect(wrapper.findComponent({ name: 'notFound'}).exists()).toBe(false);
     });
 
     it("uses the correct search parameter for non admin set browse works only browse", async () => {
@@ -365,6 +366,26 @@ describe('displayWrapper.vue', () => {
         expect(wrapper.vm.$store.state.possibleFacetFields.length).toEqual(num_facets);
         expect(wrapper.vm.$store.state.possibleFacetFields.indexOf('unit')).toEqual(-1);
         expect(wrapper.vm.$route.query.facetSelect.indexOf('unit')).toEqual(-1);
+    });
+
+    it("shows a 'not found' message if no data is returned", async () => {
+        stubQueryResponse(`/record/73bc003c-9603-4cd9-8a65-93a22520ef6a/json`, '');
+        await router.push('/record/73bc003c-9603-4cd9-8a65-93a22520ef6a/?browse_type=list-display');
+        mountApp();
+
+        await wrapper.vm.getBriefObject()
+        expect(wrapper.findComponent({ name: 'notFound' }).exists()).toBe(true);
+    });
+
+    it("displays a '503 page' if JSON responds with an error", async () => {
+        moxios.stubRequest('/record/73bc003c-9603-4cd9-8a65-93a22520ef6b/json', {
+            status: 503,
+            response: JSON.stringify({ message: 'bad stuff happened' })
+        });
+        await router.push('/record/73bc003c-9603-4cd9-8a65-93a22520ef6b/?browse_type=list-display');
+        mountApp();
+        await wrapper.vm.getBriefObject();
+        expect(wrapper.findComponent({ name: 'notAvailable' }).exists()).toBe(true);
     });
 
     afterEach(() => {

@@ -70,17 +70,30 @@ describe('collectionBrowseWrapper.vue', () => {
                 plugins: [i18n]
             }
         });
+    });
 
+    it("retrieves data", (done) => {
         moxios.stubRequest('collectionsJson', {
             status: 200,
             response: JSON.stringify(response)
         });
         wrapper.vm.retrieveData();
-    });
 
-    it("retrieves data", (done) => {
         moxios.wait(() => {
             expect(wrapper.vm.records).toEqual(response.metadata);
+            done();
+        });
+    });
+
+    it("displays a '503 page' if JSON responds with an error", (done) => {
+        moxios.stubRequest('collectionsJson', {
+            status: 503,
+            response: JSON.stringify({ message: 'bad stuff happened' })
+        });
+        wrapper.vm.retrieveData();
+
+        moxios.wait(() => {
+            expect(wrapper.findComponent({ name: 'notAvailable'}).exists()).toBe(true);
             done();
         });
     });

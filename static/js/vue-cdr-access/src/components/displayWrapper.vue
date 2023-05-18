@@ -6,7 +6,7 @@ Top level component for full record pages with searching/browsing, including Adm
     <div v-if="is_page_loading" class="loading-icon">
         <img :src="nonVueStaticImageUrl('ajax-loader-lg.gif')" alt="data loading icon">
     </div>
-    <div v-if="!is_page_loading" class="browse-header">
+    <div v-if="displayRecord" class="browse-header">
         <div class="columns">
             <div class="column crumbs">
                 <bread-crumbs :object-path="container_info.briefObject.objectPath">
@@ -49,6 +49,8 @@ Top level component for full record pages with searching/browsing, including Adm
             <pagination browse-type="display" :number-of-records="record_count"></pagination>
         </div>
     </div>
+    <not-found v-if="show_404" :display-header="false" />
+    <not-available v-if="show_503" :display-header="false" />
 </template>
 
 <script>
@@ -67,9 +69,12 @@ Top level component for full record pages with searching/browsing, including Adm
     import pagination from '@/components/pagination.vue';
     import viewType from '@/components/viewType.vue';
     import worksOnly from '@/components/worksOnly.vue';
+    import notAvailable from "@/components/error_pages/notAvailable.vue";
+    import notFound from '@/components/error_pages/notFound.vue';
     import get from 'axios';
     import isEmpty from 'lodash.isempty';
     import analyticsUtils from '../mixins/analyticsUtils';
+    import errorUtils from '../mixins/errorUtils';
     import imageUtils from '../mixins/imageUtils';
     import routeUtils from '../mixins/routeUtils';
 
@@ -120,10 +125,12 @@ Top level component for full record pages with searching/browsing, including Adm
             pagination,
             viewType,
             worksOnly,
-            facets
+            facets,
+            notAvailable,
+            notFound
         },
 
-        mixins: [analyticsUtils, imageUtils, routeUtils],
+        mixins: [analyticsUtils, errorUtils, imageUtils, routeUtils],
 
         data() {
             return {
@@ -162,6 +169,10 @@ Top level component for full record pages with searching/browsing, including Adm
 
             needsSearchResults() {
                 return GET_SEARCH_RESULTS.includes(this.container_info.resourceType);
+            },
+
+            displayRecord() {
+                return !this.is_page_loading && !this.show_404 && !this.show_503;
             }
         },
 
@@ -181,7 +192,9 @@ Top level component for full record pages with searching/browsing, including Adm
                     if (!isEmpty(this.$route.query)) {
                         this.updateUrl();
                     }
-                }).catch(function (error) {
+                }).catch(error => {
+                    this.setErrorResponse(error);
+                    this.is_page_loading = false;
                     console.log(error);
                 });
             },
@@ -193,6 +206,7 @@ Top level component for full record pages with searching/browsing, including Adm
                 }
 
                return get(`${link}json`).then((response) => {
+                   this.emptyJsonResponseCheck(response);
                    this.container_info = response.data;
                    this.pageEvent(response.data);
                    this.pageView(this.container_info.pageSubtitle)
@@ -202,8 +216,10 @@ Top level component for full record pages with searching/browsing, including Adm
                        this.is_page_loading = false;
                    }
                 }).catch(error => {
-                    console.log(error);
-                });
+                   this.setErrorResponse(error);
+                   this.is_page_loading = false;
+                   console.log(error);
+               });
             },
 
             getCollectionName(briefObject) {

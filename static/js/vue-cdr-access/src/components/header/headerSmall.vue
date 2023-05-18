@@ -46,9 +46,11 @@
 
 <script>
 import headerUtils from "../../mixins/headerUtils";
+import loginUrlUtils from "../../mixins/loginUrlUtils";
+
 export default {
     name: "headerSmall",
 
-    mixins: [headerUtils]
+    mixins: [headerUtils, loginUrlUtils],
 }
 </script>

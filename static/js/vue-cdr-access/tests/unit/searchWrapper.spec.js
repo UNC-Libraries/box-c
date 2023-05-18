@@ -152,6 +152,7 @@ describe('searchWrapper.vue', () => {
         loadFullData();
         moxios.wait(() => {
             expect(wrapper.vm.records).toEqual(response.metadata);
+            expect(wrapper.findComponent({ name: 'notFound'}).exists()).toBe(false);
             done();
         });
     });
@@ -195,6 +196,32 @@ describe('searchWrapper.vue', () => {
         loadFullData();
         moxios.wait(() => {
             expect(wrapper.vm.recordDisplayCounts).toEqual('1-1');
+            done();
+        });
+    });
+
+    it("displays a 'page not found' message if JSON response is an empty", (done) => {
+        moxios.stubRequest(`searchJson/?anywhere=&getFacets=true`, {
+            status: 200,
+            response: JSON.stringify('')
+        });
+        wrapper.vm.retrieveData();
+        moxios.wait(() => {
+            expect(wrapper.findComponent({ name: 'notFound'}).exists()).toBe(true);
+            expect(wrapper.vm.hasFacets).toBe(false);
+            done();
+        });
+    });
+
+    it("displays a '503 page' if JSON responds with an error", (done) => {
+        moxios.stubRequest(`searchJson/?anywhere=&getFacets=true`, {
+            status: 503,
+            response: JSON.stringify({ message: 'bad stuff happened' })
+        });
+        wrapper.vm.retrieveData();
+        moxios.wait(() => {
+            expect(wrapper.findComponent({ name: 'notAvailable' }).exists()).toBe(true);
+            expect(wrapper.vm.hasFacets).toBe(false);
             done();
         });
     });

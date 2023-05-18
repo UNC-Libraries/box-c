@@ -3,7 +3,7 @@ Top level component wrapper for search pages
 -->
 <template>
     <header-small/>
-    <div>
+    <div v-if="!show_404 && !show_503">
         <div class="search-query-text">
             Search results for "{{ $route.query.anywhere }}"
         </div>
@@ -35,6 +35,8 @@ Top level component wrapper for search pages
             </div>
         </div>
     </div>
+    <not-found v-if="show_404" :display-header="false"></not-found>
+    <not-available v-if="show_503"></not-available>
 </template>
 
 <script>
@@ -43,8 +45,11 @@ Top level component wrapper for search pages
     import facets from "@/components/facets.vue";
     import headerSmall from "@/components/header/headerSmall.vue";
     import listDisplay from "@/components/listDisplay.vue";
+    import notAvailable from "@/components/error_pages/notAvailable.vue";
+    import notFound from "@/components/error_pages/notFound.vue";
     import pagination from "@/components/pagination.vue";
     import analyticsUtils from '../mixins/analyticsUtils';
+    import errorUtils from "../mixins/errorUtils";
     import imageUtils from "../mixins/imageUtils";
     import routeUtils from "../mixins/routeUtils";
     import get from 'axios';
@@ -53,9 +58,18 @@ Top level component wrapper for search pages
     export default {
         name: 'searchWrapper',
 
-        components: {browseSort, clearFilters, facets, headerSmall, listDisplay, pagination},
+        components: {
+            browseSort,
+            clearFilters,
+            facets,
+            headerSmall,
+            listDisplay,
+            notAvailable,
+            notFound,
+            pagination
+        },
 
-        mixins: [analyticsUtils, imageUtils, routeUtils],
+        mixins: [analyticsUtils, errorUtils, imageUtils, routeUtils],
 
         data() {
             return {
@@ -114,13 +128,16 @@ Top level component wrapper for search pages
                 this.collection = this.routeHasPathId ? this.$route.path.split('/')[2] : '';
 
                 get(`${search_path}/${param_string}`).then((response) => {
+                    this.emptyJsonResponseCheck(response);
                     this.records = response.data.metadata;
                     this.total_records = response.data.resultCount;
                     this.facet_list = response.data.facetFields;
                     this.filter_parameters = response.data.filterParameters;
                     this.min_created_year = response.data.minSearchYear;
                     this.is_loading = false;
-                }).catch(function (error) {
+                }).catch(error => {
+                    this.setErrorResponse(error);
+                    this.is_loading = false;
                     console.log(error);
                 });
             }
