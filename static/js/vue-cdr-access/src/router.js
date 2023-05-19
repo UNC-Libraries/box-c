@@ -20,12 +20,18 @@ const router = createRouter({
       component: advancedSearch
     },
     {
-      path: `/record/:uuid(${UUID_REGEX})/`,
+      path: `/record/:id(${UUID_REGEX})/`,
       name: 'displayRecords',
       component: displayWrapper
     },
+    { // Old style DCR full record urls
+      path: `/record/:id(uuid:${UUID_REGEX})/`,
+      redirect: to => {
+        return { path: to.path.replace('uuid:', '') }
+      }
+    },
     {
-      path: `/search/:uuid(${UUID_REGEX})?/`,
+      path: `/search/:id(${UUID_REGEX})?/`,
       name: 'searchRecords',
       component: searchWrapper
     },
