@@ -65,7 +65,7 @@ router.beforeEach((to, from) => {
     store.commit('setIsLoggedIn');
     store.commit('setViewAdmin', response.headers['can-view-admin']);
   }).catch(error => {
-    console.log(error.toJSON());
+    console.log(error);
   });
 });
 
