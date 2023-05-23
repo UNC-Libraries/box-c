@@ -2,11 +2,14 @@ import { createWebHistory, createRouter } from 'vue-router'
 import axios from 'axios';
 import advancedSearch from "@/components/advancedSearch.vue";
 import displayWrapper from "@/components/displayWrapper.vue";
+import notFound from "@/components/error_pages/notFound.vue";
 import searchWrapper from "@/components/searchWrapper.vue";
 import collectionBrowseWrapper from "@/components/collectionBrowseWrapper.vue";
 import frontPage from "@/components/frontPage.vue";
 import aboutRepository from "@/components/aboutRepository.vue";
 import store from './store'
+
+const UUID_REGEX = '[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}';
 
 const router = createRouter({
   history: createWebHistory(),
@@ -17,17 +20,23 @@ const router = createRouter({
       component: advancedSearch
     },
     {
-      path: '/record/:uuid/',
+      path: `/record/:id(${UUID_REGEX})/`,
       name: 'displayRecords',
       component: displayWrapper
     },
+    { // Old style DCR full record urls
+      path: `/record/:id(uuid:${UUID_REGEX})/`,
+      redirect: to => {
+        return { path: to.path.replace('uuid:', '') }
+      }
+    },
     {
-      path: '/search/:uuid?/',
+      path: `/search/:id(${UUID_REGEX})?/`,
       name: 'searchRecords',
       component: searchWrapper
     },
     {
-      path: '/collections/',
+      path: '/collections',
       name: 'collectionBrowse',
       component: collectionBrowseWrapper
     },
@@ -40,6 +49,12 @@ const router = createRouter({
       path: '/aboutRepository',
       name: 'aboutRepository',
       component: aboutRepository
+    },
+    {
+      // https://router.vuejs.org/guide/migration/#removed-star-or-catch-all-routes
+      path: '/:pathMatch(.*)*',
+      name: 'notFound',
+      component: notFound
     }
   ]
 });
@@ -49,6 +64,8 @@ router.beforeEach((to, from) => {
     store.commit('setUsername', response.headers['username']);
     store.commit('setIsLoggedIn');
     store.commit('setViewAdmin', response.headers['can-view-admin']);
+  }).catch(error => {
+    console.log(error);
   });
 });
 
