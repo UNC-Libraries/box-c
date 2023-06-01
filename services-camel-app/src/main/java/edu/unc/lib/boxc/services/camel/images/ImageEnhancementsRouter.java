@@ -106,7 +106,7 @@ public class ImageEnhancementsRouter extends RouteBuilder {
                 .setHeader(CdrFcrepoHeaders.CdrTempPath, simple("${properties:services.tempDirectory}/${body}-access"))
                 .doTry()
                     .recipientList(simple("exec:/bin/sh?args=${properties:cdr.enhancement.bin}/convertJp2.sh "
-                            + "${headers[CdrImagePath]} jp2 ${headers[CdrTempPath]}"))
+                            + "${headers[CdrImagePath]} ${headers[CdrMimeType]} ${headers[CdrTempPath]}"))
                     .bean(addAccessCopyProcessor)
                 .endDoTry()
                 .doFinally()
