@@ -30,6 +30,12 @@ const router = createRouter({
         return { path: to.path.replace('uuid:', '') }
       }
     },
+    { // Old style DCR list urls
+      path: `/list/:pathMatch(.*)*`,
+      redirect: to => {
+        return { path: to.path.replace('/list/', '/record/') }
+      }
+    },
     {
       path: `/search/:id(${UUID_REGEX})?/`,
       name: 'searchRecords',
