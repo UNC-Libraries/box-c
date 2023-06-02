@@ -31,7 +31,7 @@ const router = createRouter({
       }
     },
     { // Old style DCR list urls
-      path: `/list/:patchMatch(.*)*`,
+      path: `/list/:pathMatch(.*)*`,
       redirect: to => {
         return { path: to.path.replace('/list/', '/record/') }
       }
