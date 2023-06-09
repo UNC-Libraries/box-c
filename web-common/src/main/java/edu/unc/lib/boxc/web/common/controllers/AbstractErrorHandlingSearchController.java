@@ -11,6 +11,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.context.request.ServletWebRequest;
@@ -26,35 +27,27 @@ import javax.servlet.http.HttpServletRequest;
 public abstract class AbstractErrorHandlingSearchController extends AbstractSolrSearchController {
     private static final Logger log = LoggerFactory.getLogger(AbstractErrorHandlingSearchController.class);
 
-    @ResponseStatus(HttpStatus.NOT_FOUND)
     @ExceptionHandler({ NotFoundException.class, ResourceNotFoundException.class })
-    public String handleInvalidRecordRequest(RuntimeException ex, HttpServletRequest request) {
-        request.setAttribute("pageSubtitle", "Not found");
-        log.debug("Invalid record request", ex);
-        return "error/invalidRecord";
+    public ResponseEntity<Object> handleInvalidRecordRequest() {
+        return new ResponseEntity<>("Invalid record request", HttpStatus.NOT_FOUND);
     }
 
-    @ResponseStatus(HttpStatus.FORBIDDEN)
     @ExceptionHandler({ AccessRestrictionException.class, AuthorizationException.class })
-    public String handleForbiddenRecordRequest(RuntimeException ex, HttpServletRequest request) {
-        request.setAttribute("pageSubtitle", "Access restricted");
-        log.debug("Access denied", ex);
-        return "error/invalidRecord";
+    public ResponseEntity<Object> handleForbiddenRecordRequest() {
+        return new ResponseEntity<>("Access denied", HttpStatus.FORBIDDEN);
     }
 
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler({ IllegalArgumentException.class, ObjectTypeMismatchException.class,
             InvalidRecordRequestException.class, InvalidPidException.class })
-    public String handleObjectTypeMismatchException(RuntimeException ex, WebRequest request) {
-        request.setAttribute("pageSubtitle", "Invalid request", WebRequest.SCOPE_REQUEST);
+    public ResponseEntity<Object> handleObjectTypeMismatchException(RuntimeException ex, WebRequest request) {
         log.info("Bad request to {}: {}", getRequestUri(request), ex.getMessage());
-        return "error/invalidRecord";
+        return new ResponseEntity<>("Invalid request", HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler({ RuntimeException.class })
-    protected String handleUncaught(RuntimeException ex, WebRequest request) {
+    protected ResponseEntity<Object> handleUncaught(RuntimeException ex, WebRequest request) {
         log.error("Uncaught exception from URL {}", getRequestUri(request), ex);
-        return "error/exception";
+        return new ResponseEntity<>("Error", HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     private String getRequestUri(WebRequest request) {

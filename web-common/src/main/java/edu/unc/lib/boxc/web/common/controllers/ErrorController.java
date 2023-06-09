@@ -7,6 +7,8 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -20,23 +22,17 @@ public class ErrorController {
     private static final Logger LOG = LoggerFactory.getLogger(ErrorController.class);
 
     @RequestMapping("/403")
-    public String handle403(Model model, HttpServletRequest request, HttpServletResponse response) {
-        response.setStatus(HttpServletResponse.SC_FORBIDDEN);
-        model.addAttribute("pageSubtitle", "Error");
-        return "error/403";
+    public ResponseEntity<Object> handle403() {
+        return new ResponseEntity<>(HttpStatus.FORBIDDEN);
     }
 
     @RequestMapping("/404")
-    public String handle404(Model model, HttpServletResponse response) {
-        LOG.debug("Page not found, forwarding to 404 page");
-        response.setStatus(HttpServletResponse.SC_NOT_FOUND);
-        model.addAttribute("pageSubtitle", "Page not found");
-        return "error/404";
+    public ResponseEntity<Object> handle404() {
+        return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
 
     @RequestMapping("/exception")
-    public String handleException(Model model, HttpServletRequest request, HttpServletResponse response) {
-        response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+    public ResponseEntity<Object> handleException(HttpServletRequest request) {
         Throwable throwable = (Throwable) request.getAttribute("javax.servlet.error.exception");
 
         if (throwable.getCause() instanceof SocketException || throwable instanceof IllegalStateException) {
@@ -46,8 +42,6 @@ public class ErrorController {
             LOG.error("An uncaught exception occurred at " + request.getAttribute("javax.servlet.forward.request_uri"),
                     throwable);
         }
-
-        model.addAttribute("pageSubtitle", "Error");
-        return "error/exception";
+        return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
     }
 }
