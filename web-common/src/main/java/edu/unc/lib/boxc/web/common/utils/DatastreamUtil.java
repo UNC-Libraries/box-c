@@ -79,37 +79,6 @@ public class DatastreamUtil {
     }
 
     /**
-     * @param metadata
-     * @return Get the file type for the given record, preferring the file format description and
-     *      falling back to the mimetype when needed.
-     */
-    public static String getFileType(ContentObjectRecord metadata) {
-        String fileType = determineFileType(metadata.getFileFormatDescription());
-        if (StringUtils.isBlank(fileType)) {
-            fileType = determineFileType(metadata.getFileFormatType());
-        }
-        return StringUtils.isBlank(fileType) ? "" : fileType;
-    }
-
-    /**
-     * Determines which filetype should be shown. Null if no filetypes found.
-     * Otherwise it de-dupes the array and if only one value returns that, otherwise returns 'Various'
-     * @param fileTypes
-     * @return
-     */
-    private static String determineFileType(List<String> fileTypes) {
-        if (fileTypes == null) {
-            return null;
-        }
-
-        if (!fileTypes.isEmpty()) {
-            return (new HashSet<>(fileTypes).size() == 1) ? fileTypes.get(0) : "Various";
-        } else {
-            return null;
-        }
-    }
-
-    /**
      * @param metadata metadata record for object
      * @param pattern mimetype suffix
      * @return
