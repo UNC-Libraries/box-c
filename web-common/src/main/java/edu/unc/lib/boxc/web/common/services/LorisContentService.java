@@ -61,6 +61,7 @@ public class LorisContentService {
 
         RequestConfig requestConfig = RequestConfig.custom()
                 .setConnectTimeout(2000)
+                .setConnectionRequestTimeout(5000)
                 .build();
 
         this.httpClient = HttpClients.custom()
@@ -80,42 +81,43 @@ public class LorisContentService {
         path.append(idToPath(simplepid, 4, 2))
                 .append(simplepid).append(".jp2").append("/info.json");
 
-        HttpGet method = new HttpGet(path.toString());
-        try (CloseableHttpResponse httpResp = httpClient.execute(method)) {
-            int statusCode = httpResp.getStatusLine().getStatusCode();
-            if (statusCode == HttpStatus.SC_OK) {
-                if (response != null) {
-                    response.setHeader("Content-Type", "application/json");
-                    response.setHeader("content-disposition", "inline");
+        int statusCode = -1;
+        String statusLine = null;
+        do {
+            HttpGet method = new HttpGet(path.toString());
+            try (CloseableHttpResponse httpResp = httpClient.execute(method)) {
+                statusCode = httpResp.getStatusLine().getStatusCode();
+                statusLine = httpResp.getStatusLine().toString();
+                if (statusCode == HttpStatus.SC_OK) {
+                    if (response != null) {
+                        response.setHeader("Content-Type", "application/json");
+                        response.setHeader("content-disposition", "inline");
 
-                    ObjectMapper iiifMapper = new IiifObjectMapper();
+                        ObjectMapper iiifMapper = new IiifObjectMapper();
 
-                    ImageService respData = iiifMapper.readValue(httpResp.getEntity().getContent(),
-                            ImageService.class);
-                    respData.setIdentifier(new URI(URIUtil.join(basePath, "jp2Proxy", simplepid, "jp2")));
+                        ImageService respData = iiifMapper.readValue(httpResp.getEntity().getContent(),
+                                ImageService.class);
+                        respData.setIdentifier(new URI(URIUtil.join(basePath, "jp2Proxy", simplepid, "jp2")));
 
-                    HttpEntity updatedRespData = EntityBuilder.create()
-                            .setText(iiifMapper.writeValueAsString(respData))
-                            .setContentType(ContentType.APPLICATION_JSON).build();
-                    httpResp.setEntity(updatedRespData);
+                        HttpEntity updatedRespData = EntityBuilder.create()
+                                .setText(iiifMapper.writeValueAsString(respData))
+                                .setContentType(ContentType.APPLICATION_JSON).build();
+                        httpResp.setEntity(updatedRespData);
 
-                    FileIOUtil.stream(outStream, httpResp);
+                        FileIOUtil.stream(outStream, httpResp);
+                    }
+                    return;
                 }
-            } else {
-                if ((statusCode == 500 || statusCode == 404) && retryServerError > 0) {
-                    getMetadata(simplepid, datastream, outStream, response, retryServerError - 1);
-                } else {
-                    LOG.error("Unexpected failure: {}", httpResp.getStatusLine());
-                    LOG.error("Path was: {}", method.getURI());
-                }
+            } catch (ClientAbortException e) {
+                LOG.debug("User client aborted request to stream jp2 metadata for {}", simplepid, e);
+            } catch (Exception e) {
+                LOG.error("Problem retrieving metadata for {}", path, e);
+            } finally {
+                method.releaseConnection();
             }
-        } catch (ClientAbortException e) {
-            LOG.debug("User client aborted request to stream jp2 metadata for {}", simplepid, e);
-        } catch (Exception e ) {
-            LOG.error("Problem retrieving metadata for {}", path, e);
-        } finally {
-            method.releaseConnection();
-        }
+            retryServerError--;
+        } while (retryServerError >= 0 && (statusCode == 500 || statusCode == 404));
+        LOG.error("Unexpected failure while getting Loris path {}: {}", statusLine, path);
     }
 
     public void streamJP2(String simplepid, String region, String size, String rotatation, String quality,
