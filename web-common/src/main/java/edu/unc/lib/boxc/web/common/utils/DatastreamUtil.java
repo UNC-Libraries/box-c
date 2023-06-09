@@ -1,16 +1,15 @@
 package edu.unc.lib.boxc.web.common.utils;
 
-import static edu.unc.lib.boxc.model.api.DatastreamType.ORIGINAL_FILE;
-import static java.util.Arrays.asList;
-import static org.apache.commons.lang3.StringUtils.isBlank;
-
-import java.util.HashSet;
-import java.util.List;
-
 import edu.unc.lib.boxc.model.api.DatastreamType;
 import edu.unc.lib.boxc.search.api.models.ContentObjectRecord;
 import edu.unc.lib.boxc.search.api.models.Datastream;
 import org.apache.commons.lang3.StringUtils;
+
+import java.util.List;
+
+import static edu.unc.lib.boxc.model.api.DatastreamType.ORIGINAL_FILE;
+import static java.util.Arrays.asList;
+import static org.apache.commons.lang3.StringUtils.isBlank;
 
 /**
  * Utility methods for presenting datastreams in views.
