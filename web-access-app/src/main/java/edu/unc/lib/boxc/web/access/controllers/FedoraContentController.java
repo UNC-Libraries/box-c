@@ -106,7 +106,7 @@ public class FedoraContentController {
 
     @ExceptionHandler({ResourceNotFoundException.class, NotFoundException.class, InvalidPidException.class})
     public ResponseEntity<Object> handleResourceNotFound() {
-        return new ResponseEntity<>("Invalid content", HttpStatus.NOT_FOUND);
+        return new ResponseEntity<>("Content not found", HttpStatus.NOT_FOUND);
     }
 
     @ExceptionHandler(AccessRestrictionException.class)
@@ -116,12 +116,12 @@ public class FedoraContentController {
 
     @ExceptionHandler(ObjectTypeMismatchException.class)
     public ResponseEntity<Object> handleObjectTypeMismatchException() {
-        return new ResponseEntity<>("Invalid content", HttpStatus.BAD_REQUEST);
+        return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(value = { RuntimeException.class })
     protected ResponseEntity<Object> handleUncaught(RuntimeException ex) {
         log.error("Uncaught exception while streaming content", ex);
-        return new ResponseEntity<>("Invalid content", HttpStatus.INTERNAL_SERVER_ERROR);
+        return new ResponseEntity<>("Error retrieving content", HttpStatus.INTERNAL_SERVER_ERROR);
     }
 }
