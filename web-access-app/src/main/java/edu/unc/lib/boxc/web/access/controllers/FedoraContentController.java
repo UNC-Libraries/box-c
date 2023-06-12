@@ -19,13 +19,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseStatus;
-import org.springframework.web.context.request.WebRequest;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -103,30 +102,24 @@ public class FedoraContentController {
         analyticsTracker.trackEvent(request, "download", pid, principals);
     }
 
-    @ResponseStatus(value = HttpStatus.NOT_FOUND)
     @ExceptionHandler({ResourceNotFoundException.class, NotFoundException.class, InvalidPidException.class})
-    public String handleResourceNotFound(HttpServletRequest request) {
-        request.setAttribute("pageSubtitle", "Invalid content");
-        return "error/invalidRecord";
+    public ResponseEntity<Object> handleResourceNotFound() {
+        return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
 
-    @ResponseStatus(value = HttpStatus.FORBIDDEN)
     @ExceptionHandler(AccessRestrictionException.class)
-    public String handleInvalidRecordRequest(HttpServletRequest request) {
-        request.setAttribute("pageSubtitle", "Invalid content");
-        return "error/invalidRecord";
+    public ResponseEntity<Object> handleInvalidRecordRequest() {
+        return new ResponseEntity<>(HttpStatus.FORBIDDEN);
     }
 
-    @ResponseStatus(value = HttpStatus.BAD_REQUEST)
     @ExceptionHandler(ObjectTypeMismatchException.class)
-    public String handleObjectTypeMismatchException(HttpServletRequest request) {
-        request.setAttribute("pageSubtitle", "Invalid content");
-        return "error/invalidRecord";
+    public ResponseEntity<Object> handleObjectTypeMismatchException() {
+        return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(value = { RuntimeException.class })
-    protected String handleUncaught(RuntimeException ex, WebRequest request) {
+    protected ResponseEntity<Object> handleUncaught(RuntimeException ex) {
         log.error("Uncaught exception while streaming content", ex);
-        return "error/exception";
+        return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
     }
 }

@@ -4,9 +4,9 @@
     xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd"
     metadata-complete="true"
     version="3.0" xmlns="http://java.sun.com/xml/ns/javaee">
-    
+
     <display-name>DCR Access</display-name>
-    
+
     <listener>
         <listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
     </listener>
@@ -18,30 +18,26 @@
             /WEB-INF/solr-search-context.xml
         </param-value>
     </context-param>
-    
-    <welcome-file-list>
-        <welcome-file>/</welcome-file>
-    </welcome-file-list>
-    
+
     <error-page>
         <error-code>403</error-code>
         <location>/403</location>
     </error-page>
-    
+
     <error-page>
         <error-code>404</error-code>
         <location>/404</location>
     </error-page>
-    
+
     <error-page>
         <exception-type>java.lang.Exception</exception-type>
         <location>/exception</location>
     </error-page>
-    
+
     <session-config>
         <tracking-mode>COOKIE</tracking-mode>
     </session-config>
-    
+
     <servlet>
         <servlet-name>uiapp</servlet-name>
         <servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>
@@ -50,18 +46,18 @@
             <param-value>/WEB-INF/uiapp-servlet.xml</param-value>
         </init-param>
     </servlet>
-    
+
     <servlet-mapping>
         <servlet-name>default</servlet-name>
         <url-pattern>/static/*</url-pattern>
         <url-pattern>/robots.txt</url-pattern>
     </servlet-mapping>
-    
+
     <servlet-mapping>
         <servlet-name>uiapp</servlet-name>
         <url-pattern>/</url-pattern>
     </servlet-mapping>
-    
+
     <filter>
         <filter-name>encodingFilter</filter-name>
         <filter-class>org.springframework.web.filter.CharacterEncodingFilter</filter-class>  
@@ -78,7 +74,7 @@
         <filter-name>encodingFilter</filter-name>
         <url-pattern>/*</url-pattern>
     </filter-mapping>
-    
+
     <filter>
         <filter-name>spoofShibbolethFilter</filter-name>
         <filter-class>org.springframework.web.filter.DelegatingFilterProxy</filter-class>
@@ -87,7 +83,7 @@
         <filter-name>spoofShibbolethFilter</filter-name>
         <url-pattern>/*</url-pattern>
     </filter-mapping>
-    
+
     <filter>
         <filter-name>storeUserAccessControlFilter</filter-name>
         <filter-class>org.springframework.web.filter.DelegatingFilterProxy</filter-class>
@@ -96,7 +92,7 @@
         <filter-name>storeUserAccessControlFilter</filter-name>
         <url-pattern>/*</url-pattern>
     </filter-mapping>
-    
+
     <filter>
         <filter-name>storeAccessLevelFilter</filter-name>
         <filter-class>org.springframework.web.filter.DelegatingFilterProxy</filter-class>

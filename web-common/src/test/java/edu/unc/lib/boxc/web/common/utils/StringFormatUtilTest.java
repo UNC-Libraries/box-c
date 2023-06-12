@@ -18,49 +18,6 @@ public class StringFormatUtilTest {
     private final static String BASE_URL = "http://example.com/path";
 
     @Test
-    public void testTruncateText() {
-        String text = StringUtils.repeat('1', 100);
-        assertEquals(50, StringFormatUtil.truncateText(text, 50).length());
-    }
-
-    @Test
-    public void testTruncateTextNegativeIndex() {
-        Assertions.assertThrows(IndexOutOfBoundsException.class, () -> {
-            String text = StringUtils.repeat('1', 5);
-            StringFormatUtil.truncateText(text, -1);
-        });
-    }
-
-    @Test
-    public void testTruncateTextGreaterThanLength() {
-        String text = StringUtils.repeat('1', 5);
-        assertEquals(5, StringFormatUtil.truncateText(text, 10).length());
-    }
-
-    @Test
-    public void testTruncateTextNull() {
-        assertNull(StringFormatUtil.truncateText(null, 10));
-    }
-
-    @Test
-    public void testTruncateTextWordBoundry() {
-        String text = StringUtils.repeat("word ", 10);
-        assertEquals(39, StringFormatUtil.truncateText(text, 42).length());
-    }
-
-    @Test
-    public void testTruncateTextWordBoundryOutOfRange() {
-        String text = StringUtils.repeat("reallyreallylongword ", 5);
-        assertEquals(80, StringFormatUtil.truncateText(text, 80).length());
-    }
-
-    @Test
-    public void testTruncateTextCutOffBeforeWordLongerThanAllowance() {
-        String text = StringUtils.repeat("reallyreallylongword ", 5);
-        assertEquals(62, StringFormatUtil.truncateText(text, 68).length());
-    }
-
-    @Test
     public void testRemoveOnlyQueryParameter() {
         String query = BASE_URL + "?param=val";
         assertEquals(BASE_URL, StringFormatUtil.removeQueryParameter(query, "param"));
@@ -82,31 +39,5 @@ public class StringFormatUtilTest {
     public void testRemoveQueryParameterNotPresent() {
         String query = BASE_URL + "?first=val&second=2";
         assertEquals(query, StringFormatUtil.removeQueryParameter(query, "other"));
-    }
-
-    @Test
-    public void makeTokenTest() {
-        assertEquals("blah", StringFormatUtil.makeToken("blah", "_"));
-        assertEquals("caf_", StringFormatUtil.makeToken("café", "_"));
-        assertEquals("lorem_ipsum_", StringFormatUtil.makeToken("lorem ipsum?", "_"));
-        assertEquals("lorem__ipsum_", StringFormatUtil.makeToken("lorem? ipsum?", "_"));
-        assertEquals("lorem___ipsum", StringFormatUtil.makeToken("lorem;  ipsum", "_"));
-    }
-
-    @Test
-    public void testFormatFilesizeBytes() {
-        assertEquals("6 B", StringFormatUtil.formatFilesize("6", 0));
-    }
-
-    @Test
-    public void testFormatFilesizeGB() {
-        long size = 562l * 1024l * 1024l * 1024l;
-        assertEquals("562 GB", StringFormatUtil.formatFilesize(size, 1));
-    }
-
-    @Test
-    public void testFormatFilesizeGBWithDecimal() {
-        long size = (562l * 1024l * 1024l * 1024l) / 100;
-        assertEquals("5.6 GB", StringFormatUtil.formatFilesize(size, 1));
     }
 }

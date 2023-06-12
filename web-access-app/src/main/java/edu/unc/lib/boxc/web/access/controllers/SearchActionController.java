@@ -45,16 +45,6 @@ public class SearchActionController extends AbstractErrorHandlingSearchControlle
     @Autowired
     private AccessCopiesService accessCopiesService;
 
-    @RequestMapping("/search")
-    public String search() {
-        return "searchResults";
-    }
-
-    @RequestMapping("/search/{pid}")
-    public String search(@PathVariable("pid") String pid) {
-        return "searchResults";
-    }
-
     /**
      * Endpoint which returns search results, ignoring hierarchy, with any supplied filters limiting the results.
      * @param getFacets if true, then will retrieve facet results as well

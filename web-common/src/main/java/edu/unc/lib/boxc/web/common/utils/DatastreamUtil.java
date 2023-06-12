@@ -1,16 +1,15 @@
 package edu.unc.lib.boxc.web.common.utils;
 
-import static edu.unc.lib.boxc.model.api.DatastreamType.ORIGINAL_FILE;
-import static java.util.Arrays.asList;
-import static org.apache.commons.lang3.StringUtils.isBlank;
-
-import java.util.HashSet;
-import java.util.List;
-
 import edu.unc.lib.boxc.model.api.DatastreamType;
 import edu.unc.lib.boxc.search.api.models.ContentObjectRecord;
 import edu.unc.lib.boxc.search.api.models.Datastream;
 import org.apache.commons.lang3.StringUtils;
+
+import java.util.List;
+
+import static edu.unc.lib.boxc.model.api.DatastreamType.ORIGINAL_FILE;
+import static java.util.Arrays.asList;
+import static org.apache.commons.lang3.StringUtils.isBlank;
 
 /**
  * Utility methods for presenting datastreams in views.
@@ -76,37 +75,6 @@ public class DatastreamUtil {
      */
     public static String getOriginalFileUrl(ContentObjectRecord metadata) {
         return getDatastreamUrl(metadata, ORIGINAL_FILE.getId());
-    }
-
-    /**
-     * @param metadata
-     * @return Get the file type for the given record, preferring the file format description and
-     *      falling back to the mimetype when needed.
-     */
-    public static String getFileType(ContentObjectRecord metadata) {
-        String fileType = determineFileType(metadata.getFileFormatDescription());
-        if (StringUtils.isBlank(fileType)) {
-            fileType = determineFileType(metadata.getFileFormatType());
-        }
-        return StringUtils.isBlank(fileType) ? "" : fileType;
-    }
-
-    /**
-     * Determines which filetype should be shown. Null if no filetypes found.
-     * Otherwise it de-dupes the array and if only one value returns that, otherwise returns 'Various'
-     * @param fileTypes
-     * @return
-     */
-    private static String determineFileType(List<String> fileTypes) {
-        if (fileTypes == null) {
-            return null;
-        }
-
-        if (!fileTypes.isEmpty()) {
-            return (new HashSet<>(fileTypes).size() == 1) ? fileTypes.get(0) : "Various";
-        } else {
-            return null;
-        }
     }
 
     /**

@@ -257,10 +257,6 @@ public class FullRecordController extends AbstractErrorHandlingSearchController 
         return "fullRecord/uvViewer";
     }
 
-    public void setXslViewResolver(XSLViewResolver xslViewResolver) {
-        this.xslViewResolver = xslViewResolver;
-    }
-
     private Map<String, Object> getViewerProperties(ContentObjectRecord briefObject, AccessGroupSet principals) {
         String viewerType = null;
         String viewerPid = null;
