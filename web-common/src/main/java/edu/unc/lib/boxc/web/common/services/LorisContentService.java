@@ -70,11 +70,11 @@ public class LorisContentService {
                 .build();
     }
 
-    public void getMetadata(String simplepid, String datastream, OutputStream outStream, HttpServletResponse response) {
-        getMetadata(simplepid, datastream, outStream, response, 1);
+    public void getMetadata(String simplepid, OutputStream outStream, HttpServletResponse response) {
+        getMetadata(simplepid, outStream, response, 1);
     }
 
-    public void getMetadata(String simplepid, String datastream, OutputStream outStream,
+    public void getMetadata(String simplepid, OutputStream outStream,
             HttpServletResponse response, int retryServerError) {
 
         StringBuilder path = new StringBuilder(getLorisPath());
