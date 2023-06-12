@@ -61,7 +61,6 @@ export default {
             items: "items",
             mods: "Edit MODS",
             neighbor_list: "Related Items (neighbors in this collection/folder)",
-            no_finding_aid: "Doesn't have a finding aid",
             no_subjects: "There are no subjects listed for this record",
             read_more: "Read more",
             read_less: "Read less",
