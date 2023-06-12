@@ -15,11 +15,9 @@
                     <strong>{{ $t('full_record.collection_id') }}: </strong>
                     {{ recordData.briefObject.collectionId }}
                 </p>
-                <p><strong>{{ $t('full_record.finding_aid') }}: </strong>
-                    <template v-if="fieldExists(recordData.findingAidUrl)">
-                        <a :href="recordData.findingAidUrl">{{ recordData.findingAidUrl }}</a>
-                    </template>
-                    <template v-else>{{ $t('full_record.no_finding_aid') }}</template>
+                <p v-if="fieldExists(recordData.findingAidUrl)">
+                    <strong>{{ $t('full_record.finding_aid') }}: </strong>
+                    <a :href="recordData.findingAidUrl">{{ recordData.findingAidUrl }}</a>
                 </p>
                 <abstract v-if="recordData.briefObject.abstractText" :brief-object="recordData.briefObject"/>
                 <p v-if="fieldExists(recordData.exhibits)">

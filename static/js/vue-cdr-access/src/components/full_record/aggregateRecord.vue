@@ -24,11 +24,9 @@
                                             <span class="has-text-weight-bold">{{ $t('full_record.collection_id') }}: </span>
                                             {{ recordData.briefObject.collectionId }}
                                         </li>
-                                        <li><span class="has-text-weight-bold">{{ $t('full_record.finding_aid') }}: </span>
-                                            <template v-if="fieldExists(recordData.findingAidUrl)">
-                                                <a class="finding-aid" :href="recordData.findingAidUrl">{{ recordData.findingAidUrl }}</a>
-                                            </template>
-                                            <template v-else>{{ $t('full_record.no_finding_aid') }}</template>
+                                        <li v-if="fieldExists(recordData.findingAidUrl)">
+                                            <span class="has-text-weight-bold">{{ $t('full_record.finding_aid') }}: </span>
+                                            <a class="finding-aid" :href="recordData.findingAidUrl">{{ recordData.findingAidUrl }}</a>
                                         </li>
                                         <li v-if="fieldExists(recordData.briefObject.creator)">
                                             <span class="has-text-weight-bold">{{ $t('full_record.creator') }}: </span>
