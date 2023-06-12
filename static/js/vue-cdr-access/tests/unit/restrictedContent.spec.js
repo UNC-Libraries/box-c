@@ -417,6 +417,16 @@ describe('restrictedContent.vue', () => {
         expect(wrapper.find('a.download').exists()).toBe(true);
     });
 
+    it('does not show download or embargo buttons if there is no dataFileUrl', async () => {
+        const updated_data = cloneDeep(record);
+        updated_data.dataFileUrl = "";
+        await wrapper.setProps({
+            recordData: updated_data
+        });
+        expect(wrapper.find('a.download').exists()).toBe(false);
+        expect(wrapper.find('.noaction').exists()).toBe(false);
+    });
+
     it('does not show a download option does not have download permissions', async () => {
         const updated_data = cloneDeep(record);
         updated_data.briefObject.permissions = [];
