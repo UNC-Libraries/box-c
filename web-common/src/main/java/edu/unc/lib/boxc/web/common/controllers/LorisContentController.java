@@ -124,7 +124,7 @@ public class LorisContentController extends AbstractSolrSearchController {
         if (this.hasAccess(pid, datastream)) {
             try {
                 response.addHeader("Access-Control-Allow-Origin", "*");
-                lorisContentService.getMetadata(id, datastream, response.getOutputStream(), response);
+                lorisContentService.getMetadata(id, response.getOutputStream(), response);
             } catch (IOException e) {
                 LOG.error("Error retrieving JP2 metadata content for {}", id, e);
             }
