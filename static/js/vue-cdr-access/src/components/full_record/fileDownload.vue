@@ -1,5 +1,5 @@
 <template>
-    <div id="image-download-options" v-if="hasPermission(briefObject, 'viewAccessCopies')">
+    <div id="image-download-options" v-if="hasPermission(briefObject, 'viewAccessCopies') && getOriginalFile !== undefined">
         <button @click="showOptions()" class="button" id="download-images">Download <i class="fas fa-angle-down"></i></button>
         <ul v-if="show_options" :aria-expanded="show_options">
             <li v-if="validSizeOption(800)"><a :href="downloadLink('800')">Small JPG (800px)</a></li>
@@ -37,13 +37,17 @@ export default {
             return `/content/${this.briefObject.id}?dl=true`
         },
 
-        largestImageEdge() {
+        getOriginalFile() {
             const original_file =  this.briefObject.datastream.find(file => file.startsWith('original_file'));
             if (original_file === undefined) {
                 return undefined;
             }
 
-            const file_info = original_file.split('|');
+            return original_file;
+        },
+
+        largestImageEdge() {
+            const file_info = this.getOriginalFile.split('|');
             const edge_size = file_info[file_info.length - 1].split('x');
             return edge_size.sort((a, b) => a - b)[edge_size.length - 1];
         }
@@ -65,13 +69,7 @@ export default {
         },
 
         validSizeOption(size) {
-            const edge_size = this.largestImageEdge;
-
-            if (edge_size === undefined) {
-                return false;
-            }
-
-            return size <= edge_size;
+            return size <= this.largestImageEdge;
         }
     },
 

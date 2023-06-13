@@ -43,6 +43,17 @@ describe('fileDownload.vue', () => {
         expect(wrapper.find('button').exists()).toBe(false);
     });
 
+    it('does not display a download button if there is no original file', async () => {
+        let updatedBriefObj = cloneDeep(briefObject);
+        updatedBriefObj.datastream = [
+            'jp2|image/jp2|4db695c0-5fd5-4abf-9248-2e115d43f57d.jp2|jp2|2189901|||'
+        ]
+        await wrapper.setProps({
+            briefObject: updatedBriefObj
+        });
+        expect(wrapper.find('button').exists()).toBe(false);
+    });
+
     it('displays a list of download options when clicked', async () => {
         await wrapper.find('button').trigger('click');
         expect(wrapper.find('ul').isVisible()).toBe(true);
