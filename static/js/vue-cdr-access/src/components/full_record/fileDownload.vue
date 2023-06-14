@@ -89,7 +89,7 @@ export default {
     #image-download-options {
         display: flex;
         justify-content: flex-end;
-        margin: -15px auto 10px auto;
+        margin: -25px auto 10px auto;
         width: 90.75%;
 
         button {
@@ -107,7 +107,7 @@ export default {
             border: 1px solid;
             border-radius: 5px;
             margin-top: 36px;
-            padding-top: 5px;
+            padding: 5px 0;
             position: absolute;
             right: 4.6%;
             width: 200px;
