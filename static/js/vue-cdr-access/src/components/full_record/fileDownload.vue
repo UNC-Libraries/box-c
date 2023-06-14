@@ -1,13 +1,22 @@
 <template>
-    <div id="image-download-options" v-if="hasPermission(briefObject, 'viewAccessCopies') && getOriginalFile !== undefined">
-        <button @click="showOptions()" class="button" id="download-images">Download <i class="fas fa-angle-down"></i></button>
-        <ul v-if="show_options" :aria-expanded="show_options">
-            <li v-if="validSizeOption(800)"><a :href="downloadLink('800')">Small JPG (800px)</a></li>
-            <li v-if="validSizeOption(1600)"><a :href="downloadLink('1600')">Medium JPG (1600px)</a></li>
-            <li v-if="validSizeOption(2500)"><a :href="downloadLink('2500')">Large JPG (2500px)</a></li>
-            <li><a :href="downloadLink('full')">Full Size JPG</a></li>
-            <li v-if="hasPermission(briefObject, 'viewOriginal')"><a :href="downloadOriginalLink">Original File</a></li>
-        </ul>
+    <div v-if="hasPermission(briefObject, 'viewAccessCopies') && getOriginalFile !== undefined"
+         class="dropdown" :class="{'is-active': show_options}" id="image-download-options">
+        <div class="dropdown-trigger">
+            <button @click="showOptions()" id="download-images" class="button" aria-haspopup="true" aria-controls="dropdown-menu">
+                Download <i class="fas fa-angle-down" aria-hidden="true"></i>
+            </button>
+        </div>
+        <div class="dropdown-menu" id="dropdown-menu" role="menu">
+            <div class="dropdown-content">
+                <a v-if="validSizeOption(800)" :href="downloadLink('800')" class="dropdown-item">Small JPG (800px)</a>
+                <a v-if="validSizeOption(1600)" :href="downloadLink('1600')" class="dropdown-item">Medium JPG (1600px)</a>
+                <a v-if="validSizeOption(2500)" :href="downloadLink('2500')" class="dropdown-item">Large JPG (2500px)</a>
+                <a :href="downloadLink('full')" class="dropdown-item">Full Size JPG</a>
+                <hr class="dropdown-divider">
+                <a v-if="hasPermission(briefObject, 'viewOriginal')"
+                   :href="downloadOriginalLink" class="dropdown-item">Original File</a>
+            </div>
+        </div>
     </div>
 </template>
 
@@ -90,7 +99,7 @@ export default {
         display: flex;
         justify-content: flex-end;
         margin: -25px auto 10px auto;
-        width: 90.75%;
+        width: 91.5%;
 
         button {
             background-color: #1A698C;
@@ -102,35 +111,9 @@ export default {
             }
         }
 
-        ul {
-            background-color: white;
-            border: 1px solid;
-            border-radius: 5px;
-            margin-top: 36px;
-            padding: 5px 0;
-            position: absolute;
-            right: 4.6%;
-            width: 200px;
-            z-index: 100;
-
-            li {
-                margin: 0;
-                padding: 3px 10px;
-            }
-
-            li:hover,
-            li:focus {
-                background-color: #0A5274;
-
-                a {
-                    color: white;
-                }
-            }
-
-            a {
-                color: black;
-                text-decoration: none;
-            }
+        .dropdown-menu {
+            left: unset;
+            right: 0;
         }
 
         .fa-angle-down {

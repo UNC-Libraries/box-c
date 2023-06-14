@@ -56,8 +56,8 @@ describe('fileDownload.vue', () => {
 
     it('displays a list of download options when clicked', async () => {
         await wrapper.find('button').trigger('click');
-        expect(wrapper.find('ul').isVisible()).toBe(true);
-        let options = wrapper.findAll('li');
+        expect(wrapper.find('#image-download-options').classes('is-active')).toBe(true);
+        let options = wrapper.findAll('a');
         expect(options.length).toEqual(5);
         assertHasOptionText(options[0], 'Small JPG (800px)');
         assertHasOptionText(options[1], 'Medium JPG (1600px)');
@@ -73,8 +73,8 @@ describe('fileDownload.vue', () => {
             briefObject: updatedBriefObj
         });
         await wrapper.find('button').trigger('click');
-        expect(wrapper.find('ul').isVisible()).toBe(true);
-        let options = wrapper.findAll('li');
+        expect(wrapper.find('#image-download-options').classes('is-active')).toBe(true);
+        let options = wrapper.findAll('a');
         expect(options.length).toEqual(4);
         assertHasOptionText(options[0], 'Small JPG (800px)');
         assertHasOptionText(options[1], 'Medium JPG (1600px)');
@@ -89,8 +89,8 @@ describe('fileDownload.vue', () => {
             briefObject: updatedBriefObj
         });
         await wrapper.find('button').trigger('click');
-        expect(wrapper.find('ul').isVisible()).toBe(true);
-        let options = wrapper.findAll('li');
+        expect(wrapper.find('#image-download-options').isVisible()).toBe(true);
+        let options = wrapper.findAll('a');
         expect(options.length).toEqual(4);
         assertHasOptionText(options[0], 'Small JPG (800px)');
         assertHasOptionText(options[1], 'Medium JPG (1600px)');
@@ -101,19 +101,19 @@ describe('fileDownload.vue', () => {
     it('hides the list of visible options when the options button is clicked', async () => {
         await wrapper.find('button').trigger('click'); // Open
         await wrapper.find('button').trigger('click'); // Close
-        expect(wrapper.find('ul').exists()).toBe(false);
+        expect(wrapper.find('#image-download-options').classes('is-active')).toBe(false);
     });
 
    it('hides the list of visible options when any page element is clicked', async () => {
         await wrapper.find('button').trigger('click'); // Open
         await wrapper.trigger('click'); // Close
-        expect(wrapper.find('ul').exists()).toBe(false);
+        expect(wrapper.find('#image-download-options').classes('is-active')).toBe(false);
     });
 
     it('hides the list of visible options when the "ESC" key is hit', async () => {
         await wrapper.find('button').trigger('click'); // Open
         await wrapper.trigger('keyup.esc'); // Close
-        expect(wrapper.find('ul').exists()).toBe(false);
+        expect(wrapper.find('#image-download-options').classes('is-active')).toBe(false);
     });
 
     function assertHasOptionText(option, text) {
