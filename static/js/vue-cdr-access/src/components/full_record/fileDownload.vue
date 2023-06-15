@@ -1,6 +1,9 @@
 <template>
-    <div v-if="hasPermission(briefObject, 'viewAccessCopies') && getOriginalFile !== undefined"
-         class="dropdown" :class="{'is-active': show_options}" id="image-download-options">
+    <div v-if="showNonImageDownload" class="actionlink download">
+        <a class="download button action" :href="downloadLink"><i class="fa fa-download"></i> {{ $t('full_record.download') }}</a>
+    </div>
+    <div v-else-if="showImageDownload"
+         class="dropdown actionlink download" :class="{'is-active': show_options}" id="image-download-options">
         <div class="dropdown-trigger">
             <button @click="showOptions()" id="download-images" class="button" aria-haspopup="true" aria-controls="dropdown-menu">
                 Download <i class="fas fa-angle-down" aria-hidden="true"></i>
@@ -8,13 +11,13 @@
         </div>
         <div class="dropdown-menu" id="dropdown-menu" role="menu">
             <div class="dropdown-content">
-                <a v-if="validSizeOption(800)" :href="downloadLink('800')" class="dropdown-item">Small JPG (800px)</a>
-                <a v-if="validSizeOption(1600)" :href="downloadLink('1600')" class="dropdown-item">Medium JPG (1600px)</a>
-                <a v-if="validSizeOption(2500)" :href="downloadLink('2500')" class="dropdown-item">Large JPG (2500px)</a>
-                <a :href="downloadLink('full')" class="dropdown-item">Full Size JPG</a>
+                <a v-if="validSizeOption(800)" :href="imgDownloadLink('800')" class="dropdown-item">Small JPG (800px)</a>
+                <a v-if="validSizeOption(1600)" :href="imgDownloadLink('1600')" class="dropdown-item">Medium JPG (1600px)</a>
+                <a v-if="validSizeOption(2500)" :href="imgDownloadLink('2500')" class="dropdown-item">Large JPG (2500px)</a>
+                <a :href="imgDownloadLink('full')" class="dropdown-item">Full Size JPG</a>
                 <hr class="dropdown-divider">
                 <a v-if="hasPermission(briefObject, 'viewOriginal')"
-                   :href="downloadOriginalLink" class="dropdown-item">Original File</a>
+                   :href="downloadLink" class="dropdown-item">Original File</a>
             </div>
         </div>
     </div>
@@ -32,7 +35,12 @@ export default {
         briefObject: {
             type: Object,
             default: {}
-        }
+        },
+        downloadLink: {
+            type: String,
+            default: ''
+        },
+        resourceType: String
     },
 
     data() {
@@ -42,10 +50,6 @@ export default {
     },
 
     computed: {
-        downloadOriginalLink() {
-            return `/content/${this.briefObject.id}?dl=true`
-        },
-
         getOriginalFile() {
             const original_file =  this.briefObject.datastream.find(file => file.startsWith('original_file'));
             if (original_file === undefined) {
@@ -59,6 +63,18 @@ export default {
             const file_info = this.getOriginalFile.split('|');
             const edge_size = file_info[file_info.length - 1].split('x');
             return edge_size.sort((a, b) => a - b)[edge_size.length - 1];
+        },
+
+        showNonImageDownload() {
+            return (this.resourceType === 'Work' || this.resourceType === 'File') &&
+                this.hasPermission(this.briefObject, 'viewOriginal') &&
+            !this.briefObject.format.includes('Image') && this.downloadLink !== '';
+        },
+
+        showImageDownload() {
+            return this.resourceType === 'File' &&
+                this.hasPermission(this.briefObject, 'viewAccessCopies') &&
+                this.briefObject.format.includes('Image') && this.getOriginalFile !== undefined
         }
     },
 
@@ -73,7 +89,7 @@ export default {
             this.show_options = !this.show_options;
         },
 
-        downloadLink(size) {
+        imgDownloadLink(size) {
             return `/services/api/downloadImage/${this.briefObject.id}/${size}`
         },
 
@@ -96,19 +112,20 @@ export default {
 
 <style scoped lang="scss">
     #image-download-options {
-        display: flex;
-        justify-content: flex-end;
-        margin: -25px auto 10px auto;
-        width: 91.5%;
-
         button {
             background-color: #1A698C;
             color: white;
+            padding: 23px 15px;
 
             &:hover,
             &:focus {
                 background-color: #084b6b;
             }
+        }
+
+        a {
+            border: inherit;
+            color: black;
         }
 
         .dropdown-menu {

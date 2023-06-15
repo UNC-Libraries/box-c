@@ -1,6 +1,8 @@
 import {mount} from '@vue/test-utils'
-import fileDownload from '@/components/full_record/fileDownload.vue';
 import cloneDeep from 'lodash.clonedeep';
+import {createI18n} from 'vue-i18n';
+import translations from '@/translations';
+import fileDownload from '@/components/full_record/fileDownload.vue';
 
 const briefObject = {
     id: '4db695c0-5fd5-4abf-9248-2e115d43f57d',
@@ -11,12 +13,19 @@ const briefObject = {
     datastream: [
         'original_file|image/jpeg|beez||694904|urn:sha1:0d48dadb5d61ae0d41b4998280a3c39577a2f94a||3000x2048',
         'jp2|image/jp2|4db695c0-5fd5-4abf-9248-2e115d43f57d.jp2|jp2|2189901|||'
-    ]
+    ],
+    format: ['Image']
 };
 
 let wrapper;
 
 describe('fileDownload.vue', () => {
+    const i18n = createI18n({
+        locale: 'en',
+        fallbackLocale: 'en',
+        messages: translations
+    });
+
     beforeEach(() => {
         const div = document.createElement('div')
         div.id = 'root'
@@ -24,26 +33,33 @@ describe('fileDownload.vue', () => {
 
         wrapper = mount(fileDownload, {
             attachTo: '#root',
+            global: {
+                plugins: [i18n],
+            },
             props: {
-                briefObject: briefObject
+                briefObject: briefObject,
+                resourceType: 'File',
+                downloadLink: ''
             }
         });
     });
 
-    it('displays a download button if the user has viewAccessCopies permissions', () => {
-       expect(wrapper.find('button').exists()).toBe(true);
+    it('displays an image download button if the item is a image file and the user has viewAccessCopies permissions ', () => {
+        expect(wrapper.find('#download-images').exists()).toBe(true);
+        expect(wrapper.find('a.download').exists()).toBe(false);
     });
 
-    it('does not display a download button if the user does not have viewAccessCopies permissions', async () => {
+    it('does not display an image download button if the item is a image file and the user does not have viewAccessCopies permissions', async () => {
         let updatedBriefObj = cloneDeep(briefObject);
         updatedBriefObj.permissions = ['viewMetadata'];
         await wrapper.setProps({
             briefObject: updatedBriefObj
         });
-        expect(wrapper.find('button').exists()).toBe(false);
+        expect(wrapper.find('#download-images').exists()).toBe(false);
+        expect(wrapper.find('a.download').exists()).toBe(false);
     });
 
-    it('does not display a download button if there is no original file', async () => {
+    it('does not display an image download button if there is no original file', async () => {
         let updatedBriefObj = cloneDeep(briefObject);
         updatedBriefObj.datastream = [
             'jp2|image/jp2|4db695c0-5fd5-4abf-9248-2e115d43f57d.jp2|jp2|2189901|||'
@@ -52,6 +68,7 @@ describe('fileDownload.vue', () => {
             briefObject: updatedBriefObj
         });
         expect(wrapper.find('button').exists()).toBe(false);
+        expect(wrapper.find('a.download').exists()).toBe(false);
     });
 
     it('displays a list of download options when clicked', async () => {
@@ -114,6 +131,50 @@ describe('fileDownload.vue', () => {
         await wrapper.find('button').trigger('click'); // Open
         await wrapper.trigger('keyup.esc'); // Close
         expect(wrapper.find('#image-download-options').classes('is-active')).toBe(false);
+    });
+
+    it('displays a download link if the item is a work', async () => {
+        let updatedBriefObj = cloneDeep(briefObject);
+        updatedBriefObj.format = ['Text'];
+        await wrapper.setProps({
+            briefObject: updatedBriefObj,
+            resourceType: 'Work',
+            downloadLink: 'content/e6b92640-6847-45e4-9b64-e6f23e123c6a?dl=true'
+        });
+        expect(wrapper.find('a.download').exists()).toBe(true);
+        expect(wrapper.find('#download-images').exists()).toBe(false);
+    });
+
+    it('displays a download link if the item is a non-image file', async () => {
+        let updatedBriefObj = cloneDeep(briefObject);
+        updatedBriefObj.format = ['Text'];
+        await wrapper.setProps({
+            briefObject: updatedBriefObj,
+            resourceType: 'File',
+            downloadLink: 'content/e6b92640-6847-45e4-9b64-e6f23e123c6a?dl=true'
+        });
+        expect(wrapper.find('a.download').exists()).toBe(true);
+        expect(wrapper.find('#download-images').exists()).toBe(false);
+    });
+
+    it('does not show a download button if there is no download link', async () => {
+        await wrapper.setProps({
+            downloadLink: '',
+            resourceType: 'Work'
+        });
+        expect(wrapper.find('a.download').exists()).toBe(false);
+        expect(wrapper.find('#download-images').exists()).toBe(false);
+    });
+
+    it('does not show a download option for a work if user does not have download permissions', async () => {
+        const updated_data = cloneDeep(briefObject);
+        updated_data.permissions = [];
+        await wrapper.setProps({
+            briefObject: updated_data,
+            resourceType: 'Work'
+        });
+        expect(wrapper.find('a.download').exists()).toBe(false);
+        expect(wrapper.find('#download-images').exists()).toBe(false);
     });
 
     function assertHasOptionText(option, text) {
