@@ -115,6 +115,7 @@ export default {
         button {
             background-color: #1A698C;
             color: white;
+            font-family: 'Open Sans', sans-serif;
             padding: 23px 15px;
 
             &:hover,
