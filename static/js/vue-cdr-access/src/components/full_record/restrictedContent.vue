@@ -14,8 +14,8 @@
         </div>
         <template v-if="recordData.dataFileUrl">
             <template v-if="hasPermission(recordData, 'viewOriginal')">
-                <file-download :download-link="downloadLink"
-                               :resource-type="recordData.resourceType"
+                <file-download v-if="recordData.resourceType === 'File' || recordData.resourceType === 'Work'"
+                               :download-link="downloadLink"
                                :brief-object="recordData.briefObject"></file-download>
                 <div class="actionlink" v-if="recordData.resourceType === 'File'">
                     <a class="button view action" :href="recordData.dataFileUrl">

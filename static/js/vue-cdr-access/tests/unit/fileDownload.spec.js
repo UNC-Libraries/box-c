@@ -38,8 +38,7 @@ describe('fileDownload.vue', () => {
             },
             props: {
                 briefObject: briefObject,
-                resourceType: 'File',
-                downloadLink: ''
+                downloadLink: '/content/0d48dadb5d61ae0d41b4998280a3c39577a2f94a?dl=true'
             }
         });
     });
@@ -59,7 +58,7 @@ describe('fileDownload.vue', () => {
         expect(wrapper.find('a.download').exists()).toBe(false);
     });
 
-    it('does not display an image download button if there is no original file', async () => {
+    it('does not display a download button if there is no original file', async () => {
         let updatedBriefObj = cloneDeep(briefObject);
         updatedBriefObj.datastream = [
             'jp2|image/jp2|4db695c0-5fd5-4abf-9248-2e115d43f57d.jp2|jp2|2189901|||'
@@ -99,7 +98,7 @@ describe('fileDownload.vue', () => {
         assertHasOptionText(options[3], 'Original File');
     });
 
-    it('does not display an option to download original if user does not have viewOriginal access', async () => {
+    it('does not display an option to download full size or original if user does not have viewOriginal access', async () => {
         let updatedBriefObj = cloneDeep(briefObject);
         updatedBriefObj.permissions = ['viewAccessCopies'];
         await wrapper.setProps({
@@ -108,11 +107,10 @@ describe('fileDownload.vue', () => {
         await wrapper.find('button').trigger('click');
         expect(wrapper.find('#image-download-options').isVisible()).toBe(true);
         let options = wrapper.findAll('a');
-        expect(options.length).toEqual(4);
+        expect(options.length).toEqual(3);
         assertHasOptionText(options[0], 'Small JPG (800px)');
         assertHasOptionText(options[1], 'Medium JPG (1600px)');
         assertHasOptionText(options[2], 'Large JPG (2500px)');
-        assertHasOptionText(options[3], 'Full Size JPG');
     });
 
     it('hides the list of visible options when the options button is clicked', async () => {
@@ -121,7 +119,7 @@ describe('fileDownload.vue', () => {
         expect(wrapper.find('#image-download-options').classes('is-active')).toBe(false);
     });
 
-   it('hides the list of visible options when any page element is clicked', async () => {
+   it('hides the list of visible options when any non dropdown page element is clicked', async () => {
         await wrapper.find('button').trigger('click'); // Open
         await wrapper.trigger('click'); // Close
         expect(wrapper.find('#image-download-options').classes('is-active')).toBe(false);
@@ -131,18 +129,6 @@ describe('fileDownload.vue', () => {
         await wrapper.find('button').trigger('click'); // Open
         await wrapper.trigger('keyup.esc'); // Close
         expect(wrapper.find('#image-download-options').classes('is-active')).toBe(false);
-    });
-
-    it('displays a download link if the item is a work', async () => {
-        let updatedBriefObj = cloneDeep(briefObject);
-        updatedBriefObj.format = ['Text'];
-        await wrapper.setProps({
-            briefObject: updatedBriefObj,
-            resourceType: 'Work',
-            downloadLink: 'content/e6b92640-6847-45e4-9b64-e6f23e123c6a?dl=true'
-        });
-        expect(wrapper.find('a.download').exists()).toBe(true);
-        expect(wrapper.find('#download-images').exists()).toBe(false);
     });
 
     it('displays a download link if the item is a non-image file', async () => {
@@ -158,7 +144,10 @@ describe('fileDownload.vue', () => {
     });
 
     it('does not show a download button if there is no download link', async () => {
+        let updatedBriefObj = cloneDeep(briefObject);
+        updatedBriefObj.format = ['Text'];
         await wrapper.setProps({
+            briefObject: updatedBriefObj,
             downloadLink: '',
             resourceType: 'Work'
         });

@@ -435,6 +435,39 @@ describe('restrictedContent.vue', () => {
         expect(wrapper.find('a.view').exists()).toBe(false);
     });
 
+    it('displays a download button for works with the proper permissions', async () => {
+        const updated_data = cloneDeep(record);
+        updated_data.dataFileUrl = 'content/4db695c0-5fd5-4abf-9248-2e115d43f57d';
+        updated_data.resourceType = 'Work';
+        updated_data.briefObject.permissions = ['viewAccessCopies', 'viewOriginal'];
+        await wrapper.setProps({
+            recordData: updated_data
+        });
+        expect(wrapper.findComponent({ name: 'fileDownload' }).exists()).toBe(true);
+    });
+
+    it('displays a download button for files with the proper permissions', async () => {
+        const updated_data = cloneDeep(record);
+        updated_data.dataFileUrl = 'content/4db695c0-5fd5-4abf-9248-2e115d43f57d';
+        updated_data.resourceType = 'File';
+        updated_data.briefObject.permissions = ['viewAccessCopies', 'viewOriginal'];
+        await wrapper.setProps({
+            recordData: updated_data
+        });
+        expect(wrapper.findComponent({ name: 'fileDownload' }).exists()).toBe(true);
+    });
+
+    it('does not display a download button for non-works/files', async () => {
+        const updated_data = cloneDeep(record);
+        updated_data.dataFileUrl = 'content/4db695c0-5fd5-4abf-9248-2e115d43f57d';
+        updated_data.resourceType = 'Folder';
+        updated_data.briefObject.permissions = ['viewAccessCopies', 'viewOriginal'];
+        await wrapper.setProps({
+            recordData: updated_data
+        });
+        expect(wrapper.findComponent({ name: 'fileDownload' }).exists()).toBe(false);
+    });
+
     it('displays embargo information', async () => {
         const updated_data = cloneDeep(record);
         updated_data.briefObject.embargoDate = '2199-12-31T20:34:01.799Z';

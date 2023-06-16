@@ -6,18 +6,21 @@
          class="dropdown actionlink download" :class="{'is-active': show_options}" id="image-download-options">
         <div class="dropdown-trigger">
             <button @click="showOptions()" id="download-images" class="button" aria-haspopup="true" aria-controls="dropdown-menu">
-                Download <i class="fas fa-angle-down" aria-hidden="true"></i>
+                {{ $t('full_record.download') }} <i class="fas fa-angle-down" aria-hidden="true"></i>
             </button>
         </div>
         <div class="dropdown-menu" id="dropdown-menu" role="menu">
             <div class="dropdown-content">
-                <a v-if="validSizeOption(800)" :href="imgDownloadLink('800')" class="dropdown-item">Small JPG (800px)</a>
-                <a v-if="validSizeOption(1600)" :href="imgDownloadLink('1600')" class="dropdown-item">Medium JPG (1600px)</a>
-                <a v-if="validSizeOption(2500)" :href="imgDownloadLink('2500')" class="dropdown-item">Large JPG (2500px)</a>
-                <a :href="imgDownloadLink('full')" class="dropdown-item">Full Size JPG</a>
-                <hr class="dropdown-divider">
-                <a v-if="hasPermission(briefObject, 'viewOriginal')"
-                   :href="downloadLink" class="dropdown-item">Original File</a>
+                <a v-if="validSizeOption(800)" :href="imgDownloadLink('800')" class="dropdown-item">{{ $t('full_record.small') }} JPG (800px)</a>
+                <a v-if="validSizeOption(1600)" :href="imgDownloadLink('1600')" class="dropdown-item">{{ $t('full_record.medium') }} JPG (1600px)</a>
+                <a v-if="validSizeOption(2500)" :href="imgDownloadLink('2500')" class="dropdown-item">{{ $t('full_record.large') }} JPG (2500px)</a>
+                <template v-if="hasPermission(briefObject, 'viewOriginal')">
+                    <a :href="imgDownloadLink('full')" class="dropdown-item">{{ $t('full_record.full_size') }} JPG</a>
+                    <template v-if="downloadLink !== ''">
+                        <hr class="dropdown-divider">
+                        <a :href="downloadLink" class="dropdown-item">{{ $t('full_record.original_file') }}</a>
+                    </template>
+                </template>
             </div>
         </div>
     </div>
@@ -39,8 +42,7 @@ export default {
         downloadLink: {
             type: String,
             default: ''
-        },
-        resourceType: String
+        }
     },
 
     data() {
@@ -61,19 +63,17 @@ export default {
 
         largestImageEdge() {
             const file_info = this.getOriginalFile.split('|');
-            const edge_size = file_info[file_info.length - 1].split('x');
-            return edge_size.sort((a, b) => a - b)[edge_size.length - 1];
+            const edge_sizes = file_info[file_info.length - 1].split('x');
+            return edge_sizes[0] > edge_sizes[1] ? edge_sizes[0] : edge_sizes[1];
         },
 
         showNonImageDownload() {
-            return (this.resourceType === 'Work' || this.resourceType === 'File') &&
-                this.hasPermission(this.briefObject, 'viewOriginal') &&
+            return this.hasPermission(this.briefObject, 'viewOriginal') &&
             !this.briefObject.format.includes('Image') && this.downloadLink !== '';
         },
 
         showImageDownload() {
-            return this.resourceType === 'File' &&
-                this.hasPermission(this.briefObject, 'viewAccessCopies') &&
+            return this.hasPermission(this.briefObject, 'viewAccessCopies') &&
                 this.briefObject.format.includes('Image') && this.getOriginalFile !== undefined
         }
     },
