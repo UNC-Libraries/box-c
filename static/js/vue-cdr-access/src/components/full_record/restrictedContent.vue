@@ -3,20 +3,22 @@
         <div v-if="restrictedContent && !isLoggedIn" class="column is-narrow item-actions">
             <div class="restricted-access">
                 <h2>{{ $t('full_record.restricted_content', { resource_type: recordData.briefObject.type.toLowerCase() }) }}</h2>
-                <div v-if="hasGroupRole(recordData, 'canViewOriginals', 'authenticated')" class="actionlink"><a class="button login-link" :href="loginUrl"><i class="fa fa-id-card"></i> {{ $t('access.login') }}</a></div>
-                <div class="actionlink"><a class="button contact" href="https://library.unc.edu/wilson/contact/"><i class="fa fa-envelope"></i> {{ $t('access.contact') }}</a></div>
+                <div v-if="hasGroupRole(recordData, 'canViewOriginals', 'authenticated')" class="actionlink"><a class="button login-link action" :href="loginUrl"><i class="fa fa-id-card"></i> {{ $t('access.login') }}</a></div>
+                <div class="actionlink">
+                    <a class="button contact action" href="https://library.unc.edu/wilson/contact/"><i class="fa fa-envelope"></i> {{ $t('access.contact') }}</a>
+                </div>
             </div>
         </div>
         <div v-if="hasPermission(recordData, 'editDescription')" class="actionlink">
-            <a class="edit button" :href="editDescriptionUrl(recordData.briefObject.id)"><i class="fa fa-edit"></i> {{ $t('full_record.edit') }}</a>
+            <a class="edit button action" :href="editDescriptionUrl(recordData.briefObject.id)"><i class="fa fa-edit"></i> {{ $t('full_record.edit') }}</a>
         </div>
         <template v-if="recordData.dataFileUrl">
             <template v-if="hasPermission(recordData, 'viewOriginal')">
-                <div class="actionlink download">
-                    <a class="download button" :href="downloadLink"><i class="fa fa-download"></i> {{ $t('full_record.download') }}</a>
-                </div>
-                <div v-if="recordData.resourceType === 'File'" class="actionlink">
-                    <a class="button view" :href="recordData.dataFileUrl">
+                <file-download v-if="recordData.resourceType === 'File' || recordData.resourceType === 'Work'"
+                               :download-link="downloadLink"
+                               :brief-object="recordData.briefObject"></file-download>
+                <div class="actionlink" v-if="recordData.resourceType === 'File'">
+                    <a class="button view action" :href="recordData.dataFileUrl">
                         <i class="fa fa-search" aria-hidden="true"></i> View</a>
                 </div>
             </template>
@@ -28,10 +30,13 @@
 </template>
 
 <script>
+import fileDownload from '@/components/full_record/fileDownload.vue';
 import fullRecordUtils from '../../mixins/fullRecordUtils';
 
 export default {
     name: 'restrictedContent',
+
+    components: {fileDownload},
 
     mixins: [fullRecordUtils],
 

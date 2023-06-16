@@ -691,10 +691,6 @@ img.data-thumb {
   }
 }
 
-.audiojs {
-  margin-left: 50px;
-}
-
 table.dataTable {
   tbody {
     tr.odd {
@@ -710,7 +706,7 @@ table.dataTable {
 
 .item-actions {
   .actionlink {
-    a {
+    a.action {
       font-size: 16px;
       padding: 15px 15px 30px 15px;
     }
@@ -958,10 +954,6 @@ table.dataTable {
     }
   }
 
-  .audiojs {
-    margin-top: 25px;
-  }
-
   .actionlink {
     margin-bottom: 1px;
   }
@@ -1112,10 +1104,6 @@ table.dataTable {
         }
       }
     }
-  }
-
-  .audiojs {
-    margin: 25px auto 0 auto;
   }
 
   .relateditem {

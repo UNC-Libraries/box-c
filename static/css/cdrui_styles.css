@@ -458,7 +458,7 @@ ul.fpfeed_list li {
 	margin: 0 5px 6px 0;
 }
 
-.actionlink a {
+.actionlink a.action {
 	display: block;
 	font-size: 12px;
 	border: 1px solid #084b6b;
@@ -469,7 +469,7 @@ ul.fpfeed_list li {
 	line-height: 12px;
 }
 
-.actionlink a:hover {
+.actionlink a.action:hover {
 	color: #fff;
 	background-color: #084b6b;
 }
