@@ -54,8 +54,7 @@ describe('fileDownload.vue', () => {
         await wrapper.setProps({
             briefObject: updatedBriefObj
         });
-        expect(wrapper.find('#download-images').exists()).toBe(false);
-        expect(wrapper.find('a.download').exists()).toBe(false);
+        expect(wrapper.find('.button').exists()).toBe(false);
     });
 
     it('does not display a download button if there is no original file', async () => {
@@ -66,8 +65,27 @@ describe('fileDownload.vue', () => {
         await wrapper.setProps({
             briefObject: updatedBriefObj
         });
-        expect(wrapper.find('button').exists()).toBe(false);
+        expect(wrapper.find('.button').exists()).toBe(false);
+    });
+
+    it('displays a download button for image files with viewAccessCopies but not viewOriginal access', async () => {
+        const updated_data = cloneDeep(briefObject);
+        updated_data.permissions = ['viewAccessCopies'];
+        await wrapper.setProps({
+            briefObject: updated_data
+        });
+        expect(wrapper.find('#download-images').exists()).toBe(true);
         expect(wrapper.find('a.download').exists()).toBe(false);
+    });
+
+    it('does not display a download button for non-image files with viewAccessCopies but not viewOriginal access', async () => {
+        const updated_data = cloneDeep(briefObject);
+        updated_data.format = ['Text']
+        updated_data.permissions = ['viewAccessCopies'];
+        await wrapper.setProps({
+            briefObject: updated_data
+        });
+        expect(wrapper.find('.button').exists()).toBe(false);
     });
 
     it('displays a list of download options when clicked', async () => {
