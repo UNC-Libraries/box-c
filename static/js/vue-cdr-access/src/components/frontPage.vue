@@ -84,6 +84,7 @@ export default {
     mounted() {
         this.getCollectionStats();
         this.pageView('Home');
+        this.matomoPageView('Digital Collections Repository - Home');
     }
 }
 </script>

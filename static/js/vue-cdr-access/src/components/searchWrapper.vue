@@ -149,6 +149,7 @@ Top level component wrapper for search pages
 
         mounted() {
             this.pageView('Search Results');
+            this.matomoPageView('Digital Collections Repository - Search Results');
         }
     }
 </script>

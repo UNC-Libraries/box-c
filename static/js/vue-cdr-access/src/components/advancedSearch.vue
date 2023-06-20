@@ -191,7 +191,8 @@ export default {
     mounted() {
         this.getCollections();
         this.getFormats();
-        this.pageView('Advanced Search')
+        this.pageView('Advanced Search');
+        this.matomoPageView('Digital Collections Repository - Advanced Search');
     }
 }
 </script>
