@@ -103,7 +103,6 @@ export default {
 
     mounted() {
         this.pageView('About');
-        this.matomoPageView('Digital Collections Repository - About');
     }
 }
 </script>

@@ -5,6 +5,7 @@ export default {
                 'event_category': recordData.briefObject.parentCollectionId,
                 'event_label': `${recordData.briefObject.title}|${recordData.briefObject.id}`
             });
+            this.matomoPageEvent(recordData);
         },
 
         matomoPageEvent(recordData) {
@@ -31,12 +32,13 @@ export default {
                 page_path: this.$route.path,
                 page_location: window.location.href
             });
+            this.matomoPageView(title)
         },
 
         matomoPageView(title) {
             window._mtm = window._mtm || []
             window._mtm.push(['setCustomUrl', window.location.pathname]);
-            window._mtm.push(['setDocumentTitle', title]);
+            window._mtm.push(['setDocumentTitle', `Digital Collections Repository - ${title}`]);
             window._mtm.push(['trackPageView']);
         }
     }

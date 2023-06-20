@@ -208,11 +208,7 @@ Top level component for full record pages with searching/browsing, including Adm
                return get(`${link}json`).then((response) => {
                    this.emptyJsonResponseCheck(response);
                    this.container_info = response.data;
-                   // Matomo
-                   this.matomoPageView(`Digital Collections Repository - ${this.container_info.pageSubtitle}`);
-                  // this.matomoPageEvent(this.container_info);
 
-                   // GA
                    this.pageView(this.container_info.pageSubtitle)
                    if (this.needsSearchResults) {
                        this.adjustFacetsForRetrieval();
@@ -220,8 +216,7 @@ Top level component for full record pages with searching/browsing, including Adm
                        this.is_page_loading = false;
                    }
                 }).catch(error => {
-                    console.log(error)
-                  // this.setErrorResponse(error);
+                   this.setErrorResponse(error);
                    this.is_page_loading = false;
                    console.log(error);
                });
