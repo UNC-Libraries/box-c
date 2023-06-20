@@ -19,7 +19,7 @@ export default {
 
             window._mtm = window._mtm || [];
             window._mtm.push({
-                recordUUID: recordData.briefObject.id,
+                recordId: recordData.briefObject.id,
                 recordTitle: recordData.briefObject.title,
                 resourceType: recordData.resourceType,
                 parentCollection: collection

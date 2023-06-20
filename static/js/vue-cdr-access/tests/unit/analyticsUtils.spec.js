@@ -40,7 +40,7 @@ describe('analyticsUtils', () => {
         moxios.uninstall()
     });
 
-    it("sends pageviews to Google Analytics", () => {
+    it("sends pageviews to analytics platforms", () => {
         wrapper = mount(advancedSearch, {
             global: {
                 plugins: [router, store, i18n],
@@ -54,7 +54,7 @@ describe('analyticsUtils', () => {
         expect(pageView).toHaveBeenCalledWith("Advanced Search");
     });
 
-    it("sends events to Google Analytics", (done) => {
+    it("sends events to analytics platforms", (done) => {
         const briefObj = {
             briefObject: {
                 filesizeTotal: 35845559,
