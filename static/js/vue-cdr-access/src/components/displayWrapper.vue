@@ -210,6 +210,8 @@ Top level component for full record pages with searching/browsing, including Adm
                    this.container_info = response.data;
 
                    this.pageView(this.container_info.pageSubtitle)
+                   this.pageEvent(response.data);
+
                    if (this.needsSearchResults) {
                        this.adjustFacetsForRetrieval();
                    } else {
