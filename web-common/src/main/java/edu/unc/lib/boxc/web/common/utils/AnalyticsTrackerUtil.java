@@ -29,8 +29,6 @@ import edu.unc.lib.boxc.search.api.models.ContentObjectRecord;
 import edu.unc.lib.boxc.search.api.requests.SimpleIdRequest;
 import edu.unc.lib.boxc.search.solr.services.SolrSearchService;
 
-import static edu.unc.lib.boxc.web.common.utils.StringFormatUtil.urlEncode;
-
 /**
  * Utility for performing asynchronous analytics tracking events when unable to use the javascript api
  *

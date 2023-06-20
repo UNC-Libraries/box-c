@@ -26,6 +26,8 @@ import javax.servlet.http.HttpServletRequest;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -34,7 +36,6 @@ import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.getRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
-import static edu.unc.lib.boxc.web.common.utils.StringFormatUtil.urlEncode;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
@@ -245,7 +246,7 @@ public class AnalyticsTrackerUtilTest {
         Map<String, String> params = new HashMap<>();
         params.put("_id", userId);
         params.put("idsite", Integer.toString(siteID));
-        params.put("token_auth", urlEncode(authToken));
+        params.put("token_auth", URLEncoder.encode(authToken, StandardCharsets.UTF_8.toString()));
         params.put("ua", "boxy-client");
         params.put("url", urlBuffer.toString());
         params.put("e_a", "Downloaded Original");
