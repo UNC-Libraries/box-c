@@ -26,6 +26,9 @@ if (document.getElementById('app') !== null && window.dcr_browse_records === und
 
     const gaCode = import.meta.env.VITE_GA_CODE || '';
 
+    // Set this here as it gives a build error otherwise
+    window.matomoTrackingUrl = import.meta.env.VITE_MATOMO_API_URL || '';
+
     window.dcr_browse_records = createApp({
         render() {
             return h(App);

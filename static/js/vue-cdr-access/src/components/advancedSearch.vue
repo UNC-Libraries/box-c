@@ -191,7 +191,7 @@ export default {
     mounted() {
         this.getCollections();
         this.getFormats();
-        this.pageView('Advanced Search')
+        this.pageView('Advanced Search');
     }
 }
 </script>

@@ -1,5 +1,6 @@
 package edu.unc.lib.boxc.web.common.utils;
 
+import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
@@ -17,8 +18,10 @@ import org.apache.http.conn.HttpClientConnectionManager;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.message.BasicNameValuePair;
+import org.matomo.java.tracking.MatomoTracker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.matomo.java.tracking.MatomoRequest;
 
 import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
 import edu.unc.lib.boxc.model.api.ids.PID;
@@ -40,6 +43,7 @@ public class AnalyticsTrackerUtil {
     protected static final String DEFAULT_CID = "35009a79-1a05-49d7-b876-2b884d0f825b";
     // Google analytics measurement API url
     private static final String GA_URL = "https://www.google-analytics.com/collect";
+    public static final String MATOMO_ACTION = "Downloaded Original";
 
     // Google analytics tracking id
     private String gaTrackingID;
@@ -47,7 +51,9 @@ public class AnalyticsTrackerUtil {
     private HttpClientConnectionManager httpClientConnectionManager;
     private CloseableHttpClient httpClient;
     private String repositoryHost;
-
+    private String matomoAuthToken;
+    private String matomoApiURL;
+    private int matomoSiteID;
     private SolrSearchService solrSearchService;
 
     public void setHttpClientConnectionManager(HttpClientConnectionManager manager) {
@@ -89,6 +95,9 @@ public class AnalyticsTrackerUtil {
                     : briefObject.getParentCollectionName();
             String viewedObjectLabel = briefObject.getTitle() + "|" + pid;
             trackEvent(userData, parentCollection, action, viewedObjectLabel);
+            // track in matomo
+            var matomoRequest = buildMatomoRequest(getFullURL(request), userData, parentCollection, viewedObjectLabel);
+            sendMatomoRequest(matomoRequest);
         } catch (Exception e) {
             // Prevent analytics exceptions from impacting user
             log.warn("An exception occurred while recording {} event on {}", action, pid, e);
@@ -96,8 +105,6 @@ public class AnalyticsTrackerUtil {
     }
 
     private void trackEvent(AnalyticsUserData userData, String category, String action, String label) {
-
-        // Use a default customer ID if none was provided, since it is required
         if (userData == null) {
             return;
         }
@@ -105,6 +112,42 @@ public class AnalyticsTrackerUtil {
         // Perform the analytics tracking event asynchronously
         Thread trackerThread = new Thread(new EventTrackerRunnable(userData, category, action, label));
         trackerThread.start();
+    }
+
+    private MatomoRequest buildMatomoRequest(String url, AnalyticsUserData userData, String parentCollection, String label) throws UnsupportedEncodingException {
+        return MatomoRequest.builder()
+                .siteId(matomoSiteID)
+                .visitorId(userData.uid)
+                .actionUrl(url)
+                .actionName(parentCollection + " / " + MATOMO_ACTION)
+                .eventCategory(parentCollection)
+                .eventAction(MATOMO_ACTION)
+                .eventName(label)
+                .headerUserAgent(userData.userAgent)
+                .authToken(matomoAuthToken)
+                .visitorIp(userData.uip)
+                .build();
+    }
+
+    private void sendMatomoRequest(MatomoRequest matomoRequest) {
+        var tracker = new MatomoTracker(matomoApiURL);
+
+        try {
+            tracker.sendRequestAsync(matomoRequest);
+        } catch (Exception e) {
+            log.warn("Error while sending request for download event at {} to Matomo", matomoRequest.getDownloadUrl());
+        }
+    }
+
+    private String getFullURL(HttpServletRequest request) {
+        StringBuilder requestURL = new StringBuilder(request.getRequestURL().toString());
+        String queryString = request.getQueryString();
+
+        if (queryString == null) {
+            return requestURL.toString();
+        } else {
+            return requestURL.append('?').append(queryString).toString();
+        }
     }
 
     /**
@@ -117,6 +160,16 @@ public class AnalyticsTrackerUtil {
     public void setRepositoryHost(String repositoryHost) {
         this.repositoryHost = repositoryHost;
     }
+    public void setMatomoAuthToken(String matomoAuthToken) {
+        this.matomoAuthToken = matomoAuthToken;
+    }
+    public void setMatomoApiURL(String matomoApiURL) {
+        this.matomoApiURL = matomoApiURL;
+    }
+
+    public void setMatomoSiteID(int matomoSiteID) {
+        this.matomoSiteID = matomoSiteID;
+    }
 
     public static class AnalyticsUserData {
         // ip of client
@@ -124,6 +177,8 @@ public class AnalyticsTrackerUtil {
         // client id
         public String cid;
         public String userAgent;
+        // matomo user id
+        public String uid;
 
         public AnalyticsUserData(HttpServletRequest request) {
 
@@ -145,16 +200,24 @@ public class AnalyticsTrackerUtil {
                 uip = request.getRemoteAddr();
             }
 
-            // Store the CID from _ga cookie if it is present
-            Cookie cookies[] = request.getCookies();
+            // Store the user ids from cookie if it is present
+            Cookie[] cookies = request.getCookies();
             if (cookies != null) {
                 for (Cookie cookie : cookies) {
-                    if ("_ga".equals(cookie.getName())) {
+                    // if both cookies have been found
+                    if (cid != null && uid != null) {
+                        break;
+                    }
+                    var cookieName = cookie.getName();
+                    if ("_ga".equals(cookieName)) {
                         String[] parts = cookie.getValue().split("\\.");
                         if (parts.length == 4) {
                             cid = parts[2] + "." + parts[3];
                         }
-                        break;
+                    } else if (cookieName.startsWith("_pk_id")) {
+                        // matomo cookie
+                        String[] parts = cookie.getValue().split("\\.");
+                        uid = parts[0];
                     }
                 }
             }

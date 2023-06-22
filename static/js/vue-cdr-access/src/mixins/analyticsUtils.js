@@ -1,8 +1,15 @@
 export default {
     methods: {
         pageEvent(recordData) {
-            let collection = recordData.briefObject.parentCollectionName || '';
+            this.$gtag.event('record', {
+                'event_category': recordData.briefObject.parentCollectionId,
+                'event_label': `${recordData.briefObject.title}|${recordData.briefObject.id}`
+            });
+            this.matomoPageEvent(recordData);
+        },
 
+        matomoPageEvent(recordData) {
+            let collection = recordData.briefObject.parentCollectionName || '';
             if (collection === '' && recordData.briefObject.type === 'Collection') {
                 collection = recordData.briefObject.title;
             }
@@ -10,9 +17,12 @@ export default {
                 collection = '(no collection)';
             }
 
-            this.$gtag.event('record', {
-                'event_category': recordData.briefObject.parentCollectionId,
-                'event_label': `${recordData.briefObject.title}|${recordData.briefObject.id}`,
+            window._mtm = window._mtm || [];
+            window._mtm.push({
+                recordId: recordData.briefObject.id,
+                recordTitle: recordData.briefObject.title,
+                resourceType: recordData.resourceType,
+                parentCollection: collection
             });
         },
 
@@ -22,6 +32,14 @@ export default {
                 page_path: this.$route.path,
                 page_location: window.location.href
             });
+            this.matomoPageView(title)
+        },
+
+        matomoPageView(title) {
+            window._mtm = window._mtm || []
+            window._mtm.push(['setCustomUrl', window.location.pathname]);
+            window._mtm.push(['setDocumentTitle', `Digital Collections Repository - ${title}`]);
+            window._mtm.push(['trackPageView']);
         }
     }
 }
