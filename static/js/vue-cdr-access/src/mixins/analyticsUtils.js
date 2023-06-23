@@ -19,6 +19,8 @@ export default {
 
             window._mtm = window._mtm || [];
             window._mtm.push({
+                event: 'recordPageView',
+                name: recordData.briefObject.title + "|" + recordData.briefObject.id,
                 recordId: recordData.briefObject.id,
                 recordTitle: recordData.briefObject.title,
                 resourceType: recordData.resourceType,
@@ -36,10 +38,15 @@ export default {
         },
 
         matomoPageView(title) {
-            window._mtm = window._mtm || []
-            window._mtm.push(['setCustomUrl', window.location.pathname]);
-            window._mtm.push(['setDocumentTitle', `Digital Collections Repository - ${title}`]);
-            window._mtm.push(['trackPageView']);
+            window._mtm = window._mtm || [];
+            window._mtm.push({
+                event: 'pageViewEvent',
+                name: title,
+                recordId: null,
+                recordTitle: null,
+                resourceType: null,
+                parentCollection: null
+            });
         }
     }
 }
