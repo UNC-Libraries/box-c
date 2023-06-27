@@ -12,20 +12,19 @@
         <div v-if="hasPermission(recordData, 'editDescription')" class="actionlink">
             <a class="edit button action" :href="editDescriptionUrl(recordData.briefObject.id)"><i class="fa fa-edit"></i> {{ $t('full_record.edit') }}</a>
         </div>
-        <template v-if="recordData.dataFileUrl">
+        <template v-if="recordData.resourceType === 'File'">
             <template v-if="hasPermission(recordData, 'viewOriginal')">
-                <file-download v-if="recordData.resourceType === 'File' || recordData.resourceType === 'Work'"
-                               :download-link="downloadLink"
+                <file-download :download-link="downloadLink"
                                :brief-object="recordData.briefObject"></file-download>
-                <div class="actionlink" v-if="recordData.resourceType === 'File'">
+                <div class="actionlink">
                     <a class="button view action" :href="recordData.dataFileUrl">
                         <i class="fa fa-search" aria-hidden="true"></i> View</a>
                 </div>
             </template>
-            <div v-else-if="fieldExists(recordData.briefObject.embargoDate)" class="noaction">
-                {{ $t('full_record.available_date', { available_date: formatDate(recordData.briefObject.embargoDate) }) }}
-            </div>
         </template>
+        <div v-if="fieldExists(recordData.briefObject.embargoDate) && !hasPermission(recordData, 'viewOriginal')" class="noaction">
+            {{ $t('full_record.available_date', { available_date: formatDate(recordData.briefObject.embargoDate) }) }}
+        </div>
     </div>
 </template>
 
