@@ -36,7 +36,7 @@ export default {
 
     methods: {
         loadMetadata() {
-            get(`record/${this.uuid}/metadataView`).then((response) => {
+            get(`/record/${this.uuid}/metadataView`).then((response) => {
                 this.metadata = response.data;
                 this.hasLoaded = true;
             }).catch((error) => {
