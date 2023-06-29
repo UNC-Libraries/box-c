@@ -27,7 +27,7 @@ export default {
 
     methods: {
         viewer(viewer_type) {
-            return `record/${this.recordData.briefObject.id}/${viewer_type}Viewer`;
+            return `/record/${this.recordData.briefObject.id}/${viewer_type}Viewer`;
         }
     }
 }

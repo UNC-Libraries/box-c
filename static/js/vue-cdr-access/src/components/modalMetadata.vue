@@ -77,7 +77,7 @@ Displays the MODS descriptive record for an object inside of a modal
 
         methods: {
             loadMetadata() {
-                get(`record/${this.uuid}/metadataView`).then((response) => {
+                get(`/record/${this.uuid}/metadataView`).then((response) => {
                     this.metadata = response.data;
                     this.hasLoaded = true;
                 }).catch((error) => {
