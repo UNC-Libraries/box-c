@@ -45,7 +45,8 @@ export default {
         },
 
         restrictedContent() {
-            if (!this.hasGroups(this.recordData)) {
+            if (!this.hasGroups(this.recordData) ||
+                this.recordData.briefObject.groupRoleMap.everyone === undefined) {
                 return false;
             }
             return !this.recordData.briefObject.groupRoleMap.everyone.includes('canViewOriginals');
