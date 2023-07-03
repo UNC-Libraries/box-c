@@ -19,11 +19,16 @@ export default {
         },
 
         setErrorResponse(error) {
-            if (/ResponseEmpty/.test(error)) {
+            if (/ResponseEmpty/.test(error) || this.errorStatus(error, 4)) {
                 this.show_404 = true;
-            } else if (error.response.status === 503) {
+            } else if (this.errorStatus(error, 5)) {
                 this.show_503 = true;
             }
+        },
+
+        errorStatus(error, error_code) {
+            const status_regex =  new RegExp(`^${error_code}`)
+            return error.response !== undefined && status_regex.test(error.response.status);
         }
     }
 }

@@ -377,6 +377,18 @@ describe('displayWrapper.vue', () => {
         expect(wrapper.findComponent({ name: 'notFound' }).exists()).toBe(true);
     });
 
+    it("shows a 'not found' message if a 4xx status code is returned", async () => {
+        moxios.stubRequest('/record/73bc003c-9603-4cd9-8a65-93a22520ef6b/json', {
+            status: 404,
+            response: JSON.stringify({ message: 'Nothing to see here' })
+        });
+        await router.push('/record/73bc003c-9603-4cd9-8a65-93a22520ef6b/?browse_type=list-display');
+        mountApp();
+
+        await wrapper.vm.getBriefObject()
+        expect(wrapper.findComponent({ name: 'notFound' }).exists()).toBe(true);
+    });
+
     it("displays a '503 page' if JSON responds with an error", async () => {
         moxios.stubRequest('/record/73bc003c-9603-4cd9-8a65-93a22520ef6b/json', {
             status: 503,

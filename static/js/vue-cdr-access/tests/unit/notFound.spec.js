@@ -9,7 +9,7 @@ import store from '@/store';
 
 let wrapper, router;
 
-describe('notAvailable.vue', () => {
+describe('notFound.vue', () => {
     const i18n = createI18n({
         locale: 'en',
         fallbackLocale: 'en',
