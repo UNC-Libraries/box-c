@@ -116,8 +116,8 @@ export default {
             let query_params = `?facetSort=${this.sort_type}&facetRows=${this.num_rows}&facetStart=${this.start_row}`;
             query_params += `${this.facetQuery}`;
 
-            const uuid = this.$route.params.uuid;
-            if (uuid !== undefined) {
+            const uuid = this.$route.params.id;
+            if (uuid !== undefined && uuid !== '') {
                 base_url += `/${uuid}`;
             }
 
