@@ -1,7 +1,7 @@
 # Intellij Setup
 
 ## Configuration and Troubleshooting
-You will need to set Intellij to use your Java 8 SDK installation:
+You will need to set Intellij to use your Java 11 SDK installation:
 https://www.jetbrains.com/help/idea/sdk.html#change-project-sdk
 
 If Intellij is giving project errors related to not being able to find maven dependencies, the following steps may help:
