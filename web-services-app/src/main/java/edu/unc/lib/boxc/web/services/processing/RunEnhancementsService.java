@@ -75,22 +75,35 @@ public class RunEnhancementsService {
                     SearchState searchState = new SearchState();
                     searchState.addFacet(new GenericFacet(SearchFieldKey.RESOURCE_TYPE, ResourceType.File.name()));
                     searchState.setResultFields(resultsFieldList);
+                    searchState.setRowsPerPage(1000);
+                    searchState.setIgnoreMaxRows(true);
 
                     SearchRequest searchRequest = new SearchRequest();
                     searchRequest.setAccessGroups(agent.getPrincipals());
                     searchRequest.setSearchState(searchState);
                     searchRequest.setRootPid(pid);
                     searchRequest.setApplyCutoffs(false);
-                    SearchResultResponse resultResponse = queryLayer.performSearch(searchRequest);
 
-                    for (ContentObjectRecord metadata : resultResponse.getResultList()) {
-                        createMessage(metadata, agent.getUsername(), force);
-                    }
-
-                    // Add the root container itself
-                    ContentObjectRecord rootContainer = resultResponse.getSelectedContainer();
-                    createMessage(rootContainer, agent.getUsername(), force);
+                    // Page through results for requests to run enhancements of large folders
+                    long totalResults = -1;
+                    int count = 0;
+                    do {
+                        SearchResultResponse resultResponse = queryLayer.performSearch(searchRequest);
+                        if (totalResults == -1) {
+                            totalResults = resultResponse.getResultCount();
+                            LOG.debug("Found {} items to queue for enhancement run", totalResults);
+                            // Add the root container itself
+                            ContentObjectRecord rootContainer = resultResponse.getSelectedContainer();
+                            createMessage(rootContainer, agent.getUsername(), force);
+                        }
+                        for (ContentObjectRecord metadata : resultResponse.getResultList()) {
+                            createMessage(metadata, agent.getUsername(), force);
+                            count++;
+                        }
+                        LOG.debug("Queued {} out of {} items for enhancements", count, totalResults);
+                    } while(count < totalResults);
                 } else {
+                    LOG.debug("Queueing a file object for enhancements: {}", pid);
                     SimpleIdRequest searchRequest = new SimpleIdRequest(pid, agent.getPrincipals());
                     ContentObjectRecord metadata = queryLayer.getObjectById(searchRequest);
                     createMessage(metadata, agent.getUsername(), force);
