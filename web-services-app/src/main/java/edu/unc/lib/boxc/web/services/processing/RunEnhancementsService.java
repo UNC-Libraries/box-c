@@ -86,7 +86,7 @@ public class RunEnhancementsService {
 
                     // Page through results for requests to run enhancements of large folders
                     long totalResults = -1;
-                    int cnt = 0;
+                    int count = 0;
                     do {
                         SearchResultResponse resultResponse = queryLayer.performSearch(searchRequest);
                         if (totalResults == -1) {
@@ -98,10 +98,10 @@ public class RunEnhancementsService {
                         }
                         for (ContentObjectRecord metadata : resultResponse.getResultList()) {
                             createMessage(metadata, agent.getUsername(), force);
-                            cnt++;
+                            count++;
                         }
-                        LOG.debug("Queued {} out of {} items for enhancements", cnt, totalResults);
-                    } while(cnt < totalResults);
+                        LOG.debug("Queued {} out of {} items for enhancements", count, totalResults);
+                    } while(count < totalResults);
                 } else {
                     LOG.debug("Queueing a file object for enhancements: {}", pid);
                     SimpleIdRequest searchRequest = new SimpleIdRequest(pid, agent.getPrincipals());
