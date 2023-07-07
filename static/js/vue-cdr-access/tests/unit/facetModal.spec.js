@@ -81,7 +81,7 @@ describe('modalMetadata.vue', () => {
 
     it("filters a query to a collection, if one is present", async () => {
         const uuid = '05209c77-30a1-43a0-9c94-fbd58ebf104e';
-        wrapper.vm.$route.params.uuid = uuid;
+        wrapper.vm.$route.params.id = uuid;
         await openModal();
         expect(axios.get).toHaveBeenCalledWith(`/services/api/facet/language/listValues/${uuid}?facetSort=count&facetRows=21&facetStart=0`);
     });
@@ -92,7 +92,7 @@ describe('modalMetadata.vue', () => {
             'works_only=false&browse_type=gallery-display&types=Work,Folder,Collection,File';
         await router.push(route);
         await openModal();
-        const query = '/services/api/facet/language/listValues/?facetSort=count&facetRows=21&facetStart=0&works_only=false&types=Work,Folder,Collection,File';
+        const query = '/services/api/facet/language/listValues?facetSort=count&facetRows=21&facetStart=0&works_only=false&types=Work,Folder,Collection,File';
         expect(axios.get).toHaveBeenCalledWith(query);
     });
 
