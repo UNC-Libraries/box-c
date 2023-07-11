@@ -1,36 +1,29 @@
 package edu.unc.lib.boxc.services.camel.fulltext;
 
+import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
+import edu.unc.lib.boxc.services.camel.util.CdrFcrepoHeaders;
+import org.apache.camel.Exchange;
+import org.apache.camel.Message;
+import org.apache.camel.Processor;
+import org.apache.commons.io.FileUtils;
+import org.apache.tika.Tika;
+import org.apache.tika.exception.TikaException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.regex.Pattern;
+
 import static edu.unc.lib.boxc.model.api.ids.RepositoryPathConstants.HASHED_PATH_DEPTH;
 import static edu.unc.lib.boxc.model.api.ids.RepositoryPathConstants.HASHED_PATH_SIZE;
 import static edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPaths.idToPath;
 import static edu.unc.lib.boxc.services.camel.util.CdrFcrepoHeaders.CdrBinaryPath;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.fcrepo.camel.FcrepoHeaders.FCREPO_URI;
-
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.regex.Pattern;
-
-import org.apache.camel.Exchange;
-import org.apache.camel.Message;
-import org.apache.camel.Processor;
-import org.apache.commons.io.FileUtils;
-import org.apache.tika.exception.TikaException;
-import org.apache.tika.metadata.Metadata;
-import org.apache.tika.parser.AutoDetectParser;
-import org.apache.tika.parser.ParseContext;
-import org.apache.tika.sax.BodyContentHandler;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.xml.sax.SAXException;
-
-import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
-import edu.unc.lib.boxc.services.camel.util.CdrFcrepoHeaders;
 
 /**
  * Extracts fulltext from documents and adds it as a derivative file on existing file object
@@ -110,26 +103,13 @@ public class FulltextProcessor implements Processor {
         }
     }
 
-    private String extractText(String binaryPath) throws IOException, SAXException, TikaException {
-        BodyContentHandler handler = new BodyContentHandler(characterLimit);
+    private String extractText(String binaryPath) throws IOException, TikaException {
+        Path fileToExtract = Paths.get(binaryPath);
 
-        AutoDetectParser parser = new AutoDetectParser();
-        Metadata metadata = new Metadata();
-        File fileToExtract = new File(binaryPath);
-
-        if (fileToExtract.length() > 0) {
-            try (InputStream stream = new FileInputStream(fileToExtract)) {
-                parser.parse(stream, handler, metadata, new ParseContext());
-            } catch (SAXException e) {
-                // Check for character limit exceeded message, since the exception is private
-                if (e.getMessage().contains("document contained more than")) {
-                    log.warn("File {} contained more than {} characters, extracted text limited to this length",
-                            binaryPath, characterLimit);
-                } else {
-                    throw e;
-                }
-            }
-            return handler.toString();
+        if (Files.size(fileToExtract) > 0) {
+            var tika = new Tika();
+            tika.setMaxStringLength(characterLimit);
+            return tika.parseToString(fileToExtract);
         } else {
             log.warn("File, {}, does not have any text to extract", binaryPath);
             return "";
