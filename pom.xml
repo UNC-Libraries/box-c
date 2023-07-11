@@ -134,7 +134,7 @@
         
         <fcrepo-camel.version>5.0.0</fcrepo-camel.version>
         <camel.version>2.25.4</camel.version>
-        <tika.version>1.28.5</tika.version>
+        <tika.version>2.8.0</tika.version>
         
         <maven.failsafe.version>2.22.1</maven.failsafe.version>
         <maven.surefire.version>2.22.1</maven.surefire.version>
