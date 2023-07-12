@@ -148,21 +148,21 @@
         <groupId>org.apache.httpcomponents</groupId>
         <artifactId>httpclient</artifactId>
     </dependency>
-    
+
     <dependency>
         <groupId>org.apache.tika</groupId>
         <artifactId>tika-core</artifactId>
         <version>${tika.version}</version>
     </dependency>
-    
+
     <dependency>
         <groupId>org.apache.tika</groupId>
-        <artifactId>tika-parsers</artifactId>
+        <artifactId>tika-parsers-standard-package</artifactId>
         <version>${tika.version}</version>
         <exclusions>
             <exclusion>
-                <groupId>edu.ucar</groupId>
-                <artifactId>grib</artifactId>
+                <groupId>xerces</groupId>
+                <artifactId>xercesImpl</artifactId>
             </exclusion>
         </exclusions>
     </dependency>
