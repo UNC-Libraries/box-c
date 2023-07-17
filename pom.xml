@@ -92,7 +92,7 @@
         <mail.version>1.4.7</mail.version>
         <bagit.version>5.2.0</bagit.version>
         <concurrentlinkedhashmap-lru.version>1.4.2</concurrentlinkedhashmap-lru.version>
-        <guava.version>30.1.1-jre</guava.version>
+        <guava.version>32.0.0-jre</guava.version>
         <sword2-server.version>1.0</sword2-server.version>
         
         <httpclient.version>4.5.13</httpclient.version>
