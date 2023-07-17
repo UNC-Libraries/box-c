@@ -34,3 +34,29 @@ a.button.is-link span {
 .background-white {
     background-color: white;
 }
+
+.image-download-options button {
+    background-color: #1A698C;
+    color: white;
+    font-family: 'Open Sans', sans-serif;
+}
+
+.image-download-options button:hover,
+.image-download-options button:focus {
+    background-color: #084b6b;
+    color: white;
+}
+
+.image-download-options a {
+    border: inherit;
+    color: black;
+}
+
+.image-download-options .dropdown-menu {
+    left: unset;
+    right: 0;
+}
+
+.image-download-options .fa-angle-down {
+    margin-left: 8px;
+}
