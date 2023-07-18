@@ -172,7 +172,7 @@ export default {
 
     methods: {
         getCollections() {
-            get('/advancedSearch/collections').then((response) => {
+            get('/advancedSearch/collectionsJson').then((response) => {
                 this.collections = response.data;
             }).catch(function (error) {
                 console.log(error);
