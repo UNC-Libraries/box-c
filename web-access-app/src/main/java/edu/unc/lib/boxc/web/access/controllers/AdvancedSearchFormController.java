@@ -36,7 +36,7 @@ public class AdvancedSearchFormController extends AbstractErrorHandlingSearchCon
             .sorted()
             .collect(Collectors.toList());
 
-    @RequestMapping(path = "/advancedSearch/collections", produces = APPLICATION_JSON_VALUE)
+    @RequestMapping(path = "/advancedSearch/collectionsJson", produces = APPLICATION_JSON_VALUE)
     public @ResponseBody String getCollections() {
         AccessGroupSet accessGroups = GroupsThreadStore.getPrincipals();
         SearchResultResponse collectionResultResponse = queryLayer.getCollectionList(accessGroups);

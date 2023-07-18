@@ -70,7 +70,7 @@ describe('advancedSearch.vue', () => {
             ],
             "id":"fc77a9be-b49d-4f4e-b656-1644c9e964fc", "title":"testCollection"
             }];
-        moxios.stubRequest('/advancedSearch/collections', {
+        moxios.stubRequest('/advancedSearch/collectionsJson', {
             status: 200,
             response: JSON.stringify(collections)
         });
