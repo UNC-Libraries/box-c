@@ -4,6 +4,8 @@ import static edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPaths.idToPath;
 
 import edu.unc.lib.boxc.model.api.DatastreamType;
 import edu.unc.lib.boxc.search.api.models.ContentObjectRecord;
+import edu.unc.lib.boxc.search.api.models.Datastream;
+import org.apache.commons.io.FilenameUtils;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -75,8 +77,7 @@ public class DownloadImageService {
                     throw new IllegalArgumentException(INVALID_SIZE_MESSAGE);
                 } else {
                     // format of dimensions is like 800x1200
-                    var id = DatastreamType.ORIGINAL_FILE.getId();
-                    var datastreamObject = contentObjectRecord.getDatastreamObject(id);
+                    var datastreamObject = getDatastream(contentObjectRecord);
                     String dimensions = datastreamObject.getExtent();
                     String[] dimensionParts = dimensions.split("x");
                     int longerSide = Math.max(Integer.parseInt(dimensionParts[0]), Integer.parseInt(dimensionParts[1]));
@@ -94,11 +95,17 @@ public class DownloadImageService {
     }
 
     public String getFilename(ContentObjectRecord record, String size) {
-        var id = DatastreamType.ORIGINAL_FILE.getId();
-        var datastreamObject = record.getDatastreamObject(id);
-        var originalFilename = datastreamObject.getFilename();
         var formattedSize = Objects.equals(size, FULL_SIZE) ?  FULL_SIZE : size + "px";
-        return originalFilename + "_" + formattedSize + ".jpg";
+
+        var originalFilename = getDatastream(record).getFilename();
+        var nameOnly = FilenameUtils.removeExtension(originalFilename);
+
+        return nameOnly + "_" + formattedSize + ".jpg";
+    }
+
+    private Datastream getDatastream(ContentObjectRecord record) {
+        var id = DatastreamType.ORIGINAL_FILE.getId();
+        return record.getDatastreamObject(id);
     }
 
     public void setIiifBasePath(String iiifBasePath) {

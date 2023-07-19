@@ -16,6 +16,7 @@ import edu.unc.lib.boxc.web.common.services.SolrQueryLayerService;
 import edu.unc.lib.boxc.web.services.processing.DownloadImageService;
 import edu.unc.lib.boxc.web.services.rest.modify.AbstractAPIIT;
 import org.apache.commons.io.FileUtils;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -64,11 +65,17 @@ public class DownloadImageControllerIT extends AbstractAPIIT {
     public void testGetImageAtFullSize() throws Exception {
         var pidString = makePid().getId();
         var formattedPid = idToPath(pidString, 4, 2) + pidString + ".jp2";
+        var filename = "bunny.jpg";
+        ContentObjectSolrRecord record = mock(ContentObjectSolrRecord.class);
+        Datastream datastream = mock(Datastream.class);
+        when(solrSearchService.getObjectById(any(SimpleIdRequest.class))).thenReturn(record);
+        when(record.getDatastreamObject("original_file")).thenReturn(datastream);
+        when(datastream.getFilename()).thenReturn(filename);
 
         stubFor(WireMock.get(urlMatching("/" + formattedPid + "/full/full/0/default.jpg"))
                 .willReturn(aResponse()
                         .withStatus(HttpStatus.OK.value())
-                        .withBodyFile("bunny.jpg")
+                        .withBodyFile(filename)
                         .withHeader("Content-Type", "image/jpeg")));
 
         MvcResult result = mvc.perform(get("/downloadImage/" + pidString + "/full"))
@@ -83,18 +90,20 @@ public class DownloadImageControllerIT extends AbstractAPIIT {
     public void testGetImageAtPixelSizeSmallerThanFull() throws Exception {
         var pidString = makePid().getId();
         var formattedPid = idToPath(pidString, 4, 2) + pidString + ".jp2";
+        var filename = "bunny.jpg";
         ContentObjectSolrRecord record = mock(ContentObjectSolrRecord.class);
         Datastream datastream = mock(Datastream.class);
 
         stubFor(WireMock.get(urlMatching("/" + formattedPid + "/full/!800,800/0/default.jpg"))
                 .willReturn(aResponse()
                         .withStatus(HttpStatus.OK.value())
-                        .withBodyFile("bunny.jpg")
+                        .withBodyFile(filename)
                         .withHeader("Content-Type", "image/jpeg")));
 
         when(solrSearchService.getObjectById(any(SimpleIdRequest.class))).thenReturn(record);
         when(record.getDatastreamObject("original_file")).thenReturn(datastream);
         when(datastream.getExtent()).thenReturn("1200x1200");
+        when(datastream.getFilename()).thenReturn(filename);
 
         MvcResult result = mvc.perform(get("/downloadImage/" + pidString + "/800"))
                 .andExpect(status().is2xxSuccessful())
@@ -110,18 +119,20 @@ public class DownloadImageControllerIT extends AbstractAPIIT {
     public void testGetImageAtPixelSizeBiggerThanFull() throws Exception {
         var pidString = makePid().getId();
         var formattedPid = idToPath(pidString, 4, 2) + pidString + ".jp2";
+        var filename = "bunny.jpg";
         ContentObjectSolrRecord record = mock(ContentObjectSolrRecord.class);
         Datastream datastream = mock(Datastream.class);
 
         stubFor(WireMock.get(urlMatching("/" + formattedPid + "/full/full/0/default.jpg"))
                 .willReturn(aResponse()
                         .withStatus(HttpStatus.OK.value())
-                        .withBodyFile("bunny.jpg")
+                        .withBodyFile(filename)
                         .withHeader("Content-Type", "image/jpeg")));
 
         when(solrSearchService.getObjectById(any(SimpleIdRequest.class))).thenReturn(record);
         when(record.getDatastreamObject("original_file")).thenReturn(datastream);
         when(datastream.getExtent()).thenReturn("1200x1200");
+        when(datastream.getFilename()).thenReturn(filename);
 
         MvcResult result = mvc.perform(get("/downloadImage/" + pidString + "/2500"))
                 .andExpect(status().is2xxSuccessful())
