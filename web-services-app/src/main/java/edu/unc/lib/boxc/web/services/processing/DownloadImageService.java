@@ -4,6 +4,8 @@ import static edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPaths.idToPath;
 
 import edu.unc.lib.boxc.model.api.DatastreamType;
 import edu.unc.lib.boxc.search.api.models.ContentObjectRecord;
+import edu.unc.lib.boxc.search.api.models.Datastream;
+import org.apache.commons.io.FilenameUtils;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -25,20 +27,23 @@ public class DownloadImageService {
 
     /**
      * Method contacts the IIIF server for the requested access copy image and returns it
-     * @param pidString the UUID of the file
+     * @param contentObjectRecord solr record of the file
      * @param size a string which is either "full" for full size or a pixel length like "1200"
+     * @param pidString the UUID of the file
      * @return a response entity which contains headers and content of the access copy image
      * @throws IOException
      */
-    public ResponseEntity<InputStreamResource> streamImage(String pidString, String size)
+    public ResponseEntity<InputStreamResource> streamImage(ContentObjectRecord contentObjectRecord, String size)
             throws IOException {
 
+        String pidString = contentObjectRecord.getPid().getId();
         String url = buildURL(pidString, size);
         InputStream input = new URL(url).openStream();
         InputStreamResource resource = new InputStreamResource(input);
+        String filename = getDownloadFilename(contentObjectRecord, size);
 
         return ResponseEntity.ok()
-                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=image_" + size + ".jpg")
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + filename)
                 .contentType(MediaType.IMAGE_JPEG)
                 .body(resource);
     }
@@ -75,8 +80,7 @@ public class DownloadImageService {
                     throw new IllegalArgumentException(INVALID_SIZE_MESSAGE);
                 } else {
                     // format of dimensions is like 800x1200
-                    var id = DatastreamType.ORIGINAL_FILE.getId();
-                    var datastreamObject = contentObjectRecord.getDatastreamObject(id);
+                    var datastreamObject = getDatastream(contentObjectRecord);
                     String dimensions = datastreamObject.getExtent();
                     String[] dimensionParts = dimensions.split("x");
                     int longerSide = Math.max(Integer.parseInt(dimensionParts[0]), Integer.parseInt(dimensionParts[1]));
@@ -91,6 +95,26 @@ public class DownloadImageService {
 
         }
         return size;
+    }
+
+    /**
+     * Formats the original filename to include size for access download filename
+     * @param contentObjectRecord solr record of the file
+     * @param size validated size string from getSize
+     * @return a filename for the download like "filename_full.jpg" or "filename_800px.jpg
+     */
+    public String getDownloadFilename(ContentObjectRecord contentObjectRecord, String size) {
+        var formattedSize = Objects.equals(size, FULL_SIZE) ?  FULL_SIZE : size + "px";
+
+        var originalFilename = getDatastream(contentObjectRecord).getFilename();
+        var nameOnly = FilenameUtils.removeExtension(originalFilename);
+
+        return nameOnly + "_" + formattedSize + ".jpg";
+    }
+
+    private Datastream getDatastream(ContentObjectRecord contentObjectRecord) {
+        var id = DatastreamType.ORIGINAL_FILE.getId();
+        return contentObjectRecord.getDatastreamObject(id);
     }
 
     public void setIiifBasePath(String iiifBasePath) {
