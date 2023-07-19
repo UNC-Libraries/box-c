@@ -100,18 +100,18 @@ public class DownloadImageService {
      * @param size validated size string from getSize
      * @return a filename for the download like "filename_full.jpg" or "filename_800px.jpg
      */
-    public String getFilename(ContentObjectRecord record, String size) {
+    public String getDownloadFilename(ContentObjectRecord contentObjectRecord, String size) {
         var formattedSize = Objects.equals(size, FULL_SIZE) ?  FULL_SIZE : size + "px";
 
-        var originalFilename = getDatastream(record).getFilename();
+        var originalFilename = getDatastream(contentObjectRecord).getFilename();
         var nameOnly = FilenameUtils.removeExtension(originalFilename);
 
         return nameOnly + "_" + formattedSize + ".jpg";
     }
 
-    private Datastream getDatastream(ContentObjectRecord record) {
+    private Datastream getDatastream(ContentObjectRecord contentObjectRecord) {
         var id = DatastreamType.ORIGINAL_FILE.getId();
-        return record.getDatastreamObject(id);
+        return contentObjectRecord.getDatastreamObject(id);
     }
 
     public void setIiifBasePath(String iiifBasePath) {

@@ -64,10 +64,10 @@ public class DownloadImageControllerIT extends AbstractAPIIT {
         var pidString = makePid().getId();
         var formattedPid = idToPath(pidString, 4, 2) + pidString + ".jp2";
         var filename = "bunny.jpg";
-        ContentObjectSolrRecord record = mock(ContentObjectSolrRecord.class);
+        ContentObjectSolrRecord contentObjectSolrRecord = mock(ContentObjectSolrRecord.class);
         Datastream datastream = mock(Datastream.class);
-        when(solrSearchService.getObjectById(any(SimpleIdRequest.class))).thenReturn(record);
-        when(record.getDatastreamObject("original_file")).thenReturn(datastream);
+        when(solrSearchService.getObjectById(any(SimpleIdRequest.class))).thenReturn(contentObjectSolrRecord);
+        when(contentObjectSolrRecord.getDatastreamObject("original_file")).thenReturn(datastream);
         when(datastream.getFilename()).thenReturn(filename);
 
         stubFor(WireMock.get(urlMatching("/" + formattedPid + "/full/full/0/default.jpg"))
@@ -89,7 +89,7 @@ public class DownloadImageControllerIT extends AbstractAPIIT {
         var pidString = makePid().getId();
         var formattedPid = idToPath(pidString, 4, 2) + pidString + ".jp2";
         var filename = "bunny.jpg";
-        ContentObjectSolrRecord record = mock(ContentObjectSolrRecord.class);
+        ContentObjectSolrRecord contentObjectSolrRecord = mock(ContentObjectSolrRecord.class);
         Datastream datastream = mock(Datastream.class);
 
         stubFor(WireMock.get(urlMatching("/" + formattedPid + "/full/!800,800/0/default.jpg"))
@@ -98,8 +98,8 @@ public class DownloadImageControllerIT extends AbstractAPIIT {
                         .withBodyFile(filename)
                         .withHeader("Content-Type", "image/jpeg")));
 
-        when(solrSearchService.getObjectById(any(SimpleIdRequest.class))).thenReturn(record);
-        when(record.getDatastreamObject("original_file")).thenReturn(datastream);
+        when(solrSearchService.getObjectById(any(SimpleIdRequest.class))).thenReturn(contentObjectSolrRecord);
+        when(contentObjectSolrRecord.getDatastreamObject("original_file")).thenReturn(datastream);
         when(datastream.getExtent()).thenReturn("1200x1200");
         when(datastream.getFilename()).thenReturn(filename);
 
@@ -118,7 +118,7 @@ public class DownloadImageControllerIT extends AbstractAPIIT {
         var pidString = makePid().getId();
         var formattedPid = idToPath(pidString, 4, 2) + pidString + ".jp2";
         var filename = "bunny.jpg";
-        ContentObjectSolrRecord record = mock(ContentObjectSolrRecord.class);
+        ContentObjectSolrRecord contentObjectSolrRecord = mock(ContentObjectSolrRecord.class);
         Datastream datastream = mock(Datastream.class);
 
         stubFor(WireMock.get(urlMatching("/" + formattedPid + "/full/full/0/default.jpg"))
@@ -127,8 +127,8 @@ public class DownloadImageControllerIT extends AbstractAPIIT {
                         .withBodyFile(filename)
                         .withHeader("Content-Type", "image/jpeg")));
 
-        when(solrSearchService.getObjectById(any(SimpleIdRequest.class))).thenReturn(record);
-        when(record.getDatastreamObject("original_file")).thenReturn(datastream);
+        when(solrSearchService.getObjectById(any(SimpleIdRequest.class))).thenReturn(contentObjectSolrRecord);
+        when(contentObjectSolrRecord.getDatastreamObject("original_file")).thenReturn(datastream);
         when(datastream.getExtent()).thenReturn("1200x1200");
         when(datastream.getFilename()).thenReturn(filename);
 
@@ -145,8 +145,8 @@ public class DownloadImageControllerIT extends AbstractAPIIT {
     @Test
     public void testFullSizeAccessImageNoFullSizePermissions() throws Exception {
         PID filePid = makePid();
-        ContentObjectSolrRecord record = mock(ContentObjectSolrRecord.class);
-        when(solrSearchService.getObjectById(any(SimpleIdRequest.class))).thenReturn(record);
+        ContentObjectSolrRecord contentObjectSolrRecord = mock(ContentObjectSolrRecord.class);
+        when(solrSearchService.getObjectById(any(SimpleIdRequest.class))).thenReturn(contentObjectSolrRecord);
         doThrow(new AccessRestrictionException()).when(accessControlService)
                 .assertHasAccess(anyString(), eq(filePid), any(AccessGroupSetImpl.class), eq(viewOriginal));
 
@@ -161,13 +161,13 @@ public class DownloadImageControllerIT extends AbstractAPIIT {
     @Test
     public void testGetImageAtPixelSizeBiggerThanFullNoPermission() throws Exception {
         PID filePid = makePid();
-        ContentObjectSolrRecord record = mock(ContentObjectSolrRecord.class);
+        ContentObjectSolrRecord contentObjectSolrRecord = mock(ContentObjectSolrRecord.class);
         Datastream datastream = mock(Datastream.class);
-        when(solrSearchService.getObjectById(any(SimpleIdRequest.class))).thenReturn(record);
+        when(solrSearchService.getObjectById(any(SimpleIdRequest.class))).thenReturn(contentObjectSolrRecord);
         doThrow(new AccessRestrictionException()).when(accessControlService)
                 .assertHasAccess(anyString(), eq(filePid), any(AccessGroupSetImpl.class), eq(viewOriginal));
 
-        when(record.getDatastreamObject("original_file")).thenReturn(datastream);
+        when(contentObjectSolrRecord.getDatastreamObject("original_file")).thenReturn(datastream);
         when(datastream.getExtent()).thenReturn("1200x1200");
 
         MvcResult result = mvc.perform(get("/downloadImage/" + filePid.getId() + "/2500"))
@@ -195,8 +195,8 @@ public class DownloadImageControllerIT extends AbstractAPIIT {
     @Test
     public void testAccessImageInvalidSize() throws Exception {
         PID filePid = makePid();
-        ContentObjectSolrRecord record = mock(ContentObjectSolrRecord.class);
-        when(solrSearchService.getObjectById(any(SimpleIdRequest.class))).thenReturn(record);
+        ContentObjectSolrRecord contentObjectSolrRecord = mock(ContentObjectSolrRecord.class);
+        when(solrSearchService.getObjectById(any(SimpleIdRequest.class))).thenReturn(contentObjectSolrRecord);
 
         MvcResult result = mvc.perform(get("/downloadImage/" + filePid.getId() + "/library"))
                 .andExpect(status().isBadRequest())
@@ -209,8 +209,8 @@ public class DownloadImageControllerIT extends AbstractAPIIT {
     @Test
     public void testAccessImageNegativeSize() throws Exception {
         PID filePid = makePid();
-        ContentObjectSolrRecord record = mock(ContentObjectSolrRecord.class);
-        when(solrSearchService.getObjectById(any(SimpleIdRequest.class))).thenReturn(record);
+        ContentObjectSolrRecord contentObjectSolrRecord = mock(ContentObjectSolrRecord.class);
+        when(solrSearchService.getObjectById(any(SimpleIdRequest.class))).thenReturn(contentObjectSolrRecord);
 
         MvcResult result = mvc.perform(get("/downloadImage/" + filePid.getId() + "/-1"))
                 .andExpect(status().isBadRequest())
@@ -223,8 +223,8 @@ public class DownloadImageControllerIT extends AbstractAPIIT {
     @Test
     public void testAccessImageZeroSize() throws Exception {
         PID filePid = makePid();
-        ContentObjectSolrRecord record = mock(ContentObjectSolrRecord.class);
-        when(solrSearchService.getObjectById(any(SimpleIdRequest.class))).thenReturn(record);
+        ContentObjectSolrRecord contentObjectSolrRecord = mock(ContentObjectSolrRecord.class);
+        when(solrSearchService.getObjectById(any(SimpleIdRequest.class))).thenReturn(contentObjectSolrRecord);
 
         MvcResult result = mvc.perform(get("/downloadImage/" + filePid.getId() + "/0"))
                 .andExpect(status().isBadRequest())
@@ -237,10 +237,10 @@ public class DownloadImageControllerIT extends AbstractAPIIT {
     @Test
     public void testGetAccessImageNoOriginalFile() throws Exception {
         var pidString = makePid().getId();
-        ContentObjectSolrRecord record = mock(ContentObjectSolrRecord.class);
+        ContentObjectSolrRecord contentObjectSolrRecord = mock(ContentObjectSolrRecord.class);
 
-        when(solrSearchService.getObjectById(any(SimpleIdRequest.class))).thenReturn(record);
-        when(record.getDatastreamObject("original_file")).thenReturn(null);
+        when(solrSearchService.getObjectById(any(SimpleIdRequest.class))).thenReturn(contentObjectSolrRecord);
+        when(contentObjectSolrRecord.getDatastreamObject("original_file")).thenReturn(null);
 
         MvcResult result = mvc.perform(get("/downloadImage/" + pidString + "/1200"))
                 .andExpect(status().isBadRequest())

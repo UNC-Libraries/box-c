@@ -47,15 +47,15 @@ public class DownloadImageController {
         aclService.assertHasAccess("Insufficient permissions to download access copy for " + pidString,
                 pid, principals, Permission.viewAccessCopies);
 
-        var record = solrSearchService.getObjectById(new SimpleIdRequest(pid, principals));
-        String validatedSize = downloadImageService.getSize(record, size);
+        var contentObjectRecord = solrSearchService.getObjectById(new SimpleIdRequest(pid, principals));
+        String validatedSize = downloadImageService.getSize(contentObjectRecord, size);
 
         if (Objects.equals(validatedSize, DownloadImageService.FULL_SIZE)) {
             aclService.assertHasAccess("Insufficient permissions to download full size copy for " + pidString,
                     pid, principals, Permission.viewOriginal);
         }
 
-        String filename = downloadImageService.getFilename(record, validatedSize);
+        String filename = downloadImageService.getDownloadFilename(contentObjectRecord, validatedSize);
 
         try {
             return downloadImageService.streamImage(pidString, validatedSize, filename);
