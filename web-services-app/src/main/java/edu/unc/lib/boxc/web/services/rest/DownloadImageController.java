@@ -56,7 +56,7 @@ public class DownloadImageController {
         }
 
         try {
-            return downloadImageService.streamImage(contentObjectRecord, validatedSize, pidString);
+            return downloadImageService.streamImage(contentObjectRecord, validatedSize);
         } catch (IOException e) {
             log.error("Error streaming access copy image for {} at size {}", pidString, validatedSize, e);
         }

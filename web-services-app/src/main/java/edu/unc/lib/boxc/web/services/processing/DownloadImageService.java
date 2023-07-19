@@ -33,9 +33,10 @@ public class DownloadImageService {
      * @return a response entity which contains headers and content of the access copy image
      * @throws IOException
      */
-    public ResponseEntity<InputStreamResource> streamImage(ContentObjectRecord contentObjectRecord, String size, String pidString)
+    public ResponseEntity<InputStreamResource> streamImage(ContentObjectRecord contentObjectRecord, String size)
             throws IOException {
 
+        String pidString = contentObjectRecord.getPid().getId();
         String url = buildURL(pidString, size);
         InputStream input = new URL(url).openStream();
         InputStreamResource resource = new InputStreamResource(input);
