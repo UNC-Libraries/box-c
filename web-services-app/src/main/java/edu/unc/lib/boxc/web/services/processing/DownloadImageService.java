@@ -27,17 +27,19 @@ public class DownloadImageService {
 
     /**
      * Method contacts the IIIF server for the requested access copy image and returns it
-     * @param pidString the UUID of the file
+     * @param contentObjectRecord solr record of the file
      * @param size a string which is either "full" for full size or a pixel length like "1200"
+     * @param pidString the UUID of the file
      * @return a response entity which contains headers and content of the access copy image
      * @throws IOException
      */
-    public ResponseEntity<InputStreamResource> streamImage(String pidString, String size, String filename)
+    public ResponseEntity<InputStreamResource> streamImage(ContentObjectRecord contentObjectRecord, String size, String pidString)
             throws IOException {
 
         String url = buildURL(pidString, size);
         InputStream input = new URL(url).openStream();
         InputStreamResource resource = new InputStreamResource(input);
+        String filename = getDownloadFilename(contentObjectRecord, size);
 
         return ResponseEntity.ok()
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + filename)
@@ -96,7 +98,7 @@ public class DownloadImageService {
 
     /**
      * Formats the original filename to include size for access download filename
-     * @param record solr record of the file
+     * @param contentObjectRecord solr record of the file
      * @param size validated size string from getSize
      * @return a filename for the download like "filename_full.jpg" or "filename_800px.jpg
      */
