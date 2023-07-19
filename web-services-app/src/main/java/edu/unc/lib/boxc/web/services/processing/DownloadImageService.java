@@ -94,6 +94,12 @@ public class DownloadImageService {
         return size;
     }
 
+    /**
+     * Formats the original filename to include size for access download filename
+     * @param record solr record of the file
+     * @param size validated size string from getSize
+     * @return a filename for the download like "filename_full.jpg" or "filename_800px.jpg
+     */
     public String getFilename(ContentObjectRecord record, String size) {
         var formattedSize = Objects.equals(size, FULL_SIZE) ?  FULL_SIZE : size + "px";
 
