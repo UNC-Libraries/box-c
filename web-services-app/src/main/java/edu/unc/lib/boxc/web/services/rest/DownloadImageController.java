@@ -55,8 +55,10 @@ public class DownloadImageController {
                     pid, principals, Permission.viewOriginal);
         }
 
+        String filename = downloadImageService.getFilename(record, validatedSize);
+
         try {
-            return downloadImageService.streamImage(pidString, validatedSize);
+            return downloadImageService.streamImage(pidString, validatedSize, filename);
         } catch (IOException e) {
             log.error("Error streaming access copy image for {} at size {}", pidString, validatedSize, e);
         }

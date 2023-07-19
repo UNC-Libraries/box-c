@@ -30,7 +30,7 @@ public class DownloadImageService {
      * @return a response entity which contains headers and content of the access copy image
      * @throws IOException
      */
-    public ResponseEntity<InputStreamResource> streamImage(String pidString, String size)
+    public ResponseEntity<InputStreamResource> streamImage(String pidString, String size, String filename)
             throws IOException {
 
         String url = buildURL(pidString, size);
@@ -38,7 +38,7 @@ public class DownloadImageService {
         InputStreamResource resource = new InputStreamResource(input);
 
         return ResponseEntity.ok()
-                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=image_" + size + ".jpg")
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + filename)
                 .contentType(MediaType.IMAGE_JPEG)
                 .body(resource);
     }
@@ -91,6 +91,14 @@ public class DownloadImageService {
 
         }
         return size;
+    }
+
+    public String getFilename(ContentObjectRecord record, String size) {
+        var id = DatastreamType.ORIGINAL_FILE.getId();
+        var datastreamObject = record.getDatastreamObject(id);
+        var originalFilename = datastreamObject.getFilename();
+        var formattedSize = Objects.equals(size, FULL_SIZE) ?  FULL_SIZE : size + "px";
+        return originalFilename + "_" + formattedSize + ".jpg";
     }
 
     public void setIiifBasePath(String iiifBasePath) {

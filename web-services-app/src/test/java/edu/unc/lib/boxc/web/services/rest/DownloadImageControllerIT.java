@@ -76,7 +76,7 @@ public class DownloadImageControllerIT extends AbstractAPIIT {
                 .andReturn();
 
         var response = result.getResponse();
-        assertEquals("attachment; filename=image_full.jpg", response.getHeader(CONTENT_DISPOSITION));
+        assertEquals("attachment; filename=bunny_full.jpg", response.getHeader(CONTENT_DISPOSITION));
     }
 
     @Test
@@ -102,7 +102,7 @@ public class DownloadImageControllerIT extends AbstractAPIIT {
 
         var response = result.getResponse();
 
-        assertEquals("attachment; filename=image_800.jpg", response.getHeader(CONTENT_DISPOSITION));
+        assertEquals("attachment; filename=bunny_800px.jpg", response.getHeader(CONTENT_DISPOSITION));
         assertCorrectImageReturned(response);
     }
 
@@ -129,7 +129,7 @@ public class DownloadImageControllerIT extends AbstractAPIIT {
 
         var response = result.getResponse();
 
-        assertEquals("attachment; filename=image_full.jpg", response.getHeader(CONTENT_DISPOSITION));
+        assertEquals("attachment; filename=bunny_full.jpg", response.getHeader(CONTENT_DISPOSITION));
         assertCorrectImageReturned(response);
     }
 
