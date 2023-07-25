@@ -239,80 +239,7 @@ export default {
             }
 
             return { markDeleted: markedForDeletion, restricted: restrictedAccess };
-        },
-
-        showDropdownList(e) {
-            // Close any currently open dropdowns
-            this.closeDropdownLists(e);
-
-            if (e.target.id.startsWith('dcr-download')) {
-                let drop_down = e.target.parentElement.parentElement.querySelector('.dropdown-menu');
-                if (drop_down !== null) {
-                    drop_down.setAttribute('aria-hidden', 'false');
-                    drop_down.classList.add('show-list');
-                }
-            }
-        },
-
-        closeDropdownLists() {
-            document.querySelectorAll('.show-list').forEach(element => {
-                element.setAttribute('aria-hidden', 'true');
-                element.classList.remove('show-list');
-            });
-        },
-
-        downloadButtonHtml(brief_object) {
-            if (this.showNonImageDownload(brief_object)) {
-                return `<div class="actionlink download">
-                            <a class="download button action" href="/content/${brief_object.id}?dl=true"><i class="fa fa-download"></i> ${this.$t('full_record.download')}</a>
-                        </div>`;
-            } else if (this.showImageDownload(brief_object)) {
-                let html = `<div class="dropdown actionlink download image-download-options">
-                <div class="dropdown-trigger">
-                    <button id="dcr-download-${brief_object.id}" class="button download-images" aria-haspopup="true" aria-controls="dropdown-menu">
-                    ${this.$t('full_record.download')} <i class="fas fa-angle-down" aria-hidden="true"></i>
-                    </button>
-                </div>
-                <div class="dropdown-menu table-downloads" id="dropdown-menu" role="menu" aria-hidden="true">
-                    <div class="dropdown-content">`;
-
-                if (this.validSizeOption(brief_object, 800)) {
-                   html += `<a href="${this.imgDownloadLink(brief_object.id, '800')}" class="dropdown-item">${this.$t('full_record.small') } JPG (800px)</a>`;
-                }
-                if (this.validSizeOption(brief_object, 1600)) {
-                    html += `<a href="${this.imgDownloadLink(brief_object.id, '1600')}" class="dropdown-item">${this.$t('full_record.medium') } JPG (1600px)</a>`;
-                }
-                if (this.validSizeOption(brief_object, 2500)) {
-                    html += `<a href="${this.imgDownloadLink(brief_object.id, '2500')}" class="dropdown-item">${this.$t('full_record.large') } JPG (2500px)</a>`;
-                }
-
-
-                html += `<a href="${this.imgDownloadLink(brief_object.id, 'full')}" class="dropdown-item">${this.$t('full_record.full_size')} JPG</a>`;
-                html += '<hr class="dropdown-divider">';
-                html += `<a href="/indexablecontent/${brief_object.id}?dl=true" class="dropdown-item">${this.$t('full_record.original_file')}</a>`;
-
-                html += '</div>'
-                html += '</div>'
-
-                return html;
-            } else {
-                return `<div class="dropdown actionlink download image-download-options">
-                            <button class="button download-images" title="${this.$t('full_record.download_unavailable')}" disabled>
-                                <i class="fa fa-download"></i> ${this.$t('full_record.download')}
-                            </button>
-                        </div>`;
-            }
         }
-    },
-
-    mounted() {
-        document.addEventListener('click', this.showDropdownList);
-        document.addEventListener('keyup', this.closeDropdownLists);
-    },
-
-    unmounted() {
-        document.removeEventListener('click', this.showDropdownList);
-        document.removeEventListener('keyup', this.closeDropdownLists);
     }
 }
 </script>
@@ -393,15 +320,12 @@ export default {
             .button {
                 font-size: .9rem;
                 padding: 0 10px;
+                height: 2rem;
             }
 
             .button[disabled] {
                 background-color: #084b6b;
                 color: white;
-            }
-
-            .fa-angle-down {
-                pointer-events: none;
             }
         }
     }

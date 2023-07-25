@@ -14,8 +14,7 @@
         </div>
         <template v-if="recordData.resourceType === 'File'">
             <template v-if="hasPermission(recordData, 'viewOriginal')">
-                <file-download :download-link="downloadLink"
-                               :brief-object="recordData.briefObject"></file-download>
+                <div class="header-button" v-html="downloadButtonHtml(recordData.briefObject)"></div>
                 <div class="actionlink">
                     <a class="button view action" :href="recordData.dataFileUrl">
                         <i class="fa fa-search" aria-hidden="true"></i> View</a>
@@ -29,15 +28,13 @@
 </template>
 
 <script>
-import fileDownload from '@/components/full_record/fileDownload.vue';
+import fileDownloadUtils from '../../mixins/fileDownloadUtils';
 import fullRecordUtils from '../../mixins/fullRecordUtils';
 
 export default {
     name: 'restrictedContent',
 
-    components: {fileDownload},
-
-    mixins: [fullRecordUtils],
+    mixins: [fileDownloadUtils, fullRecordUtils],
 
     props: {
         recordData: Object
@@ -49,15 +46,27 @@ export default {
  .button {
      white-space: normal;
  }
+
  .restricted-access .actionlink {
      display: block;
  }
+
+ .header-button {
+     display: inline;
+ }
+
  @media (max-width: 768px) {
      .actionlink {
-         text-align: center;
+         text-align: left;
          margin: auto;
-         justify-content: center;
+         justify-content: left;
          width: 99%;
+     }
+
+     .header-button {
+         display: block;
+         margin-bottom: 3px;
+         text-align: left;
      }
  }
 </style>

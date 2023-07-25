@@ -53,7 +53,7 @@ const record = {
         ],
         datastream: [
             "techmd_fits|text/xml|techmd_fits.xml|xml|4709|urn:sha1:5b0eabd749222a7c0bcdb92002be9fe3eff60128||",
-            "original_file|image/jpeg|beez||694904|urn:sha1:0d48dadb5d61ae0d41b4998280a3c39577a2f94a||2048x1536",
+            "original_file|image/jpeg|beez||694904|urn:sha1:0d48dadb5d61ae0d41b4998280a3c39577a2f94a||2848x1536",
             "jp2|image/jp2|4db695c0-5fd5-4abf-9248-2e115d43f57d.jp2|jp2|2189901|||",
             "thumbnail_small|image/png|4db695c0-5fd5-4abf-9248-2e115d43f57d.png|png|6768|||",
             "thumbnail_large|image/png|4db695c0-5fd5-4abf-9248-2e115d43f57d.png|png|23535|||",
@@ -347,6 +347,10 @@ describe('restrictedContent.vue', () => {
     });
 
     beforeEach(() => {
+        const div = document.createElement('div')
+        div.id = 'root'
+        document.body.appendChild(div);
+
         router = createRouter({
             history: createWebHistory(process.env.BASE_URL),
             routes: [
@@ -366,6 +370,7 @@ describe('restrictedContent.vue', () => {
         }
 
         wrapper = mount(restrictedContent, {
+            attachTo: '#root',
             global: {
                 plugins: [i18n, router],
                 mocks: {
@@ -443,7 +448,18 @@ describe('restrictedContent.vue', () => {
         await wrapper.setProps({
             recordData: updated_data
         });
-        expect(wrapper.findComponent({ name: 'fileDownload' }).exists()).toBe(false);
+        expect(wrapper.find('.download').exists()).toBe(false);
+    });
+
+    it('does not display a download button if there is no original file', async () => {
+        let updated_data = cloneDeep(record);
+        updated_data.briefObject.datastream = [
+            'jp2|image/jp2|4db695c0-5fd5-4abf-9248-2e115d43f57d.jp2|jp2|2189901|||'
+        ]
+        await wrapper.setProps({
+            recordData: updated_data
+        });
+        expect(wrapper.find('.download').exists()).toBe(false);
     });
 
     it('displays a download button for files with the proper permissions', async () => {
@@ -454,7 +470,7 @@ describe('restrictedContent.vue', () => {
         await wrapper.setProps({
             recordData: updated_data
         });
-        expect(wrapper.findComponent({ name: 'fileDownload' }).exists()).toBe(true);
+        expect(wrapper.find('.download').exists()).toBe(true);
     });
 
     it('does not display a download button for non-works/files', async () => {
@@ -465,7 +481,7 @@ describe('restrictedContent.vue', () => {
         await wrapper.setProps({
             recordData: updated_data
         });
-        expect(wrapper.findComponent({ name: 'fileDownload' }).exists()).toBe(false);
+        expect(wrapper.find('.download').exists()).toBe(false);
     });
 
     it('displays embargo information for files', async () => {
@@ -519,5 +535,23 @@ describe('restrictedContent.vue', () => {
             recordData: updated_data
         });
         expect(wrapper.find('.restricted-access .login-link').exists()).toBe(false);
+    });
+
+    it('hides the list of visible options when the options button is clicked', async () => {
+        await wrapper.find('button').trigger('click'); // Open
+        await wrapper.find('button').trigger('click'); // Close
+        expect(wrapper.find('.image-download-options').classes('is-active')).toBe(false);
+    });
+
+    it('hides the list of visible options when any non dropdown page element is clicked', async () => {
+        await wrapper.find('button').trigger('click'); // Open
+        await wrapper.trigger('click'); // Close
+        expect(wrapper.find('.image-download-options').classes('is-active')).toBe(false);
+    });
+
+    it('hides the list of visible options when the "ESC" key is hit', async () => {
+        await wrapper.find('button').trigger('click'); // Open
+        await wrapper.trigger('keyup.esc'); // Close
+        expect(wrapper.find('.image-download-options').classes('is-active')).toBe(false);
     });
 });

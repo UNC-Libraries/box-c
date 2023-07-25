@@ -39,6 +39,7 @@ a.button.is-link span {
     background-color: #1A698C;
     color: white;
     font-family: 'Open Sans', sans-serif;
+    height: 48px;
 }
 
 .image-download-options button:hover,
@@ -59,4 +60,5 @@ a.button.is-link span {
 
 .image-download-options .fa-angle-down {
     margin-left: 8px;
+    pointer-events: none;
 }
