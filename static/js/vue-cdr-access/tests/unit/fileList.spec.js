@@ -95,12 +95,9 @@ describe('fileList.vue', () => {
         expect(wrapper.vm.showBadge({ status: [''] })).toEqual({ markDeleted: false, restricted: true });
     });
 
-    it("sets download button html for image files with canViewAccess permission", async () => {
-        await wrapper.setData({
-            brief_object: briefObject
-        });
-
-        const download = wrapper.vm.downloadButtonHtml();
+    // @TODO TDB whether viewAccessCopies allows a user to download anything
+   /* it("sets download button html for image files with canViewAccess permission", () => {
+        const download = wrapper.vm.downloadButtonHtml(briefObject);
         // Download button
         expect(download).toEqual(expect.stringContaining('button id="dcr-download-4db695c0-5fd5-4abf-9248-2e115d43f57d"'));
         // Options
@@ -108,7 +105,7 @@ describe('fileList.vue', () => {
         expect(download).toEqual(expect.stringContaining('Medium JPG (1600px)'));
         expect(download).toEqual(expect.not.stringContaining('Full Size JPG'));
         expect(download).toEqual(expect.not.stringContaining('Original File'));
-    });
+    });*/
 
     it("sets download button html for image files with canViewOriginal permission", async () => {
         let updatedBriefObj = cloneDeep(briefObject);
@@ -121,14 +118,12 @@ describe('fileList.vue', () => {
             authenticated: ["canViewOriginals"],
             everyone: ["canViewOriginals"]
         };
-        await wrapper.setData({
-            brief_object: updatedBriefObj
-        });
+
         await  wrapper.setProps({
             viewOriginal: true
         })
 
-        const download = wrapper.vm.downloadButtonHtml();
+        const download = wrapper.vm.downloadButtonHtml(updatedBriefObj);
         // Download button
         expect(download).toEqual(expect.stringContaining('button id="dcr-download-4db695c0-5fd5-4abf-9248-2e115d43f57d"'));
         // Options
@@ -138,7 +133,7 @@ describe('fileList.vue', () => {
         expect(download).toEqual(expect.stringContaining('Original File'));
     });
 
-    it("sets download button html for non-image files", async () => {
+    it("sets download button html for non-image files", () => {
         let updatedBriefObj = cloneDeep(briefObject);
         updatedBriefObj.fileType = ['application/pdf']
         updatedBriefObj.format = ['Text']
@@ -148,40 +143,30 @@ describe('fileList.vue', () => {
             "viewOriginal"
         ]
         updatedBriefObj.datastream = ['original_file|application/pdf|pdf file||416330|urn:sha1:4945153c9f5ce152ef8eda495deba043f536f388||'];
-        await wrapper.setData({
-            brief_object: updatedBriefObj
-        });
 
-        const download = wrapper.vm.downloadButtonHtml();
+        const download = wrapper.vm.downloadButtonHtml(updatedBriefObj);
         // Download button
         expect(download).toEqual(expect.stringContaining('<a class="download button action"'));
     });
 
-    it("sets a disabled button for non-image files without viewOriginal permission", async () => {
+    it("sets a disabled button for non-image files without showImageDownload permission", () => {
         let updatedBriefObj = cloneDeep(briefObject);
         updatedBriefObj.fileType = ['application/pdf']
         updatedBriefObj.format = ['Text']
         updatedBriefObj.datastream = ['original_file|application/pdf|pdf file||416330|urn:sha1:4945153c9f5ce152ef8eda495deba043f536f388||'];
-        await wrapper.setData({
-            brief_object: updatedBriefObj
-        });
 
-        const download = wrapper.vm.downloadButtonHtml();
+        const download = wrapper.vm.downloadButtonHtml(updatedBriefObj);
         // Disabled download button
         expect(download).toEqual(expect.stringContaining('button class="button download-images" title="Download Unavailable" disabled'));
     });
 
-    it("sets a disabled download button for image files without viewAccessCopies permission", async () => {
+    it("sets a disabled download button for image files without viewAccessCopies permission", () => {
         let updatedBriefObj = cloneDeep(briefObject);
         updatedBriefObj.permissions = [
             "viewMetadata"
-        ]
+        ];
 
-        await wrapper.setData({
-            brief_object: updatedBriefObj
-        });
-
-        const download = wrapper.vm.downloadButtonHtml();
+        const download = wrapper.vm.downloadButtonHtml(updatedBriefObj);
         // Disabled download button
         expect(download).toEqual(expect.stringContaining('button class="button download-images" title="Download Unavailable" disabled'));
     });

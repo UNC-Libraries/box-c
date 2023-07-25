@@ -2,7 +2,7 @@
     <div v-if="showNonImageDownload" class="actionlink download">
         <a class="download button action" :href="downloadLink"><i class="fa fa-download"></i> {{ $t('full_record.download') }}</a>
     </div>
-    <div v-else-if="showImageDownload"
+    <div v-else-if="showImageDownload(briefObject)"
          class="dropdown actionlink download image-download-options" :class="{'is-active': show_options}">
         <div class="dropdown-trigger">
             <button @click="showOptions()" id="download-images" class="button" aria-haspopup="true" aria-controls="dropdown-menu">
@@ -11,11 +11,11 @@
         </div>
         <div class="dropdown-menu" id="dropdown-menu" role="menu" :aria-hidden="!show_options">
             <div class="dropdown-content">
-                <a v-if="validSizeOption(800)" :href="imgDownloadLink('800')" class="dropdown-item">{{ $t('full_record.small') }} JPG (800px)</a>
-                <a v-if="validSizeOption(1600)" :href="imgDownloadLink('1600')" class="dropdown-item">{{ $t('full_record.medium') }} JPG (1600px)</a>
-                <a v-if="validSizeOption(2500)" :href="imgDownloadLink('2500')" class="dropdown-item">{{ $t('full_record.large') }} JPG (2500px)</a>
+                <a v-if="validSizeOption(briefObject, 800)" :href="imgDownloadLink(briefObject, '800')" class="dropdown-item">{{ $t('full_record.small') }} JPG (800px)</a>
+                <a v-if="validSizeOption(briefObject,1600)" :href="imgDownloadLink(briefObject,'1600')" class="dropdown-item">{{ $t('full_record.medium') }} JPG (1600px)</a>
+                <a v-if="validSizeOption(briefObject,2500)" :href="imgDownloadLink(briefObject,'2500')" class="dropdown-item">{{ $t('full_record.large') }} JPG (2500px)</a>
                 <template v-if="hasPermission(briefObject, 'viewOriginal')">
-                    <a :href="imgDownloadLink('full')" class="dropdown-item">{{ $t('full_record.full_size') }} JPG</a>
+                    <a :href="imgDownloadLink(briefObject, 'full')" class="dropdown-item">{{ $t('full_record.full_size') }} JPG</a>
                     <template v-if="downloadLink !== ''">
                         <hr class="dropdown-divider">
                         <a :href="downloadLink" class="dropdown-item">{{ $t('full_record.original_file') }}</a>
@@ -45,12 +45,6 @@ export default {
         }
     },
 
-    watch: {
-        briefObject(d) {
-            this.brief_object = d;
-        }
-    },
-
     data() {
         return {
             show_options: false
@@ -59,8 +53,8 @@ export default {
 
     computed: {
         showNonImageDownload() {
-            return this.hasPermission(this.brief_object, 'viewOriginal') &&
-                !this.brief_object.format.includes('Image') && this.downloadLink !== '';
+            return this.hasPermission(this.briefObject, 'viewOriginal') &&
+                !this.briefObject.format.includes('Image') && this.downloadLink !== '';
         }
     },
 

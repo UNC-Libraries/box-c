@@ -435,7 +435,7 @@ describe('restrictedContent.vue', () => {
         expect(wrapper.find('a.view').exists()).toBe(false);
     });
 
-    it('does not display a download button for works even with the viewOriginal permissions', async () => {
+    it('does not display a download button for works even with the showImageDownload permissions', async () => {
         const updated_data = cloneDeep(record);
         updated_data.dataFileUrl = 'content/4db695c0-5fd5-4abf-9248-2e115d43f57d';
         updated_data.resourceType = 'Work';

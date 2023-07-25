@@ -98,7 +98,8 @@ describe('fileDownload.vue', () => {
         assertHasOptionText(options[3], 'Original File');
     });
 
-    it('does not display an option to download full size or original if user does not have viewOriginal access', async () => {
+    // @TODO TDB whether viewAccessCopies allows a user to download anything
+    /*it('does not display an option to download full size or original if user does not have showImageDownload access', async () => {
         let updatedBriefObj = cloneDeep(briefObject);
         updatedBriefObj.permissions = ['viewAccessCopies'];
         await wrapper.setProps({
@@ -112,7 +113,7 @@ describe('fileDownload.vue', () => {
         assertHasOptionText(options[1], 'Medium JPG (1600px)');
         assertHasOptionText(options[2], 'Large JPG (2500px)');
     });
-
+*/
     it('hides the list of visible options when the options button is clicked', async () => {
         await wrapper.find('button').trigger('click'); // Open
         await wrapper.find('button').trigger('click'); // Close

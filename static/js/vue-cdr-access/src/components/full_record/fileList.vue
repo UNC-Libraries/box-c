@@ -53,10 +53,6 @@ export default {
             default: 'Work',
             type: String
         },
-        viewOriginal: {
-            default: false,
-            type: Boolean
-        },
         workId: String
     },
 
@@ -134,21 +130,19 @@ export default {
                 { type: 'file-size', targets: 3 },
                 {
                     render: (data, type, row) => {
-                        this.brief_object = row;
-                        console.log(JSON.stringify(this.brief_object))
                         let img;
 
-                        if ('thumbnail_url' in this.brief_object) {
-                            const thumbnail_title = this.$t('full_record.thumbnail_title', { title: this.brief_object.title })
-                            img = `<img class="data-thumb" loading="lazy" src="${this.brief_object.thumbnail_url}"` +
+                        if ('thumbnail_url' in row) {
+                            const thumbnail_title = this.$t('full_record.thumbnail_title', { title: row.title })
+                            img = `<img class="data-thumb" loading="lazy" src="${row.thumbnail_url}"` +
                             ` alt="${thumbnail_title}">`;
                         } else {
                             const thumbnail_default = this.$t('full_record.thumbnail_default');
                             img = `<i class="fa fa-file default-img-icon data-thumb" title="${thumbnail_default}"></i>`;
                         }
 
-                        const trashBadge = this.showBadge().markDeleted;
-                        const lockBadge = this.showBadge().restricted;
+                        const trashBadge = this.showBadge(row).markDeleted;
+                        const lockBadge = this.showBadge(row).restricted;
 
                         if (trashBadge || lockBadge) {
                             let whichBadge = '';
@@ -172,7 +166,7 @@ export default {
                 },
                 {
                     render: (data, type, row) => {
-                        return `<a href="/record/${this.brief_object.id}" aria-label="${this.ariaLabelText}">${this.brief_object.title}</a>`;
+                        return `<a href="/record/${row.id}" aria-label="${this.ariaLabelText(row)}">${row.title}</a>`;
                     }, targets: 1
                 },
                 {
@@ -182,21 +176,21 @@ export default {
                 },
                 {
                     render: (data, type, row) => {
-                        return this.getOriginalFileValue(this.brief_object.datastream, 'file_size');
+                        return this.getOriginalFileValue(row.datastream, 'file_size');
                     }, targets: 3
                 },
                 {
                     render: (data, type, row) => {
                         const view = this.$t('full_record.view');
-                        const aria_title = this.$t('full_record.edit_title', { title: this.brief_object.title });
-                        return `<a href="/record/${this.brief_object.id}" aria-label="${aria_title}">` +
+                        const aria_title = this.$t('full_record.edit_title', { title: row.title });
+                        return `<a href="/record/${row.id}" aria-label="${aria_title}">` +
                             ` <i class="fa fa-search-plus is-icon" title="${view}"></i></a>`;
                     },
                     targets: 4
                 },
                 {
                     render: (data, type, row) => {
-                        return this.downloadButtonHtml();
+                        return this.downloadButtonHtml(row);
                     },
                     targets: 5
                 }
@@ -212,7 +206,7 @@ export default {
                 column_defs.push(
                     {
                         render: (data, type, row) => {
-                            return `<a href="/admin/describe/${this.brief_object.id}" aria-label="${this.ariaLabelText}">` +
+                            return `<a href="/admin/describe/${row.id}" aria-label="${this.ariaLabelText(row)}">` +
                                 '<i class="fa fa-edit is-icon" title="Edit"></i></a>'
                         },
                         targets: 6
@@ -221,27 +215,27 @@ export default {
             }
 
             return column_defs;
-        },
-
-        ariaLabelText() {
-            this.$t('full_record.view_title', { title: this.brief_object.title });
-        },
-
-        showNonImageDownload() {
-            return this.hasPermission(this.brief_object, 'viewOriginal') &&
-                !this.brief_object.format.includes('Image');
-        },
+        }
     },
 
     methods: {
-        showBadge(data = this.brief_object) {
+        ariaLabelText(brief_object) {
+            return this.$t('full_record.view_title', { title: brief_object.title });
+        },
+
+        showNonImageDownload(brief_object) {
+            return this.hasPermission(brief_object, 'viewOriginal') &&
+                !brief_object.format.includes('Image');
+        },
+
+        showBadge(brief_object) {
             let markedForDeletion = false;
             let restrictedAccess = true;
 
-            if (data.status !== undefined) {
-                const restrictions = data.status.join(',').toLowerCase();
+            if (brief_object.status !== undefined) {
+                const restrictions = brief_object.status.join(',').toLowerCase();
                 markedForDeletion = /marked.*?deletion/.test(restrictions);
-                restrictedAccess = data.status.indexOf("Public Access") === -1;
+                restrictedAccess = brief_object.status.indexOf("Public Access") === -1;
             }
 
             return { markDeleted: markedForDeletion, restricted: restrictedAccess };
@@ -267,36 +261,35 @@ export default {
             });
         },
 
-        downloadButtonHtml() {
-            if (this.showNonImageDownload) {
+        downloadButtonHtml(brief_object) {
+            if (this.showNonImageDownload(brief_object)) {
                 return `<div class="actionlink download">
-                            <a class="download button action" href="/content/${this.brief_object.id}?dl=true"><i class="fa fa-download"></i> ${this.$t('full_record.download')}</a>
+                            <a class="download button action" href="/content/${brief_object.id}?dl=true"><i class="fa fa-download"></i> ${this.$t('full_record.download')}</a>
                         </div>`;
-            } else if (this.showImageDownload) {
+            } else if (this.showImageDownload(brief_object)) {
                 let html = `<div class="dropdown actionlink download image-download-options">
                 <div class="dropdown-trigger">
-                    <button id="dcr-download-${this.brief_object.id}" class="button download-images" aria-haspopup="true" aria-controls="dropdown-menu">
+                    <button id="dcr-download-${brief_object.id}" class="button download-images" aria-haspopup="true" aria-controls="dropdown-menu">
                     ${this.$t('full_record.download')} <i class="fas fa-angle-down" aria-hidden="true"></i>
                     </button>
                 </div>
                 <div class="dropdown-menu table-downloads" id="dropdown-menu" role="menu" aria-hidden="true">
                     <div class="dropdown-content">`;
 
-                if (this.validSizeOption(800)) {
-                   html += `<a href="${this.imgDownloadLink('800')}" class="dropdown-item">${this.$t('full_record.small') } JPG (800px)</a>`;
+                if (this.validSizeOption(brief_object, 800)) {
+                   html += `<a href="${this.imgDownloadLink(brief_object.id, '800')}" class="dropdown-item">${this.$t('full_record.small') } JPG (800px)</a>`;
                 }
-                if (this.validSizeOption(1600)) {
-                    html += `<a href="${this.imgDownloadLink('1600')}" class="dropdown-item">${this.$t('full_record.medium') } JPG (1600px)</a>`;
+                if (this.validSizeOption(brief_object, 1600)) {
+                    html += `<a href="${this.imgDownloadLink(brief_object.id, '1600')}" class="dropdown-item">${this.$t('full_record.medium') } JPG (1600px)</a>`;
                 }
-                if (this.validSizeOption(2500)) {
-                    html += `<a href="${this.imgDownloadLink('2500')}" class="dropdown-item">${this.$t('full_record.large') } JPG (2500px)</a>`;
+                if (this.validSizeOption(brief_object, 2500)) {
+                    html += `<a href="${this.imgDownloadLink(brief_object.id, '2500')}" class="dropdown-item">${this.$t('full_record.large') } JPG (2500px)</a>`;
                 }
 
-                if (this.viewOriginal) {
-                    html += `<a href="${this.imgDownloadLink('full')}" class="dropdown-item">${this.$t('full_record.full_size')} JPG</a>`;
-                    html += '<hr class="dropdown-divider">';
-                    html += `<a href="/indexablecontent/${this.brief_object.id}?dl=true" class="dropdown-item">${this.$t('full_record.original_file')}</a>`;
-                }
+
+                html += `<a href="${this.imgDownloadLink(brief_object.id, 'full')}" class="dropdown-item">${this.$t('full_record.full_size')} JPG</a>`;
+                html += '<hr class="dropdown-divider">';
+                html += `<a href="/indexablecontent/${brief_object.id}?dl=true" class="dropdown-item">${this.$t('full_record.original_file')}</a>`;
 
                 html += '</div>'
                 html += '</div>'

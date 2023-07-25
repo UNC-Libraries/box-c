@@ -75,7 +75,6 @@
             <file-list v-if="childCount > 0"
                        :child-count="childCount"
                        :work-id="recordData.briefObject.id"
-                       :view-original="hasPermission(recordData,'viewOriginal')"
                        :edit-access="hasPermission(recordData,'editDescription')">
             </file-list>
             <metadata-display :uuid="recordData.briefObject.id"

@@ -3,15 +3,9 @@ import permissionUtils from "./permissionUtils";
 export default {
     mixins: [permissionUtils],
 
-    data() {
-        return {
-            brief_object: this.briefObject || {}
-        }
-    },
-
-    computed: {
-        getOriginalFile() {
-            const original_file =  this.brief_object.datastream.find(file => file.startsWith('original_file'));
+    methods: {
+        getOriginalFile(brief_object) {
+            const original_file =  brief_object.datastream.find(file => file.startsWith('original_file'));
             if (original_file === undefined) {
                 return undefined;
             }
@@ -19,25 +13,23 @@ export default {
             return original_file;
         },
 
-        largestImageEdge() {
-            const file_info = this.getOriginalFile.split('|');
+        largestImageEdge(brief_object) {
+            const file_info = this.getOriginalFile(brief_object).split('|');
             const edge_sizes = file_info[file_info.length - 1].split('x');
             return edge_sizes[0] > edge_sizes[1] ? edge_sizes[0] : edge_sizes[1];
         },
 
-        showImageDownload() {
-            return this.hasPermission(this.brief_object, 'viewAccessCopies') &&
-                this.brief_object.format.includes('Image') && this.getOriginalFile !== undefined
-        }
-    },
-
-    methods: {
-        imgDownloadLink(size) {
-            return `/services/api/downloadImage/${this.brief_object.id}/${size}`
+        showImageDownload(brief_object) {
+            return this.hasPermission(brief_object, 'viewOriginal') &&
+                brief_object.format.includes('Image') && this.getOriginalFile(brief_object) !== undefined
+        },
+        
+        imgDownloadLink(file_id, size) {
+            return `/services/api/downloadImage/${file_id}/${size}`
         },
 
-        validSizeOption(size) {
-            return size <= this.largestImageEdge;
+        validSizeOption(brief_object, size) {
+            return size <= this.largestImageEdge(brief_object);
         }
     }
 }
