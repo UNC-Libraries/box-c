@@ -28,6 +28,7 @@ force it to reload
 </template>
 
 <script>
+import fileDownloadUtils from '../../mixins/fileDownloadUtils';
 import fileUtils from '../../mixins/fileUtils';
 import DataTable from 'datatables.net-vue3'
 import DataTablesLib from 'datatables.net-bm';
@@ -38,7 +39,7 @@ DataTable.use(DataTablesLib);
 export default {
     name: 'fileList',
 
-    mixins: [fileUtils],
+    mixins: [fileDownloadUtils, fileUtils],
 
     components: {DataTable},
 
@@ -165,8 +166,7 @@ export default {
                 },
                 {
                     render: (data, type, row) => {
-                        const view_title = this.$t('full_record.view_title', { title: row.title });
-                        return `<a href="/record/${row.id}" aria-label="${view_title}">${row.title}</a>`;
+                        return `<a href="/record/${row.id}" aria-label="${this.ariaLabelText(row)}">${row.title}</a>`;
                     }, targets: 1
                 },
                 {
@@ -181,23 +181,16 @@ export default {
                 },
                 {
                     render: (data, type, row) => {
-                        const view_title = this.$t('full_record.view_title', { title: row.title });
                         const view = this.$t('full_record.view');
-                        return `<a href="/record/${row.id}" aria-label="${view_title}">` +
+                        const aria_title = this.$t('full_record.edit_title', { title: row.title });
+                        return `<a href="/record/${row.id}" aria-label="${aria_title}">` +
                             ` <i class="fa fa-search-plus is-icon" title="${view}"></i></a>`;
                     },
                     targets: 4
                 },
                 {
                     render: (data, type, row) => {
-                        if (row.permissions.indexOf('viewOriginal') === -1) {
-                            const unavailable = this.$t('full_record.download_unavailable');
-                            return `<i class="fa fa-download is-icon no-download" title="${unavailable}"></i>`;
-                        }
-                        const label_text = this.$t('full_record.download_title', { title: row.title });
-                        const download = this.$t('full_record.download');
-                        return `<a href="/indexablecontent/${row.id}?dl=true" aria-label="${label_text}">` +
-                            ` <i class="fa fa-download is-icon" title="${download}"></i></a>`;
+                        return this.downloadButtonHtml(row);
                     },
                     targets: 5
                 }
@@ -213,8 +206,7 @@ export default {
                 column_defs.push(
                     {
                         render: (data, type, row) => {
-                            const label_text = this.ariaLabelText(row.title);
-                            return `<a href="/admin/describe/${row.id}" aria-label="${label_text}">` +
+                            return `<a href="/admin/describe/${row.id}" aria-label="${this.ariaLabelText(row)}">` +
                                 '<i class="fa fa-edit is-icon" title="Edit"></i></a>'
                         },
                         targets: 6
@@ -227,21 +219,26 @@ export default {
     },
 
     methods: {
-        showBadge(data) {
+        ariaLabelText(brief_object) {
+            return this.$t('full_record.view_title', { title: brief_object.title });
+        },
+
+        showNonImageDownload(brief_object) {
+            return this.hasPermission(brief_object, 'viewOriginal') &&
+                !brief_object.format.includes('Image');
+        },
+
+        showBadge(brief_object) {
             let markedForDeletion = false;
             let restrictedAccess = true;
 
-            if (data.status !== undefined) {
-                const restrictions = data.status.join(',').toLowerCase();
+            if (brief_object.status !== undefined) {
+                const restrictions = brief_object.status.join(',').toLowerCase();
                 markedForDeletion = /marked.*?deletion/.test(restrictions);
-                restrictedAccess = data.status.indexOf("Public Access") === -1;
+                restrictedAccess = brief_object.status.indexOf("Public Access") === -1;
             }
 
             return { markDeleted: markedForDeletion, restricted: restrictedAccess };
-        },
-
-        ariaLabelText(row) {
-            return this.$t('full_record.edit_title', { title: row.title });
         }
     }
 }
@@ -251,6 +248,8 @@ export default {
     @import 'datatables.net-bm';
     @import 'datatables.net-buttons-bm';
     #data-display {
+        overflow: visible;
+
         .dataTables_wrapper {
             margin: 5px;
         }
@@ -266,6 +265,7 @@ export default {
 
         #child-files {
             border: none;
+            margin-bottom: 20px;
         }
 
         ul.pagination-list {
@@ -289,5 +289,48 @@ export default {
                 text-indent: 0;
             }
         }
+
+        tr.deleted {
+            a.dropdown-item {
+                color: black
+            }
+        }
+
+        .actionlink {
+            margin: 0;
+
+            a.action {
+                display: flex;
+            }
+
+            a.dropdown-item {
+                padding-left: 0;
+                padding-right: 0;
+                text-indent: 10px;
+            }
+
+            .fa-download {
+                margin-right: 5px;
+            }
+
+            a.download {
+                padding: 0 10px;
+            }
+
+            .button {
+                font-size: .9rem;
+                padding: 0 10px;
+                height: 2rem;
+            }
+
+            .button[disabled] {
+                background-color: #084b6b;
+                color: white;
+            }
+        }
+    }
+
+    .show-list {
+        display: block;
     }
 </style>

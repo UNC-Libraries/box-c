@@ -7,8 +7,8 @@
     <c:set var="url">${accessBaseUrl}</c:set>
     <base href="${url}" />
     <%@ include file="../../html/headElements.html"%>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/universalviewer@4.0.18/dist/uv.css"/>
-    <script src="https://cdn.jsdelivr.net/npm/universalviewer@4.0.18/dist/umd/UV.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/universalviewer@4.0.22/dist/uv.css"/>
+    <script src="https://cdn.jsdelivr.net/npm/universalviewer@4.0.22/dist/umd/UV.js"></script>
 </head>
 <body class="white">
     <div class="clear_space"></div>
