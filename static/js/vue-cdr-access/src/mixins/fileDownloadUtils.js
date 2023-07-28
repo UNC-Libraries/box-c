@@ -11,7 +11,6 @@ export default {
 
         getOriginalFile(brief_object) {
             const original_file =  brief_object.datastream.find(file => file.startsWith('original_file'));
-            console.log(original_file)
             if (original_file === undefined) {
                 return undefined;
             }
@@ -21,7 +20,7 @@ export default {
 
         largestImageEdge(brief_object) {
             const file_info = this.getOriginalFile(brief_object).split('|');
-            const edge_sizes = file_info[file_info.length - 1].split('x');
+            const edge_sizes = file_info[file_info.length - 1].split('x').map(x => parseInt(x));
             return edge_sizes[0] > edge_sizes[1] ? edge_sizes[0] : edge_sizes[1];
         },
 
