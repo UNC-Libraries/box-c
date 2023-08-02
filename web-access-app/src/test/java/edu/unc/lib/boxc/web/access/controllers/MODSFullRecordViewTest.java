@@ -66,7 +66,7 @@ public class MODSFullRecordViewTest {
         Element innerRowEl = relatedRowEl.getChild("td").getChild("table").getChild("tr");
         assertEquals("Title", innerRowEl.getChildText("th"));
 
-        assertEquals("Preceding title here", innerRowEl.getChild("td").getChildTextTrim("p"));
+        assertEquals("Preceding title here", innerRowEl.getChildTextTrim("td"));
     }
 
     @Test
@@ -107,13 +107,7 @@ public class MODSFullRecordViewTest {
         if (els.size() == 0) {
             return null;
         }
-
-        Element tdEl = els.get(0);
-        if (tdEl.getChildren().size() > 0) {
-            return tdEl.getChildren().get(0).getTextTrim();
-        } else {
-            return tdEl.getTextTrim();
-        }
+        return els.get(0).getTextTrim();
     }
 
     private Document getDocument(String path) throws Exception {
