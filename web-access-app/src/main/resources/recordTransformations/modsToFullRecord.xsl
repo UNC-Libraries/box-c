@@ -134,7 +134,7 @@
 				</th><xsl:value-of select="$newline"/>
 				<td>
 					<xsl:for-each select="current-group()">
-							<xsl:apply-templates select="."/>
+						<xsl:apply-templates select="."/>
 					</xsl:for-each>
 				</td>
 			</tr><xsl:value-of select="$newline"/>
@@ -217,7 +217,7 @@
 				</th><xsl:value-of select="$newline"/>
 				<td>
 					<xsl:for-each select="current-group()">
-							<xsl:apply-templates select="."/>
+						<xsl:apply-templates select="."/>
 					</xsl:for-each>
 				</td>
 			</tr>
