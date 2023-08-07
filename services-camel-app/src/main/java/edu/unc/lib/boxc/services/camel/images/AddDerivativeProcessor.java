@@ -1,21 +1,7 @@
 package edu.unc.lib.boxc.services.camel.images;
 
-import static edu.unc.lib.boxc.model.api.ids.RepositoryPathConstants.HASHED_PATH_DEPTH;
-import static edu.unc.lib.boxc.model.api.ids.RepositoryPathConstants.HASHED_PATH_SIZE;
-import static edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPaths.idToPath;
-import static java.nio.charset.StandardCharsets.UTF_8;
-import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
-import static org.fcrepo.camel.FcrepoHeaders.FCREPO_URI;
-
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.FileAlreadyExistsException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
+import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
+import edu.unc.lib.boxc.services.camel.util.CdrFcrepoHeaders;
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
 import org.apache.camel.Processor;
@@ -24,8 +10,20 @@ import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
-import edu.unc.lib.boxc.services.camel.util.CdrFcrepoHeaders;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import static edu.unc.lib.boxc.model.api.ids.RepositoryPathConstants.HASHED_PATH_DEPTH;
+import static edu.unc.lib.boxc.model.api.ids.RepositoryPathConstants.HASHED_PATH_SIZE;
+import static edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPaths.idToPath;
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
+import static org.fcrepo.camel.FcrepoHeaders.FCREPO_URI;
 
 /**
  * Adds a derivative file to an existing file object
@@ -58,44 +56,61 @@ public class AddDerivativeProcessor implements Processor {
         Path derivativeFinalPath = setDerivativeFinalPath(binaryId);
 
         final ExecResult result = (ExecResult) in.getBody();
-
+        String stdout = outputToString(result.getStdout());
+        String stderr = outputToString(result.getStderr());
         try {
-            String stdout = result.getStdout() == null ? "" : IOUtils.toString(result.getStdout(), UTF_8).trim();
             // Prevent further processing if the execution failed
             if (result.getExitValue() != 0) {
-                String stderr = result.getStderr() == null ? "" : IOUtils.toString(result.getStderr(), UTF_8).trim();
-                Matcher errorMatcher = ERROR_PATTERN.matcher(stderr);
-                while (errorMatcher.find()) {
-                    String errorString = errorMatcher.group(1);
-                    if (errorString.contains(IGNORE_ERROR)) {
-                        log.debug("Ignoring error message for {}: {}", binaryId, errorString);
-                    } else {
-                        log.error("Failed to generate derivative for {}: {} {}", binaryId, stdout, stderr);
-                        return;
-                    }
-                }
+                assertNoFatalErrors(stderr, stdout, binaryId);
                 log.debug("Result returned error code {} for {} but no errors were present in the output,"
                         + " derivative will be added: {}", result.getExitValue(), binaryId, stderr);
             }
 
             // Read command result as path to derived file, and trim off trailing whitespace
-            String derivativeTmpPath = stdout.trim();
-            derivativeTmpPath += "." + fileExtension;
+            var derivativeTmpPath = Paths.get(stdout + "." + fileExtension);
+            assertDerivativePathValid(derivativeTmpPath, binaryId);
+            if (Files.notExists(derivativeTmpPath)) {
+                // Command was successful, but no derivative exists, so we will assume this is the intended state
+                if (result.getExitValue() == 0) {
+                    log.info("No derivative was generated for {} after successful command.", binaryId);
+                    return;
+                } else {
+                    throw new DerivativeGenerationException("No derivative was generated for " + binaryId
+                            + " and command failed with response: " + stderr);
+                }
+            }
 
             moveFile(derivativeTmpPath, derivativeFinalPath);
             log.info("Added derivative for {} from {}", binaryUri, derivativeFinalPath);
-        } catch (FileAlreadyExistsException e) {
-            log.warn("A derivative already exists for {} at {}. Attempting regeneration without the force flag.",
-                    binaryUri, derivativeFinalPath);
-            throw e;
         } catch (IOException e) {
-            String stderr = "";
-            if (result != null && result.getStderr() != null) {
-                stderr = IOUtils.toString(result.getStderr(), UTF_8).trim();
-            }
-            log.error("Failed to generated derivative to {} for {}: {}", derivativeBasePath, binaryId, stderr);
+            log.error("Failed to generate derivative to {} for {}: {}", derivativeBasePath, binaryId, stderr);
             throw e;
         }
+    }
+
+    private boolean assertNoFatalErrors(String stderr, String stdout, String binaryId) throws IOException {
+        Matcher errorMatcher = ERROR_PATTERN.matcher(stderr);
+        while (errorMatcher.find()) {
+            String errorString = errorMatcher.group(1);
+            if (errorString.contains(IGNORE_ERROR)) {
+                log.debug("Ignoring error message for {}: {}", binaryId, errorString);
+            } else {
+                throw new DerivativeGenerationException("Failed to generate derivative for " + binaryId
+                        + ": " + stdout + " " + stderr);
+            }
+        }
+        return false;
+    }
+
+    private void assertDerivativePathValid(Path derivativeTmpPath, String binaryId) {
+        if (!derivativeTmpPath.isAbsolute()) {
+            throw new DerivativeGenerationException("Path returned by derivative command for " + binaryId
+                    + " returned a relative path: " + derivativeTmpPath);
+        }
+    }
+
+    private String outputToString(InputStream output) throws IOException {
+        return (output != null) ? IOUtils.toString(output, UTF_8).trim() : "";
     }
 
     /**
@@ -148,21 +163,19 @@ public class AddDerivativeProcessor implements Processor {
         return Paths.get(derivativeBasePath,  derivativePath, binaryId + "." + fileExtension);
     }
 
-    private void moveFile(String derivativeTmpPath, Path derivativeFinalPath)
+    private void moveFile(Path derivativeTmpPath, Path derivativeFinalPath)
             throws IOException {
-        File derivative = derivativeFinalPath.toFile();
-        File parentDir = derivative.getParentFile();
+        Files.createDirectories(derivativeFinalPath.getParent());
 
-        if (parentDir != null) {
-            parentDir.mkdirs();
+        log.debug("Moving derivative file from source {} to destination {}",
+                    derivativeTmpPath, derivativeFinalPath);
+
+        Files.move(derivativeTmpPath, derivativeFinalPath, REPLACE_EXISTING);
+    }
+
+    public static class DerivativeGenerationException extends RuntimeException {
+        public DerivativeGenerationException(String message) {
+            super(message);
         }
-
-        if (log.isDebugEnabled()) {
-            log.debug("Moving derivative file from source {} to destination {}, which exists? {}",
-                    derivativeTmpPath, derivativeFinalPath, derivative.exists());
-        }
-
-        Files.move(Paths.get(derivativeTmpPath),
-                derivativeFinalPath, REPLACE_EXISTING);
     }
 }

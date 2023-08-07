@@ -1,53 +1,50 @@
 package edu.unc.lib.boxc.services.camel.images;
 
-import static edu.unc.lib.boxc.services.camel.util.CdrFcrepoHeaders.CdrBinaryMimeType;
-import static org.fcrepo.camel.FcrepoHeaders.FCREPO_URI;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.when;
-import static org.mockito.MockitoAnnotations.initMocks;
-
-import java.io.BufferedWriter;
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-
+import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
+import edu.unc.lib.boxc.model.fcrepo.test.TestHelper;
+import edu.unc.lib.boxc.services.camel.images.AddDerivativeProcessor.DerivativeGenerationException;
+import edu.unc.lib.boxc.services.camel.util.CdrFcrepoHeaders;
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
 import org.apache.camel.component.exec.ExecResult;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.mockito.Mock;
 
-import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
-import edu.unc.lib.boxc.model.fcrepo.test.TestHelper;
-import edu.unc.lib.boxc.services.camel.images.AddDerivativeProcessor;
+import java.io.ByteArrayInputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.Arrays;
+
+import static edu.unc.lib.boxc.services.camel.util.CdrFcrepoHeaders.CdrBinaryMimeType;
+import static org.fcrepo.camel.FcrepoHeaders.FCREPO_URI;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.when;
+import static org.mockito.MockitoAnnotations.initMocks;
 
 public class AddDerivativeProcessorTest {
 
     private final String fileName = "de/75/d8/11/de75d811-9e0f-4b1f-8631-2060ab3580cc";
     private final String fileExtension = "PNG";
     private String pathId;
-    private File file;
-    private File mvFile;
+    private Path destinationPath;
+    private Path generatedDerivPath;
 
     private AddDerivativeProcessor processor;
-
-    private File finalDir;
 
     private static final String FEDORA_BASE = "http://example.com/rest/";
 
     private static final String RESC_ID = FEDORA_BASE + "content/de/75/d8/11/de75d811-9e0f-4b1f-8631-2060ab3580cc";
 
-    @Rule
-    public TemporaryFolder tmpDir = new TemporaryFolder();
+    @TempDir
+    public Path tmpFolder;
 
-    @Rule
-    public TemporaryFolder moveDir = new TemporaryFolder();
+    @TempDir
+    public Path moveFolder;
 
     @Mock
     private ExecResult result;
@@ -58,23 +55,20 @@ public class AddDerivativeProcessorTest {
     @Mock
     private Message message;
 
-    @Before
+    @BeforeEach
     public void init() throws Exception {
         initMocks(this);
 
         TestHelper.setContentBase(FEDORA_BASE);
 
-        finalDir = moveDir.getRoot();
-
-        processor = new AddDerivativeProcessor(fileExtension, finalDir.getAbsolutePath());
+        processor = new AddDerivativeProcessor(fileExtension, moveFolder.toString());
 
         pathId = PIDs.get(RESC_ID).getId();
 
         // Derivative file stored with extension
-        file = tmpDir.newFile(pathId + "." + fileExtension);
-        String derivTmpPath = file.getAbsolutePath();
+        generatedDerivPath = tmpFolder.resolve(pathId + "." + fileExtension);
         // Path to file from exec result not expected to have extension
-        derivTmpPath = derivTmpPath.substring(0, derivTmpPath.length() - fileExtension.length() - 1);
+        String derivTmpPath = tmpFolder.resolve(pathId).toString();
 
         when(exchange.getIn()).thenReturn(message);
 
@@ -84,22 +78,21 @@ public class AddDerivativeProcessorTest {
         when(message.getHeader(eq(CdrBinaryMimeType)))
                 .thenReturn("image/png");
 
-        try (BufferedWriter writeFile = new BufferedWriter(new FileWriter(file))) {
-            writeFile.write("fake image");
-        }
+        Files.write(generatedDerivPath, Arrays.asList("fake image"));
 
         when(result.getStdout()).thenReturn(new ByteArrayInputStream(
                 derivTmpPath.getBytes()
         ));
         when(message.getBody()).thenReturn(result);
+
+        destinationPath = moveFolder.resolve(fileName + ".PNG");
     }
 
     @Test
     public void createEnhancementTest() throws Exception {
-        mvFile = new File(finalDir.getAbsolutePath() + "/"+ fileName + ".PNG");
         processor.process(exchange);
 
-        assertTrue(mvFile.exists());
+        assertTrue(Files.exists(destinationPath));
     }
 
     @Test
@@ -109,17 +102,42 @@ public class AddDerivativeProcessorTest {
                 + " @ error/convert.c/ConvertImageCommand/3235.";
         when(result.getStderr()).thenReturn(new ByteArrayInputStream(stderr.getBytes()));
 
-        mvFile = new File(finalDir.getAbsolutePath() + "/"+ fileName + ".PNG");
-        processor.process(exchange);
-
-        assertFalse(mvFile.exists());
+        assertThrows(DerivativeGenerationException.class, () -> {
+            processor.process(exchange);
+        });
+        assertFalse(Files.exists(destinationPath));
     }
 
-    @Test(expected = IOException.class)
-    public void resultFileDoesNotExistTest() throws Exception {
+    @Test
+    public void resultFileIsOnlyAnExtensionTest() throws Exception {
+        when(result.getExitValue()).thenReturn(1);
         when(result.getStdout()).thenReturn(new ByteArrayInputStream(".png".getBytes()));
 
+        assertThrows(DerivativeGenerationException.class, () -> {
+            processor.process(exchange);
+        });
+        assertFalse(Files.exists(destinationPath));
+    }
+
+    @Test
+    public void resultFileDoesNotExistTest() throws Exception {
+        when(result.getExitValue()).thenReturn(1);
+        when(result.getStdout()).thenReturn(new ByteArrayInputStream(tmpFolder.resolve("not_real").toString().getBytes()));
+
+        assertThrows(DerivativeGenerationException.class, () -> {
+            processor.process(exchange);
+        });
+        assertFalse(Files.exists(destinationPath));
+    }
+
+    @Test
+    public void resultFileDoesNotExistButCommandSucceededTest() throws Exception {
+        when(result.getExitValue()).thenReturn(0);
+        when(result.getStdout()).thenReturn(new ByteArrayInputStream(tmpFolder.resolve("not_real").toString().getBytes()));
+
         processor.process(exchange);
+
+        assertFalse(Files.exists(destinationPath));
     }
 
     @Test
@@ -127,9 +145,37 @@ public class AddDerivativeProcessorTest {
         when(result.getExitValue()).thenReturn(1);
         when(result.getStderr()).thenReturn(getClass().getResourceAsStream("/convert/ignore_tag_stderr.txt"));
 
-        mvFile = new File(finalDir.getAbsolutePath() + "/"+ fileName + ".PNG");
         processor.process(exchange);
 
-        assertTrue(mvFile.exists());
+        assertTrue(Files.exists(destinationPath));
+    }
+
+    @Test
+    public void needsRunNewDerivativeTest() throws Exception {
+        assertTrue(processor.needsRun(exchange));
+    }
+
+    @Test
+    public void needsRunDerivativeAlreadyExistsTest() throws Exception {
+        Files.createDirectories(destinationPath.getParent());
+        Files.createFile(destinationPath);
+        assertFalse(processor.needsRun(exchange));
+    }
+
+    @Test
+    public void needsRunDerivativeAlreadyExistsForceFlagTest() throws Exception {
+        when(message.getHeader(eq("force"))).thenReturn("true");
+        Files.createDirectories(destinationPath.getParent());
+        Files.createFile(destinationPath);
+        assertTrue(processor.needsRun(exchange));
+    }
+
+    @Test
+    public void cleanupTempFileTest() throws Exception {
+        assertTrue(Files.exists(generatedDerivPath));
+        when(message.getHeader(eq(CdrFcrepoHeaders.CdrTempPath)))
+                .thenReturn(tmpFolder.resolve(pathId).toString());
+        processor.cleanupTempFile(exchange);
+        assertFalse(Files.exists(generatedDerivPath));
     }
 }
