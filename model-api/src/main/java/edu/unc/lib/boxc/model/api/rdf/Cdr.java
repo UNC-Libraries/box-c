@@ -137,6 +137,11 @@ public class Cdr {
     public static final Property unpublished = createProperty(
             "http://cdr.unc.edu/definitions/model#unpublished" );
 
+    /** Property which records which file should be used as thumbnail of the parent work
+     */
+    public static final Property useAsThumbnail = createProperty(
+            "http://cdr.unc.edu/definitions/model#useAsThumbnail" );
+
     /** Selector for identifying fields within descriptive metadata records which
      *  this vocabulary applies to.
      */
