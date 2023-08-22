@@ -6,6 +6,8 @@ import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.api.rdf.Cdr;
 import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
+import edu.unc.lib.boxc.operations.jms.indexing.IndexingActionType;
+import edu.unc.lib.boxc.operations.jms.indexing.IndexingMessageSender;
 import edu.unc.lib.boxc.operations.jms.indexing.IndexingService;
 import edu.unc.lib.boxc.operations.jms.thumbnail.ThumbnailRequestSerializationHelper;
 import org.apache.camel.Exchange;
@@ -18,7 +20,7 @@ public class ThumbnailRequestProcessor implements Processor {
     private RepositoryObjectLoader repositoryObjectLoader;
     private RepositoryObjectFactory repositoryObjectFactory;
     private AccessControlService aclService;
-    private IndexingService indexingService;
+    private IndexingMessageSender indexingMessageSender;
 
     @Override
     public void process(Exchange exchange) throws Exception {
@@ -28,14 +30,15 @@ public class ThumbnailRequestProcessor implements Processor {
         var file = repositoryObjectLoader.getFileObject(pid);
         var work = file.getParent();
         var agent = request.getAgent();
-        // check permission? set up new permission?
+
         aclService.assertHasAccess("User does not have permission to add/update work thumbnail",
                 pid, agent.getPrincipals(), Permission.editDescription);
 
         repositoryObjectFactory.createExclusiveRelationship(work, Cdr.useAsThumbnail, file.getResource());
 
         // send message to update solr
-        indexingService.reindexObject(agent, work.getPid());
+        indexingMessageSender.sendIndexingOperation(
+                agent.getUsername(), work.getPid(), IndexingActionType.UPDATE_DATASTREAMS);
     }
 
     public void setRepositoryObjectLoader(RepositoryObjectLoader repositoryObjectLoader) {
@@ -50,7 +53,7 @@ public class ThumbnailRequestProcessor implements Processor {
         this.aclService = aclService;
     }
 
-    public void setIndexingService(IndexingService indexingService) {
-        this.indexingService = indexingService;
+    public void setIndexingMessageSender(IndexingMessageSender indexingMessageSender) {
+        this.indexingMessageSender = indexingMessageSender;
     }
 }

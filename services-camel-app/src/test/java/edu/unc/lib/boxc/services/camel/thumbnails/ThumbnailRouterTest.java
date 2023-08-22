@@ -3,11 +3,11 @@ package edu.unc.lib.boxc.services.camel.thumbnails;
 import edu.unc.lib.boxc.auth.api.models.AgentPrincipals;
 import edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl;
 import edu.unc.lib.boxc.auth.fcrepo.models.AgentPrincipalsImpl;
-import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.boxc.services.camel.ProcessorTestHelper;
 import edu.unc.lib.boxc.operations.jms.thumbnail.ThumbnailRequest;
 import edu.unc.lib.boxc.operations.jms.thumbnail.ThumbnailRequestSerializationHelper;
 import org.apache.camel.BeanInject;
+import org.apache.camel.Endpoint;
 import org.apache.camel.builder.AdviceWithRouteBuilder;
 import org.apache.camel.test.spring.CamelSpringTestSupport;
 import org.junit.Test;
@@ -37,6 +37,8 @@ public class ThumbnailRouterTest extends CamelSpringTestSupport {
         request.setAgent(agent);
         request.setFilePid(pid);
         var body = ThumbnailRequestSerializationHelper.toJson(request);
+        Endpoint endpoint = context.getEndpoint("direct:start");
+        template.setDefaultEndpoint(endpoint);
         template.sendBody(body);
 
         verify(processor).process(any());

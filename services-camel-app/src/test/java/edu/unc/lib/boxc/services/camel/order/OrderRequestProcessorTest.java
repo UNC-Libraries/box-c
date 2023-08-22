@@ -15,6 +15,7 @@ import edu.unc.lib.boxc.operations.jms.indexing.IndexingMessageSender;
 import edu.unc.lib.boxc.operations.jms.order.MultiParentOrderRequest;
 import edu.unc.lib.boxc.operations.jms.order.OrderOperationType;
 import edu.unc.lib.boxc.operations.jms.order.OrderRequestSerializationHelper;
+import edu.unc.lib.boxc.services.camel.ProcessorTestHelper;
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
 import org.junit.Before;
@@ -142,7 +143,7 @@ public class OrderRequestProcessorTest {
     public void invalidRequestBodyTest() throws Exception {
         mockRequestAsValid();
 
-        var requestExchange = mockExchange("bad times");
+        var requestExchange = ProcessorTestHelper.mockExchange("bad times");
         try {
             processor.process(requestExchange);
             fail();
@@ -340,14 +341,6 @@ public class OrderRequestProcessorTest {
         request.setEmail(EMAIL);
         request.setOperation(OrderOperationType.SET);
         request.setParentToOrdered(parentToOrder);
-        return mockExchange(OrderRequestSerializationHelper.toJson(request));
-    }
-
-    private Exchange mockExchange(String body) {
-        var exchange = mock(Exchange.class);
-        var message = mock(Message.class);
-        when(exchange.getIn()).thenReturn(message);
-        when(message.getBody(String.class)).thenReturn(body);
-        return exchange;
+        return ProcessorTestHelper.mockExchange(OrderRequestSerializationHelper.toJson(request));
     }
 }
