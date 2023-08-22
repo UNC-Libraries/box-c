@@ -11,6 +11,10 @@
         <constructor-arg value="edu.unc.lib.boxc.services.camel.thumbnails.ThumbnailRequestProcessor" />
     </bean>
 
+    <bean id="properties" class="org.apache.camel.component.properties.PropertiesComponent">
+        <property name="location" value="classpath:thumbnails-config.properties"/>
+    </bean>
+
     <camel:camelContext id="DcrThumbnails">
         <camel:package>edu.unc.lib.boxc.services.camel.thumbnails</camel:package>
     </camel:camelContext>

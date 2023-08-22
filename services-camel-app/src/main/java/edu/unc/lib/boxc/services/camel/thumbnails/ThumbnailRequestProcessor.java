@@ -6,6 +6,7 @@ import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.api.rdf.Cdr;
 import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
+import edu.unc.lib.boxc.operations.jms.indexing.IndexingService;
 import edu.unc.lib.boxc.operations.jms.thumbnail.ThumbnailRequestSerializationHelper;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
@@ -17,12 +18,13 @@ public class ThumbnailRequestProcessor implements Processor {
     private RepositoryObjectLoader repositoryObjectLoader;
     private RepositoryObjectFactory repositoryObjectFactory;
     private AccessControlService aclService;
+    private IndexingService indexingService;
 
     @Override
     public void process(Exchange exchange) throws Exception {
         var in = exchange.getIn();
         var request = ThumbnailRequestSerializationHelper.toRequest(in.toString());
-        var pid = PIDs.get(request.getFilePid());
+        var pid = request.getFilePid();
         var file = repositoryObjectLoader.getFileObject(pid);
         var work = file.getParent();
         var agent = request.getAgent();
@@ -31,6 +33,9 @@ public class ThumbnailRequestProcessor implements Processor {
                 pid, agent.getPrincipals(), Permission.editDescription);
 
         repositoryObjectFactory.createExclusiveRelationship(work, Cdr.useAsThumbnail, file.getResource());
+
+        // send message to update solr
+        indexingService.reindexObject(agent, work.getPid());
     }
 
     public void setRepositoryObjectLoader(RepositoryObjectLoader repositoryObjectLoader) {
@@ -43,5 +48,9 @@ public class ThumbnailRequestProcessor implements Processor {
 
     public void setAclService(AccessControlService aclService) {
         this.aclService = aclService;
+    }
+
+    public void setIndexingService(IndexingService indexingService) {
+        this.indexingService = indexingService;
     }
 }
