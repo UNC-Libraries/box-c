@@ -26,10 +26,10 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.EOFException;
 import java.io.IOException;
 import java.util.concurrent.TimeoutException;
 
@@ -136,8 +136,14 @@ public class FedoraContentController {
     }
 
     @ExceptionHandler(value = { RuntimeException.class })
-    protected ResponseEntity<Object> handleUncaught(RuntimeException ex) {
+    public ResponseEntity<Object> handleUncaught(RuntimeException ex) {
         log.error("Uncaught exception while streaming content", ex);
         return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    @ExceptionHandler(value = { MethodArgumentTypeMismatchException.class })
+    public ResponseEntity<Object> handleArgumentTypeMismatch(RuntimeException ex) {
+        log.debug("Argument type mismatch", ex);
+        return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
     }
 }
