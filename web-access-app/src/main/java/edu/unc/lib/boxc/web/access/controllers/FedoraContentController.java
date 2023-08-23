@@ -15,6 +15,7 @@ import edu.unc.lib.boxc.web.common.exceptions.ResourceNotFoundException;
 import edu.unc.lib.boxc.web.common.services.FedoraContentService;
 import edu.unc.lib.boxc.web.common.utils.AnalyticsTrackerUtil;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,10 +26,12 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.concurrent.TimeoutException;
 
 import static edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore.getAgentPrincipals;
 import static edu.unc.lib.boxc.model.api.DatastreamType.ORIGINAL_FILE;
@@ -90,8 +93,23 @@ public class FedoraContentController {
             fedoraContentService.streamData(pid, datastream, principals, asAttachment, response);
             recordDownloadEvent(pid, datastream, principals, request);
         } catch (IOException e) {
-            log.error("Problem retrieving {} for {}", pid.toString(), datastream, e);
+            handleIOException(pid, datastream, e);
         }
+    }
+
+    private void handleIOException(PID pid, String datastream, IOException e) {
+        var cause = ExceptionUtils.getRootCause(e);
+        if (cause != null) {
+            if (cause.getMessage().contains("Connection reset by peer")) {
+                log.debug("Client reset connection while downloading {}/{}", pid.getId(), datastream);
+                return;
+            }
+            if (cause instanceof TimeoutException) {
+                log.warn("Request to download {}/{} timed out: {}", pid.getId(), datastream, e.getMessage());
+                return;
+            }
+        }
+        log.error("Problem retrieving {}/{}", pid.getId(), datastream, e);
     }
 
     private void recordDownloadEvent(PID pid, String datastream, AccessGroupSet principals,
@@ -118,8 +136,14 @@ public class FedoraContentController {
     }
 
     @ExceptionHandler(value = { RuntimeException.class })
-    protected ResponseEntity<Object> handleUncaught(RuntimeException ex) {
+    public ResponseEntity<Object> handleUncaught(RuntimeException ex) {
         log.error("Uncaught exception while streaming content", ex);
         return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    @ExceptionHandler(value = { MethodArgumentTypeMismatchException.class })
+    public ResponseEntity<Object> handleArgumentTypeMismatch(RuntimeException ex) {
+        log.debug("Argument type mismatch", ex);
+        return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
     }
 }
