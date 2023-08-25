@@ -25,20 +25,23 @@ import org.apache.camel.Message;
 import org.jdom2.Document;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import java.io.IOException;
 
+import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.framework;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import edu.unc.lib.boxc.auth.api.exceptions.AccessRestrictionException;
+import static org.mockito.MockitoAnnotations.openMocks;
+
 import org.junit.jupiter.api.Assertions;
 
 /**
@@ -50,6 +53,7 @@ public class ThumbnailProcessorTest {
     private PID workPid;
     private final AgentPrincipals agent = new AgentPrincipalsImpl("user", new AccessGroupSetImpl("agroup"));
     private Exchange exchange;
+    private AutoCloseable closeable;
     @Mock
     private AccessControlService accessControlService;
     @Mock
@@ -58,10 +62,12 @@ public class ThumbnailProcessorTest {
     private RepositoryObjectLoader repositoryObjectLoader;
     @Mock
     private RepositoryObjectFactory repositoryObjectFactory;
+    @Captor
+    private ArgumentCaptor<Object> fileResourceCaptor;
 
     @Before
     public void init() throws IOException {
-        MockitoAnnotations.initMocks(this);
+        closeable = MockitoAnnotations.openMocks(this);
         processor = new ThumbnailRequestProcessor();
         processor.setAclService(accessControlService);
         processor.setIndexingMessageSender(indexingMessageSender);
@@ -71,20 +77,26 @@ public class ThumbnailProcessorTest {
         workPid = ProcessorTestHelper.makePid();
         exchange = createRequestExchange();
     }
+    @AfterEach
+    void closeService() throws Exception {
+        closeable.close();
+    }
 
     @Test
     public void testUpdateThumbnail() throws Exception {
         var file = mock(FileObject.class);
         var resource = mock(Resource.class);
-        when(file.getPid()).thenReturn(filePid);
         var parentWork = mock(WorkObject.class);
+        when(file.getPid()).thenReturn(filePid);
         when(file.getParent()).thenReturn(parentWork);
         when(file.getResource()).thenReturn(resource);
         when(parentWork.getPid()).thenReturn(workPid);
         when(repositoryObjectLoader.getFileObject(filePid)).thenReturn(file);
 
         processor.process(exchange);
-        verify(repositoryObjectFactory).createExclusiveRelationship(eq(parentWork), eq(Cdr.useAsThumbnail), eq(file.getResource()));
+        verify(repositoryObjectFactory).createExclusiveRelationship(eq(parentWork), eq(Cdr.useAsThumbnail), fileResourceCaptor.capture());
+        // check to see the right file was related to the work
+        assertEquals(resource, fileResourceCaptor.getValue());
         assertIndexingMessageSent();
     }
 
