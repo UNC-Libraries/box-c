@@ -13,6 +13,8 @@ import edu.unc.lib.boxc.operations.jms.thumbnail.ThumbnailRequestSerializationHe
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 
+import java.io.IOException;
+
 /**
  * @author snluong
  */
@@ -23,16 +25,17 @@ public class ThumbnailRequestProcessor implements Processor {
     private IndexingMessageSender indexingMessageSender;
 
     @Override
-    public void process(Exchange exchange) throws Exception {
+    public void process(Exchange exchange) throws IOException {
         var in = exchange.getIn();
-        var request = ThumbnailRequestSerializationHelper.toRequest(in.toString());
-        var pid = request.getFilePid();
-        var file = repositoryObjectLoader.getFileObject(pid);
-        var work = file.getParent();
+        var request = ThumbnailRequestSerializationHelper.toRequest(in.getBody(String.class));
         var agent = request.getAgent();
+        var pid = PIDs.get(request.getFilePidString());
 
         aclService.assertHasAccess("User does not have permission to add/update work thumbnail",
                 pid, agent.getPrincipals(), Permission.editDescription);
+
+        var file = repositoryObjectLoader.getFileObject(pid);
+        var work = file.getParent();
 
         repositoryObjectFactory.createExclusiveRelationship(work, Cdr.useAsThumbnail, file.getResource());
 

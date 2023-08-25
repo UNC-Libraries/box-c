@@ -13,13 +13,13 @@ import edu.unc.lib.boxc.model.api.ids.PID;
 public class ThumbnailRequest {
     @JsonDeserialize(as = AgentPrincipalsImpl.class)
     private AgentPrincipals agent;
-    private PID filePid;
+    private String filePidString;
 
     public AgentPrincipals getAgent() { return agent; }
 
     public void setAgent(AgentPrincipals agent) { this.agent = agent; }
 
-    public PID getFilePid() { return filePid; }
+    public String getFilePidString() { return filePidString; }
 
-    public void setFilePid(PID filePid) { this.filePid = filePid; }
+    public void setFilePidString(String filePidString) { this.filePidString = filePidString; }
 }

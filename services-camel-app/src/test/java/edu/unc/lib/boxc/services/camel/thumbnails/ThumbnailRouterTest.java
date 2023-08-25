@@ -8,6 +8,8 @@ import edu.unc.lib.boxc.operations.jms.thumbnail.ThumbnailRequest;
 import edu.unc.lib.boxc.operations.jms.thumbnail.ThumbnailRequestSerializationHelper;
 import org.apache.camel.BeanInject;
 import org.apache.camel.Endpoint;
+import org.apache.camel.Produce;
+import org.apache.camel.ProducerTemplate;
 import org.apache.camel.builder.AdviceWithRouteBuilder;
 import org.apache.camel.test.spring.CamelSpringTestSupport;
 import org.junit.Test;
@@ -22,6 +24,8 @@ import static org.mockito.Mockito.verify;
  */
 public class ThumbnailRouterTest extends CamelSpringTestSupport {
     private AgentPrincipals agent = new AgentPrincipalsImpl("user", new AccessGroupSetImpl("agroup"));
+    @Produce(uri = "direct:start")
+    protected ProducerTemplate template;
     @BeanInject(value = "thumbnailRequestProcessor")
     private ThumbnailRequestProcessor processor;
     @Override
@@ -35,10 +39,8 @@ public class ThumbnailRouterTest extends CamelSpringTestSupport {
 
         var request = new ThumbnailRequest();
         request.setAgent(agent);
-        request.setFilePid(pid);
+        request.setFilePidString(pid.toString());
         var body = ThumbnailRequestSerializationHelper.toJson(request);
-        Endpoint endpoint = context.getEndpoint("direct:start");
-        template.setDefaultEndpoint(endpoint);
         template.sendBody(body);
 
         verify(processor).process(any());
