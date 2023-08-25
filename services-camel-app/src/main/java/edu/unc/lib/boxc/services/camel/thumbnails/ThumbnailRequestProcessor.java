@@ -8,7 +8,6 @@ import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.boxc.operations.jms.indexing.IndexingActionType;
 import edu.unc.lib.boxc.operations.jms.indexing.IndexingMessageSender;
-import edu.unc.lib.boxc.operations.jms.indexing.IndexingService;
 import edu.unc.lib.boxc.operations.jms.thumbnail.ThumbnailRequestSerializationHelper;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;

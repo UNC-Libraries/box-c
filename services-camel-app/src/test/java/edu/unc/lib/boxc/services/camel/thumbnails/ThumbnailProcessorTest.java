@@ -13,23 +13,18 @@ import edu.unc.lib.boxc.model.api.objects.WorkObject;
 import edu.unc.lib.boxc.model.api.rdf.Cdr;
 import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
 import org.apache.jena.rdf.model.Resource;
-import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.boxc.operations.jms.indexing.IndexingActionType;
 import edu.unc.lib.boxc.operations.jms.indexing.IndexingMessageSender;
-import edu.unc.lib.boxc.operations.jms.indexing.IndexingService;
 import edu.unc.lib.boxc.operations.jms.thumbnail.ThumbnailRequest;
 import edu.unc.lib.boxc.operations.jms.thumbnail.ThumbnailRequestSerializationHelper;
 import edu.unc.lib.boxc.services.camel.ProcessorTestHelper;
 import org.apache.camel.Exchange;
-import org.apache.camel.Message;
-import org.jdom2.Document;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.jupiter.api.AfterEach;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
 
 import java.io.IOException;
 
@@ -67,7 +62,7 @@ public class ThumbnailProcessorTest {
 
     @Before
     public void init() throws IOException {
-        closeable = MockitoAnnotations.openMocks(this);
+        closeable = openMocks(this);
         processor = new ThumbnailRequestProcessor();
         processor.setAclService(accessControlService);
         processor.setIndexingMessageSender(indexingMessageSender);

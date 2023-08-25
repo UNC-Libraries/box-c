@@ -7,7 +7,6 @@ import edu.unc.lib.boxc.services.camel.ProcessorTestHelper;
 import edu.unc.lib.boxc.operations.jms.thumbnail.ThumbnailRequest;
 import edu.unc.lib.boxc.operations.jms.thumbnail.ThumbnailRequestSerializationHelper;
 import org.apache.camel.BeanInject;
-import org.apache.camel.Endpoint;
 import org.apache.camel.Produce;
 import org.apache.camel.ProducerTemplate;
 import org.apache.camel.builder.AdviceWithRouteBuilder;
