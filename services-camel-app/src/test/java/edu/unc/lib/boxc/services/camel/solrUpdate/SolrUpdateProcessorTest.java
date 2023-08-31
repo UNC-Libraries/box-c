@@ -23,6 +23,7 @@ import edu.unc.lib.boxc.model.api.objects.FileObject;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.api.objects.WorkObject;
 import edu.unc.lib.boxc.operations.jms.MessageSender;
+import edu.unc.lib.boxc.services.camel.ProcessorTestHelper;
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
 import org.jdom2.Document;
@@ -88,7 +89,7 @@ public class SolrUpdateProcessorTest {
         when(exchange.getIn()).thenReturn(msg);
         when(msg.getBody()).thenReturn(bodyDoc);
 
-        targetPid = makePid();
+        targetPid = ProcessorTestHelper.makePid();
     }
 
     @Test
@@ -177,15 +178,11 @@ public class SolrUpdateProcessorTest {
 
         List<PID> pids = new ArrayList<>();
         for (int i = 0; i < count; i++) {
-            PID pid = makePid();
+            PID pid = ProcessorTestHelper.makePid();
             pids.add(pid);
             children.addContent(new Element("pid", CDR_MESSAGE_NS)
                     .setText(pid.getRepositoryPath()));
         }
         return pids;
-    }
-
-    private PID makePid() {
-        return PIDs.get(UUID.randomUUID().toString());
     }
 }
