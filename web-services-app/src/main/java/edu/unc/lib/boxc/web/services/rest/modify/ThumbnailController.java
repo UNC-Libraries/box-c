@@ -1,4 +1,4 @@
-package edu.unc.lib.boxc.web.services.rest;
+package edu.unc.lib.boxc.web.services.rest.modify;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -28,8 +28,8 @@ import edu.unc.lib.boxc.web.services.processing.ImportThumbnailService;
  *
  */
 @Controller
-public class EditThumbnailController {
-    private static final Logger log = LoggerFactory.getLogger(EditThumbnailController.class);
+public class ThumbnailController {
+    private static final Logger log = LoggerFactory.getLogger(ThumbnailController.class);
 
     @Autowired
     private ImportThumbnailService service;

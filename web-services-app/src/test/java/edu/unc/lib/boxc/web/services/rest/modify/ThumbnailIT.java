@@ -1,4 +1,4 @@
-package edu.unc.lib.boxc.web.services.rest;
+package edu.unc.lib.boxc.web.services.rest.modify;
 
 import static edu.unc.lib.boxc.auth.api.Permission.editDescription;
 import static edu.unc.lib.boxc.model.api.xml.JDOMNamespaceUtil.ATOM_NS;
@@ -54,7 +54,7 @@ import edu.unc.lib.boxc.web.services.rest.modify.AbstractAPIIT;
         @ContextConfiguration("/spring-test/cdr-client-container.xml"),
         @ContextConfiguration("/add-thumb-it-servlet.xml")
 })
-public class EditThumbIT extends AbstractAPIIT {
+public class ThumbnailIT extends AbstractAPIIT {
     private static final String USER_NAME = "user";
     private static final String ADMIN_GROUP = "adminGroup";
     private CollectionObject collection;
