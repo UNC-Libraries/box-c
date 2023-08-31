@@ -12,12 +12,12 @@ import java.io.IOException;
  * @author snluong
  */
 public class ThumbnailRequestSerializationHelper {
-    private static final ObjectWriter MULTI_WRITER;
-    private static final ObjectReader MULTI_READER;
+    private static final ObjectWriter REQUEST_WRITER;
+    private static final ObjectReader REQUEST_READER;
     static {
         ObjectMapper mapper = new ObjectMapper();
-        MULTI_WRITER = mapper.writerFor(ThumbnailRequest.class);
-        MULTI_READER = mapper.readerFor(ThumbnailRequest.class);
+        REQUEST_WRITER = mapper.writerFor(ThumbnailRequest.class);
+        REQUEST_READER = mapper.readerFor(ThumbnailRequest.class);
     }
 
     private ThumbnailRequestSerializationHelper() {
@@ -30,7 +30,7 @@ public class ThumbnailRequestSerializationHelper {
      * @throws IOException
      */
     public static String toJson(ThumbnailRequest request) throws IOException {
-        return MULTI_WRITER.writeValueAsString(request);
+        return REQUEST_WRITER.writeValueAsString(request);
     }
 
     /**
@@ -40,6 +40,6 @@ public class ThumbnailRequestSerializationHelper {
      * @throws IOException
      */
     public static ThumbnailRequest toRequest(String json) throws IOException {
-        return MULTI_READER.readValue(json);
+        return REQUEST_READER.readValue(json);
     }
 }

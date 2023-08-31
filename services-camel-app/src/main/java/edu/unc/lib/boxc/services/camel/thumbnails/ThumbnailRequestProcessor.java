@@ -15,6 +15,8 @@ import org.apache.camel.Processor;
 import java.io.IOException;
 
 /**
+ * Processing requests to assign a thumbnail from a file to its parent work
+ *
  * @author snluong
  */
 public class ThumbnailRequestProcessor implements Processor {
