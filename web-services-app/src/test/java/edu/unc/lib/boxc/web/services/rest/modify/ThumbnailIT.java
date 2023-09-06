@@ -12,6 +12,7 @@ import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.openMocks;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -21,6 +22,7 @@ import java.io.FileInputStream;
 import java.net.URI;
 import java.nio.file.Path;
 
+import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.operations.jms.thumbnail.ThumbnailRequest;
 import edu.unc.lib.boxc.operations.jms.thumbnail.ThumbnailRequestSender;
 import org.apache.commons.io.IOUtils;
@@ -32,6 +34,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
+import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.ContextConfiguration;
@@ -81,6 +84,9 @@ public class ThumbnailIT extends AbstractAPIIT {
     private RepositoryObjectFactory repositoryObjectFactory;
     @Autowired
     private ThumbnailRequestSender thumbnailRequestSender;
+
+    @Mock
+    private RepositoryObjectLoader repositoryObjectLoader;
 
     private File tempDir;
 
@@ -156,6 +162,8 @@ public class ThumbnailIT extends AbstractAPIIT {
     public void assignThumbnailSuccess() throws Exception {
         var pid = makePid();
         var filePidString = pid.getId();
+        var file = repositoryObjectFactory.createFileObject(pid, null);
+        when(repositoryObjectLoader.getRepositoryObject(pid)).thenReturn(file);
 
         mvc.perform(put("/assignThumbnail/" + filePidString))
                 .andExpect(status().is2xxSuccessful())
@@ -184,6 +192,19 @@ public class ThumbnailIT extends AbstractAPIIT {
         var badPidString = "Not a pid";
         mvc.perform(put("/assignThumbnail/" + badPidString))
                 .andExpect(status().is4xxClientError())
+                .andReturn();
+        verify(thumbnailRequestSender, never()).sendMessage(any(Document.class));
+    }
+
+    @Test
+    public void assignThumbnailPidIsNotAFile() throws Exception {
+        var pid = makePid();
+        var filePidString = pid.getId();
+        var work = repositoryObjectFactory.createWorkObject(pid, null);
+        when(repositoryObjectLoader.getRepositoryObject(pid)).thenReturn(work);
+
+        mvc.perform(put("/assignThumbnail/" + filePidString))
+                .andExpect(status().isBadRequest())
                 .andReturn();
         verify(thumbnailRequestSender, never()).sendMessage(any(Document.class));
     }

@@ -9,6 +9,8 @@ import edu.unc.lib.boxc.auth.api.Permission;
 import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
 import edu.unc.lib.boxc.auth.api.services.AccessControlService;
 import edu.unc.lib.boxc.model.api.ids.PID;
+import edu.unc.lib.boxc.model.api.objects.FileObject;
+import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.boxc.operations.jms.thumbnail.ThumbnailRequest;
 import edu.unc.lib.boxc.operations.jms.thumbnail.ThumbnailRequestSender;
@@ -49,6 +51,8 @@ public class ThumbnailController {
     private ThumbnailRequestSender thumbnailRequestSender;
     @Autowired
     private AccessControlService aclService;
+    @Autowired
+    private RepositoryObjectLoader repositoryObjectLoader;
 
     @PostMapping(value = "edit/displayThumbnail/{pid}")
     public @ResponseBody
@@ -88,6 +92,12 @@ public class ThumbnailController {
         AccessGroupSet principals = getAgentPrincipals().getPrincipals();
         aclService.assertHasAccess("Insufficient permissions to download access copy for " + pidString,
                 pid, principals, Permission.editDescription);
+
+        var object = repositoryObjectLoader.getRepositoryObject(pid);
+        if (!(object instanceof FileObject)) {
+            log.error("Error object is not a file: {}", pidString);
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
 
         var agent = AgentPrincipalsImpl.createFromThread();
         var request = new ThumbnailRequest();
