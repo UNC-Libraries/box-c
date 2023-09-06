@@ -426,6 +426,16 @@
     <bean id="downloadImageService" class="edu.unc.lib.boxc.web.services.processing.DownloadImageService">
         <property name="iiifBasePath" value="${iiif.base.url}"/>
     </bean>
+
+    <bean id="thumbnailRequestJmsTemplate" class="org.springframework.jms.core.JmsTemplate">
+        <property name="connectionFactory" ref="jmsFactory" />
+        <property name="defaultDestinationName" value="${cdr.thumbnail.stream}" />
+        <property name="pubSubDomain" value="false" />
+    </bean>
+
+    <bean id="thumbnailRequestSender" class="edu.unc.lib.boxc.operations.jms.thumbnail.ThumbnailRequestSender">
+        <property name="jmsTemplate" ref="thumbnailRequestJmsTemplate"/>
+    </bean>
     
     <bean class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
         <property name="staticMethod" value="edu.unc.lib.boxc.web.common.utils.SerializationUtil.injectSettings"/>
