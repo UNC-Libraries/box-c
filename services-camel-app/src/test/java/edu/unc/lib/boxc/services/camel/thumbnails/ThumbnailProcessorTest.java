@@ -46,8 +46,9 @@ public class ThumbnailProcessorTest {
     private ThumbnailRequestProcessor processor;
     private PID filePid;
     private PID workPid;
+    private Resource resource;
+    private WorkObject parentWork;
     private final AgentPrincipals agent = new AgentPrincipalsImpl("user", new AccessGroupSetImpl("agroup"));
-    private Exchange exchange;
     private AutoCloseable closeable;
     @Mock
     private AccessControlService accessControlService;
@@ -70,7 +71,15 @@ public class ThumbnailProcessorTest {
         processor.setRepositoryObjectFactory(repositoryObjectFactory);
         filePid = ProcessorTestHelper.makePid();
         workPid = ProcessorTestHelper.makePid();
-        exchange = createRequestExchange();
+        resource = mock(Resource.class);
+        parentWork = mock(WorkObject.class);
+        
+        var file = mock(FileObject.class);
+        when(file.getPid()).thenReturn(filePid);
+        when(file.getParent()).thenReturn(parentWork);
+        when(file.getResource()).thenReturn(resource);
+        when(parentWork.getPid()).thenReturn(workPid);
+        when(repositoryObjectLoader.getFileObject(filePid)).thenReturn(file);
     }
     @AfterEach
     void closeService() throws Exception {
@@ -79,14 +88,7 @@ public class ThumbnailProcessorTest {
 
     @Test
     public void testUpdateThumbnail() throws Exception {
-        var file = mock(FileObject.class);
-        var resource = mock(Resource.class);
-        var parentWork = mock(WorkObject.class);
-        when(file.getPid()).thenReturn(filePid);
-        when(file.getParent()).thenReturn(parentWork);
-        when(file.getResource()).thenReturn(resource);
-        when(parentWork.getPid()).thenReturn(workPid);
-        when(repositoryObjectLoader.getFileObject(filePid)).thenReturn(file);
+        var exchange = createRequestExchange(ThumbnailRequest.ASSIGN);
 
         processor.process(exchange);
         verify(repositoryObjectFactory).createExclusiveRelationship(eq(parentWork), eq(Cdr.useAsThumbnail), fileResourceCaptor.capture());
@@ -96,7 +98,8 @@ public class ThumbnailProcessorTest {
     }
 
     @Test
-    public void insufficientPermissionsTest() {
+    public void insufficientPermissionsTest() throws IOException {
+        var exchange = createRequestExchange(ThumbnailRequest.ASSIGN);
         Assertions.assertThrows(AccessRestrictionException.class, () -> {
             doThrow(new AccessRestrictionException()).when(accessControlService)
                 .assertHasAccess(any(), any(PID.class), any(), eq(Permission.editDescription));
@@ -105,15 +108,25 @@ public class ThumbnailProcessorTest {
         });
     }
 
+    @Test
+    public void testDeleteAssignedThumbnail() throws IOException {
+        var exchange = createRequestExchange(ThumbnailRequest.DELETE);
+
+        processor.process(exchange);
+        verify(repositoryObjectFactory).deleteProperty(eq(parentWork), eq(Cdr.useAsThumbnail));
+        assertIndexingMessageSent();
+    }
+
     private void assertIndexingMessageSent() {
         verify(indexingMessageSender).sendIndexingOperation(agent.getUsername(), workPid,
                 IndexingActionType.UPDATE_DATASTREAMS);
     }
 
-    private Exchange createRequestExchange() throws IOException {
+    private Exchange createRequestExchange(String action) throws IOException {
         var request = new ThumbnailRequest();
         request.setAgent(agent);
         request.setFilePidString(filePid.toString());
+        request.setAction(action);
         return ProcessorTestHelper.mockExchange(ThumbnailRequestSerializationHelper.toJson(request));
     }
 }
