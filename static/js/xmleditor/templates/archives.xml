@@ -7,6 +7,7 @@
   <mods:identifier displayLabel="Digital Folder Number" type="local" />
   <mods:originInfo>
     <mods:dateCreated encoding="edtf" />
+    <mods:displayDate />
   </mods:originInfo>
   <mods:relatedItem type="original">
     <mods:identifier displayLabel="Source Media Identifier" />
