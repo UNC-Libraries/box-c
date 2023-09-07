@@ -8,6 +8,7 @@ import static org.apache.commons.io.FileUtils.copyInputStreamToFile;
 import static org.apache.commons.lang3.StringUtils.containsIgnoreCase;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -40,7 +41,7 @@ public class ImportThumbnailService extends MessageSender {
         storagePath = Paths.get(sourceImagesDir);
     }
 
-    public void run(InputStream importStream, AgentPrincipals agent, String uuid, String mimeType) throws Exception {
+    public void run(InputStream importStream, AgentPrincipals agent, String uuid, String mimeType) throws IOException {
         PID pid = PIDs.get(uuid);
 
         aclService.assertHasAccess("User does not have permission to add/update collection thumbnails",
