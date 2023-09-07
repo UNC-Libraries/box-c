@@ -121,7 +121,7 @@ public class ThumbnailIT extends AbstractAPIIT {
         FileInputStream input = new FileInputStream("src/test/resources/upload-files/burndown.png");
         MockMultipartFile thumbnailFile = new MockMultipartFile("file", "burndown.png", "image/png", IOUtils.toByteArray(input));
 
-        mvc.perform(MockMvcRequestBuilders.multipart(URI.create("/edit/displayThumbnail/" + collection.getPid().getUUID()))
+        mvc.perform(MockMvcRequestBuilders.multipart("/edit/displayThumbnail/" + collection.getPid().getUUID())
                 .file(thumbnailFile))
                 .andExpect(status().is2xxSuccessful())
                 .andReturn();
@@ -135,7 +135,7 @@ public class ThumbnailIT extends AbstractAPIIT {
     public void addCollectionThumbWrongFileType() throws Exception {
         MockMultipartFile thumbnailFile = new MockMultipartFile("file", "file.txt", "plain/text", textStream());
 
-        mvc.perform(MockMvcRequestBuilders.multipart(URI.create("/edit/displayThumbnail/" + collection.getPid().getUUID()))
+        mvc.perform(MockMvcRequestBuilders.multipart("/edit/displayThumbnail/" + collection.getPid().getUUID())
                 .file(thumbnailFile))
                 .andExpect(status().is4xxClientError())
                 .andReturn();
@@ -150,7 +150,7 @@ public class ThumbnailIT extends AbstractAPIIT {
         doThrow(new AccessRestrictionException()).when(aclService)
                 .assertHasAccess(anyString(), eq(collection.getPid()), any(AccessGroupSetImpl.class), eq(editDescription));
 
-        mvc.perform(MockMvcRequestBuilders.multipart(URI.create("/edit/displayThumbnail/" + collection.getPid().getUUID()))
+        mvc.perform(MockMvcRequestBuilders.multipart("/edit/displayThumbnail/" + collection.getPid().getUUID())
                 .file(thumbnailFile))
                 .andExpect(status().isForbidden())
                 .andReturn();

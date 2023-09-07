@@ -61,7 +61,7 @@ public class ThumbnailController {
      * @return
      * @throws Exception
      */
-    @PostMapping(value = "edit/displayThumbnail/{pid}")
+    @PostMapping(value = "/edit/displayThumbnail/{pid}")
     public @ResponseBody
     ResponseEntity<Object> importThumbnail(@PathVariable("pid") String pid,
                                                      @RequestParam("file") MultipartFile thumbnailFile)
