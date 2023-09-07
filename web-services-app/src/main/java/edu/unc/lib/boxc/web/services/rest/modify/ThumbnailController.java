@@ -59,7 +59,6 @@ public class ThumbnailController {
      * @param pid PID of object getting a thumbnail
      * @param thumbnailFile file to use as thumbnail
      * @return
-     * @throws Exception
      */
     @PostMapping(value = "/edit/displayThumbnail/{pid}")
     public @ResponseBody
