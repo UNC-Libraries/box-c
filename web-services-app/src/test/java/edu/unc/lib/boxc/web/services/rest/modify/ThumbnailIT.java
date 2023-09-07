@@ -165,7 +165,7 @@ public class ThumbnailIT extends AbstractAPIIT {
         var file = repositoryObjectFactory.createFileObject(pid, null);
         when(repositoryObjectLoader.getRepositoryObject(pid)).thenReturn(file);
 
-        mvc.perform(put("/assignThumbnail/" + filePidString))
+        mvc.perform(put("/edit/assignThumbnail/" + filePidString))
                 .andExpect(status().is2xxSuccessful())
                 .andReturn();
 
@@ -181,7 +181,7 @@ public class ThumbnailIT extends AbstractAPIIT {
         doThrow(new AccessRestrictionException()).when(aclService)
                 .assertHasAccess(anyString(), eq(pid), any(AccessGroupSetImpl.class), eq(editDescription));
 
-        mvc.perform(put("/assignThumbnail/" + filePidString))
+        mvc.perform(put("/edit/assignThumbnail/" + filePidString))
                 .andExpect(status().isForbidden())
                 .andReturn();
         verify(thumbnailRequestSender, never()).sendMessage(any(Document.class));
@@ -189,8 +189,8 @@ public class ThumbnailIT extends AbstractAPIIT {
 
     @Test
     public void assignThumbnailInvalidPidString() throws Exception {
-        var badPidString = "Not a pid";
-        mvc.perform(put("/assignThumbnail/" + badPidString))
+        var badPidString = "NotAPid";
+        mvc.perform(put("/edit/assignThumbnail/" + badPidString))
                 .andExpect(status().is4xxClientError())
                 .andReturn();
         verify(thumbnailRequestSender, never()).sendMessage(any(Document.class));
@@ -203,7 +203,7 @@ public class ThumbnailIT extends AbstractAPIIT {
         var work = repositoryObjectFactory.createWorkObject(pid, null);
         when(repositoryObjectLoader.getRepositoryObject(pid)).thenReturn(work);
 
-        mvc.perform(put("/assignThumbnail/" + filePidString))
+        mvc.perform(put("/edit/assignThumbnail/" + filePidString))
                 .andExpect(status().isBadRequest())
                 .andReturn();
         verify(thumbnailRequestSender, never()).sendMessage(any(Document.class));

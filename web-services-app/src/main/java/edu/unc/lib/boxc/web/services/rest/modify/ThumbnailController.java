@@ -54,9 +54,16 @@ public class ThumbnailController {
     @Autowired
     private RepositoryObjectLoader repositoryObjectLoader;
 
+    /**
+     * This endpoint uploads a file to use as the thumbnail
+     * @param pid PID of object getting a thumbnail
+     * @param thumbnailFile file to use as thumbnail
+     * @return
+     * @throws Exception
+     */
     @PostMapping(value = "edit/displayThumbnail/{pid}")
     public @ResponseBody
-    ResponseEntity<Object> ImportThumbnail(@PathVariable("pid") String pid,
+    ResponseEntity<Object> importThumbnail(@PathVariable("pid") String pid,
                                                      @RequestParam("file") MultipartFile thumbnailFile)
             throws Exception {
 
@@ -84,13 +91,18 @@ public class ThumbnailController {
         return new ResponseEntity<>(result, HttpStatus.OK);
     }
 
-    @PutMapping(value = "/assignThumbnail/{pidString}")
+    /**
+     * This endpoint assigns a child file to use as the thumbnail for the parent work
+     * @param pidString ID of the file
+     * @return HTTP status
+     */
+    @PutMapping(value = "/edit/assignThumbnail/{pidString}")
     @ResponseBody
-    public ResponseEntity<Object> AssignThumbnail(@PathVariable("pidString") String pidString) {
+    public ResponseEntity<Object> assignThumbnail(@PathVariable("pidString") String pidString) {
         PID pid = PIDs.get(pidString);
 
         AccessGroupSet principals = getAgentPrincipals().getPrincipals();
-        aclService.assertHasAccess("Insufficient permissions to download access copy for " + pidString,
+        aclService.assertHasAccess("Insufficient permissions to assign thumbnail for " + pidString,
                 pid, principals, Permission.editDescription);
 
         var object = repositoryObjectLoader.getRepositoryObject(pid);
@@ -106,7 +118,7 @@ public class ThumbnailController {
         try {
             thumbnailRequestSender.sendToQueue(request);
         } catch (IOException e) {
-            log.error("Error assigning file {} as thumbnail: {}", request.getFilePidString(), e);
+            log.error("Error assigning file {} as thumbnail", request.getFilePidString(), e);
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
         return new ResponseEntity<>(HttpStatus.OK);

@@ -25,6 +25,7 @@ public class ThumbnailRequestSender extends MessageSender {
     public void sendToQueue(ThumbnailRequest request) throws IOException {
         String messageBody = MAPPER.writeValueAsString(request);
         sendMessage(messageBody);
-        log.info("Job to update thumbnail has been queued for {}", request.getAgent().getUsername());
+        log.info("Job to update thumbnail has been queued for {} with file {}",
+                request.getAgent().getUsername(), request.getFilePidString());
     }
 }
