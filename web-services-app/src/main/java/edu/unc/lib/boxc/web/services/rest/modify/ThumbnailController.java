@@ -64,8 +64,7 @@ public class ThumbnailController {
     @PostMapping(value = "/edit/displayThumbnail/{pid}")
     public @ResponseBody
     ResponseEntity<Object> importThumbnail(@PathVariable("pid") String pid,
-                                                     @RequestParam("file") MultipartFile thumbnailFile)
-            throws Exception {
+                                                     @RequestParam("file") MultipartFile thumbnailFile) {
 
         AgentPrincipals agent = AgentPrincipalsImpl.createFromThread();
         String mimeType = thumbnailFile.getContentType();
