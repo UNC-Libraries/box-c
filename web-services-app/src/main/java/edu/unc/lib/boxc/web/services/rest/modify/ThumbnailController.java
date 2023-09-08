@@ -11,7 +11,6 @@ import edu.unc.lib.boxc.auth.api.services.AccessControlService;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.objects.FileObject;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
-import edu.unc.lib.boxc.model.api.objects.WorkObject;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.boxc.operations.jms.thumbnail.ThumbnailRequest;
 import edu.unc.lib.boxc.operations.jms.thumbnail.ThumbnailRequestSender;
@@ -38,7 +37,8 @@ import static edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore.getAgentPr
 /**
  * Controller for handling thumbnail requests, including:
  * upload submission for collection display thumbnails,
- * assigning a child object to use as a thumbnail
+ * assigning a child object to use as a thumbnail,
+ * and deleting an assigned child object thumbnail
  *
  * @author lfarrell
  *
@@ -114,11 +114,11 @@ public class ThumbnailController {
         var agent = AgentPrincipalsImpl.createFromThread();
         var request = new ThumbnailRequest();
         request.setAgent(agent);
-        request.setPidString(pidString);
+        request.setFilePidString(pidString);
         try {
             thumbnailRequestSender.sendToQueue(request);
         } catch (IOException e) {
-            log.error("Error assigning file {} as thumbnail", request.getPidString(), e);
+            log.error("Error assigning file {} as thumbnail", request.getFilePidString(), e);
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
         return new ResponseEntity<>(HttpStatus.OK);
@@ -134,19 +134,20 @@ public class ThumbnailController {
                 pid, principals, Permission.editDescription);
 
         var object = repositoryObjectLoader.getRepositoryObject(pid);
-        if (!(object instanceof WorkObject)) {
-            log.error("Error object is not a work: {}", pidString);
+        if (!(object instanceof FileObject)) {
+            log.error("Error object is not a file: {}", pidString);
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
 
         var agent = AgentPrincipalsImpl.createFromThread();
         var request = new ThumbnailRequest();
         request.setAgent(agent);
-        request.setPidString(pidString);
+        request.setFilePidString(pidString);
+        request.setAction(ThumbnailRequest.DELETE);
         try {
             thumbnailRequestSender.sendToQueue(request);
         } catch (IOException e) {
-            log.error("Error deleting assigned thumbnail for {}", request.getPidString(), e);
+            log.error("Error deleting assigned thumbnail for {}", request.getFilePidString(), e);
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
 

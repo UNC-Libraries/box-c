@@ -20,8 +20,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.IOException;
-import java.net.URI;
 import java.nio.file.Path;
 
 import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
@@ -173,7 +171,7 @@ public class ThumbnailIT extends AbstractAPIIT {
 
         verify(thumbnailRequestSender).sendToQueue(requestCaptor.capture());
         ThumbnailRequest request = requestCaptor.getValue();
-        assertEquals(filePidString, request.getPidString());
+        assertEquals(filePidString, request.getFilePidString());
     }
 
     @Test
@@ -214,40 +212,41 @@ public class ThumbnailIT extends AbstractAPIIT {
     @Test
     public void deleteThumbnailSuccess() throws Exception {
         var pid = makePid();
-        var workPidString = pid.getId();
-        var work = repositoryObjectFactory.createWorkObject(pid, null);
-        when(repositoryObjectLoader.getRepositoryObject(pid)).thenReturn(work);
-        mvc.perform(delete("/edit/deleteThumbnail/" + workPidString))
+        var filePidString = pid.getId();
+        var file = repositoryObjectFactory.createFileObject(pid, null);
+        when(repositoryObjectLoader.getRepositoryObject(pid)).thenReturn(file);
+        mvc.perform(delete("/edit/deleteThumbnail/" + filePidString))
                 .andExpect(status().is2xxSuccessful())
                 .andReturn();
 
         verify(thumbnailRequestSender).sendToQueue(requestCaptor.capture());
         ThumbnailRequest request = requestCaptor.getValue();
-        assertEquals(workPidString, request.getPidString());
+        assertEquals(filePidString, request.getFilePidString());
+        assertEquals(ThumbnailRequest.DELETE, request.getAction());
     }
 
     @Test
     public void deleteThumbnailNoAccess() throws Exception {
         var pid = makePid();
-        var workPidString = pid.getId();
+        var filePidString = pid.getId();
 
         doThrow(new AccessRestrictionException()).when(aclService)
                 .assertHasAccess(anyString(), eq(pid), any(AccessGroupSetImpl.class), eq(editDescription));
 
-        mvc.perform(delete("/edit/deleteThumbnail/" + workPidString))
+        mvc.perform(delete("/edit/deleteThumbnail/" + filePidString))
                 .andExpect(status().isForbidden())
                 .andReturn();
         verify(thumbnailRequestSender, never()).sendMessage(any(Document.class));
     }
 
     @Test
-    public void deleteThumbnailPidIsNotAWork() throws Exception {
+    public void deleteThumbnailPidIsNotAFile() throws Exception {
         var pid = makePid();
-        var filePidString = pid.getId();
-        var file = repositoryObjectFactory.createFileObject(pid, null);
-        when(repositoryObjectLoader.getRepositoryObject(pid)).thenReturn(file);
+        var workPidString = pid.getId();
+        var work = repositoryObjectFactory.createWorkObject(pid, null);
+        when(repositoryObjectLoader.getRepositoryObject(pid)).thenReturn(work);
 
-        mvc.perform(delete("/edit/deleteThumbnail/" + filePidString))
+        mvc.perform(delete("/edit/deleteThumbnail/" + workPidString))
                 .andExpect(status().isBadRequest())
                 .andReturn();
         verify(thumbnailRequestSender, never()).sendMessage(any(Document.class));
