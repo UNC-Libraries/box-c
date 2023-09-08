@@ -73,7 +73,7 @@ public class ThumbnailProcessorTest {
         workPid = ProcessorTestHelper.makePid();
         resource = mock(Resource.class);
         parentWork = mock(WorkObject.class);
-        
+
         var file = mock(FileObject.class);
         when(file.getPid()).thenReturn(filePid);
         when(file.getParent()).thenReturn(parentWork);
