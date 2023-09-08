@@ -14,6 +14,7 @@ import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.openMocks;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -117,98 +118,98 @@ public class ThumbnailIT extends AbstractAPIIT {
         closeable.close();
     }
 
-//    @Test
-//    public void addEditThumbnail() throws Exception {
-//        FileInputStream input = new FileInputStream("src/test/resources/upload-files/burndown.png");
-//        MockMultipartFile thumbnailFile = new MockMultipartFile("file", "burndown.png", "image/png", IOUtils.toByteArray(input));
-//
-//        mvc.perform(MockMvcRequestBuilders.multipart("/edit/displayThumbnail/" + collection.getPid().getUUID())
-//                .file(thumbnailFile))
-//                .andExpect(status().is2xxSuccessful())
-//                .andReturn();
-//
-//        verify(messageSender).sendMessage(docCaptor.capture());
-//        Document msgDoc = docCaptor.getValue();
-//        assertMessageValues(msgDoc, collection.getPid());
-//    }
-//
-//    @Test
-//    public void addCollectionThumbWrongFileType() throws Exception {
-//        MockMultipartFile thumbnailFile = new MockMultipartFile("file", "file.txt", "plain/text", textStream());
-//
-//        mvc.perform(MockMvcRequestBuilders.multipart("/edit/displayThumbnail/" + collection.getPid().getUUID())
-//                .file(thumbnailFile))
-//                .andExpect(status().is4xxClientError())
-//                .andReturn();
-//
-//        verify(messageSender, never()).sendMessage(any(Document.class));
-//    }
-//
-//    @Test
-//    public void addCollectionThumbNoAccess() throws Exception {
-//        MockMultipartFile thumbnailFile = new MockMultipartFile("file", "file.txt", "plain/text", textStream());
-//
-//        doThrow(new AccessRestrictionException()).when(aclService)
-//                .assertHasAccess(anyString(), eq(collection.getPid()), any(AccessGroupSetImpl.class), eq(editDescription));
-//
-//        mvc.perform(MockMvcRequestBuilders.multipart("/edit/displayThumbnail/" + collection.getPid().getUUID())
-//                .file(thumbnailFile))
-//                .andExpect(status().isForbidden())
-//                .andReturn();
-//
-//        verify(messageSender, never()).sendMessage(any(Document.class));
-//    }
-//
-//    @Test
-//    public void assignThumbnailSuccess() throws Exception {
-//        var pid = makePid();
-//        var filePidString = pid.getId();
-//        var file = repositoryObjectFactory.createFileObject(pid, null);
-//        when(repositoryObjectLoader.getRepositoryObject(pid)).thenReturn(file);
-//
-//        mvc.perform(put("/edit/assignThumbnail/" + filePidString))
-//                .andExpect(status().is2xxSuccessful())
-//                .andReturn();
-//
-//        verify(thumbnailRequestSender).sendToQueue(requestCaptor.capture());
-//        ThumbnailRequest request = requestCaptor.getValue();
-//        assertEquals(filePidString, request.getFilePidString());
-//    }
-//
-//    @Test
-//    public void assignThumbnailNoAccess() throws Exception {
-//        var pid = makePid();
-//        var filePidString = pid.getId();
-//        doThrow(new AccessRestrictionException()).when(aclService)
-//                .assertHasAccess(anyString(), eq(pid), any(AccessGroupSetImpl.class), eq(editDescription));
-//
-//        mvc.perform(put("/edit/assignThumbnail/" + filePidString))
-//                .andExpect(status().isForbidden())
-//                .andReturn();
-//        verify(thumbnailRequestSender, never()).sendMessage(any(Document.class));
-//    }
-//
-//    @Test
-//    public void assignThumbnailInvalidPidString() throws Exception {
-//        var badPidString = "NotAPid";
-//        mvc.perform(put("/edit/assignThumbnail/" + badPidString))
-//                .andExpect(status().is4xxClientError())
-//                .andReturn();
-//        verify(thumbnailRequestSender, never()).sendMessage(any(Document.class));
-//    }
-//
-//    @Test
-//    public void assignThumbnailPidIsNotAFile() throws Exception {
-//        var pid = makePid();
-//        var filePidString = pid.getId();
-//        var work = repositoryObjectFactory.createWorkObject(pid, null);
-//        when(repositoryObjectLoader.getRepositoryObject(pid)).thenReturn(work);
-//
-//        mvc.perform(put("/edit/assignThumbnail/" + filePidString))
-//                .andExpect(status().isBadRequest())
-//                .andReturn();
-//        verify(thumbnailRequestSender, never()).sendMessage(any(Document.class));
-//    }
+    @Test
+    public void addEditThumbnail() throws Exception {
+        FileInputStream input = new FileInputStream("src/test/resources/upload-files/burndown.png");
+        MockMultipartFile thumbnailFile = new MockMultipartFile("file", "burndown.png", "image/png", IOUtils.toByteArray(input));
+
+        mvc.perform(MockMvcRequestBuilders.multipart("/edit/displayThumbnail/" + collection.getPid().getUUID())
+                .file(thumbnailFile))
+                .andExpect(status().is2xxSuccessful())
+                .andReturn();
+
+        verify(messageSender).sendMessage(docCaptor.capture());
+        Document msgDoc = docCaptor.getValue();
+        assertMessageValues(msgDoc, collection.getPid());
+    }
+
+    @Test
+    public void addCollectionThumbWrongFileType() throws Exception {
+        MockMultipartFile thumbnailFile = new MockMultipartFile("file", "file.txt", "plain/text", textStream());
+
+        mvc.perform(MockMvcRequestBuilders.multipart("/edit/displayThumbnail/" + collection.getPid().getUUID())
+                .file(thumbnailFile))
+                .andExpect(status().is4xxClientError())
+                .andReturn();
+
+        verify(messageSender, never()).sendMessage(any(Document.class));
+    }
+
+    @Test
+    public void addCollectionThumbNoAccess() throws Exception {
+        MockMultipartFile thumbnailFile = new MockMultipartFile("file", "file.txt", "plain/text", textStream());
+
+        doThrow(new AccessRestrictionException()).when(aclService)
+                .assertHasAccess(anyString(), eq(collection.getPid()), any(AccessGroupSetImpl.class), eq(editDescription));
+
+        mvc.perform(MockMvcRequestBuilders.multipart("/edit/displayThumbnail/" + collection.getPid().getUUID())
+                .file(thumbnailFile))
+                .andExpect(status().isForbidden())
+                .andReturn();
+
+        verify(messageSender, never()).sendMessage(any(Document.class));
+    }
+
+    @Test
+    public void assignThumbnailSuccess() throws Exception {
+        var pid = makePid();
+        var filePidString = pid.getId();
+        var file = repositoryObjectFactory.createFileObject(pid, null);
+        when(repositoryObjectLoader.getRepositoryObject(pid)).thenReturn(file);
+
+        mvc.perform(put("/edit/assignThumbnail/" + filePidString))
+                .andExpect(status().is2xxSuccessful())
+                .andReturn();
+
+        verify(thumbnailRequestSender).sendToQueue(requestCaptor.capture());
+        ThumbnailRequest request = requestCaptor.getValue();
+        assertEquals(filePidString, request.getPidString());
+    }
+
+    @Test
+    public void assignThumbnailNoAccess() throws Exception {
+        var pid = makePid();
+        var filePidString = pid.getId();
+        doThrow(new AccessRestrictionException()).when(aclService)
+                .assertHasAccess(anyString(), eq(pid), any(AccessGroupSetImpl.class), eq(editDescription));
+
+        mvc.perform(put("/edit/assignThumbnail/" + filePidString))
+                .andExpect(status().isForbidden())
+                .andReturn();
+        verify(thumbnailRequestSender, never()).sendMessage(any(Document.class));
+    }
+
+    @Test
+    public void assignThumbnailInvalidPidString() throws Exception {
+        var badPidString = "NotAPid";
+        mvc.perform(put("/edit/assignThumbnail/" + badPidString))
+                .andExpect(status().is4xxClientError())
+                .andReturn();
+        verify(thumbnailRequestSender, never()).sendMessage(any(Document.class));
+    }
+
+    @Test
+    public void assignThumbnailPidIsNotAFile() throws Exception {
+        var pid = makePid();
+        var filePidString = pid.getId();
+        var work = repositoryObjectFactory.createWorkObject(pid, null);
+        when(repositoryObjectLoader.getRepositoryObject(pid)).thenReturn(work);
+
+        mvc.perform(put("/edit/assignThumbnail/" + filePidString))
+                .andExpect(status().isBadRequest())
+                .andReturn();
+        verify(thumbnailRequestSender, never()).sendMessage(any(Document.class));
+    }
 
     @Test
     public void deleteThumbnailSuccess() throws Exception {
@@ -216,7 +217,7 @@ public class ThumbnailIT extends AbstractAPIIT {
         var workPidString = pid.getId();
         var work = repositoryObjectFactory.createWorkObject(pid, null);
         when(repositoryObjectLoader.getRepositoryObject(pid)).thenReturn(work);
-        mvc.perform(put("/edit/deleteThumbnail/" + workPidString))
+        mvc.perform(delete("/edit/deleteThumbnail/" + workPidString))
                 .andExpect(status().is2xxSuccessful())
                 .andReturn();
 
@@ -229,13 +230,12 @@ public class ThumbnailIT extends AbstractAPIIT {
     public void deleteThumbnailNoAccess() throws Exception {
         var pid = makePid();
         var workPidString = pid.getId();
-        var work = repositoryObjectFactory.createWorkObject(pid, null);
-        when(repositoryObjectLoader.getRepositoryObject(pid)).thenReturn(work);
+
         doThrow(new AccessRestrictionException()).when(aclService)
                 .assertHasAccess(anyString(), eq(pid), any(AccessGroupSetImpl.class), eq(editDescription));
 
-        mvc.perform(put("/edit/deleteThumbnail/" + workPidString))
-                .andExpect(status().is2xxSuccessful())
+        mvc.perform(delete("/edit/deleteThumbnail/" + workPidString))
+                .andExpect(status().isForbidden())
                 .andReturn();
         verify(thumbnailRequestSender, never()).sendMessage(any(Document.class));
     }
@@ -247,7 +247,7 @@ public class ThumbnailIT extends AbstractAPIIT {
         var file = repositoryObjectFactory.createFileObject(pid, null);
         when(repositoryObjectLoader.getRepositoryObject(pid)).thenReturn(file);
 
-        mvc.perform(put("/edit/deleteThumbnail/" + filePidString))
+        mvc.perform(delete("/edit/deleteThumbnail/" + filePidString))
                 .andExpect(status().isBadRequest())
                 .andReturn();
         verify(thumbnailRequestSender, never()).sendMessage(any(Document.class));
