@@ -20,6 +20,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -36,7 +37,8 @@ import static edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore.getAgentPr
 /**
  * Controller for handling thumbnail requests, including:
  * upload submission for collection display thumbnails,
- * assigning a child object to use as a thumbnail
+ * assigning a child object to use as a thumbnail,
+ * and deleting an assigned child object thumbnail
  *
  * @author lfarrell
  *
@@ -119,6 +121,36 @@ public class ThumbnailController {
             log.error("Error assigning file {} as thumbnail", request.getFilePidString(), e);
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    @DeleteMapping(value = "/edit/deleteThumbnail/{pidString}")
+    @ResponseBody
+    public ResponseEntity<Object> deleteThumbnail(@PathVariable("pidString") String pidString) {
+        PID pid = PIDs.get(pidString);
+
+        AccessGroupSet principals = getAgentPrincipals().getPrincipals();
+        aclService.assertHasAccess("Insufficient permissions to assign thumbnail for " + pidString,
+                pid, principals, Permission.editDescription);
+
+        var object = repositoryObjectLoader.getRepositoryObject(pid);
+        if (!(object instanceof FileObject)) {
+            log.error("Error object is not a file: {}", pidString);
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+
+        var agent = AgentPrincipalsImpl.createFromThread();
+        var request = new ThumbnailRequest();
+        request.setAgent(agent);
+        request.setFilePidString(pidString);
+        request.setAction(ThumbnailRequest.DELETE);
+        try {
+            thumbnailRequestSender.sendToQueue(request);
+        } catch (IOException e) {
+            log.error("Error deleting assigned thumbnail for {}", request.getFilePidString(), e);
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
         return new ResponseEntity<>(HttpStatus.OK);
     }
 }
