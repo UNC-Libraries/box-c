@@ -112,11 +112,11 @@ public class ThumbnailController {
         var agent = AgentPrincipalsImpl.createFromThread();
         var request = new ThumbnailRequest();
         request.setAgent(agent);
-        request.setFilePidString(pidString);
+        request.setPidString(pidString);
         try {
             thumbnailRequestSender.sendToQueue(request);
         } catch (IOException e) {
-            log.error("Error assigning file {} as thumbnail", request.getFilePidString(), e);
+            log.error("Error assigning file {} as thumbnail", request.getPidString(), e);
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
         return new ResponseEntity<>(HttpStatus.OK);

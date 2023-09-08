@@ -125,7 +125,7 @@ public class ThumbnailProcessorTest {
     private Exchange createRequestExchange(String action) throws IOException {
         var request = new ThumbnailRequest();
         request.setAgent(agent);
-        request.setFilePidString(filePid.toString());
+        request.setPidString(filePid.toString());
         request.setAction(action);
         return ProcessorTestHelper.mockExchange(ThumbnailRequestSerializationHelper.toJson(request));
     }

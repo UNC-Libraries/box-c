@@ -26,6 +26,6 @@ public class ThumbnailRequestSender extends MessageSender {
         String messageBody = MAPPER.writeValueAsString(request);
         sendMessage(messageBody);
         log.info("Job to {} thumbnail has been queued for {} with file {}",
-                request.getAction(), request.getAgent().getUsername(), request.getFilePidString());
+                request.getAction(), request.getAgent().getUsername(), request.getPidString());
     }
 }

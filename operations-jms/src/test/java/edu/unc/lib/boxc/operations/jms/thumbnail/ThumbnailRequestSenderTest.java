@@ -45,7 +45,7 @@ public class ThumbnailRequestSenderTest {
         var filePidString = makePid().toString();
         var request = new ThumbnailRequest();
         request.setAgent(agent);
-        request.setFilePidString(filePidString);
+        request.setPidString(filePidString);
         request.setAction(ThumbnailRequest.ASSIGN);
 
         thumbnailRequestSender.sendToQueue(request);

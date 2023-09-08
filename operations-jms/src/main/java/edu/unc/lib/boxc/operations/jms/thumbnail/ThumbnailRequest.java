@@ -14,7 +14,7 @@ public class ThumbnailRequest {
     public static String DELETE = "delete";
     @JsonDeserialize(as = AgentPrincipalsImpl.class)
     private AgentPrincipals agent;
-    private String filePidString;
+    private String pidString;
     private String action;
 
     public AgentPrincipals getAgent() {
@@ -25,12 +25,12 @@ public class ThumbnailRequest {
         this.agent = agent;
     }
 
-    public String getFilePidString() {
-        return filePidString;
+    public String getPidString() {
+        return pidString;
     }
 
-    public void setFilePidString(String filePidString) {
-        this.filePidString = filePidString;
+    public void setPidString(String filePidString) {
+        this.pidString = filePidString;
     }
 
     public String getAction() {

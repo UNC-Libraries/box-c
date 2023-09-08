@@ -38,7 +38,7 @@ public class ThumbnailRouterTest extends CamelSpringTestSupport {
 
         var request = new ThumbnailRequest();
         request.setAgent(agent);
-        request.setFilePidString(pid.toString());
+        request.setPidString(pid.toString());
         var body = ThumbnailRequestSerializationHelper.toJson(request);
         template.sendBody(body);
 

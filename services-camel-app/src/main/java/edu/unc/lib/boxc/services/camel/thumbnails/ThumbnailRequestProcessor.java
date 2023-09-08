@@ -33,7 +33,7 @@ public class ThumbnailRequestProcessor implements Processor {
         var request = ThumbnailRequestSerializationHelper.toRequest(in.getBody(String.class));
         var agent = request.getAgent();
         var action = request.getAction();
-        var pid = PIDs.get(request.getFilePidString());
+        var pid = PIDs.get(request.getPidString());
 
         aclService.assertHasAccess("User does not have permission to add/update work thumbnail",
                 pid, agent.getPrincipals(), Permission.editDescription);
