@@ -10,9 +10,12 @@ import edu.unc.lib.boxc.auth.fcrepo.models.AgentPrincipalsImpl;
  * @author snluong
  */
 public class ThumbnailRequest {
+    public static String ASSIGN = "assign";
+    public static String DELETE = "delete";
     @JsonDeserialize(as = AgentPrincipalsImpl.class)
     private AgentPrincipals agent;
     private String filePidString;
+    private String action;
 
     public AgentPrincipals getAgent() {
         return agent;
@@ -28,5 +31,13 @@ public class ThumbnailRequest {
 
     public void setFilePidString(String filePidString) {
         this.filePidString = filePidString;
+    }
+
+    public String getAction() {
+        return action;
+    }
+
+    public void setAction(String action) {
+        this.action = action;
     }
 }
