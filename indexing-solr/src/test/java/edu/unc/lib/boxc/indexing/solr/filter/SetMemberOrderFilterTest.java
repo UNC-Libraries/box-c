@@ -7,6 +7,7 @@ import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.objects.FileObject;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.boxc.search.solr.models.IndexDocumentBean;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
@@ -15,13 +16,15 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
-import static org.mockito.MockitoAnnotations.initMocks;
+import static org.mockito.MockitoAnnotations.openMocks;
 
 /**
  * @author bbpennel
  */
 public class SetMemberOrderFilterTest {
     private static final String SUBJECT_UUID = "f277bb38-272c-471c-a28a-9887a1328a1f";
+
+    private AutoCloseable closeable;
 
     @Mock
     private MemberOrderService memberOrderService;
@@ -35,13 +38,18 @@ public class SetMemberOrderFilterTest {
 
     @BeforeEach
     public void setup() {
-        initMocks(this);
+        closeable = openMocks(this);
         subjectPid = PIDs.get(SUBJECT_UUID);
         dip = new DocumentIndexingPackage(subjectPid, null, documentIndexingPackageDataLoader);
         dip.setPid(subjectPid);
         idb = dip.getDocument();
         filter = new SetMemberOrderFilter();
         filter.setMemberOrderService(memberOrderService);
+    }
+
+    @AfterEach
+    void closeService() throws Exception {
+        closeable.close();
     }
 
     @Test

@@ -19,7 +19,7 @@ import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.mockito.MockitoAnnotations.initMocks;
+import static org.mockito.MockitoAnnotations.openMocks;
 
 /**
  * @author bbpennel
@@ -37,7 +37,7 @@ public class JobStatusFactoryTest {
 
     @BeforeEach
     public void setup() {
-        initMocks(this);
+        openMocks(this);
 
         when(jedisPool.getResource()).thenReturn(jedis);
 

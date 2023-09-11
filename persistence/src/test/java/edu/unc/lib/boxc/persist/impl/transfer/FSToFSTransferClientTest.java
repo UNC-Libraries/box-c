@@ -9,7 +9,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.Mockito.when;
-import static org.mockito.MockitoAnnotations.initMocks;
+import static org.mockito.MockitoAnnotations.openMocks;
 
 import java.io.File;
 import java.io.RandomAccessFile;
@@ -22,6 +22,7 @@ import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.NotImplementedException;
 import org.awaitility.Awaitility;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -37,7 +38,6 @@ import edu.unc.lib.boxc.persist.api.transfer.BinaryAlreadyExistsException;
 import edu.unc.lib.boxc.persist.api.transfer.BinaryTransferException;
 import edu.unc.lib.boxc.persist.api.transfer.BinaryTransferOutcome;
 import edu.unc.lib.boxc.persist.impl.storage.HashedFilesystemStorageLocation;
-import edu.unc.lib.boxc.persist.impl.transfer.FSToFSTransferClient;
 
 /**
  * @author bbpennel
@@ -50,6 +50,7 @@ public class FSToFSTransferClientTest {
     protected static final String FILE_CONTENT_SHA1 = "6c4244329888770c6fa7f3fbf1d3b8baf9ccb7d0";
 
     protected FSToFSTransferClient client;
+    private AutoCloseable closeable;
 
     @TempDir
     public Path tmpFolder;
@@ -63,7 +64,7 @@ public class FSToFSTransferClientTest {
 
     @BeforeEach
     public void setup() throws Exception {
-        initMocks(this);
+        closeable = openMocks(this);
         sourcePath = tmpFolder.resolve("source");
         Files.createDirectory(sourcePath);
         storagePath = tmpFolder.resolve("storage");
@@ -77,6 +78,11 @@ public class FSToFSTransferClientTest {
         client = new FSToFSTransferClient(ingestSource, storageLoc);
 
         binPid = getOriginalFilePid(PIDs.get(TEST_UUID));
+    }
+
+    @AfterEach
+    void closeService() throws Exception {
+        closeable.close();
     }
 
     @Test

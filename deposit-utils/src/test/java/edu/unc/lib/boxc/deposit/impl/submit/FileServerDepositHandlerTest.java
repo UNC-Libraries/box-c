@@ -8,13 +8,14 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.mockito.MockitoAnnotations.initMocks;
+import static org.mockito.MockitoAnnotations.openMocks;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Map;
 import java.util.UUID;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -32,7 +33,6 @@ import edu.unc.lib.boxc.deposit.api.RedisWorkerConstants.DepositState;
 import edu.unc.lib.boxc.deposit.api.RedisWorkerConstants.Priority;
 import edu.unc.lib.boxc.deposit.api.submit.DepositData;
 import edu.unc.lib.boxc.deposit.impl.model.DepositStatusFactory;
-import edu.unc.lib.boxc.deposit.impl.submit.FileServerDepositHandler;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.ids.PIDMinter;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
@@ -43,6 +43,8 @@ public class FileServerDepositHandlerTest {
     private static final String DEPOSITOR = "adminuser";
     private static final String DEPOSIT_METHOD = "unitTest";
     private static final String DEPOSITOR_EMAIL = "adminuser@example.com";
+
+    private AutoCloseable closeable;
 
     @TempDir
     public Path tmpFolder;
@@ -65,7 +67,7 @@ public class FileServerDepositHandlerTest {
 
     @BeforeEach
     public void init() throws Exception {
-        initMocks(this);
+        closeable = openMocks(this);
 
         sourcePath = tmpFolder.resolve("source");
         Files.createDirectory(sourcePath);
@@ -81,6 +83,11 @@ public class FileServerDepositHandlerTest {
         depositHandler = new FileServerDepositHandler();
         depositHandler.setPidMinter(pidMinter);
         depositHandler.setDepositStatusFactory(depositStatusFactory);
+    }
+
+    @AfterEach
+    void closeService() throws Exception {
+        closeable.close();
     }
 
     @Test

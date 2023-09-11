@@ -8,7 +8,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.when;
-import static org.mockito.MockitoAnnotations.initMocks;
+import static org.mockito.MockitoAnnotations.openMocks;
 
 import java.io.File;
 
@@ -18,13 +18,13 @@ import org.apache.commons.io.FileUtils;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.rules.TemporaryFolder;
 import org.mockito.Mock;
 
 import com.google.common.io.Files;
 
 import edu.unc.lib.boxc.model.fcrepo.test.TestHelper;
-import edu.unc.lib.boxc.services.camel.fulltext.FulltextProcessor;
 
 public class FulltextProcessorTest {
     private FulltextProcessor processor;
@@ -40,6 +40,8 @@ public class FulltextProcessorTest {
 
     private static final String RESC_ID = FEDORA_BASE + "content/de/75/d8/11/de75d811-9e0f-4b1f-8631-2060ab3580cc";
 
+    private AutoCloseable closeable;
+
     @Rule
     public TemporaryFolder tmpDir = new TemporaryFolder();
 
@@ -51,7 +53,7 @@ public class FulltextProcessorTest {
 
     @Before
     public void init() throws Exception {
-        initMocks(this);
+        closeable = openMocks(this);
 
         TestHelper.setContentBase(FEDORA_BASE);
 
@@ -65,6 +67,11 @@ public class FulltextProcessorTest {
         finalDerivativeFile = new File(derivPath + "/" + derivativeFinalPath + ".txt");
         // Ensure that final path does not carry over between tests.
         finalDerivativeFile.delete();
+    }
+
+    @AfterEach
+    void closeService() throws Exception {
+        closeable.close();
     }
 
     @Test

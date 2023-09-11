@@ -23,6 +23,7 @@ import edu.unc.lib.boxc.search.solr.models.IndexDocumentBean;
 import edu.unc.lib.boxc.search.solr.responses.SearchResultResponse;
 import edu.unc.lib.boxc.search.solr.services.SolrSearchService;
 import org.apache.commons.collections.CollectionUtils;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -46,7 +47,7 @@ import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.mockito.MockitoAnnotations.initMocks;
+import static org.mockito.MockitoAnnotations.openMocks;
 
 /**
  *
@@ -57,6 +58,7 @@ public class SetContentTypeFilterTest {
 
     private DocumentIndexingPackage dip;
     private PID pid;
+    private AutoCloseable closeable;
     @Mock
     private FileObject fileObj;
     @Mock
@@ -87,7 +89,7 @@ public class SetContentTypeFilterTest {
 
     @BeforeEach
     public void setup() throws Exception {
-        initMocks(this);
+        closeable = openMocks(this);
 
         pid = PIDs.get(UUID.randomUUID().toString());
         dip = new DocumentIndexingPackage(pid, null, documentIndexingPackageDataLoader);
@@ -109,6 +111,11 @@ public class SetContentTypeFilterTest {
         filter.setSolrSearchService(solrSearchService);
         filter.setTechnicalMetadataService(technicalMetadataService);
         filter.setContentPathFactory(contentPathFactory);
+    }
+
+    @AfterEach
+    void closeService() throws Exception {
+        closeable.close();
     }
 
     @Test

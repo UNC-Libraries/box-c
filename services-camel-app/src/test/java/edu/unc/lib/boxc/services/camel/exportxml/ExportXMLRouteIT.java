@@ -13,7 +13,7 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.MockitoAnnotations.initMocks;
+import static org.mockito.MockitoAnnotations.openMocks;
 
 import java.io.File;
 import java.io.IOException;
@@ -43,6 +43,7 @@ import org.jdom2.output.Format;
 import org.jdom2.output.XMLOutputter;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
@@ -99,6 +100,8 @@ import edu.unc.lib.boxc.operations.jms.exportxml.ExportXMLRequestService;
 public class ExportXMLRouteIT {
     private static final String EMAIL = "test@example.com";
 
+    private AutoCloseable closeable;
+
     @Autowired
     private CamelContext cdrExportXML;
     @Autowired
@@ -149,12 +152,17 @@ public class ExportXMLRouteIT {
 
     @Before
     public void setup() throws Exception {
-        initMocks(this);
+        closeable = openMocks(this);
         reset(emailHandler);
         TestHelper.setContentBase("http://localhost:48085/rest");
         agent = new AgentPrincipalsImpl("user", new AccessGroupSetImpl("adminGroup"));
         generateBaseStructure();
         exportXmlProcessor.setObjectsPerExport(500);
+    }
+
+    @AfterEach
+    void closeService() throws Exception {
+        closeable.close();
     }
 
     @Test

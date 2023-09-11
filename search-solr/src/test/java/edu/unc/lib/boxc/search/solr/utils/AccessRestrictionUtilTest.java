@@ -3,9 +3,10 @@ package edu.unc.lib.boxc.search.solr.utils;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Matchers.anySetOf;
 import static org.mockito.Mockito.when;
-import static org.mockito.MockitoAnnotations.initMocks;
+import static org.mockito.MockitoAnnotations.openMocks;
 
 import org.apache.solr.client.solrj.SolrQuery;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -16,7 +17,6 @@ import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
 import edu.unc.lib.boxc.auth.api.services.GlobalPermissionEvaluator;
 import edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl;
 import edu.unc.lib.boxc.search.solr.config.SearchSettings;
-import edu.unc.lib.boxc.search.solr.utils.AccessRestrictionUtil;
 
 /**
  *
@@ -27,6 +27,8 @@ public class AccessRestrictionUtilTest {
 
     private final static String BASE_QUERY = "*:*";
     private final static String ACCESS_GROUP = "group";
+
+    private AutoCloseable closeable;
 
     @Mock
     private GlobalPermissionEvaluator globalPermissionEvaluator;
@@ -39,13 +41,18 @@ public class AccessRestrictionUtilTest {
 
     @BeforeEach
     public void init() throws Exception {
-        initMocks(this);
+        closeable = openMocks(this);
 
         restrictionUtil = new AccessRestrictionUtil();
         restrictionUtil.setGlobalPermissionEvaluator(globalPermissionEvaluator);
         restrictionUtil.setSearchSettings(searchSettings);
 
         accessGroups = new AccessGroupSetImpl(ACCESS_GROUP);
+    }
+
+    @AfterEach
+    void closeService() throws Exception {
+        closeable.close();
     }
 
     @Test

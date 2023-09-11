@@ -22,6 +22,7 @@ import edu.unc.lib.boxc.search.solr.test.BaseEmbeddedSolrTest;
 import edu.unc.lib.boxc.search.solr.test.TestCorpus;
 import edu.unc.lib.boxc.search.solr.utils.AccessRestrictionUtil;
 import edu.unc.lib.boxc.search.solr.utils.FacetFieldUtil;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -41,7 +42,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.mockito.MockitoAnnotations.initMocks;
+import static org.mockito.MockitoAnnotations.openMocks;
 
 /**
  * @author bbpennel
@@ -57,6 +58,7 @@ public class MultiSelectFacetListServiceIT extends BaseEmbeddedSolrTest {
     private TestCorpus testCorpus;
     private boolean corpusLoaded;
     private AccessGroupSet accessGroups;
+    private AutoCloseable closeable;
     @Mock
     private GlobalPermissionEvaluator globalPermissionEvaluator;
 
@@ -72,7 +74,7 @@ public class MultiSelectFacetListServiceIT extends BaseEmbeddedSolrTest {
 
     @BeforeEach
     public void init() throws Exception {
-        initMocks(this);
+        closeable = openMocks(this);
         if (!corpusLoaded) {
             corpusLoaded = true;
             index(testCorpus.populate());
@@ -104,6 +106,11 @@ public class MultiSelectFacetListServiceIT extends BaseEmbeddedSolrTest {
         service.setSearchService(searchService);
 
         accessGroups = new AccessGroupSetImpl("unitOwner", PUBLIC_PRINC);
+    }
+
+    @AfterEach
+    void closeService() throws Exception {
+        closeable.close();
     }
 
     @Test

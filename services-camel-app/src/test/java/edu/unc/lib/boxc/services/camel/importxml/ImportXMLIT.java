@@ -6,7 +6,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.when;
-import static org.mockito.MockitoAnnotations.initMocks;
+import static org.mockito.MockitoAnnotations.openMocks;
 
 import java.io.InputStream;
 import java.util.concurrent.TimeUnit;
@@ -21,6 +21,7 @@ import org.jdom2.input.SAXBuilder;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.rules.TemporaryFolder;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
@@ -43,7 +44,6 @@ import edu.unc.lib.boxc.operations.impl.importxml.ImportXMLService;
 import edu.unc.lib.boxc.operations.test.ModsTestHelper;
 import edu.unc.lib.boxc.persist.api.storage.StorageLocationManager;
 import edu.unc.lib.boxc.persist.impl.transfer.BinaryTransferServiceImpl;
-import edu.unc.lib.boxc.services.camel.importxml.ImportXMLProcessor;
 
 /**
  * @author bbpennel
@@ -62,6 +62,8 @@ public class ImportXMLIT {
 
     private final static String UPDATED_TITLE = "Updated Work Title";
     private final static String UPDATED_DATE = "2018-04-06";
+
+    private AutoCloseable closeable;
 
     @Rule
     public final TemporaryFolder tmpFolder = new TemporaryFolder();
@@ -99,7 +101,7 @@ public class ImportXMLIT {
 
     @Before
     public void setup() throws Exception {
-        initMocks(this);
+        closeable = openMocks(this);
 
         TestHelper.setContentBase(baseAddress);
 
@@ -116,6 +118,11 @@ public class ImportXMLIT {
         importXMLProcessor.setLocationManager(locationManager);
         when(mailSender.createMimeMessage()).thenReturn(mimeMessage);
         when(updateCompleteTemplate.execute(any())).thenReturn("");
+    }
+
+    @AfterEach
+    void closeService() throws Exception {
+        closeable.close();
     }
 
     @Test

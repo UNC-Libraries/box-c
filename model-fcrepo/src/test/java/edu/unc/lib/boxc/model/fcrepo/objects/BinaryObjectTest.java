@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Matchers.anyBoolean;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.when;
+import static org.mockito.MockitoAnnotations.openMocks;
 
 import java.io.ByteArrayInputStream;
 import java.net.URI;
@@ -15,11 +16,11 @@ import java.util.List;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Resource;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
@@ -38,6 +39,8 @@ import edu.unc.lib.boxc.model.fcrepo.services.RepositoryObjectDriver;
  *
  */
 public class BinaryObjectTest extends AbstractFedoraObjectTest {
+    private AutoCloseable closeable;
+
     @Mock
     private PID mockPid;
 
@@ -51,7 +54,7 @@ public class BinaryObjectTest extends AbstractFedoraObjectTest {
 
     @BeforeEach
     public void init() throws URISyntaxException {
-        MockitoAnnotations.initMocks(this);
+        closeable = openMocks(this);
 
         byte[] buf = new byte[10];
         stream = new ByteArrayInputStream(buf);
@@ -66,6 +69,11 @@ public class BinaryObjectTest extends AbstractFedoraObjectTest {
         when(driver.loadModel(eq(binObj), anyBoolean())).thenReturn(driver);
 
         setupModel();
+    }
+
+    @AfterEach
+    void closeService() throws Exception {
+        closeable.close();
     }
 
     private void setupModel() {

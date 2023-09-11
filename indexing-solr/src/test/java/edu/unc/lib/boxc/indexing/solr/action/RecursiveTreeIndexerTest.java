@@ -10,19 +10,19 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.MockitoAnnotations.initMocks;
+import static org.mockito.MockitoAnnotations.openMocks;
 
 import java.util.List;
 
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 
-import edu.unc.lib.boxc.indexing.solr.action.RecursiveTreeIndexer;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.api.sparql.SparqlQueryService;
@@ -42,6 +42,7 @@ public class RecursiveTreeIndexerTest {
     private static final String USER = "user";
 
     private RecursiveTreeIndexer indexer;
+    private AutoCloseable closeable;
 
     @Mock
     private ContentContainerObject containerObj;
@@ -60,7 +61,7 @@ public class RecursiveTreeIndexerTest {
 
     @BeforeEach
     public void setup() throws Exception {
-        initMocks(this);
+        closeable = openMocks(this);
 
         containerObj = makeContainer(makePid(), repositoryObjectLoader);
 
@@ -72,6 +73,11 @@ public class RecursiveTreeIndexerTest {
         indexer = new RecursiveTreeIndexer();
         indexer.setIndexingMessageSender(messageSender);
         indexer.setSparqlQueryService(sparqlQueryService);
+    }
+
+    @AfterEach
+    void closeService() throws Exception {
+        closeable.close();
     }
 
     @Test

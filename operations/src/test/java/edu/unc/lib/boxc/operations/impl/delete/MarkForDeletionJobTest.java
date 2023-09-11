@@ -11,12 +11,13 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.mockito.MockitoAnnotations.initMocks;
+import static org.mockito.MockitoAnnotations.openMocks;
 
 import java.net.URI;
 import java.util.List;
 import java.util.UUID;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -28,7 +29,6 @@ import edu.unc.lib.boxc.auth.api.exceptions.AccessRestrictionException;
 import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
 import edu.unc.lib.boxc.auth.api.models.AgentPrincipals;
 import edu.unc.lib.boxc.auth.api.services.AccessControlService;
-import edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl;
 import edu.unc.lib.boxc.common.test.SelfReturningAnswer;
 import edu.unc.lib.boxc.model.api.exceptions.InvalidOperationForObjectType;
 import edu.unc.lib.boxc.model.api.ids.PID;
@@ -42,7 +42,6 @@ import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.boxc.operations.api.events.PremisEventBuilder;
 import edu.unc.lib.boxc.operations.api.events.PremisLogger;
 import edu.unc.lib.boxc.operations.api.events.PremisLoggerFactory;
-import edu.unc.lib.boxc.operations.impl.delete.MarkForDeletionJob;
 import edu.unc.lib.boxc.operations.jms.OperationsMessageSender;
 
 /**
@@ -53,6 +52,7 @@ import edu.unc.lib.boxc.operations.jms.OperationsMessageSender;
 public class MarkForDeletionJobTest {
 
     private static final String MESSAGE = "Reason for the deletion";
+    private AutoCloseable closeable;
 
     @Mock
     private AccessControlService aclService;
@@ -86,7 +86,7 @@ public class MarkForDeletionJobTest {
 
     @BeforeEach
     public void init() {
-        initMocks(this);
+        closeable = openMocks(this);
 
         when(repositoryObjectLoader.getRepositoryObject(any(PID.class))).thenReturn(contentObj);
 
@@ -103,6 +103,11 @@ public class MarkForDeletionJobTest {
 
         job = new MarkForDeletionJob(pid, MESSAGE, agent, repositoryObjectLoader, sparqlUpdateService, aclService,
                 premisLoggerFactory);
+    }
+
+    @AfterEach
+    void closeService() throws Exception {
+        closeable.close();
     }
 
     @Test

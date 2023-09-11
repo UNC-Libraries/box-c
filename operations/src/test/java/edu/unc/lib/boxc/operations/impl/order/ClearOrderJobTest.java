@@ -7,19 +7,21 @@ import edu.unc.lib.boxc.model.api.rdf.Cdr;
 import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.boxc.operations.jms.order.OrderOperationType;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
 
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.mockito.MockitoAnnotations.openMocks;
 
 /**
  * @author bbpennel
  */
 public class ClearOrderJobTest {
     private static final String PARENT_UUID = "f277bb38-272c-471c-a28a-9887a1328a1f";
+    private AutoCloseable closeable;
     @Mock
     private RepositoryObjectFactory repositoryObjectFactory;
     @Mock
@@ -31,12 +33,17 @@ public class ClearOrderJobTest {
 
     @BeforeEach
     public void init() {
-        MockitoAnnotations.initMocks(this);
+        closeable = openMocks(this);
         parentPid = PIDs.get(PARENT_UUID);
         orderJobFactory = new OrderJobFactory();
         orderJobFactory.setRepositoryObjectFactory(repositoryObjectFactory);
         orderJobFactory.setRepositoryObjectLoader(repositoryObjectLoader);
         when(repositoryObjectLoader.getRepositoryObject(parentPid)).thenReturn(parentWork);
+    }
+
+    @AfterEach
+    void closeService() throws Exception {
+        closeable.close();
     }
 
     @Test

@@ -11,7 +11,7 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.mockito.MockitoAnnotations.initMocks;
+import static org.mockito.MockitoAnnotations.openMocks;
 
 import java.util.Collections;
 
@@ -22,6 +22,7 @@ import org.jdom2.Element;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.rules.TemporaryFolder;
 import org.mockito.Mock;
 
@@ -30,7 +31,6 @@ import edu.unc.lib.boxc.model.api.objects.CollectionObject;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObject;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.fcrepo.test.TestHelper;
-import edu.unc.lib.boxc.services.camel.BinaryEnhancementProcessor;
 
 /**
  *
@@ -39,6 +39,7 @@ import edu.unc.lib.boxc.services.camel.BinaryEnhancementProcessor;
  */
 public class BinaryEnhancementProcessorTest {
     private BinaryEnhancementProcessor processor;
+    private AutoCloseable closeable;
 
     @Rule
     public final TemporaryFolder tmpFolder = new TemporaryFolder();
@@ -61,7 +62,7 @@ public class BinaryEnhancementProcessorTest {
 
     @Before
     public void init() throws Exception {
-        initMocks(this);
+        closeable = openMocks(this);
 
         TestHelper.setContentBase(FEDORA_BASE);
 
@@ -72,6 +73,11 @@ public class BinaryEnhancementProcessorTest {
         when(exchange.getIn().getHeader(FCREPO_URI)).thenReturn(null);
         when(repoObjLoader.getRepositoryObject(any(PID.class))).thenReturn(repoObj);
         when(repoObj.getTypes()).thenReturn(Collections.singletonList(Binary.getURI()));
+    }
+
+    @AfterEach
+    void closeService() throws Exception {
+        closeable.close();
     }
 
     @Test

@@ -8,12 +8,13 @@ import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.MockitoAnnotations.initMocks;
+import static org.mockito.MockitoAnnotations.openMocks;
 
 import java.util.List;
 
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -23,8 +24,6 @@ import org.mockito.Mock;
 
 import edu.unc.lib.boxc.indexing.solr.ChildSetRequest;
 import edu.unc.lib.boxc.indexing.solr.SolrUpdateRequest;
-import edu.unc.lib.boxc.indexing.solr.action.RecursiveTreeIndexer;
-import edu.unc.lib.boxc.indexing.solr.action.UpdateTreeSetAction;
 import edu.unc.lib.boxc.indexing.solr.exception.IndexingException;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
@@ -42,6 +41,8 @@ import edu.unc.lib.boxc.model.api.objects.ContentObject;
  */
 public class UpdateTreeSetActionTest {
     private static final String USER = "user";
+
+    private AutoCloseable closeable;
 
     @Mock
     private RepositoryObjectLoader repositoryObjectLoader;
@@ -61,7 +62,7 @@ public class UpdateTreeSetActionTest {
 
     @BeforeEach
     public void setup() throws Exception {
-        initMocks(this);
+        closeable = openMocks(this);
 
         sparqlModel = ModelFactory.createDefaultModel();
         sparqlQueryService = new JenaSparqlQueryServiceImpl(sparqlModel);
@@ -74,6 +75,11 @@ public class UpdateTreeSetActionTest {
         action.setRepositoryObjectLoader(repositoryObjectLoader);
         action.setTreeIndexer(treeIndexer);
         action.setActionType(IndexingActionType.ADD.name());
+    }
+
+    @AfterEach
+    void closeService() throws Exception {
+        closeable.close();
     }
 
     @Test

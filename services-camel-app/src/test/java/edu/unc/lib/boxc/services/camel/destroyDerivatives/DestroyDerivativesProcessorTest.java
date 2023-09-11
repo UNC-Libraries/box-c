@@ -9,7 +9,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.when;
-import static org.mockito.MockitoAnnotations.initMocks;
+import static org.mockito.MockitoAnnotations.openMocks;
 
 import java.io.File;
 import java.nio.charset.StandardCharsets;
@@ -20,12 +20,12 @@ import org.apache.commons.io.FileUtils;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.rules.TemporaryFolder;
 import org.mockito.Mock;
 
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.boxc.model.fcrepo.test.TestHelper;
-import edu.unc.lib.boxc.services.camel.destroyDerivatives.DestroyDerivativesProcessor;
 
 public class DestroyDerivativesProcessorTest {
     private DestroyDerivativesProcessor processor;
@@ -40,6 +40,7 @@ public class DestroyDerivativesProcessorTest {
     private static final String PID_ID = "content/" + PID_UUID;
     private static final String PID_PATH = "content/de/75/d8/11/" + PID_UUID;
     private static final String RESC_ID = FEDORA_BASE + PID_PATH;
+    private AutoCloseable closeable;
 
     @Rule
     public TemporaryFolder derivativeDir = new TemporaryFolder();
@@ -52,7 +53,7 @@ public class DestroyDerivativesProcessorTest {
 
     @Before
     public void init() throws Exception {
-        initMocks(this);
+        closeable = openMocks(this);
 
         TestHelper.setContentBase(FEDORA_BASE);
 
@@ -64,6 +65,11 @@ public class DestroyDerivativesProcessorTest {
                 .thenReturn(PID_ID);
 
         derivativeDirBase = derivativeDir.getRoot().getAbsolutePath();
+    }
+
+    @AfterEach
+    void closeService() throws Exception {
+        closeable.close();
     }
 
     @Test

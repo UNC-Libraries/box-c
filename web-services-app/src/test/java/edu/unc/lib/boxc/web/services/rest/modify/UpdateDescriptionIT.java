@@ -8,7 +8,7 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doThrow;
-import static org.mockito.MockitoAnnotations.initMocks;
+import static org.mockito.MockitoAnnotations.openMocks;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -18,6 +18,7 @@ import java.io.InputStream;
 import java.util.Map;
 
 import org.apache.tika.io.IOUtils;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
@@ -44,6 +45,7 @@ import edu.unc.lib.boxc.operations.impl.edit.UpdateDescriptionService;
     @ContextConfiguration("/update-description-it-servlet.xml")
 })
 public class UpdateDescriptionIT extends AbstractAPIIT {
+    private AutoCloseable closeable;
     @Mock
     private ContentPathFactory pathFactory;
     @Autowired
@@ -51,9 +53,14 @@ public class UpdateDescriptionIT extends AbstractAPIIT {
 
     @BeforeEach
     public void setup() throws Exception {
-        initMocks(this);
+        closeable = openMocks(this);
 
         updateDescriptionService.setValidate(true);
+    }
+
+    @AfterEach
+    void closeService() throws Exception {
+        closeable.close();
     }
 
     @Test

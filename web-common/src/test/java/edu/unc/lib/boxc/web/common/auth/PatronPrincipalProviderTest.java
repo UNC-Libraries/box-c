@@ -8,7 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
-import static org.mockito.MockitoAnnotations.initMocks;
+import static org.mockito.MockitoAnnotations.openMocks;
 
 import java.io.File;
 import java.nio.file.Path;
@@ -20,6 +20,7 @@ import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -32,6 +33,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  * @author bbpennel
  */
 public class PatronPrincipalProviderTest {
+    private AutoCloseable closeable;
 
     @TempDir
     public Path tmpFolder;
@@ -53,7 +55,7 @@ public class PatronPrincipalProviderTest {
 
     @BeforeEach
     public void setup() throws Exception {
-        initMocks(this);
+        closeable = openMocks(this);
         provider = new PatronPrincipalProvider();
 
         configFile = tmpFolder.resolve("patronConfig.json").toFile();
@@ -79,6 +81,11 @@ public class PatronPrincipalProviderTest {
     private void serializeConfigAndInit() throws Exception {
         objectMapper.writeValue(configFile, patronConfig);
         provider.init();
+    }
+
+    @AfterEach
+    void closeService() throws Exception {
+        closeable.close();
     }
 
     @Test

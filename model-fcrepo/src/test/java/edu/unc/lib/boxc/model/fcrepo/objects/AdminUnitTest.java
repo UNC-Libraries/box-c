@@ -5,12 +5,13 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.mockito.MockitoAnnotations.initMocks;
+import static org.mockito.MockitoAnnotations.openMocks;
 
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -40,6 +41,8 @@ public class AdminUnitTest extends AbstractFedoraObjectTest {
 
     private PID collectionChildPid;
 
+    private AutoCloseable closeable;
+
     @Mock
     private CollectionObject collectionChildObj;
     @Mock
@@ -47,7 +50,7 @@ public class AdminUnitTest extends AbstractFedoraObjectTest {
 
     @BeforeEach
     public void init() {
-        initMocks(this);
+        closeable = openMocks(this);
 
         pid = PIDs.get(UUID.randomUUID().toString());
 
@@ -55,7 +58,11 @@ public class AdminUnitTest extends AbstractFedoraObjectTest {
 
         collectionChildPid = PIDs.get(UUID.randomUUID().toString());
         when(collectionChildObj.getPid()).thenReturn(collectionChildPid);
+    }
 
+    @AfterEach
+    void closeService() throws Exception {
+        closeable.close();
     }
 
     @Test

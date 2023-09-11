@@ -13,7 +13,7 @@ import static org.mockito.Matchers.isNull;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.mockito.MockitoAnnotations.initMocks;
+import static org.mockito.MockitoAnnotations.openMocks;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -26,6 +26,7 @@ import org.jdom2.Document;
 import org.jdom2.Element;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
@@ -47,6 +48,7 @@ public class CdrEventToSolrUpdateProcessorTest {
     private static final String USER_ID = "user_id";
 
     private CdrEventToSolrUpdateProcessor processor;
+    private AutoCloseable closeable;
 
     @Mock
     private IndexingMessageSender messageSender;
@@ -68,7 +70,7 @@ public class CdrEventToSolrUpdateProcessorTest {
 
     @Before
     public void init() throws Exception {
-        initMocks(this);
+        closeable = openMocks(this);
 
         processor = new CdrEventToSolrUpdateProcessor();
         processor.setIndexingMessageSender(messageSender);
@@ -77,6 +79,11 @@ public class CdrEventToSolrUpdateProcessorTest {
 
         when(exchange.getIn()).thenReturn(msg);
         when(msg.getHeader(eq("name"))).thenReturn(USER_ID);
+    }
+
+    @AfterEach
+    void closeService() throws Exception {
+        closeable.close();
     }
 
     @Test

@@ -5,7 +5,7 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.when;
-import static org.mockito.MockitoAnnotations.initMocks;
+import static org.mockito.MockitoAnnotations.openMocks;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -14,6 +14,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,14 +31,20 @@ import edu.unc.lib.boxc.web.services.rest.modify.AbstractAPIIT;
 
 @ContextConfiguration("/item-info-it-servlet.xml")
 public class ItemInfoRestControllerIT extends AbstractAPIIT {
+    private AutoCloseable closeable;
 
     @Autowired
     private SolrQueryLayerService solrSearchService;
 
     @BeforeEach
     public void setup() {
-        initMocks(this);
+        closeable = openMocks(this);
         reset(solrSearchService);
+    }
+
+    @AfterEach
+    void closeService() throws Exception {
+        closeable.close();
     }
 
     @Test

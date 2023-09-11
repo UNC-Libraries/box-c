@@ -3,12 +3,13 @@ package edu.unc.lib.boxc.search.solr.services;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.Mockito.mock;
-import static org.mockito.MockitoAnnotations.initMocks;
+import static org.mockito.MockitoAnnotations.openMocks;
 
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
@@ -19,8 +20,6 @@ import edu.unc.lib.boxc.search.api.models.ContentObjectRecord;
 import edu.unc.lib.boxc.search.api.models.ObjectPath;
 import edu.unc.lib.boxc.search.api.models.ObjectPathEntry;
 import edu.unc.lib.boxc.search.api.requests.SimpleIdRequest;
-import edu.unc.lib.boxc.search.solr.services.ObjectPathFactory;
-import edu.unc.lib.boxc.search.solr.services.SolrSearchService;
 import edu.unc.lib.boxc.search.solr.test.BaseEmbeddedSolrTest;
 import edu.unc.lib.boxc.search.solr.test.TestCorpus;
 import edu.unc.lib.boxc.search.solr.utils.AccessRestrictionUtil;
@@ -36,6 +35,8 @@ public class ObjectPathFactoryIT extends BaseEmbeddedSolrTest {
 
     private ObjectPathFactory objPathFactory;
 
+    private AutoCloseable closeable;
+
     @Mock
     private AccessRestrictionUtil restrictionUtil;
 
@@ -45,7 +46,7 @@ public class ObjectPathFactoryIT extends BaseEmbeddedSolrTest {
 
     @BeforeEach
     public void init() throws Exception {
-        initMocks(this);
+        closeable = openMocks(this);
 
         index(testCorpus.populate());
 
@@ -60,6 +61,11 @@ public class ObjectPathFactoryIT extends BaseEmbeddedSolrTest {
         objPathFactory.setTimeToLiveMilli(500L);
         objPathFactory.setCacheSize(10);
         objPathFactory.init();
+    }
+
+    @AfterEach
+    void closeService() throws Exception {
+        closeable.close();
     }
 
     @Test

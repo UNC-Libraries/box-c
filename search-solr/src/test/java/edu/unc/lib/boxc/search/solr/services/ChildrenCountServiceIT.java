@@ -9,7 +9,7 @@ import static java.util.Arrays.asList;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Matchers.anySetOf;
 import static org.mockito.Mockito.when;
-import static org.mockito.MockitoAnnotations.initMocks;
+import static org.mockito.MockitoAnnotations.openMocks;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -17,6 +17,7 @@ import java.util.UUID;
 
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.common.SolrInputDocument;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
@@ -30,8 +31,6 @@ import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.boxc.search.api.models.ContentObjectRecord;
 import edu.unc.lib.boxc.search.api.requests.SimpleIdRequest;
 import edu.unc.lib.boxc.search.solr.config.SearchSettings;
-import edu.unc.lib.boxc.search.solr.services.ChildrenCountService;
-import edu.unc.lib.boxc.search.solr.services.SolrSearchService;
 import edu.unc.lib.boxc.search.solr.test.BaseEmbeddedSolrTest;
 import edu.unc.lib.boxc.search.solr.test.TestCorpus;
 import edu.unc.lib.boxc.search.solr.utils.AccessRestrictionUtil;
@@ -42,6 +41,7 @@ import edu.unc.lib.boxc.search.solr.utils.AccessRestrictionUtil;
  *
  */
 public class ChildrenCountServiceIT extends BaseEmbeddedSolrTest {
+    private AutoCloseable closeable;
 
     @Mock
     private GlobalPermissionEvaluator globalPermissionEvaluator;
@@ -62,7 +62,7 @@ public class ChildrenCountServiceIT extends BaseEmbeddedSolrTest {
 
     @BeforeEach
     public void init() throws Exception {
-        initMocks(this);
+        closeable = openMocks(this);
 
         index(testCorpus.populate());
 
@@ -85,6 +85,11 @@ public class ChildrenCountServiceIT extends BaseEmbeddedSolrTest {
         setField(countService, "solrClient", server);
 
         principals = new AccessGroupSetImpl(PUBLIC_PRINC);
+    }
+
+    @AfterEach
+    void closeService() throws Exception {
+        closeable.close();
     }
 
     @Test

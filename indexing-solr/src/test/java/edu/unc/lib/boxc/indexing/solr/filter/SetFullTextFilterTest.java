@@ -5,7 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
-import static org.mockito.MockitoAnnotations.initMocks;
+import static org.mockito.MockitoAnnotations.openMocks;
 
 import java.io.File;
 import java.nio.file.Files;
@@ -13,12 +13,12 @@ import java.nio.file.Path;
 import java.util.UUID;
 
 import org.apache.commons.io.FileUtils;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.mockito.Mock;
 
-import edu.unc.lib.boxc.indexing.solr.filter.SetFullTextFilter;
 import edu.unc.lib.boxc.indexing.solr.indexing.DocumentIndexingPackage;
 import edu.unc.lib.boxc.indexing.solr.indexing.DocumentIndexingPackageDataLoader;
 import edu.unc.lib.boxc.indexing.solr.indexing.DocumentIndexingPackageFactory;
@@ -34,6 +34,7 @@ import edu.unc.lib.boxc.model.fcrepo.services.DerivativeService;
  * @author harring
  */
 public class SetFullTextFilterTest {
+    private AutoCloseable closeable;
 
     @TempDir
     public Path tempDir;
@@ -60,7 +61,7 @@ public class SetFullTextFilterTest {
 
     @BeforeEach
     public void setup() throws Exception {
-        initMocks(this);
+        closeable = openMocks(this);
 
         derivativeDir = tempDir.resolve("testFolder").toFile();
         Files.createDirectory(tempDir.resolve("testFolder"));
@@ -79,6 +80,11 @@ public class SetFullTextFilterTest {
 
         filter = new SetFullTextFilter();
         filter.setDerivativeService(derivativeService);
+    }
+
+    @AfterEach
+    void closeService() throws Exception {
+        closeable.close();
     }
 
     @Test

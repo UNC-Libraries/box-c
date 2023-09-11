@@ -17,7 +17,7 @@ import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.timeout;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.mockito.MockitoAnnotations.initMocks;
+import static org.mockito.MockitoAnnotations.openMocks;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -39,6 +39,7 @@ import org.apache.commons.io.FileUtils;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.rules.TemporaryFolder;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -81,6 +82,8 @@ public class EnhancementRouterIT {
     private final static String FILE_CONTENT = "content";
 
     private final static long ALLOW_WAIT = 5000;
+
+    private AutoCloseable closeable;
 
     @Autowired
     private String baseAddress;
@@ -125,7 +128,7 @@ public class EnhancementRouterIT {
 
     @Before
     public void init() throws Exception {
-        initMocks(this);
+        closeable = openMocks(this);
 
         reset(solrIngestProcessor);
         reset(addSmallThumbnailProcessor);
@@ -147,6 +150,11 @@ public class EnhancementRouterIT {
         File jp2ScriptFile = new File("target/convertJp2.sh");
         FileUtils.writeStringToFile(jp2ScriptFile, "exit 0", "utf-8");
         jp2ScriptFile.deleteOnExit();
+    }
+
+    @AfterEach
+    void closeService() throws Exception {
+        closeable.close();
     }
 
     @Test

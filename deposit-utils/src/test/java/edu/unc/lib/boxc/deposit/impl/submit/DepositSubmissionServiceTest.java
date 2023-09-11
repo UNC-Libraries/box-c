@@ -1,13 +1,14 @@
 package edu.unc.lib.boxc.deposit.impl.submit;
 
 import static org.mockito.Mockito.verify;
-import static org.mockito.MockitoAnnotations.initMocks;
+import static org.mockito.MockitoAnnotations.openMocks;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -33,6 +34,8 @@ public class DepositSubmissionServiceTest {
     private static final String DEPOSIT_METHOD = "unitTest";
     private static final Path FILEPATH = Paths.get(FILENAME);
 
+    private AutoCloseable closeable;
+
     @Mock
     private AccessControlService aclService;
 
@@ -53,7 +56,7 @@ public class DepositSubmissionServiceTest {
 
     @BeforeEach
     public void init() throws Exception {
-        initMocks(this);
+        closeable = openMocks(this);
 
         packageHandlers = new HashMap<>();
         packageHandlers.put(PackagingType.SIMPLE_OBJECT, depositHandler1);
@@ -62,6 +65,11 @@ public class DepositSubmissionServiceTest {
         depositService = new DepositSubmissionService();
         depositService.setPackageHandlers(packageHandlers);
         depositService.setAclService(aclService);
+    }
+
+    @AfterEach
+    void closeService() throws Exception {
+        closeable.close();
     }
 
     @Test

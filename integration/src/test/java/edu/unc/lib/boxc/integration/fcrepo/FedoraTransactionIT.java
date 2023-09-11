@@ -6,7 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
-import static org.mockito.MockitoAnnotations.initMocks;
+import static org.mockito.MockitoAnnotations.openMocks;
 
 import java.io.IOException;
 
@@ -16,6 +16,7 @@ import org.apache.jena.rdf.model.Resource;
 import org.fcrepo.client.FcrepoClient;
 import org.fcrepo.client.FcrepoOperationFailedException;
 import org.fcrepo.client.FcrepoResponse;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -37,18 +38,23 @@ import edu.unc.lib.boxc.persist.api.transfer.BinaryTransferService;
  *
  */
 public class FedoraTransactionIT extends AbstractFedoraIT {
-
+    private AutoCloseable closeable;
     private Model model;
     @Mock
     private BinaryTransferService binaryTransferService;
 
     @BeforeEach
     public void init() {
-        initMocks(this);
+        closeable = openMocks(this);
         txManager.setBinaryTransferService(binaryTransferService);
         model = ModelFactory.createDefaultModel();
         Resource resc = model.createResource("");
         resc.addProperty(DcElements.title, "Folder Title");
+    }
+
+    @AfterEach
+    void closeService() throws Exception {
+        closeable.close();
     }
 
     @Test

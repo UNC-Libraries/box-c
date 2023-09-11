@@ -16,7 +16,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.mockito.MockitoAnnotations.initMocks;
+import static org.mockito.MockitoAnnotations.openMocks;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -29,6 +29,7 @@ import java.util.Map;
 import org.apache.commons.io.FileUtils;
 import org.jdom2.Document;
 import org.jdom2.Element;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -74,6 +75,8 @@ public class RunEnhancementsIT extends AbstractAPIIT {
     private static final String USER_NAME = "user";
     private static final String ADMIN_GROUP = "adminGroup";
 
+    private AutoCloseable closeable;
+
     @Autowired
     private AccessControlServiceImpl aclServices;
     @Autowired
@@ -93,7 +96,7 @@ public class RunEnhancementsIT extends AbstractAPIIT {
 
     @BeforeEach
     public void setup() throws Exception {
-        initMocks(this);
+        closeable = openMocks(this);
         reset(messageSender);
 
         AccessGroupSet testPrincipals = new AccessGroupSetImpl(ADMIN_GROUP);
@@ -106,6 +109,11 @@ public class RunEnhancementsIT extends AbstractAPIIT {
         when(queryLayer.performSearch(any(SearchRequest.class))).thenReturn(results);
 
         setupContentRoot();
+    }
+
+    @AfterEach
+    void closeService() throws Exception {
+        closeable.close();
     }
 
     @Test

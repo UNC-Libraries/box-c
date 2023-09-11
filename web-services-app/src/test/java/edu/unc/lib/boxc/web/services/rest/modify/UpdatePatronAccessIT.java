@@ -16,7 +16,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.MockitoAnnotations.initMocks;
+import static org.mockito.MockitoAnnotations.openMocks;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -75,6 +75,7 @@ public class UpdatePatronAccessIT extends AbstractAPIIT {
 
     private AdminUnit adminUnit;
     private CollectionObject collObj;
+    private AutoCloseable closeable;
     @Autowired
     private JmsTemplate patronAccessOperationTemplate;
     @Autowired
@@ -85,7 +86,7 @@ public class UpdatePatronAccessIT extends AbstractAPIIT {
 
     @BeforeEach
     public void setup() throws Exception {
-        initMocks(this);
+        closeable = openMocks(this);
         reset(patronAccessOperationTemplate);
         reset(patronAccessOperationSender);
         AccessGroupSet testPrincipals = new AccessGroupSetImpl(USER_GROUPS);
@@ -98,6 +99,7 @@ public class UpdatePatronAccessIT extends AbstractAPIIT {
 
     @AfterEach
     public void teardown() throws Exception {
+        closeable.close();
         GroupsThreadStore.clearStore();
     }
 

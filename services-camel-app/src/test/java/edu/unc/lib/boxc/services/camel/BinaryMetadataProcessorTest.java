@@ -9,7 +9,7 @@ import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.mockito.MockitoAnnotations.initMocks;
+import static org.mockito.MockitoAnnotations.openMocks;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -27,6 +27,7 @@ import org.apache.jena.vocabulary.RDF;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.rules.TemporaryFolder;
 import org.mockito.Mock;
 
@@ -49,6 +50,7 @@ import edu.unc.lib.boxc.model.fcrepo.test.TestHelper;
 public class BinaryMetadataProcessorTest {
 
     private BinaryMetadataProcessor processor;
+    private AutoCloseable closeable;
 
     @Rule
     public final TemporaryFolder tmpFolder = new TemporaryFolder();
@@ -79,7 +81,7 @@ public class BinaryMetadataProcessorTest {
 
     @Before
     public void init() throws Exception {
-        initMocks(this);
+        closeable = openMocks(this);
 
         TestHelper.setContentBase(FEDORA_BASE);
 
@@ -96,6 +98,11 @@ public class BinaryMetadataProcessorTest {
         when(exchange.getIn().getHeader(FCREPO_URI)).thenReturn(RESC_ID);
 
         binaryPid = PIDs.get(RESC_ID);
+    }
+
+    @AfterEach
+    void closeService() throws Exception {
+        closeable.close();
     }
 
     @Test

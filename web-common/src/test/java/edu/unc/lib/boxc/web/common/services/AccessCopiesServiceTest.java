@@ -9,20 +9,12 @@ import edu.unc.lib.boxc.model.api.ResourceType;
 import edu.unc.lib.boxc.search.api.ContentCategory;
 import edu.unc.lib.boxc.search.api.models.ContentObjectRecord;
 import edu.unc.lib.boxc.search.api.requests.SearchRequest;
-import edu.unc.lib.boxc.search.api.requests.SearchState;
-import edu.unc.lib.boxc.search.solr.config.SearchSettings;
-import edu.unc.lib.boxc.search.solr.config.SolrSettings;
 import edu.unc.lib.boxc.search.solr.filters.NamedDatastreamFilter;
 import edu.unc.lib.boxc.search.solr.models.ContentObjectSolrRecord;
 import edu.unc.lib.boxc.search.solr.responses.SearchResultResponse;
 import edu.unc.lib.boxc.search.solr.services.SolrSearchService;
-import edu.unc.lib.boxc.search.solr.utils.AccessRestrictionUtil;
-import edu.unc.lib.boxc.search.solr.utils.FacetFieldUtil;
-import org.apache.solr.client.solrj.SolrClient;
-import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrServerException;
-import org.apache.solr.client.solrj.response.QueryResponse;
-import org.apache.solr.common.SolrDocumentList;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -33,7 +25,6 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.Properties;
 import java.util.UUID;
 
 import static edu.unc.lib.boxc.auth.api.Permission.viewOriginal;
@@ -46,9 +37,8 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.when;
-import static org.mockito.MockitoAnnotations.initMocks;
+import static org.mockito.MockitoAnnotations.openMocks;
 
 /**
  * @author lfarrell
@@ -70,6 +60,8 @@ public class AccessCopiesServiceTest  {
 
     private AccessCopiesService accessCopiesService;
 
+    private AutoCloseable closeable;
+
     @Mock
     private AccessControlService accessControlService;
     @Mock
@@ -83,7 +75,7 @@ public class AccessCopiesServiceTest  {
 
     @BeforeEach
     public void init() throws IOException, SolrServerException {
-        initMocks(this);
+        closeable = openMocks(this);
 
         mdObject = createPdfObject(ResourceType.Work);
         mdObjectImg = createImgObject(ResourceType.Work);
@@ -107,6 +99,11 @@ public class AccessCopiesServiceTest  {
 
         when(solrSearchService.getSearchResults(searchRequestCaptor.capture())).thenReturn(searchResultResponse);
         when(searchResultResponse.getResultCount()).thenReturn(1l);
+    }
+
+    @AfterEach
+    void closeService() throws Exception {
+        closeable.close();
     }
 
     private ContentObjectSolrRecord createAudioObject(ResourceType resourceType) {

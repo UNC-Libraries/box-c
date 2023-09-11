@@ -9,7 +9,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.mockito.MockitoAnnotations.initMocks;
+import static org.mockito.MockitoAnnotations.openMocks;
 
 import java.io.File;
 import java.nio.file.Files;
@@ -27,6 +27,7 @@ import org.apache.jena.rdf.model.Model;
 import org.fcrepo.client.FcrepoClient;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -64,8 +65,6 @@ import edu.unc.lib.boxc.persist.api.transfer.BinaryTransferService;
 import edu.unc.lib.boxc.persist.impl.storage.StorageLocationManagerImpl;
 import edu.unc.lib.boxc.search.api.models.ObjectPath;
 import edu.unc.lib.boxc.search.solr.services.ObjectPathFactory;
-import edu.unc.lib.boxc.services.camel.destroyDerivatives.DestroyDerivativesProcessor;
-import edu.unc.lib.boxc.services.camel.destroyDerivatives.DestroyedMsgProcessor;
 
 /**
  *
@@ -151,9 +150,11 @@ public class DestroyDerivativesRouterIT {
 
     private final static String LOC1_ID = "loc1";
 
+    private AutoCloseable closeable;
+
     @Before
     public void init() {
-        initMocks(this);
+        closeable = openMocks(this);
 
         TestHelper.setContentBase(baseAddress);
 
@@ -185,6 +186,11 @@ public class DestroyDerivativesRouterIT {
         when(pathFactory.getPath(any(PID.class))).thenReturn(path);
         when(path.toNamePath()).thenReturn("path/to/object");
         when(path.toIdPath()).thenReturn("pid0/pid1/pid2/pid3");
+    }
+
+    @AfterEach
+    void closeService() throws Exception {
+        closeable.close();
     }
 
     @Test

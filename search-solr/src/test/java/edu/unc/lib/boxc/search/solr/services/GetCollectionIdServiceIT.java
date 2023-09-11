@@ -3,8 +3,9 @@ package edu.unc.lib.boxc.search.solr.services;
 import static edu.unc.lib.boxc.common.test.TestHelpers.setField;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.mockito.MockitoAnnotations.initMocks;
+import static org.mockito.MockitoAnnotations.openMocks;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
@@ -12,8 +13,6 @@ import org.mockito.Mock;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.search.api.models.ContentObjectRecord;
 import edu.unc.lib.boxc.search.api.requests.SimpleIdRequest;
-import edu.unc.lib.boxc.search.solr.services.GetCollectionIdService;
-import edu.unc.lib.boxc.search.solr.services.SolrSearchService;
 import edu.unc.lib.boxc.search.solr.test.BaseEmbeddedSolrTest;
 import edu.unc.lib.boxc.search.solr.test.TestCorpus;
 import edu.unc.lib.boxc.search.solr.utils.AccessRestrictionUtil;
@@ -25,6 +24,7 @@ public class GetCollectionIdServiceIT extends BaseEmbeddedSolrTest {
     private TestCorpus testCorpus;
     private GetCollectionIdService collIdService;
     private SolrSearchService solrSearchService;
+    private AutoCloseable closeable;
     @Mock
     private AccessRestrictionUtil restrictionUtil;
 
@@ -34,7 +34,7 @@ public class GetCollectionIdServiceIT extends BaseEmbeddedSolrTest {
 
     @BeforeEach
     public void init() throws Exception {
-        initMocks(this);
+        closeable = openMocks(this);
 
         index(testCorpus.populate());
 
@@ -46,6 +46,11 @@ public class GetCollectionIdServiceIT extends BaseEmbeddedSolrTest {
         collIdService = new GetCollectionIdService();
         collIdService.setSolrSettings(solrSettings);
         setField(collIdService, "solrClient", server);
+    }
+
+    @AfterEach
+    void closeService() throws Exception {
+        closeable.close();
     }
 
     @Test

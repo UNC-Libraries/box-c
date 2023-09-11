@@ -10,7 +10,7 @@ import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.mockito.MockitoAnnotations.initMocks;
+import static org.mockito.MockitoAnnotations.openMocks;
 
 import java.util.Collection;
 import java.util.UUID;
@@ -74,7 +74,7 @@ public class SetAsPrimaryObjectServiceTest {
 
     @BeforeEach
     public void init() {
-        initMocks(this);
+        openMocks(this);
 
         fileObjPid = makePid();
         folderObjPid = makePid();

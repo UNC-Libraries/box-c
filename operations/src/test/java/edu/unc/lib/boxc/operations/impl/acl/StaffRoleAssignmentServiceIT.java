@@ -18,7 +18,7 @@ import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
-import static org.mockito.MockitoAnnotations.initMocks;
+import static org.mockito.MockitoAnnotations.openMocks;
 
 import java.time.ZonedDateTime;
 import java.util.Calendar;
@@ -32,6 +32,7 @@ import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.Statement;
 import org.apache.jena.rdf.model.StmtIterator;
 import org.apache.jena.vocabulary.RDF;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -77,7 +78,6 @@ import edu.unc.lib.boxc.model.fcrepo.test.AclModelBuilder;
 import edu.unc.lib.boxc.model.fcrepo.test.RepositoryObjectTreeIndexer;
 import edu.unc.lib.boxc.model.fcrepo.test.TestHelper;
 import edu.unc.lib.boxc.operations.api.events.PremisLoggerFactory;
-import edu.unc.lib.boxc.operations.impl.acl.StaffRoleAssignmentService;
 import edu.unc.lib.boxc.operations.jms.OperationsMessageSender;
 import edu.unc.lib.boxc.operations.jms.JMSMessageUtil.CDRActions;
 
@@ -97,6 +97,8 @@ public class StaffRoleAssignmentServiceIT {
     private static final String USER_PRINC = "user";
     private static final String GRP_PRINC = "group";
     private static final Calendar TOMORROW = GregorianCalendar.from(ZonedDateTime.now().plusDays(1));
+
+    private AutoCloseable closeable;
 
     @Autowired
     private String baseAddress;
@@ -132,7 +134,7 @@ public class StaffRoleAssignmentServiceIT {
 
     @BeforeEach
     public void init() throws Exception {
-        initMocks(this);
+        closeable = openMocks(this);
         TestHelper.setContentBase(baseAddress);
 
         groups = new AccessGroupSetImpl(GRP_PRINC);
@@ -150,6 +152,11 @@ public class StaffRoleAssignmentServiceIT {
         PID contentRootPid = RepositoryPaths.getContentRootPid();
         repoInitializer.initializeRepository();
         contentRoot = repoObjLoader.getContentRootObject(contentRootPid);
+    }
+
+    @AfterEach
+    void closeService() throws Exception {
+        closeable.close();
     }
 
     @Test

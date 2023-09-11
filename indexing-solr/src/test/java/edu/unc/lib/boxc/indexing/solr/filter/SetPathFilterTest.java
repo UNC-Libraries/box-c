@@ -9,7 +9,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.mockito.MockitoAnnotations.initMocks;
+import static org.mockito.MockitoAnnotations.openMocks;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -18,6 +18,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 import edu.unc.lib.boxc.search.solr.services.TitleRetrievalService;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -26,7 +27,6 @@ import org.mockito.Captor;
 import org.mockito.Mock;
 
 import edu.unc.lib.boxc.indexing.solr.exception.IndexingException;
-import edu.unc.lib.boxc.indexing.solr.filter.SetPathFilter;
 import edu.unc.lib.boxc.indexing.solr.indexing.DocumentIndexingPackage;
 import edu.unc.lib.boxc.indexing.solr.indexing.DocumentIndexingPackageDataLoader;
 import edu.unc.lib.boxc.model.api.ResourceType;
@@ -47,6 +47,8 @@ import edu.unc.lib.boxc.model.api.objects.FileObject;
 public class SetPathFilterTest {
     private final static String UNIT_TITLE = "Administration of Boxy";
     private final static String COLLECTION_TITLE = "Collection of Boxes";
+
+    private AutoCloseable closeable;
 
     @Mock
     private ContentPathFactory pathFactory;
@@ -74,7 +76,7 @@ public class SetPathFilterTest {
 
     @BeforeEach
     public void setUp() throws Exception {
-        initMocks(this);
+        closeable = openMocks(this);
 
         pid = PIDs.get(UUID.randomUUID().toString());
 
@@ -86,6 +88,11 @@ public class SetPathFilterTest {
         filter = new SetPathFilter();
         filter.setPathFactory(pathFactory);
         filter.setTitleRetrievalService(titleRetrievalService);
+    }
+
+    @AfterEach
+    void closeService() throws Exception {
+        closeable.close();
     }
 
     @Test

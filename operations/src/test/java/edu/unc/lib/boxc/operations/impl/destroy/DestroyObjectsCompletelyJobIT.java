@@ -14,7 +14,7 @@ import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.MockitoAnnotations.initMocks;
+import static org.mockito.MockitoAnnotations.openMocks;
 
 import java.io.File;
 import java.nio.file.Files;
@@ -32,6 +32,7 @@ import org.fcrepo.client.FcrepoOperationFailedException;
 import org.fcrepo.client.FcrepoResponse;
 import org.jdom2.Document;
 import org.jdom2.Element;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -70,7 +71,6 @@ import edu.unc.lib.boxc.model.fcrepo.services.RepositoryInitializer;
 import edu.unc.lib.boxc.model.fcrepo.test.AclModelBuilder;
 import edu.unc.lib.boxc.model.fcrepo.test.RepositoryObjectTreeIndexer;
 import edu.unc.lib.boxc.model.fcrepo.test.TestHelper;
-import edu.unc.lib.boxc.operations.impl.destroy.DestroyObjectsCompletelyJob;
 import edu.unc.lib.boxc.operations.impl.edit.EditTitleService;
 import edu.unc.lib.boxc.operations.jms.MessageSender;
 import edu.unc.lib.boxc.operations.jms.destroy.DestroyObjectsRequest;
@@ -93,6 +93,8 @@ public class DestroyObjectsCompletelyJobIT {
     private final static String LOC1_ID = "loc1";
     private static final String USER_NAME = "user";
     private static final String USER_GROUPS = "edu:lib:staff_grp";
+
+    private AutoCloseable closeable;
 
     @TempDir
     public Path tmpFolder;
@@ -141,7 +143,7 @@ public class DestroyObjectsCompletelyJobIT {
 
     @BeforeEach
     public void init() throws Exception {
-        initMocks(this);
+        closeable = openMocks(this);
         TestHelper.setContentBase(baseAddress);
 
         AccessGroupSet testPrincipals = new AccessGroupSetImpl(USER_GROUPS);
@@ -150,6 +152,11 @@ public class DestroyObjectsCompletelyJobIT {
         createContentTree();
 
         treeIndexer = new RepositoryObjectTreeIndexer(queryModel, fcrepoClient);
+    }
+
+    @AfterEach
+    void closeService() throws Exception {
+        closeable.close();
     }
 
     private void createContentTree() throws Exception {

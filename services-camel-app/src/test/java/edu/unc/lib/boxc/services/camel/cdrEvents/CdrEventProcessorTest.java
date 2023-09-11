@@ -6,7 +6,7 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.mockito.MockitoAnnotations.initMocks;
+import static org.mockito.MockitoAnnotations.openMocks;
 
 import java.io.ByteArrayInputStream;
 
@@ -20,11 +20,10 @@ import org.joda.time.format.DateTimeFormatter;
 import org.joda.time.format.ISODateTimeFormat;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
-
-import edu.unc.lib.boxc.services.camel.cdrEvents.CdrEventProcessor;
 
 /**
  *
@@ -34,6 +33,7 @@ import edu.unc.lib.boxc.services.camel.cdrEvents.CdrEventProcessor;
 public class CdrEventProcessorTest {
     private CdrEventProcessor processor;
     private String actionType = "action_placeholder";
+    private AutoCloseable closeable;
 
     @Mock
     private Exchange exchange;
@@ -46,12 +46,17 @@ public class CdrEventProcessorTest {
 
     @Before
     public void init() throws Exception {
-        initMocks(this);
+        closeable = openMocks(this);
 
         processor = new CdrEventProcessor();
 
         when(exchange.getIn())
             .thenReturn(message);
+    }
+
+    @AfterEach
+    void closeService() throws Exception {
+        closeable.close();
     }
 
     @Test

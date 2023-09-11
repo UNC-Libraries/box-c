@@ -7,7 +7,7 @@ import static org.apache.jena.rdf.model.ModelFactory.createDefaultModel;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.when;
-import static org.mockito.MockitoAnnotations.initMocks;
+import static org.mockito.MockitoAnnotations.openMocks;
 
 import java.io.File;
 import java.util.concurrent.TimeUnit;
@@ -72,6 +72,7 @@ import edu.unc.lib.boxc.operations.jms.indexing.IndexingMessageSender;
 })
 @DirtiesContext(classMode = ClassMode.AFTER_EACH_TEST_METHOD)
 public class TriplesReindexingRouterIT {
+    private AutoCloseable closeable;
 
     @Autowired
     private CamelContext fcrepoTriplestoreIndexer;
@@ -115,7 +116,7 @@ public class TriplesReindexingRouterIT {
 
     @Before
     public void setUp() throws Exception {
-        initMocks(this);
+        closeable = openMocks(this);
 
         fusekiModel = createDefaultModel();
 
@@ -139,6 +140,7 @@ public class TriplesReindexingRouterIT {
 
     @After
     public void tearDown() throws Exception {
+        closeable.close();
         fusekiServer.stop();
     }
 

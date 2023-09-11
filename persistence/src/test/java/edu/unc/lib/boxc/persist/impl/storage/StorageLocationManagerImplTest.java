@@ -7,7 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
-import static org.mockito.MockitoAnnotations.initMocks;
+import static org.mockito.MockitoAnnotations.openMocks;
 
 import java.net.URI;
 import java.nio.file.Path;
@@ -18,6 +18,7 @@ import java.util.UUID;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Resource;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -34,7 +35,6 @@ import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.boxc.persist.api.storage.StorageLocation;
 import edu.unc.lib.boxc.persist.api.storage.StorageType;
 import edu.unc.lib.boxc.persist.api.storage.UnknownStorageLocationException;
-import edu.unc.lib.boxc.persist.impl.storage.StorageLocationManagerImpl;
 
 /**
  * @author bbpennel
@@ -47,6 +47,8 @@ public class StorageLocationManagerImplTest {
     private static final String LOC2_ID = "loc2";
     private static final String LOC2_NAME = "Stor2";
     private static final String LOC2_BASE = "file://some/other";
+
+    private AutoCloseable closeable;
 
     @Mock
     private ContentPathFactory pathFactory;
@@ -62,13 +64,18 @@ public class StorageLocationManagerImplTest {
 
     @BeforeEach
     public void setup() throws Exception {
-        initMocks(this);
+        closeable = openMocks(this);
 
         locManager = new StorageLocationManagerImpl();
         locManager.setPathFactory(pathFactory);
         locManager.setRepositoryObjectLoader(repositoryObjectLoader);
 
         helper = new StorageLocationTestHelper();
+    }
+
+    @AfterEach
+    void closeService() throws Exception {
+        closeable.close();
     }
 
     private void initializeManager() throws Exception {

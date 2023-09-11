@@ -2,7 +2,7 @@ package edu.unc.lib.boxc.auth.fcrepo.services;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.MockitoAnnotations.initMocks;
+import static org.mockito.MockitoAnnotations.openMocks;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -10,6 +10,7 @@ import java.util.HashSet;
 import java.util.Properties;
 import java.util.Set;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -30,13 +31,20 @@ public class GlobalPermissionEvaluatorTest {
 
     private GlobalPermissionEvaluator evaluator;
 
+    private AutoCloseable closeable;
+
     @BeforeEach
     public void init() {
-        initMocks(this);
+        closeable = openMocks(this);
 
         configProperties = new Properties();
 
         principals = new HashSet<>(Arrays.asList(PRINC_GRP1));
+    }
+
+    @AfterEach
+    void closeService() throws Exception {
+        closeable.close();
     }
 
     @Test

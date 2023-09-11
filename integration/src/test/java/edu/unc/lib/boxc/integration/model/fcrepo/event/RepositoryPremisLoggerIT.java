@@ -11,7 +11,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
-import static org.mockito.MockitoAnnotations.initMocks;
+import static org.mockito.MockitoAnnotations.openMocks;
 
 import java.io.InputStream;
 import java.nio.file.Files;
@@ -32,6 +32,7 @@ import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.vocabulary.DCTerms;
 import org.apache.jena.vocabulary.RDF;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
@@ -72,6 +73,8 @@ public class RepositoryPremisLoggerIT extends AbstractFedoraIT {
 
     private Map<PID, String> previousDigestMap;
 
+    private AutoCloseable closeable;
+
     @Mock
     private BinaryTransferService transferService;
     @Mock
@@ -81,7 +84,7 @@ public class RepositoryPremisLoggerIT extends AbstractFedoraIT {
 
     @BeforeEach
     public void init() throws Exception {
-        initMocks(this);
+        closeable = openMocks(this);
 
         lockManager = PidLockManager.getDefaultPidLockManager();
 
@@ -108,6 +111,11 @@ public class RepositoryPremisLoggerIT extends AbstractFedoraIT {
                 });
 
         previousDigestMap = new HashMap<>();
+    }
+
+    @AfterEach
+    void closeService() throws Exception {
+        closeable.close();
     }
 
     private void initPremisLogger(RepositoryObject repoObj) {

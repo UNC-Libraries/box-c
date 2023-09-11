@@ -12,7 +12,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.when;
-import static org.mockito.MockitoAnnotations.initMocks;
+import static org.mockito.MockitoAnnotations.openMocks;
 
 import java.net.URI;
 import java.nio.file.Files;
@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -42,6 +43,8 @@ import edu.unc.lib.boxc.persist.impl.sources.IngestSourceManagerImpl.IngestSourc
  * @author bbpennel
  */
 public class IngestSourceManagerImplTest {
+    private AutoCloseable closeable;
+
     @TempDir
     public Path tmpFolder;
     private Path sourceFolderPath;
@@ -62,7 +65,7 @@ public class IngestSourceManagerImplTest {
 
     @BeforeEach
     public void init() throws Exception {
-        initMocks(this);
+        closeable = openMocks(this);
         sourceFolderPath = tmpFolder.resolve("sourceFolder");
         Files.createDirectory(sourceFolderPath);
 
@@ -73,6 +76,11 @@ public class IngestSourceManagerImplTest {
         destPid = makePid();
 
         mockAncestors(destPid, rootPid, adminUnitPid);
+    }
+
+    @AfterEach
+    void closeService() throws Exception {
+        closeable.close();
     }
 
     private void initializeManager() throws Exception {

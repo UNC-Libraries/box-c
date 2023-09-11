@@ -11,12 +11,13 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.mockito.MockitoAnnotations.initMocks;
+import static org.mockito.MockitoAnnotations.openMocks;
 
 import java.util.List;
 
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -24,8 +25,6 @@ import org.mockito.Captor;
 import org.mockito.Mock;
 
 import edu.unc.lib.boxc.indexing.solr.SolrUpdateRequest;
-import edu.unc.lib.boxc.indexing.solr.action.RecursiveTreeIndexer;
-import edu.unc.lib.boxc.indexing.solr.action.UpdateTreeAction;
 import edu.unc.lib.boxc.indexing.solr.test.TestCorpus;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
@@ -46,6 +45,7 @@ public class UpdateTreeActionTest {
     protected static final String USER = "user";
 
     protected TestCorpus corpus;
+    private AutoCloseable closeable;
 
     @Mock
     private RepositoryObjectLoader repositoryObjectLoader;
@@ -65,7 +65,7 @@ public class UpdateTreeActionTest {
 
     @BeforeEach
     public void setupTreeAction() throws Exception {
-        initMocks(this);
+        closeable = openMocks(this);
 
         corpus = new TestCorpus();
 
@@ -93,6 +93,11 @@ public class UpdateTreeActionTest {
 
     protected UpdateTreeAction getAction() {
         return new UpdateTreeAction();
+    }
+
+    @AfterEach
+    void closeService() throws Exception {
+        closeable.close();
     }
 
     @Test

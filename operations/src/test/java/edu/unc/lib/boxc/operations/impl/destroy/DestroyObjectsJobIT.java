@@ -49,6 +49,7 @@ import org.apache.jena.vocabulary.RDF;
 import org.fcrepo.client.FcrepoClient;
 import org.jdom2.Document;
 import org.jdom2.Element;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -90,7 +91,7 @@ import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.mockito.MockitoAnnotations.initMocks;
+import static org.mockito.MockitoAnnotations.openMocks;
 
 /**
  *
@@ -107,6 +108,8 @@ public class DestroyObjectsJobIT {
     private final static String LOC1_ID = "loc1";
     private static final String USER_NAME = "user";
     private static final String USER_GROUPS = "edu:lib:staff_grp";
+
+    private AutoCloseable closeable;
 
     @TempDir
     public Path tmpFolder;
@@ -166,7 +169,7 @@ public class DestroyObjectsJobIT {
 
     @BeforeEach
     public void init() throws Exception {
-        initMocks(this);
+        closeable = openMocks(this);
         TestHelper.setContentBase(baseAddress);
 
         AccessGroupSet testPrincipals = new AccessGroupSetImpl(USER_GROUPS);
@@ -179,6 +182,11 @@ public class DestroyObjectsJobIT {
         when(pathFactory.getPath(any(PID.class))).thenReturn(path);
         when(path.toNamePath()).thenReturn("path/to/object");
         when(path.toIdPath()).thenReturn("pid0/pid1/pid2/pid3");
+    }
+
+    @AfterEach
+    void closeService() throws Exception {
+        closeable.close();
     }
 
     @Test

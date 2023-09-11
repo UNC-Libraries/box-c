@@ -6,7 +6,7 @@ import static org.fcrepo.camel.FcrepoHeaders.FCREPO_URI;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.mockito.MockitoAnnotations.initMocks;
+import static org.mockito.MockitoAnnotations.openMocks;
 
 import java.io.File;
 import java.nio.charset.StandardCharsets;
@@ -20,17 +20,18 @@ import org.apache.commons.io.FileUtils;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.rules.TemporaryFolder;
 import org.mockito.Mock;
 
 import edu.unc.lib.boxc.model.fcrepo.test.TestHelper;
-import edu.unc.lib.boxc.services.camel.NonBinaryEnhancementProcessor;
 
 /**
  * @author lfarrell
  */
 public class NonBinaryEnhancementProcessorTest {
     private NonBinaryEnhancementProcessor processor;
+    private AutoCloseable closeable;
 
     @Rule
     public final TemporaryFolder tmpDir = new TemporaryFolder();
@@ -49,7 +50,7 @@ public class NonBinaryEnhancementProcessorTest {
 
     @Before
     public void init() throws Exception {
-        initMocks(this);
+        closeable = openMocks(this);
         dataDir = tmpDir.newFolder().getAbsolutePath();
 
         TestHelper.setContentBase(FEDORA_BASE);
@@ -58,6 +59,11 @@ public class NonBinaryEnhancementProcessorTest {
 
         when(exchange.getIn()).thenReturn(message);
         when(message.getHeader(FCREPO_URI)).thenReturn(RESC_URI);
+    }
+
+    @AfterEach
+    void closeService() throws Exception {
+        closeable.close();
     }
 
     @Test

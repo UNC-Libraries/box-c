@@ -16,7 +16,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.mockito.MockitoAnnotations.initMocks;
+import static org.mockito.MockitoAnnotations.openMocks;
 
 import java.io.File;
 import java.nio.file.Files;
@@ -36,6 +36,7 @@ import javax.xml.stream.events.XMLEvent;
 
 import org.jdom2.Document;
 import org.jdom2.Element;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -80,6 +81,7 @@ public class ImportXMLJobTest {
     private static final String ADMIN_EMAIL = "admin@example.com";
 
     private ImportXMLJob job;
+    private AutoCloseable closeable;
 
     @Mock
     private AgentPrincipals agent;
@@ -129,13 +131,18 @@ public class ImportXMLJobTest {
 
     @BeforeEach
     public void init() throws Exception {
-        initMocks(this);
+        closeable = openMocks(this);
 
         when(mailSender.createMimeMessage()).thenReturn(msg);
 
         when(transferService.getSession()).thenReturn(multiDestSession);
         when(multiDestSession.forDestination(storageLocation)).thenReturn(singleDestSession);
         when(locationManager.getStorageLocation(any(PID.class))).thenReturn(storageLocation);
+    }
+
+    @AfterEach
+    void closeService() throws Exception {
+        closeable.close();
     }
 
     @SuppressWarnings("unchecked")

@@ -6,7 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
-import static org.mockito.MockitoAnnotations.initMocks;
+import static org.mockito.MockitoAnnotations.openMocks;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -22,6 +22,7 @@ import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.Statement;
 import org.jdom2.Document;
 import org.jdom2.input.SAXBuilder;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -44,6 +45,8 @@ import edu.unc.lib.boxc.search.solr.models.IndexDocumentBean;
  */
 public class SetDescriptiveMetadataFilterTest {
     private static final String PID_STRING = "uuid:07d9594f-310d-4095-ab67-79a1056e7430";
+
+    private AutoCloseable closeable;
 
     @Mock
     private DocumentIndexingPackageDataLoader loader;
@@ -74,7 +77,7 @@ public class SetDescriptiveMetadataFilterTest {
 
     @BeforeEach
     public void setup() throws Exception {
-        initMocks(this);
+        closeable = openMocks(this);
 
         when(pid.getId()).thenReturn(PID_STRING);
 
@@ -89,6 +92,11 @@ public class SetDescriptiveMetadataFilterTest {
 
         filter = new SetDescriptiveMetadataFilter();
         filter.setTitleRetrievalService(titleRetrievalService);
+    }
+
+    @AfterEach
+    void closeService() throws Exception {
+        closeable.close();
     }
 
     @Test

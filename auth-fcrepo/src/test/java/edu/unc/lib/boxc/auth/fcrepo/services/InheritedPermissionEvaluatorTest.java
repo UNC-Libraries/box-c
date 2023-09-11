@@ -14,7 +14,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.when;
-import static org.mockito.MockitoAnnotations.initMocks;
+import static org.mockito.MockitoAnnotations.openMocks;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -29,6 +29,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -57,6 +58,8 @@ public class InheritedPermissionEvaluatorTest {
     private static final Set<String> PATRON_GROUP_PRINCIPLES = new HashSet<>(
             asList(PUBLIC_PRINC, PATRON_GROUP));
 
+    private AutoCloseable closeable;
+
     @Mock
     private ContentPathFactory pathFactory;
 
@@ -71,7 +74,7 @@ public class InheritedPermissionEvaluatorTest {
 
     @BeforeEach
     public void init() {
-        initMocks(this);
+        closeable = openMocks(this);
 
         evaluator = new InheritedPermissionEvaluator();
         evaluator.setPathFactory(pathFactory);
@@ -83,6 +86,11 @@ public class InheritedPermissionEvaluatorTest {
         when(pathFactory.getAncestorPids(any(PID.class))).thenReturn(ancestorPids);
 
         pid = PIDs.get(UUID.randomUUID().toString());
+    }
+
+    @AfterEach
+    void closeService() throws Exception {
+        closeable.close();
     }
 
     @Test

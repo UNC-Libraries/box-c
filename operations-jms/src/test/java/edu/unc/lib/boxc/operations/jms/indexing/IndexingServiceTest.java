@@ -7,7 +7,7 @@ import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.mockito.MockitoAnnotations.initMocks;
+import static org.mockito.MockitoAnnotations.openMocks;
 
 import java.util.UUID;
 
@@ -23,12 +23,10 @@ import edu.unc.lib.boxc.auth.api.exceptions.AccessRestrictionException;
 import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
 import edu.unc.lib.boxc.auth.api.models.AgentPrincipals;
 import edu.unc.lib.boxc.auth.api.services.AccessControlService;
-import edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl;
 import edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.objects.ContentObject;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
-import edu.unc.lib.boxc.operations.jms.indexing.IndexingService;
 
 /**
  *
@@ -37,6 +35,8 @@ import edu.unc.lib.boxc.operations.jms.indexing.IndexingService;
  */
 public class IndexingServiceTest {
     private static final String USERNAME = "username";
+
+    private AutoCloseable closeable;
 
     @Mock
     private AccessControlService aclService;
@@ -60,8 +60,8 @@ public class IndexingServiceTest {
     private PID objPid;
 
     @BeforeEach
-    public void init() throws Exception{
-        initMocks(this);
+    public void init() throws Exception {
+        closeable = openMocks(this);
 
         when(agent.getPrincipals()).thenReturn(groups);
         when(agent.getUsername()).thenReturn(USERNAME);
@@ -74,7 +74,8 @@ public class IndexingServiceTest {
     }
 
     @AfterEach
-    public void tearDown() {
+    public void tearDown() throws Exception {
+        closeable.close();
         GroupsThreadStore.clearStore();
     }
 

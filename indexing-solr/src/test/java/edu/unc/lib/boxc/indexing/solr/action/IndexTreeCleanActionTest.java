@@ -6,12 +6,13 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.mockito.MockitoAnnotations.initMocks;
+import static org.mockito.MockitoAnnotations.openMocks;
 
 import java.util.UUID;
 
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -19,9 +20,6 @@ import org.mockito.Captor;
 import org.mockito.Mock;
 
 import edu.unc.lib.boxc.indexing.solr.SolrUpdateRequest;
-import edu.unc.lib.boxc.indexing.solr.action.DeleteSolrTreeAction;
-import edu.unc.lib.boxc.indexing.solr.action.IndexTreeCleanAction;
-import edu.unc.lib.boxc.indexing.solr.action.RecursiveTreeIndexer;
 import edu.unc.lib.boxc.indexing.solr.indexing.DocumentIndexingPipeline;
 import edu.unc.lib.boxc.indexing.solr.indexing.SolrUpdateDriver;
 import edu.unc.lib.boxc.model.api.ids.PID;
@@ -36,6 +34,8 @@ import edu.unc.lib.boxc.model.api.objects.ContentContainerObject;
  */
 public class IndexTreeCleanActionTest {
     private static final String USER = "user";
+
+    private AutoCloseable closeable;
 
     @Mock
     private SolrUpdateDriver driver;
@@ -64,7 +64,7 @@ public class IndexTreeCleanActionTest {
 
     @BeforeEach
     public void setup() throws Exception {
-        initMocks(this);
+        closeable = openMocks(this);
 
         pid = PIDs.get(UUID.randomUUID().toString());
         when(request.getPid()).thenReturn(pid);
@@ -83,6 +83,11 @@ public class IndexTreeCleanActionTest {
         when(containerObj.getPid()).thenReturn(pid);
         Model model = ModelFactory.createDefaultModel();
         when(containerObj.getResource()).thenReturn(model.getResource(pid.getRepositoryPath()));
+    }
+
+    @AfterEach
+    void closeService() throws Exception {
+        closeable.close();
     }
 
     @Test

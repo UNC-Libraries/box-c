@@ -3,20 +3,20 @@ package edu.unc.lib.boxc.indexing.solr.filter;
 import static org.junit.Assert.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.when;
-import static org.mockito.MockitoAnnotations.initMocks;
+import static org.mockito.MockitoAnnotations.openMocks;
 
 import java.text.SimpleDateFormat;
 
 import org.apache.jena.rdf.model.Literal;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.Statement;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 
 import edu.unc.lib.boxc.indexing.solr.exception.IndexingException;
-import edu.unc.lib.boxc.indexing.solr.filter.SetRecordDatesFilter;
 import edu.unc.lib.boxc.indexing.solr.indexing.DocumentIndexingPackage;
 import edu.unc.lib.boxc.indexing.solr.indexing.DocumentIndexingPackageDataLoader;
 import edu.unc.lib.boxc.model.api.ids.PID;
@@ -32,6 +32,8 @@ public class SetRecordDatesFilterTest {
     private static final String DATE_ADDED = "2017-01-01";
     private static final String DATE_MODIFIED = "2017-05-31";
     private static final String BAD_DATE = "abcd";
+
+    private AutoCloseable closeable;
 
     @Mock
     private DocumentIndexingPackageDataLoader loader;
@@ -62,7 +64,7 @@ public class SetRecordDatesFilterTest {
     @BeforeEach
     public void setup() throws Exception {
         idb = new IndexDocumentBean();
-        initMocks(this);
+        closeable = openMocks(this);
 
         when(dip.getDocument()).thenReturn(idb);
         when(dip.getPid()).thenReturn(pid);
@@ -82,6 +84,11 @@ public class SetRecordDatesFilterTest {
         when(object2.toString()).thenReturn(DATE_MODIFIED);
 
         filter = new SetRecordDatesFilter();
+    }
+
+    @AfterEach
+    void closeService() throws Exception {
+        closeable.close();
     }
 
     @Test

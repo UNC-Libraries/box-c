@@ -7,7 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.mockito.MockitoAnnotations.initMocks;
+import static org.mockito.MockitoAnnotations.openMocks;
 
 import java.util.Arrays;
 import java.util.Calendar;
@@ -17,6 +17,7 @@ import java.util.UUID;
 
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -38,7 +39,6 @@ import edu.unc.lib.boxc.search.solr.models.IndexDocumentBean;
 import edu.unc.lib.boxc.auth.api.AccessPrincipalConstants;
 import edu.unc.lib.boxc.auth.fcrepo.services.InheritedAclFactory;
 import edu.unc.lib.boxc.auth.fcrepo.services.ObjectAclFactory;
-import edu.unc.lib.boxc.indexing.solr.filter.SetAccessStatusFilter;
 import edu.unc.lib.boxc.indexing.solr.indexing.DocumentIndexingPackage;
 
 /**
@@ -46,6 +46,7 @@ import edu.unc.lib.boxc.indexing.solr.indexing.DocumentIndexingPackage;
  */
 public class SetAccessStatusFilterTest {
     private static final String CUSTOM_GROUP = AccessPrincipalConstants.IP_PRINC_NAMESPACE + "special";
+    private AutoCloseable closeable;
 
     @Mock
     private DocumentIndexingPackage dip;
@@ -77,7 +78,7 @@ public class SetAccessStatusFilterTest {
 
     @BeforeEach
     public void setup() throws Exception {
-        initMocks(this);
+        closeable = openMocks(this);
 
         pid = PIDs.get(UUID.randomUUID().toString());
         parentPid = PIDs.get(UUID.randomUUID().toString());
@@ -117,6 +118,11 @@ public class SetAccessStatusFilterTest {
         filter = new SetAccessStatusFilter();
         filter.setObjectAclFactory(objAclFactory);
         filter.setInheritedAclFactory(inheritedAclFactory);
+    }
+
+    @AfterEach
+    void closeService() throws Exception {
+        closeable.close();
     }
 
     @Test

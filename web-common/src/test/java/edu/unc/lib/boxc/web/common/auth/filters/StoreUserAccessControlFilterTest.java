@@ -13,7 +13,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.mockito.MockitoAnnotations.initMocks;
+import static org.mockito.MockitoAnnotations.openMocks;
 
 import java.io.File;
 import java.nio.charset.StandardCharsets;
@@ -43,6 +43,7 @@ import edu.unc.lib.boxc.web.common.auth.RemoteUserUtil;
 public class StoreUserAccessControlFilterTest {
 
     private StoreUserAccessControlFilter filter;
+    private AutoCloseable closeable;
 
     @Mock
     private HttpServletRequest request;
@@ -64,7 +65,7 @@ public class StoreUserAccessControlFilterTest {
 
     @BeforeEach
     public void init() throws Exception {
-        initMocks(this);
+        closeable = openMocks(this);
         configFile = tmpFolder.resolve("patronConfig.json").toFile();
         FileUtils.writeStringToFile(configFile, CONFIG, StandardCharsets.US_ASCII);
 
@@ -80,7 +81,8 @@ public class StoreUserAccessControlFilterTest {
     }
 
     @AfterEach
-    public void cleanup() {
+    public void cleanup() throws Exception {
+        closeable.close();
         GroupsThreadStore.clearStore();
     }
 

@@ -9,7 +9,7 @@ import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.mockito.MockitoAnnotations.initMocks;
+import static org.mockito.MockitoAnnotations.openMocks;
 
 import java.util.Arrays;
 import java.util.HashSet;
@@ -22,12 +22,10 @@ import javax.servlet.http.HttpSession;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
 
 import edu.unc.lib.boxc.auth.api.AccessPrincipalConstants;
 import edu.unc.lib.boxc.auth.api.UserRole;
@@ -41,8 +39,8 @@ import edu.unc.lib.boxc.web.common.auth.filters.StoreAccessLevelFilter;
 /**
  * @author bbpennel
  */
-@ExtendWith(MockitoExtension.class)
 public class StoreAccessLevelFilterTest {
+    private AutoCloseable closeable;
     @Mock
     private HttpServletRequest request;
     @Mock
@@ -64,7 +62,7 @@ public class StoreAccessLevelFilterTest {
 
     @BeforeEach
     public void setup() {
-        initMocks(StoreAccessLevelFilterTest.class);
+        closeable = openMocks(StoreAccessLevelFilterTest.class);
         principals = new AccessGroupSetImpl();
         GroupsThreadStore.storeGroups(principals);
 
@@ -72,7 +70,8 @@ public class StoreAccessLevelFilterTest {
     }
 
     @AfterEach
-    public void tearDown() {
+    public void tearDown() throws Exception {
+        closeable.close();
         GroupsThreadStore.clearStore();
     }
 

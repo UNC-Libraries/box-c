@@ -12,7 +12,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.when;
-import static org.mockito.MockitoAnnotations.initMocks;
+import static org.mockito.MockitoAnnotations.openMocks;
 
 import java.io.InputStream;
 import java.nio.file.Path;
@@ -25,17 +25,14 @@ import edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl;
 import edu.unc.lib.boxc.auth.fcrepo.models.AgentPrincipalsImpl;
 import edu.unc.lib.boxc.auth.fcrepo.services.InheritedAclFactory;
 import edu.unc.lib.boxc.fcrepo.utils.TransactionManager;
-import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
 import edu.unc.lib.boxc.model.api.sparql.SparqlUpdateService;
 import edu.unc.lib.boxc.operations.api.events.PremisLoggerFactory;
 import edu.unc.lib.boxc.operations.impl.delete.MarkForDeletionJob;
-import edu.unc.lib.boxc.operations.impl.delete.MarkForDeletionService;
 import edu.unc.lib.boxc.operations.impl.destroy.DestroyObjectsJob;
 import edu.unc.lib.boxc.operations.jms.MessageSender;
 import edu.unc.lib.boxc.operations.jms.destroy.DestroyObjectsRequest;
 import edu.unc.lib.boxc.operations.jms.indexing.IndexingMessageSender;
 import edu.unc.lib.boxc.operations.jms.order.MemberOrderRequestSender;
-import edu.unc.lib.boxc.persist.api.storage.StorageLocationManager;
 import edu.unc.lib.boxc.persist.api.transfer.BinaryTransferService;
 import edu.unc.lib.boxc.search.solr.services.ObjectPathFactory;
 import org.apache.commons.collections.CollectionUtils;
@@ -46,6 +43,7 @@ import org.apache.jena.rdf.model.Resource;
 import org.fcrepo.client.FcrepoClient;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
 import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -68,7 +66,6 @@ import edu.unc.lib.boxc.operations.impl.edit.UpdateDescriptionService.UpdateDesc
 import edu.unc.lib.boxc.search.api.SearchFieldKey;
 import edu.unc.lib.boxc.search.api.models.ContentObjectRecord;
 import edu.unc.lib.boxc.search.api.requests.SimpleIdRequest;
-import edu.unc.lib.boxc.services.camel.solr.SolrIngestProcessor;
 
 /**
  *
@@ -78,6 +75,7 @@ import edu.unc.lib.boxc.services.camel.solr.SolrIngestProcessor;
 public class SolrIngestProcessorIT extends AbstractSolrProcessorIT {
 
     private SolrIngestProcessor processor;
+    private AutoCloseable closeable;
 
     private static final String CONTENT_TEXT = "Content";
     private static final String TEXT_EXTRACT = "Cone Tent";
@@ -118,7 +116,7 @@ public class SolrIngestProcessorIT extends AbstractSolrProcessorIT {
 
     @Before
     public void setUp() throws Exception {
-        initMocks(this);
+        closeable = openMocks(this);
 
         agent = new AgentPrincipalsImpl("user", new AccessGroupSetImpl("group"));
         TestHelper.setContentBase(baseAddress);
@@ -129,6 +127,11 @@ public class SolrIngestProcessorIT extends AbstractSolrProcessorIT {
         when(exchange.getIn()).thenReturn(message);
 
         generateBaseStructure();
+    }
+
+    @AfterEach
+    void closeService() throws Exception {
+        closeable.close();
     }
 
     @Test

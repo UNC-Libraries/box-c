@@ -3,20 +3,20 @@ package edu.unc.lib.boxc.indexing.solr.indexing;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.mockito.MockitoAnnotations.initMocks;
+import static org.mockito.MockitoAnnotations.openMocks;
 
 import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.common.SolrInputDocument;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 
 import edu.unc.lib.boxc.indexing.solr.exception.IndexingException;
-import edu.unc.lib.boxc.indexing.solr.indexing.SolrUpdateDriver;
 import edu.unc.lib.boxc.search.solr.config.SolrSettings;
 import edu.unc.lib.boxc.search.solr.models.IndexDocumentBean;
 
@@ -26,6 +26,8 @@ import edu.unc.lib.boxc.search.solr.models.IndexDocumentBean;
  *
  */
 public class SolrUpdateDriverTest {
+    private AutoCloseable closeable;
+
     @Mock
     private SolrClient solrClient;
     @Mock
@@ -54,7 +56,7 @@ public class SolrUpdateDriverTest {
 
     @BeforeEach
     public void setup() throws Exception {
-        initMocks(this);
+        closeable = openMocks(this);
 
         driver = new SolrUpdateDriver();
         driver.setUpdateSolrClient(updateSolrClient);
@@ -62,6 +64,11 @@ public class SolrUpdateDriverTest {
         driver.setSolrSettings(solrSettings);
 
         when(solrSettings.getRequiredFields()).thenReturn(REQUIRED_INDEXING_FIELDS);
+    }
+
+    @AfterEach
+    void closeService() throws Exception {
+        closeable.close();
     }
 
     @Test

@@ -11,7 +11,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.mockito.MockitoAnnotations.initMocks;
+import static org.mockito.MockitoAnnotations.openMocks;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -30,6 +30,7 @@ import org.jdom2.Document;
 import org.jdom2.Element;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
@@ -47,6 +48,7 @@ import edu.unc.lib.boxc.operations.jms.indexing.IndexingActionType;
  *
  */
 public class SolrUpdateProcessorTest {
+    private AutoCloseable closeable;
 
     private SolrUpdateProcessor processor;
 
@@ -74,7 +76,7 @@ public class SolrUpdateProcessorTest {
 
     @Before
     public void init() {
-        initMocks(this);
+        closeable = openMocks(this);
 
         indexingActionMap = new HashMap<>();
         indexingActionMap.put(ADD, mockAddAction);
@@ -90,6 +92,11 @@ public class SolrUpdateProcessorTest {
         when(msg.getBody()).thenReturn(bodyDoc);
 
         targetPid = ProcessorTestHelper.makePid();
+    }
+
+    @AfterEach
+    void closeService() throws Exception {
+        closeable.close();
     }
 
     @Test

@@ -14,6 +14,7 @@ import org.apache.camel.Exchange;
 import org.apache.camel.Message;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
 import org.mockito.Mock;
 
 import static org.mockito.Matchers.any;
@@ -22,7 +23,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.mockito.MockitoAnnotations.initMocks;
+import static org.mockito.MockitoAnnotations.openMocks;
 
 /**
  * @author bbpennel
@@ -31,6 +32,8 @@ public class CacheInvalidatingProcessorTest {
     private static final String FEDORA_BASE = "http://example.com/rest/";
     private static final String PID_UUID = "de75d811-9e0f-4b1f-8631-2060ab3580cc";
     private static final String PID_PATH = "/de/75/d8/11/" + PID_UUID;
+
+    private AutoCloseable closeable;
 
     @Mock
     private RepositoryObjectLoaderImpl repoObjLoader;
@@ -47,7 +50,7 @@ public class CacheInvalidatingProcessorTest {
 
     @Before
     public void init() throws Exception {
-        initMocks(this);
+        closeable = openMocks(this);
         TestHelper.setContentBase(FEDORA_BASE);
         processor = new CacheInvalidatingProcessor();
         processor.setRepositoryObjectLoader(repoObjLoader);
@@ -55,6 +58,11 @@ public class CacheInvalidatingProcessorTest {
         processor.setContentPathFactory(contentPathFactory);
         processor.setTitleRetrievalService(titleRetrievalService);
         processor.setMemberOrderService(memberOrderService);
+    }
+
+    @AfterEach
+    void closeService() throws Exception {
+        closeable.close();
     }
 
     @Test

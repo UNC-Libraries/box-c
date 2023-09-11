@@ -1,20 +1,17 @@
 package edu.unc.lib.boxc.search.solr.services;
 
 import static edu.unc.lib.boxc.auth.api.AccessPrincipalConstants.PUBLIC_PRINC;
-import static edu.unc.lib.boxc.search.api.SearchFieldKey.FILE_FORMAT_CATEGORY;
 import static edu.unc.lib.boxc.search.api.SearchFieldKey.PARENT_COLLECTION;
 import static edu.unc.lib.boxc.search.api.SearchFieldKey.PARENT_UNIT;
 import static edu.unc.lib.boxc.search.api.SearchFieldKey.SUBJECT;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.MockitoAnnotations.initMocks;
+import static org.mockito.MockitoAnnotations.openMocks;
 
-import java.util.Arrays;
 import java.util.Map;
 
-import edu.unc.lib.boxc.search.solr.facets.GenericFacet;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
@@ -24,12 +21,9 @@ import edu.unc.lib.boxc.auth.api.services.GlobalPermissionEvaluator;
 import edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.search.api.SearchFieldKey;
-import edu.unc.lib.boxc.search.api.facets.FacetFieldList;
 import edu.unc.lib.boxc.search.api.facets.FacetFieldObject;
 import edu.unc.lib.boxc.search.api.facets.SearchFacet;
-import edu.unc.lib.boxc.search.api.requests.SearchRequest;
 import edu.unc.lib.boxc.search.api.requests.SearchState;
-import edu.unc.lib.boxc.search.solr.responses.SearchResultResponse;
 import edu.unc.lib.boxc.search.solr.test.BaseEmbeddedSolrTest;
 import edu.unc.lib.boxc.search.solr.test.TestCorpus;
 import edu.unc.lib.boxc.search.solr.utils.AccessRestrictionUtil;
@@ -49,6 +43,8 @@ public class SetFacetTitleByIdServiceIT extends BaseEmbeddedSolrTest {
 
     private MultiSelectFacetListService facetListService;
 
+    private AutoCloseable closeable;
+
     @Mock
     private GlobalPermissionEvaluator globalPermissionEvaluator;
     private FacetFieldFactory facetFieldFactory;
@@ -63,7 +59,7 @@ public class SetFacetTitleByIdServiceIT extends BaseEmbeddedSolrTest {
 
     @BeforeEach
     public void init() throws Exception {
-        initMocks(this);
+        closeable = openMocks(this);
         if (!corpusLoaded) {
             corpusLoaded = true;
             index(testCorpus.populate());
@@ -107,6 +103,11 @@ public class SetFacetTitleByIdServiceIT extends BaseEmbeddedSolrTest {
         searchStateFactory = new SearchStateFactory();
         searchStateFactory.setFacetFieldFactory(facetFieldFactory);
         searchStateFactory.setSearchSettings(searchSettings);
+    }
+
+    @AfterEach
+    void closeService() throws Exception {
+        closeable.close();
     }
 
     @Test
