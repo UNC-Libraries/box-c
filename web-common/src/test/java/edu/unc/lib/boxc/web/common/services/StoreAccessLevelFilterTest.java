@@ -62,7 +62,7 @@ public class StoreAccessLevelFilterTest {
 
     @BeforeEach
     public void setup() {
-        closeable = openMocks(StoreAccessLevelFilterTest.class);
+        closeable = openMocks(this);
         principals = new AccessGroupSetImpl();
         GroupsThreadStore.storeGroups(principals);
 
