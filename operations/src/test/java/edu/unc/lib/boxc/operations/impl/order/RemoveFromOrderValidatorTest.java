@@ -8,10 +8,10 @@ import edu.unc.lib.boxc.model.api.services.MembershipService;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.boxc.operations.jms.order.OrderOperationType;
 import edu.unc.lib.boxc.operations.test.OrderTestHelper;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
 
 import java.util.Arrays;
 import java.util.List;
@@ -21,6 +21,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.when;
 import static edu.unc.lib.boxc.operations.test.OrderTestHelper.mockParentType;
 import static edu.unc.lib.boxc.operations.test.OrderTestHelper.assertHasErrors;
+import static org.mockito.MockitoAnnotations.openMocks;
 
 /**
  * @author snluong
@@ -30,6 +31,7 @@ public class RemoveFromOrderValidatorTest {
     private static final String CHILD1_UUID = "83c2d7f8-2e6b-4f0b-ab7e-7397969c0682";
     private static final String CHILD2_UUID = "0e33ad0b-7a16-4bfa-b833-6126c262d889";
     private static final String CHILD3_UUID = "9cb6cc61-d88e-403e-b959-2396cd331a12";
+    private AutoCloseable closeable;
     @Mock
     private RepositoryObjectLoader repositoryObjectLoader;
     @Mock
@@ -44,7 +46,7 @@ public class RemoveFromOrderValidatorTest {
 
     @BeforeEach
     public void setup() {
-        MockitoAnnotations.initMocks(this);
+        closeable = openMocks(this);
         validator = new RemoveFromOrderValidator();
         validator.setRepositoryObjectLoader(repositoryObjectLoader);
 
@@ -54,6 +56,11 @@ public class RemoveFromOrderValidatorTest {
         child3Pid = PIDs.get(CHILD3_UUID);
         when(repositoryObjectLoader.getRepositoryObject(parentPid)).thenReturn(parentObj);
         mockParentType(parentObj, ResourceType.Work);
+    }
+
+    @AfterEach
+    void closeService() throws Exception {
+        closeable.close();
     }
 
     @Test

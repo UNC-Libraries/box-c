@@ -4,7 +4,7 @@ import static edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPaths.getContentRootPi
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.MockitoAnnotations.initMocks;
+import static org.mockito.MockitoAnnotations.openMocks;
 
 import java.io.File;
 import java.net.URI;
@@ -17,6 +17,7 @@ import org.apache.camel.ProducerTemplate;
 import org.apache.camel.builder.NotifyBuilder;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
@@ -85,9 +86,11 @@ public class BinaryCleanupRouterIT {
 
     private CollectionObject collection;
 
+    private AutoCloseable closeable;
+
     @Before
     public void init() {
-        initMocks(this);
+        closeable = openMocks(this);
 
         TestHelper.setContentBase(baseAddress);
 
@@ -99,6 +102,11 @@ public class BinaryCleanupRouterIT {
         collection = repoObjectFactory.createCollectionObject(null);
         contentRoot.addMember(adminUnit);
         adminUnit.addMember(collection);
+    }
+
+    @AfterEach
+    void closeService() throws Exception {
+        closeable.close();
     }
 
     @Test

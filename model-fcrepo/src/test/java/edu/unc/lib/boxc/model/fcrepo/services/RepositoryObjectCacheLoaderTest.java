@@ -7,7 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
-import static org.mockito.MockitoAnnotations.initMocks;
+import static org.mockito.MockitoAnnotations.openMocks;
 
 import java.io.IOException;
 import java.util.UUID;
@@ -19,6 +19,7 @@ import org.apache.jena.vocabulary.RDF;
 import org.fcrepo.client.FcrepoClient;
 import org.fcrepo.client.FcrepoResponse;
 import org.fcrepo.client.RequestBuilder;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -56,6 +57,7 @@ public class RepositoryObjectCacheLoaderTest {
     private static final String ETAG_HEADER =  "\"etag\"";
 
     private RepositoryObjectCacheLoader objectCacheLoader;
+    private AutoCloseable closeable;
 
     @Mock
     private RepositoryObjectDriver driver;
@@ -69,7 +71,7 @@ public class RepositoryObjectCacheLoaderTest {
 
     @BeforeEach
     public void init() {
-        initMocks(this);
+        closeable = openMocks(this);
 
         client = mock(FcrepoClient.class, new BuilderReturningAnswer());
 
@@ -80,6 +82,11 @@ public class RepositoryObjectCacheLoaderTest {
         objectCacheLoader.setRepositoryObjectDriver(driver);
 
         pid = PIDs.get(UUID.randomUUID().toString());
+    }
+
+    @AfterEach
+    void closeService() throws Exception {
+        closeable.close();
     }
 
     @Test

@@ -10,7 +10,7 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyInt;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
-import static org.mockito.MockitoAnnotations.initMocks;
+import static org.mockito.MockitoAnnotations.openMocks;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -22,6 +22,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 
 import org.apache.commons.io.FileUtils;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -47,6 +48,7 @@ public class StreamToFSTransferClientTest {
     protected static final String STREAM_CONTENT_SHA1 = "bf29c7fd7f87fe7395b89012e73d91c85a0cb19b";
 
     protected StreamToFSTransferClient client;
+    private AutoCloseable closeable;
 
     @TempDir
     public Path tmpFolder;
@@ -58,7 +60,7 @@ public class StreamToFSTransferClientTest {
 
     @BeforeEach
     public void setup() throws Exception {
-        initMocks(this);
+        closeable = openMocks(this);
         sourcePath = tmpFolder.resolve("source");
         Files.createDirectory(sourcePath);
         storagePath = tmpFolder.resolve("storage");
@@ -72,6 +74,11 @@ public class StreamToFSTransferClientTest {
         client = new StreamToFSTransferClient(storageLoc);
 
         binPid = getOriginalFilePid(PIDs.get(TEST_UUID));
+    }
+
+    @AfterEach
+    void closeService() throws Exception {
+        closeable.close();
     }
 
     @Test

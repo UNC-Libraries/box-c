@@ -11,12 +11,13 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.when;
-import static org.mockito.MockitoAnnotations.initMocks;
+import static org.mockito.MockitoAnnotations.openMocks;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -44,12 +45,14 @@ public class PermissionsHelperTest {
 
     private AccessGroupSet principals;
 
+    private AutoCloseable closeable;
+
     @Mock
     private AccessControlService accessControlService;
 
     @BeforeEach
     public void init() {
-        initMocks(this);
+        closeable = openMocks(this);
 
         roleGroups = new ArrayList<>();
 
@@ -65,6 +68,11 @@ public class PermissionsHelperTest {
 
         helper = new PermissionsHelper();
         helper.setAccessControlService(accessControlService);
+    }
+
+    @AfterEach
+    void closeService() throws Exception {
+        closeable.close();
     }
 
     @Test

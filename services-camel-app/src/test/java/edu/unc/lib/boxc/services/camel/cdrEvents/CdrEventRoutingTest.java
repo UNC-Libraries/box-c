@@ -8,7 +8,7 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.mockito.MockitoAnnotations.initMocks;
+import static org.mockito.MockitoAnnotations.openMocks;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -22,6 +22,7 @@ import org.apache.camel.test.spring.CamelSpringRunner;
 import org.apache.camel.test.spring.CamelTestContextBootstrapper;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
@@ -60,6 +61,7 @@ public class CdrEventRoutingTest {
     private static final String USER_ID = "user";
     private static final String DEPOSIT_ID = "deposit";
     private static final String BASE_URI = "http://example.com/rest/";
+    private AutoCloseable closeable;
 
     @Autowired
     private OperationsMessageSender opsMsgSender;
@@ -82,7 +84,7 @@ public class CdrEventRoutingTest {
 
     @Before
     public void init() throws Exception {
-        initMocks(this);
+        closeable = openMocks(this);
 
         TestHelper.setContentBase(BASE_URI);
 
@@ -91,6 +93,11 @@ public class CdrEventRoutingTest {
 
         when(mockActionMap.get(any(IndexingActionType.class)))
                 .thenReturn(mockIndexingAction);
+    }
+
+    @AfterEach
+    void closeService() throws Exception {
+        closeable.close();
     }
 
     @Test

@@ -7,6 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.when;
+import static org.mockito.MockitoAnnotations.openMocks;
 
 import java.net.URI;
 
@@ -18,14 +19,11 @@ import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.fcrepo.client.FcrepoClient.FcrepoClientBuilder;
 import org.fcrepo.client.FcrepoResponse;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
 
-import edu.unc.lib.boxc.fcrepo.utils.FedoraTransaction;
-import edu.unc.lib.boxc.fcrepo.utils.TransactionManager;
-import edu.unc.lib.boxc.fcrepo.utils.TransactionalFcrepoClient;
 import edu.unc.lib.boxc.persist.api.transfer.BinaryTransferService;
 
 /**
@@ -44,6 +42,7 @@ public class TransactionalFcrepoClientTest {
     private TransactionalFcrepoClient txClient;
     private FedoraTransaction tx;
     private TransactionManager txManager;
+    private AutoCloseable closeable;
 
     @Mock
     private HttpRequestBase request;
@@ -60,7 +59,7 @@ public class TransactionalFcrepoClientTest {
 
     @BeforeEach
     public void setup() throws Exception {
-        MockitoAnnotations.initMocks(this);
+        closeable = openMocks(this);
         URI uri = URI.create(TX_URI);
         FcrepoClientBuilder builder = TransactionalFcrepoClient.client(BASE_URI);
         txClient = (TransactionalFcrepoClient) builder.build();
@@ -79,6 +78,11 @@ public class TransactionalFcrepoClientTest {
             .thenReturn(REQUEST_URI);
         when(httpResponse.getAllHeaders()).thenReturn(new Header[]{header});
         when(request.getMethod()).thenReturn("GET");
+    }
+
+    @AfterEach
+    void closeService() throws Exception {
+        closeable.close();
     }
 
     @Test

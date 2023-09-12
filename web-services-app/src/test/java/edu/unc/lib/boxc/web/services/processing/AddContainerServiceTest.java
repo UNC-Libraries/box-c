@@ -12,7 +12,7 @@ import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.mockito.MockitoAnnotations.initMocks;
+import static org.mockito.MockitoAnnotations.openMocks;
 
 import java.util.Collection;
 import java.util.UUID;
@@ -20,6 +20,7 @@ import java.util.UUID;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.impl.ModelCom;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -65,6 +66,7 @@ import edu.unc.lib.boxc.web.services.processing.AddContainerService.AddContainer
 public class AddContainerServiceTest {
 
     private static final String STORAGE_LOC_ID = "loc1";
+    private AutoCloseable closeable;
 
     @Mock
     private AccessControlService aclService;
@@ -107,7 +109,7 @@ public class AddContainerServiceTest {
 
     @BeforeEach
     public void init() {
-        initMocks(this);
+        closeable = openMocks(this);
 
         when(agent.getPrincipals()).thenReturn(groups);
         when(agent.getUsername()).thenReturn("user");
@@ -141,6 +143,11 @@ public class AddContainerServiceTest {
         service.setStorageLocationManager(storageLocationManager);
         service.setUpdateDescriptionService(updateDescService);
         service.setPremisLoggerFactory(premisLoggerFactory);
+    }
+
+    @AfterEach
+    void closeService() throws Exception {
+        closeable.close();
     }
 
     private AddContainerRequest createRequest(String label, boolean staffOnly, ResourceType containerType) {

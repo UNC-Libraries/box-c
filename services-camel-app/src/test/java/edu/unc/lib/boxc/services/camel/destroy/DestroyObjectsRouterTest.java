@@ -7,17 +7,15 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.mockito.MockitoAnnotations.initMocks;
+import static org.mockito.MockitoAnnotations.openMocks;
 
 import java.util.Collections;
 import java.util.UUID;
 
-import edu.unc.lib.boxc.model.api.objects.RepositoryObject;
 import edu.unc.lib.boxc.model.api.rdf.Premis;
 import edu.unc.lib.boxc.operations.api.events.PremisEventBuilder;
 import edu.unc.lib.boxc.operations.api.events.PremisLogger;
 import edu.unc.lib.boxc.operations.api.events.PremisLoggerFactory;
-import edu.unc.lib.boxc.operations.impl.events.PremisEventBuilderImpl;
 import org.apache.camel.BeanInject;
 import org.apache.camel.Produce;
 import org.apache.camel.ProducerTemplate;
@@ -28,6 +26,7 @@ import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.vocabulary.RDF;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
 import org.mockito.Mock;
 import org.springframework.context.support.AbstractApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
@@ -61,6 +60,8 @@ public class DestroyObjectsRouterTest extends CamelSpringTestSupport {
     private static final String USER_NAME = "user";
     private static final String USER_GROUPS = "edu:lib:staff_grp";
 
+    private AutoCloseable closeable;
+
     @Produce(uri = "direct:start")
     protected ProducerTemplate template;
 
@@ -93,11 +94,16 @@ public class DestroyObjectsRouterTest extends CamelSpringTestSupport {
 
     @Before
     public void setup() {
-        initMocks(this);
+        closeable = openMocks(this);
         AccessGroupSet testPrincipals = new AccessGroupSetImpl(USER_GROUPS);
         agent = new AgentPrincipalsImpl(USER_NAME, testPrincipals);
 
         when(txManager.startTransaction()).thenReturn(tx);
+    }
+
+    @AfterEach
+    void closeService() throws Exception {
+        closeable.close();
     }
 
     @Override

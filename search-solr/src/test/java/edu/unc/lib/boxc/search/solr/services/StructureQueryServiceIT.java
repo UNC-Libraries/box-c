@@ -13,12 +13,13 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Matchers.anySetOf;
 import static org.mockito.Mockito.when;
-import static org.mockito.MockitoAnnotations.initMocks;
+import static org.mockito.MockitoAnnotations.openMocks;
 
 import java.util.NoSuchElementException;
 import java.util.UUID;
 
 import org.apache.solr.common.SolrInputDocument;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
@@ -35,11 +36,6 @@ import edu.unc.lib.boxc.search.api.requests.SearchState;
 import edu.unc.lib.boxc.search.solr.facets.GenericFacet;
 import edu.unc.lib.boxc.search.solr.responses.HierarchicalBrowseResultResponse;
 import edu.unc.lib.boxc.search.solr.responses.HierarchicalBrowseResultResponse.ResultNode;
-import edu.unc.lib.boxc.search.solr.services.ChildrenCountService;
-import edu.unc.lib.boxc.search.solr.services.FacetFieldFactory;
-import edu.unc.lib.boxc.search.solr.services.SearchStateFactory;
-import edu.unc.lib.boxc.search.solr.services.SolrSearchService;
-import edu.unc.lib.boxc.search.solr.services.StructureQueryService;
 import edu.unc.lib.boxc.search.solr.test.BaseEmbeddedSolrTest;
 import edu.unc.lib.boxc.search.solr.test.TestCorpus;
 import edu.unc.lib.boxc.search.solr.utils.AccessRestrictionUtil;
@@ -51,6 +47,7 @@ import edu.unc.lib.boxc.search.solr.utils.FacetFieldUtil;
  *
  */
 public class StructureQueryServiceIT extends BaseEmbeddedSolrTest {
+    private AutoCloseable closeable;
 
     @Mock
     private GlobalPermissionEvaluator globalPermissionEvaluator;
@@ -77,7 +74,7 @@ public class StructureQueryServiceIT extends BaseEmbeddedSolrTest {
 
     @BeforeEach
     public void init() throws Exception {
-        initMocks(this);
+        closeable = openMocks(this);
 
         index(testCorpus.populate());
 
@@ -126,6 +123,11 @@ public class StructureQueryServiceIT extends BaseEmbeddedSolrTest {
         principals = new AccessGroupSetImpl(PUBLIC_PRINC);
 
         rootId = getContentRootPid().getId();
+    }
+
+    @AfterEach
+    void closeService() throws Exception {
+        closeable.close();
     }
 
     @Test

@@ -19,7 +19,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.when;
-import static org.mockito.MockitoAnnotations.initMocks;
+import static org.mockito.MockitoAnnotations.openMocks;
 
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
@@ -33,6 +33,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
@@ -49,6 +50,8 @@ public class InheritedAclFactoryTest {
     private static final String OWNER_PRINC = "owner";
     private static final String PATRON_GROUP = PATRON_NAMESPACE + "special";
 
+    private AutoCloseable closeable;
+
     @Mock
     private ContentPathFactory pathFactory;
 
@@ -63,7 +66,7 @@ public class InheritedAclFactoryTest {
 
     @BeforeEach
     public void init() {
-        initMocks(this);
+        closeable = openMocks(this);
 
         aclFactory = new InheritedAclFactory();
         aclFactory.setObjectAclFactory(objectAclFactory);
@@ -75,6 +78,11 @@ public class InheritedAclFactoryTest {
         when(pathFactory.getAncestorPids(any(PID.class))).thenReturn(ancestorPids);
 
         pid = PIDs.get(UUID.randomUUID().toString());
+    }
+
+    @AfterEach
+    void closeService() throws Exception {
+        closeable.close();
     }
 
     @Test

@@ -10,7 +10,7 @@ import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.mockito.MockitoAnnotations.initMocks;
+import static org.mockito.MockitoAnnotations.openMocks;
 
 import java.io.InputStream;
 import java.net.URI;
@@ -25,6 +25,7 @@ import org.fcrepo.client.FcrepoOperationFailedException;
 import org.fcrepo.client.FcrepoResponse;
 import org.fcrepo.client.PostBuilder;
 import org.fcrepo.client.PutBuilder;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
@@ -50,6 +51,7 @@ import edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPIDMinter;
  *
  */
 public class RepositoryObjectFactoryTest {
+    private AutoCloseable closeable;
 
     @Mock
     private LdpContainerFactory ldpFactory;
@@ -74,7 +76,7 @@ public class RepositoryObjectFactoryTest {
 
     @BeforeEach
     public void init() throws FcrepoOperationFailedException, URISyntaxException {
-        initMocks(this);
+        closeable = openMocks(this);
         repoObjFactory = new RepositoryObjectFactoryImpl();
         repoObjFactory.setClient(fcrepoClient);
         repoObjFactory.setLdpFactory(ldpFactory);
@@ -95,6 +97,11 @@ public class RepositoryObjectFactoryTest {
         when(mockPostBuilder.perform()).thenReturn(mockResponse);
         when(mockResponse.getLinkHeaders(any(String.class))).thenReturn(linkHeaders);
 
+    }
+
+    @AfterEach
+    void closeService() throws Exception {
+        closeable.close();
     }
 
     @Test

@@ -4,7 +4,7 @@ import static edu.unc.lib.boxc.auth.api.AccessPrincipalConstants.PUBLIC_PRINC;
 import static edu.unc.lib.boxc.common.test.TestHelpers.setField;
 import static java.util.Arrays.asList;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.MockitoAnnotations.initMocks;
+import static org.mockito.MockitoAnnotations.openMocks;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -12,6 +12,7 @@ import java.util.UUID;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.solr.common.SolrInputDocument;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
@@ -26,8 +27,6 @@ import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.boxc.search.api.models.ContentObjectRecord;
 import edu.unc.lib.boxc.search.api.requests.SimpleIdRequest;
-import edu.unc.lib.boxc.search.solr.services.NeighborQueryService;
-import edu.unc.lib.boxc.search.solr.services.SolrSearchService;
 import edu.unc.lib.boxc.search.solr.test.BaseEmbeddedSolrTest;
 import edu.unc.lib.boxc.search.solr.test.TestCorpus;
 import edu.unc.lib.boxc.search.solr.utils.AccessRestrictionUtil;
@@ -53,6 +52,8 @@ public class NeighborQueryServiceIT extends BaseEmbeddedSolrTest {
 
     private TestCorpus testCorpus;
 
+    private AutoCloseable closeable;
+
     @Mock
     private GlobalPermissionEvaluator globalPermissionEvaluator;
 
@@ -71,7 +72,7 @@ public class NeighborQueryServiceIT extends BaseEmbeddedSolrTest {
     @Override
     @BeforeEach
     public void setUp() throws Exception {
-        initMocks(this);
+        closeable = openMocks(this);
 
         super.setUp();
 
@@ -101,6 +102,11 @@ public class NeighborQueryServiceIT extends BaseEmbeddedSolrTest {
         queryService.setAccessRestrictionUtil(restrictionUtil);
         queryService.setFacetFieldUtil(facetFieldUtil);
         setField(queryService, "solrClient", server);
+    }
+
+    @AfterEach
+    void closeService() throws Exception {
+        closeable.close();
     }
 
     @Test

@@ -4,7 +4,7 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.when;
-import static org.mockito.MockitoAnnotations.initMocks;
+import static org.mockito.MockitoAnnotations.openMocks;
 
 import java.io.File;
 import java.nio.file.Files;
@@ -52,6 +52,8 @@ public class AbstractDepositJobTest {
     protected static final String FEDORA_BASE = "http://localhost:48085/rest/";
     protected static final String TX_URI = "http://localhost:48085/rest/tx:99b58d30-06f5-477b-a44c-d614a9049d38";
 
+    private AutoCloseable closeable;
+
     @Mock
     protected RepositoryObjectDriver driver;
     @Mock
@@ -94,7 +96,7 @@ public class AbstractDepositJobTest {
 
     @BeforeEach
     public void initBase() throws Exception {
-        initMocks(this);
+        closeable = openMocks(this);
 
         TestHelper.setContentBase(FEDORA_BASE);
 
@@ -144,7 +146,8 @@ public class AbstractDepositJobTest {
     }
 
     @AfterEach
-    public void tearDown() {
+    public void tearDown() throws Exception {
+        closeable.close();
         depositModelManager.close();
     }
 

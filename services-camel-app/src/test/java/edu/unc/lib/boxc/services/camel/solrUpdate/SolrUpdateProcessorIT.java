@@ -19,19 +19,15 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.when;
-import static org.mockito.MockitoAnnotations.initMocks;
+import static org.mockito.MockitoAnnotations.openMocks;
 
 import java.io.File;
-import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
 import javax.annotation.Resource;
@@ -42,10 +38,8 @@ import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.api.objects.WorkObject;
 import edu.unc.lib.boxc.model.api.rdf.IanaRelation;
 import edu.unc.lib.boxc.model.fcrepo.ids.DatastreamPids;
-import edu.unc.lib.boxc.model.fcrepo.services.RepositoryObjectLoaderImpl;
 import edu.unc.lib.boxc.operations.impl.order.OrderJobFactory;
 import edu.unc.lib.boxc.operations.impl.order.OrderRequestFactory;
-import edu.unc.lib.boxc.operations.impl.order.SetOrderJob;
 import edu.unc.lib.boxc.operations.jms.MessageSender;
 import edu.unc.lib.boxc.operations.jms.indexing.IndexingMessageSender;
 import edu.unc.lib.boxc.operations.jms.order.OrderOperationType;
@@ -58,11 +52,11 @@ import org.apache.jena.vocabulary.DCTerms;
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.response.QueryResponse;
-import org.apache.solr.common.SolrInputDocument;
 import org.jdom2.Document;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.rules.TemporaryFolder;
 import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -75,9 +69,7 @@ import edu.unc.lib.boxc.auth.api.models.AgentPrincipals;
 import edu.unc.lib.boxc.indexing.solr.action.IndexingAction;
 import edu.unc.lib.boxc.indexing.solr.filter.SetCollectionSupplementalInformationFilter;
 import edu.unc.lib.boxc.indexing.solr.filter.collection.RLASupplementalFilter;
-import edu.unc.lib.boxc.model.api.ResourceType;
 import edu.unc.lib.boxc.model.api.ids.PID;
-import edu.unc.lib.boxc.model.api.objects.AdminUnit;
 import edu.unc.lib.boxc.model.api.objects.CollectionObject;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObject;
 import edu.unc.lib.boxc.model.fcrepo.test.TestHelper;
@@ -88,7 +80,6 @@ import edu.unc.lib.boxc.search.api.FacetConstants;
 import edu.unc.lib.boxc.search.api.models.ContentObjectRecord;
 import edu.unc.lib.boxc.search.solr.models.ContentObjectSolrRecord;
 import edu.unc.lib.boxc.services.camel.solr.AbstractSolrProcessorIT;
-import edu.unc.lib.boxc.services.camel.solrUpdate.SolrUpdateProcessor;
 
 /**
  *
@@ -101,6 +92,7 @@ import edu.unc.lib.boxc.services.camel.solrUpdate.SolrUpdateProcessor;
 })
 @DirtiesContext(classMode = ClassMode.AFTER_EACH_TEST_METHOD)
 public class SolrUpdateProcessorIT extends AbstractSolrProcessorIT {
+    private AutoCloseable closeable;
 
     @Rule
     public final TemporaryFolder tmpFolder = new TemporaryFolder();
@@ -133,7 +125,7 @@ public class SolrUpdateProcessorIT extends AbstractSolrProcessorIT {
 
     @Before
     public void setUp() throws Exception {
-        initMocks(this);
+        closeable = openMocks(this);
 
         TestHelper.setContentBase(baseAddress);
 
@@ -148,6 +140,11 @@ public class SolrUpdateProcessorIT extends AbstractSolrProcessorIT {
         when(exchange.getIn()).thenReturn(message);
 
         generateBaseStructure();
+    }
+
+    @AfterEach
+    void closeService() throws Exception {
+        closeable.close();
     }
 
     @Test

@@ -3,18 +3,18 @@ package edu.unc.lib.boxc.indexing.solr.filter;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.mockito.MockitoAnnotations.initMocks;
+import static org.mockito.MockitoAnnotations.openMocks;
 
 import java.util.Arrays;
 import java.util.Collections;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 
 import edu.unc.lib.boxc.indexing.solr.exception.IndexingException;
-import edu.unc.lib.boxc.indexing.solr.filter.SetObjectTypeFilter;
 import edu.unc.lib.boxc.indexing.solr.indexing.DocumentIndexingPackage;
 import edu.unc.lib.boxc.model.api.ResourceType;
 import edu.unc.lib.boxc.model.api.ids.PID;
@@ -31,6 +31,7 @@ import edu.unc.lib.boxc.model.api.objects.ContentObject;
 public class SetObjectTypeFilterTest {
 
     private SetObjectTypeFilter filter;
+    private AutoCloseable closeable;
 
     @Mock
     private DocumentIndexingPackage dip;
@@ -44,7 +45,7 @@ public class SetObjectTypeFilterTest {
 
     @BeforeEach
     public void setup() throws Exception {
-        initMocks(this);
+        closeable = openMocks(this);
 
         when(dip.getDocument()).thenReturn(idb);
         when(dip.getPid()).thenReturn(pid);
@@ -52,6 +53,11 @@ public class SetObjectTypeFilterTest {
         when(dip.getContentObject()).thenReturn(contentObj);
 
         filter = new SetObjectTypeFilter();
+    }
+
+    @AfterEach
+    void closeService() throws Exception {
+        closeable.close();
     }
 
     @Test

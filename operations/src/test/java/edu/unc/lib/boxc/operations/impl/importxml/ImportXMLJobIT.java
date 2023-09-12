@@ -12,12 +12,11 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.mockito.MockitoAnnotations.initMocks;
+import static org.mockito.MockitoAnnotations.openMocks;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Instant;
 import java.util.UUID;
@@ -28,6 +27,7 @@ import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.JDOMException;
 import org.jdom2.input.SAXBuilder;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -69,6 +69,7 @@ import edu.unc.lib.boxc.persist.impl.transfer.BinaryTransferServiceImpl;
 public class ImportXMLJobIT {
 
     private ImportXMLJob job;
+    private AutoCloseable closeable;
 
     private final static String USER_EMAIL = "user@example.com";
 
@@ -117,7 +118,7 @@ public class ImportXMLJobIT {
 
     @BeforeEach
     public void init_() throws Exception {
-        initMocks(this);
+        closeable = openMocks(this);
 
         tempDir = tmpFolder.resolve("tempDir").toFile();
 
@@ -125,6 +126,11 @@ public class ImportXMLJobIT {
         when(completeTemplate.execute(any(Object.class))).thenReturn("update was successful");
 
         TestHelper.setContentBase(baseAddress);
+    }
+
+    @AfterEach
+    void closeService() throws Exception {
+        closeable.close();
     }
 
     @Test

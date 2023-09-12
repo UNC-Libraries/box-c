@@ -6,7 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.MockitoAnnotations.initMocks;
+import static org.mockito.MockitoAnnotations.openMocks;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -58,6 +58,7 @@ public class ExportXMLIT extends AbstractAPIIT {
     private Connection conn;
     private Session session;
     private MessageConsumer consumer;
+    private AutoCloseable closeable;
     @Autowired
     private ExportXMLRequestService exportXmlRequestService;
     private PIDMinter pidMinter;
@@ -68,7 +69,7 @@ public class ExportXMLIT extends AbstractAPIIT {
 
     @BeforeEach
     public void setup() throws Exception {
-        initMocks(this);
+        closeable = openMocks(this);
         pidMinter = new RepositoryPIDMinter();
         ConnectionFactory connectionFactory = new ActiveMQConnectionFactory(
                 "vm://embedded-broker?create=false&waitForStart=5000");
@@ -98,6 +99,7 @@ public class ExportXMLIT extends AbstractAPIIT {
 
     @AfterEach
     public void shutdown() throws Exception {
+        closeable.close();
         consumer.close();
         session.close();
         conn.stop();

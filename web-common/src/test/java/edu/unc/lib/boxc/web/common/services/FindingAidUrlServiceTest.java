@@ -4,19 +4,18 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.when;
-import static org.mockito.MockitoAnnotations.initMocks;
+import static org.mockito.MockitoAnnotations.openMocks;
 
 import org.apache.http.HttpStatus;
 import org.apache.http.StatusLine;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpHead;
 import org.apache.http.impl.client.CloseableHttpClient;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
-
-import edu.unc.lib.boxc.web.common.services.FindingAidUrlService;
 
 /**
  * @author bbpennel
@@ -24,6 +23,7 @@ import edu.unc.lib.boxc.web.common.services.FindingAidUrlService;
 public class FindingAidUrlServiceTest {
 
     private FindingAidUrlService service;
+    private AutoCloseable closeable;
 
     private static final String BASE_URL = "http://example.com/";
 
@@ -36,7 +36,7 @@ public class FindingAidUrlServiceTest {
 
     @BeforeEach
     public void setup() throws Exception {
-        initMocks(this);
+        closeable = openMocks(this);
         service = new FindingAidUrlService();
         service.setHttpClient(httpClient);
         service.setFindingAidBaseUrl(BASE_URL);
@@ -46,6 +46,11 @@ public class FindingAidUrlServiceTest {
 
         when(httpClient.execute(any(HttpHead.class))).thenReturn(httpResp);
         when(httpResp.getStatusLine()).thenReturn(statusLine);
+    }
+
+    @AfterEach
+    void closeService() throws Exception {
+        closeable.close();
     }
 
     @Test

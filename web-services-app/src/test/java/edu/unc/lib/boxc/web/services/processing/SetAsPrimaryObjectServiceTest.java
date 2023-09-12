@@ -10,12 +10,13 @@ import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.mockito.MockitoAnnotations.initMocks;
+import static org.mockito.MockitoAnnotations.openMocks;
 
 import java.util.Collection;
 import java.util.UUID;
 
 import org.apache.jena.rdf.model.Resource;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -43,6 +44,7 @@ import edu.unc.lib.boxc.operations.jms.OperationsMessageSender;
  *
  */
 public class SetAsPrimaryObjectServiceTest {
+    private AutoCloseable closeable;
 
     @Mock
     private AccessControlService aclService;
@@ -74,7 +76,7 @@ public class SetAsPrimaryObjectServiceTest {
 
     @BeforeEach
     public void init() {
-        initMocks(this);
+        closeable = openMocks(this);
 
         fileObjPid = makePid();
         folderObjPid = makePid();
@@ -92,6 +94,11 @@ public class SetAsPrimaryObjectServiceTest {
         service.setAclService(aclService);
         service.setRepositoryObjectLoader(repoObjLoader);
         service.setOperationsMessageSender(messageSender);
+    }
+
+    @AfterEach
+    void closeService() throws Exception {
+        closeable.close();
     }
 
     @Test

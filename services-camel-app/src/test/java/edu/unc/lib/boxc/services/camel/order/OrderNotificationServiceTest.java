@@ -10,8 +10,8 @@ import edu.unc.lib.boxc.operations.jms.order.MultiParentOrderRequest;
 import edu.unc.lib.boxc.operations.jms.order.OrderOperationType;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
 
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.isNull;
@@ -20,6 +20,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.times;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.when;
+import static org.mockito.MockitoAnnotations.openMocks;
 
 import java.io.File;
 import java.util.Arrays;
@@ -38,6 +39,7 @@ public class OrderNotificationServiceTest {
     private AgentPrincipals agent = new AgentPrincipalsImpl(USERNAME, new AccessGroupSetImpl("agroup"));
     private MultiParentOrderRequest request = new MultiParentOrderRequest();
     private OrderNotificationService orderNotificationService;
+    private AutoCloseable closeable;
 
     @Mock
     private EmailHandler emailHandler;
@@ -46,7 +48,7 @@ public class OrderNotificationServiceTest {
 
     @Before
     public void setup() {
-        MockitoAnnotations.initMocks(this);
+        closeable = openMocks(this);
         request.setAgent(agent);
         request.setOperation(OrderOperationType.SET);
         parentPid1 = PIDs.get(PARENT1_UUID);
@@ -55,6 +57,12 @@ public class OrderNotificationServiceTest {
         orderNotificationService.setOrderNotificationBuilder(orderNotificationBuilder);
         orderNotificationService.setEmailHandler(emailHandler);
     }
+
+    @AfterEach
+    void closeService() throws Exception {
+        closeable.close();
+    }
+
     @Test
     public void sendResultsSendsEmail() {
         when(orderNotificationBuilder.construct(any(), any(), any())).thenReturn("Hi there");

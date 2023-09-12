@@ -7,6 +7,7 @@ import edu.unc.lib.boxc.services.camel.util.CdrFcrepoHeaders;
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
 import org.apache.camel.component.exec.ExecResult;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -24,7 +25,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
-import static org.mockito.MockitoAnnotations.initMocks;
+import static org.mockito.MockitoAnnotations.openMocks;
 
 public class AddDerivativeProcessorTest {
 
@@ -39,6 +40,8 @@ public class AddDerivativeProcessorTest {
     private static final String FEDORA_BASE = "http://example.com/rest/";
 
     private static final String RESC_ID = FEDORA_BASE + "content/de/75/d8/11/de75d811-9e0f-4b1f-8631-2060ab3580cc";
+
+    private AutoCloseable closeable;
 
     @TempDir
     public Path tmpFolder;
@@ -57,7 +60,7 @@ public class AddDerivativeProcessorTest {
 
     @BeforeEach
     public void init() throws Exception {
-        initMocks(this);
+        closeable = openMocks(this);
 
         TestHelper.setContentBase(FEDORA_BASE);
 
@@ -86,6 +89,11 @@ public class AddDerivativeProcessorTest {
         when(message.getBody()).thenReturn(result);
 
         destinationPath = moveFolder.resolve(fileName + ".PNG");
+    }
+
+    @AfterEach
+    void closeService() throws Exception {
+        closeable.close();
     }
 
     @Test

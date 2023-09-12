@@ -7,13 +7,14 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.timeout;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.mockito.MockitoAnnotations.initMocks;
+import static org.mockito.MockitoAnnotations.openMocks;
 
 import org.apache.camel.BeanInject;
 import org.apache.camel.test.spring.CamelSpringTestSupport;
 import org.jgroups.util.UUID;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.springframework.context.support.AbstractApplicationContext;
@@ -37,6 +38,7 @@ import edu.unc.lib.boxc.operations.impl.acl.PatronAccessOperationSender;
 public class PatronAccessAssignmentRouterTest extends CamelSpringTestSupport {
     private static final String USER = "someone";
     private static final String PRINCIPALS = "my:special:group;everyone;authenticated";
+    private AutoCloseable closeable;
 
     @BeanInject(value = "patronAccessAssignmentService")
     private PatronAccessAssignmentService patronAccessAssignmentService;
@@ -49,7 +51,12 @@ public class PatronAccessAssignmentRouterTest extends CamelSpringTestSupport {
 
     @Before
     public void init() throws Exception {
-        initMocks(this);
+        closeable = openMocks(this);
+    }
+
+    @AfterEach
+    void closeService() throws Exception {
+        closeable.close();
     }
 
     @Override

@@ -7,7 +7,7 @@ import static org.mockito.Mockito.atLeast;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.mockito.MockitoAnnotations.initMocks;
+import static org.mockito.MockitoAnnotations.openMocks;
 
 import java.net.URI;
 
@@ -16,14 +16,11 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 
-import edu.unc.lib.boxc.fcrepo.utils.FedoraTransaction;
-import edu.unc.lib.boxc.fcrepo.utils.FedoraTransactionRefresher;
-import edu.unc.lib.boxc.fcrepo.utils.TransactionManager;
-
 /**
  * @author bbpennel
  */
 public class FedoraTransactionRefresherTest {
+    private AutoCloseable closeable;
 
     @Mock
     private TransactionManager txManager;
@@ -37,7 +34,7 @@ public class FedoraTransactionRefresherTest {
 
     @BeforeEach
     public void setup() {
-        initMocks(this);
+        closeable = openMocks(this);
         txUri = URI.create("http://example.com/tx");
 
         when(tx.getTransactionManager()).thenReturn(txManager);
@@ -45,7 +42,8 @@ public class FedoraTransactionRefresherTest {
     }
 
     @AfterEach
-    public void cleanup() {
+    public void cleanup() throws Exception {
+        closeable.close();
         FedoraTransactionRefresher.setMaxTimeToLive(originalMaxTimeToLive);
         FedoraTransactionRefresher.setRefreshInterval(originalRefreshInterval);
     }

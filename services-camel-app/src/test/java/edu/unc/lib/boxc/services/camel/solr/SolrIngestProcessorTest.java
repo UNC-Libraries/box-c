@@ -8,20 +8,19 @@ import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.mockito.MockitoAnnotations.initMocks;
+import static org.mockito.MockitoAnnotations.openMocks;
 
-import edu.unc.lib.boxc.indexing.solr.SolrUpdateRequest;
 import edu.unc.lib.boxc.model.api.objects.FileObject;
 import edu.unc.lib.boxc.model.api.objects.WorkObject;
 import edu.unc.lib.boxc.model.api.rdf.Fcrepo4Repository;
 import edu.unc.lib.boxc.model.fcrepo.ids.DatastreamPids;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.boxc.operations.jms.MessageSender;
-import edu.unc.lib.boxc.operations.jms.indexing.IndexingActionType;
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
 import org.mockito.Mock;
 
 import edu.unc.lib.boxc.indexing.solr.exception.IndexingException;
@@ -33,7 +32,6 @@ import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.fcrepo.test.TestHelper;
 import edu.unc.lib.boxc.search.solr.models.IndexDocumentBean;
-import edu.unc.lib.boxc.services.camel.solr.SolrIngestProcessor;
 
 import java.util.UUID;
 
@@ -50,6 +48,7 @@ public class SolrIngestProcessorTest {
             "http://localhost:48085/rest/content/7c/73/29/6f/7c73296f-54ae-438e-b8d5-1890eba41676";
 
     private SolrIngestProcessor processor;
+    private AutoCloseable closeable;
 
     @Mock
     private DocumentIndexingPackageFactory dipFactory;
@@ -74,7 +73,7 @@ public class SolrIngestProcessorTest {
     @Before
     public void init() throws Exception {
         TestHelper.setContentBase(CONTENT_BASE_URI);
-        initMocks(this);
+        closeable = openMocks(this);
         processor = new SolrIngestProcessor(dipFactory, pipeline, solrUpdateDriver, repoObjLoader);
         processor.setUpdateWorkSender(messageSender);
 
@@ -84,6 +83,11 @@ public class SolrIngestProcessorTest {
 
         when(dip.getDocument()).thenReturn(docBean);
         when(dipFactory.createDip(any(PID.class))).thenReturn(dip);
+    }
+
+    @AfterEach
+    void closeService() throws Exception {
+        closeable.close();
     }
 
     @Test

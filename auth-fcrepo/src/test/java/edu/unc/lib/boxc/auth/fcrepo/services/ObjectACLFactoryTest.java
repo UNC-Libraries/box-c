@@ -11,7 +11,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.mockito.MockitoAnnotations.initMocks;
+import static org.mockito.MockitoAnnotations.openMocks;
 
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
@@ -29,6 +29,7 @@ import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.vocabulary.RDF;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -59,6 +60,7 @@ public class ObjectACLFactoryTest {
     private static final LocalDateTime TOMORROW = LocalDateTime.now().plusDays(1);
 
     private ObjectAclFactory aclFactory;
+    private AutoCloseable closeable;
 
     @Mock
     private RepositoryObjectLoader repositoryObjectLoader;
@@ -71,7 +73,7 @@ public class ObjectACLFactoryTest {
 
     @BeforeEach
     public void init() {
-        initMocks(this);
+        closeable = openMocks(this);
 
         aclFactory = new ObjectAclFactory();
         aclFactory.setRepositoryObjectLoader(repositoryObjectLoader);
@@ -85,6 +87,11 @@ public class ObjectACLFactoryTest {
         objResc = objModel.getResource(pid.getRepositoryPath());
         when(repoObj.getModel()).thenReturn(objModel);
         when(repositoryObjectLoader.getRepositoryObject(pid)).thenReturn(repoObj);
+    }
+
+    @AfterEach
+    void closeService() throws Exception {
+        closeable.close();
     }
 
     @Test

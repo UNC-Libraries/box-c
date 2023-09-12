@@ -2,6 +2,7 @@ package edu.unc.lib.boxc.deposit.impl.model;
 
 import edu.unc.lib.boxc.deposit.api.RedisWorkerConstants.JobField;
 import edu.unc.lib.boxc.model.api.exceptions.RepositoryException;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -19,12 +20,13 @@ import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.mockito.MockitoAnnotations.initMocks;
+import static org.mockito.MockitoAnnotations.openMocks;
 
 /**
  * @author bbpennel
  */
 public class JobStatusFactoryTest {
+    private AutoCloseable closeable;
 
     @Mock
     private JedisPool jedisPool;
@@ -37,7 +39,7 @@ public class JobStatusFactoryTest {
 
     @BeforeEach
     public void setup() {
-        initMocks(this);
+        closeable = openMocks(this);
 
         when(jedisPool.getResource()).thenReturn(jedis);
 
@@ -47,6 +49,11 @@ public class JobStatusFactoryTest {
         statusFactory.setSocketTimeoutDelay(1);
         statusFactory.setSocketTimeoutRetries(4);
         statusFactory.setJedisPool(jedisPool);
+    }
+
+    @AfterEach
+    void closeService() throws Exception {
+        closeable.close();
     }
 
     @Test

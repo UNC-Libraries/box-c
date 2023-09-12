@@ -4,7 +4,7 @@ import static edu.unc.lib.boxc.common.test.TestHelpers.setField;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.when;
-import static org.mockito.MockitoAnnotations.initMocks;
+import static org.mockito.MockitoAnnotations.openMocks;
 
 import java.net.URI;
 import java.util.ArrayList;
@@ -19,11 +19,11 @@ import org.fcrepo.client.FcrepoClient;
 import org.fcrepo.client.FcrepoOperationFailedException;
 import org.fcrepo.client.FcrepoResponse;
 import org.fcrepo.client.HeadBuilder;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 
-import edu.unc.lib.boxc.deposit.validate.VerifyObjectsAreInFedoraService;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 
@@ -38,6 +38,7 @@ public class VerifyObjectsAreInFedoraServiceTest {
     private PID workPid;
     private PID filePid;
     private Collection<String> pids;
+    private AutoCloseable closeable;
     @Mock
     private FcrepoClient client;
     @Mock
@@ -52,13 +53,18 @@ public class VerifyObjectsAreInFedoraServiceTest {
 
     @BeforeEach
     public void init() throws Exception {
-        initMocks(this);
+        closeable = openMocks(this);
         verificationService = new VerifyObjectsAreInFedoraService();
         setField(verificationService, "fcrepoClient", client);
 
         workPid = makePid();
         filePid = makePid();
         pids = new HashSet<>();
+    }
+
+    @AfterEach
+    void closeService() throws Exception {
+        closeable.close();
     }
 
     @Test

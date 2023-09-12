@@ -7,7 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
-import static org.mockito.MockitoAnnotations.initMocks;
+import static org.mockito.MockitoAnnotations.openMocks;
 
 import java.net.URI;
 import java.nio.file.Files;
@@ -15,6 +15,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 
 import org.apache.commons.lang3.NotImplementedException;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -26,8 +27,6 @@ import edu.unc.lib.boxc.persist.api.sources.IngestSourceManager;
 import edu.unc.lib.boxc.persist.api.storage.StorageLocation;
 import edu.unc.lib.boxc.persist.api.transfer.BinaryTransferOutcome;
 import edu.unc.lib.boxc.persist.api.transfer.BinaryTransferService;
-import edu.unc.lib.boxc.persist.impl.transfer.BinaryTransferServiceImpl;
-import edu.unc.lib.boxc.persist.impl.transfer.BinaryTransferSessionImpl;
 
 /**
  * @author bbpennel
@@ -36,6 +35,7 @@ import edu.unc.lib.boxc.persist.impl.transfer.BinaryTransferSessionImpl;
 public class BinaryTransferSessionImplTest extends AbstractBinaryTransferTest {
 
     private BinaryTransferSessionImpl session;
+    private AutoCloseable closeable;
 
     private BinaryTransferService bts;
     @Mock
@@ -50,7 +50,7 @@ public class BinaryTransferSessionImplTest extends AbstractBinaryTransferTest {
 
     @BeforeEach
     public void setup() throws Exception {
-        initMocks(this);
+        closeable = openMocks(this);
         createPaths();
 
         binPid = makeBinPid();
@@ -63,6 +63,11 @@ public class BinaryTransferSessionImplTest extends AbstractBinaryTransferTest {
         when(storageLoc.getId()).thenReturn("loc1");
 
         bts = new BinaryTransferServiceImpl();
+    }
+
+    @AfterEach
+    void closeService() throws Exception {
+        closeable.close();
     }
 
     @Test

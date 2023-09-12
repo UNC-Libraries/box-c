@@ -7,10 +7,11 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
-import static org.mockito.MockitoAnnotations.initMocks;
+import static org.mockito.MockitoAnnotations.openMocks;
 
 import java.net.URI;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -41,6 +42,7 @@ import edu.unc.lib.boxc.model.fcrepo.objects.RepositoryObjectCacheLoader;
  *
  */
 public class RepositoryObjectLoaderTest {
+    private AutoCloseable closeable;
 
     @Mock
     private RepositoryObjectCacheLoader objectCacheLoader;
@@ -54,7 +56,7 @@ public class RepositoryObjectLoaderTest {
 
     @BeforeEach
     public void init() {
-        initMocks(this);
+        closeable = openMocks(this);
 
         contentPid = PIDs.get("content/uuid:0311cf7e-9ac0-4ab0-8c24-ff367e8e77f5");
         depositRecordPid = PIDs.get("deposit/uuid:0411cf7e-9ac0-4ab0-8c24-ff367e8e77f6");
@@ -69,6 +71,11 @@ public class RepositoryObjectLoaderTest {
         when(pidMinter.mintContentPid()).thenReturn(contentPid);
         when(pidMinter.mintDepositRecordPid()).thenReturn(depositRecordPid);
         when(pidMinter.mintPremisEventPid(any(PID.class))).thenReturn(premisPid);
+    }
+
+    @AfterEach
+    void closeService() throws Exception {
+        closeable.close();
     }
 
     @Test

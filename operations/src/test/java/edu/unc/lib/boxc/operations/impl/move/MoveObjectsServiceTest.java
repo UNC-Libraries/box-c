@@ -1,7 +1,6 @@
 package edu.unc.lib.boxc.operations.impl.move;
 
 import static java.util.Arrays.asList;
-import static org.hamcrest.CoreMatchers.isA;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -15,7 +14,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.mockito.MockitoAnnotations.initMocks;
+import static org.mockito.MockitoAnnotations.openMocks;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -48,7 +47,6 @@ import edu.unc.lib.boxc.auth.api.exceptions.AccessRestrictionException;
 import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
 import edu.unc.lib.boxc.auth.api.models.AgentPrincipals;
 import edu.unc.lib.boxc.auth.api.services.AccessControlService;
-import edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl;
 import edu.unc.lib.boxc.fcrepo.exceptions.TransactionCancelledException;
 import edu.unc.lib.boxc.fcrepo.utils.FedoraTransaction;
 import edu.unc.lib.boxc.fcrepo.utils.TransactionManager;
@@ -74,6 +72,7 @@ import edu.unc.lib.boxc.search.solr.services.ObjectPathFactory;
 public class MoveObjectsServiceTest {
     private final static String DEST_OBJ_PATH = "/path/to/destination";
     private final static String SOURCE_OBJ_PATH = "/path/to/source";
+    private AutoCloseable closeable;
 
     @Mock
     private AccessControlService aclService;
@@ -119,7 +118,7 @@ public class MoveObjectsServiceTest {
 
     @BeforeEach
     public void init() throws Exception {
-        initMocks(this);
+        closeable = openMocks(this);
 
         service = new MoveObjectsService();
         service.setAclService(aclService);
@@ -165,7 +164,8 @@ public class MoveObjectsServiceTest {
     }
 
     @AfterEach
-    public void after() {
+    public void after() throws Exception {
+        closeable.close();
         actionAppender.stop();
     }
 

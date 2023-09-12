@@ -1,7 +1,7 @@
 package edu.unc.lib.boxc.indexing.solr.action;
 
 import static edu.unc.lib.boxc.operations.jms.indexing.IndexingActionType.DELETE_SOLR_TREE;
-import static org.mockito.MockitoAnnotations.initMocks;
+import static org.mockito.MockitoAnnotations.openMocks;
 
 import java.io.IOException;
 import java.util.Properties;
@@ -9,6 +9,7 @@ import java.util.Properties;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrDocumentList;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
@@ -16,7 +17,6 @@ import org.mockito.Mock;
 import edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl;
 import edu.unc.lib.boxc.common.test.TestHelpers;
 import edu.unc.lib.boxc.indexing.solr.SolrUpdateRequest;
-import edu.unc.lib.boxc.indexing.solr.action.DeleteSolrTreeAction;
 import edu.unc.lib.boxc.indexing.solr.test.TestCorpus;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.search.solr.config.SearchSettings;
@@ -33,6 +33,7 @@ import edu.unc.lib.boxc.search.solr.utils.AccessRestrictionUtil;
 public class DeleteSolrTreeTest extends BaseEmbeddedSolrTest {
 
     protected TestCorpus corpus;
+    private AutoCloseable closeable;
 
     @Mock
     private AccessRestrictionUtil restrictionUtil;
@@ -48,7 +49,7 @@ public class DeleteSolrTreeTest extends BaseEmbeddedSolrTest {
 
     @BeforeEach
     public void setup() throws SolrServerException, IOException {
-        initMocks(this);
+        closeable = openMocks(this);
 
         corpus = new TestCorpus();
 
@@ -78,6 +79,11 @@ public class DeleteSolrTreeTest extends BaseEmbeddedSolrTest {
 
         server.add(corpus.populate());
         server.commit();
+    }
+
+    @AfterEach
+    void closeService() throws Exception {
+        closeable.close();
     }
 
     @Test

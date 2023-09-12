@@ -41,7 +41,6 @@ import edu.unc.lib.boxc.search.solr.responses.SearchResultResponse;
  * @author bbpennel
  *
  */
-@ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
 public class SerializationUtilTest extends Assertions {
     private static final List<String> DATASTREAMS =

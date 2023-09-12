@@ -10,7 +10,7 @@ import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.mockito.MockitoAnnotations.initMocks;
+import static org.mockito.MockitoAnnotations.openMocks;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
@@ -18,6 +18,7 @@ import java.util.Collection;
 import java.util.UUID;
 
 import org.apache.commons.io.IOUtils;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -30,7 +31,6 @@ import edu.unc.lib.boxc.auth.api.exceptions.AccessRestrictionException;
 import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
 import edu.unc.lib.boxc.auth.api.models.AgentPrincipals;
 import edu.unc.lib.boxc.auth.api.services.AccessControlService;
-import edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.objects.BinaryObject;
 import edu.unc.lib.boxc.model.api.objects.ContentObject;
@@ -43,7 +43,6 @@ import edu.unc.lib.boxc.operations.impl.validation.MODSValidator;
 import edu.unc.lib.boxc.operations.impl.versioning.VersionedDatastreamService;
 import edu.unc.lib.boxc.operations.impl.versioning.VersionedDatastreamService.DatastreamVersion;
 import edu.unc.lib.boxc.operations.jms.OperationsMessageSender;
-import edu.unc.lib.boxc.operations.jms.indexing.IndexingPriority;
 import edu.unc.lib.boxc.persist.api.storage.StorageLocation;
 import edu.unc.lib.boxc.persist.api.transfer.BinaryTransferSession;
 
@@ -55,6 +54,7 @@ import edu.unc.lib.boxc.persist.api.transfer.BinaryTransferSession;
 public class UpdateDescriptionServiceTest {
 
     private static final String FILE_CONTENT = "Some content";
+    private AutoCloseable closeable;
 
     @Mock
     private AccessControlService aclService;
@@ -95,7 +95,7 @@ public class UpdateDescriptionServiceTest {
     @SuppressWarnings("unchecked")
     @BeforeEach
     public void init() throws Exception{
-        initMocks(this);
+        closeable = openMocks(this);
 
         when(agent.getPrincipals()).thenReturn(groups);
         when(agent.getUsername()).thenReturn("username");
@@ -117,6 +117,11 @@ public class UpdateDescriptionServiceTest {
         service.setOperationsMessageSender(messageSender);
         service.setModsValidator(modsValidator);
         service.setVersionedDatastreamService(versioningService);
+    }
+
+    @AfterEach
+    void closeService() throws Exception {
+        closeable.close();
     }
 
     @Test

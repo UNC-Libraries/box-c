@@ -7,7 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.mockito.MockitoAnnotations.initMocks;
+import static org.mockito.MockitoAnnotations.openMocks;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -18,6 +18,7 @@ import java.nio.file.Paths;
 import java.util.Map;
 import java.util.UUID;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -53,6 +54,8 @@ public class CDRMETSDepositHandlerTest {
     private static final String DEPOSITOR = "adminuser";
     private static final String DEPOSIT_METHOD = "unitTest";
 
+    private AutoCloseable closeable;
+
     @TempDir
     public Path tmpFolder;
 
@@ -74,7 +77,7 @@ public class CDRMETSDepositHandlerTest {
 
     @BeforeEach
     public void init() throws Exception {
-        initMocks(this);
+        closeable = openMocks(this);
 
         Files.createDirectory(tmpFolder.resolve("deposits"));
         depositsDir = tmpFolder.resolve("deposits").toFile();
@@ -91,6 +94,11 @@ public class CDRMETSDepositHandlerTest {
         depositHandler.setDepositsDirectory(depositsDir);
         depositHandler.setPidMinter(pidMinter);
         depositHandler.setDepositStatusFactory(depositStatusFactory);
+    }
+
+    @AfterEach
+    void closeService() throws Exception {
+        closeable.close();
     }
 
     @Test

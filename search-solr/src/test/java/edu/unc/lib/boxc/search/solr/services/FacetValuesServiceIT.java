@@ -20,6 +20,7 @@ import edu.unc.lib.boxc.search.solr.utils.AccessRestrictionUtil;
 import edu.unc.lib.boxc.search.solr.utils.FacetFieldUtil;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.solr.common.SolrInputDocument;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
@@ -33,7 +34,7 @@ import static edu.unc.lib.boxc.auth.api.AccessPrincipalConstants.PUBLIC_PRINC;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
-import static org.mockito.MockitoAnnotations.initMocks;
+import static org.mockito.MockitoAnnotations.openMocks;
 
 /**
  * @author bbpennel
@@ -47,6 +48,7 @@ public class FacetValuesServiceIT extends BaseEmbeddedSolrTest {
     private final static String SUBJECT_6 = "University of North Carolina";
     private final static String SUBJECT_7 = "Chapel Hill";
     private final static String SUBJECT_8 = "Boxy";
+    private AutoCloseable closeable;
 
     @Mock
     private GlobalPermissionEvaluator globalPermissionEvaluator;
@@ -67,7 +69,7 @@ public class FacetValuesServiceIT extends BaseEmbeddedSolrTest {
 
     @BeforeEach
     public void setupFacets() throws Exception {
-        initMocks(this);
+        closeable = openMocks(this);
 
         accessRestrictionUtil = new AccessRestrictionUtil();
         accessRestrictionUtil.setSearchSettings(searchSettings);
@@ -99,6 +101,11 @@ public class FacetValuesServiceIT extends BaseEmbeddedSolrTest {
             corpusLoaded = true;
             index(testCorpus.populate());
         }
+    }
+
+    @AfterEach
+    void closeService() throws Exception {
+        closeable.close();
     }
 
     @Test

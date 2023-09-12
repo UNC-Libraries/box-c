@@ -17,14 +17,13 @@ import edu.unc.lib.boxc.operations.jms.order.OrderOperationType;
 import edu.unc.lib.boxc.operations.jms.order.OrderRequestSerializationHelper;
 import edu.unc.lib.boxc.services.camel.ProcessorTestHelper;
 import org.apache.camel.Exchange;
-import org.apache.camel.Message;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.MockitoAnnotations;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -44,6 +43,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.mockito.MockitoAnnotations.openMocks;
 
 /**
  * @author bbpennel
@@ -58,6 +58,7 @@ public class OrderRequestProcessorTest {
     private static final String EMAIL = "user1@example.com";
     private PID parentPid1;
     private PID parentPid2;
+    private AutoCloseable closeable;
     @Mock
     private AccessControlService accessControlService;
     @Mock
@@ -82,7 +83,7 @@ public class OrderRequestProcessorTest {
 
     @Before
     public void setup() {
-        MockitoAnnotations.initMocks(this);
+        closeable = openMocks(this);
         processor = new OrderRequestProcessor();
         processor.setAccessControlService(accessControlService);
         processor.setOrderJobFactory(orderJobFactory);
@@ -94,6 +95,11 @@ public class OrderRequestProcessorTest {
         when(accessControlService.hasAccess(any(), any(), eq(Permission.orderMembers))).thenReturn(true);
         when(orderJobFactory.createJob(any())).thenReturn(orderJob);
         when(orderValidatorFactory.createValidator(any())).thenReturn(orderValidator);
+    }
+
+    @AfterEach
+    void closeService() throws Exception {
+        closeable.close();
     }
 
     @Test

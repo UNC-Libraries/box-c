@@ -7,7 +7,7 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.mockito.MockitoAnnotations.initMocks;
+import static org.mockito.MockitoAnnotations.openMocks;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -15,13 +15,11 @@ import java.io.FileInputStream;
 import java.io.InputStream;
 
 import org.jdom2.Element;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 
-import edu.unc.lib.boxc.indexing.solr.exception.IndexingException;
-import edu.unc.lib.boxc.indexing.solr.indexing.DocumentIndexingPackage;
-import edu.unc.lib.boxc.indexing.solr.indexing.DocumentIndexingPackageDataLoader;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.objects.ContentObject;
 import edu.unc.lib.boxc.model.api.objects.BinaryObject;
@@ -35,6 +33,7 @@ import edu.unc.lib.boxc.model.fcrepo.services.RepositoryObjectLoaderImpl;
 public class DocumentIndexingPackageDataLoaderTest {
 
     private DocumentIndexingPackageDataLoader dataLoader;
+    private AutoCloseable closeable;
 
     @Mock
     private RepositoryObjectLoaderImpl repoObjLoader;
@@ -50,12 +49,17 @@ public class DocumentIndexingPackageDataLoaderTest {
 
     @BeforeEach
     public void setup() throws Exception {
-        initMocks(this);
+        closeable = openMocks(this);
 
         dataLoader = new DocumentIndexingPackageDataLoader();
         dataLoader.setRepositoryObjectLoader(repoObjLoader);
 
         when(dip.getPid()).thenReturn(pid);
+    }
+
+    @AfterEach
+    void closeService() throws Exception {
+        closeable.close();
     }
 
     @Test

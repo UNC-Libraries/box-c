@@ -12,20 +12,20 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.mockito.MockitoAnnotations.initMocks;
+import static org.mockito.MockitoAnnotations.openMocks;
 
 import java.net.URI;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.vocabulary.DC;
 import org.apache.jena.vocabulary.RDF;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -65,6 +65,8 @@ public class WorkObjectTest extends AbstractFedoraObjectTest {
 
     private WorkObjectImpl work;
 
+    private AutoCloseable closeable;
+
     @Mock
     private FileObject fileObj;
     private URI contentUri;
@@ -75,7 +77,7 @@ public class WorkObjectTest extends AbstractFedoraObjectTest {
 
     @BeforeEach
     public void init() {
-        initMocks(this);
+        closeable = openMocks(this);
 
         pid = makePid();
 
@@ -106,6 +108,11 @@ public class WorkObjectTest extends AbstractFedoraObjectTest {
             }
         });
         when(driver.getRepositoryObject(any(PID.class))).thenReturn(fileObj);
+    }
+
+    @AfterEach
+    void closeService() throws Exception {
+        closeable.close();
     }
 
     @Test

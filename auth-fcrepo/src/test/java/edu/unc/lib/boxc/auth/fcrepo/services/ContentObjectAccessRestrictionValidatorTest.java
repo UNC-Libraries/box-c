@@ -4,7 +4,7 @@ import static edu.unc.lib.boxc.auth.api.AccessPrincipalConstants.AUTHENTICATED_P
 import static edu.unc.lib.boxc.auth.api.AccessPrincipalConstants.PUBLIC_PRINC;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.when;
-import static org.mockito.MockitoAnnotations.initMocks;
+import static org.mockito.MockitoAnnotations.openMocks;
 
 import java.util.Calendar;
 
@@ -12,6 +12,7 @@ import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.vocabulary.RDF;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -36,6 +37,7 @@ public class ContentObjectAccessRestrictionValidatorTest {
             "http://example.com/rest/content/99/9a/01/a2/999a01a2-c836-499a-a72e-57f1039f4f45";
 
     private ContentObjectAccessRestrictionValidator validator;
+    private AutoCloseable closeable;
 
     @Mock
     private PID pid;
@@ -45,13 +47,18 @@ public class ContentObjectAccessRestrictionValidatorTest {
 
     @BeforeEach
     public void init() {
-        initMocks(this);
+        closeable = openMocks(this);
 
         validator = new ContentObjectAccessRestrictionValidator();
         when(pid.getURI()).thenReturn(PID_URI);
 
         model = ModelFactory.createDefaultModel();
         resc = model.getResource(PID_URI);
+    }
+
+    @AfterEach
+    void closeService() throws Exception {
+        closeable.close();
     }
 
     @Test
