@@ -19,6 +19,7 @@ import java.util.NoSuchElementException;
 import java.util.UUID;
 
 import org.apache.solr.common.SolrInputDocument;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
@@ -122,6 +123,11 @@ public class StructureQueryServiceIT extends BaseEmbeddedSolrTest {
         principals = new AccessGroupSetImpl(PUBLIC_PRINC);
 
         rootId = getContentRootPid().getId();
+    }
+
+    @AfterEach
+    void closeService() throws Exception {
+        closeable.close();
     }
 
     @Test
