@@ -64,6 +64,7 @@
             <list>
                 <ref bean="setRecordDatesFilter" />
                 <ref bean="setDatastreamFilter" />
+                <ref bean="setContentStatusFilter" />
             </list>
         </property>
     </bean>
