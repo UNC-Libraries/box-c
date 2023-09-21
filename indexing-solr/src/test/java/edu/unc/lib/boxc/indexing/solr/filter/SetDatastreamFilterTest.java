@@ -316,6 +316,56 @@ public class SetDatastreamFilterTest {
     }
 
     @Test
+    public void workObjectWithThumbnailNoPrimaryObjectTest() throws Exception {
+        WorkObject workObj = mock(WorkObject.class);
+        when(workObj.getThumbnailObject()).thenReturn(fileObj);
+        when(workObj.getPid()).thenReturn(pid);
+
+        String fileId = "055ed112-f548-479e-ab4b-bf1aad40d470";
+        PID filePid = PIDs.get(fileId);
+        when(fileObj.getPid()).thenReturn(filePid);
+        when(binObj.getPid()).thenReturn(getOriginalFilePid(filePid));
+
+        dip.setContentObject(workObj);
+        filter.filter(dip);
+
+        assertNotNull(idb.getDatastream());
+        assertNull(idb.getFilesizeSort());
+        assertNotNull(idb.getFilesizeTotal());
+
+        assertContainsDatastream(idb.getDatastream(), THUMBNAIL_SMALL.getId(),
+                FILE_SIZE, FILE_MIMETYPE, FILE_NAME, FILE_DIGEST, fileId, null);
+    }
+
+    @Test
+    public void workObjectTestWithPrimaryAndThumbnailObjects() throws Exception {
+        WorkObject workObj = mock(WorkObject.class);
+        when(workObj.getPrimaryObject()).thenReturn(fileObj);
+        when(workObj.getPid()).thenReturn(pid);
+        addMetadataDatastreams(workObj);
+
+        dip.setContentObject(workObj);
+
+        String fileId = "055ed112-f548-479e-ab4b-bf1aad40d470";
+        PID filePid = PIDs.get(fileId);
+        when(fileObj.getPid()).thenReturn(filePid);
+        when(binObj.getPid()).thenReturn(getOriginalFilePid(filePid));
+
+        filter.filter(dip);
+
+        assertContainsDatastream(idb.getDatastream(), ORIGINAL_FILE.getId(),
+                FILE_SIZE, FILE_MIMETYPE, FILE_NAME, FILE_DIGEST, fileId, null);
+        assertContainsDatastream(idb.getDatastream(), THUMBNAIL_SMALL.getId(),
+                FILE_SIZE, FILE_MIMETYPE, FILE_NAME, FILE_DIGEST, fileId, null);
+        assertContainsMetadataDatastreams(idb.getDatastream());
+
+        // Sort size is based off primary object's size
+        assertEquals(FILE_SIZE, (long) idb.getFilesizeSort());
+        // Work has no datastreams of its own
+        assertEquals(FILE2_SIZE + MODS_SIZE + PREMIS_SIZE, (long) idb.getFilesizeTotal());
+    }
+
+    @Test
     public void folderObjectWithMetadataTest() throws Exception {
         FolderObject folderObj = mock(FolderObject.class);
         addMetadataDatastreams(folderObj);

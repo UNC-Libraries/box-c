@@ -11,6 +11,7 @@ import edu.unc.lib.boxc.model.api.exceptions.TombstoneFoundException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
+import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.Statement;
 import org.apache.jena.vocabulary.DC;
@@ -102,20 +103,7 @@ public class WorkObjectImpl extends AbstractContentContainerObject implements Wo
      */
     @Override
     public FileObject getPrimaryObject() {
-        Resource resc = getResource();
-        // Find the primary object relation if it is present
-        Statement primaryStmt = resc.getProperty(Cdr.primaryObject);
-        if (primaryStmt == null) {
-            return null;
-        }
-
-        PID primaryPid = PIDs.get(primaryStmt.getResource().getURI());
-        try {
-            return driver.getRepositoryObject(primaryPid, FileObject.class);
-        } catch (TombstoneFoundException e) {
-            log.debug("Cannot retrieve primary object for {}", getPid().getId(), e);
-        }
-        return null;
+        return getObject(Cdr.primaryObject);
     }
 
     @Override
@@ -213,5 +201,27 @@ public class WorkObjectImpl extends AbstractContentContainerObject implements Wo
         return Arrays.stream(memberOrder.getString().split("\\|"))
                 .map(PIDs::get)
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public FileObject getThumbnailObject() {
+        return getObject(Cdr.useAsThumbnail);
+    }
+
+    private FileObject getObject(Property property) {
+        Resource resource = getResource();
+        // Find the object relation if it is present
+        Statement stmt = resource.getProperty(property);
+        if (stmt == null) {
+            return null;
+        }
+
+        PID pid = PIDs.get(stmt.getResource().getURI());
+        try {
+            return driver.getRepositoryObject(pid, FileObject.class);
+        } catch (TombstoneFoundException e) {
+            log.debug("Cannot retrieve {} object for {}", property.getLocalName(), getPid().getId(), e);
+        }
+        return null;
     }
 }
