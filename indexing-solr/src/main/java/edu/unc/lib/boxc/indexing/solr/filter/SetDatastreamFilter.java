@@ -75,6 +75,10 @@ public class SetDatastreamFilter implements IndexDocumentFilter {
             addDerivatives(datastreams, contentObj.getPid(), false);
         }
 
+        if (contentObj instanceof WorkObject) {
+            addThumbnailDerivatives(contentObj, datastreams);
+        }
+
         // Add in metadata datastreams
         addDatastreams(datastreams, contentObj.listMetadata(), false);
 
@@ -220,21 +224,51 @@ public class SetDatastreamFilter implements IndexDocumentFilter {
     }
 
     private void addDerivatives(List<Datastream> dsList, PID pid, boolean ownedByOtherObject) {
-        derivativeService.getDerivatives(pid).stream()
+        derivativeService.getDerivatives(pid)
             .forEach(deriv -> {
                 String owner = (ownedByOtherObject ? pid.getId() : null);
 
                 DatastreamType type = deriv.getType();
-                String name = type.getId();
-                String mimetype = type.getMimetype();
-                String extension = type.getExtension();
-
-                File derivFile = deriv.getFile();
-                Long filesize = derivFile.length();
-                String filename = derivFile.getName();
-
-                dsList.add(new DatastreamImpl(owner, name, filesize, mimetype, filename, extension, null, null));
+                addToDatastreamList(type, owner, dsList, deriv.getFile());
             });
+    }
+
+    private void addSelectedDerivatives(List<Datastream> dsList, PID pid, boolean ownedByOtherObject, List<DatastreamType> types) {
+        var derivatives = derivativeService.getDerivatives(pid);
+
+
+                derivatives.forEach(deriv -> {
+                    DatastreamType type = deriv.getType();
+                    // only add derivatives of types listed
+                    if (!types.contains(type)) return;
+
+                    String owner = (ownedByOtherObject ? pid.getId() : null);
+                    addToDatastreamList(type, owner, dsList, deriv.getFile());
+                });
+    }
+
+    private void addThumbnailDerivatives(ContentObject contentObject, List<Datastream> datastreams) {
+        WorkObject workObj = (WorkObject) contentObject;
+        FileObject thumbnailObject = workObj.getThumbnailObject();
+
+        if (thumbnailObject != null) {
+            List<DatastreamType> types = new ArrayList<>();
+            types.add(DatastreamType.THUMBNAIL_SMALL);
+            types.add(DatastreamType.THUMBNAIL_LARGE);
+
+            addSelectedDerivatives(datastreams, thumbnailObject.getPid(), true, types);
+        }
+    }
+
+    private void addToDatastreamList(DatastreamType type, String owner, List<Datastream> dsList, File file) {
+        String name = type.getId();
+        String mimetype = type.getMimetype();
+        String extension = type.getExtension();
+
+        Long filesize = file.length();
+        String filename = file.getName();
+
+        dsList.add(new DatastreamImpl(owner, name, filesize, mimetype, filename, extension, null, null));
     }
 
     /**
