@@ -69,10 +69,10 @@ public class SetDatastreamFilter implements IndexDocumentFilter {
             doc.setFilesizeSort(getFilesize(datastreams));
 
             // Add list of derivatives associated from the representative file
-            addDerivatives(datastreams, fileObj.getPid(), ownedByOtherObject);
+            addDerivatives(datastreams, fileObj.getPid(), ownedByOtherObject, null);
         } else {
             // Add list of derivatives associated with the object
-            addDerivatives(datastreams, contentObj.getPid(), false);
+            addDerivatives(datastreams, contentObj.getPid(), false, null);
         }
 
         if (contentObj instanceof WorkObject) {
@@ -155,7 +155,7 @@ public class SetDatastreamFilter implements IndexDocumentFilter {
      * @param ownedByOtherObject
      */
     private void addDatastreams(List<Datastream> dsList, List<BinaryObject> binList, boolean ownedByOtherObject) {
-        binList.stream().forEach(binary -> {
+        binList.forEach(binary -> {
                 Resource binaryResc = binary.getResource();
 
                 String name = binaryResc.getURI();
@@ -215,7 +215,7 @@ public class SetDatastreamFilter implements IndexDocumentFilter {
                 .filter(ds -> ORIGINAL_FILE.getId().equals(ds.getName()))
                 .findFirst();
 
-        if (!original.isPresent()) {
+        if (original.isEmpty()) {
             throw new IndexingException("File object in invalid state, cannot find original file binary");
         }
 
@@ -223,30 +223,23 @@ public class SetDatastreamFilter implements IndexDocumentFilter {
         return size != null ? size : 0l;
     }
 
-    private void addDerivatives(List<Datastream> dsList, PID pid, boolean ownedByOtherObject) {
-        derivativeService.getDerivatives(pid)
-            .forEach(deriv -> {
-                String owner = (ownedByOtherObject ? pid.getId() : null);
+    private void addDerivatives(List<Datastream> dsList, PID pid, boolean ownedByOtherObject, List<DatastreamType> types) {
+        derivativeService.getDerivatives(pid).forEach(deriv -> {
+            DatastreamType type = deriv.getType();
+            // only add derivatives of types listed
+            if (!(types == null) && !types.contains(type)) return;
 
-                DatastreamType type = deriv.getType();
-                addToDatastreamList(type, owner, dsList, deriv.getFile());
-            });
+            String owner = (ownedByOtherObject ? pid.getId() : null);
+            addToDatastreamList(type, owner, dsList, deriv.getFile());
+        });
     }
 
-    private void addSelectedDerivatives(List<Datastream> dsList, PID pid, boolean ownedByOtherObject, List<DatastreamType> types) {
-        var derivatives = derivativeService.getDerivatives(pid);
-
-
-                derivatives.forEach(deriv -> {
-                    DatastreamType type = deriv.getType();
-                    // only add derivatives of types listed
-                    if (!types.contains(type)) return;
-
-                    String owner = (ownedByOtherObject ? pid.getId() : null);
-                    addToDatastreamList(type, owner, dsList, deriv.getFile());
-                });
-    }
-
+    /**
+     * Used to selectively add only thumbnail datastreams
+     *
+     * @param contentObject should be the work object with the thumbnail relation
+     * @param datastreams work object's datastreams to add thumbnail streams to
+     */
     private void addThumbnailDerivatives(ContentObject contentObject, List<Datastream> datastreams) {
         WorkObject workObj = (WorkObject) contentObject;
         FileObject thumbnailObject = workObj.getThumbnailObject();
@@ -256,7 +249,7 @@ public class SetDatastreamFilter implements IndexDocumentFilter {
             types.add(DatastreamType.THUMBNAIL_SMALL);
             types.add(DatastreamType.THUMBNAIL_LARGE);
 
-            addSelectedDerivatives(datastreams, thumbnailObject.getPid(), true, types);
+            addDerivatives(datastreams, thumbnailObject.getPid(), true, types);
         }
     }
 
