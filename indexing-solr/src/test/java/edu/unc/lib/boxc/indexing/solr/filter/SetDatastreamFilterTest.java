@@ -46,6 +46,7 @@ import static edu.unc.lib.boxc.model.api.DatastreamType.THUMBNAIL_SMALL;
 import static edu.unc.lib.boxc.model.fcrepo.ids.DatastreamPids.getOriginalFilePid;
 import static org.apache.jena.rdf.model.ResourceFactory.createResource;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -350,6 +351,7 @@ public class SetDatastreamFilterTest {
         PID filePid = PIDs.get(fileId);
         when(fileObj.getPid()).thenReturn(filePid);
         when(binObj.getPid()).thenReturn(getOriginalFilePid(filePid));
+        setUpDerivatives(filePid);
 
         // set up thumbnail file object
         FileObject thumbnailObj = mock(FileObject.class);
@@ -370,6 +372,11 @@ public class SetDatastreamFilterTest {
         assertEquals(FILE_SIZE, (long) idb.getFilesizeSort());
         // Work has no datastreams of its own
         assertEquals(FILE2_SIZE + MODS_SIZE + PREMIS_SIZE, (long) idb.getFilesizeTotal());
+
+        assertDoesNotContainDatastream(idb.getDatastream(), THUMBNAIL_SMALL.getId(),
+                7l, THUMBNAIL_SMALL.getMimetype(), "small.png", null, fileId, null);
+        assertDoesNotContainDatastream(idb.getDatastream(), THUMBNAIL_LARGE.getId(),
+                13l, THUMBNAIL_LARGE.getMimetype(), "large.png", null, fileId, null);
     }
 
     @Test
@@ -444,6 +451,17 @@ public class SetDatastreamFilterTest {
                 .map(c -> c == null ? "" : c.toString())
                 .collect(Collectors.joining("|"));
         assertTrue(values.contains(joined), "Did not contain datastream " + name);
+    }
+
+    private void assertDoesNotContainDatastream(List<String> values, String name, long filesize, String mimetype,
+                                          String filename, String digest, String owner, String extent) {
+        String extension = filename.substring(filename.lastIndexOf('.') + 1);
+        List<Object> components = Arrays.asList(
+                name, mimetype, filename, extension, filesize, digest, owner, extent);
+        String joined = components.stream()
+                .map(c -> c == null ? "" : c.toString())
+                .collect(Collectors.joining("|"));
+        assertFalse(values.contains(joined), "Contains datastream " + name);
     }
 
     private void addMetadataDatastreams(ContentObject obj) throws Exception {

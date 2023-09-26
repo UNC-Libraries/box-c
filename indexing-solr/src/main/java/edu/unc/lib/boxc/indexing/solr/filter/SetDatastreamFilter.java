@@ -234,14 +234,7 @@ public class SetDatastreamFilter implements IndexDocumentFilter {
             }
 
             String owner = (ownedByOtherObject ? pid.getId() : null);
-            String name = type.getId();
-            String mimetype = type.getMimetype();
-            String extension = type.getExtension();
-            File file = deriv.getFile();
-            Long filesize = file.length();
-            String filename = file.getName();
-            var derivative = new DatastreamImpl(owner, name, filesize, mimetype, filename, extension, null, null);
-            addDerivativeToList(dsList, derivative);
+            dsList.add(createDatastream(deriv, owner));
         });
     }
 
@@ -268,17 +261,19 @@ public class SetDatastreamFilter implements IndexDocumentFilter {
      * @return modified list of datastreams without thumbnail datastreams
      */
     private List<Datastream> clearPreviousThumbnailDatastreams(List<Datastream> datastreams) {
-        for (Datastream datastream : datastreams) {
-            var type = DatastreamType.getByIdentifier(datastream.getName());
-            if (THUMBNAIL_DS_TYPES.contains(type)) {
-                datastreams.remove(datastream);
-            }
-        }
+        datastreams.removeIf(ds -> THUMBNAIL_DS_TYPES.contains(DatastreamType.getByIdentifier(ds.getName())));
         return datastreams;
     }
 
-    private void addDerivativeToList(List<Datastream> dsList, DatastreamImpl derivative) {
-        dsList.add(derivative);
+    private DatastreamImpl createDatastream(DerivativeService.Derivative derivative, String owner) {
+        DatastreamType type = derivative.getType();
+        String name = type.getId();
+        String mimetype = type.getMimetype();
+        String extension = type.getExtension();
+        File file = derivative.getFile();
+        Long filesize = file.length();
+        String filename = file.getName();
+        return new DatastreamImpl(owner, name, filesize, mimetype, filename, extension, null, null);
     }
 
     /**
