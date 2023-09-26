@@ -103,7 +103,7 @@ public class WorkObjectImpl extends AbstractContentContainerObject implements Wo
      */
     @Override
     public FileObject getPrimaryObject() {
-        return getObject(Cdr.primaryObject);
+        return getFileObjectByProperty(Cdr.primaryObject);
     }
 
     @Override
@@ -205,10 +205,10 @@ public class WorkObjectImpl extends AbstractContentContainerObject implements Wo
 
     @Override
     public FileObject getThumbnailObject() {
-        return getObject(Cdr.useAsThumbnail);
+        return getFileObjectByProperty(Cdr.useAsThumbnail);
     }
 
-    private FileObject getObject(Property property) {
+    private FileObject getFileObjectByProperty(Property property) {
         Resource resource = getResource();
         // Find the object relation if it is present
         Statement stmt = resource.getProperty(property);

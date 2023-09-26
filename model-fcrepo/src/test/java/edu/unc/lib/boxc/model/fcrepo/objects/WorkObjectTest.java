@@ -191,7 +191,7 @@ public class WorkObjectTest extends AbstractFedoraObjectTest {
     @Test
     public void getPrimaryObjectTest() {
         PID primaryPid = makePid();
-        Resource primaryResc = createResource(primaryPid.getURI());
+        Resource primaryResc = createResource(primaryPid.getRepositoryPath());
 
         when(driver.getRepositoryObject(eq(primaryPid), eq(FileObject.class))).thenReturn(fileObj);
 
@@ -294,6 +294,28 @@ public class WorkObjectTest extends AbstractFedoraObjectTest {
         var memberValue = member1.getId() + "|" + member2.getId() + "|" + member3.getId();
         resc.addProperty(Cdr.memberOrder, memberValue);
         assertEquals(members, work.getMemberOrder());
+    }
+
+    @Test
+    public void getThumbnailObjectTest() {
+        PID pid = makePid();
+        Resource resource = createResource(pid.getRepositoryPath());
+
+        when(driver.getRepositoryObject(eq(pid), eq(FileObject.class))).thenReturn(fileObj);
+
+        resc.addProperty(Cdr.useAsThumbnail, resource);
+
+        FileObject resultObj = work.getThumbnailObject();
+
+        assertEquals(resultObj, fileObj);
+    }
+
+    @Test
+    public void getNoThumbnailObjectTest() {
+        FileObject resultObj = work.getThumbnailObject();
+
+        assertNull(resultObj);
+        verify(driver, never()).getRepositoryObject(any(PID.class), eq(FileObject.class));
     }
 
     private PID makePid() {

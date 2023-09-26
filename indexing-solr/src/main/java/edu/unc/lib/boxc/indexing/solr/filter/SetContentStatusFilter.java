@@ -53,6 +53,9 @@ public class SetContentStatusFilter implements IndexDocumentFilter{
             if (parentResc.hasProperty(Cdr.primaryObject, resc)) {
                 status.add(FacetConstants.IS_PRIMARY_OBJECT);
             }
+            if (parentResc.hasProperty(Cdr.useAsThumbnail, resc)) {
+                status.add(FacetConstants.IS_ASSIGNED_THUMBNAIL);
+            }
         }
 
         return status;
@@ -69,6 +72,12 @@ public class SetContentStatusFilter implements IndexDocumentFilter{
             status.add(FacetConstants.MEMBERS_ARE_ORDERED);
         } else {
             status.add(FacetConstants.MEMBERS_ARE_UNORDERED);
+        }
+
+        if (resource.hasProperty(Cdr.useAsThumbnail)) {
+            status.add(FacetConstants.THUMBNAIL_ASSIGNED);
+        } else {
+            status.add(FacetConstants.NO_THUMBNAIL_ASSIGNED);
         }
     }
 }
