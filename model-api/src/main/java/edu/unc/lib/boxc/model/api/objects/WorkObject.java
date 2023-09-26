@@ -75,4 +75,11 @@ public interface WorkObject extends ContentContainerObject {
      * @return Ordered list of member ids, or an empty list if members aren't ordered.
      */
     List<PID> getMemberOrder();
+
+    /**
+     * Get the thumbnail object for this work if one is assigned, otherwise return null.
+     *
+     * @return
+     */
+    FileObject getThumbnailObject();
 }

@@ -23,4 +23,8 @@ public abstract class FacetConstants {
     public static final String STAFF_ONLY_ACCESS = "Staff-Only Access";
     public static final String MEMBERS_ARE_ORDERED = "Members Are Ordered";
     public static final String MEMBERS_ARE_UNORDERED = "Members Are Unordered";
+    public static final String THUMBNAIL_ASSIGNED = "Has Assigned Thumbnail";
+    public static final String NO_THUMBNAIL_ASSIGNED = "No Assigned Thumbnail";
+    public static final String IS_ASSIGNED_THUMBNAIL = "Is Assigned Thumbnail";
+
 }

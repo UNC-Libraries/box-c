@@ -7,6 +7,7 @@ import static edu.unc.lib.boxc.model.api.xml.JDOMNamespaceUtil.PREMIS_V3_NS;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -49,6 +50,7 @@ public class SetDatastreamFilter implements IndexDocumentFilter {
 
     private DerivativeService derivativeService;
     private TechnicalMetadataService technicalMetadataService;
+    private static final List<DatastreamType> THUMBNAIL_DS_TYPES = Arrays.asList(DatastreamType.THUMBNAIL_SMALL, DatastreamType.THUMBNAIL_LARGE);
 
     @Override
     public void filter(DocumentIndexingPackage dip) throws IndexingException {
@@ -69,10 +71,14 @@ public class SetDatastreamFilter implements IndexDocumentFilter {
             doc.setFilesizeSort(getFilesize(datastreams));
 
             // Add list of derivatives associated from the representative file
-            addDerivatives(datastreams, fileObj.getPid(), ownedByOtherObject);
+            addDerivatives(datastreams, fileObj.getPid(), ownedByOtherObject, null);
         } else {
             // Add list of derivatives associated with the object
-            addDerivatives(datastreams, contentObj.getPid(), false);
+            addDerivatives(datastreams, contentObj.getPid(), false, null);
+        }
+
+        if (contentObj instanceof WorkObject) {
+            addThumbnailDerivatives((WorkObject) contentObj, datastreams);
         }
 
         // Add in metadata datastreams
@@ -151,7 +157,7 @@ public class SetDatastreamFilter implements IndexDocumentFilter {
      * @param ownedByOtherObject
      */
     private void addDatastreams(List<Datastream> dsList, List<BinaryObject> binList, boolean ownedByOtherObject) {
-        binList.stream().forEach(binary -> {
+        binList.forEach(binary -> {
                 Resource binaryResc = binary.getResource();
 
                 String name = binaryResc.getURI();
@@ -211,7 +217,7 @@ public class SetDatastreamFilter implements IndexDocumentFilter {
                 .filter(ds -> ORIGINAL_FILE.getId().equals(ds.getName()))
                 .findFirst();
 
-        if (!original.isPresent()) {
+        if (original.isEmpty()) {
             throw new IndexingException("File object in invalid state, cannot find original file binary");
         }
 
@@ -219,22 +225,55 @@ public class SetDatastreamFilter implements IndexDocumentFilter {
         return size != null ? size : 0l;
     }
 
-    private void addDerivatives(List<Datastream> dsList, PID pid, boolean ownedByOtherObject) {
-        derivativeService.getDerivatives(pid).stream()
-            .forEach(deriv -> {
-                String owner = (ownedByOtherObject ? pid.getId() : null);
+    private void addDerivatives(List<Datastream> dsList, PID pid, boolean ownedByOtherObject, List<DatastreamType> types) {
+        derivativeService.getDerivatives(pid).forEach(deriv -> {
+            DatastreamType type = deriv.getType();
+            // only add derivatives of types listed
+            if ((types != null) && !types.contains(type)) {
+                return;
+            }
 
-                DatastreamType type = deriv.getType();
-                String name = type.getId();
-                String mimetype = type.getMimetype();
-                String extension = type.getExtension();
+            String owner = (ownedByOtherObject ? pid.getId() : null);
+            dsList.add(createDatastream(deriv, owner));
+        });
+    }
 
-                File derivFile = deriv.getFile();
-                Long filesize = derivFile.length();
-                String filename = derivFile.getName();
+    /**
+     * Used to selectively add only thumbnail datastreams
+     *
+     * @param workObject the work object with the thumbnail relation
+     * @param datastreams work object's datastreams to add thumbnail streams to
+     */
+    private void addThumbnailDerivatives(WorkObject workObject, List<Datastream> datastreams) {
+        FileObject thumbnailObject = workObject.getThumbnailObject();
 
-                dsList.add(new DatastreamImpl(owner, name, filesize, mimetype, filename, extension, null, null));
-            });
+        if (thumbnailObject != null) {
+            var updatedDatastreams = clearPreviousThumbnailDatastreams(datastreams);
+            addDerivatives(updatedDatastreams, thumbnailObject.getPid(), true, THUMBNAIL_DS_TYPES);
+        }
+    }
+
+    /**
+     *  There may be thumbnail streams from the primary object, so we'll clear those
+     *  before adding the assigned thumbnail datastreams
+     *
+     * @param datastreams full list of datastreams to index for the work object
+     * @return modified list of datastreams without thumbnail datastreams
+     */
+    private List<Datastream> clearPreviousThumbnailDatastreams(List<Datastream> datastreams) {
+        datastreams.removeIf(ds -> THUMBNAIL_DS_TYPES.contains(DatastreamType.getByIdentifier(ds.getName())));
+        return datastreams;
+    }
+
+    private DatastreamImpl createDatastream(DerivativeService.Derivative derivative, String owner) {
+        DatastreamType type = derivative.getType();
+        String name = type.getId();
+        String mimetype = type.getMimetype();
+        String extension = type.getExtension();
+        File file = derivative.getFile();
+        Long filesize = file.length();
+        String filename = file.getName();
+        return new DatastreamImpl(owner, name, filesize, mimetype, filename, extension, null, null);
     }
 
     /**

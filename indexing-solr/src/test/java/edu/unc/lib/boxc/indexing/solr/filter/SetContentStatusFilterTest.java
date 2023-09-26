@@ -180,4 +180,42 @@ public class SetContentStatusFilterTest {
         assertTrue(listCaptor.getValue().contains(FacetConstants.MEMBERS_ARE_UNORDERED));
         assertFalse(listCaptor.getValue().contains(FacetConstants.MEMBERS_ARE_ORDERED));
     }
+
+    @Test
+    public void testWorkWithAssignedThumbnail() throws Exception {
+        when(dip.getContentObject()).thenReturn(workObj);
+        when(workObj.getResource()).thenReturn(resc);
+        when(resc.hasProperty(Cdr.useAsThumbnail)).thenReturn(true);
+
+        filter.filter(dip);
+
+        verify(idb).setContentStatus(listCaptor.capture());
+        assertTrue(listCaptor.getValue().contains(FacetConstants.THUMBNAIL_ASSIGNED));
+        assertFalse(listCaptor.getValue().contains(FacetConstants.NO_THUMBNAIL_ASSIGNED));
+    }
+
+    @Test
+    public void testWorkNoAssignedThumbnail() throws Exception {
+        when(dip.getContentObject()).thenReturn(workObj);
+        when(workObj.getResource()).thenReturn(resc);
+
+        filter.filter(dip);
+
+        verify(idb).setContentStatus(listCaptor.capture());
+        assertTrue(listCaptor.getValue().contains(FacetConstants.NO_THUMBNAIL_ASSIGNED));
+    }
+
+    @Test
+    public void testIsAssignedThumbnail() throws Exception {
+        when(workObj.getResource()).thenReturn(resc);
+        when(resc.hasProperty(Cdr.useAsThumbnail, fileResc)).thenReturn(true);
+
+        when(dip.getContentObject()).thenReturn(fileObj);
+        when(fileObj.getResource()).thenReturn(fileResc);
+
+        filter.filter(dip);
+
+        verify(idb).setContentStatus(listCaptor.capture());
+        assertTrue(listCaptor.getValue().contains(FacetConstants.IS_ASSIGNED_THUMBNAIL));
+    }
 }

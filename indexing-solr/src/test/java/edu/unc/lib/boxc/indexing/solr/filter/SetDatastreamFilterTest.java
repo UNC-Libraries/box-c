@@ -32,6 +32,7 @@ import org.mockito.Captor;
 import org.mockito.Mock;
 
 import java.io.File;
+import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
@@ -45,6 +46,7 @@ import static edu.unc.lib.boxc.model.api.DatastreamType.THUMBNAIL_SMALL;
 import static edu.unc.lib.boxc.model.fcrepo.ids.DatastreamPids.getOriginalFilePid;
 import static org.apache.jena.rdf.model.ResourceFactory.createResource;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -316,6 +318,68 @@ public class SetDatastreamFilterTest {
     }
 
     @Test
+    public void workObjectWithThumbnailNoPrimaryObjectTest() throws Exception {
+        WorkObject workObj = mock(WorkObject.class);
+        when(workObj.getThumbnailObject()).thenReturn(fileObj);
+        when(workObj.getPid()).thenReturn(pid);
+
+        String fileId = "055ed112-f548-479e-ab4b-bf1aad40d470";
+        PID filePid = PIDs.get(fileId);
+        when(fileObj.getPid()).thenReturn(filePid);
+        when(binObj.getPid()).thenReturn(getOriginalFilePid(filePid));
+        setUpDerivatives(filePid);
+
+        dip.setContentObject(workObj);
+        filter.filter(dip);
+
+        assertNotNull(idb.getDatastream());
+        assertNull(idb.getFilesizeSort());
+        assertNotNull(idb.getFilesizeTotal());
+        assertThumbnailDatastreams(fileId);
+    }
+
+    @Test
+    public void workObjectTestWithPrimaryAndThumbnailObjects() throws Exception {
+        WorkObject workObj = mock(WorkObject.class);
+        when(workObj.getPrimaryObject()).thenReturn(fileObj);
+        when(workObj.getPid()).thenReturn(pid);
+        addMetadataDatastreams(workObj);
+
+        dip.setContentObject(workObj);
+
+        String fileId = "055ed112-f548-479e-ab4b-bf1aad40d470";
+        PID filePid = PIDs.get(fileId);
+        when(fileObj.getPid()).thenReturn(filePid);
+        when(binObj.getPid()).thenReturn(getOriginalFilePid(filePid));
+        setUpDerivatives(filePid);
+
+        // set up thumbnail file object
+        FileObject thumbnailObj = mock(FileObject.class);
+        when(workObj.getThumbnailObject()).thenReturn(thumbnailObj);
+        String thumbnailId = "066ed112-f548-479e-ab4b-bf1aad40d678";
+        PID thumbnailPid = PIDs.get(thumbnailId);
+        when(thumbnailObj.getPid()).thenReturn(thumbnailPid);
+        setUpDerivatives(thumbnailPid);
+
+        filter.filter(dip);
+
+        assertContainsDatastream(idb.getDatastream(), ORIGINAL_FILE.getId(),
+                FILE_SIZE, FILE_MIMETYPE, FILE_NAME, FILE_DIGEST, fileId, null);
+        assertThumbnailDatastreams(thumbnailId);
+        assertContainsMetadataDatastreams(idb.getDatastream());
+
+        // Sort size is based off primary object's size
+        assertEquals(FILE_SIZE, (long) idb.getFilesizeSort());
+        // Work has no datastreams of its own
+        assertEquals(FILE2_SIZE + MODS_SIZE + PREMIS_SIZE, (long) idb.getFilesizeTotal());
+
+        assertDoesNotContainDatastream(idb.getDatastream(), THUMBNAIL_SMALL.getId(),
+                7l, THUMBNAIL_SMALL.getMimetype(), "small.png", null, fileId, null);
+        assertDoesNotContainDatastream(idb.getDatastream(), THUMBNAIL_LARGE.getId(),
+                13l, THUMBNAIL_LARGE.getMimetype(), "large.png", null, fileId, null);
+    }
+
+    @Test
     public void folderObjectWithMetadataTest() throws Exception {
         FolderObject folderObj = mock(FolderObject.class);
         addMetadataDatastreams(folderObj);
@@ -389,6 +453,17 @@ public class SetDatastreamFilterTest {
         assertTrue(values.contains(joined), "Did not contain datastream " + name);
     }
 
+    private void assertDoesNotContainDatastream(List<String> values, String name, long filesize, String mimetype,
+                                          String filename, String digest, String owner, String extent) {
+        String extension = filename.substring(filename.lastIndexOf('.') + 1);
+        List<Object> components = Arrays.asList(
+                name, mimetype, filename, extension, filesize, digest, owner, extent);
+        String joined = components.stream()
+                .map(c -> c == null ? "" : c.toString())
+                .collect(Collectors.joining("|"));
+        assertFalse(values.contains(joined), "Contains datastream " + name);
+    }
+
     private void addMetadataDatastreams(ContentObject obj) throws Exception {
         BinaryObject fitsBin = mock(BinaryObject.class);
         when(fitsBin.getPid()).thenReturn(DatastreamPids.getTechnicalMetadataPid(pid));
@@ -414,5 +489,24 @@ public class SetDatastreamFilterTest {
                         MODS_SIZE, MODS_MIMETYPE, MODS_NAME, MODS_DIGEST, null, null);
         assertContainsDatastream(values, DatastreamType.MD_EVENTS.getId(),
                 PREMIS_SIZE, PREMIS_MIMETYPE, PREMIS_NAME, PREMIS_DIGEST, null, null);
+    }
+
+    private void setUpDerivatives(PID filePid) throws IOException {
+        File smallFile = derivDir.resolve("small.png").toFile();
+        FileUtils.write(smallFile, "content", "UTF-8");
+
+        File largeFile = derivDir.resolve("large.png").toFile();
+        FileUtils.write(largeFile, "large content", "UTF-8");
+
+        List<Derivative> derivs = Arrays.asList(new Derivative(THUMBNAIL_SMALL, smallFile),
+                new Derivative(THUMBNAIL_LARGE, largeFile));
+        when(derivativeService.getDerivatives(filePid)).thenReturn(derivs);
+    }
+
+    private void assertThumbnailDatastreams(String thumbnailId) {
+        assertContainsDatastream(idb.getDatastream(), THUMBNAIL_SMALL.getId(),
+                7l, THUMBNAIL_SMALL.getMimetype(), "small.png", null, thumbnailId, null);
+        assertContainsDatastream(idb.getDatastream(), THUMBNAIL_LARGE.getId(),
+                13l, THUMBNAIL_LARGE.getMimetype(), "large.png", null, thumbnailId, null);
     }
 }
