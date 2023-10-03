@@ -115,6 +115,8 @@ public class ThumbnailController {
         var request = new ThumbnailRequest();
         request.setAgent(agent);
         request.setFilePidString(pidString);
+        request.setAction(ThumbnailRequest.ASSIGN);
+
         try {
             thumbnailRequestSender.sendToQueue(request);
         } catch (IOException e) {
