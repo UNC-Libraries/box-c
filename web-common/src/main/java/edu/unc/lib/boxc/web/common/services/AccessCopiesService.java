@@ -6,6 +6,7 @@ import edu.unc.lib.boxc.auth.api.services.GlobalPermissionEvaluator;
 import edu.unc.lib.boxc.model.api.DatastreamType;
 import edu.unc.lib.boxc.model.api.ResourceType;
 import edu.unc.lib.boxc.model.api.ids.PID;
+import edu.unc.lib.boxc.model.api.objects.WorkObject;
 import edu.unc.lib.boxc.search.api.ContentCategory;
 import edu.unc.lib.boxc.search.api.SearchFieldKey;
 import edu.unc.lib.boxc.search.api.facets.CutoffFacet;
@@ -130,6 +131,14 @@ public class AccessCopiesService {
      */
     public String getThumbnailId(ContentObjectRecord contentObjectRecord, AccessGroupSet principals,
                                  boolean checkChildren) {
+        // Find work's assigned thumbnail, if it exists
+        if (ResourceType.Work.name().equals(contentObjectRecord.getResourceType())) {
+            var workObject = (WorkObject) contentObjectRecord;
+            if (workObject.getThumbnailObject() != null) {
+                return workObject.getThumbnailObject().getPid().getId();
+            }
+        }
+
         // Find thumbnail datastream recorded directly on the object, if present
         var thumbId = DatastreamUtil.getThumbnailOwnerId(contentObjectRecord);
         if (thumbId != null) {
