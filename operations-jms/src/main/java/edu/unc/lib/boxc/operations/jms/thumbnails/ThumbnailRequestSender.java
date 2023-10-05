@@ -1,4 +1,4 @@
-package edu.unc.lib.boxc.operations.jms.thumbnail;
+package edu.unc.lib.boxc.operations.jms.thumbnails;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;

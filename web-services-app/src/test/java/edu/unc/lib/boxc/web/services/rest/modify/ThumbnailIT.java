@@ -23,8 +23,8 @@ import java.io.FileInputStream;
 import java.nio.file.Path;
 
 import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
-import edu.unc.lib.boxc.operations.jms.thumbnail.ThumbnailRequest;
-import edu.unc.lib.boxc.operations.jms.thumbnail.ThumbnailRequestSender;
+import edu.unc.lib.boxc.operations.jms.thumbnails.ThumbnailRequest;
+import edu.unc.lib.boxc.operations.jms.thumbnails.ThumbnailRequestSender;
 import org.apache.commons.io.IOUtils;
 import org.jdom2.Document;
 import org.jdom2.Element;

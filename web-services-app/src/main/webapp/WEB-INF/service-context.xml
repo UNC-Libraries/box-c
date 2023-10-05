@@ -433,7 +433,7 @@
         <property name="pubSubDomain" value="false" />
     </bean>
 
-    <bean id="thumbnailRequestSender" class="edu.unc.lib.boxc.operations.jms.thumbnail.ThumbnailRequestSender">
+    <bean id="thumbnailRequestSender" class="edu.unc.lib.boxc.operations.jms.thumbnails.ThumbnailRequestSender">
         <property name="jmsTemplate" ref="thumbnailRequestJmsTemplate"/>
     </bean>
     

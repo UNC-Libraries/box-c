@@ -36,6 +36,6 @@
     </bean>
 
     <bean id="thumbnailRequestSender" class="org.mockito.Mockito" factory-method="mock">
-        <constructor-arg value="edu.unc.lib.boxc.operations.jms.thumbnail.ThumbnailRequestSender" />
+        <constructor-arg value="edu.unc.lib.boxc.operations.jms.thumbnails.ThumbnailRequestSender" />
     </bean>
 </beans>
