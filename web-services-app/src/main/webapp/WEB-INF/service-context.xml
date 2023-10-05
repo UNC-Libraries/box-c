@@ -429,7 +429,7 @@
 
     <bean id="thumbnailRequestJmsTemplate" class="org.springframework.jms.core.JmsTemplate">
         <property name="connectionFactory" ref="jmsFactory" />
-        <property name="defaultDestinationName" value="${cdr.thumbnail.stream}" />
+        <property name="defaultDestinationName" value="${cdr.thumbnails.stream}" />
         <property name="pubSubDomain" value="false" />
     </bean>
 

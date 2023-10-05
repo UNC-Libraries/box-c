@@ -132,12 +132,12 @@ public class AccessCopiesService {
     public String getThumbnailId(ContentObjectRecord contentObjectRecord, AccessGroupSet principals,
                                  boolean checkChildren) {
         // Find work's assigned thumbnail, if it exists
-        if (ResourceType.Work.name().equals(contentObjectRecord.getResourceType())) {
-            var workObject = (WorkObject) contentObjectRecord;
-            if (workObject.getThumbnailObject() != null) {
-                return workObject.getThumbnailObject().getPid().getId();
-            }
-        }
+//        if (ResourceType.Work.name().equals(contentObjectRecord.getResourceType())) {
+//            var workObject = (WorkObject) contentObjectRecord;
+//            if (workObject.getThumbnailObject() != null) {
+//                return workObject.getThumbnailObject().getPid().getId();
+//            }
+//        }
 
         // Find thumbnail datastream recorded directly on the object, if present
         var thumbId = DatastreamUtil.getThumbnailOwnerId(contentObjectRecord);

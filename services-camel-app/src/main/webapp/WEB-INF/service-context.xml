@@ -499,6 +499,13 @@
         <property name="orderNotificationService" ref="orderNotificationService" />
     </bean>
 
+    <bean id="thumbnailRequestProcessor" class="edu.unc.lib.boxc.services.camel.thumbnails.ThumbnailRequestProcessor">
+        <property name="aclService" ref="aclService" />
+        <property name="indexingMessageSender" ref="indexingMessageSender" />
+        <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
+        <property name="repositoryObjectFactory" ref="repositoryObjectFactory" />
+    </bean>
+
     <!-- Camel contexts -->
 
     <camel:camelContext id="FcrepoTriplestoreIndexer">
@@ -555,5 +562,9 @@
 
     <camel:camelContext id="CdrMemberOrder">
         <camel:package>edu.unc.lib.boxc.services.camel.order</camel:package>
+    </camel:camelContext>
+
+    <camel:camelContext id="CdrThumbnails">
+        <camel:package>edu.unc.lib.boxc.services.camel.thumbnails</camel:package>
     </camel:camelContext>
 </beans>
