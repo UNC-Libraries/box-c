@@ -12,8 +12,8 @@ import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.objects.FileObject;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
-import edu.unc.lib.boxc.operations.jms.thumbnail.ThumbnailRequest;
-import edu.unc.lib.boxc.operations.jms.thumbnail.ThumbnailRequestSender;
+import edu.unc.lib.boxc.operations.jms.thumbnails.ThumbnailRequest;
+import edu.unc.lib.boxc.operations.jms.thumbnails.ThumbnailRequestSender;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -115,6 +115,8 @@ public class ThumbnailController {
         var request = new ThumbnailRequest();
         request.setAgent(agent);
         request.setFilePidString(pidString);
+        request.setAction(ThumbnailRequest.ASSIGN);
+
         try {
             thumbnailRequestSender.sendToQueue(request);
         } catch (IOException e) {
