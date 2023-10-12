@@ -41,10 +41,6 @@
 
     <!-- Beans -->
 
-    <bean id="gaTrackingID" class="java.lang.String">
-        <constructor-arg value="${google.trackingId}" />
-    </bean>
-    
     <bean id="accessBaseUrl" class="java.lang.String">
         <constructor-arg value="${access.base.url}" />
     </bean>

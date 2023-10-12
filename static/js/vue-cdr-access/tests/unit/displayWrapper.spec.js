@@ -6,7 +6,6 @@ import moxios from "moxios";
 import {createI18n} from "vue-i18n";
 import translations from "@/translations";
 import { response, briefObjectData } from "../fixtures/displayWrapperFixtures";
-import { $gtag } from '../fixtures/testHelpers';
 
 let wrapper, router;
 
@@ -45,7 +44,6 @@ describe('displayWrapper.vue', () => {
         wrapper = mount(displayWrapper, {
             global: {
                 plugins: [router, store, i18n],
-                mocks: { $gtag },
                 stubs: {
                     RouterLink: RouterLinkStub
                 }

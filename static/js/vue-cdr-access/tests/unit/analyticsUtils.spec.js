@@ -6,7 +6,6 @@ import analyticsUtils from "../../src/mixins/analyticsUtils";
 import store from '@/store';
 import { createI18n } from "vue-i18n";
 import translations from "@/translations";
-import { $gtag } from '../fixtures/testHelpers';
 import moxios from "moxios";
 
 let wrapper;
@@ -44,7 +43,6 @@ describe('analyticsUtils', () => {
         wrapper = mount(advancedSearch, {
             global: {
                 plugins: [router, store, i18n],
-                mocks: { $gtag },
                 stubs: {
                     RouterLink: RouterLinkStub
                 }
@@ -145,7 +143,7 @@ describe('analyticsUtils', () => {
         wrapper = mount(displayWrapper, {
             global: {
                 plugins: [store, i18n],
-                mocks: { $gtag, $route },
+                mocks: { $route },
                 stubs: {
                     RouterLink: RouterLinkStub
                 }
