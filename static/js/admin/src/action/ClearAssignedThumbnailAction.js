@@ -27,6 +27,7 @@ define('ClearAssignedThumbnailAction', [ 'jquery', 'AjaxCallbackAction'], functi
             };
         }
 
+
         AjaxCallbackAction.prototype._create.call(this, options);
     };
 
