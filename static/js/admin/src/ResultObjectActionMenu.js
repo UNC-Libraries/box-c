@@ -151,6 +151,11 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'A
 				} else {
 					items['setAsPrimaryObject'] = { name : 'Set as Primary Object' };
 				}
+				if ($.inArray('Assigned As Thumbnail', metadata.contentStatus) != -1) {
+					items['clearAssignedThumbnail'] = { name : 'Clear Assigned Thumbnail' };
+				} else {
+					items['assignAsThumbnail'] = { name : 'Assign as Thumbnail' };
+				}
 			} else if (metadata.type == 'Work') {
 				if ($.inArray('Has Primary Object', metadata.contentStatus) != -1) {
 					items['clearPrimaryObject'] = { name : 'Clear Primary Object' };
@@ -359,6 +364,20 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'A
 					case "setAsPrimaryObject" :
 						self.actionHandler.addEvent({
 							action : 'SetAsPrimaryObjectResult',
+							target : resultObject,
+							confirm : false
+						});
+						break;
+					case "clearAssignedThumbnail" :
+						self.actionHandler.addEvent({
+							action : 'ClearAssignedThumbnail',
+							target : resultObject,
+							confirm : false
+						});
+						break;
+					case "assignAsThumbnail" :
+						self.actionHandler.addEvent({
+							action : 'AssignAsThumbnail',
 							target : resultObject,
 							confirm : false
 						});

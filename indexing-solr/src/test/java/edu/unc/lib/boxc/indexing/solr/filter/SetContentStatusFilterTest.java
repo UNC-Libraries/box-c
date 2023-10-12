@@ -190,7 +190,7 @@ public class SetContentStatusFilterTest {
         filter.filter(dip);
 
         verify(idb).setContentStatus(listCaptor.capture());
-        assertTrue(listCaptor.getValue().contains(FacetConstants.THUMBNAIL_ASSIGNED));
+        assertTrue(listCaptor.getValue().contains(FacetConstants.HAS_THUMBNAIL_ASSIGNED));
         assertFalse(listCaptor.getValue().contains(FacetConstants.NO_THUMBNAIL_ASSIGNED));
     }
 
@@ -216,6 +216,6 @@ public class SetContentStatusFilterTest {
         filter.filter(dip);
 
         verify(idb).setContentStatus(listCaptor.capture());
-        assertTrue(listCaptor.getValue().contains(FacetConstants.IS_ASSIGNED_THUMBNAIL));
+        assertTrue(listCaptor.getValue().contains(FacetConstants.ASSIGNED_AS_THUMBNAIL));
     }
 }
