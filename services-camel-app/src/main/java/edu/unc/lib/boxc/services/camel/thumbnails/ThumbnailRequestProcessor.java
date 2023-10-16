@@ -3,6 +3,7 @@ package edu.unc.lib.boxc.services.camel.thumbnails;
 import edu.unc.lib.boxc.auth.api.Permission;
 import edu.unc.lib.boxc.auth.api.services.AccessControlService;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
+import edu.unc.lib.boxc.model.api.objects.WorkObject;
 import edu.unc.lib.boxc.model.api.rdf.Cdr;
 import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
@@ -39,10 +40,16 @@ public class ThumbnailRequestProcessor implements Processor {
                 pid, agent.getPrincipals(), Permission.editDescription);
 
         var file = repositoryObjectLoader.getFileObject(pid);
-        var work = file.getParent();
+        var work = (WorkObject) file.getParent();
 
         if (Objects.equals(action, ThumbnailRequest.ASSIGN)) {
             repositoryObjectFactory.createExclusiveRelationship(work, Cdr.useAsThumbnail, file.getResource());
+            // reindex old thumbnail object
+            var oldThumbnailFile = work.getThumbnailObject();
+            if (oldThumbnailFile != null) {
+                indexingMessageSender.sendIndexingOperation(
+                        agent.getUsername(), oldThumbnailFile.getPid(), IndexingActionType.UPDATE_DATASTREAMS);
+            }
         } else if ( Objects.equals(action, ThumbnailRequest.DELETE)) {
             repositoryObjectFactory.deleteProperty(work, Cdr.useAsThumbnail);
         }
@@ -50,6 +57,8 @@ public class ThumbnailRequestProcessor implements Processor {
         // send message to update solr
         indexingMessageSender.sendIndexingOperation(
                 agent.getUsername(), work.getPid(), IndexingActionType.UPDATE_DATASTREAMS);
+        indexingMessageSender.sendIndexingOperation(
+                agent.getUsername(), file.getPid(), IndexingActionType.UPDATE_DATASTREAMS);
     }
 
     public void setRepositoryObjectLoader(RepositoryObjectLoader repositoryObjectLoader) {

@@ -11,7 +11,7 @@ define('ClearAssignedThumbnailAction', [ 'jquery', 'AjaxCallbackAction'], functi
         this.context = context;
 
         var options = {
-            workMethod: "PUT",
+            workMethod: "DELETE",
             workPath: "/services/api/edit/deleteThumbnail/{idPath}",
             workLabel: "Clearing assigned thumbnail...",
             followupLabel: "Clearing assigned thumbnail...",
