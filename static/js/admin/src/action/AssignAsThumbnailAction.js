@@ -35,8 +35,19 @@ define('AssignAsThumbnailAction', [ 'jquery', 'AjaxCallbackAction'], function($,
             action : 'RefreshResult',
             target : this.context.target
         });
+        this.context.actionHandler.addEvent({
+            action : 'RefreshResult',
+            target : this.context.resultTable.resultObjectList.getResultObject(this.oldThumbnailId)
+        });
         this.alertHandler.alertHandler("success", "Assignment of object \"" + this.context.target.metadata.title + "\" as the assigned thumbnail has completed.");
         this.context.target.enable();
+    };
+
+    AssignAsThumbnailAction.prototype.workDone = function(data) {
+        this.completeTimestamp = data.timestamp;
+        this.oldThumbnailId = data.oldThumbnailId;
+        this.newThumbnailId = data.newThumbnailId;
+        return true;
     };
 
     return AssignAsThumbnailAction;

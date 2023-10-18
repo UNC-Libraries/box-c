@@ -11,6 +11,7 @@ import edu.unc.lib.boxc.auth.api.services.AccessControlService;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.objects.FileObject;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
+import edu.unc.lib.boxc.model.api.objects.WorkObject;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.boxc.operations.jms.thumbnails.ThumbnailRequest;
 import edu.unc.lib.boxc.operations.jms.thumbnails.ThumbnailRequestSender;
@@ -100,6 +101,8 @@ public class ThumbnailController {
     @ResponseBody
     public ResponseEntity<Object> assignThumbnail(@PathVariable("pidString") String pidString) {
         PID pid = PIDs.get(pidString);
+        Map<String, Object> result = new HashMap<>();
+        result.put("action", "assignThumbnail");
 
         AccessGroupSet principals = getAgentPrincipals().getPrincipals();
         aclService.assertHasAccess("Insufficient permissions to assign thumbnail for " + pidString,
@@ -109,6 +112,12 @@ public class ThumbnailController {
         if (!(object instanceof FileObject)) {
             log.error("Error object is not a file: {}", pidString);
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+
+        var workObject = (WorkObject) object.getParent();
+        var oldThumbnail = workObject.getThumbnailObject();
+        if (oldThumbnail != null) {
+            result.put("oldThumbnailId", oldThumbnail.getPid().getId());
         }
 
         var agent = AgentPrincipalsImpl.createFromThread();
@@ -123,13 +132,17 @@ public class ThumbnailController {
             log.error("Error assigning file {} as thumbnail", request.getFilePidString(), e);
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
-        return new ResponseEntity<>(HttpStatus.OK);
+        result.put("timestamp", System.currentTimeMillis());
+        result.put("newThumbnailId", object.getPid().getId());
+        return new ResponseEntity<>(result, HttpStatus.OK);
     }
 
     @DeleteMapping(value = "/edit/deleteThumbnail/{pidString}")
     @ResponseBody
     public ResponseEntity<Object> deleteThumbnail(@PathVariable("pidString") String pidString) {
         PID pid = PIDs.get(pidString);
+        Map<String, Object> result = new HashMap<>();
+        result.put("action", "deleteThumbnail");
 
         AccessGroupSet principals = getAgentPrincipals().getPrincipals();
         aclService.assertHasAccess("Insufficient permissions to assign thumbnail for " + pidString,
@@ -153,6 +166,8 @@ public class ThumbnailController {
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
-        return new ResponseEntity<>(HttpStatus.OK);
+        result.put("timestamp", System.currentTimeMillis());
+        result.put("oldThumbnailId", object.getPid().getId());
+        return new ResponseEntity<>(result, HttpStatus.OK);
     }
 }
