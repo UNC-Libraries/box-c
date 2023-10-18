@@ -50,5 +50,13 @@ define('AssignAsThumbnailAction', [ 'jquery', 'AjaxCallbackAction'], function($,
         return true;
     };
 
+    AssignAsThumbnailAction.prototype.followup = function(data) {
+        if (data) {
+            return this.context.target.updateVersion(data) &&
+                this.context.resultTable.resultObjectList.getResultObject(this.oldThumbnailId).updateVersion(data);
+        }
+        return false;
+    };
+
     return AssignAsThumbnailAction;
 });

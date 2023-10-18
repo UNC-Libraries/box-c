@@ -40,5 +40,12 @@ define('ClearAssignedThumbnailAction', [ 'jquery', 'AjaxCallbackAction'], functi
         this.context.target.enable();
     };
 
+    ClearAssignedThumbnailAction.prototype.followup = function(data) {
+        if (data) {
+            return this.context.target.updateVersion(data);
+        }
+        return false;
+    };
+
     return ClearAssignedThumbnailAction;
 });

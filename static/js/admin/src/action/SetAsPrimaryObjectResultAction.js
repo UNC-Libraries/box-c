@@ -38,6 +38,13 @@ define('SetAsPrimaryObjectResultAction', [ 'jquery', 'AjaxCallbackAction'], func
 		this.alertHandler.alertHandler("success", "Assignment of object \"" + this.context.target.metadata.title + "\" as primary object has completed.");
 		this.context.target.enable();
 	};
+
+	SetAsPrimaryObjectResultAction.prototype.followup = function(data) {
+		if (data) {
+			return this.context.target.updateVersion(data);
+		}
+		return false;
+	};
 	
 	return SetAsPrimaryObjectResultAction;
 });
