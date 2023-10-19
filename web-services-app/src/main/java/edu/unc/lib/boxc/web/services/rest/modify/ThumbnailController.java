@@ -149,16 +149,24 @@ public class ThumbnailController {
                 pid, principals, Permission.editDescription);
 
         var object = repositoryObjectLoader.getRepositoryObject(pid);
-        if (!(object instanceof FileObject)) {
-            log.error("Error object is not a file: {}", pidString);
+        if (!(object instanceof FileObject) && !(object instanceof WorkObject)) {
+            log.error("Error object is not a file or work: {}", pidString);
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
 
         var agent = AgentPrincipalsImpl.createFromThread();
         var request = new ThumbnailRequest();
         request.setAgent(agent);
-        request.setFilePidString(pidString);
         request.setAction(ThumbnailRequest.DELETE);
+        if (object instanceof WorkObject) {
+            var fileId = ((WorkObject) object).getThumbnailObject().getPid().getId();
+            request.setFilePidString(fileId);
+            result.put("oldThumbnailId", fileId);
+        } else {
+            request.setFilePidString(pidString);
+            result.put("oldThumbnailId", object.getPid().getId());
+        }
+
         try {
             thumbnailRequestSender.sendToQueue(request);
         } catch (IOException e) {
@@ -167,7 +175,6 @@ public class ThumbnailController {
         }
 
         result.put("timestamp", System.currentTimeMillis());
-        result.put("oldThumbnailId", object.getPid().getId());
         return new ResponseEntity<>(result, HttpStatus.OK);
     }
 }

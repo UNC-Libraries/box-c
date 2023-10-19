@@ -160,6 +160,9 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'A
 				if ($.inArray('Has Primary Object', metadata.contentStatus) != -1) {
 					items['clearPrimaryObject'] = { name : 'Clear Primary Object' };
 				}
+				if ($.inArray('Has Assigned Thumbnail', metadata.contentStatus) != -1) {
+					items['clearAssignedThumbnail'] = { name : 'Clear Assigned Thumbnail' };
+				}
 			}
 		}
 		
