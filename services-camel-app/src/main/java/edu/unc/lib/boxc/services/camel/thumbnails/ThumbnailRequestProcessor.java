@@ -43,9 +43,10 @@ public class ThumbnailRequestProcessor implements Processor {
         var work = (WorkObject) file.getParent();
 
         if (Objects.equals(action, ThumbnailRequest.ASSIGN)) {
+            // Capture the old thumbnail id before it gets cleared
+            var oldThumbnailFile = work.getThumbnailObject();
             repositoryObjectFactory.createExclusiveRelationship(work, Cdr.useAsThumbnail, file.getResource());
             // reindex old thumbnail object
-            var oldThumbnailFile = work.getThumbnailObject();
             if (oldThumbnailFile != null) {
                 indexingMessageSender.sendIndexingOperation(
                         agent.getUsername(), oldThumbnailFile.getPid(), IndexingActionType.UPDATE_DATASTREAMS);

@@ -27,63 +27,13 @@ define('ClearAssignedThumbnailAction', [ 'jquery', 'AjaxCallbackAction'], functi
             };
         }
 
-
         AjaxCallbackAction.prototype._create.call(this, options);
-    };
-
-    ClearAssignedThumbnailAction.prototype.performWork = function(workMethod, workData) {
-        this.workState();
-        var op = this;
-
-        $.ajax({
-            type: workMethod,
-            url: this.workURL,
-            dataType: "json",
-            data: workData
-        }).done(function(data) {
-            this.oldThumbnailId = data.oldThumbnailId;
-            if (op.options.followup) {
-                try {
-                    var workSuccessful = op.workDone(data);
-
-                    if (!workSuccessful)
-                        throw "Operation was unsuccessful";
-                } catch (e) {
-                    op.alertHandler.alertHandler('error', e.message);
-                    if (typeof console == "object")
-                        console.error(e.message, e.error);
-                    if (op.context.resultTable.resultObjectList.getResultObject(this.oldThumbnailId))
-                        op.context.resultTable.resultObjectList.getResultObject(this.oldThumbnailId).setState("failed");
-                    return;
-                }
-                if (op.context.resultTable.resultObjectList.getResultObject(this.oldThumbnailId))
-                    op.context.resultTable.resultObjectList.getResultObject(this.oldThumbnailId).setState("followup");
-                op.followupMonitor.performPing();
-            } else {
-                if (op.context.resultTable.resultObjectList.getResultObject(this.oldThumbnailId))
-                    op.context.resultTable.resultObjectList.getResultObject(this.oldThumbnailId).setState("idle");
-                op.complete(data);
-            }
-
-            // Trigger unchecking all checked objects when action completes
-            $(".select_all").trigger('click', function(){
-                var resultObjects = op.resultObjectList.resultObjects;
-                for (var index in resultObjects) {
-                    resultObjects[index]["unselect"]();
-                }
-                op.selectionUpdated();
-            }).children("input").prop("checked", false);
-
-        }).fail(function(data, error) {
-            op.alertHandler.alertHandler('error', data.responseText + ", " + error);
-            console.error(data.responseText, error);
-        });
     };
 
     ClearAssignedThumbnailAction.prototype.completeState = function() {
         this.context.actionHandler.addEvent({
             action : 'RefreshResult',
-            target : this.context.resultTable.resultObjectList.getResultObject(this.oldThumbnailId)
+            target : this.context.target
         });
         this.alertHandler.alertHandler("success", "Cleared the assigned thumbnail.");
         this.context.target.enable();
@@ -92,12 +42,22 @@ define('ClearAssignedThumbnailAction', [ 'jquery', 'AjaxCallbackAction'], functi
     ClearAssignedThumbnailAction.prototype.workDone = function(data) {
         this.completeTimestamp = data.timestamp;
         this.oldThumbnailId = data.oldThumbnailId;
+        if (this.context.target.metadata.type == "Work") {
+            var oldThumbnail = this.context.resultTable.resultObjectList.getResultObject(this.oldThumbnailId);
+            if (oldThumbnail != null) {
+                this.context.actionHandler.addEvent({
+                    action : 'RefreshResult',
+                    target : oldThumbnail,
+                    waitForUpdate : true
+                });
+            }
+        }
         return true;
     };
 
     ClearAssignedThumbnailAction.prototype.followup = function(data) {
         if (data) {
-            return this.context.resultTable.resultObjectList.getResultObject(this.oldThumbnailId).updateVersion(data);
+            return this.context.target.updateVersion(data);
         }
         return false;
     };
