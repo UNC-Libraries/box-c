@@ -47,6 +47,8 @@ import static edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore.getAgentPr
 @Controller
 public class ThumbnailController {
     private static final Logger log = LoggerFactory.getLogger(ThumbnailController.class);
+    private static final String OLD_THUMBNAIL_ID = "oldThumbnailId";
+    private static final String ACTION = "action";
 
     @Autowired
     private ImportThumbnailService service;
@@ -72,7 +74,7 @@ public class ThumbnailController {
         String mimeType = thumbnailFile.getContentType();
 
         Map<String, Object> result = new HashMap<>();
-        result.put("action", "editThumbnail");
+        result.put(ACTION, "editThumbnail");
         result.put("username", agent.getUsername());
 
         try (InputStream importStream = thumbnailFile.getInputStream()) {
@@ -102,7 +104,7 @@ public class ThumbnailController {
     public ResponseEntity<Object> assignThumbnail(@PathVariable("pidString") String pidString) {
         PID pid = PIDs.get(pidString);
         Map<String, Object> result = new HashMap<>();
-        result.put("action", "assignThumbnail");
+        result.put(ACTION, "assignThumbnail");
 
         AccessGroupSet principals = getAgentPrincipals().getPrincipals();
         aclService.assertHasAccess("Insufficient permissions to assign thumbnail for " + pidString,
@@ -117,7 +119,7 @@ public class ThumbnailController {
         var workObject = (WorkObject) object.getParent();
         var oldThumbnail = workObject.getThumbnailObject();
         if (oldThumbnail != null) {
-            result.put("oldThumbnailId", oldThumbnail.getPid().getId());
+            result.put(OLD_THUMBNAIL_ID, oldThumbnail.getPid().getId());
         }
 
         var agent = AgentPrincipalsImpl.createFromThread();
@@ -142,7 +144,7 @@ public class ThumbnailController {
     public ResponseEntity<Object> deleteThumbnail(@PathVariable("pidString") String pidString) {
         PID pid = PIDs.get(pidString);
         Map<String, Object> result = new HashMap<>();
-        result.put("action", "deleteThumbnail");
+        result.put(ACTION, "deleteThumbnail");
 
         AccessGroupSet principals = getAgentPrincipals().getPrincipals();
         aclService.assertHasAccess("Insufficient permissions to assign thumbnail for " + pidString,
@@ -161,10 +163,10 @@ public class ThumbnailController {
         if (object instanceof WorkObject) {
             var fileId = ((WorkObject) object).getThumbnailObject().getPid().getId();
             request.setFilePidString(fileId);
-            result.put("oldThumbnailId", fileId);
+            result.put(OLD_THUMBNAIL_ID, fileId);
         } else {
             request.setFilePidString(pidString);
-            result.put("oldThumbnailId", object.getPid().getId());
+            result.put(OLD_THUMBNAIL_ID, object.getPid().getId());
         }
 
         try {

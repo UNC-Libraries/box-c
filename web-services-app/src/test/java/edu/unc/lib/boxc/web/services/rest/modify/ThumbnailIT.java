@@ -23,6 +23,7 @@ import java.io.FileInputStream;
 import java.nio.file.Path;
 
 import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
+import edu.unc.lib.boxc.model.api.rdf.Cdr;
 import edu.unc.lib.boxc.operations.jms.thumbnails.ThumbnailRequest;
 import edu.unc.lib.boxc.operations.jms.thumbnails.ThumbnailRequestSender;
 import org.apache.commons.io.IOUtils;
@@ -163,7 +164,9 @@ public class ThumbnailIT extends AbstractAPIIT {
         var pid = makePid();
         var filePidString = pid.getId();
         var file = repositoryObjectFactory.createFileObject(pid, null);
+        var work = repositoryObjectFactory.createWorkObject(makePid(), null);
         when(repositoryObjectLoader.getRepositoryObject(pid)).thenReturn(file);
+        work.addMember(file);
 
         mvc.perform(put("/edit/assignThumbnail/" + filePidString))
                 .andExpect(status().is2xxSuccessful())
@@ -240,13 +243,33 @@ public class ThumbnailIT extends AbstractAPIIT {
     }
 
     @Test
-    public void deleteThumbnailPidIsNotAFile() throws Exception {
+    public void deleteThumbnailPidIsAWork() throws Exception {
         var pid = makePid();
         var workPidString = pid.getId();
         var work = repositoryObjectFactory.createWorkObject(pid, null);
+        var filePid = makePid();
+        var file = repositoryObjectFactory.createFileObject(filePid, null);
+        work.addMember(file);
+        repositoryObjectFactory.createExclusiveRelationship(work, Cdr.useAsThumbnail, file.getResource());
         when(repositoryObjectLoader.getRepositoryObject(pid)).thenReturn(work);
 
         mvc.perform(delete("/edit/deleteThumbnail/" + workPidString))
+                .andExpect(status().is2xxSuccessful())
+                .andReturn();
+        verify(thumbnailRequestSender).sendToQueue(requestCaptor.capture());
+        ThumbnailRequest request = requestCaptor.getValue();
+        assertEquals(filePid.getId(), request.getFilePidString());
+        assertEquals(ThumbnailRequest.DELETE, request.getAction());
+    }
+
+    @Test
+    public void deleteThumbnailPidIsNotAFileOrWork() throws Exception {
+        var pid = makePid();
+        var folderPidString = pid.getId();
+        var folder = repositoryObjectFactory.createFolderObject(pid, null);
+        when(repositoryObjectLoader.getRepositoryObject(pid)).thenReturn(folder);
+
+        mvc.perform(delete("/edit/deleteThumbnail/" + folderPidString))
                 .andExpect(status().isBadRequest())
                 .andReturn();
         verify(thumbnailRequestSender, never()).sendMessage(any(Document.class));
