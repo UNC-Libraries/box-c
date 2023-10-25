@@ -156,11 +156,9 @@ public class ThumbnailController {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
 
-        if (object instanceof WorkObject) {
-            if (((WorkObject) object).getThumbnailObject() == null) {
-                log.error("Error work object does not have assigned thumbnail to delete: {}", pidString);
-                return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-            }
+        if (object instanceof WorkObject && ((WorkObject) object).getThumbnailObject() == null) {
+            log.error("Error work object does not have assigned thumbnail to delete: {}", pidString);
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
 
         var agent = AgentPrincipalsImpl.createFromThread();
