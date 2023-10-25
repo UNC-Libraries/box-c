@@ -47,8 +47,8 @@ import static edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore.getAgentPr
 @Controller
 public class ThumbnailController {
     private static final Logger log = LoggerFactory.getLogger(ThumbnailController.class);
-    private static final String OLD_THUMBNAIL_ID = "oldThumbnailId";
-    private static final String ACTION = "action";
+    public static final String OLD_THUMBNAIL_ID = "oldThumbnailId";
+    public static final String ACTION = "action";
 
     @Autowired
     private ImportThumbnailService service;
@@ -154,6 +154,13 @@ public class ThumbnailController {
         if (!(object instanceof FileObject) && !(object instanceof WorkObject)) {
             log.error("Error object is not a file or work: {}", pidString);
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+
+        if (object instanceof WorkObject) {
+            if (((WorkObject) object).getThumbnailObject() == null) {
+                log.error("Error work object does not have assigned thumbnail to delete: {}", pidString);
+                return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+            }
         }
 
         var agent = AgentPrincipalsImpl.createFromThread();

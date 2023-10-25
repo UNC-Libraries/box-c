@@ -87,14 +87,37 @@ public class ThumbnailProcessorTest {
     }
 
     @Test
-    public void testUpdateThumbnail() throws Exception {
+    public void testAssignThumbnail() throws Exception {
         var exchange = createRequestExchange(ThumbnailRequest.ASSIGN);
 
         processor.process(exchange);
         verify(repositoryObjectFactory).createExclusiveRelationship(eq(parentWork), eq(Cdr.useAsThumbnail), fileResourceCaptor.capture());
         // check to see the right file was related to the work
         assertEquals(resource, fileResourceCaptor.getValue());
-        assertIndexingMessageSent();
+        assertIndexingMessageSent(workPid);
+        assertIndexingMessageSent(filePid);
+    }
+
+    // test for when the work already has an assigned thumbnail and a new one is chosen
+    @Test
+    public void testAssignNewThumbnail() throws Exception {
+        // set up pre-existing assigned thumbnail
+        var oldThumbnailPid = ProcessorTestHelper.makePid();
+        var oldThumbnailFile = mock(FileObject.class);
+        var oldResource = mock(Resource.class);
+        when(oldThumbnailFile.getResource()).thenReturn(oldResource);
+        when(oldThumbnailFile.getPid()).thenReturn(oldThumbnailPid);
+        when(parentWork.getThumbnailObject()).thenReturn(oldThumbnailFile);
+
+        var exchange = createRequestExchange(ThumbnailRequest.ASSIGN);
+
+        processor.process(exchange);
+        verify(repositoryObjectFactory).createExclusiveRelationship(eq(parentWork), eq(Cdr.useAsThumbnail), fileResourceCaptor.capture());
+        // check to see the right file was related to the work
+        assertEquals(resource, fileResourceCaptor.getValue());
+        assertIndexingMessageSent(workPid);
+        assertIndexingMessageSent(filePid);
+        assertIndexingMessageSent(oldThumbnailPid);
     }
 
     @Test
@@ -114,11 +137,11 @@ public class ThumbnailProcessorTest {
 
         processor.process(exchange);
         verify(repositoryObjectFactory).deleteProperty(eq(parentWork), eq(Cdr.useAsThumbnail));
-        assertIndexingMessageSent();
+        assertIndexingMessageSent(workPid);
     }
 
-    private void assertIndexingMessageSent() {
-        verify(indexingMessageSender).sendIndexingOperation(agent.getUsername(), workPid,
+    private void assertIndexingMessageSent(PID pid) {
+        verify(indexingMessageSender).sendIndexingOperation(agent.getUsername(), pid,
                 IndexingActionType.UPDATE_DATASTREAMS);
     }
 
