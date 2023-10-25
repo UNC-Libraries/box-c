@@ -11,6 +11,7 @@ import edu.unc.lib.boxc.auth.api.services.AccessControlService;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.objects.FileObject;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
+import edu.unc.lib.boxc.model.api.objects.WorkObject;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.boxc.operations.jms.thumbnails.ThumbnailRequest;
 import edu.unc.lib.boxc.operations.jms.thumbnails.ThumbnailRequestSender;
@@ -46,6 +47,8 @@ import static edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore.getAgentPr
 @Controller
 public class ThumbnailController {
     private static final Logger log = LoggerFactory.getLogger(ThumbnailController.class);
+    public static final String OLD_THUMBNAIL_ID = "oldThumbnailId";
+    public static final String ACTION = "action";
 
     @Autowired
     private ImportThumbnailService service;
@@ -71,7 +74,7 @@ public class ThumbnailController {
         String mimeType = thumbnailFile.getContentType();
 
         Map<String, Object> result = new HashMap<>();
-        result.put("action", "editThumbnail");
+        result.put(ACTION, "editThumbnail");
         result.put("username", agent.getUsername());
 
         try (InputStream importStream = thumbnailFile.getInputStream()) {
@@ -100,6 +103,8 @@ public class ThumbnailController {
     @ResponseBody
     public ResponseEntity<Object> assignThumbnail(@PathVariable("pidString") String pidString) {
         PID pid = PIDs.get(pidString);
+        Map<String, Object> result = new HashMap<>();
+        result.put(ACTION, "assignThumbnail");
 
         AccessGroupSet principals = getAgentPrincipals().getPrincipals();
         aclService.assertHasAccess("Insufficient permissions to assign thumbnail for " + pidString,
@@ -109,6 +114,12 @@ public class ThumbnailController {
         if (!(object instanceof FileObject)) {
             log.error("Error object is not a file: {}", pidString);
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+
+        var workObject = (WorkObject) object.getParent();
+        var oldThumbnail = workObject.getThumbnailObject();
+        if (oldThumbnail != null) {
+            result.put(OLD_THUMBNAIL_ID, oldThumbnail.getPid().getId());
         }
 
         var agent = AgentPrincipalsImpl.createFromThread();
@@ -123,29 +134,46 @@ public class ThumbnailController {
             log.error("Error assigning file {} as thumbnail", request.getFilePidString(), e);
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
-        return new ResponseEntity<>(HttpStatus.OK);
+        result.put("timestamp", System.currentTimeMillis());
+        result.put("newThumbnailId", object.getPid().getId());
+        return new ResponseEntity<>(result, HttpStatus.OK);
     }
 
     @DeleteMapping(value = "/edit/deleteThumbnail/{pidString}")
     @ResponseBody
     public ResponseEntity<Object> deleteThumbnail(@PathVariable("pidString") String pidString) {
         PID pid = PIDs.get(pidString);
+        Map<String, Object> result = new HashMap<>();
+        result.put(ACTION, "deleteThumbnail");
 
         AccessGroupSet principals = getAgentPrincipals().getPrincipals();
         aclService.assertHasAccess("Insufficient permissions to assign thumbnail for " + pidString,
                 pid, principals, Permission.editDescription);
 
         var object = repositoryObjectLoader.getRepositoryObject(pid);
-        if (!(object instanceof FileObject)) {
-            log.error("Error object is not a file: {}", pidString);
+        if (!(object instanceof FileObject) && !(object instanceof WorkObject)) {
+            log.error("Error object is not a file or work: {}", pidString);
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+
+        if (object instanceof WorkObject && ((WorkObject) object).getThumbnailObject() == null) {
+            log.error("Error work object does not have assigned thumbnail to delete: {}", pidString);
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
 
         var agent = AgentPrincipalsImpl.createFromThread();
         var request = new ThumbnailRequest();
         request.setAgent(agent);
-        request.setFilePidString(pidString);
         request.setAction(ThumbnailRequest.DELETE);
+        if (object instanceof WorkObject) {
+            var fileId = ((WorkObject) object).getThumbnailObject().getPid().getId();
+            request.setFilePidString(fileId);
+            result.put(OLD_THUMBNAIL_ID, fileId);
+        } else {
+            request.setFilePidString(pidString);
+            result.put(OLD_THUMBNAIL_ID, object.getPid().getId());
+        }
+
         try {
             thumbnailRequestSender.sendToQueue(request);
         } catch (IOException e) {
@@ -153,6 +181,7 @@ public class ThumbnailController {
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
-        return new ResponseEntity<>(HttpStatus.OK);
+        result.put("timestamp", System.currentTimeMillis());
+        return new ResponseEntity<>(result, HttpStatus.OK);
     }
 }
