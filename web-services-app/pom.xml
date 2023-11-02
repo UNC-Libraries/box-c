@@ -166,6 +166,11 @@
             <artifactId>wiremock-jre8</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>info.freelibrary</groupId>
+            <artifactId>jiiify-presentation-v3</artifactId>
+            <version>0.12.3</version>
+        </dependency>
         <!-- Servlets -->
         <dependency>
             <groupId>jakarta.servlet</groupId>
