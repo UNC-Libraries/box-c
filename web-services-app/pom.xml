@@ -169,6 +169,7 @@
         <dependency>
             <groupId>info.freelibrary</groupId>
             <artifactId>jiiify-presentation-v3</artifactId>
+            <!-- newer versions are built with java 17 -->
             <version>0.12.3</version>
         </dependency>
         <!-- Servlets -->
