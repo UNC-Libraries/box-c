@@ -71,7 +71,7 @@ public class IiifV3ManifestControllerTest {
         manifestService = new IiifV3ManifestService();
         manifestService.setAccessCopiesService(accessCopiesService);
         manifestService.setBaseIiifv3Path(IIIF_BASE);
-        manifestService.setBaseServicesPath(SERVICES_BASE);
+        manifestService.setBaseServicesApiPath(SERVICES_BASE);
         manifestService.setBaseAccessPath(ACCESS_BASE);
         manifestController.setManifestService(manifestService);
         mockMvc = MockMvcBuilders.standaloneSetup(manifestController)

@@ -436,6 +436,12 @@
     <bean id="thumbnailRequestSender" class="edu.unc.lib.boxc.operations.jms.thumbnails.ThumbnailRequestSender">
         <property name="jmsTemplate" ref="thumbnailRequestJmsTemplate"/>
     </bean>
+
+    <bean id="iiifV3ManifestService" class="edu.unc.lib.boxc.web.services.processing.IiifV3ManifestService">
+        <property name="baseIiifv3Path" value="${services.api.url}iiif/v3/"/>
+        <property name="baseAccessPath" value="${repository.protocol}://${repository.host}/"/>
+        <property name="baseServicesApiPath" value="${services.api.url}"/>
+    </bean>
     
     <bean class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
         <property name="staticMethod" value="edu.unc.lib.boxc.web.common.utils.SerializationUtil.injectSettings"/>

@@ -33,7 +33,7 @@ public class IiifV3ManifestService {
     private AccessCopiesService accessCopiesService;
     private String baseIiifv3Path;
     private String baseAccessPath;
-    private String baseServicesPath;
+    private String baseServicesApiPath;
 
     /**
      * Constructs a manifest record for the object identified by the provided PID
@@ -182,7 +182,7 @@ public class IiifV3ManifestService {
     }
 
     private String makeThumbnailUrl(String id) {
-        return URIUtil.join(baseServicesPath, "api", "thumb", id, "large");
+        return URIUtil.join(baseServicesApiPath, "thumb", id, "large");
     }
 
     private boolean hasViewableContent(ContentObjectRecord contentObj) {
@@ -202,7 +202,7 @@ public class IiifV3ManifestService {
         this.baseAccessPath = baseAccessPath;
     }
 
-    public void setBaseServicesPath(String baseServicesPath) {
-        this.baseServicesPath = baseServicesPath;
+    public void setBaseServicesApiPath(String baseServicesApiPath) {
+        this.baseServicesApiPath = baseServicesApiPath;
     }
 }

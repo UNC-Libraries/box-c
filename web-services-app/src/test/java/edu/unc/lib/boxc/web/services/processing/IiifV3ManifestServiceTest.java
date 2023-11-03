@@ -30,7 +30,7 @@ import static org.mockito.MockitoAnnotations.openMocks;
  */
 public class IiifV3ManifestServiceTest {
     private static final String IIIF_BASE = "http://example.com/iiif/v3/";
-    private static final String SERVICES_BASE = "http://example.com/services/";
+    private static final String SERVICES_BASE = "http://example.com/services/api/";
     private static final String ACCESS_BASE = "http://example.com/";
     private static final String WORK_ID = "5d72b84a-983c-4a45-8caa-dc9857987da2";
     private static final String FILE1_ID = "faffb3e1-85fc-451f-9075-c60fc7584c7b";
@@ -56,7 +56,7 @@ public class IiifV3ManifestServiceTest {
         manifestService = new IiifV3ManifestService();
         manifestService.setAccessCopiesService(accessCopiesService);
         manifestService.setBaseIiifv3Path(IIIF_BASE);
-        manifestService.setBaseServicesPath(SERVICES_BASE);
+        manifestService.setBaseServicesApiPath(SERVICES_BASE);
         manifestService.setBaseAccessPath(ACCESS_BASE);
 
         when(agent.getPrincipals()).thenReturn(principals);
