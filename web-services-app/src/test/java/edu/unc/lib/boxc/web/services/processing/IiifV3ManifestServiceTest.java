@@ -1,7 +1,10 @@
 package edu.unc.lib.boxc.web.services.processing;
 
+import edu.unc.lib.boxc.auth.api.Permission;
+import edu.unc.lib.boxc.auth.api.exceptions.AccessRestrictionException;
 import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
 import edu.unc.lib.boxc.auth.api.models.AgentPrincipals;
+import edu.unc.lib.boxc.auth.api.services.AccessControlService;
 import edu.unc.lib.boxc.model.api.ResourceType;
 import edu.unc.lib.boxc.model.api.exceptions.NotFoundException;
 import edu.unc.lib.boxc.model.api.ids.PID;
@@ -22,6 +25,9 @@ import java.util.Arrays;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.openMocks;
 
@@ -41,6 +47,8 @@ public class IiifV3ManifestServiceTest {
     @Mock
     private AccessCopiesService accessCopiesService;
     @Mock
+    private AccessControlService accessControlService;
+    @Mock
     private AgentPrincipals agent;
     @Mock
     private AccessGroupSet principals;
@@ -55,6 +63,7 @@ public class IiifV3ManifestServiceTest {
         closeable = openMocks(this);
         manifestService = new IiifV3ManifestService();
         manifestService.setAccessCopiesService(accessCopiesService);
+        manifestService.setAccessControlService(accessControlService);
         manifestService.setBaseIiifv3Path(IIIF_BASE);
         manifestService.setBaseServicesApiPath(SERVICES_BASE);
         manifestService.setBaseAccessPath(ACCESS_BASE);
@@ -79,7 +88,7 @@ public class IiifV3ManifestServiceTest {
     }
 
     @Test
-    public void buildManifestNoViewableTest() throws Exception {
+    public void buildManifestNoViewableTest() {
         when(accessCopiesService.listViewableFiles(WORK_PID, principals)).thenReturn(Arrays.asList());
         assertThrows(NotFoundException.class, () -> {
             manifestService.buildManifest(WORK_PID, agent);
@@ -87,7 +96,16 @@ public class IiifV3ManifestServiceTest {
     }
 
     @Test
-    public void buildManifestWorkWithoutViewableTest() throws Exception {
+    public void buildManifestNoAccessTest() {
+        doThrow(new AccessRestrictionException()).when(accessControlService)
+                .assertHasAccess(eq(WORK_PID), any(), eq(Permission.viewAccessCopies));
+        assertThrows(AccessRestrictionException.class, () -> {
+            manifestService.buildManifest(WORK_PID, agent);
+        });
+    }
+
+    @Test
+    public void buildManifestWorkWithoutViewableTest() {
         when(accessCopiesService.listViewableFiles(WORK_PID, principals)).thenReturn(Arrays.asList(workObj));
 
         var manifest = manifestService.buildManifest(WORK_PID, agent);
@@ -99,7 +117,7 @@ public class IiifV3ManifestServiceTest {
     }
 
     @Test
-    public void buildManifestWorkWithViewableFilesTest() throws Exception {
+    public void buildManifestWorkWithViewableFilesTest() {
         var fileObj1 = createFileRecord(FILE1_ID);
         var fileObj2 = createFileRecord(FILE2_ID);
         when(accessCopiesService.listViewableFiles(WORK_PID, principals)).thenReturn(Arrays.asList(workObj, fileObj1, fileObj2));
@@ -115,7 +133,7 @@ public class IiifV3ManifestServiceTest {
     }
 
     @Test
-    public void buildManifestViewableFileTest() throws Exception {
+    public void buildManifestViewableFileTest() {
         var fileObj1 = createFileRecord(FILE1_ID);
         var filePid = PIDs.get(FILE1_ID);
         when(accessCopiesService.listViewableFiles(filePid, principals)).thenReturn(Arrays.asList(fileObj1));
@@ -130,6 +148,16 @@ public class IiifV3ManifestServiceTest {
 
         assertEquals("<a href=\"http://example.com/record/faffb3e1-85fc-451f-9075-c60fc7584c7b\">View full record</a>",
                 manifest.getMetadata().get(0).getValue().getString());
+    }
+
+    @Test
+    public void buildCanvasViewableFileTest() {
+        var fileObj1 = createFileRecord(FILE1_ID);
+        var filePid = PIDs.get(FILE1_ID);
+        when(accessCopiesService.listViewableFiles(filePid, principals)).thenReturn(Arrays.asList(fileObj1));
+
+        var canvas = manifestService.buildCanvas(filePid, agent);
+        assertFileCanvasPopulated(canvas, FILE1_ID);
     }
     
     private void assertFileCanvasPopulated(Canvas fileCanvas, String expectedId) {
@@ -153,7 +181,7 @@ public class IiifV3ManifestServiceTest {
     }
 
     @Test
-    public void buildManifestWorkWithMetadataTest() throws Exception {
+    public void buildManifestWorkWithMetadataTest() {
         workObj.setSubject(Arrays.asList("Images", "Transformation"));
         workObj.setAbstractText("This is a test work");
         workObj.setCreator(Arrays.asList("Boxy", "Boxc"));

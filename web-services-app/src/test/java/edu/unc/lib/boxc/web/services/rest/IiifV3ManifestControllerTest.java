@@ -10,6 +10,7 @@ import edu.unc.lib.boxc.model.api.ResourceType;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.boxc.search.solr.models.ContentObjectSolrRecord;
+import edu.unc.lib.boxc.search.solr.models.DatastreamImpl;
 import edu.unc.lib.boxc.web.common.services.AccessCopiesService;
 import edu.unc.lib.boxc.web.services.processing.IiifV3ManifestService;
 import edu.unc.lib.boxc.web.services.rest.exceptions.RestResponseEntityExceptionHandler;
@@ -43,8 +44,8 @@ public class IiifV3ManifestControllerTest {
     private static final String SERVICES_BASE = "http://example.com/services/";
     private static final String ACCESS_BASE = "http://example.com/";
 
-    private static final String WORK_ID = "f277bb38-272c-471c-a28a-9887a1328a1f";
-    private static final PID WORK_PID = PIDs.get(WORK_ID);
+    private static final String OBJECT_ID = "f277bb38-272c-471c-a28a-9887a1328a1f";
+    private static final PID OBJECT_PID = PIDs.get(OBJECT_ID);
     private final static String USERNAME = "test_user";
     private final static AccessGroupSet GROUPS = new AccessGroupSetImpl("adminGroup");
 
@@ -59,8 +60,6 @@ public class IiifV3ManifestControllerTest {
 
     private IiifV3ManifestService manifestService;
 
-    private ContentObjectSolrRecord workObj;
-
     private MockMvc mockMvc;
 
     private AutoCloseable closeable;
@@ -70,6 +69,7 @@ public class IiifV3ManifestControllerTest {
         closeable = openMocks(this);
         manifestService = new IiifV3ManifestService();
         manifestService.setAccessCopiesService(accessCopiesService);
+        manifestService.setAccessControlService(accessControlService);
         manifestService.setBaseIiifv3Path(IIIF_BASE);
         manifestService.setBaseServicesApiPath(SERVICES_BASE);
         manifestService.setBaseAccessPath(ACCESS_BASE);
@@ -79,24 +79,22 @@ public class IiifV3ManifestControllerTest {
                 .build();
         GroupsThreadStore.storeUsername(USERNAME);
         GroupsThreadStore.storeGroups(GROUPS);
-
-        workObj = new ContentObjectSolrRecord();
-        workObj.setId(WORK_ID);
-        workObj.setResourceType(ResourceType.Work.name());
-        workObj.setTitle("Test Work");
     }
 
     @Test
     public void testGetManifest() throws Exception {
-        when(accessCopiesService.listViewableFiles(eq(WORK_PID), any())).thenReturn(Arrays.asList(workObj));
+        var workObj = new ContentObjectSolrRecord();
+        workObj.setId(OBJECT_ID);
+        workObj.setResourceType(ResourceType.Work.name());
+        workObj.setTitle("Test Work");
+        when(accessCopiesService.listViewableFiles(eq(OBJECT_PID), any())).thenReturn(Arrays.asList(workObj));
 
-        var result = mockMvc.perform(get("/iiif/v3/" + WORK_ID + "/manifest")
+        var result = mockMvc.perform(get("/iiif/v3/" + OBJECT_ID + "/manifest")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andReturn();
 
         Map<String, Object> respMap = MvcTestHelpers.getMapFromResponse(result);
-        System.out.println(respMap);
         assertEquals("Manifest", respMap.get("type"));
         assertEquals("http://example.com/iiif/v3/f277bb38-272c-471c-a28a-9887a1328a1f/manifest", respMap.get("id"));
         assertEquals("Test Work", ((List) ((Map) respMap.get("label")).get("none")).get(0));
@@ -107,11 +105,34 @@ public class IiifV3ManifestControllerTest {
     @Test
     public void testGetManifestNoAccess() throws Exception {
         doThrow(new AccessRestrictionException()).when(accessControlService)
-                .assertHasAccess(eq(WORK_PID), any(), eq(Permission.viewAccessCopies));
-        when(accessCopiesService.listViewableFiles(eq(WORK_PID), any())).thenReturn(Arrays.asList(workObj));
+                .assertHasAccess(eq(OBJECT_PID), any(), eq(Permission.viewAccessCopies));
 
-        mockMvc.perform(get("/iiif/v3/" + WORK_ID + "/manifest")
+        mockMvc.perform(get("/iiif/v3/" + OBJECT_ID + "/manifest")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isForbidden());
+    }
+
+    @Test
+    public void testGetCanvas() throws Exception {
+        var fileObj = new ContentObjectSolrRecord();
+        fileObj.setId(OBJECT_ID);
+        fileObj.setResourceType(ResourceType.File.name());
+        fileObj.setTitle("File Object");
+        var originalDs = new DatastreamImpl("original_file|image/jpeg|image.jpg|jpg|0|||240x750");
+        var jp2Ds = new DatastreamImpl("jp2|image/jp2|image.jp2|jp2|0|||");
+        fileObj.setDatastream(Arrays.asList(originalDs.toString(), jp2Ds.toString()));
+        when(accessCopiesService.listViewableFiles(eq(OBJECT_PID), any())).thenReturn(Arrays.asList(fileObj));
+
+        var result = mockMvc.perform(get("/iiif/v3/" + OBJECT_ID + "/canvas")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        Map<String, Object> respMap = MvcTestHelpers.getMapFromResponse(result);
+        assertEquals("Canvas", respMap.get("type"));
+        assertEquals("http://example.com/iiif/v3/f277bb38-272c-471c-a28a-9887a1328a1f/canvas", respMap.get("id"));
+        assertEquals(750, respMap.get("width"));
+        var items = (List) respMap.get("items");
+        assertFalse(items.isEmpty());
     }
 }

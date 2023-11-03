@@ -1,6 +1,9 @@
 package edu.unc.lib.boxc.web.services.processing;
 
+import edu.unc.lib.boxc.auth.api.Permission;
 import edu.unc.lib.boxc.auth.api.models.AgentPrincipals;
+import edu.unc.lib.boxc.auth.api.services.AccessControlService;
+import edu.unc.lib.boxc.auth.api.services.DatastreamPermissionUtil;
 import edu.unc.lib.boxc.common.util.URIUtil;
 import edu.unc.lib.boxc.model.api.DatastreamType;
 import edu.unc.lib.boxc.model.api.exceptions.NotFoundException;
@@ -24,6 +27,8 @@ import org.springframework.util.CollectionUtils;
 import java.util.ArrayList;
 import java.util.List;
 
+import static edu.unc.lib.boxc.model.api.DatastreamType.JP2_ACCESS_COPY;
+
 /**
  * Service for generating iiif v3 manifests for repository object
  * @author bbpennel
@@ -31,6 +36,7 @@ import java.util.List;
 public class IiifV3ManifestService {
     private static final Logger log = LoggerFactory.getLogger(IiifV3ManifestService.class);
     private AccessCopiesService accessCopiesService;
+    private AccessControlService accessControlService;
     private String baseIiifv3Path;
     private String baseAccessPath;
     private String baseServicesApiPath;
@@ -42,6 +48,7 @@ public class IiifV3ManifestService {
      * @return
      */
     public Manifest buildManifest(PID pid, AgentPrincipals agent) {
+        assertHasAccess(pid, agent);
         var contentObjs = accessCopiesService.listViewableFiles(pid, agent.getPrincipals());
         if (contentObjs.size() == 0) {
             throw new NotFoundException("No objects were found for inclusion in manifest for object " + pid.getId());
@@ -108,11 +115,24 @@ public class IiifV3ManifestService {
     }
 
     /**
+     * Constructs a standalone canvas document for the requested object
+     * @param pid
+     * @param agent
+     * @return
+     */
+    public Canvas buildCanvas(PID pid, AgentPrincipals agent) {
+        assertHasAccess(pid, agent);
+        var contentObjs = accessCopiesService.listViewableFiles(pid, agent.getPrincipals());
+        ContentObjectRecord rootObj = contentObjs.get(0);
+        return createCanvas(rootObj);
+    }
+
+    /**
      * Constructs a canvas record for the provided object
      * @param contentObj
      * @return
      */
-    public Canvas createCanvas(ContentObjectRecord contentObj) {
+    private Canvas createCanvas(ContentObjectRecord contentObj) {
         String title = getTitle(contentObj);
         String uuid = contentObj.getId();
 
@@ -157,6 +177,14 @@ public class IiifV3ManifestService {
         }
     }
 
+    private void assertHasAccess(PID pid, AgentPrincipals agent) {
+        Permission permission = DatastreamPermissionUtil.getPermissionForDatastream(JP2_ACCESS_COPY);
+
+        log.debug("Checking if user {} has access to {} belonging to object {}.",
+                agent.getUsername(), JP2_ACCESS_COPY, pid);
+        accessControlService.assertHasAccess(pid, agent.getPrincipals(), permission);
+    }
+
     private String getManifestPath(ContentObjectRecord contentObj) {
         return URIUtil.join(baseIiifv3Path, contentObj.getId(), "manifest");
     }
@@ -192,6 +220,10 @@ public class IiifV3ManifestService {
 
     public void setAccessCopiesService(AccessCopiesService accessCopiesService) {
         this.accessCopiesService = accessCopiesService;
+    }
+
+    public void setAccessControlService(AccessControlService accessControlService) {
+        this.accessControlService = accessControlService;
     }
 
     public void setBaseIiifv3Path(String baseIiifv3Path) {
