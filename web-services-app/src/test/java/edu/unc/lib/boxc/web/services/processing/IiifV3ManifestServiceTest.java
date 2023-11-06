@@ -94,7 +94,7 @@ public class IiifV3ManifestServiceTest {
     }
 
     @Test
-    public void buildManifestNoViewableTest() {
+    public void buildManifestNoViewableFilesTest() {
         when(accessCopiesService.listViewableFiles(WORK_PID, principals)).thenReturn(Arrays.asList());
         assertThrows(NotFoundException.class, () -> {
             manifestService.buildManifest(WORK_PID, agent);
