@@ -6,6 +6,7 @@ import edu.unc.lib.boxc.auth.api.services.AccessControlService;
 import edu.unc.lib.boxc.auth.api.services.DatastreamPermissionUtil;
 import edu.unc.lib.boxc.common.util.URIUtil;
 import edu.unc.lib.boxc.model.api.DatastreamType;
+import edu.unc.lib.boxc.model.api.ResourceType;
 import edu.unc.lib.boxc.model.api.exceptions.NotFoundException;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.search.api.models.ContentObjectRecord;
@@ -215,7 +216,7 @@ public class IiifV3ManifestService {
 
     private boolean hasViewableContent(ContentObjectRecord contentObj) {
         var datastream = contentObj.getDatastreamObject(DatastreamType.JP2_ACCESS_COPY.getId());
-        return datastream != null;
+        return datastream != null && contentObj.getResourceType().equals(ResourceType.File.name());
     }
 
     public void setAccessCopiesService(AccessCopiesService accessCopiesService) {

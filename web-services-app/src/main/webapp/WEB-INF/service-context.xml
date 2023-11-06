@@ -441,6 +441,8 @@
         <property name="baseIiifv3Path" value="${services.api.url}iiif/v3/"/>
         <property name="baseAccessPath" value="${repository.protocol}://${repository.host}/"/>
         <property name="baseServicesApiPath" value="${services.api.url}"/>
+        <property name="accessControlService" ref="aclService"/>
+        <property name="accessCopiesService" ref="accessCopiesService"/>
     </bean>
     
     <bean class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
