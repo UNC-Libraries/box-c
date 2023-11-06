@@ -57,29 +57,29 @@ public class IiifV3ManifestService {
         log.debug("Constructing manifest for {} containing {} items", pid.getId(), contentObjs.size());
         ContentObjectRecord rootObj = contentObjs.get(0);
         var manifest = new Manifest(getManifestPath(rootObj), new Label(getTitle(rootObj)));
-        manifest.setMetadata(buildMetadata(rootObj));
+        manifest.setMetadata(constructMetadataSection(rootObj));
         addAttribution(manifest, rootObj);
 
-        addItems(manifest, contentObjs);
+        addCanvasItems(manifest, contentObjs);
 
         return manifest;
     }
 
-    private List<Metadata> buildMetadata(ContentObjectRecord rootObj) {
+    private List<Metadata> constructMetadataSection(ContentObjectRecord rootObj) {
         var metadataList = new ArrayList<Metadata>();
         String abstractText = rootObj.getAbstractText();
         if (abstractText != null) {
             metadataList.add(new Metadata("description", abstractText));
         }
-        addMetadataField(metadataList, "Creators", rootObj.getCreator());
-        addMetadataField(metadataList, "Subjects", rootObj.getSubject());
-        addMetadataField(metadataList, "Languages", rootObj.getLanguage());
+        addMultiValuedMetadataField(metadataList, "Creators", rootObj.getCreator());
+        addMultiValuedMetadataField(metadataList, "Subjects", rootObj.getSubject());
+        addMultiValuedMetadataField(metadataList, "Languages", rootObj.getLanguage());
         metadataList.add(new Metadata("", "<a href=\"" +
                 URIUtil.join(baseAccessPath, "record", rootObj.getId()) + "\">View full record</a>"));
         return metadataList;
     }
 
-    private void addMetadataField(List<Metadata> metadataList, String fieldName, List<String> values) {
+    private void addMultiValuedMetadataField(List<Metadata> metadataList, String fieldName, List<String> values) {
         if (!CollectionUtils.isEmpty(values)) {
             metadataList.add(new Metadata(fieldName, String.join(", ", values)));
         }
@@ -104,12 +104,12 @@ public class IiifV3ManifestService {
      * @param manifest
      * @param contentObjs
      */
-    private void addItems(Manifest manifest, List<ContentObjectRecord> contentObjs) {
+    private void addCanvasItems(Manifest manifest, List<ContentObjectRecord> contentObjs) {
         var canvases = new ArrayList<Canvas>();
         for (ContentObjectRecord contentObj : contentObjs) {
             // Add canvases for any records with displayable content
             if (hasViewableContent(contentObj)) {
-                canvases.add(createCanvas(contentObj));
+                canvases.add(constructCanvasSection(contentObj));
             }
         }
         manifest.setCanvases(canvases);
@@ -125,7 +125,7 @@ public class IiifV3ManifestService {
         assertHasAccess(pid, agent);
         var contentObjs = accessCopiesService.listViewableFiles(pid, agent.getPrincipals());
         ContentObjectRecord rootObj = contentObjs.get(0);
-        return createCanvas(rootObj);
+        return constructCanvasSection(rootObj);
     }
 
     /**
@@ -133,7 +133,7 @@ public class IiifV3ManifestService {
      * @param contentObj
      * @return
      */
-    private Canvas createCanvas(ContentObjectRecord contentObj) {
+    private Canvas constructCanvasSection(ContentObjectRecord contentObj) {
         String title = getTitle(contentObj);
         String uuid = contentObj.getId();
 

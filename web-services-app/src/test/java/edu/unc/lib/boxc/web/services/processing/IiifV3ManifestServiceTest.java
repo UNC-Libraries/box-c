@@ -16,6 +16,7 @@ import edu.unc.lib.boxc.web.common.services.AccessCopiesService;
 import info.freelibrary.iiif.presentation.v3.Canvas;
 import info.freelibrary.iiif.presentation.v3.ImageContent;
 import info.freelibrary.iiif.presentation.v3.services.ImageService3;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
@@ -76,6 +77,11 @@ public class IiifV3ManifestServiceTest {
         workObj.setTitle("Test Work");
     }
 
+    @AfterEach
+    void closeService() throws Exception {
+        closeable.close();
+    }
+
     private ContentObjectRecord createFileRecord(String id) {
         var fileObj = new ContentObjectSolrRecord();
         fileObj.setId(id);
@@ -105,7 +111,7 @@ public class IiifV3ManifestServiceTest {
     }
 
     @Test
-    public void buildManifestWorkWithoutViewableTest() {
+    public void buildManifestWorkWithoutViewableFilesTest() {
         when(accessCopiesService.listViewableFiles(WORK_PID, principals)).thenReturn(Arrays.asList(workObj));
 
         var manifest = manifestService.buildManifest(WORK_PID, agent);
