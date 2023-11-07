@@ -66,12 +66,6 @@
         <property name="basePath" value="${access.base.url}"/>
         <property name="httpClientConnectionManager" ref="httpClientConnectionManager" />
     </bean>
-
-    <bean id="imageServerProxyService" class="edu.unc.lib.boxc.web.common.services.ImageServerProxyService">
-        <property name="imageServerProxyPath" value="${imageServerProxy.base.url}"/>
-        <property name="basePath" value="${access.base.url}"/>
-        <property name="httpClientConnectionManager" ref="httpClientConnectionManager" />
-    </bean>
     
     <bean id="findingAidUrlService" class="edu.unc.lib.boxc.web.common.services.FindingAidUrlService"
             init-method="init">

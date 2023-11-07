@@ -1,4 +1,4 @@
-package edu.unc.lib.boxc.web.common.services;
+package edu.unc.lib.boxc.web.services.processing;
 
 import static edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPaths.idToPath;
 

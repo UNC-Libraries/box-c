@@ -1,4 +1,4 @@
-package edu.unc.lib.boxc.web.common.controllers;
+package edu.unc.lib.boxc.web.services.rest;
 
 import edu.unc.lib.boxc.auth.api.Permission;
 import edu.unc.lib.boxc.auth.api.models.AgentPrincipals;
@@ -8,7 +8,8 @@ import edu.unc.lib.boxc.auth.fcrepo.models.AgentPrincipalsImpl;
 import edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
-import edu.unc.lib.boxc.web.common.services.ImageServerProxyService;
+import edu.unc.lib.boxc.web.common.controllers.AbstractSolrSearchController;
+import edu.unc.lib.boxc.web.services.processing.ImageServerProxyService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;

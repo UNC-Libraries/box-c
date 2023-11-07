@@ -444,6 +444,12 @@
         <property name="accessControlService" ref="aclService"/>
         <property name="accessCopiesService" ref="accessCopiesService"/>
     </bean>
+
+    <bean id="imageServerProxyService" class="edu.unc.lib.boxc.web.services.processing.ImageServerProxyService">
+        <property name="imageServerProxyPath" value="${imageServerProxy.base.url}"/>
+        <property name="basePath" value="${access.base.url}"/>
+        <property name="httpClientConnectionManager" ref="httpClientConnectionManager" />
+    </bean>
     
     <bean class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
         <property name="staticMethod" value="edu.unc.lib.boxc.web.common.utils.SerializationUtil.injectSettings"/>
