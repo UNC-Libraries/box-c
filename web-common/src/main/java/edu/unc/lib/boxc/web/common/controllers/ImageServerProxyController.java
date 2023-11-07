@@ -77,7 +77,7 @@ public class ImageServerProxyController extends AbstractSolrSearchController {
                 response.addHeader("Access-Control-Allow-Origin", "*");
                 imageServerProxyService.streamJP2(
                         id, region, size, rotation, quality, format,
-                        response.getOutputStream(), response);
+                        response.getOutputStream(), response, 1);
             } catch (IOException e) {
                 LOG.error("Error retrieving streaming JP2 content for {}", id, e);
             }
@@ -100,7 +100,7 @@ public class ImageServerProxyController extends AbstractSolrSearchController {
         if (this.hasAccess(pid)) {
             try {
                 response.addHeader("Access-Control-Allow-Origin", "*");
-                imageServerProxyService.getMetadata(id, response.getOutputStream(), response);
+                imageServerProxyService.getMetadata(id, response.getOutputStream(), response, 1);
             } catch (IOException e) {
                 LOG.error("Error retrieving JP2 metadata content for {}", id, e);
             }
