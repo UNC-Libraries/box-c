@@ -7,6 +7,8 @@ import java.net.URI;
 
 import javax.servlet.http.HttpServletResponse;
 
+import com.fasterxml.jackson.databind.ObjectReader;
+import info.freelibrary.iiif.presentation.v3.services.ImageService3;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.config.RequestConfig;
@@ -72,14 +74,14 @@ public class ImageServerProxyService {
                         response.setHeader("Content-Type", "application/json");
                         response.setHeader("content-disposition", "inline");
 
-                        ObjectMapper iiifMapper = new IiifObjectMapper();
+                        ObjectReader iiifReader = new ObjectMapper().readerFor(ImageService3.class);
+                        ImageService3 respData = iiifReader.readValue(httpResp.getEntity().getContent());
+                        var iiifWriter = new ObjectMapper().writerFor(ImageService3.class);
 
-                        ImageService respData = iiifMapper.readValue(httpResp.getEntity().getContent(),
-                                ImageService.class);
-                        respData.setIdentifier(new URI(URIUtil.join(basePath, "jp2Proxy", simplepid, "jp2")));
+                        respData.setID(new URI(URIUtil.join(imageServerProxyPath, simplepid)));
 
                         HttpEntity updatedRespData = EntityBuilder.create()
-                                .setText(iiifMapper.writeValueAsString(respData))
+                                .setText(iiifWriter.writeValueAsString(respData))
                                 .setContentType(ContentType.APPLICATION_JSON).build();
                         httpResp.setEntity(updatedRespData);
 
