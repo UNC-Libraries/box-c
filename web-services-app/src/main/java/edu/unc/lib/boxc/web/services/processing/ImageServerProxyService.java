@@ -24,8 +24,6 @@ import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import de.digitalcollections.iiif.model.image.ImageService;
-import de.digitalcollections.iiif.model.jackson.IiifObjectMapper;
 import edu.unc.lib.boxc.common.util.URIUtil;
 import edu.unc.lib.boxc.web.common.exceptions.ClientAbortException;
 import edu.unc.lib.boxc.web.common.utils.FileIOUtil;
@@ -39,8 +37,7 @@ import edu.unc.lib.boxc.web.common.utils.FileIOUtil;
 public class ImageServerProxyService {
     private static final Logger LOG = LoggerFactory.getLogger(ImageServerProxyService.class);
     private CloseableHttpClient httpClient;
-    private String imageServerProxyPath;
-    private String basePath;
+    private String imageServerProxyBasePath;
 
     public void setHttpClientConnectionManager(HttpClientConnectionManager manager) {
 
@@ -55,12 +52,12 @@ public class ImageServerProxyService {
                 .build();
     }
 
-    public void getMetadata(String simplepid, OutputStream outStream,
+    public void getMetadata(String id, OutputStream outStream,
                             HttpServletResponse response, int retryServerError) {
 
-        StringBuilder path = new StringBuilder(getImageServerProxyPath());
-        path.append(idToPath(simplepid, 4, 2))
-                .append(simplepid).append(".jp2").append("/info.json");
+        StringBuilder path = new StringBuilder(getImageServerProxyBasePath());
+        path.append(idToPath(id, 4, 2))
+                .append(id).append(".jp2").append("/info.json");
 
         int statusCode = -1;
         String statusLine = null;
@@ -78,7 +75,7 @@ public class ImageServerProxyService {
                         ImageService3 respData = iiifReader.readValue(httpResp.getEntity().getContent());
                         var iiifWriter = new ObjectMapper().writerFor(ImageService3.class);
 
-                        respData.setID(new URI(URIUtil.join(imageServerProxyPath, simplepid)));
+                        respData.setID(new URI(URIUtil.join(imageServerProxyBasePath, id)));
 
                         HttpEntity updatedRespData = EntityBuilder.create()
                                 .setText(iiifWriter.writeValueAsString(respData))
@@ -90,7 +87,7 @@ public class ImageServerProxyService {
                     return;
                 }
             } catch (ClientAbortException e) {
-                LOG.debug("User client aborted request to stream jp2 metadata for {}", simplepid, e);
+                LOG.debug("User client aborted request to stream jp2 metadata for {}", id, e);
             } catch (Exception e) {
                 LOG.error("Problem retrieving metadata for {}", path, e);
             } finally {
@@ -101,12 +98,12 @@ public class ImageServerProxyService {
         LOG.error("Unexpected failure while getting image server proxy path {}: {}", statusLine, path);
     }
 
-    public void streamJP2(String simplepid, String region, String size, String rotation, String quality,
+    public void streamJP2(String id, String region, String size, String rotation, String quality,
                           String format, OutputStream outStream, HttpServletResponse response,
                           int retryServerError) {
 
-        StringBuilder path = new StringBuilder(getImageServerProxyPath());
-        path.append(idToPath(simplepid, 4, 2)).append(simplepid).append(".jp2")
+        StringBuilder path = new StringBuilder(getImageServerProxyBasePath());
+        path.append(idToPath(id, 4, 2)).append(id).append(".jp2")
                 .append("/" + region).append("/" + size)
                 .append("/" + rotation).append("/" + quality + "." + format);
 
@@ -121,10 +118,11 @@ public class ImageServerProxyService {
                     response.setHeader("content-disposition", "inline");
 
                     FileIOUtil.stream(outStream, httpResp);
+//                    httpResp.getEntity().getContent()
                 }
             } else {
                 if ((statusCode == 500 || statusCode == 404) && retryServerError > 0) {
-                    streamJP2(simplepid, region, size, rotation, quality,
+                    streamJP2(id, region, size, rotation, quality,
                             format, outStream, response, retryServerError - 1);
                 } else {
                     LOG.error("Unexpected failure: {}", httpResp.getStatusLine());
@@ -132,7 +130,7 @@ public class ImageServerProxyService {
                 }
             }
         } catch (ClientAbortException e) {
-            LOG.debug("User client aborted request to stream jp2 for {}", simplepid, e);
+            LOG.debug("User client aborted request to stream jp2 for {}", id, e);
         } catch (Exception e) {
             LOG.error("Problem retrieving metadata for {}", path, e);
         } finally {
@@ -140,15 +138,11 @@ public class ImageServerProxyService {
         }
     }
 
-    public void setImageServerProxyPath(String fullPath) {
-        this.imageServerProxyPath = fullPath;
+    public void setImageServerProxyBasePath(String fullPath) {
+        this.imageServerProxyBasePath = fullPath;
     }
 
-    public String getImageServerProxyPath() {
-        return imageServerProxyPath;
-    }
-
-    public void setBasePath(String basePath) {
-        this.basePath = basePath;
+    public String getImageServerProxyBasePath() {
+        return imageServerProxyBasePath;
     }
 }

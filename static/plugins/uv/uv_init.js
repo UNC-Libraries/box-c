@@ -5,7 +5,7 @@
     try {
         let iiifurlAdaptor = new UV.IIIFURLAdaptor()
         let data = iiifurlAdaptor.getInitialData({
-            manifest: 'jp2Proxy/' + $UV.dataset.url + '/jp2/manifest',
+            manifest: 'services/api/iiif/v3/' + $UV.dataset.url + '/manifest',
             locales: [{ name: "en-GB" }]
         });
         let viewer = UV.init('jp2_viewer', data);
