@@ -222,7 +222,7 @@
       <dependency>
           <groupId>org.piwik.java.tracking</groupId>
           <artifactId>matomo-java-tracker</artifactId>
-          <version>3.0.2</version>
+          <version>3.0.3</version>
       </dependency>
   </dependencies>
 </project>
