@@ -4,6 +4,8 @@ import static edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPaths.idToPath;
 
 import java.io.OutputStream;
 import java.net.URI;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 
 import javax.servlet.http.HttpServletResponse;
 
@@ -55,9 +57,10 @@ public class ImageServerProxyService {
     public void getMetadata(String id, OutputStream outStream,
                             HttpServletResponse response, int retryServerError) {
 
+        var idPathEncoded = URLEncoder.encode(idToPath(id, 4, 2), StandardCharsets.UTF_8);
+        var idEncoded = URLEncoder.encode(id, StandardCharsets.UTF_8);
         StringBuilder path = new StringBuilder(getImageServerProxyBasePath());
-        path.append(idToPath(id, 4, 2))
-                .append(id).append(".jp2").append("/info.json");
+        path.append(idPathEncoded).append(idEncoded).append(".jp2").append("/info.json");
 
         int statusCode = -1;
         String statusLine = null;
