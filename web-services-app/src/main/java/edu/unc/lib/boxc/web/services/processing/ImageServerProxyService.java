@@ -1,16 +1,10 @@
 package edu.unc.lib.boxc.web.services.processing;
 
-import static edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPaths.idToPath;
-
-import java.io.OutputStream;
-import java.net.URI;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
-
-import javax.servlet.http.HttpServletResponse;
-
-import com.fasterxml.jackson.databind.ObjectReader;
-import info.freelibrary.iiif.presentation.v3.services.ImageService3;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import edu.unc.lib.boxc.common.util.URIUtil;
+import edu.unc.lib.boxc.web.common.exceptions.ClientAbortException;
+import edu.unc.lib.boxc.web.common.utils.FileIOUtil;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.config.RequestConfig;
@@ -24,13 +18,12 @@ import org.apache.http.impl.client.HttpClients;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import javax.servlet.http.HttpServletResponse;
+import java.io.OutputStream;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 
-import edu.unc.lib.boxc.common.util.URIUtil;
-import edu.unc.lib.boxc.web.common.exceptions.ClientAbortException;
-import edu.unc.lib.boxc.web.common.utils.FileIOUtil;
-
-
+import static edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPaths.idToPath;
 
 /**
  * Generates request, connects to, and streams the output from the image Server Proxy.  Sets pertinent headers.
@@ -72,14 +65,12 @@ public class ImageServerProxyService {
                         response.setHeader("Content-Type", "application/json");
                         response.setHeader("content-disposition", "inline");
 
-                        ObjectReader iiifReader = new ObjectMapper().readerFor(ImageService3.class);
-                        ImageService3 respData = iiifReader.readValue(httpResp.getEntity().getContent());
-                        var iiifWriter = new ObjectMapper().writerFor(ImageService3.class);
-
-                        respData.setID(new URI(URIUtil.join(baseIiifv3Path, id)));
+                        var mapper = new ObjectMapper();
+                        var respData = mapper.readTree(httpResp.getEntity().getContent());
+                        ((ObjectNode) respData).put("id", URIUtil.join(baseIiifv3Path, id));
 
                         HttpEntity updatedRespData = EntityBuilder.create()
-                                .setText(iiifWriter.writeValueAsString(respData))
+                                .setText(mapper.writeValueAsString(respData))
                                 .setContentType(ContentType.APPLICATION_JSON).build();
                         httpResp.setEntity(updatedRespData);
 
