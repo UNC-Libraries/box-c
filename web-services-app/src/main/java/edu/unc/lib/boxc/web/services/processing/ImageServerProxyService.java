@@ -58,10 +58,7 @@ public class ImageServerProxyService {
     public void getMetadata(String id, OutputStream outStream,
                             HttpServletResponse response, int retryServerError) {
 
-        var idPathEncoded = URLEncoder.encode(idToPath(id, 4, 2), StandardCharsets.UTF_8);
-        var idEncoded = URLEncoder.encode(id, StandardCharsets.UTF_8);
-        StringBuilder path = new StringBuilder(getImageServerProxyBasePath());
-        path.append(idPathEncoded).append(idEncoded).append(".jp2").append("/info.json");
+        var path = getImageServerEncodedBasePath(id).append(".jp2").append("/info.json");
 
         int statusCode = -1;
         String statusLine = null;
@@ -106,8 +103,7 @@ public class ImageServerProxyService {
                           String format, OutputStream outStream, HttpServletResponse response,
                           int retryServerError) {
 
-        StringBuilder path = new StringBuilder(getImageServerProxyBasePath());
-        path.append(idToPath(id, 4, 2)).append(id).append(".jp2")
+        var path = getImageServerEncodedBasePath(id).append(".jp2")
                 .append("/" + region).append("/" + size)
                 .append("/" + rotation).append("/" + quality + "." + format);
 
@@ -122,7 +118,6 @@ public class ImageServerProxyService {
                     response.setHeader("content-disposition", "inline");
 
                     FileIOUtil.stream(outStream, httpResp);
-//                    httpResp.getEntity().getContent()
                 }
             } else {
                 if ((statusCode == 500 || statusCode == 404) && retryServerError > 0) {
@@ -140,6 +135,18 @@ public class ImageServerProxyService {
         } finally {
             method.releaseConnection();
         }
+    }
+
+    /**
+     * Returns the image server base path with encoded IDs
+     * @param id
+     * @return
+     */
+    private StringBuilder getImageServerEncodedBasePath(String id) {
+        var idPathEncoded = URLEncoder.encode(idToPath(id, 4, 2), StandardCharsets.UTF_8);
+        var idEncoded = URLEncoder.encode(id, StandardCharsets.UTF_8);
+        StringBuilder path = new StringBuilder(getImageServerProxyBasePath());
+        return path.append(idPathEncoded).append(idEncoded);
     }
 
     public void setImageServerProxyBasePath(String fullPath) {
