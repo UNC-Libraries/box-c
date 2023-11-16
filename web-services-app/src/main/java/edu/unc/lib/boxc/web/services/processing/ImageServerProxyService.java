@@ -76,7 +76,7 @@ public class ImageServerProxyService {
                         ImageService3 respData = iiifReader.readValue(httpResp.getEntity().getContent());
                         var iiifWriter = new ObjectMapper().writerFor(ImageService3.class);
 
-                        respData.setID(new URI(URIUtil.join(baseIiifv3Path, id, "info.json")));
+                        respData.setID(new URI(URIUtil.join(baseIiifv3Path, id)));
 
                         HttpEntity updatedRespData = EntityBuilder.create()
                                 .setText(iiifWriter.writeValueAsString(respData))
