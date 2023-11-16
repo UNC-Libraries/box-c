@@ -40,6 +40,7 @@ public class ImageServerProxyService {
     private static final Logger LOG = LoggerFactory.getLogger(ImageServerProxyService.class);
     private CloseableHttpClient httpClient;
     private String imageServerProxyBasePath;
+    private String baseIiifv3Path;
 
     public void setHttpClientConnectionManager(HttpClientConnectionManager manager) {
 
@@ -78,7 +79,7 @@ public class ImageServerProxyService {
                         ImageService3 respData = iiifReader.readValue(httpResp.getEntity().getContent());
                         var iiifWriter = new ObjectMapper().writerFor(ImageService3.class);
 
-                        respData.setID(new URI(URIUtil.join(imageServerProxyBasePath, id)));
+                        respData.setID(new URI(URIUtil.join(baseIiifv3Path, id, "info.json")));
 
                         HttpEntity updatedRespData = EntityBuilder.create()
                                 .setText(iiifWriter.writeValueAsString(respData))
@@ -147,5 +148,9 @@ public class ImageServerProxyService {
 
     public String getImageServerProxyBasePath() {
         return imageServerProxyBasePath;
+    }
+
+    public void setBaseIiifv3Path(String baseIiifv3Path) {
+        this.baseIiifv3Path = baseIiifv3Path;
     }
 }

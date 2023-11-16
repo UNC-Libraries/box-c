@@ -447,6 +447,7 @@
 
     <bean id="imageServerProxyService" class="edu.unc.lib.boxc.web.services.processing.ImageServerProxyService">
         <property name="imageServerProxyBasePath" value="${iiif.imageServer.base.url}"/>
+        <property name="baseIiifv3Path" value="${services.api.url}iiif/v3/"/>
         <property name="httpClientConnectionManager" ref="httpClientConnectionManager" />
     </bean>
     
