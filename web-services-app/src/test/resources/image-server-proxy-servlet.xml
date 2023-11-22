@@ -30,40 +30,4 @@
     <bean id="httpClientConnectionManager" class="org.apache.http.impl.conn.PoolingHttpClientConnectionManager"
           destroy-method="shutdown">
     </bean>
-
-    <bean id="solrSearchService" class="org.mockito.Mockito" factory-method="mock">
-        <constructor-arg value="edu.unc.lib.boxc.web.common.services.SolrQueryLayerService" />
-    </bean>
-
-    <bean id="searchSettings" class="org.mockito.Mockito" factory-method="mock">
-        <constructor-arg value="edu.unc.lib.boxc.search.solr.config.SearchSettings" />
-    </bean>
-
-    <bean id="solrSettings" class="org.mockito.Mockito" factory-method="mock">
-        <constructor-arg value="edu.unc.lib.boxc.search.solr.config.SolrSettings" />
-    </bean>
-
-    <bean id="facetFieldFactory" class="org.mockito.Mockito" factory-method="mock">
-        <constructor-arg value="edu.unc.lib.boxc.search.solr.services.FacetFieldFactory" />
-    </bean>
-
-    <bean id="searchActionService" class="org.mockito.Mockito" factory-method="mock">
-        <constructor-arg value="edu.unc.lib.boxc.web.common.search.SearchActionService" />
-    </bean>
-
-    <bean id="facetFieldUtil" class="org.mockito.Mockito" factory-method="mock">
-        <constructor-arg value="edu.unc.lib.boxc.search.solr.utils.FacetFieldUtil" />
-    </bean>
-
-    <bean id="searchStateFactory" class="org.mockito.Mockito" factory-method="mock">
-        <constructor-arg value="edu.unc.lib.boxc.search.solr.services.SearchStateFactory" />
-    </bean>
-
-    <bean id="childrenCountService" class="org.mockito.Mockito" factory-method="mock">
-        <constructor-arg value="edu.unc.lib.boxc.search.solr.services.ChildrenCountService" />
-    </bean>
-
-    <bean id="setFacetTitleByIdService" class="org.mockito.Mockito" factory-method="mock">
-        <constructor-arg value="edu.unc.lib.boxc.search.solr.services.SetFacetTitleByIdService" />
-    </bean>
 </beans>

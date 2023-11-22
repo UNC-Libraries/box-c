@@ -24,10 +24,11 @@ import java.io.IOException;
 import static edu.unc.lib.boxc.model.api.DatastreamType.JP2_ACCESS_COPY;
 
 /**
+ * Controller that handles IIIF V3 requests to the image server
  * @author snluong
  */
 @Controller
-public class ImageServerProxyController extends AbstractSolrSearchController {
+public class ImageServerProxyController {
     private static final Logger LOG = LoggerFactory.getLogger(ImageServerProxyController.class);
 
     @Autowired

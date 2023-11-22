@@ -48,6 +48,13 @@ public class ImageServerProxyService {
                 .build();
     }
 
+    /**
+     * Gets metadata from the IIIF V3 image server about the requested ID
+     * @param id ID of the requested object
+     * @param outStream out stream from the response
+     * @param response response object passed from the controller
+     * @param retryServerError the number of times to retry after failure
+     */
     public void getMetadata(String id, OutputStream outStream,
                             HttpServletResponse response, int retryServerError) {
 
@@ -91,6 +98,18 @@ public class ImageServerProxyService {
         LOG.error("Unexpected failure while getting image server proxy path {}: {}", statusLine, path);
     }
 
+    /**
+     * Gets the datastream from the IIIF V3 image server for the requested ID
+     * @param id ID of the requested object
+     * @param region region of the image
+     * @param size pixel size of the image, or max
+     * @param rotation degree of rotation
+     * @param quality quality of image
+     * @param format format like png or jpg
+     * @param outStream out stream of the response
+     * @param response response object passed from the controller
+     * @param retryServerError the number of times to retry after failure
+     */
     public void streamJP2(String id, String region, String size, String rotation, String quality,
                           String format, OutputStream outStream, HttpServletResponse response,
                           int retryServerError) {
