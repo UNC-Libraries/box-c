@@ -51,7 +51,8 @@ public class ImageServerProxyService {
     public void getMetadata(String id, OutputStream outStream,
                             HttpServletResponse response, int retryServerError) {
 
-        var path = getImageServerEncodedBasePath(id).append(".jp2").append("/info.json");
+        var path = new StringBuilder(getImageServerProxyBasePath());
+        path.append(getImageServerEncodedId(id)).append(".jp2").append("/info.json");
 
         int statusCode = -1;
         String statusLine = null;
@@ -94,7 +95,8 @@ public class ImageServerProxyService {
                           String format, OutputStream outStream, HttpServletResponse response,
                           int retryServerError) {
 
-        var path = getImageServerEncodedBasePath(id).append(".jp2")
+        StringBuilder path = new StringBuilder(getImageServerProxyBasePath());
+        path.append(getImageServerEncodedId(id)).append(".jp2")
                 .append("/" + region).append("/" + size)
                 .append("/" + rotation).append("/" + quality + "." + format);
 
@@ -133,11 +135,10 @@ public class ImageServerProxyService {
      * @param id
      * @return
      */
-    private StringBuilder getImageServerEncodedBasePath(String id) {
+    public String getImageServerEncodedId(String id) {
         var idPathEncoded = URLEncoder.encode(idToPath(id, 4, 2), StandardCharsets.UTF_8);
         var idEncoded = URLEncoder.encode(id, StandardCharsets.UTF_8);
-        StringBuilder path = new StringBuilder(getImageServerProxyBasePath());
-        return path.append(idPathEncoded).append(idEncoded);
+        return idPathEncoded + idEncoded;
     }
 
     public void setImageServerProxyBasePath(String fullPath) {

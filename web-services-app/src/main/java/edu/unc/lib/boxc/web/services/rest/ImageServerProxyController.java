@@ -81,6 +81,7 @@ public class ImageServerProxyController extends AbstractSolrSearchController {
                         response.getOutputStream(), response, 1);
             } catch (IOException e) {
                 LOG.error("Error retrieving streaming JP2 content for {}", id, e);
+                response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
             }
         } else {
             LOG.debug("Access was forbidden to {} for user {}", id, GroupsThreadStore.getUsername());
@@ -104,6 +105,7 @@ public class ImageServerProxyController extends AbstractSolrSearchController {
                 imageServerProxyService.getMetadata(id, response.getOutputStream(), response, 1);
             } catch (IOException e) {
                 LOG.error("Error retrieving JP2 metadata content for {}", id, e);
+                response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
             }
         } else {
             LOG.debug("Image access was forbidden to {} for user {}", id, GroupsThreadStore.getUsername());
