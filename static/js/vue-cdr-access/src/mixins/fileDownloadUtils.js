@@ -72,11 +72,7 @@ export default {
 
                 return html;
             } else {
-                return `<div class="dropdown actionlink image-download-options">
-                            <button class="button download-images" title="${this.$t('full_record.download_unavailable')}" disabled>
-                                <i class="fa fa-download"></i> ${this.$t('full_record.download')}
-                            </button>
-                        </div>`;
+                return '';
             }
         },
 
