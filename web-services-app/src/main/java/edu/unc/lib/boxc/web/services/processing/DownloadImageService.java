@@ -35,6 +35,9 @@ public class DownloadImageService {
      */
     public ResponseEntity<InputStreamResource> streamImage(ContentObjectRecord contentObjectRecord, String size)
             throws IOException {
+        if (contentObjectRecord.getDatastreamObject(DatastreamType.JP2_ACCESS_COPY.getId()) == null) {
+            return ResponseEntity.notFound().build();
+        }
 
         String pidString = contentObjectRecord.getPid().getId();
         String url = buildURL(pidString, size);
