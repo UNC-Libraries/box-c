@@ -6,6 +6,8 @@ import static edu.unc.lib.boxc.auth.api.Permission.viewMetadata;
 import static edu.unc.lib.boxc.auth.api.Permission.viewOriginal;
 import static edu.unc.lib.boxc.model.api.DatastreamType.JP2_ACCESS_COPY;
 import static edu.unc.lib.boxc.model.api.DatastreamType.ORIGINAL_FILE;
+import static edu.unc.lib.boxc.model.api.DatastreamType.THUMBNAIL_LARGE;
+import static edu.unc.lib.boxc.model.api.DatastreamType.THUMBNAIL_SMALL;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Matchers.any;
@@ -61,7 +63,9 @@ public class PermissionsHelperTest {
         mdObject.setRoleGroup(roleGroups);
         List<String> datastreams = Arrays.asList(
                 ORIGINAL_FILE.getId() + "|application/pdf|file.pdf|pdf|766|urn:sha1:checksum|",
-                JP2_ACCESS_COPY.getId() + "|application/jp2|file.jp2|jp2|884||");
+                JP2_ACCESS_COPY.getId() + "|application/jp2|file.jp2|jp2|884||",
+                THUMBNAIL_LARGE.getId() + "|image/png|thumb|png|55||",
+                THUMBNAIL_SMALL.getId() + "|image/png|thumb|png|15||");
         mdObject.setDatastream(datastreams);
 
         principals = new AccessGroupSetImpl("group");
@@ -108,6 +112,20 @@ public class PermissionsHelperTest {
         assignPermission(viewAccessCopies, true);
 
         assertTrue(helper.hasDatastreamAccess(principals, JP2_ACCESS_COPY, mdObject));
+    }
+
+    @Test
+    public void testAllowsThumbnailAccess() {
+        assignPermission(viewAccessCopies, true);
+
+        assertTrue(helper.hasThumbnailAccess(principals, mdObject), "Thumbnail should have full patron access");
+    }
+
+    @Test
+    public void testDisAllowsThumbnailAccess() {
+        assignPermission(viewMetadata, true);
+
+        assertFalse(helper.hasThumbnailAccess(principals, mdObject), "Thumbnail must not have full patron access");
     }
 
     @Test

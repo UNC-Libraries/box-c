@@ -135,7 +135,7 @@ export default {
                     render: (data, type, row) => {
                         let img;
 
-                        if ('thumbnail_url' in row) {
+                        if ('thumbnail_url' in row && this.hasPermission(row,'viewAccessCopies')) {
                             const thumbnail_title = this.$t('full_record.thumbnail_title', { title: row.title })
                             img = `<img class="data-thumb" loading="lazy" src="${row.thumbnail_url}"` +
                             ` alt="${thumbnail_title}">`;

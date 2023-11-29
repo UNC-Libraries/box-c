@@ -130,12 +130,17 @@ public class AccessCopiesService {
      */
     public String getThumbnailId(ContentObjectRecord contentObjectRecord, AccessGroupSet principals,
                                  boolean checkChildren) {
+        if (!permissionsHelper.hasThumbnailAccess(principals, contentObjectRecord)) {
+            return null;
+        }
+
         // Find thumbnail datastream recorded directly on the object, if present
         var thumbId = DatastreamUtil.getThumbnailOwnerId(contentObjectRecord);
         if (thumbId != null) {
             log.debug("Found thumbnail object directly assigned to object {}", thumbId);
             return thumbId;
         }
+
         // Don't need to check any further if object isn't a work or doesn't contain files with thumbnails
         if (!ResourceType.Work.name().equals(contentObjectRecord.getResourceType())
                 || contentObjectRecord.getFileFormatCategory() == null
