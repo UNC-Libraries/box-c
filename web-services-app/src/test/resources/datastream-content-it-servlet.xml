@@ -39,6 +39,11 @@
 
     <bean id="accessCopiesService" class="edu.unc.lib.boxc.web.common.services.AccessCopiesService">
         <property name="globalPermissionEvaluator" ref="globalPermissionEvaluator" />
+        <property name="permissionsHelper" ref="permsHelper" />
         <property name="solrSearchService" ref="solrSearchService" />
+    </bean>
+
+    <bean id="permsHelper" class="org.mockito.Mockito" factory-method="mock">
+        <constructor-arg value="edu.unc.lib.boxc.web.common.services.PermissionsHelper" />
     </bean>
 </beans>
