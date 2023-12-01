@@ -27,7 +27,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
-import static edu.unc.lib.boxc.auth.api.Permission.viewAccessCopies;
 import static edu.unc.lib.boxc.auth.api.Permission.viewOriginal;
 import static edu.unc.lib.boxc.model.api.DatastreamType.ORIGINAL_FILE;
 import static edu.unc.lib.boxc.model.api.DatastreamType.TECHNICAL_METADATA;
@@ -138,7 +137,6 @@ public class AccessCopiesServiceTest  {
         List<String> imgDatastreams = Arrays.asList(
                 ORIGINAL_FILE.getId() + "|image/png|file.png|png|766|urn:sha1:checksum|",
                 DatastreamType.THUMBNAIL_LARGE.getId() + "|image/png|thumb|png|55||",
-                DatastreamType.THUMBNAIL_SMALL.getId() + "|image/png|thumb|png|15||",
                 DatastreamType.JP2_ACCESS_COPY.getId() + "|image/jp2|thumb|jp2|555||");
         mdObjectImg.setFileFormatCategory(Collections.singletonList(ContentCategory.image.getDisplayName()));
         mdObjectImg.setFileFormatType(Collections.singletonList("image/png"));
@@ -239,14 +237,6 @@ public class AccessCopiesServiceTest  {
     }
 
     @Test
-    public void primaryObjThumbnailMetadataOnlyPermissions() {
-        hasPermissions(mdObjectImg, true, false);
-
-        assertNull(accessCopiesService.getThumbnailId(mdObjectImg, principals, false));
-        assertNull(accessCopiesService.getThumbnailId(mdObjectImg, principals, true));
-    }
-
-    @Test
     public void noPrimaryObjThumbnailMultipleFiles() {
         hasPermissions(noOriginalFileObj, true);
         hasPermissions(mdObjectXml, true);
@@ -261,21 +251,6 @@ public class AccessCopiesServiceTest  {
         assertEquals(mdObjectImg.getId(), accessCopiesService.getThumbnailId(noOriginalFileObj, principals, true));
         assertRequestedDatastreamFilter(DatastreamType.THUMBNAIL_LARGE);
         assertSortType("default");
-    }
-
-    @Test
-    public void noPrimaryObjThumbnailMultipleFilesMetadataOnlyPermissions() {
-        hasPermissions(noOriginalFileObj, true, false);
-        hasPermissions(mdObjectXml, false);
-        hasPermissions(mdObjectImg, false);
-        noOriginalFileObj.setFileFormatCategory(Collections.singletonList(ContentCategory.image.getDisplayName()));
-        noOriginalFileObj.setFileFormatType(Collections.singletonList("png"));
-        populateResultList(mdObjectImg);
-        when(searchResultResponse.getResultCount()).thenReturn(2l);
-
-        assertNull(accessCopiesService.getThumbnailId(noOriginalFileObj, principals, false));
-        // Gets the ID of the specific child with a thumbnail
-        assertNull(accessCopiesService.getThumbnailId(noOriginalFileObj, principals, true));
     }
 
     @Test
@@ -298,8 +273,7 @@ public class AccessCopiesServiceTest  {
         mdObjectImg2.setId(UUID.randomUUID().toString());
         var imgDatastreams = Arrays.asList(
                 ORIGINAL_FILE.getId() + "|image/jpg|file2.png|png|555|urn:sha1:checksum|",
-                DatastreamType.THUMBNAIL_LARGE.getId() + "|image/png|thumb|png|55||",
-                DatastreamType.THUMBNAIL_SMALL.getId() + "|image/png|thumb|png|15||");
+                DatastreamType.THUMBNAIL_LARGE.getId() + "|image/png|thumb|png|55||");
         mdObjectImg2.setFileFormatCategory(Collections.singletonList(ContentCategory.image.getDisplayName()));
         mdObjectImg2.setFileFormatType(Collections.singletonList("png"));
         mdObjectImg2.setDatastream(imgDatastreams);
@@ -318,33 +292,6 @@ public class AccessCopiesServiceTest  {
         assertEquals(mdObjectImg2.getId(), accessCopiesService.getThumbnailId(noOriginalFileObj, principals, true));
         assertRequestedDatastreamFilter(DatastreamType.THUMBNAIL_LARGE);
         assertSortType("default");
-    }
-
-    @Test
-    public void getThumbnailIdNoPrimaryMultipleImagesMetadataOnlyPermissions() {
-        var mdObjectImg2 = new ContentObjectSolrRecord();
-        mdObjectImg2.setResourceType(ResourceType.File.name());
-        mdObjectImg2.setId(UUID.randomUUID().toString());
-        var imgDatastreams = Arrays.asList(
-                ORIGINAL_FILE.getId() + "|image/jpg|file2.png|png|555|urn:sha1:checksum|",
-                DatastreamType.THUMBNAIL_LARGE.getId() + "|image/png|thumb|png|55||",
-                DatastreamType.THUMBNAIL_SMALL.getId() + "|image/png|thumb|png|15||");
-        mdObjectImg2.setFileFormatCategory(Collections.singletonList(ContentCategory.image.getDisplayName()));
-        mdObjectImg2.setFileFormatType(Collections.singletonList("png"));
-        mdObjectImg2.setDatastream(imgDatastreams);
-
-        hasPermissions(noOriginalFileObj, true, false);
-        hasPermissions(mdObjectImg2, true, false);
-        hasPermissions(mdObjectImg, true, false);
-        noOriginalFileObj.setFileFormatCategory(Collections.singletonList(ContentCategory.image.getDisplayName()));
-        noOriginalFileObj.setFileFormatType(Collections.singletonList("png"));
-        populateResultList(mdObjectImg2);
-        when(searchResultResponse.getResultCount()).thenReturn(2l);
-
-        assertNull(accessCopiesService.getThumbnailId(noOriginalFileObj, principals, false));
-
-        // Gets the ID of the specific child with a thumbnail
-        assertNull(accessCopiesService.getThumbnailId(noOriginalFileObj, principals, true));
     }
 
     private void assertRequestedDatastreamFilter(DatastreamType expectedType) {
@@ -419,15 +366,6 @@ public class AccessCopiesServiceTest  {
 
     private void hasPermissions(ContentObjectSolrRecord contentObject, boolean hasAccess) {
         when(accessControlService.hasAccess(contentObject.getPid(), principals, viewOriginal)).thenReturn(hasAccess);
-        when(accessControlService.hasAccess(contentObject.getPid(), principals, viewAccessCopies)).thenReturn(hasAccess);
-    }
-
-    private void hasPermissions(ContentObjectSolrRecord contentObject, boolean hasAccessOriginal,
-                                boolean hasAccessThumb) {
-        when(accessControlService.hasAccess(contentObject.getPid(), principals, viewOriginal))
-                .thenReturn(hasAccessOriginal);
-        when(accessControlService.hasAccess(contentObject.getPid(), principals, viewAccessCopies))
-                .thenReturn(hasAccessThumb);
     }
 
     private void populateResultList(ContentObjectRecord... objects) {

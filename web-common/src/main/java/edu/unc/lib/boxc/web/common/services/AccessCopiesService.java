@@ -130,10 +130,6 @@ public class AccessCopiesService {
      */
     public String getThumbnailId(ContentObjectRecord contentObjectRecord, AccessGroupSet principals,
                                  boolean checkChildren) {
-        if (!permissionsHelper.hasThumbnailAccess(principals, contentObjectRecord)) {
-            return null;
-        }
-
         // Find thumbnail datastream recorded directly on the object, if present
         var thumbId = DatastreamUtil.getThumbnailOwnerId(contentObjectRecord);
         if (thumbId != null) {

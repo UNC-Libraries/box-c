@@ -3,12 +3,12 @@ package edu.unc.lib.boxc.web.common.services;
 import static edu.unc.lib.boxc.auth.api.AccessPrincipalConstants.AUTHENTICATED_PRINC;
 import static edu.unc.lib.boxc.auth.api.AccessPrincipalConstants.PUBLIC_PRINC;
 import static edu.unc.lib.boxc.auth.api.Permission.editDescription;
-import static edu.unc.lib.boxc.auth.api.Permission.viewAccessCopies;
 import static edu.unc.lib.boxc.auth.api.UserRole.canViewOriginals;
 import static edu.unc.lib.boxc.auth.api.services.DatastreamPermissionUtil.getPermissionForDatastream;
 import static edu.unc.lib.boxc.model.api.DatastreamType.JP2_ACCESS_COPY;
 import static edu.unc.lib.boxc.model.api.DatastreamType.MD_DESCRIPTIVE;
 import static edu.unc.lib.boxc.model.api.DatastreamType.ORIGINAL_FILE;
+import static edu.unc.lib.boxc.model.api.DatastreamType.THUMBNAIL_SMALL;
 import static org.springframework.util.Assert.notNull;
 
 import edu.unc.lib.boxc.auth.api.Permission;
@@ -49,21 +49,6 @@ public class PermissionsHelper {
     }
 
     /**
-     * Returns true if the principals can access thumbnails belonging to
-     * the requested object, if present.
-     *
-     * @param principals
-     * @param metadata
-     * @return
-     */
-    public boolean hasThumbnailAccess(AccessGroupSet principals, ContentObjectRecord metadata) {
-        notNull(principals, "Requires agent principals");
-        notNull(metadata, "Requires metadata object");
-
-        return accessControlService.hasAccess(metadata.getPid(), principals, viewAccessCopies);
-    }
-
-    /**
      * Returns true if the principals can access the image preview belonging to
      * the requested object, if present.
      *
@@ -78,7 +63,7 @@ public class PermissionsHelper {
     /**
      * Returns true if the principals can access the MODS description belonging to
      * the requested object, if present.
-     * 
+     *
      * @param metadata
      * @return
      */
@@ -96,7 +81,7 @@ public class PermissionsHelper {
      * @return
      */
     public boolean hasDatastreamAccess(AccessGroupSet principals, DatastreamType datastream,
-            ContentObjectRecord metadata) {
+                                       ContentObjectRecord metadata) {
         notNull(principals, "Requires agent principals");
         notNull(datastream, "Requires datastream type");
         notNull(metadata, "Requires metadata object");

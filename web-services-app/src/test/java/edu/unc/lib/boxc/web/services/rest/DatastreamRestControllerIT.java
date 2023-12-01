@@ -1,7 +1,7 @@
 package edu.unc.lib.boxc.web.services.rest;
 
-import static edu.unc.lib.boxc.auth.api.Permission.viewAccessCopies;
 import static edu.unc.lib.boxc.auth.api.Permission.viewHidden;
+import static edu.unc.lib.boxc.auth.api.Permission.viewMetadata;
 import static edu.unc.lib.boxc.model.api.DatastreamType.MD_EVENTS;
 import static edu.unc.lib.boxc.model.api.DatastreamType.TECHNICAL_METADATA;
 import static edu.unc.lib.boxc.model.api.DatastreamType.THUMBNAIL_SMALL;
@@ -17,7 +17,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -27,10 +26,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
 import edu.unc.lib.boxc.indexing.solr.test.TestCorpus;
-import edu.unc.lib.boxc.search.api.models.ContentObjectRecord;
-import edu.unc.lib.boxc.web.common.services.PermissionsHelper;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.jena.rdf.model.Model;
@@ -40,7 +36,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.io.TempDir;
-import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.test.context.ContextConfiguration;
@@ -71,10 +66,10 @@ import edu.unc.lib.boxc.web.services.rest.modify.AbstractAPIIT;
 @ExtendWith(SpringExtension.class)
 @WebAppConfiguration
 @ContextHierarchy({
-    @ContextConfiguration("/spring-test/test-fedora-container.xml"),
-    @ContextConfiguration("/spring-test/cdr-client-container.xml"),
-    @ContextConfiguration("/spring-test/solr-indexing-context.xml"),
-    @ContextConfiguration("/datastream-content-it-servlet.xml")
+        @ContextConfiguration("/spring-test/test-fedora-container.xml"),
+        @ContextConfiguration("/spring-test/cdr-client-container.xml"),
+        @ContextConfiguration("/spring-test/solr-indexing-context.xml"),
+        @ContextConfiguration("/datastream-content-it-servlet.xml")
 })
 public class DatastreamRestControllerIT extends AbstractAPIIT {
 
@@ -91,9 +86,6 @@ public class DatastreamRestControllerIT extends AbstractAPIIT {
 
     @Autowired
     private EmbeddedSolrServer embeddedSolrServer;
-
-    @Autowired
-    private PermissionsHelper permissionsHelper;
 
     @TempDir
     public Path derivDir;
@@ -198,9 +190,6 @@ public class DatastreamRestControllerIT extends AbstractAPIIT {
         createDerivative(id, THUMBNAIL_SMALL, BINARY_CONTENT.getBytes());
         PID workPid = corpus.pid6;
 
-        doReturn(true).when(permissionsHelper)
-                .hasThumbnailAccess(any(AccessGroupSet.class), any(ContentObjectRecord.class));
-
         MvcResult result = mvc.perform(get("/thumb/" + workPid.getId()))
                 .andExpect(status().is2xxSuccessful())
                 .andReturn();
@@ -236,7 +225,7 @@ public class DatastreamRestControllerIT extends AbstractAPIIT {
         createDerivative(id, THUMBNAIL_SMALL, BINARY_CONTENT.getBytes());
 
         doThrow(new AccessRestrictionException()).when(accessControlService)
-                .assertHasAccess(anyString(), eq(filePid), any(AccessGroupSetImpl.class), eq(viewAccessCopies));
+                .assertHasAccess(anyString(), eq(filePid), any(AccessGroupSetImpl.class), eq(viewMetadata));
 
         MvcResult result = mvc.perform(get("/thumb/" + filePid.getId()))
                 .andExpect(status().isForbidden())
@@ -288,9 +277,9 @@ public class DatastreamRestControllerIT extends AbstractAPIIT {
 
         FolderObject folderObj = repositoryObjectFactory.createFolderObject(folderPid, null);
         premisLoggerFactory.createPremisLogger(folderObj)
-            .buildEvent(Premis.Creation)
-            .addAuthorizingAgent(AgentPids.forPerson("some_user"))
-            .writeAndClose();
+                .buildEvent(Premis.Creation)
+                .addAuthorizingAgent(AgentPids.forPerson("some_user"))
+                .writeAndClose();
 
         MvcResult result = mvc.perform(get("/file/" + id + "/" + MD_EVENTS.getId()))
                 .andExpect(status().is2xxSuccessful())
@@ -332,9 +321,9 @@ public class DatastreamRestControllerIT extends AbstractAPIIT {
 
         FolderObject folderObj = repositoryObjectFactory.createFolderObject(folderPid, null);
         premisLoggerFactory.createPremisLogger(folderObj)
-            .buildEvent(Premis.Creation)
-            .addAuthorizingAgent(AgentPids.forPerson("some_user"))
-            .writeAndClose();
+                .buildEvent(Premis.Creation)
+                .addAuthorizingAgent(AgentPids.forPerson("some_user"))
+                .writeAndClose();
 
         doThrow(new AccessRestrictionException()).when(accessControlService)
                 .assertHasAccess(anyString(), eq(folderPid), any(AccessGroupSetImpl.class), eq(viewHidden));
