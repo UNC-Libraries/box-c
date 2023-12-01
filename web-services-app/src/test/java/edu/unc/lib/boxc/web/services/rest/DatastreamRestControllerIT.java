@@ -1,7 +1,7 @@
 package edu.unc.lib.boxc.web.services.rest;
 
+import static edu.unc.lib.boxc.auth.api.Permission.viewAccessCopies;
 import static edu.unc.lib.boxc.auth.api.Permission.viewHidden;
-import static edu.unc.lib.boxc.auth.api.Permission.viewMetadata;
 import static edu.unc.lib.boxc.model.api.DatastreamType.MD_EVENTS;
 import static edu.unc.lib.boxc.model.api.DatastreamType.TECHNICAL_METADATA;
 import static edu.unc.lib.boxc.model.api.DatastreamType.THUMBNAIL_SMALL;
@@ -225,7 +225,7 @@ public class DatastreamRestControllerIT extends AbstractAPIIT {
         createDerivative(id, THUMBNAIL_SMALL, BINARY_CONTENT.getBytes());
 
         doThrow(new AccessRestrictionException()).when(accessControlService)
-                .assertHasAccess(anyString(), eq(filePid), any(AccessGroupSetImpl.class), eq(viewMetadata));
+                .assertHasAccess(anyString(), eq(filePid), any(AccessGroupSetImpl.class), eq(viewAccessCopies));
 
         MvcResult result = mvc.perform(get("/thumb/" + filePid.getId()))
                 .andExpect(status().isForbidden())
