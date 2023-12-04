@@ -22,13 +22,13 @@ import java.util.Objects;
  */
 public class DownloadImageService {
     private String iiifBasePath;
-    public static final String FULL_SIZE = "full";
+    public static final String FULL_SIZE = "max";
     public static final String INVALID_SIZE_MESSAGE = "Unable to determine size for access copy download";
 
     /**
      * Method contacts the IIIF server for the requested access copy image and returns it
      * @param contentObjectRecord solr record of the file
-     * @param size a string which is either "full" for full size or a pixel length like "1200"
+     * @param size a string which is either "max" for full size or a pixel length like "1200"
      * @param pidString the UUID of the file
      * @return a response entity which contains headers and content of the access copy image
      * @throws IOException
@@ -54,7 +54,7 @@ public class DownloadImageService {
     /**
      * A method that builds the IIIF URL based on an assumption of full region, 0 rotation, and default quality.
      * @param id the UUID of the file
-     * @param size a string which is either "full" for full size or a pixel length like "1200"
+     * @param size a string which is either "max" for full size or a pixel length like "1200"
      * @return a string which is the URL to request the IIIF server for the image
      */
     private String buildURL(String id, String size) {
