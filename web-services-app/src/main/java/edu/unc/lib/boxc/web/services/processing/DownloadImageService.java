@@ -5,6 +5,7 @@ import static edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPaths.idToPath;
 import edu.unc.lib.boxc.model.api.DatastreamType;
 import edu.unc.lib.boxc.search.api.models.ContentObjectRecord;
 import edu.unc.lib.boxc.search.api.models.Datastream;
+import edu.unc.lib.boxc.web.services.utils.ImageServerUtil;
 import org.apache.commons.io.FilenameUtils;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpHeaders;
@@ -59,8 +60,7 @@ public class DownloadImageService {
      */
     private String buildURL(String id, String size) {
         var formattedSize = size;
-        var hash = idToPath(id, 4, 2);
-        var formattedId = hash + id + ".jp2";
+        var formattedId = ImageServerUtil.getImageServerEncodedId(id);
         if (!Objects.equals(size, FULL_SIZE)) {
             // pixel length should be in !123,123 format
             formattedSize = "!" + size + "," + size;

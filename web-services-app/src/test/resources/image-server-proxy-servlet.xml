@@ -17,12 +17,6 @@
     <context:component-scan base-package="edu.unc.lib.boxc.web.services.rest.exceptions"/>
     <context:component-scan resource-pattern="**/ImageServerProxyController*" base-package="edu.unc.lib.boxc.web.services.rest"/>
 
-    <bean id="imageServerProxyService" class="edu.unc.lib.boxc.web.services.processing.ImageServerProxyService">
-        <property name="baseIiifv3Path" value="http://example.com/iiif/v3/"/>
-        <property name="imageServerProxyBasePath" value="http://localhost:46887/iiif/v3/"/>
-        <property name="httpClientConnectionManager" ref="httpClientConnectionManager" />
-    </bean>
-
     <bean id="aclService" class="org.mockito.Mockito" factory-method="mock">
         <constructor-arg value="edu.unc.lib.boxc.auth.fcrepo.services.AccessControlServiceImpl" />
     </bean>

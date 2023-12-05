@@ -14,7 +14,9 @@ import edu.unc.lib.boxc.search.api.requests.SimpleIdRequest;
 import edu.unc.lib.boxc.search.solr.models.ContentObjectSolrRecord;
 import edu.unc.lib.boxc.web.common.services.SolrQueryLayerService;
 import edu.unc.lib.boxc.web.services.processing.DownloadImageService;
+import edu.unc.lib.boxc.web.services.processing.ImageServerProxyService;
 import edu.unc.lib.boxc.web.services.rest.modify.AbstractAPIIT;
+import edu.unc.lib.boxc.web.services.utils.ImageServerUtil;
 import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -64,7 +66,7 @@ public class DownloadImageControllerIT extends AbstractAPIIT {
     public void testGetImageAtFullSize() throws Exception {
         var pid = makePid();
         var pidString = pid.getId();
-        var formattedPid = idToPath(pidString, 4, 2) + pidString + ".jp2";
+        var formattedPid = ImageServerUtil.getImageServerEncodedId(pidString);
         var filename = "bunny.jpg";
         ContentObjectSolrRecord contentObjectSolrRecord = mock(ContentObjectSolrRecord.class);
         Datastream originalDatastream = mock(Datastream.class);
@@ -95,7 +97,7 @@ public class DownloadImageControllerIT extends AbstractAPIIT {
     public void testGetImageAtPixelSizeSmallerThanFull() throws Exception {
         var pid = makePid();
         var pidString = pid.getId();
-        var formattedPid = idToPath(pidString, 4, 2) + pidString + ".jp2";
+        var formattedPid = ImageServerUtil.getImageServerEncodedId(pidString);
         var filename = "bunny.jpg";
         ContentObjectSolrRecord contentObjectSolrRecord = mock(ContentObjectSolrRecord.class);
         Datastream originalDatastream = mock(Datastream.class);
@@ -128,7 +130,7 @@ public class DownloadImageControllerIT extends AbstractAPIIT {
     public void testGetImageAtPixelSizeBiggerThanFull() throws Exception {
         var pid = makePid();
         var pidString = pid.getId();
-        var formattedPid = idToPath(pidString, 4, 2) + pidString + ".jp2";
+        var formattedPid = ImageServerUtil.getImageServerEncodedId(pidString);
         var filename = "bunny.jpg";
         ContentObjectSolrRecord contentObjectSolrRecord = mock(ContentObjectSolrRecord.class);
         Datastream originalDatastream = mock(Datastream.class);

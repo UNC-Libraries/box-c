@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import edu.unc.lib.boxc.common.util.URIUtil;
 import edu.unc.lib.boxc.web.common.exceptions.ClientAbortException;
 import edu.unc.lib.boxc.web.common.utils.FileIOUtil;
+import edu.unc.lib.boxc.web.services.utils.ImageServerUtil;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.config.RequestConfig;
@@ -59,7 +60,7 @@ public class ImageServerProxyService {
                             HttpServletResponse response, int retryServerError) {
 
         var path = new StringBuilder(getImageServerProxyBasePath());
-        path.append(getImageServerEncodedId(id)).append(".jp2").append("/info.json");
+        path.append(ImageServerUtil.getImageServerEncodedId(id)).append("/info.json");
 
         int statusCode = -1;
         String statusLine = null;
@@ -115,7 +116,7 @@ public class ImageServerProxyService {
                           int retryServerError) {
 
         StringBuilder path = new StringBuilder(getImageServerProxyBasePath());
-        path.append(getImageServerEncodedId(id)).append(".jp2")
+        path.append(ImageServerUtil.getImageServerEncodedId(id))
                 .append("/" + region).append("/" + size)
                 .append("/" + rotation).append("/" + quality + "." + format);
 
@@ -147,17 +148,6 @@ public class ImageServerProxyService {
         } finally {
             method.releaseConnection();
         }
-    }
-
-    /**
-     * Returns the image server base path with encoded IDs
-     * @param id
-     * @return
-     */
-    public String getImageServerEncodedId(String id) {
-        var idPathEncoded = URLEncoder.encode(idToPath(id, 4, 2), StandardCharsets.UTF_8);
-        var idEncoded = URLEncoder.encode(id, StandardCharsets.UTF_8);
-        return idPathEncoded + idEncoded;
     }
 
     public void setImageServerProxyBasePath(String fullPath) {
