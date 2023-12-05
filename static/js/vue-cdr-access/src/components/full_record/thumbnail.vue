@@ -105,7 +105,7 @@ export default {
         },
 
         src() {
-            if (this.objectData.thumbnail_url !== undefined) {
+            if (this.objectData.thumbnail_url !== undefined && this.hasPermission(this.objectData, 'viewAccessCopies')) {
                 return this.objectData.thumbnail_url;
             }
 
