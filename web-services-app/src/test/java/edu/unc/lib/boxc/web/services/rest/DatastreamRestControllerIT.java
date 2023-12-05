@@ -1,7 +1,7 @@
 package edu.unc.lib.boxc.web.services.rest;
 
+import static edu.unc.lib.boxc.auth.api.Permission.viewAccessCopies;
 import static edu.unc.lib.boxc.auth.api.Permission.viewHidden;
-import static edu.unc.lib.boxc.auth.api.Permission.viewMetadata;
 import static edu.unc.lib.boxc.model.api.DatastreamType.MD_EVENTS;
 import static edu.unc.lib.boxc.model.api.DatastreamType.TECHNICAL_METADATA;
 import static edu.unc.lib.boxc.model.api.DatastreamType.THUMBNAIL_SMALL;
@@ -66,10 +66,10 @@ import edu.unc.lib.boxc.web.services.rest.modify.AbstractAPIIT;
 @ExtendWith(SpringExtension.class)
 @WebAppConfiguration
 @ContextHierarchy({
-    @ContextConfiguration("/spring-test/test-fedora-container.xml"),
-    @ContextConfiguration("/spring-test/cdr-client-container.xml"),
-    @ContextConfiguration("/spring-test/solr-indexing-context.xml"),
-    @ContextConfiguration("/datastream-content-it-servlet.xml")
+        @ContextConfiguration("/spring-test/test-fedora-container.xml"),
+        @ContextConfiguration("/spring-test/cdr-client-container.xml"),
+        @ContextConfiguration("/spring-test/solr-indexing-context.xml"),
+        @ContextConfiguration("/datastream-content-it-servlet.xml")
 })
 public class DatastreamRestControllerIT extends AbstractAPIIT {
 
@@ -225,7 +225,7 @@ public class DatastreamRestControllerIT extends AbstractAPIIT {
         createDerivative(id, THUMBNAIL_SMALL, BINARY_CONTENT.getBytes());
 
         doThrow(new AccessRestrictionException()).when(accessControlService)
-                .assertHasAccess(anyString(), eq(filePid), any(AccessGroupSetImpl.class), eq(viewMetadata));
+                .assertHasAccess(anyString(), eq(filePid), any(AccessGroupSetImpl.class), eq(viewAccessCopies));
 
         MvcResult result = mvc.perform(get("/thumb/" + filePid.getId()))
                 .andExpect(status().isForbidden())
@@ -277,9 +277,9 @@ public class DatastreamRestControllerIT extends AbstractAPIIT {
 
         FolderObject folderObj = repositoryObjectFactory.createFolderObject(folderPid, null);
         premisLoggerFactory.createPremisLogger(folderObj)
-            .buildEvent(Premis.Creation)
-            .addAuthorizingAgent(AgentPids.forPerson("some_user"))
-            .writeAndClose();
+                .buildEvent(Premis.Creation)
+                .addAuthorizingAgent(AgentPids.forPerson("some_user"))
+                .writeAndClose();
 
         MvcResult result = mvc.perform(get("/file/" + id + "/" + MD_EVENTS.getId()))
                 .andExpect(status().is2xxSuccessful())
@@ -321,9 +321,9 @@ public class DatastreamRestControllerIT extends AbstractAPIIT {
 
         FolderObject folderObj = repositoryObjectFactory.createFolderObject(folderPid, null);
         premisLoggerFactory.createPremisLogger(folderObj)
-            .buildEvent(Premis.Creation)
-            .addAuthorizingAgent(AgentPids.forPerson("some_user"))
-            .writeAndClose();
+                .buildEvent(Premis.Creation)
+                .addAuthorizingAgent(AgentPids.forPerson("some_user"))
+                .writeAndClose();
 
         doThrow(new AccessRestrictionException()).when(accessControlService)
                 .assertHasAccess(anyString(), eq(folderPid), any(AccessGroupSetImpl.class), eq(viewHidden));
