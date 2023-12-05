@@ -136,6 +136,7 @@ public class AccessCopiesService {
             log.debug("Found thumbnail object directly assigned to object {}", thumbId);
             return thumbId;
         }
+
         // Don't need to check any further if object isn't a work or doesn't contain files with thumbnails
         if (!ResourceType.Work.name().equals(contentObjectRecord.getResourceType())
                 || contentObjectRecord.getFileFormatCategory() == null

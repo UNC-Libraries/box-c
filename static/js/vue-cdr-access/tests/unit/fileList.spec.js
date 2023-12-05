@@ -95,18 +95,6 @@ describe('fileList.vue', () => {
         expect(wrapper.vm.showBadge({ status: [''] })).toEqual({ markDeleted: false, restricted: true });
     });
 
-    // @TODO TDB whether viewAccessCopies allows a user to download anything
-   /* it("sets download button html for image files with canViewAccess permission", () => {
-        const download = wrapper.vm.downloadButtonHtml(briefObject);
-        // Download button
-        expect(download).toEqual(expect.stringContaining('button id="dcr-download-4db695c0-5fd5-4abf-9248-2e115d43f57d"'));
-        // Options
-        expect(download).toEqual(expect.stringContaining('Small JPG (800px)'));
-        expect(download).toEqual(expect.stringContaining('Medium JPG (1600px)'));
-        expect(download).toEqual(expect.not.stringContaining('Full Size JPG'));
-        expect(download).toEqual(expect.not.stringContaining('Original File'));
-    });*/
-
     it("sets download button html for image files with canViewOriginal permission", async () => {
         let updatedBriefObj = cloneDeep(briefObject);
         updatedBriefObj.permissions = [
@@ -149,25 +137,21 @@ describe('fileList.vue', () => {
         expect(download).toEqual(expect.stringContaining('<a class="download button action"'));
     });
 
-    it("sets a disabled button for non-image files without showImageDownload permission", () => {
+    it("does not show a button for non-image files without viewOriginal permission", () => {
         let updatedBriefObj = cloneDeep(briefObject);
         updatedBriefObj.fileType = ['application/pdf']
         updatedBriefObj.format = ['Text']
         updatedBriefObj.datastream = ['original_file|application/pdf|pdf file||416330|urn:sha1:4945153c9f5ce152ef8eda495deba043f536f388||'];
 
-        const download = wrapper.vm.downloadButtonHtml(updatedBriefObj);
-        // Disabled download button
-        expect(download).toEqual(expect.stringContaining('button class="button download-images" title="Download Unavailable" disabled'));
+        expect(wrapper.find('div.download').exists()).toBe(false);
     });
 
-    it("sets a disabled download button for image files without viewAccessCopies permission", () => {
+    it("does not show a button for image files without viewOriginal permission", () => {
         let updatedBriefObj = cloneDeep(briefObject);
         updatedBriefObj.permissions = [
             "viewMetadata"
         ];
 
-        const download = wrapper.vm.downloadButtonHtml(updatedBriefObj);
-        // Disabled download button
-        expect(download).toEqual(expect.stringContaining('button class="button download-images" title="Download Unavailable" disabled'));
+        expect(wrapper.find('div.image-download-options').exists()).toBe(false);
     });
 });

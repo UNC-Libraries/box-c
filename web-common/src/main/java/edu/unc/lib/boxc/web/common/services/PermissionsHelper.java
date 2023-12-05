@@ -49,18 +49,6 @@ public class PermissionsHelper {
     }
 
     /**
-     * Returns true if the principals can access thumbnails belonging to
-     * the requested object, if present.
-     *
-     * @param principals
-     * @param metadata
-     * @return
-     */
-    public boolean hasThumbnailAccess(AccessGroupSet principals, ContentObjectRecord metadata) {
-        return hasDatastreamAccess(principals, THUMBNAIL_SMALL, metadata);
-    }
-
-    /**
      * Returns true if the principals can access the image preview belonging to
      * the requested object, if present.
      *
@@ -75,7 +63,7 @@ public class PermissionsHelper {
     /**
      * Returns true if the principals can access the MODS description belonging to
      * the requested object, if present.
-     * 
+     *
      * @param metadata
      * @return
      */
@@ -93,7 +81,7 @@ public class PermissionsHelper {
      * @return
      */
     public boolean hasDatastreamAccess(AccessGroupSet principals, DatastreamType datastream,
-            ContentObjectRecord metadata) {
+                                       ContentObjectRecord metadata) {
         notNull(principals, "Requires agent principals");
         notNull(datastream, "Requires datastream type");
         notNull(metadata, "Requires metadata object");
