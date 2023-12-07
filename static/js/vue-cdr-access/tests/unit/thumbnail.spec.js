@@ -128,10 +128,19 @@ describe('thumbnail.vue', () => {
         });
     });
 
-    it('displays a thumbnail, if present', () => {
+    it('displays a thumbnail, if present and user has viewAccessCopies permissions', () => {
         expect(wrapper.find('.thumbnail .thumbnail-viewer').exists()).toBe(true);
+        expect(wrapper.find('i.placeholder').exists()).toBe(false);
         expect(wrapper.find('a').attributes('class'))
             .toEqual('thumbnail thumbnail-size-large has_tooltip')
+    });
+
+    it('does not display a thumbnail if user does not have viewAccessCopies permissions', async () => {
+        let updatedRecordData = cloneDeep(recordData);
+        updatedRecordData.briefObject.permissions = ['viewMetadata'];
+        await wrapper.setProps({ thumbnailData: updatedRecordData });
+        expect(wrapper.find('i.placeholder').exists()).toBe(true);
+        expect(wrapper.find('.thumbnail .thumbnail-viewer').exists()).toBe(false);
     });
 
     it('displays a placeholder, if no thumbnail', async () => {
