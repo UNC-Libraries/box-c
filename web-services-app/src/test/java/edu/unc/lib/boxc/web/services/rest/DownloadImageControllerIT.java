@@ -14,7 +14,9 @@ import edu.unc.lib.boxc.search.api.requests.SimpleIdRequest;
 import edu.unc.lib.boxc.search.solr.models.ContentObjectSolrRecord;
 import edu.unc.lib.boxc.web.common.services.SolrQueryLayerService;
 import edu.unc.lib.boxc.web.services.processing.DownloadImageService;
+import edu.unc.lib.boxc.web.services.processing.ImageServerProxyService;
 import edu.unc.lib.boxc.web.services.rest.modify.AbstractAPIIT;
+import edu.unc.lib.boxc.web.services.utils.ImageServerUtil;
 import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -64,7 +66,7 @@ public class DownloadImageControllerIT extends AbstractAPIIT {
     public void testGetImageAtFullSize() throws Exception {
         var pid = makePid();
         var pidString = pid.getId();
-        var formattedPid = idToPath(pidString, 4, 2) + pidString + ".jp2";
+        var formattedPid = ImageServerUtil.getImageServerEncodedId(pidString);
         var filename = "bunny.jpg";
         ContentObjectSolrRecord contentObjectSolrRecord = mock(ContentObjectSolrRecord.class);
         Datastream originalDatastream = mock(Datastream.class);
@@ -77,25 +79,25 @@ public class DownloadImageControllerIT extends AbstractAPIIT {
 
         when(contentObjectSolrRecord.getPid()).thenReturn(pid);
 
-        stubFor(WireMock.get(urlMatching("/" + formattedPid + "/full/full/0/default.jpg"))
+        stubFor(WireMock.get(urlMatching("/" + formattedPid + "/full/max/0/default.jpg"))
                 .willReturn(aResponse()
                         .withStatus(HttpStatus.OK.value())
                         .withBodyFile(filename)
                         .withHeader("Content-Type", "image/jpeg")));
 
-        MvcResult result = mvc.perform(get("/downloadImage/" + pidString + "/full"))
+        MvcResult result = mvc.perform(get("/downloadImage/" + pidString + "/max"))
                 .andExpect(status().is2xxSuccessful())
                 .andReturn();
 
         var response = result.getResponse();
-        assertEquals("attachment; filename=bunny_full.jpg", response.getHeader(CONTENT_DISPOSITION));
+        assertEquals("attachment; filename=bunny_max.jpg", response.getHeader(CONTENT_DISPOSITION));
     }
 
     @Test
     public void testGetImageAtPixelSizeSmallerThanFull() throws Exception {
         var pid = makePid();
         var pidString = pid.getId();
-        var formattedPid = idToPath(pidString, 4, 2) + pidString + ".jp2";
+        var formattedPid = ImageServerUtil.getImageServerEncodedId(pidString);
         var filename = "bunny.jpg";
         ContentObjectSolrRecord contentObjectSolrRecord = mock(ContentObjectSolrRecord.class);
         Datastream originalDatastream = mock(Datastream.class);
@@ -128,13 +130,13 @@ public class DownloadImageControllerIT extends AbstractAPIIT {
     public void testGetImageAtPixelSizeBiggerThanFull() throws Exception {
         var pid = makePid();
         var pidString = pid.getId();
-        var formattedPid = idToPath(pidString, 4, 2) + pidString + ".jp2";
+        var formattedPid = ImageServerUtil.getImageServerEncodedId(pidString);
         var filename = "bunny.jpg";
         ContentObjectSolrRecord contentObjectSolrRecord = mock(ContentObjectSolrRecord.class);
         Datastream originalDatastream = mock(Datastream.class);
         Datastream jp2Datastream = mock(Datastream.class);
 
-        stubFor(WireMock.get(urlMatching("/" + formattedPid + "/full/full/0/default.jpg"))
+        stubFor(WireMock.get(urlMatching("/" + formattedPid + "/full/max/0/default.jpg"))
                 .willReturn(aResponse()
                         .withStatus(HttpStatus.OK.value())
                         .withBodyFile(filename)
@@ -153,7 +155,7 @@ public class DownloadImageControllerIT extends AbstractAPIIT {
 
         var response = result.getResponse();
 
-        assertEquals("attachment; filename=bunny_full.jpg", response.getHeader(CONTENT_DISPOSITION));
+        assertEquals("attachment; filename=bunny_max.jpg", response.getHeader(CONTENT_DISPOSITION));
         assertCorrectImageReturned(response);
     }
 
@@ -165,7 +167,7 @@ public class DownloadImageControllerIT extends AbstractAPIIT {
         doThrow(new AccessRestrictionException()).when(accessControlService)
                 .assertHasAccess(anyString(), eq(filePid), any(AccessGroupSetImpl.class), eq(viewOriginal));
 
-        MvcResult result = mvc.perform(get("/downloadImage/" + filePid.getId() + "/full"))
+        MvcResult result = mvc.perform(get("/downloadImage/" + filePid.getId() + "/max"))
                 .andExpect(status().isForbidden())
                 .andReturn();
 
@@ -276,7 +278,7 @@ public class DownloadImageControllerIT extends AbstractAPIIT {
         ContentObjectSolrRecord contentObjectSolrRecord = mock(ContentObjectSolrRecord.class);
         when(solrSearchService.getObjectById(any(SimpleIdRequest.class))).thenReturn(contentObjectSolrRecord);
 
-        mvc.perform(get("/downloadImage/" + filePid.getId() + "/full"))
+        mvc.perform(get("/downloadImage/" + filePid.getId() + "/max"))
                 .andExpect(status().is4xxClientError())
                 .andReturn();
     }

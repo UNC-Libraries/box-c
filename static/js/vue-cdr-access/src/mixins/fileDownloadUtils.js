@@ -63,7 +63,7 @@ export default {
                 }
 
 
-                html += `<a href="${this.imgDownloadLink(brief_object.id, 'full')}" class="dropdown-item">${this.$t('full_record.full_size')} JPG</a>`;
+                html += `<a href="${this.imgDownloadLink(brief_object.id, 'max')}" class="dropdown-item">${this.$t('full_record.full_size')} JPG</a>`;
                 html += '<hr class="dropdown-divider">';
                 html += `<a href="/indexablecontent/${brief_object.id}?dl=true" class="dropdown-item">${this.$t('full_record.original_file')}</a>`;
 

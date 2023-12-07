@@ -8,6 +8,7 @@ import edu.unc.lib.boxc.auth.api.services.AccessControlService;
 import edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl;
 import edu.unc.lib.boxc.web.services.processing.ImageServerProxyService;
 import edu.unc.lib.boxc.web.services.rest.modify.AbstractAPIIT;
+import edu.unc.lib.boxc.web.services.utils.ImageServerUtil;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.junit.Assert;
 import org.junit.jupiter.api.AfterEach;
@@ -45,8 +46,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @WireMockTest(httpPort = 46887)
 public class ImageServerProxyControllerTest extends AbstractAPIIT {
     @Autowired
-    private ImageServerProxyService imageServerProxyService;
-    @Autowired
     private AccessControlService accessControlService;
 
     @Mock
@@ -78,7 +77,7 @@ public class ImageServerProxyControllerTest extends AbstractAPIIT {
     void getRegionTest() throws Exception {
         var pid = makePid();
         var pidString = pid.getId();
-        var formattedBasePath = "/iiif/v3/" + imageServerProxyService.getImageServerEncodedId(pidString) + ".jp2";
+        var formattedBasePath = "/iiif/v3/" + ImageServerUtil.getImageServerEncodedId(pidString);
         var filename = "bunny.jpg";
         when(accessControlService.hasAccess(any(), any(), any())).thenReturn(true);
         stubFor(WireMock.get(urlMatching(formattedBasePath + "/full/max/0/default.jpg"))
@@ -111,7 +110,7 @@ public class ImageServerProxyControllerTest extends AbstractAPIIT {
     void getMetadataTest() throws Exception {
         var pid = makePid();
         var pidString = pid.getId();
-        var formattedBasePath = "/iiif/v3/" + imageServerProxyService.getImageServerEncodedId(pidString) + ".jp2";
+        var formattedBasePath = "/iiif/v3/" + ImageServerUtil.getImageServerEncodedId(pidString);
         var json = "{\"@context\":\"http://iiif.io/api/image/3/context.json\",\"id\":\"http://example.com/iiif/v3/"
                 + pidString + "\",\"type\":\"ImageService3\",\"protocol\":\"http://iiif.io/api/image\"}";
         when(accessControlService.hasAccess(any(), any(), any())).thenReturn(true);
