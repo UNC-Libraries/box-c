@@ -18,9 +18,18 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.http.ContentDisposition;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 
 import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 
@@ -71,7 +80,6 @@ public class ImageServerProxyService {
                 statusLine = httpResp.getStatusLine().toString();
                 if (statusCode == HttpStatus.SC_OK) {
                     if (response != null) {
-                        response.setHeader("Content-Type", "application/json");
                         response.setHeader("content-disposition", "inline");
 
                         var mapper = new ObjectMapper();
@@ -99,6 +107,19 @@ public class ImageServerProxyService {
         LOG.error("Unexpected failure while getting image server proxy path {}: {}", statusLine, path);
     }
 
+//    public ResponseEntity<InputStreamResource> getMetadata(String id, int retryServerError) throws IOException {
+//        var url = new StringBuilder(getImageServerProxyBasePath());
+//        url.append(ImageServerUtil.getImageServerEncodedId(id)).append("/info.json");
+//        InputStream input = new URL(url.toString()).openStream();
+//        InputStreamResource resource = new InputStreamResource(input);
+//
+//
+//        return ResponseEntity.ok()
+//                .header(HttpHeaders.CONTENT_DISPOSITION, "inline")
+//                .contentType(MediaType.IMAGE_JPEG)
+//                .body(resource);
+//    }
+
     /**
      * Gets the datastream from the IIIF V3 image server for the requested ID
      * @param id ID of the requested object
@@ -111,43 +132,60 @@ public class ImageServerProxyService {
      * @param response response object passed from the controller
      * @param retryServerError the number of times to retry after failure
      */
-    public void streamJP2(String id, String region, String size, String rotation, String quality,
+    public void streamJP2V1(String id, String region, String size, String rotation, String quality,
                           String format, OutputStream outStream, HttpServletResponse response,
                           int retryServerError) {
+
+//        StringBuilder path = new StringBuilder(getImageServerProxyBasePath());
+//        path.append(ImageServerUtil.getImageServerEncodedId(id))
+//                .append("/" + region).append("/" + size)
+//                .append("/" + rotation).append("/" + quality + "." + format);
+//
+//        HttpGet method = new HttpGet(path.toString());
+//
+//        try (CloseableHttpResponse httpResp = httpClient.execute(method)) {
+//            int statusCode = httpResp.getStatusLine().getStatusCode();
+//
+//            if (statusCode == HttpStatus.SC_OK) {
+//                if (response != null) {
+//                    response.setHeader("Content-Type", "image/jpeg");
+//                    response.setHeader("content-disposition", "inline");
+//
+//                    FileIOUtil.stream(outStream, httpResp);
+//                }
+//            } else {
+//                if ((statusCode == 500 || statusCode == 404) && retryServerError > 0) {
+//                    streamJP2(id, region, size, rotation, quality,
+//                            format, outStream, response, retryServerError - 1);
+//                } else {
+//                    LOG.error("Unexpected failure: {}", httpResp.getStatusLine());
+//                    LOG.error("Path was: {}", method.getURI());
+//                }
+//            }
+//        } catch (ClientAbortException e) {
+//            LOG.debug("User client aborted request to stream jp2 for {}", id, e);
+//        } catch (Exception e) {
+//            LOG.error("Problem retrieving metadata for {}", path, e);
+//        } finally {
+//            method.releaseConnection();
+//        }
+    }
+
+    public ResponseEntity<InputStreamResource> streamJP2(String id, String region, String size, String rotation,
+                                                         String quality, String format, int retryServerError) throws IOException {
 
         StringBuilder path = new StringBuilder(getImageServerProxyBasePath());
         path.append(ImageServerUtil.getImageServerEncodedId(id))
                 .append("/" + region).append("/" + size)
                 .append("/" + rotation).append("/" + quality + "." + format);
 
-        HttpGet method = new HttpGet(path.toString());
+        InputStream input = new URL(path.toString()).openStream();
+        InputStreamResource resource = new InputStreamResource(input);
 
-        try (CloseableHttpResponse httpResp = httpClient.execute(method)) {
-            int statusCode = httpResp.getStatusLine().getStatusCode();
-
-            if (statusCode == HttpStatus.SC_OK) {
-                if (response != null) {
-                    response.setHeader("Content-Type", "image/jpeg");
-                    response.setHeader("content-disposition", "inline");
-
-                    FileIOUtil.stream(outStream, httpResp);
-                }
-            } else {
-                if ((statusCode == 500 || statusCode == 404) && retryServerError > 0) {
-                    streamJP2(id, region, size, rotation, quality,
-                            format, outStream, response, retryServerError - 1);
-                } else {
-                    LOG.error("Unexpected failure: {}", httpResp.getStatusLine());
-                    LOG.error("Path was: {}", method.getURI());
-                }
-            }
-        } catch (ClientAbortException e) {
-            LOG.debug("User client aborted request to stream jp2 for {}", id, e);
-        } catch (Exception e) {
-            LOG.error("Problem retrieving metadata for {}", path, e);
-        } finally {
-            method.releaseConnection();
-        }
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "inline")
+                .contentType(MediaType.IMAGE_JPEG)
+                .body(resource);
     }
 
     public void setImageServerProxyBasePath(String fullPath) {

@@ -9,6 +9,7 @@ import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.boxc.search.api.requests.SimpleIdRequest;
 import edu.unc.lib.boxc.web.common.services.SolrQueryLayerService;
 import edu.unc.lib.boxc.web.services.processing.DownloadImageService;
+import edu.unc.lib.boxc.web.services.utils.ImageServerUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -50,7 +51,7 @@ public class DownloadImageController {
         var contentObjectRecord = solrSearchService.getObjectById(new SimpleIdRequest(pid, principals));
         String validatedSize = downloadImageService.getSize(contentObjectRecord, size);
 
-        if (Objects.equals(validatedSize, DownloadImageService.FULL_SIZE)) {
+        if (Objects.equals(validatedSize, ImageServerUtil.FULL_SIZE)) {
             aclService.assertHasAccess("Insufficient permissions to download full size copy for " + pidString,
                     pid, principals, Permission.viewOriginal);
         }

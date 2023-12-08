@@ -23,14 +23,13 @@ import java.util.Objects;
  */
 public class DownloadImageService {
     private String iiifBasePath;
-    public static final String FULL_SIZE = "max";
+
     public static final String INVALID_SIZE_MESSAGE = "Unable to determine size for access copy download";
 
     /**
      * Method contacts the IIIF server for the requested access copy image and returns it
      * @param contentObjectRecord solr record of the file
      * @param size a string which is either "max" for full size or a pixel length like "1200"
-     * @param pidString the UUID of the file
      * @return a response entity which contains headers and content of the access copy image
      * @throws IOException
      */
@@ -41,7 +40,7 @@ public class DownloadImageService {
         }
 
         String pidString = contentObjectRecord.getPid().getId();
-        String url = buildURL(pidString, size);
+        String url = ImageServerUtil.buildURL(iiifBasePath, pidString, size);
         InputStream input = new URL(url).openStream();
         InputStreamResource resource = new InputStreamResource(input);
         String filename = getDownloadFilename(contentObjectRecord, size);
@@ -52,21 +51,7 @@ public class DownloadImageService {
                 .body(resource);
     }
 
-    /**
-     * A method that builds the IIIF URL based on an assumption of full region, 0 rotation, and default quality.
-     * @param id the UUID of the file
-     * @param size a string which is either "max" for full size or a pixel length like "1200"
-     * @return a string which is the URL to request the IIIF server for the image
-     */
-    private String buildURL(String id, String size) {
-        var formattedSize = size;
-        var formattedId = ImageServerUtil.getImageServerEncodedId(id);
-        if (!Objects.equals(size, FULL_SIZE)) {
-            // pixel length should be in !123,123 format
-            formattedSize = "!" + size + "," + size;
-        }
-        return iiifBasePath + formattedId + "/full/" + formattedSize + "/0/default.jpg";
-    }
+
 
     /**
      * Determines size based on original dimensions of requested file, unless requested size is full size.
@@ -75,7 +60,7 @@ public class DownloadImageService {
      * @return validated size string
      */
     public String getSize(ContentObjectRecord contentObjectRecord, String size) {
-        if (!Objects.equals(size, FULL_SIZE)) {
+        if (!Objects.equals(size, ImageServerUtil.FULL_SIZE)) {
             try {
                 var integerSize = Integer.parseInt(size);
 
@@ -89,7 +74,7 @@ public class DownloadImageService {
                     int longerSide = Math.max(Integer.parseInt(dimensionParts[0]), Integer.parseInt(dimensionParts[1]));
                     // request is bigger than or equal to full size, so we will switch to full size
                     if (integerSize >= longerSide) {
-                        return FULL_SIZE;
+                        return ImageServerUtil.FULL_SIZE;
                     }
                 }
             } catch (Exception e) {
@@ -107,7 +92,7 @@ public class DownloadImageService {
      * @return a filename for the download like "filename_full.jpg" or "filename_800px.jpg
      */
     public String getDownloadFilename(ContentObjectRecord contentObjectRecord, String size) {
-        var formattedSize = Objects.equals(size, FULL_SIZE) ?  FULL_SIZE : size + "px";
+        var formattedSize = Objects.equals(size, ImageServerUtil.FULL_SIZE) ?  ImageServerUtil.FULL_SIZE : size + "px";
 
         var originalFilename = getDatastream(contentObjectRecord).getFilename();
         var nameOnly = FilenameUtils.removeExtension(originalFilename);
