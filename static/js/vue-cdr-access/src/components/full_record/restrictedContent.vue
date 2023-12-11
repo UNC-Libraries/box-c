@@ -20,6 +20,9 @@
                         <i class="fa fa-search" aria-hidden="true"></i> View</a>
                 </div>
             </template>
+            <template v-if="hasPermission(recordData, 'viewHidden')">
+                <single-use-link :uuid="recordData.briefObject.id"></single-use-link>
+            </template>
         </template>
         <div v-if="fieldExists(recordData.briefObject.embargoDate) && !hasPermission(recordData, 'viewOriginal')" class="noaction">
             {{ $t('full_record.available_date', { available_date: formatDate(recordData.briefObject.embargoDate) }) }}
@@ -28,11 +31,14 @@
 </template>
 
 <script>
+import singleUseLink from '@/components/full_record/singleUseLink.vue';
 import fileDownloadUtils from '../../mixins/fileDownloadUtils';
 import fullRecordUtils from '../../mixins/fullRecordUtils';
 
 export default {
     name: 'restrictedContent',
+
+    components: {singleUseLink},
 
     mixins: [fileDownloadUtils, fullRecordUtils],
 
