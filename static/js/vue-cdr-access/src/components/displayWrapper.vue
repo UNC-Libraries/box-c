@@ -72,7 +72,6 @@ Top level component for full record pages with searching/browsing, including Adm
     import notAvailable from "@/components/error_pages/notAvailable.vue";
     import notFound from '@/components/error_pages/notFound.vue';
     import get from 'axios';
-    import isEmpty from 'lodash.isempty';
     import analyticsUtils from '../mixins/analyticsUtils';
     import errorUtils from '../mixins/errorUtils';
     import imageUtils from '../mixins/imageUtils';
@@ -189,9 +188,6 @@ Top level component for full record pages with searching/browsing, including Adm
                     this.min_created_year = response.data.minSearchYear;
                     this.filter_parameters = response.data.filterParameters;
                     this.is_page_loading = false;
-                    if (!isEmpty(this.$route.query)) {
-                        this.updateUrl();
-                    }
                 }).catch(error => {
                     this.setErrorResponse(error);
                     this.is_page_loading = false;
@@ -235,15 +231,6 @@ Top level component for full record pages with searching/browsing, including Adm
                 } else {
                     return '(no collection)';
                 }
-            },
-
-            updateUrl() {
-                let params = this.setTypes();
-                this.$router.push({ name: 'displayRecords', query: params }).catch((e) => {
-                    if (this.nonDuplicateNavigationError(e)) {
-                        throw e;
-                    }
-                });
             },
 
             hasSearchQuery() {
