@@ -77,8 +77,7 @@ public class ImageServerProxyController {
                 String[] qualityFormatArray = qualityFormat.split("\\.");
                 String quality = qualityFormatArray[0];
                 String format = qualityFormatArray[1];
-                return imageServerProxyService.streamJP2(
-                        id, region, size, rotation, quality, format, 1);
+                return imageServerProxyService.streamJP2(id, region, size, rotation, quality, format);
             } catch (IOException e) {
                 LOG.error("Error retrieving streaming JP2 content for {}", id, e);
                 return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
@@ -100,14 +99,13 @@ public class ImageServerProxyController {
         PID pid = PIDs.get(id);
         // Check if the user is allowed to view this object
         if (this.hasAccess(pid)) {
-//        try {
-            var metadata = imageServerProxyService.getMetadata(id);
-            return new ResponseEntity<>(metadata, HttpStatus.OK);
-//        } catch (IOException e) {
-//            LOG.error("Error retrieving JP2 metadata content for {}", id, e);
-//            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-//        }
-//        return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+            try {
+                var metadata = imageServerProxyService.getMetadata(id);
+                return new ResponseEntity<>(metadata, HttpStatus.OK);
+            } catch (IOException e) {
+                LOG.error("Error retrieving JP2 metadata content for {}", id, e);
+                return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+            }
         } else {
             LOG.debug("Access was forbidden to {} for user {}", id, GroupsThreadStore.getUsername());
             return new ResponseEntity<>(HttpStatus.FORBIDDEN);
