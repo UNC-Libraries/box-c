@@ -1,10 +1,10 @@
 <template>
     <div class="header-button-single-download">
         <div class="actionlink single-download">
-            <div class="single-use-msg-text" :class="{'display-msg': this.message !== ''}" :style="message_location">
+            <div class="single-use-msg-text" :class="{'display-msg': this.message !== ''}">
                 {{ this.message }}
             </div>
-            <a class="button action" id="single-use-link" href="#" @click.prevent="createLink($event)">{{ $t('full_record.download_single_use') }}</a>
+            <a class="button action" id="single-use-link" href="#" @click.prevent="createLink()">{{ $t('full_record.download_single_use') }}</a>
             <ul>
                 <li v-for="single_use_link in single_use_links">
                     <div class="download-link-wrapper">
@@ -30,13 +30,12 @@ export default {
     data() {
         return {
             single_use_links: [],
-            message: '',
-            message_location: { left: 0 }
+            message: ''
         }
     },
 
     methods: {
-        createLink(e) {
+        createLink() {
             axios({
                 method: 'post',
                 url: `/services/api/single_use_link/create/${this.uuid}`
@@ -44,7 +43,6 @@ export default {
                 this.single_use_links.push(response.data)
             }).catch((error) => {
                 console.log(error);
-                this.positionMsg(e.target.id);
                 this.message = this.$t('full_record.created_link_failed', { uuid: this.uuid});
                 this.fadeOutMsg();
             });
@@ -60,16 +58,8 @@ export default {
             this.fadeOutMsg();
         },
 
-        positionMsg(id) {
-            const button_location = document.getElementById(id).getBoundingClientRect();
-            this.message_location.left = `${button_location.left}px`;
-        },
-
         fadeOutMsg() {
-            setTimeout(() => {
-                this.message = '';
-                this.message_location.left = 0;
-            }, 3000);
+            setTimeout(() => this.message = '', 3000);
         }
     }
 }
@@ -116,8 +106,10 @@ export default {
             display: block;
             height: auto;
             padding: 5px;
-            position: absolute;
+            position: fixed;
+            right: 10px;
             text-align: center;
+            top: 10px;
             width: 250px;
             z-index: 599;
         }

@@ -50,6 +50,21 @@ describe('singleUseLink.vue', () => {
         });
     });
 
+    it("does not create single use links on response errors", (done) => {
+        expect(wrapper.find('.download-link-wrapper').exists()).toBe(false);
+
+        moxios.stubRequest(`/services/api/single_use_link/create/${uuid}`, {
+            status: 404,
+            response: JSON.stringify('No record here')
+        });
+
+        moxios.wait(async () => {
+            await wrapper.find('#single-use-link').trigger('click');
+            expect(wrapper.find('.download-link-wrapper').exists()).toBe(false);
+            done();
+        });
+    });
+
     it("copies single use links", async () => {
         Object.assign(window.navigator, {
             clipboard: {
