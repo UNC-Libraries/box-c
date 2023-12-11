@@ -1,7 +1,6 @@
 package edu.unc.lib.boxc.web.services.rest;
 
 import edu.unc.lib.boxc.auth.api.Permission;
-import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
 import edu.unc.lib.boxc.auth.api.models.AgentPrincipals;
 import edu.unc.lib.boxc.auth.api.services.AccessControlService;
 import edu.unc.lib.boxc.auth.api.services.DatastreamPermissionUtil;
@@ -14,17 +13,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.InputStreamResource;
-import org.springframework.http.ContentDisposition;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.ResponseBody;
-
-import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
 import static edu.unc.lib.boxc.model.api.DatastreamType.JP2_ACCESS_COPY;
@@ -95,45 +89,28 @@ public class ImageServerProxyController {
         }
     }
 
-//    @GetMapping("/iiif/v3/{id}/info.json")
-//    public void getMetadata(@PathVariable("id") String id, HttpServletResponse response) {
-//        PID pid = PIDs.get(id);
-//        // Check if the user is allowed to view this object
-//        if (this.hasAccess(pid)) {
-//            try {
-//                response.addHeader("Access-Control-Allow-Origin", "*");
-//                imageServerProxyService.getMetadata(id, response.getOutputStream(), response, 1);
-//            } catch (IOException e) {
-//                LOG.error("Error retrieving JP2 metadata content for {}", id, e);
-//                response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
-//            }
-//        } else {
-//            LOG.debug("Image access was forbidden to {} for user {}", id, GroupsThreadStore.getUsername());
-//            response.setStatus(HttpStatus.FORBIDDEN.value());
-//        }
-//    }
-
     /**
      * Handles requests for jp2 metadata
      *
      * @param id
-     * @param response
      */
-//    @CrossOrigin
-//    @GetMapping("/iiif/v3/{id}/info.json", produces = APPLICATION_JSON_VALUE)
-//    public ResponseEntity<InputStreamResource> getMetadata(@PathVariable("id") String id) {
-//        PID pid = PIDs.get(id);
-//        // Check if the user is allowed to view this object
-//        AgentPrincipals agent = AgentPrincipalsImpl.createFromThread();
-//        AccessGroupSet principals = agent.getPrincipals();
-//        accessControlService.assertHasAccess("Insufficient permissions to download access copy for " + id,
-//                pid, principals, Permission.viewAccessCopies);
+    @CrossOrigin
+    @GetMapping(value ="/iiif/v3/{id}/info.json", produces = APPLICATION_JSON_VALUE)
+    public ResponseEntity<Object> getMetadata(@PathVariable("id") String id) {
+        PID pid = PIDs.get(id);
+        // Check if the user is allowed to view this object
+        if (this.hasAccess(pid)) {
 //        try {
-//            return imageServerProxyService.getMetadata(id, 1);
+            var metadata = imageServerProxyService.getMetadata(id);
+            return new ResponseEntity<>(metadata, HttpStatus.OK);
 //        } catch (IOException e) {
 //            LOG.error("Error retrieving JP2 metadata content for {}", id, e);
 //            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
 //        }
 //        return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-//    }
+        } else {
+            LOG.debug("Access was forbidden to {} for user {}", id, GroupsThreadStore.getUsername());
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+        }
+    }
 }

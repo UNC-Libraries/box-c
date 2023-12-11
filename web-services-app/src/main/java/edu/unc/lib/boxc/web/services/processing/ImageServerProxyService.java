@@ -1,25 +1,21 @@
 package edu.unc.lib.boxc.web.services.processing;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import edu.unc.lib.boxc.common.util.URIUtil;
 import edu.unc.lib.boxc.web.common.exceptions.ClientAbortException;
-import edu.unc.lib.boxc.web.common.utils.FileIOUtil;
 import edu.unc.lib.boxc.web.services.utils.ImageServerUtil;
-import org.apache.http.HttpEntity;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.config.RequestConfig;
-import org.apache.http.client.entity.EntityBuilder;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.conn.HttpClientConnectionManager;
-import org.apache.http.entity.ContentType;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.io.InputStreamResource;
-import org.springframework.http.ContentDisposition;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -28,12 +24,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.net.MalformedURLException;
 import java.net.URL;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
-
-import static edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPaths.idToPath;
 
 /**
  * Generates request, connects to, and streams the output from the image Server Proxy.  Sets pertinent headers.
@@ -61,64 +52,31 @@ public class ImageServerProxyService {
     /**
      * Gets metadata from the IIIF V3 image server about the requested ID
      * @param id ID of the requested object
-     * @param outStream out stream from the response
-     * @param response response object passed from the controller
-     * @param retryServerError the number of times to retry after failure
      */
-    public void getMetadata(String id, OutputStream outStream,
-                            HttpServletResponse response, int retryServerError) {
-
+    public JsonNode getMetadata(String id) {
         var path = new StringBuilder(getImageServerProxyBasePath());
         path.append(ImageServerUtil.getImageServerEncodedId(id)).append("/info.json");
 
-        int statusCode = -1;
-        String statusLine = null;
-        do {
-            HttpGet method = new HttpGet(path.toString());
-            try (CloseableHttpResponse httpResp = httpClient.execute(method)) {
-                statusCode = httpResp.getStatusLine().getStatusCode();
-                statusLine = httpResp.getStatusLine().toString();
-                if (statusCode == HttpStatus.SC_OK) {
-                    if (response != null) {
-                        response.setHeader("content-disposition", "inline");
-
-                        var mapper = new ObjectMapper();
-                        var respData = mapper.readTree(httpResp.getEntity().getContent());
-                        ((ObjectNode) respData).put("id", URIUtil.join(baseIiifv3Path, id));
-
-                        HttpEntity updatedRespData = EntityBuilder.create()
-                                .setText(mapper.writeValueAsString(respData))
-                                .setContentType(ContentType.APPLICATION_JSON).build();
-                        httpResp.setEntity(updatedRespData);
-
-                        FileIOUtil.stream(outStream, httpResp);
-                    }
-                    return;
-                }
-            } catch (ClientAbortException e) {
-                LOG.debug("User client aborted request to stream jp2 metadata for {}", id, e);
-            } catch (Exception e) {
-                LOG.error("Problem retrieving metadata for {}", path, e);
-            } finally {
-                method.releaseConnection();
+        HttpGet method = new HttpGet(path.toString());
+        try (CloseableHttpResponse httpResp = httpClient.execute(method)) {
+            var statusCode = httpResp.getStatusLine().getStatusCode();
+            if (statusCode == HttpStatus.SC_OK) {
+                var mapper = new ObjectMapper();
+                var respData = mapper.readTree(httpResp.getEntity().getContent());
+                ((ObjectNode) respData).put("id", URIUtil.join(baseIiifv3Path, id));
+                return respData;
             }
-            retryServerError--;
-        } while (retryServerError >= 0 && (statusCode == 500 || statusCode == 404));
-        LOG.error("Unexpected failure while getting image server proxy path {}: {}", statusLine, path);
+        } catch (ClientAbortException e) {
+            LOG.debug("User client aborted request to stream jp2 metadata for {}", id, e);
+        } catch (Exception e) {
+            LOG.error("Problem retrieving metadata for {}", path, e);
+        } finally {
+            method.releaseConnection();
+        }
+//        LOG.error("Unexpected failure while getting image server proxy path {}: {}", statusLine, path);
+        return null;
     }
 
-//    public ResponseEntity<InputStreamResource> getMetadata(String id, int retryServerError) throws IOException {
-//        var url = new StringBuilder(getImageServerProxyBasePath());
-//        url.append(ImageServerUtil.getImageServerEncodedId(id)).append("/info.json");
-//        InputStream input = new URL(url.toString()).openStream();
-//        InputStreamResource resource = new InputStreamResource(input);
-//
-//
-//        return ResponseEntity.ok()
-//                .header(HttpHeaders.CONTENT_DISPOSITION, "inline")
-//                .contentType(MediaType.IMAGE_JPEG)
-//                .body(resource);
-//    }
 
     /**
      * Gets the datastream from the IIIF V3 image server for the requested ID
