@@ -40,9 +40,8 @@ public class ImageServerProxyController {
 
     /**
      * Determines if the user is allowed to access a JP2 datastream on the selected object.
-     *
-     * @param pid
-     * @return
+     * @param pid PID of the object
+     * @return true if user is allowed, false if not
      */
     private boolean hasAccess(PID pid) {
         var datastream = JP2_ACCESS_COPY.getId();
@@ -59,7 +58,7 @@ public class ImageServerProxyController {
      * Handles requests for individual region tiles.
      * @param id
      * @param region
-     * @param size
+     * @param size pixel size or max for full size
      * @param rotation
      * @param qualityFormat
      */
@@ -90,8 +89,7 @@ public class ImageServerProxyController {
 
     /**
      * Handles requests for jp2 metadata
-     *
-     * @param id
+     * @param id ID of the object
      */
     @CrossOrigin
     @GetMapping(value ="/iiif/v3/{id}/info.json", produces = APPLICATION_JSON_VALUE)

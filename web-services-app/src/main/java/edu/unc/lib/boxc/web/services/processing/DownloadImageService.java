@@ -1,6 +1,5 @@
 
 package edu.unc.lib.boxc.web.services.processing;
-import static edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPaths.idToPath;
 
 import edu.unc.lib.boxc.model.api.DatastreamType;
 import edu.unc.lib.boxc.search.api.models.ContentObjectRecord;
@@ -16,6 +15,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.Objects;
+
+import static edu.unc.lib.boxc.web.services.utils.ImageServerUtil.FULL_SIZE;
 
 /**
  * Service to process access copy image downloads
@@ -60,7 +61,7 @@ public class DownloadImageService {
      * @return validated size string
      */
     public String getSize(ContentObjectRecord contentObjectRecord, String size) {
-        if (!Objects.equals(size, ImageServerUtil.FULL_SIZE)) {
+        if (!Objects.equals(size, FULL_SIZE)) {
             try {
                 var integerSize = Integer.parseInt(size);
 
@@ -74,7 +75,7 @@ public class DownloadImageService {
                     int longerSide = Math.max(Integer.parseInt(dimensionParts[0]), Integer.parseInt(dimensionParts[1]));
                     // request is bigger than or equal to full size, so we will switch to full size
                     if (integerSize >= longerSide) {
-                        return ImageServerUtil.FULL_SIZE;
+                        return FULL_SIZE;
                     }
                 }
             } catch (Exception e) {
@@ -92,7 +93,7 @@ public class DownloadImageService {
      * @return a filename for the download like "filename_full.jpg" or "filename_800px.jpg
      */
     public String getDownloadFilename(ContentObjectRecord contentObjectRecord, String size) {
-        var formattedSize = Objects.equals(size, ImageServerUtil.FULL_SIZE) ?  ImageServerUtil.FULL_SIZE : size + "px";
+        var formattedSize = Objects.equals(size, FULL_SIZE) ?  FULL_SIZE : size + "px";
 
         var originalFilename = getDatastream(contentObjectRecord).getFilename();
         var nameOnly = FilenameUtils.removeExtension(originalFilename);

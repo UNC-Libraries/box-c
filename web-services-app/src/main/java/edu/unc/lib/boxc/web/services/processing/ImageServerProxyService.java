@@ -79,12 +79,10 @@ public class ImageServerProxyService {
     public ResponseEntity<InputStreamResource> streamJP2(String id, String region, String size, String rotation,
                                                          String quality, String format) throws IOException {
 
-        StringBuilder path = new StringBuilder(getImageServerProxyBasePath());
-        path.append(ImageServerUtil.getImageServerEncodedId(id))
-                .append("/" + region).append("/" + size)
-                .append("/" + rotation).append("/" + quality + "." + format);
+        String path = getImageServerProxyBasePath() + ImageServerUtil.getImageServerEncodedId(id) +
+                "/" + region + "/" + size + "/" + rotation + "/" + quality + "." + format;
 
-        InputStream input = new URL(path.toString()).openStream();
+        InputStream input = new URL(path).openStream();
         InputStreamResource resource = new InputStreamResource(input);
 
         return ResponseEntity.ok()
