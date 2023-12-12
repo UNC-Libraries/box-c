@@ -1,6 +1,5 @@
 
 package edu.unc.lib.boxc.web.services.processing;
-import static edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPaths.idToPath;
 
 import edu.unc.lib.boxc.model.api.DatastreamType;
 import edu.unc.lib.boxc.search.api.models.ContentObjectRecord;
@@ -17,20 +16,21 @@ import java.io.InputStream;
 import java.net.URL;
 import java.util.Objects;
 
+import static edu.unc.lib.boxc.web.services.utils.ImageServerUtil.FULL_SIZE;
+
 /**
  * Service to process access copy image downloads
  * @author snluong
  */
 public class DownloadImageService {
     private String iiifBasePath;
-    public static final String FULL_SIZE = "max";
+
     public static final String INVALID_SIZE_MESSAGE = "Unable to determine size for access copy download";
 
     /**
      * Method contacts the IIIF server for the requested access copy image and returns it
      * @param contentObjectRecord solr record of the file
      * @param size a string which is either "max" for full size or a pixel length like "1200"
-     * @param pidString the UUID of the file
      * @return a response entity which contains headers and content of the access copy image
      * @throws IOException
      */
@@ -41,7 +41,7 @@ public class DownloadImageService {
         }
 
         String pidString = contentObjectRecord.getPid().getId();
-        String url = buildURL(pidString, size);
+        String url = ImageServerUtil.buildURL(iiifBasePath, pidString, size);
         InputStream input = new URL(url).openStream();
         InputStreamResource resource = new InputStreamResource(input);
         String filename = getDownloadFilename(contentObjectRecord, size);
@@ -52,21 +52,7 @@ public class DownloadImageService {
                 .body(resource);
     }
 
-    /**
-     * A method that builds the IIIF URL based on an assumption of full region, 0 rotation, and default quality.
-     * @param id the UUID of the file
-     * @param size a string which is either "max" for full size or a pixel length like "1200"
-     * @return a string which is the URL to request the IIIF server for the image
-     */
-    private String buildURL(String id, String size) {
-        var formattedSize = size;
-        var formattedId = ImageServerUtil.getImageServerEncodedId(id);
-        if (!Objects.equals(size, FULL_SIZE)) {
-            // pixel length should be in !123,123 format
-            formattedSize = "!" + size + "," + size;
-        }
-        return iiifBasePath + formattedId + "/full/" + formattedSize + "/0/default.jpg";
-    }
+
 
     /**
      * Determines size based on original dimensions of requested file, unless requested size is full size.

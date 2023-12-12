@@ -2,15 +2,12 @@ package edu.unc.lib.boxc.web.services.rest;
 
 import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.junit5.WireMockTest;
-import edu.unc.lib.boxc.auth.api.Permission;
-import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
+import edu.unc.lib.boxc.auth.api.exceptions.AccessRestrictionException;
 import edu.unc.lib.boxc.auth.api.services.AccessControlService;
 import edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl;
 import edu.unc.lib.boxc.web.services.processing.ImageServerProxyService;
 import edu.unc.lib.boxc.web.services.rest.modify.AbstractAPIIT;
 import edu.unc.lib.boxc.web.services.utils.ImageServerUtil;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.junit.Assert;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -27,11 +24,13 @@ import org.springframework.test.web.servlet.MvcResult;
 import java.io.IOException;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
-import static com.github.tomakehurst.wiremock.client.WireMock.jsonResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlMatching;
+import static edu.unc.lib.boxc.auth.api.Permission.viewAccessCopies;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.MockitoAnnotations.openMocks;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -47,9 +46,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 public class ImageServerProxyControllerTest extends AbstractAPIIT {
     @Autowired
     private AccessControlService accessControlService;
-
     @Mock
-    private CloseableHttpClient httpClient;
+    private ImageServerProxyService imageServerProxyService;
     private AutoCloseable closeable;
 
     @BeforeEach
@@ -63,10 +61,11 @@ public class ImageServerProxyControllerTest extends AbstractAPIIT {
     }
 
     @Test
-    void getRegionTestNoAccess() throws Exception {
+    void testGetRegionNoAccess() throws Exception {
         var pid = makePid();
         var pidString = pid.getId();
-        when(accessControlService.hasAccess(any(), any(), any())).thenReturn(false);
+        doThrow(new AccessRestrictionException()).when(accessControlService)
+                .assertHasAccess(anyString(), eq(pid), any(AccessGroupSetImpl.class), eq(viewAccessCopies));
 
         mvc.perform(get("/iiif/v3/" + pidString + "/full/max/0/default.jpg"))
                 .andExpect(status().isForbidden())
@@ -74,12 +73,11 @@ public class ImageServerProxyControllerTest extends AbstractAPIIT {
     }
 
     @Test
-    void getRegionTest() throws Exception {
+    void testGetRegionSuccess() throws Exception {
         var pid = makePid();
         var pidString = pid.getId();
         var formattedBasePath = "/iiif/v3/" + ImageServerUtil.getImageServerEncodedId(pidString);
         var filename = "bunny.jpg";
-        when(accessControlService.hasAccess(any(), any(), any())).thenReturn(true);
         stubFor(WireMock.get(urlMatching(formattedBasePath + "/full/max/0/default.jpg"))
                 .willReturn(aResponse()
                         .withStatus(HttpStatus.OK.value())
@@ -94,12 +92,24 @@ public class ImageServerProxyControllerTest extends AbstractAPIIT {
         Assertions.assertEquals(response.getContentAsString(), filename);
     }
 
-
     @Test
-    void getMetadataTestNoAccess() throws Exception {
+    void testGetRegionIOException() throws Exception {
         var pid = makePid();
         var pidString = pid.getId();
-        when(accessControlService.hasAccess(any(), any(), any())).thenReturn(false);
+        doThrow(new IOException()).when(imageServerProxyService)
+                .streamJP2(pidString, "full", "max", "0", "default", "jpg");
+
+        mvc.perform(get("/iiif/v3/" + pidString + "/full/max/0/default.jpg"))
+                .andExpect(status().isInternalServerError())
+                .andReturn();
+    }
+
+    @Test
+    void testGetMetadataNoAccess() throws Exception {
+        var pid = makePid();
+        var pidString = pid.getId();
+        doThrow(new AccessRestrictionException()).when(accessControlService)
+                .assertHasAccess(anyString(), eq(pid), any(AccessGroupSetImpl.class), eq(viewAccessCopies));
 
         mvc.perform(get("/iiif/v3/" + pidString + "/info.json"))
                 .andExpect(status().isForbidden())
@@ -107,13 +117,12 @@ public class ImageServerProxyControllerTest extends AbstractAPIIT {
     }
 
     @Test
-    void getMetadataTest() throws Exception {
+    void testGetMetadataSuccess() throws Exception {
         var pid = makePid();
         var pidString = pid.getId();
         var formattedBasePath = "/iiif/v3/" + ImageServerUtil.getImageServerEncodedId(pidString);
         var json = "{\"@context\":\"http://iiif.io/api/image/3/context.json\",\"id\":\"http://example.com/iiif/v3/"
                 + pidString + "\",\"type\":\"ImageService3\",\"protocol\":\"http://iiif.io/api/image\"}";
-        when(accessControlService.hasAccess(any(), any(), any())).thenReturn(true);
         stubFor(WireMock.get(urlMatching(formattedBasePath + "/info.json"))
                 .willReturn(aResponse()
                         .withStatus(HttpStatus.OK.value())
@@ -126,5 +135,20 @@ public class ImageServerProxyControllerTest extends AbstractAPIIT {
 
         var response = result.getResponse();
         Assertions.assertEquals(response.getContentAsString(), json);
+    }
+
+    @Test
+    void testGetMetadataIOException() throws Exception {
+        var pid = makePid();
+        var pidString = pid.getId();
+        var formattedBasePath = "/iiif/v3/" + ImageServerUtil.getImageServerEncodedId(pidString);
+        doThrow(new IOException()).when(imageServerProxyService).getMetadata(pidString);
+
+        stubFor(WireMock.get(urlMatching(formattedBasePath + "/info.json"))
+                .willReturn(aResponse().withHeader("Content-Type", "application/json")));
+
+        mvc.perform(get("/iiif/v3/" + pidString + "/info.json"))
+                .andExpect(status().isInternalServerError())
+                .andReturn();
     }
 }
