@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import edu.unc.lib.boxc.common.util.URIUtil;
-import edu.unc.lib.boxc.web.services.utils.ImageServerUtil;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -22,6 +21,8 @@ import org.springframework.http.ResponseEntity;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+
+import static edu.unc.lib.boxc.web.services.utils.ImageServerUtil.getImageServerEncodedId;
 
 /**
  * Generates request, connects to, and streams the output from the image Server Proxy.
@@ -50,16 +51,19 @@ public class ImageServerProxyService {
      * @param id ID of the requested object
      */
     public JsonNode getMetadata(String id) throws IOException {
-        HttpGet method = new HttpGet(getImageServerProxyBasePath() + ImageServerUtil.getImageServerEncodedId(id) + "/info.json");
-        CloseableHttpResponse httpResp = httpClient.execute(method);
-        var statusCode = httpResp.getStatusLine().getStatusCode();
-        if (statusCode == HttpStatus.SC_OK) {
-            var mapper = new ObjectMapper();
-            var respData = mapper.readTree(httpResp.getEntity().getContent());
-            ((ObjectNode) respData).put("id", URIUtil.join(baseIiifv3Path, id));
-            return respData;
+        var url = URIUtil.join(getImageServerProxyBasePath(), getImageServerEncodedId(id), "/info.json");
+        HttpGet method = new HttpGet(url);
+        try (CloseableHttpResponse httpResp = httpClient.execute(method)) {
+            var statusCode = httpResp.getStatusLine().getStatusCode();
+            if (statusCode == HttpStatus.SC_OK) {
+                var mapper = new ObjectMapper();
+                var respData = mapper.readTree(httpResp.getEntity().getContent());
+                ((ObjectNode) respData).put("id", URIUtil.join(baseIiifv3Path, id));
+                return respData;
+            }
+        } finally {
+            method.releaseConnection();
         }
-        method.releaseConnection();
 
         LOG.error("Unexpected failure while getting image server proxy path {}", method);
         return null;
@@ -75,12 +79,12 @@ public class ImageServerProxyService {
      * @param quality quality of image
      * @param format format like png or jpg
      */
-
     public ResponseEntity<InputStreamResource> streamJP2(String id, String region, String size, String rotation,
                                                          String quality, String format) throws IOException {
 
-        String path = getImageServerProxyBasePath() + ImageServerUtil.getImageServerEncodedId(id) +
-                "/" + region + "/" + size + "/" + rotation + "/" + quality + "." + format;
+        String path = URIUtil.join(getImageServerProxyBasePath(), getImageServerEncodedId(id),
+                region, size, rotation, quality);
+        path += "." + format;
 
         InputStream input = new URL(path).openStream();
         InputStreamResource resource = new InputStreamResource(input);
