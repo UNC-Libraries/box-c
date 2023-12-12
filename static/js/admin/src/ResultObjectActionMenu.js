@@ -196,11 +196,14 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'A
 		}
 
 		// Export actions
-		if (!isContentRoot) {
-			items["sepexport"] = "";
-			if (metadata.type !== 'File' && $.inArray('viewHidden', metadata.permissions) != -1) {
-				items["exportCSV"] = {name : 'Export as CSV'};
+		if (metadata.type !== 'File' && $.inArray('viewHidden', metadata.permissions) !== -1) {
+			items["export"] = {name: "Export", items: {}}
+
+			if (!isContentRoot) {
+				items['export']['items']["exportCSV"] = {name: "Export CSV"};
 			}
+
+			items['export']['items']["exportMemberOrder"] = {name: "Export Member Order"};
 		}
 
 		items["copyid"] = {name : 'Copy PID to Clipboard'};
@@ -416,6 +419,13 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'A
 						self.actionHandler.addEvent({
 							action : 'ChangeLocation',
 							url : "api/exportTree/csv/" + metadata.id,
+							application: "services"
+						});
+						break;
+					case "exportMemberOrder" :
+						self.actionHandler.addEvent({
+							action : 'ChangeLocation',
+							url : "api/edit/memberOrder/export/csv?ids=" + metadata.id,
 							application: "services"
 						});
 						break;
