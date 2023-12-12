@@ -3,6 +3,7 @@ package edu.unc.lib.boxc.web.services.rest;
 import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.junit5.WireMockTest;
 import edu.unc.lib.boxc.auth.api.services.AccessControlService;
+import edu.unc.lib.boxc.web.services.processing.ImageServerProxyService;
 import edu.unc.lib.boxc.web.services.rest.modify.AbstractAPIIT;
 import edu.unc.lib.boxc.web.services.utils.ImageServerUtil;
 import org.junit.jupiter.api.AfterEach;
@@ -10,6 +11,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.test.context.ContextConfiguration;
@@ -17,10 +19,13 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.test.web.servlet.MvcResult;
 
+import java.io.IOException;
+
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlMatching;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.openMocks;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -37,6 +42,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 public class ImageServerProxyControllerTest extends AbstractAPIIT {
     @Autowired
     private AccessControlService accessControlService;
+    @Mock
+    private ImageServerProxyService imageServerProxyService;
     private AutoCloseable closeable;
 
     @BeforeEach
@@ -50,7 +57,7 @@ public class ImageServerProxyControllerTest extends AbstractAPIIT {
     }
 
     @Test
-    void getRegionTestNoAccess() throws Exception {
+    void testGetRegionNoAccess() throws Exception {
         var pid = makePid();
         var pidString = pid.getId();
         when(accessControlService.hasAccess(any(), any(), any())).thenReturn(false);
@@ -61,7 +68,7 @@ public class ImageServerProxyControllerTest extends AbstractAPIIT {
     }
 
     @Test
-    void getRegionTest() throws Exception {
+    void testGetRegionSuccess() throws Exception {
         var pid = makePid();
         var pidString = pid.getId();
         var formattedBasePath = "/iiif/v3/" + ImageServerUtil.getImageServerEncodedId(pidString);
@@ -81,9 +88,21 @@ public class ImageServerProxyControllerTest extends AbstractAPIIT {
         Assertions.assertEquals(response.getContentAsString(), filename);
     }
 
+    @Test
+    void testGetRegionIOException() throws Exception {
+        var pid = makePid();
+        var pidString = pid.getId();
+        when(accessControlService.hasAccess(any(), any(), any())).thenReturn(true);
+        doThrow(new IOException()).when(imageServerProxyService)
+                .streamJP2(pidString, "full", "max", "0", "default", "jpg");
+
+        mvc.perform(get("/iiif/v3/" + pidString + "/full/max/0/default.jpg"))
+                .andExpect(status().isInternalServerError())
+                .andReturn();
+    }
 
     @Test
-    void getMetadataTestNoAccess() throws Exception {
+    void testGetMetadataNoAccess() throws Exception {
         var pid = makePid();
         var pidString = pid.getId();
         when(accessControlService.hasAccess(any(), any(), any())).thenReturn(false);
@@ -94,7 +113,7 @@ public class ImageServerProxyControllerTest extends AbstractAPIIT {
     }
 
     @Test
-    void getMetadataTest() throws Exception {
+    void testGetMetadataSuccess() throws Exception {
         var pid = makePid();
         var pidString = pid.getId();
         var formattedBasePath = "/iiif/v3/" + ImageServerUtil.getImageServerEncodedId(pidString);
@@ -113,5 +132,21 @@ public class ImageServerProxyControllerTest extends AbstractAPIIT {
 
         var response = result.getResponse();
         Assertions.assertEquals(response.getContentAsString(), json);
+    }
+
+    @Test
+    void testGetMetadataIOException() throws Exception {
+        var pid = makePid();
+        var pidString = pid.getId();
+        var formattedBasePath = "/iiif/v3/" + ImageServerUtil.getImageServerEncodedId(pidString);
+        when(accessControlService.hasAccess(any(), any(), any())).thenReturn(true);
+        doThrow(new IOException()).when(imageServerProxyService).getMetadata(pidString);
+
+        stubFor(WireMock.get(urlMatching(formattedBasePath + "/info.json"))
+                .willReturn(aResponse().withHeader("Content-Type", "application/json")));
+
+        mvc.perform(get("/iiif/v3/" + pidString + "/info.json"))
+                .andExpect(status().isInternalServerError())
+                .andReturn();
     }
 }
