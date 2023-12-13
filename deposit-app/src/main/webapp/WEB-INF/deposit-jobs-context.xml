@@ -191,6 +191,7 @@
         <property name="clamClient" ref="clamClient" />
         <property name="maxQueuedJobs" value="${job.fileValidation.maxQueuedJobs:5}" />
         <property name="executorService" ref="fileValidationExecutor" />
+        <property name="maxStreamSize" value="${clamd.maxStreamSize:64000000}" />
     </bean>
     
     <bean id="FixityCheckJob" class="edu.unc.lib.boxc.deposit.validate.FixityCheckJob"
