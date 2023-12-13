@@ -42,7 +42,7 @@ public class VirusScanJob extends AbstractConcurrentDepositJob {
             .getLogger(VirusScanJob.class);
 
     private static final int MAX_RETRIES = 5;
-    private long maxStreamSize = 0;
+    private long maxStreamSize;
 
     private ClamAVClient clamClient;
 
