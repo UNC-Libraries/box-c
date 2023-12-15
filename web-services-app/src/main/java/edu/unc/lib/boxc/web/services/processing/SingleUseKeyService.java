@@ -22,7 +22,7 @@ import java.util.concurrent.locks.ReentrantLock;
  */
 public class SingleUseKeyService {
     private static final String ID = "UUID";
-    private static final String ACCESS_KEY = "Access Key";
+    public static final String ACCESS_KEY = "Access Key";
     private static final String TIMESTAMP = "Timestamp";
     private static final String[] CSV_HEADERS = new String[] {ID, ACCESS_KEY, TIMESTAMP};
     private Path csvPath;
@@ -90,7 +90,7 @@ public class SingleUseKeyService {
                 .withTrim())
                 .getRecords();
     }
-    private String getKey() {
+    public static String getKey() {
         return UUID.randomUUID().toString().replace("-", "") + Long.toHexString(System.nanoTime());
     }
 
