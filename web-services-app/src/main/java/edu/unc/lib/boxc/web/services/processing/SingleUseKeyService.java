@@ -21,10 +21,10 @@ import java.util.concurrent.locks.ReentrantLock;
  * @author snluong
  */
 public class SingleUseKeyService {
-    private static final String ID = "UUID";
+    public static final String ID = "UUID";
     public static final String ACCESS_KEY = "Access Key";
     private static final String TIMESTAMP = "Timestamp";
-    private static final String[] CSV_HEADERS = new String[] {ID, ACCESS_KEY, TIMESTAMP};
+    public static final String[] CSV_HEADERS = new String[] {ID, ACCESS_KEY, TIMESTAMP};
     private Path csvPath;
     public String generate(String id) {
         var lock = new ReentrantLock();
@@ -59,16 +59,12 @@ public class SingleUseKeyService {
                     updatedRecords.add(record);
                 }
             }
-//            try (var csvPrinter = createCsvPrinter(csvPath)) {
-//                csvPrinter.flush();
-//                csvPrinter.printRecords(updatedRecords);
-//            } catch (Exception e) {
-//                throw new IOException("Failed rewrite of Single Use Key CSV");
-//            }
-//            try (FileWriter writer = new FileWriter(csvPath.toFile())) {
-//
-//            }
-
+            try (var csvPrinter = createCsvPrinter(csvPath)) {
+                csvPrinter.flush();
+                csvPrinter.printRecords(updatedRecords);
+            } catch (Exception e) {
+                throw new IOException("Failed rewrite of Single Use Key CSV");
+            }
         } catch (IOException e) {
             throw new RepositoryException("Failed to invalidate key in Single Use Key CSV", e);
         } finally {
@@ -82,7 +78,7 @@ public class SingleUseKeyService {
                 .withHeader(CSV_HEADERS));
     }
 
-    private List<CSVRecord> parseCsv(Path csvPath) throws IOException {
+    public List<CSVRecord> parseCsv(Path csvPath) throws IOException {
         Reader reader = Files.newBufferedReader(csvPath);
         return new CSVParser(reader, CSVFormat.DEFAULT
                 .withFirstRecordAsHeader()
