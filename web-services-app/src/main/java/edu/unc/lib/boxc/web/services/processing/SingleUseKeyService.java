@@ -6,7 +6,6 @@ import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVPrinter;
 import org.apache.commons.csv.CSVRecord;
 
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Reader;
 import java.nio.file.Files;
@@ -26,6 +25,12 @@ public class SingleUseKeyService {
     private static final String TIMESTAMP = "Timestamp";
     public static final String[] CSV_HEADERS = new String[] {ID, ACCESS_KEY, TIMESTAMP};
     private Path csvPath;
+
+    /**
+     * Generates an access key for a particular ID, adds it to the CSV, and returns the key
+     * @param id UUID of the record
+     * @return generated access key
+     */
     public String generate(String id) {
         var lock = new ReentrantLock();
         var key = getKey();
@@ -39,6 +44,13 @@ public class SingleUseKeyService {
         }
         return key;
     }
+
+    /**
+     * Determines if a key is valid by seeing if it is in the CSV
+     * @param key access key for single use link
+     * @return true if key is in the CSV, otherwise false
+     * @throws IOException
+     */
     public boolean keyIsValid(String key) throws IOException {
         var csvRecords = parseCsv(csvPath);
         for (CSVRecord record : csvRecords) {
@@ -48,6 +60,11 @@ public class SingleUseKeyService {
         }
         return false;
     }
+
+    /**
+     * Invalidates a key by removing its entry from the CSV
+     * @param key access key of the record
+     */
     public void invalidate(String key) {
         var lock = new ReentrantLock();
         lock.lock();
