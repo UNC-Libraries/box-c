@@ -1,18 +1,16 @@
 package edu.unc.lib.boxc.web.services.processing;
 
-import org.apache.commons.csv.CSVFormat;
-import org.apache.commons.csv.CSVPrinter;
 import org.apache.commons.csv.CSVRecord;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
 import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 
 import static edu.unc.lib.boxc.web.services.processing.SingleUseKeyService.CSV_HEADERS;
+import static edu.unc.lib.boxc.web.services.processing.SingleUseKeyService.DAY_MILLISECONDS;
 import static edu.unc.lib.boxc.web.services.utils.CsvUtil.createCsvPrinter;
 import static edu.unc.lib.boxc.web.services.utils.CsvUtil.parseCsv;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -57,21 +55,33 @@ public class SingleUseKeyServiceTest {
     public void testKeyIsValid() throws IOException {
         var key = SingleUseKeyService.getKey();
         generateDefaultCsv(key);
-        assertTrue(singleUseKeyService.keyIsValid(UUID_TEST, key));
+        var currentMilliseconds = System.currentTimeMillis();
+        assertTrue(singleUseKeyService.keyIsValid(UUID_TEST, key, currentMilliseconds));
     }
 
     @Test
     public void testKeyIsNotValid() throws IOException {
         var key = SingleUseKeyService.getKey();
         generateDefaultCsv(null);
-        assertFalse(singleUseKeyService.keyIsValid(UUID_TEST, key));
+        var currentMilliseconds = System.currentTimeMillis();
+        assertFalse(singleUseKeyService.keyIsValid(UUID_TEST, key, currentMilliseconds));
     }
 
     @Test
     public void testKeyIsNotValidWrongUUID() throws IOException {
         var key = SingleUseKeyService.getKey();
         generateDefaultCsv(key);
-        assertFalse(singleUseKeyService.keyIsValid("8e0040b2-9951-48a3-9d65-780ae7106951", key));
+        var currentMilliseconds = System.currentTimeMillis();
+        assertFalse(singleUseKeyService.keyIsValid(
+                "8e0040b2-9951-48a3-9d65-780ae7106951", key, currentMilliseconds));
+    }
+
+    @Test
+    public void testKeyIsNotValidCurrentTimeIsMoreThan24hLater() throws IOException {
+        var key = SingleUseKeyService.getKey();
+        generateDefaultCsv(key);
+        var currentMilliseconds = System.currentTimeMillis() + (2 * DAY_MILLISECONDS);
+        assertFalse(singleUseKeyService.keyIsValid(UUID_TEST, key, currentMilliseconds));
     }
 
     @Test

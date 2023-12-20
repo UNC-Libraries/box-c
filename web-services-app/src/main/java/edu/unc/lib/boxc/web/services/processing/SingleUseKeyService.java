@@ -1,17 +1,11 @@
 package edu.unc.lib.boxc.web.services.processing;
 
 import edu.unc.lib.boxc.model.api.exceptions.RepositoryException;
-import org.apache.commons.csv.CSVFormat;
-import org.apache.commons.csv.CSVParser;
-import org.apache.commons.csv.CSVPrinter;
 import org.apache.commons.csv.CSVRecord;
 
 import java.io.IOException;
-import java.io.Reader;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -27,6 +21,7 @@ public class SingleUseKeyService {
     public static final String ACCESS_KEY = "Access Key";
     private static final String TIMESTAMP = "Timestamp";
     public static final String[] CSV_HEADERS = new String[] {ID, ACCESS_KEY, TIMESTAMP};
+    public static final long DAY_MILLISECONDS = 86400000;
     private Path csvPath;
 
     /**
@@ -55,11 +50,13 @@ public class SingleUseKeyService {
      * @return true if key is in the CSV, otherwise false
      * @throws IOException
      */
-    public boolean keyIsValid(String id, String key) throws IOException {
+    public boolean keyIsValid(String id, String key, long currentMilliseconds) throws IOException {
         var csvRecords = parseCsv(CSV_HEADERS, csvPath);
         for (CSVRecord record : csvRecords) {
             if (accessKeyMatchesUuid(record, id, key)) {
-                return true;
+                var startTime = Long.parseLong(record.get(TIMESTAMP));
+                long endTime = startTime + DAY_MILLISECONDS;
+                return currentMilliseconds >= startTime && currentMilliseconds <= endTime;
             }
         }
         return false;
