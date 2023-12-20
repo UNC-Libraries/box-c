@@ -11,6 +11,7 @@ import java.util.List;
 
 import static edu.unc.lib.boxc.web.services.processing.SingleUseKeyService.CSV_HEADERS;
 import static edu.unc.lib.boxc.web.services.processing.SingleUseKeyService.DAY_MILLISECONDS;
+import static edu.unc.lib.boxc.web.services.processing.SingleUseKeyService.getExpirationInMilliseconds;
 import static edu.unc.lib.boxc.web.services.utils.CsvUtil.createCsvPrinter;
 import static edu.unc.lib.boxc.web.services.utils.CsvUtil.parseCsv;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -46,7 +47,8 @@ public class SingleUseKeyServiceTest {
         var oldRecords = parseCsv(CSV_HEADERS, csvPath);
         assertDoesNotContainValue(oldRecords, SingleUseKeyService.ID, UUID_TEST);
 
-        var key = singleUseKeyService.generate(UUID_TEST);
+        var expirationTime = getExpirationInMilliseconds();
+        var key = singleUseKeyService.generate(UUID_TEST, expirationTime);
         var newRecords = parseCsv(CSV_HEADERS, csvPath);
         assertContainsAccessKeyPair(newRecords, UUID_TEST, key);
     }
@@ -80,7 +82,7 @@ public class SingleUseKeyServiceTest {
     public void testKeyIsNotValidCurrentTimeIsMoreThan24hLater() throws IOException {
         var key = SingleUseKeyService.getKey();
         generateDefaultCsv(key);
-        var currentMilliseconds = System.currentTimeMillis() + (2 * DAY_MILLISECONDS);
+        var currentMilliseconds = System.currentTimeMillis() + (3 * DAY_MILLISECONDS);
         assertFalse(singleUseKeyService.keyIsValid(UUID_TEST, key, currentMilliseconds));
     }
 
@@ -114,12 +116,13 @@ public class SingleUseKeyServiceTest {
     }
 
     private void generateDefaultCsv(String key) throws IOException {
+        var expiration = getExpirationInMilliseconds();
         try (var csvPrinter = createCsvPrinter(CSV_HEADERS, csvPath)) {
              for (String id : ids) {
-                 csvPrinter.printRecord(id, SingleUseKeyService.getKey(), System.currentTimeMillis());
+                 csvPrinter.printRecord(id, SingleUseKeyService.getKey(), expiration);
              }
              if (key != null) {
-                 csvPrinter.printRecord(UUID_TEST, key, System.currentTimeMillis());
+                 csvPrinter.printRecord(UUID_TEST, key, expiration);
              }
         }
     }

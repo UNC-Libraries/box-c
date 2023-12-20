@@ -19,7 +19,7 @@ import static edu.unc.lib.boxc.web.services.utils.CsvUtil.parseCsv;
 public class SingleUseKeyService {
     public static final String ID = "UUID";
     public static final String ACCESS_KEY = "Access Key";
-    private static final String TIMESTAMP = "Timestamp";
+    private static final String TIMESTAMP = "Expiration Timestamp";
     public static final String[] CSV_HEADERS = new String[] {ID, ACCESS_KEY, TIMESTAMP};
     public static final long DAY_MILLISECONDS = 86400000;
     private Path csvPath;
@@ -29,12 +29,12 @@ public class SingleUseKeyService {
      * @param id UUID of the record
      * @return generated access key
      */
-    public String generate(String id) {
+    public String generate(String id, long expirationInMilliseconds) {
         var lock = new ReentrantLock();
         var key = getKey();
         lock.lock();
         try (var csvPrinter = createCsvPrinter(CSV_HEADERS, csvPath)) {
-            csvPrinter.printRecord(id, key, System.currentTimeMillis());
+            csvPrinter.printRecord(id, key, expirationInMilliseconds);
         } catch (Exception e) {
             throw new RepositoryException("Failed to write new key to Single Use Key CSV", e);
         } finally {
@@ -54,9 +54,8 @@ public class SingleUseKeyService {
         var csvRecords = parseCsv(CSV_HEADERS, csvPath);
         for (CSVRecord record : csvRecords) {
             if (accessKeyMatchesUuid(record, id, key)) {
-                var startTime = Long.parseLong(record.get(TIMESTAMP));
-                long endTime = startTime + DAY_MILLISECONDS;
-                return currentMilliseconds >= startTime && currentMilliseconds <= endTime;
+                var expirationTimestamp = Long.parseLong(record.get(TIMESTAMP));
+                return currentMilliseconds <= expirationTimestamp;
             }
         }
         return false;
@@ -104,6 +103,9 @@ public class SingleUseKeyService {
 
     public static String getKey() {
         return UUID.randomUUID().toString().replace("-", "") + Long.toHexString(System.nanoTime());
+    }
+    public static long getExpirationInMilliseconds() {
+        return System.currentTimeMillis() + DAY_MILLISECONDS;
     }
 
     public void setCsvPath(Path csvPath) {
