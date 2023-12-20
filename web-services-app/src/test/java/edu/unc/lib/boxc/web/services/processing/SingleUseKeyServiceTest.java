@@ -12,7 +12,11 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 
+import static edu.unc.lib.boxc.web.services.processing.SingleUseKeyService.CSV_HEADERS;
+import static edu.unc.lib.boxc.web.services.utils.CsvUtil.createCsvPrinter;
+import static edu.unc.lib.boxc.web.services.utils.CsvUtil.parseCsv;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
@@ -41,11 +45,11 @@ public class SingleUseKeyServiceTest {
     @Test
     public void testGenerate() throws IOException {
         generateDefaultCsv(null);
-        var oldRecords = singleUseKeyService.parseCsv(csvPath);
+        var oldRecords = parseCsv(CSV_HEADERS, csvPath);
         assertDoesNotContainValue(oldRecords, SingleUseKeyService.ID, UUID_TEST);
 
         var key = singleUseKeyService.generate(UUID_TEST);
-        var newRecords = singleUseKeyService.parseCsv(csvPath);
+        var newRecords = parseCsv(CSV_HEADERS, csvPath);
         assertContainsAccessKeyPair(newRecords, UUID_TEST, key);
     }
 
@@ -53,7 +57,21 @@ public class SingleUseKeyServiceTest {
     public void testKeyIsValid() throws IOException {
         var key = SingleUseKeyService.getKey();
         generateDefaultCsv(key);
-        assertTrue(singleUseKeyService.keyIsValid(key));
+        assertTrue(singleUseKeyService.keyIsValid(UUID_TEST, key));
+    }
+
+    @Test
+    public void testKeyIsNotValid() throws IOException {
+        var key = SingleUseKeyService.getKey();
+        generateDefaultCsv(null);
+        assertFalse(singleUseKeyService.keyIsValid(UUID_TEST, key));
+    }
+
+    @Test
+    public void testKeyIsNotValidWrongUUID() throws IOException {
+        var key = SingleUseKeyService.getKey();
+        generateDefaultCsv(key);
+        assertFalse(singleUseKeyService.keyIsValid("8e0040b2-9951-48a3-9d65-780ae7106951", key));
     }
 
     @Test
@@ -62,7 +80,7 @@ public class SingleUseKeyServiceTest {
         generateDefaultCsv(key);
         singleUseKeyService.invalidate(key);
 
-        var records = singleUseKeyService.parseCsv(csvPath);
+        var records = parseCsv(CSV_HEADERS, csvPath);
         assertDoesNotContainValue(records, SingleUseKeyService.ACCESS_KEY, key);
     }
 
@@ -86,9 +104,7 @@ public class SingleUseKeyServiceTest {
     }
 
     private void generateDefaultCsv(String key) throws IOException {
-        try (var writer = Files.newBufferedWriter(csvPath);
-             var csvPrinter = new CSVPrinter(writer, CSVFormat.DEFAULT
-                     .withHeader(SingleUseKeyService.CSV_HEADERS))) {
+        try (var csvPrinter = createCsvPrinter(CSV_HEADERS, csvPath)) {
              for (String id : ids) {
                  csvPrinter.printRecord(id, SingleUseKeyService.getKey(), System.currentTimeMillis());
              }

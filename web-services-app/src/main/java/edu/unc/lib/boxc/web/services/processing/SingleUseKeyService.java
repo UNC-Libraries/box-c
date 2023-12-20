@@ -15,6 +15,9 @@ import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.locks.ReentrantLock;
 
+import static edu.unc.lib.boxc.web.services.utils.CsvUtil.createCsvPrinter;
+import static edu.unc.lib.boxc.web.services.utils.CsvUtil.parseCsv;
+
 /**
  * Generate and invalidate access keys for single use links
  * @author snluong
@@ -35,7 +38,7 @@ public class SingleUseKeyService {
         var lock = new ReentrantLock();
         var key = getKey();
         lock.lock();
-        try (var csvPrinter = createCsvPrinter(csvPath)) {
+        try (var csvPrinter = createCsvPrinter(CSV_HEADERS, csvPath)) {
             csvPrinter.printRecord(id, key, System.currentTimeMillis());
         } catch (Exception e) {
             throw new RepositoryException("Failed to write new key to Single Use Key CSV", e);
@@ -46,15 +49,16 @@ public class SingleUseKeyService {
     }
 
     /**
-     * Determines if a key is valid by seeing if it is in the CSV
+     * Determines if a key is valid by seeing if it is in the CSV, connected to the proper ID
+     * @param id uuid of the box-c record
      * @param key access key for single use link
      * @return true if key is in the CSV, otherwise false
      * @throws IOException
      */
-    public boolean keyIsValid(String key) throws IOException {
-        var csvRecords = parseCsv(csvPath);
+    public boolean keyIsValid(String id, String key) throws IOException {
+        var csvRecords = parseCsv(CSV_HEADERS, csvPath);
         for (CSVRecord record : csvRecords) {
-            if (key.equals(record.get(ACCESS_KEY))) {
+            if (accessKeyMatchesUuid(record, id, key)) {
                 return true;
             }
         }
@@ -63,20 +67,20 @@ public class SingleUseKeyService {
 
     /**
      * Invalidates a key by removing its entry from the CSV
-     * @param key access key of the record
+     * @param key access key of the box-c record
      */
     public void invalidate(String key) {
         var lock = new ReentrantLock();
         lock.lock();
         try {
-            List<CSVRecord> csvRecords = parseCsv(csvPath);
+            var csvRecords = parseCsv(CSV_HEADERS, csvPath);
             var updatedRecords = new ArrayList<>();
             for (CSVRecord record : csvRecords) {
                 if (!key.equals(record.get(ACCESS_KEY))) {
                     updatedRecords.add(record);
                 }
             }
-            try (var csvPrinter = createCsvPrinter(csvPath)) {
+            try (var csvPrinter = createCsvPrinter(CSV_HEADERS, csvPath)) {
                 csvPrinter.flush();
                 csvPrinter.printRecords(updatedRecords);
             } catch (Exception e) {
@@ -89,20 +93,18 @@ public class SingleUseKeyService {
         }
 
     }
-    private CSVPrinter createCsvPrinter(Path csvPath) throws IOException {
-        var writer = Files.newBufferedWriter(csvPath);
-        return new CSVPrinter(writer, CSVFormat.DEFAULT
-                .withHeader(CSV_HEADERS));
+
+    /**
+     * Check that the access key is connected to the uuid in question
+     * @param record CSV entry
+     * @param uuid uuid of the box-c record
+     * @param key access key
+     * @return true if they are in the same CSV line
+     */
+    private boolean accessKeyMatchesUuid(CSVRecord record,String uuid, String key) {
+        return uuid.equals(record.get(ID)) && key.equals(record.get(ACCESS_KEY));
     }
 
-    public List<CSVRecord> parseCsv(Path csvPath) throws IOException {
-        Reader reader = Files.newBufferedReader(csvPath);
-        return new CSVParser(reader, CSVFormat.DEFAULT
-                .withFirstRecordAsHeader()
-                .withHeader(CSV_HEADERS)
-                .withTrim())
-                .getRecords();
-    }
     public static String getKey() {
         return UUID.randomUUID().toString().replace("-", "") + Long.toHexString(System.nanoTime());
     }
