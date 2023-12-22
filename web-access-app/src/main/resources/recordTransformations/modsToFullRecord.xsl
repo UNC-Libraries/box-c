@@ -301,14 +301,7 @@
 								<xsl:value-of select="$defaultLabel"/>
 							</xsl:when>
 							<xsl:otherwise>
-								<xsl:choose>
-									<xsl:when test="$groupKey = 'doi' or $groupKey = 'issn'">
-										<xsl:value-of select="upper-case($groupKey)"/>
-									</xsl:when>
-									<xsl:otherwise>
-										<xsl:value-of select="concat(upper-case(substring($groupKey,1,1)), substring($groupKey,2))"/>
-									</xsl:otherwise>
-								</xsl:choose>
+								<xsl:value-of select="concat(upper-case(substring($groupKey,1,1)), substring($groupKey,2))"/>
 							</xsl:otherwise>
 						</xsl:choose>
 					</th><xsl:value-of select="$newline"/>
@@ -354,18 +347,24 @@
 		</xsl:if>
 	</xsl:template>
 
-	<!-- collection identifier -->
-	<xsl:template name="modsCollectionIdentifier">
+	<!-- mods:identifier -->
+	<xsl:template name="modsIdentifiers">
 		<xsl:param name="defaultLabel"/>
 		<xsl:param name="field"/>
 		<xsl:if test="boolean($field)">
-			<xsl:for-each-group select="$field" group-by="@type, .[not(@type)]/@displayLabel">
+			<xsl:for-each-group select="$field" group-by="@displayLabel, .[not(@displayLabel)]/@type, local-name(.[not(@displayLabel) and not(@type)])[. != '']">
 				<xsl:variable name="groupKey" select="current-grouping-key()"/>
 				<tr>
 					<th>
 						<xsl:choose>
-							<xsl:when test="$groupKey = 'local'">
+							<xsl:when test="$groupKey = local-name()">
 								<xsl:value-of select="$defaultLabel"/>
+							</xsl:when>
+							<xsl:when test="$groupKey = 'Collection Number'">
+								<xsl:value-of>Archival Collection ID</xsl:value-of>
+							</xsl:when>
+							<xsl:when test="$groupKey = 'doi' or $groupKey = 'issn'">
+								<xsl:value-of select="upper-case($groupKey)"/>
 							</xsl:when>
 							<xsl:otherwise>
 								<xsl:value-of select="concat(upper-case(substring($groupKey,1,1)), substring($groupKey,2))"/>
@@ -374,7 +373,33 @@
 					</th><xsl:value-of select="$newline"/>
 					<td>
 						<xsl:for-each select="current-group()">
-							<xsl:value-of select="text()"/><br/><xsl:value-of select="$newline"/>
+							<xsl:choose>
+								<xsl:when test="$groupKey = 'Catalog ID'">
+									<xsl:variable name="catalog_number">
+										<xsl:choose>
+											<xsl:when test="contains(., 'catalog.lib.unc.edu/')">
+												<xsl:value-of select="substring-after(., 'UNC')" />
+											</xsl:when>
+											<xsl:otherwise>
+												<xsl:variable name="bib_number" select="text()"/>
+												<xsl:variable name="length" select="string-length($bib_number)"/>
+												<xsl:value-of select="substring($bib_number, 1, $length - 1)"/>
+											</xsl:otherwise>
+										</xsl:choose>
+									</xsl:variable>
+									<span>
+										<a>
+											<xsl:attribute name="href">
+												<xsl:text>https://catalog.lib.unc.edu/catalog/UNC</xsl:text><xsl:value-of select="$catalog_number"/>
+											</xsl:attribute>
+											<xsl:text>catalog.lib.unc.edu/catalog/UNC</xsl:text><xsl:value-of select="$catalog_number"/>
+										</a><br/><xsl:value-of select="$newline"/>
+									</span>
+								</xsl:when>
+								<xsl:otherwise>
+									<xsl:value-of select="text()"/><br/><xsl:value-of select="$newline"/>
+								</xsl:otherwise>
+							</xsl:choose>
 						</xsl:for-each>
 					</td>
 				</tr>
@@ -945,14 +970,9 @@
 								<xsl:with-param name="field" select="*[local-name() = 'note' and not(@type = 'admin')]"/>
 							</xsl:call-template>
 
-							<xsl:call-template name="modsCollectionIdentifier">
-								<xsl:with-param name="defaultLabel">Archival Collection ID</xsl:with-param>
-								<xsl:with-param name="field" select="*[local-name() = 'identifier' and @displayLabel='Collection Number']"/>
-							</xsl:call-template>
-
-							<xsl:call-template name="modsGroupedFieldWithType">
+							<xsl:call-template name="modsIdentifiers">
 								<xsl:with-param name="defaultLabel">Identifier</xsl:with-param>
-								<xsl:with-param name="field" select="*[local-name() = 'identifier' and not(@displayLabel='Collection Number')]"/>
+								<xsl:with-param name="field" select="*[local-name() = 'identifier']"/>
 							</xsl:call-template>
 							<xsl:call-template name="modsSubjects"/>
 							<xsl:call-template name="modsClassifications"/>
@@ -989,13 +1009,12 @@
 		<xsl:variable name="language" select="*[local-name() = 'language']"/>
 		<xsl:variable name="typeOfResource" select="*[local-name() = 'typeOfResource']"/>
 		<xsl:variable name="genre" select="*[local-name() = 'genre']"/>
-		<xsl:variable name="collectionIdentifier" select="*[local-name() = 'identifier' and @displayLabel='Collection Number']"/>
-		<xsl:variable name="identifier" select="*[local-name() = 'identifier' and not(@displayLabel='Collection Number')]"/>
+		<xsl:variable name="identifier" select="*[local-name() = 'identifier']"/>
 		<xsl:variable name="classification" select="*[local-name() = 'classification']"/>
 		<xsl:variable name="abstract" select="*[local-name() = 'abstract' and @type='Content advice']"/>
 		<xsl:variable name="targetAudience" select="*[local-name() = 'targetAudience']"/>
 
-		<xsl:if test="boolean($language) or boolean($typeOfResource) or boolean($genre) or boolean($collectionIdentifier) or boolean($identifier) or boolean($classification) or boolean($targetAudience) or boolean ($abstract)">
+		<xsl:if test="boolean($language) or boolean($typeOfResource) or boolean($genre) or boolean($identifier) or boolean($classification) or boolean($targetAudience) or boolean ($abstract)">
 			<table>
 				<xsl:call-template name="modsLanguages"/>
 				<xsl:call-template name="modsGroupedField">
@@ -1006,11 +1025,7 @@
 					<xsl:with-param name="defaultLabel">Genre</xsl:with-param>
 					<xsl:with-param name="field" select="$genre"/>
 				</xsl:call-template>
-				<xsl:call-template name="modsCollectionIdentifier">
-					<xsl:with-param name="defaultLabel">Archival Collection ID</xsl:with-param>
-					<xsl:with-param name="field" select="$collectionIdentifier"/>
-				</xsl:call-template>
-				<xsl:call-template name="modsGroupedFieldWithType">
+				<xsl:call-template name="modsIdentifiers">
 					<xsl:with-param name="defaultLabel">Identifier</xsl:with-param>
 					<xsl:with-param name="field" select="$identifier"/>
 				</xsl:call-template>
