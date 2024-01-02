@@ -196,12 +196,10 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'A
 		}
 
 		// Export actions
-		if (metadata.type !== 'File' && $.inArray('viewHidden', metadata.permissions) !== -1) {
+		if (!isContentRoot && metadata.type !== 'File' && $.inArray('viewHidden', metadata.permissions) !== -1) {
 			items["export"] = {name: "Export", items: {}}
 
-			if (!isContentRoot) {
-				items['export']['items']["exportCSV"] = {name: "Export CSV"};
-			}
+			items['export']['items']["exportCSV"] = {name: "Export CSV"};
 
 			if (metadata.type === 'Work') {
 				items['export']['items']["exportMemberOrder"] = {name: "Export Member Order"};
