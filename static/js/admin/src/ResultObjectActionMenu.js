@@ -203,7 +203,9 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'A
 				items['export']['items']["exportCSV"] = {name: "Export CSV"};
 			}
 
-			items['export']['items']["exportMemberOrder"] = {name: "Export Member Order"};
+			if (metadata.type === 'Work') {
+				items['export']['items']["exportMemberOrder"] = {name: "Export Member Order"};
+			}
 		}
 
 		items["copyid"] = {name : 'Copy PID to Clipboard'};
