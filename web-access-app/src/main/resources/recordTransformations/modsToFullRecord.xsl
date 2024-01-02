@@ -525,8 +525,10 @@
 				</th><xsl:value-of select="$newline"/>
 				<td>
 					<xsl:for-each select="current-group()">
-						<xsl:for-each select="./*">
+						<xsl:if test="position()!=1">
 							<br/><xsl:value-of select="$newline"/>
+						</xsl:if>
+						<xsl:for-each select="./*">
 							<!-- Render the second tier of children based on the element name of the first tier -->
 							<xsl:choose>
 								<xsl:when test="local-name() = 'name' or local-name() = 'titleInfo'">

@@ -21,8 +21,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import java.io.File;
 import java.io.FileInputStream;
 import java.nio.file.Path;
+import java.util.Map;
 
 import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
+import edu.unc.lib.boxc.model.api.rdf.Cdr;
 import edu.unc.lib.boxc.operations.jms.thumbnails.ThumbnailRequest;
 import edu.unc.lib.boxc.operations.jms.thumbnails.ThumbnailRequestSender;
 import org.apache.commons.io.IOUtils;
@@ -39,6 +41,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.ContextHierarchy;
+import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 import edu.unc.lib.boxc.auth.api.exceptions.AccessRestrictionException;
@@ -163,15 +166,21 @@ public class ThumbnailIT extends AbstractAPIIT {
         var pid = makePid();
         var filePidString = pid.getId();
         var file = repositoryObjectFactory.createFileObject(pid, null);
+        var work = repositoryObjectFactory.createWorkObject(makePid(), null);
         when(repositoryObjectLoader.getRepositoryObject(pid)).thenReturn(file);
+        work.addMember(file);
 
-        mvc.perform(put("/edit/assignThumbnail/" + filePidString))
+        MvcResult result = mvc.perform(put("/edit/assignThumbnail/" + filePidString))
                 .andExpect(status().is2xxSuccessful())
                 .andReturn();
 
         verify(thumbnailRequestSender).sendToQueue(requestCaptor.capture());
         ThumbnailRequest request = requestCaptor.getValue();
         assertEquals(filePidString, request.getFilePidString());
+
+        Map<String, Object> respMap = getMapFromResponse(result);
+        assertEquals("assignThumbnail", respMap.get(ThumbnailController.ACTION));
+        assertEquals(filePidString, respMap.get("newThumbnailId"));
     }
 
     @Test
@@ -197,13 +206,40 @@ public class ThumbnailIT extends AbstractAPIIT {
     }
 
     @Test
-    public void assignThumbnailPidIsNotAFile() throws Exception {
+    public void assignThumbnailPidIsAWorkWithPreviousAssignedThumbnail() throws Exception {
         var pid = makePid();
         var filePidString = pid.getId();
-        var work = repositoryObjectFactory.createWorkObject(pid, null);
+        var file = repositoryObjectFactory.createFileObject(pid, null);
+        var oldThumbnailPid = makePid();
+        var oldThumbnail = repositoryObjectFactory.createFileObject(oldThumbnailPid, null);
+        var workPid = makePid();
+        var work = repositoryObjectFactory.createWorkObject(workPid, null);
+        work.addMember(file);
+        work.addMember(oldThumbnail);
         when(repositoryObjectLoader.getRepositoryObject(pid)).thenReturn(work);
+        repositoryObjectFactory.createExclusiveRelationship(work, Cdr.useAsThumbnail, oldThumbnail.getResource());
 
-        mvc.perform(put("/edit/assignThumbnail/" + filePidString))
+        MvcResult result = mvc.perform(put("/edit/assignThumbnail/" + filePidString))
+                .andExpect(status().is2xxSuccessful())
+                .andReturn();
+        verify(thumbnailRequestSender).sendToQueue(requestCaptor.capture());
+        ThumbnailRequest request = requestCaptor.getValue();
+        assertEquals(filePidString, request.getFilePidString());
+
+        Map<String, Object> respMap = getMapFromResponse(result);
+        assertEquals("assignThumbnail", respMap.get(ThumbnailController.ACTION));
+        assertEquals(filePidString, respMap.get("newThumbnailId"));
+        assertEquals(oldThumbnailPid.getId(), respMap.get(ThumbnailController.OLD_THUMBNAIL_ID));
+    }
+
+    @Test
+    public void assignThumbnailPidIsNotAFileOrWork() throws Exception {
+        var pid = makePid();
+        var folderPidString = pid.getId();
+        var folder = repositoryObjectFactory.createFolderObject(pid, null);
+        when(repositoryObjectLoader.getRepositoryObject(pid)).thenReturn(folder);
+
+        mvc.perform(put("/edit/assignThumbnail/" + folderPidString))
                 .andExpect(status().isBadRequest())
                 .andReturn();
         verify(thumbnailRequestSender, never()).sendMessage(any(Document.class));
@@ -215,7 +251,7 @@ public class ThumbnailIT extends AbstractAPIIT {
         var filePidString = pid.getId();
         var file = repositoryObjectFactory.createFileObject(pid, null);
         when(repositoryObjectLoader.getRepositoryObject(pid)).thenReturn(file);
-        mvc.perform(delete("/edit/deleteThumbnail/" + filePidString))
+        MvcResult result = mvc.perform(delete("/edit/deleteThumbnail/" + filePidString))
                 .andExpect(status().is2xxSuccessful())
                 .andReturn();
 
@@ -223,6 +259,10 @@ public class ThumbnailIT extends AbstractAPIIT {
         ThumbnailRequest request = requestCaptor.getValue();
         assertEquals(filePidString, request.getFilePidString());
         assertEquals(ThumbnailRequest.DELETE, request.getAction());
+
+        Map<String, Object> respMap = getMapFromResponse(result);
+        assertEquals("deleteThumbnail", respMap.get(ThumbnailController.ACTION));
+        assertEquals(filePidString, respMap.get(ThumbnailController.OLD_THUMBNAIL_ID));
     }
 
     @Test
@@ -240,13 +280,49 @@ public class ThumbnailIT extends AbstractAPIIT {
     }
 
     @Test
-    public void deleteThumbnailPidIsNotAFile() throws Exception {
+    public void deleteThumbnailPidIsAWork() throws Exception {
         var pid = makePid();
         var workPidString = pid.getId();
         var work = repositoryObjectFactory.createWorkObject(pid, null);
+        var filePid = makePid();
+        var file = repositoryObjectFactory.createFileObject(filePid, null);
+        work.addMember(file);
+        repositoryObjectFactory.createExclusiveRelationship(work, Cdr.useAsThumbnail, file.getResource());
         when(repositoryObjectLoader.getRepositoryObject(pid)).thenReturn(work);
 
         mvc.perform(delete("/edit/deleteThumbnail/" + workPidString))
+                .andExpect(status().is2xxSuccessful())
+                .andReturn();
+        verify(thumbnailRequestSender).sendToQueue(requestCaptor.capture());
+        ThumbnailRequest request = requestCaptor.getValue();
+        assertEquals(filePid.getId(), request.getFilePidString());
+        assertEquals(ThumbnailRequest.DELETE, request.getAction());
+    }
+
+    @Test
+    public void deleteThumbnailPidIsAWorkButNoAssignedThumbnail() throws Exception {
+        var pid = makePid();
+        var workPidString = pid.getId();
+        var work = repositoryObjectFactory.createWorkObject(pid, null);
+        var filePid = makePid();
+        var file = repositoryObjectFactory.createFileObject(filePid, null);
+        work.addMember(file);
+        when(repositoryObjectLoader.getRepositoryObject(pid)).thenReturn(work);
+
+        mvc.perform(delete("/edit/deleteThumbnail/" + workPidString))
+                .andExpect(status().isBadRequest())
+                .andReturn();
+        verify(thumbnailRequestSender, never()).sendMessage(any(Document.class));
+    }
+
+    @Test
+    public void deleteThumbnailPidIsNotAFileOrWork() throws Exception {
+        var pid = makePid();
+        var folderPidString = pid.getId();
+        var folder = repositoryObjectFactory.createFolderObject(pid, null);
+        when(repositoryObjectLoader.getRepositoryObject(pid)).thenReturn(folder);
+
+        mvc.perform(delete("/edit/deleteThumbnail/" + folderPidString))
                 .andExpect(status().isBadRequest())
                 .andReturn();
         verify(thumbnailRequestSender, never()).sendMessage(any(Document.class));

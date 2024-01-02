@@ -38,6 +38,13 @@ define('ClearPrimaryObjectResultAction', [ 'jquery', 'AjaxCallbackAction'], func
 		this.alertHandler.alertHandler("success", "Cleared the primary object assignment.");
 		this.context.target.enable();
 	};
+
+	ClearPrimaryObjectResultAction.prototype.followup = function(data) {
+		if (data) {
+			return this.context.target.updateVersion(data);
+		}
+		return false;
+	};
 	
 	return ClearPrimaryObjectResultAction;
 });

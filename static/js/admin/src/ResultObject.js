@@ -31,7 +31,7 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'underscore', 'ModalLoadingOverl
 
 		if (tags.length > 0) {
 			this.metadata.tags = tags.filter(function(d) {
-				return !/^(has|not|no.primary|public.access|members.are.unordered)/i.test(d);
+				return !/^(has|not|no.primary|public.access|members.are.unordered|no.assigned.thumbnail)/i.test(d);
 			}).map(function(d) {
 				var tagValue;
 
@@ -85,7 +85,7 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'underscore', 'ModalLoadingOverl
 			case 'patron-settings':
 				helpText = 'Patron access settings for this object have been added';
 				break;
-			case 'primary-object':
+			case 'is-primary-object':
 				helpText = 'This file is the representative object for the work which contains it';
 				break;
 			case 'staff-only':
@@ -93,6 +93,9 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'underscore', 'ModalLoadingOverl
 				break;
 			case 'inherited-settings':
 				helpText = 'Object is inheriting patron access settings which have been modified (typically they are more restrictive)';
+				break;
+			case 'assigned-as-thumbnail':
+				helpText = 'This file is the assigned thumbnail for the work which contains it';
 				break;
 			default:
 				helpText = '';

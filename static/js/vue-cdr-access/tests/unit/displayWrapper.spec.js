@@ -66,7 +66,6 @@ describe('displayWrapper.vue', () => {
         await router.push(`/record/${response.container.id}`);
         mountApp();
         wrapper.vm.getBriefObject();
-        wrapper.vm.updateUrl();
         wrapper.vm.retrieveSearchResults();
         await flushPromises();
 
@@ -83,11 +82,9 @@ describe('displayWrapper.vue', () => {
         mountApp();
 
         wrapper.vm.getBriefObject();
-        wrapper.vm.updateUrl();
         wrapper.vm.retrieveSearchResults();
         await flushPromises();
         expect(wrapper.vm.search_method).toEqual('searchJson');
-        expect(wrapper.vm.$router.currentRoute.value.query.types).toEqual('Work,File');
     });
 
     it("uses the correct search parameters for non admin works only browse",  async () => {
@@ -95,11 +92,9 @@ describe('displayWrapper.vue', () => {
         mountApp();
 
         wrapper.vm.getBriefObject();
-        wrapper.vm.updateUrl();
         wrapper.vm.retrieveSearchResults();
         await flushPromises();
         expect(wrapper.vm.search_method).toEqual('listJson');
-        expect(wrapper.vm.$router.currentRoute.value.query.types).toEqual('Work,Folder,Collection,File');
     });
 
     it("uses the correct search parameters if search text is specified", async () => {
@@ -109,11 +104,9 @@ describe('displayWrapper.vue', () => {
         });
 
         wrapper.vm.getBriefObject();
-        wrapper.vm.updateUrl();
         wrapper.vm.retrieveSearchResults();
         await flushPromises();
         expect(wrapper.vm.search_method).toEqual('searchJson');
-        expect(wrapper.vm.$router.currentRoute.value.query.types).toEqual('Work,Folder,Collection,File');
     });
 
     it("uses the correct search parameters if facet parameter is specified", async () => {
@@ -123,11 +116,9 @@ describe('displayWrapper.vue', () => {
         });
 
         wrapper.vm.getBriefObject();
-        wrapper.vm.updateUrl();
         wrapper.vm.retrieveSearchResults();
         await flushPromises();
         expect(wrapper.vm.search_method).toEqual('searchJson');
-        expect(wrapper.vm.$router.currentRoute.value.query.types).toEqual('Work,Folder,Collection,File');
     });
 
     it("uses the correct parameters for admin unit browse", async () => {
@@ -157,46 +148,11 @@ describe('displayWrapper.vue', () => {
         });
 
         wrapper.vm.getBriefObject();
-        wrapper.vm.updateUrl();
         wrapper.vm.retrieveSearchResults();
         await flushPromises();
         expect(wrapper.vm.search_method).toEqual('listJson');
-        expect(wrapper.vm.$router.currentRoute.value.query.types).toEqual('Work,Folder,Collection,File');
         expect(wrapper.find(".container-note").exists()).toBe(true);
         expect(wrapper.find('#browse-display-type').exists()).toBe(true);
-    });
-
-    it("updates the url when work type changes", async () => {
-        await router.push('/record/73bc003c-9603-4cd9-8a65-93a22520ef6a?browse_type=gallery-display');
-        mountApp({
-            container_info: {
-                briefObject: {
-                    type: 'Collection',
-                    objectPath: [
-                        {
-                            pid: 'collections',
-                            name: 'Content Collections Root',
-                            container: true
-                        },
-                        {
-                            pid: '353ee09f-a4ed-461e-a436-18a1bee77b01',
-                            name: 'testAdminUnit',
-                            container: true
-                        },
-                        {
-                            pid: 'fc77a9be-b49d-4f4e-b656-1644c9e964fc',
-                            name: 'testCollection',
-                            container: true
-                        }
-                    ]
-                },
-                resourceType: 'Collection'
-            }
-        });
-
-        wrapper.vm.updateUrl();
-        await flushPromises();
-        expect(wrapper.vm.$router.currentRoute.value.query.types).toEqual('Work,Folder,Collection,File');
     });
 
     it("displays a 'works only' option if the 'works only' box is checked and no records are works", async () => {
@@ -205,7 +161,6 @@ describe('displayWrapper.vue', () => {
         mountApp();
 
         wrapper.vm.getBriefObject();
-        wrapper.vm.updateUrl();
         wrapper.vm.retrieveSearchResults();
         await flushPromises();
         let works_only = wrapper.find('.container-note');
@@ -216,10 +171,7 @@ describe('displayWrapper.vue', () => {
     it("does not display a 'works only' option if the 'works only' box is not checked and no records are works", async () => {
         await router.push('/record/73bc003c-9603-4cd9-8a65-93a22520ef6a?works_only=false');
         mountApp();
-        // wrapper.vm.getBriefObject();
-        // wrapper.vm.updateUrl();
-        // wrapper.vm.retrieveSearchResults();
-        // await flushPromises();
+
         let works_only = wrapper.find('.container-note');
         expect(works_only.exists()).toBe(false)
     });
@@ -251,7 +203,6 @@ describe('displayWrapper.vue', () => {
         await router.push('/record/73bc003c-9603-4cd9-8a65-93a22520ef6a');
         mountApp();
         wrapper.vm.getBriefObject();
-        wrapper.vm.updateUrl();
         wrapper.vm.retrieveSearchResults();
         await flushPromises();
 
@@ -355,7 +306,6 @@ describe('displayWrapper.vue', () => {
         let num_facets = wrapper.vm.$store.state.possibleFacetFields.length;
         expect(num_facets).toBeGreaterThan(0);
         expect(wrapper.vm.$store.state.possibleFacetFields.indexOf('unit')).toEqual(-1);
-        expect(wrapper.vm.$route.query.facetSelect.indexOf('unit')).toEqual(-1);
 
         // Trigger works only filter and make sure that the set of facets does not change
         await wrapper.find('#works-only').trigger('click');

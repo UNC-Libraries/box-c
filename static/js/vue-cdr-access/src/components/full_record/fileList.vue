@@ -19,7 +19,7 @@ force it to reload
                 <th>{{ $t('full_record.file_type') }}</th>
                 <th>{{ $t('full_record.filesize') }}</th>
                 <th><span class="sr-only">{{ $t('full_record.view_file') }}</span></th>
-                <th><span class="sr-only">{{ $t('full_record.download_file') }}</span></th>
+                <th v-if="downloadAccess"><span class="sr-only">{{ $t('full_record.download_file') }}</span></th>
                 <th v-if="editAccess"><span class="sr-only">{{ $t('full_record.mods') }}</span></th>
             </tr>
             </thead>
@@ -45,6 +45,10 @@ export default {
 
     props: {
         childCount: Number,
+        downloadAccess: {
+            default: false,
+            type: Boolean
+        },
         editAccess: {
             default: false,
             type: Boolean
@@ -63,8 +67,7 @@ export default {
                 { data: this.$t('full_record.title') },
                 { data: this.$t('full_record.file_type') },
                 { data: this.$t('full_record.filesize') },
-                { data: this.$t('full_record.view_file') },
-                { data: this.$t('full_record.download_file') }
+                { data: this.$t('full_record.view_file') }
             ]
         }
     },
@@ -122,7 +125,7 @@ export default {
         },
 
         columnDefs() {
-            const excluded_columns = [0, 4, 5];
+            const excluded_columns = [0, 4];
 
             let column_defs = [
                 { orderable: false, targets: excluded_columns },
@@ -132,7 +135,7 @@ export default {
                     render: (data, type, row) => {
                         let img;
 
-                        if ('thumbnail_url' in row) {
+                        if ('thumbnail_url' in row && this.hasPermission(row,'viewAccessCopies')) {
                             const thumbnail_title = this.$t('full_record.thumbnail_title', { title: row.title })
                             img = `<img class="data-thumb" loading="lazy" src="${row.thumbnail_url}"` +
                             ` alt="${thumbnail_title}">`;
@@ -187,18 +190,29 @@ export default {
                             ` <i class="fa fa-search-plus is-icon" title="${view}"></i></a>`;
                     },
                     targets: 4
-                },
-                {
+                }
+            ];
+
+            if (this.downloadAccess)  {
+                this.columns.push({ data: this.$t('full_record.download_file') });
+                excluded_columns.push(5); // download button
+
+                // Add to orderable, searchable exclusions
+                [0, 1].forEach((d) => column_defs[d].targets = excluded_columns);
+
+                column_defs.push({
                     render: (data, type, row) => {
                         return this.downloadButtonHtml(row);
                     },
                     targets: 5
-                }
-            ];
+                });
+            }
 
             if (this.editAccess) {
+                // Check for the correct column number, in the unlikely event a user has edit access, but not download access
+                const column_number = (this.downloadAccess) ? 6 : 5;
                 this.columns.push({ data: this.$t('full_record.mods') });
-                excluded_columns.push(6); // edit button
+                excluded_columns.push(column_number); // edit button
 
                 // Add to orderable, searchable exclusions
                 [0, 1].forEach((d) => column_defs[d].targets = excluded_columns);
@@ -209,7 +223,7 @@ export default {
                             return `<a href="/admin/describe/${row.id}" aria-label="${this.ariaLabelText(row)}">` +
                                 '<i class="fa fa-edit is-icon" title="Edit"></i></a>'
                         },
-                        targets: 6
+                        targets: column_number
                     }
                 );
             }
