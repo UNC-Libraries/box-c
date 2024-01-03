@@ -6,7 +6,6 @@ import displayWrapper from '@/components/displayWrapper.vue';
 import store from '@/store';
 import { createI18n } from "vue-i18n";
 import translations from "@/translations";
-import { $gtag } from '../fixtures/testHelpers';
 
 
 let wrapper;
@@ -44,7 +43,6 @@ describe('matomoUtils', () => {
             attachTo: '#root',
             global: {
                 plugins: [router, store, i18n],
-                mocks: { $gtag },
                 stubs: {
                     RouterLink: RouterLinkStub
                 }
