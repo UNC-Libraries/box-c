@@ -50,9 +50,9 @@
                                             <span class="has-text-weight-bold">{{ $t('full_record.date_created') }}: </span>
                                             {{ formatDate(recordData.briefObject.created) }}
                                         </li>
-                                        <li v-if="fieldExists(recordData.briefObject.embargoDate)">
+                                        <li class="embargo" v-if="fieldExists(recordData.embargoDate)">
                                             <span class="has-text-weight-bold">{{ $t('full_record.embargo_date') }}: </span>
-                                            {{ formatDate(recordData.briefObject.embargoDate) }}
+                                            {{ recordData.embargoDate }}
                                         </li>
                                         <abstract v-if="recordData.briefObject.abstractText" :brief-object="recordData.briefObject"/>
                                         <li v-if="fieldExists(recordData.exhibits)">

@@ -484,29 +484,6 @@ describe('restrictedContent.vue', () => {
         expect(wrapper.find('.download').exists()).toBe(false);
     });
 
-    it('displays embargo information for files', async () => {
-        const updated_data = cloneDeep(record);
-        updated_data.briefObject.embargoDate = '2199-12-31T20:34:01.799Z';
-        updated_data.dataFileUrl = 'content/4db695c0-5fd5-4abf-9248-2e115d43f57d';
-        updated_data.briefObject.permissions = [];
-        await wrapper.setProps({
-            recordData: updated_data
-        });
-        expect(wrapper.find('.noaction').text()).toEqual('Available after 2199-12-31');
-    });
-
-    it('displays embargo information for works', async () => {
-        const updated_data = cloneDeep(record);
-        updated_data.briefObject.embargoDate = '2199-12-31T20:34:01.799Z';
-        updated_data.dataFileUrl = 'content/4db695c0-5fd5-4abf-9248-2e115d43f57d';
-        updated_data.resourceType = 'Work';
-        updated_data.briefObject.permissions = [];
-        await wrapper.setProps({
-            recordData: updated_data
-        });
-        expect(wrapper.find('.noaction').text()).toEqual('Available after 2199-12-31');
-    });
-
     it('does not show view options if content is public', async () => {
         const updated_data = cloneDeep(record);
         updated_data.briefObject.groupRoleMap = {

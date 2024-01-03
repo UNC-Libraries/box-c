@@ -21,9 +21,6 @@
                 </div>
             </template>
         </template>
-        <div v-if="fieldExists(recordData.briefObject.embargoDate) && !hasPermission(recordData, 'viewOriginal')" class="noaction">
-            {{ $t('full_record.available_date', { available_date: formatDate(recordData.briefObject.embargoDate) }) }}
-        </div>
     </div>
 </template>
 
