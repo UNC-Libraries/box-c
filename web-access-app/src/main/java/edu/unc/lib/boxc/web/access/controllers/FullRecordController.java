@@ -48,6 +48,7 @@ import java.text.SimpleDateFormat;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TimeZone;
 import java.util.stream.Collectors;
 
 import static edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore.getAgentPrincipals;
@@ -222,13 +223,14 @@ public class FullRecordController extends AbstractErrorHandlingSearchController 
         if (objectStatus != null) {
             isMarkedForDeletion = objectStatus.contains(MARKED_FOR_DELETION);
         }
+        recordProperties.put("markedForDeletion", isMarkedForDeletion);
 
         var embargoDate = objectAclFactory.getEmbargoUntil(pid);
         if (embargoDate != null) {
             SimpleDateFormat dateFormatter = new SimpleDateFormat("yyyy-MM-dd");
+            dateFormatter.setTimeZone(TimeZone.getTimeZone("UTC"));
             recordProperties.put("embargoDate", dateFormatter.format(embargoDate));
         }
-        recordProperties.put("markedForDeletion", isMarkedForDeletion);
         recordProperties.put("briefObject", SerializationUtil.metadataToMap(briefObject, principals));
         recordProperties.put("pageSubtitle", briefObject.getTitle());
         return SerializationUtil.objectToJSON(recordProperties);
