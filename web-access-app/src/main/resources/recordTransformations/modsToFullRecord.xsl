@@ -375,24 +375,27 @@
 						<xsl:for-each select="current-group()">
 							<xsl:choose>
 								<xsl:when test="$groupKey = 'Catalog ID'">
-									<xsl:variable name="catalog_number">
+									<xsl:variable name="catalog_url">
 										<xsl:choose>
 											<xsl:when test="contains(., 'catalog.lib.unc.edu/')">
-												<xsl:value-of select="substring-after(., 'UNC')" />
+												<xsl:value-of select="text()"/>
+											</xsl:when>
+											<xsl:when test="contains(., 'afton.lib.unc.edu/')">
+												<xsl:value-of select="text()"/>
 											</xsl:when>
 											<xsl:otherwise>
 												<xsl:variable name="bib_number" select="text()"/>
 												<xsl:variable name="length" select="string-length($bib_number)"/>
-												<xsl:value-of select="substring($bib_number, 1, $length - 1)"/>
+												<xsl:text>https://catalog.lib.unc.edu/catalog/UNC</xsl:text><xsl:value-of select="substring($bib_number, 1, $length - 1)"/>
 											</xsl:otherwise>
 										</xsl:choose>
 									</xsl:variable>
 									<span>
 										<a>
 											<xsl:attribute name="href">
-												<xsl:text>https://catalog.lib.unc.edu/catalog/UNC</xsl:text><xsl:value-of select="$catalog_number"/>
+												<xsl:value-of select="$catalog_url"/>
 											</xsl:attribute>
-											<xsl:text>catalog.lib.unc.edu/catalog/UNC</xsl:text><xsl:value-of select="$catalog_number"/>
+											<xsl:value-of select="$catalog_url"/>
 										</a><br/><xsl:value-of select="$newline"/>
 									</span>
 								</xsl:when>
