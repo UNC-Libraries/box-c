@@ -377,10 +377,7 @@
 								<xsl:when test="$groupKey = 'Catalog ID'">
 									<xsl:variable name="catalog_url">
 										<xsl:choose>
-											<xsl:when test="contains(., 'catalog.lib.unc.edu/')">
-												<xsl:value-of select="text()"/>
-											</xsl:when>
-											<xsl:when test="contains(., 'afton.lib.unc.edu/')">
+											<xsl:when test="starts-with(., 'http')">
 												<xsl:value-of select="text()"/>
 											</xsl:when>
 											<xsl:otherwise>
