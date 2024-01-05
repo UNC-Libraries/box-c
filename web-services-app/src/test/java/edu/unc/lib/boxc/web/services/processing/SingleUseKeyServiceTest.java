@@ -152,7 +152,10 @@ public class SingleUseKeyServiceTest {
         for (CSVRecord record : csvRecords) {
             if (key.equals(record.get(SingleUseKeyService.ACCESS_KEY))) {
                 assertEquals(id, record.get(SingleUseKeyService.ID));
-                assertNotNull(record.get(SingleUseKeyService.TIMESTAMP));
+                // timestamp must not be null and must be in the future
+                var expirationTimestamp = record.get(SingleUseKeyService.TIMESTAMP);
+                assertNotNull(expirationTimestamp);
+                assertTrue(Long.parseLong(expirationTimestamp) > System.currentTimeMillis());
                 return;
             }
         }

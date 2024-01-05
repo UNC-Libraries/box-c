@@ -36,7 +36,6 @@ public class CsvUtil {
     public static CSVPrinter createCsvPrinter(String[] headers, Path csvPath) throws IOException {
         if (Files.exists(csvPath)) {
             var writer = Files.newBufferedWriter(csvPath, StandardOpenOption.APPEND);
-            //return new CSVPrinter(writer, CSVFormat.DEFAULT.withHeader(headers));
             return new CSVPrinter(writer, CSVFormat.DEFAULT.withSkipHeaderRecord());
         } else {
             return createNewCsvPrinter(headers, csvPath);
