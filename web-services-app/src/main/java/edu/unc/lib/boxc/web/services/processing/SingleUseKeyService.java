@@ -33,8 +33,8 @@ public class SingleUseKeyService {
      */
     public String generate(String id) {
         var key = getKey();
-        var expirationInMilliseconds = System.currentTimeMillis() + DAY_MILLISECONDS;
         lock.lock();
+        var expirationInMilliseconds = System.currentTimeMillis() + DAY_MILLISECONDS;
         try (var csvPrinter = createCsvPrinter(CSV_HEADERS, csvPath)) {
             csvPrinter.printRecord(id, key, expirationInMilliseconds);
         } catch (Exception e) {
@@ -49,16 +49,19 @@ public class SingleUseKeyService {
      * Determines if a key is valid by seeing if it is in the CSV and if the expiration timestamp has not passed
      * @param key access key for single use link
      * @return true if key is in the CSV, otherwise false
-     * @throws IOException
      */
-    public boolean keyIsValid(String key) throws IOException {
-        var csvRecords = parseCsv(CSV_HEADERS, csvPath);
-        var currentMilliseconds = System.currentTimeMillis();
-        for (CSVRecord record : csvRecords) {
-            if (key.equals(record.get(ACCESS_KEY))) {
-                var expirationTimestamp = Long.parseLong(record.get(TIMESTAMP));
-                return currentMilliseconds <= expirationTimestamp;
+    public boolean keyIsValid(String key) {
+        try {
+            var csvRecords = parseCsv(CSV_HEADERS, csvPath);
+            var currentMilliseconds = System.currentTimeMillis();
+            for (CSVRecord record : csvRecords) {
+                if (key.equals(record.get(ACCESS_KEY))) {
+                    var expirationTimestamp = Long.parseLong(record.get(TIMESTAMP));
+                    return currentMilliseconds <= expirationTimestamp;
+                }
             }
+        } catch (IOException e) {
+            throw new RepositoryException("Failed to determine if key is valid in Single Use Key CSV", e);
         }
         return false;
     }

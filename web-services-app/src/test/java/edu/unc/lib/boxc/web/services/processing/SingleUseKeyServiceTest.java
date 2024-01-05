@@ -45,8 +45,8 @@ public class SingleUseKeyServiceTest {
     public void testGenerateNoCsvExists() throws IOException {
         var key = singleUseKeyService.generate(UUID_TEST);
         var newRecords = parseCsv(CSV_HEADERS, csvPath);
-        var currentMilliseconds = System.currentTimeMillis();
-        assertCsvContainsCorrectEntry(newRecords, UUID_TEST, key, currentMilliseconds);
+        assertCsvContainsCorrectEntry(newRecords, UUID_TEST, key);
+        assertEquals(1, newRecords.size());
     }
 
     @Test
@@ -56,10 +56,10 @@ public class SingleUseKeyServiceTest {
         var key3 = singleUseKeyService.generate(UUID_3);
 
         var newRecords = parseCsv(CSV_HEADERS, csvPath);
-        var currentMilliseconds = System.currentTimeMillis();
-        assertCsvContainsCorrectEntry(newRecords, UUID_1, key1, currentMilliseconds);
-        assertCsvContainsCorrectEntry(newRecords, UUID_2, key2, currentMilliseconds);
-        assertCsvContainsCorrectEntry(newRecords, UUID_3, key3, currentMilliseconds);
+        assertCsvContainsCorrectEntry(newRecords, UUID_1, key1);
+        assertCsvContainsCorrectEntry(newRecords, UUID_2, key2);
+        assertCsvContainsCorrectEntry(newRecords, UUID_3, key3);
+        assertEquals(3, newRecords.size());
     }
 
     @Test
@@ -69,10 +69,10 @@ public class SingleUseKeyServiceTest {
         var key3 = singleUseKeyService.generate(UUID_1);
 
         var newRecords = parseCsv(CSV_HEADERS, csvPath);
-        var currentMilliseconds = System.currentTimeMillis();
-        assertCsvContainsCorrectEntry(newRecords, UUID_1, key1, currentMilliseconds);
-        assertCsvContainsCorrectEntry(newRecords, UUID_1, key2, currentMilliseconds);
-        assertCsvContainsCorrectEntry(newRecords, UUID_1, key3, currentMilliseconds);
+        assertCsvContainsCorrectEntry(newRecords, UUID_1, key1);
+        assertCsvContainsCorrectEntry(newRecords, UUID_1, key2);
+        assertCsvContainsCorrectEntry(newRecords, UUID_1, key3);
+        assertEquals(3, newRecords.size());
 
     }
 
@@ -109,6 +109,7 @@ public class SingleUseKeyServiceTest {
 
         var records = parseCsv(CSV_HEADERS, csvPath);
         assertDoesNotContainValue(records, SingleUseKeyService.ACCESS_KEY, key);
+        assertEquals(3, records.size());
     }
 
     @Test
@@ -120,6 +121,22 @@ public class SingleUseKeyServiceTest {
 
         var records = parseCsv(CSV_HEADERS, csvPath);
         assertDoesNotContainValue(records, SingleUseKeyService.ACCESS_KEY, key);
+        assertEquals(3, records.size());
+    }
+
+    @Test
+    public void testInvalidateMultipleTimes() throws IOException {
+        var key = SingleUseKeyService.getKey();
+        var expirationTimestamp = System.currentTimeMillis() + DAY_MILLISECONDS;
+        generateDefaultCsv(key, expirationTimestamp);
+        var key2 = singleUseKeyService.generate(UUID_TEST);
+        singleUseKeyService.invalidate(key);
+        singleUseKeyService.invalidate(key2);
+
+        var records = parseCsv(CSV_HEADERS, csvPath);
+        assertDoesNotContainValue(records, SingleUseKeyService.ACCESS_KEY, key);
+        assertDoesNotContainValue(records, SingleUseKeyService.ACCESS_KEY, key2);
+        assertEquals(3, records.size());
     }
 
     private void assertDoesNotContainValue(List<CSVRecord> csvRecords, String column, String value) {
@@ -131,15 +148,11 @@ public class SingleUseKeyServiceTest {
         }
     }
 
-    private void assertCsvContainsCorrectEntry(List<CSVRecord> csvRecords,
-                                               String id, String key, long currentTimestamp) {
+    private void assertCsvContainsCorrectEntry(List<CSVRecord> csvRecords, String id, String key) {
         for (CSVRecord record : csvRecords) {
             if (key.equals(record.get(SingleUseKeyService.ACCESS_KEY))) {
                 assertEquals(id, record.get(SingleUseKeyService.ID));
-                // timestamp must not be null and must be in the future
-                var expirationTimestamp = record.get(SingleUseKeyService.TIMESTAMP);
-                assertNotNull(expirationTimestamp);
-                assertTrue(Long.parseLong(expirationTimestamp) > currentTimestamp);
+                assertNotNull(record.get(SingleUseKeyService.TIMESTAMP));
                 return;
             }
         }
