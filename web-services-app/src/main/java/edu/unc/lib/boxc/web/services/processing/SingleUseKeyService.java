@@ -10,6 +10,7 @@ import java.util.UUID;
 import java.util.concurrent.locks.ReentrantLock;
 
 import static edu.unc.lib.boxc.web.services.utils.CsvUtil.createCsvPrinter;
+import static edu.unc.lib.boxc.web.services.utils.CsvUtil.createNewCsvPrinter;
 import static edu.unc.lib.boxc.web.services.utils.CsvUtil.parseCsv;
 
 /**
@@ -19,19 +20,20 @@ import static edu.unc.lib.boxc.web.services.utils.CsvUtil.parseCsv;
 public class SingleUseKeyService {
     public static final String ID = "UUID";
     public static final String ACCESS_KEY = "Access Key";
-    private static final String TIMESTAMP = "Expiration Timestamp";
+    public static final String TIMESTAMP = "Expiration Timestamp";
     public static final String[] CSV_HEADERS = new String[] {ID, ACCESS_KEY, TIMESTAMP};
     public static final long DAY_MILLISECONDS = 86400000;
     private Path csvPath;
+    private ReentrantLock lock = new ReentrantLock();
 
     /**
      * Generates an access key for a particular ID, adds it to the CSV, and returns the key
      * @param id UUID of the record
      * @return generated access key
      */
-    public String generate(String id, long expirationInMilliseconds) {
-        var lock = new ReentrantLock();
+    public String generate(String id) {
         var key = getKey();
+        var expirationInMilliseconds = System.currentTimeMillis() + DAY_MILLISECONDS;
         lock.lock();
         try (var csvPrinter = createCsvPrinter(CSV_HEADERS, csvPath)) {
             csvPrinter.printRecord(id, key, expirationInMilliseconds);
@@ -44,16 +46,16 @@ public class SingleUseKeyService {
     }
 
     /**
-     * Determines if a key is valid by seeing if it is in the CSV, connected to the proper ID
-     * @param id uuid of the box-c record
+     * Determines if a key is valid by seeing if it is in the CSV and if the expiration timestamp has not passed
      * @param key access key for single use link
      * @return true if key is in the CSV, otherwise false
      * @throws IOException
      */
-    public boolean keyIsValid(String id, String key, long currentMilliseconds) throws IOException {
+    public boolean keyIsValid(String key) throws IOException {
         var csvRecords = parseCsv(CSV_HEADERS, csvPath);
+        var currentMilliseconds = System.currentTimeMillis();
         for (CSVRecord record : csvRecords) {
-            if (accessKeyMatchesUuid(record, id, key)) {
+            if (key.equals(record.get(ACCESS_KEY))) {
                 var expirationTimestamp = Long.parseLong(record.get(TIMESTAMP));
                 return currentMilliseconds <= expirationTimestamp;
             }
@@ -66,46 +68,35 @@ public class SingleUseKeyService {
      * @param key access key of the box-c record
      */
     public void invalidate(String key) {
-        var lock = new ReentrantLock();
         lock.lock();
         try {
             var csvRecords = parseCsv(CSV_HEADERS, csvPath);
             var updatedRecords = new ArrayList<>();
+            var keyExists = false;
             for (CSVRecord record : csvRecords) {
-                if (!key.equals(record.get(ACCESS_KEY))) {
+                if (key.equals(record.get(ACCESS_KEY))) {
+                    keyExists = true;
+                } else {
+                    // add the rest of the keys to list
                     updatedRecords.add(record);
                 }
             }
-            try (var csvPrinter = createCsvPrinter(CSV_HEADERS, csvPath)) {
-                csvPrinter.flush();
-                csvPrinter.printRecords(updatedRecords);
-            } catch (Exception e) {
-                throw new IOException("Failed rewrite of Single Use Key CSV");
+
+            if (keyExists) {
+                try (var csvPrinter = createNewCsvPrinter(CSV_HEADERS, csvPath)) {
+                    csvPrinter.flush();
+                    csvPrinter.printRecords(updatedRecords);
+                }
             }
         } catch (IOException e) {
             throw new RepositoryException("Failed to invalidate key in Single Use Key CSV", e);
         } finally {
             lock.unlock();
         }
-
-    }
-
-    /**
-     * Check that the access key is connected to the uuid in question
-     * @param record CSV entry
-     * @param uuid uuid of the box-c record
-     * @param key access key
-     * @return true if they are in the same CSV line
-     */
-    private boolean accessKeyMatchesUuid(CSVRecord record,String uuid, String key) {
-        return uuid.equals(record.get(ID)) && key.equals(record.get(ACCESS_KEY));
     }
 
     public static String getKey() {
         return UUID.randomUUID().toString().replace("-", "") + Long.toHexString(System.nanoTime());
-    }
-    public static long getExpirationInMilliseconds() {
-        return System.currentTimeMillis() + DAY_MILLISECONDS;
     }
 
     public void setCsvPath(Path csvPath) {

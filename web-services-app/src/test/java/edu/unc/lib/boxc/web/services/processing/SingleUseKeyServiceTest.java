@@ -11,12 +11,12 @@ import java.util.List;
 
 import static edu.unc.lib.boxc.web.services.processing.SingleUseKeyService.CSV_HEADERS;
 import static edu.unc.lib.boxc.web.services.processing.SingleUseKeyService.DAY_MILLISECONDS;
-import static edu.unc.lib.boxc.web.services.processing.SingleUseKeyService.getExpirationInMilliseconds;
 import static edu.unc.lib.boxc.web.services.utils.CsvUtil.createCsvPrinter;
 import static edu.unc.lib.boxc.web.services.utils.CsvUtil.parseCsv;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.fail;
 
 /**
@@ -31,7 +31,7 @@ public class SingleUseKeyServiceTest {
     private static final String UUID_2 = "ba70a1ee-fa7c-437f-a979-cc8b16599652";
     private static final String UUID_3 = "83c2d7f8-2e6b-4f0b-ab7e-7397969c0682";
     private static final String UUID_TEST = "0e33ad0b-7a16-4bfa-b833-6126c262d889";
-    private String[] ids = {UUID_1, UUID_2, UUID_3};
+    private final String[] ids = {UUID_1, UUID_2, UUID_3};
     private SingleUseKeyService singleUseKeyService;
 
     @BeforeEach
@@ -42,54 +42,80 @@ public class SingleUseKeyServiceTest {
     }
 
     @Test
-    public void testGenerate() throws IOException {
-        generateDefaultCsv(null);
-        var oldRecords = parseCsv(CSV_HEADERS, csvPath);
-        assertDoesNotContainValue(oldRecords, SingleUseKeyService.ID, UUID_TEST);
-
-        var expirationTime = getExpirationInMilliseconds();
-        var key = singleUseKeyService.generate(UUID_TEST, expirationTime);
+    public void testGenerateNoCsvExists() throws IOException {
+        var key = singleUseKeyService.generate(UUID_TEST);
         var newRecords = parseCsv(CSV_HEADERS, csvPath);
-        assertContainsAccessKeyPair(newRecords, UUID_TEST, key);
+        var currentMilliseconds = System.currentTimeMillis();
+        assertCsvContainsCorrectEntry(newRecords, UUID_TEST, key, currentMilliseconds);
+    }
+
+    @Test
+    public void testGenerateMultipleCallsForDifferentIds() throws IOException {
+        var key1 = singleUseKeyService.generate(UUID_1);
+        var key2 = singleUseKeyService.generate(UUID_2);
+        var key3 = singleUseKeyService.generate(UUID_3);
+
+        var newRecords = parseCsv(CSV_HEADERS, csvPath);
+        var currentMilliseconds = System.currentTimeMillis();
+        assertCsvContainsCorrectEntry(newRecords, UUID_1, key1, currentMilliseconds);
+        assertCsvContainsCorrectEntry(newRecords, UUID_2, key2, currentMilliseconds);
+        assertCsvContainsCorrectEntry(newRecords, UUID_3, key3, currentMilliseconds);
+    }
+
+    @Test
+    public void testGenerateMultipleCallsForSameId() throws IOException {
+        var key1 = singleUseKeyService.generate(UUID_1);
+        var key2 = singleUseKeyService.generate(UUID_1);
+        var key3 = singleUseKeyService.generate(UUID_1);
+
+        var newRecords = parseCsv(CSV_HEADERS, csvPath);
+        var currentMilliseconds = System.currentTimeMillis();
+        assertCsvContainsCorrectEntry(newRecords, UUID_1, key1, currentMilliseconds);
+        assertCsvContainsCorrectEntry(newRecords, UUID_1, key2, currentMilliseconds);
+        assertCsvContainsCorrectEntry(newRecords, UUID_1, key3, currentMilliseconds);
+
     }
 
     @Test
     public void testKeyIsValid() throws IOException {
         var key = SingleUseKeyService.getKey();
-        generateDefaultCsv(key);
-        var currentMilliseconds = System.currentTimeMillis();
-        assertTrue(singleUseKeyService.keyIsValid(UUID_TEST, key, currentMilliseconds));
+        var futureExpiration = System.currentTimeMillis() + DAY_MILLISECONDS;
+        generateDefaultCsv(key, futureExpiration);
+        assertTrue(singleUseKeyService.keyIsValid(key));
     }
 
     @Test
     public void testKeyIsNotValid() throws IOException {
         var key = SingleUseKeyService.getKey();
-        generateDefaultCsv(null);
-        var currentMilliseconds = System.currentTimeMillis();
-        assertFalse(singleUseKeyService.keyIsValid(UUID_TEST, key, currentMilliseconds));
-    }
-
-    @Test
-    public void testKeyIsNotValidWrongUUID() throws IOException {
-        var key = SingleUseKeyService.getKey();
-        generateDefaultCsv(key);
-        var currentMilliseconds = System.currentTimeMillis();
-        assertFalse(singleUseKeyService.keyIsValid(
-                "8e0040b2-9951-48a3-9d65-780ae7106951", key, currentMilliseconds));
+        var timestamp = System.currentTimeMillis();
+        generateDefaultCsv(null, timestamp);
+        assertFalse(singleUseKeyService.keyIsValid(key));
     }
 
     @Test
     public void testKeyIsNotValidCurrentTimeIsMoreThan24hLater() throws IOException {
         var key = SingleUseKeyService.getKey();
-        generateDefaultCsv(key);
-        var currentMilliseconds = System.currentTimeMillis() + (3 * DAY_MILLISECONDS);
-        assertFalse(singleUseKeyService.keyIsValid(UUID_TEST, key, currentMilliseconds));
+        var pastTimestamp = System.currentTimeMillis() - (2 * DAY_MILLISECONDS);
+        generateDefaultCsv(key, pastTimestamp);
+        assertFalse(singleUseKeyService.keyIsValid(key));
     }
 
     @Test
     public void testInvalidate() throws IOException {
         var key = SingleUseKeyService.getKey();
-        generateDefaultCsv(key);
+        var expirationTimestamp = System.currentTimeMillis() + DAY_MILLISECONDS;
+        generateDefaultCsv(key, expirationTimestamp);
+        singleUseKeyService.invalidate(key);
+
+        var records = parseCsv(CSV_HEADERS, csvPath);
+        assertDoesNotContainValue(records, SingleUseKeyService.ACCESS_KEY, key);
+    }
+
+    @Test
+    public void testInvalidateWhenKeyIsNotPresent() throws IOException {
+        var key = SingleUseKeyService.getKey();
+        var expirationTimestamp = System.currentTimeMillis()+ DAY_MILLISECONDS;
+        generateDefaultCsv(null, expirationTimestamp);
         singleUseKeyService.invalidate(key);
 
         var records = parseCsv(CSV_HEADERS, csvPath);
@@ -105,18 +131,22 @@ public class SingleUseKeyServiceTest {
         }
     }
 
-    private void assertContainsAccessKeyPair(List<CSVRecord> csvRecords, String id, String key) {
+    private void assertCsvContainsCorrectEntry(List<CSVRecord> csvRecords,
+                                               String id, String key, long currentTimestamp) {
         for (CSVRecord record : csvRecords) {
-            if (id.equals(record.get(SingleUseKeyService.ID))) {
-                assertEquals(key, record.get(SingleUseKeyService.ACCESS_KEY));
+            if (key.equals(record.get(SingleUseKeyService.ACCESS_KEY))) {
+                assertEquals(id, record.get(SingleUseKeyService.ID));
+                // timestamp must not be null and must be in the future
+                var expirationTimestamp = record.get(SingleUseKeyService.TIMESTAMP);
+                assertNotNull(expirationTimestamp);
+                assertTrue(Long.parseLong(expirationTimestamp) > currentTimestamp);
                 return;
             }
         }
-        fail("No access key pair found");
+        fail("Correct entry not found");
     }
 
-    private void generateDefaultCsv(String key) throws IOException {
-        var expiration = getExpirationInMilliseconds();
+    private void generateDefaultCsv(String key, long expiration) throws IOException {
         try (var csvPrinter = createCsvPrinter(CSV_HEADERS, csvPath)) {
              for (String id : ids) {
                  csvPrinter.printRecord(id, SingleUseKeyService.getKey(), expiration);
