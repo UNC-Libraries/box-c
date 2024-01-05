@@ -9,8 +9,9 @@ package edu.unc.lib.boxc.auth.api;
 public enum Permission {
     viewMetadata,
     viewAccessCopies,
+    viewReducedResolutionImages,
     viewOriginal,
-    // TODO replaces viewAdminUI and viewEmbargoed
+    // Staff Permissions
     viewHidden,
     editDescription,
     bulkUpdateDescription,
@@ -28,16 +29,4 @@ public enum Permission {
     editResourceType,
     runEnhancements,
     reindex;
-
-    private Permission() {
-    }
-
-    public static Permission getPermission(String permissionName) {
-        for (Permission permission: Permission.values()) {
-            if (permission.name().equals(permissionName)) {
-                return permission;
-            }
-        }
-        return null;
-    }
 }
