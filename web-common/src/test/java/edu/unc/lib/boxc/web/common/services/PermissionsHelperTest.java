@@ -1,8 +1,22 @@
 package edu.unc.lib.boxc.web.common.services;
 
-import static edu.unc.lib.boxc.auth.api.Permission.editDescription;
+import edu.unc.lib.boxc.auth.api.Permission;
+import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
+import edu.unc.lib.boxc.auth.api.services.AccessControlService;
+import edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl;
+import edu.unc.lib.boxc.model.api.DatastreamType;
+import edu.unc.lib.boxc.model.api.ids.PID;
+import edu.unc.lib.boxc.search.solr.models.ContentObjectSolrRecord;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.Mock;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 import static edu.unc.lib.boxc.auth.api.Permission.viewAccessCopies;
-import static edu.unc.lib.boxc.auth.api.Permission.viewMetadata;
 import static edu.unc.lib.boxc.auth.api.Permission.viewOriginal;
 import static edu.unc.lib.boxc.model.api.DatastreamType.JP2_ACCESS_COPY;
 import static edu.unc.lib.boxc.model.api.DatastreamType.ORIGINAL_FILE;
@@ -12,23 +26,6 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.openMocks;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.mockito.Mock;
-
-import edu.unc.lib.boxc.auth.api.Permission;
-import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
-import edu.unc.lib.boxc.auth.api.services.AccessControlService;
-import edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl;
-import edu.unc.lib.boxc.model.api.ids.PID;
-import edu.unc.lib.boxc.search.solr.models.ContentObjectSolrRecord;
 
 /**
  *
@@ -76,27 +73,6 @@ public class PermissionsHelperTest {
     }
 
     @Test
-    public void testAllowsPublicAccess() {
-        roleGroups.add("canViewOriginals|everyone");
-
-        assertTrue(helper.allowsPublicAccess(mdObject), "Failed to determine object has full patron access");
-    }
-
-    @Test
-    public void testDoesNotAllowPublicAccess() {
-        roleGroups.add("canViewMetadata|everyone");
-
-        assertFalse(helper.allowsPublicAccess(mdObject), "Object must not have full patron access");
-    }
-
-    @Test
-    public void testAllowsPublicAccessNoRoleGroups() {
-        mdObject.setRoleGroup(null);
-
-        assertFalse(helper.allowsPublicAccess(mdObject), "Object must not have full patron access");
-    }
-
-    @Test
     public void testPermitOriginalAccess() {
         assignPermission(viewOriginal, true);
 
@@ -118,45 +94,24 @@ public class PermissionsHelperTest {
     }
 
     @Test
-    public void testHasEditAccess() {
-        assignPermission(editDescription, true);
+    public void testHasDatastreamAccessNotPresent() {
+        assignPermission(viewOriginal, false);
 
-        assertTrue(helper.hasEditAccess(principals, mdObject));
+        assertFalse(helper.hasDatastreamAccess(principals, DatastreamType.FULLTEXT_EXTRACTION, mdObject));
     }
 
     @Test
-    public void testDoesNotHaveEditAccess() {
-        assignPermission(editDescription, false);
+    public void testHasOriginalAccessDeny() {
+        assignPermission(viewAccessCopies, true);
 
-        assertFalse(helper.hasEditAccess(principals, mdObject));
+        assertFalse(helper.hasOriginalAccess(principals, mdObject));
     }
 
     @Test
-    public void testHasEditAccessNoPrincipals() {
-        Assertions.assertThrows(IllegalArgumentException.class, () -> {
-            assignPermission(editDescription, true);
+    public void testHasOriginalAccessPermit() {
+        assignPermission(viewOriginal, true);
 
-            assertTrue(helper.hasEditAccess(null, mdObject));
-        });
-    }
-
-    @Test
-    public void testHasEnhancedAccessNoGroups() {
-        assertFalse(helper.allowsFullAuthenticatedAccess(mdObject));
-    }
-
-    @Test
-    public void testHasEnhancedAccessIfLoggedIn() {
-        assignPermission(viewMetadata, true);
-        roleGroups.add("canViewOriginals|authenticated");
-        assertTrue(helper.allowsFullAuthenticatedAccess(mdObject));
-    }
-
-    @Test
-    public void testDoesNotHaveEnhancedIfLoggedIn() {
-        assignPermission(viewMetadata, true);
-        roleGroups.add("canViewMetadata|authenticated");
-        assertFalse(helper.allowsFullAuthenticatedAccess(mdObject));
+        assertTrue(helper.hasOriginalAccess(principals, mdObject));
     }
 
     private void assignPermission(Permission permission, boolean value) {
