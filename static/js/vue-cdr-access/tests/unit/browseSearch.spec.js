@@ -1,13 +1,14 @@
 import { flushPromises, mount } from '@vue/test-utils';
 import { createI18n } from 'vue-i18n';
 import  { createRouter, createWebHistory } from 'vue-router';
-import store from '@/store';
+import {createTestingPinia} from '@pinia/testing';
+import { useAccessStore } from '@/stores/access';
 import browseSearch from '@/components/browseSearch.vue';
 import displayWrapper from "@/components/displayWrapper.vue";
 import translations from "@/translations";
 
 const query = 'Test Collection';
-let wrapper, router;
+let wrapper, router, store;
 
 describe('browseSearch.vue', () => {
     const i18n = createI18n({
@@ -29,19 +30,22 @@ describe('browseSearch.vue', () => {
         });
         wrapper = mount(browseSearch, {
             global: {
-                plugins: [i18n, store, router]
+                plugins: [i18n, router, createTestingPinia({
+                    stubActions: false
+                })]
             },
             props: {
                 objectType: 'Folder'
             }
         });
+        store = useAccessStore();
 
         await router.push('/record/1234');
         wrapper.vm.$router.currentRoute.value.query.anywhere = '';
     });
 
     afterEach(() =>  {
-        wrapper.vm.$store.dispatch("resetState");
+        store.$reset();
         wrapper = null;
         router = null;
     });
@@ -70,9 +74,12 @@ describe('browseSearch.vue', () => {
                 mocks: {
                     $route
                 },
-                plugins: [i18n, store]
+                plugins: [i18n, createTestingPinia({
+                    stubActions: false
+                })]
             }
         });
+        store = useAccessStore();
         expect(wrapper.find('input').attributes('placeholder')).toBe('Search within this object');
     });
 
@@ -88,13 +95,15 @@ describe('browseSearch.vue', () => {
                 mocks: {
                     $route
                 },
-                plugins: [i18n, store]
+                plugins: [i18n, createTestingPinia({
+                    stubActions: false
+                })]
             },
             props: {
                 objectType: 'Folder'
             }
         });
-
+        store = useAccessStore();
         expect(wrapper.vm.search_query).toEqual('Test Folder');
     });
 });

@@ -18,7 +18,9 @@
 <script>
 import headerSmall from "@/components/header/headerSmall.vue";
 import loginUrlUtils from "../../mixins/loginUrlUtils";
-import {mapState} from "vuex";
+import { mapState } from 'pinia';
+import { useAccessStore } from '../../stores/access';
+
 
 export default {
     name: 'notFound',
@@ -35,7 +37,7 @@ export default {
     },
 
     computed: {
-        ...mapState([
+        ...mapState(useAccessStore,[
             'isLoggedIn'
         ])
     },
@@ -44,6 +46,6 @@ export default {
         return {
             title: 'Page not found'
         }
-    },
+    }
 }
 </script>
