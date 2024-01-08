@@ -2,7 +2,8 @@ import { shallowMount } from '@vue/test-utils'
 import '@testing-library/jest-dom'
 import staffRoles from '@/components/staffRoles.vue'
 import moxios from "moxios";
-import store from '@/store';
+import { createTestingPinia } from '@pinia/testing';
+import { usePermissionsStore } from '@/stores/permissions';
 
 const response = {
     inherited: { roles: [{ principal: 'test_admin', role: 'administrator' }] },
@@ -22,22 +23,32 @@ const metadata = () => {
         }]
     };
 };
-let wrapper;
+let wrapper, store;
 
 describe('staffRoles.vue', () => {
     beforeEach(() => {
         moxios.install();
 
-        store.commit('setActionHandler', { addEvent: jest.fn() });
-        store.commit('setAlertHandler', { alertHandler: jest.fn() });
-        store.commit('setMetadata', metadata());
-
         wrapper = shallowMount(staffRoles, {
             global: {
-                plugins: [store]
+                plugins: [createTestingPinia({
+                    initialState: {
+                        permissions: {
+                            actionHandler: {
+                                addEvent: jest.fn()
+                            },
+                            alertHandler: {
+                                alertHandler: jest.fn()
+                            },
+                            metadata: metadata()
+                        }
+                    },
+                    stubActions: false
+                })]
             }
         });
 
+        store = usePermissionsStore();
         moxios.stubRequest(`/services/api/acl/staff/${wrapper.vm.uuid}`, {
             status: 200,
             response: JSON.stringify(response)
@@ -123,7 +134,7 @@ describe('staffRoles.vue', () => {
     });
 
     it("displays names of containers that roles are assigned to in inherited table", (done) => {
-        wrapper.vm.$store.commit('setMetadata', {
+        store.setMetadata({
             id: '4f2be243-ce9e-4f26-91fc-08f1b592734d',
             title: 'Some Subfolder',
             type: 'Folder',
@@ -200,7 +211,7 @@ describe('staffRoles.vue', () => {
 
         // staffSelectRole component updates the data store
         const updatedUser = { principal: 'test_user', role: 'canManage' };
-        await wrapper.vm.$store.commit('setStaffRole', updatedUser);
+        await store.setStaffRole(updatedUser);
         expect(wrapper.vm.updated_staff_roles).toEqual([updatedUser]);
     });
 
@@ -311,11 +322,11 @@ describe('staffRoles.vue', () => {
             let data = metadata();
 
             data.type = 'AdminUnit';
-            await wrapper.vm.$store.commit('setMetadata', data);
+            await store.setMetadata(data);
             expect(wrapper.find('.assigned').exists()).toBe(true);
 
             data.type = 'Collection';
-            await wrapper.vm.$store.commit('setMetadata', data);
+            await store.setMetadata(data);
             expect(wrapper.find('.assigned').exists()).toBe(true);
             done();
         });
@@ -326,15 +337,15 @@ describe('staffRoles.vue', () => {
             let data = metadata();
 
             data.type = 'Folder';
-            await wrapper.vm.$store.commit('setMetadata', data);
+            await store.setMetadata(data);
             expect(wrapper.find('.assigned').exists()).toBe(false);
 
             data.type = 'Work';
-            await wrapper.vm.$store.commit('setMetadata', data);
+            await store.setMetadata(data);
             expect(wrapper.find('.assigned').exists()).toBe(false);
 
             data.type = 'File';
-            await wrapper.vm.$store.commit('setMetadata', data);
+            await store.setMetadata(data);
             expect(wrapper.find('.assigned').exists()).toBe(false);
             done();
         });
@@ -344,17 +355,17 @@ describe('staffRoles.vue', () => {
         let data = metadata();
 
         data.type = 'AdminUnit';
-        await wrapper.vm.$store.commit('setMetadata', data);
+        await store.setMetadata(data);
         let btn = wrapper.find('#is-submitting');
         expect(btn.isVisible()).toBe(true);
 
         data.type = 'Collection';
-        await wrapper.vm.$store.commit('setMetadata', data);
+        await store.setMetadata(data);
         expect(btn.isVisible()).toBe(true);
     });
 
     it("updates the data store to reset 'changesCheck' in parent component", async () => {
-        await wrapper.vm.$store.commit('setCheckForUnsavedChanges', true);
+        await store.setCheckForUnsavedChanges(true);
         expect(wrapper.vm.user_name).toEqual('');
         expect(wrapper.vm.selected_role).toEqual('canAccess');
     });
@@ -362,7 +373,7 @@ describe('staffRoles.vue', () => {
     it("updates the data store to close the modal if 'Cancel' is clicked and there are no unsaved changes", (done) => {
         moxios.wait(() => {
             wrapper.find('#is-canceling').trigger('click');
-            expect(wrapper.vm.$store.state.showModal).toEqual(false);
+            expect(store.showModal).toEqual(false);
             done();
         });
     });
@@ -412,6 +423,7 @@ describe('staffRoles.vue', () => {
 
     afterEach(() => {
         moxios.uninstall();
+        store.$reset();
         wrapper = null;
     });
 });

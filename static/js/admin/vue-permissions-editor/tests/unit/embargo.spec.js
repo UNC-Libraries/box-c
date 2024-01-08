@@ -1,7 +1,8 @@
 import { shallowMount } from '@vue/test-utils';
 import embargo from '@/components/embargo.vue';
+import { createTestingPinia } from '@pinia/testing';
+import { usePermissionsStore } from '@/stores/permissions';
 import { addYears, format } from 'date-fns';
-import store from '@/store';
 
 const testDate = '2099-01-01';
 let embargo_from_server = {
@@ -10,43 +11,50 @@ let embargo_from_server = {
     has_embargo: false
 };
 
-let wrapper;
-let inputs;
+let wrapper, inputs, store;
 
 describe('embargo.vue', () => {
     beforeEach(async () => {
-        store.commit('setAlertHandler', { alertHandler: jest.fn() });
-
         wrapper = shallowMount(embargo, {
             props: {
                 isDeleted: false
             },
             global: {
-                plugins: [store]
+                plugins: [createTestingPinia({
+                    initialState: {
+                        permissions: {
+                            alertHandler: {
+                                alertHandler: jest.fn()
+                            }
+                        }
+                    },
+                    stubActions: false
+                })]
             }
         });
-
+        store = usePermissionsStore();
         await wrapper.vm.$nextTick();
         inputs = wrapper.findAll('input');
         global.confirm = jest.fn().mockReturnValue(true);
     });
 
     afterEach(() => {
+        store.$reset();
         wrapper = null;
     });
 
     it("sets an embargo if one is returned from the server", async () => {
         await wrapper.setData(embargo_from_server);
-        await wrapper.vm.$store.commit('setEmbargoInfo', {
+        await store.setEmbargoInfo({
             embargo: testDate,
             skip_embargo: false
         });
-        expect(wrapper.vm.$store.state.embargoInfo.embargo).toEqual(testDate);
+        expect(store.embargoInfo.embargo).toEqual(testDate);
     });
 
     it("does not set an embargo if one is not returned from the server", async () => {
         await wrapper.setData(embargo_from_server);
-        await wrapper.vm.$store.commit('setEmbargoInfo', {
+        await store.setEmbargoInfo({
             embargo: null,
             skip_embargo: false
         });
@@ -55,7 +63,7 @@ describe('embargo.vue', () => {
 
     it("shows the embargo form if an embargo is set", async () => {
         await wrapper.setData(embargo_from_server);
-        await wrapper.vm.$store.commit('setEmbargoInfo', {
+        await store.setEmbargoInfo({
             embargo: testDate,
             skip_embargo: false
         });
@@ -64,7 +72,7 @@ describe('embargo.vue', () => {
 
     it("hides the embargo form if no embargo is set and displays an 'Add Embargo' button", async () => {
         await wrapper.setData(embargo_from_server);
-        await wrapper.vm.$store.commit('setEmbargoInfo', {
+        await store.setEmbargoInfo({
             embargo: null,
             skip_embargo: false
         });
@@ -75,7 +83,7 @@ describe('embargo.vue', () => {
 
     it("shows the embargo form if the 'set embargo' button is clicked", async () => {
         await wrapper.setData(embargo_from_server);
-        await wrapper.vm.$store.commit('setEmbargoInfo', {
+        await store.setEmbargoInfo({
             embargo: null,
             skip_embargo: false
         });
@@ -85,7 +93,7 @@ describe('embargo.vue', () => {
 
     it("shows a 'Remove Embargo' button if an embargo is set", async () => {
         await wrapper.setData(embargo_from_server);
-        await wrapper.vm.$store.commit('setEmbargoInfo', {
+        await store.setEmbargoInfo({
             embargo: testDate,
             skip_embargo: false
         });
@@ -94,7 +102,7 @@ describe('embargo.vue', () => {
 
     it("hides the 'Remove Embargo' button if no embargo is set and the form is visible", async () => {
         await wrapper.setData(embargo_from_server);
-        await wrapper.vm.$store.commit('setEmbargoInfo', {
+        await store.setEmbargoInfo({
             embargo: null,
             skip_embargo: false
         });
@@ -104,7 +112,7 @@ describe('embargo.vue', () => {
 
     it("hides the form and displays an 'Add Embargo' button if an embargo is removed", async() => {
         await wrapper.setData(embargo_from_server);
-        await wrapper.vm.$store.commit('setEmbargoInfo', {
+        await store.setEmbargoInfo({
             embargo: testDate,
             skip_embargo: false
         });
@@ -120,7 +128,7 @@ describe('embargo.vue', () => {
         wrapper.find("#custom-embargo").trigger('focusout');
 
         await wrapper.vm.$nextTick();
-        expect(wrapper.vm.$store.state.embargoInfo).toEqual({
+        expect(store.embargoInfo).toEqual({
             embargo: testDate,
             skipEmbargo: false
         });
@@ -128,12 +136,12 @@ describe('embargo.vue', () => {
 
     it("updates current embargo if one is already present", async () => {
         await setStartingEmbargo();
-        expect(wrapper.vm.$store.state.embargoInfo.embargo).toBe(testDate);
+        expect(store.embargoInfo.embargo).toBe(testDate);
 
         await wrapper.find("#embargo-1year").trigger('change');
 
         let next_year = format(addYears(new Date(), 1), 'yyyy-LL-dd');
-        expect(wrapper.vm.$store.state.embargoInfo.embargo).toEqual(next_year);
+        expect(store.embargoInfo.embargo).toEqual(next_year);
     });
 
     it("asks user to confirm that they want to delete an embargo", async() => {
@@ -145,7 +153,7 @@ describe('embargo.vue', () => {
     it("updates the data store when an embargo is removed", async() => {
         await setStartingEmbargo();
         await wrapper.find('#remove-embargo').trigger('click');
-        expect(wrapper.vm.$store.state.embargoInfo.embargo).toBe(null);
+        expect(store.embargoInfo.embargo).toBe(null);
     });
 
     it("responds with an error message if user tries to add embargo with the wrong date format", async() => {
@@ -233,7 +241,7 @@ describe('embargo.vue', () => {
         await wrapper.find("#embargo-clear").trigger('change');
 
         expect(wrapper.vm.embargo_type).toEqual('clear');
-        expect(wrapper.vm.$store.state.embargoInfo).toEqual({
+        expect(store.embargoInfo).toEqual({
             embargo: null,
             skipEmbargo: false
         });
@@ -245,7 +253,7 @@ describe('embargo.vue', () => {
         await wrapper.find("#embargo-ignore").trigger('change');
 
         expect(wrapper.vm.embargo_type).toEqual('ignore');
-        expect(wrapper.vm.$store.state.embargoInfo).toEqual({
+        expect(store.embargoInfo).toEqual({
             embargo: null,
             skipEmbargo: true
         });
@@ -257,7 +265,7 @@ describe('embargo.vue', () => {
 
         expect(wrapper.vm.embargo_type).toEqual('1year');
         let next_year = format(addYears(new Date(), 1), 'yyyy-LL-dd');
-        expect(wrapper.vm.$store.state.embargoInfo).toEqual({
+        expect(store.embargoInfo).toEqual({
             embargo: next_year,
             skipEmbargo: false
         });
@@ -271,7 +279,7 @@ describe('embargo.vue', () => {
         await wrapper.vm.$nextTick();
 
         expect(wrapper.vm.embargo_type).toEqual('custom');
-        expect(wrapper.vm.$store.state.embargoInfo).toEqual({
+        expect(store.embargoInfo).toEqual({
             embargo: testDate,
             skipEmbargo: false
         });
@@ -282,7 +290,7 @@ describe('embargo.vue', () => {
     }
 
     async function setStartingEmbargo(embargoDate = testDate) {
-        await wrapper.vm.$store.commit('setEmbargoInfo', {
+        await store.setEmbargoInfo({
             embargo: embargoDate,
             skipEmbargo: false
         });
