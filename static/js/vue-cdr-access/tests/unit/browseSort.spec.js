@@ -1,13 +1,14 @@
 import { mount, flushPromises } from '@vue/test-utils';
 import { createRouter, createWebHistory } from 'vue-router';
+import {createTestingPinia} from '@pinia/testing';
+import { useAccessStore } from '@/stores/access';
 import browseSort from '@/components/browseSort.vue';
 import displayWrapper from '@/components/displayWrapper.vue';
 import searchWrapper from '@/components/searchWrapper.vue';
 import {createI18n} from "vue-i18n";
 import translations from "@/translations";
-import store from '@/store';
 
-let wrapper, wrapper_search, router;
+let wrapper, wrapper_search, router, store;
 
 describe('browseSort.vue', () => {
     const i18n = createI18n({
@@ -34,7 +35,7 @@ describe('browseSort.vue', () => {
         });
         wrapper = mount(browseSort, {
             global: {
-                plugins: [router, store, i18n]
+                plugins: [router, i18n]
             },
             props: {
                 browseType: 'display'
@@ -43,12 +44,16 @@ describe('browseSort.vue', () => {
 
         wrapper_search = mount(browseSort, {
             global: {
-                plugins: [router, store, i18n]
+                plugins: [router, i18n, createTestingPinia({
+                    stubActions: false
+                })]
             },
             props: {
                 browseType: 'search'
             }
         });
+
+        store = useAccessStore();
     });
 
     it("shows the default, 'Relevance', option when mounted with no sort specified", () => {
@@ -82,10 +87,9 @@ describe('browseSort.vue', () => {
     });
 
     afterEach(() => {
-        wrapper.vm.$store.dispatch("resetState");
         wrapper = null;
-        wrapper_search.vm.$store.dispatch("resetState");
         wrapper_search = null;
         router = null;
+        store.$reset();
     });
 });

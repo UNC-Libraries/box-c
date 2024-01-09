@@ -54,6 +54,8 @@ Top level component for full record pages with searching/browsing, including Adm
 </template>
 
 <script>
+    import { mapActions } from 'pinia';
+    import { useAccessStore } from '../stores/access';
     import adminUnit from '@/components/full_record/adminUnit.vue';
     import aggregateRecord from '@/components/full_record/aggregateRecord.vue';
     import breadCrumbs from '@/components/full_record/breadCrumbs.vue';
@@ -176,6 +178,8 @@ Top level component for full record pages with searching/browsing, including Adm
         },
 
         methods: {
+            ...mapActions(useAccessStore, ['removePossibleFacetFields']),
+
             retrieveSearchResults() {
                 let param_string = this.formatParamsString(this.updateParams()) + '&getFacets=true';
                 this.uuid = location.pathname.split('/')[2];
@@ -262,7 +266,7 @@ Top level component for full record pages with searching/browsing, including Adm
                     this.container_info.resourceType === 'Folder') {
                     facets_to_remove = FACETS_REMOVE_COLLECTION_AND_CHILDREN;
                 }
-                this.$store.commit('removePossibleFacetFields', facets_to_remove);
+                this.removePossibleFacetFields(facets_to_remove);
             }
         },
 

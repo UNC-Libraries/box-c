@@ -1,8 +1,9 @@
 import { shallowMount } from '@vue/test-utils';
 import staffRolesSelect from '@/components/staffRolesSelect.vue';
-import store from '@/store';
+import { createTestingPinia } from '@pinia/testing';
+import { usePermissionsStore } from '@/stores/permissions';
 
-let wrapper;
+let wrapper, store;
 
 describe('staffRolesSelect.vue', () => {
     beforeEach(() => {
@@ -13,12 +14,16 @@ describe('staffRolesSelect.vue', () => {
                 user: { principal: 'test_user', role: 'canAccess' }
             },
             global: {
-                plugins: [store]
+                plugins: [createTestingPinia({
+                    stubActions: false
+                })]
             }
         });
+        store = usePermissionsStore();
     });
 
     afterEach(() => {
+        store.$reset();
         wrapper = null;
     });
 
@@ -29,6 +34,6 @@ describe('staffRolesSelect.vue', () => {
 
     it("updates data store with updated user role when user role changes", () => {
         wrapper.findAll('option')[2].setSelected();
-        expect(wrapper.vm.$store.state.staffRole).toEqual({ principal: 'test_user', role: 'canDescribe' });
+        expect(store.staffRole).toEqual({ principal: 'test_user', role: 'canDescribe' });
     });
 });

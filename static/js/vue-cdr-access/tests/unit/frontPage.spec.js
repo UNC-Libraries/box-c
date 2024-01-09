@@ -1,13 +1,15 @@
 import {shallowMount, RouterLinkStub} from '@vue/test-utils';
 import { createRouter, createWebHistory } from 'vue-router';
+import {createTestingPinia} from '@pinia/testing';
+import { useAccessStore } from '@/stores/access';
 import frontPage from '@/components/frontPage.vue';
 import displayWrapper from "@/components/displayWrapper.vue";
 import {createI18n} from "vue-i18n";
 import translations from "@/translations";
-import store from '@/store';
 import moxios from "moxios";
 
-let wrapper, router;
+
+let wrapper, router, store;
 
 describe('frontPage.vue', () => {
     const i18n = createI18n({
@@ -36,15 +38,20 @@ describe('frontPage.vue', () => {
         });
         wrapper = shallowMount(frontPage, {
             global: {
-                plugins: [i18n, router, store],
+                plugins: [i18n, router, createTestingPinia({
+                    stubActions: false
+                })],
                 stubs: {
                     RouterLink: RouterLinkStub
                 }
             }
         });
+
+        store = useAccessStore();
     });
 
     afterEach(function () {
+        store.$reset();
         moxios.uninstall();
     });
 
