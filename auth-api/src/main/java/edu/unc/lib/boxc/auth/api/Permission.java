@@ -9,7 +9,7 @@ package edu.unc.lib.boxc.auth.api;
 public enum Permission {
     viewMetadata,
     viewAccessCopies,
-    viewReducedResolutionImages,
+    viewReducedResImages,
     viewOriginal,
     // Staff Permissions
     viewHidden,

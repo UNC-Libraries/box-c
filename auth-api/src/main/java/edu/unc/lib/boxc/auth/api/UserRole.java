@@ -3,10 +3,8 @@ package edu.unc.lib.boxc.auth.api;
 import static edu.unc.lib.boxc.auth.api.Permission.assignStaffRoles;
 import static edu.unc.lib.boxc.auth.api.Permission.bulkUpdateDescription;
 import static edu.unc.lib.boxc.auth.api.Permission.changePatronAccess;
-import static edu.unc.lib.boxc.auth.api.Permission.createAdminUnit;
 import static edu.unc.lib.boxc.auth.api.Permission.createCollection;
 import static edu.unc.lib.boxc.auth.api.Permission.destroy;
-import static edu.unc.lib.boxc.auth.api.Permission.destroyUnit;
 import static edu.unc.lib.boxc.auth.api.Permission.editDescription;
 import static edu.unc.lib.boxc.auth.api.Permission.editResourceType;
 import static edu.unc.lib.boxc.auth.api.Permission.ingest;
@@ -14,22 +12,17 @@ import static edu.unc.lib.boxc.auth.api.Permission.markForDeletion;
 import static edu.unc.lib.boxc.auth.api.Permission.markForDeletionUnit;
 import static edu.unc.lib.boxc.auth.api.Permission.move;
 import static edu.unc.lib.boxc.auth.api.Permission.orderMembers;
-import static edu.unc.lib.boxc.auth.api.Permission.reindex;
-import static edu.unc.lib.boxc.auth.api.Permission.runEnhancements;
 import static edu.unc.lib.boxc.auth.api.Permission.viewAccessCopies;
 import static edu.unc.lib.boxc.auth.api.Permission.viewHidden;
 import static edu.unc.lib.boxc.auth.api.Permission.viewMetadata;
 import static edu.unc.lib.boxc.auth.api.Permission.viewOriginal;
-import static edu.unc.lib.boxc.auth.api.Permission.viewReducedResolutionImages;
+import static edu.unc.lib.boxc.auth.api.Permission.viewReducedResImages;
 import static java.util.Arrays.asList;
 import static java.util.stream.Collectors.toSet;
 import static org.apache.jena.rdf.model.ResourceFactory.createProperty;
 
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.EnumMap;
 import java.util.HashSet;
 import java.util.List;
@@ -55,7 +48,7 @@ public enum UserRole {
     canViewMetadata("canViewMetadata", false, canDiscover, viewMetadata),
     canViewAccessCopies("canViewAccessCopies", false, canViewMetadata, viewAccessCopies),
     canViewReducedQuality("canViewReducedQuality", false, canViewAccessCopies,
-            viewReducedResolutionImages),
+            viewReducedResImages),
     canViewOriginals("canViewOriginals", false, canViewReducedQuality, viewOriginal),
     // Staff roles
     canAccess("canAccess", true, canViewOriginals, viewHidden),

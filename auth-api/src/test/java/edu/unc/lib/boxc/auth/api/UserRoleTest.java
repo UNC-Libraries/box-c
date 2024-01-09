@@ -21,7 +21,7 @@ public class UserRoleTest {
     public void canViewReducedQualityPermissionsTest() {
         var subject = UserRole.canViewReducedQuality;
         var expectedPermissions = Set.of(
-                Permission.viewMetadata, Permission.viewAccessCopies, Permission.viewReducedResolutionImages);
+                Permission.viewMetadata, Permission.viewAccessCopies, Permission.viewReducedResImages);
         assertSetMatchesExactly(expectedPermissions, subject.getPermissions());
     }
 
@@ -29,7 +29,7 @@ public class UserRoleTest {
     public void canViewReducedQualityPermissionNamesTest() {
         var subject = UserRole.canViewReducedQuality;
         var expectedNames = Set.of(Permission.viewMetadata.name(), Permission.viewAccessCopies.name(),
-                Permission.viewReducedResolutionImages.name());
+                Permission.viewReducedResImages.name());
         assertSetMatchesExactly(expectedNames, subject.getPermissionNames());
     }
 
