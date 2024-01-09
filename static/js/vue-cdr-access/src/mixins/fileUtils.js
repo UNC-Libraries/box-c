@@ -15,19 +15,33 @@ export default {
             return '';
         },
 
+        /**
+         * @param record
+         * @returns {string} File Type value for a work or file object. Will return the descriptive
+         *      form of the file type if available, and fall back to the mimetype if not
+         */
         getFileType(record) {
-            let fileTypes = record.fileDesc;
-            let fileType;
-            if (fileTypes && fileTypes.length > 0) {
-                fileType = fileTypes[0];
-            }
+            let fileType = this.determineFileType(record.fileDesc);
             if (!fileType) {
-                fileTypes = record.fileType;
-                if (fileTypes && fileTypes.length > 0) {
-                    fileType = fileTypes[0];
-                }
+                fileType = this.determineFileType(record.fileType);
             }
             return fileType || '';
+        },
+
+        /**
+         * Determines which filetype should be shown
+         * For multiple filetypes it de-dupes the array and if only one value show that, otherwise show 'Various'
+         * @param fileTypes
+         * @returns {string|*|undefined}
+         */
+        determineFileType(fileTypes) {
+            if (fileTypes && fileTypes.length === 1) {
+                return fileTypes[0];
+            } else if (fileTypes && fileTypes.length > 1) {
+                return ([...new Set(fileTypes)].length === 1) ? fileTypes[0] : 'Various';
+            } else {
+                return undefined;
+            }
         },
 
         formatFilesize(bytes) {
