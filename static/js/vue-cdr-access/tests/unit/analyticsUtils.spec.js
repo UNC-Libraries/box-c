@@ -110,6 +110,7 @@ describe('analyticsUtils', () => {
                 permissions: [
                     "viewAccessCopies",
                     "viewOriginal",
+                    "viewReducedResImages",
                     "viewMetadata"
                 ],
                 groupRoleMap: {

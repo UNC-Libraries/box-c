@@ -92,6 +92,7 @@ const record = {
             "ingest",
             "orderMembers",
             "viewOriginal",
+            "viewReducedResImages",
             "viewAccessCopies",
             "viewHidden",
             "assignStaffRoles",
@@ -204,6 +205,7 @@ const record = {
                 "ingest",
                 "orderMembers",
                 "viewOriginal",
+                "viewReducedResImages",
                 "viewAccessCopies",
                 "viewHidden",
                 "assignStaffRoles",
@@ -310,6 +312,7 @@ const record = {
                 "ingest",
                 "orderMembers",
                 "viewOriginal",
+                "viewReducedResImages",
                 "viewAccessCopies",
                 "viewHidden",
                 "assignStaffRoles",
@@ -444,7 +447,7 @@ describe('restrictedContent.vue', () => {
         const updated_data = cloneDeep(record);
         updated_data.dataFileUrl = 'content/4db695c0-5fd5-4abf-9248-2e115d43f57d';
         updated_data.resourceType = 'Work';
-        updated_data.briefObject.permissions = ['viewAccessCopies', 'viewOriginal'];
+        updated_data.briefObject.permissions = ['viewAccessCopies', 'viewReducedResImages', 'viewOriginal'];
         await wrapper.setProps({
             recordData: updated_data
         });
@@ -466,7 +469,7 @@ describe('restrictedContent.vue', () => {
         const updated_data = cloneDeep(record);
         updated_data.dataFileUrl = 'content/4db695c0-5fd5-4abf-9248-2e115d43f57d';
         updated_data.resourceType = 'File';
-        updated_data.briefObject.permissions = ['viewAccessCopies', 'viewOriginal'];
+        updated_data.briefObject.permissions = ['viewAccessCopies', 'viewReducedResImages', 'viewOriginal'];
         await wrapper.setProps({
             recordData: updated_data
         });
@@ -477,7 +480,7 @@ describe('restrictedContent.vue', () => {
         const updated_data = cloneDeep(record);
         updated_data.dataFileUrl = 'content/4db695c0-5fd5-4abf-9248-2e115d43f57d';
         updated_data.resourceType = 'Folder';
-        updated_data.briefObject.permissions = ['viewAccessCopies', 'viewOriginal'];
+        updated_data.briefObject.permissions = ['viewAccessCopies', 'viewReducedResImages', 'viewOriginal'];
         await wrapper.setProps({
             recordData: updated_data
         });
