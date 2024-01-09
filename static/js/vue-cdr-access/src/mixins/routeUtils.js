@@ -1,4 +1,6 @@
 import isEmpty from 'lodash.isempty';
+import { mapState } from 'pinia';
+import { useAccessStore } from '../stores/access';
 
 const UUID_REGEX = /([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})/i;
 export default {
@@ -162,9 +164,10 @@ export default {
     },
 
     computed: {
-        possibleFacetFields() {
-            return this.$store.state.possibleFacetFields;
-        },
+        ...mapState(useAccessStore, [
+            'possibleFacetFields'
+        ]),
+
         minimumCreatedYear() {
             if (this.min_created_year !== undefined) {
                 return parseInt(this.min_created_year)

@@ -1,5 +1,7 @@
 import { mount } from '@vue/test-utils'
 import { createRouter, createWebHistory } from 'vue-router';
+import {createTestingPinia} from '@pinia/testing';
+import { useAccessStore } from '@/stores/access';
 import restrictedContent from '@/components/full_record/restrictedContent.vue';
 import displayWrapper from '@/components/displayWrapper.vue';
 import {createI18n} from 'vue-i18n';
@@ -340,7 +342,7 @@ const record = {
     resourceType: "File"
 }
 
-let wrapper, router;
+let wrapper, router, store;
 
 describe('restrictedContent.vue', () => {
     const i18n = createI18n({
@@ -365,46 +367,42 @@ describe('restrictedContent.vue', () => {
             ]
         });
 
-        const $store = {
-            state: {
-                username: ''
-            },
-            commit: jest.fn()
-        }
-
         wrapper = mount(restrictedContent, {
             attachTo: '#root',
             global: {
-                plugins: [i18n, router],
-                mocks: {
-                    $store
-                }
+                plugins: [i18n, router, createTestingPinia({
+                    stubActions: false
+                })]
             },
             props: {
                 recordData: record
             }
         });
+        store = useAccessStore();
+    });
+
+    afterEach(() => {
+        store.$reset();
     });
 
     it('does not show view options if a user is logged in', async () => {
-        const $store = {
-            state: {
-                isLoggedIn: true,
-                username: 'test_user'
-            },
-            commit: jest.fn()
-        }
         wrapper = mount(restrictedContent, {
             global: {
-                plugins: [i18n, router],
-                mocks: {
-                    $store
-                }
+                plugins: [i18n, router, createTestingPinia({
+                    initialState: {
+                       access: {
+                           isLoggedIn: true,
+                           username: 'test_user'
+                       }
+                    },
+                    stubActions: false
+                })]
             },
             props: {
                 recordData: record
             }
         });
+        store = useAccessStore();
         expect(wrapper.find('.restricted-access').exists()).toBe(false);
     });
 

@@ -1,13 +1,14 @@
 import { shallowMount } from '@vue/test-utils'
 import { createRouter, createWebHistory } from 'vue-router';
+import {createTestingPinia} from '@pinia/testing';
+import { useAccessStore } from '@/stores/access';
 import pagination from '@/components/pagination.vue'
 import displayWrapper from "@/components/displayWrapper.vue";
 import routeUtils from '@/mixins/routeUtils.js';
-import store from '@/store';
 
 const gallery = 'gallery-display';
 const list_display = 'list-display';
-let wrapper, router;
+let wrapper, router, store;
 
 describe('routeUtils',  () => {
     beforeEach(async () => {
@@ -24,14 +25,17 @@ describe('routeUtils',  () => {
         // Set wrapper using any component that uses routeUtils mixin to avoid test warnings about missing template
         wrapper = shallowMount(pagination, {
             global: {
-                plugins: [router, store]
+                plugins: [router, createTestingPinia({
+                    stubActions: false
+                })]
             }
         });
+        store = useAccessStore();
         await router.push('/record/1234');
     });
 
     afterEach(() => {
-        wrapper.vm.$store.dispatch("resetState");
+        store.$reset();
         wrapper = null;
         router = null;
     });

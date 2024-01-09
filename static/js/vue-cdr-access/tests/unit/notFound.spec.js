@@ -1,13 +1,14 @@
 import { shallowMount } from '@vue/test-utils';
 import { createRouter, createWebHistory } from 'vue-router';
+import {createTestingPinia} from '@pinia/testing';
+import { useAccessStore } from '@/stores/access';
 import notFound from '@/components/error_pages/notFound.vue';
 import displayWrapper from '@/components/displayWrapper.vue';
 import {createI18n} from "vue-i18n";
 import translations from "@/translations";
-import store from '@/store';
 
 
-let wrapper, router;
+let wrapper, router, store;
 
 describe('notFound.vue', () => {
     const i18n = createI18n({
@@ -30,9 +31,16 @@ describe('notFound.vue', () => {
 
         wrapper = shallowMount(notFound, {
             global: {
-                plugins: [router, store, i18n]
+                plugins: [router, i18n, createTestingPinia({
+                    stubActions: false
+                })]
             }
         });
+        store = useAccessStore();
+    });
+
+    afterEach(() => {
+        store.$reset();
     });
 
     it('displays the DCR header and a "not found" message by default', () => {
@@ -56,20 +64,20 @@ describe('notFound.vue', () => {
     });
 
     it('does not display a login link if a user is already logged in"', async () => {
-        const $store = {
-            state: {
-                isLoggedIn: true,
-                username: 'testUser'
-            }
-        }
-        const wrapper = shallowMount(notFound, {
+     const wrapper = shallowMount(notFound, {
             global: {
-                plugins: [store, i18n],
-                mocks: {
-                    $store
-                }
+                plugins: [store, i18n, createTestingPinia({
+                    initialState: {
+                        access: {
+                            isLoggedIn: true,
+                            username: 'testUser'
+                        }
+                    },
+                    stubActions: false
+                })
+                ]
             }
-        })
+        });
 
         const links = wrapper.findAll('a');
         expect(links.length).toEqual(2);

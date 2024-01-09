@@ -1,4 +1,4 @@
-import { createWebHistory, createRouter } from 'vue-router'
+import { createWebHistory, createRouter } from 'vue-router';
 import axios from 'axios';
 import advancedSearch from "@/components/advancedSearch.vue";
 import displayWrapper from "@/components/displayWrapper.vue";
@@ -7,7 +7,7 @@ import searchWrapper from "@/components/searchWrapper.vue";
 import collectionBrowseWrapper from "@/components/collectionBrowseWrapper.vue";
 import frontPage from "@/components/frontPage.vue";
 import aboutRepository from "@/components/aboutRepository.vue";
-import store from './store'
+import { useAccessStore } from './stores/access';
 
 const UUID_REGEX = '[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}';
 
@@ -66,10 +66,12 @@ const router = createRouter({
 });
 
 router.beforeEach((to, from) => {
+  const store = useAccessStore();
+
   axios.head('/userInformation').then((response) => {
-    store.commit('setUsername', response.headers['username']);
-    store.commit('setIsLoggedIn');
-    store.commit('setViewAdmin', response.headers['can-view-admin']);
+    store.setUsername(response.headers['username']);
+    store.setIsLoggedIn();
+    store.setViewAdmin(response.headers['can-view-admin']);
   }).catch(error => {
     console.log(error);
   });

@@ -2,7 +2,8 @@ import modalMetadata from '@/components/modalMetadata.vue';
 import thumbnail from '@/components/full_record/thumbnail.vue';
 import permissionUtils from "./permissionUtils";
 import { formatInTimeZone } from 'date-fns-tz';
-import { mapState } from 'vuex';
+import { mapState } from 'pinia';
+import { useAccessStore } from '../stores/access';
 
 export default {
     components: { modalMetadata, thumbnail },
@@ -20,7 +21,7 @@ export default {
     },
 
     computed: {
-        ...mapState([
+        ...mapState(useAccessStore, [
             'isLoggedIn',
             'username'
         ]),

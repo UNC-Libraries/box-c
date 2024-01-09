@@ -1,13 +1,14 @@
 import {mount, flushPromises, RouterLinkStub} from '@vue/test-utils'
 import { createRouter, createWebHistory } from 'vue-router';
+import { createTestingPinia } from '@pinia/testing';
+import { useAccessStore } from '@/stores/access';
 import displayWrapper from '@/components/displayWrapper.vue';
-import store from '@/store';
 import moxios from "moxios";
 import {createI18n} from "vue-i18n";
 import translations from "@/translations";
 import { response, briefObjectData } from "../fixtures/displayWrapperFixtures";
 
-let wrapper, router;
+let wrapper, router, store;
 
 describe('displayWrapper.vue', () => {
     const i18n = createI18n({
@@ -31,6 +32,10 @@ describe('displayWrapper.vue', () => {
         });
     });
 
+    afterEach(() => {
+        store.$reset();
+    });
+
     function mountApp(data_overrides = {}) {
         const default_data = {
             container_name: '',
@@ -43,7 +48,9 @@ describe('displayWrapper.vue', () => {
         let data = {...default_data, ...data_overrides};
         wrapper = mount(displayWrapper, {
             global: {
-                plugins: [router, store, i18n],
+                plugins: [router, i18n, createTestingPinia({
+                    stubActions: false
+                })],
                 stubs: {
                     RouterLink: RouterLinkStub
                 }
@@ -52,6 +59,7 @@ describe('displayWrapper.vue', () => {
                 return data;
             }
         });
+        store = useAccessStore();
     }
 
     function stubQueryResponse(url_pattern, response) {
@@ -207,8 +215,8 @@ describe('displayWrapper.vue', () => {
         await flushPromises();
 
         // Verify that there are still other facets, but that the unit facet has been removed
-        expect(wrapper.vm.$store.state.possibleFacetFields.length).toBeGreaterThan(0);
-        expect(wrapper.vm.$store.state.possibleFacetFields.indexOf('unit')).toEqual(-1);
+        expect(store.possibleFacetFields.length).toBeGreaterThan(0);
+        expect(store.possibleFacetFields.indexOf('unit')).toEqual(-1);
         // Verify that record list is displaying, indicating that a request was made which did not include unit facet
         expect(wrapper.find('#fullRecordSearchResultDisplay').exists()).toBe(true);
     });
@@ -226,9 +234,9 @@ describe('displayWrapper.vue', () => {
         await flushPromises();
 
         // Verify that there are still other facets, but that the unit and collection facets have been removed
-        expect(wrapper.vm.$store.state.possibleFacetFields.length).toBeGreaterThan(0);
-        expect(wrapper.vm.$store.state.possibleFacetFields.indexOf('unit')).toEqual(-1);
-        expect(wrapper.vm.$store.state.possibleFacetFields.indexOf('collection')).toEqual(-1);
+        expect(store.possibleFacetFields.length).toBeGreaterThan(0);
+        expect(store.possibleFacetFields.indexOf('unit')).toEqual(-1);
+        expect(store.possibleFacetFields.indexOf('collection')).toEqual(-1);
         // Verify that record list is displaying, indicating that a request was made which did not include unwanted facets
         expect(wrapper.find('#fullRecordSearchResultDisplay').exists()).toBe(true);
     });
@@ -267,9 +275,9 @@ describe('displayWrapper.vue', () => {
         await flushPromises();
 
         // Verify that there are still other facets, but that the unit and collection facets have been removed
-        expect(wrapper.vm.$store.state.possibleFacetFields.length).toBeGreaterThan(0);
-        expect(wrapper.vm.$store.state.possibleFacetFields.indexOf('unit')).toEqual(-1);
-        expect(wrapper.vm.$store.state.possibleFacetFields.indexOf('collection')).toEqual(-1);
+        expect(store.possibleFacetFields.length).toBeGreaterThan(0);
+        expect(store.possibleFacetFields.indexOf('unit')).toEqual(-1);
+        expect(store.possibleFacetFields.indexOf('collection')).toEqual(-1);
         // Verify that record list is displaying, indicating that a request was made which did not include unwanted facets
         expect(wrapper.find('#fullRecordSearchResultDisplay').exists()).toBe(true);
     });
@@ -303,16 +311,16 @@ describe('displayWrapper.vue', () => {
         await flushPromises();
 
         // Verify that there are still other facets, but that the unit facet has been removed
-        let num_facets = wrapper.vm.$store.state.possibleFacetFields.length;
+        let num_facets = store.possibleFacetFields.length;
         expect(num_facets).toBeGreaterThan(0);
-        expect(wrapper.vm.$store.state.possibleFacetFields.indexOf('unit')).toEqual(-1);
+        expect(store.possibleFacetFields.indexOf('unit')).toEqual(-1);
 
         // Trigger works only filter and make sure that the set of facets does not change
         await wrapper.find('#works-only').trigger('click');
         await flushPromises();
 
-        expect(wrapper.vm.$store.state.possibleFacetFields.length).toEqual(num_facets);
-        expect(wrapper.vm.$store.state.possibleFacetFields.indexOf('unit')).toEqual(-1);
+        expect(store.possibleFacetFields.length).toEqual(num_facets);
+        expect(store.possibleFacetFields.indexOf('unit')).toEqual(-1);
         expect(wrapper.vm.$route.query.facetSelect.indexOf('unit')).toEqual(-1);
     });
 
@@ -350,7 +358,7 @@ describe('displayWrapper.vue', () => {
 
     afterEach(() => {
         moxios.uninstall();
-        wrapper.vm.$store.dispatch("resetState");
+        store.$reset();
         wrapper = null;
         router = null;
         // Reset the dom to avoid tags added persisting across tests

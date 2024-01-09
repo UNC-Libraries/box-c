@@ -1,8 +1,9 @@
 import {mount, RouterLinkStub} from '@vue/test-utils'
 import { createRouter, createWebHistory } from 'vue-router';
+import {createTestingPinia} from '@pinia/testing';
+import { useAccessStore } from '@/stores/access';
 import collectionFolder from '@/components/full_record/collectionFolder.vue';
 import displayWrapper from '@/components/displayWrapper.vue';
-import store from '@/store';
 import {createI18n} from 'vue-i18n';
 import translations from '@/translations';
 import cloneDeep from 'lodash.clonedeep';
@@ -97,7 +98,7 @@ const recordData = {
     resourceType: "Collection"
 };
 
-let wrapper, router;
+let wrapper, router, store;
 
 describe('collectionFolder.vue', () => {
     const i18n = createI18n({
@@ -120,7 +121,9 @@ describe('collectionFolder.vue', () => {
 
         wrapper = mount(collectionFolder, {
             global: {
-                plugins: [i18n, router, store],
+                plugins: [i18n, router, createTestingPinia({
+                    stubActions: false
+                })],
                 stubs: {
                     RouterLink: RouterLinkStub
                 }
@@ -129,6 +132,12 @@ describe('collectionFolder.vue', () => {
                 recordData: recordData
             }
         });
+
+        store = useAccessStore();
+    });
+
+    afterEach(function () {
+        store.$reset();
     });
 
     it('displays a header', () => {
