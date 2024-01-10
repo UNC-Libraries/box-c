@@ -1,11 +1,15 @@
 package edu.unc.lib.boxc.web.services.processing;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import edu.unc.lib.boxc.model.api.exceptions.RepositoryException;
 import org.apache.commons.csv.CSVRecord;
 
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -31,7 +35,7 @@ public class SingleUseKeyService {
      * @param id UUID of the record
      * @return generated access key
      */
-    public String generate(String id) {
+    public Map<String, String> generate(String id) {
         var key = getKey();
         lock.lock();
         var expirationInMilliseconds = System.currentTimeMillis() + DAY_MILLISECONDS;
@@ -42,7 +46,7 @@ public class SingleUseKeyService {
         } finally {
             lock.unlock();
         }
-        return key;
+        return keyInformation(key, id, expirationInMilliseconds);
     }
 
     /**
@@ -100,6 +104,15 @@ public class SingleUseKeyService {
 
     public static String getKey() {
         return UUID.randomUUID().toString().replace("-", "") + Long.toHexString(System.nanoTime());
+    }
+
+    private Map<String, String> keyInformation(String key, String id, long expirationTimestamp) {
+        Map<String, String> result = new HashMap<>();
+        result.put("url", "services/api/single_use_link/" + key);
+        result.put("target_id", id);
+        result.put("expires", String.valueOf(expirationTimestamp));
+
+        return result;
     }
 
     public void setCsvPath(Path csvPath) {

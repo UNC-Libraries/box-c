@@ -8,6 +8,7 @@ import org.junit.jupiter.api.io.TempDir;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Map;
 
 import static edu.unc.lib.boxc.web.services.processing.SingleUseKeyService.CSV_HEADERS;
 import static edu.unc.lib.boxc.web.services.processing.SingleUseKeyService.DAY_MILLISECONDS;
@@ -43,7 +44,7 @@ public class SingleUseKeyServiceTest {
 
     @Test
     public void testGenerateNoCsvExists() throws IOException {
-        var key = singleUseKeyService.generate(UUID_TEST);
+        var key = parseKey(singleUseKeyService.generate(UUID_TEST));
         var newRecords = parseCsv(CSV_HEADERS, csvPath);
         assertCsvContainsCorrectEntry(newRecords, UUID_TEST, key);
         assertEquals(1, newRecords.size());
@@ -51,9 +52,9 @@ public class SingleUseKeyServiceTest {
 
     @Test
     public void testGenerateMultipleCallsForDifferentIds() throws IOException {
-        var key1 = singleUseKeyService.generate(UUID_1);
-        var key2 = singleUseKeyService.generate(UUID_2);
-        var key3 = singleUseKeyService.generate(UUID_3);
+        var key1 = parseKey(singleUseKeyService.generate(UUID_1));
+        var key2 = parseKey(singleUseKeyService.generate(UUID_2));
+        var key3 = parseKey(singleUseKeyService.generate(UUID_3));
 
         var newRecords = parseCsv(CSV_HEADERS, csvPath);
         assertCsvContainsCorrectEntry(newRecords, UUID_1, key1);
@@ -64,9 +65,9 @@ public class SingleUseKeyServiceTest {
 
     @Test
     public void testGenerateMultipleCallsForSameId() throws IOException {
-        var key1 = singleUseKeyService.generate(UUID_1);
-        var key2 = singleUseKeyService.generate(UUID_1);
-        var key3 = singleUseKeyService.generate(UUID_1);
+        var key1 = parseKey(singleUseKeyService.generate(UUID_1));
+        var key2 = parseKey(singleUseKeyService.generate(UUID_1));
+        var key3 = parseKey(singleUseKeyService.generate(UUID_1));
 
         var newRecords = parseCsv(CSV_HEADERS, csvPath);
         assertCsvContainsCorrectEntry(newRecords, UUID_1, key1);
@@ -129,7 +130,7 @@ public class SingleUseKeyServiceTest {
         var key = SingleUseKeyService.getKey();
         var expirationTimestamp = System.currentTimeMillis() + DAY_MILLISECONDS;
         generateDefaultCsv(key, expirationTimestamp);
-        var key2 = singleUseKeyService.generate(UUID_TEST);
+        var key2 = parseKey(singleUseKeyService.generate(UUID_TEST));
         singleUseKeyService.invalidate(key);
         singleUseKeyService.invalidate(key2);
 
@@ -160,6 +161,13 @@ public class SingleUseKeyServiceTest {
             }
         }
         fail("Correct entry not found");
+    }
+
+    private String parseKey(Map<String, String> map) {
+        var url = map.get("url");
+        var parts = url.split("/");
+        var lastIndex = parts.length - 1;
+        return parts[lastIndex];
     }
 
     private void generateDefaultCsv(String key, long expiration) throws IOException {
