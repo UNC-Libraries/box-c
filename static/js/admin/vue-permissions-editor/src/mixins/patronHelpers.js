@@ -29,6 +29,7 @@ export default {
                 { text: 'No Access', role: 'none' },
                 { text: 'Metadata Only', role: 'canViewMetadata' },
                 { text: 'Access Copies', role: 'canViewAccessCopies' },
+                { text: 'Access Copies + Low Res Downloads', role: 'canViewReducedQuality' },
                 { text: `All of this ${displayType}`, role: 'canViewOriginals' }
             ]
         }
