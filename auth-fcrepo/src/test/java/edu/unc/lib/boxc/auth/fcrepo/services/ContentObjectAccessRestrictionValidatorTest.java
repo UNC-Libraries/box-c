@@ -72,7 +72,8 @@ public class ContentObjectAccessRestrictionValidatorTest {
     public void validWorkTest() throws Exception {
         model.add(resc, RDF.type, Cdr.Work);
         model.add(resc, CdrAcl.embargoUntil, model.createTypedLiteral(Calendar.getInstance()));
-        model.add(resc, CdrAcl.canViewOriginals, PUBLIC_PRINC);
+        model.add(resc, CdrAcl.canViewReducedQuality, PUBLIC_PRINC);
+        model.add(resc, CdrAcl.canViewOriginals, AUTHENTICATED_PRINC);
         model.add(resc, CdrAcl.markedForDeletion, model.createTypedLiteral(false));
 
         validator.validate(resc);

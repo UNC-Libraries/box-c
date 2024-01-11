@@ -8,6 +8,7 @@ import static edu.unc.lib.boxc.model.api.rdf.CdrAcl.canProcess;
 import static edu.unc.lib.boxc.model.api.rdf.CdrAcl.canViewAccessCopies;
 import static edu.unc.lib.boxc.model.api.rdf.CdrAcl.canViewMetadata;
 import static edu.unc.lib.boxc.model.api.rdf.CdrAcl.canViewOriginals;
+import static edu.unc.lib.boxc.model.api.rdf.CdrAcl.canViewReducedQuality;
 import static edu.unc.lib.boxc.model.api.rdf.CdrAcl.embargoUntil;
 import static edu.unc.lib.boxc.model.api.rdf.CdrAcl.markedForDeletion;
 import static edu.unc.lib.boxc.model.api.rdf.CdrAcl.none;
@@ -66,6 +67,7 @@ public class ContentObjectAccessRestrictionValidator {
     private static final Set<Property> contentProperties = new HashSet<>(Arrays.asList(
             canViewMetadata,
             canViewAccessCopies,
+            canViewReducedQuality,
             canViewOriginals,
             none,
             embargoUntil,
