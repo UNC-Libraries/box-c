@@ -50,6 +50,10 @@ plugins:
       file: "common-utils/src/main/resources/checkstyle/checkstyle.xml"
   sonar-java:
     enabled: true
+    checks:
+      # Disable enforcement of rule that enum values must be all caps, since we have many that don't adhere
+      java:S115:
+        enabled: false
   pmd:
     enabled: true
   # duplication plugin affects similar-code and identical-code
