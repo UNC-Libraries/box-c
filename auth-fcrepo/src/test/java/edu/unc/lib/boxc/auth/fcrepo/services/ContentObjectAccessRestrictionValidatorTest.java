@@ -156,6 +156,15 @@ public class ContentObjectAccessRestrictionValidatorTest {
     }
 
     @Test
+    public void validateCollectionWithCanViewReducedQualityTest() throws Exception {
+        model.add(resc, RDF.type, Cdr.Collection);
+        model.add(resc, CdrAcl.canViewReducedQuality, PUBLIC_PRINC);
+        model.add(resc, CdrAcl.canViewReducedQuality, AUTHENTICATED_PRINC);
+
+        validator.validate(resc);
+    }
+
+    @Test
     public void invalidPatronPrincipalCollectionTest() throws Exception {
         Assertions.assertThrows(InvalidAssignmentException.class, () -> {
             model.add(resc, RDF.type, Cdr.Collection);

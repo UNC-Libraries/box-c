@@ -45,6 +45,7 @@ public class ContentObjectAccessRestrictionValidator {
     private static final Set<Property> collectionProperties = new HashSet<>(Arrays.asList(
             canViewMetadata,
             canViewAccessCopies,
+            canViewReducedQuality,
             canViewOriginals,
             canAccess,
             canDescribe,
