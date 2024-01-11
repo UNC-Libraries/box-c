@@ -2,6 +2,7 @@ package edu.unc.lib.boxc.web.access.controllers;
 
 import edu.unc.lib.boxc.auth.api.exceptions.AccessRestrictionException;
 import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
+import edu.unc.lib.boxc.auth.api.services.AccessControlService;
 import edu.unc.lib.boxc.model.api.exceptions.InvalidPidException;
 import edu.unc.lib.boxc.model.api.exceptions.NotFoundException;
 import edu.unc.lib.boxc.model.api.exceptions.ObjectTypeMismatchException;
@@ -33,6 +34,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.concurrent.TimeoutException;
 
+import static edu.unc.lib.boxc.auth.api.services.DatastreamPermissionUtil.getPermissionForDatastream;
 import static edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore.getAgentPrincipals;
 import static edu.unc.lib.boxc.model.api.DatastreamType.ORIGINAL_FILE;
 
@@ -52,6 +54,8 @@ public class FedoraContentController {
     private AnalyticsTrackerUtil analyticsTracker;
     @Autowired
     private RepositoryObjectLoader repoObjLoader;
+    @Autowired
+    private AccessControlService accessControlService;
 
     @RequestMapping(value = {"/content/{pid}", "/indexablecontent/{pid}"})
     public void getDefaultDatastream(@PathVariable("pid") String pid,
@@ -88,6 +92,9 @@ public class FedoraContentController {
                 pid = primaryObj.getPid();
             }
         }
+
+        accessControlService.assertHasAccess("Insufficient permissions to access " + datastream + " for object " + pid,
+                pid, principals, getPermissionForDatastream(datastream));
 
         try {
             fedoraContentService.streamData(pid, datastream, principals, asAttachment, response);

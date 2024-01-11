@@ -3,6 +3,8 @@ package edu.unc.lib.boxc.web.services.processing;
 import com.fasterxml.jackson.databind.JsonNode;
 import edu.unc.lib.boxc.model.api.exceptions.RepositoryException;
 import org.apache.commons.csv.CSVRecord;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.http.ResponseEntity;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -104,6 +106,16 @@ public class SingleUseKeyService {
 
     public static String getKey() {
         return UUID.randomUUID().toString().replace("-", "") + Long.toHexString(System.nanoTime());
+    }
+
+    public String getId(String key) throws IOException {
+        var csvRecords = parseCsv(CSV_HEADERS, csvPath);
+        for (CSVRecord record : csvRecords) {
+            if (key.equals(record.get(ACCESS_KEY))) {
+                return record.get(ID);
+            }
+        }
+        return null;
     }
 
     private Map<String, String> keyToMap(String key, String id, long expirationTimestamp) {

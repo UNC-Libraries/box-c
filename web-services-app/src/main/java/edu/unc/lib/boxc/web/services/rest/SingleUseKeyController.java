@@ -1,14 +1,20 @@
 package edu.unc.lib.boxc.web.services.rest;
 
 import edu.unc.lib.boxc.auth.api.Permission;
+import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
 import edu.unc.lib.boxc.auth.api.services.AccessControlService;
+import edu.unc.lib.boxc.model.api.DatastreamType;
 import edu.unc.lib.boxc.model.api.exceptions.InvalidOperationForObjectType;
 import edu.unc.lib.boxc.model.api.exceptions.NotFoundException;
+import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.objects.ContentObject;
 import edu.unc.lib.boxc.model.api.objects.FileObject;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
+import edu.unc.lib.boxc.web.common.services.FedoraContentService;
+import edu.unc.lib.boxc.web.common.utils.AnalyticsTrackerUtil;
 import edu.unc.lib.boxc.web.services.processing.SingleUseKeyService;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,9 +25,12 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.io.InputStream;
 
 import static edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore.getAgentPrincipals;
+import static edu.unc.lib.boxc.model.api.DatastreamType.ORIGINAL_FILE;
 
 /**
  * Controller for generating and utilizing single use links for a specific UUID
@@ -37,6 +46,10 @@ public class SingleUseKeyController {
     private SingleUseKeyService singleUseKeyService;
     @Autowired
     private RepositoryObjectLoader repositoryObjectLoader;
+    @Autowired
+    private FedoraContentService fedoraContentService;
+    @Autowired
+    private AnalyticsTrackerUtil analyticsTracker;
 
     @RequestMapping(value = "/single_use_link/create/{id}", method = RequestMethod.POST)
     public ResponseEntity<Object> generate(@PathVariable("id") String id) {
@@ -64,11 +77,20 @@ public class SingleUseKeyController {
     }
 
     @RequestMapping(value = "/single_use_link/{key}", method = RequestMethod.GET)
-    public ResponseEntity<InputStream> download(@PathVariable("key") String accessKey) {
+    public ResponseEntity<InputStream> download(@PathVariable("key") String accessKey, HttpServletRequest request,
+                                                HttpServletResponse response) {
         try {
             if (singleUseKeyService.keyIsValid(accessKey)) {
-                log.info("Single use link used. Access Key: {}, UUID", accessKey);
+                var id = singleUseKeyService.getId(accessKey);
+                var pid = PIDs.get(id);
+                var datastream = ORIGINAL_FILE.getId();
+                var principals = getAgentPrincipals().getPrincipals();
+
                 singleUseKeyService.invalidate(accessKey);
+                fedoraContentService.streamData(pid, datastream, principals, true, response);
+                log.info("Single use link used. Access Key: {}, UUID: {}", accessKey, id);
+                recordDownloadEvent(pid, datastream, principals, request);
+
             } else {
                 throw new NotFoundException("Single use key is not valid: " + accessKey);
             }
@@ -78,5 +100,13 @@ public class SingleUseKeyController {
         }
 
         return null;
+    }
+
+    private void recordDownloadEvent(PID pid, String datastream, AccessGroupSet principals,
+                                     HttpServletRequest request) {
+        if (!(StringUtils.isBlank(datastream) || ORIGINAL_FILE.getId().equals(datastream))) {
+            return;
+        }
+        analyticsTracker.trackEvent(request, "download", pid, principals);
     }
 }

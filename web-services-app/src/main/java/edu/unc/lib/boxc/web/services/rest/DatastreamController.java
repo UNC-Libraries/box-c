@@ -2,6 +2,7 @@ package edu.unc.lib.boxc.web.services.rest;
 
 import edu.unc.lib.boxc.auth.api.exceptions.AccessRestrictionException;
 import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
+import edu.unc.lib.boxc.auth.api.services.AccessControlService;
 import edu.unc.lib.boxc.model.api.DatastreamType;
 import edu.unc.lib.boxc.model.api.ResourceType;
 import edu.unc.lib.boxc.model.api.exceptions.NotFoundException;
@@ -35,6 +36,7 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 
+import static edu.unc.lib.boxc.auth.api.services.DatastreamPermissionUtil.getPermissionForDatastream;
 import static edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore.getAgentPrincipals;
 import static edu.unc.lib.boxc.model.api.DatastreamType.ORIGINAL_FILE;
 import static edu.unc.lib.boxc.model.fcrepo.services.DerivativeService.isDerivative;
@@ -60,6 +62,8 @@ public class DatastreamController {
     private SolrQueryLayerService solrQueryLayerService;
     @Autowired
     private AccessCopiesService accessCopiesService;
+    @Autowired
+    private AccessControlService accessControlService;
 
     private static final List<String> THUMB_QUERY_FIELDS = Arrays.asList(
             SearchFieldKey.ID.name(), SearchFieldKey.DATASTREAM.name(),
@@ -90,6 +94,8 @@ public class DatastreamController {
             } else if (DatastreamType.MD_EVENTS.getId().equals(datastream)) {
                 fedoraContentService.streamEventLog(pid, principals, download, response);
             } else {
+                accessControlService.assertHasAccess("Insufficient permissions to access " + datastream + " for object " + pid,
+                        pid, principals, getPermissionForDatastream(datastream));
                 fedoraContentService.streamData(pid, datastream, principals, download, response);
                 if (datastream == null || DatastreamType.ORIGINAL_FILE.getId().equals(datastream)) {
                     recordDownloadEvent(pid, datastream, principals, request);
