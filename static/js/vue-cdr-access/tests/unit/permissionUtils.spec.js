@@ -149,4 +149,28 @@ describe('permissionUtils', () => {
         expect(wrapper.vm.hasPermission(updatedRecord, 'viewOriginal')).toBe(false);
         expect(wrapper.vm.hasPermission(updatedRecord, 'destroy')).toBe(false);
     });
+
+    it("checks for download access with viewOriginal permission", () => {
+        expect(wrapper.vm.hasDownloadAccess(recordData)).toBe(true);
+    });
+
+    it("checks for download access with images and viewReducedResImages permission", () => {
+        let updatedRecord = cloneDeep(recordData);
+        updatedRecord.briefObject.permissions = ['viewMetadata', 'viewAccessCopies', 'viewReducedResImages'];
+        updatedRecord.briefObject.format = ['Image'];
+        expect(wrapper.vm.hasDownloadAccess(updatedRecord)).toBe(true);
+    });
+
+    it("checks for download access with non-images and viewReducedResImages permission", () => {
+        let updatedRecord = cloneDeep(recordData);
+        updatedRecord.briefObject.permissions = ['viewMetadata', 'viewAccessCopies', 'viewReducedResImages'];
+        updatedRecord.briefObject.format = ['Text'];
+        expect(wrapper.vm.hasDownloadAccess(updatedRecord)).toBe(false);
+    });
+
+    it("checks for download access without permission", () => {
+        let updatedRecord = cloneDeep(recordData);
+        updatedRecord.briefObject.permissions = ['viewMetadata', 'viewAccessCopies'];
+        expect(wrapper.vm.hasDownloadAccess(updatedRecord)).toBe(false);
+    });
 });

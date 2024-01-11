@@ -34,6 +34,18 @@ export default {
             return recordData.permissions.includes(permission);
         },
 
+        // Determines if the user has access to download either the original or reduced quality forms of it
+        hasDownloadAccess(recordData) {
+            recordData = this.permissionData(recordData);
+            if (recordData.permissions === undefined) {
+                return false;
+            }
+            if (recordData.permissions.includes('viewOriginal')) {
+                return true;
+            }
+            return recordData.permissions.includes('viewReducedResImages') && recordData.format.includes('Image');
+        },
+
         markedForDeletion(record) {
            if (record.status === undefined) return false;
            return /marked.*?deletion/i.test(this.restrictions(record));

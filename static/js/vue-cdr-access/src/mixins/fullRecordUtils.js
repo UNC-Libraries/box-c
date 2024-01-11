@@ -50,7 +50,14 @@ export default {
                 this.recordData.briefObject.groupRoleMap.everyone === undefined) {
                 return false;
             }
-            return !this.recordData.briefObject.groupRoleMap.everyone.includes('canViewOriginals');
+            if (this.recordData.briefObject.groupRoleMap.everyone.includes('canViewOriginals')) {
+                return false;
+            }
+            // For File objects, content is not restricted if the user can at least download low res files
+            if (this.recordData.resourceType == 'File' && this.hasDownloadAccess(this.recordData)) {
+                return false;
+            }
+            return true;
         },
 
         loginUrl() {

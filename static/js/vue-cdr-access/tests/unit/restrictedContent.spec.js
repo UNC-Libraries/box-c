@@ -81,27 +81,7 @@ const record = {
             }
         ],
         permissions: [
-            "markForDeletionUnit",
-            "move",
-            "reindex",
-            "destroy",
-            "editResourceType",
-            "destroyUnit",
-            "bulkUpdateDescription",
-            "changePatronAccess",
-            "runEnhancements",
-            "createAdminUnit",
-            "ingest",
-            "orderMembers",
-            "viewOriginal",
-            "viewReducedResImages",
-            "viewAccessCopies",
-            "viewHidden",
-            "assignStaffRoles",
-            "viewMetadata",
-            "markForDeletion",
-            "editDescription",
-            "createCollection"
+            "viewMetadata"
         ],
         groupRoleMap: {
             authenticated: 'canViewOriginals',
@@ -120,223 +100,6 @@ const record = {
         timestamp: 1679922126871
     },
     viewerType: "uv",
-    neighborList: [
-        {
-            filesizeTotal: 69481,
-            added: "2023-01-17T13:53:48.103Z",
-            format: [
-                "Image"
-            ],
-            thumbnail_url: "https://localhost:8080/services/api/thumb/4053adf7-7bdc-4c9c-8769-8cc5da4ce81d/large",
-            title: "bee1.jpg",
-            type: "File",
-            fileDesc: [
-                "JPEG Image"
-            ],
-            parentCollectionName: "deansCollection",
-            contentStatus: [
-                "Not Described",
-                "Is Primary Object"
-            ],
-            rollup: "7d6c30fe-ca72-4362-931d-e9fe28a8ec83",
-            objectPath: [
-                {
-                    pid: "collections",
-                    name: "Content Collections Root",
-                    container: true
-                },
-                {
-                    pid: "353ee09f-a4ed-461e-a436-18a1bee77b01",
-                    name: "deansAdminUnit",
-                    container: true
-                },
-                {
-                    pid: "fc77a9be-b49d-4f4e-b656-1644c9e964fc",
-                    name: "deansCollection",
-                    container: true
-                },
-                {
-                    pid: "7d6c30fe-ca72-4362-931d-e9fe28a8ec83",
-                    name: "Bees",
-                    container: true
-                },
-                {
-                    pid: "4053adf7-7bdc-4c9c-8769-8cc5da4ce81d",
-                    name: "bee1.jpg",
-                    container: true
-                }
-            ],
-            datastream: [
-                "original_file|image/jpeg|bee1.jpg|jpg|69481|urn:sha1:87d7bed6cb33c87c589cfcdc2a2ce6110712fabb||607x1024",
-                "techmd_fits|text/xml|techmd_fits.xml|xml|7013|urn:sha1:0c4a500c73146214d5fa08f278c0cdaadede79d0||",
-                "jp2|image/jp2|4053adf7-7bdc-4c9c-8769-8cc5da4ce81d.jp2|jp2|415163|||",
-                "thumbnail_small|image/png|4053adf7-7bdc-4c9c-8769-8cc5da4ce81d.png|png|4802|||",
-                "thumbnail_large|image/png|4053adf7-7bdc-4c9c-8769-8cc5da4ce81d.png|png|16336|||",
-                "event_log|application/n-triples|event_log.nt|nt|5852|urn:sha1:8d80f0de467fa650d4bc8568d4a958e5ced85f96||"
-            ],
-            parentCollectionId: "fc77a9be-b49d-4f4e-b656-1644c9e964fc",
-            ancestorPath: [
-                {
-                    id: "collections",
-                    title: "collections"
-                },
-                {
-                    id: "353ee09f-a4ed-461e-a436-18a1bee77b01",
-                    title: "353ee09f-a4ed-461e-a436-18a1bee77b01"
-                },
-                {
-                    id: "fc77a9be-b49d-4f4e-b656-1644c9e964fc",
-                    title: "fc77a9be-b49d-4f4e-b656-1644c9e964fc"
-                },
-                {
-                    id: "7d6c30fe-ca72-4362-931d-e9fe28a8ec83",
-                    title: "7d6c30fe-ca72-4362-931d-e9fe28a8ec83"
-                }
-            ],
-            permissions: [
-                "markForDeletionUnit",
-                "move",
-                "reindex",
-                "destroy",
-                "editResourceType",
-                "destroyUnit",
-                "bulkUpdateDescription",
-                "changePatronAccess",
-                "runEnhancements",
-                "createAdminUnit",
-                "ingest",
-                "orderMembers",
-                "viewOriginal",
-                "viewReducedResImages",
-                "viewAccessCopies",
-                "viewHidden",
-                "assignStaffRoles",
-                "viewMetadata",
-                "markForDeletion",
-                "editDescription",
-                "createCollection"
-            ],
-            groupRoleMap: {},
-            id: "4053adf7-7bdc-4c9c-8769-8cc5da4ce81d",
-            updated: "2023-03-27T16:43:35.724Z",
-            fileType: [
-                "image/jpeg"
-            ],
-            status: [
-                "Marked For Deletion",
-                "Parent Is Embargoed",
-                "Parent Has Staff-Only Access"
-            ],
-            timestamp: 1679935418494
-        },
-        {
-            filesizeTotal: 694904,
-            added: "2023-03-27T13:01:58.067Z",
-            format: [
-                "Image"
-            ],
-            thumbnail_url: "https://localhost:8080/services/api/thumb/4db695c0-5fd5-4abf-9248-2e115d43f57d/large",
-            title: "beez",
-            type: "File",
-            fileDesc: [
-                "JPEG Image"
-            ],
-            parentCollectionName: "deansCollection",
-            contentStatus: [
-                "Not Described"
-            ],
-            rollup: "7d6c30fe-ca72-4362-931d-e9fe28a8ec83",
-            objectPath: [
-                {
-                    pid: "collections",
-                    name: "Content Collections Root",
-                    container: true
-                },
-                {
-                    pid: "353ee09f-a4ed-461e-a436-18a1bee77b01",
-                    name: "deansAdminUnit",
-                    container: true
-                },
-                {
-                    pid: "fc77a9be-b49d-4f4e-b656-1644c9e964fc",
-                    name: "deansCollection",
-                    container: true
-                },
-                {
-                    pid: "7d6c30fe-ca72-4362-931d-e9fe28a8ec83",
-                    name: "Bees",
-                    container: true
-                },
-                {
-                    pid: "4db695c0-5fd5-4abf-9248-2e115d43f57d",
-                    name: "beez",
-                    container: true
-                }
-            ],
-            datastream: [
-                "techmd_fits|text/xml|techmd_fits.xml|xml|4709|urn:sha1:5b0eabd749222a7c0bcdb92002be9fe3eff60128||",
-                "original_file|image/jpeg|beez||694904|urn:sha1:0d48dadb5d61ae0d41b4998280a3c39577a2f94a||2048x1536",
-                "jp2|image/jp2|4db695c0-5fd5-4abf-9248-2e115d43f57d.jp2|jp2|2189901|||",
-                "thumbnail_small|image/png|4db695c0-5fd5-4abf-9248-2e115d43f57d.png|png|6768|||",
-                "thumbnail_large|image/png|4db695c0-5fd5-4abf-9248-2e115d43f57d.png|png|23535|||",
-                "event_log|application/n-triples|event_log.nt|nt|4334|urn:sha1:aabf004766f954db4ac4ab9aa0a115bb10b708b4||"
-            ],
-            parentCollectionId: "fc77a9be-b49d-4f4e-b656-1644c9e964fc",
-            ancestorPath: [
-                {
-                    id: "collections",
-                    title: "collections"
-                },
-                {
-                    id: "353ee09f-a4ed-461e-a436-18a1bee77b01",
-                    title: "353ee09f-a4ed-461e-a436-18a1bee77b01"
-                },
-                {
-                    id: "fc77a9be-b49d-4f4e-b656-1644c9e964fc",
-                    title: "fc77a9be-b49d-4f4e-b656-1644c9e964fc"
-                },
-                {
-                    id: "7d6c30fe-ca72-4362-931d-e9fe28a8ec83",
-                    title: "7d6c30fe-ca72-4362-931d-e9fe28a8ec83"
-                }
-            ],
-            permissions: [
-                "markForDeletionUnit",
-                "move",
-                "reindex",
-                "destroy",
-                "editResourceType",
-                "destroyUnit",
-                "bulkUpdateDescription",
-                "changePatronAccess",
-                "runEnhancements",
-                "createAdminUnit",
-                "ingest",
-                "orderMembers",
-                "viewOriginal",
-                "viewReducedResImages",
-                "viewAccessCopies",
-                "viewHidden",
-                "assignStaffRoles",
-                "viewMetadata",
-                "markForDeletion",
-                "editDescription",
-                "createCollection"
-            ],
-            groupRoleMap: {},
-            id: "4db695c0-5fd5-4abf-9248-2e115d43f57d",
-            updated: "2023-03-27T13:01:58.067Z",
-            fileType: [
-                "image/jpeg"
-            ],
-            status: [
-                "Parent Is Embargoed",
-                "Parent Has Staff-Only Access",
-                "Inherited Patron Settings"
-            ],
-            timestamp: 1679922126871
-        }
-    ],
     dataFileUrl: "content/4db695c0-5fd5-4abf-9248-2e115d43f57d",
     markedForDeletion: false,
     resourceType: "File"
@@ -386,36 +149,20 @@ describe('restrictedContent.vue', () => {
     });
 
     it('does not show view options if a user is logged in', async () => {
-        wrapper = mount(restrictedContent, {
-            global: {
-                plugins: [i18n, router, createTestingPinia({
-                    initialState: {
-                       access: {
-                           isLoggedIn: true,
-                           username: 'test_user'
-                       }
-                    },
-                    stubActions: false
-                })]
-            },
-            props: {
-                recordData: record
-            }
-        });
-        store = useAccessStore();
+        logUserIn();
         expect(wrapper.find('.restricted-access').exists()).toBe(false);
     });
 
-    it('shows an edit option if user has edit permissions', () => {
+    it('shows an edit option if user has edit permissions', async () => {
+        logUserIn();
+        await setRecordPermissions(record, ['viewMetadata', 'viewAccessCopies', 'viewReducedResImages',
+            'viewOriginal', 'viewHidden', 'editDescription']);
         expect(wrapper.find('a.edit').exists()).toBe(true);
     });
 
     it('does not show an edit option if user does not have edit permissions', async () => {
-        const updated_data = cloneDeep(record);
-        updated_data.briefObject.permissions = [];
-        await wrapper.setProps({
-            recordData: updated_data
-        });
+        await setRecordPermissions(record, []);
+
         expect(wrapper.find('a.edit').exists()).toBe(false);
     });
 
@@ -428,7 +175,10 @@ describe('restrictedContent.vue', () => {
         expect(wrapper.find('.noaction').exists()).toBe(false);
     });
 
-    it('shows a view option if user can view originals and resource is a file', () => {
+    it('shows a view option if user can view originals and resource is a file', async () => {
+        await setRecordPermissions(record, ['viewMetadata', 'viewAccessCopies', 'viewReducedResImages',
+            'viewOriginal']);
+
         expect(wrapper.find('a.view').exists()).toBe(true);
     });
 
@@ -445,10 +195,8 @@ describe('restrictedContent.vue', () => {
         const updated_data = cloneDeep(record);
         updated_data.dataFileUrl = 'content/4db695c0-5fd5-4abf-9248-2e115d43f57d';
         updated_data.resourceType = 'Work';
-        updated_data.briefObject.permissions = ['viewAccessCopies', 'viewReducedResImages', 'viewOriginal'];
-        await wrapper.setProps({
-            recordData: updated_data
-        });
+        await setRecordPermissions(updated_data, ['viewAccessCopies', 'viewReducedResImages', 'viewOriginal']);
+
         expect(wrapper.find('.download').exists()).toBe(false);
     });
 
@@ -463,25 +211,56 @@ describe('restrictedContent.vue', () => {
         expect(wrapper.find('.download').exists()).toBe(false);
     });
 
-    it('displays a download button for files with the proper permissions', async () => {
+    it('displays a download button for non-image with the proper permissions', async () => {
         const updated_data = cloneDeep(record);
         updated_data.dataFileUrl = 'content/4db695c0-5fd5-4abf-9248-2e115d43f57d';
         updated_data.resourceType = 'File';
-        updated_data.briefObject.permissions = ['viewAccessCopies', 'viewReducedResImages', 'viewOriginal'];
-        await wrapper.setProps({
-            recordData: updated_data
-        });
-        expect(wrapper.find('.download').exists()).toBe(true);
+        updated_data.briefObject.format = ['Text'];
+        await setRecordPermissions(updated_data, ['viewAccessCopies', 'viewReducedResImages', 'viewOriginal']);
+
+        expect(wrapper.find('.download.action').exists()).toBe(true);
+        expect(wrapper.find('.download.action').attributes('href')).toEqual('/content/4db695c0-5fd5-4abf-9248-2e115d43f57d?dl=true');
+    });
+
+    it('displays a download button with all download options for image with viewOriginal', async () => {
+        const updated_data = cloneDeep(record);
+        updated_data.dataFileUrl = 'content/4db695c0-5fd5-4abf-9248-2e115d43f57d';
+        updated_data.resourceType = 'File';
+        await setRecordPermissions(updated_data, ['viewAccessCopies', 'viewReducedResImages', 'viewOriginal']);
+
+        expect(wrapper.find('.download.dropdown').exists()).toBe(true);
+        await wrapper.find('button').trigger('click'); // Open
+        const dropdown_items = wrapper.findAll('.dropdown-item');
+        expect(dropdown_items[0].text()).toEqual('Small JPG (800px)');
+        expect(dropdown_items[1].text()).toEqual('Medium JPG (1600px)');
+        expect(dropdown_items[2].text()).toEqual('Large JPG (2500px)');
+        expect(dropdown_items[3].text()).toEqual('Full Size JPG');
+        expect(dropdown_items[4].text()).toEqual('Original File');
+        expect(dropdown_items.length).toEqual(5);
+    });
+
+    it('displays a download button with reduced download options for image with only viewReducedResImages', async () => {
+        const updated_data = cloneDeep(record);
+        updated_data.dataFileUrl = 'content/4db695c0-5fd5-4abf-9248-2e115d43f57d';
+        updated_data.resourceType = 'File';
+        await setRecordPermissions(updated_data, ['viewAccessCopies', 'viewReducedResImages']);
+
+        expect(wrapper.find('.download.dropdown').exists()).toBe(true);
+
+        await wrapper.find('button').trigger('click'); // Open
+        const dropdown_items = wrapper.findAll('.dropdown-item');
+        expect(dropdown_items[0].text()).toEqual('Small JPG (800px)');
+        expect(dropdown_items[1].text()).toEqual('Medium JPG (1600px)');
+        expect(dropdown_items[2].text()).toEqual('Large JPG (2500px)');
+        expect(dropdown_items.length).toEqual(3);
     });
 
     it('does not display a download button for non-works/files', async () => {
         const updated_data = cloneDeep(record);
         updated_data.dataFileUrl = 'content/4db695c0-5fd5-4abf-9248-2e115d43f57d';
         updated_data.resourceType = 'Folder';
-        updated_data.briefObject.permissions = ['viewAccessCopies', 'viewReducedResImages', 'viewOriginal'];
-        await wrapper.setProps({
-            recordData: updated_data
-        });
+        await setRecordPermissions(updated_data, ['viewAccessCopies', 'viewReducedResImages', 'viewOriginal']);
+
         expect(wrapper.find('.download').exists()).toBe(false);
     });
 
@@ -516,20 +295,54 @@ describe('restrictedContent.vue', () => {
     });
 
     it('hides the list of visible options when the options button is clicked', async () => {
+        await setRecordPermissions(record, ['viewAccessCopies', 'viewReducedResImages', 'viewOriginal']);
+
         await wrapper.find('button').trigger('click'); // Open
         await wrapper.find('button').trigger('click'); // Close
         expect(wrapper.find('.image-download-options').classes('is-active')).toBe(false);
     });
 
     it('hides the list of visible options when any non dropdown page element is clicked', async () => {
+        await setRecordPermissions(record, ['viewAccessCopies', 'viewReducedResImages', 'viewOriginal']);
+
         await wrapper.find('button').trigger('click'); // Open
         await wrapper.trigger('click'); // Close
         expect(wrapper.find('.image-download-options').classes('is-active')).toBe(false);
     });
 
     it('hides the list of visible options when the "ESC" key is hit', async () => {
+        await setRecordPermissions(record, ['viewAccessCopies', 'viewReducedResImages', 'viewOriginal']);
+
         await wrapper.find('button').trigger('click'); // Open
         await wrapper.trigger('keyup.esc'); // Close
         expect(wrapper.find('.image-download-options').classes('is-active')).toBe(false);
     });
+
+    async function setRecordPermissions(rec, permissions) {
+        const updated_data = cloneDeep(rec);
+        updated_data.briefObject.permissions = permissions;
+        wrapper.setProps({
+            recordData: updated_data
+        });
+    }
+
+    function logUserIn() {
+        wrapper = mount(restrictedContent, {
+            global: {
+                plugins: [i18n, router, createTestingPinia({
+                    initialState: {
+                        access: {
+                            isLoggedIn: true,
+                            username: 'test_user'
+                        }
+                    },
+                    stubActions: false
+                })]
+            },
+            props: {
+                recordData: record
+            }
+        });
+        store = useAccessStore();
+    }
 });
