@@ -23,6 +23,8 @@ import org.springframework.test.web.servlet.MvcResult;
 import java.nio.file.Path;
 import java.util.Map;
 
+import static edu.unc.lib.boxc.web.services.processing.SingleUseKeyService.DAY_MILLISECONDS;
+import static edu.unc.lib.boxc.web.services.utils.SingleUseKeyUtil.generateDefaultCsv;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
@@ -34,6 +36,7 @@ import static edu.unc.lib.boxc.auth.api.Permission.viewHidden;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.openMocks;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 /**
@@ -50,6 +53,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 public class SingleUseKeyControllerIT extends AbstractAPIIT {
     private AutoCloseable closeable;
     private PID pid;
+    private Path csvPath;
     @TempDir
     public Path tmpFolder;
 
@@ -64,7 +68,7 @@ public class SingleUseKeyControllerIT extends AbstractAPIIT {
     public void setup() {
         closeable = openMocks(this);
         pid = makePid();
-        Path csvPath = tmpFolder.resolve("singleUseKey");
+        csvPath = tmpFolder.resolve("singleUseKey");
         singleUseKeyService.setCsvPath(csvPath);
     }
 
@@ -124,9 +128,19 @@ public class SingleUseKeyControllerIT extends AbstractAPIIT {
     }
 
     @Test
-    public void testDownloadAccessKeyInvalid() throws Exception {
+    public void testDownloadAccessKeyInvalidCsvDoesNotExist() throws Exception {
         var accessKey = SingleUseKeyService.getKey();
-        mvc.perform(post("/single_use_link/" + accessKey))
+        mvc.perform(get("/single_use_link/" + accessKey))
+                .andExpect(status().isNotFound())
+                .andReturn();
+    }
+
+    @Test
+    public void testDownloadAccessKeyIsNotInCsv() throws Exception {
+        var accessKey = SingleUseKeyService.getKey();
+        var expirationTimestamp = System.currentTimeMillis() + DAY_MILLISECONDS;
+        generateDefaultCsv(csvPath, null, expirationTimestamp);
+        mvc.perform(get("/single_use_link/" + accessKey))
                 .andExpect(status().isNotFound())
                 .andReturn();
     }
@@ -134,7 +148,9 @@ public class SingleUseKeyControllerIT extends AbstractAPIIT {
     @Test
     public void testDownloadSuccess() throws Exception {
         var accessKey = SingleUseKeyService.getKey();
-        MvcResult result = mvc.perform(post("/single_use_link/" + accessKey))
+        var expirationTimestamp = System.currentTimeMillis() + DAY_MILLISECONDS;
+        generateDefaultCsv(csvPath, accessKey, expirationTimestamp);
+        MvcResult result = mvc.perform(get("/single_use_link/" + accessKey))
                 .andExpect(status().is2xxSuccessful())
                 .andReturn();
     }

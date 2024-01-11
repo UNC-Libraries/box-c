@@ -65,11 +65,18 @@ public class SingleUseKeyController {
 
     @RequestMapping(value = "/single_use_link/{key}", method = RequestMethod.GET)
     public ResponseEntity<InputStream> download(@PathVariable("key") String accessKey) {
-        if (singleUseKeyService.keyIsValid(accessKey)) {
-            log.info("Single use link used. Access Key: {}, UUID: {}", accessKey, id);
-            singleUseKeyService.invalidate(accessKey);
-        } else {
+        try {
+            if (singleUseKeyService.keyIsValid(accessKey)) {
+                log.info("Single use link used. Access Key: {}, UUID", accessKey);
+                singleUseKeyService.invalidate(accessKey);
+            } else {
+                throw new NotFoundException("Single use key is not valid: " + accessKey);
+            }
+        } catch (Exception e) {
+            log.error("Download single use link did not work.", e);
             throw new NotFoundException("Single use key is not valid: " + accessKey);
         }
+
+        return null;
     }
 }
