@@ -3,6 +3,7 @@ package edu.unc.lib.boxc.web.services.rest;
 import edu.unc.lib.boxc.auth.api.Permission;
 import edu.unc.lib.boxc.auth.api.services.AccessControlService;
 import edu.unc.lib.boxc.model.api.exceptions.InvalidOperationForObjectType;
+import edu.unc.lib.boxc.model.api.exceptions.NotFoundException;
 import edu.unc.lib.boxc.model.api.objects.ContentObject;
 import edu.unc.lib.boxc.model.api.objects.FileObject;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
@@ -17,6 +18,8 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+
+import java.io.InputStream;
 
 import static edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore.getAgentPrincipals;
 
@@ -60,4 +63,13 @@ public class SingleUseKeyController {
         }
     }
 
+    @RequestMapping(value = "/single_use_link/{key}", method = RequestMethod.GET)
+    public ResponseEntity<InputStream> download(@PathVariable("key") String accessKey) {
+        if (singleUseKeyService.keyIsValid(accessKey)) {
+            log.info("Single use link used. Access Key: {}, UUID: {}", accessKey, id);
+            singleUseKeyService.invalidate(accessKey);
+        } else {
+            throw new NotFoundException("Single use key is not valid: " + accessKey);
+        }
+    }
 }

@@ -122,4 +122,20 @@ public class SingleUseKeyControllerIT extends AbstractAPIIT {
         assertEquals(pid.getUUID(), respMap.get("target_id"));
         assertNotNull(respMap.get("expires"));
     }
+
+    @Test
+    public void testDownloadAccessKeyInvalid() throws Exception {
+        var accessKey = SingleUseKeyService.getKey();
+        mvc.perform(post("/single_use_link/" + accessKey))
+                .andExpect(status().isNotFound())
+                .andReturn();
+    }
+
+    @Test
+    public void testDownloadSuccess() throws Exception {
+        var accessKey = SingleUseKeyService.getKey();
+        MvcResult result = mvc.perform(post("/single_use_link/" + accessKey))
+                .andExpect(status().is2xxSuccessful())
+                .andReturn();
+    }
 }

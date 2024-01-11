@@ -46,7 +46,7 @@ public class SingleUseKeyService {
         } finally {
             lock.unlock();
         }
-        return keyInformation(key, id, expirationInMilliseconds);
+        return keyToMap(key, id, expirationInMilliseconds);
     }
 
     /**
@@ -106,7 +106,7 @@ public class SingleUseKeyService {
         return UUID.randomUUID().toString().replace("-", "") + Long.toHexString(System.nanoTime());
     }
 
-    private Map<String, String> keyInformation(String key, String id, long expirationTimestamp) {
+    private Map<String, String> keyToMap(String key, String id, long expirationTimestamp) {
         Map<String, String> result = new HashMap<>();
         result.put("url", "services/api/single_use_link/" + key);
         result.put("target_id", id);

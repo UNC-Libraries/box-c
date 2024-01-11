@@ -386,6 +386,9 @@
     <bean id="memberOrderCsvTransformer" class="edu.unc.lib.boxc.web.services.processing.MemberOrderCsvTransformer">
     </bean>
 
+    <bean id="singleUseKeyService" class="edu.unc.lib.boxc.web.services.processing.SingleUseKeyService">
+    </bean>
+
     <bean id="importMemberOrderJmsTemplate" class="org.springframework.jms.core.JmsTemplate">
         <property name="connectionFactory" ref="jmsFactory" />
         <property name="defaultDestinationName" value="${cdr.ordermembers.stream}" />
