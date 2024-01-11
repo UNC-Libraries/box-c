@@ -172,20 +172,12 @@
         <property name="spoofEmailSuffix" value="${spoofing.emailSuffix:@localhost}" />
     </bean>
     
-    <bean id="gaTrackingID" class="java.lang.String">
-        <constructor-arg
-            value="${google.trackingId}" />
-    </bean>
-    
     <bean id="httpClientConnectionManager" class="org.apache.http.impl.conn.PoolingHttpClientConnectionManager"
             destroy-method="shutdown">
     </bean>
     
     <bean id="analyticsTracker" class="edu.unc.lib.boxc.web.common.utils.AnalyticsTrackerUtil">
-        <property name="gaTrackingID" ref="gaTrackingID" />
         <property name="solrSearchService" ref="unrestrictedSolrSearchService" />
-        <property name="httpClientConnectionManager" ref="httpClientConnectionManager" />
-        <property name="repositoryHost" value="${repository.host}" />
         <property name="matomoAuthToken" value="${matomo.authToken}" />
         <property name="matomoApiURL" value="${matomo.api.url}" />
         <property name="matomoSiteID" value="${matomo.site.id}" />

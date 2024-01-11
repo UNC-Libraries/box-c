@@ -46,12 +46,7 @@ endif
 build-admin-npm:
 	# Build vue permissions application files
 	npm --prefix static/js/admin/vue-permissions-editor ci
-
-ifeq ($(DEPLOY_TYPE), prod)
 	npm --prefix static/js/admin/vue-permissions-editor run build
-else
-	npm --prefix static/js/admin/vue-permissions-editor run build-dev
-endif
 
 	cp static/js/admin/vue-permissions-editor/dist/assets/vue-permissions-index.js static/js/vue-permissions-index.js
 
@@ -87,12 +82,7 @@ SUSPEND = "n"
 build-access-npm:
 	# Build vue application(s) files
 	npm --prefix static/js/vue-cdr-access ci
-
-ifeq ($(DEPLOY_TYPE), prod)
 	npm --prefix static/js/vue-cdr-access run build
-else
-	npm --prefix static/js/vue-cdr-access run build-dev
-endif
 
 	# Minify viewer.js file for pdf viewer (Uncomment the lines below if changes are made to the viewer.js file. Requires nodejs 15.x or higher)
 	# npm install minify -g

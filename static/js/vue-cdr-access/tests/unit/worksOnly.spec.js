@@ -1,13 +1,13 @@
 import { shallowMount, flushPromises } from '@vue/test-utils';
 import { createRouter, createWebHistory } from 'vue-router';
+import {createTestingPinia} from '@pinia/testing';
+import { useAccessStore } from '@/stores/access';
 import worksOnly from '@/components/worksOnly.vue';
 import displayWrapper from '@/components/displayWrapper.vue';
 import {createI18n} from "vue-i18n";
 import translations from "@/translations";
-import store from '@/store';
 
-
-let wrapper, record_input, router;
+let wrapper, record_input, router, store;
 
 describe('worksOnly.vue', () => {
     const i18n = createI18n({
@@ -29,7 +29,9 @@ describe('worksOnly.vue', () => {
         });
         wrapper = shallowMount(worksOnly, {
             global: {
-                plugins: [router, store, i18n]
+                plugins: [router, i18n, createTestingPinia({
+                    stubActions: false
+                })]
             },
             props: {
                 adminUnit: false
@@ -40,11 +42,10 @@ describe('worksOnly.vue', () => {
                 }
             }
         });
+        store = useAccessStore();
 
         record_input = wrapper.find('input');
     });
-
-    afterEach(() => router = null);
 
     it("updates route to only show works if button is checked for a gallery view",  async () => {
         await router.push('/record/1234/?browse_type=gallery-display');
@@ -84,7 +85,8 @@ describe('worksOnly.vue', () => {
     afterEach(() => {
         // Make sure box is unchecked
         wrapper.setData({ works_only: false });
-        wrapper.vm.$store.dispatch("resetState");
+        store.$reset();
+        router = null;
         wrapper = null;
     });
 });

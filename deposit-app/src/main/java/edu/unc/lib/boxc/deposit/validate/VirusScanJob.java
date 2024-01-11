@@ -42,6 +42,7 @@ public class VirusScanJob extends AbstractConcurrentDepositJob {
             .getLogger(VirusScanJob.class);
 
     private static final int MAX_RETRIES = 5;
+    private long maxStreamSize;
 
     private ClamAVClient clamClient;
 
@@ -97,18 +98,20 @@ public class VirusScanJob extends AbstractConcurrentDepositJob {
                     Path file = Paths.get(fileURI);
 
                     ScanResult result;
-                    // Clamd is unable to find files with unicode characters in their path
-                    if (charactersInBoundsForClam(file)) {
-                        result = clamClient.scanWithResult(file);
-                    } else {
-                        // Scan files with unicode in their paths via streaming
-                        try {
+                    try {
+                        if (shouldScanByPath(file)) {
+                            // Scan entire file by path
+                            log.debug("Scanning file {} by path", file);
+                            result = clamClient.scanWithResult(file);
+                        } else {
+                            // Scanning via InputStream up to the max number of bytes
+                            log.debug("Scanning file {} by stream", file);
                             result = clamClient.scanWithResult(Files.newInputStream(file));
-                        } catch (IOException e) {
-                            failures.put(fileURI.toString(), "Failed to scan file");
-                            log.error("Unable to scan file {}", file, e);
-                            return;
                         }
+                    } catch (IOException e) {
+                        failures.put(fileURI.toString(), "Failed to scan file");
+                        log.error("Unable to scan file {}", file, e);
+                        return;
                     }
 
                     switch (result.getStatus()) {
@@ -180,8 +183,23 @@ public class VirusScanJob extends AbstractConcurrentDepositJob {
         return CharMatcher.ascii().matchesAllOf(path.toString());
     }
 
+    /**
+     * Determines if we should scan a file by its file path or use streaming. Files larger than the scanning
+     * limit or with characters in their path that clamd can't handle will return false.
+     * @param path
+     * @return
+     * @throws IOException
+     */
+    private boolean shouldScanByPath(Path path) throws IOException {
+        return Files.size(path) < this.maxStreamSize && charactersInBoundsForClam(path);
+    }
+
     // unused, no results to flush
     @Override
     protected void registrationAction() {
+    }
+
+    public void setMaxStreamSize(long maxStreamSize) {
+        this.maxStreamSize = maxStreamSize;
     }
 }

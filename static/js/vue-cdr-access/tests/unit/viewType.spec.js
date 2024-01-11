@@ -1,12 +1,13 @@
 import { shallowMount, flushPromises } from '@vue/test-utils'
 import { createRouter, createWebHistory } from 'vue-router';
+import {createTestingPinia} from '@pinia/testing';
+import { useAccessStore } from '@/stores/access';
 import viewType from '@/components/viewType.vue'
 import displayWrapper from "@/components/displayWrapper.vue";
 import {createI18n} from "vue-i18n";
 import translations from "@/translations";
-import store from '@/store';
 
-let wrapper, btns, router;
+let wrapper, btns, router, store;
 
 describe('viewType.vue', () => {
     const i18n = createI18n({
@@ -29,15 +30,18 @@ describe('viewType.vue', () => {
         sessionStorage.clear();
         wrapper = shallowMount(viewType, {
             global: {
-                plugins: [router, store, i18n]
+                plugins: [router, i18n, createTestingPinia({
+                    stubActions: false
+                })]
             }
         });
 
+        store = useAccessStore();
         btns = wrapper.findAll('#browse-btns i');
     });
 
     afterEach(() => {
-        wrapper.vm.$store.dispatch("resetState");
+        store.$reset();
         wrapper = null;
         router = null;
     });

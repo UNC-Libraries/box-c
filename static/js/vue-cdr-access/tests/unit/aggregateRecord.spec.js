@@ -595,6 +595,19 @@ describe('aggregateRecord.vue', () => {
         expect(wrapper.findComponent({ name: 'fileList' }).exists()).toBe(true);
     });
 
+    it("does not display an embargo date, if it's not present", async () => {
+        expect(wrapper.find('.embargo').exists()).toBe(false);
+    });
+
+    it("displays an embargo date, if present", async () => {
+        let updated_record = cloneDeep(record);
+        updated_record.embargoDate = '2199-01-01';
+        await wrapper.setProps({
+            recordData: updated_record
+        });
+        expect(wrapper.find('.embargo').text()).toEqual(expect.stringMatching(/Embargoed Until:\s+2199-01-01/))
+    });
+
     it("displays a list of neighbor works", () => {
         expect(wrapper.findComponent({ name: 'neighborList' }).exists()).toBe(true);
     });

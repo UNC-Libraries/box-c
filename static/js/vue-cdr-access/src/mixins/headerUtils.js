@@ -1,4 +1,5 @@
-import { mapState } from 'vuex';
+import { mapState } from 'pinia';
+import { useAccessStore } from '../stores/access';
 
 export default {
     data() {
@@ -8,7 +9,7 @@ export default {
     },
 
     computed: {
-        ...mapState([
+        ...mapState(useAccessStore, [
             'isLoggedIn',
             'username',
             'viewAdmin'

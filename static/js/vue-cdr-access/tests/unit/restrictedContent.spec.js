@@ -1,5 +1,7 @@
 import { mount } from '@vue/test-utils'
 import { createRouter, createWebHistory } from 'vue-router';
+import {createTestingPinia} from '@pinia/testing';
+import { useAccessStore } from '@/stores/access';
 import restrictedContent from '@/components/full_record/restrictedContent.vue';
 import displayWrapper from '@/components/displayWrapper.vue';
 import singleUseLink from '@/components/full_record/singleUseLink.vue';
@@ -338,7 +340,7 @@ const record = {
     resourceType: "File"
 }
 
-let wrapper, router;
+let wrapper, router, store;
 
 describe('restrictedContent.vue', () => {
     const i18n = createI18n({
@@ -363,46 +365,42 @@ describe('restrictedContent.vue', () => {
             ]
         });
 
-        const $store = {
-            state: {
-                username: ''
-            },
-            commit: jest.fn()
-        }
-
         wrapper = mount(restrictedContent, {
             attachTo: '#root',
             global: {
-                plugins: [i18n, router],
-                mocks: {
-                    $store
-                }
+                plugins: [i18n, router, createTestingPinia({
+                    stubActions: false
+                })]
             },
             props: {
                 recordData: record
             }
         });
+        store = useAccessStore();
+    });
+
+    afterEach(() => {
+        store.$reset();
     });
 
     it('does not show view options if a user is logged in', async () => {
-        const $store = {
-            state: {
-                isLoggedIn: true,
-                username: 'test_user'
-            },
-            commit: jest.fn()
-        }
         wrapper = mount(restrictedContent, {
             global: {
-                plugins: [i18n, router],
-                mocks: {
-                    $store
-                }
+                plugins: [i18n, router, createTestingPinia({
+                    initialState: {
+                       access: {
+                           isLoggedIn: true,
+                           username: 'test_user'
+                       }
+                    },
+                    stubActions: false
+                })]
             },
             props: {
                 recordData: record
             }
         });
+        store = useAccessStore();
         expect(wrapper.find('.restricted-access').exists()).toBe(false);
     });
 
@@ -503,29 +501,6 @@ describe('restrictedContent.vue', () => {
             recordData: updated_data
         });
         expect(wrapper.findComponent(singleUseLink).exists()).toBe(false);
-    });
-
-    it('displays embargo information for files', async () => {
-        const updated_data = cloneDeep(record);
-        updated_data.briefObject.embargoDate = '2199-12-31T20:34:01.799Z';
-        updated_data.dataFileUrl = 'content/4db695c0-5fd5-4abf-9248-2e115d43f57d';
-        updated_data.briefObject.permissions = [];
-        await wrapper.setProps({
-            recordData: updated_data
-        });
-        expect(wrapper.find('.noaction').text()).toEqual('Available after 2199-12-31');
-    });
-
-    it('displays embargo information for works', async () => {
-        const updated_data = cloneDeep(record);
-        updated_data.briefObject.embargoDate = '2199-12-31T20:34:01.799Z';
-        updated_data.dataFileUrl = 'content/4db695c0-5fd5-4abf-9248-2e115d43f57d';
-        updated_data.resourceType = 'Work';
-        updated_data.briefObject.permissions = [];
-        await wrapper.setProps({
-            recordData: updated_data
-        });
-        expect(wrapper.find('.noaction').text()).toEqual('Available after 2199-12-31');
     });
 
     it('does not show view options if content is public', async () => {

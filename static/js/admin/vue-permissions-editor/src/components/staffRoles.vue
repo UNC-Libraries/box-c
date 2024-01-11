@@ -118,7 +118,8 @@
     import axios from 'axios';
     import cloneDeep from 'lodash.clonedeep';
     import isEmpty from 'lodash.isempty';
-    import { mapState } from 'vuex';
+    import { mapState, mapStores } from 'pinia';
+    import {usePermissionsStore} from "../stores/permissions";
 
     export default {
         name: 'staffRoles',
@@ -128,24 +129,6 @@
         },
 
         mixins: [staffRoleList, displayModal],
-
-        watch: {
-            /**
-             * Update a current user's role
-             * @param user
-             */
-            '$store.state.staffRole': {
-                handler() {
-                    let user = this.$store.state.staffRole;
-                    let user_index = this.getUserIndex(user);
-
-                    if (user_index !== -1) {
-                        this.updated_staff_roles[user_index].role = user.role;
-                        this.unsavedUpdates();
-                    }
-                }
-            }
-        },
 
         data() {
             return {
@@ -162,15 +145,17 @@
         },
 
         computed: {
-            // Get needed state from Vuex
-            ...mapState({
-                alertHandler: state => state.alertHandler,
-                changesCheck: state => state.checkForUnsavedChanges,
-                objectPath: state => state.metadata.objectPath,
-                containerType: state => state.metadata.type,
-                uuid: state => state.metadata.id,
-                title: state => state.metadata.title
+            // Get needed state from Pinia
+            ...mapState(usePermissionsStore, {
+                alertHandler: store => store.alertHandler,
+                changesCheck: store => store.checkForUnsavedChanges,
+                objectPath: store => store.metadata.objectPath,
+                containerType: store => store.metadata.type,
+                uuid: store => store.metadata.id,
+                title: store => store.metadata.title
             }),
+
+            ...mapStores(usePermissionsStore),
 
             canSetPermissions() {
                 return ['AdminUnit', 'Collection'].includes(this.containerType);
@@ -370,6 +355,19 @@
         },
 
         mounted() {
+            /* Subscribe to changes in the store. It's nearly impossible to "watch" for
+            *  changes in a pinia store without switching everything to Vue's newer composition API.
+            *  See this discussion https://github.com/vuejs/pinia/discussions/794 and
+            *  https://vuejs.org/guide/extras/composition-api-faq.html */
+            this.permissionsStore.$subscribe((mutation, state) => {
+                let user = state.staffRole
+                let user_index = this.getUserIndex(user);
+
+                if (user_index !== -1) {
+                    this.updated_staff_roles[user_index].role = user.role;
+                    this.unsavedUpdates();
+                }
+            });
             this.getRoles();
         }
     }
