@@ -100,6 +100,7 @@ describe('fileList.vue', () => {
         updatedBriefObj.permissions = [
             "viewAccessCopies",
             "viewMetadata",
+            "viewReducedResImages",
             "viewOriginal"
         ]
         updatedBriefObj.groupRoleMap = {
@@ -128,6 +129,7 @@ describe('fileList.vue', () => {
         updatedBriefObj.permissions = [
             "viewAccessCopies",
             "viewMetadata",
+            "viewReducedResImages",
             "viewOriginal"
         ]
         updatedBriefObj.datastream = ['original_file|application/pdf|pdf file||416330|urn:sha1:4945153c9f5ce152ef8eda495deba043f536f388||'];

@@ -56,6 +56,7 @@ const recordData = {
             "ingest",
             "orderMembers",
             "viewOriginal",
+            "viewReducedResImages",
             "viewAccessCopies",
             "viewHidden",
             "assignStaffRoles",

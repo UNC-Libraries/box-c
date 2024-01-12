@@ -120,7 +120,7 @@ describe('patronRoles.vue', () => {
             wrapper.find('#add-principal').trigger('click');
             // Select the existing patron principal to add
             wrapper.findAll('#add-new-patron-principal-id option')[0].setSelected();
-            wrapper.findAll('#add-new-patron-principal-role option')[4].setSelected();
+            wrapper.findAll('#add-new-patron-principal-role option')[5].setSelected();
             wrapper.find('#add-principal').trigger('click');
 
             await wrapper.vm.$nextTick();
@@ -203,7 +203,7 @@ describe('patronRoles.vue', () => {
             wrapper.find('#add-principal').trigger('click');
             // Select values for new patron role and then click the add button again
             wrapper.findAll('#add-new-patron-principal-id option')[0].setSelected();
-            wrapper.findAll('#add-new-patron-principal-role option')[4].setSelected();
+            wrapper.findAll('#add-new-patron-principal-role option')[5].setSelected();
             await wrapper.find('#add-principal').trigger('click');
 
             // Model should have updated by adding the new role to the list of assigned roles
@@ -873,7 +873,7 @@ describe('patronRoles.vue', () => {
                 { principal: 'authenticated', role: 'canViewMetadata', deleted: false, embargo: false, type: 'assigned', assignedTo: UUID }
             ]);
 
-            wrapper.findAll('.patron-assigned')[1].findAll('option')[3].setSelected();
+            wrapper.findAll('.patron-assigned')[1].findAll('option')[4].setSelected();
 
             let updated_authenticated_roles =  [
                 { principal: 'everyone', role: 'canViewMetadata', assignedTo: UUID },
@@ -886,6 +886,33 @@ describe('patronRoles.vue', () => {
             ]);
             expect(wrapper.vm.submissionAccessDetails().roles).toEqual(updated_authenticated_roles);
 
+            done();
+        });
+    });
+
+    it("updates permissions for public and auth users with canViewReducedQuality", (done) => {
+        stubDataLoad();
+
+        moxios.wait(() => {
+            expect(wrapper.vm.assignedPatronRoles).toEqual([
+                {principal: 'everyone', role: 'canViewAccessCopies', assignedTo: UUID },
+                {principal: 'authenticated', role: 'canViewAccessCopies', assignedTo: UUID }
+            ]);
+
+            wrapper.findAll('.patron-assigned option')[3].setSelected();
+            wrapper.findAll('.patron-assigned')[1].findAll('option')[3].setSelected();
+
+            expect(wrapper.vm.assignedPatronRoles).toEqual([
+                {principal: 'everyone', role: 'canViewReducedQuality', assignedTo: UUID },
+                {principal: 'authenticated', role: 'canViewReducedQuality', assignedTo: UUID }
+            ]);
+            expect(wrapper.vm.displayAssignments).toEqual([
+                { principal: 'patron', role: 'canViewReducedQuality', deleted: false, embargo: false, type: 'assigned', assignedTo: UUID }
+            ]);
+            expect(wrapper.vm.submissionAccessDetails().roles).toEqual([
+                {principal: 'everyone', role: 'canViewReducedQuality', assignedTo: UUID },
+                {principal: 'authenticated', role: 'canViewReducedQuality', assignedTo: UUID }
+            ]);
             done();
         });
     });
@@ -1196,7 +1223,7 @@ describe('patronRoles.vue', () => {
             await wrapper.find('#add-principal').trigger('click');
             // Select values for new patron role and then click the add button again
             await wrapper.findAll('#add-new-patron-principal-id option')[0].setSelected();
-            await wrapper.findAll('#add-new-patron-principal-role option')[4].setSelected();
+            await wrapper.findAll('#add-new-patron-principal-role option')[5].setSelected();
             await wrapper.find('#add-principal').trigger('click');
 
             stubBulkDataSaveResponse();

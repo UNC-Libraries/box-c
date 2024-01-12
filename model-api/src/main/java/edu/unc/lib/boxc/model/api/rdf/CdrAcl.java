@@ -64,6 +64,13 @@ public class CdrAcl {
     public static final Property canViewAccessCopies = createProperty(
             "http://cdr.unc.edu/definitions/acl#canViewAccessCopies" );
 
+    /** Grants the specified group or user permission to view metadata, access copies, and
+     * download reduced quality representations of the original file for this object and
+     * all of its children. Applies to cdr:Collection objects. Repeatable.
+     */
+    public static final Property canViewReducedQuality = createProperty(
+            "http://cdr.unc.edu/definitions/acl#canViewReducedQuality" );
+
     /** Grants the specified group or user permission to view metadata, access copies and originals
      *  for this object and all of its children. Applies to cdr:Collection objects. Repeatable.
      */

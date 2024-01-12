@@ -112,6 +112,7 @@
     const STAFF_ONLY_ROLE = 'none';
     const VIEW_METADATA_ROLE = 'canViewMetadata';
     const VIEW_ACCESS_COPIES_ROLE = 'canViewAccessCopies';
+    const VIEW_REDUCED_QUALITY_ROLE = 'canViewReducedQuality';
     const VIEW_ORIGINAL_ROLE = 'canViewOriginals';
     const DEFAULT_ROLE = VIEW_ORIGINAL_ROLE;
 
