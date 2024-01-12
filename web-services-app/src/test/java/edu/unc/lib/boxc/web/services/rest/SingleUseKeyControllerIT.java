@@ -3,10 +3,13 @@ package edu.unc.lib.boxc.web.services.rest;
 import edu.unc.lib.boxc.auth.api.exceptions.AccessRestrictionException;
 import edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl;
 import edu.unc.lib.boxc.model.api.ids.PID;
+import edu.unc.lib.boxc.model.api.objects.FileObject;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
+import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.boxc.web.services.processing.SingleUseKeyService;
 import edu.unc.lib.boxc.web.services.rest.modify.AbstractAPIIT;
+import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -14,16 +17,20 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.io.TempDir;
 import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.ContextHierarchy;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.test.web.servlet.MvcResult;
 
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Map;
 
+import static edu.unc.lib.boxc.web.common.services.FedoraContentService.CONTENT_DISPOSITION;
 import static edu.unc.lib.boxc.web.services.processing.SingleUseKeyService.DAY_MILLISECONDS;
+import static edu.unc.lib.boxc.web.services.utils.SingleUseKeyUtil.UUID_TEST;
 import static edu.unc.lib.boxc.web.services.utils.SingleUseKeyUtil.generateDefaultCsv;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -147,11 +154,25 @@ public class SingleUseKeyControllerIT extends AbstractAPIIT {
 
     @Test
     public void testDownloadSuccess() throws Exception {
+        var content = "binary content";
+        var filePid = PIDs.get(UUID_TEST);
+        FileObject fileObj = repositoryObjectFactory.createFileObject(filePid, null);
+        Path contentPath = Files.createTempFile("file", ".txt");
+        FileUtils.writeStringToFile(contentPath.toFile(), content, "UTF-8");
+        fileObj.addOriginalFile(contentPath.toUri(), "file.txt", "text/plain", null, null);
+
         var accessKey = SingleUseKeyService.getKey();
         var expirationTimestamp = System.currentTimeMillis() + DAY_MILLISECONDS;
         generateDefaultCsv(csvPath, accessKey, expirationTimestamp);
         MvcResult result = mvc.perform(get("/single_use_link/" + accessKey))
                 .andExpect(status().is2xxSuccessful())
                 .andReturn();
+
+        MockHttpServletResponse response = result.getResponse();
+        assertEquals(content, response.getContentAsString());
+
+        assertEquals(content.length(), response.getContentLength());
+        assertEquals("text/plain", response.getContentType());
+        assertEquals("attachment; filename=\"file.txt\"", response.getHeader(CONTENT_DISPOSITION));
     }
 }

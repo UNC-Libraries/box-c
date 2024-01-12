@@ -95,7 +95,7 @@ public class SingleUseKeyController {
                 throw new NotFoundException("Single use key is not valid: " + accessKey);
             }
         } catch (Exception e) {
-            log.error("Download single use link did not work.", e);
+            log.error("Download single use link did not work:", e);
             throw new NotFoundException("Single use key is not valid: " + accessKey);
         }
 
