@@ -1,16 +1,12 @@
 package edu.unc.lib.boxc.web.services.processing;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import edu.unc.lib.boxc.model.api.exceptions.RepositoryException;
 import org.apache.commons.csv.CSVRecord;
-import org.springframework.core.io.InputStreamResource;
-import org.springframework.http.ResponseEntity;
 
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.locks.ReentrantLock;
