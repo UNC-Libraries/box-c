@@ -75,7 +75,7 @@ public class DatastreamController {
             @RequestParam(value = "dl", defaultValue = "false") boolean download,
             HttpServletRequest request,
             HttpServletResponse response) {
-        getDatastream(pidString, null, download, request, response);
+        getDatastream(pidString, ORIGINAL_FILE.getId(), download, request, response);
     }
 
     @RequestMapping("/file/{pid}/{datastream}")
@@ -97,7 +97,7 @@ public class DatastreamController {
                 accessControlService.assertHasAccess("Insufficient permissions to access " + datastream + " for object " + pid,
                         pid, principals, getPermissionForDatastream(datastream));
                 fedoraContentService.streamData(pid, datastream, principals, download, response);
-                if (datastream == null || DatastreamType.ORIGINAL_FILE.getId().equals(datastream)) {
+                if (DatastreamType.ORIGINAL_FILE.getId().equals(datastream)) {
                     recordDownloadEvent(pid, datastream, principals, request);
                 }
             }

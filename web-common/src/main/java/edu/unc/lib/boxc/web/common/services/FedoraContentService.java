@@ -75,12 +75,8 @@ public class FedoraContentService {
             throw new IllegalArgumentException("Cannot stream external datastream " + datastream);
         }
 
-        accessControlService.assertHasAccess("Insufficient permissions to access " + datastream + " for object " + pid,
-                pid, principals, getPermissionForDatastream(datastream));
-
         LOG.debug("Streaming datastream {} from object {}", datastream, pid);
-
-
+        
         BinaryObject binObj;
         if (ORIGINAL_FILE.getId().equals(datastream)) {
             FileObject fileObj = repositoryObjectLoader.getFileObject(pid);
