@@ -88,8 +88,7 @@ public class SingleUseKeyController {
                 singleUseKeyService.invalidate(accessKey);
                 fedoraContentService.streamData(pid, datastream, principals, true, response);
                 log.info("Single use link used. Access Key: {}, UUID: {}", accessKey, id);
-                recordDownloadEvent(pid, datastream, principals, request);
-
+                analyticsTracker.trackEvent(request, "download", pid, principals);
             } else {
                 throw new NotFoundException("Single use key is not valid: " + accessKey);
             }
@@ -99,13 +98,5 @@ public class SingleUseKeyController {
         }
 
         return null;
-    }
-
-    private void recordDownloadEvent(PID pid, String datastream, AccessGroupSet principals,
-                                     HttpServletRequest request) {
-        if (!(StringUtils.isBlank(datastream) || ORIGINAL_FILE.getId().equals(datastream))) {
-            return;
-        }
-        analyticsTracker.trackEvent(request, "download", pid, principals);
     }
 }

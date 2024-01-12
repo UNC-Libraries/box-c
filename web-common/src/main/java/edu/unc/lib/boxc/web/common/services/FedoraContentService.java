@@ -76,7 +76,7 @@ public class FedoraContentService {
         }
 
         LOG.debug("Streaming datastream {} from object {}", datastream, pid);
-        
+
         BinaryObject binObj;
         if (ORIGINAL_FILE.getId().equals(datastream)) {
             FileObject fileObj = repositoryObjectLoader.getFileObject(pid);
