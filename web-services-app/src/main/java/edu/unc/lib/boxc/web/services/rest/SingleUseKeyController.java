@@ -5,6 +5,7 @@ import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
 import edu.unc.lib.boxc.auth.api.services.AccessControlService;
 import edu.unc.lib.boxc.model.api.exceptions.InvalidOperationForObjectType;
 import edu.unc.lib.boxc.model.api.exceptions.NotFoundException;
+import edu.unc.lib.boxc.model.api.exceptions.RepositoryException;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.objects.ContentObject;
 import edu.unc.lib.boxc.model.api.objects.FileObject;
@@ -26,6 +27,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.io.InputStream;
 
 import static edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore.getAgentPrincipals;
@@ -53,6 +55,10 @@ public class SingleUseKeyController {
     @RequestMapping(value = "/single_use_link/create/{id}", method = RequestMethod.POST)
     public ResponseEntity<Object> generate(@PathVariable("id") String id) {
         var pid = PIDs.get(id);
+        // requester must have the right permission
+        var agent= getAgentPrincipals();
+        aclService.assertHasAccess("Insufficient permissions to generate single use link for " + id,
+                pid, agent.getPrincipals(), Permission.viewHidden);
 
         // check if object is a FileObject
         ContentObject obj = (ContentObject) repositoryObjectLoader.getRepositoryObject(pid);
@@ -61,22 +67,13 @@ public class SingleUseKeyController {
                     obj.getClass().getName() + " objects.");
         }
 
-        // requester must have the right permission
-        var agent= getAgentPrincipals();
-        aclService.assertHasAccess("Insufficient permissions to generate single use link for " + id,
-                pid, agent.getPrincipals(), Permission.viewHidden);
-        try {
-            var keyInfo = singleUseKeyService.generate(id);
-            log.info("Single use link created for UUID {} by user {}", id, agent.getUsername());
-            return new ResponseEntity<>(keyInfo, HttpStatus.OK);
-        } catch (Exception e) {
-            log.error("error is", e);
-            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-        }
+        var keyInfo = singleUseKeyService.generate(id);
+        log.info("Single use link created for UUID {} by user {}", id, agent.getUsername());
+        return new ResponseEntity<>(keyInfo, HttpStatus.OK);
     }
 
     @RequestMapping(value = "/single_use_link/{key}", method = RequestMethod.GET)
-    public ResponseEntity<InputStream> download(@PathVariable("key") String accessKey, HttpServletRequest request,
+    public void download(@PathVariable("key") String accessKey, HttpServletRequest request,
                                                 HttpServletResponse response) {
         try {
             if (singleUseKeyService.keyIsValid(accessKey)) {
@@ -86,17 +83,15 @@ public class SingleUseKeyController {
                 var principals = getAgentPrincipals().getPrincipals();
 
                 singleUseKeyService.invalidate(accessKey);
-                fedoraContentService.streamData(pid, datastream, principals, true, response);
+                fedoraContentService.streamData(pid, datastream, true, response);
                 log.info("Single use link used. Access Key: {}, UUID: {}", accessKey, id);
                 analyticsTracker.trackEvent(request, "download", pid, principals);
             } else {
                 throw new NotFoundException("Single use key is not valid: " + accessKey);
             }
-        } catch (Exception e) {
+        } catch (IOException e) {
             log.error("Download single use link did not work:", e);
-            throw new NotFoundException("Single use key is not valid: " + accessKey);
+            throw new RepositoryException("Single use key is not valid: " + accessKey);
         }
-
-        return null;
     }
 }

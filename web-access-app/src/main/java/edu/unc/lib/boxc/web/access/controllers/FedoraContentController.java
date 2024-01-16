@@ -97,7 +97,7 @@ public class FedoraContentController {
                 pid, principals, getPermissionForDatastream(datastream));
 
         try {
-            fedoraContentService.streamData(pid, datastream, principals, asAttachment, response);
+            fedoraContentService.streamData(pid, datastream, asAttachment, response);
             recordDownloadEvent(pid, datastream, principals, request);
         } catch (IOException e) {
             handleIOException(pid, datastream, e);

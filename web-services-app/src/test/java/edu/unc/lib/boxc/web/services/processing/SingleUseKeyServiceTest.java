@@ -12,12 +12,14 @@ import java.util.Map;
 
 import static edu.unc.lib.boxc.web.services.processing.SingleUseKeyService.CSV_HEADERS;
 import static edu.unc.lib.boxc.web.services.processing.SingleUseKeyService.DAY_MILLISECONDS;
+import static edu.unc.lib.boxc.web.services.processing.SingleUseKeyService.URL;
 import static edu.unc.lib.boxc.web.services.utils.CsvUtil.parseCsv;
 import static edu.unc.lib.boxc.web.services.utils.SingleUseKeyUtil.UUID_1;
 import static edu.unc.lib.boxc.web.services.utils.SingleUseKeyUtil.UUID_2;
 import static edu.unc.lib.boxc.web.services.utils.SingleUseKeyUtil.UUID_3;
 import static edu.unc.lib.boxc.web.services.utils.SingleUseKeyUtil.UUID_TEST;
 import static edu.unc.lib.boxc.web.services.utils.SingleUseKeyUtil.generateDefaultCsv;
+import static edu.unc.lib.boxc.web.services.utils.SingleUseKeyUtil.parseKey;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -42,7 +44,7 @@ public class SingleUseKeyServiceTest {
 
     @Test
     public void testGenerateNoCsvExists() throws IOException {
-        var key = parseKey(singleUseKeyService.generate(UUID_TEST));
+        var key = getKey(singleUseKeyService.generate(UUID_TEST));
         var newRecords = parseCsv(CSV_HEADERS, csvPath);
         assertCsvContainsCorrectEntry(newRecords, UUID_TEST, key);
         assertEquals(1, newRecords.size());
@@ -50,9 +52,9 @@ public class SingleUseKeyServiceTest {
 
     @Test
     public void testGenerateMultipleCallsForDifferentIds() throws IOException {
-        var key1 = parseKey(singleUseKeyService.generate(UUID_1));
-        var key2 = parseKey(singleUseKeyService.generate(UUID_2));
-        var key3 = parseKey(singleUseKeyService.generate(UUID_3));
+        var key1 = getKey(singleUseKeyService.generate(UUID_1));
+        var key2 = getKey(singleUseKeyService.generate(UUID_2));
+        var key3 = getKey(singleUseKeyService.generate(UUID_3));
 
         var newRecords = parseCsv(CSV_HEADERS, csvPath);
         assertCsvContainsCorrectEntry(newRecords, UUID_1, key1);
@@ -63,9 +65,9 @@ public class SingleUseKeyServiceTest {
 
     @Test
     public void testGenerateMultipleCallsForSameId() throws IOException {
-        var key1 = parseKey(singleUseKeyService.generate(UUID_1));
-        var key2 = parseKey(singleUseKeyService.generate(UUID_1));
-        var key3 = parseKey(singleUseKeyService.generate(UUID_1));
+        var key1 = getKey(singleUseKeyService.generate(UUID_1));
+        var key2 = getKey(singleUseKeyService.generate(UUID_1));
+        var key3 = getKey(singleUseKeyService.generate(UUID_1));
 
         var newRecords = parseCsv(CSV_HEADERS, csvPath);
         assertCsvContainsCorrectEntry(newRecords, UUID_1, key1);
@@ -128,7 +130,7 @@ public class SingleUseKeyServiceTest {
         var key = SingleUseKeyService.getKey();
         var expirationTimestamp = System.currentTimeMillis() + DAY_MILLISECONDS;
         generateDefaultCsv(csvPath, key, expirationTimestamp);
-        var key2 = parseKey(singleUseKeyService.generate(UUID_TEST));
+        var key2 = getKey(singleUseKeyService.generate(UUID_TEST));
         singleUseKeyService.invalidate(key);
         singleUseKeyService.invalidate(key2);
 
@@ -161,10 +163,8 @@ public class SingleUseKeyServiceTest {
         }
     }
 
-    private String parseKey(Map<String, String> map) {
-        var url = map.get("url");
-        var parts = url.split("/");
-        var lastIndex = parts.length - 1;
-        return parts[lastIndex];
+    private String getKey(Map<String, String> map) {
+        var url = map.get(URL);
+        return parseKey(url);
     }
 }

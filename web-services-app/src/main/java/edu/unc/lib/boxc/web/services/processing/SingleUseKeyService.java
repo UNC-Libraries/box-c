@@ -25,6 +25,7 @@ public class SingleUseKeyService {
     public static final String TIMESTAMP = "Expiration Timestamp";
     public static final String[] CSV_HEADERS = new String[] {ID, ACCESS_KEY, TIMESTAMP};
     public static final long DAY_MILLISECONDS = 86400000;
+    public static final String URL = "url";
     private Path csvPath;
     private ReentrantLock lock = new ReentrantLock();
 

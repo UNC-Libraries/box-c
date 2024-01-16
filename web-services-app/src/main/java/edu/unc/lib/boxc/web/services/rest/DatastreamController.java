@@ -96,7 +96,7 @@ public class DatastreamController {
             } else {
                 accessControlService.assertHasAccess("Insufficient permissions to access " + datastream + " for object " + pid,
                         pid, principals, getPermissionForDatastream(datastream));
-                fedoraContentService.streamData(pid, datastream, principals, download, response);
+                fedoraContentService.streamData(pid, datastream, download, response);
                 if (DatastreamType.ORIGINAL_FILE.getId().equals(datastream)) {
                     recordDownloadEvent(pid, datastream, principals, request);
                 }

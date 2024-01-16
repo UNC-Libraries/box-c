@@ -30,8 +30,10 @@ import java.util.Map;
 
 import static edu.unc.lib.boxc.web.common.services.FedoraContentService.CONTENT_DISPOSITION;
 import static edu.unc.lib.boxc.web.services.processing.SingleUseKeyService.DAY_MILLISECONDS;
+import static edu.unc.lib.boxc.web.services.processing.SingleUseKeyService.URL;
 import static edu.unc.lib.boxc.web.services.utils.SingleUseKeyUtil.UUID_TEST;
 import static edu.unc.lib.boxc.web.services.utils.SingleUseKeyUtil.generateDefaultCsv;
+import static edu.unc.lib.boxc.web.services.utils.SingleUseKeyUtil.parseKey;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
@@ -68,8 +70,6 @@ public class SingleUseKeyControllerIT extends AbstractAPIIT {
     private SingleUseKeyService singleUseKeyService;
     @Autowired
     private RepositoryObjectFactory repositoryObjectFactory;
-    @Mock
-    private RepositoryObjectLoader repositoryObjectLoader;
 
     @BeforeEach
     public void setup() {
@@ -86,8 +86,7 @@ public class SingleUseKeyControllerIT extends AbstractAPIIT {
 
     @Test
     public void testGenerateNoAccess() throws Exception {
-        var fileObject = repositoryObjectFactory.createFileObject(pid, null);
-        when(repositoryObjectLoader.getRepositoryObject(eq(pid))).thenReturn(fileObject);
+        repositoryObjectFactory.createFileObject(pid, null);
 
         doThrow(new AccessRestrictionException()).when(aclService)
                 .assertHasAccess(anyString(), eq(pid), any(AccessGroupSetImpl.class), eq(viewHidden));
@@ -99,8 +98,7 @@ public class SingleUseKeyControllerIT extends AbstractAPIIT {
 
     @Test
     public void testGenerateNotAFileObject() throws Exception {
-        var folder = repositoryObjectFactory.createFolderObject(pid, null);
-        when(repositoryObjectLoader.getRepositoryObject(eq(pid))).thenReturn(folder);
+        repositoryObjectFactory.createFolderObject(pid, null);
 
         mvc.perform(post("/single_use_link/create/" + pid.getUUID()))
                 .andExpect(status().isBadRequest())
@@ -110,8 +108,7 @@ public class SingleUseKeyControllerIT extends AbstractAPIIT {
     @Test
     public void testGenerateFailure() throws Exception {
         var id = pid.getUUID();
-        var fileObject = repositoryObjectFactory.createFileObject(pid, null);
-        when(repositoryObjectLoader.getRepositoryObject(eq(pid))).thenReturn(fileObject);
+        repositoryObjectFactory.createFileObject(pid, null);
         singleUseKeyService.setCsvPath(null);
 
         mvc.perform(post("/single_use_link/create/" + id))
@@ -121,8 +118,7 @@ public class SingleUseKeyControllerIT extends AbstractAPIIT {
 
     @Test
     public void testGenerateSuccess() throws Exception {
-        var fileObject = repositoryObjectFactory.createFileObject(pid, null);
-        when(repositoryObjectLoader.getRepositoryObject(eq(pid))).thenReturn(fileObject);
+        repositoryObjectFactory.createFileObject(pid, null);
 
         MvcResult result = mvc.perform(post("/single_use_link/create/" + pid.getUUID()))
                 .andExpect(status().is2xxSuccessful())
@@ -138,7 +134,7 @@ public class SingleUseKeyControllerIT extends AbstractAPIIT {
     public void testDownloadAccessKeyInvalidCsvDoesNotExist() throws Exception {
         var accessKey = SingleUseKeyService.getKey();
         mvc.perform(get("/single_use_link/" + accessKey))
-                .andExpect(status().isNotFound())
+                .andExpect(status().isInternalServerError())
                 .andReturn();
     }
 
@@ -161,17 +157,18 @@ public class SingleUseKeyControllerIT extends AbstractAPIIT {
         FileUtils.writeStringToFile(contentPath.toFile(), content, "UTF-8");
         fileObj.addOriginalFile(contentPath.toUri(), "file.txt", "text/plain", null, null);
 
-        var accessKey = SingleUseKeyService.getKey();
-        var expirationTimestamp = System.currentTimeMillis() + DAY_MILLISECONDS;
-        generateDefaultCsv(csvPath, accessKey, expirationTimestamp);
+        MvcResult generateResult = mvc.perform(post("/single_use_link/create/" + filePid.getUUID()))
+                .andReturn();
+        var map = MvcTestHelpers.getMapFromResponse(generateResult);
+        var url = map.get(URL).toString();
+        var accessKey = parseKey(url);
+
         MvcResult result = mvc.perform(get("/single_use_link/" + accessKey))
                 .andExpect(status().is2xxSuccessful())
                 .andReturn();
 
         MockHttpServletResponse response = result.getResponse();
         assertEquals(content, response.getContentAsString());
-
-        assertEquals(content.length(), response.getContentLength());
         assertEquals("text/plain", response.getContentType());
         assertEquals("attachment; filename=\"file.txt\"", response.getHeader(CONTENT_DISPOSITION));
     }

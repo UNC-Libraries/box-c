@@ -387,6 +387,7 @@
     </bean>
 
     <bean id="singleUseKeyService" class="edu.unc.lib.boxc.web.services.processing.SingleUseKeyService">
+        <property name="csvPath" value="${singleUseLink.csv.path}"/>
     </bean>
 
     <bean id="importMemberOrderJmsTemplate" class="org.springframework.jms.core.JmsTemplate">

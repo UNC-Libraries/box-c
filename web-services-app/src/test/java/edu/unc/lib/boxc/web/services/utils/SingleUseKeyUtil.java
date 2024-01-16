@@ -6,8 +6,10 @@ import org.apache.commons.csv.CSVRecord;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Map;
 
 import static edu.unc.lib.boxc.web.services.processing.SingleUseKeyService.CSV_HEADERS;
+import static edu.unc.lib.boxc.web.services.processing.SingleUseKeyService.URL;
 import static edu.unc.lib.boxc.web.services.utils.CsvUtil.createCsvPrinter;
 import static org.junit.jupiter.api.Assertions.fail;
 
@@ -33,5 +35,11 @@ public class SingleUseKeyUtil {
                 csvPrinter.printRecord(UUID_TEST, key, expiration);
             }
         }
+    }
+
+    public static String parseKey(String url) {
+        var parts = url.split("/");
+        var lastIndex = parts.length - 1;
+        return parts[lastIndex];
     }
 }
