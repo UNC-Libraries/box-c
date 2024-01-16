@@ -1,11 +1,14 @@
 package edu.unc.lib.boxc.web.common.utils;
 
 import java.io.UnsupportedEncodingException;
+import java.net.URI;
 
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 
 import org.matomo.java.tracking.MatomoTracker;
+import org.matomo.java.tracking.TrackerConfiguration;
+import org.matomo.java.tracking.parameters.VisitorId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.matomo.java.tracking.MatomoRequest;
@@ -62,9 +65,9 @@ public class AnalyticsTrackerUtil {
     }
 
     private MatomoRequest buildMatomoRequest(String url, AnalyticsUserData userData, String parentCollection, String label) throws UnsupportedEncodingException {
-        return MatomoRequest.builder()
+        return MatomoRequest.request()
                 .siteId(matomoSiteID)
-                .visitorId(userData.uid)
+                .visitorId(VisitorId.fromHex(userData.uid))
                 .actionUrl(url)
                 .actionName(parentCollection + " / " + MATOMO_ACTION)
                 .eventCategory(parentCollection)
@@ -77,7 +80,10 @@ public class AnalyticsTrackerUtil {
     }
 
     private void sendMatomoRequest(MatomoRequest matomoRequest) {
-        var tracker = new MatomoTracker(matomoApiURL);
+        var tracker = new MatomoTracker(TrackerConfiguration
+                .builder()
+                .apiEndpoint(URI.create(matomoApiURL))
+                .build());
 
         try {
             tracker.sendRequestAsync(matomoRequest);
