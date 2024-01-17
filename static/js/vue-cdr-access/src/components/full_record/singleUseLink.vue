@@ -8,7 +8,7 @@
             <ul>
                 <li v-for="single_use_link in single_use_links">
                     <div class="download-link-wrapper">
-                        <div>{{ $t('full_record.created_link', { link: single_use_link.link, expire_time: single_use_link.expires }) }}</div>
+                        <div>{{ $t('full_record.created_link', { link: single_use_link.accessCode, expire_time: single_use_link.expires }) }}</div>
                         <a @click.prevent="copyUrl(single_use_link.link)" href="#" class="download button action">Copy</a>
                     </div>
                 </li>
@@ -19,6 +19,8 @@
 
 <script>
 import axios from 'axios';
+import {formatDistanceToNow} from "date-fns";
+import {toDate} from "date-fns";
 
 export default {
     name: 'singleUseLink',
@@ -40,7 +42,12 @@ export default {
                 method: 'post',
                 url: `/services/api/single_use_link/create/${this.uuid}`
             }).then((response) => {
-                this.single_use_links.push(response.data)
+                let basePath = window.location.hostname;
+                let accessCode = response.data.key;
+                this.single_use_links.push({"link": this.generateUrl(basePath, accessCode),
+                                            "accessCode": accessCode,
+                                            "expires": this.formatTimestamp(response.data.expires)
+                                            });
             }).catch((error) => {
                 console.log(error);
                 this.message = this.$t('full_record.created_link_failed', { uuid: this.uuid});
@@ -60,6 +67,14 @@ export default {
 
         fadeOutMsg() {
             setTimeout(() => this.message = '', 3000);
+        },
+
+        formatTimestamp(timestamp) {
+            return formatDistanceToNow(toDate(parseInt(timestamp)));
+        },
+
+        generateUrl(basePath, accessCode) {
+            return "https://" + basePath + "/services/api/single_use_link/" + accessCode;
         }
     }
 }

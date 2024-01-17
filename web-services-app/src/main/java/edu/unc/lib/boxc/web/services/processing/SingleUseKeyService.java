@@ -25,7 +25,7 @@ public class SingleUseKeyService {
     public static final String TIMESTAMP = "Expiration Timestamp";
     public static final String[] CSV_HEADERS = new String[] {ID, ACCESS_KEY, TIMESTAMP};
     public static final long DAY_MILLISECONDS = 86400000;
-    public static final String URL = "url";
+    public static final String KEY = "key";
     private Path csvPath;
     private ReentrantLock lock = new ReentrantLock();
 
@@ -117,7 +117,7 @@ public class SingleUseKeyService {
 
     private Map<String, String> keyToMap(String key, String id, long expirationTimestamp) {
         Map<String, String> result = new HashMap<>();
-        result.put("url", "services/api/single_use_link/" + key);
+        result.put(KEY, key);
         result.put("target_id", id);
         result.put("expires", String.valueOf(expirationTimestamp));
 

@@ -12,14 +12,13 @@ import java.util.Map;
 
 import static edu.unc.lib.boxc.web.services.processing.SingleUseKeyService.CSV_HEADERS;
 import static edu.unc.lib.boxc.web.services.processing.SingleUseKeyService.DAY_MILLISECONDS;
-import static edu.unc.lib.boxc.web.services.processing.SingleUseKeyService.URL;
+import static edu.unc.lib.boxc.web.services.processing.SingleUseKeyService.KEY;
 import static edu.unc.lib.boxc.web.services.utils.CsvUtil.parseCsv;
 import static edu.unc.lib.boxc.web.services.utils.SingleUseKeyUtil.UUID_1;
 import static edu.unc.lib.boxc.web.services.utils.SingleUseKeyUtil.UUID_2;
 import static edu.unc.lib.boxc.web.services.utils.SingleUseKeyUtil.UUID_3;
 import static edu.unc.lib.boxc.web.services.utils.SingleUseKeyUtil.UUID_TEST;
 import static edu.unc.lib.boxc.web.services.utils.SingleUseKeyUtil.generateDefaultCsv;
-import static edu.unc.lib.boxc.web.services.utils.SingleUseKeyUtil.parseKey;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -164,7 +163,6 @@ public class SingleUseKeyServiceTest {
     }
 
     private String getKey(Map<String, String> map) {
-        var url = map.get(URL);
-        return parseKey(url);
+        return map.get(KEY);
     }
 }

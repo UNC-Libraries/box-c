@@ -4,7 +4,6 @@ import edu.unc.lib.boxc.auth.api.exceptions.AccessRestrictionException;
 import edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.objects.FileObject;
-import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.boxc.web.services.processing.SingleUseKeyService;
@@ -15,7 +14,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.io.TempDir;
-import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.test.context.ContextConfiguration;
@@ -30,10 +28,9 @@ import java.util.Map;
 
 import static edu.unc.lib.boxc.web.common.services.FedoraContentService.CONTENT_DISPOSITION;
 import static edu.unc.lib.boxc.web.services.processing.SingleUseKeyService.DAY_MILLISECONDS;
-import static edu.unc.lib.boxc.web.services.processing.SingleUseKeyService.URL;
+import static edu.unc.lib.boxc.web.services.processing.SingleUseKeyService.KEY;
 import static edu.unc.lib.boxc.web.services.utils.SingleUseKeyUtil.UUID_TEST;
 import static edu.unc.lib.boxc.web.services.utils.SingleUseKeyUtil.generateDefaultCsv;
-import static edu.unc.lib.boxc.web.services.utils.SingleUseKeyUtil.parseKey;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
@@ -42,7 +39,6 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
 
 import static edu.unc.lib.boxc.auth.api.Permission.viewHidden;
-import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.openMocks;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -125,7 +121,7 @@ public class SingleUseKeyControllerIT extends AbstractAPIIT {
                 .andReturn();
 
         Map<String, Object> respMap = MvcTestHelpers.getMapFromResponse(result);
-        assertNotNull(respMap.get("url"));
+        assertNotNull(respMap.get(KEY));
         assertEquals(pid.getUUID(), respMap.get("target_id"));
         assertNotNull(respMap.get("expires"));
     }
@@ -160,8 +156,7 @@ public class SingleUseKeyControllerIT extends AbstractAPIIT {
         MvcResult generateResult = mvc.perform(post("/single_use_link/create/" + filePid.getUUID()))
                 .andReturn();
         var map = MvcTestHelpers.getMapFromResponse(generateResult);
-        var url = map.get(URL).toString();
-        var accessKey = parseKey(url);
+        var accessKey = map.get(KEY).toString();
 
         MvcResult result = mvc.perform(get("/single_use_link/" + accessKey))
                 .andExpect(status().is2xxSuccessful())
