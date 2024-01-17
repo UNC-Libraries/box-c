@@ -91,7 +91,7 @@ public class SingleUseKeyController {
             }
         } catch (IOException e) {
             log.error("Download single use link did not work:", e);
-            throw new RepositoryException("Single use key is not valid: " + accessKey);
+            throw new RepositoryException("Failed to download file using single use access key: " + accessKey);
         }
     }
 }
