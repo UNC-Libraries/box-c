@@ -1,5 +1,40 @@
 package edu.unc.lib.boxc.deposit.validate;
 
+import com.google.common.util.concurrent.MoreExecutors;
+import edu.unc.lib.boxc.common.util.URIUtil;
+import edu.unc.lib.boxc.deposit.api.RedisWorkerConstants.DepositState;
+import edu.unc.lib.boxc.deposit.fcrepo4.AbstractDepositJobTest;
+import edu.unc.lib.boxc.deposit.impl.model.DepositModelHelpers;
+import edu.unc.lib.boxc.deposit.work.JobFailedException;
+import edu.unc.lib.boxc.deposit.work.JobInterruptedException;
+import edu.unc.lib.boxc.model.api.exceptions.RepositoryException;
+import edu.unc.lib.boxc.model.api.ids.PID;
+import edu.unc.lib.boxc.model.api.ids.RepositoryPathConstants;
+import edu.unc.lib.boxc.model.api.rdf.Cdr;
+import edu.unc.lib.boxc.model.api.rdf.CdrDeposit;
+import edu.unc.lib.boxc.model.api.rdf.Premis;
+import edu.unc.lib.boxc.model.fcrepo.ids.DatastreamPids;
+import fi.solita.clamav.ClamAVClient;
+import fi.solita.clamav.ScanResult;
+import fi.solita.clamav.ScanResult.Status;
+import org.apache.commons.io.FileUtils;
+import org.apache.jena.rdf.model.Bag;
+import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.vocabulary.RDF;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.Mock;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
+
+import java.io.File;
+import java.io.InputStream;
+import java.nio.file.Path;
+import java.util.UUID;
+import java.util.concurrent.ExecutorService;
+
 import static edu.unc.lib.boxc.common.test.TestHelpers.setField;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.Matchers.any;
@@ -13,44 +48,6 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-
-import java.io.File;
-import java.io.InputStream;
-import java.nio.file.Path;
-import java.util.UUID;
-import java.util.concurrent.ExecutorService;
-
-import org.apache.commons.io.FileUtils;
-import org.apache.jena.rdf.model.Bag;
-import org.apache.jena.rdf.model.Model;
-import org.apache.jena.rdf.model.Resource;
-import org.apache.jena.vocabulary.RDF;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.mockito.Mock;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
-
-import com.google.common.util.concurrent.MoreExecutors;
-
-import edu.unc.lib.boxc.common.util.URIUtil;
-import edu.unc.lib.boxc.deposit.api.RedisWorkerConstants.DepositState;
-import edu.unc.lib.boxc.deposit.fcrepo4.AbstractDepositJobTest;
-import edu.unc.lib.boxc.deposit.impl.model.DepositModelHelpers;
-import edu.unc.lib.boxc.deposit.validate.VirusScanJob;
-import edu.unc.lib.boxc.deposit.work.JobFailedException;
-import edu.unc.lib.boxc.deposit.work.JobInterruptedException;
-import edu.unc.lib.boxc.model.api.exceptions.RepositoryException;
-import edu.unc.lib.boxc.model.api.ids.PID;
-import edu.unc.lib.boxc.model.api.ids.RepositoryPathConstants;
-import edu.unc.lib.boxc.model.api.rdf.Cdr;
-import edu.unc.lib.boxc.model.api.rdf.CdrDeposit;
-import edu.unc.lib.boxc.model.api.rdf.Premis;
-import edu.unc.lib.boxc.model.fcrepo.ids.DatastreamPids;
-import fi.solita.clamav.ClamAVClient;
-import fi.solita.clamav.ScanResult;
-import fi.solita.clamav.ScanResult.Status;
 
 /**
  *
@@ -92,6 +89,7 @@ public class VirusScanJobTest extends AbstractDepositJobTest {
         });
 
         when(clamClient.scanWithResult(any(Path.class))).thenReturn(scanResult);
+        when(clamClient.scanWithResult(any(InputStream.class))).thenReturn(scanResult);
 
         File examplesFile = new File("src/test/resources/examples");
         FileUtils.copyDirectory(examplesFile, depositDir);
@@ -104,6 +102,7 @@ public class VirusScanJobTest extends AbstractDepositJobTest {
         job.setJobUUID(jobUUID);
         job.setDepositUUID(depositUUID);
         job.setDepositDirectory(depositDir);
+        job.setMaxStreamSize(300l);
         setField(job, "pidMinter", pidMinter);
         job.setClamClient(clamClient);
         job.setPremisLoggerFactory(premisLoggerFactory);
@@ -142,7 +141,8 @@ public class VirusScanJobTest extends AbstractDepositJobTest {
 
         job.run();
 
-        verify(clamClient, times(3)).scanWithResult(any(Path.class));
+        verify(clamClient, times(1)).scanWithResult(any(InputStream.class));
+        verify(clamClient, times(2)).scanWithResult(any(Path.class));
 
         verify(jobStatusFactory).setTotalCompletion(eq(jobUUID), eq(3));
         verify(jobStatusFactory, times(3)).incrCompletion(eq(jobUUID), eq(1));
@@ -189,9 +189,8 @@ public class VirusScanJobTest extends AbstractDepositJobTest {
         when(result2.getStatus()).thenReturn(Status.FOUND);
         File pdfFile = new File(depositDir, "pdf.pdf");
         File textFile = new File(depositDir, "text.txt");
-        when(clamClient.scanWithResult(any(Path.class)))
-                .thenReturn(scanResult)
-                .thenReturn(result2);
+        when(clamClient.scanWithResult(any(InputStream.class))).thenReturn(scanResult);
+        when(clamClient.scanWithResult(any(Path.class))).thenReturn(result2);
 
         Model model = job.getWritableModel();
         Bag depBag = model.createBag(depositPid.getRepositoryPath());

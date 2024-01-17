@@ -1,14 +1,6 @@
 export default {
     methods: {
         pageEvent(recordData) {
-            this.$gtag.event('record', {
-                'event_category': recordData.briefObject.parentCollectionId,
-                'event_label': `${recordData.briefObject.title}|${recordData.briefObject.id}`
-            });
-            this.matomoPageEvent(recordData);
-        },
-
-        matomoPageEvent(recordData) {
             let collection = recordData.briefObject.parentCollectionName || '';
             if (collection === '' && recordData.briefObject.type === 'Collection') {
                 collection = recordData.briefObject.title;
@@ -29,15 +21,6 @@ export default {
         },
 
         pageView(title) {
-            this.$gtag.pageview({
-                page_title: `Digital Collections Repository - ${title}`,
-                page_path: this.$route.path,
-                page_location: window.location.href
-            });
-            this.matomoPageView(title)
-        },
-
-        matomoPageView(title) {
             window._mtm = window._mtm || [];
             window._mtm.push({
                 event: 'pageViewEvent',

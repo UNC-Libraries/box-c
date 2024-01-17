@@ -1,7 +1,8 @@
 import {shallowMount} from '@vue/test-utils';
 import patronRoles from '@/components/patronRoles.vue';
 import moxios from 'moxios';
-import store from '@/store';
+import { createTestingPinia } from '@pinia/testing';
+import { usePermissionsStore } from '@/stores/permissions';
 
 const UUID = '73bc003c-9603-4cd9-8a65-93a22520ef6a';
 const embargo_date = '2099-01-01';
@@ -49,15 +50,11 @@ let compacted_assigned_can_view_roles = [
     { principal: 'patron', role: 'canViewAccessCopies', deleted: false, embargo: false, type: 'assigned', assignedTo: UUID },
 ];
 
-let wrapper, selects;
+let wrapper, selects, store;
 
 describe('patronRoles.vue', () => {
     beforeEach(() => {
         moxios.install();
-
-        store.commit('setActionHandler', { addEvent: jest.fn() });
-        store.commit('setAlertHandler', { alertHandler: jest.fn() });
-        store.commit('setMetadata', { id: UUID, type: 'Folder', deleted: false, embargo: null });
     });
 
     afterEach(() => {
@@ -69,7 +66,7 @@ describe('patronRoles.vue', () => {
         stubDataLoad();
 
         moxios.wait(async () => {
-            await wrapper.vm.$store.commit('setEmbargoInfo', {
+            await store.setEmbargoInfo({
                 embargo: embargo_date,
                 skip_embargo: false
             });
@@ -354,7 +351,7 @@ describe('patronRoles.vue', () => {
         };
 
         stubDataLoad(resp_with_allowed_patrons);
-        wrapper.vm.$store.commit('setMetadata', { type: 'Collection', id: UUID });
+        store.setMetadata({ type: 'Collection', id: UUID });
 
         moxios.wait(async () => {
             expect(wrapper.vm.assignedPatronRoles).toEqual(assigned_other_roles);
@@ -475,7 +472,7 @@ describe('patronRoles.vue', () => {
         };
 
         stubDataLoad(response);
-        wrapper.vm.$store.commit('setMetadata', { type: 'Collection', id: UUID })
+        store.setMetadata({ type: 'Collection', id: UUID })
 
         moxios.wait(() => {
             expect(wrapper.vm.user_type).toEqual('staff');
@@ -508,7 +505,7 @@ describe('patronRoles.vue', () => {
         };
 
         stubDataLoad(response);
-        wrapper.vm.$store.commit('setMetadata', { type: 'Collection', id: UUID });
+        store.setMetadata({ type: 'Collection', id: UUID });
 
         moxios.wait(() => {
             expect(wrapper.vm.submissionAccessDetails().roles).toEqual(assigned_roles);
@@ -952,7 +949,7 @@ describe('patronRoles.vue', () => {
                 { principal: 'authenticated', role: 'canViewOriginals', deleted: false, embargo: false, type: 'inherited', assignedTo: null }
             ]);
 
-            wrapper.vm.$store.commit('setEmbargoInfo', { embargo: embargo_date, skip_embargo: false });
+            store.setEmbargoInfo({ embargo: embargo_date, skip_embargo: false });
             expect(wrapper.vm.displayAssignments).toEqual([
                 { principal: 'patron', role: 'canViewMetadata', deleted: false, embargo: true, type: 'assigned', assignedTo: UUID }
             ]);
@@ -976,7 +973,7 @@ describe('patronRoles.vue', () => {
                 { principal: 'authenticated', role: 'canViewMetadata', deleted: false, embargo: false, type: 'inherited', assignedTo: null }
             ]);
 
-            await wrapper.vm.$store.commit('setEmbargoInfo', embargo_date);
+            await store.setEmbargoInfo(embargo_date);
             expect(wrapper.vm.displayAssignments).toEqual([
                 { principal: 'everyone', role: 'none', deleted: false, embargo: true, type: 'assigned', assignedTo: UUID },
                 { principal: 'authenticated', role: 'canViewMetadata', deleted: false, embargo: false, type: 'inherited', assignedTo: null }
@@ -991,10 +988,10 @@ describe('patronRoles.vue', () => {
         moxios.wait(async () => {
             expect(wrapper.vm.submissionAccessDetails().embargo).toEqual(null);
 
-            await wrapper.vm.$store.commit('setEmbargoInfo', { embargo: embargo_date, skip_embargo: false });
+            await store.setEmbargoInfo({ embargo: embargo_date, skip_embargo: false });
             expect(wrapper.vm.submissionAccessDetails().embargo).toEqual(embargo_date);
 
-            await wrapper.vm.$store.commit('setEmbargoInfo', { embargo: null, skip_embargo: false });
+            await store.setEmbargoInfo({ embargo: null, skip_embargo: false });
             expect(wrapper.vm.submissionAccessDetails().embargo).toEqual(null);
             done();
         })
@@ -1138,9 +1135,8 @@ describe('patronRoles.vue', () => {
     })
 
     it("Save button to disabled when no changes for bulk update", (done) => {
-        mountBulk(resultObjectsTwoFolders);
         stubAllowedPrincipals([]);
-        mountApp();
+        mountApp(true, resultObjectsTwoFolders);
 
         moxios.wait(async () => {
             expect(wrapper.find('.inherited-permissions').exists()).toBe(false)
@@ -1150,11 +1146,11 @@ describe('patronRoles.vue', () => {
             expect(wrapper.vm.submissionAccessDetails().roles).toEqual([]);
             expectSaveButtonDisabled();
 
-            wrapper.vm.$store.commit('setEmbargoInfo', {embargo: embargo_date, skipEmbargo: false});
+            store.setEmbargoInfo({embargo: embargo_date, skipEmbargo: false});
             await wrapper.vm.$nextTick();
             expectSaveButtonDisabled(false);
 
-            wrapper.vm.$store.commit('setEmbargoInfo', {embargo: null, skipEmbargo: true});
+            store.setEmbargoInfo({embargo: null, skipEmbargo: true});
             await wrapper.vm.$nextTick();
             expectSaveButtonDisabled();
 
@@ -1168,8 +1164,7 @@ describe('patronRoles.vue', () => {
     });
 
     it("User type changes to staff only during bulk update", (done) => {
-        mountBulk(resultObjectsTwoFolders);
-        mountApp();
+        mountApp(true, resultObjectsTwoFolders);
 
         moxios.wait(async () => {
             await wrapper.find('#user_type_staff').trigger('change');
@@ -1189,8 +1184,7 @@ describe('patronRoles.vue', () => {
 
     it("Can submit custom groups during bulk update", (done) => {
         stubAllowedPrincipals([{principal: "my:special:group", name: "Special Group"}]);
-        mountBulk(resultObjectsTwoFolders);
-        mountApp();
+        mountApp(true, resultObjectsTwoFolders);
 
         moxios.wait(async () => {
             await wrapper.find('#user_type_patron').trigger('change');
@@ -1231,11 +1225,10 @@ describe('patronRoles.vue', () => {
 
     it("Bulk update submits added embargo", (done) => {
         stubAllowedPrincipals([]);
-        mountBulk(resultObjectsTwoFolders);
-        mountApp();
+        mountApp(true, resultObjectsTwoFolders);
 
         moxios.wait(async () => {
-            await wrapper.vm.$store.commit('setEmbargoInfo', { embargo: embargo_date, skipEmbargo: false });
+            await store.setEmbargoInfo({ embargo: embargo_date, skipEmbargo: false });
             stubBulkDataSaveResponse();
             await wrapper.find('#is-submitting').trigger('click');
 
@@ -1261,8 +1254,8 @@ describe('patronRoles.vue', () => {
     });
 
     it("Enables 'save' by default in bulk mode", (done) => {
-        mountBulk(resultObjectsTwoFolders);
-        mountApp();
+        mountApp(true, resultObjectsTwoFolders);
+
         moxios.wait(() => {
             expectSaveButtonDisabled(false);
             done();
@@ -1286,18 +1279,29 @@ describe('patronRoles.vue', () => {
         }
     ];
 
-    function mountBulk(resultObjects) {
-        store.commit('setResultObjects', resultObjects);
-        store.commit('setMetadata', { type: null, id: null });
-    }
+    function mountApp(use_bulk = false, resultObjects = []) {
+        let initial_permissions = {
+            actionHandler: { addEvent: jest.fn() },
+            alertHandler: { alertHandler: jest.fn() },
+            metadata: { id: UUID, type: 'Folder', deleted: false, embargo: null }
+        }
+        if (use_bulk) {
+            initial_permissions.resultObjects = resultObjects;
+            initial_permissions.metadata = { type: null, id: null }
+        }
 
-    function mountApp() {
         wrapper = shallowMount(patronRoles, {
             global: {
-                plugins: [store]
+                plugins: [createTestingPinia({
+                    initialState: {
+                        permissions: initial_permissions
+                    },
+                    stubActions: false
+                })]
             }
         });
 
+        store = usePermissionsStore();
         global.confirm = jest.fn().mockReturnValue(true);
         selects = wrapper.findAll('select');
     }

@@ -3,6 +3,7 @@ package edu.unc.lib.boxc.web.access.controllers;
 import edu.unc.lib.boxc.auth.api.Permission;
 import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
 import edu.unc.lib.boxc.auth.api.services.AccessControlService;
+import edu.unc.lib.boxc.auth.fcrepo.services.ObjectAclFactory;
 import edu.unc.lib.boxc.model.api.ResourceType;
 import edu.unc.lib.boxc.model.api.exceptions.FedoraException;
 import edu.unc.lib.boxc.model.api.exceptions.NotFoundException;
@@ -43,9 +44,11 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.InputStream;
+import java.text.SimpleDateFormat;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TimeZone;
 import java.util.stream.Collectors;
 
 import static edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore.getAgentPrincipals;
@@ -82,6 +85,8 @@ public class FullRecordController extends AbstractErrorHandlingSearchController 
     private AccessCopiesService accessCopiesService;
     @Autowired
     private XmlDocumentFilteringService xmlDocumentFilteringService;
+    @Autowired
+    private ObjectAclFactory objectAclFactory;
 
     @Autowired(required = true)
     private XSLViewResolver xslViewResolver;
@@ -219,6 +224,13 @@ public class FullRecordController extends AbstractErrorHandlingSearchController 
             isMarkedForDeletion = objectStatus.contains(MARKED_FOR_DELETION);
         }
         recordProperties.put("markedForDeletion", isMarkedForDeletion);
+
+        var embargoDate = objectAclFactory.getEmbargoUntil(pid);
+        if (embargoDate != null) {
+            SimpleDateFormat dateFormatter = new SimpleDateFormat("yyyy-MM-dd");
+            dateFormatter.setTimeZone(TimeZone.getTimeZone("UTC"));
+            recordProperties.put("embargoDate", dateFormatter.format(embargoDate));
+        }
         recordProperties.put("briefObject", SerializationUtil.metadataToMap(briefObject, principals));
         recordProperties.put("pageSubtitle", briefObject.getTitle());
         return SerializationUtil.objectToJSON(recordProperties);

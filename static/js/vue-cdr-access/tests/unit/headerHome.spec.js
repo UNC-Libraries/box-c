@@ -1,28 +1,26 @@
 import {mount, RouterLinkStub} from '@vue/test-utils';
+import {createTestingPinia} from '@pinia/testing';
+import { useAccessStore } from '@/stores/access';
 import dcrHeader from '@/components/header/headerHome.vue';
 
-let wrapper;
+let wrapper, store;
 describe('headerHome.vue', () => {
-    const $store = {
-        state: {
-            isLoggedIn: false,
-            username: '',
-            viewAdmin: false
-        },
-        commit: jest.fn()
-    };
-
     beforeEach(() => {
         wrapper = mount(dcrHeader, {
             global: {
-                mocks: {
-                    $store
-                },
+                plugins: [createTestingPinia({
+                    stubActions: false
+                })],
                 stubs: {
                     RouterLink: RouterLinkStub
                 }
             }
         });
+        store = useAccessStore();
+    });
+
+    afterEach(() => {
+        store.$reset();
     });
 
     it("loads headerHome on the home page", () => {
@@ -38,49 +36,49 @@ describe('headerHome.vue', () => {
     });
 
     it("logout button present when logged in", () => {
-        const $store = {
-            state: {
-                isLoggedIn: true,
-                username: 'test_user',
-                viewAdmin: false
-            },
-            commit: jest.fn()
-        };
         const current_page = window.location;
         const logoutUrl = `https://${current_page.host}/Shibboleth.sso/Logout?return=https://sso.unc.edu/idp/logout.jsp?return_url=${encodeURIComponent(current_page)}`;
         wrapper = mount(dcrHeader, {
             global: {
-                mocks: {
-                    $store
-                },
+                plugins: [createTestingPinia({
+                    initialState: {
+                        access: {
+                            isLoggedIn: true,
+                            username: 'test_user',
+                            viewAdmin: false
+                        }
+                    },
+                    stubActions: false
+                })],
                 stubs: {
                     RouterLink: RouterLinkStub
                 }
             }
         });
+        store = useAccessStore();
         expect(wrapper.html()).toContain(logoutUrl);
     });
 
     it("admin link present when user logged in as admin", () => {
-        const $store = {
-            state: {
-                isLoggedIn: true,
-                username: 'test_user',
-                viewAdmin: true
-            },
-            commit: jest.fn()
-        };
         const adminUrl = `https://${window.location.host}/admin/`;
         wrapper = mount(dcrHeader, {
             global: {
-                mocks: {
-                    $store
-                },
+                plugins: [createTestingPinia({
+                    initialState: {
+                        access: {
+                            isLoggedIn: true,
+                            username: 'test_user',
+                            viewAdmin: true
+                        }
+                    },
+                    stubActions: false
+                })],
                 stubs: {
                     RouterLink: RouterLinkStub
                 }
             }
         });
+        store = useAccessStore();
         expect(wrapper.html()).toContain(adminUrl);
     });
 });

@@ -98,7 +98,8 @@
     import patronHelpers from '../mixins/patronHelpers';
     import axios from 'axios';
     import cloneDeep from 'lodash.clonedeep';
-    import { mapState } from 'vuex';
+    import { mapActions, mapState } from 'pinia';
+    import { usePermissionsStore } from '../stores/permissions';
 
     const EVERYONE_PRINCIPAL = 'everyone';
     const AUTH_PRINCIPAL = 'authenticated';
@@ -148,19 +149,19 @@
         },
 
         computed: {
-            // Get needed state from Vuex
-            ...mapState({
-                alertHandler: state => state.alertHandler,
-                actionHandler: state => state.actionHandler,
-                changesCheck: state => state.checkForUnsavedChanges,
-                containerType: state => state.metadata.type,
-                embargo: state => state.embargoInfo.embargo,
-                skipEmbargo: state => state.embargoInfo.skipEmbargo,
-                resultObject: state => state.resultObject,
-                resultObjects: state => state.resultObjects,
-                objectPath: state => state.metadata.objectPath,
-                title: state => state.metadata.title,
-                uuid: state => state.metadata.id
+            // Get needed state from Pinia
+            ...mapState(usePermissionsStore, {
+                alertHandler: store => store.alertHandler,
+                actionHandler: store => store.actionHandler,
+                changesCheck: store => store.checkForUnsavedChanges,
+                containerType: store => store.metadata.type,
+                embargo: store => store.embargoInfo.embargo,
+                skipEmbargo: store => store.embargoInfo.skipEmbargo,
+                resultObject: store => store.resultObject,
+                resultObjects: store => store.resultObjects,
+                objectPath: store => store.metadata.objectPath,
+                title: store => store.metadata.title,
+                uuid: store => store.metadata.id
             }),
 
             possibleRoles() {
@@ -272,6 +273,8 @@
         },
 
         methods: {
+            ...mapActions(usePermissionsStore, ['setEmbargoInfo']),
+
             setRoleType(roles, type) {
                 if (roles.length > 0) {
                     roles.forEach((d) => {
@@ -300,7 +303,7 @@
                     return;
                 }
                 axios.get(`/services/api/acl/patron/${this.uuid}`).then((response) => {
-                    this.$store.commit('setEmbargoInfo', {
+                    this.setEmbargoInfo({
                         embargo: response.data.assigned.embargo,
                         skipEmbargo: true
                     });

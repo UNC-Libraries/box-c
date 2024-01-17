@@ -1,10 +1,9 @@
 import { createApp, h } from 'vue'
 import { createI18n } from 'vue-i18n'
 import { createHead, VueHeadMixin } from "@vueuse/head"
-import VueGtag from 'vue-gtag';
+import { createPinia } from 'pinia'
 import App from './App.vue'
 import router from './router'
-import store from './store'
 import translations from '@/translations';
 import './assets/common-styles.css';
 import './assets/nouislider.css'; // Imported here, otherwise it breaks component tests, as an invalid import
@@ -24,7 +23,7 @@ if (document.getElementById('app') !== null && window.dcr_browse_records === und
         }
     });
 
-    const gaCode = import.meta.env.VITE_GA_CODE || '';
+    const pinia = createPinia();
 
     // Set this here as it gives a build error otherwise
     window.matomoSiteSrcUrl = import.meta.env.VITE_MATOMO_SITE_SRC_URL || '';
@@ -34,13 +33,8 @@ if (document.getElementById('app') !== null && window.dcr_browse_records === und
             return h(App);
         }
     }).mixin(VueHeadMixin)
+        .use(pinia)
         .use(head)
-        .use(store)
         .use(router)
-        .use(i18n)
-        .use(VueGtag, {
-            config: {
-                id: gaCode
-            }
-        }).mount('#app');
+        .use(i18n).mount('#app');
 }

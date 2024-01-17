@@ -196,14 +196,14 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'A
 		}
 
 		// Export actions
-		if (metadata.type !== 'File' && $.inArray('viewHidden', metadata.permissions) !== -1) {
+		if (!isContentRoot && metadata.type !== 'File' && $.inArray('viewHidden', metadata.permissions) !== -1) {
 			items["export"] = {name: "Export", items: {}}
 
-			if (!isContentRoot) {
-				items['export']['items']["exportCSV"] = {name: "Export CSV"};
-			}
+			items['export']['items']["exportCSV"] = {name: "Export CSV"};
 
-			items['export']['items']["exportMemberOrder"] = {name: "Export Member Order"};
+			if (metadata.type === 'Work') {
+				items['export']['items']["exportMemberOrder"] = {name: "Export Member Order"};
+			}
 		}
 
 		items["copyid"] = {name : 'Copy PID to Clipboard'};
@@ -446,19 +446,19 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'A
 						})();
 						break;
 					case "patronPermissions":
-						perms_editor_store.commit('setPermissionType', 'Patron');
-						perms_editor_store.commit('setMetadata', metadata);
-						perms_editor_store.commit('setShowModal', true);
-						perms_editor_store.commit('setAlertHandler', self.options.alertHandler);
-						perms_editor_store.commit('setActionHandler', self.actionHandler);
-						perms_editor_store.commit('setResultObject', resultObject);
-						perms_editor_store.commit('setResultObjects', null);
+						perms_editor_store.setPermissionType('Patron');
+						perms_editor_store.setMetadata(metadata);
+						perms_editor_store.setShowModal(true);
+						perms_editor_store.setAlertHandler(self.options.alertHandler);
+						perms_editor_store.setActionHandler(self.actionHandler);
+						perms_editor_store.setResultObject(resultObject);
+						perms_editor_store.setResultObjects(null);
 						break;
 					case "staffPermissions":
-						perms_editor_store.commit('setPermissionType', 'Staff');
-						perms_editor_store.commit('setMetadata', metadata);
-						perms_editor_store.commit('setShowModal', true);
-						perms_editor_store.commit('setAlertHandler', self.options.alertHandler);
+						perms_editor_store.setPermissionType('Staff');
+						perms_editor_store.setMetadata(metadata);
+						perms_editor_store.setShowModal(true);
+						perms_editor_store.setAlertHandler(self.options.alertHandler);
 						break;
 				}
 			},

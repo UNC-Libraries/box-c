@@ -1,14 +1,14 @@
 import {RouterLinkStub, shallowMount} from '@vue/test-utils';
 import { createRouter, createWebHistory } from 'vue-router';
+import { createTestingPinia } from '@pinia/testing';
+import { useAccessStore } from '@/stores/access';
 import aboutRepository from '@/components/aboutRepository.vue';
 import displayWrapper from "@/components/displayWrapper.vue";
 import {createI18n} from "vue-i18n";
 import translations from "@/translations";
-import store from '@/store';
 import moxios from "moxios";
-import { $gtag } from '../fixtures/testHelpers';
 
-let wrapper, router;
+let wrapper, router, store;
 
 describe('aboutRepository.vue', () => {
     const i18n = createI18n({
@@ -37,16 +37,19 @@ describe('aboutRepository.vue', () => {
         });
         wrapper = shallowMount(aboutRepository, {
             global: {
-                plugins: [i18n, router, store],
-                mocks: { $gtag },
+                plugins: [i18n, router, createTestingPinia({
+                    stubActions: false
+                })],
                 stubs: {
                     RouterLink: RouterLinkStub
                 }
             }
         });
+        store = useAccessStore();
     });
 
     afterEach(function () {
+        store.$reset();
         moxios.uninstall();
     });
 
