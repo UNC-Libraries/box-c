@@ -9,7 +9,7 @@
                 <li v-for="single_use_link in single_use_links">
                     <div class="download-link-wrapper">
                         <div>{{ $t('full_record.created_link', { link: single_use_link.accessCode, expire_time: single_use_link.expires }) }}</div>
-                        <a @click.prevent="copyUrl(single_use_link.link)" href="#" class="download button action">Copy</a>
+                        <a @click.prevent="copyUrl(single_use_link.link)" href="#" class="download button action">Copy Link</a>
                     </div>
                 </li>
             </ul>
@@ -45,7 +45,7 @@ export default {
                 let basePath = window.location.hostname;
                 let accessCode = response.data.key;
                 this.single_use_links.push({"link": this.generateUrl(basePath, accessCode),
-                                            "accessCode": accessCode,
+                                            "accessCode": accessCode.substring(0, 8),
                                             "expires": this.formatTimestamp(response.data.expires)
                                             });
             }).catch((error) => {
@@ -112,6 +112,8 @@ export default {
 
         .single-use-msg-text {
             display: none;
+            word-break: break-word;
+            padding: 5px;
         }
 
         .display-msg {
@@ -125,7 +127,7 @@ export default {
             right: 10px;
             text-align: center;
             top: 10px;
-            width: 250px;
+            width: auto;
             z-index: 599;
         }
     }
