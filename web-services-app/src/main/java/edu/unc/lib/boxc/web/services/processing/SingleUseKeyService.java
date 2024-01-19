@@ -6,6 +6,8 @@ import org.apache.commons.csv.CSVRecord;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -23,6 +25,7 @@ public class SingleUseKeyService {
     public static final String TIMESTAMP = "Expiration Timestamp";
     public static final String[] CSV_HEADERS = new String[] {ID, ACCESS_KEY, TIMESTAMP};
     public static final long DAY_MILLISECONDS = 86400000;
+    public static final String KEY = "key";
     private Path csvPath;
     private ReentrantLock lock = new ReentrantLock();
 
@@ -31,7 +34,7 @@ public class SingleUseKeyService {
      * @param id UUID of the record
      * @return generated access key
      */
-    public String generate(String id) {
+    public Map<String, String> generate(String id) {
         var key = getKey();
         lock.lock();
         var expirationInMilliseconds = System.currentTimeMillis() + DAY_MILLISECONDS;
@@ -42,7 +45,7 @@ public class SingleUseKeyService {
         } finally {
             lock.unlock();
         }
-        return key;
+        return keyToMap(key, id, expirationInMilliseconds);
     }
 
     /**
@@ -100,6 +103,25 @@ public class SingleUseKeyService {
 
     public static String getKey() {
         return UUID.randomUUID().toString().replace("-", "") + Long.toHexString(System.nanoTime());
+    }
+
+    public String getId(String key) throws IOException {
+        var csvRecords = parseCsv(CSV_HEADERS, csvPath);
+        for (CSVRecord record : csvRecords) {
+            if (key.equals(record.get(ACCESS_KEY))) {
+                return record.get(ID);
+            }
+        }
+        return null;
+    }
+
+    private Map<String, String> keyToMap(String key, String id, long expirationTimestamp) {
+        Map<String, String> result = new HashMap<>();
+        result.put(KEY, key);
+        result.put("target_id", id);
+        result.put("expires", String.valueOf(expirationTimestamp));
+
+        return result;
     }
 
     public void setCsvPath(Path csvPath) {

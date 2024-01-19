@@ -5,7 +5,8 @@ import translations from '@/translations';
 import moxios from 'moxios';
 
 const uuid = '9f7f3746-0237-4261-96a2-4b4765d4ae03';
-const response_date = { link: `https://test.edu`, expires: '24hrs', id: uuid };
+const oneDay = 86400000;
+const response_date = { key: `12345`, expires: Date.now() + oneDay, id: uuid };
 let wrapper;
 
 describe('singleUseLink.vue', () => {
@@ -44,7 +45,7 @@ describe('singleUseLink.vue', () => {
             await wrapper.find('#single-use-link').trigger('click');
             expect(wrapper.find('.download-link-wrapper').exists()).toBe(true);
             expect(wrapper.find('.download-link-wrapper div').text())
-                .toEqual(`Created link ${response_date.link} expires in ${response_date.expires}`);
+                .toEqual(`Created link ${response_date.key} expires in 1 day`);
             expect(wrapper.find('.download-link-wrapper a').exists()).toBe(true); // Copy button
             done();
         });
