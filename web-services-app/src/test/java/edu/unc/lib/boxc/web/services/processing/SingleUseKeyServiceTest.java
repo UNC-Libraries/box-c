@@ -125,13 +125,23 @@ public class SingleUseKeyServiceTest {
     }
 
     @Test
-    public void testInvalidateTimeBased() throws IOException {
+    public void testInvalidateTimeBasedAllExpired() throws IOException {
         var expirationTimestamp = System.currentTimeMillis() - (2 * DAY_MILLISECONDS);
         generateDefaultCsv(csvPath,null, expirationTimestamp);
         singleUseKeyService.invalidate(null);
 
         var records = parseCsv(CSV_HEADERS, csvPath);
         assertEquals(0, records.size());
+    }
+
+    @Test
+    public void testInvalidateTimeBasedNoneExpired() throws IOException {
+        var expirationTimestamp = System.currentTimeMillis() + (2 * DAY_MILLISECONDS);
+        generateDefaultCsv(csvPath,null, expirationTimestamp);
+        singleUseKeyService.invalidate(null);
+
+        var records = parseCsv(CSV_HEADERS, csvPath);
+        assertEquals(3, records.size());
     }
 
     @Test

@@ -86,17 +86,17 @@ public class SingleUseKeyService {
         try {
             var csvRecords = parseCsv(CSV_HEADERS, csvPath);
             var updatedRecords = new ArrayList<>();
-            var recordExists = false;
+            var recordsChanged = false;
             for (CSVRecord record : csvRecords) {
                 if (recordShouldBeInvalidated(key, record)) {
-                    recordExists = true;
+                    recordsChanged = true;
                 } else {
                     // keep this record as it is valid
                     updatedRecords.add(record);
                 }
             }
 
-            if (recordExists) {
+            if (recordsChanged) {
                 writeNewCsv(updatedRecords);
             }
         } catch (IOException e) {
@@ -109,17 +109,17 @@ public class SingleUseKeyService {
     /**
      * Determines if the specific record should be invalidated
      * @param key the access key, may be null if we want a time-based eval
-     * @param record the csv record
+     * @param row the csv row that is the CSV record
      * @return true if the record should be invalidated
      */
-    private boolean recordShouldBeInvalidated(String key, CSVRecord record) {
-        var currentTime = System.currentTimeMillis();
+    private boolean recordShouldBeInvalidated(String key, CSVRecord row) {
         if (key == null) {
             // if record's timestamp is in the past, it should be invalidated
-            return Long.parseLong(record.get(TIMESTAMP)) < currentTime;
+            var currentTime = System.currentTimeMillis();
+            return Long.parseLong(row.get(TIMESTAMP)) < currentTime;
         } else {
             // if the record's key matches, it should be invalidated
-            return key.equals(record.get(ACCESS_KEY));
+            return key.equals(row.get(ACCESS_KEY));
         }
     }
 
