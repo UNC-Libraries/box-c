@@ -29,6 +29,14 @@ export default {
         uuid: String
     },
 
+    watch: {
+        '$route.path': {
+            handler() {
+                this.single_use_links = []
+            }
+        }
+    },
+
     data() {
         return {
             single_use_links: [],
