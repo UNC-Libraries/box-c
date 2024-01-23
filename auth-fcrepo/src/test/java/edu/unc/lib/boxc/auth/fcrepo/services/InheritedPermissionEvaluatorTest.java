@@ -8,6 +8,7 @@ import static edu.unc.lib.boxc.auth.api.UserRole.canManage;
 import static edu.unc.lib.boxc.auth.api.UserRole.canViewAccessCopies;
 import static edu.unc.lib.boxc.auth.api.UserRole.canViewMetadata;
 import static edu.unc.lib.boxc.auth.api.UserRole.canViewOriginals;
+import static edu.unc.lib.boxc.auth.api.UserRole.canViewReducedQuality;
 import static edu.unc.lib.boxc.model.api.ids.RepositoryPathConstants.CONTENT_ROOT_ID;
 import static java.util.Arrays.asList;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -399,6 +400,20 @@ public class InheritedPermissionEvaluatorTest {
         mockFactoryPrincipalRoles(pid, PATRON_GROUP, canViewOriginals);
 
         assertTrue(evaluator.hasPermission(pid, PATRON_GROUP_PRINCIPLES, Permission.viewOriginal));
+    }
+
+    @Test
+    public void contentPatronHasPermissionViewReducedTest() {
+        addPidToAncestors();
+        PID collectionPid = addPidToAncestors();
+
+        mockFactoryPrincipalRoles(collectionPid, PUBLIC_PRINC, canViewOriginals);
+        mockFactoryPrincipalRoles(collectionPid, AUTHENTICATED_PRINC, canViewOriginals);
+
+        mockFactoryPrincipalRoles(pid, PUBLIC_PRINC, canViewReducedQuality);
+        mockFactoryPrincipalRoles(pid, AUTHENTICATED_PRINC, canViewOriginals);
+
+        assertTrue(evaluator.hasPermission(pid, PATRON_PRINCIPLES, Permission.viewReducedResImages));
     }
 
     @Test

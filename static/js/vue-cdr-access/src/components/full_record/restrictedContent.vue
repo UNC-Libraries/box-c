@@ -13,9 +13,9 @@
             <a class="edit button action" :href="editDescriptionUrl(recordData.briefObject.id)"><i class="fa fa-edit"></i> {{ $t('full_record.edit') }}</a>
         </div>
         <template v-if="recordData.resourceType === 'File'">
-            <template v-if="hasPermission(recordData, 'viewOriginal')">
+            <template v-if="hasDownloadAccess(recordData)">
                 <div class="header-button" v-html="downloadButtonHtml(recordData.briefObject)"></div>
-                <div class="actionlink">
+                <div class="actionlink" v-if="hasPermission(recordData, 'viewOriginal')">
                     <a class="button view action" :href="recordData.dataFileUrl">
                         <i class="fa fa-search" aria-hidden="true"></i> View</a>
                 </div>

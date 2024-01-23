@@ -1,7 +1,10 @@
 package edu.unc.lib.boxc.services.camel.patronAccess;
 
 import static edu.unc.lib.boxc.auth.api.AccessPrincipalConstants.AUTHENTICATED_PRINC;
+import static edu.unc.lib.boxc.auth.api.AccessPrincipalConstants.PUBLIC_PRINC;
 import static edu.unc.lib.boxc.auth.api.UserRole.canViewMetadata;
+import static edu.unc.lib.boxc.auth.api.UserRole.canViewOriginals;
+import static edu.unc.lib.boxc.auth.api.UserRole.canViewReducedQuality;
 import static java.util.Arrays.asList;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.timeout;
@@ -71,6 +74,26 @@ public class PatronAccessAssignmentRouterTest extends CamelSpringTestSupport {
         PatronAccessDetails accessDetails = new PatronAccessDetails();
         accessDetails.setRoles(asList(
                 new RoleAssignment(AUTHENTICATED_PRINC, canViewMetadata)));
+
+        PatronAccessAssignmentRequest request = new PatronAccessAssignmentRequest(agent, pid, accessDetails);
+        patronAccessOperationSender.sendUpdateRequest(request);
+
+        verify(patronAccessAssignmentService, timeout(1000)).updatePatronAccess(requestCaptor.capture());
+        PatronAccessAssignmentRequest received = requestCaptor.getValue();
+
+        assertEquals(pid, received.getTargetPid());
+        assertEquals(agent.getPrincipals(), received.getAgent().getPrincipals());
+        assertEquals(accessDetails.getRoles(), received.getAccessDetails().getRoles());
+    }
+
+    @Test
+    public void assignReducedQualityRoleTest() throws Exception {
+        AgentPrincipals agent = new AgentPrincipalsImpl(USER, new AccessGroupSetImpl(PRINCIPALS));
+        PID pid = PIDs.get(UUID.randomUUID().toString());
+        PatronAccessDetails accessDetails = new PatronAccessDetails();
+        accessDetails.setRoles(asList(
+                new RoleAssignment(PUBLIC_PRINC, canViewReducedQuality),
+                new RoleAssignment(AUTHENTICATED_PRINC, canViewOriginals)));
 
         PatronAccessAssignmentRequest request = new PatronAccessAssignmentRequest(agent, pid, accessDetails);
         patronAccessOperationSender.sendUpdateRequest(request);

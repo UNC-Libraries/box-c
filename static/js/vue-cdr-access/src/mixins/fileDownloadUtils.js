@@ -25,7 +25,7 @@ export default {
         },
 
         showImageDownload(brief_object) {
-            return this.hasPermission(brief_object, 'viewOriginal') &&
+            return this.hasPermission(brief_object, 'viewReducedResImages') &&
                 brief_object.format.includes('Image') && this.getOriginalFile(brief_object) !== undefined
         },
         
@@ -62,13 +62,15 @@ export default {
                     html += `<a href="${this.imgDownloadLink(brief_object.id, '2500')}" class="dropdown-item">${this.$t('full_record.large') } JPG (2500px)</a>`;
                 }
 
+                if (this.hasPermission(brief_object, 'viewOriginal')) {
+                    html += `<a href="${this.imgDownloadLink(brief_object.id, 'full')}" class="dropdown-item">${this.$t('full_record.full_size')} JPG</a>`;
+                    html += '<hr class="dropdown-divider">';
+                    html += `<a href="/indexablecontent/${brief_object.id}?dl=true" class="dropdown-item">${this.$t('full_record.original_file')}</a>`;
+                }
 
-                html += `<a href="${this.imgDownloadLink(brief_object.id, 'full')}" class="dropdown-item">${this.$t('full_record.full_size')} JPG</a>`;
-                html += '<hr class="dropdown-divider">';
-                html += `<a href="/indexablecontent/${brief_object.id}?dl=true" class="dropdown-item">${this.$t('full_record.original_file')}</a>`;
-
-                html += '</div>'
-                html += '</div>'
+                html += '</div>';
+                html += '</div>';
+                html += '</div>';
 
                 return html;
             } else {
