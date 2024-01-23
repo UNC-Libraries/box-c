@@ -4,6 +4,7 @@ import {createTestingPinia} from '@pinia/testing';
 import { useAccessStore } from '@/stores/access';
 import restrictedContent from '@/components/full_record/restrictedContent.vue';
 import displayWrapper from '@/components/displayWrapper.vue';
+import singleUseLink from '@/components/full_record/singleUseLink.vue';
 import {createI18n} from 'vue-i18n';
 import translations from '@/translations';
 import cloneDeep from 'lodash.clonedeep';
@@ -262,6 +263,26 @@ describe('restrictedContent.vue', () => {
         await setRecordPermissions(updated_data, ['viewAccessCopies', 'viewReducedResImages', 'viewOriginal']);
 
         expect(wrapper.find('.download').exists()).toBe(false);
+    });
+
+    it('displays a single use link button for files with the proper permissions', async () => {
+        const updated_data = cloneDeep(record);
+        updated_data.briefObject.permissions = ['viewAccessCopies', 'viewHidden', 'viewOriginal'];
+        await wrapper.setProps({
+            recordData: updated_data
+        });
+        expect(wrapper.findComponent(singleUseLink).exists()).toBe(true);
+    });
+
+    it('does not display a single use link button for files without the proper permissions', async () => {
+        const updated_data = cloneDeep(record);
+        updated_data.dataFileUrl = 'content/4db695c0-5fd5-4abf-9248-2e115d43f57d';
+        updated_data.resourceType = 'File';
+        updated_data.briefObject.permissions = ['viewAccessCopies'];
+        await wrapper.setProps({
+            recordData: updated_data
+        });
+        expect(wrapper.findComponent(singleUseLink).exists()).toBe(false);
     });
 
     it('does not show view options if content is public', async () => {

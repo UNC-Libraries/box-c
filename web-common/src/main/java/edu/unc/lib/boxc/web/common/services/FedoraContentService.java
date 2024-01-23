@@ -62,7 +62,7 @@ public class FedoraContentService {
      * @param response response content and headers will be added to.
      * @throws IOException if unable to stream content to the response.
      */
-    public void streamData(PID pid, String dsName, AccessGroupSet principals, boolean asAttachment,
+    public void streamData(PID pid, String dsName, boolean asAttachment,
             HttpServletResponse response) throws IOException {
         // Default datastream is DATA_FILE
         String datastream = dsName == null ? ORIGINAL_FILE.getId() : dsName;
@@ -75,11 +75,7 @@ public class FedoraContentService {
             throw new IllegalArgumentException("Cannot stream external datastream " + datastream);
         }
 
-        accessControlService.assertHasAccess("Insufficient permissions to access " + datastream + " for object " + pid,
-                pid, principals, getPermissionForDatastream(datastream));
-
         LOG.debug("Streaming datastream {} from object {}", datastream, pid);
-
 
         BinaryObject binObj;
         if (ORIGINAL_FILE.getId().equals(datastream)) {
