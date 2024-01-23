@@ -101,7 +101,7 @@ public class SingleUseKeyServiceTest {
     }
 
     @Test
-    public void testInvalidate() throws IOException {
+    public void testInvalidateWithKey() throws IOException {
         var key = SingleUseKeyService.getKey();
         var expirationTimestamp = System.currentTimeMillis() + DAY_MILLISECONDS;
         generateDefaultCsv(csvPath, key, expirationTimestamp);
@@ -121,6 +121,26 @@ public class SingleUseKeyServiceTest {
 
         var records = parseCsv(CSV_HEADERS, csvPath);
         assertDoesNotContainAccessKey(records, key);
+        assertEquals(3, records.size());
+    }
+
+    @Test
+    public void testInvalidateTimeBasedAllExpired() throws IOException {
+        var expirationTimestamp = System.currentTimeMillis() - (2 * DAY_MILLISECONDS);
+        generateDefaultCsv(csvPath,null, expirationTimestamp);
+        singleUseKeyService.invalidate(null);
+
+        var records = parseCsv(CSV_HEADERS, csvPath);
+        assertEquals(0, records.size());
+    }
+
+    @Test
+    public void testInvalidateTimeBasedNoneExpired() throws IOException {
+        var expirationTimestamp = System.currentTimeMillis() + (2 * DAY_MILLISECONDS);
+        generateDefaultCsv(csvPath,null, expirationTimestamp);
+        singleUseKeyService.invalidate(null);
+
+        var records = parseCsv(CSV_HEADERS, csvPath);
         assertEquals(3, records.size());
     }
 
