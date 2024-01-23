@@ -704,6 +704,14 @@ table.dataTable {
   border-radius: 5px;
 }
 
+.is-narrow.item-actions {
+  text-align: right;
+
+  .actionlink {
+    margin-bottom: 0;
+  }
+}
+
 .item-actions {
   .actionlink {
     a.action {
@@ -1035,6 +1043,14 @@ table.dataTable {
       ul {
         margin-top: -25px;
       }
+    }
+  }
+
+  .is-narrow.item-actions {
+    text-align: left;
+
+    .actionlink {
+      margin-bottom: 3px;
     }
   }
 

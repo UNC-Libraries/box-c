@@ -16,8 +16,6 @@ import edu.unc.lib.boxc.search.solr.models.ContentObjectSolrRecord;
 import edu.unc.lib.boxc.search.solr.models.DatastreamImpl;
 import edu.unc.lib.boxc.search.solr.responses.SearchResultResponse;
 import edu.unc.lib.boxc.search.solr.services.SolrSearchService;
-import org.apache.commons.csv.CSVFormat;
-import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
@@ -26,14 +24,12 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 
 import java.io.IOException;
-import java.io.Reader;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
 import static edu.unc.lib.boxc.search.api.FacetConstants.MARKED_FOR_DELETION;
+import static edu.unc.lib.boxc.web.services.utils.CsvUtil.parseCsv;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.Matchers.any;
@@ -88,7 +84,7 @@ public class MemberOrderCsvExporterTest {
         mockChildrenResults(rec1, rec2);
 
         var resultPath = csvService.export(asPidList(PARENT1_UUID), agent);
-        var csvRecords = parseCsv(resultPath);
+        var csvRecords = parseCsv(MemberOrderCsvConstants.CSV_HEADERS, resultPath);
         assertNumberOfEntries(2, csvRecords);
         assertContainsEntry(csvRecords, CHILD1_UUID, PARENT1_UUID, "File One",
                 "file1.txt", "text/plain", false, null);
@@ -107,7 +103,7 @@ public class MemberOrderCsvExporterTest {
         mockChildrenResults(rec1, rec2);
 
         var resultPath = csvService.export(asPidList(PARENT1_UUID), agent);
-        var csvRecords = parseCsv(resultPath);
+        var csvRecords = parseCsv(MemberOrderCsvConstants.CSV_HEADERS, resultPath);
         assertContainsEntry(csvRecords, CHILD1_UUID, PARENT1_UUID, "File One",
                 "file1.txt", "text/plain", false, 0);
         assertContainsEntry(csvRecords, CHILD2_UUID, PARENT1_UUID, "File Two",
@@ -127,7 +123,7 @@ public class MemberOrderCsvExporterTest {
         mockChildrenResults(rec1, rec2);
 
         var resultPath = csvService.export(asPidList(PARENT1_UUID), agent);
-        var csvRecords = parseCsv(resultPath);
+        var csvRecords = parseCsv(MemberOrderCsvConstants.CSV_HEADERS, resultPath);
         assertContainsEntry(csvRecords, CHILD1_UUID, PARENT1_UUID, "File One",
                 "file1.txt", "text/plain", false, 0);
         assertContainsEntry(csvRecords, CHILD2_UUID, PARENT1_UUID, "File Two",
@@ -151,7 +147,7 @@ public class MemberOrderCsvExporterTest {
                 .thenReturn(makeResultResponse(rec3));
 
         var resultPath = csvService.export(asPidList(PARENT1_UUID, PARENT2_UUID), agent);
-        var csvRecords = parseCsv(resultPath);
+        var csvRecords = parseCsv(MemberOrderCsvConstants.CSV_HEADERS, resultPath);
         assertContainsEntry(csvRecords, CHILD1_UUID, PARENT1_UUID, "File One",
                 "file1.txt", "text/plain", false, 0);
         assertContainsEntry(csvRecords, CHILD2_UUID, PARENT1_UUID, "File Two",
@@ -251,15 +247,6 @@ public class MemberOrderCsvExporterTest {
 
     private List<PID> asPidList(String... ids) {
         return Arrays.stream(ids).map(PIDs::get).collect(Collectors.toList());
-    }
-
-    private List<CSVRecord> parseCsv(Path csvPath) throws IOException {
-        Reader reader = Files.newBufferedReader(csvPath);
-        return new CSVParser(reader, CSVFormat.DEFAULT
-                .withFirstRecordAsHeader()
-                .withHeader(MemberOrderCsvConstants.CSV_HEADERS)
-                .withTrim())
-                .getRecords();
     }
 
     private ContentObjectRecord makeWorkRecord(String uuid, String title) {

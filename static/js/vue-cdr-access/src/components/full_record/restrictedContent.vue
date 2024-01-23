@@ -12,22 +12,30 @@
         <div v-if="hasPermission(recordData, 'editDescription')" class="actionlink">
             <a class="edit button action" :href="editDescriptionUrl(recordData.briefObject.id)"><i class="fa fa-edit"></i> {{ $t('full_record.edit') }}</a>
         </div>
-        <template v-if="recordData.resourceType === 'File' && hasDownloadAccess(recordData)">
-            <div class="header-button" v-html="downloadButtonHtml(recordData.briefObject)"></div>
-            <div class="actionlink" v-if="hasPermission(recordData, 'viewOriginal')">
-                <a class="button view action" :href="recordData.dataFileUrl">
-                    <i class="fa fa-search" aria-hidden="true"></i> View</a>
-            </div>
+        <template v-if="recordData.resourceType === 'File'">
+            <template v-if="hasDownloadAccess(recordData)">
+                <div class="header-button" v-html="downloadButtonHtml(recordData.briefObject)"></div>
+                <div class="actionlink" v-if="hasPermission(recordData, 'viewOriginal')">
+                    <a class="button view action" :href="recordData.dataFileUrl">
+                        <i class="fa fa-search" aria-hidden="true"></i> View</a>
+                </div>
+            </template>
+            <template v-if="hasPermission(recordData, 'viewHidden')">
+                <single-use-link :uuid="recordData.briefObject.id"></single-use-link>
+            </template>
         </template>
     </div>
 </template>
 
 <script>
+import singleUseLink from '@/components/full_record/singleUseLink.vue';
 import fileDownloadUtils from '../../mixins/fileDownloadUtils';
 import fullRecordUtils from '../../mixins/fullRecordUtils';
 
 export default {
     name: 'restrictedContent',
+
+    components: {singleUseLink},
 
     mixins: [fileDownloadUtils, fullRecordUtils],
 
