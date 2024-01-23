@@ -17,6 +17,9 @@ import java.util.List;
  * @author snluong
  */
 public class CsvUtil {
+    private CsvUtil(){
+    }
+
     public static List<CSVRecord> parseCsv(String[] headers, Path csvPath) throws IOException {
         Reader reader = Files.newBufferedReader(csvPath);
         return new CSVParser(reader, CSVFormat.DEFAULT

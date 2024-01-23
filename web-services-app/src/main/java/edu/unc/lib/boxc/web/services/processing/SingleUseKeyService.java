@@ -65,9 +65,9 @@ public class SingleUseKeyService {
         try {
             var csvRecords = parseCsv(CSV_HEADERS, csvPath);
             var currentMilliseconds = System.currentTimeMillis();
-            for (CSVRecord record : csvRecords) {
-                if (key.equals(record.get(ACCESS_KEY))) {
-                    var expirationTimestamp = Long.parseLong(record.get(TIMESTAMP));
+            for (CSVRecord row : csvRecords) {
+                if (key.equals(row.get(ACCESS_KEY))) {
+                    var expirationTimestamp = Long.parseLong(row.get(TIMESTAMP));
                     return currentMilliseconds <= expirationTimestamp;
                 }
             }
@@ -87,12 +87,12 @@ public class SingleUseKeyService {
             var csvRecords = parseCsv(CSV_HEADERS, csvPath);
             var updatedRecords = new ArrayList<>();
             var recordsChanged = false;
-            for (CSVRecord record : csvRecords) {
-                if (recordShouldBeInvalidated(key, record)) {
+            for (CSVRecord row : csvRecords) {
+                if (recordShouldBeInvalidated(key, row)) {
                     recordsChanged = true;
                 } else {
                     // keep this record as it is valid
-                    updatedRecords.add(record);
+                    updatedRecords.add(row);
                 }
             }
 
@@ -145,9 +145,9 @@ public class SingleUseKeyService {
 
     public String getId(String key) throws IOException {
         var csvRecords = parseCsv(CSV_HEADERS, csvPath);
-        for (CSVRecord record : csvRecords) {
-            if (key.equals(record.get(ACCESS_KEY))) {
-                return record.get(ID);
+        for (CSVRecord row : csvRecords) {
+            if (key.equals(row.get(ACCESS_KEY))) {
+                return row.get(ID);
             }
         }
         return null;
