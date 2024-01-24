@@ -256,6 +256,46 @@ describe('restrictedContent.vue', () => {
         expect(dropdown_items.length).toEqual(3);
     });
 
+    it('shows a download button with no reduced download options when viewOriginal set and image is smaller than min size', async () => {
+        const updated_data = cloneDeep(record);
+        updated_data.dataFileUrl = 'content/4db695c0-5fd5-4abf-9248-2e115d43f57d';
+        updated_data.resourceType = 'File';
+        updated_data.briefObject.datastream[1] = "original_file|image/jpeg|tinyz||69490|urn:sha1:0d48dadb5d61ae0d41b4998280a3c39577a2f94a||640x480";
+        await setRecordPermissions(updated_data, ['viewAccessCopies', 'viewReducedResImages', 'viewOriginal']);
+
+        expect(wrapper.find('.download.dropdown').exists()).toBe(true);
+        await wrapper.find('button').trigger('click'); // Open
+        const dropdown_items = wrapper.findAll('.dropdown-item');
+        expect(dropdown_items[0].text()).toEqual('Full Size JPG');
+        expect(dropdown_items[1].text()).toEqual('Original File');
+        expect(dropdown_items.length).toEqual(2);
+    });
+
+    it('hides a download button with viewReducedResImages when image is smaller than min size', async () => {
+        const updated_data = cloneDeep(record);
+        updated_data.dataFileUrl = 'content/4db695c0-5fd5-4abf-9248-2e115d43f57d';
+        updated_data.resourceType = 'File';
+        updated_data.briefObject.datastream[1] = "original_file|image/jpeg|tinyz||69490|urn:sha1:0d48dadb5d61ae0d41b4998280a3c39577a2f94a||640x480";
+        await setRecordPermissions(updated_data, ['viewAccessCopies', 'viewReducedResImages']);
+
+        expect(wrapper.find('.download.dropdown').exists()).toBe(false);
+    });
+
+    it('shows a download button with partial reduced download options with viewReducedResImages when image is smaller than largest size', async () => {
+        const updated_data = cloneDeep(record);
+        updated_data.dataFileUrl = 'content/4db695c0-5fd5-4abf-9248-2e115d43f57d';
+        updated_data.resourceType = 'File';
+        updated_data.briefObject.datastream[1] = "original_file|image/jpeg|midz||69490|urn:sha1:0d48dadb5d61ae0d41b4998280a3c39577a2f94a||1700x1200";
+        await setRecordPermissions(updated_data, ['viewAccessCopies', 'viewReducedResImages']);
+
+        expect(wrapper.find('.download.dropdown').exists()).toBe(true);
+        await wrapper.find('button').trigger('click'); // Open
+        const dropdown_items = wrapper.findAll('.dropdown-item');
+        expect(dropdown_items[0].text()).toEqual('Small JPG (800px)');
+        expect(dropdown_items[1].text()).toEqual('Medium JPG (1600px)');
+        expect(dropdown_items.length).toEqual(2);
+    });
+
     it('does not display a download button for non-works/files', async () => {
         const updated_data = cloneDeep(record);
         updated_data.dataFileUrl = 'content/4db695c0-5fd5-4abf-9248-2e115d43f57d';
