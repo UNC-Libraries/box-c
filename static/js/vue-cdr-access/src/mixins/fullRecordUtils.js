@@ -2,7 +2,8 @@ import modalMetadata from '@/components/modalMetadata.vue';
 import thumbnail from '@/components/full_record/thumbnail.vue';
 import permissionUtils from "./permissionUtils";
 import { formatInTimeZone } from 'date-fns-tz';
-import { mapState } from 'vuex';
+import { mapState } from 'pinia';
+import { useAccessStore } from '../stores/access';
 
 export default {
     components: { modalMetadata, thumbnail },
@@ -20,7 +21,7 @@ export default {
     },
 
     computed: {
-        ...mapState([
+        ...mapState(useAccessStore, [
             'isLoggedIn',
             'username'
         ]),
@@ -49,7 +50,14 @@ export default {
                 this.recordData.briefObject.groupRoleMap.everyone === undefined) {
                 return false;
             }
-            return !this.recordData.briefObject.groupRoleMap.everyone.includes('canViewOriginals');
+            if (this.recordData.briefObject.groupRoleMap.everyone.includes('canViewOriginals')) {
+                return false;
+            }
+            // For File objects, content is not restricted if the user can at least download low res files
+            if (this.recordData.resourceType == 'File' && this.hasDownloadAccess(this.recordData)) {
+                return false;
+            }
+            return true;
         },
 
         loginUrl() {

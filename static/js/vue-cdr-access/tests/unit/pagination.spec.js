@@ -1,14 +1,15 @@
 import { shallowMount, flushPromises } from '@vue/test-utils';
 import { createRouter, createWebHistory } from 'vue-router';
+import {createTestingPinia} from '@pinia/testing';
+import { useAccessStore } from '@/stores/access';
 import '@testing-library/jest-dom';
 import pagination from '@/components/pagination.vue';
 import displayWrapper from '@/components/displayWrapper.vue';
 import searchWrapper from '@/components/searchWrapper.vue';
 import {createI18n} from "vue-i18n";
 import translations from "@/translations";
-import store from '@/store';
 
-let router, wrapper;
+let router, wrapper, store;
 
 describe('pagination.vue', () => {
     const i18n = createI18n({
@@ -35,7 +36,9 @@ describe('pagination.vue', () => {
         });
         wrapper = shallowMount(pagination, {
             global: {
-                plugins: [router, store, i18n]
+                plugins: [router, i18n, createTestingPinia({
+                    stubActions: false
+                })]
             },
             props: {
                 browseType: 'display',
@@ -50,12 +53,13 @@ describe('pagination.vue', () => {
                 }
             }
         });
+        store = useAccessStore();
 
         await router.push('/record/1234');
     });
 
     afterEach(() => {
-        wrapper.vm.$store.dispatch("resetState");
+        store.$reset();
         wrapper = null;
         router = null;
     });

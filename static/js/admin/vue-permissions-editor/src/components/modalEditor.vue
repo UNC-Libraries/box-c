@@ -43,14 +43,15 @@
 <script>
     import patronRoles from '@/components/patronRoles.vue';
     import staffRoles from "@/components/staffRoles.vue";
-    import { mapState } from 'vuex';
+    import { mapActions, mapState } from 'pinia';
+    import { usePermissionsStore } from '../stores/permissions';
 
     export default {
         name: 'modalEditor',
         components: {patronRoles, staffRoles},
 
         computed: {
-            ...mapState({
+            ...mapState(usePermissionsStore, {
                 actionHandler: state => state.actionHandler,
                 alertHandler: state => state.alertHandler,
                 checkForUnsavedChanges: state => state.checkForUnsavedChanges,
@@ -83,16 +84,18 @@
         },
 
         methods: {
+            ...mapActions(usePermissionsStore, ['setCheckForUnsavedChanges', 'setShowModal']),
+
             closeModalCheck() {
-                this.$store.commit('setCheckForUnsavedChanges', true);
+                this.setCheckForUnsavedChanges(true);
             },
 
             resetChangesCheck(check_changes) {
-                this.$store.commit('setCheckForUnsavedChanges', check_changes);
+                this.setCheckForUnsavedChanges(check_changes);
             },
 
             closeModal() {
-                this.$store.commit('setShowModal', false);
+                this.setShowModal(false);
             }
         }
     }

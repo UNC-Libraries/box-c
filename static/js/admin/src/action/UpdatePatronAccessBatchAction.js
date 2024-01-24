@@ -15,23 +15,23 @@ define('UpdatePatronAccessBatchAction', [ 'jquery', 'AbstractBatchAction'], func
     UpdatePatronAccessBatchAction.prototype.execute = function() {
         let targets = this.getTargets();
 
-        perms_editor_store.commit('setPermissionType', 'Patron');
-        perms_editor_store.commit('setAlertHandler', this.context.view.$alertHandler);
-        perms_editor_store.commit('setActionHandler', this.context.actionHandler);
+        perms_editor_store.setPermissionType('Patron');
+        perms_editor_store.setAlertHandler(this.context.view.$alertHandler);
+        perms_editor_store.setActionHandler(this.context.actionHandler);
         if (targets.length == 1) {
-            perms_editor_store.commit('setResultObject', targets[0]);
-            perms_editor_store.commit('setResultObjects', null);
-            perms_editor_store.commit('setMetadata', targets[0].metadata);
+            perms_editor_store.setResultObject(targets[0]);
+            perms_editor_store.setResultObjects(null);
+            perms_editor_store.setMetadata(targets[0].metadata);
         } else {
-            perms_editor_store.commit('setResultObject', null);
-            perms_editor_store.commit('setResultObjects', targets);
-            perms_editor_store.commit('setMetadata', {
+            perms_editor_store.setResultObject(null);
+            perms_editor_store.setResultObjects(targets);
+            perms_editor_store.setMetadata({
                 title: targets.length + " objects",
                 id: null,
                 type: null
             });
         }
-        perms_editor_store.commit('setShowModal', true);
+        perms_editor_store.setShowModal(true);
 
         AbstractBatchAction.prototype.execute.call(this);
     }

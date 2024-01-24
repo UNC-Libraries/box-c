@@ -2,23 +2,13 @@ package edu.unc.lib.boxc.web.common.utils;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.ArrayList;
-import java.util.List;
 
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 
-import org.apache.http.NameValuePair;
-import org.apache.http.client.config.RequestConfig;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.utils.URIBuilder;
-import org.apache.http.conn.HttpClientConnectionManager;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
-import org.apache.http.message.BasicNameValuePair;
 import org.matomo.java.tracking.MatomoTracker;
+import org.matomo.java.tracking.TrackerConfiguration;
+import org.matomo.java.tracking.parameters.VisitorId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.matomo.java.tracking.MatomoRequest;
@@ -41,41 +31,12 @@ public class AnalyticsTrackerUtil {
 
     // Made up CID to use if the request does not include one, such as from a API request
     protected static final String DEFAULT_CID = "35009a79-1a05-49d7-b876-2b884d0f825b";
-    // Google analytics measurement API url
-    private static final String GA_URL = "https://www.google-analytics.com/collect";
     public static final String MATOMO_ACTION = "Downloaded Original";
 
-    // Google analytics tracking id
-    private String gaTrackingID;
-
-    private HttpClientConnectionManager httpClientConnectionManager;
-    private CloseableHttpClient httpClient;
-    private String repositoryHost;
     private String matomoAuthToken;
     private String matomoApiURL;
     private int matomoSiteID;
     private SolrSearchService solrSearchService;
-
-    public void setHttpClientConnectionManager(HttpClientConnectionManager manager) {
-        this.httpClientConnectionManager = manager;
-
-        RequestConfig requestConfig = RequestConfig.custom()
-                .setConnectTimeout(2000)
-                .build();
-
-        this.httpClient = HttpClients.custom()
-                .setConnectionManager(httpClientConnectionManager)
-                .setDefaultRequestConfig(requestConfig)
-                .build();
-    }
-
-    public void setHttpClient(CloseableHttpClient httpClient) {
-        this.httpClient = httpClient;
-    }
-
-    public void setGaTrackingID(String trackingID) {
-        this.gaTrackingID = trackingID;
-    }
 
     /**
      * Track an event with the specified action for object pid for the active user on the request.
@@ -94,7 +55,6 @@ public class AnalyticsTrackerUtil {
                     "(no collection)"
                     : briefObject.getParentCollectionName();
             String viewedObjectLabel = briefObject.getTitle() + "|" + pid;
-            trackEvent(userData, parentCollection, action, viewedObjectLabel);
             // track in matomo
             var matomoRequest = buildMatomoRequest(getFullURL(request), userData, parentCollection, viewedObjectLabel);
             sendMatomoRequest(matomoRequest);
@@ -104,20 +64,10 @@ public class AnalyticsTrackerUtil {
         }
     }
 
-    private void trackEvent(AnalyticsUserData userData, String category, String action, String label) {
-        if (userData == null) {
-            return;
-        }
-
-        // Perform the analytics tracking event asynchronously
-        Thread trackerThread = new Thread(new EventTrackerRunnable(userData, category, action, label));
-        trackerThread.start();
-    }
-
     private MatomoRequest buildMatomoRequest(String url, AnalyticsUserData userData, String parentCollection, String label) throws UnsupportedEncodingException {
-        return MatomoRequest.builder()
+        return MatomoRequest.request()
                 .siteId(matomoSiteID)
-                .visitorId(userData.uid)
+                .visitorId(VisitorId.fromHex(userData.uid))
                 .actionUrl(url)
                 .actionName(parentCollection + " / " + MATOMO_ACTION)
                 .eventCategory(parentCollection)
@@ -130,7 +80,10 @@ public class AnalyticsTrackerUtil {
     }
 
     private void sendMatomoRequest(MatomoRequest matomoRequest) {
-        var tracker = new MatomoTracker(matomoApiURL);
+        var tracker = new MatomoTracker(TrackerConfiguration
+                .builder()
+                .apiEndpoint(URI.create(matomoApiURL))
+                .build());
 
         try {
             tracker.sendRequestAsync(matomoRequest);
@@ -155,10 +108,6 @@ public class AnalyticsTrackerUtil {
      */
     public void setSolrSearchService(SolrSearchService solrSearchService) {
         this.solrSearchService = solrSearchService;
-    }
-
-    public void setRepositoryHost(String repositoryHost) {
-        this.repositoryHost = repositoryHost;
     }
     public void setMatomoAuthToken(String matomoAuthToken) {
         this.matomoAuthToken = matomoAuthToken;
@@ -231,78 +180,5 @@ public class AnalyticsTrackerUtil {
                 userAgent = "";
             }
         }
-    }
-
-    protected class EventTrackerRunnable implements Runnable {
-
-        private final AnalyticsUserData userData;
-        private final String category;
-        private final String action;
-        private final String label;
-
-        public EventTrackerRunnable(AnalyticsUserData userData, String category, String action, String label) {
-            this.category = category;
-            this.action = action;
-            this.label = label;
-            this.userData = userData;
-        }
-
-        @Override
-        public void run() {
-            log.debug("Tracking user {} with event {} in category {} with label {}",
-                    userData.cid, action, category, label);
-
-            URIBuilder builder;
-            try {
-                builder = new URIBuilder(GA_URL);
-            } catch (URISyntaxException e) {
-                log.warn("Failed to build URI for tracker", e);
-                return;
-            }
-
-            // See https://developers.google.com/analytics/devguides/collection/protocol/v1/parameters
-            List<NameValuePair> params = new ArrayList<>();
-            params.add(new BasicNameValuePair("v", "1"));
-            params.add(new BasicNameValuePair("tid", gaTrackingID));
-            params.add(new BasicNameValuePair("cid", userData.cid));
-            params.add(new BasicNameValuePair("t", "event"));
-            params.add(new BasicNameValuePair("uip", userData.uip));
-            params.add(new BasicNameValuePair("ua", userData.userAgent));
-            params.add(new BasicNameValuePair("dh", repositoryHost));
-            params.add(new BasicNameValuePair("an", "cdr"));
-            params.add(new BasicNameValuePair("de", "UTF-8"));
-            params.add(new BasicNameValuePair("ul", "en-us"));
-            log.debug("Tracking user {} with event {} in category {} with label {}",
-                    userData.cid, action, category, label);
-            log.debug("Tracking:{} {} {} {}", new Object[] { GA_URL, gaTrackingID, userData.cid, userData.uip});
-
-            if (category != null) {
-                params.add(new BasicNameValuePair("ec", category));
-            }
-            if (action != null) {
-                params.add(new BasicNameValuePair("ea", action));
-            }
-            if (label != null) {
-                params.add(new BasicNameValuePair("el", label));
-            }
-
-            builder.addParameters(params);
-
-            HttpGet method;
-            try {
-                URI url = builder.build();
-                method = new HttpGet(url);
-                method.addHeader("Accept", "*/*");
-            } catch (URISyntaxException e) {
-                log.warn("Failed to build tracking url", e);
-                return;
-            }
-
-            try (CloseableHttpResponse resp = httpClient.execute(method)) {
-            } catch (Exception e) {
-                log.warn("Failed to issue tracking event for cid {}", e, userData.cid);
-            }
-        }
-
     }
 }

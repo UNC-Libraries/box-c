@@ -45,7 +45,8 @@
 
 <script>
     import { addYears, format, isFuture } from 'date-fns'
-    import {mapState} from "vuex";
+    import { mapActions, mapState } from 'pinia';
+    import { usePermissionsStore } from '../stores/permissions';
 
     export default {
         name: 'embargo',
@@ -82,13 +83,15 @@
         },
 
         computed: {
-            ...mapState({
-                alertHandler: state => state.alertHandler,
-                embargoEndsDate: state => {
-                    return (state.embargoInfo.embargo !== null) ? state.embargoInfo.embargo : '';
+            ...mapState(usePermissionsStore, {
+                alertHandler: store => store.alertHandler,
+                embargoEndsDate: store => {
+                    return (store.embargoInfo.embargo !== null) ? store.embargoInfo.embargo : '';
                 },
-                hasEmbargo: state => state.embargoInfo.embargo !== null
+                hasEmbargo: store => store.embargoInfo.embargo !== null
             }),
+            
+            
 
             formattedEmbargoDate() {
                 if (this.embargoEndsDate === '') {
@@ -100,6 +103,8 @@
         },
 
         methods: {
+            ...mapActions(usePermissionsStore, ['setEmbargoInfo']),
+
             showForm() {
                 this.show_form = !this.show_form;
             },
@@ -110,7 +115,7 @@
             removeEmbargo(confirm = true) {
                 if (!confirm || window.confirm("This will clear the embargo for this object. Are you sure you'd like to continue?")) {
                     this.clearEmbargoInfo();
-                    this.$store.commit('setEmbargoInfo', {
+                    this.setEmbargoInfo({
                         embargo: null,
                         skipEmbargo: false
                     });
@@ -122,7 +127,7 @@
              */
             ignoreEmbargo() {
                 this.clearEmbargoInfo();
-                this.$store.commit('setEmbargoInfo', {
+                this.setEmbargoInfo({
                     embargo: null,
                     skipEmbargo: true
                 });
@@ -145,7 +150,7 @@
                 let future_date = addYears(new Date(), years);
                 let fixed_embargo_date = format(future_date, 'yyyy-LL-dd');
                 this.custom_embargo_date = '';
-                this.$store.commit('setEmbargoInfo', {
+                this.setEmbargoInfo({
                     embargo: fixed_embargo_date,
                     skipEmbargo: false
                 });
@@ -162,7 +167,7 @@
                 if (date_filled && regex_match && isFuture(date_parts)) {
                     this.embargo_type = 'custom';
                     this.error_msg = '';
-                    this.$store.commit('setEmbargoInfo', {
+                    this.setEmbargoInfo({
                         embargo: this.custom_embargo_date,
                         skipEmbargo: false
                     });

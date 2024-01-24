@@ -1,15 +1,16 @@
 import {flushPromises, mount} from '@vue/test-utils'
 import { createRouter, createWebHistory } from 'vue-router';
+import {createTestingPinia} from '@pinia/testing';
+import { useAccessStore } from '@/stores/access';
 import facets from '@/components/facets.vue';
 import searchWrapper from '@/components/searchWrapper.vue';
 import displayWrapper from '@/components/displayWrapper.vue';
 import moxios from 'moxios';
-import store from '@/store';
 import {createI18n} from "vue-i18n";
 import translations from "@/translations";
 
 const end_year = new Date().getFullYear();
-let router, wrapper, collection, selected_facet, selected_sub_facet;
+let router, wrapper, collection, selected_facet, selected_sub_facet, store;
 
 describe('facets.vue', () => {
     const i18n = createI18n({
@@ -37,7 +38,9 @@ describe('facets.vue', () => {
 
         wrapper = mount(facets, {
             global: {
-                plugins: [router, store, i18n]
+                plugins: [router, i18n, createTestingPinia({
+                    stubActions: false
+                })]
             },
             props: {
                 minCreatedYear: 2011,
@@ -147,6 +150,7 @@ describe('facets.vue', () => {
                 }
             }
         });
+        store = useAccessStore();
 
         let facet_list = wrapper.findAll('.facet-display a');
         collection = facet_list[0];
@@ -155,7 +159,7 @@ describe('facets.vue', () => {
     });
 
     afterEach(() => {
-        wrapper.vm.$store.dispatch("resetState");
+        store.$reset();
         wrapper = null;
         router = null;
     });
@@ -243,7 +247,9 @@ describe('facets.vue', () => {
     it("does not display facets with no returned results", () => {
         let emptyFacetWrapper = mount(facets, {
             global: {
-                plugins: [router, store, i18n]
+                plugins: [router, i18n, createTestingPinia({
+                    stubActions: false
+                })]
             },
             props: {
                 minSearchYear: 2011,
@@ -284,6 +290,7 @@ describe('facets.vue', () => {
                 }
             }
         });
+        store = useAccessStore();
 
         let facet_headers = emptyFacetWrapper.findAll('.facet-display h3');
         let facet_list = emptyFacetWrapper.findAll('.facet-display li');
@@ -302,7 +309,9 @@ describe('facets.vue', () => {
     it("does not display date facets with no minimum search year set", () => {
         let emptyFacetWrapper = mount(facets, {
             global: {
-                plugins: [router, store, i18n]
+                plugins: [router, i18n, createTestingPinia({
+                    stubActions: false
+                })]
             },
             props: {
                 minCreatedYear: undefined,
@@ -331,6 +340,7 @@ describe('facets.vue', () => {
                 }
             }
         });
+        store = useAccessStore();
 
         let facet_headers = emptyFacetWrapper.findAll('.facet-display h3');
         let facet_list = emptyFacetWrapper.findAll('.facet-display li');
@@ -486,7 +496,9 @@ describe('facets.vue', () => {
     it("selecting Unknown date does not select Unknown format", (done) => {
         wrapper = mount(facets, {
             global: {
-                plugins: [router, store, i18n]
+                plugins: [router, i18n, createTestingPinia({
+                    stubActions: false
+                })]
             },
             props: {
                 minCreatedYear: 2015,
@@ -530,6 +542,7 @@ describe('facets.vue', () => {
                 }
             }
         });
+        store = useAccessStore();
 
         moxios.wait(async () => {
             await router.push('/search/?createdYear=unknown');

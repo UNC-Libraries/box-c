@@ -1,14 +1,14 @@
 import {mount, flushPromises, RouterLinkStub} from '@vue/test-utils'
 import { createRouter, createWebHistory } from 'vue-router';
+import { createTestingPinia } from '@pinia/testing';
+import { useAccessStore } from '@/stores/access';
 import displayWrapper from '@/components/displayWrapper.vue';
-import store from '@/store';
 import moxios from "moxios";
 import {createI18n} from "vue-i18n";
 import translations from "@/translations";
 import { response, briefObjectData } from "../fixtures/displayWrapperFixtures";
-import { $gtag } from '../fixtures/testHelpers';
 
-let wrapper, router;
+let wrapper, router, store;
 
 describe('displayWrapper.vue', () => {
     const i18n = createI18n({
@@ -32,6 +32,10 @@ describe('displayWrapper.vue', () => {
         });
     });
 
+    afterEach(() => {
+        store.$reset();
+    });
+
     function mountApp(data_overrides = {}) {
         const default_data = {
             container_name: '',
@@ -44,8 +48,9 @@ describe('displayWrapper.vue', () => {
         let data = {...default_data, ...data_overrides};
         wrapper = mount(displayWrapper, {
             global: {
-                plugins: [router, store, i18n],
-                mocks: { $gtag },
+                plugins: [router, i18n, createTestingPinia({
+                    stubActions: false
+                })],
                 stubs: {
                     RouterLink: RouterLinkStub
                 }
@@ -54,6 +59,7 @@ describe('displayWrapper.vue', () => {
                 return data;
             }
         });
+        store = useAccessStore();
     }
 
     function stubQueryResponse(url_pattern, response) {
@@ -68,7 +74,6 @@ describe('displayWrapper.vue', () => {
         await router.push(`/record/${response.container.id}`);
         mountApp();
         wrapper.vm.getBriefObject();
-        wrapper.vm.updateUrl();
         wrapper.vm.retrieveSearchResults();
         await flushPromises();
 
@@ -85,11 +90,9 @@ describe('displayWrapper.vue', () => {
         mountApp();
 
         wrapper.vm.getBriefObject();
-        wrapper.vm.updateUrl();
         wrapper.vm.retrieveSearchResults();
         await flushPromises();
         expect(wrapper.vm.search_method).toEqual('searchJson');
-        expect(wrapper.vm.$router.currentRoute.value.query.types).toEqual('Work,File');
     });
 
     it("uses the correct search parameters for non admin works only browse",  async () => {
@@ -97,11 +100,9 @@ describe('displayWrapper.vue', () => {
         mountApp();
 
         wrapper.vm.getBriefObject();
-        wrapper.vm.updateUrl();
         wrapper.vm.retrieveSearchResults();
         await flushPromises();
         expect(wrapper.vm.search_method).toEqual('listJson');
-        expect(wrapper.vm.$router.currentRoute.value.query.types).toEqual('Work,Folder,Collection,File');
     });
 
     it("uses the correct search parameters if search text is specified", async () => {
@@ -111,11 +112,9 @@ describe('displayWrapper.vue', () => {
         });
 
         wrapper.vm.getBriefObject();
-        wrapper.vm.updateUrl();
         wrapper.vm.retrieveSearchResults();
         await flushPromises();
         expect(wrapper.vm.search_method).toEqual('searchJson');
-        expect(wrapper.vm.$router.currentRoute.value.query.types).toEqual('Work,Folder,Collection,File');
     });
 
     it("uses the correct search parameters if facet parameter is specified", async () => {
@@ -125,11 +124,9 @@ describe('displayWrapper.vue', () => {
         });
 
         wrapper.vm.getBriefObject();
-        wrapper.vm.updateUrl();
         wrapper.vm.retrieveSearchResults();
         await flushPromises();
         expect(wrapper.vm.search_method).toEqual('searchJson');
-        expect(wrapper.vm.$router.currentRoute.value.query.types).toEqual('Work,Folder,Collection,File');
     });
 
     it("uses the correct parameters for admin unit browse", async () => {
@@ -159,46 +156,11 @@ describe('displayWrapper.vue', () => {
         });
 
         wrapper.vm.getBriefObject();
-        wrapper.vm.updateUrl();
         wrapper.vm.retrieveSearchResults();
         await flushPromises();
         expect(wrapper.vm.search_method).toEqual('listJson');
-        expect(wrapper.vm.$router.currentRoute.value.query.types).toEqual('Work,Folder,Collection,File');
         expect(wrapper.find(".container-note").exists()).toBe(true);
         expect(wrapper.find('#browse-display-type').exists()).toBe(true);
-    });
-
-    it("updates the url when work type changes", async () => {
-        await router.push('/record/73bc003c-9603-4cd9-8a65-93a22520ef6a?browse_type=gallery-display');
-        mountApp({
-            container_info: {
-                briefObject: {
-                    type: 'Collection',
-                    objectPath: [
-                        {
-                            pid: 'collections',
-                            name: 'Content Collections Root',
-                            container: true
-                        },
-                        {
-                            pid: '353ee09f-a4ed-461e-a436-18a1bee77b01',
-                            name: 'testAdminUnit',
-                            container: true
-                        },
-                        {
-                            pid: 'fc77a9be-b49d-4f4e-b656-1644c9e964fc',
-                            name: 'testCollection',
-                            container: true
-                        }
-                    ]
-                },
-                resourceType: 'Collection'
-            }
-        });
-
-        wrapper.vm.updateUrl();
-        await flushPromises();
-        expect(wrapper.vm.$router.currentRoute.value.query.types).toEqual('Work,Folder,Collection,File');
     });
 
     it("displays a 'works only' option if the 'works only' box is checked and no records are works", async () => {
@@ -207,7 +169,6 @@ describe('displayWrapper.vue', () => {
         mountApp();
 
         wrapper.vm.getBriefObject();
-        wrapper.vm.updateUrl();
         wrapper.vm.retrieveSearchResults();
         await flushPromises();
         let works_only = wrapper.find('.container-note');
@@ -218,10 +179,7 @@ describe('displayWrapper.vue', () => {
     it("does not display a 'works only' option if the 'works only' box is not checked and no records are works", async () => {
         await router.push('/record/73bc003c-9603-4cd9-8a65-93a22520ef6a?works_only=false');
         mountApp();
-        // wrapper.vm.getBriefObject();
-        // wrapper.vm.updateUrl();
-        // wrapper.vm.retrieveSearchResults();
-        // await flushPromises();
+
         let works_only = wrapper.find('.container-note');
         expect(works_only.exists()).toBe(false)
     });
@@ -253,13 +211,12 @@ describe('displayWrapper.vue', () => {
         await router.push('/record/73bc003c-9603-4cd9-8a65-93a22520ef6a');
         mountApp();
         wrapper.vm.getBriefObject();
-        wrapper.vm.updateUrl();
         wrapper.vm.retrieveSearchResults();
         await flushPromises();
 
         // Verify that there are still other facets, but that the unit facet has been removed
-        expect(wrapper.vm.$store.state.possibleFacetFields.length).toBeGreaterThan(0);
-        expect(wrapper.vm.$store.state.possibleFacetFields.indexOf('unit')).toEqual(-1);
+        expect(store.possibleFacetFields.length).toBeGreaterThan(0);
+        expect(store.possibleFacetFields.indexOf('unit')).toEqual(-1);
         // Verify that record list is displaying, indicating that a request was made which did not include unit facet
         expect(wrapper.find('#fullRecordSearchResultDisplay').exists()).toBe(true);
     });
@@ -277,9 +234,9 @@ describe('displayWrapper.vue', () => {
         await flushPromises();
 
         // Verify that there are still other facets, but that the unit and collection facets have been removed
-        expect(wrapper.vm.$store.state.possibleFacetFields.length).toBeGreaterThan(0);
-        expect(wrapper.vm.$store.state.possibleFacetFields.indexOf('unit')).toEqual(-1);
-        expect(wrapper.vm.$store.state.possibleFacetFields.indexOf('collection')).toEqual(-1);
+        expect(store.possibleFacetFields.length).toBeGreaterThan(0);
+        expect(store.possibleFacetFields.indexOf('unit')).toEqual(-1);
+        expect(store.possibleFacetFields.indexOf('collection')).toEqual(-1);
         // Verify that record list is displaying, indicating that a request was made which did not include unwanted facets
         expect(wrapper.find('#fullRecordSearchResultDisplay').exists()).toBe(true);
     });
@@ -318,9 +275,9 @@ describe('displayWrapper.vue', () => {
         await flushPromises();
 
         // Verify that there are still other facets, but that the unit and collection facets have been removed
-        expect(wrapper.vm.$store.state.possibleFacetFields.length).toBeGreaterThan(0);
-        expect(wrapper.vm.$store.state.possibleFacetFields.indexOf('unit')).toEqual(-1);
-        expect(wrapper.vm.$store.state.possibleFacetFields.indexOf('collection')).toEqual(-1);
+        expect(store.possibleFacetFields.length).toBeGreaterThan(0);
+        expect(store.possibleFacetFields.indexOf('unit')).toEqual(-1);
+        expect(store.possibleFacetFields.indexOf('collection')).toEqual(-1);
         // Verify that record list is displaying, indicating that a request was made which did not include unwanted facets
         expect(wrapper.find('#fullRecordSearchResultDisplay').exists()).toBe(true);
     });
@@ -354,17 +311,16 @@ describe('displayWrapper.vue', () => {
         await flushPromises();
 
         // Verify that there are still other facets, but that the unit facet has been removed
-        let num_facets = wrapper.vm.$store.state.possibleFacetFields.length;
+        let num_facets = store.possibleFacetFields.length;
         expect(num_facets).toBeGreaterThan(0);
-        expect(wrapper.vm.$store.state.possibleFacetFields.indexOf('unit')).toEqual(-1);
-        expect(wrapper.vm.$route.query.facetSelect.indexOf('unit')).toEqual(-1);
+        expect(store.possibleFacetFields.indexOf('unit')).toEqual(-1);
 
         // Trigger works only filter and make sure that the set of facets does not change
         await wrapper.find('#works-only').trigger('click');
         await flushPromises();
 
-        expect(wrapper.vm.$store.state.possibleFacetFields.length).toEqual(num_facets);
-        expect(wrapper.vm.$store.state.possibleFacetFields.indexOf('unit')).toEqual(-1);
+        expect(store.possibleFacetFields.length).toEqual(num_facets);
+        expect(store.possibleFacetFields.indexOf('unit')).toEqual(-1);
         expect(wrapper.vm.$route.query.facetSelect.indexOf('unit')).toEqual(-1);
     });
 
@@ -402,7 +358,7 @@ describe('displayWrapper.vue', () => {
 
     afterEach(() => {
         moxios.uninstall();
-        wrapper.vm.$store.dispatch("resetState");
+        store.$reset();
         wrapper = null;
         router = null;
         // Reset the dom to avoid tags added persisting across tests

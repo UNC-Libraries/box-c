@@ -10,7 +10,7 @@ export default {
             } else {
                 id = idOrObject.id;
                 // Don't apply browse types to works and files
-                if (idOrObject.type == 'Work' || idOrObject.type == 'File') {
+                if (idOrObject.type === 'Work' || idOrObject.type === 'File') {
                     browse_type = null;
                 }
             }

@@ -256,6 +256,7 @@ public class InheritedPermissionEvaluator {
     private boolean isPatronPermission(Permission permission) {
         return permission.equals(Permission.viewMetadata)
                 || permission.equals(Permission.viewAccessCopies)
+                || permission.equals(Permission.viewReducedResImages)
                 || permission.equals(Permission.viewOriginal);
     }
 

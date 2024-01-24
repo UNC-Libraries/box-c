@@ -7,6 +7,8 @@
 </template>
 
 <script>
+    import { mapActions } from 'pinia';
+    import { usePermissionsStore } from '../stores/permissions';
     import staffRoleList from "../mixins/staffRoleList";
 
     export default {
@@ -48,8 +50,10 @@
         },
 
         methods: {
-           selectedValue() {
-               this.$store.commit('setStaffRole', { principal: this.user.principal, role: this.selected_role });
+            ...mapActions(usePermissionsStore, ['setStaffRole']),
+
+            selectedValue() {
+               this.setStaffRole({ principal: this.user.principal, role: this.selected_role });
            }
         }
     }

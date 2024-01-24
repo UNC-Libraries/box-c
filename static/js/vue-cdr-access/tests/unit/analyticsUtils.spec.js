@@ -1,15 +1,15 @@
 import {mount, RouterLinkStub} from '@vue/test-utils'
 import { createRouter, createWebHistory } from 'vue-router';
+import {createTestingPinia} from '@pinia/testing';
+import { useAccessStore } from '@/stores/access';
 import advancedSearch from '@/components/advancedSearch.vue';
 import displayWrapper from '@/components/displayWrapper.vue';
 import analyticsUtils from "../../src/mixins/analyticsUtils";
-import store from '@/store';
 import { createI18n } from "vue-i18n";
 import translations from "@/translations";
-import { $gtag } from '../fixtures/testHelpers';
 import moxios from "moxios";
 
-let wrapper;
+let wrapper, store;
 describe('analyticsUtils', () => {
     const i18n = createI18n({
         locale: 'en',
@@ -37,20 +37,22 @@ describe('analyticsUtils', () => {
     });
 
     afterEach(() => {
-        moxios.uninstall()
+        store.$reset();
+        moxios.uninstall();
     });
 
     it("sends pageviews to analytics platforms", () => {
         wrapper = mount(advancedSearch, {
             global: {
-                plugins: [router, store, i18n],
-                mocks: { $gtag },
+                plugins: [router, i18n, createTestingPinia({
+                    stubActions: false
+                })],
                 stubs: {
                     RouterLink: RouterLinkStub
                 }
             }
         });
-
+        store = useAccessStore();
         expect(pageView).toHaveBeenCalledWith("Advanced Search");
     });
 
@@ -112,6 +114,7 @@ describe('analyticsUtils', () => {
                 permissions: [
                     "viewAccessCopies",
                     "viewOriginal",
+                    "viewReducedResImages",
                     "viewMetadata"
                 ],
                 groupRoleMap: {
@@ -144,14 +147,16 @@ describe('analyticsUtils', () => {
         };
         wrapper = mount(displayWrapper, {
             global: {
-                plugins: [store, i18n],
-                mocks: { $gtag, $route },
+                plugins: [i18n, createTestingPinia({
+                    stubActions: false
+                })],
+                mocks: { $route },
                 stubs: {
                     RouterLink: RouterLinkStub
                 }
             }
         });
-
+        store = useAccessStore();
         moxios.wait(() => {
             expect(pageEvent).toHaveBeenCalledWith(briefObj);
             expect(pageView).toHaveBeenCalledWith(briefObj.title);

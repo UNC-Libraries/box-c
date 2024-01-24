@@ -1,7 +1,7 @@
 
 package edu.unc.lib.boxc.web.services.rest;
 
-import static edu.unc.lib.boxc.auth.api.Permission.viewAccessCopies;
+import static edu.unc.lib.boxc.auth.api.Permission.viewReducedResImages;
 import static edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPaths.idToPath;
 import com.github.tomakehurst.wiremock.client.WireMock;
 import edu.unc.lib.boxc.auth.api.exceptions.AccessRestrictionException;
@@ -199,10 +199,10 @@ public class DownloadImageControllerIT extends AbstractAPIIT {
     }
 
     @Test
-    public void testGetImageNoViewAccessCopyPermission() throws Exception {
+    public void testGetImageNoViewReducedPermission() throws Exception {
         var pid = makePid();
         doThrow(new AccessRestrictionException()).when(accessControlService)
-                .assertHasAccess(anyString(), eq(pid), any(AccessGroupSetImpl.class), eq(viewAccessCopies));
+                .assertHasAccess(anyString(), eq(pid), any(AccessGroupSetImpl.class), eq(viewReducedResImages));
 
         MvcResult result = mvc.perform(get("/downloadImage/" + pid.getId() + "/1200"))
                 .andExpect(status().isForbidden())
