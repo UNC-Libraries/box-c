@@ -1,6 +1,6 @@
 define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'AddFileForm', 'EditThumbnailForm',
-		'EditFilenameForm', 'EditTitleForm', 'DeleteForm', 'IngestFromSourceForm', 'contextMenu'],
-		function($, ui, StringUtilities, AddFileForm, EditThumbnailForm, EditFilenameForm, EditTitleForm, DeleteForm, IngestFromSourceForm) {
+		'EditFilenameForm', 'EditTitleForm', 'DeleteForm', 'IngestFromSourceForm', 'PagedDisplayForm', 'contextMenu'],
+		function($, ui, StringUtilities, AddFileForm, EditThumbnailForm, EditFilenameForm, EditTitleForm, DeleteForm, IngestFromSourceForm, PagedDisplayForm) {
 
 	var defaultOptions = {
 		selector : undefined,
@@ -193,6 +193,10 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'A
 		if (!isContentRoot && metadata.type === 'Work' && $.inArray('ingest', metadata.permissions) != -1) {
 			items["addFile"] = {name : 'Add File'};
 			items["ingestSourceFilesOnly"] = {name : 'Add Files from Server'};
+		}
+
+		if (!isContentRoot && metadata.type === 'Work' && $.inArray('editViewSettings', metadata.permissions) !== -1) {
+			items["pagedDisplay"] = {name : 'Update View Settings'};
 		}
 
 		// Export actions
@@ -445,6 +449,9 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'A
 							}
 						})();
 						break;
+					case "pagedDisplay":
+						self.pagedDisplay(resultObject);
+						break;
 					case "patronPermissions":
 						perms_editor_store.setPermissionType('Patron');
 						perms_editor_store.setMetadata(metadata);
@@ -540,6 +547,14 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'A
 		});
 		editThumbnailForm.open(resultObject);
 	};
+
+	ResultObjectActionMenu.prototype.pagedDisplay = function(resultObject) {
+		var pagedDisplayForm = new PagedDisplayForm({
+			alertHandler : this.options.alertHandler,
+			actionHandler : this.actionHandler
+		});
+		pagedDisplayForm.open(resultObject);
+	}
 	
 	ResultObjectActionMenu.prototype.disable = function() {
 		$(this.options.selector).contextMenu(false);
