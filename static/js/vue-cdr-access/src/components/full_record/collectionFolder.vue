@@ -22,8 +22,9 @@
                 <abstract v-if="recordData.briefObject.abstractText" :brief-object="recordData.briefObject"/>
                 <p v-if="fieldExists(recordData.exhibits)">
                     <strong>{{ $t('full_record.related_digital_exhibits') }}: </strong>
-                    <template v-for="(exhibit, index) in recordData.exhibits">
-                        <a :href="exhibit.value">{{ exhibit.key }}</a><template v-if="index < recordData.exhibits.length - 1">;</template>
+                    <template v-for="(exhibit_link, title, index) in recordData.exhibits">
+                        <a :href="exhibit_link">{{ title }}</a>
+                        <template v-if="index < recordData.exhibits.length - 1">;</template>
                     </template>
                 </p>
                 <p><a @click.prevent="displayMetadata()" href="#">{{ $t('full_record.additional_metadata') }}</a></p>
