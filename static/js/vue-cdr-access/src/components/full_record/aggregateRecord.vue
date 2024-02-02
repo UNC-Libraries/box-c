@@ -55,11 +55,11 @@
                                             {{ recordData.embargoDate }}
                                         </li>
                                         <abstract v-if="recordData.briefObject.abstractText" :brief-object="recordData.briefObject"/>
-                                        <li v-if="fieldExists(recordData.exhibits)">
+                                        <li class="exhibits" v-if="fieldExists(recordData.exhibits)">
                                             <span class="has-text-weight-bold">{{ $t('full_record.related_digital_exhibits') }}: </span>
                                             <template v-for="(exhibit_link, title, index) in recordData.exhibits">
                                                 <a :href="exhibit_link">{{ title }}</a>
-                                                <template v-if="index < recordData.exhibits.length - 1">;</template>
+                                                <template v-if="hasMoreExhibits(index, recordData.exhibits)">;</template>
                                             </template>
                                         </li>
                                     </ul>
