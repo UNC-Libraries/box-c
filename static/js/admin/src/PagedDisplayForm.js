@@ -17,8 +17,8 @@ define('PagedDisplayForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateCh
 
         PagedDisplayForm.prototype.preprocessForm = function(resultObject) {
             var newViewSetting = $("#view_settings_change", this.$form).val();
-            var pid = resultObject.metadata.id;
-            this.action_url = "/services/api/edit/view_settings/" + pid + "?direction=" + encodeURIComponent(newViewSetting);
+            var pids = $("#paged_display_targets", this.$form).val();
+            this.action_url = "/services/api/edit/view_settings?targets=" + pids + "&direction=" + encodeURIComponent(newViewSetting);
         };
 
         PagedDisplayForm.prototype.validationErrors = function() {

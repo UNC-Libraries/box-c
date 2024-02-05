@@ -551,7 +551,8 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'A
 	ResultObjectActionMenu.prototype.pagedDisplay = function(resultObject) {
 		var pagedDisplayForm = new PagedDisplayForm({
 			alertHandler : this.options.alertHandler,
-			actionHandler : this.actionHandler
+			actionHandler : this.actionHandler,
+			targets: resultObject.metadata.id
 		});
 		pagedDisplayForm.open(resultObject);
 	}
