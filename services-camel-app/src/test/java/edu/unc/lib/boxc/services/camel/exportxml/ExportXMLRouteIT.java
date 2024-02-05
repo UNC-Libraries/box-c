@@ -5,6 +5,7 @@ import static edu.unc.lib.boxc.model.api.xml.NamespaceConstants.FITS_URI;
 import static edu.unc.lib.boxc.model.fcrepo.ids.DatastreamPids.getTechnicalMetadataPid;
 import static edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPaths.getContentRootPid;
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.apache.commons.io.FilenameUtils.wildcardMatch;
 import static org.apache.jena.rdf.model.ResourceFactory.createResource;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -25,6 +26,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -48,7 +50,6 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.io.TempDir;
 import org.junit.rules.TemporaryFolder;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
@@ -198,6 +199,7 @@ public class ExportXMLRouteIT {
         assertTrue("Processing message did not match expectations", result);
 
         assertEmailSent();
+        assertTempFilesDeleted();
 
         Element rootEl = getExportedDocumentRootEl();
 
@@ -221,6 +223,7 @@ public class ExportXMLRouteIT {
         assertTrue("Processing message did not match expectations", result);
 
         assertEmailSent();
+        assertTempFilesDeleted();
 
         Element rootEl = getExportedDocumentRootEl();
 
@@ -243,6 +246,7 @@ public class ExportXMLRouteIT {
         assertTrue("Processing message did not match expectations", result);
 
         assertEmailSent();
+        assertTempFilesDeleted();
 
         Element rootEl = getExportedDocumentRootEl();
 
@@ -311,6 +315,7 @@ public class ExportXMLRouteIT {
         assertTrue("Processing message did not match expectations", result);
 
         assertEmailSent(3);
+        assertTempFilesDeleted();
 
         Element rootEl1 = getExportedDocumentRootEl(1);
         assertHasObjectWithoutMods(rootEl1, ResourceType.AdminUnit, unitObj.getPid());
@@ -344,6 +349,7 @@ public class ExportXMLRouteIT {
         assertTrue("Processing message did not match expectations", result);
 
         assertEmailSent(2);
+        assertTempFilesDeleted();
 
         Element rootEl1 = getExportedDocumentRootEl(1);
         assertHasObjectWithMods(rootEl1, ResourceType.Collection, collObj1.getPid());
@@ -368,6 +374,7 @@ public class ExportXMLRouteIT {
         assertTrue("Processing message did not match expectations", result);
 
         assertEmailSent(1);
+        assertTempFilesDeleted();
 
         Element rootEl1 = getExportedDocumentRootEl(1);
         assertHasObjectWithMods(rootEl1, ResourceType.Collection, collObj1.getPid());
@@ -408,6 +415,7 @@ public class ExportXMLRouteIT {
         assertTrue("Processing message did not match expectations", result);
 
         assertEmailSent();
+        assertTempFilesDeleted();
 
         Element rootEl = getExportedDocumentRootEl();
 
@@ -430,6 +438,7 @@ public class ExportXMLRouteIT {
         assertTrue("Processing message did not match expectations", result);
 
         assertEmailSent();
+        assertTempFilesDeleted();
 
         Element rootEl = getExportedDocumentRootEl();
 
@@ -460,6 +469,7 @@ public class ExportXMLRouteIT {
         assertTrue("Processing message did not match expectations", result);
 
         assertEmailSent();
+        assertTempFilesDeleted();
 
         Element rootEl = getExportedDocumentRootEl();
 
@@ -495,6 +505,7 @@ public class ExportXMLRouteIT {
         assertTrue("Processing message did not match expectations", result);
 
         assertEmailSent();
+        assertTempFilesDeleted();
 
         Element rootEl = getExportedDocumentRootEl();
 
@@ -529,6 +540,7 @@ public class ExportXMLRouteIT {
         assertTrue("Processing message did not match expectations", result);
 
         assertEmailSent();
+        assertTempFilesDeleted();
 
         Element rootEl = getExportedDocumentRootEl();
 
@@ -562,6 +574,7 @@ public class ExportXMLRouteIT {
         assertTrue("Processing message did not match expectations", result);
 
         assertEmailSent();
+        assertTempFilesDeleted();
 
         Element rootEl = getExportedDocumentRootEl();
 
@@ -675,6 +688,19 @@ public class ExportXMLRouteIT {
             content = dsEl.getTextTrim();
         }
         assertEquals(expectedContent.trim(), content);
+    }
+
+    private void assertTempFilesDeleted() {
+        var tempDir = System.getProperty("java.io.tmpdir");
+        String wildCardValue = "xml_export*";
+        try (var stream = Files.list(Paths.get(tempDir))) {
+            var filters = stream.filter(file ->
+                    wildcardMatch(file.getFileName().toString(), wildCardValue));
+            var results = filters.collect(Collectors.toList());
+            assertTrue(results.isEmpty());
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private Element getDatastreamElByType(Element objEl, DatastreamType dsType) {
