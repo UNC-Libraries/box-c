@@ -534,7 +534,11 @@ const record = {
     viewerPid: "8a2f05e5-d2b7-4857-ae71-c24aa28484c1",
     dataFileUrl: "content/8a2f05e5-d2b7-4857-ae71-c24aa28484c1",
     markedForDeletion: false,
-    resourceType: "Work"
+    resourceType: "Work",
+    exhibits:  {
+        "The Cartoons of Boxy": "https://exhibits.lib.unc.edu/exhibits/show/boxycartoons/intro",
+        "The Cartoons of Dwane Powell": "https://exhibits.lib.unc.edu/exhibits/show/dwanepowellcartoons/intro"
+    }
 }
 
 let wrapper, router;
@@ -611,6 +615,26 @@ describe('aggregateRecord.vue', () => {
             recordData: updated_record
         });
         expect(wrapper.find('.embargo').text()).toEqual(expect.stringMatching(/Embargoed Until:\s+2199-01-01/))
+    });
+
+    it("displays a list of exhibits separated by semicolons", () => {
+        let exhibits = wrapper.find('.exhibits');
+        expect(exhibits.exists()).toBe(true);
+        expect(exhibits.html()).toEqual(expect.stringMatching(/<a.href=.*boxycartoons.*>The.Cartoons.of.Boxy<\/a>;\s<a.href=.*dwanepowellcartoons.*>The Cartoons.of.Dwane.Powell<\/a>/));
+    });
+
+    it("displays a list with one exhibit without semicolons", async () => {
+        let updated_record = cloneDeep(record);
+        updated_record.exhibits = {
+            "The Epigraphs of Boxy": "https://exhibits.lib.unc.edu/exhibits/show/boxyepi/intro"
+        };
+        await wrapper.setProps({
+            recordData: updated_record
+        });
+        let exhibits = wrapper.find('.exhibits');
+        expect(exhibits.exists()).toBe(true);
+        // Regex looks to see that there's no semicolon after the last </a>
+        expect(exhibits.html()).toEqual(expect.stringMatching(/<a.href=.*boxyepi.*>The.Epigraphs.of.Boxy<\/a>(?!;)/));
     });
 
     it("displays a list of neighbor works", () => {
