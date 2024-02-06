@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:mvc="http://www.springframework.org/schema/mvc"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="
+        http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/context
+        http://www.springframework.org/schema/context/spring-context-3.0.xsd
+        http://www.springframework.org/schema/mvc
+        http://www.springframework.org/schema/mvc/spring-mvc-3.0.xsd">
+
+    <mvc:annotation-driven/>
+
+    <context:component-scan base-package="edu.unc.lib.boxc.web.services.rest.exceptions"/>
+    <context:component-scan resource-pattern="**/ImageServerProxyController*" base-package="edu.unc.lib.boxc.web.services.rest"/>
+
+    <bean id="imageServerProxyService" class="edu.unc.lib.boxc.web.services.processing.ImageServerProxyService">
+        <property name="baseIiifv3Path" value="http://example.com/iiif/v3/"/>
+        <property name="imageServerProxyBasePath" value="http://localhost:46887/iiif/v3/"/>
+        <property name="httpClientConnectionManager" ref="httpClientConnectionManager" />
+    </bean>
+
+    <bean id="aclService" class="org.mockito.Mockito" factory-method="mock">
+        <constructor-arg value="edu.unc.lib.boxc.auth.fcrepo.services.AccessControlServiceImpl" />
+    </bean>
+
+    <bean id="httpClientConnectionManager" class="org.apache.http.impl.conn.PoolingHttpClientConnectionManager"
+          destroy-method="shutdown">
+    </bean>
+</beans>
