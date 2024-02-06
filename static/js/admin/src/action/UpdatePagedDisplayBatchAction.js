@@ -13,11 +13,13 @@ define('UpdatePagedDisplayBatchAction', [ 'jquery', 'AbstractBatchAction', "tpl!
     };
 
     UpdatePagedDisplayBatchAction.prototype.execute = function() {
+        let self = this;
         let targets = this.getTargets();
-        var UpdatePagedDisplayForm = pagedDisplayTemplate({
+        let UpdatePagedDisplayForm = pagedDisplayTemplate({
             options: { targets: this.formatTargets(targets) },
             metadata: { viewSettings: 'individual' }
         });
+
         this.dialog = $("<div class='containingDialog'>" + UpdatePagedDisplayForm + "</div>");
         this.dialog.dialog({
             autoOpen: true,
@@ -27,20 +29,39 @@ define('UpdatePagedDisplayBatchAction', [ 'jquery', 'AbstractBatchAction', "tpl!
             modal: true,
             title: `Edit View Settings for ${targets.length} object(s)`
         });
-        this.$form = this.dialog.first();
 
-        AbstractBatchAction.prototype.execute.call(this);
+        this.$form = this.dialog.first();
+        this.$form.submit(function(e) {
+            let newViewSetting = $('#view_settings_change', self.$form).val();
+            let pids = $('#paged_display_targets', self.$form).val();
+
+            $.ajax({
+                url: `/services/api/edit/view_settings?targets=${encodeURIComponent(pids)}&direction=${encodeURIComponent(newViewSetting)}`,
+                type: 'PUT',
+                contentType: 'application/json; charset=utf-8',
+                dataType: 'json'
+            }).done(function (response) {
+                self.context.view.$alertHandler.alertHandler('message', response.message);
+                self.dialog.remove();
+            }).fail(function () {
+                self.context.view.$alertHandler.alertHandler('error', `Failed to update view settings ${targets.length}objects`);
+            });
+
+            e.preventDefault();
+        });
     }
 
     UpdatePagedDisplayBatchAction.prototype.formatTargets = function(targets) {
-        return targets.filter(function(d) {
-            return d.metadata.type === 'Work';
-        }).map(function(d) {
-            return d.metadata.id;
-        }).join(',');
+        return targets.filter(d => d.metadata.type === 'Work')
+            .map(d => d.metadata.id)
+            .join(',');
     }
 
     UpdatePagedDisplayBatchAction.prototype.doWork = function() {
+        this.actionHandler.addEvent({
+            action : 'PagedDisplay',
+            confirm : false
+        });
     };
 
     return UpdatePagedDisplayBatchAction;

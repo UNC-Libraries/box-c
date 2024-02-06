@@ -2,7 +2,7 @@ define('PagedDisplayForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateCh
         'ModalLoadingOverlay', 'AbstractForm', 'AlertHandler'],
     function($, ui, _, RemoteStateChangeMonitor, pagedDisplayForm, ModalLoadingOverlay, AbstractForm) {
 
-        var defaultOptions = {
+        let defaultOptions = {
             title : 'Edit View Settings',
             createFormTemplate : pagedDisplayForm,
             submitMethod: 'PUT'
@@ -15,27 +15,27 @@ define('PagedDisplayForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateCh
         PagedDisplayForm.prototype.constructor = PagedDisplayForm;
         PagedDisplayForm.prototype = Object.create(AbstractForm.prototype);
 
-        PagedDisplayForm.prototype.preprocessForm = function(resultObject) {
-            var newViewSetting = $("#view_settings_change", this.$form).val();
-            var pids = $("#paged_display_targets", this.$form).val();
-            this.action_url = "/services/api/edit/view_settings?targets=" + pids + "&direction=" + encodeURIComponent(newViewSetting);
+        PagedDisplayForm.prototype.preprocessForm = function() {
+            let newViewSetting = $('#view_settings_change', this.$form).val();
+            let pids = $('#paged_display_targets', this.$form).val();
+            this.action_url = `/services/api/edit/view_settings?targets=${encodeURIComponent(pids)}&direction=${encodeURIComponent(newViewSetting)}`;
         };
 
-        PagedDisplayForm.prototype.validationErrors = function() {
-            var errors = [];
-            var viewSetting = $("#view_settings_change", this.$form).val();
+        PagedDisplayForm.prototype.validationErrors = function(resultObject) {
+            let errors = [];
+            let viewSetting = $('#view_settings_change', this.$form).val();
             // Validate input
             if (!viewSetting)
-                errors.push("You must specify a view setting.");
+                errors.push('You must specify a view setting.');
             return errors;
         };
 
         PagedDisplayForm.prototype.getSuccessMessage = function(data) {
-            return "View settings settings have been successfully edited.";
+            return 'View settings settings have been successfully edited.';
         };
 
         PagedDisplayForm.prototype.getErrorMessage = function(data) {
-            return "An error occurred while editing the view settings";
+            return 'An error occurred while editing the view settings';
         };
 
         PagedDisplayForm.prototype.remove = function() {
