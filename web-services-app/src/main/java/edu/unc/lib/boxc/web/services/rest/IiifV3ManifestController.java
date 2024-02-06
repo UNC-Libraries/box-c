@@ -39,6 +39,7 @@ public class IiifV3ManifestController {
     @ResponseBody
     public ResponseEntity<Object> getManifest(@PathVariable("id") String id) {
         PID pid = PIDs.get(id);
+        log.debug("Getting manifest for {}", pid.getId());
         var manifest = manifestService.buildManifest(pid, AgentPrincipalsImpl.createFromThread());
         return new ResponseEntity<>(manifest, HttpStatus.OK);
     }
@@ -53,6 +54,7 @@ public class IiifV3ManifestController {
     @ResponseBody
     public ResponseEntity<Object> getCanvas(@PathVariable("id") String id) {
         PID pid = PIDs.get(id);
+        log.debug("Getting canvas for {}", pid.getId());
         var manifest = manifestService.buildCanvas(pid, AgentPrincipalsImpl.createFromThread());
         return new ResponseEntity<>(manifest, HttpStatus.OK);
     }
