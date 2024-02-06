@@ -11,6 +11,8 @@ import java.util.Date;
 import java.util.concurrent.locks.Lock;
 
 import edu.unc.lib.boxc.fcrepo.exceptions.OptimisticLockException;
+import edu.unc.lib.boxc.persist.impl.InputStreamDigestUtil;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.rdf.model.Model;
 import org.slf4j.Logger;
 
@@ -80,6 +82,22 @@ public class VersionedDatastreamService {
                 return updateHeadVersion(newVersion, session);
             } else {
                 log.debug("Adding history and head version for datastream {}", dsPid);
+                if (newVersion.isSkipUnmodified()) {
+                    var oldSha1 = StringUtils.substringAfterLast(dsObj.getSha1Checksum(), ":");
+                    var newSha1 = InputStreamDigestUtil.computeDigest(newVersion.getContentStream());
+                    if (newSha1.equals(oldSha1)) {
+                        log.debug("Skipping update of {}, old version and new version have the same digest", dsPid);
+                        return dsObj;
+                    } else {
+                        log.debug("Continuing with update of {}, content has changed", dsPid);
+                        try {
+                            // Reset inputstream to beginning so we can write it to file
+                            newVersion.getContentStream().reset();
+                        } catch (IOException e) {
+                            throw new ServiceException("Invalid content stream, must support reset", e);
+                        }
+                    }
+                }
                 // Datastream already exists
                 // Add the current head version to the history log
                 updateDatastreamHistory(session, dsObj);
@@ -230,6 +248,10 @@ public class VersionedDatastreamService {
         this.transactionManager = transactionManager;
     }
 
+    public static enum DatastreamVersioningOption {
+        SKIP_UNMODIFIED
+    }
+
     /**
      * Details of a datastream version
      *
@@ -247,6 +269,8 @@ public class VersionedDatastreamService {
         private Model properties;
         // Date after which the datastream must not have been modified, for optimistic locking
         private Instant unmodifiedSince;
+        // If true, then no new version should be created if the checksum of the new content is the same as the old
+        private boolean skipUnmodified;
 
         public DatastreamVersion(PID dsPid) {
             this.dsPid = dsPid;
@@ -326,6 +350,14 @@ public class VersionedDatastreamService {
 
         public void setUnmodifiedSince(Instant unmodifiedSince) {
             this.unmodifiedSince = unmodifiedSince;
+        }
+
+        public boolean isSkipUnmodified() {
+            return skipUnmodified;
+        }
+
+        public void setSkipUnmodified(boolean skipUnmodified) {
+            this.skipUnmodified = skipUnmodified;
         }
     }
 }
