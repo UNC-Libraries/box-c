@@ -60,15 +60,7 @@ public class VersionedDatastreamService {
 
         Lock dsLock = lockManager.awaitWriteLock(dsPid);
         BinaryObject dsObj = getBinaryObject(dsPid);
-        if (dsObj != null && newVersion.getUnmodifiedSince() != null) {
-            Instant fcrepoModified = dsObj.getLastModified().toInstant();
-            if (newVersion.getUnmodifiedSince().isBefore(fcrepoModified)) {
-                throw new OptimisticLockException("Rejecting update to datastream " + dsPid.getQualifiedId()
-                        + ", update specifies datastream must not have been modified since "
-                        + newVersion.getUnmodifiedSince()
-                        + " but version in the repository was last updated " + fcrepoModified);
-            }
-        }
+        checkOptimisticLock(dsObj, newVersion);
 
         // Get a session for transferring the binary and its history
         BinaryTransferSession session = null;
@@ -81,23 +73,10 @@ public class VersionedDatastreamService {
                 log.debug("Adding head version for datastream {}", dsPid);
                 return updateHeadVersion(newVersion, session);
             } else {
-                log.debug("Adding history and head version for datastream {}", dsPid);
-                if (newVersion.isSkipUnmodified()) {
-                    var oldSha1 = StringUtils.substringAfterLast(dsObj.getSha1Checksum(), ":");
-                    var newSha1 = InputStreamDigestUtil.computeDigest(newVersion.getContentStream());
-                    if (newSha1.equals(oldSha1)) {
-                        log.debug("Skipping update of {}, old version and new version have the same digest", dsPid);
-                        return dsObj;
-                    } else {
-                        log.debug("Continuing with update of {}, content has changed", dsPid);
-                        try {
-                            // Reset inputstream to beginning so we can write it to file
-                            newVersion.getContentStream().reset();
-                        } catch (IOException e) {
-                            throw new ServiceException("Invalid content stream, must support reset", e);
-                        }
-                    }
+                if (skipUpdateDueToUnmodifiedContent(dsObj, newVersion)) {
+                    return dsObj;
                 }
+                log.debug("Adding history and head version for datastream {}", dsPid);
                 // Datastream already exists
                 // Add the current head version to the history log
                 updateDatastreamHistory(session, dsObj);
@@ -120,6 +99,39 @@ public class VersionedDatastreamService {
                 session.close();
             }
         }
+    }
+
+    // Throws an OptimisticLockException if the binary has been modified after the locking timestamp in the newVersion
+    private void checkOptimisticLock(BinaryObject dsObj, DatastreamVersion newVersion) {
+        if (dsObj != null && newVersion.getUnmodifiedSince() != null) {
+            Instant fcrepoModified = dsObj.getLastModified().toInstant();
+            if (newVersion.getUnmodifiedSince().isBefore(fcrepoModified)) {
+                throw new OptimisticLockException("Rejecting update to datastream " + dsObj.getPid().getQualifiedId()
+                        + ", update specifies datastream must not have been modified since "
+                        + newVersion.getUnmodifiedSince()
+                        + " but version in the repository was last updated " + fcrepoModified);
+            }
+        }
+    }
+
+    private boolean skipUpdateDueToUnmodifiedContent(BinaryObject dsObj, DatastreamVersion newVersion) {
+        if (newVersion.isSkipUnmodified()) {
+            var oldSha1 = StringUtils.substringAfterLast(dsObj.getSha1Checksum(), ":");
+            var newSha1 = InputStreamDigestUtil.computeDigest(newVersion.getContentStream());
+            if (newSha1.equals(oldSha1)) {
+                log.debug("Skipping update of {}, old version and new version have the same digest", dsObj.getPid());
+                return true;
+            } else {
+                log.debug("Continuing with update of {}, content has changed", dsObj.getPid());
+                try {
+                    // Reset inputstream to beginning so we can write it to file
+                    newVersion.getContentStream().reset();
+                } catch (IOException e) {
+                    throw new ServiceException("Invalid content stream, must support reset", e);
+                }
+            }
+        }
+        return false;
     }
 
     /**
