@@ -2,17 +2,20 @@ package edu.unc.lib.boxc.operations.impl.edit;
 
 import static edu.unc.lib.boxc.model.api.DatastreamType.MD_DESCRIPTIVE;
 import static edu.unc.lib.boxc.model.api.DatastreamType.MD_DESCRIPTIVE_HISTORY;
+import static edu.unc.lib.boxc.model.api.xml.JDOMNamespaceUtil.DCR_PACKAGING_NS;
 import static edu.unc.lib.boxc.model.api.xml.JDOMNamespaceUtil.MODS_V3_NS;
 import static edu.unc.lib.boxc.operations.test.ModsTestHelper.documentToInputStream;
 import static edu.unc.lib.boxc.operations.test.ModsTestHelper.modsWithTitleAndDate;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.MockitoAnnotations.openMocks;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 
+import edu.unc.lib.boxc.operations.impl.versioning.DatastreamHistoryLog;
 import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.JDOMException;
@@ -108,11 +111,48 @@ public class UpdateDescriptionServiceIT {
         assertNotNull(findDatastream(mdBins, MD_DESCRIPTIVE_HISTORY));
     }
 
+    @Test
+    public void updateDescriptionSkipUnmodified() throws Exception {
+        FolderObject folderObj = repoObjFactory.createFolderObject(null);
+
+        addDescription(folderObj, "new title", "2018-04-06");
+        // Perform a second update with the exact same content
+        addDescription(folderObj, "new title", "2018-04-06");
+
+        // Update should have been skipped, so no history datastream
+        List<BinaryObject> mdBins = folderObj.listMetadata();
+        assertEquals(1, mdBins.size());
+        BinaryObject modsBin = findDatastream(mdBins, MD_DESCRIPTIVE);
+        assertHasMods(modsBin.getBinaryStream(), "new title", "2018-04-06");
+        assertNull(findDatastream(mdBins, MD_DESCRIPTIVE_HISTORY));
+    }
+
+    @Test
+    public void updateDescriptionSkipUnmodifiedWithHistory() throws Exception {
+        FolderObject folderObj = repoObjFactory.createFolderObject(null);
+
+        addDescription(folderObj, "new title", "2018-04-06");
+        addDescription(folderObj, "updated title", "2018-04-08");
+        // Perform a third update with the exact same content
+        addDescription(folderObj, "updated title", "2018-04-08");
+
+        // History should be present, but only have one entry in it
+        List<BinaryObject> mdBins = folderObj.listMetadata();
+        assertEquals(2, mdBins.size());
+        BinaryObject modsBin = findDatastream(mdBins, MD_DESCRIPTIVE);
+        assertHasMods(modsBin.getBinaryStream(), "updated title", "2018-04-08");
+        var historyDs = findDatastream(mdBins, MD_DESCRIPTIVE_HISTORY);
+        assertNotNull(historyDs);
+        var rootEl = deserializeXml(historyDs.getBinaryStream());
+        var versionEls = rootEl.getChildren(DatastreamHistoryLog.VERSION_TAG, DCR_PACKAGING_NS);
+        assertEquals(1, versionEls.size());
+    }
+
     private BinaryObject findDatastream(List<BinaryObject> mdBins, DatastreamType dsType) {
         return mdBins.stream()
                 .filter(bin -> bin.getPid().getComponentId().endsWith(dsType.getId()))
                 .findFirst()
-                .get();
+                .orElse(null);
     }
 
     private void addDescription(ContentObject contentObj, String title, String date) throws Exception {
@@ -124,12 +164,16 @@ public class UpdateDescriptionServiceIT {
 
     private void assertHasMods(InputStream updatedMods, String expectedTitle, String expectedDate)
             throws JDOMException, IOException {
-        SAXBuilder builder = new SAXBuilder();
-        Document doc = builder.build(updatedMods);
-        Element rootEl = doc.getRootElement();
+        Element rootEl = deserializeXml(updatedMods);
         String title = rootEl.getChild("titleInfo", MODS_V3_NS).getChildText("title", MODS_V3_NS);
         String dateCreated = rootEl.getChild("originInfo", MODS_V3_NS).getChildText("dateCreated", MODS_V3_NS);
         assertEquals(expectedTitle, title);
         assertEquals(expectedDate, dateCreated);
+    }
+
+    private Element deserializeXml(InputStream xmlStream) throws JDOMException, IOException {
+        SAXBuilder builder = new SAXBuilder();
+        Document doc = builder.build(xmlStream);
+        return doc.getRootElement();
     }
 }
