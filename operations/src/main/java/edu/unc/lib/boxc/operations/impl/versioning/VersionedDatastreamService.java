@@ -260,10 +260,6 @@ public class VersionedDatastreamService {
         this.transactionManager = transactionManager;
     }
 
-    public static enum DatastreamVersioningOption {
-        SKIP_UNMODIFIED
-    }
-
     /**
      * Details of a datastream version
      *
