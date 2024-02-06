@@ -114,21 +114,23 @@ public class VersionedDatastreamService {
         }
     }
 
+    // Returns true if the new content is the same as the old and isSkipUnmodified is true.
     private boolean skipUpdateDueToUnmodifiedContent(BinaryObject dsObj, DatastreamVersion newVersion) {
-        if (newVersion.isSkipUnmodified()) {
-            var oldSha1 = StringUtils.substringAfterLast(dsObj.getSha1Checksum(), ":");
-            var newSha1 = InputStreamDigestUtil.computeDigest(newVersion.getContentStream());
-            if (newSha1.equals(oldSha1)) {
-                log.debug("Skipping update of {}, old version and new version have the same digest", dsObj.getPid());
-                return true;
-            } else {
-                log.debug("Continuing with update of {}, content has changed", dsObj.getPid());
-                try {
-                    // Reset inputstream to beginning so we can write it to file
-                    newVersion.getContentStream().reset();
-                } catch (IOException e) {
-                    throw new ServiceException("Invalid content stream, must support reset", e);
-                }
+        if (!newVersion.isSkipUnmodified()) {
+            return false;
+        }
+        var oldSha1 = StringUtils.substringAfterLast(dsObj.getSha1Checksum(), ":");
+        var newSha1 = InputStreamDigestUtil.computeDigest(newVersion.getContentStream());
+        if (newSha1.equals(oldSha1)) {
+            log.debug("Skipping update of {}, old version and new version have the same digest", dsObj.getPid());
+            return true;
+        } else {
+            log.debug("Continuing with update of {}, content has changed", dsObj.getPid());
+            try {
+                // Reset inputstream to beginning so we can write it to file
+                newVersion.getContentStream().reset();
+            } catch (IOException e) {
+                throw new ServiceException("Invalid content stream, must support reset when skipping unmodified", e);
             }
         }
         return false;
@@ -278,6 +280,7 @@ public class VersionedDatastreamService {
         // Date after which the datastream must not have been modified, for optimistic locking
         private Instant unmodifiedSince;
         // If true, then no new version should be created if the checksum of the new content is the same as the old
+        // Note: contentStream must support reset() when this option is true.
         private boolean skipUnmodified;
 
         public DatastreamVersion(PID dsPid) {

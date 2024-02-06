@@ -11,6 +11,7 @@ import java.security.NoSuchAlgorithmException;
 import static org.apache.commons.codec.binary.Hex.encodeHexString;
 
 /**
+ * Utilities for using digests with InputStreams
  * @author bbpennel
  */
 public class InputStreamDigestUtil {
