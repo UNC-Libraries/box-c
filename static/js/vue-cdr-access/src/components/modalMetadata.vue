@@ -68,9 +68,7 @@ Displays the MODS descriptive record for an object inside of a modal
         watch: {
             openModal(display) {
                 if (display) {
-                    if (this.metadata === '') {
-                        this.loadMetadata();
-                    }
+                    this.loadMetadata();
                 }
             }
         },
