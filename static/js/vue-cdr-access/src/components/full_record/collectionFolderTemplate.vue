@@ -11,9 +11,12 @@
                     <strong>{{ $t('full_record.date_added') }}: </strong>
                     {{ formatDate(recordData.briefObject.added) }}
                 </p>
-                <p v-if="fieldExists(recordData.briefObject.collectionId)">
+                <p class="parent_collection" v-if="fieldExists(recordData.briefObject.parentCollectionName)">
+                    <strong>{{ $t('full_record.collection') }}: </strong> <a :href="collectionLink">{{ recordData.briefObject.parentCollectionName }}</a>
+                </p>
+                <p class="parent_collection_id" v-if="fieldExists(recordData.briefObject.parentCollectionId)">
                     <strong>{{ $t('full_record.collection_id') }}: </strong>
-                    {{ recordData.briefObject.collectionId }}
+                    {{ recordData.briefObject.parentCollectionId }}
                 </p>
                 <p v-if="fieldExists(recordData.findingAidUrl)">
                     <strong>{{ $t('full_record.finding_aid') }}: </strong>
@@ -40,15 +43,21 @@
 
 <script>
 import fullRecordUtils from '../../mixins/fullRecordUtils';
-import abstract from "@/components/full_record/abstract.vue";
+import abstract from '@/components/full_record/abstract.vue';
 import restrictedContent from '@/components/full_record/restrictedContent.vue';
 
 export default {
-    name: 'collectionFolder',
+    name: 'collectionFolderTemplate',
 
     mixins: [fullRecordUtils],
 
     components: {abstract, restrictedContent},
+
+    computed: {
+        collectionLink() {
+            return `record/${this.recordData.briefObject.parentCollectionId}`;
+        }
+    },
 
     methods: {
         fieldExists(value) {

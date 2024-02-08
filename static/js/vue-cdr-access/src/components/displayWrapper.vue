@@ -14,8 +14,8 @@ Top level component for full record pages with searching/browsing, including Adm
             </div>
         </div>
         <admin-unit v-if="container_info.resourceType === 'AdminUnit'" :record-data="container_info"></admin-unit>
-        <collection-folder v-if="container_info.resourceType === 'Collection' || container_info.resourceType === 'Folder'"
-                           :record-data="container_info"></collection-folder>
+        <collection-record v-if="container_info.resourceType === 'Collection'" :record-data="container_info"></collection-record>
+        <folder-record v-if="container_info.resourceType === 'Folder'" :record-data="container_info"></folder-record>
         <aggregate-record v-if="container_info.resourceType === 'Work'" :record-data="container_info"></aggregate-record>
         <file-record v-if="container_info.resourceType === 'File'" :record-data="container_info"></file-record>
 
@@ -62,8 +62,9 @@ Top level component for full record pages with searching/browsing, including Adm
     import browseSearch from '@/components/browseSearch.vue';
     import browseSort from '@/components/browseSort.vue';
     import clearFilters from '@/components/clearFilters.vue';
-    import collectionFolder from '@/components/full_record/collectionFolder.vue';
+    import collectionRecord from '@/components/full_record/collectionRecord.vue';
     import fileRecord from '@/components/full_record/fileRecord.vue';
+    import folderRecord from '@/components/full_record/folderRecord.vue';
     import galleryDisplay from '@/components/galleryDisplay.vue';
     import headerSmall from '@/components/header/headerSmall.vue';
     import listDisplay from '@/components/listDisplay.vue';
@@ -118,8 +119,9 @@ Top level component for full record pages with searching/browsing, including Adm
             browseSearch,
             browseSort,
             clearFilters,
-            collectionFolder,
+            collectionRecord,
             fileRecord,
+            folderRecord,
             galleryDisplay,
             headerSmall,
             listDisplay,

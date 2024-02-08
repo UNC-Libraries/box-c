@@ -40,6 +40,7 @@ export default {
         full_record: {
             additional_metadata: "View Additional Metadata",
             available_date: "Available after {available_date}",
+            collection: "Collection",
             collection_id: "Archival Collection ID",
             contains: "Contains",
             copied_link: "Download URL, {text}, copied to clipboard",

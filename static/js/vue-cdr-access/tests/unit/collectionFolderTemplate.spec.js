@@ -2,7 +2,7 @@ import {mount, RouterLinkStub} from '@vue/test-utils'
 import { createRouter, createWebHistory } from 'vue-router';
 import {createTestingPinia} from '@pinia/testing';
 import { useAccessStore } from '@/stores/access';
-import collectionFolder from '@/components/full_record/collectionFolder.vue';
+import collectionFolderTemplate from '@/components/full_record/collectionFolderTemplate.vue';
 import displayWrapper from '@/components/displayWrapper.vue';
 import {createI18n} from 'vue-i18n';
 import translations from '@/translations';
@@ -119,7 +119,7 @@ describe('collectionFolder.vue', () => {
             ]
         });
 
-        wrapper = mount(collectionFolder, {
+        wrapper = mount(collectionFolderTemplate, {
             global: {
                 plugins: [i18n, router, createTestingPinia({
                     stubActions: false
@@ -169,6 +169,31 @@ describe('collectionFolder.vue', () => {
         };
         await wrapper.setProps({ recordData: updatedRecordData });
         expect(wrapper.find('.login-link').exists()).toBe(false);
+    });
+
+    it('displays a collection name with link, if present', async () => {
+        let updatedRecordData = cloneDeep(recordData);
+        updatedRecordData.briefObject.parentCollectionId = '7b7ff786-6772-4888-b020-e71261b926a6';
+        updatedRecordData.briefObject.parentCollectionName = 'testCollection';
+        updatedRecordData.briefObject.title = 'testFolder'
+        updatedRecordData.briefObject.type = 'Folder';
+        updatedRecordData.resourceType = 'Folder';
+        await wrapper.setProps({ recordData: updatedRecordData });
+        let collection_name_link = wrapper.find('.parent_collection a')
+        expect(collection_name_link.text()).toEqual('testCollection')
+        expect(collection_name_link.attributes('href')).toEqual('record/7b7ff786-6772-4888-b020-e71261b926a6')
+    });
+
+    it('displays a collection id, if present', async () => {
+        let updatedRecordData = cloneDeep(recordData);
+        updatedRecordData.briefObject.parentCollectionId = '7b7ff786-6772-4888-b020-e71261b926a6';
+        updatedRecordData.briefObject.parentCollectionName = 'testFolder';
+        updatedRecordData.briefObject.title = 'testFolder'
+        updatedRecordData.briefObject.type = 'Folder';
+        updatedRecordData.resourceType = 'Folder';
+        await wrapper.setProps({ recordData: updatedRecordData });
+        expect(wrapper.find('.parent_collection_id').text())
+            .toEqual(expect.stringMatching(/Archival Collection ID:\s+7b7ff786-6772-4888-b020-e71261b926a6/))
     });
 
     it('displays a contact link if items are restricted', () => {
