@@ -26,7 +26,7 @@ define('ResultView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtilities'
 						},
 						{
 							actions : [
-								{action : 'UpdatePagedDisplayBatch', label : 'Update View Settings'}
+								{action : 'UpdateViewSettingsBatch', label : 'Update View Settings'}
 							]
 						},
 						{

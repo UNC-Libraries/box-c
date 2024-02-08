@@ -1,26 +1,26 @@
-define('UpdatePagedDisplayBatchAction', [ 'jquery', 'AbstractBatchAction', "tpl!../templates/admin/pagedDisplayForm"], function($, AbstractBatchAction, pagedDisplayTemplate, ) {
-    function UpdatePagedDisplayBatchAction(context) {
+define('UpdateViewSettingsBatchAction', [ 'jquery', 'AbstractBatchAction', "tpl!../templates/admin/viewSettingsForm"], function($, AbstractBatchAction, viewSettingsTemplate, ) {
+    function UpdateViewSettingsBatchAction(context) {
         this._create(context);
     }
 
-    UpdatePagedDisplayBatchAction.prototype.constructor = UpdatePagedDisplayBatchAction;
-    UpdatePagedDisplayBatchAction.prototype = Object.create(AbstractBatchAction.prototype);
+    UpdateViewSettingsBatchAction.prototype.constructor = UpdateViewSettingsBatchAction;
+    UpdateViewSettingsBatchAction.prototype = Object.create(AbstractBatchAction.prototype);
 
-    UpdatePagedDisplayBatchAction.prototype.isValidTarget = function (target) {
+    UpdateViewSettingsBatchAction.prototype.isValidTarget = function (target) {
         return target.isSelected() && target.isEnabled()
-            && $.inArray('changePatronAccess', target.metadata.permissions) !== -1
+            && $.inArray('editViewSettings', target.metadata.permissions) !== -1
             && target.metadata.type === 'Work';
     };
 
-    UpdatePagedDisplayBatchAction.prototype.execute = function() {
+    UpdateViewSettingsBatchAction.prototype.execute = function() {
         let self = this;
         let targets = this.getTargets();
-        let UpdatePagedDisplayForm = pagedDisplayTemplate({
+        let UpdateViewSettingsForm = viewSettingsTemplate({
             options: { targets: this.formatTargets(targets) },
             metadata: { viewSettings: 'individual' }
         });
 
-        this.dialog = $("<div class='containingDialog'>" + UpdatePagedDisplayForm + "</div>");
+        this.dialog = $("<div class='containingDialog'>" + UpdateViewSettingsForm + "</div>");
         this.dialog.dialog({
             autoOpen: true,
             width: 'auto',
@@ -33,10 +33,10 @@ define('UpdatePagedDisplayBatchAction', [ 'jquery', 'AbstractBatchAction', "tpl!
         this.$form = this.dialog.first();
         this.$form.submit(function(e) {
             let newViewSetting = $('#view_settings_change', self.$form).val();
-            let pids = $('#paged_display_targets', self.$form).val();
+            let pids = $('#view_settings_targets', self.$form).val();
 
             $.ajax({
-                url: `/services/api/edit/view_settings?targets=${encodeURIComponent(pids)}&direction=${encodeURIComponent(newViewSetting)}`,
+                url: `/services/api/edit/view_settings?targets=${encodeURIComponent(pids)}&view_setting=${encodeURIComponent(newViewSetting)}`,
                 type: 'PUT',
                 contentType: 'application/json; charset=utf-8',
                 dataType: 'json'
@@ -51,18 +51,18 @@ define('UpdatePagedDisplayBatchAction', [ 'jquery', 'AbstractBatchAction', "tpl!
         });
     }
 
-    UpdatePagedDisplayBatchAction.prototype.formatTargets = function(targets) {
-        return targets.filter(d => d.metadata.type === 'Work')
+    UpdateViewSettingsBatchAction.prototype.formatTargets = function(targets) {
+        return targets.filter(d => this.isValidTarget(d))
             .map(d => d.metadata.id)
             .join(',');
     }
 
-    UpdatePagedDisplayBatchAction.prototype.doWork = function() {
+    UpdateViewSettingsBatchAction.prototype.doWork = function() {
         this.actionHandler.addEvent({
-            action : 'PagedDisplay',
+            action : 'ViewSettings',
             confirm : false
         });
     };
 
-    return UpdatePagedDisplayBatchAction;
+    return UpdateViewSettingsBatchAction;
 });

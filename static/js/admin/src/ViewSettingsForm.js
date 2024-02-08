@@ -1,27 +1,27 @@
-define('PagedDisplayForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateChangeMonitor', 'tpl!../templates/admin/pagedDisplayForm',
+define('ViewSettingsForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateChangeMonitor', 'tpl!../templates/admin/viewSettingsForm',
         'ModalLoadingOverlay', 'AbstractForm', 'AlertHandler'],
-    function($, ui, _, RemoteStateChangeMonitor, pagedDisplayForm, ModalLoadingOverlay, AbstractForm) {
+    function($, ui, _, RemoteStateChangeMonitor, viewSettingsForm, ModalLoadingOverlay, AbstractForm) {
 
         let defaultOptions = {
             title : 'Edit View Settings',
-            createFormTemplate : pagedDisplayForm,
+            createFormTemplate : viewSettingsForm,
             submitMethod: 'PUT'
         };
 
-        function PagedDisplayForm(options) {
+        function ViewSettingsForm(options) {
             this.options = $.extend({}, defaultOptions, options);
         }
 
-        PagedDisplayForm.prototype.constructor = PagedDisplayForm;
-        PagedDisplayForm.prototype = Object.create(AbstractForm.prototype);
+        ViewSettingsForm.prototype.constructor = ViewSettingsForm;
+        ViewSettingsForm.prototype = Object.create(AbstractForm.prototype);
 
-        PagedDisplayForm.prototype.preprocessForm = function() {
+        ViewSettingsForm.prototype.preprocessForm = function() {
             let newViewSetting = $('#view_settings_change', this.$form).val();
-            let pids = $('#paged_display_targets', this.$form).val();
-            this.action_url = `/services/api/edit/view_settings?targets=${encodeURIComponent(pids)}&direction=${encodeURIComponent(newViewSetting)}`;
+            let pids = $('#view_settings_targets', this.$form).val();
+            this.action_url = `/services/api/edit/view_settings?targets=${encodeURIComponent(pids)}&view_setting=${encodeURIComponent(newViewSetting)}`;
         };
 
-        PagedDisplayForm.prototype.validationErrors = function(resultObject) {
+        ViewSettingsForm.prototype.validationErrors = function(resultObject) {
             let errors = [];
             let viewSetting = $('#view_settings_change', this.$form).val();
             // Validate input
@@ -30,15 +30,15 @@ define('PagedDisplayForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateCh
             return errors;
         };
 
-        PagedDisplayForm.prototype.getSuccessMessage = function(data) {
+        ViewSettingsForm.prototype.getSuccessMessage = function(data) {
             return 'View settings settings have been successfully edited.';
         };
 
-        PagedDisplayForm.prototype.getErrorMessage = function(data) {
+        ViewSettingsForm.prototype.getErrorMessage = function(data) {
             return 'An error occurred while editing the view settings';
         };
 
-        PagedDisplayForm.prototype.remove = function() {
+        ViewSettingsForm.prototype.remove = function() {
             AbstractForm.prototype.remove.apply(this);
             if (this.submitSuccessful) {
                 this.options.actionHandler.addEvent({
@@ -49,5 +49,5 @@ define('PagedDisplayForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateCh
             }
         };
 
-        return PagedDisplayForm;
+        return ViewSettingsForm;
     });

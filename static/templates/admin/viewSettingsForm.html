@@ -4,15 +4,14 @@
         <label for="view_settings_change">Page Display:</label>
         <select id="view_settings_change">
             <option value="individual" <%= (metadata.view_settings === undefined || metadata.view_settings === 'individual') ? "selected" : "" %>>Individual</option>
-            <option value="ltr" <%= (metadata.view_settings == 'ltr') ? "selected" : "" %>>Left to Right</option>
-            <option value="rtl" <%= (metadata.view_settings == 'rtl') ? "selected" : "" %>>Right to Left</option>
+            <option value="paged" <%= (metadata.view_settings == 'paged') ? "selected" : "" %>>Paged</option>
         </select>
     </div>
 
     <div class="update_field">
         <input type="submit" id="edit_view_settings_submit_button" class="update_button" value="Save Changes" />
     </div>
-    <input id="paged_display_targets" type="hidden" name="pids" value="<%= options.targets %>">
+    <input id="view_settings_targets" type="hidden" name="pids" value="<%= options.targets %>">
     <div class="errors">
         <h3>Errors</h3>
         <div class="error_stack"></div>

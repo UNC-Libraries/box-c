@@ -1,6 +1,6 @@
 define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'AddFileForm', 'EditThumbnailForm',
-		'EditFilenameForm', 'EditTitleForm', 'DeleteForm', 'IngestFromSourceForm', 'PagedDisplayForm', 'contextMenu'],
-		function($, ui, StringUtilities, AddFileForm, EditThumbnailForm, EditFilenameForm, EditTitleForm, DeleteForm, IngestFromSourceForm, PagedDisplayForm) {
+		'EditFilenameForm', 'EditTitleForm', 'DeleteForm', 'IngestFromSourceForm', 'ViewSettingsForm', 'contextMenu'],
+		function($, ui, StringUtilities, AddFileForm, EditThumbnailForm, EditFilenameForm, EditTitleForm, DeleteForm, IngestFromSourceForm, ViewSettingsForm) {
 
 	var defaultOptions = {
 		selector : undefined,
@@ -195,8 +195,8 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'A
 			items["ingestSourceFilesOnly"] = {name : 'Add Files from Server'};
 		}
 
-		if (!isContentRoot && metadata.type === 'Work' && $.inArray('editViewSettings', metadata.permissions) !== -1) {
-			items["pagedDisplay"] = {name : 'Update View Settings'};
+		if (metadata.type === 'Work' && $.inArray('editViewSettings', metadata.permissions) !== -1) {
+			items["viewSettings"] = {name : 'Update View Settings'};
 		}
 
 		// Export actions
@@ -449,8 +449,8 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'A
 							}
 						})();
 						break;
-					case "pagedDisplay":
-						self.pagedDisplay(resultObject);
+					case "viewSettings":
+						self.viewSettings(resultObject);
 						break;
 					case "patronPermissions":
 						perms_editor_store.setPermissionType('Patron');
@@ -548,13 +548,13 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'A
 		editThumbnailForm.open(resultObject);
 	};
 
-	ResultObjectActionMenu.prototype.pagedDisplay = function(resultObject) {
-		var pagedDisplayForm = new PagedDisplayForm({
+	ResultObjectActionMenu.prototype.viewSettings = function(resultObject) {
+		var viewSettingsForm = new ViewSettingsForm({
 			alertHandler : this.options.alertHandler,
 			actionHandler : this.actionHandler,
 			targets: resultObject.metadata.id
 		});
-		pagedDisplayForm.open(resultObject);
+		viewSettingsForm.open(resultObject);
 	}
 	
 	ResultObjectActionMenu.prototype.disable = function() {
