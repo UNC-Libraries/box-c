@@ -29,9 +29,6 @@
       {{#updated}}
       <li>{{this}}</li>
       {{/updated}}
-      {{#skipped}}
-      <li>{{this}}</li>
-      {{/skipped}}
     </ul>
   {{/updatedCount}}
 
