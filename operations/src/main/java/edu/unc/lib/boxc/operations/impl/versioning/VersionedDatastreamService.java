@@ -124,7 +124,7 @@ public class VersionedDatastreamService {
         var newSha1 = InputStreamDigestUtil.computeDigest(newVersion.getContentStream());
         if (newSha1.equals(oldSha1)) {
             throw new StateUnmodifiedException(
-                    "Old version and new version of " + dsObj.getPid() + " are the same.");
+                    "Old version and new version of " + dsObj.getPid().getQualifiedId() + " are the same.");
         } else {
             log.debug("Continuing with update of {}, content has changed", dsObj.getPid());
             try {
