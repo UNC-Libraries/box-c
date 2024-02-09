@@ -73,7 +73,7 @@ export default {
             original_file: "Original File",
             read_more: "Read more",
             read_less: "Read less",
-            related_digital_exhibits: "Related Digital Exhibits",
+            related_digital_exhibits: "Related Digital Exhibitions",
             restricted_content: "This {resource_type} has restricted content",
             search_within: "Search within this work",
             small: "Small",
