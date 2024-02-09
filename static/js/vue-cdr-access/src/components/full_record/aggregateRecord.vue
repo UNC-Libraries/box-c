@@ -20,10 +20,6 @@
                                             <span class="has-text-weight-bold">{{ $t('display.collection') }}: </span>
                                             <router-link class="parent-collection" :to="parentUrl">{{ recordData.briefObject.parentCollectionName }}</router-link>
                                         </li>
-                                        <li v-if="fieldExists(recordData.briefObject.collectionId)">
-                                            <span class="has-text-weight-bold">{{ $t('full_record.collection_id') }}: </span>
-                                            {{ recordData.briefObject.collectionId }}
-                                        </li>
                                         <li v-if="fieldExists(recordData.findingAidUrl)">
                                             <span class="has-text-weight-bold">{{ $t('full_record.finding_aid') }}: </span>
                                             <a class="finding-aid" :href="recordData.findingAidUrl">{{ recordData.findingAidUrl }}</a>

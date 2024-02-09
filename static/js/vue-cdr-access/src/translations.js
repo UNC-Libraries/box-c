@@ -29,7 +29,7 @@ export default {
         collecting_units: "Collecting Units",
         display: {
             collection: "Collection",
-            collection_number: "Collection Number",
+            collection_id: "Archival Collection ID",
             date_deposited: "Date Deposited",
             file_type: "File Type"
         },
