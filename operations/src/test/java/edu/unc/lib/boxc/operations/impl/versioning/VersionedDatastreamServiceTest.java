@@ -11,6 +11,7 @@ import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
 import edu.unc.lib.boxc.model.fcrepo.ids.DatastreamPids;
 import edu.unc.lib.boxc.model.fcrepo.test.TestHelper;
+import edu.unc.lib.boxc.operations.api.exceptions.StateUnmodifiedException;
 import edu.unc.lib.boxc.persist.api.transfer.BinaryTransferOutcome;
 import edu.unc.lib.boxc.persist.api.transfer.BinaryTransferService;
 import edu.unc.lib.boxc.persist.api.transfer.BinaryTransferSession;
@@ -30,6 +31,7 @@ import java.util.Date;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isNull;
@@ -129,7 +131,9 @@ public class VersionedDatastreamServiceTest {
         newV2.setContentType("text/xml");
         newV2.setSkipUnmodified(true);
 
-        service.addVersion(newV2);
+        assertThrows(StateUnmodifiedException.class, () -> {
+            service.addVersion(newV2);
+        });
 
         verify(session, never()).transferReplaceExisting(eq(dsPid), any(InputStream.class));
         verify(repoObjFactory, never()).createOrUpdateBinary(eq(dsHistoryPid), any(), isNull(), eq("text/xml"),

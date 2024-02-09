@@ -11,6 +11,7 @@ import java.util.Date;
 import java.util.concurrent.locks.Lock;
 
 import edu.unc.lib.boxc.fcrepo.exceptions.OptimisticLockException;
+import edu.unc.lib.boxc.operations.api.exceptions.StateUnmodifiedException;
 import edu.unc.lib.boxc.persist.impl.InputStreamDigestUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.rdf.model.Model;
@@ -122,8 +123,8 @@ public class VersionedDatastreamService {
         var oldSha1 = StringUtils.substringAfterLast(dsObj.getSha1Checksum(), ":");
         var newSha1 = InputStreamDigestUtil.computeDigest(newVersion.getContentStream());
         if (newSha1.equals(oldSha1)) {
-            log.debug("Skipping update of {}, old version and new version have the same digest", dsObj.getPid());
-            return true;
+            throw new StateUnmodifiedException(
+                    "Old version and new version of " + dsObj.getPid() + " are the same.");
         } else {
             log.debug("Continuing with update of {}, content has changed", dsObj.getPid());
             try {

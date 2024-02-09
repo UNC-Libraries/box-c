@@ -31,6 +31,7 @@ import javax.xml.stream.events.StartElement;
 import javax.xml.stream.events.XMLEvent;
 
 import edu.unc.lib.boxc.fcrepo.exceptions.OptimisticLockException;
+import edu.unc.lib.boxc.operations.api.exceptions.StateUnmodifiedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -357,7 +358,7 @@ public class ImportXMLJob implements Runnable {
                                             "Error reading or converting MODS stream: " + ex.getMessage());
                                 } catch (NotFoundException ex) {
                                     failed.put(currentPid.getQualifiedId(), "Object not found");
-                                } catch (OptimisticLockException ex) {
+                                } catch (StateUnmodifiedException | OptimisticLockException ex) {
                                     failed.put(currentPid.getQualifiedId(), ex.getMessage());
                                 } catch (FedoraException ex) {
                                     failed.put(currentPid.getQualifiedId(),

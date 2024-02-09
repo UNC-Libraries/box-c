@@ -9,12 +9,14 @@ import static edu.unc.lib.boxc.operations.test.ModsTestHelper.modsWithTitleAndDa
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.MockitoAnnotations.openMocks;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 
+import edu.unc.lib.boxc.operations.api.exceptions.StateUnmodifiedException;
 import edu.unc.lib.boxc.operations.impl.versioning.DatastreamHistoryLog;
 import org.jdom2.Document;
 import org.jdom2.Element;
@@ -117,7 +119,9 @@ public class UpdateDescriptionServiceIT {
 
         addDescription(folderObj, "new title", "2018-04-06");
         // Perform a second update with the exact same content
-        addDescription(folderObj, "new title", "2018-04-06");
+        assertThrows(StateUnmodifiedException.class, () -> {
+            addDescription(folderObj, "new title", "2018-04-06");
+        });
 
         // Update should have been skipped, so no history datastream
         List<BinaryObject> mdBins = folderObj.listMetadata();
@@ -134,7 +138,9 @@ public class UpdateDescriptionServiceIT {
         addDescription(folderObj, "new title", "2018-04-06");
         addDescription(folderObj, "updated title", "2018-04-08");
         // Perform a third update with the exact same content
-        addDescription(folderObj, "updated title", "2018-04-08");
+        assertThrows(StateUnmodifiedException.class, () -> {
+            addDescription(folderObj, "updated title", "2018-04-08");
+        });
 
         // History should be present, but only have one entry in it
         List<BinaryObject> mdBins = folderObj.listMetadata();

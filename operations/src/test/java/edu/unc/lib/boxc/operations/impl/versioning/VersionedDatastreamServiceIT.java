@@ -19,6 +19,7 @@ import java.util.Date;
 import java.util.List;
 
 import edu.unc.lib.boxc.model.api.exceptions.NotFoundException;
+import edu.unc.lib.boxc.operations.api.exceptions.StateUnmodifiedException;
 import org.apache.commons.io.FileUtils;
 import org.jdom2.Document;
 import org.jdom2.Element;
@@ -313,8 +314,9 @@ public class VersionedDatastreamServiceIT {
         newV2.setContentType("text/xml");
         newV2.setSkipUnmodified(true);
 
-        BinaryObject dsObj2 = service.addVersion(newV2);
-        assertEquals(dsObj.getLastModified(), dsObj2.getLastModified());
+        assertThrows(StateUnmodifiedException.class, () -> {
+            service.addVersion(newV2);
+        });
 
         // No history should have been created since no update occurred
         PID historyPid = DatastreamPids.getDatastreamHistoryPid(dsPid);
