@@ -74,9 +74,8 @@ public class VersionedDatastreamService {
                 log.debug("Adding head version for datastream {}", dsPid);
                 return updateHeadVersion(newVersion, session);
             } else {
-                if (skipUpdateDueToUnmodifiedContent(dsObj, newVersion)) {
-                    return dsObj;
-                }
+                checkForUnmodifiedContent(dsObj, newVersion);
+
                 log.debug("Adding history and head version for datastream {}", dsPid);
                 // Datastream already exists
                 // Add the current head version to the history log
@@ -115,10 +114,10 @@ public class VersionedDatastreamService {
         }
     }
 
-    // Returns true if the new content is the same as the old and isSkipUnmodified is true.
-    private boolean skipUpdateDueToUnmodifiedContent(BinaryObject dsObj, DatastreamVersion newVersion) {
+    // Throws a StateUnmodifiedException if the new content is the same as the old and isSkipUnmodified is true.
+    private void checkForUnmodifiedContent(BinaryObject dsObj, DatastreamVersion newVersion) {
         if (!newVersion.isSkipUnmodified()) {
-            return false;
+            return;
         }
         var oldSha1 = StringUtils.substringAfterLast(dsObj.getSha1Checksum(), ":");
         var newSha1 = InputStreamDigestUtil.computeDigest(newVersion.getContentStream());
@@ -134,7 +133,6 @@ public class VersionedDatastreamService {
                 throw new ServiceException("Invalid content stream, must support reset when skipping unmodified", e);
             }
         }
-        return false;
     }
 
     /**
