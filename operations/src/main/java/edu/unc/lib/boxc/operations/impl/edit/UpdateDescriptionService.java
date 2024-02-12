@@ -116,6 +116,7 @@ public class UpdateDescriptionService {
             newVersion.setFilename(MD_DESCRIPTIVE.getDefaultFilename());
             newVersion.setTransferSession(request.getTransferSession());
             newVersion.setUnmodifiedSince(request.getUnmodifiedSince());
+            newVersion.setSkipUnmodified(true);
 
             BinaryObject descBinary;
             if (repoObjFactory.objectExists(modsDsPid.getRepositoryUri())) {

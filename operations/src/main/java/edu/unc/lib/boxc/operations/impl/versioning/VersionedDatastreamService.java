@@ -11,6 +11,9 @@ import java.util.Date;
 import java.util.concurrent.locks.Lock;
 
 import edu.unc.lib.boxc.fcrepo.exceptions.OptimisticLockException;
+import edu.unc.lib.boxc.operations.api.exceptions.StateUnmodifiedException;
+import edu.unc.lib.boxc.persist.impl.InputStreamDigestUtil;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.rdf.model.Model;
 import org.slf4j.Logger;
 
@@ -58,15 +61,7 @@ public class VersionedDatastreamService {
 
         Lock dsLock = lockManager.awaitWriteLock(dsPid);
         BinaryObject dsObj = getBinaryObject(dsPid);
-        if (dsObj != null && newVersion.getUnmodifiedSince() != null) {
-            Instant fcrepoModified = dsObj.getLastModified().toInstant();
-            if (newVersion.getUnmodifiedSince().isBefore(fcrepoModified)) {
-                throw new OptimisticLockException("Rejecting update to datastream " + dsPid.getQualifiedId()
-                        + ", update specifies datastream must not have been modified since "
-                        + newVersion.getUnmodifiedSince()
-                        + " but version in the repository was last updated " + fcrepoModified);
-            }
-        }
+        checkOptimisticLock(dsObj, newVersion);
 
         // Get a session for transferring the binary and its history
         BinaryTransferSession session = null;
@@ -79,6 +74,8 @@ public class VersionedDatastreamService {
                 log.debug("Adding head version for datastream {}", dsPid);
                 return updateHeadVersion(newVersion, session);
             } else {
+                checkForUnmodifiedContent(dsObj, newVersion);
+
                 log.debug("Adding history and head version for datastream {}", dsPid);
                 // Datastream already exists
                 // Add the current head version to the history log
@@ -100,6 +97,40 @@ public class VersionedDatastreamService {
             // Only close the transfer session if it was created within this method call
             if (session != null && newVersion.getTransferSession() == null) {
                 session.close();
+            }
+        }
+    }
+
+    // Throws an OptimisticLockException if the binary has been modified after the locking timestamp in the newVersion
+    private void checkOptimisticLock(BinaryObject dsObj, DatastreamVersion newVersion) {
+        if (dsObj != null && newVersion.getUnmodifiedSince() != null) {
+            Instant fcrepoModified = dsObj.getLastModified().toInstant();
+            if (newVersion.getUnmodifiedSince().isBefore(fcrepoModified)) {
+                throw new OptimisticLockException("Rejecting update to datastream " + dsObj.getPid().getQualifiedId()
+                        + ", update specifies datastream must not have been modified since "
+                        + newVersion.getUnmodifiedSince()
+                        + " but version in the repository was last updated " + fcrepoModified);
+            }
+        }
+    }
+
+    // Throws a StateUnmodifiedException if the new content is the same as the old and isSkipUnmodified is true.
+    private void checkForUnmodifiedContent(BinaryObject dsObj, DatastreamVersion newVersion) {
+        if (!newVersion.isSkipUnmodified()) {
+            return;
+        }
+        var oldSha1 = StringUtils.substringAfterLast(dsObj.getSha1Checksum(), ":");
+        var newSha1 = InputStreamDigestUtil.computeDigest(newVersion.getContentStream());
+        if (newSha1.equals(oldSha1)) {
+            throw new StateUnmodifiedException(
+                    "Old version and new version of " + dsObj.getPid().getQualifiedId() + " are the same.");
+        } else {
+            log.debug("Continuing with update of {}, content has changed", dsObj.getPid());
+            try {
+                // Reset inputstream to beginning so we can write it to file
+                newVersion.getContentStream().reset();
+            } catch (IOException e) {
+                throw new ServiceException("Invalid content stream, must support reset when skipping unmodified", e);
             }
         }
     }
@@ -247,6 +278,9 @@ public class VersionedDatastreamService {
         private Model properties;
         // Date after which the datastream must not have been modified, for optimistic locking
         private Instant unmodifiedSince;
+        // If true, then no new version should be created if the checksum of the new content is the same as the old
+        // Note: contentStream must support reset() when this option is true.
+        private boolean skipUnmodified;
 
         public DatastreamVersion(PID dsPid) {
             this.dsPid = dsPid;
@@ -326,6 +360,14 @@ public class VersionedDatastreamService {
 
         public void setUnmodifiedSince(Instant unmodifiedSince) {
             this.unmodifiedSince = unmodifiedSince;
+        }
+
+        public boolean isSkipUnmodified() {
+            return skipUnmodified;
+        }
+
+        public void setSkipUnmodified(boolean skipUnmodified) {
+            this.skipUnmodified = skipUnmodified;
         }
     }
 }
