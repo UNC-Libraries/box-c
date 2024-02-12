@@ -11,6 +11,10 @@ import static edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPaths.idToPath;
  */
 public class ImageServerUtil {
     public static final String FULL_SIZE = "max";
+
+    private ImageServerUtil() {
+    }
+
     /**
      * Returns the object ID in proper encoded format with .jp2 extension
      * @param id

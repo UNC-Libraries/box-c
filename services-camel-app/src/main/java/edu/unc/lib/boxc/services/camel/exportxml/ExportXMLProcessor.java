@@ -49,6 +49,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -150,7 +151,10 @@ public class ExportXMLProcessor implements Processor {
                 xfop.write(("</" + BULK_MD_TAG + ">").getBytes(UTF_8));
             }
 
-            sendEmail(zipit(mdExportFile, filename), request, filename, pageStart, pageEnd, totalPids);
+            File zipFile = zipit(mdExportFile, filename);
+            sendEmail(zipFile, request, filename, pageStart, pageEnd, totalPids);
+            cleanupTempFiles(zipFile, mdExportFile);
+
             log.info("Completed exported objects {} through {} for user {} to {}",
                     pageStart, pageEnd, username, filename);
         }
@@ -344,6 +348,11 @@ public class ExportXMLProcessor implements Processor {
         }
 
         return mdExportZip;
+    }
+
+    private void cleanupTempFiles(File zipFile, File xmlFile) throws IOException {
+        Files.delete(zipFile.toPath());
+        Files.delete(xmlFile.toPath());
     }
 
     private void sendEmail(File mdExportFile, ExportXMLRequest request, String filename,
