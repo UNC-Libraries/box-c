@@ -339,12 +339,12 @@ public class GroupedContentObjectSolrRecord implements GroupedContentObjectRecor
 
     @Override
     public ObjectPath getObjectPath() {
-        return representative.getObjectPath();
+        return this.representative.getObjectPath();
     }
 
     @Override
     public void setObjectPath(ObjectPath objectPath) {
-        representative.setObjectPath(objectPath);
+        this.representative.setObjectPath(objectPath);
     }
 
     @Override
