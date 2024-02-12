@@ -11,8 +11,8 @@
                     <strong>{{ $t('full_record.date_added') }}: </strong>
                     {{ formatDate(recordData.briefObject.added) }}
                 </p>
-                <p class="parent_collection" v-if="fieldExists(recordData.briefObject.parentCollectionName)">
-                    <strong>{{ $t('full_record.collection') }}: </strong> <a :href="collectionLink">{{ recordData.briefObject.parentCollectionName }}</a>
+                <p class="parent_collection">
+                    <strong>{{ $t('full_record.collection') }}: </strong> <router-link class="parent-collection" :to="parentUrl">{{ recordData.briefObject.parentCollectionName }}</router-link>
                 </p>
                 <p v-if="fieldExists(recordData.findingAidUrl)">
                     <strong>{{ $t('full_record.finding_aid') }}: </strong>
@@ -47,13 +47,7 @@ export default {
 
     mixins: [fullRecordUtils],
 
-    components: { abstract, restrictedContent },
-
-    computed: {
-        collectionLink() {
-            return `record/${this.recordData.briefObject.parentCollectionId}`;
-        }
-    }
+    components: { abstract, restrictedContent }
 }
 </script>
 

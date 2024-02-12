@@ -112,10 +112,7 @@ describe('collectionFolder.vue', () => {
             global: {
                 plugins: [i18n, router, createTestingPinia({
                     stubActions: false
-                })],
-                stubs: {
-                    RouterLink: RouterLinkStub
-                }
+                })]
             },
             props: {
                 recordData: recordData
@@ -167,7 +164,7 @@ describe('collectionFolder.vue', () => {
         await wrapper.setProps({ recordData: updatedRecordData });
         let collection_name_link = wrapper.find('.parent_collection a')
         expect(collection_name_link.text()).toEqual('testCollection')
-        expect(collection_name_link.attributes('href')).toEqual('record/7b7ff786-6772-4888-b020-e71261b926a6')
+        expect(collection_name_link.attributes('href')).toEqual('/record/7b7ff786-6772-4888-b020-e71261b926a6')
     });
 
     it('displays a contact link if items are restricted', () => {
