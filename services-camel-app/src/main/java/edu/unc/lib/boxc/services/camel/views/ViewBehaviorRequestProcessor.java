@@ -43,7 +43,7 @@ public class ViewBehaviorRequestProcessor implements Processor {
                 repositoryObjectFactory.createExclusiveRelationship(repositoryObject, CdrView.viewBehavior, behavior);
             }
         }
-        // send message to update solr?
+        // TODO BXC-4428 send message to update solr
     }
 
     public void setAccessControlService(AccessControlService accessControlService) {
