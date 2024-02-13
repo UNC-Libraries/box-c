@@ -86,7 +86,7 @@ define('ExportMetadataXMLBatchAction', [ 'jquery', 'AbstractBatchAction', "tpl!.
 					email : email,
 					pids : pids,
 					exportChildren: includeChildren || false,
-					excludeNoDatastreams: excludeNoDs || false,
+					onlyIncludeValidDatastreams: excludeNoDs || false,
 					datastreams: datastreamTypes || []
 				})
 			}).done(function(response) {
