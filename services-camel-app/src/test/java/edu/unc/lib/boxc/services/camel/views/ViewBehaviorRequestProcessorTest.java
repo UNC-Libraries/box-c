@@ -32,7 +32,6 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.openMocks;
-import static org.junit.Assert.assertEquals;
 
 /**
  * @author snluong
@@ -86,7 +85,8 @@ public class ViewBehaviorRequestProcessorTest {
         var exchange = createRequestExchange(ViewBehaviorRequest.ViewBehavior.PAGED);
         processor.process(exchange);
 
-        verify(repositoryObjectFactory).createExclusiveRelationship(eq(workObject), eq(CdrView.viewBehavior), viewBehaviorCaptor.capture());
+        verify(repositoryObjectFactory).createExclusiveRelationship(
+                eq(workObject), eq(CdrView.viewBehavior), viewBehaviorCaptor.capture());
         Assertions.assertEquals(ViewBehaviorRequest.ViewBehavior.PAGED, viewBehaviorCaptor.getValue());
     }
 
