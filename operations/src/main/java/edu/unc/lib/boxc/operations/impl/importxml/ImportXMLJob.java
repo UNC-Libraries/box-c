@@ -31,6 +31,7 @@ import javax.xml.stream.events.StartElement;
 import javax.xml.stream.events.XMLEvent;
 
 import edu.unc.lib.boxc.fcrepo.exceptions.OptimisticLockException;
+import edu.unc.lib.boxc.operations.api.exceptions.StateUnmodifiedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -94,7 +95,6 @@ public class ImportXMLJob implements Runnable {
     private XMLEventReader xmlReader;
     private final XMLOutputFactory xmlOutput = XMLOutputFactory.newInstance();
     private DocumentState state = DocumentState.ROOT;
-    private Instant currentLastModified;
 
     private final String userEmail;
     private AgentPrincipals agent;
@@ -104,6 +104,7 @@ public class ImportXMLJob implements Runnable {
 
     private List<String> updated;
     private Map<String, String> failed;
+    private Map<String, String> skipped;
 
     private BinaryTransferService transferService;
     private StorageLocationManager locationManager;
@@ -119,6 +120,7 @@ public class ImportXMLJob implements Runnable {
 
         this.updated = new ArrayList<>();
         this.failed = new HashMap<>();
+        this.skipped = new HashMap<>();
     }
 
     @Override
@@ -141,7 +143,7 @@ public class ImportXMLJob implements Runnable {
             processUpdates(session);
             log.info("Finished metadata import for {} objects in {}ms for user {}",
                     objectCount, System.currentTimeMillis() - startTime, username);
-            sendCompletedEmail(updated, failed);
+            sendCompletedEmail();
         } catch (XMLStreamException e) {
             log.info("Errors reading XML during update " + username, e);
             failed.put(importFile.getAbsolutePath(), "The import file contains XML errors");
@@ -357,8 +359,8 @@ public class ImportXMLJob implements Runnable {
                                             "Error reading or converting MODS stream: " + ex.getMessage());
                                 } catch (NotFoundException ex) {
                                     failed.put(currentPid.getQualifiedId(), "Object not found");
-                                } catch (OptimisticLockException ex) {
-                                    failed.put(currentPid.getQualifiedId(), ex.getMessage());
+                                } catch (StateUnmodifiedException | OptimisticLockException ex) {
+                                    skipped.put(currentPid.getQualifiedId(), ex.getMessage());
                                 } catch (FedoraException ex) {
                                     failed.put(currentPid.getQualifiedId(),
                                             "Error retrieving object from Fedora: " + ex.getMessage());
@@ -465,7 +467,7 @@ public class ImportXMLJob implements Runnable {
         }
     }
 
-    private void sendCompletedEmail(List<String> updated, Map<String, String> failed) {
+    private void sendCompletedEmail() {
         try {
             msg.setFrom(fromAddress);
             log.info("Sending email to '{}'", userEmail);
@@ -484,6 +486,11 @@ public class ImportXMLJob implements Runnable {
             int updatedCount = updated.size();
             data.put("updatedCount", updatedCount);
 
+            if (skipped.size() > 0) {
+                data.put("skippedCount", skipped.size());
+                data.put("skipped", skipped.entrySet());
+            }
+
             if (failed.size() > 0) {
                 data.put("failedCount", failed.size());
                 data.put("failed", failed.entrySet());
@@ -491,10 +498,10 @@ public class ImportXMLJob implements Runnable {
 
             if (failed.size() > 0) {
                 data.put("issues", true);
-                msg.setSubject("DCR Metadata update completed with issues:" + importFile.getAbsolutePath());
+                msg.setSubject("DCR Metadata update completed with issues:" + importFile.getName());
                 msg.addTo(adminAddress);
             } else {
-                msg.setSubject("DCR Metadata update completed: " + importFile.getPath());
+                msg.setSubject("DCR Metadata update completed: " + importFile.getName());
             }
 
             String html = completeTemplate.execute(data);

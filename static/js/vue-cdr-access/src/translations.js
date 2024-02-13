@@ -40,7 +40,7 @@ export default {
         full_record: {
             additional_metadata: "View Additional Metadata",
             available_date: "Available after {available_date}",
-            collection_id: "Archival Collection ID",
+            collection: "Collection",
             contains: "Contains",
             copied_link: "Download URL, {text}, copied to clipboard",
             copied_link_failed: "Unable to copy download URL, {text}, to clipboard",
@@ -73,7 +73,7 @@ export default {
             original_file: "Original File",
             read_more: "Read more",
             read_less: "Read less",
-            related_digital_exhibits: "Related Digital Exhibits",
+            related_digital_exhibits: "Related Digital Exhibitions",
             restricted_content: "This {resource_type} has restricted content",
             search_within: "Search within this work",
             small: "Small",
