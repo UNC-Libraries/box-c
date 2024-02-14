@@ -12,7 +12,7 @@ import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 
 /**
- * Processor for requests for updating the view behavior for UV
+ * Processor for requests for updating the view settings for UV
  *
  * @author snluong
  */
