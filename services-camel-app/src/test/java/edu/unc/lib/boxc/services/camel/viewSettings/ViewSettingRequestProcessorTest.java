@@ -1,4 +1,4 @@
-package edu.unc.lib.boxc.services.camel.views;
+package edu.unc.lib.boxc.services.camel.viewSettings;
 
 import edu.unc.lib.boxc.auth.api.Permission;
 import edu.unc.lib.boxc.auth.api.exceptions.AccessRestrictionException;
@@ -11,16 +11,14 @@ import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.api.objects.WorkObject;
 import edu.unc.lib.boxc.model.api.rdf.CdrView;
 import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
-import edu.unc.lib.boxc.operations.jms.views.ViewBehaviorRequest;
-import edu.unc.lib.boxc.operations.jms.views.ViewBehaviorRequestSerializationHelper;
+import edu.unc.lib.boxc.operations.jms.viewSettings.ViewSettingRequest;
+import edu.unc.lib.boxc.operations.jms.viewSettings.ViewSettingRequestSerializationHelper;
 import edu.unc.lib.boxc.services.camel.ProcessorTestHelper;
 import org.apache.camel.Exchange;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
 import org.mockito.Mock;
 
 import java.io.IOException;
@@ -36,8 +34,8 @@ import static org.mockito.MockitoAnnotations.openMocks;
 /**
  * @author snluong
  */
-public class ViewBehaviorRequestProcessorTest {
-    private ViewBehaviorRequestProcessor processor;
+public class ViewSettingRequestProcessorTest {
+    private ViewSettingRequestProcessor processor;
     private WorkObject workObject;
     private PID workPid;
     private final AgentPrincipals agent = new AgentPrincipalsImpl("user", new AccessGroupSetImpl("agroup"));
@@ -48,13 +46,11 @@ public class ViewBehaviorRequestProcessorTest {
     private RepositoryObjectLoader repositoryObjectLoader;
     @Mock
     private RepositoryObjectFactory repositoryObjectFactory;
-    @Captor
-    private ArgumentCaptor<ViewBehaviorRequest.ViewBehavior> viewBehaviorCaptor;
 
     @BeforeEach
     public void init() throws IOException {
         closeable = openMocks(this);
-        processor = new ViewBehaviorRequestProcessor();
+        processor = new ViewSettingRequestProcessor();
         processor.setAccessControlService(accessControlService);
         processor.setRepositoryObjectLoader(repositoryObjectLoader);
         processor.setRepositoryObjectFactory(repositoryObjectFactory);
@@ -71,23 +67,22 @@ public class ViewBehaviorRequestProcessorTest {
 
     @Test
     public void testUpdateViewBehaviorNoPermission() throws Exception {
-        var exchange = createRequestExchange(ViewBehaviorRequest.ViewBehavior.PAGED);
+        var exchange = createRequestExchange(ViewSettingRequest.ViewBehavior.PAGED);
 
         Assertions.assertThrows(AccessRestrictionException.class, () -> {
             doThrow(new AccessRestrictionException()).when(accessControlService)
                     .assertHasAccess(any(), any(PID.class), any(), eq(Permission.ingest));
-                    processor.process(exchange);
+            processor.process(exchange);
         });
     }
 
     @Test
     public void testUpdateViewBehaviorSuccess() throws Exception {
-        var exchange = createRequestExchange(ViewBehaviorRequest.ViewBehavior.PAGED);
+        var exchange = createRequestExchange(ViewSettingRequest.ViewBehavior.PAGED);
         processor.process(exchange);
 
         verify(repositoryObjectFactory).createExclusiveRelationship(
-                eq(workObject), eq(CdrView.viewBehavior), viewBehaviorCaptor.capture());
-        Assertions.assertEquals(ViewBehaviorRequest.ViewBehavior.PAGED, viewBehaviorCaptor.getValue());
+                eq(workObject), eq(CdrView.viewBehavior), eq(ViewSettingRequest.ViewBehavior.PAGED));
     }
 
     @Test
@@ -97,11 +92,11 @@ public class ViewBehaviorRequestProcessorTest {
         verify(repositoryObjectFactory).deleteProperty(eq(workObject), eq(CdrView.viewBehavior));
     }
 
-    private Exchange createRequestExchange(ViewBehaviorRequest.ViewBehavior viewBehavior) throws IOException {
-        var request = new ViewBehaviorRequest();
+    private Exchange createRequestExchange(ViewSettingRequest.ViewBehavior viewBehavior) throws IOException {
+        var request = new ViewSettingRequest();
         request.setAgent(agent);
         request.setObjectPidString(workPid.toString());
         request.setViewBehavior(viewBehavior);
-        return ProcessorTestHelper.mockExchange(ViewBehaviorRequestSerializationHelper.toJson(request));
+        return ProcessorTestHelper.mockExchange(ViewSettingRequestSerializationHelper.toJson(request));
     }
 }

@@ -1,4 +1,4 @@
-package edu.unc.lib.boxc.operations.jms.views;
+package edu.unc.lib.boxc.operations.jms.viewSettings;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -8,27 +8,27 @@ import com.fasterxml.jackson.databind.ObjectWriter;
 import java.io.IOException;
 
 /**
- * Helper methods for serializing and deserializing view behavior requests
+ * Helper methods for serializing and deserializing view setting requests
  * @author snluong
  */
-public class ViewBehaviorRequestSerializationHelper {
+public class ViewSettingRequestSerializationHelper {
     private static final ObjectWriter REQUEST_WRITER;
     private static final ObjectReader REQUEST_READER;
 
     static {
         ObjectMapper mapper = new ObjectMapper();
-        REQUEST_WRITER = mapper.writerFor(ViewBehaviorRequest.class);
-        REQUEST_READER = mapper.readerFor(ViewBehaviorRequest.class);
+        REQUEST_WRITER = mapper.writerFor(ViewSettingRequest.class);
+        REQUEST_READER = mapper.readerFor(ViewSettingRequest.class);
     }
 
-    private ViewBehaviorRequestSerializationHelper() {
+    private ViewSettingRequestSerializationHelper() {
     }
 
-    public static String toJson(ViewBehaviorRequest request) throws JsonProcessingException {
+    public static String toJson(ViewSettingRequest request) throws JsonProcessingException {
         return REQUEST_WRITER.writeValueAsString(request);
     }
 
-    public static ViewBehaviorRequest toRequest(String json) throws IOException {
+    public static ViewSettingRequest toRequest(String json) throws IOException {
         return REQUEST_READER.readValue(json);
     }
 }

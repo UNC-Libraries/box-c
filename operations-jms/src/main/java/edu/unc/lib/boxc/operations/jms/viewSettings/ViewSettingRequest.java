@@ -1,4 +1,4 @@
-package edu.unc.lib.boxc.operations.jms.views;
+package edu.unc.lib.boxc.operations.jms.viewSettings;
 
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
@@ -9,7 +9,7 @@ import edu.unc.lib.boxc.auth.fcrepo.models.AgentPrincipalsImpl;
  * Request object for updating the view behavior of the UV
  * @author sharonluong
  */
-public class ViewBehaviorRequest {
+public class ViewSettingRequest {
     private String objectPidString;
     private ViewBehavior viewBehavior;
 

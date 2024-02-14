@@ -1,4 +1,4 @@
-package edu.unc.lib.boxc.services.camel.views;
+package edu.unc.lib.boxc.services.camel.viewSettings;
 
 import edu.unc.lib.boxc.auth.api.Permission;
 import edu.unc.lib.boxc.auth.api.services.AccessControlService;
@@ -7,18 +7,16 @@ import edu.unc.lib.boxc.model.api.objects.WorkObject;
 import edu.unc.lib.boxc.model.api.rdf.CdrView;
 import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
-import edu.unc.lib.boxc.operations.jms.views.ViewBehaviorRequestSerializationHelper;
+import edu.unc.lib.boxc.operations.jms.viewSettings.ViewSettingRequestSerializationHelper;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
-
-import java.util.Objects;
 
 /**
  * Processor for requests for updating the view behavior for UV
  *
  * @author snluong
  */
-public class ViewBehaviorRequestProcessor implements Processor {
+public class ViewSettingRequestProcessor implements Processor {
     private AccessControlService accessControlService;
     private RepositoryObjectLoader repositoryObjectLoader;
     private RepositoryObjectFactory repositoryObjectFactory;
@@ -26,7 +24,7 @@ public class ViewBehaviorRequestProcessor implements Processor {
     @Override
     public void process(Exchange exchange) throws Exception {
         var in = exchange.getIn();
-        var request = ViewBehaviorRequestSerializationHelper.toRequest(in.getBody(String.class));
+        var request = ViewSettingRequestSerializationHelper.toRequest(in.getBody(String.class));
         var agent = request.getAgent();
         var pid = PIDs.get(request.getObjectPidString());
 

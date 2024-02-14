@@ -7,12 +7,12 @@
         http://camel.apache.org/schema/spring
         http://camel.apache.org/schema/spring/camel-spring.xsd">
 
-    <bean id="viewBehaviorRequestProcessor" class="org.mockito.Mockito" factory-method="mock">
-        <constructor-arg value="edu.unc.lib.boxc.services.camel.views.ViewBehaviorRequestProcessor" />
+    <bean id="viewSettingRequestProcessor" class="org.mockito.Mockito" factory-method="mock">
+        <constructor-arg value="edu.unc.lib.boxc.services.camel.viewSettings.ViewSettingRequestProcessor" />
     </bean>
 
-    <camel:camelContext id="DcrViewBehavior">
-        <camel:package>edu.unc.lib.boxc.services.camel.views</camel:package>
+    <camel:camelContext id="DcrViewSetting">
+        <camel:package>edu.unc.lib.boxc.services.camel.viewSettings</camel:package>
     </camel:camelContext>
 
 </beans>

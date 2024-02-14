@@ -506,7 +506,7 @@
         <property name="repositoryObjectFactory" ref="repositoryObjectFactory" />
     </bean>
 
-    <bean id="viewBehaviorRequestProcessor" class="edu.unc.lib.boxc.services.camel.views.ViewBehaviorRequestProcessor">
+    <bean id="viewBehaviorRequestProcessor" class="edu.unc.lib.boxc.services.camel.viewSettings.ViewSettingRequestProcessor">
         <property name="accessControlService" ref="aclService" />
         <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
         <property name="repositoryObjectFactory" ref="repositoryObjectFactory" />
@@ -575,6 +575,6 @@
     </camel:camelContext>
 
     <camel:camelContext id="CdrViews">
-        <camel:package>edu.unc.lib.boxc.services.camel.views</camel:package>
+        <camel:package>edu.unc.lib.boxc.services.camel.viewSettings</camel:package>
     </camel:camelContext>
 </beans>
