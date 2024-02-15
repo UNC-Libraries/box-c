@@ -27,6 +27,7 @@ public enum Permission {
     changePatronAccess,
     assignStaffRoles,
     editResourceType,
+    editViewSettings,
     runEnhancements,
     reindex;
 }

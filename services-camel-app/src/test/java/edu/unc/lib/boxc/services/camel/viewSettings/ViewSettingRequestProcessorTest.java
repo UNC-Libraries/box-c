@@ -71,7 +71,7 @@ public class ViewSettingRequestProcessorTest {
 
         Assertions.assertThrows(AccessRestrictionException.class, () -> {
             doThrow(new AccessRestrictionException()).when(accessControlService)
-                    .assertHasAccess(any(), any(PID.class), any(), eq(Permission.ingest));
+                    .assertHasAccess(any(), any(PID.class), any(), eq(Permission.editViewSettings));
             processor.process(exchange);
         });
     }
