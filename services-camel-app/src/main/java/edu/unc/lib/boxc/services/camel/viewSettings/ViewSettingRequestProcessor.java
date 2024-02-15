@@ -28,8 +28,8 @@ public class ViewSettingRequestProcessor implements Processor {
         var agent = request.getAgent();
         var pid = PIDs.get(request.getObjectPidString());
 
-        accessControlService.assertHasAccess("User does not have permission to update view behavior",
-                pid, agent.getPrincipals(), Permission.ingest);
+        accessControlService.assertHasAccess("User does not have permission to update view settings",
+                pid, agent.getPrincipals(), Permission.editViewSettings);
 
         var repositoryObject = repositoryObjectLoader.getRepositoryObject(pid);
         var behavior = request.getViewBehavior();
