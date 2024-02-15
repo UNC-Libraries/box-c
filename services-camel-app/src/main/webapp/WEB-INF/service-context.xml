@@ -506,6 +506,12 @@
         <property name="repositoryObjectFactory" ref="repositoryObjectFactory" />
     </bean>
 
+    <bean id="viewBehaviorRequestProcessor" class="edu.unc.lib.boxc.services.camel.viewSettings.ViewSettingRequestProcessor">
+        <property name="accessControlService" ref="aclService" />
+        <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
+        <property name="repositoryObjectFactory" ref="repositoryObjectFactory" />
+    </bean>
+
     <!-- Camel contexts -->
 
     <camel:camelContext id="FcrepoTriplestoreIndexer">
@@ -566,5 +572,9 @@
 
     <camel:camelContext id="CdrThumbnails">
         <camel:package>edu.unc.lib.boxc.services.camel.thumbnails</camel:package>
+    </camel:camelContext>
+
+    <camel:camelContext id="CdrViews">
+        <camel:package>edu.unc.lib.boxc.services.camel.viewSettings</camel:package>
     </camel:camelContext>
 </beans>

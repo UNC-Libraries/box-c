@@ -93,6 +93,10 @@ export default {
 
         editDescriptionUrl(id) {
             return `https://${window.location.host}/admin/describe/${id}`;
+        },
+
+        hasMoreExhibits(current_exhibit, exhibits) {
+            return current_exhibit < Object.keys(exhibits).length - 1;
         }
     }
 }

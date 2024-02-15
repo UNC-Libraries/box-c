@@ -28,6 +28,13 @@
                                                 <span class="has-text-weight-bold">{{ $t('full_record.finding_aid') }}: </span>
                                                 <a class="finding-aid" :href="recordData.findingAidUrl">{{ recordData.findingAidUrl }}</a>
                                             </li>
+                                            <li class="exhibits" v-if="fieldExists(recordData.exhibits)">
+                                                <span class="has-text-weight-bold">{{ $t('full_record.related_digital_exhibits') }}: </span>
+                                                <template v-for="(exhibit_link, title, index) in recordData.exhibits">
+                                                    <a :href="exhibit_link">{{ title }}</a>
+                                                    <template v-if="hasMoreExhibits(index, recordData.exhibits)">; </template>
+                                                </template>
+                                            </li>
                                             <li v-if="fieldExists(recordData.briefObject.creator)">
                                                 <span class="has-text-weight-bold">{{ $t('full_record.creator') }}: </span>
                                                 {{ recordData.briefObject.creator.join('; ') }}
@@ -51,12 +58,6 @@
                                                 {{ recordData.embargoDate }}
                                             </li>
                                             <abstract v-if="recordData.briefObject.abstractText" :brief-object="recordData.briefObject"/>
-                                            <li v-if="fieldExists(recordData.exhibits)">
-                                                <span class="has-text-weight-bold">{{ $t('full_record.related_digital_exhibits') }}: </span>
-                                                <template v-for="(exhibit, index) in recordData.exhibits">
-                                                    <a :href="exhibit.value">{{ exhibit.key }}</a><template v-if="index < recordData.exhibits.length - 1">;</template>
-                                                </template>
-                                            </li>
                                             <li>
                                                 <router-link id="parent-url" :to="parentWorkUrl">{{ $t('full_record.view_parent_work') }}</router-link>
                                             </li>
