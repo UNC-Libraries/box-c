@@ -459,6 +459,7 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
         Resource historyResc = DepositModelHelpers.addDatastream(workBag, DatastreamType.MD_DESCRIPTIVE_HISTORY);
         Path modsPath = job.getModsPath(workPid, true);
         var originalModsPath = Path.of("src/test/resources/simpleMods.xml");
+        Files.copy(originalModsPath, modsPath);
         Path modsHistoryPath = depositDirManager.getHistoryFile(workPid, DatastreamType.MD_DESCRIPTIVE_HISTORY);
         FileUtils.writeStringToFile(modsHistoryPath.toFile(), "History content", UTF_8);
         String modsHistorySha1 = getSha1(modsHistoryPath);
