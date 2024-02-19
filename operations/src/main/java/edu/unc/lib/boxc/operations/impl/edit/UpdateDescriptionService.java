@@ -1,22 +1,5 @@
 package edu.unc.lib.boxc.operations.impl.edit;
 
-import static edu.unc.lib.boxc.model.api.DatastreamType.MD_DESCRIPTIVE;
-import static edu.unc.lib.boxc.model.fcrepo.ids.DatastreamPids.getMdDescriptivePid;
-import static java.util.Arrays.asList;
-import static org.apache.commons.io.IOUtils.toByteArray;
-import static org.apache.jena.rdf.model.ModelFactory.createDefaultModel;
-import static org.apache.jena.rdf.model.ResourceFactory.createResource;
-
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.time.Instant;
-
-import org.apache.jena.rdf.model.Model;
-import org.apache.jena.vocabulary.RDF;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import edu.unc.lib.boxc.auth.api.Permission;
 import edu.unc.lib.boxc.auth.api.models.AgentPrincipals;
 import edu.unc.lib.boxc.auth.api.services.AccessControlService;
@@ -35,6 +18,27 @@ import edu.unc.lib.boxc.operations.jms.OperationsMessageSender;
 import edu.unc.lib.boxc.operations.jms.indexing.IndexingPriority;
 import edu.unc.lib.boxc.persist.api.transfer.BinaryTransferSession;
 import io.dropwizard.metrics5.Timer;
+import org.apache.jena.rdf.model.Model;
+import org.apache.jena.vocabulary.RDF;
+import org.jdom2.Document;
+import org.jdom2.JDOMException;
+import org.jdom2.output.Format;
+import org.jdom2.output.XMLOutputter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.time.Instant;
+
+import static edu.unc.lib.boxc.common.xml.SecureXMLFactory.createSAXBuilder;
+import static edu.unc.lib.boxc.model.api.DatastreamType.MD_DESCRIPTIVE;
+import static edu.unc.lib.boxc.model.fcrepo.ids.DatastreamPids.getMdDescriptivePid;
+import static java.util.Arrays.asList;
+import static org.apache.jena.rdf.model.ModelFactory.createDefaultModel;
+import static org.apache.jena.rdf.model.ResourceFactory.createResource;
 
 /**
  * Service that manages description, e.g., MODS, updates
@@ -65,20 +69,6 @@ public class UpdateDescriptionService {
     }
 
     /**
-     * Updates the MODS description of a single object
-     *
-     * @param agent
-     * @param pid
-     * @param modsStream
-     * @throws MetadataValidationException
-     * @throws IOException
-     */
-    public BinaryObject updateDescription(AgentPrincipals agent, PID pid, InputStream modsStream)
-            throws MetadataValidationException, IOException {
-        return updateDescription(new UpdateDescriptionRequest(agent, pid, modsStream));
-    }
-
-    /**
      * Updates the MODS description of an object using the details of the provided request
      *
      * @param request update request
@@ -99,17 +89,13 @@ public class UpdateDescriptionService {
             }
 
             String username = request.getAgent().getUsername();
-            InputStream modsStream = request.getModsStream();
+            var modsStream = getStandardizedModsStream(request);
             if (validate) {
-                if (!modsStream.markSupported()) {
-                    modsStream = new ByteArrayInputStream(toByteArray(modsStream));
-                }
                 modsValidator.validate(modsStream);
             }
 
             // Transfer the description to its storage location
             PID modsDsPid = getMdDescriptivePid(obj.getPid());
-
             DatastreamVersion newVersion = new DatastreamVersion(modsDsPid);
             newVersion.setContentStream(modsStream);
             newVersion.setContentType(MD_DESCRIPTIVE.getMimetype());
@@ -140,6 +126,28 @@ public class UpdateDescriptionService {
             }
 
             return descBinary;
+        }
+    }
+
+    /**
+     *
+     * @param request
+     * @return InputStream containing the MODS with standardized formatting
+     * @throws IOException
+     */
+    private InputStream getStandardizedModsStream(UpdateDescriptionRequest request) throws IOException {
+        try {
+            Document modsDoc;
+            if (request.getModsDocument() == null) {
+                modsDoc = createSAXBuilder().build(request.getModsStream());
+            } else {
+                modsDoc = request.getModsDocument();
+            }
+            var outStream = new ByteArrayOutputStream();
+            new XMLOutputter(Format.getPrettyFormat()).output(modsDoc, outStream);
+            return new ByteArrayInputStream(outStream.toByteArray());
+        } catch (JDOMException e) {
+            throw new MetadataValidationException("Unable to parse MODS XML for " + request.getPid().getQualifiedId(), e);
         }
     }
 
@@ -202,36 +210,36 @@ public class UpdateDescriptionService {
         private BinaryTransferSession transferSession;
         private AgentPrincipals agent;
         private InputStream modsStream;
+        private Document modsDocument;
         private IndexingPriority priority;
         private Instant unmodifiedSince;
 
-        public UpdateDescriptionRequest(AgentPrincipals agent, PID pid, InputStream modsStream) {
+        public UpdateDescriptionRequest(AgentPrincipals agent, PID pid) {
             this.agent = agent;
             this.pid = pid;
+        }
+
+        public UpdateDescriptionRequest(AgentPrincipals agent, PID pid, InputStream modsStream) {
+            this(agent, pid);
             this.modsStream = modsStream;
         }
+
         public UpdateDescriptionRequest(AgentPrincipals agent, ContentObject obj, InputStream modsStream) {
-            this.agent = agent;
+            this(agent, obj.getPid(), modsStream);
             this.contentObject = obj;
-            this.pid = obj.getPid();
-            this.modsStream = modsStream;
+        }
+
+        public UpdateDescriptionRequest(AgentPrincipals agent, PID pid, Document modsDocument) {
+            this(agent, pid);
+            this.modsDocument = modsDocument;
         }
 
         public PID getPid() {
             return pid;
         }
 
-        public void setPid(PID pid) {
-            this.pid = pid;
-        }
-
         public ContentObject getContentObject() {
             return contentObject;
-        }
-
-        public UpdateDescriptionRequest withContentObject(ContentObject contentObject) {
-            this.contentObject = contentObject;
-            return this;
         }
 
         public BinaryTransferSession getTransferSession() {
@@ -247,16 +255,12 @@ public class UpdateDescriptionService {
             return agent;
         }
 
-        public void setAgent(AgentPrincipals agent) {
-            this.agent = agent;
-        }
-
         public InputStream getModsStream() {
             return modsStream;
         }
 
-        public void setModsStream(InputStream modsStream) {
-            this.modsStream = modsStream;
+        public Document getModsDocument() {
+            return modsDocument;
         }
 
         public IndexingPriority getPriority() {

@@ -1,5 +1,6 @@
 package edu.unc.lib.boxc.operations.impl.edit;
 
+import static edu.unc.lib.boxc.common.xml.SecureXMLFactory.createSAXBuilder;
 import static edu.unc.lib.boxc.model.fcrepo.ids.DatastreamPids.getMdDescriptivePid;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -7,17 +8,29 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.openMocks;
 
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.time.Instant;
 import java.util.Collection;
 import java.util.UUID;
 
+import edu.unc.lib.boxc.model.api.objects.WorkObject;
+import edu.unc.lib.boxc.operations.jms.indexing.IndexingPriority;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
+import org.jdom2.Document;
+import org.jdom2.output.Format;
+import org.jdom2.output.XMLOutputter;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -67,8 +80,6 @@ public class UpdateDescriptionServiceTest {
     @Mock
     private MODSValidator modsValidator;
     @Mock
-    private StorageLocation destination;
-    @Mock
     private BinaryTransferSession transferSession;
     @Mock
     private VersionedDatastreamService versioningService;
@@ -91,6 +102,8 @@ public class UpdateDescriptionServiceTest {
     private PID objPid;
     private PID modsPid;
     private InputStream modsStream;
+    private String modsString;
+    private Path modsPath;
 
     @SuppressWarnings("unchecked")
     @BeforeEach
@@ -105,7 +118,11 @@ public class UpdateDescriptionServiceTest {
 
         objPid = PIDs.get(UUID.randomUUID().toString());
         modsPid = getMdDescriptivePid(objPid);
-        modsStream = new ByteArrayInputStream(FILE_CONTENT.getBytes());
+        modsPath = Path.of("src/test/resources/samples/mods.xml");
+        modsStream = Files.newInputStream(modsPath);
+        // Reformat mods document to pretty print it to match normalization in the service
+        var modsDoc = createSAXBuilder().build(Files.newInputStream(modsPath));
+        modsString = new XMLOutputter(Format.getPrettyFormat()).outputString(modsDoc);
 
         when(versioningService.addVersion(any(DatastreamVersion.class))).thenReturn(mockDescBin);
         when(obj.getPid()).thenReturn(objPid);
@@ -128,13 +145,53 @@ public class UpdateDescriptionServiceTest {
     public void updateDescriptionTest() throws Exception {
         service.updateDescription(new UpdateDescriptionRequest(agent, objPid, modsStream));
 
-        verify(versioningService).addVersion(versionCaptor.capture());
-        DatastreamVersion version = versionCaptor.getValue();
-        assertEquals(modsPid, version.getDsPid());
-        assertEquals("text/xml", version.getContentType());
-        assertEquals(FILE_CONTENT, IOUtils.toString(version.getContentStream()));
-
+        assertUpdateSuccessful();
         assertMessageSent();
+    }
+
+    @Test
+    public void updateDescriptionFromDocumentTest() throws Exception {
+        var modsDoc = createSAXBuilder().build(Files.newInputStream(modsPath));
+        service.updateDescription(new UpdateDescriptionRequest(agent, objPid, modsDoc));
+
+        assertUpdateSuccessful();
+        assertMessageSent();
+    }
+
+    @Test
+    public void updateWithContentObjectTest() throws Exception {
+        var contentObj = mock(WorkObject.class);
+        when(contentObj.getPid()).thenReturn(objPid);
+        service.updateDescription(new UpdateDescriptionRequest(agent, contentObj, modsStream));
+
+        assertUpdateSuccessful();
+        assertMessageSent();
+        verify(repoObjLoader, never()).getRepositoryObject(any());
+    }
+
+    @Test
+    public void updateWithUnmodifiedSinceTest() throws Exception {
+        var unmodifedSince = Instant.now();
+        var request = new UpdateDescriptionRequest(agent, objPid, modsStream);
+        request.withUnmodifiedSince(unmodifedSince);
+        service.updateDescription(request);
+
+        assertUpdateSuccessful();
+        DatastreamVersion version = versionCaptor.getValue();
+        assertEquals(unmodifedSince, version.getUnmodifiedSince());
+        assertMessageSent();
+    }
+
+    @Test
+    public void updateWithIndexingPriorityTest() throws Exception {
+        var request = new UpdateDescriptionRequest(agent, objPid, modsStream);
+        request.withPriority(IndexingPriority.high);
+        service.updateDescription(request);
+
+        assertUpdateSuccessful();
+        assertMessageSent();
+        verify(messageSender).sendUpdateDescriptionOperation(
+                anyString(), any(), eq(IndexingPriority.high));
     }
 
     @Test
@@ -143,17 +200,12 @@ public class UpdateDescriptionServiceTest {
 
         service.updateDescription(new UpdateDescriptionRequest(agent, objPid, modsStream));
 
-        verify(versioningService).addVersion(versionCaptor.capture());
-        DatastreamVersion version = versionCaptor.getValue();
-        assertEquals(modsPid, version.getDsPid());
-        assertEquals("text/xml", version.getContentType());
-        assertEquals(FILE_CONTENT, IOUtils.toString(version.getContentStream()));
-
+        assertUpdateSuccessful();
         assertMessageSent();
     }
 
     @Test
-    public void insufficientAccessTest() throws Exception {
+    public void insufficientAccessTest() {
         Assertions.assertThrows(AccessRestrictionException.class, () -> {
             doThrow(new AccessRestrictionException()).when(aclService)
                     .assertHasAccess(anyString(), eq(objPid), any(), any(Permission.class));
@@ -176,7 +228,7 @@ public class UpdateDescriptionServiceTest {
     }
 
     @Test
-    public void invalidModsTest() throws Exception {
+    public void invalidModsTest() {
         Assertions.assertThrows(MetadataValidationException.class, () -> {
             doThrow(new MetadataValidationException()).when(modsValidator).validate(any(InputStream.class));
 
@@ -194,30 +246,32 @@ public class UpdateDescriptionServiceTest {
     }
 
     @Test
+    public void invalidXMLTest() {
+        Assertions.assertThrows(MetadataValidationException.class, () -> {
+            var badXmlStream = new ByteArrayInputStream("BAD XML".getBytes());
+            service.updateDescription(new UpdateDescriptionRequest(agent, objPid, badXmlStream));
+        });
+    }
+
+    @Test
     public void updateDescriptionProvidedSession() throws Exception {
         service.updateDescription(new UpdateDescriptionRequest(agent, objPid, modsStream)
                 .withTransferSession(transferSession));
 
-        verify(versioningService).addVersion(versionCaptor.capture());
+        assertUpdateSuccessful();
         DatastreamVersion version = versionCaptor.getValue();
-        assertEquals(FILE_CONTENT, IOUtils.toString(version.getContentStream()));
         assertEquals(transferSession, version.getTransferSession());
 
         assertMessageSent();
     }
 
     @Test
-    public void updateDescriptionDisableMassgesTest() throws Exception {
+    public void updateDescriptionDisableMessagesTest() throws Exception {
         service.setSendsMessages(false);
 
         service.updateDescription(new UpdateDescriptionRequest(agent, objPid, modsStream));
 
-        verify(versioningService).addVersion(versionCaptor.capture());
-        DatastreamVersion version = versionCaptor.getValue();
-        assertEquals(modsPid, version.getDsPid());
-        assertEquals("text/xml", version.getContentType());
-        assertEquals(FILE_CONTENT, IOUtils.toString(version.getContentStream()));
-
+        assertUpdateSuccessful();
         verify(messageSender, never()).sendUpdateDescriptionOperation(anyString(), pidsCaptor.capture());
     }
 
@@ -227,5 +281,13 @@ public class UpdateDescriptionServiceTest {
         Collection<PID> pids = pidsCaptor.getValue();
         assertEquals(1, pids.size());
         assertTrue(pids.contains(objPid));
+    }
+
+    private void assertUpdateSuccessful() throws Exception {
+        verify(versioningService).addVersion(versionCaptor.capture());
+        DatastreamVersion version = versionCaptor.getValue();
+        assertEquals(modsPid, version.getDsPid());
+        assertEquals("text/xml", version.getContentType());
+        assertEquals(modsString, IOUtils.toString(version.getContentStream()));
     }
 }

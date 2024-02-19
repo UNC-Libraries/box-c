@@ -13,11 +13,8 @@ import edu.unc.lib.boxc.model.fcrepo.test.AclModelBuilder;
 import edu.unc.lib.boxc.model.fcrepo.test.RepositoryObjectTreeIndexer;
 import edu.unc.lib.boxc.operations.impl.edit.UpdateDescriptionService;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.rdf.model.Model;
-import org.jdom2.output.Format;
-import org.jdom2.output.XMLOutputter;
 
 import java.io.IOException;
 import java.util.Map;
@@ -39,11 +36,9 @@ public class ContentObjectFactory {
         options = validateOptions(options);
         var modsDocument = modsFactory.createDocument(options);
         if (modsDocument != null) {
-            var modsString = new XMLOutputter(Format.getPrettyFormat()).outputString(modsDocument);
-            var inputStream = IOUtils.toInputStream(modsString, "utf-8");
-
             // put mods in fedora
-            updateDescriptionService.updateDescription(agent, object.getPid(), inputStream);
+            var request = new UpdateDescriptionService.UpdateDescriptionRequest(agent, object.getPid(), modsDocument);
+            updateDescriptionService.updateDescription(request);
         }
         // index folder in triple store
         indexTripleStore(object);
