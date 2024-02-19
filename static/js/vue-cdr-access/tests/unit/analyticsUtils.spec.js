@@ -130,9 +130,7 @@ describe('analyticsUtils', () => {
                 fileType: [
                     "audio/mpeg"
                 ],
-                status: [
-                    "Public Access"
-                ]
+                status: []
             }
         };
         moxios.stubRequest(new RegExp(`record/73bc003c-9603-4cd9-8a65-93a22520ef6a?.+`), {

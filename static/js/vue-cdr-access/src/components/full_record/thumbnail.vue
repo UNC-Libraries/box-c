@@ -59,15 +59,11 @@ export default {
         badgeIcon() {
             if (this.thumbnailData.markedForDeletion) {
                 return 'fa-trash';
-            } else if (this.objectData.type !== 'AdminUnit' && !this.publicAccess) {
+            } else if (this.objectData.type !== 'AdminUnit' && !this.publicAccess(this.objectData)) {
                 return 'fa-lock';
             } else {
                 return '';
             }
-        },
-
-        publicAccess() {
-            return this.objectData.status !== undefined && this.objectData.status.includes('Public Access');
         },
 
         imgClasses() {

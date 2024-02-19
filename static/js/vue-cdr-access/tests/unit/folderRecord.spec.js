@@ -78,9 +78,7 @@ const recordData = {
         },
         id: "64acbfae-929f-4820-96da-65fdc19f529d",
         updated: "2023-06-26T12:37:49.701Z",
-        status: [
-            "Public Access"
-        ],
+        status: [],
         timestamp: 1687783094875
     },
     markedForDeletion: false,
