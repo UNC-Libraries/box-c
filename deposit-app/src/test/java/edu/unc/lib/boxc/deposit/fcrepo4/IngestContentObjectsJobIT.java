@@ -1,6 +1,7 @@
 package edu.unc.lib.boxc.deposit.fcrepo4;
 
 import static edu.unc.lib.boxc.common.test.TestHelpers.setField;
+import static edu.unc.lib.boxc.common.xml.SecureXMLFactory.createSAXBuilder;
 import static edu.unc.lib.boxc.model.api.DatastreamType.ORIGINAL_FILE;
 import static edu.unc.lib.boxc.model.api.DatastreamType.TECHNICAL_METADATA;
 import static edu.unc.lib.boxc.persist.impl.storage.StorageLocationTestHelper.LOC1_ID;
@@ -39,6 +40,8 @@ import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.vocabulary.DC;
 import org.apache.jena.vocabulary.RDF;
 import org.fcrepo.client.FcrepoClient;
+import org.jdom2.output.Format;
+import org.jdom2.output.XMLOutputter;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -455,7 +458,7 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
 
         Resource historyResc = DepositModelHelpers.addDatastream(workBag, DatastreamType.MD_DESCRIPTIVE_HISTORY);
         Path modsPath = job.getModsPath(workPid, true);
-        FileUtils.writeStringToFile(modsPath.toFile(), "Mods content", UTF_8);
+        var originalModsPath = Path.of("src/test/resources/simpleMods.xml");
         Path modsHistoryPath = depositDirManager.getHistoryFile(workPid, DatastreamType.MD_DESCRIPTIVE_HISTORY);
         FileUtils.writeStringToFile(modsHistoryPath.toFile(), "History content", UTF_8);
         String modsHistorySha1 = getSha1(modsHistoryPath);
@@ -475,7 +478,7 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
         // Make sure that the work is present and is actually a work
         WorkObject mWork = (WorkObject) findContentObjectByPid(destMembers, workPid);
         BinaryObject descBin = mWork.getDescription();
-        assertEquals("Mods content", IOUtils.toString(descBin.getBinaryStream(), UTF_8));
+        assertEquals(FileUtils.readFileToString(originalModsPath.toFile(), UTF_8), IOUtils.toString(descBin.getBinaryStream(), UTF_8));
 
         PID historyPid = DatastreamPids.getDatastreamHistoryPid(descBin.getPid());
         BinaryObject historyBin = repoObjLoader.getBinaryObject(historyPid);
@@ -810,7 +813,7 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
         PID folderPid = pidMinter.mintContentPid();
 
         Path modsPath = job.getModsPath(folderPid, true);
-        Files.createFile(modsPath);
+        Files.copy(Path.of("src/test/resources/simpleMods.xml"), modsPath);
 
         String label = "testfolder";
 

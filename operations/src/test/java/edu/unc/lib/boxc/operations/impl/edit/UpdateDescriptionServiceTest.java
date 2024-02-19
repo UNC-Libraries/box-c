@@ -1,5 +1,44 @@
 package edu.unc.lib.boxc.operations.impl.edit;
 
+import edu.unc.lib.boxc.auth.api.Permission;
+import edu.unc.lib.boxc.auth.api.exceptions.AccessRestrictionException;
+import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
+import edu.unc.lib.boxc.auth.api.models.AgentPrincipals;
+import edu.unc.lib.boxc.auth.api.services.AccessControlService;
+import edu.unc.lib.boxc.model.api.ids.PID;
+import edu.unc.lib.boxc.model.api.objects.BinaryObject;
+import edu.unc.lib.boxc.model.api.objects.ContentObject;
+import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
+import edu.unc.lib.boxc.model.api.objects.WorkObject;
+import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
+import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
+import edu.unc.lib.boxc.operations.api.exceptions.MetadataValidationException;
+import edu.unc.lib.boxc.operations.impl.edit.UpdateDescriptionService.UpdateDescriptionRequest;
+import edu.unc.lib.boxc.operations.impl.validation.MODSValidator;
+import edu.unc.lib.boxc.operations.impl.versioning.VersionedDatastreamService;
+import edu.unc.lib.boxc.operations.impl.versioning.VersionedDatastreamService.DatastreamVersion;
+import edu.unc.lib.boxc.operations.jms.OperationsMessageSender;
+import edu.unc.lib.boxc.operations.jms.indexing.IndexingPriority;
+import edu.unc.lib.boxc.persist.api.transfer.BinaryTransferSession;
+import org.apache.commons.io.IOUtils;
+import org.jdom2.output.Format;
+import org.jdom2.output.XMLOutputter;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
+import org.mockito.Mock;
+
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.time.Instant;
+import java.util.Collection;
+import java.util.UUID;
+
 import static edu.unc.lib.boxc.common.xml.SecureXMLFactory.createSAXBuilder;
 import static edu.unc.lib.boxc.model.fcrepo.ids.DatastreamPids.getMdDescriptivePid;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -14,59 +53,12 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.openMocks;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.time.Instant;
-import java.util.Collection;
-import java.util.UUID;
-
-import edu.unc.lib.boxc.model.api.objects.WorkObject;
-import edu.unc.lib.boxc.operations.jms.indexing.IndexingPriority;
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
-import org.jdom2.Document;
-import org.jdom2.output.Format;
-import org.jdom2.output.XMLOutputter;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
-import org.mockito.Mock;
-
-import edu.unc.lib.boxc.auth.api.Permission;
-import edu.unc.lib.boxc.auth.api.exceptions.AccessRestrictionException;
-import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
-import edu.unc.lib.boxc.auth.api.models.AgentPrincipals;
-import edu.unc.lib.boxc.auth.api.services.AccessControlService;
-import edu.unc.lib.boxc.model.api.ids.PID;
-import edu.unc.lib.boxc.model.api.objects.BinaryObject;
-import edu.unc.lib.boxc.model.api.objects.ContentObject;
-import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
-import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
-import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
-import edu.unc.lib.boxc.operations.api.exceptions.MetadataValidationException;
-import edu.unc.lib.boxc.operations.impl.edit.UpdateDescriptionService.UpdateDescriptionRequest;
-import edu.unc.lib.boxc.operations.impl.validation.MODSValidator;
-import edu.unc.lib.boxc.operations.impl.versioning.VersionedDatastreamService;
-import edu.unc.lib.boxc.operations.impl.versioning.VersionedDatastreamService.DatastreamVersion;
-import edu.unc.lib.boxc.operations.jms.OperationsMessageSender;
-import edu.unc.lib.boxc.persist.api.storage.StorageLocation;
-import edu.unc.lib.boxc.persist.api.transfer.BinaryTransferSession;
-
 /**
  *
  * @author harring
  *
  */
 public class UpdateDescriptionServiceTest {
-
-    private static final String FILE_CONTENT = "Some content";
     private AutoCloseable closeable;
 
     @Mock
@@ -120,9 +112,6 @@ public class UpdateDescriptionServiceTest {
         modsPid = getMdDescriptivePid(objPid);
         modsPath = Path.of("src/test/resources/samples/mods.xml");
         modsStream = Files.newInputStream(modsPath);
-        // Reformat mods document to pretty print it to match normalization in the service
-        var modsDoc = createSAXBuilder().build(Files.newInputStream(modsPath));
-        modsString = new XMLOutputter(Format.getPrettyFormat()).outputString(modsDoc);
 
         when(versioningService.addVersion(any(DatastreamVersion.class))).thenReturn(mockDescBin);
         when(obj.getPid()).thenReturn(objPid);
@@ -288,6 +277,7 @@ public class UpdateDescriptionServiceTest {
         DatastreamVersion version = versionCaptor.getValue();
         assertEquals(modsPid, version.getDsPid());
         assertEquals("text/xml", version.getContentType());
-        assertEquals(modsString, IOUtils.toString(version.getContentStream()));
+        assertEquals(Files.readString(Path.of("src/test/resources/samples/modsNormalized.xml")),
+                IOUtils.toString(version.getContentStream()));
     }
 }

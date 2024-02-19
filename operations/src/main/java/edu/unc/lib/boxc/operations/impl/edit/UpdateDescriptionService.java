@@ -48,6 +48,7 @@ import static org.apache.jena.rdf.model.ResourceFactory.createResource;
  */
 public class UpdateDescriptionService {
     private static final Logger log = LoggerFactory.getLogger(UpdateDescriptionService.class);
+    private static final String NEWLINE = System.getProperty("line.separator");
 
     private AccessControlService aclService;
     private RepositoryObjectLoader repoObjLoader;
@@ -137,14 +138,15 @@ public class UpdateDescriptionService {
      */
     private InputStream getStandardizedModsStream(UpdateDescriptionRequest request) throws IOException {
         try {
-            Document modsDoc;
-            if (request.getModsDocument() == null) {
+            Document modsDoc = request.getModsDocument();
+            if (modsDoc == null) {
                 modsDoc = createSAXBuilder().build(request.getModsStream());
-            } else {
-                modsDoc = request.getModsDocument();
             }
             var outStream = new ByteArrayOutputStream();
-            new XMLOutputter(Format.getPrettyFormat()).output(modsDoc, outStream);
+            // Pretty print, ensure newlines are \n instead of jdom default \r\n
+            new XMLOutputter(Format.getPrettyFormat().setLineSeparator(NEWLINE))
+                    // ensure no XML declaration and no trailing newline (via using root element instead of doc)
+                    .output(modsDoc.getRootElement(), outStream);
             return new ByteArrayInputStream(outStream.toByteArray());
         } catch (JDOMException e) {
             throw new MetadataValidationException("Unable to parse MODS XML for " + request.getPid().getQualifiedId(), e);

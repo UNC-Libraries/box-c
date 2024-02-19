@@ -1,16 +1,14 @@
-<?xml version="1.0" encoding="UTF-8"?>
 <mods xmlns="http://www.loc.gov/mods/v3">
-    <titleInfo>
-        <title>Simple MODS document</title>
-    </titleInfo>
-
-    <language>
-        <languageTerm type="code" authority="iso639-2b">eng</languageTerm>
-    </language>
-    <name>
-        <namePart>Test</namePart>
-        <role>
-            <roleTerm>creator</roleTerm>
-        </role>
-    </name>
+  <titleInfo>
+    <title>Simple MODS document</title>
+  </titleInfo>
+  <language>
+    <languageTerm type="code" authority="iso639-2b">eng</languageTerm>
+  </language>
+  <name>
+    <namePart>Test</namePart>
+    <role>
+      <roleTerm>creator</roleTerm>
+    </role>
+  </name>
 </mods>
