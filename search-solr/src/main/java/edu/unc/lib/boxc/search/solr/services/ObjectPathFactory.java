@@ -60,10 +60,10 @@ public class ObjectPathFactory {
         titleFieldName = SearchFieldKey.TITLE.getSolrField();
         typeFieldName = SearchFieldKey.RESOURCE_TYPE.getSolrField();
         collectionId = SearchFieldKey.COLLECTION_ID.getSolrField();
-        pathFields = Arrays.asList(titleFieldName, typeFieldName);
+        pathFields = Arrays.asList(titleFieldName, typeFieldName, collectionId);
         startObjectFields = Arrays.asList(SearchFieldKey.ID.name(),
                 SearchFieldKey.TITLE.name(), SearchFieldKey.RESOURCE_TYPE.name(),
-                SearchFieldKey.ANCESTOR_PATH.name());
+                SearchFieldKey.ANCESTOR_PATH.name(), SearchFieldKey.COLLECTION_ID.name());
     }
 
     /**
