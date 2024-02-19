@@ -196,6 +196,13 @@ describe('thumbnail.vue', () => {
         expect(wrapper.find('.fa-lock').exists()).toBe(true);
     });
 
+    it('displays a lock icon if the "everyone" groupRole is not set', async () => {
+        let updatedRecordData = cloneDeep(recordData);
+        updatedRecordData.briefObject.groupRoleMap = { authenticated: ['canViewOriginals'] }
+        await wrapper.setProps({ thumbnailData: updatedRecordData });
+        expect(wrapper.find('.fa-lock').exists()).toBe(true);
+    });
+
     it('displays a trash icon if an item is marked for deletion', async () => {
         let updatedRecordData = cloneDeep(recordData);
         updatedRecordData.markedForDeletion = true;

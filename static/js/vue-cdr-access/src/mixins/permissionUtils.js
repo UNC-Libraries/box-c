@@ -58,7 +58,8 @@ export default {
 
         publicAccess(record) {
             const CAN_VIEW_MATERIALS = ['canViewOriginals', 'canViewReducedQuality', 'canViewAccessCopies'];
-            return record.groupRoleMap !== undefined && CAN_VIEW_MATERIALS.includes(record.groupRoleMap.everyone[0]);
+            return record.groupRoleMap !== undefined && Array.isArray(record.groupRoleMap.everyone)
+                && CAN_VIEW_MATERIALS.includes(record.groupRoleMap.everyone[0]);
         },
 
         restrictions(record) {
