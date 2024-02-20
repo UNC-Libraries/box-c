@@ -1,6 +1,5 @@
 package edu.unc.lib.boxc.web.services.rest;
 
-import com.github.tomakehurst.wiremock.junit5.WireMockTest;
 import de.digitalcollections.iiif.model.jackson.IiifObjectMapper;
 import de.digitalcollections.iiif.model.openannotation.Annotation;
 import de.digitalcollections.iiif.model.sharedcanvas.Canvas;
@@ -21,12 +20,8 @@ import edu.unc.lib.boxc.search.solr.models.DatastreamImpl;
 import edu.unc.lib.boxc.web.common.services.AccessCopiesService;
 import edu.unc.lib.boxc.web.services.processing.ImageServerV2Service;
 import edu.unc.lib.boxc.web.services.rest.exceptions.RestResponseEntityExceptionHandler;
-import org.apache.http.HttpClientConnection;
-import org.apache.http.conn.ConnectionRequest;
 import org.apache.http.conn.HttpClientConnectionManager;
-import org.apache.http.conn.routing.HttpRoute;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
-import org.apache.http.protocol.HttpContext;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -38,17 +33,12 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.TimeUnit;
 
-import static edu.unc.lib.boxc.auth.api.Permission.editResourceType;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
@@ -61,7 +51,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 /**
  * @author bbpennel
  */
-@WireMockTest(httpPort = 46887)
 public class ImageServerV2ControllerTest {
     private static final String IIIF_BASE = "http://example.com/iiif/v2/";
     private static final String SERVICES_BASE = "http://example.com/services/";
@@ -190,28 +179,4 @@ public class ImageServerV2ControllerTest {
         Manifest manifest = new IiifObjectMapper().readValue(response.getContentAsString(), Manifest.class);
         return manifest;
     }
-
-//    @Test
-//    public void testGetCanvas() throws Exception {
-//        var fileObj = new ContentObjectSolrRecord();
-//        fileObj.setId(OBJECT_ID);
-//        fileObj.setResourceType(ResourceType.File.name());
-//        fileObj.setTitle("File Object");
-//        var originalDs = new DatastreamImpl("original_file|image/jpeg|image.jpg|jpg|0|||240x750");
-//        var jp2Ds = new DatastreamImpl("jp2|image/jp2|image.jp2|jp2|0|||");
-//        fileObj.setDatastream(Arrays.asList(originalDs.toString(), jp2Ds.toString()));
-//        when(accessCopiesService.listViewableFiles(eq(OBJECT_PID), any())).thenReturn(Arrays.asList(fileObj));
-//
-//        var result = mockMvc.perform(get("/iiif/v2/" + OBJECT_ID + "/jp2/canvas")
-//                        .contentType(MediaType.APPLICATION_JSON))
-//                .andExpect(status().isOk())
-//                .andReturn();
-//
-//        Map<String, Object> respMap = MvcTestHelpers.getMapFromResponse(result);
-//        assertEquals("Canvas", respMap.get("type"));
-//        assertEquals("http://example.com/iiif/v2/f277bb38-272c-471c-a28a-9887a1328a1f/canvas", respMap.get("id"));
-//        assertEquals(750, respMap.get("width"));
-//        var items = (List) respMap.get("items");
-//        assertFalse(items.isEmpty());
-//    }
 }
