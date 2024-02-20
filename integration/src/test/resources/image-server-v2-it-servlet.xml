@@ -15,19 +15,19 @@
 
     <mvc:annotation-driven/>
 
-    <context:component-scan resource-pattern="**/LorisContentController*" base-package="edu.unc.lib.boxc.web.common.controllers"/>
+    <context:component-scan resource-pattern="**/ImageServerV2Controller*" base-package="edu.unc.lib.boxc.web.common.controllers"/>
 
     <bean id="properties" class="org.springframework.beans.factory.config.PropertiesFactoryBean">
-        <property name="location" value="classpath:loris-content-it.properties"/>
+        <property name="location" value="classpath:image-server-v2-it.properties"/>
     </bean>
 
     <bean id="serverProperties" class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
-        <property name="location" value="classpath:loris-content-it.properties"/>
+        <property name="location" value="classpath:image-server-v2-it.properties"/>
         <property name="ignoreResourceNotFound" value="false"/>
     </bean>
     
-    <bean id="lorisContentService" class="edu.unc.lib.boxc.web.common.services.LorisContentService">
-        <property name="lorisPath" value="${loris.base.url}"/>
+    <bean id="ImageServerV2Service" class="edu.unc.lib.boxc.web.services.processing.ImageServerV2Service">
+        <property name="imageServerProxyBasePath" value="${iiif.v2.base.url}"/>
         <property name="basePath" value="${access.base.url}"/>
     </bean>
     

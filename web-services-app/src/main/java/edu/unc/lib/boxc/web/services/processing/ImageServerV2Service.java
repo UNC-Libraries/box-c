@@ -1,4 +1,4 @@
-package edu.unc.lib.boxc.web.common.services;
+package edu.unc.lib.boxc.web.services.processing;
 
 import static edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPaths.idToPath;
 
@@ -9,6 +9,7 @@ import java.util.List;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import edu.unc.lib.boxc.web.services.utils.ImageServerUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpStatus;
@@ -43,17 +44,18 @@ import edu.unc.lib.boxc.web.common.exceptions.ClientAbortException;
 import edu.unc.lib.boxc.web.common.utils.FileIOUtil;
 
 /**
- * Generates request, connects to, and streams the output from loris.  Sets pertinent headers.
+ * Generates request, connects to, and streams the output from a iiif v2 server.  Sets pertinent headers.
  * @author bbpennel
  */
-public class LorisContentService {
-    private static final Logger LOG = LoggerFactory.getLogger(LorisContentService.class);
+public class ImageServerV2Service {
+    private static final Logger LOG = LoggerFactory.getLogger(ImageServerV2Service.class);
 
     private CloseableHttpClient httpClient;
     private HttpClientConnectionManager httpClientConnectionManager;
 
-    private String lorisPath;
+    private String imageServerProxyBasePath;
     private String basePath;
+    private String accessAppPath;
     private ObjectMapper iiifMapper = new IiifObjectMapper();
 
     public void setHttpClientConnectionManager(HttpClientConnectionManager manager) {
@@ -77,9 +79,8 @@ public class LorisContentService {
     public void getMetadata(String simplepid, OutputStream outStream,
             HttpServletResponse response, int retryServerError) {
 
-        StringBuilder path = new StringBuilder(getLorisPath());
-        path.append(idToPath(simplepid, 4, 2))
-                .append(simplepid).append(".jp2").append("/info.json");
+        StringBuilder path = new StringBuilder(getImageServerProxyBasePath());
+        path.append(ImageServerUtil.getImageServerEncodedId(simplepid)).append("/info.json");
 
         int statusCode = -1;
         String statusLine = null;
@@ -97,7 +98,7 @@ public class LorisContentService {
 
                         ImageService respData = iiifMapper.readValue(httpResp.getEntity().getContent(),
                                 ImageService.class);
-                        respData.setIdentifier(new URI(URIUtil.join(basePath, "jp2Proxy", simplepid, "jp2")));
+                        respData.setIdentifier(new URI(URIUtil.join(basePath, "iiif", "v2", simplepid, "jp2")));
 
                         HttpEntity updatedRespData = EntityBuilder.create()
                                 .setText(iiifMapper.writeValueAsString(respData))
@@ -117,20 +118,24 @@ public class LorisContentService {
             }
             retryServerError--;
         } while (retryServerError >= 0 && (statusCode == 500 || statusCode == 404));
-        LOG.error("Unexpected failure while getting Loris path {}: {}", statusLine, path);
+        LOG.error("Unexpected failure while getting image server path {}: {}", statusLine, path);
     }
 
     public void streamJP2(String simplepid, String region, String size, String rotatation, String quality,
-            String format, String datastream, OutputStream outStream, HttpServletResponse response ) {
-        this.streamJP2(simplepid, region, size, rotatation, quality, format, datastream, outStream, response, 1);
+            String format, OutputStream outStream, HttpServletResponse response ) {
+        this.streamJP2(simplepid, region, size, rotatation, quality, format, outStream, response, 1);
     }
 
     public void streamJP2(String simplepid, String region, String size, String rotation, String quality,
-            String format, String datastream, OutputStream outStream, HttpServletResponse response,
+            String format, OutputStream outStream, HttpServletResponse response,
             int retryServerError) {
 
-        StringBuilder path = new StringBuilder(getLorisPath());
-        path.append(idToPath(simplepid, 4, 2)).append(simplepid).append(".jp2")
+        StringBuilder path = new StringBuilder(getImageServerProxyBasePath());
+        // Remap "full" size to "max" since cantaloupe's v2 api doesn't seem to be able to handle full/full correctly
+        if ("full".equals(size)) {
+            size = "max";
+        }
+        path.append(ImageServerUtil.getImageServerEncodedId(simplepid))
                 .append("/" + region).append("/" + size)
                 .append("/" + rotation).append("/" + quality + "." + format);
 
@@ -149,7 +154,7 @@ public class LorisContentService {
             } else {
                 if ((statusCode == 500 || statusCode == 404) && retryServerError > 0) {
                     streamJP2(simplepid, region, size, rotation, quality,
-                            format, datastream, outStream, response, retryServerError - 1);
+                            format, outStream, response, retryServerError - 1);
                 } else {
                     LOG.error("Unexpected failure: {}", httpResp.getStatusLine());
                     LOG.error("Path was: {}", method.getURI());
@@ -188,7 +193,7 @@ public class LorisContentService {
         setMetadataField(manifest, "Subjects", subjects);
         setMetadataField(manifest, "Languages", language);
         manifest.addMetadata("", "<a href=\"" +
-                URIUtil.join(basePath, "record", rootObj.getId()) + "\">View full record</a>");
+                URIUtil.join(accessAppPath, "record", rootObj.getId()) + "\">View full record</a>");
         String attribution = "University of North Carolina Libraries, Digital Collections Repository";
         String collection = rootObj.getParentCollectionName();
         if (collection != null) {
@@ -256,7 +261,7 @@ public class LorisContentService {
             return canvas;
         }
 
-        String canvasPath = URIUtil.join(basePath, "jp2Proxy", uuid, "jp2");
+        String canvasPath = URIUtil.join(basePath, "iiif", "v2", uuid, "jp2");
 
         Datastream fileDs = briefObj.getDatastreamObject(DatastreamType.ORIGINAL_FILE.getId());
         String extent = fileDs.getExtent();
@@ -276,9 +281,9 @@ public class LorisContentService {
 
     private String getRecordPath(HttpServletRequest request) {
         String[] url = request.getRequestURL().toString().split("\\/");
-        String uuid = url[4];
-        String datastream = url[5];
-        return URIUtil.join(basePath, "jp2Proxy", uuid, datastream);
+        String uuid = url[7];
+        String datastream = url[8];
+        return URIUtil.join(basePath, "iiif", "v2", uuid, datastream);
     }
 
     private String jp2Pid(ContentObjectRecord briefObj) {
@@ -305,12 +310,12 @@ public class LorisContentService {
         return (title != null) ? title : "";
     }
 
-    public void setLorisPath(String fullPath) {
-        this.lorisPath = fullPath;
+    public void setImageServerProxyBasePath(String fullPath) {
+        this.imageServerProxyBasePath = fullPath;
     }
 
-    public String getLorisPath() {
-        return lorisPath;
+    public String getImageServerProxyBasePath() {
+        return imageServerProxyBasePath;
     }
 
     public void setBasePath(String basePath) {
@@ -319,5 +324,9 @@ public class LorisContentService {
 
     public String getBasePath() {
         return basePath;
+    }
+
+    public void setAccessAppPath(String accessAppPath) {
+        this.accessAppPath = accessAppPath;
     }
 }

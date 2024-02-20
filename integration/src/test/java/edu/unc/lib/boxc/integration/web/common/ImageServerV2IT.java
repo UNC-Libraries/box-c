@@ -72,11 +72,11 @@ import edu.unc.lib.boxc.auth.api.UserRole;
     @ContextConfiguration("/spring-test/acl-service-context.xml"),
     @ContextConfiguration("/spring-test/solr-embedded-context.xml"),
     @ContextConfiguration("/spring-test/solr-indexing-context.xml"),
-    @ContextConfiguration("/loris-content-it-servlet.xml")
+    @ContextConfiguration("/image-server-v2-content-it-servlet.xml")
 })
 @ExtendWith(SpringExtension.class)
 @WebAppConfiguration
-public class LorisContentIT {
+public class ImageServerV2IT {
 
     @Autowired
     protected String baseAddress;
