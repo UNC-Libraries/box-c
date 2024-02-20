@@ -169,9 +169,9 @@ public class ImageServerV2Service {
         }
     }
 
-    public String getManifest(HttpServletRequest request, List<ContentObjectRecord> briefObjs)
+    public String getManifest(String id, String datastream, List<ContentObjectRecord> briefObjs)
             throws JsonProcessingException {
-        String manifestBase = getRecordPath(request);
+        String manifestBase = getRecordPath(id, datastream);
         ContentObjectRecord rootObj = briefObjs.get(0);
 
         String title = getTitle(rootObj);
@@ -206,15 +206,15 @@ public class ImageServerV2Service {
         return iiifMapper.writeValueAsString(manifest.addSequence(seq));
     }
 
-    public String getSequence(HttpServletRequest request, List<ContentObjectRecord> briefObjs)
+    public String getSequence(String id, String datastream, List<ContentObjectRecord> briefObjs)
             throws JsonProcessingException {
-        String path = getRecordPath(request);
+        String path = getRecordPath(id, datastream);
         return iiifMapper.writeValueAsString(createSequence(path, briefObjs));
     }
 
-    public String getCanvas(HttpServletRequest request, ContentObjectRecord briefObj)
+    public String getCanvas(String id, String datastream, ContentObjectRecord briefObj)
             throws JsonProcessingException {
-        String path = getRecordPath(request);
+        String path = getRecordPath(id, datastream);
         return iiifMapper.writeValueAsString(createCanvas(path, briefObj));
     }
 
@@ -279,10 +279,7 @@ public class ImageServerV2Service {
         return canvas;
     }
 
-    private String getRecordPath(HttpServletRequest request) {
-        String[] url = request.getRequestURL().toString().split("\\/");
-        String uuid = url[7];
-        String datastream = url[8];
+    private String getRecordPath(String uuid, String datastream) {
         return URIUtil.join(basePath, "iiif", "v2", uuid, datastream);
     }
 
