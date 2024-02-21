@@ -51,7 +51,8 @@ public class XmlDocumentFilteringService {
                 Element detachEl = el;
                 Element parentEl = detachEl.getParentElement();
                 // The parent is empty if it has no children other than the element being removed and no attributes
-                while (parentEl != null && parentEl.getChildren().size() == 1 && parentEl.getAttributes().isEmpty()) {
+                while (parentEl != null && !parentEl.isRootElement() && parentEl.getChildren().size() == 1
+                        && parentEl.getAttributes().isEmpty()) {
                     detachEl = parentEl;
                     parentEl = detachEl.getParentElement();
                 }

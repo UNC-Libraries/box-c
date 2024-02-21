@@ -26,6 +26,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 public class XmlDocumentFilteringServiceTest {
     private XmlDocumentFilteringService service;
     private Document doc;
+    private Document exclusionDoc;
 
     @TempDir
     public Path tmpFolder;
@@ -35,6 +36,7 @@ public class XmlDocumentFilteringServiceTest {
         service = new XmlDocumentFilteringService();
         SAXBuilder saxBuilder = SecureXMLFactory.createSAXBuilder();
         doc = saxBuilder.build(new File("src/test/resources/mods/test_record.xml"));
+        exclusionDoc = saxBuilder.build(new File("src/test/resources/mods/exclusion_record.xml"));
         tmpFolder.resolve("testFolder");
         Files.createDirectory(tmpFolder.resolve("testFolder"));
     }
@@ -54,6 +56,23 @@ public class XmlDocumentFilteringServiceTest {
         service.filterExclusions(doc);
         String after = new XMLOutputter().outputString(doc);
         assertEquals(before, after);
+    }
+
+    @Test
+    public void excludeAllElementsTest() throws Exception {
+        initWithXPath("//mods:originInfo[@displayLabel=\"Digital Scan Date Raw Scan\"]/mods:dateCaptured",
+                "//mods:originInfo[@displayLabel=\"Digital Scan Date filename\"]/mods:dateCaptured",
+                "//mods:identifier[@type=\"filename\"]",
+                "//mods:physicalDescription/mods:note[@type=\"technical\"]",
+                "//mods:originInfo/mods:place/mods:placeTerm[@type=\"code\" and @authority=\"marccountry\"]",
+                "//mods:originInfo/mods:dateIssued[@encoding=\"marc\"]",
+                "//mods:identifier[@displayLabel=\"HookID\" and @type=\"local\"]",
+                "//mods:physicalDescription/mods:note[@displayLabel=\"Container type\"]",
+                "//mods:identifier[@displayLabel=\"CONTENTdm number\" and @type=\"local\"]",
+                "//mods:accessCondition[@type=\"use and reproduction\" and @displayLabel=\"CONTENTdm Usage Rights\"]");
+
+        service.filterExclusions(exclusionDoc);
+        assertEquals(0, exclusionDoc.getRootElement().getChildren().size());
     }
 
     @Test
