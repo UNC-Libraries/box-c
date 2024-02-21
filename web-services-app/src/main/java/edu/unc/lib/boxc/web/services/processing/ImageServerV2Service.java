@@ -94,8 +94,6 @@ public class ImageServerV2Service {
                         response.setHeader("Content-Type", "application/json");
                         response.setHeader("content-disposition", "inline");
 
-                        ObjectMapper iiifMapper = new IiifObjectMapper();
-
                         ImageService respData = iiifMapper.readValue(httpResp.getEntity().getContent(),
                                 ImageService.class);
                         respData.setIdentifier(new URI(URIUtil.join(basePath, "iiif", "v2", simplepid, "jp2")));
@@ -133,7 +131,7 @@ public class ImageServerV2Service {
         StringBuilder path = new StringBuilder(getImageServerProxyBasePath());
         // Remap "full" size to "max" since cantaloupe's v2 api doesn't seem to be able to handle full/full correctly
         if ("full".equals(size)) {
-            size = "max";
+            size = ImageServerUtil.FULL_SIZE;
         }
         path.append(ImageServerUtil.getImageServerEncodedId(simplepid))
                 .append("/" + region).append("/" + size)

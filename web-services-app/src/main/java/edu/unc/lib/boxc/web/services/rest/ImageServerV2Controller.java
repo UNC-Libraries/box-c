@@ -104,11 +104,15 @@ public class ImageServerV2Controller extends AbstractSolrSearchController {
         // Check if the user is allowed to view this object
         assertHasAccess(pid);
         try {
-            response.addHeader("Access-Control-Allow-Origin", "*");
+            addAllowOriginHeader(response);
             imageServerV2Service.getMetadata(id, response.getOutputStream(), response);
         } catch (IOException e) {
             LOG.error("Error retrieving JP2 metadata content for {}", id, e);
         }
+    }
+
+    private void addAllowOriginHeader(HttpServletResponse response) {
+        response.addHeader("Access-Control-Allow-Origin", "*");
     }
 
     /**
@@ -128,7 +132,7 @@ public class ImageServerV2Controller extends AbstractSolrSearchController {
         SimpleIdRequest idRequest = new SimpleIdRequest(pid, GroupsThreadStore
                 .getAgentPrincipals().getPrincipals());
         ContentObjectRecord briefObj = queryLayer.getObjectById(idRequest);
-        response.addHeader("Access-Control-Allow-Origin", "*");
+        addAllowOriginHeader(response);
         return imageServerV2Service.getCanvas(id, datastream, briefObj);
     }
 
@@ -147,7 +151,7 @@ public class ImageServerV2Controller extends AbstractSolrSearchController {
         // Check if the user is allowed to view this object's manifest
         assertHasAccess(pid);
         List<ContentObjectRecord> briefObjs = getDatastreams(pid);
-        response.addHeader("Access-Control-Allow-Origin", "*");
+        addAllowOriginHeader(response);
         return imageServerV2Service.getSequence(id, datastream, briefObjs);
     }
 
@@ -170,7 +174,7 @@ public class ImageServerV2Controller extends AbstractSolrSearchController {
             if (briefObjs.size() == 0) {
                 response.setStatus(HttpStatus.NOT_FOUND.value());
             } else {
-                response.addHeader("Access-Control-Allow-Origin", "*");
+                addAllowOriginHeader(response);
                 return imageServerV2Service.getManifest(id, datastream, briefObjs);
             }
         } catch (IOException e) {
