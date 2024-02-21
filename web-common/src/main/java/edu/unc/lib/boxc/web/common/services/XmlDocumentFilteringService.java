@@ -48,15 +48,14 @@ public class XmlDocumentFilteringService {
             for (Element el: xPath.evaluate(doc)) {
                 log.debug("Excluding element {} from document based on expression {}", el.getName(), xPathString);
                 // Remove the element itself and any parents of itself that would be left empty by the removal
-                Element detachEl = el;
-                Element parentEl = detachEl.getParentElement();
+                Element parentEl = el.getParentElement();
                 // The parent is empty if it has no children other than the element being removed and no attributes
-                while (parentEl != null && parentEl.getChildren().size() == 1 && parentEl.getAttributes().isEmpty()) {
-                    detachEl = parentEl;
-                    parentEl = detachEl.getParentElement();
+                while (parentEl != null && !parentEl.isRootElement() && parentEl.getChildren().size() == 1
+                        && parentEl.getAttributes().isEmpty()) {
+                    parentEl = el.getParentElement();
                 }
-                detachEl.detach();
 
+                el.detach();
             }
         }
     }

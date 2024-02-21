@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mods:mods xmlns:mods="http://www.loc.gov/mods/v3">
+    <mods:identifier displayLabel="CONTENTdm number" type="local">7063/original_file</mods:identifier>
+    <mods:identifier displayLabel="CONTENTdm file name" type="filename">7054.jp2</mods:identifier>
+    <mods:identifier displayLabel="Full resolution" type="filename">Volume37/Dwane Powell_026.tif</mods:identifier>
+    <mods:identifier displayLabel="filename" type="filename">Dwane Powell_026.tif</mods:identifier>
+</mods:mods>
