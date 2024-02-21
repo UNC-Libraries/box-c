@@ -1,28 +1,19 @@
 package edu.unc.lib.boxc.operations.impl.importxml;
 
-import static edu.unc.lib.boxc.model.api.xml.JDOMNamespaceUtil.MODS_V3_NS;
-import static edu.unc.lib.boxc.operations.test.ModsTestHelper.addObjectUpdate;
-import static edu.unc.lib.boxc.operations.test.ModsTestHelper.documentToInputStream;
-import static edu.unc.lib.boxc.operations.test.ModsTestHelper.makeUpdateDocument;
-import static edu.unc.lib.boxc.operations.test.ModsTestHelper.modsWithTitleAndDate;
-import static edu.unc.lib.boxc.operations.test.ModsTestHelper.writeToFile;
-import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.apache.commons.io.FileUtils.writeStringToFile;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-import static org.mockito.MockitoAnnotations.openMocks;
-
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.file.Path;
-import java.time.Instant;
-import java.util.UUID;
-
-import javax.mail.internet.MimeMessage;
-
+import com.samskivert.mustache.Template;
+import edu.unc.lib.boxc.auth.api.models.AgentPrincipals;
+import edu.unc.lib.boxc.model.api.ids.PID;
+import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
+import edu.unc.lib.boxc.model.api.objects.WorkObject;
+import edu.unc.lib.boxc.model.api.services.ContentPathFactory;
+import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
+import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
+import edu.unc.lib.boxc.model.fcrepo.test.TestHelper;
+import edu.unc.lib.boxc.operations.impl.edit.UpdateDescriptionService;
+import edu.unc.lib.boxc.operations.impl.edit.UpdateDescriptionService.UpdateDescriptionRequest;
+import edu.unc.lib.boxc.operations.jms.exportxml.BulkXMLConstants;
+import edu.unc.lib.boxc.persist.api.storage.StorageLocationManager;
+import edu.unc.lib.boxc.persist.impl.transfer.BinaryTransferServiceImpl;
 import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.JDOMException;
@@ -39,21 +30,26 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.ContextHierarchy;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-import com.samskivert.mustache.Template;
+import javax.mail.internet.MimeMessage;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Path;
+import java.time.Instant;
+import java.util.UUID;
 
-import edu.unc.lib.boxc.auth.api.models.AgentPrincipals;
-import edu.unc.lib.boxc.model.api.ids.PID;
-import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
-import edu.unc.lib.boxc.model.api.objects.WorkObject;
-import edu.unc.lib.boxc.model.api.services.ContentPathFactory;
-import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
-import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
-import edu.unc.lib.boxc.model.fcrepo.test.TestHelper;
-import edu.unc.lib.boxc.operations.impl.edit.UpdateDescriptionService;
-import edu.unc.lib.boxc.operations.impl.edit.UpdateDescriptionService.UpdateDescriptionRequest;
-import edu.unc.lib.boxc.operations.jms.exportxml.BulkXMLConstants;
-import edu.unc.lib.boxc.persist.api.storage.StorageLocationManager;
-import edu.unc.lib.boxc.persist.impl.transfer.BinaryTransferServiceImpl;
+import static edu.unc.lib.boxc.model.api.xml.JDOMNamespaceUtil.MODS_V3_NS;
+import static edu.unc.lib.boxc.operations.test.ModsTestHelper.addObjectUpdate;
+import static edu.unc.lib.boxc.operations.test.ModsTestHelper.makeUpdateDocument;
+import static edu.unc.lib.boxc.operations.test.ModsTestHelper.modsWithTitleAndDate;
+import static edu.unc.lib.boxc.operations.test.ModsTestHelper.writeToFile;
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.apache.commons.io.FileUtils.writeStringToFile;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import static org.mockito.MockitoAnnotations.openMocks;
 
 /**
  *
@@ -361,8 +357,7 @@ public class ImportXMLJobIT {
         workObj = factory.createWorkObject(workPid, null);
         Document doc = new Document()
                 .addContent(modsWithTitleAndDate(ORIGINAL_TITLE, ORIGINAL_DATE));
-        InputStream modsStream = documentToInputStream(doc);
-        updateService.updateDescription(new UpdateDescriptionRequest(agent, workObj, modsStream));
+        updateService.updateDescription(new UpdateDescriptionRequest(agent, workPid, doc));
         return workPid;
     }
 

@@ -1,19 +1,5 @@
 package edu.unc.lib.boxc.operations.impl.edit;
 
-import static edu.unc.lib.boxc.common.xml.SecureXMLFactory.createSAXBuilder;
-import static edu.unc.lib.boxc.model.api.xml.JDOMNamespaceUtil.MODS_V3_NS;
-
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Arrays;
-
-import org.jdom2.Document;
-import org.jdom2.Element;
-import org.jdom2.JDOMException;
-import org.jdom2.output.XMLOutputter;
-
 import edu.unc.lib.boxc.auth.api.Permission;
 import edu.unc.lib.boxc.auth.api.models.AgentPrincipals;
 import edu.unc.lib.boxc.auth.api.services.AccessControlService;
@@ -26,6 +12,16 @@ import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.operations.impl.edit.UpdateDescriptionService.UpdateDescriptionRequest;
 import edu.unc.lib.boxc.operations.jms.OperationsMessageSender;
 import io.dropwizard.metrics5.Timer;
+import org.jdom2.Document;
+import org.jdom2.Element;
+import org.jdom2.JDOMException;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Arrays;
+
+import static edu.unc.lib.boxc.common.xml.SecureXMLFactory.createSAXBuilder;
+import static edu.unc.lib.boxc.model.api.xml.JDOMNamespaceUtil.MODS_V3_NS;
 
 /**
  * Service that manages editing of the mods:title property on an object
@@ -81,11 +77,7 @@ public class EditTitleService {
                 newMods = addTitleToMODS(document, title);
             }
 
-            ByteArrayOutputStream outStream = new ByteArrayOutputStream();
-            new XMLOutputter().output(newMods, outStream);
-            InputStream newModsStream = new ByteArrayInputStream(outStream.toByteArray());
-
-            updateDescriptionService.updateDescription(new UpdateDescriptionRequest(agent, pid, newModsStream));
+            updateDescriptionService.updateDescription(new UpdateDescriptionRequest(agent, pid, newMods));
         } catch (JDOMException e) {
             throw new ServiceException("Unable to build mods document for " + pid, e);
         } catch (IOException e) {
