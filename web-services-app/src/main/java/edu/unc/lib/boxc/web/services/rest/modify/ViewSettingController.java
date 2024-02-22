@@ -43,7 +43,7 @@ public class ViewSettingController {
         PID pid = PIDs.get(id);
         // Check if the user is allowed to view this object
         AccessGroupSet principals = getAgentPrincipals().getPrincipals();
-        accessControlService.assertHasAccess("Insufficient permissions to get a region for " + id,
+        accessControlService.assertHasAccess("Insufficient permissions to get view settings for " + id,
                 pid, principals, Permission.viewHidden);
 
         // check if object is a WorkObject
