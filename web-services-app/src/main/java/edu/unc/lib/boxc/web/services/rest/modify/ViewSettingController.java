@@ -17,7 +17,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -28,6 +27,9 @@ import java.util.Map;
 import static edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore.getAgentPrincipals;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
+/**
+ * Controller for handling view setting requests. This may include things like setting a viewBehavior.
+ */
 @Controller
 public class ViewSettingController {
     private static final Logger LOG = LoggerFactory.getLogger(ViewSettingController.class);
@@ -36,7 +38,11 @@ public class ViewSettingController {
     @Autowired
     private RepositoryObjectLoader repositoryObjectLoader;
 
-    @CrossOrigin
+    /**
+     * This endpoint gets the view settings of the object
+     * @param id UUID of the object
+     * @return json with the UUID and key value pairs that are the view setting : value and response status
+     */
     @GetMapping(value = "/edit/viewSettings/{id}", produces = APPLICATION_JSON_VALUE)
     @ResponseBody
     public ResponseEntity<Object> getViewSetting(@PathVariable("id") String id) {

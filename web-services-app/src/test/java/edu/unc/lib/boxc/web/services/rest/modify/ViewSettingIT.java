@@ -12,7 +12,6 @@ import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.api.objects.WorkObject;
 import edu.unc.lib.boxc.model.api.rdf.CdrView;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
-import edu.unc.lib.boxc.operations.jms.viewSettings.ViewSettingRequest;
 import edu.unc.lib.boxc.web.services.rest.MvcTestHelpers;
 import edu.unc.lib.boxc.web.services.rest.exceptions.RestResponseEntityExceptionHandler;
 import org.apache.jena.rdf.model.Resource;
@@ -80,7 +79,7 @@ public class ViewSettingIT {
 
     @Test
     public void testGetViewSetting() throws Exception {
-        var paged = ViewSettingRequest.ViewBehavior.PAGED.toString();
+        var paged = "paged";
         when(resource.getProperty(eq(CdrView.viewBehavior))).thenReturn(stmt);
         when(stmt.getString()).thenReturn(paged);
 
