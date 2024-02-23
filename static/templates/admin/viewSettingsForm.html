@@ -3,7 +3,7 @@
     <div class="form_field">
         <label for="view_settings_change">Page Display:</label>
         <select id="view_settings_change">
-            <option value="individual" <%= (metadata.view_settings === undefined || metadata.view_settings === 'individual') ? "selected" : "" %>>Individual</option>
+            <option value="individuals" <%= (metadata.view_settings === undefined || metadata.view_settings === 'individuals') ? "selected" : "" %>>Individuals</option>
             <option value="paged" <%= (metadata.view_settings == 'paged') ? "selected" : "" %>>Paged</option>
         </select>
     </div>
