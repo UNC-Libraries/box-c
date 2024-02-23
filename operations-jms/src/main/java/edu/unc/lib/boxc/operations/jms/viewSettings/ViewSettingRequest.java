@@ -18,7 +18,15 @@ public class ViewSettingRequest {
     public enum ViewBehavior {
         INDIVIDUALS,
         PAGED,
-        CONTINUOUS
+        CONTINUOUS;
+
+        public String getString() {
+            return this.name().toLowerCase();
+        }
+
+        public static ViewBehavior caseInsensitiveValueOf(String behavior) {
+            return valueOf(behavior.toUpperCase());
+        }
     }
 
     public String getObjectPidString() {

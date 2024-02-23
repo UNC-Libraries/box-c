@@ -9,6 +9,8 @@ import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.api.objects.WorkObject;
 import edu.unc.lib.boxc.model.api.rdf.CdrView;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
+import edu.unc.lib.boxc.operations.jms.viewSettings.ViewSettingRequest;
+import edu.unc.lib.boxc.operations.jms.viewSettings.ViewSettingRequestSender;
 import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.Resource;
 import org.slf4j.Logger;
@@ -17,14 +19,19 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
+import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
 import static edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore.getAgentPrincipals;
+import static edu.unc.lib.boxc.operations.jms.viewSettings.ViewSettingRequest.ViewBehavior.caseInsensitiveValueOf;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 /**
@@ -32,11 +39,13 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
  */
 @Controller
 public class ViewSettingController {
-    private static final Logger LOG = LoggerFactory.getLogger(ViewSettingController.class);
+    private static final Logger log = LoggerFactory.getLogger(ViewSettingController.class);
     @Autowired
     private AccessControlService accessControlService;
     @Autowired
     private RepositoryObjectLoader repositoryObjectLoader;
+    @Autowired
+    private ViewSettingRequestSender viewSettingRequestSender;
 
     /**
      * This endpoint gets the view settings of the object
@@ -66,9 +75,60 @@ public class ViewSettingController {
         return new ResponseEntity<>(result, HttpStatus.OK);
     }
 
+    @PutMapping(value = "/edit/viewSettings", produces = APPLICATION_JSON_VALUE)
+    @ResponseBody
+    public ResponseEntity<Object> updateViewSetting(@RequestParam Map<String,String> allParams) {
+                Map<String, Object> result = new HashMap<>();
+
+        if (allParams.isEmpty()) {
+            result.put("error", "Request must include ids and view settings");
+            return new ResponseEntity<>(result, HttpStatus.BAD_REQUEST);
+        }
+
+        var ids = allParams.get("targets").split(",");
+        AccessGroupSet principals = getAgentPrincipals().getPrincipals();
+        for (String id : ids) {
+            var pid = PIDs.get(id);
+            // check permissions for object first
+            accessControlService.assertHasAccess("Insufficient permissions to edit view settings for " + id,
+                    pid, principals, Permission.editViewSettings);
+
+            //check if object is a work
+            var repositoryObject = repositoryObjectLoader.getRepositoryObject(pid);
+            if (!(repositoryObject instanceof WorkObject)) {
+                throw new InvalidOperationForObjectType("Cannot update View Settings of object " +
+                        id + ", as only WorkObjects have View Settings");
+            }
+        }
+
+        // now build and send requests
+        for (String id : ids) {
+            var request = buildRequest(id, allParams);
+            try {
+                viewSettingRequestSender.sendToQueue(request);
+            } catch (IOException e) {
+                log.error("Error updating view setting for {}", request.getObjectPidString(), e);
+                return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+            }
+
+        }
+
+        result.put("ids", ids);
+        result.put("status", "Submitted view setting updates for " + ids.length + " object(s)");
+        result.put("timestamp", System.currentTimeMillis());
+        return new ResponseEntity<>(result, HttpStatus.OK);
+    }
+
     private String getValue(Resource resource, Property property) {
         var propValue = resource.getProperty(property);
         return propValue == null ? null : propValue.getString();
     }
 
+    private ViewSettingRequest buildRequest(String id, Map<String, String> params) {
+        var request = new ViewSettingRequest();
+        var viewBehavior = caseInsensitiveValueOf(params.get("behavior"));
+        request.setObjectPidString(id);
+        request.setViewBehavior(viewBehavior);
+        return request;
+    }
 }
