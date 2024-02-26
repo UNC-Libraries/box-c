@@ -134,19 +134,19 @@ public class AnalyticsTrackerUtil {
 
             // Get the user's IP address, either from proxy headers or request
             uip = request.getHeader("X-Forwarded-For");
-            if (unknownUip(uip)) {
+            if (hasUnknownUip(uip)) {
                 uip = request.getHeader("Proxy-Client-IP");
             }
-            if (unknownUip(uip)) {
+            if (hasUnknownUip(uip)) {
                 uip = request.getHeader("WL-Proxy-Client-IP");
             }
-            if (unknownUip(uip)) {
+            if (hasUnknownUip(uip)) {
                 uip = request.getHeader("HTTP_CLIENT_IP");
             }
-            if (unknownUip(uip)) {
+            if (hasUnknownUip(uip)) {
                 uip = request.getHeader("HTTP_X_FORWARDED_FOR");
             }
-            if (unknownUip(uip)) {
+            if (hasUnknownUip(uip)) {
                 uip = request.getRemoteAddr();
             }
 
@@ -181,7 +181,7 @@ public class AnalyticsTrackerUtil {
         private String generateUserId() {
             return UUID.randomUUID().toString();
         }
-        private boolean unknownUip(String uip) {
+        private boolean hasUnknownUip(String uip) {
             return StringUtils.isBlank(uip) || "unknown".equalsIgnoreCase(uip);
         }
     }
