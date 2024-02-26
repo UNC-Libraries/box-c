@@ -2,10 +2,13 @@ package edu.unc.lib.boxc.web.common.utils;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
+import java.util.UUID;
 
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 
+import com.ctc.wstx.util.StringUtil;
+import org.apache.commons.lang.StringUtils;
 import org.matomo.java.tracking.MatomoTracker;
 import org.matomo.java.tracking.TrackerConfiguration;
 import org.matomo.java.tracking.parameters.VisitorId;
@@ -123,8 +126,6 @@ public class AnalyticsTrackerUtil {
     public static class AnalyticsUserData {
         // ip of client
         public String uip;
-        // client id
-        public String cid;
         public String userAgent;
         // matomo user id
         public String uid;
@@ -133,19 +134,19 @@ public class AnalyticsTrackerUtil {
 
             // Get the user's IP address, either from proxy headers or request
             uip = request.getHeader("X-Forwarded-For");
-            if (uip == null || uip.length() == 0 || "unknown".equalsIgnoreCase(uip)) {
+            if (unknownUip(uip)) {
                 uip = request.getHeader("Proxy-Client-IP");
             }
-            if (uip == null || uip.length() == 0 || "unknown".equalsIgnoreCase(uip)) {
+            if (unknownUip(uip)) {
                 uip = request.getHeader("WL-Proxy-Client-IP");
             }
-            if (uip == null || uip.length() == 0 || "unknown".equalsIgnoreCase(uip)) {
+            if (unknownUip(uip)) {
                 uip = request.getHeader("HTTP_CLIENT_IP");
             }
-            if (uip == null || uip.length() == 0 || "unknown".equalsIgnoreCase(uip)) {
+            if (unknownUip(uip)) {
                 uip = request.getHeader("HTTP_X_FORWARDED_FOR");
             }
-            if (uip == null || uip.length() == 0 || "unknown".equalsIgnoreCase(uip)) {
+            if (unknownUip(uip)) {
                 uip = request.getRemoteAddr();
             }
 
@@ -153,17 +154,12 @@ public class AnalyticsTrackerUtil {
             Cookie[] cookies = request.getCookies();
             if (cookies != null) {
                 for (Cookie cookie : cookies) {
-                    // if both cookies have been found
-                    if (cid != null && uid != null) {
+                    // if cookie has been found
+                    if (uid != null) {
                         break;
                     }
                     var cookieName = cookie.getName();
-                    if ("_ga".equals(cookieName)) {
-                        String[] parts = cookie.getValue().split("\\.");
-                        if (parts.length == 4) {
-                            cid = parts[2] + "." + parts[3];
-                        }
-                    } else if (cookieName.startsWith("_pk_id")) {
+                    if (cookieName.startsWith("_pk_id")) {
                         // matomo cookie
                         String[] parts = cookie.getValue().split("\\.");
                         uid = parts[0];
@@ -171,14 +167,22 @@ public class AnalyticsTrackerUtil {
                 }
             }
 
-            if (cid == null) {
-                cid = DEFAULT_CID;
+            // if it cannot be found in the cookie, generate a random UUID
+            if (uid == null) {
+                uid = generateUserId();
             }
 
             userAgent = request.getHeader("User-Agent");
             if (userAgent == null) {
                 userAgent = "";
             }
+        }
+
+        private String generateUserId() {
+            return UUID.randomUUID().toString();
+        }
+        private boolean unknownUip(String uip) {
+            return StringUtils.isBlank(uip) || "unknown".equalsIgnoreCase(uip);
         }
     }
 }

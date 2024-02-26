@@ -33,6 +33,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.getRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -147,6 +148,20 @@ public class AnalyticsTrackerUtilTest {
         when(request.getRemoteAddr()).thenReturn("1.1.1.1");
         var userData = new AnalyticsTrackerUtil.AnalyticsUserData(request);
         assertEquals("1.1.1.1", userData.uip);
+    }
+
+    @Test
+    public void testAnalyticsUserDataInvalidUidCookie() {
+        when(request.getHeader("Proxy-Client-IP")).thenReturn("0.0.0.0");
+        var uidCookie = mock(Cookie.class);
+        when(uidCookie.getName()).thenReturn("_pk_id");
+        when(uidCookie.getValue()).thenReturn("");
+        when(request.getCookies()).thenReturn(new Cookie[]{ uidCookie });
+        when(request.getHeader("User-Agent")).thenReturn("boxy-client");
+        when(request.getRequestURL()).thenReturn(urlBuffer);
+
+        var userData = new AnalyticsTrackerUtil.AnalyticsUserData(request);
+        assertNotNull(userData.uid);
     }
 
     private void assertMatomoQueryIsCorrect(Map<String, StringValuePattern> params) {
