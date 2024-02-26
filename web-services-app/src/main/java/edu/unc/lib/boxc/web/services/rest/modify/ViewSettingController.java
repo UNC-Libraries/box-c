@@ -78,12 +78,15 @@ public class ViewSettingController {
     @PutMapping(value = "/edit/viewSettings", produces = APPLICATION_JSON_VALUE)
     @ResponseBody
     public ResponseEntity<Object> updateViewSetting(@RequestParam Map<String,String> allParams) {
-                Map<String, Object> result = new HashMap<>();
+        Map<String, Object> result = new HashMap<>();
 
-        if (allParams.isEmpty()) {
+        if (badParams(allParams)) {
             result.put("error", "Request must include ids and view settings");
             return new ResponseEntity<>(result, HttpStatus.BAD_REQUEST);
         }
+
+        // see if view behavior is valid
+        var viewBehavior = caseInsensitiveValueOf(allParams.get("behavior"));
 
         var ids = allParams.get("targets").split(",");
         AccessGroupSet principals = getAgentPrincipals().getPrincipals();
@@ -103,7 +106,7 @@ public class ViewSettingController {
 
         // now build and send requests
         for (String id : ids) {
-            var request = buildRequest(id, allParams);
+            var request = buildRequest(id, viewBehavior);
             try {
                 viewSettingRequestSender.sendToQueue(request);
             } catch (IOException e) {
@@ -124,11 +127,14 @@ public class ViewSettingController {
         return propValue == null ? null : propValue.getString();
     }
 
-    private ViewSettingRequest buildRequest(String id, Map<String, String> params) {
-        var request = new ViewSettingRequest();
-        var viewBehavior = caseInsensitiveValueOf(params.get("behavior"));
+    private ViewSettingRequest buildRequest(String id, ViewSettingRequest.ViewBehavior viewBehavior) {
+        var request = new ViewSettingRequest();;
         request.setObjectPidString(id);
         request.setViewBehavior(viewBehavior);
         return request;
+    }
+
+    private boolean badParams(Map<String,String> params) {
+        return params.isEmpty() || params.get("targets") == null || params.get("targets").isBlank();
     }
 }
