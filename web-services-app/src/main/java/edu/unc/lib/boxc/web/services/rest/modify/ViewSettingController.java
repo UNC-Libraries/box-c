@@ -1,5 +1,6 @@
 package edu.unc.lib.boxc.web.services.rest.modify;
 
+import com.apicatalog.jsonld.StringUtils;
 import edu.unc.lib.boxc.auth.api.Permission;
 import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
 import edu.unc.lib.boxc.auth.api.services.AccessControlService;
@@ -19,7 +20,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -135,6 +135,6 @@ public class ViewSettingController {
     }
 
     private boolean badParams(Map<String,String> params) {
-        return params.isEmpty() || params.get("targets") == null || params.get("targets").isBlank();
+        return params.isEmpty() || StringUtils.isBlank(params.get("targets"));
     }
 }
