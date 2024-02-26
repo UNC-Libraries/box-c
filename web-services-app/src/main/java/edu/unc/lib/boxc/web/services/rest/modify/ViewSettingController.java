@@ -80,7 +80,7 @@ public class ViewSettingController {
     public ResponseEntity<Object> updateViewSetting(@RequestParam Map<String,String> allParams) {
         Map<String, Object> result = new HashMap<>();
 
-        if (badParams(allParams)) {
+        if (hasBadParams(allParams)) {
             result.put("error", "Request must include ids and view settings");
             return new ResponseEntity<>(result, HttpStatus.BAD_REQUEST);
         }
@@ -128,13 +128,13 @@ public class ViewSettingController {
     }
 
     private ViewSettingRequest buildRequest(String id, ViewSettingRequest.ViewBehavior viewBehavior) {
-        var request = new ViewSettingRequest();;
+        var request = new ViewSettingRequest();
         request.setObjectPidString(id);
         request.setViewBehavior(viewBehavior);
         return request;
     }
 
-    private boolean badParams(Map<String,String> params) {
+    private boolean hasBadParams(Map<String,String> params) {
         return params.isEmpty() || StringUtils.isBlank(params.get("targets"));
     }
 }
