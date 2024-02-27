@@ -2,7 +2,7 @@
 package edu.unc.lib.boxc.web.services.rest;
 
 import static edu.unc.lib.boxc.auth.api.Permission.viewReducedResImages;
-import static edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPaths.idToPath;
+
 import com.github.tomakehurst.wiremock.client.WireMock;
 import edu.unc.lib.boxc.auth.api.exceptions.AccessRestrictionException;
 import edu.unc.lib.boxc.auth.api.services.AccessControlService;
@@ -14,7 +14,6 @@ import edu.unc.lib.boxc.search.api.requests.SimpleIdRequest;
 import edu.unc.lib.boxc.search.solr.models.ContentObjectSolrRecord;
 import edu.unc.lib.boxc.web.common.services.SolrQueryLayerService;
 import edu.unc.lib.boxc.web.services.processing.DownloadImageService;
-import edu.unc.lib.boxc.web.services.processing.ImageServerProxyService;
 import edu.unc.lib.boxc.web.services.rest.modify.AbstractAPIIT;
 import edu.unc.lib.boxc.web.services.utils.ImageServerUtil;
 import org.apache.commons.io.FileUtils;

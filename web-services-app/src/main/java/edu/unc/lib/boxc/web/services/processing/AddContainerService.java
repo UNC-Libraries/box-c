@@ -1,32 +1,5 @@
 package edu.unc.lib.boxc.web.services.processing;
 
-import static edu.unc.lib.boxc.auth.api.AccessPrincipalConstants.AUTHENTICATED_PRINC;
-import static edu.unc.lib.boxc.auth.api.AccessPrincipalConstants.PUBLIC_PRINC;
-import static edu.unc.lib.boxc.auth.api.UserRole.canViewOriginals;
-import static edu.unc.lib.boxc.auth.api.UserRole.none;
-import static edu.unc.lib.boxc.model.api.xml.DescriptionConstants.COLLECTION_NUMBER_EL;
-import static edu.unc.lib.boxc.model.api.xml.DescriptionConstants.COLLECTION_NUMBER_LABEL;
-import static edu.unc.lib.boxc.model.api.xml.DescriptionConstants.COLLECTION_NUMBER_TYPE;
-import static java.util.Arrays.asList;
-import static org.apache.jena.rdf.model.ModelFactory.createDefaultModel;
-import static org.jdom2.output.Format.getPrettyFormat;
-import static org.springframework.util.Assert.notNull;
-
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
-import java.util.UUID;
-
-import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.jena.rdf.model.Model;
-import org.apache.jena.rdf.model.Resource;
-import org.jdom2.Document;
-import org.jdom2.Element;
-import org.jdom2.output.XMLOutputter;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import edu.unc.lib.boxc.auth.api.Permission;
 import edu.unc.lib.boxc.auth.api.exceptions.AccessRestrictionException;
 import edu.unc.lib.boxc.auth.api.models.AgentPrincipals;
@@ -56,6 +29,28 @@ import edu.unc.lib.boxc.operations.jms.OperationsMessageSender;
 import edu.unc.lib.boxc.persist.api.storage.StorageLocation;
 import edu.unc.lib.boxc.persist.api.storage.StorageLocationManager;
 import io.dropwizard.metrics5.Timer;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.Resource;
+import org.jdom2.Document;
+import org.jdom2.Element;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.UUID;
+
+import static edu.unc.lib.boxc.auth.api.AccessPrincipalConstants.AUTHENTICATED_PRINC;
+import static edu.unc.lib.boxc.auth.api.AccessPrincipalConstants.PUBLIC_PRINC;
+import static edu.unc.lib.boxc.auth.api.UserRole.canViewOriginals;
+import static edu.unc.lib.boxc.auth.api.UserRole.none;
+import static edu.unc.lib.boxc.model.api.xml.DescriptionConstants.COLLECTION_NUMBER_EL;
+import static edu.unc.lib.boxc.model.api.xml.DescriptionConstants.COLLECTION_NUMBER_LABEL;
+import static edu.unc.lib.boxc.model.api.xml.DescriptionConstants.COLLECTION_NUMBER_TYPE;
+import static java.util.Arrays.asList;
+import static org.apache.jena.rdf.model.ModelFactory.createDefaultModel;
+import static org.springframework.util.Assert.notNull;
 
 /**
  * Service that manages the creation of containers
@@ -182,10 +177,7 @@ public class AddContainerService {
                     .setText(addRequest.getCollectionNumber().trim()));
         }
 
-        String modsString = new XMLOutputter(getPrettyFormat()).outputString(mods.getDocument());
-
-        updateDescService.updateDescription(new UpdateDescriptionRequest(addRequest.getAgent(), containerPid,
-                IOUtils.toInputStream(modsString, StandardCharsets.UTF_8)));
+        updateDescService.updateDescription(new UpdateDescriptionRequest(addRequest.getAgent(), containerPid, doc));
     }
 
     /**

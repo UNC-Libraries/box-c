@@ -11,9 +11,8 @@
                     <strong>{{ $t('full_record.date_added') }}: </strong>
                     {{ formatDate(recordData.briefObject.added) }}
                 </p>
-                <p v-if="fieldExists(recordData.briefObject.collectionId)">
-                    <strong>{{ $t('full_record.collection_id') }}: </strong>
-                    {{ recordData.briefObject.collectionId }}
+                <p class="parent_collection">
+                    <strong>{{ $t('full_record.collection') }}: </strong> <router-link class="parent-collection" :to="parentUrl">{{ recordData.briefObject.parentCollectionName }}</router-link>
                 </p>
                 <p v-if="fieldExists(recordData.findingAidUrl)">
                     <strong>{{ $t('full_record.finding_aid') }}: </strong>
@@ -40,39 +39,33 @@
 
 <script>
 import fullRecordUtils from '../../mixins/fullRecordUtils';
-import abstract from "@/components/full_record/abstract.vue";
+import abstract from '@/components/full_record/abstract.vue';
 import restrictedContent from '@/components/full_record/restrictedContent.vue';
 
 export default {
-    name: 'collectionFolder',
+    name: 'folderRecord',
 
     mixins: [fullRecordUtils],
 
-    components: {abstract, restrictedContent},
-
-    methods: {
-        fieldExists(value) {
-            return value !== undefined;
-        }
-    }
+    components: { abstract, restrictedContent }
 }
 </script>
 
 <style scoped lang="scss">
-    .actionlink {
-        margin: 5px auto;
-        max-width: 300px;
-    }
+.actionlink {
+    margin: 5px auto;
+    max-width: 300px;
+}
 
-    .browse-header {
-        h2 {
-            font-size: 1.5rem;
-        }
+.browse-header {
+    h2 {
+        font-size: 1.5rem;
     }
+}
 
-    .restricted-access {
-        h2 {
-            text-align: center;
-        }
+.restricted-access {
+    h2 {
+        text-align: center;
     }
+}
 </style>

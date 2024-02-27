@@ -6,6 +6,7 @@ import static java.util.Arrays.asList;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -17,6 +18,8 @@ import java.nio.file.Path;
 import java.util.Date;
 import java.util.List;
 
+import edu.unc.lib.boxc.model.api.exceptions.NotFoundException;
+import edu.unc.lib.boxc.operations.api.exceptions.StateUnmodifiedException;
 import org.apache.commons.io.FileUtils;
 import org.jdom2.Document;
 import org.jdom2.Element;
@@ -291,6 +294,45 @@ public class VersionedDatastreamServiceIT {
 
             service.addVersion(newV);
         });
+    }
+
+    @Test
+    public void addVersion_DatastreamWithSameContentSkipUnmodified() throws Exception {
+        repoObjFactory.createFolderObject(parentPid, null);
+        treeIndexer.indexAll(baseAddress);
+
+        DatastreamVersion newV1 = new DatastreamVersion(dsPid);
+        newV1.setContentStream(getModsDocumentStream(TEST_TITLE));
+        newV1.setContentType("text/xml");
+        newV1.setSkipUnmodified(false);
+
+        BinaryObject dsObj = service.addVersion(newV1);
+
+        // Perform update with same content and skipUnmodified
+        DatastreamVersion newV2 = new DatastreamVersion(dsPid);
+        newV2.setContentStream(getModsDocumentStream(TEST_TITLE));
+        newV2.setContentType("text/xml");
+        newV2.setSkipUnmodified(true);
+
+        assertThrows(StateUnmodifiedException.class, () -> {
+            service.addVersion(newV2);
+        });
+
+        // No history should have been created since no update occurred
+        PID historyPid = DatastreamPids.getDatastreamHistoryPid(dsPid);
+        assertThrows(NotFoundException.class, () -> {
+            repoObjLoader.getBinaryObject(historyPid);
+        });
+
+        // Perform third request to update with same content, but without skipping unmodified
+        DatastreamVersion newV3 = new DatastreamVersion(dsPid);
+        newV3.setContentStream(getModsDocumentStream(TEST_TITLE));
+        newV3.setContentType("text/xml");
+        newV3.setSkipUnmodified(false);
+
+        service.addVersion(newV3);
+
+        assertNotNull(repoObjLoader.getBinaryObject(historyPid), "History object should have been created");
     }
 
     private InputStream getModsDocumentStream(String title) throws Exception {

@@ -196,6 +196,13 @@ describe('thumbnail.vue', () => {
         expect(wrapper.find('.fa-lock').exists()).toBe(true);
     });
 
+    it('displays a lock icon if the "everyone" groupRole is not set', async () => {
+        let updatedRecordData = cloneDeep(recordData);
+        updatedRecordData.briefObject.groupRoleMap = { authenticated: ['canViewOriginals'] }
+        await wrapper.setProps({ thumbnailData: updatedRecordData });
+        expect(wrapper.find('.fa-lock').exists()).toBe(true);
+    });
+
     it('displays a trash icon if an item is marked for deletion', async () => {
         let updatedRecordData = cloneDeep(recordData);
         updatedRecordData.markedForDeletion = true;
@@ -208,8 +215,7 @@ describe('thumbnail.vue', () => {
     it('displays no icon if an item is not restricted or marked for deletion', async () => {
         // No lock icon if record has public access status
         let updatedRecordData = cloneDeep(recordData);
-        updatedRecordData.briefObject.roleGroup = undefined;
-        updatedRecordData.briefObject.status.push('Public Access');
+        updatedRecordData.briefObject.groupRoleMap = { authenticated: ['canViewOriginals'], everyone: ['canViewOriginals']}
         await wrapper.setProps({ thumbnailData: updatedRecordData });
         expect(wrapper.find('.fa-lock').exists()).toBe(false);
         expect(wrapper.find('.fa-trash').exists()).toBe(false);

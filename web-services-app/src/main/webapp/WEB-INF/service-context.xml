@@ -420,7 +420,7 @@
     </bean>
 
     <bean id="downloadImageService" class="edu.unc.lib.boxc.web.services.processing.DownloadImageService">
-        <property name="iiifBasePath" value="${iiif.base.url}"/>
+        <property name="iiifBasePath" value="${iiif.v3.base.url}"/>
     </bean>
 
     <bean id="thumbnailRequestJmsTemplate" class="org.springframework.jms.core.JmsTemplate">
@@ -433,6 +433,13 @@
         <property name="jmsTemplate" ref="thumbnailRequestJmsTemplate"/>
     </bean>
 
+    <bean id="imageServerV2Service" class="edu.unc.lib.boxc.web.services.processing.ImageServerV2Service">
+        <property name="imageServerProxyBasePath" value="${iiif.v2.base.url}"/>
+        <property name="basePath" value="${services.api.url}"/>
+        <property name="accessAppPath" value="${repository.protocol}://${repository.host}/"/>
+        <property name="httpClientConnectionManager" ref="httpClientConnectionManager" />
+    </bean>
+
     <bean id="iiifV3ManifestService" class="edu.unc.lib.boxc.web.services.processing.IiifV3ManifestService">
         <property name="baseIiifv3Path" value="${services.api.url}iiif/v3/"/>
         <property name="baseAccessPath" value="${repository.protocol}://${repository.host}/"/>
@@ -442,7 +449,7 @@
     </bean>
 
     <bean id="imageServerProxyService" class="edu.unc.lib.boxc.web.services.processing.ImageServerProxyService">
-        <property name="imageServerProxyBasePath" value="${iiif.imageServer.base.url}"/>
+        <property name="imageServerProxyBasePath" value="${iiif.v3.imageServer.base.url}"/>
         <property name="baseIiifv3Path" value="${services.api.url}iiif/v3/"/>
         <property name="httpClientConnectionManager" ref="httpClientConnectionManager" />
     </bean>

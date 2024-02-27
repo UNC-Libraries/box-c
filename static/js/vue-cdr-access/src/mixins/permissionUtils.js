@@ -53,8 +53,13 @@ export default {
 
         isRestricted(record) {
            if (record.type === 'AdminUnit') return false;
-           if (record.status === undefined) return true;
-           return !record.status.includes('Public Access');
+           return !this.publicAccess(record)
+        },
+
+        publicAccess(record) {
+            const CAN_VIEW_MATERIALS = ['canViewOriginals', 'canViewReducedQuality', 'canViewAccessCopies'];
+            return record.groupRoleMap !== undefined && Array.isArray(record.groupRoleMap.everyone)
+                && CAN_VIEW_MATERIALS.includes(record.groupRoleMap.everyone[0]);
         },
 
         restrictions(record) {

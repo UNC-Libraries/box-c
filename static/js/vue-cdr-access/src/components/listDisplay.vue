@@ -20,7 +20,7 @@ Renders search results in a list view display format
                                 <span class="has-text-weight-bold">{{ $t('display.collection') }}:</span> <router-link class="metadata-link" :to="recordUrl(record.objectPath[2].pid, linkBrowseType)">{{ collectionInfo(record.objectPath) }}</router-link>
                             </div>
                             <div v-if="record.objectPath.length >= 3 && showCollection(record)" class="collection_id">
-                                <span class="has-text-weight-bold">{{ $t('display.collection_number') }}:</span> {{ record.objectPath[2].collectionId }}
+                                <span class="has-text-weight-bold">{{ $t('display.collection_id') }}:</span> {{ record.objectPath[2].collectionId }}
                             </div>
                             <div v-if="record.type === 'Work' || record.type === 'File'"><span class="has-text-weight-bold">{{ $t('display.file_type') }}:</span> {{ getFileType(record) }}</div>
                         </div>

@@ -69,12 +69,27 @@ public class ObjectPathFactoryIT extends BaseEmbeddedSolrTest {
     }
 
     @Test
+    public void testGetCollectionPathByPid() throws Exception {
+        ObjectPath path = objPathFactory.getPath(testCorpus.coll1Pid);
+
+        assertPathPids(path, testCorpus.rootPid, testCorpus.unitPid, testCorpus.coll1Pid);
+        assertEquals("/Collections/Unit/Collection 1", path.toNamePath());
+        var pathEntries = path.getEntries();
+        var collEntry = pathEntries.get(pathEntries.size() - 1);
+        assertEquals(TestCorpus.TEST_COLL_ID, collEntry.getCollectionId());
+    }
+
+    @Test
     public void testGetWorkPathByPid() throws Exception {
         ObjectPath path = objPathFactory.getPath(testCorpus.work1Pid);
 
         assertPathPids(path, testCorpus.rootPid, testCorpus.unitPid, testCorpus.coll1Pid,
                 testCorpus.folder1Pid, testCorpus.work1Pid);
         assertEquals("/Collections/Unit/Collection 1/Folder 1/Work 1", path.toNamePath());
+        var pathEntries = path.getEntries();
+        var workEntry = pathEntries.get(pathEntries.size() - 1);
+        assertNull(workEntry.getCollectionId());
+        assertEquals(TestCorpus.TEST_COLL_ID, pathEntries.get(2).getCollectionId());
     }
 
     @Test
@@ -111,6 +126,9 @@ public class ObjectPathFactoryIT extends BaseEmbeddedSolrTest {
 
         assertPathPids(path, testCorpus.rootPid, testCorpus.unitPid, testCorpus.coll1Pid);
         assertEquals("/Collections/Unit/Collection 1", path.toNamePath());
+        var pathEntries = path.getEntries();
+        var collEntry = pathEntries.get(pathEntries.size() - 1);
+        assertEquals(TestCorpus.TEST_COLL_ID, collEntry.getCollectionId());
     }
 
     private void assertPathPids(ObjectPath path, PID... pids) {
