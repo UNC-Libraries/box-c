@@ -8,10 +8,12 @@ import static edu.unc.lib.boxc.model.api.rdf.CdrAcl.embargoUntil;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.springframework.util.Assert.notNull;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -19,6 +21,7 @@ import org.apache.jena.datatypes.xsd.XSDDatatype;
 import org.apache.jena.datatypes.xsd.XSDDateTime;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
+import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.Statement;
 import org.apache.jena.rdf.model.StmtIterator;
@@ -152,14 +155,22 @@ public class PatronAccessAssignmentService {
         // Update a copy of the model for this object
         Resource resc = model.getResource(repoObj.getPid().getRepositoryPath());
 
-        // So nor proceed if there are no changes to role assignments
+        // Do not proceed if there are no changes to role assignments
         if (!hasRoleChanges(resc, assignments)) {
             return null;
         }
 
+        var oldRoles = new ArrayList<Property>();
+        var oldPrincipals = new ArrayList<String>();
         // Clear out all the existing staff roles
         for (UserRole role: UserRole.getPatronRoles()) {
-            resc.removeAll(role.getProperty());
+            var it = resc.listProperties(role.getProperty());
+            while (it.hasNext()) {
+                Statement stmt = it.next();
+                oldRoles.add(stmt.getPredicate());
+                oldPrincipals.add(stmt.getString());
+                it.remove();
+            }
         }
 
         // Add the new role assignments
@@ -172,7 +183,7 @@ public class PatronAccessAssignmentService {
         // Add PREMIS event indicating the role changes
         return premisLoggerFactory.createPremisLogger(repoObj).buildEvent(Premis.PolicyAssignment)
                 .addImplementorAgent(AgentPids.forPerson(agent))
-                .addEventDetail(createRoleEventDetails(assignments))
+                .addEventDetail(createRoleEventDetails(assignments, oldRoles, oldPrincipals))
                 .create();
     }
 
@@ -251,14 +262,27 @@ public class PatronAccessAssignmentService {
         }
     }
 
-    private String createRoleEventDetails(Collection<RoleAssignment> assignments) {
-        StringBuilder details = new StringBuilder("Patron roles for item set to:");
+    private String createRoleEventDetails(Collection<RoleAssignment> assignments,
+                                          List<Property> oldRoles, List<String> oldPrincipals) {
+        StringBuilder details = new StringBuilder("Patron roles for item changed from:");
         details.append(NEWLINE);
+        if (oldRoles.isEmpty()) {
+            details.append("No roles assigned").append(NEWLINE);
+        } else {
+            // Add the old assignments in alphabetic order in order to guarantee consistent messages
+            List<String> oldAssignments = new ArrayList<>();
+            for (int i = 0; i < oldRoles.size(); i++) {
+                oldAssignments.add(oldPrincipals.get(i) + ": " + oldRoles.get(i).getURI() + NEWLINE);
+            }
+            oldAssignments.stream().sorted().forEach(details::append);
+        }
+        details.append("To new roles:").append(NEWLINE);
         if (assignments == null || assignments.isEmpty()) {
             details.append("No roles assigned");
         } else {
             String roleDetails = assignments.stream()
                     .map(a -> a.getPrincipal() + ": " + a.getRole().getPropertyString())
+                    .sorted()
                     .collect(Collectors.joining(NEWLINE));
             details.append(roleDetails);
         }

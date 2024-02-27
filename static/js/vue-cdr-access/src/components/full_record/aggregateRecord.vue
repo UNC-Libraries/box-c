@@ -16,13 +16,9 @@
                                             <span class="has-text-weight-bold">{{ $t('full_record.date_added') }}: </span>
                                             {{ formatDate(recordData.briefObject.added) }}
                                         </li>
-                                        <li v-if="fieldExists(recordData.briefObject.parentCollectionName)">
+                                        <li>
                                             <span class="has-text-weight-bold">{{ $t('display.collection') }}: </span>
                                             <router-link class="parent-collection" :to="parentUrl">{{ recordData.briefObject.parentCollectionName }}</router-link>
-                                        </li>
-                                        <li v-if="fieldExists(recordData.briefObject.collectionId)">
-                                            <span class="has-text-weight-bold">{{ $t('full_record.collection_id') }}: </span>
-                                            {{ recordData.briefObject.collectionId }}
                                         </li>
                                         <li v-if="fieldExists(recordData.findingAidUrl)">
                                             <span class="has-text-weight-bold">{{ $t('full_record.finding_aid') }}: </span>

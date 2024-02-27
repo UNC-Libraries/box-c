@@ -91,8 +91,14 @@ describe('fileList.vue', () => {
     });
 
     it("sets 'badge' options for thumbnails", () => {
-        expect(wrapper.vm.showBadge({ status: ['Marked for Deletion', 'Public Access'] })).toEqual({ markDeleted: true, restricted: false });
-        expect(wrapper.vm.showBadge({ status: [''] })).toEqual({ markDeleted: false, restricted: true });
+        expect(wrapper.vm.showBadge({
+                status: ['Marked for Deletion'],
+                groupRoleMap: { authenticated: ['canViewOriginals'], everyone: ['canViewAccessCopies'] }
+            })).toEqual({ markDeleted: true, restricted: false });
+        expect(wrapper.vm.showBadge({
+            status: [''],
+            groupRoleMap: { authenticated: ['none'], everyone: ['none'] }
+        })).toEqual({ markDeleted: false, restricted: true });
     });
 
     it("sets download button html for image files with canViewOriginal permission", async () => {

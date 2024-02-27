@@ -272,8 +272,9 @@ public class EnhancementRouterIT {
     @Test
     public void testProcessFilterOutDescriptiveMDSolr() throws Exception {
         FileObject fileObj = repoObjectFactory.createFileObject(null);
+        var modsStream = Files.newInputStream(Path.of("src/test/resources/datastreams/simpleMods.xml"));
         BinaryObject descObj = updateDescriptionService.updateDescription(new UpdateDescriptionRequest(
-                mock(AgentPrincipalsImpl.class), fileObj.getPid(), new ByteArrayInputStream(FILE_CONTENT.getBytes())));
+                mock(AgentPrincipalsImpl.class), fileObj.getPid(), modsStream));
 
         NotifyBuilder notify = new NotifyBuilder(cdrEnhancements)
                 .whenCompleted(1)

@@ -263,8 +263,12 @@ public class PatronAccessAssignmentServiceIT {
 
         List<String> eventDetails = getEventDetails(target);
         assertEquals(1, eventDetails.size());
-        assertEventWithDetail(eventDetails, PUBLIC_PRINC + ": " + canViewMetadata.getPropertyString());
-        assertEventWithDetail(eventDetails, AUTHENTICATED_PRINC + ": " + canViewOriginals.getPropertyString());
+        assertEquals("Patron roles for item changed from:\n" +
+                "No roles assigned\n" +
+                "To new roles:\n" +
+                "authenticated: http://cdr.unc.edu/definitions/acl#canViewOriginals\n" +
+                "everyone: http://cdr.unc.edu/definitions/acl#canViewMetadata",
+                eventDetails.get(0));
 
         assertMessageSent(pid);
     }
@@ -375,7 +379,10 @@ public class PatronAccessAssignmentServiceIT {
 
         List<String> eventDetails = getEventDetails(target);
         assertEquals(1, eventDetails.size());
-        assertEventWithDetail(eventDetails, PUBLIC_PRINC + ": " + UserRole.none.getPropertyString());
+        assertEquals("Patron roles for item changed from:\n" +
+                "everyone: http://cdr.unc.edu/definitions/acl#canViewOriginals\n" +
+                "To new roles:\n" +
+                "everyone: http://cdr.unc.edu/definitions/acl#none", eventDetails.get(0));
 
         assertMessageSent(pid);
     }
@@ -403,8 +410,11 @@ public class PatronAccessAssignmentServiceIT {
 
         List<String> eventDetails = getEventDetails(target);
         assertEquals(1, eventDetails.size());
-        assertEventWithDetail(eventDetails, AUTHENTICATED_PRINC + ": " + canViewMetadata.getPropertyString());
-        assertFalse(eventDetails.get(0).contains(PUBLIC_PRINC));
+        assertEquals("Patron roles for item changed from:\n" +
+                "authenticated: http://cdr.unc.edu/definitions/acl#canViewOriginals\n" +
+                "everyone: http://cdr.unc.edu/definitions/acl#canViewOriginals\n" +
+                "To new roles:\n" +
+                "authenticated: http://cdr.unc.edu/definitions/acl#canViewMetadata", eventDetails.get(0));
 
         assertMessageSent(pid);
     }
@@ -428,7 +438,10 @@ public class PatronAccessAssignmentServiceIT {
 
         List<String> eventDetails = getEventDetails(target);
         assertEquals(1, eventDetails.size());
-        assertEventWithDetail(eventDetails, "No roles assigned");
+        assertEquals("Patron roles for item changed from:\n" +
+                "everyone: http://cdr.unc.edu/definitions/acl#canViewOriginals\n" +
+                "To new roles:\n" +
+                "No roles assigned", eventDetails.get(0));
 
         assertMessageSent(pid);
     }
@@ -628,7 +641,11 @@ public class PatronAccessAssignmentServiceIT {
 
         List<String> eventDetails = getEventDetails(target);
         assertEquals(1, eventDetails.size());
-        assertEventWithDetail(eventDetails, AUTHENTICATED_PRINC + ": " + canViewOriginals.getPropertyString());
+        assertEquals("Patron roles for item changed from:\n" +
+                "No roles assigned\n" +
+                "To new roles:\n" +
+                "authenticated: http://cdr.unc.edu/definitions/acl#canViewOriginals",
+                eventDetails.get(0));
 
         assertMessageSent(pid);
     }
@@ -786,6 +803,10 @@ public class PatronAccessAssignmentServiceIT {
         List<String> eventDetails = getEventDetails(target);
         assertEquals(1, eventDetails.size());
         assertEventWithDetail(eventDetails, AUTHENTICATED_PRINC + ": " + canViewMetadata.getPropertyString());
+        assertEquals("Patron roles for item changed from:\n" +
+                "No roles assigned\n" +
+                "To new roles:\n" +
+                "authenticated: http://cdr.unc.edu/definitions/acl#canViewMetadata", eventDetails.get(0));
 
         assertMessageSent(pid);
     }

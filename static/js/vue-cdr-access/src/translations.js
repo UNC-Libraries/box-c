@@ -29,7 +29,7 @@ export default {
         collecting_units: "Collecting Units",
         display: {
             collection: "Collection",
-            collection_number: "Collection Number",
+            collection_id: "Archival Collection ID",
             date_deposited: "Date Deposited",
             file_type: "File Type"
         },
@@ -40,7 +40,7 @@ export default {
         full_record: {
             additional_metadata: "View Additional Metadata",
             available_date: "Available after {available_date}",
-            collection_id: "Archival Collection ID",
+            collection: "Collection",
             contains: "Contains",
             copied_link: "Download URL, {text}, copied to clipboard",
             copied_link_failed: "Unable to copy download URL, {text}, to clipboard",

@@ -64,7 +64,7 @@ export default {
                 }
 
                 if (this.hasPermission(brief_object, 'viewOriginal')) {
-                    opt_html += `<a href="${this.imgDownloadLink(brief_object.id, 'full')}" class="dropdown-item">${this.$t('full_record.full_size')} JPG</a>`;
+                    opt_html += `<a href="${this.imgDownloadLink(brief_object.id, 'max')}" class="dropdown-item">${this.$t('full_record.full_size')} JPG</a>`;
                     opt_html += '<hr class="dropdown-divider">';
                     opt_html += `<a href="/indexablecontent/${brief_object.id}?dl=true" class="dropdown-item">${this.$t('full_record.original_file')}</a>`;
                 }

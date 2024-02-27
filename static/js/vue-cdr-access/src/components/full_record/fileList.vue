@@ -243,16 +243,7 @@ export default {
         },
 
         showBadge(brief_object) {
-            let markedForDeletion = false;
-            let restrictedAccess = true;
-
-            if (brief_object.status !== undefined) {
-                const restrictions = brief_object.status.join(',').toLowerCase();
-                markedForDeletion = /marked.*?deletion/.test(restrictions);
-                restrictedAccess = brief_object.status.indexOf("Public Access") === -1;
-            }
-
-            return { markDeleted: markedForDeletion, restricted: restrictedAccess };
+            return { markDeleted: this.markedForDeletion(brief_object), restricted: this.isRestricted(brief_object) };
         }
     }
 }

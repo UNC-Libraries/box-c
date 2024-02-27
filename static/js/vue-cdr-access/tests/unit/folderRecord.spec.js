@@ -2,7 +2,7 @@ import {mount, RouterLinkStub} from '@vue/test-utils'
 import { createRouter, createWebHistory } from 'vue-router';
 import {createTestingPinia} from '@pinia/testing';
 import { useAccessStore } from '@/stores/access';
-import collectionFolder from '@/components/full_record/collectionFolder.vue';
+import folderRecord from '@/components/full_record/folderRecord.vue';
 import displayWrapper from '@/components/displayWrapper.vue';
 import {createI18n} from 'vue-i18n';
 import translations from '@/translations';
@@ -10,17 +10,17 @@ import cloneDeep from 'lodash.clonedeep';
 
 const recordData = {
     briefObject: {
-        added: "2023-01-17T13:52:29.596Z",
+        added: "2022-06-15T16:42:42.925Z",
         counts: {
-            child: 4
+            child: 2
         },
-        created: 1041379200000,
-        title: "testCollection",
-        type: "Collection",
+        title: "Test Folder",
+        type: "Folder",
+        parentCollectionName: "Testing2",
         contentStatus: [
             "Described"
         ],
-        rollup: "fc77a9be-b49d-4f4e-b656-1644c9e964fc",
+        rollup: "64acbfae-929f-4820-96da-65fdc19f529d",
         objectPath: [
             {
                 pid: "collections",
@@ -28,56 +28,45 @@ const recordData = {
                 container: true
             },
             {
-                pid: "353ee09f-a4ed-461e-a436-18a1bee77b01",
-                name: "testAdminUnit",
+                pid: "bfe93126-849a-43a5-b9d9-391e18ffacc6",
+                name: "General Library Collections",
                 container: true
             },
             {
-                pid: "fc77a9be-b49d-4f4e-b656-1644c9e964fc",
-                name: "testCollection",
+                pid: "01cc3f06-7ba6-4270-b801-932f3b069610",
+                name: "Testing",
+                container: true
+            },
+            {
+                pid: "64acbfae-929f-4820-96da-65fdc19f529d",
+                name: "Test Folder",
                 container: true
             }
         ],
         datastream: [
-            "thumbnail_small|image/png|fc77a9be-b49d-4f4e-b656-1644c9e964fc.png|png|6768|||",
-            "thumbnail_large|image/png|fc77a9be-b49d-4f4e-b656-1644c9e964fc.png|png|23535|||",
-            "event_log|application/n-triples|event_log.nt|nt|8206|urn:sha1:54fe67d57b965651e813eea1777c7f0332253168||",
-            "md_descriptive_history|text/xml|||916|urn:sha1:efb4f2b6226d2932229f0e2b89128ec9a651de71||",
-            "md_descriptive|text/xml|md_descriptive.xml|xml|283|urn:sha1:97f7dbdb806f724f9301445820ff1e0c9691cd6b||"
+            "md_descriptive|text/xml|md_descriptive.xml|xml|191|urn:sha1:2f40cfb372dda202269cf227c88db88d3bf19b8c||",
+            "event_log|application/n-triples|event_log.nt|nt|1599|urn:sha1:a1e278822844556df972c43beded080af0341b56||"
         ],
+        parentCollectionId: "01cc3f06-7ba6-4270-b801-932f3b069610",
         ancestorPath: [
             {
                 id: "collections",
                 title: "collections"
             },
             {
-                id: "353ee09f-a4ed-461e-a436-18a1bee77b01",
-                title: "353ee09f-a4ed-461e-a436-18a1bee77b01"
+                id: "bfe93126-849a-43a5-b9d9-391e18ffacc6",
+                title: "bfe93126-849a-43a5-b9d9-391e18ffacc6"
+            },
+            {
+                id: "01cc3f06-7ba6-4270-b801-932f3b069610",
+                title: "01cc3f06-7ba6-4270-b801-932f3b069610"
             }
         ],
-        _version_: 1760531096449056800,
         permissions: [
-            "markForDeletionUnit",
-            "move",
-            "reindex",
-            "destroy",
-            "editResourceType",
-            "destroyUnit",
-            "bulkUpdateDescription",
-            "changePatronAccess",
-            "runEnhancements",
-            "createAdminUnit",
-            "ingest",
-            "orderMembers",
-            "viewOriginal",
-            "viewReducedResImages",
             "viewAccessCopies",
+            "viewOriginal",
             "viewMetadata",
-            "viewHidden",
-            "assignStaffRoles",
-            "markForDeletion",
-            "editDescription",
-            "createCollection"
+            "viewReducedResImages"
         ],
         groupRoleMap: {
             authenticated: [
@@ -87,16 +76,14 @@ const recordData = {
                 "canViewMetadata"
             ]
         },
-        id: "fc77a9be-b49d-4f4e-b656-1644c9e964fc",
-        updated: "2023-02-21T18:37:17.705Z",
-        status: [
-            "Patron Settings"
-        ],
-        timestamp: 1678973288810
+        id: "64acbfae-929f-4820-96da-65fdc19f529d",
+        updated: "2023-06-26T12:37:49.701Z",
+        status: [],
+        timestamp: 1687783094875
     },
     markedForDeletion: false,
-    resourceType: "Collection"
-};
+    resourceType: "Folder"
+}
 
 let wrapper, router, store;
 
@@ -119,14 +106,11 @@ describe('collectionFolder.vue', () => {
             ]
         });
 
-        wrapper = mount(collectionFolder, {
+        wrapper = mount(folderRecord, {
             global: {
                 plugins: [i18n, router, createTestingPinia({
                     stubActions: false
-                })],
-                stubs: {
-                    RouterLink: RouterLinkStub
-                }
+                })]
             },
             props: {
                 recordData: recordData
@@ -141,12 +125,12 @@ describe('collectionFolder.vue', () => {
     });
 
     it('displays a header', () => {
-        expect(wrapper.find('h2').text()).toBe('testCollection 4 items');
+        expect(wrapper.find('h2').text()).toBe('Test Folder 2 items');
     });
 
     // First field is date added
     it('displays fields, if present', () => {
-        expect(wrapper.find('p').text()).toBe('Date Added:  2023-01-17');
+        expect(wrapper.find('p').text()).toBe('Date Added:  2022-06-15');
     });
 
     it('displays restricted access info if items are restricted', () => {
@@ -163,12 +147,22 @@ describe('collectionFolder.vue', () => {
             authenticated: [
                 'canViewMetadata'
             ],
-                everyone: [
+            everyone: [
                 'canViewMetadata'
             ]
         };
         await wrapper.setProps({ recordData: updatedRecordData });
         expect(wrapper.find('.login-link').exists()).toBe(false);
+    });
+
+    it('displays a collection name with link, if present', async () => {
+        let updatedRecordData = cloneDeep(recordData);
+        updatedRecordData.briefObject.parentCollectionId = '7b7ff786-6772-4888-b020-e71261b926a6';
+        updatedRecordData.briefObject.parentCollectionName = 'testCollection';
+        await wrapper.setProps({ recordData: updatedRecordData });
+        let collection_name_link = wrapper.find('.parent_collection a')
+        expect(collection_name_link.text()).toEqual('testCollection')
+        expect(collection_name_link.attributes('href')).toEqual('/record/7b7ff786-6772-4888-b020-e71261b926a6')
     });
 
     it('displays a contact link if items are restricted', () => {
