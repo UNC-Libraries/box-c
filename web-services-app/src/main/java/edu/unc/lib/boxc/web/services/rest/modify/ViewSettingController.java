@@ -3,6 +3,7 @@ package edu.unc.lib.boxc.web.services.rest.modify;
 import com.apicatalog.jsonld.StringUtils;
 import edu.unc.lib.boxc.auth.api.Permission;
 import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
+import edu.unc.lib.boxc.auth.api.models.AgentPrincipals;
 import edu.unc.lib.boxc.auth.api.services.AccessControlService;
 import edu.unc.lib.boxc.model.api.exceptions.InvalidOperationForObjectType;
 import edu.unc.lib.boxc.model.api.ids.PID;
@@ -89,7 +90,8 @@ public class ViewSettingController {
         var viewBehavior = caseInsensitiveValueOf(allParams.get("behavior"));
 
         var ids = allParams.get("targets").split(",");
-        AccessGroupSet principals = getAgentPrincipals().getPrincipals();
+        var agent = getAgentPrincipals();
+        AccessGroupSet principals = agent.getPrincipals();
         for (String id : ids) {
             var pid = PIDs.get(id);
             // check permissions for object first
@@ -106,7 +108,7 @@ public class ViewSettingController {
 
         // now build and send requests
         for (String id : ids) {
-            var request = buildRequest(id, viewBehavior);
+            var request = buildRequest(id, viewBehavior, agent);
             try {
                 viewSettingRequestSender.sendToQueue(request);
             } catch (IOException e) {
@@ -127,10 +129,13 @@ public class ViewSettingController {
         return propValue == null ? null : propValue.getString();
     }
 
-    private ViewSettingRequest buildRequest(String id, ViewSettingRequest.ViewBehavior viewBehavior) {
+    private ViewSettingRequest buildRequest(String id,
+                                            ViewSettingRequest.ViewBehavior viewBehavior,
+                                            AgentPrincipals agent) {
         var request = new ViewSettingRequest();
         request.setObjectPidString(id);
         request.setViewBehavior(viewBehavior);
+        request.setAgent(agent);
         return request;
     }
 
