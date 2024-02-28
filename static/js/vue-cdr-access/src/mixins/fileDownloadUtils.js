@@ -18,9 +18,41 @@ export default {
             return original_file;
         },
 
+        getJp2FileDimensions(brief_object) {
+            const jp2_file =  brief_object.datastream.find(file => file.startsWith('jp2'));
+            if (jp2_file === undefined) {
+                return undefined;
+            }
+
+            // Check for jp2 dimensions
+            const jp2_dimensions = this.getImageDimensions(jp2_file);
+            if (jp2_dimensions === '') {
+                return undefined;
+            }
+
+            return this.getEdgeSizes(jp2_dimensions);
+        },
+
+        getImageDimensions(image_metadata) {
+            const image_dimensions = image_metadata.split('|')
+            return image_dimensions[image_dimensions.length - 1];
+        },
+
+        getEdgeSizes(image) {
+            return image.split('x').map(x => parseInt(x));
+        },
+
         largestImageEdge(brief_object) {
-            const file_info = this.getOriginalFile(brief_object).split('|');
-            const edge_sizes = file_info[file_info.length - 1].split('x').map(x => parseInt(x));
+            let edge_sizes;
+            const jp2_info = this.getJp2FileDimensions(brief_object);
+
+            if (jp2_info !== undefined) {
+                edge_sizes = jp2_info;
+            } else {
+                const file_info = this.getImageDimensions(this.getOriginalFile(brief_object));
+                edge_sizes = this.getEdgeSizes(file_info);
+            }
+
             return edge_sizes[0] > edge_sizes[1] ? edge_sizes[0] : edge_sizes[1];
         },
 

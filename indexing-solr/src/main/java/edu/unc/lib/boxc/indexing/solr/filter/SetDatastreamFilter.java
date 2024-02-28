@@ -1,17 +1,23 @@
 package edu.unc.lib.boxc.indexing.solr.filter;
 
+import static edu.unc.lib.boxc.model.api.DatastreamType.JP2_ACCESS_COPY;
 import static edu.unc.lib.boxc.model.api.DatastreamType.ORIGINAL_FILE;
 import static edu.unc.lib.boxc.model.api.DatastreamType.TECHNICAL_METADATA;
 import static edu.unc.lib.boxc.model.api.xml.JDOMNamespaceUtil.FITS_NS;
 import static edu.unc.lib.boxc.model.api.xml.JDOMNamespaceUtil.PREMIS_V3_NS;
 
+
+import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import de.digitalcollections.openjpeg.OpenJpeg;
+import de.digitalcollections.openjpeg.imageio.OpenJp2ImageReaderSpi;
 import edu.unc.lib.boxc.indexing.solr.utils.TechnicalMetadataService;
 import edu.unc.lib.boxc.model.api.exceptions.FedoraException;
 import edu.unc.lib.boxc.model.api.exceptions.RepositoryException;
@@ -36,6 +42,9 @@ import edu.unc.lib.boxc.model.fcrepo.services.DerivativeService;
 import edu.unc.lib.boxc.search.api.models.Datastream;
 import edu.unc.lib.boxc.search.solr.models.DatastreamImpl;
 import edu.unc.lib.boxc.search.solr.models.IndexDocumentBean;
+
+import javax.imageio.ImageIO;
+import javax.imageio.spi.IIORegistry;
 
 /**
  * Extracts datastreams from an object and sets related properties concerning the default datastream for the object.
@@ -153,6 +162,7 @@ public class SetDatastreamFilter implements IndexDocumentFilter {
      * If the datastreams are being recorded on an object  other than their owning
      * file object, the pid of the owning file object is recorded
      *
+     * @param dsList
      * @param binList list of binaries
      * @param ownedByOtherObject
      */
@@ -199,7 +209,7 @@ public class SetDatastreamFilter implements IndexDocumentFilter {
     }
 
     /**
-     * Returns the sum of filesizes for all datastreams which do no belong to
+     * Returns the sum of filesizes for all datastreams which do not belong to
      * other objects
      *
      * @param datastreams
@@ -233,8 +243,22 @@ public class SetDatastreamFilter implements IndexDocumentFilter {
                 return;
             }
 
+            String extentValue = null;
+            if (type.equals(JP2_ACCESS_COPY)) {
+                try {
+                   // ImageReader reader = ImageIO.getImageReaders(new File(deriv.getFile().getAbsolutePath())).next();
+                    IIORegistry registry = IIORegistry.getDefaultInstance();
+                    registry.registerServiceProvider(new OpenJp2ImageReaderSpi());
+                    var down = new OpenJpeg();
+                    BufferedImage jp2AccessCopy = ImageIO.read(new File(deriv.getFile().getAbsolutePath()));
+                    extentValue = jp2AccessCopy.getHeight() + "x" + jp2AccessCopy.getWidth();
+                } catch (IOException|NullPointerException e) {
+                    log.warn(e.getMessage());
+                }
+            }
+
             String owner = (ownedByOtherObject ? pid.getId() : null);
-            dsList.add(createDatastream(deriv, owner));
+            dsList.add(createDatastream(deriv, owner, extentValue));
         });
     }
 
@@ -265,7 +289,7 @@ public class SetDatastreamFilter implements IndexDocumentFilter {
         return datastreams;
     }
 
-    private DatastreamImpl createDatastream(DerivativeService.Derivative derivative, String owner) {
+    private DatastreamImpl createDatastream(DerivativeService.Derivative derivative, String owner, String extent) {
         DatastreamType type = derivative.getType();
         String name = type.getId();
         String mimetype = type.getMimetype();
@@ -273,7 +297,7 @@ public class SetDatastreamFilter implements IndexDocumentFilter {
         File file = derivative.getFile();
         Long filesize = file.length();
         String filename = file.getName();
-        return new DatastreamImpl(owner, name, filesize, mimetype, filename, extension, null, null);
+        return new DatastreamImpl(owner, name, filesize, mimetype, filename, extension, null, extent);
     }
 
     /**
