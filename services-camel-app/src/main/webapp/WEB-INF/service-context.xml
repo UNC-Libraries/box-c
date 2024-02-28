@@ -506,7 +506,7 @@
         <property name="repositoryObjectFactory" ref="repositoryObjectFactory" />
     </bean>
 
-    <bean id="viewBehaviorRequestProcessor" class="edu.unc.lib.boxc.services.camel.viewSettings.ViewSettingRequestProcessor">
+    <bean id="viewSettingRequestProcessor" class="edu.unc.lib.boxc.services.camel.viewSettings.ViewSettingRequestProcessor">
         <property name="accessControlService" ref="aclService" />
         <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
         <property name="repositoryObjectFactory" ref="repositoryObjectFactory" />
