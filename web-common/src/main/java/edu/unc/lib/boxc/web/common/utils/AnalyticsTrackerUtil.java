@@ -7,7 +7,6 @@ import java.util.UUID;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 
-import com.ctc.wstx.util.StringUtil;
 import org.apache.commons.lang.StringUtils;
 import org.matomo.java.tracking.MatomoTracker;
 import org.matomo.java.tracking.TrackerConfiguration;
@@ -168,7 +167,7 @@ public class AnalyticsTrackerUtil {
             }
 
             // if it cannot be found in the cookie, generate a random UUID
-            if (uid == null) {
+            if (StringUtils.isBlank(uid)) {
                 uid = generateUserId();
             }
 
