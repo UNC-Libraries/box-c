@@ -1,25 +1,23 @@
 package edu.unc.lib.boxc.web.common.utils;
 
-import java.io.UnsupportedEncodingException;
-import java.net.URI;
-import java.util.UUID;
-
-import javax.servlet.http.Cookie;
-import javax.servlet.http.HttpServletRequest;
-
-import org.apache.commons.lang.StringUtils;
-import org.matomo.java.tracking.MatomoTracker;
-import org.matomo.java.tracking.TrackerConfiguration;
-import org.matomo.java.tracking.parameters.VisitorId;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.matomo.java.tracking.MatomoRequest;
-
 import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.search.api.models.ContentObjectRecord;
 import edu.unc.lib.boxc.search.api.requests.SimpleIdRequest;
 import edu.unc.lib.boxc.search.solr.services.SolrSearchService;
+import org.apache.commons.lang.StringUtils;
+import org.matomo.java.tracking.MatomoRequest;
+import org.matomo.java.tracking.MatomoTracker;
+import org.matomo.java.tracking.TrackerConfiguration;
+import org.matomo.java.tracking.parameters.VisitorId;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletRequest;
+import java.io.UnsupportedEncodingException;
+import java.net.URI;
+import java.util.Random;
 
 /**
  * Utility for performing asynchronous analytics tracking events when unable to use the javascript api
@@ -178,7 +176,13 @@ public class AnalyticsTrackerUtil {
         }
 
         private String generateUserId() {
-            return UUID.randomUUID().toString();
+            Random randomService = new Random();
+            StringBuilder sb = new StringBuilder();
+            while (sb.length() < 16) {
+                sb.append(Integer.toHexString(randomService.nextInt()));
+            }
+            sb.setLength(16);
+            return sb.toString();
         }
         private boolean hasUnknownUip(String uip) {
             return StringUtils.isBlank(uip) || "unknown".equalsIgnoreCase(uip);
