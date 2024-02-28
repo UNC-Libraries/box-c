@@ -164,7 +164,7 @@ public class AnalyticsTrackerUtil {
                 }
             }
 
-            // if it cannot be found in the cookie, generate a random UUID
+            // if it cannot be found in the cookie, generate a random 16 character hex user ID
             if (StringUtils.isBlank(uid)) {
                 uid = generateUserId();
             }
