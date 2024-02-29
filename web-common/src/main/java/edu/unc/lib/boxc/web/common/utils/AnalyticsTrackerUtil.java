@@ -126,6 +126,7 @@ public class AnalyticsTrackerUtil {
         public String userAgent;
         // matomo user id
         public String uid;
+        private Random randomService = new Random();
 
         public AnalyticsUserData(HttpServletRequest request) {
 
@@ -176,7 +177,6 @@ public class AnalyticsTrackerUtil {
         }
 
         private String generateUserId() {
-            Random randomService = new Random();
             StringBuilder sb = new StringBuilder();
             while (sb.length() < 16) {
                 sb.append(Integer.toHexString(randomService.nextInt()));
