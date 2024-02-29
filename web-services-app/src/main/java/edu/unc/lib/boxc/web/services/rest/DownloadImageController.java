@@ -8,6 +8,7 @@ import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.boxc.search.api.requests.SimpleIdRequest;
 import edu.unc.lib.boxc.web.common.services.SolrQueryLayerService;
+import edu.unc.lib.boxc.web.common.utils.AnalyticsTrackerUtil;
 import edu.unc.lib.boxc.web.services.processing.DownloadImageService;
 import edu.unc.lib.boxc.web.services.utils.ImageServerUtil;
 import org.slf4j.Logger;
@@ -20,6 +21,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 
+import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.util.Objects;
 
@@ -38,10 +40,13 @@ public class DownloadImageController {
     private DownloadImageService downloadImageService;
     @Autowired
     private SolrQueryLayerService solrSearchService;
+    @Autowired
+    private AnalyticsTrackerUtil analyticsTracker;
 
     @RequestMapping("/downloadImage/{pid}/{size}")
     public ResponseEntity<InputStreamResource> getImage(@PathVariable("pid") String pidString,
-                                                        @PathVariable("size") String size) {
+                                                        @PathVariable("size") String size,
+                                                        HttpServletRequest request) {
         PID pid = PIDs.get(pidString);
 
         AccessGroupSet principals = getAgentPrincipals().getPrincipals();
@@ -57,6 +62,7 @@ public class DownloadImageController {
         }
 
         try {
+            analyticsTracker.trackEvent(request, "download access copy", pid, principals);
             return downloadImageService.streamImage(contentObjectRecord, validatedSize);
         } catch (IOException e) {
             log.error("Error streaming access copy image for {} at size {}", pidString, validatedSize, e);
