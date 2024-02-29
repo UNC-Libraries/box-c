@@ -33,6 +33,10 @@
         <constructor-arg value="edu.unc.lib.boxc.search.solr.config.SearchSettings" />
     </bean>
 
+    <bean id="analyticsTrackerUtil" class="org.mockito.Mockito" factory-method="mock">
+        <constructor-arg value="edu.unc.lib.boxc.web.common.utils.AnalyticsTrackerUtil" />
+    </bean>
+
     <bean id="solrSettings" class="org.mockito.Mockito" factory-method="mock">
         <constructor-arg value="edu.unc.lib.boxc.search.solr.config.SolrSettings" />
     </bean>
