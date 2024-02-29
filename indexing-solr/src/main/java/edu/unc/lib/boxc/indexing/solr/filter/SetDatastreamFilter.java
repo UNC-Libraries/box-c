@@ -16,7 +16,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import de.digitalcollections.openjpeg.OpenJpeg;
 import de.digitalcollections.openjpeg.imageio.OpenJp2ImageReaderSpi;
 import edu.unc.lib.boxc.indexing.solr.utils.TechnicalMetadataService;
 import edu.unc.lib.boxc.model.api.exceptions.FedoraException;
@@ -246,10 +245,8 @@ public class SetDatastreamFilter implements IndexDocumentFilter {
             String extentValue = null;
             if (type.equals(JP2_ACCESS_COPY)) {
                 try {
-                   // ImageReader reader = ImageIO.getImageReaders(new File(deriv.getFile().getAbsolutePath())).next();
                     IIORegistry registry = IIORegistry.getDefaultInstance();
                     registry.registerServiceProvider(new OpenJp2ImageReaderSpi());
-                    var down = new OpenJpeg();
                     BufferedImage jp2AccessCopy = ImageIO.read(new File(deriv.getFile().getAbsolutePath()));
                     extentValue = jp2AccessCopy.getHeight() + "x" + jp2AccessCopy.getWidth();
                 } catch (IOException|NullPointerException e) {
