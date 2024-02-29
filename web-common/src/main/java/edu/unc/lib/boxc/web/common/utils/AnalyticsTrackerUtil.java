@@ -1,23 +1,23 @@
 package edu.unc.lib.boxc.web.common.utils;
 
-import java.io.UnsupportedEncodingException;
-import java.net.URI;
-
-import javax.servlet.http.Cookie;
-import javax.servlet.http.HttpServletRequest;
-
-import org.matomo.java.tracking.MatomoTracker;
-import org.matomo.java.tracking.TrackerConfiguration;
-import org.matomo.java.tracking.parameters.VisitorId;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.matomo.java.tracking.MatomoRequest;
-
 import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.search.api.models.ContentObjectRecord;
 import edu.unc.lib.boxc.search.api.requests.SimpleIdRequest;
 import edu.unc.lib.boxc.search.solr.services.SolrSearchService;
+import org.apache.commons.lang.StringUtils;
+import org.matomo.java.tracking.MatomoRequest;
+import org.matomo.java.tracking.MatomoTracker;
+import org.matomo.java.tracking.TrackerConfiguration;
+import org.matomo.java.tracking.parameters.VisitorId;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletRequest;
+import java.io.UnsupportedEncodingException;
+import java.net.URI;
+import java.util.Random;
 
 /**
  * Utility for performing asynchronous analytics tracking events when unable to use the javascript api
@@ -123,29 +123,28 @@ public class AnalyticsTrackerUtil {
     public static class AnalyticsUserData {
         // ip of client
         public String uip;
-        // client id
-        public String cid;
         public String userAgent;
         // matomo user id
         public String uid;
+        private Random randomService = new Random();
 
         public AnalyticsUserData(HttpServletRequest request) {
 
             // Get the user's IP address, either from proxy headers or request
             uip = request.getHeader("X-Forwarded-For");
-            if (uip == null || uip.length() == 0 || "unknown".equalsIgnoreCase(uip)) {
+            if (hasUnknownUip(uip)) {
                 uip = request.getHeader("Proxy-Client-IP");
             }
-            if (uip == null || uip.length() == 0 || "unknown".equalsIgnoreCase(uip)) {
+            if (hasUnknownUip(uip)) {
                 uip = request.getHeader("WL-Proxy-Client-IP");
             }
-            if (uip == null || uip.length() == 0 || "unknown".equalsIgnoreCase(uip)) {
+            if (hasUnknownUip(uip)) {
                 uip = request.getHeader("HTTP_CLIENT_IP");
             }
-            if (uip == null || uip.length() == 0 || "unknown".equalsIgnoreCase(uip)) {
+            if (hasUnknownUip(uip)) {
                 uip = request.getHeader("HTTP_X_FORWARDED_FOR");
             }
-            if (uip == null || uip.length() == 0 || "unknown".equalsIgnoreCase(uip)) {
+            if (hasUnknownUip(uip)) {
                 uip = request.getRemoteAddr();
             }
 
@@ -153,17 +152,12 @@ public class AnalyticsTrackerUtil {
             Cookie[] cookies = request.getCookies();
             if (cookies != null) {
                 for (Cookie cookie : cookies) {
-                    // if both cookies have been found
-                    if (cid != null && uid != null) {
+                    // if cookie has been found
+                    if (uid != null) {
                         break;
                     }
                     var cookieName = cookie.getName();
-                    if ("_ga".equals(cookieName)) {
-                        String[] parts = cookie.getValue().split("\\.");
-                        if (parts.length == 4) {
-                            cid = parts[2] + "." + parts[3];
-                        }
-                    } else if (cookieName.startsWith("_pk_id")) {
+                    if (cookieName.startsWith("_pk_id")) {
                         // matomo cookie
                         String[] parts = cookie.getValue().split("\\.");
                         uid = parts[0];
@@ -171,14 +165,27 @@ public class AnalyticsTrackerUtil {
                 }
             }
 
-            if (cid == null) {
-                cid = DEFAULT_CID;
+            // if it cannot be found in the cookie, generate a random 16 character hex user ID
+            if (StringUtils.isBlank(uid)) {
+                uid = generateUserId();
             }
 
             userAgent = request.getHeader("User-Agent");
             if (userAgent == null) {
                 userAgent = "";
             }
+        }
+
+        private String generateUserId() {
+            StringBuilder sb = new StringBuilder();
+            while (sb.length() < 16) {
+                sb.append(Integer.toHexString(randomService.nextInt()));
+            }
+            sb.setLength(16);
+            return sb.toString();
+        }
+        private boolean hasUnknownUip(String uip) {
+            return StringUtils.isBlank(uip) || "unknown".equalsIgnoreCase(uip);
         }
     }
 }
