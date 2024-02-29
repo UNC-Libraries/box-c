@@ -36,7 +36,7 @@ define('UpdateViewSettingsBatchAction', [ 'jquery', 'AbstractBatchAction', "tpl!
             let pids = $('#view_settings_targets', self.$form).val();
 
             $.ajax({
-                url: `/services/api/edit/view_settings?targets=${encodeURIComponent(pids)}&view_setting=${encodeURIComponent(newViewSetting)}`,
+                url: `/services/api/edit/viewSettings?targets=${encodeURIComponent(pids)}&behavior=${encodeURIComponent(newViewSetting)}`,
                 type: 'PUT',
                 contentType: 'application/json; charset=utf-8',
                 dataType: 'json'

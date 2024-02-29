@@ -18,7 +18,7 @@ define('ViewSettingsForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateCh
         ViewSettingsForm.prototype.preprocessForm = function() {
             let newViewSetting = $('#view_settings_change', this.$form).val();
             let pids = $('#view_settings_targets', this.$form).val();
-            this.action_url = `/services/api/edit/view_settings?targets=${encodeURIComponent(pids)}&view_setting=${encodeURIComponent(newViewSetting)}`;
+            this.action_url = `/services/api/edit/viewSettings?targets=${encodeURIComponent(pids)}&behavior=${encodeURIComponent(newViewSetting)}`;
         };
 
         ViewSettingsForm.prototype.validationErrors = function(resultObject) {

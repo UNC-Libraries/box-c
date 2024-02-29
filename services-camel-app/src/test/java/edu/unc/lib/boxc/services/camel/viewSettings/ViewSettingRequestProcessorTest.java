@@ -82,7 +82,8 @@ public class ViewSettingRequestProcessorTest {
         processor.process(exchange);
 
         verify(repositoryObjectFactory).createExclusiveRelationship(
-                eq(workObject), eq(CdrView.viewBehavior), eq(ViewSettingRequest.ViewBehavior.PAGED));
+                eq(workObject), eq(CdrView.viewBehavior),
+                eq(ViewSettingRequest.ViewBehavior.PAGED.getString()));
     }
 
     @Test

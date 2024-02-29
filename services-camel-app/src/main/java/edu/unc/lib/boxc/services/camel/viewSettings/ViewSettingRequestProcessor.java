@@ -38,7 +38,8 @@ public class ViewSettingRequestProcessor implements Processor {
             if (behavior == null) {
                 repositoryObjectFactory.deleteProperty(repositoryObject, CdrView.viewBehavior);
             } else {
-                repositoryObjectFactory.createExclusiveRelationship(repositoryObject, CdrView.viewBehavior, behavior);
+                repositoryObjectFactory.createExclusiveRelationship(repositoryObject,
+                        CdrView.viewBehavior, behavior.getString());
             }
         }
         // TODO BXC-4428 send message to update solr
