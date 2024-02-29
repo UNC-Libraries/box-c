@@ -101,7 +101,38 @@ describe('fileList.vue', () => {
         })).toEqual({ markDeleted: false, restricted: true });
     });
 
-    it("sets download button html for image files with canViewOriginal permission", async () => {
+    it("sets download button html for image files with canViewOriginal permission from JP2 dimensions", async () => {
+        let updatedBriefObj = cloneDeep(briefObject);
+        updatedBriefObj.permissions = [
+            "viewAccessCopies",
+            "viewMetadata",
+            "viewReducedResImages",
+            "viewOriginal"
+        ];
+        updatedBriefObj.datastream = [
+            "original_file|image/jpeg|beez||694904|urn:sha1:0d48dadb5d61ae0d41b4998280a3c39577a2f94a||2048x1536",
+            "jp2|image/jp2|4db695c0-5fd5-4abf-9248-2e115d43f57d.jp2|jp2|2189901|||1024x800"
+        ];
+        updatedBriefObj.groupRoleMap = {
+            authenticated: ["canViewOriginals"],
+            everyone: ["canViewOriginals"]
+        };
+
+        await  wrapper.setProps({
+            viewOriginal: true
+        });
+
+        const download = wrapper.vm.downloadButtonHtml(updatedBriefObj);
+        // Download button
+        expect(download).toEqual(expect.stringContaining('button id="dcr-download-4db695c0-5fd5-4abf-9248-2e115d43f57d"'));
+        // Options
+        expect(download).toEqual(expect.stringContaining('Small JPG (800px)'));
+        expect(download).toEqual(expect.not.stringContaining('Medium JPG (1600px)'));
+        expect(download).toEqual(expect.stringContaining('Full Size JPG'));
+        expect(download).toEqual(expect.stringContaining('Original File'));
+    });
+
+    it("sets download button html for image files with canViewOriginal permission from Original file if JP2 has no listed dimensions", async () => {
         let updatedBriefObj = cloneDeep(briefObject);
         updatedBriefObj.permissions = [
             "viewAccessCopies",

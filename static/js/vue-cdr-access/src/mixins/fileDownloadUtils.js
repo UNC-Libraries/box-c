@@ -30,28 +30,20 @@ export default {
                 return undefined;
             }
 
-            return this.getEdgeSizes(jp2_dimensions);
+            return jp2_dimensions;
         },
 
         getImageDimensions(image_metadata) {
-            const image_dimensions = image_metadata.split('|')
+            const image_dimensions = image_metadata.split('|');
             return image_dimensions[image_dimensions.length - 1];
         },
 
-        getEdgeSizes(image) {
-            return image.split('x').map(x => parseInt(x));
-        },
-
         largestImageEdge(brief_object) {
-            let edge_sizes;
-            const jp2_info = this.getJp2FileDimensions(brief_object);
-
-            if (jp2_info !== undefined) {
-                edge_sizes = jp2_info;
-            } else {
-                const file_info = this.getImageDimensions(this.getOriginalFile(brief_object));
-                edge_sizes = this.getEdgeSizes(file_info);
+            let dimensions_info = this.getJp2FileDimensions(brief_object);
+            if (dimensions_info === undefined) {
+                dimensions_info = this.getImageDimensions(this.getOriginalFile(brief_object));
             }
+            const edge_sizes = dimensions_info.split('x').map(x => parseInt(x));
 
             return edge_sizes[0] > edge_sizes[1] ? edge_sizes[0] : edge_sizes[1];
         },
