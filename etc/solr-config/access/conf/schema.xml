@@ -221,6 +221,8 @@
     <field name="timestamp" type="date" indexed="true" stored="true" default="NOW" multiValued="false"/>
     <!-- Descriptive Fields -->
     <field name="title" type="sortableText" indexed="true" stored="true" required="true"/>
+    <!-- View behavior for UV -->
+    <field name="viewBehavior" type="string" indexed="true" stored="true" />
 
     <!-- Index fields -->
     <!-- Specific field indexes -->
