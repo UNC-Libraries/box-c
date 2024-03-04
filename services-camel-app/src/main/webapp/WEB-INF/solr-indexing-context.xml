@@ -33,6 +33,7 @@
                 <ref bean="setObjectTypeFilter" />
                 <ref bean="setMemberOrderFilter" />
                 <ref bean="setCollectionSupplementalInformationFilter" />
+                <ref bean="setViewBehaviorFilter" />
             </list>
         </property>
     </bean>
@@ -92,6 +93,7 @@
                 <ref bean="setRecordDatesFilter" />
                 <ref bean="setContentTypeFilter" />
                 <ref bean="setDatastreamFilter" />
+                <ref bean="setViewBehaviorFilter" />
             </list>
         </property>
     </bean>
@@ -282,6 +284,9 @@
 
     <bean id="setMemberOrderFilter" class="edu.unc.lib.boxc.indexing.solr.filter.SetMemberOrderFilter">
         <property name="memberOrderService" ref="memberOrderService" />
+    </bean>
+
+    <bean id="setViewBehaviorFilter" class="edu.unc.lib.boxc.indexing.solr.filter.SetViewBehaviorFilter">
     </bean>
 
     <!-- Ingest Actions -->
