@@ -1,35 +1,12 @@
 package edu.unc.lib.boxc.indexing.solr.filter;
 
-import static edu.unc.lib.boxc.model.api.DatastreamType.JP2_ACCESS_COPY;
-import static edu.unc.lib.boxc.model.api.DatastreamType.ORIGINAL_FILE;
-import static edu.unc.lib.boxc.model.api.DatastreamType.TECHNICAL_METADATA;
-import static edu.unc.lib.boxc.model.api.xml.JDOMNamespaceUtil.FITS_NS;
-import static edu.unc.lib.boxc.model.api.xml.JDOMNamespaceUtil.PREMIS_V3_NS;
-
-
-import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
-
-import de.digitalcollections.openjpeg.imageio.OpenJp2ImageReaderSpi;
-import edu.unc.lib.boxc.indexing.solr.utils.TechnicalMetadataService;
-import edu.unc.lib.boxc.model.api.exceptions.FedoraException;
-import edu.unc.lib.boxc.model.api.exceptions.RepositoryException;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.jena.rdf.model.Resource;
-import org.apache.jena.rdf.model.Statement;
-import org.jdom2.Element;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import edu.unc.lib.boxc.indexing.solr.exception.IndexingException;
 import edu.unc.lib.boxc.indexing.solr.indexing.DocumentIndexingPackage;
+import edu.unc.lib.boxc.indexing.solr.utils.Jp2InfoService;
+import edu.unc.lib.boxc.indexing.solr.utils.TechnicalMetadataService;
 import edu.unc.lib.boxc.model.api.DatastreamType;
+import edu.unc.lib.boxc.model.api.exceptions.FedoraException;
+import edu.unc.lib.boxc.model.api.exceptions.RepositoryException;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.objects.BinaryObject;
 import edu.unc.lib.boxc.model.api.objects.ContentObject;
@@ -41,9 +18,25 @@ import edu.unc.lib.boxc.model.fcrepo.services.DerivativeService;
 import edu.unc.lib.boxc.search.api.models.Datastream;
 import edu.unc.lib.boxc.search.solr.models.DatastreamImpl;
 import edu.unc.lib.boxc.search.solr.models.IndexDocumentBean;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.rdf.model.Statement;
+import org.jdom2.Element;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import javax.imageio.ImageIO;
-import javax.imageio.spi.IIORegistry;
+import java.io.File;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
+import static edu.unc.lib.boxc.model.api.DatastreamType.JP2_ACCESS_COPY;
+import static edu.unc.lib.boxc.model.api.DatastreamType.ORIGINAL_FILE;
+import static edu.unc.lib.boxc.model.api.DatastreamType.TECHNICAL_METADATA;
+import static edu.unc.lib.boxc.model.api.xml.JDOMNamespaceUtil.FITS_NS;
+import static edu.unc.lib.boxc.model.api.xml.JDOMNamespaceUtil.PREMIS_V3_NS;
 
 /**
  * Extracts datastreams from an object and sets related properties concerning the default datastream for the object.
@@ -58,6 +51,7 @@ public class SetDatastreamFilter implements IndexDocumentFilter {
 
     private DerivativeService derivativeService;
     private TechnicalMetadataService technicalMetadataService;
+    private Jp2InfoService jp2InfoService = new Jp2InfoService();
     private static final List<DatastreamType> THUMBNAIL_DS_TYPES = Arrays.asList(DatastreamType.THUMBNAIL_SMALL, DatastreamType.THUMBNAIL_LARGE);
 
     @Override
@@ -244,14 +238,8 @@ public class SetDatastreamFilter implements IndexDocumentFilter {
 
             String extentValue = null;
             if (type.equals(JP2_ACCESS_COPY)) {
-                try {
-                    IIORegistry registry = IIORegistry.getDefaultInstance();
-                    registry.registerServiceProvider(new OpenJp2ImageReaderSpi());
-                    BufferedImage jp2AccessCopy = ImageIO.read(new File(deriv.getFile().getAbsolutePath()));
-                    extentValue = jp2AccessCopy.getHeight() + "x" + jp2AccessCopy.getWidth();
-                } catch (IOException|NullPointerException e) {
-                    log.warn(e.getMessage());
-                }
+                var dimInfo = jp2InfoService.getDimensions(deriv.getFile().toPath());
+                extentValue = dimInfo.getExtent();
             }
 
             String owner = (ownedByOtherObject ? pid.getId() : null);
