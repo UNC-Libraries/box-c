@@ -3,6 +3,7 @@ package edu.unc.lib.boxc.indexing.solr.filter;
 import edu.unc.lib.boxc.indexing.solr.exception.IndexingException;
 import edu.unc.lib.boxc.indexing.solr.indexing.DocumentIndexingPackage;
 import edu.unc.lib.boxc.indexing.solr.utils.Jp2InfoService;
+import edu.unc.lib.boxc.indexing.solr.utils.KduJp2InfoService;
 import edu.unc.lib.boxc.indexing.solr.utils.TechnicalMetadataService;
 import edu.unc.lib.boxc.model.api.DatastreamType;
 import edu.unc.lib.boxc.model.api.exceptions.FedoraException;
@@ -51,7 +52,7 @@ public class SetDatastreamFilter implements IndexDocumentFilter {
 
     private DerivativeService derivativeService;
     private TechnicalMetadataService technicalMetadataService;
-    private Jp2InfoService jp2InfoService = new Jp2InfoService();
+    private Jp2InfoService jp2InfoService;
     private static final List<DatastreamType> THUMBNAIL_DS_TYPES = Arrays.asList(DatastreamType.THUMBNAIL_SMALL, DatastreamType.THUMBNAIL_LARGE);
 
     @Override
@@ -294,5 +295,9 @@ public class SetDatastreamFilter implements IndexDocumentFilter {
 
     public void setTechnicalMetadataService(TechnicalMetadataService technicalMetadataService) {
         this.technicalMetadataService = technicalMetadataService;
+    }
+
+    public void setJp2InfoService(Jp2InfoService jp2InfoService) {
+        this.jp2InfoService = jp2InfoService;
     }
 }

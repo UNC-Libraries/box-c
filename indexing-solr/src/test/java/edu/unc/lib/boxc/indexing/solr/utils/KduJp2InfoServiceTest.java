@@ -16,35 +16,35 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 /**
  * @author bbpennel
  */
-public class Jp2InfoServiceTest {
-    private Jp2InfoService service;
+public class KduJp2InfoServiceTest {
+    private static final String KDU_OUTPUT = "<JP2_family_file>\n" +
+            " <ftyp name=\"file-type box\" header=\"8\" body=\"12\" pos=\"12\">\n" +
+            "   <brand> \"jp2_\" 0x6A703220 </brand>\n" +
+            "   <minor_version> 0 </minor_version>\n" +
+            "   <compatible_brand> \"jp2_\" 0x6A703220 </compatible_brand>\n" +
+            " </ftyp>\n" +
+            " <jp2h name=\"JP2-header box\" header=\"8\" body=\"37\" pos=\"32\">\n" +
+            "   <ihdr name=\"image-header box\" header=\"8\" body=\"14\" pos=\"40\"></ihdr>\n" +
+            "   <colr name=\"colour box\" header=\"8\" body=\"7\" pos=\"62\"></colr>\n" +
+            " </jp2h>\n" +
+            " <jp2c name=\"contiguous-codestream box\" header=\"8\" body=\"rubber\" pos=\"77\">\n" +
+            "   <codestream>\n" +
+            "     <width> 3024 </width>\n" +
+            "     <height> 3414 </height>\n" +
+            "     <components> 3 </components>\n" +
+            "     <tiles> 42 </tiles>\n" +
+            "   </codestream>\n" +
+            "</JP2_family_file>";
+    private KduJp2InfoService service;
 
     @BeforeEach
     public void setup() {
-        service = new Jp2InfoService();
+        service = new KduJp2InfoService();
     }
 
     @Test
     public void getDimensionsTest() throws Exception {
-        String data = "<JP2_family_file>\n" +
-                " <ftyp name=\"file-type box\" header=\"8\" body=\"12\" pos=\"12\">\n" +
-                "   <brand> \"jp2_\" 0x6A703220 </brand>\n" +
-                "   <minor_version> 0 </minor_version>\n" +
-                "   <compatible_brand> \"jp2_\" 0x6A703220 </compatible_brand>\n" +
-                " </ftyp>\n" +
-                " <jp2h name=\"JP2-header box\" header=\"8\" body=\"37\" pos=\"32\">\n" +
-                "   <ihdr name=\"image-header box\" header=\"8\" body=\"14\" pos=\"40\"></ihdr>\n" +
-                "   <colr name=\"colour box\" header=\"8\" body=\"7\" pos=\"62\"></colr>\n" +
-                " </jp2h>\n" +
-                " <jp2c name=\"contiguous-codestream box\" header=\"8\" body=\"rubber\" pos=\"77\">\n" +
-                "   <codestream>\n" +
-                "     <width> 3024 </width>\n" +
-                "     <height> 3414 </height>\n" +
-                "     <components> 3 </components>\n" +
-                "     <tiles> 42 </tiles>\n" +
-                "   </codestream>\n" +
-                "</JP2_family_file>";
-        var kduPath = makeKduScript("echo '" + data + "'");
+        var kduPath = makeKduScript("echo '" + KDU_OUTPUT + "'");
         service.setKduCommand(kduPath);
 
         Path imagePath = Path.of("path/to/image.jp2");
