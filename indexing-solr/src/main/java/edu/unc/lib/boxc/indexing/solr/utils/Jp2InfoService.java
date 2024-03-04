@@ -20,31 +20,29 @@ public class Jp2InfoService {
 
     public Jp2Info getDimensions(Path path) {
         var start = System.nanoTime();
+        JPEG2000KakaduImageReader kduReader = null;
         try {
-            var command = Arrays.asList(kduCommand, "-i", path.toString());
-            ProcessBuilder builder = new ProcessBuilder(command);
-            builder.redirectErrorStream(true);
-            Process process = builder.start();
-            String output = new String(process.getInputStream().readAllBytes());
-            if (process.waitFor() == 0) {
-                var width = extractKduDimension("<width>", output);
-                var height = extractKduDimension("<height>", output);
-                var ellapsed = System.nanoTime() - start;
-                totalExecTime += ellapsed;
-                execCount++;
-                log.info("Performed {} for {} in {}ms", kduCommand, path.getFileName(), ellapsed / 1e6);
-                log.info("Metrics: total time {}ms, total calls {}, average time {}ms",
-                        totalExecTime / 1e6, execCount, (totalExecTime / execCount / 1e6));
-                return new Jp2Info(width, height);
-            }
-            log.warn("Calling {} for {} exited with status code {}", kduCommand, path, process.waitFor());
-            log.debug("Output from command: {}", output);
+            kduReader = new JPEG2000KakaduImageReader();
+            kduReader.setSource(path);
+            var height = kduReader.getHeight();
+            var width = kduReader.getWidth();
+            var ellapsed = System.nanoTime() - start;
+            totalExecTime += ellapsed;
+            execCount++;
+            log.info("Got kdu dimensions for {} in {}ms", kduCommand, path.getFileName(), ellapsed / 1e6);
+            log.info("Metrics: total time {}ms, total calls {}, average time {}ms",
+                    totalExecTime / 1e6, execCount, (totalExecTime / execCount / 1e6));
+            return new Jp2Info(width, height);
         } catch (IOException e) {
             log.warn("Failed to execute {} for {}: {}", kduCommand, path, e.getMessage());
-        } catch (InterruptedException e) {
-            log.warn("Interrupted {} for {}", kduCommand, path);
-            Thread.currentThread().interrupt();
-            throw new RuntimeException(e);
+//        } catch (InterruptedException e) {
+//            log.warn("Interrupted {} for {}", kduCommand, path);
+//            Thread.currentThread().interrupt();
+//            throw new RuntimeException(e);
+        } finally {
+            if (kduReader != null) {
+                kduReader.close();
+            }
         }
         return new Jp2Info();
     }
