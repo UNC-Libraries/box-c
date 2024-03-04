@@ -510,6 +510,7 @@
         <property name="accessControlService" ref="aclService" />
         <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
         <property name="repositoryObjectFactory" ref="repositoryObjectFactory" />
+        <property name="indexingMessageSender" ref="indexingMessageSender" />
     </bean>
 
     <!-- Camel contexts -->

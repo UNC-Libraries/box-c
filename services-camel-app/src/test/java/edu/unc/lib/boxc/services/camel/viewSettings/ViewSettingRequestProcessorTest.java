@@ -11,6 +11,8 @@ import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.api.objects.WorkObject;
 import edu.unc.lib.boxc.model.api.rdf.CdrView;
 import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
+import edu.unc.lib.boxc.operations.jms.indexing.IndexingActionType;
+import edu.unc.lib.boxc.operations.jms.indexing.IndexingMessageSender;
 import edu.unc.lib.boxc.operations.jms.viewSettings.ViewSettingRequest;
 import edu.unc.lib.boxc.operations.jms.viewSettings.ViewSettingRequestSerializationHelper;
 import edu.unc.lib.boxc.services.camel.ProcessorTestHelper;
@@ -46,6 +48,8 @@ public class ViewSettingRequestProcessorTest {
     private RepositoryObjectLoader repositoryObjectLoader;
     @Mock
     private RepositoryObjectFactory repositoryObjectFactory;
+    @Mock
+    private IndexingMessageSender indexingMessageSender;
 
     @BeforeEach
     public void init() throws IOException {
@@ -54,6 +58,7 @@ public class ViewSettingRequestProcessorTest {
         processor.setAccessControlService(accessControlService);
         processor.setRepositoryObjectLoader(repositoryObjectLoader);
         processor.setRepositoryObjectFactory(repositoryObjectFactory);
+        processor.setIndexingMessageSender(indexingMessageSender);
         workPid = ProcessorTestHelper.makePid();
         workObject = mock(WorkObject.class);
         when(workObject.getPid()).thenReturn(workPid);
@@ -84,6 +89,8 @@ public class ViewSettingRequestProcessorTest {
         verify(repositoryObjectFactory).createExclusiveRelationship(
                 eq(workObject), eq(CdrView.viewBehavior),
                 eq(ViewSettingRequest.ViewBehavior.PAGED.getString()));
+        verify(indexingMessageSender).sendIndexingOperation(agent.getUsername(), workPid,
+                IndexingActionType.UPDATE_VIEW_BEHAVIOR);
     }
 
     @Test
@@ -91,6 +98,8 @@ public class ViewSettingRequestProcessorTest {
         var exchange = createRequestExchange(null);
         processor.process(exchange);
         verify(repositoryObjectFactory).deleteProperty(eq(workObject), eq(CdrView.viewBehavior));
+        verify(indexingMessageSender).sendIndexingOperation(agent.getUsername(), workPid,
+                IndexingActionType.UPDATE_VIEW_BEHAVIOR);
     }
 
     private Exchange createRequestExchange(ViewSettingRequest.ViewBehavior viewBehavior) throws IOException {
