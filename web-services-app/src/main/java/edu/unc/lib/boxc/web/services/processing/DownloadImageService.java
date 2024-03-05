@@ -77,10 +77,11 @@ public class DownloadImageService {
     public int parseSize(String size) {
         try {
             var integerSize = Integer.parseInt(size);
-            if (integerSize > 0 ) {
+            if (integerSize > 0) {
                 return integerSize;
             }
         } catch (NumberFormatException e) {
+            // Triggers IllegalArgumentException below
         }
         throw new IllegalArgumentException(INVALID_SIZE_MESSAGE);
     }
