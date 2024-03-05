@@ -35,9 +35,8 @@ public class KduJp2InfoService implements Jp2InfoService {
                 var elapsed = System.nanoTime() - start;
                 totalExecTime += elapsed;
                 execCount++;
-                log.info("Performed {} for {} in {}ms", kduCommand, path.getFileName(), (elapsed / 1e6));
-                log.info("Metrics: total time {}ms, total calls {}, average time {}ms",
-                        totalExecTime / 1e6, execCount, (totalExecTime / execCount / 1e6));
+                log.info("Performed {} for {} in {}ms (average {})", kduCommand, path.getFileName(), (elapsed / 1e6),
+                        (totalExecTime / execCount / 1e6));
                 return new Jp2Info(width, height);
             }
             log.warn("Calling {} for {} exited with status code {}", kduCommand, path, process.waitFor());
@@ -66,9 +65,4 @@ public class KduJp2InfoService implements Jp2InfoService {
     public void setKduCommand(String kduCommand) {
         this.kduCommand = kduCommand;
     }
-
-    public void setDisabled(boolean disabled) {
-        this.disabled = disabled;
-    }
-
 }

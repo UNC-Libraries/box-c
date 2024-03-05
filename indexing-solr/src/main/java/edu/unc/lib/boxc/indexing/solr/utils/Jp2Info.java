@@ -18,7 +18,7 @@ public class Jp2Info {
     }
 
     /**
-     * @return the Jp2's info formatted as an extent string, which is heightxwidth
+     * @return the Jp2's info formatted as an extent string, which is heightxwidth, or an empty string if no dimensions
      */
     public String getExtent() {
         if (width == 0 || height == 0) {

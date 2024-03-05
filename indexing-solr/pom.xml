@@ -77,10 +77,6 @@
             <artifactId>slf4j-api</artifactId>
         </dependency>
         <dependency>
-            <groupId>de.digitalcollections.imageio</groupId>
-            <artifactId>imageio-openjpeg</artifactId>
-        </dependency>
-        <dependency>
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-core</artifactId>
             <scope>test</scope>
