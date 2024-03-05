@@ -114,12 +114,12 @@ public class DownloadImageService {
         if (StringUtils.isEmpty(extent)) {
             ds = contentObjectRecord.getDatastreamObject(DatastreamType.ORIGINAL_FILE.getId());
         }
-        return ds.getExtent();
+        return ds == null? null : ds.getExtent();
     }
 
     private int getLongestSide(ContentObjectRecord contentObjectRecord) {
         var extent = getExtent(contentObjectRecord);
-        if (StringUtils.isEmpty(extent)) {
+        if (extent == null || extent.isEmpty()) {
             return 0;
         }
         // format of dimensions is like 800x1200, heightxwidth

@@ -46,7 +46,6 @@ public class KduJp2InfoService implements Jp2InfoService {
         } catch (InterruptedException e) {
             log.warn("Interrupted {} for {}", kduCommand, path);
             Thread.currentThread().interrupt();
-            throw new RuntimeException(e);
         }
         return new Jp2Info();
     }
