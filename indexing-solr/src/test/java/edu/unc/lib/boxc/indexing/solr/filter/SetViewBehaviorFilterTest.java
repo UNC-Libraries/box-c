@@ -16,6 +16,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -62,5 +63,17 @@ public class SetViewBehaviorFilterTest {
         filter.filter(dip);
 
         assertEquals(behavior, idb.getViewBehavior());
+    }
+
+    @Test
+    public void testWithWorkObjectWithoutViewBehavior() {
+        var work = mock(WorkObject.class);
+        when(documentIndexingPackageDataLoader.getContentObject(dip)).thenReturn(work);
+        when(work.getResource()).thenReturn(resource);
+        when(resource.getProperty(eq(CdrView.viewBehavior))).thenReturn(null);
+
+        filter.filter(dip);
+
+        assertNull(idb.getViewBehavior());
     }
 }

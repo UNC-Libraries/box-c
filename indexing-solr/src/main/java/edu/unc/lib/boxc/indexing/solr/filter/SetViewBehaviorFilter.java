@@ -6,6 +6,11 @@ import edu.unc.lib.boxc.model.api.rdf.CdrView;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * Filter which sets a work's view behavior. Updates the viewBehavior field.
+ *
+ * @author snluong
+ */
 public class SetViewBehaviorFilter implements IndexDocumentFilter {
     private static final Logger log = LoggerFactory.getLogger(SetViewBehaviorFilter.class);
 
@@ -14,6 +19,9 @@ public class SetViewBehaviorFilter implements IndexDocumentFilter {
         log.debug("Performing SetViewBehavior for object {}", dip.getPid());
         var resource = dip.getContentObject().getResource();
         var doc = dip.getDocument();
-        doc.setViewBehavior(resource.getProperty(CdrView.viewBehavior).getString());
+        var behavior = resource.getProperty(CdrView.viewBehavior) == null ?
+                null : resource.getProperty(CdrView.viewBehavior).getString();
+
+        doc.setViewBehavior(behavior);
     }
 }
