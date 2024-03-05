@@ -296,14 +296,12 @@ public class DownloadImageControllerIT extends AbstractAPIIT {
 
         when(solrSearchService.getObjectById(any(SimpleIdRequest.class))).thenReturn(contentObjectSolrRecord);
         when(contentObjectSolrRecord.getDatastreamObject("original_file")).thenReturn(null);
+        when(contentObjectSolrRecord.getDatastreamObject("jp2")).thenReturn(null);
         when(contentObjectSolrRecord.getPid()).thenReturn(pid);
 
-        MvcResult result = mvc.perform(get("/downloadImage/" + pidString + "/1200"))
-                .andExpect(status().isBadRequest())
+        mvc.perform(get("/downloadImage/" + pidString + "/1200"))
+                .andExpect(status().isNotFound())
                 .andReturn();
-
-        var message = result.getResponse().getContentAsString();
-        assertEquals(message, DownloadImageService.INVALID_SIZE_MESSAGE);
     }
 
     @Test

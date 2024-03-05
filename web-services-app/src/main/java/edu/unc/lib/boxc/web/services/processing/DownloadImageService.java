@@ -2,6 +2,7 @@
 package edu.unc.lib.boxc.web.services.processing;
 
 import edu.unc.lib.boxc.model.api.DatastreamType;
+import edu.unc.lib.boxc.model.api.exceptions.NotFoundException;
 import edu.unc.lib.boxc.search.api.models.ContentObjectRecord;
 import edu.unc.lib.boxc.search.api.models.Datastream;
 import edu.unc.lib.boxc.web.services.utils.ImageServerUtil;
@@ -63,24 +64,25 @@ public class DownloadImageService {
      */
     public String getSize(ContentObjectRecord contentObjectRecord, String size) {
         if (!Objects.equals(size, FULL_SIZE)) {
-            try {
-                var integerSize = Integer.parseInt(size);
-
-                if (integerSize <= 0 ) {
-                    throw new IllegalArgumentException(INVALID_SIZE_MESSAGE);
-                } else {
-                    var longerSide = getLongestSide(contentObjectRecord);
-                    // request is bigger than or equal to full size, so we will switch to full size
-                    if (integerSize >= longerSide) {
-                        return FULL_SIZE;
-                    }
-                }
-            } catch (Exception e) {
-                throw new IllegalArgumentException(INVALID_SIZE_MESSAGE);
+            int integerSize = parseSize(size);
+            var longerSide = getLongestSide(contentObjectRecord);
+            // request is bigger than or equal to full size, so we will switch to full size
+            if (integerSize >= longerSide) {
+                return FULL_SIZE;
             }
-
         }
         return size;
+    }
+
+    public int parseSize(String size) {
+        try {
+            var integerSize = Integer.parseInt(size);
+            if (integerSize > 0 ) {
+                return integerSize;
+            }
+        } catch (NumberFormatException e) {
+        }
+        throw new IllegalArgumentException(INVALID_SIZE_MESSAGE);
     }
 
     /**
@@ -114,7 +116,10 @@ public class DownloadImageService {
         if (StringUtils.isEmpty(extent)) {
             ds = contentObjectRecord.getDatastreamObject(DatastreamType.ORIGINAL_FILE.getId());
         }
-        return ds == null? null : ds.getExtent();
+        if (ds == null) {
+            throw new NotFoundException("No jp2 or original_file available for " + contentObjectRecord.getId());
+        }
+        return ds.getExtent();
     }
 
     private int getLongestSide(ContentObjectRecord contentObjectRecord) {
