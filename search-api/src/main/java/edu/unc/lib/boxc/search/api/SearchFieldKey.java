@@ -68,7 +68,8 @@ public enum SearchFieldKey {
     TIMESTAMP("timestamp", "timestamp", "Timestamp"),
     TITLE("title", "title", "Title"),
     TITLE_INDEX("titleIndex", "titleIndex", "Title Index"),
-    VERSION("_version_", "version", "Version");
+    VERSION("_version_", "version", "Version"),
+    VIEW_BEHAVIOR("viewBehavior", "viewBehavior", "View Behavior");
 
     private final String solrField;
     private final String displayLabel;

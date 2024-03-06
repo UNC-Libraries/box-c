@@ -5,6 +5,7 @@
         <select id="view_settings_change">
             <option value="individuals" <%= (metadata.view_settings === undefined || metadata.view_settings === 'individuals') ? "selected" : "" %>>Individuals</option>
             <option value="paged" <%= (metadata.view_settings == 'paged') ? "selected" : "" %>>Paged</option>
+            <option value="continuous" <%= (metadata.view_settings == 'continuous') ? "selected" : "" %>>Continuous</option>
         </select>
     </div>
 

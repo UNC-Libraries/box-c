@@ -2,7 +2,10 @@ package edu.unc.lib.boxc.indexing.solr.filter;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
+import edu.unc.lib.boxc.model.api.rdf.CdrView;
+import edu.unc.lib.boxc.operations.jms.viewSettings.ViewSettingRequest;
 import org.apache.jena.rdf.model.Resource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -78,6 +81,19 @@ public class SetContentStatusFilter implements IndexDocumentFilter{
             status.add(FacetConstants.HAS_THUMBNAIL_ASSIGNED);
         } else {
             status.add(FacetConstants.NO_THUMBNAIL_ASSIGNED);
+        }
+
+        if (resource.hasProperty(CdrView.viewBehavior)) {
+            var viewBehavior = resource.getProperty(CdrView.viewBehavior).getString();
+            if (Objects.equals(viewBehavior, ViewSettingRequest.ViewBehavior.PAGED.getString())) {
+                status.add(FacetConstants.VIEW_BEHAVIOR_PAGED);
+            } else if (Objects.equals(viewBehavior, ViewSettingRequest.ViewBehavior.CONTINUOUS.getString())) {
+                status.add(FacetConstants.VIEW_BEHAVIOR_CONTINUOUS);
+            } else {
+                status.add(FacetConstants.VIEW_BEHAVIOR_INDIVIDUALS);
+            }
+        } else {
+            status.add(FacetConstants.VIEW_BEHAVIOR_INDIVIDUALS);
         }
     }
 }

@@ -1,5 +1,6 @@
 package edu.unc.lib.boxc.services.camel.util;
 
+import edu.unc.lib.boxc.indexing.solr.action.IndexingAction;
 import edu.unc.lib.boxc.operations.jms.indexing.IndexingActionType;
 
 import java.util.EnumSet;
@@ -48,6 +49,7 @@ public class IndexingActionUtil {
                     IndexingActionType.UPDATE_PARENT_PATH_INFO,
                     IndexingActionType.UPDATE_MEMBER_ORDER_CHILD,
                     IndexingActionType.UPDATE_MEMBER_ORDER_PARENT,
+                    IndexingActionType.UPDATE_VIEW_BEHAVIOR,
                     IndexingActionType.COMMIT,
                     IndexingActionType.DELETE);
 }

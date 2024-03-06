@@ -50,6 +50,7 @@ public enum IndexingActionType {
     UPDATE_MEMBER_ORDER("Update Member Order", "Update the order of members within an object"),
     UPDATE_MEMBER_ORDER_CHILD("Update Member Order Child", "Update the order of a container member"),
     UPDATE_MEMBER_ORDER_PARENT("Update Member Order Parent", "Update a container after its order changed"),
+    UPDATE_VIEW_BEHAVIOR("Update View Behavior", "Update the view behavior for a work"),
     UNKNOWN("Unknown action", "Unknown action");
 
     private final String label;

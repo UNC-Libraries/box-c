@@ -7,6 +7,8 @@ import edu.unc.lib.boxc.model.api.objects.WorkObject;
 import edu.unc.lib.boxc.model.api.rdf.CdrView;
 import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
+import edu.unc.lib.boxc.operations.jms.indexing.IndexingActionType;
+import edu.unc.lib.boxc.operations.jms.indexing.IndexingMessageSender;
 import edu.unc.lib.boxc.operations.jms.viewSettings.ViewSettingRequestSerializationHelper;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
@@ -20,6 +22,7 @@ public class ViewSettingRequestProcessor implements Processor {
     private AccessControlService accessControlService;
     private RepositoryObjectLoader repositoryObjectLoader;
     private RepositoryObjectFactory repositoryObjectFactory;
+    private IndexingMessageSender indexingMessageSender;
 
     @Override
     public void process(Exchange exchange) throws Exception {
@@ -42,7 +45,7 @@ public class ViewSettingRequestProcessor implements Processor {
                         CdrView.viewBehavior, behavior.getString());
             }
         }
-        // TODO BXC-4428 send message to update solr
+        indexingMessageSender.sendIndexingOperation(agent.getUsername(), pid, IndexingActionType.UPDATE_VIEW_BEHAVIOR);
     }
 
     public void setAccessControlService(AccessControlService accessControlService) {
@@ -55,5 +58,9 @@ public class ViewSettingRequestProcessor implements Processor {
 
     public void setRepositoryObjectFactory(RepositoryObjectFactory repositoryObjectFactory) {
         this.repositoryObjectFactory = repositoryObjectFactory;
+    }
+
+    public void setIndexingMessageSender(IndexingMessageSender indexingMessageSender) {
+        this.indexingMessageSender = indexingMessageSender;
     }
 }
