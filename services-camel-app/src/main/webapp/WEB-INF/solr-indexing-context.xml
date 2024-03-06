@@ -155,6 +155,7 @@
             <list>
                 <ref bean="setRecordDatesFilter" />
                 <ref bean="setViewBehaviorFilter" />
+                <ref bean="setContentStatusFilter" />
             </list>
         </property>
     </bean>
