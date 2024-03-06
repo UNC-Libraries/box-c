@@ -19,8 +19,8 @@ public class SetViewBehaviorFilter implements IndexDocumentFilter {
         log.debug("Performing SetViewBehavior for object {}", dip.getPid());
         var resource = dip.getContentObject().getResource();
         var doc = dip.getDocument();
-        var behavior = resource.getProperty(CdrView.viewBehavior) == null ?
-                null : resource.getProperty(CdrView.viewBehavior).getString();
+        var behavior = resource.hasProperty(CdrView.viewBehavior) ?
+                resource.getProperty(CdrView.viewBehavior).getString() : null ;
 
         doc.setViewBehavior(behavior);
     }

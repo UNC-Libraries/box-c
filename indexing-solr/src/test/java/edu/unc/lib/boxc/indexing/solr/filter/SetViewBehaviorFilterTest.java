@@ -57,6 +57,7 @@ public class SetViewBehaviorFilterTest {
         var behavior = ViewSettingRequest.ViewBehavior.PAGED.getString();
         when(documentIndexingPackageDataLoader.getContentObject(dip)).thenReturn(work);
         when(work.getResource()).thenReturn(resource);
+        when(resource.hasProperty(eq(CdrView.viewBehavior))).thenReturn(true);
         when(resource.getProperty(eq(CdrView.viewBehavior))).thenReturn(stmt);
         when(stmt.getString()).thenReturn(behavior);
 
@@ -70,7 +71,7 @@ public class SetViewBehaviorFilterTest {
         var work = mock(WorkObject.class);
         when(documentIndexingPackageDataLoader.getContentObject(dip)).thenReturn(work);
         when(work.getResource()).thenReturn(resource);
-        when(resource.getProperty(eq(CdrView.viewBehavior))).thenReturn(null);
+        when(resource.hasProperty(eq(CdrView.viewBehavior))).thenReturn(false);
 
         filter.filter(dip);
 
