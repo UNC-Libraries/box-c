@@ -227,10 +227,14 @@
         <property name="contentPathFactory" ref="contentPathFactory" />
     </bean>
 
+    <bean id="jp2InfoService" class="edu.unc.lib.boxc.indexing.solr.utils.NoOpJp2InfoService">
+    </bean>
+
     <bean id="setDatastreamFilter"
           class="edu.unc.lib.boxc.indexing.solr.filter.SetDatastreamFilter">
         <property name="derivativeService" ref="derivativeService" />
         <property name="technicalMetadataService" ref="technicalMetadataService" />
+        <property name="jp2InfoService" ref="jp2InfoService" />
     </bean>
 
     <bean id="setDescriptiveMetadataFilter"
