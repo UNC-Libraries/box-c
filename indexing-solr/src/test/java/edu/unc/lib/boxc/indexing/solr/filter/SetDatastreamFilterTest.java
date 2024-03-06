@@ -3,6 +3,9 @@ package edu.unc.lib.boxc.indexing.solr.filter;
 import edu.unc.lib.boxc.indexing.solr.exception.IndexingException;
 import edu.unc.lib.boxc.indexing.solr.indexing.DocumentIndexingPackage;
 import edu.unc.lib.boxc.indexing.solr.indexing.DocumentIndexingPackageDataLoader;
+import edu.unc.lib.boxc.indexing.solr.utils.Jp2Info;
+import edu.unc.lib.boxc.indexing.solr.utils.Jp2InfoService;
+import edu.unc.lib.boxc.indexing.solr.utils.NoOpJp2InfoService;
 import edu.unc.lib.boxc.indexing.solr.utils.TechnicalMetadataService;
 import edu.unc.lib.boxc.model.api.DatastreamType;
 import edu.unc.lib.boxc.model.api.ids.PID;
@@ -50,6 +53,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.openMocks;
@@ -107,6 +111,7 @@ public class SetDatastreamFilterTest {
     @Captor
     private ArgumentCaptor<List<String>> listCaptor;
 
+    private Jp2InfoService jp2InfoService;
     @Mock
     private DerivativeService derivativeService;
     @Mock
@@ -131,9 +136,12 @@ public class SetDatastreamFilterTest {
         technicalMetadataService = new TechnicalMetadataService();
         technicalMetadataService.init();
 
+        jp2InfoService = new NoOpJp2InfoService();
+
         filter = new SetDatastreamFilter();
         filter.setDerivativeService(derivativeService);
         filter.setTechnicalMetadataService(technicalMetadataService);
+        filter.setJp2InfoService(jp2InfoService);
 
         when(binObj.getResource()).thenReturn(
                 fileResource(ORIGINAL_FILE.getId(), FILE_SIZE, FILE_MIMETYPE, FILE_NAME, FILE_DIGEST));
@@ -249,6 +257,52 @@ public class SetDatastreamFilterTest {
         assertEquals(FILE_SIZE, (long) idb.getFilesizeSort());
         // JP2 and thumbnail set to same size
         assertEquals(FILE_SIZE + FILE2_SIZE, (long) idb.getFilesizeTotal());
+    }
+
+    @Test
+    public void fileObjectImageBinaryWithJp2DimensionsTest() throws Exception {
+        when(binObj.getResource()).thenReturn(
+                fileResource(ORIGINAL_FILE.getId(), FILE_SIZE, FILE3_MIMETYPE, "test.png", FILE_DIGEST));
+
+        BinaryObject binObj2 = mock(BinaryObject.class);
+        when(binObj2.getPid()).thenReturn(DatastreamPids.getTechnicalMetadataPid(pid));
+        when(binObj2.getResource()).thenReturn(
+                fileResource(TECHNICAL_METADATA.getId(), FILE2_SIZE, FILE2_MIMETYPE, FILE2_NAME, FILE2_DIGEST));
+        when(binObj2.getBinaryStream()).thenReturn(getClass().getResourceAsStream("/datastream/techmd.xml"));
+
+        PID filePid = PIDs.get("055ed112-f548-479e-ab4b-bf1aad40d470");
+        when(fileObj.getPid()).thenReturn(filePid);
+        when(fileObj.getBinaryObjects()).thenReturn(Arrays.asList(binObj, binObj2));
+        dip.setContentObject(fileObj);
+
+        File smallFile = derivDir.resolve("small.png").toFile();
+        FileUtils.write(smallFile, "content", "UTF-8");
+
+        File largeFile = derivDir.resolve("large.png").toFile();
+        FileUtils.write(largeFile, "large content", "UTF-8");
+
+        File jp2File = derivDir.resolve("access.jp2").toFile();
+        FileUtils.write(jp2File, "jp2 content", "UTF-8");
+
+        List<Derivative> derivs = Arrays.asList(new Derivative(THUMBNAIL_SMALL, smallFile),
+                new Derivative(THUMBNAIL_LARGE, largeFile),
+                new Derivative(JP2_ACCESS_COPY, jp2File));
+        when(derivativeService.getDerivatives(filePid)).thenReturn(derivs);
+
+        var mockJp2InfoService = mock(Jp2InfoService.class);
+        filter.setJp2InfoService(mockJp2InfoService);
+        when(mockJp2InfoService.getDimensions(any())).thenReturn(new Jp2Info(600, 1000));
+
+        filter.filter(dip);
+
+        assertContainsDatastream(idb.getDatastream(), ORIGINAL_FILE.getId(),
+                FILE_SIZE, FILE3_MIMETYPE, "test.png", FILE_DIGEST, null, FILE3_EXTENT);
+        assertContainsDatastream(idb.getDatastream(), TECHNICAL_METADATA.getId(),
+                FILE2_SIZE, FILE2_MIMETYPE, FILE2_NAME, FILE2_DIGEST, null, null);
+        assertContainsDatastream(idb.getDatastream(), JP2_ACCESS_COPY.getId(),
+                11, JP2_ACCESS_COPY.getMimetype(), "access.jp2", null, null, "1000x600");
+
+        assertEquals(FILE_SIZE, (long) idb.getFilesizeSort());
     }
 
     @Test
