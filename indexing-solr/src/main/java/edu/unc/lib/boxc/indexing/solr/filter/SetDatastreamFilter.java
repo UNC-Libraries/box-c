@@ -1,30 +1,13 @@
 package edu.unc.lib.boxc.indexing.solr.filter;
 
-import static edu.unc.lib.boxc.model.api.DatastreamType.ORIGINAL_FILE;
-import static edu.unc.lib.boxc.model.api.DatastreamType.TECHNICAL_METADATA;
-import static edu.unc.lib.boxc.model.api.xml.JDOMNamespaceUtil.FITS_NS;
-import static edu.unc.lib.boxc.model.api.xml.JDOMNamespaceUtil.PREMIS_V3_NS;
-
-import java.io.File;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
-
-import edu.unc.lib.boxc.indexing.solr.utils.TechnicalMetadataService;
-import edu.unc.lib.boxc.model.api.exceptions.FedoraException;
-import edu.unc.lib.boxc.model.api.exceptions.RepositoryException;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.jena.rdf.model.Resource;
-import org.apache.jena.rdf.model.Statement;
-import org.jdom2.Element;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import edu.unc.lib.boxc.indexing.solr.exception.IndexingException;
 import edu.unc.lib.boxc.indexing.solr.indexing.DocumentIndexingPackage;
+import edu.unc.lib.boxc.indexing.solr.utils.Jp2InfoService;
+import edu.unc.lib.boxc.indexing.solr.utils.KduJp2InfoService;
+import edu.unc.lib.boxc.indexing.solr.utils.TechnicalMetadataService;
 import edu.unc.lib.boxc.model.api.DatastreamType;
+import edu.unc.lib.boxc.model.api.exceptions.FedoraException;
+import edu.unc.lib.boxc.model.api.exceptions.RepositoryException;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.objects.BinaryObject;
 import edu.unc.lib.boxc.model.api.objects.ContentObject;
@@ -36,6 +19,25 @@ import edu.unc.lib.boxc.model.fcrepo.services.DerivativeService;
 import edu.unc.lib.boxc.search.api.models.Datastream;
 import edu.unc.lib.boxc.search.solr.models.DatastreamImpl;
 import edu.unc.lib.boxc.search.solr.models.IndexDocumentBean;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.rdf.model.Statement;
+import org.jdom2.Element;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.File;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
+import static edu.unc.lib.boxc.model.api.DatastreamType.JP2_ACCESS_COPY;
+import static edu.unc.lib.boxc.model.api.DatastreamType.ORIGINAL_FILE;
+import static edu.unc.lib.boxc.model.api.DatastreamType.TECHNICAL_METADATA;
+import static edu.unc.lib.boxc.model.api.xml.JDOMNamespaceUtil.FITS_NS;
+import static edu.unc.lib.boxc.model.api.xml.JDOMNamespaceUtil.PREMIS_V3_NS;
 
 /**
  * Extracts datastreams from an object and sets related properties concerning the default datastream for the object.
@@ -50,6 +52,7 @@ public class SetDatastreamFilter implements IndexDocumentFilter {
 
     private DerivativeService derivativeService;
     private TechnicalMetadataService technicalMetadataService;
+    private Jp2InfoService jp2InfoService;
     private static final List<DatastreamType> THUMBNAIL_DS_TYPES = Arrays.asList(DatastreamType.THUMBNAIL_SMALL, DatastreamType.THUMBNAIL_LARGE);
 
     @Override
@@ -153,6 +156,7 @@ public class SetDatastreamFilter implements IndexDocumentFilter {
      * If the datastreams are being recorded on an object  other than their owning
      * file object, the pid of the owning file object is recorded
      *
+     * @param dsList
      * @param binList list of binaries
      * @param ownedByOtherObject
      */
@@ -199,7 +203,7 @@ public class SetDatastreamFilter implements IndexDocumentFilter {
     }
 
     /**
-     * Returns the sum of filesizes for all datastreams which do no belong to
+     * Returns the sum of filesizes for all datastreams which do not belong to
      * other objects
      *
      * @param datastreams
@@ -233,8 +237,14 @@ public class SetDatastreamFilter implements IndexDocumentFilter {
                 return;
             }
 
+            String extentValue = null;
+            if (type.equals(JP2_ACCESS_COPY)) {
+                var dimInfo = jp2InfoService.getDimensions(deriv.getFile().toPath());
+                extentValue = dimInfo.getExtent();
+            }
+
             String owner = (ownedByOtherObject ? pid.getId() : null);
-            dsList.add(createDatastream(deriv, owner));
+            dsList.add(createDatastream(deriv, owner, extentValue));
         });
     }
 
@@ -265,7 +275,7 @@ public class SetDatastreamFilter implements IndexDocumentFilter {
         return datastreams;
     }
 
-    private DatastreamImpl createDatastream(DerivativeService.Derivative derivative, String owner) {
+    private DatastreamImpl createDatastream(DerivativeService.Derivative derivative, String owner, String extent) {
         DatastreamType type = derivative.getType();
         String name = type.getId();
         String mimetype = type.getMimetype();
@@ -273,7 +283,7 @@ public class SetDatastreamFilter implements IndexDocumentFilter {
         File file = derivative.getFile();
         Long filesize = file.length();
         String filename = file.getName();
-        return new DatastreamImpl(owner, name, filesize, mimetype, filename, extension, null, null);
+        return new DatastreamImpl(owner, name, filesize, mimetype, filename, extension, null, extent);
     }
 
     /**
@@ -285,5 +295,9 @@ public class SetDatastreamFilter implements IndexDocumentFilter {
 
     public void setTechnicalMetadataService(TechnicalMetadataService technicalMetadataService) {
         this.technicalMetadataService = technicalMetadataService;
+    }
+
+    public void setJp2InfoService(Jp2InfoService jp2InfoService) {
+        this.jp2InfoService = jp2InfoService;
     }
 }
