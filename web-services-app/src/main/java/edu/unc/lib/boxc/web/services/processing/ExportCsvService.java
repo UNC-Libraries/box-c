@@ -21,6 +21,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
@@ -70,12 +71,13 @@ public class ExportCsvService {
     public static final String DESCRIBED_HEADER = "Description";
     public static final String PATRON_PERMISSIONS_HEADER = "Patron Permissions";
     public static final String EMBARGO_HEADER = "Embargoed";
+    public static final String VIEW_BEHAVIOR_HEADER = "View";
 
     private static final String[] CSV_HEADERS = new String[] {
             OBJ_TYPE_HEADER, PID_HEADER, TITLE_HEADER, PATH_HEADER,
             DEPTH_HEADER, DELETED_HEADER, DATE_ADDED_HEADER, DATE_UPDATED_HEADER,
             MIME_TYPE_HEADER, CHECKSUM_HEADER, FILE_SIZE_HEADER, NUM_CHILDREN_HEADER,
-            DESCRIBED_HEADER, PATRON_PERMISSIONS_HEADER, EMBARGO_HEADER};
+            DESCRIBED_HEADER, PATRON_PERMISSIONS_HEADER, EMBARGO_HEADER, VIEW_BEHAVIOR_HEADER};
 
     private static final List<String> SEARCH_FIELDS = Arrays.asList(SearchFieldKey.ID.name(),
             SearchFieldKey.TITLE.name(),
@@ -84,7 +86,8 @@ public class ExportCsvService {
             SearchFieldKey.ANCESTOR_PATH.name(),
             SearchFieldKey.DATE_ADDED.name(), SearchFieldKey.DATE_UPDATED.name(),
             SearchFieldKey.CONTENT_STATUS.name(),
-            SearchFieldKey.ROLE_GROUP.name());
+            SearchFieldKey.ROLE_GROUP.name(),
+            SearchFieldKey.VIEW_BEHAVIOR.name());
 
     private ChildrenCountService childrenCountService;
     private AccessControlService aclService;
@@ -278,6 +281,10 @@ public class ExportCsvService {
         // Is object embargoed
         List<String> objStatus = object.getStatus();
         printer.print(objStatus != null && objStatus.contains(FacetConstants.EMBARGOED));
+
+        // View behavior
+        var behavior = object.getViewBehavior();
+        printer.print(Objects.requireNonNullElse(behavior, ""));
 
         printer.println();
     }

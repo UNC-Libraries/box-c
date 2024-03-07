@@ -371,4 +371,9 @@ public class GroupedContentObjectSolrRecord implements GroupedContentObjectRecor
     public void setThumbnailId(String id) {
         representative.setThumbnailId(id);
     }
+
+    @Override
+    public String getViewBehavior() {
+        return representative.getViewBehavior();
+    }
 }
