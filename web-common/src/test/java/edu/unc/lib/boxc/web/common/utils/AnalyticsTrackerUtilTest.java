@@ -147,20 +147,19 @@ public class AnalyticsTrackerUtilTest {
         assertEquals("1.1.1.1", userData.uip);
     }
 
-//    @Test
-//    public void testAnalyticsUserDataInvalidUidCookie() {
-//        when(request.getHeader("Proxy-Client-IP")).thenReturn("0.0.0.0");
-//        var uidCookie = mock(Cookie.class);
-//        when(uidCookie.getName()).thenReturn("_pk_id");
-//        when(uidCookie.getValue()).thenReturn("");
-//        when(request.getCookies()).thenReturn(new Cookie[]{ uidCookie });
-//        when(request.getHeader("User-Agent")).thenReturn("boxy-client");
-//        when(request.getRequestURL()).thenReturn(urlBuffer);
-//
-//        var userData = new AnalyticsTrackerUtil.AnalyticsUserData(request);
-//        assertNotNull(userData.uid);
-//        assertFalse(userData.uid.isEmpty());
-//    }
+    @Test
+    public void testAnalyticsUserDataInvalidUidCookie() throws Exception {
+        when(request.getHeader("Proxy-Client-IP")).thenReturn("0.0.0.0");
+        var uidCookie = mock(Cookie.class);
+        when(uidCookie.getName()).thenReturn("_pk_id");
+        when(uidCookie.getValue()).thenReturn("");
+        when(request.getCookies()).thenReturn(new Cookie[]{ uidCookie });
+        when(request.getHeader("User-Agent")).thenReturn("boxy-client");
+        when(request.getRequestURL()).thenReturn(urlBuffer);
+
+        var userData = new AnalyticsTrackerUtil.AnalyticsUserData(request);
+        assertNotNull(userData.getVisitorId());
+    }
 
     private void assertMatomoQueryIsCorrect(Map<String, StringValuePattern> params) {
         for (int i=0 ; i<100 ; i++) {
