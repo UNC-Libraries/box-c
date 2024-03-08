@@ -9,6 +9,7 @@ import edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.boxc.search.api.models.ContentObjectRecord;
 import edu.unc.lib.boxc.search.solr.services.SolrSearchService;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
@@ -56,16 +57,23 @@ public class AnalyticsTrackerUtilTest {
     private StringBuffer urlBuffer = new StringBuffer("https://www.example.org");
     private String url = "http://example.com/rest/content/03/11/45/33/03114533-0017-4c83-b9d9-567b08fb2429";
     private int siteID = 3;
+    private AutoCloseable closeable;
 
     @BeforeEach
     public void setup() {
-        MockitoAnnotations.openMocks(this);
+        closeable = MockitoAnnotations.openMocks(this);
         analyticsTrackerUtil = new AnalyticsTrackerUtil();
         analyticsTrackerUtil.setSolrSearchService(solrSearchService);
         analyticsTrackerUtil.setMatomoApiURL(apiURL);
         analyticsTrackerUtil.setMatomoAuthToken(authToken);
         analyticsTrackerUtil.setMatomoSiteID(siteID);
+        analyticsTrackerUtil.init();
         principals = new AccessGroupSetImpl("some_group");
+    }
+
+    @AfterEach
+    void closeService() throws Exception {
+        closeable.close();
     }
 
     @Test

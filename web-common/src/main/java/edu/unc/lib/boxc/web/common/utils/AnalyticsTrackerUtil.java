@@ -37,6 +37,14 @@ public class AnalyticsTrackerUtil {
     private String matomoApiURL;
     private int matomoSiteID;
     private SolrSearchService solrSearchService;
+    private MatomoTracker tracker;
+
+    public void init() {
+        tracker = new MatomoTracker(TrackerConfiguration
+                .builder()
+                .apiEndpoint(URI.create(matomoApiURL))
+                .build());
+    }
 
     /**
      * Track an event with the specified action for object pid for the active user on the request.
@@ -80,11 +88,6 @@ public class AnalyticsTrackerUtil {
     }
 
     private void sendMatomoRequest(MatomoRequest matomoRequest) {
-        var tracker = new MatomoTracker(TrackerConfiguration
-                .builder()
-                .apiEndpoint(URI.create(matomoApiURL))
-                .build());
-
         try {
             tracker.sendRequestAsync(matomoRequest);
         } catch (Exception e) {
