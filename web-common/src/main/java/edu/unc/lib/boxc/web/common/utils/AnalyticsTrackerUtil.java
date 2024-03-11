@@ -29,8 +29,6 @@ public class AnalyticsTrackerUtil {
 
     private static final Logger log = LoggerFactory.getLogger(AnalyticsTrackerUtil.class);
 
-    // Made up CID to use if the request does not include one, such as from a API request
-    protected static final String DEFAULT_CID = "35009a79-1a05-49d7-b876-2b884d0f825b";
     public static final String MATOMO_ACTION = "Downloaded Original";
 
     private String matomoAuthToken;
@@ -46,8 +44,12 @@ public class AnalyticsTrackerUtil {
                 .build());
     }
 
-    public void close() throws Exception {
-        tracker.close();
+    public void close() {
+        try {
+            tracker.close();
+        } catch (Exception e) {
+            log.warn("Failed to close matomo tracker", e);
+        }
     }
 
     /**
@@ -133,7 +135,6 @@ public class AnalyticsTrackerUtil {
         public String userAgent;
         // matomo user id
         public String uid;
-        private Random randomService = new Random();
 
         public AnalyticsUserData(HttpServletRequest request) {
 
