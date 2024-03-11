@@ -21,7 +21,7 @@
         <property name="ignoreResourceNotFound" value="false" />
     </bean>
     
-    <bean id="analyticsTracker" class="edu.unc.lib.boxc.web.common.utils.AnalyticsTrackerUtil" init-method="init">
+    <bean id="analyticsTracker" class="edu.unc.lib.boxc.web.common.utils.AnalyticsTrackerUtil" init-method="init" destroy-method="close">
         <property name="solrSearchService" ref="unrestrictedSolrSearchService" />
         <property name="matomoAuthToken" value="${matomo.authToken}" />
         <property name="matomoApiURL" value="${matomo.api.url}" />

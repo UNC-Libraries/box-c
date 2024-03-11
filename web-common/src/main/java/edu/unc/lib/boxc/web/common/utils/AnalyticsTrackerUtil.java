@@ -46,6 +46,10 @@ public class AnalyticsTrackerUtil {
                 .build());
     }
 
+    public void close() throws Exception {
+        tracker.close();
+    }
+
     /**
      * Track an event with the specified action for object pid for the active user on the request.
      *

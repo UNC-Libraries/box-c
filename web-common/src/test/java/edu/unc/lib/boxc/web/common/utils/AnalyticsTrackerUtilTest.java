@@ -73,6 +73,7 @@ public class AnalyticsTrackerUtilTest {
 
     @AfterEach
     void closeService() throws Exception {
+        analyticsTrackerUtil.close();
         closeable.close();
     }
 
