@@ -195,10 +195,6 @@ public class IiifV3ManifestService {
         }
     }
 
-    private boolean hasMultipleFiles(ContentObjectRecord contentObj) {
-        return contentObj.getCountMap().get("child").intValue() > 1;
-    }
-
     private void assertHasAccess(PID pid, AgentPrincipals agent) {
         Permission permission = DatastreamPermissionUtil.getPermissionForDatastream(JP2_ACCESS_COPY);
 
