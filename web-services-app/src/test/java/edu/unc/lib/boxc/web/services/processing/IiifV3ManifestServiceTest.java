@@ -185,7 +185,7 @@ public class IiifV3ManifestServiceTest {
         var manifest = manifestService.buildManifest(WORK_PID, agent);
 
         assertNull(manifest.getViewingDirection());
-        assertEquals(0, manifest.getBehaviors().size());
+        assertTrue(manifest.getBehaviors().isEmpty());
     }
 
     @Test
