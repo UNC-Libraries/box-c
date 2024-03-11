@@ -29,6 +29,7 @@ import org.springframework.util.CollectionUtils;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import static edu.unc.lib.boxc.model.api.DatastreamType.JP2_ACCESS_COPY;
 import static info.freelibrary.iiif.presentation.v3.properties.behaviors.ManifestBehavior.from;
@@ -184,7 +185,7 @@ public class IiifV3ManifestService {
     }
 
     private void addViewingDirectionAndBehavior(Manifest manifest, ContentObjectRecord contentObj) {
-        if (hasMultipleFiles(contentObj)) {
+        if (Objects.equals(contentObj.getResourceType(), ResourceType.Work.name())) {
             manifest.setViewingDirection(ViewingDirection.LEFT_TO_RIGHT);
             var behaviorString = contentObj.getViewBehavior();
             if (!StringUtils.isBlank(behaviorString)) {

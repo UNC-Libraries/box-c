@@ -25,7 +25,6 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -160,6 +159,9 @@ public class IiifV3ManifestServiceTest {
 
         assertEquals("<a href=\"http://example.com/record/faffb3e1-85fc-451f-9075-c60fc7584c7b\">View full record</a>",
                 manifest.getMetadata().get(0).getValue().getString());
+
+        assertNull(manifest.getViewingDirection());
+        assertTrue(manifest.getBehaviors().isEmpty());
     }
 
     @Test
@@ -173,27 +175,10 @@ public class IiifV3ManifestServiceTest {
     }
 
     @Test
-    public void buildManifestViewInfoSingleFileTest() {
-        var fileObj1 = createFileRecord(FILE1_ID);
-        when(accessCopiesService.listViewableFiles(WORK_PID, principals)).thenReturn(Arrays.asList(workObj, fileObj1));
-        var countMap = new HashMap<String, Long>();
-        countMap.put("child", 1L);
-        workObj.setCountMap(countMap);
-
-        var manifest = manifestService.buildManifest(WORK_PID, agent);
-
-        assertNull(manifest.getViewingDirection());
-        assertTrue(manifest.getBehaviors().isEmpty());
-    }
-
-    @Test
     public void buildManifestViewInfoMultipleFilesTest() {
         var fileObj1 = createFileRecord(FILE1_ID);
         var fileObj2 = createFileRecord(FILE2_ID);
         when(accessCopiesService.listViewableFiles(WORK_PID, principals)).thenReturn(Arrays.asList(workObj, fileObj1, fileObj2));
-
-        var countMap = Map.of("child", 2L);
-        workObj.setCountMap(countMap);
         workObj.setViewBehavior(ViewSettingRequest.ViewBehavior.PAGED.getString());
 
         var manifest = manifestService.buildManifest(WORK_PID, agent);
