@@ -9,6 +9,7 @@ import edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.boxc.search.api.models.ContentObjectRecord;
 import edu.unc.lib.boxc.search.solr.services.SolrSearchService;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
@@ -56,16 +57,24 @@ public class AnalyticsTrackerUtilTest {
     private StringBuffer urlBuffer = new StringBuffer("https://www.example.org");
     private String url = "http://example.com/rest/content/03/11/45/33/03114533-0017-4c83-b9d9-567b08fb2429";
     private int siteID = 3;
+    private AutoCloseable closeable;
 
     @BeforeEach
     public void setup() {
-        MockitoAnnotations.openMocks(this);
+        closeable = MockitoAnnotations.openMocks(this);
         analyticsTrackerUtil = new AnalyticsTrackerUtil();
         analyticsTrackerUtil.setSolrSearchService(solrSearchService);
         analyticsTrackerUtil.setMatomoApiURL(apiURL);
         analyticsTrackerUtil.setMatomoAuthToken(authToken);
         analyticsTrackerUtil.setMatomoSiteID(siteID);
+        analyticsTrackerUtil.init();
         principals = new AccessGroupSetImpl("some_group");
+    }
+
+    @AfterEach
+    void closeService() throws Exception {
+        analyticsTrackerUtil.close();
+        closeable.close();
     }
 
     @Test
@@ -147,20 +156,19 @@ public class AnalyticsTrackerUtilTest {
         assertEquals("1.1.1.1", userData.uip);
     }
 
-//    @Test
-//    public void testAnalyticsUserDataInvalidUidCookie() {
-//        when(request.getHeader("Proxy-Client-IP")).thenReturn("0.0.0.0");
-//        var uidCookie = mock(Cookie.class);
-//        when(uidCookie.getName()).thenReturn("_pk_id");
-//        when(uidCookie.getValue()).thenReturn("");
-//        when(request.getCookies()).thenReturn(new Cookie[]{ uidCookie });
-//        when(request.getHeader("User-Agent")).thenReturn("boxy-client");
-//        when(request.getRequestURL()).thenReturn(urlBuffer);
-//
-//        var userData = new AnalyticsTrackerUtil.AnalyticsUserData(request);
-//        assertNotNull(userData.uid);
-//        assertFalse(userData.uid.isEmpty());
-//    }
+    @Test
+    public void testAnalyticsUserDataInvalidUidCookie() throws Exception {
+        when(request.getHeader("Proxy-Client-IP")).thenReturn("0.0.0.0");
+        var uidCookie = mock(Cookie.class);
+        when(uidCookie.getName()).thenReturn("_pk_id");
+        when(uidCookie.getValue()).thenReturn("");
+        when(request.getCookies()).thenReturn(new Cookie[]{ uidCookie });
+        when(request.getHeader("User-Agent")).thenReturn("boxy-client");
+        when(request.getRequestURL()).thenReturn(urlBuffer);
+
+        var userData = new AnalyticsTrackerUtil.AnalyticsUserData(request);
+        assertNotNull(userData.getVisitorId());
+    }
 
     private void assertMatomoQueryIsCorrect(Map<String, StringValuePattern> params) {
         for (int i=0 ; i<100 ; i++) {

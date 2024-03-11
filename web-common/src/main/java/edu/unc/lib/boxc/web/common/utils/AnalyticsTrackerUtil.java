@@ -29,14 +29,28 @@ public class AnalyticsTrackerUtil {
 
     private static final Logger log = LoggerFactory.getLogger(AnalyticsTrackerUtil.class);
 
-    // Made up CID to use if the request does not include one, such as from a API request
-    protected static final String DEFAULT_CID = "35009a79-1a05-49d7-b876-2b884d0f825b";
     public static final String MATOMO_ACTION = "Downloaded Original";
 
     private String matomoAuthToken;
     private String matomoApiURL;
     private int matomoSiteID;
     private SolrSearchService solrSearchService;
+    private MatomoTracker tracker;
+
+    public void init() {
+        tracker = new MatomoTracker(TrackerConfiguration
+                .builder()
+                .apiEndpoint(URI.create(matomoApiURL))
+                .build());
+    }
+
+    public void close() {
+        try {
+            tracker.close();
+        } catch (Exception e) {
+            log.warn("Failed to close matomo tracker", e);
+        }
+    }
 
     /**
      * Track an event with the specified action for object pid for the active user on the request.
@@ -67,7 +81,7 @@ public class AnalyticsTrackerUtil {
     private MatomoRequest buildMatomoRequest(String url, AnalyticsUserData userData, String parentCollection, String label) throws UnsupportedEncodingException {
         return MatomoRequest.request()
                 .siteId(matomoSiteID)
-                .visitorId(VisitorId.fromHex(userData.uid))
+                .visitorId(userData.getVisitorId())
                 .actionUrl(url)
                 .actionName(parentCollection + " / " + MATOMO_ACTION)
                 .eventCategory(parentCollection)
@@ -80,11 +94,6 @@ public class AnalyticsTrackerUtil {
     }
 
     private void sendMatomoRequest(MatomoRequest matomoRequest) {
-        var tracker = new MatomoTracker(TrackerConfiguration
-                .builder()
-                .apiEndpoint(URI.create(matomoApiURL))
-                .build());
-
         try {
             tracker.sendRequestAsync(matomoRequest);
         } catch (Exception e) {
@@ -126,7 +135,6 @@ public class AnalyticsTrackerUtil {
         public String userAgent;
         // matomo user id
         public String uid;
-        private Random randomService = new Random();
 
         public AnalyticsUserData(HttpServletRequest request) {
 
@@ -165,26 +173,21 @@ public class AnalyticsTrackerUtil {
                 }
             }
 
-            // if it cannot be found in the cookie, generate a random 16 character hex user ID
-            if (StringUtils.isBlank(uid)) {
-                // Commented out temporarily while we debug a resource exhaustion issue
-//                uid = generateUserId();
-            }
-
             userAgent = request.getHeader("User-Agent");
             if (userAgent == null) {
                 userAgent = "";
             }
         }
 
-        private String generateUserId() {
-            StringBuilder sb = new StringBuilder();
-            while (sb.length() < 16) {
-                sb.append(Integer.toHexString(randomService.nextInt()));
+        public VisitorId getVisitorId() {
+            if (StringUtils.isBlank(uid)) {
+                // Generate a random visitor id if none is set
+                return VisitorId.random();
+            } else {
+                return VisitorId.fromHex(uid);
             }
-            sb.setLength(16);
-            return sb.toString();
         }
+
         private boolean hasUnknownUip(String uip) {
             return StringUtils.isBlank(uip) || "unknown".equalsIgnoreCase(uip);
         }
