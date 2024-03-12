@@ -67,7 +67,8 @@ public abstract class AbstractQueryService {
             SearchFieldKey.SUBJECT.name(),
             SearchFieldKey.TIMESTAMP.name(),
             SearchFieldKey.TITLE.name(),
-            SearchFieldKey.VERSION.name());
+            SearchFieldKey.VERSION.name(),
+            SearchFieldKey.VIEW_BEHAVIOR.name());
 
     @Autowired
     protected SearchSettings searchSettings;

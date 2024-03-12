@@ -214,6 +214,10 @@ public class SerializationUtil {
             result.put("timestamp", metadata.getTimestamp());
         }
 
+        if (metadata.getViewBehavior() != null) {
+            result.put("viewBehavior", metadata.getViewBehavior());
+        }
+
         if (groups != null && metadata.getRoleGroup() != null) {
             result.put("permissions", getPermissionsByGroups(metadata, groups));
         }
