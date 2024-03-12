@@ -308,6 +308,14 @@ public class IndexDocumentBean {
         fields.put(SearchFieldKey.MEMBER_ORDER_ID.getSolrField(), value);
     }
 
+    public String getViewBehavior() {
+        return (String) fields.get(SearchFieldKey.VIEW_BEHAVIOR.getSolrField());
+    }
+    @Field
+    public void setViewBehavior(String behavior) {
+        fields.put(SearchFieldKey.VIEW_BEHAVIOR.getSolrField(), behavior);
+    }
+
     public String getTitle() {
         return (String) fields.get(TITLE.getSolrField());
     }

@@ -1,0 +1,20 @@
+<iframe id="upload_file_frame" name="upload_file_frame" height="0" width="0" style="display: none;"></iframe>
+<form id="edit_view_settings" class="edit_form edit_view_settings_form">
+    <div class="form_field">
+        <label for="view_settings_change">Page Display:</label>
+        <select id="view_settings_change">
+            <option value="individuals" <%= (metadata.viewBehavior === undefined || metadata.viewBehavior === 'individuals') ? "selected" : "" %>>Individuals</option>
+            <option value="paged" <%= (metadata.viewBehavior == 'paged') ? "selected" : "" %>>Paged</option>
+            <option value="continuous" <%= (metadata.viewBehavior == 'continuous') ? "selected" : "" %>>Continuous</option>
+        </select>
+    </div>
+
+    <div class="update_field">
+        <input type="submit" id="edit_view_settings_submit_button" class="update_button" value="Save Changes" />
+    </div>
+    <input id="view_settings_targets" type="hidden" name="pids" value="<%= options.targets %>">
+    <div class="errors">
+        <h3>Errors</h3>
+        <div class="error_stack"></div>
+    </div>
+</form>

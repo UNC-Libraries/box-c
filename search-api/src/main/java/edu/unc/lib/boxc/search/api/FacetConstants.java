@@ -26,5 +26,8 @@ public abstract class FacetConstants {
     public static final String HAS_THUMBNAIL_ASSIGNED = "Has Assigned Thumbnail";
     public static final String NO_THUMBNAIL_ASSIGNED = "No Assigned Thumbnail";
     public static final String ASSIGNED_AS_THUMBNAIL = "Assigned As Thumbnail";
+    public static final String VIEW_BEHAVIOR_INDIVIDUALS = "View Behavior Individuals";
+    public static final String VIEW_BEHAVIOR_PAGED = "View Behavior Paged";
+    public static final String VIEW_BEHAVIOR_CONTINUOUS = "View Behavior Continuous";
 
 }

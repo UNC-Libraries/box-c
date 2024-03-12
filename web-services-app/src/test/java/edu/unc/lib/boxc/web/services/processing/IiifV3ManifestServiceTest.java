@@ -1,5 +1,6 @@
 package edu.unc.lib.boxc.web.services.processing;
 
+import de.digitalcollections.iiif.model.enums.ViewingDirection;
 import edu.unc.lib.boxc.auth.api.Permission;
 import edu.unc.lib.boxc.auth.api.exceptions.AccessRestrictionException;
 import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
@@ -9,12 +10,14 @@ import edu.unc.lib.boxc.model.api.ResourceType;
 import edu.unc.lib.boxc.model.api.exceptions.NotFoundException;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
+import edu.unc.lib.boxc.operations.jms.viewSettings.ViewSettingRequest;
 import edu.unc.lib.boxc.search.api.models.ContentObjectRecord;
 import edu.unc.lib.boxc.search.solr.models.ContentObjectSolrRecord;
 import edu.unc.lib.boxc.search.solr.models.DatastreamImpl;
 import edu.unc.lib.boxc.web.common.services.AccessCopiesService;
 import info.freelibrary.iiif.presentation.v3.Canvas;
 import info.freelibrary.iiif.presentation.v3.ImageContent;
+import info.freelibrary.iiif.presentation.v3.properties.behaviors.ManifestBehavior;
 import info.freelibrary.iiif.presentation.v3.services.ImageService3;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -24,6 +27,7 @@ import org.mockito.Mock;
 import java.util.Arrays;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
@@ -154,6 +158,9 @@ public class IiifV3ManifestServiceTest {
 
         assertEquals("<a href=\"http://example.com/record/faffb3e1-85fc-451f-9075-c60fc7584c7b\">View full record</a>",
                 manifest.getMetadata().get(0).getValue().getString());
+
+        assertNull(manifest.getViewingDirection());
+        assertTrue(manifest.getBehaviors().isEmpty());
     }
 
     @Test
@@ -164,6 +171,19 @@ public class IiifV3ManifestServiceTest {
 
         var canvas = manifestService.buildCanvas(filePid, agent);
         assertFileCanvasPopulated(canvas, FILE1_ID);
+    }
+
+    @Test
+    public void buildManifestViewInfoMultipleFilesTest() {
+        var fileObj1 = createFileRecord(FILE1_ID);
+        var fileObj2 = createFileRecord(FILE2_ID);
+        when(accessCopiesService.listViewableFiles(WORK_PID, principals)).thenReturn(Arrays.asList(workObj, fileObj1, fileObj2));
+        workObj.setViewBehavior(ViewSettingRequest.ViewBehavior.PAGED.getString());
+
+        var manifest = manifestService.buildManifest(WORK_PID, agent);
+
+        assertEquals(ViewingDirection.LEFT_TO_RIGHT.toString(), manifest.getViewingDirection().toString());
+        assertEquals(ManifestBehavior.PAGED, manifest.getBehaviors().get(0));
     }
     
     private void assertFileCanvasPopulated(Canvas fileCanvas, String expectedId) {
