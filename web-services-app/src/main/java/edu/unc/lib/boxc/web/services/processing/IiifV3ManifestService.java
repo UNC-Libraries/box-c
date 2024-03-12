@@ -20,15 +20,19 @@ import info.freelibrary.iiif.presentation.v3.PaintingAnnotation;
 import info.freelibrary.iiif.presentation.v3.properties.Label;
 import info.freelibrary.iiif.presentation.v3.properties.Metadata;
 import info.freelibrary.iiif.presentation.v3.properties.RequiredStatement;
+import info.freelibrary.iiif.presentation.v3.properties.ViewingDirection;
 import info.freelibrary.iiif.presentation.v3.services.ImageService3;
+import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.CollectionUtils;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import static edu.unc.lib.boxc.model.api.DatastreamType.JP2_ACCESS_COPY;
+import static info.freelibrary.iiif.presentation.v3.properties.behaviors.ManifestBehavior.from;
 
 /**
  * Service for generating iiif v3 manifests for repository object
@@ -51,7 +55,7 @@ public class IiifV3ManifestService {
     public Manifest buildManifest(PID pid, AgentPrincipals agent) {
         assertHasAccess(pid, agent);
         var contentObjs = accessCopiesService.listViewableFiles(pid, agent.getPrincipals());
-        if (contentObjs.size() == 0) {
+        if (contentObjs.isEmpty()) {
             throw new NotFoundException("No objects were found for inclusion in manifest for object " + pid.getId());
         }
         log.debug("Constructing manifest for {} containing {} items", pid.getId(), contentObjs.size());
@@ -61,6 +65,8 @@ public class IiifV3ManifestService {
         addAttribution(manifest, rootObj);
 
         addCanvasItems(manifest, contentObjs);
+
+        addViewingDirectionAndBehavior(manifest, rootObj);
 
         return manifest;
     }
@@ -175,6 +181,17 @@ public class IiifV3ManifestService {
             var height = Integer.parseInt(imgDimensions[0]);
             canvas.setWidthHeight(width, height); // Dimensions for the canvas
             imageContent.setWidthHeight(width, height); // Dimensions for the actual image
+        }
+    }
+
+    private void addViewingDirectionAndBehavior(Manifest manifest, ContentObjectRecord contentObj) {
+        if (Objects.equals(contentObj.getResourceType(), ResourceType.Work.name())) {
+            manifest.setViewingDirection(ViewingDirection.LEFT_TO_RIGHT);
+            var behaviorString = contentObj.getViewBehavior();
+            if (!StringUtils.isBlank(behaviorString)) {
+                var behavior = from(behaviorString);
+                manifest.setBehaviors(behavior);
+            }
         }
     }
 

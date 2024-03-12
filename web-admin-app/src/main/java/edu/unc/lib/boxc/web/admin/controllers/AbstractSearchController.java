@@ -31,7 +31,8 @@ public class AbstractSearchController extends AbstractSolrSearchController {
             SearchFieldKey.FILE_FORMAT_CATEGORY.name(), SearchFieldKey.FILE_FORMAT_TYPE.name(),
             SearchFieldKey.FILE_FORMAT_DESCRIPTION.name(),
             SearchFieldKey.CONTENT_STATUS.name(), SearchFieldKey.TIMESTAMP.name(),
-            SearchFieldKey.ANCESTOR_PATH.name(), SearchFieldKey.ROLLUP_ID.name());
+            SearchFieldKey.ANCESTOR_PATH.name(), SearchFieldKey.ROLLUP_ID.name(),
+            SearchFieldKey.VIEW_BEHAVIOR.name());
 
     @Override
     protected SearchResultResponse getSearchResults(SearchRequest searchRequest) {
