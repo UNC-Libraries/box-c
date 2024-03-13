@@ -1,5 +1,24 @@
 package edu.unc.lib.boxc.web.common.auth.filters;
 
+import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
+import edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore;
+import edu.unc.lib.boxc.web.common.auth.HttpAuthHeaders;
+import edu.unc.lib.boxc.web.common.auth.PatronPrincipalProvider;
+import edu.unc.lib.boxc.web.common.auth.RemoteUserUtil;
+import org.apache.commons.io.FileUtils;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
+import org.mockito.Mock;
+
+import javax.servlet.FilterChain;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.File;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
+
 import static edu.unc.lib.boxc.auth.api.AccessPrincipalConstants.AUTHENTICATED_PRINC;
 import static edu.unc.lib.boxc.auth.api.AccessPrincipalConstants.IP_PRINC_NAMESPACE;
 import static edu.unc.lib.boxc.auth.api.AccessPrincipalConstants.PUBLIC_PRINC;
@@ -14,26 +33,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.openMocks;
-
-import java.io.File;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Path;
-
-import javax.servlet.FilterChain;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
-import org.apache.commons.io.FileUtils;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.io.TempDir;
-import org.mockito.Mock;
-
-import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
-import edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore;
-import edu.unc.lib.boxc.web.common.auth.PatronPrincipalProvider;
-import edu.unc.lib.boxc.web.common.auth.RemoteUserUtil;
 
 /**
  *
@@ -194,7 +193,19 @@ public class StoreUserAccessControlFilterTest {
         filter.doFilter(request, response, filterChain);
 
         AccessGroupSet accessGroups = GroupsThreadStore.getGroups();
-        assertEquals(0, accessGroups.size());
+        assertEquals(1, accessGroups.size());
+        assertEquals(PUBLIC_PRINC, accessGroups.toString());
+    }
+
+    @Test
+    public void testGrouperNoGroups() throws Exception {
+        when(request.getHeader(HttpAuthHeaders.SHIBBOLETH_GROUPS_HEADER)).thenReturn("");
+
+        filter.doFilter(request, response, filterChain);
+
+        AccessGroupSet accessGroups = GroupsThreadStore.getGroups();
+        assertEquals(1, accessGroups.size());
+        assertEquals(PUBLIC_PRINC, accessGroups.toString());
     }
 
     @Test
