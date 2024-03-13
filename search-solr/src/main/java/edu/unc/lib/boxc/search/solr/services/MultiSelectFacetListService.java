@@ -73,6 +73,9 @@ public class MultiSelectFacetListService extends AbstractFacetListService {
         resultResponse.setSelectedContainer(selectedContainer);
         // Get list of facet fields without filters. Next we will add facet fields which are filtered to this list.
         FacetFieldList resultFacets = resultResponse.getFacetFields();
+        if (resultFacets == null) {
+            resultFacets = new FacetFieldList();
+        }
 
         // For each facet selected in the original search state, add facet list with results as
         // if the that facet were not selected

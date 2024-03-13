@@ -29,6 +29,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -42,6 +43,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.MockitoAnnotations.openMocks;
 
 /**
@@ -637,6 +639,18 @@ public class MultiSelectFacetListServiceIT extends BaseEmbeddedSolrTest {
 
         assertNumberFacetsReturned(resp, DATE_CREATED_YEAR, 1);
         assertFacetValueCount(resp, DATE_CREATED_YEAR, UnknownRange.UNKNOWN_VALUE, 1);
+    }
+
+    @Test
+    public void noFacetsToRetrieveTest() throws Exception {
+        SearchState searchState = new SearchState();
+        searchState.setFacetsToRetrieve(Collections.emptyList());
+
+        SearchRequest request = new SearchRequest(searchState, accessGroups);
+        request.setRetrieveFacets(false);
+        SearchResultResponse resp = service.getFacetListResult(request);
+
+        assertTrue(resp.getFacetFields().isEmpty());
     }
 
     @Test
