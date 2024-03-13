@@ -7,6 +7,7 @@ import static edu.unc.lib.boxc.auth.api.Permission.createCollection;
 import static edu.unc.lib.boxc.auth.api.Permission.destroy;
 import static edu.unc.lib.boxc.auth.api.Permission.editDescription;
 import static edu.unc.lib.boxc.auth.api.Permission.editResourceType;
+import static edu.unc.lib.boxc.auth.api.Permission.editViewSettings;
 import static edu.unc.lib.boxc.auth.api.Permission.ingest;
 import static edu.unc.lib.boxc.auth.api.Permission.markForDeletion;
 import static edu.unc.lib.boxc.auth.api.Permission.markForDeletionUnit;
@@ -53,7 +54,8 @@ public enum UserRole {
     // Staff roles
     canAccess("canAccess", true, canViewOriginals, viewHidden),
     canIngest("canIngest", true, canAccess, ingest),
-    canDescribe("canDescribe", true, canAccess, editDescription, bulkUpdateDescription),
+    canDescribe("canDescribe", true, canAccess,
+            editDescription, bulkUpdateDescription, editViewSettings),
     canProcess("canProcess", true, canDescribe,
             move, orderMembers, markForDeletion, changePatronAccess),
     canManage("canManage", true, canProcess,

@@ -140,4 +140,6 @@ public interface ContentObjectRecord {
     String getThumbnailId();
 
     void setThumbnailId(String id);
+
+    String getViewBehavior();
 }

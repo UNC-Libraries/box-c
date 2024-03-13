@@ -3,12 +3,17 @@
 	font-size: 13px;
 	background-color: #fff;
 	font-family: Verdana,Arial,sans-serif;
+	margin-top: 25px;
 }
 
 .edit_form .form_field {
 	padding-left: 5px;
 	text-align: left;
 	margin-bottom: 10px;
+}
+
+.edit_form .form_field select {
+	min-width: 200px;
 }
 
 .edit_form .file_info {
@@ -29,10 +34,9 @@
 }
 
 .edit_form label {
-	text-align: right;
-	width: 160px;
+	width: auto;
 	display: inline-block;
-	margin-right: 20px;
+	margin-right: 10px;
 }
 
 .edit_form label.form_inline {
