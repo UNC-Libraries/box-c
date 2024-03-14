@@ -92,13 +92,6 @@ public class Cdr {
     public static final Property historicalPath = createProperty(
             "http://cdr.unc.edu/definitions/model#historicalPath" );
 
-    /**
-     * Property containing the identifier of the storage location in which content
-     * for this resource is located.
-     */
-    public static final Property storageLocation = createProperty(
-            "http://cdr.unc.edu/definitions/model#storageLocation" );
-
     /** Reference to a vocabulary object. For objects in this collection, if the given
      *  vocabulary applies to a descriptive field it will only index its value if
      *  it is found within the vocabulary.
@@ -130,6 +123,31 @@ public class Cdr {
      */
     public static final Property replaceInvalidTerms = createProperty(
             "http://cdr.unc.edu/definitions/model#replaceInvalidTerms" );
+
+    /**
+     * Property containing the identifier of the storage location in which content
+     * for this resource is located.
+     */
+    public static final Property storageLocation = createProperty(
+            "http://cdr.unc.edu/definitions/model#storageLocation" );
+
+    /**
+     * Property which holds the streaming content filename
+     */
+    public static final Property streamingFile = createProperty(
+            "http://cdr.unc.edu/definitions/model#streamingFile");
+
+    /**
+     *  Property which holds the folder, directory, or space of the streaming content
+     */
+    public static final Property streamingFolder = createProperty(
+            "http://cdr.unc.edu/definitions/model#streamingFolder");
+
+    /**
+     * Propert that holds where the streaming content is hosted, like Duracloud
+     */
+    public static final Property streamingHost = createProperty(
+            "http://cdr.unc.edu/definitions/model#streamingHost");
 
     /**
      *
