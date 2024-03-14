@@ -94,7 +94,7 @@ public class StoreUserAccessControlFilter extends OncePerRequestFilter implement
         var publicAccessGroup = new AccessGroupSetImpl(List.of(PUBLIC_PRINC));
         if (log.isDebugEnabled()) {
             log.debug("Forwarding user {} logged in with forwarded groups {}",
-                    GroupsThreadStore.getUsername(), forwardedGroups);
+                    request.getRemoteUser(), forwardedGroups);
         }
         if (forwardedGroups == null) {
             logHeadersForEmptyForwarded(request);
