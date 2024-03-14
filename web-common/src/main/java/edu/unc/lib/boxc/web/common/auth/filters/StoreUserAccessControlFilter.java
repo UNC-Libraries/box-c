@@ -6,6 +6,7 @@ import edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl;
 import edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore;
 import edu.unc.lib.boxc.web.common.auth.HttpAuthHeaders;
 import edu.unc.lib.boxc.web.common.auth.PatronPrincipalProvider;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.context.ServletContextAware;
@@ -16,6 +17,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 import static edu.unc.lib.boxc.auth.api.AccessPrincipalConstants.PUBLIC_PRINC;
@@ -95,6 +97,7 @@ public class StoreUserAccessControlFilter extends OncePerRequestFilter implement
                     GroupsThreadStore.getUsername(), forwardedGroups);
         }
         if (forwardedGroups == null) {
+            logHeadersForEmptyForwarded(request);
             // if no group is specified, set to public
             return publicAccessGroup;
         }
@@ -102,8 +105,23 @@ public class StoreUserAccessControlFilter extends OncePerRequestFilter implement
         if (!forwardedGroups.trim().isEmpty()) {
             return new AccessGroupSetImpl(forwardedGroups);
         }
-        
+        logHeadersForEmptyForwarded(request);
         return publicAccessGroup;
+    }
+
+    private void logHeadersForEmptyForwarded(HttpServletRequest request) {
+        log.info("Forwarded with no groups using user {}, logging headers:", request.getRemoteUser());
+        // read all header names and values from the request and log them
+        List<String> emptyHeaders = new ArrayList<>();
+        request.getHeaderNames().asIterator().forEachRemaining(headerName -> {
+            String headerValue = request.getHeader(headerName);
+            if (StringUtils.isBlank(headerValue)) {
+                emptyHeaders.add(headerName);
+            } else {
+                log.info("   name: {}, value: {}", headerName, headerValue);
+            }
+        });
+        log.info("   Empty headers: {}", emptyHeaders);
     }
 
     protected AccessGroupSet getGrouperGroups(HttpServletRequest request) {
