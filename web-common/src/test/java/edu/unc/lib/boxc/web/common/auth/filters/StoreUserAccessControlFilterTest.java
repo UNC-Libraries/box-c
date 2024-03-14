@@ -18,6 +18,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
+import java.util.Collections;
 
 import static edu.unc.lib.boxc.auth.api.AccessPrincipalConstants.AUTHENTICATED_PRINC;
 import static edu.unc.lib.boxc.auth.api.AccessPrincipalConstants.IP_PRINC_NAMESPACE;
@@ -188,6 +189,7 @@ public class StoreUserAccessControlFilterTest {
     public void testForwardedNoGroups() throws Exception {
         when(request.getRemoteUser()).thenReturn("forwarder");
         when(request.isUserInRole(FORWARDING_ROLE)).thenReturn(true);
+        when(request.getHeaderNames()).thenReturn(Collections.emptyEnumeration());
         when(request.getHeader(FORWARDED_GROUPS_HEADER)).thenReturn("");
 
         filter.doFilter(request, response, filterChain);
