@@ -144,7 +144,7 @@ public class Cdr {
             "http://cdr.unc.edu/definitions/model#streamingFolder");
 
     /**
-     * Propert that holds where the streaming content is hosted, like Duracloud
+     * Property that holds where the streaming content is hosted, like Duracloud
      */
     public static final Property streamingHost = createProperty(
             "http://cdr.unc.edu/definitions/model#streamingHost");

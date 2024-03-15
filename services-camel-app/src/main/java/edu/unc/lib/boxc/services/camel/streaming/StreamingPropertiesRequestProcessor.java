@@ -1,0 +1,71 @@
+package edu.unc.lib.boxc.services.camel.streaming;
+
+import edu.unc.lib.boxc.auth.api.Permission;
+import edu.unc.lib.boxc.auth.api.services.AccessControlService;
+import edu.unc.lib.boxc.model.api.exceptions.ObjectTypeMismatchException;
+import edu.unc.lib.boxc.model.api.ids.PID;
+import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
+import edu.unc.lib.boxc.model.api.rdf.Cdr;
+import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
+import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
+import edu.unc.lib.boxc.operations.jms.streaming.StreamingPropertiesRequest;
+import edu.unc.lib.boxc.operations.jms.streaming.StreamingPropertiesRequestSerializationHelper;
+import org.apache.camel.Exchange;
+import org.apache.camel.Processor;
+import org.apache.tika.utils.StringUtils;
+
+import java.io.IOException;
+
+import static edu.unc.lib.boxc.operations.jms.streaming.StreamingPropertiesRequest.VALID_FOLDERS;
+
+/**
+ * Processing requests to edit streaming properties on a FileObject
+ */
+public class StreamingPropertiesRequestProcessor implements Processor {
+    private RepositoryObjectLoader repositoryObjectLoader;
+    private RepositoryObjectFactory repositoryObjectFactory;
+    private AccessControlService aclService;
+
+    @Override
+    public void process(Exchange exchange) throws IOException {
+        var in = exchange.getIn();
+        var request = StreamingPropertiesRequestSerializationHelper.toRequest(in.getBody(String.class));
+        var agent = request.getAgent();
+        var pid = PIDs.get(request.getFilePidString());
+
+        aclService.assertHasAccess("User does not have permission to set streaming properties",
+                pid, agent.getPrincipals(), Permission.ingest);
+
+        if (isValid(request, pid)) {
+            var file = repositoryObjectLoader.getFileObject(pid);
+            repositoryObjectFactory.createExclusiveRelationship(
+                    file, Cdr.streamingHost, request.getHost());
+            repositoryObjectFactory.createExclusiveRelationship(
+                    file, Cdr.streamingFile, request.getFilename());
+            repositoryObjectFactory.createExclusiveRelationship(
+                    file, Cdr.streamingFolder, request.getFolder());
+        }
+    }
+
+    private boolean isValid(StreamingPropertiesRequest request, PID pid) {
+        var folder = request.getFolder();
+        if (StringUtils.isBlank(request.getFilename()) || StringUtils.isBlank(folder)) {
+            return false;
+        }
+
+        if (!VALID_FOLDERS.contains(folder)) {
+            return false;
+        }
+
+        try {
+            repositoryObjectLoader.getFileObject(pid);
+        } catch (ObjectTypeMismatchException e) {
+            return false;
+        }
+        return true;
+    }
+
+    private String formatFilename(String filename) {
+        return filename;
+    }
+}
