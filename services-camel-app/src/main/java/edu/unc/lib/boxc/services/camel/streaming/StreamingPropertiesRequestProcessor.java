@@ -17,6 +17,8 @@ import org.apache.tika.utils.StringUtils;
 import java.io.IOException;
 
 import static edu.unc.lib.boxc.operations.jms.streaming.StreamingPropertiesRequest.VALID_FOLDERS;
+import static org.apache.commons.io.FilenameUtils.getName;
+import static org.apache.commons.io.FilenameUtils.removeExtension;
 
 /**
  * Processing requests to edit streaming properties on a FileObject
@@ -41,9 +43,11 @@ public class StreamingPropertiesRequestProcessor implements Processor {
             repositoryObjectFactory.createExclusiveRelationship(
                     file, Cdr.streamingHost, request.getHost());
             repositoryObjectFactory.createExclusiveRelationship(
-                    file, Cdr.streamingFile, request.getFilename());
+                    file, Cdr.streamingFile, formatFilename(request.getFilename()));
             repositoryObjectFactory.createExclusiveRelationship(
                     file, Cdr.streamingFolder, request.getFolder());
+        } else {
+            throw new IllegalArgumentException("Both a filename and streaming folder are required.");
         }
     }
 
@@ -65,7 +69,27 @@ public class StreamingPropertiesRequestProcessor implements Processor {
         return true;
     }
 
+    /**
+     * Converts a filename to appropriate format for streaming
+     * A filename like a/b/banjo_recording.mp3 would transform to banjo_recording-playlist.m3u8
+     * @param filename filename of the file object
+     * @return formatted string
+     */
     private String formatFilename(String filename) {
-        return filename;
+        var nameOnly = getName(filename);
+        return removeExtension(nameOnly) + "-playlist.m3u8";
+    }
+
+
+    public void setRepositoryObjectLoader(RepositoryObjectLoader repositoryObjectLoader) {
+        this.repositoryObjectLoader = repositoryObjectLoader;
+    }
+
+    public void setRepositoryObjectFactory(RepositoryObjectFactory repositoryObjectFactory) {
+        this.repositoryObjectFactory = repositoryObjectFactory;
+    }
+
+    public void setAclService(AccessControlService aclService) {
+        this.aclService = aclService;
     }
 }

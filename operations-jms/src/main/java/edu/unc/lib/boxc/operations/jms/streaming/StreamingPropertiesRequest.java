@@ -10,7 +10,7 @@ import java.util.Set;
 import static java.util.Arrays.asList;
 
 public class StreamingPropertiesRequest {
-    private static final String DURACLOUD = "duracloud";
+    public static final String DURACLOUD = "duracloud";
     public static final String OPEN = "open-hls";
     public static final String CLOSED = "closed-hls";
     public static final String CAMPUS = "campus-hls";
