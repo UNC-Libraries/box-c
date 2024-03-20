@@ -1,15 +1,14 @@
-package edu.unc.lib.boxc.services.camel.viewSettings;
+package edu.unc.lib.boxc.services.camel.streaming;
 
 import edu.unc.lib.boxc.auth.api.models.AgentPrincipals;
 import edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl;
 import edu.unc.lib.boxc.auth.fcrepo.models.AgentPrincipalsImpl;
-import edu.unc.lib.boxc.operations.jms.viewSettings.ViewSettingRequest;
-import edu.unc.lib.boxc.operations.jms.viewSettings.ViewSettingRequestSerializationHelper;
+import edu.unc.lib.boxc.operations.jms.streaming.StreamingPropertiesRequest;
+import edu.unc.lib.boxc.operations.jms.streaming.StreamingPropertiesRequestSerializationHelper;
 import edu.unc.lib.boxc.services.camel.TestHelper;
 import org.apache.camel.BeanInject;
 import org.apache.camel.Produce;
 import org.apache.camel.ProducerTemplate;
-import org.apache.camel.builder.AdviceWithRouteBuilder;
 import org.apache.camel.test.spring.CamelSpringTestSupport;
 import org.junit.Test;
 import org.springframework.context.support.AbstractApplicationContext;
@@ -18,31 +17,30 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 
-/**
- * @author snluong
- */
-public class ViewSettingRouterTest extends CamelSpringTestSupport {
+public class StreamingPropertiesRouterTest extends CamelSpringTestSupport {
     private AgentPrincipals agent = new AgentPrincipalsImpl("user", new AccessGroupSetImpl("agroup"));
     @Produce(uri = "direct:start")
     protected ProducerTemplate template;
 
-    @BeanInject(value = "viewSettingRequestProcessor")
-    private ViewSettingRequestProcessor processor;
+    @BeanInject(value = "streamingPropertiesRequestProcessor")
+    private StreamingPropertiesRequestProcessor processor;
 
     @Override
     protected AbstractApplicationContext createApplicationContext() {
-        return new ClassPathXmlApplicationContext("/service-context.xml", "/view-setting-context.xml");
+        return new ClassPathXmlApplicationContext("/service-context.xml", "/streaming-context.xml");
     }
 
     @Test
     public void requestSentTest() throws Exception {
-        TestHelper.createContext(context, "DcrViewSetting");
+        TestHelper.createContext(context, "DcrStreaming");
         var pid = TestHelper.makePid();
 
-        var request = new ViewSettingRequest();
+        var request = new StreamingPropertiesRequest();
         request.setAgent(agent);
-        request.setObjectPidString(pid.toString());
-        var body = ViewSettingRequestSerializationHelper.toJson(request);
+        request.setFilePidString(pid.getId());
+        request.setFolder(StreamingPropertiesRequest.CLOSED);
+        request.setFilename("new_file.mp3");
+        var body = StreamingPropertiesRequestSerializationHelper.toJson(request);
         template.sendBody(body);
 
         verify(processor).process(any());

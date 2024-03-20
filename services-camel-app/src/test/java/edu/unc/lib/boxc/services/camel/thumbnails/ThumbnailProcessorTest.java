@@ -17,7 +17,7 @@ import edu.unc.lib.boxc.operations.jms.indexing.IndexingActionType;
 import edu.unc.lib.boxc.operations.jms.indexing.IndexingMessageSender;
 import edu.unc.lib.boxc.operations.jms.thumbnails.ThumbnailRequest;
 import edu.unc.lib.boxc.operations.jms.thumbnails.ThumbnailRequestSerializationHelper;
-import edu.unc.lib.boxc.services.camel.ProcessorTestHelper;
+import edu.unc.lib.boxc.services.camel.TestHelper;
 import org.apache.camel.Exchange;
 import org.junit.Before;
 import org.junit.Test;
@@ -69,8 +69,8 @@ public class ThumbnailProcessorTest {
         processor.setIndexingMessageSender(indexingMessageSender);
         processor.setRepositoryObjectLoader(repositoryObjectLoader);
         processor.setRepositoryObjectFactory(repositoryObjectFactory);
-        filePid = ProcessorTestHelper.makePid();
-        workPid = ProcessorTestHelper.makePid();
+        filePid = TestHelper.makePid();
+        workPid = TestHelper.makePid();
         resource = mock(Resource.class);
         parentWork = mock(WorkObject.class);
 
@@ -102,7 +102,7 @@ public class ThumbnailProcessorTest {
     @Test
     public void testAssignNewThumbnail() throws Exception {
         // set up pre-existing assigned thumbnail
-        var oldThumbnailPid = ProcessorTestHelper.makePid();
+        var oldThumbnailPid = TestHelper.makePid();
         var oldThumbnailFile = mock(FileObject.class);
         var oldResource = mock(Resource.class);
         when(oldThumbnailFile.getResource()).thenReturn(oldResource);
@@ -150,6 +150,6 @@ public class ThumbnailProcessorTest {
         request.setAgent(agent);
         request.setFilePidString(filePid.toString());
         request.setAction(action);
-        return ProcessorTestHelper.mockExchange(ThumbnailRequestSerializationHelper.toJson(request));
+        return TestHelper.mockExchange(ThumbnailRequestSerializationHelper.toJson(request));
     }
 }

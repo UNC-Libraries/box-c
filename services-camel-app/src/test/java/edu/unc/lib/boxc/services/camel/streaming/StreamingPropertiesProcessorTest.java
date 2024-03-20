@@ -6,18 +6,17 @@ import edu.unc.lib.boxc.auth.api.models.AgentPrincipals;
 import edu.unc.lib.boxc.auth.api.services.AccessControlService;
 import edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl;
 import edu.unc.lib.boxc.auth.fcrepo.models.AgentPrincipalsImpl;
+import edu.unc.lib.boxc.model.api.exceptions.ObjectTypeMismatchException;
 import edu.unc.lib.boxc.model.api.objects.FileObject;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
-import edu.unc.lib.boxc.model.api.objects.WorkObject;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.rdf.Cdr;
 import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
 import edu.unc.lib.boxc.operations.jms.streaming.StreamingPropertiesRequest;
 import edu.unc.lib.boxc.operations.jms.streaming.StreamingPropertiesRequestSerializationHelper;
-import edu.unc.lib.boxc.services.camel.ProcessorTestHelper;
+import edu.unc.lib.boxc.services.camel.TestHelper;
 import org.apache.camel.Exchange;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
@@ -26,6 +25,7 @@ import java.io.IOException;
 
 import static edu.unc.lib.boxc.operations.jms.streaming.StreamingPropertiesRequest.DURACLOUD;
 import static edu.unc.lib.boxc.operations.jms.streaming.StreamingPropertiesRequest.OPEN;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
@@ -54,7 +54,7 @@ public class StreamingPropertiesProcessorTest {
         processor.setAclService(accessControlService);
         processor.setRepositoryObjectLoader(repositoryObjectLoader);
         processor.setRepositoryObjectFactory(repositoryObjectFactory);
-        filePid = ProcessorTestHelper.makePid();
+        filePid = TestHelper.makePid();
         fileObject = mock(FileObject.class);
         when(fileObject.getPid()).thenReturn(filePid);
         when(repositoryObjectLoader.getFileObject(filePid)).thenReturn(fileObject);
@@ -69,7 +69,7 @@ public class StreamingPropertiesProcessorTest {
     public void testStreamingPropertiesUpdateNoPermission() throws IOException {
         var exchange = createRequestExchange(OPEN, "banjo_recording.mp3", filePid.getId());
 
-        Assertions.assertThrows(AccessRestrictionException.class, () -> {
+        assertThrows(AccessRestrictionException.class, () -> {
             doThrow(new AccessRestrictionException()).when(accessControlService)
                     .assertHasAccess(any(), any(PID.class), any(), eq(Permission.ingest));
             processor.process(exchange);
@@ -79,23 +79,38 @@ public class StreamingPropertiesProcessorTest {
     @Test
     public void testStreamingPropertiesUpdateNoFilename() throws IOException {
         var exchange = createRequestExchange(OPEN, null, filePid.getId());
-        processor.process(exchange);
+        assertThrows(IllegalArgumentException.class, () -> {
+            processor.process(exchange);
+        });
 
     }
 
     @Test
     public void testStreamingPropertiesUpdateNoFolder() throws IOException {
         var exchange = createRequestExchange(null, "banjo_recording.mp3", filePid.getId());
-        processor.process(exchange);
+        assertThrows(IllegalArgumentException.class, () -> {
+            processor.process(exchange);
+        });
+    }
 
+    @Test
+    public void testStreamingPropertiesUpdateIncorrectFolder() throws IOException {
+        var exchange = createRequestExchange("no folder here", "banjo_recording.mp3", filePid.getId());
+        assertThrows(IllegalArgumentException.class, () -> {
+            processor.process(exchange);
+        });
     }
 
     @Test
     public void testStreamingPropertiesUpdateNotAFileObject() throws IOException {
-        var anotherPid = ProcessorTestHelper.makePid();
+        var anotherPid = TestHelper.makePid();
         var exchange = createRequestExchange(OPEN, "banjo_recording.mp3", anotherPid.getId());
-        processor.process(exchange);
 
+        assertThrows(IllegalArgumentException.class, () -> {
+            doThrow(new ObjectTypeMismatchException("not a file object")).when(repositoryObjectLoader)
+                    .getFileObject(eq(anotherPid));
+            processor.process(exchange);
+        });
     }
 
     @Test
@@ -117,7 +132,7 @@ public class StreamingPropertiesProcessorTest {
         request.setFilename(filename);
         request.setFilePidString(pid);
         request.setFolder(folder);
-        return ProcessorTestHelper.mockExchange(StreamingPropertiesRequestSerializationHelper.toJson(request));
+        return TestHelper.mockExchange(StreamingPropertiesRequestSerializationHelper.toJson(request));
     }
 
 }

@@ -15,7 +15,7 @@ import edu.unc.lib.boxc.operations.jms.indexing.IndexingActionType;
 import edu.unc.lib.boxc.operations.jms.indexing.IndexingMessageSender;
 import edu.unc.lib.boxc.operations.jms.viewSettings.ViewSettingRequest;
 import edu.unc.lib.boxc.operations.jms.viewSettings.ViewSettingRequestSerializationHelper;
-import edu.unc.lib.boxc.services.camel.ProcessorTestHelper;
+import edu.unc.lib.boxc.services.camel.TestHelper;
 import org.apache.camel.Exchange;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
@@ -59,7 +59,7 @@ public class ViewSettingRequestProcessorTest {
         processor.setRepositoryObjectLoader(repositoryObjectLoader);
         processor.setRepositoryObjectFactory(repositoryObjectFactory);
         processor.setIndexingMessageSender(indexingMessageSender);
-        workPid = ProcessorTestHelper.makePid();
+        workPid = TestHelper.makePid();
         workObject = mock(WorkObject.class);
         when(workObject.getPid()).thenReturn(workPid);
         when(repositoryObjectLoader.getRepositoryObject(workPid)).thenReturn(workObject);
@@ -107,6 +107,6 @@ public class ViewSettingRequestProcessorTest {
         request.setAgent(agent);
         request.setObjectPidString(workPid.toString());
         request.setViewBehavior(viewBehavior);
-        return ProcessorTestHelper.mockExchange(ViewSettingRequestSerializationHelper.toJson(request));
+        return TestHelper.mockExchange(ViewSettingRequestSerializationHelper.toJson(request));
     }
 }
