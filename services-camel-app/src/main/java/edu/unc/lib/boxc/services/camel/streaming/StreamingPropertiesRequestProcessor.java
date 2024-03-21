@@ -12,10 +12,13 @@ import edu.unc.lib.boxc.operations.jms.streaming.StreamingPropertiesRequest;
 import edu.unc.lib.boxc.operations.jms.streaming.StreamingPropertiesRequestSerializationHelper;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
-import org.apache.tika.utils.StringUtils;
+import org.apache.commons.lang.StringUtils;
 
 import java.io.IOException;
+import java.util.Objects;
 
+import static edu.unc.lib.boxc.operations.jms.streaming.StreamingPropertiesRequest.ADD;
+import static edu.unc.lib.boxc.operations.jms.streaming.StreamingPropertiesRequest.DELETE;
 import static edu.unc.lib.boxc.operations.jms.streaming.StreamingPropertiesRequest.VALID_FOLDERS;
 import static org.apache.commons.io.FilenameUtils.getName;
 import static org.apache.commons.io.FilenameUtils.removeExtension;
@@ -38,35 +41,52 @@ public class StreamingPropertiesRequestProcessor implements Processor {
         aclService.assertHasAccess("User does not have permission to set streaming properties",
                 pid, agent.getPrincipals(), Permission.ingest);
 
-        if (isValid(request, pid)) {
-            var file = repositoryObjectLoader.getFileObject(pid);
+        assertValid(request, pid);
+
+        var file = repositoryObjectLoader.getFileObject(pid);
+        if (Objects.equals(request.getAction(), ADD)) {
             repositoryObjectFactory.createExclusiveRelationship(
                     file, Cdr.streamingHost, request.getHost());
             repositoryObjectFactory.createExclusiveRelationship(
                     file, Cdr.streamingFile, formatFilename(request.getFilename()));
             repositoryObjectFactory.createExclusiveRelationship(
                     file, Cdr.streamingFolder, request.getFolder());
-        } else {
-            throw new IllegalArgumentException("Both a filename and streaming folder are required.");
+        } else if (Objects.equals(request.getAction(), DELETE)) {
+            repositoryObjectFactory.deleteProperty(file,Cdr.streamingHost);
+            repositoryObjectFactory.deleteProperty(file,Cdr.streamingFile);
+            repositoryObjectFactory.deleteProperty(file,Cdr.streamingFolder);
         }
     }
 
-    private boolean isValid(StreamingPropertiesRequest request, PID pid) {
+    private String validate(StreamingPropertiesRequest request, PID pid) {
         var folder = request.getFolder();
         if (StringUtils.isBlank(request.getFilename()) || StringUtils.isBlank(folder)) {
-            return false;
+            return "Both a filename and streaming folder are required.";
         }
 
         if (!VALID_FOLDERS.contains(folder)) {
-            return false;
+            return "Streaming folder is not valid.";
         }
 
         try {
             repositoryObjectLoader.getFileObject(pid);
         } catch (ObjectTypeMismatchException e) {
-            return false;
+            return "Object is not a FileObject";
         }
-        return true;
+        // Request is valid
+        return null;
+    }
+
+    /**
+     *  Throws an IllegalArgumentException if validate method returns any message
+     * @param request StreamingPropertiesRequest
+     * @param pid PID of the object to add streaming properties to
+     */
+    private void assertValid(StreamingPropertiesRequest request, PID pid) {
+        var message = validate(request, pid);
+        if (!StringUtils.isBlank(message)) {
+            throw new IllegalArgumentException(message);
+        }
     }
 
     /**

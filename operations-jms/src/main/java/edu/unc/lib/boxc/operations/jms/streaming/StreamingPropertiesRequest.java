@@ -9,17 +9,23 @@ import java.util.Set;
 
 import static java.util.Arrays.asList;
 
+/**
+ * Request object for updating the streaming properties of a FileObject
+ */
 public class StreamingPropertiesRequest {
     public static final String DURACLOUD = "duracloud";
     public static final String OPEN = "open-hls";
     public static final String CLOSED = "closed-hls";
     public static final String CAMPUS = "campus-hls";
+    public static String ADD = "add";
+    public static String DELETE = "delete";
     public static Set<String> VALID_FOLDERS = new HashSet<>(asList(OPEN, CLOSED, CAMPUS));
     @JsonDeserialize(as = AgentPrincipalsImpl.class)
     private AgentPrincipals agent;
     private String filePidString;
     private String filename;
     private String folder;
+    private String action;
     private String host = DURACLOUD;
 
 
@@ -62,5 +68,13 @@ public class StreamingPropertiesRequest {
 
     public void setHost(String host) {
         this.host = host;
+    }
+
+    public String getAction() {
+        return action;
+    }
+
+    public void setAction(String action) {
+        this.action = action;
     }
 }
