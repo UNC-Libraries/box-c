@@ -31,10 +31,20 @@
 			<li id="username_wrap">Welcome, <c:out value="${pageContext.request.remoteUser}"/></li>
 		</c:if>
 	</ul>
-	<div class="dark shadowbottom">
+	<div class="dark shadowbottom fullwidth">
 		<div class="cdr-header">
 			<h1 id="cdr-logo"><a href="${pageContext.request.contextPath}/" id="titlelink"><span class="dark-title">DIGITAL</span> <span class="light-title">COLLECTIONS</span> <span class="dark-title">REPOSITORY</span><span class="sub-title">Administration</span></a></h1>
-			
+			<div id="search-tags">
+				<ul id="search-tags-reset">
+					<li>
+						<a id="clear-results" class="button is-link is-small disabled" href="#">Start over <i class="fas fa-times"></i></a>
+					</li>
+					<li class="facets-button hide">
+						<a class="clear-all-facets button is-link is-small" href="#">Clear filters <i class="fas fa-times"></i></a>
+					</li>
+				</ul>
+				<ul id="search-tags-list"></ul>
+			</div>
 			<ul id="mainmenu">
 				<li>
 					<c:set var="tabClass"><c:if test="${requestScope.queryMethod == 'list' || requestScope.queryMethod == 'search'}">active</c:if></c:set>
