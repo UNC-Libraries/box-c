@@ -11,7 +11,7 @@ define('ImportMenu', [ 'jquery', 'jquery-ui', 'underscore', 'ImportMemberOrderFo
         ImportMenu.prototype.getMenuItems = function() {
             let items = {};
 
-            if ($.inArray('bulkUpdateDescription', this.container.permissions) !== -1) {
+            if (this.container !== undefined && $.inArray('bulkUpdateDescription', this.container.permissions) !== -1) {
                 items["importMemberOrder"] = {name : "Member Order"};
                 items["importMetadata"] = {name : "Bulk MODS"};
             }
