@@ -97,6 +97,9 @@ public class StreamingPropertiesRequestProcessor implements Processor {
      */
     private String formatFilename(String filename) {
         var nameOnly = getName(filename);
+        if (nameOnly.contains("-playlist.m3u8")) {
+            return nameOnly;
+        }
         return removeExtension(nameOnly) + "-playlist.m3u8";
     }
 

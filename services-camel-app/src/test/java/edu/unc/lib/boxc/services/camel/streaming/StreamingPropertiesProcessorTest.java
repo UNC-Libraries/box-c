@@ -129,6 +129,15 @@ public class StreamingPropertiesProcessorTest {
     }
 
     @Test
+    public void testStreamingPropertiesUpdateFilenameAlreadyFormattedSuccess() throws IOException {
+        var exchange = createRequestExchange(OPEN, "banjo_recording-playlist.m3u8", filePid.getId(), ADD);
+        processor.process(exchange);
+
+        verify(repositoryObjectFactory).createExclusiveRelationship(
+                eq(fileObject), eq(Cdr.streamingFile), eq("banjo_recording-playlist.m3u8"));
+    }
+
+    @Test
     public void testStreamingPropertiesDeleteSuccess() throws IOException {
         var exchange = createRequestExchange(OPEN, "banjo_recording.mp3", filePid.getId(), DELETE);
         processor.process(exchange);
