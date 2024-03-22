@@ -34,6 +34,7 @@
         <property name="childrenCountService" ref="childrenCountService"/>
         <property name="aclService" ref="aclService"/>
         <property name="queryLayer" ref="queryLayer"/>
+        <property name="repositoryObjectLoader" ref="repositoryObjectLoader"/>
     </bean>
 
     <util:set id="accessGroups" set-class="edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl">
