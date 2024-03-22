@@ -281,7 +281,7 @@ public class ExportCsvService {
         String computedPermissions = computePatronPermissions(object.getRoleGroup());
         printer.print(computedPermissions);
 
-        // Is object embargoed
+        // Embargo expiration date, if one is set
         printer.print(getEmbargoDate(object));
 
         // View behavior
@@ -300,7 +300,7 @@ public class ExportCsvService {
         if (embargoProperty == null) {
             return "";
         }
-        // Return just the date part of the embargo timestamp
+        // Return just the date part of the embargo timestamp, in YYYY-MM-DD format
         return StringUtils.substringBefore(embargoProperty.getString(), "T");
     }
 
