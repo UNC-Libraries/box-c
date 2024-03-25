@@ -7,6 +7,7 @@ import static edu.unc.lib.boxc.auth.api.UserRole.canViewOriginals;
 import static edu.unc.lib.boxc.auth.api.UserRole.none;
 import static edu.unc.lib.boxc.model.api.DatastreamType.ORIGINAL_FILE;
 import static edu.unc.lib.boxc.model.api.ids.RepositoryPathConstants.CONTENT_ROOT_ID;
+import static edu.unc.lib.boxc.model.api.rdf.CdrAcl.embargoUntil;
 import static edu.unc.lib.boxc.search.api.FacetConstants.MARKED_FOR_DELETION;
 
 import java.io.BufferedWriter;
@@ -23,6 +24,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
+import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
 import org.apache.commons.lang3.StringUtils;
@@ -70,7 +72,7 @@ public class ExportCsvService {
     public static final String NUM_CHILDREN_HEADER = "Number of Children";
     public static final String DESCRIBED_HEADER = "Description";
     public static final String PATRON_PERMISSIONS_HEADER = "Patron Permissions";
-    public static final String EMBARGO_HEADER = "Embargoed";
+    public static final String EMBARGO_HEADER = "Embargo Date";
     public static final String VIEW_BEHAVIOR_HEADER = "View";
 
     private static final String[] CSV_HEADERS = new String[] {
@@ -92,6 +94,7 @@ public class ExportCsvService {
     private ChildrenCountService childrenCountService;
     private AccessControlService aclService;
     private SolrQueryLayerService queryLayer;
+    private RepositoryObjectLoader repositoryObjectLoader;
     private int pageSize = DEFAULT_PAGE_SIZE;
 
     private static final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd kk:mm:ss");
@@ -278,15 +281,27 @@ public class ExportCsvService {
         String computedPermissions = computePatronPermissions(object.getRoleGroup());
         printer.print(computedPermissions);
 
-        // Is object embargoed
-        List<String> objStatus = object.getStatus();
-        printer.print(objStatus != null && objStatus.contains(FacetConstants.EMBARGOED));
+        // Embargo expiration date, if one is set
+        printer.print(getEmbargoDate(object));
 
         // View behavior
         var behavior = object.getViewBehavior();
         printer.print(Objects.requireNonNullElse(behavior, ""));
 
         printer.println();
+    }
+
+    private String getEmbargoDate(ContentObjectRecord object) {
+        if (object.getStatus() == null || !object.getStatus().contains(FacetConstants.EMBARGOED)) {
+            return "";
+        }
+        var repoObj = repositoryObjectLoader.getRepositoryObject(object.getPid());
+        var embargoProperty = repoObj.getResource().getProperty(embargoUntil);
+        if (embargoProperty == null) {
+            return "";
+        }
+        // Return just the date part of the embargo timestamp, in YYYY-MM-DD format
+        return StringUtils.substringBefore(embargoProperty.getString(), "T");
     }
 
     public void setChildrenCountService(ChildrenCountService childrenCountService) {
@@ -303,5 +318,9 @@ public class ExportCsvService {
 
     public void setPageSize(int pageSize) {
         this.pageSize = pageSize;
+    }
+
+    public void setRepositoryObjectLoader(RepositoryObjectLoader repositoryObjectLoader) {
+        this.repositoryObjectLoader = repositoryObjectLoader;
     }
 }

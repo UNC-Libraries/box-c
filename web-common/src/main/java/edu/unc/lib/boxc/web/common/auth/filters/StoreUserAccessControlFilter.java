@@ -1,26 +1,28 @@
 package edu.unc.lib.boxc.web.common.auth.filters;
 
-import static edu.unc.lib.boxc.web.common.auth.HttpAuthHeaders.FORWARDED_MAIL_HEADER;
-import static edu.unc.lib.boxc.web.common.auth.RemoteUserUtil.getRemoteUser;
-
-import java.io.IOException;
-
-import javax.servlet.FilterChain;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.web.context.ServletContextAware;
-import org.springframework.web.filter.OncePerRequestFilter;
-
 import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
 import edu.unc.lib.boxc.auth.api.models.AgentPrincipals;
 import edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl;
 import edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore;
 import edu.unc.lib.boxc.web.common.auth.HttpAuthHeaders;
 import edu.unc.lib.boxc.web.common.auth.PatronPrincipalProvider;
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.web.context.ServletContextAware;
+import org.springframework.web.filter.OncePerRequestFilter;
+
+import javax.servlet.FilterChain;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+
+import static edu.unc.lib.boxc.auth.api.AccessPrincipalConstants.PUBLIC_PRINC;
+import static edu.unc.lib.boxc.web.common.auth.HttpAuthHeaders.FORWARDED_MAIL_HEADER;
+import static edu.unc.lib.boxc.web.common.auth.RemoteUserUtil.getRemoteUser;
 
 /**
  * Filter which retrieves the users shibboleth and grouper session information in order to construct their profile as
@@ -89,18 +91,37 @@ public class StoreUserAccessControlFilter extends OncePerRequestFilter implement
 
     protected AccessGroupSet getForwardedGroups(HttpServletRequest request) {
         String forwardedGroups = request.getHeader(HttpAuthHeaders.FORWARDED_GROUPS_HEADER);
+        var publicAccessGroup = new AccessGroupSetImpl(List.of(PUBLIC_PRINC));
         if (log.isDebugEnabled()) {
             log.debug("Forwarding user {} logged in with forwarded groups {}",
-                    GroupsThreadStore.getUsername(), forwardedGroups);
+                    request.getRemoteUser(), forwardedGroups);
         }
         if (forwardedGroups == null) {
-            return new AccessGroupSetImpl();
+            logHeadersForEmptyForwarded(request);
+            // if no group is specified, set to public
+            return publicAccessGroup;
         }
 
-        if (forwardedGroups.trim().length() > 0) {
+        if (!forwardedGroups.trim().isEmpty()) {
             return new AccessGroupSetImpl(forwardedGroups);
         }
-        return new AccessGroupSetImpl();
+        logHeadersForEmptyForwarded(request);
+        return publicAccessGroup;
+    }
+
+    private void logHeadersForEmptyForwarded(HttpServletRequest request) {
+        log.info("Forwarded with no groups using user {}, logging headers:", request.getRemoteUser());
+        // read all header names and values from the request and log them
+        List<String> emptyHeaders = new ArrayList<>();
+        request.getHeaderNames().asIterator().forEachRemaining(headerName -> {
+            String headerValue = request.getHeader(headerName);
+            if (StringUtils.isBlank(headerValue)) {
+                emptyHeaders.add(headerName);
+            } else {
+                log.info("   name: {}, value: {}", headerName, headerValue);
+            }
+        });
+        log.info("   Empty headers: {}", emptyHeaders);
     }
 
     protected AccessGroupSet getGrouperGroups(HttpServletRequest request) {
@@ -111,7 +132,7 @@ public class StoreUserAccessControlFilter extends OncePerRequestFilter implement
             log.debug("Normal user " + userName + " logged in with groups " + shibGroups);
         }
 
-        if (shibGroups == null || shibGroups.trim().length() == 0) {
+        if (shibGroups == null || shibGroups.trim().isEmpty()) {
             accessGroups = new AccessGroupSetImpl();
         } else {
             accessGroups = new AccessGroupSetImpl(shibGroups);
