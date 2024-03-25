@@ -1,49 +1,5 @@
 package edu.unc.lib.boxc.web.services.rest.modify;
 
-import static edu.unc.lib.boxc.auth.api.AccessPrincipalConstants.AUTHENTICATED_PRINC;
-import static edu.unc.lib.boxc.auth.api.AccessPrincipalConstants.PUBLIC_PRINC;
-import static edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore.getAgentPrincipals;
-import static edu.unc.lib.boxc.common.test.TestHelpers.setField;
-import static edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPaths.getContentRootPid;
-import static edu.unc.lib.boxc.search.api.FacetConstants.CONTENT_DESCRIBED;
-import static edu.unc.lib.boxc.search.api.FacetConstants.CONTENT_NOT_DESCRIBED;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.fail;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
-import java.io.File;
-import java.io.StringReader;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-
-import javax.annotation.Resource;
-
-import edu.unc.lib.boxc.model.api.rdf.CdrView;
-import edu.unc.lib.boxc.operations.jms.viewSettings.ViewSettingRequest;
-import org.apache.commons.csv.CSVFormat;
-import org.apache.commons.csv.CSVRecord;
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang.StringUtils;
-import org.apache.jena.rdf.model.Model;
-import org.apache.solr.client.solrj.embedded.EmbeddedSolrServer;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.mock.web.MockHttpServletResponse;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.ContextHierarchy;
-import org.springframework.test.web.servlet.MvcResult;
-
 import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
 import edu.unc.lib.boxc.fcrepo.utils.FedoraSparqlUpdateService;
 import edu.unc.lib.boxc.indexing.solr.indexing.DocumentIndexingPackageFactory;
@@ -59,6 +15,7 @@ import edu.unc.lib.boxc.model.api.objects.FileObject;
 import edu.unc.lib.boxc.model.api.objects.FolderObject;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.api.objects.WorkObject;
+import edu.unc.lib.boxc.model.api.rdf.CdrView;
 import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.boxc.model.fcrepo.services.RepositoryInitializer;
@@ -68,9 +25,51 @@ import edu.unc.lib.boxc.operations.api.events.PremisLoggerFactory;
 import edu.unc.lib.boxc.operations.impl.delete.MarkForDeletionJob;
 import edu.unc.lib.boxc.operations.impl.edit.UpdateDescriptionService;
 import edu.unc.lib.boxc.operations.impl.edit.UpdateDescriptionService.UpdateDescriptionRequest;
+import edu.unc.lib.boxc.operations.jms.viewSettings.ViewSettingRequest;
 import edu.unc.lib.boxc.search.solr.services.ChildrenCountService;
 import edu.unc.lib.boxc.search.solr.services.SolrSearchService;
 import edu.unc.lib.boxc.web.services.processing.ExportCsvService;
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVRecord;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang.StringUtils;
+import org.apache.jena.rdf.model.Model;
+import org.apache.solr.client.solrj.embedded.EmbeddedSolrServer;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.mock.web.MockHttpServletResponse;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.ContextHierarchy;
+import org.springframework.test.web.servlet.MvcResult;
+
+import javax.annotation.Resource;
+import java.io.File;
+import java.io.StringReader;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+
+import static edu.unc.lib.boxc.auth.api.AccessPrincipalConstants.AUTHENTICATED_PRINC;
+import static edu.unc.lib.boxc.auth.api.AccessPrincipalConstants.PUBLIC_PRINC;
+import static edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore.getAgentPrincipals;
+import static edu.unc.lib.boxc.common.test.TestHelpers.setField;
+import static edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPaths.getContentRootPid;
+import static edu.unc.lib.boxc.search.api.FacetConstants.CONTENT_DESCRIBED;
+import static edu.unc.lib.boxc.search.api.FacetConstants.CONTENT_NOT_DESCRIBED;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 /**
  *
@@ -161,9 +160,9 @@ public class ExportCsvIT extends AbstractAPIIT {
         List<CSVRecord> csvList = parseCsvResponse(response);
         assertEquals(2, csvList.size(), "Unexpected number of results");
         assertContainerRecord(csvList, ResourceType.Collection, collObj.getPid(), "Collection",
-                COLLECTION_PATH, 2, false, 1, false, "Authenticated", false);
+                COLLECTION_PATH, 2, false, 1, false, "Authenticated", "");
         assertContainerRecord(csvList, ResourceType.Folder, folderObj.getPid(), "Folder",
-                FOLDER_PATH, 3, false, null, false, "Authenticated", false);
+                FOLDER_PATH, 3, false, null, false, "Authenticated", "");
     }
 
     @Test
@@ -189,17 +188,17 @@ public class ExportCsvIT extends AbstractAPIIT {
         assertEquals(3, csvList.size(), "Unexpected number of results");
 
         assertContainerRecord(csvList, ResourceType.Folder, folderObj.getPid(), "Folder",
-                FOLDER_PATH, 3, false, 1, false, "Authenticated", false);
+                FOLDER_PATH, 3, false, 1, false, "Authenticated", "");
 
         String pathToWork = FOLDER_PATH + "/" + workPid.getId();
         assertCsvRecord(csvList, ResourceType.Work, workPid, "TestWork",
                 pathToWork, 4, false, null, null, null,
-                1, false, "Authenticated", false, "");
+                1, false, "Authenticated", "", "");
 
         String pathToFile = pathToWork + "/file.txt";
         assertCsvRecord(csvList, ResourceType.File, pidList.get("filePid"), "TestWork",
                 pathToFile, 5, false, "text/plain", null, (long) 7,
-                null, false, "Authenticated", false, "");
+                null, false, "Authenticated", "", "");
     }
 
     @Test
@@ -231,18 +230,18 @@ public class ExportCsvIT extends AbstractAPIIT {
         // MODS title supersedes folder name
         String pathToFolder = COLLECTION_PATH + "/Test";
         assertContainerRecord(csvList, ResourceType.Folder, folderPid, "Test",
-                pathToFolder, 3, false, 1, true, "Authenticated", false);
+                pathToFolder, 3, false, 1, true, "Authenticated", "");
 
         // MODS title supersedes work name
         String pathToWork = pathToFolder + "/Work Test";
         assertCsvRecord(csvList, ResourceType.Work, workPid, "Work Test",
                 pathToWork, 4, false, null, null, null,
-                1, true, "Authenticated", false, "");
+                1, true, "Authenticated", "", "");
 
         String pathToFile = pathToWork + "/file.txt";
         assertCsvRecord(csvList, ResourceType.File, filePid, "TestWork2",
                 pathToFile, 5, false, "text/plain", null, (long) 7,
-                null, false, "Authenticated", false, "");
+                null, false, "Authenticated", "", "");
     }
 
     @Test
@@ -269,17 +268,17 @@ public class ExportCsvIT extends AbstractAPIIT {
         List<CSVRecord> csvList = parseCsvResponse(response);
 
         assertContainerRecord(csvList, ResourceType.Folder, folderPid, "Folder",
-                FOLDER_PATH, 3, true, 1, false, "Staff-only", false);
+                FOLDER_PATH, 3, true, 1, false, "Staff-only", "");
 
         String pathToWork = FOLDER_PATH + "/" + workPid.getId();
         assertCsvRecord(csvList, ResourceType.Work, workPid, "TestWorkDeleted",
                 pathToWork, 4, true, null, null, null,
-                1, false, "Staff-only", false, "");
+                1, false, "Staff-only", "", "");
 
         String pathToFile = pathToWork + "/file.txt";
         assertCsvRecord(csvList, ResourceType.File, filePid, "TestWork2",
                 pathToFile, 5, true, "text/plain", null, (long) 7,
-                null, false, "Staff-only", false, "");
+                null, false, "Staff-only", "", "");
     }
 
     @Test
@@ -306,7 +305,7 @@ public class ExportCsvIT extends AbstractAPIIT {
         String pathToFile = FOLDER_PATH + "/" + workPid.getId() + "/file.txt";
         assertCsvRecord(csvList, ResourceType.File, filePid, "TestWork3",
                 pathToFile, 5, false, "text/plain", null, (long) 7,
-                null, false, "Authenticated", false, "");
+                null, false, "Authenticated", "", "");
     }
 
     @Test
@@ -327,15 +326,19 @@ public class ExportCsvIT extends AbstractAPIIT {
         List<CSVRecord> csvList = parseCsvResponse(response);
         assertEquals(1, csvList.size(), "Unexpected number of results");
         assertContainerRecord(csvList, ResourceType.Folder, folderPid, "Folder",
-                FOLDER_PATH, 3, false, null, false, "Authenticated", false);
+                FOLDER_PATH, 3, false, null, false, "Authenticated", "");
     }
 
     @Test
     public void embargoedResult() throws Exception {
         PID folderPid = pidMinter.mintContentPid();
+        var embargoDate = getYearsInTheFuture(1);
+        // format embargoDate value to YYYY-MM-DD
+        var formatter = new SimpleDateFormat("yyyy-MM-dd");
+        String expectedEmbargo = formatter.format(embargoDate.getTime());
         FolderObject folder2Obj = repositoryObjectFactory.createFolderObject(folderPid,
                 new AclModelBuilder("Folder")
-                        .addEmbargoUntil(getYearsInTheFuture(1)).model);
+                        .addEmbargoUntil(embargoDate).model);
         collObj.addMember(folder2Obj);
 
         treeIndexer.indexAll(baseAddress);
@@ -352,7 +355,7 @@ public class ExportCsvIT extends AbstractAPIIT {
         List<CSVRecord> csvList = parseCsvResponse(response);
         assertEquals(1, csvList.size(), "Unexpected number of results");
         assertContainerRecord(csvList, ResourceType.Folder, folderPid, "Folder",
-                FOLDER_PATH, 3, false, null, false, "Restricted", true);
+                FOLDER_PATH, 3, false, null, false, "Restricted", expectedEmbargo);
     }
 
     @Test
@@ -377,7 +380,7 @@ public class ExportCsvIT extends AbstractAPIIT {
         List<CSVRecord> csvList = parseCsvResponse(response);
         assertEquals(1, csvList.size(), "Unexpected number of results");
         assertContainerRecord(csvList, ResourceType.Collection, collPid, "Collection",
-                COLLECTION_PATH, 2, false, null, false, "Public", false);
+                COLLECTION_PATH, 2, false, null, false, "Public", "");
     }
 
     @Test
@@ -403,7 +406,7 @@ public class ExportCsvIT extends AbstractAPIIT {
         List<CSVRecord> csvList = parseCsvResponse(response);
         assertEquals(1, csvList.size(), "Unexpected number of results");
         assertContainerRecord(csvList, ResourceType.Collection, collPid, "Collection",
-                COLLECTION_PATH, 2, false, null, false, "Authenticated", false);
+                COLLECTION_PATH, 2, false, null, false, "Authenticated", "");
     }
 
     @Test
@@ -429,7 +432,7 @@ public class ExportCsvIT extends AbstractAPIIT {
         List<CSVRecord> csvList = parseCsvResponse(response);
         assertEquals(1, csvList.size(), "Unexpected number of results");
         assertContainerRecord(csvList, ResourceType.Collection, collPid, "Collection",
-                COLLECTION_PATH, 2, false, null, false, "Staff-only", false);
+                COLLECTION_PATH, 2, false, null, false, "Staff-only", "");
     }
 
     @Test
@@ -459,9 +462,9 @@ public class ExportCsvIT extends AbstractAPIIT {
         List<CSVRecord> csvList = parseCsvResponse(response);
         assertEquals(2, csvList.size(), "Unexpected number of results");
         assertContainerRecord(csvList, ResourceType.Collection, collPid, "Collection",
-                COLLECTION_PATH, 2, false, 1, false, "Public", false);
+                COLLECTION_PATH, 2, false, 1, false, "Public", "");
         assertContainerRecord(csvList, ResourceType.Folder, folderPid, "Folder",
-                FOLDER_PATH, 3, false, null, false, "Restricted", false);
+                FOLDER_PATH, 3, false, null, false, "Restricted", "");
     }
 
     @Test
@@ -491,9 +494,9 @@ public class ExportCsvIT extends AbstractAPIIT {
         List<CSVRecord> csvList = parseCsvResponse(response);
         assertEquals(2, csvList.size(), "Unexpected number of results");
         assertContainerRecord(csvList, ResourceType.Collection, collPid, "Collection",
-                COLLECTION_PATH, 2, false, 1, false, "Staff-only", false);
+                COLLECTION_PATH, 2, false, 1, false, "Staff-only", "");
         assertContainerRecord(csvList, ResourceType.Folder, folderPid, "Folder",
-                FOLDER_PATH, 3, false, null, false, "Staff-only", false);
+                FOLDER_PATH, 3, false, null, false, "Staff-only", "");
     }
 
     @Test
@@ -519,7 +522,7 @@ public class ExportCsvIT extends AbstractAPIIT {
         List<CSVRecord> csvList = parseCsvResponse(response);
         assertEquals(1, csvList.size(), "Unexpected number of results");
         assertContainerRecord(csvList, ResourceType.Collection, collPid, "Collection",
-                COLLECTION_PATH, 2, false, null, false, "Restricted", false);
+                COLLECTION_PATH, 2, false, null, false, "Restricted", "");
     }
 
     @Test
@@ -571,17 +574,17 @@ public class ExportCsvIT extends AbstractAPIIT {
         assertEquals(5, csvList.size(), "Unexpected number of results");
 
         assertContainerRecord(csvList, ResourceType.Folder, folderObj.getPid(), "Folder",
-                FOLDER_PATH, 3, false, 1, false, "Authenticated", false);
+                FOLDER_PATH, 3, false, 1, false, "Authenticated", "");
 
         String pathToWork = FOLDER_PATH + "/" + workPid.getId();
         assertCsvRecord(csvList, ResourceType.Work, workPid, "TestWork",
                 pathToWork, 4, false, null, null, null,
-                1, false, "Authenticated", false, "");
+                1, false, "Authenticated", "", "");
 
         String pathToFile = pathToWork + "/file.txt";
         assertCsvRecord(csvList, ResourceType.File, pidList.get("filePid"), "TestWork",
                 pathToFile, 5, false, "text/plain", null, (long) 7,
-                null, false, "Authenticated", false, "");
+                null, false, "Authenticated", "", "");
     }
 
     @Test
@@ -612,7 +615,7 @@ public class ExportCsvIT extends AbstractAPIIT {
         String pathToWork = FOLDER_PATH + "/" + workPid.getId();
         assertCsvRecord(csvList, ResourceType.Work, workPid, "TestWork",
                 pathToWork, 4, false, null, null, null,
-                1, false, "Authenticated", false, paged);
+                1, false, "Authenticated", "", paged);
     }
 
     private Map<String, PID> addWorkToFolder() throws Exception {
@@ -688,14 +691,14 @@ public class ExportCsvIT extends AbstractAPIIT {
 
     private void assertContainerRecord(List<CSVRecord> csvList, ResourceType objType, PID expectedPid, String title,
             String path, int depth, boolean deleted, Integer numChildren, boolean described, String permissions,
-                                       boolean embargoed) {
+                                       String embargoDate) {
         assertCsvRecord(csvList, objType, expectedPid, title, path, depth, deleted,
-                null, null, null, numChildren, described, permissions, embargoed, "");
+                null, null, null, numChildren, described, permissions, embargoDate, "");
     }
 
     private void assertCsvRecord(List<CSVRecord> csvList, ResourceType objType, PID expectedPid, String title,
             String path, int depth, boolean deleted, String mimetype, String checksum, Long fileSize,
-            Integer numChildren, boolean described, String permissions, boolean embargoed, String behavior) {
+            Integer numChildren, boolean described, String permissions, String embargoDate, String behavior) {
         path = path == null ? "" : path;
         mimetype = mimetype == null ? "" : mimetype;
         checksum = checksum == null ? "" : checksum;
@@ -726,7 +729,7 @@ public class ExportCsvIT extends AbstractAPIIT {
             assertEquals(expectedDescribed, rec.get(ExportCsvService.DESCRIBED_HEADER),
                     "Unexpected description field value");
             assertEquals(permissions, rec.get(ExportCsvService.PATRON_PERMISSIONS_HEADER));
-            assertEquals(embargoed, Boolean.parseBoolean(rec.get(ExportCsvService.EMBARGO_HEADER)));
+            assertEquals(embargoDate, rec.get(ExportCsvService.EMBARGO_HEADER));
             assertEquals(behavior, rec.get(ExportCsvService.VIEW_BEHAVIOR_HEADER));
             return;
         }

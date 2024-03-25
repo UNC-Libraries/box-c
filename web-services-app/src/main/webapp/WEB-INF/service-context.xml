@@ -408,6 +408,7 @@
         <property name="childrenCountService" ref="childrenCountService"/>
         <property name="aclService" ref="aclService"/>
         <property name="queryLayer" ref="queryLayer"/>
+        <property name="repositoryObjectLoader" ref="repositoryObjectLoader"/>
     </bean>
 
     <bean id="facetValuesService" class="edu.unc.lib.boxc.search.solr.services.FacetValuesService"

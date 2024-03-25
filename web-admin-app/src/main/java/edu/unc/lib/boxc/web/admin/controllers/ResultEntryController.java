@@ -34,7 +34,7 @@ public class ResultEntryController extends AbstractSearchController {
             SearchFieldKey.CREATOR.name(), SearchFieldKey.DATASTREAM.name(), SearchFieldKey.DATE_ADDED.name(),
             SearchFieldKey.DATE_UPDATED.name(), SearchFieldKey.RESOURCE_TYPE.name(),
             SearchFieldKey.STATUS.name(), SearchFieldKey.ANCESTOR_PATH.name(),
-            SearchFieldKey.VERSION.name(), SearchFieldKey.ROLE_GROUP.name(),
+            SearchFieldKey.VERSION.name(), SearchFieldKey.ROLE_GROUP.name(), SearchFieldKey.VIEW_BEHAVIOR.name(),
             SearchFieldKey.CONTENT_STATUS.name(), SearchFieldKey.ROLLUP_ID.name());
 
     @RequestMapping(value = "entry/{pid}", method = RequestMethod.GET)
