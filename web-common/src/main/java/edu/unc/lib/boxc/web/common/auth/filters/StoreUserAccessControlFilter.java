@@ -74,7 +74,7 @@ public class StoreUserAccessControlFilter extends OncePerRequestFilter implement
                         GroupsThreadStore.getGroupString());
             }
         } catch (Exception e) {
-            log.debug("Error while retrieving the users profile", e);
+            log.warn("Error while retrieving the users profile", e);
         }
     }
 
@@ -123,7 +123,7 @@ public class StoreUserAccessControlFilter extends OncePerRequestFilter implement
 
     protected AccessGroupSet getGrouperGroups(HttpServletRequest request) {
         String shibGroups = request.getHeader(HttpAuthHeaders.SHIBBOLETH_GROUPS_HEADER);
-        AccessGroupSet accessGroups = null;
+        AccessGroupSet accessGroups;
         String userName = GroupsThreadStore.getUsername();
         if (log.isDebugEnabled()) {
             log.debug("Normal user " + userName + " logged in with groups " + shibGroups);
