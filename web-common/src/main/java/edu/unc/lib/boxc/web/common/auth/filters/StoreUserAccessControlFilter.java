@@ -69,9 +69,6 @@ public class StoreUserAccessControlFilter extends OncePerRequestFilter implement
             AccessGroupSet accessGroups = getUserGroups(request);
             GroupsThreadStore.storeGroups(accessGroups);
 
-            AgentPrincipals principals = GroupsThreadStore.getAgentPrincipals();
-            request.setAttribute("accessGroupSet", principals.getPrincipals());
-
             if (log.isDebugEnabled()) {
                 log.debug("Setting cdr groups for request processing thread: {}",
                         GroupsThreadStore.getGroupString());

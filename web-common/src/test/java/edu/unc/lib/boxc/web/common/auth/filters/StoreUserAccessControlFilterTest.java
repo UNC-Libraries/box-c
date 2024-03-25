@@ -94,7 +94,6 @@ public class StoreUserAccessControlFilterTest {
         assertNull(GroupsThreadStore.getEmail());
         AccessGroupSet accessGroups = GroupsThreadStore.getGroups();
         assertTrue(accessGroups.contains(PUBLIC_PRINC), "Public must be assigned");
-        verify(request).setAttribute("accessGroupSet", accessGroups);
     }
 
     @Test
@@ -109,7 +108,6 @@ public class StoreUserAccessControlFilterTest {
         assertEquals("user@example.com", GroupsThreadStore.getEmail());
 
         AccessGroupSet accessGroups = GroupsThreadStore.getPrincipals();
-        verify(request).setAttribute("accessGroupSet", accessGroups);
 
         assertTrue(accessGroups.contains(PUBLIC_PRINC), "Public must be assigned");
         assertTrue(accessGroups.contains(AUTHENTICATED_PRINC), "Authenticated must be assigned");
@@ -127,7 +125,6 @@ public class StoreUserAccessControlFilterTest {
         assertEquals("user@example.com", GroupsThreadStore.getEmail());
 
         AccessGroupSet accessGroups = GroupsThreadStore.getPrincipals();
-        verify(request).setAttribute("accessGroupSet", accessGroups);
 
         assertTrue(accessGroups.contains(PUBLIC_PRINC), "Public must be assigned");
         assertTrue(accessGroups.contains(AUTHENTICATED_PRINC), "Authenticated must be assigned");
@@ -144,7 +141,6 @@ public class StoreUserAccessControlFilterTest {
         assertNull(GroupsThreadStore.getEmail());
 
         AccessGroupSet accessGroups = GroupsThreadStore.getPrincipals();
-        verify(request).setAttribute("accessGroupSet", accessGroups);
 
         assertEquals(2, accessGroups.size());
         assertTrue(accessGroups.contains(PUBLIC_PRINC), "Public must be assigned");
@@ -163,7 +159,6 @@ public class StoreUserAccessControlFilterTest {
         assertEquals("user@example.com", GroupsThreadStore.getEmail());
 
         AccessGroupSet accessGroups = GroupsThreadStore.getPrincipals();
-        verify(request).setAttribute("accessGroupSet", accessGroups);
 
         assertTrue(accessGroups.contains(PUBLIC_PRINC), "Public must be assigned");
         assertTrue(accessGroups.contains(AUTHENTICATED_PRINC), "Authenticated must be assigned");
