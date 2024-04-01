@@ -3,11 +3,8 @@ package edu.unc.lib.boxc.web.services.rest.modify;
 import com.apicatalog.jsonld.StringUtils;
 import edu.unc.lib.boxc.auth.api.Permission;
 import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
+import edu.unc.lib.boxc.auth.api.models.AgentPrincipals;
 import edu.unc.lib.boxc.auth.api.services.AccessControlService;
-import edu.unc.lib.boxc.model.api.exceptions.InvalidOperationForObjectType;
-import edu.unc.lib.boxc.model.api.objects.FileObject;
-import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
-import edu.unc.lib.boxc.model.api.objects.WorkObject;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.boxc.operations.jms.streaming.StreamingPropertiesRequest;
 import edu.unc.lib.boxc.operations.jms.streaming.StreamingPropertiesRequestSender;
@@ -24,8 +21,10 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 import static edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore.getAgentPrincipals;
+import static edu.unc.lib.boxc.operations.jms.streaming.StreamingPropertiesRequest.ADD;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 /**
@@ -56,7 +55,7 @@ public class StreamingPropertiesController {
         accessControlService.assertHasAccess("Insufficient permissions to update streaming properties for " +
                         fileId, pid, principals, Permission.ingest);
 
-        var request = buildRequest(allParams);
+        var request = buildRequest(agent, allParams);
         try {
             streamingPropertiesRequestSender.sendToQueue(request);
         } catch (IOException e) {
@@ -70,20 +69,24 @@ public class StreamingPropertiesController {
         return new ResponseEntity<>(result, HttpStatus.OK);
     }
 
-    private StreamingPropertiesRequest buildRequest(Map<String,String> params) {
+    private StreamingPropertiesRequest buildRequest(AgentPrincipals agent, Map<String,String> params) {
         var request = new StreamingPropertiesRequest();
         request.setAction(params.get("action"));
         request.setFilePidString(params.get("file"));
         request.setFolder(params.get("folder"));
         request.setFilename(params.get("filename"));
+        request.setAgent(agent);
         return request;
     }
 
     private boolean hasBadParams(Map<String,String> params) {
-        return params.isEmpty() ||
-                StringUtils.isBlank(params.get("action")) ||
-                StringUtils.isBlank(params.get("filename")) ||
-                StringUtils.isBlank(params.get("file")) ||
-                StringUtils.isBlank(params.get("folder"));
+        if (params.isEmpty() || StringUtils.isBlank(params.get("action")) || StringUtils.isBlank(params.get("file"))) {
+            return true;
+        }
+        if (Objects.equals(ADD, params.get("action"))) {
+            return StringUtils.isBlank(params.get("filename")) || StringUtils.isBlank(params.get("folder"));
+        }
+
+        return false;
     }
 }

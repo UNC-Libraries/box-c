@@ -139,7 +139,7 @@ public class StreamingPropertiesProcessorTest {
 
     @Test
     public void testStreamingPropertiesDeleteSuccess() throws IOException {
-        var exchange = createRequestExchange(OPEN, "banjo_recording.mp3", filePid.getId(), DELETE);
+        var exchange = createRequestExchange(null, null, filePid.getId(), DELETE);
         processor.process(exchange);
 
         verify(repositoryObjectFactory).deleteProperty(eq(fileObject), eq(Cdr.streamingHost));

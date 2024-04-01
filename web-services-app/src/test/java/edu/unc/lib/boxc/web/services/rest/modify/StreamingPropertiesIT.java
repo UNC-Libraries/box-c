@@ -111,7 +111,7 @@ public class StreamingPropertiesIT {
     @Test
     public void testDeleteStreamingPropertiesSuccess() throws Exception {
         var result = mockMvc.perform(put(
-                        "/edit/streamingProperties?action=delete&filename=banjo_sounds.mp3&file=" + FILE_ID + "&folder=" + OPEN))
+                        "/edit/streamingProperties?action=delete&file=" + FILE_ID ))
                 .andExpect(status().is2xxSuccessful())
                 .andReturn();
         Map<String, Object> respMap = MvcTestHelpers.getMapFromResponse(result);
