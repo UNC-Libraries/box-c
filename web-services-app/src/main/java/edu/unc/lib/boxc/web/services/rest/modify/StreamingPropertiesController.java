@@ -33,6 +33,7 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 @Controller
 public class StreamingPropertiesController {
     private static final Logger log = LoggerFactory.getLogger(StreamingPropertiesController.class);
+    private static final String ACTION = "action";
     @Autowired
     private AccessControlService accessControlService;
     @Autowired
@@ -71,7 +72,7 @@ public class StreamingPropertiesController {
 
     private StreamingPropertiesRequest buildRequest(AgentPrincipals agent, Map<String,String> params) {
         var request = new StreamingPropertiesRequest();
-        request.setAction(params.get("action"));
+        request.setAction(params.get(ACTION));
         request.setFilePidString(params.get("file"));
         request.setFolder(params.get("folder"));
         request.setFilename(params.get("filename"));
@@ -80,10 +81,11 @@ public class StreamingPropertiesController {
     }
 
     private boolean hasBadParams(Map<String,String> params) {
-        if (params.isEmpty() || StringUtils.isBlank(params.get("action")) || StringUtils.isBlank(params.get("file"))) {
+        var action = params.get(ACTION);
+        if (params.isEmpty() || StringUtils.isBlank(action) || StringUtils.isBlank(params.get("file"))) {
             return true;
         }
-        if (Objects.equals(ADD, params.get("action"))) {
+        if (Objects.equals(ADD, action)) {
             return StringUtils.isBlank(params.get("filename")) || StringUtils.isBlank(params.get("folder"));
         }
 

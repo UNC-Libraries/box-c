@@ -59,29 +59,30 @@ public class StreamingPropertiesRequestProcessor implements Processor {
     }
 
     private String validate(StreamingPropertiesRequest request, PID pid) {
+        String errorMessage = null;
         var action = request.getAction();
         if (StringUtils.isBlank(action)) {
-            return "An action is required.";
+            errorMessage = "An action is required.";
         }
 
         if (Objects.equals(ADD, action)) {
             var folder = request.getFolder();
             if (StringUtils.isBlank(request.getFilename()) || StringUtils.isBlank(folder)) {
-                return "Both a filename and streaming folder are required.";
+                errorMessage = "Both a filename and streaming folder are required.";
             }
 
             if (!VALID_FOLDERS.contains(folder)) {
-                return "Streaming folder is not valid.";
+                errorMessage = "Streaming folder is not valid.";
             }
         }
 
         try {
             repositoryObjectLoader.getFileObject(pid);
         } catch (ObjectTypeMismatchException e) {
-            return "Object is not a FileObject";
+            errorMessage = "Object is not a FileObject";
         }
         // Request is valid
-        return null;
+        return errorMessage;
     }
 
     /**
