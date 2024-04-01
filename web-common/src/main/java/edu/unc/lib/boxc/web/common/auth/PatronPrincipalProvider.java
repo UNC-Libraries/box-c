@@ -51,10 +51,7 @@ public class PatronPrincipalProvider {
 
         String remoteAddr = request.getHeader(FORWARDED_FOR_HEADER);
         if (StringUtils.isBlank(remoteAddr)) {
-            remoteAddr = request.getRemoteAddr();
-            if (StringUtils.isBlank(remoteAddr)) {
-                return princs;
-            }
+            return princs;
         }
 
         BigInteger ipInteger = IPAddressPatronPrincipalConfig.ipToBigInteger(remoteAddr);
