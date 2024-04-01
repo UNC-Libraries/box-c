@@ -74,7 +74,7 @@ public class StoreUserAccessControlFilter extends OncePerRequestFilter implement
                         GroupsThreadStore.getGroupString());
             }
         } catch (Exception e) {
-            log.warn("Error while retrieving the users profile", e);
+            log.error("Error while retrieving the users profile", e);
         }
     }
 
