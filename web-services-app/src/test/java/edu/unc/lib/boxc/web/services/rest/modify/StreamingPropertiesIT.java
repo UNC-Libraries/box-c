@@ -7,13 +7,10 @@ import edu.unc.lib.boxc.auth.api.services.AccessControlService;
 import edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl;
 import edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore;
 import edu.unc.lib.boxc.model.api.ids.PID;
-import edu.unc.lib.boxc.model.api.objects.FileObject;
-import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.boxc.operations.jms.streaming.StreamingPropertiesRequestSender;
 import edu.unc.lib.boxc.web.services.rest.MvcTestHelpers;
 import edu.unc.lib.boxc.web.services.rest.exceptions.RestResponseEntityExceptionHandler;
-import org.apache.jena.rdf.model.Statement;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -31,7 +28,6 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.MockitoAnnotations.openMocks;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -68,20 +64,20 @@ public class StreamingPropertiesIT {
         doThrow(new AccessRestrictionException()).when(accessControlService)
                 .assertHasAccess(anyString(), eq(FILE_PID), any(), eq(Permission.ingest));
         mockMvc.perform(put(
-                "/edit/streamingProperties?action=add&filename=banjo_sounds.mp3&file=" + FILE_ID + "&folder=" + OPEN))
+                "/edit/streamingProperties?action=add&filename=banjo_sounds.mp3&id=" + FILE_ID + "&folder=" + OPEN))
                 .andExpect(status().isForbidden());
     }
 
     @Test
     public void testUpdateStreamingPropertiesNoFilename() throws Exception {
         mockMvc.perform(put(
-                "/edit/streamingProperties?action=add&file=" + FILE_ID + "&folder=" + OPEN))
+                "/edit/streamingProperties?action=add&id=" + FILE_ID + "&folder=" + OPEN))
                 .andExpect(status().isBadRequest());
     }
     @Test
     public void testUpdateStreamingPropertiesNoFolder() throws Exception {
         mockMvc.perform(put(
-                        "/edit/streamingProperties?action=add&filename=banjo_sounds.mp3&file=" + FILE_ID))
+                        "/edit/streamingProperties?action=add&filename=banjo_sounds.mp3&id=" + FILE_ID))
                 .andExpect(status().isBadRequest());
     }
     @Test
@@ -94,14 +90,14 @@ public class StreamingPropertiesIT {
     @Test
     public void testUpdateStreamingPropertiesNoAction() throws Exception {
         mockMvc.perform(put(
-                        "/edit/streamingProperties?&filename=banjo_sounds.mp3&file=" + FILE_ID + "&folder=" + OPEN))
+                        "/edit/streamingProperties?&filename=banjo_sounds.mp3&id=" + FILE_ID + "&folder=" + OPEN))
                 .andExpect(status().isBadRequest());
     }
 
     @Test
     public void testAddStreamingPropertiesSuccess() throws Exception {
         var result = mockMvc.perform(put(
-                        "/edit/streamingProperties?action=add&filename=banjo_sounds.mp3&file=" + FILE_ID + "&folder=" + OPEN))
+                        "/edit/streamingProperties?action=add&filename=banjo_sounds.mp3&id=" + FILE_ID + "&folder=" + OPEN))
                 .andExpect(status().is2xxSuccessful())
                 .andReturn();
         Map<String, Object> respMap = MvcTestHelpers.getMapFromResponse(result);
@@ -111,7 +107,7 @@ public class StreamingPropertiesIT {
     @Test
     public void testDeleteStreamingPropertiesSuccess() throws Exception {
         var result = mockMvc.perform(put(
-                        "/edit/streamingProperties?action=delete&file=" + FILE_ID ))
+                        "/edit/streamingProperties?action=delete&id=" + FILE_ID ))
                 .andExpect(status().is2xxSuccessful())
                 .andReturn();
         Map<String, Object> respMap = MvcTestHelpers.getMapFromResponse(result);

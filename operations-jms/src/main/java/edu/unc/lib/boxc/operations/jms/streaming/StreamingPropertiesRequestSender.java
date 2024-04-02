@@ -19,6 +19,6 @@ public class StreamingPropertiesRequestSender extends MessageSender {
         String messageBody = MAPPER.writeValueAsString(request);
         sendMessage(messageBody);
         log.info("Job to update streaming properties has been queued for file {} by {}",
-                request.getFilePidString(), request.getAgent().getUsername());
+                request.getId(), request.getAgent().getUsername());
     }
 }

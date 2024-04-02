@@ -147,11 +147,11 @@ public class StreamingPropertiesProcessorTest {
         verify(repositoryObjectFactory).deleteProperty(eq(fileObject), eq(Cdr.streamingFolder));
     }
 
-    private Exchange createRequestExchange(String folder, String filename, String pid, String action) throws IOException {
+    private Exchange createRequestExchange(String folder, String filename, String id, String action) throws IOException {
         var request = new StreamingPropertiesRequest();
         request.setAgent(agent);
         request.setFilename(filename);
-        request.setFilePidString(pid);
+        request.setId(id);
         request.setFolder(folder);
         request.setAction(action);
         return TestHelper.mockExchange(StreamingPropertiesRequestSerializationHelper.toJson(request));

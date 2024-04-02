@@ -36,7 +36,7 @@ public class StreamingPropertiesRequestProcessor implements Processor {
         var in = exchange.getIn();
         var request = StreamingPropertiesRequestSerializationHelper.toRequest(in.getBody(String.class));
         var agent = request.getAgent();
-        var pid = PIDs.get(request.getFilePidString());
+        var pid = PIDs.get(request.getId());
 
         aclService.assertHasAccess("User does not have permission to set streaming properties",
                 pid, agent.getPrincipals(), Permission.ingest);

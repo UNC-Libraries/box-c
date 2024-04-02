@@ -37,7 +37,7 @@ public class StreamingPropertiesRouterTest extends CamelSpringTestSupport {
 
         var request = new StreamingPropertiesRequest();
         request.setAgent(agent);
-        request.setFilePidString(pid.getId());
+        request.setId(pid.getId());
         request.setFolder(StreamingPropertiesRequest.CLOSED);
         request.setFilename("new_file.mp3");
         var body = StreamingPropertiesRequestSerializationHelper.toJson(request);

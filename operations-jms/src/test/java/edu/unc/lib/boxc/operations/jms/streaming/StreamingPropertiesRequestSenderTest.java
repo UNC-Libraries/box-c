@@ -41,7 +41,7 @@ public class StreamingPropertiesRequestSenderTest {
         var filePidString = makePid().toString();
         var request = new StreamingPropertiesRequest();
         request.setAgent(agent);
-        request.setFilePidString(filePidString);
+        request.setId(filePidString);
         request.setFilename("banjo.mp3");
         request.setFolder(StreamingPropertiesRequest.CLOSED);
         request.setAction("add");
