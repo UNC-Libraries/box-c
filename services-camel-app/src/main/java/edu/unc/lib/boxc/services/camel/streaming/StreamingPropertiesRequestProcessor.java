@@ -36,7 +36,7 @@ public class StreamingPropertiesRequestProcessor implements Processor {
         var in = exchange.getIn();
         var request = StreamingPropertiesRequestSerializationHelper.toRequest(in.getBody(String.class));
         var agent = request.getAgent();
-        var pid = PIDs.get(request.getFilePidString());
+        var pid = PIDs.get(request.getId());
 
         aclService.assertHasAccess("User does not have permission to set streaming properties",
                 pid, agent.getPrincipals(), Permission.ingest);
@@ -59,13 +59,20 @@ public class StreamingPropertiesRequestProcessor implements Processor {
     }
 
     private String validate(StreamingPropertiesRequest request, PID pid) {
-        var folder = request.getFolder();
-        if (StringUtils.isBlank(request.getFilename()) || StringUtils.isBlank(folder)) {
-            return "Both a filename and streaming folder are required.";
+        var action = request.getAction();
+        if (StringUtils.isBlank(action)) {
+            return "An action is required.";
         }
 
-        if (!VALID_FOLDERS.contains(folder)) {
-            return "Streaming folder is not valid.";
+        if (Objects.equals(ADD, action)) {
+            var folder = request.getFolder();
+            if (StringUtils.isBlank(request.getFilename()) || StringUtils.isBlank(folder)) {
+                return "Both a filename and streaming folder are required.";
+            }
+
+            if (!VALID_FOLDERS.contains(folder)) {
+                return "Streaming folder is not valid.";
+            }
         }
 
         try {

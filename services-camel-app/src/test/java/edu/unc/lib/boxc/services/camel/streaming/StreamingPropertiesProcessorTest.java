@@ -139,7 +139,7 @@ public class StreamingPropertiesProcessorTest {
 
     @Test
     public void testStreamingPropertiesDeleteSuccess() throws IOException {
-        var exchange = createRequestExchange(OPEN, "banjo_recording.mp3", filePid.getId(), DELETE);
+        var exchange = createRequestExchange(null, null, filePid.getId(), DELETE);
         processor.process(exchange);
 
         verify(repositoryObjectFactory).deleteProperty(eq(fileObject), eq(Cdr.streamingHost));
@@ -147,11 +147,11 @@ public class StreamingPropertiesProcessorTest {
         verify(repositoryObjectFactory).deleteProperty(eq(fileObject), eq(Cdr.streamingFolder));
     }
 
-    private Exchange createRequestExchange(String folder, String filename, String pid, String action) throws IOException {
+    private Exchange createRequestExchange(String folder, String filename, String id, String action) throws IOException {
         var request = new StreamingPropertiesRequest();
         request.setAgent(agent);
         request.setFilename(filename);
-        request.setFilePidString(pid);
+        request.setId(id);
         request.setFolder(folder);
         request.setAction(action);
         return TestHelper.mockExchange(StreamingPropertiesRequestSerializationHelper.toJson(request));

@@ -22,7 +22,7 @@ public class StreamingPropertiesRequestSerializationHelperTest {
         var request = new StreamingPropertiesRequest();
         request.setAgent(agent);
         request.setFilename("banjo_recording.mp3");
-        request.setFilePidString(pid.getId());
+        request.setId(pid.getId());
         request.setFolder(StreamingPropertiesRequest.OPEN);
         request.setAction(ADD);
 
@@ -32,7 +32,7 @@ public class StreamingPropertiesRequestSerializationHelperTest {
         assertEquals(request.getAction(), helperRequest.getAction());
         assertEquals(request.getAgent().getPrincipals(), helperRequest.getAgent().getPrincipals());
         assertEquals(request.getFilename(), helperRequest.getFilename());
-        assertEquals(request.getFilePidString(), helperRequest.getFilePidString());
+        assertEquals(request.getId(), helperRequest.getId());
         assertEquals(request.getFolder(), helperRequest.getFolder());
     }
 }

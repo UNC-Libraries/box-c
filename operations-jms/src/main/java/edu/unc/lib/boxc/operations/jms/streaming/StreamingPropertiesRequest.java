@@ -22,7 +22,7 @@ public class StreamingPropertiesRequest {
     public static Set<String> VALID_FOLDERS = new HashSet<>(asList(OPEN, CLOSED, CAMPUS));
     @JsonDeserialize(as = AgentPrincipalsImpl.class)
     private AgentPrincipals agent;
-    private String filePidString;
+    private String id;
     private String filename;
     private String folder;
     private String action;
@@ -38,12 +38,12 @@ public class StreamingPropertiesRequest {
         this.agent = agent;
     }
 
-    public String getFilePidString() {
-        return filePidString;
+    public String getId() {
+        return id;
     }
 
-    public void setFilePidString(String filePidString) {
-        this.filePidString = filePidString;
+    public void setId(String id) {
+        this.id = id;
     }
 
     public String getFilename() {
