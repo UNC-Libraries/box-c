@@ -354,6 +354,33 @@ public class PatronPrincipalProviderTest {
                 PUBLIC_PRINC);
     }
 
+    @Test
+    public void getPrincipalsIpChainLastMatch() throws Exception {
+        addPatronConfig(TEST_GROUP_ID, TEST_GROUP_NAME, TEST_IP);
+        serializeConfigAndInit();
+
+        List<String> princs = provider.getPrincipals(mockRequest(false, TEST_IP2 + ", " + TEST_IP));
+        assertContainsPrincipals(princs, PUBLIC_PRINC, TEST_GROUP_ID);
+    }
+
+    @Test
+    public void getPrincipalsIpChainLastNotMatch() throws Exception {
+        addPatronConfig(TEST_GROUP_ID, TEST_GROUP_NAME, TEST_IP);
+        serializeConfigAndInit();
+
+        List<String> princs = provider.getPrincipals(mockRequest(false, TEST_IP + ", " + TEST_IP2));
+        assertContainsPrincipals(princs, PUBLIC_PRINC);
+    }
+
+    @Test
+    public void getPrincipalsMultipleIpChainLastMatch() throws Exception {
+        addPatronConfig(TEST_GROUP_ID, TEST_GROUP_NAME, TEST_IP);
+        serializeConfigAndInit();
+
+        List<String> princs = provider.getPrincipals(mockRequest(false, TEST_IP3 + ", " + TEST_IP2 + ", " + TEST_IP));
+        assertContainsPrincipals(princs, PUBLIC_PRINC, TEST_GROUP_ID);
+    }
+
     private void assertContainsPrincipals(List<String> princs, String... expected) {
         String msg = "Expected [" + String.join(",", expected) + "] received " + princs;
         assertEquals(expected.length, princs.size(), msg);

@@ -31,8 +31,9 @@ public abstract class GroupsThreadStore {
         GroupsThreadStore.groups.set(groups);
         if (groups != null) {
             GroupsThreadStore.groupString.set(groups.joinAccessGroups(";"));
-            GroupsThreadStore.agentPrincipals.remove();
         }
+        // Clear agent principals any time groups are set, so that agentPrincipals will reset
+        GroupsThreadStore.agentPrincipals.remove();
     }
 
     /**
@@ -51,15 +52,6 @@ public abstract class GroupsThreadStore {
      */
     public static String getGroupString() {
         return GroupsThreadStore.groupString.get();
-    }
-
-    /**
-     * Clears the CDR groups associated with the current thread.
-     */
-    public static void clearGroups() {
-        GroupsThreadStore.groups.remove();
-        GroupsThreadStore.groupString.remove();
-        GroupsThreadStore.agentPrincipals.remove();
     }
 
     /**

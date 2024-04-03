@@ -51,10 +51,11 @@ public class PatronPrincipalProvider {
 
         String remoteAddr = request.getHeader(FORWARDED_FOR_HEADER);
         if (StringUtils.isBlank(remoteAddr)) {
-            remoteAddr = request.getRemoteAddr();
-            if (StringUtils.isBlank(remoteAddr)) {
-                return princs;
-            }
+            return princs;
+        } else {
+            // Get the last IP in the chain, which should be the server assigned IP rather than client provided one
+            var addresses = remoteAddr.split(",");
+            remoteAddr = addresses[addresses.length - 1].trim();
         }
 
         BigInteger ipInteger = IPAddressPatronPrincipalConfig.ipToBigInteger(remoteAddr);

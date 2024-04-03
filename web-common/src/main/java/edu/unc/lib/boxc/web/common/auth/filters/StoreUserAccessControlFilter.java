@@ -69,15 +69,12 @@ public class StoreUserAccessControlFilter extends OncePerRequestFilter implement
             AccessGroupSet accessGroups = getUserGroups(request);
             GroupsThreadStore.storeGroups(accessGroups);
 
-            AgentPrincipals principals = GroupsThreadStore.getAgentPrincipals();
-            request.setAttribute("accessGroupSet", principals.getPrincipals());
-
             if (log.isDebugEnabled()) {
                 log.debug("Setting cdr groups for request processing thread: {}",
                         GroupsThreadStore.getGroupString());
             }
         } catch (Exception e) {
-            log.debug("Error while retrieving the users profile", e);
+            log.error("Error while retrieving the users profile", e);
         }
     }
 
@@ -126,7 +123,7 @@ public class StoreUserAccessControlFilter extends OncePerRequestFilter implement
 
     protected AccessGroupSet getGrouperGroups(HttpServletRequest request) {
         String shibGroups = request.getHeader(HttpAuthHeaders.SHIBBOLETH_GROUPS_HEADER);
-        AccessGroupSet accessGroups = null;
+        AccessGroupSet accessGroups;
         String userName = GroupsThreadStore.getUsername();
         if (log.isDebugEnabled()) {
             log.debug("Normal user " + userName + " logged in with groups " + shibGroups);

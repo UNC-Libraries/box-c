@@ -1,6 +1,6 @@
 define('ResultView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtilities', 
-		'ResultObjectActionMenu', 'ResultTableActionMenu', 'ConfirmationDialog', 'ActionEventHandler', 'AlertHandler', 'ParentResultObject', 'AddMenu', 'ImportMenu', 'ResultTableView', 'SearchMenu', 'detachplus', 'qtip'],
-		function($, ui, ResultObjectList, URLUtilities, ResultObjectActionMenu, ResultTableActionMenu, ConfirmationDialog, ActionEventHandler, AlertHandler, ParentResultObject, AddMenu, ImportMenu, ResultTableView) {
+		'ResultObjectActionMenu', 'ResultTableActionMenu', 'SearchTags', 'ConfirmationDialog', 'ActionEventHandler', 'AlertHandler', 'ParentResultObject', 'AddMenu', 'ImportMenu', 'ResultTableView', 'SearchMenu', 'detachplus', 'qtip'],
+		function($, ui, ResultObjectList, URLUtilities, ResultObjectActionMenu, ResultTableActionMenu, SearchTags, ConfirmationDialog, ActionEventHandler, AlertHandler, ParentResultObject, AddMenu, ImportMenu, ResultTableView) {
 	$.widget("cdr.resultView", {
 		options : {
 			url : null,
@@ -82,6 +82,9 @@ define('ResultView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtilities'
 						"actionMenu" : {name : "", colClass : "narrow"}
 					};
 			}
+
+			this.tags = new SearchTags();
+			this.tags.setupEvents();
 			
 			var actionHandler = new ActionEventHandler({
 				baseContext : {
@@ -177,6 +180,8 @@ define('ResultView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtilities'
 						}
 						$publicLink.attr("href", baseHref + public_link_path);
 					}
+
+					self.tags.updateTags(data);
 					
 					$("#result_loading_icon").addClass("hidden");
 				},
