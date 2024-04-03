@@ -74,24 +74,19 @@ public class SingleUseKeyController {
 
     @RequestMapping(value = "/single_use_link/{key}", method = RequestMethod.GET)
     public void download(@PathVariable("key") String accessKey, HttpServletRequest request,
-                                                HttpServletResponse response) {
-        try {
-            if (singleUseKeyService.keyIsValid(accessKey)) {
-                var id = singleUseKeyService.getId(accessKey);
-                var pid = PIDs.get(id);
-                var datastream = ORIGINAL_FILE.getId();
-                var principals = getAgentPrincipals().getPrincipals();
+                                                HttpServletResponse response) throws IOException {
+        if (singleUseKeyService.keyIsValid(accessKey)) {
+            var id = singleUseKeyService.getId(accessKey);
+            var pid = PIDs.get(id);
+            var datastream = ORIGINAL_FILE.getId();
+            var principals = getAgentPrincipals().getPrincipals();
 
-                singleUseKeyService.invalidate(accessKey);
-                fedoraContentService.streamData(pid, datastream, true, response);
-                log.info("Single use link used. Access Key: {}, UUID: {}", accessKey, id);
-                analyticsTracker.trackEvent(request, "download", pid, principals);
-            } else {
-                throw new NotFoundException("Single use key is not valid: " + accessKey);
-            }
-        } catch (IOException e) {
-            log.error("Download single use link did not work:", e);
-            throw new RepositoryException("Failed to download file using single use access key: " + accessKey);
+            singleUseKeyService.invalidate(accessKey);
+            fedoraContentService.streamData(pid, datastream, true, response);
+            log.info("Single use link used. Access Key: {}, UUID: {}", accessKey, id);
+            analyticsTracker.trackEvent(request, "download", pid, principals);
+        } else {
+            throw new NotFoundException("Single use key is not valid: " + accessKey);
         }
     }
 }

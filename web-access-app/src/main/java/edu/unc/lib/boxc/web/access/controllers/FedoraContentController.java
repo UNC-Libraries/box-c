@@ -31,6 +31,7 @@ import org.springframework.web.method.annotation.MethodArgumentTypeMismatchExcep
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.EOFException;
 import java.io.IOException;
 import java.util.concurrent.TimeoutException;
 
@@ -107,7 +108,7 @@ public class FedoraContentController {
     private void handleIOException(PID pid, String datastream, IOException e) {
         var cause = ExceptionUtils.getRootCause(e);
         if (cause != null) {
-            if (cause.getMessage().contains("Connection reset by peer")) {
+            if (cause.getMessage().contains("Connection reset by peer") || cause instanceof EOFException) {
                 log.debug("Client reset connection while downloading {}/{}", pid.getId(), datastream);
                 return;
             }
