@@ -340,7 +340,17 @@
         <property name="accessControlService" ref="aclService" />
         <property name="derivativeService" ref="derivativeService" />
     </bean>
-    
+
+    <bean id="streamingPropertiesRequestSender" class="edu.unc.lib.boxc.operations.jms.streaming.StreamingPropertiesRequestSender">
+        <property name="jmsTemplate" ref="streamingPropertiesRequestJmsTemplate"/>
+    </bean>
+
+    <bean id="streamingPropertiesRequestJmsTemplate" class="org.springframework.jms.core.JmsTemplate">
+        <property name="connectionFactory" ref="jmsFactory" />
+        <property name="defaultDestinationName" value="${cdr.streamingproperties.stream}" />
+        <property name="pubSubDomain" value="false" />
+    </bean>
+
     <bean id="staffRoleAssignmentService" class="edu.unc.lib.boxc.operations.impl.acl.StaffRoleAssignmentService">
         <property name="aclService" ref="aclService" />
         <property name="aclFactory" ref="uncachedInheritedAclFactory" />
