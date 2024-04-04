@@ -56,7 +56,7 @@ public class StreamingPropertiesController {
         accessControlService.assertHasAccess("Insufficient permissions to get streaming properties for " + id,
                 pid, principals, Permission.viewHidden);
 
-        // check if object is a WorkObject
+        // check if object is a FileObject
         var repositoryObject = repositoryObjectLoader.getRepositoryObject(pid);
         if (!(repositoryObject instanceof FileObject)) {
             throw new InvalidOperationForObjectType("Cannot get streaming properties of type " +
