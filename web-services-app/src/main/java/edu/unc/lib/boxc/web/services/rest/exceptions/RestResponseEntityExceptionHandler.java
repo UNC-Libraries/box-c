@@ -1,6 +1,7 @@
 package edu.unc.lib.boxc.web.services.rest.exceptions;
 
 import edu.unc.lib.boxc.model.api.exceptions.InvalidOperationForObjectType;
+import java.io.EOFException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpHeaders;
@@ -67,12 +68,23 @@ public class RestResponseEntityExceptionHandler extends ResponseEntityExceptionH
         return handleExceptionInternal(ex, ex.getMessage(), new HttpHeaders(), HttpStatus.BAD_REQUEST, request);
     }
 
-    @ExceptionHandler(value = { RuntimeException.class })
-    protected ResponseEntity<Object> handleUncaught(RuntimeException ex, WebRequest request) {
-        String bodyOfResponse = "Uncaught error";
-        log.error("Uncaught exception", ex);
-        return handleExceptionInternal(ex, bodyOfResponse, new HttpHeaders(),
-                HttpStatus.INTERNAL_SERVER_ERROR, request);
+    @ExceptionHandler(value = { EOFException.class })
+    public ResponseEntity<Object> handleEofException(EOFException ex, WebRequest request) {
+        log.debug("Client closed connection to {}", getRequestUri(request), ex);
+        return null;
+    }
+
+    @ExceptionHandler(value = { Exception.class })
+    protected ResponseEntity<Object> handleUncaught(Exception ex, WebRequest request) {
+        try {
+            String bodyOfResponse = "Uncaught error";
+            log.error("Uncaught exception from {}", getRequestUri(request), ex);
+            return handleExceptionInternal(ex, bodyOfResponse, new HttpHeaders(),
+                    HttpStatus.INTERNAL_SERVER_ERROR, request);
+        } catch (Exception e) {
+            log.error("Error occurred while handling uncaught exception {}", getRequestUri(request), e);
+            return null;
+        }
     }
 
     // Extract the query path of the current request

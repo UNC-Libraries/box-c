@@ -74,7 +74,7 @@ public class DatastreamController {
     public void getDatastream(@PathVariable("pid") String pidString,
             @RequestParam(value = "dl", defaultValue = "false") boolean download,
             HttpServletRequest request,
-            HttpServletResponse response) {
+            HttpServletResponse response) throws IOException {
         getDatastream(pidString, ORIGINAL_FILE.getId(), download, request, response);
     }
 
@@ -83,26 +83,22 @@ public class DatastreamController {
             @PathVariable("datastream") String datastream,
             @RequestParam(value = "dl", defaultValue = "false") boolean download,
             HttpServletRequest request,
-            HttpServletResponse response) {
+            HttpServletResponse response) throws IOException {
 
         PID pid = PIDs.get(pidString);
         AccessGroupSet principals = getAgentPrincipals().getPrincipals();
 
-        try {
-            if (isDerivative(datastream)) {
-                derivativeContentService.streamData(pid, datastream, principals, false, response);
-            } else if (DatastreamType.MD_EVENTS.getId().equals(datastream)) {
-                fedoraContentService.streamEventLog(pid, principals, download, response);
-            } else {
-                accessControlService.assertHasAccess("Insufficient permissions to access " + datastream + " for object " + pid,
-                        pid, principals, getPermissionForDatastream(datastream));
-                fedoraContentService.streamData(pid, datastream, download, response);
-                if (DatastreamType.ORIGINAL_FILE.getId().equals(datastream)) {
-                    recordDownloadEvent(pid, datastream, principals, request);
-                }
+        if (isDerivative(datastream)) {
+            derivativeContentService.streamData(pid, datastream, principals, false, response);
+        } else if (DatastreamType.MD_EVENTS.getId().equals(datastream)) {
+            fedoraContentService.streamEventLog(pid, principals, download, response);
+        } else {
+            accessControlService.assertHasAccess("Insufficient permissions to access " + datastream + " for object " + pid,
+                    pid, principals, getPermissionForDatastream(datastream));
+            fedoraContentService.streamData(pid, datastream, download, response);
+            if (DatastreamType.ORIGINAL_FILE.getId().equals(datastream)) {
+                recordDownloadEvent(pid, datastream, principals, request);
             }
-        } catch (IOException e) {
-            log.error("Problem retrieving {} for {}", pid.toString(), datastream, e);
         }
     }
 

@@ -18,7 +18,6 @@
             </template>
             </tbody>
         </table>
-
         <h3 class="update-roles">Set Patron Access</h3>
         <ul class="set-patron-roles">
             <li v-if="isBulkMode">
