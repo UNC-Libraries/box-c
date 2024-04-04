@@ -1,8 +1,5 @@
 <template>
     <div id="patron-roles">
-        <p class="duracloud-note">Access control changes here will not change settings in Duracloud, any corresponding changes must
-            be made in Duracloud itself</p>
-
         <h3 v-if="!isBulkMode">Effective Patron Access</h3>
 
         <table class="border inherited-permissions" v-if="!isBulkMode">
@@ -654,13 +651,6 @@
 
         span:hover {
             cursor: default;
-        }
-
-        .duracloud-note {
-            color: #dc3545;
-            font-size: .8rem;
-            margin: 0;
-            text-transform: uppercase;
         }
 
         h3 {
