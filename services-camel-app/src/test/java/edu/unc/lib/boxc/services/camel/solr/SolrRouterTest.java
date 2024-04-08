@@ -4,7 +4,7 @@ import static edu.unc.lib.boxc.fcrepo.FcrepoJmsConstants.EVENT_TYPE;
 import static edu.unc.lib.boxc.fcrepo.FcrepoJmsConstants.IDENTIFIER;
 import static edu.unc.lib.boxc.fcrepo.FcrepoJmsConstants.RESOURCE_TYPE;
 import static edu.unc.lib.boxc.model.api.rdf.Fcrepo4Repository.Container;
-import static org.mockito.Matchers.any;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 
 import java.util.HashMap;

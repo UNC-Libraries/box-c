@@ -11,7 +11,7 @@ import static edu.unc.lib.boxc.search.solr.services.StructureQueryService.CONTAI
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Matchers.anySetOf;
+import static org.mockito.ArgumentMatchers.anySet;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.openMocks;
 
@@ -83,7 +83,7 @@ public class StructureQueryServiceIT extends BaseEmbeddedSolrTest {
         restrictionUtil.setGlobalPermissionEvaluator(globalPermissionEvaluator);
         restrictionUtil.setSearchSettings(searchSettings);
 
-        when(globalPermissionEvaluator.hasGlobalPrincipal(anySetOf(String.class))).thenReturn(false);
+        when(globalPermissionEvaluator.hasGlobalPrincipal(anySet())).thenReturn(false);
 
         facetFieldFactory = new FacetFieldFactory();
         facetFieldFactory.setSearchSettings(searchSettings);

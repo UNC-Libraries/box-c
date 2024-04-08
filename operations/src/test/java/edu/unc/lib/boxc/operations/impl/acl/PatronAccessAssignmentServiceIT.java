@@ -13,10 +13,10 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyCollectionOf;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Matchers.eq;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyCollection;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -866,7 +866,7 @@ public class PatronAccessAssignmentServiceIT {
 
     private void assertMessageNotSent(PID pid) {
         verify(operationsMessageSender, never()).sendOperationMessage(
-                anyString(), any(CDRActions.class), anyCollectionOf(PID.class));
+                anyString(), any(CDRActions.class), anyCollection());
     }
 
     private void assertEventWithDetail(List<String> eventDetails, String expected) {
