@@ -15,6 +15,7 @@ import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.io.File;
 import java.io.IOException;
@@ -80,13 +81,6 @@ public class ImageEnhancementsRouterTest extends CamelSpringTestSupport {
         return new ClassPathXmlApplicationContext("/service-context.xml", "/images-context.xml");
     }
 
-    @Before
-    public void setup() throws Exception {
-        doNothing().when(addSmallThumbnailProcessor).process(any(Exchange.class));
-        doNothing().when(addLargeThumbnailProcessor).process(any(Exchange.class));
-        doNothing().when(addAccessCopyProcessor).process(any(Exchange.class));
-    }
-
     @After
     public void cleanup() throws IOException {
         FileUtils.deleteDirectory(new File("target/34"));
@@ -135,6 +129,7 @@ public class ImageEnhancementsRouterTest extends CamelSpringTestSupport {
 
     @Test
     public void testThumbSmallRouteNoForceNoFileExists() throws Exception {
+        when(addSmallThumbnailProcessor.needsRun(any())).thenReturn(true);
         createContext(smallThumbRoute);
 
         getMockEndpoint("mock:exec:/bin/sh").expectedMessageCount(1);
@@ -149,6 +144,7 @@ public class ImageEnhancementsRouterTest extends CamelSpringTestSupport {
 
     @Test
     public void testThumbSmallRouteScriptFails() throws Exception {
+        when(addSmallThumbnailProcessor.needsRun(any())).thenReturn(true);
         createContext(smallThumbRoute);
 
         MockEndpoint shEndpoint = getMockEndpoint("mock:exec:/bin/sh");
@@ -175,6 +171,7 @@ public class ImageEnhancementsRouterTest extends CamelSpringTestSupport {
 
     @Test
     public void testThumbSmallRouteForceNoFileExists() throws Exception {
+        when(addSmallThumbnailProcessor.needsRun(any())).thenReturn(true);
         createContext(smallThumbRoute);
 
         getMockEndpoint("mock:exec:/bin/sh").expectedMessageCount(1);
@@ -207,6 +204,7 @@ public class ImageEnhancementsRouterTest extends CamelSpringTestSupport {
 
     @Test
     public void testThumbSmallRouteForceFileExists() throws Exception {
+        when(addSmallThumbnailProcessor.needsRun(any())).thenReturn(true);
         String derivativePath = idToPath(fileID, HASHED_PATH_DEPTH, HASHED_PATH_SIZE);
         File existingFile = new File("target/" + derivativePath + "/" + fileID + ".png");
         FileUtils.writeStringToFile(existingFile, "extracted text", "utf-8");
@@ -224,6 +222,7 @@ public class ImageEnhancementsRouterTest extends CamelSpringTestSupport {
 
     @Test
     public void testThumbLargeRouteNoForceNoFileExists() throws Exception {
+        when(addLargeThumbnailProcessor.needsRun(any())).thenReturn(true);
         createContext(largeThumbRoute);
 
         getMockEndpoint("mock:exec:/bin/sh").expectedMessageCount(1);
@@ -241,6 +240,7 @@ public class ImageEnhancementsRouterTest extends CamelSpringTestSupport {
 
     @Test
     public void testThumbLargeRouteScriptFails() throws Exception {
+        when(addLargeThumbnailProcessor.needsRun(any())).thenReturn(true);
         createContext(largeThumbRoute);
 
         MockEndpoint shEndpoint = getMockEndpoint("mock:exec:/bin/sh");
@@ -267,6 +267,7 @@ public class ImageEnhancementsRouterTest extends CamelSpringTestSupport {
 
     @Test
     public void testThumbLargeRouteForceNoFileExists() throws Exception {
+        when(addLargeThumbnailProcessor.needsRun(any())).thenReturn(true);
         createContext(largeThumbRoute);
 
         getMockEndpoint("mock:exec:/bin/sh").expectedMessageCount(1);
@@ -304,6 +305,7 @@ public class ImageEnhancementsRouterTest extends CamelSpringTestSupport {
 
     @Test
     public void testThumbLargeRouteForceFileExists() throws Exception {
+        when(addLargeThumbnailProcessor.needsRun(any())).thenReturn(true);
         String derivativePath = idToPath(fileID, HASHED_PATH_DEPTH, HASHED_PATH_SIZE);
         File existingFile = new File("target/" + derivativePath + "/" + fileID + ".png");
         FileUtils.writeStringToFile(existingFile, "extracted text", "utf-8");
@@ -323,6 +325,7 @@ public class ImageEnhancementsRouterTest extends CamelSpringTestSupport {
 
     @Test
     public void testAccessCopyRouteNoForceNoFileExists() throws Exception {
+        when(addAccessCopyProcessor.needsRun(any())).thenReturn(true);
         createContext(accessCopyRoute);
 
         getMockEndpoint("mock:exec:/bin/sh").expectedMessageCount(1);
@@ -338,6 +341,7 @@ public class ImageEnhancementsRouterTest extends CamelSpringTestSupport {
 
     @Test
     public void testAccessCopyRouteScriptFails() throws Exception {
+        when(addAccessCopyProcessor.needsRun(any())).thenReturn(true);
         createContext(accessCopyRoute);
 
         MockEndpoint shEndpoint = getMockEndpoint("mock:exec:/bin/sh");
@@ -364,6 +368,7 @@ public class ImageEnhancementsRouterTest extends CamelSpringTestSupport {
 
     @Test
     public void testAccessCopyRouteForceNoFileExists() throws Exception {
+        when(addAccessCopyProcessor.needsRun(any())).thenReturn(true);
         createContext(accessCopyRoute);
 
         getMockEndpoint("mock:exec:/bin/sh").expectedMessageCount(1);
@@ -397,6 +402,7 @@ public class ImageEnhancementsRouterTest extends CamelSpringTestSupport {
 
     @Test
     public void testAccessCopyRouteForceFileExists() throws Exception {
+        when(addAccessCopyProcessor.needsRun(any())).thenReturn(true);
         String derivativePath = idToPath(fileID, HASHED_PATH_DEPTH, HASHED_PATH_SIZE);
         File existingFile = new File("target/" + derivativePath + "/" + fileID + ".jp2");
         FileUtils.writeStringToFile(existingFile, "extracted text", "utf-8");

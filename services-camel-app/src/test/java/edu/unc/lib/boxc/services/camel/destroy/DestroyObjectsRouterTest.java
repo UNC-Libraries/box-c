@@ -118,7 +118,7 @@ public class DestroyObjectsRouterTest extends CamelSpringTestSupport {
         when(premisLogger.buildEvent(Premis.Deletion)).thenReturn(eventBuilder);
         when(eventBuilder.addAuthorizingAgent(any())).thenReturn(eventBuilder);
         when(eventBuilder.addOutcome(true)).thenReturn(eventBuilder);
-        when(eventBuilder.addEventDetail(anyString(), any())).thenReturn(eventBuilder);
+        when(eventBuilder.addEventDetail(anyString(), any(Object[].class))).thenReturn(eventBuilder);
 
         String id = UUID.randomUUID().toString();
         PID pid = PIDs.get(id);

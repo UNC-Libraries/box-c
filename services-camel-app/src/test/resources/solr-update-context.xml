@@ -24,14 +24,11 @@
     </bean>
     
     <bean id="solrUpdatePreprocessor" class="org.mockito.Mockito" factory-method="spy">
-        <constructor-arg type="java.lang.Class" ref="solrUpdatePreprocessorReal" />
+        <constructor-arg type="java.lang.Class" value="edu.unc.lib.boxc.services.camel.solrUpdate.SolrUpdatePreprocessor" />
     </bean>
     
     <bean id="cacheInvalidatingProcessor" class="org.mockito.Mockito" factory-method="mock">
         <constructor-arg type="java.lang.Class" value="edu.unc.lib.boxc.services.camel.util.CacheInvalidatingProcessor" />
-    </bean>
-    
-    <bean id="solrUpdatePreprocessorReal" class="edu.unc.lib.boxc.services.camel.solrUpdate.SolrUpdatePreprocessor">
     </bean>
 
     <bean id="mockIndexingMessageSender" class="org.mockito.Mockito" factory-method="mock">
