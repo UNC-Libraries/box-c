@@ -136,7 +136,7 @@ public class CDRMETS2N3BagJobTest extends AbstractNormalizationJobTest {
             // test case assumes one object belonging to one work in the mets.xml
             verify(premisLogger).buildEvent(eq(Premis.Validation));
             verify(premisLogger, times(4)).buildEvent(eq(Premis.Accession));
-            verify(premisEventBuilder, times(5)).addEventDetail(anyString(), any());
+            verify(premisEventBuilder, times(5)).addEventDetail(anyString(), any(Object[].class));
             verify(premisEventBuilder, times(4)).addSoftwareAgent(any(PID.class));
             verify(premisEventBuilder, times(5)).write();
         }

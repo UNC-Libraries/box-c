@@ -12,10 +12,6 @@
         http://www.springframework.org/schema/mvc
         http://www.springframework.org/schema/mvc/spring-mvc-3.0.xsd">
 
-    <mvc:annotation-driven/>
-
-    <context:component-scan resource-pattern="**/DatastreamController*" base-package="edu.unc.lib.boxc.web.services.rest"/>
-
     <bean id="fedoraContentService" class="edu.unc.lib.boxc.web.common.services.FedoraContentService">
         <property name="accessControlService" ref="aclService" />
         <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
@@ -26,15 +22,15 @@
     </bean>
 
     <bean id="aclService" class="org.mockito.Mockito" factory-method="mock">
-        <constructor-arg value="edu.unc.lib.boxc.auth.fcrepo.services.AccessControlServiceImpl" />
+        <constructor-arg type="java.lang.Class" value="edu.unc.lib.boxc.auth.fcrepo.services.AccessControlServiceImpl" />
     </bean>
 
     <bean id="analyticsTracker" class="org.mockito.Mockito" factory-method="mock">
-        <constructor-arg value="edu.unc.lib.boxc.web.common.utils.AnalyticsTrackerUtil" />
+        <constructor-arg type="java.lang.Class" value="edu.unc.lib.boxc.web.common.utils.AnalyticsTrackerUtil" />
     </bean>
 
     <bean id="globalPermissionEvaluator" class="org.mockito.Mockito" factory-method="mock">
-        <constructor-arg value="edu.unc.lib.boxc.auth.api.services.GlobalPermissionEvaluator" />
+        <constructor-arg type="java.lang.Class" value="edu.unc.lib.boxc.auth.api.services.GlobalPermissionEvaluator" />
     </bean>
 
     <bean id="accessCopiesService" class="edu.unc.lib.boxc.web.common.services.AccessCopiesService">

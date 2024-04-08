@@ -27,43 +27,43 @@
     </bean>
     
     <bean id="premisLoggerFactory" class="org.mockito.Mockito" factory-method="mock">
-        <constructor-arg value="edu.unc.lib.boxc.operations.api.events.PremisLoggerFactory" />
+        <constructor-arg type="java.lang.Class" value="edu.unc.lib.boxc.operations.api.events.PremisLoggerFactory" />
     </bean>
     
     <bean id="aclService" class="org.mockito.Mockito" factory-method="mock">
-        <constructor-arg value="edu.unc.lib.boxc.auth.api.services.AccessControlService" />
+        <constructor-arg type="java.lang.Class" value="edu.unc.lib.boxc.auth.api.services.AccessControlService" />
     </bean>
     
     <bean id="repositoryObjectFactory" class="org.mockito.Mockito" factory-method="mock">
-        <constructor-arg value="edu.unc.lib.boxc.model.fcrepo.services.RepositoryObjectFactoryImpl" />
+        <constructor-arg type="java.lang.Class" value="edu.unc.lib.boxc.model.fcrepo.services.RepositoryObjectFactoryImpl" />
     </bean>
     
     <bean id="inheritedAclFactory" class="org.mockito.Mockito" factory-method="mock">
-        <constructor-arg value="edu.unc.lib.boxc.auth.fcrepo.services.InheritedAclFactory" />
+        <constructor-arg type="java.lang.Class" value="edu.unc.lib.boxc.auth.fcrepo.services.InheritedAclFactory" />
     </bean>
     
     <bean id="repositoryObjectLoader" class="org.mockito.Mockito" factory-method="mock">
-        <constructor-arg value="edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader" />
+        <constructor-arg type="java.lang.Class" value="edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader" />
     </bean>
     
     <bean id="transactionManager" class="org.mockito.Mockito" factory-method="mock">
-        <constructor-arg value="edu.unc.lib.boxc.fcrepo.utils.TransactionManager" />
+        <constructor-arg type="java.lang.Class" value="edu.unc.lib.boxc.fcrepo.utils.TransactionManager" />
     </bean>
     
     <bean id="objectPathFactory" class="org.mockito.Mockito" factory-method="mock">
-        <constructor-arg value="edu.unc.lib.boxc.search.solr.services.ObjectPathFactory" />
+        <constructor-arg type="java.lang.Class" value="edu.unc.lib.boxc.search.solr.services.ObjectPathFactory" />
     </bean>
     
     <bean id="indexingMessageSender" class="org.mockito.Mockito" factory-method="mock">
-        <constructor-arg value="edu.unc.lib.boxc.operations.jms.indexing.IndexingMessageSender" />
+        <constructor-arg type="java.lang.Class" value="edu.unc.lib.boxc.operations.jms.indexing.IndexingMessageSender" />
     </bean>
     
     <bean id="fcrepoClient" class="org.mockito.Mockito" factory-method="mock">
-        <constructor-arg value="org.fcrepo.client.FcrepoClient" />
+        <constructor-arg type="java.lang.Class" value="org.fcrepo.client.FcrepoClient" />
     </bean>
     
     <bean id="binaryDestroyedMessageSender" class="org.mockito.Mockito" factory-method="mock">
-        <constructor-arg value="edu.unc.lib.boxc.operations.jms.MessageSender" />
+        <constructor-arg type="java.lang.Class" value="edu.unc.lib.boxc.operations.jms.MessageSender" />
     </bean>
 
     <camel:camelContext id="cdrDestroyObjects">

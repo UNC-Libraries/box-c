@@ -29,7 +29,7 @@ import edu.unc.lib.boxc.operations.jms.MessageSender;
  *
  * @author lfarrell
  */
-public class ImportThumbnailService extends MessageSender {
+public class ImportThumbnailService {
     private static final Logger log = LoggerFactory.getLogger(ImportThumbnailService.class);
 
     private String sourceImagesDir;

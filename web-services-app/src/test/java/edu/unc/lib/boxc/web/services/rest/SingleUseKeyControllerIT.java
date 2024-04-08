@@ -1,12 +1,18 @@
 package edu.unc.lib.boxc.web.services.rest;
 
 import edu.unc.lib.boxc.auth.api.exceptions.AccessRestrictionException;
+import edu.unc.lib.boxc.auth.api.services.AccessControlService;
 import edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl;
+import edu.unc.lib.boxc.auth.fcrepo.services.AccessControlServiceImpl;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.objects.FileObject;
 import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
+import edu.unc.lib.boxc.model.fcrepo.test.TestHelper;
+import edu.unc.lib.boxc.web.common.services.FedoraContentService;
+import edu.unc.lib.boxc.web.common.utils.AnalyticsTrackerUtil;
 import edu.unc.lib.boxc.web.services.processing.SingleUseKeyService;
+import edu.unc.lib.boxc.web.services.rest.exceptions.RestResponseEntityExceptionHandler;
 import edu.unc.lib.boxc.web.services.rest.modify.AbstractAPIIT;
 import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.AfterEach;
@@ -14,6 +20,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.io.TempDir;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.test.context.ContextConfiguration;
@@ -21,6 +29,7 @@ import org.springframework.test.context.ContextHierarchy;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.test.web.servlet.MvcResult;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -39,6 +48,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
 
 import static edu.unc.lib.boxc.auth.api.Permission.viewHidden;
+import static org.mockito.Mockito.mock;
 import static org.mockito.MockitoAnnotations.openMocks;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -52,8 +62,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @WebAppConfiguration
 @ContextHierarchy({
         @ContextConfiguration("/spring-test/test-fedora-container.xml"),
-        @ContextConfiguration("/spring-test/cdr-client-container.xml"),
-        @ContextConfiguration("/single-use-key-it-servlet.xml")
+        @ContextConfiguration("/spring-test/cdr-client-container.xml")
 })
 public class SingleUseKeyControllerIT extends AbstractAPIIT {
     private AutoCloseable closeable;
@@ -62,17 +71,34 @@ public class SingleUseKeyControllerIT extends AbstractAPIIT {
     @TempDir
     public Path tmpFolder;
 
-    @Autowired
     private SingleUseKeyService singleUseKeyService;
     @Autowired
     private RepositoryObjectFactory repositoryObjectFactory;
+    @Mock
+    private AnalyticsTrackerUtil analyticsTrackerUtil;
+    private FedoraContentService fedoraContentService;
+    @InjectMocks
+    private SingleUseKeyController controller;
 
     @BeforeEach
-    public void setup() {
+    public void init() {
         closeable = openMocks(this);
+        aclService = mock(AccessControlService.class);
+        fedoraContentService = new FedoraContentService();
+        fedoraContentService.setAccessControlService(aclService);
+        fedoraContentService.setRepositoryObjectLoader(repositoryObjectLoader);
+        singleUseKeyService = new SingleUseKeyService();
+        controller.setFedoraContentService(fedoraContentService);
+        controller.setSingleUseKeyService(singleUseKeyService);
+        controller.setAclService(aclService);
+        controller.setRepositoryObjectLoader(repositoryObjectLoader);
+        mvc = MockMvcBuilders.standaloneSetup(controller)
+                .setControllerAdvice(new RestResponseEntityExceptionHandler())
+                .build();
         pid = makePid();
         csvPath = tmpFolder.resolve("singleUseKey");
         singleUseKeyService.setCsvPath(csvPath);
+        TestHelper.setContentBase("http://localhost:48085/rest");
     }
 
     @AfterEach

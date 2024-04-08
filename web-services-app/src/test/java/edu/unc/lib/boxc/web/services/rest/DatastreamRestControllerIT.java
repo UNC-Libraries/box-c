@@ -18,6 +18,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.MockitoAnnotations.openMocks;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -27,6 +28,12 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 
 import edu.unc.lib.boxc.indexing.solr.test.TestCorpus;
+import edu.unc.lib.boxc.model.fcrepo.test.TestHelper;
+import edu.unc.lib.boxc.web.common.services.AccessCopiesService;
+import edu.unc.lib.boxc.web.common.services.FedoraContentService;
+import edu.unc.lib.boxc.web.common.services.SolrQueryLayerService;
+import edu.unc.lib.boxc.web.common.utils.AnalyticsTrackerUtil;
+import edu.unc.lib.boxc.web.services.rest.exceptions.RestResponseEntityExceptionHandler;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.jena.rdf.model.Model;
@@ -36,6 +43,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.io.TempDir;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.test.context.ContextConfiguration;
@@ -57,6 +66,7 @@ import edu.unc.lib.boxc.model.fcrepo.services.DerivativeService;
 import edu.unc.lib.boxc.operations.api.events.PremisLoggerFactory;
 import edu.unc.lib.boxc.web.common.services.DerivativeContentService;
 import edu.unc.lib.boxc.web.services.rest.modify.AbstractAPIIT;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 /**
  *
@@ -77,22 +87,42 @@ public class DatastreamRestControllerIT extends AbstractAPIIT {
 
     @Autowired
     private AccessControlService accessControlService;
-
+    @Autowired
+    private SolrQueryLayerService solrQueryLayerService;
+    @Autowired
+    private FedoraContentService fedoraContentService;
     @Autowired
     private DerivativeContentService derivativeContentService;
-
+    @Autowired
+    private AccessCopiesService accessCopiesService;
     @Autowired
     private PremisLoggerFactory premisLoggerFactory;
+    @Autowired
+    private AnalyticsTrackerUtil analyticsTrackerUtil;
 
     @Autowired
     private EmbeddedSolrServer embeddedSolrServer;
+    private DatastreamController controller;
 
     @TempDir
     public Path derivDir;
     private String derivDirPath;
+    private AutoCloseable closeable;
 
     @BeforeEach
-    public void setup() {
+    public void init() {
+        closeable = openMocks(this);
+        TestHelper.setContentBase("http://localhost:48085/rest");
+        controller = new DatastreamController();
+        controller.setAnalyticsTracker(analyticsTrackerUtil);
+        controller.setSolrQueryLayerService(solrQueryLayerService);
+        controller.setAccessControlService(accessControlService);
+        controller.setFedoraContentService(fedoraContentService);
+        controller.setDerivativeContentService(derivativeContentService);
+        controller.setAccessCopiesService(accessCopiesService);
+        mvc = MockMvcBuilders.standaloneSetup(controller)
+                .setControllerAdvice(new RestResponseEntityExceptionHandler())
+                .build();
         derivDirPath = derivDir.toString();
 
         DerivativeService derivService = new DerivativeService();

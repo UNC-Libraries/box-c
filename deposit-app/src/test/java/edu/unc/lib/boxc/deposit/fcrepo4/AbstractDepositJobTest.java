@@ -2,6 +2,7 @@ package edu.unc.lib.boxc.deposit.fcrepo4;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.openMocks;
@@ -104,7 +105,8 @@ public class AbstractDepositJobTest {
         when(premisLoggerFactory.createPremisLogger(any(RepositoryObject.class), any(BinaryTransferSession.class)))
                 .thenReturn(premisLogger);
         when(premisLogger.buildEvent(any(Resource.class))).thenReturn(premisEventBuilder);
-        when(premisEventBuilder.addEventDetail(anyString(), any())).thenReturn(premisEventBuilder);
+        when(premisEventBuilder.addEventDetail(anyString(), isNull())).thenReturn(premisEventBuilder);
+        when(premisEventBuilder.addEventDetail(anyString(), any(Object[].class))).thenReturn(premisEventBuilder);
         when(premisEventBuilder.addSoftwareAgent(any(PID.class))).thenReturn(premisEventBuilder);
         when(premisEventBuilder.create()).thenReturn(testResource);
 

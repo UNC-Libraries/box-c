@@ -74,15 +74,15 @@
     </bean>
 
     <bean id="repositoryObjectLoader" class="org.mockito.Mockito" factory-method="mock">
-        <constructor-arg value="edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader" />
+        <constructor-arg type="java.lang.Class" value="edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader" />
     </bean>
 
     <bean id="titleRetrievalService" class="org.mockito.Mockito" factory-method="mock">
-        <constructor-arg value="edu.unc.lib.boxc.search.solr.services.TitleRetrievalService" />
+        <constructor-arg type="java.lang.Class" value="edu.unc.lib.boxc.search.solr.services.TitleRetrievalService" />
     </bean>
     
     <bean id="cacheInvalidatingProcessor" class="org.mockito.Mockito" factory-method="mock">
-        <constructor-arg value="edu.unc.lib.boxc.services.camel.util.CacheInvalidatingProcessor" />
+        <constructor-arg type="java.lang.Class" value="edu.unc.lib.boxc.services.camel.util.CacheInvalidatingProcessor" />
     </bean>
 
     <bean id="aggregateWorkForFileProcessor" class="edu.unc.lib.boxc.services.camel.solrUpdate.AggregateUpdateProcessor">

@@ -1,45 +1,49 @@
 package edu.unc.lib.boxc.web.services.rest;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.reset;
-import static org.mockito.Mockito.when;
-import static org.mockito.MockitoAnnotations.openMocks;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.web.servlet.MvcResult;
-
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.search.api.models.ContentObjectRecord;
 import edu.unc.lib.boxc.search.api.requests.IdListRequest;
 import edu.unc.lib.boxc.search.api.requests.SimpleIdRequest;
 import edu.unc.lib.boxc.search.solr.models.ContentObjectSolrRecord;
 import edu.unc.lib.boxc.web.common.services.SolrQueryLayerService;
-import edu.unc.lib.boxc.web.services.rest.modify.AbstractAPIIT;
+import edu.unc.lib.boxc.web.services.rest.exceptions.RestResponseEntityExceptionHandler;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
-@ContextConfiguration("/item-info-it-servlet.xml")
-public class ItemInfoRestControllerIT extends AbstractAPIIT {
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+
+import static edu.unc.lib.boxc.model.fcrepo.test.TestHelper.makePid;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+import static org.mockito.MockitoAnnotations.openMocks;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+public class ItemInfoRestControllerIT {
     private AutoCloseable closeable;
-
-    @Autowired
+    @InjectMocks
+    private ItemInfoRestController controller;
+    private MockMvc mvc;
+    @Mock
     private SolrQueryLayerService solrSearchService;
 
     @BeforeEach
     public void setup() {
         closeable = openMocks(this);
-        reset(solrSearchService);
+        mvc = MockMvcBuilders.standaloneSetup(controller)
+                .setControllerAdvice(new RestResponseEntityExceptionHandler())
+                .build();
     }
 
     @AfterEach
@@ -99,7 +103,7 @@ public class ItemInfoRestControllerIT extends AbstractAPIIT {
                 .andExpect(status().isOk())
                 .andReturn();
 
-        Map<String, Object> respMap = getMapFromResponse(result);
+        Map<String, Object> respMap = MvcTestHelpers.getMapFromResponse(result);
         assertEquals(versionValue1, respMap.get(objPid1.getId()));
         assertEquals(versionValue2, respMap.get(objPid2.getId()));
     }

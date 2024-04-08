@@ -73,4 +73,8 @@ public class RunEnhancementsController {
             return force;
         }
     }
+
+    public void setEnhancementService(RunEnhancementsService enhService) {
+        this.enhService = enhService;
+    }
 }

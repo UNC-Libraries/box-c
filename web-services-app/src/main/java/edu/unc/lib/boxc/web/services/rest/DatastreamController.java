@@ -158,4 +158,28 @@ public class DatastreamController {
     @ExceptionHandler({ObjectTypeMismatchException.class, IllegalArgumentException.class})
     public void handleBadRequest() {
     }
+
+    public void setFedoraContentService(FedoraContentService fedoraContentService) {
+        this.fedoraContentService = fedoraContentService;
+    }
+
+    public void setAnalyticsTracker(AnalyticsTrackerUtil analyticsTracker) {
+        this.analyticsTracker = analyticsTracker;
+    }
+
+    public void setDerivativeContentService(DerivativeContentService derivativeContentService) {
+        this.derivativeContentService = derivativeContentService;
+    }
+
+    public void setSolrQueryLayerService(SolrQueryLayerService solrQueryLayerService) {
+        this.solrQueryLayerService = solrQueryLayerService;
+    }
+
+    public void setAccessCopiesService(AccessCopiesService accessCopiesService) {
+        this.accessCopiesService = accessCopiesService;
+    }
+
+    public void setAccessControlService(AccessControlService accessControlService) {
+        this.accessControlService = accessControlService;
+    }
 }

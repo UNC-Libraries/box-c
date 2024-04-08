@@ -86,4 +86,8 @@ public class ImageServerProxyController {
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
+
+    public void setImageServerProxyService(ImageServerProxyService imageServerProxyService) {
+        this.imageServerProxyService = imageServerProxyService;
+    }
 }
