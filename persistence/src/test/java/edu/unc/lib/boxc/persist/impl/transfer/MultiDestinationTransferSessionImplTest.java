@@ -2,7 +2,7 @@ package edu.unc.lib.boxc.persist.impl.transfer;
 
 import static edu.unc.lib.boxc.persist.api.storage.StorageType.FILESYSTEM;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Matchers.any;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.openMocks;
 

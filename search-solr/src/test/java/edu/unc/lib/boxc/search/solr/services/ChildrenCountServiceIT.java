@@ -7,7 +7,7 @@ import static edu.unc.lib.boxc.search.api.SearchFieldKey.RESOURCE_TYPE;
 import static edu.unc.lib.boxc.search.solr.services.ChildrenCountService.CHILD_COUNT;
 import static java.util.Arrays.asList;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Matchers.anySetOf;
+import static org.mockito.ArgumentMatchers.anySet;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.openMocks;
 
@@ -71,7 +71,7 @@ public class ChildrenCountServiceIT extends BaseEmbeddedSolrTest {
         restrictionUtil.setGlobalPermissionEvaluator(globalPermissionEvaluator);
         restrictionUtil.setSearchSettings(searchSettings);
 
-        when(globalPermissionEvaluator.hasGlobalPrincipal(anySetOf(String.class))).thenReturn(false);
+        when(globalPermissionEvaluator.hasGlobalPrincipal(anySet())).thenReturn(false);
         when(searchSettings.getAllowPatronAccess()).thenReturn(true);
 
         solrSearchService = new SolrSearchService();

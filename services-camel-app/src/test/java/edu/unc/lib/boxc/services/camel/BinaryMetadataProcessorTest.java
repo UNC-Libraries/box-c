@@ -4,8 +4,8 @@ import static edu.unc.lib.boxc.services.camel.util.CdrFcrepoHeaders.CdrBinaryMim
 import static edu.unc.lib.boxc.services.camel.util.CdrFcrepoHeaders.CdrBinaryPath;
 import static org.apache.jena.rdf.model.ResourceFactory.createResource;
 import static org.fcrepo.camel.FcrepoHeaders.FCREPO_URI;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
