@@ -31,7 +31,7 @@ define('ViewSettingsForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateCh
         };
 
         ViewSettingsForm.prototype.getSuccessMessage = function(data) {
-            return 'View settings settings have been successfully edited.';
+            return 'View settings have been successfully edited.';
         };
 
         ViewSettingsForm.prototype.getErrorMessage = function(data) {
