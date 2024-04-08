@@ -14,7 +14,7 @@
     <mvc:annotation-driven/>
 
     <bean id="metaServicesRouter" class="org.mockito.Mockito" factory-method="mock">
-        <constructor-arg value="org.apache.camel.CamelContext" />
+        <constructor-arg type="java.lang.Class" value="org.apache.camel.CamelContext" />
     </bean>
 
     <context:component-scan base-package="edu.unc.lib.boxc.services.camel.http"/>

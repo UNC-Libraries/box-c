@@ -26,23 +26,23 @@
     </bean>
 
     <bean id="destroyCollectionSrcImgProcessor" class="org.mockito.Mockito" factory-method="mock">
-        <constructor-arg value="edu.unc.lib.boxc.services.camel.destroyDerivatives.DestroyDerivativesProcessor" />
+        <constructor-arg type="java.lang.Class" value="edu.unc.lib.boxc.services.camel.destroyDerivatives.DestroyDerivativesProcessor" />
     </bean>
 
     <bean id="destroySmallThumbnailProcessor" class="org.mockito.Mockito" factory-method="mock">
-        <constructor-arg value="edu.unc.lib.boxc.services.camel.destroyDerivatives.DestroyDerivativesProcessor" />
+        <constructor-arg type="java.lang.Class" value="edu.unc.lib.boxc.services.camel.destroyDerivatives.DestroyDerivativesProcessor" />
     </bean>
 
     <bean id="destroyLargeThumbnailProcessor" class="org.mockito.Mockito" factory-method="mock">
-        <constructor-arg value="edu.unc.lib.boxc.services.camel.destroyDerivatives.DestroyDerivativesProcessor" />
+        <constructor-arg type="java.lang.Class" value="edu.unc.lib.boxc.services.camel.destroyDerivatives.DestroyDerivativesProcessor" />
     </bean>
 
     <bean id="destroyAccessCopyProcessor" class="org.mockito.Mockito" factory-method="mock">
-        <constructor-arg value="edu.unc.lib.boxc.services.camel.destroyDerivatives.DestroyDerivativesProcessor" />
+        <constructor-arg type="java.lang.Class" value="edu.unc.lib.boxc.services.camel.destroyDerivatives.DestroyDerivativesProcessor" />
     </bean>
 
     <bean id="destroyFulltextProcessor" class="org.mockito.Mockito" factory-method="mock">
-        <constructor-arg value="edu.unc.lib.boxc.services.camel.destroyDerivatives.DestroyDerivativesProcessor" />
+        <constructor-arg type="java.lang.Class" value="edu.unc.lib.boxc.services.camel.destroyDerivatives.DestroyDerivativesProcessor" />
     </bean>
 
     <bean id="binaryDestroyedJmsTemplate" class="org.springframework.jms.core.JmsTemplate">
@@ -63,7 +63,7 @@
     </bean>
 
     <bean id="objectPathFactory" class="org.mockito.Mockito" factory-method="mock">
-        <constructor-arg value="edu.unc.lib.boxc.search.solr.services.ObjectPathFactory" />
+        <constructor-arg type="java.lang.Class" value="edu.unc.lib.boxc.search.solr.services.ObjectPathFactory" />
     </bean>
 
     <bean id="treeIndexer" class="edu.unc.lib.boxc.model.fcrepo.test.RepositoryObjectTreeIndexer">

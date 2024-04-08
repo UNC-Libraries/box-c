@@ -52,11 +52,11 @@
     </bean>
     
     <bean id="contentPathFactory" class="org.mockito.Mockito" factory-method="mock">
-        <constructor-arg value="edu.unc.lib.boxc.model.fcrepo.services.ContentPathFactoryImpl" />
+        <constructor-arg type="java.lang.Class" value="edu.unc.lib.boxc.model.fcrepo.services.ContentPathFactoryImpl" />
     </bean>
     
     <bean id="aclService" class="org.mockito.Mockito" factory-method="mock">
-        <constructor-arg value="edu.unc.lib.boxc.auth.fcrepo.services.AccessControlServiceImpl" />
+        <constructor-arg type="java.lang.Class" value="edu.unc.lib.boxc.auth.fcrepo.services.AccessControlServiceImpl" />
     </bean>
     
     <bean id="depositStatusFactory" class="edu.unc.lib.boxc.deposit.impl.model.DepositStatusFactory">

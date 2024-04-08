@@ -29,15 +29,15 @@
     </bean>
 
     <bean id="addSmallThumbnailProcessor" class="org.mockito.Mockito" factory-method="spy">
-        <constructor-arg ref="addSmallThumbnailProcessorReal" />
+        <constructor-arg type="java.lang.Class" ref="addSmallThumbnailProcessorReal" />
     </bean>
 
     <bean id="addLargeThumbnailProcessor" class="org.mockito.Mockito" factory-method="spy">
-        <constructor-arg ref="addLargeThumbnailProcessorReal" />
+        <constructor-arg type="java.lang.Class" ref="addLargeThumbnailProcessorReal" />
     </bean>
 
     <bean id="addAccessCopyProcessor" class="org.mockito.Mockito" factory-method="spy">
-        <constructor-arg ref="addAccessCopyProcessorReal" />
+        <constructor-arg type="java.lang.Class" ref="addAccessCopyProcessorReal" />
     </bean>
 
     <camel:camelContext id="CdrServiceEnhancements">

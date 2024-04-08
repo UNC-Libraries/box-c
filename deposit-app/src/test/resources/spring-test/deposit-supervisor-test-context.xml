@@ -17,15 +17,15 @@
     </bean>
     
     <bean id="operationsMessageSender" class="org.mockito.Mockito" factory-method="mock">
-        <constructor-arg value="edu.unc.lib.boxc.operations.jms.OperationsMessageSender" />
+        <constructor-arg type="java.lang.Class" value="edu.unc.lib.boxc.operations.jms.OperationsMessageSender" />
     </bean>
     
     <bean id="depositEmailHandler" class="org.mockito.Mockito" factory-method="mock">
-        <constructor-arg value="edu.unc.lib.boxc.deposit.work.DepositEmailHandler" />
+        <constructor-arg type="java.lang.Class" value="edu.unc.lib.boxc.deposit.work.DepositEmailHandler" />
     </bean>
     
     <bean id="mockDepositDirectory" class="org.mockito.Mockito" factory-method="mock">
-        <constructor-arg value="java.io.File" />
+        <constructor-arg type="java.lang.Class" value="java.io.File" />
     </bean>
     
     <bean id="queueDAO" class="net.greghaines.jesque.meta.dao.impl.QueueInfoDAORedisImpl">
@@ -34,7 +34,7 @@
     </bean>
     
     <bean id="jobFactory" class="org.mockito.Mockito" factory-method="mock">
-        <constructor-arg value="edu.unc.lib.boxc.deposit.utils.SpringJobFactory" />
+        <constructor-arg type="java.lang.Class" value="edu.unc.lib.boxc.deposit.utils.SpringJobFactory" />
     </bean>
     
     <bean id="depositWorkerPool" class="net.greghaines.jesque.worker.WorkerPool">

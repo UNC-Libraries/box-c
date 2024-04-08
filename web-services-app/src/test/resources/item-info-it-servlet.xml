@@ -20,22 +20,22 @@
     <context:component-scan resource-pattern="**/ItemInfoRestController*" base-package="edu.unc.lib.boxc.web.services.rest"/>
     
     <bean id="queryLayer" class="org.mockito.Mockito" factory-method="mock">
-        <constructor-arg value="edu.unc.lib.boxc.web.common.services.SolrQueryLayerService" />
+        <constructor-arg type="java.lang.Class" value="edu.unc.lib.boxc.web.common.services.SolrQueryLayerService" />
     </bean>
     
     <bean id="searchSettings" class="org.mockito.Mockito" factory-method="mock">
-        <constructor-arg value="edu.unc.lib.boxc.search.solr.config.SearchSettings" />
+        <constructor-arg type="java.lang.Class" value="edu.unc.lib.boxc.search.solr.config.SearchSettings" />
     </bean>
     
     <bean id="solrSettings" class="org.mockito.Mockito" factory-method="mock">
-        <constructor-arg value="edu.unc.lib.boxc.search.solr.config.SolrSettings" />
+        <constructor-arg type="java.lang.Class" value="edu.unc.lib.boxc.search.solr.config.SolrSettings" />
     </bean>
     
     <bean id="facetFieldFactory" class="org.mockito.Mockito" factory-method="mock">
-        <constructor-arg value="edu.unc.lib.boxc.search.solr.services.FacetFieldFactory" />
+        <constructor-arg type="java.lang.Class" value="edu.unc.lib.boxc.search.solr.services.FacetFieldFactory" />
     </bean>
     
     <bean id="accessControlService" class="org.mockito.Mockito" factory-method="mock">
-        <constructor-arg value="edu.unc.lib.boxc.auth.api.services.AccessControlService" />
+        <constructor-arg type="java.lang.Class" value="edu.unc.lib.boxc.auth.api.services.AccessControlService" />
     </bean>
 </beans>

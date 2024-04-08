@@ -18,14 +18,14 @@
     <context:component-scan resource-pattern="**/MemberOrderController*" base-package="edu.unc.lib.boxc.web.services.rest.modify"/>
     
     <bean id="memberOrderCsvExporter" class="org.mockito.Mockito" factory-method="mock">
-        <constructor-arg value="edu.unc.lib.boxc.web.services.processing.MemberOrderCsvExporter" />
+        <constructor-arg type="java.lang.Class" value="edu.unc.lib.boxc.web.services.processing.MemberOrderCsvExporter" />
     </bean>
 
     <bean id="memberOrderCsvTransformer" class="org.mockito.Mockito" factory-method="mock">
-        <constructor-arg value="edu.unc.lib.boxc.web.services.processing.MemberOrderCsvTransformer" />
+        <constructor-arg type="java.lang.Class" value="edu.unc.lib.boxc.web.services.processing.MemberOrderCsvTransformer" />
     </bean>
 
     <bean id="memberOrderRequestSender" class="org.mockito.Mockito" factory-method="mock">
-        <constructor-arg value="edu.unc.lib.boxc.operations.jms.order.MemberOrderRequestSender" />
+        <constructor-arg type="java.lang.Class" value="edu.unc.lib.boxc.operations.jms.order.MemberOrderRequestSender" />
     </bean>
 </beans>

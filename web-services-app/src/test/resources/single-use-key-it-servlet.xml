@@ -20,7 +20,7 @@
     <bean id="singleUseKeyService" class="edu.unc.lib.boxc.web.services.processing.SingleUseKeyService"/>
 
     <bean id="aclService" class="org.mockito.Mockito" factory-method="mock">
-        <constructor-arg value="edu.unc.lib.boxc.auth.fcrepo.services.AccessControlServiceImpl" />
+        <constructor-arg type="java.lang.Class" value="edu.unc.lib.boxc.auth.fcrepo.services.AccessControlServiceImpl" />
     </bean>
 
     <bean id="fedoraContentService" class="edu.unc.lib.boxc.web.common.services.FedoraContentService">
@@ -29,7 +29,7 @@
     </bean>
 
     <bean id="analyticsTracker" class="org.mockito.Mockito" factory-method="mock">
-        <constructor-arg value="edu.unc.lib.boxc.web.common.utils.AnalyticsTrackerUtil" />
+        <constructor-arg type="java.lang.Class" value="edu.unc.lib.boxc.web.common.utils.AnalyticsTrackerUtil" />
     </bean>
 
 </beans>

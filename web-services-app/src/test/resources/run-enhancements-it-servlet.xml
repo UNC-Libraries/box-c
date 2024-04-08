@@ -17,23 +17,23 @@
     <context:component-scan resource-pattern="**/RunEnhancementsController*" base-package="edu.unc.lib.boxc.web.services.rest"/>
 
     <bean id="queryLayer" class="org.mockito.Mockito" factory-method="mock">
-        <constructor-arg value="edu.unc.lib.boxc.web.common.services.SolrQueryLayerService" />
+        <constructor-arg type="java.lang.Class" value="edu.unc.lib.boxc.web.common.services.SolrQueryLayerService" />
     </bean>
 
     <bean id="searchSettings" class="org.mockito.Mockito" factory-method="mock">
-        <constructor-arg value="edu.unc.lib.boxc.search.solr.config.SearchSettings" />
+        <constructor-arg type="java.lang.Class" value="edu.unc.lib.boxc.search.solr.config.SearchSettings" />
     </bean>
 
     <bean id="solrSettings" class="org.mockito.Mockito" factory-method="mock">
-        <constructor-arg value="edu.unc.lib.boxc.search.solr.config.SolrSettings" />
+        <constructor-arg type="java.lang.Class" value="edu.unc.lib.boxc.search.solr.config.SolrSettings" />
     </bean>
 
     <bean id="facetFieldFactory" class="org.mockito.Mockito" factory-method="mock">
-        <constructor-arg value="edu.unc.lib.boxc.search.solr.services.FacetFieldFactory" />
+        <constructor-arg type="java.lang.Class" value="edu.unc.lib.boxc.search.solr.services.FacetFieldFactory" />
     </bean>
     
     <bean id="messageSender" class="org.mockito.Mockito" factory-method="mock">
-        <constructor-arg value="edu.unc.lib.boxc.operations.jms.MessageSender"/>
+        <constructor-arg type="java.lang.Class" value="edu.unc.lib.boxc.operations.jms.MessageSender"/>
     </bean>
 
     <bean id="runEnhancementService" class="edu.unc.lib.boxc.web.services.processing.RunEnhancementsService">
@@ -44,6 +44,6 @@
     </bean>
 
     <bean id="aclServices" class="org.mockito.Mockito" factory-method="mock">
-        <constructor-arg value="edu.unc.lib.boxc.auth.fcrepo.services.AccessControlServiceImpl"/>
+        <constructor-arg type="java.lang.Class" value="edu.unc.lib.boxc.auth.fcrepo.services.AccessControlServiceImpl"/>
     </bean>
 </beans>

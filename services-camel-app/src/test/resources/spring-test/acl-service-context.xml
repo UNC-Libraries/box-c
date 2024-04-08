@@ -49,6 +49,6 @@
     </bean>
 
     <bean id="objectPathFactory" class="org.mockito.Mockito" factory-method="mock">
-        <constructor-arg value="edu.unc.lib.boxc.search.solr.services.ObjectPathFactory" />
+        <constructor-arg type="java.lang.Class" value="edu.unc.lib.boxc.search.solr.services.ObjectPathFactory" />
     </bean>
 </beans>

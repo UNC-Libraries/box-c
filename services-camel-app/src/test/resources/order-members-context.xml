@@ -8,7 +8,7 @@
         http://camel.apache.org/schema/spring/camel-spring.xsd">
 
     <bean id="orderRequestProcessor" class="org.mockito.Mockito" factory-method="mock">
-        <constructor-arg value="edu.unc.lib.boxc.services.camel.order.OrderRequestProcessor" />
+        <constructor-arg type="java.lang.Class" value="edu.unc.lib.boxc.services.camel.order.OrderRequestProcessor" />
     </bean>
     
     <camel:camelContext id="DcrOrderMembers">

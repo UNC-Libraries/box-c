@@ -26,15 +26,15 @@
     </bean>
 
     <bean id="aclService" class="org.mockito.Mockito" factory-method="mock">
-        <constructor-arg value="edu.unc.lib.boxc.auth.fcrepo.services.AccessControlServiceImpl" />
+        <constructor-arg type="java.lang.Class" value="edu.unc.lib.boxc.auth.fcrepo.services.AccessControlServiceImpl" />
     </bean>
 
     <bean id="analyticsTracker" class="org.mockito.Mockito" factory-method="mock">
-        <constructor-arg value="edu.unc.lib.boxc.web.common.utils.AnalyticsTrackerUtil" />
+        <constructor-arg type="java.lang.Class" value="edu.unc.lib.boxc.web.common.utils.AnalyticsTrackerUtil" />
     </bean>
 
     <bean id="globalPermissionEvaluator" class="org.mockito.Mockito" factory-method="mock">
-        <constructor-arg value="edu.unc.lib.boxc.auth.api.services.GlobalPermissionEvaluator" />
+        <constructor-arg type="java.lang.Class" value="edu.unc.lib.boxc.auth.api.services.GlobalPermissionEvaluator" />
     </bean>
 
     <bean id="accessCopiesService" class="edu.unc.lib.boxc.web.common.services.AccessCopiesService">

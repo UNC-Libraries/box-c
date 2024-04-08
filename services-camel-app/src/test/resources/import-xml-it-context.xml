@@ -25,15 +25,15 @@
     </bean>
     
     <bean id="mailSender" class="org.mockito.Mockito" factory-method="mock">
-        <constructor-arg value="org.springframework.mail.javamail.JavaMailSenderImpl" />
+        <constructor-arg type="java.lang.Class" value="org.springframework.mail.javamail.JavaMailSenderImpl" />
     </bean>
     
     <bean id="updateCompleteTemplate" class="org.mockito.Mockito" factory-method="mock">
-        <constructor-arg value="com.samskivert.mustache.Template" />
+        <constructor-arg type="java.lang.Class" value="com.samskivert.mustache.Template" />
     </bean>
     
     <bean id="updateFailedTemplate" class="org.mockito.Mockito" factory-method="mock">
-        <constructor-arg value="com.samskivert.mustache.Template" />
+        <constructor-arg type="java.lang.Class" value="com.samskivert.mustache.Template" />
     </bean>
     
     <bean id="jmsTemplate" class="org.springframework.jms.core.JmsTemplate">
