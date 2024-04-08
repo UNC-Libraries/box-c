@@ -171,4 +171,8 @@ public class FacetFieldUtil {
     public void setSolrSettings(SolrSettings solrSettings) {
         this.solrSettings = solrSettings;
     }
+
+    public void setFacetFieldFactory(FacetFieldFactory facetFieldFactory) {
+        this.facetFieldFactory = facetFieldFactory;
+    }
 }
