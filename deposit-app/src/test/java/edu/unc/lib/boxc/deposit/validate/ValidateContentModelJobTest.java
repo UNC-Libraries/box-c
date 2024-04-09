@@ -2,6 +2,8 @@ package edu.unc.lib.boxc.deposit.validate;
 
 import static edu.unc.lib.boxc.common.test.TestHelpers.setField;
 import static edu.unc.lib.boxc.model.api.ids.RepositoryPathConstants.CONTENT_BASE;
+import static edu.unc.lib.boxc.operations.jms.streaming.StreamingPropertiesRequest.CLOSED;
+import static edu.unc.lib.boxc.operations.jms.streaming.StreamingPropertiesRequest.DURACLOUD;
 import static org.apache.jena.rdf.model.ResourceFactory.createResource;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
@@ -190,7 +192,7 @@ public class ValidateContentModelJobTest extends AbstractDepositJobTest {
     }
 
     @Test
-    public void missingOriginalDatastreamTest() {
+    public void missingOriginalDatastreamNoStreamingPropertiesTest() {
         Assertions.assertThrows(JobFailedException.class, () -> {
             PID objPid = makePid(CONTENT_BASE);
             Bag objBag = model.createBag(objPid.getRepositoryPath());
@@ -209,6 +211,29 @@ public class ValidateContentModelJobTest extends AbstractDepositJobTest {
 
             job.run();
         });
+    }
+
+    @Test
+    public void noOriginalDatastreamWithStreamingPropertiesTest() {
+        PID objPid = makePid(CONTENT_BASE);
+        Bag objBag = model.createBag(objPid.getRepositoryPath());
+        objBag.addProperty(RDF.type, Cdr.Work);
+
+        PID childPid = makePid(CONTENT_BASE);
+        Resource childResc = model.getResource(childPid.getRepositoryPath());
+        childResc.addProperty(RDF.type, Cdr.FileObject);
+        childResc.addProperty(Cdr.streamingFile, "banjo-playlist.m3u8");
+        childResc.addProperty(Cdr.streamingFolder, CLOSED);
+        childResc.addProperty(Cdr.streamingHost, DURACLOUD);
+        objBag.add(childResc);
+
+        objBag.addProperty(Cdr.primaryObject, childResc);
+
+        depBag.add(objBag);
+
+        job.closeModel();
+
+        job.run();
     }
 
     @Test
@@ -433,6 +458,28 @@ public class ValidateContentModelJobTest extends AbstractDepositJobTest {
             objBag.add(childResc);
 
             doNothing().doThrow(new InvalidAssignmentException()).when(aclValidator).validate(any(Resource.class));
+
+            depBag.add(objBag);
+
+            job.closeModel();
+
+            job.run();
+        });
+    }
+
+    @Test
+    public void invalidChildStreamingPropertiesTest() {
+        Assertions.assertThrows(JobFailedException.class, () -> {
+            PID objPid = makePid(CONTENT_BASE);
+            Bag objBag = model.createBag(objPid.getRepositoryPath());
+            objBag.addProperty(RDF.type, Cdr.Folder);
+
+            PID childPid = makePid(CONTENT_BASE);
+            Resource childResc = model.getResource(childPid.getRepositoryPath());
+            childResc.addProperty(RDF.type, Cdr.Work);
+            childResc.addProperty(CdrAcl.canDescribe, "user");
+            childResc.addProperty(Cdr.streamingHost, DURACLOUD);
+            objBag.add(childResc);
 
             depBag.add(objBag);
 

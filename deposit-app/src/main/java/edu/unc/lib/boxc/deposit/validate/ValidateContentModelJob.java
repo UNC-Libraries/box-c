@@ -104,6 +104,7 @@ public class ValidateContentModelJob extends AbstractDepositJob{
 
         // Validate member order property
         validateMemberOrder(model);
+        validateStreamingProperties();
     }
 
     private void validatePrimaryObjects(Model model) {
@@ -172,6 +173,8 @@ public class ValidateContentModelJob extends AbstractDepositJob{
 
                 if (childResc.hasProperty(RDF.type, Cdr.FileObject)) {
                     validateFileObject(childResc, parentResc);
+                } else {
+                    validateNonFileObject(childResc);
                 }
 
                 // Verify that ACL assignments for this object are okay
@@ -206,11 +209,20 @@ public class ValidateContentModelJob extends AbstractDepositJob{
                     resc.getURI(), parentResc.getURI());
         }
 
-        Resource origResc = DepositModelHelpers.getDatastream(resc);
-        if (origResc == null) {
-            failJob(null, "No original datastream for file object {0}", resc.getURI());
-        } else if (!origResc.hasProperty(CdrDeposit.stagingLocation)) {
-            failJob(null, "No staging location provided for file ({0})", resc.getURI());
+        // if file does not have streaming properties then it must have an original file
+        if (!hasStreamingProperties(resc)) {
+            Resource origResc = DepositModelHelpers.getDatastream(resc);
+            if (origResc == null) {
+                failJob(null, "No original datastream for file object {0}", resc.getURI());
+            } else if (!origResc.hasProperty(CdrDeposit.stagingLocation)) {
+                failJob(null, "No staging location provided for file ({0})", resc.getURI());
+            }
+        }
+    }
+
+    private void validateNonFileObject(Resource resource) {
+        if (hasStreamingProperties(resource)) {
+            failJob(null, "Invalid streaming properties on non FileObject {0}", resource.getURI());
         }
     }
 
@@ -228,6 +240,16 @@ public class ValidateContentModelJob extends AbstractDepositJob{
                         subj.getURI(), orderValidator.getErrors());
             }
         }
+    }
+
+    private void validateStreamingProperties() {
+
+    }
+
+    private boolean hasStreamingProperties(Resource resource) {
+        return resource.hasProperty(Cdr.streamingFile) ||
+                resource.hasProperty(Cdr.streamingFolder) ||
+                resource.hasProperty(Cdr.streamingHost);
     }
 
     /**
