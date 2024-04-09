@@ -2,8 +2,11 @@ package edu.unc.lib.boxc.search.solr.services;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertIterableEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.mockStatic;
 
 import java.io.FileInputStream;
 import java.util.LinkedHashMap;
@@ -11,6 +14,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
+import edu.unc.lib.boxc.search.solr.config.SolrSettings;
+import edu.unc.lib.boxc.search.solr.utils.FacetFieldUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -19,6 +24,7 @@ import edu.unc.lib.boxc.search.api.facets.CutoffFacet;
 import edu.unc.lib.boxc.search.api.facets.SearchFacet;
 import edu.unc.lib.boxc.search.api.requests.SearchState;
 import edu.unc.lib.boxc.search.solr.config.SearchSettings;
+import org.mockito.MockedStatic;
 
 /**
  * @author bbpennel
@@ -26,6 +32,7 @@ import edu.unc.lib.boxc.search.solr.config.SearchSettings;
 public class SearchStateFactoryTest {
 
     private SearchStateFactory searchStateFactory;
+    private FacetFieldUtil facetFieldUtil;
 
     @BeforeEach
     public void setup() throws Exception {
@@ -37,10 +44,15 @@ public class SearchStateFactoryTest {
 
         FacetFieldFactory fff = new FacetFieldFactory();
         fff.setSearchSettings(searchSettings);
+        facetFieldUtil = new FacetFieldUtil();
+        facetFieldUtil.setSearchSettings(searchSettings);
+        facetFieldUtil.setSolrSettings(new SolrSettings());
+        facetFieldUtil.setFacetFieldFactory(fff);
 
         searchStateFactory = new SearchStateFactory();
         searchStateFactory.setSearchSettings(searchSettings);
         searchStateFactory.setFacetFieldFactory(fff);
+        searchStateFactory.setFacetFieldUtil(facetFieldUtil);
     }
 
     @Test
@@ -264,5 +276,112 @@ public class SearchStateFactoryTest {
         assertTrue(searchState.getSearchFields().containsKey(SearchFieldKey.COLLECTION_ID.name()));
         assertEquals("40000", searchState.getSearchFields()
                 .get(SearchFieldKey.COLLECTION_ID.name()));
+    }
+
+    @Test
+    public void extractFacetLimitsValid() {
+        Map<String, String[]> parameters = new LinkedHashMap<>();
+        parameters.put("anywhere", new String[]{""});
+        parameters.put("facetLimits", new String[]{"language:20"});
+
+        SearchState searchState = searchStateFactory.createSearchState(parameters);
+        var limits = searchState.getFacetLimits();
+        assertEquals(1, limits.size());
+        assertEquals(20, limits.get("LANGUAGE"));
+    }
+
+    @Test
+    public void extractFacetLimitsUnknownField() {
+        Map<String, String[]> parameters = new LinkedHashMap<>();
+        parameters.put("anywhere", new String[]{""});
+        parameters.put("facetLimits", new String[]{"boxyfield:20"});
+
+        SearchState searchState = searchStateFactory.createSearchState(parameters);
+        assertTrue(searchState.getFacetLimits().isEmpty());
+    }
+
+    @Test
+    public void extractFacetLimitsInvalidFacetClass() {
+        Map<String, String[]> parameters = new LinkedHashMap<>();
+        parameters.put("anywhere", new String[]{""});
+        parameters.put("facetLimits", new String[]{"language:20"});
+
+        try (MockedStatic<SearchSettings> mockedStatic = mockStatic(SearchSettings.class)) {
+            mockedStatic.when(() -> SearchSettings.getFacetClass(anyString())).thenReturn(Object.class);
+            SearchState searchState = searchStateFactory.createSearchState(parameters);
+            assertTrue(searchState.getFacetLimits().isEmpty());
+        }
+    }
+
+    @Test
+    public void extractFacetLimitBase() {
+        Map<String, String[]> parameters = new LinkedHashMap<>();
+        parameters.put("anywhere", new String[]{""});
+        parameters.put("facetLimit", new String[]{"40"});
+
+        SearchState searchState = searchStateFactory.createSearchState(parameters);
+        assertEquals(40, searchState.getBaseFacetLimit());
+    }
+
+    @Test
+    public void extractFacetLimitBaseNotANumber() {
+        Map<String, String[]> parameters = new LinkedHashMap<>();
+        parameters.put("anywhere", new String[]{""});
+        parameters.put("facetLimit", new String[]{"boxy"});
+
+        SearchState searchState = searchStateFactory.createSearchState(parameters);
+        // Should have the default base facet limit
+        assertEquals(6, searchState.getBaseFacetLimit());
+    }
+
+    @Test
+    public void extractSort() {
+        Map<String, String[]> parameters = new LinkedHashMap<>();
+        parameters.put("anywhere", new String[]{""});
+        parameters.put("sort", new String[]{"title,normal"});
+
+        SearchState searchState = searchStateFactory.createSearchState(parameters);
+        assertEquals("title", searchState.getSortType());
+        assertTrue(searchState.getSortNormalOrder());
+    }
+
+    @Test
+    public void extractFacetSelect() {
+        Map<String, String[]> parameters = new LinkedHashMap<>();
+        parameters.put("anywhere", new String[]{""});
+        parameters.put("facetSelect", new String[]{"collection,format"});
+
+        SearchState searchState = searchStateFactory.createSearchState(parameters);
+        assertIterableEquals(List.of("PARENT_COLLECTION", "FILE_FORMAT_CATEGORY"), searchState.getFacetsToRetrieve());
+    }
+
+    @Test
+    public void extractResourceTypes() {
+        Map<String, String[]> parameters = new LinkedHashMap<>();
+        parameters.put("anywhere", new String[]{""});
+        parameters.put("types", new String[]{"work,file"});
+
+        SearchState searchState = searchStateFactory.createSearchState(parameters);
+        assertIterableEquals(List.of("work", "file"), searchState.getResourceTypes());
+    }
+
+    @Test
+    public void extractRollup() {
+        Map<String, String[]> parameters = new LinkedHashMap<>();
+        parameters.put("anywhere", new String[]{""});
+        parameters.put("rollup", new String[]{"true"});
+
+        SearchState searchState = searchStateFactory.createSearchState(parameters);
+        assertTrue(searchState.getRollup());
+    }
+
+    @Test
+    public void extractOperator() {
+        Map<String, String[]> parameters = new LinkedHashMap<>();
+        parameters.put("anywhere", new String[]{""});
+        parameters.put("operator", new String[]{"OR"});
+
+        SearchState searchState = searchStateFactory.createSearchState(parameters);
+        assertEquals("OR", searchState.getSearchTermOperator());
     }
 }
