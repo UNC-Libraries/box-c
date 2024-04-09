@@ -192,7 +192,7 @@ public class ValidateContentModelJobTest extends AbstractDepositJobTest {
     }
 
     @Test
-    public void missingOriginalDatastreamNoStreamingPropertiesTest() {
+    public void fileObjectNoOriginalDatastreamNoStreamingPropertiesTest() {
         Assertions.assertThrows(JobFailedException.class, () -> {
             PID objPid = makePid(CONTENT_BASE);
             Bag objBag = model.createBag(objPid.getRepositoryPath());
@@ -214,7 +214,7 @@ public class ValidateContentModelJobTest extends AbstractDepositJobTest {
     }
 
     @Test
-    public void noOriginalDatastreamWithStreamingPropertiesTest() {
+    public void fileObjectNoOriginalDatastreamWithAllStreamingPropertiesTest() {
         PID objPid = makePid(CONTENT_BASE);
         Bag objBag = model.createBag(objPid.getRepositoryPath());
         objBag.addProperty(RDF.type, Cdr.Work);
@@ -234,6 +234,52 @@ public class ValidateContentModelJobTest extends AbstractDepositJobTest {
         job.closeModel();
 
         job.run();
+    }
+
+    @Test
+    public void fileObjectNoOriginalDatastreamWithOneStreamingPropertyTest() {
+        Assertions.assertThrows(JobFailedException.class, () -> {
+            PID objPid = makePid(CONTENT_BASE);
+            Bag objBag = model.createBag(objPid.getRepositoryPath());
+            objBag.addProperty(RDF.type, Cdr.Work);
+
+            PID childPid = makePid(CONTENT_BASE);
+            Resource childResc = model.getResource(childPid.getRepositoryPath());
+            childResc.addProperty(RDF.type, Cdr.FileObject);
+            childResc.addProperty(Cdr.streamingFile, "banjo-playlist.m3u8");
+
+            objBag.add(childResc);
+
+            objBag.addProperty(Cdr.primaryObject, childResc);
+
+            depBag.add(objBag);
+
+            job.closeModel();
+
+            job.run();
+        });
+    }
+
+    @Test
+    public void nonFileObjectWithStreamingPropertiesTest() {
+        Assertions.assertThrows(JobFailedException.class, () -> {
+            PID objPid = makePid(CONTENT_BASE);
+            Bag objBag = model.createBag(objPid.getRepositoryPath());
+            objBag.addProperty(RDF.type, Cdr.Folder);
+
+            PID childPid = makePid(CONTENT_BASE);
+            Resource childResc = model.getResource(childPid.getRepositoryPath());
+            childResc.addProperty(RDF.type, Cdr.Work);
+            childResc.addProperty(CdrAcl.canDescribe, "user");
+            childResc.addProperty(Cdr.streamingHost, DURACLOUD);
+            objBag.add(childResc);
+
+            depBag.add(objBag);
+
+            job.closeModel();
+
+            job.run();
+        });
     }
 
     @Test
@@ -458,28 +504,6 @@ public class ValidateContentModelJobTest extends AbstractDepositJobTest {
             objBag.add(childResc);
 
             doNothing().doThrow(new InvalidAssignmentException()).when(aclValidator).validate(any(Resource.class));
-
-            depBag.add(objBag);
-
-            job.closeModel();
-
-            job.run();
-        });
-    }
-
-    @Test
-    public void invalidChildStreamingPropertiesTest() {
-        Assertions.assertThrows(JobFailedException.class, () -> {
-            PID objPid = makePid(CONTENT_BASE);
-            Bag objBag = model.createBag(objPid.getRepositoryPath());
-            objBag.addProperty(RDF.type, Cdr.Folder);
-
-            PID childPid = makePid(CONTENT_BASE);
-            Resource childResc = model.getResource(childPid.getRepositoryPath());
-            childResc.addProperty(RDF.type, Cdr.Work);
-            childResc.addProperty(CdrAcl.canDescribe, "user");
-            childResc.addProperty(Cdr.streamingHost, DURACLOUD);
-            objBag.add(childResc);
 
             depBag.add(objBag);
 

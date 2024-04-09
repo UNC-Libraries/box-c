@@ -209,19 +209,27 @@ public class ValidateContentModelJob extends AbstractDepositJob{
                     resc.getURI(), parentResc.getURI());
         }
 
-        // if file does not have streaming properties then it must have an original file
-        if (!hasStreamingProperties(resc)) {
-            Resource origResc = DepositModelHelpers.getDatastream(resc);
-            if (origResc == null) {
-                failJob(null, "No original datastream for file object {0}", resc.getURI());
-            } else if (!origResc.hasProperty(CdrDeposit.stagingLocation)) {
+        Resource origResc = DepositModelHelpers.getDatastream(resc);
+        var hasOrigResc = origResc != null;
+
+        if (hasAtLeastOneStreamingProperty(resc)) {
+            if (!hasAllStreamingProperties(resc)) {
+                // if one streaming property is present, they must all be present
+                failJob(null, "All streaming properties are required for file ({0})", resc.getURI());
+            }
+        } else if (hasOrigResc) {
+            if (!origResc.hasProperty(CdrDeposit.stagingLocation)) {
+                // has original file but needs staging location
                 failJob(null, "No staging location provided for file ({0})", resc.getURI());
             }
+        } else {
+            // no streaming properties or original file
+            failJob(null, "No original datastream or streaming properties for file object {0}", resc.getURI());
         }
     }
 
     private void validateNonFileObject(Resource resource) {
-        if (hasStreamingProperties(resource)) {
+        if (hasAtLeastOneStreamingProperty(resource)) {
             failJob(null, "Invalid streaming properties on non FileObject {0}", resource.getURI());
         }
     }
@@ -246,9 +254,15 @@ public class ValidateContentModelJob extends AbstractDepositJob{
 
     }
 
-    private boolean hasStreamingProperties(Resource resource) {
+    private boolean hasAtLeastOneStreamingProperty(Resource resource) {
         return resource.hasProperty(Cdr.streamingFile) ||
                 resource.hasProperty(Cdr.streamingFolder) ||
+                resource.hasProperty(Cdr.streamingHost);
+    }
+
+    private boolean hasAllStreamingProperties(Resource resource) {
+        return resource.hasProperty(Cdr.streamingFile) &&
+                resource.hasProperty(Cdr.streamingFolder) &&
                 resource.hasProperty(Cdr.streamingHost);
     }
 
