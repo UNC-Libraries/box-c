@@ -94,7 +94,7 @@
     </bean>
     
     <bean id="binaryTransferService" class="org.mockito.Mockito" factory-method="mock">
-        <constructor-arg value="edu.unc.lib.boxc.persist.api.transfer.BinaryTransferService" />
+        <constructor-arg type="java.lang.Class" value="edu.unc.lib.boxc.persist.api.transfer.BinaryTransferService" />
     </bean>
     
     <bean id="txManager" class="edu.unc.lib.boxc.fcrepo.utils.TransactionManager">

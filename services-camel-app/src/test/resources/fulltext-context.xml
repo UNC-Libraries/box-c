@@ -14,7 +14,7 @@
         http://camel.apache.org/schema/spring/camel-spring.xsd">
     
     <bean id="fulltextProcessor" class="org.mockito.Mockito" factory-method="mock">
-        <constructor-arg value="edu.unc.lib.boxc.services.camel.fulltext.FulltextProcessor" />
+        <constructor-arg type="java.lang.Class" value="edu.unc.lib.boxc.services.camel.fulltext.FulltextProcessor" />
     </bean>
 
     <bean id="addFullTextDerivativeProcessor" class="edu.unc.lib.boxc.services.camel.images.AddDerivativeProcessor">

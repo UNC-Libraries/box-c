@@ -2,8 +2,8 @@ package edu.unc.lib.boxc.indexing.solr.action;
 
 import static edu.unc.lib.boxc.operations.jms.indexing.IndexingActionType.CLEAN_REINDEX;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.openMocks;

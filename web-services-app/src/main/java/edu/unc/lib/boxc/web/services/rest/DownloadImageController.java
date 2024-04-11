@@ -69,4 +69,8 @@ public class DownloadImageController {
         }
         return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
+
+    public void setDownloadImageService(DownloadImageService downloadImageService) {
+        this.downloadImageService = downloadImageService;
+    }
 }

@@ -99,7 +99,7 @@
     </bean>
     
     <bean id="aclService" class="org.mockito.Mockito" factory-method="mock">
-        <constructor-arg value="edu.unc.lib.boxc.auth.fcrepo.services.AccessControlServiceImpl" />
+        <constructor-arg type="java.lang.Class" value="edu.unc.lib.boxc.auth.fcrepo.services.AccessControlServiceImpl" />
     </bean>
 
     <bean id="storageLocationManager" class="edu.unc.lib.boxc.persist.impl.storage.StorageLocationTestHelper"
@@ -119,7 +119,7 @@
     </bean>
     
     <bean id="operationsMessageSender" class="org.mockito.Mockito" factory-method="mock">
-        <constructor-arg value="edu.unc.lib.boxc.operations.jms.OperationsMessageSender" />
+        <constructor-arg type="java.lang.Class" value="edu.unc.lib.boxc.operations.jms.OperationsMessageSender" />
     </bean>
 
     <bean id="updateDescriptionService" class="edu.unc.lib.boxc.operations.impl.edit.UpdateDescriptionService" >

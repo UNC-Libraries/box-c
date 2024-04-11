@@ -4,54 +4,51 @@ import edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl;
 import edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore;
 import edu.unc.lib.boxc.model.fcrepo.test.TestHelper;
 import edu.unc.lib.boxc.web.common.services.SolrQueryLayerService;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
 import org.springframework.http.MediaType;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.ContextHierarchy;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
-import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import org.springframework.web.context.WebApplicationContext;
 
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
+import static org.mockito.MockitoAnnotations.openMocks;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 /**
  * @author krwong
  */
-@ExtendWith(SpringExtension.class)
-@WebAppConfiguration
-@ContextHierarchy({
-        @ContextConfiguration("/front-page-it-servlet.xml")
-})
 public class FrontPageControllerIT {
     protected MockMvc mvc;
 
-    @Autowired
+    @Mock
     private SolrQueryLayerService queryLayer;
-    @Autowired
-    protected WebApplicationContext context;
+    @InjectMocks
+    private FrontPageController controller;
+    private AutoCloseable closeable;
 
     @BeforeEach
     public void init() {
-        mvc = MockMvcBuilders
-                .webAppContextSetup(context)
-                .build();
+        closeable = openMocks(this);
+        mvc = MockMvcBuilders.standaloneSetup(controller).build();
 
         TestHelper.setContentBase("http://localhost:48085/rest");
 
         GroupsThreadStore.storeUsername("test_user");
         GroupsThreadStore.storeGroups(new AccessGroupSetImpl("adminGroup"));
+    }
+
+    @AfterEach
+    void closeService() throws Exception {
+        closeable.close();
     }
 
     @Test

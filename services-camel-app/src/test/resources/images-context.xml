@@ -13,31 +13,16 @@
         http://camel.apache.org/schema/spring
         http://camel.apache.org/schema/spring/camel-spring.xsd">
 
-    <bean id="addSmallThumbnailProcessorReal" class="edu.unc.lib.boxc.services.camel.images.AddDerivativeProcessor">
-        <constructor-arg value="#{T(edu.unc.lib.boxc.model.api.DatastreamType).THUMBNAIL_SMALL.getExtension()}" />
-        <constructor-arg value="target" />
+    <bean id="addSmallThumbnailProcessor" class="org.mockito.Mockito" factory-method="mock">
+        <constructor-arg type="java.lang.Class" value="edu.unc.lib.boxc.services.camel.images.AddDerivativeProcessor" />
     </bean>
 
-    <bean id="addLargeThumbnailProcessorReal" class="edu.unc.lib.boxc.services.camel.images.AddDerivativeProcessor">
-        <constructor-arg value="#{T(edu.unc.lib.boxc.model.api.DatastreamType).THUMBNAIL_LARGE.getExtension()}" />
-        <constructor-arg value="target" />
+    <bean id="addLargeThumbnailProcessor" class="org.mockito.Mockito" factory-method="mock">
+        <constructor-arg type="java.lang.Class" value="edu.unc.lib.boxc.services.camel.images.AddDerivativeProcessor" />
     </bean>
 
-    <bean id="addAccessCopyProcessorReal" class="edu.unc.lib.boxc.services.camel.images.AddDerivativeProcessor">
-        <constructor-arg value="#{T(edu.unc.lib.boxc.model.api.DatastreamType).JP2_ACCESS_COPY.getExtension()}" />
-        <constructor-arg value="target" />
-    </bean>
-
-    <bean id="addSmallThumbnailProcessor" class="org.mockito.Mockito" factory-method="spy">
-        <constructor-arg ref="addSmallThumbnailProcessorReal" />
-    </bean>
-
-    <bean id="addLargeThumbnailProcessor" class="org.mockito.Mockito" factory-method="spy">
-        <constructor-arg ref="addLargeThumbnailProcessorReal" />
-    </bean>
-
-    <bean id="addAccessCopyProcessor" class="org.mockito.Mockito" factory-method="spy">
-        <constructor-arg ref="addAccessCopyProcessorReal" />
+    <bean id="addAccessCopyProcessor" class="org.mockito.Mockito" factory-method="mock">
+        <constructor-arg type="java.lang.Class" value="edu.unc.lib.boxc.services.camel.images.AddDerivativeProcessor" />
     </bean>
 
     <camel:camelContext id="CdrServiceEnhancements">

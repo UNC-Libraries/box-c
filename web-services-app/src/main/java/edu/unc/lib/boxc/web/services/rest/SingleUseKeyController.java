@@ -89,4 +89,24 @@ public class SingleUseKeyController {
             throw new NotFoundException("Single use key is not valid: " + accessKey);
         }
     }
+
+    public void setAclService(AccessControlService aclService) {
+        this.aclService = aclService;
+    }
+
+    public void setSingleUseKeyService(SingleUseKeyService singleUseKeyService) {
+        this.singleUseKeyService = singleUseKeyService;
+    }
+
+    public void setRepositoryObjectLoader(RepositoryObjectLoader repositoryObjectLoader) {
+        this.repositoryObjectLoader = repositoryObjectLoader;
+    }
+
+    public void setFedoraContentService(FedoraContentService fedoraContentService) {
+        this.fedoraContentService = fedoraContentService;
+    }
+
+    public void setAnalyticsTracker(AnalyticsTrackerUtil analyticsTracker) {
+        this.analyticsTracker = analyticsTracker;
+    }
 }

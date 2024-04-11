@@ -7,9 +7,9 @@ import static edu.unc.lib.boxc.operations.jms.JMSMessageUtil.CDRActions.RUN_ENHA
 import static java.util.Arrays.asList;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Matchers.eq;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -26,6 +26,9 @@ import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Map;
 
+import edu.unc.lib.boxc.model.fcrepo.test.TestHelper;
+import edu.unc.lib.boxc.web.services.processing.RunEnhancementsService;
+import edu.unc.lib.boxc.web.services.rest.exceptions.RestResponseEntityExceptionHandler;
 import org.apache.commons.io.FileUtils;
 import org.jdom2.Document;
 import org.jdom2.Element;
@@ -35,6 +38,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ContextConfiguration;
@@ -60,6 +65,7 @@ import edu.unc.lib.boxc.search.solr.models.ContentObjectSolrRecord;
 import edu.unc.lib.boxc.search.solr.responses.SearchResultResponse;
 import edu.unc.lib.boxc.web.common.services.SolrQueryLayerService;
 import edu.unc.lib.boxc.web.services.rest.modify.AbstractAPIIT;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 /**
  * @author lfarrell
@@ -67,8 +73,7 @@ import edu.unc.lib.boxc.web.services.rest.modify.AbstractAPIIT;
  */
 @ContextHierarchy({
         @ContextConfiguration("/spring-test/test-fedora-container.xml"),
-        @ContextConfiguration("/spring-test/cdr-client-container.xml"),
-        @ContextConfiguration("/run-enhancements-it-servlet.xml")
+        @ContextConfiguration("/spring-test/cdr-client-container.xml")
 })
 public class RunEnhancementsIT extends AbstractAPIIT {
     private static final String BINARY_CONTENT = "binary content";
@@ -77,14 +82,18 @@ public class RunEnhancementsIT extends AbstractAPIIT {
 
     private AutoCloseable closeable;
 
-    @Autowired
-    private AccessControlServiceImpl aclServices;
+    @Mock
+    private AccessControlServiceImpl aclService;
     @Autowired
     private RepositoryObjectFactory repositoryObjectFactory;
-    @Autowired
+    @Mock
     private SolrQueryLayerService queryLayer;
-    @Autowired
+    @Mock
     private MessageSender messageSender;
+    @Mock
+    private RunEnhancementsService runEnhancementsService;
+    @InjectMocks
+    private RunEnhancementsController controller;
 
     @Captor
     private ArgumentCaptor<Document> docCaptor;
@@ -95,9 +104,18 @@ public class RunEnhancementsIT extends AbstractAPIIT {
     public Path tmpFolder;
 
     @BeforeEach
-    public void setup() throws Exception {
+    public void init() {
         closeable = openMocks(this);
-        reset(messageSender);
+        runEnhancementsService = new RunEnhancementsService();
+        runEnhancementsService.setMessageSender(messageSender);
+        runEnhancementsService.setAclService(aclService);
+        runEnhancementsService.setQueryLayer(queryLayer);
+        runEnhancementsService.setRepositoryObjectLoader(repositoryObjectLoader);
+        controller.setEnhancementService(runEnhancementsService);
+        mvc = MockMvcBuilders.standaloneSetup(controller)
+                .setControllerAdvice(new RestResponseEntityExceptionHandler())
+                .build();
+        TestHelper.setContentBase("http://localhost:48085/rest");
 
         AccessGroupSet testPrincipals = new AccessGroupSetImpl(ADMIN_GROUP);
 
@@ -188,7 +206,7 @@ public class RunEnhancementsIT extends AbstractAPIIT {
         setResultMetadataObject(fileObj.getPid(), ResourceType.File.name());
 
         PID objPid = fileObj.getPid();
-        doThrow(new AccessRestrictionException()).when(aclServices)
+        doThrow(new AccessRestrictionException()).when(aclService)
                 .assertHasAccess(anyString(), eq(objPid), any(AccessGroupSetImpl.class), eq(runEnhancements));
 
         mvc.perform(post("/runEnhancements")

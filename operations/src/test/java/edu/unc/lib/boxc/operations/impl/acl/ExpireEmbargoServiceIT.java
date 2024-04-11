@@ -4,10 +4,10 @@ import static edu.unc.lib.boxc.common.util.DateTimeUtil.formatDateToUTC;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyCollectionOf;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Matchers.eq;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyCollection;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.MockitoAnnotations.openMocks;
@@ -273,6 +273,6 @@ public class ExpireEmbargoServiceIT {
 
     private void assertMessageNotSent(PID pid) {
         verify(operationsMessageSender, never()).sendOperationMessage(
-                anyString(), any(JMSMessageUtil.CDRActions.class), anyCollectionOf(PID.class));
+                anyString(), any(JMSMessageUtil.CDRActions.class), anyCollection());
     }
 }

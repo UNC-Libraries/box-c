@@ -34,7 +34,7 @@
     </bean>
     
     <bean id="deregisterLongleafProcessor" class="org.mockito.Mockito" factory-method="mock">
-        <constructor-arg value="edu.unc.lib.boxc.services.camel.longleaf.DeregisterLongleafProcessor" />
+        <constructor-arg type="java.lang.Class" value="edu.unc.lib.boxc.services.camel.longleaf.DeregisterLongleafProcessor" />
     </bean>
 
     <bean id="getUrisProcessor" class="edu.unc.lib.boxc.services.camel.longleaf.GetUrisProcessor">

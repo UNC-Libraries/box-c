@@ -6,20 +6,19 @@ import edu.unc.lib.boxc.auth.api.exceptions.AccessRestrictionException;
 import edu.unc.lib.boxc.auth.api.services.AccessControlService;
 import edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl;
 import edu.unc.lib.boxc.web.services.processing.ImageServerProxyService;
-import edu.unc.lib.boxc.web.services.rest.modify.AbstractAPIIT;
+import edu.unc.lib.boxc.web.services.rest.exceptions.RestResponseEntityExceptionHandler;
 import edu.unc.lib.boxc.web.services.utils.ImageServerUtil;
+import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
-import org.springframework.test.context.web.WebAppConfiguration;
+import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import java.io.IOException;
 
@@ -27,10 +26,12 @@ import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlMatching;
 import static edu.unc.lib.boxc.auth.api.Permission.viewAccessCopies;
+import static edu.unc.lib.boxc.model.fcrepo.test.TestHelper.makePid;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.mock;
 import static org.mockito.MockitoAnnotations.openMocks;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -38,26 +39,36 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 /**
  * @author snluong
  */
-@ExtendWith(SpringExtension.class)
-@WebAppConfiguration
-@ContextConfiguration("/image-server-proxy-servlet.xml")
-
 @WireMockTest(httpPort = 46887)
-public class ImageServerProxyControllerTest extends AbstractAPIIT {
-    @Autowired
-    private AccessControlService accessControlService;
+public class ImageServerProxyControllerTest {
     @Mock
+    private AccessControlService accessControlService;
     private ImageServerProxyService imageServerProxyService;
+    private PoolingHttpClientConnectionManager connectionManager;
+    @InjectMocks
+    private ImageServerProxyController controller;
+    protected MockMvc mvc;
     private AutoCloseable closeable;
 
     @BeforeEach
     public void setup() {
         closeable = openMocks(this);
+        connectionManager = new PoolingHttpClientConnectionManager();
+        imageServerProxyService = new ImageServerProxyService();
+        imageServerProxyService.setImageServerProxyBasePath("http://localhost:46887/iiif/v3/");
+        imageServerProxyService.setBaseIiifv3Path("http://example.com/iiif/v3/");
+        imageServerProxyService.setHttpClientConnectionManager(connectionManager);
+        controller.setImageServerProxyService(imageServerProxyService);
+
+        mvc = MockMvcBuilders.standaloneSetup(controller)
+                .setControllerAdvice(new RestResponseEntityExceptionHandler())
+                .build();
     }
 
     @AfterEach
     void closeService() throws Exception {
         closeable.close();
+        connectionManager.shutdown();
     }
 
     @Test
@@ -89,13 +100,15 @@ public class ImageServerProxyControllerTest extends AbstractAPIIT {
                 .andReturn();
 
         var response = result.getResponse();
-        Assertions.assertEquals(response.getContentAsString(), filename);
+        Assertions.assertEquals(filename, response.getContentAsString());
     }
 
     @Test
     void testGetRegionIOException() throws Exception {
         var pid = makePid();
         var pidString = pid.getId();
+        imageServerProxyService = mock(ImageServerProxyService.class);
+        controller.setImageServerProxyService(imageServerProxyService);
         doThrow(new IOException()).when(imageServerProxyService)
                 .streamJP2(pidString, "full", "max", "0", "default", "jpg");
 
@@ -134,7 +147,7 @@ public class ImageServerProxyControllerTest extends AbstractAPIIT {
                 .andReturn();
 
         var response = result.getResponse();
-        Assertions.assertEquals(response.getContentAsString(), json);
+        Assertions.assertEquals(json, response.getContentAsString());
     }
 
     @Test
@@ -142,6 +155,8 @@ public class ImageServerProxyControllerTest extends AbstractAPIIT {
         var pid = makePid();
         var pidString = pid.getId();
         var formattedBasePath = "/iiif/v3/" + ImageServerUtil.getImageServerEncodedId(pidString);
+        imageServerProxyService = mock(ImageServerProxyService.class);
+        controller.setImageServerProxyService(imageServerProxyService);
         doThrow(new IOException()).when(imageServerProxyService).getMetadata(pidString);
 
         stubFor(WireMock.get(urlMatching(formattedBasePath + "/info.json"))

@@ -72,7 +72,7 @@
     </bean>
     
     <bean id="binaryTransferService" class="org.mockito.Mockito" factory-method="mock">
-        <constructor-arg value="edu.unc.lib.boxc.persist.api.transfer.BinaryTransferService" />
+        <constructor-arg type="java.lang.Class" value="edu.unc.lib.boxc.persist.api.transfer.BinaryTransferService" />
     </bean>
     
     <bean id="transactionManager" class="edu.unc.lib.boxc.fcrepo.utils.TransactionManager">
@@ -85,10 +85,10 @@
     </bean>
     
     <bean id="analyticsTracker" class="org.mockito.Mockito" factory-method="mock">
-        <constructor-arg value="edu.unc.lib.boxc.web.common.utils.AnalyticsTrackerUtil" />
+        <constructor-arg type="java.lang.Class" value="edu.unc.lib.boxc.web.common.utils.AnalyticsTrackerUtil" />
     </bean>
     
     <bean id="aclService" class="org.mockito.Mockito" factory-method="mock">
-        <constructor-arg value="edu.unc.lib.boxc.auth.fcrepo.services.AccessControlServiceImpl" />
+        <constructor-arg type="java.lang.Class" value="edu.unc.lib.boxc.auth.fcrepo.services.AccessControlServiceImpl" />
     </bean>
 </beans>
