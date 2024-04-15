@@ -5,6 +5,8 @@ import static edu.unc.lib.boxc.auth.api.AccessPrincipalConstants.PUBLIC_PRINC;
 import static edu.unc.lib.boxc.common.test.TestHelpers.setField;
 import static edu.unc.lib.boxc.model.api.DatastreamType.ORIGINAL_FILE;
 import static edu.unc.lib.boxc.model.api.DatastreamType.TECHNICAL_METADATA;
+import static edu.unc.lib.boxc.operations.jms.streaming.StreamingPropertiesRequest.CLOSED;
+import static edu.unc.lib.boxc.operations.jms.streaming.StreamingPropertiesRequest.DURACLOUD;
 import static edu.unc.lib.boxc.persist.impl.storage.StorageLocationTestHelper.LOC1_ID;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -31,6 +33,7 @@ import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
 
+import edu.unc.lib.boxc.deposit.work.AbstractDepositJob;
 import org.apache.commons.io.FileUtils;
 import org.apache.http.HttpStatus;
 import org.apache.jena.rdf.model.Bag;
@@ -141,6 +144,8 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
 
     @Mock
     private FileObject mockFileObj;
+    @Mock
+    private FileObject streamingFileObj;
 
     @Mock
     private BinaryObject mockBinaryObj;
@@ -155,6 +160,10 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
     private BinaryTransferSession mockTransferSession;
     @Mock
     private UpdateDescriptionService updateDescService;
+    @Mock
+    private File premisFile;
+    @Mock
+    private AbstractDepositJob abstractDepositJob;
 
     @Captor
     private ArgumentCaptor<Model> modelCaptor;
@@ -322,29 +331,37 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
     }
 
     /**
-     * Test that the deposit fails if a file object is specified but not given a
-     * staging location
+     * Test that ingest will work if a file object is specified with no original resource,
+     * assuming it has streaming properties and passed validation
      */
     @Test
-    public void ingestWorkWithFileWithoutLocation() throws Exception {
-        Assertions.assertThrows(JobFailedException.class, () -> {
-            PID workPid = makePid(RepositoryPathConstants.CONTENT_BASE);
-            WorkObject work = mock(WorkObject.class);
-            Bag workBag = setupWork(workPid, work);
+    public void ingestWorkWithFileWithoutOriginalFileAndStagingLocation() {
+        PID workPid = makePid(RepositoryPathConstants.CONTENT_BASE);
+        WorkObject work = mock(WorkObject.class);
+        Bag workBag = setupWork(workPid, work);
 
-            PID filePid = makePid(RepositoryPathConstants.CONTENT_BASE);
+        PID filePid = makePid(RepositoryPathConstants.CONTENT_BASE);
 
-            Resource fileResc = model.createResource(filePid.getRepositoryPath());
-            fileResc.addProperty(RDF.type, Cdr.FileObject);
-            fileResc.addProperty(CdrDeposit.mimetype, "text/plain");
-            workBag.add(fileResc);
+        Resource fileResc = model.createResource(filePid.getRepositoryPath());
+        fileResc.addProperty(RDF.type, Cdr.FileObject);
+        fileResc.addProperty(CdrDeposit.mimetype, "text/plain");
+        fileResc.addProperty(Cdr.streamingHost, DURACLOUD);
+        fileResc.addProperty(Cdr.streamingFolder, CLOSED);
+        fileResc.addProperty(Cdr.streamingFile, "banjo-playlist.m3u8");
+        workBag.add(fileResc);
 
-            job.closeModel();
+        job.closeModel();
 
-            when(repoObjLoader.getWorkObject(eq(workPid))).thenReturn(work);
+        when(repoObjLoader.getWorkObject(eq(workPid))).thenReturn(work);
+        when(repoObjFactory.createFileObject(eq(filePid), any())).thenReturn(streamingFileObj);
+        when(streamingFileObj.getPid()).thenReturn(filePid);
 
-            job.run();
-        });
+        job.run();
+
+        verify(repoObjFactory).createWorkObject(eq(workPid), any(Model.class));
+        verify(destinationObj).addMember(eq(work));
+
+        verify(jobStatusFactory, times(2)).incrCompletion(eq(jobUUID), eq(1));
     }
 
     /**
