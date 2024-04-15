@@ -905,12 +905,12 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
         PremisEventBuilder builder = premisLogger.buildEvent(Premis.Ingestion);
 
         if (obj instanceof FileObject) {
-            var originalFile = ((FileObject) obj).getOriginalFile();
-            if (originalFile == null) {
-                builder.addEventDetail("ingested as PID: {0}", obj.getPid().getQualifiedId());
-            } else {
+            try {
+                var originalFile = ((FileObject) obj).getOriginalFile();
                 builder.addEventDetail("ingested as PID: {0}\n ingested as filename: {1}",
                         obj.getPid().getQualifiedId(), originalFile.getFilename());
+            } catch (Exception e) {
+                builder.addEventDetail("ingested as PID: {0}", obj.getPid().getQualifiedId());
             }
         } else if (obj instanceof ContentContainerObject) {
             builder.addEventDetail("ingested as PID: {0}",
