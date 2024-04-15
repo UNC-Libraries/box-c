@@ -8,6 +8,7 @@ import edu.unc.lib.boxc.model.api.objects.CollectionObject;
 import edu.unc.lib.boxc.model.api.objects.FileObject;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObject;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
+import edu.unc.lib.boxc.model.api.objects.Tombstone;
 import edu.unc.lib.boxc.model.api.objects.WorkObject;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.boxc.operations.jms.MessageSender;
@@ -28,6 +29,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
@@ -89,7 +91,7 @@ public class SolrUpdateProcessor implements Processor {
             }
 
             SolrUpdateRequest updateRequest;
-            if (children == null) {
+            if (children.isEmpty()) {
                 updateRequest = new SolrUpdateRequest(pid, actionType, null, author);
             } else {
                 updateRequest = new ChildSetRequest(pid, children, actionType, author);
@@ -102,6 +104,10 @@ public class SolrUpdateProcessor implements Processor {
             }
             var targetPid = PIDs.get(pid);
             var targetObj = repoObjLoader.getRepositoryObject(targetPid);
+            if (targetObj instanceof Tombstone && actionDoesNotSupportTombstones(actionType)) {
+                log.info("Ignoring action {} on tombstone {}", action, pid);
+                return;
+            }
             String previousTitle = null;
             if (needsUpdateOfChildrenPathInfo(targetObj, actionType)) {
                 previousTitle = titleRetrievalService.retrieveCachedTitle(targetPid);
@@ -111,6 +117,12 @@ public class SolrUpdateProcessor implements Processor {
 
             triggerFollowupActions(targetObj, actionType, previousTitle);
         }
+    }
+
+    private static boolean actionDoesNotSupportTombstones(IndexingActionType actionType) {
+        return actionType != IndexingActionType.DELETE &&
+                actionType != IndexingActionType.DELETE_SOLR_TREE &&
+                actionType != IndexingActionType.DELETE_CHILDREN_PRIOR_TO_TIMESTAMP;
     }
 
     private void triggerFollowupActions(RepositoryObject targetObj, IndexingActionType actionType,
@@ -152,7 +164,7 @@ public class SolrUpdateProcessor implements Processor {
     private List<String> extractChildren(Element body) {
         Element childrenEl = body.getChild("children", CDR_MESSAGE_NS);
         if (childrenEl == null) {
-            return null;
+            return Collections.EMPTY_LIST;
         }
         return childrenEl.getChildren("pid", CDR_MESSAGE_NS).stream()
                 .map(c -> c.getTextTrim())

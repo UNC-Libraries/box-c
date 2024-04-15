@@ -266,6 +266,16 @@
     
     <bean id="indexingMessageProcessor" class="edu.unc.lib.boxc.services.camel.triplesReindexing.IndexingMessageProcessor">
     </bean>
+
+    <bean id="importMemberOrderJmsTemplate" class="org.springframework.jms.core.JmsTemplate">
+        <property name="connectionFactory" ref="pooledAmqConnectionFactory" />
+        <property name="defaultDestinationName" value="${cdr.ordermembers.stream}" />
+        <property name="pubSubDomain" value="false" />
+    </bean>
+
+    <bean id="memberOrderRequestSender" class="edu.unc.lib.boxc.operations.jms.order.MemberOrderRequestSender">
+        <property name="jmsTemplate" ref="importMemberOrderJmsTemplate"/>
+    </bean>
     
     <bean id="destroyObjectsProcessor" class="edu.unc.lib.boxc.services.camel.destroy.DestroyObjectsProcessor">
         <property name="aclService" ref="aclService" />
@@ -280,6 +290,7 @@
         <property name="indexingMessageSender" ref="indexingMessageSender" />
         <property name="binaryDestroyedMessageSender" ref="binaryDestroyedMessageSender" />
         <property name="premisLoggerFactory" ref="premisLoggerFactory" />
+        <property name="memberOrderRequestSender" ref="memberOrderRequestSender" />
     </bean>
     
     <bean id="fcrepo" class="org.fcrepo.camel.FcrepoComponent">
