@@ -127,7 +127,7 @@
         <jsp-api.version>2.3.6</jsp-api.version>
         
         <jedis.version>2.9.3</jedis.version>
-        <embedded-redis.version>0.7.3</embedded-redis.version>
+        <embedded-redis.version>1.4.3</embedded-redis.version>
         <solr.version>8.10.1</solr.version>
         <metrics.version>5.0.0</metrics.version>
         <jena.version>4.4.0</jena.version>
@@ -911,7 +911,7 @@
                 <version>${jedis.version}</version>
             </dependency>
             <dependency>
-                <groupId>it.ozimov</groupId>
+                <groupId>com.github.codemonstur</groupId>
                 <artifactId>embedded-redis</artifactId>
                 <version>${embedded-redis.version}</version>
                 <scope>test</scope>

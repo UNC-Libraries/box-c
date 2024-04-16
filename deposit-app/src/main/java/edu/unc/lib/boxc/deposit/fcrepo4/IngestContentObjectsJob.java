@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import edu.unc.lib.boxc.model.api.exceptions.NotFoundException;
 import org.apache.http.HttpStatus;
 import org.apache.jena.datatypes.xsd.XSDDatatype;
 import org.apache.jena.rdf.model.Bag;
@@ -376,64 +377,63 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
         log.debug("Adding file {} to work {}", childResc, work.getPid());
         PID childPid = PIDs.get(childResc.getURI());
         Resource originalResc = DepositModelHelpers.getDatastream(childResc);
-
-        String storageString = originalResc != null ? getPropertyValue(originalResc, CdrDeposit.storageUri) : null;
-        if (storageString == null) {
-            // throw exception, child must be a file with a staging path
-            throw new DepositException("No staging location provided for child ("
-                    + childResc.getURI() + ") of Work object (" + work.getPid().getQualifiedId() + ")");
-        }
-        URI storageUri = URI.create(storageString);
-
-        // Pull out file properties if they are present
-        String mimetype = getPropertyValue(originalResc, CdrDeposit.mimetype);
-
-        String sha1 = getPropertyValue(originalResc, CdrDeposit.sha1sum);
-        String md5 = getPropertyValue(originalResc, CdrDeposit.md5sum);
-
-        // Label comes from file object if not set for binary
-        String label = getPropertyValue(originalResc, CdrDeposit.label);
-        if (label == null) {
-            label = getPropertyValue(childResc, CdrDeposit.label);
-        }
+        FileObject fileObj = null;
 
         // Construct a model to store properties about this new fileObject
         Model aipModel = ModelFactory.createDefaultModel();
         Resource aResc = aipModel.getResource(childResc.getURI());
-
         addAclProperties(childResc, aResc);
         populateAIPProperties(childResc, aResc);
 
-        // Add the file to the work as the datafile of its own FileObject
-        FileObject fileObj = null;
-        // Retry if there are checksum failures
-        for (int retryCnt = 1; retryCnt <= CHECKSUM_RETRIES; retryCnt++) {
-            try {
-                fileObj = work.addDataFile(childPid, storageUri, label, mimetype, sha1, md5, aipModel);
-                break;
-            } catch (ChecksumMismatchException e) {
-                if ((CHECKSUM_RETRIES - retryCnt) > 0) {
-                    log.warn("Failed to ingest file {} due to a checksum mismatch, {} retries remaining: {}",
-                            childPid.getQualifiedId(), CHECKSUM_RETRIES - retryCnt, e.getMessage());
-                    try {
-                        Thread.sleep(retryCnt * 1000);
-                    } catch (InterruptedException ef) {
-                        throw new JobInterruptedException(e.getMessage());
+        if (originalResc != null) {
+            String storageString = getPropertyValue(originalResc, CdrDeposit.storageUri);
+            URI storageUri = URI.create(storageString);
+            // Pull out file properties if they are present
+            String mimetype = getPropertyValue(originalResc, CdrDeposit.mimetype);
+
+            String sha1 = getPropertyValue(originalResc, CdrDeposit.sha1sum);
+            String md5 = getPropertyValue(originalResc, CdrDeposit.md5sum);
+
+            // Label comes from file object if not set for binary
+            String label = getPropertyValue(originalResc, CdrDeposit.label);
+            if (label == null) {
+                label = getPropertyValue(childResc, CdrDeposit.label);
+            }
+
+            // Add the file to the work as the datafile of its own FileObject
+            // Retry if there are checksum failures
+            for (int retryCnt = 1; retryCnt <= CHECKSUM_RETRIES; retryCnt++) {
+                try {
+                    fileObj = work.addDataFile(childPid, storageUri, label, mimetype, sha1, md5, aipModel);
+                    break;
+                } catch (ChecksumMismatchException e) {
+                    if ((CHECKSUM_RETRIES - retryCnt) > 0) {
+                        log.warn("Failed to ingest file {} due to a checksum mismatch, {} retries remaining: {}",
+                                childPid.getQualifiedId(), CHECKSUM_RETRIES - retryCnt, e.getMessage());
+                        try {
+                            Thread.sleep(retryCnt * 1000);
+                        } catch (InterruptedException ef) {
+                            throw new JobInterruptedException(e.getMessage());
+                        }
+                    } else {
+                        failJob("Unable to ingest " + childPid.getQualifiedId(), e.getMessage());
                     }
-                } else {
-                    failJob("Unable to ingest " + childPid.getQualifiedId(), e.getMessage());
                 }
             }
-        }
 
-        // Record the size of the file for throughput stats
-        if (storageUri.getScheme().equals("file")) {
-            metricsClient.incrDepositFileThroughput(getDepositUUID(), Paths.get(storageUri).toFile().length());
-        }
+            // Record the size of the file for throughput stats
+            if (storageUri.getScheme().equals("file")) {
+                metricsClient.incrDepositFileThroughput(getDepositUUID(), Paths.get(storageUri).toFile().length());
+            }
 
-        // Add the FITS report for this file
-        addFitsHistory(fileObj, childResc);
-        addFitsReport(fileObj, childResc);
+            // Add the FITS report for this file
+            addFitsHistory(fileObj, childResc);
+            addFitsReport(fileObj, childResc);
+        } else {
+            // create a FileObject without an Original file for streaming properties
+            fileObj = repoObjFactory.createFileObject(childPid, aipModel);
+            work.addMember(fileObj);
+        }
 
         return fileObj;
     }
@@ -769,6 +769,15 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
         if (dResc.hasProperty(Cdr.memberOrder)) {
             aResc.addProperty(Cdr.memberOrder, dResc.getProperty(Cdr.memberOrder).getString());
         }
+        if (dResc.hasProperty(Cdr.streamingFolder)) {
+            aResc.addProperty(Cdr.streamingFolder, dResc.getProperty(Cdr.streamingFolder).getString());
+        }
+        if (dResc.hasProperty(Cdr.streamingFile)) {
+            aResc.addProperty(Cdr.streamingFile, dResc.getProperty(Cdr.streamingFile).getString());
+        }
+        if (dResc.hasProperty(Cdr.streamingHost)) {
+            aResc.addProperty(Cdr.streamingHost, dResc.getProperty(Cdr.streamingHost).getString());
+        }
     }
 
     private void overrideModifiedTimestamp(ContentObject contentObj, Resource dResc) {
@@ -898,8 +907,13 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
         PremisEventBuilder builder = premisLogger.buildEvent(Premis.Ingestion);
 
         if (obj instanceof FileObject) {
-            builder.addEventDetail("ingested as PID: {0}\n ingested as filename: {1}",
-                    obj.getPid().getQualifiedId(), ((FileObject) obj).getOriginalFile().getFilename());
+            try {
+                var originalFile = ((FileObject) obj).getOriginalFile();
+                builder.addEventDetail("ingested as PID: {0}\n ingested as filename: {1}",
+                        obj.getPid().getQualifiedId(), originalFile.getFilename());
+            } catch (NotFoundException e) {
+                builder.addEventDetail("ingested as PID: {0}", obj.getPid().getQualifiedId());
+            }
         } else if (obj instanceof ContentContainerObject) {
             builder.addEventDetail("ingested as PID: {0}",
                     obj.getPid().getQualifiedId());

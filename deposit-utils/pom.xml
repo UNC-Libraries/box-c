@@ -49,7 +49,7 @@
         </dependency>
         <!-- Testing -->
         <dependency>
-            <groupId>it.ozimov</groupId>
+            <groupId>com.github.codemonstur</groupId>
             <artifactId>embedded-redis</artifactId>
         </dependency>
         <dependency>
