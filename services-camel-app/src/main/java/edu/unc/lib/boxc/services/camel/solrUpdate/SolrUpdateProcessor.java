@@ -104,7 +104,7 @@ public class SolrUpdateProcessor implements Processor {
             }
             var targetPid = PIDs.get(pid);
             var targetObj = repoObjLoader.getRepositoryObject(targetPid);
-            if (targetObj instanceof Tombstone && actionDoesNotSupportTombstones(actionType)) {
+            if (targetObj instanceof Tombstone && !actionSupportsTombstones(actionType)) {
                 log.info("Ignoring action {} on tombstone {}", action, pid);
                 return;
             }
@@ -119,10 +119,10 @@ public class SolrUpdateProcessor implements Processor {
         }
     }
 
-    private static boolean actionDoesNotSupportTombstones(IndexingActionType actionType) {
-        return actionType != IndexingActionType.DELETE &&
-                actionType != IndexingActionType.DELETE_SOLR_TREE &&
-                actionType != IndexingActionType.DELETE_CHILDREN_PRIOR_TO_TIMESTAMP;
+    private static boolean actionSupportsTombstones(IndexingActionType actionType) {
+        return actionType == IndexingActionType.DELETE ||
+                actionType == IndexingActionType.DELETE_SOLR_TREE ||
+                actionType == IndexingActionType.DELETE_CHILDREN_PRIOR_TO_TIMESTAMP;
     }
 
     private void triggerFollowupActions(RepositoryObject targetObj, IndexingActionType actionType,
