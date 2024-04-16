@@ -169,7 +169,7 @@ public class ValidateContentModelJobTest extends AbstractDepositJobTest {
     }
 
     @Test
-    public void missingStagingLocationTest() {
+    public void fileObjectOriginalDatastreamMissingStagingLocationTest() {
         Assertions.assertThrows(JobFailedException.class, () -> {
             PID objPid = makePid(CONTENT_BASE);
             Bag objBag = model.createBag(objPid.getRepositoryPath());
@@ -179,6 +179,59 @@ public class ValidateContentModelJobTest extends AbstractDepositJobTest {
             Resource childResc = model.getResource(childPid.getRepositoryPath());
             childResc.addProperty(RDF.type, Cdr.FileObject);
             DepositModelHelpers.addDatastream(childResc);
+            objBag.add(childResc);
+
+            objBag.addProperty(Cdr.primaryObject, childResc);
+
+            depBag.add(objBag);
+
+            job.closeModel();
+
+            job.run();
+        });
+    }
+
+    @Test
+    public void fileObjectWithOriginalDatastreamWithAllStreamingPropertiesTest() {
+        PID objPid = makePid(CONTENT_BASE);
+        Bag objBag = model.createBag(objPid.getRepositoryPath());
+        objBag.addProperty(RDF.type, Cdr.Work);
+
+        PID childPid = makePid(CONTENT_BASE);
+        Resource childResc = model.getResource(childPid.getRepositoryPath());
+        Resource origResc = DepositModelHelpers.addDatastream(childResc);
+        origResc.addLiteral(CdrDeposit.stagingLocation, "path");
+        childResc.addProperty(RDF.type, Cdr.FileObject);
+        childResc.addProperty(Cdr.streamingFile, "banjo-playlist.m3u8");
+        childResc.addProperty(Cdr.streamingFolder, CLOSED);
+        childResc.addProperty(Cdr.streamingHost, DURACLOUD);
+        objBag.add(childResc);
+
+        objBag.addProperty(Cdr.primaryObject, childResc);
+
+        depBag.add(objBag);
+
+        job.closeModel();
+
+        job.run();
+    }
+
+    @Test
+    public void fileObjectWithOriginalDatastreamNoStagingLocationWithAllStreamingPropertiesTest() {
+        Assertions.assertThrows(JobFailedException.class, () -> {
+            PID objPid = makePid(CONTENT_BASE);
+            Bag objBag = model.createBag(objPid.getRepositoryPath());
+            objBag.addProperty(RDF.type, Cdr.Work);
+
+            PID childPid = makePid(CONTENT_BASE);
+            Resource childResc = model.getResource(childPid.getRepositoryPath());
+            // add original datastream but not the staging location
+            DepositModelHelpers.addDatastream(childResc);
+
+            childResc.addProperty(RDF.type, Cdr.FileObject);
+            childResc.addProperty(Cdr.streamingFile, "banjo-playlist.m3u8");
+            childResc.addProperty(Cdr.streamingFolder, CLOSED);
+            childResc.addProperty(Cdr.streamingHost, DURACLOUD);
             objBag.add(childResc);
 
             objBag.addProperty(Cdr.primaryObject, childResc);

@@ -441,6 +441,11 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
         assertEquals(1, workMembers.size(), "Incorrect number of members in work");
         FileObject fileObj = (FileObject) findContentObjectByPid(workMembers, filePid);
         assertNotNull(fileObj);
+        var fileResource = fileObj.getResource();
+        assertEquals(DURACLOUD, fileResource.getProperty(Cdr.streamingHost).getString());
+        assertEquals(CLOSED, fileResource.getProperty(Cdr.streamingFolder).getString());
+        assertEquals("banjo-playlist.m3u8", fileResource.getProperty(Cdr.streamingFile).getString());
+
     }
 
     @Test

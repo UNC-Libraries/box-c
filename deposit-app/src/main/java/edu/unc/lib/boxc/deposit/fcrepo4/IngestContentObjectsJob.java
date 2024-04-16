@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import edu.unc.lib.boxc.model.api.exceptions.NotFoundException;
 import org.apache.http.HttpStatus;
 import org.apache.jena.datatypes.xsd.XSDDatatype;
 import org.apache.jena.rdf.model.Bag;
@@ -429,6 +430,7 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
             addFitsHistory(fileObj, childResc);
             addFitsReport(fileObj, childResc);
         } else {
+            // create a FileObject without an Original file for streaming properties
             fileObj = repoObjFactory.createFileObject(childPid, aipModel);
             work.addMember(fileObj);
         }
@@ -909,7 +911,7 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
                 var originalFile = ((FileObject) obj).getOriginalFile();
                 builder.addEventDetail("ingested as PID: {0}\n ingested as filename: {1}",
                         obj.getPid().getQualifiedId(), originalFile.getFilename());
-            } catch (Exception e) {
+            } catch (NotFoundException e) {
                 builder.addEventDetail("ingested as PID: {0}", obj.getPid().getQualifiedId());
             }
         } else if (obj instanceof ContentContainerObject) {

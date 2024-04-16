@@ -33,7 +33,7 @@ import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
 
-import edu.unc.lib.boxc.deposit.work.AbstractDepositJob;
+import edu.unc.lib.boxc.model.api.exceptions.NotFoundException;
 import org.apache.commons.io.FileUtils;
 import org.apache.http.HttpStatus;
 import org.apache.jena.rdf.model.Bag;
@@ -160,11 +160,6 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
     private BinaryTransferSession mockTransferSession;
     @Mock
     private UpdateDescriptionService updateDescService;
-    @Mock
-    private File premisFile;
-    @Mock
-    private AbstractDepositJob abstractDepositJob;
-
     @Captor
     private ArgumentCaptor<Model> modelCaptor;
 
@@ -331,11 +326,11 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
     }
 
     /**
-     * Test that ingest will work if a file object is specified with no original resource,
-     * assuming it has streaming properties and passed validation
+     * Test that ingest will work if a file object has streaming properties and no
+     * original file and staging location
      */
     @Test
-    public void ingestWorkWithFileWithoutOriginalFileAndStagingLocation() {
+    public void ingestWorkWithFileWithStreamingPropertiesNoOriginalFile() {
         PID workPid = makePid(RepositoryPathConstants.CONTENT_BASE);
         WorkObject work = mock(WorkObject.class);
         Bag workBag = setupWork(workPid, work);
@@ -355,6 +350,7 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
         when(repoObjLoader.getWorkObject(eq(workPid))).thenReturn(work);
         when(repoObjFactory.createFileObject(eq(filePid), any())).thenReturn(streamingFileObj);
         when(streamingFileObj.getPid()).thenReturn(filePid);
+        when(streamingFileObj.getOriginalFile()).thenThrow(NotFoundException.class);
 
         job.run();
 
@@ -362,6 +358,44 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
         verify(destinationObj).addMember(eq(work));
 
         verify(jobStatusFactory, times(2)).incrCompletion(eq(jobUUID), eq(1));
+    }
+
+    /**
+     * Test that ingest will work if a file object both streaming properties and
+     * original file and staging location
+     */
+    @Test
+    public void ingestWorkWithFileWithStreamingPropertiesAndOriginalFile() throws Exception {
+        PID workPid = makePid(RepositoryPathConstants.CONTENT_BASE);
+        WorkObject work = mock(WorkObject.class);
+        Bag workBag = setupWork(workPid, work);
+
+        String loc = "pdf.pdf";
+        String mime = "application/pdf";
+        PID filePid = addFileObject(workBag, loc, mime);
+
+        var fileResc = model.getResource(filePid.getRepositoryPath());
+        fileResc.addProperty(RDF.type, Cdr.FileObject);
+        fileResc.addProperty(CdrDeposit.mimetype, "text/plain");
+        fileResc.addProperty(Cdr.streamingHost, DURACLOUD);
+        fileResc.addProperty(Cdr.streamingFolder, CLOSED);
+        fileResc.addProperty(Cdr.streamingFile, "banjo-playlist.m3u8");
+        workBag.add(fileResc);
+
+        job.closeModel();
+
+        when(work.addDataFile(any(PID.class), any(URI.class),
+                anyString(), anyString(), isNull(), isNull(), any(Model.class)))
+                .thenReturn(mockFileObj);
+        when(mockFileObj.getPid()).thenReturn(filePid);
+        when(repoObjLoader.getWorkObject(eq(workPid))).thenReturn(work);
+
+        job.run();
+
+        verify(repoObjFactory).createWorkObject(eq(workPid), any(Model.class));
+        verify(destinationObj).addMember(eq(work));
+
+        verify(jobStatusFactory, times(3)).incrCompletion(eq(jobUUID), eq(1));
     }
 
     /**

@@ -209,20 +209,25 @@ public class ValidateContentModelJob extends AbstractDepositJob{
                     resc.getURI(), parentResc.getURI());
         }
 
-        Resource origResc = DepositModelHelpers.getDatastream(resc);
-        var hasOrigResc = origResc != null;
+        Resource origResource = DepositModelHelpers.getDatastream(resc);
+        var hasOrigResource = origResource != null;
+        var hasStreamingOrOriginal = false;
 
         if (hasAtLeastOneStreamingProperty(resc)) {
+            hasStreamingOrOriginal = true;
             if (!hasAllStreamingProperties(resc)) {
                 // if one streaming property is present, they must all be present
                 failJob(null, "All streaming properties are required for file ({0})", resc.getURI());
             }
-        } else if (hasOrigResc) {
-            if (!origResc.hasProperty(CdrDeposit.stagingLocation)) {
+        }
+        if (hasOrigResource) {
+            hasStreamingOrOriginal = true;
+            if (!origResource.hasProperty(CdrDeposit.stagingLocation)) {
                 // has original file but needs staging location
                 failJob(null, "No staging location provided for file ({0})", resc.getURI());
             }
-        } else {
+        }
+        if (!hasStreamingOrOriginal) {
             // no streaming properties or original file
             failJob(null, "No original datastream or streaming properties for file object {0}", resc.getURI());
         }
