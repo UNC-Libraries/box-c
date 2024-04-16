@@ -194,7 +194,7 @@ public class WorkObjectImpl extends AbstractContentContainerObject implements Wo
     @Override
     public List<PID> getMemberOrder() {
         var memberOrder = getResource().getProperty(Cdr.memberOrder);
-        if (memberOrder == null) {
+        if (memberOrder == null || memberOrder.getString().isEmpty()) {
             return Collections.emptyList();
         }
         // Split the value from fedora up by pipes, convert into PID objects, return as a list

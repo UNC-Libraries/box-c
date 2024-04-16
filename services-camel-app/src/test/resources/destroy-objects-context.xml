@@ -24,6 +24,11 @@
         <property name="indexingMessageSender" ref="indexingMessageSender" />
         <property name="binaryDestroyedMessageSender" ref="binaryDestroyedMessageSender" />
         <property name="premisLoggerFactory" ref="premisLoggerFactory" />
+        <property name="memberOrderRequestSender" ref="memberOrderRequestSender" />
+    </bean>
+
+    <bean id="memberOrderRequestSender" class="org.mockito.Mockito" factory-method="mock">
+        <constructor-arg type="java.lang.Class" value="edu.unc.lib.boxc.operations.jms.order.MemberOrderRequestSender" />
     </bean>
     
     <bean id="premisLoggerFactory" class="org.mockito.Mockito" factory-method="mock">

@@ -257,6 +257,7 @@ public class DestroyObjectsJob extends AbstractDestroyObjectsJob {
         var request = new MultiParentOrderRequest();
         request.setParentToOrdered(Map.of(parentId, Collections.singletonList(childId)));
         request.setOperation(OrderOperationType.REMOVE_FROM);
+        request.setAgent(agent);
         memberOrderRequestSender.sendToQueue(request);
     }
 
