@@ -7,7 +7,7 @@ import static edu.unc.lib.boxc.model.api.xml.JDOMNamespaceUtil.ATOM_NS;
 import static edu.unc.lib.boxc.model.api.xml.JDOMNamespaceUtil.CDR_MESSAGE_NS;
 import static edu.unc.lib.boxc.operations.jms.JMSMessageUtil.CDRActions.RUN_ENHANCEMENTS;
 import static org.fcrepo.camel.FcrepoHeaders.FCREPO_URI;
-import static org.mockito.Matchers.any;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;

@@ -33,7 +33,7 @@
     </bean>
 
     <bean id="patronAccessAssignmentService" class="org.mockito.Mockito" factory-method="mock">
-        <constructor-arg  value="edu.unc.lib.boxc.operations.impl.acl.PatronAccessAssignmentService" />
+        <constructor-arg type="java.lang.Class" value="edu.unc.lib.boxc.operations.impl.acl.PatronAccessAssignmentService" />
     </bean>
 
     <bean id="patronAccessAssignmentProcessor" class="edu.unc.lib.boxc.services.camel.patronAccess.PatronAccessAssignmentProcessor">

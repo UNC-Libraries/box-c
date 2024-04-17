@@ -3,7 +3,7 @@ package edu.unc.lib.boxc.web.common.utils;
 import static com.fasterxml.jackson.databind.type.TypeFactory.defaultInstance;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
-import static org.mockito.Matchers.any;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 import java.util.Arrays;

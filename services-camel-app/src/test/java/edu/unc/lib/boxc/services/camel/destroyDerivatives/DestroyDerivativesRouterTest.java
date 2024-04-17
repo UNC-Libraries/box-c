@@ -3,7 +3,7 @@ package edu.unc.lib.boxc.services.camel.destroyDerivatives;
 import static edu.unc.lib.boxc.services.camel.util.CdrFcrepoHeaders.CdrBinaryMimeType;
 import static edu.unc.lib.boxc.services.camel.util.CdrFcrepoHeaders.CdrBinaryPidId;
 import static edu.unc.lib.boxc.services.camel.util.CdrFcrepoHeaders.CdrObjectType;
-import static org.mockito.Matchers.any;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 

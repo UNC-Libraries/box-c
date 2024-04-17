@@ -25,7 +25,7 @@
     </bean>
     
     <bean id="emailHandler" class="org.mockito.Mockito" factory-method="mock">
-        <constructor-arg value="edu.unc.lib.boxc.operations.impl.utils.EmailHandler" />
+        <constructor-arg type="java.lang.Class" value="edu.unc.lib.boxc.operations.impl.utils.EmailHandler" />
     </bean>
     
     <bean id="exportXmlRequestService" class="edu.unc.lib.boxc.operations.jms.exportxml.ExportXMLRequestService" >

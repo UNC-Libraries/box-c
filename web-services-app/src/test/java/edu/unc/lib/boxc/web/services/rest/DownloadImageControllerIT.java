@@ -1,66 +1,90 @@
 
 package edu.unc.lib.boxc.web.services.rest;
 
-import static edu.unc.lib.boxc.auth.api.Permission.viewReducedResImages;
-
 import com.github.tomakehurst.wiremock.client.WireMock;
+import com.github.tomakehurst.wiremock.junit5.WireMockTest;
 import edu.unc.lib.boxc.auth.api.exceptions.AccessRestrictionException;
 import edu.unc.lib.boxc.auth.api.services.AccessControlService;
 import edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl;
 import edu.unc.lib.boxc.model.api.DatastreamType;
 import edu.unc.lib.boxc.model.api.ids.PID;
+import edu.unc.lib.boxc.model.fcrepo.test.TestHelper;
 import edu.unc.lib.boxc.search.api.models.Datastream;
 import edu.unc.lib.boxc.search.api.requests.SimpleIdRequest;
 import edu.unc.lib.boxc.search.solr.models.ContentObjectSolrRecord;
 import edu.unc.lib.boxc.web.common.services.SolrQueryLayerService;
 import edu.unc.lib.boxc.web.common.utils.AnalyticsTrackerUtil;
 import edu.unc.lib.boxc.web.services.processing.DownloadImageService;
-import edu.unc.lib.boxc.web.services.rest.modify.AbstractAPIIT;
+import edu.unc.lib.boxc.web.services.rest.exceptions.RestResponseEntityExceptionHandler;
 import edu.unc.lib.boxc.web.services.utils.ImageServerUtil;
 import org.apache.commons.io.FileUtils;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
 import org.springframework.http.HttpStatus;
 import org.springframework.mock.web.MockHttpServletResponse;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
-import org.springframework.test.context.web.WebAppConfiguration;
+import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+
+import java.io.File;
+import java.io.IOException;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlMatching;
 import static edu.unc.lib.boxc.auth.api.Permission.viewOriginal;
+import static edu.unc.lib.boxc.auth.api.Permission.viewReducedResImages;
+import static edu.unc.lib.boxc.model.fcrepo.test.TestHelper.makePid;
 import static edu.unc.lib.boxc.web.common.services.FedoraContentService.CONTENT_DISPOSITION;
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+import static org.mockito.MockitoAnnotations.openMocks;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import com.github.tomakehurst.wiremock.junit5.WireMockTest;
-
-import java.io.File;
-import java.io.IOException;
 
 /**
  * @author snluong
  */
-@ExtendWith(SpringExtension.class)
-@WebAppConfiguration
-@ContextConfiguration("/download-image-it-servlet.xml")
-
 @WireMockTest(httpPort = 46887)
-public class DownloadImageControllerIT extends AbstractAPIIT {
-    @Autowired
+public class DownloadImageControllerIT {
+    @Mock
     private AccessControlService accessControlService;
-    @Autowired
+    @Mock
     private SolrQueryLayerService solrSearchService;
+    @Mock
+    private AnalyticsTrackerUtil analyticsTracker;
+    private DownloadImageService downloadImageService;
+    @InjectMocks
+    private DownloadImageController controller;
+    private MockMvc mvc;
+    private AutoCloseable closeable;
+
+    @BeforeEach
+    public void init() {
+        closeable = openMocks(this);
+        downloadImageService = new DownloadImageService();
+        downloadImageService.setIiifBasePath("http://localhost:46887/");
+        controller.setDownloadImageService(downloadImageService);
+        mvc = MockMvcBuilders.standaloneSetup(controller)
+                .setControllerAdvice(new RestResponseEntityExceptionHandler())
+                .build();
+
+        TestHelper.setContentBase("http://localhost:48085/rest");
+    }
+
+    @AfterEach
+    void closeService() throws Exception {
+        closeable.close();
+    }
 
     @Test
     public void testGetImageAtFullSize() throws Exception {

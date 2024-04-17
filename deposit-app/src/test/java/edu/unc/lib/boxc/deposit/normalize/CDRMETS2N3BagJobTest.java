@@ -4,9 +4,9 @@ import static edu.unc.lib.boxc.common.test.TestHelpers.setField;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Matchers.eq;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -30,7 +30,6 @@ import org.apache.jena.vocabulary.RDF;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Matchers;
 import org.mockito.Mock;
 import org.xml.sax.SAXException;
 
@@ -39,7 +38,6 @@ import com.google.common.io.Files;
 import edu.unc.lib.boxc.deposit.api.RedisWorkerConstants.DepositField;
 import edu.unc.lib.boxc.deposit.impl.mets.METSProfile;
 import edu.unc.lib.boxc.deposit.impl.model.DepositModelHelpers;
-import edu.unc.lib.boxc.deposit.normalize.CDRMETS2N3BagJob;
 import edu.unc.lib.boxc.deposit.work.JobFailedException;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.ids.RepositoryPathConstants;
@@ -138,7 +136,7 @@ public class CDRMETS2N3BagJobTest extends AbstractNormalizationJobTest {
             // test case assumes one object belonging to one work in the mets.xml
             verify(premisLogger).buildEvent(eq(Premis.Validation));
             verify(premisLogger, times(4)).buildEvent(eq(Premis.Accession));
-            verify(premisEventBuilder, times(5)).addEventDetail(anyString(), Matchers.<Object>anyVararg());
+            verify(premisEventBuilder, times(5)).addEventDetail(anyString(), any(Object[].class));
             verify(premisEventBuilder, times(4)).addSoftwareAgent(any(PID.class));
             verify(premisEventBuilder, times(5)).write();
         }

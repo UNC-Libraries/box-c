@@ -4,7 +4,7 @@ import static edu.unc.lib.boxc.indexing.solr.test.MockRepositoryObjectHelpers.ad
 import static edu.unc.lib.boxc.indexing.solr.test.MockRepositoryObjectHelpers.makeContainer;
 import static java.util.Arrays.asList;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Matchers.eq;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;

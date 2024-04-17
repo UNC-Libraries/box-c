@@ -8,10 +8,9 @@ import static edu.unc.lib.boxc.operations.test.ModsTestHelper.writeToFile;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyObject;
-import static org.mockito.Matchers.argThat;
-import static org.mockito.Matchers.eq;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.argThat;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -231,7 +230,7 @@ public class ImportXMLJobTest {
     public void successfulJobTest() throws Exception {
         File tempImportFile = createTempImportFile();
         setupJob(tempImportFile);
-        when(completeTemplate.execute(anyObject())).thenReturn("success email text");
+        when(completeTemplate.execute(any())).thenReturn("success email text");
         job.run();
 
         verify(mailSender).send(msg);
@@ -263,7 +262,7 @@ public class ImportXMLJobTest {
 
         File tempImportFile = createTempImportFile();
         setupJob(tempImportFile);
-        when(completeTemplate.execute(anyObject())).thenReturn("success email text");
+        when(completeTemplate.execute(any())).thenReturn("success email text");
         job.run();
 
         verify(mailSender).send(msg);
@@ -301,7 +300,7 @@ public class ImportXMLJobTest {
         File tempImportFile = writeToFile(updateDoc);
 
         setupJob(tempImportFile);
-        when(completeTemplate.execute(anyObject())).thenReturn("success email text");
+        when(completeTemplate.execute(any())).thenReturn("success email text");
         job.run();
 
         verify(mailSender).send(msg);

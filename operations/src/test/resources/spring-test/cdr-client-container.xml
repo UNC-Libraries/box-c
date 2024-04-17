@@ -97,9 +97,9 @@
     </bean>
     
     <bean id="jmsTemplate" class="org.mockito.Mockito" factory-method="mock">
-        <constructor-arg value="org.springframework.jms.core.JmsTemplate" />
+        <constructor-arg type="java.lang.Class" value="org.springframework.jms.core.JmsTemplate" />
     </bean>
-    
+
     <bean id="operationsMessageSender" class="edu.unc.lib.boxc.operations.jms.OperationsMessageSender">
         <property name="jmsTemplate" ref="jmsTemplate" />
     </bean>
@@ -156,7 +156,7 @@
     </bean>
     
     <bean id="objectPathFactory" class="org.mockito.Mockito" factory-method="mock">
-        <constructor-arg value="edu.unc.lib.boxc.search.solr.services.ObjectPathFactory" />
+        <constructor-arg type="java.lang.Class" value="edu.unc.lib.boxc.search.solr.services.ObjectPathFactory" />
     </bean>
     
     <bean id="treeIndexer" class="edu.unc.lib.boxc.model.fcrepo.test.RepositoryObjectTreeIndexer">

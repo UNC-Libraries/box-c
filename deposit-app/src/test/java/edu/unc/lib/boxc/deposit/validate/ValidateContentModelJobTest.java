@@ -5,8 +5,8 @@ import static edu.unc.lib.boxc.model.api.ids.RepositoryPathConstants.CONTENT_BAS
 import static edu.unc.lib.boxc.operations.jms.streaming.StreamingPropertiesRequest.CLOSED;
 import static edu.unc.lib.boxc.operations.jms.streaming.StreamingPropertiesRequest.DURACLOUD;
 import static org.apache.jena.rdf.model.ResourceFactory.createResource;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
