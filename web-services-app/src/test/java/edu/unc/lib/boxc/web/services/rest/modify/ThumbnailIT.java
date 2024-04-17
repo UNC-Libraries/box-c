@@ -5,10 +5,11 @@ import static edu.unc.lib.boxc.model.api.xml.JDOMNamespaceUtil.ATOM_NS;
 import static edu.unc.lib.boxc.model.api.xml.JDOMNamespaceUtil.CDR_MESSAGE_NS;
 import static edu.unc.lib.boxc.operations.jms.JMSMessageUtil.CDRActions.RUN_ENHANCEMENTS;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Matchers.eq;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.verify;
@@ -23,10 +24,13 @@ import java.io.FileInputStream;
 import java.nio.file.Path;
 import java.util.Map;
 
+import edu.unc.lib.boxc.auth.api.services.AccessControlService;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.api.rdf.Cdr;
+import edu.unc.lib.boxc.model.fcrepo.test.TestHelper;
 import edu.unc.lib.boxc.operations.jms.thumbnails.ThumbnailRequest;
 import edu.unc.lib.boxc.operations.jms.thumbnails.ThumbnailRequestSender;
+import edu.unc.lib.boxc.web.services.rest.exceptions.RestResponseEntityExceptionHandler;
 import org.apache.commons.io.IOUtils;
 import org.jdom2.Document;
 import org.jdom2.Element;
@@ -36,6 +40,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mock.web.MockMultipartFile;
@@ -54,14 +59,14 @@ import edu.unc.lib.boxc.model.api.objects.CollectionObject;
 import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
 import edu.unc.lib.boxc.operations.jms.MessageSender;
 import edu.unc.lib.boxc.web.services.processing.ImportThumbnailService;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 /**
  * @author lfarrell
  */
 @ContextHierarchy({
         @ContextConfiguration("/spring-test/test-fedora-container.xml"),
-        @ContextConfiguration("/spring-test/cdr-client-container.xml"),
-        @ContextConfiguration("/thumb-it-servlet.xml")
+        @ContextConfiguration("/spring-test/cdr-client-container.xml")
 })
 public class ThumbnailIT extends AbstractAPIIT {
     private static final String USER_NAME = "user";
@@ -77,38 +82,43 @@ public class ThumbnailIT extends AbstractAPIIT {
     @Captor
     private ArgumentCaptor<ThumbnailRequest> requestCaptor;
 
-    @Autowired
     private ImportThumbnailService service;
-    @Autowired
-    private AccessControlServiceImpl aclService;
-    @Autowired
+    @Mock
     private MessageSender messageSender;
     @Autowired
     private RepositoryObjectFactory repositoryObjectFactory;
-    @Autowired
+    @Mock
     private ThumbnailRequestSender thumbnailRequestSender;
 
     @Mock
     private RepositoryObjectLoader repositoryObjectLoader;
+    @InjectMocks
+    private ThumbnailController controller;
 
     private File tempDir;
 
     @BeforeEach
-    public void init_() throws Exception {
+    public void init() {
+        closeable = openMocks(this);
         tempDir = tmpFolder.toFile();
+        aclService = mock(AccessControlService.class);
+        service = new ImportThumbnailService();
+        service.setAclService(aclService);
+        service.setMessageSender(messageSender);
         service.setSourceImagesDir(tempDir.getAbsolutePath());
         service.init();
-    }
-
-    @BeforeEach
-    public void setup() {
-        closeable = openMocks(this);
-        reset(messageSender, thumbnailRequestSender);
+        controller.setImportThumbnailService(service);
+        controller.setAclService(aclService);
+        mvc = MockMvcBuilders.standaloneSetup(controller)
+                .setControllerAdvice(new RestResponseEntityExceptionHandler())
+                .build();
 
         AccessGroupSet testPrincipals = new AccessGroupSetImpl(ADMIN_GROUP);
 
         GroupsThreadStore.storeUsername(USER_NAME);
         GroupsThreadStore.storeGroups(testPrincipals);
+
+        TestHelper.setContentBase("http://localhost:48085/rest");
 
         setupContentRoot();
         collection = repositoryObjectFactory.createCollectionObject(null);
@@ -216,7 +226,7 @@ public class ThumbnailIT extends AbstractAPIIT {
         var work = repositoryObjectFactory.createWorkObject(workPid, null);
         work.addMember(file);
         work.addMember(oldThumbnail);
-        when(repositoryObjectLoader.getRepositoryObject(pid)).thenReturn(work);
+        when(repositoryObjectLoader.getRepositoryObject(pid)).thenReturn(file);
         repositoryObjectFactory.createExclusiveRelationship(work, Cdr.useAsThumbnail, oldThumbnail.getResource());
 
         MvcResult result = mvc.perform(put("/edit/assignThumbnail/" + filePidString))

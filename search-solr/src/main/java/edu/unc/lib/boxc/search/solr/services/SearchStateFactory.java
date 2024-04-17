@@ -308,11 +308,16 @@ public class SearchStateFactory {
                 String parameterPairArray[] = parameterPair.split(":", 2);
                 if (parameterPairArray.length > 1) {
                     try {
-                        facetFieldUtil.setFacetLimit(searchSettings.searchFieldKey(parameterPairArray[0]),
-                                Integer.parseInt(parameterPairArray[1]), searchState);
-                    } catch (Exception e) {
-                        log.warn("Failed to add facet limit {} to field {}", new Object[] { parameterPairArray[0],
-                                parameterPairArray[1] }, e);
+                        var fieldKey = searchSettings.searchFieldKey(parameterPairArray[0]);
+                        if (fieldKey == null) {
+                            log.warn("Unknown facet limit field key: {}", parameterPairArray[0]);
+                            continue;
+                        }
+                        facetFieldUtil.setFacetLimit(fieldKey, Integer.parseInt(parameterPairArray[1]), searchState);
+                    } catch (IllegalArgumentException | InvalidFacetException e) {
+                        log.warn("Failed to add facet limit {} to field {}: {}", parameterPairArray[0],
+                                parameterPairArray[1], e.getMessage());
+                        log.debug("Exception from invalid facet limit", e);
                     }
                 }
             }
@@ -492,5 +497,9 @@ public class SearchStateFactory {
 
     public void setFacetFieldFactory(FacetFieldFactory facetFieldFactory) {
         this.facetFieldFactory = facetFieldFactory;
+    }
+
+    public void setFacetFieldUtil(FacetFieldUtil facetFieldUtil) {
+        this.facetFieldUtil = facetFieldUtil;
     }
 }

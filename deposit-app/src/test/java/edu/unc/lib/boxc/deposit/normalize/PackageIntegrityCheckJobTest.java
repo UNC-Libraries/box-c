@@ -1,7 +1,7 @@
 package edu.unc.lib.boxc.deposit.normalize;
 
 import static edu.unc.lib.boxc.common.test.TestHelpers.setField;
-import static org.mockito.Matchers.anyString;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 
 import java.io.File;

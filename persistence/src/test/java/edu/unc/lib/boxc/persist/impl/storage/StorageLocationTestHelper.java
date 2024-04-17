@@ -5,7 +5,7 @@ import static java.lang.Runtime.getRuntime;
 import static java.nio.file.Files.createTempDirectory;
 import static java.util.Arrays.asList;
 import static org.apache.commons.io.FileUtils.deleteDirectory;
-import static org.mockito.Matchers.any;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 

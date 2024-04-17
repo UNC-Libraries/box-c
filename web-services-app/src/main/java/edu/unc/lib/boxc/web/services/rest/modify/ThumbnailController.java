@@ -184,4 +184,20 @@ public class ThumbnailController {
         result.put("timestamp", System.currentTimeMillis());
         return new ResponseEntity<>(result, HttpStatus.OK);
     }
+
+    public void setImportThumbnailService(ImportThumbnailService service) {
+        this.service = service;
+    }
+
+    public void setThumbnailRequestSender(ThumbnailRequestSender thumbnailRequestSender) {
+        this.thumbnailRequestSender = thumbnailRequestSender;
+    }
+
+    public void setAclService(AccessControlService aclService) {
+        this.aclService = aclService;
+    }
+
+    public void setRepositoryObjectLoader(RepositoryObjectLoader repositoryObjectLoader) {
+        this.repositoryObjectLoader = repositoryObjectLoader;
+    }
 }

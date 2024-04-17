@@ -1,7 +1,7 @@
 package edu.unc.lib.boxc.search.solr.utils;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Matchers.anySetOf;
+import static org.mockito.ArgumentMatchers.anySet;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.openMocks;
 
@@ -77,7 +77,7 @@ public class AccessRestrictionUtilTest {
 
     @Test
     public void addAccessGlobalPermissionsTest() {
-        when(globalPermissionEvaluator.hasGlobalPrincipal(anySetOf(String.class))).thenReturn(true);
+        when(globalPermissionEvaluator.hasGlobalPrincipal(anySet())).thenReturn(true);
 
         SolrQuery query = new SolrQuery(BASE_QUERY);
         restrictionUtil.add(query, accessGroups);

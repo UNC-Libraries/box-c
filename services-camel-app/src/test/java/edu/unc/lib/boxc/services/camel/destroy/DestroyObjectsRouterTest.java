@@ -3,8 +3,8 @@ package edu.unc.lib.boxc.services.camel.destroy;
 import static edu.unc.lib.boxc.operations.jms.destroy.DestroyObjectsHelper.serializeDestroyRequest;
 import static org.apache.jena.rdf.model.ModelFactory.createDefaultModel;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.openMocks;
@@ -118,7 +118,7 @@ public class DestroyObjectsRouterTest extends CamelSpringTestSupport {
         when(premisLogger.buildEvent(Premis.Deletion)).thenReturn(eventBuilder);
         when(eventBuilder.addAuthorizingAgent(any())).thenReturn(eventBuilder);
         when(eventBuilder.addOutcome(true)).thenReturn(eventBuilder);
-        when(eventBuilder.addEventDetail(anyString(), any())).thenReturn(eventBuilder);
+        when(eventBuilder.addEventDetail(anyString(), any(Object[].class))).thenReturn(eventBuilder);
 
         String id = UUID.randomUUID().toString();
         PID pid = PIDs.get(id);

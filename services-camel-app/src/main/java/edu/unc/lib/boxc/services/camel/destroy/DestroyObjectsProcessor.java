@@ -1,5 +1,6 @@
 package edu.unc.lib.boxc.services.camel.destroy;
 
+import edu.unc.lib.boxc.operations.jms.order.MemberOrderRequestSender;
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
 import org.apache.camel.Processor;
@@ -50,6 +51,7 @@ public class DestroyObjectsProcessor implements Processor {
     private IndexingMessageSender indexingMessageSender;
     private MessageSender binaryDestroyedMessageSender;
     private PremisLoggerFactory premisLoggerFactory;
+    private MemberOrderRequestSender memberOrderRequestSender;
 
     @Override
     public void process(Exchange exchange) throws Exception {
@@ -89,6 +91,7 @@ public class DestroyObjectsProcessor implements Processor {
             job.setIndexingMessageSender(indexingMessageSender);
             job.setBinaryDestroyedMessageSender(binaryDestroyedMessageSender);
             job.setPremisLoggerFactory(premisLoggerFactory);
+            job.setMemberOrderRequestSender(memberOrderRequestSender);
             return job;
         }
     }
@@ -139,5 +142,9 @@ public class DestroyObjectsProcessor implements Processor {
 
     public void setPremisLoggerFactory(PremisLoggerFactory premisLoggerFactory) {
         this.premisLoggerFactory = premisLoggerFactory;
+    }
+
+    public void setMemberOrderRequestSender(MemberOrderRequestSender memberOrderRequestSender) {
+        this.memberOrderRequestSender = memberOrderRequestSender;
     }
 }

@@ -15,11 +15,15 @@ import edu.unc.lib.boxc.operations.jms.order.MultiParentOrderRequest;
 import edu.unc.lib.boxc.web.services.processing.MemberOrderCsvExporter;
 import edu.unc.lib.boxc.web.services.processing.MemberOrderCsvTransformer;
 import edu.unc.lib.boxc.web.services.rest.MvcTestHelpers;
+import edu.unc.lib.boxc.web.services.rest.exceptions.RestResponseEntityExceptionHandler;
 import org.apache.commons.io.FileUtils;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.io.TempDir;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.ContextConfiguration;
@@ -47,41 +51,45 @@ import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.mockito.MockitoAnnotations.openMocks;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 /**
  * @author bbpennel
  */
-@ExtendWith(SpringExtension.class)
-@WebAppConfiguration
-@ContextConfiguration("/member-order-test-servlet.xml")
 public class MemberOrderControllerTest {
     private static final String PARENT1_UUID = "f277bb38-272c-471c-a28a-9887a1328a1f";
     private static final String PARENT2_UUID = "ba70a1ee-fa7c-437f-a979-cc8b16599652";
     private final static String USERNAME = "test_user";
     private final static AccessGroupSet GROUPS = new AccessGroupSetImpl("adminGroup");
-    @Autowired
-    private WebApplicationContext context;
-    @Autowired
+    @Mock
     private MemberOrderCsvExporter csvExporter;
-    @Autowired
+    @Mock
     private MemberOrderRequestSender requestSender;
-    @Autowired
+    @Mock
     private MemberOrderCsvTransformer csvTransformer;
+    @InjectMocks
+    private MemberOrderController controller;
     @TempDir
     public Path tmpFolder;
 
     private MockMvc mvc;
+    private AutoCloseable closeable;
 
     @BeforeEach
     public void init() throws Exception {
-        reset(csvTransformer, csvExporter, requestSender);
-        mvc = MockMvcBuilders
-                .webAppContextSetup(context)
+        closeable = openMocks(this);
+        mvc = MockMvcBuilders.standaloneSetup(controller)
+                .setControllerAdvice(new RestResponseEntityExceptionHandler())
                 .build();
         GroupsThreadStore.storeUsername(USERNAME);
         GroupsThreadStore.storeGroups(GROUPS);
+    }
+
+    @AfterEach
+    void closeService() throws Exception {
+        closeable.close();
     }
 
     @Test

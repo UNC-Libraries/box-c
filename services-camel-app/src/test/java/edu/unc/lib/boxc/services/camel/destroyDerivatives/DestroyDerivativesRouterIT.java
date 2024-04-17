@@ -4,7 +4,7 @@ import static edu.unc.lib.boxc.model.api.ids.RepositoryPathConstants.HASHED_PATH
 import static edu.unc.lib.boxc.model.api.ids.RepositoryPathConstants.HASHED_PATH_SIZE;
 import static edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPaths.getContentRootPid;
 import static edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPaths.idToPath;
-import static org.mockito.Matchers.any;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.verify;

@@ -11,7 +11,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Matchers.any;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.times;
@@ -35,6 +35,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
+import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jms.core.JmsTemplate;
 import org.springframework.jms.core.MessageCreator;
@@ -77,17 +78,14 @@ public class UpdatePatronAccessIT extends AbstractAPIIT {
     private CollectionObject collObj;
     private AutoCloseable closeable;
     @Autowired
-    private JmsTemplate patronAccessOperationTemplate;
-    @Autowired
     private PatronAccessOperationSender patronAccessOperationSender;
     @Captor
-    private ArgumentCaptor<String> stringCaptor;
+    private ArgumentCaptor<PatronAccessAssignmentRequest> requestCaptor;
     private static final ObjectReader MAPPER = new ObjectMapper().readerFor(PatronAccessAssignmentRequest.class);
 
     @BeforeEach
     public void setup() throws Exception {
         closeable = openMocks(this);
-        reset(patronAccessOperationTemplate);
         reset(patronAccessOperationSender);
         AccessGroupSet testPrincipals = new AccessGroupSetImpl(USER_GROUPS);
 
@@ -121,7 +119,7 @@ public class UpdatePatronAccessIT extends AbstractAPIIT {
                 .andExpect(status().isForbidden())
             .andReturn();
 
-        verify(patronAccessOperationTemplate, never()).send(any());
+        verify(patronAccessOperationSender, never()).sendUpdateRequest(any());
     }
 
     @Test
@@ -143,7 +141,7 @@ public class UpdatePatronAccessIT extends AbstractAPIIT {
                 .andExpect(status().isNotFound())
             .andReturn();
 
-        verify(patronAccessOperationTemplate, never()).send(any());
+        verify(patronAccessOperationSender, never()).sendUpdateRequest(any());
     }
 
     @Test
@@ -164,7 +162,7 @@ public class UpdatePatronAccessIT extends AbstractAPIIT {
                 .andExpect(status().isBadRequest())
             .andReturn();
 
-        verify(patronAccessOperationTemplate, never()).send(any());
+        verify(patronAccessOperationSender, never()).sendUpdateRequest(any());
     }
 
     @Test
@@ -185,7 +183,7 @@ public class UpdatePatronAccessIT extends AbstractAPIIT {
                 .andExpect(status().isBadRequest())
             .andReturn();
 
-        verify(patronAccessOperationTemplate, never()).send(any());
+        verify(patronAccessOperationSender, never()).sendUpdateRequest(any());
     }
 
     @Test
@@ -200,7 +198,7 @@ public class UpdatePatronAccessIT extends AbstractAPIIT {
                 .andExpect(status().isBadRequest())
             .andReturn();
 
-        verify(patronAccessOperationTemplate, never()).send(any());
+        verify(patronAccessOperationSender, never()).sendUpdateRequest(any());
     }
 
     @Test
@@ -227,7 +225,7 @@ public class UpdatePatronAccessIT extends AbstractAPIIT {
 
         assertResponseSuccess(mvcResult);
 
-        verify(patronAccessOperationTemplate).send(any(MessageCreator.class));
+        verify(patronAccessOperationSender).sendUpdateRequest(any());
     }
 
     @Test
@@ -243,7 +241,7 @@ public class UpdatePatronAccessIT extends AbstractAPIIT {
                 .andExpect(status().isForbidden())
             .andReturn();
 
-        verify(patronAccessOperationTemplate, never()).send(any());
+        verify(patronAccessOperationSender, never()).sendUpdateRequest(any());
     }
 
     @Test
@@ -265,7 +263,7 @@ public class UpdatePatronAccessIT extends AbstractAPIIT {
 
         assertResponseSuccess(mvcResult);
 
-        verify(patronAccessOperationTemplate).send(any(MessageCreator.class));
+        verify(patronAccessOperationSender).sendUpdateRequest(any());
     }
 
     @Test
@@ -291,7 +289,7 @@ public class UpdatePatronAccessIT extends AbstractAPIIT {
 
         assertResponseSuccess(mvcResult);
 
-        verify(patronAccessOperationTemplate).send(any());
+        verify(patronAccessOperationSender).sendUpdateRequest(any());
     }
 
     @Test
@@ -314,7 +312,7 @@ public class UpdatePatronAccessIT extends AbstractAPIIT {
                 .andExpect(status().isBadRequest())
             .andReturn();
 
-        verify(patronAccessOperationTemplate, never()).send(any());
+        verify(patronAccessOperationSender, never()).sendUpdateRequest(any());
     }
 
     @Test
@@ -332,7 +330,7 @@ public class UpdatePatronAccessIT extends AbstractAPIIT {
                 .andExpect(status().isBadRequest())
             .andReturn();
 
-        verify(patronAccessOperationTemplate, never()).send(any());
+        verify(patronAccessOperationSender, never()).sendUpdateRequest(any());
     }
 
     @Test
@@ -363,7 +361,7 @@ public class UpdatePatronAccessIT extends AbstractAPIIT {
 
         assertResponseSuccess(mvcResult);
 
-        verify(patronAccessOperationTemplate, times(3)).send(any());
+        verify(patronAccessOperationSender, times(3)).sendUpdateRequest(any());
     }
 
     @Test
@@ -387,7 +385,7 @@ public class UpdatePatronAccessIT extends AbstractAPIIT {
                 .andExpect(status().isForbidden())
             .andReturn();
 
-        verify(patronAccessOperationTemplate, never()).send(any());
+        verify(patronAccessOperationSender, never()).sendUpdateRequest(any());
     }
 
     @Test
@@ -413,14 +411,12 @@ public class UpdatePatronAccessIT extends AbstractAPIIT {
 
         assertResponseSuccess(mvcResult);
 
-        verify(patronAccessOperationSender).sendMessage(stringCaptor.capture());
-        PatronAccessAssignmentRequest sentRequest = MAPPER.readValue(stringCaptor.getValue());
+        verify(patronAccessOperationSender).sendUpdateRequest(requestCaptor.capture());
+        PatronAccessAssignmentRequest sentRequest = requestCaptor.getValue();
         assertEquals(embargoUntil, sentRequest.getAccessDetails().getEmbargo());
         assertEquals(1, sentRequest.getAccessDetails().getRoles().size());
         assertFalse(sentRequest.isFolderCreation());
         assertFalse(sentRequest.isSkipEmbargo());
-
-        verify(patronAccessOperationTemplate).send(any());
     }
 
     @Test
@@ -445,14 +441,12 @@ public class UpdatePatronAccessIT extends AbstractAPIIT {
 
         assertResponseSuccess(mvcResult);
 
-        verify(patronAccessOperationSender).sendMessage(stringCaptor.capture());
-        PatronAccessAssignmentRequest sentRequest = MAPPER.readValue(stringCaptor.getValue());
+        verify(patronAccessOperationSender).sendUpdateRequest(requestCaptor.capture());
+        PatronAccessAssignmentRequest sentRequest = requestCaptor.getValue();
         assertNull(sentRequest.getAccessDetails().getEmbargo());
         assertEquals(1, sentRequest.getAccessDetails().getRoles().size());
         assertFalse(sentRequest.isFolderCreation());
         assertTrue(sentRequest.isSkipEmbargo());
-
-        verify(patronAccessOperationTemplate).send(any());
     }
 
     private void createCollectionInUnit(Model collModel, Model unitModel) {

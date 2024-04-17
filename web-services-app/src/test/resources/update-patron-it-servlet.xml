@@ -14,16 +14,8 @@
         
     <mvc:annotation-driven/>
 
-    <bean id="patronAccessOperationTemplate" class="org.mockito.Mockito" factory-method="mock">
-        <constructor-arg value="org.springframework.jms.core.JmsTemplate" />
-    </bean>
-    
-    <bean id="patronAccessOperationSenderReal" class="edu.unc.lib.boxc.operations.impl.acl.PatronAccessOperationSender">
-        <property name="jmsTemplate" ref="patronAccessOperationTemplate"/>
-    </bean>
-    
-    <bean id="patronAccessOperationSender" class="org.mockito.Mockito" factory-method="spy">
-        <constructor-arg ref="patronAccessOperationSenderReal" />
+    <bean id="patronAccessOperationSender" class="org.mockito.Mockito" factory-method="mock">
+        <constructor-arg type="java.lang.Class" value="edu.unc.lib.boxc.operations.impl.acl.PatronAccessOperationSender" />
     </bean>
     
     <context:component-scan resource-pattern="**/UpdatePatronAccessController*" base-package="edu.unc.lib.boxc.web.services.rest.modify"/>

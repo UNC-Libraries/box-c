@@ -4,10 +4,10 @@ import static java.util.Arrays.asList;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyListOf;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Matchers.eq;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
@@ -207,8 +207,8 @@ public class MoveObjectsServiceTest {
         service.moveObjects(mockAgent, destPid, movePids);
 
         verify(mockDestObj).addMember(any(ContentObject.class));
-        verify(operationsMessageSender).sendMoveOperation(anyString(), anyListOf(PID.class),
-                eq(destPid), anyListOf(PID.class), eq(null));
+        verify(operationsMessageSender).sendMoveOperation(anyString(), anyList(),
+                eq(destPid), anyList(), eq(null));
 
         verifyLogMessage(sourcePid, movePids);
     }
@@ -270,8 +270,8 @@ public class MoveObjectsServiceTest {
         service.moveObjects(mockAgent, destPid, movePids);
 
         verify(mockDestObj, times(2)).addMember(any(ContentObject.class));
-        verify(operationsMessageSender).sendMoveOperation(anyString(), anyListOf(PID.class),
-                eq(destPid), anyListOf(PID.class), eq(null));
+        verify(operationsMessageSender).sendMoveOperation(anyString(), anyList(),
+                eq(destPid), anyList(), eq(null));
 
         verifyLogMessage(sourcePid, movePids);
     }
