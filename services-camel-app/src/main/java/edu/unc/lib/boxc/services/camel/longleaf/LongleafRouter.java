@@ -49,7 +49,11 @@ public class LongleafRouter extends RouteBuilder {
             .log(LoggingLevel.DEBUG, log, "Queuing ${headers[CamelFcrepoUri]} for registration to longleaf")
             .to("sjms:register.longleaf?transacted=true");
 
-        from("{{longleaf.register.consumer}}", "activemq://activemq:queue:longleaf.register.batch")
+        from("{{longleaf.register.consumer}}")
+            .to("direct:register.longleaf");
+        from("activemq://activemq:queue:longleaf.register.batch")
+            .to("direct:register.longleaf");
+        from("direct:register.longleaf")
             .routeId("RegisterLongleafProcessing")
             .startupOrder(3)
             .log(LoggingLevel.DEBUG, log, "Processing batch of longleaf registrations")
@@ -62,7 +66,11 @@ public class LongleafRouter extends RouteBuilder {
             .process(getUrisProcessor)
             .to("sjms:deregister.longleaf?transacted=true");
 
-        from("{{longleaf.deregister.consumer}}", "activemq://activemq:queue:longleaf.deregister.batch")
+        from("{{longleaf.deregister.consumer}}")
+            .to("direct:deregister.longleaf");
+        from("activemq://activemq:queue:longleaf.deregister.batch")
+            .to("direct:deregister.longleaf");
+        from("direct:deregister.longleaf")
             .routeId("DeregisterLongleafProcessing")
             .startupOrder(1)
             .log(LoggingLevel.DEBUG, log, "Processing batch of longleaf deregistrations")

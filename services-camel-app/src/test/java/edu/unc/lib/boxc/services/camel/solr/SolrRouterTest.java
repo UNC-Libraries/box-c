@@ -16,14 +16,12 @@ import org.apache.camel.Exchange;
 import org.apache.camel.Produce;
 import org.apache.camel.ProducerTemplate;
 import org.apache.camel.PropertyInject;
-import org.apache.camel.builder.AdviceWithRouteBuilder;
+import org.apache.camel.builder.AdviceWith;
 import org.apache.camel.component.mock.MockEndpoint;
 import org.apache.camel.test.spring.CamelSpringTestSupport;
 import org.junit.Test;
 import org.springframework.context.support.AbstractApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
-
-import edu.unc.lib.boxc.services.camel.solr.SolrIngestProcessor;
 
 /**
  *
@@ -58,14 +56,10 @@ public class SolrRouterTest extends CamelSpringTestSupport {
     }
 
     private void createContext(String routeName) throws Exception {
-        context.getRouteDefinition(routeName).adviceWith(context, new AdviceWithRouteBuilder() {
-            @Override
-            public void configure() throws Exception {
-                replaceFromWith("direct:start");
-                mockEndpointsAndSkip("*");
-            }
+        AdviceWith.adviceWith(context, routeName, a -> {
+            a.replaceFromWith("direct:start");
+            a.mockEndpointsAndSkip("*");
         });
-
         context.start();
     }
 

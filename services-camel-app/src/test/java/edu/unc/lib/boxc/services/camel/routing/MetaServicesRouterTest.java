@@ -19,7 +19,7 @@ import org.apache.camel.EndpointInject;
 import org.apache.camel.Produce;
 import org.apache.camel.ProducerTemplate;
 import org.apache.camel.PropertyInject;
-import org.apache.camel.builder.AdviceWithRouteBuilder;
+import org.apache.camel.builder.AdviceWith;
 import org.apache.camel.builder.NotifyBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
 import org.apache.camel.test.spring.CamelSpringTestSupport;
@@ -287,14 +287,10 @@ public class MetaServicesRouterTest extends CamelSpringTestSupport {
     }
 
     private void createContext(String routeName) throws Exception {
-        context.getRouteDefinition(routeName).adviceWith(context, new AdviceWithRouteBuilder() {
-            @Override
-            public void configure() throws Exception {
-                replaceFromWith("direct:start");
-                mockEndpointsAndSkip("*");
-            }
+        AdviceWith.adviceWith(context, routeName, a -> {
+            a.replaceFromWith("direct:start");
+            a.mockEndpointsAndSkip("*");
         });
-
         context.start();
     }
 

@@ -5,8 +5,8 @@ import static org.slf4j.LoggerFactory.getLogger;
 import org.apache.camel.BeanInject;
 import org.apache.camel.LoggingLevel;
 import org.apache.camel.builder.RouteBuilder;
-import org.apache.camel.impl.JavaUuidGenerator;
 import org.apache.camel.spi.UuidGenerator;
+import org.apache.camel.support.DefaultUuidGenerator;
 import org.slf4j.Logger;
 
 import edu.unc.lib.boxc.model.api.exceptions.RepositoryException;
@@ -39,7 +39,7 @@ public class ImageEnhancementsRouter extends RouteBuilder {
     public void configure() throws Exception {
         ImageDerivativeProcessor imageDerivProcessor = new ImageDerivativeProcessor();
 
-        uuidGenerator = new JavaUuidGenerator();
+        uuidGenerator = new DefaultUuidGenerator();
 
         onException(RepositoryException.class)
                 .redeliveryDelay("{{error.retryDelay}}")

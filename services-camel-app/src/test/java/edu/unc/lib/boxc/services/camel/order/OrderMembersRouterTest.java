@@ -3,17 +3,15 @@ package edu.unc.lib.boxc.services.camel.order;
 import edu.unc.lib.boxc.auth.api.models.AgentPrincipals;
 import edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl;
 import edu.unc.lib.boxc.auth.fcrepo.models.AgentPrincipalsImpl;
-import edu.unc.lib.boxc.operations.jms.JMSMessageUtil;
 import edu.unc.lib.boxc.operations.jms.order.MultiParentOrderRequest;
 import edu.unc.lib.boxc.operations.jms.order.OrderOperationType;
 import edu.unc.lib.boxc.operations.jms.order.OrderRequestSerializationHelper;
 import org.apache.camel.BeanInject;
 import org.apache.camel.Produce;
 import org.apache.camel.ProducerTemplate;
-import org.apache.camel.builder.AdviceWithRouteBuilder;
+import org.apache.camel.builder.AdviceWith;
 import org.apache.camel.test.spring.CamelSpringTestSupport;
 import org.junit.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.support.AbstractApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
@@ -59,14 +57,10 @@ public class OrderMembersRouterTest extends CamelSpringTestSupport {
     }
 
     private void createContext(String routeName) throws Exception {
-        context.getRouteDefinition(routeName).adviceWith(context, new AdviceWithRouteBuilder() {
-            @Override
-            public void configure() throws Exception {
-                replaceFromWith("direct:start");
-                mockEndpointsAndSkip("*");
-            }
+        AdviceWith.adviceWith(context, routeName, a -> {
+            a.replaceFromWith("direct:start");
+            a.mockEndpointsAndSkip("*");
         });
-
         context.start();
     }
 }
