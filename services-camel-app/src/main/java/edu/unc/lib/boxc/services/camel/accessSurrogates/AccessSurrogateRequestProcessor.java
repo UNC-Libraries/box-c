@@ -17,9 +17,13 @@ import org.jdom2.Document;
 import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Objects;
 
 import static edu.unc.lib.boxc.operations.jms.RunEnhancementsMessageHelpers.makeEnhancementOperationBody;
+import static edu.unc.lib.boxc.operations.jms.accessSurrogates.AccessSurrogateRequest.DELETE;
+import static edu.unc.lib.boxc.operations.jms.accessSurrogates.AccessSurrogateRequest.SET;
 import static org.apache.commons.io.FileUtils.copyFile;
+import static org.apache.commons.io.file.PathUtils.deleteFile;
 
 /**
  * Processor for requests for adding, replacing, and removing access surrogates
@@ -38,16 +42,21 @@ public class AccessSurrogateRequestProcessor implements Processor {
         var request = AccessSurrogateRequestSerializationHelper.toRequest(in.getBody(String.class));
         var agent = request.getAgent();
         var pid = PIDs.get(request.getPidString());
+        var action = request.getAction();
 
         accessControlService.assertHasAccess("User does not have permission to update access surrogates",
                 pid, agent.getPrincipals(), Permission.editDescription);
 
         var repositoryObject = repositoryObjectLoader.getRepositoryObject(pid);
         if (repositoryObject instanceof FileObject) {
-            var file = new File(request.getFilePath());
-            Path surrogatePath = derivativeService.getDerivativePath(pid, DatastreamType.ACCESS_SURROGATE);
 
-            copyFile(file, surrogatePath.toFile());
+            Path surrogatePath = derivativeService.getDerivativePath(pid, DatastreamType.ACCESS_SURROGATE);
+            if (Objects.equals(SET, action)) {
+                var file = new File(request.getFilePath());
+                copyFile(file, surrogatePath.toFile());
+            } else if (Objects.equals(DELETE, action)) {
+                deleteFile(surrogatePath);
+            }
 
             Document msg = makeEnhancementOperationBody(agent.getUsername(), pid, true);
             messageSender.sendMessage(msg);
