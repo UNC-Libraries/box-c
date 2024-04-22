@@ -9,6 +9,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 
+import org.apache.camel.test.junit5.CamelTestSupport;
 import org.slf4j.Logger;
 
 import edu.unc.lib.boxc.persist.impl.transfer.FileSystemTransferHelpers;
@@ -16,7 +17,7 @@ import edu.unc.lib.boxc.persist.impl.transfer.FileSystemTransferHelpers;
 /**
  * @author bbpennel
  */
-public abstract class AbstractLongleafRouteTest {
+public abstract class AbstractLongleafRouteTest extends CamelTestSupport {
     private static final Logger log = getLogger(AbstractLongleafRouteTest.class);
 
     protected String outputPath;
