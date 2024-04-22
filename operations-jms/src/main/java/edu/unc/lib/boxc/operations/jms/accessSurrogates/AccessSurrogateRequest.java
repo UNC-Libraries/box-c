@@ -4,6 +4,8 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import edu.unc.lib.boxc.auth.api.models.AgentPrincipals;
 import edu.unc.lib.boxc.auth.fcrepo.models.AgentPrincipalsImpl;
 
+import java.nio.file.Path;
+
 public class AccessSurrogateRequest {
     public static String SET = "set";
     public static String DELETE = "delete";
@@ -12,7 +14,7 @@ public class AccessSurrogateRequest {
     private AgentPrincipals agent;
     private String action;
     private String mimetype;
-    private String filePath;
+    private Path filePath;
 
     public String getPidString() {
         return pidString;
@@ -38,11 +40,11 @@ public class AccessSurrogateRequest {
         this.action = action;
     }
 
-    public String getFilePath() {
+    public Path getFilePath() {
         return filePath;
     }
 
-    public void setFilePath(String filePath) {
+    public void setFilePath(Path filePath) {
         this.filePath = filePath;
     }
 
