@@ -108,6 +108,7 @@ public class AccessSurrogateRequestProcessorTest {
 
         processor.process(exchange);
         assertFalse(Files.exists(workAccessSurrogatePath));
+        assertFalse(Files.exists(workTempPath));
     }
 
     @Test
@@ -117,6 +118,7 @@ public class AccessSurrogateRequestProcessorTest {
 
         processor.process(exchange);
         assertTrue(Files.exists(accessSurrogatePath));
+        assertFalse(Files.exists(path));
     }
 
     @Test
@@ -126,6 +128,7 @@ public class AccessSurrogateRequestProcessorTest {
 
         processor.process(exchange);
         assertFalse(Files.exists(accessSurrogatePath));
+        assertFalse(Files.exists(path));
     }
 
     private Exchange createRequestExchange(String pidString, Path path, String action) throws JsonProcessingException {

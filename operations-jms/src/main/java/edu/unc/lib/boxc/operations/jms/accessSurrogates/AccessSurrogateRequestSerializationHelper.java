@@ -8,6 +8,10 @@ import edu.unc.lib.boxc.operations.jms.accessSurrogates.AccessSurrogateRequest;
 
 import java.io.IOException;
 
+/**
+ * Helper methods for serializing and deserializing access surrogate requests
+ * @author snluong
+ */
 public class AccessSurrogateRequestSerializationHelper {
     private static final ObjectWriter REQUEST_WRITER;
     private static final ObjectReader REQUEST_READER;

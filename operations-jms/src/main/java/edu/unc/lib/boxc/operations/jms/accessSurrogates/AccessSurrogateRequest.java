@@ -6,6 +6,10 @@ import edu.unc.lib.boxc.auth.fcrepo.models.AgentPrincipalsImpl;
 
 import java.nio.file.Path;
 
+/**
+ * Request object for updating access surrogates of a FileObject
+ * @author snluong
+ */
 public class AccessSurrogateRequest {
     public static String SET = "set";
     public static String DELETE = "delete";

@@ -12,6 +12,8 @@ import edu.unc.lib.boxc.operations.jms.accessSurrogates.AccessSurrogateRequestSe
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 import org.jdom2.Document;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -21,7 +23,6 @@ import java.util.Objects;
 import static edu.unc.lib.boxc.operations.jms.RunEnhancementsMessageHelpers.makeEnhancementOperationBody;
 import static edu.unc.lib.boxc.operations.jms.accessSurrogates.AccessSurrogateRequest.DELETE;
 import static edu.unc.lib.boxc.operations.jms.accessSurrogates.AccessSurrogateRequest.SET;
-import static org.apache.commons.io.file.PathUtils.deleteFile;
 
 /**
  * Processor for requests for adding, replacing, and removing access surrogates
@@ -29,6 +30,7 @@ import static org.apache.commons.io.file.PathUtils.deleteFile;
  * @author snluong
  */
 public class AccessSurrogateRequestProcessor implements Processor {
+    private static final Logger log = LoggerFactory.getLogger(AccessSurrogateRequestProcessor.class);
     private AccessControlService accessControlService;
     private RepositoryObjectLoader repositoryObjectLoader;
     private DerivativeService derivativeService;
@@ -46,20 +48,24 @@ public class AccessSurrogateRequestProcessor implements Processor {
 
         var action = request.getAction();
         var repositoryObject = repositoryObjectLoader.getRepositoryObject(pid);
+        var filePath = request.getFilePath();
         if (repositoryObject instanceof FileObject) {
-
             Path surrogatePath = derivativeService.getDerivativePath(pid, DatastreamType.ACCESS_SURROGATE);
             if (Objects.equals(SET, action)) {
-                var filePath = request.getFilePath();
                 Files.copy(filePath, surrogatePath, StandardCopyOption.REPLACE_EXISTING);
             } else if (Objects.equals(DELETE, action)) {
-                deleteFile(surrogatePath);
+                Files.deleteIfExists(surrogatePath);
             }
 
             Document msg = makeEnhancementOperationBody(agent.getUsername(), pid, true);
             messageSender.sendMessage(msg);
+        } else {
+            log.warn("Cannot process access surrogate update for {}, non FileObjects do not have access surrogates",
+                    pid.getId());
         }
 
+        // clean up file from request
+        Files.deleteIfExists(filePath);
     }
 
     public void setAccessControlService(AccessControlService accessControlService) {
