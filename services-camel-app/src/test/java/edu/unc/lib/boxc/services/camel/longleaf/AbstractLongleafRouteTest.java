@@ -9,7 +9,11 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 
+import org.apache.camel.EndpointInject;
+import org.apache.camel.component.mock.MockEndpoint;
 import org.apache.camel.test.junit5.CamelTestSupport;
+import org.junit.jupiter.api.io.TempDir;
+import org.mockito.Mock;
 import org.slf4j.Logger;
 
 import edu.unc.lib.boxc.persist.impl.transfer.FileSystemTransferHelpers;
@@ -22,6 +26,39 @@ public abstract class AbstractLongleafRouteTest extends CamelTestSupport {
 
     protected String outputPath;
     protected List<String> output;
+    @TempDir
+    public Path tmpFolder;
+    protected String longleafScript;
+
+    @EndpointInject(uri = "mock:direct:longleaf.dlq")
+    protected MockEndpoint mockDlq;
+
+    protected RegisterToLongleafProcessor registerToLongleafProcessor;
+    protected DeregisterLongleafProcessor deregisterLongleafProcessor;
+
+    private LongleafAggregationStrategy aggregationStrategy;
+    private GetUrisProcessor getUrisProcessor;
+
+    protected LongleafRouter getLongleafRouter() {
+        aggregationStrategy = new LongleafAggregationStrategy();
+        getUrisProcessor = new GetUrisProcessor();
+        var router = new LongleafRouter();
+        router.setRegisterProcessor(registerToLongleafProcessor);
+        router.setDeregisterProcessor(deregisterLongleafProcessor);
+        router.setLongleafAggregationStrategy(aggregationStrategy);
+        router.setGetUrisProcessor(getUrisProcessor);
+        router.setLongleafRegisterConsumer("direct:register.longleaf.consumer");
+        router.setLongleafRegisterDestination("direct:register.longleaf.consumer");
+        router.setLongleafDeregisterConsumer("direct:deregister.longleaf.consumer");
+        router.setLongleafDeregisterDestination("direct:deregister.longleaf.consumer");
+        router.setLongleafDeadLetterQueueDestination("mock:direct:longleaf.dlq");
+        router.setLongleafFilterDeregister("direct:filter.longleaf.deregister");
+        router.setLongleafRegisterBatchConsumer("direct:register.longleaf.batch.consumer");
+        router.setLongleafDeregisterBatchDestination("direct:deregister.longleaf.batch.consumer");
+        router.setBatchSize(5);
+        router.setBatchTimeout(100L);
+        return router;
+    }
 
     /**
      * Assert that all of the provided content uris are present in the longleaf output

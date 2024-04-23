@@ -55,17 +55,9 @@ public class RegisterLongleafRouteTest extends AbstractLongleafRouteTest {
     @Produce(uri = "direct-vm:filter.longleaf")
     private ProducerTemplate template;
 
-    @EndpointInject(uri = "mock:direct:longleaf.dlq")
-    private MockEndpoint mockDlq;
-
     @EndpointInject(uri = "mock:direct:registrationSuccessful")
     private MockEndpoint mockSuccess;
 
-    @TempDir
-    public Path tmpFolder;
-    private RegisterToLongleafProcessor processor;
-    @Mock
-    private DeregisterLongleafProcessor deregisterLongleafProcessor;
     private LongleafAggregationStrategy aggregationStrategy;
     private GetUrisProcessor getUrisProcessor;
     @Mock
@@ -79,7 +71,6 @@ public class RegisterLongleafRouteTest extends AbstractLongleafRouteTest {
     @Mock
     private FcrepoResponse fcrepoResponse;
     private PID binPid;
-    private String longleafScript;
 
     @Override
     protected RouteBuilder createRouteBuilder() throws Exception {
@@ -94,35 +85,14 @@ public class RegisterLongleafRouteTest extends AbstractLongleafRouteTest {
         outputPath = tmpPath.toAbsolutePath().toString();
         output = null;
 
-        processor = new RegisterToLongleafProcessor();
-        processor.setFcrepoClient(fcrepoClient);
-        processor.setRepositoryObjectLoader(repositoryObjectLoader);
-        processor.setRegistrationSuccessfulEndpoint("mock:direct:registrationSuccessful");
+        deregisterLongleafProcessor = mock(DeregisterLongleafProcessor.class);
+        registerToLongleafProcessor = new RegisterToLongleafProcessor();
+        registerToLongleafProcessor.setFcrepoClient(fcrepoClient);
+        registerToLongleafProcessor.setRepositoryObjectLoader(repositoryObjectLoader);
+        registerToLongleafProcessor.setRegistrationSuccessfulEndpoint("mock:direct:registrationSuccessful");
         longleafScript = LongleafTestHelpers.getLongleafScript(outputPath);
-        processor.setLongleafBaseCommand(longleafScript);
-        aggregationStrategy = new LongleafAggregationStrategy();
-        getUrisProcessor = new GetUrisProcessor();
+        registerToLongleafProcessor.setLongleafBaseCommand(longleafScript);
         var router = getLongleafRouter();
-        return router;
-    }
-
-    private LongleafRouter getLongleafRouter() {
-        var router = new LongleafRouter();
-        router.setRegisterProcessor(processor);
-        router.setDeregisterProcessor(deregisterLongleafProcessor);
-        router.setLongleafAggregationStrategy(aggregationStrategy);
-        router.setLongleafDeadLetterQueueDestination("mock:direct:longleaf.dlq");
-        router.setGetUrisProcessor(getUrisProcessor);
-        router.setLongleafRegisterConsumer("direct:register.longleaf.consumer");
-        router.setLongleafRegisterDestination("direct:register.longleaf.consumer");
-        router.setLongleafDeregisterConsumer("direct:deregister.longleaf.consumer");
-        router.setLongleafDeregisterDestination("direct:deregister.longleaf.consumer");
-        router.setLongleafDeadLetterQueueDestination("mock:direct:longleaf.dlq");
-        router.setLongleafFilterDeregister("direct:filter.longleaf.deregister");
-        router.setLongleafRegisterBatchConsumer("direct:register.longleaf.batch.consumer");
-        router.setLongleafDeregisterBatchDestination("direct:deregister.longleaf.batch.consumer");
-        router.setBatchSize(5);
-        router.setBatchTimeout(100L);
         return router;
     }
 

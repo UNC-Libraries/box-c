@@ -88,6 +88,9 @@ public class LongleafRouter extends RouteBuilder {
             .routeId("DeregisterLongleafProcessing")
             .startupOrder(1)
             .log(LoggingLevel.DEBUG, log, "Processing batch of longleaf deregistrations")
+                .aggregate(longleafAggregationStrategy).constant(true)
+                .completionSize(batchSize)
+                .completionTimeout(batchTimeout)
             .bean(deregisterProcessor);
     }
 
