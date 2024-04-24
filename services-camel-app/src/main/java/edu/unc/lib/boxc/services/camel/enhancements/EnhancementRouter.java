@@ -11,6 +11,7 @@ import org.apache.camel.BeanInject;
 import org.apache.camel.LoggingLevel;
 import org.apache.camel.PropertyInject;
 import org.apache.camel.builder.RouteBuilder;
+import org.fcrepo.camel.processor.EventProcessor;
 import org.slf4j.Logger;
 
 import edu.unc.lib.boxc.model.api.rdf.Cdr;
@@ -37,20 +38,23 @@ public class EnhancementRouter extends RouteBuilder {
     @BeanInject(value = "nonBinaryEnhancementProcessor")
     private NonBinaryEnhancementProcessor nbProcessor;
 
-    @PropertyInject(value = "cdr.enhancement.processingThreads")
     private Integer enhancementThreads;
+
+    private String enhancementStreamCamel;
+    private String enhancementPerformCamel;
 
     private static final String DEFAULT_ENHANCEMENTS = "thumbnails,imageAccessCopy,extractFulltext";
     private static final String THUMBNAIL_ENHANCEMENTS = "thumbnails";
     @Override
     public void configure() throws Exception {
+        var eventProcessor = new EventProcessor();
 
         // Queue which interprets fedora messages into enhancement requests
-        from("{{cdr.enhancement.stream.camel}}")
+        from(enhancementStreamCamel)
             .routeId("ProcessEnhancementQueue")
             .startupOrder(110)
             .process(enProcessor)
-            .to("fcrepo:{{fcrepo.baseUrl}}?preferInclude=ServerManaged&accept=text/turtle")
+            .process(eventProcessor)
             .choice()
                 .when(simple("${headers[org.fcrepo.jms.resourceType]} contains '" + Cdr.Tombstone.getURI() + "'"))
                     .log(DEBUG, log, "Ignoring tombstone object for enhancements ${headers[CamelFcrepoUri]}")
@@ -69,7 +73,7 @@ public class EnhancementRouter extends RouteBuilder {
                     .log(DEBUG, log, "Processing enhancements for non-binary ${headers[CamelFcrepoUri]}")
                     .process(nbProcessor)
                     .setHeader(CdrEnhancementSet, constant(THUMBNAIL_ENHANCEMENTS))
-                    .to("{{cdr.enhancement.perform.camel}}")
+                    .to(enhancementPerformCamel)
                 .otherwise()
                     .log(DEBUG, log, "Ignoring resource ${headers[CamelFcrepoUri]}")
             .end();
@@ -81,10 +85,10 @@ public class EnhancementRouter extends RouteBuilder {
             .setHeader(CdrEnhancementSet, constant(DEFAULT_ENHANCEMENTS))
             .process(mdProcessor)
             .filter(header(CdrBinaryPath).isNotNull())
-                .to("{{cdr.enhancement.perform.camel}}");
+                .to(enhancementPerformCamel);
 
-        // Queue for executing enhancnement operations
-        from("{{cdr.enhancement.perform.camel}}")
+        // Queue for executing enhancement operations
+        from(enhancementPerformCamel)
             .routeId("PerformEnhancementsQueue")
             .startupOrder(107)
             .choice()
@@ -113,7 +117,34 @@ public class EnhancementRouter extends RouteBuilder {
             .doCatch(IllegalStateException.class)
                 .log(LoggingLevel.WARN, log, "Shutdown interrupted processing of ${headers[CdrBinaryPath]}, requeuing")
                 .setHeader("AMQ_SCHEDULED_DELAY", constant("10000"))
-                .inOnly("{{cdr.enhancement.perform.camel}}");
+                .inOnly(enhancementPerformCamel);
 
+    }
+
+    @PropertyInject("cdr.enhancement.stream.camel")
+    public void setEnhancementStreamCamel(String enhancementStreamCamel) {
+        this.enhancementStreamCamel = enhancementStreamCamel;
+    }
+
+    @PropertyInject("cdr.enhancement.perform.camel")
+    public void setEnhancementPerformCamel(String enhancementPerformCamel) {
+        this.enhancementPerformCamel = enhancementPerformCamel;
+    }
+
+    public void setBinaryEnhancementProcessor(BinaryEnhancementProcessor enProcessor) {
+        this.enProcessor = enProcessor;
+    }
+
+    public void setBinaryMetadataProcessor(BinaryMetadataProcessor mdProcessor) {
+        this.mdProcessor = mdProcessor;
+    }
+
+    public void setNonBinaryEnhancementProcessor(NonBinaryEnhancementProcessor nbProcessor) {
+        this.nbProcessor = nbProcessor;
+    }
+
+    @PropertyInject("cdr.enhancement.processingThreads")
+    public void setEnhancementThreads(Integer enhancementThreads) {
+        this.enhancementThreads = enhancementThreads;
     }
 }
