@@ -123,7 +123,7 @@ public class AccessSurrogateRequestProcessorTest {
 
     @Test
     public void testDeleteAccessSurrogate() throws Exception {
-        var exchange = createRequestExchange(filePid.getId(), path, DELETE);
+        var exchange = createRequestExchange(filePid.getId(), null, DELETE);
         Files.write(accessSurrogatePath, List.of("fake image"));
 
         processor.process(exchange);

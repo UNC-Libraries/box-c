@@ -63,9 +63,10 @@ public class AccessSurrogateRequestProcessor implements Processor {
             log.error("Cannot process access surrogate update for {}, non FileObjects do not have access surrogates",
                     pid.getId());
         }
-
-        // clean up file from request
-        Files.deleteIfExists(filePath);
+        // clean up file from request if it exists
+        if (filePath != null) {
+            Files.deleteIfExists(filePath);
+        }
     }
 
     public void setAccessControlService(AccessControlService accessControlService) {
