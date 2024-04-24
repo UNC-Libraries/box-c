@@ -60,7 +60,7 @@ public class AccessSurrogateRequestProcessor implements Processor {
             Document msg = makeEnhancementOperationBody(agent.getUsername(), pid, true);
             messageSender.sendMessage(msg);
         } else {
-            log.warn("Cannot process access surrogate update for {}, non FileObjects do not have access surrogates",
+            log.error("Cannot process access surrogate update for {}, non FileObjects do not have access surrogates",
                     pid.getId());
         }
 
