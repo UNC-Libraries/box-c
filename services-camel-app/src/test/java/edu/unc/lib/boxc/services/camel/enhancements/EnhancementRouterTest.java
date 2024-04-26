@@ -59,8 +59,6 @@ import static org.mockito.Mockito.when;
 public class EnhancementRouterTest extends CamelTestSupport {
     private final static List<String> ENHANCEMENT_TYPES = Arrays.asList("thumbnails", "imageAccessCopy", "extractFulltext");
 
-    private final static long ALLOW_WAIT = 5000;
-
     @Produce(uri = "direct:repository.enhancements.stream")
     private ProducerTemplate template;
     @EndpointInject(uri = "mock:direct:solrIndexing")
