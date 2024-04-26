@@ -1,102 +1,114 @@
 package edu.unc.lib.boxc.services.camel.cdrEvents;
 
-import static edu.unc.lib.boxc.services.camel.util.CdrFcrepoHeaders.CdrUpdateAction;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.verify;
-
-import java.util.HashMap;
-import java.util.Map;
-
-import org.apache.camel.BeanInject;
+import edu.unc.lib.boxc.operations.jms.JMSMessageUtil.CDRActions;
+import edu.unc.lib.boxc.services.camel.solr.CdrEventToSolrUpdateProcessor;
 import org.apache.camel.Exchange;
 import org.apache.camel.Produce;
 import org.apache.camel.ProducerTemplate;
 import org.apache.camel.builder.AdviceWith;
-import org.apache.camel.builder.AdviceWithRouteBuilder;
-import org.apache.camel.model.ModelCamelContext;
-import org.apache.camel.test.spring.CamelSpringTestSupport;
-import org.junit.Test;
-import org.springframework.context.support.AbstractApplicationContext;
-import org.springframework.context.support.ClassPathXmlApplicationContext;
+import org.apache.camel.builder.RouteBuilder;
+import org.apache.camel.test.junit5.CamelTestSupport;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-import edu.unc.lib.boxc.operations.jms.JMSMessageUtil.CDRActions;
-import edu.unc.lib.boxc.services.camel.cdrEvents.CdrEventProcessor;
-import edu.unc.lib.boxc.services.camel.solr.CdrEventToSolrUpdateProcessor;
+import java.util.HashMap;
+import java.util.Map;
+
+import static edu.unc.lib.boxc.services.camel.util.CdrFcrepoHeaders.CdrUpdateAction;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.verify;
 
 /**
  *
  * @author lfarrell
  *
  */
-public class CdrEventRouterTest extends CamelSpringTestSupport {
+@ExtendWith(MockitoExtension.class)
+public class CdrEventRouterTest extends CamelTestSupport {
     @Produce(uri = "direct:start")
     private ProducerTemplate template;
 
-    @BeanInject(value = "cdrEventProcessor")
+    @Mock
     private CdrEventProcessor cdrEventProcessor;
 
-    @BeanInject(value = "cdrEventToSolrUpdateProcessor")
+    @Mock
     private CdrEventToSolrUpdateProcessor cdrEventToSolrUpdateProcessor;
 
     @Override
-    protected AbstractApplicationContext createApplicationContext() {
-        return new ClassPathXmlApplicationContext("/service-context.xml", "/cdr-events-context.xml");
+    protected RouteBuilder createRouteBuilder() {
+        var router = new CdrEventRouter();
+        router.setCdrEventProcessor(cdrEventProcessor);
+        router.setCdrEventToSolrUpdateProcessor(cdrEventToSolrUpdateProcessor);
+        router.setCdrStreamCamel("direct:cdr.event.stream");
+        router.setErrorRetryDelay(0);
+        router.setErrorBackOffMultiplier(1);
+        router.setErrorMaxRedeliveries(1);
+        return router;
     }
 
     @Test
     public void testMoveFilter() throws Exception {
-        getMockEndpoint("mock:direct:solr-update").expectedMessageCount(1);
+        var solrUpdateEndpoint = getMockEndpoint("mock:direct:solr-update");
+        solrUpdateEndpoint.expectedMessageCount(1);
         createContext("CdrServiceCdrEvents");
         template.sendBodyAndHeaders("", createEvent(CDRActions.MOVE.toString()));
-        assertMockEndpointsSatisfied();
+        solrUpdateEndpoint.assertIsSatisfied();
     }
 
     @Test
     public void testRemoveFilter() throws Exception {
-        getMockEndpoint("mock:direct:solr-update").expectedMessageCount(1);
+        var solrUpdateEndpoint = getMockEndpoint("mock:direct:solr-update");
+        solrUpdateEndpoint.expectedMessageCount(1);
         createContext("CdrServiceCdrEvents");
         template.sendBodyAndHeaders("", createEvent(CDRActions.REMOVE.toString()));
-        assertMockEndpointsSatisfied();
+        solrUpdateEndpoint.assertIsSatisfied();
     }
 
     @Test
     public void testAddFilter() throws Exception {
-        getMockEndpoint("mock:direct:solr-update").expectedMessageCount(1);
+        var solrUpdateEndpoint = getMockEndpoint("mock:direct:solr-update");
+        solrUpdateEndpoint.expectedMessageCount(1);
         createContext("CdrServiceCdrEvents");
         template.sendBodyAndHeaders("", createEvent(CDRActions.ADD.toString()));
-        assertMockEndpointsSatisfied();
+        solrUpdateEndpoint.assertIsSatisfied();
     }
 
     @Test
     public void testMarkForDeletionFilter() throws Exception {
-        getMockEndpoint("mock:direct:solr-update").expectedMessageCount(1);
+        var solrUpdateEndpoint = getMockEndpoint("mock:direct:solr-update");
+        solrUpdateEndpoint.expectedMessageCount(1);
         createContext("CdrServiceCdrEvents");
         template.sendBodyAndHeaders("", createEvent(CDRActions.MARK_FOR_DELETION.toString()));
-        assertMockEndpointsSatisfied();
+        solrUpdateEndpoint.assertIsSatisfied();
     }
 
     @Test
     public void testEditAccessFilter() throws Exception {
-        getMockEndpoint("mock:direct:solr-update").expectedMessageCount(1);
+        var solrUpdateEndpoint = getMockEndpoint("mock:direct:solr-update");
+        solrUpdateEndpoint.expectedMessageCount(1);
         createContext("CdrServiceCdrEvents");
         template.sendBodyAndHeaders("", createEvent(CDRActions.EDIT_ACCESS_CONTROL.toString()));
-        assertMockEndpointsSatisfied();
+        solrUpdateEndpoint.assertIsSatisfied();
     }
 
     @Test
     public void testEditTypeFilter() throws Exception {
-        getMockEndpoint("mock:direct:solr-update").expectedMessageCount(1);
+        var solrUpdateEndpoint = getMockEndpoint("mock:direct:solr-update");
+        solrUpdateEndpoint.expectedMessageCount(1);
         createContext("CdrServiceCdrEvents");
         template.sendBodyAndHeaders("", createEvent(CDRActions.EDIT_TYPE.toString()));
-        assertMockEndpointsSatisfied();
+        solrUpdateEndpoint.assertIsSatisfied();
     }
 
     @Test
     public void testFilterFail() throws Exception {
-        getMockEndpoint("mock:direct:solr-update").expectedMessageCount(0);
+        var solrUpdateEndpoint = getMockEndpoint("mock:direct:solr-update");
+        solrUpdateEndpoint.expectedMessageCount(0);
         createContext("CdrServiceCdrEvents");
         template.sendBodyAndHeaders("", createEvent("none"));
-        assertMockEndpointsSatisfied();
+        solrUpdateEndpoint.assertIsSatisfied();
     }
 
     @Test
