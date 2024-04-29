@@ -1,6 +1,7 @@
 package edu.unc.lib.boxc.services.camel.viewSettings;
 
 import org.apache.camel.BeanInject;
+import org.apache.camel.PropertyInject;
 import org.apache.camel.builder.RouteBuilder;
 import org.slf4j.Logger;
 
@@ -17,12 +18,22 @@ public class ViewSettingRouter extends RouteBuilder {
 
     @BeanInject(value = "viewSettingRequestProcessor")
     private ViewSettingRequestProcessor viewSettingRequestProcessor;
+    private String viewSettingStreamCamel;
 
     @Override
     public void configure() throws Exception {
-        from("{{cdr.viewsetting.stream.camel}}")
+        from(viewSettingStreamCamel)
                 .routeId("DcrViewSetting")
                 .log(DEBUG, log, "Received view setting request")
                 .bean(viewSettingRequestProcessor);
+    }
+
+    public void setViewSettingRequestProcessor(ViewSettingRequestProcessor viewSettingRequestProcessor) {
+        this.viewSettingRequestProcessor = viewSettingRequestProcessor;
+    }
+
+    @PropertyInject("cdr.viewsetting.stream.camel")
+    public void setViewSettingStreamCamel(String viewSettingStreamCamel) {
+        this.viewSettingStreamCamel = viewSettingStreamCamel;
     }
 }

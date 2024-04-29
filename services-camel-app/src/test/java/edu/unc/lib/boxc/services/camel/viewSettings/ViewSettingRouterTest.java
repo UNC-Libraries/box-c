@@ -6,14 +6,15 @@ import edu.unc.lib.boxc.auth.fcrepo.models.AgentPrincipalsImpl;
 import edu.unc.lib.boxc.operations.jms.viewSettings.ViewSettingRequest;
 import edu.unc.lib.boxc.operations.jms.viewSettings.ViewSettingRequestSerializationHelper;
 import edu.unc.lib.boxc.services.camel.ProcessorTestHelper;
-import org.apache.camel.BeanInject;
 import org.apache.camel.Produce;
 import org.apache.camel.ProducerTemplate;
 import org.apache.camel.builder.AdviceWith;
-import org.apache.camel.test.spring.CamelSpringTestSupport;
-import org.junit.Test;
-import org.springframework.context.support.AbstractApplicationContext;
-import org.springframework.context.support.ClassPathXmlApplicationContext;
+import org.apache.camel.builder.RouteBuilder;
+import org.apache.camel.test.junit5.CamelTestSupport;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
@@ -21,17 +22,21 @@ import static org.mockito.Mockito.verify;
 /**
  * @author snluong
  */
-public class ViewSettingRouterTest extends CamelSpringTestSupport {
+@ExtendWith(MockitoExtension.class)
+public class ViewSettingRouterTest extends CamelTestSupport {
     private AgentPrincipals agent = new AgentPrincipalsImpl("user", new AccessGroupSetImpl("agroup"));
     @Produce(uri = "direct:start")
     protected ProducerTemplate template;
 
-    @BeanInject(value = "viewSettingRequestProcessor")
+    @Mock
     private ViewSettingRequestProcessor processor;
 
     @Override
-    protected AbstractApplicationContext createApplicationContext() {
-        return new ClassPathXmlApplicationContext("/service-context.xml", "/view-setting-context.xml");
+    protected RouteBuilder createRouteBuilder() throws Exception {
+        var router = new ViewSettingRouter();
+        router.setViewSettingRequestProcessor(processor);
+        router.setViewSettingStreamCamel("direct:start");
+        return router;
     }
 
     @Test
