@@ -20,6 +20,7 @@ import org.jdom2.Document;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
@@ -32,6 +33,7 @@ import static edu.unc.lib.boxc.operations.jms.accessSurrogates.AccessSurrogateRe
 import static edu.unc.lib.boxc.operations.jms.accessSurrogates.AccessSurrogateRequest.DELETE;
 
 import java.io.FileInputStream;
+import java.nio.file.Path;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -43,6 +45,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.openMocks;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 public class AccessSurrogateIT {
@@ -62,6 +65,8 @@ public class AccessSurrogateIT {
     private AccessSurrogateRequestSender accessSurrogateRequestSender;
     @Captor
     private ArgumentCaptor<AccessSurrogateRequest> requestCaptor;
+    @TempDir
+    public Path tmpFolder;
     private MockMvc mockMvc;
     private AutoCloseable closeable;
     private PID filePid;
@@ -79,6 +84,10 @@ public class AccessSurrogateIT {
         GroupsThreadStore.storeGroups(GROUPS);
         filePid = PIDs.get(FILE_ID);
         when(repositoryObjectLoader.getRepositoryObject(eq(filePid))).thenReturn(fileObject);
+        controller.setAccessSurrogateTempPath(tmpFolder);
+        controller.setAccessSurrogateRequestSender(accessSurrogateRequestSender);
+        controller.setAclService(accessControlService);
+        controller.setRepositoryObjectLoader(repositoryObjectLoader);
     }
 
     @AfterEach
@@ -87,21 +96,21 @@ public class AccessSurrogateIT {
     }
 
     @Test
-    public void testUpdateAccessSurrogateNoPermission() throws Exception {
+    public void testSetAccessSurrogateNoPermission() throws Exception {
         doThrow(new AccessRestrictionException()).when(accessControlService)
                 .assertHasAccess(anyString(), eq(filePid), any(), eq(Permission.editDescription));
         FileInputStream input = new FileInputStream("src/test/resources/upload-files/burndown.png");
         MockMultipartFile surrogateFile = new MockMultipartFile("file", "burndown.png", "image/png", IOUtils.toByteArray(input));
-        mockMvc.perform(MockMvcRequestBuilders.multipart("/edit/accessSurrogate/" + FILE_ID + "/set")
+        mockMvc.perform(MockMvcRequestBuilders.multipart("/edit/accessSurrogate/" + FILE_ID)
                 .file(surrogateFile))
                 .andExpect(status().isForbidden())
                 .andReturn();
     }
 
     @Test
-    public void testUpdateAccessSurrogateWrongSurrogateFileType() throws Exception {
+    public void testSetAccessSurrogateWrongSurrogateFileType() throws Exception {
         MockMultipartFile surrogateFile = new MockMultipartFile("file", "file.txt", "plain/text", textStream());
-        mockMvc.perform(MockMvcRequestBuilders.multipart("/edit/accessSurrogate/" + FILE_ID + "/set")
+        mockMvc.perform(MockMvcRequestBuilders.multipart("/edit/accessSurrogate/" + FILE_ID)
                         .file(surrogateFile))
                 .andExpect(status().is4xxClientError())
                 .andReturn();
@@ -110,12 +119,12 @@ public class AccessSurrogateIT {
     }
 
     @Test
-    public void testUpdateAccessSurrogateWrongRepositoryObjectType() throws Exception {
+    public void testSetAccessSurrogateWrongRepositoryObjectType() throws Exception {
         var workPid = makePid();
         when(repositoryObjectLoader.getRepositoryObject(eq(workPid))).thenReturn(workObject);
         FileInputStream input = new FileInputStream("src/test/resources/upload-files/burndown.png");
         MockMultipartFile surrogateFile = new MockMultipartFile("file", "burndown.png", "image/png", IOUtils.toByteArray(input));
-        mockMvc.perform(MockMvcRequestBuilders.multipart("/edit/accessSurrogate/" + workPid + "/set")
+        mockMvc.perform(MockMvcRequestBuilders.multipart("/edit/accessSurrogate/" + workPid)
                         .file(surrogateFile))
                 .andExpect(status().is4xxClientError())
                 .andReturn();
@@ -127,7 +136,7 @@ public class AccessSurrogateIT {
     public void testSetAccessSurrogateSuccess() throws Exception {
         FileInputStream input = new FileInputStream("src/test/resources/upload-files/burndown.png");
         MockMultipartFile surrogateFile = new MockMultipartFile("file", "burndown.png", "image/png", IOUtils.toByteArray(input));
-        mockMvc.perform(MockMvcRequestBuilders.multipart("/edit/accessSurrogate/" + FILE_ID + "/set")
+        mockMvc.perform(MockMvcRequestBuilders.multipart("/edit/accessSurrogate/" + FILE_ID)
                         .file(surrogateFile))
                 .andExpect(status().is2xxSuccessful())
                 .andReturn();
@@ -139,8 +148,28 @@ public class AccessSurrogateIT {
     }
 
     @Test
+    public void testDeleteAccessSurrogateNoPermission() throws Exception {
+        doThrow(new AccessRestrictionException()).when(accessControlService)
+                .assertHasAccess(anyString(), eq(filePid), any(), eq(Permission.editDescription));
+        mockMvc.perform(delete("/edit/accessSurrogate/" + FILE_ID))
+                .andExpect(status().isForbidden())
+                .andReturn();
+    }
+
+    @Test
+    public void testDeleteAccessSurrogateWrongRepositoryObjectType() throws Exception {
+        var workPid = makePid();
+        when(repositoryObjectLoader.getRepositoryObject(eq(workPid))).thenReturn(workObject);
+        mockMvc.perform(delete("/edit/accessSurrogate/" + workPid))
+                .andExpect(status().is4xxClientError())
+                .andReturn();
+
+        verify(messageSender, never()).sendMessage(any(Document.class));
+    }
+
+    @Test
     public void testDeleteAccessSurrogateSuccess() throws Exception {
-        mockMvc.perform(MockMvcRequestBuilders.multipart("/edit/accessSurrogate/" + FILE_ID + "/delete"))
+        mockMvc.perform(delete("/edit/accessSurrogate/" + FILE_ID))
                 .andExpect(status().is2xxSuccessful())
                 .andReturn();
 
