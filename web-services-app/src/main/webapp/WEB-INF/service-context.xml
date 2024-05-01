@@ -444,6 +444,23 @@
         <property name="pubSubDomain" value="false" />
     </bean>
 
+    <bean id="accessSurrogateRequestSender" class="edu.unc.lib.boxc.operations.jms.accessSurrogates.AccessSurrogateRequestSender">
+        <property name="jmsTemplate" ref="accessSurrogateRequestJmsTemplate"/>
+    </bean>
+
+    <bean id="accessSurrogateRequestJmsTemplate" class="org.springframework.jms.core.JmsTemplate">
+        <property name="connectionFactory" ref="jmsFactory" />
+        <property name="defaultDestinationName" value="${cdr.access.surrogate.stream}" />
+        <property name="pubSubDomain" value="false" />
+    </bean>
+
+    <bean id="accessSurrogateController" class="edu.unc.lib.boxc.web.services.rest.modify.AccessSurrogateController">
+        <property name="aclService" ref="aclService" />
+        <property name="accessSurrogateTempPath" value="${access.surrogate.temp.path}"/>
+        <property name="accessSurrogateRequestSender" ref="accessSurrogateRequestSender"/>
+        <property name="repositoryObjectLoader" ref="repositoryObjectLoader"/>
+    </bean>
+
     <bean id="imageServerV2Service" class="edu.unc.lib.boxc.web.services.processing.ImageServerV2Service">
         <property name="imageServerProxyBasePath" value="${iiif.v2.base.url}"/>
         <property name="basePath" value="${services.api.url}"/>
