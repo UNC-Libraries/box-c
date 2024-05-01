@@ -8,6 +8,9 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 
+/**
+ * Service for sending requests to update access surrogates of a FileObject
+ */
 public class AccessSurrogateRequestSender extends MessageSender {
     private static final Logger log = LoggerFactory.getLogger(AccessSurrogateRequestSender.class);
     private static final ObjectWriter MAPPER = new ObjectMapper().writerFor(AccessSurrogateRequest.class);

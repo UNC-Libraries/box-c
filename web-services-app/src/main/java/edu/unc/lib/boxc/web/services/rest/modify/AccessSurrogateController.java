@@ -85,7 +85,7 @@ public class AccessSurrogateController {
 
         try (InputStream inputStream = surrogateFile.getInputStream()) {
             var path = copyFileToPath(pidString, inputStream);
-            request.setFilePath(path);;
+            request.setFilePath(path);
         } catch (IOException e) {
             log.error("Failed to get submitted file", e);
             result.put("error", e.getMessage());
@@ -95,7 +95,7 @@ public class AccessSurrogateController {
         try {
             accessSurrogateRequestSender.sendToQueue(request);
         } catch (IOException e) {
-            log.error("Error updating access surrogates for {}", request.getPidString(), e);
+            log.warn("Error updating access surrogates for {}", request.getPidString(), e);
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
