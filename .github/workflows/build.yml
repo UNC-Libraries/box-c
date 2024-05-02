@@ -18,12 +18,14 @@ jobs:
         image: redis
         ports:
           - 6379/tcp
-      fcrepo:
+      fedora:
         image: fcrepo/fcrepo:5.1.1
         ports:
           - 48085:8080
+        volumes:
+          - ./it_config:/config
         env:
-          CATALINA_OPTS: "-Djava.awt.headless=true -server -Xms1G -Xmx2G -XX:MaxNewSize=1G -XX:+HeapDumpOnOutOfMemoryError -Dfcrepo.modeshape.configuration=classpath:/config/file-simple/repository.json -Dfcrepo.external.content.allowed=${{github.workspace}}/it_config/allowed_external_paths.txt"
+          CATALINA_OPTS: "-Djava.awt.headless=true -server -Xms1G -Xmx2G -XX:MaxNewSize=1G -XX:+HeapDumpOnOutOfMemoryError -Dfcrepo.modeshape.configuration=classpath:/config/file-simple/repository.json -Dfcrepo.external.content.allowed=/config/allowed_external_paths.txt"
 
     steps:
     - name: Checkout repository
