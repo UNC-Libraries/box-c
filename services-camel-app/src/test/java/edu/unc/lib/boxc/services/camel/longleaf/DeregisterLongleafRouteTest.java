@@ -8,7 +8,6 @@ import org.apache.commons.io.FileUtils;
 import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.output.XMLOutputter;
-import org.jgroups.util.UUID;
 import org.junit.jupiter.api.Test;
 
 import java.io.File;
@@ -17,6 +16,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 import static edu.unc.lib.boxc.model.api.xml.JDOMNamespaceUtil.ATOM_NS;

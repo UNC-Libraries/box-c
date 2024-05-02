@@ -70,7 +70,7 @@ public class CdrEventRoutingTest extends CamelSpringTestSupport {
 
         when(mockActionMap.get(any(IndexingActionType.class)))
                 .thenReturn(mockIndexingAction);
-        camelContext = applicationContext.getBean("cdrServiceCdrEvents", CamelContext.class);//.start();
+        camelContext = applicationContext.getBean("cdrServiceCdrEvents", CamelContext.class);
         opsMsgSender = applicationContext.getBean(OperationsMessageSender.class);
         solrSmallUpdateProcessor = applicationContext.getBean("solrSmallUpdateProcessor", SolrUpdateProcessor.class);
         solrLargeUpdateProcessor = applicationContext.getBean("solrLargeUpdateProcessor", SolrUpdateProcessor.class);

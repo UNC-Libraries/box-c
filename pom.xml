@@ -79,6 +79,7 @@
         <fcrepo.client.version>5.0.0</fcrepo.client.version>
         <mock.server.version>5.4.1</mock.server.version>
         <awaitility.version>4.0.3</awaitility.version>
+        <jetty.version>9.4.44.v20210927</jetty.version>
         <!-- Stuck on this version due to jetty tie-ins, can upgrade when solr uses newer jetty versions -->
         <wiremock.version>2.32.0</wiremock.version>
         
@@ -101,6 +102,7 @@
         <commons-csv.version>1.6</commons-csv.version>
         <commons-lang3.version>3.8.1</commons-lang3.version>
         <commons-fileupload.version>1.5</commons-fileupload.version>
+        <commons-collections.version>4.4</commons-collections.version>
         <abdera.version>1.1.3</abdera.version>
         
         <activemq.version>5.17.6</activemq.version>
@@ -131,7 +133,7 @@
         <jena.version>4.4.0</jena.version>
         <jena.fuseki.version>4.4.0</jena.fuseki.version>
         
-        <fcrepo-camel.version>5.0.0</fcrepo-camel.version>
+        <fcrepo-camel.version>6.0.0</fcrepo-camel.version>
         <camel.version>3.22.1</camel.version>
         <tika.version>2.8.0</tika.version>
         
@@ -699,6 +701,12 @@
                 <version>${wiremock.version}</version>
                 <scope>test</scope>
             </dependency>
+            <dependency>
+                <groupId>org.eclipse.jetty</groupId>
+                <artifactId>jetty-server</artifactId>
+                <version>${jetty.version}</version>
+                <scope>test</scope>
+            </dependency>
             
             <dependency>
                 <groupId>org.springframework</groupId>
@@ -890,6 +898,11 @@
                 <groupId>commons-fileupload</groupId>
                 <artifactId>commons-fileupload</artifactId>
                 <version>${commons-fileupload.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.commons</groupId>
+                <artifactId>commons-collections4</artifactId>
+                <version>${commons-collections.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.abdera</groupId>
