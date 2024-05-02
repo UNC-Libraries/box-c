@@ -13,6 +13,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -25,8 +26,6 @@ import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.api.services.ContentPathFactory;
 import edu.unc.lib.boxc.model.fcrepo.services.ContentPathFactoryImpl;
 import edu.unc.lib.boxc.persist.api.storage.StorageLocationManager;
-import edu.unc.lib.boxc.persist.impl.storage.HashedFilesystemStorageLocation;
-import edu.unc.lib.boxc.persist.impl.storage.StorageLocationManagerImpl;
 import edu.unc.lib.boxc.persist.impl.storage.StorageLocationManagerImpl.StorageLocationMapping;
 
 /**
@@ -38,6 +37,8 @@ public class StorageLocationTestHelper {
 
     private List<StorageLocationMapping> mappingList;
     private List<Map<String, String>> locationList;
+    // Hardcoded base storage path for usage across tests and containerized fedora
+    private Path baseStoragePath = Paths.get("/tmp/boxc_test_storage");
 
     public StorageLocationTestHelper() {
         mappingList = new ArrayList<>();
@@ -100,7 +101,10 @@ public class StorageLocationTestHelper {
      * @throws Exception
      */
     public StorageLocationTestHelper addTestLocation() throws Exception {
-        Path locPath = createTempDirectory("loc1");
+        if (Files.notExists(baseStoragePath)) {
+            Files.createDirectories(baseStoragePath);
+        }
+        Path locPath = createTempDirectory(baseStoragePath, "loc1");
         // Cleanup the temp dir after the tests end
         getRuntime().addShutdownHook(new Thread() {
             @Override
@@ -159,5 +163,13 @@ public class StorageLocationTestHelper {
         return newStorageLocationTestHelper()
                     .addTestLocation()
                     .createLocationManager(repoObjLoader);
+    }
+
+    public void setBaseStoragePath(Path baseStoragePath) {
+        this.baseStoragePath = baseStoragePath;
+    }
+
+    public Path getBaseStoragePath() {
+        return baseStoragePath;
     }
 }
