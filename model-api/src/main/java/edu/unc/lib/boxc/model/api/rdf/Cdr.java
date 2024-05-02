@@ -132,22 +132,10 @@ public class Cdr {
             "http://cdr.unc.edu/definitions/model#storageLocation" );
 
     /**
-     * Property which holds the streaming content filename
+     * Property which holds the StreamReaper URL for streaming
      */
-    public static final Property streamingFile = createProperty(
-            "http://cdr.unc.edu/definitions/model#streamingFile");
-
-    /**
-     *  Property which holds the folder, directory, or space of the streaming content
-     */
-    public static final Property streamingFolder = createProperty(
-            "http://cdr.unc.edu/definitions/model#streamingFolder");
-
-    /**
-     * Property that holds where the streaming content is hosted, like Duracloud
-     */
-    public static final Property streamingHost = createProperty(
-            "http://cdr.unc.edu/definitions/model#streamingHost");
+    public static final Property streamingUrl = createProperty(
+            "http://cdr.unc.edu/definitions/model#streamingUrl");
 
     /**
      *

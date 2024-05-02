@@ -18,7 +18,7 @@ public class StreamingPropertiesRequestSender extends MessageSender {
     public void sendToQueue(StreamingPropertiesRequest request) throws IOException {
         String messageBody = MAPPER.writeValueAsString(request);
         sendMessage(messageBody);
-        log.info("Job to update streaming properties has been queued for file {} by {}",
+        log.info("Job to update streaming URL has been queued for file {} by {}",
                 request.getId(), request.getAgent().getUsername());
     }
 }

@@ -32,6 +32,7 @@ import java.util.Objects;
 
 import static edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore.getAgentPrincipals;
 import static edu.unc.lib.boxc.operations.jms.streaming.StreamingPropertiesRequest.ADD;
+import static edu.unc.lib.boxc.operations.jms.streaming.StreamingPropertiesRequest.STREAMREAPER_PREFIX_URL;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 /**
@@ -106,7 +107,11 @@ public class StreamingPropertiesController {
             return true;
         }
         if (Objects.equals(ADD, action)) {
-            return StringUtils.isBlank(request.getFilename()) || StringUtils.isBlank(request.getFolder());
+            var url = request.getUrl();
+            if (StringUtils.isBlank(url)) {
+                return true;
+            }
+            return !url.startsWith(STREAMREAPER_PREFIX_URL);
         }
 
         return false;
@@ -118,14 +123,10 @@ public class StreamingPropertiesController {
     }
     private Map<String, String> getProperties(String id, Resource resource) {
         Map<String, String> result = new HashMap<>();
-        var host = getValue(resource, Cdr.streamingHost);
-        var filename = getValue(resource, Cdr.streamingFile);
-        var folder = getValue(resource, Cdr.streamingFolder);
+        var url = getValue(resource, Cdr.streamingUrl);
 
         result.put("id", id);
-        result.put("host", host);
-        result.put("filename", filename);
-        result.put("folder", folder);
+        result.put("url", url);
         return result;
     }
 }

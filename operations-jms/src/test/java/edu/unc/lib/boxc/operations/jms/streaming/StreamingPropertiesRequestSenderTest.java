@@ -42,8 +42,7 @@ public class StreamingPropertiesRequestSenderTest {
         var request = new StreamingPropertiesRequest();
         request.setAgent(agent);
         request.setId(filePidString);
-        request.setFilename("banjo.mp3");
-        request.setFolder(StreamingPropertiesRequest.CLOSED);
+        request.setUrl(StreamingPropertiesRequest.STREAMREAPER_PREFIX_URL + "?params=more");
         request.setAction("add");
 
         streamingPropertiesRequestSender.sendToQueue(request);
