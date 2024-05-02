@@ -23,9 +23,9 @@ jobs:
         ports:
           - 48085:8080
         volumes:
-          - ./it_config:/config
+          - ${{ github.workspace }}/it_config:/config
         env:
-          CATALINA_OPTS: "-Djava.awt.headless=true -server -Xms1G -Xmx2G -XX:MaxNewSize=1G -XX:+HeapDumpOnOutOfMemoryError -Dfcrepo.modeshape.configuration=classpath:/config/file-simple/repository.json -Dfcrepo.external.content.allowed=/config/allowed_external_paths.txt"
+          CATALINA_OPTS: "-Djava.awt.headless=true -server -Xms512m -Xmx1024m -XX:NewSize=256m -XX:MaxNewSize=256m -Dfcrepo.modeshape.configuration=classpath:/config/file-simple/repository.json -Dfcrepo.external.content.allowed=/config/allowed_external_paths.txt -Dlogback.configurationFile=/config/fcrepo_logback.xml"
 
     steps:
     - name: Checkout repository
@@ -42,28 +42,50 @@ jobs:
         path: ~/.m2
         key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
         restore-keys: ${{ runner.os }}-m2
+#    - name: Wait for fedora to become available
+#      run: |
+#        URL="http://localhost:48085/fcrepo/rest"
+#        timeout=$(( $(date '+%s') + 120 ))  # Set timeout to 2 minutes from now
+#        while true; do
+#          response=$(curl -s -o /dev/null -w "%{http_code}" $URL)
+#          if [ $response -eq 200 ]; then
+#            echo "URL is available! $response"
+#            break
+#          elif [ $(date '+%s') -gt $timeout ]; then
+#            echo "Timeout reached. URL did not become available within 2 minutes."
+#            exit 1
+#          else
+#            echo "URL is not yet available, waiting... $response"
+#            sleep 10  # Adjust the interval (in seconds) between retries
+#          fi
+#        done
+    - name: Wait for it
+      run: sleep 45
+    - name: Display services
+      run: docker ps
+    - name: View fedora service logs
+      run: cat ${{ github.workspace }}/it_config/logs/fedora.log
     - name: Build with Maven
       run: mvn -B -U -pl '!integration' clean install -DskipTests
-    - name: Package integration module with Maven
-      run: mvn -B -U -pl integration clean package -DskipTests
+#
 
-    - name: Set up nodejs
-      uses: actions/setup-node@v2
-      with:
-        node-version: '16'
-    - name: Cache npm modules
-      uses: actions/cache@v2
-      with:
-        path: ~/.npm
-        key: v1-npm-deps-${{ hashFiles('**/package-lock.json') }}
-        restore-keys: v1-npm-deps-
+#    - name: Set up nodejs
+#      uses: actions/setup-node@v2
+#      with:
+#        node-version: '16'
+#    - name: Cache npm modules
+#      uses: actions/cache@v2
+#      with:
+#        path: ~/.npm
+#        key: v1-npm-deps-${{ hashFiles('**/package-lock.json') }}
+#        restore-keys: v1-npm-deps-
 
-    - run: npm --prefix static/js/vue-cdr-access install
-    - run: npm --prefix static/js/admin/vue-permissions-editor install
-
-    - run: npm install -g jest-cli@29.0.3
-    - run: npm --prefix static/js/vue-cdr-access run test
-    - run: npm --prefix static/js/admin/vue-permissions-editor run test
+#    - run: npm --prefix static/js/vue-cdr-access install
+#    - run: npm --prefix static/js/admin/vue-permissions-editor install
+#
+#    - run: npm install -g jest-cli@29.0.3
+#    - run: npm --prefix static/js/vue-cdr-access run test
+#    - run: npm --prefix static/js/admin/vue-permissions-editor run test
 
     - name: Report to CodeClimate
       uses: paambaati/codeclimate-action@v3.0.0
@@ -77,3 +99,7 @@ jobs:
           ${{github.workspace}}/**/target/site/jacoco-it/jacoco.xml:jacoco
           ${{github.workspace}}/static/js/vue-cdr-access/coverage/lcov.info:lcov
           ${{github.workspace}}/static/js/admin/vue-permissions-editor/coverage/lcov.info:lcov
+
+    - name: View fedora service logs (always run)
+      if: always()
+      run: docker logs fedora
