@@ -25,8 +25,7 @@ import java.io.IOException;
 
 import static edu.unc.lib.boxc.operations.jms.streaming.StreamingPropertiesRequest.ADD;
 import static edu.unc.lib.boxc.operations.jms.streaming.StreamingPropertiesRequest.DELETE;
-import static edu.unc.lib.boxc.operations.jms.streaming.StreamingPropertiesRequest.DURACLOUD;
-import static edu.unc.lib.boxc.operations.jms.streaming.StreamingPropertiesRequest.OPEN;
+import static edu.unc.lib.boxc.operations.jms.streaming.StreamingPropertiesRequest.STREAMREAPER_PREFIX_URL;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -69,7 +68,7 @@ public class StreamingPropertiesProcessorTest {
 
     @Test
     public void testStreamingPropertiesUpdateNoPermission() throws IOException {
-        var exchange = createRequestExchange(OPEN, "banjo_recording.mp3", filePid.getId(), ADD);
+        var exchange = createRequestExchange(STREAMREAPER_PREFIX_URL, filePid.getId(), ADD);
 
         assertThrows(AccessRestrictionException.class, () -> {
             doThrow(new AccessRestrictionException()).when(accessControlService)
@@ -79,25 +78,24 @@ public class StreamingPropertiesProcessorTest {
     }
 
     @Test
-    public void testStreamingPropertiesUpdateNoFilename() throws IOException {
-        var exchange = createRequestExchange(OPEN, null, filePid.getId(), ADD);
-        assertThrows(IllegalArgumentException.class, () -> {
-            processor.process(exchange);
-        });
-
-    }
-
-    @Test
-    public void testStreamingPropertiesUpdateNoFolder() throws IOException {
-        var exchange = createRequestExchange(null, "banjo_recording.mp3", filePid.getId(), ADD);
+    public void testStreamingPropertiesUpdateNoAction() throws IOException {
+        var exchange = createRequestExchange(STREAMREAPER_PREFIX_URL,filePid.getId(), null);
         assertThrows(IllegalArgumentException.class, () -> {
             processor.process(exchange);
         });
     }
 
     @Test
-    public void testStreamingPropertiesUpdateIncorrectFolder() throws IOException {
-        var exchange = createRequestExchange("no folder here", "banjo_recording.mp3", filePid.getId(), ADD);
+    public void testStreamingPropertiesUpdateNoUrl() throws IOException {
+        var exchange = createRequestExchange(null, filePid.getId(), ADD);
+        assertThrows(IllegalArgumentException.class, () -> {
+            processor.process(exchange);
+        });
+    }
+
+    @Test
+    public void testStreamingPropertiesUpdateUrlIsNotStreamReaper() throws IOException {
+        var exchange = createRequestExchange("https://lib.unc.edu", filePid.getId(), ADD);
         assertThrows(IllegalArgumentException.class, () -> {
             processor.process(exchange);
         });
@@ -106,7 +104,7 @@ public class StreamingPropertiesProcessorTest {
     @Test
     public void testStreamingPropertiesUpdateNotAFileObject() throws IOException {
         var anotherPid = TestHelper.makePid();
-        var exchange = createRequestExchange(OPEN, "banjo_recording.mp3", anotherPid.getId(), ADD);
+        var exchange = createRequestExchange(STREAMREAPER_PREFIX_URL, anotherPid.getId(), ADD);
 
         assertThrows(IllegalArgumentException.class, () -> {
             doThrow(new ObjectTypeMismatchException("not a file object")).when(repositoryObjectLoader)
@@ -117,42 +115,26 @@ public class StreamingPropertiesProcessorTest {
 
     @Test
     public void testStreamingPropertiesUpdateSuccess() throws IOException {
-        var exchange = createRequestExchange(OPEN, "banjo_recording.mp3", filePid.getId(), ADD);
+        var exchange = createRequestExchange(STREAMREAPER_PREFIX_URL,filePid.getId(), ADD);
         processor.process(exchange);
 
         verify(repositoryObjectFactory).createExclusiveRelationship(
-                eq(fileObject), eq(Cdr.streamingFile), eq("banjo_recording-playlist.m3u8"));
-        verify(repositoryObjectFactory).createExclusiveRelationship(
-                eq(fileObject), eq(Cdr.streamingFolder), eq(OPEN));
-        verify(repositoryObjectFactory).createExclusiveRelationship(
-                eq(fileObject), eq(Cdr.streamingHost), eq(DURACLOUD));
-    }
-
-    @Test
-    public void testStreamingPropertiesUpdateFilenameAlreadyFormattedSuccess() throws IOException {
-        var exchange = createRequestExchange(OPEN, "banjo_recording-playlist.m3u8", filePid.getId(), ADD);
-        processor.process(exchange);
-
-        verify(repositoryObjectFactory).createExclusiveRelationship(
-                eq(fileObject), eq(Cdr.streamingFile), eq("banjo_recording-playlist.m3u8"));
+                eq(fileObject), eq(Cdr.streamingUrl), eq(STREAMREAPER_PREFIX_URL));
     }
 
     @Test
     public void testStreamingPropertiesDeleteSuccess() throws IOException {
-        var exchange = createRequestExchange(null, null, filePid.getId(), DELETE);
+        var exchange = createRequestExchange(null, filePid.getId(), DELETE);
         processor.process(exchange);
 
-        verify(repositoryObjectFactory).deleteProperty(eq(fileObject), eq(Cdr.streamingHost));
-        verify(repositoryObjectFactory).deleteProperty(eq(fileObject), eq(Cdr.streamingFile));
-        verify(repositoryObjectFactory).deleteProperty(eq(fileObject), eq(Cdr.streamingFolder));
+        verify(repositoryObjectFactory).deleteProperty(eq(fileObject), eq(Cdr.streamingUrl));
     }
 
-    private Exchange createRequestExchange(String folder, String filename, String id, String action) throws IOException {
+    private Exchange createRequestExchange(String url, String id, String action) throws IOException {
         var request = new StreamingPropertiesRequest();
         request.setAgent(agent);
-        request.setFilename(filename);
+        request.setUrl(url);
         request.setId(id);
-        request.setFolder(folder);
         request.setAction(action);
         return TestHelper.mockExchange(StreamingPropertiesRequestSerializationHelper.toJson(request));
     }

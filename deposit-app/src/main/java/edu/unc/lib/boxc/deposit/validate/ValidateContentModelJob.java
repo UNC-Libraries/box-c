@@ -1,6 +1,7 @@
 package edu.unc.lib.boxc.deposit.validate;
 
 import static edu.unc.lib.boxc.deposit.work.DepositGraphUtils.getChildIterator;
+import static edu.unc.lib.boxc.operations.jms.streaming.StreamingPropertiesRequest.STREAMREAPER_PREFIX_URL;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -104,7 +105,6 @@ public class ValidateContentModelJob extends AbstractDepositJob{
 
         // Validate member order property
         validateMemberOrder(model);
-        validateStreamingProperties();
     }
 
     private void validatePrimaryObjects(Model model) {
@@ -211,30 +211,25 @@ public class ValidateContentModelJob extends AbstractDepositJob{
 
         Resource origResource = DepositModelHelpers.getDatastream(resc);
         var hasOrigResource = origResource != null;
-        var hasStreamingOrOriginal = false;
+        var hasStreamingProperty = resc.hasProperty(Cdr.streamingUrl);
 
-        if (hasAtLeastOneStreamingProperty(resc)) {
-            hasStreamingOrOriginal = true;
-            if (!hasAllStreamingProperties(resc)) {
-                // if one streaming property is present, they must all be present
-                failJob(null, "All streaming properties are required for file ({0})", resc.getURI());
-            }
-        }
         if (hasOrigResource) {
-            hasStreamingOrOriginal = true;
             if (!origResource.hasProperty(CdrDeposit.stagingLocation)) {
                 // has original file but needs staging location
                 failJob(null, "No staging location provided for file ({0})", resc.getURI());
             }
         }
-        if (!hasStreamingOrOriginal) {
+        if (hasStreamingProperty) {
+            validateStreamingProperties(resc);
+        }
+        if (!hasOrigResource && !hasStreamingProperty) {
             // no streaming properties or original file
             failJob(null, "No original datastream or streaming properties for file object {0}", resc.getURI());
         }
     }
 
     private void validateNonFileObject(Resource resource) {
-        if (hasAtLeastOneStreamingProperty(resource)) {
+        if (resource.hasProperty(Cdr.streamingUrl)) {
             failJob(null, "Invalid streaming properties on non FileObject {0}", resource.getURI());
         }
     }
@@ -255,20 +250,11 @@ public class ValidateContentModelJob extends AbstractDepositJob{
         }
     }
 
-    private void validateStreamingProperties() {
-
-    }
-
-    private boolean hasAtLeastOneStreamingProperty(Resource resource) {
-        return resource.hasProperty(Cdr.streamingFile) ||
-                resource.hasProperty(Cdr.streamingFolder) ||
-                resource.hasProperty(Cdr.streamingHost);
-    }
-
-    private boolean hasAllStreamingProperties(Resource resource) {
-        return resource.hasProperty(Cdr.streamingFile) &&
-                resource.hasProperty(Cdr.streamingFolder) &&
-                resource.hasProperty(Cdr.streamingHost);
+    private void validateStreamingProperties(Resource resource) {
+        var url = resource.getProperty(Cdr.streamingUrl).getString();
+        if (!url.startsWith(STREAMREAPER_PREFIX_URL)) {
+            failJob(null, "Invalid streaming properties on FileObject {0}", resource.getURI());
+        }
     }
 
     /**

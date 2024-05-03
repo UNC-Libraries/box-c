@@ -5,8 +5,7 @@ import static edu.unc.lib.boxc.auth.api.AccessPrincipalConstants.PUBLIC_PRINC;
 import static edu.unc.lib.boxc.common.test.TestHelpers.setField;
 import static edu.unc.lib.boxc.model.api.DatastreamType.ORIGINAL_FILE;
 import static edu.unc.lib.boxc.model.api.DatastreamType.TECHNICAL_METADATA;
-import static edu.unc.lib.boxc.operations.jms.streaming.StreamingPropertiesRequest.CLOSED;
-import static edu.unc.lib.boxc.operations.jms.streaming.StreamingPropertiesRequest.DURACLOUD;
+import static edu.unc.lib.boxc.operations.jms.streaming.StreamingPropertiesRequest.STREAMREAPER_PREFIX_URL;
 import static edu.unc.lib.boxc.persist.impl.storage.StorageLocationTestHelper.LOC1_ID;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -340,9 +339,7 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
         Resource fileResc = model.createResource(filePid.getRepositoryPath());
         fileResc.addProperty(RDF.type, Cdr.FileObject);
         fileResc.addProperty(CdrDeposit.mimetype, "text/plain");
-        fileResc.addProperty(Cdr.streamingHost, DURACLOUD);
-        fileResc.addProperty(Cdr.streamingFolder, CLOSED);
-        fileResc.addProperty(Cdr.streamingFile, "banjo-playlist.m3u8");
+        fileResc.addProperty(Cdr.streamingUrl, STREAMREAPER_PREFIX_URL);
         workBag.add(fileResc);
 
         job.closeModel();
@@ -377,9 +374,7 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
         var fileResc = model.getResource(filePid.getRepositoryPath());
         fileResc.addProperty(RDF.type, Cdr.FileObject);
         fileResc.addProperty(CdrDeposit.mimetype, "text/plain");
-        fileResc.addProperty(Cdr.streamingHost, DURACLOUD);
-        fileResc.addProperty(Cdr.streamingFolder, CLOSED);
-        fileResc.addProperty(Cdr.streamingFile, "banjo-playlist.m3u8");
+        fileResc.addProperty(Cdr.streamingUrl, STREAMREAPER_PREFIX_URL);
         workBag.add(fileResc);
 
         job.closeModel();

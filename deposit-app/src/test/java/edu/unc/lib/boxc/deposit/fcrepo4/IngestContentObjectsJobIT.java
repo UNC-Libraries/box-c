@@ -71,8 +71,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import static edu.unc.lib.boxc.common.test.TestHelpers.setField;
 import static edu.unc.lib.boxc.model.api.DatastreamType.ORIGINAL_FILE;
 import static edu.unc.lib.boxc.model.api.DatastreamType.TECHNICAL_METADATA;
-import static edu.unc.lib.boxc.operations.jms.streaming.StreamingPropertiesRequest.CLOSED;
-import static edu.unc.lib.boxc.operations.jms.streaming.StreamingPropertiesRequest.DURACLOUD;
+import static edu.unc.lib.boxc.operations.jms.streaming.StreamingPropertiesRequest.STREAMREAPER_PREFIX_URL;
 import static edu.unc.lib.boxc.persist.impl.storage.StorageLocationTestHelper.LOC1_ID;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.apache.jena.rdf.model.ResourceFactory.createResource;
@@ -442,9 +441,7 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
         FileObject fileObj = (FileObject) findContentObjectByPid(workMembers, filePid);
         assertNotNull(fileObj);
         var fileResource = fileObj.getResource();
-        assertEquals(DURACLOUD, fileResource.getProperty(Cdr.streamingHost).getString());
-        assertEquals(CLOSED, fileResource.getProperty(Cdr.streamingFolder).getString());
-        assertEquals("banjo-playlist.m3u8", fileResource.getProperty(Cdr.streamingFile).getString());
+        assertEquals(STREAMREAPER_PREFIX_URL, fileResource.getProperty(Cdr.streamingUrl).getString());
 
     }
 
@@ -1346,9 +1343,7 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
         Model model = parent.getModel();
         Resource fileResc = model.createResource(filePid.getRepositoryPath());
         fileResc.addProperty(RDF.type, Cdr.FileObject);
-        fileResc.addProperty(Cdr.streamingHost, DURACLOUD);
-        fileResc.addProperty(Cdr.streamingFolder, CLOSED);
-        fileResc.addProperty(Cdr.streamingFile, "banjo-playlist.m3u8");
+        fileResc.addProperty(Cdr.streamingUrl, STREAMREAPER_PREFIX_URL);
 
         parent.add(fileResc);
 

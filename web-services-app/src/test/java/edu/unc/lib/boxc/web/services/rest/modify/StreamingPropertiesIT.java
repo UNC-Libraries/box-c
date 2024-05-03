@@ -28,8 +28,7 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import java.util.Map;
 
-import static edu.unc.lib.boxc.operations.jms.streaming.StreamingPropertiesRequest.DURACLOUD;
-import static edu.unc.lib.boxc.operations.jms.streaming.StreamingPropertiesRequest.OPEN;
+import static edu.unc.lib.boxc.operations.jms.streaming.StreamingPropertiesRequest.STREAMREAPER_PREFIX_URL;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -57,17 +56,14 @@ public class StreamingPropertiesIT {
     @Mock
     private Resource resource;
     @Mock
-    private Statement filenameStatement;
-    @Mock
-    private Statement hostStatement;
-    @Mock
-    private Statement folderStatement;
+    private Statement urlStatement;
     private MockMvc mockMvc;
     private AutoCloseable closeable;
     private final static String USERNAME = "test_user";
     private final static AccessGroupSet GROUPS = new AccessGroupSetImpl("adminGroup");
     private static final String FILE_ID = "f277bb38-272c-471c-a28a-9887a1328a1f";
     private static final PID FILE_PID = PIDs.get(FILE_ID);
+    private static final String URL = STREAMREAPER_PREFIX_URL + "?params=good";
     @BeforeEach
     public void setup() {
         closeable = openMocks(this);
@@ -105,15 +101,10 @@ public class StreamingPropertiesIT {
 
     @Test
     public void testGetStreamingPropertiesSuccess() throws Exception {
-        var filename = "banjo-playlist.m3u8";
         when(repositoryObjectLoader.getRepositoryObject(eq(FILE_PID))).thenReturn(fileObject);
         when(fileObject.getResource()).thenReturn(resource);
-        when(resource.getProperty(eq(Cdr.streamingFile))).thenReturn(filenameStatement);
-        when(filenameStatement.getString()).thenReturn(filename);
-        when(resource.getProperty(eq(Cdr.streamingFolder))).thenReturn(folderStatement);
-        when(folderStatement.getString()).thenReturn(OPEN);
-        when(resource.getProperty(eq(Cdr.streamingHost))).thenReturn(hostStatement);
-        when(hostStatement.getString()).thenReturn(DURACLOUD);
+        when(resource.getProperty(eq(Cdr.streamingUrl))).thenReturn(urlStatement);
+        when(urlStatement.getString()).thenReturn(URL);
 
         var result = mockMvc.perform(get("/edit/streamingProperties/" + FILE_ID)
                 .contentType(MediaType.APPLICATION_JSON))
@@ -121,9 +112,7 @@ public class StreamingPropertiesIT {
                 .andReturn();
 
         Map<String, Object> respMap = MvcTestHelpers.getMapFromResponse(result);
-        assertEquals(filename, respMap.get("filename"));
-        assertEquals(OPEN, respMap.get("folder"));
-        assertEquals(DURACLOUD, respMap.get("host"));
+        assertEquals(URL, respMap.get("url"));
     }
 
     @Test
@@ -131,40 +120,40 @@ public class StreamingPropertiesIT {
         doThrow(new AccessRestrictionException()).when(accessControlService)
                 .assertHasAccess(anyString(), eq(FILE_PID), any(), eq(Permission.ingest));
         mockMvc.perform(put(
-                "/edit/streamingProperties?action=add&filename=banjo_sounds.mp3&id=" + FILE_ID + "&folder=" + OPEN))
+                "/edit/streamingProperties?action=add&url=" + URL + "&id=" + FILE_ID))
                 .andExpect(status().isForbidden());
     }
 
     @Test
-    public void testUpdateStreamingPropertiesNoFilename() throws Exception {
+    public void testUpdateStreamingPropertiesIncorrectUrl() throws Exception {
         mockMvc.perform(put(
-                "/edit/streamingProperties?action=add&id=" + FILE_ID + "&folder=" + OPEN))
+                "/edit/streamingProperties?action=add&id=" + FILE_ID + "&url=https://bad.url.com"))
                 .andExpect(status().isBadRequest());
     }
     @Test
-    public void testUpdateStreamingPropertiesNoFolder() throws Exception {
+    public void testUpdateStreamingPropertiesNoUrl() throws Exception {
         mockMvc.perform(put(
-                        "/edit/streamingProperties?action=add&filename=banjo_sounds.mp3&id=" + FILE_ID))
+                        "/edit/streamingProperties?action=add&id=" + FILE_ID))
                 .andExpect(status().isBadRequest());
     }
     @Test
     public void testUpdateStreamingPropertiesNoFileId() throws Exception {
         mockMvc.perform(put(
-                        "/edit/streamingProperties?action=add&filename=banjo_sounds.mp3&folder=" + OPEN))
+                        "/edit/streamingProperties?action=add&url=" + URL))
                 .andExpect(status().isBadRequest());
     }
 
     @Test
     public void testUpdateStreamingPropertiesNoAction() throws Exception {
         mockMvc.perform(put(
-                        "/edit/streamingProperties?&filename=banjo_sounds.mp3&id=" + FILE_ID + "&folder=" + OPEN))
+                        "/edit/streamingProperties?&id=" + FILE_ID + "&url=" + URL))
                 .andExpect(status().isBadRequest());
     }
 
     @Test
     public void testAddStreamingPropertiesSuccess() throws Exception {
         var result = mockMvc.perform(put(
-                        "/edit/streamingProperties?action=add&filename=banjo_sounds.mp3&id=" + FILE_ID + "&folder=" + OPEN))
+                        "/edit/streamingProperties?action=add&url=" + URL + "&id=" + FILE_ID))
                 .andExpect(status().is2xxSuccessful())
                 .andReturn();
         Map<String, Object> respMap = MvcTestHelpers.getMapFromResponse(result);

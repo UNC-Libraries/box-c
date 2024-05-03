@@ -2,8 +2,7 @@ package edu.unc.lib.boxc.deposit.validate;
 
 import static edu.unc.lib.boxc.common.test.TestHelpers.setField;
 import static edu.unc.lib.boxc.model.api.ids.RepositoryPathConstants.CONTENT_BASE;
-import static edu.unc.lib.boxc.operations.jms.streaming.StreamingPropertiesRequest.CLOSED;
-import static edu.unc.lib.boxc.operations.jms.streaming.StreamingPropertiesRequest.DURACLOUD;
+import static edu.unc.lib.boxc.operations.jms.streaming.StreamingPropertiesRequest.STREAMREAPER_PREFIX_URL;
 import static org.apache.jena.rdf.model.ResourceFactory.createResource;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -192,7 +191,7 @@ public class ValidateContentModelJobTest extends AbstractDepositJobTest {
     }
 
     @Test
-    public void fileObjectWithOriginalDatastreamWithAllStreamingPropertiesTest() {
+    public void fileObjectWithOriginalDatastreamWithStreamingPropertiesTest() {
         PID objPid = makePid(CONTENT_BASE);
         Bag objBag = model.createBag(objPid.getRepositoryPath());
         objBag.addProperty(RDF.type, Cdr.Work);
@@ -202,9 +201,7 @@ public class ValidateContentModelJobTest extends AbstractDepositJobTest {
         Resource origResc = DepositModelHelpers.addDatastream(childResc);
         origResc.addLiteral(CdrDeposit.stagingLocation, "path");
         childResc.addProperty(RDF.type, Cdr.FileObject);
-        childResc.addProperty(Cdr.streamingFile, "banjo-playlist.m3u8");
-        childResc.addProperty(Cdr.streamingFolder, CLOSED);
-        childResc.addProperty(Cdr.streamingHost, DURACLOUD);
+        childResc.addProperty(Cdr.streamingUrl, STREAMREAPER_PREFIX_URL + "?params=more");
         objBag.add(childResc);
 
         objBag.addProperty(Cdr.primaryObject, childResc);
@@ -217,7 +214,7 @@ public class ValidateContentModelJobTest extends AbstractDepositJobTest {
     }
 
     @Test
-    public void fileObjectWithOriginalDatastreamNoStagingLocationWithAllStreamingPropertiesTest() {
+    public void fileObjectWithOriginalDatastreamNoStagingLocationWithStreamingPropertiesTest() {
         Assertions.assertThrows(JobFailedException.class, () -> {
             PID objPid = makePid(CONTENT_BASE);
             Bag objBag = model.createBag(objPid.getRepositoryPath());
@@ -229,9 +226,7 @@ public class ValidateContentModelJobTest extends AbstractDepositJobTest {
             DepositModelHelpers.addDatastream(childResc);
 
             childResc.addProperty(RDF.type, Cdr.FileObject);
-            childResc.addProperty(Cdr.streamingFile, "banjo-playlist.m3u8");
-            childResc.addProperty(Cdr.streamingFolder, CLOSED);
-            childResc.addProperty(Cdr.streamingHost, DURACLOUD);
+            childResc.addProperty(Cdr.streamingUrl, STREAMREAPER_PREFIX_URL + "?params=more");
             objBag.add(childResc);
 
             objBag.addProperty(Cdr.primaryObject, childResc);
@@ -275,9 +270,7 @@ public class ValidateContentModelJobTest extends AbstractDepositJobTest {
         PID childPid = makePid(CONTENT_BASE);
         Resource childResc = model.getResource(childPid.getRepositoryPath());
         childResc.addProperty(RDF.type, Cdr.FileObject);
-        childResc.addProperty(Cdr.streamingFile, "banjo-playlist.m3u8");
-        childResc.addProperty(Cdr.streamingFolder, CLOSED);
-        childResc.addProperty(Cdr.streamingHost, DURACLOUD);
+        childResc.addProperty(Cdr.streamingUrl, STREAMREAPER_PREFIX_URL + "?params=more");
         objBag.add(childResc);
 
         objBag.addProperty(Cdr.primaryObject, childResc);
@@ -287,30 +280,6 @@ public class ValidateContentModelJobTest extends AbstractDepositJobTest {
         job.closeModel();
 
         job.run();
-    }
-
-    @Test
-    public void fileObjectNoOriginalDatastreamWithOneStreamingPropertyTest() {
-        Assertions.assertThrows(JobFailedException.class, () -> {
-            PID objPid = makePid(CONTENT_BASE);
-            Bag objBag = model.createBag(objPid.getRepositoryPath());
-            objBag.addProperty(RDF.type, Cdr.Work);
-
-            PID childPid = makePid(CONTENT_BASE);
-            Resource childResc = model.getResource(childPid.getRepositoryPath());
-            childResc.addProperty(RDF.type, Cdr.FileObject);
-            childResc.addProperty(Cdr.streamingFile, "banjo-playlist.m3u8");
-
-            objBag.add(childResc);
-
-            objBag.addProperty(Cdr.primaryObject, childResc);
-
-            depBag.add(objBag);
-
-            job.closeModel();
-
-            job.run();
-        });
     }
 
     @Test
@@ -324,7 +293,7 @@ public class ValidateContentModelJobTest extends AbstractDepositJobTest {
             Resource childResc = model.getResource(childPid.getRepositoryPath());
             childResc.addProperty(RDF.type, Cdr.Work);
             childResc.addProperty(CdrAcl.canDescribe, "user");
-            childResc.addProperty(Cdr.streamingHost, DURACLOUD);
+            childResc.addProperty(Cdr.streamingUrl, STREAMREAPER_PREFIX_URL + "?params=more");
             objBag.add(childResc);
 
             depBag.add(objBag);
