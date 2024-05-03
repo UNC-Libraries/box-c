@@ -36,7 +36,7 @@ jobs:
       run: |
         CONTAINER_ID=$(docker ps --format "{{.ID}}" -f "ancestor=fcrepo/fcrepo:5.1.1")
         echo "CONTAINER_ID=$CONTAINER_ID" >> $GITHUB_ENV
-    - name: Restart fedora now that the repository has been checked out
+    - name: Restart fedora now that the repository has been checked out so config files are available
       run: docker restart ${{ env.CONTAINER_ID }}
     - name: Checkout submodules
       run: git submodule update --init --recursive
@@ -50,14 +50,6 @@ jobs:
         path: ~/.m2
         key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
         restore-keys: ${{ runner.os }}-m2
-    - name: Listing files current
-      run: ls -la
-    - name: Listing files workspace
-      run: ls -la ${{ github.workspace }}
-    - name: Listing files config
-      run: ls -la ${{ github.workspace }}/it_config
-    - name: Cat
-      run: cat ${{ github.workspace }}/it_config/allowed_external_paths.txt
 #    - name: Wait for fedora to become available
 #      run: |
 #        URL="http://localhost:48085/fcrepo/rest"
@@ -75,27 +67,8 @@ jobs:
 #            sleep 10  # Adjust the interval (in seconds) between retries
 #          fi
 #        done
-    - name: Wait for it
-      run: sleep 20
-    - name: Display services
-      run: docker ps
-    - name: View fedora service logs
-      run: |
-        docker logs ${{ env.CONTAINER_ID }}
-    - name: Run ls -la on container
-      run: |
-        docker exec ${{ env.CONTAINER_ID }} ls -la /
-    - name: Run ls -la /config on container
-      run: |
-        docker exec ${{ env.CONTAINER_ID }} ls -la /config/
-    - name: Docker volumes
-      run: docker inspect ${{ env.CONTAINER_ID }}
-##    - name: View fedora service logs
-##      run: cat ${{ github.workspace }}/it_config/file.log
-#    - name: Build with Maven
-#      run: mvn -B -U -pl '!integration' clean install -DskipTests
-#
-
+    - name: Build with Maven
+      run: mvn -B -U -pl '!integration' clean install -DskipTests
 #    - name: Set up nodejs
 #      uses: actions/setup-node@v2
 #      with:
@@ -113,20 +86,21 @@ jobs:
 #    - run: npm install -g jest-cli@29.0.3
 #    - run: npm --prefix static/js/vue-cdr-access run test
 #    - run: npm --prefix static/js/admin/vue-permissions-editor run test
-#
-#    - name: Report to CodeClimate
-#      uses: paambaati/codeclimate-action@v3.0.0
-#      env:
-#        CC_TEST_REPORTER_ID: ${{secrets.CC_TEST_REPORTER_ID}}
-#        JACOCO_SOURCE_PATH: "${{github.workspace}}/auth-api/src/main/java ${{github.workspace}}/auth-fcrepo/src/main/java ${{github.workspace}}/common-utils/src/main/java ${{github.workspace}}/deposit-app/src/main/java ${{github.workspace}}/deposit-utils/src/main/java ${{github.workspace}}/fcrepo-utils/src/main/java ${{github.workspace}}/indexing-solr/src/main/java ${{github.workspace}}/integration/src/main/java ${{github.workspace}}/model-api/src/main/java ${{github.workspace}}/model-fcrepo/src/main/java ${{github.workspace}}/operations/src/main/java ${{github.workspace}}/operations-jms/src/main/java ${{github.workspace}}/persistence/src/main/java ${{github.workspace}}/persistence-api/src/main/java ${{github.workspace}}/search-api/src/main/java ${{github.workspace}}/search-solr/src/main/java ${{github.workspace}}/services-camel-app/src/main/java ${{github.workspace}}/web-access-app/src/main/java ${{github.workspace}}/web-access-war/src/main/java ${{github.workspace}}/web-admin-app/src/main/java ${{github.workspace}}/web-common/src/main/java ${{github.workspace}}/web-services-app/src/main/java ${{github.workspace}}/web-sword/src/main/java  ${{github.workspace}}/clamav-java/src/main/java"
-#      with:
-#        coverageCommand: mvn -pl persistence verify
-#        coverageLocations: |
-#          ${{github.workspace}}/**/target/site/jacoco/jacoco.xml:jacoco
-#          ${{github.workspace}}/**/target/site/jacoco-it/jacoco.xml:jacoco
-#          ${{github.workspace}}/static/js/vue-cdr-access/coverage/lcov.info:lcov
-#          ${{github.workspace}}/static/js/admin/vue-permissions-editor/coverage/lcov.info:lcov
-#
-#    - name: View fedora service logs (always run)
-#      if: always()
-#      run: docker logs fedora
+
+    - name: Report to CodeClimate
+      uses: paambaati/codeclimate-action@v3.0.0
+      env:
+        CC_TEST_REPORTER_ID: ${{secrets.CC_TEST_REPORTER_ID}}
+        JACOCO_SOURCE_PATH: "${{github.workspace}}/auth-api/src/main/java ${{github.workspace}}/auth-fcrepo/src/main/java ${{github.workspace}}/common-utils/src/main/java ${{github.workspace}}/deposit-app/src/main/java ${{github.workspace}}/deposit-utils/src/main/java ${{github.workspace}}/fcrepo-utils/src/main/java ${{github.workspace}}/indexing-solr/src/main/java ${{github.workspace}}/integration/src/main/java ${{github.workspace}}/model-api/src/main/java ${{github.workspace}}/model-fcrepo/src/main/java ${{github.workspace}}/operations/src/main/java ${{github.workspace}}/operations-jms/src/main/java ${{github.workspace}}/persistence/src/main/java ${{github.workspace}}/persistence-api/src/main/java ${{github.workspace}}/search-api/src/main/java ${{github.workspace}}/search-solr/src/main/java ${{github.workspace}}/services-camel-app/src/main/java ${{github.workspace}}/web-access-app/src/main/java ${{github.workspace}}/web-access-war/src/main/java ${{github.workspace}}/web-admin-app/src/main/java ${{github.workspace}}/web-common/src/main/java ${{github.workspace}}/web-services-app/src/main/java ${{github.workspace}}/web-sword/src/main/java  ${{github.workspace}}/clamav-java/src/main/java"
+      with:
+        coverageCommand: mvn -pl persistence verify
+        coverageLocations: |
+          ${{github.workspace}}/**/target/site/jacoco/jacoco.xml:jacoco
+          ${{github.workspace}}/**/target/site/jacoco-it/jacoco.xml:jacoco
+          ${{github.workspace}}/static/js/vue-cdr-access/coverage/lcov.info:lcov
+          ${{github.workspace}}/static/js/admin/vue-permissions-editor/coverage/lcov.info:lcov
+
+    - name: View fedora service logs
+      if: always()
+      run: |
+        docker logs ${{ env.CONTAINER_ID }}
