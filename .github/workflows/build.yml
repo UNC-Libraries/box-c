@@ -35,9 +35,9 @@ jobs:
       id: get_container_id
       run: |
         CONTAINER_ID=$(docker ps --format "{{.ID}}" -f "ancestor=fcrepo/fcrepo:5.1.1")
-        echo "::set-output name=container_id::$CONTAINER_ID"
+        echo "CONTAINER_ID=$CONTAINER_ID" >> $GITHUB_ENV
     - name: Restart fedora now that the repository has been checked out
-      run: docker restart ${{ steps.get_container_id.outputs.container_id }}
+      run: docker restart ${{ env.CONTAINER_ID }}
     - name: Checkout submodules
       run: git submodule update --init --recursive
     - name: Set up JDK 11
@@ -81,15 +81,15 @@ jobs:
       run: docker ps
     - name: View fedora service logs
       run: |
-        docker logs ${{ steps.get_container_id.outputs.container_id }}
+        docker logs ${{ env.CONTAINER_ID }}
     - name: Run ls -la on container
       run: |
-        docker exec ${{ steps.get_container_id.outputs.container_id }} ls -la /
+        docker exec ${{ env.CONTAINER_ID }} ls -la /
     - name: Run ls -la /config on container
       run: |
-        docker exec ${{ steps.get_container_id.outputs.container_id }} ls -la /config/
+        docker exec ${{ env.CONTAINER_ID }} ls -la /config/
     - name: Docker volumes
-      run: docker inspect ${{ steps.get_container_id.outputs.container_id }}
+      run: docker inspect ${{ env.CONTAINER_ID }}
 ##    - name: View fedora service logs
 ##      run: cat ${{ github.workspace }}/it_config/file.log
 #    - name: Build with Maven
