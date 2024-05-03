@@ -132,7 +132,7 @@ public class Cdr {
             "http://cdr.unc.edu/definitions/model#storageLocation" );
 
     /**
-     * Property which holds the StreamReaper URL for streaming
+     * Property which holds the URL for streaming
      */
     public static final Property streamingUrl = createProperty(
             "http://cdr.unc.edu/definitions/model#streamingUrl");

@@ -23,7 +23,7 @@ public class StreamingPropertiesRequestSerializationHelperTest {
         var request = new StreamingPropertiesRequest();
         request.setAgent(agent);
         request.setId(pid.getId());
-        request.setUrl(STREAMREAPER_PREFIX_URL + "?/params=more");
+        request.setUrl(STREAMREAPER_PREFIX_URL + "?params=more");
         request.setAction(ADD);
 
         var json = StreamingPropertiesRequestSerializationHelper.toJson(request);

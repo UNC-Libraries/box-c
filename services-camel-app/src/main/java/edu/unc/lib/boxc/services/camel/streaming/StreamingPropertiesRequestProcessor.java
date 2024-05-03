@@ -20,9 +20,6 @@ import java.util.Objects;
 import static edu.unc.lib.boxc.operations.jms.streaming.StreamingPropertiesRequest.ADD;
 import static edu.unc.lib.boxc.operations.jms.streaming.StreamingPropertiesRequest.DELETE;
 import static edu.unc.lib.boxc.operations.jms.streaming.StreamingPropertiesRequest.STREAMREAPER_PREFIX_URL;
-import static edu.unc.lib.boxc.operations.jms.streaming.StreamingPropertiesRequest.VALID_FOLDERS;
-import static org.apache.commons.io.FilenameUtils.getName;
-import static org.apache.commons.io.FilenameUtils.removeExtension;
 
 /**
  * Processing requests to edit streaming properties on a FileObject
