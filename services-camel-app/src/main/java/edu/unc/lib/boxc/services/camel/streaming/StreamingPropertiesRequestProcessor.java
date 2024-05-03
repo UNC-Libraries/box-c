@@ -61,8 +61,12 @@ public class StreamingPropertiesRequestProcessor implements Processor {
 
         if (Objects.equals(ADD, action)) {
             var url = request.getUrl();
-            if (!url.startsWith(STREAMREAPER_PREFIX_URL)) {
-                return "URL is not a stream reaper URL";
+            if (url == null) {
+                return "URL is required";
+            } else {
+                if (!url.startsWith(STREAMREAPER_PREFIX_URL)) {
+                    return "URL is not a stream reaper URL";
+                }
             }
         }
 
