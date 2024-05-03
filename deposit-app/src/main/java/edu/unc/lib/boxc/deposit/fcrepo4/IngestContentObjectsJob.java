@@ -769,14 +769,8 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
         if (dResc.hasProperty(Cdr.memberOrder)) {
             aResc.addProperty(Cdr.memberOrder, dResc.getProperty(Cdr.memberOrder).getString());
         }
-        if (dResc.hasProperty(Cdr.streamingFolder)) {
-            aResc.addProperty(Cdr.streamingFolder, dResc.getProperty(Cdr.streamingFolder).getString());
-        }
-        if (dResc.hasProperty(Cdr.streamingFile)) {
-            aResc.addProperty(Cdr.streamingFile, dResc.getProperty(Cdr.streamingFile).getString());
-        }
-        if (dResc.hasProperty(Cdr.streamingHost)) {
-            aResc.addProperty(Cdr.streamingHost, dResc.getProperty(Cdr.streamingHost).getString());
+        if (dResc.hasProperty(Cdr.streamingUrl)) {
+            aResc.addProperty(Cdr.streamingUrl, dResc.getProperty(Cdr.streamingUrl).getString());
         }
     }
 
