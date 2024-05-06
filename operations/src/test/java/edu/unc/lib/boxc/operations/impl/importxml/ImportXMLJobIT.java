@@ -58,7 +58,6 @@ import static org.mockito.MockitoAnnotations.openMocks;
  */
 @ExtendWith(SpringExtension.class)
 @ContextHierarchy({
-    @ContextConfiguration("/spring-test/test-fedora-container.xml"),
     @ContextConfiguration("/spring-test/cdr-client-container.xml"),
     @ContextConfiguration("/spring-test/import-job-it.xml")
 })
