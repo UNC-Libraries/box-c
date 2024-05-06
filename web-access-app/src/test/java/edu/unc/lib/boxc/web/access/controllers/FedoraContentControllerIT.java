@@ -10,6 +10,7 @@ import edu.unc.lib.boxc.model.api.objects.FileObject;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
 import edu.unc.lib.boxc.model.fcrepo.test.TestHelper;
+import edu.unc.lib.boxc.persist.impl.storage.StorageLocationTestHelper;
 import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -28,6 +29,7 @@ import org.springframework.web.context.WebApplicationContext;
 
 import java.io.File;
 import java.net.URI;
+import java.nio.file.Files;
 import java.nio.file.Path;
 
 import static edu.unc.lib.boxc.model.api.DatastreamType.TECHNICAL_METADATA;
@@ -50,7 +52,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @ExtendWith(SpringExtension.class)
 @WebAppConfiguration
 @ContextHierarchy({
-    @ContextConfiguration("/spring-test/test-fedora-container.xml"),
     @ContextConfiguration("/spring-test/cdr-client-container.xml"),
     @ContextConfiguration("/fedora-content-it-servlet.xml")
 })
@@ -64,6 +65,9 @@ public class FedoraContentControllerIT {
     private RepositoryObjectLoader repositoryObjectLoader;
     @Autowired
     private AccessControlService accessControlService;
+    @Autowired
+    private String baseAddress;
+    private StorageLocationTestHelper storageLocationTestHelper;
 
     protected MockMvc mvc;
     @Autowired
@@ -74,16 +78,16 @@ public class FedoraContentControllerIT {
 
     @BeforeEach
     public void init() {
-
         mvc = MockMvcBuilders
                 .webAppContextSetup(context)
                 .build();
 
-        TestHelper.setContentBase("http://localhost:48085/rest");
+        TestHelper.setContentBase(baseAddress);
 
         GroupsThreadStore.storeUsername("test_user");
         GroupsThreadStore.storeGroups(new AccessGroupSetImpl("adminGroup"));
 
+        storageLocationTestHelper = new StorageLocationTestHelper();
     }
 
     @Test
@@ -191,7 +195,8 @@ public class FedoraContentControllerIT {
                 .andExpect(status().is2xxSuccessful())
                 .andReturn();
 
-        assertEquals(content, result1.getResponse().getContentAsString());
+        assertEquals(BINARY_CONTENT.length(), result1.getResponse().getContentLength());
+        assertEquals(BINARY_CONTENT, result1.getResponse().getContentAsString());
 
         // Verify administrative datastream retrievable
         MvcResult result2 = mvc.perform(get(requestPath + filePid.getId() + "/" + TECHNICAL_METADATA.getId()))
@@ -285,8 +290,8 @@ public class FedoraContentControllerIT {
     }
 
     private URI makeContentUri(String content) throws Exception {
-        File dataFile = tmpFolder.resolve("testFile").toFile();
-        FileUtils.write(dataFile, content, "UTF-8");
-        return dataFile.toPath().toUri();
+        var filePath = Files.createTempFile(storageLocationTestHelper.getBaseStoragePath(), "testFile", null);
+        FileUtils.write(filePath.toFile(), content, "UTF-8");
+        return filePath.toUri();
     }
 }
