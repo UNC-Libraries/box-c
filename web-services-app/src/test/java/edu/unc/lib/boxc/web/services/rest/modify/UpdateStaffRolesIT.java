@@ -22,6 +22,7 @@ import java.util.Map;
 
 import javax.ws.rs.core.MediaType;
 
+import edu.unc.lib.boxc.web.services.rest.MvcTestHelpers;
 import org.apache.jena.rdf.model.Resource;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -47,7 +48,6 @@ import edu.unc.lib.boxc.web.services.rest.modify.UpdateStaffAccessController.Upd
  * @author bbpennel
  */
 @ContextHierarchy({
-    @ContextConfiguration("/spring-test/test-fedora-container.xml"),
     @ContextConfiguration("/spring-test/cdr-client-container.xml"),
     @ContextConfiguration("/update-staff-it-servlet.xml")
 })
@@ -111,7 +111,7 @@ public class UpdateStaffRolesIT extends AbstractAPIIT {
                 .andExpect(status().isBadRequest())
             .andReturn();
 
-        Map<String, Object> respMap = getMapFromResponse(result);
+        Map<String, Object> respMap = MvcTestHelpers.getMapFromResponse(result);
         assertEquals(pid.getId(), respMap.get("pid"));
         assertEquals("editStaffRoles", respMap.get("action"));
         assertTrue(((String) respMap.get("error")).matches(".*contained invalid acl properties:[\\S\\s]+unitOwner"));
@@ -150,7 +150,7 @@ public class UpdateStaffRolesIT extends AbstractAPIIT {
                 .andExpect(status().isOk())
             .andReturn();
 
-        Map<String, Object> respMap = getMapFromResponse(result);
+        Map<String, Object> respMap = MvcTestHelpers.getMapFromResponse(result);
         assertEquals(pid.getId(), respMap.get("pid"));
         assertEquals("editStaffRoles", respMap.get("action"));
 
@@ -242,7 +242,7 @@ public class UpdateStaffRolesIT extends AbstractAPIIT {
                 .andExpect(status().isOk())
             .andReturn();
 
-        Map<String, Object> respMap = getMapFromResponse(result);
+        Map<String, Object> respMap = MvcTestHelpers.getMapFromResponse(result);
         assertEquals(pid.getId(), respMap.get("pid"));
         assertEquals("editStaffRoles", respMap.get("action"));
 
@@ -267,7 +267,7 @@ public class UpdateStaffRolesIT extends AbstractAPIIT {
                 .andExpect(status().isOk())
             .andReturn();
 
-        Map<String, Object> respMap = getMapFromResponse(result);
+        Map<String, Object> respMap = MvcTestHelpers.getMapFromResponse(result);
         assertEquals(pid.getId(), respMap.get("pid"));
         assertEquals("editStaffRoles", respMap.get("action"));
 
@@ -311,6 +311,6 @@ public class UpdateStaffRolesIT extends AbstractAPIIT {
         UpdateStaffRequest updateRequest = new UpdateStaffRequest();
         updateRequest.setRoles(assignments);
 
-        return makeRequestBody(updateRequest);
+        return MvcTestHelpers.makeRequestBody(updateRequest);
     }
 }

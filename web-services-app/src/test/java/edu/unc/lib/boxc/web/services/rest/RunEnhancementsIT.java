@@ -1,51 +1,5 @@
 package edu.unc.lib.boxc.web.services.rest;
 
-import static edu.unc.lib.boxc.auth.api.Permission.runEnhancements;
-import static edu.unc.lib.boxc.model.api.xml.JDOMNamespaceUtil.ATOM_NS;
-import static edu.unc.lib.boxc.model.api.xml.JDOMNamespaceUtil.CDR_MESSAGE_NS;
-import static edu.unc.lib.boxc.operations.jms.JMSMessageUtil.CDRActions.RUN_ENHANCEMENTS;
-import static java.util.Arrays.asList;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.reset;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-import static org.mockito.MockitoAnnotations.openMocks;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
-import java.io.File;
-import java.net.URI;
-import java.nio.file.Path;
-import java.util.Arrays;
-import java.util.Map;
-
-import edu.unc.lib.boxc.model.fcrepo.test.TestHelper;
-import edu.unc.lib.boxc.web.services.processing.RunEnhancementsService;
-import edu.unc.lib.boxc.web.services.rest.exceptions.RestResponseEntityExceptionHandler;
-import org.apache.commons.io.FileUtils;
-import org.jdom2.Document;
-import org.jdom2.Element;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.io.TempDir;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.MediaType;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.ContextHierarchy;
-import org.springframework.test.web.servlet.MvcResult;
-
 import edu.unc.lib.boxc.auth.api.exceptions.AccessRestrictionException;
 import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
 import edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl;
@@ -64,15 +18,55 @@ import edu.unc.lib.boxc.search.api.requests.SimpleIdRequest;
 import edu.unc.lib.boxc.search.solr.models.ContentObjectSolrRecord;
 import edu.unc.lib.boxc.search.solr.responses.SearchResultResponse;
 import edu.unc.lib.boxc.web.common.services.SolrQueryLayerService;
+import edu.unc.lib.boxc.web.services.processing.RunEnhancementsService;
+import edu.unc.lib.boxc.web.services.rest.exceptions.RestResponseEntityExceptionHandler;
 import edu.unc.lib.boxc.web.services.rest.modify.AbstractAPIIT;
+import org.jdom2.Document;
+import org.jdom2.Element;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.ContextHierarchy;
+import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+
+import java.net.URI;
+import java.nio.file.Path;
+import java.util.Arrays;
+import java.util.Map;
+
+import static edu.unc.lib.boxc.auth.api.Permission.runEnhancements;
+import static edu.unc.lib.boxc.model.api.xml.JDOMNamespaceUtil.ATOM_NS;
+import static edu.unc.lib.boxc.model.api.xml.JDOMNamespaceUtil.CDR_MESSAGE_NS;
+import static edu.unc.lib.boxc.operations.jms.JMSMessageUtil.CDRActions.RUN_ENHANCEMENTS;
+import static java.util.Arrays.asList;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import static org.mockito.MockitoAnnotations.openMocks;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 /**
  * @author lfarrell
  *
  */
 @ContextHierarchy({
-        @ContextConfiguration("/spring-test/test-fedora-container.xml"),
         @ContextConfiguration("/spring-test/cdr-client-container.xml")
 })
 public class RunEnhancementsIT extends AbstractAPIIT {
@@ -104,7 +98,7 @@ public class RunEnhancementsIT extends AbstractAPIIT {
     public Path tmpFolder;
 
     @BeforeEach
-    public void init() {
+    public void initLocal() {
         closeable = openMocks(this);
         runEnhancementsService = new RunEnhancementsService();
         runEnhancementsService.setMessageSender(messageSender);
@@ -115,7 +109,6 @@ public class RunEnhancementsIT extends AbstractAPIIT {
         mvc = MockMvcBuilders.standaloneSetup(controller)
                 .setControllerAdvice(new RestResponseEntityExceptionHandler())
                 .build();
-        TestHelper.setContentBase("http://localhost:48085/rest");
 
         AccessGroupSet testPrincipals = new AccessGroupSetImpl(ADMIN_GROUP);
 
@@ -220,15 +213,14 @@ public class RunEnhancementsIT extends AbstractAPIIT {
     }
 
     private void assertResponseSuccess(MvcResult mvcResult) throws Exception {
-        Map<String, Object> resp = getMapFromResponse(mvcResult);
+        Map<String, Object> resp = MvcTestHelpers.getMapFromResponse(mvcResult);
         assertTrue(resp.containsKey("message"), "Missing run enhancements message");
         assertEquals("runEnhancements", resp.get("action"));
     }
 
     private URI makeContentUri(String content) throws Exception {
-        File dataFile = tmpFolder.resolve("dataFile").toFile();
-        FileUtils.write(dataFile, content, "UTF-8");
-        return dataFile.toPath().toUri();
+        Path dataPath = createBinaryContent(content, "dataFile", null);
+        return dataPath.toUri();
     }
 
     private void setResultMetadataObject(PID pid, String resourceType) {

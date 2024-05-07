@@ -18,6 +18,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import java.util.Map;
 
+import edu.unc.lib.boxc.web.services.rest.MvcTestHelpers;
 import org.apache.jena.rdf.model.Resource;
 import org.jdom2.Document;
 import org.jdom2.Element;
@@ -49,7 +50,6 @@ import edu.unc.lib.boxc.model.fcrepo.test.AclModelBuilder;
  *
  */
 @ContextHierarchy({
-    @ContextConfiguration("/spring-test/test-fedora-container.xml"),
     @ContextConfiguration("/spring-test/cdr-client-container.xml"),
     @ContextConfiguration("/spring-test/acl-service-context.xml"),
     @ContextConfiguration("/add-container-it-servlet.xml")
@@ -81,7 +81,7 @@ public class AddContainerIT extends AbstractAPIIT {
         assertChildContainerAdded(parent, label, CollectionObject.class);
 
         // Verify response from api
-        Map<String, Object> respMap = getMapFromResponse(result);
+        Map<String, Object> respMap = MvcTestHelpers.getMapFromResponse(result);
         assertEquals(parentPid.getUUID(), respMap.get("pid"));
         assertEquals("create", respMap.get("action"));
         assertPatronDoesNotHaveNonePermission(parent, label);
@@ -100,7 +100,7 @@ public class AddContainerIT extends AbstractAPIIT {
         assertChildContainerAdded(contentRoot, label, AdminUnit.class);
 
         // Verify response from api
-        Map<String, Object> respMap = getMapFromResponse(result);
+        Map<String, Object> respMap = MvcTestHelpers.getMapFromResponse(result);
         assertEquals(CONTENT_ROOT_ID, respMap.get("pid"));
         assertEquals("create", respMap.get("action"));
         assertPatronDoesNotHaveNonePermission(contentRoot, label);
@@ -128,7 +128,7 @@ public class AddContainerIT extends AbstractAPIIT {
         assertChildContainerAdded(collObj, label, FolderObject.class);
 
         // Verify response from api
-        Map<String, Object> respMap = getMapFromResponse(result);
+        Map<String, Object> respMap = MvcTestHelpers.getMapFromResponse(result);
         assertEquals(collObj.getPid().getId(), respMap.get("pid"));
         assertEquals("create", respMap.get("action"));
 
@@ -202,7 +202,7 @@ public class AddContainerIT extends AbstractAPIIT {
         assertChildContainerAdded(collObj, label, FolderObject.class);
 
         // Verify response from api
-        Map<String, Object> respMap = getMapFromResponse(result);
+        Map<String, Object> respMap = MvcTestHelpers.getMapFromResponse(result);
         assertEquals(collObj.getPid().getId(), respMap.get("pid"));
         assertEquals("create", respMap.get("action"));
         assertPatronDoesNotHaveNonePermission(collObj, label);
@@ -234,7 +234,7 @@ public class AddContainerIT extends AbstractAPIIT {
         assertChildContainerAdded(collObj, label, FolderObject.class);
 
         // Verify response from api
-        Map<String, Object> respMap = getMapFromResponse(result);
+        Map<String, Object> respMap = MvcTestHelpers.getMapFromResponse(result);
         assertEquals(collObj.getPid().getId(), respMap.get("pid"));
         assertEquals("create", respMap.get("action"));
 
@@ -263,7 +263,7 @@ public class AddContainerIT extends AbstractAPIIT {
         assertChildContainerAdded(collObj, label, WorkObject.class);
 
         // Verify response from api
-        Map<String, Object> respMap = getMapFromResponse(result);
+        Map<String, Object> respMap = MvcTestHelpers.getMapFromResponse(result);
         assertEquals(collObj.getPid().getId(), respMap.get("pid"));
         assertEquals("create", respMap.get("action"));
         assertPatronDoesNotHaveNonePermission(collObj, label);
@@ -290,7 +290,7 @@ public class AddContainerIT extends AbstractAPIIT {
         assertChildContainerNotAdded(parent);
 
         // Verify response from api
-        Map<String, Object> respMap = getMapFromResponse(result);
+        Map<String, Object> respMap = MvcTestHelpers.getMapFromResponse(result);
         assertEquals(parentPid.getUUID(), respMap.get("pid"));
         assertEquals("create", respMap.get("action"));
         assertTrue(respMap.containsKey("error"));
@@ -316,7 +316,7 @@ public class AddContainerIT extends AbstractAPIIT {
         assertChildContainerAdded(adminUnit, label, CollectionObject.class);
 
         // Verify response from api
-        Map<String, Object> respMap = getMapFromResponse(result);
+        Map<String, Object> respMap = MvcTestHelpers.getMapFromResponse(result);
         assertEquals(adminId, respMap.get("pid"));
         assertEquals("create", respMap.get("action"));
         ContentObject member = getMemberByLabel(adminUnit, label);
@@ -344,7 +344,7 @@ public class AddContainerIT extends AbstractAPIIT {
         assertChildContainerAdded(adminUnit, label, CollectionObject.class);
 
         // Verify response from api
-        Map<String, Object> respMap = getMapFromResponse(result);
+        Map<String, Object> respMap = MvcTestHelpers.getMapFromResponse(result);
         assertEquals(adminId, respMap.get("pid"));
         assertEquals("create", respMap.get("action"));
         ContentObject member = getMemberByLabel(adminUnit, label);
@@ -375,7 +375,7 @@ public class AddContainerIT extends AbstractAPIIT {
         assertChildContainerAdded(adminUnit, label, CollectionObject.class);
 
         // Verify response from api
-        Map<String, Object> respMap = getMapFromResponse(result);
+        Map<String, Object> respMap = MvcTestHelpers.getMapFromResponse(result);
         assertEquals(adminId, respMap.get("pid"));
         assertEquals("create", respMap.get("action"));
         ContentObject member = getMemberByLabel(adminUnit, label);
@@ -402,7 +402,7 @@ public class AddContainerIT extends AbstractAPIIT {
         assertChildContainerNotAdded(collObj);
 
         // Verify response from api
-        Map<String, Object> respMap = getMapFromResponse(result);
+        Map<String, Object> respMap = MvcTestHelpers.getMapFromResponse(result);
         assertEquals(collObj.getPid().getId(), respMap.get("pid"));
         assertEquals("create", respMap.get("action"));
         assertTrue(respMap.containsKey("error"));

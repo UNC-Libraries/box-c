@@ -14,6 +14,7 @@ import java.util.stream.Collectors;
 
 import javax.ws.rs.core.MediaType;
 
+import edu.unc.lib.boxc.web.services.rest.MvcTestHelpers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -39,7 +40,6 @@ import edu.unc.lib.boxc.web.services.rest.modify.MoveObjectsController.MoveReque
  */
 @ExtendWith(SpringExtension.class)
 @ContextHierarchy({
-    @ContextConfiguration("/spring-test/test-fedora-container.xml"),
     @ContextConfiguration("/spring-test/cdr-client-container.xml"),
     @ContextConfiguration("/move-objects-it-servlet.xml")
 })
@@ -83,7 +83,7 @@ public class MoveObjectsIT extends AbstractAPIIT {
 
         treeIndexer.indexAll(baseAddress);
 
-        Map<String, Object> respMap = getMapFromResponse(result);
+        Map<String, Object> respMap = MvcTestHelpers.getMapFromResponse(result);
         assertNotNull(respMap.get("id"));
 
         assertObjectsAtDestination(movePids);
@@ -107,7 +107,7 @@ public class MoveObjectsIT extends AbstractAPIIT {
 
         treeIndexer.indexAll(baseAddress);
 
-        Map<String, Object> respMap = getMapFromResponse(result);
+        Map<String, Object> respMap = MvcTestHelpers.getMapFromResponse(result);
         assertNotNull(respMap.get("id"));
 
         assertObjectsAtDestination(movePids);
@@ -134,7 +134,7 @@ public class MoveObjectsIT extends AbstractAPIIT {
 
         treeIndexer.indexAll(baseAddress);
 
-        Map<String, Object> respMap = getMapFromResponse(result);
+        Map<String, Object> respMap = MvcTestHelpers.getMapFromResponse(result);
         assertNotNull(respMap.get("id"));
 
         assertObjectsAtDestination(movePids);
@@ -162,7 +162,7 @@ public class MoveObjectsIT extends AbstractAPIIT {
 
         treeIndexer.indexAll(baseAddress);
 
-        Map<String, Object> respMap = getMapFromResponse(result);
+        Map<String, Object> respMap = MvcTestHelpers.getMapFromResponse(result);
         assertNotNull(respMap.get("id"));
 
         assertObjectsAtDestination(movePids);

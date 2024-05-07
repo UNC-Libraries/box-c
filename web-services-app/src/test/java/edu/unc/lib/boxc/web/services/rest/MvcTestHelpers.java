@@ -21,4 +21,9 @@ public class MvcTestHelpers {
         ObjectMapper mapper = new ObjectMapper();
         return mapper.readValue(result.getResponse().getContentAsString(), type);
     }
+
+    public static byte[] makeRequestBody(Object details) throws Exception {
+        ObjectMapper mapper = new ObjectMapper();
+        return mapper.writeValueAsBytes(details);
+    }
 }

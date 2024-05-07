@@ -14,6 +14,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Map;
 
+import edu.unc.lib.boxc.web.services.rest.MvcTestHelpers;
 import org.jdom2.Document;
 import org.jgroups.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
@@ -39,7 +40,6 @@ import edu.unc.lib.boxc.operations.test.ModsTestHelper;
  *
  */
 @ContextHierarchy({
-    @ContextConfiguration("/spring-test/test-fedora-container.xml"),
     @ContextConfiguration("/spring-test/cdr-client-container.xml"),
     @ContextConfiguration("/import-xml-it-servlet.xml")
 })
@@ -77,7 +77,7 @@ public class ImportXMLIT extends AbstractAPIIT {
                 .andReturn();
 
         // Verify response from api
-        Map<String, Object> respMap = getMapFromResponse(result);
+        Map<String, Object> respMap = MvcTestHelpers.getMapFromResponse(result);
         assertEquals("import xml", respMap.get("action"));
         assertEquals("Import of metadata has begun. " + GroupsThreadStore.getEmail()
                 + " will be emailed when the update completes", respMap.get("message"));
@@ -97,7 +97,7 @@ public class ImportXMLIT extends AbstractAPIIT {
                 .andReturn();
 
         // Verify response from api
-        Map<String, Object> respMap = getMapFromResponse(result);
+        Map<String, Object> respMap = MvcTestHelpers.getMapFromResponse(result);
         assertEquals("import xml", respMap.get("action"));
         assertEquals(GroupsThreadStore.getUsername(), respMap.get("username"));
     }

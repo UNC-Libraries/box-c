@@ -31,6 +31,7 @@ import java.util.Map;
 
 import javax.ws.rs.core.MediaType;
 
+import edu.unc.lib.boxc.web.services.rest.MvcTestHelpers;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -60,6 +61,7 @@ import edu.unc.lib.boxc.persist.impl.sources.FilesystemIngestSource;
 import edu.unc.lib.boxc.persist.impl.sources.IngestSourceManagerImpl;
 import edu.unc.lib.boxc.persist.impl.sources.IngestSourceManagerImpl.IngestSourceMapping;
 import edu.unc.lib.boxc.web.services.rest.modify.IngestSourceController.IngestPackageDetails;
+import redis.clients.jedis.JedisPool;
 
 /**
  *
@@ -91,6 +93,8 @@ public class IngestFromSourcesIT extends AbstractAPIIT {
     private IngestSourceManagerImpl sourceManager;
     @Autowired
     private ContentPathFactory contentPathFactory;
+    @Autowired
+    private JedisPool jedisPool;
 
     @BeforeEach
     public void setup() throws Exception {
@@ -110,8 +114,8 @@ public class IngestFromSourcesIT extends AbstractAPIIT {
     }
 
     @AfterEach
-    public void teardown() throws Exception {
-        GroupsThreadStore.clearStore();
+    public void teardownLocal() throws Exception {
+        jedisPool.getResource().flushAll();
     }
 
     // List sources/candidates tests
@@ -260,7 +264,7 @@ public class IngestFromSourcesIT extends AbstractAPIIT {
 
         mvc.perform(post("/edit/ingestSources/ingest/" + destPid.getId())
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(makeRequestBody(details)))
+                .content(MvcTestHelpers.makeRequestBody(details)))
                 .andExpect(status().isForbidden())
                 .andReturn();
     }
@@ -281,7 +285,7 @@ public class IngestFromSourcesIT extends AbstractAPIIT {
 
         MvcResult result = mvc.perform(post("/edit/ingestSources/ingest/" + destPid.getId())
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(makeRequestBody(details)))
+                .content(MvcTestHelpers.makeRequestBody(details)))
                 .andExpect(status().isOk())
                 .andReturn();
 
@@ -310,7 +314,7 @@ public class IngestFromSourcesIT extends AbstractAPIIT {
 
         mvc.perform(post("/edit/ingestSources/ingest/" + destPid.getId())
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(makeRequestBody(details)))
+                .content(MvcTestHelpers.makeRequestBody(details)))
                 .andExpect(status().isBadRequest())
                 .andReturn();
     }
@@ -329,7 +333,7 @@ public class IngestFromSourcesIT extends AbstractAPIIT {
 
         mvc.perform(post("/edit/ingestSources/ingest/" + destPid.getId())
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(makeRequestBody(details)))
+                .content(MvcTestHelpers.makeRequestBody(details)))
                 .andExpect(status().isBadRequest())
                 .andReturn();
     }
@@ -351,7 +355,7 @@ public class IngestFromSourcesIT extends AbstractAPIIT {
 
         mvc.perform(post("/edit/ingestSources/ingest/" + destPid.getId())
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(makeRequestBody(details)))
+                .content(MvcTestHelpers.makeRequestBody(details)))
                 .andExpect(status().isBadRequest())
                 .andReturn();
     }
@@ -375,7 +379,7 @@ public class IngestFromSourcesIT extends AbstractAPIIT {
 
         mvc.perform(post("/edit/ingestSources/ingest/" + destPid.getId())
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(makeRequestBody(details)))
+                .content(MvcTestHelpers.makeRequestBody(details)))
                 .andExpect(status().isBadRequest())
                 .andReturn();
     }
@@ -396,7 +400,7 @@ public class IngestFromSourcesIT extends AbstractAPIIT {
 
         mvc.perform(post("/edit/ingestSources/ingest/" + destPid.getId())
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(makeRequestBody(details)))
+                .content(MvcTestHelpers.makeRequestBody(details)))
                 .andExpect(status().isBadRequest())
                 .andReturn();
     }
@@ -424,7 +428,7 @@ public class IngestFromSourcesIT extends AbstractAPIIT {
 
         MvcResult result = mvc.perform(post("/edit/ingestSources/ingest/" + destPid.getId())
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(makeRequestBody(details)))
+                .content(MvcTestHelpers.makeRequestBody(details)))
                 .andExpect(status().isOk())
                 .andReturn();
 
@@ -461,7 +465,7 @@ public class IngestFromSourcesIT extends AbstractAPIIT {
 
         MvcResult result = mvc.perform(post("/edit/ingestSources/ingest/" + destPid.getId())
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(makeRequestBody(details)))
+                .content(MvcTestHelpers.makeRequestBody(details)))
                 .andExpect(status().isOk())
                 .andReturn();
 
@@ -502,7 +506,7 @@ public class IngestFromSourcesIT extends AbstractAPIIT {
 
         MvcResult ingestResult = mvc.perform(post("/edit/ingestSources/ingest/" + destPid.getId())
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(makeRequestBody(details)))
+                .content(MvcTestHelpers.makeRequestBody(details)))
                 .andExpect(status().isOk())
                 .andReturn();
 
@@ -514,7 +518,7 @@ public class IngestFromSourcesIT extends AbstractAPIIT {
 
     @SuppressWarnings("unchecked")
     private List<String> verifySuccessResponse(MvcResult result, PID destPid) throws Exception {
-        Map<String, Object> resp = getMapFromResponse(result);
+        Map<String, Object> resp = MvcTestHelpers.getMapFromResponse(result);
         assertEquals(destPid.getId(), resp.get("destination"));
         assertEquals("ingest", resp.get("action"));
         List<String> depositIds = (List<String>) resp.get("depositIds");

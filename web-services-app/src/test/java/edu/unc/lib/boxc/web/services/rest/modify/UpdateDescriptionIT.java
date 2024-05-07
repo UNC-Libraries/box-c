@@ -17,6 +17,7 @@ import java.io.FileInputStream;
 import java.io.InputStream;
 import java.util.Map;
 
+import edu.unc.lib.boxc.web.services.rest.MvcTestHelpers;
 import org.apache.tika.io.IOUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -40,7 +41,6 @@ import edu.unc.lib.boxc.operations.impl.edit.UpdateDescriptionService;
  *
  */
 @ContextHierarchy({
-    @ContextConfiguration("/spring-test/test-fedora-container.xml"),
     @ContextConfiguration("/spring-test/cdr-client-container.xml"),
     @ContextConfiguration("/update-description-it-servlet.xml")
 })
@@ -79,7 +79,7 @@ public class UpdateDescriptionIT extends AbstractAPIIT {
         assertDescriptionUpdated(objPid);
 
         // Verify response from api
-        Map<String, Object> respMap = getMapFromResponse(result);
+        Map<String, Object> respMap = MvcTestHelpers.getMapFromResponse(result);
         assertEquals(objPid.getUUID(), respMap.get("pid"));
         assertEquals("updateDescription", respMap.get("action"));
     }
@@ -100,7 +100,7 @@ public class UpdateDescriptionIT extends AbstractAPIIT {
         assertDescriptionNotUpdated(objPid);
 
         // Verify response from api
-        Map<String, Object> respMap = getMapFromResponse(result);
+        Map<String, Object> respMap = MvcTestHelpers.getMapFromResponse(result);
         assertEquals(objPid.getUUID(), respMap.get("pid"));
         assertEquals("updateDescription", respMap.get("action"));
     }
