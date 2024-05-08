@@ -13,10 +13,10 @@ import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Map;
+import java.util.UUID;
 
 import edu.unc.lib.boxc.web.services.rest.MvcTestHelpers;
 import org.jdom2.Document;
-import org.jgroups.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;

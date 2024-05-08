@@ -18,7 +18,7 @@ import java.io.InputStream;
 import java.util.Map;
 
 import edu.unc.lib.boxc.web.services.rest.MvcTestHelpers;
-import org.apache.tika.io.IOUtils;
+import org.apache.commons.io.IOUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

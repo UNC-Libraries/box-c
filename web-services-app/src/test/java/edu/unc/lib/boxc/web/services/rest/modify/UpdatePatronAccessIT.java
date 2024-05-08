@@ -27,7 +27,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.TimeZone;
 
-import javax.ws.rs.core.MediaType;
+import org.springframework.http.MediaType;
 
 import edu.unc.lib.boxc.web.services.rest.MvcTestHelpers;
 import org.apache.jena.rdf.model.Model;

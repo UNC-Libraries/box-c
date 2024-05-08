@@ -27,7 +27,7 @@ import javax.jms.MessageListener;
 import javax.jms.Queue;
 import javax.jms.Session;
 import javax.jms.TextMessage;
-import javax.ws.rs.core.MediaType;
+import org.springframework.http.MediaType;
 import java.io.IOException;
 import java.time.Duration;
 import java.util.ArrayList;
