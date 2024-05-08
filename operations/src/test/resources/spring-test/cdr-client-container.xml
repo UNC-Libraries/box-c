@@ -148,11 +148,6 @@
         <property name="fcrepoClient" ref="fcrepoClient" />
     </bean>
     
-    <bean id="multipartResolver"
-        class="org.springframework.web.multipart.commons.CommonsMultipartResolver">
-        <property name="maxUploadSize" value="2000000000"/>
-    </bean>
-    
     <bean id="destroyProxyService" class="edu.unc.lib.boxc.operations.impl.destroy.DestroyProxyService" >
         <property name="sparqlQueryService" ref="sparqlQueryService" />
         <property name="fcrepoClient" ref="fcrepoClient" />

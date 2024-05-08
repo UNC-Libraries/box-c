@@ -204,11 +204,6 @@
         </dependency>
         <!-- integration testing -->
         <dependency>
-            <groupId>jakarta.servlet</groupId>
-            <artifactId>jakarta.servlet-api</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
             <groupId>org.apache.solr</groupId>
             <artifactId>solr-core</artifactId>
         </dependency>
