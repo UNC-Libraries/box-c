@@ -60,7 +60,7 @@ import edu.unc.lib.boxc.persist.impl.sources.FilesystemIngestSource;
 import edu.unc.lib.boxc.persist.impl.sources.IngestSourceManagerImpl;
 import edu.unc.lib.boxc.persist.impl.sources.IngestSourceManagerImpl.IngestSourceMapping;
 import edu.unc.lib.boxc.web.services.rest.modify.IngestSourceController.IngestPackageDetails;
-import redis.clients.jedis.JedisPool;
+import redis.clients.jedis.JedisPooled;
 
 /**
  *
@@ -93,7 +93,7 @@ public class IngestFromSourcesIT extends AbstractAPIIT {
     @Autowired
     private ContentPathFactory contentPathFactory;
     @Autowired
-    private JedisPool jedisPool;
+    private JedisPooled jedisPooled;
 
     @BeforeEach
     public void setup() throws Exception {
@@ -114,7 +114,7 @@ public class IngestFromSourcesIT extends AbstractAPIIT {
 
     @AfterEach
     public void teardownLocal() throws Exception {
-        jedisPool.getResource().flushAll();
+        jedisPooled.flushAll();
     }
 
     // List sources/candidates tests
