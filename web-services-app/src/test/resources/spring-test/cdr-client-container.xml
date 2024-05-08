@@ -38,9 +38,13 @@
     <bean id="repositoryInitializer" class="edu.unc.lib.boxc.model.fcrepo.services.RepositoryInitializer">
         <property name="objFactory" ref="repositoryObjectFactory" />
     </bean>
+
+    <bean id="storageLocationTestHelper" class="edu.unc.lib.boxc.persist.impl.storage.StorageLocationTestHelper"
+            factory-method="createWithBasicConfig">
+    </bean>
     
-    <bean id="storageLocationManager" class="edu.unc.lib.boxc.persist.impl.storage.StorageLocationTestHelper"
-            factory-method="createLocationManagerWithBasicConfig">
+    <bean id="storageLocationManager" factory-bean="storageLocationTestHelper"
+            factory-method="createLocationManager">
         <constructor-arg ref="repositoryObjectLoader" />
     </bean>
     

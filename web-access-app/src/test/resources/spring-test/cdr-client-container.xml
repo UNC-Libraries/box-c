@@ -73,6 +73,15 @@
         <property name="repositoryObjectDriver" ref="repositoryObjectDriver" />
         <property name="repositoryObjectFactory" ref="repositoryObjectFactory" />
     </bean>
+
+    <bean id="storageLocationTestHelper" class="edu.unc.lib.boxc.persist.impl.storage.StorageLocationTestHelper"
+          factory-method="createWithBasicConfig">
+    </bean>
+
+    <bean id="storageLocationManager" factory-bean="storageLocationTestHelper"
+          factory-method="createLocationManager">
+        <constructor-arg ref="repositoryObjectLoader" />
+    </bean>
     
     <bean id="binaryTransferService" class="org.mockito.Mockito" factory-method="mock">
         <constructor-arg type="java.lang.Class" value="edu.unc.lib.boxc.persist.api.transfer.BinaryTransferService" />

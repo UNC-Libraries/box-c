@@ -11,9 +11,11 @@ import static org.mockito.Mockito.when;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -39,6 +41,7 @@ public class StorageLocationTestHelper {
     private List<Map<String, String>> locationList;
     // Hardcoded base storage path for usage across tests and containerized fedora
     private Path baseStoragePath = Paths.get("/tmp/boxc_test_storage");
+    private StorageLocationManager locationManager;
 
     public StorageLocationTestHelper() {
         mappingList = new ArrayList<>();
@@ -148,12 +151,13 @@ public class StorageLocationTestHelper {
      */
     public StorageLocationManager createLocationManager(RepositoryObjectLoader repoObjLoader,
             ContentPathFactory pathFactory) throws Exception {
-        StorageLocationManagerImpl locationManager = new StorageLocationManagerImpl();
+        var locationManager = new StorageLocationManagerImpl();
         locationManager.setConfigPath(serializeLocationConfig());
         locationManager.setMappingPath(serializeLocationMappings());
         locationManager.setRepositoryObjectLoader(repoObjLoader);
         locationManager.setPathFactory(pathFactory);
         locationManager.init();
+        this.locationManager = locationManager;
         return locationManager;
     }
 
@@ -163,6 +167,35 @@ public class StorageLocationTestHelper {
         return newStorageLocationTestHelper()
                     .addTestLocation()
                     .createLocationManager(repoObjLoader);
+    }
+
+    public static StorageLocationTestHelper createWithBasicConfig() throws Exception {
+        return newStorageLocationTestHelper()
+                .addTestLocation();
+    }
+
+    /**
+     * Get the base storage location path for the first location in the list
+     * @return
+     */
+    public Path getFirstStorageLocationPath() {
+        return Paths.get(locationList.get(0).get("base"));
+    }
+
+    /**
+     * Create a binary file in the test storage location for the given PID with the given content
+     * @param pid
+     * @param content
+     * @return
+     * @throws IOException
+     */
+    public URI createTestBinary(PID pid, String content) throws IOException {
+        var storageLoc = locationManager.getStorageLocationById(LOC1_ID);
+        URI binaryUri = storageLoc.getNewStorageUri(pid);
+        Path binaryPath = Paths.get(binaryUri);
+        Files.createDirectories(binaryPath.getParent());
+        Files.write(binaryPath, content.getBytes());
+        return binaryUri;
     }
 
     public void setBaseStoragePath(Path baseStoragePath) {

@@ -66,6 +66,7 @@ public abstract class AbstractAPIIT {
     protected RepositoryInitializer repoInitializer;
     @Autowired(required = false)
     protected FcrepoClient fcrepoClient;
+    @Autowired(required = false)
     protected StorageLocationTestHelper storageLocationTestHelper;
 
     protected ContentRootObject contentRoot;
@@ -85,7 +86,6 @@ public abstract class AbstractAPIIT {
         if (repoInitializer != null) {
             setupContentRoot();
         }
-        storageLocationTestHelper = new StorageLocationTestHelper();
 
         GroupsThreadStore.storeUsername(USERNAME);
         GroupsThreadStore.storeGroups(GROUPS);
@@ -124,7 +124,7 @@ public abstract class AbstractAPIIT {
     }
 
     protected Path createBinaryContent(String content, String filename, String extension) throws IOException {
-        Path contentPath = Files.createTempFile(storageLocationTestHelper.getBaseStoragePath(), filename, extension);
+        Path contentPath = Files.createTempFile(storageLocationTestHelper.getFirstStorageLocationPath(), filename, extension);
         FileUtils.writeStringToFile(contentPath.toFile(), content, "UTF-8");
         return contentPath;
     }

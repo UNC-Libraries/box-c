@@ -141,6 +141,11 @@
         <dependency>
             <groupId>edu.unc.lib.cdr</groupId>
             <artifactId>persistence</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>edu.unc.lib.cdr</groupId>
+            <artifactId>persistence</artifactId>
             <type>test-jar</type>
         </dependency>
 
