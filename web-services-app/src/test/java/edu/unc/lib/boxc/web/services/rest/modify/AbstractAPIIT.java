@@ -16,6 +16,7 @@ import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.boxc.model.fcrepo.services.RepositoryInitializer;
 import edu.unc.lib.boxc.model.fcrepo.test.RepositoryObjectTreeIndexer;
 import edu.unc.lib.boxc.model.fcrepo.test.TestHelper;
+import edu.unc.lib.boxc.model.fcrepo.test.TestRepositoryDeinitializer;
 import edu.unc.lib.boxc.persist.api.storage.StorageLocationManager;
 import edu.unc.lib.boxc.persist.impl.storage.StorageLocationTestHelper;
 import org.apache.commons.io.FileUtils;
@@ -96,18 +97,7 @@ public abstract class AbstractAPIIT {
     public void tearDown() throws Exception {
         GroupsThreadStore.clearStore();
         if (fcrepoClient != null) {
-            String containerString = URIUtil.join(FcrepoPaths.getBaseUri(), RepositoryPathConstants.CONTENT_BASE);
-            try (var result = fcrepoClient.delete(URI.create(containerString)).perform()) {
-                if (result.getStatusCode() != 204) {
-                    throw new RuntimeException("Failed to delete content container");
-                }
-            }
-            String tombstoneString = URIUtil.join(containerString, RepositoryPathConstants.FCR_TOMBSTONE);
-            try (var result = fcrepoClient.delete(URI.create(tombstoneString)).perform()) {
-                if (result.getStatusCode() != 204) {
-                    throw new RuntimeException("Failed to delete content container tombstone");
-                }
-            }
+            TestRepositoryDeinitializer.cleanup(fcrepoClient);
         }
     }
 

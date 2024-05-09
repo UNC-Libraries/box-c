@@ -191,11 +191,16 @@ public class StorageLocationTestHelper {
      * @throws IOException
      */
     public URI createTestBinary(PID pid, String content) throws IOException {
+        URI binaryUri = makeTestStorageUri(pid);
+        Files.write(Path.of(binaryUri), content.getBytes());
+        return binaryUri;
+    }
+
+    public URI makeTestStorageUri(PID pid) throws IOException {
         var storageLoc = locationManager.getStorageLocationById(LOC1_ID);
         URI binaryUri = storageLoc.getNewStorageUri(pid);
         Path binaryPath = Paths.get(binaryUri);
         Files.createDirectories(binaryPath.getParent());
-        Files.write(binaryPath, content.getBytes());
         return binaryUri;
     }
 
