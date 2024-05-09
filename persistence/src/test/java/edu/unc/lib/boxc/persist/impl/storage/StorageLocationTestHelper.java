@@ -27,6 +27,7 @@ import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.api.services.ContentPathFactory;
 import edu.unc.lib.boxc.model.fcrepo.services.ContentPathFactoryImpl;
+import edu.unc.lib.boxc.persist.api.storage.StorageLocation;
 import edu.unc.lib.boxc.persist.api.storage.StorageLocationManager;
 import edu.unc.lib.boxc.persist.impl.storage.StorageLocationManagerImpl.StorageLocationMapping;
 
@@ -196,6 +197,14 @@ public class StorageLocationTestHelper {
         Files.createDirectories(binaryPath.getParent());
         Files.write(binaryPath, content.getBytes());
         return binaryUri;
+    }
+
+    public StorageLocation getTestStorageLocation() {
+        return locationManager.getStorageLocationById(LOC1_ID);
+    }
+
+    public StorageLocationManager getLocationManager() {
+        return locationManager;
     }
 
     public void setBaseStoragePath(Path baseStoragePath) {

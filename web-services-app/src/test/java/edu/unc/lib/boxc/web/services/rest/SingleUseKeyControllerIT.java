@@ -125,6 +125,7 @@ public class SingleUseKeyControllerIT extends AbstractAPIIT {
                 .andReturn();
     }
 
+    // This test intentionally generates a NullPointerException in order to trigger error handling
     @Test
     public void testGenerateFailure() throws Exception {
         var id = pid.getUUID();

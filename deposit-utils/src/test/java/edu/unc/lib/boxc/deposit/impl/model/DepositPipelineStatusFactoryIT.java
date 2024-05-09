@@ -15,6 +15,7 @@ import edu.unc.lib.boxc.deposit.api.RedisWorkerConstants.DepositPipelineAction;
 import edu.unc.lib.boxc.deposit.api.RedisWorkerConstants.DepositPipelineState;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
+import redis.clients.jedis.JedisPooled;
 
 /**
  * @author bbpennel
@@ -22,23 +23,20 @@ import redis.clients.jedis.JedisPool;
 @ExtendWith(SpringExtension.class)
 @ContextConfiguration({"/spring/jedis-context.xml"})
 public class DepositPipelineStatusFactoryIT {
-
     private DepositPipelineStatusFactory factory;
     @Autowired
-    private JedisPool jedisPool;
-    private Jedis jedisResource;
+    private JedisPooled jedisPooled;
 
     @BeforeEach
     public void init() {
         factory = new DepositPipelineStatusFactory();
-        factory.setJedisPool(jedisPool);
-        jedisResource = jedisPool.getResource();
-        jedisResource.flushAll();
+        factory.setJedisPooled(jedisPooled);
+        jedisPooled.flushAll();
     }
 
     @AfterEach
     public void cleanup() {
-        jedisResource.close();
+        jedisPooled.flushAll();
     }
 
     @Test

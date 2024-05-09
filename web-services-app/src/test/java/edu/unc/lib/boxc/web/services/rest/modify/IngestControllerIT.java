@@ -91,7 +91,11 @@ public class IngestControllerIT extends AbstractAPIIT {
 
     @AfterEach
     public void teardownLocal() throws Exception {
-        jedisPooled.flushAll();
+        try {
+            jedisPooled.flushAll();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     @Test

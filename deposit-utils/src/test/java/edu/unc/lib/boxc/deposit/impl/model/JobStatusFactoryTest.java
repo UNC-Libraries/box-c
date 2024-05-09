@@ -9,6 +9,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
+import redis.clients.jedis.JedisPooled;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 
 import java.net.SocketTimeoutException;
@@ -29,9 +30,7 @@ public class JobStatusFactoryTest {
     private AutoCloseable closeable;
 
     @Mock
-    private JedisPool jedisPool;
-    @Mock
-    private Jedis jedis;
+    private JedisPooled jedisPooled;
 
     private String jobUUID;
 
@@ -41,14 +40,12 @@ public class JobStatusFactoryTest {
     public void setup() {
         closeable = openMocks(this);
 
-        when(jedisPool.getResource()).thenReturn(jedis);
-
         jobUUID = UUID.randomUUID().toString();
 
         statusFactory = new JobStatusFactory();
         statusFactory.setSocketTimeoutDelay(1);
         statusFactory.setSocketTimeoutRetries(4);
-        statusFactory.setJedisPool(jedisPool);
+        statusFactory.setJedisPooled(jedisPooled);
     }
 
     @AfterEach
@@ -61,19 +58,19 @@ public class JobStatusFactoryTest {
         statusFactory.incrCompletion(jobUUID, 1);
         statusFactory.incrCompletion(jobUUID, 2);
 
-        verify(jedis).hincrBy(JOB_STATUS_PREFIX + jobUUID, JobField.num.name(), 1);
-        verify(jedis).hincrBy(JOB_STATUS_PREFIX + jobUUID, JobField.num.name(), 2);
+        verify(jedisPooled).hincrBy(JOB_STATUS_PREFIX + jobUUID, JobField.num.name(), 1);
+        verify(jedisPooled).hincrBy(JOB_STATUS_PREFIX + jobUUID, JobField.num.name(), 2);
     }
 
     @Test
     public void incrCompletionInterruptRecovery() {
         SocketTimeoutException cause = new SocketTimeoutException("Timed out");
         JedisConnectionException ex = new JedisConnectionException(cause);
-        when(jedis.hincrBy(anyString(), anyString(), anyLong())).thenThrow(ex).thenReturn(1L);
+        when(jedisPooled.hincrBy(anyString(), anyString(), anyLong())).thenThrow(ex).thenReturn(1L);
 
         statusFactory.incrCompletion(jobUUID, 1);
 
-        verify(jedis, times(2)).hincrBy(JOB_STATUS_PREFIX + jobUUID, JobField.num.name(), 1);
+        verify(jedisPooled, times(2)).hincrBy(JOB_STATUS_PREFIX + jobUUID, JobField.num.name(), 1);
     }
 
     @Test
@@ -81,7 +78,7 @@ public class JobStatusFactoryTest {
         Assertions.assertThrows(JedisConnectionException.class, () -> {
             SocketTimeoutException cause = new SocketTimeoutException("Timed out");
             JedisConnectionException ex = new JedisConnectionException(cause);
-            when(jedis.hincrBy(anyString(), anyString(), anyLong())).thenThrow(ex);
+            when(jedisPooled.hincrBy(anyString(), anyString(), anyLong())).thenThrow(ex);
 
             statusFactory.incrCompletion(jobUUID, 1);
         });
@@ -91,7 +88,7 @@ public class JobStatusFactoryTest {
     public void incrCompletionUnexpectedException() {
         Assertions.assertThrows(RepositoryException.class, () -> {
             Exception ex = new RepositoryException("Oops");
-            when(jedis.hincrBy(anyString(), anyString(), anyLong())).thenThrow(ex).thenReturn(1L);
+            when(jedisPooled.hincrBy(anyString(), anyString(), anyLong())).thenThrow(ex).thenReturn(1L);
 
             statusFactory.incrCompletion(jobUUID, 1);
         });

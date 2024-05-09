@@ -11,7 +11,9 @@ import edu.unc.lib.boxc.model.api.objects.FileObject;
 import edu.unc.lib.boxc.model.api.objects.FolderObject;
 import edu.unc.lib.boxc.model.api.objects.WorkObject;
 import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
+import edu.unc.lib.boxc.model.fcrepo.ids.DatastreamPids;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
+import edu.unc.lib.boxc.model.fcrepo.test.TestHelper;
 import edu.unc.lib.boxc.operations.jms.MessageSender;
 import edu.unc.lib.boxc.search.api.requests.SearchRequest;
 import edu.unc.lib.boxc.search.api.requests.SimpleIdRequest;
@@ -39,6 +41,7 @@ import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import java.net.URI;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Map;
@@ -131,7 +134,7 @@ public class RunEnhancementsIT extends AbstractAPIIT {
     public void runEnhancementsFileObject() throws Exception {
         FileObject fileObj = repositoryObjectFactory.createFileObject(null);
         PID filePid = fileObj.getPid();
-        fileObj.addOriginalFile(makeContentUri(BINARY_CONTENT), "file.png", "image/png", null, null);
+        fileObj.addOriginalFile(makeContentUri(filePid, BINARY_CONTENT), "file.png", "image/png", null, null);
         setResultMetadataObject(filePid, ResourceType.File.name());
 
         MvcResult result = mvc.perform(post("/runEnhancements")
@@ -151,8 +154,10 @@ public class RunEnhancementsIT extends AbstractAPIIT {
     @Test
     public void runEnhancementsWorkObject() throws Exception {
         WorkObject workObj = repositoryObjectFactory.createWorkObject(null);
+
+        PID filePid = TestHelper.makePid();
         FileObject workFile = workObj
-                .addDataFile(makeContentUri(BINARY_CONTENT), "file.png", "image/png", null, null);
+                .addDataFile(filePid, makeContentUri(filePid, BINARY_CONTENT), "file.png", "image/png", null, null, null);
         PID workPid = workObj.getPid();
         setResultMetadataObject(workPid, ResourceType.Work.name());
 
@@ -173,10 +178,13 @@ public class RunEnhancementsIT extends AbstractAPIIT {
     @Test
     public void runEnhancementsNonFileNonWorkObject() throws Exception {
         FolderObject folderObj = repositoryObjectFactory.createFolderObject(null);
+        PID filePid = TestHelper.makePid();
         FileObject fileObj = folderObj.addWork()
-                .addDataFile(makeContentUri(BINARY_CONTENT), "file.png", "image/png", null, null);
-        PID filePid = fileObj.getPid();
+                .addDataFile(filePid, makeContentUri(filePid, BINARY_CONTENT), "file.png", "image/png", null, null, null);
         setResultMetadataObject(filePid, ResourceType.Folder.name());
+        System.out.println("fileObj.getPid() = " + fileObj.getPid());
+        System.out.println("filePid = " + filePid);
+        System.out.println("folder.getPid() = " + folderObj.getPid());
 
         MvcResult result = mvc.perform(post("/runEnhancements")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -195,7 +203,7 @@ public class RunEnhancementsIT extends AbstractAPIIT {
     @Test
     public void runEnhancementsNoAccess() throws Exception {
         FileObject fileObj = repositoryObjectFactory.createFileObject(null);
-        fileObj.addOriginalFile(makeContentUri(BINARY_CONTENT), "file.png", "image/png", null, null);
+        fileObj.addOriginalFile(makeContentUri(fileObj.getPid(), BINARY_CONTENT), "file.png", "image/png", null, null);
         setResultMetadataObject(fileObj.getPid(), ResourceType.File.name());
 
         PID objPid = fileObj.getPid();
@@ -218,9 +226,13 @@ public class RunEnhancementsIT extends AbstractAPIIT {
         assertEquals("runEnhancements", resp.get("action"));
     }
 
-    private URI makeContentUri(String content) throws Exception {
-        Path dataPath = createBinaryContent(content, "dataFile", null);
-        return dataPath.toUri();
+    private URI makeContentUri(PID filePid, String content) throws Exception {
+        var originalPid = DatastreamPids.getOriginalFilePid(filePid);
+        var uri = storageLocationTestHelper.getTestStorageLocation().getNewStorageUri(originalPid);
+        var path = Path.of(uri);
+        Files.createDirectories(path.getParent());
+        Files.write(path, content.getBytes());
+        return uri;
     }
 
     private void setResultMetadataObject(PID pid, String resourceType) {
