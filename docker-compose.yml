@@ -16,3 +16,9 @@ services:
     image: redis:6
     ports:
       - "46380:6379"
+  fuseki:
+    # Using this image since fcrepo camel v5 does not support authentication, can switch on fedora 6
+    image: atomgraph/fuseki
+    ports:
+      - "43030:3030"
+    command: --mem /test

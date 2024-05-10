@@ -130,8 +130,7 @@
         <solr.version>8.10.1</solr.version>
         <metrics.version>5.0.0</metrics.version>
         <jena.version>4.4.0</jena.version>
-        <jena.fuseki.version>4.4.0</jena.fuseki.version>
-        
+
         <fcrepo-camel.version>5.0.0</fcrepo-camel.version>
         <camel.version>2.25.4</camel.version>
         <tika.version>2.8.0</tika.version>
@@ -976,23 +975,7 @@
                 <version>${jakarta.servlet.api.version}</version>
                 <scope>test</scope>
             </dependency>
-            
-            <dependency>
-                <groupId>org.apache.jena</groupId>
-                <artifactId>jena-fuseki-main</artifactId>
-                <version>${jena.fuseki.version}</version>
-                <scope>test</scope>
-                <exclusions>
-                    <exclusion>
-                        <groupId>org.slf4j</groupId>
-                        <artifactId>slf4j-log4j12</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>log4j</groupId>
-                        <artifactId>log4j</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
+
             <dependency>
                 <groupId>org.apache.jena</groupId>
                 <artifactId>apache-jena-libs</artifactId>

@@ -27,6 +27,12 @@ jobs:
           - /tmp/boxc_test_storage:/tmp/boxc_test_storage
         env:
           CATALINA_OPTS: "-Djava.awt.headless=true -server -Xms512m -Xmx1024m -XX:NewSize=256m -XX:MaxNewSize=256m -Dfcrepo.external.content.allowed=/config/allowed_external_paths.txt"
+      fuseki:
+        # Using this image since fcrepo camel v5 does not support authentication, can switch on fedora 6
+        image: atomgraph/fuseki
+        ports:
+          - "43030:3030"
+        command: --mem /test
 
     steps:
     - name: Change permissions of /tmp/boxc_test_storage

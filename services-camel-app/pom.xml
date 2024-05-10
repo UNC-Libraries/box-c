@@ -125,10 +125,6 @@
         <artifactId>apache-jena-libs</artifactId>
         <type>pom</type>
     </dependency>
-    <dependency>
-        <groupId>org.apache.jena</groupId>
-        <artifactId>jena-fuseki-main</artifactId>
-    </dependency>
     
     <dependency>
         <groupId>org.springframework</groupId>
@@ -298,10 +294,6 @@
         <groupId>org.apache.activemq.protobuf</groupId>
         <artifactId>activemq-protobuf</artifactId>
         <scope>test</scope>
-    </dependency>
-    <dependency>
-        <groupId>org.apache.jena</groupId>
-        <artifactId>jena-fuseki-main</artifactId>
     </dependency>
         <dependency>
             <groupId>org.junit.jupiter</groupId>

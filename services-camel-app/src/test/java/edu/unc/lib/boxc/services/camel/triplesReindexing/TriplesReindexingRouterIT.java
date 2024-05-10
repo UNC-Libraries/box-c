@@ -1,45 +1,5 @@
 package edu.unc.lib.boxc.services.camel.triplesReindexing;
 
-import static edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPaths.getContentRootPid;
-import static edu.unc.lib.boxc.operations.jms.indexing.IndexingActionType.RECURSIVE_REINDEX;
-import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.apache.jena.rdf.model.ModelFactory.createDefaultModel;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
-import static org.mockito.MockitoAnnotations.openMocks;
-
-import java.io.File;
-import java.util.concurrent.TimeUnit;
-
-import edu.unc.lib.boxc.model.fcrepo.test.TestRepositoryDeinitializer;
-import edu.unc.lib.boxc.persist.impl.storage.StorageLocationTestHelper;
-import org.apache.camel.CamelContext;
-import org.apache.camel.Exchange;
-import org.apache.camel.Message;
-import org.apache.camel.builder.NotifyBuilder;
-import org.apache.camel.test.spring.CamelSpringRunner;
-import org.apache.camel.test.spring.CamelTestContextBootstrapper;
-import org.apache.commons.io.FileUtils;
-import org.apache.jena.fuseki.main.FusekiServer;
-import org.apache.jena.query.Dataset;
-import org.apache.jena.query.QueryExecution;
-import org.apache.jena.query.ResultSet;
-import org.apache.jena.rdf.model.Model;
-import org.apache.jena.sparql.core.DatasetImpl;
-import org.fcrepo.client.FcrepoClient;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.Mock;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.annotation.DirtiesContext.ClassMode;
-import org.springframework.test.context.BootstrapWith;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.ContextHierarchy;
-
 import edu.unc.lib.boxc.auth.api.Permission;
 import edu.unc.lib.boxc.auth.api.services.AccessControlService;
 import edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl;
@@ -58,7 +18,41 @@ import edu.unc.lib.boxc.model.api.sparql.SparqlQueryService;
 import edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPaths;
 import edu.unc.lib.boxc.model.fcrepo.services.RepositoryInitializer;
 import edu.unc.lib.boxc.model.fcrepo.test.TestHelper;
+import edu.unc.lib.boxc.model.fcrepo.test.TestRepositoryDeinitializer;
 import edu.unc.lib.boxc.operations.jms.indexing.IndexingMessageSender;
+import edu.unc.lib.boxc.persist.impl.storage.StorageLocationTestHelper;
+import org.apache.camel.CamelContext;
+import org.apache.camel.Exchange;
+import org.apache.camel.Message;
+import org.apache.camel.builder.NotifyBuilder;
+import org.apache.camel.test.spring.CamelSpringRunner;
+import org.apache.camel.test.spring.CamelTestContextBootstrapper;
+import org.apache.commons.io.FileUtils;
+import org.apache.jena.query.QueryExecution;
+import org.apache.jena.query.ResultSet;
+import org.fcrepo.client.FcrepoClient;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.annotation.DirtiesContext.ClassMode;
+import org.springframework.test.context.BootstrapWith;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.ContextHierarchy;
+
+import java.io.File;
+import java.util.concurrent.TimeUnit;
+
+import static edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPaths.getContentRootPid;
+import static edu.unc.lib.boxc.operations.jms.indexing.IndexingActionType.RECURSIVE_REINDEX;
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
+import static org.mockito.MockitoAnnotations.openMocks;
 
 /**
  *
@@ -101,9 +95,6 @@ public class TriplesReindexingRouterIT {
     @Autowired
     private FcrepoClient fcrepoClient;
 
-    private Model fusekiModel;
-    private FusekiServer fusekiServer;
-
     @Autowired
     private String indexingEndpoint;
 
@@ -124,16 +115,6 @@ public class TriplesReindexingRouterIT {
     public void setUp() throws Exception {
         closeable = openMocks(this);
 
-        fusekiModel = createDefaultModel();
-
-        final Dataset ds = new DatasetImpl(fusekiModel);
-        fusekiServer = FusekiServer.create()
-                .port(Integer.parseInt(fusekiPort))
-                .contextPath("/fuseki")
-                .add("/test", ds)
-                .build();
-        fusekiServer.start();
-
         TestHelper.setContentBase(baseAddress);
 
         when(aclService.hasAccess(any(PID.class), any(AccessGroupSetImpl.class),
@@ -147,7 +128,6 @@ public class TriplesReindexingRouterIT {
     @After
     public void tearDown() throws Exception {
         closeable.close();
-        fusekiServer.stop();
         TestRepositoryDeinitializer.cleanup(fcrepoClient);
     }
 
