@@ -37,7 +37,7 @@ const router = createRouter({
       }
     },
     {
-      path: `/search/:id(${UUID_REGEX})?/`,
+      path: `/search/:id(${UUID_REGEX})?`,
       name: 'searchRecords',
       component: searchWrapper
     },
