@@ -1,21 +1,5 @@
 package edu.unc.lib.boxc.web.services.rest;
 
-import edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl;
-import edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore;
-import edu.unc.lib.boxc.deposit.api.RedisWorkerConstants.DepositPipelineState;
-import edu.unc.lib.boxc.deposit.impl.model.DepositPipelineStatusFactory;
-import edu.unc.lib.boxc.web.services.rest.modify.AbstractAPIIT;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.ContextHierarchy;
-import org.springframework.test.web.servlet.MvcResult;
-import redis.clients.jedis.JedisPooled;
-
-import java.util.Map;
-
 import static edu.unc.lib.boxc.web.services.rest.DepositPipelineController.ACTION_KEY;
 import static edu.unc.lib.boxc.web.services.rest.DepositPipelineController.ERROR_KEY;
 import static edu.unc.lib.boxc.web.services.rest.DepositPipelineController.STATE_KEY;
@@ -24,6 +8,30 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+import java.util.Map;
+
+import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.ContextHierarchy;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.springframework.test.context.web.WebAppConfiguration;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
+
+import edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl;
+import edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore;
+import edu.unc.lib.boxc.deposit.api.RedisWorkerConstants.DepositPipelineState;
+import edu.unc.lib.boxc.deposit.impl.model.DepositPipelineStatusFactory;
+import edu.unc.lib.boxc.web.services.rest.modify.AbstractAPIIT;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.web.context.WebApplicationContext;
+import redis.clients.jedis.JedisPool;
 
 /**
  * @author bbpennel
@@ -37,7 +45,7 @@ public class DepositPipelineControllerIT extends AbstractAPIIT {
     @Autowired
     private DepositPipelineStatusFactory pipelineStatusFactory;
     @Autowired
-    private JedisPooled jedisPooled;
+    private JedisPool jedisPool;
 
     @BeforeEach
     public void setup() {
@@ -47,7 +55,7 @@ public class DepositPipelineControllerIT extends AbstractAPIIT {
 
     @AfterEach
     public void teardownLocal() {
-        jedisPooled.flushAll();
+        jedisPool.getResource().flushAll();
     }
 
     @Test

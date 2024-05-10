@@ -60,6 +60,6 @@
     </bean>
     
     <bean id="depositStatusFactory" class="edu.unc.lib.boxc.deposit.impl.model.DepositStatusFactory">
-        <property name="jedisPooled" ref="jedisPooled" />
+        <property name="jedisPool" ref="jedisPool" />
     </bean>
 </beans>

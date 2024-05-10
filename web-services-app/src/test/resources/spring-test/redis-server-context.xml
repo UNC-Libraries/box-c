@@ -5,8 +5,9 @@
     xsi:schemaLocation="
         http://www.springframework.org/schema/beans
         http://www.springframework.org/schema/beans/spring-beans.xsd">
-
-    <bean id="jedisPooled" class="redis.clients.jedis.JedisPooled">
+    
+    <bean id="jedisPool" class="redis.clients.jedis.JedisPool"
+        destroy-method="destroy">
         <constructor-arg ref="poolConfig"/>
         <constructor-arg type="String" value="localhost" />
         <constructor-arg type="int" value="46380" />

@@ -33,6 +33,6 @@
     </bean>
     
     <bean id="pipelineStatusFactory" class="edu.unc.lib.boxc.deposit.impl.model.DepositPipelineStatusFactory">
-        <property name="jedisPooled" ref="jedisPooled" />
+        <property name="jedisPool" ref="jedisPool" />
     </bean>
 </beans>

@@ -15,7 +15,7 @@ jobs:
 
     services:
       redis:
-        image: redis:7
+        image: redis:6
         ports:
           - 46380:6379
       fedora:

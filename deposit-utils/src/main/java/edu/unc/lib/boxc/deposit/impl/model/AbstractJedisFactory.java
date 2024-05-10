@@ -10,7 +10,6 @@ import org.slf4j.Logger;
 import edu.unc.lib.boxc.model.api.exceptions.RepositoryException;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
-import redis.clients.jedis.JedisPooled;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 
 /**
@@ -21,7 +20,7 @@ import redis.clients.jedis.exceptions.JedisConnectionException;
 public class AbstractJedisFactory {
     private static final Logger log = getLogger(AbstractJedisFactory.class);
 
-    protected JedisPooled jedisPooled;
+    protected JedisPool jedisPool;
     private int socketTimeoutRetries = 5;
     private long socketTimeoutDelay = 15000l;
 
@@ -31,11 +30,11 @@ public class AbstractJedisFactory {
      *
      * @param block
      */
-    protected void connectWithRetries(Consumer<JedisPooled> block) {
+    protected void connectWithRetries(Consumer<Jedis> block) {
         int socketTimeoutRetriesRemaining = socketTimeoutRetries;
         while (true) {
-            try {
-                block.accept(jedisPooled);
+            try (Jedis jedis = getJedisPool().getResource()) {
+                block.accept(jedis);
                 return;
             } catch (JedisConnectionException e) {
                 if (!(e.getCause() instanceof SocketTimeoutException)) {
@@ -61,9 +60,5 @@ public class AbstractJedisFactory {
 
     public void setSocketTimeoutDelay(long socketTimeoutDelay) {
         this.socketTimeoutDelay = socketTimeoutDelay;
-    }
-
-    public void setJedisPooled(JedisPooled jedisPooled) {
-        this.jedisPooled = jedisPooled;
     }
 }

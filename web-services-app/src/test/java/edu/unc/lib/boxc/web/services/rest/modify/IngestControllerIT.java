@@ -1,17 +1,23 @@
 package edu.unc.lib.boxc.web.services.rest.modify;
 
-import edu.unc.lib.boxc.auth.api.Permission;
-import edu.unc.lib.boxc.auth.api.exceptions.AccessRestrictionException;
-import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
-import edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl;
-import edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore;
-import edu.unc.lib.boxc.deposit.api.DepositMethod;
-import edu.unc.lib.boxc.deposit.api.RedisWorkerConstants.DepositField;
-import edu.unc.lib.boxc.deposit.impl.model.DepositStatusFactory;
-import edu.unc.lib.boxc.deposit.impl.submit.CDRMETSDepositHandler;
-import edu.unc.lib.boxc.deposit.impl.submit.SimpleObjectDepositHandler;
-import edu.unc.lib.boxc.model.api.ids.PID;
-import edu.unc.lib.boxc.persist.api.PackagingType;
+import static edu.unc.lib.boxc.persist.api.PackagingType.METS_CDR;
+import static edu.unc.lib.boxc.persist.api.PackagingType.SIMPLE_OBJECT;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doThrow;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+import java.io.File;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.Map;
+
 import edu.unc.lib.boxc.web.services.rest.MvcTestHelpers;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
@@ -24,25 +30,20 @@ import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.ContextHierarchy;
 import org.springframework.test.web.servlet.MvcResult;
-import redis.clients.jedis.JedisPooled;
 
-import java.io.File;
-import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.Map;
-
-import static edu.unc.lib.boxc.persist.api.PackagingType.METS_CDR;
-import static edu.unc.lib.boxc.persist.api.PackagingType.SIMPLE_OBJECT;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.doThrow;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import edu.unc.lib.boxc.auth.api.Permission;
+import edu.unc.lib.boxc.auth.api.exceptions.AccessRestrictionException;
+import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
+import edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl;
+import edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore;
+import edu.unc.lib.boxc.deposit.api.DepositMethod;
+import edu.unc.lib.boxc.deposit.api.RedisWorkerConstants.DepositField;
+import edu.unc.lib.boxc.deposit.impl.model.DepositStatusFactory;
+import edu.unc.lib.boxc.deposit.impl.submit.CDRMETSDepositHandler;
+import edu.unc.lib.boxc.deposit.impl.submit.SimpleObjectDepositHandler;
+import edu.unc.lib.boxc.model.api.ids.PID;
+import edu.unc.lib.boxc.persist.api.PackagingType;
+import redis.clients.jedis.JedisPool;
 
 /**
  *
@@ -69,7 +70,7 @@ public class IngestControllerIT extends AbstractAPIIT {
     @Autowired
     private SimpleObjectDepositHandler simpleHandler;
     @Autowired
-    private JedisPooled jedisPooled;
+    private JedisPool jedisPool;
     @Autowired
     private DepositStatusFactory depositStatusFactory;
 
@@ -91,11 +92,7 @@ public class IngestControllerIT extends AbstractAPIIT {
 
     @AfterEach
     public void teardownLocal() throws Exception {
-        try {
-            jedisPooled.flushAll();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        jedisPool.getResource().flushAll();
     }
 
     @Test
