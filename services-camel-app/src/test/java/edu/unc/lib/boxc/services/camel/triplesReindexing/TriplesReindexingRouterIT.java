@@ -12,6 +12,8 @@ import static org.mockito.MockitoAnnotations.openMocks;
 import java.io.File;
 import java.util.concurrent.TimeUnit;
 
+import edu.unc.lib.boxc.model.fcrepo.test.TestRepositoryDeinitializer;
+import edu.unc.lib.boxc.persist.impl.storage.StorageLocationTestHelper;
 import org.apache.camel.CamelContext;
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
@@ -25,6 +27,7 @@ import org.apache.jena.query.QueryExecution;
 import org.apache.jena.query.ResultSet;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.sparql.core.DatasetImpl;
+import org.fcrepo.client.FcrepoClient;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -65,7 +68,6 @@ import edu.unc.lib.boxc.operations.jms.indexing.IndexingMessageSender;
 @RunWith(CamelSpringRunner.class)
 @BootstrapWith(CamelTestContextBootstrapper.class)
 @ContextHierarchy({
-    @ContextConfiguration("/spring-test/test-fedora-container.xml"),
     @ContextConfiguration("/spring-test/cdr-client-container.xml"),
     @ContextConfiguration("/spring-test/jms-context.xml"),
     @ContextConfiguration("/triples-reindexing-it-context.xml")
@@ -94,6 +96,10 @@ public class TriplesReindexingRouterIT {
     private AccessControlService aclService;
     @Autowired
     private SparqlQueryService sparqlQueryService;
+    @Autowired
+    private StorageLocationTestHelper storageLocationTestHelper;
+    @Autowired
+    private FcrepoClient fcrepoClient;
 
     private Model fusekiModel;
     private FusekiServer fusekiServer;
@@ -142,6 +148,7 @@ public class TriplesReindexingRouterIT {
     public void tearDown() throws Exception {
         closeable.close();
         fusekiServer.stop();
+        TestRepositoryDeinitializer.cleanup(fcrepoClient);
     }
 
     private void generateBaseStructure() throws Exception {
@@ -162,9 +169,10 @@ public class TriplesReindexingRouterIT {
         workObj = repositoryObjectFactory.createWorkObject(null);
         folderObj1.addMember(workObj);
 
-        File contentFile = File.createTempFile("test", ".txt");
-        FileUtils.write(contentFile, "content", UTF_8);
-        fileObj = workObj.addDataFile(contentFile.toPath().toUri(), "file.txt", null, null, null);
+        PID filePid = TestHelper.makePid();
+        var storageUri = storageLocationTestHelper.makeTestStorageUri(filePid);
+        FileUtils.write(new File(storageUri), "content", UTF_8);
+        fileObj = workObj.addDataFile(filePid, storageUri, "file.txt", null, null, null, null);
     }
 
     @Test

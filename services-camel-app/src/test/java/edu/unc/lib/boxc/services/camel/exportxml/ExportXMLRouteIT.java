@@ -35,12 +35,15 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
+import edu.unc.lib.boxc.model.fcrepo.test.TestRepositoryDeinitializer;
+import edu.unc.lib.boxc.persist.impl.storage.StorageLocationTestHelper;
 import org.apache.camel.CamelContext;
 import org.apache.camel.builder.NotifyBuilder;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.jena.vocabulary.DCTerms;
 import org.apache.solr.client.solrj.embedded.EmbeddedSolrServer;
+import org.fcrepo.client.FcrepoClient;
 import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.input.SAXBuilder;
@@ -97,7 +100,6 @@ import edu.unc.lib.boxc.operations.jms.exportxml.ExportXMLRequestService;
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextHierarchy({
-    @ContextConfiguration("/spring-test/test-fedora-container.xml"),
     @ContextConfiguration("/spring-test/cdr-client-container.xml"),
     @ContextConfiguration("/spring-test/acl-service-context.xml"),
     @ContextConfiguration("/spring-test/solr-indexing-context.xml"),
@@ -109,6 +111,8 @@ public class ExportXMLRouteIT {
 
     private AutoCloseable closeable;
 
+    @Autowired
+    private String baseAddress;
     @Autowired
     private CamelContext cdrExportXML;
     @Autowired
@@ -135,6 +139,10 @@ public class ExportXMLRouteIT {
     private ExportXMLProcessor exportXmlProcessor;
     @Autowired
     private PremisLoggerFactory premisLoggerFactory;
+    @Autowired
+    private FcrepoClient fcrepoClient;
+    @Autowired
+    private StorageLocationTestHelper storageLocationTestHelper;
 
     @Captor
     private ArgumentCaptor<String> toCaptor;
@@ -162,7 +170,7 @@ public class ExportXMLRouteIT {
     public void setup() throws Exception {
         closeable = openMocks(this);
         reset(emailHandler);
-        TestHelper.setContentBase("http://localhost:48085/rest");
+        TestHelper.setContentBase(baseAddress);
         agent = new AgentPrincipalsImpl("user", new AccessGroupSetImpl("adminGroup"));
         generateBaseStructure();
         exportXmlProcessor.setObjectsPerExport(500);
@@ -183,6 +191,7 @@ public class ExportXMLRouteIT {
     @AfterEach
     void closeService() throws Exception {
         closeable.close();
+        TestRepositoryDeinitializer.cleanup(fcrepoClient);
     }
 
     @Test
@@ -450,8 +459,8 @@ public class ExportXMLRouteIT {
     @Test
     public void exportWorkModsAndFitsTest() throws Exception {
         String fitsContent = "<fits>content</fits>";
-        URI fitsUri = makeContentUri(fitsContent);
         PID fitsPid = getTechnicalMetadataPid(fileObj1.getPid());
+        URI fitsUri = makeContentUri(fitsPid, fitsContent);
         fileObj1.addBinary(fitsPid, fitsUri, TECHNICAL_METADATA.getDefaultFilename(), TECHNICAL_METADATA.getMimetype(),
                 null, null, IanaRelation.derivedfrom, DCTerms.conformsTo, createResource(FITS_URI));
 
@@ -554,8 +563,8 @@ public class ExportXMLRouteIT {
     @Test
     public void exportCollectionFitsExcludeNoDatastreamTest() throws Exception {
         String fitsContent = "<fits>content</fits>";
-        URI fitsUri = makeContentUri(fitsContent);
         PID fitsPid = getTechnicalMetadataPid(fileObj1.getPid());
+        URI fitsUri = makeContentUri(fitsPid, fitsContent);
         fileObj1.addBinary(fitsPid, fitsUri, TECHNICAL_METADATA.getDefaultFilename(), TECHNICAL_METADATA.getMimetype(),
                 null, null, IanaRelation.derivedfrom, DCTerms.conformsTo, createResource(FITS_URI));
         workObj1.setPrimaryObject(fileObj1.getPid());
@@ -745,7 +754,9 @@ public class ExportXMLRouteIT {
 
         PID workPid1 = pidMinter.mintContentPid();
         workObj1 = repositoryObjectFactory.createWorkObject(workPid1, null);
-        fileObj1 = workObj1.addDataFile(makeContentUri("hello"), "text.txt", "text/plain", null, null);
+        PID filePid = pidMinter.mintContentPid();
+        PID originalPid = DatastreamPids.getOriginalFilePid(filePid);
+        fileObj1 = workObj1.addDataFile(filePid, makeContentUri(originalPid, "hello"), "text.txt", "text/plain", null, null, null);
         InputStream modsStream2 = streamResource("/datastreams/simpleMods.xml");
         updateDescriptionService.updateDescription(new UpdateDescriptionRequest(agent, workPid1, modsStream2));
         PID workPid2 = pidMinter.mintContentPid();
@@ -755,11 +766,10 @@ public class ExportXMLRouteIT {
         collObj2.addMember(workObj2);
     }
 
-    protected URI makeContentUri(String content) throws Exception {
-        File contentFile = File.createTempFile("test", ".txt");
-        contentFile.deleteOnExit();
-        FileUtils.write(contentFile, content, UTF_8);
-        return contentFile.toPath().toUri();
+    protected URI makeContentUri(PID binaryPid, String content) throws Exception {
+        var uri = storageLocationTestHelper.makeTestStorageUri(binaryPid);
+        FileUtils.write(new File(uri), content, UTF_8);
+        return uri;
     }
 
     protected InputStream streamResource(String resourcePath) throws Exception {

@@ -4,6 +4,7 @@ import edu.unc.lib.boxc.common.util.URIUtil;
 import edu.unc.lib.boxc.fcrepo.FcrepoPaths;
 import edu.unc.lib.boxc.model.api.ids.RepositoryPathConstants;
 import org.fcrepo.client.FcrepoClient;
+import org.fcrepo.client.FcrepoOperationFailedException;
 
 import java.net.URI;
 
@@ -28,7 +29,13 @@ public class TestRepositoryDeinitializer {
     }
 
     private static void deleteContainer(FcrepoClient fcrepoClient, String containerString) throws Exception {
-        try (var result = fcrepoClient.delete(URI.create(containerString)).perform()) {
+        URI containerUri = URI.create(containerString);
+        try {
+            fcrepoClient.head(containerUri).perform().close();
+        } catch (FcrepoOperationFailedException e) {
+            return;
+        }
+        try (var result = fcrepoClient.delete(containerUri).perform()) {
             if (result.getStatusCode() != 204) {
                 throw new RuntimeException("Failed to delete " + containerString);
             }
