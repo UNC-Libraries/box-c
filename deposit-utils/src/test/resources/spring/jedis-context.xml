@@ -5,7 +5,8 @@
   http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
 
 
-    <bean id="jedisPooled" class="redis.clients.jedis.JedisPooled">
+    <bean id="jedisPool" class="redis.clients.jedis.JedisPool"
+          destroy-method="destroy">
         <constructor-arg ref="poolConfig"/>
         <constructor-arg type="String" value="localhost" />
         <constructor-arg type="int" value="46380" />
@@ -18,6 +19,6 @@
     </bean>
     
     <bean id="depositStatusFactory" class="edu.unc.lib.boxc.deposit.impl.model.DepositStatusFactory">
-        <property name="jedisPooled" ref="jedisPooled" />
+        <property name="jedisPool" ref="jedisPool" />
     </bean>
 </beans>

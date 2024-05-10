@@ -15,7 +15,6 @@ import edu.unc.lib.boxc.deposit.api.RedisWorkerConstants.DepositPipelineAction;
 import edu.unc.lib.boxc.deposit.api.RedisWorkerConstants.DepositPipelineState;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
-import redis.clients.jedis.JedisPooled;
 
 /**
  * @author bbpennel
@@ -25,18 +24,21 @@ import redis.clients.jedis.JedisPooled;
 public class DepositPipelineStatusFactoryIT {
     private DepositPipelineStatusFactory factory;
     @Autowired
-    private JedisPooled jedisPooled;
+    private JedisPool jedisPool;
+    private Jedis jedisResource;
 
     @BeforeEach
     public void init() {
         factory = new DepositPipelineStatusFactory();
-        factory.setJedisPooled(jedisPooled);
-        jedisPooled.flushAll();
+        factory.setJedisPool(jedisPool);
+        jedisResource = jedisPool.getResource();
+        jedisResource.flushAll();
     }
 
     @AfterEach
     public void cleanup() {
-        jedisPooled.flushAll();
+        jedisResource.flushAll();
+        jedisResource.close();
     }
 
     @Test

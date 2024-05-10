@@ -54,6 +54,14 @@ public class AbstractJedisFactory {
         }
     }
 
+    public JedisPool getJedisPool() {
+        return jedisPool;
+    }
+
+    public void setJedisPool(JedisPool jedisPool) {
+        this.jedisPool = jedisPool;
+    }
+
     public void setSocketTimeoutRetries(int socketTimeoutRetries) {
         this.socketTimeoutRetries = socketTimeoutRetries;
     }

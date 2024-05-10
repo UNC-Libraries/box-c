@@ -125,7 +125,7 @@
         <jstl.version>1.2.7</jstl.version>
         <jsp-api.version>2.3.6</jsp-api.version>
         
-        <jedis.version>4.4.8</jedis.version>
+        <jedis.version>3.10.0</jedis.version>
         <embedded-redis.version>0.7.3</embedded-redis.version>
         <solr.version>8.10.1</solr.version>
         <metrics.version>5.0.0</metrics.version>

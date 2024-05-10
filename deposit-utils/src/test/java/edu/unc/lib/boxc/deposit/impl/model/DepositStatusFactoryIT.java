@@ -22,7 +22,6 @@ import edu.unc.lib.boxc.deposit.api.RedisWorkerConstants.DepositField;
 import edu.unc.lib.boxc.deposit.api.RedisWorkerConstants.DepositState;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
-import redis.clients.jedis.JedisPooled;
 
 /**
  *
@@ -35,18 +34,21 @@ public class DepositStatusFactoryIT {
 
     private DepositStatusFactory factory;
     @Autowired
-    private JedisPooled jedisPooled;
+    private JedisPool jedisPool;
+    private Jedis jedisResource;
 
     @BeforeEach
     public void init() {
         factory = new DepositStatusFactory();
-        factory.setJedisPooled(jedisPooled);
-        jedisPooled.flushAll();
+        factory.setJedisPool(jedisPool);
+        jedisResource = jedisPool.getResource();
+        jedisResource.flushAll();
     }
 
     @AfterEach
     public void cleanup() {
-        jedisPooled.flushAll();
+        jedisResource.flushAll();
+        jedisResource.close();
     }
 
     @Test
