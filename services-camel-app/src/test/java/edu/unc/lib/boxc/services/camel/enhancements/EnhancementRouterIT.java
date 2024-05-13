@@ -162,6 +162,7 @@ public class EnhancementRouterIT {
     void closeService() throws Exception {
         closeable.close();
         TestRepositoryDeinitializer.cleanup(fcrepoClient);
+        storageLocationTestHelper.cleanupStorageLocations();
     }
 
     @Test

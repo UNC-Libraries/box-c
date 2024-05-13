@@ -33,9 +33,6 @@ public class BinaryObjectIT extends AbstractFedoraIT {
     private static final String MIMETYPE = "text/plain";
     private static final String CHECKSUM = "82022e1782b92dce5461ee636a6c5bea8509ffee";
 
-    private URI contentUri;
-    private PID filePid;
-
     @Test
     public void retrieveExternalBinary() throws Exception {
         PID parentPid = pidMinter.mintContentPid();

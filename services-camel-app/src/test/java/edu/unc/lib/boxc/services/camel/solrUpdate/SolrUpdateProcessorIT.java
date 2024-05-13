@@ -148,6 +148,7 @@ public class SolrUpdateProcessorIT extends AbstractSolrProcessorIT {
     void closeService() throws Exception {
         closeable.close();
         TestRepositoryDeinitializer.cleanup(fcrepoClient);
+        storageLocationTestHelper.cleanupStorageLocations();
     }
 
     @Test

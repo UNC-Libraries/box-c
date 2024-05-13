@@ -75,8 +75,6 @@ public class TriplesReindexingRouterIT {
 
     @Autowired
     private String baseAddress;
-    @Autowired
-    private String fusekiPort;
 
     @javax.annotation.Resource(name = "repositoryObjectLoader")
     private RepositoryObjectLoader repositoryObjectLoader;
@@ -129,6 +127,7 @@ public class TriplesReindexingRouterIT {
     public void tearDown() throws Exception {
         closeable.close();
         TestRepositoryDeinitializer.cleanup(fcrepoClient);
+        storageLocationTestHelper.cleanupStorageLocations();
     }
 
     private void generateBaseStructure() throws Exception {

@@ -118,6 +118,7 @@ public abstract class AbstractFedoraDepositJobIT {
             jedis.flushDB();
         }
         TestRepositoryDeinitializer.cleanup(fcrepoClient);
+        storageLocationTestHelper.cleanupStorageLocations();
     }
 
     protected ContentObject findContentObjectByPid(List<ContentObject> objs, final PID pid) {

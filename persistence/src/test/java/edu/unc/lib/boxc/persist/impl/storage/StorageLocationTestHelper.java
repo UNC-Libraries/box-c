@@ -204,6 +204,18 @@ public class StorageLocationTestHelper {
         return binaryUri;
     }
 
+    public void cleanupStorageLocations() throws IOException {
+        try {
+            for (Map<String, String> location : locationList) {
+                Path locPath = Paths.get(location.get("base"));
+                deleteDirectory(locPath.toFile());
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+
     public StorageLocation getTestStorageLocation() {
         return locationManager.getStorageLocationById(LOC1_ID);
     }

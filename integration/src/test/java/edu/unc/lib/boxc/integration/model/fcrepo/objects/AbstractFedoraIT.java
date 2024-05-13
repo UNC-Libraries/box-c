@@ -6,12 +6,14 @@ import java.io.IOException;
 import java.net.URI;
 import java.util.List;
 
+import edu.unc.lib.boxc.model.fcrepo.test.TestRepositoryDeinitializer;
 import edu.unc.lib.boxc.persist.impl.storage.StorageLocationTestHelper;
 import org.apache.http.HttpStatus;
 import org.apache.jena.rdf.model.Model;
 import org.fcrepo.client.FcrepoClient;
 import org.fcrepo.client.FcrepoOperationFailedException;
 import org.fcrepo.client.FcrepoResponse;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -57,6 +59,8 @@ public abstract class AbstractFedoraIT {
     protected RepositoryObjectDriver driver;
     @Autowired
     protected StorageLocationTestHelper storageLocationTestHelper;
+    @Autowired
+    protected FcrepoClient fcrepoClient;
 
     @Autowired
     protected Model queryModel;
@@ -69,6 +73,12 @@ public abstract class AbstractFedoraIT {
     public void init_() {
         // Override base uri for IT tests
         TestHelper.setContentBase(baseAddress);
+    }
+
+    @AfterEach
+    public void cleanup() throws Exception {
+        TestRepositoryDeinitializer.cleanup(fcrepoClient);
+        storageLocationTestHelper.cleanupStorageLocations();
     }
 
     protected URI createBaseContainer(String name) throws IOException, FcrepoOperationFailedException {

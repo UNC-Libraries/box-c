@@ -1,67 +1,5 @@
 package edu.unc.lib.boxc.services.camel.exportxml;
 
-import static edu.unc.lib.boxc.model.api.DatastreamType.TECHNICAL_METADATA;
-import static edu.unc.lib.boxc.model.api.xml.NamespaceConstants.FITS_URI;
-import static edu.unc.lib.boxc.model.fcrepo.ids.DatastreamPids.getTechnicalMetadataPid;
-import static edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPaths.getContentRootPid;
-import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.apache.commons.io.FilenameUtils.wildcardMatch;
-import static org.apache.jena.rdf.model.ResourceFactory.createResource;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doAnswer;
-import static org.mockito.Mockito.reset;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.MockitoAnnotations.openMocks;
-
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URI;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.DirectoryStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.time.Instant;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.EnumSet;
-import java.util.List;
-import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
-
-import edu.unc.lib.boxc.model.fcrepo.test.TestRepositoryDeinitializer;
-import edu.unc.lib.boxc.persist.impl.storage.StorageLocationTestHelper;
-import org.apache.camel.CamelContext;
-import org.apache.camel.builder.NotifyBuilder;
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
-import org.apache.jena.vocabulary.DCTerms;
-import org.apache.solr.client.solrj.embedded.EmbeddedSolrServer;
-import org.fcrepo.client.FcrepoClient;
-import org.jdom2.Document;
-import org.jdom2.Element;
-import org.jdom2.input.SAXBuilder;
-import org.jdom2.output.Format;
-import org.jdom2.output.XMLOutputter;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.rules.TemporaryFolder;
-import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.ContextHierarchy;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-
 import edu.unc.lib.boxc.auth.api.models.AgentPrincipals;
 import edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl;
 import edu.unc.lib.boxc.auth.fcrepo.models.AgentPrincipalsImpl;
@@ -87,6 +25,7 @@ import edu.unc.lib.boxc.model.fcrepo.services.RepositoryInitializer;
 import edu.unc.lib.boxc.model.fcrepo.test.AclModelBuilder;
 import edu.unc.lib.boxc.model.fcrepo.test.RepositoryObjectTreeIndexer;
 import edu.unc.lib.boxc.model.fcrepo.test.TestHelper;
+import edu.unc.lib.boxc.model.fcrepo.test.TestRepositoryDeinitializer;
 import edu.unc.lib.boxc.operations.api.events.PremisLogger;
 import edu.unc.lib.boxc.operations.api.events.PremisLoggerFactory;
 import edu.unc.lib.boxc.operations.impl.edit.UpdateDescriptionService;
@@ -94,6 +33,66 @@ import edu.unc.lib.boxc.operations.impl.edit.UpdateDescriptionService.UpdateDesc
 import edu.unc.lib.boxc.operations.impl.utils.EmailHandler;
 import edu.unc.lib.boxc.operations.jms.exportxml.ExportXMLRequest;
 import edu.unc.lib.boxc.operations.jms.exportxml.ExportXMLRequestService;
+import edu.unc.lib.boxc.persist.impl.storage.StorageLocationTestHelper;
+import org.apache.camel.CamelContext;
+import org.apache.camel.builder.NotifyBuilder;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
+import org.apache.jena.vocabulary.DCTerms;
+import org.apache.solr.client.solrj.embedded.EmbeddedSolrServer;
+import org.fcrepo.client.FcrepoClient;
+import org.jdom2.Document;
+import org.jdom2.Element;
+import org.jdom2.input.SAXBuilder;
+import org.jdom2.output.Format;
+import org.jdom2.output.XMLOutputter;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
+import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.ContextHierarchy;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URI;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.DirectoryStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.EnumSet;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
+
+import static edu.unc.lib.boxc.model.api.DatastreamType.TECHNICAL_METADATA;
+import static edu.unc.lib.boxc.model.api.xml.NamespaceConstants.FITS_URI;
+import static edu.unc.lib.boxc.model.fcrepo.ids.DatastreamPids.getTechnicalMetadataPid;
+import static edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPaths.getContentRootPid;
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.apache.commons.io.FilenameUtils.wildcardMatch;
+import static org.apache.jena.rdf.model.ResourceFactory.createResource;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.reset;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.MockitoAnnotations.openMocks;
 
 /**
  * @author bbpennel
@@ -188,10 +187,11 @@ public class ExportXMLRouteIT {
         }).when(emailHandler).sendEmail(any(), any(), any(), any(), any());
     }
 
-    @AfterEach
+    @After
     void closeService() throws Exception {
         closeable.close();
         TestRepositoryDeinitializer.cleanup(fcrepoClient);
+        storageLocationTestHelper.cleanupStorageLocations();
     }
 
     @Test

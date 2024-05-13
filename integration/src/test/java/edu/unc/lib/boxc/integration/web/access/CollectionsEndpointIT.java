@@ -18,7 +18,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
  * @author bbpennel, snluong
  */
 @ExtendWith(SpringExtension.class)
-public class CollectionsEndpointIT extends EndpointIT{
+public class CollectionsEndpointIT extends EndpointIT {
     protected HttpGet getMethod;
 
     @BeforeEach
