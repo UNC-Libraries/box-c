@@ -203,7 +203,7 @@ public class TriplesReindexingRouterIT {
         // Wait for roughly all of the objects to be indexed
         NotifyBuilder notify = new NotifyBuilder(fcrepoTriplestoreIndexer)
                 .from(indexingEndpoint)
-                .whenCompleted(22)
+                .whenCompleted(59)
                 .create();
 
         notify.matches(25l, TimeUnit.SECONDS);
