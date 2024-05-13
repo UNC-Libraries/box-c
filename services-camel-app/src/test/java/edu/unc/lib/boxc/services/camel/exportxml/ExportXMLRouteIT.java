@@ -188,7 +188,7 @@ public class ExportXMLRouteIT {
     }
 
     @After
-    void closeService() throws Exception {
+    public void closeService() throws Exception {
         closeable.close();
         TestRepositoryDeinitializer.cleanup(fcrepoClient);
         storageLocationTestHelper.cleanupStorageLocations();
