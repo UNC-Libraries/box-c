@@ -39,6 +39,15 @@
     <bean id="repositoryInitializer" class="edu.unc.lib.boxc.model.fcrepo.services.RepositoryInitializer">
         <property name="objFactory" ref="repositoryObjectFactory" />
     </bean>
+
+    <bean id="storageLocationTestHelper" class="edu.unc.lib.boxc.persist.impl.storage.StorageLocationTestHelper"
+          factory-method="createWithBasicConfig">
+    </bean>
+
+    <bean id="storageLocationManager" factory-bean="storageLocationTestHelper"
+          factory-method="createLocationManager">
+        <constructor-arg ref="repositoryObjectLoader" />
+    </bean>
     
     <bean id="cacheTimeToLive" class="java.lang.Long">
         <constructor-arg value="0" />
@@ -95,12 +104,12 @@
         <property name="cacheTimeToLive" value="100" />
         <property name="fcrepoClient" ref="fcrepoClient" />
     </bean>
-    
-    <bean id="binaryTransferService" class="org.mockito.Mockito" factory-method="mock">
-        <constructor-arg type="java.lang.Class" value="edu.unc.lib.boxc.persist.api.transfer.BinaryTransferService" />
+
+    <bean id="binaryTransferService" class="edu.unc.lib.boxc.persist.impl.transfer.BinaryTransferServiceImpl">
+        <property name="storageLocationManager" ref="storageLocationManager" />
     </bean>
     
-    <bean id="txManager" class="edu.unc.lib.boxc.fcrepo.utils.TransactionManager">
+    <bean id="transactionManager" class="edu.unc.lib.boxc.fcrepo.utils.TransactionManager">
         <property name="client" ref="fcrepoClient" />
         <property name="binaryTransferService" ref="binaryTransferService" />
     </bean>

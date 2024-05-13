@@ -5,12 +5,15 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import edu.unc.lib.boxc.model.api.ids.PID;
+import edu.unc.lib.boxc.model.fcrepo.ids.DatastreamPids;
 import org.apache.commons.io.FileUtils;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
@@ -61,13 +64,14 @@ public class WorkObjectIT extends AbstractFedoraIT {
     public void addDataFileTest() throws Exception {
         WorkObject obj = repoObjFactory.createWorkObject(null);
 
+        PID filePid = pidMinter.mintContentPid();
         String bodyString = "Content";
         String filename = "file.txt";
         String mimetype = "text/plain";
-        Path contentPath = Files.createTempFile("file", ".txt");
-        FileUtils.writeStringToFile(contentPath.toFile(), bodyString, "UTF-8");
+        var fileUri = storageLocationTestHelper.makeTestStorageUri(DatastreamPids.getOriginalFilePid(filePid));
+        FileUtils.writeStringToFile(new File(fileUri), bodyString, "UTF-8");
 
-        obj.addDataFile(contentPath.toUri(), filename, mimetype, null, null);
+        obj.addDataFile(filePid, fileUri, filename, mimetype, null, null, null);
 
         treeIndexer.indexAll(baseAddress);
 
@@ -92,22 +96,22 @@ public class WorkObjectIT extends AbstractFedoraIT {
         WorkObject obj = repoObjFactory.createWorkObject(null);
 
         // Create the primary object
+        PID filePid1 = pidMinter.mintContentPid();
+        var fileUri1 = storageLocationTestHelper.makeTestStorageUri(DatastreamPids.getOriginalFilePid(filePid1));
         String bodyString = "Primary object";
         String filename = "primary.txt";
-        Path contentPath = Files.createTempFile("primary", ".txt");
-        FileUtils.writeStringToFile(contentPath.toFile(), bodyString, "UTF-8");
-
-        FileObject primaryObj = obj.addDataFile(contentPath.toUri(), filename, null, null, null);
+        FileUtils.writeStringToFile(new File(fileUri1), bodyString, "UTF-8");
+        FileObject primaryObj = obj.addDataFile(filePid1, fileUri1, filename, null, null, null, null);
         // Set it as the primary object for our work
         obj.setPrimaryObject(primaryObj.getPid());
 
         // Create the supplemental object
+        PID filePid2 = pidMinter.mintContentPid();
+        var fileUri2 = storageLocationTestHelper.makeTestStorageUri(DatastreamPids.getOriginalFilePid(filePid2));
         String bodyStringS = "Supplement1";
         String filenameS = "s1.txt";
-        Path contentPath2 = Files.createTempFile("s1", ".txt");
-        FileUtils.writeStringToFile(contentPath2.toFile(), bodyStringS, "UTF-8");
-
-        FileObject supp = obj.addDataFile(contentPath2.toUri(), filenameS, null, null, null);
+        FileUtils.writeStringToFile(new File(fileUri2), bodyStringS, "UTF-8");
+        FileObject supp = obj.addDataFile(filePid2, fileUri2, filenameS, null, null, null, null);
 
         treeIndexer.indexAll(baseAddress);
 

@@ -1059,64 +1059,6 @@
                 <artifactId>activemq-pool</artifactId>
                 <version>${activemq.version}</version>
             </dependency>
-            
-            <!-- integration testing -->
-            <dependency>
-                <groupId>org.fcrepo</groupId>
-                <artifactId>fcrepo-http-commons</artifactId>
-                <version>${fcrepo4.version}</version>
-                <scope>test</scope>
-                <type>test-jar</type>
-            </dependency>
-            <dependency>
-                <groupId>org.fcrepo</groupId>
-                <artifactId>fcrepo-auth-common</artifactId>
-                <version>${fcrepo4.version}</version>
-                <scope>test</scope>
-                <exclusions>
-                    <exclusion>
-                        <groupId>org.apache.jena</groupId>
-                        <artifactId>jena-arq</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>org.glassfish.grizzly</groupId>
-                <artifactId>grizzly-http-servlet</artifactId>
-                <version>${grizzly.version}</version>
-                <scope>test</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.glassfish.jersey.core</groupId>
-                <artifactId>jersey-common</artifactId>
-                <version>${jersey.version}</version>
-                <scope>test</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.glassfish.jersey.ext</groupId>
-                <artifactId>jersey-spring5</artifactId>
-                <version>${jersey.version}</version>
-                <scope>test</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.glassfish.jersey.test-framework.providers</groupId>
-                <artifactId>jersey-test-framework-provider-grizzly2</artifactId>
-                <version>${jersey.version}</version>
-                <scope>test</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.fcrepo</groupId>
-                <artifactId>fcrepo-kernel-modeshape</artifactId>
-                <version>${fcrepo4.version}</version>
-                <scope>test</scope>
-                <classifier>tests</classifier>
-            </dependency>
-            <dependency>
-                <groupId>org.fcrepo</groupId>
-                <artifactId>fcrepo-http-api</artifactId>
-                <version>${fcrepo4.version}</version>
-                <scope>test</scope>
-            </dependency>
         </dependencies>
     </dependencyManagement>
 </project>

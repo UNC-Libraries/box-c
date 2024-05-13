@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.util.List;
 
+import edu.unc.lib.boxc.persist.impl.storage.StorageLocationTestHelper;
 import org.apache.http.HttpStatus;
 import org.apache.jena.rdf.model.Model;
 import org.fcrepo.client.FcrepoClient;
@@ -35,7 +36,7 @@ import edu.unc.lib.boxc.model.fcrepo.test.TestHelper;
  *
  */
 @ExtendWith(SpringExtension.class)
-@ContextConfiguration({"/spring-test/test-fedora-container.xml", "/spring-test/cdr-client-container.xml"})
+@ContextConfiguration({"/spring-test/cdr-client-container.xml"})
 public abstract class AbstractFedoraIT {
 
     @Autowired
@@ -54,6 +55,8 @@ public abstract class AbstractFedoraIT {
     protected TransactionManager txManager;
     @Autowired
     protected RepositoryObjectDriver driver;
+    @Autowired
+    protected StorageLocationTestHelper storageLocationTestHelper;
 
     @Autowired
     protected Model queryModel;
@@ -65,7 +68,7 @@ public abstract class AbstractFedoraIT {
     @BeforeEach
     public void init_() {
         // Override base uri for IT tests
-        TestHelper.setContentBase("http://localhost:48085/rest");
+        TestHelper.setContentBase(baseAddress);
     }
 
     protected URI createBaseContainer(String name) throws IOException, FcrepoOperationFailedException {

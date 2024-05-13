@@ -38,7 +38,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  */
 
 @ContextHierarchy({
-        @ContextConfiguration("/spring-test/test-fedora-container.xml"),
         @ContextConfiguration("/spring-test/cdr-client-container.xml"),
         @ContextConfiguration("/spring-test/acl-service-context.xml"),
         @ContextConfiguration("/spring-test/solr-standalone-context.xml"),

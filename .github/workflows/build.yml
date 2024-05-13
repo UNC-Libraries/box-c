@@ -63,23 +63,23 @@ jobs:
         restore-keys: ${{ runner.os }}-m2
     - name: Build with Maven
       run: mvn -B -U -pl '!integration' clean install -DskipTests
-##    - name: Set up nodejs
-##      uses: actions/setup-node@v2
-##      with:
-##        node-version: '16'
-##    - name: Cache npm modules
-##      uses: actions/cache@v2
-##      with:
-##        path: ~/.npm
-##        key: v1-npm-deps-${{ hashFiles('**/package-lock.json') }}
-##        restore-keys: v1-npm-deps-
-#
-##    - run: npm --prefix static/js/vue-cdr-access install
-##    - run: npm --prefix static/js/admin/vue-permissions-editor install
-##
-##    - run: npm install -g jest-cli@29.0.3
-##    - run: npm --prefix static/js/vue-cdr-access run test
-##    - run: npm --prefix static/js/admin/vue-permissions-editor run test
+    - name: Set up nodejs
+      uses: actions/setup-node@v2
+      with:
+        node-version: '16'
+    - name: Cache npm modules
+      uses: actions/cache@v2
+      with:
+        path: ~/.npm
+        key: v1-npm-deps-${{ hashFiles('**/package-lock.json') }}
+        restore-keys: v1-npm-deps-
+
+    - run: npm --prefix static/js/vue-cdr-access install
+    - run: npm --prefix static/js/admin/vue-permissions-editor install
+
+    - run: npm install -g jest-cli@29.0.3
+    - run: npm --prefix static/js/vue-cdr-access run test
+    - run: npm --prefix static/js/admin/vue-permissions-editor run test
 
     - name: Report to CodeClimate
       uses: paambaati/codeclimate-action@v3.0.0
@@ -87,7 +87,7 @@ jobs:
         CC_TEST_REPORTER_ID: ${{secrets.CC_TEST_REPORTER_ID}}
         JACOCO_SOURCE_PATH: "${{github.workspace}}/auth-api/src/main/java ${{github.workspace}}/auth-fcrepo/src/main/java ${{github.workspace}}/common-utils/src/main/java ${{github.workspace}}/deposit-app/src/main/java ${{github.workspace}}/deposit-utils/src/main/java ${{github.workspace}}/fcrepo-utils/src/main/java ${{github.workspace}}/indexing-solr/src/main/java ${{github.workspace}}/integration/src/main/java ${{github.workspace}}/model-api/src/main/java ${{github.workspace}}/model-fcrepo/src/main/java ${{github.workspace}}/operations/src/main/java ${{github.workspace}}/operations-jms/src/main/java ${{github.workspace}}/persistence/src/main/java ${{github.workspace}}/persistence-api/src/main/java ${{github.workspace}}/search-api/src/main/java ${{github.workspace}}/search-solr/src/main/java ${{github.workspace}}/services-camel-app/src/main/java ${{github.workspace}}/web-access-app/src/main/java ${{github.workspace}}/web-access-war/src/main/java ${{github.workspace}}/web-admin-app/src/main/java ${{github.workspace}}/web-common/src/main/java ${{github.workspace}}/web-services-app/src/main/java ${{github.workspace}}/web-sword/src/main/java  ${{github.workspace}}/clamav-java/src/main/java"
       with:
-        coverageCommand: mvn -pl services-camel-app verify
+        coverageCommand: mvn -pl !clamav-java verify
         coverageLocations: |
           ${{github.workspace}}/**/target/site/jacoco/jacoco.xml:jacoco
           ${{github.workspace}}/**/target/site/jacoco-it/jacoco.xml:jacoco
