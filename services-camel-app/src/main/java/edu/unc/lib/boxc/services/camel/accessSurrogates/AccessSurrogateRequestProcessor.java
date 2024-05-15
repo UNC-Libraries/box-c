@@ -52,6 +52,7 @@ public class AccessSurrogateRequestProcessor implements Processor {
         if (repositoryObject instanceof FileObject) {
             Path surrogatePath = derivativeService.getDerivativePath(pid, DatastreamType.ACCESS_SURROGATE);
             if (Objects.equals(SET, action)) {
+                Files.createDirectories(surrogatePath.getParent());
                 Files.copy(filePath, surrogatePath, StandardCopyOption.REPLACE_EXISTING);
             } else if (Objects.equals(DELETE, action)) {
                 Files.deleteIfExists(surrogatePath);
