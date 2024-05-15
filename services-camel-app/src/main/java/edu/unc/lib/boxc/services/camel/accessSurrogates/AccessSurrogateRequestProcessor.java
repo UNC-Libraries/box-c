@@ -3,8 +3,10 @@ package edu.unc.lib.boxc.services.camel.accessSurrogates;
 import edu.unc.lib.boxc.auth.api.Permission;
 import edu.unc.lib.boxc.auth.api.services.AccessControlService;
 import edu.unc.lib.boxc.model.api.DatastreamType;
+import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.objects.FileObject;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
+import edu.unc.lib.boxc.model.fcrepo.ids.DatastreamPids;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.boxc.model.fcrepo.services.DerivativeService;
 import edu.unc.lib.boxc.operations.jms.MessageSender;
@@ -58,7 +60,8 @@ public class AccessSurrogateRequestProcessor implements Processor {
                 Files.deleteIfExists(surrogatePath);
             }
 
-            Document msg = makeEnhancementOperationBody(agent.getUsername(), pid, true);
+            PID originalPid = DatastreamPids.getOriginalFilePid(pid);
+            Document msg = makeEnhancementOperationBody(agent.getUsername(), originalPid, true);
             messageSender.sendMessage(msg);
         } else {
             log.error("Cannot process access surrogate update for {}, non FileObjects do not have access surrogates",

@@ -524,11 +524,21 @@
         <property name="indexingMessageSender" ref="indexingMessageSender" />
     </bean>
 
+    <bean id="enhancementsJmsTemplate" class="org.springframework.jms.core.JmsTemplate">
+        <property name="connectionFactory" ref="pooledAmqConnectionFactory" />
+        <property name="defaultDestinationName" value="${cdr.enhancement.stream}" />
+        <property name="pubSubDomain" value="false" />
+    </bean>
+
+    <bean id="runEnhancementMessageSender" class="edu.unc.lib.boxc.operations.jms.MessageSender">
+        <property name="jmsTemplate" ref="enhancementsJmsTemplate"/>
+    </bean>
+
     <bean id="accessSurrogateRequestProcessor" class="edu.unc.lib.boxc.services.camel.accessSurrogates.AccessSurrogateRequestProcessor">
         <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
         <property name="accessControlService" ref="aclService" />
         <property name="derivativeService" ref="derivativeService" />
-        <property name="messageSender" ref="operationsMessageSender" />
+        <property name="messageSender" ref="runEnhancementMessageSender" />
     </bean>
 
     <!-- Camel contexts -->
