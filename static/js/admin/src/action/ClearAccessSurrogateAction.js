@@ -12,7 +12,7 @@ define('ClearAccessSurrogateAction', [ 'jquery', 'AjaxCallbackAction'], function
 
         var options = {
             workMethod: "DELETE",
-            workPath: "/services/api/edit/deleteAccessSurrogate/{idPath}",
+            workPath: "/services/api/edit/accessSurrogate/{idPath}",
             workLabel: "Clearing assigned access surrogate...",
             followupLabel: "Clearing assigned access surrogate...",
             followupPath: "/services/api/status/item/{idPath}/solrRecord/version"

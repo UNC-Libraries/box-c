@@ -156,10 +156,9 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'A
 				} else {
 					items['assignAsThumbnail'] = { name : 'Assign as Thumbnail' };
 				}
-				if ($.inArray('Assigned As Thumbnail', metadata.contentStatus) != -1) {
-					items['clearAccessSurrogate'] = { name : 'Clear Access Surrogate' };
-				} else {
-					items['assignAccessSurrogate'] = { name : 'Edit Access Surrogate' };
+				items['assignAccessSurrogate'] = { name : 'Set Access Surrogate' };
+				if ($.inArray('Assigned As Access Surrogate', metadata.contentStatus) !== -1) {
+					items['clearAccessSurrogate'] = { name : 'Clear Assigned Access Surrogate' };
 				}
 			} else if (metadata.type == 'Work') {
 				if ($.inArray('Has Primary Object', metadata.contentStatus) != -1) {
