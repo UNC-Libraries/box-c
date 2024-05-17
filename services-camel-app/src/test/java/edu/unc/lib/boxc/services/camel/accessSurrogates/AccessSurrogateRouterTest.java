@@ -6,6 +6,8 @@ import edu.unc.lib.boxc.auth.fcrepo.models.AgentPrincipalsImpl;
 import edu.unc.lib.boxc.operations.jms.accessSurrogates.AccessSurrogateRequest;
 import edu.unc.lib.boxc.operations.jms.accessSurrogates.AccessSurrogateRequestSerializationHelper;
 import edu.unc.lib.boxc.services.camel.ProcessorTestHelper;
+import edu.unc.lib.boxc.services.camel.images.ImageCacheInvalidationProcessor;
+import edu.unc.lib.boxc.services.camel.images.ImageCacheInvalidationProcessorTest;
 import org.apache.camel.BeanInject;
 import org.apache.camel.Produce;
 import org.apache.camel.ProducerTemplate;
@@ -24,6 +26,8 @@ public class AccessSurrogateRouterTest extends CamelSpringTestSupport {
     protected ProducerTemplate template;
     @BeanInject(value = "accessSurrogateRequestProcessor")
     private AccessSurrogateRequestProcessor processor;
+    @BeanInject(value = "imageCacheInvalidationProcessor")
+    private ImageCacheInvalidationProcessor imageCacheInvalidationProcessor;
 
     @Override
     protected AbstractApplicationContext createApplicationContext() {
@@ -42,6 +46,7 @@ public class AccessSurrogateRouterTest extends CamelSpringTestSupport {
         template.sendBody(body);
 
         verify(processor).process(any());
+        verify(imageCacheInvalidationProcessor).process(any());
     }
 
     private void createContext(String routeName) throws Exception {

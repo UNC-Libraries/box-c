@@ -541,6 +541,14 @@
         <property name="messageSender" ref="runEnhancementMessageSender" />
     </bean>
 
+    <bean id="imageCacheInvalidationProcessor" class="edu.unc.lib.boxc.services.camel.images.ImageCacheInvalidationProcessor"
+            destroy-method="destroy">
+        <property name="connectionManager" ref="httpClientConnectionManager" />
+        <property name="imageServerBasePath" value="${image.server.base.path}" />
+        <property name="imageServerUsername" value="${image.server.username}" />
+        <property name="imageServerPassword" value="${image.server.password}" />
+    </bean>
+
     <!-- Camel contexts -->
 
     <camel:camelContext id="FcrepoTriplestoreIndexer">

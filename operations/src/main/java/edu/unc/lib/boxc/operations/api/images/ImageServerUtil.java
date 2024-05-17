@@ -16,14 +16,21 @@ public class ImageServerUtil {
     }
 
     /**
+     * Returns an unencoded image service ID with .jp2 extension
+     * @param id
+     * @return
+     */
+    public static String getImageServiceId(String id) {
+        return idToPath(id, 4, 2) + id + ".jp2";
+    }
+
+    /**
      * Returns the object ID in proper encoded format with .jp2 extension
      * @param id
      * @return
      */
     public static String getImageServerEncodedId(String id) {
-        var idPathEncoded = URLEncoder.encode(idToPath(id, 4, 2), StandardCharsets.UTF_8);
-        var idEncoded = URLEncoder.encode(id, StandardCharsets.UTF_8);
-        return idPathEncoded + idEncoded + ".jp2";
+        return URLEncoder.encode(getImageServiceId(id));
     }
 
     /**

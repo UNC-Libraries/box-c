@@ -25,6 +25,7 @@ import java.util.Objects;
 import static edu.unc.lib.boxc.operations.jms.RunEnhancementsMessageHelpers.makeEnhancementOperationBody;
 import static edu.unc.lib.boxc.operations.jms.accessSurrogates.AccessSurrogateRequest.DELETE;
 import static edu.unc.lib.boxc.operations.jms.accessSurrogates.AccessSurrogateRequest.SET;
+import static org.fcrepo.camel.FcrepoHeaders.FCREPO_URI;
 
 /**
  * Processor for requests for adding, replacing, and removing access surrogates
@@ -44,6 +45,7 @@ public class AccessSurrogateRequestProcessor implements Processor {
         var request = AccessSurrogateRequestSerializationHelper.toRequest(in.getBody(String.class));
         var agent = request.getAgent();
         var pid = PIDs.get(request.getPidString());
+        in.setHeader(FCREPO_URI, pid.getRepositoryPath());
 
         accessControlService.assertHasAccess("User does not have permission to update access surrogates",
                 pid, agent.getPrincipals(), Permission.editDescription);
