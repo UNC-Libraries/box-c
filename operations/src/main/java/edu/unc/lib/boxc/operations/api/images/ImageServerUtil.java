@@ -1,4 +1,4 @@
-package edu.unc.lib.boxc.web.services.utils;
+package edu.unc.lib.boxc.operations.api.images;
 
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
