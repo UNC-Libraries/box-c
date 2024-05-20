@@ -23,6 +23,7 @@ define('EditAccessSurrogateForm', [ 'jquery', 'jquery-ui', 'underscore', 'Remote
         };
 
         EditAccessSurrogateForm.prototype.getSuccessMessage = function(data) {
+            this.submitSuccessful = true;
             return this.ingestFile.name + " has been successfully uploaded for access surrogate creation.";
         };
 
@@ -33,6 +34,17 @@ define('EditAccessSurrogateForm', [ 'jquery', 'jquery-ui', 'underscore', 'Remote
                 this.setError(data.errorStack);
             }
             return message;
+        };
+
+        EditAccessSurrogateForm.prototype.remove = function() {
+            AbstractFileUploadForm.prototype.remove.apply(this);
+            if (this.submitSuccessful) {
+                this.options.actionHandler.addEvent({
+                    action : 'RefreshResult',
+                    target : this.resultObject,
+                    waitForUpdate : true
+                });
+            }
         };
 
         return EditAccessSurrogateForm;
