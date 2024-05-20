@@ -32,14 +32,12 @@ import java.util.List;
 
 import static edu.unc.lib.boxc.operations.jms.accessSurrogates.AccessSurrogateRequest.DELETE;
 import static edu.unc.lib.boxc.operations.jms.accessSurrogates.AccessSurrogateRequest.SET;
-import static org.fcrepo.camel.FcrepoHeaders.FCREPO_URI;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.openMocks;
 
@@ -121,7 +119,6 @@ public class AccessSurrogateRequestProcessorTest {
         processor.process(exchange);
         assertTrue(Files.exists(accessSurrogatePath));
         assertFalse(Files.exists(path));
-        verify(exchange.getIn()).setHeader(FCREPO_URI, filePid.getRepositoryPath());
     }
 
     @Test
@@ -132,7 +129,6 @@ public class AccessSurrogateRequestProcessorTest {
         processor.process(exchange);
         assertFalse(Files.exists(accessSurrogatePath));
         assertFalse(Files.exists(path));
-        verify(exchange.getIn()).setHeader(FCREPO_URI, filePid.getRepositoryPath());
     }
 
     private Exchange createRequestExchange(String pidString, Path path, String action) throws JsonProcessingException {

@@ -11,10 +11,6 @@
         <constructor-arg type="java.lang.Class" value="edu.unc.lib.boxc.services.camel.accessSurrogates.AccessSurrogateRequestProcessor" />
     </bean>
 
-    <bean id="imageCacheInvalidationProcessor" class="org.mockito.Mockito" factory-method="mock">
-        <constructor-arg type="java.lang.Class" value="edu.unc.lib.boxc.services.camel.images.ImageCacheInvalidationProcessor" />
-    </bean>
-
     <camel:camelContext id="DcrAccessSurrogates">
         <camel:package>edu.unc.lib.boxc.services.camel.accessSurrogates</camel:package>
     </camel:camelContext>

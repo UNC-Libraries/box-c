@@ -76,6 +76,9 @@ public class ImageEnhancementsRouterTest extends CamelSpringTestSupport {
     @BeanInject(value = "addAccessCopyProcessor")
     private AddDerivativeProcessor addAccessCopyProcessor;
 
+    @BeanInject(value = "imageCacheInvalidationProcessor")
+    private ImageCacheInvalidationProcessor imageCacheInvalidationProcessor;
+
     @Override
     protected AbstractApplicationContext createApplicationContext() {
         return new ClassPathXmlApplicationContext("/service-context.xml", "/images-context.xml");
@@ -336,6 +339,7 @@ public class ImageEnhancementsRouterTest extends CamelSpringTestSupport {
 
         verify(addAccessCopyProcessor).process(any(Exchange.class));
         verify(addAccessCopyProcessor).cleanupTempFile(any(Exchange.class));
+        verify(imageCacheInvalidationProcessor).process(any());
         assertMockEndpointsSatisfied();
     }
 
@@ -378,6 +382,7 @@ public class ImageEnhancementsRouterTest extends CamelSpringTestSupport {
         template.sendBodyAndHeaders("", headers);
 
         verify(addAccessCopyProcessor).process(any(Exchange.class));
+        verify(imageCacheInvalidationProcessor).process(any());
         assertMockEndpointsSatisfied();
     }
 
@@ -397,6 +402,7 @@ public class ImageEnhancementsRouterTest extends CamelSpringTestSupport {
 
         verify(addAccessCopyProcessor, never()).process(any(Exchange.class));
         verify(addAccessCopyProcessor, never()).cleanupTempFile(any(Exchange.class));
+        verify(imageCacheInvalidationProcessor, never()).process(any());
         assertMockEndpointsSatisfied();
     }
 
@@ -416,6 +422,7 @@ public class ImageEnhancementsRouterTest extends CamelSpringTestSupport {
         template.sendBodyAndHeaders("", headers);
 
         verify(addAccessCopyProcessor).process(any(Exchange.class));
+        verify(imageCacheInvalidationProcessor).process(any());
         assertMockEndpointsSatisfied();
     }
 
