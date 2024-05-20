@@ -157,8 +157,8 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'A
 					items['assignAsThumbnail'] = { name : 'Assign as Thumbnail' };
 				}
 				items['assignAccessSurrogate'] = { name : 'Set Access Surrogate' };
-				if ($.inArray('Assigned As Access Surrogate', metadata.contentStatus) !== -1) {
-					items['clearAccessSurrogate'] = { name : 'Clear Assigned Access Surrogate' };
+				if (metadata.datastream.findIndex(d => d.startsWith('access_surrogate')) !== -1) {
+					items['clearAccessSurrogate'] = { name : 'Clear Access Surrogate' };
 				}
 			} else if (metadata.type == 'Work') {
 				if ($.inArray('Has Primary Object', metadata.contentStatus) != -1) {
@@ -540,7 +540,8 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'A
 	ResultObjectActionMenu.prototype.editAccessSurrogate = function(resultObject) {
 		var editAccessSurrogateForm = new EditAccessSurrogateForm({
 			alertHandler : this.options.alertHandler,
-			actionHandler : this.actionHandler
+			actionHandler : this.actionHandler,
+			metadata: resultObject.metadata
 		});
 		editAccessSurrogateForm.open(resultObject);
 	};

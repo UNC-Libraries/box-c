@@ -1,6 +1,8 @@
 <iframe id="upload_file_frame" name="upload_file_frame" height="0" width="0" style="display: none;"></iframe>
 <form id="create_simple_object_form" method="post" action="/services/api/edit/accessSurrogate/<%= pid %>" enctype="multipart/form-data" target="upload_file_container" class="edit_form create_simple_object_form">
-    <p>Current surrogate file: <span id="current_surrogate_file"></span></p>
+        <% if (metadata.datastream.findIndex(d => d.startsWith('access_surrogate')) !== -1) { %>
+            <p class="access_surrogate">File has an active access surrogate</p>
+        <% } %>
     <h3>Add File</h3>
     <div class="form_field">
         <label>File*</label>
