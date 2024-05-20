@@ -39,22 +39,6 @@ define('ClearAccessSurrogateAction', [ 'jquery', 'AjaxCallbackAction'], function
         this.context.target.enable();
     };
 
-    ClearAccessSurrogateAction.prototype.workDone = function(data) {
-        this.completeTimestamp = data.timestamp;
-        this.oldAccessSurrogateId = data.oldAccessSurrogateId;
-        if (this.context.target.metadata.type === "File") {
-            var oldAccessSurrogate = this.context.resultTable.resultObjectList.getResultObject(this.oldAccessSurrogateId);
-            if (oldAccessSurrogate != null) {
-                this.context.actionHandler.addEvent({
-                    action : 'RefreshResult',
-                    target : oldAccessSurrogate,
-                    waitForUpdate : true
-                });
-            }
-        }
-        return true;
-    };
-
     ClearAccessSurrogateAction.prototype.followup = function(data) {
         if (data) {
             return this.context.target.updateVersion(data);

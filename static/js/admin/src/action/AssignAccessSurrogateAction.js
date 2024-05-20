@@ -39,20 +39,6 @@ define('AssignAccessSurrogateAction', [ 'jquery', 'AjaxCallbackAction'], functio
         this.context.target.enable();
     };
 
-    AssignAccessSurrogateAction.prototype.workDone = function(data) {
-        this.completeTimestamp = data.timestamp;
-        this.oldAccessSurrogate = data.oldAccessSurrogate;
-        this.newAccessSurrogate = data.newAccessSurrogate;
-        if (this.oldAccessSurrogate) {
-            this.context.actionHandler.addEvent({
-                action : 'RefreshResult',
-                target : this.context.resultTable.resultObjectList.getResultObject(this.oldAccessSurrogate),
-                waitForUpdate : true
-            });
-        }
-        return true;
-    };
-
     AssignAccessSurrogateAction.prototype.followup = function(data) {
         if (data) {
             return this.context.target.updateVersion(data);
