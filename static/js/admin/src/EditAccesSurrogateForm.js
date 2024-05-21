@@ -8,6 +8,7 @@ define('EditAccessSurrogateForm', [ 'jquery', 'jquery-ui', 'underscore', 'Remote
 
         function EditAccessSurrogateForm(options) {
             this.options = $.extend({}, AbstractFileUploadForm.prototype.getDefaultOptions(), defaultOptions, options);
+            this.submitSuccessful = false;
         }
 
         EditAccessSurrogateForm.prototype.constructor = EditAccessSurrogateForm;
