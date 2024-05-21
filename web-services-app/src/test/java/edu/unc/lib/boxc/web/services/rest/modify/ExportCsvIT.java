@@ -5,6 +5,7 @@ import edu.unc.lib.boxc.fcrepo.utils.FedoraSparqlUpdateService;
 import edu.unc.lib.boxc.indexing.solr.indexing.DocumentIndexingPackageFactory;
 import edu.unc.lib.boxc.indexing.solr.indexing.SolrUpdateDriver;
 import edu.unc.lib.boxc.indexing.solr.test.RepositoryObjectSolrIndexer;
+import edu.unc.lib.boxc.model.api.DatastreamType;
 import edu.unc.lib.boxc.model.api.ResourceType;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.ids.PIDMinter;
@@ -21,7 +22,6 @@ import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.boxc.model.fcrepo.services.RepositoryInitializer;
 import edu.unc.lib.boxc.model.fcrepo.test.AclModelBuilder;
 import edu.unc.lib.boxc.model.fcrepo.test.RepositoryObjectTreeIndexer;
-import edu.unc.lib.boxc.model.fcrepo.test.TestHelper;
 import edu.unc.lib.boxc.operations.api.events.PremisLoggerFactory;
 import edu.unc.lib.boxc.operations.impl.delete.MarkForDeletionJob;
 import edu.unc.lib.boxc.operations.impl.edit.UpdateDescriptionService;
@@ -37,6 +37,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.jena.rdf.model.Model;
 import org.apache.solr.client.solrj.embedded.EmbeddedSolrServer;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -47,10 +48,12 @@ import org.springframework.test.web.servlet.MvcResult;
 
 import javax.annotation.Resource;
 import java.io.File;
+import java.io.IOException;
 import java.io.StringReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -134,6 +137,7 @@ public class ExportCsvIT extends AbstractAPIIT {
     protected CollectionObject collObj;
     protected CollectionObject collObj2;
     protected FolderObject folderObj;
+    protected Path surrogatePath;
 
     @BeforeEach
     public void setup() throws Exception {
@@ -143,6 +147,11 @@ public class ExportCsvIT extends AbstractAPIIT {
 
         setField(solrSearchService, "solrClient", server);
         setField(childrenCountService, "solrClient", server);
+    }
+
+    @AfterEach
+    public void cleanup() throws IOException {
+//        Files.delete(surrogatePath.getParent());
     }
 
     @Test
@@ -168,7 +177,7 @@ public class ExportCsvIT extends AbstractAPIIT {
 
     @Test
     public void exportWorkWithFile() throws Exception {
-        Map<String, PID> pidList = addWorkToFolder();
+        Map<String, PID> pidList = addWorkToFolder(false);
         PID folderPid = folderObj.getPid();
         String id = folderPid.getId();
         PID workPid = pidList.get("workPid");
@@ -193,18 +202,50 @@ public class ExportCsvIT extends AbstractAPIIT {
 
         String pathToWork = FOLDER_PATH + "/" + workPid.getId();
         assertCsvRecord(csvList, ResourceType.Work, workPid, "TestWork",
-                pathToWork, 4, false, null, null, null,
+                pathToWork, 4, false, null, null, null, null,
                 1, false, "Authenticated", "", "");
 
         String pathToFile = pathToWork + "/file.txt";
         assertCsvRecord(csvList, ResourceType.File, pidList.get("filePid"), "TestWork",
-                pathToFile, 5, false, "text/plain", null, (long) 7,
+                pathToFile, 5, false, "text/plain", null, (long) 7, null,
+                null, false, "Authenticated", "", "");
+    }
+
+    @Test
+    public void exportWorkWithAccessSurrogate() throws Exception {
+        Map<String, PID> pidList = addWorkToFolder(true);
+        PID folderPid = folderObj.getPid();
+        String id = folderPid.getId();
+        PID workPid = pidList.get("workPid");
+        PID filePid = pidList.get("filePid");
+
+        treeIndexer.indexAll(baseAddress);
+        solrIndexer.index(rootObj.getPid(), unitObj.getPid(), collObj.getPid(), folderPid,
+                workPid, filePid);
+
+        MvcResult result = mvc.perform(get("/exportTree/csv/" + id))
+                .andExpect(status().is2xxSuccessful())
+                .andReturn();
+
+        MockHttpServletResponse response = result.getResponse();
+        assertValidFileInfo(response, id);
+
+        List<CSVRecord> csvList = parseCsvResponse(response);
+
+        String pathToWork = FOLDER_PATH + "/" + workPid.getId();
+        assertCsvRecord(csvList, ResourceType.Work, workPid, "TestWork",
+                pathToWork, 4, false, null, null, null, null,
+                1, false, "Authenticated", "", "");
+
+        String pathToFile = pathToWork + "/file.txt";
+        assertCsvRecord(csvList, ResourceType.File, pidList.get("filePid"), "TestWork",
+                pathToFile, 5, false, "text/plain", null, (long) 7, "Y",
                 null, false, "Authenticated", "", "");
     }
 
     @Test
     public void exportDescribedResource() throws Exception {
-        Map<String, PID> pidList = addWorkToFolder();
+        Map<String, PID> pidList = addWorkToFolder(false);
         PID folderPid = folderObj.getPid();
         PID workPid = pidList.get("workPid");
         PID filePid = pidList.get("filePid");
@@ -236,18 +277,18 @@ public class ExportCsvIT extends AbstractAPIIT {
         // MODS title supersedes work name
         String pathToWork = pathToFolder + "/Work Test";
         assertCsvRecord(csvList, ResourceType.Work, workPid, "Work Test",
-                pathToWork, 4, false, null, null, null,
+                pathToWork, 4, false, null, null, null, null,
                 1, true, "Authenticated", "", "");
 
         String pathToFile = pathToWork + "/file.txt";
         assertCsvRecord(csvList, ResourceType.File, filePid, "TestWork2",
-                pathToFile, 5, false, "text/plain", null, (long) 7,
+                pathToFile, 5, false, "text/plain", null, (long) 7, null,
                 null, false, "Authenticated", "", "");
     }
 
     @Test
     public void exportDeletedResource() throws Exception {
-        Map<String, PID> pidList = addWorkToFolder();
+        Map<String, PID> pidList = addWorkToFolder(false);
         PID folderPid = folderObj.getPid();
         PID workPid = pidList.get("workPid");
         PID filePid = pidList.get("filePid");
@@ -273,18 +314,18 @@ public class ExportCsvIT extends AbstractAPIIT {
 
         String pathToWork = FOLDER_PATH + "/" + workPid.getId();
         assertCsvRecord(csvList, ResourceType.Work, workPid, "TestWorkDeleted",
-                pathToWork, 4, true, null, null, null,
+                pathToWork, 4, true, null, null, null, null,
                 1, false, "Staff-only", "", "");
 
         String pathToFile = pathToWork + "/file.txt";
         assertCsvRecord(csvList, ResourceType.File, filePid, "TestWork2",
-                pathToFile, 5, true, "text/plain", null, (long) 7,
+                pathToFile, 5, true, "text/plain", null, (long) 7, null,
                 null, false, "Staff-only", "", "");
     }
 
     @Test
     public void exportFileResourceDirectly() throws Exception {
-        Map<String, PID> pidList = addWorkToFolder();
+        Map<String, PID> pidList = addWorkToFolder(false);
         PID folderPid = folderObj.getPid();
         PID workPid = pidList.get("workPid");
         PID filePid = pidList.get("filePid");
@@ -305,7 +346,7 @@ public class ExportCsvIT extends AbstractAPIIT {
 
         String pathToFile = FOLDER_PATH + "/" + workPid.getId() + "/file.txt";
         assertCsvRecord(csvList, ResourceType.File, filePid, "TestWork3",
-                pathToFile, 5, false, "text/plain", null, (long) 7,
+                pathToFile, 5, false, "text/plain", null, (long) 7, null,
                 null, false, "Authenticated", "", "");
     }
 
@@ -553,7 +594,7 @@ public class ExportCsvIT extends AbstractAPIIT {
     public void multiPageExport() throws Exception {
         exportCsvService.setPageSize(2);
 
-        Map<String, PID> pidList = addWorkToFolder();
+        Map<String, PID> pidList = addWorkToFolder(false);
         PID folderPid = folderObj.getPid();
         PID workPid = pidList.get("workPid");
         PID filePid = pidList.get("filePid");
@@ -579,18 +620,18 @@ public class ExportCsvIT extends AbstractAPIIT {
 
         String pathToWork = FOLDER_PATH + "/" + workPid.getId();
         assertCsvRecord(csvList, ResourceType.Work, workPid, "TestWork",
-                pathToWork, 4, false, null, null, null,
+                pathToWork, 4, false, null, null, null, null,
                 1, false, "Authenticated", "", "");
 
         String pathToFile = pathToWork + "/file.txt";
         assertCsvRecord(csvList, ResourceType.File, pidList.get("filePid"), "TestWork",
-                pathToFile, 5, false, "text/plain", null, (long) 7,
+                pathToFile, 5, false, "text/plain", null, (long) 7, null,
                 null, false, "Authenticated", "", "");
     }
 
     @Test
     public void exportWorkWithViewBehavior() throws Exception {
-        Map<String, PID> pidList = addWorkToFolder();
+        Map<String, PID> pidList = addWorkToFolder(false);
         PID folderPid = folderObj.getPid();
         String id = folderPid.getId();
         PID workPid = pidList.get("workPid");
@@ -615,11 +656,11 @@ public class ExportCsvIT extends AbstractAPIIT {
 
         String pathToWork = FOLDER_PATH + "/" + workPid.getId();
         assertCsvRecord(csvList, ResourceType.Work, workPid, "TestWork",
-                pathToWork, 4, false, null, null, null,
+                pathToWork, 4, false, null, null, null, null,
                 1, false, "Authenticated", "", paged);
     }
 
-    private Map<String, PID> addWorkToFolder() throws Exception {
+    private Map<String, PID> addWorkToFolder(boolean accessSurrogate) throws Exception {
         WorkObject workObj = repositoryObjectFactory.createWorkObject(null);
         PID workPid = workObj.getPid();
 
@@ -634,11 +675,21 @@ public class ExportCsvIT extends AbstractAPIIT {
 
         workObj.addMember(fileObj);
 
-        folderObj.addMember(workObj);
-
         Map<String, PID> pidList = new HashMap<>();
         pidList.put("workPid", workPid);
         pidList.put("filePid", filePid);
+
+        if (accessSurrogate) {
+            String bodyStringSurrogate = "Image";
+            Path contentPathSurrogate = Files.createTempFile("surrogate", ".png");
+            FileUtils.writeStringToFile(contentPath.toFile(), bodyStringSurrogate, "UTF-8");
+
+//            surrogatePath = derivativeService.getDerivativePath(filePid, DatastreamType.ACCESS_SURROGATE);
+//            Files.createDirectories(surrogatePath.getParent());
+//            Files.copy(contentPathSurrogate, surrogatePath, StandardCopyOption.REPLACE_EXISTING);
+        }
+
+        folderObj.addMember(workObj);
 
         return pidList;
     }
@@ -692,12 +743,13 @@ public class ExportCsvIT extends AbstractAPIIT {
             String path, int depth, boolean deleted, Integer numChildren, boolean described, String permissions,
                                        String embargoDate) {
         assertCsvRecord(csvList, objType, expectedPid, title, path, depth, deleted,
-                null, null, null, numChildren, described, permissions, embargoDate, "");
+                null, null, null, null, numChildren, described, permissions, embargoDate, "");
     }
 
     private void assertCsvRecord(List<CSVRecord> csvList, ResourceType objType, PID expectedPid, String title,
             String path, int depth, boolean deleted, String mimetype, String checksum, Long fileSize,
-            Integer numChildren, boolean described, String permissions, String embargoDate, String behavior) {
+            String accessSurrogate, Integer numChildren, boolean described, String permissions,
+            String embargoDate, String behavior) {
         path = path == null ? "" : path;
         mimetype = mimetype == null ? "" : mimetype;
         checksum = checksum == null ? "" : checksum;
@@ -717,6 +769,11 @@ public class ExportCsvIT extends AbstractAPIIT {
                 assertTrue(StringUtils.isBlank(rec.get(ExportCsvService.FILE_SIZE_HEADER)));
             } else {
                 assertEquals(fileSize, new Long(rec.get(ExportCsvService.FILE_SIZE_HEADER)));
+            }
+            if (accessSurrogate == null) {
+                assertTrue(StringUtils.isBlank(rec.get(ExportCsvService.ACCESS_SURROGATE_HEADER)));
+            } else {
+                assertEquals(accessSurrogate, rec.get(ExportCsvService.ACCESS_SURROGATE_HEADER));
             }
             if (numChildren == null) {
                 assertTrue(StringUtils.isBlank(rec.get(ExportCsvService.NUM_CHILDREN_HEADER)));
