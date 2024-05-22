@@ -1,0 +1,24 @@
+version: '3.7'
+
+services:
+  fedora:
+    image: fcrepo/fcrepo:5.1.1
+    ports:
+      - "48085:8080"
+    volumes:
+      - /tmp/boxc_test_storage:/tmp/boxc_test_storage
+      - ./it_config:/config
+    environment:
+      CATALINA_OPTS: "-Djava.awt.headless=true -server -Xms1G -Xmx2G -XX:MaxNewSize=1G -XX:+HeapDumpOnOutOfMemoryError -Dfcrepo.modeshape.configuration=classpath:/config/file-simple/repository.json -Dfcrepo.external.content.allowed=/config/allowed_external_paths.txt -Dlogback.configurationFile=/config/fcrepo_logback.xml"
+    stdin_open: true
+    tty: true
+  redis:
+    image: redis:6
+    ports:
+      - "46380:6379"
+  fuseki:
+    # Using this image since fcrepo camel v5 does not support authentication, can switch on fedora 6
+    image: atomgraph/fuseki
+    ports:
+      - "43030:3030"
+    command: --mem /test

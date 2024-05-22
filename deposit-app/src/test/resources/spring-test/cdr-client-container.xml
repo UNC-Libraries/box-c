@@ -8,11 +8,14 @@
     
     <bean id="baseAddress" class="java.lang.String">
         <constructor-arg
-            value="http://localhost:48085/rest/" />
+            value="http://localhost:48085/fcrepo/rest/" />
     </bean>
-    
+
     <bean id="fcrepoClientFactory" class="edu.unc.lib.boxc.fcrepo.utils.FcrepoClientFactory" factory-method="factory">
         <constructor-arg ref="baseAddress" />
+        <constructor-arg value="localhost" />
+        <constructor-arg value="fedoraAdmin" />
+        <constructor-arg value="fedoraAdmin" />
     </bean>
     
     <bean id="fcrepoClient" class="org.fcrepo.client.FcrepoClient"
@@ -34,9 +37,13 @@
     <bean id="repositoryInitializer" class="edu.unc.lib.boxc.model.fcrepo.services.RepositoryInitializer">
         <property name="objFactory" ref="repositoryObjectFactory" />
     </bean>
-    
-    <bean id="storageLocationManager" class="edu.unc.lib.boxc.persist.impl.storage.StorageLocationTestHelper"
-            factory-method="createLocationManagerWithBasicConfig">
+
+    <bean id="storageLocationTestHelper" class="edu.unc.lib.boxc.persist.impl.storage.StorageLocationTestHelper"
+          factory-method="createWithBasicConfig">
+    </bean>
+
+    <bean id="storageLocationManager" factory-bean="storageLocationTestHelper"
+          factory-method="createLocationManager">
         <constructor-arg ref="repositoryObjectLoader" />
     </bean>
     
@@ -155,12 +162,11 @@
     <bean id="depositModelManager" class="edu.unc.lib.boxc.deposit.impl.model.DepositModelManager"
             factory-method="inMemoryManager" destroy-method="close">
     </bean>
-    
-    <bean id="jedisPool" class="redis.clients.jedis.JedisPool"
-        destroy-method="destroy">
+
+    <bean id="jedisPool" class="redis.clients.jedis.JedisPool" destroy-method="destroy">
         <constructor-arg ref="poolConfig"/>
-        <constructor-arg type="String" value="${redis.host:localhost}" />
-        <constructor-arg type="int" value="${redis.port:46380}" />
+        <constructor-arg type="String" value="localhost" />
+        <constructor-arg type="int" value="46380" />
     </bean>
     
     <bean id="jesqueConfig" class="net.greghaines.jesque.Config">

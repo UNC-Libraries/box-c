@@ -125,10 +125,6 @@
         <artifactId>apache-jena-libs</artifactId>
         <type>pom</type>
     </dependency>
-    <dependency>
-        <groupId>org.apache.jena</groupId>
-        <artifactId>jena-fuseki-main</artifactId>
-    </dependency>
     
     <dependency>
         <groupId>org.springframework</groupId>
@@ -282,42 +278,6 @@
     </dependency>
     <!-- integration testing -->
     <dependency>
-        <groupId>org.fcrepo</groupId>
-        <artifactId>fcrepo-http-commons</artifactId>
-        <scope>test</scope>
-        <type>test-jar</type>
-    </dependency>
-    <dependency>
-        <groupId>org.fcrepo</groupId>
-        <artifactId>fcrepo-auth-common</artifactId>
-    </dependency>
-    <dependency>
-        <groupId>org.glassfish.grizzly</groupId>
-        <artifactId>grizzly-http-servlet</artifactId>
-    </dependency>
-    <dependency>
-        <groupId>org.glassfish.jersey.core</groupId>
-        <artifactId>jersey-common</artifactId>
-    </dependency>
-    <dependency>
-        <groupId>org.glassfish.jersey.ext</groupId>
-        <artifactId>jersey-spring5</artifactId>
-    </dependency>
-    <dependency>
-        <groupId>org.glassfish.jersey.test-framework.providers</groupId>
-        <artifactId>jersey-test-framework-provider-grizzly2</artifactId>
-    </dependency>
-    <dependency>
-        <groupId>org.fcrepo</groupId>
-        <artifactId>fcrepo-kernel-modeshape</artifactId>
-        <scope>test</scope>
-        <classifier>tests</classifier>
-    </dependency>
-    <dependency>
-        <groupId>org.fcrepo</groupId>
-        <artifactId>fcrepo-http-api</artifactId>
-    </dependency>
-    <dependency>
         <groupId>org.springframework</groupId>
         <artifactId>spring-test</artifactId>
     </dependency>
@@ -334,10 +294,6 @@
         <groupId>org.apache.activemq.protobuf</groupId>
         <artifactId>activemq-protobuf</artifactId>
         <scope>test</scope>
-    </dependency>
-    <dependency>
-        <groupId>org.apache.jena</groupId>
-        <artifactId>jena-fuseki-main</artifactId>
     </dependency>
         <dependency>
             <groupId>org.junit.jupiter</groupId>
