@@ -1,27 +1,25 @@
 package edu.unc.lib.boxc.indexing.solr.filter;
 
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-
-import edu.unc.lib.boxc.model.api.DatastreamType;
-import edu.unc.lib.boxc.model.api.ids.PID;
-import edu.unc.lib.boxc.model.api.rdf.CdrView;
-import edu.unc.lib.boxc.model.fcrepo.services.DerivativeService;
-import edu.unc.lib.boxc.operations.jms.viewSettings.ViewSettingRequest;
-import org.apache.jena.rdf.model.Resource;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import edu.unc.lib.boxc.indexing.solr.exception.IndexingException;
 import edu.unc.lib.boxc.indexing.solr.indexing.DocumentIndexingPackage;
+import edu.unc.lib.boxc.model.api.DatastreamType;
+import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.objects.ContentObject;
 import edu.unc.lib.boxc.model.api.objects.FileObject;
 import edu.unc.lib.boxc.model.api.objects.WorkObject;
 import edu.unc.lib.boxc.model.api.rdf.Cdr;
+import edu.unc.lib.boxc.model.api.rdf.CdrView;
+import edu.unc.lib.boxc.model.fcrepo.services.DerivativeService;
+import edu.unc.lib.boxc.operations.jms.viewSettings.ViewSettingRequest;
 import edu.unc.lib.boxc.search.api.FacetConstants;
+import org.apache.jena.rdf.model.Resource;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.nio.file.Files;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
 
 /**
  * Sets content-related status tags
@@ -31,7 +29,6 @@ import edu.unc.lib.boxc.search.api.FacetConstants;
  */
 public class SetContentStatusFilter implements IndexDocumentFilter{
     private DerivativeService derivativeService;
-    private Path accessSurrogatePath;
     private static final Logger log = LoggerFactory.getLogger(SetContentStatusFilter.class);
     @Override
     public void filter(DocumentIndexingPackage dip) throws IndexingException {
@@ -110,14 +107,11 @@ public class SetContentStatusFilter implements IndexDocumentFilter{
     }
 
     private boolean hasAccessSurrogate(PID pid) {
+        var accessSurrogatePath = derivativeService.getDerivativePath(pid, DatastreamType.ACCESS_SURROGATE);
         return Files.exists(accessSurrogatePath);
     }
 
     public void setDerivativeService(DerivativeService derivativeService) {
         this.derivativeService = derivativeService;
-    }
-
-    public void setAccessSurrogatePath(Path accessSurrogatePath) {
-        this.accessSurrogatePath = accessSurrogatePath;
     }
 }

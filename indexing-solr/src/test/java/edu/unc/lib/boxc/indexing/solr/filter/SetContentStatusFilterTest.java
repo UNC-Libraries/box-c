@@ -3,6 +3,7 @@ package edu.unc.lib.boxc.indexing.solr.filter;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.openMocks;
@@ -74,8 +75,8 @@ public class SetContentStatusFilterTest {
         accessSurrogatePath = derivativeFolder.resolve("f277bb38-272c-471c-a28a-9887a1328a1f");
         filter = new SetContentStatusFilter();
         filter.setDerivativeService(derivativeService);
-        filter.setAccessSurrogatePath(accessSurrogatePath);
-
+        when(derivativeService.getDerivativePath(any(), eq(DatastreamType.ACCESS_SURROGATE)))
+                .thenReturn(accessSurrogatePath);
     }
 
     @AfterEach
