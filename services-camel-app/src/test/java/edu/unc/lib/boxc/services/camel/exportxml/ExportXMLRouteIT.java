@@ -12,10 +12,12 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.openMocks;
 
 import java.io.File;
@@ -35,6 +37,7 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
+import edu.unc.lib.boxc.model.fcrepo.services.DerivativeService;
 import org.apache.camel.CamelContext;
 import org.apache.camel.builder.NotifyBuilder;
 import org.apache.commons.io.FileUtils;
@@ -54,6 +57,7 @@ import org.junit.rules.TemporaryFolder;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
+import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.ContextHierarchy;
@@ -135,6 +139,8 @@ public class ExportXMLRouteIT {
     private ExportXMLProcessor exportXmlProcessor;
     @Autowired
     private PremisLoggerFactory premisLoggerFactory;
+    @Autowired
+    private DerivativeService derivativeService;
 
     @Captor
     private ArgumentCaptor<String> toCaptor;
@@ -147,6 +153,8 @@ public class ExportXMLRouteIT {
     private List<Path> attachmentPaths;
     @Rule
     public final TemporaryFolder tmpFolder = new TemporaryFolder();
+    @Mock
+    private Path path;
 
     private ContentRootObject rootObj;
     private AdminUnit unitObj;
@@ -178,6 +186,8 @@ public class ExportXMLRouteIT {
             attachmentPaths.add(copiedFile.toPath());
             return null;
         }).when(emailHandler).sendEmail(any(), any(), any(), any(), any());
+
+        when(derivativeService.getDerivativePath(any(), eq(DatastreamType.ACCESS_SURROGATE))).thenReturn(path);
     }
 
     @AfterEach
