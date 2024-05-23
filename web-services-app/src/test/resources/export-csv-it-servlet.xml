@@ -37,6 +37,10 @@
         <property name="repositoryObjectLoader" ref="repositoryObjectLoader"/>
     </bean>
 
+    <bean id="derivativeService" class="org.mockito.Mockito" factory-method="mock">
+        <constructor-arg type="java.lang.Class" value="edu.unc.lib.boxc.model.fcrepo.services.DerivativeService" />
+    </bean>
+
     <util:set id="accessGroups" set-class="edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl">
         <value>${access.group.admin}</value>
     </util:set>

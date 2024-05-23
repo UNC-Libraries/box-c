@@ -139,8 +139,6 @@ public class ExportXMLRouteIT {
     private ExportXMLProcessor exportXmlProcessor;
     @Autowired
     private PremisLoggerFactory premisLoggerFactory;
-    @Autowired
-    private DerivativeService derivativeService;
 
     @Captor
     private ArgumentCaptor<String> toCaptor;
@@ -153,8 +151,6 @@ public class ExportXMLRouteIT {
     private List<Path> attachmentPaths;
     @Rule
     public final TemporaryFolder tmpFolder = new TemporaryFolder();
-    @Mock
-    private Path path;
 
     private ContentRootObject rootObj;
     private AdminUnit unitObj;
@@ -186,8 +182,6 @@ public class ExportXMLRouteIT {
             attachmentPaths.add(copiedFile.toPath());
             return null;
         }).when(emailHandler).sendEmail(any(), any(), any(), any(), any());
-
-        when(derivativeService.getDerivativePath(any(), eq(DatastreamType.ACCESS_SURROGATE))).thenReturn(path);
     }
 
     @AfterEach
