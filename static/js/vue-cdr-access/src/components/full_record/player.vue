@@ -7,11 +7,15 @@
         <template v-else-if="recordData.viewerType === 'audio' && hasPermission(recordData, 'viewAccessCopies')">
             <audio-player :datafile-url="recordData.dataFileUrl"></audio-player>
         </template>
+        <template v-else-if="recordData.viewerType === 'streaming' && hasPermission(recordData, 'viewAccessCopies')">
+            <streaming-player :brief-object="recordData.briefObject"></streaming-player>
+        </template>
     </div>
 </template>
 
 <script>
 import audioPlayer from '@/components/full_record/audioPlayer.vue';
+import streamingPlayer from '@/components/full_record/streamingPlayer.vue';
 import permissionUtils from '../../mixins/permissionUtils';
 
 const MAX_PDF_VIEWER_FILE_SIZE = 200000000; // ~200mb
@@ -19,7 +23,7 @@ const MAX_PDF_VIEWER_FILE_SIZE = 200000000; // ~200mb
 export default {
     name: 'player',
 
-    components: {audioPlayer},
+    components: {audioPlayer, streamingPlayer},
 
     mixins: [permissionUtils],
 
