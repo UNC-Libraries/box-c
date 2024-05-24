@@ -261,18 +261,16 @@ public class SetContentStatusFilterTest {
     }
 
     @Test
-    public void testWorkWithFileObjectThatHasAccessSurrogate() throws IOException {
+    public void testWorkAccessSurrogate() throws IOException {
         Files.write(accessSurrogatePath, List.of("fake image"));
         when(workObj.getResource()).thenReturn(resc);
         when(dip.getContentObject()).thenReturn(workObj);
         when(workObj.getResource()).thenReturn(resc);
-        when(fileObj.getResource()).thenReturn(fileResc);
-        workObj.addMember(fileObj);
-        when(fileObj.getParent()).thenReturn(workObj);
 
         filter.filter(dip);
 
         verify(idb).setContentStatus(listCaptor.capture());
         assertFalse(listCaptor.getValue().contains(FacetConstants.HAS_ACCESS_SURROGATE));
+        assertFalse(listCaptor.getValue().contains(FacetConstants.NO_ACCESS_SURROGATE));
     }
 }
