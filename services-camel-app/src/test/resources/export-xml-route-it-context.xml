@@ -27,10 +27,6 @@
     <bean id="emailHandler" class="org.mockito.Mockito" factory-method="mock">
         <constructor-arg type="java.lang.Class" value="edu.unc.lib.boxc.operations.impl.utils.EmailHandler" />
     </bean>
-
-    <bean id="derivativeService" class="org.mockito.Mockito" factory-method="mock">
-        <constructor-arg type="java.lang.Class" value="edu.unc.lib.boxc.model.fcrepo.services.DerivativeService" />
-    </bean>
     
     <bean id="exportXmlRequestService" class="edu.unc.lib.boxc.operations.jms.exportxml.ExportXMLRequestService" >
         <property name="jmsTemplate" ref="exportXmlJmsTemplate" />
