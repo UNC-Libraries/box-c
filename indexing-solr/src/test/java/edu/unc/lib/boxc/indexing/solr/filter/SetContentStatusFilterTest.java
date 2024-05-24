@@ -235,10 +235,9 @@ public class SetContentStatusFilterTest {
     }
 
     @Test
-    public void testHasAccessSurrogate() throws IOException {
+    public void testFileObjectHasAccessSurrogate() throws IOException {
         Files.write(accessSurrogatePath, List.of("fake image"));
         when(workObj.getResource()).thenReturn(resc);
-        when(resc.hasProperty(Cdr.primaryObject, fileResc)).thenReturn(true);
         when(dip.getContentObject()).thenReturn(fileObj);
         when(fileObj.getResource()).thenReturn(fileResc);
 
@@ -249,7 +248,7 @@ public class SetContentStatusFilterTest {
     }
 
     @Test
-    public void testNoAccessSurrogate() {
+    public void testFileObjectNoAccessSurrogate() {
         when(workObj.getResource()).thenReturn(resc);
         when(resc.hasProperty(Cdr.primaryObject, fileResc)).thenReturn(true);
         when(dip.getContentObject()).thenReturn(fileObj);
@@ -259,5 +258,21 @@ public class SetContentStatusFilterTest {
 
         verify(idb).setContentStatus(listCaptor.capture());
         assertTrue(listCaptor.getValue().contains(FacetConstants.NO_ACCESS_SURROGATE));
+    }
+
+    @Test
+    public void testWorkWithFileObjectThatHasAccessSurrogate() throws IOException {
+        Files.write(accessSurrogatePath, List.of("fake image"));
+        when(workObj.getResource()).thenReturn(resc);
+        when(dip.getContentObject()).thenReturn(workObj);
+        when(workObj.getResource()).thenReturn(resc);
+        when(fileObj.getResource()).thenReturn(fileResc);
+        workObj.addMember(fileObj);
+        when(fileObj.getParent()).thenReturn(workObj);
+
+        filter.filter(dip);
+
+        verify(idb).setContentStatus(listCaptor.capture());
+        assertFalse(listCaptor.getValue().contains(FacetConstants.HAS_ACCESS_SURROGATE));
     }
 }
