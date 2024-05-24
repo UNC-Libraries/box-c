@@ -44,6 +44,7 @@ import org.jdom2.output.Format;
 import org.jdom2.output.XMLOutputter;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -95,10 +96,6 @@ import edu.unc.lib.boxc.operations.impl.events.FilePremisLogger;
 public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
 
     private static final Logger log = getLogger(IngestContentObjectsJobIT.class);
-
-    static {
-        System.setProperty("fcrepo.properties.management", "relaxed");
-    }
 
     private static final String INGESTOR_PRINC = "ingestor";
     private static final String DEPOSITOR_NAME = "boxy_depositor";
@@ -460,10 +457,12 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
         Path modsPath = job.getModsPath(workPid, true);
         var originalModsPath = Path.of("src/test/resources/simpleMods.xml");
         Files.copy(originalModsPath, modsPath);
-        Path modsHistoryPath = depositDirManager.getHistoryFile(workPid, DatastreamType.MD_DESCRIPTIVE_HISTORY);
+        var modsPid = DatastreamPids.getMdDescriptivePid(workPid);
+        var modsHistoryStorageUri = storageLocationTestHelper.makeTestStorageUri(DatastreamPids.getDatastreamHistoryPid(modsPid));
+        Path modsHistoryPath = Paths.get(modsHistoryStorageUri);
         FileUtils.writeStringToFile(modsHistoryPath.toFile(), "History content", UTF_8);
         String modsHistorySha1 = getSha1(modsHistoryPath);
-        historyResc.addProperty(CdrDeposit.storageUri, modsHistoryPath.toUri().toString());
+        historyResc.addProperty(CdrDeposit.storageUri, modsHistoryStorageUri.toString());
         historyResc.addLiteral(CdrDeposit.sha1sum, modsHistorySha1);
 
         job.closeModel();
@@ -508,7 +507,8 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
         PID fitsPid = DatastreamPids.getTechnicalMetadataPid(mainPid);
         PID historyPid = DatastreamPids.getDatastreamHistoryPid(fitsPid);
         Resource historyResc = DepositModelHelpers.addDatastream(mainResc, DatastreamType.TECHNICAL_METADATA_HISTORY);
-        Path historyPath = depositDirManager.getHistoryFile(fitsPid, DatastreamType.TECHNICAL_METADATA_HISTORY);
+        var historyUri = storageLocationTestHelper.makeTestStorageUri(historyPid);
+        Path historyPath = Path.of(historyUri);
         FileUtils.writeStringToFile(historyPath.toFile(), "History content", UTF_8);
         String historySha1 = getSha1(historyPath);
         historyResc.addProperty(CdrDeposit.storageUri, historyPath.toUri().toString());
@@ -714,6 +714,7 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
         model = job.getWritableModel();
         Resource file2Resc = model.getResource(file2Pid.getRepositoryPath());
         Resource orig2Resc = DepositModelHelpers.getDatastream(file2Resc);
+        setupStorageUriForResource(FILE2_LOC, orig2Resc, file2Resc, file2Pid);
         orig2Resc.addProperty(CdrDeposit.storageUri, Paths.get(depositDir.getAbsolutePath(),
                 FILE2_LOC).toUri().toString());
         job.closeModel();
@@ -1100,6 +1101,7 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
     private final static Date CREATED_DATE = DateTimeUtil.parseUTCToDate(CREATED_STRING);
     private final static Date LAST_MODIFIED_DATE = DateTimeUtil.parseUTCToDate(LAST_MODIFIED_STRING);
 
+    @Disabled("This test only works if fedora is in 'relaxed' mode, which is not the case on our servers or in docker")
     @Test
     public void overrideTimestampsTest() throws Exception {
         Map<String, String> status = new HashMap<>();
@@ -1271,9 +1273,7 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
 
         Resource origResc = DepositModelHelpers.addDatastream(fileResc, ORIGINAL_FILE);
         if (stagingLocation != null) {
-            origResc.addProperty(CdrDeposit.storageUri, Paths.get(depositDir.getAbsolutePath(),
-                    stagingLocation).toUri().toString());
-            fileResc.addLiteral(Cdr.storageLocation, LOC1_ID);
+            setupStorageUriForResource(stagingLocation, origResc, fileResc, filePid);
         }
         origResc.addProperty(CdrDeposit.mimetype, mimetype);
         if (sha1 != null) {
@@ -1286,13 +1286,24 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
         parent.add(fileResc);
 
         // Create the accompanying fake premis report file
-        Path fitsPath = job.getTechMdPath(filePid, true);
+        var fitsStorageUri = storageLocationTestHelper.makeTestStorageUri(DatastreamPids.getTechnicalMetadataPid(filePid));
+        Path fitsPath = Path.of(fitsStorageUri);
         Files.createFile(fitsPath);
         Resource fitsResc = DepositModelHelpers.addDatastream(fileResc, TECHNICAL_METADATA);
-        fitsResc.addProperty(CdrDeposit.storageUri, fitsPath.toUri().toString());
+        fitsResc.addProperty(CdrDeposit.storageUri, fitsStorageUri.toString());
         fitsResc.addLiteral(CdrDeposit.sha1sum, getSha1(fitsPath));
 
         return filePid;
+    }
+
+    private void setupStorageUriForResource(String stagingLocation, Resource origResc, Resource fileResc, PID filePid) throws Exception {
+        var fileStagingPath = Paths.get(depositDir.getAbsolutePath(), stagingLocation);
+        var storageUri = storageLocationTestHelper.makeTestStorageUri(DatastreamPids.getOriginalFilePid(filePid));
+        var storagePath = Path.of(storageUri);
+        Files.copy(fileStagingPath, storagePath);
+        origResc.addProperty(CdrDeposit.storageUri, storageUri.toString());
+        fileResc.addLiteral(Cdr.storageLocation, LOC1_ID);
+        fileResc.addLiteral(CdrDeposit.label, stagingLocation);
     }
 
     private List<PID> addWorkWithFileObject(Bag parent, String stagingLocation,

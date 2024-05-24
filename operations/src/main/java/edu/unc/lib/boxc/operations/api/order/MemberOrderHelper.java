@@ -52,7 +52,7 @@ public class MemberOrderHelper {
                                             Collection<PID> problemPids) {
         return "Invalid request to " + type + " order for " + parentId
                 + ", " + reason + ": "
-                + problemPids.stream().map(PID::getId).collect(Collectors.joining(", "));
+                + problemPids.stream().map(PID::getId).sorted().collect(Collectors.joining(", "));
     }
 
     /**
