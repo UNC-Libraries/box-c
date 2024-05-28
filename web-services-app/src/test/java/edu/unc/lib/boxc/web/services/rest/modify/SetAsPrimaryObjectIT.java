@@ -14,6 +14,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import java.util.Map;
 
+import edu.unc.lib.boxc.web.services.rest.MvcTestHelpers;
 import org.junit.jupiter.api.Test;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.ContextHierarchy;
@@ -32,7 +33,6 @@ import edu.unc.lib.boxc.model.api.objects.WorkObject;
  *
  */
 @ContextHierarchy({
-    @ContextConfiguration("/spring-test/test-fedora-container.xml"),
     @ContextConfiguration("/spring-test/cdr-client-container.xml"),
     @ContextConfiguration("/set-as-primary-object-it-servlet.xml")
 })
@@ -60,7 +60,7 @@ public class SetAsPrimaryObjectIT extends AbstractAPIIT {
         assertPrimaryObjectSet(parent, fileObj);
 
         // Verify response from api
-        Map<String, Object> respMap = getMapFromResponse(result);
+        Map<String, Object> respMap = MvcTestHelpers.getMapFromResponse(result);
         assertEquals(fileObjPid.getUUID(), respMap.get("pid"));
         assertEquals("setAsPrimaryObject", respMap.get("action"));
     }
@@ -83,7 +83,7 @@ public class SetAsPrimaryObjectIT extends AbstractAPIIT {
         assertPrimaryObjectNotSet(parent);
 
         // Verify response from api
-        Map<String, Object> respMap = getMapFromResponse(result);
+        Map<String, Object> respMap = MvcTestHelpers.getMapFromResponse(result);
         assertEquals(fileObjPid.getUUID(), respMap.get("pid"));
         assertEquals("setAsPrimaryObject", respMap.get("action"));
         assertTrue(respMap.containsKey("error"));
@@ -105,7 +105,7 @@ public class SetAsPrimaryObjectIT extends AbstractAPIIT {
         assertPrimaryObjectNotSet(parent);
 
         // Verify response from api
-        Map<String, Object> respMap = getMapFromResponse(result);
+        Map<String, Object> respMap = MvcTestHelpers.getMapFromResponse(result);
         assertEquals(folderObjPid.getUUID(), respMap.get("pid"));
         assertEquals("setAsPrimaryObject", respMap.get("action"));
         assertTrue(respMap.containsKey("error"));
@@ -138,7 +138,7 @@ public class SetAsPrimaryObjectIT extends AbstractAPIIT {
         assertPrimaryObjectNotSet(parent);
 
         // Verify response from api
-        Map<String, Object> respMap = getMapFromResponse(result);
+        Map<String, Object> respMap = MvcTestHelpers.getMapFromResponse(result);
         assertEquals(target.getPid().getUUID(), respMap.get("pid"));
         assertEquals("clearPrimaryObject", respMap.get("action"));
     }
@@ -161,7 +161,7 @@ public class SetAsPrimaryObjectIT extends AbstractAPIIT {
         assertPrimaryObjectSet(parent, fileObj);
 
         // Verify response from api
-        Map<String, Object> respMap = getMapFromResponse(result);
+        Map<String, Object> respMap = MvcTestHelpers.getMapFromResponse(result);
         assertEquals(fileObjPid.getUUID(), respMap.get("pid"));
         assertEquals("clearPrimaryObject", respMap.get("action"));
         assertTrue(respMap.containsKey("error"));

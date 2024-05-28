@@ -21,11 +21,13 @@ import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.boxc.model.fcrepo.services.RepositoryInitializer;
 import edu.unc.lib.boxc.model.fcrepo.test.AclModelBuilder;
 import edu.unc.lib.boxc.model.fcrepo.test.RepositoryObjectTreeIndexer;
+import edu.unc.lib.boxc.model.fcrepo.test.TestHelper;
 import edu.unc.lib.boxc.operations.api.events.PremisLoggerFactory;
 import edu.unc.lib.boxc.operations.impl.delete.MarkForDeletionJob;
 import edu.unc.lib.boxc.operations.impl.edit.UpdateDescriptionService;
 import edu.unc.lib.boxc.operations.impl.edit.UpdateDescriptionService.UpdateDescriptionRequest;
 import edu.unc.lib.boxc.operations.jms.viewSettings.ViewSettingRequest;
+import edu.unc.lib.boxc.persist.impl.storage.StorageLocationTestHelper;
 import edu.unc.lib.boxc.search.solr.services.ChildrenCountService;
 import edu.unc.lib.boxc.search.solr.services.SolrSearchService;
 import edu.unc.lib.boxc.web.services.processing.ExportCsvService;
@@ -77,7 +79,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  *
  */
 @ContextHierarchy({
-        @ContextConfiguration("/spring-test/test-fedora-container.xml"),
         @ContextConfiguration("/spring-test/cdr-client-container.xml"),
         @ContextConfiguration("/spring-test/solr-indexing-context.xml"),
         @ContextConfiguration("/export-csv-it-servlet.xml")
@@ -90,8 +91,6 @@ public class ExportCsvIT extends AbstractAPIIT {
     private static final Path MODS_PATH_1 = Paths.get("src/test/resources/mods/valid-mods.xml");
     private static final Path MODS_PATH_2 = Paths.get("src/test/resources/mods/work-mods.xml");
 
-    @Autowired
-    protected String baseAddress;
     @Autowired
     protected File solrDataDir;
     @Autowired
@@ -128,6 +127,7 @@ public class ExportCsvIT extends AbstractAPIIT {
     private ExportCsvService exportCsvService;
     @Autowired
     private PremisLoggerFactory premisLoggerFactory;
+    private StorageLocationTestHelper storageLocationTestHelper;
 
     protected ContentRootObject rootObj;
     protected AdminUnit unitObj;
@@ -139,6 +139,7 @@ public class ExportCsvIT extends AbstractAPIIT {
     public void setup() throws Exception {
         setupContentRoot();
         generateBaseStructure();
+        storageLocationTestHelper = new StorageLocationTestHelper();
 
         setField(solrSearchService, "solrClient", server);
         setField(childrenCountService, "solrClient", server);
@@ -625,8 +626,7 @@ public class ExportCsvIT extends AbstractAPIIT {
         String bodyString = "Content";
         String filename = "file.txt";
         String mimetype = "text/plain";
-        Path contentPath = Files.createTempFile("file", ".txt");
-        FileUtils.writeStringToFile(contentPath.toFile(), bodyString, "UTF-8");
+        Path contentPath = createBinaryContent(bodyString);
 
         FileObject fileObj = repositoryObjectFactory.createFileObject(null);
         fileObj.addOriginalFile(contentPath.toUri(), filename, mimetype, null, null);
@@ -644,7 +644,6 @@ public class ExportCsvIT extends AbstractAPIIT {
     }
 
     private void generateBaseStructure() throws Exception {
-        repoInitializer.initializeRepository();
         rootObj = repositoryObjectLoader.getContentRootObject(getContentRootPid());
 
         PID unitPid = pidMinter.mintContentPid();

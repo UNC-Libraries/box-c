@@ -11,11 +11,17 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import java.util.Map;
 
+import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.ContextHierarchy;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.springframework.test.context.web.WebAppConfiguration;
+import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
 import edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl;
@@ -23,6 +29,9 @@ import edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore;
 import edu.unc.lib.boxc.deposit.api.RedisWorkerConstants.DepositPipelineState;
 import edu.unc.lib.boxc.deposit.impl.model.DepositPipelineStatusFactory;
 import edu.unc.lib.boxc.web.services.rest.modify.AbstractAPIIT;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.web.context.WebApplicationContext;
+import redis.clients.jedis.JedisPool;
 
 /**
  * @author bbpennel
@@ -35,11 +44,18 @@ public class DepositPipelineControllerIT extends AbstractAPIIT {
 
     @Autowired
     private DepositPipelineStatusFactory pipelineStatusFactory;
+    @Autowired
+    private JedisPool jedisPool;
 
     @BeforeEach
     public void setup() {
         pipelineStatusFactory.clearPipelineActionRequest();
         pipelineStatusFactory.setPipelineState(null);
+    }
+
+    @AfterEach
+    public void teardownLocal() {
+        jedisPool.getResource().flushAll();
     }
 
     @Test
@@ -50,7 +66,7 @@ public class DepositPipelineControllerIT extends AbstractAPIIT {
                 .andExpect(status().isOk())
                 .andReturn();
 
-        Map<String, Object> respMap = getMapFromResponse(result);
+        Map<String, Object> respMap = MvcTestHelpers.getMapFromResponse(result);
         assertEquals(DepositPipelineState.active.name(), respMap.get(STATE_KEY));
     }
 
@@ -60,7 +76,7 @@ public class DepositPipelineControllerIT extends AbstractAPIIT {
                 .andExpect(status().isOk())
                 .andReturn();
 
-        Map<String, Object> respMap = getMapFromResponse(result);
+        Map<String, Object> respMap = MvcTestHelpers.getMapFromResponse(result);
         assertEquals("unknown", respMap.get(STATE_KEY));
     }
 
@@ -72,7 +88,7 @@ public class DepositPipelineControllerIT extends AbstractAPIIT {
                 .andExpect(status().isUnauthorized())
                 .andReturn();
 
-        Map<String, Object> respMap = getMapFromResponse(result);
+        Map<String, Object> respMap = MvcTestHelpers.getMapFromResponse(result);
         assertEquals("Unauthorized", respMap.get(ERROR_KEY));
     }
 
@@ -84,7 +100,7 @@ public class DepositPipelineControllerIT extends AbstractAPIIT {
                 .andExpect(status().isOk())
                 .andReturn();
 
-        Map<String, Object> respMap = getMapFromResponse(result);
+        Map<String, Object> respMap = MvcTestHelpers.getMapFromResponse(result);
         assertEquals("quiet", respMap.get(ACTION_KEY));
     }
 
@@ -96,7 +112,7 @@ public class DepositPipelineControllerIT extends AbstractAPIIT {
                 .andExpect(status().isOk())
                 .andReturn();
 
-        Map<String, Object> respMap = getMapFromResponse(result);
+        Map<String, Object> respMap = MvcTestHelpers.getMapFromResponse(result);
         assertEquals("unquiet", respMap.get(ACTION_KEY));
     }
 
@@ -108,7 +124,7 @@ public class DepositPipelineControllerIT extends AbstractAPIIT {
                 .andExpect(status().isOk())
                 .andReturn();
 
-        Map<String, Object> respMap = getMapFromResponse(result);
+        Map<String, Object> respMap = MvcTestHelpers.getMapFromResponse(result);
         assertEquals("stop", respMap.get(ACTION_KEY));
     }
 
@@ -120,7 +136,7 @@ public class DepositPipelineControllerIT extends AbstractAPIIT {
                 .andExpect(status().isUnauthorized())
                 .andReturn();
 
-        Map<String, Object> respMap = getMapFromResponse(result);
+        Map<String, Object> respMap = MvcTestHelpers.getMapFromResponse(result);
         assertEquals("Unauthorized", respMap.get(ERROR_KEY));
     }
 
@@ -130,7 +146,7 @@ public class DepositPipelineControllerIT extends AbstractAPIIT {
                 .andExpect(status().isBadRequest())
                 .andReturn();
 
-        Map<String, Object> respMap = getMapFromResponse(result);
+        Map<String, Object> respMap = MvcTestHelpers.getMapFromResponse(result);
         assertTrue(((String) respMap.get(ERROR_KEY)).contains("Invalid action specified"));
     }
 
@@ -142,7 +158,7 @@ public class DepositPipelineControllerIT extends AbstractAPIIT {
                 .andExpect(status().isConflict())
                 .andReturn();
 
-        Map<String, Object> respMap = getMapFromResponse(result);
+        Map<String, Object> respMap = MvcTestHelpers.getMapFromResponse(result);
         assertTrue(((String) respMap.get(ERROR_KEY)).contains("Cannot perform quiet, the pipeline must be 'active'"));
     }
 
@@ -154,7 +170,7 @@ public class DepositPipelineControllerIT extends AbstractAPIIT {
                 .andExpect(status().isConflict())
                 .andReturn();
 
-        Map<String, Object> respMap = getMapFromResponse(result);
+        Map<String, Object> respMap = MvcTestHelpers.getMapFromResponse(result);
         assertTrue(((String) respMap.get(ERROR_KEY))
                 .contains("Cannot perform unquiet, the pipeline must be 'quieted'"));
     }
@@ -167,7 +183,7 @@ public class DepositPipelineControllerIT extends AbstractAPIIT {
                 .andExpect(status().isConflict())
                 .andReturn();
 
-        Map<String, Object> respMap = getMapFromResponse(result);
+        Map<String, Object> respMap = MvcTestHelpers.getMapFromResponse(result);
         assertTrue(((String) respMap.get(ERROR_KEY))
                 .contains("Cannot perform actions while in the 'stopped' state"));
     }
@@ -180,7 +196,7 @@ public class DepositPipelineControllerIT extends AbstractAPIIT {
                 .andExpect(status().isConflict())
                 .andReturn();
 
-        Map<String, Object> respMap = getMapFromResponse(result);
+        Map<String, Object> respMap = MvcTestHelpers.getMapFromResponse(result);
         assertTrue(((String) respMap.get(ERROR_KEY))
                 .contains("Cannot perform actions while in the 'shutdown' state"));
     }
