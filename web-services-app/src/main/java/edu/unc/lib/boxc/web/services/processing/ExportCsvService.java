@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
+import edu.unc.lib.boxc.model.api.ResourceType;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
@@ -262,7 +263,10 @@ public class ExportCsvService {
             printer.print("");
         }
 
-        Datastream dataAccessSurrogate = object.getDatastreamObject(ACCESS_SURROGATE.getId());
+        Datastream dataAccessSurrogate = null;
+        if (ResourceType.File.name().equals(object.getResourceType())) {
+            dataAccessSurrogate = object.getDatastreamObject(ACCESS_SURROGATE.getId());
+        }
         if (dataAccessSurrogate != null) {
             printer.print("Y");
         } else {
