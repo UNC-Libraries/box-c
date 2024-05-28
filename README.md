@@ -61,12 +61,25 @@ All tests run automatically in Github Actions.
 All Java tests run automatically when building the project, unless skipped.
 JavaScript test don't run on a maven build, but can be run manually using the NPM command below.
 
+### Running java unit tests
 ```
 # Java Unit Tests (skipping tests from external modules)
 mvn -pl '!clamav-java' test 
+```
+
+### Running java unit and integration tests
+To run the integration tests locally, you will first need to start external dependencies such as Fedora. Do to this, from the root directory of this project, run the following command:
+```
+docker-compose up
+```
+And then run the integration tests from within your IDE or via the following:
+```
 # Java unit and integration tests
 mvn -pl '!clamav-java' verify 
+```
 
+### Running JavaScript tests
+```
 # JavaScript Tests
 npm --prefix static/js/admin/vue-permissions-editor run test
 npm --prefix static/js/vue-cdr-access run test

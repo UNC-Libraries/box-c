@@ -47,6 +47,7 @@ public class DepositStatusFactoryIT {
 
     @AfterEach
     public void cleanup() {
+        jedisResource.flushAll();
         jedisResource.close();
     }
 

@@ -1,26 +1,25 @@
 package edu.unc.lib.boxc.integration.model.fcrepo.objects;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.InputStream;
-import java.net.URI;
-
-import org.apache.commons.io.FileUtils;
-import org.apache.jena.vocabulary.RDF;
-import org.apache.tika.io.IOUtils;
-import org.fcrepo.client.FcrepoResponse;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.objects.BinaryObject;
 import edu.unc.lib.boxc.model.api.objects.FileObject;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObject;
 import edu.unc.lib.boxc.model.api.rdf.Fcrepo4Repository;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
+import org.apache.jena.vocabulary.RDF;
+import org.fcrepo.client.FcrepoResponse;
+import org.junit.jupiter.api.Test;
+
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URI;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  *
@@ -34,22 +33,12 @@ public class BinaryObjectIT extends AbstractFedoraIT {
     private static final String MIMETYPE = "text/plain";
     private static final String CHECKSUM = "82022e1782b92dce5461ee636a6c5bea8509ffee";
 
-    private URI contentUri;
-
-    @BeforeEach
-    public void setup() throws Exception {
-        File contentFile = File.createTempFile("test_file", ".txt");
-        FileUtils.write(contentFile, BODY_STRING, "UTF-8");
-        contentFile.deleteOnExit();
-        contentUri = contentFile.toPath().toUri();
-    }
-
     @Test
     public void retrieveExternalBinary() throws Exception {
         PID parentPid = pidMinter.mintContentPid();
 
         PID filePid = PIDs.get(parentPid.getId() + "/my_bin");
-        BinaryObject obj = repoObjFactory.createOrUpdateBinary(filePid, contentUri,
+        BinaryObject obj = repoObjFactory.createOrUpdateBinary(filePid, makeContentUri(filePid, BODY_STRING),
                 FILENAME, MIMETYPE, CHECKSUM, null, null);
 
         // Verify that the body of the binary is retrieved
@@ -93,12 +82,18 @@ public class BinaryObjectIT extends AbstractFedoraIT {
     public void getParent() throws Exception {
         FileObject fileObj = repoObjFactory.createFileObject(null);
 
-        BinaryObject binObj = fileObj.addOriginalFile(contentUri, FILENAME, MIMETYPE, null, null);
+        BinaryObject binObj = fileObj.addOriginalFile(makeContentUri(fileObj.getPid(), BODY_STRING), FILENAME, MIMETYPE, null, null);
 
         treeIndexer.indexAll(baseAddress);
 
         RepositoryObject parent = binObj.getParent();
         assertEquals(parent.getPid(), fileObj.getPid(),
                 "Parent of the binary must match the file object which created it");
+    }
+
+    private URI makeContentUri(PID binPid, String bodyString) throws IOException {
+        var origUri = storageLocationTestHelper.makeTestStorageUri(binPid);
+        FileUtils.writeStringToFile(new File(origUri), bodyString, "UTF-8");
+        return origUri;
     }
 }

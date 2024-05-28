@@ -23,12 +23,10 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.io.File;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
 import edu.unc.lib.boxc.indexing.solr.test.TestCorpus;
-import edu.unc.lib.boxc.model.fcrepo.test.TestHelper;
 import edu.unc.lib.boxc.web.common.services.AccessCopiesService;
 import edu.unc.lib.boxc.web.common.services.FedoraContentService;
 import edu.unc.lib.boxc.web.common.services.SolrQueryLayerService;
@@ -41,16 +39,11 @@ import org.apache.jena.vocabulary.RDF;
 import org.apache.solr.client.solrj.embedded.EmbeddedSolrServer;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.io.TempDir;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.ContextHierarchy;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
-import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.test.web.servlet.MvcResult;
 
 import edu.unc.lib.boxc.auth.api.exceptions.AccessRestrictionException;
@@ -73,10 +66,7 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
  * @author bbpennel
  *
  */
-@ExtendWith(SpringExtension.class)
-@WebAppConfiguration
 @ContextHierarchy({
-        @ContextConfiguration("/spring-test/test-fedora-container.xml"),
         @ContextConfiguration("/spring-test/cdr-client-container.xml"),
         @ContextConfiguration("/spring-test/solr-indexing-context.xml"),
         @ContextConfiguration("/datastream-content-it-servlet.xml")
@@ -110,9 +100,8 @@ public class DatastreamRestControllerIT extends AbstractAPIIT {
     private AutoCloseable closeable;
 
     @BeforeEach
-    public void init() {
+    public void initLocal() {
         closeable = openMocks(this);
-        TestHelper.setContentBase("http://localhost:48085/rest");
         controller = new DatastreamController();
         controller.setAnalyticsTracker(analyticsTrackerUtil);
         controller.setSolrQueryLayerService(solrQueryLayerService);
@@ -136,8 +125,7 @@ public class DatastreamRestControllerIT extends AbstractAPIIT {
         PID filePid = makePid();
 
         FileObject fileObj = repositoryObjectFactory.createFileObject(filePid, null);
-        Path contentPath = Files.createTempFile("file", ".txt");
-        FileUtils.writeStringToFile(contentPath.toFile(), BINARY_CONTENT, "UTF-8");
+        Path contentPath = createBinaryContent(BINARY_CONTENT);
         fileObj.addOriginalFile(contentPath.toUri(), "file.txt", "text/plain", null, null);
 
         MvcResult result = mvc.perform(get("/file/" + filePid.getId()))
@@ -160,13 +148,11 @@ public class DatastreamRestControllerIT extends AbstractAPIIT {
         String content = "<fits>content</fits>";
 
         FileObject fileObj = repositoryObjectFactory.createFileObject(filePid, null);
-        Path originalPath = Files.createTempFile("file", ".txt");
-        FileUtils.writeStringToFile(originalPath.toFile(), BINARY_CONTENT, "UTF-8");
+        Path originalPath = createBinaryContent(BINARY_CONTENT);
         fileObj.addOriginalFile(originalPath.toUri(), null, "text/plain", null, null);
 
         PID fitsPid = getTechnicalMetadataPid(filePid);
-        Path techmdPath = Files.createTempFile("fits", ".xml");
-        FileUtils.writeStringToFile(techmdPath.toFile(), content, "UTF-8");
+        Path techmdPath = createBinaryContent(content,"fits", ".xml");
         fileObj.addBinary(fitsPid, techmdPath.toUri(),
                 "fits.xml", "application/xml", null, null, null);
 
