@@ -7,7 +7,7 @@
                     <h1>Digital Collections Repository</h1>
                 </router-link>
                 <span class="info-btns">
-                    <a href="https://library.unc.edu/wilson/contact/">Contact Us</a>
+                    <a href="https://library.unc.edu/contact-us/">Contact Us</a>
                     <a v-if="isLoggedIn" :href="logoutUrl"><i class="fas fa-user"></i>&nbsp;&nbsp;Log out</a>
                     <a v-else :href="loginUrl"><i class="fas fa-user"></i>&nbsp;&nbsp;Login</a>
                 </span>
@@ -26,7 +26,7 @@
                     <router-link to="/collections" class="navbar-item">Browse Collections</router-link>
                     <router-link to="/aboutRepository" class="navbar-item">What's Here?</router-link>
                     <a v-if="adminAccess" :href="jumpToAdminUrl" class="navbar-item" target="_blank">Admin</a>
-                    <a class="navbar-item navbar-display" href="https://library.unc.edu/wilson/contact/">Contact Us</a>
+                    <a class="navbar-item navbar-display" href="https://library.unc.edu/contact-us/">Contact Us</a>
                 </div>
                 <div class="search-row">
                     <div class="search">
