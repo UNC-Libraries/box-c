@@ -98,6 +98,8 @@ public class ExtractTechnicalMetadataJobTest extends AbstractDepositJobTest {
     private final static String UNKNOWN_MD5 = "2748ba561254b629c2103cb2e1be3fc2";
     private final static String UNKNOWN_FORMAT = "Unknown";
 
+    private static final Path TMP_PATH = Paths.get(System.getProperty("java.io.tmpdir"));
+
     @Mock
     private CloseableHttpClient httpClient;
     @Mock
@@ -429,14 +431,39 @@ public class ExtractTechnicalMetadataJobTest extends AbstractDepositJobTest {
         Bag workBag = model.createBag(workPid.getRepositoryPath());
         workBag.addProperty(RDF.type, Cdr.Work);
         depositBag.add(workBag);
-        String filename = "weird\uD83D\uDC7D.txt";
-        File sourceFile = tmpFolder.resolve(filename).toFile();
-        PID filePid = addFileObject(workBag, sourceFile.getAbsolutePath(), IMAGE_MIMETYPE, IMAGE_MD5);
+        String filename = "weird\uD83D\uDC7D.mov";
+        Path sourcePath = tmpFolder.resolve(filename);
+        Files.createFile(sourcePath);
+        PID filePid = addFileObject(workBag, sourcePath.toFile().toURI().toString(), IMAGE_MIMETYPE, IMAGE_MD5);
 
         job.closeModel();
 
         job.run();
 
+        verifyFileResults(filePid, IMAGE_MIMETYPE, IMAGE_FORMAT, IMAGE_MD5, 1);
+    }
+
+    @Test
+    public void filenameFromLabelTest() throws Exception {
+        respondWithFile("/fitsReports/imageReport.xml");
+
+        // Create the work object which nests the file
+        PID workPid = makePid(RepositoryPathConstants.CONTENT_BASE);
+        Bag workBag = model.createBag(workPid.getRepositoryPath());
+        workBag.addProperty(RDF.type, Cdr.Work);
+        depositBag.add(workBag);
+        String filename = "ambiguous_file_name";
+        Path sourcePath = tmpFolder.resolve(filename);
+        Files.createFile(sourcePath);
+        PID filePid = addFileObject(workBag, sourcePath.toFile().toURI().toString(), IMAGE_MIMETYPE, IMAGE_MD5);
+        Resource fileResc = model.getResource(filePid.getRepositoryPath());
+        fileResc.addProperty(CdrDeposit.label, "boxys_favorite_file.nef");
+
+        job.closeModel();
+
+        job.run();
+
+        verifyRequestParameters("boxys_favorite_file.nef");
         verifyFileResults(filePid, IMAGE_MIMETYPE, IMAGE_FORMAT, IMAGE_MD5, 1);
     }
 
@@ -503,15 +530,23 @@ public class ExtractTechnicalMetadataJobTest extends AbstractDepositJobTest {
     }
 
     @Test
-    public void symlinkFileTest() throws Exception {
-        PID pid = makePid();
-        var originalPath = tmpFolder.resolve("file.txt");
-        var sanitizedPath = tmpFolder.resolve("fi_l_e.txt");
-        var result = job.symlinkFile(pid, sanitizedPath, originalPath);
+    public void makeSymlinkForStagedPathProblemCharactersTest() throws Exception {
+        var originalPath = tmpFolder.resolve("fil£.txt");
+        var result = job.makeSymlinkForStagedPath(originalPath.toUri().toString(), null);
 
-        assertEquals("fi_l_e.txt", result.getFileName().toString());
-        assertEquals(pid.getId(), result.getParent().getFileName().toString());
+        assertEquals("fil_.txt", result.getFileName().toString());
         assertTrue(Files.isSymbolicLink(result));
+        assertEquals(originalPath, Files.readSymbolicLink(result));
+    }
+
+    @Test
+    public void makeSymlinkForStagedPathWithLabelTest() throws Exception {
+        var originalPath = tmpFolder.resolve("file");
+        var result = job.makeSymlinkForStagedPath(originalPath.toUri().toString(), "boxys_favorite_file.nef");
+
+        assertEquals("boxys_favorite_file.nef", result.getFileName().toString());
+        assertTrue(Files.isSymbolicLink(result));
+        assertEquals(originalPath, Files.readSymbolicLink(result));
     }
 
     private HttpUriRequest getRequest() throws Exception {
@@ -529,11 +564,12 @@ public class ExtractTechnicalMetadataJobTest extends AbstractDepositJobTest {
     }
 
     private void verifyRequestParameters(String expectedFilepath) throws Exception {
-        String absFilePath = Paths.get(depositDir.getAbsolutePath(), expectedFilepath).toString();
         HttpUriRequest request = getRequest();
         String submittedPath = getSubmittedFilePath(request);
 
-        assertEquals(absFilePath.replace("/", "%2F"), submittedPath, "FITS service not called with the expected path");
+        String failMessage = "FITS service called with wrong path. Expected " + expectedFilepath + " but got " + submittedPath;
+        assertTrue(submittedPath.startsWith(TMP_PATH.toString().replace("/", "%2F")), failMessage);
+        assertTrue(submittedPath.endsWith("%2F" + Paths.get(expectedFilepath).getFileName()), failMessage);
     }
 
     private void verifyFileResults(PID filePid, String expectedMimetype, String expectedFormat,
