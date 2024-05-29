@@ -31,7 +31,7 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'underscore', 'ModalLoadingOverl
 
 		if (tags.length > 0) {
 			this.metadata.tags = tags.filter(function(d) {
-				return !/^(has|not|no.primary|public.access|members.are.unordered|no.assigned.thumbnail|view.behavior)/i.test(d);
+				return !/^(has|not|no.primary|public.access|members.are.unordered|no.assigned.thumbnail|view.behavior|access.surrogate)/i.test(d);
 			}).map(function(d) {
 				var tagValue;
 
