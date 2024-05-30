@@ -337,7 +337,7 @@ public class ExtractTechnicalMetadataJob extends AbstractConcurrentDepositJob {
 
     /**
      * Creates a symlink to the provided stagedUri, where the symlink is sanitized of problematic characters
-     * and uses the label as the filename to ensure the original file extensions is present, if available.
+     * and uses the label as the filename to ensure the original file extension is present, if available.
      * @param objPid
      * @param stagedUriString
      * @param label
