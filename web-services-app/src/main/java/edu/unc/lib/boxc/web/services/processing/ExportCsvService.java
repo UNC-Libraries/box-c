@@ -263,15 +263,7 @@ public class ExportCsvService {
             printer.print("");
         }
 
-        Datastream dataAccessSurrogate = null;
-        if (ResourceType.File.name().equals(object.getResourceType())) {
-            dataAccessSurrogate = object.getDatastreamObject(ACCESS_SURROGATE.getId());
-        }
-        if (dataAccessSurrogate != null) {
-            printer.print("Y");
-        } else {
-            printer.print("");
-        }
+        printAccessSurrogateField(printer, object);
 
         // Container info: child count
         Long childCount = object.getCountMap().get("child");
@@ -303,6 +295,15 @@ public class ExportCsvService {
         printer.print(Objects.requireNonNullElse(behavior, ""));
 
         printer.println();
+    }
+
+    private void printAccessSurrogateField(CSVPrinter printer, ContentObjectRecord object) throws IOException {
+        if (ResourceType.File.name().equals(object.getResourceType())
+                && object.getContentStatus().contains(FacetConstants.HAS_ACCESS_SURROGATE)) {
+            printer.print("Y");
+        } else {
+            printer.print("");
+        }
     }
 
     private String getEmbargoDate(ContentObjectRecord object) {

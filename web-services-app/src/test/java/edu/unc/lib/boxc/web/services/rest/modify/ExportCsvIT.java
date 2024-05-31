@@ -19,6 +19,7 @@ import edu.unc.lib.boxc.model.api.objects.WorkObject;
 import edu.unc.lib.boxc.model.api.rdf.CdrView;
 import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
+import edu.unc.lib.boxc.model.fcrepo.services.DerivativeService;
 import edu.unc.lib.boxc.model.fcrepo.services.RepositoryInitializer;
 import edu.unc.lib.boxc.model.fcrepo.test.AclModelBuilder;
 import edu.unc.lib.boxc.model.fcrepo.test.RepositoryObjectTreeIndexer;
@@ -130,6 +131,8 @@ public class ExportCsvIT extends AbstractAPIIT {
     private ExportCsvService exportCsvService;
     @Autowired
     private PremisLoggerFactory premisLoggerFactory;
+    @Autowired
+    private DerivativeService derivativeService;
     private StorageLocationTestHelper storageLocationTestHelper;
 
     protected ContentRootObject rootObj;
@@ -151,7 +154,9 @@ public class ExportCsvIT extends AbstractAPIIT {
 
     @AfterEach
     public void cleanup() throws IOException {
-//        Files.delete(surrogatePath.getParent());
+        if (surrogatePath != null) {
+            Files.delete(surrogatePath.getParent());
+        }
     }
 
     @Test
@@ -684,9 +689,9 @@ public class ExportCsvIT extends AbstractAPIIT {
             Path contentPathSurrogate = Files.createTempFile("surrogate", ".png");
             FileUtils.writeStringToFile(contentPath.toFile(), bodyStringSurrogate, "UTF-8");
 
-//            surrogatePath = derivativeService.getDerivativePath(filePid, DatastreamType.ACCESS_SURROGATE);
-//            Files.createDirectories(surrogatePath.getParent());
-//            Files.copy(contentPathSurrogate, surrogatePath, StandardCopyOption.REPLACE_EXISTING);
+            surrogatePath = derivativeService.getDerivativePath(filePid, DatastreamType.ACCESS_SURROGATE);
+            Files.createDirectories(surrogatePath.getParent());
+            Files.copy(contentPathSurrogate, surrogatePath, StandardCopyOption.REPLACE_EXISTING);
         }
 
         folderObj.addMember(workObj);
