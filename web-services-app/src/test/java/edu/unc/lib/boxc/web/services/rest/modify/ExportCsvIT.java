@@ -41,6 +41,7 @@ import org.apache.solr.client.solrj.embedded.EmbeddedSolrServer;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.test.context.ContextConfiguration;
@@ -140,23 +141,18 @@ public class ExportCsvIT extends AbstractAPIIT {
     protected CollectionObject collObj;
     protected CollectionObject collObj2;
     protected FolderObject folderObj;
-    protected Path surrogatePath;
+    @TempDir
+    public Path tmpFolder;
 
     @BeforeEach
     public void setup() throws Exception {
         setupContentRoot();
         generateBaseStructure();
         storageLocationTestHelper = new StorageLocationTestHelper();
+        derivativeService.setDerivativeDir(tmpFolder.toString());
 
         setField(solrSearchService, "solrClient", server);
         setField(childrenCountService, "solrClient", server);
-    }
-
-    @AfterEach
-    public void cleanup() throws IOException {
-        if (surrogatePath != null) {
-            Files.delete(surrogatePath.getParent());
-        }
     }
 
     @Test
@@ -689,7 +685,7 @@ public class ExportCsvIT extends AbstractAPIIT {
             Path contentPathSurrogate = Files.createTempFile("surrogate", ".png");
             FileUtils.writeStringToFile(contentPath.toFile(), bodyStringSurrogate, "UTF-8");
 
-            surrogatePath = derivativeService.getDerivativePath(filePid, DatastreamType.ACCESS_SURROGATE);
+            var surrogatePath = derivativeService.getDerivativePath(filePid, DatastreamType.ACCESS_SURROGATE);
             Files.createDirectories(surrogatePath.getParent());
             Files.copy(contentPathSurrogate, surrogatePath, StandardCopyOption.REPLACE_EXISTING);
         }
