@@ -36,12 +36,9 @@ import org.apache.camel.component.mock.MockEndpoint;
 import org.apache.camel.test.spring.CamelSpringTestSupport;
 import org.apache.commons.io.FileUtils;
 import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 import org.springframework.context.support.AbstractApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
-
-import edu.unc.lib.boxc.services.camel.images.AddDerivativeProcessor;
 
 public class ImageEnhancementsRouterTest extends CamelSpringTestSupport {
     private static final String EVENT_NS = "http://fedora.info/definitions/v4/event#";
@@ -423,6 +420,7 @@ public class ImageEnhancementsRouterTest extends CamelSpringTestSupport {
     public void testAccessCopyRejection() throws Exception {
         createContext(accessCopyRoute);
 
+        when(addAccessCopyProcessor.needsRun(any())).thenReturn(true);
         getMockEndpoint("mock:process.enhancement.imageAccessCopy").expectedMessageCount(0);
 
         Map<String, Object> headers = createEvent(fileID, eventTypes, "false");
@@ -438,6 +436,7 @@ public class ImageEnhancementsRouterTest extends CamelSpringTestSupport {
     public void testAccessCopyDisallowedImageType() throws Exception {
         createContext(accessCopyRoute);
 
+        when(addAccessCopyProcessor.needsRun(any())).thenReturn(true);
         getMockEndpoint("mock:exec:/bin/sh").expectedMessageCount(0);
 
         Map<String, Object> headers = createEvent(fileID, eventTypes, "false");
@@ -445,6 +444,23 @@ public class ImageEnhancementsRouterTest extends CamelSpringTestSupport {
 
         template.sendBodyAndHeaders("", headers);
 
+        verify(addAccessCopyProcessor, never()).process(any(Exchange.class));
+        assertMockEndpointsSatisfied();
+    }
+
+    @Test
+    public void testAccessCopyIconFile() throws Exception {
+        createContext(accessCopyRoute);
+
+        when(addAccessCopyProcessor.needsRun(any())).thenReturn(true);
+        getMockEndpoint("mock:exec:/bin/sh").expectedMessageCount(0);
+
+        Map<String, Object> headers = createEvent(fileID, eventTypes, "false");
+        headers.put(CdrBinaryMimeType, "image/x-icon");
+
+        template.sendBodyAndHeaders("", headers);
+
+        verify(addAccessCopyProcessor).needsRun(any(Exchange.class));
         verify(addAccessCopyProcessor, never()).process(any(Exchange.class));
         assertMockEndpointsSatisfied();
     }
