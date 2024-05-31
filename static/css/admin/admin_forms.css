@@ -577,3 +577,7 @@
 .tooltip .tt-text {
 	display: none;
 }
+
+.access_surrogate {
+	color: #198754;
+}

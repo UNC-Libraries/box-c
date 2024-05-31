@@ -28,6 +28,7 @@ define('AbstractFileUploadForm', [ 'jquery', 'jquery-ui', 'underscore', 'Abstrac
 		var maxFileSize = 1610612736; // 1.5gb
 		var self = this;
 		this.closed = false;
+		this.resultObject = resultObject;
 		
 		this.dialog = $("<div class='containingDialog'>" + formContents + "</div>");
 		this.$form = this.dialog.first();
