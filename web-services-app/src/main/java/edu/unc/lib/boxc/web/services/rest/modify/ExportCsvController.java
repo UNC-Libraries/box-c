@@ -3,6 +3,7 @@ package edu.unc.lib.boxc.web.services.rest.modify;
 import static edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore.getAgentPrincipals;
 
 import java.io.IOException;
+import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -42,13 +43,14 @@ public class ExportCsvController extends AbstractSolrSearchController {
     public ResponseEntity<Object> export(@PathVariable("pid") String pidString, HttpServletRequest request,
                                                       HttpServletResponse response) {
         PID pid = PIDs.get(pidString);
+        var list = List.of(pid);
 
         try {
             String filename = pid.getId().replace(":", "_") + ".csv";
             response.addHeader("Content-Disposition", "attachment; filename=\"" + filename + "\"");
             response.addHeader("Content-Type", "text/csv");
 
-            exportCsvService.streamCsv(pid, getAgentPrincipals(), response.getOutputStream());
+            exportCsvService.streamCsvs(list, getAgentPrincipals(), response.getOutputStream());
 
             response.setStatus(HttpStatus.OK.value());
         } catch (NotFoundException e) {
