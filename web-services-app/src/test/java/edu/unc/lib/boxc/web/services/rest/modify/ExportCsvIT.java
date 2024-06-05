@@ -40,11 +40,11 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.jena.rdf.model.Model;
 import org.apache.solr.client.solrj.embedded.EmbeddedSolrServer;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.ContextHierarchy;
@@ -52,7 +52,6 @@ import org.springframework.test.web.servlet.MvcResult;
 
 import javax.annotation.Resource;
 import java.io.File;
-import java.io.IOException;
 import java.io.StringReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -65,6 +64,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
 
 import static edu.unc.lib.boxc.auth.api.AccessPrincipalConstants.AUTHENTICATED_PRINC;
@@ -77,7 +77,6 @@ import static edu.unc.lib.boxc.search.api.FacetConstants.CONTENT_NOT_DESCRIBED;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -166,16 +165,14 @@ public class ExportCsvIT extends AbstractAPIIT {
         String id = collObj.getPid().getId();
         var ids = convertToJson(List.of(id));
 
-//        MvcResult result = mvc.perform(get("/exportTree/csv/" + id))
-//                .andExpect(status().is2xxSuccessful())
-//                .andReturn();
         MvcResult result = mvc.perform(post("/exportTree/csv/")
+                        .contentType(MediaType.APPLICATION_JSON)
                         .content(ids))
                 .andExpect(status().is2xxSuccessful())
                 .andReturn();
 
         MockHttpServletResponse response = result.getResponse();
-        assertValidFileInfo(response, id);
+        assertValidFileInfo(response);
 
         List<CSVRecord> csvList = parseCsvResponse(response);
         assertEquals(2, csvList.size(), "Unexpected number of results");
@@ -197,12 +194,16 @@ public class ExportCsvIT extends AbstractAPIIT {
         solrIndexer.index(rootObj.getPid(), unitObj.getPid(), collObj.getPid(), folderPid,
                 workPid, filePid);
 
-        MvcResult result = mvc.perform(get("/exportTree/csv/" + id))
+        var ids = convertToJson(List.of(id));
+
+        MvcResult result = mvc.perform(post("/exportTree/csv/")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(ids))
                 .andExpect(status().is2xxSuccessful())
                 .andReturn();
 
         MockHttpServletResponse response = result.getResponse();
-        assertValidFileInfo(response, id);
+        assertValidFileInfo(response);
 
         List<CSVRecord> csvList = parseCsvResponse(response);
         assertEquals(3, csvList.size(), "Unexpected number of results");
@@ -233,12 +234,16 @@ public class ExportCsvIT extends AbstractAPIIT {
         solrIndexer.index(rootObj.getPid(), unitObj.getPid(), collObj.getPid(), folderPid,
                 workPid, filePid);
 
-        MvcResult result = mvc.perform(get("/exportTree/csv/" + id))
+        var ids = convertToJson(List.of(id));
+
+        MvcResult result = mvc.perform(post("/exportTree/csv/")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(ids))
                 .andExpect(status().is2xxSuccessful())
                 .andReturn();
 
         MockHttpServletResponse response = result.getResponse();
-        assertValidFileInfo(response, id);
+        assertValidFileInfo(response);
 
         List<CSVRecord> csvList = parseCsvResponse(response);
 
@@ -270,12 +275,20 @@ public class ExportCsvIT extends AbstractAPIIT {
                 workPid, filePid);
 
         String id = folderPid.getId();
-        MvcResult result = mvc.perform(get("/exportTree/csv/" + id))
+
+        var ids = convertToJson(List.of(id));
+
+        MvcResult result = mvc.perform(post("/exportTree/csv/")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(ids))
                 .andExpect(status().is2xxSuccessful())
                 .andReturn();
+//        MvcResult result = mvc.perform(get("/exportTree/csv/" + id))
+//                .andExpect(status().is2xxSuccessful())
+//                .andReturn();
 
         MockHttpServletResponse response = result.getResponse();
-        assertValidFileInfo(response, id);
+        assertValidFileInfo(response);
 
         List<CSVRecord> csvList = parseCsvResponse(response);
 
@@ -310,12 +323,16 @@ public class ExportCsvIT extends AbstractAPIIT {
         solrIndexer.index(rootObj.getPid(), unitObj.getPid(), collObj.getPid(), folderPid, workPid, filePid);
 
         String id = folderPid.getId();
-        MvcResult result = mvc.perform(get("/exportTree/csv/" + id))
+        var ids = convertToJson(List.of(id));
+
+        MvcResult result = mvc.perform(post("/exportTree/csv/")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(ids))
                 .andExpect(status().is2xxSuccessful())
                 .andReturn();
 
         MockHttpServletResponse response = result.getResponse();
-        assertValidFileInfo(response, id);
+        assertValidFileInfo(response);
 
         List<CSVRecord> csvList = parseCsvResponse(response);
 
@@ -344,12 +361,16 @@ public class ExportCsvIT extends AbstractAPIIT {
         treeIndexer.indexAll(baseAddress);
         solrIndexer.index(rootObj.getPid(), unitObj.getPid(), collObj.getPid(), folderPid, workPid, filePid);
 
-        MvcResult result = mvc.perform(get("/exportTree/csv/" + id))
+        var ids = convertToJson(List.of(id));
+
+        MvcResult result = mvc.perform(post("/exportTree/csv/")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(ids))
                 .andExpect(status().is2xxSuccessful())
                 .andReturn();
 
         MockHttpServletResponse response = result.getResponse();
-        assertValidFileInfo(response, id);
+        assertValidFileInfo(response);
 
         List<CSVRecord> csvList = parseCsvResponse(response);
         assertEquals(1, csvList.size(), "Unexpected number of results");
@@ -368,12 +389,16 @@ public class ExportCsvIT extends AbstractAPIIT {
         solrIndexer.index(rootObj.getPid(), unitObj.getPid(), collObj.getPid(), folderPid);
 
         String id = folderPid.getId();
-        MvcResult result = mvc.perform(get("/exportTree/csv/" + id))
+        var ids = convertToJson(List.of(id));
+
+        MvcResult result = mvc.perform(post("/exportTree/csv/")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(ids))
                 .andExpect(status().is2xxSuccessful())
                 .andReturn();
 
         MockHttpServletResponse response = result.getResponse();
-        assertValidFileInfo(response, id);
+        assertValidFileInfo(response);
 
         List<CSVRecord> csvList = parseCsvResponse(response);
         assertEquals(1, csvList.size(), "Unexpected number of results");
@@ -397,12 +422,16 @@ public class ExportCsvIT extends AbstractAPIIT {
         solrIndexer.index(rootObj.getPid(), unitObj.getPid(), collObj.getPid(), folderPid);
 
         String id = folderPid.getId();
-        MvcResult result = mvc.perform(get("/exportTree/csv/" + id))
+        var ids = convertToJson(List.of(id));
+
+        MvcResult result = mvc.perform(post("/exportTree/csv/")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(ids))
                 .andExpect(status().is2xxSuccessful())
                 .andReturn();
 
         MockHttpServletResponse response = result.getResponse();
-        assertValidFileInfo(response, id);
+        assertValidFileInfo(response);
 
         List<CSVRecord> csvList = parseCsvResponse(response);
         assertEquals(1, csvList.size(), "Unexpected number of results");
@@ -422,12 +451,16 @@ public class ExportCsvIT extends AbstractAPIIT {
         solrIndexer.index(rootObj.getPid(), unitObj.getPid(), collObj.getPid());
 
         String id = collPid.getId();
-        MvcResult result = mvc.perform(get("/exportTree/csv/" + id))
+        var ids = convertToJson(List.of(id));
+
+        MvcResult result = mvc.perform(post("/exportTree/csv/")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(ids))
                 .andExpect(status().is2xxSuccessful())
                 .andReturn();
 
         MockHttpServletResponse response = result.getResponse();
-        assertValidFileInfo(response, id);
+        assertValidFileInfo(response);
 
         List<CSVRecord> csvList = parseCsvResponse(response);
         assertEquals(1, csvList.size(), "Unexpected number of results");
@@ -448,12 +481,16 @@ public class ExportCsvIT extends AbstractAPIIT {
         solrIndexer.index(rootObj.getPid(), unitObj.getPid(), collObj.getPid());
 
         String id = collPid.getId();
-        MvcResult result = mvc.perform(get("/exportTree/csv/" + id))
+        var ids = convertToJson(List.of(id));
+
+        MvcResult result = mvc.perform(post("/exportTree/csv/")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(ids))
                 .andExpect(status().is2xxSuccessful())
                 .andReturn();
 
         MockHttpServletResponse response = result.getResponse();
-        assertValidFileInfo(response, id);
+        assertValidFileInfo(response);
 
         List<CSVRecord> csvList = parseCsvResponse(response);
         assertEquals(1, csvList.size(), "Unexpected number of results");
@@ -474,12 +511,16 @@ public class ExportCsvIT extends AbstractAPIIT {
         solrIndexer.index(rootObj.getPid(), unitObj.getPid(), collObj.getPid());
 
         String id = collPid.getId();
-        MvcResult result = mvc.perform(get("/exportTree/csv/" + id))
+        var ids = convertToJson(List.of(id));
+
+        MvcResult result = mvc.perform(post("/exportTree/csv/")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(ids))
                 .andExpect(status().is2xxSuccessful())
                 .andReturn();
 
         MockHttpServletResponse response = result.getResponse();
-        assertValidFileInfo(response, id);
+        assertValidFileInfo(response);
 
         List<CSVRecord> csvList = parseCsvResponse(response);
         assertEquals(1, csvList.size(), "Unexpected number of results");
@@ -504,12 +545,16 @@ public class ExportCsvIT extends AbstractAPIIT {
         solrIndexer.index(rootObj.getPid(), unitObj.getPid(), collObj.getPid(), folder.getPid());
 
         String id = collPid.getId();
-        MvcResult result = mvc.perform(get("/exportTree/csv/" + id))
+        var ids = convertToJson(List.of(id));
+
+        MvcResult result = mvc.perform(post("/exportTree/csv/")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(ids))
                 .andExpect(status().is2xxSuccessful())
                 .andReturn();
 
         MockHttpServletResponse response = result.getResponse();
-        assertValidFileInfo(response, id);
+        assertValidFileInfo(response);
 
         List<CSVRecord> csvList = parseCsvResponse(response);
         assertEquals(2, csvList.size(), "Unexpected number of results");
@@ -536,12 +581,16 @@ public class ExportCsvIT extends AbstractAPIIT {
         solrIndexer.index(rootObj.getPid(), unitObj.getPid(), collObj.getPid(), folder.getPid());
 
         String id = collPid.getId();
-        MvcResult result = mvc.perform(get("/exportTree/csv/" + id))
+        var ids = convertToJson(List.of(id));
+
+        MvcResult result = mvc.perform(post("/exportTree/csv/")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(ids))
                 .andExpect(status().is2xxSuccessful())
                 .andReturn();
 
         MockHttpServletResponse response = result.getResponse();
-        assertValidFileInfo(response, id);
+        assertValidFileInfo(response);
 
         List<CSVRecord> csvList = parseCsvResponse(response);
         assertEquals(2, csvList.size(), "Unexpected number of results");
@@ -564,12 +613,16 @@ public class ExportCsvIT extends AbstractAPIIT {
         solrIndexer.index(rootObj.getPid(), unitObj.getPid(), collObj.getPid());
 
         String id = collPid.getId();
-        MvcResult result = mvc.perform(get("/exportTree/csv/" + id))
+        var ids = convertToJson(List.of(id));
+
+        MvcResult result = mvc.perform(post("/exportTree/csv/")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(ids))
                 .andExpect(status().is2xxSuccessful())
                 .andReturn();
 
         MockHttpServletResponse response = result.getResponse();
-        assertValidFileInfo(response, id);
+        assertValidFileInfo(response);
 
         List<CSVRecord> csvList = parseCsvResponse(response);
         assertEquals(1, csvList.size(), "Unexpected number of results");
@@ -580,22 +633,36 @@ public class ExportCsvIT extends AbstractAPIIT {
     @Test
     public void exportContentRoot() throws Exception {
         String id = rootObj.getPid().getId();
-        mvc.perform(get("/exportTree/csv/" + id))
+        var ids = convertToJson(List.of(id));
+
+        mvc.perform(post("/exportTree/csv/")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(ids))
                 .andExpect(status().isBadRequest())
                 .andReturn();
     }
 
     @Test
     public void exportInvalidPidCsv() throws Exception {
-        mvc.perform(get("/exportTree/csv/1234"))
+        String id = "1234";
+        var ids = convertToJson(List.of(id));
+
+        mvc.perform(post("/exportTree/csv/")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(ids))
                 .andExpect(status().isForbidden())
                 .andReturn();
+
     }
 
     @Test
     public void exportNonExistentPidCsv() throws Exception {
         String id = UUID.randomUUID().toString();
-        mvc.perform(get("/exportTree/csv/" + id))
+        var ids = convertToJson(List.of(id));
+
+        mvc.perform(post("/exportTree/csv/")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(ids))
                 .andExpect(status().isNotFound())
                 .andReturn();
     }
@@ -615,12 +682,16 @@ public class ExportCsvIT extends AbstractAPIIT {
         solrIndexer.index(rootObj.getPid(), unitObj.getPid(), collObj.getPid(), folderPid,
                 workPid, filePid);
 
-        MvcResult result = mvc.perform(get("/exportTree/csv/" + id))
+        var ids = convertToJson(List.of(id));
+
+        MvcResult result = mvc.perform(post("/exportTree/csv/")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(ids))
                 .andExpect(status().is2xxSuccessful())
                 .andReturn();
 
         MockHttpServletResponse response = result.getResponse();
-        assertValidFileInfo(response, id);
+        assertValidFileInfo(response);
 
         List<CSVRecord> csvList = parseCsvResponse(response);
         assertEquals(5, csvList.size(), "Unexpected number of results");
@@ -654,12 +725,16 @@ public class ExportCsvIT extends AbstractAPIIT {
         solrIndexer.index(rootObj.getPid(), unitObj.getPid(), collObj.getPid(), folderPid,
                 workPid, filePid);
 
-        MvcResult result = mvc.perform(get("/exportTree/csv/" + id))
+        var ids = convertToJson(List.of(id));
+
+        MvcResult result = mvc.perform(post("/exportTree/csv/")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(ids))
                 .andExpect(status().is2xxSuccessful())
                 .andReturn();
 
         MockHttpServletResponse response = result.getResponse();
-        assertValidFileInfo(response, id);
+        assertValidFileInfo(response);
 
         List<CSVRecord> csvList = parseCsvResponse(response);
         assertEquals(3, csvList.size(), "Unexpected number of results");
@@ -741,10 +816,10 @@ public class ExportCsvIT extends AbstractAPIIT {
         return c;
     }
 
-    private void assertValidFileInfo(MockHttpServletResponse response, String id) {
-        String filename = String.format("\"%s.csv\"", id);
-        assertTrue(response.getHeader("Content-Disposition").endsWith(filename),
-                "Expected header to end with " + filename +
+    private void assertValidFileInfo(MockHttpServletResponse response) {
+        String filename = "export.csv";
+        assertTrue(Objects.requireNonNull(response.getHeader("Content-Disposition")).contains(filename),
+                "Expected header to contain " + filename +
                         " but was " + response.getHeader("Content-Disposition"));
         assertEquals("text/csv", response.getContentType());
     }
