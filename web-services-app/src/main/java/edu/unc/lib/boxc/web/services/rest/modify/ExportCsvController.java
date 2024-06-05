@@ -3,6 +3,7 @@ package edu.unc.lib.boxc.web.services.rest.modify;
 import static edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore.getAgentPrincipals;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
@@ -15,6 +16,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
@@ -32,35 +35,68 @@ import edu.unc.lib.boxc.web.services.processing.ExportCsvService;
  * @author bbpennel
  */
 @Controller
-@RequestMapping("exportTree/csv")
+//@RequestMapping("exportTree/csv")
 public class ExportCsvController extends AbstractSolrSearchController {
     private static final Logger log = LoggerFactory.getLogger(ExportCsvController.class);
 
     @Autowired
     private ExportCsvService exportCsvService;
 
-    @RequestMapping(value = "{pid}", method = RequestMethod.GET)
-    public ResponseEntity<Object> export(@PathVariable("pid") String pidString, HttpServletRequest request,
-                                                      HttpServletResponse response) {
-        PID pid = PIDs.get(pidString);
-        var list = List.of(pid);
+//    @RequestMapping(value = "{pid}", method = RequestMethod.GET)
+//    public ResponseEntity<Object> export(@PathVariable("pid") String pidString, HttpServletRequest request,
+//                                                      HttpServletResponse response) {
+//        PID pid = PIDs.get(pidString);
+//        var list = List.of(pid);
+//
+//        try {
+//            String filename = pid.getId().replace(":", "_") + ".csv";
+//            response.addHeader("Content-Disposition", "attachment; filename=\"" + filename + "\"");
+//            response.addHeader("Content-Type", "text/csv");
+//
+//            exportCsvService.streamCsv(list, getAgentPrincipals(), response.getOutputStream());
+//
+//            response.setStatus(HttpStatus.OK.value());
+//        } catch (NotFoundException e) {
+//            log.warn("Object {} not found: {}", pid, e.getMessage());
+//            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+//        } catch (RepositoryException | IOException e) {
+//            log.error("Error exporting CSV for {}, {}", pidString, e.getMessage());
+//            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+//        }
+//        return null;
+//    }
+
+
+    @PostMapping("exportTree/csv")
+    public ResponseEntity<Object> export(@RequestBody List<String> pidStrings, HttpServletRequest request,
+                                         HttpServletResponse response) {
+
+        var pids = getPids(pidStrings);
 
         try {
-            String filename = pid.getId().replace(":", "_") + ".csv";
+            String filename = "export.csv";
             response.addHeader("Content-Disposition", "attachment; filename=\"" + filename + "\"");
             response.addHeader("Content-Type", "text/csv");
 
-            exportCsvService.streamCsvs(list, getAgentPrincipals(), response.getOutputStream());
+            exportCsvService.streamCsv(pids, getAgentPrincipals(), response.getOutputStream());
 
             response.setStatus(HttpStatus.OK.value());
         } catch (NotFoundException e) {
-            log.warn("Object {} not found: {}", pid, e.getMessage());
+            log.warn("Object not found: {}", e.getMessage());
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         } catch (RepositoryException | IOException e) {
-            log.error("Error exporting CSV for {}, {}", pidString, e.getMessage());
+            log.error("Error exporting CSV: {}", e.getMessage());
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
         return null;
+    }
+
+    private List<PID> getPids(List<String> pidStrings){
+        List<PID> pids = new ArrayList<>();
+        for (String pidString : pidStrings) {
+            pids.add(PIDs.get(pidString));
+        }
+        return pids;
     }
 
 

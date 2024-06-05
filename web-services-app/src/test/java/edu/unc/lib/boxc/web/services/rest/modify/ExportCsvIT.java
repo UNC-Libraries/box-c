@@ -1,5 +1,7 @@
 package edu.unc.lib.boxc.web.services.rest.modify;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
 import edu.unc.lib.boxc.fcrepo.utils.FedoraSparqlUpdateService;
 import edu.unc.lib.boxc.indexing.solr.indexing.DocumentIndexingPackageFactory;
@@ -76,6 +78,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 /**
@@ -161,7 +164,13 @@ public class ExportCsvIT extends AbstractAPIIT {
         solrIndexer.index(rootObj.getPid(), unitObj.getPid(), collObj.getPid(), collObj2.getPid(), folderObj.getPid());
 
         String id = collObj.getPid().getId();
-        MvcResult result = mvc.perform(get("/exportTree/csv/" + id))
+        var ids = convertToJson(List.of(id));
+
+//        MvcResult result = mvc.perform(get("/exportTree/csv/" + id))
+//                .andExpect(status().is2xxSuccessful())
+//                .andReturn();
+        MvcResult result = mvc.perform(post("/exportTree/csv/")
+                        .content(ids))
                 .andExpect(status().is2xxSuccessful())
                 .andReturn();
 
@@ -801,5 +810,10 @@ public class ExportCsvIT extends AbstractAPIIT {
                 .parse(new StringReader(response.getContentAsString()))
                 .forEach(csvList::add);
         return csvList;
+    }
+
+    private String convertToJson(List<String> list) throws JsonProcessingException {
+        ObjectMapper objectMapper = new ObjectMapper();
+        return objectMapper.writeValueAsString(list);
     }
 }
