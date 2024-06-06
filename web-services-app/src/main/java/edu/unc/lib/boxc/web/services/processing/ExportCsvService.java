@@ -109,12 +109,12 @@ public class ExportCsvService {
 
         // Open the CSV
         Writer writer = new BufferedWriter(new OutputStreamWriter(out, StandardCharsets.UTF_8));
-        for (PID pid : pids) {
-            try (CSVPrinter printer = getPrinter(writer)) {
+        try (CSVPrinter printer = getPrinter(writer)) {
+            for (PID pid : pids) {
                 printObjectRows(pid, printer, agent.getUsername(), accessGroups);
-            } catch (IOException e) {
-                throw new RepositoryException("Failed to stream CSV results for " + pid, e);
             }
+        } catch (IOException e) {
+            throw new RepositoryException("Failed to stream CSV results: ", e);
         }
     }
 
