@@ -10,12 +10,14 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.InputStreamReader;
 import java.nio.file.Path;
 import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import edu.unc.lib.boxc.model.fcrepo.ids.DatastreamPids;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Resource;
@@ -82,23 +84,25 @@ public class DepositRecordIT extends AbstractFedoraIT {
 
         DepositRecord record = repoObjFactory.createDepositRecord(model);
 
+        PID manifestPid = DatastreamPids.getDepositManifestPid(record.getPid(), "manifest.txt");
         String bodyString1 = "Manifest info";
         String filename1 = "manifest1.txt";
         String mimetype1 = "text/plain";
-        Path manifestPath = createTempFile("manifest", ".txt");
-        writeStringToFile(manifestPath.toFile(), bodyString1, UTF_8);
-        BinaryObject manifest1 = record.addManifest(manifestPath.toUri(), filename1, mimetype1, null, null);
+        var manifestUri = storageLocationTestHelper.makeTestStorageUri(manifestPid);
+        writeStringToFile(new File(manifestUri), bodyString1, UTF_8);
+        BinaryObject manifest1 = record.addManifest(manifestUri, filename1, mimetype1, null, null);
 
         assertNotNull(manifest1);
         assertEquals(filename1, manifest1.getFilename());
         assertEquals(mimetype1, manifest1.getMimetype());
 
+        PID manifestPid2 = DatastreamPids.getDepositManifestPid(record.getPid(), "manifest2.txt");
         String bodyString2 = "Second manifest";
         String mimetype2 = "text/plain";
         String filename2 = "manifest2";
-        Path manifestPath2 = createTempFile("manifest", ".txt");
-        writeStringToFile(manifestPath2.toFile(), bodyString2, UTF_8);
-        BinaryObject manifest2 = record.addManifest(manifestPath2.toUri(), filename2, mimetype2, null, null);
+        var manifestUri2 = storageLocationTestHelper.makeTestStorageUri(manifestPid2);
+        writeStringToFile(new File(manifestUri2), bodyString2, UTF_8);
+        BinaryObject manifest2 = record.addManifest(manifestUri2, filename2, mimetype2, null, null);
 
         assertNotNull(manifest2);
 

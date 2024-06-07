@@ -1,6 +1,5 @@
 package edu.unc.lib.boxc.web.services.rest.modify;
 
-import static java.nio.file.Files.createTempFile;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
@@ -13,6 +12,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import java.nio.file.Path;
 import java.util.Map;
 
+import edu.unc.lib.boxc.web.services.rest.MvcTestHelpers;
 import org.junit.jupiter.api.Test;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.ContextHierarchy;
@@ -32,7 +32,6 @@ import edu.unc.lib.boxc.model.api.rdf.Ebucore;
  *
  */
 @ContextHierarchy({
-    @ContextConfiguration("/spring-test/test-fedora-container.xml"),
     @ContextConfiguration("/spring-test/cdr-client-container.xml"),
     @ContextConfiguration("/edit-filename-it-servlet.xml")
 })
@@ -41,10 +40,10 @@ public class EditFilenameIT extends AbstractAPIIT {
     private String mimetype = "text/plain";
 
     @Test
-    public void testCreateLabelWhereNoneExists() throws UnsupportedOperationException, Exception {
+    public void testCreateLabelWhereNoneExists() throws Exception {
         PID pid = makePid();
 
-        Path file = createTempFile("test", "txt");
+        Path file = createBinaryContent("", "test", "txt");
         FileObject fileObj = repositoryObjectFactory.createFileObject(pid, null);
         fileObj.addOriginalFile(file.toUri(), filename, mimetype, null, null);
 
@@ -55,7 +54,7 @@ public class EditFilenameIT extends AbstractAPIIT {
             .andReturn();
 
         // Verify response from api
-        Map<String, Object> respMap = getMapFromResponse(result);
+        Map<String, Object> respMap = MvcTestHelpers.getMapFromResponse(result);
         assertEquals(pid.getUUID(), respMap.get("pid"));
         assertEquals("editLabel", respMap.get("action"));
 
@@ -67,7 +66,7 @@ public class EditFilenameIT extends AbstractAPIIT {
     @Test
     public void testReplaceLabel() throws UnsupportedOperationException, Exception {
         PID pid = makePid();
-        Path file = createTempFile("test", "txt");
+        Path file = createBinaryContent("", "test", "txt");
 
         FileObject fileObj = repositoryObjectFactory.createFileObject(pid, null);
         fileObj.addOriginalFile(file.toUri(), filename, mimetype, null, null);
@@ -79,7 +78,7 @@ public class EditFilenameIT extends AbstractAPIIT {
             .andReturn();
 
         // Verify response from api
-        Map<String, Object> respMap = getMapFromResponse(result);
+        Map<String, Object> respMap = MvcTestHelpers.getMapFromResponse(result);
         assertEquals(pid.getUUID(), respMap.get("pid"));
         assertEquals("editLabel", respMap.get("action"));
 
@@ -116,7 +115,7 @@ public class EditFilenameIT extends AbstractAPIIT {
             .andReturn();
 
         // Verify response from api
-        Map<String, Object> respMap = getMapFromResponse(result);
+        Map<String, Object> respMap = MvcTestHelpers.getMapFromResponse(result);
         assertEquals(pid.getUUID(), respMap.get("pid"));
         assertEquals("editLabel", respMap.get("action"));
         assertTrue(respMap.containsKey("error"));
