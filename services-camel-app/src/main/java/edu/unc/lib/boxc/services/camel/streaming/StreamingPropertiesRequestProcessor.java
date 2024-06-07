@@ -19,9 +19,7 @@ import java.util.Objects;
 
 import static edu.unc.lib.boxc.operations.jms.streaming.StreamingPropertiesRequest.ADD;
 import static edu.unc.lib.boxc.operations.jms.streaming.StreamingPropertiesRequest.DELETE;
-import static edu.unc.lib.boxc.operations.jms.streaming.StreamingPropertiesRequest.VALID_FOLDERS;
-import static org.apache.commons.io.FilenameUtils.getName;
-import static org.apache.commons.io.FilenameUtils.removeExtension;
+import static edu.unc.lib.boxc.operations.jms.streaming.StreamingPropertiesRequest.STREAMREAPER_PREFIX_URL;
 
 /**
  * Processing requests to edit streaming properties on a FileObject
@@ -36,7 +34,7 @@ public class StreamingPropertiesRequestProcessor implements Processor {
         var in = exchange.getIn();
         var request = StreamingPropertiesRequestSerializationHelper.toRequest(in.getBody(String.class));
         var agent = request.getAgent();
-        var pid = PIDs.get(request.getFilePidString());
+        var pid = PIDs.get(request.getId());
 
         aclService.assertHasAccess("User does not have permission to set streaming properties",
                 pid, agent.getPrincipals(), Permission.ingest);
@@ -46,26 +44,27 @@ public class StreamingPropertiesRequestProcessor implements Processor {
         var file = repositoryObjectLoader.getFileObject(pid);
         if (Objects.equals(request.getAction(), ADD)) {
             repositoryObjectFactory.createExclusiveRelationship(
-                    file, Cdr.streamingHost, request.getHost());
-            repositoryObjectFactory.createExclusiveRelationship(
-                    file, Cdr.streamingFile, formatFilename(request.getFilename()));
-            repositoryObjectFactory.createExclusiveRelationship(
-                    file, Cdr.streamingFolder, request.getFolder());
+                    file, Cdr.streamingUrl, request.getUrl());
         } else if (Objects.equals(request.getAction(), DELETE)) {
-            repositoryObjectFactory.deleteProperty(file,Cdr.streamingHost);
-            repositoryObjectFactory.deleteProperty(file,Cdr.streamingFile);
-            repositoryObjectFactory.deleteProperty(file,Cdr.streamingFolder);
+            repositoryObjectFactory.deleteProperty(file,Cdr.streamingUrl);
         }
     }
 
     private String validate(StreamingPropertiesRequest request, PID pid) {
-        var folder = request.getFolder();
-        if (StringUtils.isBlank(request.getFilename()) || StringUtils.isBlank(folder)) {
-            return "Both a filename and streaming folder are required.";
+        var action = request.getAction();
+        if (StringUtils.isBlank(action)) {
+            return "An action is required.";
         }
 
-        if (!VALID_FOLDERS.contains(folder)) {
-            return "Streaming folder is not valid.";
+        if (Objects.equals(ADD, action)) {
+            var url = request.getUrl();
+            if (url == null) {
+                return "URL is required";
+            } else {
+                if (!url.startsWith(STREAMREAPER_PREFIX_URL)) {
+                    return "URL is not a stream reaper URL";
+                }
+            }
         }
 
         try {
@@ -88,21 +87,6 @@ public class StreamingPropertiesRequestProcessor implements Processor {
             throw new IllegalArgumentException(message);
         }
     }
-
-    /**
-     * Converts a filename to appropriate format for streaming
-     * A filename like a/b/banjo_recording.mp3 would transform to banjo_recording-playlist.m3u8
-     * @param filename filename of the file object
-     * @return formatted string
-     */
-    private String formatFilename(String filename) {
-        var nameOnly = getName(filename);
-        if (nameOnly.contains("-playlist.m3u8")) {
-            return nameOnly;
-        }
-        return removeExtension(nameOnly) + "-playlist.m3u8";
-    }
-
 
     public void setRepositoryObjectLoader(RepositoryObjectLoader repositoryObjectLoader) {
         this.repositoryObjectLoader = repositoryObjectLoader;

@@ -897,7 +897,7 @@
                 <version>${jedis.version}</version>
             </dependency>
             <dependency>
-                <groupId>it.ozimov</groupId>
+                <groupId>com.github.codemonstur</groupId>
                 <artifactId>embedded-redis</artifactId>
                 <version>${embedded-redis.version}</version>
                 <scope>test</scope>
