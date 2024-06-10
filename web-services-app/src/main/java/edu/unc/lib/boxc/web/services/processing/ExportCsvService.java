@@ -5,6 +5,7 @@ import static edu.unc.lib.boxc.auth.api.AccessPrincipalConstants.PUBLIC_PRINC;
 import static edu.unc.lib.boxc.auth.api.Permission.viewHidden;
 import static edu.unc.lib.boxc.auth.api.UserRole.canViewOriginals;
 import static edu.unc.lib.boxc.auth.api.UserRole.none;
+import static edu.unc.lib.boxc.model.api.DatastreamType.ACCESS_SURROGATE;
 import static edu.unc.lib.boxc.model.api.DatastreamType.ORIGINAL_FILE;
 import static edu.unc.lib.boxc.model.api.ids.RepositoryPathConstants.CONTENT_ROOT_ID;
 import static edu.unc.lib.boxc.model.api.rdf.CdrAcl.embargoUntil;
@@ -24,6 +25,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
+import edu.unc.lib.boxc.model.api.ResourceType;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
@@ -69,6 +71,7 @@ public class ExportCsvService {
     public static final String MIME_TYPE_HEADER = "MIME Type";
     public static final String CHECKSUM_HEADER = "Checksum";
     public static final String FILE_SIZE_HEADER = "File Size (bytes)";
+    public static final String ACCESS_SURROGATE_HEADER = "Access Surrogate";
     public static final String NUM_CHILDREN_HEADER = "Number of Children";
     public static final String DESCRIBED_HEADER = "Description";
     public static final String PATRON_PERMISSIONS_HEADER = "Patron Permissions";
@@ -78,8 +81,9 @@ public class ExportCsvService {
     private static final String[] CSV_HEADERS = new String[] {
             OBJ_TYPE_HEADER, PID_HEADER, TITLE_HEADER, PATH_HEADER,
             DEPTH_HEADER, DELETED_HEADER, DATE_ADDED_HEADER, DATE_UPDATED_HEADER,
-            MIME_TYPE_HEADER, CHECKSUM_HEADER, FILE_SIZE_HEADER, NUM_CHILDREN_HEADER,
-            DESCRIBED_HEADER, PATRON_PERMISSIONS_HEADER, EMBARGO_HEADER, VIEW_BEHAVIOR_HEADER};
+            MIME_TYPE_HEADER, CHECKSUM_HEADER, FILE_SIZE_HEADER, ACCESS_SURROGATE_HEADER, NUM_CHILDREN_HEADER,
+            DESCRIBED_HEADER, PATRON_PERMISSIONS_HEADER, EMBARGO_HEADER, VIEW_BEHAVIOR_HEADER
+    };
 
     private static final List<String> SEARCH_FIELDS = Arrays.asList(SearchFieldKey.ID.name(),
             SearchFieldKey.TITLE.name(),
@@ -259,6 +263,8 @@ public class ExportCsvService {
             printer.print("");
         }
 
+        printAccessSurrogateField(printer, object);
+
         // Container info: child count
         Long childCount = object.getCountMap().get("child");
         if (childCount != null && childCount > 0) {
@@ -289,6 +295,15 @@ public class ExportCsvService {
         printer.print(Objects.requireNonNullElse(behavior, ""));
 
         printer.println();
+    }
+
+    private void printAccessSurrogateField(CSVPrinter printer, ContentObjectRecord object) throws IOException {
+        if (ResourceType.File.name().equals(object.getResourceType())
+                && object.getContentStatus().contains(FacetConstants.HAS_ACCESS_SURROGATE)) {
+            printer.print("Y");
+        } else {
+            printer.print("");
+        }
     }
 
     private String getEmbargoDate(ContentObjectRecord object) {

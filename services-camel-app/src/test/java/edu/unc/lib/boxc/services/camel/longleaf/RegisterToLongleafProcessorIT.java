@@ -15,6 +15,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import edu.unc.lib.boxc.model.fcrepo.test.TestRepositoryDeinitializer;
+import edu.unc.lib.boxc.persist.impl.storage.StorageLocationTestHelper;
 import org.apache.camel.CamelContext;
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
@@ -43,13 +45,10 @@ import edu.unc.lib.boxc.model.api.objects.WorkObject;
 import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
 import edu.unc.lib.boxc.model.fcrepo.ids.DatastreamPids;
 import edu.unc.lib.boxc.model.fcrepo.test.TestHelper;
-import edu.unc.lib.boxc.persist.api.storage.StorageLocation;
-import edu.unc.lib.boxc.persist.api.storage.StorageLocationManager;
 import edu.unc.lib.boxc.persist.api.transfer.BinaryTransferOutcome;
 import edu.unc.lib.boxc.persist.api.transfer.BinaryTransferService;
 import edu.unc.lib.boxc.persist.api.transfer.BinaryTransferSession;
 import edu.unc.lib.boxc.persist.impl.transfer.FileSystemTransferHelpers;
-import edu.unc.lib.boxc.services.camel.longleaf.RegisterToLongleafProcessor;
 
 /**
  * @author bbpennel
@@ -57,7 +56,6 @@ import edu.unc.lib.boxc.services.camel.longleaf.RegisterToLongleafProcessor;
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextHierarchy({
-    @ContextConfiguration("/spring-test/test-fedora-container.xml"),
     @ContextConfiguration("/spring-test/cdr-client-container.xml")
 })
 public class RegisterToLongleafProcessorIT {
@@ -86,7 +84,7 @@ public class RegisterToLongleafProcessorIT {
     @Autowired
     private FcrepoClient fcrepoClient;
     @Autowired
-    private StorageLocationManager locManager;
+    private StorageLocationTestHelper storageLocationTestHelper;
     @Autowired
     private BinaryTransferService transferService;
     private BinaryTransferSession transferSession;
@@ -110,13 +108,13 @@ public class RegisterToLongleafProcessorIT {
         longleafScript = LongleafTestHelpers.getLongleafScript(outputPath);
         processor.setLongleafBaseCommand(longleafScript);
 
-        StorageLocation loc = locManager.getStorageLocationById("loc1");
-        transferSession = transferService.getSession(loc);
+        transferSession = transferService.getSession(storageLocationTestHelper.getTestStorageLocation());
     }
 
     @After
     public void tearDown() throws Exception {
         transferSession.close();
+        TestRepositoryDeinitializer.cleanup(fcrepoClient);
     }
 
     @Test

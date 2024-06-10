@@ -22,7 +22,6 @@ import redis.clients.jedis.JedisPool;
 @ExtendWith(SpringExtension.class)
 @ContextConfiguration({"/spring/jedis-context.xml"})
 public class DepositPipelineStatusFactoryIT {
-
     private DepositPipelineStatusFactory factory;
     @Autowired
     private JedisPool jedisPool;
@@ -38,6 +37,7 @@ public class DepositPipelineStatusFactoryIT {
 
     @AfterEach
     public void cleanup() {
+        jedisResource.flushAll();
         jedisResource.close();
     }
 

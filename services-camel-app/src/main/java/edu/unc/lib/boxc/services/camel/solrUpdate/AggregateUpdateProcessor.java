@@ -50,7 +50,10 @@ public class AggregateUpdateProcessor implements Processor {
         }
         for (Object idObj : idCollection) {
             PID pid = PIDs.get(idObj.toString());
-            messageSender.sendIndexingOperation(null, pid, actionType);
+            // Make sure the object exists in solr before attempting to update it
+            if (solrClient.getById(pid.getId()) != null) {
+                messageSender.sendIndexingOperation(null, pid, actionType);
+            }
         }
     }
 

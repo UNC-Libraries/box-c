@@ -1,62 +1,44 @@
 package edu.unc.lib.boxc.indexing.solr.filter;
 
-import static org.junit.Assert.assertTrue;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Mockito.when;
-import static org.mockito.MockitoAnnotations.openMocks;
-
-import java.text.SimpleDateFormat;
-
-import org.apache.jena.rdf.model.Literal;
+import edu.unc.lib.boxc.common.util.DateTimeUtil;
+import edu.unc.lib.boxc.indexing.solr.exception.IndexingException;
+import edu.unc.lib.boxc.indexing.solr.indexing.DocumentIndexingPackage;
+import edu.unc.lib.boxc.model.api.ids.PID;
+import edu.unc.lib.boxc.model.api.objects.ContentObject;
+import edu.unc.lib.boxc.model.api.rdf.Fcrepo4Repository;
+import edu.unc.lib.boxc.model.fcrepo.test.TestHelper;
+import edu.unc.lib.boxc.search.solr.models.IndexDocumentBean;
+import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Resource;
-import org.apache.jena.rdf.model.Statement;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 
-import edu.unc.lib.boxc.indexing.solr.exception.IndexingException;
-import edu.unc.lib.boxc.indexing.solr.indexing.DocumentIndexingPackage;
-import edu.unc.lib.boxc.indexing.solr.indexing.DocumentIndexingPackageDataLoader;
-import edu.unc.lib.boxc.model.api.ids.PID;
-import edu.unc.lib.boxc.model.api.rdf.Fcrepo4Repository;
-import edu.unc.lib.boxc.search.solr.models.IndexDocumentBean;
-import edu.unc.lib.boxc.model.api.objects.ContentObject;
+import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.when;
+import static org.mockito.MockitoAnnotations.openMocks;
 
 /*
  * @author harring
  */
 public class SetRecordDatesFilterTest {
 
-    private static final String DATE_ADDED = "2017-01-01";
-    private static final String DATE_MODIFIED = "2017-05-31";
+    private static final String DATE_ADDED = "2017-01-01T00:00:00.000Z";
+    private static final String DATE_MODIFIED = "2017-05-31T00:00:00.000Z";
     private static final String BAD_DATE = "abcd";
 
     private AutoCloseable closeable;
 
     @Mock
-    private DocumentIndexingPackageDataLoader loader;
-    @Mock
     private DocumentIndexingPackage dip;
-    @Mock
     private PID pid;
     @Mock
     private ContentObject contentObj;
-    @Mock
     private Resource resource;
-    @Mock
-    private Statement stmt1;
-    @Mock
-    private Statement stmt2;
-    @Mock
-    private Literal literal1;
-    @Mock
-    private Literal literal2;
-    @Mock
-    private Object object1;
-    @Mock
-    private Object object2;
 
     private IndexDocumentBean idb;
     private SetRecordDatesFilter filter;
@@ -66,22 +48,15 @@ public class SetRecordDatesFilterTest {
         idb = new IndexDocumentBean();
         closeable = openMocks(this);
 
+        pid = TestHelper.makePid();
         when(dip.getDocument()).thenReturn(idb);
         when(dip.getPid()).thenReturn(pid);
         when(dip.getContentObject()).thenReturn(contentObj);
-
+        Model model = ModelFactory.createDefaultModel();
+        resource = model.getResource(pid.getRepositoryPath());
+        resource.addProperty(Fcrepo4Repository.created, DATE_ADDED);
+        resource.addProperty(Fcrepo4Repository.lastModified, DATE_MODIFIED);
         when(contentObj.getResource()).thenReturn(resource);
-
-        when(resource.getProperty(Fcrepo4Repository.created))
-            .thenReturn(stmt1);
-        when(stmt1.getLiteral()).thenReturn(literal1);
-        when(literal1.getValue()).thenReturn(object1);
-        when(object1.toString()).thenReturn(DATE_ADDED);
-        when(resource.getProperty(Fcrepo4Repository.lastModified))
-            .thenReturn(stmt2);
-        when(stmt2.getLiteral()).thenReturn(literal2);
-        when(literal2.getValue()).thenReturn(object2);
-        when(object2.toString()).thenReturn(DATE_MODIFIED);
 
         filter = new SetRecordDatesFilter();
     }
@@ -94,19 +69,20 @@ public class SetRecordDatesFilterTest {
     @Test
     public void testCreateDate() throws Exception {
         filter.filter(dip);
-        assertEquals(DATE_ADDED, new SimpleDateFormat("yyyy-MM-dd").format(idb.getDateAdded()));
+        assertEquals(DATE_ADDED, DateTimeUtil.formatDateToUTC(idb.getDateAdded()));
     }
 
     @Test
     public void testUpdateDate() throws Exception {
         filter.filter(dip);
-        assertEquals(DATE_MODIFIED, new SimpleDateFormat("yyyy-MM-dd").format(idb.getDateUpdated()));
+        assertEquals(DATE_MODIFIED, DateTimeUtil.formatDateToUTC(idb.getDateUpdated()));
     }
 
     @Test
     public void testUnparseableDate() throws Exception {
         Exception expected = Assertions.assertThrows(IndexingException.class, () -> {
-            when(object2.toString()).thenReturn(BAD_DATE);
+            resource.removeAll(Fcrepo4Repository.lastModified);
+            resource.addProperty(Fcrepo4Repository.lastModified, BAD_DATE);
 
             filter.filter(dip);
         });

@@ -1,32 +1,5 @@
 package edu.unc.lib.boxc.persist.impl.transfer;
 
-import static java.util.Arrays.asList;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
-import java.io.File;
-import java.io.IOException;
-import java.net.URI;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.time.Duration;
-import java.util.HashMap;
-import java.util.Map;
-
-import org.apache.commons.io.FileUtils;
-import org.awaitility.Awaitility;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.junit.jupiter.api.io.TempDir;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.ContextHierarchy;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 import edu.unc.lib.boxc.fcrepo.utils.FedoraTransaction;
 import edu.unc.lib.boxc.fcrepo.utils.TransactionManager;
 import edu.unc.lib.boxc.model.api.ids.PID;
@@ -45,9 +18,29 @@ import edu.unc.lib.boxc.persist.api.transfer.BinaryTransferSession;
 import edu.unc.lib.boxc.persist.api.transfer.MultiDestinationTransferSession;
 import edu.unc.lib.boxc.persist.impl.sources.IngestSourceManagerImpl;
 import edu.unc.lib.boxc.persist.impl.sources.IngestSourceTestHelper;
-import edu.unc.lib.boxc.persist.impl.storage.HashedFilesystemStorageLocation;
 import edu.unc.lib.boxc.persist.impl.storage.StorageLocationManagerImpl;
-import edu.unc.lib.boxc.persist.impl.transfer.BinaryTransferServiceImpl;
+import edu.unc.lib.boxc.persist.impl.storage.StorageLocationTestHelper;
+import org.apache.commons.io.FileUtils;
+import org.awaitility.Awaitility;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.api.io.TempDir;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.ContextHierarchy;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
+
+import java.io.File;
+import java.net.URI;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.time.Duration;
+
+import static java.util.Arrays.asList;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * @author bbpennel
@@ -55,7 +48,6 @@ import edu.unc.lib.boxc.persist.impl.transfer.BinaryTransferServiceImpl;
  */
 @ExtendWith(SpringExtension.class)
 @ContextHierarchy({
-    @ContextConfiguration("/spring-test/test-fedora-container.xml"),
     @ContextConfiguration("/spring-test/cdr-client-container.xml")
 })
 public class BinaryTransferServiceImplIT {
@@ -80,7 +72,7 @@ public class BinaryTransferServiceImplIT {
     @TempDir
     public Path tmpFolder;
     private Path sourceConfigPath;
-    private Path storageConfigPath;
+    private StorageLocationTestHelper storageHelper;
 
     private Path sourcePath1;
     private Path sourcePath2;
@@ -91,6 +83,7 @@ public class BinaryTransferServiceImplIT {
     public void setup() throws Exception {
         TestHelper.setContentBase(baseAddress);
 
+        storageHelper = new StorageLocationTestHelper();
         File sourceMappingFile = new File(tmpFolder.toFile(), "sourceMapping.json");
         FileUtils.writeStringToFile(sourceMappingFile, "[]", "UTF-8");
 
@@ -109,19 +102,15 @@ public class BinaryTransferServiceImplIT {
 
         transferService.setIngestSourceManager(sourceManager);
 
-        File storageMappingFile = new File(tmpFolder.toFile(), "storageMapping.json");
-        FileUtils.writeStringToFile(storageMappingFile, "[]", "UTF-8");
+        storagePath1 = storageHelper.getBaseStoragePath().resolve("storage1");
+        storageHelper.addStorageLocation("loc1", "Loc 1", storagePath1.toUri().toString());
+        storagePath2 = storageHelper.getBaseStoragePath().resolve("storage2");
+        storageHelper.addStorageLocation("loc2", "Loc 2", storagePath2.toUri().toString());
+        var storageMappingFile = storageHelper.serializeLocationMappings();
+        var storageConfigFile = storageHelper.serializeLocationConfig();
 
-        storagePath1 = tmpFolder.resolve("storage1");
-        Files.createDirectory(storagePath1);
-        storagePath2 = tmpFolder.resolve("storage2");
-        Files.createDirectory(storagePath2);
-        storageConfigPath = createStorageConfigFile(
-                addStorageLocation("loc1", "Loc 1", storagePath1),
-                addStorageLocation("loc2", "Loc 2", storagePath2));
-
-        storageManager.setConfigPath(storageConfigPath.toString());
-        storageManager.setMappingPath(storageMappingFile.toString());
+        storageManager.setConfigPath(storageConfigFile);
+        storageManager.setMappingPath(storageMappingFile);
         storageManager.init();
     }
 
@@ -299,23 +288,6 @@ public class BinaryTransferServiceImplIT {
         } finally {
             tx.close();
         }
-    }
-
-    private Map<String, Object> addStorageLocation(String id, String name, Path base) throws IOException {
-        Map<String, Object> info = new HashMap<>();
-        info.put("id", id);
-        info.put("name", name);
-        info.put("type", HashedFilesystemStorageLocation.TYPE_NAME);
-        info.put("base", base.toUri().toString());
-        return info;
-    }
-
-    @SafeVarargs
-    public static final Path createStorageConfigFile(Map<String, Object>... configs) throws Exception {
-        ObjectMapper mapper = new ObjectMapper();
-        Path configPath = Files.createTempFile("storageConfig", ".json");
-        mapper.writeValue(configPath.toFile(), configs);
-        return configPath;
     }
 
     private Path createSourceFile(Path sourcePath, String filename, String content) throws Exception {

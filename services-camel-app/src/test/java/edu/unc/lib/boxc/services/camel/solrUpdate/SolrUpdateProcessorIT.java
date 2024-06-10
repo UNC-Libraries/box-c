@@ -23,6 +23,7 @@ import static org.mockito.MockitoAnnotations.openMocks;
 
 import java.io.File;
 import java.io.InputStream;
+import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Collection;
@@ -38,6 +39,7 @@ import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.api.objects.WorkObject;
 import edu.unc.lib.boxc.model.api.rdf.IanaRelation;
 import edu.unc.lib.boxc.model.fcrepo.ids.DatastreamPids;
+import edu.unc.lib.boxc.model.fcrepo.test.TestRepositoryDeinitializer;
 import edu.unc.lib.boxc.operations.impl.order.OrderJobFactory;
 import edu.unc.lib.boxc.operations.impl.order.OrderRequestFactory;
 import edu.unc.lib.boxc.operations.jms.MessageSender;
@@ -145,6 +147,8 @@ public class SolrUpdateProcessorIT extends AbstractSolrProcessorIT {
     @AfterEach
     void closeService() throws Exception {
         closeable.close();
+        TestRepositoryDeinitializer.cleanup(fcrepoClient);
+        storageLocationTestHelper.cleanupStorageLocations();
     }
 
     @Test
@@ -399,9 +403,9 @@ public class SolrUpdateProcessorIT extends AbstractSolrProcessorIT {
         // Update the work's record in the triple store
         treeIndexer.indexTree(workObj.getModel());
 
-        // Initial message should produce 4 individual record indexing messages, need to wait for all 5
+        // Initial message should produce 4 individual record indexing messages
         NotifyBuilder notify = new NotifyBuilder(cdrServiceSolrUpdate)
-                .whenCompleted(5)
+                .whenCompleted(4)
                 .create();
 
         makeIndexingMessage(workObj, null, IndexingActionType.UPDATE_MEMBER_ORDER);
@@ -427,15 +431,17 @@ public class SolrUpdateProcessorIT extends AbstractSolrProcessorIT {
     }
 
     private FileObject addFileObject(WorkObject work) throws Exception {
-        var file = tmpFolder.newFile();
-        var filename = file.getName();
-        FileUtils.writeStringToFile(file, filename, "UTF-8");
-        var fileObject = work.addDataFile(file.toPath().toUri(), filename, null, null, null);
+        PID filePid = pidMinter.mintContentPid();
+        PID originalPid = DatastreamPids.getOriginalFilePid(filePid);
+        URI originalUri = storageLocationTestHelper.makeTestStorageUri(originalPid);
+        FileUtils.writeStringToFile(new File(originalUri), "UTF-8");
+        var fileObject = work.addDataFile(filePid, originalUri, "original_file", null, null, null, null);
 
         var fitsPid = DatastreamPids.getTechnicalMetadataPid(fileObject.getPid());
-        var fitsFile = tmpFolder.newFile();
+        URI fitsUri = storageLocationTestHelper.makeTestStorageUri(fitsPid);
+        var fitsFile = new File(fitsUri);
         FileUtils.copyInputStreamToFile(this.getClass().getResourceAsStream("/datastream/techmd.xml"), fitsFile);
-        fileObject.addBinary(fitsPid, fitsFile.toURI(), TECHNICAL_METADATA.getDefaultFilename(), TECHNICAL_METADATA.getMimetype(),
+        fileObject.addBinary(fitsPid, fitsUri, TECHNICAL_METADATA.getDefaultFilename(), TECHNICAL_METADATA.getMimetype(),
                 null, null, IanaRelation.derivedfrom, DCTerms.conformsTo, createResource(FITS_URI));
         return fileObject;
     }

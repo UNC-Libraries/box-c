@@ -9,6 +9,7 @@ import edu.unc.lib.boxc.model.api.objects.BinaryObject;
 import edu.unc.lib.boxc.model.api.objects.WorkObject;
 import edu.unc.lib.boxc.operations.impl.edit.UpdateDescriptionService;
 import edu.unc.lib.boxc.operations.impl.edit.UpdateDescriptionService.UpdateDescriptionRequest;
+import edu.unc.lib.boxc.web.services.rest.MvcTestHelpers;
 import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.JDOMException;
@@ -40,7 +41,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  *
  */
 @ContextHierarchy({
-        @ContextConfiguration("/spring-test/test-fedora-container.xml"),
         @ContextConfiguration("/spring-test/cdr-client-container.xml"),
         @ContextConfiguration("/edit-title-it-servlet.xml")
 })
@@ -61,7 +61,7 @@ public class EditTitleIT extends AbstractAPIIT {
 
         work.shouldRefresh();
         // Verify response from api
-        Map<String, Object> respMap = getMapFromResponse(result);
+        Map<String, Object> respMap = MvcTestHelpers.getMapFromResponse(result);
         assertEquals(pid.getUUID(), respMap.get("pid"));
         assertEquals("editTitle", respMap.get("action"));
         hasTitleValue(getUpdatedDescriptionDocument(work.getDescription()), title);
@@ -80,7 +80,7 @@ public class EditTitleIT extends AbstractAPIIT {
 
         work.shouldRefresh();
         // Verify response from api
-        Map<String, Object> respMap = getMapFromResponse(result);
+        Map<String, Object> respMap = MvcTestHelpers.getMapFromResponse(result);
         assertEquals(pid.getUUID(), respMap.get("pid"));
         assertEquals("editTitle", respMap.get("action"));
         hasTitleValue(getUpdatedDescriptionDocument(work.getDescription()), title);
@@ -108,7 +108,7 @@ public class EditTitleIT extends AbstractAPIIT {
 
         work.shouldRefresh();
         // Verify response from api
-        Map<String, Object> respMap = getMapFromResponse(result);
+        Map<String, Object> respMap = MvcTestHelpers.getMapFromResponse(result);
         assertEquals(pid.getUUID(), respMap.get("pid"));
         assertEquals("editTitle", respMap.get("action"));
         hasTitleValue(getUpdatedDescriptionDocument(work.getDescription()), newTitle);
@@ -129,7 +129,7 @@ public class EditTitleIT extends AbstractAPIIT {
                 .andReturn();
 
         // Verify response from api
-        Map<String, Object> respMap = getMapFromResponse(result);
+        Map<String, Object> respMap = MvcTestHelpers.getMapFromResponse(result);
         assertEquals(pid.getUUID(), respMap.get("pid"));
         assertEquals("editTitle", respMap.get("action"));
         assertTrue(respMap.containsKey("error"));
