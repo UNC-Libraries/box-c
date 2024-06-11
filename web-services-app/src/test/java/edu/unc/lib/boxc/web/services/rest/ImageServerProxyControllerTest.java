@@ -7,7 +7,7 @@ import edu.unc.lib.boxc.auth.api.services.AccessControlService;
 import edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl;
 import edu.unc.lib.boxc.web.services.processing.ImageServerProxyService;
 import edu.unc.lib.boxc.web.services.rest.exceptions.RestResponseEntityExceptionHandler;
-import edu.unc.lib.boxc.web.services.utils.ImageServerUtil;
+import edu.unc.lib.boxc.operations.api.images.ImageServerUtil;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;

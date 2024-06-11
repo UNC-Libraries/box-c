@@ -16,6 +16,7 @@ import org.apache.camel.builder.NotifyBuilder;
 import org.apache.camel.test.spring.CamelSpringRunner;
 import org.apache.camel.test.spring.CamelTestContextBootstrapper;
 import org.apache.solr.client.solrj.SolrClient;
+import org.apache.solr.common.SolrDocument;
 import org.jdom2.Document;
 import org.jdom2.Element;
 import org.junit.Before;
@@ -42,6 +43,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.timeout;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 /**
  *
@@ -236,6 +238,8 @@ public class SolrUpdateRouterTest {
 
     @Test
     public void multipleWorkFromFile() throws Exception {
+        when(solrClient.getById(any(String.class))).thenReturn(new SolrDocument());
+
         PID targetPid1 = pidMinter.mintContentPid();
         PID targetPid2 = pidMinter.mintContentPid();
 

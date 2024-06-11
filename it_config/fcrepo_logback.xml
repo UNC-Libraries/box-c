@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE configuration>
+<configuration scan="true" scanPeriod="30 seconds">
+    <appender name="MAIN" class="ch.qos.logback.core.FileAppender">
+        <file>/config/logs/fedora.log</file>
+        <append>true</append>
+        <immediateFlush>true</immediateFlush>
+        <encoder>
+            <pattern>%d %-5level [%thread] %logger{35} - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <logger name="org.fcrepo" additivity="false" level="${fcrepo.log:-INFO}">
+        <appender-ref ref="MAIN"/>
+    </logger>
+
+    <root level="INFO">
+        <appender-ref ref="MAIN"/>
+    </root>
+</configuration>
