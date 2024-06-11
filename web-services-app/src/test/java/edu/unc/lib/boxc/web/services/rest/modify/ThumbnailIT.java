@@ -11,6 +11,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.openMocks;
@@ -26,9 +27,9 @@ import java.util.Map;
 import edu.unc.lib.boxc.auth.api.services.AccessControlService;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.api.rdf.Cdr;
+import edu.unc.lib.boxc.model.fcrepo.test.TestHelper;
 import edu.unc.lib.boxc.operations.jms.thumbnails.ThumbnailRequest;
 import edu.unc.lib.boxc.operations.jms.thumbnails.ThumbnailRequestSender;
-import edu.unc.lib.boxc.web.services.rest.MvcTestHelpers;
 import edu.unc.lib.boxc.web.services.rest.exceptions.RestResponseEntityExceptionHandler;
 import org.apache.commons.io.IOUtils;
 import org.jdom2.Document;
@@ -49,7 +50,10 @@ import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 import edu.unc.lib.boxc.auth.api.exceptions.AccessRestrictionException;
+import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
 import edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl;
+import edu.unc.lib.boxc.auth.fcrepo.services.AccessControlServiceImpl;
+import edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.objects.CollectionObject;
 import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
@@ -61,9 +65,12 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
  * @author lfarrell
  */
 @ContextHierarchy({
+        @ContextConfiguration("/spring-test/test-fedora-container.xml"),
         @ContextConfiguration("/spring-test/cdr-client-container.xml")
 })
 public class ThumbnailIT extends AbstractAPIIT {
+    private static final String USER_NAME = "user";
+    private static final String ADMIN_GROUP = "adminGroup";
     private CollectionObject collection;
     private AutoCloseable closeable;
 
@@ -91,7 +98,7 @@ public class ThumbnailIT extends AbstractAPIIT {
     private File tempDir;
 
     @BeforeEach
-    public void initLocal() {
+    public void init() {
         closeable = openMocks(this);
         tempDir = tmpFolder.toFile();
         aclService = mock(AccessControlService.class);
@@ -106,6 +113,14 @@ public class ThumbnailIT extends AbstractAPIIT {
                 .setControllerAdvice(new RestResponseEntityExceptionHandler())
                 .build();
 
+        AccessGroupSet testPrincipals = new AccessGroupSetImpl(ADMIN_GROUP);
+
+        GroupsThreadStore.storeUsername(USER_NAME);
+        GroupsThreadStore.storeGroups(testPrincipals);
+
+        TestHelper.setContentBase("http://localhost:48085/rest");
+
+        setupContentRoot();
         collection = repositoryObjectFactory.createCollectionObject(null);
     }
 
@@ -173,7 +188,7 @@ public class ThumbnailIT extends AbstractAPIIT {
         ThumbnailRequest request = requestCaptor.getValue();
         assertEquals(filePidString, request.getFilePidString());
 
-        Map<String, Object> respMap = MvcTestHelpers.getMapFromResponse(result);
+        Map<String, Object> respMap = getMapFromResponse(result);
         assertEquals("assignThumbnail", respMap.get(ThumbnailController.ACTION));
         assertEquals(filePidString, respMap.get("newThumbnailId"));
     }
@@ -221,7 +236,7 @@ public class ThumbnailIT extends AbstractAPIIT {
         ThumbnailRequest request = requestCaptor.getValue();
         assertEquals(filePidString, request.getFilePidString());
 
-        Map<String, Object> respMap = MvcTestHelpers.getMapFromResponse(result);
+        Map<String, Object> respMap = getMapFromResponse(result);
         assertEquals("assignThumbnail", respMap.get(ThumbnailController.ACTION));
         assertEquals(filePidString, respMap.get("newThumbnailId"));
         assertEquals(oldThumbnailPid.getId(), respMap.get(ThumbnailController.OLD_THUMBNAIL_ID));
@@ -255,7 +270,7 @@ public class ThumbnailIT extends AbstractAPIIT {
         assertEquals(filePidString, request.getFilePidString());
         assertEquals(ThumbnailRequest.DELETE, request.getAction());
 
-        Map<String, Object> respMap = MvcTestHelpers.getMapFromResponse(result);
+        Map<String, Object> respMap = getMapFromResponse(result);
         assertEquals("deleteThumbnail", respMap.get(ThumbnailController.ACTION));
         assertEquals(filePidString, respMap.get(ThumbnailController.OLD_THUMBNAIL_ID));
     }
@@ -335,6 +350,6 @@ public class ThumbnailIT extends AbstractAPIIT {
                 .getChildText("name", ATOM_NS);
 
         assertEquals(collection.getPid().getURI(), pidString);
-        assertEquals(USERNAME, author);
+        assertEquals(USER_NAME, author);
     }
 }

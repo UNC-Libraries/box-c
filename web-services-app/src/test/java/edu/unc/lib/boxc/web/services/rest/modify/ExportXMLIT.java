@@ -1,12 +1,32 @@
 package edu.unc.lib.boxc.web.services.rest.modify;
 
-import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
-import edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl;
-import edu.unc.lib.boxc.model.api.DatastreamType;
-import edu.unc.lib.boxc.model.api.ids.PIDMinter;
-import edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPIDMinter;
-import edu.unc.lib.boxc.operations.jms.exportxml.ExportXMLRequest;
-import edu.unc.lib.boxc.operations.jms.exportxml.ExportXMLRequestService;
+import static edu.unc.lib.boxc.common.test.TestHelpers.setField;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.MockitoAnnotations.openMocks;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+import java.io.IOException;
+import java.time.Duration;
+import java.util.ArrayList;
+import java.util.EnumSet;
+import java.util.List;
+import java.util.Map;
+
+import javax.jms.Connection;
+import javax.jms.ConnectionFactory;
+import javax.jms.Message;
+import javax.jms.MessageConsumer;
+import javax.jms.MessageListener;
+import javax.jms.Queue;
+import javax.jms.Session;
+import javax.jms.TextMessage;
+import javax.ws.rs.core.MediaType;
+
 import edu.unc.lib.boxc.web.services.utils.EmbeddedActiveMQBroker;
 import org.apache.activemq.ActiveMQConnectionFactory;
 import org.awaitility.Awaitility;
@@ -19,32 +39,11 @@ import org.springframework.jms.core.JmsTemplate;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.MvcResult;
 
-import javax.jms.Connection;
-import javax.jms.ConnectionFactory;
-import javax.jms.Message;
-import javax.jms.MessageConsumer;
-import javax.jms.MessageListener;
-import javax.jms.Queue;
-import javax.jms.Session;
-import javax.jms.TextMessage;
-import org.springframework.http.MediaType;
-import java.io.IOException;
-import java.time.Duration;
-import java.util.ArrayList;
-import java.util.EnumSet;
-import java.util.List;
-import java.util.Map;
-
-import static edu.unc.lib.boxc.common.test.TestHelpers.setField;
-import static edu.unc.lib.boxc.web.services.rest.MvcTestHelpers.getMapFromResponse;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.MockitoAnnotations.openMocks;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import edu.unc.lib.boxc.model.api.DatastreamType;
+import edu.unc.lib.boxc.model.api.ids.PIDMinter;
+import edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPIDMinter;
+import edu.unc.lib.boxc.operations.jms.exportxml.ExportXMLRequest;
+import edu.unc.lib.boxc.operations.jms.exportxml.ExportXMLRequestService;
 
 /**
  *
@@ -54,8 +53,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @ContextConfiguration("/export-xml-it-servlet.xml")
 public class ExportXMLIT extends AbstractAPIIT {
     private static String QUEUE_NAME = "activemq:queue:repository.exportxml";
-    protected final static String USERNAME = "test_user";
-    protected final static AccessGroupSet GROUPS = new AccessGroupSetImpl("adminGroup");
 
     private JmsTemplate jmsTemplate;
     private Connection conn;

@@ -5,13 +5,11 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
-import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
 
-import edu.unc.lib.boxc.model.fcrepo.ids.DatastreamPids;
 import org.apache.commons.io.FileUtils;
 import org.apache.jena.rdf.model.Bag;
 import org.apache.jena.rdf.model.Model;
@@ -438,10 +436,10 @@ public class ValidateDestinationJobIT extends AbstractFedoraDepositJobIT {
         WorkObject workObj = repoObjFactory.createWorkObject(null);
         folderObj.addMember(workObj);
 
-        var filePid = pidMinter.mintContentPid();
-        var storageUri = storageLocationTestHelper.makeTestStorageUri(DatastreamPids.getOriginalFilePid(filePid));
-        FileUtils.writeStringToFile(new File(storageUri), "content", UTF_8);
-        FileObject fileObj = workObj.addDataFile(filePid, storageUri, "file.txt", "text/plain", null, null, null);
+        Path origPath = Files.createTempFile("original", ".txt");
+        FileUtils.writeStringToFile(origPath.toFile(), "content", UTF_8);
+        origPath.toFile().deleteOnExit();
+        FileObject fileObj = workObj.addDataFile(origPath.toUri(), "file.txt", "text/plain", null, null);
 
         treeIndexer.indexAll(baseAddress);
 

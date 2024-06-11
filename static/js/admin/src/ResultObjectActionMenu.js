@@ -156,10 +156,6 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'A
 				} else {
 					items['assignAsThumbnail'] = { name : 'Assign as Thumbnail' };
 				}
-				items['assignAccessSurrogate'] = { name : 'Set Access Surrogate' };
-				if (metadata.datastream.findIndex(d => d.startsWith('access_surrogate')) !== -1) {
-					items['clearAccessSurrogate'] = { name : 'Clear Access Surrogate' };
-				}
 			} else if (metadata.type == 'Work') {
 				if ($.inArray('Has Primary Object', metadata.contentStatus) != -1) {
 					items['clearPrimaryObject'] = { name : 'Clear Primary Object' };
@@ -386,16 +382,6 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'A
 							confirm : false
 						});
 						break;
-					case "clearAccessSurrogate" :
-						self.actionHandler.addEvent({
-							action : 'ClearAccessSurrogate',
-							target : resultObject,
-							confirm : false
-						});
-						break;
-					case "assignAccessSurrogate" :
-						self.editAccessSurrogate(resultObject);
-						break;
 					case "clearAssignedThumbnail" :
 						self.actionHandler.addEvent({
 							action : 'ClearAssignedThumbnail',
@@ -542,15 +528,6 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'A
 	
 	ResultObjectActionMenu.prototype.setSelectedCount = function(selectedCount) {
 		this.selectedCount = selectedCount;
-	};
-
-	ResultObjectActionMenu.prototype.editAccessSurrogate = function(resultObject) {
-		var editAccessSurrogateForm = new EditAccessSurrogateForm({
-			alertHandler : this.options.alertHandler,
-			actionHandler : this.actionHandler,
-			metadata: resultObject.metadata
-		});
-		editAccessSurrogateForm.open(resultObject);
 	};
 
 	ResultObjectActionMenu.prototype.editFilename = function(resultObject) {

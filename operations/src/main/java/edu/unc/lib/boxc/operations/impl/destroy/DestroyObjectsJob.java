@@ -15,7 +15,6 @@ import java.util.Map;
 
 import edu.unc.lib.boxc.fcrepo.exceptions.ServiceException;
 import edu.unc.lib.boxc.fcrepo.utils.FedoraTransactionRefresher;
-import edu.unc.lib.boxc.model.api.objects.Tombstone;
 import edu.unc.lib.boxc.model.api.objects.WorkObject;
 import edu.unc.lib.boxc.operations.jms.order.MemberOrderRequestSender;
 import edu.unc.lib.boxc.operations.jms.order.MultiParentOrderRequest;
@@ -87,7 +86,7 @@ public class DestroyObjectsJob extends AbstractDestroyObjectsJob {
                     log.warn("Skipping destruction of {}, it is not marked for deletion", pid);
                     continue;
                 }
-                if (repoObj instanceof Tombstone) {
+                if (repoObj.getResource(true).hasProperty(RDF.type, Cdr.Tombstone)) {
                     log.debug("Skipping destruction of tombstone {}", pid);
                     continue;
                 }
@@ -150,10 +149,6 @@ public class DestroyObjectsJob extends AbstractDestroyObjectsJob {
             List<ContentObject> members = container.getMembers();
 
             for (ContentObject member : members) {
-                if (member instanceof Tombstone) {
-                    log.info("Encountered tombstone in tree, skipping destroy on {}", member.getPid().getQualifiedId());
-                    continue;
-                }
                 deletedObjIds.add(member.getPid().getUUID());
                 destroyTree(member);
 

@@ -61,6 +61,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @ExtendWith(SpringExtension.class)
 @WebAppConfiguration
 @ContextHierarchy({
+        @ContextConfiguration("/spring-test/test-fedora-container.xml"),
         @ContextConfiguration("/spring-test/cdr-client-container.xml")
 })
 public class SingleUseKeyControllerIT extends AbstractAPIIT {
@@ -80,7 +81,7 @@ public class SingleUseKeyControllerIT extends AbstractAPIIT {
     private SingleUseKeyController controller;
 
     @BeforeEach
-    public void initLocal() {
+    public void init() {
         closeable = openMocks(this);
         aclService = mock(AccessControlService.class);
         fedoraContentService = new FedoraContentService();
@@ -97,6 +98,7 @@ public class SingleUseKeyControllerIT extends AbstractAPIIT {
         pid = makePid();
         csvPath = tmpFolder.resolve("singleUseKey");
         singleUseKeyService.setCsvPath(csvPath);
+        TestHelper.setContentBase("http://localhost:48085/rest");
     }
 
     @AfterEach
@@ -125,7 +127,6 @@ public class SingleUseKeyControllerIT extends AbstractAPIIT {
                 .andReturn();
     }
 
-    // This test intentionally generates a NullPointerException in order to trigger error handling
     @Test
     public void testGenerateFailure() throws Exception {
         var id = pid.getUUID();
@@ -174,7 +175,8 @@ public class SingleUseKeyControllerIT extends AbstractAPIIT {
         var content = "binary content";
         var filePid = PIDs.get(UUID_TEST);
         FileObject fileObj = repositoryObjectFactory.createFileObject(filePid, null);
-        Path contentPath = createBinaryContent(content);
+        Path contentPath = Files.createTempFile("file", ".txt");
+        FileUtils.writeStringToFile(contentPath.toFile(), content, "UTF-8");
         fileObj.addOriginalFile(contentPath.toUri(), "file.txt", "text/plain", null, null);
 
         MvcResult generateResult = mvc.perform(post("/single_use_link/create/" + filePid.getUUID()))

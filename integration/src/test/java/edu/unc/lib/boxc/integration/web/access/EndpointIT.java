@@ -14,15 +14,11 @@ import edu.unc.lib.boxc.model.api.objects.AdminUnit;
 import edu.unc.lib.boxc.model.api.objects.CollectionObject;
 import edu.unc.lib.boxc.model.api.objects.WorkObject;
 import edu.unc.lib.boxc.model.fcrepo.services.RepositoryInitializer;
-import edu.unc.lib.boxc.model.fcrepo.test.TestRepositoryDeinitializer;
-import edu.unc.lib.boxc.persist.impl.storage.StorageLocationTestHelper;
 import org.apache.commons.collections4.IteratorUtils;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.solr.client.solrj.SolrClient;
-import org.fcrepo.client.FcrepoClient;
-import org.junit.jupiter.api.AfterEach;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.ContextHierarchy;
@@ -42,6 +38,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  */
 
 @ContextHierarchy({
+        @ContextConfiguration("/spring-test/test-fedora-container.xml"),
         @ContextConfiguration("/spring-test/cdr-client-container.xml"),
         @ContextConfiguration("/spring-test/acl-service-context.xml"),
         @ContextConfiguration("/spring-test/solr-standalone-context.xml"),
@@ -65,10 +62,6 @@ public class EndpointIT {
     protected RepositoryInitializer repoInitializer;
     @Autowired
     protected SolrClient solrClient;
-    @Autowired
-    protected StorageLocationTestHelper storageLocationTestHelper;
-    @Autowired
-    protected FcrepoClient fcrepoClient;
 
     protected final static String USERNAME = "test_user";
     protected final static AccessGroupSet GROUPS = new AccessGroupSetImpl("adminGroup");
@@ -94,12 +87,6 @@ public class EndpointIT {
         workFactory.createFileInWork(work, fileOptions);
         folderFactory.createFolder(collection,
                 Map.of("title", "Folder Object", "readGroup", "everyone"));
-    }
-
-    @AfterEach
-    public void cleanup() throws Exception {
-        TestRepositoryDeinitializer.cleanup(fcrepoClient);
-        storageLocationTestHelper.cleanupStorageLocations();
     }
 
     public List<JsonNode> getNodeFromResponse(CloseableHttpResponse response, String fieldName) throws IOException {

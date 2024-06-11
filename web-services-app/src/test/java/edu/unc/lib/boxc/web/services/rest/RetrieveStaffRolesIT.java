@@ -12,10 +12,12 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -46,6 +48,7 @@ import edu.unc.lib.boxc.web.services.rest.modify.AbstractAPIIT;
  *
  */
 @ContextHierarchy({
+    @ContextConfiguration("/spring-test/test-fedora-container.xml"),
     @ContextConfiguration("/spring-test/cdr-client-container.xml"),
     @ContextConfiguration("/spring-test/acl-service-context.xml"),
     @ContextConfiguration("/access-control-retrieval-it-servlet.xml")
@@ -295,7 +298,8 @@ public class RetrieveStaffRolesIT extends AbstractAPIIT {
         AdminUnit unit = setupAdminUnitWithGroup();
         WorkObject work = setupWorkStructure(unit);
 
-        Path contentPath = createBinaryContent(origBodyString, "test", ".txt");
+        Path contentPath = Files.createTempFile("test", ".txt");
+        FileUtils.writeStringToFile(contentPath.toFile(), origBodyString, "UTF-8");
         FileObject fileObj = work.addDataFile(contentPath.toUri(), origFilename, origMimetype, null, null);
         PID pid = fileObj.getPid();
         treeIndexer.indexAll(baseAddress);

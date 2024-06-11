@@ -8,14 +8,11 @@
     
     <bean id="baseAddress" class="java.lang.String">
         <constructor-arg
-            value="http://localhost:48085/fcrepo/rest/" />
+            value="http://localhost:48085/rest/" />
     </bean>
     
     <bean id="fcrepoClientFactory" class="edu.unc.lib.boxc.fcrepo.utils.FcrepoClientFactory" factory-method="factory">
         <constructor-arg ref="baseAddress" />
-        <constructor-arg value="localhost" />
-        <constructor-arg value="fedoraAdmin" />
-        <constructor-arg value="fedoraAdmin" />
     </bean>
     
     <bean id="fcrepoClient" class="org.fcrepo.client.FcrepoClient"
@@ -146,6 +143,11 @@
     
     <bean id="sparqlUpdateService" class="edu.unc.lib.boxc.fcrepo.utils.FedoraSparqlUpdateService">
         <property name="fcrepoClient" ref="fcrepoClient" />
+    </bean>
+    
+    <bean id="multipartResolver"
+        class="org.springframework.web.multipart.commons.CommonsMultipartResolver">
+        <property name="maxUploadSize" value="2000000000"/>
     </bean>
     
     <bean id="destroyProxyService" class="edu.unc.lib.boxc.operations.impl.destroy.DestroyProxyService" >

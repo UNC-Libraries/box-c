@@ -26,7 +26,6 @@ import edu.unc.lib.boxc.auth.fcrepo.models.AgentPrincipalsImpl;
 import edu.unc.lib.boxc.auth.fcrepo.services.InheritedAclFactory;
 import edu.unc.lib.boxc.fcrepo.utils.TransactionManager;
 import edu.unc.lib.boxc.model.api.sparql.SparqlUpdateService;
-import edu.unc.lib.boxc.model.fcrepo.test.TestRepositoryDeinitializer;
 import edu.unc.lib.boxc.operations.api.events.PremisLoggerFactory;
 import edu.unc.lib.boxc.operations.impl.delete.MarkForDeletionJob;
 import edu.unc.lib.boxc.operations.impl.destroy.DestroyObjectsJob;
@@ -99,6 +98,8 @@ public class SolrIngestProcessorIT extends AbstractSolrProcessorIT {
     @Autowired
     private ObjectPathFactory pathFactory;
     @Autowired
+    private FcrepoClient fcrepoClient;
+    @Autowired
     private InheritedAclFactory inheritedAclFactory;
     @Autowired
     private BinaryTransferService transferService;
@@ -131,7 +132,6 @@ public class SolrIngestProcessorIT extends AbstractSolrProcessorIT {
     @AfterEach
     void closeService() throws Exception {
         closeable.close();
-        TestRepositoryDeinitializer.cleanup(fcrepoClient);
     }
 
     @Test

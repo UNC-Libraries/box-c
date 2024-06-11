@@ -11,11 +11,8 @@ import static org.mockito.Mockito.when;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -27,8 +24,9 @@ import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.api.services.ContentPathFactory;
 import edu.unc.lib.boxc.model.fcrepo.services.ContentPathFactoryImpl;
-import edu.unc.lib.boxc.persist.api.storage.StorageLocation;
 import edu.unc.lib.boxc.persist.api.storage.StorageLocationManager;
+import edu.unc.lib.boxc.persist.impl.storage.HashedFilesystemStorageLocation;
+import edu.unc.lib.boxc.persist.impl.storage.StorageLocationManagerImpl;
 import edu.unc.lib.boxc.persist.impl.storage.StorageLocationManagerImpl.StorageLocationMapping;
 
 /**
@@ -40,9 +38,6 @@ public class StorageLocationTestHelper {
 
     private List<StorageLocationMapping> mappingList;
     private List<Map<String, String>> locationList;
-    // Hardcoded base storage path for usage across tests and containerized fedora
-    private Path baseStoragePath = Paths.get("/tmp/boxc_test_storage");
-    private StorageLocationManager locationManager;
 
     public StorageLocationTestHelper() {
         mappingList = new ArrayList<>();
@@ -105,10 +100,7 @@ public class StorageLocationTestHelper {
      * @throws Exception
      */
     public StorageLocationTestHelper addTestLocation() throws Exception {
-        if (Files.notExists(baseStoragePath)) {
-            Files.createDirectories(baseStoragePath);
-        }
-        Path locPath = createTempDirectory(baseStoragePath, "loc1");
+        Path locPath = createTempDirectory("loc1");
         // Cleanup the temp dir after the tests end
         getRuntime().addShutdownHook(new Thread() {
             @Override
@@ -152,13 +144,12 @@ public class StorageLocationTestHelper {
      */
     public StorageLocationManager createLocationManager(RepositoryObjectLoader repoObjLoader,
             ContentPathFactory pathFactory) throws Exception {
-        var locationManager = new StorageLocationManagerImpl();
+        StorageLocationManagerImpl locationManager = new StorageLocationManagerImpl();
         locationManager.setConfigPath(serializeLocationConfig());
         locationManager.setMappingPath(serializeLocationMappings());
         locationManager.setRepositoryObjectLoader(repoObjLoader);
         locationManager.setPathFactory(pathFactory);
         locationManager.init();
-        this.locationManager = locationManager;
         return locationManager;
     }
 
@@ -168,67 +159,5 @@ public class StorageLocationTestHelper {
         return newStorageLocationTestHelper()
                     .addTestLocation()
                     .createLocationManager(repoObjLoader);
-    }
-
-    public static StorageLocationTestHelper createWithBasicConfig() throws Exception {
-        return newStorageLocationTestHelper()
-                .addTestLocation();
-    }
-
-    /**
-     * Get the base storage location path for the first location in the list
-     * @return
-     */
-    public Path getFirstStorageLocationPath() {
-        return Paths.get(locationList.get(0).get("base"));
-    }
-
-    /**
-     * Create a binary file in the test storage location for the given PID with the given content
-     * @param pid
-     * @param content
-     * @return
-     * @throws IOException
-     */
-    public URI createTestBinary(PID pid, String content) throws IOException {
-        URI binaryUri = makeTestStorageUri(pid);
-        Files.write(Path.of(binaryUri), content.getBytes());
-        return binaryUri;
-    }
-
-    public URI makeTestStorageUri(PID pid) throws IOException {
-        var storageLoc = locationManager.getStorageLocationById(LOC1_ID);
-        URI binaryUri = storageLoc.getNewStorageUri(pid);
-        Path binaryPath = Paths.get(binaryUri);
-        Files.createDirectories(binaryPath.getParent());
-        return binaryUri;
-    }
-
-    public void cleanupStorageLocations() throws IOException {
-        try {
-            for (Map<String, String> location : locationList) {
-                Path locPath = Paths.get(location.get("base"));
-                deleteDirectory(locPath.toFile());
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-
-    public StorageLocation getTestStorageLocation() {
-        return locationManager.getStorageLocationById(LOC1_ID);
-    }
-
-    public StorageLocationManager getLocationManager() {
-        return locationManager;
-    }
-
-    public void setBaseStoragePath(Path baseStoragePath) {
-        this.baseStoragePath = baseStoragePath;
-    }
-
-    public Path getBaseStoragePath() {
-        return baseStoragePath;
     }
 }

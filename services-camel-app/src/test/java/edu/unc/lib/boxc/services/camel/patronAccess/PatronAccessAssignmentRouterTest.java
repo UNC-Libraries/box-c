@@ -14,6 +14,7 @@ import static org.mockito.MockitoAnnotations.openMocks;
 
 import org.apache.camel.BeanInject;
 import org.apache.camel.test.spring.CamelSpringTestSupport;
+import org.jgroups.util.UUID;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.jupiter.api.AfterEach;
@@ -33,8 +34,6 @@ import edu.unc.lib.boxc.operations.impl.acl.PatronAccessAssignmentService;
 import edu.unc.lib.boxc.operations.impl.acl.PatronAccessAssignmentService.PatronAccessAssignmentRequest;
 import edu.unc.lib.boxc.operations.impl.acl.PatronAccessDetails;
 import edu.unc.lib.boxc.operations.impl.acl.PatronAccessOperationSender;
-
-import java.util.UUID;
 
 /**
  * @author bbpennel

@@ -37,29 +37,28 @@ public class AbstractJedisFactory {
                 block.accept(jedis);
                 return;
             } catch (JedisConnectionException e) {
-                if (!(e.getCause() instanceof SocketTimeoutException)) {
-                    throw e;
-                }
-                if (socketTimeoutRetriesRemaining-- <= 0) {
-                    throw e;
-                } else {
-                    log.warn("Jedis connection interrupted, retrying: {}", e.getMessage());
-                    try {
-                        Thread.sleep(socketTimeoutDelay);
-                    } catch (InterruptedException e1) {
-                        throw new RepositoryException(e1);
+                if (e.getCause() instanceof SocketTimeoutException) {
+                    if (socketTimeoutRetriesRemaining-- <= 0) {
+                        throw e;
+                    } else {
+                        log.warn("Jedis connection interrupted, retrying: {}", e.getMessage());
+                        try {
+                            Thread.sleep(socketTimeoutDelay);
+                        } catch (InterruptedException e1) {
+                            throw new RepositoryException(e1);
+                        }
                     }
                 }
             }
         }
     }
 
-    public JedisPool getJedisPool() {
-        return jedisPool;
-    }
-
     public void setJedisPool(JedisPool jedisPool) {
         this.jedisPool = jedisPool;
+    }
+
+    private JedisPool getJedisPool() {
+        return jedisPool;
     }
 
     public void setSocketTimeoutRetries(int socketTimeoutRetries) {

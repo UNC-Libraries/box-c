@@ -26,7 +26,7 @@ import edu.unc.lib.boxc.model.fcrepo.test.TestHelper;
  *
  */
 @ExtendWith(SpringExtension.class)
-@ContextConfiguration({"/spring-test/cdr-client-container.xml"})
+@ContextConfiguration({"/spring-test/test-fedora-container.xml", "/spring-test/cdr-client-container.xml"})
 public class FedoraSparqlUpdateServiceIT {
 
     @Autowired

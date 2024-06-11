@@ -15,7 +15,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
-import edu.unc.lib.boxc.web.services.rest.MvcTestHelpers;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Resource;
@@ -38,6 +37,7 @@ import edu.unc.lib.boxc.model.api.rdf.Premis;
  *
  */
 @ContextHierarchy({
+    @ContextConfiguration("/spring-test/test-fedora-container.xml"),
     @ContextConfiguration("/spring-test/cdr-client-container.xml"),
     @ContextConfiguration("/mark-for-deletion-it-servlet.xml")
 })
@@ -57,7 +57,7 @@ public class MarkForDeletionIT extends AbstractAPIIT {
         assertIsMarkedForDeletion(pid);
 
         // Verify response from api
-        Map<String, Object> respMap = MvcTestHelpers.getMapFromResponse(result);
+        Map<String, Object> respMap = getMapFromResponse(result);
         assertEquals(pid.getUUID(), respMap.get("pid"));
         assertEquals("delete", respMap.get("action"));
     }
@@ -75,7 +75,7 @@ public class MarkForDeletionIT extends AbstractAPIIT {
 
         assertNotMarkedForDeletion(pid);
 
-        Map<String, Object> respMap = MvcTestHelpers.getMapFromResponse(result);
+        Map<String, Object> respMap = getMapFromResponse(result);
         assertEquals(pid.getUUID(), respMap.get("pid"));
         assertEquals("restore", respMap.get("action"));
     }
@@ -104,7 +104,7 @@ public class MarkForDeletionIT extends AbstractAPIIT {
         assertIsMarkedForDeletion(pid3);
 
         // Verify response from api
-        Map<String, Object> respMap = MvcTestHelpers.getMapFromResponse(result);
+        Map<String, Object> respMap = getMapFromResponse(result);
         assertTrue(idList.containsAll((List<String>) respMap.get("pids")));
         assertEquals("delete", respMap.get("action"));
     }
@@ -132,7 +132,7 @@ public class MarkForDeletionIT extends AbstractAPIIT {
         assertNotMarkedForDeletion(pid3);
 
         // Verify response from api
-        Map<String, Object> respMap = MvcTestHelpers.getMapFromResponse(result);
+        Map<String, Object> respMap = getMapFromResponse(result);
         assertTrue(idList.containsAll((List<String>) respMap.get("pids")));
         assertEquals("restore", respMap.get("action"));
     }
@@ -154,7 +154,7 @@ public class MarkForDeletionIT extends AbstractAPIIT {
         assertNotMarkedForDeletion(pid);
 
         // Verify response from api
-        Map<String, Object> respMap = MvcTestHelpers.getMapFromResponse(result);
+        Map<String, Object> respMap = getMapFromResponse(result);
         assertEquals(pid.getUUID(), respMap.get("pid"));
         assertEquals("delete", respMap.get("action"));
         assertTrue(respMap.containsKey("error"));

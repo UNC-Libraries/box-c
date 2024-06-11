@@ -84,7 +84,7 @@
         
         <jackson.version>2.13.2</jackson.version>
         <jackson.databind.version>2.13.4.2</jackson.databind.version>
-        <jesque.version>2.2.0</jesque.version>
+        <jesque.version>2.1.3</jesque.version>
         
         <joda-time.version>2.10.1</joda-time.version>
         <jmustache.version>1.14</jmustache.version>
@@ -125,12 +125,13 @@
         <jstl.version>1.2.7</jstl.version>
         <jsp-api.version>2.3.6</jsp-api.version>
         
-        <jedis.version>3.10.0</jedis.version>
-        <embedded-redis.version>0.7.3</embedded-redis.version>
+        <jedis.version>2.9.3</jedis.version>
+        <embedded-redis.version>1.4.3</embedded-redis.version>
         <solr.version>8.10.1</solr.version>
         <metrics.version>5.0.0</metrics.version>
         <jena.version>4.4.0</jena.version>
-
+        <jena.fuseki.version>4.4.0</jena.fuseki.version>
+        
         <fcrepo-camel.version>5.0.0</fcrepo-camel.version>
         <camel.version>2.25.4</camel.version>
         <tika.version>2.8.0</tika.version>
@@ -969,13 +970,23 @@
                 <version>${jakarta.servlet.api.version}</version>
                 <scope>provided</scope>
             </dependency>
+            
             <dependency>
-                <groupId>jakarta.servlet</groupId>
-                <artifactId>jakarta.servlet-api</artifactId>
-                <version>${jakarta.servlet.api.version}</version>
+                <groupId>org.apache.jena</groupId>
+                <artifactId>jena-fuseki-main</artifactId>
+                <version>${jena.fuseki.version}</version>
                 <scope>test</scope>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.slf4j</groupId>
+                        <artifactId>slf4j-log4j12</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>log4j</groupId>
+                        <artifactId>log4j</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
-
             <dependency>
                 <groupId>org.apache.jena</groupId>
                 <artifactId>apache-jena-libs</artifactId>
@@ -1058,6 +1069,64 @@
                 <groupId>org.apache.activemq</groupId>
                 <artifactId>activemq-pool</artifactId>
                 <version>${activemq.version}</version>
+            </dependency>
+            
+            <!-- integration testing -->
+            <dependency>
+                <groupId>org.fcrepo</groupId>
+                <artifactId>fcrepo-http-commons</artifactId>
+                <version>${fcrepo4.version}</version>
+                <scope>test</scope>
+                <type>test-jar</type>
+            </dependency>
+            <dependency>
+                <groupId>org.fcrepo</groupId>
+                <artifactId>fcrepo-auth-common</artifactId>
+                <version>${fcrepo4.version}</version>
+                <scope>test</scope>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.apache.jena</groupId>
+                        <artifactId>jena-arq</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.glassfish.grizzly</groupId>
+                <artifactId>grizzly-http-servlet</artifactId>
+                <version>${grizzly.version}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.glassfish.jersey.core</groupId>
+                <artifactId>jersey-common</artifactId>
+                <version>${jersey.version}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.glassfish.jersey.ext</groupId>
+                <artifactId>jersey-spring5</artifactId>
+                <version>${jersey.version}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.glassfish.jersey.test-framework.providers</groupId>
+                <artifactId>jersey-test-framework-provider-grizzly2</artifactId>
+                <version>${jersey.version}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.fcrepo</groupId>
+                <artifactId>fcrepo-kernel-modeshape</artifactId>
+                <version>${fcrepo4.version}</version>
+                <scope>test</scope>
+                <classifier>tests</classifier>
+            </dependency>
+            <dependency>
+                <groupId>org.fcrepo</groupId>
+                <artifactId>fcrepo-http-api</artifactId>
+                <version>${fcrepo4.version}</version>
+                <scope>test</scope>
             </dependency>
         </dependencies>
     </dependencyManagement>

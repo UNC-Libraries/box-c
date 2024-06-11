@@ -1,54 +1,5 @@
 package edu.unc.lib.boxc.deposit.fcrepo4;
 
-import static edu.unc.lib.boxc.common.test.TestHelpers.setField;
-import static edu.unc.lib.boxc.common.xml.SecureXMLFactory.createSAXBuilder;
-import static edu.unc.lib.boxc.model.api.DatastreamType.ORIGINAL_FILE;
-import static edu.unc.lib.boxc.model.api.DatastreamType.TECHNICAL_METADATA;
-import static edu.unc.lib.boxc.persist.impl.storage.StorageLocationTestHelper.LOC1_ID;
-import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.apache.jena.rdf.model.ResourceFactory.createResource;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.fail;
-import static org.slf4j.LoggerFactory.getLogger;
-
-import java.io.File;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.security.MessageDigest;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicReference;
-
-import org.apache.commons.codec.binary.Hex;
-import org.apache.commons.codec.digest.DigestUtils;
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
-import org.apache.jena.rdf.model.Bag;
-import org.apache.jena.rdf.model.Model;
-import org.apache.jena.rdf.model.Resource;
-import org.apache.jena.vocabulary.DC;
-import org.apache.jena.vocabulary.RDF;
-import org.fcrepo.client.FcrepoClient;
-import org.jdom2.output.Format;
-import org.jdom2.output.XMLOutputter;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.api.Test;
-import org.slf4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
-
 import edu.unc.lib.boxc.auth.api.services.AccessControlService;
 import edu.unc.lib.boxc.common.util.DateTimeUtil;
 import edu.unc.lib.boxc.deposit.api.RedisWorkerConstants.DepositField;
@@ -140,6 +91,10 @@ import static org.slf4j.LoggerFactory.getLogger;
 public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
 
     private static final Logger log = getLogger(IngestContentObjectsJobIT.class);
+
+    static {
+        System.setProperty("fcrepo.properties.management", "relaxed");
+    }
 
     private static final String INGESTOR_PRINC = "ingestor";
     private static final String DEPOSITOR_NAME = "boxy_depositor";
@@ -546,12 +501,10 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
         Path modsPath = job.getModsPath(workPid, true);
         var originalModsPath = Path.of("src/test/resources/simpleMods.xml");
         Files.copy(originalModsPath, modsPath);
-        var modsPid = DatastreamPids.getMdDescriptivePid(workPid);
-        var modsHistoryStorageUri = storageLocationTestHelper.makeTestStorageUri(DatastreamPids.getDatastreamHistoryPid(modsPid));
-        Path modsHistoryPath = Paths.get(modsHistoryStorageUri);
+        Path modsHistoryPath = depositDirManager.getHistoryFile(workPid, DatastreamType.MD_DESCRIPTIVE_HISTORY);
         FileUtils.writeStringToFile(modsHistoryPath.toFile(), "History content", UTF_8);
         String modsHistorySha1 = getSha1(modsHistoryPath);
-        historyResc.addProperty(CdrDeposit.storageUri, modsHistoryStorageUri.toString());
+        historyResc.addProperty(CdrDeposit.storageUri, modsHistoryPath.toUri().toString());
         historyResc.addLiteral(CdrDeposit.sha1sum, modsHistorySha1);
 
         job.closeModel();
@@ -596,8 +549,7 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
         PID fitsPid = DatastreamPids.getTechnicalMetadataPid(mainPid);
         PID historyPid = DatastreamPids.getDatastreamHistoryPid(fitsPid);
         Resource historyResc = DepositModelHelpers.addDatastream(mainResc, DatastreamType.TECHNICAL_METADATA_HISTORY);
-        var historyUri = storageLocationTestHelper.makeTestStorageUri(historyPid);
-        Path historyPath = Path.of(historyUri);
+        Path historyPath = depositDirManager.getHistoryFile(fitsPid, DatastreamType.TECHNICAL_METADATA_HISTORY);
         FileUtils.writeStringToFile(historyPath.toFile(), "History content", UTF_8);
         String historySha1 = getSha1(historyPath);
         historyResc.addProperty(CdrDeposit.storageUri, historyPath.toUri().toString());
@@ -803,14 +755,9 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
         model = job.getWritableModel();
         Resource file2Resc = model.getResource(file2Pid.getRepositoryPath());
         Resource orig2Resc = DepositModelHelpers.getDatastream(file2Resc);
-        setupStorageUriForResource(FILE2_LOC, orig2Resc, file2Resc, file2Pid);
-        orig2Resc.addProperty(CdrDeposit.storageUri, Paths.get(depositDir.getAbsolutePath(),
-                FILE2_LOC).toUri().toString());
-
         var fixedSha = "372ea08cab33e71c02c651dbc83a474d32c676ea";
         orig2Resc.removeAll(CdrDeposit.sha1sum);
         orig2Resc.addProperty(CdrDeposit.sha1sum, fixedSha);
-
         job.closeModel();
 
         // Second run of job
@@ -1195,7 +1142,6 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
     private final static Date CREATED_DATE = DateTimeUtil.parseUTCToDate(CREATED_STRING);
     private final static Date LAST_MODIFIED_DATE = DateTimeUtil.parseUTCToDate(LAST_MODIFIED_STRING);
 
-    @Disabled("This test only works if fedora is in 'relaxed' mode, which is not the case on our servers or in docker")
     @Test
     public void overrideTimestampsTest() throws Exception {
         Map<String, String> status = new HashMap<>();
@@ -1367,7 +1313,9 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
 
         Resource origResc = DepositModelHelpers.addDatastream(fileResc, ORIGINAL_FILE);
         if (stagingLocation != null) {
-            setupStorageUriForResource(stagingLocation, origResc, fileResc, filePid);
+            origResc.addProperty(CdrDeposit.storageUri, Paths.get(depositDir.getAbsolutePath(),
+                    stagingLocation).toUri().toString());
+            fileResc.addLiteral(Cdr.storageLocation, LOC1_ID);
         }
         origResc.addProperty(CdrDeposit.mimetype, mimetype);
         if (sha1 != null) {
@@ -1380,24 +1328,13 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
         parent.add(fileResc);
 
         // Create the accompanying fake premis report file
-        var fitsStorageUri = storageLocationTestHelper.makeTestStorageUri(DatastreamPids.getTechnicalMetadataPid(filePid));
-        Path fitsPath = Path.of(fitsStorageUri);
+        Path fitsPath = job.getTechMdPath(filePid, true);
         Files.createFile(fitsPath);
         Resource fitsResc = DepositModelHelpers.addDatastream(fileResc, TECHNICAL_METADATA);
-        fitsResc.addProperty(CdrDeposit.storageUri, fitsStorageUri.toString());
+        fitsResc.addProperty(CdrDeposit.storageUri, fitsPath.toUri().toString());
         fitsResc.addLiteral(CdrDeposit.sha1sum, getSha1(fitsPath));
 
         return filePid;
-    }
-
-    private void setupStorageUriForResource(String stagingLocation, Resource origResc, Resource fileResc, PID filePid) throws Exception {
-        var fileStagingPath = Paths.get(depositDir.getAbsolutePath(), stagingLocation);
-        var storageUri = storageLocationTestHelper.makeTestStorageUri(DatastreamPids.getOriginalFilePid(filePid));
-        var storagePath = Path.of(storageUri);
-        Files.copy(fileStagingPath, storagePath);
-        origResc.addProperty(CdrDeposit.storageUri, storageUri.toString());
-        fileResc.addLiteral(Cdr.storageLocation, LOC1_ID);
-        fileResc.addLiteral(CdrDeposit.label, stagingLocation);
     }
 
     private PID addStreamingFileObject(Bag parent) {

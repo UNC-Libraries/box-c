@@ -1,28 +1,35 @@
 package edu.unc.lib.boxc.web.services.rest;
 
-import edu.unc.lib.boxc.auth.api.exceptions.AccessRestrictionException;
-import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
-import edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl;
-import edu.unc.lib.boxc.auth.fcrepo.services.AccessControlServiceImpl;
-import edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore;
-import edu.unc.lib.boxc.model.api.ResourceType;
-import edu.unc.lib.boxc.model.api.ids.PID;
-import edu.unc.lib.boxc.model.api.objects.FileObject;
-import edu.unc.lib.boxc.model.api.objects.FolderObject;
-import edu.unc.lib.boxc.model.api.objects.WorkObject;
-import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
-import edu.unc.lib.boxc.model.fcrepo.ids.DatastreamPids;
-import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
+import static edu.unc.lib.boxc.auth.api.Permission.runEnhancements;
+import static edu.unc.lib.boxc.model.api.xml.JDOMNamespaceUtil.ATOM_NS;
+import static edu.unc.lib.boxc.model.api.xml.JDOMNamespaceUtil.CDR_MESSAGE_NS;
+import static edu.unc.lib.boxc.operations.jms.JMSMessageUtil.CDRActions.RUN_ENHANCEMENTS;
+import static java.util.Arrays.asList;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.reset;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import static org.mockito.MockitoAnnotations.openMocks;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+import java.io.File;
+import java.net.URI;
+import java.nio.file.Path;
+import java.util.Arrays;
+import java.util.Map;
+
 import edu.unc.lib.boxc.model.fcrepo.test.TestHelper;
-import edu.unc.lib.boxc.operations.jms.MessageSender;
-import edu.unc.lib.boxc.search.api.requests.SearchRequest;
-import edu.unc.lib.boxc.search.api.requests.SimpleIdRequest;
-import edu.unc.lib.boxc.search.solr.models.ContentObjectSolrRecord;
-import edu.unc.lib.boxc.search.solr.responses.SearchResultResponse;
-import edu.unc.lib.boxc.web.common.services.SolrQueryLayerService;
 import edu.unc.lib.boxc.web.services.processing.RunEnhancementsService;
 import edu.unc.lib.boxc.web.services.rest.exceptions.RestResponseEntityExceptionHandler;
-import edu.unc.lib.boxc.web.services.rest.modify.AbstractAPIIT;
+import org.apache.commons.io.FileUtils;
 import org.jdom2.Document;
 import org.jdom2.Element;
 import org.junit.jupiter.api.AfterEach;
@@ -38,38 +45,34 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.ContextHierarchy;
 import org.springframework.test.web.servlet.MvcResult;
+
+import edu.unc.lib.boxc.auth.api.exceptions.AccessRestrictionException;
+import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
+import edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl;
+import edu.unc.lib.boxc.auth.fcrepo.services.AccessControlServiceImpl;
+import edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore;
+import edu.unc.lib.boxc.model.api.ResourceType;
+import edu.unc.lib.boxc.model.api.ids.PID;
+import edu.unc.lib.boxc.model.api.objects.FileObject;
+import edu.unc.lib.boxc.model.api.objects.FolderObject;
+import edu.unc.lib.boxc.model.api.objects.WorkObject;
+import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
+import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
+import edu.unc.lib.boxc.operations.jms.MessageSender;
+import edu.unc.lib.boxc.search.api.requests.SearchRequest;
+import edu.unc.lib.boxc.search.api.requests.SimpleIdRequest;
+import edu.unc.lib.boxc.search.solr.models.ContentObjectSolrRecord;
+import edu.unc.lib.boxc.search.solr.responses.SearchResultResponse;
+import edu.unc.lib.boxc.web.common.services.SolrQueryLayerService;
+import edu.unc.lib.boxc.web.services.rest.modify.AbstractAPIIT;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-
-import java.net.URI;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.Arrays;
-import java.util.Map;
-
-import static edu.unc.lib.boxc.auth.api.Permission.runEnhancements;
-import static edu.unc.lib.boxc.model.api.xml.JDOMNamespaceUtil.ATOM_NS;
-import static edu.unc.lib.boxc.model.api.xml.JDOMNamespaceUtil.CDR_MESSAGE_NS;
-import static edu.unc.lib.boxc.operations.jms.JMSMessageUtil.CDRActions.RUN_ENHANCEMENTS;
-import static java.util.Arrays.asList;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-import static org.mockito.MockitoAnnotations.openMocks;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 /**
  * @author lfarrell
  *
  */
 @ContextHierarchy({
+        @ContextConfiguration("/spring-test/test-fedora-container.xml"),
         @ContextConfiguration("/spring-test/cdr-client-container.xml")
 })
 public class RunEnhancementsIT extends AbstractAPIIT {
@@ -101,7 +104,7 @@ public class RunEnhancementsIT extends AbstractAPIIT {
     public Path tmpFolder;
 
     @BeforeEach
-    public void initLocal() {
+    public void init() {
         closeable = openMocks(this);
         runEnhancementsService = new RunEnhancementsService();
         runEnhancementsService.setMessageSender(messageSender);
@@ -112,6 +115,7 @@ public class RunEnhancementsIT extends AbstractAPIIT {
         mvc = MockMvcBuilders.standaloneSetup(controller)
                 .setControllerAdvice(new RestResponseEntityExceptionHandler())
                 .build();
+        TestHelper.setContentBase("http://localhost:48085/rest");
 
         AccessGroupSet testPrincipals = new AccessGroupSetImpl(ADMIN_GROUP);
 
@@ -134,7 +138,7 @@ public class RunEnhancementsIT extends AbstractAPIIT {
     public void runEnhancementsFileObject() throws Exception {
         FileObject fileObj = repositoryObjectFactory.createFileObject(null);
         PID filePid = fileObj.getPid();
-        fileObj.addOriginalFile(makeContentUri(filePid, BINARY_CONTENT), "file.png", "image/png", null, null);
+        fileObj.addOriginalFile(makeContentUri(BINARY_CONTENT), "file.png", "image/png", null, null);
         setResultMetadataObject(filePid, ResourceType.File.name());
 
         MvcResult result = mvc.perform(post("/runEnhancements")
@@ -154,10 +158,8 @@ public class RunEnhancementsIT extends AbstractAPIIT {
     @Test
     public void runEnhancementsWorkObject() throws Exception {
         WorkObject workObj = repositoryObjectFactory.createWorkObject(null);
-
-        PID filePid = TestHelper.makePid();
         FileObject workFile = workObj
-                .addDataFile(filePid, makeContentUri(filePid, BINARY_CONTENT), "file.png", "image/png", null, null, null);
+                .addDataFile(makeContentUri(BINARY_CONTENT), "file.png", "image/png", null, null);
         PID workPid = workObj.getPid();
         setResultMetadataObject(workPid, ResourceType.Work.name());
 
@@ -178,13 +180,10 @@ public class RunEnhancementsIT extends AbstractAPIIT {
     @Test
     public void runEnhancementsNonFileNonWorkObject() throws Exception {
         FolderObject folderObj = repositoryObjectFactory.createFolderObject(null);
-        PID filePid = TestHelper.makePid();
         FileObject fileObj = folderObj.addWork()
-                .addDataFile(filePid, makeContentUri(filePid, BINARY_CONTENT), "file.png", "image/png", null, null, null);
+                .addDataFile(makeContentUri(BINARY_CONTENT), "file.png", "image/png", null, null);
+        PID filePid = fileObj.getPid();
         setResultMetadataObject(filePid, ResourceType.Folder.name());
-        System.out.println("fileObj.getPid() = " + fileObj.getPid());
-        System.out.println("filePid = " + filePid);
-        System.out.println("folder.getPid() = " + folderObj.getPid());
 
         MvcResult result = mvc.perform(post("/runEnhancements")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -203,7 +202,7 @@ public class RunEnhancementsIT extends AbstractAPIIT {
     @Test
     public void runEnhancementsNoAccess() throws Exception {
         FileObject fileObj = repositoryObjectFactory.createFileObject(null);
-        fileObj.addOriginalFile(makeContentUri(fileObj.getPid(), BINARY_CONTENT), "file.png", "image/png", null, null);
+        fileObj.addOriginalFile(makeContentUri(BINARY_CONTENT), "file.png", "image/png", null, null);
         setResultMetadataObject(fileObj.getPid(), ResourceType.File.name());
 
         PID objPid = fileObj.getPid();
@@ -221,18 +220,15 @@ public class RunEnhancementsIT extends AbstractAPIIT {
     }
 
     private void assertResponseSuccess(MvcResult mvcResult) throws Exception {
-        Map<String, Object> resp = MvcTestHelpers.getMapFromResponse(mvcResult);
+        Map<String, Object> resp = getMapFromResponse(mvcResult);
         assertTrue(resp.containsKey("message"), "Missing run enhancements message");
         assertEquals("runEnhancements", resp.get("action"));
     }
 
-    private URI makeContentUri(PID filePid, String content) throws Exception {
-        var originalPid = DatastreamPids.getOriginalFilePid(filePid);
-        var uri = storageLocationTestHelper.getTestStorageLocation().getNewStorageUri(originalPid);
-        var path = Path.of(uri);
-        Files.createDirectories(path.getParent());
-        Files.write(path, content.getBytes());
-        return uri;
+    private URI makeContentUri(String content) throws Exception {
+        File dataFile = tmpFolder.resolve("dataFile").toFile();
+        FileUtils.write(dataFile, content, "UTF-8");
+        return dataFile.toPath().toUri();
     }
 
     private void setResultMetadataObject(PID pid, String resourceType) {

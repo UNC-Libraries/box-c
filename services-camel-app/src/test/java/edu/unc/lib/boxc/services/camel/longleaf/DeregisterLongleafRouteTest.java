@@ -10,7 +10,6 @@ import java.io.File;
 import java.net.URI;
 import java.nio.file.Paths;
 import java.util.List;
-import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.camel.CamelContext;
@@ -23,6 +22,7 @@ import org.apache.camel.test.spring.CamelTestContextBootstrapper;
 import org.apache.commons.io.FileUtils;
 import org.jdom2.Document;
 import org.jdom2.Element;
+import org.jgroups.util.UUID;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -37,6 +37,7 @@ import org.springframework.test.context.ContextHierarchy;
 
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.boxc.operations.jms.MessageSender;
+import edu.unc.lib.boxc.services.camel.longleaf.DeregisterLongleafProcessor;
 
 /**
  * @author bbpennel

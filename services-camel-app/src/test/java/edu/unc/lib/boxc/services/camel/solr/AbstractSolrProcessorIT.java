@@ -15,7 +15,6 @@ import java.util.UUID;
 
 import edu.unc.lib.boxc.indexing.solr.test.RepositoryObjectSolrIndexer;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
-import edu.unc.lib.boxc.model.fcrepo.test.TestHelper;
 import edu.unc.lib.boxc.persist.api.storage.StorageLocationManager;
 import edu.unc.lib.boxc.persist.impl.storage.StorageLocationTestHelper;
 import org.apache.camel.Exchange;
@@ -27,7 +26,6 @@ import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.solr.client.solrj.embedded.EmbeddedSolrServer;
-import org.fcrepo.client.FcrepoClient;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -59,6 +57,7 @@ import edu.unc.lib.boxc.search.solr.services.SolrSearchService;
 @RunWith(CamelSpringRunner.class)
 @BootstrapWith(CamelTestContextBootstrapper.class)
 @ContextHierarchy({
+    @ContextConfiguration("/spring-test/test-fedora-container.xml"),
     @ContextConfiguration("/spring-test/cdr-client-container.xml"),
     @ContextConfiguration("/spring-test/solr-indexing-context.xml"),
     @ContextConfiguration("/solr-indexing-it-context.xml")
@@ -97,10 +96,6 @@ public abstract class AbstractSolrProcessorIT {
     protected RepositoryObjectSolrIndexer repositoryObjectSolrIndexer;
     @Autowired
     protected StorageLocationManager locManager;
-    @Autowired
-    protected StorageLocationTestHelper storageLocationTestHelper;
-    @Autowired
-    protected FcrepoClient fcrepoClient;
 
     protected ContentRootObject rootObj;
     protected AdminUnit unitObj;
@@ -140,9 +135,10 @@ public abstract class AbstractSolrProcessorIT {
     }
 
     protected URI makeContentUri(String content) throws Exception {
-        var pid = TestHelper.makePid();
-        var storageUri = storageLocationTestHelper.makeTestStorageUri(pid);
+        var loc1 = locManager.getStorageLocationById(StorageLocationTestHelper.LOC1_ID);
+        var storageUri = loc1.getNewStorageUri(PIDs.get(UUID.randomUUID().toString()));
         var contentFile = new File(storageUri);
+        contentFile.deleteOnExit();
         FileUtils.write(contentFile, content, UTF_8);
         return storageUri;
     }

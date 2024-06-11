@@ -7,8 +7,11 @@ import static edu.unc.lib.boxc.auth.api.UserRole.canManage;
 import static edu.unc.lib.boxc.auth.api.UserRole.canViewOriginals;
 import static edu.unc.lib.boxc.auth.api.UserRole.unitOwner;
 import static java.util.Arrays.asList;
+import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.CoreMatchers.not;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -24,7 +27,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.apache.http.auth.AUTH;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.Statement;
@@ -86,6 +88,7 @@ import edu.unc.lib.boxc.operations.jms.JMSMessageUtil.CDRActions;
  */
 @ExtendWith({SpringExtension.class})
 @ContextHierarchy({
+    @ContextConfiguration("/spring-test/test-fedora-container.xml"),
     @ContextConfiguration("/spring-test/cdr-client-container.xml"),
     @ContextConfiguration("/spring-test/staff-role-service-container.xml"),
 })
@@ -204,7 +207,7 @@ public class StaffRoleAssignmentServiceIT {
         assertMessageSent(pid);
 
         String eventDetail = assertEventCreatedAndGetDetail(updated);
-        assertTrue(eventDetail.contains("No roles assigned"));
+        assertThat(eventDetail, containsString("No roles assigned"));
     }
 
     @Test
@@ -233,7 +236,7 @@ public class StaffRoleAssignmentServiceIT {
         assertMessageSent(pid);
 
         String eventDetail = assertEventCreatedAndGetDetail(updated);
-        assertTrue(eventDetail.contains("No roles assigned"));
+        assertThat(eventDetail, containsString("No roles assigned"));
     }
 
     @Test
@@ -255,7 +258,7 @@ public class StaffRoleAssignmentServiceIT {
         assertMessageSent(pid);
 
         String eventDetail = assertEventCreatedAndGetDetail(updated);
-        assertTrue(eventDetail.contains(unitOwner.name() + ": " + USER_PRINC));
+        assertThat(eventDetail, containsString(unitOwner.name() + ": " + USER_PRINC));
     }
 
     @Test
@@ -336,7 +339,7 @@ public class StaffRoleAssignmentServiceIT {
         assertMessageSent(pid);
 
         String eventDetail = assertEventCreatedAndGetDetail(updated);
-        assertTrue(eventDetail.contains(canManage.name() + ": " + USER_PRINC));
+        assertThat(eventDetail, containsString(canManage.name() + ": " + USER_PRINC));
     }
 
     @Test
@@ -380,7 +383,8 @@ public class StaffRoleAssignmentServiceIT {
         assertMessageSent(pid);
 
         String eventDetail = assertEventCreatedAndGetDetail(updated);
-        assertTrue(eventDetail.contains(canManage.name() + ": " + GRP_PRINC + ", " + USER_PRINC));
+        assertThat(eventDetail, containsString(
+                canManage.name() + ": " + GRP_PRINC + ", " + USER_PRINC));
     }
 
     @Test
@@ -411,8 +415,10 @@ public class StaffRoleAssignmentServiceIT {
 
         // Inherited and local roles should be logged
         String eventDetail = assertEventCreatedAndGetDetail(updated);
-        assertTrue(eventDetail.contains(canManage.name() + ": another, " + GRP_PRINC));
-        assertTrue(eventDetail.contains(unitOwner.name() + ": " + USER_PRINC));
+        assertThat(eventDetail, containsString(
+                canManage.name() + ": another, " + GRP_PRINC));
+        assertThat(eventDetail, containsString(
+                unitOwner.name() + ": " + USER_PRINC));
     }
 
     @Test
@@ -441,9 +447,10 @@ public class StaffRoleAssignmentServiceIT {
         assertMessageSent(pid);
 
         String eventDetail = assertEventCreatedAndGetDetail(updated);
-        assertTrue(eventDetail.contains(canManage.name() + ": " + GRP_PRINC));
+        assertThat(eventDetail, containsString(
+                canManage.name() + ": " + GRP_PRINC));
         // Must not contain the patron assignment
-        assertFalse(eventDetail.contains(AUTHENTICATED_PRINC));
+        assertThat(eventDetail, not(containsString(AUTHENTICATED_PRINC)));
     }
 
     @Test
@@ -522,7 +529,7 @@ public class StaffRoleAssignmentServiceIT {
         Resource agentResc = eventResc.getPropertyResourceValue(Premis.hasEventRelatedAgentImplementor);
         assertEquals(AgentPids.forPerson(USER_PRINC).getRepositoryPath(), agentResc.getURI());
         String eventDetail = eventResc.getProperty(Premis.note).getString();
-        assertTrue(eventDetail.contains("Staff roles for item set to:"));
+        assertThat(eventDetail, containsString("Staff roles for item set to:"));
         return eventDetail;
     }
 

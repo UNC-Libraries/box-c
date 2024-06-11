@@ -10,12 +10,12 @@
 
         <p>{{ $t('about.sub_headers.description') }}</p>
         <ul>
-            <li><a href="https://library.unc.edu/wilson/search-the-special-collections/">https://library.unc.edu/wilson/search-the-special-collections</a></li>
+            <li><a href="https://library.unc.edu/wilson/research/search/">https://library.unc.edu/wilson/research/search</a></li>
         </ul>
 
         <p>{{ $t('about.sub_headers.scans') }}</p>
         <ul>
-            <li><a href="https://library.unc.edu/special-collection/">https://library.unc.edu/special-collection</a></li>
+            <li><a href="https://library.unc.edu/find/digitalcollections/">https://library.unc.edu/find/digitalcollections/</a></li>
         </ul>
 
         <p>{{ $t('about.sub_headers.docsouth') }}</p>
