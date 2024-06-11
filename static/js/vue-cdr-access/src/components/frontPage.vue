@@ -39,7 +39,7 @@
                     <div><router-link to="/search?format=Text"><i class="fas fa-file-alt"></i>{{ collectionStats.formatCounts.text }} texts</router-link></div>
                 </div>
                 <p>Interested in seeing more?</p>
-                <p>See <a href="https://library.unc.edu/find/digitalcollections/">more digital collections</a> or visit the <a href="https://library.unc.edu/wilson">Wilson Special Collections Library</a> website.</p>
+                <p>See <a href="https://library.unc.edu/special-collection/">more digital collections</a> or visit the <a href="https://library.unc.edu/wilson">Wilson Special Collections Library</a> website.</p>
             </div>
         </div>
     </main>
