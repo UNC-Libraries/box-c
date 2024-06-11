@@ -15,6 +15,7 @@ import java.util.Map;
 import java.util.Objects;
 
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -57,6 +58,7 @@ import net.greghaines.jesque.meta.dao.QueueInfoDAO;
 import net.greghaines.jesque.worker.WorkerPool;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
+import redis.embedded.RedisServer;
 
 /**
  * @author bbpennel
@@ -107,6 +109,23 @@ public class DepositSupervisorTest {
     private ActionMonitoringTask actionMonitor;
 
     private AgentPrincipals agent;
+
+    private static final RedisServer redisServer;
+
+    static {
+        try {
+            redisServer = new RedisServer(46380);
+            redisServer.start();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+
+    }
+
+    @AfterAll
+    public static void afterClass() throws Exception {
+        redisServer.stop();
+    }
 
     @BeforeEach
     public void setup() throws Exception {

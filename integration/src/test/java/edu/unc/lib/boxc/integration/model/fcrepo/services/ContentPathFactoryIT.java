@@ -7,7 +7,6 @@ import java.nio.file.Path;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-import edu.unc.lib.boxc.model.fcrepo.ids.DatastreamPids;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -76,10 +75,8 @@ public class ContentPathFactoryIT extends AbstractFedoraIT {
         WorkObject work = repoObjFactory.createWorkObject(null);
         collObj.addMember(work);
 
-        PID filePid = pidMinter.mintContentPid();
-        var contentUri = storageLocationTestHelper.makeTestStorageUri(DatastreamPids.getOriginalFilePid(filePid));
-        Files.createFile(Path.of(contentUri));
-        FileObject fileObj = work.addDataFile(filePid, contentUri, "file", "text/plain", null, null, null);
+        Path contentPath = Files.createTempFile("test", ".txt");
+        FileObject fileObj = work.addDataFile(contentPath.toUri(), "file", "text/plain", null, null);
         BinaryObject binObj = fileObj.getOriginalFile();
 
         List<PID> ancestors = pathFactory.getAncestorPids(binObj.getPid());

@@ -21,7 +21,7 @@ public class MimetypeHelpers {
      * @return true if the given mimetype appears to be a valid mimetype
      */
     public static boolean isValidMimetype(String mimetype) {
-        if (StringUtils.isBlank(mimetype) || mimetype.contains("symlink")) {
+        if (StringUtils.isBlank(mimetype)) {
             return false;
         }
         return VALID_MIMETYPE_PATTERN.matcher(mimetype).matches();

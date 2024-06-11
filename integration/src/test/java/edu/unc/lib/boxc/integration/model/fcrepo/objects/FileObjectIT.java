@@ -6,7 +6,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -14,7 +13,6 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import edu.unc.lib.boxc.model.fcrepo.ids.DatastreamPids;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.FileUtils;
 import org.apache.jena.vocabulary.RDF;
@@ -65,9 +63,9 @@ public class FileObjectIT extends AbstractFedoraIT {
         FileObject fileObj = repoObjFactory.createFileObject(null);
 
         // Prep file and add
-        var fileUri = storageLocationTestHelper.makeTestStorageUri(DatastreamPids.getOriginalFilePid(fileObj.getPid()));
-        FileUtils.writeStringToFile(new File(fileUri), origBodyString, "UTF-8");
-        BinaryObject origObj = fileObj.addOriginalFile(fileUri, origFilename, origMimetype, origSha1Checksum,
+        Path origPath = Files.createTempFile("original", ".txt");
+        FileUtils.writeStringToFile(origPath.toFile(), origBodyString, "UTF-8");
+        BinaryObject origObj = fileObj.addOriginalFile(origPath.toUri(), origFilename, origMimetype, origSha1Checksum,
                 origMd5Checksum);
 
         verifyOriginalFile(origObj);
@@ -81,9 +79,9 @@ public class FileObjectIT extends AbstractFedoraIT {
         FileObject fileObj = repoObjFactory.createFileObject(null);
 
         // Add the original
-        var origUri = storageLocationTestHelper.makeTestStorageUri(DatastreamPids.getOriginalFilePid(fileObj.getPid()));
-        FileUtils.writeStringToFile(new File(origUri), origBodyString, "UTF-8");
-        BinaryObject bObj2 = fileObj.addOriginalFile(origUri, origFilename, origMimetype, origSha1Checksum,
+        Path origPath = Files.createTempFile("original", ".txt");
+        FileUtils.writeStringToFile(origPath.toFile(), origBodyString, "UTF-8");
+        BinaryObject bObj2 = fileObj.addOriginalFile(origPath.toUri(), origFilename, origMimetype, origSha1Checksum,
                 origMd5Checksum);
 
         // Construct the derivative objects
@@ -91,9 +89,9 @@ public class FileObjectIT extends AbstractFedoraIT {
         String textFilename = "extracted.txt";
         String textMimetype = "text/plain";
         PID fitsPid = getTechnicalMetadataPid(fileObj.getPid());
-        var fitsUri = storageLocationTestHelper.makeTestStorageUri(fitsPid);
-        FileUtils.writeStringToFile(new File(fitsUri), textBodyString, "UTF-8");
-        BinaryObject bObj1 = fileObj.addBinary(fitsPid, fitsUri, textFilename, textMimetype,
+        Path fitsPath = Files.createTempFile("extracted", ".txt");
+        FileUtils.writeStringToFile(fitsPath.toFile(), textBodyString, "UTF-8");
+        BinaryObject bObj1 = fileObj.addBinary(fitsPid, fitsPath.toUri(), textFilename, textMimetype,
                 null, RDF.type, PcdmUse.ExtractedText);
         assertNotNull(bObj1);
 
@@ -119,9 +117,9 @@ public class FileObjectIT extends AbstractFedoraIT {
         FileObject fileObj = repoObjFactory.createFileObject(null);
 
         PID binPid = getOriginalFilePid(fileObj.getPid());
-        var binUri = storageLocationTestHelper.makeTestStorageUri(binPid);
-        FileUtils.writeStringToFile(new File(binUri), origBodyString, "UTF-8");
-        fileObj.addBinary(binPid, binUri, origFilename, origMimetype, null, null, null);
+        Path contentPath = Files.createTempFile("test", ".txt");
+        FileUtils.writeStringToFile(contentPath.toFile(), origBodyString, "UTF-8");
+        fileObj.addBinary(binPid, contentPath.toUri(), origFilename, origMimetype, null, null, null);
 
         BinaryObject binObj = fileObj.getBinaryObject(DatastreamType.ORIGINAL_FILE.getId());
         verifyFile(binObj, origFilename, origMimetype, origBodyString);
@@ -142,11 +140,10 @@ public class FileObjectIT extends AbstractFedoraIT {
     public void testGetParent() throws Exception {
         WorkObject work = repoObjFactory.createWorkObject(null);
 
-        var filePid = pidMinter.mintContentPid();
-        var origUri = storageLocationTestHelper.makeTestStorageUri(DatastreamPids.getOriginalFilePid(filePid));
-        FileUtils.writeStringToFile(new File(origUri), origBodyString, "UTF-8");
-        FileObject fileObj = work.addDataFile(filePid, origUri, origFilename, origMimetype, origSha1Checksum,
-                    origMd5Checksum, null);
+        Path origPath = Files.createTempFile("original", ".txt");
+        FileUtils.writeStringToFile(origPath.toFile(), origBodyString, "UTF-8");
+        FileObject fileObj = work.addDataFile(origPath.toUri(), origFilename, origMimetype, origSha1Checksum,
+                    origMd5Checksum);
 
         treeIndexer.indexAll(baseAddress);
 

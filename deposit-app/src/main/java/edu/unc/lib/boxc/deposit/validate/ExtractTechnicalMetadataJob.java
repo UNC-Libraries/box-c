@@ -7,7 +7,6 @@ import edu.unc.lib.boxc.deposit.work.AbstractConcurrentDepositJob;
 import edu.unc.lib.boxc.deposit.work.JobFailedException;
 import edu.unc.lib.boxc.deposit.work.JobInterruptedException;
 import edu.unc.lib.boxc.model.api.ids.PID;
-import edu.unc.lib.boxc.model.api.rdf.CdrDeposit;
 import edu.unc.lib.boxc.model.fcrepo.ids.DatastreamPids;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import org.apache.commons.io.FilenameUtils;
@@ -125,10 +124,8 @@ public class ExtractTechnicalMetadataJob extends AbstractConcurrentDepositJob {
                 String stagedPath = stagedPair.getValue();
                 PID originalPid = DatastreamPids.getOriginalFilePid(objPid);
                 final String providedMimetype = getProvidedMimetype(originalPid, model);
-                final String providedLabel = getProvidedLabel(objPid, model);
 
-                submitTask(new ExtractTechnicalMetadataRunnable(objPid, originalPid, stagedPath,
-                        providedMimetype, providedLabel));
+                submitTask(new ExtractTechnicalMetadataRunnable(objPid, originalPid, stagedPath, providedMimetype));
             }
 
             waitForCompletion();
@@ -142,16 +139,6 @@ public class ExtractTechnicalMetadataJob extends AbstractConcurrentDepositJob {
         Statement mimetypeStmt = originalResc.getProperty(mimetype);
         if (mimetypeStmt != null) {
             return MimetypeHelpers.formatMimetype(mimetypeStmt.getString());
-        } else {
-            return null;
-        }
-    }
-
-    private String getProvidedLabel(PID filePid, Model model) {
-        Resource fileResc = model.getResource(filePid.getRepositoryPath());
-        Statement labelStmt = fileResc.getProperty(CdrDeposit.label);
-        if (labelStmt != null) {
-            return labelStmt.getString();
         } else {
             return null;
         }
@@ -190,16 +177,14 @@ public class ExtractTechnicalMetadataJob extends AbstractConcurrentDepositJob {
         private PID originalPid;
         private String stagedPath;
         private String providedMimetype;
-        private String providedLabel;
         private ExtractTechnicalMetadataResult result = new ExtractTechnicalMetadataResult();
 
         public ExtractTechnicalMetadataRunnable(PID objPid, PID originalPid, String stagedPath,
-                String providedMimetype, String providedLabel) {
+                String providedMimetype) {
             this.objPid = objPid;
             this.originalPid = originalPid;
             this.stagedPath = stagedPath;
             this.providedMimetype = providedMimetype;
-            this.providedLabel = providedLabel;
             result.objPid = objPid;
             result.originalPid = originalPid;
             result.hasProvidedMimetype = providedMimetype != null;
@@ -213,10 +198,8 @@ public class ExtractTechnicalMetadataJob extends AbstractConcurrentDepositJob {
 
             interruptJobIfStopped();
 
-            // Symlink the file before processing
-            Path linkPath = makeSymlinkForStagedPath(stagedPath, providedLabel);
             // Generate the FITS report as a document
-            Document fitsDoc = getFitsDocument(objPid, linkPath);
+            Document fitsDoc = getFitsDocument(objPid, stagedPath);
 
             try {
                 // Create the PREMIS report wrapper for the FITS results
@@ -239,13 +222,6 @@ public class ExtractTechnicalMetadataJob extends AbstractConcurrentDepositJob {
             } catch (Exception e) {
                 failJob(e, "Failed to extract FITS details for file '{0}' with id {1} from document:\n{2}",
                         stagedPath, objPid.getId(), getXMLOutputter().outputString(fitsDoc));
-            } finally {
-                try {
-                    Files.delete(linkPath);
-                    Files.delete(linkPath.getParent());
-                } catch (IOException e) {
-                    log.warn("Failed to delete symlink", e);
-                }
             }
         }
 
@@ -285,6 +261,7 @@ public class ExtractTechnicalMetadataJob extends AbstractConcurrentDepositJob {
          * Overrides the mimetype for this object in the deposit model when the FITS
          * generated value is preferred.
          *
+         * @param objResc
          * @param fitsExtractMimetype
          */
         private void overrideDepositMimetype(String fitsExtractMimetype) {
@@ -324,27 +301,10 @@ public class ExtractTechnicalMetadataJob extends AbstractConcurrentDepositJob {
      * XML document
      *
      * @param objPid
-     * @param filePath
-     * @return
-     */
-    private Document getFitsDocument(PID objPid, Path filePath) {
-        if (shouldProcessWithWebService(filePath)) {
-            return extractUsingWebService(objPid, filePath);
-        } else {
-            return extractUsingCLI(objPid, filePath);
-        }
-    }
-
-    /**
-     * Creates a symlink to the provided stagedUri, where the symlink is sanitized of problematic characters
-     * and uses the label as the filename to ensure the original file extension is present, if available.
-     * @param objPid
      * @param stagedUriString
-     * @param label
      * @return
      */
-    protected Path makeSymlinkForStagedPath(String stagedUriString, String label)  {
-        // Resolve the path from a URI and make it absolute
+    private Document getFitsDocument(PID objPid, String stagedUriString) {
         URI stagedUri = URI.create(stagedUriString);
         Path stagedPath;
         if (!stagedUri.isAbsolute()) {
@@ -352,20 +312,20 @@ public class ExtractTechnicalMetadataJob extends AbstractConcurrentDepositJob {
         } else {
             stagedPath = Paths.get(stagedUri);
         }
-        try {
-            // Create a symlink to the file to make use of the original filename and avoid issues with non-ascii characters
-            var parentDir = TMP_PATH.resolve(Long.toString(System.nanoTime()));
-            Files.createDirectories(parentDir);
-            String symlinkName = label != null ? label : stagedPath.getFileName().toString();
-            var linkPath = sanitizeCliPath(parentDir.resolve(symlinkName));
-            Files.createSymbolicLink(linkPath, stagedPath);
-            return linkPath;
-        } catch (IOException e) {
-            throw new JobFailedException("Failed to create symlink for file " + stagedPath, e);
+
+        if (shouldProcessWithWebService(stagedPath)) {
+            return extractUsingWebService(objPid, stagedPath);
+        } else {
+            return extractUsingCLI(objPid, stagedPath);
         }
     }
 
     private boolean shouldProcessWithWebService(Path path) {
+        // FITS cannot currently handle file paths that contain unicode characters
+        if (!CharMatcher.ascii().matchesAllOf(path.toString())) {
+            log.debug("File {} not applicable for web service due to unacceptable characters", path);
+            return false;
+        }
         String filename = path.getFileName().toString();
         String extension = FilenameUtils.getExtension(filename).toLowerCase();
         if (FILE_EXTS_FOR_CLI.contains(extension)) {
@@ -432,9 +392,35 @@ public class ExtractTechnicalMetadataJob extends AbstractConcurrentDepositJob {
         return Paths.get(path);
     }
 
-    private Document extractUsingCLI(PID objPid, Path targetPath) {
+    /**
+     * Symlink the provided file into the temp directory, inside of parent directory based on the id of the object.
+     * Filename of the symlink is based off the sanitized form of the path.
+     * @param objPid
+     * @param sanitizedPath Sanitized version of the staging path, does not need to resolve to a file
+     * @param stagedPath Original staging path of the file, must resolve to the file being linked
+     * @return Symlink path
+     * @throws IOException
+     */
+    protected Path symlinkFile(PID objPid, Path sanitizedPath, Path stagedPath) throws IOException {
+        var parentDir = TMP_PATH.resolve(objPid.getId());
+        Files.createDirectories(parentDir);
+        var linkPath = parentDir.resolve(sanitizedPath.getFileName());
+        Files.createSymbolicLink(linkPath, stagedPath);
+        return linkPath;
+    }
+
+    private Document extractUsingCLI(PID objPid, Path stagedPath) {
         String stdout = null;
+        Path fileLink = null;
         try {
+            Path targetPath = stagedPath;
+            var sanitizedPath = sanitizeCliPath(stagedPath);
+            // Create a symlink to the file to avoid problems with non-ascii characters and reserved linux characters
+            // otherwise there will be encoding mismatches between boxc, the terminal, and FITS.
+            if (!stagedPath.equals(sanitizedPath)) {
+                fileLink = symlinkFile(objPid, sanitizedPath, stagedPath);
+                targetPath = fileLink;
+            }
             String[] command = new String[] { fitsCommandPath.toString(), "-i", targetPath.toString() };
             Process process = Runtime.getRuntime().exec(command);
             int exitCode = process.waitFor();
@@ -448,7 +434,17 @@ public class ExtractTechnicalMetadataJob extends AbstractConcurrentDepositJob {
             return createSAXBuilder().build(new ByteArrayInputStream(stdout.getBytes(UTF_8)));
         } catch (IOException | JDOMException | InterruptedException e) {
             failJob(e, "Failed to generate report for file {0} with id {1}, output was:\n{2}",
-                    targetPath, objPid.getId(), stdout);
+                    stagedPath, objPid.getId(), stdout);
+        } finally {
+            // Cleanup symlink and parent directory containing symlink, if a symlink was used
+            if (fileLink != null) {
+                try {
+                    Files.delete(fileLink);
+                    Files.delete(fileLink.getParent());
+                } catch (IOException e) {
+                    log.warn("Failed to cleanup symlink", e);
+                }
+            }
         }
         return null;
     }

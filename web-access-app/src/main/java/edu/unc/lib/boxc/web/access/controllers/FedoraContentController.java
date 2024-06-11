@@ -102,32 +102,22 @@ public class FedoraContentController {
             recordDownloadEvent(pid, datastream, principals, request);
         } catch (IOException e) {
             handleIOException(pid, datastream, e);
-            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
         }
     }
 
     private void handleIOException(PID pid, String datastream, IOException e) {
-        if (connectionWasClosed(pid, datastream, e)) {
-            return;
-        }
         var cause = ExceptionUtils.getRootCause(e);
-        if (connectionWasClosed(pid, datastream, cause)) {
-            return;
+        if (cause != null) {
+            if (cause.getMessage().contains("Connection reset by peer") || cause instanceof EOFException) {
+                log.debug("Client reset connection while downloading {}/{}", pid.getId(), datastream);
+                return;
+            }
+            if (cause instanceof TimeoutException) {
+                log.warn("Request to download {}/{} timed out: {}", pid.getId(), datastream, e.getMessage());
+                return;
+            }
         }
         log.error("Problem retrieving {}/{}", pid.getId(), datastream, e);
-    }
-
-    private boolean connectionWasClosed(PID pid, String datastream, Throwable e) {
-        if (e instanceof EOFException
-                || (e.getMessage() != null && e.getMessage().contains("Connection reset by peer"))) {
-            log.debug("Client reset connection while downloading {}/{}", pid.getId(), datastream);
-            return true;
-        }
-        if (e instanceof TimeoutException) {
-            log.warn("Request to download {}/{} timed out: {}", pid.getId(), datastream, e.getMessage());
-            return true;
-        }
-        return false;
     }
 
     private void recordDownloadEvent(PID pid, String datastream, AccessGroupSet principals,
@@ -163,21 +153,5 @@ public class FedoraContentController {
     public ResponseEntity<Object> handleArgumentTypeMismatch(RuntimeException ex) {
         log.debug("Argument type mismatch", ex);
         return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-    }
-
-    public void setFedoraContentService(FedoraContentService fedoraContentService) {
-        this.fedoraContentService = fedoraContentService;
-    }
-
-    public void setAnalyticsTracker(AnalyticsTrackerUtil analyticsTracker) {
-        this.analyticsTracker = analyticsTracker;
-    }
-
-    public void setRepositoryObjectLoader(RepositoryObjectLoader repoObjLoader) {
-        this.repoObjLoader = repoObjLoader;
-    }
-
-    public void setAccessControlService(AccessControlService accessControlService) {
-        this.accessControlService = accessControlService;
     }
 }

@@ -18,7 +18,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Map;
 
-import edu.unc.lib.boxc.web.services.rest.MvcTestHelpers;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.junit.jupiter.api.AfterEach;
@@ -43,7 +42,6 @@ import edu.unc.lib.boxc.deposit.impl.submit.CDRMETSDepositHandler;
 import edu.unc.lib.boxc.deposit.impl.submit.SimpleObjectDepositHandler;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.persist.api.PackagingType;
-import redis.clients.jedis.JedisPool;
 
 /**
  *
@@ -69,8 +67,7 @@ public class IngestControllerIT extends AbstractAPIIT {
     private CDRMETSDepositHandler metsHandler;
     @Autowired
     private SimpleObjectDepositHandler simpleHandler;
-    @Autowired
-    private JedisPool jedisPool;
+
     @Autowired
     private DepositStatusFactory depositStatusFactory;
 
@@ -91,8 +88,8 @@ public class IngestControllerIT extends AbstractAPIIT {
     }
 
     @AfterEach
-    public void teardownLocal() throws Exception {
-        jedisPool.getResource().flushAll();
+    public void teardown() throws Exception {
+        GroupsThreadStore.clearStore();
     }
 
     @Test
@@ -125,7 +122,7 @@ public class IngestControllerIT extends AbstractAPIIT {
                 .andExpect(status().isOk())
             .andReturn();
 
-        Map<String, Object> respMap = MvcTestHelpers.getMapFromResponse(result);
+        Map<String, Object> respMap = getMapFromResponse(result);
         assertEquals(destPid.getId(), respMap.get("destination"));
         assertEquals("ingest", respMap.get("action"));
         String depositId = (String) respMap.get("depositId");
@@ -160,7 +157,7 @@ public class IngestControllerIT extends AbstractAPIIT {
                 .andExpect(status().isOk())
             .andReturn();
 
-        Map<String, Object> respMap = MvcTestHelpers.getMapFromResponse(result);
+        Map<String, Object> respMap = getMapFromResponse(result);
         assertEquals(destPid.getId(), respMap.get("destination"));
         assertEquals("ingest", respMap.get("action"));
         String depositId = (String) respMap.get("depositId");

@@ -16,7 +16,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import java.util.Map;
 
-import edu.unc.lib.boxc.web.services.rest.MvcTestHelpers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -60,7 +59,7 @@ public class IndexingIT extends AbstractAPIIT {
             .andReturn();
 
         // Verify response from api
-        Map<String, Object> respMap = MvcTestHelpers.getMapFromResponse(result);
+        Map<String, Object> respMap = getMapFromResponse(result);
         assertEquals(objPid.getUUID(), respMap.get("pid"));
         assertEquals("updateSolr", respMap.get("action"));
         assertTrue(respMap.containsKey("error"));
@@ -76,7 +75,7 @@ public class IndexingIT extends AbstractAPIIT {
                 .andReturn();
 
         // Verify response from api
-        Map<String, Object> respMap = MvcTestHelpers.getMapFromResponse(result);
+        Map<String, Object> respMap = getMapFromResponse(result);
         assertEquals(objPid.getUUID(), respMap.get("pid"));
         assertEquals("updateSolr", respMap.get("action"));
         assertFalse(respMap.containsKey("error"));
@@ -92,7 +91,7 @@ public class IndexingIT extends AbstractAPIIT {
                 .andReturn();
 
         // Verify response from api
-        Map<String, Object> respMap = MvcTestHelpers.getMapFromResponse(result);
+        Map<String, Object> respMap = getMapFromResponse(result);
         assertEquals(objPid.getUUID(), respMap.get("pid"));
         assertEquals("reindexSolr", respMap.get("action"));
         assertFalse(respMap.containsKey("error"));
@@ -109,7 +108,7 @@ public class IndexingIT extends AbstractAPIIT {
                 .andReturn();
 
         // Verify response from api
-        Map<String, Object> respMap = MvcTestHelpers.getMapFromResponse(result);
+        Map<String, Object> respMap = getMapFromResponse(result);
         assertEquals(parentPid.getUUID(), respMap.get("pid"));
         assertEquals("reindexSolr", respMap.get("action"));
         assertFalse(respMap.containsKey("error"));
@@ -126,7 +125,7 @@ public class IndexingIT extends AbstractAPIIT {
                 .andReturn();
 
         // Verify response from api
-        Map<String, Object> respMap = MvcTestHelpers.getMapFromResponse(result);
+        Map<String, Object> respMap = getMapFromResponse(result);
         assertEquals(parentPid.getUUID(), respMap.get("pid"));
         assertEquals("reindexTriples", respMap.get("action"));
         assertFalse(respMap.containsKey("error"));
@@ -145,7 +144,7 @@ public class IndexingIT extends AbstractAPIIT {
                 .andReturn();
 
         // Verify response from api
-        Map<String, Object> respMap = MvcTestHelpers.getMapFromResponse(result);
+        Map<String, Object> respMap = getMapFromResponse(result);
         assertEquals(parentPid.getUUID(), respMap.get("pid"));
         assertEquals("reindexTriples", respMap.get("action"));
         assertTrue(respMap.containsKey("error"));

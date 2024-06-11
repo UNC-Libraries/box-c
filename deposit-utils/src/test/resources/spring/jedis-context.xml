@@ -4,14 +4,19 @@
     xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
   http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
 
-
-    <bean id="jedisPool" class="redis.clients.jedis.JedisPool"
-          destroy-method="destroy">
-        <constructor-arg ref="poolConfig"/>
-        <constructor-arg type="String" value="localhost" />
-        <constructor-arg type="int" value="46380" />
+    <context:property-placeholder />
+    
+    <bean id="redisServer" class="redis.embedded.RedisServer" init-method="start" destroy-method="stop">
+        <constructor-arg value="46380" />
     </bean>
-
+    
+    <bean id="jedisPool" class="redis.clients.jedis.JedisPool"
+        destroy-method="destroy">
+        <constructor-arg ref="poolConfig"/>
+        <constructor-arg type="String" value="${redis.host:localhost}" />
+        <constructor-arg type="int" value="${redis.port:46380}" />
+    </bean>
+    
     <bean id="poolConfig" class="redis.clients.jedis.JedisPoolConfig">
         <property name="maxIdle" value="15"/>
         <property name="minIdle" value="2"/>

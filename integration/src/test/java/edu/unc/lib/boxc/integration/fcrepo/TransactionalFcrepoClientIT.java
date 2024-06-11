@@ -5,6 +5,7 @@ import static org.apache.jena.rdf.model.ResourceFactory.createResource;
 import static org.fcrepo.client.FedoraTypes.LDP_NON_RDF_SOURCE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mock;
 
 import java.io.InputStream;
 import java.net.URI;
@@ -16,13 +17,14 @@ import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.vocabulary.DC;
 import org.apache.jena.vocabulary.RDF;
-import org.apache.commons.io.IOUtils;
-import org.fcrepo.client.FcrepoOperationFailedException;
+import org.apache.tika.io.IOUtils;
 import org.fcrepo.client.FcrepoResponse;
 import org.fusesource.hawtbuf.ByteArrayInputStream;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import edu.unc.lib.boxc.fcrepo.exceptions.TransactionCancelledException;
 import edu.unc.lib.boxc.fcrepo.utils.FedoraTransaction;
@@ -32,33 +34,42 @@ import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.rdf.RDFModelUtil;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.boxc.model.fcrepo.test.TestHelper;
+import edu.unc.lib.boxc.persist.api.transfer.BinaryTransferService;
 
 /**
  * @author bbpennel
  */
-public class TransactionalFcrepoClientIT extends AbstractFedoraIT {
-    @Autowired
+@ExtendWith(SpringExtension.class)
+@ContextConfiguration({"/spring-test/test-fedora-container.xml"})
+public class TransactionalFcrepoClientIT {
+
+    private static final String BASE_PATH = "http://localhost:48085/rest";
+    private static final URI BASE_URI = URI.create(BASE_PATH);
+
     private TransactionalFcrepoClient fcrepoClient;
-    @Autowired
-    private String baseAddress;
-    private URI baseUri;
-    @Autowired
+
     private TransactionManager txManager;
 
     @BeforeEach
     public void setup() {
-        baseUri = URI.create(baseAddress);
-        TestHelper.setContentBase(baseAddress);
+        TestHelper.setContentBase(BASE_PATH);
+
+        BinaryTransferService bts = mock(BinaryTransferService.class);
+        txManager = new TransactionManager();
+        txManager.setBinaryTransferService(bts);
     }
 
     @Test
     public void testRequestWithTx() throws Exception {
+        fcrepoClient = TransactionalFcrepoClient.client(BASE_PATH)
+                .build();
+
         txManager.setClient(fcrepoClient);
 
         // Create object in transaction, should return transaction location
         FedoraTransaction tx = txManager.startTransaction();
         URI objUri;
-        try (FcrepoResponse response = fcrepoClient.post(baseUri).perform()) {
+        try (FcrepoResponse response = fcrepoClient.post(BASE_URI).perform()) {
             objUri = response.getLocation();
         }
 
@@ -80,6 +91,9 @@ public class TransactionalFcrepoClientIT extends AbstractFedoraIT {
 
     @Test
     public void testPutTriplesWithTx() throws Exception {
+        fcrepoClient = TransactionalFcrepoClient.client(BASE_PATH)
+                .build();
+
         txManager.setClient(fcrepoClient);
 
         PID pid = PIDs.get(UUID.randomUUID().toString());
@@ -97,8 +111,7 @@ public class TransactionalFcrepoClientIT extends AbstractFedoraIT {
         }
         // Verify that the created resource went away with transaction
         try (FcrepoResponse response = fcrepoClient.get(pid.getRepositoryUri()).perform()) {
-        } catch (FcrepoOperationFailedException e) {
-            assertEquals(HttpStatus.SC_NOT_FOUND, e.getStatusCode());
+            assertEquals(HttpStatus.SC_NOT_FOUND, response.getStatusCode());
         }
 
         FedoraTransaction tx2 = txManager.startTransaction();
@@ -112,6 +125,9 @@ public class TransactionalFcrepoClientIT extends AbstractFedoraIT {
 
     @Test
     public void testBinaryRequestWithTx() throws Exception {
+        fcrepoClient = TransactionalFcrepoClient.client(BASE_PATH)
+                .build();
+
         txManager.setClient(fcrepoClient);
 
         PID bodyPid = PIDs.get(UUID.randomUUID().toString());
@@ -121,7 +137,7 @@ public class TransactionalFcrepoClientIT extends AbstractFedoraIT {
         // Create object in transaction, should return transaction location
         FedoraTransaction tx = txManager.startTransaction();
         URI objUri;
-        try (FcrepoResponse response = fcrepoClient.post(baseUri)
+        try (FcrepoResponse response = fcrepoClient.post(BASE_URI)
                 .body(requestStream, "application/n-triples")
                 .addInteractionModel(LDP_NON_RDF_SOURCE)
                 .perform()) {

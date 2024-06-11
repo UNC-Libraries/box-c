@@ -9,9 +9,7 @@ import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.objects.FileObject;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
-import edu.unc.lib.boxc.model.fcrepo.ids.DatastreamPids;
 import edu.unc.lib.boxc.model.fcrepo.test.TestHelper;
-import edu.unc.lib.boxc.persist.impl.storage.StorageLocationTestHelper;
 import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -30,7 +28,6 @@ import org.springframework.web.context.WebApplicationContext;
 
 import java.io.File;
 import java.net.URI;
-import java.nio.file.Files;
 import java.nio.file.Path;
 
 import static edu.unc.lib.boxc.model.api.DatastreamType.TECHNICAL_METADATA;
@@ -53,6 +50,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @ExtendWith(SpringExtension.class)
 @WebAppConfiguration
 @ContextHierarchy({
+    @ContextConfiguration("/spring-test/test-fedora-container.xml"),
     @ContextConfiguration("/spring-test/cdr-client-container.xml"),
     @ContextConfiguration("/fedora-content-it-servlet.xml")
 })
@@ -66,10 +64,6 @@ public class FedoraContentControllerIT {
     private RepositoryObjectLoader repositoryObjectLoader;
     @Autowired
     private AccessControlService accessControlService;
-    @Autowired
-    private String baseAddress;
-    @Autowired
-    private StorageLocationTestHelper storageLocationTestHelper;
 
     protected MockMvc mvc;
     @Autowired
@@ -80,14 +74,16 @@ public class FedoraContentControllerIT {
 
     @BeforeEach
     public void init() {
+
         mvc = MockMvcBuilders
                 .webAppContextSetup(context)
                 .build();
 
-        TestHelper.setContentBase(baseAddress);
+        TestHelper.setContentBase("http://localhost:48085/rest");
 
         GroupsThreadStore.storeUsername("test_user");
         GroupsThreadStore.storeGroups(new AccessGroupSetImpl("adminGroup"));
+
     }
 
     @Test
@@ -95,7 +91,7 @@ public class FedoraContentControllerIT {
         PID filePid = makePid();
 
         FileObject fileObj = repositoryObjectFactory.createFileObject(filePid, null);
-        fileObj.addOriginalFile(makeContentUri(originalPid(fileObj), BINARY_CONTENT), "file.txt", "text/plain", null, null);
+        fileObj.addOriginalFile(makeContentUri(BINARY_CONTENT), "file.txt", "text/plain", null, null);
 
         MvcResult result = mvc.perform(get("/content/" + filePid.getId()))
                 .andExpect(status().is2xxSuccessful())
@@ -115,7 +111,7 @@ public class FedoraContentControllerIT {
         PID filePid = makePid();
 
         FileObject fileObj = repositoryObjectFactory.createFileObject(filePid, null);
-        fileObj.addOriginalFile(makeContentUri(originalPid(fileObj), BINARY_CONTENT), "file.txt", "text/plain", null, null);
+        fileObj.addOriginalFile(makeContentUri(BINARY_CONTENT), "file.txt", "text/plain", null, null);
 
         MvcResult result = mvc.perform(get("/content/" + filePid.getId())
                 .param("dl", "true"))
@@ -136,7 +132,7 @@ public class FedoraContentControllerIT {
         PID filePid = makePid();
 
         FileObject fileObj = repositoryObjectFactory.createFileObject(filePid, null);
-        fileObj.addOriginalFile(makeContentUri(originalPid(fileObj), BINARY_CONTENT), null, "text/plain", null, null);
+        fileObj.addOriginalFile(makeContentUri(BINARY_CONTENT), null, "text/plain", null, null);
 
         MvcResult result = mvc.perform(get("/content/" + filePid.getId())
                 .param("dl", "true"))
@@ -157,7 +153,7 @@ public class FedoraContentControllerIT {
         PID filePid = makePid();
 
         FileObject fileObj = repositoryObjectFactory.createFileObject(filePid, null);
-        fileObj.addOriginalFile(makeContentUri(originalPid(fileObj), BINARY_CONTENT), null, "text/plain", null, null);
+        fileObj.addOriginalFile(makeContentUri(BINARY_CONTENT), null, "text/plain", null, null);
 
         doThrow(new AccessRestrictionException()).when(accessControlService)
                 .assertHasAccess(anyString(), eq(filePid), any(AccessGroupSetImpl.class), eq(Permission.viewOriginal));
@@ -186,17 +182,16 @@ public class FedoraContentControllerIT {
         String content = "<fits>content</fits>";
 
         FileObject fileObj = repositoryObjectFactory.createFileObject(filePid, null);
-        fileObj.addOriginalFile(makeContentUri(originalPid(fileObj), BINARY_CONTENT), null, "text/plain", null, null);
+        fileObj.addOriginalFile(makeContentUri(BINARY_CONTENT), null, "text/plain", null, null);
         PID fitsPid = getTechnicalMetadataPid(fileObj.getPid());
-        fileObj.addBinary(fitsPid, makeContentUri(fitsPid, content), "fits.xml", "application/xml", null, null, null);
+        fileObj.addBinary(fitsPid, makeContentUri(content), "fits.xml", "application/xml", null, null, null);
 
         // Verify original file content retrievable
         MvcResult result1 = mvc.perform(get(requestPath + filePid.getId()))
                 .andExpect(status().is2xxSuccessful())
                 .andReturn();
 
-        assertEquals(BINARY_CONTENT.length(), result1.getResponse().getContentLength());
-        assertEquals(BINARY_CONTENT, result1.getResponse().getContentAsString());
+        assertEquals(content, result1.getResponse().getContentAsString());
 
         // Verify administrative datastream retrievable
         MvcResult result2 = mvc.perform(get(requestPath + filePid.getId() + "/" + TECHNICAL_METADATA.getId()))
@@ -219,7 +214,7 @@ public class FedoraContentControllerIT {
 
         FileObject fileObj = repositoryObjectFactory.createFileObject(filePid, null);
         PID fitsPid = getTechnicalMetadataPid(fileObj.getPid());
-        fileObj.addBinary(fitsPid, makeContentUri(fitsPid, content), "fits.xml", "application/xml", null, null, null);
+        fileObj.addBinary(fitsPid, makeContentUri(content), "fits.xml", "application/xml", null, null, null);
 
         // Requires viewHidden permission
         doThrow(new AccessRestrictionException()).when(accessControlService)
@@ -267,7 +262,7 @@ public class FedoraContentControllerIT {
 
         var workObj = repositoryObjectFactory.createWorkObject(workPid, null);
         FileObject fileObj = repositoryObjectFactory.createFileObject(filePid, null);
-        fileObj.addOriginalFile(makeContentUri(originalPid(fileObj), BINARY_CONTENT), "file.txt", "text/plain", null, null);
+        fileObj.addOriginalFile(makeContentUri(BINARY_CONTENT), "file.txt", "text/plain", null, null);
         workObj.addMember(fileObj);
         workObj.setPrimaryObject(filePid);
         repositoryObjectLoader.invalidate(workPid);
@@ -289,11 +284,9 @@ public class FedoraContentControllerIT {
                 .andReturn();
     }
 
-    private PID originalPid(FileObject fileObject) {
-        return DatastreamPids.getOriginalFilePid(fileObject.getPid());
-    }
-
-    private URI makeContentUri(PID binaryPid, String content) throws Exception {
-        return storageLocationTestHelper.createTestBinary(binaryPid, content);
+    private URI makeContentUri(String content) throws Exception {
+        File dataFile = tmpFolder.resolve("testFile").toFile();
+        FileUtils.write(dataFile, content, "UTF-8");
+        return dataFile.toPath().toUri();
     }
 }

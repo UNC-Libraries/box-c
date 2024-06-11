@@ -4,14 +4,11 @@ import edu.unc.lib.boxc.model.api.DatastreamType;
 import edu.unc.lib.boxc.model.api.objects.FileObject;
 import edu.unc.lib.boxc.model.api.rdf.IanaRelation;
 import edu.unc.lib.boxc.model.fcrepo.ids.DatastreamPids;
-import edu.unc.lib.boxc.persist.impl.storage.StorageLocationTestHelper;
 import org.apache.commons.io.FileUtils;
 import org.apache.jena.vocabulary.DCTerms;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.Map;
 import java.util.Objects;
 
@@ -30,7 +27,6 @@ public class FileFactory extends ContentObjectFactory {
     public static final String PDF_FORMAT = "pdf";
     public static final String AUDIO_FORMAT = "audio";
     public static final String VIDEO_FORMAT = "video";
-    private StorageLocationTestHelper storageLocationTestHelper;
 
     /*
     Creates a basic File with a FileFormat
@@ -83,20 +79,16 @@ public class FileFactory extends ContentObjectFactory {
         var fitsPid = DatastreamPids.getTechnicalMetadataPid(file.getPid());
         var fitsUri = Objects.requireNonNull(
                 this.getClass().getResource("/datastream/techmd_image.xml")).toURI();
-        var contentUri = storageLocationTestHelper.makeTestStorageUri(fitsPid);
-        Files.copy(Path.of(fitsUri), Path.of(contentUri));
         // add FITS file. Same one for all formats at the moment
-        file.addBinary(fitsPid, contentUri, TECHNICAL_METADATA.getDefaultFilename(), TECHNICAL_METADATA.getMimetype(),
+        file.addBinary(fitsPid, fitsUri, TECHNICAL_METADATA.getDefaultFilename(), TECHNICAL_METADATA.getMimetype(),
                 null, null, IanaRelation.derivedfrom, DCTerms.conformsTo, createResource(FITS_URI));
     }
 
     private void createOriginalFile(FileObject file, String mimetype, String data, String suffix) throws IOException {
-        var contentUri = storageLocationTestHelper.makeTestStorageUri(DatastreamPids.getOriginalFilePid(file.getPid()));
-        FileUtils.write(new File(contentUri), data, "UTF-8");
+        File contentFile = File.createTempFile("test_file", suffix);
+        FileUtils.write(contentFile, data, "UTF-8");
+        contentFile.deleteOnExit();
+        var contentUri = contentFile.toPath().toUri();
         file.addOriginalFile(contentUri, "test_file" + suffix, mimetype, null, null);
-    }
-
-    public void setStorageLocationTestHelper(StorageLocationTestHelper storageLocationTestHelper) {
-        this.storageLocationTestHelper = storageLocationTestHelper;
     }
 }

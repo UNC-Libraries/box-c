@@ -33,7 +33,6 @@ import org.mockito.Mock;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Instant;
@@ -279,6 +278,6 @@ public class UpdateDescriptionServiceTest {
         assertEquals(modsPid, version.getDsPid());
         assertEquals("text/xml", version.getContentType());
         assertEquals(Files.readString(Path.of("src/test/resources/samples/modsNormalized.xml")),
-                IOUtils.toString(version.getContentStream(), StandardCharsets.UTF_8));
+                IOUtils.toString(version.getContentStream()));
     }
 }

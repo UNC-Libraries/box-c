@@ -21,7 +21,7 @@
                     <div class="navbar-start">
                         <router-link to="/collections" class="navbar-item">Browse Collections</router-link>
                         <router-link to="/aboutRepository" class="navbar-item">What's Here?</router-link>
-                        <a href="https://library.unc.edu/contact-us/" class="navbar-item">Contact Us</a>
+                        <a href="https://library.unc.edu/wilson/contact/" class="navbar-item">Contact Us</a>
                         <a v-if="adminAccess" :href="adminUrl" class="navbar-item" target="_blank">Admin</a>
                     </div>
                     <div class="navbar-end">

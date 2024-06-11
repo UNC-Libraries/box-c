@@ -1,20 +1,16 @@
 package edu.unc.lib.boxc.integration.fcrepo;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.IOException;
 import java.net.URI;
 import java.util.List;
 
-import edu.unc.lib.boxc.model.fcrepo.test.TestRepositoryDeinitializer;
-import edu.unc.lib.boxc.persist.impl.storage.StorageLocationTestHelper;
 import org.apache.http.HttpStatus;
 import org.apache.jena.rdf.model.Model;
 import org.fcrepo.client.FcrepoClient;
 import org.fcrepo.client.FcrepoOperationFailedException;
 import org.fcrepo.client.FcrepoResponse;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,7 +35,7 @@ import edu.unc.lib.boxc.model.fcrepo.test.TestHelper;
  *
  */
 @ExtendWith(SpringExtension.class)
-@ContextConfiguration({"/spring-test/cdr-client-container.xml"})
+@ContextConfiguration({"/spring-test/test-fedora-container.xml", "/spring-test/cdr-client-container.xml"})
 public abstract class AbstractFedoraIT {
 
     @Autowired
@@ -58,10 +54,6 @@ public abstract class AbstractFedoraIT {
     protected TransactionManager txManager;
     @Autowired
     protected RepositoryObjectDriver driver;
-    @Autowired
-    protected StorageLocationTestHelper storageLocationTestHelper;
-    @Autowired
-    protected FcrepoClient fcrepoClient;
 
     @Autowired
     protected Model queryModel;
@@ -73,12 +65,7 @@ public abstract class AbstractFedoraIT {
     @BeforeEach
     public void init_() {
         // Override base uri for IT tests
-        TestHelper.setContentBase(baseAddress);
-    }
-
-    @AfterEach
-    public void cleanup() throws Exception {
-        TestRepositoryDeinitializer.cleanup(fcrepoClient);
+        TestHelper.setContentBase("http://localhost:48085/rest");
     }
 
     protected URI createBaseContainer(String name) throws IOException, FcrepoOperationFailedException {

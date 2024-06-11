@@ -1,5 +1,64 @@
 package edu.unc.lib.boxc.services.camel.exportxml;
 
+import static edu.unc.lib.boxc.model.api.DatastreamType.TECHNICAL_METADATA;
+import static edu.unc.lib.boxc.model.api.xml.NamespaceConstants.FITS_URI;
+import static edu.unc.lib.boxc.model.fcrepo.ids.DatastreamPids.getTechnicalMetadataPid;
+import static edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPaths.getContentRootPid;
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.apache.commons.io.FilenameUtils.wildcardMatch;
+import static org.apache.jena.rdf.model.ResourceFactory.createResource;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.reset;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.MockitoAnnotations.openMocks;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URI;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.DirectoryStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.EnumSet;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
+
+import org.apache.camel.CamelContext;
+import org.apache.camel.builder.NotifyBuilder;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
+import org.apache.jena.vocabulary.DCTerms;
+import org.apache.solr.client.solrj.embedded.EmbeddedSolrServer;
+import org.jdom2.Document;
+import org.jdom2.Element;
+import org.jdom2.input.SAXBuilder;
+import org.jdom2.output.Format;
+import org.jdom2.output.XMLOutputter;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.rules.TemporaryFolder;
+import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.ContextHierarchy;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+
 import edu.unc.lib.boxc.auth.api.models.AgentPrincipals;
 import edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl;
 import edu.unc.lib.boxc.auth.fcrepo.models.AgentPrincipalsImpl;
@@ -25,7 +84,6 @@ import edu.unc.lib.boxc.model.fcrepo.services.RepositoryInitializer;
 import edu.unc.lib.boxc.model.fcrepo.test.AclModelBuilder;
 import edu.unc.lib.boxc.model.fcrepo.test.RepositoryObjectTreeIndexer;
 import edu.unc.lib.boxc.model.fcrepo.test.TestHelper;
-import edu.unc.lib.boxc.model.fcrepo.test.TestRepositoryDeinitializer;
 import edu.unc.lib.boxc.operations.api.events.PremisLogger;
 import edu.unc.lib.boxc.operations.api.events.PremisLoggerFactory;
 import edu.unc.lib.boxc.operations.impl.edit.UpdateDescriptionService;
@@ -33,72 +91,13 @@ import edu.unc.lib.boxc.operations.impl.edit.UpdateDescriptionService.UpdateDesc
 import edu.unc.lib.boxc.operations.impl.utils.EmailHandler;
 import edu.unc.lib.boxc.operations.jms.exportxml.ExportXMLRequest;
 import edu.unc.lib.boxc.operations.jms.exportxml.ExportXMLRequestService;
-import edu.unc.lib.boxc.persist.impl.storage.StorageLocationTestHelper;
-import org.apache.camel.CamelContext;
-import org.apache.camel.builder.NotifyBuilder;
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
-import org.apache.jena.vocabulary.DCTerms;
-import org.apache.solr.client.solrj.embedded.EmbeddedSolrServer;
-import org.fcrepo.client.FcrepoClient;
-import org.jdom2.Document;
-import org.jdom2.Element;
-import org.jdom2.input.SAXBuilder;
-import org.jdom2.output.Format;
-import org.jdom2.output.XMLOutputter;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
-import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.ContextHierarchy;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URI;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.DirectoryStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.time.Instant;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.EnumSet;
-import java.util.List;
-import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
-
-import static edu.unc.lib.boxc.model.api.DatastreamType.TECHNICAL_METADATA;
-import static edu.unc.lib.boxc.model.api.xml.NamespaceConstants.FITS_URI;
-import static edu.unc.lib.boxc.model.fcrepo.ids.DatastreamPids.getTechnicalMetadataPid;
-import static edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPaths.getContentRootPid;
-import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.apache.commons.io.FilenameUtils.wildcardMatch;
-import static org.apache.jena.rdf.model.ResourceFactory.createResource;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doAnswer;
-import static org.mockito.Mockito.reset;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.MockitoAnnotations.openMocks;
 
 /**
  * @author bbpennel
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextHierarchy({
+    @ContextConfiguration("/spring-test/test-fedora-container.xml"),
     @ContextConfiguration("/spring-test/cdr-client-container.xml"),
     @ContextConfiguration("/spring-test/acl-service-context.xml"),
     @ContextConfiguration("/spring-test/solr-indexing-context.xml"),
@@ -110,8 +109,6 @@ public class ExportXMLRouteIT {
 
     private AutoCloseable closeable;
 
-    @Autowired
-    private String baseAddress;
     @Autowired
     private CamelContext cdrExportXML;
     @Autowired
@@ -138,10 +135,6 @@ public class ExportXMLRouteIT {
     private ExportXMLProcessor exportXmlProcessor;
     @Autowired
     private PremisLoggerFactory premisLoggerFactory;
-    @Autowired
-    private FcrepoClient fcrepoClient;
-    @Autowired
-    private StorageLocationTestHelper storageLocationTestHelper;
 
     @Captor
     private ArgumentCaptor<String> toCaptor;
@@ -169,7 +162,7 @@ public class ExportXMLRouteIT {
     public void setup() throws Exception {
         closeable = openMocks(this);
         reset(emailHandler);
-        TestHelper.setContentBase(baseAddress);
+        TestHelper.setContentBase("http://localhost:48085/rest");
         agent = new AgentPrincipalsImpl("user", new AccessGroupSetImpl("adminGroup"));
         generateBaseStructure();
         exportXmlProcessor.setObjectsPerExport(500);
@@ -187,11 +180,9 @@ public class ExportXMLRouteIT {
         }).when(emailHandler).sendEmail(any(), any(), any(), any(), any());
     }
 
-    @After
-    public void closeService() throws Exception {
+    @AfterEach
+    void closeService() throws Exception {
         closeable.close();
-        TestRepositoryDeinitializer.cleanup(fcrepoClient);
-        storageLocationTestHelper.cleanupStorageLocations();
     }
 
     @Test
@@ -459,8 +450,8 @@ public class ExportXMLRouteIT {
     @Test
     public void exportWorkModsAndFitsTest() throws Exception {
         String fitsContent = "<fits>content</fits>";
+        URI fitsUri = makeContentUri(fitsContent);
         PID fitsPid = getTechnicalMetadataPid(fileObj1.getPid());
-        URI fitsUri = makeContentUri(fitsPid, fitsContent);
         fileObj1.addBinary(fitsPid, fitsUri, TECHNICAL_METADATA.getDefaultFilename(), TECHNICAL_METADATA.getMimetype(),
                 null, null, IanaRelation.derivedfrom, DCTerms.conformsTo, createResource(FITS_URI));
 
@@ -563,8 +554,8 @@ public class ExportXMLRouteIT {
     @Test
     public void exportCollectionFitsExcludeNoDatastreamTest() throws Exception {
         String fitsContent = "<fits>content</fits>";
+        URI fitsUri = makeContentUri(fitsContent);
         PID fitsPid = getTechnicalMetadataPid(fileObj1.getPid());
-        URI fitsUri = makeContentUri(fitsPid, fitsContent);
         fileObj1.addBinary(fitsPid, fitsUri, TECHNICAL_METADATA.getDefaultFilename(), TECHNICAL_METADATA.getMimetype(),
                 null, null, IanaRelation.derivedfrom, DCTerms.conformsTo, createResource(FITS_URI));
         workObj1.setPrimaryObject(fileObj1.getPid());
@@ -754,9 +745,7 @@ public class ExportXMLRouteIT {
 
         PID workPid1 = pidMinter.mintContentPid();
         workObj1 = repositoryObjectFactory.createWorkObject(workPid1, null);
-        PID filePid = pidMinter.mintContentPid();
-        PID originalPid = DatastreamPids.getOriginalFilePid(filePid);
-        fileObj1 = workObj1.addDataFile(filePid, makeContentUri(originalPid, "hello"), "text.txt", "text/plain", null, null, null);
+        fileObj1 = workObj1.addDataFile(makeContentUri("hello"), "text.txt", "text/plain", null, null);
         InputStream modsStream2 = streamResource("/datastreams/simpleMods.xml");
         updateDescriptionService.updateDescription(new UpdateDescriptionRequest(agent, workPid1, modsStream2));
         PID workPid2 = pidMinter.mintContentPid();
@@ -766,10 +755,11 @@ public class ExportXMLRouteIT {
         collObj2.addMember(workObj2);
     }
 
-    protected URI makeContentUri(PID binaryPid, String content) throws Exception {
-        var uri = storageLocationTestHelper.makeTestStorageUri(binaryPid);
-        FileUtils.write(new File(uri), content, UTF_8);
-        return uri;
+    protected URI makeContentUri(String content) throws Exception {
+        File contentFile = File.createTempFile("test", ".txt");
+        contentFile.deleteOnExit();
+        FileUtils.write(contentFile, content, UTF_8);
+        return contentFile.toPath().toUri();
     }
 
     protected InputStream streamResource(String resourcePath) throws Exception {

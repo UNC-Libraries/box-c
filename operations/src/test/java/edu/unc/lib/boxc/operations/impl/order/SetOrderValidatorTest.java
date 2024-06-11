@@ -89,7 +89,7 @@ public class SetOrderValidatorTest {
         assertHasErrors(
                 validator,
                 "Invalid request to SET order for " + PARENT_UUID
-                + ", the following IDs are not members: " + CHILD2_UUID + ", " + CHILD1_UUID);
+                + ", the following IDs are not members: " + CHILD1_UUID + ", " + CHILD2_UUID);
     }
 
     @Test

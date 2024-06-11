@@ -10,7 +10,7 @@ import edu.unc.lib.boxc.search.api.requests.SimpleIdRequest;
 import edu.unc.lib.boxc.web.common.services.SolrQueryLayerService;
 import edu.unc.lib.boxc.web.common.utils.AnalyticsTrackerUtil;
 import edu.unc.lib.boxc.web.services.processing.DownloadImageService;
-import edu.unc.lib.boxc.operations.api.images.ImageServerUtil;
+import edu.unc.lib.boxc.web.services.utils.ImageServerUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;

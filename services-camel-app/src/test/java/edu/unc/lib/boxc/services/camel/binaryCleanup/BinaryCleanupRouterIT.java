@@ -11,12 +11,10 @@ import java.net.URI;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-import edu.unc.lib.boxc.model.fcrepo.test.TestRepositoryDeinitializer;
 import org.apache.camel.CamelContext;
 import org.apache.camel.Produce;
 import org.apache.camel.ProducerTemplate;
 import org.apache.camel.builder.NotifyBuilder;
-import org.fcrepo.client.FcrepoClient;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.jupiter.api.AfterEach;
@@ -54,6 +52,7 @@ import edu.unc.lib.boxc.persist.impl.storage.StorageLocationTestHelper;
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextHierarchy({
+    @ContextConfiguration("/spring-test/test-fedora-container.xml"),
     @ContextConfiguration("/spring-test/cdr-client-container.xml"),
     @ContextConfiguration("/spring-test/jms-context.xml"),
     @ContextConfiguration("/binary-cleanup-it-context.xml")
@@ -76,8 +75,6 @@ public class BinaryCleanupRouterIT {
     private TransactionManager txManager;
     @Autowired
     private PremisLoggerFactory premisLoggerFactory;
-    @Autowired
-    private FcrepoClient fcrepoClient;
 
     @Produce(uri = "{{cdr.registration.successful.dest}}")
     private ProducerTemplate template;
@@ -110,7 +107,6 @@ public class BinaryCleanupRouterIT {
     @AfterEach
     void closeService() throws Exception {
         closeable.close();
-        TestRepositoryDeinitializer.cleanup(fcrepoClient);
     }
 
     @Test

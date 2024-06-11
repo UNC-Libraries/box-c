@@ -524,31 +524,6 @@
         <property name="indexingMessageSender" ref="indexingMessageSender" />
     </bean>
 
-    <bean id="enhancementsJmsTemplate" class="org.springframework.jms.core.JmsTemplate">
-        <property name="connectionFactory" ref="pooledAmqConnectionFactory" />
-        <property name="defaultDestinationName" value="${cdr.enhancement.stream}" />
-        <property name="pubSubDomain" value="false" />
-    </bean>
-
-    <bean id="runEnhancementMessageSender" class="edu.unc.lib.boxc.operations.jms.MessageSender">
-        <property name="jmsTemplate" ref="enhancementsJmsTemplate"/>
-    </bean>
-
-    <bean id="accessSurrogateRequestProcessor" class="edu.unc.lib.boxc.services.camel.accessSurrogates.AccessSurrogateRequestProcessor">
-        <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
-        <property name="accessControlService" ref="aclService" />
-        <property name="derivativeService" ref="derivativeService" />
-        <property name="messageSender" ref="runEnhancementMessageSender" />
-    </bean>
-
-    <bean id="imageCacheInvalidationProcessor" class="edu.unc.lib.boxc.services.camel.images.ImageCacheInvalidationProcessor"
-            destroy-method="destroy">
-        <property name="connectionManager" ref="httpClientConnectionManager" />
-        <property name="imageServerBasePath" value="${image.server.base.path}" />
-        <property name="imageServerUsername" value="${image.server.username}" />
-        <property name="imageServerPassword" value="${image.server.password}" />
-    </bean>
-
     <!-- Camel contexts -->
 
     <camel:camelContext id="FcrepoTriplestoreIndexer">
@@ -613,9 +588,5 @@
 
     <camel:camelContext id="CdrViews">
         <camel:package>edu.unc.lib.boxc.services.camel.viewSettings</camel:package>
-    </camel:camelContext>
-
-    <camel:camelContext id="DcrAccessSurrogates">
-        <camel:package>edu.unc.lib.boxc.services.camel.accessSurrogates</camel:package>
     </camel:camelContext>
 </beans>

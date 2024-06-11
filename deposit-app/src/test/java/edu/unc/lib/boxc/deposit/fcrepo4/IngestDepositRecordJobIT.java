@@ -18,7 +18,6 @@ import java.util.Random;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
-import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.IOUtils;
@@ -160,14 +159,11 @@ public class IngestDepositRecordJobIT extends AbstractFedoraDepositJobIT {
     private ManifestDetails addManifest(Model model, Bag depBag, String filename, String mimetype,
             String content, boolean withSha1, boolean withMd5) throws Exception {
         ManifestDetails details = new ManifestDetails();
-        Resource manifestResc1 = DepositModelHelpers.addManifest(depBag, filename);
-        var manifestPid = PIDs.get(manifestResc1.getURI());
-        var manifestUri = storageLocationTestHelper.makeTestStorageUri(manifestPid);
-        details.uri = manifestUri;
-        Path manifestPath1 = Path.of(manifestUri);
+        Path manifestPath1 = Paths.get(depositDir.getAbsolutePath(), filename);
+        details.uri = manifestPath1.toUri();
         writeStringToFile(manifestPath1.toFile(), content, UTF_8);
+        Resource manifestResc1 = DepositModelHelpers.addManifest(depBag, filename);
         manifestResc1.addLiteral(CdrDeposit.storageUri, manifestPath1.toUri().toString());
-        manifestResc1.addLiteral(CdrDeposit.label, filename);
         if (withSha1) {
             details.sha1 = getDigest(manifestPath1, "SHA1");
             manifestResc1.addLiteral(CdrDeposit.sha1sum, details.sha1);
@@ -245,7 +241,7 @@ public class IngestDepositRecordJobIT extends AbstractFedoraDepositJobIT {
 
     private PID getPidBySuffix(List<PID> pids, String suffix) {
         return pids.stream()
-                .filter(p -> p.getRepositoryPath().contains(suffix))
+                .filter(p -> p.getRepositoryPath().endsWith(suffix))
                 .findFirst()
                 .orElse(null);
     }

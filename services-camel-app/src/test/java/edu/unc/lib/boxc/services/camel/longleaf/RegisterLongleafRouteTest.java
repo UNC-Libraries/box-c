@@ -13,8 +13,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-import edu.unc.lib.boxc.model.fcrepo.test.TestRepositoryDeinitializer;
-import edu.unc.lib.boxc.persist.impl.storage.StorageLocationTestHelper;
 import org.apache.camel.CamelContext;
 import org.apache.camel.EndpointInject;
 import org.apache.camel.Exchange;
@@ -26,13 +24,10 @@ import org.apache.camel.test.spring.CamelSpringRunner;
 import org.apache.camel.test.spring.CamelTestContextBootstrapper;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.FileUtils;
-import org.fcrepo.client.FcrepoClient;
 import org.fusesource.hawtbuf.ByteArrayInputStream;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.rules.TemporaryFolder;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -61,6 +56,7 @@ import edu.unc.lib.boxc.services.camel.longleaf.RegisterToLongleafProcessor;
 @RunWith(CamelSpringRunner.class)
 @BootstrapWith(CamelTestContextBootstrapper.class)
 @ContextHierarchy({
+    @ContextConfiguration("/spring-test/test-fedora-container.xml"),
     @ContextConfiguration("/spring-test/cdr-client-container.xml"),
     @ContextConfiguration("/spring-test/jms-context.xml"),
     @ContextConfiguration("/register-longleaf-router-context.xml")
@@ -96,10 +92,6 @@ public class RegisterLongleafRouteTest extends AbstractLongleafRouteTest {
     private BinaryTransferSession transferSession;
     @Autowired
     private RegisterToLongleafProcessor processor;
-    @Autowired
-    private StorageLocationTestHelper storageLocationTestHelper;
-    @Autowired
-    private FcrepoClient fcrepoClient;
 
     private String longleafScript;
 
@@ -113,12 +105,8 @@ public class RegisterLongleafRouteTest extends AbstractLongleafRouteTest {
         longleafScript = LongleafTestHelpers.getLongleafScript(outputPath);
         processor.setLongleafBaseCommand(longleafScript);
 
-        transferSession = transferService.getSession(storageLocationTestHelper.getTestStorageLocation());
-    }
-
-    @After
-    public void closeService() throws Exception {
-        TestRepositoryDeinitializer.cleanup(fcrepoClient);
+        StorageLocation loc = locManager.getStorageLocationById("loc1");
+        transferSession = transferService.getSession(loc);
     }
 
     @Test

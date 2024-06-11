@@ -39,10 +39,6 @@
     <bean id="addAccessCopyProcessor" class="org.mockito.Mockito" factory-method="mock">
         <constructor-arg type="java.lang.Class" value="edu.unc.lib.boxc.services.camel.images.AddDerivativeProcessor" />
     </bean>
-
-    <bean id="imageCacheInvalidationProcessor" class="org.mockito.Mockito" factory-method="mock">
-        <constructor-arg type="java.lang.Class" value="edu.unc.lib.boxc.services.camel.images.ImageCacheInvalidationProcessor" />
-    </bean>
     
     <bean id="binaryMetadataProcessor" class="edu.unc.lib.boxc.services.camel.BinaryMetadataProcessor">
         <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />

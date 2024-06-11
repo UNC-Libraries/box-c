@@ -1,5 +1,45 @@
 package edu.unc.lib.boxc.integration.model.fcrepo.event;
 
+import static java.nio.file.Files.createTempFile;
+import static org.apache.commons.codec.binary.Hex.encodeHexString;
+import static org.apache.commons.io.FileUtils.copyInputStreamToFile;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+import static org.mockito.MockitoAnnotations.openMocks;
+
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
+import java.security.DigestInputStream;
+import java.security.MessageDigest;
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.locks.Lock;
+
+import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.vocabulary.DCTerms;
+import org.apache.jena.vocabulary.RDF;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.Mock;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
+import org.springframework.beans.factory.annotation.Autowired;
+
 import edu.unc.lib.boxc.integration.fcrepo.AbstractFedoraIT;
 import edu.unc.lib.boxc.model.api.SoftwareAgentConstants.SoftwareAgent;
 import edu.unc.lib.boxc.model.api.ids.PID;
@@ -13,32 +53,10 @@ import edu.unc.lib.boxc.model.fcrepo.ids.PidLockManager;
 import edu.unc.lib.boxc.operations.api.events.PremisLogger;
 import edu.unc.lib.boxc.operations.impl.events.PremisLoggerFactoryImpl;
 import edu.unc.lib.boxc.operations.impl.events.RepositoryPremisLogger;
+import edu.unc.lib.boxc.persist.api.DigestAlgorithm;
+import edu.unc.lib.boxc.persist.api.transfer.BinaryTransferOutcome;
 import edu.unc.lib.boxc.persist.api.transfer.BinaryTransferService;
 import edu.unc.lib.boxc.persist.api.transfer.BinaryTransferSession;
-import org.apache.jena.rdf.model.Model;
-import org.apache.jena.rdf.model.Resource;
-import org.apache.jena.vocabulary.DCTerms;
-import org.apache.jena.vocabulary.RDF;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-
-import java.time.Instant;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.locks.Lock;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.MockitoAnnotations.openMocks;
 
 /**
  *
@@ -57,9 +75,10 @@ public class RepositoryPremisLoggerIT extends AbstractFedoraIT {
 
     private AutoCloseable closeable;
 
-    @Autowired
+    @Mock
     private BinaryTransferService transferService;
-    private BinaryTransferSession transferSession;
+    @Mock
+    private BinaryTransferSession mockSession;
     @Autowired
     private PremisLoggerFactoryImpl premisLoggerFactory;
 
@@ -68,21 +87,39 @@ public class RepositoryPremisLoggerIT extends AbstractFedoraIT {
         closeable = openMocks(this);
 
         lockManager = PidLockManager.getDefaultPidLockManager();
+
+        when(transferService.getSession(any(RepositoryObject.class))).thenReturn(mockSession);
         premisLoggerFactory.setBinaryTransferService(transferService);
+
+        // No implementations of session available here, so mock from interface
+        final Path path = createTempFile("content", null);
+        when(mockSession.transferReplaceExisting(any(PID.class), any(InputStream.class)))
+                .thenAnswer(new Answer<BinaryTransferOutcome>()  {
+                    @Override
+                    public BinaryTransferOutcome answer(InvocationOnMock invocation) throws Throwable {
+                        InputStream contentStream = invocation.getArgument(1);
+                        DigestInputStream digestStream = new DigestInputStream(
+                                contentStream, MessageDigest.getInstance(DigestAlgorithm.DEFAULT_ALGORITHM.getName()));
+                        Path tempFilePath = createTempFile("temp_content", null);
+                        copyInputStreamToFile(digestStream, tempFilePath.toFile());
+                        Files.move(tempFilePath, path, StandardCopyOption.REPLACE_EXISTING);
+                        BinaryTransferOutcome outcome = mock(BinaryTransferOutcome.class);
+                        when(outcome.getDestinationUri()).thenReturn(path.toUri());
+                        when(outcome.getSha1()).thenReturn(encodeHexString(digestStream.getMessageDigest().digest()));
+                        return outcome;
+                    }
+                });
+
         previousDigestMap = new HashMap<>();
     }
 
     @AfterEach
     void closeService() throws Exception {
         closeable.close();
-        if (transferSession != null) {
-            transferSession.close();
-        }
     }
 
     private void initPremisLogger(RepositoryObject repoObj) {
-        transferSession = transferService.getSession(parentObject);
-        logger = new RepositoryPremisLogger(parentObject, transferSession, pidMinter,
+        logger = new RepositoryPremisLogger(parentObject, mockSession, pidMinter,
                 repoObjLoader, repoObjFactory);
     }
 
@@ -134,7 +171,7 @@ public class RepositoryPremisLoggerIT extends AbstractFedoraIT {
         assertEventLogDigestChanged(parentObject);
 
         // Make a new logger to make sure everything is clean
-        PremisLogger retrieveLogger = new RepositoryPremisLogger(parentObject, transferSession,
+        PremisLogger retrieveLogger = new RepositoryPremisLogger(parentObject, mockSession,
                 pidMinter, repoObjLoader, repoObjFactory);
 
         Model logModel = retrieveLogger.getEventsModel();
@@ -173,7 +210,7 @@ public class RepositoryPremisLoggerIT extends AbstractFedoraIT {
         initPremisLogger(parentObject);
 
         // make sure that there are no events in premis log before the writes
-        PremisLogger retrieveLogger = new RepositoryPremisLogger(parentObject, transferSession,
+        PremisLogger retrieveLogger = new RepositoryPremisLogger(parentObject, mockSession,
                 pidMinter, repoObjLoader, repoObjFactory);
         Model initialLogModel = retrieveLogger.getEventsModel();
         assertFalse(initialLogModel.listObjects().hasNext(), "New premis already contains events");
@@ -241,7 +278,7 @@ public class RepositoryPremisLoggerIT extends AbstractFedoraIT {
         initPremisLogger(parentObject);
 
         // make sure that there are no events in premis log before the writes
-        PremisLogger retrieveLogger = new RepositoryPremisLogger(parentObject, transferSession,
+        PremisLogger retrieveLogger = new RepositoryPremisLogger(parentObject, mockSession,
                 pidMinter, repoObjLoader, repoObjFactory);
         Model initialLogModel = retrieveLogger.getEventsModel();
         assertFalse(initialLogModel.listObjects().hasNext(), "New premis already contains events");
@@ -284,7 +321,7 @@ public class RepositoryPremisLoggerIT extends AbstractFedoraIT {
         initPremisLogger(parentObject);
 
         // make sure that there are no events in premis log before the writes
-        PremisLogger retrieveLogger = new RepositoryPremisLogger(parentObject, transferSession,
+        PremisLogger retrieveLogger = new RepositoryPremisLogger(parentObject, mockSession,
                 pidMinter, repoObjLoader, repoObjFactory);
         Model initialLogModel = retrieveLogger.getEventsModel();
         assertFalse(initialLogModel.listObjects().hasNext(), "New premis already contains events");
@@ -362,7 +399,7 @@ public class RepositoryPremisLoggerIT extends AbstractFedoraIT {
         initPremisLogger(parentObject);
 
         // make sure that there are no events in premis log before the writes
-        PremisLogger retrieveLogger = new RepositoryPremisLogger(parentObject, transferSession,
+        PremisLogger retrieveLogger = new RepositoryPremisLogger(parentObject, mockSession,
                 pidMinter, repoObjLoader, repoObjFactory);
         Model initialLogModel = retrieveLogger.getEventsModel();
         assertFalse(initialLogModel.listObjects().hasNext(), "New premis already contains events");

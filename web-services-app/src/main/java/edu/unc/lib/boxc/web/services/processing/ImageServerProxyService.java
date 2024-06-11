@@ -22,7 +22,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 
-import static edu.unc.lib.boxc.operations.api.images.ImageServerUtil.getImageServerEncodedId;
+import static edu.unc.lib.boxc.web.services.utils.ImageServerUtil.getImageServerEncodedId;
 
 /**
  * Generates request, connects to, and streams the output from the image Server Proxy.

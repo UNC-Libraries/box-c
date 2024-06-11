@@ -8,14 +8,11 @@
 
     <bean id="baseAddress" class="java.lang.String">
         <constructor-arg
-                value="http://localhost:48085/fcrepo/rest/" />
+            value="http://localhost:48085/rest/" />
     </bean>
-
+    
     <bean id="fcrepoClientFactory" class="edu.unc.lib.boxc.fcrepo.utils.FcrepoClientFactory" factory-method="factory">
         <constructor-arg ref="baseAddress" />
-        <constructor-arg value="localhost" />
-        <constructor-arg value="fedoraAdmin" />
-        <constructor-arg value="fedoraAdmin" />
     </bean>
     
     <bean id="fcrepoClient" class="org.fcrepo.client.FcrepoClient"
@@ -105,12 +102,8 @@
         <constructor-arg type="java.lang.Class" value="edu.unc.lib.boxc.auth.fcrepo.services.AccessControlServiceImpl" />
     </bean>
 
-    <bean id="storageLocationTestHelper" class="edu.unc.lib.boxc.persist.impl.storage.StorageLocationTestHelper"
-          factory-method="createWithBasicConfig">
-    </bean>
-
-    <bean id="storageLocationManager" factory-bean="storageLocationTestHelper"
-          factory-method="createLocationManager">
+    <bean id="storageLocationManager" class="edu.unc.lib.boxc.persist.impl.storage.StorageLocationTestHelper"
+          factory-method="createLocationManagerWithBasicConfig">
         <constructor-arg ref="repositoryObjectLoader" />
     </bean>
 
@@ -140,12 +133,5 @@
 
     <bean id="derivativeService" class="edu.unc.lib.boxc.model.fcrepo.services.DerivativeService">
         <property name="derivativeDir" value="target/" />
-    </bean>
-
-    <bean id="fcrepo" class="org.fcrepo.camel.FcrepoComponent">
-        <property name="authUsername" value="fedoraAdmin"/>
-        <property name="authPassword" value="fedoraAdmin"/>
-        <property name="authHost" value="localhost"/>
-        <property name="baseUrl" ref="baseAddress"/>
     </bean>
 </beans>

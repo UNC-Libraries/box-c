@@ -27,16 +27,18 @@ import java.util.List;
 import java.util.Map;
 import java.util.TimeZone;
 
-import org.springframework.http.MediaType;
+import javax.ws.rs.core.MediaType;
 
-import edu.unc.lib.boxc.web.services.rest.MvcTestHelpers;
 import org.apache.jena.rdf.model.Model;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
+import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jms.core.JmsTemplate;
+import org.springframework.jms.core.MessageCreator;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.ContextHierarchy;
 import org.springframework.test.web.servlet.MvcResult;
@@ -62,6 +64,7 @@ import edu.unc.lib.boxc.operations.impl.acl.PatronAccessOperationSender;
  * @author bbpennel
  */
 @ContextHierarchy({
+    @ContextConfiguration("/spring-test/test-fedora-container.xml"),
     @ContextConfiguration("/spring-test/cdr-client-container.xml"),
     @ContextConfiguration("/spring-test/acl-service-context.xml"),
     @ContextConfiguration("/update-patron-it-servlet.xml")
@@ -78,6 +81,7 @@ public class UpdatePatronAccessIT extends AbstractAPIIT {
     private PatronAccessOperationSender patronAccessOperationSender;
     @Captor
     private ArgumentCaptor<PatronAccessAssignmentRequest> requestCaptor;
+    private static final ObjectReader MAPPER = new ObjectMapper().readerFor(PatronAccessAssignmentRequest.class);
 
     @BeforeEach
     public void setup() throws Exception {
@@ -87,6 +91,8 @@ public class UpdatePatronAccessIT extends AbstractAPIIT {
 
         GroupsThreadStore.storeUsername(USER_NAME);
         GroupsThreadStore.storeGroups(testPrincipals);
+
+        setupContentRoot();
     }
 
     @AfterEach
@@ -109,7 +115,7 @@ public class UpdatePatronAccessIT extends AbstractAPIIT {
 
         mvc.perform(put("/edit/acl/patron/" + collObj.getPid().getId())
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(MvcTestHelpers.makeRequestBody(accessDetails)))
+                .content(makeRequestBody(accessDetails)))
                 .andExpect(status().isForbidden())
             .andReturn();
 
@@ -131,7 +137,7 @@ public class UpdatePatronAccessIT extends AbstractAPIIT {
 
         mvc.perform(put("/edit/acl/patron/" + pid.getId())
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(MvcTestHelpers.makeRequestBody(accessDetails)))
+                .content(makeRequestBody(accessDetails)))
                 .andExpect(status().isNotFound())
             .andReturn();
 
@@ -152,7 +158,7 @@ public class UpdatePatronAccessIT extends AbstractAPIIT {
 
         mvc.perform(put("/edit/acl/patron/" + collObj.getPid().getId())
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(MvcTestHelpers.makeRequestBody(accessDetails)))
+                .content(makeRequestBody(accessDetails)))
                 .andExpect(status().isBadRequest())
             .andReturn();
 
@@ -173,7 +179,7 @@ public class UpdatePatronAccessIT extends AbstractAPIIT {
 
         mvc.perform(put("/edit/acl/patron/" + collObj.getPid().getId())
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(MvcTestHelpers.makeRequestBody(accessDetails)))
+                .content(makeRequestBody(accessDetails)))
                 .andExpect(status().isBadRequest())
             .andReturn();
 
@@ -213,7 +219,7 @@ public class UpdatePatronAccessIT extends AbstractAPIIT {
 
         MvcResult mvcResult = mvc.perform(put("/edit/acl/patron/" + collObj.getPid().getId())
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(MvcTestHelpers.makeRequestBody(accessDetails)))
+                .content(makeRequestBody(accessDetails)))
                 .andExpect(status().isOk())
             .andReturn();
 
@@ -231,7 +237,7 @@ public class UpdatePatronAccessIT extends AbstractAPIIT {
 
         mvc.perform(put("/edit/acl/patron/definitelynotapid")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(MvcTestHelpers.makeRequestBody(accessDetails)))
+                .content(makeRequestBody(accessDetails)))
                 .andExpect(status().isForbidden())
             .andReturn();
 
@@ -251,7 +257,7 @@ public class UpdatePatronAccessIT extends AbstractAPIIT {
 
         MvcResult mvcResult = mvc.perform(put("/edit/acl/patron/" + collObj.getPid().getId())
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(MvcTestHelpers.makeRequestBody(accessDetails)))
+                .content(makeRequestBody(accessDetails)))
                 .andExpect(status().isOk())
             .andReturn();
 
@@ -277,7 +283,7 @@ public class UpdatePatronAccessIT extends AbstractAPIIT {
 
         MvcResult mvcResult = mvc.perform(put("/edit/acl/patron")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(MvcTestHelpers.makeRequestBody(bulkDetails)))
+                .content(makeRequestBody(bulkDetails)))
                 .andExpect(status().isOk())
             .andReturn();
 
@@ -302,7 +308,7 @@ public class UpdatePatronAccessIT extends AbstractAPIIT {
 
         mvc.perform(put("/edit/acl/patron")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(MvcTestHelpers.makeRequestBody(bulkDetails)))
+                .content(makeRequestBody(bulkDetails)))
                 .andExpect(status().isBadRequest())
             .andReturn();
 
@@ -320,7 +326,7 @@ public class UpdatePatronAccessIT extends AbstractAPIIT {
 
         mvc.perform(put("/edit/acl/patron")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(MvcTestHelpers.makeRequestBody(bulkDetails)))
+                .content(makeRequestBody(bulkDetails)))
                 .andExpect(status().isBadRequest())
             .andReturn();
 
@@ -349,7 +355,7 @@ public class UpdatePatronAccessIT extends AbstractAPIIT {
 
         MvcResult mvcResult = mvc.perform(put("/edit/acl/patron")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(MvcTestHelpers.makeRequestBody(bulkDetails)))
+                .content(makeRequestBody(bulkDetails)))
                 .andExpect(status().isOk())
             .andReturn();
 
@@ -375,7 +381,7 @@ public class UpdatePatronAccessIT extends AbstractAPIIT {
 
         mvc.perform(put("/edit/acl/patron")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(MvcTestHelpers.makeRequestBody(bulkDetails)))
+                .content(makeRequestBody(bulkDetails)))
                 .andExpect(status().isForbidden())
             .andReturn();
 
@@ -399,7 +405,7 @@ public class UpdatePatronAccessIT extends AbstractAPIIT {
 
         MvcResult mvcResult = mvc.perform(put("/edit/acl/patron")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(MvcTestHelpers.makeRequestBody(bulkDetails)))
+                .content(makeRequestBody(bulkDetails)))
                 .andExpect(status().isOk())
             .andReturn();
 
@@ -429,7 +435,7 @@ public class UpdatePatronAccessIT extends AbstractAPIIT {
 
         MvcResult mvcResult = mvc.perform(put("/edit/acl/patron")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(MvcTestHelpers.makeRequestBody(bulkDetails)))
+                .content(makeRequestBody(bulkDetails)))
                 .andExpect(status().isOk())
             .andReturn();
 
@@ -471,7 +477,7 @@ public class UpdatePatronAccessIT extends AbstractAPIIT {
     }
 
     private void assertResponseSuccess(MvcResult mvcResult) throws Exception {
-        Map<String, Object> resp = MvcTestHelpers.getMapFromResponse(mvcResult);
+        Map<String, Object> resp = getMapFromResponse(mvcResult);
         assertTrue(((String) resp.get("status")).contains("Submitted patron access update"));
         assertEquals("editPatronAccess", resp.get("action"));
     }

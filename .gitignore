@@ -42,4 +42,3 @@ services-worker
 *.css.map
 dependency-reduced-pom.xml
 etc/solr-config/access/data/
-it_config/logs/*

@@ -18,7 +18,6 @@ import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.List;
 
-import edu.unc.lib.boxc.model.fcrepo.test.TestRepositoryDeinitializer;
 import edu.unc.lib.boxc.operations.jms.order.MemberOrderRequestSender;
 import org.apache.camel.BeanInject;
 import org.apache.camel.CamelContext;
@@ -74,6 +73,7 @@ import edu.unc.lib.boxc.search.solr.services.ObjectPathFactory;
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextHierarchy({
+        @ContextConfiguration("/spring-test/test-fedora-container.xml"),
         @ContextConfiguration("/spring-test/cdr-client-container.xml"),
         @ContextConfiguration("/spring-test/jms-context.xml"),
         @ContextConfiguration("/spring-test/acl-service-context.xml"),
@@ -191,7 +191,6 @@ public class DestroyDerivativesRouterIT {
     @AfterEach
     void closeService() throws Exception {
         closeable.close();
-        TestRepositoryDeinitializer.cleanup(fcrepoClient);
     }
 
     @Test

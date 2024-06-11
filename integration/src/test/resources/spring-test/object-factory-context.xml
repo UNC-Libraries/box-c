@@ -4,6 +4,20 @@
        xsi:schemaLocation="http://www.springframework.org/schema/beans
         http://www.springframework.org/schema/beans/spring-beans-4.3.xsd">
 
+    <bean id="storageLocationManager" class="edu.unc.lib.boxc.persist.impl.storage.StorageLocationTestHelper"
+          factory-method="createLocationManagerWithBasicConfig">
+        <constructor-arg ref="repositoryObjectLoader" />
+    </bean>
+
+    <bean id="binaryTransferService" class="edu.unc.lib.boxc.persist.impl.transfer.BinaryTransferServiceImpl">
+        <property name="storageLocationManager" ref="storageLocationManager" />
+    </bean>
+
+    <bean id="transactionManager" class="edu.unc.lib.boxc.fcrepo.utils.TransactionManager">
+        <property name="client" ref="fcrepoClient" />
+        <property name="binaryTransferService" ref="binaryTransferService" />
+    </bean>
+
     <bean id="versionedDatastreamService" class="edu.unc.lib.boxc.operations.impl.versioning.VersionedDatastreamService" >
         <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
         <property name="repositoryObjectFactory" ref="repositoryObjectFactory" />
@@ -60,7 +74,6 @@
         <property name="updateDescriptionService" ref="updateDescriptionService" />
         <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
         <property name="derivativeService" ref="derivativeService" />
-        <property name="storageLocationTestHelper" ref="storageLocationTestHelper" />
     </bean>
 
     <bean id="workFactory" class="edu.unc.lib.boxc.integration.factories.WorkFactory">

@@ -3,24 +3,17 @@ package edu.unc.lib.boxc.indexing.solr.filter;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.openMocks;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.List;
 
-import edu.unc.lib.boxc.model.api.DatastreamType;
-import edu.unc.lib.boxc.model.fcrepo.services.DerivativeService;
 import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.Resource;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.io.TempDir;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
@@ -53,13 +46,9 @@ public class SetContentStatusFilterTest {
     private IndexDocumentBean idb;
     @Mock
     private Resource resc, fileResc;
-    @Mock
-    private DerivativeService derivativeService;
     @Captor
     private ArgumentCaptor<List<String>> listCaptor;
-    @TempDir
-    public Path derivativeFolder;
-    private Path accessSurrogatePath;
+
     private SetContentStatusFilter filter;
 
     @BeforeEach
@@ -72,11 +61,7 @@ public class SetContentStatusFilterTest {
         when(resc.hasProperty(any(Property.class))).thenReturn(false);
 
         when(fileObj.getParent()).thenReturn(workObj);
-        accessSurrogatePath = derivativeFolder.resolve("f277bb38-272c-471c-a28a-9887a1328a1f");
         filter = new SetContentStatusFilter();
-        filter.setDerivativeService(derivativeService);
-        when(derivativeService.getDerivativePath(any(), eq(DatastreamType.ACCESS_SURROGATE)))
-                .thenReturn(accessSurrogatePath);
     }
 
     @AfterEach
@@ -232,45 +217,5 @@ public class SetContentStatusFilterTest {
 
         verify(idb).setContentStatus(listCaptor.capture());
         assertTrue(listCaptor.getValue().contains(FacetConstants.ASSIGNED_AS_THUMBNAIL));
-    }
-
-    @Test
-    public void testFileObjectHasAccessSurrogate() throws IOException {
-        Files.write(accessSurrogatePath, List.of("fake image"));
-        when(workObj.getResource()).thenReturn(resc);
-        when(dip.getContentObject()).thenReturn(fileObj);
-        when(fileObj.getResource()).thenReturn(fileResc);
-
-        filter.filter(dip);
-
-        verify(idb).setContentStatus(listCaptor.capture());
-        assertTrue(listCaptor.getValue().contains(FacetConstants.HAS_ACCESS_SURROGATE));
-    }
-
-    @Test
-    public void testFileObjectNoAccessSurrogate() {
-        when(workObj.getResource()).thenReturn(resc);
-        when(resc.hasProperty(Cdr.primaryObject, fileResc)).thenReturn(true);
-        when(dip.getContentObject()).thenReturn(fileObj);
-        when(fileObj.getResource()).thenReturn(fileResc);
-
-        filter.filter(dip);
-
-        verify(idb).setContentStatus(listCaptor.capture());
-        assertTrue(listCaptor.getValue().contains(FacetConstants.NO_ACCESS_SURROGATE));
-    }
-
-    @Test
-    public void testWorkAccessSurrogate() throws IOException {
-        Files.write(accessSurrogatePath, List.of("fake image"));
-        when(workObj.getResource()).thenReturn(resc);
-        when(dip.getContentObject()).thenReturn(workObj);
-        when(workObj.getResource()).thenReturn(resc);
-
-        filter.filter(dip);
-
-        verify(idb).setContentStatus(listCaptor.capture());
-        assertFalse(listCaptor.getValue().contains(FacetConstants.HAS_ACCESS_SURROGATE));
-        assertFalse(listCaptor.getValue().contains(FacetConstants.NO_ACCESS_SURROGATE));
     }
 }

@@ -19,6 +19,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.openMocks;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.nio.file.Files;
@@ -28,9 +29,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-import edu.unc.lib.boxc.model.fcrepo.ids.DatastreamPids;
-import edu.unc.lib.boxc.model.fcrepo.test.TestRepositoryDeinitializer;
-import edu.unc.lib.boxc.persist.impl.storage.StorageLocationTestHelper;
 import org.apache.camel.BeanInject;
 import org.apache.camel.CamelContext;
 import org.apache.camel.Exchange;
@@ -38,7 +36,6 @@ import org.apache.camel.Produce;
 import org.apache.camel.ProducerTemplate;
 import org.apache.camel.builder.NotifyBuilder;
 import org.apache.commons.io.FileUtils;
-import org.fcrepo.client.FcrepoClient;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -75,6 +72,7 @@ import edu.unc.lib.boxc.services.camel.solr.SolrIngestProcessor;
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextHierarchy({
+    @ContextConfiguration("/spring-test/test-fedora-container.xml"),
     @ContextConfiguration("/spring-test/cdr-client-container.xml"),
     @ContextConfiguration("/spring-test/jms-context.xml"),
     @ContextConfiguration("/enhancement-router-it-context.xml")
@@ -92,10 +90,6 @@ public class EnhancementRouterIT {
 
     @Autowired
     private RepositoryObjectFactory repoObjectFactory;
-    @Autowired
-    private StorageLocationTestHelper storageLocationTestHelper;
-    @Autowired
-    private FcrepoClient fcrepoClient;
 
     @Autowired
     private CamelContext cdrEnhancements;
@@ -161,8 +155,6 @@ public class EnhancementRouterIT {
     @AfterEach
     void closeService() throws Exception {
         closeable.close();
-        TestRepositoryDeinitializer.cleanup(fcrepoClient);
-        storageLocationTestHelper.cleanupStorageLocations();
     }
 
     @Test
@@ -201,9 +193,9 @@ public class EnhancementRouterIT {
     @Test
     public void testBinaryImageFile() throws Exception {
         FileObject fileObj = repoObjectFactory.createFileObject(null);
-        var storageUri = storageLocationTestHelper.makeTestStorageUri(DatastreamPids.getOriginalFilePid(fileObj.getPid()));
-        FileUtils.writeStringToFile(new File(storageUri), FILE_CONTENT, "UTF-8");
-        BinaryObject binObj = fileObj.addOriginalFile(storageUri,
+        Path originalPath = Files.createTempFile("file", ".png");
+        FileUtils.writeStringToFile(originalPath.toFile(), FILE_CONTENT, "UTF-8");
+        BinaryObject binObj = fileObj.addOriginalFile(originalPath.toUri(),
                 null, "image/png", null, null);
 
         // Separate exchanges when multicasting
@@ -227,9 +219,9 @@ public class EnhancementRouterIT {
     @Test
     public void testBinaryMetadataFile() throws Exception {
         FileObject fileObj = repoObjectFactory.createFileObject(null);
-        var storageUri = storageLocationTestHelper.makeTestStorageUri(fileObj.getPid());
-        FileUtils.writeStringToFile(new File(storageUri), FILE_CONTENT, "UTF-8");
-        BinaryObject binObj = fileObj.addOriginalFile(storageUri,
+        Path originalPath = Files.createTempFile("file", ".png");
+        FileUtils.writeStringToFile(originalPath.toFile(), FILE_CONTENT, "UTF-8");
+        BinaryObject binObj = fileObj.addOriginalFile(originalPath.toUri(),
                 null, "image/png", null, null);
 
         String mdId = binObj.getPid().getRepositoryPath() + "/fcr:metadata";
@@ -256,9 +248,9 @@ public class EnhancementRouterIT {
     public void testInvalidFile() throws Exception {
         FileObject fileObj = repoObjectFactory.createFileObject(null);
         PID fitsPid = getTechnicalMetadataPid(fileObj.getPid());
-        var storageUri = storageLocationTestHelper.makeTestStorageUri(fitsPid);
-        FileUtils.writeStringToFile(new File(storageUri), FILE_CONTENT, "UTF-8");
-        BinaryObject binObj = fileObj.addBinary(fitsPid, storageUri,
+        Path techmdPath = Files.createTempFile("fits", ".xml");
+        FileUtils.writeStringToFile(techmdPath.toFile(), FILE_CONTENT, "UTF-8");
+        BinaryObject binObj = fileObj.addBinary(fitsPid, techmdPath.toUri(),
                 "fits.xml", "text/xml", null, null, null);
 
         NotifyBuilder notify = new NotifyBuilder(cdrEnhancements)
@@ -302,9 +294,8 @@ public class EnhancementRouterIT {
     @Test
     public void testDepositManifestFileMetadata() throws Exception {
         DepositRecord recObj = repoObjectFactory.createDepositRecord(null);
-        var storageUri = storageLocationTestHelper.makeTestStorageUri(recObj.getPid());
-        FileUtils.writeStringToFile(new File(storageUri), FILE_CONTENT, "UTF-8");
-        BinaryObject manifestBin = recObj.addManifest(storageUri, "manifest", "text/plain", null, null);
+        Path manifestPath = Files.createTempFile("manifest", ".txt");
+        BinaryObject manifestBin = recObj.addManifest(manifestPath.toUri(), "manifest", "text/plain", null, null);
 
         String mdId = manifestBin.getPid().getRepositoryPath() + "/fcr:metadata";
         PID mdPid = PIDs.get(mdId);
