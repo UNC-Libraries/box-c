@@ -208,7 +208,7 @@ public class ExportCsvIT extends AbstractAPIIT {
         List<CSVRecord> csvList = parseCsvResponse(response);
         assertEquals(3, csvList.size(), "Unexpected number of results");
 
-        assertCsvContentIsCorrect(csvList, folderObj.getPid(), pidList);
+        assertCsvContentIsCorrect(csvList, folderObj.getPid(), workPid, filePid, pidList);
     }
 
     @Test
@@ -766,8 +766,8 @@ public class ExportCsvIT extends AbstractAPIIT {
         List<CSVRecord> csvList = parseCsvResponse(response);
         assertEquals(6, csvList.size(), "Unexpected number of results");
 
-        assertCsvContentIsCorrect(csvList, folderPid1, pidList1);
-        assertCsvContentIsCorrect(csvList, folderPid2, pidList2);
+        assertCsvContentIsCorrect(csvList, folderPid1, workPid1, filePid2, pidList1);
+        assertCsvContentIsCorrect(csvList, folderPid2, workPid2, filePid2, pidList2);
     }
 
     private Map<String, PID> addWorkToFolder(boolean accessSurrogate, FolderObject folder) throws Exception {
@@ -902,18 +902,17 @@ public class ExportCsvIT extends AbstractAPIIT {
         fail("No CSV record with PID " + expectedPid.getId() + " present");
     }
 
-    private void assertCsvContentIsCorrect(List<CSVRecord> csvList, PID folderPid, Map<String, PID> pidList) {
+    private void assertCsvContentIsCorrect(List<CSVRecord> csvList, PID folderPid, PID workPid, PID filePid, Map<String, PID> pidList) {
         assertContainerRecord(csvList, ResourceType.Folder, folderPid, "Folder",
                 FOLDER_PATH, 3, false, 1, false, "Authenticated", "");
 
-        var workPid = pidList.get("workPid");
         String pathToWork = FOLDER_PATH + "/" + workPid.getId();
         assertCsvRecord(csvList, ResourceType.Work, workPid, "TestWork",
                 pathToWork, 4, false, null, null, null, null,
                 1, false, "Authenticated", "", "");
 
         String pathToFile = pathToWork + "/file.txt";
-        assertCsvRecord(csvList, ResourceType.File, pidList.get("filePid"), "TestWork",
+        assertCsvRecord(csvList, ResourceType.File, filePid, "TestWork",
                 pathToFile, 5, false, "text/plain", null, (long) 7, null,
                 null, false, "Authenticated", "", "");
     }
