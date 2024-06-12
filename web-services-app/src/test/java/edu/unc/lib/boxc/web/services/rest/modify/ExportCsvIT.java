@@ -766,7 +766,7 @@ public class ExportCsvIT extends AbstractAPIIT {
         List<CSVRecord> csvList = parseCsvResponse(response);
         assertEquals(6, csvList.size(), "Unexpected number of results");
 
-        assertCsvContentIsCorrect(csvList, folderPid1, workPid1, filePid2, pidList1);
+        assertCsvContentIsCorrect(csvList, folderPid1, workPid1, filePid1, pidList1);
         assertCsvContentIsCorrect(csvList, folderPid2, workPid2, filePid2, pidList2);
     }
 
