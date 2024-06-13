@@ -208,7 +208,7 @@ public class ExportCsvIT extends AbstractAPIIT {
         List<CSVRecord> csvList = parseCsvResponse(response);
         assertEquals(3, csvList.size(), "Unexpected number of results");
 
-        assertCsvContentIsCorrect(csvList, folderObj.getPid(), workPid, filePid, pidList);
+        assertCsvContentIsCorrect(csvList, folderObj.getPid(), workPid, filePid);
     }
 
     @Test
@@ -766,8 +766,8 @@ public class ExportCsvIT extends AbstractAPIIT {
         List<CSVRecord> csvList = parseCsvResponse(response);
         assertEquals(6, csvList.size(), "Unexpected number of results");
 
-        assertCsvContentIsCorrect(csvList, folderPid1, workPid1, filePid1, pidList1);
-        assertCsvContentIsCorrect(csvList, folderPid2, workPid2, filePid2, pidList2);
+        assertCsvContentIsCorrect(csvList, folderPid1, workPid1, filePid1);
+        assertCsvContentIsCorrect(csvList, folderPid2, workPid2, filePid2);
     }
 
     private Map<String, PID> addWorkToFolder(boolean accessSurrogate, FolderObject folder) throws Exception {
@@ -902,7 +902,7 @@ public class ExportCsvIT extends AbstractAPIIT {
         fail("No CSV record with PID " + expectedPid.getId() + " present");
     }
 
-    private void assertCsvContentIsCorrect(List<CSVRecord> csvList, PID folderPid, PID workPid, PID filePid, Map<String, PID> pidList) {
+    private void assertCsvContentIsCorrect(List<CSVRecord> csvList, PID folderPid, PID workPid, PID filePid) {
         assertContainerRecord(csvList, ResourceType.Folder, folderPid, "Folder",
                 FOLDER_PATH, 3, false, 1, false, "Authenticated", "");
 
