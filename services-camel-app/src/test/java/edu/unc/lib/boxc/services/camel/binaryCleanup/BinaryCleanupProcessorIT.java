@@ -25,18 +25,16 @@ import edu.unc.lib.boxc.persist.api.transfer.BinaryTransferService;
 import edu.unc.lib.boxc.persist.impl.storage.StorageLocationTestHelper;
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
-import org.apache.camel.Produce;
-import org.apache.camel.ProducerTemplate;
 import org.fcrepo.client.FcrepoClient;
-import org.junit.Before;
-import org.junit.Test;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.ContextHierarchy;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.io.File;
 import java.net.URI;
@@ -54,10 +52,8 @@ import static org.mockito.MockitoAnnotations.openMocks;
 /**
  * @author bbpennel
  */
-@RunWith(SpringJUnit4ClassRunner.class)
-@ContextHierarchy({
-    @ContextConfiguration("/spring-test/cdr-client-container.xml"),
-})
+@ExtendWith(SpringExtension.class)
+@ContextConfiguration("/spring-test/cdr-client-container.xml")
 public class BinaryCleanupProcessorIT {
 
     @Autowired
@@ -93,7 +89,7 @@ public class BinaryCleanupProcessorIT {
 
     private AutoCloseable closeable;
 
-    @Before
+    @BeforeEach
     public void init() {
         closeable = openMocks(this);
 

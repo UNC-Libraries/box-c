@@ -58,8 +58,4 @@
 
     <bean id="getUrisProcessor" class="edu.unc.lib.boxc.services.camel.longleaf.GetUrisProcessor">
     </bean>
-
-    <camel:camelContext id="cdrServiceTriplesReindexing">
-        <camel:package>edu.unc.lib.boxc.services.camel.triplesReindexing</camel:package>
-    </camel:camelContext>
 </beans>

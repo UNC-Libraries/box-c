@@ -88,8 +88,8 @@ public class TriplesReindexingRouterIT extends CamelSpringTestSupport {
         closeable = openMocks(this);
 
 //        camelContext = applicationContext.getBean("cdrServiceTriplesReindexing", CamelContext.class);
-//        indexingEndpoint = applicationContext.getBean("indexingEndpoint", String.class);
-//        fusekiPort = applicationContext.getBean("fusekiPort", String.class);
+        indexingEndpoint = applicationContext.getBean("indexingEndpoint", String.class);
+        fusekiPort = applicationContext.getBean("fusekiPort", String.class);
         baseAddress = applicationContext.getBean("baseAddress", String.class);
         repositoryObjectLoader = applicationContext.getBean("repositoryObjectLoader", RepositoryObjectLoader.class);
         repositoryObjectFactory = applicationContext.getBean("repositoryObjectFactory", RepositoryObjectFactory.class);
