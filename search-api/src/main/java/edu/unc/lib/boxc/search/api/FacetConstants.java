@@ -29,5 +29,6 @@ public abstract class FacetConstants {
     public static final String VIEW_BEHAVIOR_INDIVIDUALS = "View Behavior Individuals";
     public static final String VIEW_BEHAVIOR_PAGED = "View Behavior Paged";
     public static final String VIEW_BEHAVIOR_CONTINUOUS = "View Behavior Continuous";
-
+    public static final String HAS_ACCESS_SURROGATE = "Has Access Surrogate";
+    public static final String NO_ACCESS_SURROGATE = "No Access Surrogate";
 }

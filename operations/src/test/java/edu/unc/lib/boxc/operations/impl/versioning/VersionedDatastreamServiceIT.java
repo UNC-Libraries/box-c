@@ -61,7 +61,6 @@ import edu.unc.lib.boxc.persist.impl.transfer.BinaryTransferServiceImpl;
  */
 @ExtendWith(SpringExtension.class)
 @ContextHierarchy({
-    @ContextConfiguration("/spring-test/test-fedora-container.xml"),
     @ContextConfiguration("/spring-test/cdr-client-container.xml")
 })
 public class VersionedDatastreamServiceIT {

@@ -5,14 +5,17 @@
   http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
 
     <context:property-placeholder />
-    
+
     <bean id="baseAddress" class="java.lang.String">
         <constructor-arg
-            value="http://localhost:48085/rest/" />
+                value="http://localhost:48085/fcrepo/rest/" />
     </bean>
-    
+
     <bean id="fcrepoClientFactory" class="edu.unc.lib.boxc.fcrepo.utils.FcrepoClientFactory" factory-method="factory">
         <constructor-arg ref="baseAddress" />
+        <constructor-arg value="localhost" />
+        <constructor-arg value="fedoraAdmin" />
+        <constructor-arg value="fedoraAdmin" />
     </bean>
     
     <bean id="fcrepoClient" class="org.fcrepo.client.FcrepoClient"
@@ -35,6 +38,15 @@
     
     <bean id="repositoryInitializer" class="edu.unc.lib.boxc.model.fcrepo.services.RepositoryInitializer">
         <property name="objFactory" ref="repositoryObjectFactory" />
+    </bean>
+
+    <bean id="storageLocationTestHelper" class="edu.unc.lib.boxc.persist.impl.storage.StorageLocationTestHelper"
+          factory-method="createWithBasicConfig">
+    </bean>
+
+    <bean id="storageLocationManager" factory-bean="storageLocationTestHelper"
+          factory-method="createLocationManager">
+        <constructor-arg ref="repositoryObjectLoader" />
     </bean>
     
     <bean id="cacheTimeToLive" class="java.lang.Long">
@@ -92,12 +104,12 @@
         <property name="cacheTimeToLive" value="100" />
         <property name="fcrepoClient" ref="fcrepoClient" />
     </bean>
-    
-    <bean id="binaryTransferService" class="org.mockito.Mockito" factory-method="mock">
-        <constructor-arg type="java.lang.Class" value="edu.unc.lib.boxc.persist.api.transfer.BinaryTransferService" />
+
+    <bean id="binaryTransferService" class="edu.unc.lib.boxc.persist.impl.transfer.BinaryTransferServiceImpl">
+        <property name="storageLocationManager" ref="storageLocationManager" />
     </bean>
     
-    <bean id="txManager" class="edu.unc.lib.boxc.fcrepo.utils.TransactionManager">
+    <bean id="transactionManager" class="edu.unc.lib.boxc.fcrepo.utils.TransactionManager">
         <property name="client" ref="fcrepoClient" />
         <property name="binaryTransferService" ref="binaryTransferService" />
     </bean>

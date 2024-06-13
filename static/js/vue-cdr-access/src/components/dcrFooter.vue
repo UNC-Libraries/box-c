@@ -4,9 +4,9 @@
             <router-link to="/">Home</router-link> |
             <router-link to="/collections">Browse Collections</router-link> |
             <router-link to="/aboutRepository">About</router-link> |
-            <a href="https://library.unc.edu/wilson/contact/">Contact Us</a> |
+            <a href="https://library.unc.edu/contact-us/">Contact Us</a> |
             <a href="https://library.unc.edu">Library Home</a> |
-            <a href="https://library.unc.edu/privacy-policy/">Privacy Policy</a> |
+            <a href="https://library.unc.edu/policies/privacy-policy/">Privacy Policy</a> |
             <a href="https://digitalaccess.unc.edu/report">Accessibility</a>
         </p>
     </footer>

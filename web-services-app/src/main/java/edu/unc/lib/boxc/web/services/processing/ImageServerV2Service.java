@@ -1,15 +1,12 @@
 package edu.unc.lib.boxc.web.services.processing;
 
-import static edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPaths.idToPath;
-
 import java.io.OutputStream;
 import java.net.URI;
 import java.util.List;
 
-import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import edu.unc.lib.boxc.web.services.utils.ImageServerUtil;
+import edu.unc.lib.boxc.operations.api.images.ImageServerUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpStatus;

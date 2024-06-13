@@ -13,8 +13,10 @@ import java.util.concurrent.TimeUnit;
 
 import javax.mail.internet.MimeMessage;
 
+import edu.unc.lib.boxc.model.fcrepo.test.TestRepositoryDeinitializer;
 import org.apache.camel.CamelContext;
 import org.apache.camel.builder.NotifyBuilder;
+import org.fcrepo.client.FcrepoClient;
 import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.input.SAXBuilder;
@@ -51,7 +53,6 @@ import edu.unc.lib.boxc.persist.impl.transfer.BinaryTransferServiceImpl;
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextHierarchy({
-    @ContextConfiguration("/spring-test/test-fedora-container.xml"),
     @ContextConfiguration("/spring-test/cdr-client-container.xml"),
     @ContextConfiguration("/spring-test/jms-context.xml"),
     @ContextConfiguration("/import-xml-it-context.xml")
@@ -95,6 +96,8 @@ public class ImportXMLIT {
     private MimeMessage mimeMessage;
     @Autowired
     private Template updateCompleteTemplate;
+    @Autowired
+    private FcrepoClient fcrepoClient;
 
     @Mock
     private AgentPrincipals agent;
@@ -123,6 +126,7 @@ public class ImportXMLIT {
     @AfterEach
     void closeService() throws Exception {
         closeable.close();
+        TestRepositoryDeinitializer.cleanup(fcrepoClient);
     }
 
     @Test

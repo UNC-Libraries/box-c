@@ -16,6 +16,7 @@ import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
 import edu.unc.lib.boxc.model.fcrepo.ids.DatastreamPids;
 import edu.unc.lib.boxc.model.fcrepo.services.RepositoryInitializer;
 import edu.unc.lib.boxc.model.fcrepo.test.TestHelper;
+import edu.unc.lib.boxc.model.fcrepo.test.TestRepositoryDeinitializer;
 import edu.unc.lib.boxc.operations.api.events.PremisLogger;
 import edu.unc.lib.boxc.operations.api.events.PremisLoggerFactory;
 import edu.unc.lib.boxc.persist.api.storage.StorageLocation;
@@ -24,6 +25,9 @@ import edu.unc.lib.boxc.persist.api.transfer.BinaryTransferService;
 import edu.unc.lib.boxc.persist.impl.storage.StorageLocationTestHelper;
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
+import org.apache.camel.Produce;
+import org.apache.camel.ProducerTemplate;
+import org.fcrepo.client.FcrepoClient;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.jupiter.api.AfterEach;
@@ -52,8 +56,7 @@ import static org.mockito.MockitoAnnotations.openMocks;
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextHierarchy({
-        @ContextConfiguration("/spring-test/test-fedora-container.xml"),
-        @ContextConfiguration("/spring-test/cdr-client-container.xml")
+    @ContextConfiguration("/spring-test/cdr-client-container.xml"),
 })
 public class BinaryCleanupProcessorIT {
 
@@ -75,6 +78,9 @@ public class BinaryCleanupProcessorIT {
     private BinaryTransferService binaryTransferService;
     @Autowired
     private PremisLoggerFactory premisLoggerFactory;
+    @Autowired
+    private FcrepoClient fcrepoClient;
+
     private BinaryCleanupProcessor processor;
     @Mock
     private Exchange exchange;
@@ -111,6 +117,7 @@ public class BinaryCleanupProcessorIT {
     @AfterEach
     void closeService() throws Exception {
         closeable.close();
+        TestRepositoryDeinitializer.cleanup(fcrepoClient);
     }
 
     @Test

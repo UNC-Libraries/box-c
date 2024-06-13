@@ -12,14 +12,12 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.TimeZone;
 
-import org.apache.commons.io.FileUtils;
 import org.apache.jena.rdf.model.Model;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -53,7 +51,6 @@ import edu.unc.lib.boxc.web.services.rest.modify.AbstractAPIIT;
 *
 */
 @ContextHierarchy({
-   @ContextConfiguration("/spring-test/test-fedora-container.xml"),
    @ContextConfiguration("/spring-test/cdr-client-container.xml"),
    @ContextConfiguration("/spring-test/acl-service-context.xml"),
    @ContextConfiguration("/access-control-retrieval-it-servlet.xml")
@@ -618,8 +615,7 @@ public class RetrievePatronRolesIT extends AbstractAPIIT {
         WorkObject work = repositoryObjectFactory.createWorkObject(null);
         collObj.addMember(work);
 
-        Path originalPath = Files.createTempFile("file", ".txt");
-        FileUtils.writeStringToFile(originalPath.toFile(), origBodyString, "UTF-8");
+        Path originalPath = createBinaryContent(origBodyString);
         FileObject fileObj = work.addDataFile(originalPath.toUri(), origFilename, origMimetype, null, null,
                 new AclModelBuilder("Work")
                     .addNoneRole(PUBLIC_PRINC)

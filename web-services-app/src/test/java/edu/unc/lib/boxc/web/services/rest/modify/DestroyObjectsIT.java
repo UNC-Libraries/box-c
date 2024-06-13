@@ -12,6 +12,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import java.net.URI;
 import java.util.Map;
 
+import edu.unc.lib.boxc.web.services.rest.MvcTestHelpers;
 import org.apache.jena.rdf.model.Model;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -34,7 +35,6 @@ import edu.unc.lib.boxc.model.fcrepo.test.AclModelBuilder;
  *
  */
 @ContextHierarchy({
-    @ContextConfiguration("/spring-test/test-fedora-container.xml"),
     @ContextConfiguration("/spring-test/cdr-client-container.xml"),
     @ContextConfiguration("/spring-test/acl-service-context.xml"),
     @ContextConfiguration("/destroy-objects-it-servlet.xml")
@@ -161,7 +161,7 @@ public class DestroyObjectsIT extends AbstractAPIIT {
     }
 
     private void assertResponseSuccess(MvcResult mvcResult) throws Exception {
-        Map<String, Object> resp = getMapFromResponse(mvcResult);
+        Map<String, Object> resp = MvcTestHelpers.getMapFromResponse(mvcResult);
         assertTrue(resp.containsKey("job"), "Missing job id");
         assertEquals("destroy", resp.get("action"));
     }

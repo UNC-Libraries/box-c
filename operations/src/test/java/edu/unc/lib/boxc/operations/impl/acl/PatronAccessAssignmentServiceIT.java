@@ -29,6 +29,8 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
+import edu.unc.lib.boxc.persist.api.storage.StorageLocation;
+import edu.unc.lib.boxc.persist.impl.storage.StorageLocationTestHelper;
 import org.apache.jena.datatypes.xsd.XSDDateTime;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Resource;
@@ -86,7 +88,6 @@ import edu.unc.lib.boxc.operations.jms.JMSMessageUtil.CDRActions;
 
 @ExtendWith(SpringExtension.class)
 @ContextHierarchy({
-    @ContextConfiguration("/spring-test/test-fedora-container.xml"),
     @ContextConfiguration("/spring-test/cdr-client-container.xml")
 })
 public class PatronAccessAssignmentServiceIT {
@@ -209,10 +210,11 @@ public class PatronAccessAssignmentServiceIT {
     @Test
     public void assignToBinaryObject() throws Exception {
         Assertions.assertThrows(InvalidAssignmentException.class, () -> {
+            var storageLocationTestHelper = new StorageLocationTestHelper();
             createCollectionInUnit(null);
             WorkObject work = repoObjFactory.createWorkObject(null);
             collObj.addMember(work);
-            URI contentUri = Files.createTempFile("test", ".txt").toUri();
+            URI contentUri = Files.createTempFile(storageLocationTestHelper.getBaseStoragePath(), "test", ".txt").toUri();
             FileObject fileObj = work.addDataFile(contentUri, origFilename, origMimetype, null, null);
             BinaryObject binObj = fileObj.getOriginalFile();
 

@@ -171,6 +171,7 @@
     </bean>
 
     <bean id="setContentStatusFilter" class="edu.unc.lib.boxc.indexing.solr.filter.SetContentStatusFilter">
+        <property name="derivativeService" ref="derivativeService" />
     </bean>
 
     <bean id="setContentTypeFilter" class="edu.unc.lib.boxc.indexing.solr.filter.SetContentTypeFilter">

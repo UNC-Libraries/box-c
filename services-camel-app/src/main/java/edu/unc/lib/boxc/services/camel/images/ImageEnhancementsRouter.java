@@ -30,6 +30,9 @@ public class ImageEnhancementsRouter extends RouteBuilder {
     @BeanInject(value = "addAccessCopyProcessor")
     private AddDerivativeProcessor addAccessCopyProcessor;
 
+    @BeanInject(value = "imageCacheInvalidationProcessor")
+    private ImageCacheInvalidationProcessor imageCacheInvalidationProcessor;
+
     private UuidGenerator uuidGenerator;
 
     /**
@@ -108,6 +111,7 @@ public class ImageEnhancementsRouter extends RouteBuilder {
                     .recipientList(simple("exec:/bin/sh?args=${properties:cdr.enhancement.bin}/convertJp2.sh "
                             + "${headers[CdrImagePath]} ${headers[CdrMimeType]} ${headers[CdrTempPath]}"))
                     .bean(addAccessCopyProcessor)
+                    .bean(imageCacheInvalidationProcessor)
                 .endDoTry()
                 .doFinally()
                     .bean(addAccessCopyProcessor, "cleanupTempFile")

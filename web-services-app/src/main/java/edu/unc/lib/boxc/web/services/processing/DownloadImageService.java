@@ -5,7 +5,7 @@ import edu.unc.lib.boxc.model.api.DatastreamType;
 import edu.unc.lib.boxc.model.api.exceptions.NotFoundException;
 import edu.unc.lib.boxc.search.api.models.ContentObjectRecord;
 import edu.unc.lib.boxc.search.api.models.Datastream;
-import edu.unc.lib.boxc.web.services.utils.ImageServerUtil;
+import edu.unc.lib.boxc.operations.api.images.ImageServerUtil;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.core.io.InputStreamResource;
@@ -18,7 +18,7 @@ import java.io.InputStream;
 import java.net.URL;
 import java.util.Objects;
 
-import static edu.unc.lib.boxc.web.services.utils.ImageServerUtil.FULL_SIZE;
+import static edu.unc.lib.boxc.operations.api.images.ImageServerUtil.FULL_SIZE;
 
 /**
  * Service to process access copy image downloads
