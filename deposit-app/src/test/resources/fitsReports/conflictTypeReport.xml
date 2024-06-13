@@ -8,7 +8,7 @@
       <tool toolname="Exiftool" toolversion="10.00" />
       <externalIdentifier toolname="Droid" toolversion="6.1.5" type="puid">fmt/141</externalIdentifier>
     </identity>
-    <identity format="WAVE" mimetype="audio/x-wave" toolname="FITS" toolversion="1.0.5">
+    <identity format="WAVERLY" mimetype="audio/x-waverly" toolname="FITS" toolversion="1.0.5">
       <tool toolname="Jhove" toolversion="1.11" />
     </identity>
   </identification>

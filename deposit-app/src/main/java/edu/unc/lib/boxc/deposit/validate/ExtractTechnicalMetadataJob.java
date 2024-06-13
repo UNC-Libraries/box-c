@@ -6,6 +6,7 @@ import edu.unc.lib.boxc.common.util.URIUtil;
 import edu.unc.lib.boxc.deposit.work.AbstractConcurrentDepositJob;
 import edu.unc.lib.boxc.deposit.work.JobFailedException;
 import edu.unc.lib.boxc.deposit.work.JobInterruptedException;
+import edu.unc.lib.boxc.model.api.exceptions.RepositoryException;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.rdf.CdrDeposit;
 import edu.unc.lib.boxc.model.fcrepo.ids.DatastreamPids;
@@ -43,6 +44,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -50,6 +52,7 @@ import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Set;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import static edu.unc.lib.boxc.common.xml.SecureXMLFactory.createSAXBuilder;
 import static edu.unc.lib.boxc.model.api.rdf.CdrDeposit.mimetype;
@@ -73,7 +76,7 @@ public class ExtractTechnicalMetadataJob extends AbstractConcurrentDepositJob {
 
     private static final String FITS_SINGLE_STATUS = "SINGLE_RESULT";
     private static final String FITS_EXAMINE_PATH = "examine";
-    private static final Path TMP_PATH = Paths.get(System.getProperty("java.io.tmpdir"));
+    private static final String MIMETYPE_ATTR = "mimetype";
 
     private CloseableHttpClient httpClient;
 
@@ -215,10 +218,12 @@ public class ExtractTechnicalMetadataJob extends AbstractConcurrentDepositJob {
 
             // Symlink the file before processing
             Path linkPath = makeSymlinkForStagedPath(stagedPath, providedLabel);
-            // Generate the FITS report as a document
-            Document fitsDoc = getFitsDocument(objPid, linkPath);
 
+            Document fitsDoc = null;
             try {
+                // Generate the FITS report as a document
+                fitsDoc = getFitsDocument(objPid, linkPath);
+
                 // Create the PREMIS report wrapper for the FITS results
                 Document premisDoc = generatePremisReport(objPid, fitsDoc);
                 Element premisObjCharsEl = getObjectCharacteristics(premisDoc);
@@ -234,11 +239,11 @@ public class ExtractTechnicalMetadataJob extends AbstractConcurrentDepositJob {
                 writePremisReport(objPid, premisDoc);
 
                 receiveResult(result);
-            } catch (JobFailedException | JobInterruptedException e) {
+            } catch (JobFailedException | JobInterruptedException | RepositoryException e) {
                 throw e;
             } catch (Exception e) {
                 failJob(e, "Failed to extract FITS details for file '{0}' with id {1} from document:\n{2}",
-                        stagedPath, objPid.getId(), getXMLOutputter().outputString(fitsDoc));
+                        stagedPath, objPid.getId(), fitsDoc != null ? getXMLOutputter().outputString(fitsDoc) : "null");
             } finally {
                 try {
                     Files.delete(linkPath);
@@ -263,7 +268,7 @@ public class ExtractTechnicalMetadataJob extends AbstractConcurrentDepositJob {
             String fitsMimetype = null;
             String format;
             if (identity != null) {
-                fitsMimetype = identity.getAttributeValue("mimetype");
+                fitsMimetype = identity.getAttributeValue(MIMETYPE_ATTR);
                 format = identity.getAttributeValue("format");
             } else {
                 format = "Unknown";
@@ -347,15 +352,18 @@ public class ExtractTechnicalMetadataJob extends AbstractConcurrentDepositJob {
         // Resolve the path from a URI and make it absolute
         URI stagedUri = URI.create(stagedUriString);
         Path stagedPath;
+        File depositDirectory = getDepositDirectory();
         if (!stagedUri.isAbsolute()) {
-            stagedPath = Paths.get(getDepositDirectory().toString(), stagedUriString);
+            stagedPath = Paths.get(depositDirectory.toString(), stagedUriString);
         } else {
             stagedPath = Paths.get(stagedUri);
         }
         try {
+            // Create a unique parent directory for the symlink to avoid filename conflicts
+            var parentDir = Files.createTempDirectory(depositDirectory.toPath(), "fits_staging");
+            // Assign the same permissions as the parent directory to the temp dir, since createTempDirectory is restrictive
+            Files.setPosixFilePermissions(parentDir, Files.getPosixFilePermissions(parentDir.getParent()));
             // Create a symlink to the file to make use of the original filename and avoid issues with non-ascii characters
-            var parentDir = TMP_PATH.resolve(Long.toString(System.nanoTime()));
-            Files.createDirectories(parentDir);
             String symlinkName = label != null ? label : stagedPath.getFileName().toString();
             var linkPath = sanitizeCliPath(parentDir.resolve(symlinkName));
             Files.createSymbolicLink(linkPath, stagedPath);
@@ -511,19 +519,22 @@ public class ExtractTechnicalMetadataJob extends AbstractConcurrentDepositJob {
                 return null;
             }
 
-            // Conflicting identification from FITS, try to resolve
-            // Don't trust Exiftool if it detects a symlink, which is does not follow to the file.
-            // Trust any answer agreed on by multiple tools
-            for (Element el : identification.getChildren("identity", FITS_NS)) {
-                if (el.getChildren("tool", FITS_NS).size() > 1
-                        || !("Exiftool".equals(el.getChild("tool", FITS_NS).getAttributeValue("toolname"))
-                                && "application/x-symlink".equals(el.getAttributeValue("mimetype")))) {
-                    return el;
-                }
-            }
+            // Sort the identification elements to find the best value returned by FITS
+            var identityEls = identification.getChildren("identity", FITS_NS).stream()
+                    // Filter out any invalid entries
+                    .filter(el -> MimetypeHelpers.isValidMimetype(el.getAttributeValue(MIMETYPE_ATTR)))
+                    // Primarily sort by the best ranking mimetype
+                    .sorted(Comparator.comparingInt((Element el) -> rankMimetype(el.getAttributeValue(MIMETYPE_ATTR)))
+                    // Then rank by the number of tools that agreed on the mimetype
+                    .thenComparingInt(el -> el.getChildren("tool", FITS_NS).size())
+                    // Reverse so both rank and tool count is in descending order
+                    .reversed()
+                    // And then favor more application specific mimetypes
+                    .thenComparingInt(el -> el.getAttributeValue(MIMETYPE_ATTR).contains("x-") ? -1 : 0))
+                    .collect(Collectors.toList());
+            // Return the best ranking identification, or null if none are valid
+            return identityEls.isEmpty() ? null : identityEls.get(0);
         }
-
-        return null;
     }
 
     private int rankMimetype(String mimetype) {
