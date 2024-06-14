@@ -9,5 +9,16 @@ import org.apache.jena.query.QueryExecution;
  */
 public interface SparqlQueryService {
 
+    /**
+     * Execute a select query
+     * @param queryString
+     * @return
+     */
     public QueryExecution executeQuery(String queryString);
+
+    /**
+     * Execute an update query
+     * @param queryString
+     */
+    public void executeUpdate(String queryString);
 }

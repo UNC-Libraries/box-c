@@ -9,6 +9,10 @@ import org.apache.jena.query.QueryExecutionFactory;
 import org.apache.jena.query.QueryFactory;
 
 import edu.unc.lib.boxc.model.api.sparql.SparqlQueryService;
+import org.apache.jena.update.UpdateExecutionFactory;
+import org.apache.jena.update.UpdateFactory;
+import org.apache.jena.update.UpdateProcessor;
+import org.apache.jena.update.UpdateRequest;
 
 import java.lang.reflect.Method;
 
@@ -29,6 +33,13 @@ public class FusekiSparqlQueryServiceImpl implements SparqlQueryService {
         return QueryExecution.service(fusekiQueryURL)
                 .query(query)
                 .build();
+    }
+
+    @Override
+    public void executeUpdate(String queryString) {
+        UpdateRequest updateRequest = UpdateFactory.create(queryString);
+        UpdateProcessor updateProcessor = UpdateExecutionFactory.createRemote(updateRequest, fusekiQueryURL);
+        updateProcessor.execute();
     }
 
     public void setFusekiQueryURL(String fusekiQueryURL) {

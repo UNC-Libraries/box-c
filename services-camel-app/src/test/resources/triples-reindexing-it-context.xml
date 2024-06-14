@@ -9,10 +9,6 @@
         http://www.springframework.org/schema/beans/spring-beans-4.3.xsd
         http://camel.apache.org/schema/spring
         http://camel.apache.org/schema/spring/camel-spring.xsd">
-
-    <bean id="properties" class="org.apache.camel.component.properties.PropertiesComponent">
-        <property name="location" value="classpath:triples-reindexing-it-config.properties"/>
-    </bean>
     
     <bean id="bridgePropertyPlaceholder" class="org.apache.camel.spring.spi.BridgePropertyPlaceholderConfigurer">
         <property name="location" value="classpath:triples-reindexing-it-config.properties"/>
@@ -58,4 +54,13 @@
 
     <bean id="getUrisProcessor" class="edu.unc.lib.boxc.services.camel.longleaf.GetUrisProcessor">
     </bean>
+
+    <bean id="triplesUpdateProcessor" class="edu.unc.lib.boxc.services.camel.triplesReindexing.TriplesUpdateProcessor">
+        <property name="sparqlQueryService" ref="sparqlQueryService" />
+        <property name="fcrepoClient" ref="fcrepoClient" />
+    </bean>
+
+    <camel:camelContext id="cdrServiceTriplesReindexing">
+        <camel:package>edu.unc.lib.boxc.services.camel.triplesReindexing</camel:package>
+    </camel:camelContext>
 </beans>
