@@ -72,7 +72,11 @@ To run the integration tests locally, you will first need to start external depe
 ```
 docker-compose up
 ```
-And then run the integration tests from within your IDE or via the following:
+And then wait for the start-up/installation process to complete, which may take a few minutes.
+
+Note: After the first time, you can start and stop the docker containers directly in Docker Desktop instead of using the commandline. It would still be best to wait a minute or two for all the containers to finish starting.
+
+Next, run the integration tests from within your IDE or via the following:
 ```
 # Java unit and integration tests
 mvn -pl '!clamav-java' verify 
