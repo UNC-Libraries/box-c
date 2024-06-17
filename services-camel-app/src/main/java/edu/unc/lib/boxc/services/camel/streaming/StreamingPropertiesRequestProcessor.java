@@ -8,6 +8,8 @@ import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.api.rdf.Cdr;
 import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
+import edu.unc.lib.boxc.operations.jms.indexing.IndexingActionType;
+import edu.unc.lib.boxc.operations.jms.indexing.IndexingMessageSender;
 import edu.unc.lib.boxc.operations.jms.streaming.StreamingPropertiesRequest;
 import edu.unc.lib.boxc.operations.jms.streaming.StreamingPropertiesRequestSerializationHelper;
 import org.apache.camel.Exchange;
@@ -28,6 +30,7 @@ public class StreamingPropertiesRequestProcessor implements Processor {
     private RepositoryObjectLoader repositoryObjectLoader;
     private RepositoryObjectFactory repositoryObjectFactory;
     private AccessControlService aclService;
+    private IndexingMessageSender indexingMessageSender;
 
     @Override
     public void process(Exchange exchange) throws IOException {
@@ -48,6 +51,9 @@ public class StreamingPropertiesRequestProcessor implements Processor {
         } else if (Objects.equals(request.getAction(), DELETE)) {
             repositoryObjectFactory.deleteProperty(file,Cdr.streamingUrl);
         }
+
+        indexingMessageSender.sendIndexingOperation(agent.getUsername(), pid,
+                IndexingActionType.UPDATE_STREAMING_URL);
     }
 
     private String validate(StreamingPropertiesRequest request, PID pid) {
@@ -98,5 +104,9 @@ public class StreamingPropertiesRequestProcessor implements Processor {
 
     public void setAclService(AccessControlService aclService) {
         this.aclService = aclService;
+    }
+
+    public void setIndexingMessageSender(IndexingMessageSender indexingMessageSender) {
+        this.indexingMessageSender = indexingMessageSender;
     }
 }

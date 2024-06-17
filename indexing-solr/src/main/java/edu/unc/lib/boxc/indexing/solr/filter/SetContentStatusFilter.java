@@ -68,6 +68,11 @@ public class SetContentStatusFilter implements IndexDocumentFilter{
             } else {
                 status.add(FacetConstants.NO_ACCESS_SURROGATE);
             }
+            if (resc.hasProperty(Cdr.streamingUrl)) {
+                status.add(FacetConstants.HAS_STREAMING);
+            } else {
+                status.add(FacetConstants.NO_STREAMING);
+            }
         }
 
         return status;
