@@ -8,15 +8,14 @@ import edu.unc.lib.boxc.model.api.rdf.Cdr;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.boxc.search.solr.models.IndexDocumentBean;
 import org.apache.jena.rdf.model.Resource;
-import org.apache.jena.rdf.model.Statement;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 
+import static edu.unc.lib.boxc.indexing.solr.test.MockRepositoryObjectHelpers.makeFileResource;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.openMocks;
@@ -26,10 +25,7 @@ public class SetStreamingUrlFilterTest {
     private AutoCloseable closeable;
     @Mock
     private DocumentIndexingPackageDataLoader documentIndexingPackageDataLoader;
-    @Mock
     private Resource resource;
-    @Mock
-    private Statement stmt;
     private SetStreamingUrlFilter filter;
     private DocumentIndexingPackage dip;
     private IndexDocumentBean idb;
@@ -42,6 +38,7 @@ public class SetStreamingUrlFilterTest {
         dip.setPid(filePid);
         idb = dip.getDocument();
         filter = new SetStreamingUrlFilter();
+        resource = makeFileResource(FILE_UUID);
     }
 
     @AfterEach
@@ -55,9 +52,7 @@ public class SetStreamingUrlFilterTest {
         var url = "https://streaming.url";
         when(documentIndexingPackageDataLoader.getContentObject(dip)).thenReturn(file);
         when(file.getResource()).thenReturn(resource);
-        when(resource.hasProperty(eq(Cdr.streamingUrl))).thenReturn(true);
-        when(resource.getProperty(eq(Cdr.streamingUrl))).thenReturn(stmt);
-        when(stmt.getString()).thenReturn(url);
+        resource.addProperty(Cdr.streamingUrl, url);
 
         filter.filter(dip);
 
@@ -69,7 +64,6 @@ public class SetStreamingUrlFilterTest {
         var file = mock(FileObject.class);
         when(documentIndexingPackageDataLoader.getContentObject(dip)).thenReturn(file);
         when(file.getResource()).thenReturn(resource);
-        when(resource.hasProperty(eq(Cdr.streamingUrl))).thenReturn(false);
 
         filter.filter(dip);
 

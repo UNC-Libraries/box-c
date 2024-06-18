@@ -6,6 +6,11 @@ import edu.unc.lib.boxc.model.api.rdf.Cdr;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * Filter which sets a file's streaming URL. Updates the streamingUrl field.
+ *
+ * @author snluong
+ */
 public class SetStreamingUrlFilter implements IndexDocumentFilter {
     private static final Logger log = LoggerFactory.getLogger(SetStreamingUrlFilter.class);
 

@@ -1,5 +1,6 @@
 package edu.unc.lib.boxc.indexing.solr.test;
 
+import static org.apache.jena.rdf.model.ResourceFactory.createResource;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -7,6 +8,8 @@ import static org.mockito.Mockito.when;
 import java.util.ArrayList;
 import java.util.UUID;
 
+import edu.unc.lib.boxc.model.api.rdf.Ebucore;
+import edu.unc.lib.boxc.model.api.rdf.Premis;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Resource;
@@ -88,5 +91,17 @@ public class MockRepositoryObjectHelpers {
         for (ContentObject child : children) {
             child.getResource().addProperty(PcdmModels.memberOf, container.getResource());
         }
+    }
+
+    public static Resource makeFileResource(String name) {
+        Model model = ModelFactory.createDefaultModel();
+        Resource resc = model.getResource("http://example.com/rest/" + name);
+        resc.addLiteral(Premis.hasSize, 5062l);
+        resc.addLiteral(Ebucore.hasMimeType, "text/plain");
+        resc.addLiteral(Ebucore.filename, "test.txt");
+        resc.addProperty(Premis.hasMessageDigest,
+                createResource("urn:sha1:82022e1782b92dce5461ee636a6c5bea8509ffee"));
+
+        return resc;
     }
 }
