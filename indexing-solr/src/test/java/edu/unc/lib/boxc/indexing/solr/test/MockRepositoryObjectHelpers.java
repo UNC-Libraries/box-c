@@ -12,6 +12,7 @@ import edu.unc.lib.boxc.model.api.rdf.Ebucore;
 import edu.unc.lib.boxc.model.api.rdf.Premis;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
+import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.vocabulary.RDF;
 
@@ -41,10 +42,11 @@ public class MockRepositoryObjectHelpers {
     public static FileObject makeFileObject(PID pid, RepositoryObjectLoader repositoryObjectLoader) {
         FileObject fileObj = mock(FileObject.class);
         when(fileObj.getPid()).thenReturn(pid);
-        when(repositoryObjectLoader.getRepositoryObject(eq(pid))).thenReturn(fileObj);
-        Model model = ModelFactory.createDefaultModel();
-        Resource resc = model.getResource(pid.getRepositoryPath());
-        resc.addProperty(RDF.type, Cdr.FileObject);
+        if (repositoryObjectLoader != null) {
+            when(repositoryObjectLoader.getRepositoryObject(eq(pid))).thenReturn(fileObj);
+        }
+
+        var resc = makeResource(pid, Cdr.FileObject);
         when(fileObj.getResource()).thenReturn(resc);
 
         return fileObj;
@@ -59,10 +61,8 @@ public class MockRepositoryObjectHelpers {
         when(container.getMembers()).thenReturn(new ArrayList<>());
         when(container.getPid()).thenReturn(pid);
         when(repositoryObjectLoader.getRepositoryObject(eq(pid))).thenReturn(container);
-        Model model = ModelFactory.createDefaultModel();
-        Resource resc = model.getResource(pid.getRepositoryPath());
-        resc.addProperty(RDF.type, Cdr.Work);
-        when(container.getResource()).thenReturn(model.getResource(pid.getRepositoryPath()));
+        var resc = makeResource(pid, Cdr.Work);
+        when(container.getResource()).thenReturn(resc);
 
         return container;
     }
@@ -93,15 +93,10 @@ public class MockRepositoryObjectHelpers {
         }
     }
 
-    public static Resource makeFileResource(String name) {
+    public static Resource makeResource(PID pid, Resource type) {
         Model model = ModelFactory.createDefaultModel();
-        Resource resc = model.getResource("http://example.com/rest/" + name);
-        resc.addLiteral(Premis.hasSize, 5062l);
-        resc.addLiteral(Ebucore.hasMimeType, "text/plain");
-        resc.addLiteral(Ebucore.filename, "test.txt");
-        resc.addProperty(Premis.hasMessageDigest,
-                createResource("urn:sha1:82022e1782b92dce5461ee636a6c5bea8509ffee"));
-
-        return resc;
+        Resource resource = model.getResource(pid.getRepositoryPath());
+        resource.addProperty(RDF.type, type);
+        return resource;
     }
 }
