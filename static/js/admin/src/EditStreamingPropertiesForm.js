@@ -16,36 +16,31 @@ define('EditStreamingPropertiesForm', [ 'jquery', 'jquery-ui', 'underscore', 'Re
 
         EditStreamingPropertiesForm.prototype.preprocessForm = function() {
             let resultObjId = $('#streaming_file_id', this.$form).val();
-            let streamingFile = $('#streaming_file', this.$form).val();
-            let streamingFolder = $('#streaming_folder', this.$form).val();
+            let streamingUrl = $('#streaming_url', this.$form).val();
             let isDeletion = $('#delete_streaming_settings', this.$form).is(':checked');
             let action = (isDeletion) ? 'delete' : 'add';
-            this.action_url = `/services/api/edit/streamingProperties?id=${resultObjId}&filename=${encodeURIComponent(streamingFile)}&folder=${encodeURIComponent(streamingFolder)}&action=${action}`;
+            this.action_url = `/services/api/edit/streamingProperties?id=${resultObjId}&url=${encodeURIComponent(streamingUrl)}&action=${action}`;
         }
 
         EditStreamingPropertiesForm.prototype.validationErrors = function(resultObject) {
             let errors = [];
-            let streamingFile = $('#streaming_file', this.$form).val();
-            let streamingFolder = $('#streaming_folder', this.$form).val();
+            let streamingUrl = $('#streaming_url', this.$form).val();
             let isDeletion = $('#delete_streaming_settings', this.$form).is(':checked');
 
             // Validate input
-            if (!isDeletion && !streamingFile) {
-                errors.push('You must specify a streaming file.');
-            }
-            if (!isDeletion && !streamingFolder) {
-                errors.push('You must specify a streaming folder.');
+            if (!isDeletion && !streamingUrl) {
+                errors.push('You must specify a streaming URL.');
             }
 
             return errors;
         };
 
         EditStreamingPropertiesForm.prototype.getSuccessMessage = function(data) {
-            return 'Streaming properties settings have been successfully edited.';
+            return 'Streaming URL has been successfully edited.';
         };
 
         EditStreamingPropertiesForm.prototype.getErrorMessage = function(data) {
-            return 'An error occurred while editing the streaming properties';
+            return 'An error occurred while editing the streaming URL';
         };
 
         EditStreamingPropertiesForm.prototype.remove = function() {

@@ -1,20 +1,15 @@
 <iframe id="upload_file_frame" name="upload_file_frame" height="0" width="0" style="display: none;"></iframe>
 <form id="edit_streaming_properties" class="edit_form edit_streaming_properties_form">
     <div class="form_field">
-        <label for="streaming_file"><span class="required">*</span> Streaming File:</label>
-        <input id="streaming_file" type="text" name="streaming_file" value="<%= metadata.streamingFile %>"/>
+        <label for="streaming_url"><span class="required">*</span> Streaming URL:</label>
+        <input id="streaming_url" type="text" name="streaming_url" value="<%= metadata.streamingUrl %>"/>
     </div>
 
     <div class="form_field">
-        <label for="streaming_folder"><span class="required">*</span> Streaming Folder:</label>
-        <input id="streaming_folder" type="text" name="streaming_folder" value="<%= metadata.streamingFolder %>"/>
+        <input type="checkbox" id="delete_streaming_settings" name="delete_streaming_settings" /><label for="delete_streaming_settings">Delete streaming URL?</label>
     </div>
 
-    <div class="form_field">
-        <input type="checkbox" id="delete_streaming_settings" name="delete_streaming_settings" /><label for="delete_streaming_settings">Delete streaming properties?</label>
-    </div>
-
-    <div class="form_field" style="font-weight: bold"><span class="required">*</span> Required fields, unless edit is a deletion request</div>
+    <div class="form_field" style="font-weight: bold"><span class="required">*</span> Required field, unless edit is a deletion request</div>
 
     <input type="hidden" value="<%= metadata.id %>" id="streaming_file_id" name="streaming_file_id"/>
 
