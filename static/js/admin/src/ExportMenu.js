@@ -29,6 +29,11 @@ define('ExportMenu', [ 'jquery', 'jquery-ui', 'underscore', 'qtip', 'cycle'],
             return ids.join(',');
         }
 
+        ExportMenu.prototype.getTargetIdsAsString = function() {
+            let targets = this.getTargets();
+            return targets.map(d => d.metadata.id).join(',');
+        }
+
         ExportMenu.prototype.canEditDescription = function() {
             return $.inArray('editDescription', this.getTargets()[0].metadata.permissions) !== -1;
         }
@@ -87,7 +92,7 @@ define('ExportMenu', [ 'jquery', 'jquery-ui', 'underscore', 'qtip', 'cycle'],
                                 case "exportCSV" :
                                     self.options.actionHandler.addEvent({
                                         action : 'ChangeLocation',
-                                        url : `api/exportTree/csv?ids=${self.getTargets()}`,
+                                        url : `api/exportTree/csv?ids=${self.getTargetIdsAsString()}`,
                                         application: "services"
                                     });
                                     sessionStorage.removeItem('exportTargets');
