@@ -87,7 +87,7 @@ define('ExportMenu', [ 'jquery', 'jquery-ui', 'underscore', 'qtip', 'cycle'],
                                 case "exportCSV" :
                                     self.options.actionHandler.addEvent({
                                         action : 'ChangeLocation',
-                                        url : `api/exportTree/csv?ids=${self.getMemberOrderTargetIds()}`,
+                                        url : `api/exportTree/csv?ids=${self.getTargets()}`,
                                         application: "services"
                                     });
                                     sessionStorage.removeItem('exportTargets');
