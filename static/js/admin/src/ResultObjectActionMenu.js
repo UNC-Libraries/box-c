@@ -1,7 +1,7 @@
 
-define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'AddFileForm', 'EditThumbnailForm',
+define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'AddFileForm', 'EditAccessControlForm', 'EditThumbnailForm',
 		'EditFilenameForm', 'EditTitleForm', 'DeleteForm', 'IngestFromSourceForm', 'ViewSettingsForm', 'EditStreamingPropertiesForm', 'contextMenu'],
-		function($, ui, StringUtilities, AddFileForm, , EditAccessSurrogateForm, EditThumbnailForm, EditFilenameForm, EditTitleForm, DeleteForm, IngestFromSourceForm, ViewSettingsForm, EditStreamingPropertiesForm) {
+		function($, ui, StringUtilities, AddFileForm, EditAccessSurrogateForm, EditThumbnailForm, EditFilenameForm, EditTitleForm, DeleteForm, IngestFromSourceForm, ViewSettingsForm, EditStreamingPropertiesForm) {
 
 	var defaultOptions = {
 		selector : undefined,
