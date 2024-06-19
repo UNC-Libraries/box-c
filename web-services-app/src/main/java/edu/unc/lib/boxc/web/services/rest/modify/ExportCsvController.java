@@ -10,17 +10,18 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore.getAgentPrincipals;
 
@@ -37,11 +38,12 @@ public class ExportCsvController extends AbstractSolrSearchController {
     @Autowired
     private ExportCsvService exportCsvService;
 
-    @PostMapping(value ="exportTree/csv", consumes = {MediaType.APPLICATION_JSON_VALUE})
-    public ResponseEntity<Object> export(@RequestBody List<String> pidStrings, HttpServletRequest request,
-                                         HttpServletResponse response) {
 
-        var pids = getPids(pidStrings);
+    @GetMapping("exportTree/csv")
+    public ResponseEntity<Object> export(@RequestParam("ids") String ids, HttpServletRequest request,
+                                         HttpServletResponse response) {
+        var pidList = Arrays.stream(ids.split(",")).map(String::trim).collect(Collectors.toList());
+        var pids = getPids(pidList);
 
         try {
             String filename = "export.csv";

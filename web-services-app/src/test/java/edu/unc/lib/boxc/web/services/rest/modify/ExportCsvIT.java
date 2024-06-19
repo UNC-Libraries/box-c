@@ -1,7 +1,5 @@
 package edu.unc.lib.boxc.web.services.rest.modify;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
 import edu.unc.lib.boxc.fcrepo.utils.FedoraSparqlUpdateService;
 import edu.unc.lib.boxc.indexing.solr.indexing.DocumentIndexingPackageFactory;
@@ -44,7 +42,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.ContextHierarchy;
@@ -77,7 +74,7 @@ import static edu.unc.lib.boxc.search.api.FacetConstants.CONTENT_NOT_DESCRIBED;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 /**
@@ -163,11 +160,7 @@ public class ExportCsvIT extends AbstractAPIIT {
         solrIndexer.index(rootObj.getPid(), unitObj.getPid(), collObj.getPid(), collObj2.getPid(), folderObj.getPid());
 
         String id = collObj.getPid().getId();
-        var ids = convertToJson(List.of(id));
-
-        MvcResult result = mvc.perform(post("/exportTree/csv/")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(ids))
+        MvcResult result = mvc.perform(get("/exportTree/csv?ids=" + id))
                 .andExpect(status().is2xxSuccessful())
                 .andReturn();
 
@@ -194,11 +187,7 @@ public class ExportCsvIT extends AbstractAPIIT {
         solrIndexer.index(rootObj.getPid(), unitObj.getPid(), collObj.getPid(), folderPid,
                 workPid, filePid);
 
-        var ids = convertToJson(List.of(id));
-
-        MvcResult result = mvc.perform(post("/exportTree/csv/")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(ids))
+        MvcResult result = mvc.perform(get("/exportTree/csv?ids=" + id))
                 .andExpect(status().is2xxSuccessful())
                 .andReturn();
 
@@ -223,11 +212,7 @@ public class ExportCsvIT extends AbstractAPIIT {
         solrIndexer.index(rootObj.getPid(), unitObj.getPid(), collObj.getPid(), folderPid,
                 workPid, filePid);
 
-        var ids = convertToJson(List.of(id));
-
-        MvcResult result = mvc.perform(post("/exportTree/csv/")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(ids))
+        MvcResult result = mvc.perform(get("/exportTree/csv?ids=" + id))
                 .andExpect(status().is2xxSuccessful())
                 .andReturn();
 
@@ -265,11 +250,7 @@ public class ExportCsvIT extends AbstractAPIIT {
 
         String id = folderPid.getId();
 
-        var ids = convertToJson(List.of(id));
-
-        MvcResult result = mvc.perform(post("/exportTree/csv/")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(ids))
+        MvcResult result = mvc.perform(get("/exportTree/csv?ids=" + id))
                 .andExpect(status().is2xxSuccessful())
                 .andReturn();
 
@@ -309,11 +290,8 @@ public class ExportCsvIT extends AbstractAPIIT {
         solrIndexer.index(rootObj.getPid(), unitObj.getPid(), collObj.getPid(), folderPid, workPid, filePid);
 
         String id = folderPid.getId();
-        var ids = convertToJson(List.of(id));
 
-        MvcResult result = mvc.perform(post("/exportTree/csv/")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(ids))
+        MvcResult result = mvc.perform(get("/exportTree/csv?ids=" + id))
                 .andExpect(status().is2xxSuccessful())
                 .andReturn();
 
@@ -347,11 +325,7 @@ public class ExportCsvIT extends AbstractAPIIT {
         treeIndexer.indexAll(baseAddress);
         solrIndexer.index(rootObj.getPid(), unitObj.getPid(), collObj.getPid(), folderPid, workPid, filePid);
 
-        var ids = convertToJson(List.of(id));
-
-        MvcResult result = mvc.perform(post("/exportTree/csv/")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(ids))
+        MvcResult result = mvc.perform(get("/exportTree/csv?ids=" + id))
                 .andExpect(status().is2xxSuccessful())
                 .andReturn();
 
@@ -375,11 +349,8 @@ public class ExportCsvIT extends AbstractAPIIT {
         solrIndexer.index(rootObj.getPid(), unitObj.getPid(), collObj.getPid(), folderPid);
 
         String id = folderPid.getId();
-        var ids = convertToJson(List.of(id));
 
-        MvcResult result = mvc.perform(post("/exportTree/csv/")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(ids))
+        MvcResult result = mvc.perform(get("/exportTree/csv?ids=" + id))
                 .andExpect(status().is2xxSuccessful())
                 .andReturn();
 
@@ -408,11 +379,8 @@ public class ExportCsvIT extends AbstractAPIIT {
         solrIndexer.index(rootObj.getPid(), unitObj.getPid(), collObj.getPid(), folderPid);
 
         String id = folderPid.getId();
-        var ids = convertToJson(List.of(id));
 
-        MvcResult result = mvc.perform(post("/exportTree/csv/")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(ids))
+        MvcResult result = mvc.perform(get("/exportTree/csv?ids=" + id))
                 .andExpect(status().is2xxSuccessful())
                 .andReturn();
 
@@ -437,11 +405,8 @@ public class ExportCsvIT extends AbstractAPIIT {
         solrIndexer.index(rootObj.getPid(), unitObj.getPid(), collObj.getPid());
 
         String id = collPid.getId();
-        var ids = convertToJson(List.of(id));
 
-        MvcResult result = mvc.perform(post("/exportTree/csv/")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(ids))
+        MvcResult result = mvc.perform(get("/exportTree/csv?ids=" + id))
                 .andExpect(status().is2xxSuccessful())
                 .andReturn();
 
@@ -467,11 +432,8 @@ public class ExportCsvIT extends AbstractAPIIT {
         solrIndexer.index(rootObj.getPid(), unitObj.getPid(), collObj.getPid());
 
         String id = collPid.getId();
-        var ids = convertToJson(List.of(id));
 
-        MvcResult result = mvc.perform(post("/exportTree/csv/")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(ids))
+        MvcResult result = mvc.perform(get("/exportTree/csv/?ids=" + id))
                 .andExpect(status().is2xxSuccessful())
                 .andReturn();
 
@@ -497,11 +459,8 @@ public class ExportCsvIT extends AbstractAPIIT {
         solrIndexer.index(rootObj.getPid(), unitObj.getPid(), collObj.getPid());
 
         String id = collPid.getId();
-        var ids = convertToJson(List.of(id));
 
-        MvcResult result = mvc.perform(post("/exportTree/csv/")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(ids))
+        MvcResult result = mvc.perform(get("/exportTree/csv?ids=" + id))
                 .andExpect(status().is2xxSuccessful())
                 .andReturn();
 
@@ -531,11 +490,8 @@ public class ExportCsvIT extends AbstractAPIIT {
         solrIndexer.index(rootObj.getPid(), unitObj.getPid(), collObj.getPid(), folder.getPid());
 
         String id = collPid.getId();
-        var ids = convertToJson(List.of(id));
 
-        MvcResult result = mvc.perform(post("/exportTree/csv/")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(ids))
+        MvcResult result = mvc.perform(get("/exportTree/csv?ids=" + id))
                 .andExpect(status().is2xxSuccessful())
                 .andReturn();
 
@@ -567,11 +523,8 @@ public class ExportCsvIT extends AbstractAPIIT {
         solrIndexer.index(rootObj.getPid(), unitObj.getPid(), collObj.getPid(), folder.getPid());
 
         String id = collPid.getId();
-        var ids = convertToJson(List.of(id));
 
-        MvcResult result = mvc.perform(post("/exportTree/csv/")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(ids))
+        MvcResult result = mvc.perform(get("/exportTree/csv?ids=" + id))
                 .andExpect(status().is2xxSuccessful())
                 .andReturn();
 
@@ -599,11 +552,8 @@ public class ExportCsvIT extends AbstractAPIIT {
         solrIndexer.index(rootObj.getPid(), unitObj.getPid(), collObj.getPid());
 
         String id = collPid.getId();
-        var ids = convertToJson(List.of(id));
 
-        MvcResult result = mvc.perform(post("/exportTree/csv/")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(ids))
+        MvcResult result = mvc.perform(get("/exportTree/csv?ids=" + id))
                 .andExpect(status().is2xxSuccessful())
                 .andReturn();
 
@@ -619,11 +569,8 @@ public class ExportCsvIT extends AbstractAPIIT {
     @Test
     public void exportContentRoot() throws Exception {
         String id = rootObj.getPid().getId();
-        var ids = convertToJson(List.of(id));
 
-        mvc.perform(post("/exportTree/csv/")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(ids))
+        mvc.perform(get("/exportTree/csv?ids=" + id))
                 .andExpect(status().isBadRequest())
                 .andReturn();
     }
@@ -631,11 +578,8 @@ public class ExportCsvIT extends AbstractAPIIT {
     @Test
     public void exportInvalidPidCsv() throws Exception {
         String id = "1234";
-        var ids = convertToJson(List.of(id));
 
-        mvc.perform(post("/exportTree/csv/")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(ids))
+        mvc.perform(get("/exportTree/csv?ids=" + id))
                 .andExpect(status().isForbidden())
                 .andReturn();
 
@@ -644,11 +588,8 @@ public class ExportCsvIT extends AbstractAPIIT {
     @Test
     public void exportNonExistentPidCsv() throws Exception {
         String id = UUID.randomUUID().toString();
-        var ids = convertToJson(List.of(id));
 
-        mvc.perform(post("/exportTree/csv/")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(ids))
+        mvc.perform(get("/exportTree/csv?ids=" + id))
                 .andExpect(status().isNotFound())
                 .andReturn();
     }
@@ -666,13 +607,9 @@ public class ExportCsvIT extends AbstractAPIIT {
 
         treeIndexer.indexAll(baseAddress);
         solrIndexer.index(rootObj.getPid(), unitObj.getPid(), collObj.getPid(), folderPid,
-                workPid, filePid);
+                workPid, filePid);;
 
-        var ids = convertToJson(List.of(id));
-
-        MvcResult result = mvc.perform(post("/exportTree/csv/")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(ids))
+        MvcResult result = mvc.perform(get("/exportTree/csv?ids=" + id))
                 .andExpect(status().is2xxSuccessful())
                 .andReturn();
 
@@ -711,11 +648,7 @@ public class ExportCsvIT extends AbstractAPIIT {
         solrIndexer.index(rootObj.getPid(), unitObj.getPid(), collObj.getPid(), folderPid,
                 workPid, filePid);
 
-        var ids = convertToJson(List.of(id));
-
-        MvcResult result = mvc.perform(post("/exportTree/csv/")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(ids))
+        MvcResult result = mvc.perform(get("/exportTree/csv?ids=" + id))
                 .andExpect(status().is2xxSuccessful())
                 .andReturn();
 
@@ -753,10 +686,8 @@ public class ExportCsvIT extends AbstractAPIIT {
         solrIndexer.index(rootObj.getPid(), unitObj.getPid(), collObj.getPid(), folderPid1,
                 workPid1, filePid1, folderPid2, workPid2, filePid2);
 
-        var ids = convertToJson(List.of(folderPid1.getId(), folderPid2.getId()));
-        MvcResult result = mvc.perform(post("/exportTree/csv/")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(ids))
+        var ids = folderPid1.getId() + "," +folderPid2.getId();
+        MvcResult result = mvc.perform(get("/exportTree/csv?ids=" + ids))
                 .andExpect(status().is2xxSuccessful())
                 .andReturn();
 
@@ -804,7 +735,7 @@ public class ExportCsvIT extends AbstractAPIIT {
         return pidList;
     }
 
-    private void generateBaseStructure() throws Exception {
+    private void generateBaseStructure() {
         rootObj = repositoryObjectLoader.getContentRootObject(getContentRootPid());
 
         PID unitPid = pidMinter.mintContentPid();
@@ -925,10 +856,5 @@ public class ExportCsvIT extends AbstractAPIIT {
                 .parse(new StringReader(response.getContentAsString()))
                 .forEach(csvList::add);
         return csvList;
-    }
-
-    private String convertToJson(List<String> list) throws JsonProcessingException {
-        ObjectMapper objectMapper = new ObjectMapper();
-        return objectMapper.writeValueAsString(list);
     }
 }

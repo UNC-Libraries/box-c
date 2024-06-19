@@ -16,6 +16,7 @@ define('ExportMenu', [ 'jquery', 'jquery-ui', 'underscore', 'qtip', 'cycle'],
             }
             if ($.inArray('editDescription', targets[0].metadata.permissions) !== -1) {
                 items["exportXML"] = {name : "Bulk Metadata"};
+                items["exportCSV"] = {name : "Bulk CSV"};
             }
 
             return items;
@@ -80,6 +81,14 @@ define('ExportMenu', [ 'jquery', 'jquery-ui', 'underscore', 'qtip', 'cycle'],
                                     self.options.actionHandler.addEvent({
                                         action : 'ExportMetadataXMLBatch',
                                         targets : self.getTargets()
+                                    });
+                                    sessionStorage.removeItem('exportTargets');
+                                    break;
+                                case "exportCSV" :
+                                    self.options.actionHandler.addEvent({
+                                        action : 'ChangeLocation',
+                                        url : `api/exportTree/csv?ids=${self.getMemberOrderTargetIds()}`,
+                                        application: "services"
                                     });
                                     sessionStorage.removeItem('exportTargets');
                                     break;
