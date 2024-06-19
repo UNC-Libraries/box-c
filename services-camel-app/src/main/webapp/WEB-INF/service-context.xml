@@ -549,6 +549,13 @@
         <property name="imageServerPassword" value="${image.server.password}" />
     </bean>
 
+    <bean id="streamingPropertiesRequestProcessor" class="edu.unc.lib.boxc.services.camel.streaming.StreamingPropertiesRequestProcessor">
+        <property name="aclService" ref="aclService" />
+        <property name="indexingMessageSender" ref="indexingMessageSender" />
+        <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
+        <property name="repositoryObjectFactory" ref="repositoryObjectFactory" />
+    </bean>
+
     <!-- Camel contexts -->
 
     <camel:camelContext id="FcrepoTriplestoreIndexer">
@@ -617,5 +624,9 @@
 
     <camel:camelContext id="DcrAccessSurrogates">
         <camel:package>edu.unc.lib.boxc.services.camel.accessSurrogates</camel:package>
+    </camel:camelContext>
+
+    <camel:camelContext id="DcrStreaming">
+        <camel:package>edu.unc.lib.boxc.services.camel.streaming</camel:package>
     </camel:camelContext>
 </beans>
