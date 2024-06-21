@@ -61,16 +61,14 @@ public class ImageServerV2Controller extends AbstractSolrSearchController {
     /**
      * Handles requests for individual region tiles.
      * @param id
-     * @param datastream
      * @param region
      * @param size
      * @param rotation
      * @param qualityFormat
      * @param response
      */
-    @GetMapping("/iiif/v2/{id}/{datastream}/{region}/{size}/{rotation}/{qualityFormat:.+}")
-    public void getRegion(@PathVariable("id") String id,
-            @PathVariable("datastream") String datastream, @PathVariable("region") String region,
+    @GetMapping("/iiif/v2/{id}/{region}/{size}/{rotation}/{qualityFormat:.+}")
+    public void getRegion(@PathVariable("id") String id, @PathVariable("region") String region,
             @PathVariable("size") String size, @PathVariable("rotation") String rotation,
             @PathVariable("qualityFormat") String qualityFormat, HttpServletResponse response) {
 
@@ -94,12 +92,10 @@ public class ImageServerV2Controller extends AbstractSolrSearchController {
      * Handles requests for jp2 metadata
      *
      * @param id
-     * @param datastream
      * @param response
      */
-    @GetMapping("/iiif/v2/{id}/{datastream}/info.json")
-    public void getMetadata(@PathVariable("id") String id,
-            @PathVariable("datastream") String datastream, HttpServletResponse response) {
+    @GetMapping("/iiif/v2/{id}/info.json")
+    public void getMetadata(@PathVariable("id") String id, HttpServletResponse response) {
         PID pid = PIDs.get(id);
         // Check if the user is allowed to view this object
         assertHasAccess(pid);
@@ -171,7 +167,7 @@ public class ImageServerV2Controller extends AbstractSolrSearchController {
         assertHasAccess(pid);
         try {
             List<ContentObjectRecord> briefObjs = getDatastreams(pid);
-            if (briefObjs.size() == 0) {
+            if (briefObjs.isEmpty()) {
                 response.setStatus(HttpStatus.NOT_FOUND.value());
             } else {
                 addAllowOriginHeader(response);
