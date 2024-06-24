@@ -273,6 +273,11 @@ public class GroupedContentObjectSolrRecord implements GroupedContentObjectRecor
     }
 
     @Override
+    public String getStreamingUrl() {
+        return this.representative.getStreamingUrl();
+    }
+
+    @Override
     public List<String> getLanguage() {
         return this.representative.getLanguage();
     }
