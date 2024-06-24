@@ -5,11 +5,7 @@
         <input id="streaming_url" type="text" placeholder="Format: https://durastream.lib.unc.edu/..." name="streaming_url" value="<%= metadata.streamingUrl %>"/>
     </div>
 
-    <div class="form_field">
-        <input type="checkbox" id="delete_streaming_settings" name="delete_streaming_settings" /><label for="delete_streaming_settings">Delete streaming URL?</label>
-    </div>
-
-    <div class="form_field" style="font-weight: bold"><span class="required">*</span> Required field, unless edit is a deletion request</div>
+    <div class="form_field" style="font-weight: bold"><span class="required">*</span> Required field</div>
 
     <input type="hidden" value="<%= metadata.id %>" id="streaming_file_id" name="streaming_file_id"/>
 

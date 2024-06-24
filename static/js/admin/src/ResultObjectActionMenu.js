@@ -205,7 +205,12 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'A
 		}
 
 		if (metadata.type === 'File' && $.inArray('ingest', metadata.permissions) !== -1) {
-			items["editStreamingProperties"] = {name : 'Edit Streaming Properties'};
+			items["streaming"] = {name: "Streaming Properties", items: {}}
+			items["streaming"]['items']["editStreamingProperties"] = {name: "Edit Streaming URL"};
+
+			if (metadata.streamingUrl !== undefined) {
+				items["streaming"]['items']["deleteStreamingProperties"] = {name: "Delete Streaming URL"};
+			}
 		}
 
 		// Export actions
@@ -473,6 +478,13 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'A
 						break;
 					case "editStreamingProperties":
 						self.editStreamingProperties(resultObject);
+						break;
+					case "deleteStreamingProperties":
+						self.actionHandler.addEvent({
+							action: 'DeleteStreamingPropertiesResult',
+							target : resultObject,
+							confirmAnchor : options.$trigger
+						});
 						break;
 					case "patronPermissions":
 						perms_editor_store.setPermissionType('Patron');

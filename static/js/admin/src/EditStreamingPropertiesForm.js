@@ -17,9 +17,7 @@ define('EditStreamingPropertiesForm', [ 'jquery', 'jquery-ui', 'underscore', 'Re
         EditStreamingPropertiesForm.prototype.preprocessForm = function() {
             let resultObjId = $('#streaming_file_id', this.$form).val();
             let streamingUrl = $('#streaming_url', this.$form).val();
-            let isDeletion = $('#delete_streaming_settings', this.$form).is(':checked');
-            let action = (isDeletion) ? 'delete' : 'add';
-            this.action_url = `/services/api/edit/streamingProperties?id=${resultObjId}&url=${encodeURIComponent(streamingUrl)}&action=${action}`;
+            this.action_url = `/services/api/edit/streamingProperties?id=${resultObjId}&url=${encodeURIComponent(streamingUrl)}&action=add`;
         }
 
         EditStreamingPropertiesForm.prototype.validationErrors = function(resultObject) {
@@ -30,10 +28,9 @@ define('EditStreamingPropertiesForm', [ 'jquery', 'jquery-ui', 'underscore', 'Re
             const STREAMREAPER_PREFIX_URL = "https://durastream.lib.unc.edu/player"
             let errors = [];
             let streamingUrl = $('#streaming_url', this.$form).val();
-            let isDeletion = $('#delete_streaming_settings', this.$form).is(':checked');
 
             // Validate input
-            if (!isDeletion && !streamingUrl.startsWith(STREAMREAPER_PREFIX_URL)) {
+            if (!streamingUrl.startsWith(STREAMREAPER_PREFIX_URL)) {
                 errors.push(`You must specify a DuraStream based streaming URL, e.g. ${STREAMREAPER_PREFIX_URL}`);
             }
 
