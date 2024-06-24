@@ -23,13 +23,18 @@ define('EditStreamingPropertiesForm', [ 'jquery', 'jquery-ui', 'underscore', 'Re
         }
 
         EditStreamingPropertiesForm.prototype.validationErrors = function(resultObject) {
+            /**
+               If you change this value it also needs to be updated in
+               operations-jms/src/main/java/edu/unc/lib/boxc/operations/jms/streaming/StreamingPropertiesRequest.java
+            **/
+            const STREAMREAPER_PREFIX_URL = "https://durastream.lib.unc.edu/player"
             let errors = [];
             let streamingUrl = $('#streaming_url', this.$form).val();
             let isDeletion = $('#delete_streaming_settings', this.$form).is(':checked');
 
             // Validate input
-            if (!isDeletion && !streamingUrl) {
-                errors.push('You must specify a streaming URL.');
+            if (!isDeletion && !streamingUrl.startsWith(STREAMREAPER_PREFIX_URL)) {
+                errors.push(`You must specify a DuraStream based streaming URL, e.g. ${STREAMREAPER_PREFIX_URL}`);
             }
 
             return errors;
