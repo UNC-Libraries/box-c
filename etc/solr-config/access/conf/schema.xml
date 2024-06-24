@@ -216,6 +216,8 @@
     <field name="rollup" type="string" indexed="true" stored="true" required="true" docValues="true"/>
     <!-- Stores publication status and other statuses that affect viewing of this object outside of group ACLs -->
     <field name="status" type="string" indexed="true" stored="true" multiValued="true"/>
+    <!-- Stores streaming URL for files with streaming property -->
+    <field name="streamingUrl" type="string" indexed="true" stored="true"/>
     <field name="subject" type="string" indexed="true" stored="true" multiValued="true" docValues="true"/>
     <!-- Timestamp when this record was updated -->
     <field name="timestamp" type="date" indexed="true" stored="true" default="NOW" multiValued="false"/>

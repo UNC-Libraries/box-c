@@ -12,6 +12,8 @@ import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.rdf.Cdr;
 import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
+import edu.unc.lib.boxc.operations.jms.indexing.IndexingActionType;
+import edu.unc.lib.boxc.operations.jms.indexing.IndexingMessageSender;
 import edu.unc.lib.boxc.operations.jms.streaming.StreamingPropertiesRequest;
 import edu.unc.lib.boxc.operations.jms.streaming.StreamingPropertiesRequestSerializationHelper;
 import edu.unc.lib.boxc.services.camel.TestHelper;
@@ -48,6 +50,9 @@ public class StreamingPropertiesProcessorTest {
     private RepositoryObjectLoader repositoryObjectLoader;
     @Mock
     private RepositoryObjectFactory repositoryObjectFactory;
+    @Mock
+    private IndexingMessageSender indexingMessageSender;
+
     @BeforeEach
     public void init() throws IOException {
         closeable = openMocks(this);
@@ -55,6 +60,7 @@ public class StreamingPropertiesProcessorTest {
         processor.setAclService(accessControlService);
         processor.setRepositoryObjectLoader(repositoryObjectLoader);
         processor.setRepositoryObjectFactory(repositoryObjectFactory);
+        processor.setIndexingMessageSender(indexingMessageSender);
         filePid = TestHelper.makePid();
         fileObject = mock(FileObject.class);
         when(fileObject.getPid()).thenReturn(filePid);
@@ -120,6 +126,8 @@ public class StreamingPropertiesProcessorTest {
 
         verify(repositoryObjectFactory).createExclusiveRelationship(
                 eq(fileObject), eq(Cdr.streamingUrl), eq(STREAMREAPER_PREFIX_URL));
+        verify(indexingMessageSender).sendIndexingOperation(agent.getUsername(), filePid,
+                IndexingActionType.UPDATE_STREAMING_URL);
     }
 
     @Test
@@ -128,6 +136,8 @@ public class StreamingPropertiesProcessorTest {
         processor.process(exchange);
 
         verify(repositoryObjectFactory).deleteProperty(eq(fileObject), eq(Cdr.streamingUrl));
+        verify(indexingMessageSender).sendIndexingOperation(agent.getUsername(), filePid,
+                IndexingActionType.UPDATE_STREAMING_URL);
     }
 
     private Exchange createRequestExchange(String url, String id, String action) throws IOException {
