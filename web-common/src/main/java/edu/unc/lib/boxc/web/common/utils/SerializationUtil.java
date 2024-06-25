@@ -197,6 +197,10 @@ public class SerializationUtil {
             result.put("counts", metadata.getCountMap());
         }
 
+        if (metadata.getStreamingUrl() != null) {
+            result.put("streamingUrl", metadata.getStreamingUrl());
+        }
+
         if (metadata.getDateAdded() != null) {
             String dateAdded = DateTimeUtil.formatDateToUTC(metadata.getDateAdded());
             result.put("added", dateAdded);

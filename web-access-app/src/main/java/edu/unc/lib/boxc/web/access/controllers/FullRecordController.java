@@ -12,6 +12,7 @@ import edu.unc.lib.boxc.model.api.objects.BinaryObject;
 import edu.unc.lib.boxc.model.api.objects.ContentObject;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
+import edu.unc.lib.boxc.search.api.FacetConstants;
 import edu.unc.lib.boxc.search.api.SearchFieldKey;
 import edu.unc.lib.boxc.search.api.models.ContentObjectRecord;
 import edu.unc.lib.boxc.search.api.requests.SimpleIdRequest;
@@ -276,6 +277,8 @@ public class FullRecordController extends AbstractErrorHandlingSearchController 
         boolean imageViewerNeeded = accessCopiesService.hasViewableFiles(briefObject, principals);
         if (imageViewerNeeded) {
             viewerType = "uv";
+        } else if (briefObject.getContentStatus().contains(FacetConstants.HAS_STREAMING)) {
+            viewerType = "streaming";
         } else {
             // Check for PDF to display
             viewerPid = accessCopiesService.getDatastreamPid(briefObject, principals, PDF_MIMETYPE_REGEX);

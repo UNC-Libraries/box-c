@@ -13,8 +13,7 @@ export default {
 
     computed: {
         streamingLink() {
-            return `https://durastream.lib.unc.edu/player?spaceId=${this.briefObject.folder}`
-            + `&filename=${this.briefObject.filename}&refUrl=${location.href}`;
+            return `${this.briefObject.streamingUrl}&refUrl=${location.href}`;
         }
     }
 }
