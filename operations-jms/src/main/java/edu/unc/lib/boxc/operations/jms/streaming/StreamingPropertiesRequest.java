@@ -8,6 +8,7 @@ import edu.unc.lib.boxc.auth.fcrepo.models.AgentPrincipalsImpl;
  * Request object for updating the streaming properties of a FileObject
  */
 public class StreamingPropertiesRequest {
+    // If you change this value it also needs to be updated in static/js/admin/src/EditStreamingPropertiesForm.js
     public static final String STREAMREAPER_PREFIX_URL = "https://durastream.lib.unc.edu/player";
     public static String ADD = "add";
     public static String DELETE = "delete";

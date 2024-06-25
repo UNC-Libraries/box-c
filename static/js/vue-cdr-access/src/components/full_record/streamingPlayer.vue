@@ -4,6 +4,9 @@
 </template>
 
 <script>
+
+const STREAMREAPER_PREFIX_URL = "https://durastream.lib.unc.edu/player"
+
 export default {
     name: 'listDisplay',
 
