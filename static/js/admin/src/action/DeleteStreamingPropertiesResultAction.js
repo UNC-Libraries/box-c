@@ -13,7 +13,7 @@ define('DeleteStreamingPropertiesResultAction', [ 'jquery', 'AjaxCallbackAction'
         var options = {
             workMethod: "PUT",
             workPath: `/services/api/edit/streamingProperties?id=${this.context.target.metadata.id}&action=delete`,
-            workLabel: "Deleting streaming properties..",
+            workLabel: "Deleting streaming properties...",
             followupLabel: "Deleting streaming properties...",
             followupPath: `/services/api/status/item/${this.context.target.metadata.id}/solrRecord/version`
         }
@@ -22,7 +22,7 @@ define('DeleteStreamingPropertiesResultAction', [ 'jquery', 'AjaxCallbackAction'
             options.confirm = false;
         } else {
             options.confirm = {
-                promptText : "Clear streaming properties?",
+                promptText : "Delete streaming properties?",
                 confirmAnchor : this.context.confirmAnchor
             };
         }
@@ -35,7 +35,7 @@ define('DeleteStreamingPropertiesResultAction', [ 'jquery', 'AjaxCallbackAction'
             action : 'RefreshResult',
             target : this.context.target
         });
-        this.alertHandler.alertHandler("success", "Cleared streaming properties.");
+        this.alertHandler.alertHandler("success", "Deleted streaming properties.");
         this.context.target.enable();
     };
 
