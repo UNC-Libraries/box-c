@@ -252,7 +252,8 @@ public class ValidateContentModelJob extends AbstractDepositJob{
 
     private void validateStreamingProperties(Resource resource) {
         var url = resource.getProperty(Cdr.streamingUrl).getString();
-        if (!url.startsWith(STREAMREAPER_PREFIX_URL)) {
+        var streamingType = resource.hasProperty(Cdr.streamingType);
+        if (!url.startsWith(STREAMREAPER_PREFIX_URL) || !streamingType) {
             failJob(null, "Invalid streaming properties on FileObject {0}", resource.getURI());
         }
     }

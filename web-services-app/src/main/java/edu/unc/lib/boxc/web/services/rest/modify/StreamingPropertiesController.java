@@ -108,7 +108,8 @@ public class StreamingPropertiesController {
         }
         if (Objects.equals(ADD, action)) {
             var url = request.getUrl();
-            if (StringUtils.isBlank(url)) {
+            var type = request.getType();
+            if (StringUtils.isBlank(url) || StringUtils.isBlank(type)) {
                 return true;
             }
             return !url.startsWith(STREAMREAPER_PREFIX_URL);

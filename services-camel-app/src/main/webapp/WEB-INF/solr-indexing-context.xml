@@ -489,7 +489,7 @@
         <property name="addDocumentMode" value="false" />
     </bean>
 
-    <bean id="updateStreamingUrlAction"
+    <bean id="updateStreamingPropertiesAction"
           class="edu.unc.lib.boxc.indexing.solr.action.UpdateObjectAction">
         <property name="pipeline" ref="solrStreamingUrlUpdatePipeline" />
         <property name="addDocumentMode" value="false" />
@@ -524,7 +524,7 @@
         <entry key="UPDATE_MEMBER_ORDER_PARENT" value-ref="updateMemberOrderParentAction" />
         <entry key="UPDATE_MEMBER_ORDER_CHILD" value-ref="updateMemberOrderChildAction" />
         <entry key="UPDATE_VIEW_BEHAVIOR" value-ref="updateViewBehaviorAction" />
-        <entry key="UPDATE_STREAMING_URL" value-ref="updateStreamingUrlAction" />
+        <entry key="UPDATE_STREAMING_URL" value-ref="updateStreamingPropertiesAction" />
     </util:map>
     
     <bean id="dipDataLoader"

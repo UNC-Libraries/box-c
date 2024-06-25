@@ -20,8 +20,15 @@ public class SetStreamingUrlFilter implements IndexDocumentFilter {
         var resource = dip.getContentObject().getResource();
         var doc = dip.getDocument();
         var url = resource.hasProperty(Cdr.streamingUrl) ?
-                resource.getProperty(Cdr.streamingUrl).getString() : null ;
+                resource.getProperty(Cdr.streamingUrl).getString() : null;
+
+        String streamingType = null;
+        if (url != null) {
+            streamingType = resource.hasProperty(Cdr.streamingType) ?
+                    resource.getProperty(Cdr.streamingType).getString() : null;
+        }
 
         doc.setStreamingUrl(url);
+        doc.setStreamingType(streamingType);
     }
 }

@@ -201,6 +201,10 @@ public class SerializationUtil {
             result.put("streamingUrl", metadata.getStreamingUrl());
         }
 
+        if (metadata.getStreamingType() != null) {
+            result.put("streamingType", metadata.getStreamingType());
+        }
+
         if (metadata.getDateAdded() != null) {
             String dateAdded = DateTimeUtil.formatDateToUTC(metadata.getDateAdded());
             result.put("added", dateAdded);

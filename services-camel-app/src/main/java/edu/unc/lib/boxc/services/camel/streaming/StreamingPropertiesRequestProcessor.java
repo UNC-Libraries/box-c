@@ -48,8 +48,11 @@ public class StreamingPropertiesRequestProcessor implements Processor {
         if (Objects.equals(request.getAction(), ADD)) {
             repositoryObjectFactory.createExclusiveRelationship(
                     file, Cdr.streamingUrl, request.getUrl());
+            repositoryObjectFactory.createExclusiveRelationship(
+                    file, Cdr.streamingType, request.getType());
         } else if (Objects.equals(request.getAction(), DELETE)) {
             repositoryObjectFactory.deleteProperty(file,Cdr.streamingUrl);
+            repositoryObjectFactory.deleteProperty(file,Cdr.streamingType);
         }
 
         indexingMessageSender.sendIndexingOperation(agent.getUsername(), pid,
@@ -70,6 +73,9 @@ public class StreamingPropertiesRequestProcessor implements Processor {
                 if (!url.startsWith(STREAMREAPER_PREFIX_URL)) {
                     return "URL is not a stream reaper URL";
                 }
+            }
+            if (request.getType() == null) {
+                return "Streaming type is required";
             }
         }
 

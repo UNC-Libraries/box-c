@@ -16,6 +16,7 @@ public class StreamingPropertiesRequest {
     private AgentPrincipals agent;
     private String id;
     private String action;
+    private String type;
     private String url;
 
 
@@ -50,5 +51,13 @@ public class StreamingPropertiesRequest {
 
     public void setUrl(String url) {
         this.url = url;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
     }
 }
