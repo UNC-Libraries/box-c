@@ -114,14 +114,13 @@ public class ImageServerV2Controller extends AbstractSolrSearchController {
     /**
      * Handles requests for IIIF canvases
      * @param id
-     * @param datastream
      * @param response
      * @return
      */
-    @GetMapping(value = "/iiif/v2/{id}/{datastream}", produces = APPLICATION_JSON_VALUE)
+    @GetMapping(value = "/iiif/v2/{id}", produces = APPLICATION_JSON_VALUE)
     @ResponseBody
-    public String getCanvas(@PathVariable("id") String id, @PathVariable("datastream") String datastream,
-                              HttpServletRequest request, HttpServletResponse response) throws JsonProcessingException {
+    public String getCanvas(@PathVariable("id") String id, HttpServletRequest request,
+                            HttpServletResponse response) throws JsonProcessingException {
         PID pid = PIDs.get(id);
         // Check if the user is allowed to view this object's manifest
         assertHasAccess(pid);
@@ -129,39 +128,36 @@ public class ImageServerV2Controller extends AbstractSolrSearchController {
                 .getAgentPrincipals().getPrincipals());
         ContentObjectRecord briefObj = queryLayer.getObjectById(idRequest);
         addAllowOriginHeader(response);
-        return imageServerV2Service.getCanvas(id, datastream, briefObj);
+        return imageServerV2Service.getCanvas(id, briefObj);
     }
 
     /**
      * Handles requests for IIIF sequences
      * @param id
-     * @param datastream
      * @param response
      * @return
      */
-    @GetMapping(value = "/iiif/v2/{id}/{datastream}/sequence/normal", produces = APPLICATION_JSON_VALUE)
+    @GetMapping(value = "/iiif/v2/{id}/sequence/normal", produces = APPLICATION_JSON_VALUE)
     @ResponseBody
-    public String getSequence(@PathVariable("id") String id, @PathVariable("datastream") String datastream,
+    public String getSequence(@PathVariable("id") String id,
                               HttpServletRequest request, HttpServletResponse response) throws JsonProcessingException {
         PID pid = PIDs.get(id);
         // Check if the user is allowed to view this object's manifest
         assertHasAccess(pid);
         List<ContentObjectRecord> briefObjs = getDatastreams(pid);
         addAllowOriginHeader(response);
-        return imageServerV2Service.getSequence(id, datastream, briefObjs);
+        return imageServerV2Service.getSequence(id, briefObjs);
     }
 
     /**
      * Handles requests for IIIF manifests
      * @param id
-     * @param datastream
      * @param response
      * @return
      */
-    @GetMapping(value = "/iiif/v2/{id}/{datastream}/manifest" , produces = APPLICATION_JSON_VALUE)
+    @GetMapping(value = "/iiif/v2/{id}/manifest" , produces = APPLICATION_JSON_VALUE)
     @ResponseBody
-    public String getManifest(@PathVariable("id") String id, @PathVariable("datastream") String datastream,
-                            HttpServletRequest request, HttpServletResponse response) {
+    public String getManifest(@PathVariable("id") String id, HttpServletRequest request, HttpServletResponse response) {
         PID pid = PIDs.get(id);
         // Check if the user is allowed to view this object's manifest
         assertHasAccess(pid);
@@ -171,7 +167,7 @@ public class ImageServerV2Controller extends AbstractSolrSearchController {
                 response.setStatus(HttpStatus.NOT_FOUND.value());
             } else {
                 addAllowOriginHeader(response);
-                return imageServerV2Service.getManifest(id, datastream, briefObjs);
+                return imageServerV2Service.getManifest(id, briefObjs);
             }
         } catch (IOException e) {
             LOG.error("Error retrieving manifest content for {}", id, e);
