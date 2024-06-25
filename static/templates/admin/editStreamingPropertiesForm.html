@@ -1,8 +1,13 @@
 <iframe id="upload_file_frame" name="upload_file_frame" height="0" width="0" style="display: none;"></iframe>
 <form id="edit_streaming_properties" class="edit_form edit_streaming_properties_form">
+    <p class="form_notes">
+        Structure: https://durastream.lib.unc.edu/player?spaceId=[space-id]&filename=[filename-without-extension]
+    <br />
+        Example: https://durastream.lib.unc.edu/player?spaceId=open-hls&filename=04950_VT0008_0001
+    </p>
     <div class="form_field">
         <label for="streaming_url"><span class="required">*</span> Streaming URL:</label>
-        <input id="streaming_url" type="text" placeholder="Format: https://durastream.lib.unc.edu/..." name="streaming_url" value="<%= metadata.streamingUrl %>"/>
+        <input id="streaming_url" type="text" name="streaming_url" value="<%= metadata.streamingUrl %>"/>
     </div>
 
     <div class="form_field" style="font-weight: bold"><span class="required">*</span> Required field</div>

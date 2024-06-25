@@ -206,10 +206,10 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'A
 
 		if (metadata.type === 'File' && $.inArray('ingest', metadata.permissions) !== -1) {
 			items["streaming"] = {name: "Streaming Properties", items: {}}
-			items["streaming"]['items']["editStreamingProperties"] = {name: "Edit Streaming URL"};
+			items["streaming"]['items']["editStreamingProperties"] = {name: "Edit Streaming Properties"};
 
 			if (metadata.streamingUrl !== undefined) {
-				items["streaming"]['items']["deleteStreamingProperties"] = {name: "Delete Streaming URL"};
+				items["streaming"]['items']["deleteStreamingProperties"] = {name: "Delete Streaming Properties"};
 			}
 		}
 

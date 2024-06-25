@@ -38,11 +38,11 @@ define('EditStreamingPropertiesForm', [ 'jquery', 'jquery-ui', 'underscore', 'Re
         };
 
         EditStreamingPropertiesForm.prototype.getSuccessMessage = function(data) {
-            return 'Streaming URL has been successfully edited.';
+            return 'Streaming properties have been successfully edited.';
         };
 
         EditStreamingPropertiesForm.prototype.getErrorMessage = function(data) {
-            return 'An error occurred while editing the streaming URL';
+            return 'An error occurred while editing streaming properties';
         };
 
         EditStreamingPropertiesForm.prototype.remove = function() {

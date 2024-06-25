@@ -9,12 +9,12 @@ define('DeleteStreamingPropertiesResultAction', [ 'jquery', 'AjaxCallbackAction'
 
     DeleteStreamingPropertiesResultAction.prototype._create = function(context) {
         this.context = context;
-        console.log(this.context)
+
         var options = {
             workMethod: "PUT",
-            workPath: `/services/api/edit/streamingProperties?id=${this.context.target.metadata.id}&url=${encodeURIComponent(this.context.target.metadata.streamingUrl)}&action=delete`,
-            workLabel: "Deleting streaming URL..",
-            followupLabel: "Deleting streaming URL...",
+            workPath: `/services/api/edit/streamingProperties?id=${this.context.target.metadata.id}&action=delete`,
+            workLabel: "Deleting streaming properties..",
+            followupLabel: "Deleting streaming properties...",
             followupPath: `/services/api/status/item/${this.context.target.metadata.id}/solrRecord/version`
         }
 
@@ -22,7 +22,7 @@ define('DeleteStreamingPropertiesResultAction', [ 'jquery', 'AjaxCallbackAction'
             options.confirm = false;
         } else {
             options.confirm = {
-                promptText : "Clear streaming URL?",
+                promptText : "Clear streaming properties?",
                 confirmAnchor : this.context.confirmAnchor
             };
         }
@@ -35,7 +35,7 @@ define('DeleteStreamingPropertiesResultAction', [ 'jquery', 'AjaxCallbackAction'
             action : 'RefreshResult',
             target : this.context.target
         });
-        this.alertHandler.alertHandler("success", "Cleared streaming URL.");
+        this.alertHandler.alertHandler("success", "Cleared streaming properties.");
         this.context.target.enable();
     };
 
