@@ -125,9 +125,11 @@ public class StreamingPropertiesController {
     private Map<String, String> getProperties(String id, Resource resource) {
         Map<String, String> result = new HashMap<>();
         var url = getValue(resource, Cdr.streamingUrl);
+        var type = getValue(resource, Cdr.streamingType);
 
         result.put("id", id);
         result.put("url", url);
+        result.put("type", type);
         return result;
     }
 }

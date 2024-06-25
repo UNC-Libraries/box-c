@@ -44,6 +44,7 @@ public class StreamingPropertiesRequestSenderTest {
         request.setId(filePidString);
         request.setUrl(StreamingPropertiesRequest.STREAMREAPER_PREFIX_URL + "?params=more");
         request.setAction("add");
+        request.setType("video");
 
         streamingPropertiesRequestSender.sendToQueue(request);
         verify(jmsTemplate).send(any());

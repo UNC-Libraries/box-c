@@ -164,6 +164,8 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
 
     private Path storageLocPath;
 
+    private static final String STREAMING_TYPE = "video";
+
     @Mock
     private VerifyObjectsAreInFedoraService verificationService;
 
@@ -340,6 +342,7 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
         fileResc.addProperty(RDF.type, Cdr.FileObject);
         fileResc.addProperty(CdrDeposit.mimetype, "text/plain");
         fileResc.addProperty(Cdr.streamingUrl, STREAMREAPER_PREFIX_URL);
+        fileResc.addProperty(Cdr.streamingUrl, STREAMING_TYPE);
         workBag.add(fileResc);
 
         job.closeModel();
@@ -375,6 +378,7 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
         fileResc.addProperty(RDF.type, Cdr.FileObject);
         fileResc.addProperty(CdrDeposit.mimetype, "text/plain");
         fileResc.addProperty(Cdr.streamingUrl, STREAMREAPER_PREFIX_URL);
+        fileResc.addProperty(Cdr.streamingType, STREAMING_TYPE);
         workBag.add(fileResc);
 
         job.closeModel();

@@ -25,6 +25,7 @@ public class StreamingPropertiesRequestSerializationHelperTest {
         request.setId(pid.getId());
         request.setUrl(STREAMREAPER_PREFIX_URL + "?params=more");
         request.setAction(ADD);
+        request.setType("video");
 
         var json = StreamingPropertiesRequestSerializationHelper.toJson(request);
         var helperRequest = StreamingPropertiesRequestSerializationHelper.toRequest(json);
