@@ -22,9 +22,9 @@ import org.apache.camel.PropertyInject;
 import org.apache.camel.builder.AdviceWith;
 import org.apache.camel.builder.NotifyBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
-import org.apache.camel.test.spring.CamelSpringTestSupport;
-import org.junit.Before;
-import org.junit.Test;
+import org.apache.camel.test.spring.junit5.CamelSpringTestSupport;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.context.support.AbstractApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
@@ -61,16 +61,19 @@ public class MetaServicesRouterTest extends CamelSpringTestSupport {
         return new ClassPathXmlApplicationContext("/service-context.xml", "/metaservices-context.xml");
     }
 
-    @Before
+    @BeforeEach
     public void setup() {
         TestHelper.setContentBase("http://example.com/rest/");
     }
 
     @Test
     public void testRouteStartContainer() throws Exception {
-        getMockEndpoint("mock:direct-vm:index.start").expectedMessageCount(1);
-        getMockEndpoint("mock:direct-vm:filter.longleaf").expectedMessageCount(0);
-        getMockEndpoint("mock:direct:process.enhancement").expectedMessageCount(1);
+        var indexStartEndpoint = getMockEndpoint("mock:direct-vm:index.start");
+        indexStartEndpoint.expectedMessageCount(1);
+        var filterLongleafEndpoint = getMockEndpoint("mock:direct-vm:filter.longleaf");
+        filterLongleafEndpoint.expectedMessageCount(0);
+        var processEnhEndpoint = getMockEndpoint("mock:direct:process.enhancement");
+        processEnhEndpoint.expectedMessageCount(1);
 
         createContext(META_ROUTE);
 
@@ -78,14 +81,19 @@ public class MetaServicesRouterTest extends CamelSpringTestSupport {
         template.sendBodyAndHeaders("", createEvent(CONTAINER_ID, Container.getURI()));
         notify.matches(1l, TimeUnit.SECONDS);
 
-        assertMockEndpointsSatisfied();
+        indexStartEndpoint.assertIsSatisfied();
+        filterLongleafEndpoint.assertIsSatisfied();
+        processEnhEndpoint.assertIsSatisfied();
     }
 
     @Test
     public void testRouteStartTimemap() throws Exception {
-        getMockEndpoint("mock:direct-vm:index.start").expectedMessageCount(0);
-        getMockEndpoint("mock:direct-vm:filter.longleaf").expectedMessageCount(0);
-        getMockEndpoint("mock:direct:process.enhancement").expectedMessageCount(0);
+        var indexStartEndpoint = getMockEndpoint("mock:direct-vm:index.start");
+        indexStartEndpoint.expectedMessageCount(0);
+        var filterLongleafEndpoint = getMockEndpoint("mock:direct-vm:filter.longleaf");
+        filterLongleafEndpoint.expectedMessageCount(0);
+        var processEnhEndpoint = getMockEndpoint("mock:direct:process.enhancement");
+        processEnhEndpoint.expectedMessageCount(0);
 
         createContext(META_ROUTE);
 
@@ -96,14 +104,19 @@ public class MetaServicesRouterTest extends CamelSpringTestSupport {
         Thread.sleep(100);
         notify.matches(1l, TimeUnit.SECONDS);
 
-        assertMockEndpointsSatisfied();
+        indexStartEndpoint.assertIsSatisfied();
+        filterLongleafEndpoint.assertIsSatisfied();
+        processEnhEndpoint.assertIsSatisfied();
     }
 
     @Test
     public void testRouteStartDatafs() throws Exception {
-        getMockEndpoint("mock:direct-vm:index.start").expectedMessageCount(1);
-        getMockEndpoint("mock:direct-vm:filter.longleaf").expectedMessageCount(0);
-        getMockEndpoint("mock:direct:process.enhancement").expectedMessageCount(0);
+        var indexStartEndpoint = getMockEndpoint("mock:direct-vm:index.start");
+        indexStartEndpoint.expectedMessageCount(1);
+        var filterLongleafEndpoint = getMockEndpoint("mock:direct-vm:filter.longleaf");
+        filterLongleafEndpoint.expectedMessageCount(0);
+        var processEnhEndpoint = getMockEndpoint("mock:direct:process.enhancement");
+        processEnhEndpoint.expectedMessageCount(0);
 
         createContext(META_ROUTE);
 
@@ -114,14 +127,19 @@ public class MetaServicesRouterTest extends CamelSpringTestSupport {
         Thread.sleep(100);
         notify.matches(1l, TimeUnit.SECONDS);
 
-        assertMockEndpointsSatisfied();
+        indexStartEndpoint.assertIsSatisfied();
+        filterLongleafEndpoint.assertIsSatisfied();
+        processEnhEndpoint.assertIsSatisfied();
     }
 
     @Test
     public void testRouteStartDepositRecord() throws Exception {
-        getMockEndpoint("mock:direct-vm:index.start").expectedMessageCount(1);
-        getMockEndpoint("mock:direct-vm:filter.longleaf").expectedMessageCount(0);
-        getMockEndpoint("mock:direct:process.enhancement").expectedMessageCount(0);
+        var indexStartEndpoint = getMockEndpoint("mock:direct-vm:index.start");
+        indexStartEndpoint.expectedMessageCount(1);
+        var filterLongleafEndpoint = getMockEndpoint("mock:direct-vm:filter.longleaf");
+        filterLongleafEndpoint.expectedMessageCount(0);
+        var processEnhEndpoint = getMockEndpoint("mock:direct:process.enhancement");
+        processEnhEndpoint.expectedMessageCount(0);
 
         createContext(META_ROUTE);
 
@@ -132,14 +150,19 @@ public class MetaServicesRouterTest extends CamelSpringTestSupport {
         Thread.sleep(100);
         notify.matches(1l, TimeUnit.SECONDS);
 
-        assertMockEndpointsSatisfied();
+        indexStartEndpoint.assertIsSatisfied();
+        filterLongleafEndpoint.assertIsSatisfied();
+        processEnhEndpoint.assertIsSatisfied();
     }
 
     @Test
     public void testRouteStartNotAPid() throws Exception {
-        getMockEndpoint("mock:direct-vm:index.start").expectedMessageCount(1);
-        getMockEndpoint("mock:direct-vm:filter.longleaf").expectedMessageCount(0);
-        getMockEndpoint("mock:direct:process.enhancement").expectedMessageCount(0);
+        var indexStartEndpoint = getMockEndpoint("mock:direct-vm:index.start");
+        indexStartEndpoint.expectedMessageCount(1);
+        var filterLongleafEndpoint = getMockEndpoint("mock:direct-vm:filter.longleaf");
+        filterLongleafEndpoint.expectedMessageCount(0);
+        var processEnhEndpoint = getMockEndpoint("mock:direct:process.enhancement");
+        processEnhEndpoint.expectedMessageCount(0);
 
         createContext(META_ROUTE);
 
@@ -150,15 +173,20 @@ public class MetaServicesRouterTest extends CamelSpringTestSupport {
         Thread.sleep(100);
         notify.matches(1l, TimeUnit.SECONDS);
 
-        assertMockEndpointsSatisfied();
+        indexStartEndpoint.assertIsSatisfied();
+        filterLongleafEndpoint.assertIsSatisfied();
+        processEnhEndpoint.assertIsSatisfied();
     }
 
     @Test
     public void testRouteStartCollections() throws Exception {
-        getMockEndpoint("mock:direct-vm:index.start").expectedMessageCount(1);
-        getMockEndpoint("mock:direct-vm:filter.longleaf").expectedMessageCount(0);
+        var indexStartEndpoint = getMockEndpoint("mock:direct-vm:index.start");
+        indexStartEndpoint.expectedMessageCount(1);
+        var filterLongleafEndpoint = getMockEndpoint("mock:direct-vm:filter.longleaf");
+        filterLongleafEndpoint.expectedMessageCount(0);
+        var processEnhEndpoint = getMockEndpoint("mock:direct:process.enhancement");
+        processEnhEndpoint.expectedMessageCount(1);
         // Enhancements call for root obj to trigger indexing
-        getMockEndpoint("mock:direct:process.enhancement").expectedMessageCount(1);
 
         createContext(META_ROUTE);
 
@@ -167,14 +195,19 @@ public class MetaServicesRouterTest extends CamelSpringTestSupport {
                 Fcrepo4Repository.Container.getURI()));
         notify.matches(1l, TimeUnit.SECONDS);
 
-        assertMockEndpointsSatisfied();
+        indexStartEndpoint.assertIsSatisfied();
+        filterLongleafEndpoint.assertIsSatisfied();
+        processEnhEndpoint.assertIsSatisfied();
     }
 
     @Test
     public void testRouteStartBinaryMetadata() throws Exception {
-        getMockEndpoint("mock:direct-vm:index.start").expectedMessageCount(1);
-        getMockEndpoint("mock:direct-vm:filter.longleaf").expectedMessageCount(0);
-        getMockEndpoint("mock:direct:process.enhancement").expectedMessageCount(0);
+        var indexStartEndpoint = getMockEndpoint("mock:direct-vm:index.start");
+        indexStartEndpoint.expectedMessageCount(1);
+        var filterLongleafEndpoint = getMockEndpoint("mock:direct-vm:filter.longleaf");
+        filterLongleafEndpoint.expectedMessageCount(0);
+        var processEnhEndpoint = getMockEndpoint("mock:direct:process.enhancement");
+        processEnhEndpoint.expectedMessageCount(0);
 
         createContext(META_ROUTE);
 
@@ -189,14 +222,19 @@ public class MetaServicesRouterTest extends CamelSpringTestSupport {
 
         notify.matches(1l, TimeUnit.SECONDS);
 
-        assertMockEndpointsSatisfied();
+        indexStartEndpoint.assertIsSatisfied();
+        filterLongleafEndpoint.assertIsSatisfied();
+        processEnhEndpoint.assertIsSatisfied();
     }
 
     @Test
     public void testRouteStartOriginalBinary() throws Exception {
-        getMockEndpoint("mock:direct-vm:index.start").expectedMessageCount(1);
-        getMockEndpoint("mock:direct-vm:filter.longleaf").expectedMessageCount(1);
-        getMockEndpoint("mock:direct:process.enhancement").expectedMessageCount(1);
+        var indexStartEndpoint = getMockEndpoint("mock:direct-vm:index.start");
+        indexStartEndpoint.expectedMessageCount(1);
+        var filterLongleafEndpoint = getMockEndpoint("mock:direct-vm:filter.longleaf");
+        filterLongleafEndpoint.expectedMessageCount(1);
+        var processEnhEndpoint = getMockEndpoint("mock:direct:process.enhancement");
+        processEnhEndpoint.expectedMessageCount(1);
 
         createContext(META_ROUTE);
 
@@ -205,14 +243,19 @@ public class MetaServicesRouterTest extends CamelSpringTestSupport {
                 Fcrepo4Repository.Binary.getURI()));
         notify.matches(1l, TimeUnit.SECONDS);
 
-        assertMockEndpointsSatisfied();
+        indexStartEndpoint.assertIsSatisfied();
+        filterLongleafEndpoint.assertIsSatisfied();
+        processEnhEndpoint.assertIsSatisfied();
     }
 
     @Test
     public void testRouteStartPremisBinary() throws Exception {
-        getMockEndpoint("mock:direct-vm:index.start").expectedMessageCount(1);
-        getMockEndpoint("mock:direct-vm:filter.longleaf").expectedMessageCount(1);
-        getMockEndpoint("mock:direct:process.enhancement").expectedMessageCount(0);
+        var indexStartEndpoint = getMockEndpoint("mock:direct-vm:index.start");
+        indexStartEndpoint.expectedMessageCount(1);
+        var filterLongleafEndpoint = getMockEndpoint("mock:direct-vm:filter.longleaf");
+        filterLongleafEndpoint.expectedMessageCount(1);
+        var processEnhEndpoint = getMockEndpoint("mock:direct:process.enhancement");
+        processEnhEndpoint.expectedMessageCount(0);
 
         createContext(META_ROUTE);
 
@@ -223,12 +266,15 @@ public class MetaServicesRouterTest extends CamelSpringTestSupport {
         Thread.sleep(100);
         notify.matches(1l, TimeUnit.SECONDS);
 
-        assertMockEndpointsSatisfied();
+        indexStartEndpoint.assertIsSatisfied();
+        filterLongleafEndpoint.assertIsSatisfied();
+        processEnhEndpoint.assertIsSatisfied();
     }
 
     @Test
     public void testEventTypeFilter() throws Exception {
-        getMockEndpoint("mock:direct-vm:process.creation").expectedMessageCount(0);
+        var processCreationEndpoint = getMockEndpoint("mock:direct-vm:process.creation");
+        processCreationEndpoint.expectedMessageCount(0);
 
         createContext(PROCESS_ENHANCEMENT_ROUTE);
 
@@ -239,12 +285,13 @@ public class MetaServicesRouterTest extends CamelSpringTestSupport {
         template.sendBodyAndHeaders("", headers);
         notify.matches(1l, TimeUnit.SECONDS);
 
-        assertMockEndpointsSatisfied();
+        processCreationEndpoint.assertIsSatisfied();
     }
 
     @Test
     public void testEventTypeFilterValid() throws Exception {
-        getMockEndpoint("mock:direct:process.enhancement").expectedMessageCount(1);
+        var processEnhEndpoint = getMockEndpoint("mock:direct:process.enhancement");
+        processEnhEndpoint.expectedMessageCount(1);
 
         createContext(META_ROUTE);
 
@@ -253,13 +300,15 @@ public class MetaServicesRouterTest extends CamelSpringTestSupport {
         template.sendBodyAndHeaders("", headers);
         notify.matches(1l, TimeUnit.SECONDS);
 
-        assertMockEndpointsSatisfied();
+        processEnhEndpoint.assertIsSatisfied();
     }
 
     @Test
     public void testUpdateNonBinary() throws Exception {
-        getMockEndpoint("mock:direct-vm:filter.longleaf").expectedMessageCount(0);
-        getMockEndpoint("mock:direct-vm:process.creation").expectedMessageCount(0);
+        var filterLongleafEndpoint = getMockEndpoint("mock:direct-vm:filter.longleaf");
+        filterLongleafEndpoint.expectedMessageCount(0);
+        var processCreationEndpoint = getMockEndpoint("mock:direct:process.creation");
+        processCreationEndpoint.expectedMessageCount(0);
 
         createContext(PROCESS_ENHANCEMENT_ROUTE);
         Map<String, Object> headers = createEvent("/not/binary", Container.getURI());
@@ -269,12 +318,14 @@ public class MetaServicesRouterTest extends CamelSpringTestSupport {
         template.sendBodyAndHeaders("", headers);
         notify.matches(1l, TimeUnit.SECONDS);
 
-        assertMockEndpointsSatisfied();
+        filterLongleafEndpoint.assertIsSatisfied();
+        processCreationEndpoint.assertIsSatisfied();
     }
 
     @Test
     public void testCreationRoute() throws Exception {
-        getMockEndpoint("mock:{{cdr.enhancement.stream.camel}}").expectedMessageCount(1);
+        var enhStreamEndpoint = getMockEndpoint("mock:{{cdr.enhancement.stream.camel}}");
+        enhStreamEndpoint.expectedMessageCount(1);
 
         createContext(PROCESS_ENHANCEMENT_ROUTE);
         Map<String, Object> headers = createEvent(FILE_ID, Binary.getURI());
@@ -283,7 +334,7 @@ public class MetaServicesRouterTest extends CamelSpringTestSupport {
         template.sendBodyAndHeaders("", headers);
         notify.matches(1l, TimeUnit.SECONDS);
 
-        assertMockEndpointsSatisfied();
+        enhStreamEndpoint.assertIsSatisfied();
     }
 
     private void createContext(String routeName) throws Exception {
