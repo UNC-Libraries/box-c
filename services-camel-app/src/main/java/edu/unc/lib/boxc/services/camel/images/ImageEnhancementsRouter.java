@@ -59,7 +59,7 @@ public class ImageEnhancementsRouter extends RouteBuilder {
                         + " of type ${headers[CdrMimeType]}")
                 .bean(imageDerivProcessor)
                 // Generate an random identifier to avoid derivative collisions
-                .bean(uuidGenerator)
+                .setBody(exchange -> uuidGenerator.generateUuid())
                 .multicast()
                 .shareUnitOfWork()
                 .to("direct:small.thumbnail", "direct:large.thumbnail");
@@ -105,7 +105,7 @@ public class ImageEnhancementsRouter extends RouteBuilder {
                 .bean(imageDerivProcessor)
                 .log(LoggingLevel.INFO, log, "Creating/Updating JP2 access copy for ${headers[CdrImagePath]}")
                 // Generate an random identifier to avoid derivative collisions
-                .bean(uuidGenerator)
+                .setBody(exchange -> uuidGenerator.generateUuid())
                 .setHeader(CdrFcrepoHeaders.CdrTempPath, simple("${properties:services.tempDirectory}/${body}-access"))
                 .doTry()
                     .recipientList(simple("exec:/bin/sh?args=${properties:cdr.enhancement.bin}/convertJp2.sh "

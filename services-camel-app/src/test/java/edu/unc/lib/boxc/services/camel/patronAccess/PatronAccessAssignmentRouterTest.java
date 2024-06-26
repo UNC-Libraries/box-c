@@ -6,6 +6,7 @@ import static edu.unc.lib.boxc.auth.api.UserRole.canViewMetadata;
 import static edu.unc.lib.boxc.auth.api.UserRole.canViewOriginals;
 import static edu.unc.lib.boxc.auth.api.UserRole.canViewReducedQuality;
 import static java.util.Arrays.asList;
+import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.timeout;
 import static org.mockito.Mockito.verify;
@@ -13,10 +14,10 @@ import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.openMocks;
 
 import org.apache.camel.BeanInject;
-import org.apache.camel.test.spring.CamelSpringTestSupport;
-import org.junit.Before;
-import org.junit.Test;
+import org.apache.camel.test.spring.junit5.CamelSpringTestSupport;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.springframework.context.support.AbstractApplicationContext;
@@ -53,7 +54,7 @@ public class PatronAccessAssignmentRouterTest extends CamelSpringTestSupport {
     @Captor
     private ArgumentCaptor<PatronAccessAssignmentRequest> requestCaptor;
 
-    @Before
+    @BeforeEach
     public void init() throws Exception {
         closeable = openMocks(this);
     }
