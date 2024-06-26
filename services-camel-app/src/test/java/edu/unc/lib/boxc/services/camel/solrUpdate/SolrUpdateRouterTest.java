@@ -15,15 +15,18 @@ import org.apache.camel.ProducerTemplate;
 import org.apache.camel.builder.NotifyBuilder;
 import org.apache.camel.test.spring.CamelSpringRunner;
 import org.apache.camel.test.spring.CamelTestContextBootstrapper;
+import org.apache.camel.test.spring.junit5.CamelSpringTestSupport;
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.common.SolrDocument;
 import org.jdom2.Document;
 import org.jdom2.Element;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.support.AbstractApplicationContext;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.annotation.DirtiesContext.ClassMode;
 import org.springframework.test.context.BootstrapWith;
@@ -51,14 +54,7 @@ import static org.mockito.Mockito.when;
  * @author bbpennel
  *
  */
-@RunWith(CamelSpringRunner.class)
-@BootstrapWith(CamelTestContextBootstrapper.class)
-@ContextHierarchy({
-    @ContextConfiguration("/spring-test/jms-context.xml"),
-    @ContextConfiguration("/solr-update-context.xml")
-})
-@DirtiesContext(classMode = ClassMode.AFTER_EACH_TEST_METHOD)
-public class SolrUpdateRouterTest {
+public class SolrUpdateRouterTest extends CamelSpringTestSupport {
     private static final String USER = "user";
 
     @Produce(uri = "{{cdr.solrupdate.stream}}")
@@ -67,22 +63,16 @@ public class SolrUpdateRouterTest {
     @Produce(uri = "{{cdr.solrupdate.workObject.fileUpdated}}")
     private ProducerTemplate templateWorkFromFile;
 
-    @Autowired
     private IndexingMessageSender indexingMessageSender;
 
-    @Autowired
     private CamelContext cdrServiceSolrUpdate;
 
-    @Autowired
     private SolrUpdateProcessor solrSmallUpdateProcessor;
 
-    @Autowired
     private SolrUpdateProcessor solrLargeUpdateProcessor;
 
-    @Autowired
     private SolrUpdatePreprocessor solrUpdatePreprocessor;
 
-    @Autowired
     private SolrClient solrClient;
 
     private ArgumentCaptor<Exchange> exchangeCaptor;
@@ -91,11 +81,22 @@ public class SolrUpdateRouterTest {
 
     private PID targetPid;
 
-    @Before
+    @BeforeEach
     public void init() {
         pidMinter = new RepositoryPIDMinter();
         targetPid = pidMinter.mintContentPid();
         exchangeCaptor = ArgumentCaptor.forClass(Exchange.class);
+        indexingMessageSender = applicationContext.getBean(IndexingMessageSender.class);
+        solrSmallUpdateProcessor = applicationContext.getBean("solrSmallUpdateProcessor", SolrUpdateProcessor.class);
+        solrLargeUpdateProcessor = applicationContext.getBean("solrLargeUpdateProcessor", SolrUpdateProcessor.class);
+        solrUpdatePreprocessor = applicationContext.getBean(SolrUpdatePreprocessor.class);
+        solrClient = applicationContext.getBean(SolrClient.class);
+        cdrServiceSolrUpdate = applicationContext.getBean(CamelContext.class);
+    }
+
+    @Override
+    protected AbstractApplicationContext createApplicationContext() {
+        return new ClassPathXmlApplicationContext("spring-test/jms-context.xml", "solr-update-context.xml");
     }
 
     @Test
@@ -244,7 +245,7 @@ public class SolrUpdateRouterTest {
         PID targetPid2 = pidMinter.mintContentPid();
 
         NotifyBuilder notify = new NotifyBuilder(cdrServiceSolrUpdate)
-                .whenCompleted(1)
+                .whenCompleted(5)
                 .create();
 
         templateWorkFromFile.sendBodyAndHeaders(targetPid1.getId(), null);

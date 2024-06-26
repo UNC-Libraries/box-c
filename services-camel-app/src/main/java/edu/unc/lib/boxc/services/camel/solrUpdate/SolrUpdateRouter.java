@@ -44,32 +44,22 @@ public class SolrUpdateRouter extends RouteBuilder {
     @BeanInject
     private OrderedSetAggregationStrategy orderedSetAggregationStrategy;
 
-    private long errorRetryDelay;
-    private int errorMaxRedeliveries;
-    private int errorBackOffMultiplier;
-    private String solrUpdateStreamCamel;
-    private String solrUpdateLargeCamel;
-    private String solrUpdatePriorityLowCamel;
-    private String solrUpdateWorkObjectFileUpdatedEndpoint;
-    private String solrUpdateWorkObjectFileUpdatedDestination;
-    private String solrUpdateWorkObjectFileUpdatedConsumer;
-
     @Override
     public void configure() throws Exception {
         onException(NotFoundException.class)
-            .redeliveryDelay(errorRetryDelay)
-            .maximumRedeliveries(errorMaxRedeliveries)
-            .backOffMultiplier(errorBackOffMultiplier)
+            .redeliveryDelay("{{cdr.enhancement.solr.notFound.retryDelay:500}}")
+            .maximumRedeliveries("{{cdr.enhancement.solr.notFound.maxRedeliveries:10}}")
+            .backOffMultiplier("{{cdr.enhancement.solr.notFound.backOffMultiplier:2}}")
             .retryAttemptedLogLevel(LoggingLevel.DEBUG);
         onException(RecoverableIndexingException.class, FcrepoOperationFailedException.class,
                     ConnectException.class, HttpException.class)
-            .redeliveryDelay(errorRetryDelay)
-            .maximumRedeliveries(errorMaxRedeliveries)
-            .backOffMultiplier(errorBackOffMultiplier)
+            .redeliveryDelay("{{cdr.enhancement.solr.error.retryDelay:500}}")
+            .maximumRedeliveries("{{cdr.enhancement.solr.error.maxRedeliveries:10}}")
+            .backOffMultiplier("{{cdr.enhancement.solr.error.backOffMultiplier:2}}")
             .retryAttemptedLogLevel(LoggingLevel.WARN);
         onException(Exception.class).retriesExhaustedLogLevel(LoggingLevel.ERROR);
 
-        from(solrUpdateStreamCamel)
+        from("{{cdr.solrupdate.stream.camel}}")
             .routeId("CdrServiceSolrUpdate")
             .startupOrder(510)
             .bean(solrUpdatePreprocessor)
@@ -79,9 +69,9 @@ public class SolrUpdateRouter extends RouteBuilder {
             .choice()
                 .when(simple("${headers[" + CdrFcrepoHeaders.CdrSolrIndexingPriority
                         + "]} == '" + IndexingPriority.low.name() + "'"))
-                    .to(solrUpdatePriorityLowCamel)
+                    .to("{{cdr.solrupdate.priority.low.camel}}")
                 .when().method(SolrUpdatePreprocessor.class, "isLargeAction")
-                    .to(solrUpdateLargeCamel)
+                    .to("{{cdr.solrupdate.large.camel}}")
                 .when().method(SolrUpdatePreprocessor.class, "isSmallAction")
                     .log(LoggingLevel.DEBUG, log, "Performing small solr update")
                     .bean(solrSmallUpdateProcessor)
@@ -89,98 +79,34 @@ public class SolrUpdateRouter extends RouteBuilder {
                     .bean(solrUpdatePreprocessor, "logUnknownSolrUpdate")
             .endChoice();
 
-        from(solrUpdateLargeCamel)
+        from("{{cdr.solrupdate.large.camel}}")
             .routeId("CdrSolrUpdateLarge")
             .startupOrder(507)
             .log(LoggingLevel.DEBUG, log, "Performing large solr update")
             .bean(solrLargeUpdateProcessor);
 
-        from(solrUpdatePriorityLowCamel)
+        from("{{cdr.solrupdate.priority.low.camel}}")
             .routeId("CdrSolrUpdateLowPriority")
             .startupOrder(508)
             .log(LoggingLevel.DEBUG, log, "Performing low priority solr update")
             .bean(solrSmallUpdateProcessor);
 
         // Endpoint for receiving individual requests update works when files are updated
-        from(solrUpdateWorkObjectFileUpdatedEndpoint)
+        from("activemq://activemq:queue:solr.update.workObject.fileUpdated")
             .routeId("CdrSolrUpdateWorkFileEndpoint")
             .startupOrder(506)
             // Camel does not initialize the sjms endpoint for the batch consumer unless it appears in a route
-            .to(solrUpdateWorkObjectFileUpdatedDestination);
+            .to("{{cdr.solrupdate.workObject.fileUpdated}}");
 
         // Batch endpoint for updating works when files update, to allow for deduplication of pending requests
-        from(solrUpdateWorkObjectFileUpdatedConsumer)
+        from("{{cdr.solrupdate.workObject.fileUpdated.consumer}}")
             .routeId("CdrSolrUpdateWorkFileUpdated")
             .startupOrder(505)
-            .log(LoggingLevel.DEBUG, log, "Processing batch of work updates")
+            .log(LoggingLevel.ERROR, log, "Processing batch of work updates")
                 .aggregate(orderedSetAggregationStrategy).constant(true)
-                .completionSize(100)
-                .completionTimeout(1000)
+                .completionSize("{{cdr.solrupdate.workObject.fileUpdated.batchSize}}")
+                .completionTimeout("{{cdr.solrupdate.workObject.fileUpdated.batchTimeout}}")
+                .log(LoggingLevel.ERROR, log, "BOOM")
             .bean(aggregateWorkForFileProcessor);
-    }
-
-    @PropertyInject("cdr.enhancement.solr.notFound.retryDelay:500")
-    public void setErrorRetryDelay(long errorRetryDelay) {
-        this.errorRetryDelay = errorRetryDelay;
-    }
-
-    @PropertyInject("cdr.enhancement.solr.notFound.maxRedeliveries:10")
-    public void setErrorMaxRedeliveries(int errorMaxRedeliveries) {
-        this.errorMaxRedeliveries = errorMaxRedeliveries;
-    }
-
-    @PropertyInject("cdr.enhancement.solr.notFound.backOffMultiplier:2")
-    public void setErrorBackOffMultiplier(int errorBackOffMultiplier) {
-        this.errorBackOffMultiplier = errorBackOffMultiplier;
-    }
-
-    public void setSolrLargeUpdateProcessor(SolrUpdateProcessor solrLargeUpdateProcessor) {
-        this.solrLargeUpdateProcessor = solrLargeUpdateProcessor;
-    }
-
-    public void setSolrSmallUpdateProcessor(SolrUpdateProcessor solrSmallUpdateProcessor) {
-        this.solrSmallUpdateProcessor = solrSmallUpdateProcessor;
-    }
-
-    public void setSolrUpdatePreprocessor(SolrUpdatePreprocessor solrUpdatePreprocessor) {
-        this.solrUpdatePreprocessor = solrUpdatePreprocessor;
-    }
-
-    public void setCacheInvalidatingProcessor(CacheInvalidatingProcessor cacheInvalidatingProcessor) {
-        this.cacheInvalidatingProcessor = cacheInvalidatingProcessor;
-    }
-
-    public void setAggregateWorkForFileProcessor(AggregateUpdateProcessor aggregateWorkForFileProcessor) {
-        this.aggregateWorkForFileProcessor = aggregateWorkForFileProcessor;
-    }
-
-    @PropertyInject("cdr.solrupdate.stream.camel")
-    public void setSolrUpdateStreamCamel(String solrUpdateStreamCamel) {
-        this.solrUpdateStreamCamel = solrUpdateStreamCamel;
-    }
-
-    @PropertyInject("cdr.solrupdate.large.camel")
-    public void setSolrUpdateLargeCamel(String solrUpdateLargeCamel) {
-        this.solrUpdateLargeCamel = solrUpdateLargeCamel;
-    }
-
-    @PropertyInject("cdr.solrupdate.priority.low.camel")
-    public void setSolrUpdatePriorityLowCamel(String solrUpdatePriorityLowCamel) {
-        this.solrUpdatePriorityLowCamel = solrUpdatePriorityLowCamel;
-    }
-
-    @PropertyInject("cdr.solrupdate.workObject.fileUpdated.endpoint")
-    public void setSolrUpdateWorkObjectFileUpdatedEndpoint(String solrUpdateWorkObjectFileUpdatedEndpoint) {
-        this.solrUpdateWorkObjectFileUpdatedEndpoint = solrUpdateWorkObjectFileUpdatedEndpoint;
-    }
-
-    @PropertyInject("cdr.solrupdate.workObject.fileUpdated.consumer")
-    public void setSolrUpdateWorkObjectFileUpdatedConsumer(String solrUpdateWorkObjectFileUpdatedConsumer) {
-        this.solrUpdateWorkObjectFileUpdatedConsumer = solrUpdateWorkObjectFileUpdatedConsumer;
-    }
-
-    @PropertyInject("cdr.solrupdate.workObject.fileUpdated.destination")
-    public void setSolrUpdateWorkObjectFileUpdatedDestination(String solrUpdateWorkObjectFileUpdatedDestination) {
-        this.solrUpdateWorkObjectFileUpdatedDestination = solrUpdateWorkObjectFileUpdatedDestination;
     }
 }
