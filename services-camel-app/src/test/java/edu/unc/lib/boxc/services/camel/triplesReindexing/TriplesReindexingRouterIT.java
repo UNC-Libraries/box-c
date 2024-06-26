@@ -19,8 +19,6 @@ import edu.unc.lib.boxc.model.fcrepo.test.TestRepositoryDeinitializer;
 import edu.unc.lib.boxc.operations.jms.indexing.IndexingMessageSender;
 import edu.unc.lib.boxc.persist.impl.storage.StorageLocationTestHelper;
 import org.apache.activemq.broker.BrokerService;
-import org.apache.camel.Exchange;
-import org.apache.camel.Message;
 import org.apache.camel.builder.NotifyBuilder;
 import org.apache.camel.test.spring.junit5.CamelSpringTestSupport;
 import org.apache.commons.io.FileUtils;
@@ -33,7 +31,7 @@ import org.fcrepo.client.FcrepoClient;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mock;
+import org.slf4j.Logger;
 import org.springframework.context.support.AbstractApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
@@ -43,8 +41,9 @@ import java.util.concurrent.TimeUnit;
 import static edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPaths.getContentRootPid;
 import static edu.unc.lib.boxc.operations.jms.indexing.IndexingActionType.RECURSIVE_REINDEX;
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 import static org.mockito.MockitoAnnotations.openMocks;
+import static org.slf4j.LoggerFactory.getLogger;
 
 /**
  *
@@ -52,6 +51,7 @@ import static org.mockito.MockitoAnnotations.openMocks;
  *
  */
 public class TriplesReindexingRouterIT extends CamelSpringTestSupport {
+    private static final Logger log = getLogger(TriplesReindexingRouterIT.class);
     private AutoCloseable closeable;
 
     private String baseAddress;
@@ -142,16 +142,16 @@ public class TriplesReindexingRouterIT extends CamelSpringTestSupport {
 
     @Test
     public void testIndexingSingle() throws Exception {
+        System.out.println("Indexing " + folderObj2.getPid());
         messageSender.sendIndexingOperation("user", folderObj2.getPid(), RECURSIVE_REINDEX);
 
-        // 3 resources compose the folder
         NotifyBuilder notify = new NotifyBuilder(context)
-                .whenDone(6)
+                .whenDone(5)
                 .create();
 
-        notify.matches(5l, TimeUnit.SECONDS);
+        notify.matches(2l, TimeUnit.SECONDS);
 
-        assertIndexed(folderObj2);
+        assertIndexed(folderObj2, 2000);
     }
 
     @Test
@@ -164,8 +164,10 @@ public class TriplesReindexingRouterIT extends CamelSpringTestSupport {
                 .whenCompleted(60)
                 .create();
 
-        notify.matches(25l, TimeUnit.SECONDS);
+        notify.matches(5l, TimeUnit.SECONDS);
 
+        // Allow for a long delay for the deepest record to be indexed
+        assertIndexed(fileObj, 10000);
         assertIndexed(rootObj);
         assertIndexed(unitObj);
         assertIndexed(collObj);
@@ -188,8 +190,10 @@ public class TriplesReindexingRouterIT extends CamelSpringTestSupport {
                 .whenCompleted(200)
                 .create();
 
-        notify.matches(25l, TimeUnit.SECONDS);
+        notify.matches(5l, TimeUnit.SECONDS);
 
+        // Allow for a long delay for the deepest record to be indexed
+        assertIndexed(fileObj.getOriginalFile(), 15000);
         assertIndexed(rootObj);
         assertIndexed(unitObj);
         assertIndexed(collObj);
@@ -197,19 +201,29 @@ public class TriplesReindexingRouterIT extends CamelSpringTestSupport {
         assertIndexed(folderObj2);
         assertIndexed(workObj);
         assertIndexed(fileObj);
-        assertIndexed(fileObj.getOriginalFile());
 
         assertIndexed(depositRec);
     }
 
-    private void assertIndexed(RepositoryObject repoObj) {
+    private void assertIndexed(RepositoryObject repoObj) throws Exception {
+        assertIndexed(repoObj, 1000);
+    }
+
+    private void assertIndexed(RepositoryObject repoObj, long waitMs) throws Exception {
         String query = String.format("select ?pred ?obj where { <%s> ?pred ?obj } limit 1",
                 repoObj.getPid().getRepositoryPath());
 
+        long endTime = System.currentTimeMillis() + waitMs;
         try (QueryExecution qExecution = sparqlQueryService.executeQuery(query)) {
-            ResultSet resultSet = qExecution.execSelect();
+            while (System.currentTimeMillis() < endTime) {
+                ResultSet resultSet = qExecution.execSelect();
+                if (resultSet.hasNext()) {
+                    return;
+                }
+                Thread.sleep(100l);
+            }
 
-            assertTrue("Object " + repoObj.getPid() + " was not indexed", resultSet.hasNext());
+            fail("Object " + repoObj.getPid() + " was not indexed");
         }
     }
 }

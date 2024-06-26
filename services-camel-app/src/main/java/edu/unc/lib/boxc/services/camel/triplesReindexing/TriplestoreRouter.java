@@ -1,11 +1,6 @@
 package edu.unc.lib.boxc.services.camel.triplesReindexing;
 
-import org.apache.camel.CamelContext;
-import org.apache.camel.builder.RouteBuilder;
-
-import org.apache.camel.BeanInject;
 import org.apache.camel.LoggingLevel;
-import org.apache.camel.PropertyInject;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.language.xpath.XPathBuilder;
 import org.apache.camel.support.builder.Namespaces;
@@ -14,16 +9,11 @@ import org.fcrepo.camel.processor.SparqlDeleteProcessor;
 import org.fcrepo.camel.processor.SparqlUpdateProcessor;
 import org.slf4j.Logger;
 
-import java.util.List;
-
-import static java.util.Arrays.stream;
-import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.toList;
+import static org.apache.camel.LoggingLevel.DEBUG;
 import static org.apache.camel.builder.PredicateBuilder.in;
 import static org.apache.camel.builder.PredicateBuilder.not;
 import static org.apache.camel.builder.PredicateBuilder.or;
-
-import static org.apache.camel.LoggingLevel.DEBUG;
 import static org.fcrepo.camel.FcrepoHeaders.FCREPO_EVENT_TYPE;
 import static org.fcrepo.camel.FcrepoHeaders.FCREPO_NAMED_GRAPH;
 import static org.fcrepo.camel.FcrepoHeaders.FCREPO_URI;
@@ -90,6 +80,7 @@ public class TriplestoreRouter extends RouteBuilder {
          */
         from("direct:index.triplestore")
                 .routeId("FcrepoTriplestoreIndexer")
+                .log(DEBUG, LOGGER,"Received Triplestore Indexing request for ${headers[CamelFcrepoUri]}")
                 .filter(not(in(tokenizePropertyPlaceholder(getContext(), "{{filter.containers}}", ",").stream()
                         .map(uri -> or(
                                 header(FCREPO_URI).startsWith(constant(uri + "/")),
@@ -100,7 +91,6 @@ public class TriplestoreRouter extends RouteBuilder {
                 .when(simple("{{indexing.predicate}} != 'true'"))
                 .to("direct:update.triplestore")
                 .otherwise()
-                // TODO this won't work with fedora 5
                 .to("fcrepo:{{fcrepo.baseUrl}}?preferInclude=PreferMinimalContainer&accept=application/rdf+xml")
                 .choice()
                 .when(indexable)
@@ -132,14 +122,4 @@ public class TriplestoreRouter extends RouteBuilder {
                         "Indexing Triplestore Object ${headers[CamelFcrepoUri]}")
                 .to("{{triplestore.baseUrl}}?useSystemProperties=true");
     }
-//    public static List<String> tokenizePropertyPlaceholder(final CamelContext context, final String property,
-//                                                           final String token) {
-//        try {
-//            return stream(context.resolvePropertyPlaceholders(property).split(token)).map(String::trim)
-//                    .filter(val -> !val.isEmpty()).collect(toList());
-//        } catch (final Exception ex) {
-//            LOGGER.debug("No property value found for {}", property);
-//            return emptyList();
-//        }
-//    }
 }

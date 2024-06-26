@@ -1,15 +1,15 @@
 package edu.unc.lib.boxc.services.camel.triplesReindexing;
 
-import static org.apache.camel.LoggingLevel.ERROR;
-import static org.apache.camel.LoggingLevel.INFO;
-import static org.fcrepo.camel.FcrepoHeaders.FCREPO_URI;
-import static org.slf4j.LoggerFactory.getLogger;
-
 import org.apache.camel.BeanInject;
+import org.apache.camel.ExchangePattern;
 import org.apache.camel.LoggingLevel;
 import org.apache.camel.PropertyInject;
 import org.apache.camel.builder.RouteBuilder;
 import org.slf4j.Logger;
+
+import static org.apache.camel.LoggingLevel.INFO;
+import static org.fcrepo.camel.FcrepoHeaders.FCREPO_URI;
+import static org.slf4j.LoggerFactory.getLogger;
 
 /**
  * Route for processing reindexing requests.
@@ -24,8 +24,6 @@ public class TriplesReindexingRouter extends RouteBuilder {
 
     @BeanInject(value = "indexingMessageProcessor")
     private IndexingMessageProcessor indexingMessageProcessor;
-    @BeanInject(value = "triplesUpdateProcessor")
-    private TriplesUpdateProcessor triplesUpdateProcessor;
 
     private String fcrepoBaseUrl;
     private String reindexingStream;
@@ -56,7 +54,7 @@ public class TriplesReindexingRouter extends RouteBuilder {
             .routeId("FcrepoReindexingTraverse")
             .startupOrder(1)
             .log(INFO, log, "Reindexing ${headers[CamelFcrepoUri]}")
-            .process(triplesUpdateProcessor)
+            .to(ExchangePattern.InOnly, triplestoreReindexStream)
             .to("fcrepo:" + fcrepoBaseUrl + "?preferInclude=PreferContainment" +
                     "&preferOmit=ServerManaged&accept=application/n-triples")
             // split the n-triples stream on line breaks so that each triple is split into a separate message
@@ -119,9 +117,5 @@ public class TriplesReindexingRouter extends RouteBuilder {
     @PropertyInject("cdr.triplesupdate.stream.camel")
     public void setTriplesUpdateStreamCamel(String triplesUpdateStreamCamel) {
         this.triplesUpdateStreamCamel = triplesUpdateStreamCamel;
-    }
-
-    public void setTriplesUpdateProcessor(TriplesUpdateProcessor triplesUpdateProcessor) {
-        this.triplesUpdateProcessor = triplesUpdateProcessor;
     }
 }
