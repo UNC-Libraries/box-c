@@ -90,6 +90,7 @@ public class ImageServerV2Controller extends AbstractSolrSearchController {
      * @param id
      * @param response
      */
+    @CrossOrigin(origins = "*")
     @GetMapping("/iiif/v2/{id}/info.json")
     public void getMetadata(@PathVariable("id") String id, HttpServletResponse response) {
         PID pid = PIDs.get(id);

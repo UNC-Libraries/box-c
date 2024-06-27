@@ -120,7 +120,7 @@ public class ImageServerV2ControllerTest {
         var viewableRecords = new ArrayList<ContentObjectRecord>(Arrays.asList(workObj, fileObj));
         when(accessCopiesService.listViewableFiles(eq(OBJECT_PID), any())).thenReturn(viewableRecords);
 
-        var result = mockMvc.perform(get("/iiif/v2/" + OBJECT_ID + "/jp2/manifest")
+        var result = mockMvc.perform(get("/iiif/v2/" + OBJECT_ID + "/manifest")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andReturn();
@@ -134,7 +134,7 @@ public class ImageServerV2ControllerTest {
         doThrow(new AccessRestrictionException()).when(accessControlService)
                 .assertHasAccess(anyString(), any(), any(), eq(Permission.viewAccessCopies));
 
-        mockMvc.perform(get("/iiif/v2/" + OBJECT_ID + "/jp2/manifest")
+        mockMvc.perform(get("/iiif/v2/" + OBJECT_ID + "/manifest")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isForbidden());
     }
@@ -167,7 +167,7 @@ public class ImageServerV2ControllerTest {
         List<Annotation> images = canvas.getImages();
         assertEquals(2, images.size());
         Annotation jp2Image = images.get(0);
-        assertEquals("http://example.com/services/iiif/v2/" + filePid.getId() + "/jp2",
+        assertEquals("http://example.com/services/iiif/v2/" + filePid.getId(),
                 jp2Image.getResource().getServices().get(0).getIdentifier().toString());
         Annotation thumbImage = images.get(1);
         assertEquals("http://example.com/services/services/api/thumb/" + filePid.getId() + "/large",
