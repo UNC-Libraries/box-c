@@ -251,5 +251,8 @@
     </bean>
     
     <bean id="repositoryObjectSolrIndexer" class="edu.unc.lib.boxc.indexing.solr.test.RepositoryObjectSolrIndexer">
+        <property name="documentIndexingPackageFactory" ref="dipFactory" />
+        <property name="solrUpdateDriver" ref="solrUpdateDriver" />
+        <property name="documentIndexingPipeline" ref="solrFullUpdatePipeline" />
     </bean>
 </beans>
