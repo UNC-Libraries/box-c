@@ -18,6 +18,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -62,6 +63,7 @@ public class ImageServerV2Controller extends AbstractSolrSearchController {
      * @param qualityFormat
      * @param response
      */
+    @CrossOrigin(origins = "*")
     @GetMapping("/iiif/v2/{id}/{region}/{size}/{rotation}/{qualityFormat:.+}")
     public void getRegion(@PathVariable("id") String id, @PathVariable("region") String region,
             @PathVariable("size") String size, @PathVariable("rotation") String rotation,
@@ -74,7 +76,6 @@ public class ImageServerV2Controller extends AbstractSolrSearchController {
             String[] qualityFormatArray = qualityFormat.split("\\.");
             String quality = qualityFormatArray[0];
             String format = qualityFormatArray[1];
-            response.addHeader("Access-Control-Allow-Origin", "*");
             imageServerV2Service.streamJP2(
                     id, region, size, rotation, quality, format,
                     response.getOutputStream(), response);
@@ -95,15 +96,10 @@ public class ImageServerV2Controller extends AbstractSolrSearchController {
         // Check if the user is allowed to view this object
         assertHasAccess(pid);
         try {
-            addAllowOriginHeader(response);
             imageServerV2Service.getMetadata(id, response.getOutputStream(), response);
         } catch (IOException e) {
             LOG.error("Error retrieving JP2 metadata content for {}", id, e);
         }
-    }
-
-    private void addAllowOriginHeader(HttpServletResponse response) {
-        response.addHeader("Access-Control-Allow-Origin", "*");
     }
 
     /**
@@ -112,6 +108,7 @@ public class ImageServerV2Controller extends AbstractSolrSearchController {
      * @param response
      * @return
      */
+    @CrossOrigin(origins = "*")
     @GetMapping(value = "/iiif/v2/{id}", produces = APPLICATION_JSON_VALUE)
     @ResponseBody
     public String getCanvas(@PathVariable("id") String id, HttpServletRequest request,
@@ -122,7 +119,6 @@ public class ImageServerV2Controller extends AbstractSolrSearchController {
         SimpleIdRequest idRequest = new SimpleIdRequest(pid, GroupsThreadStore
                 .getAgentPrincipals().getPrincipals());
         ContentObjectRecord briefObj = queryLayer.getObjectById(idRequest);
-        addAllowOriginHeader(response);
         return imageServerV2Service.getCanvas(id, briefObj);
     }
 
@@ -132,6 +128,7 @@ public class ImageServerV2Controller extends AbstractSolrSearchController {
      * @param response
      * @return
      */
+    @CrossOrigin(origins = "*")
     @GetMapping(value = "/iiif/v2/{id}/sequence/normal", produces = APPLICATION_JSON_VALUE)
     @ResponseBody
     public String getSequence(@PathVariable("id") String id,
@@ -140,7 +137,6 @@ public class ImageServerV2Controller extends AbstractSolrSearchController {
         // Check if the user is allowed to view this object's manifest
         assertHasAccess(pid);
         List<ContentObjectRecord> briefObjs = getDatastreams(pid);
-        addAllowOriginHeader(response);
         return imageServerV2Service.getSequence(id, briefObjs);
     }
 
@@ -150,6 +146,7 @@ public class ImageServerV2Controller extends AbstractSolrSearchController {
      * @param response
      * @return
      */
+    @CrossOrigin(origins = "*")
     @GetMapping(value = "/iiif/v2/{id}/manifest" , produces = APPLICATION_JSON_VALUE)
     @ResponseBody
     public String getManifest(@PathVariable("id") String id, HttpServletRequest request, HttpServletResponse response) {
@@ -161,7 +158,6 @@ public class ImageServerV2Controller extends AbstractSolrSearchController {
             if (briefObjs.isEmpty()) {
                 response.setStatus(HttpStatus.NOT_FOUND.value());
             } else {
-                addAllowOriginHeader(response);
                 return imageServerV2Service.getManifest(id, briefObjs);
             }
         } catch (IOException e) {
