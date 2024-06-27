@@ -1,41 +1,5 @@
 package edu.unc.lib.boxc.services.camel.destroyDerivatives;
 
-import static edu.unc.lib.boxc.model.api.ids.RepositoryPathConstants.HASHED_PATH_DEPTH;
-import static edu.unc.lib.boxc.model.api.ids.RepositoryPathConstants.HASHED_PATH_SIZE;
-import static edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPaths.getContentRootPid;
-import static edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPaths.idToPath;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.reset;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-import static org.mockito.MockitoAnnotations.openMocks;
-
-import java.io.File;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.Collections;
-import java.util.List;
-
-import edu.unc.lib.boxc.model.fcrepo.test.TestRepositoryDeinitializer;
-import edu.unc.lib.boxc.operations.jms.order.MemberOrderRequestSender;
-import org.apache.camel.BeanInject;
-import org.apache.camel.CamelContext;
-import org.apache.camel.Exchange;
-import org.apache.commons.io.FileUtils;
-import org.apache.jena.rdf.model.Model;
-import org.fcrepo.client.FcrepoClient;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.runner.RunWith;
-import org.mockito.Mock;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.ContextHierarchy;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-
 import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
 import edu.unc.lib.boxc.auth.api.models.AgentPrincipals;
 import edu.unc.lib.boxc.auth.api.services.AccessControlService;
@@ -56,61 +20,67 @@ import edu.unc.lib.boxc.model.fcrepo.services.RepositoryInitializer;
 import edu.unc.lib.boxc.model.fcrepo.test.AclModelBuilder;
 import edu.unc.lib.boxc.model.fcrepo.test.RepositoryObjectTreeIndexer;
 import edu.unc.lib.boxc.model.fcrepo.test.TestHelper;
+import edu.unc.lib.boxc.model.fcrepo.test.TestRepositoryDeinitializer;
 import edu.unc.lib.boxc.operations.impl.delete.MarkForDeletionJob;
 import edu.unc.lib.boxc.operations.impl.destroy.DestroyObjectsJob;
 import edu.unc.lib.boxc.operations.impl.events.PremisLoggerFactoryImpl;
 import edu.unc.lib.boxc.operations.jms.MessageSender;
 import edu.unc.lib.boxc.operations.jms.destroy.DestroyObjectsRequest;
 import edu.unc.lib.boxc.operations.jms.indexing.IndexingMessageSender;
+import edu.unc.lib.boxc.operations.jms.order.MemberOrderRequestSender;
 import edu.unc.lib.boxc.persist.api.transfer.BinaryTransferService;
 import edu.unc.lib.boxc.persist.impl.storage.StorageLocationManagerImpl;
 import edu.unc.lib.boxc.search.api.models.ObjectPath;
 import edu.unc.lib.boxc.search.solr.services.ObjectPathFactory;
+import org.apache.camel.Exchange;
+import org.apache.camel.test.spring.junit5.CamelSpringTestSupport;
+import org.apache.commons.io.FileUtils;
+import org.apache.jena.rdf.model.Model;
+import org.fcrepo.client.FcrepoClient;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.Mock;
+import org.springframework.context.support.AbstractApplicationContext;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
+
+import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Collections;
+import java.util.List;
+
+import static edu.unc.lib.boxc.model.api.ids.RepositoryPathConstants.HASHED_PATH_DEPTH;
+import static edu.unc.lib.boxc.model.api.ids.RepositoryPathConstants.HASHED_PATH_SIZE;
+import static edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPaths.getContentRootPid;
+import static edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPaths.idToPath;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import static org.mockito.MockitoAnnotations.openMocks;
 
 /**
  *
  * @author lfarrell
  *
  */
-@RunWith(SpringJUnit4ClassRunner.class)
-@ContextHierarchy({
-        @ContextConfiguration("/spring-test/cdr-client-container.xml"),
-        @ContextConfiguration("/spring-test/jms-context.xml"),
-        @ContextConfiguration("/spring-test/acl-service-context.xml"),
-        @ContextConfiguration("/destroy-derivatives-router-it-context.xml")
-})
-public class DestroyDerivativesRouterIT {
-    @Autowired
+public class DestroyDerivativesRouterIT extends CamelSpringTestSupport {
     private String baseAddress;
-    @Autowired
     private RepositoryObjectFactory repoObjectFactory;
-    @javax.annotation.Resource(name = "repositoryObjectLoader")
     private RepositoryObjectLoader repoObjLoader;
-    @Autowired
     private TransactionManager txManager;
-    @Autowired
     private ObjectPathFactory pathFactory;
-    @Autowired
     private FcrepoClient fcrepoClient;
-    @Autowired
     private Model queryModel;
-    @Autowired
     private StorageLocationManagerImpl locationManager;
-    @Autowired
     private BinaryTransferService transferService;
-    @Autowired
     private AccessControlService aclService;
-    @Autowired
     private InheritedAclFactory inheritedAclFactory;
-    @Autowired
     private RepositoryInitializer repositoryInitializer;
-    @Autowired
     private FedoraSparqlUpdateService sparqlUpdateService;
-    @Autowired
     private PremisLoggerFactoryImpl premisLoggerFactory;
-    @Autowired
-    private CamelContext cdrDestroyDerivatives;
-    @Autowired
     private MessageSender binaryDestroyedMessageSender;
 
     @Mock
@@ -120,22 +90,16 @@ public class DestroyDerivativesRouterIT {
     @Mock
     private MemberOrderRequestSender memberOrderRequestSender;
 
-    @BeanInject(value = "destroyedMsgProcessor")
     private DestroyedMsgProcessor destroyedMsgProcessor;
 
-    @BeanInject(value = "destroyCollectionSrcImgProcessor")
     private DestroyDerivativesProcessor destroyCollectionSrcImgProcessor;
 
-    @BeanInject(value = "destroySmallThumbnailProcessor")
     private DestroyDerivativesProcessor destroySmallThumbnailProcessor;
 
-    @BeanInject(value = "destroyLargeThumbnailProcessor")
     private DestroyDerivativesProcessor destroyLargeThumbnailProcessor;
 
-    @BeanInject(value = "destroyAccessCopyProcessor")
     private DestroyDerivativesProcessor destroyAccessCopyProcessor;
 
-    @BeanInject(value = "destroyFulltextProcessor")
     private DestroyDerivativesProcessor destroyFulltextProcessor;
 
     private DestroyObjectsJob destroyJob;
@@ -152,9 +116,40 @@ public class DestroyDerivativesRouterIT {
 
     private AutoCloseable closeable;
 
-    @Before
+    @Override
+    protected AbstractApplicationContext createApplicationContext() {
+        return new ClassPathXmlApplicationContext("spring-test/cdr-client-container.xml",
+                "spring-test/jms-context.xml",
+                "spring-test/acl-service-context.xml",
+                "destroy-derivatives-router-it-context.xml");
+    }
+
+    @BeforeEach
     public void init() {
         closeable = openMocks(this);
+
+        baseAddress = applicationContext.getBean("baseAddress", String.class);
+        repoObjectFactory = applicationContext.getBean(RepositoryObjectFactory.class);
+        repoObjLoader = applicationContext.getBean("repositoryObjectLoader", RepositoryObjectLoader.class);
+        txManager = applicationContext.getBean(TransactionManager.class);
+        pathFactory = applicationContext.getBean(ObjectPathFactory.class);
+        fcrepoClient = applicationContext.getBean(FcrepoClient.class);
+        queryModel = applicationContext.getBean(Model.class);
+        locationManager = applicationContext.getBean(StorageLocationManagerImpl.class);
+        transferService = applicationContext.getBean(BinaryTransferService.class);
+        aclService = applicationContext.getBean(AccessControlService.class);
+        inheritedAclFactory = applicationContext.getBean(InheritedAclFactory.class);
+        repositoryInitializer = applicationContext.getBean(RepositoryInitializer.class);
+        sparqlUpdateService = applicationContext.getBean(FedoraSparqlUpdateService.class);
+        premisLoggerFactory = applicationContext.getBean(PremisLoggerFactoryImpl.class);
+        indexingMessageSender = applicationContext.getBean(IndexingMessageSender.class);
+        binaryDestroyedMessageSender = applicationContext.getBean("binaryDestroyedMessageSender", MessageSender.class);
+        destroyedMsgProcessor = applicationContext.getBean(DestroyedMsgProcessor.class);
+        destroyCollectionSrcImgProcessor = applicationContext.getBean("destroyCollectionSrcImgProcessor", DestroyDerivativesProcessor.class);
+        destroySmallThumbnailProcessor = applicationContext.getBean("destroySmallThumbnailProcessor", DestroyDerivativesProcessor.class);
+        destroyLargeThumbnailProcessor = applicationContext.getBean("destroyLargeThumbnailProcessor", DestroyDerivativesProcessor.class);
+        destroyAccessCopyProcessor = applicationContext.getBean("destroyAccessCopyProcessor", DestroyDerivativesProcessor.class);
+        destroyFulltextProcessor = applicationContext.getBean("destroyFulltextProcessor", DestroyDerivativesProcessor.class);
 
         TestHelper.setContentBase(baseAddress);
 
@@ -173,12 +168,6 @@ public class DestroyDerivativesRouterIT {
 
         contentRoot.addMember(adminUnit);
         adminUnit.addMember(collection);
-
-        reset(destroyCollectionSrcImgProcessor);
-        reset(destroySmallThumbnailProcessor);
-        reset(destroyLargeThumbnailProcessor);
-        reset(destroyAccessCopyProcessor);
-        reset(destroyFulltextProcessor);
 
         treeIndexer = new RepositoryObjectTreeIndexer(queryModel, fcrepoClient);
         premisLoggerFactory.setBinaryTransferService(transferService);

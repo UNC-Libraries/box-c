@@ -14,7 +14,7 @@
         http://camel.apache.org/schema/spring/camel-spring.xsd">
 
     <bean id="properties" class="org.apache.camel.component.properties.PropertiesComponent">
-        <property name="location" value="classpath:destroy-derivatives-it-config.properties"/>
+        <property name="location" value="classpath:destroy-derivatives-router-it-config.properties"/>
     </bean>
 
     <bean id="bridgePropertyPlaceholder" class="org.apache.camel.spring.spi.BridgePropertyPlaceholderConfigurer">
@@ -71,9 +71,8 @@
         <constructor-arg ref="fcrepoClient" />
     </bean>
 
-    <bean id="camelShutdownHook" class="org.apache.activemq.camel.CamelShutdownHook">
-        <constructor-arg ref="activemqBroker" />
-        <property name="camelContext" ref="cdrDestroyDerivatives" />
+    <bean id="indexingMessageSender" class="org.mockito.Mockito" factory-method="mock">
+        <constructor-arg type="java.lang.Class" value="edu.unc.lib.boxc.operations.jms.indexing.IndexingMessageSender" />
     </bean>
 
     <camel:camelContext id="cdrDestroyDerivatives">
