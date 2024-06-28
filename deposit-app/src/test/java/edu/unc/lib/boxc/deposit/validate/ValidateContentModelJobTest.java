@@ -2,9 +2,9 @@ package edu.unc.lib.boxc.deposit.validate;
 
 import static edu.unc.lib.boxc.common.test.TestHelpers.setField;
 import static edu.unc.lib.boxc.model.api.ids.RepositoryPathConstants.CONTENT_BASE;
-import static edu.unc.lib.boxc.operations.jms.streaming.StreamingPropertiesRequest.STREAMREAPER_SOUND;
+import static edu.unc.lib.boxc.operations.jms.streaming.StreamingPropertiesRequest.STREAMING_TYPE_SOUND;
 import static edu.unc.lib.boxc.operations.jms.streaming.StreamingPropertiesRequest.STREAMREAPER_PREFIX_URL;
-import static edu.unc.lib.boxc.operations.jms.streaming.StreamingPropertiesRequest.STREAMREAPER_VIDEO;
+import static edu.unc.lib.boxc.operations.jms.streaming.StreamingPropertiesRequest.STREAMING_TYPE_VIDEO;
 import static org.apache.jena.rdf.model.ResourceFactory.createResource;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -202,7 +202,7 @@ public class ValidateContentModelJobTest extends AbstractDepositJobTest {
         origResc.addLiteral(CdrDeposit.stagingLocation, "path");
         childResc.addProperty(RDF.type, Cdr.FileObject);
         childResc.addProperty(Cdr.streamingUrl, STREAMREAPER_PREFIX_URL + "?params=more");
-        childResc.addProperty(Cdr.streamingType, STREAMREAPER_VIDEO);
+        childResc.addProperty(Cdr.streamingType, STREAMING_TYPE_VIDEO);
         objBag.add(childResc);
 
         objBag.addProperty(Cdr.primaryObject, childResc);
@@ -254,7 +254,7 @@ public class ValidateContentModelJobTest extends AbstractDepositJobTest {
 
             childResc.addProperty(RDF.type, Cdr.FileObject);
             childResc.addProperty(Cdr.streamingUrl, STREAMREAPER_PREFIX_URL + "?params=more");
-            childResc.addProperty(Cdr.streamingType, STREAMREAPER_VIDEO);
+            childResc.addProperty(Cdr.streamingType, STREAMING_TYPE_VIDEO);
             objBag.add(childResc);
 
             objBag.addProperty(Cdr.primaryObject, childResc);
@@ -299,7 +299,7 @@ public class ValidateContentModelJobTest extends AbstractDepositJobTest {
         Resource childResc = model.getResource(childPid.getRepositoryPath());
         childResc.addProperty(RDF.type, Cdr.FileObject);
         childResc.addProperty(Cdr.streamingUrl, STREAMREAPER_PREFIX_URL + "?params=more");
-        childResc.addProperty(Cdr.streamingType, STREAMREAPER_SOUND);
+        childResc.addProperty(Cdr.streamingType, STREAMING_TYPE_SOUND);
         objBag.add(childResc);
 
         objBag.addProperty(Cdr.primaryObject, childResc);
@@ -323,7 +323,7 @@ public class ValidateContentModelJobTest extends AbstractDepositJobTest {
             childResc.addProperty(RDF.type, Cdr.Work);
             childResc.addProperty(CdrAcl.canDescribe, "user");
             childResc.addProperty(Cdr.streamingUrl, STREAMREAPER_PREFIX_URL + "?params=more");
-            childResc.addProperty(Cdr.streamingType, STREAMREAPER_VIDEO);
+            childResc.addProperty(Cdr.streamingType, STREAMING_TYPE_VIDEO);
             objBag.add(childResc);
 
             depBag.add(objBag);

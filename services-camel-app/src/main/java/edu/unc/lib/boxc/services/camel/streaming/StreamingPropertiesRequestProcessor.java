@@ -21,9 +21,9 @@ import java.util.Objects;
 
 import static edu.unc.lib.boxc.operations.jms.streaming.StreamingPropertiesRequest.ADD;
 import static edu.unc.lib.boxc.operations.jms.streaming.StreamingPropertiesRequest.DELETE;
-import static edu.unc.lib.boxc.operations.jms.streaming.StreamingPropertiesRequest.STREAMREAPER_SOUND;
+import static edu.unc.lib.boxc.operations.jms.streaming.StreamingPropertiesRequest.STREAMING_TYPE_SOUND;
 import static edu.unc.lib.boxc.operations.jms.streaming.StreamingPropertiesRequest.STREAMREAPER_PREFIX_URL;
-import static edu.unc.lib.boxc.operations.jms.streaming.StreamingPropertiesRequest.STREAMREAPER_VIDEO;
+import static edu.unc.lib.boxc.operations.jms.streaming.StreamingPropertiesRequest.STREAMING_TYPE_VIDEO;
 
 /**
  * Processing requests to edit streaming properties on a FileObject
@@ -79,8 +79,8 @@ public class StreamingPropertiesRequestProcessor implements Processor {
             }
             if (type == null) {
                 return "Streaming type is required";
-            } else if (!type.equals(STREAMREAPER_SOUND) && !type.equals(STREAMREAPER_VIDEO)) {
-                return "Streaming type is not a valid stream reaper type";
+            } else if (!type.equals(STREAMING_TYPE_SOUND) && !type.equals(STREAMING_TYPE_VIDEO)) {
+                return "Streaming type is not a valid type";
             }
         }
 
