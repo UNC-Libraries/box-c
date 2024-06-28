@@ -41,7 +41,7 @@ import edu.unc.lib.boxc.web.common.exceptions.ClientAbortException;
 import edu.unc.lib.boxc.web.common.utils.FileIOUtil;
 
 /**
- * Generates request, connects to, and streams the output from a iiif v2 server.  Sets pertinent headers.
+ * Generates request, connects to, and streams the output from an iiif v2 server.  Sets pertinent headers.
  * @author bbpennel
  */
 public class ImageServerV2Service {
@@ -93,7 +93,7 @@ public class ImageServerV2Service {
 
                         ImageService respData = iiifMapper.readValue(httpResp.getEntity().getContent(),
                                 ImageService.class);
-                        respData.setIdentifier(new URI(URIUtil.join(basePath, "iiif", "v2", simplepid, "jp2")));
+                        respData.setIdentifier(new URI(URIUtil.join(basePath, "iiif", "v2", simplepid)));
 
                         HttpEntity updatedRespData = EntityBuilder.create()
                                 .setText(iiifMapper.writeValueAsString(respData))
@@ -105,7 +105,7 @@ public class ImageServerV2Service {
                     return;
                 }
             } catch (ClientAbortException e) {
-                LOG.debug("User client aborted request to stream jp2 metadata for {}", simplepid, e);
+                LOG.debug("User client aborted request to stream metadata for {}", simplepid, e);
             } catch (Exception e) {
                 LOG.error("Problem retrieving metadata for {}", path, e);
             } finally {
@@ -131,8 +131,9 @@ public class ImageServerV2Service {
             size = ImageServerUtil.FULL_SIZE;
         }
         path.append(ImageServerUtil.getImageServerEncodedId(simplepid))
-                .append("/" + region).append("/" + size)
-                .append("/" + rotation).append("/" + quality + "." + format);
+                .append("/").append(region).append("/").append(size)
+                .append("/").append(rotation).append("/").append(quality)
+                .append(".").append(format);
 
         HttpGet method = new HttpGet(path.toString());
 
@@ -164,9 +165,9 @@ public class ImageServerV2Service {
         }
     }
 
-    public String getManifest(String id, String datastream, List<ContentObjectRecord> briefObjs)
+    public String getManifest(String id, List<ContentObjectRecord> briefObjs)
             throws JsonProcessingException {
-        String manifestBase = getRecordPath(id, datastream);
+        String manifestBase = getRecordPath(id);
         ContentObjectRecord rootObj = briefObjs.get(0);
 
         String title = getTitle(rootObj);
@@ -201,15 +202,15 @@ public class ImageServerV2Service {
         return iiifMapper.writeValueAsString(manifest.addSequence(seq));
     }
 
-    public String getSequence(String id, String datastream, List<ContentObjectRecord> briefObjs)
+    public String getSequence(String id, List<ContentObjectRecord> briefObjs)
             throws JsonProcessingException {
-        String path = getRecordPath(id, datastream);
+        String path = getRecordPath(id);
         return iiifMapper.writeValueAsString(createSequence(path, briefObjs));
     }
 
-    public String getCanvas(String id, String datastream, ContentObjectRecord briefObj)
+    public String getCanvas(String id, ContentObjectRecord briefObj)
             throws JsonProcessingException {
-        String path = getRecordPath(id, datastream);
+        String path = getRecordPath(id);
         return iiifMapper.writeValueAsString(createCanvas(path, briefObj));
     }
 
@@ -256,11 +257,11 @@ public class ImageServerV2Service {
             return canvas;
         }
 
-        String canvasPath = URIUtil.join(basePath, "iiif", "v2", uuid, "jp2");
+        String canvasPath = URIUtil.join(basePath, "iiif", "v2", uuid);
 
         Datastream fileDs = briefObj.getDatastreamObject(DatastreamType.ORIGINAL_FILE.getId());
         String extent = fileDs.getExtent();
-        if (extent != null && !extent.equals("")) {
+        if (extent != null && !extent.isEmpty()) {
             String[] imgDimensions = extent.split("x");
             canvas.setHeight(Integer.parseInt(imgDimensions[0]));
             canvas.setWidth(Integer.parseInt(imgDimensions[1]));
@@ -274,15 +275,15 @@ public class ImageServerV2Service {
         return canvas;
     }
 
-    private String getRecordPath(String uuid, String datastream) {
-        return URIUtil.join(basePath, "iiif", "v2", uuid, datastream);
+    private String getRecordPath(String uuid) {
+        return URIUtil.join(basePath, "iiif", "v2", uuid);
     }
 
     private String jp2Pid(ContentObjectRecord briefObj) {
         Datastream datastream = briefObj.getDatastreamObject(DatastreamType.JP2_ACCESS_COPY.getId());
         if (datastream != null) {
             String id = datastream.getOwner();
-            if (id.equals("")) {
+            if (id.isEmpty()) {
                 return briefObj.getId();
             }
             return id;
