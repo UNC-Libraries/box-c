@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.util.UUID;
 
 import static edu.unc.lib.boxc.operations.jms.streaming.StreamingPropertiesRequest.ADD;
+import static edu.unc.lib.boxc.operations.jms.streaming.StreamingPropertiesRequest.STREAMING_TYPE_SOUND;
 import static edu.unc.lib.boxc.operations.jms.streaming.StreamingPropertiesRequest.STREAMREAPER_PREFIX_URL;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -25,6 +26,7 @@ public class StreamingPropertiesRequestSerializationHelperTest {
         request.setId(pid.getId());
         request.setUrl(STREAMREAPER_PREFIX_URL + "?params=more");
         request.setAction(ADD);
+        request.setType(STREAMING_TYPE_SOUND);
 
         var json = StreamingPropertiesRequestSerializationHelper.toJson(request);
         var helperRequest = StreamingPropertiesRequestSerializationHelper.toRequest(json);
@@ -32,6 +34,7 @@ public class StreamingPropertiesRequestSerializationHelperTest {
         assertEquals(request.getAction(), helperRequest.getAction());
         assertEquals(request.getAgent().getPrincipals(), helperRequest.getAgent().getPrincipals());
         assertEquals(request.getUrl(), helperRequest.getUrl());
+        assertEquals(request.getType(), helperRequest.getType());
         assertEquals(request.getId(), helperRequest.getId());
     }
 }

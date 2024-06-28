@@ -772,6 +772,9 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
         if (dResc.hasProperty(Cdr.streamingUrl)) {
             aResc.addProperty(Cdr.streamingUrl, dResc.getProperty(Cdr.streamingUrl).getString());
         }
+        if (dResc.hasProperty(Cdr.streamingType)) {
+            aResc.addProperty(Cdr.streamingType, dResc.getProperty(Cdr.streamingType).getString());
+        }
     }
 
     private void overrideModifiedTimestamp(ContentObject contentObj, Resource dResc) {

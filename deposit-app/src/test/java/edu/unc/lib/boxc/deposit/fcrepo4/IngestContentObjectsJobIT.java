@@ -111,6 +111,7 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
     private static final String FILE2_MIMETYPE = "text/plain";
     private static final long FILE2_SIZE = 4L;
     private static final String BLANK_SHA1 = "da39a3ee5e6b4b0d3255bfef95601890afd80709";
+    private static final String STREAMING_TYPE = "video";
 
     @Autowired
     private AccessControlService aclService;
@@ -440,6 +441,7 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
         assertNotNull(fileObj);
         var fileResource = fileObj.getResource();
         assertEquals(STREAMREAPER_PREFIX_URL, fileResource.getProperty(Cdr.streamingUrl).getString());
+        assertEquals(STREAMING_TYPE, fileResource.getProperty(Cdr.streamingType).getString());
 
     }
 
@@ -1280,7 +1282,7 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
         assertEquals(expectedCreated, obj.getCreatedDate(),
                 "Date created for " + obj.getPid().getId() + " did not match expected value");
         assertEquals(expectedModified, obj.getLastModified(),
-                "Last modifed for " + obj.getPid().getId() + " did not match expected value");
+                "Last modified for " + obj.getPid().getId() + " did not match expected value");
     }
 
     private void assertBinaryProperties(FileObject fileObj, String loc, String mimetype,
@@ -1351,6 +1353,7 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
         Resource fileResc = model.createResource(filePid.getRepositoryPath());
         fileResc.addProperty(RDF.type, Cdr.FileObject);
         fileResc.addProperty(Cdr.streamingUrl, STREAMREAPER_PREFIX_URL);
+        fileResc.addProperty(Cdr.streamingType, STREAMING_TYPE);
 
         parent.add(fileResc);
 

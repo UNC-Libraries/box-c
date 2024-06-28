@@ -1,7 +1,9 @@
 package edu.unc.lib.boxc.deposit.validate;
 
 import static edu.unc.lib.boxc.deposit.work.DepositGraphUtils.getChildIterator;
+import static edu.unc.lib.boxc.operations.jms.streaming.StreamingPropertiesRequest.STREAMING_TYPE_SOUND;
 import static edu.unc.lib.boxc.operations.jms.streaming.StreamingPropertiesRequest.STREAMREAPER_PREFIX_URL;
+import static edu.unc.lib.boxc.operations.jms.streaming.StreamingPropertiesRequest.STREAMING_TYPE_VIDEO;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -252,7 +254,9 @@ public class ValidateContentModelJob extends AbstractDepositJob{
 
     private void validateStreamingProperties(Resource resource) {
         var url = resource.getProperty(Cdr.streamingUrl).getString();
-        if (!url.startsWith(STREAMREAPER_PREFIX_URL)) {
+        var streamingType = resource.getProperty(Cdr.streamingType).getString();
+        if (!url.startsWith(STREAMREAPER_PREFIX_URL) ||
+                (!streamingType.equals(STREAMING_TYPE_SOUND) && !streamingType.equals(STREAMING_TYPE_VIDEO))) {
             failJob(null, "Invalid streaming properties on FileObject {0}", resource.getURI());
         }
     }

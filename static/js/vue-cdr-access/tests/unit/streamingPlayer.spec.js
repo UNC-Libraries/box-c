@@ -7,12 +7,13 @@ const briefObject = {
     filename: 'R1018_Audio',
     folder: 'open-hls',
     title: 'Test title',
-    type: 'streaming',
+    viewerType: 'streaming',
+    streamingType: 'sound',
     streamingUrl: streamingUrl
 }
 let wrapper;
 
-describe('audioPlayer.vue', () => {
+describe('streamingPlayer.vue', () => {
     beforeEach(() => {
         wrapper = shallowMount(streamingPlayer, {
             props: {
@@ -30,14 +31,14 @@ describe('audioPlayer.vue', () => {
         expect(wrapper.find('#streaming-player').attributes('src')).toEqual(`${streamingUrl}&refUrl=https://localhost/record/73bc003c-9603-4cd9-8a65-93a22520ef6a`);
     });
 
-    // @TODO update when streaming file type is returned in the briefObject
-    /*it('sets an "audio" class for streaming audio', () => {
+    it('sets an "audio" class for streaming audio', () => {
         expect(wrapper.find('.audio').exists()).toBe(true);
     });
 
     it('does not set an "audio" class for streaming video', async () => {
         let updatedRecordData = cloneDeep(briefObject);
-        await wrapper.setProps({ recordData: updatedRecordData });
+        updatedRecordData.streamingType = 'video';
+        await wrapper.setProps({ briefObject: updatedRecordData });
         expect(wrapper.find('.audio').exists()).toBe(false);
-    });*/
+    });
 });

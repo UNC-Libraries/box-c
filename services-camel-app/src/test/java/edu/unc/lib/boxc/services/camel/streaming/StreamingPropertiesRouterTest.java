@@ -39,6 +39,7 @@ public class StreamingPropertiesRouterTest extends CamelSpringTestSupport {
         request.setAgent(agent);
         request.setId(pid.getId());
         request.setUrl(StreamingPropertiesRequest.STREAMREAPER_PREFIX_URL);
+        request.setType("video");
         var body = StreamingPropertiesRequestSerializationHelper.toJson(request);
         template.sendBody(body);
 

@@ -34,7 +34,7 @@
                 <ref bean="setMemberOrderFilter" />
                 <ref bean="setCollectionSupplementalInformationFilter" />
                 <ref bean="setViewBehaviorFilter" />
-                <ref bean="setStreamingUrlFilter" />
+                <ref bean="setStreamingPropertiesFilter" />
             </list>
         </property>
     </bean>
@@ -166,7 +166,7 @@
         <property name="filters">
             <list>
                 <ref bean="setRecordDatesFilter" />
-                <ref bean="setStreamingUrlFilter" />
+                <ref bean="setStreamingPropertiesFilter" />
                 <ref bean="setContentStatusFilter" />
             </list>
         </property>
@@ -316,7 +316,7 @@
     <bean id="setViewBehaviorFilter" class="edu.unc.lib.boxc.indexing.solr.filter.SetViewBehaviorFilter">
     </bean>
 
-    <bean id="setStreamingUrlFilter" class="edu.unc.lib.boxc.indexing.solr.filter.SetStreamingUrlFilter">
+    <bean id="setStreamingPropertiesFilter" class="edu.unc.lib.boxc.indexing.solr.filter.SetStreamingPropertiesFilter">
     </bean>
 
     <!-- Ingest Actions -->
@@ -489,7 +489,13 @@
         <property name="addDocumentMode" value="false" />
     </bean>
 
-    <bean id="updateStreamingUrlAction"
+    <bean id="updateStreamingPropertiesUrl"
+          class="edu.unc.lib.boxc.indexing.solr.action.UpdateObjectAction">
+        <property name="pipeline" ref="solrStreamingUrlUpdatePipeline" />
+        <property name="addDocumentMode" value="false" />
+    </bean>
+
+    <bean id="updateStreamingPropertiesType"
           class="edu.unc.lib.boxc.indexing.solr.action.UpdateObjectAction">
         <property name="pipeline" ref="solrStreamingUrlUpdatePipeline" />
         <property name="addDocumentMode" value="false" />
@@ -524,7 +530,8 @@
         <entry key="UPDATE_MEMBER_ORDER_PARENT" value-ref="updateMemberOrderParentAction" />
         <entry key="UPDATE_MEMBER_ORDER_CHILD" value-ref="updateMemberOrderChildAction" />
         <entry key="UPDATE_VIEW_BEHAVIOR" value-ref="updateViewBehaviorAction" />
-        <entry key="UPDATE_STREAMING_URL" value-ref="updateStreamingUrlAction" />
+        <entry key="UPDATE_STREAMING_PROPERTIES" value-ref="updateStreamingPropertiesUrl" />
+        <entry key="UPDATE_STREAMING_PROPERTIES" value-ref="updateStreamingPropertiesType" />
     </util:map>
     
     <bean id="dipDataLoader"

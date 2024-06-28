@@ -1,11 +1,9 @@
 <template>
-    <iframe id="streaming-player" :src="streamingLink" :class="{ audio: briefObject.type === 'audio' }"
+    <iframe id="streaming-player" :src="streamingLink" :class="{ audio: briefObject.streamingType === 'sound' }"
             allow="fullscreen" :title="briefObject.title"></iframe>
 </template>
 
 <script>
-
-const STREAMREAPER_PREFIX_URL = "https://durastream.lib.unc.edu/player"
 
 export default {
     name: 'listDisplay',

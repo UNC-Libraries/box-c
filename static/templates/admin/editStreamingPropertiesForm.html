@@ -4,6 +4,15 @@
         <textarea id="streaming_url" name="streaming_url"><%= metadata.streamingUrl %></textarea>
     </div>
 
+    <div class="form_field">
+        <label for="streaming_type"><span class="required">*</span> Streaming Type:</label>
+        <select id="streaming_type">
+            <option value="">--Streaming Type--</option>
+            <option <%= metadata.streamingType === 'sound' ? 'selected' : '' %> value="sound">Sound</option>
+            <option <%= metadata.streamingType === 'video' ? 'selected' : '' %> value="video">Video</option>
+        </select>
+    </div>
+
     <p class="form_notes">
         Structure: https://durastream.lib.unc.edu/player?spaceId=[space-id]&filename=[filename-without-extension]
         <br />

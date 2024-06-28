@@ -108,7 +108,8 @@ public class StreamingPropertiesController {
         }
         if (Objects.equals(ADD, action)) {
             var url = request.getUrl();
-            if (StringUtils.isBlank(url)) {
+            var type = request.getType();
+            if (StringUtils.isBlank(url) || StringUtils.isBlank(type)) {
                 return true;
             }
             return !url.startsWith(STREAMREAPER_PREFIX_URL);
@@ -124,9 +125,11 @@ public class StreamingPropertiesController {
     private Map<String, String> getProperties(String id, Resource resource) {
         Map<String, String> result = new HashMap<>();
         var url = getValue(resource, Cdr.streamingUrl);
+        var type = getValue(resource, Cdr.streamingType);
 
         result.put("id", id);
         result.put("url", url);
+        result.put("type", type);
         return result;
     }
 }

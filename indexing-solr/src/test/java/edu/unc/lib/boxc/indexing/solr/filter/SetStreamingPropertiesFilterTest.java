@@ -17,11 +17,11 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.openMocks;
 
-public class SetStreamingUrlFilterTest {
+public class SetStreamingPropertiesFilterTest {
     private AutoCloseable closeable;
     @Mock
     private DocumentIndexingPackageDataLoader documentIndexingPackageDataLoader;
-    private SetStreamingUrlFilter filter;
+    private SetStreamingPropertiesFilter filter;
     private DocumentIndexingPackage dip;
     private IndexDocumentBean idb;
     private PID filePid;
@@ -33,7 +33,7 @@ public class SetStreamingUrlFilterTest {
         dip = new DocumentIndexingPackage(filePid, null, documentIndexingPackageDataLoader);
         dip.setPid(filePid);
         idb = dip.getDocument();
-        filter = new SetStreamingUrlFilter();
+        filter = new SetStreamingPropertiesFilter();
     }
 
     @AfterEach
@@ -45,22 +45,26 @@ public class SetStreamingUrlFilterTest {
     public void testWithFileObject() {
         var file =  makeFileObject(filePid, null);
         var url = "https://streaming.url";
+        var type = "video";
         when(documentIndexingPackageDataLoader.getContentObject(dip)).thenReturn(file);
         var resource = file.getResource();
         resource.addProperty(Cdr.streamingUrl, url);
+        resource.addProperty(Cdr.streamingType, type);
 
         filter.filter(dip);
 
         assertEquals(url, idb.getStreamingUrl());
+        assertEquals(type, idb.getStreamingType());
     }
 
     @Test
-    public void testWithFileObjectWithoutStreamingUrl() {
+    public void testWithFileObjectWithoutStreamingProperties() {
         var file = makeFileObject(filePid, null);
         when(documentIndexingPackageDataLoader.getContentObject(dip)).thenReturn(file);
 
         filter.filter(dip);
 
         assertNull(idb.getStreamingUrl());
+        assertNull(idb.getStreamingType());
     }
 }

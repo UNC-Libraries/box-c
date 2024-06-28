@@ -21,7 +21,9 @@ import java.util.Objects;
 
 import static edu.unc.lib.boxc.operations.jms.streaming.StreamingPropertiesRequest.ADD;
 import static edu.unc.lib.boxc.operations.jms.streaming.StreamingPropertiesRequest.DELETE;
+import static edu.unc.lib.boxc.operations.jms.streaming.StreamingPropertiesRequest.STREAMING_TYPE_SOUND;
 import static edu.unc.lib.boxc.operations.jms.streaming.StreamingPropertiesRequest.STREAMREAPER_PREFIX_URL;
+import static edu.unc.lib.boxc.operations.jms.streaming.StreamingPropertiesRequest.STREAMING_TYPE_VIDEO;
 
 /**
  * Processing requests to edit streaming properties on a FileObject
@@ -48,12 +50,15 @@ public class StreamingPropertiesRequestProcessor implements Processor {
         if (Objects.equals(request.getAction(), ADD)) {
             repositoryObjectFactory.createExclusiveRelationship(
                     file, Cdr.streamingUrl, request.getUrl());
+            repositoryObjectFactory.createExclusiveRelationship(
+                    file, Cdr.streamingType, request.getType().toLowerCase());
         } else if (Objects.equals(request.getAction(), DELETE)) {
             repositoryObjectFactory.deleteProperty(file,Cdr.streamingUrl);
+            repositoryObjectFactory.deleteProperty(file,Cdr.streamingType);
         }
 
         indexingMessageSender.sendIndexingOperation(agent.getUsername(), pid,
-                IndexingActionType.UPDATE_STREAMING_URL);
+                IndexingActionType.UPDATE_STREAMING_PROPERTIES);
     }
 
     private String validate(StreamingPropertiesRequest request, PID pid) {
@@ -64,12 +69,18 @@ public class StreamingPropertiesRequestProcessor implements Processor {
 
         if (Objects.equals(ADD, action)) {
             var url = request.getUrl();
+            var type = request.getType();
             if (url == null) {
                 return "URL is required";
             } else {
                 if (!url.startsWith(STREAMREAPER_PREFIX_URL)) {
                     return "URL is not a stream reaper URL";
                 }
+            }
+            if (type == null) {
+                return "Streaming type is required";
+            } else if (!type.equals(STREAMING_TYPE_SOUND) && !type.equals(STREAMING_TYPE_VIDEO)) {
+                return "Streaming type is not a valid type";
             }
         }
 

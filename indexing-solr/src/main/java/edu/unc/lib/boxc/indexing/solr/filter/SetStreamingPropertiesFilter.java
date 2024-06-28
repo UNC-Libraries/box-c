@@ -11,17 +11,24 @@ import org.slf4j.LoggerFactory;
  *
  * @author snluong
  */
-public class SetStreamingUrlFilter implements IndexDocumentFilter {
-    private static final Logger log = LoggerFactory.getLogger(SetStreamingUrlFilter.class);
+public class SetStreamingPropertiesFilter implements IndexDocumentFilter {
+    private static final Logger log = LoggerFactory.getLogger(SetStreamingPropertiesFilter.class);
 
     @Override
     public void filter(DocumentIndexingPackage dip) throws IndexingException {
-        log.debug("Performing SetStreamingUrl for object {}", dip.getPid());
+        log.debug("Performing SetStreamingProperties for object {}", dip.getPid());
         var resource = dip.getContentObject().getResource();
         var doc = dip.getDocument();
         var url = resource.hasProperty(Cdr.streamingUrl) ?
-                resource.getProperty(Cdr.streamingUrl).getString() : null ;
+                resource.getProperty(Cdr.streamingUrl).getString() : null;
+
+        String streamingType = null;
+        if (url != null) {
+            streamingType = resource.hasProperty(Cdr.streamingType) ?
+                    resource.getProperty(Cdr.streamingType).getString() : null;
+        }
 
         doc.setStreamingUrl(url);
+        doc.setStreamingType(streamingType);
     }
 }

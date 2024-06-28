@@ -50,7 +50,7 @@ public class IndexingActionUtil {
                     IndexingActionType.UPDATE_MEMBER_ORDER_CHILD,
                     IndexingActionType.UPDATE_MEMBER_ORDER_PARENT,
                     IndexingActionType.UPDATE_VIEW_BEHAVIOR,
-                    IndexingActionType.UPDATE_STREAMING_URL,
+                    IndexingActionType.UPDATE_STREAMING_PROPERTIES,
                     IndexingActionType.COMMIT,
                     IndexingActionType.DELETE);
 }

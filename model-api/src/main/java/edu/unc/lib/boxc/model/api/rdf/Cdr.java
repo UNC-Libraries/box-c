@@ -138,6 +138,12 @@ public class Cdr {
             "http://cdr.unc.edu/definitions/model#streamingUrl");
 
     /**
+     * Property which holds the type for streaming URLs
+     */
+    public static final Property streamingType = createProperty(
+            "http://cdr.unc.edu/definitions/model#streamingType");
+
+    /**
      *
      */
     public static final Property unpublished = createProperty(

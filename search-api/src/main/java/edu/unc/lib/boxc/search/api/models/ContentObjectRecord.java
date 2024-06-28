@@ -104,6 +104,8 @@ public interface ContentObjectRecord {
 
     public List<String> getSubject();
 
+    public String getStreamingType();
+
     public String getStreamingUrl();
 
     public List<String> getLocation();

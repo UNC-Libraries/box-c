@@ -42,6 +42,7 @@ public class StreamingPropertiesProcessorTest {
     private FileObject fileObject;
     private PID filePid;
     private final AgentPrincipals agent = new AgentPrincipalsImpl("user", new AccessGroupSetImpl("agroup"));
+    private final String streamingType = "video";
 
     private AutoCloseable closeable;
     @Mock
@@ -74,7 +75,7 @@ public class StreamingPropertiesProcessorTest {
 
     @Test
     public void testStreamingPropertiesUpdateNoPermission() throws IOException {
-        var exchange = createRequestExchange(STREAMREAPER_PREFIX_URL, filePid.getId(), ADD);
+        var exchange = createRequestExchange(STREAMREAPER_PREFIX_URL, filePid.getId(), ADD, streamingType);
 
         assertThrows(AccessRestrictionException.class, () -> {
             doThrow(new AccessRestrictionException()).when(accessControlService)
@@ -85,7 +86,7 @@ public class StreamingPropertiesProcessorTest {
 
     @Test
     public void testStreamingPropertiesUpdateNoAction() throws IOException {
-        var exchange = createRequestExchange(STREAMREAPER_PREFIX_URL,filePid.getId(), null);
+        var exchange = createRequestExchange(STREAMREAPER_PREFIX_URL,filePid.getId(), null, streamingType);
         assertThrows(IllegalArgumentException.class, () -> {
             processor.process(exchange);
         });
@@ -93,7 +94,15 @@ public class StreamingPropertiesProcessorTest {
 
     @Test
     public void testStreamingPropertiesUpdateNoUrl() throws IOException {
-        var exchange = createRequestExchange(null, filePid.getId(), ADD);
+        var exchange = createRequestExchange(null, filePid.getId(), ADD, streamingType);
+        assertThrows(IllegalArgumentException.class, () -> {
+            processor.process(exchange);
+        });
+    }
+
+    @Test
+    public void testStreamingPropertiesUpdateNoType() throws IOException {
+        var exchange = createRequestExchange(STREAMREAPER_PREFIX_URL, filePid.getId(), ADD, null);
         assertThrows(IllegalArgumentException.class, () -> {
             processor.process(exchange);
         });
@@ -101,7 +110,7 @@ public class StreamingPropertiesProcessorTest {
 
     @Test
     public void testStreamingPropertiesUpdateUrlIsNotStreamReaper() throws IOException {
-        var exchange = createRequestExchange("https://lib.unc.edu", filePid.getId(), ADD);
+        var exchange = createRequestExchange("https://lib.unc.edu", filePid.getId(), ADD, streamingType);
         assertThrows(IllegalArgumentException.class, () -> {
             processor.process(exchange);
         });
@@ -110,7 +119,7 @@ public class StreamingPropertiesProcessorTest {
     @Test
     public void testStreamingPropertiesUpdateNotAFileObject() throws IOException {
         var anotherPid = TestHelper.makePid();
-        var exchange = createRequestExchange(STREAMREAPER_PREFIX_URL, anotherPid.getId(), ADD);
+        var exchange = createRequestExchange(STREAMREAPER_PREFIX_URL, anotherPid.getId(), ADD, streamingType);
 
         assertThrows(IllegalArgumentException.class, () -> {
             doThrow(new ObjectTypeMismatchException("not a file object")).when(repositoryObjectLoader)
@@ -121,31 +130,32 @@ public class StreamingPropertiesProcessorTest {
 
     @Test
     public void testStreamingPropertiesUpdateSuccess() throws IOException {
-        var exchange = createRequestExchange(STREAMREAPER_PREFIX_URL,filePid.getId(), ADD);
+        var exchange = createRequestExchange(STREAMREAPER_PREFIX_URL,filePid.getId(), ADD, streamingType);
         processor.process(exchange);
 
         verify(repositoryObjectFactory).createExclusiveRelationship(
                 eq(fileObject), eq(Cdr.streamingUrl), eq(STREAMREAPER_PREFIX_URL));
         verify(indexingMessageSender).sendIndexingOperation(agent.getUsername(), filePid,
-                IndexingActionType.UPDATE_STREAMING_URL);
+                IndexingActionType.UPDATE_STREAMING_PROPERTIES);
     }
 
     @Test
     public void testStreamingPropertiesDeleteSuccess() throws IOException {
-        var exchange = createRequestExchange(null, filePid.getId(), DELETE);
+        var exchange = createRequestExchange(null, filePid.getId(), DELETE, null);
         processor.process(exchange);
 
         verify(repositoryObjectFactory).deleteProperty(eq(fileObject), eq(Cdr.streamingUrl));
         verify(indexingMessageSender).sendIndexingOperation(agent.getUsername(), filePid,
-                IndexingActionType.UPDATE_STREAMING_URL);
+                IndexingActionType.UPDATE_STREAMING_PROPERTIES);
     }
 
-    private Exchange createRequestExchange(String url, String id, String action) throws IOException {
+    private Exchange createRequestExchange(String url, String id, String action, String type) throws IOException {
         var request = new StreamingPropertiesRequest();
         request.setAgent(agent);
         request.setUrl(url);
         request.setId(id);
         request.setAction(action);
+        request.setType(type);
         return TestHelper.mockExchange(StreamingPropertiesRequestSerializationHelper.toJson(request));
     }
 
