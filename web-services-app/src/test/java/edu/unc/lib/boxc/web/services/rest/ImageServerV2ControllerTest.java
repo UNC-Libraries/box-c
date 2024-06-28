@@ -149,6 +149,46 @@ public class ImageServerV2ControllerTest {
                 .andReturn();
     }
 
+    @Test
+    public void testGetRegionNoAccess() throws Exception {
+        doThrow(new AccessRestrictionException()).when(accessControlService)
+                .assertHasAccess(anyString(), any(), any(), eq(Permission.viewAccessCopies));
+
+        mockMvc.perform(get("/iiif/v2/" + OBJECT_ID + "/full/full/0/default.jpg")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    public void testGetMetadataNoAccess() throws Exception {
+        doThrow(new AccessRestrictionException()).when(accessControlService)
+                .assertHasAccess(anyString(), any(), any(), eq(Permission.viewAccessCopies));
+
+        mockMvc.perform(get("/iiif/v2/" + OBJECT_ID + "/info.json")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    public void testGetCanvasNoAccess() throws Exception {
+        doThrow(new AccessRestrictionException()).when(accessControlService)
+                .assertHasAccess(anyString(), any(), any(), eq(Permission.viewAccessCopies));
+
+        mockMvc.perform(get("/iiif/v2/" + OBJECT_ID)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    public void testGetSequenceNoAccess() throws Exception {
+        doThrow(new AccessRestrictionException()).when(accessControlService)
+                .assertHasAccess(anyString(), any(), any(), eq(Permission.viewAccessCopies));
+
+        mockMvc.perform(get("/iiif/v2/" + OBJECT_ID + "/sequence/normal")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isForbidden());
+    }
+
     private void assertHasImageManifest(Manifest manifest, PID filePid, String label, String fileLabel) throws Exception {
         assertEquals(label, manifest.getLabelString());
         Sequence sequence = manifest.getSequences().get(0);
