@@ -1,10 +1,62 @@
 package edu.unc.lib.boxc.services.camel.solr;
 
+import edu.unc.lib.boxc.auth.api.models.AgentPrincipals;
+import edu.unc.lib.boxc.auth.api.services.AccessControlService;
+import edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl;
+import edu.unc.lib.boxc.auth.fcrepo.models.AgentPrincipalsImpl;
+import edu.unc.lib.boxc.auth.fcrepo.services.InheritedAclFactory;
+import edu.unc.lib.boxc.fcrepo.utils.TransactionManager;
+import edu.unc.lib.boxc.indexing.solr.indexing.DocumentIndexingPipeline;
+import edu.unc.lib.boxc.model.api.DatastreamType;
+import edu.unc.lib.boxc.model.api.ResourceType;
+import edu.unc.lib.boxc.model.api.objects.BinaryObject;
+import edu.unc.lib.boxc.model.api.objects.FileObject;
+import edu.unc.lib.boxc.model.api.objects.RepositoryObject;
+import edu.unc.lib.boxc.model.api.objects.WorkObject;
+import edu.unc.lib.boxc.model.api.rdf.Cdr;
+import edu.unc.lib.boxc.model.api.rdf.CdrAcl;
+import edu.unc.lib.boxc.model.api.rdf.Fcrepo4Repository;
+import edu.unc.lib.boxc.model.api.sparql.SparqlUpdateService;
+import edu.unc.lib.boxc.model.fcrepo.services.DerivativeService;
+import edu.unc.lib.boxc.model.fcrepo.test.TestHelper;
+import edu.unc.lib.boxc.model.fcrepo.test.TestRepositoryDeinitializer;
+import edu.unc.lib.boxc.operations.api.events.PremisLoggerFactory;
+import edu.unc.lib.boxc.operations.impl.delete.MarkForDeletionJob;
+import edu.unc.lib.boxc.operations.impl.destroy.DestroyObjectsJob;
+import edu.unc.lib.boxc.operations.impl.edit.UpdateDescriptionService;
+import edu.unc.lib.boxc.operations.impl.edit.UpdateDescriptionService.UpdateDescriptionRequest;
+import edu.unc.lib.boxc.operations.jms.MessageSender;
+import edu.unc.lib.boxc.operations.jms.destroy.DestroyObjectsRequest;
+import edu.unc.lib.boxc.operations.jms.indexing.IndexingMessageSender;
+import edu.unc.lib.boxc.operations.jms.order.MemberOrderRequestSender;
+import edu.unc.lib.boxc.persist.api.transfer.BinaryTransferService;
+import edu.unc.lib.boxc.search.api.SearchFieldKey;
+import edu.unc.lib.boxc.search.api.models.ContentObjectRecord;
+import edu.unc.lib.boxc.search.api.requests.SimpleIdRequest;
+import edu.unc.lib.boxc.search.solr.services.ObjectPathFactory;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.io.FileUtils;
+import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.ModelFactory;
+import org.apache.jena.rdf.model.Resource;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.Mock;
+import org.springframework.context.support.AbstractApplicationContext;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
+
+import java.io.InputStream;
+import java.nio.file.Path;
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
+
 import static edu.unc.lib.boxc.auth.api.AccessPrincipalConstants.AUTHENTICATED_PRINC;
 import static edu.unc.lib.boxc.fcrepo.FcrepoJmsConstants.RESOURCE_TYPE;
 import static edu.unc.lib.boxc.model.api.DatastreamType.MD_DESCRIPTIVE;
-import static edu.unc.lib.boxc.model.api.DatastreamType.ORIGINAL_FILE;
 import static edu.unc.lib.boxc.model.api.DatastreamType.MD_EVENTS;
+import static edu.unc.lib.boxc.model.api.DatastreamType.ORIGINAL_FILE;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -13,60 +65,6 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.openMocks;
-
-import java.io.InputStream;
-import java.nio.file.Path;
-import java.util.Arrays;
-import java.util.List;
-import java.util.stream.Collectors;
-
-import edu.unc.lib.boxc.auth.api.services.AccessControlService;
-import edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl;
-import edu.unc.lib.boxc.auth.fcrepo.models.AgentPrincipalsImpl;
-import edu.unc.lib.boxc.auth.fcrepo.services.InheritedAclFactory;
-import edu.unc.lib.boxc.fcrepo.utils.TransactionManager;
-import edu.unc.lib.boxc.model.api.sparql.SparqlUpdateService;
-import edu.unc.lib.boxc.model.fcrepo.test.TestRepositoryDeinitializer;
-import edu.unc.lib.boxc.operations.api.events.PremisLoggerFactory;
-import edu.unc.lib.boxc.operations.impl.delete.MarkForDeletionJob;
-import edu.unc.lib.boxc.operations.impl.destroy.DestroyObjectsJob;
-import edu.unc.lib.boxc.operations.jms.MessageSender;
-import edu.unc.lib.boxc.operations.jms.destroy.DestroyObjectsRequest;
-import edu.unc.lib.boxc.operations.jms.indexing.IndexingMessageSender;
-import edu.unc.lib.boxc.operations.jms.order.MemberOrderRequestSender;
-import edu.unc.lib.boxc.persist.api.transfer.BinaryTransferService;
-import edu.unc.lib.boxc.search.solr.services.ObjectPathFactory;
-import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.io.FileUtils;
-import org.apache.jena.rdf.model.Model;
-import org.apache.jena.rdf.model.ModelFactory;
-import org.apache.jena.rdf.model.Resource;
-import org.fcrepo.client.FcrepoClient;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.jupiter.api.AfterEach;
-import org.mockito.Mock;
-import org.springframework.beans.factory.annotation.Autowired;
-
-import edu.unc.lib.boxc.auth.api.models.AgentPrincipals;
-import edu.unc.lib.boxc.indexing.solr.indexing.DocumentIndexingPipeline;
-import edu.unc.lib.boxc.model.api.DatastreamType;
-import edu.unc.lib.boxc.model.api.ResourceType;
-import edu.unc.lib.boxc.model.api.objects.BinaryObject;
-import edu.unc.lib.boxc.model.api.objects.FileObject;
-import edu.unc.lib.boxc.model.api.objects.RepositoryObject;
-import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
-import edu.unc.lib.boxc.model.api.objects.WorkObject;
-import edu.unc.lib.boxc.model.api.rdf.Cdr;
-import edu.unc.lib.boxc.model.api.rdf.CdrAcl;
-import edu.unc.lib.boxc.model.api.rdf.Fcrepo4Repository;
-import edu.unc.lib.boxc.model.fcrepo.services.DerivativeService;
-import edu.unc.lib.boxc.model.fcrepo.test.TestHelper;
-import edu.unc.lib.boxc.operations.impl.edit.UpdateDescriptionService;
-import edu.unc.lib.boxc.operations.impl.edit.UpdateDescriptionService.UpdateDescriptionRequest;
-import edu.unc.lib.boxc.search.api.SearchFieldKey;
-import edu.unc.lib.boxc.search.api.models.ContentObjectRecord;
-import edu.unc.lib.boxc.search.api.requests.SimpleIdRequest;
 
 /**
  *
@@ -81,41 +79,49 @@ public class SolrIngestProcessorIT extends AbstractSolrProcessorIT {
     private static final String CONTENT_TEXT = "Content";
     private static final String TEXT_EXTRACT = "Cone Tent";
 
-    @Autowired
     private DocumentIndexingPipeline solrFullUpdatePipeline;
-    @Autowired
     private UpdateDescriptionService updateDescriptionService;
-    @javax.annotation.Resource(name = "repositoryObjectLoader")
-    private RepositoryObjectLoader repositoryObjectLoader;
-    @Autowired
     private DerivativeService derivativeService;
     private AgentPrincipals agent;
-    @Autowired
     private MessageSender updateWorkSender;
-    @Autowired
     private AccessControlService aclService;
-    @Autowired
     private TransactionManager txManager;
-    @Autowired
     private ObjectPathFactory pathFactory;
-    @Autowired
     private InheritedAclFactory inheritedAclFactory;
-    @Autowired
     private BinaryTransferService transferService;
     @Mock
     private IndexingMessageSender indexingMessageSender;
     @Mock
     private MessageSender binaryDestroyedMessageSender;
-    @Autowired
     private PremisLoggerFactory premisLoggerFactory;
-    @Autowired
     private SparqlUpdateService sparqlUpdateService;
     @Mock
     private MemberOrderRequestSender memberOrderRequestSender;
 
-    @Before
-    public void setUp() throws Exception {
+    @Override
+    protected AbstractApplicationContext createApplicationContext() {
+        return new ClassPathXmlApplicationContext(
+                "spring-test/cdr-client-container.xml",
+                "spring-test/solr-indexing-context.xml",
+                "spring-test/jms-context.xml",
+                "solr-indexing-it-context.xml");
+    }
+
+    @BeforeEach
+    public void setUpTest() throws Exception {
         closeable = openMocks(this);
+        initCommon();
+        solrFullUpdatePipeline = applicationContext.getBean("solrFullUpdatePipeline", DocumentIndexingPipeline.class);
+        updateDescriptionService = applicationContext.getBean(UpdateDescriptionService.class);
+        derivativeService = applicationContext.getBean(DerivativeService.class);
+        updateWorkSender = applicationContext.getBean("updateWorkSender", MessageSender.class);
+        aclService = applicationContext.getBean(AccessControlService.class);
+        txManager = applicationContext.getBean(TransactionManager.class);
+        pathFactory = applicationContext.getBean(ObjectPathFactory.class);
+        inheritedAclFactory = applicationContext.getBean(InheritedAclFactory.class);
+        transferService = applicationContext.getBean(BinaryTransferService.class);
+        premisLoggerFactory = applicationContext.getBean(PremisLoggerFactory.class);
+        sparqlUpdateService = applicationContext.getBean(SparqlUpdateService.class);
 
         agent = new AgentPrincipalsImpl("user", new AccessGroupSetImpl("group"));
         TestHelper.setContentBase(baseAddress);

@@ -86,7 +86,7 @@
         <property name="facetFieldFactory" ref="facetFieldFactory" />
     </bean>
 
-    <bean id="pathFactory" class="edu.unc.lib.boxc.search.solr.services.ObjectPathFactory">
+    <bean id="pathFactory" class="edu.unc.lib.boxc.search.solr.services.ObjectPathFactory" init-method="init">
         <property name="search" ref="solrSearchService" />
         <property name="cacheSize" value="1000" />
         <property name="timeToLiveMilli" value="10000" />

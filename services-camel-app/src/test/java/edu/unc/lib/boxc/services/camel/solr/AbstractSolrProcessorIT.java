@@ -1,43 +1,9 @@
 package edu.unc.lib.boxc.services.camel.solr;
 
-import static edu.unc.lib.boxc.auth.api.AccessPrincipalConstants.AUTHENTICATED_PRINC;
-import static edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPaths.getContentRootPid;
-import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.fcrepo.camel.FcrepoHeaders.FCREPO_URI;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.when;
-
-import java.io.File;
-import java.io.InputStream;
-import java.net.URI;
-import java.nio.file.Paths;
-import java.util.UUID;
-
-import edu.unc.lib.boxc.indexing.solr.test.RepositoryObjectSolrIndexer;
-import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
-import edu.unc.lib.boxc.model.fcrepo.test.TestHelper;
-import edu.unc.lib.boxc.persist.api.storage.StorageLocationManager;
-import edu.unc.lib.boxc.persist.impl.storage.StorageLocationTestHelper;
-import org.apache.camel.Exchange;
-import org.apache.camel.Message;
-import org.apache.camel.test.spring.CamelSpringRunner;
-import org.apache.camel.test.spring.CamelTestContextBootstrapper;
-import org.apache.commons.io.FileUtils;
-import org.apache.jena.rdf.model.Model;
-import org.apache.jena.rdf.model.ModelFactory;
-import org.apache.jena.rdf.model.Resource;
-import org.apache.solr.client.solrj.embedded.EmbeddedSolrServer;
-import org.fcrepo.client.FcrepoClient;
-import org.junit.runner.RunWith;
-import org.mockito.Mock;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.context.BootstrapWith;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.ContextHierarchy;
-
 import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
 import edu.unc.lib.boxc.indexing.solr.indexing.DocumentIndexingPackageFactory;
 import edu.unc.lib.boxc.indexing.solr.indexing.SolrUpdateDriver;
+import edu.unc.lib.boxc.indexing.solr.test.RepositoryObjectSolrIndexer;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.ids.PIDMinter;
 import edu.unc.lib.boxc.model.api.objects.AdminUnit;
@@ -49,57 +15,55 @@ import edu.unc.lib.boxc.model.api.rdf.CdrAcl;
 import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
 import edu.unc.lib.boxc.model.fcrepo.services.RepositoryInitializer;
 import edu.unc.lib.boxc.model.fcrepo.test.RepositoryObjectTreeIndexer;
+import edu.unc.lib.boxc.model.fcrepo.test.TestHelper;
+import edu.unc.lib.boxc.persist.api.storage.StorageLocationManager;
+import edu.unc.lib.boxc.persist.impl.storage.StorageLocationTestHelper;
 import edu.unc.lib.boxc.search.solr.services.SolrSearchService;
+import org.apache.camel.Exchange;
+import org.apache.camel.Message;
+import org.apache.camel.test.spring.junit5.CamelSpringTestSupport;
+import org.apache.commons.io.FileUtils;
+import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.ModelFactory;
+import org.apache.jena.rdf.model.Resource;
+import org.apache.solr.client.solrj.embedded.EmbeddedSolrServer;
+import org.fcrepo.client.FcrepoClient;
+import org.mockito.Mock;
+
+import java.io.File;
+import java.io.InputStream;
+import java.net.URI;
+
+import static edu.unc.lib.boxc.auth.api.AccessPrincipalConstants.AUTHENTICATED_PRINC;
+import static edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPaths.getContentRootPid;
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.fcrepo.camel.FcrepoHeaders.FCREPO_URI;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.when;
 
 /**
  *
  * @author bbpennel
  *
  */
-@RunWith(CamelSpringRunner.class)
-@BootstrapWith(CamelTestContextBootstrapper.class)
-@ContextHierarchy({
-    @ContextConfiguration("/spring-test/cdr-client-container.xml"),
-    @ContextConfiguration("/spring-test/solr-indexing-context.xml"),
-    @ContextConfiguration("/solr-indexing-it-context.xml")
-})
-public abstract class AbstractSolrProcessorIT {
+public abstract class AbstractSolrProcessorIT extends CamelSpringTestSupport {
 
-    @Autowired
     protected String baseAddress;
-
-    @Autowired
     protected File solrDataDir;
-    @Autowired
     protected EmbeddedSolrServer server;
-    @Autowired
     protected SolrUpdateDriver driver;
-    @Autowired
     protected SolrSearchService solrSearchService;
-    @javax.annotation.Resource(name = "accessGroups")
     protected AccessGroupSet accessGroups;
-
-    @Autowired
     protected Model queryModel;
-    @javax.annotation.Resource(name = "repositoryObjectLoader")
     protected RepositoryObjectLoader repositoryObjectLoader;
-    @Autowired
     protected RepositoryObjectFactory repositoryObjectFactory;
-    @Autowired
     protected DocumentIndexingPackageFactory dipFactory;
-    @Autowired
     protected PIDMinter pidMinter;
-    @Autowired
     private RepositoryInitializer repoInitializer;
-    @Autowired
     protected RepositoryObjectTreeIndexer treeIndexer;
-    @Autowired
     protected RepositoryObjectSolrIndexer repositoryObjectSolrIndexer;
-    @Autowired
     protected StorageLocationManager locManager;
-    @Autowired
     protected StorageLocationTestHelper storageLocationTestHelper;
-    @Autowired
     protected FcrepoClient fcrepoClient;
 
     protected ContentRootObject rootObj;
@@ -110,6 +74,26 @@ public abstract class AbstractSolrProcessorIT {
     protected Exchange exchange;
     @Mock
     protected Message message;
+
+    protected void initCommon() {
+        baseAddress = applicationContext.getBean("baseAddress", String.class);
+        fcrepoClient = applicationContext.getBean(FcrepoClient.class);
+        solrDataDir = applicationContext.getBean("solrDataDir", File.class);
+        server = applicationContext.getBean(EmbeddedSolrServer.class);
+        driver = applicationContext.getBean(SolrUpdateDriver.class);
+        solrSearchService = applicationContext.getBean(SolrSearchService.class);
+        accessGroups = applicationContext.getBean("accessGroups", AccessGroupSet.class);
+        queryModel = applicationContext.getBean("queryModel", Model.class);
+        repositoryObjectLoader = applicationContext.getBean("repositoryObjectLoader", RepositoryObjectLoader.class);
+        repositoryObjectFactory = applicationContext.getBean(RepositoryObjectFactory.class);
+        dipFactory = applicationContext.getBean(DocumentIndexingPackageFactory.class);
+        pidMinter = applicationContext.getBean(PIDMinter.class);
+        repoInitializer = applicationContext.getBean(RepositoryInitializer.class);
+        treeIndexer = applicationContext.getBean(RepositoryObjectTreeIndexer.class);
+        repositoryObjectSolrIndexer = applicationContext.getBean(RepositoryObjectSolrIndexer.class);
+        locManager = applicationContext.getBean(StorageLocationManager.class);
+        storageLocationTestHelper = applicationContext.getBean(StorageLocationTestHelper.class);
+    }
 
     protected void generateBaseStructure() throws Exception {
         repoInitializer.initializeRepository();

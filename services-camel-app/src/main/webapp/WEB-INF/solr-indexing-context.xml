@@ -309,30 +309,40 @@
         class="edu.unc.lib.boxc.indexing.solr.action.UpdateObjectAction">
         <property name="pipeline" ref="solrFullUpdatePipeline" />
         <property name="addDocumentMode" value="true" />
+        <property name="factory" ref="dipFactory" />
+        <property name="solrUpdateDriver" ref="solrUpdateDriver" />
     </bean>
     
     <bean id="updateDescriptionAction"
         class="edu.unc.lib.boxc.indexing.solr.action.UpdateObjectAction">
         <property name="pipeline" ref="solrDescriptionUpdatePipeline" />
         <property name="addDocumentMode" value="false" />
+        <property name="factory" ref="dipFactory" />
+        <property name="solrUpdateDriver" ref="solrUpdateDriver" />
     </bean>
     
     <bean id="updateDatastreamsAction"
         class="edu.unc.lib.boxc.indexing.solr.action.UpdateObjectAction">
         <property name="pipeline" ref="solrDatastreamUpdatePipeline" />
         <property name="addDocumentMode" value="false" />
+        <property name="factory" ref="dipFactory" />
+        <property name="solrUpdateDriver" ref="solrUpdateDriver" />
     </bean>
 
     <bean id="updateWorkFilesAction"
           class="edu.unc.lib.boxc.indexing.solr.action.UpdateObjectAction">
         <property name="pipeline" ref="solrUpdateWorkFilesPipeline" />
         <property name="addDocumentMode" value="false" />
+        <property name="factory" ref="dipFactory" />
+        <property name="solrUpdateDriver" ref="solrUpdateDriver" />
     </bean>
     
     <bean id="updateFullTextAction"
         class="edu.unc.lib.boxc.indexing.solr.action.UpdateObjectAction">
         <property name="pipeline" ref="solrFullTextUpdatePipeline" />
         <property name="addDocumentMode" value="false" />
+        <property name="factory" ref="dipFactory" />
+        <property name="solrUpdateDriver" ref="solrUpdateDriver" />
     </bean>
     
     <bean id="recursiveTreeIndexer" class="edu.unc.lib.boxc.indexing.solr.action.RecursiveTreeIndexer">
@@ -385,6 +395,8 @@
         class="edu.unc.lib.boxc.indexing.solr.action.UpdateObjectAction">
         <property name="pipeline" ref="solrAccessControlUpdatePipeline" />
         <property name="addDocumentMode" value="false" />
+        <property name="factory" ref="dipFactory" />
+        <property name="solrUpdateDriver" ref="solrUpdateDriver" />
     </bean>
     
     <bean id="updateAccessTreeAction"
@@ -405,12 +417,16 @@
         class="edu.unc.lib.boxc.indexing.solr.action.UpdateObjectAction">
         <property name="pipeline" ref="solrMoveUpdatePipeline" />
         <property name="addDocumentMode" value="false" />
+        <property name="factory" ref="dipFactory" />
+        <property name="solrUpdateDriver" ref="solrUpdateDriver" />
     </bean>
 
     <bean id="updateParentPathInfoAction"
           class="edu.unc.lib.boxc.indexing.solr.action.UpdateObjectAction">
         <property name="pipeline" ref="solrUpdateParentPathInfoPipeline" />
         <property name="addDocumentMode" value="false" />
+        <property name="factory" ref="dipFactory" />
+        <property name="solrUpdateDriver" ref="solrUpdateDriver" />
     </bean>
 
     <bean id="updateParentPathInfoTreeAction"
@@ -432,6 +448,8 @@
         class="edu.unc.lib.boxc.indexing.solr.action.UpdateObjectAction">
         <property name="pipeline" ref="solrUpdateTypePipeline" />
         <property name="addDocumentMode" value="false" />
+        <property name="factory" ref="dipFactory" />
+        <property name="solrUpdateDriver" ref="solrUpdateDriver" />
     </bean>
     
     <bean id="updateTypeTreeAction"
@@ -460,18 +478,24 @@
           class="edu.unc.lib.boxc.indexing.solr.action.UpdateObjectAction">
         <property name="pipeline" ref="solrOrderMembersParentUpdatePipeline" />
         <property name="addDocumentMode" value="false" />
+        <property name="factory" ref="dipFactory" />
+        <property name="solrUpdateDriver" ref="solrUpdateDriver" />
     </bean>
 
     <bean id="updateMemberOrderChildAction"
           class="edu.unc.lib.boxc.indexing.solr.action.UpdateObjectAction">
         <property name="pipeline" ref="solrOrderMembersChildUpdatePipeline" />
         <property name="addDocumentMode" value="false" />
+        <property name="factory" ref="dipFactory" />
+        <property name="solrUpdateDriver" ref="solrUpdateDriver" />
     </bean>
 
     <bean id="updateViewBehaviorAction"
           class="edu.unc.lib.boxc.indexing.solr.action.UpdateObjectAction">
         <property name="pipeline" ref="solrViewBehaviorUpdatePipeline" />
         <property name="addDocumentMode" value="false" />
+        <property name="factory" ref="dipFactory" />
+        <property name="solrUpdateDriver" ref="solrUpdateDriver" />
     </bean>
     
     <util:map id="solrIndexingActionMap"
