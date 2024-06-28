@@ -45,22 +45,26 @@ public class SetStreamingPropertiesFilterTest {
     public void testWithFileObject() {
         var file =  makeFileObject(filePid, null);
         var url = "https://streaming.url";
+        var type = "video";
         when(documentIndexingPackageDataLoader.getContentObject(dip)).thenReturn(file);
         var resource = file.getResource();
         resource.addProperty(Cdr.streamingUrl, url);
+        resource.addProperty(Cdr.streamingType, type);
 
         filter.filter(dip);
 
         assertEquals(url, idb.getStreamingUrl());
+        assertEquals(type, idb.getStreamingType());
     }
 
     @Test
-    public void testWithFileObjectWithoutStreamingUrl() {
+    public void testWithFileObjectWithoutStreamingProperties() {
         var file = makeFileObject(filePid, null);
         when(documentIndexingPackageDataLoader.getContentObject(dip)).thenReturn(file);
 
         filter.filter(dip);
 
         assertNull(idb.getStreamingUrl());
+        assertNull(idb.getStreamingType());
     }
 }

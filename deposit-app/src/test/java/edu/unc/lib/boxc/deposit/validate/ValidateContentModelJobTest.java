@@ -2,7 +2,9 @@ package edu.unc.lib.boxc.deposit.validate;
 
 import static edu.unc.lib.boxc.common.test.TestHelpers.setField;
 import static edu.unc.lib.boxc.model.api.ids.RepositoryPathConstants.CONTENT_BASE;
+import static edu.unc.lib.boxc.operations.jms.streaming.StreamingPropertiesRequest.STREAMREAPER_SOUND;
 import static edu.unc.lib.boxc.operations.jms.streaming.StreamingPropertiesRequest.STREAMREAPER_PREFIX_URL;
+import static edu.unc.lib.boxc.operations.jms.streaming.StreamingPropertiesRequest.STREAMREAPER_VIDEO;
 import static org.apache.jena.rdf.model.ResourceFactory.createResource;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -51,7 +53,6 @@ public class ValidateContentModelJobTest extends AbstractDepositJobTest {
     private PID destPid;
 
     private Bag depBag;
-    private String streamingType = "video";
 
     @Mock
     private ContentObjectAccessRestrictionValidator aclValidator;
@@ -201,7 +202,7 @@ public class ValidateContentModelJobTest extends AbstractDepositJobTest {
         origResc.addLiteral(CdrDeposit.stagingLocation, "path");
         childResc.addProperty(RDF.type, Cdr.FileObject);
         childResc.addProperty(Cdr.streamingUrl, STREAMREAPER_PREFIX_URL + "?params=more");
-        childResc.addProperty(Cdr.streamingType, streamingType);
+        childResc.addProperty(Cdr.streamingType, STREAMREAPER_VIDEO);
         objBag.add(childResc);
 
         objBag.addProperty(Cdr.primaryObject, childResc);
@@ -211,6 +212,32 @@ public class ValidateContentModelJobTest extends AbstractDepositJobTest {
         job.closeModel();
 
         job.run();
+    }
+
+    @Test
+    public void fileObjectWithOriginalDatastreamWithNoStreamingTypeTest() {
+        Assertions.assertThrows(JobFailedException.class, () -> {
+            PID objPid = makePid(CONTENT_BASE);
+            Bag objBag = model.createBag(objPid.getRepositoryPath());
+            objBag.addProperty(RDF.type, Cdr.Work);
+
+            PID childPid = makePid(CONTENT_BASE);
+            Resource childResc = model.getResource(childPid.getRepositoryPath());
+            Resource origResc = DepositModelHelpers.addDatastream(childResc);
+            origResc.addLiteral(CdrDeposit.stagingLocation, "path");
+            childResc.addProperty(RDF.type, Cdr.FileObject);
+            childResc.addProperty(Cdr.streamingUrl, STREAMREAPER_PREFIX_URL + "?params=more");
+            childResc.addProperty(Cdr.streamingType, "");
+            objBag.add(childResc);
+
+            objBag.addProperty(Cdr.primaryObject, childResc);
+
+            depBag.add(objBag);
+
+            job.closeModel();
+
+            job.run();
+        });
     }
 
     @Test
@@ -227,7 +254,7 @@ public class ValidateContentModelJobTest extends AbstractDepositJobTest {
 
             childResc.addProperty(RDF.type, Cdr.FileObject);
             childResc.addProperty(Cdr.streamingUrl, STREAMREAPER_PREFIX_URL + "?params=more");
-            childResc.addProperty(Cdr.streamingType, streamingType);
+            childResc.addProperty(Cdr.streamingType, STREAMREAPER_VIDEO);
             objBag.add(childResc);
 
             objBag.addProperty(Cdr.primaryObject, childResc);
@@ -272,7 +299,7 @@ public class ValidateContentModelJobTest extends AbstractDepositJobTest {
         Resource childResc = model.getResource(childPid.getRepositoryPath());
         childResc.addProperty(RDF.type, Cdr.FileObject);
         childResc.addProperty(Cdr.streamingUrl, STREAMREAPER_PREFIX_URL + "?params=more");
-        childResc.addProperty(Cdr.streamingType, streamingType);
+        childResc.addProperty(Cdr.streamingType, STREAMREAPER_SOUND);
         objBag.add(childResc);
 
         objBag.addProperty(Cdr.primaryObject, childResc);
@@ -296,7 +323,7 @@ public class ValidateContentModelJobTest extends AbstractDepositJobTest {
             childResc.addProperty(RDF.type, Cdr.Work);
             childResc.addProperty(CdrAcl.canDescribe, "user");
             childResc.addProperty(Cdr.streamingUrl, STREAMREAPER_PREFIX_URL + "?params=more");
-            childResc.addProperty(Cdr.streamingType, streamingType);
+            childResc.addProperty(Cdr.streamingType, STREAMREAPER_VIDEO);
             objBag.add(childResc);
 
             depBag.add(objBag);

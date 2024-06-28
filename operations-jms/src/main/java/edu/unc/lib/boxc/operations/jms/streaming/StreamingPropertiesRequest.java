@@ -10,6 +10,8 @@ import edu.unc.lib.boxc.auth.fcrepo.models.AgentPrincipalsImpl;
 public class StreamingPropertiesRequest {
     // If you change this value it also needs to be updated in static/js/admin/src/EditStreamingPropertiesForm.js
     public static final String STREAMREAPER_PREFIX_URL = "https://durastream.lib.unc.edu/player";
+    public static final String STREAMREAPER_SOUND = "sound";
+    public static final String STREAMREAPER_VIDEO = "video";
     public static String ADD = "add";
     public static String DELETE = "delete";
     @JsonDeserialize(as = AgentPrincipalsImpl.class)

@@ -136,7 +136,7 @@ public class StreamingPropertiesProcessorTest {
         verify(repositoryObjectFactory).createExclusiveRelationship(
                 eq(fileObject), eq(Cdr.streamingUrl), eq(STREAMREAPER_PREFIX_URL));
         verify(indexingMessageSender).sendIndexingOperation(agent.getUsername(), filePid,
-                IndexingActionType.UPDATE_STREAMING_URL);
+                IndexingActionType.UPDATE_STREAMING_PROPERTIES);
     }
 
     @Test
@@ -146,7 +146,7 @@ public class StreamingPropertiesProcessorTest {
 
         verify(repositoryObjectFactory).deleteProperty(eq(fileObject), eq(Cdr.streamingUrl));
         verify(indexingMessageSender).sendIndexingOperation(agent.getUsername(), filePid,
-                IndexingActionType.UPDATE_STREAMING_URL);
+                IndexingActionType.UPDATE_STREAMING_PROPERTIES);
     }
 
     private Exchange createRequestExchange(String url, String id, String action, String type) throws IOException {

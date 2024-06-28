@@ -34,13 +34,13 @@ define('EditStreamingPropertiesForm', [ 'jquery', 'jquery-ui', 'underscore', 'Re
             // Validate input
             if (!streamingUrl.startsWith(STREAMREAPER_PREFIX_URL)) {
                 errors.push(`You must specify a DuraStream based streaming URL, e.g. ${STREAMREAPER_PREFIX_URL}`);
-
-                if (streamingType === '') {
-                    errors.push(`You must specify a streaming type, e.g. "Sound" or "Video"`)
-                }
-
-                return errors;
             }
+
+            if (streamingType === '') {
+                errors.push(`You must specify a streaming type, e.g. "Sound" or "Video"`)
+            }
+
+            return errors;
         }
 
         EditStreamingPropertiesForm.prototype.getSuccessMessage = function(data) {

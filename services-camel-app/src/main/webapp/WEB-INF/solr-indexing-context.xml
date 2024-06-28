@@ -530,8 +530,8 @@
         <entry key="UPDATE_MEMBER_ORDER_PARENT" value-ref="updateMemberOrderParentAction" />
         <entry key="UPDATE_MEMBER_ORDER_CHILD" value-ref="updateMemberOrderChildAction" />
         <entry key="UPDATE_VIEW_BEHAVIOR" value-ref="updateViewBehaviorAction" />
-        <entry key="UPDATE_STREAMING_URL" value-ref="updateStreamingPropertiesUrl" />
-        <entry key="UPDATE_STREAMING_TYPE" value-ref="updateStreamingPropertiesType" />
+        <entry key="UPDATE_STREAMING_PROPERTIES" value-ref="updateStreamingPropertiesUrl" />
+        <entry key="UPDATE_STREAMING_PROPERTIES" value-ref="updateStreamingPropertiesType" />
     </util:map>
     
     <bean id="dipDataLoader"
