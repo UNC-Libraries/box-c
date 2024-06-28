@@ -15,9 +15,11 @@ import edu.unc.lib.boxc.model.api.ResourceType;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.boxc.search.api.models.ContentObjectRecord;
+import edu.unc.lib.boxc.search.api.requests.SimpleIdRequest;
 import edu.unc.lib.boxc.search.solr.models.ContentObjectSolrRecord;
 import edu.unc.lib.boxc.search.solr.models.DatastreamImpl;
 import edu.unc.lib.boxc.web.common.services.AccessCopiesService;
+import edu.unc.lib.boxc.web.common.services.SolrQueryLayerService;
 import edu.unc.lib.boxc.web.services.processing.ImageServerV2Service;
 import edu.unc.lib.boxc.web.services.rest.exceptions.RestResponseEntityExceptionHandler;
 import org.apache.http.conn.HttpClientConnectionManager;
@@ -43,6 +45,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.openMocks;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -73,6 +76,9 @@ public class ImageServerV2ControllerTest {
 
     @Mock
     private AccessCopiesService accessCopiesService;
+
+    @Mock
+    private SolrQueryLayerService solrSearchService;
 
     private ImageServerV2Service imageService;
 
@@ -150,6 +156,13 @@ public class ImageServerV2ControllerTest {
     }
 
     @Test
+    public void testGetRegion() throws Exception {
+        mockMvc.perform(get("/iiif/v2/" + OBJECT_ID + "/full/full/0/default.jpg")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
+    }
+
+    @Test
     public void testGetRegionNoAccess() throws Exception {
         doThrow(new AccessRestrictionException()).when(accessControlService)
                 .assertHasAccess(anyString(), any(), any(), eq(Permission.viewAccessCopies));
@@ -160,6 +173,13 @@ public class ImageServerV2ControllerTest {
     }
 
     @Test
+    public void testGetMetadata() throws Exception {
+        mockMvc.perform(get("/iiif/v2/" + OBJECT_ID + "/info.json")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
+    }
+
+    @Test
     public void testGetMetadataNoAccess() throws Exception {
         doThrow(new AccessRestrictionException()).when(accessControlService)
                 .assertHasAccess(anyString(), any(), any(), eq(Permission.viewAccessCopies));
@@ -167,6 +187,15 @@ public class ImageServerV2ControllerTest {
         mockMvc.perform(get("/iiif/v2/" + OBJECT_ID + "/info.json")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isForbidden());
+    }
+
+    @Test
+    public void testGetCanvas() throws Exception {
+        ContentObjectSolrRecord contentObjectSolrRecord = mock(ContentObjectSolrRecord.class);
+        when(solrSearchService.getObjectById(any(SimpleIdRequest.class))).thenReturn(contentObjectSolrRecord);
+        mockMvc.perform(get("/iiif/v2/" + OBJECT_ID)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
     }
 
     @Test
