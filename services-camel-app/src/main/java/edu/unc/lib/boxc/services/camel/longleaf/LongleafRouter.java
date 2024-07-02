@@ -9,6 +9,7 @@ import org.apache.camel.builder.RouteBuilder;
 import org.slf4j.Logger;
 
 import edu.unc.lib.boxc.services.camel.AddFailedRouteProcessor;
+import org.springframework.beans.factory.annotation.Value;
 
 /**
  * Router for longleaf operations
@@ -29,8 +30,10 @@ public class LongleafRouter extends RouteBuilder {
 
     @BeanInject(value = "longleafAggregationStrategy")
     private LongleafAggregationStrategy longleafAggregationStrategy;
-
+    @Value("${longleaf.maxRedelivieries:3}")
     private int longleafMaxRedelivieries;
+
+    @Value("${longleaf.redeliveryDelay:10000}")
     private long longleafRedeliveryDelay;
     private int batchSize;
     private long batchTimeout;
@@ -48,7 +51,7 @@ public class LongleafRouter extends RouteBuilder {
     public void configure() throws Exception {
         AddFailedRouteProcessor failedRouteProcessor = new AddFailedRouteProcessor();
 
-        errorHandler(deadLetterChannel(longleafDeadLetterQueueDestination)
+        errorHandler(deadLetterChannel("{{longleaf.dlq.dest}}")
                 .maximumRedeliveries(longleafMaxRedelivieries)
                 .redeliveryDelay(longleafRedeliveryDelay)
                 .onPrepareFailure(failedRouteProcessor));
@@ -60,11 +63,12 @@ public class LongleafRouter extends RouteBuilder {
             .log(LoggingLevel.DEBUG, log, "Queuing ${headers[CamelFcrepoUri]} for registration to longleaf")
             .to(longleafRegisterDestination);
 
+        // Directing multiple input streams to the registration stream, since camel 3 disallows multiple addresses in "from"
         from(longleafRegisterConsumer)
-            .to("direct:register.longleaf");
+            .to(longleafRegisterDestination);
         from(longleafRegisterBatchConsumer)
-            .to("direct:register.longleaf");
-        from("direct:register.longleaf")
+            .to(longleafRegisterDestination);
+        from(longleafRegisterDestination)
             .routeId("RegisterLongleafProcessing")
             .startupOrder(5)
             .log(LoggingLevel.INFO, log, "Processing batch of longleaf registrations")
@@ -80,11 +84,12 @@ public class LongleafRouter extends RouteBuilder {
             .process(getUrisProcessor)
             .to(longleafDeregisterDestination);
 
+        // Directing multiple input streams to the deregistration stream
         from(longleafDeregisterConsumer)
-            .to("direct:deregister.longleaf");
+            .to(longleafDeregisterDestination);
         from(longleafDeregisterBatchDestination)
-            .to("direct:deregister.longleaf");
-        from("direct:deregister.longleaf")
+            .to(longleafDeregisterDestination);
+        from(longleafDeregisterDestination)
             .routeId("DeregisterLongleafProcessing")
             .startupOrder(1)
             .log(LoggingLevel.DEBUG, log, "Processing batch of longleaf deregistrations")
@@ -110,17 +115,14 @@ public class LongleafRouter extends RouteBuilder {
         this.longleafAggregationStrategy = longleafAggregationStrategy;
     }
 
-    @PropertyInject("longleaf.maxRedelivieries:3")
     public void setLongleafMaxRedelivieries(int longleafMaxRedelivieries) {
         this.longleafMaxRedelivieries = longleafMaxRedelivieries;
     }
 
-    @PropertyInject("longleaf.redeliveryDelay:10000")
     public void setLongleafRedeliveryDelay(long longleafRedeliveryDelay) {
         this.longleafRedeliveryDelay = longleafRedeliveryDelay;
     }
 
-    @PropertyInject("longleaf.dlq.dest")
     public void setLongleafDeadLetterQueueDestination(String longleafDeadLetterQueueDestination) {
         this.longleafDeadLetterQueueDestination = longleafDeadLetterQueueDestination;
     }

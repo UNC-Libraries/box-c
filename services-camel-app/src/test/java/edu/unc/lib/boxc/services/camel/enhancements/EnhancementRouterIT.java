@@ -106,8 +106,6 @@ public class EnhancementRouterIT extends CamelSpringTestSupport {
 
     private FulltextProcessor fulltextProcessor;
 
-//    private BinaryMetadataProcessor binaryMetadataProcessor;
-
     private UpdateDescriptionService updateDescriptionService;
 
     @TempDir
@@ -138,15 +136,8 @@ public class EnhancementRouterIT extends CamelSpringTestSupport {
         addAccessCopyProcessor = applicationContext.getBean("addAccessCopyProcessor", AddDerivativeProcessor.class);
         solrIngestProcessor = applicationContext.getBean("solrIngestProcessor", SolrIngestProcessor.class);
         fulltextProcessor = applicationContext.getBean("fulltextProcessor", FulltextProcessor.class);
-//        binaryMetadataProcessor = applicationContext.getBean("binaryMetadataProcessor", BinaryMetadataProcessor.class);
         updateDescriptionService = applicationContext.getBean(UpdateDescriptionService.class);
         nbh = applicationContext.getBean(NonBinaryEnhancementProcessor.class);
-
-
-        reset(solrIngestProcessor);
-        reset(addSmallThumbnailProcessor);
-        reset(addLargeThumbnailProcessor);
-        reset(addAccessCopyProcessor);
 
         when(addSmallThumbnailProcessor.needsRun(any(Exchange.class))).thenReturn(true);
         when(addLargeThumbnailProcessor.needsRun(any(Exchange.class))).thenReturn(true);

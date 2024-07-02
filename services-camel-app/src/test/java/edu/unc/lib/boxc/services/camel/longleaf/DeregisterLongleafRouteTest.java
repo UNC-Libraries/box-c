@@ -1,14 +1,19 @@
 package edu.unc.lib.boxc.services.camel.longleaf;
 
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
+import org.apache.camel.EndpointInject;
 import org.apache.camel.Exchange;
 import org.apache.camel.builder.NotifyBuilder;
-import org.apache.camel.builder.RouteBuilder;
+import org.apache.camel.component.mock.MockEndpoint;
 import org.apache.commons.io.FileUtils;
 import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.output.XMLOutputter;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
+import org.springframework.context.support.AbstractApplicationContext;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import java.io.File;
 import java.net.URI;
@@ -24,7 +29,6 @@ import static edu.unc.lib.boxc.model.api.xml.JDOMNamespaceUtil.CDR_MESSAGE_NS;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.mock;
 
 /**
  * @author bbpennel
@@ -32,19 +36,33 @@ import static org.mockito.Mockito.mock;
 public class DeregisterLongleafRouteTest extends AbstractLongleafRouteTest {
     private static final String FILTER_DEREGISTER_ENDPOINT = "direct:filter.longleaf.deregister";
 
+    @EndpointInject(uri = "mock:direct:longleaf.dlq")
+    private MockEndpoint mockDlq;
+
+    private DeregisterLongleafProcessor deregisterLongleafProcessor;
+
+    @TempDir
+    public Path tmpFolder;
+
+    private String longleafScript;
+
     @Override
-    protected RouteBuilder createRouteBuilder() throws Exception {
+    protected AbstractApplicationContext createApplicationContext() {
+        return new ClassPathXmlApplicationContext(
+                "spring-test/cdr-client-container.xml",
+                "spring-test/jms-context.xml",
+                "deregister-longleaf-router-context.xml");
+    }
+
+    @BeforeEach
+    public void setup() throws Exception {
+        deregisterLongleafProcessor = applicationContext.getBean(DeregisterLongleafProcessor.class);
+
         Path tmpPath = tmpFolder.resolve("output_file");
         Files.createFile(tmpPath);
         outputPath = tmpPath.toAbsolutePath().toString();
-        output = null;
         longleafScript = LongleafTestHelpers.getLongleafScript(outputPath);
-
-        registerToLongleafProcessor = mock(RegisterToLongleafProcessor.class);
-        deregisterLongleafProcessor = new DeregisterLongleafProcessor();
         deregisterLongleafProcessor.setLongleafBaseCommand(longleafScript);
-        var router = getLongleafRouter();
-        return router;
     }
 
     @Test
@@ -119,7 +137,6 @@ public class DeregisterLongleafRouteTest extends AbstractLongleafRouteTest {
         assertSubmittedPaths(10000, successUris);
     }
 
-    @SuppressWarnings("unchecked")
     @Test
     public void deregisterPartialSuccess() throws Exception {
         mockDlq.expectedMessageCount(1);
@@ -155,7 +172,6 @@ public class DeregisterLongleafRouteTest extends AbstractLongleafRouteTest {
                 failedList.contains(contentUris[1]));
     }
 
-    @SuppressWarnings("unchecked")
     @Test
     public void deregisterCommandErrorSuccessExit() throws Exception {
         mockDlq.expectedMessageCount(1);
