@@ -32,7 +32,7 @@ public class FedoraSparqlUpdateService implements SparqlUpdateService {
         URI rescUri = URI.create(uri);
 
         try (InputStream sparqlStream = new ByteArrayInputStream(updateString.getBytes(UTF_8))) {
-            try (FcrepoResponse response = fcrepoClient.patch(rescUri)
+            try (FcrepoResponse ignored = fcrepoClient.patch(rescUri)
                     .body(sparqlStream)
                     .perform()) {
             }
@@ -41,6 +41,11 @@ public class FedoraSparqlUpdateService implements SparqlUpdateService {
         } catch (FcrepoOperationFailedException e) {
             throw ClientFaultResolver.resolve(e);
         }
+    }
+
+    @Override
+    public void executeUpdate(String updateString) {
+        throw new UnsupportedOperationException("FedoraSparqlUpdateService requires a resource URI to update");
     }
 
     /**

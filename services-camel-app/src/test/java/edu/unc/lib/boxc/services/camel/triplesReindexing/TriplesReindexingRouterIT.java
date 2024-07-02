@@ -12,6 +12,7 @@ import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.api.objects.WorkObject;
 import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
 import edu.unc.lib.boxc.model.api.sparql.SparqlQueryService;
+import edu.unc.lib.boxc.model.api.sparql.SparqlUpdateService;
 import edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPaths;
 import edu.unc.lib.boxc.model.fcrepo.services.RepositoryInitializer;
 import edu.unc.lib.boxc.model.fcrepo.test.TestHelper;
@@ -61,6 +62,7 @@ public class TriplesReindexingRouterIT extends CamelSpringTestSupport {
     private RepositoryInitializer repoInitializer;
     private IndexingMessageSender messageSender;
     private SparqlQueryService sparqlQueryService;
+    private SparqlUpdateService sparqlUpdateService;
     private StorageLocationTestHelper storageLocationTestHelper;
     private FcrepoClient fcrepoClient;
     private BrokerService activemqBroker;
@@ -82,6 +84,7 @@ public class TriplesReindexingRouterIT extends CamelSpringTestSupport {
         repoInitializer = applicationContext.getBean("repositoryInitializer", RepositoryInitializer.class);
         storageLocationTestHelper = applicationContext.getBean(StorageLocationTestHelper.class);
         sparqlQueryService = applicationContext.getBean("sparqlQueryService", SparqlQueryService.class);
+        sparqlUpdateService = applicationContext.getBean("sparqlUpdateService", SparqlUpdateService.class);
         fcrepoClient = applicationContext.getBean(FcrepoClient.class);
         messageSender = applicationContext.getBean("triplesIndexingMessageSender", IndexingMessageSender.class);
         activemqBroker = applicationContext.getBean(BrokerService.class);
@@ -101,7 +104,7 @@ public class TriplesReindexingRouterIT extends CamelSpringTestSupport {
             activemqBroker.stop();
             activemqBroker.waitUntilStopped();
         }
-        sparqlQueryService.executeUpdate("DELETE WHERE { ?subject ?predicate ?object . }");
+        sparqlUpdateService.executeUpdate("DELETE WHERE { ?subject ?predicate ?object . }");
     }
 
     @Override

@@ -32,6 +32,10 @@
     <bean id="sparqlQueryService" class="edu.unc.lib.boxc.model.fcrepo.sparql.FusekiSparqlQueryServiceImpl" >
         <property name="fusekiQueryURL" value="${triplestore.datasetUri}" />
     </bean>
+
+    <bean id="sparqlUpdateService" class="edu.unc.lib.boxc.model.fcrepo.sparql.TripleStoreSparqlUpdateService" >
+        <property name="fusekiQueryURL" value="${triplestore.datasetUri}" />
+    </bean>
     
     <bean id="triplesUpdateJmsTemplate" class="org.springframework.jms.core.JmsTemplate">
         <property name="connectionFactory" ref="jmsFactory" />
