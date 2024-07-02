@@ -204,7 +204,7 @@ public class ExportCsvIT extends AbstractAPIIT {
         String pathToWork = FOLDER_PATH + "/" + workPid.getId();
         assertCsvRecord(csvList, ResourceType.Work, workPid, "TestWork",
                 pathToWork, 4, false, null, null, null, null,
-                1, false, "Authenticated", "", "");
+                1, false, "Authenticated", "", "", null, null);
 
         String pathToFile = pathToWork + "/file.txt";
         assertCsvRecord(csvList, ResourceType.File, pidList.get("filePid"), "TestWork",
@@ -236,7 +236,7 @@ public class ExportCsvIT extends AbstractAPIIT {
         String pathToWork = FOLDER_PATH + "/" + workPid.getId();
         assertCsvRecord(csvList, ResourceType.Work, workPid, "TestWork",
                 pathToWork, 4, false, null, null, null, null,
-                1, false, "Authenticated", "", "");
+                1, false, "Authenticated", "", "", null, null);
 
         String pathToFile = pathToWork + "/file.txt";
         assertCsvRecord(csvList, ResourceType.File, pidList.get("filePid"), "TestWork",
@@ -279,7 +279,7 @@ public class ExportCsvIT extends AbstractAPIIT {
         String pathToWork = pathToFolder + "/Work Test";
         assertCsvRecord(csvList, ResourceType.Work, workPid, "Work Test",
                 pathToWork, 4, false, null, null, null, null,
-                1, true, "Authenticated", "", "");
+                1, true, "Authenticated", "", "", null, null);
 
         String pathToFile = pathToWork + "/file.txt";
         assertCsvRecord(csvList, ResourceType.File, filePid, "TestWork2",
@@ -316,7 +316,7 @@ public class ExportCsvIT extends AbstractAPIIT {
         String pathToWork = FOLDER_PATH + "/" + workPid.getId();
         assertCsvRecord(csvList, ResourceType.Work, workPid, "TestWorkDeleted",
                 pathToWork, 4, true, null, null, null, null,
-                1, false, "Staff-only", "", "");
+                1, false, "Staff-only", "", "", null, null);
 
         String pathToFile = pathToWork + "/file.txt";
         assertCsvRecord(csvList, ResourceType.File, filePid, "TestWork2",
@@ -622,7 +622,7 @@ public class ExportCsvIT extends AbstractAPIIT {
         String pathToWork = FOLDER_PATH + "/" + workPid.getId();
         assertCsvRecord(csvList, ResourceType.Work, workPid, "TestWork",
                 pathToWork, 4, false, null, null, null, null,
-                1, false, "Authenticated", "", "");
+                1, false, "Authenticated", "", "", null, null);
 
         String pathToFile = pathToWork + "/file.txt";
         assertCsvRecord(csvList, ResourceType.File, pidList.get("filePid"), "TestWork",
@@ -658,7 +658,7 @@ public class ExportCsvIT extends AbstractAPIIT {
         String pathToWork = FOLDER_PATH + "/" + workPid.getId();
         assertCsvRecord(csvList, ResourceType.Work, workPid, "TestWork",
                 pathToWork, 4, false, null, null, null, null,
-                1, false, "Authenticated", "", paged);
+                1, false, "Authenticated", "", paged, null, null);
     }
 
     private Map<String, PID> addWorkToFolder(boolean accessSurrogate) throws Exception {
@@ -744,13 +744,14 @@ public class ExportCsvIT extends AbstractAPIIT {
             String path, int depth, boolean deleted, Integer numChildren, boolean described, String permissions,
                                        String embargoDate) {
         assertCsvRecord(csvList, objType, expectedPid, title, path, depth, deleted,
-                null, null, null, null, numChildren, described, permissions, embargoDate, "");
+                null, null, null, null, numChildren, described, permissions,
+                embargoDate, "", null, null);
     }
 
     private void assertCsvRecord(List<CSVRecord> csvList, ResourceType objType, PID expectedPid, String title,
             String path, int depth, boolean deleted, String mimetype, String checksum, Long fileSize,
             String accessSurrogate, Integer numChildren, boolean described, String permissions,
-            String embargoDate, String behavior) {
+            String embargoDate, String behavior, String parentWorkUrl, String parentWorkTitle) {
         path = path == null ? "" : path;
         mimetype = mimetype == null ? "" : mimetype;
         checksum = checksum == null ? "" : checksum;
@@ -788,6 +789,12 @@ public class ExportCsvIT extends AbstractAPIIT {
             assertEquals(permissions, rec.get(ExportCsvService.PATRON_PERMISSIONS_HEADER));
             assertEquals(embargoDate, rec.get(ExportCsvService.EMBARGO_HEADER));
             assertEquals(behavior, rec.get(ExportCsvService.VIEW_BEHAVIOR_HEADER));
+
+            if (accessSurrogate == null) {
+                assertTrue(StringUtils.isBlank(rec.get(ExportCsvService.ACCESS_SURROGATE_HEADER)));
+            } else {
+                assertEquals(accessSurrogate, rec.get(ExportCsvService.ACCESS_SURROGATE_HEADER));
+            }
             return;
         }
         fail("No CSV record with PID " + expectedPid.getId() + " present");

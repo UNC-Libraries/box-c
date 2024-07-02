@@ -27,6 +27,7 @@ import java.util.Objects;
 
 import edu.unc.lib.boxc.model.api.ResourceType;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
+import edu.unc.lib.boxc.model.api.objects.WorkObject;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
 import org.apache.commons.lang3.StringUtils;
@@ -99,6 +100,7 @@ public class ExportCsvService {
     private AccessControlService aclService;
     private SolrQueryLayerService queryLayer;
     private RepositoryObjectLoader repositoryObjectLoader;
+    private String baseUrl;
     private int pageSize = DEFAULT_PAGE_SIZE;
 
     private static final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd kk:mm:ss");
@@ -208,7 +210,7 @@ public class ExportCsvService {
     }
 
     private void printObject(CSVPrinter printer, ContentObjectRecord object) throws IOException {
-        // Vitals: object type, pid, title, path, label, depth
+        // Vitals: object type, pid, title, path, depth
         printer.print(object.getResourceType());
         printer.print(object.getId());
         printer.print(object.getTitle());
@@ -294,6 +296,14 @@ public class ExportCsvService {
         var behavior = object.getViewBehavior();
         printer.print(Objects.requireNonNullElse(behavior, ""));
 
+        // Parent info for FileObjects
+        if (ResourceType.File.name().equals(object.getResourceType())) {
+            // parentWorkUrl, parentWorkTitle
+            var parentRecordId = object.getParentCollectionId();
+            printer.print(getUrl(parentRecordId));
+            printer.print(object.getParentCollectionName());
+        }
+
         printer.println();
     }
 
@@ -319,6 +329,10 @@ public class ExportCsvService {
         return StringUtils.substringBefore(embargoProperty.getString(), "T");
     }
 
+    protected String getUrl(String id) {
+        return baseUrl + "/" + id;
+    }
+
     public void setChildrenCountService(ChildrenCountService childrenCountService) {
         this.childrenCountService = childrenCountService;
     }
@@ -337,5 +351,9 @@ public class ExportCsvService {
 
     public void setRepositoryObjectLoader(RepositoryObjectLoader repositoryObjectLoader) {
         this.repositoryObjectLoader = repositoryObjectLoader;
+    }
+
+    public void setBaseUrl(String baseUrl) {
+        this.baseUrl = baseUrl;
     }
 }
