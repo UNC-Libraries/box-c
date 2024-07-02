@@ -299,9 +299,13 @@ public class ExportCsvService {
         // Parent info for FileObjects
         if (ResourceType.File.name().equals(object.getResourceType())) {
             // parentWorkUrl, parentWorkTitle
-            var parentRecordId = object.getParentCollectionId();
-            printer.print(getUrl(parentRecordId));
-            printer.print(object.getParentCollectionName());
+            var parentWorkId = object.getPath().getHighestTierNode().getSearchKey();
+            printer.print(getUrl(parentWorkId));
+            var parentWorkTitle = getTitle(object.getAncestorNames());
+            printer.print(parentWorkTitle);
+        } else {
+            printer.print("");
+            printer.print("");
         }
 
         printer.println();
@@ -329,8 +333,25 @@ public class ExportCsvService {
         return StringUtils.substringBefore(embargoProperty.getString(), "T");
     }
 
-    protected String getUrl(String id) {
+    /**
+     * Creating a record URL with just the ID
+     * @param id
+     * @return
+     */
+    private String getUrl(String id) {
         return baseUrl + "/" + id;
+    }
+
+    /**
+     * Transforming ancestor path names to get the last one, but keep escaped slashes if necessary
+     * @param input
+     * @return
+     */
+    private String getTitle(String input) {
+        String regex = "(?<!\\\\)/";
+        String[] result = input.split(regex);
+        // for the last one escape any backslashes in the title
+        return result[result.length - 1].replace("\\/", "/");
     }
 
     public void setChildrenCountService(ChildrenCountService childrenCountService) {

@@ -35,6 +35,7 @@
         <property name="aclService" ref="aclService"/>
         <property name="queryLayer" ref="queryLayer"/>
         <property name="repositoryObjectLoader" ref="repositoryObjectLoader"/>
+        <property name="baseUrl" value="http://example.com/record"/>
     </bean>
 
     <util:set id="accessGroups" set-class="edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl">

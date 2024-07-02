@@ -209,7 +209,7 @@ public class ExportCsvIT extends AbstractAPIIT {
         String pathToFile = pathToWork + "/file.txt";
         assertCsvRecord(csvList, ResourceType.File, pidList.get("filePid"), "TestWork",
                 pathToFile, 5, false, "text/plain", null, (long) 7, null,
-                null, false, "Authenticated", "", "");
+                null, false, "Authenticated", "", "", getUrl(workPid.getId()), "TestWork");
     }
 
     @Test
@@ -241,7 +241,7 @@ public class ExportCsvIT extends AbstractAPIIT {
         String pathToFile = pathToWork + "/file.txt";
         assertCsvRecord(csvList, ResourceType.File, pidList.get("filePid"), "TestWork",
                 pathToFile, 5, false, "text/plain", null, (long) 7, "Y",
-                null, false, "Authenticated", "", "");
+                null, false, "Authenticated", "", "", getUrl(workPid.getId()), "TestWork");
     }
 
     @Test
@@ -284,7 +284,7 @@ public class ExportCsvIT extends AbstractAPIIT {
         String pathToFile = pathToWork + "/file.txt";
         assertCsvRecord(csvList, ResourceType.File, filePid, "TestWork2",
                 pathToFile, 5, false, "text/plain", null, (long) 7, null,
-                null, false, "Authenticated", "", "");
+                null, false, "Authenticated", "", "", getUrl(workPid.getId()), "Work Test");
     }
 
     @Test
@@ -321,7 +321,7 @@ public class ExportCsvIT extends AbstractAPIIT {
         String pathToFile = pathToWork + "/file.txt";
         assertCsvRecord(csvList, ResourceType.File, filePid, "TestWork2",
                 pathToFile, 5, true, "text/plain", null, (long) 7, null,
-                null, false, "Staff-only", "", "");
+                null, false, "Staff-only", "", "", getUrl(workPid.getId()), "TestWorkDeleted");
     }
 
     @Test
@@ -348,7 +348,7 @@ public class ExportCsvIT extends AbstractAPIIT {
         String pathToFile = FOLDER_PATH + "/" + workPid.getId() + "/file.txt";
         assertCsvRecord(csvList, ResourceType.File, filePid, "TestWork3",
                 pathToFile, 5, false, "text/plain", null, (long) 7, null,
-                null, false, "Authenticated", "", "");
+                null, false, "Authenticated", "", "", getUrl(workPid.getId()), "TestWork3");
     }
 
     @Test
@@ -627,7 +627,7 @@ public class ExportCsvIT extends AbstractAPIIT {
         String pathToFile = pathToWork + "/file.txt";
         assertCsvRecord(csvList, ResourceType.File, pidList.get("filePid"), "TestWork",
                 pathToFile, 5, false, "text/plain", null, (long) 7, null,
-                null, false, "Authenticated", "", "");
+                null, false, "Authenticated", "", "", getUrl(workPid.getId()), "TestWork");
     }
 
     @Test
@@ -808,5 +808,9 @@ public class ExportCsvIT extends AbstractAPIIT {
                 .parse(new StringReader(response.getContentAsString()))
                 .forEach(csvList::add);
         return csvList;
+    }
+
+    private String getUrl(String id) {
+        return "http://example.com/record/" + id;
     }
 }
