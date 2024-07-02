@@ -42,19 +42,19 @@ public class EnhancementRouter extends RouteBuilder {
 
     private String enhancementStreamCamel;
     private String enhancementPerformCamel;
+    private String fcrepoBaseUrl;
 
     private static final String DEFAULT_ENHANCEMENTS = "thumbnails,imageAccessCopy,extractFulltext";
     private static final String THUMBNAIL_ENHANCEMENTS = "thumbnails";
     @Override
     public void configure() throws Exception {
-        var eventProcessor = new EventProcessor();
 
         // Queue which interprets fedora messages into enhancement requests
         from(enhancementStreamCamel)
             .routeId("ProcessEnhancementQueue")
             .startupOrder(110)
             .process(enProcessor)
-            .process(eventProcessor)
+            .to("fcrepo:" + fcrepoBaseUrl + "?preferInclude=ServerManaged&accept=text/turtle")
             .choice()
                 .when(simple("${headers[org.fcrepo.jms.resourceType]} contains '" + Cdr.Tombstone.getURI() + "'"))
                     .log(DEBUG, log, "Ignoring tombstone object for enhancements ${headers[CamelFcrepoUri]}")
@@ -141,6 +141,11 @@ public class EnhancementRouter extends RouteBuilder {
 
     public void setNonBinaryEnhancementProcessor(NonBinaryEnhancementProcessor nbProcessor) {
         this.nbProcessor = nbProcessor;
+    }
+
+    @PropertyInject("fcrepo.baseUrl")
+    public void setFcrepoBaseUrl(String fcrepoBaseUrl) {
+        this.fcrepoBaseUrl = fcrepoBaseUrl;
     }
 
     @PropertyInject("cdr.enhancement.processingThreads")

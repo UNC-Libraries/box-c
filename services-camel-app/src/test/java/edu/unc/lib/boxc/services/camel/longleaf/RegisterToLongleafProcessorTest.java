@@ -1,22 +1,20 @@
 package edu.unc.lib.boxc.services.camel.longleaf;
 
-import static org.fcrepo.camel.FcrepoHeaders.FCREPO_URI;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-
-import org.apache.camel.Exchange;
-import org.apache.camel.Message;
-import org.junit.Before;
-import org.junit.Test;
-
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.ids.PIDMinter;
 import edu.unc.lib.boxc.model.fcrepo.ids.DatastreamPids;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPIDMinter;
-import edu.unc.lib.boxc.services.camel.longleaf.RegisterToLongleafProcessor;
+import org.apache.camel.Exchange;
+import org.apache.camel.Message;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import static org.fcrepo.camel.FcrepoHeaders.FCREPO_URI;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 /**
  * @author bbpennel
@@ -25,7 +23,7 @@ public class RegisterToLongleafProcessorTest {
     private PIDMinter pidMinter;
     private PID filePid;
 
-    @Before
+    @BeforeEach
     public void setup() {
         pidMinter = new RepositoryPIDMinter();
         filePid = pidMinter.mintContentPid();

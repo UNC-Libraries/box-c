@@ -17,9 +17,9 @@ import edu.unc.lib.boxc.operations.jms.order.OrderOperationType;
 import edu.unc.lib.boxc.operations.jms.order.OrderRequestSerializationHelper;
 import edu.unc.lib.boxc.services.camel.ProcessorTestHelper;
 import org.apache.camel.Exchange;
-import org.junit.Before;
-import org.junit.Test;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
@@ -81,7 +81,7 @@ public class OrderRequestProcessorTest {
     private AgentPrincipals agent = new AgentPrincipalsImpl(USERNAME, new AccessGroupSetImpl("agroup"));
     private OrderRequestProcessor processor;
 
-    @Before
+    @BeforeEach
     public void setup() {
         closeable = openMocks(this);
         processor = new OrderRequestProcessor();
