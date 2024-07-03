@@ -237,7 +237,8 @@ public class TransferBinariesToStorageJob extends AbstractConcurrentDepositJob {
         }
 
         private void transferFitsExtract() {
-            if (datastreamNotPresentOrTransferred(CdrDeposit.hasDatastreamFits)) {
+            // FITS will not be present if the resource is streaming only
+            if (datastreamNotPresentOrTransferred(CdrDeposit.hasDatastreamFits) && !hasStreamingOnly()) {
                 PID fitsPid = getTechnicalMetadataPid(objPid);
 
                 Path fitsPath = getTechMdPath(objPid, false);
@@ -249,6 +250,13 @@ public class TransferBinariesToStorageJob extends AbstractConcurrentDepositJob {
                 transferFile(fitsPid, stagingUri, CdrDeposit.hasDatastreamFits);
                 log.debug("Finished transferring techmd file {}", fitsPid.getQualifiedId());
             }
+        }
+
+        private boolean hasStreamingOnly() {
+            if (!resc.hasProperty(Cdr.streamingUrl)) {
+                return false;
+            }
+            return DepositModelHelpers.getDatastream(resc) == null;
         }
 
         private void transferAccessSurrogate() {
