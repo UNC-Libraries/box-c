@@ -115,7 +115,6 @@ public class EnhancementRouter extends RouteBuilder {
             .doCatch(IllegalStateException.class)
                 .log(LoggingLevel.WARN, log, "Shutdown interrupted processing of ${headers[CdrBinaryPath]}, requeuing")
                 .setHeader("AMQ_SCHEDULED_DELAY", constant("10000"))
-                .to("{{cdr.enhancement.perform.camel}}")
                 .to(ExchangePattern.InOnly, "{{cdr.enhancement.perform.camel}}");
 
     }

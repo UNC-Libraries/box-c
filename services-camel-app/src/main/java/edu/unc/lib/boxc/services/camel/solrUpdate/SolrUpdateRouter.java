@@ -102,11 +102,10 @@ public class SolrUpdateRouter extends RouteBuilder {
         from("{{cdr.solrupdate.workObject.fileUpdated.consumer}}")
             .routeId("CdrSolrUpdateWorkFileUpdated")
             .startupOrder(505)
-            .log(LoggingLevel.ERROR, log, "Processing batch of work updates")
+            .log(LoggingLevel.DEBUG, log, "Processing batch of work updates")
                 .aggregate(orderedSetAggregationStrategy).constant(true)
                 .completionSize("{{cdr.solrupdate.workObject.fileUpdated.batchSize}}")
                 .completionTimeout("{{cdr.solrupdate.workObject.fileUpdated.batchTimeout}}")
-                .log(LoggingLevel.ERROR, log, "BOOM")
             .bean(aggregateWorkForFileProcessor);
     }
 }

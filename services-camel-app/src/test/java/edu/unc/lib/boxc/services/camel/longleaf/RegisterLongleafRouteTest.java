@@ -48,7 +48,6 @@ import static org.junit.Assert.assertTrue;
 /**
  * @author bbpennel
  */
-//@ExtendWith(MockitoExtension.class)
 public class RegisterLongleafRouteTest extends AbstractLongleafRouteTest {
     private static final String TEXT1_BODY = "Some content";
     private static final String TEXT1_SHA1 = DigestUtils.sha1Hex(TEXT1_BODY);
