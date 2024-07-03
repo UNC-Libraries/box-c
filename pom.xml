@@ -79,7 +79,6 @@
         <fcrepo.client.version>5.0.0</fcrepo.client.version>
         <mock.server.version>5.4.1</mock.server.version>
         <awaitility.version>4.0.3</awaitility.version>
-        <jetty.version>9.4.44.v20210927</jetty.version>
         <!-- Stuck on this version due to jetty tie-ins, can upgrade when solr uses newer jetty versions -->
         <wiremock.version>2.32.0</wiremock.version>
         
@@ -130,7 +129,7 @@
         <solr.version>8.10.1</solr.version>
         <metrics.version>5.0.0</metrics.version>
         <jena.version>4.4.0</jena.version>
-        
+
         <fcrepo-camel.version>6.0.0</fcrepo-camel.version>
         <camel.version>3.22.1</camel.version>
         <tika.version>2.8.0</tika.version>
@@ -697,12 +696,6 @@
                 <groupId>com.github.tomakehurst</groupId>
                 <artifactId>wiremock-jre8</artifactId>
                 <version>${wiremock.version}</version>
-                <scope>test</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.eclipse.jetty</groupId>
-                <artifactId>jetty-server</artifactId>
-                <version>${jetty.version}</version>
                 <scope>test</scope>
             </dependency>
             

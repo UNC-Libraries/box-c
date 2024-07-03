@@ -61,11 +61,6 @@
         <groupId>org.apache.activemq</groupId>
         <artifactId>activemq-client</artifactId>
     </dependency>
-<!--    <dependency>-->
-<!--        <groupId>org.apache.camel</groupId>-->
-<!--        <artifactId>camel-sjms2</artifactId>-->
-<!--        <version>${camel.version}</version>-->
-<!--    </dependency>-->
 
     <dependency>
         <groupId>commons-io</groupId>
@@ -83,22 +78,6 @@
         <artifactId>camel-http</artifactId>
         <version>${camel.version}</version>
     </dependency>
-
-<!--    <dependency>-->
-<!--        <groupId>org.fcrepo.camel</groupId>-->
-<!--        <artifactId>fcrepo-indexing-triplestore</artifactId>-->
-<!--        <version>${fcrepo-indexing-triplestore.version}</version>-->
-<!--        <exclusions>-->
-<!--            <exclusion>-->
-<!--                <groupId>org.apache.camel</groupId>-->
-<!--                <artifactId>camel-blueprint</artifactId>-->
-<!--            </exclusion>-->
-<!--            <exclusion>-->
-<!--                <groupId>org.apache.camel</groupId>-->
-<!--                <artifactId>camel-http4</artifactId>-->
-<!--            </exclusion>-->
-<!--        </exclusions>-->
-<!--    </dependency>-->
     
     <dependency>
         <groupId>org.fcrepo.client</groupId>
@@ -295,31 +274,14 @@
         <artifactId>activemq-protobuf</artifactId>
         <scope>test</scope>
     </dependency>
-        <dependency>
-            <groupId>org.junit.jupiter</groupId>
-            <artifactId>junit-jupiter-api</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.fcrepo</groupId>
-            <artifactId>fcrepo-webapp</artifactId>
-            <version>${fcrepo4.version}</version>
-            <scope>test</scope>
-            <type>war</type>
-        </dependency>
-        <dependency>
-            <groupId>org.eclipse.jetty</groupId>
-            <artifactId>jetty-server</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.eclipse.jetty</groupId>
-            <artifactId>jetty-webapp</artifactId>
-            <version>${jetty.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.github.tomakehurst</groupId>
-            <artifactId>wiremock-jre8</artifactId>
-        </dependency>
+    <dependency>
+        <groupId>org.junit.jupiter</groupId>
+        <artifactId>junit-jupiter-api</artifactId>
+    </dependency>
+    <dependency>
+        <groupId>com.github.tomakehurst</groupId>
+        <artifactId>wiremock-jre8</artifactId>
+    </dependency>
     </dependencies>
 
     <build>
@@ -336,33 +298,6 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-war-plugin</artifactId>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-dependency-plugin</artifactId>
-                <version>3.2.0</version>
-                <executions>
-                    <execution>
-                        <id>copy</id>
-                        <phase>generate-test-resources</phase>
-                        <goals>
-                            <goal>copy</goal>
-                        </goals>
-                        <configuration>
-                            <artifactItems>
-                                <artifactItem>
-                                    <groupId>org.fcrepo</groupId>
-                                    <artifactId>fcrepo-webapp</artifactId>
-                                    <version>${fcrepo4.version}</version>
-                                    <type>war</type>
-                                    <overWrite>false</overWrite>
-                                    <outputDirectory>${project.build.directory}/test-resources</outputDirectory>
-                                    <destFileName>fcrepo-webapp.war</destFileName>
-                                </artifactItem>
-                            </artifactItems>
-                        </configuration>
-                    </execution>
-                </executions>
             </plugin>
         </plugins>
     </build>
