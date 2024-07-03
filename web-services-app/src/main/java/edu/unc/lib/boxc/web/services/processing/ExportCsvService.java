@@ -75,12 +75,15 @@ public class ExportCsvService {
     public static final String PATRON_PERMISSIONS_HEADER = "Patron Permissions";
     public static final String EMBARGO_HEADER = "Embargo Date";
     public static final String VIEW_BEHAVIOR_HEADER = "View";
+    public static final String PARENT_WORK_URL = "Parent Work URL";
+    public static final String PARENT_WORK_TITLE = "Parent Work Title";
 
     private static final String[] CSV_HEADERS = new String[] {
             OBJ_TYPE_HEADER, PID_HEADER, TITLE_HEADER, PATH_HEADER,
             DEPTH_HEADER, DELETED_HEADER, DATE_ADDED_HEADER, DATE_UPDATED_HEADER,
             MIME_TYPE_HEADER, CHECKSUM_HEADER, FILE_SIZE_HEADER, ACCESS_SURROGATE_HEADER, NUM_CHILDREN_HEADER,
-            DESCRIBED_HEADER, PATRON_PERMISSIONS_HEADER, EMBARGO_HEADER, VIEW_BEHAVIOR_HEADER
+            DESCRIBED_HEADER, PATRON_PERMISSIONS_HEADER, EMBARGO_HEADER, VIEW_BEHAVIOR_HEADER,
+            PARENT_WORK_URL, PARENT_WORK_TITLE
     };
 
     private static final List<String> SEARCH_FIELDS = Arrays.asList(SearchFieldKey.ID.name(),
@@ -296,7 +299,7 @@ public class ExportCsvService {
         // Parent info for FileObjects
         if (ResourceType.File.name().equals(object.getResourceType())) {
             // parentWorkUrl, parentWorkTitle
-            var parentWorkId = object.getPath().getHighestTierNode().getSearchKey();
+            var parentWorkId = object.getAncestorPathFacet().getHighestTierNode().getSearchKey();
             printer.print(getUrl(parentWorkId));
             var parentWorkTitle = getTitle(object.getAncestorNames());
             printer.print(parentWorkTitle);
@@ -340,7 +343,7 @@ public class ExportCsvService {
     }
 
     /**
-     * Transforming ancestor path names to get the last one, but keep escaped slashes if necessary
+     * Transforming ancestor path names to get the second to last one (for the work), but keep escaped slashes if necessary
      * @param input
      * @return
      */
@@ -348,7 +351,7 @@ public class ExportCsvService {
         String regex = "(?<!\\\\)/";
         String[] result = input.split(regex);
         // for the last one escape any backslashes in the title
-        return result[result.length - 1].replace("\\/", "/");
+        return result[result.length - 2].replace("\\/", "/");
     }
 
     public void setChildrenCountService(ChildrenCountService childrenCountService) {
