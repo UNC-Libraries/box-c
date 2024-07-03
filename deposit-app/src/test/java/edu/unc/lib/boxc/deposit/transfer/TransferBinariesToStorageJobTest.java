@@ -13,6 +13,7 @@ import static java.util.Collections.emptyList;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.eq;
@@ -667,6 +668,29 @@ public class TransferBinariesToStorageJobTest extends AbstractNormalizationJobTe
 
         verify(jobStatusFactory).setTotalCompletion(eq(jobUUID), eq(3));
         verify(jobStatusFactory, times(3)).incrCompletion(eq(jobUUID), eq(1));
+    }
+
+    @Test
+    public void depositWithWorkContainingFileWithStreamingButNoSource() throws Exception {
+        Bag workBag = addContainerObject(depBag, Cdr.Work);
+
+        // File has no source or fits, but does have streaming
+        PID filePid = makePid();
+        Resource fileResc = depositModel.getResource(filePid.getRepositoryPath());
+        fileResc.addProperty(RDF.type, Cdr.FileObject);
+        fileResc.addProperty(Cdr.streamingUrl, "http://example.com/streaming");
+        fileResc.addProperty(Cdr.streamingType, "video");
+
+        workBag.add(fileResc);
+
+        job.closeModel();
+        job.run();
+
+        Model model = job.getReadOnlyModel();
+        Resource postFileResc = model.getResource(fileResc.getURI());
+
+        Resource dsResc = DepositModelHelpers.getDatastream(postFileResc, DatastreamType.ORIGINAL_FILE);
+        assertNull(dsResc, "No original file should have been transferred");
     }
 
     private void assertManifestTranferred(List<URI> manifestUris, String name) {
