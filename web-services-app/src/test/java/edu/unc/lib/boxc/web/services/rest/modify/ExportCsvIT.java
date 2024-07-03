@@ -351,10 +351,11 @@ public class ExportCsvIT extends AbstractAPIIT {
         assertEquals(1, csvList.size(), "Unexpected number of results");
 
         var fileTitle = "file.txt";
-        String pathToFile = FOLDER_PATH + "/" + workPid.getId() + "/file.txt";
-        assertCsvRecord(csvList, ResourceType.File, filePid, id,
+        var workId = workPid.getId();
+        String pathToFile = FOLDER_PATH + "/" +  workId + "/file.txt";
+        assertCsvRecord(csvList, ResourceType.File, filePid, fileTitle,
                 pathToFile, 5, false, "text/plain", null, (long) 7, null,
-                null, false, "Authenticated", "", "", getUrl(workPid.getId()), "file.txt");
+                null, false, "Authenticated", "", "", getUrl(workPid.getId()), workId);
     }
 
     @Test
