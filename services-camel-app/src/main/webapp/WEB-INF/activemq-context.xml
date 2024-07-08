@@ -36,7 +36,7 @@
         <property name="concurrentConsumers" value="${jms.consumers}" />
     </bean>
 
-    <bean id="activemq" class="org.apache.activemq.camel.component.ActiveMQComponent">
+    <bean id="activemq" class="org.apache.camel.component.activemq.ActiveMQComponent">
         <property name="configuration" ref="jmsConfig" />
         <property name="transacted" value="true" />
         <property name="lazyCreateTransactionManager" value="false" />
@@ -46,13 +46,5 @@
         <property name="connectionFactory" ref="pooledAmqConnectionFactory" />
         <property name="defaultDestinationName" value="repository.updates" />
         <property name="pubSubDomain" value="true" />
-    </bean>
-    
-    <bean id="sjms" class="org.apache.camel.component.sjms.SjmsComponent">
-        <property name="connectionFactory" ref="pooledAmqConnectionFactory" />
-    </bean>
-    
-    <bean id="sjms-batch" class="org.apache.camel.component.sjms.batch.SjmsBatchComponent">
-        <property name="connectionFactory" ref="pooledAmqConnectionFactory" />
     </bean>
 </beans>

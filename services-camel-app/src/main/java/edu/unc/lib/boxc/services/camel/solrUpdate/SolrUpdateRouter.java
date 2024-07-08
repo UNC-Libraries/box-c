@@ -92,14 +92,13 @@ public class SolrUpdateRouter extends RouteBuilder {
             .bean(solrSmallUpdateProcessor);
 
         // Endpoint for receiving individual requests update works when files are updated
-        from("activemq://activemq:queue:solr.update.workObject.fileUpdated")
+        from("{{cdr.solrupdate.workObject.fileUpdated.individual.camel}}")
             .routeId("CdrSolrUpdateWorkFileEndpoint")
             .startupOrder(506)
-            // Camel does not initialize the sjms endpoint for the batch consumer unless it appears in a route
-            .to("{{cdr.solrupdate.workObject.fileUpdated}}");
+            .to("{{cdr.solrupdate.workObject.fileUpdated.batch.camel}}");
 
         // Batch endpoint for updating works when files update, to allow for deduplication of pending requests
-        from("{{cdr.solrupdate.workObject.fileUpdated.consumer}}")
+        from("{{cdr.solrupdate.workObject.fileUpdated.batch.camel}}")
             .routeId("CdrSolrUpdateWorkFileUpdated")
             .startupOrder(505)
             .log(LoggingLevel.DEBUG, log, "Processing batch of work updates")

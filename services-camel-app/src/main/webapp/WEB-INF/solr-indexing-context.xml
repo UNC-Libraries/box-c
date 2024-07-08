@@ -1,17 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:c="http://www.springframework.org/schema/c"
-    xmlns:p="http://www.springframework.org/schema/p" xmlns:context="http://www.springframework.org/schema/context"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xmlns:util="http://www.springframework.org/schema/util"
-    xmlns:camel="http://camel.apache.org/schema/spring"
     xsi:schemaLocation="http://www.springframework.org/schema/beans
-        http://www.springframework.org/schema/beans/spring-beans-4.3.xsd
+        http://www.springframework.org/schema/beans/spring-beans.xsd
         http://www.springframework.org/schema/util 
-        http://www.springframework.org/schema/util/spring-util.xsd
-        http://www.springframework.org/schema/context
-        http://www.springframework.org/schema/context/spring-context-4.3.xsd
-        http://camel.apache.org/schema/spring
-        http://camel.apache.org/schema/spring/camel-spring.xsd">
+        http://www.springframework.org/schema/util/spring-util.xsd">
         
     <util:set id="accessGroups" set-class="edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl">
         <value>${access.group.admin}</value>
@@ -583,7 +577,7 @@
 
     <bean id="updateWorkJmsTemplate" class="org.springframework.jms.core.JmsTemplate">
         <property name="connectionFactory" ref="pooledAmqConnectionFactory" />
-        <property name="defaultDestinationName" value="activemq:queue:solr.update.workObject.fileUpdated" />
+        <property name="defaultDestinationName" value="${cdr.solrupdate.workObject.fileUpdated.individual}" />
         <property name="pubSubDomain" value="false" />
     </bean>
 
@@ -592,8 +586,4 @@
     </bean>
 
     <bean id="orderedSetAggregationStrategy" class="edu.unc.lib.boxc.services.camel.util.OrderedSetAggregationStrategy"/>
-    
-    <camel:camelContext id="CdrServiceSolrUpdate">
-        <camel:package>edu.unc.lib.boxc.services.camel.solrUpdate</camel:package>
-    </camel:camelContext>
 </beans>

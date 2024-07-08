@@ -60,7 +60,7 @@ public class SolrUpdateRouterTest extends CamelSpringTestSupport {
     @Produce(uri = "{{cdr.solrupdate.stream}}")
     private ProducerTemplate template;
 
-    @Produce(uri = "{{cdr.solrupdate.workObject.fileUpdated}}")
+    @Produce(uri = "{{cdr.solrupdate.workObject.fileUpdated.individual}}")
     private ProducerTemplate templateWorkFromFile;
 
     private IndexingMessageSender indexingMessageSender;
