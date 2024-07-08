@@ -3,6 +3,7 @@ package edu.unc.lib.boxc.web.services.processing;
 import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
 import edu.unc.lib.boxc.auth.api.models.AgentPrincipals;
 import edu.unc.lib.boxc.auth.api.services.AccessControlService;
+import edu.unc.lib.boxc.common.util.URIUtil;
 import edu.unc.lib.boxc.model.api.ResourceType;
 import edu.unc.lib.boxc.model.api.exceptions.NotFoundException;
 import edu.unc.lib.boxc.model.api.exceptions.RepositoryException;
@@ -355,7 +356,7 @@ public class ExportCsvService {
      * @return
      */
     private String getUrl(String id) {
-        return baseUrl + "/" + id;
+        return URIUtil.join(baseUrl, id);
     }
 
     /**
