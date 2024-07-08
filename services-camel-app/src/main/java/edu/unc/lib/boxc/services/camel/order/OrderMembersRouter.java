@@ -1,6 +1,5 @@
 package edu.unc.lib.boxc.services.camel.order;
 
-import com.google.j2objc.annotations.Property;
 import org.apache.camel.BeanInject;
 import org.apache.camel.PropertyInject;
 import org.apache.camel.builder.RouteBuilder;
