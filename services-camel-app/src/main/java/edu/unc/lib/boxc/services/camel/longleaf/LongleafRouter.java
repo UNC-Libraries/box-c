@@ -58,7 +58,7 @@ public class LongleafRouter extends RouteBuilder {
 
         from("direct-vm:filter.longleaf")
             .routeId("RegisterLongleafQueuing")
-            .startupOrder(8)
+            .startupOrder(18)
             .filter().method(RegisterToLongleafProcessor.class, "registerableBinary")
             .log(LoggingLevel.DEBUG, log, "Queuing ${headers[CamelFcrepoUri]} for registration to longleaf")
             .to(longleafRegisterDestination);
@@ -70,7 +70,7 @@ public class LongleafRouter extends RouteBuilder {
             .to(longleafRegisterDestination);
         from(longleafRegisterDestination)
             .routeId("RegisterLongleafProcessing")
-            .startupOrder(5)
+            .startupOrder(15)
             .log(LoggingLevel.INFO, log, "Processing batch of longleaf registrations")
                 .aggregate(longleafAggregationStrategy).constant(true)
                 .completionSize(batchSize)
@@ -79,7 +79,7 @@ public class LongleafRouter extends RouteBuilder {
 
         from(longleafFilterDeregister)
             .routeId("DeregisterLongleafQueuing")
-            .startupOrder(4)
+            .startupOrder(14)
             .log(LoggingLevel.DEBUG, log, "Queuing ${body} for deregistration in longleaf")
             .process(getUrisProcessor)
             .to(longleafDeregisterDestination);
@@ -91,7 +91,7 @@ public class LongleafRouter extends RouteBuilder {
             .to(longleafDeregisterDestination);
         from(longleafDeregisterDestination)
             .routeId("DeregisterLongleafProcessing")
-            .startupOrder(1)
+            .startupOrder(11)
             .log(LoggingLevel.DEBUG, log, "Processing batch of longleaf deregistrations")
                 .aggregate(longleafAggregationStrategy).constant(true)
                 .completionSize(batchSize)
