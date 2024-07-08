@@ -409,7 +409,7 @@ public class SetContentTypeFilterTest {
     @Test
     public void testStreamingOnlySound() throws Exception {
         var filePid = TestHelper.makePid();
-        var fileObj =  makeFileObject(filePid, repositoryObjectLoader);
+        var fileObj = makeFileObject(filePid, repositoryObjectLoader);
         when(dip.getContentObject()).thenReturn(fileObj);
         doThrow(NotFoundException.class).when(fileObj).getOriginalFile();
         var fileResc = fileObj.getResource();

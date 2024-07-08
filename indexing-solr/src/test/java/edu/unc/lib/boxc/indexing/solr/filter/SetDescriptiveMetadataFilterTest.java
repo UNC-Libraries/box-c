@@ -1,9 +1,11 @@
 package edu.unc.lib.boxc.indexing.solr.filter;
 
+import static edu.unc.lib.boxc.indexing.solr.test.MockRepositoryObjectHelpers.makeFileObject;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.openMocks;
@@ -16,6 +18,8 @@ import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
 
+import edu.unc.lib.boxc.model.api.exceptions.NotFoundException;
+import edu.unc.lib.boxc.model.api.objects.BinaryObject;
 import edu.unc.lib.boxc.search.solr.services.TitleRetrievalService;
 import edu.unc.lib.boxc.search.solr.utils.DateFormatUtil;
 import org.apache.jena.rdf.model.Resource;
@@ -391,6 +395,32 @@ public class SetDescriptiveMetadataFilterTest {
         filter.filter(dip);
 
         assertEquals("uuid: 1234", idb.getTitle());
+    }
+
+    @Test
+    public void fileUsingFilenameAsTitle() {
+        var fileObj = makeFileObject(pid, null);
+        when(dip.getContentObject()).thenReturn(fileObj);
+        var binObj = mock(BinaryObject.class);
+        when(binObj.getFilename()).thenReturn("bin_filename.txt");
+        when(fileObj.getOriginalFile()).thenReturn(binObj);
+        idb.setTitle(null);
+
+        filter.filter(dip);
+
+        assertEquals("bin_filename.txt", idb.getTitle());
+    }
+
+    @Test
+    public void streamingFileTitleWithNoTitle() {
+        var fileObj = makeFileObject(pid, null);
+        when(dip.getContentObject()).thenReturn(fileObj);
+        doThrow(NotFoundException.class).when(fileObj).getOriginalFile();
+        idb.setTitle(null);
+
+        filter.filter(dip);
+
+        assertEquals(pid.getId(), idb.getTitle());
     }
 
     @Test

@@ -13,6 +13,7 @@ import edu.unc.lib.boxc.model.api.objects.BinaryObject;
 import edu.unc.lib.boxc.model.api.objects.ContentObject;
 import edu.unc.lib.boxc.model.api.objects.FileObject;
 import edu.unc.lib.boxc.model.api.objects.WorkObject;
+import edu.unc.lib.boxc.model.api.rdf.Cdr;
 import edu.unc.lib.boxc.model.api.rdf.Ebucore;
 import edu.unc.lib.boxc.model.api.rdf.Premis;
 import edu.unc.lib.boxc.model.fcrepo.services.DerivativeService;
@@ -71,7 +72,7 @@ public class SetDatastreamFilter implements IndexDocumentFilter {
             // Add list of file datastreams associated with this object
             addDatastreams(datastreams, fileObj.getBinaryObjects(), ownedByOtherObject);
             // Set the sort file size to the size of the original file
-            doc.setFilesizeSort(getFilesize(datastreams));
+            doc.setFilesizeSort(getFilesize(fileObj, datastreams));
 
             // Add list of derivatives associated from the representative file
             addDerivatives(datastreams, fileObj.getPid(), ownedByOtherObject, null);
@@ -216,12 +217,16 @@ public class SetDatastreamFilter implements IndexDocumentFilter {
             .sum();
     }
 
-    private long getFilesize(List<Datastream> datastreams) throws IndexingException {
+    private long getFilesize(FileObject fileObject, List<Datastream> datastreams) throws IndexingException {
         Optional<Datastream> original = datastreams.stream()
                 .filter(ds -> ORIGINAL_FILE.getId().equals(ds.getName()))
                 .findFirst();
 
         if (original.isEmpty()) {
+            if (fileObject.getResource().hasProperty(Cdr.streamingUrl)) {
+                log.debug("File object {} is a streaming object, setting filesize to 0", fileObject.getPid());
+                return 0;
+            }
             throw new IndexingException("File object in invalid state, cannot find original file binary");
         }
 
