@@ -3,6 +3,7 @@ package edu.unc.lib.boxc.services.camel.streaming;
 import edu.unc.lib.boxc.auth.api.models.AgentPrincipals;
 import edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl;
 import edu.unc.lib.boxc.auth.fcrepo.models.AgentPrincipalsImpl;
+import edu.unc.lib.boxc.model.api.StreamingConstants;
 import edu.unc.lib.boxc.operations.jms.streaming.StreamingPropertiesRequest;
 import edu.unc.lib.boxc.operations.jms.streaming.StreamingPropertiesRequestSerializationHelper;
 import edu.unc.lib.boxc.services.camel.TestHelper;
@@ -38,7 +39,7 @@ public class StreamingPropertiesRouterTest extends CamelSpringTestSupport {
         var request = new StreamingPropertiesRequest();
         request.setAgent(agent);
         request.setId(pid.getId());
-        request.setUrl(StreamingPropertiesRequest.STREAMREAPER_PREFIX_URL);
+        request.setUrl(StreamingConstants.STREAMREAPER_PREFIX_URL);
         request.setType("video");
         var body = StreamingPropertiesRequestSerializationHelper.toJson(request);
         template.sendBody(body);

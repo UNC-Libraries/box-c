@@ -1,9 +1,9 @@
 package edu.unc.lib.boxc.deposit.validate;
 
 import static edu.unc.lib.boxc.deposit.work.DepositGraphUtils.getChildIterator;
-import static edu.unc.lib.boxc.operations.jms.streaming.StreamingPropertiesRequest.STREAMING_TYPE_SOUND;
-import static edu.unc.lib.boxc.operations.jms.streaming.StreamingPropertiesRequest.STREAMREAPER_PREFIX_URL;
-import static edu.unc.lib.boxc.operations.jms.streaming.StreamingPropertiesRequest.STREAMING_TYPE_VIDEO;
+import static edu.unc.lib.boxc.model.api.StreamingConstants.STREAMING_TYPE_SOUND;
+import static edu.unc.lib.boxc.model.api.StreamingConstants.STREAMREAPER_PREFIX_URL;
+import static edu.unc.lib.boxc.model.api.StreamingConstants.STREAMING_TYPE_VIDEO;
 
 import java.util.ArrayList;
 import java.util.Arrays;

@@ -11,8 +11,8 @@ import java.io.IOException;
 import java.util.UUID;
 
 import static edu.unc.lib.boxc.operations.jms.streaming.StreamingPropertiesRequest.ADD;
-import static edu.unc.lib.boxc.operations.jms.streaming.StreamingPropertiesRequest.STREAMING_TYPE_SOUND;
-import static edu.unc.lib.boxc.operations.jms.streaming.StreamingPropertiesRequest.STREAMREAPER_PREFIX_URL;
+import static edu.unc.lib.boxc.model.api.StreamingConstants.STREAMING_TYPE_SOUND;
+import static edu.unc.lib.boxc.model.api.StreamingConstants.STREAMREAPER_PREFIX_URL;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class StreamingPropertiesRequestSerializationHelperTest {

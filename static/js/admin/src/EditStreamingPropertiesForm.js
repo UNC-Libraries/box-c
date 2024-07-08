@@ -24,7 +24,7 @@ define('EditStreamingPropertiesForm', [ 'jquery', 'jquery-ui', 'underscore', 'Re
         EditStreamingPropertiesForm.prototype.validationErrors = function(resultObject) {
             /**
              If you change this value it also needs to be updated in
-             operations-jms/src/main/java/edu/unc/lib/boxc/operations/jms/streaming/StreamingPropertiesRequest.java
+             model-api/src/main/java/edu/unc/lib/boxc/model/api/StreamingConstants.java
              **/
             const STREAMREAPER_PREFIX_URL = "https://durastream.lib.unc.edu/player"
             let errors = [];
