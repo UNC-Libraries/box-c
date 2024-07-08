@@ -103,17 +103,39 @@ public class ExportCsvService {
 
     private static final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd kk:mm:ss");
 
-    public void streamCsv(PID pid, AgentPrincipals agent, OutputStream out) {
+    public void streamCsv(List<PID> pids, AgentPrincipals agent, OutputStream out) {
+        AccessGroupSet accessGroups = agent.getPrincipals();
+        validate(pids, accessGroups);
+
+        // Open the CSV
+        Writer writer = new BufferedWriter(new OutputStreamWriter(out, StandardCharsets.UTF_8));
+        try (CSVPrinter printer = getPrinter(writer)) {
+            for (PID pid : pids) {
+                printObjectRows(pid, printer, agent.getUsername(), accessGroups);
+            }
+        } catch (IOException e) {
+            throw new RepositoryException("Failed to stream CSV results: ", e);
+        }
+    }
+
+    private void validate(List<PID> pids, AccessGroupSet accessGroups) {
+        for (PID pid : pids) {
+            validateObject(pid, accessGroups);
+        }
+    }
+
+    private void validateObject(PID pid, AccessGroupSet accessGroups) {
         if (CONTENT_ROOT_ID.equals(pid.getId())) {
             throw new IllegalArgumentException("Error exporting CSV for " + pid.getId()
                     + ". Not allowed to export collection root");
         }
 
-        AccessGroupSet accessGroups = agent.getPrincipals();
         aclService.assertHasAccess("Insufficient privileges to export CSV for " + pid.getUUID(),
                 pid, accessGroups, viewHidden);
+    }
 
-        log.debug("Streaming CSV export of {} for {}", pid, agent.getUsername());
+    private void printObjectRows(PID pid, CSVPrinter printer, String username, AccessGroupSet accessGroups) throws IOException {
+        log.debug("Streaming CSV export of {} for {}", pid, username);
 
         SearchState searchState = new SearchState();
         searchState.setResultFields(SEARCH_FIELDS);
@@ -130,38 +152,32 @@ public class ExportCsvService {
         searchRequest.setRootPid(pid);
         searchRequest.setApplyCutoffs(false);
 
-        // Open the CSV
-        Writer writer = new BufferedWriter(new OutputStreamWriter(out, StandardCharsets.UTF_8));
-        try (CSVPrinter printer = getPrinter(writer)) {
-            int pageStart = 0;
-            long totalResults = -1;
-            do {
-                searchState.setStartRow(pageStart);
+        int pageStart = 0;
+        long totalResults = -1;
+        do {
+            searchState.setStartRow(pageStart);
 
-                SearchResultResponse resultResponse = queryLayer.getSearchResults(searchRequest);
+            SearchResultResponse resultResponse = queryLayer.getSearchResults(searchRequest);
 
-                List<ContentObjectRecord> objects = resultResponse.getResultList();
-                // Insert the parent container if on the first page of results
-                if (pageStart == 0) {
-                    objects.add(0, container);
-                    totalResults = resultResponse.getResultCount();
-                } else {
-                    log.debug("Streaming results {}-{} of {} in multi-page result for {}",
-                            pageStart, pageStart + pageSize, totalResults, pid.getId());
-                }
+            List<ContentObjectRecord> objects = resultResponse.getResultList();
+            // Insert the parent container if on the first page of results
+            if (pageStart == 0) {
+                objects.add(0, container);
+                totalResults = resultResponse.getResultCount();
+            } else {
+                log.debug("Streaming results {}-{} of {} in multi-page result for {}",
+                        pageStart, pageStart + pageSize, totalResults, pid.getId());
+            }
 
-                childrenCountService.addChildrenCounts(objects, searchRequest.getAccessGroups());
+            childrenCountService.addChildrenCounts(objects, searchRequest.getAccessGroups());
 
-                // Stream the current page of results
-                for (ContentObjectRecord object : objects) {
-                    printObject(printer, object);
-                }
+            // Stream the current page of results
+            for (ContentObjectRecord object : objects) {
+                printObject(printer, object);
+            }
 
-                pageStart += pageSize;
-            } while (pageStart < totalResults);
-        } catch (IOException e) {
-            throw new RepositoryException("Failed to stream CSV results for " + pid, e);
-        }
+            pageStart += pageSize;
+        } while (pageStart < totalResults);
     }
 
     private String computePatronPermissions(List<String> roles) {
