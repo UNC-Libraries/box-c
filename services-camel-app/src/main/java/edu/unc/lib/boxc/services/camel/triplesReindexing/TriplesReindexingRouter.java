@@ -1,13 +1,15 @@
 package edu.unc.lib.boxc.services.camel.triplesReindexing;
 
+import org.apache.camel.BeanInject;
+import org.apache.camel.ExchangePattern;
+import org.apache.camel.LoggingLevel;
+import org.apache.camel.PropertyInject;
+import org.apache.camel.builder.RouteBuilder;
+import org.slf4j.Logger;
+
 import static org.apache.camel.LoggingLevel.INFO;
 import static org.fcrepo.camel.FcrepoHeaders.FCREPO_URI;
 import static org.slf4j.LoggerFactory.getLogger;
-
-import org.apache.camel.BeanInject;
-import org.apache.camel.LoggingLevel;
-import org.apache.camel.builder.RouteBuilder;
-import org.slf4j.Logger;
 
 /**
  * Route for processing reindexing requests.
@@ -23,29 +25,35 @@ public class TriplesReindexingRouter extends RouteBuilder {
     @BeanInject(value = "indexingMessageProcessor")
     private IndexingMessageProcessor indexingMessageProcessor;
 
+    private String fcrepoBaseUrl;
+    private String reindexingStream;
+    private String triplestoreReindexStream;
+    private String triplesUpdateStreamCamel;
+    private long errorRetryDelay;
+    private int errorMaxRedeliveries;
+    private int errorBackOffMultiplier;
+
     @Override
     public void configure() throws Exception {
         onException(Exception.class)
-            .redeliveryDelay("{{error.retryDelay}}")
-            .maximumRedeliveries("{{error.maxRedeliveries}}")
-            .backOffMultiplier("{{error.backOffMultiplier}}")
+            .redeliveryDelay(errorRetryDelay)
+            .maximumRedeliveries(errorMaxRedeliveries)
+            .backOffMultiplier(errorBackOffMultiplier)
             .retryAttemptedLogLevel(LoggingLevel.WARN);
 
         // Route for receiving reindexing request messages
-        from("{{cdr.triplesupdate.stream.camel}}")
+        from(triplesUpdateStreamCamel)
             .routeId("TripleIndexingRoute")
-            .startupOrder(2)
             .bean(indexingMessageProcessor)
             .log(INFO, log, "Received triple reindexing update message: ${headers[CamelFcrepoUri]}")
-            .inOnly("{{reindexing.stream}}?disableTimeToLive=true");
+            .inOnly(reindexingStream + "?disableTimeToLive=true");
 
         // Route which recursively steps through fedora objects and submits them for indexing
-        from("{{reindexing.stream}}?asyncConsumer=true")
+        from(reindexingStream + "?asyncConsumer=true")
             .routeId("FcrepoReindexingTraverse")
-            .startupOrder(1)
             .log(INFO, log, "Reindexing ${headers[CamelFcrepoUri]}")
-            .inOnly("{{triplestore.reindex.stream}}")
-            .to("fcrepo:{{fcrepo.baseUrl}}?preferInclude=PreferContainment" +
+            .to(ExchangePattern.InOnly, triplestoreReindexStream)
+            .to("fcrepo:" + fcrepoBaseUrl + "?preferInclude=PreferContainment" +
                     "&preferOmit=ServerManaged&accept=application/n-triples")
             // split the n-triples stream on line breaks so that each triple is split into a separate message
             .split(body().tokenize("\\n")).streaming()
@@ -67,6 +75,45 @@ public class TriplesReindexingRouter extends RouteBuilder {
                     }
                 })
             .filter(header(FCREPO_URI).isNotNull())
-            .inOnly("{{reindexing.stream}}?disableTimeToLive=true");
+            .inOnly(reindexingStream + "?disableTimeToLive=true");
+    }
+
+    @PropertyInject("error.retryDelay:500")
+    public void setErrorRetryDelay(long errorRetryDelay) {
+        this.errorRetryDelay = errorRetryDelay;
+    }
+
+    @PropertyInject("error.maxRedeliveries:10")
+    public void setErrorMaxRedeliveries(int errorMaxRedeliveries) {
+        this.errorMaxRedeliveries = errorMaxRedeliveries;
+    }
+
+    @PropertyInject("error.backOffMultiplier:2")
+    public void setErrorBackOffMultiplier(int errorBackOffMultiplier) {
+        this.errorBackOffMultiplier = errorBackOffMultiplier;
+    }
+
+    public void setIndexingMessageProcessor(IndexingMessageProcessor indexingMessageProcessor) {
+        this.indexingMessageProcessor = indexingMessageProcessor;
+    }
+
+    @PropertyInject("fcrepo.baseUrl")
+    public void setFcrepoBaseUrl(String fcrepoBaseUrl) {
+        this.fcrepoBaseUrl = fcrepoBaseUrl;
+    }
+
+    @PropertyInject("reindexing.stream")
+    public void setReindexingStream(String reindexingStream) {
+        this.reindexingStream = reindexingStream;
+    }
+
+    @PropertyInject("triplestore.reindex.stream")
+    public void setTriplestoreReindexStream(String triplestoreReindexStream) {
+        this.triplestoreReindexStream = triplestoreReindexStream;
+    }
+
+    @PropertyInject("cdr.triplesupdate.stream.camel")
+    public void setTriplesUpdateStreamCamel(String triplesUpdateStreamCamel) {
+        this.triplesUpdateStreamCamel = triplesUpdateStreamCamel;
     }
 }

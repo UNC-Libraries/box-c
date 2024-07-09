@@ -42,6 +42,14 @@ public class FulltextRouter extends RouteBuilder {
             .routeId("ExtractingText")
             .startupOrder(30)
             .log(LoggingLevel.DEBUG, log, "Extracting full text for ${headers[CdrBinaryPath]}")
-            .bean(ftProcessor);
+            .process(ftProcessor);
+    }
+
+    public void setFulltextProcessor(FulltextProcessor ftProcessor) {
+        this.ftProcessor = ftProcessor;
+    }
+
+    public void setAddDerivativeProcessor(AddDerivativeProcessor adProcessor) {
+        this.adProcessor = adProcessor;
     }
 }

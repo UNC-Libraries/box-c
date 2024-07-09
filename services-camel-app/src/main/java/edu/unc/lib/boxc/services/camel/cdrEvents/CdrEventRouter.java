@@ -17,6 +17,7 @@ import java.util.List;
 
 import org.apache.camel.BeanInject;
 import org.apache.camel.LoggingLevel;
+import org.apache.camel.PropertyInject;
 import org.apache.camel.builder.RouteBuilder;
 import org.slf4j.Logger;
 
@@ -36,6 +37,10 @@ public class CdrEventRouter extends RouteBuilder {
 
     @BeanInject(value = "cdrEventToSolrUpdateProcessor")
     private CdrEventToSolrUpdateProcessor cdrEventToSolrUpdateProcessor;
+    private long errorRetryDelay;
+    private int errorMaxRedeliveries;
+    private int errorBackOffMultiplier;
+    private String cdrStreamCamel;
 
     private static final List<String> solrAllowedActions = asList(ADD.toString(), EDIT_ACCESS_CONTROL.toString(),
             EDIT_TYPE.toString(), MARK_FOR_DELETION.toString(), MOVE.toString(), REMOVE.toString(),
@@ -46,12 +51,12 @@ public class CdrEventRouter extends RouteBuilder {
     @Override
     public void configure() throws Exception {
         onException(Exception.class)
-                .redeliveryDelay("{{error.retryDelay}}")
-                .maximumRedeliveries("{{error.maxRedeliveries}}")
-                .backOffMultiplier("{{error.backOffMultiplier}}")
+                .redeliveryDelay(errorRetryDelay)
+                .maximumRedeliveries(errorMaxRedeliveries)
+                .backOffMultiplier(errorBackOffMultiplier)
                 .retryAttemptedLogLevel(LoggingLevel.WARN);
 
-        from("{{cdr.stream.camel}}")
+        from(cdrStreamCamel)
             .routeId("CdrServiceCdrEvents")
             .startupOrder(2)
             .log(LoggingLevel.DEBUG, log, "CDR Event Message received ${headers[" + CdrUpdateAction + "]}")
@@ -64,5 +69,33 @@ public class CdrEventRouter extends RouteBuilder {
             .startupOrder(1)
             .log(LoggingLevel.DEBUG, log, "Updating solr index for ${headers[org.fcrepo.jms.identifier]}")
             .bean(cdrEventToSolrUpdateProcessor);
+    }
+
+    @PropertyInject("error.retryDelay:10000")
+    public void setErrorRetryDelay(long errorRetryDelay) {
+        this.errorRetryDelay = errorRetryDelay;
+    }
+
+    @PropertyInject("error.maxRedeliveries:3")
+    public void setErrorMaxRedeliveries(int errorMaxRedeliveries) {
+        this.errorMaxRedeliveries = errorMaxRedeliveries;
+    }
+
+    @PropertyInject("error.backOffMultiplier:2")
+    public void setErrorBackOffMultiplier(int errorBackOffMultiplier) {
+        this.errorBackOffMultiplier = errorBackOffMultiplier;
+    }
+
+    public void setCdrEventProcessor(CdrEventProcessor cdrEventProcessor) {
+        this.cdrEventProcessor = cdrEventProcessor;
+    }
+
+    public void setCdrEventToSolrUpdateProcessor(CdrEventToSolrUpdateProcessor cdrEventToSolrUpdateProcessor) {
+        this.cdrEventToSolrUpdateProcessor = cdrEventToSolrUpdateProcessor;
+    }
+
+    @PropertyInject("cdr.stream.camel")
+    public void setCdrStreamCamel(String cdrStreamCamel) {
+        this.cdrStreamCamel = cdrStreamCamel;
     }
 }

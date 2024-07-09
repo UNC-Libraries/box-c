@@ -18,9 +18,9 @@ import org.jdom2.output.XMLOutputter;
 import org.joda.time.DateTimeUtils;
 import org.joda.time.format.DateTimeFormatter;
 import org.joda.time.format.ISODateTimeFormat;
-import org.junit.Before;
-import org.junit.Test;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
@@ -44,7 +44,7 @@ public class CdrEventProcessorTest {
     @Captor
     private ArgumentCaptor<Object> bodyCaptor;
 
-    @Before
+    @BeforeEach
     public void init() throws Exception {
         closeable = openMocks(this);
 

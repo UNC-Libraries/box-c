@@ -1,6 +1,7 @@
 package edu.unc.lib.boxc.services.camel.order;
 
 import org.apache.camel.BeanInject;
+import org.apache.camel.PropertyInject;
 import org.apache.camel.builder.RouteBuilder;
 import org.slf4j.Logger;
 
@@ -18,11 +19,22 @@ public class OrderMembersRouter extends RouteBuilder {
     @BeanInject(value = "orderRequestProcessor")
     private OrderRequestProcessor orderRequestProcessor;
 
+    private String orderMembersStream;
+
     @Override
     public void configure() throws Exception {
-        from("{{cdr.ordermembers.stream.camel}}")
+        from(orderMembersStream)
                 .routeId("DcrOrderMembers")
                 .log(DEBUG, log, "Received order members request")
                 .bean(orderRequestProcessor);
+    }
+
+    public void setOrderRequestProcessor(OrderRequestProcessor orderRequestProcessor) {
+        this.orderRequestProcessor = orderRequestProcessor;
+    }
+
+    @PropertyInject("cdr.ordermembers.stream.camel")
+    public void setOrderMembersStream(String orderMembersStream) {
+        this.orderMembersStream = orderMembersStream;
     }
 }

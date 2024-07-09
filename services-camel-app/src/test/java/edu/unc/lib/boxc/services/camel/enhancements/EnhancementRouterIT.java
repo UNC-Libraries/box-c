@@ -37,15 +37,20 @@ import org.apache.camel.Exchange;
 import org.apache.camel.Produce;
 import org.apache.camel.ProducerTemplate;
 import org.apache.camel.builder.NotifyBuilder;
+import org.apache.camel.test.spring.junit5.CamelSpringTestSupport;
 import org.apache.commons.io.FileUtils;
 import org.fcrepo.client.FcrepoClient;
 import org.junit.Before;
 import org.junit.Rule;
-import org.junit.Test;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.junit.rules.TemporaryFolder;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.support.AbstractApplicationContext;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.ContextHierarchy;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
@@ -73,80 +78,73 @@ import edu.unc.lib.boxc.services.camel.solr.SolrIngestProcessor;
  * @author bbpennel
  *
  */
-@RunWith(SpringJUnit4ClassRunner.class)
-@ContextHierarchy({
-    @ContextConfiguration("/spring-test/cdr-client-container.xml"),
-    @ContextConfiguration("/spring-test/jms-context.xml"),
-    @ContextConfiguration("/enhancement-router-it-context.xml")
-})
-public class EnhancementRouterIT {
-
+public class EnhancementRouterIT extends CamelSpringTestSupport {
     private final static String FILE_CONTENT = "content";
 
     private final static long ALLOW_WAIT = 5000;
 
     private AutoCloseable closeable;
 
-    @Autowired
     private String baseAddress;
 
-    @Autowired
     private RepositoryObjectFactory repoObjectFactory;
-    @Autowired
     private StorageLocationTestHelper storageLocationTestHelper;
-    @Autowired
     private FcrepoClient fcrepoClient;
 
-    @Autowired
     private CamelContext cdrEnhancements;
 
     @Produce(uri = "{{cdr.enhancement.stream.camel}}")
     private ProducerTemplate template;
 
-    @BeanInject(value = "addSmallThumbnailProcessor")
     private AddDerivativeProcessor addSmallThumbnailProcessor;
 
-    @BeanInject(value = "addLargeThumbnailProcessor")
     private AddDerivativeProcessor addLargeThumbnailProcessor;
 
-    @BeanInject(value = "addAccessCopyProcessor")
     private AddDerivativeProcessor addAccessCopyProcessor;
 
-    @BeanInject(value = "solrIngestProcessor")
     private SolrIngestProcessor solrIngestProcessor;
 
-    @BeanInject(value = "fulltextProcessor")
     private FulltextProcessor fulltextProcessor;
 
-    @BeanInject(value = "binaryMetadataProcessor")
-    private BinaryMetadataProcessor binaryMetadataProcessor;
-
-    @Autowired
     private UpdateDescriptionService updateDescriptionService;
 
-    @Rule
-    public final TemporaryFolder tmpFolder = new TemporaryFolder();
+    @TempDir
+    public Path tmpFolder;
 
     private File tempDir;
 
-    @Autowired
     private NonBinaryEnhancementProcessor nbh;
 
-    @Before
+    @Override
+    protected AbstractApplicationContext createApplicationContext() {
+        return new ClassPathXmlApplicationContext(
+                "spring-test/cdr-client-container.xml",
+                "spring-test/jms-context.xml",
+                "enhancement-router-it-context.xml");
+    }
+
+    @BeforeEach
     public void init() throws Exception {
         closeable = openMocks(this);
-
-        reset(solrIngestProcessor);
-        reset(addSmallThumbnailProcessor);
-        reset(addLargeThumbnailProcessor);
-        reset(addAccessCopyProcessor);
+        baseAddress = applicationContext.getBean("baseAddress", String.class);
+        repoObjectFactory = applicationContext.getBean(RepositoryObjectFactory.class);
+        storageLocationTestHelper = applicationContext.getBean(StorageLocationTestHelper.class);
+        fcrepoClient = applicationContext.getBean(FcrepoClient.class);
+        cdrEnhancements = applicationContext.getBean(CamelContext.class);
+        addSmallThumbnailProcessor = applicationContext.getBean("addSmallThumbnailProcessor", AddDerivativeProcessor.class);
+        addLargeThumbnailProcessor = applicationContext.getBean("addLargeThumbnailProcessor", AddDerivativeProcessor.class);
+        addAccessCopyProcessor = applicationContext.getBean("addAccessCopyProcessor", AddDerivativeProcessor.class);
+        solrIngestProcessor = applicationContext.getBean("solrIngestProcessor", SolrIngestProcessor.class);
+        fulltextProcessor = applicationContext.getBean("fulltextProcessor", FulltextProcessor.class);
+        updateDescriptionService = applicationContext.getBean(UpdateDescriptionService.class);
+        nbh = applicationContext.getBean(NonBinaryEnhancementProcessor.class);
 
         when(addSmallThumbnailProcessor.needsRun(any(Exchange.class))).thenReturn(true);
         when(addLargeThumbnailProcessor.needsRun(any(Exchange.class))).thenReturn(true);
         when(addAccessCopyProcessor.needsRun(any(Exchange.class))).thenReturn(true);
 
         TestHelper.setContentBase(baseAddress);
-        tempDir = tmpFolder.newFolder("target");
+        tempDir = Files.createDirectory(tmpFolder.resolve("target")).toFile();
         nbh.setSourceImagesDir(tempDir.getAbsolutePath());
 
         File thumbScriptFile = new File("target/convertScaleStage.sh");

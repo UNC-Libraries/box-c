@@ -2,6 +2,7 @@ package edu.unc.lib.boxc.services.camel.solr;
 
 import static edu.unc.lib.boxc.fcrepo.FcrepoJmsConstants.RESOURCE_TYPE;
 import static org.fcrepo.camel.FcrepoHeaders.FCREPO_URI;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
@@ -18,9 +19,9 @@ import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.boxc.operations.jms.MessageSender;
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
-import org.junit.Before;
-import org.junit.Test;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 
 import edu.unc.lib.boxc.indexing.solr.exception.IndexingException;
@@ -70,7 +71,7 @@ public class SolrIngestProcessorTest {
     @Mock
     private Message message;
 
-    @Before
+    @BeforeEach
     public void init() throws Exception {
         TestHelper.setContentBase(CONTENT_BASE_URI);
         closeable = openMocks(this);
@@ -98,11 +99,11 @@ public class SolrIngestProcessorTest {
         verify(solrUpdateDriver).addDocument(eq(docBean));
     }
 
-    @Test(expected = IndexingException.class)
+    @Test
     public void testIndexingFailed() throws Exception {
         doThrow(new IndexingException("Fail")).when(pipeline).process(any(DocumentIndexingPackage.class));
 
-        processor.process(exchange);
+        assertThrows(IndexingException.class, () -> processor.process(exchange));
     }
 
     @Test

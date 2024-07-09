@@ -1,19 +1,16 @@
 package edu.unc.lib.boxc.services.camel.longleaf;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.fcrepo.camel.FcrepoHeaders.FCREPO_URI;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-
-import java.io.File;
-import java.net.URI;
-import java.nio.file.Paths;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.TimeUnit;
-
+import edu.unc.lib.boxc.model.api.ids.PID;
+import edu.unc.lib.boxc.model.api.objects.BinaryObject;
+import edu.unc.lib.boxc.model.api.objects.FileObject;
+import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
+import edu.unc.lib.boxc.model.fcrepo.ids.DatastreamPids;
+import edu.unc.lib.boxc.model.fcrepo.test.TestHelper;
 import edu.unc.lib.boxc.model.fcrepo.test.TestRepositoryDeinitializer;
+import edu.unc.lib.boxc.persist.api.storage.StorageLocationManager;
+import edu.unc.lib.boxc.persist.api.transfer.BinaryTransferOutcome;
+import edu.unc.lib.boxc.persist.api.transfer.BinaryTransferService;
+import edu.unc.lib.boxc.persist.api.transfer.BinaryTransferSession;
 import edu.unc.lib.boxc.persist.impl.storage.StorageLocationTestHelper;
 import org.apache.camel.CamelContext;
 import org.apache.camel.EndpointInject;
@@ -22,53 +19,39 @@ import org.apache.camel.Produce;
 import org.apache.camel.ProducerTemplate;
 import org.apache.camel.builder.NotifyBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
-import org.apache.camel.test.spring.CamelSpringRunner;
-import org.apache.camel.test.spring.CamelTestContextBootstrapper;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.FileUtils;
 import org.fcrepo.client.FcrepoClient;
-import org.fusesource.hawtbuf.ByteArrayInputStream;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.rules.TemporaryFolder;
-import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.annotation.DirtiesContext.ClassMode;
-import org.springframework.test.context.BootstrapWith;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.ContextHierarchy;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
+import org.springframework.context.support.AbstractApplicationContext;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
 
-import edu.unc.lib.boxc.model.api.ids.PID;
-import edu.unc.lib.boxc.model.api.objects.BinaryObject;
-import edu.unc.lib.boxc.model.api.objects.FileObject;
-import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
-import edu.unc.lib.boxc.model.fcrepo.ids.DatastreamPids;
-import edu.unc.lib.boxc.model.fcrepo.test.TestHelper;
-import edu.unc.lib.boxc.persist.api.storage.StorageLocation;
-import edu.unc.lib.boxc.persist.api.storage.StorageLocationManager;
-import edu.unc.lib.boxc.persist.api.transfer.BinaryTransferOutcome;
-import edu.unc.lib.boxc.persist.api.transfer.BinaryTransferService;
-import edu.unc.lib.boxc.persist.api.transfer.BinaryTransferSession;
-import edu.unc.lib.boxc.services.camel.longleaf.RegisterToLongleafProcessor;
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.net.URI;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.TimeUnit;
+
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.fcrepo.camel.FcrepoHeaders.FCREPO_URI;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 /**
  * @author bbpennel
  */
-@RunWith(CamelSpringRunner.class)
-@BootstrapWith(CamelTestContextBootstrapper.class)
-@ContextHierarchy({
-    @ContextConfiguration("/spring-test/cdr-client-container.xml"),
-    @ContextConfiguration("/spring-test/jms-context.xml"),
-    @ContextConfiguration("/register-longleaf-router-context.xml")
-})
-@DirtiesContext(classMode = ClassMode.AFTER_EACH_TEST_METHOD)
 public class RegisterLongleafRouteTest extends AbstractLongleafRouteTest {
     private static final String TEXT1_BODY = "Some content";
     private static final String TEXT1_SHA1 = DigestUtils.sha1Hex(TEXT1_BODY);
+    private static final URI CONTENT_URI = URI.create("file:///path/to/content.txt");
 
     @Produce(uri = "direct-vm:filter.longleaf")
     private ProducerTemplate template;
@@ -79,36 +62,44 @@ public class RegisterLongleafRouteTest extends AbstractLongleafRouteTest {
     @EndpointInject(uri = "mock:direct:registrationSuccessful")
     private MockEndpoint mockSuccess;
 
-    @Rule
-    public final TemporaryFolder tmpFolder = new TemporaryFolder();
-    @Autowired
+    @TempDir
+    public Path tmpFolder;
     private String baseAddress;
-    @Autowired
     private CamelContext cdrLongleaf;
 
-    @Autowired
     private RepositoryObjectFactory repoObjFactory;
-
-    @Autowired
     private StorageLocationManager locManager;
-    @Autowired
     private BinaryTransferService transferService;
     private BinaryTransferSession transferSession;
-    @Autowired
     private RegisterToLongleafProcessor processor;
-    @Autowired
     private StorageLocationTestHelper storageLocationTestHelper;
-    @Autowired
     private FcrepoClient fcrepoClient;
 
     private String longleafScript;
 
-    @Before
-    public void init() throws Exception {
-        TestHelper.setContentBase(baseAddress);
-        tmpFolder.create();
+    @Override
+    protected AbstractApplicationContext createApplicationContext() {
+        return new ClassPathXmlApplicationContext(
+                "spring-test/cdr-client-container.xml",
+                "spring-test/jms-context.xml",
+                "register-longleaf-router-context.xml");
+    }
 
-        outputPath = tmpFolder.newFile().getPath();
+    @BeforeEach
+    public void init() throws Exception {
+        baseAddress = applicationContext.getBean("baseAddress", String.class);
+        repoObjFactory = applicationContext.getBean(RepositoryObjectFactory.class);
+        storageLocationTestHelper = applicationContext.getBean(StorageLocationTestHelper.class);
+        fcrepoClient = applicationContext.getBean(FcrepoClient.class);
+        transferService = applicationContext.getBean(BinaryTransferService.class);
+        processor = applicationContext.getBean(RegisterToLongleafProcessor.class);
+        locManager = applicationContext.getBean(StorageLocationManager.class);
+
+        TestHelper.setContentBase(baseAddress);
+
+        Path tmpPath = tmpFolder.resolve("output_file");
+        Files.createFile(tmpPath);
+        outputPath = tmpPath.toAbsolutePath().toString();
         output = null;
         longleafScript = LongleafTestHelpers.getLongleafScript(outputPath);
         processor.setLongleafBaseCommand(longleafScript);
@@ -116,9 +107,10 @@ public class RegisterLongleafRouteTest extends AbstractLongleafRouteTest {
         transferSession = transferService.getSession(storageLocationTestHelper.getTestStorageLocation());
     }
 
-    @After
-    public void closeService() throws Exception {
+    @AfterEach
+    void closeService() throws Exception {
         TestRepositoryDeinitializer.cleanup(fcrepoClient);
+        storageLocationTestHelper.cleanupStorageLocations();
     }
 
     @Test
@@ -130,7 +122,7 @@ public class RegisterLongleafRouteTest extends AbstractLongleafRouteTest {
         BinaryObject origBin = createOriginalBinary(fileObj, TEXT1_BODY, TEXT1_SHA1, null);
         URI contentUri = origBin.getContentUri();
 
-        NotifyBuilder notify = new NotifyBuilder(cdrLongleaf)
+        NotifyBuilder notify = new NotifyBuilder(context)
                 .whenCompleted(2)
                 .create();
 
@@ -153,7 +145,7 @@ public class RegisterLongleafRouteTest extends AbstractLongleafRouteTest {
         FileObject fileObj = repoObjFactory.createFileObject(null);
         PID binPid = DatastreamPids.getOriginalFilePid(fileObj.getPid());
 
-        NotifyBuilder notify = new NotifyBuilder(cdrLongleaf)
+        NotifyBuilder notify = new NotifyBuilder(context)
                 .whenCompleted(2)
                 .create();
 
@@ -178,7 +170,7 @@ public class RegisterLongleafRouteTest extends AbstractLongleafRouteTest {
         FileObject fileObj = repoObjFactory.createFileObject(null);
         BinaryObject origBin = createOriginalBinary(fileObj, TEXT1_BODY, TEXT1_SHA1, null);
 
-        NotifyBuilder notify = new NotifyBuilder(cdrLongleaf)
+        NotifyBuilder notify = new NotifyBuilder(context)
                 .whenDone(2)
                 .create();
 
@@ -213,7 +205,7 @@ public class RegisterLongleafRouteTest extends AbstractLongleafRouteTest {
                 "\nexit 2",
                 UTF_8, true);
 
-        NotifyBuilder notify = new NotifyBuilder(cdrLongleaf)
+        NotifyBuilder notify = new NotifyBuilder(context)
                 .whenDone(2)
                 .create();
 
@@ -250,7 +242,7 @@ public class RegisterLongleafRouteTest extends AbstractLongleafRouteTest {
         FileObject fileObj = repoObjFactory.createFileObject(null);
         BinaryObject origBin = createOriginalBinary(fileObj, TEXT1_BODY, TEXT1_SHA1, null);
 
-        NotifyBuilder notify = new NotifyBuilder(cdrLongleaf)
+        NotifyBuilder notify = new NotifyBuilder(context)
                 .whenDone(2)
                 .create();
 

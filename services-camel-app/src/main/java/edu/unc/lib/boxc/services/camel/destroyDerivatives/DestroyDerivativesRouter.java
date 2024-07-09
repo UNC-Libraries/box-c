@@ -5,6 +5,7 @@ import static org.slf4j.LoggerFactory.getLogger;
 
 import org.apache.camel.BeanInject;
 import org.apache.camel.LoggingLevel;
+import org.apache.camel.PropertyInject;
 import org.apache.camel.builder.RouteBuilder;
 import org.slf4j.Logger;
 
@@ -39,15 +40,20 @@ public class DestroyDerivativesRouter extends RouteBuilder {
     @BeanInject(value = "destroyFulltextProcessor")
     private DestroyDerivativesProcessor destroyFulltextProcessor;
 
+    private String destroyDerivativesStreamCamel;
+    private long errorRetryDelay;
+    private int errorMaxRedeliveries;
+    private int errorBackOffMultiplier;
+
     @Override
     public void configure() throws Exception {
         onException(Exception.class)
-                .redeliveryDelay("{{error.retryDelay}}")
-                .maximumRedeliveries("{{error.maxRedeliveries}}")
-                .backOffMultiplier("{{error.backOffMultiplier}}")
+                .redeliveryDelay(errorRetryDelay)
+                .maximumRedeliveries(errorMaxRedeliveries)
+                .backOffMultiplier(errorBackOffMultiplier)
                 .retryAttemptedLogLevel(LoggingLevel.WARN);
 
-        from("{{cdr.destroy.derivatives.stream.camel}}")
+        from(destroyDerivativesStreamCamel)
                 .routeId("CdrDestroyDerivatives")
                 .startupOrder(204)
                 .log(LoggingLevel.DEBUG, log, "Received destroy derivatives message")
@@ -89,5 +95,49 @@ public class DestroyDerivativesRouter extends RouteBuilder {
                 .startupOrder(200)
                 .log(LoggingLevel.DEBUG, log, "Destroying collection image upload")
                 .bean(destroyCollectionSrcImgProcessor);
+    }
+
+    public void setDestroyedMsgProcessor(DestroyedMsgProcessor destroyedMsgProcessor) {
+        this.destroyedMsgProcessor = destroyedMsgProcessor;
+    }
+
+    public void setDestroyCollectionSrcImgProcessor(DestroyDerivativesProcessor destroyCollectionSrcImgProcessor) {
+        this.destroyCollectionSrcImgProcessor = destroyCollectionSrcImgProcessor;
+    }
+
+    public void setDestroySmallThumbnailProcessor(DestroyDerivativesProcessor destroySmallThumbnailProcessor) {
+        this.destroySmallThumbnailProcessor = destroySmallThumbnailProcessor;
+    }
+
+    public void setDestroyLargeThumbnailProcessor(DestroyDerivativesProcessor destroyLargeThumbnailProcessor) {
+        this.destroyLargeThumbnailProcessor = destroyLargeThumbnailProcessor;
+    }
+
+    public void setDestroyAccessCopyProcessor(DestroyDerivativesProcessor destroyAccessCopyProcessor) {
+        this.destroyAccessCopyProcessor = destroyAccessCopyProcessor;
+    }
+
+    public void setDestroyFulltextProcessor(DestroyDerivativesProcessor destroyFulltextProcessor) {
+        this.destroyFulltextProcessor = destroyFulltextProcessor;
+    }
+
+    @PropertyInject("cdr.destroy.derivatives.stream.camel")
+    public void setDestroyDerivativesStreamCamel(String destroyDerivativesStreamCamel) {
+        this.destroyDerivativesStreamCamel = destroyDerivativesStreamCamel;
+    }
+
+    @PropertyInject("error.retryDelay:10000")
+    public void setErrorRetryDelay(long errorRetryDelay) {
+        this.errorRetryDelay = errorRetryDelay;
+    }
+
+    @PropertyInject("error.maxRedeliveries:3")
+    public void setErrorMaxRedeliveries(int errorMaxRedeliveries) {
+        this.errorMaxRedeliveries = errorMaxRedeliveries;
+    }
+
+    @PropertyInject("error.backOffMultiplier:2")
+    public void setErrorBackOffMultiplier(int errorBackOffMultiplier) {
+        this.errorBackOffMultiplier = errorBackOffMultiplier;
     }
 }

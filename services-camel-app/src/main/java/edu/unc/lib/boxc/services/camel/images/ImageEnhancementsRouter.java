@@ -5,8 +5,8 @@ import static org.slf4j.LoggerFactory.getLogger;
 import org.apache.camel.BeanInject;
 import org.apache.camel.LoggingLevel;
 import org.apache.camel.builder.RouteBuilder;
-import org.apache.camel.impl.JavaUuidGenerator;
 import org.apache.camel.spi.UuidGenerator;
+import org.apache.camel.support.DefaultUuidGenerator;
 import org.slf4j.Logger;
 
 import edu.unc.lib.boxc.model.api.exceptions.RepositoryException;
@@ -42,7 +42,7 @@ public class ImageEnhancementsRouter extends RouteBuilder {
     public void configure() throws Exception {
         ImageDerivativeProcessor imageDerivProcessor = new ImageDerivativeProcessor();
 
-        uuidGenerator = new JavaUuidGenerator();
+        uuidGenerator = new DefaultUuidGenerator();
 
         onException(RepositoryException.class)
                 .redeliveryDelay("{{error.retryDelay}}")
@@ -59,7 +59,7 @@ public class ImageEnhancementsRouter extends RouteBuilder {
                         + " of type ${headers[CdrMimeType]}")
                 .bean(imageDerivProcessor)
                 // Generate an random identifier to avoid derivative collisions
-                .bean(uuidGenerator)
+                .setBody(exchange -> uuidGenerator.generateUuid())
                 .multicast()
                 .shareUnitOfWork()
                 .to("direct:small.thumbnail", "direct:large.thumbnail");
@@ -105,7 +105,7 @@ public class ImageEnhancementsRouter extends RouteBuilder {
                 .bean(imageDerivProcessor)
                 .log(LoggingLevel.INFO, log, "Creating/Updating JP2 access copy for ${headers[CdrImagePath]}")
                 // Generate an random identifier to avoid derivative collisions
-                .bean(uuidGenerator)
+                .setBody(exchange -> uuidGenerator.generateUuid())
                 .setHeader(CdrFcrepoHeaders.CdrTempPath, simple("${properties:services.tempDirectory}/${body}-access"))
                 .doTry()
                     .recipientList(simple("exec:/bin/sh?args=${properties:cdr.enhancement.bin}/convertJp2.sh "

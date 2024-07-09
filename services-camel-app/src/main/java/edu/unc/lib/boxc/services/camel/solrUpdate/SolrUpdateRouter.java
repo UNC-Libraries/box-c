@@ -5,8 +5,10 @@ import edu.unc.lib.boxc.model.api.exceptions.NotFoundException;
 import edu.unc.lib.boxc.operations.jms.indexing.IndexingPriority;
 import edu.unc.lib.boxc.services.camel.util.CacheInvalidatingProcessor;
 import edu.unc.lib.boxc.services.camel.util.CdrFcrepoHeaders;
+import edu.unc.lib.boxc.services.camel.util.OrderedSetAggregationStrategy;
 import org.apache.camel.BeanInject;
 import org.apache.camel.LoggingLevel;
+import org.apache.camel.PropertyInject;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.http.HttpException;
 import org.fcrepo.client.FcrepoOperationFailedException;
@@ -39,6 +41,8 @@ public class SolrUpdateRouter extends RouteBuilder {
 
     @BeanInject
     private AggregateUpdateProcessor aggregateWorkForFileProcessor;
+    @BeanInject
+    private OrderedSetAggregationStrategy orderedSetAggregationStrategy;
 
     @Override
     public void configure() throws Exception {
@@ -88,17 +92,19 @@ public class SolrUpdateRouter extends RouteBuilder {
             .bean(solrSmallUpdateProcessor);
 
         // Endpoint for receiving individual requests update works when files are updated
-        from("activemq://activemq:queue:solr.update.workObject.fileUpdated")
+        from("{{cdr.solrupdate.workObject.fileUpdated.individual.camel}}")
             .routeId("CdrSolrUpdateWorkFileEndpoint")
             .startupOrder(506)
-            // Camel does not initialize the sjms endpoint for the batch consumer unless it appears in a route
-            .to("{{cdr.solrupdate.workObject.fileUpdated}}");
+            .to("{{cdr.solrupdate.workObject.fileUpdated.batch.camel}}");
 
         // Batch endpoint for updating works when files update, to allow for deduplication of pending requests
-        from("{{cdr.solrupdate.workObject.fileUpdated.consumer}}")
+        from("{{cdr.solrupdate.workObject.fileUpdated.batch.camel}}")
             .routeId("CdrSolrUpdateWorkFileUpdated")
             .startupOrder(505)
             .log(LoggingLevel.DEBUG, log, "Processing batch of work updates")
+                .aggregate(orderedSetAggregationStrategy).constant(true)
+                .completionSize("{{cdr.solrupdate.workObject.fileUpdated.batchSize}}")
+                .completionTimeout("{{cdr.solrupdate.workObject.fileUpdated.batchTimeout}}")
             .bean(aggregateWorkForFileProcessor);
     }
 }

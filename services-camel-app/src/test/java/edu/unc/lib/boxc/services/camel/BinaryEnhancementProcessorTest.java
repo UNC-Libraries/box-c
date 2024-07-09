@@ -1,5 +1,21 @@
 package edu.unc.lib.boxc.services.camel;
 
+import edu.unc.lib.boxc.model.api.ids.PID;
+import edu.unc.lib.boxc.model.api.objects.CollectionObject;
+import edu.unc.lib.boxc.model.api.objects.RepositoryObject;
+import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
+import edu.unc.lib.boxc.model.fcrepo.test.TestHelper;
+import org.apache.camel.Exchange;
+import org.apache.camel.Message;
+import org.jdom2.Document;
+import org.jdom2.Element;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.Mock;
+
+import java.util.Collections;
+
 import static edu.unc.lib.boxc.fcrepo.FcrepoJmsConstants.RESOURCE_TYPE;
 import static edu.unc.lib.boxc.model.api.rdf.Cdr.Collection;
 import static edu.unc.lib.boxc.model.api.rdf.Fcrepo4Repository.Binary;
@@ -13,25 +29,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.openMocks;
 
-import java.util.Collections;
-
-import org.apache.camel.Exchange;
-import org.apache.camel.Message;
-import org.jdom2.Document;
-import org.jdom2.Element;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.rules.TemporaryFolder;
-import org.mockito.Mock;
-
-import edu.unc.lib.boxc.model.api.ids.PID;
-import edu.unc.lib.boxc.model.api.objects.CollectionObject;
-import edu.unc.lib.boxc.model.api.objects.RepositoryObject;
-import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
-import edu.unc.lib.boxc.model.fcrepo.test.TestHelper;
-
 /**
  *
  * @author lfarrell
@@ -40,9 +37,6 @@ import edu.unc.lib.boxc.model.fcrepo.test.TestHelper;
 public class BinaryEnhancementProcessorTest {
     private BinaryEnhancementProcessor processor;
     private AutoCloseable closeable;
-
-    @Rule
-    public final TemporaryFolder tmpFolder = new TemporaryFolder();
 
     private static final String FEDORA_BASE = "http://example.com/rest/";
 
@@ -60,7 +54,7 @@ public class BinaryEnhancementProcessorTest {
     @Mock
     private CollectionObject collObj;
 
-    @Before
+    @BeforeEach
     public void init() throws Exception {
         closeable = openMocks(this);
 

@@ -13,15 +13,16 @@ import static org.mockito.MockitoAnnotations.openMocks;
 
 import java.io.File;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
 import org.apache.commons.io.FileUtils;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.io.TempDir;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
@@ -42,8 +43,8 @@ public class DestroyDerivativesProcessorTest {
     private static final String RESC_ID = FEDORA_BASE + PID_PATH;
     private AutoCloseable closeable;
 
-    @Rule
-    public TemporaryFolder derivativeDir = new TemporaryFolder();
+    @TempDir
+    public Path tmpFolder;
 
     @Mock
     private Exchange exchange;
@@ -51,7 +52,7 @@ public class DestroyDerivativesProcessorTest {
     @Mock
     private Message message;
 
-    @Before
+    @BeforeEach
     public void init() throws Exception {
         closeable = openMocks(this);
 
@@ -64,7 +65,7 @@ public class DestroyDerivativesProcessorTest {
         when(message.getHeader(eq(CdrBinaryPidId)))
                 .thenReturn(PID_ID);
 
-        derivativeDirBase = derivativeDir.getRoot().getAbsolutePath();
+        derivativeDirBase = tmpFolder.toString();
     }
 
     @AfterEach
@@ -75,7 +76,7 @@ public class DestroyDerivativesProcessorTest {
     @Test
     public void deleteFulltextTest() throws Exception {
         derivativeTypeDir = FULLTEXT_EXTRACTION.getId();
-        derivativeFinalDir = derivativeDir.newFolder(derivativeTypeDir, "de", "75", "d8", "11");
+        derivativeFinalDir = Files.createDirectories(tmpFolder.resolve(derivativeTypeDir + "/de/75/d8/11")).toFile();
         file = new File(derivativeFinalDir, PID_UUID + ".txt");
 
         FileUtils.writeStringToFile(file, "my text", StandardCharsets.UTF_8);
@@ -99,7 +100,7 @@ public class DestroyDerivativesProcessorTest {
     @Test
     public void deleteThumbnailTest() throws Exception {
         derivativeTypeDir = THUMBNAIL_LARGE.getId();
-        derivativeFinalDir = derivativeDir.newFolder(derivativeTypeDir, "de", "75", "d8", "11");
+        derivativeFinalDir = Files.createDirectories(tmpFolder.resolve(derivativeTypeDir + "/de/75/d8/11")).toFile();
         file = new File(derivativeFinalDir, pathId + ".png");
 
         FileUtils.writeStringToFile(file, "fake image", StandardCharsets.UTF_8);
@@ -123,7 +124,7 @@ public class DestroyDerivativesProcessorTest {
     @Test
     public void deleteCollectionSrcImgTest() throws Exception {
         String srcDirBase = "srcDir";
-        File srcDir = derivativeDir.newFolder(srcDirBase, "de", "75", "d8", "11");
+        File srcDir = Files.createDirectories(tmpFolder.resolve(srcDirBase + "/de/75/d8/11")).toFile();
         File srcFile = new File(srcDir, pathId);
         FileUtils.writeStringToFile(srcFile, "fake image src", StandardCharsets.UTF_8);
 
@@ -153,7 +154,7 @@ public class DestroyDerivativesProcessorTest {
     @Test
     public void deleteJp2Test() throws Exception {
         derivativeTypeDir = JP2_ACCESS_COPY.getId();
-        derivativeFinalDir = derivativeDir.newFolder(derivativeTypeDir, "de", "75", "d8", "11");
+        derivativeFinalDir = Files.createDirectories(tmpFolder.resolve(derivativeTypeDir + "/de/75/d8/11")).toFile();
         file = new File(derivativeFinalDir, pathId + ".jp2");
 
         FileUtils.writeStringToFile(file, "fake jp2", StandardCharsets.UTF_8);
@@ -179,12 +180,12 @@ public class DestroyDerivativesProcessorTest {
         derivativeTypeDir = JP2_ACCESS_COPY.getId();
 
         // Derivative to destroy
-        derivativeFinalDir = derivativeDir.newFolder(derivativeTypeDir, "de", "75", "d8", "11");
+        derivativeFinalDir = Files.createDirectories(tmpFolder.resolve(derivativeTypeDir + "/de/75/d8/11")).toFile();
         file = new File(derivativeFinalDir, pathId + ".jp2");
         FileUtils.writeStringToFile(file, "fake jp2", StandardCharsets.UTF_8);
 
         // Another derivative at the same level
-        File siblingDir = derivativeDir.newFolder(derivativeTypeDir, "de", "55", "c8", "21");
+        File siblingDir = Files.createDirectories(tmpFolder.resolve(derivativeTypeDir + "/de/55/c8/21")).toFile();
         String siblingPidId = "de55c821-9e0f-4b1f-8631-2060ab3580cc";
         String siblingRescId = FEDORA_BASE + "content/de/55/c8/21/" + siblingPidId;
         String siblingPathId = PIDs.get(siblingRescId).getId();
@@ -213,7 +214,7 @@ public class DestroyDerivativesProcessorTest {
     @Test
     public void multipleFilesInDirectoryTest() throws Exception {
         derivativeTypeDir = JP2_ACCESS_COPY.getId();
-        derivativeFinalDir = derivativeDir.newFolder(derivativeTypeDir, "de", "75", "d8", "11");
+        derivativeFinalDir = Files.createDirectories(tmpFolder.resolve(derivativeTypeDir + "/de/75/d8/11")).toFile();
 
         // Derivative to destroy
         file = new File(derivativeFinalDir, pathId + ".jp2");

@@ -8,9 +8,9 @@ import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.boxc.operations.impl.utils.EmailHandler;
 import edu.unc.lib.boxc.operations.jms.order.MultiParentOrderRequest;
 import edu.unc.lib.boxc.operations.jms.order.OrderOperationType;
-import org.junit.Before;
-import org.junit.Test;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -46,7 +46,7 @@ public class OrderNotificationServiceTest {
     @Mock
     private OrderNotificationBuilder orderNotificationBuilder;
 
-    @Before
+    @BeforeEach
     public void setup() {
         closeable = openMocks(this);
         request.setAgent(agent);

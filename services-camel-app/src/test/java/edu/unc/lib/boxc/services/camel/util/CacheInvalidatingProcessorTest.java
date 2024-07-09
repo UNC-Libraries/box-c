@@ -12,9 +12,9 @@ import edu.unc.lib.boxc.model.fcrepo.test.TestHelper;
 import edu.unc.lib.boxc.search.solr.services.TitleRetrievalService;
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
-import org.junit.Before;
-import org.junit.Test;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -48,7 +48,7 @@ public class CacheInvalidatingProcessorTest {
 
     private CacheInvalidatingProcessor processor;
 
-    @Before
+    @BeforeEach
     public void init() throws Exception {
         closeable = openMocks(this);
         TestHelper.setContentBase(FEDORA_BASE);

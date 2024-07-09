@@ -1,6 +1,7 @@
 package edu.unc.lib.boxc.services.camel.accessSurrogates;
 
 import org.apache.camel.BeanInject;
+import org.apache.camel.PropertyInject;
 import org.apache.camel.builder.RouteBuilder;
 import org.slf4j.Logger;
 
@@ -16,11 +17,22 @@ public class AccessSurrogateRouter extends RouteBuilder {
     @BeanInject(value = "accessSurrogateRequestProcessor")
     private AccessSurrogateRequestProcessor processor;
 
+    private String accessSurrogatesStreamCamel;
+
     @Override
     public void configure() throws Exception {
-        from("{{cdr.access.surrogates.stream.camel}}")
+        from(accessSurrogatesStreamCamel)
                 .routeId("DcrAccessSurrogates")
                 .log(DEBUG, log, "Received access surrogate request")
                 .bean(processor);
+    }
+
+    public void setAccessSurrogateRequestProcessor(AccessSurrogateRequestProcessor processor) {
+        this.processor = processor;
+    }
+
+    @PropertyInject("cdr.access.surrogates.stream.camel")
+    public void setAccessSurrogatesStreamCamel(String accessSurrogatesStreamCamel) {
+        this.accessSurrogatesStreamCamel = accessSurrogatesStreamCamel;
     }
 }

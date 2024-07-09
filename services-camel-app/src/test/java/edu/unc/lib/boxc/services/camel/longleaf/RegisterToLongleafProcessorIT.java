@@ -1,40 +1,5 @@
 package edu.unc.lib.boxc.services.camel.longleaf;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.fail;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-
-import java.io.InputStream;
-import java.net.URI;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.Arrays;
-import java.util.List;
-import java.util.stream.Collectors;
-
-import edu.unc.lib.boxc.model.fcrepo.test.TestRepositoryDeinitializer;
-import edu.unc.lib.boxc.persist.impl.storage.StorageLocationTestHelper;
-import org.apache.camel.CamelContext;
-import org.apache.camel.Exchange;
-import org.apache.camel.Message;
-import org.apache.camel.ProducerTemplate;
-import org.apache.commons.codec.digest.DigestUtils;
-import org.fcrepo.client.FcrepoClient;
-import org.fusesource.hawtbuf.ByteArrayInputStream;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
-import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.ContextHierarchy;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.ids.PIDMinter;
 import edu.unc.lib.boxc.model.api.objects.BinaryObject;
@@ -45,19 +10,50 @@ import edu.unc.lib.boxc.model.api.objects.WorkObject;
 import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
 import edu.unc.lib.boxc.model.fcrepo.ids.DatastreamPids;
 import edu.unc.lib.boxc.model.fcrepo.test.TestHelper;
+import edu.unc.lib.boxc.model.fcrepo.test.TestRepositoryDeinitializer;
 import edu.unc.lib.boxc.persist.api.transfer.BinaryTransferOutcome;
 import edu.unc.lib.boxc.persist.api.transfer.BinaryTransferService;
 import edu.unc.lib.boxc.persist.api.transfer.BinaryTransferSession;
+import edu.unc.lib.boxc.persist.impl.storage.StorageLocationTestHelper;
 import edu.unc.lib.boxc.persist.impl.transfer.FileSystemTransferHelpers;
+import org.apache.camel.CamelContext;
+import org.apache.camel.Exchange;
+import org.apache.camel.Message;
+import org.apache.camel.ProducerTemplate;
+import org.apache.commons.codec.digest.DigestUtils;
+import org.fcrepo.client.FcrepoClient;
+import org.fusesource.hawtbuf.ByteArrayInputStream;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.api.io.TempDir;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
+
+import java.io.InputStream;
+import java.net.URI;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
+
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.fail;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 /**
  * @author bbpennel
  * @author smithjp
  */
-@RunWith(SpringJUnit4ClassRunner.class)
-@ContextHierarchy({
-    @ContextConfiguration("/spring-test/cdr-client-container.xml")
-})
+@ExtendWith(SpringExtension.class)
+@ContextConfiguration("/spring-test/cdr-client-container.xml")
 public class RegisterToLongleafProcessorIT {
     private static final String TEXT1_BODY = "Some content";
     private static final String TEXT1_SHA1 = DigestUtils.sha1Hex(TEXT1_BODY);
@@ -70,8 +66,8 @@ public class RegisterToLongleafProcessorIT {
     private static final String TEXT4_BODY = "Maybe some more metadata";
     private static final String TEXT4_MD5 = DigestUtils.md5Hex(TEXT4_BODY);
 
-    @Rule
-    public final TemporaryFolder tmpFolder = new TemporaryFolder();
+    @TempDir
+    public Path tmpFolder;
 
     @Autowired
     private String baseAddress;
@@ -95,15 +91,14 @@ public class RegisterToLongleafProcessorIT {
 
     private RegisterToLongleafProcessor processor;
 
-    @Before
-    public void init() throws Exception {
+    @BeforeEach
+    public void initTest() throws Exception {
         TestHelper.setContentBase(baseAddress);
-        tmpFolder.create();
 
         processor = new RegisterToLongleafProcessor();
         processor.setFcrepoClient(fcrepoClient);
         processor.setRepositoryObjectLoader(repoObjLoader);
-        outputPath = tmpFolder.newFile().getPath();
+        outputPath = Files.createFile(tmpFolder.resolve("output")).toString();
         output = null;
         longleafScript = LongleafTestHelpers.getLongleafScript(outputPath);
         processor.setLongleafBaseCommand(longleafScript);
@@ -111,7 +106,7 @@ public class RegisterToLongleafProcessorIT {
         transferSession = transferService.getSession(storageLocationTestHelper.getTestStorageLocation());
     }
 
-    @After
+    @AfterEach
     public void tearDown() throws Exception {
         transferSession.close();
         TestRepositoryDeinitializer.cleanup(fcrepoClient);

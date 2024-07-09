@@ -4,11 +4,12 @@ import static org.slf4j.LoggerFactory.getLogger;
 
 import org.apache.camel.BeanInject;
 import org.apache.camel.LoggingLevel;
+import org.apache.camel.PropertyInject;
 import org.apache.camel.builder.RouteBuilder;
 import org.slf4j.Logger;
-import org.springframework.beans.factory.annotation.Value;
 
 import edu.unc.lib.boxc.services.camel.AddFailedRouteProcessor;
+import org.springframework.beans.factory.annotation.Value;
 
 /**
  * Router for longleaf operations
@@ -27,11 +28,23 @@ public class LongleafRouter extends RouteBuilder {
     @BeanInject(value = "deregisterLongleafProcessor")
     private DeregisterLongleafProcessor deregisterProcessor;
 
+    @BeanInject(value = "longleafAggregationStrategy")
+    private LongleafAggregationStrategy longleafAggregationStrategy;
     @Value("${longleaf.maxRedelivieries:3}")
     private int longleafMaxRedelivieries;
 
     @Value("${longleaf.redeliveryDelay:10000}")
     private long longleafRedeliveryDelay;
+    private int batchSize;
+    private long batchTimeout;
+
+    private String longleafRegisterConsumer;
+    private String longleafRegisterBatchConsumer;
+    private String longleafRegisterDestination;
+    private String longleafDeregisterConsumer;
+    private String longleafDeregisterDestination;
+    private String longleafDeregisterBatchDestination;
+    private String longleafFilterDeregister;
 
     @Override
     public void configure() throws Exception {
@@ -44,28 +57,113 @@ public class LongleafRouter extends RouteBuilder {
 
         from("direct-vm:filter.longleaf")
             .routeId("RegisterLongleafQueuing")
-            .startupOrder(4)
+            .startupOrder(18)
             .filter().method(RegisterToLongleafProcessor.class, "registerableBinary")
             .log(LoggingLevel.DEBUG, log, "Queuing ${headers[CamelFcrepoUri]} for registration to longleaf")
-            .to("sjms:register.longleaf?transacted=true");
+            .to(longleafRegisterDestination);
 
-        from("{{longleaf.register.consumer}}", "activemq://activemq:queue:longleaf.register.batch")
+        // Directing multiple input streams to the registration stream, since camel 3 disallows multiple addresses in "from"
+        from(longleafRegisterConsumer)
+            .to(longleafRegisterDestination);
+        from(longleafRegisterBatchConsumer)
+            .to(longleafRegisterDestination);
+        from(longleafRegisterDestination)
             .routeId("RegisterLongleafProcessing")
-            .startupOrder(3)
-            .log(LoggingLevel.DEBUG, log, "Processing batch of longleaf registrations")
+            .startupOrder(15)
+            .log(LoggingLevel.INFO, log, "Processing batch of longleaf registrations")
+                .aggregate(longleafAggregationStrategy).constant(true)
+                .completionSize(batchSize)
+                .completionTimeout(batchTimeout)
             .bean(registerProcessor);
 
-        from("activemq://activemq:queue:filter.longleaf.deregister")
+        from(longleafFilterDeregister)
             .routeId("DeregisterLongleafQueuing")
-            .startupOrder(2)
+            .startupOrder(14)
             .log(LoggingLevel.DEBUG, log, "Queuing ${body} for deregistration in longleaf")
             .process(getUrisProcessor)
-            .to("sjms:deregister.longleaf?transacted=true");
+            .to(longleafDeregisterDestination);
 
-        from("{{longleaf.deregister.consumer}}", "activemq://activemq:queue:longleaf.deregister.batch")
+        // Directing multiple input streams to the deregistration stream
+        from(longleafDeregisterConsumer)
+            .to(longleafDeregisterDestination);
+        from(longleafDeregisterBatchDestination)
+            .to(longleafDeregisterDestination);
+        from(longleafDeregisterDestination)
             .routeId("DeregisterLongleafProcessing")
-            .startupOrder(1)
+            .startupOrder(11)
             .log(LoggingLevel.DEBUG, log, "Processing batch of longleaf deregistrations")
+                .aggregate(longleafAggregationStrategy).constant(true)
+                .completionSize(batchSize)
+                .completionTimeout(batchTimeout)
             .bean(deregisterProcessor);
+    }
+
+    public void setGetUrisProcessor(GetUrisProcessor getUrisProcessor) {
+        this.getUrisProcessor = getUrisProcessor;
+    }
+
+    public void setRegisterProcessor(RegisterToLongleafProcessor registerProcessor) {
+        this.registerProcessor = registerProcessor;
+    }
+
+    public void setDeregisterProcessor(DeregisterLongleafProcessor deregisterProcessor) {
+        this.deregisterProcessor = deregisterProcessor;
+    }
+
+    public void setLongleafAggregationStrategy(LongleafAggregationStrategy longleafAggregationStrategy) {
+        this.longleafAggregationStrategy = longleafAggregationStrategy;
+    }
+
+    public void setLongleafMaxRedelivieries(int longleafMaxRedelivieries) {
+        this.longleafMaxRedelivieries = longleafMaxRedelivieries;
+    }
+
+    public void setLongleafRedeliveryDelay(long longleafRedeliveryDelay) {
+        this.longleafRedeliveryDelay = longleafRedeliveryDelay;
+    }
+
+    @PropertyInject("longleaf.register.consumer")
+    public void setLongleafRegisterConsumer(String longleafRegisterConsumer) {
+        this.longleafRegisterConsumer = longleafRegisterConsumer;
+    }
+
+    @PropertyInject("longleaf.deregister.consumer")
+    public void setLongleafDeregisterConsumer(String longleafDeregisterConsumer) {
+        this.longleafDeregisterConsumer = longleafDeregisterConsumer;
+    }
+
+    @PropertyInject("longleaf.register.dest")
+    public void setLongleafRegisterDestination(String longleafRegisterDestination) {
+        this.longleafRegisterDestination = longleafRegisterDestination;
+    }
+
+    @PropertyInject("longleaf.deregister.dest")
+    public void setLongleafDeregisterDestination(String longleafDeregisterDestination) {
+        this.longleafDeregisterDestination = longleafDeregisterDestination;
+    }
+
+    @PropertyInject("longleaf.filter.deregister")
+    public void setLongleafFilterDeregister(String longleafFilterDeregister) {
+        this.longleafFilterDeregister = longleafFilterDeregister;
+    }
+
+    @PropertyInject("longleaf.register.batch.consumer")
+    public void setLongleafRegisterBatchConsumer(String longleafRegisterBatchConsumer) {
+        this.longleafRegisterBatchConsumer = longleafRegisterBatchConsumer;
+    }
+
+    @PropertyInject("longleaf.deregister.batch.consumer")
+    public void setLongleafDeregisterBatchDestination(String longleafDeregisterBatchDestination) {
+        this.longleafDeregisterBatchDestination = longleafDeregisterBatchDestination;
+    }
+
+    @PropertyInject("longleaf.batchSize")
+    public void setBatchSize(int batchSize) {
+        this.batchSize = batchSize;
+    }
+
+    @PropertyInject("longleaf.batchTimeout")
+    public void setBatchTimeout(long batchTimeout) {
+        this.batchTimeout = batchTimeout;
     }
 }

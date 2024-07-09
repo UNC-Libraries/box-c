@@ -95,10 +95,6 @@
 
     <camel:camelContext id="cdrServiceCdrEvents">
         <camel:package>edu.unc.lib.boxc.services.camel.cdrEvents</camel:package>
-    </camel:camelContext>
-
-    <camel:camelContext id="cdrServiceSolrUpdate">
         <camel:package>edu.unc.lib.boxc.services.camel.solrUpdate</camel:package>
     </camel:camelContext>
-  
 </beans>

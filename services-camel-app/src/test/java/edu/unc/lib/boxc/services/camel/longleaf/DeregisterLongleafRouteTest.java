@@ -1,74 +1,66 @@
 package edu.unc.lib.boxc.services.camel.longleaf;
 
+import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
+import org.apache.camel.EndpointInject;
+import org.apache.camel.Exchange;
+import org.apache.camel.builder.NotifyBuilder;
+import org.apache.camel.component.mock.MockEndpoint;
+import org.apache.commons.io.FileUtils;
+import org.jdom2.Document;
+import org.jdom2.Element;
+import org.jdom2.output.XMLOutputter;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
+import org.springframework.context.support.AbstractApplicationContext;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
+
+import java.io.File;
+import java.net.URI;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.List;
+import java.util.UUID;
+import java.util.concurrent.TimeUnit;
+
 import static edu.unc.lib.boxc.model.api.xml.JDOMNamespaceUtil.ATOM_NS;
 import static edu.unc.lib.boxc.model.api.xml.JDOMNamespaceUtil.CDR_MESSAGE_NS;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-import java.io.File;
-import java.net.URI;
-import java.nio.file.Paths;
-import java.util.List;
-import java.util.UUID;
-import java.util.concurrent.TimeUnit;
-
-import org.apache.camel.CamelContext;
-import org.apache.camel.EndpointInject;
-import org.apache.camel.Exchange;
-import org.apache.camel.builder.NotifyBuilder;
-import org.apache.camel.component.mock.MockEndpoint;
-import org.apache.camel.test.spring.CamelSpringRunner;
-import org.apache.camel.test.spring.CamelTestContextBootstrapper;
-import org.apache.commons.io.FileUtils;
-import org.jdom2.Document;
-import org.jdom2.Element;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
-import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.annotation.DirtiesContext.ClassMode;
-import org.springframework.test.context.BootstrapWith;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.ContextHierarchy;
-
-import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
-import edu.unc.lib.boxc.operations.jms.MessageSender;
-
 /**
  * @author bbpennel
  */
-@RunWith(CamelSpringRunner.class)
-@BootstrapWith(CamelTestContextBootstrapper.class)
-@ContextHierarchy({
-    @ContextConfiguration("/spring-test/jms-context.xml"),
-    @ContextConfiguration("/deregister-longleaf-router-context.xml")
-})
-@DirtiesContext(classMode = ClassMode.AFTER_EACH_TEST_METHOD)
 public class DeregisterLongleafRouteTest extends AbstractLongleafRouteTest {
-    @Autowired
-    private MessageSender messageSender;
+    private static final String FILTER_DEREGISTER_ENDPOINT = "direct:filter.longleaf.deregister";
+
     @EndpointInject(uri = "mock:direct:longleaf.dlq")
     private MockEndpoint mockDlq;
 
-    @Autowired
     private DeregisterLongleafProcessor deregisterLongleafProcessor;
 
-    @Autowired
-    private CamelContext cdrLongleaf;
-
-    @Rule
-    public final TemporaryFolder tmpFolder = new TemporaryFolder();
+    @TempDir
+    public Path tmpFolder;
 
     private String longleafScript;
 
-    @Before
+    @Override
+    protected AbstractApplicationContext createApplicationContext() {
+        return new ClassPathXmlApplicationContext(
+                "spring-test/cdr-client-container.xml",
+                "spring-test/jms-context.xml",
+                "deregister-longleaf-router-context.xml");
+    }
+
+    @BeforeEach
     public void setup() throws Exception {
-        tmpFolder.create();
-        outputPath = tmpFolder.newFile().getPath();
+        deregisterLongleafProcessor = applicationContext.getBean(DeregisterLongleafProcessor.class);
+
+        Path tmpPath = tmpFolder.resolve("output_file");
+        Files.createFile(tmpPath);
+        outputPath = tmpPath.toAbsolutePath().toString();
         longleafScript = LongleafTestHelpers.getLongleafScript(outputPath);
         deregisterLongleafProcessor.setLongleafBaseCommand(longleafScript);
     }
@@ -76,7 +68,7 @@ public class DeregisterLongleafRouteTest extends AbstractLongleafRouteTest {
     @Test
     public void deregisterSingleBinary() throws Exception {
         // Expecting 1 batch message and 1 individual file message, on different routes
-        NotifyBuilder notify = new NotifyBuilder(cdrLongleaf)
+        NotifyBuilder notify = new NotifyBuilder(context)
                 .whenCompleted(1 + 1)
                 .create();
 
@@ -92,7 +84,7 @@ public class DeregisterLongleafRouteTest extends AbstractLongleafRouteTest {
     @Test
     public void deregisterSingleBatch() throws Exception {
         // Expecting 1 batch message and 3 individual file messages, on different routes
-        NotifyBuilder notify = new NotifyBuilder(cdrLongleaf)
+        NotifyBuilder notify = new NotifyBuilder(context)
                 .whenCompleted(1 + 3)
                 .create();
 
@@ -107,7 +99,7 @@ public class DeregisterLongleafRouteTest extends AbstractLongleafRouteTest {
 
     @Test
     public void deregisterMultipleBatches() throws Exception {
-        NotifyBuilder notify = new NotifyBuilder(cdrLongleaf)
+        NotifyBuilder notify = new NotifyBuilder(context)
                 .whenCompleted(2 + 10)
                 .create();
 
@@ -123,7 +115,7 @@ public class DeregisterLongleafRouteTest extends AbstractLongleafRouteTest {
     // Should process file uris, and absolute paths without file://, but not http uris or relative
     @Test
     public void deregisterMultipleMixOfSchemes() throws Exception {
-        NotifyBuilder notify = new NotifyBuilder(cdrLongleaf)
+        NotifyBuilder notify = new NotifyBuilder(context)
                 .whenCompleted(2 + 9)
                 .create();
 
@@ -145,12 +137,11 @@ public class DeregisterLongleafRouteTest extends AbstractLongleafRouteTest {
         assertSubmittedPaths(10000, successUris);
     }
 
-    @SuppressWarnings("unchecked")
     @Test
     public void deregisterPartialSuccess() throws Exception {
         mockDlq.expectedMessageCount(1);
 
-        NotifyBuilder notify = new NotifyBuilder(cdrLongleaf)
+        NotifyBuilder notify = new NotifyBuilder(context)
                 .whenDone(3)
                 .create();
 
@@ -181,12 +172,11 @@ public class DeregisterLongleafRouteTest extends AbstractLongleafRouteTest {
                 failedList.contains(contentUris[1]));
     }
 
-    @SuppressWarnings("unchecked")
     @Test
     public void deregisterCommandErrorSuccessExit() throws Exception {
         mockDlq.expectedMessageCount(1);
 
-        NotifyBuilder notify = new NotifyBuilder(cdrLongleaf)
+        NotifyBuilder notify = new NotifyBuilder(context)
                 .whenDone(1)
                 .create();
 
@@ -229,11 +219,12 @@ public class DeregisterLongleafRouteTest extends AbstractLongleafRouteTest {
 
     private void sendMessages(String... contentUris) {
         for (String contentUri : contentUris) {
-            messageSender.sendMessage(makeDocument(contentUri));
+            template.sendBody(FILTER_DEREGISTER_ENDPOINT, makeDocument(contentUri));
         }
     }
 
-    private Document makeDocument(String uri) {
+    private String makeDocument(String uri) {
+        XMLOutputter out = new XMLOutputter();
         Document msg = new Document();
         Element entry = new Element("entry", ATOM_NS);
 
@@ -244,6 +235,6 @@ public class DeregisterLongleafRouteTest extends AbstractLongleafRouteTest {
         entry.addContent(obj);
         msg.addContent(entry);
 
-        return msg;
+        return out.outputString(msg);
     }
 }
