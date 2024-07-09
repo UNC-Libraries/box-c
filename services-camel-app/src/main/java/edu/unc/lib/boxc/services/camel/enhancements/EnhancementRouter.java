@@ -12,7 +12,6 @@ import org.apache.camel.ExchangePattern;
 import org.apache.camel.LoggingLevel;
 import org.apache.camel.PropertyInject;
 import org.apache.camel.builder.RouteBuilder;
-import org.fcrepo.camel.processor.EventProcessor;
 import org.slf4j.Logger;
 
 import edu.unc.lib.boxc.model.api.rdf.Cdr;
