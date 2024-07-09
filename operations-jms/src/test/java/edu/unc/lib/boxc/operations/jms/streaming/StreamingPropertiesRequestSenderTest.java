@@ -3,6 +3,7 @@ package edu.unc.lib.boxc.operations.jms.streaming;
 import edu.unc.lib.boxc.auth.api.models.AgentPrincipals;
 import edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl;
 import edu.unc.lib.boxc.auth.fcrepo.models.AgentPrincipalsImpl;
+import edu.unc.lib.boxc.model.api.StreamingConstants;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import org.junit.jupiter.api.AfterEach;
@@ -42,7 +43,7 @@ public class StreamingPropertiesRequestSenderTest {
         var request = new StreamingPropertiesRequest();
         request.setAgent(agent);
         request.setId(filePidString);
-        request.setUrl(StreamingPropertiesRequest.STREAMREAPER_PREFIX_URL + "?params=more");
+        request.setUrl(StreamingConstants.STREAMREAPER_PREFIX_URL + "?params=more");
         request.setAction("add");
         request.setType("video");
 

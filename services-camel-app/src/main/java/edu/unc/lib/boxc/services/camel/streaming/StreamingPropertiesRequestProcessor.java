@@ -21,9 +21,9 @@ import java.util.Objects;
 
 import static edu.unc.lib.boxc.operations.jms.streaming.StreamingPropertiesRequest.ADD;
 import static edu.unc.lib.boxc.operations.jms.streaming.StreamingPropertiesRequest.DELETE;
-import static edu.unc.lib.boxc.operations.jms.streaming.StreamingPropertiesRequest.STREAMING_TYPE_SOUND;
-import static edu.unc.lib.boxc.operations.jms.streaming.StreamingPropertiesRequest.STREAMREAPER_PREFIX_URL;
-import static edu.unc.lib.boxc.operations.jms.streaming.StreamingPropertiesRequest.STREAMING_TYPE_VIDEO;
+import static edu.unc.lib.boxc.model.api.StreamingConstants.STREAMING_TYPE_SOUND;
+import static edu.unc.lib.boxc.model.api.StreamingConstants.STREAMREAPER_PREFIX_URL;
+import static edu.unc.lib.boxc.model.api.StreamingConstants.STREAMING_TYPE_VIDEO;
 
 /**
  * Processing requests to edit streaming properties on a FileObject
