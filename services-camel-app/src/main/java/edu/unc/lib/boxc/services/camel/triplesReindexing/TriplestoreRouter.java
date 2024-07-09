@@ -32,6 +32,9 @@ public class TriplestoreRouter extends RouteBuilder {
 
     private static final String RESOURCE_DELETION = "http://fedora.info/definitions/v4/event#ResourceDeletion";
     private static final String DELETE = "https://www.w3.org/ns/activitystreams#Delete";
+    private static final String UPDATE_TRIPLESTORE_ROUTE = "direct:update.triplestore";
+    private static final String DELETE_TRIPLESTORE_ROUTE = "direct:delete.triplestore";
+    private static final String INDEX_TRIPLESTORE_ROUTE = "direct:index.triplestore";
 
     /**
      * Configure the message route workflow.
@@ -64,21 +67,21 @@ public class TriplestoreRouter extends RouteBuilder {
                 .choice()
                 .when(or(header(FCREPO_EVENT_TYPE).contains(RESOURCE_DELETION),
                         header(FCREPO_EVENT_TYPE).contains(DELETE)))
-                .to("direct:delete.triplestore")
+                .to(DELETE_TRIPLESTORE_ROUTE)
                 .otherwise()
-                .to("direct:index.triplestore");
+                .to(INDEX_TRIPLESTORE_ROUTE);
 
         /**
          * Handle re-index events
          */
         from("{{triplestore.reindex.stream}}")
                 .routeId("FcrepoTriplestoreReindex")
-                .to("direct:index.triplestore");
+                .to(INDEX_TRIPLESTORE_ROUTE);
 
         /**
          * Based on an item's metadata, determine if it is indexable.
          */
-        from("direct:index.triplestore")
+        from(INDEX_TRIPLESTORE_ROUTE)
                 .routeId("FcrepoTriplestoreIndexer")
                 .log(DEBUG, LOGGER,"Received Triplestore Indexing request for ${headers[CamelFcrepoUri]}")
                 .filter(not(in(tokenizePropertyPlaceholder(getContext(), "{{filter.containers}}", ",").stream()
@@ -89,19 +92,19 @@ public class TriplestoreRouter extends RouteBuilder {
                 .removeHeaders("CamelHttp*")
                 .choice()
                 .when(simple("{{indexing.predicate}} != 'true'"))
-                .to("direct:update.triplestore")
+                .to(UPDATE_TRIPLESTORE_ROUTE)
                 .otherwise()
                 .to("fcrepo:{{fcrepo.baseUrl}}?preferInclude=PreferMinimalContainer&accept=application/rdf+xml")
                 .choice()
                 .when(indexable)
-                .to("direct:update.triplestore")
+                .to(UPDATE_TRIPLESTORE_ROUTE)
                 .otherwise()
-                .to("direct:delete.triplestore");
+                .to(DELETE_TRIPLESTORE_ROUTE);
 
         /**
          * Remove an item from the triplestore index.
          */
-        from("direct:delete.triplestore")
+        from(DELETE_TRIPLESTORE_ROUTE)
                 .routeId("FcrepoTriplestoreDeleter")
                 .process(new SparqlDeleteProcessor())
                 .log(LoggingLevel.INFO, LOGGER,
@@ -111,7 +114,7 @@ public class TriplestoreRouter extends RouteBuilder {
         /**
          * Perform the sparql update.
          */
-        from("direct:update.triplestore")
+        from(UPDATE_TRIPLESTORE_ROUTE)
                 .routeId("FcrepoTriplestoreUpdater")
                 .setHeader(FCREPO_NAMED_GRAPH)
                 .simple("{{triplestore.namedGraph}}")

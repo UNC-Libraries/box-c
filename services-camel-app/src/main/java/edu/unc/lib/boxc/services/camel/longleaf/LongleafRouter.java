@@ -38,7 +38,6 @@ public class LongleafRouter extends RouteBuilder {
     private int batchSize;
     private long batchTimeout;
 
-    private String longleafDeadLetterQueueDestination;
     private String longleafRegisterConsumer;
     private String longleafRegisterBatchConsumer;
     private String longleafRegisterDestination;
@@ -121,10 +120,6 @@ public class LongleafRouter extends RouteBuilder {
 
     public void setLongleafRedeliveryDelay(long longleafRedeliveryDelay) {
         this.longleafRedeliveryDelay = longleafRedeliveryDelay;
-    }
-
-    public void setLongleafDeadLetterQueueDestination(String longleafDeadLetterQueueDestination) {
-        this.longleafDeadLetterQueueDestination = longleafDeadLetterQueueDestination;
     }
 
     @PropertyInject("longleaf.register.consumer")
