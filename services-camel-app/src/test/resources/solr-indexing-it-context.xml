@@ -191,7 +191,7 @@
 
     <bean id="updateWorkJmsTemplate" class="org.springframework.jms.core.JmsTemplate">
         <property name="connectionFactory" ref="jmsFactory" />
-        <property name="defaultDestinationName" value="${cdr.solrupdate.workObject.fileUpdated}" />
+        <property name="defaultDestinationName" value="${cdr.solrupdate.workObject.fileUpdated.individual}" />
         <property name="pubSubDomain" value="false" />
     </bean>
 
