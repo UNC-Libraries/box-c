@@ -37,6 +37,7 @@ import static edu.unc.lib.boxc.model.api.DatastreamType.TECHNICAL_METADATA;
 import static edu.unc.lib.boxc.model.fcrepo.ids.DatastreamPids.getTechnicalMetadataPid;
 import static edu.unc.lib.boxc.model.fcrepo.test.TestHelper.makePid;
 import static edu.unc.lib.boxc.web.common.services.FedoraContentService.CONTENT_DISPOSITION;
+import static edu.unc.lib.boxc.web.common.services.FedoraContentService.RANGE_HEADER;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -106,6 +107,27 @@ public class FedoraContentControllerIT {
         assertEquals(BINARY_CONTENT, response.getContentAsString());
 
         assertEquals(BINARY_CONTENT.length(), response.getContentLength());
+        assertEquals("text/plain", response.getContentType());
+        assertEquals("inline; filename=\"file.txt\"", response.getHeader(CONTENT_DISPOSITION));
+    }
+
+    @Test
+    public void testGetDatastreamWithRange() throws Exception {
+        PID filePid = makePid();
+
+        FileObject fileObj = repositoryObjectFactory.createFileObject(filePid, null);
+        fileObj.addOriginalFile(makeContentUri(originalPid(fileObj), BINARY_CONTENT), "file.txt", "text/plain", null, null);
+
+        MvcResult result = mvc.perform(get("/content/" + filePid.getId())
+                        .header(RANGE_HEADER,"bytes:0-10"))
+                .andExpect(status().is2xxSuccessful())
+                .andReturn();
+
+        // Verify content was retrieved
+        MockHttpServletResponse response = result.getResponse();
+        assertEquals(BINARY_CONTENT, response.getContentAsString());
+
+        assertEquals(10, response.getContentLength());
         assertEquals("text/plain", response.getContentType());
         assertEquals("inline; filename=\"file.txt\"", response.getHeader(CONTENT_DISPOSITION));
     }

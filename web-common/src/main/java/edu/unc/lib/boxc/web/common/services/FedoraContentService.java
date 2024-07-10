@@ -44,6 +44,7 @@ public class FedoraContentService {
     private static final int BUFFER_SIZE = 4096;
 
     public static final String CONTENT_DISPOSITION = "Content-Disposition";
+    public static final String RANGE_HEADER = "Range";
 
     private AccessControlService accessControlService;
 
@@ -60,10 +61,11 @@ public class FedoraContentService {
      * @param asAttachment if true, then content-disposition header will specify
      *            as "attachment" instead of "inline"
      * @param response response content and headers will be added to.
+     * @param range requested byte range of datastream (optional)
      * @throws IOException if unable to stream content to the response.
      */
     public void streamData(PID pid, String dsName, boolean asAttachment,
-            HttpServletResponse response) throws IOException {
+            HttpServletResponse response, String range) throws IOException {
         // Default datastream is DATA_FILE
         String datastream = dsName == null ? ORIGINAL_FILE.getId() : dsName;
 
@@ -99,7 +101,7 @@ public class FedoraContentService {
         }
 
         // Stream binary content to http response
-        try (InputStream binStream = binObj.getBinaryStream()) {
+        try (InputStream binStream = binObj.getBinaryStream(range)) {
             OutputStream outStream = response.getOutputStream();
             IOUtils.copy(binStream, outStream, BUFFER_SIZE);
         }

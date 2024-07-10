@@ -27,6 +27,7 @@ import java.io.IOException;
 
 import static edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore.getAgentPrincipals;
 import static edu.unc.lib.boxc.model.api.DatastreamType.ORIGINAL_FILE;
+import static edu.unc.lib.boxc.web.common.services.FedoraContentService.RANGE_HEADER;
 
 /**
  * Controller for generating and utilizing single use links for a specific UUID
@@ -75,9 +76,10 @@ public class SingleUseKeyController {
             var pid = PIDs.get(id);
             var datastream = ORIGINAL_FILE.getId();
             var principals = getAgentPrincipals().getPrincipals();
+            var range = request.getHeader(RANGE_HEADER);
 
             singleUseKeyService.invalidate(accessKey);
-            fedoraContentService.streamData(pid, datastream, true, response);
+            fedoraContentService.streamData(pid, datastream, true, response, range);
             log.info("Single use link used. Access Key: {}, UUID: {}", accessKey, id);
             analyticsTracker.trackEvent(request, "download", pid, principals);
         } else {
