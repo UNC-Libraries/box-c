@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<premis3:premis xmlns:premis3="http://www.loc.gov/premis/v3">
+    <script/>
+    <premis3:object xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="premis3:file">
+        <premis3:objectCharacteristics>
+            <premis3:compositionLevel>0</premis3:compositionLevel>
+            <premis3:format>
+                <premis3:formatDesignation>
+                    <premis3:formatName>MPEG 1/2 Audio Layer 3</premis3:formatName>
+                </premis3:formatDesignation>
+            </premis3:format>
+            <premis3:size>1006026</premis3:size>
+            <premis3:objectCharacteristicsExtension>
+                <fits xmlns="http://hul.harvard.edu/ois/xml/ns/fits/fits_output" xsi:schemaLocation="http://hul.harvard.edu/ois/xml/ns/fits/fits_output http://hul.harvard.edu/ois/xml/xsd/fits/fits_output.xsd" version="1.6.0" timestamp="7/9/24, 4:42 PM">
+                    <identification status="CONFLICT">
+                        <identity format="MPEG 1/2 Audio Layer 3" mimetype="audio/mpeg" toolname="FITS" toolversion="1.6.0">
+                            <tool toolname="Droid" toolversion="6.5.2"/>
+                            <tool toolname="Exiftool" toolversion="12.50"/>
+                            <tool toolname="NLNZ Metadata Extractor" toolversion="3.6GA"/>
+                            <tool toolname="Tika" toolversion="2.6.0"/>
+                            <version toolname="NLNZ Metadata Extractor" toolversion="3.6GA">1</version>
+                            <externalIdentifier toolname="Droid" toolversion="6.5.2" type="puid">fmt/134</externalIdentifier>
+                        </identity>
+                    </identification>
+                    <fileinfo>
+                        <filepath toolname="OIS File Information" toolversion="1.0" status="SINGLE_RESULT">/path/to/audio.mp3</filepath>
+                        <filename toolname="OIS File Information" toolversion="1.0" status="SINGLE_RESULT">audio.mp3</filename>
+                        <size toolname="OIS File Information" toolversion="1.0">1006026</size>
+                        <md5checksum toolname="OIS File Information" toolversion="1.0" status="SINGLE_RESULT">791e98fe4c59e666f2d844d883d7a046</md5checksum>
+                        <fslastmodified toolname="OIS File Information" toolversion="1.0" status="SINGLE_RESULT">1720543212150</fslastmodified>
+                    </fileinfo>
+                    <filestatus/>
+                    <metadata>
+                        <audio>
+                            <duration toolname="NLNZ Metadata Extractor" toolversion="3.6GA" status="SINGLE_RESULT">0:1:2:864</duration>
+                            <bitRate toolname="Exiftool" toolversion="12.50" status="CONFLICT">128 kbps</bitRate>
+                            <bitRate toolname="NLNZ Metadata Extractor" toolversion="3.6GA" status="CONFLICT">128000</bitRate>
+                            <sampleRate toolname="Exiftool" toolversion="12.50">44100</sampleRate>
+                            <channels toolname="Exiftool" toolversion="12.50">2</channels>
+                            <milliseconds toolname="NLNZ Metadata Extractor" toolversion="3.6GA" status="SINGLE_RESULT">62864</milliseconds>
+                            <sampleRate toolname="Tika" toolversion="2.6.0" status="SINGLE_RESULT">44100</sampleRate>
+                        </audio>
+                    </metadata>
+                </fits>
+            </premis3:objectCharacteristicsExtension>
+        </premis3:objectCharacteristics>
+        <premis3:objectIdentifier>
+            <premis3:objectIdentifierType>Fedora Datastream PID</premis3:objectIdentifierType>
+            <premis3:objectIdentifierValue>http://example.com/object</premis3:objectIdentifierValue>
+        </premis3:objectIdentifier>
+    </premis3:object>
+</premis3:premis>
