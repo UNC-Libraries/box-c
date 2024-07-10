@@ -188,8 +188,8 @@ public class SetDatastreamFilter implements IndexDocumentFilter {
         // Audio and video don't necessarily have the same play times, so select the larger one if both are present
         String trackTime = (audioTime == null || Integer.parseInt(videoTime) >= Integer.parseInt(audioTime))
                 ? videoTime : audioTime;
-        return formatExtent(videoHeight, videoWidth, pid)
-                + "x" + trackTime;
+        var extent = formatExtent(videoHeight, videoWidth, pid);
+        return (extent == null) ? "xx" + trackTime : extent + "x" + trackTime;
     }
 
     private String formatTime(Element durationElement) {
