@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<premis3:premis xmlns:premis3="http://www.loc.gov/premis/v3">
+    <script/>
+    <premis3:object xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="premis3:file">
+        <premis3:objectCharacteristics>
+            <premis3:compositionLevel>0</premis3:compositionLevel>
+            <premis3:format>
+                <premis3:formatDesignation>
+                    <premis3:formatName>MPEG-4</premis3:formatName>
+                </premis3:formatDesignation>
+            </premis3:format>
+            <premis3:size>5298788</premis3:size>
+            <premis3:objectCharacteristicsExtension>
+                <fits xmlns="http://hul.harvard.edu/ois/xml/ns/fits/fits_output" xsi:schemaLocation="http://hul.harvard.edu/ois/xml/ns/fits/fits_output http://hul.harvard.edu/ois/xml/xsd/fits/fits_output.xsd" version="1.6.0" timestamp="7/9/24, 4:44 PM">
+                    <identification status="CONFLICT">
+                        <identity format="MPEG-4" mimetype="video/mp4" toolname="FITS" toolversion="1.6.0">
+                            <tool toolname="MediaInfo" toolversion="23.09"/>
+                            <tool toolname="Droid" toolversion="6.5.2"/>
+                            <externalIdentifier toolname="Droid" toolversion="6.5.2" type="puid">fmt/199</externalIdentifier>
+                        </identity>
+                        <identity format="symbolic link to `/opt/data/deposits/f0e63a5e-fac1-4120-bc4d-7cd119b3a3e4/data/_82101931-f10c-4c8f-a979-619da56037ed'" mimetype="inode/symlink" toolname="FITS" toolversion="1.6.0">
+                            <tool toolname="file utility" toolversion="5.11"/>
+                        </identity>
+                    </identification>
+                    <fileinfo>
+                        <filepath toolname="OIS File Information" toolversion="1.0" status="SINGLE_RESULT">/path/to/video.mp4</filepath>
+                        <filename toolname="OIS File Information" toolversion="1.0" status="SINGLE_RESULT">002.mp4</filename>
+                        <size toolname="MediaInfo" toolversion="23.09">5298788</size>
+                        <md5checksum toolname="OIS File Information" toolversion="1.0" status="SINGLE_RESULT">7e6c03925cc3782016e57eb6dc163f66</md5checksum>
+                        <fslastmodified toolname="OIS File Information" toolversion="1.0" status="SINGLE_RESULT">1720543039916</fslastmodified>
+                    </fileinfo>
+                    <filestatus/>
+                    <metadata>
+                        <video>
+                            <location toolname="MediaInfo" toolversion="23.09" status="SINGLE_RESULT">/path/to/object</location>
+                            <mimeType toolname="MediaInfo" toolversion="23.09" status="SINGLE_RESULT">video/quicktime</mimeType>
+                            <format toolname="MediaInfo" toolversion="23.09" status="SINGLE_RESULT">MPEG-4</format>
+                            <formatProfile toolname="MediaInfo" toolversion="23.09" status="SINGLE_RESULT">Base Media</formatProfile>
+                            <duration toolname="MediaInfo" toolversion="23.09" status="SINGLE_RESULT">86616</duration>
+                            <bitRate toolname="MediaInfo" toolversion="23.09" status="SINGLE_RESULT">489405</bitRate>
+                            <dateModified toolname="MediaInfo" toolversion="23.09" status="SINGLE_RESULT">2024-07-09 16:37:19 UTC</dateModified>
+                            <track type="video" id="1" toolname="MediaInfo" toolversion="23.09" status="SINGLE_RESULT">
+                                <videoDataEncoding>avc1</videoDataEncoding>
+                                <codecId>avc1</codecId>
+                                <codecCC>avc1</codecCC>
+                                <codecVersion>High@L3</codecVersion>
+                                <codecName>AVC</codecName>
+                                <codecFamily>H.264</codecFamily>
+                                <codecInfo>Advanced Video Codec</codecInfo>
+                                <compression>Unknown</compression>
+                                <byteOrder>Unknown</byteOrder>
+                                <bitDepth>8 bits</bitDepth>
+                                <bitRate>405406</bitRate>
+                                <duration>78145</duration>
+                                <trackSize>3960046</trackSize>
+                                <width>704 pixels</width>
+                                <height>480 pixels</height>
+                                <frameRate>29.970</frameRate>
+                                <frameRateMode>Constant</frameRateMode>
+                                <frameCount>2342</frameCount>
+                                <aspectRatio>4:3</aspectRatio>
+                                <scanningFormat>Progressive</scanningFormat>
+                                <chromaSubsampling>4:2:0</chromaSubsampling>
+                                <colorspace>YUV</colorspace>
+                                <broadcastStandard>NTSC</broadcastStandard>
+                            </track>
+                            <track type="audio" id="2" toolname="MediaInfo" toolversion="23.09" status="SINGLE_RESULT">
+                                <audioDataEncoding>AAC LC</audioDataEncoding>
+                                <codecId>mp4a-40-2</codecId>
+                                <codecFamily>AAC</codecFamily>
+                                <compression>Lossy</compression>
+                                <bitRate>128000</bitRate>
+                                <bitRateMode>Variable</bitRateMode>
+                                <duration>86616</duration>
+                                <trackSize>1252259</trackSize>
+                                <soundField>Front: L R</soundField>
+                                <samplingRate>48000</samplingRate>
+                                <numSamples>4157568</numSamples>
+                                <channels>2</channels>
+                            </track>
+                        </video>
+                    </metadata>
+                </fits>
+            </premis3:objectCharacteristicsExtension>
+        </premis3:objectCharacteristics>
+        <premis3:objectIdentifier>
+            <premis3:objectIdentifierType>Fedora Datastream PID</premis3:objectIdentifierType>
+            <premis3:objectIdentifierValue>http://example.com/object</premis3:objectIdentifierValue>
+        </premis3:objectIdentifier>
+    </premis3:object>
+</premis3:premis>
