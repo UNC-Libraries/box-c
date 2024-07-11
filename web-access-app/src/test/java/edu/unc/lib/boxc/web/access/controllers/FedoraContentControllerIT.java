@@ -234,6 +234,50 @@ public class FedoraContentControllerIT {
     }
 
     @Test
+    public void testGetMultipleDatastreamsWithRange() throws Exception {
+        testGetMultipleDatastreamsWithRange("/content/");
+    }
+
+    @Test
+    public void testGetMultipleIndexableDatastreamsWithRange() throws Exception {
+        testGetMultipleDatastreamsWithRange("/indexablecontent/");
+    }
+
+    private void testGetMultipleDatastreamsWithRange(String requestPath) throws Exception {
+        PID filePid = makePid();
+
+        String content = "<fits>content</fits>";
+
+        FileObject fileObj = repositoryObjectFactory.createFileObject(filePid, null);
+        fileObj.addOriginalFile(makeContentUri(originalPid(fileObj), BINARY_CONTENT), null, "text/plain", null, null);
+        PID fitsPid = getTechnicalMetadataPid(fileObj.getPid());
+        fileObj.addBinary(fitsPid, makeContentUri(fitsPid, content), "fits.xml", "application/xml", null, null, null);
+
+        // Verify original file content retrievable
+        MvcResult result1 = mvc.perform(get(requestPath + filePid.getId())
+                        .header(RANGE_HEADER,"bytes=0-9"))
+                .andExpect(status().is2xxSuccessful())
+                .andReturn();
+
+        var contentAsString = result1.getResponse().getContentAsString();
+        var binaryContentSubString = BINARY_CONTENT.substring(0,10);
+        assertEquals(binaryContentSubString.length(), contentAsString.length());
+        assertEquals(binaryContentSubString, contentAsString);
+
+        // Verify administrative datastream retrievable
+        MvcResult result2 = mvc.perform(get(requestPath + filePid.getId() + "/" + TECHNICAL_METADATA.getId()))
+                .andExpect(status().is2xxSuccessful())
+                .andReturn();
+
+        MockHttpServletResponse response = result2.getResponse();
+        assertEquals(content, response.getContentAsString());
+
+        assertEquals(content.length(), response.getContentLength());
+        assertEquals("application/xml", response.getContentType());
+        assertEquals("inline; filename=\"fits.xml\"", response.getHeader(CONTENT_DISPOSITION));
+    }
+
+    @Test
     public void testGetAdministrativeDatastreamNoPermissions() throws Exception {
         PID filePid = makePid();
 
