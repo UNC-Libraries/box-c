@@ -119,15 +119,15 @@ public class FedoraContentControllerIT {
         fileObj.addOriginalFile(makeContentUri(originalPid(fileObj), BINARY_CONTENT), "file.txt", "text/plain", null, null);
 
         MvcResult result = mvc.perform(get("/content/" + filePid.getId())
-                        .header(RANGE_HEADER,"bytes:0-10"))
+                        .header(RANGE_HEADER,"bytes=0-9"))
                 .andExpect(status().is2xxSuccessful())
                 .andReturn();
 
         // Verify content was retrieved
         MockHttpServletResponse response = result.getResponse();
-        assertEquals(BINARY_CONTENT, response.getContentAsString());
+        assertEquals(BINARY_CONTENT.substring(0,10), response.getContentAsString());
 
-        assertEquals(10, response.getContentLength());
+        assertEquals(10, response.getContentAsString().length());
         assertEquals("text/plain", response.getContentType());
         assertEquals("inline; filename=\"file.txt\"", response.getHeader(CONTENT_DISPOSITION));
     }

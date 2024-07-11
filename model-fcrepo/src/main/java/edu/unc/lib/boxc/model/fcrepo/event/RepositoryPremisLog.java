@@ -35,7 +35,7 @@ public class RepositoryPremisLog implements PremisLog {
         Lock logLock = lockManager.awaitReadLock(logPid);
         try {
             BinaryObject eventsObj = repoObjLoader.getBinaryObject(logPid);
-            return RDFModelUtil.createModel(eventsObj.getBinaryStream(null), "N-TRIPLE");
+            return RDFModelUtil.createModel(eventsObj.getBinaryStream(), "N-TRIPLE");
         } catch (NotFoundException e) {
             return ModelFactory.createDefaultModel();
         } finally {

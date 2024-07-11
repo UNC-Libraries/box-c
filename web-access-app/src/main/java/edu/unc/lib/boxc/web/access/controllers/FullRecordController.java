@@ -120,7 +120,7 @@ public class FullRecordController extends AbstractErrorHandlingSearchController 
             BinaryObject modsObj = contentObj.getDescription();
             if (modsObj != null) {
                 SAXBuilder builder = createSAXBuilder();
-                try (InputStream modsStream = modsObj.getBinaryStream(null)) {
+                try (InputStream modsStream = modsObj.getBinaryStream()) {
                     Document modsDoc = builder.build(modsStream);
                     xmlDocumentFilteringService.filterExclusions(modsDoc);
                     fullObjectView = xslViewResolver.renderView("external.xslView.fullRecord.url",
