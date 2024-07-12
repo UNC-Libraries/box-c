@@ -1,23 +1,38 @@
 package edu.unc.lib.boxc.services.camel.enhancements;
 
-import static edu.unc.lib.boxc.fcrepo.FcrepoJmsConstants.EVENT_TYPE;
-import static edu.unc.lib.boxc.fcrepo.FcrepoJmsConstants.IDENTIFIER;
-import static edu.unc.lib.boxc.fcrepo.FcrepoJmsConstants.RESOURCE_TYPE;
-import static edu.unc.lib.boxc.model.api.ids.RepositoryPathConstants.HASHED_PATH_DEPTH;
-import static edu.unc.lib.boxc.model.api.ids.RepositoryPathConstants.HASHED_PATH_SIZE;
-import static edu.unc.lib.boxc.model.api.rdf.Fcrepo4Repository.Binary;
-import static edu.unc.lib.boxc.model.api.rdf.Fcrepo4Repository.Container;
-import static edu.unc.lib.boxc.model.fcrepo.ids.DatastreamPids.getTechnicalMetadataPid;
-import static edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPaths.idToPath;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.reset;
-import static org.mockito.Mockito.timeout;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-import static org.mockito.MockitoAnnotations.openMocks;
+import edu.unc.lib.boxc.auth.fcrepo.models.AgentPrincipalsImpl;
+import edu.unc.lib.boxc.model.api.ids.PID;
+import edu.unc.lib.boxc.model.api.objects.BinaryObject;
+import edu.unc.lib.boxc.model.api.objects.CollectionObject;
+import edu.unc.lib.boxc.model.api.objects.DepositRecord;
+import edu.unc.lib.boxc.model.api.objects.FileObject;
+import edu.unc.lib.boxc.model.api.rdf.Cdr;
+import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
+import edu.unc.lib.boxc.model.fcrepo.ids.DatastreamPids;
+import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
+import edu.unc.lib.boxc.model.fcrepo.test.TestHelper;
+import edu.unc.lib.boxc.model.fcrepo.test.TestRepositoryDeinitializer;
+import edu.unc.lib.boxc.operations.impl.edit.UpdateDescriptionService;
+import edu.unc.lib.boxc.operations.impl.edit.UpdateDescriptionService.UpdateDescriptionRequest;
+import edu.unc.lib.boxc.persist.impl.storage.StorageLocationTestHelper;
+import edu.unc.lib.boxc.services.camel.NonBinaryEnhancementProcessor;
+import edu.unc.lib.boxc.services.camel.fulltext.FulltextProcessor;
+import edu.unc.lib.boxc.services.camel.images.AddDerivativeProcessor;
+import edu.unc.lib.boxc.services.camel.solr.SolrIngestProcessor;
+import org.apache.camel.CamelContext;
+import org.apache.camel.Exchange;
+import org.apache.camel.Produce;
+import org.apache.camel.ProducerTemplate;
+import org.apache.camel.builder.NotifyBuilder;
+import org.apache.camel.test.spring.junit5.CamelSpringTestSupport;
+import org.apache.commons.io.FileUtils;
+import org.fcrepo.client.FcrepoClient;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
+import org.springframework.context.support.AbstractApplicationContext;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -28,50 +43,23 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-import edu.unc.lib.boxc.model.fcrepo.ids.DatastreamPids;
-import edu.unc.lib.boxc.model.fcrepo.test.TestRepositoryDeinitializer;
-import edu.unc.lib.boxc.persist.impl.storage.StorageLocationTestHelper;
-import org.apache.camel.BeanInject;
-import org.apache.camel.CamelContext;
-import org.apache.camel.Exchange;
-import org.apache.camel.Produce;
-import org.apache.camel.ProducerTemplate;
-import org.apache.camel.builder.NotifyBuilder;
-import org.apache.camel.test.spring.junit5.CamelSpringTestSupport;
-import org.apache.commons.io.FileUtils;
-import org.fcrepo.client.FcrepoClient;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.io.TempDir;
-import org.junit.rules.TemporaryFolder;
-import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.support.AbstractApplicationContext;
-import org.springframework.context.support.ClassPathXmlApplicationContext;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.ContextHierarchy;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-
-import edu.unc.lib.boxc.auth.fcrepo.models.AgentPrincipalsImpl;
-import edu.unc.lib.boxc.model.api.ids.PID;
-import edu.unc.lib.boxc.model.api.objects.BinaryObject;
-import edu.unc.lib.boxc.model.api.objects.CollectionObject;
-import edu.unc.lib.boxc.model.api.objects.DepositRecord;
-import edu.unc.lib.boxc.model.api.objects.FileObject;
-import edu.unc.lib.boxc.model.api.rdf.Cdr;
-import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
-import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
-import edu.unc.lib.boxc.model.fcrepo.test.TestHelper;
-import edu.unc.lib.boxc.operations.impl.edit.UpdateDescriptionService;
-import edu.unc.lib.boxc.operations.impl.edit.UpdateDescriptionService.UpdateDescriptionRequest;
-import edu.unc.lib.boxc.services.camel.BinaryMetadataProcessor;
-import edu.unc.lib.boxc.services.camel.NonBinaryEnhancementProcessor;
-import edu.unc.lib.boxc.services.camel.fulltext.FulltextProcessor;
-import edu.unc.lib.boxc.services.camel.images.AddDerivativeProcessor;
-import edu.unc.lib.boxc.services.camel.solr.SolrIngestProcessor;
+import static edu.unc.lib.boxc.fcrepo.FcrepoJmsConstants.EVENT_TYPE;
+import static edu.unc.lib.boxc.fcrepo.FcrepoJmsConstants.IDENTIFIER;
+import static edu.unc.lib.boxc.fcrepo.FcrepoJmsConstants.RESOURCE_TYPE;
+import static edu.unc.lib.boxc.model.api.ids.RepositoryPathConstants.HASHED_PATH_DEPTH;
+import static edu.unc.lib.boxc.model.api.ids.RepositoryPathConstants.HASHED_PATH_SIZE;
+import static edu.unc.lib.boxc.model.api.rdf.Fcrepo4Repository.Binary;
+import static edu.unc.lib.boxc.model.api.rdf.Fcrepo4Repository.Container;
+import static edu.unc.lib.boxc.model.fcrepo.ids.DatastreamPids.getTechnicalMetadataPid;
+import static edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPaths.idToPath;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.timeout;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import static org.mockito.MockitoAnnotations.openMocks;
 
 /**
  *
@@ -93,7 +81,7 @@ public class EnhancementRouterIT extends CamelSpringTestSupport {
 
     private CamelContext cdrEnhancements;
 
-    @Produce(uri = "{{cdr.enhancement.stream.camel}}")
+    @Produce("{{cdr.enhancement.stream.camel}}")
     private ProducerTemplate template;
 
     private AddDerivativeProcessor addSmallThumbnailProcessor;
@@ -212,8 +200,8 @@ public class EnhancementRouterIT extends CamelSpringTestSupport {
         final Map<String, Object> headers = createEvent(binObj.getPid(), Binary.getURI());
         template.sendBodyAndHeaders("", headers);
 
-        boolean result1 = notify1.matches(5l, TimeUnit.SECONDS);
-        assertTrue("Enhancement route not satisfied", result1);
+        boolean result1 = notify1.matches(5L, TimeUnit.SECONDS);
+        assertTrue(result1, "Enhancement route not satisfied");
 
         verify(addSmallThumbnailProcessor, timeout(ALLOW_WAIT)).process(any(Exchange.class));
         verify(addLargeThumbnailProcessor, timeout(ALLOW_WAIT)).process(any(Exchange.class));
@@ -240,9 +228,9 @@ public class EnhancementRouterIT extends CamelSpringTestSupport {
         final Map<String, Object> headers = createEvent(mdPid, Binary.getURI());
         template.sendBodyAndHeaders("", headers);
 
-        boolean result = notify.matches(5l, TimeUnit.SECONDS);
+        boolean result = notify.matches(5L, TimeUnit.SECONDS);
 
-        assertTrue("Processing message did not match expectations", result);
+        assertTrue(result, "Processing message did not match expectations");
 
         verify(addSmallThumbnailProcessor, never()).process(any(Exchange.class));
         verify(addLargeThumbnailProcessor, never()).process(any(Exchange.class));
@@ -266,9 +254,9 @@ public class EnhancementRouterIT extends CamelSpringTestSupport {
         final Map<String, Object> headers = createEvent(binObj.getPid(), Binary.getURI());
         template.sendBodyAndHeaders("", headers);
 
-        boolean result = notify.matches(5l, TimeUnit.SECONDS);
+        boolean result = notify.matches(5L, TimeUnit.SECONDS);
 
-        assertTrue("Processing message did not match expectations", result);
+        assertTrue(result, "Processing message did not match expectations");
 
         verify(addSmallThumbnailProcessor, never()).process(any(Exchange.class));
         verify(fulltextProcessor,  never()).process(any(Exchange.class));
@@ -290,9 +278,9 @@ public class EnhancementRouterIT extends CamelSpringTestSupport {
                 Binary.getURI(), Cdr.DescriptiveMetadata.getURI());
         template.sendBodyAndHeaders("", headers);
 
-        boolean result = notify.matches(5l, TimeUnit.SECONDS);
+        boolean result = notify.matches(5L, TimeUnit.SECONDS);
 
-        assertTrue("Processing message did not match expectations", result);
+        assertTrue(result, "Processing message did not match expectations");
 
         verify(solrIngestProcessor, never()).process(any(Exchange.class));
     }
@@ -314,9 +302,9 @@ public class EnhancementRouterIT extends CamelSpringTestSupport {
         final Map<String, Object> headers = createEvent(mdPid, Binary.getURI());
         template.sendBodyAndHeaders("", headers);
 
-        boolean result = notify.matches(5l, TimeUnit.SECONDS);
+        boolean result = notify.matches(5L, TimeUnit.SECONDS);
 
-        assertTrue("Processing message did not match expectations", result);
+        assertTrue(result, "Processing message did not match expectations");
 
         verify(addSmallThumbnailProcessor, never()).process(any(Exchange.class));
         verify(addLargeThumbnailProcessor, never()).process(any(Exchange.class));

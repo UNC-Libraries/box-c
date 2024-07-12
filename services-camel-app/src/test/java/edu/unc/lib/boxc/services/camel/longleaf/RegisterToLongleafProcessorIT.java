@@ -42,9 +42,9 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -215,7 +215,7 @@ public class RegisterToLongleafProcessorIT {
 
     private void assertManifestEntry(String alg, String expectedDigest, URI storageUri) {
         int algIndex = output.indexOf(alg + ":");
-        assertNotEquals("Expected digest algorithm " + alg + " not found in manifest", -1, algIndex);
+        assertNotEquals(-1, algIndex, "Expected digest algorithm " + alg + " not found in manifest");
 
         Path storagePath = Paths.get(storageUri);
         String expectedBase = FileSystemTransferHelpers.getBaseBinaryPath(storagePath);
