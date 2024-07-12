@@ -27,8 +27,8 @@ import java.util.concurrent.TimeUnit;
 import static edu.unc.lib.boxc.model.api.xml.JDOMNamespaceUtil.ATOM_NS;
 import static edu.unc.lib.boxc.model.api.xml.JDOMNamespaceUtil.CDR_MESSAGE_NS;
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * @author bbpennel
@@ -36,7 +36,7 @@ import static org.junit.Assert.assertTrue;
 public class DeregisterLongleafRouteTest extends AbstractLongleafRouteTest {
     private static final String FILTER_DEREGISTER_ENDPOINT = "direct:filter.longleaf.deregister";
 
-    @EndpointInject(uri = "mock:direct:longleaf.dlq")
+    @EndpointInject("mock:direct:longleaf.dlq")
     private MockEndpoint mockDlq;
 
     private DeregisterLongleafProcessor deregisterLongleafProcessor;
@@ -75,8 +75,8 @@ public class DeregisterLongleafRouteTest extends AbstractLongleafRouteTest {
         String contentUri = generateContentUri();
         sendMessages(contentUri);
 
-        boolean result1 = notify.matches(5l, TimeUnit.SECONDS);
-        assertTrue("Deregister route not satisfied", result1);
+        boolean result1 = notify.matches(5L, TimeUnit.SECONDS);
+        assertTrue(result1, "Deregister route not satisfied");
 
         assertSubmittedPaths(2000, contentUri);
     }
@@ -91,8 +91,8 @@ public class DeregisterLongleafRouteTest extends AbstractLongleafRouteTest {
         String[] contentUris = generateContentUris(3);
         sendMessages(contentUris);
 
-        boolean result1 = notify.matches(5l, TimeUnit.SECONDS);
-        assertTrue("Deregister route not satisfied", result1);
+        boolean result1 = notify.matches(5L, TimeUnit.SECONDS);
+        assertTrue(result1, "Deregister route not satisfied");
 
         assertSubmittedPaths(2000, contentUris);
     }
@@ -106,8 +106,8 @@ public class DeregisterLongleafRouteTest extends AbstractLongleafRouteTest {
         String[] contentUris = generateContentUris(10);
         sendMessages(contentUris);
 
-        boolean result1 = notify.matches(5l, TimeUnit.SECONDS);
-        assertTrue("Deregister route not satisfied", result1);
+        boolean result1 = notify.matches(5L, TimeUnit.SECONDS);
+        assertTrue(result1, "Deregister route not satisfied");
 
         assertSubmittedPaths(5000, contentUris);
     }
@@ -124,15 +124,15 @@ public class DeregisterLongleafRouteTest extends AbstractLongleafRouteTest {
         for (int i = 0; i < 3; i++) {
             contentUris[i*3] = generateContentUri();
             successUris[i*2] = contentUris[i*3];
-            contentUris[i*3+1] = "/path/to/file/" + UUID.randomUUID().toString();
+            contentUris[i*3+1] = "/path/to/file/" + UUID.randomUUID();
             successUris[i*2+1] = contentUris[i*3+1];
             contentUris[i*3+2] = PIDs.get(UUID.randomUUID().toString()).getRepositoryPath();
-            contentUris[i*3+3] = "file/" + UUID.randomUUID().toString();
+            contentUris[i*3+3] = "file/" + UUID.randomUUID();
         }
         sendMessages(contentUris);
 
-        boolean result1 = notify.matches(5l, TimeUnit.SECONDS);
-        assertTrue("Deregister route not satisfied", result1);
+        boolean result1 = notify.matches(5L, TimeUnit.SECONDS);
+        assertTrue(result1, "Deregister route not satisfied");
 
         assertSubmittedPaths(10000, successUris);
     }
@@ -157,8 +157,8 @@ public class DeregisterLongleafRouteTest extends AbstractLongleafRouteTest {
 
         sendMessages(contentUris);
 
-        boolean result1 = notify.matches(20l, TimeUnit.SECONDS);
-        assertTrue("Deregister route not satisfied", result1);
+        boolean result1 = notify.matches(20L, TimeUnit.SECONDS);
+        assertTrue(result1, "Deregister route not satisfied");
 
         assertSubmittedPaths(5000, contentUris);
 
@@ -166,10 +166,10 @@ public class DeregisterLongleafRouteTest extends AbstractLongleafRouteTest {
         List<Exchange> dlqExchanges = mockDlq.getExchanges();
 
         Exchange failed = dlqExchanges.get(0);
-        List<String> failedList = failed.getIn().getBody(List.class);
-        assertEquals("Only two uris should be in the failed message body", 1, failedList.size());
-        assertTrue("Exchange in DLQ must contain the fcrepo uri of the failed binary",
-                failedList.contains(contentUris[1]));
+        var failedList = failed.getIn().getBody(List.class);
+        assertEquals(1, failedList.size(), "Only two uris should be in the failed message body");
+        assertTrue(failedList.contains(contentUris[1]),
+                "Exchange in DLQ must contain the fcrepo uri of the failed binary");
     }
 
     @Test
@@ -189,8 +189,8 @@ public class DeregisterLongleafRouteTest extends AbstractLongleafRouteTest {
 
         sendMessages(contentUris);
 
-        boolean result1 = notify.matches(5l, TimeUnit.SECONDS);
-        assertTrue("Deregister route not satisfied", result1);
+        boolean result1 = notify.matches(5L, TimeUnit.SECONDS);
+        assertTrue(result1, "Deregister route not satisfied");
 
         assertSubmittedPaths(5000, contentUris);
 
@@ -198,15 +198,15 @@ public class DeregisterLongleafRouteTest extends AbstractLongleafRouteTest {
 
         List<Exchange> dlqExchanges = mockDlq.getExchanges();
         Exchange failed = dlqExchanges.get(0);
-        List<String> failedList = failed.getIn().getBody(List.class);
-        assertEquals("Only one uri should be in the failed message body", 1, failedList.size());
+        var failedList = failed.getIn().getBody(List.class);
+        assertEquals(1, failedList.size(), "Only one uri should be in the failed message body");
 
-        assertTrue("Exchange in DLQ must contain the fcrepo uri of the unprocessed binary",
-                failedList.contains(contentUris[0]));
+        assertTrue(failedList.contains(contentUris[0]),
+                "Exchange in DLQ must contain the fcrepo uri of the unprocessed binary");
     }
 
     private String generateContentUri() {
-        return "file:///path/to/file/" + UUID.randomUUID().toString() + "." + System.nanoTime();
+        return "file:///path/to/file/" + UUID.randomUUID() + "." + System.nanoTime();
     }
 
     private String[] generateContentUris(int num) {

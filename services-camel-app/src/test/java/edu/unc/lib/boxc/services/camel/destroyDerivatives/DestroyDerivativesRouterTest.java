@@ -20,7 +20,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.concurrent.TimeUnit;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -31,10 +31,9 @@ public class DestroyDerivativesRouterTest extends CamelTestSupport {
     private static final String DESTROY_FULLTEXT_ROUTE = "CdrDestroyFullText";
     private static final String DESTROY_IMAGE_ROUTE = "CdrDestroyImage";
     private static final String DESTROY_ACCESS_COPY_ROUTE = "CdrDestroyAccessCopy";
-    private static final String DESTROY_SRC_COPY = "CdrDestroyCollectionUpload";
     private static final String TEST_ID = "dee2614c-8a4b-4ac2-baf2-4b4afc11af87";
 
-    @Produce(uri = "direct:start")
+    @Produce("direct:start")
     private ProducerTemplate template;
 
     private DestroyedMsgProcessor destroyedMsgProcessor;
@@ -88,8 +87,8 @@ public class DestroyDerivativesRouterTest extends CamelTestSupport {
         var body = createMessage(Cdr.FileObject, "text/plain", TEST_ID, contentPath);
         template.sendBody(body);
 
-        boolean result1 = notify.matches(5l, TimeUnit.SECONDS);
-        assertTrue("Register route not satisfied", result1);
+        boolean result1 = notify.matches(5L, TimeUnit.SECONDS);
+        assertTrue(result1, "Register route not satisfied");
 
         imgDestroyEndpoint.assertIsSatisfied();
         fullTextDestroyEndpoint.assertIsSatisfied();
@@ -103,10 +102,6 @@ public class DestroyDerivativesRouterTest extends CamelTestSupport {
         fullTextDestroyEndpoint.expectedMessageCount(0);
 
         createContext(DESTROY_DERIVATIVES_ROUTE);
-
-        NotifyBuilder notify = new NotifyBuilder(context)
-                .whenCompleted(1)
-                .create();
 
         Path contentPath = tmpFolder.resolve("content.png");
         var body = createMessage(Cdr.FileObject, "image/png", TEST_ID, contentPath);
@@ -125,10 +120,6 @@ public class DestroyDerivativesRouterTest extends CamelTestSupport {
 
         createContext(DESTROY_DERIVATIVES_ROUTE);
 
-        NotifyBuilder notify = new NotifyBuilder(context)
-                .whenCompleted(1)
-                .create();
-
         Path contentPath = tmpFolder.resolve("content");
         var body = createMessage(Cdr.FileObject, "application", TEST_ID, contentPath);
         template.sendBody(body);
@@ -140,10 +131,6 @@ public class DestroyDerivativesRouterTest extends CamelTestSupport {
     @Test
     public void destroyTextDerivative() throws Exception {
         createContext(DESTROY_FULLTEXT_ROUTE);
-
-        NotifyBuilder notify = new NotifyBuilder(context)
-                .whenCompleted(1)
-                .create();
 
         Path contentPath = tmpFolder.resolve("content");
         var body = createMessage(Cdr.FileObject, "text/plain", TEST_ID, contentPath);
@@ -159,10 +146,6 @@ public class DestroyDerivativesRouterTest extends CamelTestSupport {
     @Test
     public void destroyImageThumbnailDerivative() throws Exception {
         createContext(DESTROY_IMAGE_ROUTE);
-
-        NotifyBuilder notify = new NotifyBuilder(context)
-                .whenCompleted(1)
-                .create();
 
         Path contentPath = tmpFolder.resolve("content");
         var body = createMessage(Cdr.FileObject, "image/png", TEST_ID, contentPath);

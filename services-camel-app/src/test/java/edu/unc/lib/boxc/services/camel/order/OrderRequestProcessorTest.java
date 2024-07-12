@@ -32,9 +32,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
@@ -56,8 +56,6 @@ public class OrderRequestProcessorTest {
     private static final String CHILD2_UUID = "0e33ad0b-7a16-4bfa-b833-6126c262d889";
     private static final String CHILD3_UUID = "9cb6cc61-d88e-403e-b959-2396cd331a12";
     private static final String EMAIL = "user1@example.com";
-    private PID parentPid1;
-    private PID parentPid2;
     private AutoCloseable closeable;
     @Mock
     private AccessControlService accessControlService;
@@ -90,8 +88,6 @@ public class OrderRequestProcessorTest {
         processor.setIndexingMessageSender(indexingMessageSender);
         processor.setOrderValidatorFactory(orderValidatorFactory);
         processor.setOrderNotificationService(orderNotificationService);
-        parentPid1 = PIDs.get(PARENT1_UUID);
-        parentPid2 = PIDs.get(PARENT2_UUID);
         when(accessControlService.hasAccess(any(), any(), eq(Permission.orderMembers))).thenReturn(true);
         when(orderJobFactory.createJob(any())).thenReturn(orderJob);
         when(orderValidatorFactory.createValidator(any())).thenReturn(orderValidator);
@@ -324,8 +320,8 @@ public class OrderRequestProcessorTest {
         var expected = Arrays.asList(expectedErrors);
         var errors = errorsCaptor.getValue();
         var message = "Expected errors:\n" + expected + "\nBut received:\n" + errors;
-        assertTrue(message, errors.containsAll(expected));
-        assertEquals(message, expectedErrors.length, errors.size());
+        assertTrue(errors.containsAll(expected), message);
+        assertEquals(expectedErrors.length, errors.size(), message);
     }
 
     private void assertNotificationWithoutSuccesses() {
@@ -337,8 +333,8 @@ public class OrderRequestProcessorTest {
         var expected = Arrays.stream(expectedSuccesses).map(PIDs::get).collect(Collectors.toList());
         var successes = successesCaptor.getValue();
         var message = "Expected successes:\n" + expected + "\nBut received:\n" + successes;
-        assertTrue(message, successes.containsAll(expected));
-        assertEquals(message, expectedSuccesses.length, successes.size());
+        assertTrue(successes.containsAll(expected), message);
+        assertEquals(expectedSuccesses.length, successes.size(), message);
     }
 
     private Exchange createRequestExchange(Map<String, List<String>> parentToOrder) throws IOException {

@@ -4,7 +4,6 @@ import com.google.common.collect.ImmutableMap;
 import edu.unc.lib.boxc.fcrepo.utils.FedoraTransaction;
 import edu.unc.lib.boxc.fcrepo.utils.TransactionManager;
 import edu.unc.lib.boxc.model.api.ids.PID;
-import edu.unc.lib.boxc.model.api.ids.PIDMinter;
 import edu.unc.lib.boxc.model.api.objects.AdminUnit;
 import edu.unc.lib.boxc.model.api.objects.BinaryObject;
 import edu.unc.lib.boxc.model.api.objects.CollectionObject;
@@ -33,7 +32,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.ContextHierarchy;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.io.File;
@@ -43,9 +41,9 @@ import java.util.List;
 import java.util.Map;
 
 import static edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPaths.getContentRootPid;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.openMocks;
 
@@ -60,8 +58,6 @@ public class BinaryCleanupProcessorIT {
     private String baseAddress;
     @Autowired
     private RepositoryInitializer repositoryInitializer;
-    @Autowired
-    private PIDMinter pidMinter;
     @Autowired
     private RepositoryObjectFactory repoObjectFactory;
     @javax.annotation.Resource(name = "repositoryObjectLoaderNoCache")
@@ -118,9 +114,6 @@ public class BinaryCleanupProcessorIT {
 
     @Test
     public void noBinariesTest() throws Exception {
-        PID pid = pidMinter.mintContentPid();
-        PID dsPid = DatastreamPids.getMdDescriptivePid(pid);
-
         when(message.getBody(Map.class)).thenReturn(Collections.emptyMap());
         processor.process(exchange);
         // Does nothing, but should not fail
@@ -138,12 +131,12 @@ public class BinaryCleanupProcessorIT {
         BinaryObject mdEventsObj = repoObjectLoader.getBinaryObject(mdEventsPid);
         URI mdEventsUri = mdEventsObj.getContentUri();
         File headContentFile = new File(mdEventsUri);
-        assertTrue("Binary must exist prior to cleanup", headContentFile.exists());
+        assertTrue(headContentFile.exists(), "Binary must exist prior to cleanup");
 
         when(message.getBody(Map.class)).thenReturn(ImmutableMap.of(mdEventsPid.getRepositoryPath(), mdEventsUri.toString()));
         processor.process(exchange);
 
-        assertTrue("Binary must exist after cleanup", headContentFile.exists());
+        assertTrue(headContentFile.exists(), "Binary must exist after cleanup");
     }
 
     @Test
@@ -167,7 +160,7 @@ public class BinaryCleanupProcessorIT {
         BinaryObject mdEventsObj = repoObjectLoader.getBinaryObject(mdEventsPid);
         URI headContentUri = mdEventsObj.getContentUri();
         File headContentFile = new File(headContentUri);
-        assertTrue("Binary must exist prior to cleanup", headContentFile.exists());
+        assertTrue(headContentFile.exists(), "Binary must exist prior to cleanup");
 
         StorageLocation storageLoc = storageLocationManager.getStorageLocationById(StorageLocationTestHelper.LOC1_ID);
         List<URI> startingUris = storageLoc.getAllStorageUris(mdEventsPid);
@@ -176,7 +169,7 @@ public class BinaryCleanupProcessorIT {
         when(message.getBody(Map.class)).thenReturn(ImmutableMap.of(mdEventsPid.getRepositoryPath(), headContentUri.toString()));
         processor.process(exchange);
 
-        assertTrue("Head binary must exist after cleanup", headContentFile.exists());
+        assertTrue(headContentFile.exists(), "Head binary must exist after cleanup");
 
         List<URI> afterUris = storageLoc.getAllStorageUris(mdEventsPid);
         assertEquals(1, afterUris.size());
@@ -196,7 +189,7 @@ public class BinaryCleanupProcessorIT {
         BinaryObject mdEventsObj = repoObjectLoader.getBinaryObject(mdEventsPid);
         URI headContentUri = mdEventsObj.getContentUri();
         File headContentFile = new File(headContentUri);
-        assertTrue("Binary must exist prior to cleanup", headContentFile.exists());
+        assertTrue(headContentFile.exists(), "Binary must exist prior to cleanup");
 
         StorageLocation storageLoc = storageLocationManager.getStorageLocationById(StorageLocationTestHelper.LOC1_ID);
 
@@ -224,7 +217,7 @@ public class BinaryCleanupProcessorIT {
         // Check that correct files are in place after ending the tx
         BinaryObject afterMdEventsObj = repoObjectLoader.getBinaryObject(mdEventsPid);
         URI afterContentUri = afterMdEventsObj.getContentUri();
-        assertNotEquals("Content URI of Event Log must have updated", afterContentUri, headContentUri);
+        assertNotEquals(afterContentUri, headContentUri, "Content URI of Event Log must have updated");
 
         when(message.getBody(Map.class)).thenReturn(ImmutableMap.of(mdEventsPid.getRepositoryPath(), afterContentUri.toString()));
         processor.process(exchange);
