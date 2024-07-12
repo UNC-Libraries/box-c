@@ -10,8 +10,8 @@ import edu.unc.lib.boxc.services.camel.TestHelper;
 import org.apache.camel.BeanInject;
 import org.apache.camel.Produce;
 import org.apache.camel.ProducerTemplate;
-import org.apache.camel.test.spring.CamelSpringTestSupport;
-import org.junit.Test;
+import org.apache.camel.test.spring.junit5.CamelSpringTestSupport;
+import org.junit.jupiter.api.Test;
 import org.springframework.context.support.AbstractApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
