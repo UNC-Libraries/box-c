@@ -385,57 +385,67 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
         addAclProperties(childResc, aResc);
         populateAIPProperties(childResc, aResc);
 
-        if (originalResc != null) {
-            String storageString = getPropertyValue(originalResc, CdrDeposit.storageUri);
-            URI storageUri = URI.create(storageString);
-            // Pull out file properties if they are present
-            String mimetype = getPropertyValue(originalResc, CdrDeposit.mimetype);
-
-            String sha1 = getPropertyValue(originalResc, CdrDeposit.sha1sum);
-            String md5 = getPropertyValue(originalResc, CdrDeposit.md5sum);
-
-            // Label comes from file object if not set for binary
-            String label = getPropertyValue(originalResc, CdrDeposit.label);
-            if (label == null) {
-                label = getPropertyValue(childResc, CdrDeposit.label);
-            }
-
-            // Add the file to the work as the datafile of its own FileObject
-            // Retry if there are checksum failures
-            for (int retryCnt = 1; retryCnt <= CHECKSUM_RETRIES; retryCnt++) {
-                try {
-                    fileObj = work.addDataFile(childPid, storageUri, label, mimetype, sha1, md5, aipModel);
-                    break;
-                } catch (ChecksumMismatchException e) {
-                    if ((CHECKSUM_RETRIES - retryCnt) > 0) {
-                        log.warn("Failed to ingest file {} due to a checksum mismatch, {} retries remaining: {}",
-                                childPid.getQualifiedId(), CHECKSUM_RETRIES - retryCnt, e.getMessage());
-                        try {
-                            Thread.sleep(retryCnt * 1000);
-                        } catch (InterruptedException ef) {
-                            throw new JobInterruptedException(e.getMessage());
-                        }
-                    } else {
-                        failJob("Unable to ingest " + childPid.getQualifiedId(), e.getMessage());
-                    }
-                }
-            }
-
-            // Record the size of the file for throughput stats
-            if (storageUri.getScheme().equals("file")) {
-                metricsClient.incrDepositFileThroughput(getDepositUUID(), Paths.get(storageUri).toFile().length());
-            }
-
-            // Add the FITS report for this file
-            addFitsHistory(fileObj, childResc);
-            addFitsReport(fileObj, childResc);
-        } else {
+        if (originalResc == null) {
             // create a FileObject without an Original file for streaming properties
             fileObj = repoObjFactory.createFileObject(childPid, aipModel);
             work.addMember(fileObj);
+            return fileObj;
         }
 
+        String storageString = getPropertyValue(originalResc, CdrDeposit.storageUri);
+        URI storageUri = URI.create(storageString);
+        // Pull out file properties if they are present
+        String mimetype = getPropertyValue(originalResc, CdrDeposit.mimetype);
+
+        String sha1 = getPropertyValue(originalResc, CdrDeposit.sha1sum);
+        String md5 = getPropertyValue(originalResc, CdrDeposit.md5sum);
+
+        // Label comes from file object if not set for binary
+        String label = getPropertyValue(originalResc, CdrDeposit.label);
+        if (label == null) {
+            label = getPropertyValue(childResc, CdrDeposit.label);
+        }
+
+        // Add the file to the work as the datafile of its own FileObject
+        fileObj = addFileObjectWithRetries(work, childPid, storageUri, label, mimetype, new String[] { sha1, md5}, aipModel);
+
+        recordFileMetrics(storageUri);
+
+        // Add the FITS report for this file
+        addFitsHistory(fileObj, childResc);
+        addFitsReport(fileObj, childResc);
+
         return fileObj;
+    }
+
+    // Record the size of the file for throughput stats
+    private void recordFileMetrics(URI storageUri) {
+        if (storageUri.getScheme().equals("file")) {
+            metricsClient.incrDepositFileThroughput(getDepositUUID(), Paths.get(storageUri).toFile().length());
+        }
+    }
+
+    private FileObject addFileObjectWithRetries(WorkObject work, PID childPid, URI storageUri, String label,
+                                                String mimetype, String[] checksums, Model aipModel) {
+        // Retry if there are checksum failures
+        for (int retryCnt = 1; retryCnt <= CHECKSUM_RETRIES; retryCnt++) {
+            try {
+                return work.addDataFile(childPid, storageUri, label, mimetype, checksums[0], checksums[1], aipModel);
+            } catch (ChecksumMismatchException e) {
+                if ((CHECKSUM_RETRIES - retryCnt) > 0) {
+                    log.warn("Failed to ingest file {} due to a checksum mismatch, {} retries remaining: {}",
+                            childPid.getQualifiedId(), CHECKSUM_RETRIES - retryCnt, e.getMessage());
+                    try {
+                        Thread.sleep(retryCnt * 1000);
+                    } catch (InterruptedException ef) {
+                        throw new JobInterruptedException(e.getMessage());
+                    }
+                } else {
+                    failJob("Unable to ingest " + childPid.getQualifiedId(), e.getMessage());
+                }
+            }
+        }
+        return null;
     }
 
     private void addFitsHistory(FileObject fileObj, Resource dResc) {

@@ -6,6 +6,8 @@ package edu.unc.lib.boxc.model.api;
  * @author bbpennel
  */
 public class StreamingConstants {
+    private StreamingConstants() {
+    }
 
     // If you change this value it also needs to be updated in static/js/admin/src/EditStreamingPropertiesForm.js
     public static final String STREAMREAPER_PREFIX_URL = "https://durastream.lib.unc.edu/player";

@@ -215,11 +215,9 @@ public class ValidateContentModelJob extends AbstractDepositJob{
         var hasOrigResource = origResource != null;
         var hasStreamingProperty = resc.hasProperty(Cdr.streamingUrl);
 
-        if (hasOrigResource) {
-            if (!origResource.hasProperty(CdrDeposit.stagingLocation)) {
-                // has original file but needs staging location
-                failJob(null, "No staging location provided for file ({0})", resc.getURI());
-            }
+        if (hasOrigResource && !origResource.hasProperty(CdrDeposit.stagingLocation)) {
+            // has original file but needs staging location
+            failJob(null, "No staging location provided for file ({0})", resc.getURI());
         }
         if (hasStreamingProperty) {
             validateStreamingProperties(resc);
