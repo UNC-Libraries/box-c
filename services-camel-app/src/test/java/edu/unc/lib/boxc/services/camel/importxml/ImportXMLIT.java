@@ -36,8 +36,8 @@ import java.util.concurrent.TimeUnit;
 
 import static edu.unc.lib.boxc.model.api.xml.JDOMNamespaceUtil.MODS_V3_NS;
 import static edu.unc.lib.boxc.persist.impl.storage.StorageLocationTestHelper.newStorageLocationTestHelper;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.openMocks;
@@ -138,8 +138,8 @@ public class ImportXMLIT extends CamelSpringTestSupport {
                 .whenCompleted(1)
                 .create();
 
-        boolean result = notify.matches(5L, TimeUnit.SECONDS);
-        assertTrue(result, "Processing message did not match expectations");
+        boolean result = notify.matches(5l, TimeUnit.SECONDS);
+        assertTrue("Processing message did not match expectations", result);
 
         FolderObject updateObject = repoObjectLoader.getFolderObject(folderObject.getPid());
         Document modsDoc = parseDescription(updateObject);

@@ -43,7 +43,7 @@ import java.util.concurrent.TimeUnit;
 
 import static edu.unc.lib.boxc.operations.jms.destroy.DestroyObjectsHelper.serializeDestroyRequest;
 import static org.apache.jena.rdf.model.ModelFactory.createDefaultModel;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
@@ -63,7 +63,7 @@ public class DestroyObjectsRouterTest extends CamelTestSupport {
     private static final String USER_NAME = "user";
     private static final String USER_GROUPS = "edu:lib:staff_grp";
 
-    @Produce("direct:start")
+    @Produce(uri = "direct:start")
     protected ProducerTemplate template;
 
     private AgentPrincipals agent;
@@ -172,12 +172,14 @@ public class DestroyObjectsRouterTest extends CamelTestSupport {
 
         template.sendBody("");
 
-        boolean result1 = notify.matches(5L, TimeUnit.SECONDS);
-        assertTrue(result1, "Register route not satisfied");
+        boolean result1 = notify.matches(5l, TimeUnit.SECONDS);
+        assertTrue("Register route not satisfied", result1);
         // The mocked routes don't match when using parallel processing
     }
 
     private void createContext(String routeName, String currentRoute) throws Exception {
-        AdviceWith.adviceWith(context, routeName, a -> a.replaceFromWith(currentRoute));
+        AdviceWith.adviceWith(context, routeName, a -> {
+            a.replaceFromWith(currentRoute);
+        });
     }
 }

@@ -23,7 +23,7 @@ import static org.mockito.Mockito.verify;
  */
 public class ThumbnailRouterTest extends CamelSpringTestSupport {
     private AgentPrincipals agent = new AgentPrincipalsImpl("user", new AccessGroupSetImpl("agroup"));
-    @Produce("direct:start")
+    @Produce(uri = "direct:start")
     protected ProducerTemplate template;
     @BeanInject(value = "thumbnailRequestProcessor")
     private ThumbnailRequestProcessor processor;

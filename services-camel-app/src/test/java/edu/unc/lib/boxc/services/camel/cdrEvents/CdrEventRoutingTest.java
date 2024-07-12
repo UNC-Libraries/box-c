@@ -30,8 +30,8 @@ import java.util.concurrent.TimeUnit;
 import static edu.unc.lib.boxc.operations.jms.indexing.IndexingActionType.ADD_SET_TO_PARENT;
 import static edu.unc.lib.boxc.operations.jms.indexing.IndexingActionType.UPDATE_ACCESS_TREE;
 import static java.util.Collections.emptyList;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -100,7 +100,7 @@ public class CdrEventRoutingTest extends CamelSpringTestSupport {
 
         opsMsgSender.sendAddOperation(USER_ID, destinations, added, emptyList(), DEPOSIT_ID);
 
-        notify.matches(3L, TimeUnit.SECONDS);
+        notify.matches(3l, TimeUnit.SECONDS);
 
         verify(mockIndexingAction).performAction(updateRequestCaptor.capture());
 
@@ -121,7 +121,7 @@ public class CdrEventRoutingTest extends CamelSpringTestSupport {
 
         opsMsgSender.sendMarkForDeletionOperation(USER_ID, pids);
 
-        notify.matches(3L, TimeUnit.SECONDS);
+        notify.matches(3l, TimeUnit.SECONDS);
 
         verify(mockIndexingAction).performAction(updateRequestCaptor.capture());
 

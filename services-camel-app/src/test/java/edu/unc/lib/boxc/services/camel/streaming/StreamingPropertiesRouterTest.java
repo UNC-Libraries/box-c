@@ -20,7 +20,7 @@ import static org.mockito.Mockito.verify;
 
 public class StreamingPropertiesRouterTest extends CamelSpringTestSupport {
     private AgentPrincipals agent = new AgentPrincipalsImpl("user", new AccessGroupSetImpl("agroup"));
-    @Produce("direct:start")
+    @Produce(uri = "direct:start")
     protected ProducerTemplate template;
 
     @BeanInject(value = "streamingPropertiesRequestProcessor")

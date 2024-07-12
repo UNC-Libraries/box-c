@@ -24,7 +24,7 @@ import static org.mockito.Mockito.verify;
 @ExtendWith(MockitoExtension.class)
 public class ViewSettingRouterTest extends CamelTestSupport {
     private AgentPrincipals agent = new AgentPrincipalsImpl("user", new AccessGroupSetImpl("agroup"));
-    @Produce("direct:start")
+    @Produce(uri = "direct:start")
     protected ProducerTemplate template;
 
     @Mock

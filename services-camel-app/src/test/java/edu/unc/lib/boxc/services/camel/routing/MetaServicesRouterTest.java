@@ -50,10 +50,10 @@ public class MetaServicesRouterTest extends CamelSpringTestSupport {
     @PropertyInject(value = "fcrepo.baseUri")
     private static String baseUri;
 
-    @EndpointInject("mock:fcrepo")
+    @EndpointInject(uri = "mock:fcrepo")
     private MockEndpoint resultEndpoint;
 
-    @Produce("direct:start")
+    @Produce(uri = "direct:start")
     private ProducerTemplate template;
 
     @Override

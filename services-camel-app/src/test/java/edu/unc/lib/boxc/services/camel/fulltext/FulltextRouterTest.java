@@ -41,7 +41,7 @@ public class FulltextRouterTest extends CamelTestSupport {
     private FulltextProcessor ftProcessor;
     private AddDerivativeProcessor adProcessor;
 
-    @Produce("direct:start")
+    @Produce(uri = "direct:start")
     protected ProducerTemplate template;
 
     @TempDir

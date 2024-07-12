@@ -1,5 +1,15 @@
 package edu.unc.lib.boxc.services.camel.cdrEvents;
 
+import static edu.unc.lib.boxc.model.api.xml.JDOMNamespaceUtil.ATOM_NS;
+import static edu.unc.lib.boxc.services.camel.util.CdrFcrepoHeaders.CdrUpdateAction;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import static org.mockito.MockitoAnnotations.openMocks;
+
+import java.io.ByteArrayInputStream;
+
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
 import org.jdom2.Document;
@@ -14,16 +24,6 @@ import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
-
-import java.io.ByteArrayInputStream;
-
-import static edu.unc.lib.boxc.model.api.xml.JDOMNamespaceUtil.ATOM_NS;
-import static edu.unc.lib.boxc.services.camel.util.CdrFcrepoHeaders.CdrUpdateAction;
-import static org.junit.jupiter.api.Assertions.assertInstanceOf;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-import static org.mockito.MockitoAnnotations.openMocks;
 
 /**
  *
@@ -88,7 +88,7 @@ public class CdrEventProcessorTest {
 
         verify(message).setBody(bodyCaptor.capture());
         Object bodyObject = bodyCaptor.getValue();
-        assertInstanceOf(Document.class, bodyObject);
+        assertTrue(bodyObject instanceof Document);
     }
 
     @Test
@@ -106,7 +106,7 @@ public class CdrEventProcessorTest {
 
         verify(message).setBody(bodyCaptor.capture());
         Object bodyObject = bodyCaptor.getValue();
-        assertInstanceOf(Document.class, bodyObject);
+        assertTrue(bodyObject instanceof Document);
     }
 
     @Test

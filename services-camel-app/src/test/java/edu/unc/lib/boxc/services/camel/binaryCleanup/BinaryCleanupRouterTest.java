@@ -16,7 +16,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.concurrent.TimeUnit;
 
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 
@@ -25,7 +25,7 @@ import static org.mockito.Mockito.verify;
  */
 @ExtendWith(MockitoExtension.class)
 public class BinaryCleanupRouterTest extends CamelTestSupport {
-    @Produce("direct:binaryCleanup")
+    @Produce(uri = "direct:binaryCleanup")
     private ProducerTemplate template;
 
     @Mock
@@ -50,7 +50,7 @@ public class BinaryCleanupRouterTest extends CamelTestSupport {
 
         template.sendBody(ImmutableMap.of(dsPid.getRepositoryPath(), "file:///path/to/something.txt"));
 
-        assertTrue(notify.matches(5L, TimeUnit.SECONDS), "Route not satisfied");
+        assertTrue("Route not satisfied", notify.matches(5l, TimeUnit.SECONDS));
         verify(binaryCleanupProcessor).process(any());
     }
 }

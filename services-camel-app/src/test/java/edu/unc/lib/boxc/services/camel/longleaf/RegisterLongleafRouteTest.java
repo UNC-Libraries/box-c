@@ -12,6 +12,7 @@ import edu.unc.lib.boxc.persist.api.transfer.BinaryTransferOutcome;
 import edu.unc.lib.boxc.persist.api.transfer.BinaryTransferService;
 import edu.unc.lib.boxc.persist.api.transfer.BinaryTransferSession;
 import edu.unc.lib.boxc.persist.impl.storage.StorageLocationTestHelper;
+import org.apache.camel.CamelContext;
 import org.apache.camel.EndpointInject;
 import org.apache.camel.Exchange;
 import org.apache.camel.Produce;
@@ -41,8 +42,8 @@ import java.util.concurrent.TimeUnit;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.fcrepo.camel.FcrepoHeaders.FCREPO_URI;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 /**
  * @author bbpennel
@@ -50,19 +51,21 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 public class RegisterLongleafRouteTest extends AbstractLongleafRouteTest {
     private static final String TEXT1_BODY = "Some content";
     private static final String TEXT1_SHA1 = DigestUtils.sha1Hex(TEXT1_BODY);
+    private static final URI CONTENT_URI = URI.create("file:///path/to/content.txt");
 
-    @Produce("direct-vm:filter.longleaf")
+    @Produce(uri = "direct-vm:filter.longleaf")
     private ProducerTemplate template;
 
-    @EndpointInject("mock:direct:longleaf.dlq")
+    @EndpointInject(uri = "mock:direct:longleaf.dlq")
     private MockEndpoint mockDlq;
 
-    @EndpointInject("mock:direct:registrationSuccessful")
+    @EndpointInject(uri = "mock:direct:registrationSuccessful")
     private MockEndpoint mockSuccess;
 
     @TempDir
     public Path tmpFolder;
     private String baseAddress;
+    private CamelContext cdrLongleaf;
 
     private RepositoryObjectFactory repoObjFactory;
     private StorageLocationManager locManager;
@@ -125,8 +128,8 @@ public class RegisterLongleafRouteTest extends AbstractLongleafRouteTest {
 
         template.sendBodyAndHeaders("", createEvent(origBin.getPid()));
 
-        boolean result1 = notify.matches(5L, TimeUnit.SECONDS);
-        assertTrue(result1, "Register route not satisfied");
+        boolean result1 = notify.matches(5l, TimeUnit.SECONDS);
+        assertTrue("Register route not satisfied", result1);
 
         mockDlq.assertIsSatisfied();
         mockSuccess.assertIsSatisfied(1000);
@@ -148,8 +151,8 @@ public class RegisterLongleafRouteTest extends AbstractLongleafRouteTest {
 
         template.sendBodyAndHeaders("", createEvent(binPid));
 
-        boolean result1 = notify.matches(5L, TimeUnit.SECONDS);
-        assertTrue(result1, "Register route not satisfied");
+        boolean result1 = notify.matches(5l, TimeUnit.SECONDS);
+        assertTrue("Register route not satisfied", result1);
 
         mockDlq.assertIsSatisfied();
         mockSuccess.assertIsSatisfied();
@@ -173,8 +176,8 @@ public class RegisterLongleafRouteTest extends AbstractLongleafRouteTest {
 
         template.sendBodyAndHeaders("", createEvent(origBin.getPid()));
 
-        boolean result1 = notify.matches(5L, TimeUnit.SECONDS);
-        assertTrue(result1, "Register route not satisfied");
+        boolean result1 = notify.matches(5l, TimeUnit.SECONDS);
+        assertTrue("Register route not satisfied", result1);
 
         mockDlq.assertIsSatisfied(1000);
         mockSuccess.assertIsSatisfied();
@@ -209,8 +212,8 @@ public class RegisterLongleafRouteTest extends AbstractLongleafRouteTest {
         template.sendBodyAndHeaders("", createEvent(origBin1.getPid()));
         template.sendBodyAndHeaders("", createEvent(origBin2.getPid()));
 
-        boolean result1 = notify.matches(5L, TimeUnit.SECONDS);
-        assertTrue(result1, "Register route not satisfied");
+        boolean result1 = notify.matches(5l, TimeUnit.SECONDS);
+        assertTrue("Register route not satisfied", result1);
 
         assertSubmittedPaths(2000, contentUri1.toString(), contentUri2.toString());
 
@@ -220,9 +223,9 @@ public class RegisterLongleafRouteTest extends AbstractLongleafRouteTest {
 
         Exchange failed = dlqExchanges.get(0);
         List<String> failedList = failed.getIn().getBody(List.class);
-        assertEquals(1, failedList.size(), "Only one uri should be in the failed message body");
-        assertTrue(failedList.contains(origBin2.getPid().getRepositoryPath()),
-                "Exchange in DLQ must contain the fcrepo uri of the failed binary");
+        assertEquals("Only one uri should be in the failed message body", 1, failedList.size());
+        assertTrue("Exchange in DLQ must contain the fcrepo uri of the failed binary",
+                failedList.contains(origBin2.getPid().getRepositoryPath()));
     }
 
     // command fails with usage error, but successful response
@@ -245,8 +248,8 @@ public class RegisterLongleafRouteTest extends AbstractLongleafRouteTest {
 
         template.sendBodyAndHeaders("", createEvent(origBin.getPid()));
 
-        boolean result1 = notify.matches(5L, TimeUnit.SECONDS);
-        assertTrue(result1, "Register route not satisfied");
+        boolean result1 = notify.matches(5l, TimeUnit.SECONDS);
+        assertTrue("Register route not satisfied", result1);
 
         mockDlq.assertIsSatisfied(1000);
         mockSuccess.assertIsSatisfied();
@@ -255,9 +258,9 @@ public class RegisterLongleafRouteTest extends AbstractLongleafRouteTest {
         assertEquals(1, dlqExchanges.size());
         Exchange failed = dlqExchanges.get(0);
         List<String> failedList = failed.getIn().getBody(List.class);
-        assertEquals(1, failedList.size(), "Only one uri should be in the failed message body");
-        assertTrue(failedList.contains(origBin.getPid().getRepositoryPath()),
-                "Exchange in DLQ must contain the fcrepo uri of the failed binary");
+        assertEquals("Only one uri should be in the failed message body", 1, failedList.size());
+        assertTrue("Exchange in DLQ must contain the fcrepo uri of the failed binary",
+                failedList.contains(origBin.getPid().getRepositoryPath()));
     }
 
     private BinaryObject createOriginalBinary(FileObject fileObj, String content, String sha1, String md5) {

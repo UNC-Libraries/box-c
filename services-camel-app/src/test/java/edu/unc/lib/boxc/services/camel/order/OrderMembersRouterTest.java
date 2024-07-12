@@ -32,7 +32,7 @@ public class OrderMembersRouterTest extends CamelTestSupport {
     private static final String EMAIL = "user1@example.com";
     private AgentPrincipals agent = new AgentPrincipalsImpl("user", new AccessGroupSetImpl("agroup"));
 
-    @Produce("direct:start")
+    @Produce(uri = "direct:start")
     private ProducerTemplate template;
     private String endpointUri = "direct:ordermembers";
 

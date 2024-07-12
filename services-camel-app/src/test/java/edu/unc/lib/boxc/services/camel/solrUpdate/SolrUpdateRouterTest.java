@@ -13,6 +13,8 @@ import org.apache.camel.Exchange;
 import org.apache.camel.Produce;
 import org.apache.camel.ProducerTemplate;
 import org.apache.camel.builder.NotifyBuilder;
+import org.apache.camel.test.spring.CamelSpringRunner;
+import org.apache.camel.test.spring.CamelTestContextBootstrapper;
 import org.apache.camel.test.spring.junit5.CamelSpringTestSupport;
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.common.SolrDocument;
@@ -20,9 +22,16 @@ import org.jdom2.Document;
 import org.jdom2.Element;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.support.AbstractApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
+import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.annotation.DirtiesContext.ClassMode;
+import org.springframework.test.context.BootstrapWith;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.ContextHierarchy;
 
 import java.util.Arrays;
 import java.util.List;
@@ -30,7 +39,7 @@ import java.util.concurrent.TimeUnit;
 
 import static edu.unc.lib.boxc.model.api.xml.JDOMNamespaceUtil.ATOM_NS;
 import static edu.unc.lib.boxc.operations.jms.indexing.IndexingMessageHelper.makeIndexingOperationBody;
-import static org.junit.jupiter.api.Assertions.fail;
+import static org.junit.Assert.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
@@ -48,10 +57,10 @@ import static org.mockito.Mockito.when;
 public class SolrUpdateRouterTest extends CamelSpringTestSupport {
     private static final String USER = "user";
 
-    @Produce("{{cdr.solrupdate.stream}}")
+    @Produce(uri = "{{cdr.solrupdate.stream}}")
     private ProducerTemplate template;
 
-    @Produce("{{cdr.solrupdate.workObject.fileUpdated.individual}}")
+    @Produce(uri = "{{cdr.solrupdate.workObject.fileUpdated.individual}}")
     private ProducerTemplate templateWorkFromFile;
 
     private IndexingMessageSender indexingMessageSender;
@@ -100,7 +109,7 @@ public class SolrUpdateRouterTest extends CamelSpringTestSupport {
 
         template.sendBodyAndHeaders(msg, null);
 
-        notify.matches(5L, TimeUnit.SECONDS);
+        notify.matches(5l, TimeUnit.SECONDS);
 
         verify(solrSmallUpdateProcessor).process(exchangeCaptor.capture());
         List<Exchange> exchanges = exchangeCaptor.getAllValues();
@@ -121,7 +130,7 @@ public class SolrUpdateRouterTest extends CamelSpringTestSupport {
         template.sendBodyAndHeaders(msg, null);
         template.sendBodyAndHeaders(msg2, null);
 
-        notify.matches(5L, TimeUnit.SECONDS);
+        notify.matches(5l, TimeUnit.SECONDS);
 
         verify(solrSmallUpdateProcessor, times(3)).process(exchangeCaptor.capture());
         List<Exchange> exchanges = exchangeCaptor.getAllValues();
@@ -143,7 +152,7 @@ public class SolrUpdateRouterTest extends CamelSpringTestSupport {
         template.sendBodyAndHeaders(msg2, null);
         template.sendBodyAndHeaders(msg3, null);
 
-        notify.matches(5L, TimeUnit.SECONDS);
+        notify.matches(5l, TimeUnit.SECONDS);
 
         verify(solrSmallUpdateProcessor, times(3)).process(exchangeCaptor.capture());
         List<Exchange> exchanges = exchangeCaptor.getAllValues();
@@ -163,7 +172,7 @@ public class SolrUpdateRouterTest extends CamelSpringTestSupport {
 
         template.sendBodyAndHeaders(msg, null);
 
-        notify.matches(5L, TimeUnit.SECONDS);
+        notify.matches(5l, TimeUnit.SECONDS);
 
         verify(solrLargeUpdateProcessor).process(exchangeCaptor.capture());
         List<Exchange> exchanges = exchangeCaptor.getAllValues();
@@ -186,7 +195,7 @@ public class SolrUpdateRouterTest extends CamelSpringTestSupport {
         template.sendBodyAndHeaders(msg2, null);
         template.sendBodyAndHeaders(msg3, null);
 
-        notify.matches(5L, TimeUnit.SECONDS);
+        notify.matches(5l, TimeUnit.SECONDS);
 
         verify(solrLargeUpdateProcessor).process(exchangeCaptor.capture());
         List<Exchange> largeExchanges = exchangeCaptor.getAllValues();
@@ -221,7 +230,7 @@ public class SolrUpdateRouterTest extends CamelSpringTestSupport {
 
         template.sendBodyAndHeaders(msg, null);
 
-        notify.matches(5L, TimeUnit.SECONDS);
+        notify.matches(5l, TimeUnit.SECONDS);
 
         verify(solrSmallUpdateProcessor).process(exchangeCaptor.capture());
         List<Exchange> exchanges = exchangeCaptor.getAllValues();
@@ -245,7 +254,7 @@ public class SolrUpdateRouterTest extends CamelSpringTestSupport {
         templateWorkFromFile.sendBodyAndHeaders(targetPid1.getId(), null);
         templateWorkFromFile.sendBodyAndHeaders(targetPid1.getId(), null);
 
-        notify.matches(3L, TimeUnit.SECONDS);
+        notify.matches(3l, TimeUnit.SECONDS);
 
         verify(solrClient).commit();
         verify(indexingMessageSender).sendIndexingOperation(null, targetPid1, IndexingActionType.UPDATE_WORK_FILES);

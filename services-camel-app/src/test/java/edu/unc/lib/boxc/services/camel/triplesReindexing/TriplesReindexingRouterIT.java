@@ -32,6 +32,7 @@ import org.fcrepo.client.FcrepoClient;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
 import org.springframework.context.support.AbstractApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
@@ -41,8 +42,9 @@ import java.util.concurrent.TimeUnit;
 import static edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPaths.getContentRootPid;
 import static edu.unc.lib.boxc.operations.jms.indexing.IndexingActionType.RECURSIVE_REINDEX;
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.junit.jupiter.api.Assertions.fail;
+import static org.junit.Assert.fail;
 import static org.mockito.MockitoAnnotations.openMocks;
+import static org.slf4j.LoggerFactory.getLogger;
 
 /**
  *
@@ -50,6 +52,7 @@ import static org.mockito.MockitoAnnotations.openMocks;
  *
  */
 public class TriplesReindexingRouterIT extends CamelSpringTestSupport {
+    private static final Logger log = getLogger(TriplesReindexingRouterIT.class);
     private AutoCloseable closeable;
 
     private String baseAddress;
@@ -115,7 +118,7 @@ public class TriplesReindexingRouterIT extends CamelSpringTestSupport {
     private void generateBaseStructure() throws Exception {
         CloseableHttpClient httpClient = HttpClientBuilder.create().build();
         var getRequest = new HttpGet(baseAddress + "/fcrepo/rest");
-        httpClient.execute(getRequest);
+        var response = httpClient.execute(getRequest);
 
         repoInitializer.initializeRepository();
         rootObj = repositoryObjectLoader.getContentRootObject(getContentRootPid());
@@ -149,7 +152,7 @@ public class TriplesReindexingRouterIT extends CamelSpringTestSupport {
                 .whenDone(5)
                 .create();
 
-        notify.matches(2L, TimeUnit.SECONDS);
+        notify.matches(2l, TimeUnit.SECONDS);
 
         assertIndexed(folderObj2, 2000);
     }
@@ -164,7 +167,7 @@ public class TriplesReindexingRouterIT extends CamelSpringTestSupport {
                 .whenCompleted(60)
                 .create();
 
-        notify.matches(5L, TimeUnit.SECONDS);
+        notify.matches(5l, TimeUnit.SECONDS);
 
         // Allow for a long delay for the deepest record to be indexed
         assertIndexed(fileObj, 10000);
@@ -190,7 +193,7 @@ public class TriplesReindexingRouterIT extends CamelSpringTestSupport {
                 .whenCompleted(200)
                 .create();
 
-        notify.matches(5L, TimeUnit.SECONDS);
+        notify.matches(5l, TimeUnit.SECONDS);
 
         // Allow for a long delay for the deepest record to be indexed
         assertIndexed(fileObj.getOriginalFile(), 15000);
@@ -220,7 +223,7 @@ public class TriplesReindexingRouterIT extends CamelSpringTestSupport {
                 if (resultSet.hasNext()) {
                     return;
                 }
-                Thread.sleep(100L);
+                Thread.sleep(100l);
             }
 
             fail("Object " + repoObj.getPid() + " was not indexed");

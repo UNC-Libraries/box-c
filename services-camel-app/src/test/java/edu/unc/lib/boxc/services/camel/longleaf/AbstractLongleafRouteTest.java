@@ -9,8 +9,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.slf4j.LoggerFactory.getLogger;
 
 /**
@@ -56,14 +56,14 @@ public abstract class AbstractLongleafRouteTest extends CamelSpringTestSupport {
                 contentPath = Paths.get(uri);
             }
             String basePath = FileSystemTransferHelpers.getBaseBinaryPath(contentPath);
-            assertTrue(output.stream().anyMatch(line -> line.contains(basePath)),
-                    "Expected content uri to be submitted: " + contentPath);
+            assertTrue("Expected content uri to be submitted: " + contentPath,
+                    output.stream().anyMatch(line -> line.contains(basePath)));
         }
     }
 
     protected void assertNoSubmittedPaths() throws Exception {
         output = LongleafTestHelpers.readOutput(outputPath);
-        assertEquals(0, output.size(),
-                "Expected no calls to longleaf, but received output:\n" + String.join("\n", output));
+        assertEquals("Expected no calls to longleaf, but received output:\n" + String.join("\n", output),
+                0, output.size());
     }
 }
