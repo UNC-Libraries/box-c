@@ -8,6 +8,7 @@ import static org.apache.camel.LoggingLevel.INFO;
 import static org.slf4j.LoggerFactory.getLogger;
 
 import org.apache.camel.BeanInject;
+import org.apache.camel.ExchangePattern;
 import org.apache.camel.LoggingLevel;
 import org.apache.camel.PropertyInject;
 import org.apache.camel.builder.RouteBuilder;
@@ -113,7 +114,7 @@ public class EnhancementRouter extends RouteBuilder {
             .doCatch(IllegalStateException.class)
                 .log(LoggingLevel.WARN, log, "Shutdown interrupted processing of ${headers[CdrBinaryPath]}, requeuing")
                 .setHeader("AMQ_SCHEDULED_DELAY", constant("10000"))
-                .inOnly("{{cdr.enhancement.perform.camel}}");
+                .to(ExchangePattern.InOnly, "{{cdr.enhancement.perform.camel}}");
 
     }
 }

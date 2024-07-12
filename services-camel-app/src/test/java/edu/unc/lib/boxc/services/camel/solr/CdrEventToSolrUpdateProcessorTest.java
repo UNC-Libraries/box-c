@@ -24,9 +24,9 @@ import org.apache.camel.Exchange;
 import org.apache.camel.Message;
 import org.jdom2.Document;
 import org.jdom2.Element;
-import org.junit.Before;
-import org.junit.Test;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
@@ -68,7 +68,7 @@ public class CdrEventToSolrUpdateProcessorTest {
 
     private PID targetPid;
 
-    @Before
+    @BeforeEach
     public void init() throws Exception {
         closeable = openMocks(this);
 

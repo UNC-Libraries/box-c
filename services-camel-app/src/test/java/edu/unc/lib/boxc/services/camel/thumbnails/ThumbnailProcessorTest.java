@@ -19,9 +19,9 @@ import edu.unc.lib.boxc.operations.jms.thumbnails.ThumbnailRequest;
 import edu.unc.lib.boxc.operations.jms.thumbnails.ThumbnailRequestSerializationHelper;
 import edu.unc.lib.boxc.services.camel.TestHelper;
 import org.apache.camel.Exchange;
-import org.junit.Before;
-import org.junit.Test;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
@@ -61,7 +61,7 @@ public class ThumbnailProcessorTest {
     @Captor
     private ArgumentCaptor<Object> fileResourceCaptor;
 
-    @Before
+    @BeforeEach
     public void init() throws IOException {
         closeable = openMocks(this);
         processor = new ThumbnailRequestProcessor();

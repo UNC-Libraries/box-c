@@ -137,30 +137,40 @@
         class="edu.unc.lib.boxc.indexing.solr.action.UpdateObjectAction">
         <property name="pipeline" ref="solrFullUpdatePipeline" />
         <property name="addDocumentMode" value="true" />
+        <property name="factory" ref="dipFactory" />
+        <property name="solrUpdateDriver" ref="solrUpdateDriver" />
     </bean>
     
     <bean id="updateDescriptionAction"
         class="edu.unc.lib.boxc.indexing.solr.action.UpdateObjectAction">
         <property name="pipeline" ref="solrDescriptionUpdatePipeline" />
         <property name="addDocumentMode" value="false" />
+        <property name="factory" ref="dipFactory" />
+        <property name="solrUpdateDriver" ref="solrUpdateDriver" />
     </bean>
     
     <bean id="updateDatastreamsAction"
         class="edu.unc.lib.boxc.indexing.solr.action.UpdateObjectAction">
         <property name="pipeline" ref="solrDatastreamUpdatePipeline" />
         <property name="addDocumentMode" value="false" />
+        <property name="factory" ref="dipFactory" />
+        <property name="solrUpdateDriver" ref="solrUpdateDriver" />
     </bean>
 
     <bean id="updateWorkFilesAction"
           class="edu.unc.lib.boxc.indexing.solr.action.UpdateObjectAction">
         <property name="pipeline" ref="solrUpdateWorkFilesPipeline" />
         <property name="addDocumentMode" value="false" />
+        <property name="factory" ref="dipFactory" />
+        <property name="solrUpdateDriver" ref="solrUpdateDriver" />
     </bean>
     
     <bean id="updateFullTextAction"
         class="edu.unc.lib.boxc.indexing.solr.action.UpdateObjectAction">
         <property name="pipeline" ref="solrFullTextUpdatePipeline" />
         <property name="addDocumentMode" value="false" />
+        <property name="factory" ref="dipFactory" />
+        <property name="solrUpdateDriver" ref="solrUpdateDriver" />
     </bean>
     
     <util:map id="solrIndexingActionMap"
@@ -177,5 +187,15 @@
     <bean id="dipFactory"
         class="edu.unc.lib.boxc.indexing.solr.indexing.DocumentIndexingPackageFactory">
         <property name="dataLoader" ref="dipDataLoader" />
+    </bean>
+
+    <bean id="updateWorkJmsTemplate" class="org.springframework.jms.core.JmsTemplate">
+        <property name="connectionFactory" ref="jmsFactory" />
+        <property name="defaultDestinationName" value="${cdr.solrupdate.workObject.fileUpdated.individual}" />
+        <property name="pubSubDomain" value="false" />
+    </bean>
+
+    <bean id="updateWorkSender" class="edu.unc.lib.boxc.operations.jms.MessageSender">
+        <property name="jmsTemplate" ref="updateWorkJmsTemplate" />
     </bean>
 </beans>

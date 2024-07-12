@@ -419,6 +419,7 @@
         <property name="aclService" ref="aclService"/>
         <property name="queryLayer" ref="queryLayer"/>
         <property name="repositoryObjectLoader" ref="repositoryObjectLoader"/>
+        <property name="baseUrl" value="${base.record.url}"/>
     </bean>
 
     <bean id="facetValuesService" class="edu.unc.lib.boxc.search.solr.services.FacetValuesService"

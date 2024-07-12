@@ -17,4 +17,6 @@ public interface SparqlUpdateService {
      */
     public void executeUpdate(String uri, String updateString);
 
+    public void executeUpdate(String updateString);
+
 }

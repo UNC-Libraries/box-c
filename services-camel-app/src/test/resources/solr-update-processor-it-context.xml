@@ -73,6 +73,8 @@
         class="edu.unc.lib.boxc.indexing.solr.action.UpdateObjectAction">
         <property name="pipeline" ref="solrAccessControlUpdatePipeline" />
         <property name="addDocumentMode" value="false" />
+        <property name="factory" ref="dipFactory" />
+        <property name="solrUpdateDriver" ref="solrUpdateDriver" />
     </bean>
     
     <bean id="updateAccessTreeAction"
@@ -93,12 +95,16 @@
         class="edu.unc.lib.boxc.indexing.solr.action.UpdateObjectAction">
         <property name="pipeline" ref="solrMoveUpdatePipeline" />
         <property name="addDocumentMode" value="false" />
+        <property name="factory" ref="dipFactory" />
+        <property name="solrUpdateDriver" ref="solrUpdateDriver" />
     </bean>
 
     <bean id="updateParentPathInfoAction"
           class="edu.unc.lib.boxc.indexing.solr.action.UpdateObjectAction">
         <property name="pipeline" ref="solrUpdateParentPathInfoPipeline" />
         <property name="addDocumentMode" value="false" />
+        <property name="factory" ref="dipFactory" />
+        <property name="solrUpdateDriver" ref="solrUpdateDriver" />
     </bean>
 
     <bean id="updateParentPathInfoTreeAction"
@@ -120,6 +126,8 @@
         class="edu.unc.lib.boxc.indexing.solr.action.UpdateObjectAction">
         <property name="pipeline" ref="solrUpdateTypePipeline" />
         <property name="addDocumentMode" value="false" />
+        <property name="factory" ref="dipFactory" />
+        <property name="solrUpdateDriver" ref="solrUpdateDriver" />
     </bean>
     
     <bean id="updateTypeTreeAction"
@@ -148,12 +156,16 @@
           class="edu.unc.lib.boxc.indexing.solr.action.UpdateObjectAction">
         <property name="pipeline" ref="solrOrderMembersParentUpdatePipeline" />
         <property name="addDocumentMode" value="false" />
+        <property name="factory" ref="dipFactory" />
+        <property name="solrUpdateDriver" ref="solrUpdateDriver" />
     </bean>
 
     <bean id="updateMemberOrderChildAction"
           class="edu.unc.lib.boxc.indexing.solr.action.UpdateObjectAction">
         <property name="pipeline" ref="solrOrderMembersChildUpdatePipeline" />
         <property name="addDocumentMode" value="false" />
+        <property name="factory" ref="dipFactory" />
+        <property name="solrUpdateDriver" ref="solrUpdateDriver" />
     </bean>
 
     <util:map id="solrIndexingActionMap"
@@ -233,16 +245,6 @@
         <property name="actionType" value="UPDATE_WORK_FILES" />
         <property name="forceCommit" value="true" />
         <property name="solrClient" ref="embeddedSolrServer" />
-    </bean>
-
-    <bean id="updateWorkJmsTemplate" class="org.springframework.jms.core.JmsTemplate">
-        <property name="connectionFactory" ref="jmsFactory" />
-        <property name="defaultDestinationName" value="${cdr.solrupdate.workObject.fileUpdated}" />
-        <property name="pubSubDomain" value="false" />
-    </bean>
-
-    <bean id="updateWorkSender" class="edu.unc.lib.boxc.operations.jms.MessageSender">
-        <property name="jmsTemplate" ref="updateWorkJmsTemplate" />
     </bean>
 
     <bean id="orderedSetAggregationStrategy" class="edu.unc.lib.boxc.services.camel.util.OrderedSetAggregationStrategy"/>

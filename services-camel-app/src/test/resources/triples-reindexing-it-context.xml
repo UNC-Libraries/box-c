@@ -7,18 +7,8 @@
     xmlns:amq="http://activemq.apache.org/schema/core"
     xsi:schemaLocation="http://www.springframework.org/schema/beans
         http://www.springframework.org/schema/beans/spring-beans-4.3.xsd
-        http://www.springframework.org/schema/util 
-        http://www.springframework.org/schema/util/spring-util.xsd
-        http://www.springframework.org/schema/context
-        http://www.springframework.org/schema/context/spring-context-4.3.xsd
-        http://activemq.apache.org/schema/core
-        http://activemq.apache.org/schema/core/activemq-core.xsd
         http://camel.apache.org/schema/spring
         http://camel.apache.org/schema/spring/camel-spring.xsd">
-    
-    <bean id="properties" class="org.apache.camel.component.properties.PropertiesComponent">
-        <property name="location" value="classpath:triples-reindexing-it-config.properties"/>
-    </bean>
     
     <bean id="bridgePropertyPlaceholder" class="org.apache.camel.spring.spi.BridgePropertyPlaceholderConfigurer">
         <property name="location" value="classpath:triples-reindexing-it-config.properties"/>
@@ -40,6 +30,10 @@
     </bean>
 
     <bean id="sparqlQueryService" class="edu.unc.lib.boxc.model.fcrepo.sparql.FusekiSparqlQueryServiceImpl" >
+        <property name="fusekiQueryURL" value="${triplestore.datasetUri}" />
+    </bean>
+
+    <bean id="sparqlUpdateService" class="edu.unc.lib.boxc.model.fcrepo.sparql.TripleStoreSparqlUpdateService" >
         <property name="fusekiQueryURL" value="${triplestore.datasetUri}" />
     </bean>
     
@@ -64,10 +58,6 @@
 
     <bean id="getUrisProcessor" class="edu.unc.lib.boxc.services.camel.longleaf.GetUrisProcessor">
     </bean>
-    
-    <camel:camelContext id="fcrepoTriplestoreIndexer">
-        <camel:package>org.fcrepo.camel.indexing.triplestore</camel:package>
-    </camel:camelContext>
 
     <camel:camelContext id="cdrServiceTriplesReindexing">
         <camel:package>edu.unc.lib.boxc.services.camel.triplesReindexing</camel:package>

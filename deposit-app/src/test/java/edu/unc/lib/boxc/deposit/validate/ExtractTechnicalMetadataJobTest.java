@@ -228,6 +228,20 @@ public class ExtractTechnicalMetadataJobTest extends AbstractDepositJobTest {
     }
 
     @Test
+    public void multiRankingSpecificityConflictMimetypeTest() throws Exception {
+        respondWithFile("/fitsReports/conflictRankingReport.xml");
+
+        // Providing octet stream mimetype to be overridden
+        PID filePid = addFileObject(depositBag, CONFLICT_FILEPATH, OCTET_MIMETYPE, null);
+        job.closeModel();
+
+        job.run();
+
+        verifyRequestParameters(CONFLICT_FILEPATH);
+        verifyFileResults(filePid, "image/x-nikon-nef", "NEF EXIF", CONFLICT_MD5, 1);
+    }
+
+    @Test
     public void exifMimetypeTest() throws Exception {
         respondWithFile("/fitsReports/exifReport.xml");
 
@@ -568,7 +582,7 @@ public class ExtractTechnicalMetadataJobTest extends AbstractDepositJobTest {
         String submittedPath = getSubmittedFilePath(request);
 
         String failMessage = "FITS service called with wrong path. Expected " + expectedFilepath + " but got " + submittedPath;
-        assertTrue(submittedPath.startsWith(TMP_PATH.toString().replace("/", "%2F")), failMessage);
+        assertTrue(submittedPath.startsWith(job.getDepositDirectory().toString().replace("/", "%2F")), failMessage);
         assertTrue(submittedPath.endsWith("%2F" + Paths.get(expectedFilepath).getFileName()), failMessage);
     }
 

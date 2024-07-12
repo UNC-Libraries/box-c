@@ -36,6 +36,7 @@ import edu.unc.lib.boxc.operations.jms.exportxml.ExportXMLRequestService;
 import edu.unc.lib.boxc.persist.impl.storage.StorageLocationTestHelper;
 import org.apache.camel.CamelContext;
 import org.apache.camel.builder.NotifyBuilder;
+import org.apache.camel.test.spring.junit5.CamelSpringTestSupport;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.jena.vocabulary.DCTerms;
@@ -46,18 +47,14 @@ import org.jdom2.Element;
 import org.jdom2.input.SAXBuilder;
 import org.jdom2.output.Format;
 import org.jdom2.output.XMLOutputter;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.ContextHierarchy;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.context.support.AbstractApplicationContext;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import java.io.File;
 import java.io.IOException;
@@ -89,7 +86,6 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doAnswer;
-import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.MockitoAnnotations.openMocks;
@@ -97,50 +93,34 @@ import static org.mockito.MockitoAnnotations.openMocks;
 /**
  * @author bbpennel
  */
-@RunWith(SpringJUnit4ClassRunner.class)
-@ContextHierarchy({
-    @ContextConfiguration("/spring-test/cdr-client-container.xml"),
-    @ContextConfiguration("/spring-test/acl-service-context.xml"),
-    @ContextConfiguration("/spring-test/solr-indexing-context.xml"),
-    @ContextConfiguration("/spring-test/jms-context.xml"),
-    @ContextConfiguration("/export-xml-route-it-context.xml")
-})
-public class ExportXMLRouteIT {
+public class ExportXMLRouteIT extends CamelSpringTestSupport {
+    @Override
+    protected AbstractApplicationContext createApplicationContext() {
+        return new ClassPathXmlApplicationContext("spring-test/cdr-client-container.xml",
+                "spring-test/jms-context.xml",
+                "spring-test/acl-service-context.xml",
+                "spring-test/solr-indexing-context.xml",
+                "export-xml-route-it-context.xml");
+    }
     private static final String EMAIL = "test@example.com";
 
     private AutoCloseable closeable;
 
-    @Autowired
     private String baseAddress;
-    @Autowired
     private CamelContext cdrExportXML;
-    @Autowired
     private RepositoryObjectTreeIndexer treeIndexer;
-    @Autowired
     private RepositoryObjectSolrIndexer solrIndexer;
-    @Autowired
     private RepositoryInitializer repoInitializer;
-    @Autowired
     protected RepositoryObjectLoader repositoryObjectLoader;
-    @Autowired
     protected RepositoryObjectFactory repositoryObjectFactory;
-    @Autowired
     protected PIDMinter pidMinter;
-    @Autowired
     protected EmbeddedSolrServer server;
-    @Autowired
     private UpdateDescriptionService updateDescriptionService;
-    @Autowired
     private ExportXMLRequestService requestService;
-    @Autowired
     private EmailHandler emailHandler;
-    @Autowired
     private ExportXMLProcessor exportXmlProcessor;
-    @Autowired
     private PremisLoggerFactory premisLoggerFactory;
-    @Autowired
     private FcrepoClient fcrepoClient;
-    @Autowired
     private StorageLocationTestHelper storageLocationTestHelper;
 
     @Captor
@@ -152,8 +132,8 @@ public class ExportXMLRouteIT {
     @Captor
     private ArgumentCaptor<String> filenameCaptor;
     private List<Path> attachmentPaths;
-    @Rule
-    public final TemporaryFolder tmpFolder = new TemporaryFolder();
+    @TempDir
+    public Path tmpFolder;
 
     private ContentRootObject rootObj;
     private AdminUnit unitObj;
@@ -165,10 +145,26 @@ public class ExportXMLRouteIT {
 
     private AgentPrincipals agent;
 
-    @Before
+    @BeforeEach
     public void setup() throws Exception {
         closeable = openMocks(this);
-        reset(emailHandler);
+        baseAddress = applicationContext.getBean("baseAddress", String.class);
+        cdrExportXML = applicationContext.getBean("cdrExportXML", CamelContext.class);
+        treeIndexer = applicationContext.getBean(RepositoryObjectTreeIndexer.class);
+        solrIndexer = applicationContext.getBean(RepositoryObjectSolrIndexer.class);
+        repoInitializer = applicationContext.getBean(RepositoryInitializer.class);
+        repositoryObjectLoader = applicationContext.getBean("repositoryObjectLoader", RepositoryObjectLoader.class);
+        repositoryObjectFactory = applicationContext.getBean(RepositoryObjectFactory.class);
+        pidMinter = applicationContext.getBean(PIDMinter.class);
+        server = applicationContext.getBean(EmbeddedSolrServer.class);
+        updateDescriptionService = applicationContext.getBean(UpdateDescriptionService.class);
+        requestService = applicationContext.getBean(ExportXMLRequestService.class);
+        emailHandler = applicationContext.getBean(EmailHandler.class);
+        exportXmlProcessor = applicationContext.getBean(ExportXMLProcessor.class);
+        premisLoggerFactory = applicationContext.getBean(PremisLoggerFactory.class);
+        fcrepoClient = applicationContext.getBean(FcrepoClient.class);
+        storageLocationTestHelper = applicationContext.getBean(StorageLocationTestHelper.class);
+
         TestHelper.setContentBase(baseAddress);
         agent = new AgentPrincipalsImpl("user", new AccessGroupSetImpl("adminGroup"));
         generateBaseStructure();
@@ -180,14 +176,14 @@ public class ExportXMLRouteIT {
             if (attachment == null) {
                 return null;
             }
-            var copiedFile = new File(tmpFolder.newFolder(), attachment.getName());
-            FileUtils.copyFile(attachment, copiedFile);
-            attachmentPaths.add(copiedFile.toPath());
+            var copiedPath = Files.createTempDirectory(tmpFolder, "email").resolve(attachment.getName());
+            Files.copy(attachment.toPath(), copiedPath);
+            attachmentPaths.add(copiedPath);
             return null;
         }).when(emailHandler).sendEmail(any(), any(), any(), any(), any());
     }
 
-    @After
+    @AfterEach
     public void closeService() throws Exception {
         closeable.close();
         TestRepositoryDeinitializer.cleanup(fcrepoClient);

@@ -7,8 +7,8 @@ import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.boxc.operations.jms.order.MultiParentOrderRequest;
 import edu.unc.lib.boxc.operations.jms.order.OrderOperationType;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -34,7 +34,7 @@ public class OrderNotificationBuilderTest {
     private MultiParentOrderRequest request = new MultiParentOrderRequest();
     private OrderNotificationBuilder orderNotificationBuilder;
 
-    @Before
+    @BeforeEach
     public void setup(){
         var parentToOrder = Map.of(
                 PARENT1_UUID, Arrays.asList(CHILD1_UUID, CHILD2_UUID), PARENT2_UUID, List.of(CHILD3_UUID));

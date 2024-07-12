@@ -17,11 +17,10 @@ import java.nio.file.Paths;
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
 import org.apache.commons.io.FileUtils;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.mockito.Mock;
 
 import edu.unc.lib.boxc.model.fcrepo.test.TestHelper;
@@ -33,8 +32,8 @@ public class NonBinaryEnhancementProcessorTest {
     private NonBinaryEnhancementProcessor processor;
     private AutoCloseable closeable;
 
-    @Rule
-    public final TemporaryFolder tmpDir = new TemporaryFolder();
+    @TempDir
+    public Path tmpFolder;
 
     private static final String FEDORA_BASE = "http://example.com/rest/";
 
@@ -48,10 +47,10 @@ public class NonBinaryEnhancementProcessorTest {
     private File imgFile;
     private String dataDir;
 
-    @Before
+    @BeforeEach
     public void init() throws Exception {
         closeable = openMocks(this);
-        dataDir = tmpDir.newFolder().getAbsolutePath();
+        dataDir = tmpFolder.toString();
 
         TestHelper.setContentBase(FEDORA_BASE);
         processor = new NonBinaryEnhancementProcessor();

@@ -1,5 +1,24 @@
 package edu.unc.lib.boxc.services.camel.fulltext;
 
+import edu.unc.lib.boxc.model.api.DatastreamType;
+import edu.unc.lib.boxc.services.camel.images.AddDerivativeProcessor;
+import org.apache.camel.Exchange;
+import org.apache.camel.Produce;
+import org.apache.camel.ProducerTemplate;
+import org.apache.camel.builder.AdviceWith;
+import org.apache.camel.builder.RouteBuilder;
+import org.apache.camel.test.junit5.CamelTestSupport;
+import org.apache.commons.io.FileUtils;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.api.io.TempDir;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+
+import java.nio.file.Path;
+import java.util.HashMap;
+import java.util.Map;
+
 import static edu.unc.lib.boxc.fcrepo.FcrepoJmsConstants.EVENT_TYPE;
 import static edu.unc.lib.boxc.fcrepo.FcrepoJmsConstants.IDENTIFIER;
 import static edu.unc.lib.boxc.fcrepo.FcrepoJmsConstants.RESOURCE_TYPE;
@@ -12,112 +31,88 @@ import static org.fcrepo.camel.FcrepoHeaders.FCREPO_URI;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
-
-import org.apache.camel.BeanInject;
-import org.apache.camel.EndpointInject;
-import org.apache.camel.Exchange;
-import org.apache.camel.Produce;
-import org.apache.camel.ProducerTemplate;
-import org.apache.camel.PropertyInject;
-import org.apache.camel.builder.AdviceWithRouteBuilder;
-import org.apache.camel.component.mock.MockEndpoint;
-import org.apache.camel.test.spring.CamelSpringTestSupport;
-import org.apache.commons.io.FileUtils;
-import org.junit.After;
-import org.junit.Test;
-import org.springframework.context.support.AbstractApplicationContext;
-import org.springframework.context.support.ClassPathXmlApplicationContext;
-
-import edu.unc.lib.boxc.services.camel.fulltext.FulltextProcessor;
-import edu.unc.lib.boxc.services.camel.images.AddDerivativeProcessor;
-
-public class FulltextRouterTest extends CamelSpringTestSupport {
+@ExtendWith(MockitoExtension.class)
+public class FulltextRouterTest extends CamelTestSupport {
     private static final String ENHANCEMENT_ROUTE = "CdrServiceFulltextExtraction";
     private static final String EXTRACTION_ROUTE = "ExtractingText";
-    private static final String fileID = "343b3da4-8876-42f5-8821-7aabb65e0f19";
+    private static final String FILE_ID = "343b3da4-8876-42f5-8821-7aabb65e0f19";
 
-    @PropertyInject(value = "fcrepo.baseUri")
-    private static String baseUri;
-
-    @EndpointInject(uri = "mock:fcrepo")
-    protected MockEndpoint resultEndpoint;
-
-    @BeanInject(value = "fulltextProcessor")
+    @Mock
     private FulltextProcessor ftProcessor;
-
-    @BeanInject(value = "addFullTextDerivativeProcessor")
     private AddDerivativeProcessor adProcessor;
 
     @Produce(uri = "direct:start")
     protected ProducerTemplate template;
 
-    @Override
-    protected AbstractApplicationContext createApplicationContext() {
-        return new ClassPathXmlApplicationContext("/service-context.xml", "/fulltext-context.xml");
-    }
+    @TempDir
+    public Path tmpFolder;
 
-    @After
-    public void cleanup() throws IOException {
-        FileUtils.deleteDirectory(new File("target/34"));
+    @Override
+    protected RouteBuilder createRouteBuilder() throws Exception {
+        adProcessor = new AddDerivativeProcessor(DatastreamType.FULLTEXT_EXTRACTION.getExtension(),
+                tmpFolder.toAbsolutePath().toString());
+        var router = new FulltextRouter();
+        router.setFulltextProcessor(ftProcessor);
+        router.setAddDerivativeProcessor(adProcessor);
+        return router;
     }
 
     @Test
     public void testFullTextExtractionFilterValidMimeTypeNoForceNoExistingFile() throws Exception {
-        getMockEndpoint("mock:direct:fulltext.extraction").expectedMessageCount(1);
+        var mockEndpoint = getMockEndpoint("mock:direct:fulltext.extraction");
+        mockEndpoint.expectedMessageCount(1);
         createContext(ENHANCEMENT_ROUTE);
 
         template.sendBodyAndHeaders("", createEvent());
-        assertMockEndpointsSatisfied();
+        mockEndpoint.assertIsSatisfied();
     }
 
     @Test
     public void testFullTextExtractionFilterValidMimeTypeForceNoExistingFile() throws Exception {
-        getMockEndpoint("mock:direct:fulltext.extraction").expectedMessageCount(1);
+        var mockEndpoint = getMockEndpoint("mock:direct:fulltext.extraction");
+        mockEndpoint.expectedMessageCount(1);
         createContext(ENHANCEMENT_ROUTE);
 
         Map<String, Object> headers = createEvent();
         headers.put("force", "true");
         template.sendBodyAndHeaders("", headers);
-        assertMockEndpointsSatisfied();
+        mockEndpoint.assertIsSatisfied();
     }
 
     @Test
     public void testFullTextExtractionFilterValidMimeTypeNoForceExistingFile() throws Exception {
-        String derivativePath = idToPath(fileID, HASHED_PATH_DEPTH, HASHED_PATH_SIZE);
-        File existingFile = new File("target/" + derivativePath + "/" + fileID + ".txt");
-        FileUtils.writeStringToFile(existingFile, "extracted text", "utf-8");
+        String derivativePath = idToPath(FILE_ID, HASHED_PATH_DEPTH, HASHED_PATH_SIZE);
+        Path existingPath = tmpFolder.resolve(derivativePath).resolve(FILE_ID + ".txt");
+        FileUtils.writeStringToFile(existingPath.toFile(), "extracted text", "utf-8");
 
-        getMockEndpoint("mock:direct:fulltext.extraction").expectedMessageCount(0);
+        var mockEndpoint = getMockEndpoint("mock:direct:fulltext.extraction");
+        mockEndpoint.expectedMessageCount(0);
         createContext(ENHANCEMENT_ROUTE);
 
-        Map<String, Object> headers = createEvent();
         template.sendBodyAndHeaders("", createEvent());
-        assertMockEndpointsSatisfied();
+        mockEndpoint.assertIsSatisfied();
     }
 
     @Test
     public void testFullTextExtractionFilterValidMimeTypeForceExistingFile() throws Exception {
-        String derivativePath = idToPath(fileID, HASHED_PATH_DEPTH, HASHED_PATH_SIZE);
-        File existingFile = new File("target/" + derivativePath + "/" + fileID + ".txt");
-        FileUtils.writeStringToFile(existingFile, "extracted text", "utf-8");
+        String derivativePath = idToPath(FILE_ID, HASHED_PATH_DEPTH, HASHED_PATH_SIZE);
+        Path existingPath = tmpFolder.resolve(derivativePath).resolve(FILE_ID + ".txt");
+        FileUtils.writeStringToFile(existingPath.toFile(), "extracted text", "utf-8");
 
-        getMockEndpoint("mock:direct:fulltext.extraction").expectedMessageCount(1);
+        var mockEndpoint = getMockEndpoint("mock:direct:fulltext.extraction");
+        mockEndpoint.expectedMessageCount(1);
         createContext(ENHANCEMENT_ROUTE);
 
         Map<String, Object> headers = createEvent();
         headers.put("force", "true");
         template.sendBodyAndHeaders("", headers);
-        assertMockEndpointsSatisfied();
+        mockEndpoint.assertIsSatisfied();
     }
 
     @Test
     public void testFullTextExtractionFilterInvalidMimeType() throws Exception {
-        getMockEndpoint("mock:direct:fulltext.extraction").expectedMessageCount(0);
-
+        var mockEndpoint = getMockEndpoint("mock:direct:fulltext.extraction");
+        mockEndpoint.expectedMessageCount(0);
         createContext(ENHANCEMENT_ROUTE);
 
         Map<String, Object> headers = createEvent();
@@ -125,7 +120,7 @@ public class FulltextRouterTest extends CamelSpringTestSupport {
 
         template.sendBodyAndHeaders("", headers);
 
-        assertMockEndpointsSatisfied();
+        mockEndpoint.assertIsSatisfied();
     }
 
     @Test
@@ -139,14 +134,10 @@ public class FulltextRouterTest extends CamelSpringTestSupport {
     }
 
     private void createContext(String routeName) throws Exception {
-        context.getRouteDefinition(routeName).adviceWith(context, new AdviceWithRouteBuilder() {
-            @Override
-            public void configure() throws Exception {
-                replaceFromWith("direct:start");
-                mockEndpointsAndSkip("*");
-            }
+        AdviceWith.adviceWith(context, routeName, a -> {
+            a.replaceFromWith("direct:start");
+            a.mockEndpointsAndSkip("*");
         });
-
         context.start();
     }
 
@@ -155,7 +146,7 @@ public class FulltextRouterTest extends CamelSpringTestSupport {
         headers.put(EVENT_TYPE, "ResourceCreation");
         headers.put(IDENTIFIER, "original_file");
         headers.put(RESOURCE_TYPE, Binary.getURI());
-        headers.put(FCREPO_URI, fileID);
+        headers.put(FCREPO_URI, FILE_ID);
         headers.put(CdrBinaryMimeType, "text/plain");
         headers.put("force", "false");
 

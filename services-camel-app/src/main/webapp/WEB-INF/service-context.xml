@@ -5,11 +5,11 @@
     xmlns:util="http://www.springframework.org/schema/util"
     xmlns:camel="http://camel.apache.org/schema/spring"
     xsi:schemaLocation="http://www.springframework.org/schema/beans
-        http://www.springframework.org/schema/beans/spring-beans-4.3.xsd
+        http://www.springframework.org/schema/beans/spring-beans.xsd
         http://www.springframework.org/schema/util 
         http://www.springframework.org/schema/util/spring-util.xsd
         http://www.springframework.org/schema/context
-        http://www.springframework.org/schema/context/spring-context-4.3.xsd
+        http://www.springframework.org/schema/context/spring-context.xsd
         http://camel.apache.org/schema/spring
         http://camel.apache.org/schema/spring/camel-spring.xsd">
 
@@ -558,72 +558,28 @@
 
     <!-- Camel contexts -->
 
-    <camel:camelContext id="FcrepoTriplestoreIndexer">
+    <camel:camelContext id="boxcCamelContext">
         <camel:package>org.fcrepo.camel.indexing.triplestore</camel:package>
-    </camel:camelContext>
-    
-    <camel:camelContext id="CdrServiceTriplesReindexing">
         <camel:package>edu.unc.lib.boxc.services.camel.triplesReindexing</camel:package>
-    </camel:camelContext>
-    
-    <camel:camelContext id="CdrServiceCdrEvents">
         <camel:package>edu.unc.lib.boxc.services.camel.cdrEvents</camel:package>
-    </camel:camelContext>
-    
-    <camel:camelContext id="cdrLongleaf">
         <camel:package>edu.unc.lib.boxc.services.camel.longleaf</camel:package>
-    </camel:camelContext>
-    
-    <camel:camelContext id="CdrEnhancements">
         <camel:package>edu.unc.lib.boxc.services.camel.enhancements</camel:package>
         <camel:package>edu.unc.lib.boxc.services.camel.images</camel:package>
         <camel:package>edu.unc.lib.boxc.services.camel.fulltext</camel:package>
         <camel:package>edu.unc.lib.boxc.services.camel.solr</camel:package>
-    </camel:camelContext>
-    
-    <camel:camelContext id="CdrBinaryCleanup">
         <camel:package>edu.unc.lib.boxc.services.camel.binaryCleanup</camel:package>
-    </camel:camelContext>
-    
-    <!-- Initialize metaServicesRouter after the routes it depends on -->
-    <camel:camelContext id="metaServicesRouter">
+        <!-- Initialize metaServicesRouter after the routes it depends on -->
         <camel:package>edu.unc.lib.boxc.services.camel.routing</camel:package>
-    </camel:camelContext>
-    
-    <camel:camelContext id="CdrImportXML">
         <camel:package>edu.unc.lib.boxc.services.camel.importxml</camel:package>
-    </camel:camelContext>
-    
-    <camel:camelContext id="CdrExportXML">
         <camel:package>edu.unc.lib.boxc.services.camel.exportxml</camel:package>
-    </camel:camelContext>
-    
-    <camel:camelContext id="CdrDestroyObjects">
         <camel:package>edu.unc.lib.boxc.services.camel.destroy</camel:package>
-    </camel:camelContext>
-
-    <camel:camelContext id="CdrDestroyDerivatives">
         <camel:package>edu.unc.lib.boxc.services.camel.destroyDerivatives</camel:package>
-    </camel:camelContext>
-    
-    <camel:camelContext id="CdrUpdatePatronAccess">
         <camel:package>edu.unc.lib.boxc.services.camel.patronAccess</camel:package>
-    </camel:camelContext>
-
-    <camel:camelContext id="CdrMemberOrder">
         <camel:package>edu.unc.lib.boxc.services.camel.order</camel:package>
-    </camel:camelContext>
-
-    <camel:camelContext id="CdrThumbnails">
         <camel:package>edu.unc.lib.boxc.services.camel.thumbnails</camel:package>
-    </camel:camelContext>
-
-    <camel:camelContext id="CdrViews">
         <camel:package>edu.unc.lib.boxc.services.camel.viewSettings</camel:package>
-    </camel:camelContext>
-
-    <camel:camelContext id="DcrAccessSurrogates">
         <camel:package>edu.unc.lib.boxc.services.camel.accessSurrogates</camel:package>
+        <camel:package>edu.unc.lib.boxc.services.camel.solrUpdate</camel:package>
     </camel:camelContext>
 
     <camel:camelContext id="DcrStreaming">

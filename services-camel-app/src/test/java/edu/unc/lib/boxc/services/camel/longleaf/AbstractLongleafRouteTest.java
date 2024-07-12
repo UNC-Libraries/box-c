@@ -1,22 +1,22 @@
 package edu.unc.lib.boxc.services.camel.longleaf;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.slf4j.LoggerFactory.getLogger;
+import edu.unc.lib.boxc.persist.impl.transfer.FileSystemTransferHelpers;
+import org.apache.camel.test.spring.junit5.CamelSpringTestSupport;
+import org.slf4j.Logger;
 
 import java.net.URI;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 
-import org.slf4j.Logger;
-
-import edu.unc.lib.boxc.persist.impl.transfer.FileSystemTransferHelpers;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.slf4j.LoggerFactory.getLogger;
 
 /**
  * @author bbpennel
  */
-public abstract class AbstractLongleafRouteTest {
+public abstract class AbstractLongleafRouteTest extends CamelSpringTestSupport {
     private static final Logger log = getLogger(AbstractLongleafRouteTest.class);
 
     protected String outputPath;

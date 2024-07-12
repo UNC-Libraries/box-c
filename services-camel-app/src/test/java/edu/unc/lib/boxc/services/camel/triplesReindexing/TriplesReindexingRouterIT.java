@@ -1,8 +1,5 @@
 package edu.unc.lib.boxc.services.camel.triplesReindexing;
 
-import edu.unc.lib.boxc.auth.api.Permission;
-import edu.unc.lib.boxc.auth.api.services.AccessControlService;
-import edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.objects.AdminUnit;
 import edu.unc.lib.boxc.model.api.objects.CollectionObject;
@@ -15,33 +12,29 @@ import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.api.objects.WorkObject;
 import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
 import edu.unc.lib.boxc.model.api.sparql.SparqlQueryService;
+import edu.unc.lib.boxc.model.api.sparql.SparqlUpdateService;
 import edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPaths;
 import edu.unc.lib.boxc.model.fcrepo.services.RepositoryInitializer;
 import edu.unc.lib.boxc.model.fcrepo.test.TestHelper;
 import edu.unc.lib.boxc.model.fcrepo.test.TestRepositoryDeinitializer;
 import edu.unc.lib.boxc.operations.jms.indexing.IndexingMessageSender;
 import edu.unc.lib.boxc.persist.impl.storage.StorageLocationTestHelper;
-import org.apache.camel.CamelContext;
-import org.apache.camel.Exchange;
-import org.apache.camel.Message;
+import org.apache.activemq.broker.BrokerService;
 import org.apache.camel.builder.NotifyBuilder;
-import org.apache.camel.test.spring.CamelSpringRunner;
-import org.apache.camel.test.spring.CamelTestContextBootstrapper;
+import org.apache.camel.test.spring.junit5.CamelSpringTestSupport;
 import org.apache.commons.io.FileUtils;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.jena.query.QueryExecution;
 import org.apache.jena.query.ResultSet;
 import org.fcrepo.client.FcrepoClient;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.Mock;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.annotation.DirtiesContext.ClassMode;
-import org.springframework.test.context.BootstrapWith;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.ContextHierarchy;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
+import org.springframework.context.support.AbstractApplicationContext;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import java.io.File;
 import java.util.concurrent.TimeUnit;
@@ -49,57 +42,30 @@ import java.util.concurrent.TimeUnit;
 import static edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPaths.getContentRootPid;
 import static edu.unc.lib.boxc.operations.jms.indexing.IndexingActionType.RECURSIVE_REINDEX;
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
+import static org.junit.Assert.fail;
 import static org.mockito.MockitoAnnotations.openMocks;
+import static org.slf4j.LoggerFactory.getLogger;
 
 /**
  *
  * @author bbpennel
  *
  */
-@RunWith(CamelSpringRunner.class)
-@BootstrapWith(CamelTestContextBootstrapper.class)
-@ContextHierarchy({
-    @ContextConfiguration("/spring-test/cdr-client-container.xml"),
-    @ContextConfiguration("/spring-test/jms-context.xml"),
-    @ContextConfiguration("/triples-reindexing-it-context.xml")
-})
-@DirtiesContext(classMode = ClassMode.AFTER_EACH_TEST_METHOD)
-public class TriplesReindexingRouterIT {
+public class TriplesReindexingRouterIT extends CamelSpringTestSupport {
+    private static final Logger log = getLogger(TriplesReindexingRouterIT.class);
     private AutoCloseable closeable;
 
-    @Autowired
-    private CamelContext fcrepoTriplestoreIndexer;
-
-    @Autowired
     private String baseAddress;
 
-    @javax.annotation.Resource(name = "repositoryObjectLoader")
     private RepositoryObjectLoader repositoryObjectLoader;
-    @Autowired
     private RepositoryObjectFactory repositoryObjectFactory;
-    @Autowired
     private RepositoryInitializer repoInitializer;
-    @Autowired
     private IndexingMessageSender messageSender;
-    @Autowired
-    private AccessControlService aclService;
-    @Autowired
     private SparqlQueryService sparqlQueryService;
-    @Autowired
+    private SparqlUpdateService sparqlUpdateService;
     private StorageLocationTestHelper storageLocationTestHelper;
-    @Autowired
     private FcrepoClient fcrepoClient;
-
-    @Autowired
-    private String indexingEndpoint;
-
-    @Mock
-    private Exchange exchange;
-    @Mock
-    private Message message;
+    private BrokerService activemqBroker;
 
     private ContentRootObject rootObj;
     private AdminUnit unitObj;
@@ -109,28 +75,51 @@ public class TriplesReindexingRouterIT {
     private WorkObject workObj;
     private FileObject fileObj;
 
-    @Before
-    public void setUp() throws Exception {
+    @BeforeEach
+    public void init() throws Exception {
         closeable = openMocks(this);
-
+        baseAddress = applicationContext.getBean("baseAddress", String.class);
+        repositoryObjectLoader = applicationContext.getBean("repositoryObjectLoader", RepositoryObjectLoader.class);
+        repositoryObjectFactory = applicationContext.getBean("repositoryObjectFactory", RepositoryObjectFactory.class);
+        repoInitializer = applicationContext.getBean("repositoryInitializer", RepositoryInitializer.class);
+        storageLocationTestHelper = applicationContext.getBean(StorageLocationTestHelper.class);
+        sparqlQueryService = applicationContext.getBean("sparqlQueryService", SparqlQueryService.class);
+        sparqlUpdateService = applicationContext.getBean("sparqlUpdateService", SparqlUpdateService.class);
+        fcrepoClient = applicationContext.getBean(FcrepoClient.class);
+        messageSender = applicationContext.getBean("triplesIndexingMessageSender", IndexingMessageSender.class);
+        activemqBroker = applicationContext.getBean(BrokerService.class);
         TestHelper.setContentBase(baseAddress);
-
-        when(aclService.hasAccess(any(PID.class), any(AccessGroupSetImpl.class),
-                any(Permission.class))).thenReturn(true);
-
-        when(exchange.getIn()).thenReturn(message);
-
         generateBaseStructure();
     }
 
-    @After
+    @AfterEach
     public void tearDown() throws Exception {
         closeable.close();
+        if (context != null) {
+            context.stop();
+        }
         TestRepositoryDeinitializer.cleanup(fcrepoClient);
         storageLocationTestHelper.cleanupStorageLocations();
+        if (activemqBroker != null) {
+            activemqBroker.stop();
+            activemqBroker.waitUntilStopped();
+        }
+        sparqlUpdateService.executeUpdate("DELETE WHERE { ?subject ?predicate ?object . }");
+    }
+
+    @Override
+    protected AbstractApplicationContext createApplicationContext() {
+        return new ClassPathXmlApplicationContext(
+                "/spring-test/cdr-client-container.xml",
+                "/spring-test/jms-context.xml",
+                "/triples-reindexing-it-context.xml");
     }
 
     private void generateBaseStructure() throws Exception {
+        CloseableHttpClient httpClient = HttpClientBuilder.create().build();
+        var getRequest = new HttpGet(baseAddress + "/fcrepo/rest");
+        var response = httpClient.execute(getRequest);
+
         repoInitializer.initializeRepository();
         rootObj = repositoryObjectLoader.getContentRootObject(getContentRootPid());
 
@@ -156,17 +145,16 @@ public class TriplesReindexingRouterIT {
 
     @Test
     public void testIndexingSingle() throws Exception {
+        System.out.println("Indexing " + folderObj2.getPid());
         messageSender.sendIndexingOperation("user", folderObj2.getPid(), RECURSIVE_REINDEX);
 
-        // 3 resources compose the folder
-        NotifyBuilder notify = new NotifyBuilder(fcrepoTriplestoreIndexer)
-                .from(indexingEndpoint)
-                .whenDone(2)
+        NotifyBuilder notify = new NotifyBuilder(context)
+                .whenDone(5)
                 .create();
 
-        notify.matches(5l, TimeUnit.SECONDS);
+        notify.matches(2l, TimeUnit.SECONDS);
 
-        assertIndexed(folderObj2);
+        assertIndexed(folderObj2, 2000);
     }
 
     @Test
@@ -175,13 +163,14 @@ public class TriplesReindexingRouterIT {
         messageSender.sendIndexingOperation("user", contentPid, RECURSIVE_REINDEX);
 
         // Wait for roughly all of the objects to be indexed
-        NotifyBuilder notify = new NotifyBuilder(fcrepoTriplestoreIndexer)
-                .from(indexingEndpoint)
-                .whenCompleted(15)
+        NotifyBuilder notify = new NotifyBuilder(context)
+                .whenCompleted(60)
                 .create();
 
-        notify.matches(25l, TimeUnit.SECONDS);
+        notify.matches(5l, TimeUnit.SECONDS);
 
+        // Allow for a long delay for the deepest record to be indexed
+        assertIndexed(fileObj, 10000);
         assertIndexed(rootObj);
         assertIndexed(unitObj);
         assertIndexed(collObj);
@@ -200,13 +189,14 @@ public class TriplesReindexingRouterIT {
         messageSender.sendIndexingOperation("user", contentPid, RECURSIVE_REINDEX);
 
         // Wait for roughly all of the objects to be indexed
-        NotifyBuilder notify = new NotifyBuilder(fcrepoTriplestoreIndexer)
-                .from(indexingEndpoint)
-                .whenCompleted(59)
+        NotifyBuilder notify = new NotifyBuilder(context)
+                .whenCompleted(200)
                 .create();
 
-        notify.matches(25l, TimeUnit.SECONDS);
+        notify.matches(5l, TimeUnit.SECONDS);
 
+        // Allow for a long delay for the deepest record to be indexed
+        assertIndexed(fileObj.getOriginalFile(), 15000);
         assertIndexed(rootObj);
         assertIndexed(unitObj);
         assertIndexed(collObj);
@@ -218,15 +208,25 @@ public class TriplesReindexingRouterIT {
         assertIndexed(depositRec);
     }
 
-    private void assertIndexed(RepositoryObject repoObj) {
+    private void assertIndexed(RepositoryObject repoObj) throws Exception {
+        assertIndexed(repoObj, 1000);
+    }
+
+    private void assertIndexed(RepositoryObject repoObj, long waitMs) throws Exception {
         String query = String.format("select ?pred ?obj where { <%s> ?pred ?obj } limit 1",
                 repoObj.getPid().getRepositoryPath());
 
+        long endTime = System.currentTimeMillis() + waitMs;
         try (QueryExecution qExecution = sparqlQueryService.executeQuery(query)) {
-            ResultSet resultSet = qExecution.execSelect();
+            while (System.currentTimeMillis() < endTime) {
+                ResultSet resultSet = qExecution.execSelect();
+                if (resultSet.hasNext()) {
+                    return;
+                }
+                Thread.sleep(100l);
+            }
 
-            assertTrue("Object " + repoObj.getPid() + " was not indexed", resultSet.hasNext());
-            return;
+            fail("Object " + repoObj.getPid() + " was not indexed");
         }
     }
 }

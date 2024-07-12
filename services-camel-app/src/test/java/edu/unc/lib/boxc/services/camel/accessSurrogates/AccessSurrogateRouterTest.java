@@ -6,28 +6,33 @@ import edu.unc.lib.boxc.auth.fcrepo.models.AgentPrincipalsImpl;
 import edu.unc.lib.boxc.operations.jms.accessSurrogates.AccessSurrogateRequest;
 import edu.unc.lib.boxc.operations.jms.accessSurrogates.AccessSurrogateRequestSerializationHelper;
 import edu.unc.lib.boxc.services.camel.TestHelper;
-import org.apache.camel.BeanInject;
 import org.apache.camel.Produce;
 import org.apache.camel.ProducerTemplate;
-import org.apache.camel.builder.AdviceWithRouteBuilder;
-import org.apache.camel.test.spring.CamelSpringTestSupport;
-import org.junit.Test;
-import org.springframework.context.support.AbstractApplicationContext;
-import org.springframework.context.support.ClassPathXmlApplicationContext;
+import org.apache.camel.builder.AdviceWith;
+import org.apache.camel.builder.RouteBuilder;
+import org.apache.camel.test.junit5.CamelTestSupport;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 
-public class AccessSurrogateRouterTest extends CamelSpringTestSupport {
+@ExtendWith(MockitoExtension.class)
+public class AccessSurrogateRouterTest extends CamelTestSupport {
     private AgentPrincipals agent = new AgentPrincipalsImpl("user", new AccessGroupSetImpl("agroup"));
     @Produce(uri = "direct:start")
     protected ProducerTemplate template;
-    @BeanInject(value = "accessSurrogateRequestProcessor")
+    @Mock
     private AccessSurrogateRequestProcessor processor;
 
     @Override
-    protected AbstractApplicationContext createApplicationContext() {
-        return new ClassPathXmlApplicationContext("/service-context.xml", "/access-surrogates-context.xml");
+    protected RouteBuilder createRouteBuilder() throws Exception {
+        var router = new AccessSurrogateRouter();
+        router.setAccessSurrogateRequestProcessor(processor);
+        router.setAccessSurrogatesStreamCamel("direct:accessSurrogates.stream");
+        return router;
     }
 
     @Test
@@ -45,14 +50,8 @@ public class AccessSurrogateRouterTest extends CamelSpringTestSupport {
     }
 
     private void createContext(String routeName) throws Exception {
-        context.getRouteDefinition(routeName).adviceWith(context, new AdviceWithRouteBuilder() {
-            @Override
-            public void configure() throws Exception {
-                replaceFromWith("direct:start");
-                mockEndpointsAndSkip("*");
-            }
+        AdviceWith.adviceWith(context, routeName, a -> {
+            a.replaceFromWith("direct:start");
         });
-
-        context.start();
     }
 }

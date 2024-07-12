@@ -1,5 +1,19 @@
 package edu.unc.lib.boxc.services.camel.fulltext;
 
+import edu.unc.lib.boxc.model.fcrepo.test.TestHelper;
+import org.apache.camel.Exchange;
+import org.apache.camel.Message;
+import org.apache.commons.io.FileUtils;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
+import org.mockito.Mock;
+
+import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Path;
+
 import static edu.unc.lib.boxc.services.camel.util.CdrFcrepoHeaders.CdrBinaryPath;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.fcrepo.camel.FcrepoHeaders.FCREPO_URI;
@@ -9,22 +23,6 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.openMocks;
-
-import java.io.File;
-
-import org.apache.camel.Exchange;
-import org.apache.camel.Message;
-import org.apache.commons.io.FileUtils;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.rules.TemporaryFolder;
-import org.mockito.Mock;
-
-import com.google.common.io.Files;
-
-import edu.unc.lib.boxc.model.fcrepo.test.TestHelper;
 
 public class FulltextProcessorTest {
     private FulltextProcessor processor;
@@ -42,8 +40,8 @@ public class FulltextProcessorTest {
 
     private AutoCloseable closeable;
 
-    @Rule
-    public TemporaryFolder tmpDir = new TemporaryFolder();
+    @TempDir
+    public Path tmpFolder;
 
     @Mock
     private Exchange exchange;
@@ -51,13 +49,13 @@ public class FulltextProcessorTest {
     @Mock
     private Message message;
 
-    @Before
+    @BeforeEach
     public void init() throws Exception {
         closeable = openMocks(this);
 
         TestHelper.setContentBase(FEDORA_BASE);
 
-        derivPath = tmpDir.newFolder().getAbsolutePath();
+        derivPath = tmpFolder.toString();
         processor = new FulltextProcessor(derivPath);
 
 
@@ -76,8 +74,7 @@ public class FulltextProcessorTest {
 
     @Test
     public void extractFulltextTest() throws Exception {
-        originalFile = tmpDir.newFile(originalFileName);
-        FileUtils.write(originalFile, testText, "UTF-8");
+        originalFile = createFile(originalFileName, testText);
 
         when(message.getHeader(eq(CdrBinaryPath)))
                 .thenReturn(originalFile.toPath().toString());
@@ -89,8 +86,7 @@ public class FulltextProcessorTest {
 
     @Test
     public void extractFromEmptyFileTest() throws Exception {
-        originalFile = tmpDir.newFile(originalFileName);
-        FileUtils.write(originalFile, "", "UTF-8");
+        originalFile = createFile(originalFileName, "");
 
         when(message.getHeader(eq(CdrBinaryPath)))
                 .thenReturn(originalFile.toPath().toString());
@@ -102,8 +98,8 @@ public class FulltextProcessorTest {
 
     @Test
     public void extractFromInvalidPdfTest() throws Exception {
-        originalFile = tmpDir.newFile("invalid.pdf");
-        Files.copy(new File("src/test/resources/datastreams/invalid.pdf"), originalFile);
+        originalFile = createFile("invalid.pdf", "");
+        FileUtils.copyFile(new File("src/test/resources/datastreams/invalid.pdf"), originalFile);
 
         when(message.getHeader(eq(CdrBinaryPath)))
                 .thenReturn(originalFile.toPath().toString());
@@ -116,8 +112,7 @@ public class FulltextProcessorTest {
     public void extractFulltextExceedsCharacterLimit() throws Exception {
         processor.setCharacterLimit(10);
 
-        originalFile = tmpDir.newFile(originalFileName);
-        FileUtils.write(originalFile, testText, "UTF-8");
+        originalFile = createFile(originalFileName, testText);
 
         when(message.getHeader(eq(CdrBinaryPath)))
                 .thenReturn(originalFile.toPath().toString());
@@ -125,5 +120,11 @@ public class FulltextProcessorTest {
         processor.process(exchange);
         assertTrue(finalDerivativeFile.exists());
         assertEquals(testText.substring(0, 10), FileUtils.readFileToString(finalDerivativeFile, UTF_8).trim());
+    }
+
+    private File createFile(String name, String content) throws Exception {
+        File file = Files.createFile(tmpFolder.resolve(name)).toFile();
+        FileUtils.write(file, content, "UTF-8");
+        return file;
     }
 }

@@ -446,7 +446,7 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'A
 					case "exportCSV" :
 						self.actionHandler.addEvent({
 							action : 'ChangeLocation',
-							url : "api/exportTree/csv/" + metadata.id,
+							url : `api/exportTree/csv?ids=${metadata.id}`,
 							application: "services"
 						});
 						break;

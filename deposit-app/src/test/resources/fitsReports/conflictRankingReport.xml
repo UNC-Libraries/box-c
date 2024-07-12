@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<fits xmlns="http://hul.harvard.edu/ois/xml/ns/fits/fits_output" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://hul.harvard.edu/ois/xml/ns/fits/fits_output http://hul.harvard.edu/ois/xml/xsd/fits/fits_output.xsd" version="1.6.0" timestamp="2/19/24 11:32 AM">
+    <identification status="CONFLICT">
+        <identity format="symbolic link to `/path/to/2217c4ce-9ab7-409a-9538-ef961ba119cf/data/_e5c9e83b-0427-4ec3-bb0f-fd24a992a56e'" mimetype="inode/symlink" toolname="FITS" toolversion="1.6.0">
+            <tool toolname="file utility" toolversion="5.11" />
+        </identity>
+        <identity format="Text Plain" mimetype="text/plain" toolname="FITS" toolversion="1.6.0">
+            <tool toolname="Droid" toolversion="6.1.5" />
+        </identity>
+        <identity format="Tagged Image File Format" mimetype="image/tiff" toolname="FITS" toolversion="1.6.0">
+            <tool toolname="Tika" toolversion="2.6.0" />
+        </identity>
+        <identity format="NEF EXIF" mimetype="image/x-nikon-nef" toolname="FITS" toolversion="1.6.0">
+            <tool toolname="Exiftool" toolversion="12.50" />
+        </identity>
+    </identification>
+    <fileinfo>
+        <lastmodified toolname="Exiftool" toolversion="12.50">2017-08-22T17:00:41</lastmodified>
+        <created toolname="Exiftool" toolversion="12.50">2017-08-22T17:00:41</created>
+        <filepath toolname="OIS File Information" toolversion="1.0" status="SINGLE_RESULT">/path/to/temp/9064692952992/20170822_068.nef</filepath>
+        <filename toolname="OIS File Information" toolversion="1.0" status="SINGLE_RESULT">20170822_068.nef</filename>
+        <size toolname="OIS File Information" toolversion="1.0">13887221</size>
+        <md5checksum toolname="OIS File Information" toolversion="1.0" status="SINGLE_RESULT">238b8c4a61fda89ef829c6b7d69b57fa</md5checksum>
+        <fslastmodified toolname="OIS File Information" toolversion="1.0" status="SINGLE_RESULT">1717086826457</fslastmodified>
+    </fileinfo>
+    <filestatus />
+    <metadata>
+        <image>
+            <compressionScheme toolname="Exiftool" toolversion="12.50" status="SINGLE_RESULT">JPEG</compressionScheme>
+            <imageWidth toolname="Exiftool" toolversion="12.50">4304</imageWidth>
+            <imageHeight toolname="Exiftool" toolversion="12.50">2864</imageHeight>
+            <colorSpace toolname="Exiftool" toolversion="12.50" status="SINGLE_RESULT">RGB</colorSpace>
+            <referenceBlackWhite toolname="Exiftool" toolversion="12.50" status="SINGLE_RESULT">0 255 0 255 0 255</referenceBlackWhite>
+            <YCbCrPositioning toolname="Exiftool" toolversion="12.50" status="SINGLE_RESULT">2</YCbCrPositioning>
+            <orientation toolname="Exiftool" toolversion="12.50" status="SINGLE_RESULT">normal*</orientation>
+            <samplingFrequencyUnit toolname="Exiftool" toolversion="12.50">in.</samplingFrequencyUnit>
+            <xSamplingFrequency toolname="Exiftool" toolversion="12.50">300</xSamplingFrequency>
+            <ySamplingFrequency toolname="Exiftool" toolversion="12.50">300</ySamplingFrequency>
+            <bitsPerSample toolname="Exiftool" toolversion="12.50" status="SINGLE_RESULT">8 8 8</bitsPerSample>
+            <samplesPerPixel toolname="Exiftool" toolversion="12.50" status="CONFLICT">3</samplesPerPixel>
+            <samplesPerPixel toolname="Tika" toolversion="2.6.0" status="CONFLICT">1</samplesPerPixel>
+            <captureDevice toolname="Exiftool" toolversion="12.50" status="SINGLE_RESULT">digital still camera</captureDevice>
+            <digitalCameraManufacturer toolname="Exiftool" toolversion="12.50" status="SINGLE_RESULT">NIKON CORPORATION</digitalCameraManufacturer>
+            <digitalCameraModelName toolname="Exiftool" toolversion="12.50" status="SINGLE_RESULT">NIKON D500</digitalCameraModelName>
+            <scanningSoftwareName toolname="Exiftool" toolversion="12.50" status="SINGLE_RESULT">Ver.1.13</scanningSoftwareName>
+            <fNumber toolname="Exiftool" toolversion="12.50" status="SINGLE_RESULT">3.5</fNumber>
+            <exposureTime toolname="Exiftool" toolversion="12.50" status="SINGLE_RESULT">0.002</exposureTime>
+            <exposureProgram toolname="Exiftool" toolversion="12.50" status="SINGLE_RESULT">Manual</exposureProgram>
+            <isoSpeedRating toolname="Exiftool" toolversion="12.50" status="SINGLE_RESULT">6400</isoSpeedRating>
+            <exposureBiasValue toolname="Exiftool" toolversion="12.50" status="SINGLE_RESULT">0</exposureBiasValue>
+            <maxApertureValue toolname="Exiftool" toolversion="12.50" status="SINGLE_RESULT">2.8</maxApertureValue>
+            <meteringMode toolname="Exiftool" toolversion="12.50" status="SINGLE_RESULT">Pattern</meteringMode>
+            <lightSource toolname="Exiftool" toolversion="12.50" status="SINGLE_RESULT">unknown</lightSource>
+            <flash toolname="Exiftool" toolversion="12.50" status="SINGLE_RESULT">Flash did not fire</flash>
+            <focalLength toolname="Exiftool" toolversion="12.50" status="SINGLE_RESULT">200.0</focalLength>
+            <sensingMethod toolname="Exiftool" toolversion="12.50" status="SINGLE_RESULT">One-chip color area sensor</sensingMethod>
+            <cfaPattern toolname="Exiftool" toolversion="12.50" status="SINGLE_RESULT">[Red,Green][Green,Blue]</cfaPattern>
+            <cfaPattern2 toolname="Exiftool" toolversion="12.50" status="SINGLE_RESULT">0 1 1 2</cfaPattern2>
+            <gpsVersionID toolname="Exiftool" toolversion="12.50" status="SINGLE_RESULT">2.3.0.0</gpsVersionID>
+        </image>
+    </metadata>
+    <statistics fitsExecutionTime="8234">
+        <tool toolname="MediaInfo" toolversion="23.09" status="did not run" />
+        <tool toolname="OIS Audio Information" toolversion="0.1" status="did not run" />
+        <tool toolname="ADL Tool" toolversion="0.1" status="did not run" />
+        <tool toolname="VTT Tool" toolversion="0.1" status="did not run" />
+        <tool toolname="Droid" toolversion="6.5.2" executionTime="5814" />
+        <tool toolname="jpylyzer" toolversion="2.1.0" status="did not run" />
+        <tool toolname="embARC" toolversion="0.2" status="did not run" />
+        <tool toolname="file utility" toolversion="5.11" executionTime="8031" />
+        <tool toolname="Exiftool" toolversion="12.50" executionTime="8053" />
+        <tool toolname="NLNZ Metadata Extractor" toolversion="3.6GA" status="did not run" />
+        <tool toolname="OIS File Information" toolversion="1.0" executionTime="5717" />
+        <tool toolname="OIS XML Metadata" toolversion="0.2" status="did not run" />
+        <tool toolname="Tika" toolversion="2.6.0" executionTime="7168" />
+    </statistics>
+</fits>

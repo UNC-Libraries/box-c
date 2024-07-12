@@ -9,9 +9,9 @@ import edu.unc.lib.boxc.operations.jms.thumbnails.ThumbnailRequestSerializationH
 import org.apache.camel.BeanInject;
 import org.apache.camel.Produce;
 import org.apache.camel.ProducerTemplate;
-import org.apache.camel.builder.AdviceWithRouteBuilder;
-import org.apache.camel.test.spring.CamelSpringTestSupport;
-import org.junit.Test;
+import org.apache.camel.builder.AdviceWith;
+import org.apache.camel.test.spring.junit5.CamelSpringTestSupport;
+import org.junit.jupiter.api.Test;
 import org.springframework.context.support.AbstractApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
@@ -46,14 +46,10 @@ public class ThumbnailRouterTest extends CamelSpringTestSupport {
     }
 
     private void createContext(String routeName) throws Exception {
-        context.getRouteDefinition(routeName).adviceWith(context, new AdviceWithRouteBuilder() {
-            @Override
-            public void configure() throws Exception {
-                replaceFromWith("direct:start");
-                mockEndpointsAndSkip("*");
-            }
+        AdviceWith.adviceWith(context, routeName, a -> {
+            a.replaceFromWith("direct:start");
+            a.mockEndpointsAndSkip("*");
         });
-
         context.start();
     }
 }

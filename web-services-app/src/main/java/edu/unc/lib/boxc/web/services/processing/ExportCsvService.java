@@ -1,15 +1,28 @@
 package edu.unc.lib.boxc.web.services.processing;
 
-import static edu.unc.lib.boxc.auth.api.AccessPrincipalConstants.AUTHENTICATED_PRINC;
-import static edu.unc.lib.boxc.auth.api.AccessPrincipalConstants.PUBLIC_PRINC;
-import static edu.unc.lib.boxc.auth.api.Permission.viewHidden;
-import static edu.unc.lib.boxc.auth.api.UserRole.canViewOriginals;
-import static edu.unc.lib.boxc.auth.api.UserRole.none;
-import static edu.unc.lib.boxc.model.api.DatastreamType.ACCESS_SURROGATE;
-import static edu.unc.lib.boxc.model.api.DatastreamType.ORIGINAL_FILE;
-import static edu.unc.lib.boxc.model.api.ids.RepositoryPathConstants.CONTENT_ROOT_ID;
-import static edu.unc.lib.boxc.model.api.rdf.CdrAcl.embargoUntil;
-import static edu.unc.lib.boxc.search.api.FacetConstants.MARKED_FOR_DELETION;
+import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
+import edu.unc.lib.boxc.auth.api.models.AgentPrincipals;
+import edu.unc.lib.boxc.auth.api.services.AccessControlService;
+import edu.unc.lib.boxc.common.util.URIUtil;
+import edu.unc.lib.boxc.model.api.ResourceType;
+import edu.unc.lib.boxc.model.api.exceptions.NotFoundException;
+import edu.unc.lib.boxc.model.api.exceptions.RepositoryException;
+import edu.unc.lib.boxc.model.api.ids.PID;
+import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
+import edu.unc.lib.boxc.search.api.FacetConstants;
+import edu.unc.lib.boxc.search.api.SearchFieldKey;
+import edu.unc.lib.boxc.search.api.models.ContentObjectRecord;
+import edu.unc.lib.boxc.search.api.models.Datastream;
+import edu.unc.lib.boxc.search.api.requests.SearchRequest;
+import edu.unc.lib.boxc.search.api.requests.SearchState;
+import edu.unc.lib.boxc.search.solr.responses.SearchResultResponse;
+import edu.unc.lib.boxc.search.solr.services.ChildrenCountService;
+import edu.unc.lib.boxc.web.common.services.SolrQueryLayerService;
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVPrinter;
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -25,29 +38,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-import edu.unc.lib.boxc.model.api.ResourceType;
-import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
-import org.apache.commons.csv.CSVFormat;
-import org.apache.commons.csv.CSVPrinter;
-import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
-import edu.unc.lib.boxc.auth.api.models.AgentPrincipals;
-import edu.unc.lib.boxc.auth.api.services.AccessControlService;
-import edu.unc.lib.boxc.model.api.exceptions.NotFoundException;
-import edu.unc.lib.boxc.model.api.exceptions.RepositoryException;
-import edu.unc.lib.boxc.model.api.ids.PID;
-import edu.unc.lib.boxc.search.api.FacetConstants;
-import edu.unc.lib.boxc.search.api.SearchFieldKey;
-import edu.unc.lib.boxc.search.api.models.ContentObjectRecord;
-import edu.unc.lib.boxc.search.api.models.Datastream;
-import edu.unc.lib.boxc.search.api.requests.SearchRequest;
-import edu.unc.lib.boxc.search.api.requests.SearchState;
-import edu.unc.lib.boxc.search.solr.responses.SearchResultResponse;
-import edu.unc.lib.boxc.search.solr.services.ChildrenCountService;
-import edu.unc.lib.boxc.web.common.services.SolrQueryLayerService;
+import static edu.unc.lib.boxc.auth.api.AccessPrincipalConstants.AUTHENTICATED_PRINC;
+import static edu.unc.lib.boxc.auth.api.AccessPrincipalConstants.PUBLIC_PRINC;
+import static edu.unc.lib.boxc.auth.api.Permission.viewHidden;
+import static edu.unc.lib.boxc.auth.api.UserRole.canViewOriginals;
+import static edu.unc.lib.boxc.auth.api.UserRole.none;
+import static edu.unc.lib.boxc.model.api.DatastreamType.ORIGINAL_FILE;
+import static edu.unc.lib.boxc.model.api.ids.RepositoryPathConstants.CONTENT_ROOT_ID;
+import static edu.unc.lib.boxc.model.api.rdf.CdrAcl.embargoUntil;
+import static edu.unc.lib.boxc.search.api.FacetConstants.MARKED_FOR_DELETION;
 
 /**
  * Service which outputs a CSV listing of a repository object and all of its children,
@@ -77,12 +76,15 @@ public class ExportCsvService {
     public static final String PATRON_PERMISSIONS_HEADER = "Patron Permissions";
     public static final String EMBARGO_HEADER = "Embargo Date";
     public static final String VIEW_BEHAVIOR_HEADER = "View";
+    public static final String PARENT_WORK_URL = "Parent Work URL";
+    public static final String PARENT_WORK_TITLE = "Parent Work Title";
 
     private static final String[] CSV_HEADERS = new String[] {
             OBJ_TYPE_HEADER, PID_HEADER, TITLE_HEADER, PATH_HEADER,
             DEPTH_HEADER, DELETED_HEADER, DATE_ADDED_HEADER, DATE_UPDATED_HEADER,
             MIME_TYPE_HEADER, CHECKSUM_HEADER, FILE_SIZE_HEADER, ACCESS_SURROGATE_HEADER, NUM_CHILDREN_HEADER,
-            DESCRIBED_HEADER, PATRON_PERMISSIONS_HEADER, EMBARGO_HEADER, VIEW_BEHAVIOR_HEADER
+            DESCRIBED_HEADER, PATRON_PERMISSIONS_HEADER, EMBARGO_HEADER, VIEW_BEHAVIOR_HEADER,
+            PARENT_WORK_URL, PARENT_WORK_TITLE
     };
 
     private static final List<String> SEARCH_FIELDS = Arrays.asList(SearchFieldKey.ID.name(),
@@ -99,21 +101,44 @@ public class ExportCsvService {
     private AccessControlService aclService;
     private SolrQueryLayerService queryLayer;
     private RepositoryObjectLoader repositoryObjectLoader;
+    private String baseUrl;
     private int pageSize = DEFAULT_PAGE_SIZE;
 
     private static final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd kk:mm:ss");
 
-    public void streamCsv(PID pid, AgentPrincipals agent, OutputStream out) {
+    public void streamCsv(List<PID> pids, AgentPrincipals agent, OutputStream out) {
+        AccessGroupSet accessGroups = agent.getPrincipals();
+        validate(pids, accessGroups);
+
+        // Open the CSV
+        Writer writer = new BufferedWriter(new OutputStreamWriter(out, StandardCharsets.UTF_8));
+        try (CSVPrinter printer = getPrinter(writer)) {
+            for (PID pid : pids) {
+                printObjectRows(pid, printer, agent.getUsername(), accessGroups);
+            }
+        } catch (IOException e) {
+            throw new RepositoryException("Failed to stream CSV results: ", e);
+        }
+    }
+
+    private void validate(List<PID> pids, AccessGroupSet accessGroups) {
+        for (PID pid : pids) {
+            validateObject(pid, accessGroups);
+        }
+    }
+
+    private void validateObject(PID pid, AccessGroupSet accessGroups) {
         if (CONTENT_ROOT_ID.equals(pid.getId())) {
             throw new IllegalArgumentException("Error exporting CSV for " + pid.getId()
                     + ". Not allowed to export collection root");
         }
 
-        AccessGroupSet accessGroups = agent.getPrincipals();
         aclService.assertHasAccess("Insufficient privileges to export CSV for " + pid.getUUID(),
                 pid, accessGroups, viewHidden);
+    }
 
-        log.debug("Streaming CSV export of {} for {}", pid, agent.getUsername());
+    private void printObjectRows(PID pid, CSVPrinter printer, String username, AccessGroupSet accessGroups) throws IOException {
+        log.debug("Streaming CSV export of {} for {}", pid, username);
 
         SearchState searchState = new SearchState();
         searchState.setResultFields(SEARCH_FIELDS);
@@ -130,38 +155,32 @@ public class ExportCsvService {
         searchRequest.setRootPid(pid);
         searchRequest.setApplyCutoffs(false);
 
-        // Open the CSV
-        Writer writer = new BufferedWriter(new OutputStreamWriter(out, StandardCharsets.UTF_8));
-        try (CSVPrinter printer = getPrinter(writer)) {
-            int pageStart = 0;
-            long totalResults = -1;
-            do {
-                searchState.setStartRow(pageStart);
+        int pageStart = 0;
+        long totalResults = -1;
+        do {
+            searchState.setStartRow(pageStart);
 
-                SearchResultResponse resultResponse = queryLayer.getSearchResults(searchRequest);
+            SearchResultResponse resultResponse = queryLayer.getSearchResults(searchRequest);
 
-                List<ContentObjectRecord> objects = resultResponse.getResultList();
-                // Insert the parent container if on the first page of results
-                if (pageStart == 0) {
-                    objects.add(0, container);
-                    totalResults = resultResponse.getResultCount();
-                } else {
-                    log.debug("Streaming results {}-{} of {} in multi-page result for {}",
-                            pageStart, pageStart + pageSize, totalResults, pid.getId());
-                }
+            List<ContentObjectRecord> objects = resultResponse.getResultList();
+            // Insert the parent container if on the first page of results
+            if (pageStart == 0) {
+                objects.add(0, container);
+                totalResults = resultResponse.getResultCount();
+            } else {
+                log.debug("Streaming results {}-{} of {} in multi-page result for {}",
+                        pageStart, pageStart + pageSize, totalResults, pid.getId());
+            }
 
-                childrenCountService.addChildrenCounts(objects, searchRequest.getAccessGroups());
+            childrenCountService.addChildrenCounts(objects, searchRequest.getAccessGroups());
 
-                // Stream the current page of results
-                for (ContentObjectRecord object : objects) {
-                    printObject(printer, object);
-                }
+            // Stream the current page of results
+            for (ContentObjectRecord object : objects) {
+                printObject(printer, object);
+            }
 
-                pageStart += pageSize;
-            } while (pageStart < totalResults);
-        } catch (IOException e) {
-            throw new RepositoryException("Failed to stream CSV results for " + pid, e);
-        }
+            pageStart += pageSize;
+        } while (pageStart < totalResults);
     }
 
     private String computePatronPermissions(List<String> roles) {
@@ -208,7 +227,7 @@ public class ExportCsvService {
     }
 
     private void printObject(CSVPrinter printer, ContentObjectRecord object) throws IOException {
-        // Vitals: object type, pid, title, path, label, depth
+        // Vitals: object type, pid, title, path, depth
         printer.print(object.getResourceType());
         printer.print(object.getId());
         printer.print(object.getTitle());
@@ -294,6 +313,18 @@ public class ExportCsvService {
         var behavior = object.getViewBehavior();
         printer.print(Objects.requireNonNullElse(behavior, ""));
 
+        // Parent info for FileObjects
+        if (ResourceType.File.name().equals(object.getResourceType())) {
+            // parentWorkUrl, parentWorkTitle
+            var parentWorkId = object.getAncestorPathFacet().getHighestTierNode().getSearchKey();
+            printer.print(getUrl(parentWorkId));
+            var parentWorkTitle = getTitle(object.getAncestorNames());
+            printer.print(parentWorkTitle);
+        } else {
+            printer.print("");
+            printer.print("");
+        }
+
         printer.println();
     }
 
@@ -319,6 +350,27 @@ public class ExportCsvService {
         return StringUtils.substringBefore(embargoProperty.getString(), "T");
     }
 
+    /**
+     * Creating a record URL with just the ID
+     * @param id
+     * @return
+     */
+    private String getUrl(String id) {
+        return URIUtil.join(baseUrl, id);
+    }
+
+    /**
+     * Transforming ancestor path names to get the second to last one (for the work), but keep escaped slashes if necessary
+     * @param input
+     * @return
+     */
+    private String getTitle(String input) {
+        String regex = "(?<!\\\\)/";
+        String[] result = input.split(regex);
+        // for the last one escape any backslashes in the title
+        return result[result.length - 2].replace("\\/", "/");
+    }
+
     public void setChildrenCountService(ChildrenCountService childrenCountService) {
         this.childrenCountService = childrenCountService;
     }
@@ -337,5 +389,9 @@ public class ExportCsvService {
 
     public void setRepositoryObjectLoader(RepositoryObjectLoader repositoryObjectLoader) {
         this.repositoryObjectLoader = repositoryObjectLoader;
+    }
+
+    public void setBaseUrl(String baseUrl) {
+        this.baseUrl = baseUrl;
     }
 }
