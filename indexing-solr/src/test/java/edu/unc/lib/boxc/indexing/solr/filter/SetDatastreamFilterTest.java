@@ -8,18 +8,21 @@ import edu.unc.lib.boxc.indexing.solr.utils.Jp2InfoService;
 import edu.unc.lib.boxc.indexing.solr.utils.NoOpJp2InfoService;
 import edu.unc.lib.boxc.indexing.solr.utils.TechnicalMetadataService;
 import edu.unc.lib.boxc.model.api.DatastreamType;
+import edu.unc.lib.boxc.model.api.StreamingConstants;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.objects.BinaryObject;
 import edu.unc.lib.boxc.model.api.objects.ContentObject;
 import edu.unc.lib.boxc.model.api.objects.FileObject;
 import edu.unc.lib.boxc.model.api.objects.FolderObject;
 import edu.unc.lib.boxc.model.api.objects.WorkObject;
+import edu.unc.lib.boxc.model.api.rdf.Cdr;
 import edu.unc.lib.boxc.model.api.rdf.Ebucore;
 import edu.unc.lib.boxc.model.api.rdf.Premis;
 import edu.unc.lib.boxc.model.fcrepo.ids.DatastreamPids;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.boxc.model.fcrepo.services.DerivativeService;
 import edu.unc.lib.boxc.model.fcrepo.services.DerivativeService.Derivative;
+import edu.unc.lib.boxc.model.fcrepo.test.TestHelper;
 import edu.unc.lib.boxc.search.solr.models.IndexDocumentBean;
 import org.apache.commons.io.FileUtils;
 import org.apache.jena.rdf.model.Model;
@@ -38,9 +41,11 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static edu.unc.lib.boxc.indexing.solr.test.MockRepositoryObjectHelpers.makeFileObject;
 import static edu.unc.lib.boxc.model.api.DatastreamType.JP2_ACCESS_COPY;
 import static edu.unc.lib.boxc.model.api.DatastreamType.ORIGINAL_FILE;
 import static edu.unc.lib.boxc.model.api.DatastreamType.TECHNICAL_METADATA;
@@ -104,7 +109,6 @@ public class SetDatastreamFilterTest {
     private IndexDocumentBean idb;
     private PID pid;
 
-    @Mock
     private FileObject fileObj;
     @Mock
     private BinaryObject binObj;
@@ -129,6 +133,7 @@ public class SetDatastreamFilterTest {
         dip = new DocumentIndexingPackage(pid, null, documentIndexingPackageDataLoader);
         dip.setPid(pid);
         idb = dip.getDocument();
+        fileObj = makeFileObject(pid, null);
         when(fileObj.getOriginalFile()).thenReturn(binObj);
         when(binObj.getPid()).thenReturn(DatastreamPids.getOriginalFilePid(pid));
         when(fileObj.getBinaryObjects()).thenReturn(Arrays.asList(binObj));
@@ -316,6 +321,21 @@ public class SetDatastreamFilterTest {
 
             filter.filter(dip);
         });
+    }
+
+    @Test
+    public void fileObjectStreamingOnlyTest() throws Exception {
+        when(fileObj.getBinaryObjects()).thenReturn(Collections.emptyList());
+        var fileResc = fileObj.getResource();
+        fileResc.addLiteral(Cdr.streamingUrl, "http://example.com/streaming/audio");
+        fileResc.addLiteral(Cdr.streamingType, StreamingConstants.STREAMING_TYPE_SOUND);
+        dip.setContentObject(fileObj);
+
+        filter.filter(dip);
+
+        assertTrue(idb.getDatastream().isEmpty());
+        assertEquals(0, (long) idb.getFilesizeSort());
+        assertEquals(0, (long) idb.getFilesizeTotal());
     }
 
     @Test

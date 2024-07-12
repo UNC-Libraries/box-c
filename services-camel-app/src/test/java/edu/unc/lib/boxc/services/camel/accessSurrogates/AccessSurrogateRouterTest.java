@@ -5,7 +5,7 @@ import edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl;
 import edu.unc.lib.boxc.auth.fcrepo.models.AgentPrincipalsImpl;
 import edu.unc.lib.boxc.operations.jms.accessSurrogates.AccessSurrogateRequest;
 import edu.unc.lib.boxc.operations.jms.accessSurrogates.AccessSurrogateRequestSerializationHelper;
-import edu.unc.lib.boxc.services.camel.ProcessorTestHelper;
+import edu.unc.lib.boxc.services.camel.TestHelper;
 import org.apache.camel.Produce;
 import org.apache.camel.ProducerTemplate;
 import org.apache.camel.builder.AdviceWith;
@@ -38,7 +38,7 @@ public class AccessSurrogateRouterTest extends CamelTestSupport {
     @Test
     public void requestSentTest() throws Exception {
         createContext("DcrAccessSurrogates");
-        var pid = ProcessorTestHelper.makePid();
+        var pid = TestHelper.makePid();
 
         var request = new AccessSurrogateRequest();
         request.setAgent(agent);

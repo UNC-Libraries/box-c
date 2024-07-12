@@ -3,9 +3,9 @@ package edu.unc.lib.boxc.services.camel.thumbnails;
 import edu.unc.lib.boxc.auth.api.models.AgentPrincipals;
 import edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl;
 import edu.unc.lib.boxc.auth.fcrepo.models.AgentPrincipalsImpl;
+import edu.unc.lib.boxc.services.camel.TestHelper;
 import edu.unc.lib.boxc.operations.jms.thumbnails.ThumbnailRequest;
 import edu.unc.lib.boxc.operations.jms.thumbnails.ThumbnailRequestSerializationHelper;
-import edu.unc.lib.boxc.services.camel.ProcessorTestHelper;
 import org.apache.camel.BeanInject;
 import org.apache.camel.Produce;
 import org.apache.camel.ProducerTemplate;
@@ -34,7 +34,7 @@ public class ThumbnailRouterTest extends CamelSpringTestSupport {
     @Test
     public void requestSentTest() throws Exception {
         createContext("DcrThumbnails");
-        var pid = ProcessorTestHelper.makePid();
+        var pid = TestHelper.makePid();
 
         var request = new ThumbnailRequest();
         request.setAgent(agent);

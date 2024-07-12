@@ -4,15 +4,19 @@ import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
 import edu.unc.lib.boxc.indexing.solr.indexing.DocumentIndexingPackage;
 import edu.unc.lib.boxc.indexing.solr.indexing.DocumentIndexingPackageDataLoader;
 import edu.unc.lib.boxc.indexing.solr.utils.TechnicalMetadataService;
+import edu.unc.lib.boxc.model.api.StreamingConstants;
+import edu.unc.lib.boxc.model.api.exceptions.NotFoundException;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.objects.BinaryObject;
 import edu.unc.lib.boxc.model.api.objects.FileObject;
 import edu.unc.lib.boxc.model.api.objects.FolderObject;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.api.objects.WorkObject;
+import edu.unc.lib.boxc.model.api.rdf.Cdr;
 import edu.unc.lib.boxc.model.api.services.ContentPathFactory;
 import edu.unc.lib.boxc.model.fcrepo.ids.DatastreamPids;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
+import edu.unc.lib.boxc.model.fcrepo.test.TestHelper;
 import edu.unc.lib.boxc.search.api.ContentCategory;
 import edu.unc.lib.boxc.search.api.SearchFieldKey;
 import edu.unc.lib.boxc.search.api.facets.CutoffFacet;
@@ -39,11 +43,13 @@ import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
+import static edu.unc.lib.boxc.indexing.solr.test.MockRepositoryObjectHelpers.makeFileObject;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -381,6 +387,40 @@ public class SetContentTypeFilterTest {
         assertHasFileDescriptions(idb, "Extensible Markup Language");
         assertHasCategories(idb, ContentCategory.text);
         verify(solrSearchService, never()).getAncestorPath(anyString(), any(AccessGroupSet.class));
+    }
+
+    @Test
+    public void testStreamingOnlyVideo() throws Exception {
+        var filePid = TestHelper.makePid();
+        var fileObj =  makeFileObject(filePid, repositoryObjectLoader);
+        when(dip.getContentObject()).thenReturn(fileObj);
+        doThrow(NotFoundException.class).when(fileObj).getOriginalFile();
+        var fileResc = fileObj.getResource();
+        fileResc.addLiteral(Cdr.streamingUrl, "http://example.com/streaming/video");
+        fileResc.addLiteral(Cdr.streamingType, StreamingConstants.STREAMING_TYPE_VIDEO);
+
+        filter.filter(dip);
+
+        assertNull(idb.getFileFormatType());
+        assertHasFileDescriptions(idb, "Streaming Video");
+        assertHasCategories(idb, ContentCategory.video);
+    }
+
+    @Test
+    public void testStreamingOnlySound() throws Exception {
+        var filePid = TestHelper.makePid();
+        var fileObj = makeFileObject(filePid, repositoryObjectLoader);
+        when(dip.getContentObject()).thenReturn(fileObj);
+        doThrow(NotFoundException.class).when(fileObj).getOriginalFile();
+        var fileResc = fileObj.getResource();
+        fileResc.addLiteral(Cdr.streamingUrl, "http://example.com/streaming/audio");
+        fileResc.addLiteral(Cdr.streamingType, StreamingConstants.STREAMING_TYPE_SOUND);
+
+        filter.filter(dip);
+
+        assertNull(idb.getFileFormatType());
+        assertHasFileDescriptions(idb, "Streaming Audio");
+        assertHasCategories(idb, ContentCategory.audio);
     }
 
     private void mockFile(String filename, String identity, String mimetype) {

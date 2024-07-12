@@ -199,6 +199,18 @@ describe('player.vue', () => {
         expect(wrapper.findComponent({ name: 'audioPlayer' }).exists()).toBe(true);
     });
 
+    it("uses the streaming player for streaming files", async () => {
+        let updated_record = cloneDeep(record);
+        updated_record.viewerType = 'streaming';
+        updated_record.briefObject.groupRoleMap = {
+            everyone: 'canViewOriginals'
+        }
+        await wrapper.setProps({
+            recordData: updated_record
+        });
+        expect(wrapper.findComponent({ name: 'streamingPlayer' }).exists()).toBe(true);
+    })
+
     it("does not display a viewer if no permissions are set", async () => {
         let updated_record = cloneDeep(record);
         updated_record.viewerType = 'audio';

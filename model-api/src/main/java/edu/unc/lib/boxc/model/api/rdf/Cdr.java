@@ -92,13 +92,6 @@ public class Cdr {
     public static final Property historicalPath = createProperty(
             "http://cdr.unc.edu/definitions/model#historicalPath" );
 
-    /**
-     * Property containing the identifier of the storage location in which content
-     * for this resource is located.
-     */
-    public static final Property storageLocation = createProperty(
-            "http://cdr.unc.edu/definitions/model#storageLocation" );
-
     /** Reference to a vocabulary object. For objects in this collection, if the given
      *  vocabulary applies to a descriptive field it will only index its value if
      *  it is found within the vocabulary.
@@ -130,6 +123,25 @@ public class Cdr {
      */
     public static final Property replaceInvalidTerms = createProperty(
             "http://cdr.unc.edu/definitions/model#replaceInvalidTerms" );
+
+    /**
+     * Property containing the identifier of the storage location in which content
+     * for this resource is located.
+     */
+    public static final Property storageLocation = createProperty(
+            "http://cdr.unc.edu/definitions/model#storageLocation" );
+
+    /**
+     * Property which holds the URL for streaming
+     */
+    public static final Property streamingUrl = createProperty(
+            "http://cdr.unc.edu/definitions/model#streamingUrl");
+
+    /**
+     * Property which holds the type for streaming URLs
+     */
+    public static final Property streamingType = createProperty(
+            "http://cdr.unc.edu/definitions/model#streamingType");
 
     /**
      *

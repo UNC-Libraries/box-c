@@ -1,0 +1,33 @@
+<form id="edit_streaming_properties" class="edit_form edit_streaming_properties_form">
+    <div class="form_field">
+        <label for="streaming_url"><span class="required">*</span> Streaming URL:</label>
+        <textarea id="streaming_url" name="streaming_url"><%= metadata.streamingUrl %></textarea>
+    </div>
+
+    <div class="form_field">
+        <label for="streaming_type"><span class="required">*</span> Streaming Type:</label>
+        <select id="streaming_type">
+            <option value="">--Streaming Type--</option>
+            <option <%= metadata.streamingType === 'sound' ? 'selected' : '' %> value="sound">Sound</option>
+            <option <%= metadata.streamingType === 'video' ? 'selected' : '' %> value="video">Video</option>
+        </select>
+    </div>
+
+    <p class="form_notes">
+        Structure: https://durastream.lib.unc.edu/player?spaceId=[space-id]&filename=[filename-without-extension]
+        <br />
+        Example: https://durastream.lib.unc.edu/player?spaceId=open-hls&filename=04950_VT0008_0001
+    </p>
+
+    <div class="form_field" style="font-weight: bold"><span class="required">*</span> Required field</div>
+
+    <input type="hidden" value="<%= metadata.id %>" id="streaming_file_id" name="streaming_file_id"/>
+
+    <div class="update_field">
+        <input type="submit" id="edit_streaming_properties_submit_button" class="update_button" value="Save Changes" />
+    </div>
+    <div class="errors">
+        <h3>Errors</h3>
+        <div class="error_stack"></div>
+    </div>
+</form>

@@ -1,59 +1,10 @@
 package edu.unc.lib.boxc.deposit.fcrepo4;
 
-import static edu.unc.lib.boxc.common.test.TestHelpers.setField;
-import static edu.unc.lib.boxc.common.xml.SecureXMLFactory.createSAXBuilder;
-import static edu.unc.lib.boxc.model.api.DatastreamType.ORIGINAL_FILE;
-import static edu.unc.lib.boxc.model.api.DatastreamType.TECHNICAL_METADATA;
-import static edu.unc.lib.boxc.persist.impl.storage.StorageLocationTestHelper.LOC1_ID;
-import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.apache.jena.rdf.model.ResourceFactory.createResource;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.fail;
-import static org.slf4j.LoggerFactory.getLogger;
-
-import java.io.File;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.security.MessageDigest;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicReference;
-
-import org.apache.commons.codec.binary.Hex;
-import org.apache.commons.codec.digest.DigestUtils;
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
-import org.apache.jena.rdf.model.Bag;
-import org.apache.jena.rdf.model.Model;
-import org.apache.jena.rdf.model.Resource;
-import org.apache.jena.vocabulary.DC;
-import org.apache.jena.vocabulary.RDF;
-import org.fcrepo.client.FcrepoClient;
-import org.jdom2.output.Format;
-import org.jdom2.output.XMLOutputter;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.api.Test;
-import org.slf4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import edu.unc.lib.boxc.auth.api.services.AccessControlService;
 import edu.unc.lib.boxc.common.util.DateTimeUtil;
 import edu.unc.lib.boxc.deposit.api.RedisWorkerConstants.DepositField;
 import edu.unc.lib.boxc.deposit.api.RedisWorkerConstants.JobField;
-import edu.unc.lib.boxc.deposit.fcrepo4.IngestContentObjectsJob;
 import edu.unc.lib.boxc.deposit.impl.model.DepositDirectoryManager;
 import edu.unc.lib.boxc.deposit.impl.model.DepositModelHelpers;
 import edu.unc.lib.boxc.deposit.impl.model.DepositStatusFactory;
@@ -87,6 +38,52 @@ import edu.unc.lib.boxc.model.fcrepo.test.AclModelBuilder;
 import edu.unc.lib.boxc.model.fcrepo.test.RepositoryObjectTreeIndexer;
 import edu.unc.lib.boxc.operations.impl.edit.UpdateDescriptionService;
 import edu.unc.lib.boxc.operations.impl.events.FilePremisLogger;
+import org.apache.commons.codec.binary.Hex;
+import org.apache.commons.codec.digest.DigestUtils;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
+import org.apache.jena.rdf.model.Bag;
+import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.vocabulary.DC;
+import org.apache.jena.vocabulary.RDF;
+import org.fcrepo.client.FcrepoClient;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.security.MessageDigest;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
+
+import static edu.unc.lib.boxc.common.test.TestHelpers.setField;
+import static edu.unc.lib.boxc.model.api.DatastreamType.ORIGINAL_FILE;
+import static edu.unc.lib.boxc.model.api.DatastreamType.TECHNICAL_METADATA;
+import static edu.unc.lib.boxc.model.api.StreamingConstants.STREAMREAPER_PREFIX_URL;
+import static edu.unc.lib.boxc.persist.impl.storage.StorageLocationTestHelper.LOC1_ID;
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.apache.jena.rdf.model.ResourceFactory.createResource;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+import static org.slf4j.LoggerFactory.getLogger;
 
 /**
  *
@@ -114,6 +111,7 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
     private static final String FILE2_MIMETYPE = "text/plain";
     private static final long FILE2_SIZE = 4L;
     private static final String BLANK_SHA1 = "da39a3ee5e6b4b0d3255bfef95601890afd80709";
+    private static final String STREAMING_TYPE = "video";
 
     @Autowired
     private AccessControlService aclService;
@@ -402,6 +400,52 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
     }
 
     @Test
+    public void ingestWorkWithStreamingFileObject() throws Exception {
+        String label = "testwork";
+        PID workPid = pidMinter.mintContentPid();
+
+        // Construct the deposit model with work object
+        Model model = job.getWritableModel();
+        Bag depBag = model.createBag(depositPid.getRepositoryPath());
+
+        // Constructing the work in the deposit model with a label
+        Bag workBag = model.createBag(workPid.getRepositoryPath());
+        workBag.addProperty(RDF.type, Cdr.Work);
+        workBag.addProperty(CdrDeposit.label, label);
+        depBag.add(workBag);
+
+        var filePid = addStreamingFileObject(workBag);
+
+        job.closeModel();
+
+        job.run();
+
+        treeIndexer.indexAll(baseAddress);
+
+        ContentContainerObject destObj = (ContentContainerObject) repoObjLoader.getRepositoryObject(destinationPid);
+        List<ContentObject> destMembers = destObj.getMembers();
+        assertEquals(1, destMembers.size(), "Incorrect number of children at destination");
+
+        // Make sure that the work is present and is actually a work
+        WorkObject mWork = (WorkObject) findContentObjectByPid(destMembers, workPid);
+
+        String title = mWork.getResource().getProperty(DC.title).getString();
+        assertEquals(label, title, "Work title was not correctly set");
+        assertClickCount(2);
+        ingestedObjectsCount(2);
+
+        // Check the right number of members are present
+        List<ContentObject> workMembers = mWork.getMembers();
+        assertEquals(1, workMembers.size(), "Incorrect number of members in work");
+        FileObject fileObj = (FileObject) findContentObjectByPid(workMembers, filePid);
+        assertNotNull(fileObj);
+        var fileResource = fileObj.getResource();
+        assertEquals(STREAMREAPER_PREFIX_URL, fileResource.getProperty(Cdr.streamingUrl).getString());
+        assertEquals(STREAMING_TYPE, fileResource.getProperty(Cdr.streamingType).getString());
+
+    }
+
+    @Test
     public void ingestWorkObjectChecksumErrorRetryLimitTest() throws Exception {
         String label = "testwork";
         PID workPid = pidMinter.mintContentPid();
@@ -680,9 +724,9 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
 
         depBag.add(folderBag);
 
-        // Add children, where the second child is invalid due to missing location
+        // Add children, where the second child is invalid due to wrong checksum
         PID file1Pid = addWorkWithFileObject(folderBag, FILE1_LOC, FILE1_MIMETYPE, FILE1_SHA1, FILE1_MD5).get(1);
-        List<PID> work2Pids = addWorkWithFileObject(folderBag, null, FILE2_MIMETYPE, null, null);
+        List<PID> work2Pids = addWorkWithFileObject(folderBag, FILE2_LOC, FILE2_MIMETYPE, "fakesha1", null);
         PID work2Pid = work2Pids.get(0);
         PID file2Pid = work2Pids.get(1);
 
@@ -710,13 +754,19 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
         WorkObject work2Failed = (WorkObject) findContentObjectByPid(folderMembersFailed, work2Pid);
         assertEquals(0, work2Failed.getMembers().size(), "No files should be present");
 
-        // Fix the staging location of the second file
+        // Fix the checksum of the second file
         model = job.getWritableModel();
         Resource file2Resc = model.getResource(file2Pid.getRepositoryPath());
         Resource orig2Resc = DepositModelHelpers.getDatastream(file2Resc);
+
+        var fixedSha = "372ea08cab33e71c02c651dbc83a474d32c676ea";
+        orig2Resc.removeAll(CdrDeposit.sha1sum);
+        orig2Resc.addProperty(CdrDeposit.sha1sum, fixedSha);
+
         setupStorageUriForResource(FILE2_LOC, orig2Resc, file2Resc, file2Pid);
         orig2Resc.addProperty(CdrDeposit.storageUri, Paths.get(depositDir.getAbsolutePath(),
                 FILE2_LOC).toUri().toString());
+
         job.closeModel();
 
         // Second run of job
@@ -748,7 +798,7 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
         }
 
         assertBinaryProperties(file1Obj, FILE1_LOC, FILE1_MIMETYPE, FILE1_SHA1, FILE1_MD5, FILE1_SIZE);
-        assertBinaryProperties(file2Obj, FILE2_LOC, FILE2_MIMETYPE, null, null, FILE2_SIZE);
+        assertBinaryProperties(file2Obj, FILE2_LOC, FILE2_MIMETYPE, fixedSha, null, FILE2_SIZE);
 
         // Count includes folder, two works each with a file
         assertClickCount(5);
@@ -1232,7 +1282,7 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
         assertEquals(expectedCreated, obj.getCreatedDate(),
                 "Date created for " + obj.getPid().getId() + " did not match expected value");
         assertEquals(expectedModified, obj.getLastModified(),
-                "Last modifed for " + obj.getPid().getId() + " did not match expected value");
+                "Last modified for " + obj.getPid().getId() + " did not match expected value");
     }
 
     private void assertBinaryProperties(FileObject fileObj, String loc, String mimetype,
@@ -1292,6 +1342,20 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
         Resource fitsResc = DepositModelHelpers.addDatastream(fileResc, TECHNICAL_METADATA);
         fitsResc.addProperty(CdrDeposit.storageUri, fitsStorageUri.toString());
         fitsResc.addLiteral(CdrDeposit.sha1sum, getSha1(fitsPath));
+
+        return filePid;
+    }
+
+    private PID addStreamingFileObject(Bag parent) {
+        PID filePid = pidMinter.mintContentPid();
+
+        Model model = parent.getModel();
+        Resource fileResc = model.createResource(filePid.getRepositoryPath());
+        fileResc.addProperty(RDF.type, Cdr.FileObject);
+        fileResc.addProperty(Cdr.streamingUrl, STREAMREAPER_PREFIX_URL);
+        fileResc.addProperty(Cdr.streamingType, STREAMING_TYPE);
+
+        parent.add(fileResc);
 
         return filePid;
     }

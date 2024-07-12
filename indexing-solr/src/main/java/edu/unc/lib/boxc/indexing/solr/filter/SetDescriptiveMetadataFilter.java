@@ -4,6 +4,7 @@ import edu.unc.lib.boxc.indexing.solr.exception.IndexingException;
 import edu.unc.lib.boxc.indexing.solr.indexing.DocumentIndexingPackage;
 import edu.unc.lib.boxc.indexing.solr.utils.JDOMQueryUtil;
 import edu.unc.lib.boxc.model.api.exceptions.FedoraException;
+import edu.unc.lib.boxc.model.api.exceptions.NotFoundException;
 import edu.unc.lib.boxc.model.api.objects.AdminUnit;
 import edu.unc.lib.boxc.model.api.objects.CollectionObject;
 import edu.unc.lib.boxc.model.api.objects.FileObject;
@@ -113,15 +114,22 @@ public class SetDescriptiveMetadataFilter implements IndexDocumentFilter {
     private String getAlternativeTitle(DocumentIndexingPackage dip) throws FedoraException, IndexingException {
         Resource resc = dip.getContentObject().getResource();
         String dcTitle = titleText(resc, DcElements.title);
-        String ebucoreTitle = titleText(resc, Ebucore.filename);
-        if (isBlank(dcTitle) && isBlank(ebucoreTitle) && dip.getContentObject() instanceof FileObject) {
-            ebucoreTitle = ((FileObject) dip.getContentObject()).getOriginalFile().getFilename();
-        }
-
-        // Use dc:title as a default
         if (!isBlank(dcTitle)) {
             return dcTitle;
-        } else if (!isBlank(ebucoreTitle)) { // fall back to filename if one is present
+        }
+        String ebucoreTitle = titleText(resc, Ebucore.filename);
+        if (!isBlank(ebucoreTitle)) {
+            return ebucoreTitle;
+        }
+        if (dip.getContentObject() instanceof FileObject) {
+            try {
+                // Fall back to the original_file's filename for a file object, if present
+                ebucoreTitle = ((FileObject) dip.getContentObject()).getOriginalFile().getFilename();
+            } catch(NotFoundException e) {
+                log.debug("No original file found for {}", dip.getPid());
+            }
+        }
+        if (!isBlank(ebucoreTitle)) {
             return ebucoreTitle;
         } else { // Use the object's id as the title as a final option
             return dip.getPid().getId();

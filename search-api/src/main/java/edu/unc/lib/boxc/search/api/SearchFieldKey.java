@@ -63,6 +63,8 @@ public enum SearchFieldKey {
     ROLLUP_ID("rollup", "rollupId", "Rollup ID"),
     SCORE("score", "score", "Score"),
     STATUS("status", "status", "Access Status"),
+    STREAMING_TYPE("streamingType", "streamingType", "Streaming Type"),
+    STREAMING_URL("streamingUrl", "streamingUrl", "Streaming URL"),
     SUBJECT("subject", "subject", "Subject"),
     SUBJECT_INDEX("subjectIndex", "subjectIndex", "Subject Index"),
     TIMESTAMP("timestamp", "timestamp", "Timestamp"),

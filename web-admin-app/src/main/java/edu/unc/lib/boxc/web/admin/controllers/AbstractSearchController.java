@@ -29,8 +29,8 @@ public class AbstractSearchController extends AbstractSolrSearchController {
             SearchFieldKey.RESOURCE_TYPE.name(),
             SearchFieldKey.STATUS.name(), SearchFieldKey.VERSION.name(),SearchFieldKey.ROLE_GROUP.name(),
             SearchFieldKey.FILE_FORMAT_CATEGORY.name(), SearchFieldKey.FILE_FORMAT_TYPE.name(),
-            SearchFieldKey.FILE_FORMAT_DESCRIPTION.name(),
-            SearchFieldKey.CONTENT_STATUS.name(), SearchFieldKey.TIMESTAMP.name(),
+            SearchFieldKey.FILE_FORMAT_DESCRIPTION.name(), SearchFieldKey.STREAMING_TYPE.name(),
+            SearchFieldKey.STREAMING_URL.name(), SearchFieldKey.CONTENT_STATUS.name(), SearchFieldKey.TIMESTAMP.name(),
             SearchFieldKey.ANCESTOR_PATH.name(), SearchFieldKey.ROLLUP_ID.name(),
             SearchFieldKey.VIEW_BEHAVIOR.name());
 

@@ -2,6 +2,9 @@ package edu.unc.lib.boxc.deposit.validate;
 
 import static edu.unc.lib.boxc.common.test.TestHelpers.setField;
 import static edu.unc.lib.boxc.model.api.ids.RepositoryPathConstants.CONTENT_BASE;
+import static edu.unc.lib.boxc.model.api.StreamingConstants.STREAMING_TYPE_SOUND;
+import static edu.unc.lib.boxc.model.api.StreamingConstants.STREAMREAPER_PREFIX_URL;
+import static edu.unc.lib.boxc.model.api.StreamingConstants.STREAMING_TYPE_VIDEO;
 import static org.apache.jena.rdf.model.ResourceFactory.createResource;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -13,7 +16,6 @@ import static org.mockito.Mockito.when;
 import java.util.HashMap;
 import java.util.Map;
 
-import net.greghaines.jesque.Job;
 import org.apache.jena.rdf.model.Bag;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
@@ -35,7 +37,6 @@ import edu.unc.lib.boxc.auth.fcrepo.services.ContentObjectAccessRestrictionValid
 import edu.unc.lib.boxc.deposit.api.RedisWorkerConstants.DepositField;
 import edu.unc.lib.boxc.deposit.fcrepo4.AbstractDepositJobTest;
 import edu.unc.lib.boxc.deposit.impl.model.DepositModelHelpers;
-import edu.unc.lib.boxc.deposit.validate.ValidateContentModelJob;
 import edu.unc.lib.boxc.deposit.work.JobFailedException;
 
 /**
@@ -167,7 +168,7 @@ public class ValidateContentModelJobTest extends AbstractDepositJobTest {
     }
 
     @Test
-    public void missingStagingLocationTest() {
+    public void fileObjectOriginalDatastreamMissingStagingLocationTest() {
         Assertions.assertThrows(JobFailedException.class, () -> {
             PID objPid = makePid(CONTENT_BASE);
             Bag objBag = model.createBag(objPid.getRepositoryPath());
@@ -190,7 +191,84 @@ public class ValidateContentModelJobTest extends AbstractDepositJobTest {
     }
 
     @Test
-    public void missingOriginalDatastreamTest() {
+    public void fileObjectWithOriginalDatastreamWithStreamingPropertiesTest() {
+        PID objPid = makePid(CONTENT_BASE);
+        Bag objBag = model.createBag(objPid.getRepositoryPath());
+        objBag.addProperty(RDF.type, Cdr.Work);
+
+        PID childPid = makePid(CONTENT_BASE);
+        Resource childResc = model.getResource(childPid.getRepositoryPath());
+        Resource origResc = DepositModelHelpers.addDatastream(childResc);
+        origResc.addLiteral(CdrDeposit.stagingLocation, "path");
+        childResc.addProperty(RDF.type, Cdr.FileObject);
+        childResc.addProperty(Cdr.streamingUrl, STREAMREAPER_PREFIX_URL + "?params=more");
+        childResc.addProperty(Cdr.streamingType, STREAMING_TYPE_VIDEO);
+        objBag.add(childResc);
+
+        objBag.addProperty(Cdr.primaryObject, childResc);
+
+        depBag.add(objBag);
+
+        job.closeModel();
+
+        job.run();
+    }
+
+    @Test
+    public void fileObjectWithOriginalDatastreamWithNoStreamingTypeTest() {
+        Assertions.assertThrows(JobFailedException.class, () -> {
+            PID objPid = makePid(CONTENT_BASE);
+            Bag objBag = model.createBag(objPid.getRepositoryPath());
+            objBag.addProperty(RDF.type, Cdr.Work);
+
+            PID childPid = makePid(CONTENT_BASE);
+            Resource childResc = model.getResource(childPid.getRepositoryPath());
+            Resource origResc = DepositModelHelpers.addDatastream(childResc);
+            origResc.addLiteral(CdrDeposit.stagingLocation, "path");
+            childResc.addProperty(RDF.type, Cdr.FileObject);
+            childResc.addProperty(Cdr.streamingUrl, STREAMREAPER_PREFIX_URL + "?params=more");
+            childResc.addProperty(Cdr.streamingType, "");
+            objBag.add(childResc);
+
+            objBag.addProperty(Cdr.primaryObject, childResc);
+
+            depBag.add(objBag);
+
+            job.closeModel();
+
+            job.run();
+        });
+    }
+
+    @Test
+    public void fileObjectWithOriginalDatastreamNoStagingLocationWithStreamingPropertiesTest() {
+        Assertions.assertThrows(JobFailedException.class, () -> {
+            PID objPid = makePid(CONTENT_BASE);
+            Bag objBag = model.createBag(objPid.getRepositoryPath());
+            objBag.addProperty(RDF.type, Cdr.Work);
+
+            PID childPid = makePid(CONTENT_BASE);
+            Resource childResc = model.getResource(childPid.getRepositoryPath());
+            // add original datastream but not the staging location
+            DepositModelHelpers.addDatastream(childResc);
+
+            childResc.addProperty(RDF.type, Cdr.FileObject);
+            childResc.addProperty(Cdr.streamingUrl, STREAMREAPER_PREFIX_URL + "?params=more");
+            childResc.addProperty(Cdr.streamingType, STREAMING_TYPE_VIDEO);
+            objBag.add(childResc);
+
+            objBag.addProperty(Cdr.primaryObject, childResc);
+
+            depBag.add(objBag);
+
+            job.closeModel();
+
+            job.run();
+        });
+    }
+
+    @Test
+    public void fileObjectNoOriginalDatastreamNoStreamingPropertiesTest() {
         Assertions.assertThrows(JobFailedException.class, () -> {
             PID objPid = makePid(CONTENT_BASE);
             Bag objBag = model.createBag(objPid.getRepositoryPath());
@@ -202,6 +280,51 @@ public class ValidateContentModelJobTest extends AbstractDepositJobTest {
             objBag.add(childResc);
 
             objBag.addProperty(Cdr.primaryObject, childResc);
+
+            depBag.add(objBag);
+
+            job.closeModel();
+
+            job.run();
+        });
+    }
+
+    @Test
+    public void fileObjectNoOriginalDatastreamWithAllStreamingPropertiesTest() {
+        PID objPid = makePid(CONTENT_BASE);
+        Bag objBag = model.createBag(objPid.getRepositoryPath());
+        objBag.addProperty(RDF.type, Cdr.Work);
+
+        PID childPid = makePid(CONTENT_BASE);
+        Resource childResc = model.getResource(childPid.getRepositoryPath());
+        childResc.addProperty(RDF.type, Cdr.FileObject);
+        childResc.addProperty(Cdr.streamingUrl, STREAMREAPER_PREFIX_URL + "?params=more");
+        childResc.addProperty(Cdr.streamingType, STREAMING_TYPE_SOUND);
+        objBag.add(childResc);
+
+        objBag.addProperty(Cdr.primaryObject, childResc);
+
+        depBag.add(objBag);
+
+        job.closeModel();
+
+        job.run();
+    }
+
+    @Test
+    public void nonFileObjectWithStreamingPropertiesTest() {
+        Assertions.assertThrows(JobFailedException.class, () -> {
+            PID objPid = makePid(CONTENT_BASE);
+            Bag objBag = model.createBag(objPid.getRepositoryPath());
+            objBag.addProperty(RDF.type, Cdr.Folder);
+
+            PID childPid = makePid(CONTENT_BASE);
+            Resource childResc = model.getResource(childPid.getRepositoryPath());
+            childResc.addProperty(RDF.type, Cdr.Work);
+            childResc.addProperty(CdrAcl.canDescribe, "user");
+            childResc.addProperty(Cdr.streamingUrl, STREAMREAPER_PREFIX_URL + "?params=more");
+            childResc.addProperty(Cdr.streamingType, STREAMING_TYPE_VIDEO);
+            objBag.add(childResc);
 
             depBag.add(objBag);
 

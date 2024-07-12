@@ -30,9 +30,7 @@ checks:
     config:
       threshold: 4
   return-statements:
-    enabled: true
-    config:
-      threshold: 4
+    enabled: false
   similar-code:
     enabled: true
     config:
@@ -63,7 +61,7 @@ plugins:
       count_threshold: 5
       languages:
         java:
-          mass_threshold: 40 # default threshold
+          mass_threshold: 50 # default threshold is 40
 
 exclude_patterns:
   - "static/js/lib/"

@@ -28,9 +28,9 @@ import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.api.objects.Tombstone;
 import edu.unc.lib.boxc.model.api.objects.WorkObject;
 import edu.unc.lib.boxc.operations.jms.MessageSender;
+import edu.unc.lib.boxc.services.camel.TestHelper;
 import edu.unc.lib.boxc.operations.jms.indexing.IndexingMessageSender;
 import edu.unc.lib.boxc.search.solr.services.TitleRetrievalService;
-import edu.unc.lib.boxc.services.camel.ProcessorTestHelper;
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
 import org.apache.solr.client.solrj.SolrClient;
@@ -110,7 +110,7 @@ public class SolrUpdateProcessorTest {
         when(exchange.getIn()).thenReturn(msg);
         when(msg.getBody()).thenReturn(bodyDoc);
 
-        targetPid = ProcessorTestHelper.makePid();
+        targetPid = TestHelper.makePid();
     }
 
     @AfterEach
@@ -267,7 +267,7 @@ public class SolrUpdateProcessorTest {
 
         List<PID> pids = new ArrayList<>();
         for (int i = 0; i < count; i++) {
-            PID pid = ProcessorTestHelper.makePid();
+            PID pid = TestHelper.makePid();
             pids.add(pid);
             children.addContent(new Element("pid", CDR_MESSAGE_NS)
                     .setText(pid.getRepositoryPath()));

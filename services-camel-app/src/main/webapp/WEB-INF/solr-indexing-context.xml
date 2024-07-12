@@ -28,6 +28,7 @@
                 <ref bean="setMemberOrderFilter" />
                 <ref bean="setCollectionSupplementalInformationFilter" />
                 <ref bean="setViewBehaviorFilter" />
+                <ref bean="setStreamingPropertiesFilter" />
             </list>
         </property>
     </bean>
@@ -149,6 +150,17 @@
             <list>
                 <ref bean="setRecordDatesFilter" />
                 <ref bean="setViewBehaviorFilter" />
+                <ref bean="setContentStatusFilter" />
+            </list>
+        </property>
+    </bean>
+
+    <bean id="solrStreamingUrlUpdatePipeline"
+          class="edu.unc.lib.boxc.indexing.solr.indexing.DocumentIndexingPipeline">
+        <property name="filters">
+            <list>
+                <ref bean="setRecordDatesFilter" />
+                <ref bean="setStreamingPropertiesFilter" />
                 <ref bean="setContentStatusFilter" />
             </list>
         </property>
@@ -296,6 +308,9 @@
     </bean>
 
     <bean id="setViewBehaviorFilter" class="edu.unc.lib.boxc.indexing.solr.filter.SetViewBehaviorFilter">
+    </bean>
+
+    <bean id="setStreamingPropertiesFilter" class="edu.unc.lib.boxc.indexing.solr.filter.SetStreamingPropertiesFilter">
     </bean>
 
     <!-- Ingest Actions -->
@@ -491,6 +506,18 @@
         <property name="factory" ref="dipFactory" />
         <property name="solrUpdateDriver" ref="solrUpdateDriver" />
     </bean>
+
+    <bean id="updateStreamingPropertiesUrl"
+          class="edu.unc.lib.boxc.indexing.solr.action.UpdateObjectAction">
+        <property name="pipeline" ref="solrStreamingUrlUpdatePipeline" />
+        <property name="addDocumentMode" value="false" />
+    </bean>
+
+    <bean id="updateStreamingPropertiesType"
+          class="edu.unc.lib.boxc.indexing.solr.action.UpdateObjectAction">
+        <property name="pipeline" ref="solrStreamingUrlUpdatePipeline" />
+        <property name="addDocumentMode" value="false" />
+    </bean>
     
     <util:map id="solrIndexingActionMap"
         key-type="edu.unc.lib.boxc.operations.jms.indexing.IndexingActionType"
@@ -521,6 +548,8 @@
         <entry key="UPDATE_MEMBER_ORDER_PARENT" value-ref="updateMemberOrderParentAction" />
         <entry key="UPDATE_MEMBER_ORDER_CHILD" value-ref="updateMemberOrderChildAction" />
         <entry key="UPDATE_VIEW_BEHAVIOR" value-ref="updateViewBehaviorAction" />
+        <entry key="UPDATE_STREAMING_PROPERTIES" value-ref="updateStreamingPropertiesUrl" />
+        <entry key="UPDATE_STREAMING_PROPERTIES" value-ref="updateStreamingPropertiesType" />
     </util:map>
     
     <bean id="dipDataLoader"

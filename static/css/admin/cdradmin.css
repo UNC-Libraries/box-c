@@ -1,5 +1,5 @@
 html {
-	background-color: #ffffff;
+	background-color: #fff;
 }
 
 body {
@@ -12,7 +12,7 @@ body {
 }
 
 .contentarea.nobottom {
-	margin-bottom: 0px;
+	margin-bottom: 0;
 }
 
 .threecol {
@@ -127,7 +127,7 @@ h1 {
 
 /** Search form */
 .search_inputwrap {
-  background-color: #FFFFFF;
+  background-color: #FFF;
   border: 1px solid #C8D8E0;
   float: left;
   height: 23px;
@@ -230,7 +230,7 @@ h1 {
 }
 
 #header_banner {
-	padding: 5px 20px 0px;
+	padding: 5px 20px 0;
 }
 
 .header_right {
@@ -265,10 +265,10 @@ h1 {
 
 .secondarymenu li a {
 	margin-right: 1px;
-	background-color: #FFFFFF;
-	border-right: 0px;
+	background-color: #FFF;
+	border-right: 0;
 	border: 1px solid #D8EDf5;
-	border-bottom: 0px;
+	border-bottom: 0;
 	color: #0A5274;
 	background-image: none;
 }
@@ -290,7 +290,7 @@ h1 {
 
 .browseitem {
 	border-top: 1px solid #eee;
-	padding: 20px 0px;
+	padding: 20px 0;
 }
 
 .browseitem > h2 {
@@ -299,7 +299,7 @@ h1 {
 
 .browseitem > a {
 	float: left;
-	padding: 0px 20px 20px 0px;
+	padding: 0 20px 20px 0;
 	width: 128px;
 	min-height: 128px;
 }
@@ -434,7 +434,7 @@ h1 {
 }
 
 	.qtip-admin .qtip-content {
-		border: 0px;
+		border: 0;
 		padding: 8px;
 		margin-right: 17px;
 		font-size: 13px;
@@ -647,4 +647,15 @@ div.in-admin-iframe,
 
 .status_monitor_actions > button:disabled {
 	opacity: 70%;
+}
+
+.form_notes {
+	color: rgba(33, 37, 41, 0.75);
+	font-size: 0.875em;
+	margin-bottom: 10px;
+	margin-left: 5px;
+}
+
+#streaming_url {
+	min-width: 400px;
 }

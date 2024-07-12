@@ -647,7 +647,10 @@ img.data-thumb {
       margin: 25px;
       width: 100%;
     }
+  }
 
+  div:has(#streaming-player) {
+    padding: 5px 0 15px 0;
   }
 }
 

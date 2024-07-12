@@ -64,6 +64,8 @@ public abstract class AbstractQueryService {
             SearchFieldKey.ROLE_GROUP.name(),
             SearchFieldKey.ROLLUP_ID.name(),
             SearchFieldKey.STATUS.name(),
+            SearchFieldKey.STREAMING_TYPE.name(),
+            SearchFieldKey.STREAMING_URL.name(),
             SearchFieldKey.SUBJECT.name(),
             SearchFieldKey.TIMESTAMP.name(),
             SearchFieldKey.TITLE.name(),

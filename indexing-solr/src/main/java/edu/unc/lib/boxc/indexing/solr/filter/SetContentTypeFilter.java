@@ -4,12 +4,15 @@ import edu.unc.lib.boxc.indexing.solr.exception.IndexingException;
 import edu.unc.lib.boxc.indexing.solr.indexing.DocumentIndexingPackage;
 import edu.unc.lib.boxc.indexing.solr.utils.TechnicalMetadataService;
 import edu.unc.lib.boxc.model.api.ResourceType;
+import edu.unc.lib.boxc.model.api.StreamingConstants;
 import edu.unc.lib.boxc.model.api.exceptions.FedoraException;
+import edu.unc.lib.boxc.model.api.exceptions.NotFoundException;
 import edu.unc.lib.boxc.model.api.exceptions.RepositoryException;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.objects.BinaryObject;
 import edu.unc.lib.boxc.model.api.objects.FileObject;
 import edu.unc.lib.boxc.model.api.objects.WorkObject;
+import edu.unc.lib.boxc.model.api.rdf.Cdr;
 import edu.unc.lib.boxc.model.api.services.ContentPathFactory;
 import edu.unc.lib.boxc.search.api.ContentCategory;
 import edu.unc.lib.boxc.search.api.SearchFieldKey;
@@ -78,21 +81,49 @@ public class SetContentTypeFilter implements IndexDocumentFilter {
             log.debug("Indexing contentType of work {}", dip.getPid().getId());
             addFileContentTypesToWork(doc);
         } else if (contentObj instanceof FileObject) {
-            var fileObj = (FileObject) contentObj;
-            BinaryObject binObj = fileObj.getOriginalFile();
-            String filename = binObj.getFilename();
-            String mimetype = getBaseMimeType(binObj.getMimetype());
-            if (StringUtils.isBlank(mimetype)) {
-                mimetype = DEFAULT_MIMETYPE;
+            addFileContentTypesToFile((FileObject) contentObj, doc);
+        }
+    }
+
+    private void addFileContentTypesToFile(FileObject fileObj, IndexDocumentBean doc) {
+        try {
+            addFileFormatFromOriginal(fileObj, doc);
+        } catch (NotFoundException e) {
+            if (fileObj.getResource().hasProperty(Cdr.streamingUrl)) {
+                log.debug("No original file, setting format from streaming for {}", fileObj.getPid());
+                addFileFormatFromStreaming(fileObj, doc);
             } else {
-                mimetype = overrideMimetype(filename, mimetype);
+                throw e;
             }
-            String fileDesc = getFormatDescription(fileObj.getPid(), mimetype);
-            doc.setFileFormatDescription(fileDesc == null ? null : Collections.singletonList(fileDesc));
-            log.debug("The binary {} has mimetype {} and description {}", binObj.getPid(), mimetype, fileDesc);
-            doc.setFileFormatType(Collections.singletonList(mimetype));
-            ContentCategory contentCategory = getContentCategory(mimetype);
-            doc.setFileFormatCategory(Collections.singletonList(contentCategory.getDisplayName()));
+        }
+    }
+
+    private void addFileFormatFromOriginal(FileObject fileObj, IndexDocumentBean doc) {
+        BinaryObject binObj = fileObj.getOriginalFile();
+        String filename = binObj.getFilename();
+        String mimetype = getBaseMimeType(binObj.getMimetype());
+        if (StringUtils.isBlank(mimetype)) {
+            mimetype = DEFAULT_MIMETYPE;
+        } else {
+            mimetype = overrideMimetype(filename, mimetype);
+        }
+        String fileDesc = getFormatDescription(fileObj.getPid(), mimetype);
+        doc.setFileFormatDescription(fileDesc == null ? null : Collections.singletonList(fileDesc));
+        log.debug("The binary {} has mimetype {} and description {}", binObj.getPid(), mimetype, fileDesc);
+        doc.setFileFormatType(Collections.singletonList(mimetype));
+        ContentCategory contentCategory = getContentCategory(mimetype);
+        doc.setFileFormatCategory(Collections.singletonList(contentCategory.getDisplayName()));
+    }
+
+    private void addFileFormatFromStreaming(FileObject fileObj, IndexDocumentBean doc) {
+        var streamingType = fileObj.getResource().getProperty(Cdr.streamingType).getString();
+        doc.setFileFormatType(null);
+        if (StreamingConstants.STREAMING_TYPE_VIDEO.equals(streamingType)) {
+            doc.setFileFormatDescription(Collections.singletonList("Streaming Video"));
+            doc.setFileFormatCategory(Collections.singletonList(ContentCategory.video.getDisplayName()));
+        } else {
+            doc.setFileFormatDescription(Collections.singletonList("Streaming Audio"));
+            doc.setFileFormatCategory(Collections.singletonList(ContentCategory.audio.getDisplayName()));
         }
     }
 

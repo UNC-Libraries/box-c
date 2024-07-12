@@ -16,7 +16,7 @@ import edu.unc.lib.boxc.model.fcrepo.services.DerivativeService;
 import edu.unc.lib.boxc.operations.jms.MessageSender;
 import edu.unc.lib.boxc.operations.jms.accessSurrogates.AccessSurrogateRequest;
 import edu.unc.lib.boxc.operations.jms.accessSurrogates.AccessSurrogateRequestSerializationHelper;
-import edu.unc.lib.boxc.services.camel.ProcessorTestHelper;
+import edu.unc.lib.boxc.services.camel.TestHelper;
 import org.apache.camel.Exchange;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
@@ -69,7 +69,7 @@ public class AccessSurrogateRequestProcessorTest {
         processor.setRepositoryObjectLoader(repositoryObjectLoader);
         processor.setDerivativeService(derivativeService);
         processor.setMessageSender(messageSender);
-        filePid = ProcessorTestHelper.makePid();
+        filePid = TestHelper.makePid();
         FileObject fileObject = mock(FileObject.class);
         path = requestFolder.resolve(filePid.getId());
         accessSurrogatePath = derivativeFolder.resolve(filePid.getId());
@@ -97,7 +97,7 @@ public class AccessSurrogateRequestProcessorTest {
 
     @Test
     public void testUpdateAccessSurrogateNotAFile() throws Exception {
-        var workPid = ProcessorTestHelper.makePid();
+        var workPid = TestHelper.makePid();
         var workObject = mock(WorkObject.class);
         when(repositoryObjectLoader.getRepositoryObject(eq(workPid))).thenReturn(workObject);
         var workTempPath = requestFolder.resolve(workPid.getId());
@@ -139,7 +139,7 @@ public class AccessSurrogateRequestProcessorTest {
         request.setMimetype("image/jpeg");
         request.setFilePath(path);
         request.setPidString(pidString);
-        return ProcessorTestHelper.mockExchange(AccessSurrogateRequestSerializationHelper.toJson(request));
+        return TestHelper.mockExchange(AccessSurrogateRequestSerializationHelper.toJson(request));
     }
 
     private Exchange setRequestExchange() throws JsonProcessingException {

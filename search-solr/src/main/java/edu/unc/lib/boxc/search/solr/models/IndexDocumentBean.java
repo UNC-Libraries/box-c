@@ -40,6 +40,8 @@ import static edu.unc.lib.boxc.search.api.SearchFieldKey.RIGHTS_URI;
 import static edu.unc.lib.boxc.search.api.SearchFieldKey.ROLE_GROUP;
 import static edu.unc.lib.boxc.search.api.SearchFieldKey.ROLLUP_ID;
 import static edu.unc.lib.boxc.search.api.SearchFieldKey.STATUS;
+import static edu.unc.lib.boxc.search.api.SearchFieldKey.STREAMING_TYPE;
+import static edu.unc.lib.boxc.search.api.SearchFieldKey.STREAMING_URL;
 import static edu.unc.lib.boxc.search.api.SearchFieldKey.SUBJECT;
 import static edu.unc.lib.boxc.search.api.SearchFieldKey.TIMESTAMP;
 import static edu.unc.lib.boxc.search.api.SearchFieldKey.TITLE;
@@ -546,6 +548,24 @@ public class IndexDocumentBean {
 
     public void setDynamicFields(Map<String, Object> dynamicFields) {
         this.dynamicFields = dynamicFields;
+    }
+
+    public String getStreamingType() {
+        return (String) fields.get(STREAMING_TYPE.getSolrField());
+    }
+
+    @Field
+    public void setStreamingType(String streamingType) {
+        fields.put(STREAMING_TYPE.getSolrField(), streamingType);
+    }
+
+    public String getStreamingUrl() {
+        return (String) fields.get(STREAMING_URL.getSolrField());
+    }
+
+    @Field
+    public void setStreamingUrl(String streamingUrl) {
+        fields.put(STREAMING_URL.getSolrField(), streamingUrl);
     }
 
     /**

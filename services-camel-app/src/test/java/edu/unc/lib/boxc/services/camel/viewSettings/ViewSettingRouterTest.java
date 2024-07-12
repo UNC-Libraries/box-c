@@ -5,10 +5,9 @@ import edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl;
 import edu.unc.lib.boxc.auth.fcrepo.models.AgentPrincipalsImpl;
 import edu.unc.lib.boxc.operations.jms.viewSettings.ViewSettingRequest;
 import edu.unc.lib.boxc.operations.jms.viewSettings.ViewSettingRequestSerializationHelper;
-import edu.unc.lib.boxc.services.camel.ProcessorTestHelper;
+import edu.unc.lib.boxc.services.camel.TestHelper;
 import org.apache.camel.Produce;
 import org.apache.camel.ProducerTemplate;
-import org.apache.camel.builder.AdviceWith;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.test.junit5.CamelTestSupport;
 import org.junit.jupiter.api.Test;
@@ -41,8 +40,8 @@ public class ViewSettingRouterTest extends CamelTestSupport {
 
     @Test
     public void requestSentTest() throws Exception {
-        createContext("DcrViewSetting");
-        var pid = ProcessorTestHelper.makePid();
+        TestHelper.createContext(context, "DcrViewSetting");
+        var pid = TestHelper.makePid();
 
         var request = new ViewSettingRequest();
         request.setAgent(agent);
@@ -51,13 +50,5 @@ public class ViewSettingRouterTest extends CamelTestSupport {
         template.sendBody(body);
 
         verify(processor).process(any());
-    }
-
-    private void createContext(String routeName) throws Exception {
-        AdviceWith.adviceWith(context, routeName, a -> {
-            a.replaceFromWith("direct:start");
-            a.mockEndpointsAndSkip("*");
-        });
-        context.start();
     }
 }

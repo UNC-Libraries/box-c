@@ -1,6 +1,7 @@
+
 define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'AddFileForm', 'EditAccessSurrogateForm', 'EditThumbnailForm',
-		'EditFilenameForm', 'EditTitleForm', 'DeleteForm', 'IngestFromSourceForm', 'ViewSettingsForm', 'contextMenu'],
-		function($, ui, StringUtilities, AddFileForm, EditAccessSurrogateForm, EditThumbnailForm, EditFilenameForm, EditTitleForm, DeleteForm, IngestFromSourceForm, ViewSettingsForm) {
+		'EditFilenameForm', 'EditTitleForm', 'DeleteForm', 'IngestFromSourceForm', 'ViewSettingsForm', 'EditStreamingPropertiesForm', 'contextMenu'],
+		function($, ui, StringUtilities, AddFileForm, EditAccessSurrogateForm, EditThumbnailForm, EditFilenameForm, EditTitleForm, DeleteForm, IngestFromSourceForm, ViewSettingsForm, EditStreamingPropertiesForm) {
 
 	var defaultOptions = {
 		selector : undefined,
@@ -201,6 +202,15 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'A
 
 		if (metadata.type === 'Work' && $.inArray('editViewSettings', metadata.permissions) !== -1) {
 			items["viewSettings"] = {name : 'Update View Settings'};
+		}
+
+		if (metadata.type === 'File' && $.inArray('ingest', metadata.permissions) !== -1) {
+			items["streaming"] = {name: "Streaming Properties", items: {}}
+			items["streaming"]['items']["editStreamingProperties"] = {name: "Edit Streaming Properties"};
+
+			if (metadata.streamingUrl !== undefined) {
+				items["streaming"]['items']["deleteStreamingProperties"] = {name: "Delete Streaming Properties"};
+			}
 		}
 
 		// Export actions
@@ -466,6 +476,16 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'A
 					case "viewSettings":
 						self.viewSettings(resultObject);
 						break;
+					case "editStreamingProperties":
+						self.editStreamingProperties(resultObject);
+						break;
+					case "deleteStreamingProperties":
+						self.actionHandler.addEvent({
+							action: 'DeleteStreamingPropertiesResult',
+							target : resultObject,
+							confirmAnchor : options.$trigger
+						});
+						break;
 					case "patronPermissions":
 						perms_editor_store.setPermissionType('Patron');
 						perms_editor_store.setMetadata(metadata);
@@ -579,7 +599,16 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'A
 		});
 		viewSettingsForm.open(resultObject);
 	}
-	
+
+	ResultObjectActionMenu.prototype.editStreamingProperties = function(resultObject) {
+		var editStreamingPropertiesForm = new EditStreamingPropertiesForm({
+			alertHandler : this.options.alertHandler,
+			actionHandler : this.actionHandler,
+			targets: resultObject.metadata.id
+		});
+		editStreamingPropertiesForm.open(resultObject);
+	}
+
 	ResultObjectActionMenu.prototype.disable = function() {
 		$(this.options.selector).contextMenu(false);
 	};

@@ -8,7 +8,7 @@ import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.junit5.WireMockTest;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
-import edu.unc.lib.boxc.services.camel.ProcessorTestHelper;
+import edu.unc.lib.boxc.services.camel.TestHelper;
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
 import org.apache.http.conn.HttpClientConnectionManager;
@@ -49,7 +49,7 @@ public class ImageCacheInvalidationProcessorTest {
         processor.setImageServerBasePath(imageServerBasePath);
         processor.setImageServerUsername("user");
         processor.setImageServerPassword("password");
-        exchange = ProcessorTestHelper.mockExchange("");
+        exchange = TestHelper.mockExchange("");
         messageIn = exchange.getIn();
 
         Logger actionLogger = (Logger) LoggerFactory.getLogger(ImageCacheInvalidationProcessor.class);
@@ -88,7 +88,7 @@ public class ImageCacheInvalidationProcessorTest {
                 .willReturn(aResponse()
                         .withStatus(HttpStatus.NOT_FOUND.value())));
 
-        PID filePid = ProcessorTestHelper.makePid();
+        PID filePid = TestHelper.makePid();
         when(messageIn.getHeader(FCREPO_URI)).thenReturn(filePid.getRepositoryPath());
         processor.process(exchange);
 
