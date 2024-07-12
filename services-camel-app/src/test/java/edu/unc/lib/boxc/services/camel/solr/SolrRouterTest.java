@@ -32,10 +32,10 @@ public class SolrRouterTest extends CamelSpringTestSupport {
     @PropertyInject(value = "fcrepo.baseUri")
     private static String baseUri;
 
-    @EndpointInject(uri = "mock:fcrepo")
+    @EndpointInject("mock:fcrepo")
     private MockEndpoint resultEndpoint;
 
-    @Produce(uri = "direct:start")
+    @Produce("direct:start")
     private ProducerTemplate template;
 
     @BeanInject(value = "solrIngestProcessor")

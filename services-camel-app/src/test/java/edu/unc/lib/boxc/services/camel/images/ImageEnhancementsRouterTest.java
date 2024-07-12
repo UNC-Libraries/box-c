@@ -60,10 +60,10 @@ public class ImageEnhancementsRouterTest extends CamelSpringTestSupport {
     @PropertyInject(value = "fcrepo.baseUrl")
     private static String baseUri;
 
-    @EndpointInject(uri = "mock:fcrepo")
+    @EndpointInject("mock:fcrepo")
     protected MockEndpoint resultEndpoint;
 
-    @Produce(uri = "direct:process.binary.original")
+    @Produce("direct:process.binary.original")
     protected ProducerTemplate template;
 
     @BeanInject(value = "addSmallThumbnailProcessor")

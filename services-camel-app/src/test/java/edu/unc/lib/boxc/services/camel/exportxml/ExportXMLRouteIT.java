@@ -80,10 +80,10 @@ import static edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPaths.getContentRootPi
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.apache.commons.io.FilenameUtils.wildcardMatch;
 import static org.apache.jena.rdf.model.ResourceFactory.createResource;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.times;
@@ -200,8 +200,8 @@ public class ExportXMLRouteIT extends CamelSpringTestSupport {
 
         sendRequest(createRequest(false, false, workObj1.getPid(), workObj2.getPid()));
 
-        boolean result = notify.matches(5l, TimeUnit.SECONDS);
-        assertTrue("Processing message did not match expectations", result);
+        boolean result = notify.matches(5L, TimeUnit.SECONDS);
+        assertTrue(result, "Processing message did not match expectations");
 
         assertEmailSent();
         assertTempFilesDeleted();
@@ -224,8 +224,8 @@ public class ExportXMLRouteIT extends CamelSpringTestSupport {
 
         sendRequest(createRequest(false, false, collObj1.getPid()));
 
-        boolean result = notify.matches(5l, TimeUnit.SECONDS);
-        assertTrue("Processing message did not match expectations", result);
+        boolean result = notify.matches(5L, TimeUnit.SECONDS);
+        assertTrue(result, "Processing message did not match expectations");
 
         assertEmailSent();
         assertTempFilesDeleted();
@@ -247,8 +247,8 @@ public class ExportXMLRouteIT extends CamelSpringTestSupport {
 
         sendRequest(createRequest(true, false, collObj1.getPid()));
 
-        boolean result = notify.matches(5l, TimeUnit.SECONDS);
-        assertTrue("Processing message did not match expectations", result);
+        boolean result = notify.matches(5L, TimeUnit.SECONDS);
+        assertTrue(result, "Processing message did not match expectations");
 
         assertEmailSent();
         assertTempFilesDeleted();
@@ -274,8 +274,8 @@ public class ExportXMLRouteIT extends CamelSpringTestSupport {
 
         sendRequest(createRequest(false, false, workObj1.getPid()));
 
-        boolean result = notify.matches(5l, TimeUnit.SECONDS);
-        assertTrue("Processing message did not match expectations", result);
+        boolean result = notify.matches(5L, TimeUnit.SECONDS);
+        assertTrue(result, "Processing message did not match expectations");
 
         assertEmailSent();
 
@@ -295,8 +295,8 @@ public class ExportXMLRouteIT extends CamelSpringTestSupport {
 
         sendRequest(createRequest(false, false, collObj1.getPid()));
 
-        boolean result = notify.matches(5l, TimeUnit.SECONDS);
-        assertTrue("Processing message did not match expectations", result);
+        boolean result = notify.matches(5L, TimeUnit.SECONDS);
+        assertTrue(result, "Processing message did not match expectations");
 
         assertEmailSent();
 
@@ -316,8 +316,8 @@ public class ExportXMLRouteIT extends CamelSpringTestSupport {
 
         sendRequest(createRequest(true, false, unitObj.getPid()));
 
-        boolean result = notify.matches(5l, TimeUnit.SECONDS);
-        assertTrue("Processing message did not match expectations", result);
+        boolean result = notify.matches(5L, TimeUnit.SECONDS);
+        assertTrue(result, "Processing message did not match expectations");
 
         assertEmailSent(3);
         assertTempFilesDeleted();
@@ -350,8 +350,8 @@ public class ExportXMLRouteIT extends CamelSpringTestSupport {
 
         sendRequest(createRequest(true, true, unitObj.getPid()));
 
-        boolean result = notify.matches(5l, TimeUnit.SECONDS);
-        assertTrue("Processing message did not match expectations", result);
+        boolean result = notify.matches(5L, TimeUnit.SECONDS);
+        assertTrue(result, "Processing message did not match expectations");
 
         assertEmailSent(2);
         assertTempFilesDeleted();
@@ -375,8 +375,8 @@ public class ExportXMLRouteIT extends CamelSpringTestSupport {
 
         sendRequest(createRequest(false, true, collObj1.getPid()));
 
-        boolean result = notify.matches(5l, TimeUnit.SECONDS);
-        assertTrue("Processing message did not match expectations", result);
+        boolean result = notify.matches(5L, TimeUnit.SECONDS);
+        assertTrue(result, "Processing message did not match expectations");
 
         assertEmailSent(1);
         assertTempFilesDeleted();
@@ -396,8 +396,8 @@ public class ExportXMLRouteIT extends CamelSpringTestSupport {
 
         sendRequest(createRequest(true, true, workObj2.getPid()));
 
-        boolean result = notify.matches(5l, TimeUnit.SECONDS);
-        assertTrue("Processing message did not match expectations", result);
+        boolean result = notify.matches(5L, TimeUnit.SECONDS);
+        assertTrue(result, "Processing message did not match expectations");
 
         assertEmailSent();
 
@@ -416,8 +416,8 @@ public class ExportXMLRouteIT extends CamelSpringTestSupport {
 
         sendRequest(createRequest(true, true, workObj1.getPid()));
 
-        boolean result = notify.matches(5l, TimeUnit.SECONDS);
-        assertTrue("Processing message did not match expectations", result);
+        boolean result = notify.matches(5L, TimeUnit.SECONDS);
+        assertTrue(result, "Processing message did not match expectations");
 
         assertEmailSent();
         assertTempFilesDeleted();
@@ -439,8 +439,8 @@ public class ExportXMLRouteIT extends CamelSpringTestSupport {
 
         sendRequest(createRequest(false, true, workObj1.getPid()));
 
-        boolean result = notify.matches(5l, TimeUnit.SECONDS);
-        assertTrue("Processing message did not match expectations", result);
+        boolean result = notify.matches(5L, TimeUnit.SECONDS);
+        assertTrue(result, "Processing message did not match expectations");
 
         assertEmailSent();
         assertTempFilesDeleted();
@@ -470,8 +470,8 @@ public class ExportXMLRouteIT extends CamelSpringTestSupport {
         request.setDatastreams(EnumSet.of(DatastreamType.MD_DESCRIPTIVE, DatastreamType.TECHNICAL_METADATA));
         sendRequest(request);
 
-        boolean result = notify.matches(5l, TimeUnit.SECONDS);
-        assertTrue("Processing message did not match expectations", result);
+        boolean result = notify.matches(5L, TimeUnit.SECONDS);
+        assertTrue(result, "Processing message did not match expectations");
 
         assertEmailSent();
         assertTempFilesDeleted();
@@ -506,8 +506,8 @@ public class ExportXMLRouteIT extends CamelSpringTestSupport {
         request.setDatastreams(EnumSet.of(DatastreamType.MD_DESCRIPTIVE, DatastreamType.MD_EVENTS));
         sendRequest(request);
 
-        boolean result = notify.matches(5l, TimeUnit.SECONDS);
-        assertTrue("Processing message did not match expectations", result);
+        boolean result = notify.matches(5L, TimeUnit.SECONDS);
+        assertTrue(result, "Processing message did not match expectations");
 
         assertEmailSent();
         assertTempFilesDeleted();
@@ -541,8 +541,8 @@ public class ExportXMLRouteIT extends CamelSpringTestSupport {
         request.setDatastreams(EnumSet.of(DatastreamType.MD_DESCRIPTIVE, DatastreamType.MD_EVENTS));
         sendRequest(request);
 
-        boolean result = notify.matches(5l, TimeUnit.SECONDS);
-        assertTrue("Processing message did not match expectations", result);
+        boolean result = notify.matches(5L, TimeUnit.SECONDS);
+        assertTrue(result, "Processing message did not match expectations");
 
         assertEmailSent();
         assertTempFilesDeleted();
@@ -575,8 +575,8 @@ public class ExportXMLRouteIT extends CamelSpringTestSupport {
         request.setDatastreams(EnumSet.of(DatastreamType.TECHNICAL_METADATA));
         sendRequest(request);
 
-        boolean result = notify.matches(5l, TimeUnit.SECONDS);
-        assertTrue("Processing message did not match expectations", result);
+        boolean result = notify.matches(5L, TimeUnit.SECONDS);
+        assertTrue(result, "Processing message did not match expectations");
 
         assertEmailSent();
         assertTempFilesDeleted();
@@ -616,9 +616,8 @@ public class ExportXMLRouteIT extends CamelSpringTestSupport {
         return request;
     }
 
-    private ExportXMLRequest sendRequest(ExportXMLRequest request) throws IOException {
+    private void sendRequest(ExportXMLRequest request) throws IOException {
         requestService.sendRequest(request);
-        return request;
     }
 
     private Element getExportedDocumentRootEl() throws Exception {
@@ -637,8 +636,8 @@ public class ExportXMLRouteIT extends CamelSpringTestSupport {
         String toEmail = toCaptor.getAllValues().get(page - 1);
         assertEquals(EMAIL, toEmail);
         String exportFile = filenameCaptor.getAllValues().get(page - 1);
-        assertTrue("Unexpected export filename: " + exportFile,
-                exportFile.matches("xml\\_export\\_.*\\_0+" + page + "\\.zip"));
+        assertTrue(exportFile.matches("xml\\_export\\_.*\\_0+" + page + "\\.zip"),
+                "Unexpected export filename: " + exportFile);
         return getExportedDocument(attachmentPaths.get(page - 1).toFile());
     }
 
@@ -657,7 +656,7 @@ public class ExportXMLRouteIT extends CamelSpringTestSupport {
 
     private void assertHasObjectWithoutMods(Element rootEl, ResourceType expectedType, PID pid) {
         Element objEl = getObjectElByPid(rootEl, pid);
-        assertNotNull("Did not contain expected child object " + pid, objEl);
+        assertNotNull(objEl, "Did not contain expected child object " + pid);
         assertEquals(expectedType.name(), objEl.getAttributeValue("type"));
         Element dsEl = getDatastreamElByType(objEl, DatastreamType.MD_DESCRIPTIVE);
         assertNull(dsEl);
@@ -665,7 +664,7 @@ public class ExportXMLRouteIT extends CamelSpringTestSupport {
 
     private void assertHasObjectWithMods(Element rootEl, ResourceType expectedType, PID pid) {
         Element objEl = getObjectElByPid(rootEl, pid);
-        assertNotNull("Did not contain expected child object " + pid, objEl);
+        assertNotNull(objEl, "Did not contain expected child object " + pid);
         assertEquals(expectedType.name(), objEl.getAttributeValue("type"));
         Element dsEl = getDatastreamElByType(objEl, DatastreamType.MD_DESCRIPTIVE);
         assertNotNull(dsEl);
@@ -678,7 +677,7 @@ public class ExportXMLRouteIT extends CamelSpringTestSupport {
     private void assertHasObjectWithDatastream(Element rootEl, ResourceType expectedType, PID pid,
             DatastreamType expectedDsType, String expectedMimetype, String expectedContent) {
         Element objEl = getObjectElByPid(rootEl, pid);
-        assertNotNull("Did not contain expected child object " + pid, objEl);
+        assertNotNull(objEl, "Did not contain expected child object " + pid);
         assertEquals(expectedType.name(), objEl.getAttributeValue("type"));
         Element dsEl = getDatastreamElByType(objEl, expectedDsType);
         assertNotNull(dsEl);
