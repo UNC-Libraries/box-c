@@ -57,8 +57,8 @@ public class SetDatastreamFilter implements IndexDocumentFilter {
     private Jp2InfoService jp2InfoService;
     private static final List<DatastreamType> THUMBNAIL_DS_TYPES = Arrays.asList(DatastreamType.THUMBNAIL_SMALL, DatastreamType.THUMBNAIL_LARGE);
     // Check for hours, minutes, seconds. Optional non-capturing check for milliseconds
-    private final Pattern TIMING_REGEX = Pattern.compile("\\d+:\\d+:\\d+(?::\\d+)?", Pattern.CASE_INSENSITIVE);
-    private final String VIDEO = "video";
+    private final Pattern TIMING_REGEX = Pattern.compile("\\d+:\\d+:\\d+(?::\\d+)?");
+    private final String FITS_VIDEO_NAME = "video";
 
     @Override
     public void filter(DocumentIndexingPackage dip) throws IndexingException {
@@ -138,7 +138,7 @@ public class SetDatastreamFilter implements IndexDocumentFilter {
                     return formatDimensionExtent(imgHeight, imgWidth, fits.getPid().getQualifiedId());
                 }
 
-                Element videoMd = fitsMd.getChild(VIDEO, FITS_NS);
+                Element videoMd = fitsMd.getChild(FITS_VIDEO_NAME, FITS_NS);
                 if (videoMd != null) {
                     var trackInfo = videoMd.getChildren("track", FITS_NS);
                     if (trackInfo != null) {
@@ -157,17 +157,20 @@ public class SetDatastreamFilter implements IndexDocumentFilter {
         } catch (RepositoryException | FedoraException e) {
             log.warn("Unable to parse FITS for {}", fitsId, e);
             return null;
+        } catch (NumberFormatException e) {
+            log.warn("Unable to parse audio/video track time for {}", fitsId, e);
+            return null;
         }
     }
 
-    private String formatVideoExtent(List<Element> trackInfo, Element trackTime, String pid) {
+    private String formatVideoExtent(List<Element> trackInfo, Element videoMd, String pid) {
         var numTracks = trackInfo.size();
         var videoTrack = 0;
 
         if (numTracks > 1) {
             for (int i = 0; i < numTracks; i++) {
                 var type = trackInfo.get(i).getAttributeValue("type");
-                if (type.equals(VIDEO)) {
+                if (type.equals(FITS_VIDEO_NAME)) {
                     videoTrack = i;
                     break;
                 }
@@ -179,7 +182,7 @@ public class SetDatastreamFilter implements IndexDocumentFilter {
         var videoWidth = videoInfo.getChildTextTrim("width", FITS_NS);
 
         var extent = formatDimensionExtent(videoHeight, videoWidth, pid);
-        return (extent == null) ? "xx" + formatTime(trackTime) : extent + "x" + formatTime(trackTime);
+        return (extent == null) ? "xx" + formatTime(videoMd) : extent + "x" + formatTime(videoMd);
     }
 
     private String formatTime(Element durationElement) {
@@ -206,7 +209,7 @@ public class SetDatastreamFilter implements IndexDocumentFilter {
             var hoursToSeconds = Integer.parseInt(durationParts[0]) * 60 * 60;
             var minutesToSeconds = Integer.parseInt(durationParts[1]) * 60;
             var seconds = Integer.parseInt(durationParts[2]);
-            var millisecondsToSeconds = (durationParts[3] != null) ? 1 : 0;
+            var millisecondsToSeconds = (durationParts[3] != null) ? millisecondsToSeconds(durationParts[3]) : 0;
 
             return Integer.toString(hoursToSeconds + minutesToSeconds + seconds + millisecondsToSeconds);
         }
@@ -265,12 +268,16 @@ public class SetDatastreamFilter implements IndexDocumentFilter {
 
                 String owner = ownedByOtherObject ? binary.getPid().getId() : null;
 
-                String extentValue = (name.equals(ORIGINAL_FILE.getId()) &&
-                        mimetype != null && (mimetype.startsWith("image") || mimetype.startsWith(VIDEO)
-                        || mimetype.startsWith("audio"))) ? getExtent(binList) : null;
+                String extentValue = (needsExtent(name, mimetype)) ? getExtent(binList) : null;
                 dsList.add(new DatastreamImpl(owner, name, filesize, mimetype,
                         filename, extension, checksum, extentValue));
             });
+    }
+
+    private boolean needsExtent(String name, String mimetype) {
+        return name.equals(ORIGINAL_FILE.getId()) &&
+                mimetype != null && (mimetype.startsWith("image") || mimetype.startsWith(FITS_VIDEO_NAME)
+                || mimetype.startsWith("audio"));
     }
 
     private String getFirstChecksum(Resource resc) {
