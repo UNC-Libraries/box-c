@@ -58,6 +58,7 @@ public class SetDatastreamFilter implements IndexDocumentFilter {
     private static final List<DatastreamType> THUMBNAIL_DS_TYPES = Arrays.asList(DatastreamType.THUMBNAIL_SMALL, DatastreamType.THUMBNAIL_LARGE);
     // Check for hours, minutes, seconds. Optional non-capturing check for milliseconds
     private final Pattern TIMING_REGEX = Pattern.compile("\\d+:\\d+:\\d+(?::\\d+)?", Pattern.CASE_INSENSITIVE);
+    private final String VIDEO = "video";
 
     @Override
     public void filter(DocumentIndexingPackage dip) throws IndexingException {
@@ -137,7 +138,7 @@ public class SetDatastreamFilter implements IndexDocumentFilter {
                     return formatDimensionExtent(imgHeight, imgWidth, fits.getPid().getQualifiedId());
                 }
 
-                Element videoMd = fitsMd.getChild("video", FITS_NS);
+                Element videoMd = fitsMd.getChild(VIDEO, FITS_NS);
                 if (videoMd != null) {
                     var trackInfo = videoMd.getChildren("track", FITS_NS);
                     if (trackInfo != null) {
@@ -166,7 +167,7 @@ public class SetDatastreamFilter implements IndexDocumentFilter {
         if (numTracks > 1) {
             for (int i = 0; i < numTracks; i++) {
                 var type = trackInfo.get(i).getAttributeValue("type");
-                if (type.equals("video")) {
+                if (type.equals(VIDEO)) {
                     videoTrack = i;
                     break;
                 }
@@ -265,7 +266,7 @@ public class SetDatastreamFilter implements IndexDocumentFilter {
                 String owner = ownedByOtherObject ? binary.getPid().getId() : null;
 
                 String extentValue = (name.equals(ORIGINAL_FILE.getId()) &&
-                        mimetype != null && (mimetype.startsWith("image") || mimetype.startsWith("video")
+                        mimetype != null && (mimetype.startsWith("image") || mimetype.startsWith(VIDEO)
                         || mimetype.startsWith("audio"))) ? getExtent(binList) : null;
                 dsList.add(new DatastreamImpl(owner, name, filesize, mimetype,
                         filename, extension, checksum, extentValue));
