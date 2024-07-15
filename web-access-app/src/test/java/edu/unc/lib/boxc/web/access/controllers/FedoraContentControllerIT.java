@@ -12,7 +12,6 @@ import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
 import edu.unc.lib.boxc.model.fcrepo.ids.DatastreamPids;
 import edu.unc.lib.boxc.model.fcrepo.test.TestHelper;
 import edu.unc.lib.boxc.persist.impl.storage.StorageLocationTestHelper;
-import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -28,16 +27,14 @@ import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
-import java.io.File;
 import java.net.URI;
-import java.nio.file.Files;
 import java.nio.file.Path;
 
 import static edu.unc.lib.boxc.model.api.DatastreamType.TECHNICAL_METADATA;
 import static edu.unc.lib.boxc.model.fcrepo.ids.DatastreamPids.getTechnicalMetadataPid;
 import static edu.unc.lib.boxc.model.fcrepo.test.TestHelper.makePid;
 import static edu.unc.lib.boxc.web.common.services.FedoraContentService.CONTENT_DISPOSITION;
-import static edu.unc.lib.boxc.web.common.services.FedoraContentService.RANGE_HEADER;
+import static org.apache.http.HttpHeaders.RANGE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -119,7 +116,7 @@ public class FedoraContentControllerIT {
         fileObj.addOriginalFile(makeContentUri(originalPid(fileObj), BINARY_CONTENT), "file.txt", "text/plain", null, null);
 
         MvcResult result = mvc.perform(get("/content/" + filePid.getId())
-                        .header(RANGE_HEADER,"bytes=0-9"))
+                        .header(RANGE,"bytes=0-9"))
                 .andExpect(status().is2xxSuccessful())
                 .andReturn();
 
@@ -255,7 +252,7 @@ public class FedoraContentControllerIT {
 
         // Verify original file content retrievable
         MvcResult result1 = mvc.perform(get(requestPath + filePid.getId())
-                        .header(RANGE_HEADER,"bytes=0-9"))
+                        .header(RANGE,"bytes=0-9"))
                 .andExpect(status().is2xxSuccessful())
                 .andReturn();
 
@@ -265,12 +262,13 @@ public class FedoraContentControllerIT {
         assertEquals(binaryContentSubString, contentAsString);
 
         // Verify administrative datastream retrievable
-        MvcResult result2 = mvc.perform(get(requestPath + filePid.getId() + "/" + TECHNICAL_METADATA.getId()))
+        MvcResult result2 = mvc.perform(get(requestPath + filePid.getId() + "/" + TECHNICAL_METADATA.getId())
+                        .header(RANGE,"bytes=0-9"))
                 .andExpect(status().is2xxSuccessful())
                 .andReturn();
 
         MockHttpServletResponse response = result2.getResponse();
-        assertEquals(content, response.getContentAsString());
+        assertEquals(content.substring(0,10), response.getContentAsString());
 
         assertEquals(content.length(), response.getContentLength());
         assertEquals("application/xml", response.getContentType());

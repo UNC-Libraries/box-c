@@ -38,7 +38,7 @@ import java.util.concurrent.TimeoutException;
 import static edu.unc.lib.boxc.auth.api.services.DatastreamPermissionUtil.getPermissionForDatastream;
 import static edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore.getAgentPrincipals;
 import static edu.unc.lib.boxc.model.api.DatastreamType.ORIGINAL_FILE;
-import static edu.unc.lib.boxc.web.common.services.FedoraContentService.RANGE_HEADER;
+import static org.apache.http.HttpHeaders.RANGE;
 
 /**
  * Controller which handles requests for specific content datastreams from Fedora and streams the results back as the
@@ -98,7 +98,7 @@ public class FedoraContentController {
         accessControlService.assertHasAccess("Insufficient permissions to access " + datastream + " for object " + pid,
                 pid, principals, getPermissionForDatastream(datastream));
 
-        var range = request.getHeader(RANGE_HEADER);
+        var range = request.getHeader(RANGE);
 
         try {
             fedoraContentService.streamData(pid, datastream, asAttachment, response, range);

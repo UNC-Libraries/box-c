@@ -40,7 +40,7 @@ import static edu.unc.lib.boxc.auth.api.services.DatastreamPermissionUtil.getPer
 import static edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore.getAgentPrincipals;
 import static edu.unc.lib.boxc.model.api.DatastreamType.ORIGINAL_FILE;
 import static edu.unc.lib.boxc.model.fcrepo.services.DerivativeService.isDerivative;
-import static edu.unc.lib.boxc.web.common.services.FedoraContentService.RANGE_HEADER;
+import static org.apache.http.HttpHeaders.RANGE;
 
 /**
  *
@@ -96,7 +96,7 @@ public class DatastreamController {
         } else {
             accessControlService.assertHasAccess("Insufficient permissions to access " + datastream + " for object " + pid,
                     pid, principals, getPermissionForDatastream(datastream));
-            var range = request.getHeader(RANGE_HEADER);
+            var range = request.getHeader(RANGE);
             fedoraContentService.streamData(pid, datastream, download, response, range);
             if (DatastreamType.ORIGINAL_FILE.getId().equals(datastream)) {
                 recordDownloadEvent(pid, datastream, principals, request);

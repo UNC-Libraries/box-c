@@ -44,7 +44,6 @@ public class FedoraContentService {
     private static final int BUFFER_SIZE = 4096;
 
     public static final String CONTENT_DISPOSITION = "Content-Disposition";
-    public static final String RANGE_HEADER = "Range";
 
     private AccessControlService accessControlService;
 
