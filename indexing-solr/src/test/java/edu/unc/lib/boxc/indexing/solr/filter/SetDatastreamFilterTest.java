@@ -100,13 +100,13 @@ public class SetDatastreamFilterTest {
     private static final String FILE_MP4_NAME = "video.mp4";
     private static final String FILE_MP4_DIGEST = "urn:sha1:280f5922b6487c39d6d01a5a8e93bfa07b8f3b60";
     private static final long FILE_MP4_SIZE = 27136l;
-    private static final String FILE_MP4_EXTENT = "704x480x87";
+    private static final String FILE_MP4_EXTENT = "480x704x87";
 
     private static final String FILE_MPEG_MIMETYPE = "video/mpg";
     private static final String FILE_MPEG_NAME = "video.mpeg";
     private static final String FILE_MPEG_DIGEST = "urn:sha1:3b0f5711b6487c39d6d01a5a8e93bfa07b8f3b60";
     private static final long FILE_MPEG_SIZE = 27136l;
-    private static final String FILE_MPEG_EXTENT = "720x480x1";
+    private static final String FILE_MPEG_EXTENT = "480x720x1";
 
     private static final String MODS_MIMETYPE = "text/xml";
     private static final String MODS_NAME = "mods.xml";
@@ -278,6 +278,28 @@ public class SetDatastreamFilterTest {
     }
 
     @Test
+    public void fileObjectDurationWithMillisecondsNoSeparateMillisecondsFieldBinaryTest() throws Exception {
+        when(binObj.getResource()).thenReturn(
+                fileResource(ORIGINAL_FILE.getId(), FILE_MP3_SIZE, FILE_MP3_MIMETYPE, FILE_MP3_NAME, FILE_MP3_DIGEST));
+
+        BinaryObject binObj2 = mock(BinaryObject.class);
+        when(binObj2.getPid()).thenReturn(DatastreamPids.getTechnicalMetadataPid(pid));
+        when(binObj2.getResource()).thenReturn(
+                fileResource(TECHNICAL_METADATA.getId(), FILE2_SIZE, FILE2_MIMETYPE, FILE2_NAME, FILE2_DIGEST));
+        when(binObj2.getBinaryStream()).thenReturn(getClass()
+                .getResourceAsStream("/datastream/techmd_no_milliseconds_field.xml"));
+        when(fileObj.getBinaryObjects()).thenReturn(Arrays.asList(binObj, binObj2));
+        dip.setContentObject(fileObj);
+
+        filter.filter(dip);
+
+        assertContainsDatastream(idb.getDatastream(), ORIGINAL_FILE.getId(),
+                FILE_MP3_SIZE, FILE_MP3_MIMETYPE, FILE_MP3_NAME, FILE_MP3_DIGEST, null, FILE_MP3_EXTENT);
+        assertContainsDatastream(idb.getDatastream(), TECHNICAL_METADATA.getId(),
+                FILE2_SIZE, FILE2_MIMETYPE, FILE2_NAME, FILE2_DIGEST, null, null);
+    }
+
+    @Test
     public void fileObjectVideoAudioBinaryTest() throws Exception {
         when(binObj.getResource()).thenReturn(
                 fileResource(ORIGINAL_FILE.getId(), FILE_MP4_SIZE, FILE_MP4_MIMETYPE, FILE_MP4_NAME,
@@ -341,7 +363,7 @@ public class SetDatastreamFilterTest {
         filter.filter(dip);
 
         assertContainsDatastream(idb.getDatastream(), ORIGINAL_FILE.getId(),
-                FILE_MPEG_SIZE, FILE_MPEG_MIMETYPE, FILE_MPEG_NAME, FILE_MPEG_DIGEST, null, "720x480x-1");
+                FILE_MPEG_SIZE, FILE_MPEG_MIMETYPE, FILE_MPEG_NAME, FILE_MPEG_DIGEST, null, "480x720x-1");
         assertContainsDatastream(idb.getDatastream(), TECHNICAL_METADATA.getId(),
                 FILE2_SIZE, FILE2_MIMETYPE, FILE2_NAME, FILE2_DIGEST, null, null);
     }

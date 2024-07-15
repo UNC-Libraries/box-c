@@ -33,7 +33,6 @@
                             <location toolname="MediaInfo" toolversion="23.09" status="SINGLE_RESULT">/opt/data/deposits/31d00601-78cd-480f-b9e8-9b319790f7a4/data/_a49114ad-2276-4e99-afda-67c2fa8f0a24</location>
                             <mimeType toolname="MediaInfo" toolversion="23.09" status="SINGLE_RESULT">video/mpg</mimeType>
                             <format toolname="MediaInfo" toolversion="23.09" status="SINGLE_RESULT">MPEG-PS</format>
-                            <duration toolname="MediaInfo" toolversion="23.09" status="SINGLE_RESULT">467</duration>
                             <bitRate toolname="MediaInfo" toolversion="23.09" status="SINGLE_RESULT">1999760</bitRate>
                             <dateModified toolname="MediaInfo" toolversion="23.09" status="SINGLE_RESULT">2024-07-09 16:38:11 UTC</dateModified>
                             <track type="video" id="224" toolname="MediaInfo" toolversion="23.09" status="SINGLE_RESULT">

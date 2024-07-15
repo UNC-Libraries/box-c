@@ -56,6 +56,8 @@ public class SetDatastreamFilter implements IndexDocumentFilter {
     private TechnicalMetadataService technicalMetadataService;
     private Jp2InfoService jp2InfoService;
     private static final List<DatastreamType> THUMBNAIL_DS_TYPES = Arrays.asList(DatastreamType.THUMBNAIL_SMALL, DatastreamType.THUMBNAIL_LARGE);
+    // Check for hours, minutes, seconds. Optional non-capturing check for milliseconds
+    private final Pattern TIMING_REGEX = Pattern.compile("\\d+:\\d+:\\d+(?::\\d+)?", Pattern.CASE_INSENSITIVE);
 
     @Override
     public void filter(DocumentIndexingPackage dip) throws IndexingException {
@@ -132,14 +134,14 @@ public class SetDatastreamFilter implements IndexDocumentFilter {
                 if (imgMd != null) {
                     String imgHeight = imgMd.getChildTextTrim("imageHeight", FITS_NS);
                     String imgWidth = imgMd.getChildTextTrim("imageWidth", FITS_NS);
-                    return formatExtent(imgHeight, imgWidth, fits.getPid().getQualifiedId());
+                    return formatDimensionExtent(imgHeight, imgWidth, fits.getPid().getQualifiedId());
                 }
 
                 Element videoMd = fitsMd.getChild("video", FITS_NS);
                 if (videoMd != null) {
                     var trackInfo = videoMd.getChildren("track", FITS_NS);
                     if (trackInfo != null) {
-                        return formatVideoExtent(trackInfo, fits.getPid().getQualifiedId());
+                        return formatVideoExtent(trackInfo, videoMd, fits.getPid().getQualifiedId());
                     }
                 }
 
@@ -157,39 +159,26 @@ public class SetDatastreamFilter implements IndexDocumentFilter {
         }
     }
 
-    private String formatVideoExtent(List<Element> trackInfo, String pid) {
+    private String formatVideoExtent(List<Element> trackInfo, Element trackTime, String pid) {
         var numTracks = trackInfo.size();
         var videoTrack = 0;
-        var audioTrack = 0;
 
         if (numTracks > 1) {
             for (int i = 0; i < numTracks; i++) {
                 var type = trackInfo.get(i).getAttributeValue("type");
                 if (type.equals("video")) {
                     videoTrack = i;
-                }
-                if (type.equals("audio")) {
-                    audioTrack = i;
+                    break;
                 }
             }
         }
 
         var videoInfo = trackInfo.get(videoTrack);
-        var videoTime = formatTime(videoInfo);
-        var videoHeight = videoInfo.getChildTextTrim("width", FITS_NS);
-        var videoWidth = videoInfo.getChildTextTrim("height", FITS_NS);
+        var videoHeight = videoInfo.getChildTextTrim("height", FITS_NS);
+        var videoWidth = videoInfo.getChildTextTrim("width", FITS_NS);
 
-        // Some videos have separate tracks for the audio content
-        String audioTime = null;
-        if (numTracks > 1) {
-            audioTime = formatTime(trackInfo.get(audioTrack));
-        }
-
-        // Audio and video don't necessarily have the same play times, so select the larger one if both are present
-        String trackTime = (audioTime == null || Integer.parseInt(videoTime) >= Integer.parseInt(audioTime))
-                ? videoTime : audioTime;
-        var extent = formatExtent(videoHeight, videoWidth, pid);
-        return (extent == null) ? "xx" + trackTime : extent + "x" + trackTime;
+        var extent = formatDimensionExtent(videoHeight, videoWidth, pid);
+        return (extent == null) ? "xx" + formatTime(trackTime) : extent + "x" + formatTime(trackTime);
     }
 
     private String formatTime(Element durationElement) {
@@ -208,23 +197,20 @@ public class SetDatastreamFilter implements IndexDocumentFilter {
     }
 
     private String normalizeTime(String duration) {
-        String output = "";
-        Pattern pattern = Pattern.compile("\\d+:\\d+:\\d+", Pattern.CASE_INSENSITIVE);
-        Matcher matcher = pattern.matcher(duration);
+        Matcher matcher = TIMING_REGEX.matcher(duration);
         boolean matchFound = matcher.find();
 
         if (matchFound) {
             var durationParts = duration.split(":");
             var hoursToSeconds = Integer.parseInt(durationParts[0]) * 60 * 60;
-            var minutesToSeconds = Integer.parseInt(durationParts[1]) * 60 ;
+            var minutesToSeconds = Integer.parseInt(durationParts[1]) * 60;
             var seconds = Integer.parseInt(durationParts[2]);
+            var millisecondsToSeconds = (durationParts[3] != null) ? 1 : 0;
 
-            output += hoursToSeconds + minutesToSeconds + seconds;
-        } else {
-            output += millisecondsToSeconds(duration);
+            return Integer.toString(hoursToSeconds + minutesToSeconds + seconds + millisecondsToSeconds);
         }
 
-        return output;
+        return Integer.toString(millisecondsToSeconds(duration));
     }
 
     private Integer millisecondsToSeconds(String duration) {
@@ -232,15 +218,15 @@ public class SetDatastreamFilter implements IndexDocumentFilter {
         return (int) Math.ceil(durationToSeconds);
     }
 
-    private String formatExtent(String imgHeight, String imgWidth, String id) {
+    private String formatDimensionExtent(String imgHeight, String imgWidth, String pid) {
         if (!StringUtils.isBlank(imgHeight) && !StringUtils.isBlank(imgWidth)) {
             try {
                 var adjustedHeight = Integer.parseInt(imgHeight.replaceAll("[\\sa-zA-Z]", ""));
                 var adjustedWidth = Integer.parseInt(imgWidth.replaceAll("[\\sa-zA-Z]", ""));
                 return adjustedHeight + "x" + adjustedWidth;
             } catch (NumberFormatException e) {
-                log.warn("Invalid image width or height from FITS {}: {} x {}",
-                        id, imgWidth, imgHeight);
+                log.warn("Invalid width or height from FITS {}: {} x {}",
+                        pid, imgWidth, imgHeight);
                 return null;
             }
         }
