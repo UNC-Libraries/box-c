@@ -171,8 +171,7 @@ public class RepositoryObjectDriver {
         PID pid = obj.getPid();
 
         try {
-            var getRequest = getClient().get(pid.getRepositoryUri());
-            FcrepoResponse response = getRequest.perform();
+            FcrepoResponse response = getClient().get(pid.getRepositoryUri()).perform();
             return response.getBody();
         } catch (FcrepoOperationFailedException e) {
             throw ClientFaultResolver.resolve(e);
