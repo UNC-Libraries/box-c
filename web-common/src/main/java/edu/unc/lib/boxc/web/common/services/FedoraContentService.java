@@ -61,7 +61,6 @@ public class FedoraContentService {
      * @param pid pid of object containing datastream
      * @param dsName name of datastream being requested. If null, then original
      *            file datastream is assumed.
-     * @param principals principals of requesting client
      * @param asAttachment if true, then content-disposition header will specify
      *            as "attachment" instead of "inline"
      * @param response response content and headers will be added to.
