@@ -186,6 +186,7 @@
     <bean id="fedoraContentService" class="edu.unc.lib.boxc.web.common.services.FedoraContentService">
         <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
         <property name="accessControlService" ref="aclService" />
+        <property name="client" ref="fcrepoClient" />
     </bean>
     
     <bean id="addContainerService" class="edu.unc.lib.boxc.web.services.processing.AddContainerService">

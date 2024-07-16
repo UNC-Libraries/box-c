@@ -93,8 +93,6 @@ public class FedoraContentService {
             binObj = repositoryObjectLoader.getBinaryObject(dsPid);
         }
 
-        // Set binary detail response headers
-//        response.setHeader(CONTENT_LENGTH, Long.toString(binObj.getFilesize()));
         response.setHeader(CONTENT_TYPE, binObj.getMimetype());
         String binaryName = binObj.getFilename();
         String filename = binaryName == null ? pid.getId() : binaryName;
@@ -103,12 +101,6 @@ public class FedoraContentService {
         } else {
             response.setHeader(CONTENT_DISPOSITION, "inline; filename=\"" + filename + "\"");
         }
-
-        // Stream binary content to http response
-//        try (InputStream binStream = binObj.getBinaryStream(range)) {
-//            OutputStream outStream = response.getOutputStream();
-//            IOUtils.copy(binStream, outStream, BUFFER_SIZE);
-//        }
 
         try (FcrepoResponse fedoraResponse = getFedoraResponse(binObj, range)) {
             response.setHeader(CONTENT_LENGTH, fedoraResponse.getHeaderValue(CONTENT_LENGTH));

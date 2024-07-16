@@ -69,8 +69,6 @@ public class FedoraContentControllerIT {
     private String baseAddress;
     @Autowired
     private StorageLocationTestHelper storageLocationTestHelper;
-    @Autowired
-    private FcrepoClient client;
 
     protected MockMvc mvc;
     @Autowired

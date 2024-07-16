@@ -122,7 +122,7 @@ public class BinaryObjectTest extends AbstractFedoraObjectTest {
 
     @Test
     public void testGetBinaryStream() {
-        when(driver.getBinaryStream(eq(binObj), any())).thenReturn(stream);
+        when(driver.getBinaryStream(eq(binObj))).thenReturn(stream);
         assertEquals(binObj.getBinaryStream(), stream);
     }
 
