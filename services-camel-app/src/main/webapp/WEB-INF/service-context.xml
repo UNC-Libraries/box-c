@@ -580,9 +580,6 @@
         <camel:package>edu.unc.lib.boxc.services.camel.viewSettings</camel:package>
         <camel:package>edu.unc.lib.boxc.services.camel.accessSurrogates</camel:package>
         <camel:package>edu.unc.lib.boxc.services.camel.solrUpdate</camel:package>
-    </camel:camelContext>
-
-    <camel:camelContext id="DcrStreaming">
         <camel:package>edu.unc.lib.boxc.services.camel.streaming</camel:package>
     </camel:camelContext>
 </beans>
