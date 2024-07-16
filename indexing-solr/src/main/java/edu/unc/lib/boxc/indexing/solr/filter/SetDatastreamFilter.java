@@ -169,7 +169,7 @@ public class SetDatastreamFilter implements IndexDocumentFilter {
             var videoTrack = 0;
             for (int i = 0; i < numTracks; i++) {
                 var type = trackInfo.get(i).getAttributeValue("type");
-                if (type.equals(FITS_VIDEO_NAME)) {
+                if (FITS_VIDEO_NAME.equals(type)) {
                     videoTrack = i;
                     break;
                 }
