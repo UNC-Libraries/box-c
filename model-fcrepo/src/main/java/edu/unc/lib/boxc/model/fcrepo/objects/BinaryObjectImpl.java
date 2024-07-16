@@ -91,24 +91,12 @@ public class BinaryObjectImpl extends AbstractRepositoryObject implements Binary
     /**
      * Get an inputstream of the binary content
      *
-     * @param range requested byte range of binary resource object
      * @return
      * @throws FedoraException
      */
     @Override
-    public InputStream getBinaryStream(String range) throws FedoraException {
-        return driver.getBinaryStream(this, range);
-    }
-
-    /**
-     * Get an inputstream of the binary content
-     *
-     * @return
-     * @throws FedoraException
-     */
-
     public InputStream getBinaryStream() throws FedoraException {
-        return getBinaryStream(null);
+        return driver.getBinaryStream(this);
     }
 
     /**

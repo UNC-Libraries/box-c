@@ -12,6 +12,7 @@ import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
 import edu.unc.lib.boxc.model.fcrepo.ids.DatastreamPids;
 import edu.unc.lib.boxc.model.fcrepo.test.TestHelper;
 import edu.unc.lib.boxc.persist.impl.storage.StorageLocationTestHelper;
+import org.fcrepo.client.FcrepoClient;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -68,6 +69,8 @@ public class FedoraContentControllerIT {
     private String baseAddress;
     @Autowired
     private StorageLocationTestHelper storageLocationTestHelper;
+    @Autowired
+    private FcrepoClient client;
 
     protected MockMvc mvc;
     @Autowired
@@ -268,9 +271,10 @@ public class FedoraContentControllerIT {
                 .andReturn();
 
         MockHttpServletResponse response = result2.getResponse();
-        assertEquals(content.substring(0,10), response.getContentAsString());
+        var contentSubstring = content.substring(0,10);
+        assertEquals(contentSubstring, response.getContentAsString());
 
-        assertEquals(content.length(), response.getContentLength());
+        assertEquals(contentSubstring.length(), response.getContentLength());
         assertEquals("application/xml", response.getContentType());
         assertEquals("inline; filename=\"fits.xml\"", response.getHeader(CONTENT_DISPOSITION));
     }

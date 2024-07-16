@@ -167,30 +167,16 @@ public class RepositoryObjectDriver {
      * @return
      * @throws FedoraException
      */
-    public InputStream getBinaryStream(BinaryObject obj, String range) throws FedoraException {
+    public InputStream getBinaryStream(BinaryObject obj) throws FedoraException {
         PID pid = obj.getPid();
 
         try {
             var getRequest = getClient().get(pid.getRepositoryUri());
-            if (range != null) {
-                getRequest.addHeader("Range", range);
-            }
             FcrepoResponse response = getRequest.perform();
             return response.getBody();
         } catch (FcrepoOperationFailedException e) {
             throw ClientFaultResolver.resolve(e);
         }
-    }
-
-    /**
-     * Retrieve the binary content for the given BinaryObject as an inputstream
-     *
-     * @param obj
-     * @return
-     * @throws FedoraException
-     */
-    public InputStream getBinaryStream(BinaryObject obj) throws FedoraException {
-        return getBinaryStream(obj, null);
     }
 
     /**

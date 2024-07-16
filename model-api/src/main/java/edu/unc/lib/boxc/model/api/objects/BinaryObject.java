@@ -15,15 +15,6 @@ public interface BinaryObject extends RepositoryObject {
     /**
      * Get an inputstream of the binary content
      *
-     * @param range requested byte range of binary resource object
-     * @return
-     * @throws FedoraException
-     */
-    InputStream getBinaryStream(String range) throws FedoraException;
-
-    /**
-     * Get an inputstream of the binary content
-     *
      * @return
      * @throws FedoraException
      */

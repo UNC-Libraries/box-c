@@ -12,11 +12,15 @@ import java.io.OutputStream;
 
 import javax.servlet.http.HttpServletResponse;
 
+import edu.unc.lib.boxc.fcrepo.utils.ClientFaultResolver;
 import org.apache.commons.io.IOUtils;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.riot.RDFDataMgr;
 import org.apache.jena.riot.RDFFormat;
 import org.apache.jena.riot.WebContent;
+import org.fcrepo.client.FcrepoClient;
+import org.fcrepo.client.FcrepoOperationFailedException;
+import org.fcrepo.client.FcrepoResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -48,6 +52,7 @@ public class FedoraContentService {
     private AccessControlService accessControlService;
 
     private RepositoryObjectLoader repositoryObjectLoader;
+    private FcrepoClient client;
 
     /**
      * Set content headers and stream the binary content of the specified
@@ -89,7 +94,7 @@ public class FedoraContentService {
         }
 
         // Set binary detail response headers
-        response.setHeader(CONTENT_LENGTH, Long.toString(binObj.getFilesize()));
+//        response.setHeader(CONTENT_LENGTH, Long.toString(binObj.getFilesize()));
         response.setHeader(CONTENT_TYPE, binObj.getMimetype());
         String binaryName = binObj.getFilename();
         String filename = binaryName == null ? pid.getId() : binaryName;
@@ -100,7 +105,14 @@ public class FedoraContentService {
         }
 
         // Stream binary content to http response
-        try (InputStream binStream = binObj.getBinaryStream(range)) {
+//        try (InputStream binStream = binObj.getBinaryStream(range)) {
+//            OutputStream outStream = response.getOutputStream();
+//            IOUtils.copy(binStream, outStream, BUFFER_SIZE);
+//        }
+
+        try (FcrepoResponse fedoraResponse = getFedoraResponse(binObj, range)) {
+            response.setHeader(CONTENT_LENGTH, fedoraResponse.getHeaderValue(CONTENT_LENGTH));
+            InputStream binStream = fedoraResponse.getBody();
             OutputStream outStream = response.getOutputStream();
             IOUtils.copy(binStream, outStream, BUFFER_SIZE);
         }
@@ -134,6 +146,21 @@ public class FedoraContentService {
         }
     }
 
+    private FcrepoResponse getFedoraResponse(BinaryObject obj, String range) {
+        PID pid = obj.getPid();
+
+        try {
+            var getRequest = client.get(pid.getRepositoryUri());
+            if (range != null) {
+                getRequest.addHeader("Range", range);
+            }
+
+            return getRequest.perform();
+        } catch (FcrepoOperationFailedException e) {
+            throw ClientFaultResolver.resolve(e);
+        }
+    }
+
     /**
      * @param accessControlService the accessControlService to set
      */
@@ -146,5 +173,9 @@ public class FedoraContentService {
      */
     public void setRepositoryObjectLoader(RepositoryObjectLoader repositoryObjectLoader) {
         this.repositoryObjectLoader = repositoryObjectLoader;
+    }
+
+    public void setClient(FcrepoClient client) {
+        this.client = client;
     }
 }
