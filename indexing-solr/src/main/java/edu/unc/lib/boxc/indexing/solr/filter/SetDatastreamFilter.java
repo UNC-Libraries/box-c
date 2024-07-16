@@ -140,10 +140,7 @@ public class SetDatastreamFilter implements IndexDocumentFilter {
 
                 Element videoMd = fitsMd.getChild(FITS_VIDEO_NAME, FITS_NS);
                 if (videoMd != null) {
-                    var trackInfo = videoMd.getChildren("track", FITS_NS);
-                    if (trackInfo != null) {
-                        return formatVideoExtent(trackInfo, videoMd, fits.getPid().getQualifiedId());
-                    }
+                    return formatVideoExtent(videoMd, fits.getPid().getQualifiedId());
                 }
 
                 Element audioMd = fitsMd.getChild("audio", FITS_NS);
@@ -163,11 +160,13 @@ public class SetDatastreamFilter implements IndexDocumentFilter {
         }
     }
 
-    private String formatVideoExtent(List<Element> trackInfo, Element videoMd, String pid) {
-        var numTracks = trackInfo.size();
-        var videoTrack = 0;
+    private String formatVideoExtent(Element videoMd, String pid) {
+        var videoInfo = videoMd;
+        var trackInfo = videoMd.getChildren("track", FITS_NS);
 
-        if (numTracks > 1) {
+        var numTracks = trackInfo.size();
+        if (numTracks > 0) {
+            var videoTrack = 0;
             for (int i = 0; i < numTracks; i++) {
                 var type = trackInfo.get(i).getAttributeValue("type");
                 if (type.equals(FITS_VIDEO_NAME)) {
@@ -175,14 +174,23 @@ public class SetDatastreamFilter implements IndexDocumentFilter {
                     break;
                 }
             }
+            videoInfo = trackInfo.get(videoTrack);
         }
 
-        var videoInfo = trackInfo.get(videoTrack);
-        var videoHeight = videoInfo.getChildTextTrim("height", FITS_NS);
-        var videoWidth = videoInfo.getChildTextTrim("width", FITS_NS);
-
+        var videoHeight = getDimensionValue(videoInfo, "height");
+        var videoWidth = getDimensionValue(videoInfo, "width");
         var extent = formatDimensionExtent(videoHeight, videoWidth, pid);
+
         return (extent == null) ? "xx" + formatTime(videoMd) : extent + "x" + formatTime(videoMd);
+    }
+
+    private String getDimensionValue(Element field, String dimensionType) {
+        var value = field.getChildTextTrim(dimensionType, FITS_NS);
+        if (value == null) {
+            value = field.getChildTextTrim("image" + StringUtils.capitalize(dimensionType), FITS_NS);
+        }
+
+        return value;
     }
 
     private String formatTime(Element durationElement) {
@@ -209,7 +217,7 @@ public class SetDatastreamFilter implements IndexDocumentFilter {
             var hoursToSeconds = Integer.parseInt(durationParts[0]) * 60 * 60;
             var minutesToSeconds = Integer.parseInt(durationParts[1]) * 60;
             var seconds = Integer.parseInt(durationParts[2]);
-            var millisecondsToSeconds = (durationParts[3] != null) ? millisecondsToSeconds(durationParts[3]) : 0;
+            var millisecondsToSeconds = (durationParts.length == 4) ? millisecondsToSeconds(durationParts[3]) : 0;
 
             return Integer.toString(hoursToSeconds + minutesToSeconds + seconds + millisecondsToSeconds);
         }

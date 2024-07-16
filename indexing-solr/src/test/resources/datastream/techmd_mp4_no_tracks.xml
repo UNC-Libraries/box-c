@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<premis3:premis xmlns:premis3="http://www.loc.gov/premis/v3">
+    <script/>
+    <premis3:object xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="premis3:file">
+        <premis3:objectCharacteristics>
+            <premis3:compositionLevel>0</premis3:compositionLevel>
+            <premis3:format>
+                <premis3:formatDesignation>
+                    <premis3:formatName>ISO Media, MPEG v4 system, version 2</premis3:formatName>
+                </premis3:formatDesignation>
+            </premis3:format>
+            <premis3:size>825469036</premis3:size>
+            <premis3:fixity>
+                <premis3:messageDigestAlgorithm>MD5</premis3:messageDigestAlgorithm>
+                <premis3:messageDigest>352ed3fd257016feab5717a2830399e2</premis3:messageDigest>
+            </premis3:fixity>
+            <premis3:objectCharacteristicsExtension>
+                <fits xmlns="http://hul.harvard.edu/ois/xml/ns/fits/fits_output" xsi:schemaLocation="http://hul.harvard.edu/ois/xml/ns/fits/fits_output http://hul.harvard.edu/ois/xml/xsd/fits/fits_output.xsd" version="1.4.1" timestamp="6/11/20 1:42 PM">
+                    <identification status="CONFLICT">
+                        <identity format="ISO Media, MPEG v4 system, version 2" mimetype="video/mp4" toolname="FITS" toolversion="1.4.1">
+                            <tool toolname="Exiftool" toolversion="11.14"/>
+                        </identity>
+                        <identity format="MP4 container format" mimetype="application/mp4" toolname="FITS" toolversion="1.4.1">
+                            <tool toolname="Tika" toolversion="1.19.1"/>
+                        </identity>
+                    </identification>
+                    <fileinfo>
+                        <lastmodified toolname="Exiftool" toolversion="11.14" status="CONFLICT">0000:00:00 00:00:00</lastmodified>
+                        <lastmodified toolname="Tika" toolversion="1.19.1" status="CONFLICT">1904-01-01T00:00:00Z</lastmodified>
+                        <created toolname="Exiftool" toolversion="11.14" status="SINGLE_RESULT">0000:00:00 00:00:00</created>
+                        <creatingApplicationName toolname="Tika" toolversion="1.19.1" status="SINGLE_RESULT">Lavf57.56.101</creatingApplicationName>
+                        <filepath toolname="OIS File Information" toolversion="0.2" status="SINGLE_RESULT">/path/to/video_no_tracks.mp4</filepath>
+                        <filename toolname="OIS File Information" toolversion="0.2" status="SINGLE_RESULT">video_no_tracks.mp4</filename>
+                        <size toolname="OIS File Information" toolversion="0.2" status="SINGLE_RESULT">825469036</size>
+                        <md5checksum toolname="OIS File Information" toolversion="0.2" status="SINGLE_RESULT">352ed3fd257016feab5717a2830399e2</md5checksum>
+                        <fslastmodified toolname="OIS File Information" toolversion="0.2" status="SINGLE_RESULT">1506021303000</fslastmodified>
+                    </fileinfo>
+                    <filestatus/>
+                    <metadata>
+                        <video>
+                            <duration toolname="Exiftool" toolversion="11.14" status="SINGLE_RESULT">1:10:13</duration>
+                            <frameRate toolname="Exiftool" toolversion="11.14" status="SINGLE_RESULT">29.97</frameRate>
+                            <bitDepth toolname="Exiftool" toolversion="11.14" status="SINGLE_RESULT">24</bitDepth>
+                            <audioSampleRate toolname="Exiftool" toolversion="11.14" status="SINGLE_RESULT">48000</audioSampleRate>
+                            <channels toolname="Exiftool" toolversion="11.14" status="SINGLE_RESULT">2</channels>
+                            <imageWidth toolname="Exiftool" toolversion="11.14" status="SINGLE_RESULT">640</imageWidth>
+                            <imageHeight toolname="Exiftool" toolversion="11.14" status="SINGLE_RESULT">480</imageHeight>
+                            <rotation toolname="Exiftool" toolversion="11.14" status="SINGLE_RESULT">0</rotation>
+                            <xSamplingFrequency toolname="Exiftool" toolversion="11.14" status="SINGLE_RESULT">72</xSamplingFrequency>
+                            <ySamplingFrequency toolname="Exiftool" toolversion="11.14" status="SINGLE_RESULT">72</ySamplingFrequency>
+                            <creatingApplicationName toolname="Exiftool" toolversion="11.14" status="SINGLE_RESULT">avc1</creatingApplicationName>
+                        </video>
+                    </metadata>
+                </fits>
+            </premis3:objectCharacteristicsExtension>
+        </premis3:objectCharacteristics>
+        <premis3:objectIdentifier>
+            <premis3:objectIdentifierType>Fedora Datastream PID</premis3:objectIdentifierType>
+            <premis3:objectIdentifierValue>http://example.com/object</premis3:objectIdentifierValue>
+        </premis3:objectIdentifier>
+    </premis3:object>
+</premis3:premis>
