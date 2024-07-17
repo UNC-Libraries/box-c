@@ -4,6 +4,7 @@ import static edu.unc.lib.boxc.auth.api.services.DatastreamPermissionUtil.getPer
 import static edu.unc.lib.boxc.model.api.DatastreamType.ORIGINAL_FILE;
 import static org.apache.http.HttpHeaders.CONTENT_LENGTH;
 import static org.apache.http.HttpHeaders.CONTENT_TYPE;
+import static org.apache.http.HttpHeaders.RANGE;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -143,7 +144,7 @@ public class FedoraContentService {
         try {
             var getRequest = client.get(pid.getRepositoryUri());
             if (range != null) {
-                getRequest.addHeader("Range", range);
+                getRequest.addHeader(RANGE, range);
             }
 
             return getRequest.perform();
