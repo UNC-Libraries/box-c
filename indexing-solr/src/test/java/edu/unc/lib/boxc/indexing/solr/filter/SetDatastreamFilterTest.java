@@ -22,7 +22,6 @@ import edu.unc.lib.boxc.model.fcrepo.ids.DatastreamPids;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.boxc.model.fcrepo.services.DerivativeService;
 import edu.unc.lib.boxc.model.fcrepo.services.DerivativeService.Derivative;
-import edu.unc.lib.boxc.model.fcrepo.test.TestHelper;
 import edu.unc.lib.boxc.search.solr.models.IndexDocumentBean;
 import org.apache.commons.io.FileUtils;
 import org.apache.jena.rdf.model.Model;
@@ -89,6 +88,30 @@ public class SetDatastreamFilterTest {
     private static final String FILE3_DIGEST = "urn:sha1:280f5922b6487c39d6d01a5a8e93bfa07b8f1740";
     private static final long FILE3_SIZE = 17136l;
     private static final String FILE3_EXTENT = "375x250";
+
+    private static final String FILE_MP3_MIMETYPE = "audio/mpeg";
+    private static final String FILE_MP3_NAME = "audio.mp3";
+    private static final String FILE_MP3_DIGEST = "urn:sha1:280f5922b6487c39d6d01a5a8e93bfa07b8f1760";
+    private static final long FILE_MP3_SIZE = 27136l;
+    private static final String FILE_MP3_EXTENT = "xx63";
+
+    private static final String FILE_MP4_MIMETYPE = "video/mp4";
+    private static final String FILE_MP4_NAME = "video.mp4";
+    private static final String FILE_MP4_DIGEST = "urn:sha1:280f5922b6487c39d6d01a5a8e93bfa07b8f3b60";
+    private static final long FILE_MP4_SIZE = 27136l;
+    private static final String FILE_MP4_EXTENT = "480x704x87";
+
+    private static final String FILE_MP4_MIMETYPE_NO_TRACKS = "video/mp4";
+    private static final String FILE_MP4_NAME_NO_TRACKS = "video_no_tracks.mp4";
+    private static final String FILE_MP4_DIGEST_NO_TRACKS = "urn:sha1:280f5922b6487c39d6d01a5a8e93bfa07b8f3b60";
+    private static final long FILE_MP4_SIZE_NO_TRACKS = 27136l;
+    private static final String FILE_MP4_EXTENT_NO_TRACKS = "480x640x4213";
+
+    private static final String FILE_MPEG_MIMETYPE = "video/mpg";
+    private static final String FILE_MPEG_NAME = "video.mpeg";
+    private static final String FILE_MPEG_DIGEST = "urn:sha1:3b0f5711b6487c39d6d01a5a8e93bfa07b8f3b60";
+    private static final long FILE_MPEG_SIZE = 27136l;
+    private static final String FILE_MPEG_EXTENT = "480x720x1";
 
     private static final String MODS_MIMETYPE = "text/xml";
     private static final String MODS_NAME = "mods.xml";
@@ -236,6 +259,165 @@ public class SetDatastreamFilterTest {
         assertEquals(FILE_SIZE, (long) idb.getFilesizeSort());
         // JP2 and thumbnail set to same size
         assertEquals(FILE_SIZE + FILE2_SIZE + (FILE3_SIZE * 2), (long) idb.getFilesizeTotal());
+    }
+
+    @Test
+    public void fileObjectAudioOnlyBinaryTest() throws Exception {
+        when(binObj.getResource()).thenReturn(
+                fileResource(ORIGINAL_FILE.getId(), FILE_MP3_SIZE, FILE_MP3_MIMETYPE, FILE_MP3_NAME, FILE_MP3_DIGEST));
+
+        BinaryObject binObj2 = mock(BinaryObject.class);
+        when(binObj2.getPid()).thenReturn(DatastreamPids.getTechnicalMetadataPid(pid));
+        when(binObj2.getResource()).thenReturn(
+                fileResource(TECHNICAL_METADATA.getId(), FILE2_SIZE, FILE2_MIMETYPE, FILE2_NAME, FILE2_DIGEST));
+        when(binObj2.getBinaryStream()).thenReturn(getClass().getResourceAsStream("/datastream/techmd_mp3.xml"));
+        when(fileObj.getBinaryObjects()).thenReturn(Arrays.asList(binObj, binObj2));
+        dip.setContentObject(fileObj);
+
+        filter.filter(dip);
+
+        assertContainsDatastream(idb.getDatastream(), ORIGINAL_FILE.getId(),
+                FILE_MP3_SIZE, FILE_MP3_MIMETYPE, FILE_MP3_NAME, FILE_MP3_DIGEST, null, FILE_MP3_EXTENT);
+        assertContainsDatastream(idb.getDatastream(), TECHNICAL_METADATA.getId(),
+                FILE2_SIZE, FILE2_MIMETYPE, FILE2_NAME, FILE2_DIGEST, null, null);
+    }
+
+    @Test
+    public void fileObjectDurationWithMillisecondsNoSeparateMillisecondsFieldBinaryTest() throws Exception {
+        when(binObj.getResource()).thenReturn(
+                fileResource(ORIGINAL_FILE.getId(), FILE_MP3_SIZE, FILE_MP3_MIMETYPE, FILE_MP3_NAME, FILE_MP3_DIGEST));
+
+        BinaryObject binObj2 = mock(BinaryObject.class);
+        when(binObj2.getPid()).thenReturn(DatastreamPids.getTechnicalMetadataPid(pid));
+        when(binObj2.getResource()).thenReturn(
+                fileResource(TECHNICAL_METADATA.getId(), FILE2_SIZE, FILE2_MIMETYPE, FILE2_NAME, FILE2_DIGEST));
+        when(binObj2.getBinaryStream()).thenReturn(getClass()
+                .getResourceAsStream("/datastream/techmd_no_milliseconds_field.xml"));
+        when(fileObj.getBinaryObjects()).thenReturn(Arrays.asList(binObj, binObj2));
+        dip.setContentObject(fileObj);
+
+        filter.filter(dip);
+
+        assertContainsDatastream(idb.getDatastream(), ORIGINAL_FILE.getId(),
+                FILE_MP3_SIZE, FILE_MP3_MIMETYPE, FILE_MP3_NAME, FILE_MP3_DIGEST, null, FILE_MP3_EXTENT);
+        assertContainsDatastream(idb.getDatastream(), TECHNICAL_METADATA.getId(),
+                FILE2_SIZE, FILE2_MIMETYPE, FILE2_NAME, FILE2_DIGEST, null, null);
+    }
+
+    @Test
+    public void fileObjectVideoAudioBinaryTest() throws Exception {
+        when(binObj.getResource()).thenReturn(
+                fileResource(ORIGINAL_FILE.getId(), FILE_MP4_SIZE, FILE_MP4_MIMETYPE, FILE_MP4_NAME,
+                        FILE_MP4_DIGEST));
+
+        BinaryObject binObj2 = mock(BinaryObject.class);
+        when(binObj2.getPid()).thenReturn(DatastreamPids.getTechnicalMetadataPid(pid));
+        when(binObj2.getResource()).thenReturn(
+                fileResource(TECHNICAL_METADATA.getId(), FILE2_SIZE, FILE2_MIMETYPE, FILE2_NAME, FILE2_DIGEST));
+        when(binObj2.getBinaryStream()).thenReturn(getClass().getResourceAsStream("/datastream/techmd_mp4.xml"));
+
+        when(fileObj.getBinaryObjects()).thenReturn(Arrays.asList(binObj, binObj2));
+        dip.setContentObject(fileObj);
+
+        filter.filter(dip);
+
+        assertContainsDatastream(idb.getDatastream(), ORIGINAL_FILE.getId(),
+                FILE_MP4_SIZE, FILE_MP4_MIMETYPE, FILE_MP4_NAME, FILE_MP4_DIGEST, null, FILE_MP4_EXTENT);
+        assertContainsDatastream(idb.getDatastream(), TECHNICAL_METADATA.getId(),
+                FILE2_SIZE, FILE2_MIMETYPE, FILE2_NAME, FILE2_DIGEST, null, null);
+    }
+
+    @Test
+    public void fileObjectVideoInfoOnlyBinaryTest() throws Exception {
+        when(binObj.getResource()).thenReturn(
+                fileResource(ORIGINAL_FILE.getId(), FILE_MPEG_SIZE, FILE_MPEG_MIMETYPE, FILE_MPEG_NAME,
+                        FILE_MPEG_DIGEST));
+
+        BinaryObject binObj2 = mock(BinaryObject.class);
+        when(binObj2.getPid()).thenReturn(DatastreamPids.getTechnicalMetadataPid(pid));
+        when(binObj2.getResource()).thenReturn(
+                fileResource(TECHNICAL_METADATA.getId(), FILE2_SIZE, FILE2_MIMETYPE, FILE2_NAME, FILE2_DIGEST));
+        when(binObj2.getBinaryStream()).thenReturn(getClass().getResourceAsStream("/datastream/techmd_mpeg.xml"));
+
+        when(fileObj.getBinaryObjects()).thenReturn(Arrays.asList(binObj, binObj2));
+        dip.setContentObject(fileObj);
+
+        filter.filter(dip);
+
+        assertContainsDatastream(idb.getDatastream(), ORIGINAL_FILE.getId(),
+                FILE_MPEG_SIZE, FILE_MPEG_MIMETYPE, FILE_MPEG_NAME, FILE_MPEG_DIGEST, null, FILE_MPEG_EXTENT);
+        assertContainsDatastream(idb.getDatastream(), TECHNICAL_METADATA.getId(),
+                FILE2_SIZE, FILE2_MIMETYPE, FILE2_NAME, FILE2_DIGEST, null, null);
+    }
+
+    @Test
+    public void fileObjectVideoInfoNoTracksBinaryTest() throws Exception {
+        when(binObj.getResource()).thenReturn(
+                fileResource(ORIGINAL_FILE.getId(), FILE_MP4_SIZE_NO_TRACKS, FILE_MP4_MIMETYPE_NO_TRACKS,
+                        FILE_MP4_NAME_NO_TRACKS, FILE_MP4_DIGEST_NO_TRACKS));
+
+        BinaryObject binObj2 = mock(BinaryObject.class);
+        when(binObj2.getPid()).thenReturn(DatastreamPids.getTechnicalMetadataPid(pid));
+        when(binObj2.getResource()).thenReturn(
+                fileResource(TECHNICAL_METADATA.getId(), FILE2_SIZE, FILE2_MIMETYPE, FILE2_NAME, FILE2_DIGEST));
+        when(binObj2.getBinaryStream()).thenReturn(getClass().getResourceAsStream("/datastream/techmd_mp4_no_tracks.xml"));
+
+        when(fileObj.getBinaryObjects()).thenReturn(Arrays.asList(binObj, binObj2));
+        dip.setContentObject(fileObj);
+
+        filter.filter(dip);
+
+        assertContainsDatastream(idb.getDatastream(), ORIGINAL_FILE.getId(),
+                FILE_MP4_SIZE_NO_TRACKS, FILE_MP4_MIMETYPE_NO_TRACKS, FILE_MP4_NAME_NO_TRACKS,
+                FILE_MP4_DIGEST_NO_TRACKS, null, FILE_MP4_EXTENT_NO_TRACKS);
+        assertContainsDatastream(idb.getDatastream(), TECHNICAL_METADATA.getId(),
+                FILE2_SIZE, FILE2_MIMETYPE, FILE2_NAME, FILE2_DIGEST, null, null);
+    }
+
+    @Test
+    public void fileObjectVideoNoDurationBinaryTest() throws Exception {
+        when(binObj.getResource()).thenReturn(
+                fileResource(ORIGINAL_FILE.getId(), FILE_MPEG_SIZE, FILE_MPEG_MIMETYPE, FILE_MPEG_NAME,
+                        FILE_MPEG_DIGEST));
+
+        BinaryObject binObj2 = mock(BinaryObject.class);
+        when(binObj2.getPid()).thenReturn(DatastreamPids.getTechnicalMetadataPid(pid));
+        when(binObj2.getResource()).thenReturn(
+                fileResource(TECHNICAL_METADATA.getId(), FILE2_SIZE, FILE2_MIMETYPE, FILE2_NAME, FILE2_DIGEST));
+        when(binObj2.getBinaryStream()).thenReturn(getClass().getResourceAsStream("/datastream/techmd_no_duration.xml"));
+
+        when(fileObj.getBinaryObjects()).thenReturn(Arrays.asList(binObj, binObj2));
+        dip.setContentObject(fileObj);
+
+        filter.filter(dip);
+
+        assertContainsDatastream(idb.getDatastream(), ORIGINAL_FILE.getId(),
+                FILE_MPEG_SIZE, FILE_MPEG_MIMETYPE, FILE_MPEG_NAME, FILE_MPEG_DIGEST, null, "480x720x-1");
+        assertContainsDatastream(idb.getDatastream(), TECHNICAL_METADATA.getId(),
+                FILE2_SIZE, FILE2_MIMETYPE, FILE2_NAME, FILE2_DIGEST, null, null);
+    }
+
+    @Test
+    public void fileObjectVideoNoHeightWidthBinaryTest() throws Exception {
+        when(binObj.getResource()).thenReturn(
+                fileResource(ORIGINAL_FILE.getId(), FILE_MPEG_SIZE, FILE_MPEG_MIMETYPE, FILE_MPEG_NAME,
+                        FILE_MPEG_DIGEST));
+
+        BinaryObject binObj2 = mock(BinaryObject.class);
+        when(binObj2.getPid()).thenReturn(DatastreamPids.getTechnicalMetadataPid(pid));
+        when(binObj2.getResource()).thenReturn(
+                fileResource(TECHNICAL_METADATA.getId(), FILE2_SIZE, FILE2_MIMETYPE, FILE2_NAME, FILE2_DIGEST));
+        when(binObj2.getBinaryStream()).thenReturn(getClass().getResourceAsStream("/datastream/techmd_no_height_width.xml"));
+
+        when(fileObj.getBinaryObjects()).thenReturn(Arrays.asList(binObj, binObj2));
+        dip.setContentObject(fileObj);
+
+        filter.filter(dip);
+
+        assertContainsDatastream(idb.getDatastream(), ORIGINAL_FILE.getId(),
+                FILE_MPEG_SIZE, FILE_MPEG_MIMETYPE, FILE_MPEG_NAME, FILE_MPEG_DIGEST, null, "xx87");
+        assertContainsDatastream(idb.getDatastream(), TECHNICAL_METADATA.getId(),
+                FILE2_SIZE, FILE2_MIMETYPE, FILE2_NAME, FILE2_DIGEST, null, null);
     }
 
     @Test

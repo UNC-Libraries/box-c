@@ -3,7 +3,6 @@ package edu.unc.lib.boxc.indexing.solr.filter;
 import edu.unc.lib.boxc.indexing.solr.exception.IndexingException;
 import edu.unc.lib.boxc.indexing.solr.indexing.DocumentIndexingPackage;
 import edu.unc.lib.boxc.indexing.solr.utils.Jp2InfoService;
-import edu.unc.lib.boxc.indexing.solr.utils.KduJp2InfoService;
 import edu.unc.lib.boxc.indexing.solr.utils.TechnicalMetadataService;
 import edu.unc.lib.boxc.model.api.DatastreamType;
 import edu.unc.lib.boxc.model.api.exceptions.FedoraException;
@@ -32,6 +31,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import static edu.unc.lib.boxc.model.api.DatastreamType.JP2_ACCESS_COPY;
@@ -55,6 +56,9 @@ public class SetDatastreamFilter implements IndexDocumentFilter {
     private TechnicalMetadataService technicalMetadataService;
     private Jp2InfoService jp2InfoService;
     private static final List<DatastreamType> THUMBNAIL_DS_TYPES = Arrays.asList(DatastreamType.THUMBNAIL_SMALL, DatastreamType.THUMBNAIL_LARGE);
+    // Check for hours, minutes, seconds. Optional non-capturing check for milliseconds
+    private final Pattern TIMING_REGEX = Pattern.compile("\\d+:\\d+:\\d+(?::\\d+)?");
+    private final String FITS_VIDEO_NAME = "video";
 
     @Override
     public void filter(DocumentIndexingPackage dip) throws IndexingException {
@@ -117,7 +121,6 @@ public class SetDatastreamFilter implements IndexDocumentFilter {
         }
 
         String fitsId = fits.getPid().getId();
-        String extent = null;
 
         try {
             var techMdDoc = technicalMetadataService.retrieveDocument(fits);
@@ -129,27 +132,118 @@ public class SetDatastreamFilter implements IndexDocumentFilter {
 
             if (fitsMd != null) {
                 Element imgMd = fitsMd.getChild("image", FITS_NS);
-
                 if (imgMd != null) {
                     String imgHeight = imgMd.getChildTextTrim("imageHeight", FITS_NS);
                     String imgWidth = imgMd.getChildTextTrim("imageWidth", FITS_NS);
-                    if (!StringUtils.isBlank(imgHeight) && !StringUtils.isBlank(imgWidth)) {
-                        try {
-                            Integer.parseInt(imgHeight);
-                            Integer.parseInt(imgWidth);
-                            extent = imgHeight + "x" + imgWidth;
-                        } catch (NumberFormatException e) {
-                            log.warn("Invalid image width or height from FITS {}: {} x {}",
-                                    fits.getPid().getQualifiedId(), imgWidth, imgHeight);
-                        }
-                    }
+                    return formatDimensionExtent(imgHeight, imgWidth, fits.getPid().getQualifiedId());
+                }
+
+                Element videoMd = fitsMd.getChild(FITS_VIDEO_NAME, FITS_NS);
+                if (videoMd != null) {
+                    return formatVideoExtent(videoMd, fits.getPid().getQualifiedId());
+                }
+
+                Element audioMd = fitsMd.getChild("audio", FITS_NS);
+                if (audioMd != null) {
+                    var audioTime = formatTime(audioMd);
+                    return "xx" + audioTime;
                 }
             }
-            return extent;
+
+            return null;
         } catch (RepositoryException | FedoraException e) {
             log.warn("Unable to parse FITS for {}", fitsId, e);
             return null;
+        } catch (NumberFormatException e) {
+            log.warn("Unable to parse audio/video track time for {}", fitsId, e);
+            return null;
         }
+    }
+
+    private String formatVideoExtent(Element videoMd, String pid) {
+        var videoInfo = videoMd;
+        var trackInfo = videoMd.getChildren("track", FITS_NS);
+
+        var numTracks = trackInfo.size();
+        if (numTracks > 0) {
+            var videoTrack = 0;
+            for (int i = 0; i < numTracks; i++) {
+                var type = trackInfo.get(i).getAttributeValue("type");
+                if (FITS_VIDEO_NAME.equals(type)) {
+                    videoTrack = i;
+                    break;
+                }
+            }
+            videoInfo = trackInfo.get(videoTrack);
+        }
+
+        var videoHeight = getDimensionValue(videoInfo, "height");
+        var videoWidth = getDimensionValue(videoInfo, "width");
+        var extent = formatDimensionExtent(videoHeight, videoWidth, pid);
+
+        return (extent == null) ? "xx" + formatTime(videoMd) : extent + "x" + formatTime(videoMd);
+    }
+
+    private String getDimensionValue(Element field, String dimensionType) {
+        var value = field.getChildTextTrim(dimensionType, FITS_NS);
+        if (value == null) {
+            value = field.getChildTextTrim("image" + StringUtils.capitalize(dimensionType), FITS_NS);
+        }
+
+        return value;
+    }
+
+    private String formatTime(Element durationElement) {
+        var durationMilliseconds = durationElement.getChild("milliseconds", FITS_NS);
+        var duration  = durationElement.getChild("duration", FITS_NS);
+
+        if (durationMilliseconds != null) {
+            return normalizeTime(durationMilliseconds.getTextTrim());
+        }
+
+        if (duration != null) {
+            return normalizeTime(duration.getTextTrim());
+        }
+
+        return "-1";
+    }
+
+    private String normalizeTime(String duration) {
+        Matcher matcher = TIMING_REGEX.matcher(duration);
+        boolean matchFound = matcher.find();
+
+        if (matchFound) {
+            var durationParts = duration.split(":");
+            var hoursToSeconds = Integer.parseInt(durationParts[0]) * 60 * 60;
+            var minutesToSeconds = Integer.parseInt(durationParts[1]) * 60;
+            var seconds = Integer.parseInt(durationParts[2]);
+            var millisecondsToSeconds = (durationParts.length == 4) ? millisecondsToSeconds(durationParts[3]) : 0;
+
+            return Integer.toString(hoursToSeconds + minutesToSeconds + seconds + millisecondsToSeconds);
+        }
+
+        return Integer.toString(millisecondsToSeconds(duration));
+    }
+
+    private Integer millisecondsToSeconds(String duration) {
+        var durationToSeconds = Integer.parseInt(duration) / 1000.0;
+        return (int) Math.ceil(durationToSeconds);
+    }
+
+    private String formatDimensionExtent(String imgHeight, String imgWidth, String pid) {
+        if (!StringUtils.isBlank(imgHeight) && !StringUtils.isBlank(imgWidth)) {
+            try {
+                var adjustedHeight = Integer.parseInt(imgHeight.replaceAll("[\\sa-zA-Z]", ""));
+                var adjustedWidth = Integer.parseInt(imgWidth.replaceAll("[\\sa-zA-Z]", ""));
+                return adjustedHeight + "x" + adjustedWidth;
+            } catch (NumberFormatException e) {
+                log.warn("Invalid width or height from FITS {}: {} x {}",
+                        pid, imgWidth, imgHeight);
+                return null;
+            }
+        }
+
+        return null;
     }
 
     /**
@@ -182,11 +276,16 @@ public class SetDatastreamFilter implements IndexDocumentFilter {
 
                 String owner = ownedByOtherObject ? binary.getPid().getId() : null;
 
-                String extentValue = (name.equals(ORIGINAL_FILE.getId()) &&
-                        mimetype != null && mimetype.startsWith("image")) ? getExtent(binList) : null;
+                String extentValue = (needsExtent(name, mimetype)) ? getExtent(binList) : null;
                 dsList.add(new DatastreamImpl(owner, name, filesize, mimetype,
                         filename, extension, checksum, extentValue));
             });
+    }
+
+    private boolean needsExtent(String name, String mimetype) {
+        return name.equals(ORIGINAL_FILE.getId()) &&
+                mimetype != null && (mimetype.startsWith("image") || mimetype.startsWith(FITS_VIDEO_NAME)
+                || mimetype.startsWith("audio"));
     }
 
     private String getFirstChecksum(Resource resc) {
