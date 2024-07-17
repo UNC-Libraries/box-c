@@ -15,14 +15,21 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 
+import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 
 import static edu.unc.lib.boxc.model.api.DatastreamType.ORIGINAL_FILE;
 import static edu.unc.lib.boxc.model.fcrepo.test.TestHelper.makePid;
+import static org.apache.http.HttpHeaders.CONTENT_LENGTH;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.openMocks;
 
@@ -45,6 +52,8 @@ public class FedoraContentServiceTest {
     private GetBuilder builder;
     @Mock
     private FcrepoResponse fcrepoResponse;
+    @Mock
+    private ServletOutputStream outputStream;
 
     @BeforeEach
     public void setup() {
@@ -87,9 +96,12 @@ public class FedoraContentServiceTest {
         when(binaryObject.getPid()).thenReturn(pid);
         when(fcrepoClient.get(any())).thenReturn(builder);
         when(builder.perform()).thenReturn(fcrepoResponse);
-
-
+        when(fcrepoResponse.getBody()).thenReturn(new ByteArrayInputStream("image".getBytes(StandardCharsets.UTF_8)));
+        when(response.getOutputStream()).thenReturn(outputStream);
+        when(fcrepoResponse.getHeaderValue(CONTENT_LENGTH)).thenReturn("5");
 
         fedoraContentService.streamData(pid, ORIGINAL_FILE.getId(), false, response, null);
+
+        verify(response).setHeader(CONTENT_LENGTH, "5");
     }
 }
