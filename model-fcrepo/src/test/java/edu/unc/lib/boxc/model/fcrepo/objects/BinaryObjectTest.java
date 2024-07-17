@@ -2,6 +2,7 @@ package edu.unc.lib.boxc.model.fcrepo.objects;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
@@ -121,7 +122,7 @@ public class BinaryObjectTest extends AbstractFedoraObjectTest {
 
     @Test
     public void testGetBinaryStream() {
-        when(driver.getBinaryStream(binObj)).thenReturn(stream);
+        when(driver.getBinaryStream(eq(binObj))).thenReturn(stream);
         assertEquals(binObj.getBinaryStream(), stream);
     }
 

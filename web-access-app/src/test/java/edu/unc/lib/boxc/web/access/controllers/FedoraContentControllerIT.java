@@ -12,7 +12,7 @@ import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
 import edu.unc.lib.boxc.model.fcrepo.ids.DatastreamPids;
 import edu.unc.lib.boxc.model.fcrepo.test.TestHelper;
 import edu.unc.lib.boxc.persist.impl.storage.StorageLocationTestHelper;
-import org.apache.commons.io.FileUtils;
+import org.fcrepo.client.FcrepoClient;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -28,15 +28,14 @@ import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
-import java.io.File;
 import java.net.URI;
-import java.nio.file.Files;
 import java.nio.file.Path;
 
 import static edu.unc.lib.boxc.model.api.DatastreamType.TECHNICAL_METADATA;
 import static edu.unc.lib.boxc.model.fcrepo.ids.DatastreamPids.getTechnicalMetadataPid;
 import static edu.unc.lib.boxc.model.fcrepo.test.TestHelper.makePid;
 import static edu.unc.lib.boxc.web.common.services.FedoraContentService.CONTENT_DISPOSITION;
+import static org.apache.http.HttpHeaders.RANGE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -106,6 +105,27 @@ public class FedoraContentControllerIT {
         assertEquals(BINARY_CONTENT, response.getContentAsString());
 
         assertEquals(BINARY_CONTENT.length(), response.getContentLength());
+        assertEquals("text/plain", response.getContentType());
+        assertEquals("inline; filename=\"file.txt\"", response.getHeader(CONTENT_DISPOSITION));
+    }
+
+    @Test
+    public void testGetDatastreamWithRange() throws Exception {
+        PID filePid = makePid();
+
+        FileObject fileObj = repositoryObjectFactory.createFileObject(filePid, null);
+        fileObj.addOriginalFile(makeContentUri(originalPid(fileObj), BINARY_CONTENT), "file.txt", "text/plain", null, null);
+
+        MvcResult result = mvc.perform(get("/content/" + filePid.getId())
+                        .header(RANGE,"bytes=0-9"))
+                .andExpect(status().is2xxSuccessful())
+                .andReturn();
+
+        // Verify content was retrieved
+        MockHttpServletResponse response = result.getResponse();
+        assertEquals(BINARY_CONTENT.substring(0,10), response.getContentAsString());
+
+        assertEquals(10, response.getContentAsString().length());
         assertEquals("text/plain", response.getContentType());
         assertEquals("inline; filename=\"file.txt\"", response.getHeader(CONTENT_DISPOSITION));
     }
@@ -207,6 +227,52 @@ public class FedoraContentControllerIT {
         assertEquals(content, response.getContentAsString());
 
         assertEquals(content.length(), response.getContentLength());
+        assertEquals("application/xml", response.getContentType());
+        assertEquals("inline; filename=\"fits.xml\"", response.getHeader(CONTENT_DISPOSITION));
+    }
+
+    @Test
+    public void testGetMultipleDatastreamsWithRange() throws Exception {
+        testGetMultipleDatastreamsWithRange("/content/");
+    }
+
+    @Test
+    public void testGetMultipleIndexableDatastreamsWithRange() throws Exception {
+        testGetMultipleDatastreamsWithRange("/indexablecontent/");
+    }
+
+    private void testGetMultipleDatastreamsWithRange(String requestPath) throws Exception {
+        PID filePid = makePid();
+
+        String content = "<fits>content</fits>";
+
+        FileObject fileObj = repositoryObjectFactory.createFileObject(filePid, null);
+        fileObj.addOriginalFile(makeContentUri(originalPid(fileObj), BINARY_CONTENT), null, "text/plain", null, null);
+        PID fitsPid = getTechnicalMetadataPid(fileObj.getPid());
+        fileObj.addBinary(fitsPid, makeContentUri(fitsPid, content), "fits.xml", "application/xml", null, null, null);
+
+        // Verify original file content retrievable
+        MvcResult result1 = mvc.perform(get(requestPath + filePid.getId())
+                        .header(RANGE,"bytes=0-9"))
+                .andExpect(status().is2xxSuccessful())
+                .andReturn();
+
+        var contentAsString = result1.getResponse().getContentAsString();
+        var binaryContentSubString = BINARY_CONTENT.substring(0,10);
+        assertEquals(binaryContentSubString.length(), contentAsString.length());
+        assertEquals(binaryContentSubString, contentAsString);
+
+        // Verify administrative datastream retrievable
+        MvcResult result2 = mvc.perform(get(requestPath + filePid.getId() + "/" + TECHNICAL_METADATA.getId())
+                        .header(RANGE,"bytes=0-9"))
+                .andExpect(status().is2xxSuccessful())
+                .andReturn();
+
+        MockHttpServletResponse response = result2.getResponse();
+        var contentSubstring = content.substring(0,10);
+        assertEquals(contentSubstring, response.getContentAsString());
+
+        assertEquals(contentSubstring.length(), response.getContentLength());
         assertEquals("application/xml", response.getContentType());
         assertEquals("inline; filename=\"fits.xml\"", response.getHeader(CONTENT_DISPOSITION));
     }
