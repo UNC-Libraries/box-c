@@ -56,8 +56,9 @@ public class SetDatastreamFilter implements IndexDocumentFilter {
     private TechnicalMetadataService technicalMetadataService;
     private Jp2InfoService jp2InfoService;
     private static final List<DatastreamType> THUMBNAIL_DS_TYPES = Arrays.asList(DatastreamType.THUMBNAIL_SMALL, DatastreamType.THUMBNAIL_LARGE);
-    // Check for hours, minutes, seconds. Optional non-capturing check for milliseconds
-    private final Pattern TIMING_REGEX = Pattern.compile("\\d+:\\d+:\\d+(?:(?:\\.|:)\\d+)?");
+    // Check for hours, minutes, seconds. Optional non-capturing check for milliseconds separted from seconds
+    // by a "." or a ":".
+    private final Pattern TIMING_REGEX = Pattern.compile("\\d+:\\d+:\\d+(?:[.:]\\d+)?");
     private final String FITS_VIDEO_NAME = "video";
 
     @Override
