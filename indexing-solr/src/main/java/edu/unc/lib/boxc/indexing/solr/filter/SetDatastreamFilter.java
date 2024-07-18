@@ -57,7 +57,7 @@ public class SetDatastreamFilter implements IndexDocumentFilter {
     private Jp2InfoService jp2InfoService;
     private static final List<DatastreamType> THUMBNAIL_DS_TYPES = Arrays.asList(DatastreamType.THUMBNAIL_SMALL, DatastreamType.THUMBNAIL_LARGE);
     // Check for hours, minutes, seconds. Optional non-capturing check for milliseconds
-    private final Pattern TIMING_REGEX = Pattern.compile("\\d+:\\d+:\\d+(?::\\d+)?");
+    private final Pattern TIMING_REGEX = Pattern.compile("\\d+:\\d+:\\d+(?:(?:\\.|:)\\d+)?");
     private final String FITS_VIDEO_NAME = "video";
 
     @Override
@@ -216,8 +216,16 @@ public class SetDatastreamFilter implements IndexDocumentFilter {
             var durationParts = duration.split(":");
             var hoursToSeconds = Integer.parseInt(durationParts[0]) * 60 * 60;
             var minutesToSeconds = Integer.parseInt(durationParts[1]) * 60;
-            var seconds = Integer.parseInt(durationParts[2]);
-            var millisecondsToSeconds = (durationParts.length == 4) ? millisecondsToSeconds(durationParts[3]) : 0;
+            var secondsWithMilliseconds = durationParts[2].split("\\.");
+            var seconds =  Integer.parseInt(secondsWithMilliseconds[0]);
+            var milliseconds = "0";
+            if (secondsWithMilliseconds.length == 2) {
+                milliseconds = secondsWithMilliseconds[1];
+            } else if (durationParts.length == 4) {
+                milliseconds = durationParts[3];
+            }
+
+            var millisecondsToSeconds = millisecondsToSeconds(milliseconds);
 
             return Integer.toString(hoursToSeconds + minutesToSeconds + seconds + millisecondsToSeconds);
         }
