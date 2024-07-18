@@ -15,6 +15,7 @@ import edu.unc.lib.boxc.web.services.processing.SingleUseKeyService;
 import edu.unc.lib.boxc.web.services.rest.exceptions.RestResponseEntityExceptionHandler;
 import edu.unc.lib.boxc.web.services.rest.modify.AbstractAPIIT;
 import org.apache.commons.io.FileUtils;
+import org.fcrepo.client.FcrepoClient;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -71,10 +72,10 @@ public class SingleUseKeyControllerIT extends AbstractAPIIT {
     public Path tmpFolder;
 
     private SingleUseKeyService singleUseKeyService;
-    @Autowired
-    private RepositoryObjectFactory repositoryObjectFactory;
     @Mock
     private AnalyticsTrackerUtil analyticsTrackerUtil;
+    @Autowired
+    private FcrepoClient fcrepoClient;
     private FedoraContentService fedoraContentService;
     @InjectMocks
     private SingleUseKeyController controller;
@@ -86,6 +87,7 @@ public class SingleUseKeyControllerIT extends AbstractAPIIT {
         fedoraContentService = new FedoraContentService();
         fedoraContentService.setAccessControlService(aclService);
         fedoraContentService.setRepositoryObjectLoader(repositoryObjectLoader);
+        fedoraContentService.setClient(fcrepoClient);
         singleUseKeyService = new SingleUseKeyService();
         controller.setFedoraContentService(fedoraContentService);
         controller.setSingleUseKeyService(singleUseKeyService);

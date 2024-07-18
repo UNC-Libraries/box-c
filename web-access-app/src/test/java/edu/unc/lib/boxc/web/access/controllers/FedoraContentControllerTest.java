@@ -66,7 +66,7 @@ public class FedoraContentControllerTest {
         PID pid = TestHelper.makePid();
         doThrow(new EofException((String) null))
                 .when(fedoraContentService)
-                .streamData(any(), any(), anyBoolean(), any());
+                .streamData(any(), any(), anyBoolean(), any(), any());
         mvc.perform(get("/content/" + pid.getId()))
                 .andExpect(status().isBadRequest())
                 .andReturn();
@@ -77,7 +77,7 @@ public class FedoraContentControllerTest {
         PID pid = TestHelper.makePid();
         doThrow(new IOException(new EofException((String) null)))
                 .when(fedoraContentService)
-                .streamData(any(), any(), anyBoolean(), any());
+                .streamData(any(), any(), anyBoolean(), any(), any());
         mvc.perform(get("/content/" + pid.getId()))
                 .andExpect(status().isBadRequest())
                 .andReturn();
@@ -88,7 +88,7 @@ public class FedoraContentControllerTest {
         PID pid = TestHelper.makePid();
         doThrow(new IOException(new TimeoutException()))
                 .when(fedoraContentService)
-                .streamData(any(), any(), anyBoolean(), any());
+                .streamData(any(), any(), anyBoolean(), any(), any());
         mvc.perform(get("/content/" + pid.getId()))
                 .andExpect(status().isBadRequest())
                 .andReturn();
@@ -99,7 +99,7 @@ public class FedoraContentControllerTest {
         PID pid = TestHelper.makePid();
         doThrow(new IOException())
                 .when(fedoraContentService)
-                .streamData(any(), any(), anyBoolean(), any());
+                .streamData(any(), any(), anyBoolean(), any(), any());
         mvc.perform(get("/content/" + pid.getId()))
                 .andExpect(status().isBadRequest())
                 .andReturn();

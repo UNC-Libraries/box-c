@@ -4,6 +4,7 @@ import static edu.unc.lib.boxc.auth.api.services.DatastreamPermissionUtil.getPer
 import static edu.unc.lib.boxc.model.api.DatastreamType.ORIGINAL_FILE;
 import static org.apache.http.HttpHeaders.CONTENT_LENGTH;
 import static org.apache.http.HttpHeaders.CONTENT_TYPE;
+import static org.apache.http.HttpHeaders.RANGE;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -12,11 +13,15 @@ import java.io.OutputStream;
 
 import javax.servlet.http.HttpServletResponse;
 
+import edu.unc.lib.boxc.fcrepo.utils.ClientFaultResolver;
 import org.apache.commons.io.IOUtils;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.riot.RDFDataMgr;
 import org.apache.jena.riot.RDFFormat;
 import org.apache.jena.riot.WebContent;
+import org.fcrepo.client.FcrepoClient;
+import org.fcrepo.client.FcrepoOperationFailedException;
+import org.fcrepo.client.FcrepoResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -48,6 +53,7 @@ public class FedoraContentService {
     private AccessControlService accessControlService;
 
     private RepositoryObjectLoader repositoryObjectLoader;
+    private FcrepoClient client;
 
     /**
      * Set content headers and stream the binary content of the specified
@@ -56,14 +62,14 @@ public class FedoraContentService {
      * @param pid pid of object containing datastream
      * @param dsName name of datastream being requested. If null, then original
      *            file datastream is assumed.
-     * @param principals principals of requesting client
      * @param asAttachment if true, then content-disposition header will specify
      *            as "attachment" instead of "inline"
      * @param response response content and headers will be added to.
+     * @param range requested byte range of datastream (optional)
      * @throws IOException if unable to stream content to the response.
      */
     public void streamData(PID pid, String dsName, boolean asAttachment,
-            HttpServletResponse response) throws IOException {
+            HttpServletResponse response, String range) throws IOException {
         // Default datastream is DATA_FILE
         String datastream = dsName == null ? ORIGINAL_FILE.getId() : dsName;
 
@@ -87,8 +93,6 @@ public class FedoraContentService {
             binObj = repositoryObjectLoader.getBinaryObject(dsPid);
         }
 
-        // Set binary detail response headers
-        response.setHeader(CONTENT_LENGTH, Long.toString(binObj.getFilesize()));
         response.setHeader(CONTENT_TYPE, binObj.getMimetype());
         String binaryName = binObj.getFilename();
         String filename = binaryName == null ? pid.getId() : binaryName;
@@ -98,8 +102,9 @@ public class FedoraContentService {
             response.setHeader(CONTENT_DISPOSITION, "inline; filename=\"" + filename + "\"");
         }
 
-        // Stream binary content to http response
-        try (InputStream binStream = binObj.getBinaryStream()) {
+        try (FcrepoResponse fedoraResponse = getFedoraResponse(binObj, range)) {
+            response.setHeader(CONTENT_LENGTH, fedoraResponse.getHeaderValue(CONTENT_LENGTH));
+            InputStream binStream = fedoraResponse.getBody();
             OutputStream outStream = response.getOutputStream();
             IOUtils.copy(binStream, outStream, BUFFER_SIZE);
         }
@@ -133,6 +138,21 @@ public class FedoraContentService {
         }
     }
 
+    private FcrepoResponse getFedoraResponse(BinaryObject obj, String range) {
+        PID pid = obj.getPid();
+
+        try {
+            var getRequest = client.get(pid.getRepositoryUri());
+            if (range != null) {
+                getRequest.addHeader(RANGE, range);
+            }
+
+            return getRequest.perform();
+        } catch (FcrepoOperationFailedException e) {
+            throw ClientFaultResolver.resolve(e);
+        }
+    }
+
     /**
      * @param accessControlService the accessControlService to set
      */
@@ -145,5 +165,9 @@ public class FedoraContentService {
      */
     public void setRepositoryObjectLoader(RepositoryObjectLoader repositoryObjectLoader) {
         this.repositoryObjectLoader = repositoryObjectLoader;
+    }
+
+    public void setClient(FcrepoClient client) {
+        this.client = client;
     }
 }

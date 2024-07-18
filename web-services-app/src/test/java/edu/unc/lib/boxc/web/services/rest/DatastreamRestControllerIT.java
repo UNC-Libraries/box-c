@@ -37,6 +37,7 @@ import org.apache.commons.io.IOUtils;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.vocabulary.RDF;
 import org.apache.solr.client.solrj.embedded.EmbeddedSolrServer;
+import org.fcrepo.client.FcrepoClient;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -89,7 +90,8 @@ public class DatastreamRestControllerIT extends AbstractAPIIT {
     private PremisLoggerFactory premisLoggerFactory;
     @Autowired
     private AnalyticsTrackerUtil analyticsTrackerUtil;
-
+    @Autowired
+    private FcrepoClient fcrepoClient;
     @Autowired
     private EmbeddedSolrServer embeddedSolrServer;
     private DatastreamController controller;
@@ -118,6 +120,7 @@ public class DatastreamRestControllerIT extends AbstractAPIIT {
         derivService.setDerivativeDir(derivDirPath);
 
         derivativeContentService.setDerivativeService(derivService);
+        fedoraContentService.setClient(fcrepoClient);
     }
 
     @Test

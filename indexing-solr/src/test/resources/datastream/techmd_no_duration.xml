@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<premis3:premis xmlns:premis3="http://www.loc.gov/premis/v3">
+    <script/>
+    <premis3:object xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="premis3:file">
+        <premis3:objectCharacteristics>
+            <premis3:compositionLevel>0</premis3:compositionLevel>
+            <premis3:format>
+                <premis3:formatDesignation>
+                    <premis3:formatName>MPEG-PS</premis3:formatName>
+                </premis3:formatDesignation>
+            </premis3:format>
+            <premis3:size>116736</premis3:size>
+            <premis3:objectCharacteristicsExtension>
+                <fits xmlns="http://hul.harvard.edu/ois/xml/ns/fits/fits_output" xsi:schemaLocation="http://hul.harvard.edu/ois/xml/ns/fits/fits_output http://hul.harvard.edu/ois/xml/xsd/fits/fits_output.xsd" version="1.6.0" timestamp="7/9/24, 4:38 PM">
+                    <identification status="CONFLICT">
+                        <identity format="MPEG-PS" mimetype="video/mpg" toolname="FITS" toolversion="1.6.0">
+                            <tool toolname="MediaInfo" toolversion="23.09"/>
+                        </identity>
+                        <identity format="symbolic link to `/opt/data/deposits/31d00601-78cd-480f-b9e8-9b319790f7a4/data/_a49114ad-2276-4e99-afda-67c2fa8f0a24'" mimetype="inode/symlink" toolname="FITS" toolversion="1.6.0">
+                            <tool toolname="file utility" toolversion="5.11"/>
+                        </identity>
+                    </identification>
+                    <fileinfo>
+                        <filepath toolname="OIS File Information" toolversion="1.0" status="SINGLE_RESULT">/path/to/video.mpeg</filepath>
+                        <filename toolname="OIS File Information" toolversion="1.0" status="SINGLE_RESULT">video.mpeg</filename>
+                        <size toolname="MediaInfo" toolversion="23.09">116736</size>
+                        <md5checksum toolname="OIS File Information" toolversion="1.0" status="SINGLE_RESULT">5f7973ff9e4152827994d4149c8af39d</md5checksum>
+                        <fslastmodified toolname="OIS File Information" toolversion="1.0" status="SINGLE_RESULT">1720543091535</fslastmodified>
+                    </fileinfo>
+                    <filestatus/>
+                    <metadata>
+                        <video>
+                            <location toolname="MediaInfo" toolversion="23.09" status="SINGLE_RESULT">/opt/data/deposits/31d00601-78cd-480f-b9e8-9b319790f7a4/data/_a49114ad-2276-4e99-afda-67c2fa8f0a24</location>
+                            <mimeType toolname="MediaInfo" toolversion="23.09" status="SINGLE_RESULT">video/mpg</mimeType>
+                            <format toolname="MediaInfo" toolversion="23.09" status="SINGLE_RESULT">MPEG-PS</format>
+                            <bitRate toolname="MediaInfo" toolversion="23.09" status="SINGLE_RESULT">1999760</bitRate>
+                            <dateModified toolname="MediaInfo" toolversion="23.09" status="SINGLE_RESULT">2024-07-09 16:38:11 UTC</dateModified>
+                            <track type="video" id="224" toolname="MediaInfo" toolversion="23.09" status="SINGLE_RESULT">
+                                <codecVersion>Main@Main</codecVersion>
+                                <codecName>MPEG Video</codecName>
+                                <compression>Lossy</compression>
+                                <byteOrder>Unknown</byteOrder>
+                                <bitDepth>8 bits</bitDepth>
+                                <bitRateMode>Constant</bitRateMode>
+                                <delay>233.566667</delay>
+                                <width>720 pixels</width>
+                                <height>480 pixels</height>
+                                <frameRate>29.970</frameRate>
+                                <frameCount>14</frameCount>
+                                <aspectRatio>4:3</aspectRatio>
+                                <scanningFormat>Interlaced</scanningFormat>
+                                <scanningOrder>TFF</scanningOrder>
+                                <chromaSubsampling>4:2:0</chromaSubsampling>
+                                <colorspace>YUV</colorspace>
+                                <broadcastStandard>NTSC</broadcastStandard>
+                            </track>
+                            <standard>
+                                <ebucore:ebuCoreMain xmlns:ebucore="urn:ebu:metadata-schema:ebuCore_2014">
+                                    <ebucore:coreMetadata>
+                                        <ebucore:format>
+                                            <ebucore:videoFormat>
+                                                <ebucore:width unit="pixel">720</ebucore:width>
+                                                <ebucore:height unit="pixel">480</ebucore:height>
+                                                <ebucore:frameRate factorNumerator="1000" factorDenominator="1001">30</ebucore:frameRate>
+                                                <ebucore:aspectRatio typeLabel="display">
+                                                    <ebucore:factorNumerator>4</ebucore:factorNumerator>
+                                                    <ebucore:factorDenominator>3</ebucore:factorDenominator>
+                                                </ebucore:aspectRatio>
+                                                <ebucore:bitRateMode>constant</ebucore:bitRateMode>
+                                                <ebucore:scanningFormat>interlaced</ebucore:scanningFormat>
+                                                <ebucore:videoTrack trackId="224"/>
+                                                <ebucore:technicalAttributeString typeLabel="chromaSubsampling">4:2:0</ebucore:technicalAttributeString>
+                                                <ebucore:technicalAttributeString typeLabel="colorspace">YUV</ebucore:technicalAttributeString>
+                                                <ebucore:technicalAttributeString typeLabel="byteOrder">unknown</ebucore:technicalAttributeString>
+                                                <ebucore:technicalAttributeString typeLabel="delay">233.566667</ebucore:technicalAttributeString>
+                                                <ebucore:technicalAttributeString typeLabel="compression">lossy</ebucore:technicalAttributeString>
+                                                <ebucore:technicalAttributeString typeLabel="broadcastStandard">NTSC</ebucore:technicalAttributeString>
+                                                <ebucore:technicalAttributeLong typeLabel="frameCount">14</ebucore:technicalAttributeLong>
+                                                <ebucore:technicalAttributeLong typeLabel="bitDepth">8</ebucore:technicalAttributeLong>
+                                                <ebucore:technicalAttributeLong typeLabel="duration">467</ebucore:technicalAttributeLong>
+                                            </ebucore:videoFormat>
+                                            <ebucore:audioFormatExtended/>
+                                            <ebucore:containerFormat>
+                                                <ebucore:comment typeLabel="format">MPEG-PS</ebucore:comment>
+                                            </ebucore:containerFormat>
+                                            <ebucore:mimeType typeLabel="video/mpg"/>
+                                            <ebucore:locator>/opt/data/deposits/31d00601-78cd-480f-b9e8-9b319790f7a4/data/_a49114ad-2276-4e99-afda-67c2fa8f0a24</ebucore:locator>
+                                            <ebucore:technicalAttributeString typeLabel="overallBitRate">1999760</ebucore:technicalAttributeString>
+                                            <ebucore:dateModified startTime="16:38:11Z" startDate="2024-07-09"/>
+                                        </ebucore:format>
+                                    </ebucore:coreMetadata>
+                                </ebucore:ebuCoreMain>
+                            </standard>
+                        </video>
+                    </metadata>
+                </fits>
+            </premis3:objectCharacteristicsExtension>
+        </premis3:objectCharacteristics>
+        <premis3:objectIdentifier>
+            <premis3:objectIdentifierType>Fedora Datastream PID</premis3:objectIdentifierType>
+            <premis3:objectIdentifierValue>http://example.com/object</premis3:objectIdentifierValue>
+        </premis3:objectIdentifier>
+    </premis3:object>
+</premis3:premis>
