@@ -56,9 +56,9 @@ public class SetDatastreamFilter implements IndexDocumentFilter {
     private TechnicalMetadataService technicalMetadataService;
     private Jp2InfoService jp2InfoService;
     private static final List<DatastreamType> THUMBNAIL_DS_TYPES = Arrays.asList(DatastreamType.THUMBNAIL_SMALL, DatastreamType.THUMBNAIL_LARGE);
-    // Check for hours, minutes, seconds. Optional non-capturing check for milliseconds separted from seconds
-    // by a "." or a ":".
-    private final Pattern TIMING_REGEX = Pattern.compile("\\d+:\\d+:\\d+(?:[.:]\\d+)?");
+    // Check for hours, minutes, seconds. Plus a check for optional milliseconds separated from seconds
+    // by a "." or a ":" via a non-capturing block followed by a capture group for the milliseconds.
+    private final Pattern TIMING_REGEX = Pattern.compile("(\\d+):(\\d+):(\\d+)(?:[.:](\\d+))?");
     private final String FITS_VIDEO_NAME = "video";
 
     @Override
@@ -214,19 +214,10 @@ public class SetDatastreamFilter implements IndexDocumentFilter {
         boolean matchFound = matcher.find();
 
         if (matchFound) {
-            var durationParts = duration.split(":");
-            var hoursToSeconds = Integer.parseInt(durationParts[0]) * 60 * 60;
-            var minutesToSeconds = Integer.parseInt(durationParts[1]) * 60;
-            var secondsWithMilliseconds = durationParts[2].split("\\.");
-            var seconds =  Integer.parseInt(secondsWithMilliseconds[0]);
-            var milliseconds = "0";
-            if (secondsWithMilliseconds.length == 2) {
-                milliseconds = secondsWithMilliseconds[1];
-            } else if (durationParts.length == 4) {
-                milliseconds = durationParts[3];
-            }
-
-            var millisecondsToSeconds = millisecondsToSeconds(milliseconds);
+            var hoursToSeconds = Integer.parseInt(matcher.group(1)) * 60 * 60;
+            var minutesToSeconds = Integer.parseInt(matcher.group(2)) * 60;
+            var seconds =  Integer.parseInt(matcher.group(3));
+            var millisecondsToSeconds = (matcher.group(4) != null) ? millisecondsToSeconds(matcher.group(4)) : 0;
 
             return Integer.toString(hoursToSeconds + minutesToSeconds + seconds + millisecondsToSeconds);
         }
