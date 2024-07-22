@@ -340,7 +340,7 @@ public class BagIt2N3BagJobTest extends AbstractNormalizationJobTest {
                 "Checksum was not set");
         assertEquals(fileLocation, originalResc.getProperty(CdrDeposit.stagingLocation).getString(),
                 "Binary location not set");
-        assertFalse(work.hasProperty(Cdr.primaryObject), "Would must not have a primary object");
+        assertFalse(work.hasProperty(Cdr.primaryObject), "Work must not have a primary object");
     }
 
     private Resource getChildByLabel(Bag bagResc, String seekLabel) {

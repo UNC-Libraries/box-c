@@ -113,7 +113,7 @@ public class DirectoryToBagJobTest extends AbstractNormalizationJobTest {
         Bag workBag = model.getBag(work.getURI());
         Resource file = getChildByLabel(workBag, "lorem.txt");
         assertTrue(file.hasProperty(RDF.type, Cdr.FileObject), "Type was not set");
-        assertFalse(work.hasProperty(Cdr.primaryObject), "Would must not have a primary object");
+        assertFalse(work.hasProperty(Cdr.primaryObject), "Work must not have a primary object");
 
         Resource originalResc = DepositModelHelpers.getDatastream(file);
         String tagPath = originalResc.getProperty(CdrDeposit.stagingLocation).getString();
