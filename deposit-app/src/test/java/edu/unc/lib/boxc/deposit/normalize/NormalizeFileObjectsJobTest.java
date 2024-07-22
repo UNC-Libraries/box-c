@@ -115,6 +115,37 @@ public class NormalizeFileObjectsJobTest extends AbstractDepositJobTest {
 
         assertNotNull(map.get(workBag.getURI()));
         assertNotNull(map.get(childResc.getURI()));
+        var resultWorkBag = model.getBag(workBag.getURI());
+        var resultChildResc = model.getResource(childResc.getURI());
+        assertTrue(resultWorkBag.contains(resultChildResc));
+        var resultWorkResc = model.getResource(workBag.getURI());
+        assertFalse(resultWorkResc.hasProperty(Cdr.primaryObject));
+    }
+
+    @Test
+    public void fileObjectInWorkWithPrimaryObjectTest() throws Exception {
+        Bag workBag = addContainer(Cdr.Work);
+        var workResc = workBag.asResource();
+        Resource childResc = addFileObject(workBag);
+        workResc.addProperty(Cdr.primaryObject, childResc);
+
+        job.closeModel();
+
+        job.run();
+
+        Model model = job.getReadOnlyModel();
+
+        // Check that no additional objects were added
+        Map<String, Resource> map = getResourceMap(model);
+        assertEquals(3, map.size(), "Number of objects in model must not change");
+
+        assertNotNull(map.get(workBag.getURI()));
+        assertNotNull(map.get(childResc.getURI()));
+        var resultWorkResc = model.getResource(workResc.getURI());
+        var resultWorkBag = model.getBag(workResc);
+        var resultChildResc = model.getResource(childResc.getURI());
+        assertTrue(resultWorkBag.contains(resultChildResc));
+        assertTrue(resultWorkResc.hasProperty(Cdr.primaryObject));
     }
 
     @Test
@@ -156,7 +187,7 @@ public class NormalizeFileObjectsJobTest extends AbstractDepositJobTest {
         assertEquals(model.getBag(workResc).iterator().next().asResource(), childResc, "Folder must contain work");
 
         // Work must have fileObject as primary
-        assertTrue(workResc.hasProperty(Cdr.primaryObject, childResc));
+        assertFalse(workResc.hasProperty(Cdr.primaryObject, childResc));
 
         // Label still present on file object
         assertEquals(FILENAME, childResc.getProperty(CdrDeposit.label).getString());

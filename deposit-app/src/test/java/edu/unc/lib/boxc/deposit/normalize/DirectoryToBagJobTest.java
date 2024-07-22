@@ -2,6 +2,7 @@ package edu.unc.lib.boxc.deposit.normalize;
 
 import static edu.unc.lib.boxc.common.test.TestHelpers.setField;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.Mockito.anyString;
@@ -112,6 +113,7 @@ public class DirectoryToBagJobTest extends AbstractNormalizationJobTest {
         Bag workBag = model.getBag(work.getURI());
         Resource file = getChildByLabel(workBag, "lorem.txt");
         assertTrue(file.hasProperty(RDF.type, Cdr.FileObject), "Type was not set");
+        assertFalse(work.hasProperty(Cdr.primaryObject, file), "Primary object was not set");
 
         Resource originalResc = DepositModelHelpers.getDatastream(file);
         String tagPath = originalResc.getProperty(CdrDeposit.stagingLocation).getString();
