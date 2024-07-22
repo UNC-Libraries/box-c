@@ -92,7 +92,6 @@ public class NormalizeFileObjectsJob extends AbstractDepositJob {
         Bag workBag = model.createBag(workPid.getURI());
         workBag.addProperty(RDF.type, Cdr.Work);
         workBag.addProperty(CdrDeposit.label, filename);
-        workBag.addProperty(Cdr.primaryObject, fileResc);
 
         // Add premis event for work creation
         addPremisEvent(workPid, filePid);

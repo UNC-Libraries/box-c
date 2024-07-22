@@ -114,7 +114,6 @@ public abstract class AbstractFileServerToBagJob extends AbstractDepositJob {
 
         if (!isFileOnlyMode()) {
             workBag.add(fileResource);
-            workBag.addProperty(Cdr.primaryObject, fileResource);
             parentBag.add(workBag);
         } else {
             parentBag.add(fileResource);
