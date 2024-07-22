@@ -17,6 +17,8 @@ import info.freelibrary.iiif.presentation.v3.Canvas;
 import info.freelibrary.iiif.presentation.v3.ImageContent;
 import info.freelibrary.iiif.presentation.v3.Manifest;
 import info.freelibrary.iiif.presentation.v3.PaintingAnnotation;
+import info.freelibrary.iiif.presentation.v3.SoundContent;
+import info.freelibrary.iiif.presentation.v3.VideoContent;
 import info.freelibrary.iiif.presentation.v3.properties.Label;
 import info.freelibrary.iiif.presentation.v3.properties.Metadata;
 import info.freelibrary.iiif.presentation.v3.properties.RequiredStatement;
@@ -28,10 +30,12 @@ import org.slf4j.LoggerFactory;
 import org.springframework.util.CollectionUtils;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
 
 import static edu.unc.lib.boxc.model.api.DatastreamType.JP2_ACCESS_COPY;
+import static edu.unc.lib.boxc.model.api.DatastreamType.ORIGINAL_FILE;
 import static info.freelibrary.iiif.presentation.v3.properties.behaviors.ManifestBehavior.from;
 
 /**
@@ -157,7 +161,43 @@ public class IiifV3ManifestService {
         var paintingAnno = new PaintingAnnotation(getAnnotationPath(contentObj), canvas);
         annoPage.addAnnotations(paintingAnno);
 
-        // Child of the Annotation is the content resource, which is an ImageContent
+        // Child of the Annotation is a Content Object
+        var mimetype = getMimetype(contentObj);
+        if (isAudio(mimetype)) {
+            setSoundContent(contentObj, paintingAnno);
+        } else if (isVideo(mimetype)) {
+            setVideoContent(contentObj, paintingAnno, canvas);
+        } else {
+            setImageContent(contentObj, paintingAnno, canvas);
+        }
+
+        return canvas;
+    }
+
+    private void setSoundContent(ContentObjectRecord contentObj, PaintingAnnotation paintingAnno) {
+        var soundContent = new SoundContent(getDownloadPath(contentObj));
+        var dimensions = getDimensions(contentObj);
+        soundContent.setDuration(Integer.parseInt(dimensions.get("duration")));
+        paintingAnno.getBodies().add(soundContent);
+    }
+
+    private void setVideoContent(ContentObjectRecord contentObj, PaintingAnnotation paintingAnno, Canvas canvas) {
+        var videoContent = new VideoContent(getDownloadPath(contentObj));
+        videoContent.setFormat("video/mp4");
+        assignVideoDimensions(contentObj, canvas, videoContent);
+        paintingAnno.getBodies().add(videoContent);
+    }
+
+    private void assignVideoDimensions(ContentObjectRecord contentObj, Canvas canvas, VideoContent videoContent) {
+        var dimensions = getDimensions(contentObj);
+        var width = Integer.parseInt(dimensions.get("width"));
+        var height = Integer.parseInt(dimensions.get("height"));
+        canvas.setWidthHeight(width, height); // Dimensions for the canvas
+        videoContent.setWidthHeight(width, height); // Dimensions for the actual video
+        videoContent.setDuration(Integer.parseInt(dimensions.get("duration")));
+    }
+
+    private void setImageContent(ContentObjectRecord contentObj, PaintingAnnotation paintingAnno, Canvas canvas) {
         var imageContent = new ImageContent(getImagePath(contentObj));
         imageContent.setFormat("image/jpeg");
         paintingAnno.getBodies().add(imageContent);
@@ -167,21 +207,48 @@ public class IiifV3ManifestService {
         imageContent.setServices(imageService);
 
         // Set the dimensions of this item on appropriate elements
-        assignDimensions(contentObj, canvas, imageContent);
-
-        return canvas;
+        assignImageDimensions(contentObj, canvas, imageContent);
     }
 
-    private void assignDimensions(ContentObjectRecord contentObj, Canvas canvas, ImageContent imageContent) {
-        Datastream fileDs = contentObj.getDatastreamObject(DatastreamType.ORIGINAL_FILE.getId());
+    private void assignImageDimensions(ContentObjectRecord contentObj, Canvas canvas, ImageContent imageContent) {
+        var dimensions = getDimensions(contentObj);
+        var width = Integer.parseInt(dimensions.get("width"));
+        var height = Integer.parseInt(dimensions.get("height"));
+        canvas.setWidthHeight(width, height); // Dimensions for the canvas
+        imageContent.setWidthHeight(width, height); // Dimensions for the actual image
+    }
+
+    private HashMap<String, String> getDimensions(ContentObjectRecord contentObj) {
+        var dimensions = new HashMap<String,String>();
+        var fileDs = getFileDatastream(contentObj);
         String extent = fileDs.getExtent();
-        if (extent != null && !extent.equals("")) {
+        if (extent != null && !extent.isEmpty()) {
             String[] imgDimensions = extent.split("x");
-            var width = Integer.parseInt(imgDimensions[1]); // in the datastream, the width is second
-            var height = Integer.parseInt(imgDimensions[0]);
-            canvas.setWidthHeight(width, height); // Dimensions for the canvas
-            imageContent.setWidthHeight(width, height); // Dimensions for the actual image
+            // [height, width, seconds]
+            var height = imgDimensions[0];
+            var width = imgDimensions[1];
+            var duration = imgDimensions[2];
+            dimensions.put("width", width);
+            dimensions.put("height", height);
+            dimensions.put("duration", duration);
         }
+        return dimensions;
+    }
+
+    private Datastream getFileDatastream(ContentObjectRecord contentObj) {
+        return contentObj.getDatastreamObject(DatastreamType.ORIGINAL_FILE.getId());
+    }
+
+    private String getMimetype(ContentObjectRecord contentObj) {
+        return getFileDatastream(contentObj).getMimetype();
+    }
+
+    private boolean isVideo(String mimetype) {
+        return Objects.equals(mimetype, "video/mp4") || Objects.equals(mimetype, "video/mpeg");
+    }
+
+    private boolean isAudio(String mimetype) {
+        return Objects.equals(mimetype, "audio/mp4") || Objects.equals(mimetype, "audio/mpeg");
     }
 
     private void addViewingDirectionAndBehavior(Manifest manifest, ContentObjectRecord contentObj) {
@@ -229,6 +296,10 @@ public class IiifV3ManifestService {
 
     private String makeThumbnailUrl(String id) {
         return URIUtil.join(baseServicesApiPath, "thumb", id, "large");
+    }
+
+    private String getDownloadPath(ContentObjectRecord contentObj) {
+        return URIUtil.join(baseServicesApiPath, "file", contentObj.getId());
     }
 
     private boolean hasViewableContent(ContentObjectRecord contentObj) {

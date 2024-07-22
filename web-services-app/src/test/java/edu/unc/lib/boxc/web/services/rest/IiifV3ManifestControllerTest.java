@@ -24,6 +24,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -169,10 +170,9 @@ public class IiifV3ManifestControllerTest {
         fileObj.setId(OBJECT_ID);
         fileObj.setResourceType(ResourceType.File.name());
         fileObj.setTitle("File Object");
-        var originalDs = new DatastreamImpl("original_file|image/jpeg|image.jpg|jpg|0|||240x750");
-        var jp2Ds = new DatastreamImpl("jp2|image/jp2|image.jp2|jp2|0|||");
-        fileObj.setDatastream(Arrays.asList(originalDs.toString(), jp2Ds.toString()));
-        when(accessCopiesService.listViewableFiles(eq(OBJECT_PID), any())).thenReturn(Arrays.asList(fileObj));
+        var originalDs = new DatastreamImpl("original_file|video/mp4|video.mp4|mp4|0|||240x750x500");
+        fileObj.setDatastream(List.of(originalDs.toString()));
+        when(accessCopiesService.listViewableFiles(eq(OBJECT_PID), any())).thenReturn(List.of(fileObj));
 
         var result = mockMvc.perform(get("/iiif/v3/" + OBJECT_ID + "/canvas")
                         .contentType(MediaType.APPLICATION_JSON))
@@ -183,8 +183,8 @@ public class IiifV3ManifestControllerTest {
         assertEquals("Canvas", respMap.get("type"));
         assertEquals("http://example.com/iiif/v3/f277bb38-272c-471c-a28a-9887a1328a1f/canvas", respMap.get("id"));
         assertEquals(750, respMap.get("width"));
-        var items = (List) respMap.get("items");
-        assertFalse(items.isEmpty());
-        var items1 =((Map) respMap.get("items")).get("items").get()
+        var canvasItems = respMap.get("items");
+        var annotation =((Map) respMap.get("items")).get("items");
+        var body = ((Map) annotation).get("body");
     }
 }
