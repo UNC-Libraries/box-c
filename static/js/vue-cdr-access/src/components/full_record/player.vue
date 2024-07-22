@@ -8,7 +8,7 @@
             <audio-player :datafile-url="recordData.dataFileUrl"></audio-player>
         </template>
         <template v-else-if="recordData.viewerType === 'streaming' && hasPermission(recordData, 'viewAccessCopies')">
-            <streaming-player :brief-object="recordData.briefObject"></streaming-player>
+            <streaming-player :record-data="recordData"></streaming-player>
         </template>
     </div>
 </template>

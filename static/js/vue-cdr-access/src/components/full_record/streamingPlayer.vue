@@ -1,6 +1,6 @@
 <template>
-    <iframe id="streaming-player" :src="streamingLink" :class="{ audio: briefObject.streamingType === 'sound' }"
-            allow="fullscreen" :title="briefObject.title"></iframe>
+    <iframe id="streaming-player" :src="streamingLink" :class="{ audio: getProperty('streamingType') === 'sound' }"
+            allow="fullscreen" :title="recordData.briefObject.title"></iframe>
 </template>
 
 <script>
@@ -9,12 +9,19 @@ export default {
     name: 'listDisplay',
 
     props: {
-        briefObject: Object
+        recordData: Object
     },
 
     computed: {
         streamingLink() {
-            return `${this.briefObject.streamingUrl}&refUrl=${location.href}`;
+            return `${this.getProperty('streamingUrl')}&refUrl=${location.href}`;
+        }
+    },
+
+    methods: {
+        getProperty(property) {
+            const property_value = this.recordData.briefObject[property];
+            return property_value !== undefined ? property_value : this.recordData[property];
         }
     }
 }

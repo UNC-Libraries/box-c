@@ -71,6 +71,8 @@ public class FullRecordController extends AbstractErrorHandlingSearchController 
     private static final Logger LOG = LoggerFactory.getLogger(FullRecordController.class);
     private final String VIEWER_PID = "viewerPid";
     private final String VIEWER_TYPE = "viewerType";
+    private final String STREAMING_URL = "streamingUrl";
+    private final String STREAMING_TYPE = "streamingType";
 
     @Autowired
     private AccessControlService aclService;
@@ -211,6 +213,11 @@ public class FullRecordController extends AbstractErrorHandlingSearchController 
             recordProperties.put(VIEWER_TYPE, viewerProperties.get(VIEWER_TYPE));
             recordProperties.put(VIEWER_PID, viewerProperties.get(VIEWER_PID));
 
+            if (ResourceType.Work.nameEquals(resourceType)) {
+                recordProperties.put(STREAMING_URL, viewerProperties.get(STREAMING_URL));
+                recordProperties.put(STREAMING_TYPE, viewerProperties.get(STREAMING_TYPE));
+            }
+
             // Get the file to download
             String dataFileUrl = accessCopiesService.getDownloadUrl(briefObject, principals);
             recordProperties.put("dataFileUrl", dataFileUrl);
@@ -273,12 +280,20 @@ public class FullRecordController extends AbstractErrorHandlingSearchController 
     private Map<String, Object> getViewerProperties(ContentObjectRecord briefObject, AccessGroupSet principals) {
         String viewerType = null;
         String viewerPid = null;
+        String streamingUrl = null;
+        String streamingType = null;
 
         boolean imageViewerNeeded = accessCopiesService.hasViewableFiles(briefObject, principals);
+        var workStreamingContent = accessCopiesService.getStreamingChildren(briefObject, principals);
+
         if (imageViewerNeeded) {
             viewerType = "uv";
         } else if (briefObject.getContentStatus().contains(FacetConstants.HAS_STREAMING)) {
             viewerType = "streaming";
+        } else if (workStreamingContent != null) {
+            viewerType = "streaming";
+            streamingUrl = workStreamingContent.getStreamingUrl();
+            streamingType = workStreamingContent.getStreamingType();
         } else {
             // Check for PDF to display
             viewerPid = accessCopiesService.getDatastreamPid(briefObject, principals, PDF_MIMETYPE_REGEX);
@@ -296,6 +311,8 @@ public class FullRecordController extends AbstractErrorHandlingSearchController 
         var viewerProperties = new HashMap<String, Object>();
         viewerProperties.put(VIEWER_TYPE, viewerType);
         viewerProperties.put(VIEWER_PID, viewerPid);
+        viewerProperties.put(STREAMING_URL, streamingUrl);
+        viewerProperties.put(STREAMING_TYPE, streamingType);
 
         return viewerProperties;
     }
