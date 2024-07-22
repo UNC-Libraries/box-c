@@ -186,8 +186,8 @@ public class NormalizeFileObjectsJobTest extends AbstractDepositJobTest {
         // Check that the work contains the fileObject
         assertEquals(model.getBag(workResc).iterator().next().asResource(), childResc, "Folder must contain work");
 
-        // Work must have fileObject as primary
-        assertFalse(workResc.hasProperty(Cdr.primaryObject, childResc));
+        // Work should not have primaryObject assigned
+        assertFalse(workResc.hasProperty(Cdr.primaryObject));
 
         // Label still present on file object
         assertEquals(FILENAME, childResc.getProperty(CdrDeposit.label).getString());
