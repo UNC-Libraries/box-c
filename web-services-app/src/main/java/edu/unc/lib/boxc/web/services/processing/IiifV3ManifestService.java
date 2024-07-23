@@ -30,6 +30,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.util.CollectionUtils;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
@@ -227,10 +228,12 @@ public class IiifV3ManifestService {
             // [height, width, seconds]
             var height = imgDimensions[0];
             var width = imgDimensions[1];
-            var duration = imgDimensions[2];
             dimensions.put("width", width);
             dimensions.put("height", height);
-            dimensions.put("duration", duration);
+            if (Arrays.stream(imgDimensions).count() == 3) {
+                var duration = imgDimensions[2];
+                dimensions.put("duration", duration);
+            }
         }
         return dimensions;
     }
