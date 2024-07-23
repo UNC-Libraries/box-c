@@ -36,7 +36,6 @@ import java.util.List;
 import java.util.Objects;
 
 import static edu.unc.lib.boxc.model.api.DatastreamType.JP2_ACCESS_COPY;
-import static edu.unc.lib.boxc.model.api.DatastreamType.ORIGINAL_FILE;
 import static info.freelibrary.iiif.presentation.v3.properties.behaviors.ManifestBehavior.from;
 
 /**
@@ -45,6 +44,9 @@ import static info.freelibrary.iiif.presentation.v3.properties.behaviors.Manifes
  */
 public class IiifV3ManifestService {
     private static final Logger log = LoggerFactory.getLogger(IiifV3ManifestService.class);
+    public static final String DURATION = "duration";
+    public static final String WIDTH = "width";
+    public static final String HEIGHT = "height";
     private AccessCopiesService accessCopiesService;
     private AccessControlService accessControlService;
     private String baseIiifv3Path;
@@ -178,7 +180,7 @@ public class IiifV3ManifestService {
     private void setSoundContent(ContentObjectRecord contentObj, PaintingAnnotation paintingAnno) {
         var soundContent = new SoundContent(getDownloadPath(contentObj));
         var dimensions = getDimensions(contentObj);
-        soundContent.setDuration(Integer.parseInt(dimensions.get("duration")));
+        soundContent.setDuration(Integer.parseInt(dimensions.get(DURATION)));
         paintingAnno.getBodies().add(soundContent);
     }
 
@@ -191,11 +193,11 @@ public class IiifV3ManifestService {
 
     private void assignVideoDimensions(ContentObjectRecord contentObj, Canvas canvas, VideoContent videoContent) {
         var dimensions = getDimensions(contentObj);
-        var width = Integer.parseInt(dimensions.get("width"));
-        var height = Integer.parseInt(dimensions.get("height"));
+        var width = Integer.parseInt(dimensions.get(WIDTH));
+        var height = Integer.parseInt(dimensions.get(HEIGHT));
         canvas.setWidthHeight(width, height); // Dimensions for the canvas
         videoContent.setWidthHeight(width, height); // Dimensions for the actual video
-        videoContent.setDuration(Integer.parseInt(dimensions.get("duration")));
+        videoContent.setDuration(Integer.parseInt(dimensions.get(DURATION)));
     }
 
     private void setImageContent(ContentObjectRecord contentObj, PaintingAnnotation paintingAnno, Canvas canvas) {
@@ -213,8 +215,8 @@ public class IiifV3ManifestService {
 
     private void assignImageDimensions(ContentObjectRecord contentObj, Canvas canvas, ImageContent imageContent) {
         var dimensions = getDimensions(contentObj);
-        var width = Integer.parseInt(dimensions.get("width"));
-        var height = Integer.parseInt(dimensions.get("height"));
+        var width = Integer.parseInt(dimensions.get(WIDTH));
+        var height = Integer.parseInt(dimensions.get(HEIGHT));
         canvas.setWidthHeight(width, height); // Dimensions for the canvas
         imageContent.setWidthHeight(width, height); // Dimensions for the actual image
     }
@@ -225,14 +227,14 @@ public class IiifV3ManifestService {
         String extent = fileDs.getExtent();
         if (extent != null && !extent.isEmpty()) {
             String[] imgDimensions = extent.split("x");
-            // [height, width, seconds]
+            // height x width x seconds
             var height = imgDimensions[0];
             var width = imgDimensions[1];
-            dimensions.put("width", width);
-            dimensions.put("height", height);
+            dimensions.put(WIDTH, width);
+            dimensions.put(HEIGHT, height);
             if (Arrays.stream(imgDimensions).count() == 3) {
                 var duration = imgDimensions[2];
-                dimensions.put("duration", duration);
+                dimensions.put(DURATION, duration);
             }
         }
         return dimensions;

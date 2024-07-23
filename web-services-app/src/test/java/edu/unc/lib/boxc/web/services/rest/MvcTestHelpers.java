@@ -3,7 +3,6 @@ package edu.unc.lib.boxc.web.services.rest;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.type.MapType;
-import org.apache.http.client.methods.CloseableHttpResponse;
 import org.springframework.test.web.servlet.MvcResult;
 
 import java.io.IOException;

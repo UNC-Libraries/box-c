@@ -24,10 +24,12 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+import static edu.unc.lib.boxc.web.services.processing.IiifV3ManifestService.DURATION;
+import static edu.unc.lib.boxc.web.services.processing.IiifV3ManifestService.HEIGHT;
+import static edu.unc.lib.boxc.web.services.processing.IiifV3ManifestService.WIDTH;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.mockito.ArgumentMatchers.any;
@@ -125,7 +127,7 @@ public class IiifV3ManifestControllerTest {
         fileObj.setId(OBJECT_ID);
         fileObj.setResourceType(ResourceType.File.name());
         fileObj.setTitle("File Object");
-        var originalDs = new DatastreamImpl("original_file|image/jpeg|image.jpg|jpg|0|||240x750x");
+        var originalDs = new DatastreamImpl("original_file|image/jpeg|image.jpg|jpg|0|||240x750");
         var jp2Ds = new DatastreamImpl("jp2|image/jp2|image.jp2|jp2|0|||");
         fileObj.setDatastream(Arrays.asList(originalDs.toString(), jp2Ds.toString()));
         when(accessCopiesService.listViewableFiles(eq(OBJECT_PID), any())).thenReturn(Arrays.asList(fileObj));
@@ -184,9 +186,9 @@ public class IiifV3ManifestControllerTest {
         assertEquals(SERVICES_BASE + "file/" + OBJECT_ID, body.get("id").textValue());
         assertEquals("video/mp4", body.get("format").textValue());
         assertEquals("Video", body.get("type").textValue());
-        assertEquals(750, body.get("width").intValue());
-        assertEquals(240, body.get("height").intValue());
-        assertEquals(500, body.get("duration").intValue());
+        assertEquals(750, body.get(WIDTH).intValue());
+        assertEquals(240, body.get(HEIGHT).intValue());
+        assertEquals(500, body.get(DURATION).intValue());
     }
 
     @Test
@@ -208,6 +210,6 @@ public class IiifV3ManifestControllerTest {
         var body = respJson.get("items").get(0).get("items").get(0).get("body");
         assertEquals(SERVICES_BASE + "file/" + OBJECT_ID, body.get("id").textValue());
         assertEquals("Sound", body.get("type").textValue());
-        assertEquals(500, body.get("duration").intValue());
+        assertEquals(500, body.get(DURATION).intValue());
     }
 }
