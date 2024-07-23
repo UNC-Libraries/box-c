@@ -7,8 +7,10 @@ import edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl;
 import edu.unc.lib.boxc.model.api.DatastreamType;
 import edu.unc.lib.boxc.model.api.ResourceType;
 import edu.unc.lib.boxc.search.api.ContentCategory;
+import edu.unc.lib.boxc.search.api.SearchFieldKey;
 import edu.unc.lib.boxc.search.api.models.ContentObjectRecord;
 import edu.unc.lib.boxc.search.api.requests.SearchRequest;
+import edu.unc.lib.boxc.search.solr.filters.HasPopulatedFieldFilter;
 import edu.unc.lib.boxc.search.solr.filters.NamedDatastreamFilter;
 import edu.unc.lib.boxc.search.solr.models.ContentObjectSolrRecord;
 import edu.unc.lib.boxc.search.solr.responses.SearchResultResponse;
@@ -52,6 +54,8 @@ public class AccessCopiesServiceTest  {
 
     private ContentObjectSolrRecord mdObjectAudio;
 
+    private ContentObjectSolrRecord mdObjectVideo;
+
     private ContentObjectSolrRecord noOriginalFileObj;
 
     private ContentObjectSolrRecord mdObjectXml;
@@ -80,6 +84,7 @@ public class AccessCopiesServiceTest  {
         mdObject = createPdfObject(ResourceType.Work);
         mdObjectImg = createImgObject(ResourceType.Work);
         mdObjectAudio = createAudioObject(ResourceType.Work);
+        mdObjectVideo = createVideoObject(ResourceType.Work);
 
         noOriginalFileObj = new ContentObjectSolrRecord();
         noOriginalFileObj.setResourceType(ResourceType.Work.name());
@@ -98,7 +103,7 @@ public class AccessCopiesServiceTest  {
         accessCopiesService.setGlobalPermissionEvaluator(globalPermissionEvaluator);
 
         when(solrSearchService.getSearchResults(searchRequestCaptor.capture())).thenReturn(searchResultResponse);
-        when(searchResultResponse.getResultCount()).thenReturn(1l);
+        when(searchResultResponse.getResultCount()).thenReturn(1L);
     }
 
     @AfterEach
@@ -115,6 +120,22 @@ public class AccessCopiesServiceTest  {
         mdObjectAudio.setFileFormatCategory(Collections.singletonList(ContentCategory.audio.getDisplayName()));
         mdObjectAudio.setFileFormatType(Collections.singletonList("audio/mpeg"));
         mdObjectAudio.setDatastream(audioDatastreams);
+        mdObjectAudio.setStreamingUrl("https://durastream.lib.unc.edu/player?spaceId=open-hls&filename=04950_VT0008_0003");
+        mdObjectAudio.setStreamingType("sound");
+        return mdObjectAudio;
+    }
+
+    private ContentObjectSolrRecord createVideoObject(ResourceType resourceType) {
+        var mdObjectAudio = new ContentObjectSolrRecord();
+        mdObjectAudio.setResourceType(resourceType.name());
+        mdObjectAudio.setId(UUID.randomUUID().toString());
+        List<String> audioDatastreams = Collections.singletonList(
+                ORIGINAL_FILE.getId() + "|video/mp4|file.mp4|mp4|766|urn:sha1:checksum|");
+        mdObjectAudio.setFileFormatCategory(Collections.singletonList(ContentCategory.video.getDisplayName()));
+        mdObjectAudio.setFileFormatType(Collections.singletonList("video/mp4"));
+        mdObjectAudio.setDatastream(audioDatastreams);
+        mdObjectAudio.setStreamingUrl("https://durastream.lib.unc.edu/player?spaceId=open-hls&filename=04950_VT0008_0001");
+        mdObjectAudio.setStreamingType("video");
         return mdObjectAudio;
     }
 
@@ -244,7 +265,7 @@ public class AccessCopiesServiceTest  {
         noOriginalFileObj.setFileFormatCategory(Collections.singletonList(ContentCategory.image.getDisplayName()));
         noOriginalFileObj.setFileFormatType(Collections.singletonList("png"));
         populateResultList(mdObjectImg);
-        when(searchResultResponse.getResultCount()).thenReturn(2l);
+        when(searchResultResponse.getResultCount()).thenReturn(2L);
 
         assertEquals(noOriginalFileObj.getId(), accessCopiesService.getThumbnailId(noOriginalFileObj, principals, false));
         // Gets the ID of the specific child with a thumbnail
@@ -284,7 +305,7 @@ public class AccessCopiesServiceTest  {
         noOriginalFileObj.setFileFormatCategory(Collections.singletonList(ContentCategory.image.getDisplayName()));
         noOriginalFileObj.setFileFormatType(Collections.singletonList("png"));
         populateResultList(mdObjectImg2);
-        when(searchResultResponse.getResultCount()).thenReturn(2l);
+        when(searchResultResponse.getResultCount()).thenReturn(2L);
 
         assertEquals(noOriginalFileObj.getId(), accessCopiesService.getThumbnailId(noOriginalFileObj, principals, false));
 
@@ -299,6 +320,13 @@ public class AccessCopiesServiceTest  {
         var queryFilter = (NamedDatastreamFilter) searchState.getFilters().get(0);
         assertEquals(expectedType, queryFilter.getDatastreamType(),
                 "Expected request to be filtered by datastream " + expectedType.name());
+    }
+
+    private void assertHasPopulatedFieldFilter(SearchFieldKey expectedKey) {
+        var searchState = searchRequestCaptor.getValue().getSearchState();
+        var queryFilter = (HasPopulatedFieldFilter) searchState.getFilters().get(0);
+        assertEquals(expectedKey, queryFilter.getFieldKey(),
+                "Expected request to be filtered by key " + expectedKey.name());
     }
 
     private void assertSortType(String expectedSort) {
@@ -362,6 +390,51 @@ public class AccessCopiesServiceTest  {
 
         assertTrue(accessCopiesService.hasViewableFiles(mdObjectImg, principals));
         assertRequestedDatastreamFilter(DatastreamType.JP2_ACCESS_COPY);
+    }
+
+    @Test
+    public void hasStreamingSoundTest() {
+        var mdObjectAudio = createAudioObject(ResourceType.Work);
+        hasPermissions(mdObjectAudio, true);
+
+        when(searchResultResponse.getResultList()).thenReturn(List.of(mdObjectAudio));
+        var audioObj = accessCopiesService.getStreamingChildren(mdObjectAudio, principals);
+        assertEquals("sound", audioObj.getStreamingType());
+        assertHasPopulatedFieldFilter(SearchFieldKey.STREAMING_TYPE);
+    }
+
+    @Test
+    public void hasStreamingVideoTest() {
+        var mdObjectVideo = createVideoObject(ResourceType.Work);
+        hasPermissions(mdObjectVideo, true);
+        when(searchResultResponse.getResultList()).thenReturn(List.of(mdObjectVideo));
+        var videoObj = accessCopiesService.getStreamingChildren(mdObjectVideo, principals);
+        assertEquals("video", videoObj.getStreamingType());
+        assertHasPopulatedFieldFilter(SearchFieldKey.STREAMING_TYPE);
+    }
+
+    @Test
+    public void doesNotHaveStreamingAudioTest() {
+        hasPermissions(mdObjectImg, true);
+        when(searchResultResponse.getResultCount()).thenReturn(0L);
+        assertNull(accessCopiesService.getStreamingChildren(mdObjectImg, principals));
+        assertHasPopulatedFieldFilter(SearchFieldKey.STREAMING_TYPE);
+    }
+
+    @Test
+    public void doesNotHaveStreamingVideoTest() {
+        hasPermissions(mdObjectImg, true);
+        when(searchResultResponse.getResultCount()).thenReturn(0L);
+        assertNull(accessCopiesService.getStreamingChildren(mdObjectImg, principals));
+        assertHasPopulatedFieldFilter(SearchFieldKey.STREAMING_TYPE);
+    }
+
+    @Test
+    public void doesNotHaveStreamingNonWorkTest() {
+        var mdObjectVideoFile = createVideoObject(ResourceType.File);
+        hasPermissions(mdObjectVideoFile, true);
+
+        assertNull(accessCopiesService.getStreamingChildren(mdObjectVideoFile, principals));
     }
 
     private void hasPermissions(ContentObjectSolrRecord contentObject, boolean hasAccess) {
