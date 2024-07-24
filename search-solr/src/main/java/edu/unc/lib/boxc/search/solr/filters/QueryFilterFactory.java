@@ -32,4 +32,12 @@ public class QueryFilterFactory {
     public static QueryFilter createFilter(SearchFieldKey fieldKey, Set<DatastreamType> datastreamTypes) {
         return new MultipleDirectlyOwnedDatastreamsFilter(fieldKey, datastreamTypes);
     }
+
+    /**
+     * @param fieldKey key of field to filter
+     * @return new QueryFilter instance with the provided search key
+     */
+    public static QueryFilter createFilter(SearchFieldKey fieldKey) {
+        return new HasPopulatedFieldFilter(fieldKey);
+    }
 }

@@ -88,6 +88,25 @@ public class AccessCopiesService {
         return resp.getResultCount() > 0;
     }
 
+    public ContentObjectRecord getFirstStreamingChild(ContentObjectRecord briefObj, AccessGroupSet principals) {
+        String resourceType = briefObj.getResourceType();
+        if (!ResourceType.Work.nameEquals(resourceType)) {
+            return null;
+        }
+
+        var request = buildFirstChildQuery(briefObj, principals);
+        // Limit query to just children which have streaming content
+        var searchState = request.getSearchState();
+        searchState.addFilter(QueryFilterFactory.createFilter(SearchFieldKey.STREAMING_TYPE));
+        var resp = solrSearchService.getSearchResults(request);
+        if (resp.getResultCount() > 0) {
+            var id = resp.getResultList().get(0).getId();
+            log.debug("Found streaming content {} for work {}", id, briefObj.getId());
+            return resp.getResultList().get(0);
+        }
+        return null;
+    }
+
     /**
      * Retrieves the ID of the owner of the original file for the provided object, if the mimetype of the
      * file matches the provided regular expression pattern. If there is no matching original file, null is returned.
