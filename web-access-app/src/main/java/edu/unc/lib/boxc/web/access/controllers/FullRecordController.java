@@ -279,9 +279,13 @@ public class FullRecordController extends AbstractErrorHandlingSearchController 
         String viewerPid = null;
         String streamingUrl = null;
         String streamingType = null;
+        ContentObjectRecord workStreamingContent = null;
 
         boolean imageViewerNeeded = accessCopiesService.hasViewableFiles(briefObject, principals);
-        var workStreamingContent = accessCopiesService.getFirstStreamingChild(briefObject, principals);
+
+        if (!imageViewerNeeded) {
+            workStreamingContent = accessCopiesService.getFirstStreamingChild(briefObject, principals);
+        }
 
         if (imageViewerNeeded) {
             viewerType = "uv";
