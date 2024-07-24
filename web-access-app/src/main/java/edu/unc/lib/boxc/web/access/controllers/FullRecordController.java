@@ -291,13 +291,10 @@ public class FullRecordController extends AbstractErrorHandlingSearchController 
             viewerType = "uv";
         } else if (briefObject.getContentStatus().contains(FacetConstants.HAS_STREAMING) || workStreamingContent != null) {
             viewerType = "streaming";
-            if (workStreamingContent != null) {
-                streamingUrl = workStreamingContent.getStreamingUrl();
-                streamingType = workStreamingContent.getStreamingType();
-            } else {
-                streamingUrl = briefObject.getStreamingUrl();
-                streamingType = briefObject.getStreamingType();
-            }
+            streamingUrl = (workStreamingContent != null) ? workStreamingContent.getStreamingUrl() :
+                    briefObject.getStreamingUrl();
+            streamingType = (workStreamingContent != null) ? workStreamingContent.getStreamingType() :
+                    briefObject.getStreamingType();
         } else {
             // Check for PDF to display
             viewerPid = accessCopiesService.getDatastreamPid(briefObject, principals, PDF_MIMETYPE_REGEX);
