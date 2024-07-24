@@ -1,5 +1,5 @@
 <template>
-    <iframe id="streaming-player" :src="streamingLink" :class="{ audio: getProperty('streamingType') === 'sound' }"
+    <iframe id="streaming-player" :src="streamingLink" :class="{ audio: recordData.streamingType === 'sound' }"
             allow="fullscreen" :title="recordData.briefObject.title"></iframe>
 </template>
 
@@ -14,14 +14,7 @@ export default {
 
     computed: {
         streamingLink() {
-            return `${this.getProperty('streamingUrl')}&refUrl=${location.href}`;
-        }
-    },
-
-    methods: {
-        getProperty(property) {
-            const property_value = this.recordData.briefObject[property];
-            return property_value !== undefined ? property_value : this.recordData[property];
+            return `${this.recordData.streamingUrl}&refUrl=${location.href}`;
         }
     }
 }

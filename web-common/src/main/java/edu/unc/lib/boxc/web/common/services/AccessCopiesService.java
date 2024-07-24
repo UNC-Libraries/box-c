@@ -88,7 +88,7 @@ public class AccessCopiesService {
         return resp.getResultCount() > 0;
     }
 
-    public ContentObjectRecord getStreamingChildren(ContentObjectRecord briefObj, AccessGroupSet principals) {
+    public ContentObjectRecord getFirstStreamingChild(ContentObjectRecord briefObj, AccessGroupSet principals) {
         String resourceType = briefObj.getResourceType();
         if (!ResourceType.Work.nameEquals(resourceType)) {
             return null;

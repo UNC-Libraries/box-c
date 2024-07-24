@@ -398,7 +398,7 @@ public class AccessCopiesServiceTest  {
         hasPermissions(mdObjectAudio, true);
 
         when(searchResultResponse.getResultList()).thenReturn(List.of(mdObjectAudio));
-        var audioObj = accessCopiesService.getStreamingChildren(mdObjectAudio, principals);
+        var audioObj = accessCopiesService.getFirstStreamingChild(mdObjectAudio, principals);
         assertEquals("sound", audioObj.getStreamingType());
         assertHasPopulatedFieldFilter(SearchFieldKey.STREAMING_TYPE);
     }
@@ -408,24 +408,16 @@ public class AccessCopiesServiceTest  {
         var mdObjectVideo = createVideoObject(ResourceType.Work);
         hasPermissions(mdObjectVideo, true);
         when(searchResultResponse.getResultList()).thenReturn(List.of(mdObjectVideo));
-        var videoObj = accessCopiesService.getStreamingChildren(mdObjectVideo, principals);
+        var videoObj = accessCopiesService.getFirstStreamingChild(mdObjectVideo, principals);
         assertEquals("video", videoObj.getStreamingType());
         assertHasPopulatedFieldFilter(SearchFieldKey.STREAMING_TYPE);
     }
 
     @Test
-    public void doesNotHaveStreamingAudioTest() {
+    public void doesNotHaveStreamingTest() {
         hasPermissions(mdObjectImg, true);
         when(searchResultResponse.getResultCount()).thenReturn(0L);
-        assertNull(accessCopiesService.getStreamingChildren(mdObjectImg, principals));
-        assertHasPopulatedFieldFilter(SearchFieldKey.STREAMING_TYPE);
-    }
-
-    @Test
-    public void doesNotHaveStreamingVideoTest() {
-        hasPermissions(mdObjectImg, true);
-        when(searchResultResponse.getResultCount()).thenReturn(0L);
-        assertNull(accessCopiesService.getStreamingChildren(mdObjectImg, principals));
+        assertNull(accessCopiesService.getFirstStreamingChild(mdObjectImg, principals));
         assertHasPopulatedFieldFilter(SearchFieldKey.STREAMING_TYPE);
     }
 
@@ -434,7 +426,7 @@ public class AccessCopiesServiceTest  {
         var mdObjectVideoFile = createVideoObject(ResourceType.File);
         hasPermissions(mdObjectVideoFile, true);
 
-        assertNull(accessCopiesService.getStreamingChildren(mdObjectVideoFile, principals));
+        assertNull(accessCopiesService.getFirstStreamingChild(mdObjectVideoFile, principals));
     }
 
     private void hasPermissions(ContentObjectSolrRecord contentObject, boolean hasAccess) {

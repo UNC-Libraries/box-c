@@ -212,11 +212,8 @@ public class FullRecordController extends AbstractErrorHandlingSearchController 
             var viewerProperties = getViewerProperties(briefObject, principals);
             recordProperties.put(VIEWER_TYPE, viewerProperties.get(VIEWER_TYPE));
             recordProperties.put(VIEWER_PID, viewerProperties.get(VIEWER_PID));
-
-            if (ResourceType.Work.nameEquals(resourceType)) {
-                recordProperties.put(STREAMING_URL, viewerProperties.get(STREAMING_URL));
-                recordProperties.put(STREAMING_TYPE, viewerProperties.get(STREAMING_TYPE));
-            }
+            recordProperties.put(STREAMING_URL, viewerProperties.get(STREAMING_URL));
+            recordProperties.put(STREAMING_TYPE, viewerProperties.get(STREAMING_TYPE));
 
             // Get the file to download
             String dataFileUrl = accessCopiesService.getDownloadUrl(briefObject, principals);
@@ -284,16 +281,19 @@ public class FullRecordController extends AbstractErrorHandlingSearchController 
         String streamingType = null;
 
         boolean imageViewerNeeded = accessCopiesService.hasViewableFiles(briefObject, principals);
-        var workStreamingContent = accessCopiesService.getStreamingChildren(briefObject, principals);
+        var workStreamingContent = accessCopiesService.getFirstStreamingChild(briefObject, principals);
 
         if (imageViewerNeeded) {
             viewerType = "uv";
-        } else if (briefObject.getContentStatus().contains(FacetConstants.HAS_STREAMING)) {
+        } else if (briefObject.getContentStatus().contains(FacetConstants.HAS_STREAMING) || workStreamingContent != null) {
             viewerType = "streaming";
-        } else if (workStreamingContent != null) {
-            viewerType = "streaming";
-            streamingUrl = workStreamingContent.getStreamingUrl();
-            streamingType = workStreamingContent.getStreamingType();
+            if (workStreamingContent != null) {
+                streamingUrl = workStreamingContent.getStreamingUrl();
+                streamingType = workStreamingContent.getStreamingType();
+            } else {
+                streamingUrl = briefObject.getStreamingUrl();
+                streamingType = briefObject.getStreamingType();
+            }
         } else {
             // Check for PDF to display
             viewerPid = accessCopiesService.getDatastreamPid(briefObject, principals, PDF_MIMETYPE_REGEX);

@@ -4,7 +4,7 @@ import edu.unc.lib.boxc.search.api.SearchFieldKey;
 import edu.unc.lib.boxc.search.api.filters.QueryFilter;
 
 /**
- * Filter which restricts results to entries which contain populated values for the given search key,
+ * Filter which restricts results to entries which contain populated values for the given search key
  *
  * @author lfarrell
  */
