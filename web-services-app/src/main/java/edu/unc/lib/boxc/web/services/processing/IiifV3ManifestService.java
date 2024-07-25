@@ -244,7 +244,7 @@ public class IiifV3ManifestService {
         return null;
     }
 
-    private static HashMap<String, Integer> extractDimensions(String[] imgDimensions) {
+    private static Map<String, Integer> extractDimensions(String[] imgDimensions) {
         var dimensions = new HashMap<String, Integer>();
         // [height, width, seconds]
         var height = imgDimensions[0];
