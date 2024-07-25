@@ -237,16 +237,14 @@ public class IiifV3ManifestService {
         String extent = fileDs.getExtent();
         if (extent != null && !extent.isEmpty()) {
             String[] imgDimensions = extent.split("x");
-            var imgDimensionsCount = Arrays.stream(imgDimensions).count();
-            if (imgDimensionsCount < 2) {
-                return null;
+            if (imgDimensions.length >= 2) {
+                return extractDimensions(imgDimensions);
             }
-            return extractDimensions(imgDimensions, imgDimensionsCount);
         }
         return null;
     }
 
-    private static HashMap<String, Integer> extractDimensions(String[] imgDimensions, long imgDimensionsCount) {
+    private static HashMap<String, Integer> extractDimensions(String[] imgDimensions) {
         var dimensions = new HashMap<String, Integer>();
         // [height, width, seconds]
         var height = imgDimensions[0];
@@ -257,7 +255,7 @@ public class IiifV3ManifestService {
         if (!width.isBlank()) {
             dimensions.put(WIDTH, Integer.parseInt(width));
         }
-        if (imgDimensionsCount == 3) {
+        if (imgDimensions.length == 3) {
             var duration = imgDimensions[2];
             dimensions.put(DURATION, Integer.parseInt(duration));
         }
