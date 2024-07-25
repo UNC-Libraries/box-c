@@ -31,7 +31,7 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'underscore', 'ModalLoadingOverl
 
 		if (tags.length > 0) {
 			this.metadata.tags = tags.filter(function(d) {
-				return !/^(not|no|has.primary|public.access|members.are.unordered|view.behavior|has.access)/i.test(d);
+				return !/^(not|no|has.primary|public.access|members.are.unordered|view.behavior)/i.test(d);
 			}).map(function(d) {
 				var tagValue;
 
@@ -87,6 +87,12 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'underscore', 'ModalLoadingOverl
 				break;
 			case 'is-primary-object':
 				helpText = 'This file is the representative object for the work which contains it';
+				break;
+			case 'has-access-surrogate':
+				helpText = 'This file has an access surrogate';
+				break;
+			case 'has-streaming':
+				helpText = 'This file has streaming content';
 				break;
 			case 'staff-only':
 				helpText = 'Only users with staff roles can access this object';
