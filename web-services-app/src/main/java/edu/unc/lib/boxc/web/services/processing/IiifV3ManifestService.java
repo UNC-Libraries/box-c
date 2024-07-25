@@ -33,6 +33,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 import static edu.unc.lib.boxc.model.api.DatastreamType.JP2_ACCESS_COPY;
@@ -180,7 +181,9 @@ public class IiifV3ManifestService {
     private void setSoundContent(ContentObjectRecord contentObj, PaintingAnnotation paintingAnno) {
         var soundContent = new SoundContent(getDownloadPath(contentObj));
         var dimensions = getDimensions(contentObj);
-        soundContent.setDuration(Integer.parseInt(dimensions.get(DURATION)));
+        if (dimensions != null && (dimensions.get(DURATION) >= 0)) {
+            soundContent.setDuration(dimensions.get(DURATION));
+        }
         paintingAnno.getBodies().add(soundContent);
     }
 
@@ -193,11 +196,17 @@ public class IiifV3ManifestService {
 
     private void assignVideoDimensions(ContentObjectRecord contentObj, Canvas canvas, VideoContent videoContent) {
         var dimensions = getDimensions(contentObj);
-        var width = Integer.parseInt(dimensions.get(WIDTH));
-        var height = Integer.parseInt(dimensions.get(HEIGHT));
-        canvas.setWidthHeight(width, height); // Dimensions for the canvas
-        videoContent.setWidthHeight(width, height); // Dimensions for the actual video
-        videoContent.setDuration(Integer.parseInt(dimensions.get(DURATION)));
+        if (dimensions != null) {
+            var width = dimensions.get(WIDTH);
+            var height = dimensions.get(HEIGHT);
+            canvas.setWidthHeight(width, height); // Dimensions for the canvas
+            videoContent.setWidthHeight(width, height); // Dimensions for the actual video
+            var duration = dimensions.get(DURATION);
+            if (duration >= 0) {
+                videoContent.setDuration(duration);
+            }
+
+        }
     }
 
     private void setImageContent(ContentObjectRecord contentObj, PaintingAnnotation paintingAnno, Canvas canvas) {
@@ -215,27 +224,42 @@ public class IiifV3ManifestService {
 
     private void assignImageDimensions(ContentObjectRecord contentObj, Canvas canvas, ImageContent imageContent) {
         var dimensions = getDimensions(contentObj);
-        var width = Integer.parseInt(dimensions.get(WIDTH));
-        var height = Integer.parseInt(dimensions.get(HEIGHT));
-        canvas.setWidthHeight(width, height); // Dimensions for the canvas
-        imageContent.setWidthHeight(width, height); // Dimensions for the actual image
+        if (dimensions != null) {
+            var width = dimensions.get(WIDTH);
+            var height = dimensions.get(HEIGHT);
+            canvas.setWidthHeight(width, height); // Dimensions for the canvas
+            imageContent.setWidthHeight(width, height); // Dimensions for the actual image
+        }
     }
 
-    private HashMap<String, String> getDimensions(ContentObjectRecord contentObj) {
-        var dimensions = new HashMap<String,String>();
+    private Map<String, Integer> getDimensions(ContentObjectRecord contentObj) {
         var fileDs = getFileDatastream(contentObj);
         String extent = fileDs.getExtent();
         if (extent != null && !extent.isEmpty()) {
             String[] imgDimensions = extent.split("x");
-            // height x width x seconds
-            var height = imgDimensions[0];
-            var width = imgDimensions[1];
-            dimensions.put(WIDTH, width);
-            dimensions.put(HEIGHT, height);
-            if (Arrays.stream(imgDimensions).count() == 3) {
-                var duration = imgDimensions[2];
-                dimensions.put(DURATION, duration);
+            var imgDimensionsCount = Arrays.stream(imgDimensions).count();
+            if (imgDimensionsCount < 2) {
+                return null;
             }
+            return extractDimensions(imgDimensions, imgDimensionsCount);
+        }
+        return null;
+    }
+
+    private static HashMap<String, Integer> extractDimensions(String[] imgDimensions, long imgDimensionsCount) {
+        var dimensions = new HashMap<String, Integer>();
+        // [height, width, seconds]
+        var height = imgDimensions[0];
+        if (!height.isBlank()) {
+            dimensions.put(HEIGHT, Integer.parseInt(height));
+        }
+        var width = imgDimensions[1];
+        if (!width.isBlank()) {
+            dimensions.put(WIDTH, Integer.parseInt(width));
+        }
+        if (imgDimensionsCount == 3) {
+            var duration = imgDimensions[2];
+            dimensions.put(DURATION, Integer.parseInt(duration));
         }
         return dimensions;
     }
@@ -249,7 +273,7 @@ public class IiifV3ManifestService {
     }
 
     private boolean isVideo(String mimetype) {
-        return Objects.equals(mimetype, "video/mp4") || Objects.equals(mimetype, "video/mpeg");
+        return Objects.equals(mimetype, "video/mp4");
     }
 
     private boolean isAudio(String mimetype) {
@@ -308,8 +332,21 @@ public class IiifV3ManifestService {
     }
 
     private boolean hasViewableContent(ContentObjectRecord contentObj) {
-        var datastream = contentObj.getDatastreamObject(DatastreamType.JP2_ACCESS_COPY.getId());
-        return datastream != null && contentObj.getResourceType().equals(ResourceType.File.name());
+        // if obj is not a file
+        if (!contentObj.getResourceType().equals(ResourceType.File.name())) {
+            return false;
+        }
+
+        var jp2Datastream = contentObj.getDatastreamObject(DatastreamType.JP2_ACCESS_COPY.getId());
+        var isValidDatastream = jp2Datastream != null;
+        var originalDatastream = contentObj.getDatastreamObject(DatastreamType.ORIGINAL_FILE.getId());
+        // check if original datastream mimetype is image or video
+        if (!isValidDatastream && originalDatastream != null) {
+            var mimetype = originalDatastream.getMimetype();
+            isValidDatastream = isAudio(mimetype) || isVideo(mimetype);
+        }
+
+        return isValidDatastream;
     }
 
     public void setAccessCopiesService(AccessCopiesService accessCopiesService) {

@@ -32,6 +32,7 @@ import static edu.unc.lib.boxc.web.services.processing.IiifV3ManifestService.HEI
 import static edu.unc.lib.boxc.web.services.processing.IiifV3ManifestService.WIDTH;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
@@ -122,7 +123,35 @@ public class IiifV3ManifestControllerTest {
     }
 
     @Test
-    public void testGetCanvas() throws Exception {
+    public void testGetManifestWithAVFiles() throws Exception {
+        var workObj = new ContentObjectSolrRecord();
+        workObj.setId(OBJECT_ID);
+        workObj.setResourceType(ResourceType.Work.name());
+        workObj.setTitle("Test Work");
+
+        var fileObj = new ContentObjectSolrRecord();
+        fileObj.setId("5d72b84a-983c-4a45-8caa-dc9857987da2");
+        fileObj.setResourceType(ResourceType.File.name());
+        fileObj.setTitle("File Object");
+        var originalDs = new DatastreamImpl("original_file|video/mp4|video.mp4|mp4|0|||240x750x500");
+        fileObj.setDatastream(List.of(originalDs.toString()));
+        when(accessCopiesService.listViewableFiles(eq(OBJECT_PID), any())).thenReturn(Arrays.asList(workObj, fileObj));
+
+        var result = mockMvc.perform(get("/iiif/v3/" + OBJECT_ID + "/manifest")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        var respJson = MvcTestHelpers.getResponseAsJson(result);
+        assertEquals("Manifest", respJson.get("type").textValue());
+        assertEquals("http://example.com/iiif/v3/f277bb38-272c-471c-a28a-9887a1328a1f/manifest", respJson.get("id").textValue());
+        assertEquals("Test Work", respJson.get("label").get("none").get(0).textValue());
+        assertFalse(respJson.get("metadata").isEmpty());
+        assertFalse(respJson.get("items").isEmpty());
+    }
+
+    @Test
+    public void testGetCanvasWithImageFile() throws Exception {
         var fileObj = new ContentObjectSolrRecord();
         fileObj.setId(OBJECT_ID);
         fileObj.setResourceType(ResourceType.File.name());
@@ -146,27 +175,6 @@ public class IiifV3ManifestControllerTest {
     }
 
     @Test
-    public void testGetManifestWithAVFiles() throws Exception {
-        var workObj = new ContentObjectSolrRecord();
-        workObj.setId(OBJECT_ID);
-        workObj.setResourceType(ResourceType.Work.name());
-        workObj.setTitle("Test Work");
-        when(accessCopiesService.listViewableFiles(eq(OBJECT_PID), any())).thenReturn(Arrays.asList(workObj));
-
-        var result = mockMvc.perform(get("/iiif/v3/" + OBJECT_ID + "/manifest")
-                        .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andReturn();
-
-        Map<String, Object> respMap = MvcTestHelpers.getMapFromResponse(result);
-        assertEquals("Manifest", respMap.get("type"));
-        assertEquals("http://example.com/iiif/v3/f277bb38-272c-471c-a28a-9887a1328a1f/manifest", respMap.get("id"));
-        assertEquals("Test Work", ((List) ((Map) respMap.get("label")).get("none")).get(0));
-        var metadata = (List) respMap.get("metadata");
-        assertFalse(metadata.isEmpty());
-    }
-
-    @Test
     public void testGetCanvasWithVideoFile() throws Exception {
         var fileObj = new ContentObjectSolrRecord();
         fileObj.setId(OBJECT_ID);
@@ -183,7 +191,7 @@ public class IiifV3ManifestControllerTest {
 
         var respJson = MvcTestHelpers.getResponseAsJson(result);
         var body = respJson.get("items").get(0).get("items").get(0).get("body");
-        assertEquals(SERVICES_BASE + "file/" + OBJECT_ID, body.get("id").textValue());
+        assertEquals("http://example.com/services/file/f277bb38-272c-471c-a28a-9887a1328a1f", body.get("id").textValue());
         assertEquals("video/mp4", body.get("format").textValue());
         assertEquals("Video", body.get("type").textValue());
         assertEquals(750, body.get(WIDTH).intValue());
@@ -208,8 +216,58 @@ public class IiifV3ManifestControllerTest {
 
         var respJson = MvcTestHelpers.getResponseAsJson(result);
         var body = respJson.get("items").get(0).get("items").get(0).get("body");
-        assertEquals(SERVICES_BASE + "file/" + OBJECT_ID, body.get("id").textValue());
+        assertEquals("http://example.com/services/file/f277bb38-272c-471c-a28a-9887a1328a1f", body.get("id").textValue());
         assertEquals("Sound", body.get("type").textValue());
         assertEquals(500, body.get(DURATION).intValue());
+    }
+
+    @Test
+    public void testGetCanvasWithNoExtentInformation() throws Exception {
+        var fileObj = new ContentObjectSolrRecord();
+        fileObj.setId(OBJECT_ID);
+        fileObj.setResourceType(ResourceType.File.name());
+        fileObj.setTitle("File Object");
+        var originalDs = new DatastreamImpl("original_file|video/mp4|video.mp4|mp4|0|||");
+        fileObj.setDatastream(List.of(originalDs.toString()));
+        when(accessCopiesService.listViewableFiles(eq(OBJECT_PID), any())).thenReturn(List.of(fileObj));
+
+        var result = mockMvc.perform(get("/iiif/v3/" + OBJECT_ID + "/canvas")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        var respJson = MvcTestHelpers.getResponseAsJson(result);
+        var body = respJson.get("items").get(0).get("items").get(0).get("body");
+        assertEquals("http://example.com/services/file/f277bb38-272c-471c-a28a-9887a1328a1f", body.get("id").textValue());
+        assertEquals("video/mp4", body.get("format").textValue());
+        assertEquals("Video", body.get("type").textValue());
+        assertNull(body.get(WIDTH));
+        assertNull(body.get(HEIGHT));
+        assertNull(body.get(DURATION));
+    }
+
+    @Test
+    public void testGetCanvasWithNegativeDuration() throws Exception {
+        var fileObj = new ContentObjectSolrRecord();
+        fileObj.setId(OBJECT_ID);
+        fileObj.setResourceType(ResourceType.File.name());
+        fileObj.setTitle("File Object");
+        var originalDs = new DatastreamImpl("original_file|video/mp4|video.mp4|mp4|0|||240x750x-1");
+        fileObj.setDatastream(List.of(originalDs.toString()));
+        when(accessCopiesService.listViewableFiles(eq(OBJECT_PID), any())).thenReturn(List.of(fileObj));
+
+        var result = mockMvc.perform(get("/iiif/v3/" + OBJECT_ID + "/canvas")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        var respJson = MvcTestHelpers.getResponseAsJson(result);
+        var body = respJson.get("items").get(0).get("items").get(0).get("body");
+        assertEquals("http://example.com/services/file/f277bb38-272c-471c-a28a-9887a1328a1f", body.get("id").textValue());
+        assertEquals("video/mp4", body.get("format").textValue());
+        assertEquals("Video", body.get("type").textValue());
+        assertEquals(750, body.get(WIDTH).intValue());
+        assertEquals(240, body.get(HEIGHT).intValue());
+        assertNull(body.get(DURATION));
     }
 }
