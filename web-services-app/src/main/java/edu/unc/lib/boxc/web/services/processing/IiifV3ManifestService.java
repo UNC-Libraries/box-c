@@ -278,6 +278,24 @@ public class IiifV3ManifestService {
         return Objects.equals(mimetype, "audio/mp4") || Objects.equals(mimetype, "audio/mpeg");
     }
 
+    private boolean hasViewableContent(ContentObjectRecord contentObj) {
+        // if obj is not a file
+        if (!contentObj.getResourceType().equals(ResourceType.File.name())) {
+            return false;
+        }
+
+        var jp2Datastream = contentObj.getDatastreamObject(DatastreamType.JP2_ACCESS_COPY.getId());
+        var isValidDatastream = jp2Datastream != null;
+        var originalDatastream = contentObj.getDatastreamObject(DatastreamType.ORIGINAL_FILE.getId());
+        // check if original datastream mimetype is image or video
+        if (!isValidDatastream && originalDatastream != null) {
+            var mimetype = originalDatastream.getMimetype();
+            isValidDatastream = isAudio(mimetype) || isVideo(mimetype);
+        }
+
+        return isValidDatastream;
+    }
+
     private void addViewingDirectionAndBehavior(Manifest manifest, ContentObjectRecord contentObj) {
         if (Objects.equals(contentObj.getResourceType(), ResourceType.Work.name())) {
             manifest.setViewingDirection(ViewingDirection.LEFT_TO_RIGHT);
@@ -327,24 +345,6 @@ public class IiifV3ManifestService {
 
     private String getDownloadPath(ContentObjectRecord contentObj) {
         return URIUtil.join(baseServicesApiPath, "file", contentObj.getId());
-    }
-
-    private boolean hasViewableContent(ContentObjectRecord contentObj) {
-        // if obj is not a file
-        if (!contentObj.getResourceType().equals(ResourceType.File.name())) {
-            return false;
-        }
-
-        var jp2Datastream = contentObj.getDatastreamObject(DatastreamType.JP2_ACCESS_COPY.getId());
-        var isValidDatastream = jp2Datastream != null;
-        var originalDatastream = contentObj.getDatastreamObject(DatastreamType.ORIGINAL_FILE.getId());
-        // check if original datastream mimetype is image or video
-        if (!isValidDatastream && originalDatastream != null) {
-            var mimetype = originalDatastream.getMimetype();
-            isValidDatastream = isAudio(mimetype) || isVideo(mimetype);
-        }
-
-        return isValidDatastream;
     }
 
     public void setAccessCopiesService(AccessCopiesService accessCopiesService) {

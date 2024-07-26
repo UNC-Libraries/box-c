@@ -25,6 +25,7 @@ import org.slf4j.LoggerFactory;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Service to check for or list resources with access copies
@@ -50,12 +51,8 @@ public class AccessCopiesService {
     public List<ContentObjectRecord> listViewableFiles(PID pid, AccessGroupSet principals) {
         ContentObjectRecord briefObj = solrSearchService.getObjectById(new SimpleIdRequest(pid, principals));
         String resourceType = briefObj.getResourceType();
-        if (ResourceType.File.nameEquals(resourceType)) {
-            if (briefObj.getDatastreamObject(DatastreamType.JP2_ACCESS_COPY.getId()) != null) {
-                return Collections.singletonList(briefObj);
-            } else {
-                return Collections.emptyList();
-            }
+        if (hasViewableContent(briefObj, resourceType)) {
+            return Collections.singletonList(briefObj);
         }
         if (!ResourceType.Work.nameEquals(resourceType)) {
             return Collections.emptyList();
@@ -76,26 +73,48 @@ public class AccessCopiesService {
      */
     public boolean hasViewableFiles(ContentObjectRecord briefObj, AccessGroupSet principals) {
         String resourceType = briefObj.getResourceType();
-        if (ResourceType.File.nameEquals(resourceType)) {
-            Datastream datastream = briefObj.getDatastreamObject(DatastreamType.JP2_ACCESS_COPY.getId());
-            return datastream != null;
+        if (ResourceType.Work.nameEquals(resourceType)) {
+            var resp = performQuery(briefObj, principals, 0);
+            return resp.getResultCount() > 0;
         }
-        if (!ResourceType.Work.nameEquals(resourceType)) {
+
+        return hasViewableContent(briefObj, resourceType);
+    }
+
+    private boolean isVideo(String mimetype) {
+        return Objects.equals(mimetype, "video/mp4");
+    }
+
+    private boolean isAudio(String mimetype) {
+        return Objects.equals(mimetype, "audio/mp4") || Objects.equals(mimetype, "audio/mpeg");
+    }
+
+    private boolean hasViewableContent(ContentObjectRecord contentObj, String resourceType) {
+        // if obj is not a file
+        if (!resourceType.equals(ResourceType.File.name())) {
             return false;
         }
 
-        var resp = performQuery(briefObj, principals, 0);
-        return resp.getResultCount() > 0;
+        var jp2Datastream = contentObj.getDatastreamObject(DatastreamType.JP2_ACCESS_COPY.getId());
+        var isValidDatastream = jp2Datastream != null;
+        var originalDatastream = contentObj.getDatastreamObject(DatastreamType.ORIGINAL_FILE.getId());
+        // check if original datastream mimetype is image or video
+        if (!isValidDatastream && originalDatastream != null) {
+            var mimetype = originalDatastream.getMimetype();
+            isValidDatastream = isAudio(mimetype) || isVideo(mimetype);
+        }
+
+        return isValidDatastream;
     }
 
-    /**
-     * Retrieves the ID of the owner of the original file for the provided object, if the mimetype of the
-     * file matches the provided regular expression pattern. If there is no matching original file, null is returned.
-     * @param briefObj
-     * @param principals
-     * @param regxPattern
-     * @return String
-     */
+        /**
+         * Retrieves the ID of the owner of the original file for the provided object, if the mimetype of the
+         * file matches the provided regular expression pattern. If there is no matching original file, null is returned.
+         * @param briefObj
+         * @param principals
+         * @param regxPattern
+         * @return String
+         */
     public String getDatastreamPid(ContentObjectRecord briefObj, AccessGroupSet principals, String regxPattern) {
         if (permissionsHelper.hasOriginalAccess(principals, briefObj) &&
                 DatastreamUtil.originalFileMimetypeMatches(briefObj, regxPattern)) {
