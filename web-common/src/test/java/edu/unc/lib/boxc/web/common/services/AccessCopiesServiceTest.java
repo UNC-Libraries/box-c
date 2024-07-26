@@ -353,7 +353,7 @@ public class AccessCopiesServiceTest  {
         var mdObjectAudio = createAudioObject(ResourceType.File);
         hasPermissions(mdObjectAudio, true);
 
-        assertTrue(accessCopiesService.hasViewableFiles(mdObjectAudio, principals));
+        assertFalse(accessCopiesService.hasViewableFiles(mdObjectAudio, principals));
     }
 
     @Test
