@@ -1,16 +1,26 @@
 package edu.unc.lib.boxc.web.services.processing;
 
 import edu.unc.lib.boxc.auth.api.Permission;
+import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
 import edu.unc.lib.boxc.auth.api.models.AgentPrincipals;
 import edu.unc.lib.boxc.auth.api.services.AccessControlService;
 import edu.unc.lib.boxc.auth.api.services.DatastreamPermissionUtil;
+import edu.unc.lib.boxc.auth.api.services.GlobalPermissionEvaluator;
 import edu.unc.lib.boxc.common.util.URIUtil;
 import edu.unc.lib.boxc.model.api.DatastreamType;
 import edu.unc.lib.boxc.model.api.ResourceType;
 import edu.unc.lib.boxc.model.api.exceptions.NotFoundException;
 import edu.unc.lib.boxc.model.api.ids.PID;
+import edu.unc.lib.boxc.search.api.SearchFieldKey;
+import edu.unc.lib.boxc.search.api.facets.CutoffFacet;
 import edu.unc.lib.boxc.search.api.models.ContentObjectRecord;
 import edu.unc.lib.boxc.search.api.models.Datastream;
+import edu.unc.lib.boxc.search.api.requests.SearchRequest;
+import edu.unc.lib.boxc.search.api.requests.SearchState;
+import edu.unc.lib.boxc.search.api.requests.SimpleIdRequest;
+import edu.unc.lib.boxc.search.solr.filters.QueryFilterFactory;
+import edu.unc.lib.boxc.search.solr.responses.SearchResultResponse;
+import edu.unc.lib.boxc.search.solr.services.SolrSearchService;
 import edu.unc.lib.boxc.web.common.services.AccessCopiesService;
 import info.freelibrary.iiif.presentation.v3.AnnotationPage;
 import info.freelibrary.iiif.presentation.v3.Canvas;
@@ -31,6 +41,7 @@ import org.springframework.util.CollectionUtils;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -48,8 +59,9 @@ public class IiifV3ManifestService {
     public static final String DURATION = "duration";
     public static final String WIDTH = "width";
     public static final String HEIGHT = "height";
-    private AccessCopiesService accessCopiesService;
     private AccessControlService accessControlService;
+    private SolrSearchService solrSearchService;
+    private GlobalPermissionEvaluator globalPermissionEvaluator;
     private String baseIiifv3Path;
     private String baseAccessPath;
     private String baseServicesApiPath;
@@ -62,7 +74,7 @@ public class IiifV3ManifestService {
      */
     public Manifest buildManifest(PID pid, AgentPrincipals agent) {
         assertHasAccess(pid, agent);
-        var contentObjs = accessCopiesService.listViewableFiles(pid, agent.getPrincipals());
+        var contentObjs = listViewableFiles(pid, agent.getPrincipals());
         if (contentObjs.isEmpty()) {
             throw new NotFoundException("No objects were found for inclusion in manifest for object " + pid.getId());
         }
@@ -137,7 +149,7 @@ public class IiifV3ManifestService {
      */
     public Canvas buildCanvas(PID pid, AgentPrincipals agent) {
         assertHasAccess(pid, agent);
-        var contentObjs = accessCopiesService.listViewableFiles(pid, agent.getPrincipals());
+        var contentObjs = listViewableFiles(pid, agent.getPrincipals());
         ContentObjectRecord rootObj = contentObjs.get(0);
         return constructCanvasSection(rootObj);
     }
@@ -296,6 +308,46 @@ public class IiifV3ManifestService {
         return isValidDatastream;
     }
 
+    /**
+     * List viewable files for the specified object
+     * @param pid
+     * @param principals
+     * @return
+     */
+    private List<ContentObjectRecord> listViewableFiles(PID pid, AccessGroupSet principals) {
+        ContentObjectRecord briefObj = solrSearchService.getObjectById(new SimpleIdRequest(pid, principals));
+        String resourceType = briefObj.getResourceType();
+        if (hasViewableContent(briefObj)) {
+            return Collections.singletonList(briefObj);
+        }
+        if (!ResourceType.Work.nameEquals(resourceType)) {
+            return Collections.emptyList();
+        }
+
+        var resp = performQuery(briefObj, principals, 2000);
+        List<ContentObjectRecord> mdObjs = resp.getResultList();
+        mdObjs.add(0, briefObj);
+        return mdObjs;
+    }
+
+    private SearchResultResponse performQuery(ContentObjectRecord briefObj, AccessGroupSet principals, int rows) {
+        // Search for child objects with jp2 datastreams with user can access
+        SearchState searchState = new SearchState();
+        if (!globalPermissionEvaluator.hasGlobalPrincipal(principals)) {
+            searchState.setPermissionLimits(List.of(Permission.viewAccessCopies));
+        }
+        searchState.setIgnoreMaxRows(true);
+        searchState.setRowsPerPage(rows);
+        CutoffFacet selectedPath = briefObj.getPath();
+        searchState.addFacet(selectedPath);
+        searchState.setSortType("default");
+        searchState.addFilter(
+                QueryFilterFactory.createFilter(SearchFieldKey.FILE_FORMAT_TYPE, );
+
+        var searchRequest = new SearchRequest(searchState, principals);
+        return solrSearchService.getSearchResults(searchRequest);
+    }
+
     private void addViewingDirectionAndBehavior(Manifest manifest, ContentObjectRecord contentObj) {
         if (Objects.equals(contentObj.getResourceType(), ResourceType.Work.name())) {
             manifest.setViewingDirection(ViewingDirection.LEFT_TO_RIGHT);
@@ -347,12 +399,16 @@ public class IiifV3ManifestService {
         return URIUtil.join(baseServicesApiPath, "file", contentObj.getId());
     }
 
-    public void setAccessCopiesService(AccessCopiesService accessCopiesService) {
-        this.accessCopiesService = accessCopiesService;
-    }
-
     public void setAccessControlService(AccessControlService accessControlService) {
         this.accessControlService = accessControlService;
+    }
+
+    public void setSolrSearchService(SolrSearchService solrSearchService) {
+        this.solrSearchService = solrSearchService;
+    }
+
+    public void setGlobalPermissionEvaluator(GlobalPermissionEvaluator globalPermissionEvaluator) {
+        this.globalPermissionEvaluator = globalPermissionEvaluator;
     }
 
     public void setBaseIiifv3Path(String baseIiifv3Path) {
