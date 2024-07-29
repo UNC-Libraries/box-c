@@ -283,6 +283,48 @@ public class SetDatastreamFilterTest {
     }
 
     @Test
+    public void fileObjectBinaryWithColonMillisecondsSeperatorTest() throws Exception {
+        when(binObj.getResource()).thenReturn(
+                fileResource(ORIGINAL_FILE.getId(), FILE_MP3_SIZE, FILE_MP3_MIMETYPE, FILE_MP3_NAME, FILE_MP3_DIGEST));
+
+        BinaryObject binObj2 = mock(BinaryObject.class);
+        when(binObj2.getPid()).thenReturn(DatastreamPids.getTechnicalMetadataPid(pid));
+        when(binObj2.getResource()).thenReturn(
+                fileResource(TECHNICAL_METADATA.getId(), FILE2_SIZE, FILE2_MIMETYPE, FILE2_NAME, FILE2_DIGEST));
+        when(binObj2.getBinaryStream()).thenReturn(getClass().getResourceAsStream("/datastream/techmd_colon_separated_milliseconds.xml"));
+        when(fileObj.getBinaryObjects()).thenReturn(Arrays.asList(binObj, binObj2));
+        dip.setContentObject(fileObj);
+
+        filter.filter(dip);
+
+        assertContainsDatastream(idb.getDatastream(), ORIGINAL_FILE.getId(),
+                FILE_MP3_SIZE, FILE_MP3_MIMETYPE, FILE_MP3_NAME, FILE_MP3_DIGEST, null, FILE_MP3_EXTENT);
+        assertContainsDatastream(idb.getDatastream(), TECHNICAL_METADATA.getId(),
+                FILE2_SIZE, FILE2_MIMETYPE, FILE2_NAME, FILE2_DIGEST, null, null);
+    }
+
+    @Test
+    public void fileObjectAudioOnlyBinaryWithDotMillisecondsSeperatorTest() throws Exception {
+        when(binObj.getResource()).thenReturn(
+                fileResource(ORIGINAL_FILE.getId(), FILE_MP3_SIZE, FILE_MP3_MIMETYPE, FILE_MP3_NAME, FILE_MP3_DIGEST));
+
+        BinaryObject binObj2 = mock(BinaryObject.class);
+        when(binObj2.getPid()).thenReturn(DatastreamPids.getTechnicalMetadataPid(pid));
+        when(binObj2.getResource()).thenReturn(
+                fileResource(TECHNICAL_METADATA.getId(), FILE2_SIZE, FILE2_MIMETYPE, FILE2_NAME, FILE2_DIGEST));
+        when(binObj2.getBinaryStream()).thenReturn(getClass().getResourceAsStream("/datastream/techmd_dot_separated_milliseconds.xml"));
+        when(fileObj.getBinaryObjects()).thenReturn(Arrays.asList(binObj, binObj2));
+        dip.setContentObject(fileObj);
+
+        filter.filter(dip);
+
+        assertContainsDatastream(idb.getDatastream(), ORIGINAL_FILE.getId(),
+                FILE_MP3_SIZE, FILE_MP3_MIMETYPE, FILE_MP3_NAME, FILE_MP3_DIGEST, null, FILE_MP3_EXTENT);
+        assertContainsDatastream(idb.getDatastream(), TECHNICAL_METADATA.getId(),
+                FILE2_SIZE, FILE2_MIMETYPE, FILE2_NAME, FILE2_DIGEST, null, null);
+    }
+
+    @Test
     public void fileObjectDurationWithMillisecondsNoSeparateMillisecondsFieldBinaryTest() throws Exception {
         when(binObj.getResource()).thenReturn(
                 fileResource(ORIGINAL_FILE.getId(), FILE_MP3_SIZE, FILE_MP3_MIMETYPE, FILE_MP3_NAME, FILE_MP3_DIGEST));

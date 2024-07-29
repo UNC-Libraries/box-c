@@ -1,6 +1,6 @@
 <template>
-    <iframe id="streaming-player" :src="streamingLink" :class="{ audio: briefObject.streamingType === 'sound' }"
-            allow="fullscreen" :title="briefObject.title"></iframe>
+    <iframe id="streaming-player" :src="streamingLink" :class="{ audio: recordData.streamingType === 'sound' }"
+            allow="fullscreen" :title="recordData.briefObject.title"></iframe>
 </template>
 
 <script>
@@ -9,12 +9,12 @@ export default {
     name: 'listDisplay',
 
     props: {
-        briefObject: Object
+        recordData: Object
     },
 
     computed: {
         streamingLink() {
-            return `${this.briefObject.streamingUrl}&refUrl=${location.href}`;
+            return `${this.recordData.streamingUrl}&refUrl=${location.href}`;
         }
     }
 }

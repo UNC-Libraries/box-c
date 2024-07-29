@@ -2,6 +2,7 @@ package edu.unc.lib.boxc.deposit.normalize;
 
 import static edu.unc.lib.boxc.common.test.TestHelpers.setField;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -339,6 +340,7 @@ public class BagIt2N3BagJobTest extends AbstractNormalizationJobTest {
                 "Checksum was not set");
         assertEquals(fileLocation, originalResc.getProperty(CdrDeposit.stagingLocation).getString(),
                 "Binary location not set");
+        assertFalse(work.hasProperty(Cdr.primaryObject), "Work must not have a primary object");
     }
 
     private Resource getChildByLabel(Bag bagResc, String seekLabel) {
