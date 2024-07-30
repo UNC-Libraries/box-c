@@ -13,7 +13,6 @@ import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.boxc.search.solr.models.ContentObjectSolrRecord;
 import edu.unc.lib.boxc.search.solr.models.DatastreamImpl;
 import edu.unc.lib.boxc.search.solr.services.SolrSearchService;
-import edu.unc.lib.boxc.web.common.services.AccessCopiesService;
 import edu.unc.lib.boxc.web.services.processing.IiifV3ManifestService;
 import edu.unc.lib.boxc.web.services.rest.exceptions.RestResponseEntityExceptionHandler;
 import org.junit.jupiter.api.AfterEach;

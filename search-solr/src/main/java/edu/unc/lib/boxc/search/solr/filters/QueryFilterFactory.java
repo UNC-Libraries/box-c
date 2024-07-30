@@ -42,10 +42,10 @@ public class QueryFilterFactory {
         return new HasPopulatedFieldFilter(fieldKey);
     }
 
-    public static QueryFilter createFileTypeFilter(List<String> fileTypes) {
-        return new FileTypeFilter(fileTypes);
-    }
-
+    /**
+     * @param fileTypes mimetypes
+     * @return new QueryFilter instance with the provided file types
+     */
     public static QueryFilter createIIIFv3ViewableFilter(List<String> fileTypes) {
         return new IIIFv3ViewableFilter(fileTypes);
     }
