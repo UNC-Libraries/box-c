@@ -40,4 +40,8 @@ public class QueryFilterFactory {
     public static QueryFilter createFilter(SearchFieldKey fieldKey) {
         return new HasPopulatedFieldFilter(fieldKey);
     }
+
+    public static QueryFilter createFilter(SearchFieldKey fieldKey, Set<String> fileTypes) {
+        return new FileTypeFilter(fieldKey, fileTypes);
+    }
 }
