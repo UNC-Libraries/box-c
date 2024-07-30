@@ -6,6 +6,7 @@ import edu.unc.lib.boxc.auth.api.exceptions.AccessRestrictionException;
 import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
 import edu.unc.lib.boxc.auth.api.models.AgentPrincipals;
 import edu.unc.lib.boxc.auth.api.services.AccessControlService;
+import edu.unc.lib.boxc.auth.api.services.GlobalPermissionEvaluator;
 import edu.unc.lib.boxc.model.api.ResourceType;
 import edu.unc.lib.boxc.model.api.exceptions.NotFoundException;
 import edu.unc.lib.boxc.model.api.ids.PID;
@@ -14,7 +15,9 @@ import edu.unc.lib.boxc.operations.jms.viewSettings.ViewSettingRequest;
 import edu.unc.lib.boxc.search.api.models.ContentObjectRecord;
 import edu.unc.lib.boxc.search.solr.models.ContentObjectSolrRecord;
 import edu.unc.lib.boxc.search.solr.models.DatastreamImpl;
-import edu.unc.lib.boxc.web.common.services.AccessCopiesService;
+import edu.unc.lib.boxc.search.solr.responses.SearchResultResponse;
+import edu.unc.lib.boxc.search.solr.services.SolrSearchService;
+import edu.unc.lib.boxc.web.services.rest.MvcTestHelpers;
 import info.freelibrary.iiif.presentation.v3.Canvas;
 import info.freelibrary.iiif.presentation.v3.ImageContent;
 import info.freelibrary.iiif.presentation.v3.PaintingAnnotation;
@@ -56,25 +59,26 @@ public class IiifV3ManifestServiceTest {
     private static final String VIDEO = "video";
 
     @Mock
-    private AccessCopiesService accessCopiesService;
+    private SolrSearchService solrSearchService;
     @Mock
     private AccessControlService accessControlService;
     @Mock
     private AgentPrincipals agent;
     @Mock
     private AccessGroupSet principals;
+    @Mock
+    private GlobalPermissionEvaluator globalPermissionEvaluator;
     private AutoCloseable closeable;
-
     private ContentObjectSolrRecord workObj;
-
     private IiifV3ManifestService manifestService;
 
     @BeforeEach
     public void setup() {
         closeable = openMocks(this);
         manifestService = new IiifV3ManifestService();
-        manifestService.setAccessCopiesService(accessCopiesService);
+        manifestService.setSolrSearchService(solrSearchService);
         manifestService.setAccessControlService(accessControlService);
+        manifestService.setGlobalPermissionEvaluator(globalPermissionEvaluator);
         manifestService.setBaseIiifv3Path(IIIF_BASE);
         manifestService.setBaseServicesApiPath(SERVICES_BASE);
         manifestService.setBaseAccessPath(ACCESS_BASE);
@@ -118,7 +122,7 @@ public class IiifV3ManifestServiceTest {
 
     @Test
     public void buildManifestNoViewableFilesTest() {
-        when(accessCopiesService.listViewableFiles(WORK_PID, principals)).thenReturn(Arrays.asList());
+        when(solrSearchService.getObjectById(any())).thenReturn(null);
         assertThrows(NotFoundException.class, () -> {
             manifestService.buildManifest(WORK_PID, agent);
         });
@@ -135,7 +139,10 @@ public class IiifV3ManifestServiceTest {
 
     @Test
     public void buildManifestWorkWithoutViewableFilesTest() {
-        when(accessCopiesService.listViewableFiles(WORK_PID, principals)).thenReturn(Arrays.asList(workObj));
+        when(solrSearchService.getObjectById(any())).thenReturn(workObj);
+        when(solrSearchService.getSearchResults(any()))
+                .thenReturn(MvcTestHelpers.createSearchResponse(List.of(workObj)));
+        when(globalPermissionEvaluator.hasGlobalPrincipal(any())).thenReturn(true);
 
         var manifest = manifestService.buildManifest(WORK_PID, agent);
         assertEquals("Test Work", manifest.getLabel().getString());
@@ -149,7 +156,10 @@ public class IiifV3ManifestServiceTest {
     public void buildManifestWorkWithViewableFilesTest() {
         var fileObj1 = createFileRecord(FILE1_ID, IMAGE);
         var fileObj2 = createFileRecord(FILE2_ID, IMAGE);
-        when(accessCopiesService.listViewableFiles(WORK_PID, principals)).thenReturn(Arrays.asList(workObj, fileObj1, fileObj2));
+        when(solrSearchService.getObjectById(any())).thenReturn(workObj);
+        when(solrSearchService.getSearchResults(any()))
+                .thenReturn(MvcTestHelpers.createSearchResponse(Arrays.asList(workObj, fileObj1, fileObj2)));
+        when(globalPermissionEvaluator.hasGlobalPrincipal(any())).thenReturn(true);
 
         var manifest = manifestService.buildManifest(WORK_PID, agent);
         assertEquals("Test Work", manifest.getLabel().getString());
@@ -165,7 +175,7 @@ public class IiifV3ManifestServiceTest {
     public void buildManifestViewableFileImageTest() {
         var fileObj1 = createFileRecord(FILE1_ID, IMAGE);
         var filePid = PIDs.get(FILE1_ID);
-        when(accessCopiesService.listViewableFiles(filePid, principals)).thenReturn(Arrays.asList(fileObj1));
+        when(solrSearchService.getObjectById(any())).thenReturn(fileObj1);
 
         var manifest = manifestService.buildManifest(filePid, agent);
         assertEquals("File Object faffb3e1-85fc-451f-9075-c60fc7584c7b", manifest.getLabel().getString());
@@ -186,7 +196,7 @@ public class IiifV3ManifestServiceTest {
     public void buildManifestViewableFileVideoTest() {
         var fileObj1 = createFileRecord(FILE1_ID, "video");
         var filePid = PIDs.get(FILE1_ID);
-        when(accessCopiesService.listViewableFiles(filePid, principals)).thenReturn(Arrays.asList(fileObj1));
+        when(solrSearchService.getObjectById(any())).thenReturn(fileObj1);
 
         var manifest = manifestService.buildManifest(filePid, agent);
         assertEquals("File Object faffb3e1-85fc-451f-9075-c60fc7584c7b", manifest.getLabel().getString());
@@ -207,7 +217,7 @@ public class IiifV3ManifestServiceTest {
     public void buildCanvasViewableFileTest() {
         var fileObj1 = createFileRecord(FILE1_ID, IMAGE);
         var filePid = PIDs.get(FILE1_ID);
-        when(accessCopiesService.listViewableFiles(filePid, principals)).thenReturn(Arrays.asList(fileObj1));
+        when(solrSearchService.getObjectById(any())).thenReturn(fileObj1);
 
         var canvas = manifestService.buildCanvas(filePid, agent);
         assertFileCanvasPopulated(canvas, FILE1_ID, IMAGE);
@@ -217,50 +227,15 @@ public class IiifV3ManifestServiceTest {
     public void buildManifestViewInfoMultipleFilesTest() {
         var fileObj1 = createFileRecord(FILE1_ID, IMAGE);
         var fileObj2 = createFileRecord(FILE2_ID, IMAGE);
-        when(accessCopiesService.listViewableFiles(WORK_PID, principals)).thenReturn(Arrays.asList(workObj, fileObj1, fileObj2));
+        when(solrSearchService.getObjectById(any())).thenReturn(workObj);
+        when(solrSearchService.getSearchResults(any()))
+                .thenReturn(MvcTestHelpers.createSearchResponse(Arrays.asList(workObj, fileObj1, fileObj2)));
         workObj.setViewBehavior(ViewSettingRequest.ViewBehavior.PAGED.getString());
 
         var manifest = manifestService.buildManifest(WORK_PID, agent);
 
         assertEquals(ViewingDirection.LEFT_TO_RIGHT.toString(), manifest.getViewingDirection().toString());
         assertEquals(ManifestBehavior.PAGED, manifest.getBehaviors().get(0));
-    }
-    
-    private void assertFileCanvasPopulated(Canvas fileCanvas, String expectedId, String type) {
-        assertEquals("http://example.com/iiif/v3/" + expectedId + "/canvas",
-                fileCanvas.getID().toString());
-        assertEquals(240, fileCanvas.getHeight());
-        assertEquals(750, fileCanvas.getWidth());
-        assertEquals("http://example.com/services/api/thumb/" + expectedId + "/large",
-                fileCanvas.getThumbnails().get(0).getID().toString());
-        var annoPage = fileCanvas.getPaintingPages().get(0);
-        var annotation = annoPage.getAnnotations().get(0);
-        assertEquals("painting", annotation.getMotivation());
-
-        if (Objects.equals(type, VIDEO)) {
-            checkVideoContent(annotation, expectedId);
-        } else {
-            checkImageContent(annotation, expectedId);
-        }
-
-    }
-
-    private void checkImageContent(PaintingAnnotation annotation, String expectedId) {
-        var imageContent = (ImageContent) annotation.getBodies().get(0);
-        assertEquals(240, imageContent.getHeight());
-        assertEquals(750, imageContent.getWidth());
-        assertEquals("image/jpeg", imageContent.getFormat().get().toString());
-        var imageService = (ImageService3) imageContent.getServices().get(0);
-        assertEquals("http://example.com/iiif/v3/" + expectedId, imageService.getID().toString());
-        assertEquals("level2", imageService.getProfile().get().string());
-    }
-
-    private void checkVideoContent(PaintingAnnotation annotation, String expectedId) {
-        var videoContent = (VideoContent) annotation.getBodies().get(0);
-        assertEquals(240, videoContent.getHeight());
-        assertEquals(750, videoContent.getWidth());
-        assertEquals(500, videoContent.getDuration());
-        assertEquals("video/mp4", videoContent.getFormat().get().toString());
     }
 
     @Test
@@ -270,7 +245,9 @@ public class IiifV3ManifestServiceTest {
         workObj.setCreator(Arrays.asList("Boxy", "Boxc"));
         workObj.setLanguage(Arrays.asList("English", "Spanish"));
         workObj.setParentCollection("Image Collection|" + COLL_ID);
-        when(accessCopiesService.listViewableFiles(WORK_PID, principals)).thenReturn(Arrays.asList(workObj));
+        when(solrSearchService.getObjectById(any())).thenReturn(workObj);
+        when(solrSearchService.getSearchResults(any()))
+                .thenReturn(MvcTestHelpers.createSearchResponse(List.of(workObj)));
 
         var manifest = manifestService.buildManifest(WORK_PID, agent);
         assertEquals("http://example.com/iiif/v3/5d72b84a-983c-4a45-8caa-dc9857987da2/manifest", manifest.getID().toString());
@@ -297,5 +274,42 @@ public class IiifV3ManifestServiceTest {
         assertEquals("", recordLinkMd.getLabel().getString());
         assertEquals("<a href=\"http://example.com/record/5d72b84a-983c-4a45-8caa-dc9857987da2\">View full record</a>",
                 recordLinkMd.getValue().getString());
+    }
+
+    private void assertFileCanvasPopulated(Canvas fileCanvas, String expectedId, String type) {
+        assertEquals("http://example.com/iiif/v3/" + expectedId + "/canvas",
+                fileCanvas.getID().toString());
+        assertEquals(240, fileCanvas.getHeight());
+        assertEquals(750, fileCanvas.getWidth());
+        assertEquals("http://example.com/services/api/thumb/" + expectedId + "/large",
+                fileCanvas.getThumbnails().get(0).getID().toString());
+        var annoPage = fileCanvas.getPaintingPages().get(0);
+        var annotation = annoPage.getAnnotations().get(0);
+        assertEquals("painting", annotation.getMotivation());
+
+        if (Objects.equals(type, VIDEO)) {
+            checkVideoContent(annotation);
+        } else {
+            checkImageContent(annotation, expectedId);
+        }
+
+    }
+
+    private void checkImageContent(PaintingAnnotation annotation, String expectedId) {
+        var imageContent = (ImageContent) annotation.getBodies().get(0);
+        assertEquals(240, imageContent.getHeight());
+        assertEquals(750, imageContent.getWidth());
+        assertEquals("image/jpeg", imageContent.getFormat().get().toString());
+        var imageService = (ImageService3) imageContent.getServices().get(0);
+        assertEquals("http://example.com/iiif/v3/" + expectedId, imageService.getID().toString());
+        assertEquals("level2", imageService.getProfile().get().string());
+    }
+
+    private void checkVideoContent(PaintingAnnotation annotation) {
+        var videoContent = (VideoContent) annotation.getBodies().get(0);
+        assertEquals(240, videoContent.getHeight());
+        assertEquals(750, videoContent.getWidth());
+        assertEquals(500, videoContent.getDuration());
+        assertEquals("video/mp4", videoContent.getFormat().get().toString());
     }
 }

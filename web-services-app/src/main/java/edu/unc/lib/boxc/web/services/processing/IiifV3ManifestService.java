@@ -11,7 +11,6 @@ import edu.unc.lib.boxc.model.api.DatastreamType;
 import edu.unc.lib.boxc.model.api.ResourceType;
 import edu.unc.lib.boxc.model.api.exceptions.NotFoundException;
 import edu.unc.lib.boxc.model.api.ids.PID;
-import edu.unc.lib.boxc.search.api.SearchFieldKey;
 import edu.unc.lib.boxc.search.api.facets.CutoffFacet;
 import edu.unc.lib.boxc.search.api.models.ContentObjectRecord;
 import edu.unc.lib.boxc.search.api.models.Datastream;
@@ -19,9 +18,7 @@ import edu.unc.lib.boxc.search.api.requests.SearchRequest;
 import edu.unc.lib.boxc.search.api.requests.SearchState;
 import edu.unc.lib.boxc.search.api.requests.SimpleIdRequest;
 import edu.unc.lib.boxc.search.solr.filters.QueryFilterFactory;
-import edu.unc.lib.boxc.search.solr.responses.SearchResultResponse;
 import edu.unc.lib.boxc.search.solr.services.SolrSearchService;
-import edu.unc.lib.boxc.web.common.services.AccessCopiesService;
 import info.freelibrary.iiif.presentation.v3.AnnotationPage;
 import info.freelibrary.iiif.presentation.v3.Canvas;
 import info.freelibrary.iiif.presentation.v3.ImageContent;
@@ -59,6 +56,10 @@ public class IiifV3ManifestService {
     public static final String DURATION = "duration";
     public static final String WIDTH = "width";
     public static final String HEIGHT = "height";
+    private static final String VIDEO_MP4 = "video/mp4";
+    private static final String AUDIO_MP4 = "audio/mp4";
+    private static final String AUDIO_MPEG = "audio/mpeg";
+    private static final List<String> FILE_TYPES = Arrays.asList(VIDEO_MP4, AUDIO_MP4, AUDIO_MPEG);
     private AccessControlService accessControlService;
     private SolrSearchService solrSearchService;
     private GlobalPermissionEvaluator globalPermissionEvaluator;
@@ -283,11 +284,11 @@ public class IiifV3ManifestService {
     }
 
     private boolean isVideo(String mimetype) {
-        return Objects.equals(mimetype, "video/mp4");
+        return Objects.equals(mimetype, VIDEO_MP4);
     }
 
     private boolean isAudio(String mimetype) {
-        return Objects.equals(mimetype, "audio/mp4") || Objects.equals(mimetype, "audio/mpeg");
+        return Objects.equals(mimetype, AUDIO_MP4) || Objects.equals(mimetype, AUDIO_MPEG);
     }
 
     private boolean hasViewableContent(ContentObjectRecord contentObj) {
@@ -316,6 +317,9 @@ public class IiifV3ManifestService {
      */
     private List<ContentObjectRecord> listViewableFiles(PID pid, AccessGroupSet principals) {
         ContentObjectRecord briefObj = solrSearchService.getObjectById(new SimpleIdRequest(pid, principals));
+        if (briefObj == null) {
+            return Collections.emptyList();
+        }
         String resourceType = briefObj.getResourceType();
         if (hasViewableContent(briefObj)) {
             return Collections.singletonList(briefObj);
@@ -324,28 +328,27 @@ public class IiifV3ManifestService {
             return Collections.emptyList();
         }
 
-        var resp = performQuery(briefObj, principals, 2000);
-        List<ContentObjectRecord> mdObjs = resp.getResultList();
+        var mdObjs = performQuery(briefObj, principals);
         mdObjs.add(0, briefObj);
         return mdObjs;
     }
 
-    private SearchResultResponse performQuery(ContentObjectRecord briefObj, AccessGroupSet principals, int rows) {
-        // Search for child objects with jp2 datastreams with user can access
+    private List<ContentObjectRecord> performQuery(ContentObjectRecord briefObj, AccessGroupSet principals) {
+        // Search for child objects with AV mimetypes with user can access
         SearchState searchState = new SearchState();
         if (!globalPermissionEvaluator.hasGlobalPrincipal(principals)) {
             searchState.setPermissionLimits(List.of(Permission.viewAccessCopies));
         }
         searchState.setIgnoreMaxRows(true);
-        searchState.setRowsPerPage(rows);
+        searchState.setRowsPerPage(2000);
         CutoffFacet selectedPath = briefObj.getPath();
         searchState.addFacet(selectedPath);
         searchState.setSortType("default");
-        searchState.addFilter(
-                QueryFilterFactory.createFilter(SearchFieldKey.FILE_FORMAT_TYPE, );
+        searchState.addFilter(QueryFilterFactory.createFileTypeFilter(FILE_TYPES));
 
         var searchRequest = new SearchRequest(searchState, principals);
-        return solrSearchService.getSearchResults(searchRequest);
+        var resp = solrSearchService.getSearchResults(searchRequest);
+        return resp.getResultList();
     }
 
     private void addViewingDirectionAndBehavior(Manifest manifest, ContentObjectRecord contentObj) {

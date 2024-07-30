@@ -4,6 +4,7 @@ import edu.unc.lib.boxc.auth.api.Permission;
 import edu.unc.lib.boxc.auth.api.exceptions.AccessRestrictionException;
 import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
 import edu.unc.lib.boxc.auth.api.services.AccessControlService;
+import edu.unc.lib.boxc.auth.api.services.GlobalPermissionEvaluator;
 import edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl;
 import edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore;
 import edu.unc.lib.boxc.model.api.ResourceType;
@@ -11,6 +12,7 @@ import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.boxc.search.solr.models.ContentObjectSolrRecord;
 import edu.unc.lib.boxc.search.solr.models.DatastreamImpl;
+import edu.unc.lib.boxc.search.solr.services.SolrSearchService;
 import edu.unc.lib.boxc.web.common.services.AccessCopiesService;
 import edu.unc.lib.boxc.web.services.processing.IiifV3ManifestService;
 import edu.unc.lib.boxc.web.services.rest.exceptions.RestResponseEntityExceptionHandler;
@@ -61,7 +63,9 @@ public class IiifV3ManifestControllerTest {
     private AccessControlService accessControlService;
 
     @Mock
-    private AccessCopiesService accessCopiesService;
+    private SolrSearchService solrSearchService;
+
+    @Mock private GlobalPermissionEvaluator globalPermissionEvaluator;
 
     private IiifV3ManifestService manifestService;
 
@@ -73,11 +77,12 @@ public class IiifV3ManifestControllerTest {
     public void setup() {
         closeable = openMocks(this);
         manifestService = new IiifV3ManifestService();
-        manifestService.setAccessCopiesService(accessCopiesService);
+        manifestService.setSolrSearchService(solrSearchService);
         manifestService.setAccessControlService(accessControlService);
         manifestService.setBaseIiifv3Path(IIIF_BASE);
         manifestService.setBaseServicesApiPath(SERVICES_BASE);
         manifestService.setBaseAccessPath(ACCESS_BASE);
+        manifestService.setGlobalPermissionEvaluator(globalPermissionEvaluator);
         manifestController.setManifestService(manifestService);
         mockMvc = MockMvcBuilders.standaloneSetup(manifestController)
                 .setControllerAdvice(new RestResponseEntityExceptionHandler())
@@ -97,7 +102,10 @@ public class IiifV3ManifestControllerTest {
         workObj.setId(OBJECT_ID);
         workObj.setResourceType(ResourceType.Work.name());
         workObj.setTitle("Test Work");
-        when(accessCopiesService.listViewableFiles(eq(OBJECT_PID), any())).thenReturn(Arrays.asList(workObj));
+        when(solrSearchService.getObjectById(any())).thenReturn(workObj);
+        when(solrSearchService.getSearchResults(any()))
+                .thenReturn(MvcTestHelpers.createSearchResponse(List.of(workObj)));
+        when(globalPermissionEvaluator.hasGlobalPrincipal(any())).thenReturn(true);
 
         var result = mockMvc.perform(get("/iiif/v3/" + OBJECT_ID + "/manifest")
                         .contentType(MediaType.APPLICATION_JSON))
@@ -135,7 +143,10 @@ public class IiifV3ManifestControllerTest {
         fileObj.setTitle("File Object");
         var originalDs = new DatastreamImpl("original_file|video/mp4|video.mp4|mp4|0|||240x750x500");
         fileObj.setDatastream(List.of(originalDs.toString()));
-        when(accessCopiesService.listViewableFiles(eq(OBJECT_PID), any())).thenReturn(Arrays.asList(workObj, fileObj));
+        when(solrSearchService.getObjectById(any())).thenReturn(workObj);
+        when(globalPermissionEvaluator.hasGlobalPrincipal(any())).thenReturn(true);
+        when(solrSearchService.getSearchResults(any()))
+                .thenReturn(MvcTestHelpers.createSearchResponse(Arrays.asList(workObj, fileObj)));
 
         var result = mockMvc.perform(get("/iiif/v3/" + OBJECT_ID + "/manifest")
                         .contentType(MediaType.APPLICATION_JSON))
@@ -159,7 +170,10 @@ public class IiifV3ManifestControllerTest {
         var originalDs = new DatastreamImpl("original_file|image/jpeg|image.jpg|jpg|0|||240x750");
         var jp2Ds = new DatastreamImpl("jp2|image/jp2|image.jp2|jp2|0|||");
         fileObj.setDatastream(Arrays.asList(originalDs.toString(), jp2Ds.toString()));
-        when(accessCopiesService.listViewableFiles(eq(OBJECT_PID), any())).thenReturn(Arrays.asList(fileObj));
+        when(solrSearchService.getObjectById(any())).thenReturn(fileObj);
+        when(solrSearchService.getSearchResults(any()))
+                .thenReturn(MvcTestHelpers.createSearchResponse(List.of(fileObj)));
+        when(globalPermissionEvaluator.hasGlobalPrincipal(any())).thenReturn(true);
 
         var result = mockMvc.perform(get("/iiif/v3/" + OBJECT_ID + "/canvas")
                         .contentType(MediaType.APPLICATION_JSON))
@@ -182,7 +196,10 @@ public class IiifV3ManifestControllerTest {
         fileObj.setTitle("File Object");
         var originalDs = new DatastreamImpl("original_file|video/mp4|video.mp4|mp4|0|||240x750x500");
         fileObj.setDatastream(List.of(originalDs.toString()));
-        when(accessCopiesService.listViewableFiles(eq(OBJECT_PID), any())).thenReturn(List.of(fileObj));
+        when(solrSearchService.getSearchResults(any()))
+                .thenReturn(MvcTestHelpers.createSearchResponse(List.of(fileObj)));
+        when(solrSearchService.getObjectById(any())).thenReturn(fileObj);
+        when(globalPermissionEvaluator.hasGlobalPrincipal(any())).thenReturn(true);
 
         var result = mockMvc.perform(get("/iiif/v3/" + OBJECT_ID + "/canvas")
                         .contentType(MediaType.APPLICATION_JSON))
@@ -207,7 +224,10 @@ public class IiifV3ManifestControllerTest {
         fileObj.setTitle("File Object");
         var originalDs = new DatastreamImpl("original_file|audio/mp4|sound.mp3|mp3|0|||xx500");
         fileObj.setDatastream(List.of(originalDs.toString()));
-        when(accessCopiesService.listViewableFiles(eq(OBJECT_PID), any())).thenReturn(List.of(fileObj));
+        when(solrSearchService.getSearchResults(any()))
+                .thenReturn(MvcTestHelpers.createSearchResponse(List.of(fileObj)));
+        when(solrSearchService.getObjectById(any())).thenReturn(fileObj);
+        when(globalPermissionEvaluator.hasGlobalPrincipal(any())).thenReturn(true);
 
         var result = mockMvc.perform(get("/iiif/v3/" + OBJECT_ID + "/canvas")
                         .contentType(MediaType.APPLICATION_JSON))
@@ -229,7 +249,10 @@ public class IiifV3ManifestControllerTest {
         fileObj.setTitle("File Object");
         var originalDs = new DatastreamImpl("original_file|video/mp4|video.mp4|mp4|0|||");
         fileObj.setDatastream(List.of(originalDs.toString()));
-        when(accessCopiesService.listViewableFiles(eq(OBJECT_PID), any())).thenReturn(List.of(fileObj));
+        when(solrSearchService.getSearchResults(any()))
+                .thenReturn(MvcTestHelpers.createSearchResponse(List.of(fileObj)));
+        when(globalPermissionEvaluator.hasGlobalPrincipal(any())).thenReturn(true);
+        when(solrSearchService.getObjectById(any())).thenReturn(fileObj);
 
         var result = mockMvc.perform(get("/iiif/v3/" + OBJECT_ID + "/canvas")
                         .contentType(MediaType.APPLICATION_JSON))
@@ -254,7 +277,10 @@ public class IiifV3ManifestControllerTest {
         fileObj.setTitle("File Object");
         var originalDs = new DatastreamImpl("original_file|video/mp4|video.mp4|mp4|0|||240x750x-1");
         fileObj.setDatastream(List.of(originalDs.toString()));
-        when(accessCopiesService.listViewableFiles(eq(OBJECT_PID), any())).thenReturn(List.of(fileObj));
+        when(solrSearchService.getSearchResults(any()))
+                .thenReturn(MvcTestHelpers.createSearchResponse(List.of(fileObj)));
+        when(solrSearchService.getObjectById(any())).thenReturn(fileObj);
+        when(globalPermissionEvaluator.hasGlobalPrincipal(any())).thenReturn(true);
 
         var result = mockMvc.perform(get("/iiif/v3/" + OBJECT_ID + "/canvas")
                         .contentType(MediaType.APPLICATION_JSON))

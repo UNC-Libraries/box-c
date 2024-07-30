@@ -3,6 +3,7 @@ package edu.unc.lib.boxc.search.solr.filters;
 import edu.unc.lib.boxc.search.api.SearchFieldKey;
 import edu.unc.lib.boxc.search.api.filters.QueryFilter;
 
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -11,16 +12,15 @@ import java.util.stream.Collectors;
  */
 public class FileTypeFilter implements QueryFilter {
     private SearchFieldKey fieldKey;
-    private Set<String> fileTypes;
+    private List<String> fileTypes;
 
-    protected FileTypeFilter(SearchFieldKey fieldKey, Set<String> fileTypes) {
-        this.fieldKey = fieldKey;
+    protected FileTypeFilter(List<String> fileTypes) {
         this.fileTypes = fileTypes;
     }
     @Override
     public String toFilterString() {
-        var solrField = getFieldKey().getSolrField();
-        return  getFileTypes().stream().map( type -> solrField + ":" + type)
+        var fileTypeField = SearchFieldKey.FILE_FORMAT_TYPE.getSolrField();
+        return  getFileTypes().stream().map( type -> fileTypeField + ":" + type)
                 .collect(Collectors.joining(" OR ", "(", ")"));
     }
 
@@ -29,7 +29,7 @@ public class FileTypeFilter implements QueryFilter {
         return fieldKey;
     }
 
-    public Set<String> getFileTypes() {
+    public List<String> getFileTypes() {
         return fileTypes;
     }
 }
