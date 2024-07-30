@@ -59,6 +59,7 @@ public class IiifV3ManifestService {
     private static final String VIDEO_MP4 = "video/mp4";
     private static final String AUDIO_MP4 = "audio/mp4";
     private static final String AUDIO_MPEG = "audio/mpeg";
+//    private static final String IMAGE_JPEG
     private static final List<String> FILE_TYPES = Arrays.asList(VIDEO_MP4, AUDIO_MP4, AUDIO_MPEG);
     private AccessControlService accessControlService;
     private SolrSearchService solrSearchService;
@@ -344,7 +345,7 @@ public class IiifV3ManifestService {
         CutoffFacet selectedPath = briefObj.getPath();
         searchState.addFacet(selectedPath);
         searchState.setSortType("default");
-        searchState.addFilter(QueryFilterFactory.createFileTypeFilter(FILE_TYPES));
+        searchState.addFilter(QueryFilterFactory.createAVFilter(FILE_TYPES));
 
         var searchRequest = new SearchRequest(searchState, principals);
         var resp = solrSearchService.getSearchResults(searchRequest);

@@ -45,4 +45,8 @@ public class QueryFilterFactory {
     public static QueryFilter createFileTypeFilter(List<String> fileTypes) {
         return new FileTypeFilter(fileTypes);
     }
+
+    public static QueryFilter createAVFilter(List<String> fileTypes) {
+        return new AVFilter(fileTypes);
+    }
 }
