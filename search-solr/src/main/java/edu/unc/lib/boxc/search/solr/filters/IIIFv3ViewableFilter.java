@@ -10,11 +10,11 @@ import java.util.stream.Collectors;
 /**
  * Filter which restricts results to those with either JP2 access copy datastream or specified file types
  */
-public class AVFilter implements QueryFilter {
+public class IIIFv3ViewableFilter implements QueryFilter {
     private SearchFieldKey fieldKey;
     private List<String> fileTypes;
 
-    protected AVFilter(List<String> fileTypes) {
+    protected IIIFv3ViewableFilter(List<String> fileTypes) {
         this.fileTypes = fileTypes;
     }
     @Override

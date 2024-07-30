@@ -345,7 +345,7 @@ public class IiifV3ManifestService {
         CutoffFacet selectedPath = briefObj.getPath();
         searchState.addFacet(selectedPath);
         searchState.setSortType("default");
-        searchState.addFilter(QueryFilterFactory.createAVFilter(FILE_TYPES));
+        searchState.addFilter(QueryFilterFactory.createIIIFv3ViewableFilter(FILE_TYPES));
 
         var searchRequest = new SearchRequest(searchState, principals);
         var resp = solrSearchService.getSearchResults(searchRequest);
