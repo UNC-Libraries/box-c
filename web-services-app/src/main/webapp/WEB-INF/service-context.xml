@@ -484,7 +484,7 @@
         <property name="baseServicesApiPath" value="${services.api.url}"/>
         <property name="accessControlService" ref="aclService"/>
         <property name="globalPermissionEvaluator" ref="globalPermissionEvaluator" />
-        <property name="solrSearchService" ref="solrSearchService" />
+        <property name="solrSearchService" ref="queryLayer" />
     </bean>
 
     <bean id="imageServerProxyService" class="edu.unc.lib.boxc.web.services.processing.ImageServerProxyService">
