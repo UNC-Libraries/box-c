@@ -163,13 +163,8 @@ public class IiifV3ManifestService {
      */
     private Canvas constructCanvasSection(ContentObjectRecord contentObj) {
         String title = getTitle(contentObj);
-        String uuid = contentObj.getId();
 
         var canvas = new Canvas(getCanvasPath(contentObj), title);
-
-        // Set up thumbnail for the current item
-        var thumbnail = new ImageContent(makeThumbnailUrl(uuid));
-        canvas.setThumbnails(thumbnail);
 
         // Children of canvas are AnnotationPages
         var annoPage = new AnnotationPage<PaintingAnnotation>(getAnnotationPagePath(contentObj));
@@ -187,6 +182,10 @@ public class IiifV3ManifestService {
             setVideoContent(contentObj, paintingAnno, canvas);
         } else {
             setImageContent(contentObj, paintingAnno, canvas);
+            // Set up thumbnail for the current image
+            String uuid = contentObj.getId();
+            var thumbnail = new ImageContent(makeThumbnailUrl(uuid));
+            canvas.setThumbnails(thumbnail);
         }
 
         return canvas;
@@ -223,7 +222,6 @@ public class IiifV3ManifestService {
                 videoContent.setDuration(duration);
                 canvas.setDuration(duration);
             }
-
         }
     }
 
