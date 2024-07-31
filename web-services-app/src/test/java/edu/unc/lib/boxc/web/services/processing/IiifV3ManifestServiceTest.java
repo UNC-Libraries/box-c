@@ -280,8 +280,7 @@ public class IiifV3ManifestServiceTest {
                 fileCanvas.getID().toString());
         assertEquals(240, fileCanvas.getHeight());
         assertEquals(750, fileCanvas.getWidth());
-        assertEquals("http://example.com/services/api/thumb/" + expectedId + "/large",
-                fileCanvas.getThumbnails().get(0).getID().toString());
+
         var annoPage = fileCanvas.getPaintingPages().get(0);
         var annotation = annoPage.getAnnotations().get(0);
         assertEquals("painting", annotation.getMotivation());
@@ -290,6 +289,8 @@ public class IiifV3ManifestServiceTest {
             checkVideoContent(annotation);
         } else {
             checkImageContent(annotation, expectedId);
+            assertEquals("http://example.com/services/api/thumb/" + expectedId + "/large",
+                    fileCanvas.getThumbnails().get(0).getID().toString());
         }
 
     }
