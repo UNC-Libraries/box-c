@@ -182,7 +182,7 @@ public class IiifV3ManifestService {
         // Child of the Annotation is a Content Object
         var mimetype = getMimetype(contentObj);
         if (isAudio(mimetype)) {
-            setSoundContent(contentObj, paintingAnno);
+            setSoundContent(contentObj, paintingAnno, canvas);
         } else if (isVideo(mimetype)) {
             setVideoContent(contentObj, paintingAnno, canvas);
         } else {
@@ -192,12 +192,14 @@ public class IiifV3ManifestService {
         return canvas;
     }
 
-    private void setSoundContent(ContentObjectRecord contentObj, PaintingAnnotation paintingAnno) {
+    private void setSoundContent(ContentObjectRecord contentObj, PaintingAnnotation paintingAnno, Canvas canvas) {
         var soundContent = new SoundContent(getDownloadPath(contentObj));
         soundContent.setFormat(AUDIO_MP4);
         var dimensions = getDimensions(contentObj);
         if (dimensions != null && (dimensions.get(DURATION) >= 0)) {
-            soundContent.setDuration(dimensions.get(DURATION));
+            var duration = dimensions.get(DURATION);
+            soundContent.setDuration(duration);
+            canvas.setDuration(duration);
         }
         paintingAnno.getBodies().add(soundContent);
     }
@@ -219,6 +221,7 @@ public class IiifV3ManifestService {
             var duration = dimensions.get(DURATION);
             if (duration >= 0) {
                 videoContent.setDuration(duration);
+                canvas.setDuration(duration);
             }
 
         }
