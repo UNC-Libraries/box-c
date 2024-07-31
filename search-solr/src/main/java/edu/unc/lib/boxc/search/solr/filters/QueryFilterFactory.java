@@ -4,6 +4,7 @@ import edu.unc.lib.boxc.model.api.DatastreamType;
 import edu.unc.lib.boxc.search.api.SearchFieldKey;
 import edu.unc.lib.boxc.search.api.filters.QueryFilter;
 
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -39,5 +40,13 @@ public class QueryFilterFactory {
      */
     public static QueryFilter createFilter(SearchFieldKey fieldKey) {
         return new HasPopulatedFieldFilter(fieldKey);
+    }
+
+    /**
+     * @param fileTypes mimetypes
+     * @return new QueryFilter instance with the provided file types
+     */
+    public static QueryFilter createIIIFv3ViewableFilter(List<String> fileTypes) {
+        return new IIIFv3ViewableFilter(fileTypes);
     }
 }

@@ -1,10 +1,16 @@
 package edu.unc.lib.boxc.web.services.rest;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.type.MapType;
+import edu.unc.lib.boxc.search.api.models.ContentObjectRecord;
+import edu.unc.lib.boxc.search.solr.responses.SearchResultResponse;
 import org.springframework.test.web.servlet.MvcResult;
 
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static com.fasterxml.jackson.databind.type.TypeFactory.defaultInstance;
@@ -22,8 +28,19 @@ public class MvcTestHelpers {
         return mapper.readValue(result.getResponse().getContentAsString(), type);
     }
 
+    public static JsonNode getResponseAsJson(MvcResult result) throws IOException {
+        ObjectMapper mapper = new ObjectMapper();
+        return mapper.readTree(result.getResponse().getContentAsString());
+    }
+
     public static byte[] makeRequestBody(Object details) throws Exception {
         ObjectMapper mapper = new ObjectMapper();
         return mapper.writeValueAsBytes(details);
+    }
+
+    public static SearchResultResponse createSearchResponse(List<ContentObjectRecord> records) {
+        var response = new SearchResultResponse();
+        response.setResultList(new ArrayList<>(records));
+        return response;
     }
 }

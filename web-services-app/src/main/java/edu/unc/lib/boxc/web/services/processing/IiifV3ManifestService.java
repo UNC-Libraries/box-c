@@ -1,22 +1,31 @@
 package edu.unc.lib.boxc.web.services.processing;
 
 import edu.unc.lib.boxc.auth.api.Permission;
+import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
 import edu.unc.lib.boxc.auth.api.models.AgentPrincipals;
 import edu.unc.lib.boxc.auth.api.services.AccessControlService;
 import edu.unc.lib.boxc.auth.api.services.DatastreamPermissionUtil;
+import edu.unc.lib.boxc.auth.api.services.GlobalPermissionEvaluator;
 import edu.unc.lib.boxc.common.util.URIUtil;
 import edu.unc.lib.boxc.model.api.DatastreamType;
 import edu.unc.lib.boxc.model.api.ResourceType;
 import edu.unc.lib.boxc.model.api.exceptions.NotFoundException;
 import edu.unc.lib.boxc.model.api.ids.PID;
+import edu.unc.lib.boxc.search.api.facets.CutoffFacet;
 import edu.unc.lib.boxc.search.api.models.ContentObjectRecord;
 import edu.unc.lib.boxc.search.api.models.Datastream;
-import edu.unc.lib.boxc.web.common.services.AccessCopiesService;
+import edu.unc.lib.boxc.search.api.requests.SearchRequest;
+import edu.unc.lib.boxc.search.api.requests.SearchState;
+import edu.unc.lib.boxc.search.api.requests.SimpleIdRequest;
+import edu.unc.lib.boxc.search.solr.filters.QueryFilterFactory;
+import edu.unc.lib.boxc.search.solr.services.SolrSearchService;
 import info.freelibrary.iiif.presentation.v3.AnnotationPage;
 import info.freelibrary.iiif.presentation.v3.Canvas;
 import info.freelibrary.iiif.presentation.v3.ImageContent;
 import info.freelibrary.iiif.presentation.v3.Manifest;
 import info.freelibrary.iiif.presentation.v3.PaintingAnnotation;
+import info.freelibrary.iiif.presentation.v3.SoundContent;
+import info.freelibrary.iiif.presentation.v3.VideoContent;
 import info.freelibrary.iiif.presentation.v3.properties.Label;
 import info.freelibrary.iiif.presentation.v3.properties.Metadata;
 import info.freelibrary.iiif.presentation.v3.properties.RequiredStatement;
@@ -28,10 +37,18 @@ import org.slf4j.LoggerFactory;
 import org.springframework.util.CollectionUtils;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 import static edu.unc.lib.boxc.model.api.DatastreamType.JP2_ACCESS_COPY;
+import static info.freelibrary.iiif.presentation.v3.MediaType.AUDIO_MP4;
+import static info.freelibrary.iiif.presentation.v3.MediaType.AUDIO_MPEG;
+import static info.freelibrary.iiif.presentation.v3.MediaType.IMAGE_JPEG;
+import static info.freelibrary.iiif.presentation.v3.MediaType.VIDEO_MP4;
 import static info.freelibrary.iiif.presentation.v3.properties.behaviors.ManifestBehavior.from;
 
 /**
@@ -40,8 +57,13 @@ import static info.freelibrary.iiif.presentation.v3.properties.behaviors.Manifes
  */
 public class IiifV3ManifestService {
     private static final Logger log = LoggerFactory.getLogger(IiifV3ManifestService.class);
-    private AccessCopiesService accessCopiesService;
+    public static final String DURATION = "duration";
+    public static final String WIDTH = "width";
+    public static final String HEIGHT = "height";
+    private static final List<String> FILE_TYPES = Arrays.asList(VIDEO_MP4.toString(), AUDIO_MP4.toString(), AUDIO_MPEG.toString());
     private AccessControlService accessControlService;
+    private SolrSearchService solrSearchService;
+    private GlobalPermissionEvaluator globalPermissionEvaluator;
     private String baseIiifv3Path;
     private String baseAccessPath;
     private String baseServicesApiPath;
@@ -54,7 +76,7 @@ public class IiifV3ManifestService {
      */
     public Manifest buildManifest(PID pid, AgentPrincipals agent) {
         assertHasAccess(pid, agent);
-        var contentObjs = accessCopiesService.listViewableFiles(pid, agent.getPrincipals());
+        var contentObjs = listViewableFiles(pid, agent.getPrincipals());
         if (contentObjs.isEmpty()) {
             throw new NotFoundException("No objects were found for inclusion in manifest for object " + pid.getId());
         }
@@ -129,7 +151,7 @@ public class IiifV3ManifestService {
      */
     public Canvas buildCanvas(PID pid, AgentPrincipals agent) {
         assertHasAccess(pid, agent);
-        var contentObjs = accessCopiesService.listViewableFiles(pid, agent.getPrincipals());
+        var contentObjs = listViewableFiles(pid, agent.getPrincipals());
         ContentObjectRecord rootObj = contentObjs.get(0);
         return constructCanvasSection(rootObj);
     }
@@ -141,13 +163,8 @@ public class IiifV3ManifestService {
      */
     private Canvas constructCanvasSection(ContentObjectRecord contentObj) {
         String title = getTitle(contentObj);
-        String uuid = contentObj.getId();
 
         var canvas = new Canvas(getCanvasPath(contentObj), title);
-
-        // Set up thumbnail for the current item
-        var thumbnail = new ImageContent(makeThumbnailUrl(uuid));
-        canvas.setThumbnails(thumbnail);
 
         // Children of canvas are AnnotationPages
         var annoPage = new AnnotationPage<PaintingAnnotation>(getAnnotationPagePath(contentObj));
@@ -157,9 +174,60 @@ public class IiifV3ManifestService {
         var paintingAnno = new PaintingAnnotation(getAnnotationPath(contentObj), canvas);
         annoPage.addAnnotations(paintingAnno);
 
-        // Child of the Annotation is the content resource, which is an ImageContent
+        // Child of the Annotation is a Content Object
+        var mimetype = getMimetype(contentObj);
+        if (isAudio(mimetype)) {
+            setSoundContent(contentObj, paintingAnno, canvas);
+        } else if (isVideo(mimetype)) {
+            setVideoContent(contentObj, paintingAnno, canvas);
+        } else {
+            setImageContent(contentObj, paintingAnno, canvas);
+            // Set up thumbnail for the current image
+            String uuid = contentObj.getId();
+            var thumbnail = new ImageContent(makeThumbnailUrl(uuid));
+            canvas.setThumbnails(thumbnail);
+        }
+
+        return canvas;
+    }
+
+    private void setSoundContent(ContentObjectRecord contentObj, PaintingAnnotation paintingAnno, Canvas canvas) {
+        var soundContent = new SoundContent(getDownloadPath(contentObj));
+        soundContent.setFormat(AUDIO_MP4);
+        var dimensions = getDimensions(contentObj);
+        if (dimensions != null && (dimensions.get(DURATION) >= 0)) {
+            var duration = dimensions.get(DURATION);
+            soundContent.setDuration(duration);
+            canvas.setDuration(duration);
+        }
+        paintingAnno.getBodies().add(soundContent);
+    }
+
+    private void setVideoContent(ContentObjectRecord contentObj, PaintingAnnotation paintingAnno, Canvas canvas) {
+        var videoContent = new VideoContent(getDownloadPath(contentObj));
+        videoContent.setFormat(VIDEO_MP4);
+        assignVideoDimensions(contentObj, canvas, videoContent);
+        paintingAnno.getBodies().add(videoContent);
+    }
+
+    private void assignVideoDimensions(ContentObjectRecord contentObj, Canvas canvas, VideoContent videoContent) {
+        var dimensions = getDimensions(contentObj);
+        if (dimensions != null) {
+            var width = dimensions.get(WIDTH);
+            var height = dimensions.get(HEIGHT);
+            canvas.setWidthHeight(width, height); // Dimensions for the canvas
+            videoContent.setWidthHeight(width, height); // Dimensions for the actual video
+            var duration = dimensions.get(DURATION);
+            if (duration >= 0) {
+                videoContent.setDuration(duration);
+                canvas.setDuration(duration);
+            }
+        }
+    }
+
+    private void setImageContent(ContentObjectRecord contentObj, PaintingAnnotation paintingAnno, Canvas canvas) {
         var imageContent = new ImageContent(getImagePath(contentObj));
-        imageContent.setFormat("image/jpeg");
+        imageContent.setFormat(IMAGE_JPEG);
         paintingAnno.getBodies().add(imageContent);
 
         // Child of the content resource is an ImageService
@@ -167,21 +235,123 @@ public class IiifV3ManifestService {
         imageContent.setServices(imageService);
 
         // Set the dimensions of this item on appropriate elements
-        assignDimensions(contentObj, canvas, imageContent);
-
-        return canvas;
+        assignImageDimensions(contentObj, canvas, imageContent);
     }
 
-    private void assignDimensions(ContentObjectRecord contentObj, Canvas canvas, ImageContent imageContent) {
-        Datastream fileDs = contentObj.getDatastreamObject(DatastreamType.ORIGINAL_FILE.getId());
-        String extent = fileDs.getExtent();
-        if (extent != null && !extent.equals("")) {
-            String[] imgDimensions = extent.split("x");
-            var width = Integer.parseInt(imgDimensions[1]); // in the datastream, the width is second
-            var height = Integer.parseInt(imgDimensions[0]);
+    private void assignImageDimensions(ContentObjectRecord contentObj, Canvas canvas, ImageContent imageContent) {
+        var dimensions = getDimensions(contentObj);
+        if (dimensions != null) {
+            var width = dimensions.get(WIDTH);
+            var height = dimensions.get(HEIGHT);
             canvas.setWidthHeight(width, height); // Dimensions for the canvas
             imageContent.setWidthHeight(width, height); // Dimensions for the actual image
         }
+    }
+
+    private Map<String, Integer> getDimensions(ContentObjectRecord contentObj) {
+        var fileDs = getFileDatastream(contentObj);
+        String extent = fileDs.getExtent();
+        if (extent != null && !extent.isEmpty()) {
+            String[] imgDimensions = extent.split("x");
+            if (imgDimensions.length >= 2) {
+                return extractDimensions(imgDimensions);
+            }
+        }
+        return null;
+    }
+
+    private static Map<String, Integer> extractDimensions(String[] imgDimensions) {
+        var dimensions = new HashMap<String, Integer>();
+        // [height, width, seconds]
+        var height = imgDimensions[0];
+        if (!height.isBlank()) {
+            dimensions.put(HEIGHT, Integer.parseInt(height));
+        }
+        var width = imgDimensions[1];
+        if (!width.isBlank()) {
+            dimensions.put(WIDTH, Integer.parseInt(width));
+        }
+        if (imgDimensions.length == 3) {
+            var duration = imgDimensions[2];
+            dimensions.put(DURATION, Integer.parseInt(duration));
+        }
+        return dimensions;
+    }
+
+    private Datastream getFileDatastream(ContentObjectRecord contentObj) {
+        return contentObj.getDatastreamObject(DatastreamType.ORIGINAL_FILE.getId());
+    }
+
+    private String getMimetype(ContentObjectRecord contentObj) {
+        return getFileDatastream(contentObj).getMimetype();
+    }
+
+    private boolean isVideo(String mimetype) {
+        return Objects.equals(mimetype, VIDEO_MP4.toString());
+    }
+
+    private boolean isAudio(String mimetype) {
+        return Objects.equals(mimetype, AUDIO_MP4.toString()) || Objects.equals(mimetype, AUDIO_MPEG.toString());
+    }
+
+    private boolean hasViewableContent(ContentObjectRecord contentObj) {
+        // if obj is not a file
+        if (!contentObj.getResourceType().equals(ResourceType.File.name())) {
+            return false;
+        }
+
+        var jp2Datastream = contentObj.getDatastreamObject(DatastreamType.JP2_ACCESS_COPY.getId());
+        var isValidDatastream = jp2Datastream != null;
+        var originalDatastream = contentObj.getDatastreamObject(DatastreamType.ORIGINAL_FILE.getId());
+        // check if original datastream mimetype is image or video
+        if (!isValidDatastream && originalDatastream != null) {
+            var mimetype = originalDatastream.getMimetype();
+            isValidDatastream = isAudio(mimetype) || isVideo(mimetype);
+        }
+
+        return isValidDatastream;
+    }
+
+    /**
+     * List viewable files for the specified object
+     * @param pid
+     * @param principals
+     * @return
+     */
+    private List<ContentObjectRecord> listViewableFiles(PID pid, AccessGroupSet principals) {
+        ContentObjectRecord briefObj = solrSearchService.getObjectById(new SimpleIdRequest(pid, principals));
+        if (briefObj == null) {
+            return Collections.emptyList();
+        }
+        String resourceType = briefObj.getResourceType();
+        if (hasViewableContent(briefObj)) {
+            return Collections.singletonList(briefObj);
+        }
+        if (!ResourceType.Work.nameEquals(resourceType)) {
+            return Collections.emptyList();
+        }
+
+        var mdObjs = performQuery(briefObj, principals);
+        mdObjs.add(0, briefObj);
+        return mdObjs;
+    }
+
+    private List<ContentObjectRecord> performQuery(ContentObjectRecord briefObj, AccessGroupSet principals) {
+        // Search for child objects with AV mimetypes with user can access
+        SearchState searchState = new SearchState();
+        if (!globalPermissionEvaluator.hasGlobalPrincipal(principals)) {
+            searchState.setPermissionLimits(List.of(Permission.viewAccessCopies));
+        }
+        searchState.setIgnoreMaxRows(true);
+        searchState.setRowsPerPage(2000);
+        CutoffFacet selectedPath = briefObj.getPath();
+        searchState.addFacet(selectedPath);
+        searchState.setSortType("default");
+        searchState.addFilter(QueryFilterFactory.createIIIFv3ViewableFilter(FILE_TYPES));
+
+        var searchRequest = new SearchRequest(searchState, principals);
+        var resp = solrSearchService.getSearchResults(searchRequest);
+        return resp.getResultList();
     }
 
     private void addViewingDirectionAndBehavior(Manifest manifest, ContentObjectRecord contentObj) {
@@ -231,17 +401,20 @@ public class IiifV3ManifestService {
         return URIUtil.join(baseServicesApiPath, "thumb", id, "large");
     }
 
-    private boolean hasViewableContent(ContentObjectRecord contentObj) {
-        var datastream = contentObj.getDatastreamObject(DatastreamType.JP2_ACCESS_COPY.getId());
-        return datastream != null && contentObj.getResourceType().equals(ResourceType.File.name());
-    }
-
-    public void setAccessCopiesService(AccessCopiesService accessCopiesService) {
-        this.accessCopiesService = accessCopiesService;
+    private String getDownloadPath(ContentObjectRecord contentObj) {
+        return URIUtil.join(baseServicesApiPath, "file", contentObj.getId());
     }
 
     public void setAccessControlService(AccessControlService accessControlService) {
         this.accessControlService = accessControlService;
+    }
+
+    public void setSolrSearchService(SolrSearchService solrSearchService) {
+        this.solrSearchService = solrSearchService;
+    }
+
+    public void setGlobalPermissionEvaluator(GlobalPermissionEvaluator globalPermissionEvaluator) {
+        this.globalPermissionEvaluator = globalPermissionEvaluator;
     }
 
     public void setBaseIiifv3Path(String baseIiifv3Path) {
