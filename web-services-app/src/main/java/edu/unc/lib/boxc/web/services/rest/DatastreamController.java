@@ -23,6 +23,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -71,6 +72,7 @@ public class DatastreamController {
             SearchFieldKey.FILE_FORMAT_CATEGORY.name(), SearchFieldKey.FILE_FORMAT_TYPE.name(),
             SearchFieldKey.RESOURCE_TYPE.name(), SearchFieldKey.ANCESTOR_PATH.name());
 
+    @CrossOrigin
     @RequestMapping("/file/{pid}")
     public void getDatastream(@PathVariable("pid") String pidString,
             @RequestParam(value = "dl", defaultValue = "false") boolean download,
@@ -79,6 +81,7 @@ public class DatastreamController {
         getDatastream(pidString, ORIGINAL_FILE.getId(), download, request, response);
     }
 
+    @CrossOrigin
     @RequestMapping("/file/{pid}/{datastream}")
     public void getDatastream(@PathVariable("pid") String pidString,
             @PathVariable("datastream") String datastream,

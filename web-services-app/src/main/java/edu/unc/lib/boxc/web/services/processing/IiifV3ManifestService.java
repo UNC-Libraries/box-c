@@ -45,6 +45,10 @@ import java.util.Map;
 import java.util.Objects;
 
 import static edu.unc.lib.boxc.model.api.DatastreamType.JP2_ACCESS_COPY;
+import static info.freelibrary.iiif.presentation.v3.MediaType.AUDIO_MP4;
+import static info.freelibrary.iiif.presentation.v3.MediaType.AUDIO_MPEG;
+import static info.freelibrary.iiif.presentation.v3.MediaType.IMAGE_JPEG;
+import static info.freelibrary.iiif.presentation.v3.MediaType.VIDEO_MP4;
 import static info.freelibrary.iiif.presentation.v3.properties.behaviors.ManifestBehavior.from;
 
 /**
@@ -56,11 +60,7 @@ public class IiifV3ManifestService {
     public static final String DURATION = "duration";
     public static final String WIDTH = "width";
     public static final String HEIGHT = "height";
-    private static final String VIDEO_MP4 = "video/mp4";
-    private static final String AUDIO_MP4 = "audio/mp4";
-    private static final String AUDIO_MPEG = "audio/mpeg";
-//    private static final String IMAGE_JPEG
-    private static final List<String> FILE_TYPES = Arrays.asList(VIDEO_MP4, AUDIO_MP4, AUDIO_MPEG);
+    private static final List<String> FILE_TYPES = Arrays.asList(VIDEO_MP4.toString(), AUDIO_MP4.toString(), AUDIO_MPEG.toString());
     private AccessControlService accessControlService;
     private SolrSearchService solrSearchService;
     private GlobalPermissionEvaluator globalPermissionEvaluator;
@@ -194,6 +194,7 @@ public class IiifV3ManifestService {
 
     private void setSoundContent(ContentObjectRecord contentObj, PaintingAnnotation paintingAnno) {
         var soundContent = new SoundContent(getDownloadPath(contentObj));
+        soundContent.setFormat(AUDIO_MP4);
         var dimensions = getDimensions(contentObj);
         if (dimensions != null && (dimensions.get(DURATION) >= 0)) {
             soundContent.setDuration(dimensions.get(DURATION));
@@ -203,7 +204,7 @@ public class IiifV3ManifestService {
 
     private void setVideoContent(ContentObjectRecord contentObj, PaintingAnnotation paintingAnno, Canvas canvas) {
         var videoContent = new VideoContent(getDownloadPath(contentObj));
-        videoContent.setFormat("video/mp4");
+        videoContent.setFormat(VIDEO_MP4);
         assignVideoDimensions(contentObj, canvas, videoContent);
         paintingAnno.getBodies().add(videoContent);
     }
@@ -225,7 +226,7 @@ public class IiifV3ManifestService {
 
     private void setImageContent(ContentObjectRecord contentObj, PaintingAnnotation paintingAnno, Canvas canvas) {
         var imageContent = new ImageContent(getImagePath(contentObj));
-        imageContent.setFormat("image/jpeg");
+        imageContent.setFormat(IMAGE_JPEG);
         paintingAnno.getBodies().add(imageContent);
 
         // Child of the content resource is an ImageService
@@ -285,11 +286,11 @@ public class IiifV3ManifestService {
     }
 
     private boolean isVideo(String mimetype) {
-        return Objects.equals(mimetype, VIDEO_MP4);
+        return Objects.equals(mimetype, VIDEO_MP4.toString());
     }
 
     private boolean isAudio(String mimetype) {
-        return Objects.equals(mimetype, AUDIO_MP4) || Objects.equals(mimetype, AUDIO_MPEG);
+        return Objects.equals(mimetype, AUDIO_MP4.toString()) || Objects.equals(mimetype, AUDIO_MPEG.toString());
     }
 
     private boolean hasViewableContent(ContentObjectRecord contentObj) {
