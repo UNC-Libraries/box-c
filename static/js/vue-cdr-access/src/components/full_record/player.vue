@@ -1,14 +1,11 @@
 <template>
     <div>
-        <template v-if="(recordData.viewerType === 'uv' && hasPermission(recordData, 'viewAccessCopies')) ||
+        <template v-if="((recordData.viewerType === 'uv' || recordData.viewerType === 'audio' || recordData.viewerType === 'video') && hasPermission(recordData, 'viewAccessCopies')) ||
                 (recordData.viewerType === 'pdf' && hasPermission(recordData, 'viewOriginal') && pdfFileAcceptableForDisplay)">
-            <iframe :src="viewer(recordData.viewerType)" allow="fullscreen" scrolling="no"></iframe>
-        </template>
-        <template v-else-if="recordData.viewerType === 'audio' && hasPermission(recordData, 'viewAccessCopies')">
-            <audio-player :datafile-url="recordData.dataFileUrl"></audio-player>
+            <iframe :src="viewer('uv')" allow="fullscreen" scrolling="no"></iframe>
         </template>
         <template v-else-if="recordData.viewerType === 'streaming' && hasPermission(recordData, 'viewAccessCopies')">
-            <streaming-player :record-data="recordData"></streaming-player>
+            <streaming-player :brief-object="recordData.briefObject"></streaming-player>
         </template>
     </div>
 </template>
