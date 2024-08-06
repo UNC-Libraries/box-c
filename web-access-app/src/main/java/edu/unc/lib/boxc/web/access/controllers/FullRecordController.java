@@ -57,6 +57,7 @@ import static edu.unc.lib.boxc.common.xml.SecureXMLFactory.createSAXBuilder;
 import static edu.unc.lib.boxc.search.api.FacetConstants.MARKED_FOR_DELETION;
 import static edu.unc.lib.boxc.web.common.services.AccessCopiesService.AUDIO_MIMETYPE_REGEX;
 import static edu.unc.lib.boxc.web.common.services.AccessCopiesService.PDF_MIMETYPE_REGEX;
+import static edu.unc.lib.boxc.web.common.services.AccessCopiesService.VIDEO_MIMETYPE_REGEX;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 /**
@@ -306,7 +307,11 @@ public class FullRecordController extends AbstractErrorHandlingSearchController 
                 if (viewerPid != null) {
                     viewerType = "audio";
                 }
-            }
+                viewerPid = accessCopiesService.getDatastreamPid(briefObject, principals, VIDEO_MIMETYPE_REGEX);
+                if (viewerPid != null) {
+                    viewerType = "video";
+
+                }
         }
 
         var viewerProperties = new HashMap<String, Object>();
