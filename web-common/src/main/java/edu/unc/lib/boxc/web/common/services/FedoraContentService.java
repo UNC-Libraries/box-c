@@ -52,6 +52,7 @@ public class FedoraContentService {
 
     private static final String BYTES = "bytes";
     public static final String CONTENT_DISPOSITION = "Content-Disposition";
+    private static final int PARTIAL_CONTENT = 206;
 
     private AccessControlService accessControlService;
 
@@ -109,6 +110,7 @@ public class FedoraContentService {
             response.setHeader(ACCEPT_RANGES, BYTES);
             response.setHeader(CONTENT_LENGTH, fedoraResponse.getHeaderValue(CONTENT_LENGTH));
             response.setHeader(CONTENT_RANGE, fedoraResponse.getHeaderValue(CONTENT_RANGE));
+            response.setStatus(PARTIAL_CONTENT);
             InputStream binStream = fedoraResponse.getBody();
             OutputStream outStream = response.getOutputStream();
             IOUtils.copy(binStream, outStream, BUFFER_SIZE);
