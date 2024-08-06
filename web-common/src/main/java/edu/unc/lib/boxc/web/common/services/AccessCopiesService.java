@@ -39,6 +39,7 @@ public class AccessCopiesService {
     private PermissionsHelper permissionsHelper;
     private SolrSearchService solrSearchService;
     public static final String AUDIO_MIMETYPE_REGEX = "audio/(x-)?mpeg(-?3)?";
+    public static final String VIDEO_MIMETYPE_REGEX = "video/(x-)?(mpeg|mp)(-?4)?";
     public static final String PDF_MIMETYPE_REGEX = "application/(x-)?pdf";
 
     /**

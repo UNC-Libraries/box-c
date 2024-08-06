@@ -57,6 +57,7 @@ import static edu.unc.lib.boxc.common.xml.SecureXMLFactory.createSAXBuilder;
 import static edu.unc.lib.boxc.search.api.FacetConstants.MARKED_FOR_DELETION;
 import static edu.unc.lib.boxc.web.common.services.AccessCopiesService.AUDIO_MIMETYPE_REGEX;
 import static edu.unc.lib.boxc.web.common.services.AccessCopiesService.PDF_MIMETYPE_REGEX;
+import static edu.unc.lib.boxc.web.common.services.AccessCopiesService.VIDEO_MIMETYPE_REGEX;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 /**
@@ -288,7 +289,7 @@ public class FullRecordController extends AbstractErrorHandlingSearchController 
         }
 
         if (imageViewerNeeded) {
-            viewerType = "uv";
+            viewerType = "clover";
         } else if (briefObject.getContentStatus().contains(FacetConstants.HAS_STREAMING) || workStreamingContent != null) {
             viewerType = "streaming";
             streamingUrl = (workStreamingContent != null) ? workStreamingContent.getStreamingUrl() :
@@ -304,7 +305,11 @@ public class FullRecordController extends AbstractErrorHandlingSearchController 
                 // Check for viewable audio file
                 viewerPid = accessCopiesService.getDatastreamPid(briefObject, principals, AUDIO_MIMETYPE_REGEX);
                 if (viewerPid != null) {
-                    viewerType = "audio";
+                    viewerType = "clover";
+                }
+                viewerPid = accessCopiesService.getDatastreamPid(briefObject, principals, VIDEO_MIMETYPE_REGEX);
+                if (viewerPid != null) {
+                    viewerType = "clover";
                 }
             }
         }
