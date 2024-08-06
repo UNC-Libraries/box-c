@@ -2,7 +2,9 @@ package edu.unc.lib.boxc.web.common.services;
 
 import static edu.unc.lib.boxc.auth.api.services.DatastreamPermissionUtil.getPermissionForDatastream;
 import static edu.unc.lib.boxc.model.api.DatastreamType.ORIGINAL_FILE;
+import static org.apache.http.HttpHeaders.ACCEPT_RANGES;
 import static org.apache.http.HttpHeaders.CONTENT_LENGTH;
+import static org.apache.http.HttpHeaders.CONTENT_RANGE;
 import static org.apache.http.HttpHeaders.CONTENT_TYPE;
 import static org.apache.http.HttpHeaders.RANGE;
 
@@ -48,6 +50,7 @@ public class FedoraContentService {
 
     private static final int BUFFER_SIZE = 4096;
 
+    private static final String BYTES = "bytes";
     public static final String CONTENT_DISPOSITION = "Content-Disposition";
 
     private AccessControlService accessControlService;
@@ -103,7 +106,10 @@ public class FedoraContentService {
         }
 
         try (FcrepoResponse fedoraResponse = getFedoraResponse(binObj, range)) {
+            response.setHeader(ACCEPT_RANGES, BYTES);
             response.setHeader(CONTENT_LENGTH, fedoraResponse.getHeaderValue(CONTENT_LENGTH));
+            response.setHeader(CONTENT_RANGE, fedoraResponse.getHeaderValue(CONTENT_RANGE));
+            response.setStatus(fedoraResponse.getStatusCode());
             InputStream binStream = fedoraResponse.getBody();
             OutputStream outStream = response.getOutputStream();
             IOUtils.copy(binStream, outStream, BUFFER_SIZE);
