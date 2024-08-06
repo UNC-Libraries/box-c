@@ -3,7 +3,6 @@ package edu.unc.lib.boxc.operations.impl.download;
 import edu.unc.lib.boxc.auth.api.Permission;
 import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
 import edu.unc.lib.boxc.auth.api.services.AccessControlService;
-import edu.unc.lib.boxc.model.api.DatastreamType;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.objects.ContentObject;
 import edu.unc.lib.boxc.model.api.objects.FileObject;
@@ -11,8 +10,6 @@ import edu.unc.lib.boxc.model.api.objects.RepositoryObject;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.api.objects.WorkObject;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
-import edu.unc.lib.boxc.search.api.models.ContentObjectRecord;
-import edu.unc.lib.boxc.search.api.models.Datastream;
 import org.apache.commons.io.IOUtils;
 
 import java.io.FileOutputStream;
@@ -35,20 +32,23 @@ public class DownloadBulkService {
                 "User does not have permissions to view the Work for download",
                 workPid, agentPrincipals, Permission.viewOriginal);
 
-        RepositoryObject obj = repoObjLoader.getRepositoryObject(workPid);
-        if (!(obj instanceof WorkObject)) {
-            throw new IllegalArgumentException("Failed to bulk download for " + obj.getPid());
+        var workObject = repoObjLoader.getWorkObject(workPid);
+        if (workObject == null) {
+            throw new IllegalArgumentException("Failed to bulk download for " + workPid);
         }
 
         var zipFilePath = basePath + getZipFilename(workPid.getId());
 
-        zipFiles(workPid,agentPrincipals, zipFilePath);
+        zipFiles(workObject, agentPrincipals, zipFilePath);
         return zipFilePath;
     }
 
-    private void zipFiles(PID workPid, AccessGroupSet agentPrincipals, String zipFilePath) throws IOException {
-        var workObject = repoObjLoader.getWorkObject(workPid);
+    private void zipFiles(WorkObject workObject, AccessGroupSet agentPrincipals, String zipFilePath) throws IOException {
         var memberObjects = workObject.getMembers();
+        if (memberObjects.isEmpty()) {
+            throw new IllegalArgumentException("The WorkObject with ID" + workObject.getPid() +
+                    " does not have any FileObjects");
+        }
         final FileOutputStream fos = new FileOutputStream(zipFilePath);
         ZipOutputStream zipOut = new ZipOutputStream(fos);
 
@@ -72,10 +72,6 @@ public class DownloadBulkService {
         fos.close();
     }
 
-    private Datastream getDatastream(ContentObjectRecord contentObjectRecord) {
-        var id = DatastreamType.ORIGINAL_FILE.getId();
-        return contentObjectRecord.getDatastreamObject(id);
-    }
     private String getZipFilename(String workPidString) {
         return "ZIP-WORK-" + workPidString + ".zip";
     }
