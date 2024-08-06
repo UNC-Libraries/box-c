@@ -310,8 +310,8 @@ public class FullRecordController extends AbstractErrorHandlingSearchController 
                 viewerPid = accessCopiesService.getDatastreamPid(briefObject, principals, VIDEO_MIMETYPE_REGEX);
                 if (viewerPid != null) {
                     viewerType = "video";
-
                 }
+            }
         }
 
         var viewerProperties = new HashMap<String, Object>();
