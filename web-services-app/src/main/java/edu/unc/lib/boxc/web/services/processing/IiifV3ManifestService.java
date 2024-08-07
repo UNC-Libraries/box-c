@@ -178,6 +178,9 @@ public class IiifV3ManifestService {
         var mimetype = getMimetype(contentObj);
         if (isAudio(mimetype)) {
             setSoundContent(contentObj, paintingAnno, canvas);
+            var imgPath = URIUtil.join(baseAccessPath, "static", "images", "file-audio.png");
+            var thumbnail = new ImageContent(imgPath);
+            canvas.setThumbnails(thumbnail);
         } else if (isVideo(mimetype)) {
             setVideoContent(contentObj, paintingAnno, canvas);
         } else {

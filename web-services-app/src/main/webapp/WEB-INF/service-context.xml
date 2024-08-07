@@ -480,7 +480,7 @@
 
     <bean id="iiifV3ManifestService" class="edu.unc.lib.boxc.web.services.processing.IiifV3ManifestService">
         <property name="baseIiifv3Path" value="${services.api.url}iiif/v3/"/>
-        <property name="baseAccessPath" value="${repository.protocol}://${repository.host}/"/>
+        <property name="baseAccessPath" value="${repository.protocol}://${repository.host}${repository.port}/"/>
         <property name="baseServicesApiPath" value="${services.api.url}"/>
         <property name="accessControlService" ref="aclService"/>
         <property name="globalPermissionEvaluator" ref="globalPermissionEvaluator" />
