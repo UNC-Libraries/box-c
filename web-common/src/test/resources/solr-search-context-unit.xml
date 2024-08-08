@@ -20,8 +20,6 @@
     <bean id="facetFieldUtil" class="edu.unc.lib.boxc.search.solr.utils.FacetFieldUtil">
         <property name="searchSettings" ref="searchSettings" />
     </bean>
-    <bean id="searchActionService" class="edu.unc.lib.boxc.web.common.search.SearchActionService">
-    </bean>
     <bean id="searchStateUtil" class="edu.unc.lib.boxc.search.solr.utils.SearchStateUtil">
         <property name="searchSettings" ref="searchSettings" />
     </bean>

@@ -5,7 +5,6 @@ import edu.unc.lib.boxc.search.solr.config.SearchSettings;
 import edu.unc.lib.boxc.search.solr.services.SearchStateFactory;
 import edu.unc.lib.boxc.search.solr.utils.SearchStateUtil;
 import edu.unc.lib.boxc.web.common.controllers.AbstractErrorHandlingSearchController;
-import edu.unc.lib.boxc.web.common.search.SearchActionService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,8 +31,6 @@ import java.util.HashMap;
 @RequestMapping("/basicSearch")
 public class BasicSearchFormController extends AbstractErrorHandlingSearchController {
     private static final Logger LOG = LoggerFactory.getLogger(BasicSearchFormController.class);
-    @Autowired(required = true)
-    private SearchActionService searchActionService;
     @Autowired
     private SearchSettings searchSettings;
     @Autowired
@@ -93,14 +90,6 @@ public class BasicSearchFormController extends AbstractErrorHandlingSearchContro
             destination.append('?').append(queryType).append('=').append(query);
         }
         return destination.toString();
-    }
-
-    public SearchActionService getSearchActionService() {
-        return searchActionService;
-    }
-
-    public void setSearchActionService(SearchActionService searchActionService) {
-        this.searchActionService = searchActionService;
     }
 
     public void setSearchStateFactory(SearchStateFactory searchStateFactory) {

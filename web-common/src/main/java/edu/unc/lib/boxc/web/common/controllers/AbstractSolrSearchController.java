@@ -2,7 +2,6 @@ package edu.unc.lib.boxc.web.common.controllers;
 
 import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
 import edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore;
-import edu.unc.lib.boxc.search.api.exceptions.InvalidHierarchicalFacetException;
 import edu.unc.lib.boxc.search.api.requests.HierarchicalBrowseRequest;
 import edu.unc.lib.boxc.search.api.requests.SearchRequest;
 import edu.unc.lib.boxc.search.api.requests.SearchState;
@@ -12,7 +11,6 @@ import edu.unc.lib.boxc.search.solr.services.ChildrenCountService;
 import edu.unc.lib.boxc.search.solr.services.SearchStateFactory;
 import edu.unc.lib.boxc.search.solr.services.SetFacetTitleByIdService;
 import edu.unc.lib.boxc.search.solr.utils.SearchStateUtil;
-import edu.unc.lib.boxc.web.common.search.SearchActionService;
 import edu.unc.lib.boxc.web.common.services.SolrQueryLayerService;
 import edu.unc.lib.boxc.web.common.utils.SearchStateSerializationUtil;
 import edu.unc.lib.boxc.web.common.utils.SerializationUtil;
@@ -21,7 +19,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -37,8 +34,6 @@ public abstract class AbstractSolrSearchController {
 
     @Autowired(required = true)
     protected SolrQueryLayerService queryLayer;
-    @Autowired(required = true)
-    protected SearchActionService searchActionService;
     @Autowired
     protected SearchSettings searchSettings;
     @Autowired
@@ -66,9 +61,8 @@ public abstract class AbstractSolrSearchController {
      */
     protected SearchRequest generateSearchRequest(
             HttpServletRequest request, SearchState searchState, SearchRequest searchRequest) {
+        LOG.debug("Generating search request");
 
-        //Get user access groups.  Fill this in later, for now just set to public
-        HttpSession session = request.getSession();
         //Get the access group list
         AccessGroupSet accessGroups = getAgentPrincipals().getPrincipals();
         searchRequest.setAccessGroups(accessGroups);
@@ -82,13 +76,6 @@ public abstract class AbstractSolrSearchController {
             }
         }
 
-        //Perform actions on search state
-        try {
-            searchActionService.executeActions(searchState, request.getParameterMap());
-        } catch (InvalidHierarchicalFacetException e) {
-            LOG.debug("An invalid facet was provided: " + request.getQueryString(), e);
-        }
-
         //Store the search state into the search request
         searchRequest.setSearchState(searchState);
 
@@ -97,14 +84,6 @@ public abstract class AbstractSolrSearchController {
 
     protected SearchResultResponse getSearchResults(SearchRequest searchRequest) {
         return queryLayer.getSearchResults(searchRequest);
-    }
-
-    public SearchActionService getSearchActionService() {
-        return searchActionService;
-    }
-
-    public void setSearchActionService(SearchActionService searchActionService) {
-        this.searchActionService = searchActionService;
     }
 
     public SolrQueryLayerService getQueryLayer() {
