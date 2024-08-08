@@ -200,6 +200,9 @@ public class IiifV3ManifestService {
             soundContent.setDuration(duration);
             canvas.setDuration(duration);
         }
+        var audioThumbPath = URIUtil.join(baseAccessPath, "static", "images", "file-audio.png");
+        var thumbnail = new ImageContent(audioThumbPath);
+        canvas.setThumbnails(thumbnail);
         paintingAnno.getBodies().add(soundContent);
     }
 
