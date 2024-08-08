@@ -45,12 +45,16 @@ public class DownloadBulkService {
 
     private void zipFiles(WorkObject workObject, AccessGroupSet agentPrincipals, String zipFilePath) throws IOException {
         var memberObjects = workObject.getMembers();
-        if (memberObjects.isEmpty()) {
-            throw new IllegalArgumentException("The WorkObject with ID" + workObject.getPid() +
-                    " does not have any FileObjects");
-        }
         final FileOutputStream fos = new FileOutputStream(zipFilePath);
         ZipOutputStream zipOut = new ZipOutputStream(fos);
+        if (memberObjects.isEmpty()) {
+//            throw new IllegalArgumentException("The WorkObject with ID" + workObject.getPid() +
+//                    " does not have any FileObjects");
+            zipOut.close();
+            fos.close();
+            return;
+        }
+
 
         for (ContentObject memberObject : memberObjects ) {
             var filePid = memberObject.getPid();
@@ -72,7 +76,7 @@ public class DownloadBulkService {
         fos.close();
     }
 
-    private String getZipFilename(String workPidString) {
+    public static String getZipFilename(String workPidString) {
         return "ZIP-WORK-" + workPidString + ".zip";
     }
 

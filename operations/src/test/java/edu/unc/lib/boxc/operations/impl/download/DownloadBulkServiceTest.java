@@ -7,6 +7,7 @@ import edu.unc.lib.boxc.auth.api.models.AgentPrincipals;
 import edu.unc.lib.boxc.auth.api.services.AccessControlService;
 import edu.unc.lib.boxc.fcrepo.exceptions.TransactionCancelledException;
 import edu.unc.lib.boxc.model.api.ids.PID;
+import edu.unc.lib.boxc.model.api.objects.FileObject;
 import edu.unc.lib.boxc.model.api.objects.FolderObject;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.api.objects.WorkObject;
@@ -20,7 +21,13 @@ import org.mockito.Mock;
 
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.Enumeration;
+import java.util.List;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
 
+import static edu.unc.lib.boxc.operations.impl.download.DownloadBulkService.getZipFilename;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
@@ -41,6 +48,8 @@ public class DownloadBulkServiceTest {
     private AgentPrincipals mockAgent;
     @Mock
     private WorkObject parentWork;
+    @Mock
+    private FileObject fileObject1, fileObject2;
     @TempDir
     public Path zipStorageBasePath;
     private PID parentPid;
@@ -86,17 +95,57 @@ public class DownloadBulkServiceTest {
     }
 
     @Test
-    public void workObjectDoesNotHaveFileObjectsTest() {
+    public void workObjectDoesNotHaveFileObjectsTest() throws IOException {
         when(repoObjLoader.getWorkObject(any(PID.class))).thenReturn(parentWork);
-        Assertions.assertThrows(IllegalArgumentException.class, () -> {
-            service.downloadBulk(request);
-        });
+        service.downloadBulk(request);
+        // the zip file should be empty
+        assertZipFile(PARENT_UUID, 0);
+    }
+
+    @Test
+    public void noAccessToFileObjectsTest() throws IOException {
+        when(repoObjLoader.getWorkObject(any(PID.class))).thenReturn(parentWork);
+        when(parentWork.getMembers()).thenReturn(List.of(fileObject1));
+        when(aclService.hasAccess(eq(fileObject1.getPid()), any(),
+                eq(Permission.viewOriginal))).thenReturn(false);
+        service.downloadBulk(request);
+        // the zip file should be empty
+        assertZipFile(PARENT_UUID, 0);
+    }
+
+    @Test
+    public void accessToOnlyOneFileObjectTest() throws IOException {
+        when(repoObjLoader.getWorkObject(any(PID.class))).thenReturn(parentWork);
+        when(parentWork.getMembers()).thenReturn(List.of(fileObject1, fileObject2));
+        service.downloadBulk(request);
+        // the zip file should have one entry
+        assertZipFile(PARENT_UUID, 1);
+    }
+
+    @Test
+    public void noOriginalFilesTest() throws IOException {
+        when(repoObjLoader.getWorkObject(any(PID.class))).thenReturn(parentWork);
+        when(parentWork.getMembers()).thenReturn(List.of(fileObject1));
+        service.downloadBulk(request);
+        // the zip file should be empty
+        assertZipFile(PARENT_UUID, 0);
     }
 
     @Test
     public void successTest() throws IOException {
-        when(repoObjLoader.getRepositoryObject(any(PID.class))).thenReturn(parentWork);
-        parentWork.addMember()
+        when(repoObjLoader.getWorkObject(any(PID.class))).thenReturn(parentWork);
+        when(parentWork.getMembers()).thenReturn(List.of(fileObject1));
         service.downloadBulk(request);
+
+        // the zip file should have one entry
+        assertZipFile(PARENT_UUID, 1);
+    }
+
+    private void assertZipFile(String workPidString, int numberOfEntries) throws IOException {
+        var zipFilePath = zipStorageBasePath.toString() + getZipFilename(workPidString);
+        try (ZipFile zipFile = new ZipFile(zipFilePath)) {
+            //Enumeration<? extends ZipEntry> entries = zipFile.entries();
+            assertEquals(numberOfEntries, zipFile.size());
+        }
     }
 }
