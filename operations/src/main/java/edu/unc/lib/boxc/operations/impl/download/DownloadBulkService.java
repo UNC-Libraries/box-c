@@ -47,20 +47,20 @@ public class DownloadBulkService {
         var memberObjects = workObject.getMembers();
         final FileOutputStream fos = new FileOutputStream(zipFilePath);
         ZipOutputStream zipOut = new ZipOutputStream(fos);
+
         if (memberObjects.isEmpty()) {
-//            throw new IllegalArgumentException("The WorkObject with ID" + workObject.getPid() +
-//                    " does not have any FileObjects");
             zipOut.close();
             fos.close();
             return;
         }
 
-
         for (ContentObject memberObject : memberObjects ) {
-            var filePid = memberObject.getPid();
             var fileObject = (FileObject) memberObject;
-            if (aclService.hasAccess(filePid, agentPrincipals, Permission.viewOriginal)) {
+            if (aclService.hasAccess(memberObject.getPid(), agentPrincipals, Permission.viewOriginal)) {
                 var binObj = fileObject.getOriginalFile();
+                if (binObj == null ) {
+                    continue;
+                }
                 var binaryStream = binObj.getBinaryStream();
                 var filename = binObj.getFilename();
 
