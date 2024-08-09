@@ -9,6 +9,7 @@ import edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl;
 import edu.unc.lib.boxc.model.api.DatastreamType;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.fcrepo.test.TestHelper;
+import edu.unc.lib.boxc.search.api.exceptions.SolrRuntimeException;
 import edu.unc.lib.boxc.search.api.models.Datastream;
 import edu.unc.lib.boxc.search.api.requests.SimpleIdRequest;
 import edu.unc.lib.boxc.search.solr.models.ContentObjectSolrRecord;
@@ -373,8 +374,20 @@ public class DownloadImageControllerIT {
                 .willReturn(aResponse()
                         .withStatus(HttpStatus.BAD_REQUEST.value())));
 
-        MvcResult result = mvc.perform(get("/downloadImage/" + pidString + "/max"))
+        mvc.perform(get("/downloadImage/" + pidString + "/max"))
                 .andExpect(status().isNotFound())
+                .andReturn();
+    }
+
+    @Test
+    public void testGetAccessImageSolrUnavailable() throws Exception {
+        var pid = makePid();
+        var pidString = pid.getId();
+
+        when(solrSearchService.getObjectById(any(SimpleIdRequest.class))).thenThrow(new SolrRuntimeException());
+
+        mvc.perform(get("/downloadImage/" + pidString + "/500"))
+                .andExpect(status().isServiceUnavailable())
                 .andReturn();
     }
 
