@@ -3,17 +3,18 @@ package edu.unc.lib.boxc.operations.impl.download;
 import edu.unc.lib.boxc.auth.api.Permission;
 import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
 import edu.unc.lib.boxc.auth.api.services.AccessControlService;
-import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.objects.ContentObject;
 import edu.unc.lib.boxc.model.api.objects.FileObject;
-import edu.unc.lib.boxc.model.api.objects.RepositoryObject;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.api.objects.WorkObject;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -54,6 +55,7 @@ public class DownloadBulkService {
             return;
         }
 
+        Map<String, Integer> duplicates = new HashMap<>();
         for (ContentObject memberObject : memberObjects ) {
             var fileObject = (FileObject) memberObject;
             if (aclService.hasAccess(memberObject.getPid(), agentPrincipals, Permission.viewOriginal)) {
@@ -64,7 +66,13 @@ public class DownloadBulkService {
                 var binaryStream = binObj.getBinaryStream();
                 var filename = binObj.getFilename();
 
-                ZipEntry zipEntry = new ZipEntry(filename);
+                // start keeping track of filenames
+                duplicates.putIfAbsent(filename, 0);
+                var copyNumber = duplicates.get(filename);
+                var zipFilename = formatFilename(filename, copyNumber);
+                duplicates.computeIfPresent(filename, (w, prev) -> prev + 1);
+
+                ZipEntry zipEntry = new ZipEntry(zipFilename);
                 zipOut.putNextEntry(zipEntry);
 
                 IOUtils.copy(binaryStream, zipOut);
@@ -77,7 +85,16 @@ public class DownloadBulkService {
     }
 
     public static String getZipFilename(String workPidString) {
-        return "ZIP-WORK-" + workPidString + ".zip";
+        return "bulk-download-" + workPidString + ".zip";
+    }
+
+    private String formatFilename(String filename, int copyNumber) {
+        if (copyNumber == 0) {
+            return filename;
+        }
+        var extension = FilenameUtils.getExtension(filename);
+        var base = FilenameUtils.removeExtension(filename);
+        return base + "(" + copyNumber + ")." + extension;
     }
 
     public void setAclService(AccessControlService aclService) {

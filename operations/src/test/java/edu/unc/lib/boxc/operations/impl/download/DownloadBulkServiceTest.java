@@ -5,11 +5,9 @@ import edu.unc.lib.boxc.auth.api.exceptions.AccessRestrictionException;
 import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
 import edu.unc.lib.boxc.auth.api.models.AgentPrincipals;
 import edu.unc.lib.boxc.auth.api.services.AccessControlService;
-import edu.unc.lib.boxc.fcrepo.exceptions.TransactionCancelledException;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.objects.BinaryObject;
 import edu.unc.lib.boxc.model.api.objects.FileObject;
-import edu.unc.lib.boxc.model.api.objects.FolderObject;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.api.objects.WorkObject;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
@@ -22,14 +20,13 @@ import org.junit.jupiter.api.io.TempDir;
 import org.mockito.Mock;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
-import java.util.Enumeration;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
+import static edu.unc.lib.boxc.model.fcrepo.test.TestHelper.makePid;
 import static edu.unc.lib.boxc.operations.impl.download.DownloadBulkService.getZipFilename;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
@@ -44,7 +41,14 @@ public class DownloadBulkServiceTest {
     private static final String PARENT_UUID = "f277bb38-272c-471c-a28a-9887a1328a1f";
     private static final String CHILD1_UUID = "83c2d7f8-2e6b-4f0b-ab7e-7397969c0682";
     private static final String CHILD2_UUID = "0e33ad0b-7a16-4bfa-b833-6126c262d889";
+    private static final String FILENAME1 = "filename1.txt";
+    private static final String FILENAME2 = "filename2.txt";
     private AutoCloseable closeable;
+    private PID parentPid;
+    private PID fileObject1Pid;
+    private PID fileObject2Pid;
+    private DownloadBulkService service;
+    private DownloadBulkRequest request;
     @Mock
     private AccessControlService aclService;
     @Mock
@@ -59,11 +63,6 @@ public class DownloadBulkServiceTest {
     private FileObject fileObject1, fileObject2;
     @TempDir
     public Path zipStorageBasePath;
-    private PID parentPid;
-    private PID fileObject1Pid;
-    private PID fileObject2Pid;
-    private DownloadBulkService service;
-    private DownloadBulkRequest request;
 
     @BeforeEach
     public void init() throws Exception {
@@ -92,8 +91,8 @@ public class DownloadBulkServiceTest {
     @Test
     public void noAccessToWorkObjectTest() {
         Assertions.assertThrows(AccessRestrictionException.class, () -> {
-            doThrow(new AccessRestrictionException()).when(aclService)
-                    .assertHasAccess(anyString(), eq(parentPid), any(), eq(Permission.viewOriginal));
+            doThrow(new AccessRestrictionException()).when(aclService).assertHasAccess(
+                    anyString(), eq(parentPid), any(), eq(Permission.viewOriginal));
 
             service.downloadBulk(request);
         });
@@ -112,7 +111,7 @@ public class DownloadBulkServiceTest {
         when(repoObjLoader.getWorkObject(any(PID.class))).thenReturn(parentWork);
         service.downloadBulk(request);
         // the zip file should be empty
-        assertZipFile(0);
+        assertZipFile(0, List.of());
     }
 
     @Test
@@ -123,21 +122,21 @@ public class DownloadBulkServiceTest {
                 eq(Permission.viewOriginal))).thenReturn(false);
         service.downloadBulk(request);
         // the zip file should be empty
-        assertZipFile( 0);
+        assertZipFile( 0, List.of());
     }
 
     @Test
     public void accessToOnlyOneFileObjectTest() throws IOException {
         when(repoObjLoader.getWorkObject(any(PID.class))).thenReturn(parentWork);
         when(parentWork.getMembers()).thenReturn(List.of(fileObject1, fileObject2));
-        makeBinaryObject(fileObject1, "filename1");
+        makeBinaryObject(fileObject1, FILENAME1);
         when(aclService.hasAccess(eq(fileObject1Pid), any(),
                 eq(Permission.viewOriginal))).thenReturn(true);
         when(aclService.hasAccess(eq(fileObject2Pid), any(),
                 eq(Permission.viewOriginal))).thenReturn(false);
         service.downloadBulk(request);
         // the zip file should have one entry
-        assertZipFile(1);
+        assertZipFile(1, List.of(FILENAME1));
     }
 
     @Test
@@ -146,33 +145,77 @@ public class DownloadBulkServiceTest {
         when(parentWork.getMembers()).thenReturn(List.of(fileObject1));
         service.downloadBulk(request);
         // the zip file should be empty
-        assertZipFile(0);
+        assertZipFile(0, List.of());
     }
 
     @Test
     public void successTest() throws IOException {
         when(repoObjLoader.getWorkObject(eq(parentPid))).thenReturn(parentWork);
         when(parentWork.getMembers()).thenReturn(List.of(fileObject1, fileObject2));
-
-        makeBinaryObject(fileObject1, "filename1");
-
-        makeBinaryObject(fileObject2, "filename2");
         when(aclService.hasAccess(eq(fileObject1Pid), any(),
                 eq(Permission.viewOriginal))).thenReturn(true);
         when(aclService.hasAccess(eq(fileObject2Pid), any(),
                 eq(Permission.viewOriginal))).thenReturn(true);
+        makeBinaryObject(fileObject1, FILENAME1);
+        makeBinaryObject(fileObject2, FILENAME2);
 
         service.downloadBulk(request);
 
         // the zip file should have two entries
-        assertZipFile(2);
+        assertZipFile(2, List.of(FILENAME1, FILENAME2));
     }
 
-    private void assertZipFile(int numberOfEntries) throws IOException {
+    @Test
+    public void duplicateFilenameTest() throws IOException {
+        when(repoObjLoader.getWorkObject(eq(parentPid))).thenReturn(parentWork);
+        when(parentWork.getMembers()).thenReturn(List.of(fileObject1, fileObject2));
+        when(aclService.hasAccess(eq(fileObject1Pid), any(),
+                eq(Permission.viewOriginal))).thenReturn(true);
+        when(aclService.hasAccess(eq(fileObject2Pid), any(),
+                eq(Permission.viewOriginal))).thenReturn(true);
+        makeBinaryObject(fileObject1, "filename.txt");
+        makeBinaryObject(fileObject2, "filename.txt");
+
+        service.downloadBulk(request);
+
+        // the zip file should have two entries
+        assertZipFile(2, List.of("filename.txt", "filename(1).txt"));
+    }
+
+    @Test
+    public void multipleFilenamesTest() throws IOException {
+        var fileObject3 = mock(FileObject.class);
+        var fileObject3Pid = makePid();
+        when(fileObject3.getPid()).thenReturn(fileObject3Pid);
+        when(repoObjLoader.getWorkObject(eq(parentPid))).thenReturn(parentWork);
+        when(parentWork.getMembers()).thenReturn(List.of(fileObject1, fileObject2, fileObject3));
+        when(aclService.hasAccess(eq(fileObject1Pid), any(),
+                eq(Permission.viewOriginal))).thenReturn(true);
+        when(aclService.hasAccess(eq(fileObject2Pid), any(),
+                eq(Permission.viewOriginal))).thenReturn(true);
+        when(aclService.hasAccess(eq(fileObject3Pid), any(),
+                eq(Permission.viewOriginal))).thenReturn(true);
+        makeBinaryObject(fileObject1, "filename.txt");
+        makeBinaryObject(fileObject2, "filename.txt");
+        makeBinaryObject(fileObject3, "flower.txt");
+
+        service.downloadBulk(request);
+
+        // the zip file should have two entries
+        assertZipFile(3, List.of("filename.txt", "filename(1).txt", "flower.txt"));
+    }
+
+    private void assertZipFile(int numberOfEntries, List<String> filenames) throws IOException {
         var zipFilePath = zipStorageBasePath.toString() + getZipFilename(PARENT_UUID);
+        var actualFilenames = new ArrayList<String>();
         try (ZipFile zipFile = new ZipFile(zipFilePath)) {
             assertEquals(numberOfEntries, zipFile.size());
             var entries = zipFile.entries();
+            while (entries.hasMoreElements()) {
+                var entry = entries.nextElement();
+                actualFilenames.add(entry.getName());
+            }
+            assertEquals(filenames, actualFilenames);
         }
     }
 
