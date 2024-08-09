@@ -42,10 +42,6 @@
         <property name="facetFieldFactory" ref="facetFieldFactory" />
     </bean>
 
-    <bean id="searchActionService" class="edu.unc.lib.boxc.web.common.search.SearchActionService">
-        <property name="searchSettings" ref="searchSettings" />
-    </bean>
-    
     <bean id="solrAccessRestrictionUtil" class="edu.unc.lib.boxc.search.solr.utils.AccessRestrictionUtil">
         <property name="searchSettings" ref="searchSettings" />
         <property name="disablePermissionFiltering" value="false" />
