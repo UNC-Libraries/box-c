@@ -3,6 +3,8 @@ package edu.unc.lib.boxc.operations.impl.download;
 import edu.unc.lib.boxc.auth.api.Permission;
 import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
 import edu.unc.lib.boxc.auth.api.services.AccessControlService;
+import edu.unc.lib.boxc.model.api.exceptions.NotFoundException;
+import edu.unc.lib.boxc.model.api.exceptions.ObjectTypeMismatchException;
 import edu.unc.lib.boxc.model.api.objects.ContentObject;
 import edu.unc.lib.boxc.model.api.objects.FileObject;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
@@ -26,62 +28,60 @@ public class DownloadBulkService {
     private RepositoryObjectLoader repoObjLoader;
     private String basePath;
 
-    public String downloadBulk(DownloadBulkRequest request) throws IOException {
-        var workPid = PIDs.get(request.getWorkPidString());
+    public String downloadBulk(DownloadBulkRequest request) {
+        var pidString = request.getWorkPidString();
+        var workPid = PIDs.get(pidString);
         var agentPrincipals = request.getAgent().getPrincipals();
         aclService.assertHasAccess(
                 "User does not have permissions to view the Work for download",
                 workPid, agentPrincipals, Permission.viewOriginal);
 
-        var workObject = repoObjLoader.getWorkObject(workPid);
-        if (workObject == null) {
-            throw new IllegalArgumentException("Failed to bulk download for " + workPid);
+        var zipFilePath = basePath + getZipFilename(workPid.getId());
+        try {
+            var workObject = repoObjLoader.getWorkObject(workPid);
+            zipFiles(workObject, agentPrincipals, zipFilePath);
+        } catch (Exception e){
+            throw new NotFoundException("Failed to perform bulk download for WorkObject " + pidString+ " : " + e);
         }
 
-        var zipFilePath = basePath + getZipFilename(workPid.getId());
-
-        zipFiles(workObject, agentPrincipals, zipFilePath);
         return zipFilePath;
     }
 
     private void zipFiles(WorkObject workObject, AccessGroupSet agentPrincipals, String zipFilePath) throws IOException {
         var memberObjects = workObject.getMembers();
-        final FileOutputStream fos = new FileOutputStream(zipFilePath);
-        ZipOutputStream zipOut = new ZipOutputStream(fos);
+        try (
+                FileOutputStream fos = new FileOutputStream(zipFilePath);
+                ZipOutputStream zipOut = new ZipOutputStream(fos)
+        ) {
+            if (memberObjects.isEmpty()) {
+                return;
+            }
 
-        if (memberObjects.isEmpty()) {
-            zipOut.close();
-            fos.close();
-            return;
-        }
+            Map<String, Integer> duplicates = new HashMap<>();
+            for (ContentObject memberObject : memberObjects ) {
+                var fileObject = (FileObject) memberObject;
+                if (aclService.hasAccess(memberObject.getPid(), agentPrincipals, Permission.viewOriginal)) {
+                    var binObj = fileObject.getOriginalFile();
+                    if (binObj == null ) {
+                        continue;
+                    }
+                    try (var binaryStream = binObj.getBinaryStream()) {
+                        var filename = binObj.getFilename();
 
-        Map<String, Integer> duplicates = new HashMap<>();
-        for (ContentObject memberObject : memberObjects ) {
-            var fileObject = (FileObject) memberObject;
-            if (aclService.hasAccess(memberObject.getPid(), agentPrincipals, Permission.viewOriginal)) {
-                var binObj = fileObject.getOriginalFile();
-                if (binObj == null ) {
-                    continue;
+                        // start keeping track of filenames
+                        duplicates.putIfAbsent(filename, 0);
+                        var copyNumber = duplicates.get(filename);
+                        var zipFilename = formatFilename(filename, copyNumber);
+                        duplicates.put(filename, copyNumber + 1);
+
+                        ZipEntry zipEntry = new ZipEntry(zipFilename);
+                        zipOut.putNextEntry(zipEntry);
+
+                        IOUtils.copy(binaryStream, zipOut);
+                    }
                 }
-                var binaryStream = binObj.getBinaryStream();
-                var filename = binObj.getFilename();
-
-                // start keeping track of filenames
-                duplicates.putIfAbsent(filename, 0);
-                var copyNumber = duplicates.get(filename);
-                var zipFilename = formatFilename(filename, copyNumber);
-                duplicates.computeIfPresent(filename, (w, prev) -> prev + 1);
-
-                ZipEntry zipEntry = new ZipEntry(zipFilename);
-                zipOut.putNextEntry(zipEntry);
-
-                IOUtils.copy(binaryStream, zipOut);
-                binaryStream.close();
             }
         }
-
-        zipOut.close();
-        fos.close();
     }
 
     public static String getZipFilename(String workPidString) {

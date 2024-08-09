@@ -5,6 +5,8 @@ import edu.unc.lib.boxc.auth.api.exceptions.AccessRestrictionException;
 import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
 import edu.unc.lib.boxc.auth.api.models.AgentPrincipals;
 import edu.unc.lib.boxc.auth.api.services.AccessControlService;
+import edu.unc.lib.boxc.model.api.exceptions.NotFoundException;
+import edu.unc.lib.boxc.model.api.exceptions.ObjectTypeMismatchException;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.objects.BinaryObject;
 import edu.unc.lib.boxc.model.api.objects.FileObject;
@@ -100,8 +102,9 @@ public class DownloadBulkServiceTest {
 
     @Test
     public void notAWorkTest() {
-        when(repoObjLoader.getWorkObject(any(PID.class))).thenReturn(null);
-        Assertions.assertThrows(IllegalArgumentException.class, () -> {
+        when(repoObjLoader.getWorkObject(any(PID.class)))
+                .thenThrow(ObjectTypeMismatchException.class);
+        Assertions.assertThrows(NotFoundException.class, () -> {
             service.downloadBulk(request);
         });
     }
@@ -111,7 +114,7 @@ public class DownloadBulkServiceTest {
         when(repoObjLoader.getWorkObject(any(PID.class))).thenReturn(parentWork);
         service.downloadBulk(request);
         // the zip file should be empty
-        assertZipFile(0, List.of());
+        assertZipFiles(List.of());
     }
 
     @Test
@@ -120,9 +123,10 @@ public class DownloadBulkServiceTest {
         when(parentWork.getMembers()).thenReturn(List.of(fileObject1));
         when(aclService.hasAccess(eq(fileObject1Pid), any(),
                 eq(Permission.viewOriginal))).thenReturn(false);
+        makeBinaryObject(fileObject1, FILENAME1);
         service.downloadBulk(request);
         // the zip file should be empty
-        assertZipFile( 0, List.of());
+        assertZipFiles(List.of());
     }
 
     @Test
@@ -130,13 +134,14 @@ public class DownloadBulkServiceTest {
         when(repoObjLoader.getWorkObject(any(PID.class))).thenReturn(parentWork);
         when(parentWork.getMembers()).thenReturn(List.of(fileObject1, fileObject2));
         makeBinaryObject(fileObject1, FILENAME1);
+        makeBinaryObject(fileObject2, FILENAME2);
         when(aclService.hasAccess(eq(fileObject1Pid), any(),
                 eq(Permission.viewOriginal))).thenReturn(true);
         when(aclService.hasAccess(eq(fileObject2Pid), any(),
                 eq(Permission.viewOriginal))).thenReturn(false);
         service.downloadBulk(request);
         // the zip file should have one entry
-        assertZipFile(1, List.of(FILENAME1));
+        assertZipFiles(List.of(FILENAME1));
     }
 
     @Test
@@ -145,7 +150,7 @@ public class DownloadBulkServiceTest {
         when(parentWork.getMembers()).thenReturn(List.of(fileObject1));
         service.downloadBulk(request);
         // the zip file should be empty
-        assertZipFile(0, List.of());
+        assertZipFiles(List.of());
     }
 
     @Test
@@ -162,7 +167,7 @@ public class DownloadBulkServiceTest {
         service.downloadBulk(request);
 
         // the zip file should have two entries
-        assertZipFile(2, List.of(FILENAME1, FILENAME2));
+        assertZipFiles(List.of(FILENAME1, FILENAME2));
     }
 
     @Test
@@ -179,7 +184,7 @@ public class DownloadBulkServiceTest {
         service.downloadBulk(request);
 
         // the zip file should have two entries
-        assertZipFile(2, List.of("filename.txt", "filename(1).txt"));
+        assertZipFiles(List.of("filename.txt", "filename(1).txt"));
     }
 
     @Test
@@ -201,15 +206,14 @@ public class DownloadBulkServiceTest {
 
         service.downloadBulk(request);
 
-        // the zip file should have two entries
-        assertZipFile(3, List.of("filename.txt", "filename(1).txt", "flower.txt"));
+        // the zip file should have 3 entries
+        assertZipFiles(List.of("filename.txt", "filename(1).txt", "flower.txt"));
     }
 
-    private void assertZipFile(int numberOfEntries, List<String> filenames) throws IOException {
+    private void assertZipFiles(List<String> filenames) throws IOException {
         var zipFilePath = zipStorageBasePath.toString() + getZipFilename(PARENT_UUID);
         var actualFilenames = new ArrayList<String>();
         try (ZipFile zipFile = new ZipFile(zipFilePath)) {
-            assertEquals(numberOfEntries, zipFile.size());
             var entries = zipFile.entries();
             while (entries.hasMoreElements()) {
                 var entry = entries.nextElement();
