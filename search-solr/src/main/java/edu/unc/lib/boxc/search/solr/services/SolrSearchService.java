@@ -10,6 +10,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import edu.unc.lib.boxc.search.api.exceptions.SolrRuntimeException;
 import edu.unc.lib.boxc.search.api.filters.QueryFilter;
 import edu.unc.lib.boxc.search.solr.config.SearchSettings;
 import edu.unc.lib.boxc.search.solr.ranges.RangePair;
@@ -17,8 +18,6 @@ import edu.unc.lib.boxc.search.solr.ranges.UnknownRange;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrServerException;
-import org.apache.solr.client.solrj.response.FacetField;
-import org.apache.solr.client.solrj.response.FacetField.Count;
 import org.apache.solr.client.solrj.response.Group;
 import org.apache.solr.client.solrj.response.GroupCommand;
 import org.apache.solr.client.solrj.response.GroupResponse;
@@ -87,10 +86,6 @@ public class SolrSearchService extends AbstractQueryService {
         try {
             // Add access restrictions to query
             addAccessRestrictions(solrQuery, idRequest.getAccessGroups());
-            /*
-             * if (idRequest.getAccessTypeFilter() != null) { addAccessRestrictions(query, idRequest.getAccessGroups(),
-             * idRequest.getAccessTypeFilter()); }
-             */
         } catch (AccessRestrictionException e) {
             // If the user doesn't have any access groups, they don't have access to anything, return null.
             LOG.error("Error while attempting to add access restrictions to object " + idRequest.getId(), e);
@@ -106,8 +101,7 @@ public class SolrSearchService extends AbstractQueryService {
         try {
             queryResponse = executeQuery(solrQuery);
         } catch (SolrServerException e) {
-            LOG.error("Error retrieving Solr object request", e);
-            return null;
+            throw new SolrRuntimeException("Error retrieving Solr object request", e);
         }
 
         List<ContentObjectSolrRecord> results = queryResponse.getBeans(ContentObjectSolrRecord.class);
@@ -128,7 +122,7 @@ public class SolrSearchService extends AbstractQueryService {
             addAccessRestrictions(solrQuery, listRequest.getAccessGroups());
         } catch (AccessRestrictionException e) {
             // If the user doesn't have any access groups, they don't have access to anything, return null.
-            LOG.error("Error while attempting to add access restrictions to object " + listRequest.getId(), e);
+            LOG.error("Error while attempting to add access restrictions to query for " + listRequest.getIds(), e);
             return null;
         }
 
@@ -156,8 +150,7 @@ public class SolrSearchService extends AbstractQueryService {
         try {
             queryResponse = executeQuery(solrQuery);
         } catch (SolrServerException e) {
-            LOG.error("Error retrieving Solr object request", e);
-            return null;
+            throw new SolrRuntimeException("Error retrieving Solr object request", e);
         }
 
         List<?> results = queryResponse.getBeans(ContentObjectSolrRecord.class);
@@ -214,9 +207,8 @@ public class SolrSearchService extends AbstractQueryService {
 
             return resultResponse;
         } catch (SolrServerException e) {
-            LOG.error("Error retrieving Solr search result request", e);
+            throw new SolrRuntimeException("Error retrieving Solr search result request", e);
         }
-        return null;
     }
 
     /**
@@ -658,49 +650,6 @@ public class SolrSearchService extends AbstractQueryService {
             return queryResponse.getResults().get(0).getFieldValueMap();
         }
         return null;
-    }
-
-    /**
-     * Returns a combined set of distinct field values for one or more fields, limited by the set of access groups
-     * provided
-     *
-     * @param fields
-     *           Solr field names to retrieve distinct values for
-     * @param maxValuesPerField
-     *           Max number of distinct values to retrieve for each field
-     * @param accessGroups
-     * @return
-     * @throws AccessRestrictionException
-     * @throws SolrServerException
-     */
-    public java.util.Collection<String> getDistinctFieldValues(String[] fields, int maxValuesPerField,
-            AccessGroupSet accessGroups) throws AccessRestrictionException, SolrServerException {
-        SolrQuery solrQuery = new SolrQuery();
-        StringBuilder query = new StringBuilder("*:*");
-        addAccessRestrictions(solrQuery, accessGroups);
-        solrQuery.setQuery(query.toString());
-        solrQuery.setFacet(true);
-        for (String facetField : fields) {
-            solrQuery.addFacetField(facetField);
-        }
-        solrQuery.setFacetLimit(maxValuesPerField);
-        solrQuery.setFacetSort("index");
-
-        QueryResponse queryResponse = executeQuery(solrQuery);
-        // Determine initial capacity for the result list
-        int numberValues = 0;
-        for (FacetField facet : queryResponse.getFacetFields()) {
-            numberValues += facet.getValueCount();
-        }
-
-        java.util.Collection<String> fieldValues = new java.util.HashSet<>(numberValues);
-        for (FacetField facet : queryResponse.getFacetFields()) {
-            for (Count count : facet.getValues()) {
-                fieldValues.add(count.getName());
-            }
-        }
-
-        return fieldValues;
     }
 
     public void setFacetFieldFactory(FacetFieldFactory facetFieldFactory) {

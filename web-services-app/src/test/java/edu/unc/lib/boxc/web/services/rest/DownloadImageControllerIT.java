@@ -330,6 +330,18 @@ public class DownloadImageControllerIT {
     }
 
     @Test
+    public void testGetAccessImageSolrRecordNotFound() throws Exception {
+        var pid = makePid();
+        var pidString = pid.getId();
+
+        when(solrSearchService.getObjectById(any(SimpleIdRequest.class))).thenReturn(null);
+
+        mvc.perform(get("/downloadImage/" + pidString + "/1200"))
+                .andExpect(status().isNotFound())
+                .andReturn();
+    }
+
+    @Test
     public void testGetImageNoJP2() throws Exception {
         PID filePid = makePid();
         ContentObjectSolrRecord contentObjectSolrRecord = mock(ContentObjectSolrRecord.class);
