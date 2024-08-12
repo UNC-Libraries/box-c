@@ -4,7 +4,6 @@ import edu.unc.lib.boxc.auth.api.Permission;
 import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
 import edu.unc.lib.boxc.auth.api.services.AccessControlService;
 import edu.unc.lib.boxc.model.api.exceptions.NotFoundException;
-import edu.unc.lib.boxc.model.api.exceptions.ObjectTypeMismatchException;
 import edu.unc.lib.boxc.model.api.objects.ContentObject;
 import edu.unc.lib.boxc.model.api.objects.FileObject;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
@@ -13,7 +12,6 @@ import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -44,7 +42,7 @@ public class DownloadBulkService {
             var workObject = repoObjLoader.getWorkObject(workPid);
             zipFiles(workObject, agentPrincipals, zipFilePath);
         } catch (Exception e){
-            throw new NotFoundException("Failed to perform bulk download for WorkObject " + pidString+ " : " + e);
+            throw new NotFoundException("Failed to perform bulk download for WorkObject " + pidString + " : " + e);
         }
 
         return zipFilePath;
