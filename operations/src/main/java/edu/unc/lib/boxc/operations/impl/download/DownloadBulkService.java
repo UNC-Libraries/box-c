@@ -15,6 +15,9 @@ import org.apache.commons.io.IOUtils;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.zip.ZipEntry;
@@ -26,9 +29,9 @@ import java.util.zip.ZipOutputStream;
 public class DownloadBulkService {
     private AccessControlService aclService;
     private RepositoryObjectLoader repoObjLoader;
-    private String basePath;
+    private Path basePath;
 
-    public String downloadBulk(DownloadBulkRequest request) {
+    public Path downloadBulk(DownloadBulkRequest request) {
         var pidString = request.getWorkPidString();
         var workPid = PIDs.get(pidString);
         var agentPrincipals = request.getAgent().getPrincipals();
@@ -36,7 +39,7 @@ public class DownloadBulkService {
                 "User does not have permissions to view the Work for download",
                 workPid, agentPrincipals, Permission.viewOriginal);
 
-        var zipFilePath = basePath + getZipFilename(workPid.getId());
+        var zipFilePath = Paths.get(basePath.toString(), getZipFilename(pidString));
         try {
             var workObject = repoObjLoader.getWorkObject(workPid);
             zipFiles(workObject, agentPrincipals, zipFilePath);
@@ -47,13 +50,14 @@ public class DownloadBulkService {
         return zipFilePath;
     }
 
-    private void zipFiles(WorkObject workObject, AccessGroupSet agentPrincipals, String zipFilePath) throws IOException {
+    private void zipFiles(WorkObject workObject, AccessGroupSet agentPrincipals, Path zipFilePath) throws IOException {
         var memberObjects = workObject.getMembers();
         try (
-                FileOutputStream fos = new FileOutputStream(zipFilePath);
+                var fos = Files.newOutputStream(zipFilePath);
                 ZipOutputStream zipOut = new ZipOutputStream(fos)
         ) {
             if (memberObjects.isEmpty()) {
+                // return an empty zip file
                 return;
             }
 
@@ -105,7 +109,7 @@ public class DownloadBulkService {
         this.repoObjLoader = repoObjLoader;
     }
 
-    public void setBasePath(String basePath) {
+    public void setBasePath(Path basePath) {
         this.basePath = basePath;
     }
 }

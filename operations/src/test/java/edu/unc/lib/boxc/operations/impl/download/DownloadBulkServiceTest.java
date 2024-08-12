@@ -22,6 +22,7 @@ import org.junit.jupiter.api.io.TempDir;
 import org.mockito.Mock;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -73,7 +74,7 @@ public class DownloadBulkServiceTest {
         service = new DownloadBulkService();
         service.setAclService(aclService);
         service.setRepoObjLoader(repoObjLoader);
-        service.setBasePath(zipStorageBasePath.toString());
+        service.setBasePath(zipStorageBasePath);
         parentPid = PIDs.get(PARENT_UUID);
         fileObject1Pid = PIDs.get(CHILD1_UUID);
         fileObject2Pid = PIDs.get(CHILD2_UUID);
@@ -114,7 +115,7 @@ public class DownloadBulkServiceTest {
         when(repoObjLoader.getWorkObject(any(PID.class))).thenReturn(parentWork);
         service.downloadBulk(request);
         // the zip file should be empty
-        assertZipFiles(List.of());
+        assertZipFiles(List.of(), List.of());
     }
 
     @Test
@@ -126,7 +127,7 @@ public class DownloadBulkServiceTest {
         makeBinaryObject(fileObject1, FILENAME1);
         service.downloadBulk(request);
         // the zip file should be empty
-        assertZipFiles(List.of());
+        assertZipFiles(List.of(), List.of());
     }
 
     @Test
@@ -141,7 +142,7 @@ public class DownloadBulkServiceTest {
                 eq(Permission.viewOriginal))).thenReturn(false);
         service.downloadBulk(request);
         // the zip file should have one entry
-        assertZipFiles(List.of(FILENAME1));
+        assertZipFiles(List.of(FILENAME1), List.of("flower"));
     }
 
     @Test
@@ -150,7 +151,7 @@ public class DownloadBulkServiceTest {
         when(parentWork.getMembers()).thenReturn(List.of(fileObject1));
         service.downloadBulk(request);
         // the zip file should be empty
-        assertZipFiles(List.of());
+        assertZipFiles(List.of(), List.of());
     }
 
     @Test
@@ -167,7 +168,7 @@ public class DownloadBulkServiceTest {
         service.downloadBulk(request);
 
         // the zip file should have two entries
-        assertZipFiles(List.of(FILENAME1, FILENAME2));
+        assertZipFiles(List.of(FILENAME1, FILENAME2), List.of("flower", "flower"));
     }
 
     @Test
@@ -184,7 +185,8 @@ public class DownloadBulkServiceTest {
         service.downloadBulk(request);
 
         // the zip file should have two entries
-        assertZipFiles(List.of("filename.txt", "filename(1).txt"));
+        assertZipFiles(List.of("filename.txt", "filename(1).txt"),
+                List.of("flower", "flower"));
     }
 
     @Test
@@ -207,19 +209,26 @@ public class DownloadBulkServiceTest {
         service.downloadBulk(request);
 
         // the zip file should have 3 entries
-        assertZipFiles(List.of("filename.txt", "filename(1).txt", "flower.txt"));
+        assertZipFiles(List.of("filename.txt", "filename(1).txt", "flower.txt"),
+                List.of("flower", "flower", "flower"));
     }
 
-    private void assertZipFiles(List<String> filenames) throws IOException {
-        var zipFilePath = zipStorageBasePath.toString() + getZipFilename(PARENT_UUID);
+    private void assertZipFiles(List<String> filenames, List<String> content) throws IOException {
+        var zipFilePathTest = zipStorageBasePath.resolve(getZipFilename(PARENT_UUID));
         var actualFilenames = new ArrayList<String>();
-        try (ZipFile zipFile = new ZipFile(zipFilePath)) {
+        var fileContent = new ArrayList<String>();
+        try (ZipFile zipFile = new ZipFile(zipFilePathTest.toFile())) {
             var entries = zipFile.entries();
             while (entries.hasMoreElements()) {
                 var entry = entries.nextElement();
                 actualFilenames.add(entry.getName());
+                try (InputStream inputStream = zipFile.getInputStream(entry)) {
+                    String result = IOUtils.toString(inputStream, StandardCharsets.UTF_8);
+                    fileContent.add(result);
+                }
             }
             assertEquals(filenames, actualFilenames);
+            assertEquals(content, fileContent);
         }
     }
 
