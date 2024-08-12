@@ -105,7 +105,7 @@ public class DownloadBulkServiceTest {
     public void notAWorkTest() {
         when(repoObjLoader.getWorkObject(any(PID.class)))
                 .thenThrow(ObjectTypeMismatchException.class);
-        Assertions.assertThrows(NotFoundException.class, () -> {
+        Assertions.assertThrows(ObjectTypeMismatchException.class, () -> {
             service.downloadBulk(request);
         });
     }

@@ -3,6 +3,7 @@ package edu.unc.lib.boxc.operations.impl.download;
 import edu.unc.lib.boxc.auth.api.Permission;
 import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
 import edu.unc.lib.boxc.auth.api.services.AccessControlService;
+import edu.unc.lib.boxc.fcrepo.exceptions.ServiceException;
 import edu.unc.lib.boxc.model.api.exceptions.NotFoundException;
 import edu.unc.lib.boxc.model.api.objects.ContentObject;
 import edu.unc.lib.boxc.model.api.objects.FileObject;
@@ -38,11 +39,11 @@ public class DownloadBulkService {
                 workPid, agentPrincipals, Permission.viewOriginal);
 
         var zipFilePath = Paths.get(basePath.toString(), getZipFilename(pidString));
+        var workObject = repoObjLoader.getWorkObject(workPid);
         try {
-            var workObject = repoObjLoader.getWorkObject(workPid);
             zipFiles(workObject, agentPrincipals, zipFilePath);
-        } catch (Exception e){
-            throw new NotFoundException("Failed to perform bulk download for WorkObject " + pidString + " : " + e);
+        } catch (IOException e){
+            throw new ServiceException("Failed to perform bulk download for WorkObject " + pidString, e);
         }
 
         return zipFilePath;
@@ -64,7 +65,7 @@ public class DownloadBulkService {
                 var fileObject = (FileObject) memberObject;
                 if (aclService.hasAccess(memberObject.getPid(), agentPrincipals, Permission.viewOriginal)) {
                     var binObj = fileObject.getOriginalFile();
-                    if (binObj == null ) {
+                    if (binObj == null) {
                         continue;
                     }
                     try (var binaryStream = binObj.getBinaryStream()) {
