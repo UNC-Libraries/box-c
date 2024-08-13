@@ -54,6 +54,10 @@ public class DownloadImageController {
                 pid, principals, Permission.viewReducedResImages);
 
         var contentObjectRecord = solrSearchService.getObjectById(new SimpleIdRequest(pid, principals));
+        if (contentObjectRecord == null) {
+            log.error("No content object found for {}", pidString);
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
         String validatedSize = downloadImageService.getSize(contentObjectRecord, size);
 
         if (Objects.equals(validatedSize, ImageServerUtil.FULL_SIZE)) {
