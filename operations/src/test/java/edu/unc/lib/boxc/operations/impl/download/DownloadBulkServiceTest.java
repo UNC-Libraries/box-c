@@ -78,7 +78,7 @@ public class DownloadBulkServiceTest {
         parentPid = PIDs.get(PARENT_UUID);
         fileObject1Pid = PIDs.get(CHILD1_UUID);
         fileObject2Pid = PIDs.get(CHILD2_UUID);
-        request = new DownloadBulkRequest(PARENT_UUID, mockAgent);
+        request = new DownloadBulkRequest(PARENT_UUID, mockAccessSet);
 
         when(mockAgent.getUsername()).thenReturn("user");
         when(mockAgent.getPrincipals()).thenReturn(mockAccessSet);
