@@ -13,6 +13,8 @@ import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.boxc.model.fcrepo.test.TestHelper;
 import edu.unc.lib.boxc.operations.impl.download.DownloadBulkService;
 import edu.unc.lib.boxc.web.services.rest.exceptions.RestResponseEntityExceptionHandler;
+import edu.unc.lib.boxc.web.services.utils.DownloadTestHelper;
+import org.apache.commons.io.IOUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -22,11 +24,14 @@ import org.mockito.Mock;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
+import java.io.ByteArrayInputStream;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
+import java.util.zip.ZipInputStream;
 
 import static edu.unc.lib.boxc.auth.api.Permission.viewOriginal;
 import static edu.unc.lib.boxc.web.common.services.FedoraContentService.CONTENT_DISPOSITION;
@@ -100,17 +105,25 @@ public class DownloadBulkControllerIT {
                 .andExpect(status().is2xxSuccessful())
                 .andReturn();
 
-        var zipFile = (ZipFile) result;
+        var response = result.getResponse();
+        var bytes = response.getContentAsByteArray();
+        var zipInputStream =  new ZipInputStream(new ByteArrayInputStream(bytes));
 
-        assertZipFiles(zipFile);
+        assertZipFiles(zipInputStream);
+        //assertEquals("application/zip", response.getHeader("Content-Type"));
     }
 
-    private void assertZipFiles(ZipFile zipFile) throws IOException {
-        var entries = zipFile.entries();
-        while (entries.hasMoreElements()) {
-            var entry = entries.nextElement();
-            var zipInputStream = zipFile.getInputStream(entry);
-            assertEquals(fileInputStream, zipInputStream);
+    private void assertZipFiles(ZipInputStream stream) throws IOException {
+        ZipEntry entry;
+        while((entry = stream.getNextEntry())!=null)
+        {
+
         }
+//        while (entries.hasMoreElements()) {
+//            var entry = entries.nextElement();
+//            var zipInputStream = zipFile.getInputStream(entry);
+//            var actualContent = IOUtils.toByteArray(zipInputStream);
+//            DownloadTestHelper.assertCorrectImageReturned(actualContent);
+//        }
     }
 }

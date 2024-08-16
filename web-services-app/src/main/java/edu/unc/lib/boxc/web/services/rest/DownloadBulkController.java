@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -19,6 +20,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import static edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore.getAgentPrincipals;
+import static org.apache.jena.ext.com.google.common.net.HttpHeaders.CONTENT_DISPOSITION;
 
 /**
  * Controller for downloading FileObject original files from a WorkObject into a zip file
@@ -32,7 +34,7 @@ public class DownloadBulkController {
 
     @RequestMapping("/bulkDownload/{id}")
     @ResponseBody
-    public FileSystemResource getZip(@PathVariable("id") String pidString) {
+    public ResponseEntity<FileSystemResource> getZip(@PathVariable("id") String pidString) {
         PID pid = PIDs.get(pidString);
 
         AccessGroupSet principals = getAgentPrincipals().getPrincipals();
@@ -40,8 +42,12 @@ public class DownloadBulkController {
                 pid, principals, Permission.viewOriginal);
         var request = new DownloadBulkRequest(pidString, principals);
         var path = downloadBulkService.downloadBulk(request);
+        var filename = DownloadBulkService.getZipFilename(pidString);
 
-        return new FileSystemResource(path);
+        return ResponseEntity.ok()
+                .header(CONTENT_DISPOSITION,"attachment;filename=\"" + filename + "\"")
+                .contentType(MediaType.valueOf("application/zip"))
+                .body(new FileSystemResource(path));
     }
 
     public void setDownloadBulkService(DownloadBulkService downloadBulkService) {
