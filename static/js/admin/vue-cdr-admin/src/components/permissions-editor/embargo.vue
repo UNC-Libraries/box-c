@@ -46,7 +46,7 @@
 <script>
     import { addYears, format, isFuture } from 'date-fns'
     import { mapActions, mapState } from 'pinia';
-    import { usePermissionsStore } from '../stores/permissions';
+    import { usePermissionsStore } from '../../stores/permissions';
 
     export default {
         name: 'embargo',

@@ -15,8 +15,8 @@ export default defineConfig({
         minify: false,
         rollupOptions: {
             output: {
-                entryFileNames: `assets/vue-permissions-[name].js`,
-                chunkFileNames: `assets/vue-permissions-[name].js`,
+                entryFileNames: `assets/vue-admin-[name].js`,
+                chunkFileNames: `assets/vue-admin-[name].js`,
                 assetFileNames: `assets/[name].[ext]`
             }
         }

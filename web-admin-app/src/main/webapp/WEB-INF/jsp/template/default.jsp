@@ -13,7 +13,7 @@
 	</title>
 </head>
 <body>
-<div id="permissions-app"></div>
+<div id="vue-admin-app"></div>
 <script type="module" crossorigin src="/static/js/vue-permissions-index.js"></script>
 
 <div id="pagewrap">

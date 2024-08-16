@@ -41,10 +41,10 @@
 </template>
 
 <script>
-    import patronRoles from '@/components/patronRoles.vue';
-    import staffRoles from "@/components/staffRoles.vue";
+    import patronRoles from '@/components/permissions-editor/patronRoles.vue';
+    import staffRoles from "@/components/permissions-editor/staffRoles.vue";
     import { mapActions, mapState } from 'pinia';
-    import { usePermissionsStore } from '../stores/permissions';
+    import { usePermissionsStore } from '../../stores/permissions';
 
     export default {
         name: 'modalEditor',
