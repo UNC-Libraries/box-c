@@ -8,12 +8,15 @@ import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.boxc.operations.impl.download.DownloadBulkRequest;
 import edu.unc.lib.boxc.operations.impl.download.DownloadBulkService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 import static edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore.getAgentPrincipals;
 
@@ -28,7 +31,8 @@ public class DownloadBulkController {
     private DownloadBulkService downloadBulkService;
 
     @RequestMapping("/bulkDownload/{id}")
-    public ResponseEntity<InputStreamResource> getZip(@PathVariable("id") String pidString) {
+    @ResponseBody
+    public FileSystemResource getZip(@PathVariable("id") String pidString) {
         PID pid = PIDs.get(pidString);
 
         AccessGroupSet principals = getAgentPrincipals().getPrincipals();
@@ -37,8 +41,7 @@ public class DownloadBulkController {
         var request = new DownloadBulkRequest(pidString, principals);
         var path = downloadBulkService.downloadBulk(request);
 
-
-        return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        return new FileSystemResource(path);
     }
 
     public void setDownloadBulkService(DownloadBulkService downloadBulkService) {

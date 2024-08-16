@@ -24,7 +24,9 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.nio.file.Path;
+import java.util.zip.ZipFile;
 
 import static edu.unc.lib.boxc.auth.api.Permission.viewOriginal;
 import static edu.unc.lib.boxc.web.common.services.FedoraContentService.CONTENT_DISPOSITION;
@@ -98,9 +100,17 @@ public class DownloadBulkControllerIT {
                 .andExpect(status().is2xxSuccessful())
                 .andReturn();
 
-//        var response = result.getResponse();
-//        var filename = DownloadBulkService.getZipFilename(WORK_ID);
-//        assertEquals("attachment; filename=" + filename, response.getHeader(CONTENT_DISPOSITION));
+        var zipFile = (ZipFile) result;
+
+        assertZipFiles(zipFile);
     }
 
+    private void assertZipFiles(ZipFile zipFile) throws IOException {
+        var entries = zipFile.entries();
+        while (entries.hasMoreElements()) {
+            var entry = entries.nextElement();
+            var zipInputStream = zipFile.getInputStream(entry);
+            assertEquals(fileInputStream, zipInputStream);
+        }
+    }
 }
