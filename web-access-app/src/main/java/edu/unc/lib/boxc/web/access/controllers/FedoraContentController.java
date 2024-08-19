@@ -3,6 +3,7 @@ package edu.unc.lib.boxc.web.access.controllers;
 import edu.unc.lib.boxc.auth.api.exceptions.AccessRestrictionException;
 import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
 import edu.unc.lib.boxc.auth.api.services.AccessControlService;
+import edu.unc.lib.boxc.fcrepo.exceptions.RangeNotSatisfiableException;
 import edu.unc.lib.boxc.model.api.exceptions.InvalidPidException;
 import edu.unc.lib.boxc.model.api.exceptions.NotFoundException;
 import edu.unc.lib.boxc.model.api.exceptions.ObjectTypeMismatchException;
@@ -166,6 +167,11 @@ public class FedoraContentController {
     public ResponseEntity<Object> handleArgumentTypeMismatch(RuntimeException ex) {
         log.debug("Argument type mismatch", ex);
         return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(RangeNotSatisfiableException.class)
+    public ResponseEntity<Object> handleRangeNotSatisfiable() {
+        return new ResponseEntity<>(HttpStatus.REQUESTED_RANGE_NOT_SATISFIABLE);
     }
 
     public void setFedoraContentService(FedoraContentService fedoraContentService) {
