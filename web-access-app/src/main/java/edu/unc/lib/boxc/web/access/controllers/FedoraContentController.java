@@ -28,6 +28,8 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.context.request.ServletWebRequest;
+import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 import javax.servlet.http.HttpServletRequest;
@@ -158,8 +160,13 @@ public class FedoraContentController {
     }
 
     @ExceptionHandler(value = { RuntimeException.class })
-    public ResponseEntity<Object> handleUncaught(RuntimeException ex) {
-        log.error("Uncaught exception while streaming content", ex);
+    public ResponseEntity<Object> handleUncaught(RuntimeException ex, WebRequest request) {
+        var headers = new StringBuilder();
+        request.getHeaderNames().forEachRemaining(header -> {
+            headers.append("\n").append(header).append(" = ").append(request.getHeader(header));
+        });
+        var requestUri = ((ServletWebRequest) request).getRequest().getRequestURI();
+        log.error("Uncaught exception while streaming content from {} headers {}", requestUri, headers, ex);
         return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
