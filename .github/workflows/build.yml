@@ -75,11 +75,11 @@ jobs:
         restore-keys: v1-npm-deps-
 
     - run: npm --prefix static/js/vue-cdr-access install
-    - run: npm --prefix static/js/admin/vue-permissions-editor install
+    - run: npm --prefix static/js/admin/vue-cdr-admin install
 
     - run: npm install -g jest-cli@29.0.3
     - run: npm --prefix static/js/vue-cdr-access run test
-    - run: npm --prefix static/js/admin/vue-permissions-editor run test
+    - run: npm --prefix static/js/admin/vue-cdr-admin run test
 
     - name: Report to CodeClimate
       uses: paambaati/codeclimate-action@v3.0.0
