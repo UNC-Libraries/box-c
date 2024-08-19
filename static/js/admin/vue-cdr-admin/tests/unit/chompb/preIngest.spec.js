@@ -16,7 +16,7 @@ const project_info = [
         "projectSource": "files",
         "status": "sources_mapped",
         "allowedActions": ["color_bar_crop", "color_bar_report"],
-        "projectPath": "/opt/data/cdm_migrations/file_source_test"
+        "projectPath": "/test_path_one/file_source_test"
     },
     {
         "name": "ncmaps_urls",
@@ -30,7 +30,7 @@ const project_info = [
         "projectSource": "CDM",
         "status": "sources_mapped",
         "allowedActions": [],
-        "projectPath": "/opt/data/cdm_migrations/file_source_test"
+        "projectPath": "/test_path_two/file_source_test"
     }
 ];
 

@@ -92,7 +92,7 @@ jobs:
           ${{github.workspace}}/**/target/site/jacoco/jacoco.xml:jacoco
           ${{github.workspace}}/**/target/site/jacoco-it/jacoco.xml:jacoco
           ${{github.workspace}}/static/js/vue-cdr-access/coverage/lcov.info:lcov
-          ${{github.workspace}}/static/js/admin/vue-permissions-editor/coverage/lcov.info:lcov
+          ${{github.workspace}}/static/js/admin/vue-cdr-admin/coverage/lcov.info:lcov
 
     - name: View fedora service logs
       if: always()

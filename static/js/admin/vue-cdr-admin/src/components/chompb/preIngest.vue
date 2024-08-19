@@ -51,28 +51,6 @@ export default {
     },
 
     computed: {
-        /* ajaxOptions() {
-            return  {
-                url: `/listJson/${this.workId}?rows=10`,
-                dataSrc: (d) => this.resourceType === 'Work' ? d.metadata : [d.container],
-                data: (d) => {
-                    const sorts = ['title', 'fileFormatDescription', 'fileSize'];
-                    const sortOrder = {'asc': 'normal', 'desc': 'reverse'};
-                    d.anywhere = d.search['value'];
-                    d.length = 10;
-                    d.rollup = false;
-                    if (d.order[0] !== undefined) {
-                        d.sort = sorts[d.order[0]['column'] - 1] + ',' + sortOrder[d.order[0]['dir']];
-                    }
-                },
-                dataFilter: (data) => {
-                    let json = JSON.parse(data);
-                    json.recordsTotal = json.resultCount;
-                    json.recordsFiltered = json.resultCount;
-                    return JSON.stringify(json);
-                }
-            }
-        }, */
         tableOptions() {
             return {
                 //serverSide: true,
