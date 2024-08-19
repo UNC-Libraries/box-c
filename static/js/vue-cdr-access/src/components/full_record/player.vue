@@ -63,7 +63,8 @@ export default {
                     gestureSettingsMouse: {
                         scrollToZoom: true
                     }
-                }
+                },
+                showIIIFBadge: false
             }
         }
     },
