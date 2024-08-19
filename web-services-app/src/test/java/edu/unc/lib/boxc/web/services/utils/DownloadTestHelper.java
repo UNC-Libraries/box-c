@@ -10,7 +10,7 @@ import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 
 public class DownloadTestHelper {
     public static void assertCorrectImageReturned(byte[] actualContent) throws IOException {
-        byte[] imageContent = FileUtils.readFileToByteArray(new File("src/test/resources/__files/bunny.jpg"));
+        byte[] imageContent = FileUtils.readFileToByteArray(new File("src/test/resources/files/bunny.jpg"));
 
         assertArrayEquals(imageContent, actualContent);
     }

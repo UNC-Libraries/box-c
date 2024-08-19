@@ -1,6 +1,5 @@
 package edu.unc.lib.boxc.web.services.rest;
 
-import com.github.tomakehurst.wiremock.junit5.WireMockTest;
 import edu.unc.lib.boxc.auth.api.Permission;
 import edu.unc.lib.boxc.auth.api.exceptions.AccessRestrictionException;
 import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
@@ -49,7 +48,6 @@ import static org.mockito.MockitoAnnotations.openMocks;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@WireMockTest(httpPort = 46887)
 public class DownloadBulkControllerIT {
     private static final String WORK_ID = "f277bb38-272c-471c-a28a-9887a1328a1f";
     private static final String FILE_ID = "83c2d7f8-2e6b-4f0b-ab7e-7397969c0682";
@@ -80,7 +78,7 @@ public class DownloadBulkControllerIT {
         downloadBulkService.setBasePath(tmpFolder);
         downloadBulkService.setRepoObjLoader(repositoryObjectLoader);
         controller.setDownloadBulkService(downloadBulkService);
-        fileInputStream = new FileInputStream("src/test/resources/__files/bunny.jpg");
+        fileInputStream = new FileInputStream("src/test/resources/files/bunny.jpg");
         mvc = MockMvcBuilders.standaloneSetup(controller)
                 .setControllerAdvice(new RestResponseEntityExceptionHandler())
                 .build();
