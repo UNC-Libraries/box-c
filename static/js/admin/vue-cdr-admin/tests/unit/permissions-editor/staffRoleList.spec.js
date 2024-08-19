@@ -1,5 +1,5 @@
 import { shallowMount } from '@vue/test-utils'
-import staffRolesSelect from '@/components/staffRolesSelect.vue'
+import staffRolesSelect from '@/components/permissions-editor/staffRolesSelect.vue'
 import staffRoleList from '@/mixins/staffRoleList';
 
 const collection_roles = [

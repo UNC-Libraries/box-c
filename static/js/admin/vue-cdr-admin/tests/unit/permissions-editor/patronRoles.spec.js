@@ -1,5 +1,5 @@
 import {shallowMount} from '@vue/test-utils';
-import patronRoles from '@/components/patronRoles.vue';
+import patronRoles from '@/components/permissions-editor/patronRoles.vue';
 import moxios from 'moxios';
 import { createTestingPinia } from '@pinia/testing';
 import { usePermissionsStore } from '@/stores/permissions';

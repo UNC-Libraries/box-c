@@ -14,7 +14,7 @@
 </head>
 <body>
 <div id="vue-admin-app"></div>
-<script type="module" crossorigin src="/static/js/vue-permissions-index.js"></script>
+<script type="module" crossorigin src="/static/js/vue-admin-index.js"></script>
 
 <div id="pagewrap">
 	<div id="pagewrap_inside">

@@ -1,5 +1,5 @@
 import { shallowMount } from '@vue/test-utils';
-import embargo from '@/components/embargo.vue';
+import embargo from '@/components/permissions-editor/embargo.vue';
 import { createTestingPinia } from '@pinia/testing';
 import { usePermissionsStore } from '@/stores/permissions';
 import { addYears, format } from 'date-fns';
