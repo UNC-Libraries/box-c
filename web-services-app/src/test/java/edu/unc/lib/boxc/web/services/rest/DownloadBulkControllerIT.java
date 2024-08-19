@@ -31,16 +31,13 @@ import java.io.ByteArrayInputStream;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.zip.ZipEntry;
-import java.util.zip.ZipFile;
 import java.util.zip.ZipInputStream;
 
 import static edu.unc.lib.boxc.auth.api.Permission.viewOriginal;
-import static edu.unc.lib.boxc.web.common.services.FedoraContentService.CONTENT_DISPOSITION;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -49,14 +46,13 @@ import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.openMocks;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WireMockTest(httpPort = 46887)
 public class DownloadBulkControllerIT {
     private static final String WORK_ID = "f277bb38-272c-471c-a28a-9887a1328a1f";
     private static final String FILE_ID = "83c2d7f8-2e6b-4f0b-ab7e-7397969c0682";
-    private static final PID WORK_PID = PIDs.get(WORK_ID);
     private static final PID FILE_PID = PIDs.get(FILE_ID);
     private final static String USERNAME = "test_user";
     private final static AccessGroupSet GROUPS = new AccessGroupSetImpl("adminGroup");
@@ -72,7 +68,6 @@ public class DownloadBulkControllerIT {
     public Path tmpFolder;
     @InjectMocks
     private DownloadBulkController controller;
-    private DownloadBulkService downloadBulkService;
     private MockMvc mvc;
     private FileInputStream fileInputStream;
     private AutoCloseable closeable;
@@ -80,7 +75,7 @@ public class DownloadBulkControllerIT {
     @BeforeEach
     public void init() throws FileNotFoundException {
         closeable = openMocks(this);
-        downloadBulkService = new DownloadBulkService();
+        DownloadBulkService downloadBulkService = new DownloadBulkService();
         downloadBulkService.setAclService(aclService);
         downloadBulkService.setBasePath(tmpFolder);
         downloadBulkService.setRepoObjLoader(repositoryObjectLoader);
