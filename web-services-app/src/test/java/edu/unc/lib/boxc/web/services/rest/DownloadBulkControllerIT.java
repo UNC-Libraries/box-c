@@ -78,7 +78,7 @@ public class DownloadBulkControllerIT {
         downloadBulkService.setBasePath(tmpFolder);
         downloadBulkService.setRepoObjLoader(repositoryObjectLoader);
         controller.setDownloadBulkService(downloadBulkService);
-        fileInputStream = new FileInputStream("src/test/resources/files/bunny.jpg");
+        fileInputStream = new FileInputStream("src/test/resources/__files/bunny.jpg");
         mvc = MockMvcBuilders.standaloneSetup(controller)
                 .setControllerAdvice(new RestResponseEntityExceptionHandler())
                 .build();
