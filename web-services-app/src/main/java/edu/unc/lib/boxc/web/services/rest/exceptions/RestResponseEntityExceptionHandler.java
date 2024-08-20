@@ -3,6 +3,7 @@ package edu.unc.lib.boxc.web.services.rest.exceptions;
 import edu.unc.lib.boxc.model.api.exceptions.InvalidOperationForObjectType;
 import java.io.EOFException;
 
+import edu.unc.lib.boxc.model.api.exceptions.ObjectTypeMismatchException;
 import edu.unc.lib.boxc.search.api.exceptions.SolrRuntimeException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -87,6 +88,12 @@ public class RestResponseEntityExceptionHandler extends ResponseEntityExceptionH
             log.error("Error occurred while handling exception {}", getRequestUri(request), e);
             return null;
         }
+    }
+
+    @ExceptionHandler(value = { ObjectTypeMismatchException.class })
+    protected ResponseEntity<Object> handleObjectTypeMismatch(RuntimeException ex, WebRequest request) {
+        String bodyOfResponse = "Object type mismatch";
+        return handleExceptionInternal(ex, bodyOfResponse, new HttpHeaders(), HttpStatus.BAD_REQUEST, request);
     }
 
     @ExceptionHandler(value = { Exception.class })

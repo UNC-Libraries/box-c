@@ -492,6 +492,12 @@
         <property name="baseIiifv3Path" value="${services.api.url}iiif/v3/"/>
         <property name="httpClientConnectionManager" ref="httpClientConnectionManager" />
     </bean>
+
+    <bean id="downloadBulkService" class="edu.unc.lib.boxc.operations.impl.download.DownloadBulkService">
+        <property name="aclService" ref="aclService"/>
+        <property name="repoObjLoader" ref="repositoryObjectLoader"/>
+        <property name="basePath" value="${data.dir}/zip/"/>
+    </bean>
     
     <bean class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
         <property name="staticMethod" value="edu.unc.lib.boxc.web.common.utils.SerializationUtil.injectSettings"/>

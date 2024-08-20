@@ -5,7 +5,6 @@ import edu.unc.lib.boxc.auth.api.exceptions.AccessRestrictionException;
 import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
 import edu.unc.lib.boxc.auth.api.models.AgentPrincipals;
 import edu.unc.lib.boxc.auth.api.services.AccessControlService;
-import edu.unc.lib.boxc.model.api.exceptions.NotFoundException;
 import edu.unc.lib.boxc.model.api.exceptions.ObjectTypeMismatchException;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.objects.BinaryObject;
@@ -78,7 +77,7 @@ public class DownloadBulkServiceTest {
         parentPid = PIDs.get(PARENT_UUID);
         fileObject1Pid = PIDs.get(CHILD1_UUID);
         fileObject2Pid = PIDs.get(CHILD2_UUID);
-        request = new DownloadBulkRequest(PARENT_UUID, mockAgent);
+        request = new DownloadBulkRequest(PARENT_UUID, mockAccessSet);
 
         when(mockAgent.getUsername()).thenReturn("user");
         when(mockAgent.getPrincipals()).thenReturn(mockAccessSet);

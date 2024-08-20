@@ -18,6 +18,7 @@ import edu.unc.lib.boxc.web.common.utils.AnalyticsTrackerUtil;
 import edu.unc.lib.boxc.web.services.processing.DownloadImageService;
 import edu.unc.lib.boxc.web.services.rest.exceptions.RestResponseEntityExceptionHandler;
 import edu.unc.lib.boxc.operations.api.images.ImageServerUtil;
+import edu.unc.lib.boxc.web.services.utils.DownloadTestHelper;
 import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -149,7 +150,8 @@ public class DownloadImageControllerIT {
         var response = result.getResponse();
 
         assertEquals("attachment; filename=bunny_800px.jpg", response.getHeader(CONTENT_DISPOSITION));
-        assertCorrectImageReturned(response);
+        assertEquals("image/jpeg", response.getContentType());
+        DownloadTestHelper.assertCorrectImageReturned(response.getContentAsByteArray());
     }
 
     @Test
@@ -182,7 +184,8 @@ public class DownloadImageControllerIT {
         var response = result.getResponse();
 
         assertEquals("attachment; filename=bunny_max.jpg", response.getHeader(CONTENT_DISPOSITION));
-        assertCorrectImageReturned(response);
+        assertEquals("image/jpeg", response.getContentType());
+        DownloadTestHelper.assertCorrectImageReturned(response.getContentAsByteArray());
     }
 
     @Test
@@ -255,7 +258,8 @@ public class DownloadImageControllerIT {
         var response = result.getResponse();
 
         assertEquals("attachment; filename=bunny_max.jpg", response.getHeader(CONTENT_DISPOSITION));
-        assertCorrectImageReturned(response);
+        assertEquals("image/jpeg", response.getContentType());
+        DownloadTestHelper.assertCorrectImageReturned(response.getContentAsByteArray());
     }
 
     @Test
@@ -389,14 +393,5 @@ public class DownloadImageControllerIT {
         mvc.perform(get("/downloadImage/" + pidString + "/500"))
                 .andExpect(status().isServiceUnavailable())
                 .andReturn();
-    }
-
-    private void assertCorrectImageReturned(MockHttpServletResponse response) throws IOException {
-        assertEquals("image/jpeg", response.getContentType());
-
-        var responseContent = response.getContentAsByteArray();
-        byte[] imageContent = FileUtils.readFileToByteArray(new File("src/test/resources/__files/bunny.jpg"));
-
-        assertArrayEquals(responseContent, imageContent);
     }
 }
