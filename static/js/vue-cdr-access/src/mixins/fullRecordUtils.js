@@ -95,6 +95,10 @@ export default {
             return `https://${window.location.host}/admin/describe/${id}`;
         },
 
+        downloadBulkUrl(id) {
+            return `https://${window.location.host}/services/api/bulkDownload/${id}`;
+        },
+
         hasMoreExhibits(current_exhibit, exhibits) {
             return current_exhibit < Object.keys(exhibits).length - 1;
         }

@@ -9,6 +9,9 @@
                 </div>
             </div>
         </div>
+        <div v-if="hasPermission(recordData, 'viewOriginal')" class="actionlink">
+            <a class="bulk-download button action" :href="downloadBulkUrl(recordData.briefObject.id)"><i class="fa fa-edit"></i> {{ $t('full_record.bulk_download') }}</a>
+        </div>
         <div v-if="hasPermission(recordData, 'editDescription')" class="actionlink">
             <a class="edit button action" :href="editDescriptionUrl(recordData.briefObject.id)"><i class="fa fa-edit"></i> {{ $t('full_record.edit') }}</a>
         </div>
