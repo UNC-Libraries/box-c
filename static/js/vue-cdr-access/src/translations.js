@@ -55,6 +55,7 @@ export default {
             download_single_use: "Generate Single-Use Link",
             download_title: "Download {title}",
             download_unavailable: "Download Unavailable",
+            download_zip: "Download ZIP file",
             edit: "Edit",
             edit_title: "@:edit {title}",
             embargo_date: "Embargoed Until",
