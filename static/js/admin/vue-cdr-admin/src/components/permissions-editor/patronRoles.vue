@@ -93,14 +93,14 @@
 </template>
 
 <script>
-    import patronDisplayRow from '@/components/patronDisplayRow.vue';
-    import embargo from '@/components/embargo.vue';
-    import displayModal from '../mixins/displayModal';
-    import patronHelpers from '../mixins/patronHelpers';
+    import patronDisplayRow from '@/components/permissions-editor/patronDisplayRow.vue';
+    import embargo from '@/components/permissions-editor/embargo.vue';
+    import displayModal from '../../mixins/displayModal';
+    import patronHelpers from '../../mixins/patronHelpers';
     import axios from 'axios';
     import cloneDeep from 'lodash.clonedeep';
     import { mapActions, mapState } from 'pinia';
-    import { usePermissionsStore } from '../stores/permissions';
+    import { usePermissionsStore } from '../../stores/permissions';
 
     const EVERYONE_PRINCIPAL = 'everyone';
     const AUTH_PRINCIPAL = 'authenticated';

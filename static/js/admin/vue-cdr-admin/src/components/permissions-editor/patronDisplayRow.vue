@@ -24,7 +24,7 @@
 </template>
 
 <script>
-    import patronHelpers from '../mixins/patronHelpers';
+    import patronHelpers from '../../mixins/patronHelpers';
 
     export default {
         name: 'patronDisplayRow',

@@ -1,5 +1,5 @@
 import { shallowMount } from '@vue/test-utils';
-import patronDisplayRow from '@/components/patronDisplayRow.vue';
+import patronDisplayRow from '@/components/permissions-editor/patronDisplayRow.vue';
 
 let wrapper, icons, columns, principal, role;
 

@@ -1,6 +1,6 @@
 import { shallowMount } from '@vue/test-utils'
 import '@testing-library/jest-dom'
-import staffRoles from '@/components/staffRoles.vue'
+import staffRoles from '@/components/permissions-editor/staffRoles.vue'
 import moxios from "moxios";
 import { createTestingPinia } from '@pinia/testing';
 import { usePermissionsStore } from '@/stores/permissions';

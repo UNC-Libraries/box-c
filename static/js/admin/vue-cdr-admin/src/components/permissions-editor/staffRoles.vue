@@ -112,14 +112,14 @@
 </template>
 
 <script>
-    import staffRolesSelect from "@/components/staffRolesSelect.vue";
-    import staffRoleList from "../mixins/staffRoleList";
-    import displayModal from "../mixins/displayModal";
+    import staffRolesSelect from "@/components/permissions-editor/staffRolesSelect.vue";
+    import staffRoleList from "../../mixins/staffRoleList";
+    import displayModal from "../../mixins/displayModal";
     import axios from 'axios';
     import cloneDeep from 'lodash.clonedeep';
     import isEmpty from 'lodash.isempty';
     import { mapState, mapStores } from 'pinia';
-    import {usePermissionsStore} from "../stores/permissions";
+    import {usePermissionsStore} from "../../stores/permissions";
 
     export default {
         name: 'staffRoles',

@@ -1,5 +1,5 @@
 import { shallowMount } from '@vue/test-utils';
-import staffRolesSelect from '@/components/staffRolesSelect.vue';
+import staffRolesSelect from '@/components/permissions-editor/staffRolesSelect.vue';
 import { createTestingPinia } from '@pinia/testing';
 import { usePermissionsStore } from '@/stores/permissions';
 

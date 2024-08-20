@@ -54,6 +54,10 @@
 					<c:set var="tabClass"><c:if test="${contentPage == 'report/statusMonitor.jsp'}">active</c:if></c:set>
 					<a href="statusMonitor" id="menu_status_monitor" class="${tabClass}">Status Monitor</a>
 				</li>
+				<li>
+					<c:set var="tabClass"><c:if test="${contentPage == 'report/chompb'}">active</c:if></c:set>
+					<a class="${tabClass}" href="chompb">Pre-ingest</a>
+				</li>
 			</ul>
 		</div>
 	</div>

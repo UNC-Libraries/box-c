@@ -10,7 +10,7 @@ window.perms_editor = createApp({
   render() {
     return h(App);
   }
-}).use(pinia).use(router).mount('#permissions-app');
+}).use(pinia).use(router).mount('#vue-admin-app');
 
 /**
  * Need to define our Pinia store instance as a global, due to the way the build scopes variables,
