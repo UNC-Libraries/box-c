@@ -6,9 +6,6 @@
         <template v-if="recordData.viewerType === 'pdf' && hasPermission(recordData, 'viewOriginal') && pdfFileAcceptableForDisplay">
             <iframe :src="viewer(recordData.viewerType)" allow="fullscreen" scrolling="no"></iframe>
         </template>
-        <template v-else-if="recordData.viewerType === 'audio' && hasPermission(recordData, 'viewAccessCopies')">
-            <audio-player :datafile-url="recordData.dataFileUrl"></audio-player>
-        </template>
         <template v-else-if="recordData.viewerType === 'streaming' && hasPermission(recordData, 'viewAccessCopies')">
             <streaming-player :record-data="recordData"></streaming-player>
         </template>
@@ -18,7 +15,6 @@
 <script>
 import { applyPureReactInVue } from 'veaury';
 import Viewer from '@samvera/clover-iiif/viewer';
-import audioPlayer from '@/components/full_record/audioPlayer.vue';
 import streamingPlayer from '@/components/full_record/streamingPlayer.vue';
 import permissionUtils from '../../mixins/permissionUtils';
 
@@ -27,7 +23,7 @@ const MAX_PDF_VIEWER_FILE_SIZE = 200000000; // ~200mb
 export default {
     name: 'player',
 
-    components: {audioPlayer, streamingPlayer, clover: applyPureReactInVue(Viewer) },
+    components: {streamingPlayer, clover: applyPureReactInVue(Viewer) },
 
     mixins: [permissionUtils],
 
@@ -49,7 +45,7 @@ export default {
 
         manifestPath() {
             const url_info = window.location;
-            const port = url_info.port !== '' ? `:${url_info.port}`  : '';
+            const port = url_info.port !== '' ? `:${url_info.port}` : '';
             return `https://${url_info.hostname}${port}/services/api/iiif/v3/${this.recordData.briefObject.id}/manifest`
         },
 
