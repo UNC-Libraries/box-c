@@ -12,6 +12,7 @@ import static edu.unc.lib.boxc.model.fcrepo.ids.DatastreamPids.getTechnicalMetad
 import static edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPaths.idToPath;
 import static edu.unc.lib.boxc.web.common.services.FedoraContentService.CONTENT_DISPOSITION;
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.apache.http.HttpHeaders.RANGE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
@@ -353,6 +354,20 @@ public class DatastreamRestControllerIT extends AbstractAPIIT {
 
         MockHttpServletResponse response = result.getResponse();
         assertEquals("", response.getContentAsString(), "Content must not be returned");
+    }
+
+    @Test
+    public void testRangeExceedsFileLength() throws Exception {
+        PID filePid = makePid();
+
+        FileObject fileObj = repositoryObjectFactory.createFileObject(filePid, null);
+        Path contentPath = createBinaryContent(BINARY_CONTENT);
+        fileObj.addOriginalFile(contentPath.toUri(), "file.txt", "text/plain", null, null);
+
+        mvc.perform(get("/file/" + filePid.getId())
+                        .header(RANGE,"bytes=0-900000"))
+                .andExpect(status().isRequestedRangeNotSatisfiable())
+                .andReturn();
     }
 
     private File createDerivative(String id, DatastreamType dsType, byte[] content) throws Exception {

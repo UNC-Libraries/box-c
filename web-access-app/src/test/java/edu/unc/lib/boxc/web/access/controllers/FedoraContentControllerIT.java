@@ -278,6 +278,19 @@ public class FedoraContentControllerIT {
     }
 
     @Test
+    public void testRangeExceedsFileLength() throws Exception {
+        PID filePid = makePid();
+        FileObject fileObj = repositoryObjectFactory.createFileObject(filePid, null);
+        fileObj.addOriginalFile(makeContentUri(originalPid(fileObj), BINARY_CONTENT), null, "text/plain", null, null);
+
+        mvc.perform(get("/indexablecontent/" + filePid.getId())
+                        .header(RANGE,"bytes=0-900000"))
+                .andExpect(status().isRequestedRangeNotSatisfiable())
+                .andReturn();
+    }
+
+
+    @Test
     public void testGetAdministrativeDatastreamNoPermissions() throws Exception {
         PID filePid = makePid();
 
