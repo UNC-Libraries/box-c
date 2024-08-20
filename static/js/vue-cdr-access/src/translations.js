@@ -40,6 +40,7 @@ export default {
         full_record: {
             additional_metadata: "View Additional Metadata",
             available_date: "Available after {available_date}",
+            bulk_download: "Download ZIP file",
             collection: "Collection",
             contains: "Contains",
             copied_link: "Download URL, {text}, copied to clipboard",
@@ -55,7 +56,6 @@ export default {
             download_single_use: "Generate Single-Use Link",
             download_title: "Download {title}",
             download_unavailable: "Download Unavailable",
-            download_zip: "Download ZIP file",
             edit: "Edit",
             edit_title: "@:edit {title}",
             embargo_date: "Embargoed Until",

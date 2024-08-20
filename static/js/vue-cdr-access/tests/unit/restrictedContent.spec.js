@@ -167,6 +167,19 @@ describe('restrictedContent.vue', () => {
         expect(wrapper.find('a.edit').exists()).toBe(false);
     });
 
+    it('shows a bulk download option if user has viewOriginal permissions', async () => {
+        logUserIn();
+        await setRecordPermissions(record, ['viewMetadata', 'viewAccessCopies', 'viewReducedResImages',
+            'viewOriginal', 'viewHidden', 'editDescription']);
+        expect(wrapper.find('a.bulk-download').exists()).toBe(true);
+    });
+
+    it('does not show a bulk download option if user does not have viewOriginal permissions', async () => {
+        await setRecordPermissions(record, []);
+
+        expect(wrapper.find('a.bulk-download').exists()).toBe(false);
+    });
+
     it('does not show embargo info if there is no dataFileUrl', async () => {
         const updated_data = cloneDeep(record);
         updated_data.dataFileUrl = "";
