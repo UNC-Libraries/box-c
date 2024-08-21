@@ -16,6 +16,7 @@ import edu.unc.lib.boxc.operations.impl.edit.UpdateDescriptionService;
 import edu.unc.lib.boxc.operations.impl.edit.UpdateDescriptionService.UpdateDescriptionRequest;
 import edu.unc.lib.boxc.persist.impl.storage.StorageLocationTestHelper;
 import edu.unc.lib.boxc.services.camel.NonBinaryEnhancementProcessor;
+import edu.unc.lib.boxc.services.camel.audio.AudioDerivativeProcessor;
 import edu.unc.lib.boxc.services.camel.fulltext.FulltextProcessor;
 import edu.unc.lib.boxc.services.camel.images.AddDerivativeProcessor;
 import edu.unc.lib.boxc.services.camel.solr.SolrIngestProcessor;
@@ -94,6 +95,8 @@ public class EnhancementRouterIT extends CamelSpringTestSupport {
 
     private FulltextProcessor fulltextProcessor;
 
+    private AudioDerivativeProcessor audioDerivativeProcessor;
+
     private UpdateDescriptionService updateDescriptionService;
 
     @TempDir
@@ -124,6 +127,7 @@ public class EnhancementRouterIT extends CamelSpringTestSupport {
         addAccessCopyProcessor = applicationContext.getBean("addAccessCopyProcessor", AddDerivativeProcessor.class);
         solrIngestProcessor = applicationContext.getBean("solrIngestProcessor", SolrIngestProcessor.class);
         fulltextProcessor = applicationContext.getBean("fulltextProcessor", FulltextProcessor.class);
+        audioDerivativeProcessor = applicationContext.getBean("audioDerivativeProcessor", AudioDerivativeProcessor.class);
         updateDescriptionService = applicationContext.getBean(UpdateDescriptionService.class);
         nbh = applicationContext.getBean(NonBinaryEnhancementProcessor.class);
 

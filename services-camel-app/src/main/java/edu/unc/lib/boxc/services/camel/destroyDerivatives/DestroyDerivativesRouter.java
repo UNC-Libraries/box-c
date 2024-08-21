@@ -60,7 +60,6 @@ public class DestroyDerivativesRouter extends RouteBuilder {
         from(destroyDerivativesStreamCamel)
                 .routeId("CdrDestroyDerivatives")
                 .startupOrder(204)
-                .log(LoggingLevel.DEBUG, log, "Received destroy derivatives message")
                 .process(destroyedMsgProcessor)
                 .choice()
                     .when(method(ImageDerivativeProcessor.class, "allowedImageType"))
@@ -104,7 +103,7 @@ public class DestroyDerivativesRouter extends RouteBuilder {
 
         from("direct:audio.derivatives.destroy")
                 .routeId("CdrDestroyAudio")
-                .startupOrder(201)
+                .startupOrder(199)
                 .log(LoggingLevel.DEBUG, log, "Destroying derivative audio files")
                 .bean(destroyAudioProcessor);
     }
