@@ -180,7 +180,7 @@ public class AudioEnhancementsRouterTest extends CamelSpringTestSupport {
         audioEndpoint.expectedMessageCount(0);
 
         Map<String, Object> headers = createEvent(fileID, eventTypes, "false");
-        headers.put(CdrBinaryMimeType, "audio/wav");
+        headers.put(CdrBinaryMimeType, "audio/mpeg");
 
         template.sendBodyAndHeaders("", headers);
 

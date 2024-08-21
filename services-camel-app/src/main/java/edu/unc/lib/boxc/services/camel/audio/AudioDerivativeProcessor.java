@@ -16,7 +16,7 @@ import java.util.regex.Pattern;
 public class AudioDerivativeProcessor implements Processor {
     private static final Logger log = LoggerFactory.getLogger(AudioDerivativeProcessor.class);
 
-    private static final Pattern MIMETYPE_PATTERN = Pattern.compile(".*(audio\\.wav).*");
+    private static final Pattern MIMETYPE_PATTERN = Pattern.compile("^(audio.wav)$");
 
     /**
      * Returns true if the subject of the exchange is a binary which

@@ -2,7 +2,6 @@ package edu.unc.lib.boxc.services.camel.audio;
 
 import edu.unc.lib.boxc.model.api.exceptions.RepositoryException;
 import edu.unc.lib.boxc.services.camel.images.AddDerivativeProcessor;
-import edu.unc.lib.boxc.services.camel.thumbnails.ThumbnailRequestProcessor;
 import edu.unc.lib.boxc.services.camel.util.CdrFcrepoHeaders;
 import org.apache.camel.BeanInject;
 import org.apache.camel.LoggingLevel;
