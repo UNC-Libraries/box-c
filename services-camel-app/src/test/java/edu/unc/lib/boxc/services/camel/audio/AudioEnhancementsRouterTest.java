@@ -1,5 +1,6 @@
 package edu.unc.lib.boxc.services.camel.audio;
 
+import edu.unc.lib.boxc.fcrepo.FcrepoJmsConstants;
 import edu.unc.lib.boxc.services.camel.images.AddDerivativeProcessor;
 import org.apache.camel.BeanInject;
 import org.apache.camel.CamelExecutionException;
@@ -41,16 +42,12 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 public class AudioEnhancementsRouterTest extends CamelSpringTestSupport {
-    private static final String EVENT_NS = "http://fedora.info/definitions/v4/event#";
-    private static final String EVENT_TYPE = "org.fcrepo.jms.eventType";
-    private static final String IDENTIFIER = "org.fcrepo.jms.identifier";
-    private static final String RESOURCE_TYPE = "org.fcrepo.jms.resourceType";
     private static final long timestamp = 1428360320168L;
     private static final String userID = "bypassAdmin";
     private static final String userAgent = "curl/7.37.1";
     private static final String fileID = "343b3da4-8876-42f5-8821-7aabb65e0f19";
-    private final String eventTypes = EVENT_NS + "ResourceCreation";
-    private final String accessCopyRoute = "AccessCopy";
+    private final String eventTypes = FcrepoJmsConstants.EVENT_NS + "ResourceCreation";
+    private final String audioAccessCopy = "AudioAccessCopy";
 
     @PropertyInject(value = "fcrepo.baseUrl")
     private static String baseUri;
@@ -77,7 +74,7 @@ public class AudioEnhancementsRouterTest extends CamelSpringTestSupport {
     @Test
     public void testAudioAccessCopyRouteNoForceNoFileExists() throws Exception {
         when(addAccessCopyProcessor.needsRun(any())).thenReturn(true);
-        createContext(accessCopyRoute);
+        createContext(audioAccessCopy);
 
         var shEndpoint = getMockEndpoint("mock:exec:/bin/sh");
         shEndpoint.expectedMessageCount(1);
@@ -94,7 +91,7 @@ public class AudioEnhancementsRouterTest extends CamelSpringTestSupport {
     @Test
     public void testAudioAccessCopyRouteScriptFails() throws Exception {
         when(addAccessCopyProcessor.needsRun(any())).thenReturn(true);
-        createContext(accessCopyRoute);
+        createContext(audioAccessCopy);
 
         MockEndpoint shEndpoint = getMockEndpoint("mock:exec:/bin/sh");
         shEndpoint.expectedMessageCount(1);
@@ -118,7 +115,7 @@ public class AudioEnhancementsRouterTest extends CamelSpringTestSupport {
     @Test
     public void testAudioAccessCopyRouteForceNoFileExists() throws Exception {
         when(addAccessCopyProcessor.needsRun(any())).thenReturn(true);
-        createContext(accessCopyRoute);
+        createContext(audioAccessCopy);
 
         var shEndpoint = getMockEndpoint("mock:exec:/bin/sh");
         shEndpoint.expectedMessageCount(1);
@@ -137,7 +134,7 @@ public class AudioEnhancementsRouterTest extends CamelSpringTestSupport {
         File existingFile = new File("target/" + derivativePath + "/" + fileID + ".mp3");
         FileUtils.writeStringToFile(existingFile, "extracted text", "utf-8");
 
-        createContext(accessCopyRoute);
+        createContext(audioAccessCopy);
 
         var shEndpoint = getMockEndpoint("mock:exec:/bin/sh");
         shEndpoint.expectedMessageCount(0);
@@ -158,7 +155,7 @@ public class AudioEnhancementsRouterTest extends CamelSpringTestSupport {
         File existingFile = new File("target/" + derivativePath + "/" + fileID + ".mp3");
         FileUtils.writeStringToFile(existingFile, "extracted text", "utf-8");
 
-        createContext(accessCopyRoute);
+        createContext(audioAccessCopy);
 
         var shEndpoint = getMockEndpoint("mock:exec:/bin/sh");
         shEndpoint.expectedMessageCount(1);
@@ -173,7 +170,7 @@ public class AudioEnhancementsRouterTest extends CamelSpringTestSupport {
 
     @Test
     public void testAudioAccessCopyRejection() throws Exception {
-        createContext(accessCopyRoute);
+        createContext(audioAccessCopy);
 
         when(addAccessCopyProcessor.needsRun(any())).thenReturn(true);
         var audioEndpoint = getMockEndpoint("mock:process.enhancement.audioAccessCopy");
@@ -204,9 +201,9 @@ public class AudioEnhancementsRouterTest extends CamelSpringTestSupport {
         headers.put(FCREPO_AGENT, Arrays.asList(userID, userAgent));
         headers.put(FCREPO_EVENT_TYPE, eventTypes);
         headers.put(FCREPO_BASE_URL, baseUri);
-        headers.put(EVENT_TYPE, "ResourceCreation");
-        headers.put(IDENTIFIER, "original_file");
-        headers.put(RESOURCE_TYPE, Binary.getURI());
+        headers.put(FcrepoJmsConstants.EVENT_TYPE, "ResourceCreation");
+        headers.put(FcrepoJmsConstants.IDENTIFIER, "original_file");
+        headers.put(FcrepoJmsConstants.RESOURCE_TYPE, Binary.getURI());
         headers.put(CdrBinaryMimeType, "audio/wav");
         headers.put("force", force);
 

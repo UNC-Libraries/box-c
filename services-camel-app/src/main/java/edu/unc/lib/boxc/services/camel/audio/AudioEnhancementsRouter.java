@@ -12,6 +12,10 @@ import org.slf4j.Logger;
 
 import static org.slf4j.LoggerFactory.getLogger;
 
+/**
+ * Router which triggers the creation of audio derivatives
+ * @author krwong
+ */
 public class AudioEnhancementsRouter extends RouteBuilder {
     private static final Logger log = getLogger(AudioEnhancementsRouter.class);
 
@@ -21,7 +25,7 @@ public class AudioEnhancementsRouter extends RouteBuilder {
     private UuidGenerator uuidGenerator;
 
     /**
-     * Configure the thumbnail route workflow.
+     * Configure the audio enhancement route workflow.
      */
     @Override
     public void configure() throws Exception {
@@ -36,8 +40,8 @@ public class AudioEnhancementsRouter extends RouteBuilder {
                 .retryAttemptedLogLevel(LoggingLevel.WARN);
 
         from("direct:process.enhancement.audioAccessCopy")
-                .routeId("AccessCopy")
-                .startupOrder(20)
+                .routeId("AudioAccessCopy")
+                .startupOrder(25)
                 .log(LoggingLevel.DEBUG, log, "Access copy triggered")
                 .filter().method(addAccessCopyProcessor, "needsRun")
                 .filter().method(audioDerivProcessor, "allowedAudioType")

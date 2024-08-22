@@ -146,6 +146,10 @@ public class EnhancementRouterIT extends CamelSpringTestSupport {
         File jp2ScriptFile = new File("target/convertJp2.sh");
         FileUtils.writeStringToFile(jp2ScriptFile, "exit 0", "utf-8");
         jp2ScriptFile.deleteOnExit();
+
+        File audioScriptFile = new File("target/convertWav.sh");
+        FileUtils.writeStringToFile(jp2ScriptFile, "exit 0", "utf-8");
+        jp2ScriptFile.deleteOnExit();
     }
 
     @AfterEach
@@ -174,6 +178,7 @@ public class EnhancementRouterIT extends CamelSpringTestSupport {
         verify(addLargeThumbnailProcessor, timeout(ALLOW_WAIT)).process(any(Exchange.class));
         verify(addAccessCopyProcessor, never()).process(any(Exchange.class));
         verify(solrIngestProcessor, timeout(ALLOW_WAIT)).process(any(Exchange.class));
+        verify(audioDerivativeProcessor, never()).process(any(Exchange.class));
     }
 
     @Test
@@ -186,6 +191,7 @@ public class EnhancementRouterIT extends CamelSpringTestSupport {
         verify(solrIngestProcessor, timeout(ALLOW_WAIT)).process(any(Exchange.class));
         verify(addSmallThumbnailProcessor, never()).process(any(Exchange.class));
         verify(addLargeThumbnailProcessor, never()).process(any(Exchange.class));
+        verify(audioDerivativeProcessor, never()).process(any(Exchange.class));
     }
 
     @Test
@@ -212,6 +218,7 @@ public class EnhancementRouterIT extends CamelSpringTestSupport {
         verify(addAccessCopyProcessor, timeout(ALLOW_WAIT)).process(any(Exchange.class));
         // Indexing triggered for binary parent
         verify(solrIngestProcessor, timeout(ALLOW_WAIT)).process(any(Exchange.class));
+        verify(audioDerivativeProcessor, never()).process(any(Exchange.class));
     }
 
     @Test
@@ -240,6 +247,7 @@ public class EnhancementRouterIT extends CamelSpringTestSupport {
         verify(addLargeThumbnailProcessor, never()).process(any(Exchange.class));
         verify(addAccessCopyProcessor, never()).process(any(Exchange.class));
         verify(solrIngestProcessor, never()).process(any(Exchange.class));
+        verify(audioDerivativeProcessor, never()).process(any(Exchange.class));
     }
 
     @Test
@@ -265,6 +273,7 @@ public class EnhancementRouterIT extends CamelSpringTestSupport {
         verify(addSmallThumbnailProcessor, never()).process(any(Exchange.class));
         verify(fulltextProcessor,  never()).process(any(Exchange.class));
         verify(solrIngestProcessor, never()).process(any(Exchange.class));
+        verify(audioDerivativeProcessor, never()).process(any(Exchange.class));
     }
 
     @Test
@@ -314,6 +323,7 @@ public class EnhancementRouterIT extends CamelSpringTestSupport {
         verify(addLargeThumbnailProcessor, never()).process(any(Exchange.class));
         verify(addAccessCopyProcessor, never()).process(any(Exchange.class));
         verify(solrIngestProcessor, never()).process(any(Exchange.class));
+        verify(audioDerivativeProcessor, never()).process(any(Exchange.class));
     }
 
     private Map<String, Object> createEvent(PID pid, String... type) {

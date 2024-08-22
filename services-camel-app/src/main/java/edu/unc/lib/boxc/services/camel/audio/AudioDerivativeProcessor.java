@@ -18,6 +18,9 @@ public class AudioDerivativeProcessor implements Processor {
 
     private static final Pattern MIMETYPE_PATTERN = Pattern.compile("^(audio.wav)$");
 
+    public AudioDerivativeProcessor() {
+    }
+
     /**
      * Returns true if the subject of the exchange is a binary which
      * is eligible for having audio derivatives generated from it.

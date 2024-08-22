@@ -60,6 +60,7 @@ public class DestroyDerivativesRouter extends RouteBuilder {
         from(destroyDerivativesStreamCamel)
                 .routeId("CdrDestroyDerivatives")
                 .startupOrder(204)
+                .log(LoggingLevel.DEBUG, log, "Received destroy derivatives message")
                 .process(destroyedMsgProcessor)
                 .choice()
                     .when(method(ImageDerivativeProcessor.class, "allowedImageType"))
