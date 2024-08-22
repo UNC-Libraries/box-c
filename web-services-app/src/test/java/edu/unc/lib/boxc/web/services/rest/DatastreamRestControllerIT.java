@@ -1,5 +1,8 @@
 package edu.unc.lib.boxc.web.services.rest;
 
+import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
+import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlMatching;
 import static edu.unc.lib.boxc.auth.api.Permission.viewAccessCopies;
 import static edu.unc.lib.boxc.auth.api.Permission.viewHidden;
 import static edu.unc.lib.boxc.model.api.DatastreamType.MD_EVENTS;
@@ -10,6 +13,7 @@ import static edu.unc.lib.boxc.model.api.ids.RepositoryPathConstants.HASHED_PATH
 import static edu.unc.lib.boxc.model.api.rdf.RDFModelUtil.createModel;
 import static edu.unc.lib.boxc.model.fcrepo.ids.DatastreamPids.getTechnicalMetadataPid;
 import static edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPaths.idToPath;
+import static edu.unc.lib.boxc.model.fcrepo.test.TestHelper.makePid;
 import static edu.unc.lib.boxc.web.common.services.FedoraContentService.CONTENT_DISPOSITION;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.apache.http.HttpHeaders.RANGE;
@@ -19,6 +23,8 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.openMocks;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -27,22 +33,32 @@ import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
+import com.github.tomakehurst.wiremock.client.WireMock;
+import com.github.tomakehurst.wiremock.junit5.WireMockTest;
 import edu.unc.lib.boxc.indexing.solr.test.TestCorpus;
+import edu.unc.lib.boxc.operations.api.images.ImageServerUtil;
+import edu.unc.lib.boxc.search.api.models.Datastream;
+import edu.unc.lib.boxc.search.api.requests.SimpleIdRequest;
+import edu.unc.lib.boxc.search.solr.models.ContentObjectSolrRecord;
 import edu.unc.lib.boxc.web.common.services.AccessCopiesService;
 import edu.unc.lib.boxc.web.common.services.FedoraContentService;
 import edu.unc.lib.boxc.web.common.services.SolrQueryLayerService;
 import edu.unc.lib.boxc.web.common.utils.AnalyticsTrackerUtil;
+import edu.unc.lib.boxc.web.services.processing.DownloadImageService;
 import edu.unc.lib.boxc.web.services.rest.exceptions.RestResponseEntityExceptionHandler;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
+import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.vocabulary.RDF;
 import org.apache.solr.client.solrj.embedded.EmbeddedSolrServer;
 import org.fcrepo.client.FcrepoClient;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.ContextHierarchy;
@@ -73,6 +89,8 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
         @ContextConfiguration("/spring-test/solr-indexing-context.xml"),
         @ContextConfiguration("/datastream-content-it-servlet.xml")
 })
+
+@WireMockTest(httpPort = 46887)
 public class DatastreamRestControllerIT extends AbstractAPIIT {
 
     private static final String BINARY_CONTENT = "binary content";
@@ -95,7 +113,10 @@ public class DatastreamRestControllerIT extends AbstractAPIIT {
     private FcrepoClient fcrepoClient;
     @Autowired
     private EmbeddedSolrServer embeddedSolrServer;
+    @Autowired
+    private DownloadImageService downloadImageService;
     private DatastreamController controller;
+    private PoolingHttpClientConnectionManager connectionManager;
 
     @TempDir
     public Path derivDir;
@@ -105,6 +126,7 @@ public class DatastreamRestControllerIT extends AbstractAPIIT {
     @BeforeEach
     public void initLocal() {
         closeable = openMocks(this);
+        connectionManager = new PoolingHttpClientConnectionManager();
         controller = new DatastreamController();
         controller.setAnalyticsTracker(analyticsTrackerUtil);
         controller.setSolrQueryLayerService(solrQueryLayerService);
@@ -112,6 +134,7 @@ public class DatastreamRestControllerIT extends AbstractAPIIT {
         controller.setFedoraContentService(fedoraContentService);
         controller.setDerivativeContentService(derivativeContentService);
         controller.setAccessCopiesService(accessCopiesService);
+        controller.setDownloadImageService(downloadImageService);
         mvc = MockMvcBuilders.standaloneSetup(controller)
                 .setControllerAdvice(new RestResponseEntityExceptionHandler())
                 .build();
@@ -122,6 +145,11 @@ public class DatastreamRestControllerIT extends AbstractAPIIT {
 
         derivativeContentService.setDerivativeService(derivService);
         fedoraContentService.setClient(fcrepoClient);
+    }
+    @AfterEach
+    void closeService() throws Exception {
+        closeable.close();
+        connectionManager.shutdown();
     }
 
     @Test
@@ -183,53 +211,57 @@ public class DatastreamRestControllerIT extends AbstractAPIIT {
     @Test
     public void testGetThumbnail() throws Exception {
         var corpus = populateCorpus();
-
         PID filePid = corpus.pid6File;
         String id = filePid.getId();
-        createDerivative(id, THUMBNAIL_SMALL, BINARY_CONTENT.getBytes());
 
-        MvcResult result = mvc.perform(get("/thumb/" + filePid.getId()))
+        var filename = "bunny.jpg";
+        var formattedBasePath = "/iiif/v3/" + ImageServerUtil.getImageServerEncodedId(id);
+        stubFor(WireMock.get(urlMatching(formattedBasePath + "/full/!64,64/0/default.jpg"))
+                .willReturn(aResponse()
+                        .withStatus(HttpStatus.OK.value())
+                        .withBody(filename)
+                        .withHeader("Content-Type", "image/jpeg")));
+
+        MvcResult result = mvc.perform(get("/thumb/" + id))
                 .andExpect(status().is2xxSuccessful())
                 .andReturn();
 
         // Verify content was retrieved
         MockHttpServletResponse response = result.getResponse();
-        assertEquals(BINARY_CONTENT, response.getContentAsString());
-        assertEquals(BINARY_CONTENT.length(), response.getContentLength());
-        assertEquals("image/png", response.getContentType());
-        assertEquals("inline; filename=\"" + id + "." + THUMBNAIL_SMALL.getExtension() + "\"",
-                response.getHeader(CONTENT_DISPOSITION));
+        // TO DO assert correct image returned
+        assertEquals("image/jpeg", response.getContentType());
+        assertEquals("attachment; filename=file_64px.jpg", response.getHeader(CONTENT_DISPOSITION));
     }
 
     @Test
     public void testGetThumbnailForWork() throws Exception {
         var corpus = populateCorpus();
-
         PID filePid = corpus.pid6File;
-        String id = filePid.getId();
-        createDerivative(id, THUMBNAIL_SMALL, BINARY_CONTENT.getBytes());
         PID workPid = corpus.pid6;
 
-        MvcResult result = mvc.perform(get("/thumb/" + workPid.getId()))
+        var filename = "bunny.jpg";
+        var formattedBasePath = "/iiif/v3/" + ImageServerUtil.getImageServerEncodedId(filePid.getId());
+        stubFor(WireMock.get(urlMatching(formattedBasePath + "/full/!128,128/0/default.jpg"))
+                .willReturn(aResponse()
+                        .withStatus(HttpStatus.OK.value())
+                        .withBody(filename)
+                        .withHeader("Content-Type", "image/jpeg")));
+
+        MvcResult result = mvc.perform(get("/thumb/" + workPid.getId() + "/large"))
                 .andExpect(status().is2xxSuccessful())
                 .andReturn();
 
         // Verify content was retrieved
         MockHttpServletResponse response = result.getResponse();
-        assertEquals(BINARY_CONTENT, response.getContentAsString());
-        assertEquals(BINARY_CONTENT.length(), response.getContentLength());
-        assertEquals("image/png", response.getContentType());
-        assertEquals("inline; filename=\"" + id + "." + THUMBNAIL_SMALL.getExtension() + "\"",
-                response.getHeader(CONTENT_DISPOSITION));
+        // TO DO assert correct image returned
+        assertEquals("image/jpeg", response.getContentType());
+        assertEquals("attachment; filename=file_128px.jpg", response.getHeader(CONTENT_DISPOSITION));
     }
 
     @Test
     public void testGetInvalidThumbnailSize() throws Exception {
         var corpus = populateCorpus();
-
         PID filePid = corpus.pid6File;
-        String id = filePid.getId();
-        createDerivative(id, THUMBNAIL_SMALL, BINARY_CONTENT.getBytes());
 
         mvc.perform(get("/thumb/" + filePid.getId() + "/megasize"))
                 .andExpect(status().isBadRequest())
@@ -239,10 +271,7 @@ public class DatastreamRestControllerIT extends AbstractAPIIT {
     @Test
     public void testGetThumbnailNoPermission() throws Exception {
         var corpus = populateCorpus();
-
         PID filePid = corpus.pid6File;
-        String id = filePid.getId();
-        createDerivative(id, THUMBNAIL_SMALL, BINARY_CONTENT.getBytes());
 
         doThrow(new AccessRestrictionException()).when(accessControlService)
                 .assertHasAccess(anyString(), eq(filePid), any(AccessGroupSetImpl.class), eq(viewAccessCopies));

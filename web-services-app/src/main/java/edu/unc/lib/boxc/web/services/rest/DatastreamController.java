@@ -1,5 +1,6 @@
 package edu.unc.lib.boxc.web.services.rest;
 
+import edu.unc.lib.boxc.auth.api.Permission;
 import edu.unc.lib.boxc.auth.api.exceptions.AccessRestrictionException;
 import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
 import edu.unc.lib.boxc.auth.api.services.AccessControlService;
@@ -17,11 +18,14 @@ import edu.unc.lib.boxc.web.common.services.DerivativeContentService;
 import edu.unc.lib.boxc.web.common.services.FedoraContentService;
 import edu.unc.lib.boxc.web.common.services.SolrQueryLayerService;
 import edu.unc.lib.boxc.web.common.utils.AnalyticsTrackerUtil;
+import edu.unc.lib.boxc.web.services.processing.DownloadImageService;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -53,6 +57,8 @@ import static org.apache.http.HttpHeaders.RANGE;
 @Controller
 public class DatastreamController {
     private static final Logger log = LoggerFactory.getLogger(DatastreamController.class);
+    private static final String SMALL = "small";
+    private static final String LARGE = "large";
 
     @Autowired
     private FedoraContentService fedoraContentService;
@@ -66,6 +72,8 @@ public class DatastreamController {
     private AccessCopiesService accessCopiesService;
     @Autowired
     private AccessControlService accessControlService;
+    @Autowired
+    private DownloadImageService downloadImageService;
 
     private static final List<String> THUMB_QUERY_FIELDS = Arrays.asList(
             SearchFieldKey.ID.name(), SearchFieldKey.DATASTREAM.name(),
@@ -116,21 +124,21 @@ public class DatastreamController {
     }
 
     @RequestMapping("/thumb/{pid}")
-    public void getThumbnailSmall(@PathVariable("pid") String pid,
-            @RequestParam(value = "size", defaultValue = "small") String size, HttpServletRequest request,
-            HttpServletResponse response) throws IOException {
+    public ResponseEntity<InputStreamResource> getThumbnailSmall(@PathVariable("pid") String pid,
+            @RequestParam(value = "size", defaultValue = SMALL) String size) {
 
-        getThumbnail(pid, size, request, response);
+        return getThumbnail(pid, size);
     }
 
     @RequestMapping("/thumb/{pid}/{size}")
-    public void getThumbnail(@PathVariable("pid") String pidString,
-            @PathVariable("size") String size, HttpServletRequest request,
-            HttpServletResponse response) throws IOException {
+    public ResponseEntity<InputStreamResource> getThumbnail(@PathVariable("pid") String pidString,
+                                                            @PathVariable("size") String size) {
 
         PID pid = PIDs.get(pidString);
         AccessGroupSet principals = getAgentPrincipals().getPrincipals();
-        String thumbName = "thumbnail_" + size.toLowerCase().trim();
+        if (!size.equals(SMALL) && !size.equals(LARGE)) {
+            throw new IllegalArgumentException("That is not a valid thumbnail size");
+        }
 
         // For work objects, determine the source of the thumbnail
         var objRequest = new SimpleIdRequest(pid, THUMB_QUERY_FIELDS, principals);
@@ -146,7 +154,24 @@ public class DatastreamController {
             }
         }
 
-        derivativeContentService.streamData(pid, thumbName, principals, false, response);
+        accessControlService.assertHasAccess("Insufficient permissions to get thumbnail for " + pidString,
+                pid, principals, Permission.viewAccessCopies);
+
+        var thumbObjRequest = new SimpleIdRequest(pid, THUMB_QUERY_FIELDS, principals);
+        var thumbObjRecord = solrQueryLayerService.getObjectById(thumbObjRequest);
+
+        // small thumbnail is 64px, large is 128px
+        var pixelSize = "128";
+        if (size.equals(SMALL)) {
+            pixelSize ="64";
+        }
+
+        try {
+            return downloadImageService.streamImage(thumbObjRecord, pixelSize);
+        } catch (IOException e) {
+            log.error("Error streaming thumbnail for {} at size {}", pidString, pixelSize, e);
+        }
+        return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
 
     @ResponseStatus(value = HttpStatus.NOT_FOUND)
@@ -186,5 +211,9 @@ public class DatastreamController {
 
     public void setAccessControlService(AccessControlService accessControlService) {
         this.accessControlService = accessControlService;
+    }
+
+    public void setDownloadImageService(DownloadImageService downloadImageService) {
+        this.downloadImageService = downloadImageService;
     }
 }
