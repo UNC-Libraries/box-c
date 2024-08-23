@@ -235,7 +235,7 @@
         <constructor-arg value="${cdr.enhancement.path.fulltext}" />
     </bean>
 
-    <bean id="audioProcessor" class="edu.unc.lib.boxc.services.camel.images.AddDerivativeProcessor">
+    <bean id="addAudioAccessCopyProcessor" class="edu.unc.lib.boxc.services.camel.images.AddDerivativeProcessor">
         <constructor-arg value="#{T(edu.unc.lib.boxc.model.api.DatastreamType).AUDIO_ACCESS_COPY.getExtension()}" />
         <constructor-arg value="${cdr.enhancement.path.audio}" />
     </bean>
