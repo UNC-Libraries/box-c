@@ -84,7 +84,7 @@ public class EnhancementRouter extends RouteBuilder {
             .filter(header(CdrBinaryPath).isNotNull())
                 .to("{{cdr.enhancement.perform.camel}}");
 
-        // Queue for executing enhancnement operations
+        // Queue for executing enhancement operations
         from("{{cdr.enhancement.perform.camel}}")
             .routeId("PerformEnhancementsQueue")
             .startupOrder(107)

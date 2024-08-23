@@ -19,8 +19,8 @@ import static org.slf4j.LoggerFactory.getLogger;
 public class AudioEnhancementsRouter extends RouteBuilder {
     private static final Logger log = getLogger(AudioEnhancementsRouter.class);
 
-    @BeanInject(value = "addAccessCopyProcessor")
-    private AddDerivativeProcessor addAccessCopyProcessor;
+    @BeanInject(value = "addAudioAccessCopyProcessor")
+    private AddDerivativeProcessor addAudioAccessCopyProcessor;
 
     private UuidGenerator uuidGenerator;
 
@@ -43,7 +43,7 @@ public class AudioEnhancementsRouter extends RouteBuilder {
                 .routeId("AudioAccessCopy")
                 .startupOrder(25)
                 .log(LoggingLevel.DEBUG, log, "Access copy triggered")
-                .filter().method(addAccessCopyProcessor, "needsRun")
+                .filter().method(addAudioAccessCopyProcessor, "needsRun")
                 .filter().method(audioDerivProcessor, "allowedAudioType")
                     .bean(audioDerivProcessor)
                     .log(LoggingLevel.INFO, log, "Creating/Updating MP3 access copy for ${headers[CdrAudioPath]}")
@@ -53,10 +53,10 @@ public class AudioEnhancementsRouter extends RouteBuilder {
                     .doTry()
                         .recipientList(simple("exec:/bin/sh?args=${properties:cdr.enhancement.bin}/convertWav.sh "
                                 + "${headers[CdrAudioPath]} ${headers[CdrTempPath]}"))
-                        .bean(addAccessCopyProcessor)
+                        .bean(addAudioAccessCopyProcessor)
                     .endDoTry()
                     .doFinally()
-                        .bean(addAccessCopyProcessor, "cleanupTempFile")
+                        .bean(addAudioAccessCopyProcessor, "cleanupTempFile")
                 .end();
     }
 }

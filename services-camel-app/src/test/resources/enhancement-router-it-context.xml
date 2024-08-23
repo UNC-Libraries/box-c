@@ -64,8 +64,8 @@
         <constructor-arg type="java.lang.Class" value="edu.unc.lib.boxc.services.camel.fulltext.FulltextProcessor" />
     </bean>
 
-    <bean id="audioDerivativeProcessor" class="org.mockito.Mockito" factory-method="mock">
-        <constructor-arg type="java.lang.Class" value="edu.unc.lib.boxc.services.camel.audio.AudioDerivativeProcessor" />
+    <bean id="addAudioAccessCopyProcessor" class="org.mockito.Mockito" factory-method="mock">
+        <constructor-arg type="java.lang.Class" value="edu.unc.lib.boxc.services.camel.images.AddDerivativeProcessor" />
     </bean>
 
     <camel:camelContext id="cdrEnhancements">

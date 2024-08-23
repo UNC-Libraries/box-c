@@ -58,8 +58,8 @@ public class AudioEnhancementsRouterTest extends CamelSpringTestSupport {
     @Produce("direct:process.binary.original")
     protected ProducerTemplate template;
 
-    @BeanInject(value = "addAccessCopyProcessor")
-    private AddDerivativeProcessor addAccessCopyProcessor;
+    @BeanInject(value = "addAudioAccessCopyProcessor")
+    private AddDerivativeProcessor addAudioAccessCopyProcessor;
 
     @Override
     protected AbstractApplicationContext createApplicationContext() {
@@ -73,7 +73,7 @@ public class AudioEnhancementsRouterTest extends CamelSpringTestSupport {
 
     @Test
     public void testAudioAccessCopyRouteNoForceNoFileExists() throws Exception {
-        when(addAccessCopyProcessor.needsRun(any())).thenReturn(true);
+        when(addAudioAccessCopyProcessor.needsRun(any())).thenReturn(true);
         createContext(audioAccessCopy);
 
         var shEndpoint = getMockEndpoint("mock:exec:/bin/sh");
@@ -83,14 +83,14 @@ public class AudioEnhancementsRouterTest extends CamelSpringTestSupport {
 
         template.sendBodyAndHeaders("", headers);
 
-        verify(addAccessCopyProcessor).process(any(Exchange.class));
-        verify(addAccessCopyProcessor).cleanupTempFile(any(Exchange.class));
+        verify(addAudioAccessCopyProcessor).process(any(Exchange.class));
+        verify(addAudioAccessCopyProcessor).cleanupTempFile(any(Exchange.class));
         shEndpoint.assertIsSatisfied();
     }
 
     @Test
     public void testAudioAccessCopyRouteScriptFails() throws Exception {
-        when(addAccessCopyProcessor.needsRun(any())).thenReturn(true);
+        when(addAudioAccessCopyProcessor.needsRun(any())).thenReturn(true);
         createContext(audioAccessCopy);
 
         MockEndpoint shEndpoint = getMockEndpoint("mock:exec:/bin/sh");
@@ -107,14 +107,14 @@ public class AudioEnhancementsRouterTest extends CamelSpringTestSupport {
             assertTrue(e.getCause() instanceof IllegalStateException);
         }
 
-        verify(addAccessCopyProcessor, never()).process(any(Exchange.class));
-        verify(addAccessCopyProcessor).cleanupTempFile(any(Exchange.class));
+        verify(addAudioAccessCopyProcessor, never()).process(any(Exchange.class));
+        verify(addAudioAccessCopyProcessor).cleanupTempFile(any(Exchange.class));
         shEndpoint.assertIsSatisfied();
     }
 
     @Test
     public void testAudioAccessCopyRouteForceNoFileExists() throws Exception {
-        when(addAccessCopyProcessor.needsRun(any())).thenReturn(true);
+        when(addAudioAccessCopyProcessor.needsRun(any())).thenReturn(true);
         createContext(audioAccessCopy);
 
         var shEndpoint = getMockEndpoint("mock:exec:/bin/sh");
@@ -124,7 +124,7 @@ public class AudioEnhancementsRouterTest extends CamelSpringTestSupport {
 
         template.sendBodyAndHeaders("", headers);
 
-        verify(addAccessCopyProcessor).process(any(Exchange.class));
+        verify(addAudioAccessCopyProcessor).process(any(Exchange.class));
         shEndpoint.assertIsSatisfied();
     }
 
@@ -143,14 +143,14 @@ public class AudioEnhancementsRouterTest extends CamelSpringTestSupport {
 
         template.sendBodyAndHeaders("", headers);
 
-        verify(addAccessCopyProcessor, never()).process(any(Exchange.class));
-        verify(addAccessCopyProcessor, never()).cleanupTempFile(any(Exchange.class));
+        verify(addAudioAccessCopyProcessor, never()).process(any(Exchange.class));
+        verify(addAudioAccessCopyProcessor, never()).cleanupTempFile(any(Exchange.class));
         shEndpoint.assertIsSatisfied();
     }
 
     @Test
     public void testAudioAccessCopyRouteForceFileExists() throws Exception {
-        when(addAccessCopyProcessor.needsRun(any())).thenReturn(true);
+        when(addAudioAccessCopyProcessor.needsRun(any())).thenReturn(true);
         String derivativePath = idToPath(fileID, HASHED_PATH_DEPTH, HASHED_PATH_SIZE);
         File existingFile = new File("target/" + derivativePath + "/" + fileID + ".mp3");
         FileUtils.writeStringToFile(existingFile, "extracted text", "utf-8");
@@ -164,7 +164,7 @@ public class AudioEnhancementsRouterTest extends CamelSpringTestSupport {
 
         template.sendBodyAndHeaders("", headers);
 
-        verify(addAccessCopyProcessor).process(any(Exchange.class));
+        verify(addAudioAccessCopyProcessor).process(any(Exchange.class));
         shEndpoint.assertIsSatisfied();
     }
 
@@ -172,7 +172,7 @@ public class AudioEnhancementsRouterTest extends CamelSpringTestSupport {
     public void testAudioAccessCopyRejection() throws Exception {
         createContext(audioAccessCopy);
 
-        when(addAccessCopyProcessor.needsRun(any())).thenReturn(true);
+        when(addAudioAccessCopyProcessor.needsRun(any())).thenReturn(true);
         var audioEndpoint = getMockEndpoint("mock:process.enhancement.audioAccessCopy");
         audioEndpoint.expectedMessageCount(0);
 
@@ -181,7 +181,7 @@ public class AudioEnhancementsRouterTest extends CamelSpringTestSupport {
 
         template.sendBodyAndHeaders("", headers);
 
-        verify(addAccessCopyProcessor, never()).process(any(Exchange.class));
+        verify(addAudioAccessCopyProcessor, never()).process(any(Exchange.class));
         audioEndpoint.assertIsSatisfied();
     }
 
