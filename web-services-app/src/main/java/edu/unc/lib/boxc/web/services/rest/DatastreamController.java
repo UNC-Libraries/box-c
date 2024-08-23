@@ -143,7 +143,7 @@ public class DatastreamController {
                 pid, principals, Permission.viewAccessCopies);
 
         size = size.toLowerCase();
-        if (!size.equals(SMALL) && !size.equals(LARGE)) {
+        if (!THUMB_SIZE_MAP.containsKey(size)) {
             throw new IllegalArgumentException("That is not a valid thumbnail size");
         }
 
