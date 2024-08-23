@@ -109,7 +109,6 @@ public class DatastreamRestControllerIT extends AbstractAPIIT {
     @Autowired
     private DownloadImageService downloadImageService;
     private DatastreamController controller;
-    private PoolingHttpClientConnectionManager connectionManager;
 
     @TempDir
     public Path derivDir;
@@ -119,7 +118,6 @@ public class DatastreamRestControllerIT extends AbstractAPIIT {
     @BeforeEach
     public void initLocal() {
         closeable = openMocks(this);
-        connectionManager = new PoolingHttpClientConnectionManager();
         controller = new DatastreamController();
         controller.setAnalyticsTracker(analyticsTrackerUtil);
         controller.setSolrQueryLayerService(solrQueryLayerService);
@@ -139,10 +137,10 @@ public class DatastreamRestControllerIT extends AbstractAPIIT {
         derivativeContentService.setDerivativeService(derivService);
         fedoraContentService.setClient(fcrepoClient);
     }
+
     @AfterEach
     void closeService() throws Exception {
         closeable.close();
-        connectionManager.shutdown();
     }
 
     @Test
@@ -248,7 +246,7 @@ public class DatastreamRestControllerIT extends AbstractAPIIT {
         MockHttpServletResponse response = result.getResponse();
         // TO DO assert correct image returned
         assertEquals("image/jpeg", response.getContentType());
-        assertEquals("attachment; filename=file_128px.jpg", response.getHeader(CONTENT_DISPOSITION));
+        assertEquals("inline; filename=file_128px.jpg", response.getHeader(CONTENT_DISPOSITION));
     }
 
     @Test

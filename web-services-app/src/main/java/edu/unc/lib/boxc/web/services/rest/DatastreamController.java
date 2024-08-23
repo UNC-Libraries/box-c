@@ -40,6 +40,8 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 
 import static edu.unc.lib.boxc.auth.api.services.DatastreamPermissionUtil.getPermissionForDatastream;
 import static edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore.getAgentPrincipals;
@@ -59,6 +61,7 @@ public class DatastreamController {
     private static final Logger log = LoggerFactory.getLogger(DatastreamController.class);
     private static final String SMALL = "small";
     private static final String LARGE = "large";
+    private static final Map<String, Integer> THUMB_SIZE_MAP = Map.of(SMALL, 64, LARGE, 128);
 
     @Autowired
     private FedoraContentService fedoraContentService;
@@ -136,6 +139,10 @@ public class DatastreamController {
 
         PID pid = PIDs.get(pidString);
         AccessGroupSet principals = getAgentPrincipals().getPrincipals();
+        accessControlService.assertHasAccess("Insufficient permissions to get thumbnail for " + pidString,
+                pid, principals, Permission.viewAccessCopies);
+
+        size = size.toLowerCase();
         if (!size.equals(SMALL) && !size.equals(LARGE)) {
             throw new IllegalArgumentException("That is not a valid thumbnail size");
         }
@@ -150,24 +157,19 @@ public class DatastreamController {
             var thumbId = accessCopiesService.getThumbnailId(objRecord, principals, true);
             if (thumbId != null) {
                 pid = PIDs.get(thumbId);
+                // check permissions for thumbnail file
+                accessControlService.assertHasAccess("Insufficient permissions to get thumbnail for " + pidString,
+                        pid, principals, Permission.viewAccessCopies);
                 log.debug("Got thumbnail id {} for work {}", thumbId, pidString);
             }
         }
 
-        accessControlService.assertHasAccess("Insufficient permissions to get thumbnail for " + pidString,
-                pid, principals, Permission.viewAccessCopies);
-
         var thumbObjRequest = new SimpleIdRequest(pid, THUMB_QUERY_FIELDS, principals);
         var thumbObjRecord = solrQueryLayerService.getObjectById(thumbObjRequest);
-
-        // small thumbnail is 64px, large is 128px
-        var pixelSize = "128";
-        if (size.equals(SMALL)) {
-            pixelSize ="64";
-        }
+        var pixelSize = THUMB_SIZE_MAP.get(size).toString();
 
         try {
-            return downloadImageService.streamImage(thumbObjRecord, pixelSize);
+            return downloadImageService.streamImage(thumbObjRecord, pixelSize, false);
         } catch (IOException e) {
             log.error("Error streaming thumbnail for {} at size {}", pidString, pixelSize, e);
         }
