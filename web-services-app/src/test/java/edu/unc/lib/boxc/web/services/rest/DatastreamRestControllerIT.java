@@ -36,6 +36,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.ContextHierarchy;
@@ -53,6 +54,7 @@ import static edu.unc.lib.boxc.auth.api.Permission.viewAccessCopies;
 import static edu.unc.lib.boxc.auth.api.Permission.viewHidden;
 import static edu.unc.lib.boxc.model.api.DatastreamType.MD_EVENTS;
 import static edu.unc.lib.boxc.model.api.DatastreamType.TECHNICAL_METADATA;
+import static edu.unc.lib.boxc.model.api.DatastreamType.THUMBNAIL_LARGE;
 import static edu.unc.lib.boxc.model.api.DatastreamType.THUMBNAIL_SMALL;
 import static edu.unc.lib.boxc.model.api.ids.RepositoryPathConstants.HASHED_PATH_DEPTH;
 import static edu.unc.lib.boxc.model.api.ids.RepositoryPathConstants.HASHED_PATH_SIZE;
@@ -200,7 +202,7 @@ public class DatastreamRestControllerIT extends AbstractAPIIT {
     }
 
     @Test
-    public void testGetThumbnail() throws Exception {
+    public void testGetThumbnailWithFileObject() throws Exception {
         var corpus = populateCorpus();
         PID filePid = corpus.pid6File;
         String id = filePid.getId();
@@ -221,7 +223,7 @@ public class DatastreamRestControllerIT extends AbstractAPIIT {
         MockHttpServletResponse response = result.getResponse();
         // TO DO assert correct image returned
         assertEquals("image/jpeg", response.getContentType());
-        assertEquals("attachment; filename=file_64px.jpg", response.getHeader(CONTENT_DISPOSITION));
+        assertEquals("inline; filename=file_64px.jpg", response.getHeader(CONTENT_DISPOSITION));
     }
 
     @Test
@@ -247,6 +249,26 @@ public class DatastreamRestControllerIT extends AbstractAPIIT {
         // TO DO assert correct image returned
         assertEquals("image/jpeg", response.getContentType());
         assertEquals("inline; filename=file_128px.jpg", response.getHeader(CONTENT_DISPOSITION));
+    }
+
+    @Test
+    public void testGetThumbnailForCollection() throws Exception {
+        var corpus = populateCorpus();
+        var collectionPid = corpus.pid2;
+        var id = collectionPid.getId();
+        createDerivative(id, THUMBNAIL_LARGE, BINARY_CONTENT.getBytes());
+
+        MvcResult result = mvc.perform(get("/thumb/" + id + "/large"))
+                .andExpect(status().is2xxSuccessful())
+                .andReturn();
+
+        // Verify content was retrieved
+        MockHttpServletResponse response = result.getResponse();
+        assertEquals(BINARY_CONTENT, response.getContentAsString());
+        assertEquals(BINARY_CONTENT.length(), response.getContentLength());
+        assertEquals(MediaType.IMAGE_PNG.toString(), response.getContentType());
+        assertEquals("inline; filename=" + id + "." + THUMBNAIL_LARGE.getExtension(),
+                response.getHeader(CONTENT_DISPOSITION));
     }
 
     @Test
