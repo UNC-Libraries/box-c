@@ -79,7 +79,7 @@
         <fcrepo.client.version>5.0.0</fcrepo.client.version>
         <mock.server.version>5.4.1</mock.server.version>
         <awaitility.version>4.0.3</awaitility.version>
-        <wiremock.version>3.9.1</wiremock.version>
+        <wiremock.version>2.35.2</wiremock.version>
         
         <jackson.version>2.13.2</jackson.version>
         <jackson.databind.version>2.13.4.2</jackson.databind.version>
@@ -692,8 +692,8 @@
                 <scope>test</scope>
             </dependency>
             <dependency>
-                <groupId>org.wiremock</groupId>
-                <artifactId>wiremock</artifactId>
+                <groupId>com.github.tomakehurst</groupId>
+                <artifactId>wiremock-jre8-standalone</artifactId>
                 <version>${wiremock.version}</version>
                 <scope>test</scope>
             </dependency>
