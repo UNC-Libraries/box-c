@@ -97,11 +97,6 @@
         </dependency>
         <dependency>
             <groupId>org.apache.solr</groupId>
-            <artifactId>solr-dataimporthandler</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.solr</groupId>
             <artifactId>solr-test-framework</artifactId>
             <scope>test</scope>
         </dependency>

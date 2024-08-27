@@ -117,9 +117,8 @@
           <artifactId>mockito-junit-jupiter</artifactId>
       </dependency>
       <dependency>
-          <groupId>com.github.tomakehurst</groupId>
-          <artifactId>wiremock-jre8</artifactId>
-          <scope>test</scope>
+          <groupId>org.wiremock</groupId>
+          <artifactId>wiremock</artifactId>
       </dependency>
       <dependency>
           <groupId>edu.unc.lib.cdr</groupId>

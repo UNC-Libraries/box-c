@@ -61,7 +61,7 @@
                     </execution>
                 </executions>
                 <configuration>
-                    <url>https://www.apache.org/dyn/closer.lua/lucene/solr/${solr.version}/solr-${solr.version}.tgz?action=download</url>
+                    <url>https://www.apache.org/dyn/closer.lua/solr/solr/${solr.version}/solr-${solr.version}.tgz?action=download</url>
                     <unpack>true</unpack>
                     <outputDirectory>${project.build.directory}/solr/</outputDirectory>
                 </configuration>
