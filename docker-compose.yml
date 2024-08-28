@@ -22,3 +22,13 @@ services:
     ports:
       - "43030:3030"
     command: --mem /test
+  solr:
+    image: solr:9
+    ports:
+      - "48983:8983"
+    volumes:
+      - ./etc/solr-config:/solr_config/config
+    command:
+      - solr-precreate
+      - access
+      - /solr_config/config

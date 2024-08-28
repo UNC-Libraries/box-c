@@ -85,6 +85,7 @@ public class BaseEmbeddedSolrTest {
 
     @AfterEach
     public void tearDown() throws Exception {
+        container.shutdown();
         server.close();
         log.debug("Cleaning up data directory");
         FileUtils.deleteDirectory(dataDir);

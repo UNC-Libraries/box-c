@@ -27,6 +27,12 @@ jobs:
           - /tmp/boxc_test_storage:/tmp/boxc_test_storage
         env:
           CATALINA_OPTS: "-Djava.awt.headless=true -server -Xms512m -Xmx1024m -XX:NewSize=256m -XX:MaxNewSize=256m -Dfcrepo.external.content.allowed=/config/allowed_external_paths.txt"
+      solr:
+        image: solr:9
+        ports:
+          - "48983:8983"
+        volumes:
+          - /tmp/solr-config:/solr_config
 
     steps:
     - name: Change permissions of /tmp/boxc_test_storage
@@ -46,6 +52,21 @@ jobs:
     - name: Run Fuseki container as command to pass in extra dataset name argument
       run: |
         docker run -d --rm -p 43030:3030 atomgraph/fuseki --mem /test
+
+    # Need to copy the config is outside of the source path, otherwise it produces permission conflicts
+    - name: Copy Solr Config into container
+      run: sudo cp -r ${{ github.workspace }}/etc/solr-config/* /tmp/solr-config/
+
+    - name: Wait for Solr to start
+      run: |
+        until curl -s http://localhost:48983/solr; do
+          echo "Waiting for Solr to start..."
+          sleep 5
+        done
+
+    - name: Create Solr Core
+      run: curl "http://localhost:48983/solr/admin/cores?action=CREATE&name=access&instanceDir=/solr_config&config=solrconfig.xml&schema=schema.xml"
+
 
     - name: Checkout submodules
       run: git submodule update --init --recursive
