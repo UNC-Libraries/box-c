@@ -46,7 +46,7 @@ public class AudioEnhancementsRouter extends RouteBuilder {
                 .filter().method(addAudioAccessCopyProcessor, "needsRun")
                 .filter().method(audioDerivProcessor, "allowedAudioType")
                     .bean(audioDerivProcessor)
-                    .log(LoggingLevel.INFO, log, "Creating/Updating MP3 access copy for ${headers[CdrAudioPath]}")
+                    .log(LoggingLevel.INFO, log, "Creating/Updating AAC access copy for ${headers[CdrAudioPath]}")
                     // Generate an random identifier to avoid derivative collisions
                     .setBody(exchange -> uuidGenerator.generateUuid())
                     .setHeader(CdrFcrepoHeaders.CdrTempPath, simple("${properties:services.tempDirectory}/${body}-access"))

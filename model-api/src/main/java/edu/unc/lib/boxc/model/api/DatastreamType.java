@@ -13,7 +13,7 @@ import static edu.unc.lib.boxc.model.api.ids.RepositoryPathConstants.METADATA_CO
  */
 public enum DatastreamType {
     ACCESS_SURROGATE("access_surrogate", "application/octet-stream", null, null, EXTERNAL),
-    AUDIO_ACCESS_COPY("audio", "audio/mpeg", "mp3", null, EXTERNAL),
+    AUDIO_ACCESS_COPY("audio", "audio/aac", "m4a", null, EXTERNAL),
     FULLTEXT_EXTRACTION("fulltext", "text/plain", "txt", null, EXTERNAL),
     JP2_ACCESS_COPY("jp2", "image/jp2", "jp2", null, EXTERNAL),
     MD_DESCRIPTIVE("md_descriptive", "text/xml", "xml", METADATA_CONTAINER, INTERNAL),

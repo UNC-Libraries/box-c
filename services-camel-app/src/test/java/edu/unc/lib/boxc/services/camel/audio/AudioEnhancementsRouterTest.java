@@ -131,7 +131,7 @@ public class AudioEnhancementsRouterTest extends CamelSpringTestSupport {
     @Test
     public void testAudioAccessCopyRouteNoForceFileExists() throws Exception {
         String derivativePath = idToPath(fileID, HASHED_PATH_DEPTH, HASHED_PATH_SIZE);
-        File existingFile = new File("target/" + derivativePath + "/" + fileID + ".mp3");
+        File existingFile = new File("target/" + derivativePath + "/" + fileID + ".m4a");
         FileUtils.writeStringToFile(existingFile, "extracted text", "utf-8");
 
         createContext(audioAccessCopy);
@@ -152,7 +152,7 @@ public class AudioEnhancementsRouterTest extends CamelSpringTestSupport {
     public void testAudioAccessCopyRouteForceFileExists() throws Exception {
         when(addAudioAccessCopyProcessor.needsRun(any())).thenReturn(true);
         String derivativePath = idToPath(fileID, HASHED_PATH_DEPTH, HASHED_PATH_SIZE);
-        File existingFile = new File("target/" + derivativePath + "/" + fileID + ".mp3");
+        File existingFile = new File("target/" + derivativePath + "/" + fileID + ".m4a");
         FileUtils.writeStringToFile(existingFile, "extracted text", "utf-8");
 
         createContext(audioAccessCopy);
@@ -177,7 +177,7 @@ public class AudioEnhancementsRouterTest extends CamelSpringTestSupport {
         audioEndpoint.expectedMessageCount(0);
 
         Map<String, Object> headers = createEvent(fileID, eventTypes, "false");
-        headers.put(CdrBinaryMimeType, "audio/mpeg");
+        headers.put(CdrBinaryMimeType, "audio/aac");
 
         template.sendBodyAndHeaders("", headers);
 
