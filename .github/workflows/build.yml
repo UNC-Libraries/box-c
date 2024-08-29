@@ -27,12 +27,6 @@ jobs:
           - /tmp/boxc_test_storage:/tmp/boxc_test_storage
         env:
           CATALINA_OPTS: "-Djava.awt.headless=true -server -Xms512m -Xmx1024m -XX:NewSize=256m -XX:MaxNewSize=256m -Dfcrepo.external.content.allowed=/config/allowed_external_paths.txt"
-#      solr:
-#        image: solr:9
-#        ports:
-#          - "48983:8983"
-#        volumes:
-#          - /tmp/solr-config:/solr_config
 
     steps:
     - name: Change permissions of /tmp/boxc_test_storage
@@ -54,80 +48,64 @@ jobs:
         docker run -d --rm -p 43030:3030 atomgraph/fuseki --mem /test
 
     - name: Make directory for solr config
-      run: mkdir -p /tmp/solr-config/config
+      run: mkdir -p /tmp/solr-config
 
     # Need to copy the config is outside of the source path, otherwise it produces permission conflicts
     - name: Copy Solr Config into container
       run: sudo cp -r ${{ github.workspace }}/etc/solr-config/* /tmp/solr-config/
 
-    - name: Change permissions of /tmp/solr-config
-      run: sudo chmod -R 2777 /tmp/solr-config
-
     - name: Run solr container as command to trigger core creation
       run: |
         docker run -v /tmp/solr-config:/solr_config -d --rm -p 48983:8983 solr:9 solr-precreate access /solr_config/access
 
-    - name: Wait for Solr to start
+    - name: Checkout submodules
+      run: git submodule update --init --recursive
+
+    - name: Set up JDK 11
+      uses: actions/setup-java@v1
+      with:
+        java-version: 11
+
+    - name: Cache Maven packages
+      uses: actions/cache@v2
+      with:
+        path: ~/.m2
+        key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
+        restore-keys: ${{ runner.os }}-m2
+    - name: Build with Maven
+      run: mvn -B -U -pl '!integration' clean install -DskipTests
+    - name: Set up nodejs
+      uses: actions/setup-node@v2
+      with:
+        node-version: '16'
+    - name: Cache npm modules
+      uses: actions/cache@v2
+      with:
+        path: ~/.npm
+        key: v1-npm-deps-${{ hashFiles('**/package-lock.json') }}
+        restore-keys: v1-npm-deps-
+
+    - run: npm --prefix static/js/vue-cdr-access install
+    - run: npm --prefix static/js/admin/vue-permissions-editor install
+
+    - run: npm install -g jest-cli@29.0.3
+    - run: npm --prefix static/js/vue-cdr-access run test
+    - run: npm --prefix static/js/admin/vue-permissions-editor run test
+
+    - name: Report to CodeClimate
+      uses: paambaati/codeclimate-action@v3.0.0
+      env:
+        CC_TEST_REPORTER_ID: ${{secrets.CC_TEST_REPORTER_ID}}
+        JACOCO_SOURCE_PATH: "${{github.workspace}}/auth-api/src/main/java ${{github.workspace}}/auth-fcrepo/src/main/java ${{github.workspace}}/common-utils/src/main/java ${{github.workspace}}/deposit-app/src/main/java ${{github.workspace}}/deposit-utils/src/main/java ${{github.workspace}}/fcrepo-utils/src/main/java ${{github.workspace}}/indexing-solr/src/main/java ${{github.workspace}}/integration/src/main/java ${{github.workspace}}/model-api/src/main/java ${{github.workspace}}/model-fcrepo/src/main/java ${{github.workspace}}/operations/src/main/java ${{github.workspace}}/operations-jms/src/main/java ${{github.workspace}}/persistence/src/main/java ${{github.workspace}}/persistence-api/src/main/java ${{github.workspace}}/search-api/src/main/java ${{github.workspace}}/search-solr/src/main/java ${{github.workspace}}/services-camel-app/src/main/java ${{github.workspace}}/web-access-app/src/main/java ${{github.workspace}}/web-access-war/src/main/java ${{github.workspace}}/web-admin-app/src/main/java ${{github.workspace}}/web-common/src/main/java ${{github.workspace}}/web-services-app/src/main/java ${{github.workspace}}/web-sword/src/main/java  ${{github.workspace}}/clamav-java/src/main/java"
+      with:
+        coverageCommand: mvn -pl !clamav-java verify
+        coverageLocations: |
+          ${{github.workspace}}/**/target/site/jacoco/jacoco.xml:jacoco
+          ${{github.workspace}}/**/target/site/jacoco-it/jacoco.xml:jacoco
+          ${{github.workspace}}/static/js/vue-cdr-access/coverage/lcov.info:lcov
+          ${{github.workspace}}/static/js/admin/vue-permissions-editor/coverage/lcov.info:lcov
+
+    - name: View fedora service logs
+      if: always()
       run: |
-        until curl -s http://localhost:48983/solr; do
-          echo "Waiting for Solr to start..."
-          sleep 5
-        done
-#
-#    - name: Create Solr Core
-#      run: curl "http://localhost:48983/solr/admin/cores?action=CREATE&name=access&instanceDir=/solr_config/config&config=solrconfig.xml&schema=schema.xml"
-#
-    - name: Probe Solr core
-      run: curl -s "http://localhost:48983/solr/access/select?q=*"
-#
-#    - name: Checkout submodules
-#      run: git submodule update --init --recursive
-#
-#    - name: Set up JDK 11
-#      uses: actions/setup-java@v1
-#      with:
-#        java-version: 11
-#
-#    - name: Cache Maven packages
-#      uses: actions/cache@v2
-#      with:
-#        path: ~/.m2
-#        key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
-#        restore-keys: ${{ runner.os }}-m2
-#    - name: Build with Maven
-#      run: mvn -B -U -pl '!integration' clean install -DskipTests
-#    - name: Set up nodejs
-#      uses: actions/setup-node@v2
-#      with:
-#        node-version: '16'
-#    - name: Cache npm modules
-#      uses: actions/cache@v2
-#      with:
-#        path: ~/.npm
-#        key: v1-npm-deps-${{ hashFiles('**/package-lock.json') }}
-#        restore-keys: v1-npm-deps-
-
-#    - run: npm --prefix static/js/vue-cdr-access install
-#    - run: npm --prefix static/js/admin/vue-permissions-editor install
-#
-#    - run: npm install -g jest-cli@29.0.3
-#    - run: npm --prefix static/js/vue-cdr-access run test
-#    - run: npm --prefix static/js/admin/vue-permissions-editor run test
-
-#    - name: Report to CodeClimate
-#      uses: paambaati/codeclimate-action@v3.0.0
-#      env:
-#        CC_TEST_REPORTER_ID: ${{secrets.CC_TEST_REPORTER_ID}}
-#        JACOCO_SOURCE_PATH: "${{github.workspace}}/auth-api/src/main/java ${{github.workspace}}/auth-fcrepo/src/main/java ${{github.workspace}}/common-utils/src/main/java ${{github.workspace}}/deposit-app/src/main/java ${{github.workspace}}/deposit-utils/src/main/java ${{github.workspace}}/fcrepo-utils/src/main/java ${{github.workspace}}/indexing-solr/src/main/java ${{github.workspace}}/integration/src/main/java ${{github.workspace}}/model-api/src/main/java ${{github.workspace}}/model-fcrepo/src/main/java ${{github.workspace}}/operations/src/main/java ${{github.workspace}}/operations-jms/src/main/java ${{github.workspace}}/persistence/src/main/java ${{github.workspace}}/persistence-api/src/main/java ${{github.workspace}}/search-api/src/main/java ${{github.workspace}}/search-solr/src/main/java ${{github.workspace}}/services-camel-app/src/main/java ${{github.workspace}}/web-access-app/src/main/java ${{github.workspace}}/web-access-war/src/main/java ${{github.workspace}}/web-admin-app/src/main/java ${{github.workspace}}/web-common/src/main/java ${{github.workspace}}/web-services-app/src/main/java ${{github.workspace}}/web-sword/src/main/java  ${{github.workspace}}/clamav-java/src/main/java"
-#      with:
-#        coverageCommand: mvn -pl integration verify
-#        coverageLocations: |
-#          ${{github.workspace}}/**/target/site/jacoco/jacoco.xml:jacoco
-#          ${{github.workspace}}/**/target/site/jacoco-it/jacoco.xml:jacoco
-#          ${{github.workspace}}/static/js/vue-cdr-access/coverage/lcov.info:lcov
-#          ${{github.workspace}}/static/js/admin/vue-permissions-editor/coverage/lcov.info:lcov
-#
-#    - name: View fedora service logs
-#      if: always()
-#      run: |
-#        docker logs ${{ env.CONTAINER_ID }}
+        docker logs ${{ env.CONTAINER_ID }}
