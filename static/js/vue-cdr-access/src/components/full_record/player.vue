@@ -3,7 +3,7 @@
         <template v-if="recordData.viewerType === 'clover' && hasPermission(recordData, 'viewAccessCopies')">
             <clover :iiifContent="manifestPath" :options="cloverOptions"></clover>
         </template>
-        <template v-if="recordData.viewerType === 'pdf' && hasPermission(recordData, 'viewOriginal') && pdfFileAcceptableForDisplay">
+        <template v-else-if="recordData.viewerType === 'pdf' && hasPermission(recordData, 'viewOriginal') && pdfFileAcceptableForDisplay">
             <iframe :src="viewer(recordData.viewerType)" allow="fullscreen" scrolling="no"></iframe>
         </template>
         <template v-else-if="recordData.viewerType === 'streaming' && hasPermission(recordData, 'viewAccessCopies')">
