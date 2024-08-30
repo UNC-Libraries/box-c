@@ -1,13 +1,13 @@
 <template>
     <div>
-        <template v-if="recordData.viewerType === 'clover' && hasPermission(recordData, 'viewAccessCopies')">
-            <clover :iiifContent="manifestPath" :options="cloverOptions"></clover>
+        <template v-if="recordData.viewerType === 'streaming' && hasPermission(recordData, 'viewAccessCopies')">
+            <streaming-player :record-data="recordData"></streaming-player>
         </template>
         <template v-else-if="recordData.viewerType === 'pdf' && hasPermission(recordData, 'viewOriginal') && pdfFileAcceptableForDisplay">
             <iframe :src="viewer(recordData.viewerType)" allow="fullscreen" scrolling="no"></iframe>
         </template>
-        <template v-else-if="recordData.viewerType === 'streaming' && hasPermission(recordData, 'viewAccessCopies')">
-            <streaming-player :record-data="recordData"></streaming-player>
+        <template v-else-if="recordData.viewerType === 'clover' && hasPermission(recordData, 'viewAccessCopies')">
+            <clover :iiifContent="manifestPath" :options="cloverOptions"></clover>
         </template>
     </div>
 </template>
