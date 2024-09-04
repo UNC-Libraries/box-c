@@ -33,4 +33,10 @@ public class QueryFilterFactoryTest {
         var filter = QueryFilterFactory.createFilter(SearchFieldKey.STREAMING_TYPE);
         assertTrue(filter instanceof HasPopulatedFieldFilter);
     }
+
+    @Test
+    public void HasViewerTypeFilterTest() {
+        var filter = QueryFilterFactory.createHasViewerTypeFilter(SearchFieldKey.FILE_FORMAT_TYPE, "application/pdf");
+        assertTrue(filter instanceof HasViewerTypeFilter);
+    }
 }

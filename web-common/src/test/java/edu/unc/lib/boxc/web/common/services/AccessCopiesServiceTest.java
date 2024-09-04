@@ -103,7 +103,6 @@ public class AccessCopiesServiceTest  {
         accessCopiesService.setGlobalPermissionEvaluator(globalPermissionEvaluator);
 
         when(solrSearchService.getSearchResults(searchRequestCaptor.capture())).thenReturn(searchResultResponse);
-        when(searchResultResponse.getResultCount()).thenReturn(1L);
     }
 
     @AfterEach
@@ -380,14 +379,14 @@ public class AccessCopiesServiceTest  {
     public void hasViewableFilesAudioFileTest() {
         var mdObjectAudio = createAudioObject(ResourceType.File);
         hasPermissions(mdObjectAudio, true);
-
+        when(searchResultResponse.getResultCount()).thenReturn(1L);
         assertFalse(accessCopiesService.hasViewableFiles(mdObjectAudio, principals));
     }
 
     @Test
     public void hasViewableFilesImageWorkTest() {
         hasPermissions(mdObjectImg, true);
-
+        when(searchResultResponse.getResultCount()).thenReturn(1L);
         assertTrue(accessCopiesService.hasViewableFiles(mdObjectImg, principals));
         assertRequestedDatastreamFilter(DatastreamType.JP2_ACCESS_COPY);
     }
@@ -398,6 +397,7 @@ public class AccessCopiesServiceTest  {
         hasPermissions(mdObjectAudio, true);
 
         when(searchResultResponse.getResultList()).thenReturn(List.of(mdObjectAudio));
+        when(searchResultResponse.getResultCount()).thenReturn(1L);
         var audioObj = accessCopiesService.getFirstStreamingChild(mdObjectAudio, principals);
         assertEquals("sound", audioObj.getStreamingType());
         assertHasPopulatedFieldFilter(SearchFieldKey.STREAMING_TYPE);
@@ -408,6 +408,7 @@ public class AccessCopiesServiceTest  {
         var mdObjectVideo = createVideoObject(ResourceType.Work);
         hasPermissions(mdObjectVideo, true);
         when(searchResultResponse.getResultList()).thenReturn(List.of(mdObjectVideo));
+        when(searchResultResponse.getResultCount()).thenReturn(1L);
         var videoObj = accessCopiesService.getFirstStreamingChild(mdObjectVideo, principals);
         assertEquals("video", videoObj.getStreamingType());
         assertHasPopulatedFieldFilter(SearchFieldKey.STREAMING_TYPE);
@@ -427,6 +428,39 @@ public class AccessCopiesServiceTest  {
         hasPermissions(mdObjectVideoFile, true);
 
         assertNull(accessCopiesService.getFirstStreamingChild(mdObjectVideoFile, principals));
+    }
+
+    @Test
+    public void hasMatchingChildTest() {
+        var mdObjectPdf = createPdfObject(ResourceType.Work);
+        hasPermissions(mdObjectPdf, true);
+        when(searchResultResponse.getResultList()).thenReturn(List.of(mdObjectPdf));
+        when(searchResultResponse.getResultCount()).thenReturn(1L);
+        var pdfObj = accessCopiesService.getFirstMatchingChild(mdObjectPdf,
+                "application/pdf", principals);
+        assertNotNull(pdfObj);
+        assertTrue(pdfObj.getFileFormatType().contains("application/pdf"));
+    }
+
+    @Test
+    public void hasNoMatchingChildForSpecifiedFileTypeTest() {
+        hasPermissions(mdObjectXml, true);
+        when(searchResultResponse.getResultList()).thenReturn(List.of(mdObjectXml));
+        when(searchResultResponse.getResultCount()).thenReturn(0L);
+        var xmlObj = accessCopiesService.getFirstMatchingChild(mdObjectXml,
+                "application/pdf", principals);
+
+        assertNull(xmlObj);
+    }
+
+    @Test
+    public void hasNoMatchingChildForFilesTest() {
+        var mdObject = createPdfObject(ResourceType.File);
+        hasPermissions(mdObject, true);
+        when(searchResultResponse.getResultList()).thenReturn(List.of(mdObject));
+        var obj = accessCopiesService.getFirstMatchingChild(mdObject,
+                "application/pdf", principals);
+        assertNull(obj);
     }
 
     private void hasPermissions(ContentObjectSolrRecord contentObject, boolean hasAccess) {

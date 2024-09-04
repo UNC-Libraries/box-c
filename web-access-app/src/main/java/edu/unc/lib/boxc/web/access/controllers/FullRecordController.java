@@ -58,6 +58,7 @@ import static edu.unc.lib.boxc.search.api.FacetConstants.MARKED_FOR_DELETION;
 import static edu.unc.lib.boxc.web.common.services.AccessCopiesService.AUDIO_MIMETYPE_REGEX;
 import static edu.unc.lib.boxc.web.common.services.AccessCopiesService.PDF_MIMETYPE_REGEX;
 import static edu.unc.lib.boxc.web.common.services.AccessCopiesService.VIDEO_MIMETYPE_REGEX;
+import static info.freelibrary.iiif.presentation.v3.MediaType.APPLICATION_PDF;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 /**
@@ -255,8 +256,14 @@ public class FullRecordController extends AbstractErrorHandlingSearchController 
         SimpleIdRequest idRequest = new SimpleIdRequest(pid, principals);
         ContentObjectRecord briefObject = queryLayer.getObjectById(idRequest);
 
-        String viewerPid = accessCopiesService.getDatastreamPid(briefObject, principals, PDF_MIMETYPE_REGEX);
-        model.addAttribute("pid", viewerPid);
+        String viewerPid = null;
+        if (ResourceType.Work.nameEquals(briefObject.getResourceType())) {
+            viewerPid = accessCopiesService.getFirstMatchingChild(briefObject, APPLICATION_PDF.toString(), principals).getId();
+        } else {
+            accessCopiesService.getDatastreamPid(briefObject, principals, PDF_MIMETYPE_REGEX);
+        }
+
+        model.addAttribute("viewerPid", viewerPid);
         model.addAttribute("briefObject", briefObject);
         model.addAttribute("template", "ajax");
 
@@ -297,19 +304,17 @@ public class FullRecordController extends AbstractErrorHandlingSearchController 
             streamingType = (workStreamingContent != null) ? workStreamingContent.getStreamingType() :
                     briefObject.getStreamingType();
         } else {
-            // Check for PDF to display
-            viewerPid = accessCopiesService.getDatastreamPid(briefObject, principals, PDF_MIMETYPE_REGEX);
-            if (viewerPid != null) {
-                viewerType = "pdf";
-            } else {
-                // Check for viewable audio file
-                viewerPid = accessCopiesService.getDatastreamPid(briefObject, principals, AUDIO_MIMETYPE_REGEX);
-                if (viewerPid != null) {
-                    viewerType = "clover";
-                }
+            viewerPid = accessCopiesService.getDatastreamPid(briefObject, principals, AUDIO_MIMETYPE_REGEX);
+            if (viewerPid == null) {
                 viewerPid = accessCopiesService.getDatastreamPid(briefObject, principals, VIDEO_MIMETYPE_REGEX);
+            }
+
+            if (viewerPid != null) {
+                viewerType = "clover";
+            } else {
+                viewerPid = accessCopiesService.getDatastreamPid(briefObject, principals, PDF_MIMETYPE_REGEX);
                 if (viewerPid != null) {
-                    viewerType = "clover";
+                    viewerType = "pdf";
                 }
             }
         }

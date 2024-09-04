@@ -7,7 +7,9 @@ import static edu.unc.lib.boxc.model.api.DatastreamType.THUMBNAIL_SMALL;
 import static edu.unc.lib.boxc.model.fcrepo.test.TestHelper.makePid;
 import static java.util.Arrays.asList;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -15,8 +17,6 @@ import org.junit.jupiter.api.Test;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.search.solr.models.ContentObjectSolrRecord;
 
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -33,7 +33,6 @@ public class DatastreamUtilTest {
     private final static String FITS_DS = TECHNICAL_METADATA.getId() + "|text/xml|fits.xml|xml|5555||";
     private final static String THUMB_SMALL_DS = THUMBNAIL_SMALL.getId() + "|image/png|small|png|3333||";
     private final static String THUMB_LARGE_DS = THUMBNAIL_LARGE.getId() + "|image/png|small|png|10000||";
-    private final static List<String> EMPTY_LIST = Collections.emptyList();
 
     @BeforeEach
     public void setup() {
@@ -107,10 +106,21 @@ public class DatastreamUtilTest {
         PID pid = makePid();
         ContentObjectSolrRecord mdObj = new ContentObjectSolrRecord();
         mdObj.setId(pid.getId());
-        mdObj.setDatastream(asList(ORIGINAL_DS));
+        mdObj.setDatastream(List.of(ORIGINAL_DS));
 
         var id = DatastreamUtil.getThumbnailOwnerId(mdObj);
         assertNull(id);
         assertNull(DatastreamUtil.constructThumbnailUrl(id));
+    }
+
+    @Test
+    public void testOriginalFileMimetypeMatches() {
+        PID pid = makePid();
+        ContentObjectSolrRecord mdObj = new ContentObjectSolrRecord();
+        mdObj.setId(pid.getId());
+        mdObj.setFileFormatType(asList("text/rtf", "application/pdf"));
+
+        assertTrue( DatastreamUtil.originalFileMimetypeMatches(mdObj, "application/pdf"));
+        assertFalse( DatastreamUtil.originalFileMimetypeMatches(mdObj, "image/png"));
     }
 }

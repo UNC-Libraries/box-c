@@ -49,4 +49,14 @@ public class QueryFilterFactory {
     public static QueryFilter createIIIFv3ViewableFilter(List<String> fileTypes) {
         return new IIIFv3ViewableFilter(fileTypes);
     }
+
+    /**
+     *
+     * @param fieldKey searchField
+     * @param fileType regular expression
+     * @return new QueryFilter instance with the provided file type
+     */
+    public static QueryFilter createHasViewerTypeFilter(SearchFieldKey fieldKey, String fileType) {
+        return new HasViewerTypeFilter(fieldKey, fileType);
+    }
 }

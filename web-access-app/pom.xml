@@ -166,5 +166,11 @@
             <groupId>edu.unc.lib.cdr</groupId>
             <artifactId>search-solr</artifactId>
         </dependency>
+        <dependency>
+            <groupId>info.freelibrary</groupId>
+            <artifactId>jiiify-presentation-v3</artifactId>
+            <version>0.12.3</version>
+            <scope>compile</scope>
+        </dependency>
     </dependencies>
 </project>

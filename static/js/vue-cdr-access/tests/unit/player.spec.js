@@ -79,26 +79,8 @@ const record = {
             }
         ],
         permissions: [
-            "markForDeletionUnit",
-            "move",
-            "reindex",
-            "destroy",
-            "editResourceType",
-            "destroyUnit",
-            "bulkUpdateDescription",
-            "changePatronAccess",
-            "runEnhancements",
-            "createAdminUnit",
-            "ingest",
-            "orderMembers",
             "viewOriginal",
             "viewAccessCopies",
-            "viewHidden",
-            "assignStaffRoles",
-            "viewMetadata",
-            "markForDeletion",
-            "editDescription",
-            "createCollection"
         ],
         groupRoleMap: {},
         id: "4db695c0-5fd5-4abf-9248-2e115d43f57d",
@@ -113,7 +95,7 @@ const record = {
         ],
         timestamp: 1679922126871
     },
-    viewerType: "uv",
+    viewerType: "clover",
     neighborList: [],
     dataFileUrl: "content/4db695c0-5fd5-4abf-9248-2e115d43f57d",
     markedForDeletion: false,
@@ -151,7 +133,7 @@ describe('player.vue', () => {
         });
     });
 
-    it("displays an iframe viewer for images", async () => {
+    it("displays the clover viewer for A/V content", async () => {
         let updated_record = cloneDeep(record);
         updated_record.briefObject.groupRoleMap = {
             everyone: 'canViewAccessCopies'
@@ -159,7 +141,7 @@ describe('player.vue', () => {
         await wrapper.setProps({
             recordData: updated_record
         });
-        expect(wrapper.find('iframe').exists()).toBe(true);
+        expect(wrapper.findComponent({ name: 'clover' }).exists()).toBe(true);
     });
 
     it("displays an iframe viewer for pdfs", async () => {
@@ -185,18 +167,6 @@ describe('player.vue', () => {
             recordData: updated_record
         });
         expect(wrapper.find('iframe').exists()).toBe(false);
-    });
-
-    it("uses the audio player component for audio files", async () => {
-        let updated_record = cloneDeep(record);
-        updated_record.viewerType = 'audio';
-        updated_record.briefObject.groupRoleMap = {
-            everyone: 'canViewAccessCopies'
-        }
-        await wrapper.setProps({
-            recordData: updated_record
-        });
-        expect(wrapper.findComponent({ name: 'audioPlayer' }).exists()).toBe(true);
     });
 
     it("uses the streaming player for streaming files", async () => {
