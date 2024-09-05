@@ -42,7 +42,6 @@ public class EnhancementRouter extends RouteBuilder {
     private Integer enhancementThreads;
 
     private static final String DEFAULT_ENHANCEMENTS = "thumbnails,imageAccessCopy,extractFulltext";
-    private static final String THUMBNAIL_ENHANCEMENTS = "thumbnails";
     @Override
     public void configure() throws Exception {
 
