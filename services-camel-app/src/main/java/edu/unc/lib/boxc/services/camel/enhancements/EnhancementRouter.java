@@ -69,7 +69,7 @@ public class EnhancementRouter extends RouteBuilder {
                         ))
                     .log(DEBUG, log, "Processing enhancements for non-binary ${headers[CamelFcrepoUri]}")
                     .process(nbProcessor)
-                    .setHeader(CdrEnhancementSet, constant(THUMBNAIL_ENHANCEMENTS))
+                    .setHeader(CdrEnhancementSet, constant("imageAccessCopy"))
                     .to("{{cdr.enhancement.perform.camel}}")
                 .otherwise()
                     .log(DEBUG, log, "Ignoring resource ${headers[CamelFcrepoUri]}")
