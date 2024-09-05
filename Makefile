@@ -44,7 +44,7 @@ ifneq ($(VERSION), "")
 endif
 
 build-admin-npm:
-	# Build vue permissions application files
+	# Build vue admin application files
 	npm --prefix static/js/admin/vue-cdr-admin ci
 	npm --prefix static/js/admin/vue-cdr-admin run build
 
