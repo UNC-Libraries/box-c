@@ -7,7 +7,7 @@ https://vuejs.org/guide/built-ins/teleport.html
     <teleport to="#chompb-admin">
         <div id="chompb-preingest-ui">
             <h2 class="chompb-ui has-text-weight-semibold is-size-3 has-text-centered">Pre-ingest Projects</h2>
-            <data-table @click="copyPath($event)" id="chompb-projects" class="table is-striped is-bordered is-fullwidth"
+            <data-table v-if="dataSet.length > 0" @click="copyPath($event)" id="chompb-projects" class="table is-striped is-bordered is-fullwidth"
                         :data="dataSet"
                         :columns="columns"
                         :options="tableOptions">
@@ -20,6 +20,7 @@ https://vuejs.org/guide/built-ins/teleport.html
                 </tr>
                 </thead>
             </data-table>
+            <p v-else>There are no pre-ingest projects to show</p>
             <div id="copy-msg" class="notification is-light" :class="copyMsgClass" v-if="copy_msg !== ''">{{ copy_msg }}</div>
         </div>
     </teleport>
@@ -28,6 +29,8 @@ https://vuejs.org/guide/built-ins/teleport.html
 <script>
 import DataTable from 'datatables.net-vue3';
 import DataTablesLib from 'datatables.net-bm';
+import axios from "axios";
+import isEmpty from "lodash.isempty";
 
 DataTable.use(DataTablesLib);
 
@@ -53,7 +56,7 @@ export default {
     computed: {
         tableOptions() {
             return {
-                //serverSide: true,
+                ajax: '/admin/chompb/project',
                 bAutoWidth: false,
                 columnDefs: this.columnDefs,
                 language: { search: '', searchPlaceholder: 'Filter projects' }
@@ -102,6 +105,40 @@ export default {
     },
 
     methods: {
+        retrieveProjects() {
+            axios.get('/admin/chompb/project').then((response) => {
+               // if (!isEmpty(response.data)) {
+                    this.dataSet = [{
+                        "name": "file_source_test",
+                        "cdmCollectionId": null,
+                        "createdDate": "2024-07-16T15:20:08.579384Z",
+                        "creator": "bbpennel",
+                        "exportedDate": null,
+                        "indexedDate": "2024-08-15T12:38:28.662654Z",
+                        "destinationsGeneratedDate": null,
+                        "sourceFilesUpdatedDate": "2024-08-14T17:06:34.182417Z",
+                        "accessFilesUpdatedDate": null,
+                        "groupMappingsUpdatedDate": "2024-08-14T17:42:49.626664Z",
+                        "groupMappingsSyncedDate": null,
+                        "descriptionsExpandedDate": null,
+                        "sipsGeneratedDate": null,
+                        "sipsSubmitted": [],
+                        "hookId": null,
+                        "collectionNumber": null,
+                        "cdmEnvironmentId": null,
+                        "bxcEnvironmentId": "test",
+                        "projectSource": "files",
+                        "status": "sources_mapped",
+                        "allowedActions": ["color_bar_crop", "color_bar_report"],
+                        "projectPath": "/opt/data/cdm_migrations/file_source_test"
+
+                    }]
+              //  }
+            }).catch((error) => {
+                console.log(error);
+            });
+        },
+
         clearCopyMessage() {
             setTimeout(() => {
                 this.copy_error = false;
@@ -131,6 +168,10 @@ export default {
                 this.clearCopyMessage();
             }
         }
+    },
+
+    beforeMount() {
+        this.retrieveProjects();
     }
 }
 </script>
@@ -141,6 +182,11 @@ export default {
     #chompb-preingest-ui {
         width: 96%;
         margin: 25px auto;
+    }
+
+    p {
+        text-align: center;
+        margin-top: 50px;
     }
 
     #copy-msg {
