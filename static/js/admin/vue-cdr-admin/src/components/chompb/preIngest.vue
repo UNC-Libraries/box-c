@@ -171,7 +171,7 @@ export default {
     },
 
     beforeMount() {
-        this.retrieveProjects();
+       // this.retrieveProjects();
     }
 }
 </script>
