@@ -49,7 +49,7 @@ public class AudioEnhancementsRouter extends RouteBuilder {
                     .log(LoggingLevel.INFO, log, "Creating/Updating AAC access copy for ${headers[CdrAudioPath]}")
                     // Generate an random identifier to avoid derivative collisions
                     .setBody(exchange -> uuidGenerator.generateUuid())
-                    .setHeader(CdrFcrepoHeaders.CdrTempPath, simple("${properties:services.tempDirectory}/${body}-access"))
+                    .setHeader(CdrFcrepoHeaders.CdrTempPath, simple("${properties:services.tempDirectory}/${body}-audio"))
                     .doTry()
                         .recipientList(simple("exec:/bin/sh?args=${properties:cdr.enhancement.bin}/convertWav.sh "
                                 + "${headers[CdrAudioPath]} ${headers[CdrTempPath]}"))
