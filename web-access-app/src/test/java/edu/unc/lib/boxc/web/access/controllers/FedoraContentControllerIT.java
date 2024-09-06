@@ -131,6 +131,27 @@ public class FedoraContentControllerIT {
     }
 
     @Test
+    public void testGetDatastreamWithRangeEndingSameAsSize() throws Exception {
+        PID filePid = makePid();
+
+        FileObject fileObj = repositoryObjectFactory.createFileObject(filePid, null);
+        fileObj.addOriginalFile(makeContentUri(originalPid(fileObj), BINARY_CONTENT), "file.txt", "text/plain", null, null);
+
+        MvcResult result = mvc.perform(get("/content/" + filePid.getId())
+                        .header(RANGE,"bytes=0-14"))
+                .andExpect(status().is2xxSuccessful())
+                .andReturn();
+
+        // Verify content was retrieved
+        MockHttpServletResponse response = result.getResponse();
+        assertEquals(BINARY_CONTENT, response.getContentAsString());
+
+        assertEquals(BINARY_CONTENT.length(), response.getContentAsString().length());
+        assertEquals("text/plain", response.getContentType());
+        assertEquals("inline; filename=\"file.txt\"", response.getHeader(CONTENT_DISPOSITION));
+    }
+
+    @Test
     public void testGetDatastreamDownload() throws Exception {
         PID filePid = makePid();
 
@@ -284,7 +305,7 @@ public class FedoraContentControllerIT {
         fileObj.addOriginalFile(makeContentUri(originalPid(fileObj), BINARY_CONTENT), null, "text/plain", null, null);
 
         mvc.perform(get("/indexablecontent/" + filePid.getId())
-                        .header(RANGE,"bytes=0-900000"))
+                        .header(RANGE,"bytes=900000-900000"))
                 .andExpect(status().isRequestedRangeNotSatisfiable())
                 .andReturn();
     }
