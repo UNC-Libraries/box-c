@@ -26,7 +26,6 @@ import edu.unc.lib.boxc.search.solr.models.ContentObjectSolrRecord;
 import edu.unc.lib.boxc.search.solr.models.IndexDocumentBean;
 import edu.unc.lib.boxc.search.solr.responses.SearchResultResponse;
 import edu.unc.lib.boxc.search.solr.services.SolrSearchService;
-import org.apache.commons.collections.CollectionUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -171,9 +170,9 @@ public class SetContentTypeFilterTest {
 
         filter.filter(dip);
 
-        assertTrue(CollectionUtils.isEmpty(idb.getFileFormatType()));
-        assertTrue(CollectionUtils.isEmpty(idb.getFileFormatDescription()));
-        assertTrue(CollectionUtils.isEmpty(idb.getFileFormatCategory()));
+        assertNull(idb.getFileFormatType());
+        assertNull(idb.getFileFormatDescription());
+        assertNull(idb.getFileFormatCategory());
     }
 
     @Test
@@ -335,9 +334,9 @@ public class SetContentTypeFilterTest {
 
         filter.filter(dip);
 
-        assertTrue(CollectionUtils.isEmpty(idb.getFileFormatType()));
-        assertTrue(CollectionUtils.isEmpty(idb.getFileFormatDescription()));
-        assertTrue(CollectionUtils.isEmpty(idb.getFileFormatCategory()));
+        assertTrue(idb.getFileFormatType().isEmpty());
+        assertTrue(idb.getFileFormatDescription().isEmpty());
+        assertTrue(idb.getFileFormatCategory().isEmpty());
     }
 
     @Test

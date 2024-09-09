@@ -104,4 +104,15 @@ public class FedoraContentControllerTest {
                 .andExpect(status().isBadRequest())
                 .andReturn();
     }
+
+    @Test
+    public void getContentUncaughtExceptionTest() throws Exception {
+        PID pid = TestHelper.makePid();
+        doThrow(new RuntimeException("Uncaught"))
+                .when(fedoraContentService)
+                .streamData(any(), any(), anyBoolean(), any(), any());
+        mvc.perform(get("/content/" + pid.getId()).header("Range", "bad"))
+                .andExpect(status().isInternalServerError())
+                .andReturn();
+    }
 }

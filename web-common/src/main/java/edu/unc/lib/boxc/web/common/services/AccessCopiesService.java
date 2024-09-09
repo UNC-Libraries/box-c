@@ -173,7 +173,7 @@ public class AccessCopiesService {
         // Limit query to just children which have a thumbnail datastream
         var searchState = request.getSearchState();
         searchState.addFilter(
-                QueryFilterFactory.createFilter(SearchFieldKey.DATASTREAM, DatastreamType.THUMBNAIL_LARGE));
+                QueryFilterFactory.createFilter(SearchFieldKey.DATASTREAM, DatastreamType.JP2_ACCESS_COPY));
 
         var resp = solrSearchService.getSearchResults(request);
         if (resp.getResultCount() > 0) {

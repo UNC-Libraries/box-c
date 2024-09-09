@@ -1,5 +1,6 @@
 package edu.unc.lib.boxc.fcrepo.utils;
 
+import edu.unc.lib.boxc.fcrepo.exceptions.RangeNotSatisfiableException;
 import org.apache.http.HttpStatus;
 import org.fcrepo.client.FcrepoOperationFailedException;
 
@@ -31,9 +32,11 @@ public abstract class ClientFaultResolver {
             case HttpStatus.SC_FORBIDDEN:
                 return new AuthorizationException(ex);
             case HttpStatus.SC_NOT_FOUND:
-                    return new NotFoundException(ex);
+                return new NotFoundException(ex);
             case HttpStatus.SC_CONFLICT:
-                    return new ConflictException(ex);
+                return new ConflictException(ex);
+            case HttpStatus.SC_REQUESTED_RANGE_NOT_SATISFIABLE:
+                return new RangeNotSatisfiableException(ex);
             }
         }
         return new FedoraException(ex);

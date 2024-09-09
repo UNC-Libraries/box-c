@@ -48,67 +48,6 @@
                 </executions>
             </plugin>
             <plugin>
-                <groupId>com.googlecode.maven-download-plugin</groupId>
-                <artifactId>download-maven-plugin</artifactId>
-                <version>1.6.8</version>
-                <executions>
-                    <execution>
-                        <id>install-solr</id>
-                        <phase>pre-integration-test</phase>
-                        <goals>
-                            <goal>wget</goal>
-                        </goals>
-                    </execution>
-                </executions>
-                <configuration>
-                    <url>https://www.apache.org/dyn/closer.lua/lucene/solr/${solr.version}/solr-${solr.version}.tgz?action=download</url>
-                    <unpack>true</unpack>
-                    <outputDirectory>${project.build.directory}/solr/</outputDirectory>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>exec-maven-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>Start solr</id>
-                        <goals>
-                            <goal>exec</goal>
-                        </goals>
-                        <phase>pre-integration-test</phase>
-                        <configuration>
-                            <async>true</async>
-                            <executable>${project.build.directory}/solr/solr-${solr.version}/bin/solr</executable>
-                            <commandlineArgs>start -p 48983 -s ${project.build.directory}/../../etc/solr-config/</commandlineArgs>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <id>Stop solr</id>
-                        <goals>
-                            <goal>exec</goal>
-                        </goals>
-                        <phase>post-integration-test</phase>
-                        <configuration>
-                            <async>true</async>
-                            <executable>${project.build.directory}/solr/solr-${solr.version}/bin/solr</executable>
-                            <arguments>
-                                <argument>stop</argument>
-                                <argument>-p</argument>
-                                <argument>48983</argument>
-                            </arguments>
-                        </configuration>
-                    </execution>
-                </executions>
-                <configuration>
-                    <systemProperties>
-                        <systemProperty>
-                            <name>solr.solr.home</name>
-                            <value>${project.build.directory}/../../etc/solr-config/</value>
-                        </systemProperty>
-                    </systemProperties>
-                </configuration>
-            </plugin>
-            <plugin>
                 <groupId>org.eclipse.jetty</groupId>
                 <artifactId>jetty-maven-plugin</artifactId>
                 <version>9.4.19.v20190610</version>
