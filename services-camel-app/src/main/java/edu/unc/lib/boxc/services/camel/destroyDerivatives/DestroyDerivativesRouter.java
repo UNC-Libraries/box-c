@@ -3,6 +3,7 @@ package edu.unc.lib.boxc.services.camel.destroyDerivatives;
 import static edu.unc.lib.boxc.services.camel.util.CdrFcrepoHeaders.CdrObjectType;
 import static org.slf4j.LoggerFactory.getLogger;
 
+import edu.unc.lib.boxc.services.camel.audio.AudioDerivativeProcessor;
 import org.apache.camel.BeanInject;
 import org.apache.camel.LoggingLevel;
 import org.apache.camel.PropertyInject;
@@ -40,6 +41,9 @@ public class DestroyDerivativesRouter extends RouteBuilder {
     @BeanInject(value = "destroyFulltextProcessor")
     private DestroyDerivativesProcessor destroyFulltextProcessor;
 
+    @BeanInject(value = "destroyAudioProcessor")
+    private DestroyDerivativesProcessor destroyAudioProcessor;
+
     private String destroyDerivativesStreamCamel;
     private long errorRetryDelay;
     private int errorMaxRedeliveries;
@@ -63,6 +67,8 @@ public class DestroyDerivativesRouter extends RouteBuilder {
                         .to("direct:image.derivatives.destroy")
                     .when(method(FulltextProcessor.class, "allowedTextType"))
                         .to("direct:fulltext.derivatives.destroy")
+                    .when(method(AudioDerivativeProcessor.class, "allowedAudioType"))
+                        .to("direct:audio.derivatives.destroy")
                 .end();
 
         from("direct:fulltext.derivatives.destroy")
@@ -95,6 +101,12 @@ public class DestroyDerivativesRouter extends RouteBuilder {
                 .startupOrder(200)
                 .log(LoggingLevel.DEBUG, log, "Destroying collection image upload")
                 .bean(destroyCollectionSrcImgProcessor);
+
+        from("direct:audio.derivatives.destroy")
+                .routeId("CdrDestroyAudio")
+                .startupOrder(199)
+                .log(LoggingLevel.DEBUG, log, "Destroying derivative audio files")
+                .bean(destroyAudioProcessor);
     }
 
     public void setDestroyedMsgProcessor(DestroyedMsgProcessor destroyedMsgProcessor) {
@@ -119,6 +131,10 @@ public class DestroyDerivativesRouter extends RouteBuilder {
 
     public void setDestroyFulltextProcessor(DestroyDerivativesProcessor destroyFulltextProcessor) {
         this.destroyFulltextProcessor = destroyFulltextProcessor;
+    }
+
+    public void setDestroyAudioProcessor(DestroyDerivativesProcessor destroyAudioProcessor) {
+        this.destroyAudioProcessor = destroyAudioProcessor;
     }
 
     @PropertyInject("cdr.destroy.derivatives.stream.camel")

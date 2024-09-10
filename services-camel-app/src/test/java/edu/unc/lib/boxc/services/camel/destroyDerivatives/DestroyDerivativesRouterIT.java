@@ -102,6 +102,8 @@ public class DestroyDerivativesRouterIT extends CamelSpringTestSupport {
 
     private DestroyDerivativesProcessor destroyFulltextProcessor;
 
+    private DestroyDerivativesProcessor destroyAudioProcessor;
+
     private DestroyObjectsJob destroyJob;
 
     private AgentPrincipals agent;
@@ -150,6 +152,7 @@ public class DestroyDerivativesRouterIT extends CamelSpringTestSupport {
         destroyLargeThumbnailProcessor = applicationContext.getBean("destroyLargeThumbnailProcessor", DestroyDerivativesProcessor.class);
         destroyAccessCopyProcessor = applicationContext.getBean("destroyAccessCopyProcessor", DestroyDerivativesProcessor.class);
         destroyFulltextProcessor = applicationContext.getBean("destroyFulltextProcessor", DestroyDerivativesProcessor.class);
+        destroyAudioProcessor = applicationContext.getBean("destroyAudioProcessor", DestroyDerivativesProcessor.class);
 
         TestHelper.setContentBase(baseAddress);
 
@@ -200,6 +203,7 @@ public class DestroyDerivativesRouterIT extends CamelSpringTestSupport {
         verify(destroyCollectionSrcImgProcessor, never()).process(any(Exchange.class));
         verify(destroyAccessCopyProcessor).process(any(Exchange.class));
         verify(destroyFulltextProcessor, never()).process(any(Exchange.class));
+        verify(destroyAudioProcessor, never()).process(any(Exchange.class));
     }
 
     @Test
@@ -227,6 +231,7 @@ public class DestroyDerivativesRouterIT extends CamelSpringTestSupport {
         verify(destroyCollectionSrcImgProcessor).process(any(Exchange.class));
         verify(destroyAccessCopyProcessor, never()).process(any(Exchange.class));
         verify(destroyFulltextProcessor, never()).process(any(Exchange.class));
+        verify(destroyAudioProcessor, never()).process(any(Exchange.class));
     }
 
     @Test
@@ -245,6 +250,7 @@ public class DestroyDerivativesRouterIT extends CamelSpringTestSupport {
         verify(destroyCollectionSrcImgProcessor, never()).process(any(Exchange.class));
         verify(destroyAccessCopyProcessor, never()).process(any(Exchange.class));
         verify(destroyFulltextProcessor, never()).process(any(Exchange.class));
+        verify(destroyAudioProcessor, never()).process(any(Exchange.class));
     }
 
     @Test
@@ -265,6 +271,7 @@ public class DestroyDerivativesRouterIT extends CamelSpringTestSupport {
         verify(destroyCollectionSrcImgProcessor, never()).process(any(Exchange.class));
         verify(destroyAccessCopyProcessor, never()).process(any(Exchange.class));
         verify(destroyFulltextProcessor).process(any(Exchange.class));
+        verify(destroyAudioProcessor, never()).process(any(Exchange.class));
     }
 
     @Test
@@ -284,6 +291,27 @@ public class DestroyDerivativesRouterIT extends CamelSpringTestSupport {
         verify(destroyCollectionSrcImgProcessor, never()).process(any(Exchange.class));
         verify(destroyAccessCopyProcessor, never()).process(any(Exchange.class));
         verify(destroyFulltextProcessor, never()).process(any(Exchange.class));
+        verify(destroyAudioProcessor, never()).process(any(Exchange.class));
+    }
+
+    @Test
+    public void destroyAudioTest() throws Exception {
+        WorkObject work = repoObjectFactory.createWorkObject(null);
+        FileObject fileObj = addFileToWork(work, "audio/wav");
+        work.addMember(fileObj);
+
+        treeIndexer.indexAll(baseAddress);
+
+        markForDeletion(fileObj.getPid());
+        initializeDestroyJob(Collections.singletonList(fileObj.getPid()));
+        destroyJob.run();
+
+        verify(destroySmallThumbnailProcessor, never()).process(any(Exchange.class));
+        verify(destroyLargeThumbnailProcessor, never()).process(any(Exchange.class));
+        verify(destroyCollectionSrcImgProcessor, never()).process(any(Exchange.class));
+        verify(destroyAccessCopyProcessor, never()).process(any(Exchange.class));
+        verify(destroyFulltextProcessor, never()).process(any(Exchange.class));
+        verify(destroyAudioProcessor).process(any(Exchange.class));
     }
 
     private FileObject addFileToWork(WorkObject work, String mimetype) throws Exception {

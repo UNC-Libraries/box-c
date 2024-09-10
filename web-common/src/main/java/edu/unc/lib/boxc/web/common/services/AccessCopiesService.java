@@ -51,7 +51,8 @@ public class AccessCopiesService {
         ContentObjectRecord briefObj = solrSearchService.getObjectById(new SimpleIdRequest(pid, principals));
         String resourceType = briefObj.getResourceType();
         if (ResourceType.File.nameEquals(resourceType)) {
-            if (briefObj.getDatastreamObject(DatastreamType.JP2_ACCESS_COPY.getId()) != null) {
+            if (briefObj.getDatastreamObject(DatastreamType.JP2_ACCESS_COPY.getId()) != null
+                    || briefObj.getDatastreamObject(DatastreamType.AUDIO_ACCESS_COPY.getId()) != null) {
                 return Collections.singletonList(briefObj);
             } else {
                 return Collections.emptyList();
