@@ -1,7 +1,10 @@
 package edu.unc.lib.boxc.web.services.rest.exceptions;
 
+import edu.unc.lib.boxc.fcrepo.exceptions.RangeNotSatisfiableException;
 import edu.unc.lib.boxc.model.api.exceptions.InvalidOperationForObjectType;
 import java.io.EOFException;
+
+import edu.unc.lib.boxc.search.api.exceptions.SolrRuntimeException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpHeaders;
@@ -72,6 +75,26 @@ public class RestResponseEntityExceptionHandler extends ResponseEntityExceptionH
     public ResponseEntity<Object> handleEofException(EOFException ex, WebRequest request) {
         log.debug("Client closed connection to {}", getRequestUri(request), ex);
         return null;
+    }
+
+    @ExceptionHandler(RangeNotSatisfiableException.class)
+    public ResponseEntity<Object> handleRangeNotSatisfiable(RuntimeException ex, WebRequest request) {
+        var rangeValue = request.getHeader(HttpHeaders.RANGE);
+        log.debug("Unsatisfiable range {} requested {}", rangeValue, getRequestUri(request), ex);
+        return handleExceptionInternal(ex, null, new HttpHeaders(), HttpStatus.REQUESTED_RANGE_NOT_SATISFIABLE, request);
+    }
+
+    @ExceptionHandler(value = { SolrRuntimeException.class })
+    protected ResponseEntity<Object> handleUnavailable(Exception ex, WebRequest request) {
+        try {
+            String bodyOfResponse = "Service unavailable";
+            log.error("Service unavailable from {}", getRequestUri(request), ex);
+            return handleExceptionInternal(ex, bodyOfResponse, new HttpHeaders(),
+                    HttpStatus.SERVICE_UNAVAILABLE, request);
+        } catch (Exception e) {
+            log.error("Error occurred while handling exception {}", getRequestUri(request), e);
+            return null;
+        }
     }
 
     @ExceptionHandler(value = { Exception.class })

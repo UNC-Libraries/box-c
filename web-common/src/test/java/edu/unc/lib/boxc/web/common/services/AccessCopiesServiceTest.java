@@ -269,7 +269,7 @@ public class AccessCopiesServiceTest  {
         assertEquals(noOriginalFileObj.getId(), accessCopiesService.getThumbnailId(noOriginalFileObj, principals, false));
         // Gets the ID of the specific child with a thumbnail
         assertEquals(mdObjectImg.getId(), accessCopiesService.getThumbnailId(noOriginalFileObj, principals, true));
-        assertRequestedDatastreamFilter(DatastreamType.THUMBNAIL_LARGE);
+        assertRequestedDatastreamFilter(DatastreamType.JP2_ACCESS_COPY);
         assertSortType("default");
     }
 
@@ -310,7 +310,7 @@ public class AccessCopiesServiceTest  {
 
         // Gets the ID of the specific child with a thumbnail
         assertEquals(mdObjectImg2.getId(), accessCopiesService.getThumbnailId(noOriginalFileObj, principals, true));
-        assertRequestedDatastreamFilter(DatastreamType.THUMBNAIL_LARGE);
+        assertRequestedDatastreamFilter(DatastreamType.JP2_ACCESS_COPY);
         assertSortType("default");
     }
 
