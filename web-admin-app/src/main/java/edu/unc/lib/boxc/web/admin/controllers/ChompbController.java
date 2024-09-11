@@ -12,6 +12,8 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
+
 /**
  * @author lfarrell
  */
@@ -25,9 +27,8 @@ public class ChompbController {
         return "report/chompb";
     }
 
-    @RequestMapping(value = "chompb/project", method = RequestMethod.GET)
-    public @ResponseBody
-    String chompbProjectsJSON(HttpServletRequest request, HttpServletResponse response) {
+    @RequestMapping(value = "chompb/project", method = RequestMethod.GET, produces = APPLICATION_JSON_VALUE)
+    public @ResponseBody String chompbProjectsJSON() {
         AccessGroupSet accessGroups = GroupsThreadStore.getPrincipals();
         return chompbPreIngestService.getProjectLists(accessGroups);
     }
