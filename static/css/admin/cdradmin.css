@@ -660,12 +660,14 @@ div.in-admin-iframe,
 	min-width: 400px;
 }
 
-#chompb-projects_filter {
+#chompb-projects_filter,
+#vue-cdr-admin-app .dataTables_filter {
 	text-align: right;
 }
 
-#chompb-projects_filter input {
-	max-width: 350px;
+#chompb-projects_filter input,
+#vue-cdr-admin-app .dataTables_filter input {
+	max-width: 250px;
 }
 
 #chompb-preingest-ui table td a {
@@ -676,16 +678,23 @@ div.in-admin-iframe,
 #chompb-preingest-ui table td:last-child {
 	padding-right: 0;
 }
-#chompb-projects_wrapper .is-half {
+#chompb-projects_wrapper .is-half,
+#vue-cdr-admin-app .dataTables_wrapper .is-half {
 	margin: 25px auto;
 }
 
-#chompb-projects_length label {
-    vertical-align: bottom;
+#chompb-projects_length label,
+#vue-cdr-admin-app .dataTables_length label {
+    vertical-align: middle;
 }
 
-#chompb-projects_paginate .pagination-list {
+#chompb-projects_paginate .pagination-list,
+#vue-cdr-admin-app .pagination-list {
 	justify-content: flex-end;
+}
+
+#vue-cdr-admin-app {
+	margin: 15px 20px;
 }
 
 @media (max-width: 768px) {

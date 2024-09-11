@@ -7,7 +7,8 @@ https://vuejs.org/guide/built-ins/teleport.html
     <teleport to="#chompb-admin">
         <div id="chompb-preingest-ui">
             <h2 class="chompb-ui has-text-weight-semibold is-size-3 has-text-centered">Pre-ingest Projects</h2>
-            <data-table @click="copyPath($event)" id="chompb-projects" class="table is-striped is-bordered is-fullwidth"
+            <data-table id="chompb-projects" class="table is-striped is-bordered is-fullwidth"
+                        :data="dataSet"
                         :columns="columns"
                         :options="tableOptions">
                 <thead>
@@ -18,6 +19,14 @@ https://vuejs.org/guide/built-ins/teleport.html
                     <th>Actions</th>
                 </tr>
                 </thead>
+                <template #actions="props">
+                    <a @click.prevent="copyPath(props.rowData.projectPath)" href="#">Copy Path</a>
+                    <template v-for="action in props.rowData.allowedActions">
+                        <a class="is-capitalized" @click.prevent="actionPath(action, props.rowData.projectProperties.name)">
+                            {{ capitalizeAction(action) }}
+                        </a>
+                    </template>
+                </template>
             </data-table>
             <div id="copy-msg" class="notification is-light" :class="copyMsgClass" v-if="copy_msg !== ''">{{ copy_msg }}</div>
         </div>
@@ -26,9 +35,9 @@ https://vuejs.org/guide/built-ins/teleport.html
 
 <script>
 import DataTable from 'datatables.net-vue3';
-import DataTablesLib from 'datatables.net-bm';
+import DataTablesCore from 'datatables.net-bm';
 
-DataTable.use(DataTablesLib);
+DataTable.use(DataTablesCore);
 
 export default {
     name: 'preIngest',
@@ -40,10 +49,14 @@ export default {
             copy_error: false,
             copy_msg: '',
             columns: [
-                { data: 'Chompb Project' },
-                { data: 'Source' },
-                { data: 'Status' },
-                { data: 'Actions' }
+                { data: 'projectProperties.name', title: 'Chompb Project' },
+                { data: 'projectProperties.projectSource', title: 'Source' },
+                { data: 'status', title: 'Status' },
+                { data: null, title: 'Actions',
+                    render: {
+                        display: '#actions'
+                    }
+                }
             ],
             dataSet: []
         }
@@ -66,43 +79,10 @@ export default {
         },
 
         columnDefs() {
-            const excluded_columns = [3];
-
             return [
-                { orderable: false, targets: excluded_columns },
-                { searchable: false, target: excluded_columns },
-                {
-                    render: (data, type, row) => {
-                        return row.projectProperties.name;
-                    }, targets: 0
-                },
-                {
-                    render: (data, type, row) => {
-                        if (row.projectProperties.projectSource) {
-                            return row.projectProperties.projectSource;
-                        } else {
-                            return "";
-                        }
-                    }, targets: 1
-                },
-                {
-                    render: (data, type, row) => {
-                        return `<span class="is-capitalized">${row.status.replaceAll('_', ' ')}</span>`
-                    }, targets: 2
-                },
-                {
-                    render: (data, type, row) => {
-                        let actions = [`<a id="${row.projectProperties.name}" href="#">Copy Path</a>`];
-                        if (row.allowedActions.length === 0) {
-                            return actions;
-                        }
-                        row.allowedActions.forEach((d) => {
-                            actions.push(`<a class="is-capitalized" href="/admin/${d}">${d.replaceAll('_', ' ')}</a>`);
-                        });
-                        return actions.join(' ');
-                    }, targets: 3
-                }
-            ];
+                { orderable: false, targets: [3] },
+                { searchable: false, target: [3] }
+            ]
         },
 
         copyMsgClass() {
@@ -111,40 +91,46 @@ export default {
     },
 
     methods: {
+        actionPath(action_type, action_name) {
+            return this.$router.push(`/admin/chompb/${action_type}/${action_name}`);
+        },
+
         clearCopyMessage() {
             setTimeout(() => {
                 this.copy_error = false;
                 this.copy_msg = '';
-            }, 5000);
+            }, 4000);
         },
 
-        async copyPath(e) {
-            const project_id = e.target.id;
-            if (project_id === '') {
-                return true;
+        async copyPath(project_path) {
+            try {
+                await navigator.clipboard.writeText(project_path);
+                this.copy_error = false;
+                this.copy_msg = 'Project path copied to the clipboard!';
+            } catch (err) {
+                this.copy_error = true;
+                this.copy_msg = 'Unable to copy project path the to clipboard!';
+                console.error('Failed to copy: ', err);
             }
+            this.clearCopyMessage();
+        },
 
-            const project = this.dataSet.find(d => d.name === project_id)
-            if (project !== undefined) {
-                e.preventDefault();
-
-                try {
-                    await navigator.clipboard.writeText(project.projectPath);
-                    this.copy_error = false;
-                    this.copy_msg = 'Project path copied to the clipboard!';
-                } catch (err) {
-                    this.copy_error = true;
-                    this.copy_msg = 'Unable to copy project path the to clipboard!';
-                    console.error('Failed to copy: ', err);
-                }
-                this.clearCopyMessage();
-            }
+        /**
+         * For some reason the first word in an action doesn't capitalize correctly
+         * using CSS, though subsequent words do. So, just up case the first letter in the string.
+         * @param action
+         * @returns {*}
+         */
+        capitalizeAction(action) {
+            let text = action.replaceAll('_', ' ');
+            return text.charAt(0).toUpperCase() + text.slice(1);
         }
     }
 }
 </script>
 
-<style scoped lang="scss">
+<style lang="scss">
+    /* Seems to be a bug with datatables 2.x that if styles are scoped the import isn't picked up */
     @import 'datatables.net-bm';
 
     #chompb-preingest-ui {

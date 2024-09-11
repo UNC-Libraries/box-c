@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router';
 import modalEditor from "@/components/permissions-editor/modalEditor.vue";
 import preIngest from "@/components/chompb/preIngest.vue";
+import croppingReport from "@/components/chompb/croppingReport.vue";
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -19,6 +20,11 @@ const router = createRouter({
       path: '/admin/chompb',
       name: 'preIngest',
       component: preIngest
+    },
+    {
+      path: '/admin/chompb/cropping_report/:project',
+      name: 'croppingReport',
+      component: croppingReport
     },
   ]
 });

@@ -32,4 +32,14 @@ public class ChompbController {
         AccessGroupSet accessGroups = GroupsThreadStore.getPrincipals();
         return chompbPreIngestService.getProjectLists(accessGroups);
     }
+
+    /**
+     * Until the admin is a full SPA we'll need to set routes here and in the vue-admin-apps router
+     * for each chompb action
+     * @return
+     */
+    @RequestMapping(value = "chompb/cropping_report/{projectName}", method = RequestMethod.GET)
+    public String chompbCroppingReport() {
+        return "report/chompb";
+    }
 }

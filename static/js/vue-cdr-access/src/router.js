@@ -66,6 +66,7 @@ const router = createRouter({
 });
 
 router.beforeEach((to, from) => {
+  console.log('access');
   const store = useAccessStore();
 
   axios.head('/userInformation').then((response) => {
