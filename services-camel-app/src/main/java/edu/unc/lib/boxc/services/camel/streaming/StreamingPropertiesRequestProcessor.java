@@ -14,7 +14,7 @@ import edu.unc.lib.boxc.operations.jms.streaming.StreamingPropertiesRequest;
 import edu.unc.lib.boxc.operations.jms.streaming.StreamingPropertiesRequestSerializationHelper;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import java.io.IOException;
 import java.util.Objects;
