@@ -1,5 +1,6 @@
 package edu.unc.lib.boxc.web.services.rest.exceptions;
 
+import edu.unc.lib.boxc.fcrepo.exceptions.RangeNotSatisfiableException;
 import edu.unc.lib.boxc.model.api.exceptions.InvalidOperationForObjectType;
 import java.io.EOFException;
 
@@ -74,6 +75,13 @@ public class RestResponseEntityExceptionHandler extends ResponseEntityExceptionH
     public ResponseEntity<Object> handleEofException(EOFException ex, WebRequest request) {
         log.debug("Client closed connection to {}", getRequestUri(request), ex);
         return null;
+    }
+
+    @ExceptionHandler(RangeNotSatisfiableException.class)
+    public ResponseEntity<Object> handleRangeNotSatisfiable(RuntimeException ex, WebRequest request) {
+        var rangeValue = request.getHeader(HttpHeaders.RANGE);
+        log.debug("Unsatisfiable range {} requested {}", rangeValue, getRequestUri(request), ex);
+        return handleExceptionInternal(ex, null, new HttpHeaders(), HttpStatus.REQUESTED_RANGE_NOT_SATISFIABLE, request);
     }
 
     @ExceptionHandler(value = { SolrRuntimeException.class })

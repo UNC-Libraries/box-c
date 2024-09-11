@@ -96,6 +96,9 @@ public class FedoraContentService {
             binObj = repositoryObjectLoader.getBinaryObject(dsPid);
         }
 
+        // Make sure the range is valid or will produce a reasonable response from fedora
+        range = correctRangeValue(range, binObj);
+
         response.setHeader(CONTENT_TYPE, binObj.getMimetype());
         String binaryName = binObj.getFilename();
         String filename = binaryName == null ? pid.getId() : binaryName;
@@ -114,6 +117,25 @@ public class FedoraContentService {
             OutputStream outStream = response.getOutputStream();
             IOUtils.copy(binStream, outStream, BUFFER_SIZE);
         }
+    }
+
+    private String correctRangeValue(String range, BinaryObject binObj) {
+        if (range == null) {
+            return null;
+        }
+        var rangeParts = range.split("-");
+        if (rangeParts.length == 2) {
+            var endingRange = rangeParts[1];
+            try {
+                var endingValue = Long.parseLong(endingRange);
+                if (endingValue >= binObj.getFilesize()) {
+                    return rangeParts[0] + "-";
+                }
+            } catch (NumberFormatException e) {
+                LOG.debug("Invalid range ending provided: {}", e.getMessage());
+            }
+        }
+        return range;
     }
 
     public void streamEventLog(PID pid, AccessGroupSet principals, boolean asAttachment,

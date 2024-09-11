@@ -36,7 +36,7 @@ public class DownloadImageService {
      * @return a response entity which contains headers and content of the access copy image
      * @throws IOException
      */
-    public ResponseEntity<InputStreamResource> streamImage(ContentObjectRecord contentObjectRecord, String size)
+    public ResponseEntity<InputStreamResource> streamImage(ContentObjectRecord contentObjectRecord, String size, boolean attachment)
             throws IOException {
         if (contentObjectRecord.getDatastreamObject(DatastreamType.JP2_ACCESS_COPY.getId()) == null) {
             return ResponseEntity.notFound().build();
@@ -47,9 +47,10 @@ public class DownloadImageService {
         InputStream input = new URL(url).openStream();
         InputStreamResource resource = new InputStreamResource(input);
         String filename = getDownloadFilename(contentObjectRecord, size);
+        var type = attachment ? "attachment" : "inline";
 
         return ResponseEntity.ok()
-                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + filename)
+                .header(HttpHeaders.CONTENT_DISPOSITION, type + "; filename=" + filename)
                 .contentType(MediaType.IMAGE_JPEG)
                 .body(resource);
     }

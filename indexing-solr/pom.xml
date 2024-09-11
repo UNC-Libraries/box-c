@@ -97,8 +97,7 @@
         </dependency>
         <dependency>
             <groupId>org.apache.solr</groupId>
-            <artifactId>solr-dataimporthandler</artifactId>
-            <scope>test</scope>
+            <artifactId>solr-api</artifactId>
         </dependency>
         <dependency>
             <groupId>org.apache.solr</groupId>

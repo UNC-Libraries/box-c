@@ -79,8 +79,7 @@
         <fcrepo.client.version>5.0.0</fcrepo.client.version>
         <mock.server.version>5.4.1</mock.server.version>
         <awaitility.version>4.0.3</awaitility.version>
-        <!-- Stuck on this version due to jetty tie-ins, can upgrade when solr uses newer jetty versions -->
-        <wiremock.version>2.32.0</wiremock.version>
+        <wiremock.version>2.35.2</wiremock.version>
         
         <jackson.version>2.13.2</jackson.version>
         <jackson.databind.version>2.13.4.2</jackson.databind.version>
@@ -96,7 +95,7 @@
         
         <httpclient.version>4.5.13</httpclient.version>
         <commons-compress.version>1.26.0</commons-compress.version>
-        <commons-codec.version>1.11</commons-codec.version>
+        <commons-codec.version>1.17.1</commons-codec.version>
         <commons-io.version>2.7</commons-io.version>
         <commons-csv.version>1.6</commons-csv.version>
         <commons-lang3.version>3.8.1</commons-lang3.version>
@@ -126,7 +125,7 @@
         <jsp-api.version>2.3.6</jsp-api.version>
 
         <jedis.version>3.10.0</jedis.version>
-        <solr.version>8.10.1</solr.version>
+        <solr.version>9.6.1</solr.version>
         <metrics.version>5.0.0</metrics.version>
         <jena.version>4.4.0</jena.version>
 
@@ -694,7 +693,7 @@
             </dependency>
             <dependency>
                 <groupId>com.github.tomakehurst</groupId>
-                <artifactId>wiremock-jre8</artifactId>
+                <artifactId>wiremock-jre8-standalone</artifactId>
                 <version>${wiremock.version}</version>
                 <scope>test</scope>
             </dependency>
@@ -938,9 +937,8 @@
             </dependency>
             <dependency>
                 <groupId>org.apache.solr</groupId>
-                <artifactId>solr-dataimporthandler</artifactId>
+                <artifactId>solr-api</artifactId>
                 <version>${solr.version}</version>
-                <scope>test</scope>
             </dependency>
             <dependency>
                 <groupId>org.apache.solr</groupId>

@@ -38,9 +38,8 @@ public class BaseEmbeddedSolrTest extends Assertions {
         dataDir.mkdir();
 
         System.setProperty("solr.data.dir", dataDir.getAbsolutePath());
-        container = CoreContainer.createAndLoad(Paths.get("../etc/solr-config"),
-                Paths.get("../etc/solr-config/solr.xml"));
-        container.load();
+        container = CoreContainer.createAndLoad(Paths.get("../etc/solr-config").toAbsolutePath(),
+                Paths.get("../etc/solr-config/solr.xml").toAbsolutePath());
 
         server = new EmbeddedSolrServer(container, "access");
 

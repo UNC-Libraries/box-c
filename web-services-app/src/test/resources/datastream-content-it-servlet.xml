@@ -21,6 +21,10 @@
         <property name="accessControlService" ref="aclService" />
     </bean>
 
+    <bean id="downloadImageService" class="edu.unc.lib.boxc.web.services.processing.DownloadImageService">
+        <property name="iiifBasePath" value="http://localhost:46887/iiif/v3/" />
+    </bean>
+
     <bean id="aclService" class="org.mockito.Mockito" factory-method="mock">
         <constructor-arg type="java.lang.Class" value="edu.unc.lib.boxc.auth.fcrepo.services.AccessControlServiceImpl" />
     </bean>

@@ -226,7 +226,7 @@
     </dependency>
     <dependency>
         <groupId>com.github.tomakehurst</groupId>
-        <artifactId>wiremock-jre8</artifactId>
+        <artifactId>wiremock-jre8-standalone</artifactId>
     </dependency>
 
     <dependency>
@@ -280,10 +280,6 @@
     <dependency>
         <groupId>org.junit.jupiter</groupId>
         <artifactId>junit-jupiter-api</artifactId>
-    </dependency>
-    <dependency>
-        <groupId>com.github.tomakehurst</groupId>
-        <artifactId>wiremock-jre8</artifactId>
     </dependency>
     </dependencies>
 

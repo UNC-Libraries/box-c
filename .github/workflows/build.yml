@@ -47,6 +47,17 @@ jobs:
       run: |
         docker run -d --rm -p 43030:3030 atomgraph/fuseki --mem /test
 
+    - name: Make directory for solr config
+      run: mkdir -p /tmp/solr-config
+
+    # Need to copy the config is outside of the source path, otherwise it produces permission conflicts
+    - name: Copy Solr Config into container
+      run: sudo cp -r ${{ github.workspace }}/etc/solr-config/* /tmp/solr-config/
+
+    - name: Run solr container as command to trigger core creation
+      run: |
+        docker run -v /tmp/solr-config:/solr_config -d --rm -p 48983:8983 solr:9 solr-precreate access /solr_config/access
+
     - name: Checkout submodules
       run: git submodule update --init --recursive
 

@@ -118,8 +118,7 @@
       </dependency>
       <dependency>
           <groupId>com.github.tomakehurst</groupId>
-          <artifactId>wiremock-jre8</artifactId>
-          <scope>test</scope>
+          <artifactId>wiremock-jre8-standalone</artifactId>
       </dependency>
       <dependency>
           <groupId>edu.unc.lib.cdr</groupId>
