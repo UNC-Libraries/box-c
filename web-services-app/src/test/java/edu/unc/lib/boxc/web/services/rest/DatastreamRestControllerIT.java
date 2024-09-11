@@ -407,7 +407,7 @@ public class DatastreamRestControllerIT extends AbstractAPIIT {
         fileObj.addOriginalFile(contentPath.toUri(), "file.txt", "text/plain", null, null);
 
         mvc.perform(get("/file/" + filePid.getId())
-                        .header(RANGE,"bytes=0-900000"))
+                        .header(RANGE,"bytes=900000-900001"))
                 .andExpect(status().isRequestedRangeNotSatisfiable())
                 .andReturn();
     }

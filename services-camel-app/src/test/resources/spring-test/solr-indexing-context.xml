@@ -116,9 +116,9 @@
         <constructor-arg value="../etc/solr-config/solr.xml" />
     </bean>
 
-    <bean id="coreContainer" class="org.apache.solr.core.CoreContainer" factory-method="createAndLoad" init-method="load">
-        <constructor-arg value="#{solrHomePath.toPath()}" />
-        <constructor-arg value="#{solrConfigPath.toPath()}" />
+    <bean id="coreContainer" class="org.apache.solr.core.CoreContainer" factory-method="createAndLoad" destroy-method="shutdown">
+        <constructor-arg value="#{solrHomePath.toPath().toAbsolutePath()}" />
+        <constructor-arg value="#{solrConfigPath.toPath().toAbsolutePath()}" />
     </bean>
     
     <bean id="solrSearchService" class="edu.unc.lib.boxc.search.solr.services.SolrSearchService">
