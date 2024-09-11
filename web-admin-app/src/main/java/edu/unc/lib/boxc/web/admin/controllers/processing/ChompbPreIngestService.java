@@ -19,7 +19,7 @@ public class ChompbPreIngestService {
             return null;
         }
 
-        String output = null;
+        StringBuilder output = new StringBuilder();
 
         try {
             ProcessBuilder builder = new ProcessBuilder("/usr/local/bin/chompb", "-w", "/opt/data/cdm_migrations", "list_projects");
@@ -30,7 +30,7 @@ public class ChompbPreIngestService {
             String line;
 
             while ((line = br.readLine()) != null) {
-                output = line;
+                output.append(line);
             }
             if (process.waitFor() != 0) {
                 throw new Exception("Command exited with status code " + process.waitFor() + ": " + output);
@@ -39,7 +39,7 @@ public class ChompbPreIngestService {
             return e.getMessage();
         }
 
-        return output;
+        return output.toString();
     }
 
     public void setGlobalPermissionEvaluator(GlobalPermissionEvaluator globalPermissionEvaluator) {
