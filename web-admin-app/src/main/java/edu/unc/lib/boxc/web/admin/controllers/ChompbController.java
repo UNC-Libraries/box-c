@@ -27,7 +27,7 @@ public class ChompbController {
         return "report/chompb";
     }
 
-    @RequestMapping(value = "chompb/project", method = RequestMethod.GET, produces = APPLICATION_JSON_VALUE)
+    @RequestMapping(value = "chompb/listProjects", method = RequestMethod.GET, produces = APPLICATION_JSON_VALUE)
     public @ResponseBody String chompbProjectsJSON() {
         AccessGroupSet accessGroups = GroupsThreadStore.getPrincipals();
         return chompbPreIngestService.getProjectLists(accessGroups);

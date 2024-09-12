@@ -7,13 +7,21 @@ import edu.unc.lib.boxc.auth.api.services.GlobalPermissionEvaluator;
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.nio.file.Path;
 
 /**
  * @author lfarrell
  */
 public class ChompbPreIngestService {
     private GlobalPermissionEvaluator globalPermissionEvaluator;
+    private Path baseProjectsPath;
 
+    /**
+     * List all of the chompb projects in the base projects path
+     *
+     * @param principals
+     * @return
+     */
     public String getProjectLists(AccessGroupSet principals) {
         if (!globalPermissionEvaluator.hasGlobalPermission(principals, Permission.ingest)) {
             return null;
@@ -22,7 +30,7 @@ public class ChompbPreIngestService {
         StringBuilder output = new StringBuilder();
 
         try {
-            ProcessBuilder builder = new ProcessBuilder("/usr/local/bin/chompb", "-w", "/opt/data/cdm_migrations", "list_projects");
+            ProcessBuilder builder = new ProcessBuilder("chompb", "-w", baseProjectsPath.toAbsolutePath().toString(), "list_projects");
             builder.redirectErrorStream(true);
             Process process = builder.start();
             InputStream is = process.getInputStream();
@@ -30,7 +38,7 @@ public class ChompbPreIngestService {
             String line;
 
             while ((line = br.readLine()) != null) {
-                output.append(line);
+                output.append(line).append("\n");
             }
             if (process.waitFor() != 0) {
                 throw new Exception("Command exited with status code " + process.waitFor() + ": " + output);
@@ -44,5 +52,9 @@ public class ChompbPreIngestService {
 
     public void setGlobalPermissionEvaluator(GlobalPermissionEvaluator globalPermissionEvaluator) {
         this.globalPermissionEvaluator = globalPermissionEvaluator;
+    }
+
+    public void setBaseProjectsPath(Path baseProjectsPath) {
+        this.baseProjectsPath = baseProjectsPath;
     }
 }
