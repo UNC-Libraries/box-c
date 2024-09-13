@@ -7,8 +7,7 @@ https://vuejs.org/guide/built-ins/teleport.html
     <teleport to="#chompb-admin">
         <div id="chompb-preingest-ui">
             <h2 class="chompb-ui has-text-weight-semibold is-size-3 has-text-centered">Pre-ingest Projects</h2>
-            <data-table v-if="dataSet.length > 0" @click="copyPath($event)" id="chompb-projects" class="table is-striped is-bordered is-fullwidth"
-                        :data="dataSet"
+            <data-table @click="copyPath($event)" id="chompb-projects" class="table is-striped is-bordered is-fullwidth"
                         :columns="columns"
                         :options="tableOptions">
                 <thead>
@@ -20,7 +19,6 @@ https://vuejs.org/guide/built-ins/teleport.html
                 </tr>
                 </thead>
             </data-table>
-            <p v-else>There are no pre-ingest projects to show</p>
             <div id="copy-msg" class="notification is-light" :class="copyMsgClass" v-if="copy_msg !== ''">{{ copy_msg }}</div>
         </div>
     </teleport>
@@ -29,8 +27,6 @@ https://vuejs.org/guide/built-ins/teleport.html
 <script>
 import DataTable from 'datatables.net-vue3';
 import DataTablesLib from 'datatables.net-bm';
-import axios from "axios";
-import isEmpty from "lodash.isempty";
 
 DataTable.use(DataTablesLib);
 
@@ -56,7 +52,13 @@ export default {
     computed: {
         tableOptions() {
             return {
-                ajax: '/admin/chompb/project',
+                ajax: {
+                    url: '/admin/chompb/listProjects',
+                    dataSrc: (data) => {
+                        this.dataSet = data;
+                        return data;
+                    }
+                },
                 bAutoWidth: false,
                 columnDefs: this.columnDefs,
                 language: { search: '', searchPlaceholder: 'Filter projects' }
@@ -71,12 +73,16 @@ export default {
                 { searchable: false, target: excluded_columns },
                 {
                     render: (data, type, row) => {
-                        return row.name;
+                        return row.projectProperties.name;
                     }, targets: 0
                 },
                 {
                     render: (data, type, row) => {
-                        return row.projectSource;
+                        if (row.projectProperties.projectSource) {
+                            return row.projectProperties.projectSource;
+                        } else {
+                            return "";
+                        }
                     }, targets: 1
                 },
                 {
@@ -86,7 +92,7 @@ export default {
                 },
                 {
                     render: (data, type, row) => {
-                        let actions = [`<a id="${row.name}" href="#">Copy Path</a>`];
+                        let actions = [`<a id="${row.projectProperties.name}" href="#">Copy Path</a>`];
                         if (row.allowedActions.length === 0) {
                             return actions;
                         }
@@ -105,40 +111,6 @@ export default {
     },
 
     methods: {
-        retrieveProjects() {
-            axios.get('/admin/chompb/project').then((response) => {
-               // if (!isEmpty(response.data)) {
-                    this.dataSet = [{
-                        "name": "file_source_test",
-                        "cdmCollectionId": null,
-                        "createdDate": "2024-07-16T15:20:08.579384Z",
-                        "creator": "bbpennel",
-                        "exportedDate": null,
-                        "indexedDate": "2024-08-15T12:38:28.662654Z",
-                        "destinationsGeneratedDate": null,
-                        "sourceFilesUpdatedDate": "2024-08-14T17:06:34.182417Z",
-                        "accessFilesUpdatedDate": null,
-                        "groupMappingsUpdatedDate": "2024-08-14T17:42:49.626664Z",
-                        "groupMappingsSyncedDate": null,
-                        "descriptionsExpandedDate": null,
-                        "sipsGeneratedDate": null,
-                        "sipsSubmitted": [],
-                        "hookId": null,
-                        "collectionNumber": null,
-                        "cdmEnvironmentId": null,
-                        "bxcEnvironmentId": "test",
-                        "projectSource": "files",
-                        "status": "sources_mapped",
-                        "allowedActions": ["color_bar_crop", "color_bar_report"],
-                        "projectPath": "/opt/data/cdm_migrations/file_source_test"
-
-                    }]
-              //  }
-            }).catch((error) => {
-                console.log(error);
-            });
-        },
-
         clearCopyMessage() {
             setTimeout(() => {
                 this.copy_error = false;
@@ -168,10 +140,6 @@ export default {
                 this.clearCopyMessage();
             }
         }
-    },
-
-    beforeMount() {
-       // this.retrieveProjects();
     }
 }
 </script>
