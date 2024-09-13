@@ -35,7 +35,7 @@ import edu.unc.lib.boxc.web.services.processing.ExportCsvService;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVRecord;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.rdf.model.Model;
 import org.apache.solr.client.solrj.embedded.EmbeddedSolrServer;
 import org.junit.jupiter.api.BeforeEach;
