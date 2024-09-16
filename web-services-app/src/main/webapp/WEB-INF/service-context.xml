@@ -299,6 +299,7 @@
         <property name="aclService" ref="aclService" />
         <property name="messageSender" ref="runEnhancementMessageSender" />
         <property name="sourceImagesDir" value="${sourceImages.dir}" />
+        <property name="tempStoragePath" value="${thumbnail.temp.dir}" />
     </bean>
   
   <bean id="exportXmlJmsTemplate" class="org.springframework.jms.core.JmsTemplate">

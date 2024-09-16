@@ -4,6 +4,7 @@ import static edu.unc.lib.boxc.model.api.xml.JDOMNamespaceUtil.ATOM_NS;
 import static edu.unc.lib.boxc.model.api.xml.JDOMNamespaceUtil.CDR_MESSAGE_NS;
 import static edu.unc.lib.boxc.model.api.xml.NamespaceConstants.CDR_MESSAGE_AUTHOR_URI;
 
+import java.nio.file.Path;
 import java.util.Collection;
 import java.util.UUID;
 
@@ -318,6 +319,28 @@ public class OperationsMessageSender extends MessageSender {
         Document msg = contentEl.getDocument();
         sendMessage(msg);
         LOG.debug("sent set-as-primary-object operation JMS message using JMS template: {}", this.getJmsTemplate());
+
+        return getMessageId(msg);
+    }
+
+    /**
+     * Sends a message to process an uploaded thumbnail image
+     * @param userid id of user who triggered the operation
+     * @param pid object that is getting the thumbnail
+     * @param tempStoragePath path where image is temporarily stored
+     * @param mimetype mimetype of the original image
+     * @return id of operation message
+     */
+    public String sendMakeThumbnailJP2Operation(String userid, PID pid, Path tempStoragePath, String mimetype) {
+        Element contentEl = createAtomEntry(userid, pid, CDRActions.MAKE_THUMBNAILS);
+        var thumbnails = new Element(CDRActions.MAKE_THUMBNAILS.getName(), CDR_MESSAGE_NS);
+        thumbnails.addContent(new Element("tempStoragePath", CDR_MESSAGE_NS).setText(tempStoragePath.toString()));
+        thumbnails.addContent(new Element("mimetype", CDR_MESSAGE_NS).setText(mimetype));
+
+        contentEl.addContent(thumbnails);
+        var msg = contentEl.getDocument();
+        sendMessage(msg);
+        LOG.debug("sent make-thumbnail-JP2 operation JMS message using JMS template: {}", this.getJmsTemplate());
 
         return getMessageId(msg);
     }

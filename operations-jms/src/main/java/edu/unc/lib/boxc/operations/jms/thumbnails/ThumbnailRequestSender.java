@@ -16,6 +16,7 @@ import java.io.IOException;
 public class ThumbnailRequestSender extends MessageSender {
     private static final Logger log = LoggerFactory.getLogger(ThumbnailRequestSender.class);
     private static final ObjectWriter MAPPER = new ObjectMapper().writerFor(ThumbnailRequest.class);
+    private static final ObjectWriter IMPORT_MAPPER = new ObjectMapper().writerFor(ImportThumbnailRequest.class);
 
     /**
      * Send a ThumbnailRequest to the configured JMS queue
@@ -27,5 +28,17 @@ public class ThumbnailRequestSender extends MessageSender {
         sendMessage(messageBody);
         log.info("Job to {} thumbnail has been queued for {} with file {}",
                 request.getAction(), request.getAgent().getUsername(), request.getFilePidString());
+    }
+
+    /**
+     * Send an ImportThumbnailRequest to the configured JMS queue
+     * @param request
+     * @throws IOException
+     */
+    public void sendToQueue(ImportThumbnailRequest request) throws IOException {
+        String messageBody = IMPORT_MAPPER.writeValueAsString(request);
+        sendMessage(messageBody);
+        log.info("Job to import thumbnail has been queued for {} with object {}",
+                request.getAgent().getUsername(), request.getPidString());
     }
 }

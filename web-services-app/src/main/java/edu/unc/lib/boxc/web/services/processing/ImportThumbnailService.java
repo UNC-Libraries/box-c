@@ -2,8 +2,9 @@ package edu.unc.lib.boxc.web.services.processing;
 
 import static edu.unc.lib.boxc.model.api.ids.RepositoryPathConstants.HASHED_PATH_DEPTH;
 import static edu.unc.lib.boxc.model.api.ids.RepositoryPathConstants.HASHED_PATH_SIZE;
+import static edu.unc.lib.boxc.model.api.xml.JDOMNamespaceUtil.ATOM_NS;
+import static edu.unc.lib.boxc.model.api.xml.JDOMNamespaceUtil.CDR_MESSAGE_NS;
 import static edu.unc.lib.boxc.model.fcrepo.ids.RepositoryPaths.idToPath;
-import static edu.unc.lib.boxc.operations.jms.RunEnhancementsMessageHelpers.makeEnhancementOperationBody;
 import static org.apache.commons.io.FileUtils.copyInputStreamToFile;
 import static org.apache.commons.lang3.StringUtils.containsIgnoreCase;
 
@@ -13,7 +14,10 @@ import java.io.InputStream;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
+import edu.unc.lib.boxc.operations.jms.JMSMessageUtil;
+import edu.unc.lib.boxc.operations.jms.thumbnails.ThumbnailRequestSender;
 import org.jdom2.Document;
+import org.jdom2.Element;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -34,8 +38,9 @@ public class ImportThumbnailService {
 
     private String sourceImagesDir;
     private Path storagePath;
+    private Path tempStoragePath;
     private AccessControlService aclService;
-    private MessageSender messageSender;
+    private ThumbnailRequestSender messageSender;
 
     public void init() {
         storagePath = Paths.get(sourceImagesDir);
@@ -57,8 +62,8 @@ public class ImportThumbnailService {
         File finalLocation = storagePath.resolve(thumbnailBasePath).resolve(uuid).toFile();
         copyInputStreamToFile(importStream, finalLocation);
 
-        Document msg = makeEnhancementOperationBody(agent.getUsername(), pid, true);
-        messageSender.sendMessage(msg);
+        
+        messageSender.sendToQueue();
 
         log.info("Job to to add thumbnail to object {} has been queued by {}",
                 uuid, agent.getUsername());
@@ -70,6 +75,10 @@ public class ImportThumbnailService {
 
     public void setMessageSender(MessageSender messageSender) {
         this.messageSender = messageSender;
+    }
+
+    public void setTempStoragePath(Path tempStoragePath) {
+        this.tempStoragePath = tempStoragePath;
     }
 
     public void setSourceImagesDir(String sourceImagesDir) {
