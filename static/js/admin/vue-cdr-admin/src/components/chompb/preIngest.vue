@@ -8,7 +8,6 @@ https://vuejs.org/guide/built-ins/teleport.html
         <div id="chompb-preingest-ui">
             <h2 class="chompb-ui has-text-weight-semibold is-size-3 has-text-centered">Pre-ingest Projects</h2>
             <data-table @click="copyPath($event)" id="chompb-projects" class="table is-striped is-bordered is-fullwidth"
-                        :data="dataSet"
                         :columns="columns"
                         :options="tableOptions">
                 <thead>
@@ -53,7 +52,13 @@ export default {
     computed: {
         tableOptions() {
             return {
-                //serverSide: true,
+                ajax: {
+                    url: '/admin/chompb/listProjects',
+                    dataSrc: (data) => {
+                        this.dataSet = data;
+                        return data;
+                    }
+                },
                 bAutoWidth: false,
                 columnDefs: this.columnDefs,
                 language: { search: '', searchPlaceholder: 'Filter projects' }
@@ -68,12 +73,16 @@ export default {
                 { searchable: false, target: excluded_columns },
                 {
                     render: (data, type, row) => {
-                        return row.name;
+                        return row.projectProperties.name;
                     }, targets: 0
                 },
                 {
                     render: (data, type, row) => {
-                        return row.projectSource;
+                        if (row.projectProperties.projectSource) {
+                            return row.projectProperties.projectSource;
+                        } else {
+                            return "";
+                        }
                     }, targets: 1
                 },
                 {
@@ -83,7 +92,7 @@ export default {
                 },
                 {
                     render: (data, type, row) => {
-                        let actions = [`<a id="${row.name}" href="#">Copy Path</a>`];
+                        let actions = [`<a id="${row.projectProperties.name}" href="#">Copy Path</a>`];
                         if (row.allowedActions.length === 0) {
                             return actions;
                         }
@@ -141,6 +150,11 @@ export default {
     #chompb-preingest-ui {
         width: 96%;
         margin: 25px auto;
+    }
+
+    p {
+        text-align: center;
+        margin-top: 50px;
     }
 
     #copy-msg {
