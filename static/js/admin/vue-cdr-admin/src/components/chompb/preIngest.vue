@@ -50,7 +50,8 @@ export default {
             copy_msg: '',
             columns: [
                 { data: 'projectProperties.name', title: 'Chompb Project' },
-                { data: 'projectProperties.projectSource', title: 'Source' },
+                { data: 'projectProperties.projectSource', title: 'Source',
+                    render: (data, type, row) => row.projectProperties.projectSource || '' },
                 { data: 'status', title: 'Status' },
                 { data: null, title: 'Actions',
                     render: {

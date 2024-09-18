@@ -81,7 +81,36 @@ export default {
                 show_all: false,
                 clear_all: false
             },
-            dataSet: []
+            dataSet: [
+                {
+                    "original": "/mnt/locos/ncc/nccpa/70103_wallace_wpa/70103_pa0001/70103_pa0001_0001.tif",
+                    "pred_class": "1",
+                    "pred_conf": "0.9996",
+                    "problem": false,
+                    "image": "images/mnt/locos/ncc/nccpa/70103_wallace_wpa/70103_pa0001/70103_pa0001_0001.tif.jpg"
+                },
+                {
+                    "original": "/mnt/locos/ncc/nccpa/70103_wallace_wpa/70103_pa0001/70103_pa0001_0068.tif",
+                    "pred_class": "1",
+                    "pred_conf": "0.9925",
+                    "problem": true,
+                    "image": "images/mnt/locos/ncc/nccpa/70103_wallace_wpa/70103_pa0001/70103_pa0001_0068.tif.jpg"
+                },
+                {
+                    "original": "/mnt/locos/ncc/nccpa/P0082_mccauley/P0082_1-6_53.tif",
+                    "pred_class": "0",
+                    "pred_conf": "0.0000",
+                    "problem": false,
+                    "image": "images/mnt/locos/ncc/nccpa/P0082_mccauley/P0082_1-6_53.tif.jpg"
+                },
+                {
+                    "original": "/mnt/locos/ncc/nccpa/P0082_mccauley/P082_1_6_44.tif",
+                    "pred_class": "0",
+                    "pred_conf": "0.0000",
+                    "problem": false,
+                    "image": "images/mnt/locos/ncc/nccpa/P0082_mccauley/P082_1_6_44.tif.jpg"
+                }
+            ]
         }
     },
 
