@@ -11,7 +11,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import edu.unc.lib.boxc.auth.api.Permission;
-import edu.unc.lib.boxc.auth.api.models.AgentPrincipals;
 import edu.unc.lib.boxc.auth.api.services.AccessControlService;
 import edu.unc.lib.boxc.common.metrics.TimerFactory;
 import edu.unc.lib.boxc.model.api.ResourceType;
@@ -64,6 +63,7 @@ public class RunEnhancementsService {
             var agent = request.getAgent();
             var objectPids = request.getPids();
             var force = request.isForce();
+            var recursive = request.isRecursive();
             for (String objectPid : objectPids) {
                 PID pid = PIDs.get(objectPid);
 
@@ -72,7 +72,7 @@ public class RunEnhancementsService {
 
                 LOG.debug("sending solr update message for {} of type runEnhancements", pid);
 
-                if (!(repositoryObjectLoader.getRepositoryObject(pid) instanceof FileObject)) {
+                if (recursive && !(repositoryObjectLoader.getRepositoryObject(pid) instanceof FileObject)) {
                     SearchState searchState = new SearchState();
                     searchState.addFacet(new GenericFacet(SearchFieldKey.RESOURCE_TYPE, ResourceType.File.name()));
                     searchState.setResultFields(resultsFieldList);
@@ -104,7 +104,7 @@ public class RunEnhancementsService {
                         LOG.debug("Queued {} out of {} items for enhancements", count, totalResults);
                     } while(count < totalResults);
                 } else {
-                    LOG.debug("Queueing a file object for enhancements: {}", pid);
+                    LOG.debug("Queueing an object for enhancements: {}", pid);
                     SimpleIdRequest searchRequest = new SimpleIdRequest(pid, agent.getPrincipals());
                     ContentObjectRecord metadata = queryLayer.getObjectById(searchRequest);
                     createMessage(metadata, agent.getUsername(), force);

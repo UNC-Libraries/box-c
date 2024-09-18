@@ -11,6 +11,7 @@ public class RunEnhancementsRequest {
     private List<String> pids;
     private boolean force;
     private AgentPrincipals agent;
+    private boolean recursive;
 
     public List<String> getPids() {
         return pids;
@@ -34,5 +35,13 @@ public class RunEnhancementsRequest {
 
     public void setAgent(AgentPrincipals agent) {
         this.agent = agent;
+    }
+
+    public boolean isRecursive() {
+        return recursive;
+    }
+
+    public void setRecursive(boolean recursive) {
+        this.recursive = recursive;
     }
 }
