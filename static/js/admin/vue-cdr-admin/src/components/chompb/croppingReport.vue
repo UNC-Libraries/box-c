@@ -4482,12 +4482,12 @@ export default {
                 { searchable: false, target: excluded_columns },
                 {
                     render: (data, type, row) => {
-                        return `<img src="${row.image}" alt="" role="presentation" />`;
+                        return `<img src="${row.normalized_path}" alt="" role="presentation" />`;
                     }, targets: 0
                 },
                 {
                     render: (data, type, row) => {
-                        return row.original;
+                        return row.original_path;
                     }, targets: 1
                 },
                 {
@@ -4507,7 +4507,7 @@ export default {
                 },
                 {
                     render: (data, type, row) => {
-                        return `<button class="button is-outlined incorrect" value="incorrect" data-path="${row.original}"` + `
+                        return `<button class="button is-outlined incorrect" value="incorrect" data-path="${row.original_path}"` + `
                                 data-predicted="${row.pred_class}">Mark incorrect</button>`;
                     }, targets: 5
                 }
@@ -4552,7 +4552,7 @@ export default {
         markAsProblem(e) {
             if (e.target.classList.contains('incorrect')) {
                 const image_path = e.target.dataset.path;
-                const marked_as_problem = this.problems.findIndex(d => d.path === image_path);
+                const marked_as_problem = this.problems.findIndex(d => d.original_path === image_path);
 
                 if (marked_as_problem === -1) {
                     this.problems.push({
