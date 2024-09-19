@@ -12,6 +12,8 @@
     "axios": "^1.7.7",
     "datatables.net": "^2.1.6",
     "datatables.net-bm": "^2.1.6",
+    "datatables.net-searchpanes-bm": "^2.3.2",
+    "datatables.net-select-bm": "^2.1.0",
     "datatables.net-vue3": "^3.0.2",
     "date-fns": "^3.6.0",
     "lodash.clonedeep": "^4.5.0",
