@@ -15,24 +15,6 @@
                     </a>
                 </span>
             </div>
-            <div class="columns">
-                <div class="column is-half">Filters active - {{ active_filters.length }}</div>
-                <div class="column is-half">
-                    <div class="buttons has-addons pull-right" @click="setBulkActions($event)">
-                        <span class="button is-outlined" id="collapse_all">Collapse All</span>
-                        <span class="button is-outlined" id="show_all">Show All</span>
-                        <span class="button is-outlined" id="clear_all">Clear All</span>
-                    </div>
-                </div>
-            </div>
-            <div class="columns">
-                <div class="column is-half">
-                   <cropping-actions :bulk-actions="bulk_actions" action-type="class" :cropping-data="dataSet"></cropping-actions>
-                </div>
-                <div class="column is-half">
-                    <cropping-actions class="end" :bulk-actions="bulk_actions" action-type="problem" :cropping-data="dataSet"></cropping-actions>
-                </div>
-            </div>
             <data-table @click.prevent="markAsProblem($event)" class="table is-striped is-bordered is-fullwidth"
                         :data="dataSet"
                         :columns="columns"
@@ -53,16 +35,17 @@
 </template>
 
 <script>
-import croppingActions from "@/components/chompb/croppingActions.vue";
 import DataTable from 'datatables.net-vue3';
 import DataTablesLib from 'datatables.net-bm';
+import 'datatables.net-searchpanes-bm';
+import 'datatables.net-select-bm'
 
 DataTable.use(DataTablesLib);
 
 export default {
     name: 'croppingReport',
 
-    components: {croppingActions, DataTable},
+    components: {DataTable},
 
     data() {
         return {
@@ -74,13 +57,7 @@ export default {
                 {data: 'Problem'},
                 {data: ''}
             ],
-            active_filters: [],
             problems: [],
-            bulk_actions: {
-                collapse_all: false,
-                show_all: false,
-                clear_all: false
-            },
             dataSet: []
         }
     },
@@ -89,7 +66,23 @@ export default {
         tableOptions() {
             return {
                 columnDefs: this.columnDefs,
-                language: {search: '', searchPlaceholder: 'Search'},
+                searching: true,
+                layout: {
+                    top1: 'searchPanes',
+                    topStart: 'info',
+                    topEnd: {
+                        search: {
+                            placeholder: 'Search'
+                        }
+                    }
+                },
+                searchPanes: {
+                    viewTotal: true,
+                    columns: [2, 4],
+                    layout: 'columns-2',
+                    initCollapsed: true
+                },
+                language: { search: '' },
                 order: [[1, 'asc']]
             }
         },
@@ -139,8 +132,7 @@ export default {
             csvContent += this.dataSet.map(d => {
                 return `${d.original},${d.image},${d.pred_class},${d.pred_conf}`;
             }).join("\n");
-            let data = new Blob([csvContent]);
-            return  URL.createObjectURL(data);
+            return  this.downloadResponse(csvContent);
         },
 
         downloadProblems() {
@@ -148,22 +140,15 @@ export default {
             csvContent += this.problems.map(d => {
                 return `${d.path},${d.predicted},${d.predicted === '1' ? '0' : '1'}`
             }).join("\n");
-            let data = new Blob([csvContent]);
-            return  URL.createObjectURL(data);
+            return  this.downloadResponse(csvContent);
         }
     },
 
     methods: {
-        setBulkActions(e) {
-            let action = e.target.id;
-            this.bulk_actions[action] = !this.bulk_actions[action];
-            if (action === 'collapse_all') {
-                this.bulk_actions.show_all = false;
-            } else if (action === 'show_all') {
-                this.bulk_actions.collapse_all = false;
-            }
+        downloadResponse(csv) {
+            let data = new Blob([csv]);
+            return URL.createObjectURL(data);
         },
-
         /**
          * We can't make updating button classes in the table reactive, so update them as we add/remove items from
          * the problem bin
@@ -193,30 +178,39 @@ export default {
 </script>
 
 <style lang="scss">
-    /* Seems to be a bug with datatables 2.x that if styles are scoped the import isn't picked up */
-    @import 'datatables.net-bm';
+/* Seems to be a bug with datatables 2.x that if styles are scoped the import isn't picked up */
+@import 'datatables.net-bm';
+@import 'datatables.net-searchpanes-bm';
+@import 'datatables.net-select-bm';
 
-    .cropping-report {
-        width: 96%;
-        margin: auto;
+.cropping-report {
+    width: 96%;
+    margin: auto;
 
-        h2 {
-            margin: 25px;
-        }
+    div.dtsp-panesContainer {
+        margin-bottom: 2.5rem;
+        margin-left: 0;
+        margin-right: 0;
+        width: 100%;
+    }
 
-        .download {
+    h2 {
+        margin: 25px;
+    }
+
+    .download {
+        text-decoration: none;
+        &:hover,
+        &:focus {
             text-decoration: none;
-            &:hover,
-            &:focus {
-                text-decoration: none;
-            }
-            color: black;
         }
+        color: black;
+    }
 
-        .is-success {
-            .download {
-                color: white;
-            }
+    .is-success {
+        .download {
+            color: white;
         }
     }
+}
 </style>
