@@ -30,8 +30,12 @@ define('RunEnhancementsBatchAction', [ 'jquery', 'AbstractBatchAction', "tpl!../
 		} else {
 			title = "Run enhancements on " + this.targets.length + " objects";
 		}
-		
-		var form = runEnhancementsTemplate();
+
+		var targetIds = "";
+		for (var index in this.targets) {
+			targetIds += this.targets[index].getPid() + "\n";
+		}
+		var form = runEnhancementsTemplate({ targetIds : targetIds });
 		this.dialog = $("<div class='containingDialog'>" + form + "</div>");
 		this.dialog.dialog({
 			autoOpen: true,
@@ -44,12 +48,11 @@ define('RunEnhancementsBatchAction', [ 'jquery', 'AbstractBatchAction', "tpl!../
 		
 		this.$form.submit(function(e){
 			var force = document.getElementById('run_enhancements_force').checked;
+			var recursive = document.getElementById('run_enhancements_recursive').checked;
+			var targetIdsString = document.getElementById('run_enhancements_ids').value;
 
-			var pids = [];
-			for (var index in self.targets) {
-				pids.push(self.targets[index].getPid());
-			}
-			
+			var pids = targetIdsString.split("\n").map((id) => id.trim()).filter((id) => id.length > 0);
+
 			$.ajax({
 				url : "/services/api/runEnhancements",
 				type : "POST",
@@ -57,7 +60,8 @@ define('RunEnhancementsBatchAction', [ 'jquery', 'AbstractBatchAction', "tpl!../
 				dataType: "json",
 				data : JSON.stringify({
 					force : force,
-					pids : pids
+					pids : pids,
+					recursive : recursive
 				})
 			}).done(function(response) {
 				self.context.view.$alertHandler.alertHandler("message", response.message);
