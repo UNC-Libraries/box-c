@@ -35,7 +35,7 @@ public class ThumbnailRequestSender extends MessageSender {
      * @param request
      * @throws IOException
      */
-    public void sendToQueue(ImportThumbnailRequest request) throws IOException {
+    public void sendToImportQueue(ImportThumbnailRequest request) throws IOException {
         String messageBody = IMPORT_MAPPER.writeValueAsString(request);
         sendMessage(messageBody);
         log.info("Job to import thumbnail has been queued for {} with object {}",

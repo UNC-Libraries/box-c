@@ -294,12 +294,11 @@
       <property name="versionedDatastreamService" ref="versionedDatastreamService" />
   </bean>
 
-    <bean id="editThumbnailService" class="edu.unc.lib.boxc.web.services.processing.ImportThumbnailService"
+    <bean id="importThumbnailService" class="edu.unc.lib.boxc.web.services.processing.ImportThumbnailService"
           init-method="init">
         <property name="aclService" ref="aclService" />
-        <property name="messageSender" ref="runEnhancementMessageSender" />
+        <property name="messageSender" ref="thumbnailRequestSender" />
         <property name="sourceImagesDir" value="${sourceImages.dir}" />
-        <property name="tempStoragePath" value="${thumbnail.temp.dir}" />
     </bean>
   
   <bean id="exportXmlJmsTemplate" class="org.springframework.jms.core.JmsTemplate">

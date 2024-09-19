@@ -10,13 +10,20 @@ import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.api.objects.WorkObject;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import edu.unc.lib.boxc.operations.jms.OperationsMessageSender;
+import edu.unc.lib.boxc.operations.jms.thumbnails.ImportThumbnailRequest;
+import edu.unc.lib.boxc.operations.jms.thumbnails.ThumbnailRequest;
+import edu.unc.lib.boxc.operations.jms.thumbnails.ThumbnailRequestSender;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.Mock;
 
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
@@ -24,6 +31,7 @@ import java.nio.file.Path;
 
 import static edu.unc.lib.boxc.auth.api.Permission.editDescription;
 import static edu.unc.lib.boxc.auth.api.Permission.editResourceType;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -41,14 +49,15 @@ public class ImportThumbnailServiceTest {
     @Mock
     private RepositoryObjectLoader repoObjLoader;
     @Mock
-    private OperationsMessageSender messageSender;
+    private ThumbnailRequestSender messageSender;
     @Mock
     private AgentPrincipals agent;
     @Mock
     private AccessGroupSet groups;
     @Mock
     private CollectionObject collectionObject;
-    @Mock
+    @Captor
+    private ArgumentCaptor<ImportThumbnailRequest> requestCaptor;
     private InputStream inputStream;
     @TempDir
     public Path tmpFolder;
@@ -56,13 +65,15 @@ public class ImportThumbnailServiceTest {
 
 
     @BeforeEach
-    public void init() {
+    public void init() throws FileNotFoundException {
         closeable = openMocks(this);
         tempStoragePath = tmpFolder.resolve("thumbnails");
         importThumbnailService = new ImportThumbnailService();
         importThumbnailService.setAclService(aclService);
         importThumbnailService.setMessageSender(messageSender);
-        importThumbnailService.setTempStoragePath(tempStoragePath);
+        importThumbnailService.setSourceImagesDir(tempStoragePath.toString());
+        importThumbnailService.init();
+        inputStream = new FileInputStream("src/test/resources/__files/bunny.jpg");
     }
 
     @AfterEach
@@ -81,10 +92,22 @@ public class ImportThumbnailServiceTest {
     }
 
     @Test
+    public void notAnImageTest() {
+        Assertions.assertThrows(IllegalArgumentException.class, () -> {
+            importThumbnailService.run(inputStream, agent, COLLECTION_UUID, "video/mp4");
+        });
+    }
+
+    @Test
     public void successTest() throws IOException {
-        var pid = PIDs.get(COLLECTION_UUID);
-        importThumbnailService.run(inputStream, agent, COLLECTION_UUID, "image/jpeg");
-        verify(messageSender).sendMakeThumbnailJP2Operation(agent.getUsername(), pid, tempStoragePath, "image/jpeg");
+        var mimetype = "image/jpeg";
+        importThumbnailService.run(inputStream, agent, COLLECTION_UUID, mimetype);
+        verify(messageSender).sendToImportQueue(requestCaptor.capture());
+
+        var request = requestCaptor.getValue();
+        assertEquals(COLLECTION_UUID, request.getPidString());
+        assertEquals(agent, request.getAgent());
+        assertEquals(mimetype, request.getMimetype());
         assertTrue(Files.exists(tempStoragePath));
     }
 }

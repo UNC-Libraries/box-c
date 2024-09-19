@@ -324,28 +324,6 @@ public class OperationsMessageSender extends MessageSender {
     }
 
     /**
-     * Sends a message to process an uploaded thumbnail image
-     * @param userid id of user who triggered the operation
-     * @param pid object that is getting the thumbnail
-     * @param tempStoragePath path where image is temporarily stored
-     * @param mimetype mimetype of the original image
-     * @return id of operation message
-     */
-    public String sendMakeThumbnailJP2Operation(String userid, PID pid, Path tempStoragePath, String mimetype) {
-        Element contentEl = createAtomEntry(userid, pid, CDRActions.MAKE_THUMBNAILS);
-        var thumbnails = new Element(CDRActions.MAKE_THUMBNAILS.getName(), CDR_MESSAGE_NS);
-        thumbnails.addContent(new Element("tempStoragePath", CDR_MESSAGE_NS).setText(tempStoragePath.toString()));
-        thumbnails.addContent(new Element("mimetype", CDR_MESSAGE_NS).setText(mimetype));
-
-        contentEl.addContent(thumbnails);
-        var msg = contentEl.getDocument();
-        sendMessage(msg);
-        LOG.debug("sent make-thumbnail-JP2 operation JMS message using JMS template: {}", this.getJmsTemplate());
-
-        return getMessageId(msg);
-    }
-
-    /**
      * Sends a message indicating that an action has occurred on a collection of objects
      *
      * @param userid id of user who triggered the operation
