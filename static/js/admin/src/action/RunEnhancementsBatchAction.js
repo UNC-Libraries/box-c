@@ -65,7 +65,7 @@ define('RunEnhancementsBatchAction', [ 'jquery', 'AbstractBatchAction', "tpl!../
 				})
 			}).done(function(response) {
 				self.context.view.$alertHandler.alertHandler("message", response.message);
-				self.dialog.remove();
+				self.dialog.dialog("destroy");
 			}).fail(function() {
 				self.context.view.$alertHandler.alertHandler("error", "Failed to run enhancements for " + self.targets.length + " objects");
 			});
