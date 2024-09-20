@@ -4,7 +4,6 @@ import static edu.unc.lib.boxc.model.api.xml.JDOMNamespaceUtil.ATOM_NS;
 import static edu.unc.lib.boxc.model.api.xml.JDOMNamespaceUtil.CDR_MESSAGE_NS;
 import static edu.unc.lib.boxc.model.api.xml.NamespaceConstants.CDR_MESSAGE_AUTHOR_URI;
 
-import java.nio.file.Path;
 import java.util.Collection;
 import java.util.UUID;
 
