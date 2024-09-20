@@ -6,12 +6,12 @@ import static edu.unc.lib.boxc.operations.jms.RunEnhancementsMessageHelpers.make
 import java.util.Arrays;
 import java.util.List;
 
+import edu.unc.lib.boxc.auth.api.models.AgentPrincipals;
 import org.jdom2.Document;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import edu.unc.lib.boxc.auth.api.Permission;
-import edu.unc.lib.boxc.auth.api.models.AgentPrincipals;
 import edu.unc.lib.boxc.auth.api.services.AccessControlService;
 import edu.unc.lib.boxc.common.metrics.TimerFactory;
 import edu.unc.lib.boxc.model.api.ResourceType;
@@ -41,7 +41,7 @@ public class RunEnhancementsService {
     private static final Logger LOG = LoggerFactory.getLogger(RunEnhancementsService.class);
     private static final Timer timer = TimerFactory.createTimerForClass(RunEnhancementsService.class);
 
-    private final List<String> resultsFieldList = Arrays.asList(
+    private static final List<String> RESULTS_FIELD_LIST = Arrays.asList(
             SearchFieldKey.DATASTREAM.name(), SearchFieldKey.ID.name(),
             SearchFieldKey.RESOURCE_TYPE.name());
 
@@ -57,59 +57,68 @@ public class RunEnhancementsService {
      * Service to take a list of pids searches for file objects which are in the list of pids
      * or children of those objects and run enhancements on.
      *
-     * @param agent security principals of the agent making request.
-     * @param objectPids List of pids to run enhancements on
-     * @param force whether enhancements should run if derivatives are already present
+     * @param request Request to run enhancements
      */
-    public void run(AgentPrincipals agent, List<String> objectPids, boolean force) {
-        try (Timer.Context context = timer.time()) {
+    public void run(RunEnhancementsRequest request) {
+        try (Timer.Context ignored = timer.time()) {
+            var agent = request.getAgent();
+            var objectPids = request.getPids();
+            var force = request.isForce();
+            var recursive = request.isRecursive();
             for (String objectPid : objectPids) {
                 PID pid = PIDs.get(objectPid);
 
                 aclService.assertHasAccess("User does not have permission to run enhancements",
                         pid, agent.getPrincipals(), Permission.runEnhancements);
 
-                LOG.debug("sending solr update message for {} of type runEnhancements", pid);
-
-                if (!(repositoryObjectLoader.getRepositoryObject(pid) instanceof FileObject)) {
-                    SearchState searchState = new SearchState();
-                    searchState.addFacet(new GenericFacet(SearchFieldKey.RESOURCE_TYPE, ResourceType.File.name()));
-                    searchState.setResultFields(resultsFieldList);
-                    searchState.setRowsPerPage(1000);
-                    searchState.setIgnoreMaxRows(true);
-
-                    SearchRequest searchRequest = new SearchRequest();
-                    searchRequest.setAccessGroups(agent.getPrincipals());
-                    searchRequest.setSearchState(searchState);
-                    searchRequest.setRootPid(pid);
-                    searchRequest.setApplyCutoffs(false);
-
-                    // Page through results for requests to run enhancements of large folders
-                    long totalResults = -1;
-                    int count = 0;
-                    do {
-                        SearchResultResponse resultResponse = queryLayer.performSearch(searchRequest);
-                        if (totalResults == -1) {
-                            totalResults = resultResponse.getResultCount();
-                            LOG.debug("Found {} items to queue for enhancement run", totalResults);
-                            // Add the root container itself
-                            ContentObjectRecord rootContainer = resultResponse.getSelectedContainer();
-                            createMessage(rootContainer, agent.getUsername(), force);
-                        }
-                        for (ContentObjectRecord metadata : resultResponse.getResultList()) {
-                            createMessage(metadata, agent.getUsername(), force);
-                            count++;
-                        }
-                        LOG.debug("Queued {} out of {} items for enhancements", count, totalResults);
-                    } while(count < totalResults);
+                if (recursive && !(repositoryObjectLoader.getRepositoryObject(pid) instanceof FileObject)) {
+                    LOG.debug("Queueing object and children for enhancements: {}", pid);
+                    recursiveEnhancements(pid, agent, force);
                 } else {
-                    LOG.debug("Queueing a file object for enhancements: {}", pid);
-                    SimpleIdRequest searchRequest = new SimpleIdRequest(pid, agent.getPrincipals());
-                    ContentObjectRecord metadata = queryLayer.getObjectById(searchRequest);
-                    createMessage(metadata, agent.getUsername(), force);
+                    LOG.debug("Queueing object for enhancements: {}", pid);
+                    shallowEnhancements(pid, agent, force);
                 }
             }
         }
+    }
+
+    private void recursiveEnhancements(PID pid, AgentPrincipals agent, Boolean force) {
+        SearchState searchState = new SearchState();
+        searchState.addFacet(new GenericFacet(SearchFieldKey.RESOURCE_TYPE, ResourceType.File.name()));
+        searchState.setResultFields(RESULTS_FIELD_LIST);
+        searchState.setRowsPerPage(1000);
+        searchState.setIgnoreMaxRows(true);
+
+        SearchRequest searchRequest = new SearchRequest();
+        searchRequest.setAccessGroups(agent.getPrincipals());
+        searchRequest.setSearchState(searchState);
+        searchRequest.setRootPid(pid);
+        searchRequest.setApplyCutoffs(false);
+
+        // Page through results for requests to run enhancements of large folders
+        long totalResults = -1;
+        int count = 0;
+        do {
+            SearchResultResponse resultResponse = queryLayer.performSearch(searchRequest);
+            if (totalResults == -1) {
+                totalResults = resultResponse.getResultCount();
+                LOG.debug("Found {} items to queue for enhancement run", totalResults);
+                // Add the root container itself
+                ContentObjectRecord rootContainer = resultResponse.getSelectedContainer();
+                createMessage(rootContainer, agent.getUsername(), force);
+            }
+            for (ContentObjectRecord metadata : resultResponse.getResultList()) {
+                createMessage(metadata, agent.getUsername(), force);
+                count++;
+            }
+            LOG.debug("Queued {} out of {} items for enhancements", count, totalResults);
+        } while(count < totalResults);
+    }
+
+    private void shallowEnhancements(PID pid, AgentPrincipals agent, Boolean force) {
+        SimpleIdRequest searchRequest = new SimpleIdRequest(pid, agent.getPrincipals());
+        ContentObjectRecord metadata = queryLayer.getObjectById(searchRequest);
+        createMessage(metadata, agent.getUsername(), force);
     }
 
     public void setAclService(AccessControlService aclService) {
