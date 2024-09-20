@@ -16,7 +16,6 @@ public class ImportThumbnailRequestProcessor implements Processor {
     public void process(Exchange exchange) throws IOException {
         var in = exchange.getIn();
         var request = ImportThumbnailRequestSerializationHelper.toRequest(in.getBody(String.class));
-        var agent = request.getAgent();
         var mimetype = request.getMimetype();
         var storagePath = request.getStoragePath();
         var pidString = request.getPidString();
