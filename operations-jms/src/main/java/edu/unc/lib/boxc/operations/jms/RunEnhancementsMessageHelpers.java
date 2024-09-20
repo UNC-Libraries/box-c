@@ -9,7 +9,6 @@ import org.jdom2.Element;
 import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.operations.jms.JMSMessageUtil.CDRActions;
 
-
 /**
  * Helper methods for run enhancement messages
  *
