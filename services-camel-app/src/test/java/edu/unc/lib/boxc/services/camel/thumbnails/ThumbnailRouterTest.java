@@ -3,6 +3,9 @@ package edu.unc.lib.boxc.services.camel.thumbnails;
 import edu.unc.lib.boxc.auth.api.models.AgentPrincipals;
 import edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl;
 import edu.unc.lib.boxc.auth.fcrepo.models.AgentPrincipalsImpl;
+import edu.unc.lib.boxc.model.api.rdf.Cdr;
+import edu.unc.lib.boxc.operations.jms.thumbnails.ImportThumbnailRequest;
+import edu.unc.lib.boxc.operations.jms.thumbnails.ImportThumbnailRequestSerializationHelper;
 import edu.unc.lib.boxc.services.camel.TestHelper;
 import edu.unc.lib.boxc.operations.jms.thumbnails.ThumbnailRequest;
 import edu.unc.lib.boxc.operations.jms.thumbnails.ThumbnailRequestSerializationHelper;
@@ -15,6 +18,10 @@ import org.junit.jupiter.api.Test;
 import org.springframework.context.support.AbstractApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
+import java.util.HashMap;
+import java.util.Map;
+
+import static edu.unc.lib.boxc.fcrepo.FcrepoJmsConstants.RESOURCE_TYPE;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 
@@ -27,6 +34,9 @@ public class ThumbnailRouterTest extends CamelSpringTestSupport {
     protected ProducerTemplate template;
     @BeanInject(value = "thumbnailRequestProcessor")
     private ThumbnailRequestProcessor processor;
+
+    @BeanInject(value = "importThumbnailRequestProcessor")
+    private ImportThumbnailRequestProcessor importProcessor;
     @Override
     protected AbstractApplicationContext createApplicationContext() {
         return new ClassPathXmlApplicationContext("/service-context.xml", "/thumbnails-context.xml");
@@ -40,9 +50,24 @@ public class ThumbnailRouterTest extends CamelSpringTestSupport {
         request.setAgent(agent);
         request.setFilePidString(pid.toString());
         var body = ThumbnailRequestSerializationHelper.toJson(request);
-        template.sendBody(body);
+        template.sendBodyAndHeader(body, RESOURCE_TYPE, Cdr.FileObject.getURI());
 
         verify(processor).process(any());
+    }
+
+    @Test
+    public void importRequestSentTest() throws Exception {
+        createContext("DcrThumbnails");
+        var pid = TestHelper.makePid();
+
+        var request = new ImportThumbnailRequest();
+        request.setAgent(agent);
+        request.setPidString(pid.toString());
+
+        var body = ImportThumbnailRequestSerializationHelper.toJson(request);
+        template.sendBodyAndHeader(body, RESOURCE_TYPE, Cdr.Collection.getURI());
+
+        verify(importProcessor).process(any());
     }
 
     private void createContext(String routeName) throws Exception {
