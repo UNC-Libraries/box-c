@@ -50,14 +50,14 @@ public class ThumbnailRouterTest extends CamelSpringTestSupport {
         request.setAgent(agent);
         request.setFilePidString(pid.toString());
         var body = ThumbnailRequestSerializationHelper.toJson(request);
-        template.sendBodyAndHeader(body, RESOURCE_TYPE, Cdr.FileObject.getURI());
+        template.sendBody(body);
 
         verify(processor).process(any());
     }
 
     @Test
     public void importRequestSentTest() throws Exception {
-        createContext("DcrThumbnails");
+        createContext("DcrImportThumbnails");
         var pid = TestHelper.makePid();
 
         var request = new ImportThumbnailRequest();
@@ -65,7 +65,7 @@ public class ThumbnailRouterTest extends CamelSpringTestSupport {
         request.setPidString(pid.toString());
 
         var body = ImportThumbnailRequestSerializationHelper.toJson(request);
-        template.sendBodyAndHeader(body, RESOURCE_TYPE, Cdr.Collection.getURI());
+        template.sendBody(body);
 
         verify(importProcessor).process(any());
     }

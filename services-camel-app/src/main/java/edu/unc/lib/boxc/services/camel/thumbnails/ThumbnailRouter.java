@@ -29,18 +29,15 @@ public class ThumbnailRouter extends RouteBuilder {
     public void configure() throws Exception {
         from("{{cdr.thumbnails.stream.camel}}")
             .routeId("DcrThumbnails")
-            .log(DEBUG, log, "Received thumbnail request")
-            .choice()
-                .when(simple("${headers[org.fcrepo.jms.resourceType]} contains '" + Cdr.Folder.getURI() + "'"
-                        + " || ${headers[org.fcrepo.jms.resourceType]} contains '" + Cdr.Collection.getURI() + "'"
-                        + " || ${headers[org.fcrepo.jms.resourceType]} contains '" + Cdr.AdminUnit.getURI() + "'"
-                ))
-                    .log(DEBUG, log, "Importing thumbnail for ${headers[CamelFcrepoUri]}")
-                    .process(importThumbnailRequestProcessor)
-                    .to("direct:process.enhancement.imageAccessCopy")
-                .otherwise()
-                    .log(DEBUG, log, "Assigning thumbnail for ${headers[CamelFcrepoUri]}")
-                    .bean(thumbnailRequestProcessor)
-            .end();
+            .log(DEBUG, log,
+                    "Received thumbnail request: assigning thumbnail for ${headers[CamelFcrepoUri]}")
+            .bean(thumbnailRequestProcessor);
+
+        from("{{cdr.import.thumbnails.stream.camel}}")
+                .routeId("DcrImportThumbnails")
+                .log(DEBUG, log,
+                        "Received thumbnail request: importing thumbnail for ${headers[CamelFcrepoUri]}")
+                .process(importThumbnailRequestProcessor)
+                .to("direct:process.enhancement.imageAccessCopy");
     }
 }

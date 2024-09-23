@@ -11,6 +11,11 @@ import static edu.unc.lib.boxc.services.camel.util.CdrFcrepoHeaders.CdrBinaryMim
 import static edu.unc.lib.boxc.services.camel.util.CdrFcrepoHeaders.CdrBinaryPath;
 import static org.fcrepo.camel.FcrepoHeaders.FCREPO_URI;
 
+/**
+ * Processing requests to import images to use as a thumbnail for a non-work Repository object
+ *
+ * @author snluong
+ */
 public class ImportThumbnailRequestProcessor implements Processor {
     @Override
     public void process(Exchange exchange) throws IOException {
@@ -19,9 +24,10 @@ public class ImportThumbnailRequestProcessor implements Processor {
         var mimetype = request.getMimetype();
         var storagePath = request.getStoragePath();
         var pidString = request.getPidString();
+        var uri = PIDs.get(pidString).getRepositoryUri();
 
         in.setHeader(CdrBinaryPath, storagePath);
         in.setHeader(CdrBinaryMimeType, mimetype);
-        in.setHeader(FCREPO_URI, pidString);
+        in.setHeader(FCREPO_URI, uri);
     }
 }

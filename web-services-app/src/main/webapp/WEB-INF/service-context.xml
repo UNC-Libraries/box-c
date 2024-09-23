@@ -444,6 +444,7 @@
 
     <bean id="thumbnailRequestSender" class="edu.unc.lib.boxc.operations.jms.thumbnails.ThumbnailRequestSender">
         <property name="jmsTemplate" ref="thumbnailRequestJmsTemplate"/>
+        <property name="importDestinationName" value="${cdr.import.thumbnails.stream}" />
     </bean>
 
     <bean id="viewSettingsRequestSender" class="edu.unc.lib.boxc.operations.jms.viewSettings.ViewSettingRequestSender">
