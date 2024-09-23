@@ -20,6 +20,7 @@ import static edu.unc.lib.boxc.services.camel.util.CdrFcrepoHeaders.CdrBinaryPat
 import static org.fcrepo.camel.FcrepoHeaders.FCREPO_URI;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.mockito.Mockito.verify;
 import static org.mockito.MockitoAnnotations.openMocks;
 
 public class ImportThumbnailProcessorTest {
@@ -54,14 +55,10 @@ public class ImportThumbnailProcessorTest {
         var exchange = TestHelper.mockExchange(ImportThumbnailRequestSerializationHelper.toJson(request));
         var message = exchange.getIn();
 
-        assertNull(message.getHeader(FCREPO_URI));
-        assertNull(message.getHeader(CdrBinaryMimeType));
-        assertNull(message.getHeader(CdrBinaryPath));
-
         processor.process(exchange);
 
-        assertEquals(pid.getRepositoryUri(), message.getHeader(FCREPO_URI));
-        assertEquals(mimetype, message.getHeader(CdrBinaryMimeType));
-        assertEquals(path, message.getHeader(CdrBinaryPath));
+        verify(message).setHeader(FCREPO_URI, pid.getRepositoryUri());
+        verify(message).setHeader(CdrBinaryMimeType, mimetype);
+        verify(message).setHeader(CdrBinaryPath, path);
     }
 }

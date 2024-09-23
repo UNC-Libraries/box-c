@@ -35,9 +35,9 @@ public class ThumbnailRouter extends RouteBuilder {
 
         from("{{cdr.import.thumbnails.stream.camel}}")
                 .routeId("DcrImportThumbnails")
+                .process(importThumbnailRequestProcessor)
                 .log(DEBUG, log,
                         "Received thumbnail request: importing thumbnail for ${headers[CamelFcrepoUri]}")
-                .process(importThumbnailRequestProcessor)
                 .to("direct:process.enhancement.imageAccessCopy");
     }
 }
