@@ -26,7 +26,7 @@ public class ImportThumbnailRequestProcessor implements Processor {
         var pidString = request.getPidString();
         var repoPath = PIDs.get(pidString).getRepositoryPath();
 
-        in.setHeader(CdrBinaryPath, storagePath);
+        in.setHeader(CdrBinaryPath, storagePath.toString());
         in.setHeader(CdrBinaryMimeType, mimetype);
         in.setHeader(FCREPO_URI, repoPath);
     }
