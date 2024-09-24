@@ -24,10 +24,10 @@ public class ImportThumbnailRequestProcessor implements Processor {
         var mimetype = request.getMimetype();
         var storagePath = request.getStoragePath();
         var pidString = request.getPidString();
-        var uri = PIDs.get(pidString).getRepositoryUri();
+        var repoPath = PIDs.get(pidString).getRepositoryPath();
 
         in.setHeader(CdrBinaryPath, storagePath);
         in.setHeader(CdrBinaryMimeType, mimetype);
-        in.setHeader(FCREPO_URI, uri);
+        in.setHeader(FCREPO_URI, repoPath);
     }
 }
