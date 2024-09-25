@@ -3,12 +3,11 @@ package edu.unc.lib.boxc.services.camel.thumbnails;
 import edu.unc.lib.boxc.auth.api.models.AgentPrincipals;
 import edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl;
 import edu.unc.lib.boxc.auth.fcrepo.models.AgentPrincipalsImpl;
-import edu.unc.lib.boxc.model.api.rdf.Cdr;
 import edu.unc.lib.boxc.operations.jms.thumbnails.ImportThumbnailRequest;
 import edu.unc.lib.boxc.operations.jms.thumbnails.ImportThumbnailRequestSerializationHelper;
-import edu.unc.lib.boxc.services.camel.TestHelper;
 import edu.unc.lib.boxc.operations.jms.thumbnails.ThumbnailRequest;
 import edu.unc.lib.boxc.operations.jms.thumbnails.ThumbnailRequestSerializationHelper;
+import edu.unc.lib.boxc.services.camel.TestHelper;
 import org.apache.camel.BeanInject;
 import org.apache.camel.Produce;
 import org.apache.camel.ProducerTemplate;
@@ -18,10 +17,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.context.support.AbstractApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
-import java.util.HashMap;
-import java.util.Map;
-
-import static edu.unc.lib.boxc.fcrepo.FcrepoJmsConstants.RESOURCE_TYPE;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 
@@ -41,6 +36,7 @@ public class ThumbnailRouterTest extends CamelSpringTestSupport {
     protected AbstractApplicationContext createApplicationContext() {
         return new ClassPathXmlApplicationContext("/service-context.xml", "/thumbnails-context.xml");
     }
+
     @Test
     public void requestSentTest() throws Exception {
         createContext("DcrThumbnails");
@@ -65,9 +61,15 @@ public class ThumbnailRouterTest extends CamelSpringTestSupport {
         request.setPidString(pid.toString());
 
         var body = ImportThumbnailRequestSerializationHelper.toJson(request);
+        var solrEndpoint = getMockEndpoint("mock:direct:solrIndexing");
+        solrEndpoint.expectedMessageCount(1);
+        var imageAccessCopyEndpoint = getMockEndpoint("mock:direct:process.enhancement.imageAccessCopy");
+        imageAccessCopyEndpoint.expectedMessageCount(1);
         template.sendBody(body);
 
         verify(importProcessor).process(any());
+        solrEndpoint.assertIsSatisfied();
+        imageAccessCopyEndpoint.assertIsSatisfied();
     }
 
     private void createContext(String routeName) throws Exception {
