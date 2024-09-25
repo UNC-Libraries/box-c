@@ -262,20 +262,24 @@ public class DatastreamRestControllerIT extends AbstractAPIIT {
         var collectionPid = corpus.pid2;
         var id = collectionPid.getId();
         createDerivative(id, JP2_ACCESS_COPY, BINARY_CONTENT.getBytes());
-        var jp2Datastream = mock(Datastream.class);
-//        when(contentObjectSolrRecord.getDatastreamObject(DatastreamType.JP2_ACCESS_COPY.getId())).thenReturn(jp2Datastream);
+
+        var filename = "bunny.jpg";
+        var formattedBasePath = "/iiif/v3/" + ImageServerUtil.getImageServerEncodedId(collectionPid.getId());
+        stubFor(WireMock.get(urlMatching(formattedBasePath + "/full/!128,128/0/default.jpg"))
+                .willReturn(aResponse()
+                        .withStatus(HttpStatus.OK.value())
+                        .withBody(filename)
+                        .withHeader("Content-Type", MediaType.IMAGE_JPEG_VALUE)));
 
         MvcResult result = mvc.perform(get("/thumb/" + id + "/large"))
                 .andExpect(status().is2xxSuccessful())
                 .andReturn();
 
         // Verify content was retrieved
-//        MockHttpServletResponse response = result.getResponse();
-//        assertEquals(BINARY_CONTENT, response.getContentAsString());
-//        assertEquals(BINARY_CONTENT.length(), response.getContentLength());
-//        assertEquals(MediaType.IMAGE_PNG.toString(), response.getContentType());
-//        assertEquals("inline; filename=" + id + "." + THUMBNAIL_LARGE.getExtension(),
-//                response.getHeader(CONTENT_DISPOSITION));
+        MockHttpServletResponse response = result.getResponse();
+        assertEquals(filename, response.getContentAsString());
+        assertEquals(MediaType.IMAGE_JPEG_VALUE, response.getContentType());
+        assertEquals("inline; filename=bunny_128px.jpg", response.getHeader(CONTENT_DISPOSITION));
     }
 
     @Test

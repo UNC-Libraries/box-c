@@ -78,6 +78,9 @@ public class TestCorpus {
         newDoc.addField("ancestorIds", makeAncestorIds(pid1, pid2));
         newDoc.addField("ancestorPath", makeAncestorPath(pid1));
         newDoc.addField("resourceType", "Collection");
+        List<String> collectionDatastream = List.of(
+                DatastreamType.JP2_ACCESS_COPY.getId() + "|image/jp2|bunny.jp2|jp2|||1200x1200");
+        newDoc.addField(SearchFieldKey.DATASTREAM.getSolrField(), collectionDatastream);
         docs.add(newDoc);
 
         newDoc = new SolrInputDocument();
