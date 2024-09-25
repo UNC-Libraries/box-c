@@ -1,13 +1,9 @@
 package edu.unc.lib.boxc.services.camel.thumbnails;
 
-import edu.unc.lib.boxc.model.api.rdf.Cdr;
 import org.apache.camel.BeanInject;
-import org.apache.camel.PropertyInject;
 import org.apache.camel.builder.RouteBuilder;
 import org.slf4j.Logger;
 
-import static edu.unc.lib.boxc.services.camel.util.CdrFcrepoHeaders.CdrBinaryMimeType;
-import static edu.unc.lib.boxc.services.camel.util.CdrFcrepoHeaders.CdrBinaryPath;
 import static org.apache.camel.LoggingLevel.DEBUG;
 import static org.slf4j.LoggerFactory.getLogger;
 
