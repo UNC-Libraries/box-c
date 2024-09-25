@@ -38,6 +38,7 @@ public class ThumbnailRouter extends RouteBuilder {
                 .process(importThumbnailRequestProcessor)
                 .log(DEBUG, log,
                         "Received thumbnail request: importing thumbnail for ${headers[CamelFcrepoUri]}")
-                .to("direct:process.enhancement.imageAccessCopy");
+                // trigger JP2 generation sequentially followed by indexing
+                .to("direct:process.enhancement.imageAccessCopy", "direct:solrIndexing");
     }
 }
