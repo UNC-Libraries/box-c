@@ -42,7 +42,6 @@ public class EnhancementRouter extends RouteBuilder {
     private Integer enhancementThreads;
 
     private static final String DEFAULT_ENHANCEMENTS = "thumbnails,imageAccessCopy,extractFulltext";
-    private static final String THUMBNAIL_ENHANCEMENTS = "thumbnails";
     @Override
     public void configure() throws Exception {
 
@@ -69,7 +68,6 @@ public class EnhancementRouter extends RouteBuilder {
                         ))
                     .log(DEBUG, log, "Processing enhancements for non-binary ${headers[CamelFcrepoUri]}")
                     .process(nbProcessor)
-                    .setHeader(CdrEnhancementSet, constant(THUMBNAIL_ENHANCEMENTS))
                     .to("{{cdr.enhancement.perform.camel}}")
                 .otherwise()
                     .log(DEBUG, log, "Ignoring resource ${headers[CamelFcrepoUri]}")

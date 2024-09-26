@@ -334,7 +334,8 @@ public class SetDatastreamFilter implements IndexDocumentFilter {
     }
 
     private void addDerivatives(List<Datastream> dsList, PID pid, boolean ownedByOtherObject, List<DatastreamType> types) {
-        derivativeService.getDerivatives(pid).forEach(deriv -> {
+        var derivatives = derivativeService.getDerivatives(pid);
+        derivatives.forEach(deriv -> {
             DatastreamType type = deriv.getType();
             // only add derivatives of types listed
             if ((types != null) && !types.contains(type)) {

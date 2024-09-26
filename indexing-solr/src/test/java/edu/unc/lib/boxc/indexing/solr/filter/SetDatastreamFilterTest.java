@@ -692,6 +692,24 @@ public class SetDatastreamFilterTest {
     }
 
     @Test
+    public void folderObjectWithJP2Test() throws Exception {
+        FolderObject folderObj = mock(FolderObject.class);
+        when(folderObj.getPid()).thenReturn(pid);
+
+        File file = derivDir.resolve("small.jp2").toFile();
+        FileUtils.write(file, "content", "UTF-8");
+        List<Derivative> derivs = List.of(new Derivative(JP2_ACCESS_COPY, file));
+        when(derivativeService.getDerivatives(pid)).thenReturn(derivs);
+
+        dip.setContentObject(folderObj);
+
+        filter.filter(dip);
+
+        assertContainsDatastream(idb.getDatastream(), JP2_ACCESS_COPY.getId(),
+                7l, JP2_ACCESS_COPY.getMimetype(), "small.jp2", null, null, null);
+    }
+
+    @Test
     public void fileObjectWithDerivativeTest() throws Exception {
         when(fileObj.getPid()).thenReturn(pid);
         when(fileObj.getBinaryObjects()).thenReturn(Arrays.asList(binObj));

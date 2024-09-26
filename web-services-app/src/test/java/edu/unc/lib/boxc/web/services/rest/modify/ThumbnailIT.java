@@ -26,6 +26,7 @@ import java.util.Map;
 import edu.unc.lib.boxc.auth.api.services.AccessControlService;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
 import edu.unc.lib.boxc.model.api.rdf.Cdr;
+import edu.unc.lib.boxc.operations.jms.thumbnails.ImportThumbnailRequest;
 import edu.unc.lib.boxc.operations.jms.thumbnails.ThumbnailRequest;
 import edu.unc.lib.boxc.operations.jms.thumbnails.ThumbnailRequestSender;
 import edu.unc.lib.boxc.web.services.rest.MvcTestHelpers;
@@ -69,25 +70,19 @@ public class ThumbnailIT extends AbstractAPIIT {
 
     @TempDir
     public Path tmpFolder;
-
     @Captor
-    private ArgumentCaptor<Document> docCaptor;
+    private ArgumentCaptor<ImportThumbnailRequest> importRequestCaptor;
     @Captor
     private ArgumentCaptor<ThumbnailRequest> requestCaptor;
-
     private ImportThumbnailService service;
-    @Mock
-    private MessageSender messageSender;
     @Autowired
     private RepositoryObjectFactory repositoryObjectFactory;
     @Mock
     private ThumbnailRequestSender thumbnailRequestSender;
-
     @Mock
     private RepositoryObjectLoader repositoryObjectLoader;
     @InjectMocks
     private ThumbnailController controller;
-
     private File tempDir;
 
     @BeforeEach
@@ -97,7 +92,7 @@ public class ThumbnailIT extends AbstractAPIIT {
         aclService = mock(AccessControlService.class);
         service = new ImportThumbnailService();
         service.setAclService(aclService);
-        service.setMessageSender(messageSender);
+        service.setMessageSender(thumbnailRequestSender);
         service.setSourceImagesDir(tempDir.getAbsolutePath());
         service.init();
         controller.setImportThumbnailService(service);
@@ -118,15 +113,17 @@ public class ThumbnailIT extends AbstractAPIIT {
     public void addEditThumbnail() throws Exception {
         FileInputStream input = new FileInputStream("src/test/resources/upload-files/burndown.png");
         MockMultipartFile thumbnailFile = new MockMultipartFile("file", "burndown.png", "image/png", IOUtils.toByteArray(input));
+        var id = collection.getPid().getUUID();
 
-        mvc.perform(MockMvcRequestBuilders.multipart("/edit/displayThumbnail/" + collection.getPid().getUUID())
+        mvc.perform(MockMvcRequestBuilders.multipart("/edit/displayThumbnail/" + id)
                 .file(thumbnailFile))
                 .andExpect(status().is2xxSuccessful())
                 .andReturn();
 
-        verify(messageSender).sendMessage(docCaptor.capture());
-        Document msgDoc = docCaptor.getValue();
-        assertMessageValues(msgDoc, collection.getPid());
+        verify(thumbnailRequestSender).sendToImportQueue(importRequestCaptor.capture());
+        var request = importRequestCaptor.getValue();
+        assertEquals(id, request.getPidString());
+        assertEquals("image/png", request.getMimetype());
     }
 
     @Test
@@ -138,7 +135,7 @@ public class ThumbnailIT extends AbstractAPIIT {
                 .andExpect(status().is4xxClientError())
                 .andReturn();
 
-        verify(messageSender, never()).sendMessage(any(Document.class));
+        verify(thumbnailRequestSender, never()).sendToImportQueue(any(ImportThumbnailRequest.class));
     }
 
     @Test
@@ -153,7 +150,7 @@ public class ThumbnailIT extends AbstractAPIIT {
                 .andExpect(status().isForbidden())
                 .andReturn();
 
-        verify(messageSender, never()).sendMessage(any(Document.class));
+        verify(thumbnailRequestSender, never()).sendToImportQueue(any(ImportThumbnailRequest.class));
     }
 
     @Test
@@ -327,14 +324,4 @@ public class ThumbnailIT extends AbstractAPIIT {
         return "I am not an image".getBytes();
     }
 
-    private void assertMessageValues(Document msgDoc, PID expectedPid) {
-        Element entry = msgDoc.getRootElement();
-        String pidString = entry.getChild(RUN_ENHANCEMENTS.getName(), CDR_MESSAGE_NS)
-                .getChildText("pid", CDR_MESSAGE_NS);
-        String author = entry.getChild("author", ATOM_NS)
-                .getChildText("name", ATOM_NS);
-
-        assertEquals(collection.getPid().getURI(), pidString);
-        assertEquals(USERNAME, author);
-    }
 }

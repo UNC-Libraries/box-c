@@ -166,8 +166,8 @@ public class EnhancementRouterIT extends CamelSpringTestSupport {
                 Cdr.Collection.getURI(), Container.getURI());
         template.sendBodyAndHeaders("", headers);
 
-        verify(addSmallThumbnailProcessor, timeout(ALLOW_WAIT)).process(any(Exchange.class));
-        verify(addLargeThumbnailProcessor, timeout(ALLOW_WAIT)).process(any(Exchange.class));
+        verify(addSmallThumbnailProcessor, never()).process(any(Exchange.class));
+        verify(addLargeThumbnailProcessor, never()).process(any(Exchange.class));
         verify(addAccessCopyProcessor, never()).process(any(Exchange.class));
         verify(solrIngestProcessor, timeout(ALLOW_WAIT)).process(any(Exchange.class));
     }
