@@ -55,7 +55,7 @@ public class SetDatastreamFilter implements IndexDocumentFilter {
     private DerivativeService derivativeService;
     private TechnicalMetadataService technicalMetadataService;
     private Jp2InfoService jp2InfoService;
-    private static final List<DatastreamType> THUMBNAIL_DS_TYPES = Arrays.asList(DatastreamType.THUMBNAIL_SMALL, DatastreamType.THUMBNAIL_LARGE);
+
     // Check for hours, minutes, seconds. Plus a check for optional milliseconds separated from seconds
     // by a "." or a ":" via a non-capturing block followed by a capture group for the milliseconds.
     private final Pattern TIMING_REGEX = Pattern.compile("(\\d+):(\\d+):(\\d+)(?:[.:](\\d+))?");
@@ -84,10 +84,6 @@ public class SetDatastreamFilter implements IndexDocumentFilter {
         } else {
             // Add list of derivatives associated with the object
             addDerivatives(datastreams, contentObj.getPid(), false, null);
-        }
-
-        if (contentObj instanceof WorkObject) {
-            addThumbnailDerivatives((WorkObject) contentObj, datastreams);
         }
 
         // Add in metadata datastreams
@@ -351,33 +347,6 @@ public class SetDatastreamFilter implements IndexDocumentFilter {
             String owner = (ownedByOtherObject ? pid.getId() : null);
             dsList.add(createDatastream(deriv, owner, extentValue));
         });
-    }
-
-    /**
-     * Used to selectively add only thumbnail datastreams
-     *
-     * @param workObject the work object with the thumbnail relation
-     * @param datastreams work object's datastreams to add thumbnail streams to
-     */
-    private void addThumbnailDerivatives(WorkObject workObject, List<Datastream> datastreams) {
-        FileObject thumbnailObject = workObject.getThumbnailObject();
-
-        if (thumbnailObject != null) {
-            var updatedDatastreams = clearPreviousThumbnailDatastreams(datastreams);
-            addDerivatives(updatedDatastreams, thumbnailObject.getPid(), true, THUMBNAIL_DS_TYPES);
-        }
-    }
-
-    /**
-     *  There may be thumbnail streams from the primary object, so we'll clear those
-     *  before adding the assigned thumbnail datastreams
-     *
-     * @param datastreams full list of datastreams to index for the work object
-     * @return modified list of datastreams without thumbnail datastreams
-     */
-    private List<Datastream> clearPreviousThumbnailDatastreams(List<Datastream> datastreams) {
-        datastreams.removeIf(ds -> THUMBNAIL_DS_TYPES.contains(DatastreamType.getByIdentifier(ds.getName())));
-        return datastreams;
     }
 
     private DatastreamImpl createDatastream(DerivativeService.Derivative derivative, String owner, String extent) {
