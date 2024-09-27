@@ -504,18 +504,7 @@ public class SetDatastreamFilterTest {
         when(fileObj.getBinaryObjects()).thenReturn(Arrays.asList(binObj, binObj2));
         dip.setContentObject(fileObj);
 
-        File smallFile = derivDir.resolve("small.png").toFile();
-        FileUtils.write(smallFile, "content", "UTF-8");
-
-        File largeFile = derivDir.resolve("large.png").toFile();
-        FileUtils.write(largeFile, "large content", "UTF-8");
-
-        File jp2File = derivDir.resolve("access.jp2").toFile();
-        FileUtils.write(jp2File, "jp2 content", "UTF-8");
-
-        List<Derivative> derivs = Arrays.asList(new Derivative(THUMBNAIL_SMALL, smallFile),
-                new Derivative(THUMBNAIL_LARGE, largeFile),
-                new Derivative(JP2_ACCESS_COPY, jp2File));
+        List<Derivative> derivs = makeJP2Derivative();
         when(derivativeService.getDerivatives(filePid)).thenReturn(derivs);
 
         var mockJp2InfoService = mock(Jp2InfoService.class);
@@ -604,7 +593,7 @@ public class SetDatastreamFilterTest {
     }
 
     @Test
-    public void workObjectWithoutPrimaryObjectTest() throws Exception {
+    public void workObjectWithoutPrimaryObjectTest() {
         WorkObject workObj = mock(WorkObject.class);
 
         dip.setContentObject(workObj);
@@ -633,7 +622,6 @@ public class SetDatastreamFilterTest {
         assertNotNull(idb.getDatastream());
         assertNull(idb.getFilesizeSort());
         assertNotNull(idb.getFilesizeTotal());
-        assertThumbnailDatastreams(fileId);
     }
 
     @Test
@@ -649,7 +637,6 @@ public class SetDatastreamFilterTest {
         PID filePid = PIDs.get(fileId);
         when(fileObj.getPid()).thenReturn(filePid);
         when(binObj.getPid()).thenReturn(getOriginalFilePid(filePid));
-        setUpDerivatives(filePid);
 
         // set up thumbnail file object
         FileObject thumbnailObj = mock(FileObject.class);
@@ -657,13 +644,13 @@ public class SetDatastreamFilterTest {
         String thumbnailId = "066ed112-f548-479e-ab4b-bf1aad40d678";
         PID thumbnailPid = PIDs.get(thumbnailId);
         when(thumbnailObj.getPid()).thenReturn(thumbnailPid);
-        setUpDerivatives(thumbnailPid);
+        var derivs = makeJP2Derivative();
+        when(derivativeService.getDerivatives(thumbnailPid)).thenReturn(derivs);
 
         filter.filter(dip);
 
         assertContainsDatastream(idb.getDatastream(), ORIGINAL_FILE.getId(),
                 FILE_SIZE, FILE_MIMETYPE, FILE_NAME, FILE_DIGEST, fileId, null);
-        assertThumbnailDatastreams(thumbnailId);
         assertContainsMetadataDatastreams(idb.getDatastream());
 
         // Sort size is based off primary object's size
@@ -671,10 +658,8 @@ public class SetDatastreamFilterTest {
         // Work has no datastreams of its own
         assertEquals(FILE2_SIZE + MODS_SIZE + PREMIS_SIZE, (long) idb.getFilesizeTotal());
 
-        assertDoesNotContainDatastream(idb.getDatastream(), THUMBNAIL_SMALL.getId(),
-                7l, THUMBNAIL_SMALL.getMimetype(), "small.png", null, fileId, null);
-        assertDoesNotContainDatastream(idb.getDatastream(), THUMBNAIL_LARGE.getId(),
-                13l, THUMBNAIL_LARGE.getMimetype(), "large.png", null, fileId, null);
+        assertContainsDatastream(idb.getDatastream(), JP2_ACCESS_COPY.getId(),
+                11, JP2_ACCESS_COPY.getMimetype(), "access.jp2", null, null, null);
     }
 
     @Test
@@ -696,9 +681,7 @@ public class SetDatastreamFilterTest {
         FolderObject folderObj = mock(FolderObject.class);
         when(folderObj.getPid()).thenReturn(pid);
 
-        File file = derivDir.resolve("small.jp2").toFile();
-        FileUtils.write(file, "content", "UTF-8");
-        List<Derivative> derivs = List.of(new Derivative(JP2_ACCESS_COPY, file));
+        List<Derivative> derivs = makeJP2Derivative();
         when(derivativeService.getDerivatives(pid)).thenReturn(derivs);
 
         dip.setContentObject(folderObj);
@@ -706,7 +689,7 @@ public class SetDatastreamFilterTest {
         filter.filter(dip);
 
         assertContainsDatastream(idb.getDatastream(), JP2_ACCESS_COPY.getId(),
-                7l, JP2_ACCESS_COPY.getMimetype(), "small.jp2", null, null, null);
+                11, JP2_ACCESS_COPY.getMimetype(), "access.jp2", null, null, null);
     }
 
     @Test
@@ -808,21 +791,23 @@ public class SetDatastreamFilterTest {
     }
 
     private void setUpDerivatives(PID filePid) throws IOException {
-        File smallFile = derivDir.resolve("small.png").toFile();
-        FileUtils.write(smallFile, "content", "UTF-8");
+        File file = derivDir.resolve("file.jp2").toFile();
+        FileUtils.write(file, "content", "UTF-8");
 
-        File largeFile = derivDir.resolve("large.png").toFile();
-        FileUtils.write(largeFile, "large content", "UTF-8");
-
-        List<Derivative> derivs = Arrays.asList(new Derivative(THUMBNAIL_SMALL, smallFile),
-                new Derivative(THUMBNAIL_LARGE, largeFile));
+        List<Derivative> derivs = List.of(new Derivative(JP2_ACCESS_COPY, file));
         when(derivativeService.getDerivatives(filePid)).thenReturn(derivs);
     }
 
+    private List<Derivative> makeJP2Derivative() throws IOException {
+        File jp2File = derivDir.resolve("access.jp2").toFile();
+        FileUtils.write(jp2File, "jp2 content", "UTF-8");
+
+        return List.of(new Derivative(JP2_ACCESS_COPY, jp2File));
+    }
+
     private void assertThumbnailDatastreams(String thumbnailId) {
-        assertContainsDatastream(idb.getDatastream(), THUMBNAIL_SMALL.getId(),
-                7l, THUMBNAIL_SMALL.getMimetype(), "small.png", null, thumbnailId, null);
-        assertContainsDatastream(idb.getDatastream(), THUMBNAIL_LARGE.getId(),
-                13l, THUMBNAIL_LARGE.getMimetype(), "large.png", null, thumbnailId, null);
+        assertContainsDatastream(idb.getDatastream(), JP2_ACCESS_COPY.getId(),
+                7l, JP2_ACCESS_COPY.getMimetype(), "file.jp2", null, thumbnailId, null);
+
     }
 }
