@@ -1,6 +1,5 @@
-package edu.unc.lib.boxc.web.admin.controller;
+package edu.unc.lib.boxc.web.admin.controllers;
 
-import edu.unc.lib.boxc.web.admin.controllers.ChompbController;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -37,6 +36,14 @@ public class ChompbControllerIT {
     @Test
     public void testPageLoad() throws Exception {
         MvcResult result = mvc.perform(get("/chompb"))
+                .andExpect(status().isOk())
+                .andReturn();
+        assertEquals("report/chompb", result.getResponse().getForwardedUrl());
+    }
+
+    @Test
+    public void testProcessingReportRequest() throws Exception {
+        MvcResult result = mvc.perform(get("/chompb/project/test_proj/processing_results/velocicroptor/"))
                 .andExpect(status().isOk())
                 .andReturn();
         assertEquals("report/chompb", result.getResponse().getForwardedUrl());

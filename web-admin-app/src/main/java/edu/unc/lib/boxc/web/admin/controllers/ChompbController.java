@@ -1,16 +1,21 @@
 package edu.unc.lib.boxc.web.admin.controllers;
 
 import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
+import edu.unc.lib.boxc.auth.api.models.AgentPrincipals;
+import edu.unc.lib.boxc.auth.fcrepo.models.AgentPrincipalsImpl;
 import edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore;
 import edu.unc.lib.boxc.web.admin.controllers.processing.ChompbPreIngestService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
+import java.io.IOException;
 
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
@@ -29,8 +34,8 @@ public class ChompbController {
 
     @RequestMapping(value = "chompb/listProjects", method = RequestMethod.GET, produces = APPLICATION_JSON_VALUE)
     public @ResponseBody String chompbProjectsJSON() {
-        AccessGroupSet accessGroups = GroupsThreadStore.getPrincipals();
-        return chompbPreIngestService.getProjectLists(accessGroups);
+        var agentPrincipals = AgentPrincipalsImpl.createFromThread();
+        return chompbPreIngestService.getProjectLists(agentPrincipals);
     }
 
     /**
@@ -38,8 +43,21 @@ public class ChompbController {
      * for each chompb action
      * @return
      */
-    @RequestMapping(value = "chompb/cropping_report/{projectName}", method = RequestMethod.GET)
+    @RequestMapping(value = "chompb/project/**", method = RequestMethod.GET)
     public String chompbCroppingReport() {
         return "report/chompb";
+    }
+
+    @RequestMapping(value = "chompb/project/{projectName}/processing_results/{jobName}/data.json",
+            method = RequestMethod.GET,
+            produces = APPLICATION_JSON_VALUE)
+    public @ResponseBody String getProcessingResults(@PathVariable("projectName") String projectName,
+                                                     @PathVariable("jobName") String jobName) {
+        var agentPrincipals = AgentPrincipalsImpl.createFromThread();
+        try {
+            return chompbPreIngestService.getProcessingResults(agentPrincipals, projectName, jobName);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 }
