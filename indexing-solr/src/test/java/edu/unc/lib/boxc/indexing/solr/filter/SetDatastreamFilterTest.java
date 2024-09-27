@@ -614,7 +614,8 @@ public class SetDatastreamFilterTest {
         PID filePid = PIDs.get(fileId);
         when(fileObj.getPid()).thenReturn(filePid);
         when(binObj.getPid()).thenReturn(getOriginalFilePid(filePid));
-        setUpDerivatives(filePid);
+        var derivs = makeJP2Derivative();
+        when(derivativeService.getDerivatives(filePid)).thenReturn(derivs);
 
         dip.setContentObject(workObj);
         filter.filter(dip);
@@ -622,6 +623,9 @@ public class SetDatastreamFilterTest {
         assertNotNull(idb.getDatastream());
         assertNull(idb.getFilesizeSort());
         assertNotNull(idb.getFilesizeTotal());
+
+        assertContainsDatastream(idb.getDatastream(), JP2_ACCESS_COPY.getId(),
+                11, JP2_ACCESS_COPY.getMimetype(), "access.jp2", null, fileId, null);
     }
 
     @Test
@@ -659,7 +663,7 @@ public class SetDatastreamFilterTest {
         assertEquals(FILE2_SIZE + MODS_SIZE + PREMIS_SIZE, (long) idb.getFilesizeTotal());
 
         assertContainsDatastream(idb.getDatastream(), JP2_ACCESS_COPY.getId(),
-                11, JP2_ACCESS_COPY.getMimetype(), "access.jp2", null, null, null);
+                11, JP2_ACCESS_COPY.getMimetype(), "access.jp2", null, thumbnailId, null);
     }
 
     @Test
@@ -752,17 +756,6 @@ public class SetDatastreamFilterTest {
         assertTrue(values.contains(joined), "Did not contain datastream " + name);
     }
 
-    private void assertDoesNotContainDatastream(List<String> values, String name, long filesize, String mimetype,
-                                          String filename, String digest, String owner, String extent) {
-        String extension = filename.substring(filename.lastIndexOf('.') + 1);
-        List<Object> components = Arrays.asList(
-                name, mimetype, filename, extension, filesize, digest, owner, extent);
-        String joined = components.stream()
-                .map(c -> c == null ? "" : c.toString())
-                .collect(Collectors.joining("|"));
-        assertFalse(values.contains(joined), "Contains datastream " + name);
-    }
-
     private void addMetadataDatastreams(ContentObject obj) throws Exception {
         BinaryObject fitsBin = mock(BinaryObject.class);
         when(fitsBin.getPid()).thenReturn(DatastreamPids.getTechnicalMetadataPid(pid));
@@ -790,24 +783,10 @@ public class SetDatastreamFilterTest {
                 PREMIS_SIZE, PREMIS_MIMETYPE, PREMIS_NAME, PREMIS_DIGEST, null, null);
     }
 
-    private void setUpDerivatives(PID filePid) throws IOException {
-        File file = derivDir.resolve("file.jp2").toFile();
-        FileUtils.write(file, "content", "UTF-8");
-
-        List<Derivative> derivs = List.of(new Derivative(JP2_ACCESS_COPY, file));
-        when(derivativeService.getDerivatives(filePid)).thenReturn(derivs);
-    }
-
     private List<Derivative> makeJP2Derivative() throws IOException {
         File jp2File = derivDir.resolve("access.jp2").toFile();
         FileUtils.write(jp2File, "jp2 content", "UTF-8");
 
         return List.of(new Derivative(JP2_ACCESS_COPY, jp2File));
-    }
-
-    private void assertThumbnailDatastreams(String thumbnailId) {
-        assertContainsDatastream(idb.getDatastream(), JP2_ACCESS_COPY.getId(),
-                7l, JP2_ACCESS_COPY.getMimetype(), "file.jp2", null, thumbnailId, null);
-
     }
 }

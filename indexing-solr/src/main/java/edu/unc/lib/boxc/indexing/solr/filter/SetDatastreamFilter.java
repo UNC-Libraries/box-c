@@ -86,6 +86,10 @@ public class SetDatastreamFilter implements IndexDocumentFilter {
             addDerivatives(datastreams, contentObj.getPid(), false, null);
         }
 
+        if (contentObj instanceof WorkObject) {
+            addThumbnailDerivative((WorkObject) contentObj, datastreams);
+        }
+
         // Add in metadata datastreams
         addDatastreams(datastreams, contentObj.listMetadata(), false);
 
@@ -276,6 +280,20 @@ public class SetDatastreamFilter implements IndexDocumentFilter {
                 dsList.add(new DatastreamImpl(owner, name, filesize, mimetype,
                         filename, extension, checksum, extentValue));
             });
+    }
+
+    /**
+     * Used to selectively add the JP2 thumbnail datastream
+     *
+     * @param workObject the work object with the thumbnail relation
+     * @param datastreams work object's datastreams to add thumbnail streams to
+     */
+    private void addThumbnailDerivative(WorkObject workObject, List<Datastream> datastreams) {
+        FileObject thumbnailObject = workObject.getThumbnailObject();
+
+        if (thumbnailObject != null) {
+            addDerivatives(datastreams, thumbnailObject.getPid(), true, List.of(JP2_ACCESS_COPY));
+        }
     }
 
     private boolean needsExtent(String name, String mimetype) {
