@@ -2,7 +2,6 @@ package edu.unc.lib.boxc.services.camel.destroyDerivatives;
 
 import static edu.unc.lib.boxc.model.api.DatastreamType.FULLTEXT_EXTRACTION;
 import static edu.unc.lib.boxc.model.api.DatastreamType.JP2_ACCESS_COPY;
-import static edu.unc.lib.boxc.model.api.DatastreamType.THUMBNAIL_LARGE;
 import static edu.unc.lib.boxc.services.camel.util.CdrFcrepoHeaders.CdrBinaryMimeType;
 import static edu.unc.lib.boxc.services.camel.util.CdrFcrepoHeaders.CdrBinaryPidId;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -86,30 +85,6 @@ public class DestroyDerivativesProcessorTest {
 
         when(message.getHeader(eq(CdrBinaryMimeType)))
                 .thenReturn("text/plain");
-
-        processor.process(exchange);
-
-        // Deleted file
-        assertFalse(file.exists());
-        // Deleted parent dirs
-        assertFalse(new File(derivativeTypeBaseDir, "de").exists());
-        // Didn't delete root derivative type dir
-        assertTrue(derivativeTypeBaseDir.exists());
-    }
-
-    @Test
-    public void deleteThumbnailTest() throws Exception {
-        derivativeTypeDir = THUMBNAIL_LARGE.getId();
-        derivativeFinalDir = Files.createDirectories(tmpFolder.resolve(derivativeTypeDir + "/de/75/d8/11")).toFile();
-        file = new File(derivativeFinalDir, pathId + ".png");
-
-        FileUtils.writeStringToFile(file, "fake image", StandardCharsets.UTF_8);
-
-        derivativeTypeBaseDir = new File(derivativeDirBase, derivativeTypeDir);
-        processor = new DestroyDerivativesProcessor("png", derivativeTypeBaseDir.getAbsolutePath());
-
-        when(message.getHeader(eq(CdrBinaryMimeType)))
-                .thenReturn("image/png");
 
         processor.process(exchange);
 

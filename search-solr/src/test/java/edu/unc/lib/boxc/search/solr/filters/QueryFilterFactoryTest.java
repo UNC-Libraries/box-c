@@ -15,7 +15,7 @@ import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 public class QueryFilterFactoryTest {
     @Test
     public void NamedDatastreamFilterTest() {
-        var filter = QueryFilterFactory.createFilter(SearchFieldKey.DATASTREAM, DatastreamType.THUMBNAIL_LARGE);
+        var filter = QueryFilterFactory.createFilter(SearchFieldKey.DATASTREAM, DatastreamType.JP2_ACCESS_COPY);
         assertInstanceOf(NamedDatastreamFilter.class, filter);
     }
 

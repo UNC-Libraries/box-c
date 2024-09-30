@@ -155,10 +155,8 @@ public class AccessCopiesServiceTest  {
         var mdObjectImg = new ContentObjectSolrRecord();
         mdObjectImg.setResourceType(resourceType.name());
         mdObjectImg.setId(UUID.randomUUID().toString());
-        List<String> imgDatastreams = Arrays.asList(
-                ORIGINAL_FILE.getId() + "|image/png|file.png|png|766|urn:sha1:checksum|",
-                DatastreamType.THUMBNAIL_LARGE.getId() + "|image/png|thumb|png|55||",
-                DatastreamType.JP2_ACCESS_COPY.getId() + "|image/jp2|thumb|jp2|555||");
+        List<String> imgDatastreams = List.of(
+                ORIGINAL_FILE.getId() + "|image/png|file.png|png|766|urn:sha1:checksum|");
         mdObjectImg.setFileFormatCategory(Collections.singletonList(ContentCategory.image.getDisplayName()));
         mdObjectImg.setFileFormatType(Collections.singletonList("image/png"));
         mdObjectImg.setDatastream(imgDatastreams);
@@ -292,9 +290,8 @@ public class AccessCopiesServiceTest  {
         var mdObjectImg2 = new ContentObjectSolrRecord();
         mdObjectImg2.setResourceType(ResourceType.File.name());
         mdObjectImg2.setId(UUID.randomUUID().toString());
-        var imgDatastreams = Arrays.asList(
-                ORIGINAL_FILE.getId() + "|image/jpg|file2.png|png|555|urn:sha1:checksum|",
-                DatastreamType.THUMBNAIL_LARGE.getId() + "|image/png|thumb|png|55||");
+        var imgDatastreams = List.of(
+                ORIGINAL_FILE.getId() + "|image/jpg|file2.png|png|555|urn:sha1:checksum|");
         mdObjectImg2.setFileFormatCategory(Collections.singletonList(ContentCategory.image.getDisplayName()));
         mdObjectImg2.setFileFormatType(Collections.singletonList("png"));
         mdObjectImg2.setDatastream(imgDatastreams);
