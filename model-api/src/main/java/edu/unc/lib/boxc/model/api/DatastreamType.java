@@ -21,7 +21,6 @@ public enum DatastreamType {
     ORIGINAL_FILE("original_file", null, null, DATA_FILE_FILESET, INTERNAL),
     TECHNICAL_METADATA("techmd_fits", "text/xml", "xml", DATA_FILE_FILESET, INTERNAL),
     TECHNICAL_METADATA_HISTORY("techmd_fits_history", "text/xml", "xml", DATA_FILE_FILESET, INTERNAL),
-    THUMBNAIL_SMALL("thumbnail_small", "image/png", "png", null, EXTERNAL),
     THUMBNAIL_LARGE("thumbnail_large", "image/png", "png", null, EXTERNAL);
 
     private final String id;

@@ -210,16 +210,6 @@
         <property name="titleRetrievalService" ref="titleRetrievalService" />
         <property name="memberOrderService" ref="memberOrderService" />
     </bean>
-
-    <bean id="addSmallThumbnailProcessor" class="edu.unc.lib.boxc.services.camel.images.AddDerivativeProcessor">
-        <constructor-arg value="#{T(edu.unc.lib.boxc.model.api.DatastreamType).THUMBNAIL_SMALL.getExtension()}" />
-        <constructor-arg value="${cdr.enhancement.path.thumbnail.small}" />
-    </bean>
-    
-    <bean id="addLargeThumbnailProcessor" class="edu.unc.lib.boxc.services.camel.images.AddDerivativeProcessor">
-        <constructor-arg value="#{T(edu.unc.lib.boxc.model.api.DatastreamType).THUMBNAIL_LARGE.getExtension()}" />
-        <constructor-arg value="${cdr.enhancement.path.thumbnail.large}" />
-    </bean>
     
     <bean id="addAccessCopyProcessor" class="edu.unc.lib.boxc.services.camel.images.AddDerivativeProcessor">
         <constructor-arg value="#{T(edu.unc.lib.boxc.model.api.DatastreamType).JP2_ACCESS_COPY.getExtension()}" />
@@ -242,16 +232,6 @@
     <bean id="destroyCollectionSrcImgProcessor" class="edu.unc.lib.boxc.services.camel.destroyDerivatives.DestroyDerivativesProcessor">
         <constructor-arg value="" />
         <constructor-arg value="${sourceImages.dir}" />
-    </bean>
-
-    <bean id="destroySmallThumbnailProcessor" class="edu.unc.lib.boxc.services.camel.destroyDerivatives.DestroyDerivativesProcessor">
-        <constructor-arg value="#{T(edu.unc.lib.boxc.model.api.DatastreamType).THUMBNAIL_SMALL.getExtension()}" />
-        <constructor-arg value="${cdr.enhancement.path.thumbnail.small}" />
-    </bean>
-
-    <bean id="destroyLargeThumbnailProcessor" class="edu.unc.lib.boxc.services.camel.destroyDerivatives.DestroyDerivativesProcessor">
-        <constructor-arg value="#{T(edu.unc.lib.boxc.model.api.DatastreamType).THUMBNAIL_LARGE.getExtension()}" />
-        <constructor-arg value="${cdr.enhancement.path.thumbnail.large}" />
     </bean>
 
     <bean id="destroyAccessCopyProcessor" class="edu.unc.lib.boxc.services.camel.destroyDerivatives.DestroyDerivativesProcessor">

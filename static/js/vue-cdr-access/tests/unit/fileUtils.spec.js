@@ -71,8 +71,6 @@ describe('fileUtils', () => {
             "datastream": [
                 "techmd_fits|text\/xml|aaa66f91-4870-4937-b7ba-06b015959e4f.xml|xml|5480|urn:sha1:82c71472051b8279a0fbaa537a340c57e3d842f6|aaa66f91-4870-4937-b7ba-06b015959e4f",
                 "original_file|image\/png|Screen+Shot+2018-10-17+at+3.02.53+PM.png|png|232738|urn:md5:f5397b230bb5dfa4d53f57ad35514405|aaa66f91-4870-4937-b7ba-06b015959e4f",
-                "thumbnail_small|image\/png|aaa66f91-4870-4937-b7ba-06b015959e4f.png|png|2454||aaa66f91-4870-4937-b7ba-06b015959e4f",
-                "thumbnail_large|image\/png|aaa66f91-4870-4937-b7ba-06b015959e4f.png|png|5892||aaa66f91-4870-4937-b7ba-06b015959e4f"
             ],
             "fileDesc": ["Portable Network Graphics", "Joint Photographic Experts Group"],
             "fileType": [
@@ -93,8 +91,6 @@ describe('fileUtils', () => {
             "datastream": [
                 "techmd_fits|text\/xml|aaa66f91-4870-4937-b7ba-06b015959e4f.xml|xml|5480|urn:sha1:82c71472051b8279a0fbaa537a340c57e3d842f6|aaa66f91-4870-4937-b7ba-06b015959e4f",
                 "original_file|image\/png|Screen+Shot+2018-10-17+at+3.02.53+PM.png|png|232738|urn:md5:f5397b230bb5dfa4d53f57ad35514405|aaa66f91-4870-4937-b7ba-06b015959e4f",
-                "thumbnail_small|image\/png|aaa66f91-4870-4937-b7ba-06b015959e4f.png|png|2454||aaa66f91-4870-4937-b7ba-06b015959e4f",
-                "thumbnail_large|image\/png|aaa66f91-4870-4937-b7ba-06b015959e4f.png|png|5892||aaa66f91-4870-4937-b7ba-06b015959e4f"
             ],
             "fileDesc": ["Portable Network Graphics", "Portable Network Graphics"],
             "fileType": [
@@ -115,8 +111,6 @@ describe('fileUtils', () => {
             "datastream": [
                 "techmd_fits|text\/xml|aaa66f91-4870-4937-b7ba-06b015959e4f.xml|xml|5480|urn:sha1:82c71472051b8279a0fbaa537a340c57e3d842f6|aaa66f91-4870-4937-b7ba-06b015959e4f",
                 "original_file|image\/png|Screen+Shot+2018-10-17+at+3.02.53+PM.png|png|232738|urn:md5:f5397b230bb5dfa4d53f57ad35514405|aaa66f91-4870-4937-b7ba-06b015959e4f",
-                "thumbnail_small|image\/png|aaa66f91-4870-4937-b7ba-06b015959e4f.png|png|2454||aaa66f91-4870-4937-b7ba-06b015959e4f",
-                "thumbnail_large|image\/png|aaa66f91-4870-4937-b7ba-06b015959e4f.png|png|5892||aaa66f91-4870-4937-b7ba-06b015959e4f"
             ],
             "fileDesc": [],
             "fileType": [
@@ -137,8 +131,6 @@ describe('fileUtils', () => {
             "datastream": [
                 "techmd_fits|text\/xml|aaa66f91-4870-4937-b7ba-06b015959e4f.xml|xml|5480|urn:sha1:82c71472051b8279a0fbaa537a340c57e3d842f6|aaa66f91-4870-4937-b7ba-06b015959e4f",
                 "original_file|image\/png|Screen+Shot+2018-10-17+at+3.02.53+PM.png|png|232738|urn:md5:f5397b230bb5dfa4d53f57ad35514405|aaa66f91-4870-4937-b7ba-06b015959e4f",
-                "thumbnail_small|image\/png|aaa66f91-4870-4937-b7ba-06b015959e4f.png|png|2454||aaa66f91-4870-4937-b7ba-06b015959e4f",
-                "thumbnail_large|image\/png|aaa66f91-4870-4937-b7ba-06b015959e4f.png|png|5892||aaa66f91-4870-4937-b7ba-06b015959e4f"
             ],
             "fileDesc": [],
             "fileType": [
@@ -159,8 +151,6 @@ describe('fileUtils', () => {
             "datastream": [
                 "techmd_fits|text\/xml|aaa66f91-4870-4937-b7ba-06b015959e4f.xml|xml|5480|urn:sha1:82c71472051b8279a0fbaa537a340c57e3d842f6|aaa66f91-4870-4937-b7ba-06b015959e4f",
                 "original_file|image\/png|Screen+Shot+2018-10-17+at+3.02.53+PM.png|png|232738|urn:md5:f5397b230bb5dfa4d53f57ad35514405|aaa66f91-4870-4937-b7ba-06b015959e4f",
-                "thumbnail_small|image\/png|aaa66f91-4870-4937-b7ba-06b015959e4f.png|png|2454||aaa66f91-4870-4937-b7ba-06b015959e4f",
-                "thumbnail_large|image\/png|aaa66f91-4870-4937-b7ba-06b015959e4f.png|png|5892||aaa66f91-4870-4937-b7ba-06b015959e4f"
             ],
             "fileDesc": [],
             "fileType": [
@@ -181,8 +171,6 @@ describe('fileUtils', () => {
             "datastream": [
                 "techmd_fits|text\/xml|aaa66f91-4870-4937-b7ba-06b015959e4f.xml|xml|5480|urn:sha1:82c71472051b8279a0fbaa537a340c57e3d842f6|aaa66f91-4870-4937-b7ba-06b015959e4f",
                 "original_file|image\/png|Screen+Shot+2018-10-17+at+3.02.53+PM.png|png|232738|urn:md5:f5397b230bb5dfa4d53f57ad35514405|aaa66f91-4870-4937-b7ba-06b015959e4f",
-                "thumbnail_small|image\/png|aaa66f91-4870-4937-b7ba-06b015959e4f.png|png|2454||aaa66f91-4870-4937-b7ba-06b015959e4f",
-                "thumbnail_large|image\/png|aaa66f91-4870-4937-b7ba-06b015959e4f.png|png|5892||aaa66f91-4870-4937-b7ba-06b015959e4f"
             ],
             "fileType": [
                 "image/png"

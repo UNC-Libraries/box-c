@@ -49,11 +49,9 @@ import static edu.unc.lib.boxc.model.api.DatastreamType.JP2_ACCESS_COPY;
 import static edu.unc.lib.boxc.model.api.DatastreamType.ORIGINAL_FILE;
 import static edu.unc.lib.boxc.model.api.DatastreamType.TECHNICAL_METADATA;
 import static edu.unc.lib.boxc.model.api.DatastreamType.THUMBNAIL_LARGE;
-import static edu.unc.lib.boxc.model.api.DatastreamType.THUMBNAIL_SMALL;
 import static edu.unc.lib.boxc.model.fcrepo.ids.DatastreamPids.getOriginalFilePid;
 import static org.apache.jena.rdf.model.ResourceFactory.createResource;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -699,22 +697,22 @@ public class SetDatastreamFilterTest {
     @Test
     public void fileObjectWithDerivativeTest() throws Exception {
         when(fileObj.getPid()).thenReturn(pid);
-        when(fileObj.getBinaryObjects()).thenReturn(Arrays.asList(binObj));
+        when(fileObj.getBinaryObjects()).thenReturn(List.of(binObj));
         dip.setContentObject(fileObj);
 
-        File derivFile = derivDir.resolve("deriv.png").toFile();
+        File derivFile = derivDir.resolve("deriv.jp2").toFile();
         FileUtils.write(derivFile, "content", "UTF-8");
         long derivSize = 7l;
 
-        List<Derivative> derivs = Arrays.asList(new Derivative(THUMBNAIL_SMALL, derivFile));
+        List<Derivative> derivs = List.of(new Derivative(JP2_ACCESS_COPY, derivFile));
         when(derivativeService.getDerivatives(pid)).thenReturn(derivs);
 
         filter.filter(dip);
 
         assertContainsDatastream(idb.getDatastream(), ORIGINAL_FILE.getId(),
                 FILE_SIZE, FILE_MIMETYPE, FILE_NAME, FILE_DIGEST, null, null);
-        assertContainsDatastream(idb.getDatastream(), THUMBNAIL_SMALL.getId(),
-                derivSize, THUMBNAIL_SMALL.getMimetype(), derivFile.getName(), null, null, null);
+        assertContainsDatastream(idb.getDatastream(), JP2_ACCESS_COPY.getId(),
+                derivSize, JP2_ACCESS_COPY.getMimetype(), derivFile.getName(), null, null, null);
 
         assertEquals(FILE_SIZE, (long) idb.getFilesizeSort());
         assertEquals(FILE_SIZE + derivSize, (long) idb.getFilesizeTotal());

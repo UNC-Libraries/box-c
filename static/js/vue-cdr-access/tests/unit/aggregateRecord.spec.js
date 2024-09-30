@@ -159,8 +159,6 @@ const record = {
                 "original_file|image/jpeg|bee1.jpg|jpg|69481|urn:sha1:87d7bed6cb33c87c589cfcdc2a2ce6110712fabb|4053adf7-7bdc-4c9c-8769-8cc5da4ce81d|607x1024",
                 "techmd_fits|text/xml|techmd_fits.xml|xml|7013|urn:sha1:0c4a500c73146214d5fa08f278c0cdaadede79d0|4053adf7-7bdc-4c9c-8769-8cc5da4ce81d|",
                 "jp2|image/jp2|4053adf7-7bdc-4c9c-8769-8cc5da4ce81d.jp2|jp2|415163||4053adf7-7bdc-4c9c-8769-8cc5da4ce81d|",
-                "thumbnail_small|image/png|4053adf7-7bdc-4c9c-8769-8cc5da4ce81d.png|png|4802||4053adf7-7bdc-4c9c-8769-8cc5da4ce81d|",
-                "thumbnail_large|image/png|4053adf7-7bdc-4c9c-8769-8cc5da4ce81d.png|png|16336||4053adf7-7bdc-4c9c-8769-8cc5da4ce81d|",
                 "event_log|application/n-triples|event_log.nt|nt|4504|urn:sha1:b15940ee90b0f6d2b3ab1639eb7a266e54b621f2||",
                 "md_descriptive|text/xml|md_descriptive.xml|xml|459|urn:sha1:17e8dec55960ac14f100541993793dc8da231788||",
                 "md_descriptive_history|text/xml|||4976|urn:sha1:35e4b19ea3c58148c607b6537cc9af510406700c||"
