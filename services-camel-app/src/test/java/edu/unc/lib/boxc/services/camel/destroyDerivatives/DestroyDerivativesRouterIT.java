@@ -92,12 +92,6 @@ public class DestroyDerivativesRouterIT extends CamelSpringTestSupport {
 
     private DestroyedMsgProcessor destroyedMsgProcessor;
 
-    private DestroyDerivativesProcessor destroyCollectionSrcImgProcessor;
-
-    private DestroyDerivativesProcessor destroySmallThumbnailProcessor;
-
-    private DestroyDerivativesProcessor destroyLargeThumbnailProcessor;
-
     private DestroyDerivativesProcessor destroyAccessCopyProcessor;
 
     private DestroyDerivativesProcessor destroyFulltextProcessor;
@@ -145,9 +139,6 @@ public class DestroyDerivativesRouterIT extends CamelSpringTestSupport {
         indexingMessageSender = applicationContext.getBean(IndexingMessageSender.class);
         binaryDestroyedMessageSender = applicationContext.getBean("binaryDestroyedMessageSender", MessageSender.class);
         destroyedMsgProcessor = applicationContext.getBean(DestroyedMsgProcessor.class);
-        destroyCollectionSrcImgProcessor = applicationContext.getBean("destroyCollectionSrcImgProcessor", DestroyDerivativesProcessor.class);
-        destroySmallThumbnailProcessor = applicationContext.getBean("destroySmallThumbnailProcessor", DestroyDerivativesProcessor.class);
-        destroyLargeThumbnailProcessor = applicationContext.getBean("destroyLargeThumbnailProcessor", DestroyDerivativesProcessor.class);
         destroyAccessCopyProcessor = applicationContext.getBean("destroyAccessCopyProcessor", DestroyDerivativesProcessor.class);
         destroyFulltextProcessor = applicationContext.getBean("destroyFulltextProcessor", DestroyDerivativesProcessor.class);
 
@@ -195,9 +186,6 @@ public class DestroyDerivativesRouterIT extends CamelSpringTestSupport {
         initializeDestroyJob(Collections.singletonList(fileObj.getPid()));
         destroyJob.run();
 
-        verify(destroySmallThumbnailProcessor).process(any(Exchange.class));
-        verify(destroyLargeThumbnailProcessor).process(any(Exchange.class));
-        verify(destroyCollectionSrcImgProcessor, never()).process(any(Exchange.class));
         verify(destroyAccessCopyProcessor).process(any(Exchange.class));
         verify(destroyFulltextProcessor, never()).process(any(Exchange.class));
     }
@@ -222,9 +210,6 @@ public class DestroyDerivativesRouterIT extends CamelSpringTestSupport {
 
         destroyJob.run();
 
-        verify(destroySmallThumbnailProcessor).process(any(Exchange.class));
-        verify(destroyLargeThumbnailProcessor).process(any(Exchange.class));
-        verify(destroyCollectionSrcImgProcessor).process(any(Exchange.class));
         verify(destroyAccessCopyProcessor, never()).process(any(Exchange.class));
         verify(destroyFulltextProcessor, never()).process(any(Exchange.class));
     }
@@ -240,9 +225,6 @@ public class DestroyDerivativesRouterIT extends CamelSpringTestSupport {
         initializeDestroyJob(Collections.singletonList(collectionWithImg.getPid()));
         destroyJob.run();
 
-        verify(destroySmallThumbnailProcessor, never()).process(any(Exchange.class));
-        verify(destroyLargeThumbnailProcessor, never()).process(any(Exchange.class));
-        verify(destroyCollectionSrcImgProcessor, never()).process(any(Exchange.class));
         verify(destroyAccessCopyProcessor, never()).process(any(Exchange.class));
         verify(destroyFulltextProcessor, never()).process(any(Exchange.class));
     }
@@ -260,9 +242,6 @@ public class DestroyDerivativesRouterIT extends CamelSpringTestSupport {
         initializeDestroyJob(Collections.singletonList(fileObj.getPid()));
         destroyJob.run();
 
-        verify(destroySmallThumbnailProcessor, never()).process(any(Exchange.class));
-        verify(destroyLargeThumbnailProcessor, never()).process(any(Exchange.class));
-        verify(destroyCollectionSrcImgProcessor, never()).process(any(Exchange.class));
         verify(destroyAccessCopyProcessor, never()).process(any(Exchange.class));
         verify(destroyFulltextProcessor).process(any(Exchange.class));
     }
@@ -279,9 +258,6 @@ public class DestroyDerivativesRouterIT extends CamelSpringTestSupport {
         initializeDestroyJob(Collections.singletonList(fileObj.getPid()));
         destroyJob.run();
 
-        verify(destroySmallThumbnailProcessor, never()).process(any(Exchange.class));
-        verify(destroyLargeThumbnailProcessor, never()).process(any(Exchange.class));
-        verify(destroyCollectionSrcImgProcessor, never()).process(any(Exchange.class));
         verify(destroyAccessCopyProcessor, never()).process(any(Exchange.class));
         verify(destroyFulltextProcessor, never()).process(any(Exchange.class));
     }

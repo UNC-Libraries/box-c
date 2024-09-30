@@ -25,15 +25,6 @@ public class DestroyDerivativesRouter extends RouteBuilder {
     @BeanInject(value = "destroyedMsgProcessor")
     private DestroyedMsgProcessor destroyedMsgProcessor;
 
-    @BeanInject(value = "destroyCollectionSrcImgProcessor")
-    private DestroyDerivativesProcessor destroyCollectionSrcImgProcessor;
-
-    @BeanInject(value = "destroySmallThumbnailProcessor")
-    private DestroyDerivativesProcessor destroySmallThumbnailProcessor;
-
-    @BeanInject(value = "destroyLargeThumbnailProcessor")
-    private DestroyDerivativesProcessor destroyLargeThumbnailProcessor;
-
     @BeanInject(value = "destroyAccessCopyProcessor")
     private DestroyDerivativesProcessor destroyAccessCopyProcessor;
 
@@ -75,13 +66,7 @@ public class DestroyDerivativesRouter extends RouteBuilder {
                 .routeId("CdrDestroyImage")
                 .startupOrder(202)
                 .log(LoggingLevel.DEBUG, log, "Destroying derivative thumbnails")
-                .bean(destroySmallThumbnailProcessor)
-                .bean(destroyLargeThumbnailProcessor)
-                .choice()
-                    .when(simple("${headers['" + CdrObjectType + "']} == '" + Cdr.FileObject.getURI() + "'"))
-                        .to("direct:image.access.destroy")
-                    .when(simple("${headers['CollectionThumb']} != null"))
-                        .to("direct:image.collection.destroy")
+                .to("direct:image.access.destroy")
                 .end();
 
         from("direct:image.access.destroy")
@@ -89,28 +74,10 @@ public class DestroyDerivativesRouter extends RouteBuilder {
                 .startupOrder(201)
                 .log(LoggingLevel.DEBUG, log, "Destroying access copy")
                 .bean(destroyAccessCopyProcessor);
-
-        from("direct:image.collection.destroy")
-                .routeId("CdrDestroyCollectionUpload")
-                .startupOrder(200)
-                .log(LoggingLevel.DEBUG, log, "Destroying collection image upload")
-                .bean(destroyCollectionSrcImgProcessor);
     }
 
     public void setDestroyedMsgProcessor(DestroyedMsgProcessor destroyedMsgProcessor) {
         this.destroyedMsgProcessor = destroyedMsgProcessor;
-    }
-
-    public void setDestroyCollectionSrcImgProcessor(DestroyDerivativesProcessor destroyCollectionSrcImgProcessor) {
-        this.destroyCollectionSrcImgProcessor = destroyCollectionSrcImgProcessor;
-    }
-
-    public void setDestroySmallThumbnailProcessor(DestroyDerivativesProcessor destroySmallThumbnailProcessor) {
-        this.destroySmallThumbnailProcessor = destroySmallThumbnailProcessor;
-    }
-
-    public void setDestroyLargeThumbnailProcessor(DestroyDerivativesProcessor destroyLargeThumbnailProcessor) {
-        this.destroyLargeThumbnailProcessor = destroyLargeThumbnailProcessor;
     }
 
     public void setDestroyAccessCopyProcessor(DestroyDerivativesProcessor destroyAccessCopyProcessor) {
