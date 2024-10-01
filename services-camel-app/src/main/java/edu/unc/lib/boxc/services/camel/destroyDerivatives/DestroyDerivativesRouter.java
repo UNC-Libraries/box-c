@@ -1,17 +1,14 @@
 package edu.unc.lib.boxc.services.camel.destroyDerivatives;
 
-import static edu.unc.lib.boxc.services.camel.util.CdrFcrepoHeaders.CdrObjectType;
-import static org.slf4j.LoggerFactory.getLogger;
-
+import edu.unc.lib.boxc.services.camel.fulltext.FulltextProcessor;
+import edu.unc.lib.boxc.services.camel.images.ImageDerivativeProcessor;
 import org.apache.camel.BeanInject;
 import org.apache.camel.LoggingLevel;
 import org.apache.camel.PropertyInject;
 import org.apache.camel.builder.RouteBuilder;
 import org.slf4j.Logger;
 
-import edu.unc.lib.boxc.model.api.rdf.Cdr;
-import edu.unc.lib.boxc.services.camel.fulltext.FulltextProcessor;
-import edu.unc.lib.boxc.services.camel.images.ImageDerivativeProcessor;
+import static org.slf4j.LoggerFactory.getLogger;
 
 /**
  * Router to process requests to destroy derivatives for an object
@@ -65,14 +62,7 @@ public class DestroyDerivativesRouter extends RouteBuilder {
         from("direct:image.derivatives.destroy")
                 .routeId("CdrDestroyImage")
                 .startupOrder(202)
-                .log(LoggingLevel.DEBUG, log, "Destroying access copy")
-//                .to("direct:image.access.destroy")
-//                .end();
-//
-//        from("direct:image.access.destroy")
-//                .routeId("CdrDestroyAccessCopy")
-//                .startupOrder(201)
-//                .log(LoggingLevel.DEBUG, log, "Destroying access copy")
+                .log(LoggingLevel.DEBUG, log, "Destroying access copy derivatives")
                 .bean(destroyAccessCopyProcessor);
     }
 
