@@ -193,10 +193,6 @@
     <bean id="binaryEnhancementProcessor" class="edu.unc.lib.boxc.services.camel.BinaryEnhancementProcessor">
         <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
     </bean>
-
-    <bean id="nonBinaryEnhancementProcessor" class="edu.unc.lib.boxc.services.camel.NonBinaryEnhancementProcessor">
-        <property name="sourceImagesDir" value="${sourceImages.dir}" />
-    </bean>
     
     <bean id="binaryMetadataProcessor" class="edu.unc.lib.boxc.services.camel.BinaryMetadataProcessor">
         <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />

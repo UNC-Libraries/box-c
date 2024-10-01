@@ -10,12 +10,10 @@ import edu.unc.lib.boxc.model.api.rdf.Cdr;
 import edu.unc.lib.boxc.model.api.services.RepositoryObjectFactory;
 import edu.unc.lib.boxc.model.fcrepo.ids.DatastreamPids;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
-import edu.unc.lib.boxc.model.fcrepo.test.TestHelper;
 import edu.unc.lib.boxc.model.fcrepo.test.TestRepositoryDeinitializer;
 import edu.unc.lib.boxc.operations.impl.edit.UpdateDescriptionService;
 import edu.unc.lib.boxc.operations.impl.edit.UpdateDescriptionService.UpdateDescriptionRequest;
 import edu.unc.lib.boxc.persist.impl.storage.StorageLocationTestHelper;
-import edu.unc.lib.boxc.services.camel.NonBinaryEnhancementProcessor;
 import edu.unc.lib.boxc.services.camel.fulltext.FulltextProcessor;
 import edu.unc.lib.boxc.services.camel.images.AddDerivativeProcessor;
 import edu.unc.lib.boxc.services.camel.solr.SolrIngestProcessor;
@@ -101,7 +99,6 @@ public class EnhancementRouterIT extends CamelSpringTestSupport {
 
     private File tempDir;
 
-    private NonBinaryEnhancementProcessor nbh;
 
     @Override
     protected AbstractApplicationContext createApplicationContext() {
@@ -125,15 +122,8 @@ public class EnhancementRouterIT extends CamelSpringTestSupport {
         solrIngestProcessor = applicationContext.getBean("solrIngestProcessor", SolrIngestProcessor.class);
         fulltextProcessor = applicationContext.getBean("fulltextProcessor", FulltextProcessor.class);
         updateDescriptionService = applicationContext.getBean(UpdateDescriptionService.class);
-        nbh = applicationContext.getBean(NonBinaryEnhancementProcessor.class);
 
-        when(addSmallThumbnailProcessor.needsRun(any(Exchange.class))).thenReturn(true);
-        when(addLargeThumbnailProcessor.needsRun(any(Exchange.class))).thenReturn(true);
         when(addAccessCopyProcessor.needsRun(any(Exchange.class))).thenReturn(true);
-
-        TestHelper.setContentBase(baseAddress);
-        tempDir = Files.createDirectory(tmpFolder.resolve("target")).toFile();
-        nbh.setSourceImagesDir(tempDir.getAbsolutePath());
 
         File thumbScriptFile = new File("target/convertScaleStage.sh");
         FileUtils.writeStringToFile(thumbScriptFile, "exit 0", "utf-8");
@@ -166,9 +156,7 @@ public class EnhancementRouterIT extends CamelSpringTestSupport {
                 Cdr.Collection.getURI(), Container.getURI());
         template.sendBodyAndHeaders("", headers);
 
-        verify(addSmallThumbnailProcessor, never()).process(any(Exchange.class));
-        verify(addLargeThumbnailProcessor, never()).process(any(Exchange.class));
-        verify(addAccessCopyProcessor, never()).process(any(Exchange.class));
+        verify(addAccessCopyProcessor).process(any(Exchange.class));
         verify(solrIngestProcessor, timeout(ALLOW_WAIT)).process(any(Exchange.class));
     }
 

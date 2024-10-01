@@ -28,14 +28,6 @@
         <constructor-arg type="java.lang.Class" value="edu.unc.lib.boxc.services.camel.solr.SolrIngestProcessor" />
     </bean>
 
-    <bean id="addSmallThumbnailProcessor" class="org.mockito.Mockito" factory-method="mock">
-        <constructor-arg type="java.lang.Class" value="edu.unc.lib.boxc.services.camel.images.AddDerivativeProcessor" />
-    </bean>
-
-    <bean id="addLargeThumbnailProcessor" class="org.mockito.Mockito" factory-method="mock">
-        <constructor-arg type="java.lang.Class" value="edu.unc.lib.boxc.services.camel.images.AddDerivativeProcessor" />
-    </bean>
-
     <bean id="addAccessCopyProcessor" class="org.mockito.Mockito" factory-method="mock">
         <constructor-arg type="java.lang.Class" value="edu.unc.lib.boxc.services.camel.images.AddDerivativeProcessor" />
     </bean>
@@ -51,9 +43,6 @@
 
     <bean id="binaryEnhancementProcessor" class="edu.unc.lib.boxc.services.camel.BinaryEnhancementProcessor">
         <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
-    </bean>
-
-    <bean id="nonBinaryEnhancementProcessor" class="edu.unc.lib.boxc.services.camel.NonBinaryEnhancementProcessor">
     </bean>
 
     <bean id="addFullTextDerivativeProcessor" class="org.mockito.Mockito" factory-method="mock">
