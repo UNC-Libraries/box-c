@@ -210,7 +210,7 @@ public class DestroyDerivativesRouterIT extends CamelSpringTestSupport {
 
         destroyJob.run();
 
-        verify(destroyAccessCopyProcessor, never()).process(any(Exchange.class));
+        verify(destroyAccessCopyProcessor).process(any(Exchange.class));
         verify(destroyFulltextProcessor, never()).process(any(Exchange.class));
     }
 

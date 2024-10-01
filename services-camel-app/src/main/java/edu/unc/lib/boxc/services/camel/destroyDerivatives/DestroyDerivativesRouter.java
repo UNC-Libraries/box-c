@@ -65,14 +65,14 @@ public class DestroyDerivativesRouter extends RouteBuilder {
         from("direct:image.derivatives.destroy")
                 .routeId("CdrDestroyImage")
                 .startupOrder(202)
-                .log(LoggingLevel.DEBUG, log, "Destroying derivative thumbnails")
-                .to("direct:image.access.destroy")
-                .end();
-
-        from("direct:image.access.destroy")
-                .routeId("CdrDestroyAccessCopy")
-                .startupOrder(201)
                 .log(LoggingLevel.DEBUG, log, "Destroying access copy")
+//                .to("direct:image.access.destroy")
+//                .end();
+//
+//        from("direct:image.access.destroy")
+//                .routeId("CdrDestroyAccessCopy")
+//                .startupOrder(201)
+//                .log(LoggingLevel.DEBUG, log, "Destroying access copy")
                 .bean(destroyAccessCopyProcessor);
     }
 

@@ -30,7 +30,6 @@ public class DestroyDerivativesRouterTest extends CamelTestSupport {
     private static final String DESTROY_DERIVATIVES_ROUTE = "CdrDestroyDerivatives";
     private static final String DESTROY_FULLTEXT_ROUTE = "CdrDestroyFullText";
     private static final String DESTROY_IMAGE_ROUTE = "CdrDestroyImage";
-    private static final String DESTROY_ACCESS_COPY_ROUTE = "CdrDestroyAccessCopy";
     private static final String TEST_ID = "dee2614c-8a4b-4ac2-baf2-4b4afc11af87";
 
     @Produce("direct:start")
@@ -61,9 +60,6 @@ public class DestroyDerivativesRouterTest extends CamelTestSupport {
         destroyedMsgProcessor = new DestroyedMsgProcessor(tmpFolder.toAbsolutePath().toString());
         var router = new DestroyDerivativesRouter();
         router.setDestroyedMsgProcessor(destroyedMsgProcessor);
-        router.setDestroyCollectionSrcImgProcessor(destroyCollectionSrcImgProcessor);
-        router.setDestroySmallThumbnailProcessor(destroySmallThumbnailProcessor);
-        router.setDestroyLargeThumbnailProcessor(destroyLargeThumbnailProcessor);
         router.setDestroyAccessCopyProcessor(destroyAccessCopyProcessor);
         router.setDestroyFulltextProcessor(destroyFulltextProcessor);
         router.setDestroyDerivativesStreamCamel("direct:destroy.derivatives.stream");
@@ -151,20 +147,12 @@ public class DestroyDerivativesRouterTest extends CamelTestSupport {
         var body = createMessage(Cdr.FileObject, "image/png", TEST_ID, contentPath);
         template.sendBody(body);
 
-        verify(destroySmallThumbnailProcessor).process(any(Exchange.class));
-        verify(destroyLargeThumbnailProcessor).process(any(Exchange.class));
-        verify(destroyCollectionSrcImgProcessor, never()).process(any(Exchange.class));
-        verify(destroyAccessCopyProcessor, never()).process(any(Exchange.class));
+        verify(destroyAccessCopyProcessor).process(any(Exchange.class));
         verify(destroyFulltextProcessor, never()).process(any(Exchange.class));
     }
 
     @Test
     public void destroyImageThumbnailDerivativeCollection() throws Exception {
-        // Create the thumbnail file for the collection
-        var thumbPath = tmpFolder.resolve("de/e2/61/4c").resolve(TEST_ID);
-        Files.createDirectories(thumbPath.getParent());
-        Files.createFile(thumbPath);
-
         AdviceWith.adviceWith(context, DESTROY_DERIVATIVES_ROUTE, a -> {
             a.replaceFromWith("direct:start");
         });
@@ -173,10 +161,7 @@ public class DestroyDerivativesRouterTest extends CamelTestSupport {
         var body = createMessage(Cdr.Collection, "image/*", TEST_ID, contentPath);
         template.sendBody(body);
 
-        verify(destroySmallThumbnailProcessor).process(any(Exchange.class));
-        verify(destroyLargeThumbnailProcessor).process(any(Exchange.class));
-        verify(destroyCollectionSrcImgProcessor).process(any(Exchange.class));
-        verify(destroyAccessCopyProcessor, never()).process(any(Exchange.class));
+        verify(destroyAccessCopyProcessor).process(any(Exchange.class));
         verify(destroyFulltextProcessor, never()).process(any(Exchange.class));
     }
 
@@ -199,7 +184,7 @@ public class DestroyDerivativesRouterTest extends CamelTestSupport {
 
     @Test
     public void destroyImageAccessDerivative() throws Exception {
-        createContext(DESTROY_ACCESS_COPY_ROUTE);
+        createContext(DESTROY_IMAGE_ROUTE);
 
         Path contentPath = tmpFolder.resolve("content");
         var body = createMessage(Cdr.FileObject, "image/png", TEST_ID, contentPath);
