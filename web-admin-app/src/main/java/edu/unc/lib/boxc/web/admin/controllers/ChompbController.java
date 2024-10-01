@@ -1,21 +1,24 @@
 package edu.unc.lib.boxc.web.admin.controllers;
 
-import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
-import edu.unc.lib.boxc.auth.api.models.AgentPrincipals;
 import edu.unc.lib.boxc.auth.fcrepo.models.AgentPrincipalsImpl;
-import edu.unc.lib.boxc.auth.fcrepo.services.GroupsThreadStore;
 import edu.unc.lib.boxc.web.admin.controllers.processing.ChompbPreIngestService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
 import java.io.IOException;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Paths;
 
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
@@ -48,16 +51,45 @@ public class ChompbController {
         return "report/chompb";
     }
 
-    @RequestMapping(value = "chompb/project/{projectName}/processing_results/{jobName}/data.json",
-            method = RequestMethod.GET,
-            produces = APPLICATION_JSON_VALUE)
-    public @ResponseBody String getProcessingResults(@PathVariable("projectName") String projectName,
-                                                     @PathVariable("jobName") String jobName) {
+    /**
+     * Get processing result files for a specific job
+     * @param projectName
+     * @param jobName
+     * @param filePath
+     * @return
+     * @throws IOException
+     */
+    @RequestMapping(value = "chompb/project/{projectName}/processing_results/{jobName}/files",
+            method = RequestMethod.GET)
+    public ResponseEntity<InputStreamResource> getProcessingResults(@PathVariable("projectName") String projectName,
+                                                @PathVariable("jobName") String jobName,
+                                                @RequestParam(value = "path", defaultValue = "false") String filename)
+                                                throws IOException {
+//        var filename = extractFilename(request, jobName);
         var agentPrincipals = AgentPrincipalsImpl.createFromThread();
-        try {
-            return chompbPreIngestService.getProcessingResults(agentPrincipals, projectName, jobName);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+//        filename = URLDecoder.decode(filename, StandardCharsets.UTF_8);
+        var nameSegment = Paths.get(filename).getFileName().toString();
+        var stream = chompbPreIngestService.getProcessingResults(agentPrincipals, projectName, jobName, filename);
+        InputStreamResource resource = new InputStreamResource(stream);
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + nameSegment)
+                .contentType(getMediaType(filename))
+                .body(resource);
+    }
+
+    private String extractFilename(HttpServletRequest request, String jobName) {
+        var preceding = String.format("/processing_results/%s/", jobName);
+        var queryPath = request.getRequestURI();
+        return queryPath.substring(queryPath.indexOf(preceding) + preceding.length());
+    }
+
+    private MediaType getMediaType(String filename) {
+        if (filename.endsWith(".json")) {
+            return MediaType.APPLICATION_JSON;
+        } else if (filename.endsWith(".csv")) {
+            return MediaType.TEXT_PLAIN;
+        } else {
+            return MediaType.IMAGE_JPEG;
         }
     }
 }

@@ -6,6 +6,7 @@ import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
 import edu.unc.lib.boxc.auth.api.models.AgentPrincipals;
 import edu.unc.lib.boxc.auth.api.services.GlobalPermissionEvaluator;
 import edu.unc.lib.boxc.auth.fcrepo.models.AccessGroupSetImpl;
+import org.apache.commons.io.IOUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -17,6 +18,7 @@ import org.mockito.Mockito;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
@@ -39,6 +41,7 @@ public class ChompbPreIngestServiceTest {
     private static final String PROJ_NAME = "chompb_proj";
     private static final String VELO_JOB_NAME = "velocicroptor";
     private static final String DATA_JSON = "{ \"data\": [ ] }";
+    private static final String JSON_FILENAME = "data.json";
 
     private ChompbPreIngestService service;
     @Mock
@@ -121,8 +124,8 @@ public class ChompbPreIngestServiceTest {
     public void getProcessingResultsTest() throws Exception {
         createDataJson();
 
-        var results = service.getProcessingResults(agentPrincipals, PROJ_NAME, VELO_JOB_NAME);
-        assertEquals(DATA_JSON, results);
+        var results = service.getProcessingResults(agentPrincipals, PROJ_NAME, VELO_JOB_NAME, JSON_FILENAME);
+        assertEquals(DATA_JSON, IOUtils.toString(results, StandardCharsets.UTF_8));
     }
 
     @Test
@@ -131,15 +134,44 @@ public class ChompbPreIngestServiceTest {
         createDataJson();
 
         assertThrows(AccessRestrictionException.class,
-                () -> service.getProcessingResults(agentPrincipals, PROJ_NAME, VELO_JOB_NAME));
+                () -> service.getProcessingResults(agentPrincipals, PROJ_NAME, VELO_JOB_NAME, JSON_FILENAME));
+    }
+
+    @Test
+    public void getProcessingResultsImageTest() throws Exception {
+        var imagePath = "images/path/to/image.jpg";
+        var testContent = "test";
+        createResultFile(imagePath, testContent);
+
+        var results = service.getProcessingResults(agentPrincipals, PROJ_NAME, VELO_JOB_NAME, imagePath);
+        assertEquals(testContent, IOUtils.toString(results, StandardCharsets.UTF_8));
+    }
+
+    @Test
+    public void getProcessingResultsImageWithTraversalTest() throws Exception {
+        var imagePath = "images/../../../../../../attack.jpg";
+
+        assertThrows(AccessRestrictionException.class,
+                () -> service.getProcessingResults(agentPrincipals, PROJ_NAME, VELO_JOB_NAME, imagePath));
+    }
+
+    @Test
+    public void getProcessingResultsInvalidFilenameTest() throws Exception {
+        assertThrows(IllegalArgumentException.class,
+                () -> service.getProcessingResults(agentPrincipals, PROJ_NAME, VELO_JOB_NAME, "rando.json"));
     }
 
     private void createDataJson() throws IOException {
-        var dataJsonPath = tmpFolder.resolve(PROJ_NAME)
+        createResultFile(JSON_FILENAME, DATA_JSON);
+    }
+
+    private void createResultFile(String filename, String testContent) throws IOException {
+        var path = tmpFolder.resolve(PROJ_NAME)
                 .resolve("processing/results")
                 .resolve(VELO_JOB_NAME)
-                .resolve("report/data.json");
-        Files.createDirectories(dataJsonPath.getParent());
-        Files.writeString(dataJsonPath, DATA_JSON);
+                .resolve("report")
+                .resolve(filename);
+        Files.createDirectories(path.getParent());
+        Files.writeString(path, testContent);
     }
 }

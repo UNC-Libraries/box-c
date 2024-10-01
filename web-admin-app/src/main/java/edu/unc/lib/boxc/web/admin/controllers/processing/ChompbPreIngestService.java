@@ -11,13 +11,16 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Set;
 
 /**
+ * Service for interacting with the chompb command-line tool for pre-ingest processing
  * @author lfarrell
  */
 public class ChompbPreIngestService {
     private GlobalPermissionEvaluator globalPermissionEvaluator;
     private Path baseProjectsPath;
+    private static final Set<String> VALID_FILENAMES = Set.of("data.json", "data.csv");
 
     /**
      * List all of the chompb projects in the base projects path
@@ -63,16 +66,31 @@ public class ChompbPreIngestService {
      * @param agent
      * @param projectName
      * @param jobName
-     * @return String representation of json processing results
+     * @param filename
+     * @return Contents of the file as a InputStream
      */
-    public String getProcessingResults(AgentPrincipals agent, String projectName, String jobName) throws IOException {
+    public InputStream getProcessingResults(AgentPrincipals agent, String projectName, String jobName, String filename) throws IOException {
         assertHasPermission(agent);
+        assertValidProcessingResultFilename(filename);
 
         var projectPath = buildProjectPath(projectName);
         // Build path to results file
-        var resultsPath = projectPath.resolve("processing/results").resolve(jobName).resolve("report/data.json");
-        // Read the file and return it as a string
-        return Files.readString(resultsPath);
+        Path resultsPath = projectPath.resolve("processing/results")
+                .resolve(jobName)
+                .resolve("report")
+                .resolve(filename)
+                .normalize();
+        if (!resultsPath.startsWith(projectPath)) {
+            throw new AccessRestrictionException("Cannot access specified file");
+        }
+        // Read the file and return it as a stream
+        return Files.newInputStream(resultsPath);
+    }
+
+    private void assertValidProcessingResultFilename(String filename) {
+        if (!VALID_FILENAMES.contains(filename) && !(filename.startsWith("images/") && filename.endsWith(".jpg"))) {
+            throw new IllegalArgumentException("Invalid filename: " + filename);
+        }
     }
 
     private void assertHasPermission(AgentPrincipals agent) {

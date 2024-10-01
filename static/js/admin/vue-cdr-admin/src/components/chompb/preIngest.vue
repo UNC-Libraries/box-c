@@ -50,7 +50,11 @@ export default {
             copy_msg: '',
             columns: [
                 { data: 'projectProperties.name', title: 'Chompb Project' },
-                { data: 'projectProperties.projectSource', title: 'Source' },
+                { title: 'Source',
+                    data: function (row) {
+                        return (row.projectProperties.projectSource) ? row.projectProperties.projectSource : '';
+                    }
+                },
                 { data: 'status', title: 'Status' },
                 { data: null, title: 'Actions',
                     render: {

@@ -5,7 +5,7 @@
             <h2 class="chompb-ui has-text-weight-semibold is-size-3 has-text-centered">Cropping Report</h2>
             <div class="buttons has-addons">
                 <span class="button is-success is-selected">
-                    <a class="download" download="originals.csv" :href="downloadOriginals">
+                    <a class="download" download="originals.csv" :href="downloadOriginalCsvUrl">
                         Original CSV
                     </a>
                 </span>
@@ -16,8 +16,6 @@
                 </span>
             </div>
             <data-table @click.prevent="markAsProblem($event)" class="table is-striped is-bordered is-fullwidth"
-                        :data="dataSet"
-                        :columns="columns"
                         :options="tableOptions">
                 <thead>
                 <tr>
@@ -43,28 +41,29 @@ import 'datatables.net-select-bm'
 DataTable.use(DataTablesLib);
 
 export default {
-    name: 'croppingReport',
+    name: 'velocicroptorReport',
 
     components: {DataTable},
 
     data() {
         return {
-            columns: [
-                {data: 'Image'},
-                {data: 'Path'},
-                {data: 'Class'},
-                {data: 'Confidence'},
-                {data: 'Problem'},
-                {data: ''}
-            ],
             problems: [],
-            dataSet: []
+            dataSet: [],
+            projectName: this.$route.path.split('/')[4],
+            jobName: this.$route.path.split('/')[6]
         }
     },
 
     computed: {
         tableOptions() {
             return {
+                ajax: {
+                    url: `chompb/project/${this.projectName}/processing_results/${this.jobName}/files?path=data.json`,
+                    dataSrc: (data) => {
+                        this.dataSet = data;
+                        return data.data;
+                    }
+                },
                 columnDefs: this.columnDefs,
                 searching: true,
                 layout: {
@@ -95,7 +94,8 @@ export default {
                 { searchable: false, target: excluded_columns },
                 {
                     render: (data, type, row) => {
-                        return `<img src="${row.image}" alt="" role="presentation" />`;
+                        let imgUrl = `/admin/chompb/project/${this.projectName}/processing_results/${this.jobName}/files?path=${row.image}`;
+                        return `<img src="${imgUrl}" alt="" role="presentation" />`;
                     }, targets: 0
                 },
                 {
@@ -127,12 +127,8 @@ export default {
             ];
         },
 
-        downloadOriginals() {
-            let csvContent = "original_path,normalized_path,predicted_class,predicted_conf\n";
-            csvContent += this.dataSet.map(d => {
-                return `${d.original},${d.image},${d.pred_class},${d.pred_conf}`;
-            }).join("\n");
-            return  this.downloadResponse(csvContent);
+        downloadOriginalCsvUrl() {
+            return `/admin/chompb/project/${this.projectName}/processing_results/${this.jobName}/files?path=data.csv`;
         },
 
         downloadProblems() {
@@ -140,7 +136,7 @@ export default {
             csvContent += this.problems.map(d => {
                 return `${d.path},${d.predicted},${d.predicted === '1' ? '0' : '1'}`
             }).join("\n");
-            return  this.downloadResponse(csvContent);
+            return this.downloadResponse(csvContent);
         }
     },
 
