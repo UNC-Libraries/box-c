@@ -14,10 +14,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
-import java.net.URLDecoder;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
 
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
@@ -65,9 +62,7 @@ public class ChompbController {
                                                 @PathVariable("jobName") String jobName,
                                                 @RequestParam(value = "path", defaultValue = "false") String filename)
                                                 throws IOException {
-//        var filename = extractFilename(request, jobName);
         var agentPrincipals = AgentPrincipalsImpl.createFromThread();
-//        filename = URLDecoder.decode(filename, StandardCharsets.UTF_8);
         var nameSegment = Paths.get(filename).getFileName().toString();
         var stream = chompbPreIngestService.getProcessingResults(agentPrincipals, projectName, jobName, filename);
         InputStreamResource resource = new InputStreamResource(stream);
@@ -75,12 +70,6 @@ public class ChompbController {
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + nameSegment)
                 .contentType(getMediaType(filename))
                 .body(resource);
-    }
-
-    private String extractFilename(HttpServletRequest request, String jobName) {
-        var preceding = String.format("/processing_results/%s/", jobName);
-        var queryPath = request.getRequestURI();
-        return queryPath.substring(queryPath.indexOf(preceding) + preceding.length());
     }
 
     private MediaType getMediaType(String filename) {
