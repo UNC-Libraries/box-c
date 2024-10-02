@@ -216,3 +216,9 @@
 .slide-enter, .slide-leave-to {
     max-height: 0
 }
+
+.pull-right,
+.buttons.pull-right {
+    display: flex;
+    justify-content: flex-end;
+}

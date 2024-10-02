@@ -1,5 +1,5 @@
 <template>
-    <div id="permissions-app">
+    <div id="vue-cdr-admin-app">
         <router-view/>
     </div>
 </template>
