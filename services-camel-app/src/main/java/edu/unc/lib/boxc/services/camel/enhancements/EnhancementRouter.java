@@ -37,7 +37,7 @@ public class EnhancementRouter extends RouteBuilder {
     @PropertyInject(value = "cdr.enhancement.processingThreads")
     private Integer enhancementThreads;
 
-    private static final String DEFAULT_ENHANCEMENTS = "thumbnails,imageAccessCopy,extractFulltext";
+    private static final String DEFAULT_ENHANCEMENTS = "imageAccessCopy,extractFulltext";
     @Override
     public void configure() throws Exception {
 
