@@ -32,12 +32,8 @@ import edu.unc.lib.boxc.services.camel.util.MessageUtil;
  *
  */
 public class DestroyedMsgProcessor implements Processor {
-    private final String srcBasePath;
     private static final Logger log = LoggerFactory.getLogger(DestroyedMsgProcessor.class);
 
-    public DestroyedMsgProcessor(String srcBasePath) {
-        this.srcBasePath = srcBasePath;
-    }
 
     @Override
     public void process(Exchange exchange) throws Exception {
@@ -55,17 +51,6 @@ public class DestroyedMsgProcessor implements Processor {
         String mimeType = content.getChildTextTrim("mimeType", JDOMNamespaceUtil.CDR_MESSAGE_NS);
         String pidId = content.getChildTextTrim("pidId", JDOMNamespaceUtil.CDR_MESSAGE_NS);
         String binaryPath = content.getChildTextTrim("contentUri", JDOMNamespaceUtil.CDR_MESSAGE_NS);
-
-        if (objType.equals(Cdr.Collection.getURI()) || objType.equals(Cdr.AdminUnit.getURI())) {
-            String uuid = PIDs.get(pidId).getId();
-            String binarySubPath = idToPath(uuid, HASHED_PATH_DEPTH, HASHED_PATH_SIZE);
-            Path srcPath = Paths.get(srcBasePath, binarySubPath, uuid);
-
-            if (Files.exists(srcPath)) {
-                mimeType = "image/*";
-                in.setHeader("CollectionThumb", true);
-            }
-        }
 
         if (mimeType == null) {
             mimeType = "";

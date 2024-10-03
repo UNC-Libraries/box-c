@@ -40,12 +40,6 @@ public class DestroyDerivativesRouterTest extends CamelTestSupport {
     private DestroyDerivativesProcessor destroyCollectionSrcImgProcessor;
 
     @Mock
-    private DestroyDerivativesProcessor destroySmallThumbnailProcessor;
-
-    @Mock
-    private DestroyDerivativesProcessor destroyLargeThumbnailProcessor;
-
-    @Mock
     private DestroyDerivativesProcessor destroyAccessCopyProcessor;
 
     @Mock
@@ -56,7 +50,7 @@ public class DestroyDerivativesRouterTest extends CamelTestSupport {
 
     @Override
     protected RouteBuilder createRouteBuilder() throws Exception {
-        destroyedMsgProcessor = new DestroyedMsgProcessor(tmpFolder.toAbsolutePath().toString());
+        destroyedMsgProcessor = new DestroyedMsgProcessor();
         var router = new DestroyDerivativesRouter();
         router.setDestroyedMsgProcessor(destroyedMsgProcessor);
         router.setDestroyAccessCopyProcessor(destroyAccessCopyProcessor);
@@ -132,9 +126,7 @@ public class DestroyDerivativesRouterTest extends CamelTestSupport {
         template.sendBody(body);
 
         verify(destroyFulltextProcessor).process(any(Exchange.class));
-        verify(destroySmallThumbnailProcessor, never()).process(any(Exchange.class));
         verify(destroyCollectionSrcImgProcessor, never()).process(any(Exchange.class));
-        verify(destroyLargeThumbnailProcessor, never()).process(any(Exchange.class));
         verify(destroyAccessCopyProcessor, never()).process(any(Exchange.class));
     }
 
