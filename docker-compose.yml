@@ -27,8 +27,8 @@ services:
     ports:
       - "48983:8983"
     volumes:
-      - ./etc/solr-config:/solr_config/config
+      - ./etc/solr-config:/var/solr/data/access/conf
     command:
       - solr-precreate
       - access
-      - /solr_config/config
+      - /var/solr/data/access/conf
