@@ -222,6 +222,7 @@
     </bean>
 
     <bean id="destroyedMsgProcessor" class="edu.unc.lib.boxc.services.camel.destroyDerivatives.DestroyedMsgProcessor">
+        <property name="jp2BasePath" value="${cdr.enhancement.path.jp2}" />
     </bean>
 
     <bean id="destroyCollectionSrcImgProcessor" class="edu.unc.lib.boxc.services.camel.destroyDerivatives.DestroyDerivativesProcessor">

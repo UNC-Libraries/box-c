@@ -22,7 +22,6 @@
     </bean>
 
     <bean id="destroyedMsgProcessor" class="edu.unc.lib.boxc.services.camel.destroyDerivatives.DestroyedMsgProcessor">
-        <constructor-arg value="${sourceImages.dir}" />
     </bean>
 
     <bean id="destroyAccessCopyProcessor" class="org.mockito.Mockito" factory-method="mock">

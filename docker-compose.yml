@@ -2,7 +2,7 @@ version: '3.7'
 
 services:
   fedora:
-    image: fcrepo/fcrepo:5.1.1
+    image: fcrepo/fcrepo:5.1.1-multiplatform
     ports:
       - "48085:8080"
     volumes:
