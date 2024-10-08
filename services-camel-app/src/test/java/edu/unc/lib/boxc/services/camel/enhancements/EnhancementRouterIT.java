@@ -122,10 +122,6 @@ public class EnhancementRouterIT extends CamelSpringTestSupport {
         TestHelper.setContentBase(baseAddress);
         tempDir = Files.createDirectory(tmpFolder.resolve("target")).toFile();
 
-        File thumbScriptFile = new File("target/convertScaleStage.sh");
-        FileUtils.writeStringToFile(thumbScriptFile, "exit 0", "utf-8");
-        thumbScriptFile.deleteOnExit();
-
         File jp2ScriptFile = new File("target/convertJp2.sh");
         FileUtils.writeStringToFile(jp2ScriptFile, "exit 0", "utf-8");
         jp2ScriptFile.deleteOnExit();
