@@ -282,6 +282,12 @@ public class SetDatastreamFilter implements IndexDocumentFilter {
             });
     }
 
+    private boolean needsExtent(String name, String mimetype) {
+        return name.equals(ORIGINAL_FILE.getId()) &&
+                mimetype != null && (mimetype.startsWith("image") || mimetype.startsWith(FITS_VIDEO_NAME)
+                || mimetype.startsWith("audio"));
+    }
+
     /**
      * Used to selectively add the JP2 thumbnail datastream
      *
@@ -294,12 +300,6 @@ public class SetDatastreamFilter implements IndexDocumentFilter {
         if (thumbnailObject != null) {
             addDerivatives(datastreams, thumbnailObject.getPid(), true, List.of(JP2_ACCESS_COPY));
         }
-    }
-
-    private boolean needsExtent(String name, String mimetype) {
-        return name.equals(ORIGINAL_FILE.getId()) &&
-                mimetype != null && (mimetype.startsWith("image") || mimetype.startsWith(FITS_VIDEO_NAME)
-                || mimetype.startsWith("audio"));
     }
 
     private String getFirstChecksum(Resource resc) {

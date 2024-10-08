@@ -38,6 +38,7 @@ const recordData = {
             }
         ],
         datastream: [
+            "jp2|image/jp2|fc77a9be-b49d-4f4e-b656-1644c9e964fc.jp2|jp2|2189901|||",
             "event_log|application/n-triples|event_log.nt|nt|8206|urn:sha1:54fe67d57b965651e813eea1777c7f0332253168||",
             "md_descriptive_history|text/xml|||916|urn:sha1:efb4f2b6226d2932229f0e2b89128ec9a651de71||",
             "md_descriptive|text/xml|md_descriptive.xml|xml|283|urn:sha1:97f7dbdb806f724f9301445820ff1e0c9691cd6b||"
