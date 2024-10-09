@@ -28,10 +28,6 @@
     <bean id="binaryEnhancementProcessor" class="org.mockito.Mockito" factory-method="mock">
         <constructor-arg type="java.lang.Class" value="edu.unc.lib.boxc.services.camel.BinaryEnhancementProcessor" />
     </bean>
-
-    <bean id="nonBinaryEnhancementProcessor" class="org.mockito.Mockito" factory-method="mock">
-        <constructor-arg type="java.lang.Class" value="edu.unc.lib.boxc.services.camel.NonBinaryEnhancementProcessor" />
-    </bean>
     
     <bean id="cacheInvalidatingProcessor" class="org.mockito.Mockito" factory-method="mock">
         <constructor-arg type="java.lang.Class" value="edu.unc.lib.boxc.services.camel.util.CacheInvalidatingProcessor" />

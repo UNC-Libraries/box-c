@@ -86,29 +86,6 @@ public class DerivativeContentService {
         IOUtils.copy(new FileInputStream(derivFile), outStream, BUFFER_SIZE);
     }
 
-    /**
-     * Returns a response entity consisting of the derivative stream used for thumbnails
-     * @param pid PID of the repository object
-     * @param dsName datastream name
-     * @return
-     * @throws FileNotFoundException
-     */
-    public ResponseEntity<InputStreamResource> streamThumbnail(PID pid, String dsName) throws FileNotFoundException {
-        var datastreamType = getType(dsName);
-        Derivative derivative = getDerivative(pid, dsName, datastreamType);
-
-        var file = derivative.getFile();
-        var filename = file.getName();
-        var input = new FileInputStream(file);
-        InputStreamResource resource = new InputStreamResource(input);
-        return ResponseEntity.ok()
-                    .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=" + filename)
-                    .contentLength(file.length())
-                    .contentType(MediaType.IMAGE_PNG)
-                    .body(resource);
-
-    }
-
     private DatastreamType getType(String dsName) {
         DatastreamType derivType = getByIdentifier(dsName);
         if (derivType == null || !listDerivativeTypes().contains(derivType)) {

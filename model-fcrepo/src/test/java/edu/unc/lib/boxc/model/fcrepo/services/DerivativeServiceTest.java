@@ -1,27 +1,25 @@
 package edu.unc.lib.boxc.model.fcrepo.services;
 
-import static edu.unc.lib.boxc.model.api.DatastreamType.JP2_ACCESS_COPY;
-import static edu.unc.lib.boxc.model.api.DatastreamType.ORIGINAL_FILE;
-import static edu.unc.lib.boxc.model.api.DatastreamType.THUMBNAIL_SMALL;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
+import edu.unc.lib.boxc.model.api.DatastreamType;
+import edu.unc.lib.boxc.model.api.ids.PID;
+import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
+import edu.unc.lib.boxc.model.fcrepo.services.DerivativeService.Derivative;
+import org.apache.commons.io.FileUtils;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 
-import org.apache.commons.io.FileUtils;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.io.TempDir;
-
-import edu.unc.lib.boxc.model.api.DatastreamType;
-import edu.unc.lib.boxc.model.api.ids.PID;
-import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
-import edu.unc.lib.boxc.model.fcrepo.services.DerivativeService;
-import edu.unc.lib.boxc.model.fcrepo.services.DerivativeService.Derivative;
+import static edu.unc.lib.boxc.model.api.DatastreamType.FULLTEXT_EXTRACTION;
+import static edu.unc.lib.boxc.model.api.DatastreamType.JP2_ACCESS_COPY;
+import static edu.unc.lib.boxc.model.api.DatastreamType.ORIGINAL_FILE;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 /**
  *
@@ -56,48 +54,48 @@ public class DerivativeServiceTest {
 
     @Test
     public void testGetDerivative() throws Exception {
-        File originalDerivFile = createDerivative(pid, THUMBNAIL_SMALL);
+        File originalDerivFile = createDerivative(pid, JP2_ACCESS_COPY);
 
-        Derivative deriv = derivativeService.getDerivative(pid, THUMBNAIL_SMALL);
+        Derivative deriv = derivativeService.getDerivative(pid, JP2_ACCESS_COPY);
 
         assertEquals(originalDerivFile, deriv.getFile());
-        assertEquals(THUMBNAIL_SMALL, deriv.getType());
+        assertEquals(JP2_ACCESS_COPY, deriv.getType());
     }
 
     @Test
     public void testGetDerivativeNotExist() throws Exception {
-        Derivative deriv = derivativeService.getDerivative(pid, THUMBNAIL_SMALL);
+        Derivative deriv = derivativeService.getDerivative(pid, JP2_ACCESS_COPY);
 
         assertNull(deriv);
     }
 
     @Test
     public void testGetDerivatives() throws Exception {
-        File originalDerivFile1 = createDerivative(pid, THUMBNAIL_SMALL);
+        File originalDerivFile1 = createDerivative(pid, FULLTEXT_EXTRACTION);
         File originalDerivFil21 = createDerivative(pid, JP2_ACCESS_COPY);
 
         List<Derivative> derivs = derivativeService.getDerivatives(pid);
         assertEquals(2, derivs.size());
 
-        Derivative thumbDeriv = findDerivative(derivs, THUMBNAIL_SMALL);
+        Derivative textDeriv = findDerivative(derivs, FULLTEXT_EXTRACTION);
         Derivative jp2Deriv = findDerivative(derivs, JP2_ACCESS_COPY);
 
-        assertNotNull(thumbDeriv);
+        assertNotNull(textDeriv);
         assertNotNull(jp2Deriv);
 
-        assertEquals(originalDerivFile1, thumbDeriv.getFile());
+        assertEquals(originalDerivFile1, textDeriv.getFile());
         assertEquals(originalDerivFil21, jp2Deriv.getFile());
     }
 
     @Test
     public void testGetDerivativesIgnoreNonDerivatives() throws Exception {
-        File originalDerivFile1 = createDerivative(pid, THUMBNAIL_SMALL);
+        File originalDerivFile1 = createDerivative(pid, JP2_ACCESS_COPY);
         createDerivative(pid, ORIGINAL_FILE);
 
         List<Derivative> derivs = derivativeService.getDerivatives(pid);
         assertEquals(1, derivs.size());
 
-        Derivative thumbDeriv = findDerivative(derivs, THUMBNAIL_SMALL);
+        Derivative thumbDeriv = findDerivative(derivs, JP2_ACCESS_COPY);
         assertEquals(originalDerivFile1, thumbDeriv.getFile());
     }
 

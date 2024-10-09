@@ -15,8 +15,6 @@ import edu.unc.lib.boxc.model.fcrepo.ids.AgentPids;
 import edu.unc.lib.boxc.model.fcrepo.services.DerivativeService;
 import edu.unc.lib.boxc.operations.api.events.PremisLoggerFactory;
 import edu.unc.lib.boxc.operations.api.images.ImageServerUtil;
-import edu.unc.lib.boxc.search.api.models.Datastream;
-import edu.unc.lib.boxc.search.api.requests.SimpleIdRequest;
 import edu.unc.lib.boxc.web.common.services.AccessCopiesService;
 import edu.unc.lib.boxc.web.common.services.DerivativeContentService;
 import edu.unc.lib.boxc.web.common.services.FedoraContentService;
@@ -27,7 +25,6 @@ import edu.unc.lib.boxc.web.services.rest.exceptions.RestResponseEntityException
 import edu.unc.lib.boxc.web.services.rest.modify.AbstractAPIIT;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
-import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.vocabulary.RDF;
 import org.apache.solr.client.solrj.embedded.EmbeddedSolrServer;
@@ -57,8 +54,6 @@ import static edu.unc.lib.boxc.auth.api.Permission.viewHidden;
 import static edu.unc.lib.boxc.model.api.DatastreamType.JP2_ACCESS_COPY;
 import static edu.unc.lib.boxc.model.api.DatastreamType.MD_EVENTS;
 import static edu.unc.lib.boxc.model.api.DatastreamType.TECHNICAL_METADATA;
-import static edu.unc.lib.boxc.model.api.DatastreamType.THUMBNAIL_LARGE;
-import static edu.unc.lib.boxc.model.api.DatastreamType.THUMBNAIL_SMALL;
 import static edu.unc.lib.boxc.model.api.ids.RepositoryPathConstants.HASHED_PATH_DEPTH;
 import static edu.unc.lib.boxc.model.api.ids.RepositoryPathConstants.HASHED_PATH_SIZE;
 import static edu.unc.lib.boxc.model.api.rdf.RDFModelUtil.createModel;
@@ -73,8 +68,6 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.openMocks;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -319,9 +312,9 @@ public class DatastreamRestControllerIT extends AbstractAPIIT {
     public void testGetFileDerivative() throws Exception {
         PID filePid = makePid();
         String id = filePid.getId();
-        createDerivative(id, THUMBNAIL_SMALL, BINARY_CONTENT.getBytes());
+        createDerivative(id, JP2_ACCESS_COPY, BINARY_CONTENT.getBytes());
 
-        MvcResult result = mvc.perform(get("/file/" + filePid.getId() + "/" + THUMBNAIL_SMALL.getId()))
+        MvcResult result = mvc.perform(get("/file/" + filePid.getId() + "/" + JP2_ACCESS_COPY.getId()))
                 .andExpect(status().is2xxSuccessful())
                 .andReturn();
 
@@ -329,8 +322,8 @@ public class DatastreamRestControllerIT extends AbstractAPIIT {
         MockHttpServletResponse response = result.getResponse();
         assertEquals(BINARY_CONTENT, response.getContentAsString());
         assertEquals(BINARY_CONTENT.length(), response.getContentLength());
-        assertEquals("image/png", response.getContentType());
-        assertEquals("inline; filename=\"" + id + "." + THUMBNAIL_SMALL.getExtension() + "\"",
+        assertEquals("image/jp2", response.getContentType());
+        assertEquals("inline; filename=\"" + id + "." + JP2_ACCESS_COPY.getExtension() + "\"",
                 response.getHeader(CONTENT_DISPOSITION));
     }
 
