@@ -103,8 +103,12 @@ public class DownloadImageService {
     }
 
     private Datastream getDatastream(ContentObjectRecord contentObjectRecord) {
-        var id = DatastreamType.ORIGINAL_FILE.getId();
-        return contentObjectRecord.getDatastreamObject(id);
+        var originalFileDatastream = contentObjectRecord.getDatastreamObject(
+                DatastreamType.ORIGINAL_FILE.getId());
+        if (originalFileDatastream == null) {
+            return contentObjectRecord.getDatastreamObject(DatastreamType.JP2_ACCESS_COPY.getId());
+        }
+        return originalFileDatastream;
     }
 
     /**

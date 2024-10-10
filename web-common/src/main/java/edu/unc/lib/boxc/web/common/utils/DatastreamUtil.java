@@ -131,7 +131,7 @@ public class DatastreamUtil {
      */
     public static String getThumbnailOwnerId(ContentObjectRecord metadata) {
         // Prefer the matching derivative from this object
-        Datastream preferredDS = getPreferredDatastream(metadata, DatastreamType.THUMBNAIL_LARGE.getId());
+        Datastream preferredDS = getPreferredDatastream(metadata, DatastreamType.JP2_ACCESS_COPY.getId());
 
         // Ensure that this item has the appropriate thumbnail
         if (preferredDS == null) {

@@ -44,18 +44,4 @@ public class DerivativeContentServiceTest {
     void closeService() throws Exception {
         closeable.close();
     }
-
-    @Test
-    public void testStreamThumbnail() throws FileNotFoundException {
-        var pid = makePid();
-        var datastreamType = DatastreamType.THUMBNAIL_SMALL;
-        var file = new File("src/test/resources/tokki.jpg");
-        var derivative = new DerivativeService.Derivative(datastreamType, file);
-        when(derivativeService.getDerivative(eq(pid), eq(datastreamType))).thenReturn(derivative);
-
-        var respEntity = derivativeContentService.streamThumbnail(pid, "thumbnail_small");
-        assertEquals(HttpStatus.OK, respEntity.getStatusCode());
-        assertEquals("inline; filename=\"tokki.jpg\"", respEntity.getHeaders().getContentDisposition().toString());
-        assertEquals(MediaType.IMAGE_PNG, respEntity.getHeaders().getContentType());
-    }
 }
