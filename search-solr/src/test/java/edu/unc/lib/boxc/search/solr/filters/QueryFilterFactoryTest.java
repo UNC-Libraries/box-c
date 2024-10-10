@@ -7,7 +7,7 @@ import org.junit.jupiter.api.Test;
 
 import java.util.HashSet;
 
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 
 /**
  * @author lfarrell
@@ -15,22 +15,22 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 public class QueryFilterFactoryTest {
     @Test
     public void NamedDatastreamFilterTest() {
-        var filter = QueryFilterFactory.createFilter(SearchFieldKey.DATASTREAM, DatastreamType.THUMBNAIL_LARGE);
-        assertTrue(filter instanceof NamedDatastreamFilter);
+        var filter = QueryFilterFactory.createFilter(SearchFieldKey.DATASTREAM, DatastreamType.JP2_ACCESS_COPY);
+        assertInstanceOf(NamedDatastreamFilter.class, filter);
     }
 
     @Test
     public void MultipleDirectlyOwnedDatastreamsFilterTest() {
         var datastreamTypes = new HashSet<DatastreamType>();
-        datastreamTypes.add(DatastreamType.THUMBNAIL_LARGE);
-        datastreamTypes.add(DatastreamType.THUMBNAIL_SMALL);
+        datastreamTypes.add(DatastreamType.JP2_ACCESS_COPY);
+        datastreamTypes.add(DatastreamType.FULLTEXT_EXTRACTION);
         var filter = QueryFilterFactory.createFilter(SearchFieldKey.DATASTREAM, datastreamTypes);
-        assertTrue(filter instanceof MultipleDirectlyOwnedDatastreamsFilter);
+        assertInstanceOf(MultipleDirectlyOwnedDatastreamsFilter.class, filter);
     }
 
     @Test
     public void HasPopulatedFieldFilterTest() {
         var filter = QueryFilterFactory.createFilter(SearchFieldKey.STREAMING_TYPE);
-        assertTrue(filter instanceof HasPopulatedFieldFilter);
+        assertInstanceOf(HasPopulatedFieldFilter.class, filter);
     }
 }

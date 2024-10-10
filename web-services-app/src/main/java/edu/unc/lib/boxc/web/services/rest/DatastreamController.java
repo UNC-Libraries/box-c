@@ -154,16 +154,7 @@ public class DatastreamController {
             throw new ResourceNotFoundException("The requested object either does not exist or is not accessible");
         }
 
-        if (ResourceType.Folder.name().equals(objRecord.getResourceType()) ||
-                ResourceType.Collection.name().equals(objRecord.getResourceType()) ||
-                ResourceType.AdminUnit.name().equals(objRecord.getResourceType())) {
-            String thumbName = "thumbnail_" + size.toLowerCase().trim();
-            try {
-                return derivativeContentService.streamThumbnail(pid, thumbName);
-            } catch (IOException e) {
-                log.error("Error streaming thumbnail for {}", pid);
-            }
-        } else if (ResourceType.Work.name().equals(objRecord.getResourceType())) {
+        if (ResourceType.Work.name().equals(objRecord.getResourceType())) {
             var thumbId = accessCopiesService.getThumbnailId(objRecord, principals, true);
             if (thumbId != null) {
                 pid = PIDs.get(thumbId);

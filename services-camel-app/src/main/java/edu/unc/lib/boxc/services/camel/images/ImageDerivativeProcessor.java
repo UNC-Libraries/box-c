@@ -1,14 +1,13 @@
 package edu.unc.lib.boxc.services.camel.images;
 
-import java.util.regex.Pattern;
-
+import edu.unc.lib.boxc.services.camel.util.CdrFcrepoHeaders;
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
 import org.apache.camel.Processor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import edu.unc.lib.boxc.services.camel.util.CdrFcrepoHeaders;
+import java.util.regex.Pattern;
 
 /**
  * Processor which validates and prepares image objects for producing derivatives
