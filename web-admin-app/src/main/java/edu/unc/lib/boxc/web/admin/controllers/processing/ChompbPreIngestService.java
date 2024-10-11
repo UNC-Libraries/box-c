@@ -4,6 +4,7 @@ import edu.unc.lib.boxc.auth.api.Permission;
 import edu.unc.lib.boxc.auth.api.exceptions.AccessRestrictionException;
 import edu.unc.lib.boxc.auth.api.models.AgentPrincipals;
 import edu.unc.lib.boxc.auth.api.services.GlobalPermissionEvaluator;
+import edu.unc.lib.boxc.model.api.exceptions.RepositoryException;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -51,10 +52,13 @@ public class ChompbPreIngestService {
             }
             outputString = output.toString().trim();
             if (process.waitFor() != 0) {
-                throw new RuntimeException("Command exited with status code " + process.waitFor() + ": " + outputString);
+                throw new RepositoryException("Command exited with status code " + process.waitFor() + ": " + outputString);
             }
-        } catch (IOException | InterruptedException e) {
-            throw new RuntimeException("Failed to execute chompb command", e);
+        } catch (IOException e) {
+            throw new RepositoryException("Failed to execute chompb command", e);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new RepositoryException("Interrupted while waiting for chompb command to complete", e);
         }
 
         return outputString;
