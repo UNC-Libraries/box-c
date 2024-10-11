@@ -72,6 +72,11 @@
         destroy-method="shutdown">
     </bean>
 
+    <bean id="chompbPreIngestService" class="edu.unc.lib.boxc.web.admin.controllers.processing.ChompbPreIngestService">
+        <property name="globalPermissionEvaluator" ref="globalPermissionEvaluator" />
+        <property name="baseProjectsPath" value="${chompb.projects.basePath}" />
+    </bean>
+
     <bean class="edu.unc.lib.boxc.web.common.view.CDRViewResolver" p:suffix=".jsp">
         <property name="exposedContextBeanNames">
             <list>
