@@ -1,11 +1,16 @@
 <form id="run_enhancements_form"class="edit_form">
 	<p>
-		Enhancements will be performed on the selected objects and their children.
+		Enhancements will be run on the objects with the following IDs (edit the list as needed):
 	</p>
-	
-	<span>
+	<p>
+		<textarea id="run_enhancements_ids" name="run_enhancements_ids" cols="40" placeholder="Enter object IDs, one per line"><%= targetIds %></textarea>
+	</p>
+	<p>
 		<input type="checkbox" id="run_enhancements_force" name="run_enhancements_force" /><label for="run_enhancements_force">Rerun previously performed enhancements as well?</label>
-	</span>
+	</p>
+	<p>
+		<input type="checkbox" id="run_enhancements_recursive" name="run_enhancements_recursive" /><label for="run_enhancements_recursive">Run enhancements for children too?</label>
+	</p>
 
 	<div class="update_field">
 		<input type="submit" id="run_enhancements_submit_button" class="update_button" value="Run" autofocus />

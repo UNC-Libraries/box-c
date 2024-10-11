@@ -2,7 +2,6 @@ package edu.unc.lib.boxc.services.camel.destroyDerivatives;
 
 import static edu.unc.lib.boxc.model.api.DatastreamType.FULLTEXT_EXTRACTION;
 import static edu.unc.lib.boxc.model.api.DatastreamType.JP2_ACCESS_COPY;
-import static edu.unc.lib.boxc.model.api.DatastreamType.THUMBNAIL_LARGE;
 import static edu.unc.lib.boxc.services.camel.util.CdrFcrepoHeaders.CdrBinaryMimeType;
 import static edu.unc.lib.boxc.services.camel.util.CdrFcrepoHeaders.CdrBinaryPidId;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -93,60 +92,6 @@ public class DestroyDerivativesProcessorTest {
         assertFalse(file.exists());
         // Deleted parent dirs
         assertFalse(new File(derivativeTypeBaseDir, "de").exists());
-        // Didn't delete root derivative type dir
-        assertTrue(derivativeTypeBaseDir.exists());
-    }
-
-    @Test
-    public void deleteThumbnailTest() throws Exception {
-        derivativeTypeDir = THUMBNAIL_LARGE.getId();
-        derivativeFinalDir = Files.createDirectories(tmpFolder.resolve(derivativeTypeDir + "/de/75/d8/11")).toFile();
-        file = new File(derivativeFinalDir, pathId + ".png");
-
-        FileUtils.writeStringToFile(file, "fake image", StandardCharsets.UTF_8);
-
-        derivativeTypeBaseDir = new File(derivativeDirBase, derivativeTypeDir);
-        processor = new DestroyDerivativesProcessor("png", derivativeTypeBaseDir.getAbsolutePath());
-
-        when(message.getHeader(eq(CdrBinaryMimeType)))
-                .thenReturn("image/png");
-
-        processor.process(exchange);
-
-        // Deleted file
-        assertFalse(file.exists());
-        // Deleted parent dirs
-        assertFalse(new File(derivativeTypeBaseDir, "de").exists());
-        // Didn't delete root derivative type dir
-        assertTrue(derivativeTypeBaseDir.exists());
-    }
-
-    @Test
-    public void deleteCollectionSrcImgTest() throws Exception {
-        String srcDirBase = "srcDir";
-        File srcDir = Files.createDirectories(tmpFolder.resolve(srcDirBase + "/de/75/d8/11")).toFile();
-        File srcFile = new File(srcDir, pathId);
-        FileUtils.writeStringToFile(srcFile, "fake image src", StandardCharsets.UTF_8);
-
-        derivativeTypeBaseDir = new File(derivativeDirBase, srcDirBase);
-
-        processor = new DestroyDerivativesProcessor("", derivativeTypeBaseDir.getAbsolutePath());
-
-        when(message.getHeader(eq(CdrBinaryMimeType)))
-                .thenReturn("image/*");
-
-        when(message.getHeader(eq("CollectionThumb")))
-                .thenReturn(true);
-
-        assertTrue(srcFile.exists());
-        assertTrue(srcDir.exists());
-
-        processor.process(exchange);
-
-        // Make sure src image is removed
-        assertFalse(srcFile.exists());
-        assertFalse(srcDir.exists());
-
         // Didn't delete root derivative type dir
         assertTrue(derivativeTypeBaseDir.exists());
     }

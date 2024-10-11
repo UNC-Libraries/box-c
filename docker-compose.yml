@@ -2,7 +2,7 @@ version: '3.7'
 
 services:
   fedora:
-    image: fcrepo/fcrepo:5.1.1
+    image: fcrepo/fcrepo:5.1.1-multiplatform
     ports:
       - "48085:8080"
     volumes:
@@ -27,8 +27,8 @@ services:
     ports:
       - "48983:8983"
     volumes:
-      - ./etc/solr-config:/solr_config/config
+      - ./etc/solr-config:/var/solr/data/access/conf
     command:
       - solr-precreate
       - access
-      - /solr_config/config
+      - /var/solr/data/access/conf

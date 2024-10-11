@@ -25,7 +25,6 @@ import edu.unc.lib.boxc.web.services.rest.exceptions.RestResponseEntityException
 import edu.unc.lib.boxc.web.services.rest.modify.AbstractAPIIT;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
-import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.vocabulary.RDF;
 import org.apache.solr.client.solrj.embedded.EmbeddedSolrServer;
@@ -52,10 +51,9 @@ import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlMatching;
 import static edu.unc.lib.boxc.auth.api.Permission.viewAccessCopies;
 import static edu.unc.lib.boxc.auth.api.Permission.viewHidden;
+import static edu.unc.lib.boxc.model.api.DatastreamType.JP2_ACCESS_COPY;
 import static edu.unc.lib.boxc.model.api.DatastreamType.MD_EVENTS;
 import static edu.unc.lib.boxc.model.api.DatastreamType.TECHNICAL_METADATA;
-import static edu.unc.lib.boxc.model.api.DatastreamType.THUMBNAIL_LARGE;
-import static edu.unc.lib.boxc.model.api.DatastreamType.THUMBNAIL_SMALL;
 import static edu.unc.lib.boxc.model.api.ids.RepositoryPathConstants.HASHED_PATH_DEPTH;
 import static edu.unc.lib.boxc.model.api.ids.RepositoryPathConstants.HASHED_PATH_SIZE;
 import static edu.unc.lib.boxc.model.api.rdf.RDFModelUtil.createModel;
@@ -256,7 +254,15 @@ public class DatastreamRestControllerIT extends AbstractAPIIT {
         var corpus = populateCorpus();
         var collectionPid = corpus.pid2;
         var id = collectionPid.getId();
-        createDerivative(id, THUMBNAIL_LARGE, BINARY_CONTENT.getBytes());
+        createDerivative(id, JP2_ACCESS_COPY, BINARY_CONTENT.getBytes());
+
+        var filename = "bunny.jpg";
+        var formattedBasePath = "/iiif/v3/" + ImageServerUtil.getImageServerEncodedId(collectionPid.getId());
+        stubFor(WireMock.get(urlMatching(formattedBasePath + "/full/!128,128/0/default.jpg"))
+                .willReturn(aResponse()
+                        .withStatus(HttpStatus.OK.value())
+                        .withBody(filename)
+                        .withHeader("Content-Type", MediaType.IMAGE_JPEG_VALUE)));
 
         MvcResult result = mvc.perform(get("/thumb/" + id + "/large"))
                 .andExpect(status().is2xxSuccessful())
@@ -264,11 +270,9 @@ public class DatastreamRestControllerIT extends AbstractAPIIT {
 
         // Verify content was retrieved
         MockHttpServletResponse response = result.getResponse();
-        assertEquals(BINARY_CONTENT, response.getContentAsString());
-        assertEquals(BINARY_CONTENT.length(), response.getContentLength());
-        assertEquals(MediaType.IMAGE_PNG.toString(), response.getContentType());
-        assertEquals("inline; filename=" + id + "." + THUMBNAIL_LARGE.getExtension(),
-                response.getHeader(CONTENT_DISPOSITION));
+        assertEquals(filename, response.getContentAsString());
+        assertEquals(MediaType.IMAGE_JPEG_VALUE, response.getContentType());
+        assertEquals("inline; filename=bunny_128px.jpg", response.getHeader(CONTENT_DISPOSITION));
     }
 
     @Test
@@ -308,9 +312,9 @@ public class DatastreamRestControllerIT extends AbstractAPIIT {
     public void testGetFileDerivative() throws Exception {
         PID filePid = makePid();
         String id = filePid.getId();
-        createDerivative(id, THUMBNAIL_SMALL, BINARY_CONTENT.getBytes());
+        createDerivative(id, JP2_ACCESS_COPY, BINARY_CONTENT.getBytes());
 
-        MvcResult result = mvc.perform(get("/file/" + filePid.getId() + "/" + THUMBNAIL_SMALL.getId()))
+        MvcResult result = mvc.perform(get("/file/" + filePid.getId() + "/" + JP2_ACCESS_COPY.getId()))
                 .andExpect(status().is2xxSuccessful())
                 .andReturn();
 
@@ -318,8 +322,8 @@ public class DatastreamRestControllerIT extends AbstractAPIIT {
         MockHttpServletResponse response = result.getResponse();
         assertEquals(BINARY_CONTENT, response.getContentAsString());
         assertEquals(BINARY_CONTENT.length(), response.getContentLength());
-        assertEquals("image/png", response.getContentType());
-        assertEquals("inline; filename=\"" + id + "." + THUMBNAIL_SMALL.getExtension() + "\"",
+        assertEquals("image/jp2", response.getContentType());
+        assertEquals("inline; filename=\"" + id + "." + JP2_ACCESS_COPY.getExtension() + "\"",
                 response.getHeader(CONTENT_DISPOSITION));
     }
 

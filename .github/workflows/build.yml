@@ -19,7 +19,7 @@ jobs:
         ports:
           - 46380:6379
       fedora:
-        image: fcrepo/fcrepo:5.1.1
+        image: fcrepo/fcrepo:5.1.1-multiplatform
         ports:
           - 48085:8080
         volumes:
@@ -38,7 +38,7 @@ jobs:
     - name: Get Container ID of fedora service
       id: get_container_id
       run: |
-        CONTAINER_ID=$(docker ps --format "{{.ID}}" -f "ancestor=fcrepo/fcrepo:5.1.1")
+        CONTAINER_ID=$(docker ps --format "{{.ID}}" -f "ancestor=fcrepo/fcrepo:5.1.1-multiplatform")
         echo "CONTAINER_ID=$CONTAINER_ID" >> $GITHUB_ENV
     - name: Restart fedora now that the repository has been checked out so config files are available
       run: docker restart ${{ env.CONTAINER_ID }}
