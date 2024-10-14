@@ -64,6 +64,6 @@ a.button.is-link span {
 }
 
 /* This removes the thumbnail search button from clover */
-.clover-viewer-media-wrapper .c-iZqOLP + .c-bwRbCV {
+.clover-viewer-media-wrapper div + button {
     display: none !important;
 }
