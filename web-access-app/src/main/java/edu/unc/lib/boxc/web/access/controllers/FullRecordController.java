@@ -304,10 +304,8 @@ public class FullRecordController extends AbstractErrorHandlingSearchController 
             streamingType = (workStreamingContent != null) ? workStreamingContent.getStreamingType() :
                     briefObject.getStreamingType();
         } else {
-            viewerPid = accessCopiesService.getDatastreamPid(briefObject, principals, AUDIO_MIMETYPE_REGEX);
-            if (viewerPid == null) {
-                viewerPid = accessCopiesService.getDatastreamPid(briefObject, principals, VIDEO_MIMETYPE_REGEX);
-            }
+            viewerPid = accessCopiesService.getDatastreamPid(briefObject, principals,
+                    "(" + AUDIO_MIMETYPE_REGEX + ")|(" + VIDEO_MIMETYPE_REGEX + ")");
 
             if (viewerPid != null) {
                 viewerType = "clover";
@@ -327,6 +325,7 @@ public class FullRecordController extends AbstractErrorHandlingSearchController 
 
         return viewerProperties;
     }
+
     /**
      * Get list of digital exhibits associated with an object
      * @param briefObject
