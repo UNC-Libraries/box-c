@@ -35,8 +35,8 @@ public class QueryFilterFactoryTest {
     }
 
     @Test
-    public void HasViewerTypeFilterTest() {
-        var filter = QueryFilterFactory.createHasViewerTypeFilter(SearchFieldKey.FILE_FORMAT_TYPE, "application/pdf");
-        assertInstanceOf(HasViewerTypeFilter.class, filter);
+    public void HasValueFilterTest() {
+        var filter = QueryFilterFactory.createHasValueFilter(SearchFieldKey.FILE_FORMAT_TYPE, "application/pdf");
+        assertInstanceOf(HasValueFilter.class, filter);
     }
 }

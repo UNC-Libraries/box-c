@@ -58,8 +58,8 @@ import static edu.unc.lib.boxc.search.api.FacetConstants.MARKED_FOR_DELETION;
 import static edu.unc.lib.boxc.web.common.services.AccessCopiesService.AUDIO_MIMETYPE_REGEX;
 import static edu.unc.lib.boxc.web.common.services.AccessCopiesService.PDF_MIMETYPE_REGEX;
 import static edu.unc.lib.boxc.web.common.services.AccessCopiesService.VIDEO_MIMETYPE_REGEX;
-import static info.freelibrary.iiif.presentation.v3.MediaType.APPLICATION_PDF;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
+import static org.springframework.http.MediaType.APPLICATION_PDF_VALUE;
 
 /**
  * Controller which retrieves data necessary for populating the full record page, retrieving supplemental information
@@ -258,7 +258,7 @@ public class FullRecordController extends AbstractErrorHandlingSearchController 
 
         String viewerPid = null;
         if (ResourceType.Work.nameEquals(briefObject.getResourceType())) {
-            viewerPid = accessCopiesService.getFirstMatchingChild(briefObject, APPLICATION_PDF.toString(), principals).getId();
+            viewerPid = accessCopiesService.getFirstMatchingChild(briefObject, APPLICATION_PDF_VALUE, principals).getId();
         } else {
             accessCopiesService.getDatastreamPid(briefObject, principals, PDF_MIMETYPE_REGEX);
         }

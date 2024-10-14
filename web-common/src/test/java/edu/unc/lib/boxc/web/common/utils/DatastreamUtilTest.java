@@ -119,7 +119,8 @@ public class DatastreamUtilTest {
         mdObj.setId(pid.getId());
         mdObj.setFileFormatType(asList("text/rtf", "application/pdf"));
 
-        assertTrue( DatastreamUtil.originalFileMimetypeMatches(mdObj, "application/pdf"));
-        assertFalse( DatastreamUtil.originalFileMimetypeMatches(mdObj, "image/png"));
+        assertTrue(DatastreamUtil.originalFileMimetypeMatches(mdObj, "application/pdf"));
+        assertTrue(DatastreamUtil.originalFileMimetypeMatches(mdObj, "text/rtf"));
+        assertFalse(DatastreamUtil.originalFileMimetypeMatches(mdObj, "image/png"));
     }
 }

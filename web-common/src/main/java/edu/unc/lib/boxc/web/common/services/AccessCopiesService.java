@@ -117,7 +117,7 @@ public class AccessCopiesService {
         var request = buildFirstChildQuery(briefObj, principals);
         // Limit query to just children which have streaming content
         var searchState = request.getSearchState();
-        searchState.addFilter(QueryFilterFactory.createHasViewerTypeFilter(SearchFieldKey.FILE_FORMAT_TYPE, fileType));
+        searchState.addFilter(QueryFilterFactory.createHasValueFilter(SearchFieldKey.FILE_FORMAT_TYPE, fileType));
         var resp = solrSearchService.getSearchResults(request);
 
         if (resp.getResultCount() > 0) {
