@@ -54,6 +54,10 @@ public class DownloadImageController {
                 pid, principals, Permission.viewReducedResImages);
 
         var contentObjectRecord = solrSearchService.getObjectById(new SimpleIdRequest(pid, principals));
+        if (contentObjectRecord == null) {
+            log.error("No content object found for {}", pidString);
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
         String validatedSize = downloadImageService.getSize(contentObjectRecord, size);
 
         if (Objects.equals(validatedSize, ImageServerUtil.FULL_SIZE)) {
@@ -63,7 +67,7 @@ public class DownloadImageController {
 
         try {
             analyticsTracker.trackEvent(request, "download access copy", pid, principals);
-            return downloadImageService.streamImage(contentObjectRecord, validatedSize);
+            return downloadImageService.streamImage(contentObjectRecord, validatedSize, true);
         } catch (IOException e) {
             log.error("Error streaming access copy image for {} at size {}", pidString, validatedSize, e);
         }

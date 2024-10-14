@@ -42,6 +42,7 @@ public class AbstractStructureResultsController extends AbstractSolrSearchContro
 
     protected HierarchicalBrowseResultResponse getStructureResult(String pid, boolean includeFiles,
             boolean collectionMode, HttpServletRequest request) {
+        LOG.debug("Retrieving structure browse results for pid: {}", pid);
         int depth;
         try {
             depth = Integer.parseInt(request.getParameter("depth"));
@@ -63,12 +64,6 @@ public class AbstractStructureResultsController extends AbstractSolrSearchContro
         browseRequest.setIncludeFiles(includeFiles);
 
         SearchState searchState = browseRequest.getSearchState();
-
-        try {
-            searchActionService.executeActions(searchState, request.getParameterMap());
-        } catch (InvalidHierarchicalFacetException e) {
-            LOG.debug("An invalid facet was provided: " + request.getQueryString(), e);
-        }
 
         if (pid == null && !searchState.getFacets().containsKey(SearchFieldKey.ANCESTOR_PATH.name())) {
             browseRequest.setRetrievalDepth(1);

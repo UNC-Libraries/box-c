@@ -58,10 +58,6 @@
         <property name="facetFieldFactory" ref="facetFieldFactory" />
     </bean>
 
-    <bean id="searchActionService" class="edu.unc.lib.boxc.web.common.search.SearchActionService">
-        <property name="searchSettings" ref="searchSettings" />
-    </bean>
-
     <bean id="pathFactory" class="edu.unc.lib.boxc.search.solr.services.ObjectPathFactory">
         <property name="search" ref="queryLayer" />
         <property name="cacheSize" value="1000" />

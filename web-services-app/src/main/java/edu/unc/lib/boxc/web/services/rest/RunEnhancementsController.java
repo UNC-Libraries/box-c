@@ -3,9 +3,9 @@ package edu.unc.lib.boxc.web.services.rest;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
+import edu.unc.lib.boxc.web.services.processing.RunEnhancementsRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,9 +37,10 @@ public class RunEnhancementsController {
     @PostMapping(value = "runEnhancements", produces = APPLICATION_JSON_VALUE)
     public @ResponseBody ResponseEntity<Object> runEnhancements(@RequestBody RunEnhancementsRequest data) {
         Map<String, Object> result = new HashMap<>();
+        data.setAgent(GroupsThreadStore.getAgentPrincipals());
 
         try {
-            enhService.run(GroupsThreadStore.getAgentPrincipals(), data.getPids(), data.isForce());
+            enhService.run(data);
             result.put("message", "Enhancement of " + data.getPids().size()
                     + " object(s) and their children has begun");
             result.put("action", "runEnhancements");
@@ -59,19 +60,6 @@ public class RunEnhancementsController {
 
         result.put("timestamp", System.currentTimeMillis());
         return new ResponseEntity<>(result, HttpStatus.OK);
-    }
-
-    public static class RunEnhancementsRequest {
-        private List<String> pids;
-        private boolean force;
-
-        public List<String> getPids() {
-            return pids;
-        }
-
-        public boolean isForce() {
-            return force;
-        }
     }
 
     public void setEnhancementService(RunEnhancementsService enhService) {

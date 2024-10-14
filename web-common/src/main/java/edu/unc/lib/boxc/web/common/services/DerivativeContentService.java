@@ -9,6 +9,7 @@ import static org.apache.http.HttpHeaders.CONTENT_TYPE;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.OutputStream;
 
@@ -23,6 +24,10 @@ import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.fcrepo.services.DerivativeService;
 import edu.unc.lib.boxc.model.fcrepo.services.DerivativeService.Derivative;
 import edu.unc.lib.boxc.web.common.exceptions.ResourceNotFoundException;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 
 /**
  * Streams content for derivative files of repository objects.
@@ -59,19 +64,13 @@ public class DerivativeContentService {
     public void streamData(PID pid, String dsName, AccessGroupSet principals, boolean asAttachment,
             HttpServletResponse response) throws IOException, ResourceNotFoundException {
 
-        DatastreamType derivType = getByIdentifier(dsName);
-        if (derivType == null || !listDerivativeTypes().contains(derivType)) {
-            throw new IllegalArgumentException(dsName + " is not a valid derivative type.");
-        }
+        DatastreamType derivType = getType(dsName);
 
         accessControlService.assertHasAccess("Insufficient permissions to access derivative "
                 + dsName + " for object " + pid,
                 pid, principals, getPermissionForDatastream(derivType));
 
-        Derivative deriv = derivativeService.getDerivative(pid, derivType);
-        if (deriv == null) {
-            throw new ResourceNotFoundException("Derivative " + dsName + " does not exist for object " + pid);
-        }
+        Derivative deriv = getDerivative(pid, dsName, derivType);
 
         File derivFile = deriv.getFile();
         response.setHeader(CONTENT_LENGTH, Long.toString(derivFile.length()));
@@ -85,6 +84,22 @@ public class DerivativeContentService {
 
         OutputStream outStream = response.getOutputStream();
         IOUtils.copy(new FileInputStream(derivFile), outStream, BUFFER_SIZE);
+    }
+
+    private DatastreamType getType(String dsName) {
+        DatastreamType derivType = getByIdentifier(dsName);
+        if (derivType == null || !listDerivativeTypes().contains(derivType)) {
+            throw new IllegalArgumentException(dsName + " is not a valid derivative type.");
+        }
+        return derivType;
+    }
+
+    private Derivative getDerivative (PID pid, String dsName, DatastreamType datastreamType) {
+        Derivative derivative = derivativeService.getDerivative(pid, datastreamType);
+        if (derivative == null) {
+            throw new ResourceNotFoundException("Derivative " + dsName + " does not exist for object " + pid);
+        }
+        return derivative;
     }
 
     /**

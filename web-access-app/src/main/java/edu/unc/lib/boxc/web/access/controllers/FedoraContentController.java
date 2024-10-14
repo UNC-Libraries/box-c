@@ -3,6 +3,7 @@ package edu.unc.lib.boxc.web.access.controllers;
 import edu.unc.lib.boxc.auth.api.exceptions.AccessRestrictionException;
 import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
 import edu.unc.lib.boxc.auth.api.services.AccessControlService;
+import edu.unc.lib.boxc.fcrepo.exceptions.RangeNotSatisfiableException;
 import edu.unc.lib.boxc.model.api.exceptions.InvalidPidException;
 import edu.unc.lib.boxc.model.api.exceptions.NotFoundException;
 import edu.unc.lib.boxc.model.api.exceptions.ObjectTypeMismatchException;
@@ -27,6 +28,8 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.context.request.ServletWebRequest;
+import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 import javax.servlet.http.HttpServletRequest;
@@ -157,8 +160,13 @@ public class FedoraContentController {
     }
 
     @ExceptionHandler(value = { RuntimeException.class })
-    public ResponseEntity<Object> handleUncaught(RuntimeException ex) {
-        log.error("Uncaught exception while streaming content", ex);
+    public ResponseEntity<Object> handleUncaught(RuntimeException ex, WebRequest request) {
+        var headers = new StringBuilder();
+        request.getHeaderNames().forEachRemaining(header -> {
+            headers.append("\n").append(header).append(" = ").append(request.getHeader(header));
+        });
+        var requestUri = ((ServletWebRequest) request).getRequest().getRequestURI();
+        log.error("Uncaught exception while streaming content from {} headers {}", requestUri, headers, ex);
         return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
@@ -166,6 +174,11 @@ public class FedoraContentController {
     public ResponseEntity<Object> handleArgumentTypeMismatch(RuntimeException ex) {
         log.debug("Argument type mismatch", ex);
         return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(RangeNotSatisfiableException.class)
+    public ResponseEntity<Object> handleRangeNotSatisfiable() {
+        return new ResponseEntity<>(HttpStatus.REQUESTED_RANGE_NOT_SATISFIABLE);
     }
 
     public void setFedoraContentService(FedoraContentService fedoraContentService) {

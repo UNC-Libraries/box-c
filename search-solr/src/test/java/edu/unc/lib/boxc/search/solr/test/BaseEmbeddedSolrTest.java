@@ -45,9 +45,8 @@ public class BaseEmbeddedSolrTest {
         Files.createDirectory(dataBaseDir.resolve("dataDir"));
 
         System.setProperty("solr.data.dir", dataDir.getAbsolutePath());
-        container = CoreContainer.createAndLoad(Paths.get("../etc/solr-config"),
-                Paths.get("../etc/solr-config/solr.xml"));
-        container.load();
+        container = CoreContainer.createAndLoad(Paths.get("../etc/solr-config").toAbsolutePath(),
+                Paths.get("../etc/solr-config/solr.xml").toAbsolutePath());
 
         server = new EmbeddedSolrServer(container, "access");
 
@@ -86,6 +85,7 @@ public class BaseEmbeddedSolrTest {
 
     @AfterEach
     public void tearDown() throws Exception {
+        container.shutdown();
         server.close();
         log.debug("Cleaning up data directory");
         FileUtils.deleteDirectory(dataDir);

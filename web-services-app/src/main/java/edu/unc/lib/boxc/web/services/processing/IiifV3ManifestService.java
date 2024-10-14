@@ -31,7 +31,7 @@ import info.freelibrary.iiif.presentation.v3.properties.Metadata;
 import info.freelibrary.iiif.presentation.v3.properties.RequiredStatement;
 import info.freelibrary.iiif.presentation.v3.properties.ViewingDirection;
 import info.freelibrary.iiif.presentation.v3.services.ImageService3;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.CollectionUtils;
@@ -203,6 +203,9 @@ public class IiifV3ManifestService {
             soundContent.setDuration(duration);
             canvas.setDuration(duration);
         }
+        var audioThumbPath = URIUtil.join(baseAccessPath, "static", "images", "file-audio.png");
+        var thumbnail = new ImageContent(audioThumbPath);
+        canvas.setThumbnails(thumbnail);
         paintingAnno.getBodies().add(soundContent);
     }
 

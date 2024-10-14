@@ -56,8 +56,6 @@ const record = {
             "techmd_fits|text/xml|techmd_fits.xml|xml|4709|urn:sha1:5b0eabd749222a7c0bcdb92002be9fe3eff60128||",
             "original_file|image/jpeg|beez||694904|urn:sha1:0d48dadb5d61ae0d41b4998280a3c39577a2f94a||2048x1536",
             "jp2|image/jp2|4db695c0-5fd5-4abf-9248-2e115d43f57d.jp2|jp2|2189901|||",
-            "thumbnail_small|image/png|4db695c0-5fd5-4abf-9248-2e115d43f57d.png|png|6768|||",
-            "thumbnail_large|image/png|4db695c0-5fd5-4abf-9248-2e115d43f57d.png|png|23535|||",
             "event_log|application/n-triples|event_log.nt|nt|4334|urn:sha1:aabf004766f954db4ac4ab9aa0a115bb10b708b4||"
         ],
         parentCollectionId: "fc77a9be-b49d-4f4e-b656-1644c9e964fc",
@@ -166,8 +164,6 @@ const record = {
                 "original_file|image/jpeg|bee1.jpg|jpg|69481|urn:sha1:87d7bed6cb33c87c589cfcdc2a2ce6110712fabb||607x1024",
                 "techmd_fits|text/xml|techmd_fits.xml|xml|7013|urn:sha1:0c4a500c73146214d5fa08f278c0cdaadede79d0||",
                 "jp2|image/jp2|4053adf7-7bdc-4c9c-8769-8cc5da4ce81d.jp2|jp2|415163|||",
-                "thumbnail_small|image/png|4053adf7-7bdc-4c9c-8769-8cc5da4ce81d.png|png|4802|||",
-                "thumbnail_large|image/png|4053adf7-7bdc-4c9c-8769-8cc5da4ce81d.png|png|16336|||",
                 "event_log|application/n-triples|event_log.nt|nt|5852|urn:sha1:8d80f0de467fa650d4bc8568d4a958e5ced85f96||"
             ],
             parentCollectionId: "fc77a9be-b49d-4f4e-b656-1644c9e964fc",
@@ -273,8 +269,6 @@ const record = {
                 "techmd_fits|text/xml|techmd_fits.xml|xml|4709|urn:sha1:5b0eabd749222a7c0bcdb92002be9fe3eff60128||",
                 "original_file|image/jpeg|beez||694904|urn:sha1:0d48dadb5d61ae0d41b4998280a3c39577a2f94a||2048x1536",
                 "jp2|image/jp2|4db695c0-5fd5-4abf-9248-2e115d43f57d.jp2|jp2|2189901|||",
-                "thumbnail_small|image/png|4db695c0-5fd5-4abf-9248-2e115d43f57d.png|png|6768|||",
-                "thumbnail_large|image/png|4db695c0-5fd5-4abf-9248-2e115d43f57d.png|png|23535|||",
                 "event_log|application/n-triples|event_log.nt|nt|4334|urn:sha1:aabf004766f954db4ac4ab9aa0a115bb10b708b4||"
             ],
             parentCollectionId: "fc77a9be-b49d-4f4e-b656-1644c9e964fc",

@@ -163,7 +163,7 @@ public class RunEnhancementsIT extends AbstractAPIIT {
 
         MvcResult result = mvc.perform(post("/runEnhancements")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content("{\"force\":false,\"pids\":[\"" + workFile.getPid().getId() + "\"]}")
+                .content("{\"force\":false,\"recursive\":true,\"pids\":[\"" + workFile.getPid().getId() + "\"]}")
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().is2xxSuccessful())
                 .andReturn();
@@ -188,7 +188,7 @@ public class RunEnhancementsIT extends AbstractAPIIT {
 
         MvcResult result = mvc.perform(post("/runEnhancements")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content("{\"force\":false,\"pids\":[\"" + filePid.getId() + "\"]}")
+                .content("{\"force\":false,\"recursive\":true,\"pids\":[\"" + filePid.getId() + "\"]}")
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().is2xxSuccessful())
                 .andReturn();
@@ -212,7 +212,7 @@ public class RunEnhancementsIT extends AbstractAPIIT {
 
         mvc.perform(post("/runEnhancements")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content("{\"force\":false,\"pids\":[\"" + objPid.toString() + "\"]}")
+                .content("{\"force\":false,\"recursive\":true,\"pids\":[\"" + objPid.toString() + "\"]}")
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isForbidden())
                 .andReturn();
