@@ -7,7 +7,13 @@ force it to reload
 -->
 <template>
     <div class="child-records table-container" id="data-display">
-        <h3>{{ $t('full_record.item_list') }} ({{ childCount }})</h3>
+        <div class="columns">
+            <h3 class="column">{{ $t('full_record.item_list') }} ({{ childCount }})</h3>
+            <div v-if="viewOriginalAccess" class="actionlink column pr-0 is-justify-content-flex-end">
+                <a class="bulk-download button action" :href="downloadBulkUrl(workId)"><i class="fa fa-edit"></i> {{ $t('full_record.bulk_download') }}</a>
+            </div>
+        </div>
+
         <data-table :key="workId" id="child-files" class="table is-striped is-bordered is-fullwidth"
                     :ajax="ajaxOptions"
                     :columns="columns"
@@ -29,17 +35,19 @@ force it to reload
 
 <script>
 import fileDownloadUtils from '../../mixins/fileDownloadUtils';
+import fullRecordUtils from '../../mixins/fullRecordUtils';
 import fileUtils from '../../mixins/fileUtils';
 import DataTable from 'datatables.net-vue3'
 import DataTablesLib from 'datatables.net-bm';
 import 'datatables.net-buttons-bm';
+
 
 DataTable.use(DataTablesLib);
 
 export default {
     name: 'fileList',
 
-    mixins: [fileDownloadUtils, fileUtils],
+    mixins: [fileDownloadUtils, fileUtils, fullRecordUtils],
 
     components: {DataTable},
 
@@ -56,6 +64,10 @@ export default {
         resourceType: {
             default: 'Work',
             type: String
+        },
+        viewOriginalAccess: {
+            default: false,
+            type: Boolean
         },
         workId: String
     },
@@ -337,5 +349,22 @@ export default {
 
     .show-list {
         display: block;
+    }
+
+    @media screen and (max-width: 576px) {
+        #data-display {
+            h3,
+            .actionlink.column {
+                margin-bottom: 0;
+            }
+
+            .dataTables_filter {
+                margin-top: -25px
+            }
+
+            .child-files_wrapper {
+                margin-left: 0;
+            }
+        }
     }
 </style>
