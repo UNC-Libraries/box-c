@@ -41,9 +41,9 @@ public class ImportThumbnailRequestProcessor implements Processor {
     /**
      * Deletes the temporarily stored uploaded thumbnail file
      * @param exchange
-     * @throws Exception
+     * @throws IOException
      */
-    public void cleanupTempThumbnailFile(Exchange exchange) throws Exception {
+    public void cleanupTempThumbnailFile(Exchange exchange) throws IOException {
         final Message in = exchange.getIn();
         String tempValue = (String) in.getHeader(CdrBinaryPath);
         Path tempPath = Paths.get(tempValue);
