@@ -108,7 +108,7 @@ public class AccessCopiesService {
         return null;
     }
 
-    public ContentObjectRecord getFirstMatchingChild(ContentObjectRecord briefObj, String fileType, AccessGroupSet principals) {
+    public ContentObjectRecord getFirstMatchingChild(ContentObjectRecord briefObj, List<String> fileType, AccessGroupSet principals) {
         String resourceType = briefObj.getResourceType();
         if (!ResourceType.Work.nameEquals(resourceType)) {
             return null;
@@ -117,7 +117,7 @@ public class AccessCopiesService {
         var request = buildFirstChildQuery(briefObj, principals);
         // Limit query to just children which have streaming content
         var searchState = request.getSearchState();
-        searchState.addFilter(QueryFilterFactory.createHasValueFilter(SearchFieldKey.FILE_FORMAT_TYPE, fileType));
+        searchState.addFilter(QueryFilterFactory.createHasValuesFilter(SearchFieldKey.FILE_FORMAT_TYPE, fileType));
         var resp = solrSearchService.getSearchResults(request);
 
         if (resp.getResultCount() > 0) {

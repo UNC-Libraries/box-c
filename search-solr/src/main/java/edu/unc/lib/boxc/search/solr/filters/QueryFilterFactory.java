@@ -56,7 +56,7 @@ public class QueryFilterFactory {
      * @param fileType regular expression
      * @return new QueryFilter instance with the provided file type
      */
-    public static QueryFilter createHasValueFilter(SearchFieldKey fieldKey, String fileType) {
-        return new HasValueFilter(fieldKey, fileType);
+    public static QueryFilter createHasValuesFilter(SearchFieldKey fieldKey, List<String> fileType) {
+        return new HasValuesFilter(fieldKey, fileType);
     }
 }

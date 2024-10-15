@@ -46,6 +46,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.InputStream;
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -75,6 +76,7 @@ public class FullRecordController extends AbstractErrorHandlingSearchController 
     private final String VIEWER_TYPE = "viewerType";
     private final String STREAMING_URL = "streamingUrl";
     private final String STREAMING_TYPE = "streamingType";
+    private final String APPLICATION_X_PDF_VALUE = "application/x-pdf";
 
     @Autowired
     private AccessControlService aclService;
@@ -258,7 +260,8 @@ public class FullRecordController extends AbstractErrorHandlingSearchController 
 
         String viewerPid = null;
         if (ResourceType.Work.nameEquals(briefObject.getResourceType())) {
-            viewerPid = accessCopiesService.getFirstMatchingChild(briefObject, APPLICATION_PDF_VALUE, principals).getId();
+            viewerPid = accessCopiesService.getFirstMatchingChild(briefObject,
+                    Arrays.asList(APPLICATION_PDF_VALUE, APPLICATION_X_PDF_VALUE), principals).getId();
         } else {
             accessCopiesService.getDatastreamPid(briefObject, principals, PDF_MIMETYPE_REGEX);
         }

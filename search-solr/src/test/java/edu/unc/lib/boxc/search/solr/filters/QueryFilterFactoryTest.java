@@ -6,6 +6,7 @@ import edu.unc.lib.boxc.search.api.SearchFieldKey;
 import org.junit.jupiter.api.Test;
 
 import java.util.HashSet;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 
@@ -35,8 +36,8 @@ public class QueryFilterFactoryTest {
     }
 
     @Test
-    public void HasValueFilterTest() {
-        var filter = QueryFilterFactory.createHasValueFilter(SearchFieldKey.FILE_FORMAT_TYPE, "application/pdf");
-        assertInstanceOf(HasValueFilter.class, filter);
+    public void HasValuesFilterTest() {
+        var filter = QueryFilterFactory.createHasValuesFilter(SearchFieldKey.FILE_FORMAT_TYPE, List.of("application/pdf"));
+        assertInstanceOf(HasValuesFilter.class, filter);
     }
 }

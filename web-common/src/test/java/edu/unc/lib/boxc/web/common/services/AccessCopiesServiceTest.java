@@ -151,6 +151,18 @@ public class AccessCopiesServiceTest  {
         return mdObject;
     }
 
+    private ContentObjectSolrRecord createXPdfObject(ResourceType resourceType) {
+        var mdObject = new ContentObjectSolrRecord();
+        mdObject.setResourceType(resourceType.name());
+        mdObject.setId(UUID.randomUUID().toString());
+        List<String> datastreams = Collections.singletonList(
+                ORIGINAL_FILE.getId() + "|application/x-pdf|file.pdf|pdf|766|urn:sha1:checksum|");
+        mdObject.setFileFormatCategory(Collections.singletonList(ContentCategory.text.getDisplayName()));
+        mdObject.setFileFormatType(Collections.singletonList("application/x-pdf"));
+        mdObject.setDatastream(datastreams);
+        return mdObject;
+    }
+
     private ContentObjectSolrRecord createImgObject(ResourceType resourceType) {
         var mdObjectImg = new ContentObjectSolrRecord();
         mdObjectImg.setResourceType(resourceType.name());
@@ -437,9 +449,21 @@ public class AccessCopiesServiceTest  {
         when(searchResultResponse.getResultList()).thenReturn(List.of(mdObjectPdf));
         when(searchResultResponse.getResultCount()).thenReturn(1L);
         var pdfObj = accessCopiesService.getFirstMatchingChild(mdObjectPdf,
-                "application/pdf", principals);
+                List.of("application/pdf"), principals);
         assertNotNull(pdfObj);
         assertTrue(pdfObj.getFileFormatType().contains("application/pdf"));
+    }
+
+    @Test
+    public void hasMatchingChildXPDFTest() {
+        var mdObjectPdf = createXPdfObject(ResourceType.Work);
+        hasPermissions(mdObjectPdf, true);
+        when(searchResultResponse.getResultList()).thenReturn(List.of(mdObjectPdf));
+        when(searchResultResponse.getResultCount()).thenReturn(1L);
+        var pdfObj = accessCopiesService.getFirstMatchingChild(mdObjectPdf,
+                Arrays.asList("application/pdf", "application/x-pdf"), principals);
+        assertNotNull(pdfObj);
+        assertTrue(pdfObj.getFileFormatType().contains("application/x-pdf"));
     }
 
     @Test
@@ -448,7 +472,7 @@ public class AccessCopiesServiceTest  {
         when(searchResultResponse.getResultList()).thenReturn(List.of(mdObjectXml));
         when(searchResultResponse.getResultCount()).thenReturn(0L);
         var xmlObj = accessCopiesService.getFirstMatchingChild(mdObjectXml,
-                "application/pdf", principals);
+                List.of("application/pdf"), principals);
 
         assertNull(xmlObj);
     }
@@ -459,7 +483,7 @@ public class AccessCopiesServiceTest  {
         hasPermissions(mdObject, true);
         when(searchResultResponse.getResultList()).thenReturn(List.of(mdObject));
         var obj = accessCopiesService.getFirstMatchingChild(mdObject,
-                "application/pdf", principals);
+                List.of("application/pdf"), principals);
         assertNull(obj);
     }
 
