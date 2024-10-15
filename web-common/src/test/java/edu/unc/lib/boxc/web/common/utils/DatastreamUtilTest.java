@@ -113,7 +113,7 @@ public class DatastreamUtilTest {
     }
 
     @Test
-    public void testOriginalFileMimetypeMatches() {
+    public void testOriginalFileMimetypesMatching() {
         PID pid = makePid();
         ContentObjectSolrRecord mdObj = new ContentObjectSolrRecord();
         mdObj.setId(pid.getId());
