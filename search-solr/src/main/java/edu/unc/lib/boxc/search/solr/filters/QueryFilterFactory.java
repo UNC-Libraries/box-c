@@ -53,10 +53,10 @@ public class QueryFilterFactory {
     /**
      *
      * @param fieldKey searchField
-     * @param fileType regular expression
+     * @param fieldValues list of values to search for
      * @return new QueryFilter instance with the provided file type
      */
-    public static QueryFilter createHasValuesFilter(SearchFieldKey fieldKey, List<String> fileType) {
-        return new HasValuesFilter(fieldKey, fileType);
+    public static QueryFilter createHasValuesFilter(SearchFieldKey fieldKey, List<String> fieldValues) {
+        return new HasValuesFilter(fieldKey, fieldValues);
     }
 }
