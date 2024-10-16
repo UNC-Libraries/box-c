@@ -61,6 +61,9 @@ public class DownloadBulkService {
 
             Map<String, Integer> duplicates = new HashMap<>();
             for (ContentObject memberObject : memberObjects ) {
+                if (!(memberObject instanceof FileObject)) {
+                    continue;
+                }
                 var fileObject = (FileObject) memberObject;
                 if (aclService.hasAccess(memberObject.getPid(), agentPrincipals, Permission.viewOriginal)) {
                     var binObj = fileObject.getOriginalFile();
