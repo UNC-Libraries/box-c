@@ -273,18 +273,6 @@ public class FullRecordController extends AbstractErrorHandlingSearchController 
         return "fullRecord/pdfViewer";
     }
 
-    @GetMapping("/{pid}/uvViewer")
-    public String handleUvViewerRequest(@PathVariable("pid") String pidString, Model model) {
-        PID pid = PIDs.get(pidString);
-
-        AccessGroupSet principals = getAgentPrincipals().getPrincipals();
-        aclService.assertHasAccess("Insufficient permissions to access pdf for " + pidString,
-                pid, principals, Permission.viewAccessCopies);
-
-        model.addAttribute("template", "ajax");
-        return "fullRecord/uvViewer";
-    }
-
     private Map<String, Object> getViewerProperties(ContentObjectRecord briefObject, AccessGroupSet principals) {
         String viewerType = null;
         String viewerPid = null;
