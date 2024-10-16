@@ -21,6 +21,9 @@ import edu.unc.lib.boxc.services.camel.util.CdrFcrepoHeaders;
 public class ImageEnhancementsRouter extends RouteBuilder {
     private static final Logger log = getLogger(ImageEnhancementsRouter.class);
 
+    private static final int CACHE_INVALIDATE_THREADS = 5;
+    private static final int CACHE_INVALIDATE_REQUESTS_PER_SEC = 10;
+
     @BeanInject(value = "addAccessCopyProcessor")
     private AddDerivativeProcessor addAccessCopyProcessor;
 
@@ -59,7 +62,12 @@ public class ImageEnhancementsRouter extends RouteBuilder {
                     .recipientList(simple("exec:/bin/sh?args=${properties:cdr.enhancement.bin}/convertJp2.sh "
                             + "${headers[CdrImagePath]} ${headers[CdrMimeType]} ${headers[CdrTempPath]}"))
                     .bean(addAccessCopyProcessor)
-                    .bean(imageCacheInvalidationProcessor)
+                    // Process cache invalidation asynchronously with a limited number of threads
+                    .threads(CACHE_INVALIDATE_THREADS)
+                        // Limit the max number of requests per second
+                        .throttle(CACHE_INVALIDATE_REQUESTS_PER_SEC)
+                        .bean(imageCacheInvalidationProcessor)
+                    .end()
                 .endDoTry()
                 .doFinally()
                     .bean(addAccessCopyProcessor, "cleanupTempFile")
