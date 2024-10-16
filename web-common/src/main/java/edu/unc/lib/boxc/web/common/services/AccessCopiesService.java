@@ -39,6 +39,7 @@ public class AccessCopiesService {
     private PermissionsHelper permissionsHelper;
     private SolrSearchService solrSearchService;
     public static final String AUDIO_MIMETYPE_REGEX = "audio/(x-)?mpeg(-?3)?";
+    public static final String VIDEO_MIMETYPE_REGEX = "(video|application)/(x-)?(mpeg|mp|quicktime)(-?4)?";
     public static final String PDF_MIMETYPE_REGEX = "application/(x-)?pdf";
 
     /**
@@ -102,6 +103,26 @@ public class AccessCopiesService {
         if (resp.getResultCount() > 0) {
             var id = resp.getResultList().get(0).getId();
             log.debug("Found streaming content {} for work {}", id, briefObj.getId());
+            return resp.getResultList().get(0);
+        }
+        return null;
+    }
+
+    public ContentObjectRecord getFirstMatchingChild(ContentObjectRecord briefObj, List<String> fileType, AccessGroupSet principals) {
+        String resourceType = briefObj.getResourceType();
+        if (!ResourceType.Work.nameEquals(resourceType)) {
+            return null;
+        }
+
+        var request = buildFirstChildQuery(briefObj, principals);
+        // Limit query to just children which have streaming content
+        var searchState = request.getSearchState();
+        searchState.addFilter(QueryFilterFactory.createHasValuesFilter(SearchFieldKey.FILE_FORMAT_TYPE, fileType));
+        var resp = solrSearchService.getSearchResults(request);
+
+        if (resp.getResultCount() > 0) {
+            var id = resp.getResultList().get(0).getId();
+            log.debug("Found {} content {} for work {}", fileType, id, briefObj.getId());
             return resp.getResultList().get(0);
         }
         return null;

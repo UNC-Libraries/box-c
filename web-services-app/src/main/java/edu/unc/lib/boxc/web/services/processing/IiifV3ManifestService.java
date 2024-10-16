@@ -49,6 +49,8 @@ import static info.freelibrary.iiif.presentation.v3.MediaType.AUDIO_MP4;
 import static info.freelibrary.iiif.presentation.v3.MediaType.AUDIO_MPEG;
 import static info.freelibrary.iiif.presentation.v3.MediaType.IMAGE_JPEG;
 import static info.freelibrary.iiif.presentation.v3.MediaType.VIDEO_MP4;
+import static info.freelibrary.iiif.presentation.v3.MediaType.VIDEO_MPEG;
+import static info.freelibrary.iiif.presentation.v3.MediaType.VIDEO_QUICKTIME;
 import static info.freelibrary.iiif.presentation.v3.properties.behaviors.ManifestBehavior.from;
 
 /**
@@ -60,7 +62,8 @@ public class IiifV3ManifestService {
     public static final String DURATION = "duration";
     public static final String WIDTH = "width";
     public static final String HEIGHT = "height";
-    private static final List<String> FILE_TYPES = Arrays.asList(VIDEO_MP4.toString(), AUDIO_MP4.toString(), AUDIO_MPEG.toString());
+    private static final List<String> FILE_TYPES = Arrays.asList(VIDEO_MP4.toString(), VIDEO_MPEG.toString(),
+            VIDEO_QUICKTIME.toString(), AUDIO_MP4.toString(), AUDIO_MPEG.toString());
     private AccessControlService accessControlService;
     private SolrSearchService solrSearchService;
     private GlobalPermissionEvaluator globalPermissionEvaluator;
@@ -290,7 +293,8 @@ public class IiifV3ManifestService {
     }
 
     private boolean isVideo(String mimetype) {
-        return Objects.equals(mimetype, VIDEO_MP4.toString());
+        return Objects.equals(mimetype, VIDEO_MP4.toString())  || Objects.equals(mimetype, VIDEO_MPEG.toString())
+                || Objects.equals(mimetype, VIDEO_QUICKTIME.toString());
     }
 
     private boolean isAudio(String mimetype) {
