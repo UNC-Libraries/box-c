@@ -55,8 +55,6 @@ const record = {
             "techmd_fits|text/xml|techmd_fits.xml|xml|4709|urn:sha1:5b0eabd749222a7c0bcdb92002be9fe3eff60128||",
             "original_file|image/jpeg|beez||694904|urn:sha1:0d48dadb5d61ae0d41b4998280a3c39577a2f94a||2048x1536",
             "jp2|image/jp2|4db695c0-5fd5-4abf-9248-2e115d43f57d.jp2|jp2|2189901|||",
-            "thumbnail_small|image/png|4db695c0-5fd5-4abf-9248-2e115d43f57d.png|png|6768|||",
-            "thumbnail_large|image/png|4db695c0-5fd5-4abf-9248-2e115d43f57d.png|png|23535|||",
             "event_log|application/n-triples|event_log.nt|nt|4334|urn:sha1:aabf004766f954db4ac4ab9aa0a115bb10b708b4||"
         ],
         parentCollectionId: "fc77a9be-b49d-4f4e-b656-1644c9e964fc",
@@ -79,26 +77,8 @@ const record = {
             }
         ],
         permissions: [
-            "markForDeletionUnit",
-            "move",
-            "reindex",
-            "destroy",
-            "editResourceType",
-            "destroyUnit",
-            "bulkUpdateDescription",
-            "changePatronAccess",
-            "runEnhancements",
-            "createAdminUnit",
-            "ingest",
-            "orderMembers",
             "viewOriginal",
             "viewAccessCopies",
-            "viewHidden",
-            "assignStaffRoles",
-            "viewMetadata",
-            "markForDeletion",
-            "editDescription",
-            "createCollection"
         ],
         groupRoleMap: {},
         id: "4db695c0-5fd5-4abf-9248-2e115d43f57d",
@@ -113,7 +93,7 @@ const record = {
         ],
         timestamp: 1679922126871
     },
-    viewerType: "uv",
+    viewerType: "clover",
     neighborList: [],
     dataFileUrl: "content/4db695c0-5fd5-4abf-9248-2e115d43f57d",
     markedForDeletion: false,
@@ -151,7 +131,7 @@ describe('player.vue', () => {
         });
     });
 
-    it("displays an iframe viewer for images", async () => {
+    it("displays the clover viewer for A/V content", async () => {
         let updated_record = cloneDeep(record);
         updated_record.briefObject.groupRoleMap = {
             everyone: 'canViewAccessCopies'
@@ -159,7 +139,7 @@ describe('player.vue', () => {
         await wrapper.setProps({
             recordData: updated_record
         });
-        expect(wrapper.find('iframe').exists()).toBe(true);
+        expect(wrapper.findComponent({ name: 'clover' }).exists()).toBe(true);
     });
 
     it("displays an iframe viewer for pdfs", async () => {
@@ -185,18 +165,6 @@ describe('player.vue', () => {
             recordData: updated_record
         });
         expect(wrapper.find('iframe').exists()).toBe(false);
-    });
-
-    it("uses the audio player component for audio files", async () => {
-        let updated_record = cloneDeep(record);
-        updated_record.viewerType = 'audio';
-        updated_record.briefObject.groupRoleMap = {
-            everyone: 'canViewAccessCopies'
-        }
-        await wrapper.setProps({
-            recordData: updated_record
-        });
-        expect(wrapper.findComponent({ name: 'audioPlayer' }).exists()).toBe(true);
     });
 
     it("uses the streaming player for streaming files", async () => {

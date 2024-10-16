@@ -21,12 +21,6 @@ import edu.unc.lib.boxc.services.camel.util.CdrFcrepoHeaders;
 public class ImageEnhancementsRouter extends RouteBuilder {
     private static final Logger log = getLogger(ImageEnhancementsRouter.class);
 
-    @BeanInject(value = "addSmallThumbnailProcessor")
-    private AddDerivativeProcessor addSmallThumbnailProcessor;
-
-    @BeanInject(value = "addLargeThumbnailProcessor")
-    private AddDerivativeProcessor addLargeThumbProcessor;
-
     @BeanInject(value = "addAccessCopyProcessor")
     private AddDerivativeProcessor addAccessCopyProcessor;
 
@@ -49,52 +43,6 @@ public class ImageEnhancementsRouter extends RouteBuilder {
                 .maximumRedeliveries("{{error.maxRedeliveries}}")
                 .backOffMultiplier("{{error.backOffMultiplier}}")
                 .retryAttemptedLogLevel(LoggingLevel.WARN);
-
-        from("direct:process.enhancement.thumbnails")
-            .routeId("ProcessThumbnails")
-            .startupOrder(23)
-            .log(LoggingLevel.INFO, log, "Thumbs ${headers[CdrBinaryPath]} with ${headers[CdrMimeType]}")
-            .filter().method(imageDerivProcessor, "allowedImageType")
-                .log(LoggingLevel.INFO, log, "Generating thumbnails for ${headers[org.fcrepo.jms.identifier]}"
-                        + " of type ${headers[CdrMimeType]}")
-                .bean(imageDerivProcessor)
-                // Generate an random identifier to avoid derivative collisions
-                .setBody(exchange -> uuidGenerator.generateUuid())
-                .multicast()
-                .shareUnitOfWork()
-                .to("direct:small.thumbnail", "direct:large.thumbnail");
-
-        from("direct:small.thumbnail")
-            .routeId("SmallThumbnail")
-            .startupOrder(22)
-            .log(LoggingLevel.INFO, log, "Creating/Updating Small Thumbnail for ${headers[CdrImagePath]}")
-            .filter().method(addSmallThumbnailProcessor, "needsRun")
-                .setHeader(CdrFcrepoHeaders.CdrTempPath, simple("${properties:services.tempDirectory}/${body}-small"))
-                .doTry()
-                    .recipientList(simple("exec:/bin/sh?args=${properties:cdr.enhancement.bin}/convertScaleStage.sh "
-                            + "${headers[CdrImagePath]} png 64 64 ${headers[CdrTempPath]}"))
-                    .bean(addSmallThumbnailProcessor)
-                .endDoTry()
-                .doFinally()
-                    // Ensure temp files get cleaned up in case of failure
-                    .bean(addSmallThumbnailProcessor, "cleanupTempFile")
-                .end();
-
-
-        from("direct:large.thumbnail")
-            .routeId("LargeThumbnail")
-            .startupOrder(21)
-            .log(LoggingLevel.INFO, log, "Creating/Updating Large Thumbnail for ${headers[CdrImagePath]}")
-            .filter().method(addLargeThumbProcessor, "needsRun")
-                .setHeader(CdrFcrepoHeaders.CdrTempPath, simple("${properties:services.tempDirectory}/${body}-large"))
-                .doTry()
-                    .recipientList(simple("exec:/bin/sh?args=${properties:cdr.enhancement.bin}/convertScaleStage.sh "
-                            + "${headers[CdrImagePath]} png 128 128 ${headers[CdrTempPath]}"))
-                    .bean(addLargeThumbProcessor)
-                .endDoTry()
-                .doFinally()
-                    .bean(addLargeThumbProcessor, "cleanupTempFile")
-                .end();
 
         from("direct:process.enhancement.imageAccessCopy")
             .routeId("AccessCopy")

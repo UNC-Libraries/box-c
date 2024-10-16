@@ -46,6 +46,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.InputStream;
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -57,7 +58,9 @@ import static edu.unc.lib.boxc.common.xml.SecureXMLFactory.createSAXBuilder;
 import static edu.unc.lib.boxc.search.api.FacetConstants.MARKED_FOR_DELETION;
 import static edu.unc.lib.boxc.web.common.services.AccessCopiesService.AUDIO_MIMETYPE_REGEX;
 import static edu.unc.lib.boxc.web.common.services.AccessCopiesService.PDF_MIMETYPE_REGEX;
+import static edu.unc.lib.boxc.web.common.services.AccessCopiesService.VIDEO_MIMETYPE_REGEX;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
+import static org.springframework.http.MediaType.APPLICATION_PDF_VALUE;
 
 /**
  * Controller which retrieves data necessary for populating the full record page, retrieving supplemental information
@@ -73,6 +76,7 @@ public class FullRecordController extends AbstractErrorHandlingSearchController 
     private final String VIEWER_TYPE = "viewerType";
     private final String STREAMING_URL = "streamingUrl";
     private final String STREAMING_TYPE = "streamingType";
+    private final String APPLICATION_X_PDF_VALUE = "application/x-pdf";
 
     @Autowired
     private AccessControlService aclService;
@@ -254,8 +258,15 @@ public class FullRecordController extends AbstractErrorHandlingSearchController 
         SimpleIdRequest idRequest = new SimpleIdRequest(pid, principals);
         ContentObjectRecord briefObject = queryLayer.getObjectById(idRequest);
 
-        String viewerPid = accessCopiesService.getDatastreamPid(briefObject, principals, PDF_MIMETYPE_REGEX);
-        model.addAttribute("pid", viewerPid);
+        String viewerPid = null;
+        if (ResourceType.Work.nameEquals(briefObject.getResourceType())) {
+            viewerPid = accessCopiesService.getFirstMatchingChild(briefObject,
+                    Arrays.asList(APPLICATION_PDF_VALUE, APPLICATION_X_PDF_VALUE), principals).getId();
+        } else {
+            accessCopiesService.getDatastreamPid(briefObject, principals, PDF_MIMETYPE_REGEX);
+        }
+
+        model.addAttribute("viewerPid", viewerPid);
         model.addAttribute("briefObject", briefObject);
         model.addAttribute("template", "ajax");
 
@@ -288,7 +299,7 @@ public class FullRecordController extends AbstractErrorHandlingSearchController 
         }
 
         if (imageViewerNeeded) {
-            viewerType = "uv";
+            viewerType = "clover";
         } else if (briefObject.getContentStatus().contains(FacetConstants.HAS_STREAMING) || workStreamingContent != null) {
             viewerType = "streaming";
             streamingUrl = (workStreamingContent != null) ? workStreamingContent.getStreamingUrl() :
@@ -296,15 +307,15 @@ public class FullRecordController extends AbstractErrorHandlingSearchController 
             streamingType = (workStreamingContent != null) ? workStreamingContent.getStreamingType() :
                     briefObject.getStreamingType();
         } else {
-            // Check for PDF to display
-            viewerPid = accessCopiesService.getDatastreamPid(briefObject, principals, PDF_MIMETYPE_REGEX);
+            viewerPid = accessCopiesService.getDatastreamPid(briefObject, principals,
+                    "(" + AUDIO_MIMETYPE_REGEX + ")|(" + VIDEO_MIMETYPE_REGEX + ")");
+
             if (viewerPid != null) {
-                viewerType = "pdf";
+                viewerType = "clover";
             } else {
-                // Check for viewable audio file
-                viewerPid = accessCopiesService.getDatastreamPid(briefObject, principals, AUDIO_MIMETYPE_REGEX);
+                viewerPid = accessCopiesService.getDatastreamPid(briefObject, principals, PDF_MIMETYPE_REGEX);
                 if (viewerPid != null) {
-                    viewerType = "audio";
+                    viewerType = "pdf";
                 }
             }
         }
@@ -317,6 +328,7 @@ public class FullRecordController extends AbstractErrorHandlingSearchController 
 
         return viewerProperties;
     }
+
     /**
      * Get list of digital exhibits associated with an object
      * @param briefObject

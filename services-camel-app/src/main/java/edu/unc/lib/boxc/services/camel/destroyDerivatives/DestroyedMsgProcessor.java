@@ -32,12 +32,8 @@ import edu.unc.lib.boxc.services.camel.util.MessageUtil;
  *
  */
 public class DestroyedMsgProcessor implements Processor {
-    private final String srcBasePath;
     private static final Logger log = LoggerFactory.getLogger(DestroyedMsgProcessor.class);
-
-    public DestroyedMsgProcessor(String srcBasePath) {
-        this.srcBasePath = srcBasePath;
-    }
+    private String jp2BasePath;
 
     @Override
     public void process(Exchange exchange) throws Exception {
@@ -56,14 +52,13 @@ public class DestroyedMsgProcessor implements Processor {
         String pidId = content.getChildTextTrim("pidId", JDOMNamespaceUtil.CDR_MESSAGE_NS);
         String binaryPath = content.getChildTextTrim("contentUri", JDOMNamespaceUtil.CDR_MESSAGE_NS);
 
-        if (objType.equals(Cdr.Collection.getURI()) || objType.equals(Cdr.AdminUnit.getURI())) {
+        if (!objType.equals(Cdr.FileObject.getURI())) {
             String uuid = PIDs.get(pidId).getId();
             String binarySubPath = idToPath(uuid, HASHED_PATH_DEPTH, HASHED_PATH_SIZE);
-            Path srcPath = Paths.get(srcBasePath, binarySubPath, uuid);
+            Path jp2Path = Paths.get(jp2BasePath, binarySubPath, uuid + ".jp2");
 
-            if (Files.exists(srcPath)) {
-                mimeType = "image/*";
-                in.setHeader("CollectionThumb", true);
+            if (Files.exists(jp2Path)) {
+                mimeType = "image/jp2";
             }
         }
 
@@ -78,5 +73,9 @@ public class DestroyedMsgProcessor implements Processor {
         in.setHeader(CdrBinaryPidId, pidId);
         in.setHeader(CdrBinaryPath, binaryPath);
         in.setHeader(CdrObjectType, objType);
+    }
+
+    public void setJp2BasePath(String jp2BasePath) {
+        this.jp2BasePath = jp2BasePath;
     }
 }

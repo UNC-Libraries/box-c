@@ -15,7 +15,6 @@ import edu.unc.lib.boxc.model.fcrepo.test.TestRepositoryDeinitializer;
 import edu.unc.lib.boxc.operations.impl.edit.UpdateDescriptionService;
 import edu.unc.lib.boxc.operations.impl.edit.UpdateDescriptionService.UpdateDescriptionRequest;
 import edu.unc.lib.boxc.persist.impl.storage.StorageLocationTestHelper;
-import edu.unc.lib.boxc.services.camel.NonBinaryEnhancementProcessor;
 import edu.unc.lib.boxc.services.camel.fulltext.FulltextProcessor;
 import edu.unc.lib.boxc.services.camel.images.AddDerivativeProcessor;
 import edu.unc.lib.boxc.services.camel.solr.SolrIngestProcessor;
@@ -84,10 +83,6 @@ public class EnhancementRouterIT extends CamelSpringTestSupport {
     @Produce("{{cdr.enhancement.stream.camel}}")
     private ProducerTemplate template;
 
-    private AddDerivativeProcessor addSmallThumbnailProcessor;
-
-    private AddDerivativeProcessor addLargeThumbnailProcessor;
-
     private AddDerivativeProcessor addAccessCopyProcessor;
 
     private SolrIngestProcessor solrIngestProcessor;
@@ -103,7 +98,6 @@ public class EnhancementRouterIT extends CamelSpringTestSupport {
 
     private File tempDir;
 
-    private NonBinaryEnhancementProcessor nbh;
 
     @Override
     protected AbstractApplicationContext createApplicationContext() {
@@ -121,27 +115,17 @@ public class EnhancementRouterIT extends CamelSpringTestSupport {
         storageLocationTestHelper = applicationContext.getBean(StorageLocationTestHelper.class);
         fcrepoClient = applicationContext.getBean(FcrepoClient.class);
         cdrEnhancements = applicationContext.getBean(CamelContext.class);
-        addSmallThumbnailProcessor = applicationContext.getBean("addSmallThumbnailProcessor", AddDerivativeProcessor.class);
-        addLargeThumbnailProcessor = applicationContext.getBean("addLargeThumbnailProcessor", AddDerivativeProcessor.class);
         addAccessCopyProcessor = applicationContext.getBean("addAccessCopyProcessor", AddDerivativeProcessor.class);
         solrIngestProcessor = applicationContext.getBean("solrIngestProcessor", SolrIngestProcessor.class);
         fulltextProcessor = applicationContext.getBean("fulltextProcessor", FulltextProcessor.class);
         addAudioAccessCopyProcessor = applicationContext.getBean("addAudioAccessCopyProcessor", AddDerivativeProcessor.class);
         updateDescriptionService = applicationContext.getBean(UpdateDescriptionService.class);
-        nbh = applicationContext.getBean(NonBinaryEnhancementProcessor.class);
 
-        when(addSmallThumbnailProcessor.needsRun(any(Exchange.class))).thenReturn(true);
-        when(addLargeThumbnailProcessor.needsRun(any(Exchange.class))).thenReturn(true);
         when(addAccessCopyProcessor.needsRun(any(Exchange.class))).thenReturn(true);
         when(addAudioAccessCopyProcessor.needsRun(any(Exchange.class))).thenReturn(true);
 
         TestHelper.setContentBase(baseAddress);
         tempDir = Files.createDirectory(tmpFolder.resolve("target")).toFile();
-        nbh.setSourceImagesDir(tempDir.getAbsolutePath());
-
-        File thumbScriptFile = new File("target/convertScaleStage.sh");
-        FileUtils.writeStringToFile(thumbScriptFile, "exit 0", "utf-8");
-        thumbScriptFile.deleteOnExit();
 
         File jp2ScriptFile = new File("target/convertJp2.sh");
         FileUtils.writeStringToFile(jp2ScriptFile, "exit 0", "utf-8");
@@ -174,9 +158,6 @@ public class EnhancementRouterIT extends CamelSpringTestSupport {
                 Cdr.Collection.getURI(), Container.getURI());
         template.sendBodyAndHeaders("", headers);
 
-        verify(addSmallThumbnailProcessor, timeout(ALLOW_WAIT)).process(any(Exchange.class));
-        verify(addLargeThumbnailProcessor, timeout(ALLOW_WAIT)).process(any(Exchange.class));
-        verify(addAccessCopyProcessor, never()).process(any(Exchange.class));
         verify(solrIngestProcessor, timeout(ALLOW_WAIT)).process(any(Exchange.class));
         verify(addAudioAccessCopyProcessor, never()).process(any(Exchange.class));
     }
@@ -189,8 +170,6 @@ public class EnhancementRouterIT extends CamelSpringTestSupport {
         template.sendBodyAndHeaders("", headers);
 
         verify(solrIngestProcessor, timeout(ALLOW_WAIT)).process(any(Exchange.class));
-        verify(addSmallThumbnailProcessor, never()).process(any(Exchange.class));
-        verify(addLargeThumbnailProcessor, never()).process(any(Exchange.class));
         verify(addAudioAccessCopyProcessor, never()).process(any(Exchange.class));
     }
 
@@ -204,7 +183,7 @@ public class EnhancementRouterIT extends CamelSpringTestSupport {
 
         // Separate exchanges when multicasting
         NotifyBuilder notify1 = new NotifyBuilder(cdrEnhancements)
-                .whenCompleted(12)
+                .whenCompleted(7)
                 .create();
 
         final Map<String, Object> headers = createEvent(binObj.getPid(), Binary.getURI());
@@ -213,8 +192,6 @@ public class EnhancementRouterIT extends CamelSpringTestSupport {
         boolean result1 = notify1.matches(5L, TimeUnit.SECONDS);
         assertTrue(result1, "Enhancement route not satisfied");
 
-        verify(addSmallThumbnailProcessor, timeout(ALLOW_WAIT)).process(any(Exchange.class));
-        verify(addLargeThumbnailProcessor, timeout(ALLOW_WAIT)).process(any(Exchange.class));
         verify(addAccessCopyProcessor, timeout(ALLOW_WAIT)).process(any(Exchange.class));
         // Indexing triggered for binary parent
         verify(solrIngestProcessor, timeout(ALLOW_WAIT)).process(any(Exchange.class));
@@ -243,8 +220,6 @@ public class EnhancementRouterIT extends CamelSpringTestSupport {
 
         assertTrue(result, "Processing message did not match expectations");
 
-        verify(addSmallThumbnailProcessor, never()).process(any(Exchange.class));
-        verify(addLargeThumbnailProcessor, never()).process(any(Exchange.class));
         verify(addAccessCopyProcessor, never()).process(any(Exchange.class));
         verify(solrIngestProcessor, never()).process(any(Exchange.class));
         verify(addAudioAccessCopyProcessor, never()).process(any(Exchange.class));
@@ -270,8 +245,7 @@ public class EnhancementRouterIT extends CamelSpringTestSupport {
 
         assertTrue(result, "Processing message did not match expectations");
 
-        verify(addSmallThumbnailProcessor, never()).process(any(Exchange.class));
-        verify(fulltextProcessor, never()).process(any(Exchange.class));
+        verify(fulltextProcessor,  never()).process(any(Exchange.class));
         verify(solrIngestProcessor, never()).process(any(Exchange.class));
         verify(addAudioAccessCopyProcessor, never()).process(any(Exchange.class));
     }
@@ -319,8 +293,6 @@ public class EnhancementRouterIT extends CamelSpringTestSupport {
 
         assertTrue(result, "Processing message did not match expectations");
 
-        verify(addSmallThumbnailProcessor, never()).process(any(Exchange.class));
-        verify(addLargeThumbnailProcessor, never()).process(any(Exchange.class));
         verify(addAccessCopyProcessor, never()).process(any(Exchange.class));
         verify(solrIngestProcessor, never()).process(any(Exchange.class));
         verify(addAudioAccessCopyProcessor, never()).process(any(Exchange.class));
@@ -344,8 +316,6 @@ public class EnhancementRouterIT extends CamelSpringTestSupport {
 
         boolean result = notify.matches(5L, TimeUnit.SECONDS);
 
-        verify(addSmallThumbnailProcessor, never()).process(any(Exchange.class));
-        verify(addLargeThumbnailProcessor, never()).process(any(Exchange.class));
         verify(addAccessCopyProcessor, never()).process(any(Exchange.class));
         verify(addAudioAccessCopyProcessor, timeout(ALLOW_WAIT)).process(any(Exchange.class));
         verify(solrIngestProcessor, timeout(ALLOW_WAIT)).process(any(Exchange.class));

@@ -1,0 +1,224 @@
+#modal-permissions-editor .border,
+#modal-permissions-editor .border th,
+#modal-permissions-editor .border td {
+    border: 1px solid lightgray;
+    border-collapse: collapse;
+    font-size: 14px;
+    height: 20px;
+    padding: 5px 0 5px 15px;
+}
+
+#modal-permissions-editor .border th {
+    background-color: #DFEBEF;
+    border: none;
+    border-bottom: 1px solid lightgray;
+}
+
+#modal-permissions-editor .inherited-permissions td {
+    border: none;
+    border-bottom: 1px solid lightgray;
+}
+
+#modal-permissions-editor table {
+    margin-bottom: 25px;
+    text-align: left;
+    width: 100%;
+}
+
+#modal-permissions-editor .assigned-permissions td.border {
+    border-right: none;
+    border-bottom: 1px solid lightgray;
+    max-width: 325px;
+}
+
+#modal-permissions-editor .assigned-permissions td.size {
+    max-width: 150px;
+}
+
+#modal-permissions-editor .assigned-permissions td.size input[type=text] {
+    height: 32px;
+    width: 230px;
+}
+
+#modal-permissions-editor .assigned-permissions td div.text-only {
+    margin-right: 5px;
+}
+
+#modal-permissions-editor .assigned-permissions td.border.select-box {
+    border-left: none;
+    border-right: 1px solid lightgray;
+    padding: 0;
+}
+
+#modal-permissions-editor .btn button {
+    width: 100px;
+}
+
+#modal-permissions-editor button {
+    border: none;
+    padding: 5px 10px;
+}
+
+#modal-permissions-editor button:hover {
+    cursor: pointer;
+    opacity: .7;
+}
+
+#modal-permissions-editor input {
+    border: none;
+    font-size: 14px;
+    line-height: 20px;
+}
+
+#modal-permissions-editor .no-updates-allowed {
+    color: gray;
+    margin-top: 15px;
+}
+
+#modal-permissions-editor select {
+    background: #F4F4F4;
+    border: 1px solid #F0F3FB;
+    border-radius: 0;
+    height: 100%;
+    width: 100%;
+    padding: 10px;
+    font-size: 14px;
+    color: #3F3F3F;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    -ms-appearance: none;
+    -o-appearance: none;
+    appearance: none;
+}
+
+#modal-permissions-editor .select-wrapper {
+    position: relative;
+}
+
+#modal-permissions-editor .select-wrapper:after {
+    font-family: "Font Awesome 5 Free";
+    content: '\f078';
+    font-size: 14px;
+    font-weight: 900;
+    position: absolute;
+    top: 12px;
+    right: 10px;
+    color: #434B67;
+    pointer-events: none;
+}
+
+#modal-permissions-editor select::-ms-expand {
+    display: none;
+}
+
+#modal-permissions-editor .marked-for-deletion {
+    background-color: #f99;
+    text-decoration: line-through;
+}
+
+#modal-permissions-editor select.marked-for-deletion {
+    border: none;
+}
+
+#modal-permissions-editor .assigned > div {
+    display: inline-flex;
+}
+
+#modal-permissions-editor ul#role-list {
+    border: none;
+    font-size: 14px;
+    margin: 0 15px;
+    padding-bottom: 20px;
+    padding-top: 0;
+    text-align: left;
+}
+
+#modal-permissions-editor #role-list li {
+    display: list-item;
+    padding-left: 15px;
+}
+
+#modal-permissions-editor .info {
+    background-color: #4B9CD3;;
+    border: 1px solid #4B9CD3;;
+    border-radius: 100%;
+    color: white;
+    font-size: 16px;
+    font-weight: bold;
+    height: 20px;
+    margin: 22px 0 0 5px;
+    text-align: center;
+    width: 20px;
+}
+
+#modal-permissions-editor .info:hover {
+    cursor: grab;
+    opacity: .7;
+}
+
+#modal-permissions-editor .role-description {
+    display: block;
+    margin: 10px auto;
+}
+
+#modal-permissions-editor ul {
+    border-top: 1px solid lightgray;
+    list-style-type: none;
+    margin-top: 25px;
+    padding-top: 20px;
+    text-align: center;
+}
+
+#modal-permissions-editor ul li {
+    display: inline;
+    margin-left: 0;
+}
+
+#modal-permissions-editor ul li button {
+    font-size: 14px;
+}
+
+#modal-permissions-editor button {
+    margin-left: 15px;
+}
+
+#modal-permissions-editor .btn-disabled {
+    opacity: .3;
+    cursor: not-allowed;
+}
+
+#modal-permissions-editor .cancel {
+    background-color: gray;
+}
+
+#modal-permissions-editor .message {
+    height: 17px;
+    margin-top: 15px;
+}
+
+#modal-permissions-editor .is-disabled {
+    opacity: .5
+}
+
+#modal-permissions-editor .is-disabled:hover {
+    cursor: not-allowed;
+}
+
+.slide-enter-active, .slide-leave-active {
+    max-height: 200px;
+    overflow-y: hidden;
+    -webkit-transition: max-height 0.8s ease-in-out;
+    -moz-transition: max-height 0.8s ease-in-out;
+    -o-transition: max-height 0.8s ease-in-out;
+    transition: max-height 0.8s ease-in-out;
+}
+
+.slide-enter, .slide-leave-to {
+    max-height: 0
+}
+
+.pull-right,
+.buttons.pull-right {
+    display: flex;
+    justify-content: flex-end;
+}

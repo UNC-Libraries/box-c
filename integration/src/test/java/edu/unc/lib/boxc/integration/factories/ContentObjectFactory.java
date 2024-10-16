@@ -62,7 +62,7 @@ public class ContentObjectFactory {
     }
 
     protected void addThumbnail(ContentObject object) throws IOException {
-        var derivativePath = derivativeService.getDerivativePath(object.getPid(), DatastreamType.THUMBNAIL_LARGE);
+        var derivativePath = derivativeService.getDerivativePath(object.getPid(), DatastreamType.JP2_ACCESS_COPY);
         FileUtils.write(derivativePath.toFile(), "image", "UTF-8");
     }
 

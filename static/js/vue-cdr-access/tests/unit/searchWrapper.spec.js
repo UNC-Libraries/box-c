@@ -39,8 +39,6 @@ const response = {
                 "techmd_fits|text/xml|0367e115-fc95-4f61-8539-e9a77cf00d8a.xml|xml|5480|urn:sha1:4b74895e0f119890a1c0ae1e329683e4cb8264af|0367e115-fc95-4f61-8539-e9a77cf00d8a",
                 "original_file|image/png|agent.png|png|174979|urn:md5:68e519e0c42adada7cb543a7c0193101|0367e115-fc95-4f61-8539-e9a77cf00d8a",
                 "jp2|image/jp2|0367e115-fc95-4f61-8539-e9a77cf00d8a.jp2|jp2|427985||0367e115-fc95-4f61-8539-e9a77cf00d8a",
-                "thumbnail_small|image/png|0367e115-fc95-4f61-8539-e9a77cf00d8a.png|png|1445||0367e115-fc95-4f61-8539-e9a77cf00d8a",
-                "thumbnail_large|image/png|0367e115-fc95-4f61-8539-e9a77cf00d8a.png|png|3602||0367e115-fc95-4f61-8539-e9a77cf00d8a"
             ],
             "_version_": 1649012742492782600,
             "id": "64e6883d-3667-4e5b-893d-c6e851ac738a",

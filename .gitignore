@@ -24,6 +24,7 @@ static/js/cdr-access.js
 static/css/cdr_access.css
 static/css/cdr_vue_modal_styles.css
 static/js/vue-access-index.js
+static/js/vue-admin-index.js
 static/js/vue-permissions-index.js
 static/js/vue-cdr-access/.env
 static/css/cdr-ui.css

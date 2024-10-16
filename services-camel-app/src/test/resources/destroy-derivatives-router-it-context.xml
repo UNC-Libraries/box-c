@@ -22,19 +22,6 @@
     </bean>
 
     <bean id="destroyedMsgProcessor" class="edu.unc.lib.boxc.services.camel.destroyDerivatives.DestroyedMsgProcessor">
-        <constructor-arg value="${sourceImages.dir}" />
-    </bean>
-
-    <bean id="destroyCollectionSrcImgProcessor" class="org.mockito.Mockito" factory-method="mock">
-        <constructor-arg type="java.lang.Class" value="edu.unc.lib.boxc.services.camel.destroyDerivatives.DestroyDerivativesProcessor" />
-    </bean>
-
-    <bean id="destroySmallThumbnailProcessor" class="org.mockito.Mockito" factory-method="mock">
-        <constructor-arg type="java.lang.Class" value="edu.unc.lib.boxc.services.camel.destroyDerivatives.DestroyDerivativesProcessor" />
-    </bean>
-
-    <bean id="destroyLargeThumbnailProcessor" class="org.mockito.Mockito" factory-method="mock">
-        <constructor-arg type="java.lang.Class" value="edu.unc.lib.boxc.services.camel.destroyDerivatives.DestroyDerivativesProcessor" />
     </bean>
 
     <bean id="destroyAccessCopyProcessor" class="org.mockito.Mockito" factory-method="mock">

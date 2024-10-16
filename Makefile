@@ -33,7 +33,7 @@ build-admin-concat:
 		static/css/admin/fontawesome/all.min.css \
 		static/css/structure_browse.css \
 		static/css/cdr_vue_modal_styles.css \
-		static/js/admin/vue-permissions-editor/dist/assets/index.css \
+		static/js/admin/vue-cdr-admin/dist/assets/index.css \
 		> static/css/cdr_admin.css
 
 ifneq ($(VERSION), "")
@@ -44,11 +44,11 @@ ifneq ($(VERSION), "")
 endif
 
 build-admin-npm:
-	# Build vue permissions application files
-	npm --prefix static/js/admin/vue-permissions-editor ci
-	npm --prefix static/js/admin/vue-permissions-editor run build
+	# Build vue admin application files
+	npm --prefix static/js/admin/vue-cdr-admin ci
+	npm --prefix static/js/admin/vue-cdr-admin run build
 
-	cp static/js/admin/vue-permissions-editor/dist/assets/vue-permissions-index.js static/js/vue-permissions-index.js
+	cp static/js/admin/vue-cdr-admin/dist/assets/vue-admin-index.js static/js/vue-admin-index.js
 
 build-access-concat:
 	# Make sure file is empty
