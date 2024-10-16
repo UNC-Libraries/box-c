@@ -113,7 +113,7 @@ const record = {
         ],
         timestamp: 1679922126871
     },
-    viewerType: "uv",
+    viewerType: "clover",
     neighborList: [
         {
             filesizeTotal: 69481,

@@ -98,7 +98,7 @@ const record = {
         ],
         timestamp: 1679922126871
     },
-    viewerType: "uv",
+    viewerType: "clover",
     dataFileUrl: "content/4db695c0-5fd5-4abf-9248-2e115d43f57d",
     markedForDeletion: false,
     resourceType: "File"
