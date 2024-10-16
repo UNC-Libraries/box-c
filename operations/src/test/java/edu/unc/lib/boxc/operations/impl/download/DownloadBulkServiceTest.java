@@ -10,6 +10,7 @@ import edu.unc.lib.boxc.model.api.ids.PID;
 import edu.unc.lib.boxc.model.api.objects.BinaryObject;
 import edu.unc.lib.boxc.model.api.objects.FileObject;
 import edu.unc.lib.boxc.model.api.objects.RepositoryObjectLoader;
+import edu.unc.lib.boxc.model.api.objects.Tombstone;
 import edu.unc.lib.boxc.model.api.objects.WorkObject;
 import edu.unc.lib.boxc.model.fcrepo.ids.PIDs;
 import org.apache.commons.io.IOUtils;
@@ -63,6 +64,8 @@ public class DownloadBulkServiceTest {
     private WorkObject parentWork;
     @Mock
     private FileObject fileObject1, fileObject2;
+    @Mock
+    private Tombstone tombstone;
     @TempDir
     public Path zipStorageBasePath;
 
@@ -148,6 +151,15 @@ public class DownloadBulkServiceTest {
     public void noOriginalFilesTest() throws IOException {
         when(repoObjLoader.getWorkObject(eq(parentPid))).thenReturn(parentWork);
         when(parentWork.getMembers()).thenReturn(List.of(fileObject1));
+        service.downloadBulk(request);
+        // the zip file should be empty
+        assertZipFiles(List.of(), List.of());
+    }
+
+    @Test
+    public void tombstoneTest() throws IOException {
+        when(repoObjLoader.getWorkObject(eq(parentPid))).thenReturn(parentWork);
+        when(parentWork.getMembers()).thenReturn(List.of(tombstone));
         service.downloadBulk(request);
         // the zip file should be empty
         assertZipFiles(List.of(), List.of());
