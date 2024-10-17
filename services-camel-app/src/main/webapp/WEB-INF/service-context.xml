@@ -98,6 +98,8 @@
     <!-- ACL related beans -->
     <bean id="httpClientConnectionManager" class="org.apache.http.impl.conn.PoolingHttpClientConnectionManager"
             destroy-method="shutdown">
+        <property name="maxTotal" value="100" />
+        <property name="defaultMaxPerRoute" value="5"/>
     </bean>
     
     <bean id="sparqlQueryService" class="edu.unc.lib.boxc.model.fcrepo.sparql.FusekiSparqlQueryServiceImpl">
