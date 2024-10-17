@@ -931,6 +931,21 @@ table.dataTable {
   display: inline-flex;
 }
 
+.button.is-link.is-hovered,
+.button.is-link:hover {
+  background-color: #276cda;
+  border-color: transparent;
+  color: #fff;
+}
+
+.navbar-link.is-active,
+.navbar-link:hover,
+a.navbar-item.is-active,
+a.navbar-item:hover {
+  background-color: #fafafa;
+  color: #3273dc;
+}
+
 /*** End of Bulma overrides ***/
 
 /* Following Bulma breakpoints */
