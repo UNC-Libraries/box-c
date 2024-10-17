@@ -76,7 +76,7 @@ describe('fileList.vue', () => {
             props: {
                 childCount: 3,
                 editAccess: true,
-                viewOriginal: false,
+                viewOriginalAccess: false,
                 workId: 'e2f0d544-4f36-482c-b0ca-ba11f1251c01',
             }
         });
@@ -192,5 +192,16 @@ describe('fileList.vue', () => {
         ];
 
         expect(wrapper.find('div.image-download-options').exists()).toBe(false);
+    });
+
+    it('shows a bulk download option if user has viewOriginal permissions', async () => {
+        await wrapper.setProps({
+            viewOriginalAccess: true
+        })
+        expect(wrapper.find('a.bulk-download').exists()).toBe(true);
+    });
+
+    it('does not show a bulk download option if user does not viewOriginal permissions', async () => {
+        expect(wrapper.find('a.bulk-download').exists()).toBe(false);
     });
 });

@@ -420,11 +420,6 @@ p.no-search-results {
 
 #child-files_filter {
   margin-bottom: 25px;
-
-  label {
-    float: right;
-    width: 250px;
-  }
 }
 
 .input::placeholder, .input {
@@ -719,7 +714,7 @@ table.dataTable {
   .actionlink {
     a.action {
       font-size: 16px;
-      padding: 15px 15px 30px 15px;
+      padding: 15px;
     }
   }
 }
@@ -934,6 +929,21 @@ table.dataTable {
 
 .actionlink {
   display: inline-flex;
+}
+
+.button.is-link.is-hovered,
+.button.is-link:hover {
+  background-color: #276cda;
+  border-color: transparent;
+  color: #fff;
+}
+
+.navbar-link.is-active,
+.navbar-link:hover,
+a.navbar-item.is-active,
+a.navbar-item:hover {
+  background-color: #fafafa;
+  color: #3273dc;
 }
 
 /*** End of Bulma overrides ***/

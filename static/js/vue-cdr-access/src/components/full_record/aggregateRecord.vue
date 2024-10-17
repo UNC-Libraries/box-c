@@ -73,6 +73,7 @@
                        :child-count="childCount"
                        :work-id="recordData.briefObject.id"
                        :download-access="hasDownloadAccess(recordData)"
+                       :view-original-access="hasPermission(recordData, 'viewOriginal')"
                        :edit-access="hasPermission(recordData,'editDescription')">
             </file-list>
             <metadata-display :uuid="recordData.briefObject.id"
