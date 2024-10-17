@@ -276,7 +276,6 @@ export default {
         }
 
         input[type=search] {
-            margin-bottom: 15px;
             min-width: 225px;
         }
 
