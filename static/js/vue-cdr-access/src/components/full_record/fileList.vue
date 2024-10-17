@@ -10,7 +10,12 @@ force it to reload
         <div class="columns">
             <h3 class="column">{{ $t('full_record.item_list') }} ({{ childCount }})</h3>
             <div v-if="viewOriginalAccess" class="actionlink column pr-0 is-justify-content-flex-end">
-                <a class="bulk-download button action" :href="downloadBulkUrl(workId)"><i class="fa fa-edit"></i> {{ $t('full_record.bulk_download') }}</a>
+                <a class="bulk-download button action" :href="downloadBulkUrl(workId)">
+                    <span class="icon">
+                        <i class="fa fa-archive"></i>
+                    </span>
+                    <span>{{ $t('full_record.bulk_download') }}</span>
+                </a>
             </div>
         </div>
 
@@ -317,6 +322,7 @@ export default {
 
             a.action {
                 display: flex;
+                height: 34px;
             }
 
             a.dropdown-item {
