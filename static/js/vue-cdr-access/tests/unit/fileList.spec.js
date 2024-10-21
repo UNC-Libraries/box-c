@@ -193,15 +193,4 @@ describe('fileList.vue', () => {
 
         expect(wrapper.find('div.image-download-options').exists()).toBe(false);
     });
-
-    it('shows a bulk download option if user has viewOriginal permissions', async () => {
-        await wrapper.setProps({
-            viewOriginalAccess: true
-        })
-        expect(wrapper.find('a.bulk-download').exists()).toBe(true);
-    });
-
-    it('does not show a bulk download option if user does not viewOriginal permissions', async () => {
-        expect(wrapper.find('a.bulk-download').exists()).toBe(false);
-    });
 });

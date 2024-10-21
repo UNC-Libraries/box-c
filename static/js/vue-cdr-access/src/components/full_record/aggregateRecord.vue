@@ -72,6 +72,7 @@
             <file-list v-if="childCount > 0"
                        :child-count="childCount"
                        :work-id="recordData.briefObject.id"
+                       :total-download-size="recordData.totalDownloadSize"
                        :download-access="hasDownloadAccess(recordData)"
                        :view-original-access="hasPermission(recordData, 'viewOriginal')"
                        :edit-access="hasPermission(recordData,'editDescription')">
