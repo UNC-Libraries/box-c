@@ -9,7 +9,6 @@ import edu.unc.lib.boxc.search.api.requests.SearchRequest;
 import edu.unc.lib.boxc.search.solr.models.ContentObjectSolrRecord;
 import edu.unc.lib.boxc.search.solr.responses.SearchResultResponse;
 import edu.unc.lib.boxc.search.solr.services.SolrSearchService;
-import org.apache.commons.io.FileUtils;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -73,7 +72,7 @@ public class WorkFilesizeServiceTest {
         var mdObject = createObject(ResourceType.Work, fileSize);
         when(solrSearchService.getSearchResults(searchRequestCaptor.capture()).getResultList())
                 .thenReturn(List.of(mdObject));
-        assertEquals(FileUtils.byteCountToDisplaySize(fileSize),
+        assertEquals(workFilesizeService.formatFileSize(fileSize),
                 workFilesizeService.getTotalFilesize(mdObject, principals));
     }
 
@@ -91,7 +90,7 @@ public class WorkFilesizeServiceTest {
         mdObjectImg.setResourceType(resourceType.name());
         var id = UUID.randomUUID().toString();
         mdObjectImg.setId(id);
-        mdObjectImg.setFilesizeTotal(filesize);
+        mdObjectImg.setFilesizeSort(filesize);
         List<String> imgDatastreams = List.of(
                 ORIGINAL_FILE.getId() + "|image/png|file.png|png|" + filesize + "|urn:sha1:checksum|",
                 JP2_ACCESS_COPY.getId() + "|image/jp2|bunny.jp2|jp2|||" + id + "|1200x1200");

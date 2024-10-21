@@ -8,10 +8,12 @@ import edu.unc.lib.boxc.search.api.models.ContentObjectRecord;
 import edu.unc.lib.boxc.search.api.requests.SearchRequest;
 import edu.unc.lib.boxc.search.api.requests.SearchState;
 import edu.unc.lib.boxc.search.solr.services.SolrSearchService;
-import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.math.RoundingMode;
+import java.text.DecimalFormat;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -32,20 +34,40 @@ public class WorkFilesizeService {
         var resp = solrSearchService.getSearchResults(request);
 
         if (resp.getResultCount() > 0) {
-            Long totalFileSize = 0L;
-            for (ContentObjectRecord file: resp.getResultList()) {
-                totalFileSize += file.getFilesizeTotal();
-            }
+            var totalFileSize = resp.getResultList().stream()
+                    .mapToLong(ContentObjectRecord::getFilesizeSort)
+                    .reduce(0, Long::sum);
 
             if (totalFileSize > ONE_GIGABYTE) {
                 return "-1";
             }
 
-            return FileUtils.byteCountToDisplaySize(totalFileSize);
+            return formatFileSize(totalFileSize);
         } else {
             log.debug("No child objects for work {}", contentObjectRecord.getId());
             return null;
         }
+    }
+
+    protected String formatFileSize(Long fileBytes) {
+        if (fileBytes == 0) {
+            return "0 B";
+        }
+
+        var k = 1024;
+        var sizes = Arrays.asList("B", "KB", "MB", "GB", "TB", "PB");
+        var i = Math.floor(Math.log(fileBytes) / Math.log(k));
+        var val = (fileBytes / Math.pow(k, i));
+        var flooredVal = Math.floor(val);
+
+        if (val - flooredVal == 0) {
+            return flooredVal + " " + sizes.get((int) i);
+        }
+
+        DecimalFormat df = new DecimalFormat("#.#");
+        df.setRoundingMode(RoundingMode.CEILING);
+        return df.format(val) + " " + sizes.get((int) i);
+
     }
 
     private SearchRequest buildChildrenQuery(ContentObjectRecord briefObj, AccessGroupSet principals) {
@@ -59,7 +81,8 @@ public class WorkFilesizeService {
         CutoffFacet selectedPath = briefObj.getPath();
         searchState.addFacet(selectedPath);
         SearchRequest searchRequest = new SearchRequest(searchState, principals);
-        searchRequest.setApplyCutoffs(true);
+        searchRequest.setApplyCutoffs(false);
+
         return searchRequest;
     }
 

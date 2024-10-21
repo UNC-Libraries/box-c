@@ -265,10 +265,6 @@ export default {
 
         showBadge(brief_object) {
             return { markDeleted: this.markedForDeletion(brief_object), restricted: this.isRestricted(brief_object) };
-        },
-
-        getFilesize() {
-
         }
     }
 }
