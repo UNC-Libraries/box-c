@@ -236,6 +236,7 @@ public class IiifV3ManifestControllerTest {
         var respJson = MvcTestHelpers.getResponseAsJson(result);
         var body = respJson.get("items").get(0).get("items").get(0).get("body");
         assertEquals("http://example.com/services/file/f277bb38-272c-471c-a28a-9887a1328a1f", body.get("id").textValue());
+        assertEquals("audio/mp4", body.get("format").textValue());
         assertEquals("Sound", body.get("type").textValue());
         assertEquals(500, body.get(DURATION).intValue());
     }

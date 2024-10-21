@@ -45,6 +45,7 @@ import java.util.Map;
 import java.util.Objects;
 
 import static edu.unc.lib.boxc.model.api.DatastreamType.JP2_ACCESS_COPY;
+import static info.freelibrary.iiif.presentation.v3.MediaType.AUDIO_AAC;
 import static info.freelibrary.iiif.presentation.v3.MediaType.AUDIO_MP4;
 import static info.freelibrary.iiif.presentation.v3.MediaType.AUDIO_MPEG;
 import static info.freelibrary.iiif.presentation.v3.MediaType.IMAGE_JPEG;
@@ -63,7 +64,7 @@ public class IiifV3ManifestService {
     public static final String WIDTH = "width";
     public static final String HEIGHT = "height";
     private static final List<String> FILE_TYPES = Arrays.asList(VIDEO_MP4.toString(), VIDEO_MPEG.toString(),
-            VIDEO_QUICKTIME.toString(), AUDIO_MP4.toString(), AUDIO_MPEG.toString());
+            VIDEO_QUICKTIME.toString(), AUDIO_MP4.toString(), AUDIO_MPEG.toString(), AUDIO_AAC.toString());
     private AccessControlService accessControlService;
     private SolrSearchService solrSearchService;
     private GlobalPermissionEvaluator globalPermissionEvaluator;
@@ -298,7 +299,8 @@ public class IiifV3ManifestService {
     }
 
     private boolean isAudio(String mimetype) {
-        return Objects.equals(mimetype, AUDIO_MP4.toString()) || Objects.equals(mimetype, AUDIO_MPEG.toString());
+        return Objects.equals(mimetype, AUDIO_MP4.toString()) || Objects.equals(mimetype, AUDIO_MPEG.toString())
+                || Objects.equals(mimetype, AUDIO_AAC.toString());
     }
 
     private boolean hasViewableContent(ContentObjectRecord contentObj) {
