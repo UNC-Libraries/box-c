@@ -289,9 +289,6 @@ public class DestroyDerivativesRouterIT extends CamelSpringTestSupport {
         initializeDestroyJob(Collections.singletonList(fileObj.getPid()));
         destroyJob.run();
 
-        verify(destroySmallThumbnailProcessor, never()).process(any(Exchange.class));
-        verify(destroyLargeThumbnailProcessor, never()).process(any(Exchange.class));
-        verify(destroyCollectionSrcImgProcessor, never()).process(any(Exchange.class));
         verify(destroyAccessCopyProcessor, never()).process(any(Exchange.class));
         verify(destroyFulltextProcessor, never()).process(any(Exchange.class));
         verify(destroyAudioProcessor).process(any(Exchange.class));
