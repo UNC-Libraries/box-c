@@ -7,7 +7,10 @@
             <span>{{ $t('full_record.bulk_download') }} ({{ totalDownloadSize }})</span>
         </a>
         <a v-else class="bulk-download bulk-download-email button action" href="https://library.unc.edu/contact-us/?destination=wilson">
-            <i class="fa fa-envelope"></i> {{ $t('access.contact') }}
+            <span class="icon">
+                <i class="fa fa-envelope"></i>
+            </span>
+            <span>{{ $t('access.contact') }}</span>
         </a>
     </div>
 </template>
