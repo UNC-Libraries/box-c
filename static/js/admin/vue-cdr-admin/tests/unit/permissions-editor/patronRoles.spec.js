@@ -73,8 +73,8 @@ describe('patronRoles.vue', () => {
 
             stubDataSaveResponse();
             await wrapper.find('#is-submitting').trigger('click');
-            moxios.wait(async () => {
-                let request = moxios.requests.mostRecent()
+            moxios.wait(() => {
+                let request = moxios.requests.mostRecent();
                 expect(request.config.method).toEqual('put');
                 expect(JSON.parse(request.config.data)).toEqual(
                     { roles: assigned_roles, deleted: false, embargo: embargo_date, assignedTo: UUID }
