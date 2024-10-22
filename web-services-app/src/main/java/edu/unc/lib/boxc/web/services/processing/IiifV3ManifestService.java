@@ -64,7 +64,7 @@ public class IiifV3ManifestService {
     public static final String WIDTH = "width";
     public static final String HEIGHT = "height";
     private static final List<String> FILE_TYPES = Arrays.asList(VIDEO_MP4.toString(), VIDEO_MPEG.toString(),
-            VIDEO_QUICKTIME.toString(), AUDIO_MP4.toString(), AUDIO_MPEG.toString(), AUDIO_AAC.toString());
+            VIDEO_QUICKTIME.toString(), AUDIO_MP4.toString(), AUDIO_MPEG.toString());
     private AccessControlService accessControlService;
     private SolrSearchService solrSearchService;
     private GlobalPermissionEvaluator globalPermissionEvaluator;
@@ -180,7 +180,7 @@ public class IiifV3ManifestService {
 
         // Child of the Annotation is a Content Object
         var mimetype = getMimetype(contentObj);
-        if (isAudio(mimetype)) {
+        if (isAudio(mimetype, contentObj)) {
             setSoundContent(contentObj, paintingAnno, canvas);
         } else if (isVideo(mimetype)) {
             setVideoContent(contentObj, paintingAnno, canvas);
@@ -197,6 +197,9 @@ public class IiifV3ManifestService {
 
     private void setSoundContent(ContentObjectRecord contentObj, PaintingAnnotation paintingAnno, Canvas canvas) {
         var soundContent = new SoundContent(getDownloadPath(contentObj));
+        if (contentObj.getDatastreamObject(DatastreamType.AUDIO_ACCESS_COPY.getId()) != null) {
+            soundContent = new SoundContent(getAccessPath(contentObj));
+        }
         soundContent.setFormat(AUDIO_MP4);
         var dimensions = getDimensions(contentObj);
         if (dimensions != null && (dimensions.get(DURATION) >= 0)) {
@@ -298,7 +301,11 @@ public class IiifV3ManifestService {
                 || Objects.equals(mimetype, VIDEO_QUICKTIME.toString());
     }
 
-    private boolean isAudio(String mimetype) {
+    private boolean isAudio(String mimetype, ContentObjectRecord contentObj) {
+        if (contentObj.getDatastreamObject(DatastreamType.AUDIO_ACCESS_COPY.getId()) != null) {
+            return true;
+        }
+
         return Objects.equals(mimetype, AUDIO_MP4.toString()) || Objects.equals(mimetype, AUDIO_MPEG.toString())
                 || Objects.equals(mimetype, AUDIO_AAC.toString());
     }
@@ -315,7 +322,7 @@ public class IiifV3ManifestService {
         // check if original datastream mimetype is image or video
         if (!isValidDatastream && originalDatastream != null) {
             var mimetype = originalDatastream.getMimetype();
-            isValidDatastream = isAudio(mimetype) || isVideo(mimetype);
+            isValidDatastream = isAudio(mimetype, contentObj) || isVideo(mimetype);
         }
 
         return isValidDatastream;
@@ -412,6 +419,10 @@ public class IiifV3ManifestService {
 
     private String getDownloadPath(ContentObjectRecord contentObj) {
         return URIUtil.join(baseServicesApiPath, "file", contentObj.getId());
+    }
+
+    private String getAccessPath(ContentObjectRecord contentObj) {
+        return URIUtil.join(baseServicesApiPath, "file", DatastreamType.AUDIO_ACCESS_COPY.getId());
     }
 
     public void setAccessControlService(AccessControlService accessControlService) {
