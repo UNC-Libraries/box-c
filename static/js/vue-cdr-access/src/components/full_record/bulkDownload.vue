@@ -4,7 +4,7 @@
                     <span class="icon">
                         <i class="fa fa-archive"></i>
                     </span>
-            <span>{{ $t('full_record.bulk_download') }} ({{ totalDownloadSize }})</span>
+            <span>{{ $t('full_record.bulk_download') }} ({{ formatFilesize(totalDownloadSize) }})</span>
         </a>
         <a v-else class="bulk-download bulk-download-email button action" href="https://library.unc.edu/contact-us/?destination=wilson">
             <span class="icon">
@@ -16,17 +16,20 @@
 </template>
 
 <script>
+import fileUtils from '../../mixins/fileUtils';
 import fullRecordUtils from '../../mixins/fullRecordUtils';
+
+const ONE_GIGABYTE = 1073741824;
 
 export default {
     name: 'bulkDownload',
 
-    mixins: [fullRecordUtils],
+    mixins: [fileUtils, fullRecordUtils],
 
     props: {
         totalDownloadSize: {
             default: null,
-            type: String
+            type: Number
         },
         viewOriginalAccess: {
             default: false,
@@ -41,7 +44,7 @@ export default {
         },
 
         showTotalFilesize() {
-            return this.hasDownloadableContent && parseInt(this.totalDownloadSize) !== -1;
+            return this.hasDownloadableContent && this.totalDownloadSize <= ONE_GIGABYTE;
         }
     }
 }

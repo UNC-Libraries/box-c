@@ -223,7 +223,7 @@ public class FullRecordController extends AbstractErrorHandlingSearchController 
             recordProperties.put("dataFileUrl", dataFileUrl);
         }
 
-        String totalDownloadSize = null;
+        Long totalDownloadSize = null;
         if (ResourceType.Work.nameEquals(resourceType)) {
             totalDownloadSize = workFilesizeService.getTotalFilesize(briefObject, principals);
         }

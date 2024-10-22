@@ -72,17 +72,7 @@ public class WorkFilesizeServiceTest {
         var mdObject = createObject(ResourceType.Work, fileSize);
         when(solrSearchService.getSearchResults(searchRequestCaptor.capture()).getResultList())
                 .thenReturn(List.of(mdObject));
-        assertEquals(workFilesizeService.formatFileSize(fileSize),
-                workFilesizeService.getTotalFilesize(mdObject, principals));
-    }
-
-    @Test
-    public void workObjectWithBulkDownloadGreaterThan1GB() {
-        var TWO_GIGABYTE_FILE = 2147483648L;
-        var mdObject = createObject(ResourceType.Work, TWO_GIGABYTE_FILE);
-        when(solrSearchService.getSearchResults(searchRequestCaptor.capture())
-                .getResultList()).thenReturn(List.of(mdObject));
-        assertEquals("-1", workFilesizeService.getTotalFilesize(mdObject, principals));
+        assertEquals(fileSize, workFilesizeService.getTotalFilesize(mdObject, principals));
     }
 
     private ContentObjectSolrRecord createObject(ResourceType resourceType, Long filesize) {

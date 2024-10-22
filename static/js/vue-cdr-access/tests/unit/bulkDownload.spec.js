@@ -19,7 +19,7 @@ describe('fileList.vue', () => {
                 plugins: [i18n],
             },
             props: {
-                totalDownloadSize: "2.1 MB",
+                totalDownloadSize: 8193,
                 viewOriginalAccess: true,
                 workId: work_id,
             }
@@ -33,12 +33,13 @@ describe('fileList.vue', () => {
         expect(download_link.exists()).toBe(true);
         expect(download_email.exists()).toBe(false);
         expect(download_link.attributes('href')).toEqual(expect.stringContaining(`/services/api/bulkDownload/${work_id}`));
-        expect(download_link.text()).toEqual(expect.stringContaining('Download All Files (2.1 MB)'));
+        expect(download_link.text()).toEqual(expect.stringContaining('Download All Files (8 KB)'));
     });
 
     it ("displays a contact wilson button for downloads greater than 1 GB", async () => {
+        const TWO_GIGABYTE_FILE = 2147483648;
         await wrapper.setProps({
-            totalDownloadSize: "-1"
+            totalDownloadSize: TWO_GIGABYTE_FILE
         });
 
         let download_link = wrapper.find('.bulk-download-link');

@@ -10,8 +10,9 @@ force it to reload
         <div class="columns">
             <h3 class="column">{{ $t('full_record.item_list') }} ({{ childCount }})</h3>
             <bulk-download :view-original-access="viewOriginalAccess"
-            :total-download-size="totalDownloadSize"
-            :work-id="workId"></bulk-download>
+                           :total-download-size="totalDownloadSize"
+                           :work-id="workId">
+            </bulk-download>
         </div>
 
         <data-table :key="workId" id="child-files" class="table is-striped is-bordered is-fullwidth"
