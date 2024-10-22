@@ -102,6 +102,11 @@
         <property name="permissionsHelper" ref="permsHelper" />
         <property name="solrSearchService" ref="queryLayer" />
     </bean>
+
+    <bean id="workFilesizeService" class="edu.unc.lib.boxc.web.common.services.WorkFilesizeService">
+        <property name="globalPermissionEvaluator" ref="globalPermissionEvaluator" />
+        <property name="solrSearchService" ref="queryLayer" />
+    </bean>
     
     <bean id="queryLayer" class="edu.unc.lib.boxc.web.common.services.SolrQueryLayerService"
         init-method="initializeSolrServer">

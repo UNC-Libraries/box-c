@@ -9,14 +9,10 @@ force it to reload
     <div class="child-records table-container" id="data-display">
         <div class="columns">
             <h3 class="column">{{ $t('full_record.item_list') }} ({{ childCount }})</h3>
-            <div v-if="viewOriginalAccess" class="actionlink column pr-0 is-justify-content-flex-end">
-                <a class="bulk-download button action" :href="downloadBulkUrl(workId)">
-                    <span class="icon">
-                        <i class="fa fa-archive"></i>
-                    </span>
-                    <span>{{ $t('full_record.bulk_download') }}</span>
-                </a>
-            </div>
+            <bulk-download :view-original-access="viewOriginalAccess"
+                           :total-download-size="totalDownloadSize"
+                           :work-id="workId">
+            </bulk-download>
         </div>
 
         <data-table :key="workId" id="child-files" class="table is-striped is-bordered is-fullwidth"
@@ -39,6 +35,7 @@ force it to reload
 </template>
 
 <script>
+import bulkDownload from '@/components/full_record/bulkDownload.vue';
 import fileDownloadUtils from '../../mixins/fileDownloadUtils';
 import fullRecordUtils from '../../mixins/fullRecordUtils';
 import fileUtils from '../../mixins/fileUtils';
@@ -54,7 +51,7 @@ export default {
 
     mixins: [fileDownloadUtils, fileUtils, fullRecordUtils],
 
-    components: {DataTable},
+    components: {bulkDownload, DataTable},
 
     props: {
         childCount: Number,
@@ -68,6 +65,10 @@ export default {
         },
         resourceType: {
             default: 'Work',
+            type: String
+        },
+        totalDownloadSize: {
+            default: null,
             type: String
         },
         viewOriginalAccess: {
@@ -90,6 +91,10 @@ export default {
     },
 
     computed: {
+        showTotalFilesize() {
+            return this.viewOriginalAccess && this.totalDownloadSize !== null
+        },
+
         // Datatables expects dataSrc to return an array
         // File objects don't have any child metadata, so wrap the file object in an array
         ajaxOptions() {
@@ -309,6 +314,10 @@ export default {
                 margin: 0;
                 text-indent: 0;
             }
+        }
+
+        a {
+            word-break: break-word;
         }
 
         tr.deleted {

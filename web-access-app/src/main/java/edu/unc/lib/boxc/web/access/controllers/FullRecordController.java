@@ -24,6 +24,7 @@ import edu.unc.lib.boxc.web.common.controllers.AbstractErrorHandlingSearchContro
 import edu.unc.lib.boxc.web.common.exceptions.RenderViewException;
 import edu.unc.lib.boxc.web.common.services.AccessCopiesService;
 import edu.unc.lib.boxc.web.common.services.FindingAidUrlService;
+import edu.unc.lib.boxc.web.common.services.WorkFilesizeService;
 import edu.unc.lib.boxc.web.common.services.XmlDocumentFilteringService;
 import edu.unc.lib.boxc.web.common.utils.ModsUtil;
 import edu.unc.lib.boxc.web.common.utils.SerializationUtil;
@@ -86,6 +87,8 @@ public class FullRecordController extends AbstractErrorHandlingSearchController 
     private FindingAidUrlService findingAidUrlService;
     @Autowired
     private AccessCopiesService accessCopiesService;
+    @Autowired
+    private WorkFilesizeService workFilesizeService;
     @Autowired
     private XmlDocumentFilteringService xmlDocumentFilteringService;
     @Autowired
@@ -219,6 +222,12 @@ public class FullRecordController extends AbstractErrorHandlingSearchController 
             String dataFileUrl = accessCopiesService.getDownloadUrl(briefObject, principals);
             recordProperties.put("dataFileUrl", dataFileUrl);
         }
+
+        Long totalDownloadSize = null;
+        if (ResourceType.Work.nameEquals(resourceType)) {
+            totalDownloadSize = workFilesizeService.getTotalFilesize(briefObject, principals);
+        }
+        recordProperties.put("totalDownloadSize", totalDownloadSize);
 
         accessCopiesService.populateThumbnailId(briefObject, principals, true);
 
