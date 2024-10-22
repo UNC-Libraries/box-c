@@ -11,7 +11,7 @@
   "dependencies": {
     "@samvera/clover-iiif": "^2.10.2",
     "@vueuse/head": "^2.0.0",
-    "axios": "^0.28.1",
+    "axios": "^1.7.7",
     "canvas": "^2.11.2",
     "datatables.net": "^1.13.11",
     "datatables.net-bm": "^1.13.11",
