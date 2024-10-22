@@ -55,11 +55,17 @@ describe('singleUseLink.vue', () => {
 
         moxios.wait(async () => {
             await wrapper.find('#single-use-link').trigger('click');
-            expect(wrapper.find('.download-link-wrapper').exists()).toBe(true);
-            expect(wrapper.find('.download-link-wrapper div').text())
-                .toEqual(`Created link ${response_date.key} expires in 1 day`);
-            expect(wrapper.find('.download-link-wrapper a').exists()).toBe(true); // Copy button
-            done();
+
+            moxios.wait(() => {
+                let request = moxios.requests.mostRecent();
+
+                expect(request.config.method).toEqual('post');
+                expect(wrapper.find('.download-link-wrapper').exists()).toBe(true);
+                expect(wrapper.find('.download-link-wrapper div').text())
+                    .toEqual(`Created link ${response_date.key} expires in 1 day`);
+                expect(wrapper.find('.download-link-wrapper a').exists()).toBe(true); // Copy button
+                done();
+            });
         });
     });
 
