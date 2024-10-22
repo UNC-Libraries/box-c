@@ -196,9 +196,11 @@ public class IiifV3ManifestService {
     }
 
     private void setSoundContent(ContentObjectRecord contentObj, PaintingAnnotation paintingAnno, Canvas canvas) {
-        var soundContent = new SoundContent(getDownloadPath(contentObj));
+        SoundContent soundContent;
         if (contentObj.getDatastreamObject(DatastreamType.AUDIO_ACCESS_COPY.getId()) != null) {
             soundContent = new SoundContent(getAccessPath(contentObj));
+        } else {
+            soundContent = new SoundContent(getDownloadPath(contentObj));
         }
         soundContent.setFormat(AUDIO_MP4);
         var dimensions = getDimensions(contentObj);
@@ -422,7 +424,8 @@ public class IiifV3ManifestService {
     }
 
     private String getAccessPath(ContentObjectRecord contentObj) {
-        return URIUtil.join(baseServicesApiPath, "file", DatastreamType.AUDIO_ACCESS_COPY.getId());
+        return URIUtil.join(baseServicesApiPath, "file", contentObj.getId(),
+                DatastreamType.AUDIO_ACCESS_COPY.getId());
     }
 
     public void setAccessControlService(AccessControlService accessControlService) {
