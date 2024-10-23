@@ -4,6 +4,7 @@ import edu.unc.lib.boxc.auth.api.Permission;
 import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
 import edu.unc.lib.boxc.auth.api.services.AccessControlService;
 import edu.unc.lib.boxc.auth.fcrepo.services.ObjectAclFactory;
+import edu.unc.lib.boxc.model.api.DatastreamType;
 import edu.unc.lib.boxc.model.api.ResourceType;
 import edu.unc.lib.boxc.model.api.exceptions.FedoraException;
 import edu.unc.lib.boxc.model.api.exceptions.NotFoundException;
@@ -294,6 +295,8 @@ public class FullRecordController extends AbstractErrorHandlingSearchController 
                     briefObject.getStreamingUrl();
             streamingType = (workStreamingContent != null) ? workStreamingContent.getStreamingType() :
                     briefObject.getStreamingType();
+        } else if (briefObject.getDatastreamObject(DatastreamType.AUDIO_ACCESS_COPY.getId()) != null) {
+            viewerType = "clover";
         } else {
             viewerPid = accessCopiesService.getDatastreamPid(briefObject, principals,
                     "(" + AUDIO_MIMETYPE_REGEX + ")|(" + VIDEO_MIMETYPE_REGEX + ")");
