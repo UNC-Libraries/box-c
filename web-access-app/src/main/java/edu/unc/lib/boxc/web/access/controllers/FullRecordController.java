@@ -295,8 +295,6 @@ public class FullRecordController extends AbstractErrorHandlingSearchController 
                     briefObject.getStreamingUrl();
             streamingType = (workStreamingContent != null) ? workStreamingContent.getStreamingType() :
                     briefObject.getStreamingType();
-        } else if (briefObject.getDatastreamObject(DatastreamType.AUDIO_ACCESS_COPY.getId()) != null) {
-            viewerType = "clover";
         } else {
             viewerPid = accessCopiesService.getDatastreamPid(briefObject, principals,
                     "(" + AUDIO_MIMETYPE_REGEX + ")|(" + VIDEO_MIMETYPE_REGEX + ")");

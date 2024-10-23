@@ -24,7 +24,9 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Service to check for or list resources with access copies
@@ -79,8 +81,10 @@ public class AccessCopiesService {
     public boolean hasViewableFiles(ContentObjectRecord briefObj, AccessGroupSet principals) {
         String resourceType = briefObj.getResourceType();
         if (ResourceType.File.nameEquals(resourceType)) {
-            Datastream datastream = briefObj.getDatastreamObject(DatastreamType.JP2_ACCESS_COPY.getId());
-            return datastream != null;
+            if (briefObj.getDatastreamObject(DatastreamType.JP2_ACCESS_COPY.getId()) != null ||
+                    briefObj.getDatastreamObject(DatastreamType.AUDIO_ACCESS_COPY.getId()) != null) {
+                return true;
+            }
         }
         if (!ResourceType.Work.nameEquals(resourceType)) {
             return false;
@@ -235,7 +239,9 @@ public class AccessCopiesService {
     }
 
     private SearchResultResponse performQuery(ContentObjectRecord briefObj, AccessGroupSet principals, int rows) {
-        // Search for child objects with jp2 datastreams with user can access
+        // Search for child objects with jp2 or audio datastreams with user can access
+        Set<DatastreamType> datastreams = new HashSet<>(Arrays.asList(DatastreamType.JP2_ACCESS_COPY,
+                DatastreamType.AUDIO_ACCESS_COPY));
         SearchState searchState = new SearchState();
         if (!globalPermissionEvaluator.hasGlobalPrincipal(principals)) {
             searchState.setPermissionLimits(Arrays.asList(Permission.viewAccessCopies));
@@ -245,8 +251,7 @@ public class AccessCopiesService {
         CutoffFacet selectedPath = briefObj.getPath();
         searchState.addFacet(selectedPath);
         searchState.setSortType("default");
-        searchState.addFilter(
-                QueryFilterFactory.createFilter(SearchFieldKey.DATASTREAM, DatastreamType.JP2_ACCESS_COPY));
+        searchState.addFilter(QueryFilterFactory.createFilter(SearchFieldKey.DATASTREAM, datastreams));
 
         var searchRequest = new SearchRequest(searchState, principals);
         return solrSearchService.getSearchResults(searchRequest);
