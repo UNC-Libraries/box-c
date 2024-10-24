@@ -23,7 +23,8 @@ public class IIIFv3ViewableFilter implements QueryFilter {
         var fileTypeFilter = getFileTypes().stream().map( type -> fileTypeField + ":" + type)
                 .collect(Collectors.joining(" OR ", "(", ")"));
         var datastreamFilter = SearchFieldKey.DATASTREAM.getSolrField() + ":" + DatastreamType.JP2_ACCESS_COPY.getId() + "|*";
-        return "(" + fileTypeFilter + ") OR (" + datastreamFilter + ")";
+        var datastreamFilterAudio = SearchFieldKey.DATASTREAM.getSolrField() + ":" + DatastreamType.AUDIO_ACCESS_COPY.getId() + "|*";
+        return "(" + fileTypeFilter + ") OR (" + datastreamFilter + ") OR (" + datastreamFilterAudio + ")";
     }
 
     @Override

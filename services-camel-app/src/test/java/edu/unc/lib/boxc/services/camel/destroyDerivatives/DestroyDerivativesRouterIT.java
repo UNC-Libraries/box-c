@@ -40,11 +40,13 @@ import org.fcrepo.client.FcrepoClient;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.mockito.Mock;
 import org.springframework.context.support.AbstractApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import java.io.File;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -90,13 +92,10 @@ public class DestroyDerivativesRouterIT extends CamelSpringTestSupport {
     @Mock
     private MemberOrderRequestSender memberOrderRequestSender;
 
+    @TempDir
+    public Path tmpFolder;
+
     private DestroyedMsgProcessor destroyedMsgProcessor;
-
-    private DestroyDerivativesProcessor destroyCollectionSrcImgProcessor;
-
-    private DestroyDerivativesProcessor destroySmallThumbnailProcessor;
-
-    private DestroyDerivativesProcessor destroyLargeThumbnailProcessor;
 
     private DestroyDerivativesProcessor destroyAccessCopyProcessor;
 
@@ -147,9 +146,6 @@ public class DestroyDerivativesRouterIT extends CamelSpringTestSupport {
         indexingMessageSender = applicationContext.getBean(IndexingMessageSender.class);
         binaryDestroyedMessageSender = applicationContext.getBean("binaryDestroyedMessageSender", MessageSender.class);
         destroyedMsgProcessor = applicationContext.getBean(DestroyedMsgProcessor.class);
-        destroyCollectionSrcImgProcessor = applicationContext.getBean("destroyCollectionSrcImgProcessor", DestroyDerivativesProcessor.class);
-        destroySmallThumbnailProcessor = applicationContext.getBean("destroySmallThumbnailProcessor", DestroyDerivativesProcessor.class);
-        destroyLargeThumbnailProcessor = applicationContext.getBean("destroyLargeThumbnailProcessor", DestroyDerivativesProcessor.class);
         destroyAccessCopyProcessor = applicationContext.getBean("destroyAccessCopyProcessor", DestroyDerivativesProcessor.class);
         destroyFulltextProcessor = applicationContext.getBean("destroyFulltextProcessor", DestroyDerivativesProcessor.class);
         destroyAudioProcessor = applicationContext.getBean("destroyAudioProcessor", DestroyDerivativesProcessor.class);
@@ -168,6 +164,7 @@ public class DestroyDerivativesRouterIT extends CamelSpringTestSupport {
                 .model);
 
         collection = repoObjectFactory.createCollectionObject(null);
+        destroyedMsgProcessor.setJp2BasePath(tmpFolder.toString());
 
         contentRoot.addMember(adminUnit);
         adminUnit.addMember(collection);
@@ -198,9 +195,6 @@ public class DestroyDerivativesRouterIT extends CamelSpringTestSupport {
         initializeDestroyJob(Collections.singletonList(fileObj.getPid()));
         destroyJob.run();
 
-        verify(destroySmallThumbnailProcessor).process(any(Exchange.class));
-        verify(destroyLargeThumbnailProcessor).process(any(Exchange.class));
-        verify(destroyCollectionSrcImgProcessor, never()).process(any(Exchange.class));
         verify(destroyAccessCopyProcessor).process(any(Exchange.class));
         verify(destroyFulltextProcessor, never()).process(any(Exchange.class));
         verify(destroyAudioProcessor, never()).process(any(Exchange.class));
@@ -213,23 +207,21 @@ public class DestroyDerivativesRouterIT extends CamelSpringTestSupport {
 
         treeIndexer.indexAll(baseAddress);
 
-        // Create collection thumbnail
+        // Create collection thumbnail jp2
         PID collPid = collectionWithImg.getPid();
         String uuid = collPid.getId();
         String binarySubPath = idToPath(uuid, HASHED_PATH_DEPTH, HASHED_PATH_SIZE);
-        Path existingFileDirs = Files.createDirectories(new File("target/" + binarySubPath).toPath());
-        File existingFile = new File(existingFileDirs.toString(), uuid);
-        FileUtils.writeStringToFile(existingFile, "thumbnail", "UTF-8");
+        var derivativeFinalDir = Files.createDirectories(tmpFolder.resolve( binarySubPath)).toFile();
+        var file = new File(derivativeFinalDir, uuid + ".jp2");
+        FileUtils.writeStringToFile(file, "fake jp2", StandardCharsets.UTF_8);
 
-        markForDeletion(collPid);
+        new MarkForDeletionJob(collPid, "", agent, repoObjLoader,
+                sparqlUpdateService, aclService, premisLoggerFactory).run();
         initializeDestroyJob(Collections.singletonList(collPid));
 
         destroyJob.run();
 
-        verify(destroySmallThumbnailProcessor).process(any(Exchange.class));
-        verify(destroyLargeThumbnailProcessor).process(any(Exchange.class));
-        verify(destroyCollectionSrcImgProcessor).process(any(Exchange.class));
-        verify(destroyAccessCopyProcessor, never()).process(any(Exchange.class));
+        verify(destroyAccessCopyProcessor).process(any(Exchange.class));
         verify(destroyFulltextProcessor, never()).process(any(Exchange.class));
         verify(destroyAudioProcessor, never()).process(any(Exchange.class));
     }
@@ -245,9 +237,6 @@ public class DestroyDerivativesRouterIT extends CamelSpringTestSupport {
         initializeDestroyJob(Collections.singletonList(collectionWithImg.getPid()));
         destroyJob.run();
 
-        verify(destroySmallThumbnailProcessor, never()).process(any(Exchange.class));
-        verify(destroyLargeThumbnailProcessor, never()).process(any(Exchange.class));
-        verify(destroyCollectionSrcImgProcessor, never()).process(any(Exchange.class));
         verify(destroyAccessCopyProcessor, never()).process(any(Exchange.class));
         verify(destroyFulltextProcessor, never()).process(any(Exchange.class));
         verify(destroyAudioProcessor, never()).process(any(Exchange.class));
@@ -266,9 +255,6 @@ public class DestroyDerivativesRouterIT extends CamelSpringTestSupport {
         initializeDestroyJob(Collections.singletonList(fileObj.getPid()));
         destroyJob.run();
 
-        verify(destroySmallThumbnailProcessor, never()).process(any(Exchange.class));
-        verify(destroyLargeThumbnailProcessor, never()).process(any(Exchange.class));
-        verify(destroyCollectionSrcImgProcessor, never()).process(any(Exchange.class));
         verify(destroyAccessCopyProcessor, never()).process(any(Exchange.class));
         verify(destroyFulltextProcessor).process(any(Exchange.class));
         verify(destroyAudioProcessor, never()).process(any(Exchange.class));
@@ -286,9 +272,6 @@ public class DestroyDerivativesRouterIT extends CamelSpringTestSupport {
         initializeDestroyJob(Collections.singletonList(fileObj.getPid()));
         destroyJob.run();
 
-        verify(destroySmallThumbnailProcessor, never()).process(any(Exchange.class));
-        verify(destroyLargeThumbnailProcessor, never()).process(any(Exchange.class));
-        verify(destroyCollectionSrcImgProcessor, never()).process(any(Exchange.class));
         verify(destroyAccessCopyProcessor, never()).process(any(Exchange.class));
         verify(destroyFulltextProcessor, never()).process(any(Exchange.class));
         verify(destroyAudioProcessor, never()).process(any(Exchange.class));
@@ -306,9 +289,6 @@ public class DestroyDerivativesRouterIT extends CamelSpringTestSupport {
         initializeDestroyJob(Collections.singletonList(fileObj.getPid()));
         destroyJob.run();
 
-        verify(destroySmallThumbnailProcessor, never()).process(any(Exchange.class));
-        verify(destroyLargeThumbnailProcessor, never()).process(any(Exchange.class));
-        verify(destroyCollectionSrcImgProcessor, never()).process(any(Exchange.class));
         verify(destroyAccessCopyProcessor, never()).process(any(Exchange.class));
         verify(destroyFulltextProcessor, never()).process(any(Exchange.class));
         verify(destroyAudioProcessor).process(any(Exchange.class));

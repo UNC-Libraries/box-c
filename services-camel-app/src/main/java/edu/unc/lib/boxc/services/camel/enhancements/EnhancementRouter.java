@@ -17,7 +17,6 @@ import org.slf4j.Logger;
 import edu.unc.lib.boxc.model.api.rdf.Cdr;
 import edu.unc.lib.boxc.services.camel.BinaryEnhancementProcessor;
 import edu.unc.lib.boxc.services.camel.BinaryMetadataProcessor;
-import edu.unc.lib.boxc.services.camel.NonBinaryEnhancementProcessor;
 
 /**
  * Router which queues and triggers enhancement services.
@@ -35,14 +34,10 @@ public class EnhancementRouter extends RouteBuilder {
     @BeanInject(value = "binaryMetadataProcessor")
     private BinaryMetadataProcessor mdProcessor;
 
-    @BeanInject(value = "nonBinaryEnhancementProcessor")
-    private NonBinaryEnhancementProcessor nbProcessor;
-
     @PropertyInject(value = "cdr.enhancement.processingThreads")
     private Integer enhancementThreads;
 
-    private static final String DEFAULT_ENHANCEMENTS = "thumbnails,imageAccessCopy,extractFulltext,audioAccessCopy";
-    private static final String THUMBNAIL_ENHANCEMENTS = "thumbnails";
+    private static final String DEFAULT_ENHANCEMENTS = "imageAccessCopy,extractFulltext,audioAccessCopy";
     @Override
     public void configure() throws Exception {
 
@@ -68,9 +63,7 @@ public class EnhancementRouter extends RouteBuilder {
                         + " || ${headers[org.fcrepo.jms.resourceType]} contains '" + Cdr.ContentRoot.getURI() + "'"
                         ))
                     .log(DEBUG, log, "Processing enhancements for non-binary ${headers[CamelFcrepoUri]}")
-                    .process(nbProcessor)
-                    .setHeader(CdrEnhancementSet, constant(THUMBNAIL_ENHANCEMENTS))
-                    .to("{{cdr.enhancement.perform.camel}}")
+                    .to("direct:solrIndexing")
                 .otherwise()
                     .log(DEBUG, log, "Ignoring resource ${headers[CamelFcrepoUri]}")
             .end();
@@ -88,17 +81,11 @@ public class EnhancementRouter extends RouteBuilder {
         from("{{cdr.enhancement.perform.camel}}")
             .routeId("PerformEnhancementsQueue")
             .startupOrder(107)
-            .choice()
-            .when(simple("${headers[" + CdrBinaryPath + "]} == null"))
-                .log(INFO, log, "Indexing queued resource without binary path ${headers[CamelFcrepoUri]}")
-                .to("direct:solrIndexing")
-            .otherwise()
-                .log(INFO, log, "Processing queued enhancements ${headers[CdrEnhancementSet]}" +
-                    "for ${headers[CamelFcrepoUri]}")
-                .multicast()
-                // trigger enhancements sequentially followed by indexing
-                .to("direct:process.enhancements", "direct:solrIndexing")
-            .end();
+            .log(INFO, log, "Processing queued enhancements ${headers[CdrEnhancementSet]}" +
+                "for ${headers[CamelFcrepoUri]}")
+            .multicast()
+            // trigger enhancements sequentially followed by indexing
+            .to("direct:process.enhancements", "direct:solrIndexing");
 
         // Expands enhancement requests into individual services
         from("direct:process.enhancements")

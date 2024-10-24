@@ -9,7 +9,7 @@ import static org.apache.camel.LoggingLevel.DEBUG;
 import static org.slf4j.LoggerFactory.getLogger;
 
 /**
- * Router for processing requests to update view setting of UV
+ * Router for processing requests to update view setting of Clover
  *
  * @author snluong
  */

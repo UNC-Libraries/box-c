@@ -832,37 +832,6 @@ table.dataTable {
   color: white;
 }
 
-/* UV image viewer */
-.uv {
-  .footer {
-    background-color: white;
-    padding: 0;
-  }
-
-  .search {
-    a {
-      margin-left: 0;
-    }
-  }
-
-  .tabs {
-    margin-bottom: 0;
-
-    .tab.on {
-      display: inherit !important;
-    }
-  }
-
-  .title {
-    color: white;
-    font-size: inherit;
-  }
-
-  li {
-    text-indent: 0;
-  }
-}
-
 /* MODs display for work and file pages, plus modalMetadata.vue component */
 #mods_data_display {
   margin: auto;
@@ -1169,6 +1138,17 @@ iframe {
 #pdfViewer {
   background-color: white;
   margin: 25px auto;
+}
+
+.clover-viewer {
+  margin: auto;
+  width: 90%;
+}
+
+#information-toggle {
+  &:focus {
+    background-color: hsl(209, 100%, 38.2%);
+  }
 }
 
 /*! @creativebulma/bulma-tooltip v1.2.0 | (c) 2020 Gaetan | MIT License | https://github.com/CreativeBulma/bulma-tooltip */

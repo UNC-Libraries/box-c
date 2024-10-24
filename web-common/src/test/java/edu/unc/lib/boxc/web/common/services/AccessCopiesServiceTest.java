@@ -11,6 +11,7 @@ import edu.unc.lib.boxc.search.api.SearchFieldKey;
 import edu.unc.lib.boxc.search.api.models.ContentObjectRecord;
 import edu.unc.lib.boxc.search.api.requests.SearchRequest;
 import edu.unc.lib.boxc.search.solr.filters.HasPopulatedFieldFilter;
+import edu.unc.lib.boxc.search.solr.filters.MultipleDirectlyOwnedDatastreamsFilter;
 import edu.unc.lib.boxc.search.solr.filters.NamedDatastreamFilter;
 import edu.unc.lib.boxc.search.solr.models.ContentObjectSolrRecord;
 import edu.unc.lib.boxc.search.solr.responses.SearchResultResponse;
@@ -26,10 +27,13 @@ import org.mockito.Mock;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 import static edu.unc.lib.boxc.auth.api.Permission.viewOriginal;
+import static edu.unc.lib.boxc.model.api.DatastreamType.JP2_ACCESS_COPY;
 import static edu.unc.lib.boxc.model.api.DatastreamType.ORIGINAL_FILE;
 import static edu.unc.lib.boxc.model.api.DatastreamType.TECHNICAL_METADATA;
 import static edu.unc.lib.boxc.web.common.services.AccessCopiesService.AUDIO_MIMETYPE_REGEX;
@@ -103,7 +107,6 @@ public class AccessCopiesServiceTest  {
         accessCopiesService.setGlobalPermissionEvaluator(globalPermissionEvaluator);
 
         when(solrSearchService.getSearchResults(searchRequestCaptor.capture())).thenReturn(searchResultResponse);
-        when(searchResultResponse.getResultCount()).thenReturn(1L);
     }
 
     @AfterEach
@@ -151,14 +154,26 @@ public class AccessCopiesServiceTest  {
         return mdObject;
     }
 
+    private ContentObjectSolrRecord createXPdfObject(ResourceType resourceType) {
+        var mdObject = new ContentObjectSolrRecord();
+        mdObject.setResourceType(resourceType.name());
+        mdObject.setId(UUID.randomUUID().toString());
+        List<String> datastreams = Collections.singletonList(
+                ORIGINAL_FILE.getId() + "|application/x-pdf|file.pdf|pdf|766|urn:sha1:checksum|");
+        mdObject.setFileFormatCategory(Collections.singletonList(ContentCategory.text.getDisplayName()));
+        mdObject.setFileFormatType(Collections.singletonList("application/x-pdf"));
+        mdObject.setDatastream(datastreams);
+        return mdObject;
+    }
+
     private ContentObjectSolrRecord createImgObject(ResourceType resourceType) {
         var mdObjectImg = new ContentObjectSolrRecord();
         mdObjectImg.setResourceType(resourceType.name());
-        mdObjectImg.setId(UUID.randomUUID().toString());
-        List<String> imgDatastreams = Arrays.asList(
+        var id = UUID.randomUUID().toString();
+        mdObjectImg.setId(id);
+        List<String> imgDatastreams = List.of(
                 ORIGINAL_FILE.getId() + "|image/png|file.png|png|766|urn:sha1:checksum|",
-                DatastreamType.THUMBNAIL_LARGE.getId() + "|image/png|thumb|png|55||",
-                DatastreamType.JP2_ACCESS_COPY.getId() + "|image/jp2|thumb|jp2|555||");
+                JP2_ACCESS_COPY.getId() + "|image/jp2|bunny.jp2|jp2|||" + id + "|1200x1200");
         mdObjectImg.setFileFormatCategory(Collections.singletonList(ContentCategory.image.getDisplayName()));
         mdObjectImg.setFileFormatType(Collections.singletonList("image/png"));
         mdObjectImg.setDatastream(imgDatastreams);
@@ -292,9 +307,8 @@ public class AccessCopiesServiceTest  {
         var mdObjectImg2 = new ContentObjectSolrRecord();
         mdObjectImg2.setResourceType(ResourceType.File.name());
         mdObjectImg2.setId(UUID.randomUUID().toString());
-        var imgDatastreams = Arrays.asList(
-                ORIGINAL_FILE.getId() + "|image/jpg|file2.png|png|555|urn:sha1:checksum|",
-                DatastreamType.THUMBNAIL_LARGE.getId() + "|image/png|thumb|png|55||");
+        var imgDatastreams = List.of(
+                ORIGINAL_FILE.getId() + "|image/jpg|file2.png|png|555|urn:sha1:checksum|");
         mdObjectImg2.setFileFormatCategory(Collections.singletonList(ContentCategory.image.getDisplayName()));
         mdObjectImg2.setFileFormatType(Collections.singletonList("png"));
         mdObjectImg2.setDatastream(imgDatastreams);
@@ -320,6 +334,13 @@ public class AccessCopiesServiceTest  {
         var queryFilter = (NamedDatastreamFilter) searchState.getFilters().get(0);
         assertEquals(expectedType, queryFilter.getDatastreamType(),
                 "Expected request to be filtered by datastream " + expectedType.name());
+    }
+
+    private void assertRequestedDatastreamFilters(Set<DatastreamType> expectedTypeSet) {
+        var searchState = searchRequestCaptor.getValue().getSearchState();
+        var queryFilter = (MultipleDirectlyOwnedDatastreamsFilter) searchState.getFilters().get(0);
+        assertEquals(expectedTypeSet, queryFilter.getDatastreamTypes(),
+                "Expected request to be filtered by datastreams " + expectedTypeSet);
     }
 
     private void assertHasPopulatedFieldFilter(SearchFieldKey expectedKey) {
@@ -380,16 +401,18 @@ public class AccessCopiesServiceTest  {
     public void hasViewableFilesAudioFileTest() {
         var mdObjectAudio = createAudioObject(ResourceType.File);
         hasPermissions(mdObjectAudio, true);
-
+        when(searchResultResponse.getResultCount()).thenReturn(1L);
         assertFalse(accessCopiesService.hasViewableFiles(mdObjectAudio, principals));
     }
 
     @Test
     public void hasViewableFilesImageWorkTest() {
         hasPermissions(mdObjectImg, true);
-
+        when(searchResultResponse.getResultCount()).thenReturn(1L);
         assertTrue(accessCopiesService.hasViewableFiles(mdObjectImg, principals));
-        assertRequestedDatastreamFilter(DatastreamType.JP2_ACCESS_COPY);
+        Set<DatastreamType> datastreams = new HashSet<>(Arrays.asList(DatastreamType.JP2_ACCESS_COPY,
+                DatastreamType.AUDIO_ACCESS_COPY));
+        assertRequestedDatastreamFilters(datastreams);
     }
 
     @Test
@@ -398,6 +421,7 @@ public class AccessCopiesServiceTest  {
         hasPermissions(mdObjectAudio, true);
 
         when(searchResultResponse.getResultList()).thenReturn(List.of(mdObjectAudio));
+        when(searchResultResponse.getResultCount()).thenReturn(1L);
         var audioObj = accessCopiesService.getFirstStreamingChild(mdObjectAudio, principals);
         assertEquals("sound", audioObj.getStreamingType());
         assertHasPopulatedFieldFilter(SearchFieldKey.STREAMING_TYPE);
@@ -408,6 +432,7 @@ public class AccessCopiesServiceTest  {
         var mdObjectVideo = createVideoObject(ResourceType.Work);
         hasPermissions(mdObjectVideo, true);
         when(searchResultResponse.getResultList()).thenReturn(List.of(mdObjectVideo));
+        when(searchResultResponse.getResultCount()).thenReturn(1L);
         var videoObj = accessCopiesService.getFirstStreamingChild(mdObjectVideo, principals);
         assertEquals("video", videoObj.getStreamingType());
         assertHasPopulatedFieldFilter(SearchFieldKey.STREAMING_TYPE);
@@ -427,6 +452,51 @@ public class AccessCopiesServiceTest  {
         hasPermissions(mdObjectVideoFile, true);
 
         assertNull(accessCopiesService.getFirstStreamingChild(mdObjectVideoFile, principals));
+    }
+
+    @Test
+    public void hasMatchingChildTest() {
+        var mdObjectPdf = createPdfObject(ResourceType.Work);
+        hasPermissions(mdObjectPdf, true);
+        when(searchResultResponse.getResultList()).thenReturn(List.of(mdObjectPdf));
+        when(searchResultResponse.getResultCount()).thenReturn(1L);
+        var pdfObj = accessCopiesService.getFirstMatchingChild(mdObjectPdf,
+                List.of("application/pdf"), principals);
+        assertNotNull(pdfObj);
+        assertTrue(pdfObj.getFileFormatType().contains("application/pdf"));
+    }
+
+    @Test
+    public void hasMatchingChildXPDFTest() {
+        var mdObjectPdf = createXPdfObject(ResourceType.Work);
+        hasPermissions(mdObjectPdf, true);
+        when(searchResultResponse.getResultList()).thenReturn(List.of(mdObjectPdf));
+        when(searchResultResponse.getResultCount()).thenReturn(1L);
+        var pdfObj = accessCopiesService.getFirstMatchingChild(mdObjectPdf,
+                Arrays.asList("application/pdf", "application/x-pdf"), principals);
+        assertNotNull(pdfObj);
+        assertTrue(pdfObj.getFileFormatType().contains("application/x-pdf"));
+    }
+
+    @Test
+    public void hasNoMatchingChildForSpecifiedFileTypeTest() {
+        hasPermissions(mdObjectXml, true);
+        when(searchResultResponse.getResultList()).thenReturn(List.of(mdObjectXml));
+        when(searchResultResponse.getResultCount()).thenReturn(0L);
+        var xmlObj = accessCopiesService.getFirstMatchingChild(mdObjectXml,
+                List.of("application/pdf"), principals);
+
+        assertNull(xmlObj);
+    }
+
+    @Test
+    public void hasNoMatchingChildForFilesTest() {
+        var mdObject = createPdfObject(ResourceType.File);
+        hasPermissions(mdObject, true);
+        when(searchResultResponse.getResultList()).thenReturn(List.of(mdObject));
+        var obj = accessCopiesService.getFirstMatchingChild(mdObject,
+                List.of("application/pdf"), principals);
+        assertNull(obj);
     }
 
     private void hasPermissions(ContentObjectSolrRecord contentObject, boolean hasAccess) {
