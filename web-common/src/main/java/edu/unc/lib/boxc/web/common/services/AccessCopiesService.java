@@ -80,11 +80,10 @@ public class AccessCopiesService {
      */
     public boolean hasViewableFiles(ContentObjectRecord briefObj, AccessGroupSet principals) {
         String resourceType = briefObj.getResourceType();
-        if (ResourceType.File.nameEquals(resourceType)) {
-            if (briefObj.getDatastreamObject(DatastreamType.JP2_ACCESS_COPY.getId()) != null ||
-                    briefObj.getDatastreamObject(DatastreamType.AUDIO_ACCESS_COPY.getId()) != null) {
+        if (ResourceType.File.nameEquals(resourceType) &&
+                (briefObj.getDatastreamObject(DatastreamType.JP2_ACCESS_COPY.getId()) != null ||
+                    briefObj.getDatastreamObject(DatastreamType.AUDIO_ACCESS_COPY.getId()) != null)) {
                 return true;
-            }
         }
         if (!ResourceType.Work.nameEquals(resourceType)) {
             return false;
