@@ -223,6 +223,14 @@
         <constructor-arg value="${cdr.enhancement.path.fulltext}" />
     </bean>
 
+    <bean id="addAudioAccessCopyProcessor" class="edu.unc.lib.boxc.services.camel.images.AddDerivativeProcessor">
+        <constructor-arg value="#{T(edu.unc.lib.boxc.model.api.DatastreamType).AUDIO_ACCESS_COPY.getExtension()}" />
+        <constructor-arg value="${cdr.enhancement.path.audio}" />
+    </bean>
+
+    <bean id="audioAccessCopyProcessor" class="edu.unc.lib.boxc.services.camel.audio.AudioDerivativeProcessor">
+    </bean>
+
     <bean id="destroyedMsgProcessor" class="edu.unc.lib.boxc.services.camel.destroyDerivatives.DestroyedMsgProcessor">
         <property name="jp2BasePath" value="${cdr.enhancement.path.jp2}" />
     </bean>
@@ -240,6 +248,11 @@
     <bean id="destroyFulltextProcessor" class="edu.unc.lib.boxc.services.camel.destroyDerivatives.DestroyDerivativesProcessor">
         <constructor-arg value="#{T(edu.unc.lib.boxc.model.api.DatastreamType).FULLTEXT_EXTRACTION.getExtension()}" />
         <constructor-arg value="${cdr.enhancement.path.fulltext}" />
+    </bean>
+
+    <bean id="destroyAudioProcessor" class="edu.unc.lib.boxc.services.camel.destroyDerivatives.DestroyDerivativesProcessor">
+        <constructor-arg value="#{T(edu.unc.lib.boxc.model.api.DatastreamType).AUDIO_ACCESS_COPY.getExtension()}" />
+        <constructor-arg value="${cdr.enhancement.path.audio}" />
     </bean>
     
     <bean id="indexingMessageProcessor" class="edu.unc.lib.boxc.services.camel.triplesReindexing.IndexingMessageProcessor">
@@ -547,6 +560,7 @@
         <camel:package>edu.unc.lib.boxc.services.camel.enhancements</camel:package>
         <camel:package>edu.unc.lib.boxc.services.camel.images</camel:package>
         <camel:package>edu.unc.lib.boxc.services.camel.fulltext</camel:package>
+        <camel:package>edu.unc.lib.boxc.services.camel.audio</camel:package>
         <camel:package>edu.unc.lib.boxc.services.camel.solr</camel:package>
         <camel:package>edu.unc.lib.boxc.services.camel.binaryCleanup</camel:package>
         <!-- Initialize metaServicesRouter after the routes it depends on -->

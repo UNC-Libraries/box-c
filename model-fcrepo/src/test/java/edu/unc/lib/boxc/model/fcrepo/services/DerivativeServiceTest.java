@@ -14,6 +14,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 
+import static edu.unc.lib.boxc.model.api.DatastreamType.AUDIO_ACCESS_COPY;
 import static edu.unc.lib.boxc.model.api.DatastreamType.FULLTEXT_EXTRACTION;
 import static edu.unc.lib.boxc.model.api.DatastreamType.JP2_ACCESS_COPY;
 import static edu.unc.lib.boxc.model.api.DatastreamType.ORIGINAL_FILE;
@@ -73,18 +74,22 @@ public class DerivativeServiceTest {
     public void testGetDerivatives() throws Exception {
         File originalDerivFile1 = createDerivative(pid, FULLTEXT_EXTRACTION);
         File originalDerivFil21 = createDerivative(pid, JP2_ACCESS_COPY);
+        File originalDerivFile3 = createDerivative(pid, AUDIO_ACCESS_COPY);
 
         List<Derivative> derivs = derivativeService.getDerivatives(pid);
-        assertEquals(2, derivs.size());
+        assertEquals(3, derivs.size());
 
         Derivative textDeriv = findDerivative(derivs, FULLTEXT_EXTRACTION);
         Derivative jp2Deriv = findDerivative(derivs, JP2_ACCESS_COPY);
+        Derivative audioDeriv = findDerivative(derivs, AUDIO_ACCESS_COPY);
 
         assertNotNull(textDeriv);
         assertNotNull(jp2Deriv);
+        assertNotNull(audioDeriv);
 
         assertEquals(originalDerivFile1, textDeriv.getFile());
         assertEquals(originalDerivFil21, jp2Deriv.getFile());
+        assertEquals(originalDerivFile3, audioDeriv.getFile());
     }
 
     @Test

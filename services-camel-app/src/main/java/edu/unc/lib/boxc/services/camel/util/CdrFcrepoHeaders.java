@@ -22,6 +22,9 @@ public abstract class CdrFcrepoHeaders {
     // URI identifying the location
     public static final String CdrImagePath = "CdrImagePath";
 
+    // URI identifying the location
+    public static final String CdrAudioPath = "CdrAudioPath";
+
     // File path for a temp file
     public static final String CdrTempPath = "CdrTempPath";
 

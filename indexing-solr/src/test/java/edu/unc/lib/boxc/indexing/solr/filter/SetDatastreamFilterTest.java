@@ -45,6 +45,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import static edu.unc.lib.boxc.indexing.solr.test.MockRepositoryObjectHelpers.makeFileObject;
+import static edu.unc.lib.boxc.model.api.DatastreamType.AUDIO_ACCESS_COPY;
 import static edu.unc.lib.boxc.model.api.DatastreamType.JP2_ACCESS_COPY;
 import static edu.unc.lib.boxc.model.api.DatastreamType.ORIGINAL_FILE;
 import static edu.unc.lib.boxc.model.api.DatastreamType.TECHNICAL_METADATA;
@@ -118,6 +119,7 @@ public class SetDatastreamFilterTest {
     private static final long PREMIS_SIZE = 893l;
 
     private static final long JP2_SIZE = 11;
+    private static final long AUDIO_SIZE = 11;
 
     private AutoCloseable closeable;
 
@@ -255,6 +257,8 @@ public class SetDatastreamFilterTest {
                 fileResource(TECHNICAL_METADATA.getId(), FILE2_SIZE, FILE2_MIMETYPE, FILE2_NAME, FILE2_DIGEST));
         when(binObj2.getBinaryStream()).thenReturn(getClass().getResourceAsStream("/datastream/techmd_mp3.xml"));
         when(fileObj.getBinaryObjects()).thenReturn(Arrays.asList(binObj, binObj2));
+        List<Derivative> derivs = makeAudioDerivative();
+        when(derivativeService.getDerivatives(pid)).thenReturn(derivs);
         dip.setContentObject(fileObj);
 
         filter.filter(dip);
@@ -263,6 +267,8 @@ public class SetDatastreamFilterTest {
                 FILE_MP3_SIZE, FILE_MP3_MIMETYPE, FILE_MP3_NAME, FILE_MP3_DIGEST, null, FILE_MP3_EXTENT);
         assertContainsDatastream(idb.getDatastream(), TECHNICAL_METADATA.getId(),
                 FILE2_SIZE, FILE2_MIMETYPE, FILE2_NAME, FILE2_DIGEST, null, null);
+        assertContainsDatastream(idb.getDatastream(), AUDIO_ACCESS_COPY.getId(),
+                AUDIO_SIZE, AUDIO_ACCESS_COPY.getMimetype(), "access.m4a", null, null, null);
     }
 
     @Test
@@ -297,6 +303,8 @@ public class SetDatastreamFilterTest {
                 fileResource(TECHNICAL_METADATA.getId(), FILE2_SIZE, FILE2_MIMETYPE, FILE2_NAME, FILE2_DIGEST));
         when(binObj2.getBinaryStream()).thenReturn(getClass().getResourceAsStream("/datastream/techmd_dot_separated_milliseconds.xml"));
         when(fileObj.getBinaryObjects()).thenReturn(Arrays.asList(binObj, binObj2));
+        List<Derivative> derivs = makeAudioDerivative();
+        when(derivativeService.getDerivatives(pid)).thenReturn(derivs);
         dip.setContentObject(fileObj);
 
         filter.filter(dip);
@@ -305,6 +313,8 @@ public class SetDatastreamFilterTest {
                 FILE_MP3_SIZE, FILE_MP3_MIMETYPE, FILE_MP3_NAME, FILE_MP3_DIGEST, null, FILE_MP3_EXTENT);
         assertContainsDatastream(idb.getDatastream(), TECHNICAL_METADATA.getId(),
                 FILE2_SIZE, FILE2_MIMETYPE, FILE2_NAME, FILE2_DIGEST, null, null);
+        assertContainsDatastream(idb.getDatastream(), AUDIO_ACCESS_COPY.getId(),
+                AUDIO_SIZE, AUDIO_ACCESS_COPY.getMimetype(), "access.m4a", null, null, null);
     }
 
     @Test
@@ -767,5 +777,12 @@ public class SetDatastreamFilterTest {
         FileUtils.write(jp2File, "jp2 content", "UTF-8");
 
         return List.of(new Derivative(JP2_ACCESS_COPY, jp2File));
+    }
+
+    private List<Derivative> makeAudioDerivative() throws IOException {
+        File m4aFile = derivDir.resolve("access.m4a").toFile();
+        FileUtils.write(m4aFile, "m4a content", "UTF-8");
+
+        return List.of(new Derivative(AUDIO_ACCESS_COPY, m4aFile));
     }
 }

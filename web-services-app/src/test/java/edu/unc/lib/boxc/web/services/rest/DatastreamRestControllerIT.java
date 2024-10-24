@@ -51,6 +51,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlMatching;
 import static edu.unc.lib.boxc.auth.api.Permission.viewAccessCopies;
 import static edu.unc.lib.boxc.auth.api.Permission.viewHidden;
+import static edu.unc.lib.boxc.model.api.DatastreamType.AUDIO_ACCESS_COPY;
 import static edu.unc.lib.boxc.model.api.DatastreamType.JP2_ACCESS_COPY;
 import static edu.unc.lib.boxc.model.api.DatastreamType.MD_EVENTS;
 import static edu.unc.lib.boxc.model.api.DatastreamType.TECHNICAL_METADATA;
@@ -324,6 +325,25 @@ public class DatastreamRestControllerIT extends AbstractAPIIT {
         assertEquals(BINARY_CONTENT.length(), response.getContentLength());
         assertEquals("image/jp2", response.getContentType());
         assertEquals("inline; filename=\"" + id + "." + JP2_ACCESS_COPY.getExtension() + "\"",
+                response.getHeader(CONTENT_DISPOSITION));
+    }
+
+    @Test
+    public void testGetAudioFileDerivative() throws Exception {
+        PID filePid = makePid();
+        String id = filePid.getId();
+        createDerivative(id, AUDIO_ACCESS_COPY, BINARY_CONTENT.getBytes());
+
+        MvcResult result = mvc.perform(get("/file/" + filePid.getId() + "/" + AUDIO_ACCESS_COPY.getId()))
+                .andExpect(status().is2xxSuccessful())
+                .andReturn();
+
+        // Verify content was retrieved
+        MockHttpServletResponse response = result.getResponse();
+        assertEquals(BINARY_CONTENT, response.getContentAsString());
+        assertEquals(BINARY_CONTENT.length(), response.getContentLength());
+        assertEquals("audio/aac", response.getContentType());
+        assertEquals("inline; filename=\"" + id + "." + AUDIO_ACCESS_COPY.getExtension() + "\"",
                 response.getHeader(CONTENT_DISPOSITION));
     }
 
