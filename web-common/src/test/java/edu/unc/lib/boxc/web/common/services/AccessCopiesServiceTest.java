@@ -11,6 +11,7 @@ import edu.unc.lib.boxc.search.api.SearchFieldKey;
 import edu.unc.lib.boxc.search.api.models.ContentObjectRecord;
 import edu.unc.lib.boxc.search.api.requests.SearchRequest;
 import edu.unc.lib.boxc.search.solr.filters.HasPopulatedFieldFilter;
+import edu.unc.lib.boxc.search.solr.filters.MultipleDirectlyOwnedDatastreamsFilter;
 import edu.unc.lib.boxc.search.solr.filters.NamedDatastreamFilter;
 import edu.unc.lib.boxc.search.solr.models.ContentObjectSolrRecord;
 import edu.unc.lib.boxc.search.solr.responses.SearchResultResponse;
@@ -26,7 +27,9 @@ import org.mockito.Mock;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 import static edu.unc.lib.boxc.auth.api.Permission.viewOriginal;
@@ -333,6 +336,13 @@ public class AccessCopiesServiceTest  {
                 "Expected request to be filtered by datastream " + expectedType.name());
     }
 
+    private void assertRequestedDatastreamFilters(Set<DatastreamType> expectedTypeSet) {
+        var searchState = searchRequestCaptor.getValue().getSearchState();
+        var queryFilter = (MultipleDirectlyOwnedDatastreamsFilter) searchState.getFilters().get(0);
+        assertEquals(expectedTypeSet, queryFilter.getDatastreamTypes(),
+                "Expected request to be filtered by datastreams " + expectedTypeSet);
+    }
+
     private void assertHasPopulatedFieldFilter(SearchFieldKey expectedKey) {
         var searchState = searchRequestCaptor.getValue().getSearchState();
         var queryFilter = (HasPopulatedFieldFilter) searchState.getFilters().get(0);
@@ -400,7 +410,9 @@ public class AccessCopiesServiceTest  {
         hasPermissions(mdObjectImg, true);
         when(searchResultResponse.getResultCount()).thenReturn(1L);
         assertTrue(accessCopiesService.hasViewableFiles(mdObjectImg, principals));
-        assertRequestedDatastreamFilter(DatastreamType.JP2_ACCESS_COPY);
+        Set<DatastreamType> datastreams = new HashSet<>(Arrays.asList(DatastreamType.JP2_ACCESS_COPY,
+                DatastreamType.AUDIO_ACCESS_COPY));
+        assertRequestedDatastreamFilters(datastreams);
     }
 
     @Test
