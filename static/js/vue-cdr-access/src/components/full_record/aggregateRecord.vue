@@ -9,6 +9,11 @@
                             <div class="columns is-tablet">
                                 <div class="column is-narrow" :class="isDeleted">
                                     <thumbnail :thumbnail-data="recordData"></thumbnail>
+                                    <div class="actionlink">
+                                        <a class="download-jump button action" :href="filesLink">
+                                            <i class="fa fa-download" aria-hidden="true"></i> Skip to Download
+                                        </a>
+                                    </div>
                                 </div>
                                 <div class="column">
                                     <ul class="record-metadata">
@@ -69,7 +74,7 @@
         </div>
         <div class="full_record_bottom">
             <player :record-data="recordData"></player>
-            <file-list v-if="childCount > 0"
+            <file-list v-if="childCount > 0" id="file-display"
                        :child-count="childCount"
                        :work-id="recordData.briefObject.id"
                        :download-access="hasDownloadAccess(recordData)"
@@ -102,5 +107,12 @@ export default {
     components: {abstract, fileList, neighborList, metadataDisplay, player, restrictedContent},
 
     mixins: [fileUtils, fullRecordUtils],
+
+    computed: {
+        filesLink() {
+            const current_page = location.href;
+            return /file-display$/.test(current_page) ? current_page : `${current_page}#file-display`;
+        }
+    }
 }
 </script>
