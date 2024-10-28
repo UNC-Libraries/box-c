@@ -131,7 +131,7 @@ public class EnhancementRouterIT extends CamelSpringTestSupport {
         FileUtils.writeStringToFile(jp2ScriptFile, "exit 0", "utf-8");
         jp2ScriptFile.deleteOnExit();
 
-        File audioScriptFile = new File("target/convertWav.sh");
+        File audioScriptFile = new File("target/convertAudio.sh");
         FileUtils.writeStringToFile(audioScriptFile, "exit 0", "utf-8");
         audioScriptFile.deleteOnExit();
     }

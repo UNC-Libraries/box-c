@@ -51,7 +51,7 @@ public class AudioEnhancementsRouter extends RouteBuilder {
                     .setBody(exchange -> uuidGenerator.generateUuid())
                     .setHeader(CdrFcrepoHeaders.CdrTempPath, simple("${properties:services.tempDirectory}/${body}-audio"))
                     .doTry()
-                        .recipientList(simple("exec:/bin/sh?args=${properties:cdr.enhancement.bin}/convertWav.sh "
+                        .recipientList(simple("exec:/bin/sh?args=${properties:cdr.enhancement.bin}/convertAudio.sh "
                                 + "${headers[CdrAudioPath]} ${headers[CdrTempPath]}"))
                         .bean(addAudioAccessCopyProcessor)
                     .endDoTry()
