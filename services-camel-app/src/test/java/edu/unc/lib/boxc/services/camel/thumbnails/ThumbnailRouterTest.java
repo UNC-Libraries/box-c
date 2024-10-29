@@ -9,6 +9,7 @@ import edu.unc.lib.boxc.operations.jms.thumbnails.ThumbnailRequest;
 import edu.unc.lib.boxc.operations.jms.thumbnails.ThumbnailRequestSerializationHelper;
 import edu.unc.lib.boxc.services.camel.TestHelper;
 import org.apache.camel.BeanInject;
+import org.apache.camel.Exchange;
 import org.apache.camel.Produce;
 import org.apache.camel.ProducerTemplate;
 import org.apache.camel.builder.AdviceWith;
@@ -68,6 +69,7 @@ public class ThumbnailRouterTest extends CamelSpringTestSupport {
         template.sendBody(body);
 
         verify(importProcessor).process(any());
+        verify(importProcessor).cleanupTempThumbnailFile(any(Exchange.class));
         solrEndpoint.assertIsSatisfied();
         imageAccessCopyEndpoint.assertIsSatisfied();
     }

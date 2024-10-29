@@ -35,17 +35,7 @@
                                             <span class="has-text-weight-bold">{{ $t('full_record.creator') }}: </span>
                                             {{ recordData.briefObject.creator.join('; ') }}
                                         </li>
-                                        <template v-if="fieldExists(recordData.briefObject.fileDesc)">
-                                            <li>
-                                                <span class="has-text-weight-bold">{{ $t('full_record.file_type') }}: </span>
-                                                {{ getFileType(recordData.briefObject) }}
-                                            </li>
-                                            <li v-if="fieldExists(recordData.briefObject.filesizeTotal)">
-                                                <span class="has-text-weight-bold">{{ $t('full_record.filesize') }}: </span>
-                                                {{ formatFilesize(recordData.briefObject.filesizeTotal) }}
-                                            </li>
-                                        </template>
-                                        <li v-else>
+                                        <li>
                                             <span class="has-text-weight-bold">{{ $t('full_record.contains') }}: </span>
                                             {{ displayChildCount }}
                                         </li>
