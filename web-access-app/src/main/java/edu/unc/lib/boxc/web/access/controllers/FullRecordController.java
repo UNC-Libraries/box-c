@@ -4,6 +4,7 @@ import edu.unc.lib.boxc.auth.api.Permission;
 import edu.unc.lib.boxc.auth.api.models.AccessGroupSet;
 import edu.unc.lib.boxc.auth.api.services.AccessControlService;
 import edu.unc.lib.boxc.auth.fcrepo.services.ObjectAclFactory;
+import edu.unc.lib.boxc.model.api.DatastreamType;
 import edu.unc.lib.boxc.model.api.ResourceType;
 import edu.unc.lib.boxc.model.api.exceptions.FedoraException;
 import edu.unc.lib.boxc.model.api.exceptions.NotFoundException;
@@ -24,6 +25,7 @@ import edu.unc.lib.boxc.web.common.controllers.AbstractErrorHandlingSearchContro
 import edu.unc.lib.boxc.web.common.exceptions.RenderViewException;
 import edu.unc.lib.boxc.web.common.services.AccessCopiesService;
 import edu.unc.lib.boxc.web.common.services.FindingAidUrlService;
+import edu.unc.lib.boxc.web.common.services.WorkFilesizeService;
 import edu.unc.lib.boxc.web.common.services.XmlDocumentFilteringService;
 import edu.unc.lib.boxc.web.common.utils.ModsUtil;
 import edu.unc.lib.boxc.web.common.utils.SerializationUtil;
@@ -46,6 +48,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.InputStream;
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -57,7 +60,9 @@ import static edu.unc.lib.boxc.common.xml.SecureXMLFactory.createSAXBuilder;
 import static edu.unc.lib.boxc.search.api.FacetConstants.MARKED_FOR_DELETION;
 import static edu.unc.lib.boxc.web.common.services.AccessCopiesService.AUDIO_MIMETYPE_REGEX;
 import static edu.unc.lib.boxc.web.common.services.AccessCopiesService.PDF_MIMETYPE_REGEX;
+import static edu.unc.lib.boxc.web.common.services.AccessCopiesService.VIDEO_MIMETYPE_REGEX;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
+import static org.springframework.http.MediaType.APPLICATION_PDF_VALUE;
 
 /**
  * Controller which retrieves data necessary for populating the full record page, retrieving supplemental information
@@ -73,6 +78,7 @@ public class FullRecordController extends AbstractErrorHandlingSearchController 
     private final String VIEWER_TYPE = "viewerType";
     private final String STREAMING_URL = "streamingUrl";
     private final String STREAMING_TYPE = "streamingType";
+    private final String APPLICATION_X_PDF_VALUE = "application/x-pdf";
 
     @Autowired
     private AccessControlService aclService;
@@ -86,6 +92,8 @@ public class FullRecordController extends AbstractErrorHandlingSearchController 
     private FindingAidUrlService findingAidUrlService;
     @Autowired
     private AccessCopiesService accessCopiesService;
+    @Autowired
+    private WorkFilesizeService workFilesizeService;
     @Autowired
     private XmlDocumentFilteringService xmlDocumentFilteringService;
     @Autowired
@@ -220,6 +228,12 @@ public class FullRecordController extends AbstractErrorHandlingSearchController 
             recordProperties.put("dataFileUrl", dataFileUrl);
         }
 
+        Long totalDownloadSize = null;
+        if (ResourceType.Work.nameEquals(resourceType)) {
+            totalDownloadSize = workFilesizeService.getTotalFilesize(briefObject, principals);
+        }
+        recordProperties.put("totalDownloadSize", totalDownloadSize);
+
         accessCopiesService.populateThumbnailId(briefObject, principals, true);
 
         List<String> objectStatus = briefObject.getStatus();
@@ -254,24 +268,19 @@ public class FullRecordController extends AbstractErrorHandlingSearchController 
         SimpleIdRequest idRequest = new SimpleIdRequest(pid, principals);
         ContentObjectRecord briefObject = queryLayer.getObjectById(idRequest);
 
-        String viewerPid = accessCopiesService.getDatastreamPid(briefObject, principals, PDF_MIMETYPE_REGEX);
-        model.addAttribute("pid", viewerPid);
+        String viewerPid = null;
+        if (ResourceType.Work.nameEquals(briefObject.getResourceType())) {
+            viewerPid = accessCopiesService.getFirstMatchingChild(briefObject,
+                    Arrays.asList(APPLICATION_PDF_VALUE, APPLICATION_X_PDF_VALUE), principals).getId();
+        } else {
+            accessCopiesService.getDatastreamPid(briefObject, principals, PDF_MIMETYPE_REGEX);
+        }
+
+        model.addAttribute("viewerPid", viewerPid);
         model.addAttribute("briefObject", briefObject);
         model.addAttribute("template", "ajax");
 
         return "fullRecord/pdfViewer";
-    }
-
-    @GetMapping("/{pid}/uvViewer")
-    public String handleUvViewerRequest(@PathVariable("pid") String pidString, Model model) {
-        PID pid = PIDs.get(pidString);
-
-        AccessGroupSet principals = getAgentPrincipals().getPrincipals();
-        aclService.assertHasAccess("Insufficient permissions to access pdf for " + pidString,
-                pid, principals, Permission.viewAccessCopies);
-
-        model.addAttribute("template", "ajax");
-        return "fullRecord/uvViewer";
     }
 
     private Map<String, Object> getViewerProperties(ContentObjectRecord briefObject, AccessGroupSet principals) {
@@ -288,7 +297,7 @@ public class FullRecordController extends AbstractErrorHandlingSearchController 
         }
 
         if (imageViewerNeeded) {
-            viewerType = "uv";
+            viewerType = "clover";
         } else if (briefObject.getContentStatus().contains(FacetConstants.HAS_STREAMING) || workStreamingContent != null) {
             viewerType = "streaming";
             streamingUrl = (workStreamingContent != null) ? workStreamingContent.getStreamingUrl() :
@@ -296,15 +305,15 @@ public class FullRecordController extends AbstractErrorHandlingSearchController 
             streamingType = (workStreamingContent != null) ? workStreamingContent.getStreamingType() :
                     briefObject.getStreamingType();
         } else {
-            // Check for PDF to display
-            viewerPid = accessCopiesService.getDatastreamPid(briefObject, principals, PDF_MIMETYPE_REGEX);
+            viewerPid = accessCopiesService.getDatastreamPid(briefObject, principals,
+                    "(" + AUDIO_MIMETYPE_REGEX + ")|(" + VIDEO_MIMETYPE_REGEX + ")");
+
             if (viewerPid != null) {
-                viewerType = "pdf";
+                viewerType = "clover";
             } else {
-                // Check for viewable audio file
-                viewerPid = accessCopiesService.getDatastreamPid(briefObject, principals, AUDIO_MIMETYPE_REGEX);
+                viewerPid = accessCopiesService.getDatastreamPid(briefObject, principals, PDF_MIMETYPE_REGEX);
                 if (viewerPid != null) {
-                    viewerType = "audio";
+                    viewerType = "pdf";
                 }
             }
         }
@@ -317,6 +326,7 @@ public class FullRecordController extends AbstractErrorHandlingSearchController 
 
         return viewerProperties;
     }
+
     /**
      * Get list of digital exhibits associated with an object
      * @param briefObject

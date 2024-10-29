@@ -30,11 +30,16 @@ public class ThumbnailRouter extends RouteBuilder {
             .bean(thumbnailRequestProcessor);
 
         from("{{cdr.import.thumbnails.stream.camel}}")
-                .routeId("DcrImportThumbnails")
-                .process(importThumbnailRequestProcessor)
-                .log(DEBUG, log,
-                        "Received thumbnail request: importing thumbnail for ${headers[CamelFcrepoUri]}")
+            .routeId("DcrImportThumbnails")
+            .process(importThumbnailRequestProcessor)
+            .log(DEBUG, log,
+                    "Received thumbnail request: importing thumbnail for ${headers[CamelFcrepoUri]}")
+            .doTry()
                 // trigger JP2 generation sequentially followed by indexing
-                .to("direct:process.enhancement.imageAccessCopy", "direct:solrIndexing");
+                .to("direct:process.enhancement.imageAccessCopy", "direct:solrIndexing")
+            .endDoTry()
+            .doFinally()
+                .bean(importThumbnailRequestProcessor, "cleanupTempThumbnailFile")
+            .end();
     }
 }

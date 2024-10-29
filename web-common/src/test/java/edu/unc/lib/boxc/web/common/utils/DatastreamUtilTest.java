@@ -13,7 +13,9 @@ import static edu.unc.lib.boxc.model.api.DatastreamType.TECHNICAL_METADATA;
 import static edu.unc.lib.boxc.model.fcrepo.test.TestHelper.makePid;
 import static java.util.Arrays.asList;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  *
@@ -108,5 +110,17 @@ public class DatastreamUtilTest {
         var id = DatastreamUtil.getThumbnailOwnerId(mdObj);
         assertNull(id);
         assertNull(DatastreamUtil.constructThumbnailUrl(id));
+    }
+
+    @Test
+    public void testOriginalFileMimetypesMatching() {
+        PID pid = makePid();
+        ContentObjectSolrRecord mdObj = new ContentObjectSolrRecord();
+        mdObj.setId(pid.getId());
+        mdObj.setFileFormatType(asList("text/rtf", "application/pdf"));
+
+        assertTrue(DatastreamUtil.originalFileMimetypeMatches(mdObj, "application/pdf"));
+        assertTrue(DatastreamUtil.originalFileMimetypeMatches(mdObj, "text/rtf"));
+        assertFalse(DatastreamUtil.originalFileMimetypeMatches(mdObj, "image/png"));
     }
 }

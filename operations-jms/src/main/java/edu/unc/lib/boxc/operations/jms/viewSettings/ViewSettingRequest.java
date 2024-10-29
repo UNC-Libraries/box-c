@@ -6,7 +6,7 @@ import edu.unc.lib.boxc.auth.api.models.AgentPrincipals;
 import edu.unc.lib.boxc.auth.fcrepo.models.AgentPrincipalsImpl;
 
 /**
- * Request object for updating the view settings of the UV
+ * Request object for updating the view settings of Clover
  * @author sharonluong
  */
 public class ViewSettingRequest {

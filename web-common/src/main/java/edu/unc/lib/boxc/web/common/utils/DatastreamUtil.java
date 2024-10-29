@@ -3,7 +3,6 @@ package edu.unc.lib.boxc.web.common.utils;
 import edu.unc.lib.boxc.model.api.DatastreamType;
 import edu.unc.lib.boxc.search.api.models.ContentObjectRecord;
 import edu.unc.lib.boxc.search.api.models.Datastream;
-import org.apache.commons.lang3.StringUtils;
 
 import java.util.List;
 
@@ -87,11 +86,13 @@ public class DatastreamUtil {
         if (formatTypes == null || formatTypes.isEmpty()) {
             return false;
         }
-        String mimetype = formatTypes.get(0);
-        if (StringUtils.isBlank(mimetype)) {
-            return false;
+
+        for (String format : formatTypes) {
+            if (format.matches(pattern)) {
+                return true;
+            }
         }
-        return mimetype.matches(pattern);
+        return false;
     }
 
     /**

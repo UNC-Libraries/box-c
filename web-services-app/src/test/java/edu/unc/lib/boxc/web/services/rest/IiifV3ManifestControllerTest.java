@@ -236,6 +236,34 @@ public class IiifV3ManifestControllerTest {
         var respJson = MvcTestHelpers.getResponseAsJson(result);
         var body = respJson.get("items").get(0).get("items").get(0).get("body");
         assertEquals("http://example.com/services/file/f277bb38-272c-471c-a28a-9887a1328a1f", body.get("id").textValue());
+        assertEquals("audio/mp4", body.get("format").textValue());
+        assertEquals("Sound", body.get("type").textValue());
+        assertEquals(500, body.get(DURATION).intValue());
+    }
+
+    @Test
+    public void testGetCanvasWithAudioAccessFile() throws Exception {
+        var fileObj = new ContentObjectSolrRecord();
+        fileObj.setId(OBJECT_ID);
+        fileObj.setResourceType(ResourceType.File.name());
+        fileObj.setTitle("File Object");
+        var originalDs = new DatastreamImpl("original_file|audio/mp4|sound.mp3|mp3|0|||xx500");
+        var audioAccessDs = new DatastreamImpl("audio|audio/aac|audio.m4a|aac|0|||xx500");
+        fileObj.setDatastream(Arrays.asList(originalDs.toString(), audioAccessDs.toString()));
+        when(solrSearchService.getSearchResults(any()))
+                .thenReturn(MvcTestHelpers.createSearchResponse(List.of(fileObj)));
+        when(solrSearchService.getObjectById(any())).thenReturn(fileObj);
+        when(globalPermissionEvaluator.hasGlobalPrincipal(any())).thenReturn(true);
+
+        var result = mockMvc.perform(get("/iiif/v3/" + OBJECT_ID + "/canvas")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        var respJson = MvcTestHelpers.getResponseAsJson(result);
+        var body = respJson.get("items").get(0).get("items").get(0).get("body");
+        assertEquals("http://example.com/services/file/f277bb38-272c-471c-a28a-9887a1328a1f/audio", body.get("id").textValue());
+        assertEquals("audio/mp4", body.get("format").textValue());
         assertEquals("Sound", body.get("type").textValue());
         assertEquals(500, body.get(DURATION).intValue());
     }

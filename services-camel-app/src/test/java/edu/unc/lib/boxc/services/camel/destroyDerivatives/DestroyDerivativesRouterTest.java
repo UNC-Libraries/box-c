@@ -45,6 +45,9 @@ public class DestroyDerivativesRouterTest extends CamelTestSupport {
     @Mock
     private DestroyDerivativesProcessor destroyFulltextProcessor;
 
+    @Mock
+    private DestroyDerivativesProcessor destroyAudioProcessor;
+
     @TempDir
     public Path tmpFolder;
 
@@ -55,6 +58,7 @@ public class DestroyDerivativesRouterTest extends CamelTestSupport {
         router.setDestroyedMsgProcessor(destroyedMsgProcessor);
         router.setDestroyAccessCopyProcessor(destroyAccessCopyProcessor);
         router.setDestroyFulltextProcessor(destroyFulltextProcessor);
+        router.setDestroyAudioProcessor(destroyAudioProcessor);
         router.setDestroyDerivativesStreamCamel("direct:destroy.derivatives.stream");
         return router;
     }
@@ -128,6 +132,7 @@ public class DestroyDerivativesRouterTest extends CamelTestSupport {
         verify(destroyFulltextProcessor).process(any(Exchange.class));
         verify(destroyCollectionSrcImgProcessor, never()).process(any(Exchange.class));
         verify(destroyAccessCopyProcessor, never()).process(any(Exchange.class));
+        verify(destroyAudioProcessor, never()).process(any(Exchange.class));
     }
 
     @Test
@@ -140,6 +145,7 @@ public class DestroyDerivativesRouterTest extends CamelTestSupport {
 
         verify(destroyAccessCopyProcessor).process(any(Exchange.class));
         verify(destroyFulltextProcessor, never()).process(any(Exchange.class));
+        verify(destroyAudioProcessor, never()).process(any(Exchange.class));
     }
 
     @Test
@@ -154,6 +160,7 @@ public class DestroyDerivativesRouterTest extends CamelTestSupport {
 
         verify(destroyAccessCopyProcessor).process(any(Exchange.class));
         verify(destroyFulltextProcessor, never()).process(any(Exchange.class));
+        verify(destroyAudioProcessor, never()).process(any(Exchange.class));
     }
 
     // See if any messages are routed for object with no mimetype

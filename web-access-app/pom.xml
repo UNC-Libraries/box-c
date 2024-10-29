@@ -162,9 +162,5 @@
             <groupId>edu.unc.lib.cdr</groupId>
             <artifactId>auth-fcrepo</artifactId>
         </dependency>
-        <dependency>
-            <groupId>edu.unc.lib.cdr</groupId>
-            <artifactId>search-solr</artifactId>
-        </dependency>
     </dependencies>
 </project>

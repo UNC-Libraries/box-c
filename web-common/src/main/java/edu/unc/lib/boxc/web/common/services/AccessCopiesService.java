@@ -24,7 +24,9 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Service to check for or list resources with access copies
@@ -38,7 +40,8 @@ public class AccessCopiesService {
     private GlobalPermissionEvaluator globalPermissionEvaluator;
     private PermissionsHelper permissionsHelper;
     private SolrSearchService solrSearchService;
-    public static final String AUDIO_MIMETYPE_REGEX = "audio/(x-)?mpeg(-?3)?";
+    public static final String AUDIO_MIMETYPE_REGEX = "audio/((x-)?mpeg(-?3)?|aac)";
+    public static final String VIDEO_MIMETYPE_REGEX = "(video|application)/(x-)?(mpeg|mp|quicktime)(-?4)?";
     public static final String PDF_MIMETYPE_REGEX = "application/(x-)?pdf";
 
     /**
@@ -51,7 +54,8 @@ public class AccessCopiesService {
         ContentObjectRecord briefObj = solrSearchService.getObjectById(new SimpleIdRequest(pid, principals));
         String resourceType = briefObj.getResourceType();
         if (ResourceType.File.nameEquals(resourceType)) {
-            if (briefObj.getDatastreamObject(DatastreamType.JP2_ACCESS_COPY.getId()) != null) {
+            if (briefObj.getDatastreamObject(DatastreamType.JP2_ACCESS_COPY.getId()) != null
+                    || briefObj.getDatastreamObject(DatastreamType.AUDIO_ACCESS_COPY.getId()) != null) {
                 return Collections.singletonList(briefObj);
             } else {
                 return Collections.emptyList();
@@ -76,9 +80,10 @@ public class AccessCopiesService {
      */
     public boolean hasViewableFiles(ContentObjectRecord briefObj, AccessGroupSet principals) {
         String resourceType = briefObj.getResourceType();
-        if (ResourceType.File.nameEquals(resourceType)) {
-            Datastream datastream = briefObj.getDatastreamObject(DatastreamType.JP2_ACCESS_COPY.getId());
-            return datastream != null;
+        if (ResourceType.File.nameEquals(resourceType) &&
+                (briefObj.getDatastreamObject(DatastreamType.JP2_ACCESS_COPY.getId()) != null ||
+                    briefObj.getDatastreamObject(DatastreamType.AUDIO_ACCESS_COPY.getId()) != null)) {
+                return true;
         }
         if (!ResourceType.Work.nameEquals(resourceType)) {
             return false;
@@ -102,6 +107,26 @@ public class AccessCopiesService {
         if (resp.getResultCount() > 0) {
             var id = resp.getResultList().get(0).getId();
             log.debug("Found streaming content {} for work {}", id, briefObj.getId());
+            return resp.getResultList().get(0);
+        }
+        return null;
+    }
+
+    public ContentObjectRecord getFirstMatchingChild(ContentObjectRecord briefObj, List<String> fileType, AccessGroupSet principals) {
+        String resourceType = briefObj.getResourceType();
+        if (!ResourceType.Work.nameEquals(resourceType)) {
+            return null;
+        }
+
+        var request = buildFirstChildQuery(briefObj, principals);
+        // Limit query to just children which have streaming content
+        var searchState = request.getSearchState();
+        searchState.addFilter(QueryFilterFactory.createHasValuesFilter(SearchFieldKey.FILE_FORMAT_TYPE, fileType));
+        var resp = solrSearchService.getSearchResults(request);
+
+        if (resp.getResultCount() > 0) {
+            var id = resp.getResultList().get(0).getId();
+            log.debug("Found {} content {} for work {}", fileType, id, briefObj.getId());
             return resp.getResultList().get(0);
         }
         return null;
@@ -213,7 +238,9 @@ public class AccessCopiesService {
     }
 
     private SearchResultResponse performQuery(ContentObjectRecord briefObj, AccessGroupSet principals, int rows) {
-        // Search for child objects with jp2 datastreams with user can access
+        // Search for child objects with jp2 or audio datastreams with user can access
+        Set<DatastreamType> datastreams = new HashSet<>(Arrays.asList(DatastreamType.JP2_ACCESS_COPY,
+                DatastreamType.AUDIO_ACCESS_COPY));
         SearchState searchState = new SearchState();
         if (!globalPermissionEvaluator.hasGlobalPrincipal(principals)) {
             searchState.setPermissionLimits(Arrays.asList(Permission.viewAccessCopies));
@@ -223,8 +250,7 @@ public class AccessCopiesService {
         CutoffFacet selectedPath = briefObj.getPath();
         searchState.addFacet(selectedPath);
         searchState.setSortType("default");
-        searchState.addFilter(
-                QueryFilterFactory.createFilter(SearchFieldKey.DATASTREAM, DatastreamType.JP2_ACCESS_COPY));
+        searchState.addFilter(QueryFilterFactory.createFilter(SearchFieldKey.DATASTREAM, datastreams));
 
         var searchRequest = new SearchRequest(searchState, principals);
         return solrSearchService.getSearchResults(searchRequest);
