@@ -11,7 +11,6 @@ import './assets/nouislider.css'; // Imported here, otherwise it breaks componen
 if (document.getElementById('app') !== null && window.dcr_browse_records === undefined) {
     const i18n = createI18n({
         locale: 'en',
-        fallbackLocale: 'en',
         messages: translations
     });
 

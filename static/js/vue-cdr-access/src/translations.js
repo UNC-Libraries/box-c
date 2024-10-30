@@ -90,7 +90,6 @@ export default {
             view_file: "View file"
         },
         modal: {
-            close: "Close",
             error: "Unable to retrieve metadata for this item"
         },
         pagination: {
