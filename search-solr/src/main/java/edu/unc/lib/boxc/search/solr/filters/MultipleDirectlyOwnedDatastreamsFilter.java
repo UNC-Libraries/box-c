@@ -27,7 +27,7 @@ public class MultipleDirectlyOwnedDatastreamsFilter implements QueryFilter {
         var dsField = fieldKey.getSolrField();
         return getDatastreamTypes().stream()
                 // Filtering datastreams to exclude those owned by other objects
-                .map(ds -> dsField + ":" + ds.getId() + "|*||")
+                .map(ds -> dsField + ":" + ds.getId() + "|*||*")
                 .collect(Collectors.joining(" OR ", "(", ")"));
     }
 
