@@ -200,7 +200,8 @@ public class ExportXMLProcessor implements Processor {
             searchRequest.setApplyCutoffs(false);
             if (request.getOnlyIncludeValidDatastreams()) {
                 searchState.addFilter(
-                        QueryFilterFactory.createFilter(SearchFieldKey.DATASTREAM, request.getDatastreams()));
+                        QueryFilterFactory.createDirectlyOwnedFilter(
+                                SearchFieldKey.DATASTREAM, request.getDatastreams()));
             }
 
             SearchResultResponse resultResponse = searchService.getSearchResults(searchRequest);
