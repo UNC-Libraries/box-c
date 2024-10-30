@@ -10,7 +10,7 @@ export default {
 
     data() {
         return {
-            showMetadata: false
+            showModal: false
         }
     },
 
@@ -54,7 +54,7 @@ export default {
                 return false;
             }
             // For File objects, content is not restricted if the user can at least download low res files
-            if (this.recordData.resourceType == 'File' && this.hasDownloadAccess(this.recordData)) {
+            if (this.recordData.resourceType === 'File' && this.hasDownloadAccess(this.recordData)) {
                 return false;
             }
             return true;
@@ -75,12 +75,12 @@ export default {
     },
 
     methods: {
-        displayMetadata() {
-            this.showMetadata = true;
+        displayModal() {
+            this.showModal = true;
         },
 
-        toggleMetadata(show) {
-            this.showMetadata = show;
+        toggleModal(show) {
+            this.showModal = show;
         },
 
         fieldExists(value) {

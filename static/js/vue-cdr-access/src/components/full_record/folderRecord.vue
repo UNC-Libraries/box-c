@@ -26,14 +26,14 @@
                     </template>
                 </p>
                 <abstract v-if="recordData.briefObject.abstractText" :brief-object="recordData.briefObject"/>
-                <p><a @click.prevent="displayMetadata()" href="#">{{ $t('full_record.additional_metadata') }}</a></p>
+                <p><a @click.prevent="displayModal()" href="#">{{ $t('full_record.additional_metadata') }}</a></p>
             </div>
             <restricted-content :record-data="recordData"></restricted-content>
         </div>
         <modal-metadata :title="recordData.briefObject.title"
                         :uuid="recordData.briefObject.id"
-                        :open-modal="showMetadata"
-                        @display-metadata="toggleMetadata"></modal-metadata>
+                        :open-modal="showModal"
+                        @display-modal="toggleModal"></modal-metadata>
     </div>
 </template>
 
