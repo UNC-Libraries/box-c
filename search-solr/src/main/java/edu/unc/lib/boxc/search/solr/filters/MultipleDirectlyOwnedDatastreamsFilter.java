@@ -16,18 +16,22 @@ import java.util.stream.Collectors;
 public class MultipleDirectlyOwnedDatastreamsFilter implements QueryFilter {
     private Set<DatastreamType> datastreamTypes;
     private SearchFieldKey fieldKey;
+    private boolean onlyDirectlyOwned;
 
-    protected MultipleDirectlyOwnedDatastreamsFilter(SearchFieldKey fieldKey, Set<DatastreamType> datastreamTypes) {
+    protected MultipleDirectlyOwnedDatastreamsFilter(SearchFieldKey fieldKey, Set<DatastreamType> datastreamTypes,
+                                                     boolean onlyDirectlyOwned) {
         this.datastreamTypes = datastreamTypes;
         this.fieldKey = fieldKey;
+        this.onlyDirectlyOwned = onlyDirectlyOwned;
     }
 
     @Override
     public String toFilterString() {
         var dsField = fieldKey.getSolrField();
+        final var ownershipSuffix = onlyDirectlyOwned ? "||" : "";
         return getDatastreamTypes().stream()
                 // Filtering datastreams to exclude those owned by other objects
-                .map(ds -> dsField + ":" + ds.getId() + "|*||")
+                .map(ds -> dsField + ":" + ds.getId() + "|*" + ownershipSuffix)
                 .collect(Collectors.joining(" OR ", "(", ")"));
     }
 
