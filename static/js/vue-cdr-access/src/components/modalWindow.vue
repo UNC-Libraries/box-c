@@ -10,7 +10,7 @@
                                 <slot name="header">
                                     <div class="column is-12">
                                         <h3>{{ title }}</h3>
-                                        <button class="button is-small" @click="closeModal()">
+                                        <button class="button" @click="closeModal()">
                                             <i class="fa fa-times-circle"></i>
                                         </button>
                                     </div>
@@ -61,18 +61,5 @@ export default {
 </script>
 
 <style scoped lang="scss">
-.meta-modal {
-    float: right;
-}
-
-@media screen and (max-width: 768px) {
-    .meta-modal {
-        float: none;
-    }
-
-    .fa-times-circle {
-        pointer-events: none;
-    }
-}
 /* See cdr_vue_modal_styles.scss. Modal styles moved there so they can be used across Vue applications */
 </style>

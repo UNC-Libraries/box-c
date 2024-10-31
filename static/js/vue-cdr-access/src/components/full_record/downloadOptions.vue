@@ -1,6 +1,6 @@
 <template>
     <div v-if="!isLoggedIn" class="actionlink download">
-        <a @click.prevent="displayModal()" class="download button action" href="#">Contact wilson/log into to access</a>
+        <a @click.prevent="displayModal()" class="download button action" href="#">Contact Wilson/Log in to access</a>
     </div>
     <div v-else-if="showNonImageDownload(recordData)" class="actionlink download">
         <a class="download button action" :href="nonImageDownloadLink(recordData.id)"><i class="fa fa-download"></i> {{ t('full_record.download') }}</a>
@@ -28,7 +28,7 @@
 
     <modal-window :open-modal="showModal" @display-modal="toggleModal" :title="t('full_record.restricted_content', { resource_type: recordData.type.toLowerCase() })">
         <template #body>
-            <div>
+            <div class="restricted-access">
                 <div class="actionlink">
                     <a class="button login-link action" :href="loginUrl"><i class="fa fa-id-card"></i> {{ t('access.login') }}</a>
                 </div>
@@ -44,7 +44,7 @@
 import modalWindow from '@/components/modalWindow.vue';
 import fileDownloadUtils from "../../mixins/fileDownloadUtils";
 import fullRecordUtils from '../../mixins/fullRecordUtils';
-import {mapState} from "pinia/dist/pinia";
+import {mapState} from "pinia";
 import {useAccessStore} from "../../stores/access";
 
 export default {
@@ -66,3 +66,37 @@ export default {
     }
 }
 </script>
+<style scoped lang="scss">
+.restricted-access {
+    display: flex;
+    justify-content: center;
+
+    .actionlink {
+        display: flex;
+        flex-wrap: wrap;
+        width: fit-content;
+
+        &:last-of-type {
+            margin-left: 15px !important;
+        }
+
+        i {
+            padding-right: 8px;
+        }
+    }
+}
+
+@media screen and (max-width: 576px) {
+    .restricted-access {
+        flex-direction: column;
+
+        .actionlink {
+            &:last-of-type {
+                margin-left: 0 !important;
+                margin-top: 15px !important;
+            }
+        }
+    }
+}
+
+</style>

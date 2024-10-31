@@ -72,7 +72,7 @@ export default {
                 { data: this.$t('full_record.file_type') },
                 { data: this.$t('full_record.filesize') },
                 { data: this.$t('full_record.view_file') },
-                { data: null, render: {
+                { data: null, width: '120px', render: {
                         display: '#downloads'
                     }
                 }
