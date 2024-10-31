@@ -31,7 +31,18 @@ public class QueryFilterFactory {
      * @return new QueryFilter instance with the provided datastream types
      */
     public static QueryFilter createFilter(SearchFieldKey fieldKey, Set<DatastreamType> datastreamTypes) {
-        return new MultipleDirectlyOwnedDatastreamsFilter(fieldKey, datastreamTypes);
+        return new MultipleDirectlyOwnedDatastreamsFilter(fieldKey, datastreamTypes, false);
+    }
+
+    /**
+     * Create a filter which restricts results to entries which contain at least one of the listed datastreams,
+     * where the datastreams are owned by the object itself rather than one of its children
+     * @param fieldKey key of field to filter
+     * @param datastreamTypes datastreams to filter for
+     * @return  new QueryFilter instance with the provided datastream types
+     */
+    public static QueryFilter createDirectlyOwnedFilter(SearchFieldKey fieldKey, Set<DatastreamType> datastreamTypes) {
+        return new MultipleDirectlyOwnedDatastreamsFilter(fieldKey, datastreamTypes, true);
     }
 
     /**
