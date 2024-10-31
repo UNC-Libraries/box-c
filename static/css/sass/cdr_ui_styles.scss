@@ -420,6 +420,7 @@ p.no-search-results {
 
 #child-files_filter {
   margin-bottom: 25px;
+  margin-top: -50px;
 }
 
 .input::placeholder, .input {
@@ -1049,6 +1050,10 @@ a.navbar-item:hover {
     .action-btn {
       padding-left: 30px;
     }
+  }
+
+  #child-files_filter {
+    margin-top: -25px;
   }
 
   .dataTables_wrapper {
