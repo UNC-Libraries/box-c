@@ -582,7 +582,7 @@ describe('aggregateRecord.vue', () => {
     });
 
     it("has a jump to download button", () => {
-        expect(wrapper.find('.download-jump').exists()).toBe(true);
+        expect(wrapper.find('.download-jump a').exists()).toBe(true);
     });
 
     it("does not display a finding aid link, if absent", () => {

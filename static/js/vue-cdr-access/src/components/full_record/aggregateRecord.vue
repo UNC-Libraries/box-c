@@ -9,8 +9,8 @@
                             <div class="columns is-tablet">
                                 <div class="column is-narrow" :class="isDeleted">
                                     <thumbnail :thumbnail-data="recordData"></thumbnail>
-                                    <div class="actionlink">
-                                        <a class="download-jump button action" :href="filesLink">
+                                    <div class="actionlink download-jump">
+                                        <a class="button action" :href="filesLink">
                                             <i class="fa fa-download" aria-hidden="true"></i> Skip to Download
                                         </a>
                                     </div>
@@ -107,3 +107,14 @@ export default {
     }
 }
 </script>
+
+<style scoped lang="scss">
+    .actionlink.download-jump {
+        margin: 0 5px 0 0;
+    }
+
+    .actionlink a.action {
+        font-size: 1rem;
+        padding: 10px;
+    }
+</style>
