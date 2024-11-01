@@ -178,7 +178,6 @@ const record = {
                     title: "fc77a9be-b49d-4f4e-b656-1644c9e964fc"
                 }
             ],
-            _version_: 1760531096505680000,
             permissions: [
                 "markForDeletionUnit",
                 "move",
@@ -283,7 +282,6 @@ const record = {
                     title: "fc77a9be-b49d-4f4e-b656-1644c9e964fc"
                 }
             ],
-            _version_: 1760531096497291300,
             permissions: [
                 "markForDeletionUnit",
                 "move",
@@ -581,6 +579,10 @@ describe('aggregateRecord.vue', () => {
 
     it("displays a work title", () => {
         expect(wrapper.find('h2').text()).toEqual('Listen for real');
+    });
+
+    it("has a jump to download button", () => {
+        expect(wrapper.find('.download-jump a').exists()).toBe(true);
     });
 
     it("does not display a finding aid link, if absent", () => {

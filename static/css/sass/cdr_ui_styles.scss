@@ -420,6 +420,7 @@ p.no-search-results {
 
 #child-files_filter {
   margin-bottom: 25px;
+  margin-top: -50px;
 }
 
 .input::placeholder, .input {
@@ -609,7 +610,6 @@ img.data-thumb {
 
 .full_record_top {
   border-bottom: 1px solid $light-gray;
-  padding-bottom: 25px;
 
   .collinfo {
     width: 100%;
@@ -1050,6 +1050,10 @@ a.navbar-item:hover {
     .action-btn {
       padding-left: 30px;
     }
+  }
+
+  #child-files_filter {
+    margin-top: -25px;
   }
 
   .dataTables_wrapper {
