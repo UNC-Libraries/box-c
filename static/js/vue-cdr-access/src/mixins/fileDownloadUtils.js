@@ -61,50 +61,12 @@ export default {
             return size <= this.largestImageEdge(brief_object);
         },
 
-        downloadButtonHtml(brief_object) {
-            if (this.showNonImageDownload(brief_object)) {
-                return `<div class="actionlink download">
-                            <a class="download button action" href="/content/${brief_object.id}?dl=true"><i class="fa fa-download"></i> ${this.$t('full_record.download')}</a>
-                        </div>`;
-            } else if (this.showImageDownload(brief_object)) {
-                let html = `<div class="dropdown actionlink download image-download-options">
-                <div class="dropdown-trigger">
-                    <button id="dcr-download-${brief_object.id}" class="button download-images" aria-haspopup="true" aria-controls="dropdown-menu">
-                    ${this.$t('full_record.download')} <i class="fas fa-angle-down" aria-hidden="true"></i>
-                    </button>
-                </div>
-                <div class="dropdown-menu table-downloads" id="dropdown-menu" role="menu" aria-hidden="true">
-                    <div class="dropdown-content">`;
+        originalImgDownloadLink(id) {
+            return `/content/${id}?dl=true`;
+        },
 
-                let opt_html = "";
-                if (this.validSizeOption(brief_object, 800)) {
-                    opt_html += `<a href="${this.imgDownloadLink(brief_object.id, '800')}" class="dropdown-item">${this.$t('full_record.small') } JPG (800px)</a>`;
-                }
-                if (this.validSizeOption(brief_object, 1600)) {
-                    opt_html += `<a href="${this.imgDownloadLink(brief_object.id, '1600')}" class="dropdown-item">${this.$t('full_record.medium') } JPG (1600px)</a>`;
-                }
-                if (this.validSizeOption(brief_object, 2500)) {
-                    opt_html += `<a href="${this.imgDownloadLink(brief_object.id, '2500')}" class="dropdown-item">${this.$t('full_record.large') } JPG (2500px)</a>`;
-                }
-
-                if (this.hasPermission(brief_object, 'viewOriginal')) {
-                    opt_html += `<a href="${this.imgDownloadLink(brief_object.id, 'max')}" class="dropdown-item">${this.$t('full_record.full_size')} JPG</a>`;
-                    opt_html += '<hr class="dropdown-divider">';
-                    opt_html += `<a href="/indexablecontent/${brief_object.id}?dl=true" class="dropdown-item">${this.$t('full_record.original_file')}</a>`;
-                }
-                // No download options were available, so return no download button
-                if (opt_html === '') {
-                    return '';
-                }
-
-                html += opt_html + '</div>';
-                html += '</div>';
-                html += '</div>';
-
-                return html;
-            } else {
-                return '';
-            }
+        nonImageDownloadLink(id) {
+            return `/content/${id}?dl=true`;
         },
 
         showDropdownList(e) {

@@ -19,17 +19,21 @@ force it to reload
                 <th>{{ $t('full_record.file_type') }}</th>
                 <th>{{ $t('full_record.filesize') }}</th>
                 <th><span class="sr-only">{{ $t('full_record.view_file') }}</span></th>
-                <th v-if="downloadAccess"><span class="sr-only">{{ $t('full_record.download_file') }}</span></th>
+                <th><span class="sr-only">{{ $t('full_record.download_file') }}</span></th>
                 <th v-if="editAccess"><span class="sr-only">{{ $t('full_record.mods') }}</span></th>
             </tr>
             </thead>
+            <template #downloads="props">
+                <download-options :t="$t" :record-data="props.rowData"></download-options>
+            </template>
         </data-table>
     </div>
 </template>
 
 <script>
-import fileDownloadUtils from '../../mixins/fileDownloadUtils';
+import DownloadOptions from "@/components/full_record/downloadOptions.vue";
 import fileUtils from '../../mixins/fileUtils';
+import fullRecordUtils from '../../mixins/fullRecordUtils';
 import DataTable from 'datatables.net-vue3'
 import DataTablesLib from 'datatables.net-bm';
 import 'datatables.net-buttons-bm';
@@ -39,9 +43,9 @@ DataTable.use(DataTablesLib);
 export default {
     name: 'fileList',
 
-    mixins: [fileDownloadUtils, fileUtils],
+    mixins: [fileUtils, fullRecordUtils],
 
-    components: {DataTable},
+    components: {DownloadOptions, DataTable},
 
     props: {
         childCount: Number,
@@ -67,7 +71,11 @@ export default {
                 { data: this.$t('full_record.title') },
                 { data: this.$t('full_record.file_type') },
                 { data: this.$t('full_record.filesize') },
-                { data: this.$t('full_record.view_file') }
+                { data: this.$t('full_record.view_file') },
+                { data: null, width: '120px', render: {
+                        display: '#downloads'
+                    }
+                }
             ]
         }
     },
@@ -125,7 +133,7 @@ export default {
         },
 
         columnDefs() {
-            const excluded_columns = [0, 4];
+            const excluded_columns = [0, 4, 5];
 
             let column_defs = [
                 { orderable: false, targets: excluded_columns },
@@ -138,7 +146,7 @@ export default {
                         if ('thumbnail_url' in row && this.hasPermission(row,'viewAccessCopies')) {
                             const thumbnail_title = this.$t('full_record.thumbnail_title', { title: row.title })
                             img = `<img class="data-thumb" loading="lazy" src="${row.thumbnail_url}"` +
-                            ` alt="${thumbnail_title}">`;
+                                ` alt="${thumbnail_title}">`;
                         } else {
                             const thumbnail_default = this.$t('full_record.thumbnail_default');
                             img = `<i class="fa fa-file default-img-icon data-thumb" title="${thumbnail_default}"></i>`;
@@ -193,24 +201,9 @@ export default {
                 }
             ];
 
-            if (this.downloadAccess)  {
-                this.columns.push({ data: this.$t('full_record.download_file') });
-                excluded_columns.push(5); // download button
-
-                // Add to orderable, searchable exclusions
-                [0, 1].forEach((d) => column_defs[d].targets = excluded_columns);
-
-                column_defs.push({
-                    render: (data, type, row) => {
-                        return this.downloadButtonHtml(row);
-                    },
-                    targets: 5
-                });
-            }
-
             if (this.editAccess) {
                 // Check for the correct column number, in the unlikely event a user has edit access, but not download access
-                const column_number = (this.downloadAccess) ? 6 : 5;
+                const column_number = 6;
                 this.columns.push({ data: this.$t('full_record.mods') });
                 excluded_columns.push(column_number); // edit button
 
