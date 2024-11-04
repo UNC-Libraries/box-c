@@ -30,7 +30,7 @@ public class ImageServerUtil {
      * @return
      */
     public static String getImageServerEncodedId(String id) {
-        return URLEncoder.encode(getImageServiceId(id));
+        return URLEncoder.encode(getImageServiceId(id), StandardCharsets.UTF_8);
     }
 
     /**

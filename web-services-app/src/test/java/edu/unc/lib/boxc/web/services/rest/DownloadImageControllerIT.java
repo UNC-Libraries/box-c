@@ -391,6 +391,39 @@ public class DownloadImageControllerIT {
                 .andReturn();
     }
 
+    @Test
+    public void testPlaceholderThumbnail() throws Exception {
+        var pid = makePid();
+        var pidString = pid.getId();
+        var formattedPid = ImageServerUtil.getImageServerEncodedId(pidString);
+        var filename = "bunny.jpg";
+        ContentObjectSolrRecord contentObjectSolrRecord = mock(ContentObjectSolrRecord.class);
+        Datastream originalDatastream = mock(Datastream.class);
+        Datastream jp2Datastream = mock(Datastream.class);
+
+        stubFor(WireMock.get(urlMatching("/default_images/placeholder.png/full/!128,128/0/default.jpg"))
+                .willReturn(aResponse()
+                        .withStatus(HttpStatus.OK.value())
+                        .withBodyFile(filename)
+                        .withHeader("Content-Type", "image/png")));
+
+        when(solrSearchService.getObjectById(any(SimpleIdRequest.class))).thenReturn(contentObjectSolrRecord);
+        when(contentObjectSolrRecord.getDatastreamObject("original_file")).thenReturn(originalDatastream);
+        when(originalDatastream.getExtent()).thenReturn("100x200");
+        when(originalDatastream.getFilename()).thenReturn(filename);
+        when(contentObjectSolrRecord.getDatastreamObject(DatastreamType.JP2_ACCESS_COPY.getId())).thenReturn(jp2Datastream);
+        when(jp2Datastream.getExtent()).thenReturn("100x200");
+        when(contentObjectSolrRecord.getPid()).thenReturn(pid);
+
+        MvcResult result = mvc.perform(get("/downloadImage/" + pidString + "/128"))
+                .andExpect(status().is2xxSuccessful())
+                .andReturn();
+
+        var response = result.getResponse();
+
+        assertEquals("inline;", response.getHeader(CONTENT_DISPOSITION));
+    }
+
     private void assertCorrectImageReturned(MockHttpServletResponse response) throws IOException {
         assertEquals("image/jpeg", response.getContentType());
 
