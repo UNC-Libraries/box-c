@@ -149,7 +149,7 @@ describe('restrictedContent.vue', () => {
 
     it('does not show view options if a user is logged in', async () => {
         logUserIn();
-        expect(wrapper.find('.restricted-access').exists()).toBe(false);
+        expect(wrapper.find('.restricted-access.actions').exists()).toBe(false);
     });
 
     it('shows an edit option if user has edit permissions', async () => {
@@ -217,6 +217,36 @@ describe('restrictedContent.vue', () => {
             recordData: updated_data
         });
         expect(wrapper.findComponent(singleUseLink).exists()).toBe(false);
+    });
+
+    it('shows view options if a user is not logged in and access is restricted', () => {
+        expect(wrapper.find('.restricted-access.actions').exists()).toBe(true);
+        expect(wrapper.find('.restricted-access.actions .login-link').exists()).toBe(true);
+        expect(wrapper.find('.restricted-access.actions .contact').exists()).toBe(true);
+    });
+
+    it('does not show a login option if a user is not logged in and logging in does not grant further access', async () => {
+        const updated_data = cloneDeep(record);
+        updated_data.briefObject.groupRoleMap = {
+            authenticated: 'canViewMetadata',
+            everyone: 'canViewMetadata'
+        }
+        await wrapper.setProps({
+            recordData: updated_data
+        });
+        expect(wrapper.find('.restricted-access.actions .login-link').exists()).toBe(false);
+    });
+
+    it('does not show view options if content is public', async () => {
+        const updated_data = cloneDeep(record);
+        updated_data.briefObject.groupRoleMap = {
+            authenticated: 'canViewOriginals',
+            everyone: 'canViewOriginals'
+        }
+        await wrapper.setProps({
+            recordData: updated_data
+        });
+        expect(wrapper.find('.restricted-access.actions').exists()).toBe(false);
     });
 
     async function setRecordPermissions(rec, permissions) {

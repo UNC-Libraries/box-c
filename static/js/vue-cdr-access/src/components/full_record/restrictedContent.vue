@@ -1,7 +1,7 @@
 <template>
     <div class="column is-narrow action-btn item-actions">
         <div v-if="restrictedContent && !isLoggedIn" class="column is-narrow item-actions">
-            <div class="restricted-access">
+            <div class="restricted-access actions">
                 <h2>{{ $t('full_record.restricted_content', { resource_type: recordData.briefObject.type.toLowerCase() }) }}</h2>
                 <div v-if="hasGroupRole(recordData, 'canViewOriginals', 'authenticated')" class="actionlink"><a class="button login-link action" :href="loginUrl"><i class="fa fa-id-card"></i> {{ $t('access.login') }}</a></div>
                 <div class="actionlink">
@@ -28,7 +28,6 @@
 
 <script>
 import singleUseLink from '@/components/full_record/singleUseLink.vue';
-import fileDownloadUtils from '../../mixins/fileDownloadUtils';
 import fullRecordUtils from '../../mixins/fullRecordUtils';
 
 export default {
@@ -36,7 +35,7 @@ export default {
 
     components: {singleUseLink},
 
-    mixins: [fileDownloadUtils, fullRecordUtils],
+    mixins: [fullRecordUtils],
 
     props: {
         recordData: Object
