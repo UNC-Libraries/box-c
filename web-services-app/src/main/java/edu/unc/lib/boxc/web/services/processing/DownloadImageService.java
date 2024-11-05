@@ -187,7 +187,7 @@ public class DownloadImageService {
     private String getPlaceholderUrl(String size) {
         // pixel length should be in !123,123 format
         var formattedSize = "!" + size + "," + size;
-        return iiifBasePath + PLACEHOLDER_ID + "/full/" + formattedSize + "/0/default.jpg";
+        return iiifBasePath + PLACEHOLDER_ID + "/full/" + formattedSize + "/0/default.png";
     }
 
     public void setIiifBasePath(String iiifBasePath) {

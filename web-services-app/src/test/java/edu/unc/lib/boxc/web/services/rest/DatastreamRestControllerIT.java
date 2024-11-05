@@ -310,7 +310,7 @@ public class DatastreamRestControllerIT extends AbstractAPIIT {
         var placeholder = "placeholder.png";
         var id = URLEncoder.encode("/default_images/placeholder.png", UTF_8);
 
-        stubFor(WireMock.get(urlMatching("/iiif/v3/" + id + "/full/!128,128/0/default.jpg"))
+        stubFor(WireMock.get(urlMatching("/iiif/v3/" + id + "/full/!128,128/0/default.png"))
                 .willReturn(aResponse()
                         .withStatus(HttpStatus.OK.value())
                         .withBodyFile(placeholder)
