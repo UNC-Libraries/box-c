@@ -62,7 +62,7 @@ public class DatastreamImpl implements Datastream {
 
     @Override
     public String toString() {
-        //DS name|mimetype|extension|filesize|checksum|owner|extent
+        //DS name|mimetype|filename|extension|filesize|checksum|owner|extent
         StringBuilder sb = new StringBuilder();
         if (name != null) {
             sb.append(name);
