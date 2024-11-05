@@ -19,6 +19,7 @@ import java.io.InputStream;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.Objects;
 
 import static edu.unc.lib.boxc.operations.api.images.ImageServerUtil.FULL_SIZE;
@@ -28,6 +29,7 @@ import static edu.unc.lib.boxc.operations.api.images.ImageServerUtil.FULL_SIZE;
  * @author snluong
  */
 public class DownloadImageService {
+    private String PLACEHOLDER_ID = URLEncoder.encode("/default_images/placeholder.png", StandardCharsets.UTF_8);
     private String iiifBasePath;
 
     public static final String INVALID_SIZE_MESSAGE = "Unable to determine size for access copy download";
@@ -155,13 +157,14 @@ public class DownloadImageService {
         return shortestSide < Integer.parseInt(size);
     }
 
-    private String[] getImageDimensions(ContentObjectRecord contentObjectRecord) {
+    private int[] getImageDimensions(ContentObjectRecord contentObjectRecord) {
         var extent = getExtent(contentObjectRecord);
         if (extent == null || extent.isEmpty()) {
-            return ArrayUtils.EMPTY_STRING_ARRAY;
+            return ArrayUtils.EMPTY_INT_ARRAY;
         }
         // format of dimensions is like 800x1200, heightxwidth
-        return extent.split("x");
+        // split by x and convert to integers
+        return Arrays.stream(extent.split("x")).mapToInt(Integer::parseInt).toArray();
     }
 
     private int getLongestSide(ContentObjectRecord contentObjectRecord) {
@@ -170,7 +173,7 @@ public class DownloadImageService {
             return 0;
         }
 
-        return Math.max(Integer.parseInt(extent[0]), Integer.parseInt(extent[1]));
+        return Math.max(extent[0], extent[1]);
     }
 
     private int getShortestSide(ContentObjectRecord contentObjectRecord) {
@@ -178,14 +181,13 @@ public class DownloadImageService {
         if (extent.length == 0) {
             return 0;
         }
-        return Math.min(Integer.parseInt(extent[0]), Integer.parseInt(extent[1]));
+        return Math.min(extent[0], extent[1]);
     }
 
     private String getPlaceholderUrl(String size) {
         // pixel length should be in !123,123 format
         var formattedSize = "!" + size + "," + size;
-        var fileId = URLEncoder.encode("/default_images/placeholder.png", StandardCharsets.UTF_8);
-        return iiifBasePath + fileId + "/full/" + formattedSize + "/0/default.jpg";
+        return iiifBasePath + PLACEHOLDER_ID + "/full/" + formattedSize + "/0/default.jpg";
     }
 
     public void setIiifBasePath(String iiifBasePath) {
