@@ -3,7 +3,7 @@
         <a @click.prevent="modal_open = true" class="download login-modal-link button action" href="#">Contact Wilson/Log in to access</a>
     </div>
     <div v-else-if="showNonImageDownload(recordData)" class="actionlink download">
-        <a class="download button action" :href="nonImageDownloadLink(recordData.id)"><i class="fa fa-download"></i> Download</a>
+        <a class="download button action" :href="nonImageDownloadLink(recordData.id)"><i class="fa fa-download"></i> {{ t('full_record.download') }}</a>
     </div>
     <div v-else-if="showImageDownload(recordData) && hasDownloadOptions(recordData)" class="dropdown actionlink download image-download-options">
         <div class="dropdown actionlink download image-download-options">
@@ -14,13 +14,13 @@
             </div>
             <div class="dropdown-menu table-downloads" :class="{ 'show-list': download_options_open }" id="dropdown-menu" role="menu" :aria-hidden="!download_options_open">
                 <div class="dropdown-content">
-                    <a v-if="validSizeOption(recordData, 800)" :href="imgDownloadLink(recordData.id, '800')" class="dropdown-item">Small JPG (800px)</a>
-                    <a v-if="validSizeOption(recordData, 1600)" :href="imgDownloadLink(recordData.id, '1600')" class="dropdown-item">Medium JPG (1600px)</a>
-                    <a v-if="validSizeOption(recordData, 2500)" :href="imgDownloadLink(recordData.id, '2500')" class="dropdown-item">Large JPG (2500px)</a>
+                    <a v-if="validSizeOption(recordData, 800)" :href="imgDownloadLink(recordData.id, '800')" class="dropdown-item">{{ t('full_record.small') }} JPG (800px)</a>
+                    <a v-if="validSizeOption(recordData, 1600)" :href="imgDownloadLink(recordData.id, '1600')" class="dropdown-item">{{ t('full_record.medium') }} JPG (1600px)</a>
+                    <a v-if="validSizeOption(recordData, 2500)" :href="imgDownloadLink(recordData.id, '2500')" class="dropdown-item">{{ t('full_record.large') }} JPG (2500px)</a>
                     <template v-if="hasPermission(recordData, 'viewOriginal')">
-                        <a :href="imgDownloadLink(recordData.id, 'max')" class="dropdown-item">Full Size JPG</a>
+                        <a :href="imgDownloadLink(recordData.id, 'max')" class="dropdown-item">{{ t('full_record.full_size') }} JPG</a>
                         <hr class="dropdown-divider">
-                        <a :href="originalImgDownloadLink(recordData.id)" class="dropdown-item">Original File</a>
+                        <a :href="originalImgDownloadLink(recordData.id)" class="dropdown-item">{{ t('full_record.original_file') }}</a>
                     </template>
                 </div>
             </div>
