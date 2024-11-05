@@ -274,7 +274,7 @@ describe('downloadOption.vue', () => {
     });
 
     it('shows a login modal', async () => {
-        await setRecordPermissions(record, ['viewAccessCopies', 'viewReducedResImages']);
+        await setRecordPermissions(record, ['viewMetadata']);
         await store.$patch({ username: '' })
         await store.$patch({ isLoggedIn: false })
         await wrapper.find('.login-modal-link').trigger('click'); // Open
@@ -282,7 +282,7 @@ describe('downloadOption.vue', () => {
     });
 
     it('closes the login modal', async () => {
-        await setRecordPermissions(record, ['viewAccessCopies', 'viewReducedResImages']);
+        await setRecordPermissions(record, ['viewMetadata']);
         await store.$patch({ username: '' });
         await store.$patch({ isLoggedIn: false });
         await wrapper.find('.login-modal-link').trigger('click'); // Open
@@ -291,7 +291,7 @@ describe('downloadOption.vue', () => {
     });
 
     it('closes the modal when the "ESC" key is hit', async () => {
-        await setRecordPermissions(record, ['viewAccessCopies', 'viewReducedResImages']);
+        await setRecordPermissions(record, ['viewMetadata']);
         await store.$patch({ username: '' });
         await store.$patch({ isLoggedIn: false });
         await wrapper.find('.login-modal-link').trigger('click'); // Open

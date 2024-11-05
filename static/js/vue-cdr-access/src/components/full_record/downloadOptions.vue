@@ -89,7 +89,7 @@ export default {
             }
             // For File objects, content is not restricted if the user can at least download low res files
             // Record is assumed to be a file
-            if (this.hasDownloadAccess(recordData)) {
+            if (recordData.type === 'File' && this.hasDownloadAccess(recordData)) {
                 return false;
             }
             return true;

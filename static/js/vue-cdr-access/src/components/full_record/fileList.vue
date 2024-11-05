@@ -23,7 +23,7 @@ force it to reload
                 <th v-if="editAccess"><span class="sr-only">{{ $t('full_record.mods') }}</span></th>
             </tr>
             </thead>
-            <template v-if="downloadAccess" #downloads="props">
+            <template #downloads="props">
                 <download-options :t="$t" :record-data="props.rowData"></download-options>
             </template>
         </data-table>
