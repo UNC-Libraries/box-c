@@ -27,7 +27,7 @@
         </div>
     </div>
 
-    <div class="modal" :class="{ 'is-active': modal_open }">
+    <div v-if="!isLoggedIn && (showNonImageDownload(recordData) || showImageDownload(recordData))" class="modal" :class="{ 'is-active': modal_open }">
         <div class="modal-background"></div>
         <div class="modal-card">
             <header class="modal-card-head">

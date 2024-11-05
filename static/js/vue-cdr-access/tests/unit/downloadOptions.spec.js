@@ -285,26 +285,42 @@ describe('downloadOption.vue', () => {
         await setRecordPermissions(record, ['viewAccessCopies', 'viewReducedResImages', 'viewOriginal']);
         await store.$patch({ username: '' });
         await store.$patch({ isLoggedIn: false });
-        // await wrapper.find('.login-modal-link').trigger('click'); // Open
+        await wrapper.find('.login-modal-link').trigger('click'); // Open
         await wrapper.find('button.close').trigger('click'); // Close
         expect(wrapper.find('.modal').classes('is-active')).toBe(false);
     });
 
-    it('hides the list of visible options when any non dropdown page element is clicked', async () => {
-        await setRecordPermissions(record, ['viewAccessCopies', 'viewReducedResImages', 'viewOriginal']);
-
-        await wrapper.find('.login-link').trigger('click'); // Open
-        await wrapper.trigger('click'); // Close
-        expect(wrapper.find('.modal').classes('is-active')).toBe(false);
-    });
-
-    it('hides the list of visible options when the "ESC" key is hit', async () => {
+    it('closes the modal when the "ESC" key is hit', async () => {
         await setRecordPermissions(record, ['viewAccessCopies', 'viewReducedResImages', 'viewOriginal']);
         await store.$patch({ username: '' });
         await store.$patch({ isLoggedIn: false });
         await wrapper.find('.login-modal-link').trigger('click'); // Open
+        expect(wrapper.find('.modal').classes('is-active')).toBe(true);
         await wrapper.trigger('keyup.esc'); // Close
         expect(wrapper.find('.modal').classes('is-active')).toBe(false);
+    });
+
+    it('shows the list of download options', async () => {
+        await setRecordPermissions(record, ['viewAccessCopies', 'viewReducedResImages', 'viewOriginal']);
+
+        await wrapper.find('.download-images').trigger('click'); // Open
+        expect(wrapper.find('#dropdown-menu').classes('show-list')).toBe(true);
+    });
+
+    it('hides the list of download options when any non dropdown page element is clicked', async () => {
+        await setRecordPermissions(record, ['viewAccessCopies', 'viewReducedResImages', 'viewOriginal']);
+
+        await wrapper.find('.download-images').trigger('click'); // Open
+        await wrapper.trigger('click'); // Close
+        expect(wrapper.find('#dropdown-menu').classes('show-list')).toBe(false);
+    });
+
+    it('hides the list of download options when the "ESC" key is hit', async () => {
+        await setRecordPermissions(record, ['viewAccessCopies', 'viewReducedResImages', 'viewOriginal']);
+
+        await wrapper.find('.download-images').trigger('click'); // Open
+        await wrapper.trigger('keyup.esc'); // Close
+        expect(wrapper.find('#dropdown-menu').classes('show-list')).toBe(false);
     });
 
     async function setRecordPermissions(rec, permissions) {
