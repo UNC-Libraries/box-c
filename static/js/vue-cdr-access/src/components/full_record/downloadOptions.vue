@@ -1,5 +1,5 @@
 <template>
-    <div v-if="!isLoggedIn && (showNonImageDownload(recordData) || showImageDownload(recordData))" class="actionlink download">
+    <div v-if="!isLoggedIn && restrictedFiles(recordData)" class="actionlink download">
         <a @click.prevent="modal_open = true" class="download login-modal-link button action" href="#">Contact Wilson/Log in to access</a>
     </div>
     <div v-else-if="showNonImageDownload(recordData)" class="actionlink download">
@@ -27,7 +27,7 @@
         </div>
     </div>
 
-    <div v-if="!isLoggedIn && (showNonImageDownload(recordData) || showImageDownload(recordData))" class="modal" :class="{ 'is-active': modal_open }">
+    <div v-if="!isLoggedIn && restrictedFiles(recordData)" class="modal" :class="{ 'is-active': modal_open }">
         <div class="modal-background"></div>
         <div class="modal-card">
             <header class="modal-card-head">
@@ -79,6 +79,22 @@ export default {
     },
 
     methods: {
+        restrictedFiles(recordData) {
+            if (!this.hasGroups(recordData) ||
+                recordData.groupRoleMap.everyone === undefined) {
+                return false;
+            }
+            if (recordData.groupRoleMap.everyone.includes('canViewOriginals')) {
+                return false;
+            }
+            // For File objects, content is not restricted if the user can at least download low res files
+            // Record is assumed to be a file
+            if (this.hasDownloadAccess(recordData)) {
+                return false;
+            }
+            return true;
+        },
+
         toggleDownloadOptions() {
             this.download_options_open = !this.download_options_open;
         },

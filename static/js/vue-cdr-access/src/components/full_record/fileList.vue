@@ -19,7 +19,7 @@ force it to reload
                 <th>{{ $t('full_record.file_type') }}</th>
                 <th>{{ $t('full_record.filesize') }}</th>
                 <th><span class="sr-only">{{ $t('full_record.view_file') }}</span></th>
-                <th v-if="downloadAccess"><span class="sr-only">{{ $t('full_record.download_file') }}</span></th>
+                <th><span class="sr-only">{{ $t('full_record.download_file') }}</span></th>
                 <th v-if="editAccess"><span class="sr-only">{{ $t('full_record.mods') }}</span></th>
             </tr>
             </thead>
@@ -71,7 +71,11 @@ export default {
                 { data: this.$t('full_record.title') },
                 { data: this.$t('full_record.file_type') },
                 { data: this.$t('full_record.filesize') },
-                { data: this.$t('full_record.view_file') }
+                { data: this.$t('full_record.view_file') },
+                { data: null, width: '120px', render: {
+                        display: '#downloads'
+                    }
+                }
             ]
         }
     },
@@ -129,7 +133,7 @@ export default {
         },
 
         columnDefs() {
-            const excluded_columns = [0, 4];
+            const excluded_columns = [0, 4, 5];
 
             let column_defs = [
                 { orderable: false, targets: excluded_columns },
@@ -197,25 +201,9 @@ export default {
                 }
             ];
 
-            if (this.downloadAccess)  {
-                this.columns.push({ data: null });
-                excluded_columns.push(5); // download button
-
-                // Add to orderable, searchable exclusions
-                [0, 1].forEach((d) => column_defs[d].targets = excluded_columns);
-
-                column_defs.push({
-                    render: {
-                        display: '#downloads'
-                    },
-                    width: '120px',
-                    targets: 5
-                });
-            }
-
             if (this.editAccess) {
                 // Check for the correct column number, in the unlikely event a user has edit access, but not download access
-                const column_number = (this.downloadAccess) ? 6 : 5;
+                const column_number =  6;
                 this.columns.push({ data: this.$t('full_record.mods') });
                 excluded_columns.push(column_number); // edit button
 
