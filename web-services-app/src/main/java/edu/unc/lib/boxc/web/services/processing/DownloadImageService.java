@@ -7,6 +7,7 @@ import edu.unc.lib.boxc.search.api.models.ContentObjectRecord;
 import edu.unc.lib.boxc.search.api.models.Datastream;
 import edu.unc.lib.boxc.operations.api.images.ImageServerUtil;
 import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpHeaders;
@@ -157,7 +158,7 @@ public class DownloadImageService {
     private String[] getImageDimensions(ContentObjectRecord contentObjectRecord) {
         var extent = getExtent(contentObjectRecord);
         if (extent == null || extent.isEmpty()) {
-            return null;
+            return ArrayUtils.EMPTY_STRING_ARRAY;
         }
         // format of dimensions is like 800x1200, heightxwidth
         return extent.split("x");
@@ -165,7 +166,7 @@ public class DownloadImageService {
 
     private int getLongestSide(ContentObjectRecord contentObjectRecord) {
         var extent = getImageDimensions(contentObjectRecord);
-        if (extent == null) {
+        if (extent.length == 0) {
             return 0;
         }
 
@@ -174,7 +175,7 @@ public class DownloadImageService {
 
     private int getShortestSide(ContentObjectRecord contentObjectRecord) {
         var extent = getImageDimensions(contentObjectRecord);
-        if (extent == null) {
+        if (extent.length == 0) {
             return 0;
         }
         return Math.min(Integer.parseInt(extent[0]), Integer.parseInt(extent[1]));
