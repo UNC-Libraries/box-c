@@ -19,11 +19,11 @@ force it to reload
                 <th>{{ $t('full_record.file_type') }}</th>
                 <th>{{ $t('full_record.filesize') }}</th>
                 <th><span class="sr-only">{{ $t('full_record.view_file') }}</span></th>
-                <th><span class="sr-only">{{ $t('full_record.download_file') }}</span></th>
+                <th v-if="downloadAccess"><span class="sr-only">{{ $t('full_record.download_file') }}</span></th>
                 <th v-if="editAccess"><span class="sr-only">{{ $t('full_record.mods') }}</span></th>
             </tr>
             </thead>
-            <template #downloads="props">
+            <template v-if="downloadAccess" #downloads="props">
                 <download-options :t="$t" :record-data="props.rowData"></download-options>
             </template>
         </data-table>
@@ -31,9 +31,9 @@ force it to reload
 </template>
 
 <script>
-import DownloadOptions from "@/components/full_record/downloadOptions.vue";
 import fileUtils from '../../mixins/fileUtils';
 import fullRecordUtils from '../../mixins/fullRecordUtils';
+import DownloadOptions from '@/components/full_record/downloadOptions.vue';
 import DataTable from 'datatables.net-vue3'
 import DataTablesLib from 'datatables.net-bm';
 import 'datatables.net-buttons-bm';
@@ -71,11 +71,7 @@ export default {
                 { data: this.$t('full_record.title') },
                 { data: this.$t('full_record.file_type') },
                 { data: this.$t('full_record.filesize') },
-                { data: this.$t('full_record.view_file') },
-                { data: null, width: '120px', render: {
-                        display: '#downloads'
-                    }
-                }
+                { data: this.$t('full_record.view_file') }
             ]
         }
     },
@@ -133,7 +129,7 @@ export default {
         },
 
         columnDefs() {
-            const excluded_columns = [0, 4, 5];
+            const excluded_columns = [0, 4];
 
             let column_defs = [
                 { orderable: false, targets: excluded_columns },
@@ -201,9 +197,25 @@ export default {
                 }
             ];
 
+            if (this.downloadAccess)  {
+                this.columns.push({ data: null });
+                excluded_columns.push(5); // download button
+
+                // Add to orderable, searchable exclusions
+                [0, 1].forEach((d) => column_defs[d].targets = excluded_columns);
+
+                column_defs.push({
+                    render: {
+                        display: '#downloads'
+                    },
+                    width: '120px',
+                    targets: 5
+                });
+            }
+
             if (this.editAccess) {
                 // Check for the correct column number, in the unlikely event a user has edit access, but not download access
-                const column_number = 6;
+                const column_number = (this.downloadAccess) ? 6 : 5;
                 this.columns.push({ data: this.$t('full_record.mods') });
                 excluded_columns.push(column_number); // edit button
 
@@ -228,11 +240,6 @@ export default {
     methods: {
         ariaLabelText(brief_object) {
             return this.$t('full_record.view_title', { title: brief_object.title });
-        },
-
-        showNonImageDownload(brief_object) {
-            return this.hasPermission(brief_object, 'viewOriginal') &&
-                !brief_object.format.includes('Image');
         },
 
         showBadge(brief_object) {

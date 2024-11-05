@@ -32,7 +32,7 @@
         <div class="modal-card">
             <header class="modal-card-head">
                 <p class="modal-card-title">{{ t('full_record.restricted_content', { resource_type: recordData.type.toLowerCase() }) }}</p>
-                <button @click="modal_open = false" class="close" aria-label="close"></button>
+                <button @click="modal_open = false" class="delete close" aria-label="close"></button>
             </header>
             <section class="modal-card-body">
                 <div class="restricted-access downloads">
@@ -195,36 +195,43 @@ export default {
 }
 </script>
 <style scoped lang="scss">
-.restricted-access {
-    display: flex;
-    justify-content: center;
-
-    .actionlink {
-        display: flex;
-        flex-wrap: wrap;
-        width: fit-content;
-
-        &:last-of-type {
-            margin-left: 15px !important;
-        }
-
-        i {
-            padding-right: 8px;
-        }
+    .modal-card-title {
+        font-weight: bold;
     }
-}
 
-@media screen and (max-width: 576px) {
+    .modal-card {
+        border-radius: 5px;
+    }
+
     .restricted-access {
-        flex-direction: column;
+        display: flex;
+        justify-content: center;
 
         .actionlink {
+            display: flex;
+            flex-wrap: wrap;
+            width: fit-content;
+
             &:last-of-type {
-                margin-left: 0 !important;
-                margin-top: 15px !important;
+                margin-left: 15px !important;
+            }
+
+            i {
+                padding-right: 8px;
             }
         }
     }
-}
 
+    @media screen and (max-width: 576px) {
+        .restricted-access {
+            flex-direction: column;
+
+            .actionlink {
+                &:last-of-type {
+                    margin-left: 0 !important;
+                    margin-top: 15px !important;
+                }
+            }
+        }
+    }
 </style>
