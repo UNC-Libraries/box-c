@@ -6,7 +6,7 @@
         <a class="download button action" :href="nonImageDownloadLink(recordData.id)"><i class="fa fa-download"></i> {{ t('full_record.download') }}</a>
     </div>
     <div v-else-if="showImageDownload(recordData) && hasDownloadOptions(recordData)" class="dropdown actionlink download image-download-options">
-        <div class="dropdown actionlink download image-download-options">
+        <div class="dropdown download image-download-options">
             <div class="dropdown-trigger">
                 <button @click="toggleDownloadOptions()" id="dropdown-menu-button" class="button download-images" aria-haspopup="true" aria-controls="dropdown-menu">
                     {{ t('full_record.download') }} <i class="fas fa-angle-down" aria-hidden="true"></i>
@@ -36,7 +36,7 @@
             </header>
             <section class="modal-card-body">
                 <div class="restricted-access downloads">
-                    <div class="actionlink">
+                    <div v-if="hasGroupRole(recordData, 'canViewOriginals', 'authenticated')" class="actionlink">
                         <a class="button login-link action" :href="loginUrl"><i class="fa fa-id-card"></i> {{ t('access.login') }}</a>
                     </div>
                     <div class="actionlink">
@@ -213,10 +213,15 @@ export default {
 <style scoped lang="scss">
     .modal-card-title {
         font-weight: bold;
+        text-align: center;
     }
 
     .modal-card {
         border-radius: 5px;
+
+        .modal-card-head {
+            align-items: flex-start;
+        }
     }
 
     .restricted-access {
