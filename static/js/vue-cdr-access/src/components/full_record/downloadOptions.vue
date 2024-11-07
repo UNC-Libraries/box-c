@@ -1,6 +1,8 @@
 <template>
-
-    <div v-if="!isLoggedIn && restrictedFiles(recordData)" class="download">
+    <div v-if="!isLoggedIn && restrictedFiles(recordData) && hasGroupRole(recordData, 'canViewOriginals', 'authenticated')" class="actionlink download">
+        <a @click.prevent="modal_open = true" class="download login-modal-link button action" href="#">Contact Wilson/Log in to access</a>
+    </div>
+    <div v-else-if="!isLoggedIn && restrictedFiles(recordData)" class="download">
         <div class="actionlink">
             <a class="button contact action" href="https://library.unc.edu/contact-us/?destination=wilson"><i class="fa fa-envelope"></i> {{ t('access.contact') }}</a>
         </div>
@@ -171,6 +173,9 @@ export default {
         },
 
         showImageDownload(brief_object) {
+            console.log(this.hasPermission(brief_object, 'viewReducedResImages'))
+            console.log(brief_object.format.includes('Image'))
+            console.log(this.getOriginalFile(brief_object) !== undefined)
             return this.hasPermission(brief_object, 'viewReducedResImages') &&
                 brief_object.format.includes('Image') && this.getOriginalFile(brief_object) !== undefined
         },
