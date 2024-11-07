@@ -4,7 +4,6 @@ export default {
     methods: {
         permissionData(recordData) {
             if (recordData.briefObject !== undefined) {
-                console.log('here')
                 return recordData.briefObject;
             }
             return recordData;

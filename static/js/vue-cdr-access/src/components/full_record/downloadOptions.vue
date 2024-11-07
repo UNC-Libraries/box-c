@@ -114,6 +114,7 @@ export default {
         hasDownloadOptions() {
             console.log(this.hasPermission(this.recordData, 'viewOriginal'))
             if (this.hasPermission(this.recordData, 'viewOriginal')) {
+                console.log(this.recordData)
                 return true;
             }
 
