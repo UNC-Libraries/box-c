@@ -24,7 +24,9 @@ force it to reload
             </tr>
             </thead>
             <template #downloads="props">
-                <download-options :t="$t" :record-data="props.rowData"></download-options>
+                <download-options :t="$t"
+                                  :record-data="props.rowData">
+                </download-options>
             </template>
         </data-table>
     </div>
@@ -290,8 +292,6 @@ export default {
         }
 
         .actionlink {
-            margin: 0;
-
             a.action {
                 display: flex;
             }
@@ -311,7 +311,7 @@ export default {
             }
 
             .button {
-                font-size: .9rem;
+                font-size: 1rem;
                 padding: 0 10px;
                 height: 2rem;
             }

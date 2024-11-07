@@ -31,8 +31,13 @@
             </div>
         </div>
     </div>
+    <div v-else-if="showImageDownload(recordData) && !hasDownloadOptions(recordData)" class="download">
+        <div class="actionlink">
+            <a class="button contact action" href="https://library.unc.edu/contact-us/?destination=wilson"><i class="fa fa-envelope"></i> {{ t('access.contact') }}</a>
+        </div>
+    </div>
 
-    <div v-if="!isLoggedIn && restrictedFiles(recordData)" class="modal" :class="{ 'is-active': modal_open }">
+    <div v-if="!isLoggedIn && restrictedFiles(recordData) && hasGroupRole(recordData, 'canViewOriginals', 'authenticated')" class="modal" :class="{ 'is-active': modal_open }">
         <div class="modal-background"></div>
         <div class="modal-card">
             <header class="modal-card-head">
@@ -212,7 +217,6 @@ export default {
         window.removeEventListener('click', this.closeDropdownLists);
         window.removeEventListener('keyup', this.closeOverlays);
     }
-
 }
 </script>
 <style scoped lang="scss">
@@ -226,6 +230,13 @@ export default {
 
         .modal-card-head {
             align-items: flex-start;
+        }
+
+        .button {
+            display: flex;
+            font-size: 1rem !important;
+            padding: 0 10px !important;
+            height: 2rem;
         }
     }
 
@@ -244,23 +255,28 @@ export default {
             width: fit-content;
 
             &:last-of-type {
-                margin-left: 15px !important;
+                margin-left: 15px;
             }
         }
     }
 
     @media screen and (max-width: 576px) {
-        .restricted-access {
-            flex-direction: column;
+        .modal-card-body {
+            .restricted-access {
+                flex-direction: column;
+                align-items: center;
 
-            .actionlink {
-                i {
-                    padding-right: 0;
+                .actionlink + .actionlink {
+                    margin-left: 0;
+                    margin-top: 8px;
                 }
+            }
+        }
 
-                &:last-of-type {
-                    margin-left: 0 !important;
-                    margin-top: 15px !important;
+        .item-actions {
+            .image-download-options {
+                .image-download-options .dropdown-menu {
+                    left: 0;
                 }
             }
         }
