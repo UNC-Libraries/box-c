@@ -112,6 +112,7 @@ export default {
         },
 
         hasDownloadOptions() {
+            console.log(this.hasPermission(this.recordData, 'viewOriginal'))
             if (this.hasPermission(this.recordData, 'viewOriginal')) {
                 return true;
             }
@@ -173,9 +174,6 @@ export default {
         },
 
         showImageDownload(brief_object) {
-            console.log(this.hasPermission(brief_object, 'viewReducedResImages'))
-            console.log(brief_object.format.includes('Image'))
-            console.log(this.getOriginalFile(brief_object) !== undefined)
             return this.hasPermission(brief_object, 'viewReducedResImages') &&
                 brief_object.format.includes('Image') && this.getOriginalFile(brief_object) !== undefined
         },
