@@ -62,10 +62,4 @@ export default {
         font-size: 1.5rem;
     }
 }
-
-.restricted-access {
-    h2 {
-        text-align: center;
-    }
-}
 </style>

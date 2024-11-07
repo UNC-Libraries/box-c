@@ -1084,6 +1084,13 @@ table.dataTable {
     }
   }
 
+  .content-wrap.full_record,
+  #is-admin-unit {
+    .restricted-access {
+      padding: 10px;
+    }
+  }
+
   .file_record {
     .columns-resize {
       .is-10 {
@@ -1093,6 +1100,7 @@ table.dataTable {
       }
     }
   }
+
 
   .relateditem {
     margin-left: 5px;

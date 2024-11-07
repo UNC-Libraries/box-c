@@ -1,13 +1,12 @@
 <template>
     <div class="column is-narrow action-btn item-actions">
-
         <div v-if="hasPermission(recordData, 'editDescription')" class="actionlink">
             <a class="edit button action" :href="editDescriptionUrl(recordData.briefObject.id)"><i class="fa fa-edit"></i> {{ $t('full_record.edit') }}</a>
         </div>
         <template v-if="recordData.resourceType === 'File'">
             <div v-if="restrictedContent && !isLoggedIn" class="column is-narrow item-actions">
                 <div class="restricted-access actions">
-                    <h2>{{ $t('full_record.restricted_content', { resource_type: recordData.briefObject.type.toLowerCase() }) }}</h2>
+                    <h2 class="has-text-centered">{{ $t('full_record.restricted_content', { resource_type: recordData.briefObject.type.toLowerCase() }) }}</h2>
                     <download-options :record-data="recordData.briefObject" :t="$t"></download-options>
                 </div>
             </div>

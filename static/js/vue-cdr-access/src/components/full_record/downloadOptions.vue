@@ -1,6 +1,11 @@
 <template>
-    <div v-if="!isLoggedIn && restrictedFiles(recordData)" class="actionlink download">
+    <div v-if="!isLoggedIn && restrictedFiles(recordData) && hasGroupRole(recordData, 'canViewOriginals', 'authenticated')" class="actionlink download">
         <a @click.prevent="modal_open = true" class="download login-modal-link button action" href="#">Contact Wilson/Log in to access</a>
+    </div>
+    <div v-else-if="!isLoggedIn && restrictedFiles(recordData)" class="download">
+        <div class="actionlink">
+            <a class="button contact action" href="https://library.unc.edu/contact-us/?destination=wilson"><i class="fa fa-envelope"></i> {{ t('access.contact') }}</a>
+        </div>
     </div>
     <div v-else-if="showNonImageDownload(recordData)" class="actionlink download">
         <a class="download button action" :href="nonImageDownloadLink(recordData.id)"><i class="fa fa-download"></i> {{ t('full_record.download') }}</a>
@@ -224,6 +229,11 @@ export default {
         }
     }
 
+    .actionlink .contact i,
+    .restricted-access .actionlink i {
+        padding-right: 8px;
+    }
+
     .restricted-access {
         display: flex;
         justify-content: center;
@@ -236,10 +246,6 @@ export default {
             &:last-of-type {
                 margin-left: 15px !important;
             }
-
-            i {
-                padding-right: 8px;
-            }
         }
     }
 
@@ -248,6 +254,10 @@ export default {
             flex-direction: column;
 
             .actionlink {
+                i {
+                    padding-right: 0;
+                }
+
                 &:last-of-type {
                     margin-left: 0 !important;
                     margin-top: 15px !important;
