@@ -1,8 +1,6 @@
 <template>
-    <div v-if="!isLoggedIn && restrictedFiles(recordData) && hasGroupRole(recordData, 'canViewOriginals', 'authenticated')" class="actionlink download">
-        <a @click.prevent="modal_open = true" class="download login-modal-link button action" href="#">Contact Wilson/Log in to access</a>
-    </div>
-    <div v-else-if="!isLoggedIn && restrictedFiles(recordData)" class="download">
+
+    <div v-if="!isLoggedIn && restrictedFiles(recordData)" class="download">
         <div class="actionlink">
             <a class="button contact action" href="https://library.unc.edu/contact-us/?destination=wilson"><i class="fa fa-envelope"></i> {{ t('access.contact') }}</a>
         </div>
@@ -32,7 +30,7 @@
         </div>
     </div>
 
-    <div v-if="!isLoggedIn && restrictedFiles(recordData)" class="modal" :class="{ 'is-active': modal_open }">
+    <div v-if="!isLoggedIn && restrictedFiles(recordData) && hasGroupRole(recordData, 'canViewOriginals', 'authenticated')" class="modal" :class="{ 'is-active': modal_open }">
         <div class="modal-background"></div>
         <div class="modal-card">
             <header class="modal-card-head">
