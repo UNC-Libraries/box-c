@@ -7,7 +7,6 @@ export default {
                 console.log('here')
                 return recordData.briefObject;
             }
-            console.log('ho' + JSON.stringify(recordData))
             return recordData;
         },
 
