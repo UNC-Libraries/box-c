@@ -246,6 +246,7 @@ export default {
         .actionlink {
             display: flex;
             flex-wrap: wrap;
+            font-size: .9rem;
             width: fit-content;
 
             &:last-of-type {
