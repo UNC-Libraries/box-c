@@ -31,8 +31,8 @@
             </div>
         </div>
     </div>
-    <div v-else class="actionlink download">
-        <a class="download button action" disabled href="#"><i class="fa fa-download"></i> {{ t('full_record.download') }}</a>
+    <div v-else-if="alwaysDisplayButton" class="actionlink download">
+        <a @click.prevent class="download button action" disabled href="#" aria-disabled="true"><i class="fa fa-download"></i> {{ t('full_record.download') }}</a>
     </div>
 
     <div v-if="!isLoggedIn && restrictedFiles(recordData) && hasGroupRole(recordData, 'canViewOriginals', 'authenticated')" class="modal" :class="{ 'is-active': modal_open }">
@@ -69,7 +69,11 @@ export default {
 
     props: {
         recordData: Object,
-        t: Function
+        t: Function,
+        alwaysDisplayButton: {
+            type: Boolean,
+            default: false
+        }
     },
 
     data() {
@@ -250,6 +254,10 @@ export default {
                 margin-left: 15px !important;
             }
         }
+    }
+
+    [aria-disabled="true"] {
+        pointer-events: none;
     }
 
     @media screen and (max-width: 576px) {
