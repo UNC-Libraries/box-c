@@ -246,8 +246,13 @@ export default {
         .actionlink {
             display: flex;
             flex-wrap: wrap;
-            font-size: .9rem;
             width: fit-content;
+
+            .button {
+                font-size: .9rem;
+                padding: 0 10px;
+                height: 2rem;
+            }
 
             &:last-of-type {
                 margin-left: 15px !important;
