@@ -31,8 +31,10 @@
             </div>
         </div>
     </div>
-    <div v-else-if="showImageDownload(recordData) && !hasDownloadOptions(recordData)" class="actionlink download">
-        <a @click.prevent class="download button action" disabled href="#" aria-disabled="true"><i class="fa fa-download"></i> {{ t('full_record.download') }}</a>
+    <div v-else-if="showImageDownload(recordData) && !hasDownloadOptions(recordData)" class="download">
+        <div class="actionlink">
+            <a class="button contact action" href="https://library.unc.edu/contact-us/?destination=wilson"><i class="fa fa-envelope"></i> {{ t('access.contact') }}</a>
+        </div>
     </div>
 
     <div v-if="!isLoggedIn && restrictedFiles(recordData) && hasGroupRole(recordData, 'canViewOriginals', 'authenticated')" class="modal" :class="{ 'is-active': modal_open }">
@@ -250,10 +252,6 @@ export default {
                 margin-left: 15px !important;
             }
         }
-    }
-
-    [aria-disabled="true"] {
-        pointer-events: none;
     }
 
     @media screen and (max-width: 576px) {
