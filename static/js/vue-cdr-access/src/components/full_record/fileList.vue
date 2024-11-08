@@ -24,7 +24,10 @@ force it to reload
             </tr>
             </thead>
             <template #downloads="props">
-                <download-options :t="$t" :record-data="props.rowData"></download-options>
+                <download-options :t="$t"
+                                  :record-data="props.rowData"
+                                  :always-display-button="true">
+                </download-options>
             </template>
         </data-table>
     </div>
