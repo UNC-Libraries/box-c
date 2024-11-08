@@ -313,7 +313,7 @@ export default {
             }
 
             .button {
-                font-size: .9rem;
+                font-size: 1rem;
                 padding: 0 10px;
                 height: 2rem;
             }

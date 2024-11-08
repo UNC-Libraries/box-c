@@ -232,6 +232,13 @@ export default {
         .modal-card-head {
             align-items: flex-start;
         }
+
+        .button {
+            display: flex;
+            font-size: 1rem !important;
+            padding: 0 10px !important;
+            height: 2rem;
+        }
     }
 
     .actionlink .contact i,
@@ -248,12 +255,6 @@ export default {
             flex-wrap: wrap;
             width: fit-content;
 
-            .button {
-                font-size: .9rem;
-                padding: 0 10px;
-                height: 2rem;
-            }
-
             &:last-of-type {
                 margin-left: 15px !important;
             }
@@ -263,15 +264,21 @@ export default {
     @media screen and (max-width: 576px) {
         .restricted-access {
             flex-direction: column;
+            align-items: center;
 
             .actionlink {
-                i {
-                    padding-right: 0;
-                }
-
+                &:has(.contact),
+                &:has(.login-modal-link),
                 &:last-of-type {
-                    margin-left: 0 !important;
-                    margin-top: 15px !important;
+                    margin: auto !important;
+                }
+            }
+        }
+
+        .item-actions {
+            .image-download-options {
+                .image-download-options .dropdown-menu {
+                    left: 0;
                 }
             }
         }
