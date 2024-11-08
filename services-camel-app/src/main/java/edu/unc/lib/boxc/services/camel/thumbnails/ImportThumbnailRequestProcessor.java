@@ -37,7 +37,7 @@ public class ImportThumbnailRequestProcessor implements Processor {
         in.setHeader(CdrBinaryMimeType, mimetype);
         in.setHeader(FCREPO_URI, repoPath);
         // force access copy regeneration when importing a thumbnail
-        in.setHeader("force", true);
+        in.setHeader("force", "true");
     }
 
     /**
