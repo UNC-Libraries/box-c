@@ -31,7 +31,7 @@
             </div>
         </div>
     </div>
-    <div v-else-if="alwaysDisplayButton" class="actionlink download">
+    <div v-else-if="showImageDownload(recordData) && !hasDownloadOptions(recordData)" class="actionlink download">
         <a @click.prevent class="download button action" disabled href="#" aria-disabled="true"><i class="fa fa-download"></i> {{ t('full_record.download') }}</a>
     </div>
 
@@ -69,11 +69,7 @@ export default {
 
     props: {
         recordData: Object,
-        t: Function,
-        alwaysDisplayButton: {
-            type: Boolean,
-            default: false
-        }
+        t: Function
     },
 
     data() {
