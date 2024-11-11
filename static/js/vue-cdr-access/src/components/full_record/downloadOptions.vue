@@ -178,6 +178,9 @@ export default {
         },
 
         showImageDownload(brief_object) {
+            console.log(this.hasPermission(brief_object, 'viewReducedResImages'))
+            console.log(this.hasPermission(brief_object, 'viewOriginal'))
+            console.log(brief_object)
             return (this.hasPermission(brief_object, 'viewReducedResImages')
                     || this.hasPermission(brief_object, 'viewOriginal')) &&
                 brief_object.format.includes('Image') && this.getOriginalFile(brief_object) !== undefined
