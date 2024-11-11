@@ -10,7 +10,7 @@
     <div v-else-if="showNonImageDownload(recordData)" class="actionlink download">
         <a class="download button action" :href="nonImageDownloadLink(recordData.id)"><i class="fa fa-download"></i> {{ t('full_record.download') }}</a>
     </div>
-    <div v-else-if="showImageDownload(recordData) && hasDownloadOptions(recordData)" class="dropdown actionlink download image-download-options">
+    <div v-else-if="(showImageDownload(recordData) && hasDownloadOptions(recordData)) || hasGroupRole(recordData, 'canViewOriginals', 'everyone')" class="dropdown actionlink download image-download-options">
         <div class="dropdown download image-download-options">
             <div class="dropdown-trigger">
                 <button @click="toggleDownloadOptions()" id="dropdown-menu-button" class="button download-images" aria-haspopup="true" aria-controls="dropdown-menu">
@@ -31,7 +31,7 @@
             </div>
         </div>
     </div>
-    <div v-else-if="showImageDownload(recordData) && (!hasDownloadOptions(recordData) || !hasGroupRole(recordData, 'canViewOriginals', 'everyone'))" class="download">
+    <div v-else-if="showImageDownload(recordData) && !hasDownloadOptions(recordData)" class="download">
         <div class="actionlink">
             <a class="button contact action" href="https://library.unc.edu/contact-us/?destination=wilson"><i class="fa fa-envelope"></i> {{ t('access.contact') }}</a>
         </div>
