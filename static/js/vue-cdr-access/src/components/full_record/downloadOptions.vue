@@ -269,6 +269,7 @@ export default {
 
                 .actionlink + .actionlink {
                     margin-left: 0;
+                    margin-right: 0;
                     margin-top: 8px;
                 }
             }
