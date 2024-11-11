@@ -10,7 +10,13 @@
                     <download-options :record-data="recordData.briefObject" :t="$t"></download-options>
                 </div>
             </div>
-            <download-options v-else :record-data="recordData.briefObject" :t="$t"></download-options>
+            <template v-else>
+                <download-options :record-data="recordData.briefObject" :t="$t"></download-options>
+                <div class="actionlink" v-if="hasPermission(recordData, 'viewOriginal')">
+                    <a class="button view action" :href="recordData.dataFileUrl">
+                        <i class="fa fa-search" aria-hidden="true"></i> View</a>
+                </div>
+            </template>
             <template v-if="hasPermission(recordData, 'viewHidden')">
                 <single-use-link :uuid="recordData.briefObject.id"></single-use-link>
             </template>

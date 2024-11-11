@@ -292,8 +292,6 @@ export default {
         }
 
         .actionlink {
-            margin: 0;
-
             a.action {
                 display: flex;
             }
