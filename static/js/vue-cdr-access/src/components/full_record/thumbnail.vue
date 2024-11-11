@@ -44,6 +44,10 @@ export default {
     methods: {
         altText(title) {
             return `Thumbnail for ${title}`;
+        },
+
+        canView() {
+            return (this.objectData.type === 'AdminUnit' || this.hasPermission(this.objectData, 'viewAccessCopies'));
         }
     },
 
@@ -98,10 +102,6 @@ export default {
                 return this.linkToUrl;
             }
             return `/record/${this.objectData.id}`;
-        },
-
-        canView() {
-            return (this.objectData.type === 'AdminUnit' || this.hasPermission(this.objectData, 'viewAccessCopies'));
         },
 
         src() {
