@@ -323,6 +323,12 @@ export default {
         }
     }
 
+    td {
+        .actionlink {
+            margin: 0
+        }
+    }
+
     .show-list {
         display: block;
     }
