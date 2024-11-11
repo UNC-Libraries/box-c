@@ -100,8 +100,12 @@ export default {
             return `/record/${this.objectData.id}`;
         },
 
+        canView() {
+            return (this.objectData.type === 'AdminUnit' || this.hasPermission(this.objectData, 'viewAccessCopies'));
+        },
+
         src() {
-            if (this.objectData.thumbnail_url !== undefined && this.hasPermission(this.objectData, 'viewAccessCopies')) {
+            if (this.objectData.thumbnail_url !== undefined && this.canView()) {
                 return this.objectData.thumbnail_url;
             }
 
