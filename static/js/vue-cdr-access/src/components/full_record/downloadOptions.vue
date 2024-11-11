@@ -255,18 +255,21 @@ export default {
             width: fit-content;
 
             &:last-of-type {
-                margin-left: 15px !important;
+                margin-left: 15px;
             }
         }
     }
 
     @media screen and (max-width: 576px) {
-        .restricted-access {
-            flex-direction: column;
-            align-items: center;
+        .modal-card-body {
+            .restricted-access {
+                flex-direction: column;
+                align-items: center;
 
-            .actionlink {
-                margin: auto auto 8px auto !important;
+                .actionlink + .actionlink {
+                    margin-left: 0;
+                    margin-top: 8px;
+                }
             }
         }
 
