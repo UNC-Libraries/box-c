@@ -31,7 +31,7 @@
             </div>
         </div>
     </div>
-    <div v-else-if="showImageDownload(recordData) && !hasDownloadOptions(recordData)" class="download">
+    <div v-else-if="showImageDownload(recordData) && (!hasDownloadOptions(recordData) || !hasGroupRole(recordData, 'canViewOriginals', 'everyone'))" class="download">
         <div class="actionlink">
             <a class="button contact action" href="https://library.unc.edu/contact-us/?destination=wilson"><i class="fa fa-envelope"></i> {{ t('access.contact') }}</a>
         </div>
