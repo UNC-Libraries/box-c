@@ -217,7 +217,6 @@ export default {
         window.removeEventListener('click', this.closeDropdownLists);
         window.removeEventListener('keyup', this.closeOverlays);
     }
-
 }
 </script>
 <style scoped lang="scss">
@@ -267,11 +266,7 @@ export default {
             align-items: center;
 
             .actionlink {
-                &:has(.contact),
-                &:has(.login-modal-link),
-                &:last-of-type {
-                    margin: auto !important;
-                }
+                margin: auto auto 8px auto !important;
             }
         }
 
