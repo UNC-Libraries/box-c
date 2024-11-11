@@ -252,6 +252,7 @@ export default {
         .actionlink {
             display: flex;
             flex-wrap: wrap;
+            margin: auto;
             width: fit-content;
 
             &:last-of-type {

@@ -21,6 +21,14 @@
                 <single-use-link :uuid="recordData.briefObject.id"></single-use-link>
             </template>
         </template>
+        <template v-if="recordData.resourceType === 'Folder' || recordData.resourceType === 'Collection'">
+            <div v-if="restrictedContent && !isLoggedIn" class="column is-narrow item-actions">
+                <div class="restricted-access actions">
+                    <h2 class="has-text-centered">{{ $t('full_record.restricted_content', { resource_type: recordData.briefObject.type.toLowerCase() }) }}</h2>
+                    <download-options :record-data="recordData.briefObject" :t="$t"></download-options>
+                </div>
+            </div>
+        </template>
     </div>
 </template>
 
