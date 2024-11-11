@@ -10,7 +10,7 @@
     <div v-else-if="showNonImageDownload(recordData)" class="actionlink download">
         <a class="download button action" :href="nonImageDownloadLink(recordData.id)"><i class="fa fa-download"></i> {{ t('full_record.download') }}</a>
     </div>
-    <div v-else-if="(showImageDownload(recordData) && hasDownloadOptions(recordData)) || !restrictedFiles(recordData)" class="dropdown actionlink download image-download-options">
+    <div v-else-if="showImageDownload(recordData) && hasDownloadOptions(recordData)" class="dropdown actionlink download image-download-options">
         <div class="dropdown download image-download-options">
             <div class="dropdown-trigger">
                 <button @click="toggleDownloadOptions()" id="dropdown-menu-button" class="button download-images" aria-haspopup="true" aria-controls="dropdown-menu">
@@ -178,7 +178,8 @@ export default {
         },
 
         showImageDownload(brief_object) {
-            return this.hasPermission(brief_object, 'viewReducedResImages') &&
+            return (this.hasPermission(brief_object, 'viewReducedResImages')
+                    || this.hasPermission(brief_object, 'viewReducedResImages')) &&
                 brief_object.format.includes('Image') && this.getOriginalFile(brief_object) !== undefined
         },
 
