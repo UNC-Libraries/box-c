@@ -179,7 +179,7 @@ export default {
 
         showImageDownload(brief_object) {
             return (this.hasPermission(brief_object, 'viewReducedResImages')
-                    || this.hasPermission(brief_object, 'viewReducedResImages')) &&
+                    || this.hasPermission(brief_object, 'viewOriginals')) &&
                 brief_object.format.includes('Image') && this.getOriginalFile(brief_object) !== undefined
         },
 
