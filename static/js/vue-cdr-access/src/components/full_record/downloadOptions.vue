@@ -181,8 +181,9 @@ export default {
             console.log(this.hasPermission(brief_object, 'viewReducedResImages'))
             console.log(this.hasPermission(brief_object, 'viewOriginal'))
             console.log(brief_object)
-            return (this.hasPermission(brief_object, 'viewReducedResImages')
-                    || this.hasPermission(brief_object, 'viewOriginal')) &&
+            return (this.hasPermission(brief_object, 'viewReducedResImages') ||
+                    this.hasGroupRole(recordData, 'canViewOriginals', 'authenticated') ||
+                    this.hasGroupRole(recordData, 'canViewOriginals', 'everyone')) &&
                 brief_object.format.includes('Image') && this.getOriginalFile(brief_object) !== undefined
         },
 
