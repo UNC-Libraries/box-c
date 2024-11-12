@@ -1,6 +1,8 @@
 <template>
     {{ restrictedFiles(recordData )}}
     {{ hasGroupRole(recordData, 'canViewOriginals', 'authenticated') }}
+    {{ showImageDownload(recordData) }}
+    {{ hasDownloadOptions(recordData) }}
     <div v-if="!isLoggedIn && restrictedFiles(recordData) && hasGroupRole(recordData, 'canViewOriginals', 'authenticated')" class="actionlink download">
         <a @click.prevent="modal_open = true" class="download login-modal-link button action" href="#">Contact Wilson/Log in to access</a>
     </div>
