@@ -1,7 +1,4 @@
 <template>
-    {{ restrictedFiles(recordData )}}
-    {{ hasGroupRole(recordData, 'canViewOriginals', 'authenticated') }}
-    {{ showImageDownload(recordData) }}
     {{ hasDownloadOptions(recordData) }}
     <div v-if="!isLoggedIn && restrictedFiles(recordData) && hasGroupRole(recordData, 'canViewOriginals', 'authenticated')" class="actionlink download">
         <a @click.prevent="modal_open = true" class="download login-modal-link button action" href="#">Contact Wilson/Log in to access</a>
@@ -120,15 +117,15 @@ export default {
             }
         },
 
-        hasDownloadOptions() {
-            if (this.hasPermission(this.recordData, 'viewOriginal')) {
+        hasDownloadOptions(recordData) {
+            if (this.hasPermission(recordData, 'viewOriginal')) {
                 return true;
             }
 
             let has_download_options = false;
             const valid_sizes = [800, 1600, 2500];
             for (let i=0; i < valid_sizes.length; i++) {
-                if (this.validSizeOption(this.recordData, valid_sizes[i])) {
+                if (this.validSizeOption(recordData, valid_sizes[i])) {
                     has_download_options = true;
                     break;
                 }
