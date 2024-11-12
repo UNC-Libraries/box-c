@@ -28,7 +28,6 @@ export default {
 
         hasPermission(recordData, permission) {
             recordData = this.permissionData(recordData);
-            console.log(recordData)
             if (recordData.permissions === undefined) {
                 return false;
             }
