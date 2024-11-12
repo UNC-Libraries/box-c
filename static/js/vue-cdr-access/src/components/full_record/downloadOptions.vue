@@ -99,7 +99,7 @@ export default {
             }
             // For File objects, content is not restricted if the user can at least download low res files
             // Record is assumed to be a file
-            if (recordData.type === 'File' && this.hasDownloadAccess(recordData)) {
+            if (recordData.type === 'File' && this.hasDownloadAccess(recordData) && this.hasDownloadOptions(recordData)) {
                 return false;
             }
             return true;
@@ -116,15 +116,15 @@ export default {
             }
         },
 
-        hasDownloadOptions() {
-            if (this.hasPermission(this.recordData, 'viewOriginal')) {
+        hasDownloadOptions(recordData) {
+            if (this.hasPermission(recordData, 'viewOriginal')) {
                 return true;
             }
 
             let has_download_options = false;
             const valid_sizes = [800, 1600, 2500];
             for (let i=0; i < valid_sizes.length; i++) {
-                if (this.validSizeOption(this.recordData, valid_sizes[i])) {
+                if (this.validSizeOption(recordData, valid_sizes[i])) {
                     has_download_options = true;
                     break;
                 }
@@ -199,7 +199,7 @@ export default {
         },
 
         /**
-        * Create a global listener to close the menu by clicking anywhere on the screen
+         * Create a global listener to close the menu by clicking anywhere on the screen
          */
         closeDropdownLists(e) {
             if (e.target.id !== 'dropdown-menu-button') {

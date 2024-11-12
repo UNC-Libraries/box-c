@@ -1,4 +1,4 @@
-import {mount, RouterLinkStub, shallowMount} from "@vue/test-utils";
+import {mount, RouterLinkStub} from "@vue/test-utils";
 import {createTestingPinia} from "@pinia/testing";
 import {useAccessStore} from '@/stores/access';
 import {createI18n} from 'vue-i18n';
@@ -156,7 +156,7 @@ describe('downloadOption.vue', () => {
         expect(dropdown_items.length).toEqual(2);
     });
 
-    it('hides a download button with viewReducedResImages when image is smaller than min size', async () => {
+    it('hides a download button with viewReducedResImages when image is smaller than min size and user can\'t view original', async () => {
         const updated_data = cloneDeep(record);
         updated_data.dataFileUrl = 'content/4db695c0-5fd5-4abf-9248-2e115d43f57d';
         updated_data.resourceType = 'File';
@@ -164,6 +164,18 @@ describe('downloadOption.vue', () => {
         await setRecordPermissions(updated_data, ['viewAccessCopies', 'viewReducedResImages']);
 
         expect(wrapper.find('.dropdown-menu').exists()).toBe(false);
+    });
+
+    it('a login button when user is not logged in, but authenticated users canViewOriginals and viewReducedResImages but image is smaller than min size', async () => {
+        const updated_data = cloneDeep(record);
+        updated_data.dataFileUrl = 'content/4db695c0-5fd5-4abf-9248-2e115d43f57d';
+        updated_data.resourceType = 'File';
+        updated_data.datastream[1] = "original_file|image/jpeg|tinyz||69490|urn:sha1:0d48dadb5d61ae0d41b4998280a3c39577a2f94a||140x180";
+        await setRecordPermissions(updated_data, ['viewAccessCopies', 'viewReducedResImages']);
+        await store.$patch({ username: '' })
+        await store.$patch({ isLoggedIn: false })
+
+        expect(wrapper.find('a.login-modal-link').exists()).toBe(true);
     });
 
     it('shows a download button with partial reduced download options with viewReducedResImages when image is smaller than largest size', async () => {
