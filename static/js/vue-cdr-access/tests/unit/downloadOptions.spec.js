@@ -97,7 +97,6 @@ describe('downloadOption.vue', () => {
     });
 
     it('displays a download button for non-image with the proper permissions', async () => {
-        logUserIn();
         const updated_data = cloneDeep(record);
         updated_data.dataFileUrl = 'content/4db695c0-5fd5-4abf-9248-2e115d43f57d';
         updated_data.resourceType = 'File';
@@ -341,27 +340,5 @@ describe('downloadOption.vue', () => {
         await wrapper.setProps({
             recordData: updated_data
         });
-    }
-
-    function logUserIn() {
-        wrapper = mount(downloadOptions, {
-            global: {
-                plugins: [i18n, createTestingPinia({
-                    initialState: {
-                        access: {
-                            isLoggedIn: true,
-                            username: 'test_user'
-                        }
-                    },
-                    stubActions: false
-                })],
-
-            },
-            props: {
-                recordData: record,
-                t: jest.fn()
-            }
-        });
-        store = useAccessStore();
     }
 });
