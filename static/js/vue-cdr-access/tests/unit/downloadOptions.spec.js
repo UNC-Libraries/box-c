@@ -165,7 +165,7 @@ describe('downloadOption.vue', () => {
         expect(wrapper.find('.dropdown-menu').exists()).toBe(false);
     });
 
-    it('a login button when user is not logged in, but authenticated users canViewOriginals and viewReducedResImages but image is smaller than min size', async () => {
+    it('Shows a login button when user is not logged in, but authenticated users canViewOriginals and viewReducedResImages but image is smaller than min size', async () => {
         const updated_data = cloneDeep(record);
         updated_data.dataFileUrl = 'content/4db695c0-5fd5-4abf-9248-2e115d43f57d';
         updated_data.resourceType = 'File';
@@ -258,6 +258,42 @@ describe('downloadOption.vue', () => {
         });
         // Download button
         expect(wrapper.find('.download.button').exists()).toBe(true);
+    });
+
+    it("sets non-image download option for image files without JP2 files if user can ViewOriginal", async () => {
+        let updatedBriefObj = cloneDeep(record)
+        updatedBriefObj.permissions = [
+            "viewAccessCopies",
+            "viewMetadata",
+            "viewReducedResImages",
+            "viewOriginal"
+        ]
+        updatedBriefObj.datastream = [
+            "techmd_fits|text/xml|techmd_fits.xml|xml|4709|urn:sha1:5b0eabd749222a7c0bcdb92002be9fe3eff60128||",
+            "original_file|image/vnd.fpx|beez||694904|urn:sha1:0d48dadb5d61ae0d41b4998280a3c39577a2f94a||2848x1536",
+            "event_log|application/n-triples|event_log.nt|nt|4334|urn:sha1:aabf004766f954db4ac4ab9aa0a115bb10b708b4||"
+        ]
+
+        await wrapper.setProps({
+            recordData: updatedBriefObj
+        });
+        // Download button
+        expect(wrapper.find('.download.button').exists()).toBe(true);
+    });
+
+    it("does not set a non-image download option for image files without JP2 files if user cannot ViewOriginal", async () => {
+        let updatedBriefObj = cloneDeep(record)
+        updatedBriefObj.datastream = [
+            "techmd_fits|text/xml|techmd_fits.xml|xml|4709|urn:sha1:5b0eabd749222a7c0bcdb92002be9fe3eff60128||",
+            "original_file|image/vnd.fpx|beez||694904|urn:sha1:0d48dadb5d61ae0d41b4998280a3c39577a2f94a||2848x1536",
+            "event_log|application/n-triples|event_log.nt|nt|4334|urn:sha1:aabf004766f954db4ac4ab9aa0a115bb10b708b4||"
+        ]
+
+        await wrapper.setProps({
+            recordData: updatedBriefObj
+        });
+        // Download button
+        expect(wrapper.find('.download.button').exists()).toBe(false);
     });
 
     it("does not show a button for non-image files without viewOriginal permission", async () => {

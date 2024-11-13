@@ -2,7 +2,7 @@ import { mount } from '@vue/test-utils'
 import { createRouter, createWebHistory } from 'vue-router';
 import {createTestingPinia} from '@pinia/testing';
 import { useAccessStore } from '@/stores/access';
-import restrictedContent from '@/components/full_record/restrictedContent.vue';
+import objectActions from '@/components/full_record/objectActions.vue';
 import displayWrapper from '@/components/displayWrapper.vue';
 import singleUseLink from '@/components/full_record/singleUseLink.vue';
 import {createI18n} from 'vue-i18n';
@@ -106,7 +106,7 @@ const record = {
 
 let wrapper, router, store;
 
-describe('restrictedContent.vue', () => {
+describe('objectActions.vue', () => {
     const i18n = createI18n({
         locale: 'en',
         fallbackLocale: 'en',
@@ -129,7 +129,7 @@ describe('restrictedContent.vue', () => {
             ]
         });
 
-        wrapper = mount(restrictedContent, {
+        wrapper = mount(objectActions, {
             attachTo: '#root',
             global: {
                 plugins: [i18n, router, createTestingPinia({
@@ -258,7 +258,7 @@ describe('restrictedContent.vue', () => {
     }
 
     function logUserIn() {
-        wrapper = mount(restrictedContent, {
+        wrapper = mount(objectActions, {
             global: {
                 plugins: [i18n, router, createTestingPinia({
                     initialState: {

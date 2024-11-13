@@ -38,7 +38,7 @@ import singleUseLink from '@/components/full_record/singleUseLink.vue';
 import fullRecordUtils from '../../mixins/fullRecordUtils';
 
 export default {
-    name: 'restrictedContent',
+    name: 'objectActions',
 
     components: {downloadOptions, singleUseLink},
 

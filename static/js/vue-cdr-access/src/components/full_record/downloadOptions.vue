@@ -1,6 +1,6 @@
 <template>
     <div v-if="!isLoggedIn && restrictedFiles(recordData) && hasGroupRole(recordData, 'canViewOriginals', 'authenticated')" class="actionlink download">
-        <a @click.prevent="modal_open = true" class="download login-modal-link button action" href="#">Contact Wilson/Log in to access</a>
+        <a @click.prevent="modal_open = true" class="download login-modal-link button action" href="#">{{ t('full_record.login') }}</a>
     </div>
     <div v-else-if="!isLoggedIn && restrictedFiles(recordData)" class="download">
         <div class="actionlink">
@@ -135,7 +135,8 @@ export default {
 
         showNonImageDownload(brief_object) {
             return this.hasPermission(brief_object, 'viewOriginal') &&
-                !brief_object.format.includes('Image') && this.getOriginalFile(brief_object) !== undefined;
+                this.getOriginalFile(brief_object) !== undefined &&
+                (!brief_object.format.includes('Image') || !this.hasJp2File(brief_object));
         },
 
         getOriginalFile(brief_object) {
@@ -179,7 +180,12 @@ export default {
 
         showImageDownload(brief_object) {
             return this.hasPermission(brief_object, 'viewReducedResImages') &&
-                brief_object.format.includes('Image') && this.getOriginalFile(brief_object) !== undefined
+                brief_object.format.includes('Image') && this.getOriginalFile(brief_object) !== undefined &&
+                this.hasJp2File(brief_object);
+        },
+
+        hasJp2File(brief_object) {
+            return brief_object.datastream.find(file => file.startsWith('jp2')) !== undefined;
         },
 
         imgDownloadLink(file_id, size) {

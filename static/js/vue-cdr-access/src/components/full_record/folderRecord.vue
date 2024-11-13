@@ -28,7 +28,7 @@
                 <abstract v-if="recordData.briefObject.abstractText" :brief-object="recordData.briefObject"/>
                 <p><a @click.prevent="displayMetadata()" href="#">{{ $t('full_record.additional_metadata') }}</a></p>
             </div>
-            <restricted-content :record-data="recordData"></restricted-content>
+            <object-actions :record-data="recordData"></object-actions>
         </div>
         <modal-metadata :title="recordData.briefObject.title"
                         :uuid="recordData.briefObject.id"
@@ -40,14 +40,14 @@
 <script>
 import fullRecordUtils from '../../mixins/fullRecordUtils';
 import abstract from '@/components/full_record/abstract.vue';
-import restrictedContent from '@/components/full_record/restrictedContent.vue';
+import objectActions from '@/components/full_record/objectActions.vue';
 
 export default {
     name: 'folderRecord',
 
     mixins: [fullRecordUtils],
 
-    components: { abstract, restrictedContent }
+    components: { abstract, objectActions }
 }
 </script>
 
