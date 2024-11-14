@@ -77,6 +77,7 @@ public class DownloadBulkControllerIT {
         downloadBulkService.setAclService(aclService);
         downloadBulkService.setBasePath(tmpFolder);
         downloadBulkService.setRepoObjLoader(repositoryObjectLoader);
+        downloadBulkService.setFileLimit(5);
         controller.setDownloadBulkService(downloadBulkService);
         fileInputStream = new FileInputStream("src/test/resources/__files/bunny.jpg");
         mvc = MockMvcBuilders.standaloneSetup(controller)
