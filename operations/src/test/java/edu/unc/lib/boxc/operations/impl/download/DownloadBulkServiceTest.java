@@ -77,6 +77,7 @@ public class DownloadBulkServiceTest {
         service.setAclService(aclService);
         service.setRepoObjLoader(repoObjLoader);
         service.setBasePath(zipStorageBasePath);
+        service.setFileLimit(5);
         parentPid = PIDs.get(PARENT_UUID);
         fileObject1Pid = PIDs.get(CHILD1_UUID);
         fileObject2Pid = PIDs.get(CHILD2_UUID);
@@ -163,6 +164,22 @@ public class DownloadBulkServiceTest {
         service.downloadBulk(request);
         // the zip file should be empty
         assertZipFiles(List.of(), List.of());
+    }
+
+    @Test
+    public void fileLimitTest() throws IOException {
+        when(repoObjLoader.getWorkObject(any(PID.class))).thenReturn(parentWork);
+        when(parentWork.getMembers()).thenReturn(List.of(fileObject1, fileObject2));
+        makeBinaryObject(fileObject1, FILENAME1);
+        makeBinaryObject(fileObject2, FILENAME2);
+        when(aclService.hasAccess(eq(fileObject1Pid), any(),
+                eq(Permission.viewOriginal))).thenReturn(true);
+        when(aclService.hasAccess(eq(fileObject2Pid), any(),
+                eq(Permission.viewOriginal))).thenReturn(true);
+        service.setFileLimit(1);
+        service.downloadBulk(request);
+        // the zip file should have one entry
+        assertZipFiles(List.of(FILENAME1), List.of("flower"));
     }
 
     @Test

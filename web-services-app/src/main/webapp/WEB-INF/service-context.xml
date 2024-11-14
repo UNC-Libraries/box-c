@@ -498,6 +498,7 @@
         <property name="aclService" ref="aclService"/>
         <property name="repoObjLoader" ref="repositoryObjectLoader"/>
         <property name="basePath" value="${data.dir}/zip/"/>
+        <property name="fileLimit" value="500" />
     </bean>
     
     <bean class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
