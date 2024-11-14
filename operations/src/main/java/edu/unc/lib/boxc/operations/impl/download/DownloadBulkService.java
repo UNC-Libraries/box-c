@@ -62,10 +62,8 @@ public class DownloadBulkService {
 
             Map<String, Integer> duplicates = new HashMap<>();
             int count = 0;
-            var limit = getLoopLimit(memberObjects.size());
-//            while (count < getLoopLimit(memberObjects.size())) {
             for (ContentObject memberObject : memberObjects ) {
-                if (count == limit) {
+                if (count == getLoopLimit(memberObjects.size())) {
                     break;
                 }
                 if (!(memberObject instanceof FileObject)) {
@@ -94,7 +92,6 @@ public class DownloadBulkService {
                     count++;
                 }
             }
-
         }
     }
 
