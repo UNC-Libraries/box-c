@@ -56,7 +56,7 @@
                                 </div>
                             </div>
                         </div>
-                        <restricted-content :record-data="recordData"></restricted-content>
+                        <object-actions :record-data="recordData"></object-actions>
                     </div>
                 </div>
             </div>
@@ -77,12 +77,12 @@ import abstract from '@/components/full_record/abstract.vue';
 import player from '@/components/full_record/player.vue';
 import metadataDisplay from '@/components/full_record/metadataDisplay.vue';
 import neighborList from '@/components/full_record/neighborList.vue';
-import restrictedContent from '@/components/full_record/restrictedContent.vue';
+import objectActions from '@/components/full_record/objectActions.vue';
 
 export default {
     name: 'fileRecord',
 
-    components: {abstract, metadataDisplay, neighborList, player, restrictedContent},
+    components: {abstract, metadataDisplay, neighborList, objectActions, player },
 
     mixins: [fileUtils, fullRecordUtils],
 
