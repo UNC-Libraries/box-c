@@ -28,6 +28,7 @@ public class DownloadBulkService {
     private AccessControlService aclService;
     private RepositoryObjectLoader repoObjLoader;
     private Path basePath;
+    private int fileLimit;
 
     public Path downloadBulk(DownloadBulkRequest request) {
         var pidString = request.getWorkPidString();
@@ -60,7 +61,12 @@ public class DownloadBulkService {
             }
 
             Map<String, Integer> duplicates = new HashMap<>();
+            int count = 0;
+            var loopLimit = getLoopLimit(memberObjects.size());
             for (ContentObject memberObject : memberObjects ) {
+                if (count == loopLimit) {
+                    break;
+                }
                 if (!(memberObject instanceof FileObject)) {
                     continue;
                 }
@@ -84,6 +90,7 @@ public class DownloadBulkService {
 
                         IOUtils.copy(binaryStream, zipOut);
                     }
+                    count++;
                 }
             }
         }
@@ -101,6 +108,9 @@ public class DownloadBulkService {
         var base = FilenameUtils.removeExtension(filename);
         return base + "(" + copyNumber + ")." + extension;
     }
+    private int getLoopLimit(int arraySize) {
+        return Math.min(fileLimit, arraySize);
+    }
 
     public void setAclService(AccessControlService aclService) {
         this.aclService = aclService;
@@ -112,5 +122,9 @@ public class DownloadBulkService {
 
     public void setBasePath(Path basePath) {
         this.basePath = basePath;
+    }
+
+    public void setFileLimit(int fileLimit) {
+        this.fileLimit = fileLimit;
     }
 }
