@@ -62,9 +62,8 @@ public class DownloadBulkService {
 
             Map<String, Integer> duplicates = new HashMap<>();
             int count = 0;
-            var loopLimit = getLoopLimit(memberObjects.size());
             for (ContentObject memberObject : memberObjects ) {
-                if (count == loopLimit) {
+                if (count == fileLimit) {
                     break;
                 }
                 if (!(memberObject instanceof FileObject)) {
@@ -107,9 +106,6 @@ public class DownloadBulkService {
         var extension = FilenameUtils.getExtension(filename);
         var base = FilenameUtils.removeExtension(filename);
         return base + "(" + copyNumber + ")." + extension;
-    }
-    private int getLoopLimit(int arraySize) {
-        return Math.min(fileLimit, arraySize);
     }
 
     public void setAclService(AccessControlService aclService) {
