@@ -6,7 +6,7 @@ import translations from '@/translations';
 const work_id = 'e2f0d544-4f36-482c-b0ca-ba11f1251c01'
 let wrapper;
 
-describe('fileList.vue', () => {
+describe('bulkDownload.vue', () => {
     const i18n = createI18n({
         locale: 'en',
         fallbackLocale: 'en',
@@ -20,7 +20,7 @@ describe('fileList.vue', () => {
             },
             props: {
                 totalDownloadSize: 8193,
-                viewOriginalAccess: true,
+                hasBulkDownloadAccess: true,
                 workId: work_id,
             }
         });
@@ -51,9 +51,9 @@ describe('fileList.vue', () => {
         expect(download_email.text()).toEqual(expect.stringContaining('Contact Wilson Library for access'));
     });
 
-    it ("does not display a button if the user doesn't have viewOriginalAccess", async () => {
+    it ("does not display a button if the user doesn't have hasBulkDownloadAccess", async () => {
         await wrapper.setProps({
-            viewOriginalAccess: false
+            hasBulkDownloadAccess: false
         });
 
         let download_link = wrapper.find('.actionlink');
