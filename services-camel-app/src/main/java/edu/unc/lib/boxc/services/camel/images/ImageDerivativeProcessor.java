@@ -19,7 +19,8 @@ public class ImageDerivativeProcessor implements Processor {
 
     private static final Pattern MIMETYPE_PATTERN = Pattern.compile("^(image.*$|application.*?(photoshop|psd)$)");
 
-    private static final Pattern DISALLOWED_PATTERN = Pattern.compile(".*(vnd\\.fpx|x-icon|x-raw-panasonic).*");
+    private static final Pattern DISALLOWED_PATTERN =
+            Pattern.compile(".*(vnd\\.fpx|x-icon|x-raw-panasonic|vnd\\.microsoft\\.icon).*");
 
     /**
      * Returns true if the subject of the exchange is a binary which

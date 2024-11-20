@@ -73,4 +73,11 @@ public class ImageDerivativeProcessorTest {
 
         assertTrue(ImageDerivativeProcessor.allowedImageType(exchange));
     }
+
+    @Test
+    public void testAllowedImageTypeMicrosoft() {
+        when(messageIn.getHeader(CdrFcrepoHeaders.CdrBinaryMimeType)).thenReturn("image/vnd.microsoft.icon");
+
+        assertFalse(ImageDerivativeProcessor.allowedImageType(exchange));
+    }
 }
