@@ -1,6 +1,6 @@
 <template>
-    <div v-if="hasDownloadableContent" class="actionlink column pr-0 is-justify-content-flex-end">
-        <a v-if="showTotalFilesize" class="bulk-download bulk-download-link button action" :href="downloadBulkUrl(workId)">
+    <div v-if="hasDownloadableContent" class="column pr-0 has-text-right">
+        <a v-if="showTotalFilesize" class="bulk-download bulk-download-link button action is-primary" :href="downloadBulkUrl(workId)">
                     <span class="icon">
                         <i class="fa fa-archive"></i>
                     </span>
